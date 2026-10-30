@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Runtime.ExceptionServices;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -15,6 +16,7 @@ internal sealed class NavMenuEntryCollection : IList<INavMenuEntry>,
     private readonly Action<INavMenuEntry> _attach;
     private readonly Action<INavMenuEntry> _detach;
     private readonly NavMenuEntryOwnershipCoordinator _ownershipCoordinator;
+    private bool _isReplacing;
 
     public NavMenuEntryCollection(object owner,
                                   Action<INavMenuEntry> validate,
@@ -44,27 +46,64 @@ internal sealed class NavMenuEntryCollection : IList<INavMenuEntry>,
         get => _entries[index];
         set
         {
+            EnsureCanMutate();
             var oldEntry = _entries[index];
             if (ReferenceEquals(oldEntry, value))
             {
                 return;
             }
 
-            Validate(value, index);
-            var prospectiveEntries = _entries.ToList();
-            prospectiveEntries[index] = value;
-            _ownershipCoordinator.Validate(prospectiveEntries);
-            _detach(oldEntry);
-            _entries[index] = value;
-            _ownershipCoordinator.Synchronize();
-            _attach(value);
-            RaiseIndexerChanged();
-            CollectionChanged?.Invoke(this,
-                new NotifyCollectionChangedEventArgs(
-                    NotifyCollectionChangedAction.Replace,
-                    value,
-                    oldEntry,
-                    index));
+            // Parent callbacks and collection observers must see one committed replacement.
+            // Reentrant writes to this collection would publish changes against an unfinished
+            // Replace; writes to other owners still use the normal structural ownership checks.
+            _isReplacing = true;
+            try
+            {
+                Validate(value, index);
+                var prospectiveEntries = _entries.ToList();
+                prospectiveEntries[index] = value;
+                _ownershipCoordinator.Validate(prospectiveEntries);
+                _entries[index] = value;
+                _ownershipCoordinator.Synchronize();
+
+                List<Exception>? callbackExceptions = null;
+                CompleteStep(() => _detach(oldEntry));
+                CompleteStep(() => _attach(value));
+                CompleteStep(RaiseIndexerChanged);
+                CompleteStep(() => CollectionChanged?.Invoke(this,
+                    new NotifyCollectionChangedEventArgs(
+                        NotifyCollectionChangedAction.Replace,
+                        value,
+                        oldEntry,
+                        index)));
+
+                if (callbackExceptions is { Count: 1 })
+                {
+                    ExceptionDispatchInfo.Capture(callbackExceptions[0]).Throw();
+                }
+                else if (callbackExceptions is not null)
+                {
+                    throw new AggregateException(callbackExceptions);
+                }
+
+                void CompleteStep(Action callback)
+                {
+                    try
+                    {
+                        callback();
+                    }
+                    catch (Exception exception)
+                    {
+                        // The collection is committed. Finish parent projection and notification
+                        // before propagating every callback failure to the caller.
+                        (callbackExceptions ??= []).Add(exception);
+                    }
+                }
+            }
+            finally
+            {
+                _isReplacing = false;
+            }
         }
     }
 
@@ -87,6 +126,7 @@ internal sealed class NavMenuEntryCollection : IList<INavMenuEntry>,
 
     public void AddRange(IEnumerable<INavMenuEntry> entries)
     {
+        EnsureCanMutate();
         ArgumentNullException.ThrowIfNull(entries);
 
         var additions = entries.ToArray();
@@ -121,6 +161,7 @@ internal sealed class NavMenuEntryCollection : IList<INavMenuEntry>,
 
     public void Clear()
     {
+        EnsureCanMutate();
         if (_entries.Count == 0)
         {
             return;
@@ -176,6 +217,7 @@ internal sealed class NavMenuEntryCollection : IList<INavMenuEntry>,
 
     public void Insert(int index, INavMenuEntry item)
     {
+        EnsureCanMutate();
         Validate(item, index);
         var prospectiveEntries = _entries.ToList();
         prospectiveEntries.Insert(index, item);
@@ -198,6 +240,7 @@ internal sealed class NavMenuEntryCollection : IList<INavMenuEntry>,
 
     public bool Remove(INavMenuEntry item)
     {
+        EnsureCanMutate();
         var index = _entries.IndexOf(item);
         if (index < 0)
         {
@@ -218,6 +261,7 @@ internal sealed class NavMenuEntryCollection : IList<INavMenuEntry>,
 
     public void RemoveAt(int index)
     {
+        EnsureCanMutate();
         var oldEntry = _entries[index];
         _entries.RemoveAt(index);
         _detach(oldEntry);
@@ -233,6 +277,15 @@ internal sealed class NavMenuEntryCollection : IList<INavMenuEntry>,
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+
+    private void EnsureCanMutate()
+    {
+        if (_isReplacing)
+        {
+            throw new InvalidOperationException(
+                "Cannot modify a NavMenu entry collection while its replacement is being applied or notified.");
+        }
     }
 
     private void Validate(INavMenuEntry? entry, int index)

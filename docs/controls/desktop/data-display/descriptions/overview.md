@@ -1,6 +1,6 @@
 # Descriptions 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.Descriptions` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Descriptions 桌面版实现原理](implementation.md)，Descriptions Token 的专项设计见 [Descriptions Token 设计](token.md)，设计和契约变化记录见 [Descriptions Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.Descriptions` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，公共语义区域见 [Descriptions Semantic Part 契约](semantic-part.md)，内部实现原理见 [Descriptions 桌面版实现原理](implementation.md)，Descriptions Token 的专项设计见 [Descriptions Token 设计](token.md)，设计和契约变化记录见 [Descriptions Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -18,7 +18,7 @@ Descriptions 的职责是把描述项数据排版为稳定的网格视觉。它�
 
 ## 2. 设计语言
 
-Descriptions 的设计语言来自 参考设计体系的描述列表：标签提供字段名，内容提供字段值，列数和跨度提供信息密度，边框模式提供表格化阅读边界。
+Descriptions 以标签提供字段名、以内容提供字段值，并通过列数、跨度和边框模式组织信息密度与阅读边界。
 
 | 维度 | 含义 | 典型表达 |
 | --- | --- | --- |
@@ -70,6 +70,7 @@ Descriptions 仍然负责把 `DescriptionItem` 转换成内部视觉控件。`De
 
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
+| `RootFrame` | `PixelAlignedBorder` | 将 root 的标准背景、边框、圆角和 Padding 投影到完整 Descriptions 表面。 |
 | `HeaderLayout` | `DockPanel` | Header/Extra 行容器，固定存在，通过 `IsHeaderLayoutVisible` 控制显示。 |
 | `ExtraPresenter` | `ContentPresenter` | Extra 内容和模板承载。 |
 | `HeaderPresenter` | `ContentPresenter` | Header 内容和模板承载。 |
@@ -142,6 +143,23 @@ DescriptionsTheme / DescriptionDefaultItemTheme / bordered cell themes
 
 根 `ContentFrame` 的边框、圆角、裁剪来自 SharedToken。label 背景、label/content/title/extra 颜色、Header margin、item padding 和冒号 margin 来自 DescriptionsToken。
 
+### 5.1 Semantic Part 支持摘要
+
+Descriptions 由唯一 public owner `Descriptions` 公开以下 Semantic Part：
+
+| Part | 公共入口 | 数量语义 | 职责摘要 |
+| --- | --- | --- | --- |
+| `root` | Descriptions 本身 | `Single` | 数据、布局、尺寸、边框和响应式状态的统一 owner。 |
+| `header` | `.semantic-header` | `Single` | Header 与 Extra 的完整头部布局区域。 |
+| `title` | `.semantic-title` | `Single` | Header 内容展示区域。 |
+| `extra` | `.semantic-extra` | `Single` | 头部辅助内容展示区域。 |
+| `label` | `.semantic-label` | `Multiple` | 每个已物化 item 的标签展示区域。 |
+| `content` | `.semantic-content` | `Multiple` | 每个已物化 item 的内容展示区域。 |
+
+`DescriptionItem` 是非视觉数据对象，不建立独立 descriptor。`label` 和 `content` 随生成视觉物化；空集合没有 item-scoped
+target，非空集合中二者数量均与当前已物化 `Items.Count` 相等。完整 Selector、`ContractType`、运行时创建边界、状态矩阵和
+排除区域见 [Descriptions Semantic Part 契约](semantic-part.md)。
+
 ## 6. 控件家族或集成关系
 
 Descriptions 是 Data Display 分类下的独立展示控件，不属于输入控件家族，不实现 Form、CompactSpace、选择、弹层或 motion 接口。
@@ -167,7 +185,13 @@ Descriptions 是 Data Display 分类下的独立展示控件，不属于输入�
 - 普通水平和纵向非边框模式必须保持 `IsShowColon` 到冒号显示状态的绑定。
 - `HeaderLayout` 是固定模板节点，Header/Extra 为空时隐藏而不是销毁。
 - `PART_GridLayout`、`HeaderLayout`、`HeaderPresenter`、`ExtraPresenter`、`ContentFrame` 的名称和职责不能在未授权情况下改变。
+- `RootFrame` 必须投影 Descriptions owner 的 `Background`、`BorderBrush`、`BorderThickness`、`CornerRadius` 和 `Padding`，并同时
+  包含 Header 与内容区；root Semantic Setter 不得被收窄为仅修改内容表格。
 - `SizeType` 默认值保持 `Large`。
+- Semantic Part descriptor 只包含 `root`、`header`、`title`、`extra`、`label` 和 `content`；内部 frame、grid、cell、冒号和 separator 不得提升为公共 Part。
+- `header`、`title`、`extra` 的静态 marker 必须在根模板中稳定存在；每个已物化 item 必须在所有布局组合下产生一个 `label` 和一个 `content` marker。
+- 四种布局中的 `label`、`content` target 必须统一为 `ContentPresenter`；水平 bordered cell 只负责边框几何，默认
+  Padding、Background、Foreground 和文本排版基线必须投影到 target presenter。
 - Token 名称和语义不擅自重命名或删除。
 - 媒体断点订阅必须在 detach 时释放。
 
@@ -209,34 +233,14 @@ Descriptions 是 Data Display 分类下的独立展示控件，不属于输入�
 - item 与视觉控件之间只能保存当前生成周期需要的映射；重建视觉前必须清空旧映射和旧订阅。
 - 不允许通过清空 Gallery DataContext、强制路由释放或改静态资源值来掩盖泄露。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
+- [Descriptions Semantic Part 契约](semantic-part.md)
 - [Descriptions 桌面版实现原理](implementation.md)
 - [Descriptions Token 设计](token.md)
 - [Descriptions Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Descriptions` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/descriptions/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/descriptions/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -245,6 +249,7 @@ LLMS 导出来源：
 | Public API | `IsBordered`、`IsShowColon`、`ColumnInfo`、`Header`、`Extra`、`Layout`、`SizeType`、`ItemsSource`、`Items` 和 `DescriptionItem` 属性语义。 |
 | 状态行为 | 集合增删清空、Items 替换、item 属性变化、Header/Extra 显隐、媒体断点变化、边框切换、布局切换、冒号绑定。 |
 | AXAML / Template | 稳定 template part、固定 HeaderLayout、ContentFrame 边框、默认项三种模板和水平边框 cell 模板。 |
+| Semantic Part | descriptor、静态 header/title/extra marker、四种布局的运行时 label/content marker、数量语义和 Selector 命中。 |
 | Token | label 背景/颜色、标题/内容/extra 颜色、Header margin、item padding、冒号 margin。 |
 | 生命周期 | item remove/reset/template reapply/detach 后旧 item、旧 generated control、binding expression 和资源订阅不被保留。 |
 | Gallery | Basic、Border、Custom Size、Responsive、Vertical、Vertical Border、Row 示例。 |

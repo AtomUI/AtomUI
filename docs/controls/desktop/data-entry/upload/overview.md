@@ -1,6 +1,6 @@
 # Upload 桌面版架构设计
 
-本文档定义 `Upload` 桌面版的设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Upload 桌面版实现原理](implementation.md)，拖动输入专项契约见 [Upload 拖动上传设计](drag-drop-design.md)，Upload Token 的专项设计见 [Upload Token 设计](token.md)，设计和契约变化记录见 [Upload Changelog](changelog.md)。
+本文档定义 `Upload` 桌面版的设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，公开主题区域见 [Upload Semantic Part 契约](semantic-part.md)，内部实现原理见 [Upload 桌面版实现原理](implementation.md)，拖动输入专项契约见 [Upload 拖动上传设计](drag-drop-design.md)，Upload Token 的专项设计见 [Upload Token 设计](token.md)，设计和契约变化记录见 [Upload Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -60,7 +60,7 @@ Upload 以 `Files` 作为唯一上传文件状态 owner。触发器、拖拽区�
 | 输入结果 | `InputBatchCompleted`、`UploadInputBatchCompletedEventArgs` | 每个输入批次在 UI 线程统一报告接受项、拒绝项以及 Completed、Cancelled 或 Failed 终态。 |
 | 文件内容 | `UploadFileInfo`、`IUploadFileSource` | Transport 通过可打开内容源读取文件，不假定本地路径可访问。 |
 | 上传队列 | `UploadTransport`、`AutoUpload`、`MaxConcurrentTasks`、`UploadQueue` | 上传调度与视觉控件解耦，生命周期由 `Upload` 统一释放。 |
-| 列表展示 | `UploadList`、`ListType`、`ListMaxHeight`、`ListScrollBarVisibility` | 列表内部滚动，触发区保持固定。 |
+| 列表展示 | `UploadList`、`ListType`、`ListMaxHeight`、`ListScrollBarVisibility` | 列表内部滚动，触发区保持固定；应用通过 `list` / `item` Semantic Part 定制稳定区域。 |
 | 触发入口 | `TriggerContent`、`UploadTrigger`、Picture append slot | 文件/目录触发器由用户布局组合，PictureCard/PictureCircle 通过显示源 append slot 呈现。 |
 | 状态反馈 | `SuccessAutoRemoveDelay`、`PendingText`、`FileValueMode` | 成功自动移除、待上传文案和 Form 值投影可配置。 |
 | 视觉与动效 | `IsMotionEnabled`、Upload Token | 只表达视觉状态，不保存业务任务状态。 |
@@ -203,6 +203,10 @@ Upload 的视觉模型由控件模板、ControlTheme、SharedToken 和控件 Tok
 - 可由 AXAML 表达的模板状态必须优先留在 AXAML。
 - Token 只表达视觉变量，不承载上传状态、队列状态或 Form 错误。
 
+公开 Semantic Part 为 `root`、`list` 与 `item`。`list` 在四种 `ListType` 下都表示唯一活动文件列表，`item`
+只表示真实 `UploadFileItem` 容器，不包含 PictureCard/PictureCircle 的 append trigger。完整 Selector、ContractType、
+状态矩阵和定制边界见 [Upload Semantic Part 契约](semantic-part.md)。
+
 ## 6. 控件家族或集成关系
 
 主要协作类型：
@@ -236,6 +240,7 @@ Upload 的视觉模型由控件模板、ControlTheme、SharedToken 和控件 Tok
 - 不通过运行时反射扫描 public API、Token 或 Gallery 示例数据。
 - `UploadDropZone` 和 `UploadDefaultDropArea` 的 ControlTheme、模板视觉树、Token 映射、布局和默认渲染结果保持稳定。
 - `UploadDropZone` 的新增拖动状态伪类只提供自定义主题入口；AtomUI 默认主题不得据此改变 pointerover、disabled、motion、Light/Dark 或缩放后的视觉结果。
+- `root`、`list`、`item` 的 selector class、route、ContractType 和 cardinality 属于公共主题 API；所有内置模板变体必须实现相同契约。
 - 文档只描述稳定设计；历史变化记录在 `changelog.md`。
 
 ## 8. 专项模型
@@ -285,37 +290,15 @@ Upload 的视觉模型由控件模板、ControlTheme、SharedToken 和控件 Tok
 
 错误状态必须投射到 Avalonia `DataValidationErrors`，不得另建 Upload 专属 error 机制。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Upload 桌面版实现原理](implementation.md)
+- [Upload Semantic Part 契约](semantic-part.md)
 - [Upload 拖动上传设计](drag-drop-design.md)
 - [Upload Token 设计](token.md)
 - [Upload Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Upload` | 上传状态协调器，拥有文件集合、用户输入范围、上传队列、Form 值投影和生命周期。 | `Files`、`IsMultipleEnabled`、`UploadTransport`、`FileValueMode` | `UploadToken`、SharedToken | stable |
-| `trigger` | `TriggerContent` / `UploadTrigger` | 承载文件或目录选择入口，只提交选择动作，不持有上传状态。 | `TriggerContent`、`SourceKind`、`SelectFilesAsync()`、`SelectDirectoriesAsync()` | Upload trigger 主题资源 | stable |
-| `drop-zone` | `UploadDropZone` | 协商拖动效果、取得 Drop 快照并创建统一输入批次。 | `IsOpenFileDialogOnClick`、`DirectoryDropMode`、`DragState` | Upload drop-zone 主题资源 | stable |
-| `drop-area` | `UploadDefaultDropArea` | 渲染默认拖动图标、标题、副标题和边框，不处理 DataTransfer。 | `DropIcon`、`Header`、`SubHeader` | Upload Token、SharedToken | stable |
-| `list` | `UploadList` | 渲染 `Files` 并拥有列表滚动边界，不创建第二份文件状态。 | `Files`、`ListType`、`ListMaxHeight`、`ListScrollBarVisibility` | Upload list 主题资源 | internal-observable |
-| `item` | `AbstractUploadListItem` 派生容器 | 投射单个 `UploadFileItem` 的状态、进度和操作入口。 | `UploadFileItem.Status`、`Progress`、`ErrorMessage`、`Result` | Upload item 主题资源 | internal-observable |
-| `validation` | `Upload` Form / validation 投影 | 按 `FileValueMode` 输出 Form 值，并把错误投射到 `DataValidationErrors`。 | `FileValueMode`、`IFormItemAware` | SharedToken、Form Token | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/upload/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/upload/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -327,3 +310,4 @@ LLMS 导出来源：
 | AXAML/Theme | 检查 trigger 固定、list 内部滚动、display append slot、template part、资源 key 和 Light/Dark 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查 fixed trigger、scrollable list、file/directory dual trigger 和 auto-remove 示例。 |
+| Semantic Part | 验证 descriptor、四种 `ListType` marker、生成 Style route、Gallery 高亮和 append trigger 排除。 |

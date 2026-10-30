@@ -1,4 +1,3 @@
-using AtomUI.Generator.Localization.Catalog;
 using Microsoft.CodeAnalysis;
 
 namespace AtomUI.Generator.Localization;

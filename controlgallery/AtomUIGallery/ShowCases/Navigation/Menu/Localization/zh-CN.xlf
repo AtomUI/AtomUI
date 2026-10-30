@@ -307,6 +307,12 @@
         <target state="translated">导航一</target>
       </segment>
     </unit>
+    <unit id="P2HeaderNavigationThree">
+      <segment>
+        <source>Navigation Three</source>
+        <target state="translated">导航三</target>
+      </segment>
+    </unit>
     <unit id="P2HeaderNavigationThreeSubmenu">
       <segment>
         <source>Navigation Three - Submenu</source>
@@ -581,6 +587,90 @@
       <segment>
         <source>Scrollable menu</source>
         <target state="translated">可滚动菜单</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Text content area of a first-level item</source>
+        <target state="translated">一级条目的文字内容区域</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>First-level item container, including items inside top-level groups</source>
+        <target state="translated">一级条目容器，包含一级分组内部的条目</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIconDescription">
+      <segment>
+        <source>Icon area of a first-level item</source>
+        <target state="translated">一级条目的图标区域</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemTitleDescription">
+      <segment>
+        <source>Top-level group title (hidden in horizontal mode)</source>
+        <target state="translated">一级分组标题（horizontal 模式隐藏）</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListDescription">
+      <segment>
+        <source>Top-level group list</source>
+        <target state="translated">一级分组列表</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize the menu through the generated Semantic Part styles: first-level item text color and minimum height, item icon color, item text weight, group title weight, group list spacing, submenu item color, submenu list spacing, and the submenu popup frame border, corner radius and padding. The root element is customized through owner-scoped visual properties.</source>
+        <target state="translated">通过生成的 Semantic Part 样式定制菜单：一级条目文字颜色与最小高度、条目图标颜色、条目文字字重、分组标题字重、分组列表间距、子菜单条目颜色、子菜单列表间距，以及子菜单弹层框体的边框、圆角与内边距。根元素通过 owner 作用域的视觉属性定制。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Submenu popup frame (absent in inline mode)</source>
+        <target state="translated">子菜单弹层框体（inline 模式不存在）</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element hosting the menu API, selection, expansion and theme entry</source>
+        <target state="translated">根元素，承载菜单 API、选择、展开与主题入口</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSubMenuItemContentDescription">
+      <segment>
+        <source>Text content area of an item inside a submenu</source>
+        <target state="translated">子菜单内条目的文字内容区域</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSubMenuItemDescription">
+      <segment>
+        <source>Item container inside a submenu</source>
+        <target state="translated">子菜单内的条目容器</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSubMenuItemIconDescription">
+      <segment>
+        <source>Icon area of an item inside a submenu</source>
+        <target state="translated">子菜单内条目的图标区域</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSubMenuItemTitleDescription">
+      <segment>
+        <source>Group title inside a submenu</source>
+        <target state="translated">子菜单内的分组标题</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSubMenuListDescription">
+      <segment>
+        <source>Group list inside a submenu</source>
+        <target state="translated">子菜单内的分组列表</target>
       </segment>
     </unit>
     <unit id="SwitchMenuTypeDescription">

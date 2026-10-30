@@ -2,6 +2,17 @@
 
 本文档记录 CheckBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-08-16
+
+- Semantic Part
+  - Add Semantic Part descriptors for `CheckBox`：`root`（owner）、`icon`（`CheckBoxIndicator`，`.semantic-icon`，`Single`，`ContractType` 为 `TemplatedControl`）与 `label`（`ContentPresenter`，`.semantic-label`，`Single`）。
+  - Add static `Classes.semantic-icon="True"` / `Classes.semantic-label="True"` markers to the CheckBox template; the checked/unchecked/indeterminate states share one indicator node, so marker identity and count do not change with check state.
+  - Keep `CheckBoxGroup`、`CheckBoxItemsControl` and `CheckBoxIndicator` free of independent descriptors.
+- Gallery
+  - Migrate the CheckBox ShowCase to `GalleryShowCaseHost` with a lazy Semantic Parts Preview and add a custom Semantic Part styling example (fixed and checked-conditional icon/label styling).
+- Docs
+  - Add `semantic-part.md` and rewrite the stale `root/input/trigger/popup/validation` LLMS semantic table to `root/icon/label`.
+
 ## 2026-07-06
 
 - Behavior

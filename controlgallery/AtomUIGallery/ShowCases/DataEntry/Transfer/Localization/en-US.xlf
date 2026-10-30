@@ -226,6 +226,161 @@
         <source>Search</source>
       </segment>
     </unit>
+    <unit id="SemanticActionsDescription">
+      <segment>
+        <source>Middle actions area that hosts the move-to-target and move-to-source buttons</source>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Panel body region that hosts the filter input and the list content host</source>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>Panel bottom region that renders the direction footer and its template</source>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Panel header region that hosts the select-all checkbox, selection count and title</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Item content element, only applies to text content styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, only applies to list item styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIconDescription">
+      <segment>
+        <source>Item icon element, only applies to icon styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticListDescription">
+      <segment>
+        <source>List content host that carries the source or target view control</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartFooterText">
+      <segment>
+        <source>Custom Footer</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Transfer property selectors to customize the published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element that lays out the source panel, the actions area and the target panel</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceBodyDescription">
+      <segment>
+        <source>Source body element, only applies to left list body styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceDescription">
+      <segment>
+        <source>Source panel container that wraps the whole source section decorator</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceFooterDescription">
+      <segment>
+        <source>Source footer element, only applies to left footer area styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceHeaderDescription">
+      <segment>
+        <source>Source header element, only applies to left header area styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceItemContentDescription">
+      <segment>
+        <source>Source item content element, only applies to left text content styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceItemDescription">
+      <segment>
+        <source>Source item element, only applies to left list item styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceItemIconDescription">
+      <segment>
+        <source>Source item icon element, only applies to left icon styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceListDescription">
+      <segment>
+        <source>Source list element, only applies to left list content styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceTitleDescription">
+      <segment>
+        <source>Source title element, only applies to left title text styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetBodyDescription">
+      <segment>
+        <source>Target body element, only applies to right list body styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetDescription">
+      <segment>
+        <source>Target panel container that wraps the whole target section decorator</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetFooterDescription">
+      <segment>
+        <source>Target footer element, only applies to right footer area styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetHeaderDescription">
+      <segment>
+        <source>Target header element, only applies to right header area styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetItemContentDescription">
+      <segment>
+        <source>Target item content element, only applies to right text content styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetItemDescription">
+      <segment>
+        <source>Target item element, only applies to right list item styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetItemIconDescription">
+      <segment>
+        <source>Target item icon element, only applies to right icon styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetListDescription">
+      <segment>
+        <source>Target list element, only applies to right list content styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetTitleDescription">
+      <segment>
+        <source>Target title element, only applies to right title text styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title presenter that renders the source or target panel title</source>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to Transfer with status, which could be error or warning.</source>

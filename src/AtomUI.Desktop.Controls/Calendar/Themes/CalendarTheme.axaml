@@ -4,17 +4,46 @@
     xmlns:atom="https://atomui.net"
     xmlns:controls="clr-namespace:AtomUI.Desktop.Controls"
     xmlns:calendar="clr-namespace:AtomUI.Desktop.Controls.Internal.Calendar"
+    xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
+    xmlns:themes="clr-namespace:AtomUI.Desktop.Controls.Themes"
     x:Class="AtomUI.Desktop.Controls.Themes.CalendarControlTheme"
     TargetType="controls:Calendar"
     x:ClassModifier="internal">
+    <ControlTheme.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceInclude Source="/Calendar/Themes/CalendarDateCellTheme.axaml" />
+        </ResourceDictionary.MergedDictionaries>
+        <ControlTheme x:Key="CalendarDatePanelTheme" TargetType="viewer:DatePanel">
+            <ControlTheme.BasedOn><themes:DatePanelTheme TargetType="viewer:DatePanel" /></ControlTheme.BasedOn>
+            <Setter Property="Width" Value="NaN" />
+            <Setter Property="Padding" Value="0" />
+            <Style Selector="^[Presentation=Compact]">
+                <Setter Property="WeekHeaderMinHeight" Value="{atom:SharedTokenResource FontHeightSM}" />
+            </Style>
+            <Style Selector="^[Presentation=Content]">
+                <Setter Property="WeekHeaderTextAlignment" Value="Right" />
+                <Setter Property="WeekHeaderMinHeight" Value="{atom:CalendarTokenResource WeekHeaderHeight}" />
+                <Setter Property="WeekHeaderPadding" Value="{atom:CalendarTokenResource WeekHeaderPadding}" />
+            </Style>
+        </ControlTheme>
+        </ResourceDictionary>
+    </ControlTheme.Resources>
+    <Setter Property="DateCellTheme" Value="{StaticResource CalendarDateCellTheme}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="controls:Calendar">
             <Border Name="PART_Root"
-                    Background="{atom:CalendarTokenResource FullBg}"
-                    BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}">
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Padding="{TemplateBinding Padding}">
                 <DockPanel LastChildFill="True">
-                    <Panel Name="PART_HeaderPresenter" DockPanel.Dock="Top">
+                    <ContentControl Name="PART_HeaderPresenter" DockPanel.Dock="Top" Classes.semantic-header="True"
+                                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                        <Panel>
                         <calendar:CalendarHeader Name="PART_DefaultHeader"
+                                                 IsVisible="{Binding HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}"
                                                  Value="{TemplateBinding Value}"
                                                  Mode="{TemplateBinding Mode}"
                                                  ValidRange="{TemplateBinding ValidRange}"
@@ -22,39 +51,39 @@
                         <ContentControl Name="PART_CustomHeader"
                                         ContentTemplate="{TemplateBinding HeaderTemplate}"
                                         IsVisible="{Binding HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                    </Panel>
+                        </Panel>
+                    </ContentControl>
                     <DockPanel Name="PART_BodyPresenter"
+                               Classes.semantic-body="True"
                                LastChildFill="True"
                                ClipToBounds="True">
                         <Border DockPanel.Dock="Top"
                                 Height="{atom:SharedTokenResource LineWidth}"
-                                Background="{atom:SharedTokenResource ColorSplit}" />
+                                Background="{atom:SharedTokenResource ColorSplit}"
+                                IsVisible="{TemplateBinding Fullscreen, Converter={x:Static BoolConverters.Not}}" />
                         <Border DockPanel.Dock="Top"
                                 Height="{atom:SharedTokenResource UniformlyPaddingXS}" />
                         <Border DockPanel.Dock="Bottom"
                                 Height="{atom:SharedTokenResource UniformlyPaddingXS}" />
                         <Grid>
-                            <calendar:CalendarView Name="PART_CalendarView"
-                                                   Value="{TemplateBinding Value}"
-                                                   Fullscreen="{TemplateBinding Fullscreen}"
-                                                   ShowWeek="{TemplateBinding ShowWeek}"
-                                                   ValidRange="{TemplateBinding ValidRange}"
-                                                   DisabledDate="{TemplateBinding DisabledDate}"
+                            <controls:DateViewer Name="PART_DateViewer"
+                                                   Classes.semantic-content="True"
+                                                   ShowHeader="False" Padding="0"
+                                                   CellTheme="{TemplateBinding DateCellTheme}"
+                                                   PanelTheme="{StaticResource CalendarDatePanelTheme}"
+                                                   DefaultFullCellTemplate="{TemplateBinding DefaultDateCellTemplate}"
+                                                   Presentation="{TemplateBinding DatePresentation}"
                                                    CellTemplate="{TemplateBinding CellTemplate}"
                                                    FullCellTemplate="{TemplateBinding FullCellTemplate}"
-                                                   MiniContentHeight="{TemplateBinding EffectiveMiniContentHeight}"
-                                                   FullCellMinHeight="{TemplateBinding EffectiveFullCellMinHeight}"
                                                    HorizontalAlignment="Stretch"
                                                    VerticalAlignment="Stretch"
                                                    ZIndex="0" />
                             <calendar:CalendarRangeBarPanel Name="PART_RangeBarPanel"
-                                                            Value="{TemplateBinding Value}"
+                                                            LayoutSource="{TemplateBinding EffectiveDateViewer}"
                                                             Mode="{TemplateBinding Mode}"
                                                             Fullscreen="{TemplateBinding Fullscreen}"
-                                                            ShowWeek="{TemplateBinding ShowWeek}"
                                                             RangeBars="{TemplateBinding RangeBars}"
                                                             RangeBarHeight="{atom:CalendarTokenResource RangeBarHeight}"
-                                                            WeekHeaderHeight="{atom:SharedTokenResource ControlHeightSM}"
                                                             RangeBarTopOffset="{TemplateBinding EffectiveRangeBarTopOffset}"
                                                             RangeBarHorizontalInset="{atom:SharedTokenResource UniformlyMarginXXS}"
                                                             HorizontalAlignment="Stretch"
@@ -69,23 +98,27 @@
         </ControlTemplate>
     </Setter>
 
+    <Setter Property="Background" Value="{atom:CalendarTokenResource FullBg}" />
+    <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Style Selector="^ /template/ controls|DateViewer">
+        <Setter Property="Background" Value="{atom:CalendarTokenResource FullPanelBg}" />
+    </Style>
+    <Style Selector="^:mini /template/ controls|DateViewer">
+        <Setter Property="Height" Value="{TemplateBinding EffectiveMiniContentHeight}" />
+        <Setter Property="MaxHeight" Value="{TemplateBinding EffectiveMiniContentHeight}" />
+    </Style>
+
     <Style Selector="^:fullscreen">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
-    </Style>
-    <Style Selector="^:fullscreen /template/ Border#PART_Root">
-        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="0" />
-        <Setter Property="Padding" Value="0" />
     </Style>
 
     <Style Selector="^:mini">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
-    </Style>
-    <Style Selector="^:mini /template/ Border#PART_Root">
-        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-        <Setter Property="Padding" Value="0" />
     </Style>
 </ControlTheme>

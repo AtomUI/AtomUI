@@ -229,6 +229,78 @@
         <target state="translated">樣式</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear icon button inside the suffix area that resets the value</source>
+        <target state="translated">後綴區域內的清除圖示按鈕，點擊後清空數值。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Embedded numeric text input element with font, alignment and text styles</source>
+        <target state="translated">內嵌的數字文字輸入元素，包含字體、對齊與文字樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and NumericUpDown property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">使用宿主作用域選擇器和 NumericUpDown 屬性選擇器定製已發布的語義部件。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Inner prefix content element rendered before the input text area</source>
+        <target state="translated">渲染在輸入文字區之前的內部前綴內容元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border, background, size, hover and focus states and other basic input container styles</source>
+        <target state="translated">根元素，包含邊框、背景、尺寸、懸停與聚焦狀態等基礎輸入容器樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerClearDescription">
+      <segment>
+        <source>Clear icon button inside the suffix area that resets the value in spinner mode</source>
+        <target state="translated">按鈕步進模式下，後綴區域內的清除圖示按鈕，點擊後清空數值。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerInputDescription">
+      <segment>
+        <source>Embedded numeric text input element with font, alignment and text styles in spinner mode</source>
+        <target state="translated">按鈕步進模式下內嵌的數字文字輸入元素，包含字體、對齊與文字樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerPrefixDescription">
+      <segment>
+        <source>Inner prefix content element rendered before the input text area in spinner mode</source>
+        <target state="translated">按鈕步進模式下，渲染在輸入文字區之前的內部前綴內容元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerRootDescription">
+      <segment>
+        <source>Root element with border, background, size, hover and focus states and other basic input container styles in spinner mode</source>
+        <target state="translated">按鈕步進模式下的根元素，包含邊框、背景、尺寸、懸停與聚焦狀態等基礎輸入容器樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerSuffixDescription">
+      <segment>
+        <source>Suffix container element rendered after the input text area in spinner mode</source>
+        <target state="translated">按鈕步進模式下，渲染在輸入文字區之後的後綴容器元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix container element rendered after the input text area</source>
+        <target state="translated">渲染在輸入文字區之後的後綴容器元素。</target>
+      </segment>
+    </unit>
     <unit id="SizesDescription">
       <segment>
         <source>NumberUpDown supports large (40px), default (32px), small (24px) and custom size.</source>

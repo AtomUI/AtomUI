@@ -5,7 +5,6 @@ using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -24,7 +23,7 @@ public enum FormItemLayout
 public partial class FormItem : TemplatedControl, IFormItem
 {
     public static readonly RoutedEvent<FormItemValidateChangedEventArgs> ValidateChangedEvent =
-        RoutedEvent.Register<Button, FormItemValidateChangedEventArgs>(
+        RoutedEvent.Register<FormItem, FormItemValidateChangedEventArgs>(
             nameof(ValidateChanged),
             RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
@@ -351,12 +350,7 @@ public partial class FormItem : TemplatedControl, IFormItem
             nameof(HasErrorOrWarningMsg),
             o => o.HasErrorOrWarningMsg,
             (o, v) => o.HasErrorOrWarningMsg = v);
-    
-    internal static readonly DirectProperty<FormItem, InlineCollection?> ErrorMessageInlinesProperty =
-        AvaloniaProperty.RegisterDirect<FormItem, InlineCollection?>(
-            nameof(ErrorMessageInlines), t => t.ErrorMessageInlines, 
-            (t, v) => t.ErrorMessageInlines = v);
-    
+
     internal static readonly StyledProperty<IBrush?> ErrorMessageForegroundProperty =
         Form.ErrorMessageForegroundProperty.AddOwner<FormItem>();
     
@@ -519,21 +513,13 @@ public partial class FormItem : TemplatedControl, IFormItem
     }
 
     private bool _hasErrorOrWarningMsg;
-    
+
     internal bool HasErrorOrWarningMsg
     {
         get => _hasErrorOrWarningMsg;
         set => SetAndRaise(HasErrorOrWarningMsgProperty, ref _hasErrorOrWarningMsg, value);
     }
-    
-    private InlineCollection? _errorMessageInlines;
-    
-    internal InlineCollection? ErrorMessageInlines
-    {
-        get => _errorMessageInlines;
-        set => SetAndRaise(ErrorMessageInlinesProperty, ref _errorMessageInlines, value);
-    }
-    
+
     internal IBrush? ErrorMessageForeground
     {
         get => GetValue(ErrorMessageForegroundProperty);
@@ -621,6 +607,9 @@ public partial class FormItem : TemplatedControl, IFormItem
     private Grid? _bodyLayout;
     private Panel? _contentLayout;
     private Panel? _labelLayout;
+    private StackPanel? _extraInfoLayout;
+    private Avalonia.Controls.TextBlock? _helpText;
+    private readonly List<Avalonia.Controls.TextBlock> _messageItems = new();
     private MediaBreakPoint? _breakPoint;
     private CompositeDisposable? _disposables;
     private FormValidateFeedback? _feedback;
@@ -796,7 +785,7 @@ public partial class FormItem : TemplatedControl, IFormItem
         else if (change.Property == ErrorMessageForegroundProperty ||
                  change.Property == WarningMessageForegroundProperty)
         {
-            BuildErrorMessageInlines();
+            BuildMessageItems();
         }
 
         if (change.Property == FeedbackTemplateProperty ||
@@ -846,10 +835,13 @@ public partial class FormItem : TemplatedControl, IFormItem
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _bodyLayout    = e.NameScope.Find<Grid>("PART_BodyLayout");
-        _labelLayout   = e.NameScope.Find<Panel>("PART_LabelLayout");
-        _contentLayout = e.NameScope.Find<Panel>("PART_ContentLayout");
+        _bodyLayout      = e.NameScope.Find<Grid>("PART_BodyLayout");
+        _labelLayout     = e.NameScope.Find<Panel>("PART_LabelLayout");
+        _contentLayout   = e.NameScope.Find<Panel>("PART_ContentLayout");
+        _extraInfoLayout = e.NameScope.Find<StackPanel>("ExtraInfoLayout");
+        _helpText        = e.NameScope.Find<Avalonia.Controls.TextBlock>("HelpText");
         ConfigureLayout();
+        BuildMessageItems();
         Debug.Assert(OwnerForm != null);
         if (IsValidateFeedbackEnabled)
         {

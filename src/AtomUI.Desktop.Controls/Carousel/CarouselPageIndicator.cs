@@ -99,11 +99,30 @@ internal class CarouselPageIndicator : ContentControl, ISelectable
     private CompositeDisposable? _effectiveVisibilitySubscriptions;
     private Border? _frame;
     
+    private readonly TransitionInitializationSession _transitionInitialization;
+
     static CarouselPageIndicator()
     {
         SelectableMixin.Attach<CarouselPageIndicator>(IsSelectedProperty);
         PressedMixin.Attach<CarouselPageIndicator>();
         FocusableProperty.OverrideDefaultValue<CarouselPageIndicator>(true);
+    }
+
+    public CarouselPageIndicator()
+    {
+        _transitionInitialization = new TransitionInitializationSession(this);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
@@ -145,6 +164,7 @@ internal class CarouselPageIndicator : ContentControl, ISelectable
             BuildProgressAnimation(false);
         }
         UpdateProgressAnimationState(IsEffectivelyVisible);
+        _transitionInitialization.CompleteInitialization();
     }
 
     private void BuildProgressAnimation(bool force = false)
@@ -191,6 +211,7 @@ internal class CarouselPageIndicator : ContentControl, ISelectable
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _transitionInitialization.Reset();
         _effectiveVisibilitySubscriptions?.Dispose();
         _effectiveVisibilitySubscriptions = null;
         StopProgressAnimation();
@@ -249,15 +270,4 @@ internal class CarouselPageIndicator : ContentControl, ISelectable
 
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        this.Dispatcher.Post(this.EnableTransitions);
-    }
 }

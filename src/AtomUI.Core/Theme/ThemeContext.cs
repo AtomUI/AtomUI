@@ -6,7 +6,6 @@ namespace AtomUI.Theme;
 internal sealed class ThemeContext
 {
     private ThemeSnapshot _snapshot;
-    private ThemeAppearance _appearance;
 
     internal ThemeContext(
         ThemeManager manager,
@@ -19,14 +18,13 @@ internal sealed class ThemeContext
         Manager         = manager;
         RegistrationId  = registrationId;
         _snapshot       = snapshot;
-        _appearance     = snapshot.Appearance;
         ResourceProvider = new ThemeTokenResourceProvider(this);
     }
 
     internal ThemeManager Manager { get; }
     internal long RegistrationId { get; }
-    internal ThemeSnapshot Snapshot => Volatile.Read(ref _snapshot);
-    internal ThemeAppearance Appearance => _appearance;
+    internal ThemeSnapshot Snapshot => Manager.PackageReadUpdate?.GetContextSnapshot(this) ?? Volatile.Read(ref _snapshot);
+    internal ThemeAppearance Appearance => Snapshot.Appearance;
     internal ThemeTokenResourceProvider ResourceProvider { get; }
 
     internal event EventHandler? Published;
@@ -35,7 +33,6 @@ internal sealed class ThemeContext
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         Volatile.Write(ref _snapshot, snapshot);
-        _appearance = snapshot.Appearance;
     }
 
     internal IReadOnlyList<ThemeDiagnostic> Publish(bool notifyResources = true)

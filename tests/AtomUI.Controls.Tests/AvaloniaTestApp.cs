@@ -10,16 +10,16 @@ namespace AtomUI.Controls.Tests;
 
 internal static class AvaloniaTestApp
 {
-    private static int _initialized;
+    private static int s_initialized;
 
     internal static void EnsureInitialized()
     {
         if (Application.Current is not null)
         {
-            Volatile.Write(ref _initialized, 1);
+            Volatile.Write(ref s_initialized, 1);
             return;
         }
-        if (Interlocked.Exchange(ref _initialized, 1) == 1)
+        if (Interlocked.Exchange(ref s_initialized, 1) == 1)
         {
             return;
         }
@@ -32,14 +32,16 @@ public static class TestAppBuilder
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder.Configure<TestApplication>()
-                         .UseHeadless(new AvaloniaHeadlessPlatformOptions());
+                         .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                         .UseAtomUI(builder => builder.UseCommonControls());
     }
 }
 
 internal sealed class TestApplication : Application
 {
-    public override void Initialize()
+    public override void RegisterServices()
     {
-        this.UseAtomUI(builder => builder.UseCommonControls());
+        base.RegisterServices();
+        ApplicationStartup.Attach(this);
     }
 }

@@ -1,5 +1,5 @@
 using System.Reflection;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Animation;
@@ -256,12 +256,12 @@ public class ContentExpansionMotionTests
 
     private sealed class Scene : IDisposable
     {
-        private readonly ManualClock _clock = new();
+        private readonly ManualMotionClock _clock = new();
         private readonly Avalonia.Controls.Window _window;
         private readonly AtomCollapse? _collapse;
         private readonly CollapseItem[] _items = [];
         public AtomExpander? Expander { get; }
-        public BaseMotionActor Actor { get; }
+        public ContentViewport Actor { get; }
         public Control Header { get; }
         public double OccupiedHeight => Expander?.Bounds.Height ?? Footer.Bounds.Top;
         public TextBlock Footer { get; } = new() { Text = "Following content" };
@@ -313,10 +313,10 @@ public class ContentExpansionMotionTests
             _window.Show();
             _window.SetRenderScaling(scaling);
             Pump();
-            Actor = Part<BaseMotionActor>(owner, "PART_ContentMotionActor");
+            Actor = Part<ContentViewport>(owner, "PART_ContentViewport");
             Header = Part<Control>(owner, expander ? "PART_HeaderLayoutTransform" : "PART_HeaderDecorator");
             var clockProperty = typeof(Animatable).GetProperty("Clock", BindingFlags.Instance | BindingFlags.NonPublic)!;
-            foreach (var actor in _window.GetVisualDescendants().OfType<BaseMotionActor>())
+            foreach (var actor in _window.GetVisualDescendants().OfType<ContentViewport>())
                 clockProperty.SetValue(actor, _clock.Instance);
         }
 
@@ -327,8 +327,8 @@ public class ContentExpansionMotionTests
             Pump();
         }
         public bool IsExpanded(int index = 0) => Expander?.IsExpanded ?? _items[index].IsSelected;
-        public BaseMotionActor ContentActor(int index) =>
-            Part<BaseMotionActor>(_items[index], "PART_ContentMotionActor");
+        public ContentViewport ContentActor(int index) =>
+            Part<ContentViewport>(_items[index], "PART_ContentViewport");
         public void EnableMotion(bool enabled)
         {
             if (Expander != null) Expander.IsMotionEnabled = enabled;
@@ -346,17 +346,9 @@ public class ContentExpansionMotionTests
         public void Step(int milliseconds) { _clock.Step(milliseconds); Pump(); }
         public void StepBeforeContinuations(int milliseconds) { _clock.Step(milliseconds); _window.UpdateLayout(); }
         public void Pump() { Dispatcher.UIThread.RunJobs(); _window.UpdateLayout(); }
-        public void Dispose() { _window.Close(); Pump(); }
+        public void Dispose() { _window.Close(); Pump(); _clock.Dispose(); }
         private static T Part<T>(Control owner, string name) where T : Control =>
             owner.GetVisualDescendants().OfType<T>().First(control => control.Name == name);
     }
 
-    private sealed class ManualClock
-    {
-        // Avalonia's animation clock is internal; reflection remains confined to tests.
-        private static readonly Type ClockType = typeof(Animation).Assembly.GetType("Avalonia.Animation.ClockBase", true)!;
-        private static readonly MethodInfo Pulse = ClockType.GetMethod("Pulse", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        public object Instance { get; } = Activator.CreateInstance(ClockType, nonPublic: true)!;
-        public void Step(int milliseconds) => Pulse.Invoke(Instance, [TimeSpan.FromMilliseconds(milliseconds)]);
-    }
 }

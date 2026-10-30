@@ -289,5 +289,59 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticActionsDescription">
+      <segment>
+        <source>Actions element with layout and spacing styles for action buttons</source>
+        <target state="translated">操作元素，包含用于操作按钮的布局和间距样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>Close button element with basic button styling</source>
+        <target state="translated">关闭按钮元素，包含基础按钮样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>Description element with font-size and line-height styles for additional content</source>
+        <target state="translated">描述元素，包含附加内容的字号和行高样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with color, line-height, and margin styles, supporting different status icon types</source>
+        <target state="translated">图标元素，包含颜色、行高和外边距样式，支持不同状态图标类型</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Alert's published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域样式定制 Alert 已发布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border, background, padding, border-radius, and positioning styles for the alert container</source>
+        <target state="translated">根元素，包含 Alert 容器的边框、背景、内边距、圆角和定位样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Content element with flex layout controlling content area typography and minimum width</source>
+        <target state="translated">内容元素，采用弹性布局控制内容区域的排版和最小宽度</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with text color and font styling for the alert title</source>
+        <target state="translated">标题元素，包含 Alert 标题的文本颜色和字体样式</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

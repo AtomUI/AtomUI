@@ -1,9 +1,11 @@
 using System.Collections;
+using System.Collections.Specialized;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -37,14 +39,114 @@ internal static class TabReorderHelper
         return !list.IsReadOnly && !list.IsFixedSize;
     }
 
-    internal static BaseTabScrollViewer? FindTabScrollViewer(INameScope nameScope)
+    internal static int FindContainerIndex(ItemsControl owner, IList list, Control container)
     {
-        if (nameScope.Find<Control>("PART_CardTabStripScrollViewer") is BaseTabScrollViewer cardScrollViewer)
+        var index = owner.IndexFromContainer(container);
+        if (IsValidIndex(index, list.Count))
+        {
+            return index;
+        }
+
+        for (var i = 0; i < list.Count; i++)
+        {
+            if (ReferenceEquals(list[i], container))
+            {
+                return i;
+            }
+        }
+        return InvalidIndex;
+    }
+
+    internal static bool TryGetCurrentItemIndex(
+        ItemsControl owner,
+        IList list,
+        Control container,
+        object? item,
+        out int index)
+    {
+        index = InvalidIndex;
+        if (!TryResolveItemsList(owner, out var currentList) ||
+            !ReferenceEquals(currentList, list) ||
+            !CanMoveItems(list))
+        {
+            return false;
+        }
+
+        index = FindContainerIndex(owner, list, container);
+        return IsValidIndex(index, list.Count) && IsSameItem(list[index], item);
+    }
+
+    internal static void RestoreSelectionAfterClose(
+        SelectingItemsControl owner,
+        IList list,
+        object? intendedItem,
+        object? itemAfterCallback)
+    {
+        if (!TryResolveItemsList(owner, out var currentList) ||
+            !ReferenceEquals(currentList, list) ||
+            !IsSameItem(owner.SelectedItem, itemAfterCallback))
+        {
+            return;
+        }
+
+        for (var i = 0; i < list.Count; i++)
+        {
+            if (IsSameItem(list[i], intendedItem))
+            {
+                owner.SelectedIndex = i;
+                return;
+            }
+        }
+    }
+
+    internal static bool RaiseReorderingEvent(ItemsControl owner, IList list, TabReorderingEventArgs args)
+    {
+        var itemsSource = owner.ItemsSource;
+        var items = new object?[list.Count];
+        list.CopyTo(items, 0);
+        var itemsChanged = false;
+        void HandleItemsChanged(object? sender, NotifyCollectionChangedEventArgs change) => itemsChanged = true;
+
+        // Observe the callback boundary, including mutations that restore the original order.
+        owner.ItemsView.CollectionChanged += HandleItemsChanged;
+        try
+        {
+            owner.RaiseEvent(args);
+        }
+        finally
+        {
+            owner.ItemsView.CollectionChanged -= HandleItemsChanged;
+        }
+
+        if (args.Cancel || itemsChanged ||
+            !ReferenceEquals(owner.ItemsSource, itemsSource) ||
+            !CanMoveItems(list) || list.Count != items.Length)
+        {
+            return false;
+        }
+
+        // A writable IList is not required to implement collection notifications.
+        for (var i = 0; i < items.Length; i++)
+        {
+            if (!IsSameItem(list[i], items[i]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    internal static bool IsSameItem(object? first, object? second) =>
+        ReferenceEquals(first, second) || first is ValueType && Equals(first, second);
+
+    internal static TabScrollViewer? FindTabScrollViewer(INameScope nameScope)
+    {
+        if (nameScope.Find<Control>("PART_CardTabStripScrollViewer") is TabScrollViewer cardScrollViewer)
         {
             return cardScrollViewer;
         }
 
-        return nameScope.Find<Control>("PART_TabsContainer") as BaseTabScrollViewer;
+        return nameScope.Find<Control>("PART_TabsContainer") as TabScrollViewer;
     }
 
     internal static bool IsValidIndex(int index, int count)

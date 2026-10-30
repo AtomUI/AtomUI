@@ -23,6 +23,31 @@ public class TransferViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _basicTransferItems, value);
     }
 
+    private List<EntityKey>? _semanticDemoTargetKeys;
+
+    public List<EntityKey>? SemanticDemoTargetKeys
+    {
+        get => _semanticDemoTargetKeys;
+        set => this.RaiseAndSetIfChanged(ref _semanticDemoTargetKeys, value);
+    }
+
+    private List<EntityKey>? _semanticPreviewTargetKeys;
+
+    public List<EntityKey>? SemanticPreviewTargetKeys
+    {
+        get => _semanticPreviewTargetKeys;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewTargetKeys, value);
+    }
+
+
+    private List<EntityKey>? _semanticTreePreviewTargetKeys;
+
+    public List<EntityKey>? SemanticTreePreviewTargetKeys
+    {
+        get => _semanticTreePreviewTargetKeys;
+        set => this.RaiseAndSetIfChanged(ref _semanticTreePreviewTargetKeys, value);
+    }
+
     private List<IListItemData>? _oneWayTransferItems;
 
     public List<IListItemData>? OneWayTransferItems

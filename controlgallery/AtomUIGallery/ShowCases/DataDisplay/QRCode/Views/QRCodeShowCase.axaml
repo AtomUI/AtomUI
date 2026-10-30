@@ -7,8 +7,8 @@
              xmlns:antdicons="https://atomui.net/icons/antdesign"
              x:DataType="vm:QRCodeViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="QRCode"
                     Category="{gallery:QRCodeShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,28 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="TemplatedControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:QRCodeViewModel">
+                    <gallery:SemanticPartPreview Name="QRCodeSemanticPreview"
+                                                 SemanticOwnerType="{x:Type atom:QRCode}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:QRCode Name="QRCodeSemanticOwner"
+                                         Value="https://ant.design"
+                                         Status="Loading" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:QRCodeShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="cover"
+                                Description="{gallery:QRCodeShowCaseLangResource SemanticCoverDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -175,7 +195,47 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem Title="{gallery:QRCodeShowCaseLangResource SemanticPartStyleTitle}"
+                                      Description="{gallery:QRCodeShowCaseLangResource SemanticPartStyleDescription}"
+                                      SourceKey="qr-code-semantic-part"
+                                      BadgeText="6.0.0"
+                                      Span="Full"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:QRCodeViewModel">
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|QRCode.semantic-style-class">
+                                        <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="CornerRadius" Value="8" />
+                                        <Setter Property="Padding" Value="16" />
+                                    </Style>
+                                    <Style Selector="atom|QRCode.semantic-object-styles">
+                                        <Setter Property="BorderBrush" Value="#1890FF" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Setter Property="Background" Value="#1A1890FF" />
+                                    </Style>
+                                    <Style Selector="atom|QRCode.semantic-function-styles">
+                                        <Setter Property="BorderBrush" Value="#FF4D4F" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Setter Property="Background" Value="#1AFF4D4F" />
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:QRCode Classes="semantic-style-class semantic-object-styles"
+                                             Value="https://ant.design/"
+                                             Size="160" />
+                                <atom:QRCode Classes="semantic-style-class semantic-function-styles"
+                                             Value="https://ant.design/"
+                                             Size="160"
+                                             Icon="{SvgImage avares://AtomUIGallery/Assets/AvatarShowCase/AntDesign.svg}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

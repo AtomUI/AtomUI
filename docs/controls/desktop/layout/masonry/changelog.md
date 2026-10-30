@@ -3,6 +3,24 @@
 本文档记录 Masonry 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-09-15
+
+- Behavior
+  - feat(Masonry): 对齐 Ant Design item 动效（入场淡入/位置滑动/离场淡出）与 RTL 镜像。
+  - New items fade in (`MotionDurationSlow`, 300ms default); existing items glide to new positions with `RenderTransform` translate (no fade); removed items fade out in place through a transient ghost layer (`MotionDurationFast`, 100ms default), keeping the `.semantic-item` marker during the leave window, aligned with antd 6.6.3 Masonry motion semantics.
+  - Easing is `CubicEaseOut`, equivalent to antd `motionEaseOut`; global `EnableMotion=false` degrades all motions to instantaneous.
+  - RTL arranges visual rects mirrored (`x' = width - right`), matching antd `-rtl` semantics, without changing logical order.
+- Theme
+  - Feed `MotionDuration` / `LeaveMotionDuration` from `MotionDurationSlow` / `MotionDurationFast` tokens via ControlTheme setters; add the `PART_MotionGhostLayer` hosting canvas to the default template.
+- Implementation
+  - Drive motions from `MasonryPanel` layout state (old/new arrange rects) with Animation-priority preset/release via the `SetValue` disposable handle; register an `ITransform` keyframe animator (`MasonryItemTransformAnimator`).
+  - Override `Panel.ChildrenChanged` to collect removed children and release ghosts before visual-children synchronization on re-add.
+- Docs
+  - Extend semantic-part state table with the ghost window, add the motion chapter to implementation.md, and regenerate LLMS sources.
+  - Rework the Gallery semantic style demo copy from the antd React terms (`classNames` / `styles` / semantic DOM / absolute positioning / flex layout) to Avalonia/AtomUI concepts (owner-scoped styles, `MasonryItemStyle`, style matched by class or property state), aligned with the wording used by the Spin showcase and guarded by page tests.
+- Verification
+  - Add Masonry motion tests covering duration tokens, appear, glide, release, restart, leave ghost lifecycle, zero-duration degradation and RTL mirroring.
+
 ## 2026-08-26
 
 - API
@@ -28,6 +46,14 @@
   - Recalculate only for a changed effective width or after the measured-layout cache is invalidated, while preserving non-virtualized layout and outer scrolling semantics.
 - Verification
   - Add regression coverage for same-width Arrange reuse and width-change recalculation.
+
+## 2026-08-20
+
+- Semantic Part
+  - Add `root` / `item` Semantic Part contract for Masonry, aligned with Ant Design 6.6.0 Masonry Semantic DOM.
+  - Mark prepared item containers with `.semantic-item` without adding wrappers or changing the Masonry layout engine.
+  - Expose root chrome through the inherited `Background` / `BorderBrush` / `BorderThickness` / `CornerRadius` / `Padding` theme binding, and add Gallery object/function style examples for the semantic demo.
+  - Add Gallery Semantic Parts preview, custom Semantic Part styling example, descriptor tests and item marker lifecycle tests.
 
 ## 2026-06-26
 
@@ -70,7 +96,7 @@
   - 明确 `Masonry` 继承 `ItemsControl.ItemsPanel` 公共 API；显式替换 `ItemsPanel` 即表示替换 Masonry 默认布局引擎。
   - 布局引擎 `MasonryPanel` 派生自 `Panel`，标记 `internal`，仅作为 `Masonry` 的默认 `ItemsPanel` 装配，不暴露给开发者。
   - 删除 `IsFreshLayoutEnabled` 属性，子元素尺寸变化由 Avalonia layout lifecycle 自动处理，不需要额外监听机制。
-  - `Masonry` 不 override `ItemsControl` 的 `NeedsContainer`、`CreateContainer`、`PrepareContainer` 容器生成方法，两种内容提供方式的容器层级由基类决定。
+  - `Masonry` 不 override `ItemsControl` 的 `NeedsContainer`、`CreateContainer` 容器生成方法，而是在 `PrepareContainerForItemOverride` 中补齐 `.semantic-item` marker；两种内容提供方式的容器层级仍由基类决定。
 - Theme
   - `MasonryTheme.axaml` 装配 `ItemsPresenter` 与 internal `MasonryPanel`，通过 `RelativeSource` 或等价机制把 `Masonry` 布局属性传递给 `MasonryPanel`。
   - 明确默认 `MasonryPanel` 必须接收 `ColumnInfo` 与 `Gutter` 绑定，保持响应式属性与布局引擎同步。

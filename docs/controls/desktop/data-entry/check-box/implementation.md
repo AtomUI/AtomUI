@@ -1,6 +1,6 @@
 # CheckBox 桌面版实现原理
 
-本文档描述 CheckBox 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [CheckBox 桌面版架构设计](overview.md)，变化记录见 [CheckBox Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [CheckBox Token 设计](token.md)。
+本文档描述 CheckBox 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [CheckBox 桌面版架构设计](overview.md)，变化记录见 [CheckBox Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [CheckBox Token 设计](token.md)，Semantic Part 契约见 [CheckBox Semantic Part 契约](semantic-part.md)。
 
 ## 1. 实现定位
 
@@ -97,6 +97,21 @@ Public API / ItemsSource / Command / Event
 - `PART_CheckBoxItems`：承载集合项、布局面板或虚拟化内容。
 - `PART_ItemsPresenter`：展示用户内容、文本、图标或模板化数据。
 - `PART_WaveSpirit`：稳定模板协作入口，重命名前必须同步主题和实现。
+
+`CheckBoxTheme` 的模板根节点是一个 `Border#Frame`，内含一个 `DockPanel`，左停靠 `CheckBoxIndicator#Indicator`、
+剩余为 `ContentPresenter#ContentPresenter`。Semantic Part 节点映射如下：`CheckBoxIndicator#Indicator` 对应
+`icon`（`.semantic-icon`），`ContentPresenter#ContentPresenter` 对应 `label`（`.semantic-label`），`root` 是
+CheckBox owner 本身。两个 marker 使用静态 `Classes.semantic-*="True"` 标记，不使用 Binding 或运行时赋值。
+
+checked、unchecked 与 indeterminate 三态不是三个替代实现节点：`CheckBoxIndicator` 通过内部 `State` 枚举
+（`Checked` / `Unchecked` / `Indeterminate`）和 `:checked` / `:unchecked` / `:indeterminate` 伪类切换视觉，模板中
+始终只有一个指示框节点，因此 `icon` 基数恒为 `Single`。`ContentPresenter` 的 `IsVisible` 绑定到 `Content` 非空，
+`Content` 为空时节点隐藏但仍存在，因此 `label` 基数也恒为 `Single`。
+
+`CheckBoxGroup` 与 `CheckBoxItemsControl` 不持有 Semantic descriptor：上游 Ant Design Checkbox.Group 不提供
+Semantic API，`CheckBoxItemsControl` 是 internal 类型，因此集合布局与 items presenter 不属于 CheckBox 的 Semantic
+Part 契约。模板重套用后由新模板重新提供同一 `icon` / `label` marker 契约；勾选状态或 `Content` 变化不增删 marker。
+完整契约见 [CheckBox Semantic Part 契约](semantic-part.md)。
 
 ## 6. 交互与事件处理
 

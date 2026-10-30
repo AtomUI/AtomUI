@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             x:Class="AtomUI.Desktop.Controls.Tests.SemanticParts.SemanticRepairStylesView">
+    <UserControl.Styles>
+        <Style Selector="atom|ListBox">
+            <atom:ListBoxItemStyle x:SetterTargetType="atom:ListBoxItem">
+                <Setter Property="Tag" Value="item" />
+                <Setter Property="Background" Value="Red" />
+            </atom:ListBoxItemStyle>
+        </Style>
+        <Style Selector="atom|Breadcrumb">
+            <atom:BreadcrumbSeparatorStyle x:SetterTargetType="ContentPresenter">
+                <Setter Property="Width" Value="10" />
+                <Setter Property="Height" Value="10" />
+                <Setter Property="Margin" Value="10,0" />
+            </atom:BreadcrumbSeparatorStyle>
+        </Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <atom:ListBox Name="ListBox">
+            <atom:ListBoxItem Content="Olivia" />
+        </atom:ListBox>
+        <atom:Breadcrumb Name="Breadcrumb">
+            <atom:BreadcrumbItem Content="A" Width="40" Height="20" />
+            <atom:BreadcrumbItem Content="B" Width="40" Height="20" />
+        </atom:Breadcrumb>
+    </StackPanel>
+</UserControl>

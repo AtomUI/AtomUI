@@ -3,13 +3,12 @@ using AtomUI.Desktop.Controls;
 using AtomUI.Icons.AntDesign;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 
 namespace AtomUI.Performance;
 
 internal static partial class Program
 {
-    private static readonly Lazy<Bitmap> AvatarBitmap = new(CreateAvatarBitmap);
+    private static readonly Lazy<BytesImageSource> AvatarBitmapSource = new(CreateAvatarBytesSource);
 
     private static IReadOnlyList<PerfScenario> CreateAvatarScenarios()
     {
@@ -19,8 +18,8 @@ internal static partial class Program
             new PerfScenario("Avatar.Icon.Custom64", _ => CreateIconAvatar(64)),
             new PerfScenario("Avatar.Text.Single", _ => new Avatar { Text = "U" }),
             new PerfScenario("Avatar.Text.Long.Custom40", _ => new Avatar { Size = 40, Text = "USER" }),
-            new PerfScenario("Avatar.Svg", _ => new Avatar { Src = GetAvatarSvgPath() }),
-            new PerfScenario("Avatar.Bitmap", _ => new Avatar { BitmapSrc = AvatarBitmap.Value }),
+            new PerfScenario("Avatar.Svg", _ => new Avatar { Source = CreateAvatarFileSource() }),
+            new PerfScenario("Avatar.Bitmap", _ => new Avatar { Source = AvatarBitmapSource.Value }),
             new PerfScenario("Avatar.Group.NoFold", _ => CreateAvatarGroup(maxDisplayCount: null)),
             new PerfScenario("Avatar.Group.Fold2", _ => CreateAvatarGroup(maxDisplayCount: 2)),
             new PerfScenario("Avatar.GalleryShape", _ => CreateAvatarGalleryShape())
@@ -45,7 +44,7 @@ internal static partial class Program
             FoldInfoAvatarBackground  = AvatarBrush("#fde3cf")
         };
 
-        group.Children.Add(new Avatar { Src = GetAvatarSvgPath() });
+        group.Children.Add(new Avatar { Source = CreateAvatarFileSource() });
         group.Children.Add(new Avatar { Background = AvatarBrush("#f56a00"), Text = "K" });
         group.Children.Add(new Avatar { Background = AvatarBrush("#87d068"), Icon = new UserOutlined() });
         group.Children.Add(new Avatar { Background = AvatarBrush("#1677ff"), Icon = new AntDesignOutlined() });
@@ -81,7 +80,7 @@ internal static partial class Program
             new Avatar { Icon = new UserOutlined() },
             new Avatar { Text = "U" },
             new Avatar { Size = 40, Text = "USER" },
-            new Avatar { Src = GetAvatarSvgPath() },
+            new Avatar { Source = CreateAvatarFileSource() },
             new Avatar { Background = AvatarBrush("#fde3cf"), Foreground = AvatarBrush("#f56a00"), Text = "U" },
             new Avatar { Background = AvatarBrush("#87d068"), Icon = new UserOutlined() }));
 
@@ -118,7 +117,7 @@ internal static partial class Program
             FoldInfoAvatarBackground = AvatarBrush("#fde3cf"),
             Children =
             {
-                new Avatar { Src = GetAvatarSvgPath() },
+                new Avatar { Source = CreateAvatarFileSource() },
                 new Avatar { Background = AvatarBrush("#f56a00"), Text = "K" },
                 new Avatar { Background = AvatarBrush("#87d068"), Icon = new UserOutlined() },
                 new Avatar { Background = AvatarBrush("#1677ff"), Icon = new AntDesignOutlined() }
@@ -134,7 +133,7 @@ internal static partial class Program
             FoldInfoAvatarBackground    = AvatarBrush("#fde3cf"),
             Children =
             {
-                new Avatar { BitmapSrc = AvatarBitmap.Value },
+                new Avatar { Source = AvatarBitmapSource.Value },
                 new Avatar { Background = AvatarBrush("#f56a00"), Text = "K" },
                 new Avatar { Background = AvatarBrush("#87d068"), Icon = new UserOutlined() },
                 new Avatar { Background = AvatarBrush("#1677ff"), Icon = new AntDesignOutlined() }
@@ -176,16 +175,20 @@ internal static partial class Program
         return Path.GetFullPath("resources/images/readme/AntDesign.svg");
     }
 
+    private static FileImageSource CreateAvatarFileSource()
+    {
+        return new FileImageSource(GetAvatarSvgPath());
+    }
+
     private static IBrush AvatarBrush(string color)
     {
         return Avalonia.Media.Brush.Parse(color);
     }
 
-    private static Bitmap CreateAvatarBitmap()
+    private static BytesImageSource CreateAvatarBytesSource()
     {
         var bytes = Convert.FromBase64String(
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lw7v9wAAAABJRU5ErkJggg==");
-        using var stream = new MemoryStream(bytes);
-        return new Bitmap(stream);
+        return new BytesImageSource(bytes);
     }
 }

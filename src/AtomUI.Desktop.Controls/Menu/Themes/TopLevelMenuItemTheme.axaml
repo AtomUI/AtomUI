@@ -13,18 +13,39 @@
                             CornerRadius="{TemplateBinding CornerRadius}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Center">
-                        <ContentPresenter Name="HeaderPresenter"
-                                          RecognizesAccessKey="True"
-                                          Content="{TemplateBinding Header}"
-                                          ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <!-- 菜单栏各项按自身内容排布，不做跨项图标列对齐：不参与 SharedSizeGroup，
+                                     否则无图标项会被迫让出图标列宽，产生幽灵间距。 -->
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <atom:IconPresenter Name="ItemIconPresenter"
+                                                Classes.semantic-item-icon="True"
+                                                Classes.semantic-sub-menu-item-icon="True"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Icon="{TemplateBinding Icon}"
+                                                IconBrush="{TemplateBinding Foreground}"
+                                                IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                Grid.Column="0" />
+                            <ContentPresenter Name="HeaderPresenter"
+                                              Classes.semantic-item-content="True"
+                                              Classes.semantic-sub-menu-item-content="True"
+                                              RecognizesAccessKey="True"
+                                              VerticalAlignment="Center"
+                                              Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                              Grid.Column="1" />
+                        </Grid>
                     </Border>
                     <atom:Popup Name="PART_Popup"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="False"
                                 RequestedPlacement="BottomEdgeAlignedLeft"
-                                ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}"
-                                IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
+                                ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}">
                         <Border Name="PopupFrame"
+                                Classes.semantic-popup-root="True"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
                                 Padding="{TemplateBinding PopupPadding}">
                             <atom:MenuPopupScrollHost
@@ -145,6 +166,15 @@
                     </Transitions>
                 </Setter>
             </Style>
+        </Style>
+
+        <!-- 菜单栏一级项的图标必须与弹层内菜单项同样显式定尺寸：IconPresenter 自身不测量图标，
+             缺少尺寸时图标渲染为 0x0，而图标与文字的间距仍会占位，菜单栏文字被无谓右移。
+             图标为空时由 IsVisible 折叠，间距随节点一起消失。 -->
+        <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Setter Property="Margin" Value="{atom:MenuTokenResource ItemMargin}" />
+            <Setter Property="Width" Value="{atom:MenuTokenResource ItemIconSize}" />
+            <Setter Property="Height" Value="{atom:MenuTokenResource ItemIconSize}" />
         </Style>
 
     </ControlTheme>

@@ -1,10 +1,7 @@
 using AtomUI.Controls.Data;
 using AtomUI.Desktop.Controls.Primitives;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -410,7 +407,7 @@ public class DialogPopupControlFamilyTests
             AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
             DialogPopupTestHost.Pump();
             var scrollViewer = tabControl.GetVisualDescendants()
-                                         .OfType<AtomUI.Desktop.Controls.TabControlScrollViewer>()
+                                         .OfType<AtomUI.Desktop.Controls.TabScrollViewer>()
                                          .Single();
             scrollViewer.Extent.Width.ShouldBeGreaterThan(scrollViewer.Viewport.Width);
             var menuIndicator = scrollViewer.GetVisualDescendants()

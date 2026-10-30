@@ -595,6 +595,84 @@
         <target state="translated">綁定值</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button in the suffix area, rendered when IsAllowClear is enabled.</source>
+        <target state="translated">後綴區域的清除按鈕，啟用 IsAllowClear 時渲染。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Selection content panel hosting the placeholder, selection result, search input and tags.</source>
+        <target state="translated">選擇內容面板，承載佔位符、選中結果、搜尋輸入與標籤。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Search input rendered in filter mode.</source>
+        <target state="translated">過濾模式下渲染的搜尋輸入框。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Text content inside a selected tag.</source>
+        <target state="translated">選中標籤內的文本內容。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Selected tag element shown in the selector for multiple mode.</source>
+        <target state="translated">多選模式下選擇器中的選中標籤。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemRemoveDescription">
+      <segment>
+        <source>Remove button inside a selected tag.</source>
+        <target state="translated">選中標籤內的移除按鈕。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPlaceholderDescription">
+      <segment>
+        <source>Placeholder text shown while nothing is selected.</source>
+        <target state="translated">未選擇任何項時顯示的佔位符文本。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListDescription">
+      <segment>
+        <source>One cascading menu column inside the popup; the filter result list shares the same part.</source>
+        <target state="translated">彈層中的一條級聯選單列，過濾結果清單復用同一部件。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListItemDescription">
+      <segment>
+        <source>Single option entry inside a menu column, created at runtime.</source>
+        <target state="translated">選單列中的單個選項條目，運行時創建。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root border of the cascading menu popup layer.</source>
+        <target state="translated">級聯選單彈層的根邊框節點。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix area of the selector.</source>
+        <target state="translated">選擇框的前綴區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Cascader owner itself.</source>
+        <target state="translated">Cascader 控制項本體。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix area hosting the expand/clear state and loading indicator.</source>
+        <target state="translated">後綴區域，承載展開/清除狀態與載入圖示。</target>
+      </segment>
+    </unit>
     <unit id="ShowCheckedStrategyDescription">
       <segment>
         <source>Shows a selected item in a box using showCheckedStrategy.</source>
@@ -629,6 +707,18 @@
       <segment>
         <source>Status</source>
         <target state="translated">狀態</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of Cascader with semantic part styles.</source>
+        <target state="translated">透過語義部件樣式自訂 Cascader 的語義結構樣式。</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
       </segment>
     </unit>
     <unit id="VariantsDescription">

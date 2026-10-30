@@ -21,11 +21,26 @@
                     CornerRadius="{TemplateBinding CornerRadius}"
                     BoxShadow="{TemplateBinding BoxShadow}"
                     BackgroundSizing="InnerBorderEdge">
-                    <ContentPresenter
-                        Content="{TemplateBinding Content}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    <Panel>
+                        <ContentPresenter
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        <!--
+                            活动 cell 的输入光标。
+                            显隐由 OtpLineEditCell 依据 IsActive 与内容驱动，
+                            闪烁为标准 1s 步进动画；颜色/高度跟随 cell 字体。
+                        -->
+                        <Rectangle
+                            Name="PART_Caret"
+                            Width="1"
+                            Height="{Binding FontSize, RelativeSource={RelativeSource TemplatedParent}}"
+                            Fill="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            IsVisible="False" />
+                    </Panel>
                 </atom:PixelAlignedBorder>
             </ControlTemplate>
         </Setter>
@@ -166,5 +181,23 @@
             </Style>
 
         </Style>
+
+        <Style Selector="^:cell-active /template/ Rectangle#PART_Caret">
+            <Style.Animations>
+                <Animation Duration="0:0:1"
+                           IterationCount="Infinite">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="1" />
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="Opacity" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
     </ControlTheme>
 </ResourceDictionary>

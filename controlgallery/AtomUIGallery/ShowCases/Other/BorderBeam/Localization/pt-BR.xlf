@@ -193,6 +193,30 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="ShowOnHoverCardDescription">
+      <segment>
+        <source>The border beam appears when the pointer moves over this card.</source>
+        <target state="translated">O feixe da borda aparece quando o ponteiro passa sobre este cartão.</target>
+      </segment>
+    </unit>
+    <unit id="ShowOnHoverCardTitle">
+      <segment>
+        <source>Hover over the card</source>
+        <target state="translated">Passe o mouse sobre o cartão</target>
+      </segment>
+    </unit>
+    <unit id="ShowOnHoverDescription">
+      <segment>
+        <source>Hide the border beam by default, and reveal it when hovering over the container.</source>
+        <target state="translated">Oculte o feixe da borda por padrão e revele-o ao passar o ponteiro sobre o contêiner.</target>
+      </segment>
+    </unit>
+    <unit id="ShowOnHoverTitle">
+      <segment>
+        <source>Show on hover</source>
+        <target state="translated">Mostrar ao passar o mouse</target>
+      </segment>
+    </unit>
     <unit id="SizeCompactCardDescription">
       <segment>
         <source>Keeps the highlight shorter for dense card groups.</source>
@@ -239,30 +263,6 @@
       <segment>
         <source>Size</source>
         <target state="translated">Tamanho</target>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverCardDescription">
-      <segment>
-        <source>The border beam appears when the pointer moves over this card.</source>
-        <target state="translated">O feixe da borda aparece quando o ponteiro passa sobre este cartão.</target>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverCardTitle">
-      <segment>
-        <source>Hover over the card</source>
-        <target state="translated">Passe o mouse sobre o cartão</target>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverDescription">
-      <segment>
-        <source>Hide the border beam by default, and reveal it when hovering over the container.</source>
-        <target state="translated">Oculte o feixe da borda por padrão e revele-o ao passar o ponteiro sobre o contêiner.</target>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverTitle">
-      <segment>
-        <source>Show on hover</source>
-        <target state="translated">Mostrar ao passar o mouse</target>
       </segment>
     </unit>
   </file>

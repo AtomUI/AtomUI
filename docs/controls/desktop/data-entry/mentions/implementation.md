@@ -13,6 +13,7 @@ Mentions 的实现以 `MentionTextArea` 为输入内核，`Popup` 和 `Candidate
 主要源码：
 
 - `src/AtomUI.Desktop.Controls/Mentions/Mentions.cs`：public API、状态流、候选加载、过滤、弹层生命周期、键盘处理和 Form 接口。
+- `src/AtomUI.Desktop.Controls/Mentions/Mentions.SemanticParts.cs`：Mentions 的 9 个 Semantic Part 声明（见 [Mentions Semantic Part 契约](semantic-part.md)）。
 - `src/AtomUI.Desktop.Controls/Mentions/MentionTextArea.cs`：内部 TextArea，负责触发符扫描、过滤值同步和候选插入。
 - `src/AtomUI.Desktop.Controls/Mentions/MentionOption.cs`：候选项接口和默认 record。
 - `src/AtomUI.Desktop.Controls/Mentions/DataLoad/IMentionOptionsAsyncLoader.cs`：异步候选加载接口。
@@ -230,6 +231,7 @@ AOT 边界：
 - 候选提交必须使用 `MentionTextArea.InsertMentionOption()`，保留 undo/redo 和 selection 语义。
 - 重新套用模板不能泄漏旧 part 的事件订阅。
 - MentionsToken 只服务 popup 尺寸，不承载候选数据、过滤值、loading 或输入状态。
+- Semantic Part marker 的维护边界：`MentionsTheme.axaml` 承载 `semantic-scope-input`（`MentionTextArea` 节点）、`semantic-popup-root`（`PopupFrame` Border）、`semantic-popup-list`（`PART_CandidateList`）静态 marker；`prefix` / `content` / `placeholder` / `input` / `clear` 的 marker 位于共享 `TextAreaTheme.axaml` 与 `TextAreaDecoratedBoxTheme.axaml`（`CrossNestedOwners=true`，生成器沿 `MentionTextArea` → `TextArea` 主题链校验）；`popup.listItem` 的 marker 由共享 `CandidateList.CreateContainerForItemOverride()` 注入（`RuntimeCreated=true`）。marker 随容器实例创建一次，prepare/clear/recycle 路径不得增删。
 
 ## 10. 测试与验证
 
@@ -238,5 +240,6 @@ AOT 边界：
 - `MentionsShowCasePageTests` 覆盖 Gallery 页面结构、示例 snapshot、源码片段和延迟加载规则。
 - Gallery 走查基础用法、variant、异步加载、自定义触发符、disabled/read-only、placement、status、auto-size 和 clear 示例。
 - 控件行为验证应覆盖触发符扫描、候选过滤、异步加载成功/失败/超时、键盘导航、候选提交、Form value 和模板重应用事件释放。
+- `MentionsSemanticPartTests`：descriptor 九个 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中输入区目标、popup 部件 marker 暴露。
 - Token 改动需验证 `MentionsTokenKind`、`MentionsTokenResourceExtension`、`MentionsTheme.axaml` 引用和 Token 类型、生成数据和 token.md 语义说明一致。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。

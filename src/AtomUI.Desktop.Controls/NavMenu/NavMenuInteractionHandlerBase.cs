@@ -137,7 +137,7 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
             return;
         }
 
-        SetPointerHoldItem(IsPointerOverItem(_pressedItem, e) ? _pressedItem : null);
+        SetPointerHoldItem(IsPointerOverItemHeader(_pressedItem, e) ? _pressedItem : null);
     }
 
     protected virtual void PointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -150,7 +150,7 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
         var pressedItem  = _pressedItem;
         var shouldCommit = e.InitialPressMouseButton == MouseButton.Left &&
                            IsInteractiveMenuItem(pressedItem) &&
-                           IsPointerOverItem(pressedItem, e);
+                           IsPointerOverItemHeader(pressedItem, e);
         if (!shouldCommit)
         {
             CancelTransaction();
@@ -204,7 +204,10 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
         {
             captureTarget.PointerCaptureLost -= PressedItemCaptureLost;
         }
-        pointer?.Capture(null);
+        if (pointer is not null && ReferenceEquals(pointer.Captured, captureTarget))
+        {
+            pointer.Capture(null);
+        }
         if (!preservePointerHold)
         {
             SetPointerHoldItem(null);
@@ -224,10 +227,10 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
         item?.SetCurrentValue(NavMenuItem.IsPointerHoldProperty, true);
     }
 
-    private static bool IsPointerOverItem(NavMenuItem item, PointerEventArgs e)
+    private static bool IsPointerOverItemHeader(NavMenuItem item, PointerEventArgs e)
     {
-        var position = e.GetPosition(item);
-        return item.GetVisualAt(position) is not null;
+        return item.ItemHeader is { } header &&
+               header.GetVisualAt(e.GetPosition(header)) is not null;
     }
 
     protected virtual void KeyDown(object? sender, KeyEventArgs e)

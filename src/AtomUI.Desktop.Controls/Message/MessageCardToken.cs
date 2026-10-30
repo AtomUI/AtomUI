@@ -32,10 +32,6 @@ internal sealed class MessageCardToken : AbstractControlDesignToken
     /// 提醒框图标外边距
     /// </summary>
     public Thickness MessageIconMargin { get; set; }
-
-    /// <summary>
-    /// 提醒框上边缘外边距
-    /// </summary>
     public Thickness MessageTopMargin { get; set; }
 
     public MessageCardToken()
@@ -52,7 +48,7 @@ internal sealed class MessageCardToken : AbstractControlDesignToken
              EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight) / 2,
             EffectiveGlobalToken.UniformlyPaddingXS);
         MessageIconMargin = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        MessageTopMargin  = new Thickness(EffectiveGlobalToken.UniformlyMargin, EffectiveGlobalToken.UniformlyMargin, EffectiveGlobalToken.UniformlyMargin, 0);
+        MessageTopMargin  = new Thickness(EffectiveGlobalToken.UniformlyMarginXS);
         MessageIconSize   = EffectiveGlobalToken.FontSizeSM * EffectiveGlobalToken.RelativeLineHeightSM;
     }
     

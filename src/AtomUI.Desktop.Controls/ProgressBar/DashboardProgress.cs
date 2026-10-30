@@ -2,7 +2,7 @@ using AtomUI.Controls.Commons;
 
 namespace AtomUI.Desktop.Controls;
 
-public class DashboardProgress : AbstractGeneralDashboardProgress
+public partial class DashboardProgress : AbstractGeneralDashboardProgress
 {
     public DashboardProgress()
     {

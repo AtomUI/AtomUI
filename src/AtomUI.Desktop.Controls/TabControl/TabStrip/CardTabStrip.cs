@@ -1,13 +1,15 @@
-﻿using Avalonia;
+﻿using AtomUI.Generated.AtomUIDesktopControls;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
-public class CardTabStrip : BaseTabStrip
+public partial class CardTabStrip : BaseTabStrip
 {
     #region 公共属性实现
 
@@ -75,14 +77,23 @@ public class CardTabStrip : BaseTabStrip
 
     private IconButton? _addTabButton;
     private ItemsPresenter? _itemsPresenter;
-    private TabStripScrollViewer? _scrollViewer;
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new TabStripItem
+        var tabStripItem = new TabStripItem
         {
             Shape = TabSharp.Card
         };
+        tabStripItem.Classes.Add(CardTabStripSemanticParts.ItemClass);
+        return tabStripItem;
+    }
+
+    internal override void ReleaseTabStripItemOwnerBindings(TabStripItem tabStripItem)
+    {
+        base.ReleaseTabStripItemOwnerBindings(tabStripItem);
+        // Card-only indexer bindings created in PrepareContainerForItemOverride.
+        BindingOperations.GetBindingExpressionBase(tabStripItem, CornerRadiusProperty)?.Dispose();
+        BindingOperations.GetBindingExpressionBase(tabStripItem, BorderThicknessProperty)?.Dispose();
     }
 
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
@@ -91,6 +102,7 @@ public class CardTabStrip : BaseTabStrip
         if (container is TabStripItem tabStripItem)
         {
             tabStripItem.Shape = TabSharp.Card;
+            tabStripItem.Classes.Add(CardTabStripSemanticParts.ItemClass);
             tabStripItem[!CornerRadiusProperty] = this[!EffectiveCardBorderRadiusProperty];
             tabStripItem[!BorderThicknessProperty] = this[!CardBorderThicknessProperty];
         }
@@ -98,17 +110,17 @@ public class CardTabStrip : BaseTabStrip
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        if (_addTabButton is not null)
+        {
+            _addTabButton.Click -= HandleAddButtonClicked;
+        }
+
         base.OnApplyTemplate(e);
         _addTabButton   = e.NameScope.Find<IconButton>("PART_AddTabButton");
         _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
         if (_addTabButton is not null)
         {
             _addTabButton.Click += HandleAddButtonClicked;
-        }
-        _scrollViewer      = e.NameScope.Find<TabStripScrollViewer>("PART_CardTabStripScrollViewer");
-        if (_scrollViewer != null)
-        {
-            _scrollViewer.TabStrip = this;
         }
     }
 

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AtomUI.Reflection;
 using Avalonia.Controls;
@@ -9,10 +8,11 @@ namespace AtomUI.Controls;
 internal static class ItemCollectionReflectionExtensions
 {
     #region 反射信息定义
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(ItemCollection))]
-    private static readonly Lazy<MethodInfo> SetItemsSourceMethodInfo = new Lazy<MethodInfo>(() => 
-        typeof(ItemCollection).GetMethodInfoOrThrow("SetItemsSource",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+    private static readonly Lazy<MethodInfo> SetItemsSourceMethodInfo = new(() =>
+        FixedMemberReflection.RequireMethod(
+            typeof(ItemCollection).GetMethod("SetItemsSource", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(ItemCollection),
+            "SetItemsSource"));
     
     #endregion
 

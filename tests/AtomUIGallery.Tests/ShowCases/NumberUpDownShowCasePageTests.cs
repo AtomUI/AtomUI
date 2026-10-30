@@ -7,83 +7,40 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class NumberUpDownShowCasePageTests
 {
+
     [Fact]
-    public void NumberUpDown_ShowCase_Uses_Document_Layout_With_Examples()
+    public void NumberUpDown_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
     {
         var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/NumberUpDown/Views/NumberUpDownShowCase.axaml");
+        var english = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/NumberUpDown/Localization/en-US.xlf");
 
-        source.ShouldContain("NumberUpDownShowCaseLangResource PageSubtitle");
-        source.ShouldContain("NumberUpDownShowCaseLangResource PageDescription");
-        source.ShouldNotContain("NumberUpDownShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("NumberUpDownShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("NumberUpDownShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("NumberUpDownShowCaseLangResource ComponentCategory");
-        source.ShouldContain("NumberUpDownShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("NumberUpDownShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("NumberUpDownShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("NumberUpDownShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        source.ShouldContain("Selector=\"atom|NumericUpDown\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:NumberUpDownShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(15);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(15);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:NumberUpDownViewModel\"").ShouldBe(15);
-        source.ShouldContain("NumberUpDownShowCaseLangResource BasicUsageTitle");
-        source.ShouldContain("NumberUpDownShowCaseLangResource SpinnerModeTitle");
-        source.ShouldContain("Title=\"{gallery:NumberUpDownShowCaseLangResource SpinnerModeTitle}\"\n        BadgeText=\"v6.0.5\"");
-        CountOccurrences(source, "BadgeText=\"v6.0.5\"").ShouldBe(1);
-        source.ShouldContain("Spacing=\"{atom:SharedTokenResource UniformlyMargin}\"");
-        source.ShouldContain("Mode=\"Spinner\"");
-        source.ShouldContain("NumberUpDownShowCaseLangResource HideHandleTitle");
-        source.ShouldContain("NumberUpDownShowCaseLangResource HideHandleDescription");
-        source.ShouldContain("Title=\"{gallery:NumberUpDownShowCaseLangResource HideHandleTitle}\"\n        BadgeText=\"v6.0.7\"");
-        CountOccurrences(source, "BadgeText=\"v6.0.7\"").ShouldBe(1);
-        CountOccurrences(source, "ShowButtonSpinner=\"False\"").ShouldBe(2);
-        source.ShouldContain("FormatString=\"0\"");
-        source.ShouldContain("PlaceholderText=\"Outlined\"");
-        source.ShouldContain("PlaceholderText=\"Filled\"");
-        source.ShouldContain("StyleVariant=\"Filled\"");
-        source.ShouldContain("NumberUpDownShowCaseLangResource StringModeTitle");
-        source.ShouldContain("NumberUpDownShowCaseLangResource DecimalStepTitle");
-        source.ShouldContain("Name=\"CustomSizeTypeNumberUpDown\"");
-        source.ShouldContain("SizeType=\"Custom\"");
-        source.ShouldContain("Height=\"38\"");
-        source.ShouldContain("FontSize=\"15\"");
-        source.ShouldContain("IsCustomFontSize=\"True\"");
-        source.ShouldContain("NumberUpDownShowCaseLangResource StatusTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
+        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
+        source.ShouldContain("Name=\"NumberUpDownSemanticPreview\"");
+        source.ShouldContain("Name=\"SpinnerModeSemanticPreview\"");
+        source.ShouldContain("SemanticOwner=\"{Binding #NumberUpDownSemanticOwner}\"");
+        source.ShouldContain("SemanticOwner=\"{Binding #SpinnerModeSemanticOwner}\"");
+        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:NumericUpDown}\"");
+        CountOccurrences(source, "<gallery:SemanticPartDescription").ShouldBe(10);
+        foreach (var path in new[] { "root", "prefix", "input", "suffix", "clear" })
+        {
+            CountOccurrences(source, $"Path=\"{path}\"").ShouldBe(2);
+        }
 
-    [Fact]
-    public void NumberUpDown_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataEntry/NumberUpDown/Views/NumberUpDownShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/NumberUpDownShowCaseExamples.snapshot");
+        source.ShouldContain("SourceKey=\"numericupdown-semantic-part\"");
+        source.ShouldContain("NumberUpDownShowCaseLangResource SemanticPartStyleTitle");
+        source.ShouldContain("NumberUpDownShowCaseLangResource SemanticPartStyleDescription");
+        source.ShouldContain("Selector=\"atom|NumericUpDown.semantic-object\"");
+        source.ShouldContain("Selector=\"atom|NumericUpDown.semantic-function\"");
+        CountOccurrences(source, "Property=\"BorderBrush\"").ShouldBe(2);
+        source.ShouldContain("Value=\"#1677FF\"");
+        source.ShouldContain("Value=\"#722ED1\"");
+        source.ShouldContain("Classes=\"semantic-object\"");
+        source.ShouldContain("Classes=\"semantic-function\"");
+        source.ShouldContain("PlaceholderText=\"Object\"");
+        source.ShouldContain("PlaceholderText=\"Function\"");
 
-        var normalized = NormalizeMarkup(ExtractNumberUpDownExampleItems(source));
-        CountOccurrences(normalized, "<gallery:ShowCaseItem").ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
+        english.ShouldContain("<unit id=\"SemanticRootDescription\">");
+        english.ShouldContain("<unit id=\"SemanticPartStyleTitle\">");
     }
 
     private static string ExtractNumberUpDownExampleItems(string source)

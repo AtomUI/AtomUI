@@ -1,4 +1,3 @@
-using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
@@ -9,9 +8,14 @@ using Avalonia.Media;
 
 namespace AtomUI.Controls.Commons;
 
+[TemplatePart("PART_Rail", typeof(Border))]
+[TemplatePart("PART_Dot", typeof(Border))]
+[TemplatePart("PART_IconHost", typeof(Border))]
 [TemplatePart("PART_IconPresenter", typeof(IconPresenter))]
 internal class TimelineIndicator : TemplatedControl
 {
+    public const string IconPresentPC = ":icon-present";
+
     #region 公共属性定义
 
     public static readonly StyledProperty<Orientation> OrientationProperty =
@@ -154,35 +158,32 @@ internal class TimelineIndicator : TemplatedControl
     
     #endregion
 
+    private Border? _rail;
+    private Border? _dot;
+    private Border? _iconHost;
     private IconPresenter? _iconPresenter;
-    private Pen? _cachedDotPen;
-    private IBrush? _cachedDotPenBrush;
-    private double _cachedDotPenWidth;
-    private Pen? _cachedLinePen;
-    private IBrush? _cachedLinePenBrush;
-    private double _cachedLinePenWidth;
-    
+
     static TimelineIndicator()
     {
         OrientationProperty.OverrideDefaultValue<TimelineIndicator>(Orientation.Vertical);
+        // rail 要连续延伸到下一项节点顶边，会跨出 indicator 自身的底部边界；
+        // TemplatedControl 默认 ClipToBounds=true 会把这溢出的 rail 段切断。
+        ClipToBoundsProperty.OverrideDefaultValue<TimelineIndicator>(false);
         AffectsMeasure<TimelineIndicator>(
             IsFirstProperty,
             IsLastProperty,
             OrientationProperty,
             IndicatorIconProperty,
             IndicatorMinHeightProperty);
-        AffectsRender<TimelineIndicator>(
+        AffectsArrange<TimelineIndicator>(
             IsFirstProperty,
             IsLastProperty,
             OrientationProperty,
             IndicatorIconProperty,
             IndicatorMinHeightProperty,
-            IndicatorColorProperty,
             IndicatorDotBorderWidthProperty,
             IndicatorDotSizeProperty,
-            DefaultIndicatorColorProperty,
-            IndicatorTailWidthProperty,
-            IndicatorTailColorProperty);
+            IndicatorTailWidthProperty);
         TextElement.FontSizeProperty.Changed.AddClassHandler<TimelineIndicator>((indicator, args) =>
         {
             indicator.IndicatorMinHeight = args.GetNewValue<double>() * indicator.RelativeLineHeight;
@@ -193,7 +194,11 @@ internal class TimelineIndicator : TemplatedControl
     {
         base.OnApplyTemplate(e);
         IndicatorColor ??= DefaultIndicatorColor;
+        _rail          =   e.NameScope.Find<Border>("PART_Rail");
+        _dot           =   e.NameScope.Find<Border>("PART_Dot");
+        _iconHost      =   e.NameScope.Find<Border>("PART_IconHost");
         _iconPresenter =   e.NameScope.Find<IconPresenter>("PART_IconPresenter");
+        UpdatePseudoClasses();
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -203,17 +208,15 @@ internal class TimelineIndicator : TemplatedControl
         {
             IndicatorMinHeight = RelativeLineHeight * TextElement.GetFontSize(this);
         }
-        else if (change.Property == IndicatorColorProperty ||
-                 change.Property == DefaultIndicatorColorProperty ||
-                 change.Property == IndicatorDotBorderWidthProperty)
+        else if (change.Property == IndicatorIconProperty)
         {
-            _cachedDotPen = null;
+            UpdatePseudoClasses();
         }
-        else if (change.Property == IndicatorTailColorProperty ||
-                 change.Property == IndicatorTailWidthProperty)
-        {
-            _cachedLinePen = null;
-        }
+    }
+
+    private void UpdatePseudoClasses()
+    {
+        PseudoClasses.Set(IconPresentPC, IndicatorIcon != null);
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -225,139 +228,83 @@ internal class TimelineIndicator : TemplatedControl
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        if (_iconPresenter is not null)
+        var boxSize = IndicatorDotSize + IndicatorDotBorderWidth;
+
+        if (_iconHost is not null)
         {
-            var iconWidth = _iconPresenter.DesiredSize.Width;
-            var iconHeight = _iconPresenter.DesiredSize.Height;
-            var offsetX   = (finalSize.Width - iconWidth) / 2;
-            var offsetY   = Orientation == Orientation.Horizontal
+            var iconWidth  = _iconPresenter?.DesiredSize.Width ?? 0;
+            var iconHeight = _iconPresenter?.DesiredSize.Height ?? 0;
+            var offsetX    = (finalSize.Width - iconWidth) / 2;
+            var offsetY    = Orientation == Orientation.Horizontal
                 ? (finalSize.Height - iconHeight) / 2
                 : (_indicatorMinHeight - iconHeight) / 2;
-            _iconPresenter.Arrange(new Rect(offsetX, offsetY, iconWidth, iconHeight));
+            _iconHost.Arrange(new Rect(offsetX, offsetY, iconWidth, iconHeight));
         }
 
-        return finalSize;
-    }
-
-    public override void Render(DrawingContext context)
-    {
-        if (Orientation == Orientation.Horizontal)
+        double centerX;
+        double centerY;
+        if (IndicatorIcon != null && _iconHost is not null)
         {
-            RenderHorizontal(context);
+            centerX = _iconHost.Bounds.X + _iconHost.Bounds.Width / 2;
+            centerY = _iconHost.Bounds.Y + _iconHost.Bounds.Height / 2;
+        }
+        else if (Orientation == Orientation.Horizontal)
+        {
+            centerX = finalSize.Width / 2;
+            centerY = finalSize.Height / 2;
         }
         else
         {
-            RenderVertical(context);
-        }
-    }
-
-    private void RenderVertical(DrawingContext context)
-    {
-        var dotBelowLineStartOffsetY = 0d;
-        var dotUpLineEndOffsetY      = 0d;
-        if (IndicatorIcon == null)
-        {
-            // 绘制内置的
-            var dotPen    = GetOrCreateDotPen();
-            var dotRadius = IndicatorDotSize / 2;
-            var centerX   = (Bounds.Width - IndicatorDotSize) / 2 + dotRadius;
-            var centerY   = (IndicatorMinHeight - IndicatorDotSize) / 2 + dotRadius - 1;
-            dotBelowLineStartOffsetY = centerY + dotRadius + IndicatorDotBorderWidth / 2;
-            dotUpLineEndOffsetY      = centerY - dotRadius - IndicatorDotBorderWidth / 2;
-            context.DrawEllipse(null, dotPen, new Point(centerX, centerY), dotRadius, dotRadius);
-        }
-        else if (_iconPresenter != null)
-        {
-            dotBelowLineStartOffsetY = _iconPresenter.Bounds.Bottom;
-            dotUpLineEndOffsetY      = _iconPresenter.Bounds.Top;
+            centerX = finalSize.Width / 2;
+            centerY = _indicatorMinHeight / 2 - 1;
         }
 
-        var lineOffsetX = Bounds.Width / 2;
-        var linePen     = GetOrCreateLinePen();
-        if (!IsLast)
+        if (_dot is not null)
         {
-            var dotBelowLineStartPoint = new Point(lineOffsetX, dotBelowLineStartOffsetY);
-            var dotBelowLineEndPoint   = new Point(lineOffsetX, Bounds.Height);
-            context.DrawLine(linePen, dotBelowLineStartPoint, dotBelowLineEndPoint);
+            _dot.BorderThickness = new Thickness(IndicatorDotBorderWidth);
+            _dot.CornerRadius    = new CornerRadius(boxSize / 2);
+            _dot.Arrange(new Rect(centerX - boxSize / 2, centerY - boxSize / 2, boxSize, boxSize));
         }
 
-        if (!IsFirst)
+        if (_rail is not null)
         {
-            var dotUpLineStartPoint = new Point(lineOffsetX, 0);
-            var dotUpLineEndPoint   = new Point(lineOffsetX, dotUpLineEndOffsetY);
-            context.DrawLine(linePen, dotUpLineStartPoint, dotUpLineEndPoint);
-        }
-    }
+            var tailWidth = IndicatorTailWidth;
+            Rect railRect;
+            if (Orientation == Orientation.Horizontal)
+            {
+                // 水平方向：节点位于各 item 中心、items 左右并排，单段 rail 只能覆盖
+                // 到 item 边缘（即两节点连线的中点）。因此水平 rail 贯穿相邻 item 连成
+                // 完整轴线：首项从自身节点起、末项止于自身节点、中间项全宽贯通，与
+                // 相邻 item 的 rail 首尾相接，交叉区域由不透明节点掩膜遮盖。
+                var left  = IsFirst ? centerX : 0;
+                var right = IsLast ? centerX : finalSize.Width;
+                railRect = new Rect(
+                    left,
+                    finalSize.Height / 2 - tailWidth / 2,
+                    Math.Max(0, right - left),
+                    tailWidth);
+            }
+            else
+            {
+                // 垂直方向：对齐上游 rail 的分段语义——每段从自身节点底边延伸到下一
+                // 节点顶边（贯穿 item 边界），线在节点处紧贴、由不透明节点掩膜遮盖，
+                // 视觉连续且语义框以节点为界；末项无 rail。
+                var glyphHalfHeight = Math.Max(
+                    boxSize / 2,
+                    _iconHost is not null ? _iconHost.Bounds.Height / 2 : 0);
+                var top              = centerY + glyphHalfHeight;
+                var nextGlyphTopEdge = finalSize.Height + _indicatorMinHeight / 2 - 1 - boxSize / 2;
+                var bottom           = IsLast ? top : nextGlyphTopEdge;
+                railRect = new Rect(
+                    finalSize.Width / 2 - tailWidth / 2,
+                    top,
+                    tailWidth,
+                    Math.Max(0, bottom - top));
+            }
 
-    private void RenderHorizontal(DrawingContext context)
-    {
-        var lineBeforeEndOffsetX = 0d;
-        var lineAfterStartOffsetX = Bounds.Width;
-        var centerY = Bounds.Height / 2;
-        if (IndicatorIcon == null)
-        {
-            var dotPen    = GetOrCreateDotPen();
-            var dotRadius = IndicatorDotSize / 2;
-            var centerX   = Bounds.Width / 2;
-            lineBeforeEndOffsetX = centerX - dotRadius - IndicatorDotBorderWidth / 2;
-            lineAfterStartOffsetX = centerX + dotRadius + IndicatorDotBorderWidth / 2;
-            context.DrawEllipse(null, dotPen, new Point(centerX, centerY), dotRadius, dotRadius);
-        }
-        else if (_iconPresenter is not null)
-        {
-            lineBeforeEndOffsetX  = _iconPresenter.Bounds.Left;
-            lineAfterStartOffsetX = _iconPresenter.Bounds.Right;
-        }
-
-        var linePen = GetOrCreateLinePen();
-        if (!IsLast)
-        {
-            context.DrawLine(
-                linePen,
-                new Point(lineAfterStartOffsetX, centerY),
-                new Point(Bounds.Width, centerY));
-        }
-
-        if (!IsFirst)
-        {
-            context.DrawLine(
-                linePen,
-                new Point(0, centerY),
-                new Point(lineBeforeEndOffsetX, centerY));
-        }
-    }
-
-    private Pen GetOrCreateDotPen()
-    {
-        var dotBrush = IndicatorColor ?? DefaultIndicatorColor;
-        var dotWidth = IndicatorDotBorderWidth;
-        if (_cachedDotPen is not null &&
-            ReferenceEquals(_cachedDotPenBrush, dotBrush) &&
-            MathUtils.AreClose(_cachedDotPenWidth, dotWidth))
-        {
-            return _cachedDotPen;
+            _rail.Arrange(railRect);
         }
 
-        _cachedDotPen      = new Pen(dotBrush, dotWidth);
-        _cachedDotPenBrush = dotBrush;
-        _cachedDotPenWidth = dotWidth;
-        return _cachedDotPen;
-    }
-
-    private Pen GetOrCreateLinePen()
-    {
-        var lineBrush = IndicatorTailColor;
-        var lineWidth = IndicatorTailWidth;
-        if (_cachedLinePen is not null &&
-            ReferenceEquals(_cachedLinePenBrush, lineBrush) &&
-            MathUtils.AreClose(_cachedLinePenWidth, lineWidth))
-        {
-            return _cachedLinePen;
-        }
-
-        _cachedLinePen      = new Pen(lineBrush, lineWidth);
-        _cachedLinePenBrush = lineBrush;
-        _cachedLinePenWidth = lineWidth;
-        return _cachedLinePen;
+        return finalSize;
     }
 }

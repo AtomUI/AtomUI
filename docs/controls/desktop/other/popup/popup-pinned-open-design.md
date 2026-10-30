@@ -15,6 +15,7 @@
 - `false` 只解除关闭拦截，不强制关闭已经打开的 Popup；尚未实际打开的 pending 请求必须取消，并清除底层隐藏的 open request、target tracking 和临时资源。
 - 普通交互关闭可以被拦截；生命周期 teardown 必须放行。
 - 生命周期关闭不得被关闭动效延迟。
+- owner 提供 light-dismiss 配置；共享 Popup 在首次打开前及运行期间按 `configured && !pinned` 计算有效值，并同步自身的遮罩注册。取消 pin 恢复原配置，不重开 host、不影响其他 Popup 的注册。
 - 模板、定位、滚动、Overlay、输入路由和视觉尺寸不因测试状态而改变。
 - internal 属性不进入 public API、公开 AXAML 模板契约或 Token。
 
@@ -117,6 +118,7 @@ Popup 提供内部的生命周期关闭入口，使宿主可以明确表达 tear
 
 - 业务 open state；
 - Popup 内容准备；
+- 首次物理打开前的 pinned light-dismiss 抑制，以及取消 pin 后的原配置恢复；
 - 伪类和业务事件的一致性；
 - 模板重建时重新 relay；
 - detach 后禁止旧 callback 复活。
@@ -176,7 +178,8 @@ pin=true / attach / template apply / popup closed / target restored
 
 ## 10. 兼容性、定制与验证
 
-- 不改变 Popup 的 placement、shadow、surface ownership、scrolling、light-dismiss 输入路由或 native/overlay 选择。
+- 不改变 Popup 的 placement、shadow、surface ownership、scrolling 或 native/overlay 选择；普通模式保留原 light-dismiss 输入路由，
+  pinned 模式只在首次打开前抑制本来无法完成关闭的 dismiss overlay。
 - 不改变控件现有 public API、公开模板 part、伪类、Token 和 Gallery 用法。
 - 自定义模板继续提供原有 Popup part；内部钉住属性不要求应用改写 AXAML。
 - `Dialog`、`Drawer`、`ImagePreviewer` 继续使用各自会话生命周期，不读取 Popup pinned 状态。
@@ -187,6 +190,7 @@ pin=true / attach / template apply / popup closed / target restored
 - PlacementTarget/owner detach、TopLevel 切换、模板重建和窗口销毁正常清理；
 - Select/TreeSelect/Cascader 的业务状态和 Popup 状态一致；
 - Flyout、ToolTip、ContextMenu 和代表性菜单/Picker 家族的 owner relay；
+- 首次 pinned 打开前 light-dismiss 已禁用，取消 pin 后恢复 Click/Hover/Focus 或模板原配置；
 - 属性和 Property 字段不为 public；
 - OverlayPopupHost 不残留，重新 attach 后 pinned Popup 能恢复；
 - Desktop Controls、DataGrid/ColorPicker 专项测试和文档链接检查。

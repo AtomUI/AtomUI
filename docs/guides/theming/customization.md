@@ -332,21 +332,33 @@ Global Token 都可以配置；只有名称在这两个 schema 中都不存在�
 
 ### 8.1 让主题进入 ThemeCatalog
 
-主题定义只有经过 Resolver、Reader 和 Binder 后才会进入 ThemeCatalog。来源分为三类：
+主题定义通过两种明确入口进入同一个 ThemeCatalog：
 
-- AtomUI 内置主题，由内置 Resolver 显式注册。
-- 应用或 Control 包中的 `avares://` 主题资源，由包级注册入口显式提供 URI。
-- 用户主题目录中的 `*.theme.xml`，只在应用主动启用后读取。
+- 包内固定 XML 声明为 `AtomUIThemeDefinition` 构建项，通过生成的主题包注册入口接入。Core 默认主题使用此路径。
+- 动态 XML 通过 Resolver、Reader 和 Binder 加载；包括显式 avares URI 与主动启用的用户主题目录。
+
+例如程序集 `Acme.Themes` 可声明：
+
+```xml
+<ItemGroup>
+  <AtomUIThemeDefinition Include="Themes/Brand.theme.xml" />
+</ItemGroup>
+```
+
+应用显式调用 `AtomUI.Generated.AcmeThemes.GeneratedThemePackageRegistration.Register(builder.Theme)`。
+构建时只解析静态声明并生成注册与默认值赋值；运行时合并应用配置并执行现有算法，支持主色、暗色与紧凑设置变化。
+注册不自动启用控件包；XML 中显式覆盖的 Control 必须已登记在启动时的 registry。静态主题与动态 XML 的 Id
+不能重复。完整支持域、生成协议与验收状态见[编译主题包架构](../../architecture/systems/theming/compiled-theme-packages/overview.md)。
 
 应用启用用户主题目录时必须提供稳定 Application Id：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.WithApplicationId("Acme.Editor");
     builder.UseUserThemeDirectory();
     builder.UseDesktopControls();
-});
+})
 ```
 
 默认目录位于 `Environment.SpecialFolder.ApplicationData/{ApplicationId}/Themes`。主题系统不使用
@@ -387,7 +399,7 @@ Control 级算法有四种状态：
 应用启动时应在 `UseAtomUI` Builder 阶段配置初始主题，使首个可见帧已经拥有正确 snapshot：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.WithInitialTheme(
         "AcmeLight",
@@ -396,7 +408,7 @@ this.UseAtomUI(builder =>
             .Build());
 
     builder.UseDesktopControls();
-});
+})
 ```
 
 启动后的切换使用 `IThemeManager.ApplyThemeAsync(ThemeRequest)`。`ThemeConfig` 是深度不可变值；更新主题意味着创建
@@ -472,8 +484,60 @@ Control 通过稳定 `.semantic-*` Selector 开放少量公共视觉区域。用
 Control 的 `Styles` 中定制这些区域，而不依赖 `PART_*`、Name 或 internal 类型。完整契约见
 [Semantic Part 系统设计](../../architecture/systems/theming/semantic-parts.md)。
 
+Button 当前开放 `root`、`icon` 和 `content`。`root` 是 Button 本身，不使用 `.semantic-root`；`icon` 与 `content`
+分别使用 `.semantic-icon`、`.semantic-content`。
+
+应用级样式：
+
+```xml
+<Application.Styles>
+    <Style Selector="atom|Button /template/ .semantic-icon"
+           x:SetterTargetType="Control">
+        <Setter Property="Opacity" Value="0.8" />
+    </Style>
+</Application.Styles>
+```
+
+局部和状态样式：
+
+```xml
+<UserControl.Styles>
+    <Style Selector="atom|Button:pointerover /template/ .semantic-icon"
+           x:SetterTargetType="Control">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="atom|Button /template/ .semantic-content"
+           x:SetterTargetType="ContentPresenter">
+        <Setter Property="TextBlock.FontWeight" Value="SemiBold" />
+    </Style>
+</UserControl.Styles>
+```
+
+单实例样式放在 owner 的 `Styles` 中，不需要依赖内部 `PART_*`：
+
+```xml
+<atom:Button Content="Save">
+    <atom:Button.Styles>
+        <Style Selector=".semantic-icon"
+               x:SetterTargetType="Control">
+            <Setter Property="Margin" Value="0,0,8,0" />
+        </Style>
+    </atom:Button.Styles>
+</atom:Button>
+```
+
+`.semantic-*` 是 Part 的运行时匹配身份；`x:SetterTargetType` 使用该 Part descriptor 的 `ContractType`，只帮助
+AXAML 编译器解析 Setter property。不要把两者合并成 `Control.semantic-icon` 或
+`:is(Control).semantic-icon`：前者是精确类型匹配，后者把实现类型条件混入公共 Part selector。
+
+Semantic class selector 会使用 Avalonia 的动态 class 激活机制。应用级规则应始终包含 owner scope，并把同一 Part 的
+Setter 合并在一个 Style 中；高密度或虚拟化场景的默认视觉优先通过 Token、控件属性或 container theme 表达。
+
+`IThemeManager.SemanticParts` 可供 Gallery、文档工具和诊断界面读取 descriptor，但正常样式不需要先查询 registry。
+Avalonia 12 直接根据 selector 和模板节点 class 完成匹配。
+
 当 Part 是真实 public 子 Control，并且需要允许完整替换其 ControlTheme 时，owner 可以额外使用强类型
-`ControlTheme?` 属性开放 Semantic Part Theme。
+public get/set `ControlTheme?` 属性开放 Semantic Part Theme。
 
 SearchEdit 的设计是：
 
@@ -500,44 +564,35 @@ Semantic Part Theme 是 Selector 的可选扩展，不是 Popup、Overlay 或普
 
 ## 14. 开发第三方 AtomUI Control
 
-第三方 Control 使用与 AtomUI 内置 Control 相同的 Control、Own Token 和 Theme 约定。AOT 接入的默认心智模型只有
-Package，不要求普通作者理解 Registration Unit：
+第三方使用与第一方相同的逐控件契约、Token、Semantic Part 和主题导出规则。注册相关接口对应本地已实现的 TypeMap 体系，
+验证与发布状态见 [AOT 与裁剪架构](../../architecture/foundations/aot-and-trimming.md#1-状态与事实边界)。
 
 ```text
-Acme.Controls Package
-+-- Control、可选 Own Token 和 Themes/
+Acme.Controls
++-- 正常 Control、可选 Own Token、Semantic Part 和 Themes/
 +-- AcmeControlThemesProvider
-\-- [ControlPackageRegistrationEntry] UseAcmeControls()
+\-- UseAcmeControls() 调用生成的包注册 helper
 ```
 
-包项目声明稳定 identity：
-
-```xml
-<PropertyGroup>
-  <AtomUIRegistrationPackageId>Acme.Controls</AtomUIRegistrationPackageId>
-</PropertyGroup>
-```
-
-应用在 ThemeManager 构建前显式启用：
+应用保持普通包启用方式：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.UseDesktopControls();
     builder.UseAcmeControls();
-});
+})
 ```
 
-默认整个 `Acme.Controls` 是一个安全 Unit。包内任一公开 Control 被使用时，Generator 会一起保留内部 View/Presenter、
-descriptor、Own Token 和主题资源。普通作者不写 `AtomUIRegistrationUnit`、Unit dependency、AXAML ownership metadata、
-linker XML 或手工 manifest。
+包身份是普通资源身份；生成器自动输出逐项工厂、条件映射和 Package marker，应用自动生成包引导。
+作者不编写 TypeMap、AOT 分支、目录裁剪单元或依赖清单。内部 presenter 可以只有主题资源；命名主题、局部资源和正常
+ResourceInclude 由统一的资源契约处理，不因为注册一个公开控件就完整保留整个包。
 
-只有包含大量独立控件族、并且有真实体积基线和 NativeAOT 测试的大型包，才显式设置
-`AtomUIRegistrationGranularity=Directory`。该模式是高级裁剪优化，不是普通 AOT 接入步骤。
+NativeAOT/CoreCLR 使用官方映射，Browser 裁剪与 AOT 使用链接结果转换后端，应用与包入口不切换写法。
+正常静态用法无 AOT 专用配置；真正动态输入仍需类型化工厂或明确边界。
 
-完整项目文件、Provider、入口代码和发布检查见
-[第三方 AtomUI Control Package 指南](third-party-control-packages.md)。详细注册顺序见
-[启动与注册链路](../../architecture/foundations/startup-and-registration.md)。
+项目、Provider 与目标入口示例见[第三方控件包指南](third-party-control-packages.md)，资源与 Token 语义见
+[控件与资源注册契约](../../architecture/foundations/control-registration-contracts.md)。
 
 ## 15. 一次主题切换为什么不会暴露半成品
 

@@ -1,0 +1,79 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:antdicons="using:AtomUI.Icons.AntDesign"
+    xmlns:gallery="https://atomui.net/toolkits/gallery-base"
+    x:Class="AtomUI.Toolkits.GalleryBase.Controls.SemanticPartPreviewItemControl"
+    x:DataType="gallery:SemanticPartPreviewItem">
+    <UserControl.Styles>
+        <!-- 行需要实底背景：透明背景在 Avalonia 12 的合成器命中测试中不产生命中，
+             行右侧空白区域会穿透到下层，导致列表行部分区域无法响应鼠标 -->
+        <Style Selector="Border.part-row">
+            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+        </Style>
+        <Style Selector="Border.part-row:pointerover">
+            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillTertiary}" />
+        </Style>
+        <Style Selector="Border.part-row.pinned">
+            <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimaryBg}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Border Name="PART_Row"
+            Classes="part-row"
+            Classes.pinned="{Binding IsPinned}"
+            BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
+            BorderThickness="0,0,0,1"
+            Padding="12">
+        <Grid ColumnDefinitions="*,Auto"
+              ColumnSpacing="12">
+            <StackPanel Grid.Column="0"
+                        Spacing="8">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="6">
+                    <atom:TextBlock Text="{Binding Name}"
+                                    FontSize="14"
+                                    FontWeight="SemiBold" />
+                    <!-- 多 owner Preview 时标注 Part 归属（如 Message 的 root 同时存在于两个 owner 上）。
+                         用轻量 TextBlock 而非 Tag：行内不再引入额外徽标控件，保持面板结构扁平。 -->
+                    <atom:TextBlock IsVisible="{Binding IsOwnerLabelVisible}"
+                                    VerticalAlignment="Center"
+                                    FontSize="11"
+                                    Foreground="{atom:SharedTokenResource ColorTextTertiary}"
+                                    Text="{Binding OwnerTypeName}" />
+                </StackPanel>
+
+                <atom:TextBlock Text="{Binding Description}"
+                                TextWrapping="Wrap"
+                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="4"
+                        VerticalAlignment="Top">
+                <atom:IconButton Name="PART_PinButton"
+                                 Width="24"
+                                 Height="24"
+                                 IconWidth="14"
+                                 IconHeight="14"
+                                 atom:ToolTip.Tip="{gallery:SemanticPartPreviewLangResource PinAction}">
+                    <atom:IconButton.Icon>
+                        <antdicons:PushpinOutlined />
+                    </atom:IconButton.Icon>
+                </atom:IconButton>
+                <atom:IconButton Name="PART_InfoButton"
+                                 Width="24"
+                                 Height="24"
+                                 IconWidth="14"
+                                 IconHeight="14"
+                                 atom:ToolTip.Tip="{gallery:SemanticPartPreviewLangResource InfoAction}">
+                    <atom:IconButton.Icon>
+                        <antdicons:InfoCircleOutlined />
+                    </atom:IconButton.Icon>
+                </atom:IconButton>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

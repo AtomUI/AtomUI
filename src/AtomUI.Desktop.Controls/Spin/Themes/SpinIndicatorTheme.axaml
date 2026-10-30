@@ -10,6 +10,7 @@
                 <Panel>
                     <atomc:SpinIndicatorDotPanel
                         Name="BuiltInIndicatorLayout"
+                        Classes.semantic-content="True"
                         Width="{TemplateBinding IndicatorSize}"
                         Height="{TemplateBinding IndicatorSize}">
                         <Ellipse Classes="SpinIndicatorDot"
@@ -35,6 +36,7 @@
                     </atomc:SpinIndicatorDotPanel>
                     <ContentPresenter
                         Name="PART_CustomIndicatorPresenter"
+                        Classes.semantic-content="True"
                         Content="{TemplateBinding CustomIndicator}"
                         ContentTemplate="{TemplateBinding CustomIndicatorTemplate}"
                         Width="{TemplateBinding IndicatorSize}"

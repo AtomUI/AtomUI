@@ -32,6 +32,8 @@ TimePicker 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
+时间列默认 `ItemWidth=ControlHeightLG × 1.4`，`ItemHeight=ControlHeight-4`，时段列默认同宽；默认高度基线为 28、列宽为 56。`ItemPadding` 将行文本按列宽与行高的差值定位，行两侧间距与圆角由 TimeViewCell 主题表达。候选、悬停、输入有效性和 `IsNeedConfirm` / `IsChangeOnScroll` 不进入 Token。
+
 ## 4. 控件家族影响
 
 调整 TimePicker Token 时必须评估以下范围：

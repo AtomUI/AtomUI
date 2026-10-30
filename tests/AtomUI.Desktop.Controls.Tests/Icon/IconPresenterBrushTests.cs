@@ -1,9 +1,6 @@
-using AtomUI;
 using AtomUI.Controls;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using Shouldly;
 using Xunit;

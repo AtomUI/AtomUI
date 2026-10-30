@@ -16,6 +16,8 @@
 - `src/AtomUI.Desktop.Controls/Spin/Spin.cs`
 - `src/AtomUI.Desktop.Controls/Spin/SpinIndicator.cs`
 - `src/AtomUI.Desktop.Controls/Spin/SpinToken.cs`
+- `src/AtomUI.Desktop.Controls/Spin/Spin.SemanticParts.cs`
+- `src/AtomUI.Desktop.Controls/Spin/SpinIndicator.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Spin/Themes/SpinIndicatorTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Spin/Themes/SpinTheme.axaml`
 
@@ -25,6 +27,7 @@
 - Theme 文件负责静态视觉结构、template part、selector 和资源绑定。
 - Token 文件只提供组件视觉变量，不保存实例状态。
 - Gallery 文件只展示用法和示例，不作为运行时逻辑 owner。
+- Semantic descriptor 由各 public owner 的 `[SemanticPart]` 声明生成；模板只使用静态 `Classes.semantic-*="True"` marker。
 
 ## 3. 核心类职责
 
@@ -57,7 +60,7 @@ Public API / ItemsSource / Command / Event
 
 - 内容与数据：`CustomIndicatorTemplate`。
 - 交互与状态：`IsMaskBackgroundEnabled`、`IsMaskBlurEnabled`、`IsMotionEnabled`、`IsSpinning`、`IsTipVisible`。
-- 视觉与布局：`DotSize`、`IndicatorSize`、`SizeType`。
+- 视觉与布局：`DotBgBrush`、`DotSize`、`IndicatorSize`、`SizeType`。
 - 动效与异步：`MotionDuration`、`MotionEasingCurve`。
 - 其他稳定入口：`CustomIndicator`、`Tip`。
 
@@ -82,6 +85,15 @@ Public API / ItemsSource / Command / Event
 
 - `PART_CustomIndicatorPresenter`：展示用户内容、文本、图标或模板化数据。
 
+`SpinTheme` 的模板使用两层叠加结构：`ContentPresenter.semantic-container` 承载用户内容，`MaskLayout` 面板在
+`IsSpinning=True` 时可见，其内部 `Border.semantic-mask` 提供遮罩背景，`StackPanel.semantic-section` 承载
+`SpinIndicator.semantic-indicator` 与 `TextBlock.semantic-description` 并居中。遮罩层组与内容容器是同一根面板下的
+sibling，确保 Semantic Preview 高亮 `container` 时只覆盖用户内容区域。
+
+`SpinIndicatorTheme` 的模板由两个静态替代实现构成：`SpinIndicatorDotPanel.semantic-content` 承载四个内置圆点，
+`PART_CustomIndicatorPresenter.semantic-content` 承载自定义指示器；`IsCustomIndicator` 决定当前可见 target，两个
+target 都保持 marker。四个圆点（`Ellipse.SpinIndicatorDot`）是内部 Composition 节点，不属于任何 Semantic Part。
+
 ## 6. 交互与事件处理
 
 Spin 的交互事件应从输入源收敛到控件级语义事件：
@@ -103,6 +115,13 @@ Spin 的交互事件应从输入源收敛到控件级语义事件：
 - 内容、命令和视觉状态在模板节点之间的同步。
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
 
+根控件的 MaskOpacity 自动过渡使用 `TransitionInitializationSession`：构造时抑制、Loaded 完成基线、detach 复位，
+恢复最新 Transitions 来源。指示器的持续反馈独立于该初始化作用域，不通过私有开关或 Dispatcher 猜测就绪。
+- Semantic Part marker 不参与状态切换；`IsSpinning`、`IsTipVisible` 和 `IsCustomIndicator` 只改变目标节点的
+  `IsVisible`，marker 身份和数量保持不变。
+- 指示器旋转与圆点透明度动画由 `AbstractSpinIndicator` 通过 Composition 动画直接拥有；动画目标从
+  `IsCustomIndicator` 推导，状态切换只重启动画，不增删 marker 节点。
+
 `AbstractSpinIndicator` 的旋转和内置 dot opacity 由 Compositor 无限动画驱动。Compositor 不提供控件级有效可见性暂停语义，因此 indicator 在 attach 后跟踪自身及 Visual 祖先链；有效不可见时停止所有目标动画并复位视觉状态，恢复可见时重新解析当前 built-in/custom target 并启动动画。detach 时必须释放可见性订阅和所有 Compositor target。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
@@ -112,6 +131,7 @@ Spin 的交互事件应从输入源收敛到控件级语义事件：
 资源和 AOT 约束：
 
 - 不通过运行时反射扫描 public API、Token 或 Gallery 示例数据。
+- 不通过 VisualTree 扫描维护 Semantic Part；Gallery Preview 使用生成 descriptor 和 owner-scoped marker 解析。
 - 不把可静态声明的模板结构迁移到 C# 动态创建。
 - 异步加载、上传、弹层和窗口生命周期必须能取消或释放。
 - 缓存对象必须与控件、窗口、弹层或数据 owner 生命周期一致。

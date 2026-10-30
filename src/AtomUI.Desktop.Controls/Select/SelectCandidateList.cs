@@ -3,6 +3,7 @@ using AtomUI.Controls;
 using AtomUI.Controls.Data;
 using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Desktop.Controls.Themes;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -221,7 +222,9 @@ internal class SelectCandidateList : ListView, ICandidateList
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new SelectCandidateListItem();
+        var listItem = new SelectCandidateListItem();
+        listItem.Classes.Add(SelectSemanticParts.PopupListItemClass);
+        return listItem;
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)

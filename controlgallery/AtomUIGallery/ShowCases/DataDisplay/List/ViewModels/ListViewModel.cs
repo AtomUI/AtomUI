@@ -1,4 +1,3 @@
-using AtomUIGallery.Localization;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reactive;
@@ -148,6 +147,22 @@ public class ListViewModel : ReactiveObject, IRoutableViewModel
     {
         get => _paginationListItems;
         set => this.RaiseAndSetIfChanged(ref _paginationListItems, value);
+    }
+
+    private List<IListItemData>? _semanticListItems;
+
+    public List<IListItemData>? SemanticListItems
+    {
+        get => _semanticListItems;
+        set => this.RaiseAndSetIfChanged(ref _semanticListItems, value);
+    }
+
+    private List<IListItemData>? _semanticListBoxItems;
+
+    public List<IListItemData>? SemanticListBoxItems
+    {
+        get => _semanticListBoxItems;
+        set => this.RaiseAndSetIfChanged(ref _semanticListBoxItems, value);
     }
 
     public ReactiveCommand<Unit, Unit> SelectBoundSelectedItemsCommand { get; }

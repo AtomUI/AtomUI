@@ -1,12 +1,15 @@
+using AtomUI.Animations;
 ﻿using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -16,7 +19,7 @@ namespace AtomUI.Desktop.Controls;
 using AvaloniaComboBox = Avalonia.Controls.ComboBox;
 using AvaloniaTextBox = Avalonia.Controls.TextBox;
 
-public class ComboBox : AvaloniaComboBox,
+public partial class ComboBox : AvaloniaComboBox,
                         IMotionAwareControl,
                         ICustomizableSizeTypeAware,
                         IInputControlStatusAware,
@@ -73,6 +76,13 @@ public class ComboBox : AvaloniaComboBox,
 
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         AvaloniaProperty.Register<ComboBox, bool>(nameof(ShouldUseOverlayPopup), true);
+
+    /// <summary>
+    /// 钉住候选弹层：开启后弹层忽略 light-dismiss 关闭请求，保持强制打开。
+    /// 典型场景是 Gallery 语义部件预览需要持续高亮 popup.* 部件。
+    /// </summary>
+    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+        Popup.IsPopupPinnedOpenProperty.AddOwner<ComboBox>();
 
     public static readonly StyledProperty<bool> IsFilterEnabledProperty =
         AvaloniaProperty.Register<ComboBox, bool>(nameof(IsFilterEnabled));
@@ -192,6 +202,16 @@ public class ComboBox : AvaloniaComboBox,
         set => SetValue(ShouldUseOverlayPopupProperty, value);
     }
 
+    /// <summary>
+    /// 钉住候选弹层：开启后弹层忽略 light-dismiss 关闭请求，保持强制打开。
+    /// 典型场景是 Gallery 语义部件预览需要持续高亮 popup.* 部件。
+    /// </summary>
+    public bool IsPopupPinnedOpen
+    {
+        get => GetValue(IsPopupPinnedOpenProperty);
+        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
+    }
+
     public bool IsFilterEnabled
     {
         get => GetValue(IsFilterEnabledProperty);
@@ -256,9 +276,6 @@ public class ComboBox : AvaloniaComboBox,
     internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
         InputControlState.FormStatusProperty.AddOwner<ComboBox>();
 
-    internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
-        Popup.IsPopupPinnedOpenProperty.AddOwner<ComboBox>();
-
     internal static readonly DirectProperty<ComboBox, bool> IsFormFeedbackVisibleProperty =
         AvaloniaProperty.RegisterDirect<ComboBox, bool>(
             nameof(IsFormFeedbackVisible),
@@ -306,12 +323,6 @@ public class ComboBox : AvaloniaComboBox,
         private set => SetCurrentValue(FormStatusProperty, value);
     }
 
-    internal bool IsPopupPinnedOpen
-    {
-        get => GetValue(IsPopupPinnedOpenProperty);
-        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
-    }
-
     private bool _isFormFeedbackVisible;
 
     internal bool IsFormFeedbackVisible
@@ -354,6 +365,8 @@ public class ComboBox : AvaloniaComboBox,
     private int _candidateSelectedIndex = -1;
     private ComboBoxItem? _candidateSelectedItem;
     private readonly Dictionary<ComboBoxItem, FilterVisibilityState> _filterItemVisibilityContext = new();
+    private bool _isFrameBorderBrushRelayed;
+    private bool _isFrameBackgroundRelayed;
     // Keep popup closing after SelectionChanged callbacks finish updating bound state.
     private bool _selectionFromEventInProgress;
 
@@ -410,6 +423,7 @@ public class ComboBox : AvaloniaComboBox,
             _popupPinnedOpenBinding?.Dispose();
             _popupPinnedOpenBinding = null;
             _popup.Opened -= HandlePopupOpened;
+            _popup.Closed -= HandlePopupClosed;
             _popup.OverlayInputPassThroughElement = null;
         }
 
@@ -424,6 +438,8 @@ public class ComboBox : AvaloniaComboBox,
         _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
         _editableTextBox = e.NameScope.Find<AvaloniaTextBox>("PART_EditableTextBox");
         _popup = e.NameScope.Find<Popup>("PART_Popup");
+        RelayRootSurfaceBrush(BorderBrushProperty);
+        RelayRootSurfaceBrush(BackgroundProperty);
         if (_popup != null)
         {
             _popupPinnedOpenBinding = BindUtils.RelayBind(
@@ -432,6 +448,8 @@ public class ComboBox : AvaloniaComboBox,
                 _popup,
                 Popup.IsPopupPinnedOpenProperty);
             _popup.Opened += HandlePopupOpened;
+            _popup.Closed += HandlePopupClosed;
+            // The shared Popup owns effective light-dismiss and its registration.
         }
         if (_editableTextBox != null)
         {
@@ -457,6 +475,13 @@ public class ComboBox : AvaloniaComboBox,
         UpdatePseudoClasses();
         ConfigureMaxDropdownHeight();
         RefreshFilteredItemVisibility();
+
+        // 模板应用期若业务状态已是打开（例如预览在 AXAML 上声明 IsDropDownOpen="True"），
+        // 此时才在抑制遮罩之后补开弹层。弹层不再由模板绑定打开，因此这一步是必需的。
+        if (IsDropDownOpen && _popup is { IsOpen: false })
+        {
+            _popup.IsOpen = true;
+        }
     }
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -505,7 +530,9 @@ public class ComboBox : AvaloniaComboBox,
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new ComboBoxItem();
+        var comboBoxItem = new ComboBoxItem();
+        ApplySemanticItemMarker(comboBoxItem);
+        return comboBoxItem;
     }
     
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -544,11 +571,24 @@ public class ComboBox : AvaloniaComboBox,
             comboBoxItem[!ComboBoxItem.HeightProperty]          = this[!ItemHeightProperty];
 
             ApplyCurrentFilterState(comboBoxItem, item);
+            // NeedsContainerOverride 对显式提供的 ComboBoxItem 返回 false，这类容器不经过
+            // CreateContainerForItemOverride，因此在这里兜底注入同一 marker（重复添加是幂等操作）。
+            ApplySemanticItemMarker(comboBoxItem);
         }
+    }
+
+    private static void ApplySemanticItemMarker(ComboBoxItem comboBoxItem)
+    {
+        comboBoxItem.Classes.Add(ComboBoxSemanticParts.PopupListItemClass);
     }
 
     protected override void ClearContainerForItemOverride(Control element)
     {
+        if (element is ITransitionInitializationOwner owner)
+        {
+            owner.TransitionInitialization.Reset();
+        }
+
         if (element is ComboBoxItem comboBoxItem)
         {
             if (ReferenceEquals(_candidateSelectedItem, comboBoxItem))
@@ -583,6 +623,10 @@ public class ComboBox : AvaloniaComboBox,
         {
             UpdatePseudoClasses();
         }
+        else if (change.Property == BorderBrushProperty || change.Property == BackgroundProperty)
+        {
+            RelayRootSurfaceBrush(change.Property);
+        }
         else if (change.Property == DropDownDisplayPageSizeProperty ||
                  change.Property == ItemHeightProperty ||
                  change.Property == PopupContentPaddingProperty)
@@ -601,21 +645,23 @@ public class ComboBox : AvaloniaComboBox,
         }
         else if (change.Property == IsDropDownOpenProperty)
         {
+            ClearCandidateItemSelection();
             if (IsDropDownOpen)
             {
-                ClearCandidateItemSelection();
                 RefreshFilteredItemVisibility();
+                OpenPopup();
             }
             else
             {
-                ClearCandidateItemSelection();
+                ClosePopup();
             }
         }
-        else if (change.Property == IsPopupPinnedOpenProperty &&
-                 change.GetNewValue<bool>() &&
-                 !IsDropDownOpen)
+        else if (change.Property == IsPopupPinnedOpenProperty)
         {
-            SetCurrentValue(IsDropDownOpenProperty, true);
+            if (change.GetNewValue<bool>() && !IsDropDownOpen)
+            {
+                SetCurrentValue(IsDropDownOpenProperty, true);
+            }
         }
         else if (change.Property == FormFeedbackProperty)
         {
@@ -846,6 +892,100 @@ public class ComboBox : AvaloniaComboBox,
         {
             _popup.OverlayInputPassThroughElement = _addOnDecoratedBox;
         }
+    }
+
+    /// <summary>
+    /// 把 owner 的根表面画刷以 LocalValue 中继到输入帧，使应用级根 <c>BorderBrush</c> / <c>Background</c>
+    /// 定制压过帧状态机；未设置时把属性交还状态机。ComboBox 派生自 Avalonia 的 ComboBox，不在
+    /// <c>AbstractTextInput</c> / <c>AbstractSelect</c> 的继承链上，因此需要与
+    /// <c>AbstractSelect.RelayRootSurfaceBrush</c> 保持一致的同名中继，让输入族的根边框定制契约对
+    /// ComboBox 同样成立。
+    /// </summary>
+    private void RelayRootSurfaceBrush(AvaloniaProperty property)
+    {
+        if (_addOnDecoratedBox is null)
+        {
+            return;
+        }
+
+        var value = GetValue(property);
+        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
+        {
+            // 仅当本控件确实接管过该槽位时才交还，避免清除嵌套 owner 的中继结果。
+            if (IsRootSurfaceBrushRelayed(property))
+            {
+                _addOnDecoratedBox.ClearValue(property);
+                SetRootSurfaceBrushRelayed(property, false);
+            }
+
+            return;
+        }
+
+        _addOnDecoratedBox.SetValue(property, value, BindingPriority.LocalValue);
+        SetRootSurfaceBrushRelayed(property, true);
+    }
+
+    private bool IsRootSurfaceBrushRelayed(AvaloniaProperty property)
+    {
+        return ReferenceEquals(property, BorderBrushProperty)
+            ? _isFrameBorderBrushRelayed
+            : _isFrameBackgroundRelayed;
+    }
+
+    private void SetRootSurfaceBrushRelayed(AvaloniaProperty property, bool value)
+    {
+        if (ReferenceEquals(property, BorderBrushProperty))
+        {
+            _isFrameBorderBrushRelayed = value;
+        }
+        else
+        {
+            _isFrameBackgroundRelayed = value;
+        }
+    }
+
+
+    /// <summary>
+    /// 按业务状态打开弹层。开合不再由模板 <c>IsOpen</c> 绑定承担，因为模板充气阶段的绑定求值
+    /// 会早于遮罩抑制打开弹层，钉住场景因而残留遮罩层。改为跟随 <c>IsDropDownOpen</c> 以代码打开，
+    /// 与共享 <c>AbstractSelect</c> 的约定一致。
+    /// </summary>
+    private void OpenPopup()
+    {
+        if (_popup is { IsOpen: false })
+        {
+            _popup.IsOpen = true;
+        }
+    }
+
+    private void ClosePopup()
+    {
+        if (_popup is { IsOpen: true })
+        {
+            _popup.IsOpen = false;
+        }
+    }
+
+    /// <summary>
+    /// 弹层自行关闭（light-dismiss 外点、Escape）时把状态回写业务属性。此前该回传由模板上的
+    /// TwoWay <c>IsOpen</c> 绑定承担，开合改由代码接管后必须显式补齐，否则状态会卡在打开。
+    /// </summary>
+    private void HandlePopupClosed(object? sender, EventArgs e)
+    {
+        if (!IsDropDownOpen)
+        {
+            return;
+        }
+
+        if (IsPopupPinnedOpen && _popupLifecycleCloseDepth == 0)
+        {
+            // 钉住语义：外点/Escape 不改变有效打开状态。共享 Popup 会在钉住时自行抑制物理关闭并
+            // 重新收敛，因此这里通常不会到达；若因锚点/TopLevel 失效走到这里，按设计保留“请求
+            // 打开”状态而不改写业务状态，等待 reattach 或 pin 变更重新打开。
+            return;
+        }
+
+        SetCurrentValue(IsDropDownOpenProperty, false);
     }
 
     private void ConfigureBaseEditableTextBoxFocusBehavior()

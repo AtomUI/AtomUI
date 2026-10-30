@@ -80,6 +80,10 @@ public abstract class AbstractRibbonBadge : Control
         AffectsMeasure<AbstractRibbonBadge>(DecoratedTargetProperty,
             TextProperty);
         AffectsRender<AbstractRibbonBadge>(RibbonColorProperty, PlacementProperty);
+        // 装饰型控件必须包裹目标而不是拉伸占满父槽（与 AbstractDotBadge 一致）：
+        // 拉伸会把 root 语义部件标记拖到父槽宽度。
+        HorizontalAlignmentProperty.OverrideDefaultValue<AbstractRibbonBadge>(Avalonia.Layout.HorizontalAlignment.Left);
+        VerticalAlignmentProperty.OverrideDefaultValue<AbstractRibbonBadge>(Avalonia.Layout.VerticalAlignment.Top);
     }
     
     private protected AbstractRibbonBadgeAdorner? _ribbonBadgeAdorner;

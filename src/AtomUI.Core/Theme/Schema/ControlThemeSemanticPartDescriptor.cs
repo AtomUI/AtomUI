@@ -2,21 +2,18 @@ namespace AtomUI.Theme.Schema;
 
 public sealed record ControlThemeSemanticPartDescriptor
 {
-    public ControlThemeSemanticPartDescriptor(string propertyName, string targetTypeName)
+    public ControlThemeSemanticPartDescriptor(string propertyName, Type targetType)
     {
-        if (string.IsNullOrWhiteSpace(propertyName))
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
+        ArgumentNullException.ThrowIfNull(targetType);
+        if (!typeof(Avalonia.Controls.Control).IsAssignableFrom(targetType))
         {
-            throw new ArgumentException("Semantic Part Theme property name cannot be empty.", nameof(propertyName));
+            throw new ArgumentException("Theme target must derive from Control.", nameof(targetType));
         }
-        if (string.IsNullOrWhiteSpace(targetTypeName))
-        {
-            throw new ArgumentException("Semantic Part Theme target type cannot be empty.", nameof(targetTypeName));
-        }
-
         PropertyName = propertyName;
-        TargetTypeName = targetTypeName;
+        TargetType = targetType;
     }
 
+    public Type TargetType { get; }
     public string PropertyName { get; }
-    public string TargetTypeName { get; }
 }

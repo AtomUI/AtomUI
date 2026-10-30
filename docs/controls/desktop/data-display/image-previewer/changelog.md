@@ -2,8 +2,61 @@
 
 本文档记录 ImagePreviewer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-21
+
+- 修复快速连续点击旋转时图片角度倒转、来回摆动的问题：`Scale=1` 时不再向 `RenderTransform` 写入无意义的 Scale 操作，避免 Avalonia 的 TransformOperations 插值在动画重定向后退化为矩阵分解并归一化旋转角。
+
+## 2026-10-17
+
+- 新增 `IsWheelZoomEnabled=true`，只控制滚轮；统一滚轮刻度、指针锚点、拖拽平移、双击与捏合缩放，运行时缩放范围变化立即钳制比例和刷新按钮。
+- 两种宿主使用相同的切图/reset 行为，工具栏适配按钮改为完整重置；viewer scene 明确裁剪图片，原始尺寸元数据稳定基础布局，实际预览窗口的视口与 DPI 驱动当前项解码升级。
+- Gallery 基础示例提供 `ImageMinScale=0.1`、`ImageMaxScale=8` 与滚轮开关，覆盖四种页面语言。
+
+- 建立预览变换专项设计：基础图片尺寸同时受视口宽度和高度 70% 约束，`Scale=1` 表示基础适配尺寸；`ImageViewer` 统一拥有缩放、滚轮、拖拽、旋转、翻转、reset 和边界修正，Dialog 与 OverlayHost 只负责宿主和操作转发；解码目标按基础尺寸、用户比例和 render scaling 升级，并继续受应用级图片预算约束。
+
+## 2026-09-28
+
+- 为 internal `ImagePreviewerTitleBar` 补齐与 native `WindowTitleBar` 一致的 Browser 平台排除声明，使生成的主题资产与所需 WindowTitleBar Token schema 具有一致可用域；Browser 继续使用既有 overlay 宿主。
+
+## 2026-09-09
+
+- 移除 `popup.close` 语义部件：关闭职能在 native dialog 由 OS 标题栏按钮、在 overlay 宿主由内嵌关闭按钮（`PART_CloseButton`，非语义部件）承担，发布部件 9 → 8；同步移除生成 `ImagePreviewerPopupCloseStyle` / `ImageGroupPreviewerPopupCloseStyle`、overlay 模板 marker 与示例描述。
+- 语义预览支持独立预览窗口：`AbstractImagePreviewer` 实现 `AtomUI.Theme.ISemanticPartCrossRootProvider`，
+  把存活的 native 预览对话框窗口 / overlay 宿主上报为跨根宿主，并在 `DialogOpened`、`RootTemplateApplied`（对话框表面
+  模板就绪）与 `DialogClosed` 位点触发 `CrossRootsChanged`；Gallery 语义部件页签在预览窗口打开时即可对窗口内的
+  `popup.body` / `popup.footer` 等部件定位描边与显现，关闭窗口后自动释放。该契约为通用机制，窗口宿主家族控件
+  （如 Dialog/WindowDialogPresenter）可直接复用。
+
+## 2026-09-08
+
+- Semantic Part style alignment（严格对齐上游 Image 语义 DOM 样式）
+  - 预览操作图标颜色：`PreviewOperationColor` 0.85 → 0.65、`PreviewOperationHoverColor` 1.0 → 0.85、`PreviewOperationColorDisabled` 由 `ColorTextDisabled` → `ColorTextLightSolid`@0.25（与上游 `previewOperationColor` / `previewOperationHoverColor` / `previewOperationColorDisabled` 一致）。
+  - `popup.close` 与切换按钮图标改为基础 `ColorTextLightSolid`，背景 0.1（`NavButtonBgColor`）悬浮至 0.2（`NavButtonBgHoverColor`），移除图标悬浮变色；关闭按钮外边距 `MarginLG` → `MarginSM`（对齐上游 `top` / `inset-inline-end: marginSM`）。
+  - `popup.actions` 胶囊背景 0.2 → 0.1，水平内间距 `FloatToolbarPadding` 由 `paddingLG/2` → `paddingLG`；`popup.footer` 底部偏移 `MarginLG` → `MarginXL`，页码指示与操作组间距 `SpacingXS` → `Spacing`（对齐上游 `bottom: marginXL` / `gap: margin`）。
+  - `popup.mask` 由硬编码 `#E6000000` 改为共享 `ColorBgMask`（对齐上游 `colorBgMask`）。
+- Behavior
+  - `cover` 遮罩几何对齐上游 `genImageCoverStyle` 的 `position:absolute; inset:0` cover：遮罩不再被 owner `Padding` 缩进到图片区，而是经负 Margin（`OwnerPadding` + `OwnerBorderThickness` 之和的负值，owner 模板经 `TemplateBinding` / `RelativeSource` 中继）铺满整个 owner root（含 padding 环与边框）。hover 时 30% 黑色遮罩压暗 padding 环（白色 padding 视觉上变成约 178 灰的一圈"粗框"）是上游固有视觉，单封面与组封面一致复现。
+  - 修复遮罩 padding 环被裁剪不显示的问题：移除 `ImagePreviewerCoverTheme` 的 `ClipToBounds=True` Setter，并在 `ImagePreviewerCover` 静态构造 `ClipToBoundsProperty.OverrideDefaultValue(false)`（Avalonia `TemplatedControl` 类级默认值为 `true`，属合成层裁剪，会把负 Margin 遮罩裁回 cover 内区且不体现在布局 Bounds 上）；`#Mask` 与 cover 模板 border/loading/error presenter 的圆角改经 `OwnerCornerRadius` 中继直接跟随 owner `CornerRadius`——遮罩以负 Margin 越过 owner padding，无法被 owner 的圆角裁剪覆盖，圆角需直接涂在遮罩上以对齐上游 root `overflow:hidden + border-radius` 的视觉效果。
+  - `image` 部件新增封面图片圆角能力：`ImagePreviewRenderer` 暴露 `CornerRadius`（AddOwner `Border.CornerRadiusProperty`）并把 `RoundRectGeometryBuilder` WinUI 关键点圆角几何（与 `DashedBorder.ClipContentToCornerRadius` 同算法）设到子 `Image` 的 `Clip` 属性——渲染管线遍历每个 Visual 时应用其 `Clip`，Image 只渲染一次且带裁剪；不得在 `Render` override 里 `PushGeometryClip` 包着 `image.Render` 手绘（子 Image 是 VisualChild，渲染器在父 `Render` 后还会独立遍历 VisualChildren 再画一遍无裁剪的 Image，覆盖手绘结果）。内置主题不设默认值（对齐上游默认 image 无圆角），经生成 `ImagePreviewerImageStyle` 由用户 Semantic Style 定制（`x:SetterTargetType="atom:ImagePreviewRenderer"`，Setter 属性名必须写限定名 `Property="Border.CornerRadius"`，否则经 internal 渲染器类型字段解析在运行时抛 `FieldAccessException`）。
+- Gallery
+  - 「自定义语义结构的样式」示例对齐上游 `style-class.tsx`：并排两个 160 宽 `ImagePreviewer`，`root` 经 owner 属性表达
+    padding 4 + 圆角 8 + 裁剪，右侧再加常驻 2px `#A594F9` 边框（经上游三张截图逐像素核对，边框在常态与 hover 态均常驻，
+    hover 变化的是 `cover` 遮罩 0.3 淡入）；`image` 的 `borderRadius: 4` 经生成 `ImagePreviewerImageStyle` 落到
+    `ImagePreviewRenderer.CornerRadius`；右侧 `filter: grayscale(50%)` 因无等价属性，仍通过 ViewModel 以
+    SkiaSharp 颜色矩阵去饱和图像源复现；`cover` /
+    `popup.mask` 上游未覆盖，均保持默认视觉，移除先前 0.8 透明度、0.13 遮罩等偏离上游的覆盖。
+
 ## 2026-09-07
 
+- Semantic Part
+  - 在 `ImagePreviewer` 与 `ImageGroupPreviewer` 上发布 9 个 Semantic Part（`root`/`image`/`cover`/`popup.root`/`popup.mask`/`popup.body`/`popup.footer`/`popup.actions`/`popup.close`），与上游 Image 语义 DOM 对齐；生成 owner 作用域强类型 Semantic Style（`ImagePreviewer<Part>Style` / `ImageGroupPreviewer<Part>Style`）。
+  - 在六个内置主题中补充静态 `.semantic-*` marker 与 `.semantic-scope-*` 路由锚点；默认视觉不使用 `.semantic-*` selector。
+  - `popup.*` 统一声明 `CrossVisualRoot` + `RuntimeCreated`；`popup.mask` 与 `popup.close` 仅 overlay 宿主存在（`Optional`）。
+- Hosts and theme
+  - 在 native dialog 内容根包裹 Panel 上注入 `popup.root` marker；overlay 宿主模板根改为纯 `popup.root` 容器，遮罩背景迁移为独立的 `popup.mask` 子元素，并新增 `popup.close` 关闭按钮。
+  - native dialog 保持独立 `Window`/TopLevel：owner 作用域 Semantic Style 仅在 overlay 宿主（与 owner 同 TopLevel）命中，dialog 内预览视觉继续经 host 契约（owner 属性/Token 中继与 App 级 `ImageViewer` 主题）定制。
+- Gallery
+  - ImagePreviewer ShowCase 迁移到 `GalleryShowCaseHost`：Semantic Preview 列出全部 9 个 Part 并新增「自定义语义结构的样式」示例；`root`/`image`/`cover` 在 owner 模板内高亮，`popup.*` 因宿主 internal 且无公开访问器仅列出描述。
 - Design
   - Define the formal ImagePreviewer loading architecture around `ImageSourceKey -> ImageSourceVersion -> ImageContentId -> ImageDecodeKey`, so source addresses no longer act as content identities.
   - Separate source snapshots, validated encoded content and decoded content into application-owned stores while keeping Previewer collection and cache lifecycles independent.
@@ -36,6 +89,7 @@
 - Docs
   - Rewrite the formal ImagePreviewer architecture document with the content-addressed cache model, persistent `image-cache/` naming, source validation matrix, Previewer collection ownership and verification contract.
   - Synchronize the switching design and implementation documents with strict Immediate loading semantics, WaitForLoaded-only retention and the no-timer resource boundary.
+  - 新增 `semantic-part.md`，并在 overview/implementation 中固化为 overlay 命中、native dialog 跨 TopLevel 边界与 Gallery 解析边界。
 
 ## 2026-09-03
 

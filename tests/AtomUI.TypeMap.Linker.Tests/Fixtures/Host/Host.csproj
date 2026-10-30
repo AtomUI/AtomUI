@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><PublishTrimmed>true</PublishTrimmed><RuntimeFrameworkVersion>10.0.8</RuntimeFrameworkVersion></PropertyGroup>
+  <ItemGroup><ProjectReference Include="../PackageA/PackageA.csproj" /><ProjectReference Include="../PackageB/PackageB.csproj" /><ProjectReference Include="../Empty/Empty.csproj" /></ItemGroup>
+</Project>

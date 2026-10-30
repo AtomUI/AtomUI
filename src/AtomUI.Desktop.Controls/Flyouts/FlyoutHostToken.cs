@@ -1,5 +1,4 @@
-﻿using AtomUI.Media;
-using AtomUI.Theme.DesignTokens;
+﻿using AtomUI.Theme.DesignTokens;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -43,21 +42,7 @@ internal sealed class FlyoutHostToken : AbstractControlDesignToken
         base.CalculateTokenValues(isDarkMode);
         MarginToAnchor    = EffectiveGlobalToken.UniformlyMarginXXS;
         OverlayHostShadow = EffectiveGlobalToken.BoxShadowsSecondary;
-        PopupRootShadow = new BoxShadows(new BoxShadow
-        {
-            OffsetX = 0,
-            OffsetY = 1,
-            Blur    = 6,
-            Spread  = 0,
-            Color   = ColorUtils.FromRgbF(0.14, 0, 0, 0)
-        }, [new BoxShadow
-        {
-            OffsetX = 0,
-            OffsetY = 0,
-            Blur    = 4,
-            Spread  = 0,
-            Color   = ColorUtils.FromRgbF(0.10, 0, 0, 0)
-        }]);
+        PopupRootShadow   = EffectiveGlobalToken.BoxShadowsSecondary;
         HorizontalOffset = EffectiveGlobalToken.UniformlyMarginXS;
         VerticalOffset   = EffectiveGlobalToken.UniformlyMarginXS;
     }

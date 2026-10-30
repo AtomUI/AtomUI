@@ -301,6 +301,21 @@
         <source>Zhong Hua Men</source>
       </segment>
     </unit>
+    <unit id="P2LargeSpaceButtonN1">
+      <segment>
+        <source>Large Space Button 1</source>
+      </segment>
+    </unit>
+    <unit id="P2LargeSpaceButtonN2">
+      <segment>
+        <source>Large Space Button 2</source>
+      </segment>
+    </unit>
+    <unit id="P2LargeSpaceButtonN3">
+      <segment>
+        <source>Large Space Button 3</source>
+      </segment>
+    </unit>
     <unit id="P2OkTextOk">
       <segment>
         <source>Ok</source>
@@ -359,6 +374,21 @@
     <unit id="P2SecondaryPlaceholderTextEndTime">
       <segment>
         <source>End time</source>
+      </segment>
+    </unit>
+    <unit id="P2StyledButtonN1">
+      <segment>
+        <source>Styled Button 1</source>
+      </segment>
+    </unit>
+    <unit id="P2StyledButtonN2">
+      <segment>
+        <source>Styled Button 2</source>
+      </segment>
+    </unit>
+    <unit id="P2StyledButtonN3">
+      <segment>
+        <source>Styled Button 3</source>
       </segment>
     </unit>
     <unit id="P2TextBlock">
@@ -479,6 +509,31 @@
     <unit id="ScenarioSize">
       <segment>
         <source>Size</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Wrapped item element with spacing item layout and styles, providing wrapper for each child element for inline alignment</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the Ant Design style-class demo: customize the root frame, item background and separator color through generated Semantic Part styles, and outline the root with a dashed border.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with flex layout, gap settings, alignment, wrap and other spacing container basic styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSeparatorDescription">
+      <segment>
+        <source>Separator element with divider styling</source>
       </segment>
     </unit>
     <unit id="SizeDescription">

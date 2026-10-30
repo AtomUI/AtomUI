@@ -6,6 +6,7 @@ using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
+[global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
 internal class WindowsCaptionButton : CaptionButton
 {
     internal static readonly StyledProperty<WindowState> HostWindowStateProperty =

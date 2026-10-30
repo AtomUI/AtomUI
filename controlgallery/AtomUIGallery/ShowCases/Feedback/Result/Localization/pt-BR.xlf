@@ -205,6 +205,54 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Content element with margin, padding, background color and other content area styles</source>
+        <target state="translated">Elemento de conteúdo com margem, preenchimento, cor de fundo e outros estilos da área de conteúdo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraDescription">
+      <segment>
+        <source>Action area element with margin, text alignment, inner element spacing and other layout styles</source>
+        <target state="translated">Elemento da área de ações com margem, alinhamento do texto, espaçamento entre elementos internos e outros estilos de layout</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with margin, text alignment, font size, status colors and other icon styles</source>
+        <target state="translated">Elemento de ícone com margem, alinhamento do texto, tamanho da fonte, cores de status e outros estilos de ícone</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize Result regions with owner-scoped Semantic Part styles.</source>
+        <target state="translated">Personalize as regiões de Result com estilos de Semantic Part limitados ao escopo do controle.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with text alignment, layout styles and other basic container styles</source>
+        <target state="translated">Elemento raiz com alinhamento de texto, estilos de layout e outros estilos básicos de contêiner</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSubTitleDescription">
+      <segment>
+        <source>Subtitle element with font size, text color, line height and other text styles</source>
+        <target state="translated">Elemento de subtítulo com tamanho da fonte, cor do texto, altura da linha e outros estilos de texto</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with font size, text color, line height, text alignment and other text styles</source>
+        <target state="translated">Elemento de título com tamanho da fonte, cor do texto, altura da linha, alinhamento do texto e outros estilos de texto</target>
+      </segment>
+    </unit>
     <unit id="ServerErrorDescription">
       <segment>
         <source>Something went wrong on server.</source>

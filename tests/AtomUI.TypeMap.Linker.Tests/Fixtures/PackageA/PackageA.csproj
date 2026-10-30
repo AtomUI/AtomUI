@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup><ProjectReference Include="../Contracts/Contracts.csproj" /><ProjectReference Include="../PackageB/PackageB.csproj" /></ItemGroup>
+</Project>

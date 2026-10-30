@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -10,6 +8,11 @@ public enum BreadcrumbShowCaseLangResourceKind
     ComponentStatusStable,
     PageSubtitle,
     PageDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticPartRootDescription,
+    SemanticPartItemDescription,
+    SemanticPartSeparatorDescription,
     BasicUsageTitle,
     BasicUsageDescription,
     WithIconTitle,
@@ -29,5 +32,8 @@ public enum BreadcrumbShowCaseLangResourceKind
     P2ContentApplication,
     P2ContentUsers,
     P2ContentParam,
-    P2ContentLocation
+    P2ContentLocation,
+    P2StyleItemAntDesign,
+    P2StyleItemComponent,
+    P2StyleItemBreadcrumb
 }

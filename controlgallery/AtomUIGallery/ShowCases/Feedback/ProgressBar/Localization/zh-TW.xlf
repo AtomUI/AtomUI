@@ -169,6 +169,48 @@
         <target state="translated">佈局</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Body element, set progress bar layout and size styles</source>
+        <target state="translated">主體元素，設定進度條的版面配置和尺寸樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorDescription">
+      <segment>
+        <source>Indicator element, set percentage text or icon position and font styles</source>
+        <target state="translated">指示器元素，設定百分比文字或圖示的位置和字型樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped style selectors to customize ProgressBar's published Semantic Parts.</source>
+        <target state="translated">使用擁有者作用域樣式選擇器自訂 ProgressBar 發布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRailDescription">
+      <segment>
+        <source>Rail element, set background track color and border radius styles. Not exist in steps mode</source>
+        <target state="translated">導軌元素，設定背景軌道的顏色和圓角樣式，steps 模式下沒有該元素</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, set relative positioning and basic container styles</source>
+        <target state="translated">根元素，設定相對定位和基礎容器樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTrackDescription">
+      <segment>
+        <source>Track element, set progress fill color and transition animation styles</source>
+        <target state="translated">軌跡元素，設定進度填充部分的顏色和過渡動畫樣式</target>
+      </segment>
+    </unit>
     <unit id="SmallerCircularProgressBarDescription">
       <segment>
         <source>A smaller circular progress bar.</source>

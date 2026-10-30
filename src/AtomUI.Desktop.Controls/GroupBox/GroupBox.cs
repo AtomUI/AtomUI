@@ -15,7 +15,7 @@ public enum GroupBoxTitlePosition
     Center
 }
 
-public class GroupBox : ContentControl
+public partial class GroupBox : ContentControl
 {
     #region 公共属性定义
 

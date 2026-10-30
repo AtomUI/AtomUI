@@ -455,7 +455,7 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
             renderBorderThickness,
             CornerRadius,
             BackgroundSizing.CenterBorder,
-            null,
+            Background,
             BorderBrush);
 
         if (Bounds.Width <= 0 || Bounds.Height <= 0 || ItemCount <= 0)

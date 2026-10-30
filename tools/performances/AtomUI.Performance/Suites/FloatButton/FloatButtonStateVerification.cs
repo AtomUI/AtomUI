@@ -147,29 +147,21 @@ internal static partial class Program
         var root = CreateFloatButtonOverlay(host);
         using var realized = RealizeControl(root);
 
-        Expect(CountVisualByTypeName(root, "FloatButtonItemsControl") == 0,
-            "Closed trigger FloatButtonGroup should not create menu items control before first open.",
+        var surface = FindVisualByName<Border>(root, "PART_MenuSurface");
+        Expect(surface is { IsVisible: false },
+            "Closed trigger FloatButtonGroup should hide its static menu surface.",
             failures);
-        Expect(CountVisualByTypeName(root, "MotionActor") == 0,
-            "Closed trigger FloatButtonGroup should not create menu MotionActor before first open.",
+        Expect(CountVisualByTypeName(root, "FloatButtonItemsControl") == 1,
+            "Trigger FloatButtonGroup should materialize one menu inside the hidden surface.",
             failures);
-
-        var overlayGroup = GetPrivateField(host, "AtomUI.Desktop.Controls.FloatButtonGroupHost", "FloatButtonGroup") as FloatButtonGroup;
 
         host.IsOpen = true;
-        var firstOpenMotionActor = overlayGroup == null
-            ? null
-            : GetPrivateField(overlayGroup, "AtomUI.Desktop.Controls.FloatButtonGroup", "_motionActor") as Control;
-        Expect(firstOpenMotionActor is { IsVisible: false } &&
-               Math.Abs(firstOpenMotionActor.Opacity) < 0.001,
-            "First-open trigger FloatButtonGroup menu actor should stay hidden until show motion starts.",
+        Expect(surface == null || !surface.IsVisible || surface.Opacity < 0.001,
+            "First-open menu should remain transparent until its motion starts.",
             failures);
         RefreshLayout(realized.Window);
-        Expect(CountVisualByTypeName(root, "FloatButtonItemsControl") == 1,
-            "Opening trigger FloatButtonGroup should create one menu items control.",
-            failures);
-        Expect(CountVisualByTypeName(root, "MotionActor") == 1,
-            "Opening trigger FloatButtonGroup should create one menu MotionActor.",
+        Expect(ReferenceEquals(surface, FindVisualByName<Border>(root, "PART_MenuSurface")),
+            "Opening trigger FloatButtonGroup should reuse its static menu surface.",
             failures);
 
         host.IsOpen = false;
@@ -179,8 +171,8 @@ internal static partial class Program
         Expect(CountVisualByTypeName(root, "FloatButtonItemsControl") == 1,
             "Reopening trigger FloatButtonGroup should reuse menu content, not duplicate it.",
             failures);
-        Expect(CountVisualByTypeName(root, "MotionActor") == 1,
-            "Reopening trigger FloatButtonGroup should reuse MotionActor, not duplicate it.",
+        Expect(ReferenceEquals(surface, FindVisualByName<Border>(root, "PART_MenuSurface")),
+            "Reopening trigger FloatButtonGroup should reuse the same menu surface.",
             failures);
     }
 

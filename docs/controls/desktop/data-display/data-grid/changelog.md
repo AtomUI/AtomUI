@@ -2,6 +2,60 @@
 
 本文档记录 DataGrid 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-26
+
+- Implementation
+  - 默认主题使用透明背景，通过根 Frame 的既有背景绑定补齐空白区命中，修复固定高度、有边框的表格在数据未填满时无法从空白区触发上下文菜单的问题；保持布局、裁剪和显式背景覆盖。
+- Validation
+  - 在已有 Frame 契约测试中覆盖左、中、右空白位置的真实右键输入与菜单显示；临时验证空/非空数据、背景覆盖、嵌套滚动及 Skia 像素一致性。
+
+## 2026-09-26
+
+- API
+  - 新增 `IsShowPageSizeSelector`，默认值为 `true`，把页大小选择器可见性转发给顶部和底部 `Pagination.IsShowSizeChanger`，不修改 Pagination 既有属性名。
+- Design
+  - 定义顶部/底部 `PaginationExtraContent` 与 `PaginationExtraContentTemplate`，Extra Content 位于 Pagination 对侧；`Start`/`End` 形成左右互换布局，`Center` 使用右侧 Extra Content 加剩余区域居中 Pagination。
+  - Pagination 默认保持 page navigation -> page-size selector；页大小选择器输入转换为 `DataGridPageRequest`，保持可保留的页序号并在页数不足时收敛到最后一页。
+- Implementation
+  - 顶部和底部 Pagination 共享同一 applied page state；修复页码收敛期间重复状态通知导致的分页请求回写。
+  - 分页区域使用两个 `DockPanel` 组合 Extra Content 与 Pagination，按 Start/End 相反对齐，Center 保留右侧 Extra Content。
+  - Extra Content 相对分页面板垂直居中，Start/End 通过 `PaginationPanelMargin` / `PaginationPanelMarginSM` 保持两侧一致水平间距。
+- Validation
+  - 定义 Extra Content API、对齐、可见性、生命周期和 Pagination 原始 UX 的验证矩阵。
+- Docs
+  - 新增 `pagination-extra-content-design.md`，并同步 overview、implementation、Pagination 默认布局边界和 LLMS 来源清单。
+- Gallery
+  - Basic Paging ShowCase 同时展示右侧 page-size selector 与左侧 Bottom Pagination Extra Content，并同步四种语言描述。
+
+## 2026-09-14
+
+- Implementation
+  - Reattach cached row-header content to the current item when a row is reused, clear item references during recycle, and release the template cache on permanent detach. Fixes [#475](https://github.com/AtomUI/AtomUI/issues/475).
+  - Keep row-header template replacement and removal independent of RowDetails visibility and loading/unloading events.
+  - Honor each header template's recycling behavior, preserve explicit Header values when reapplying the same template, and release invalidated content while row headers are hidden.
+- Validation
+  - Cover row numbers through scrolling beyond the first viewport and back with ordinary and frozen columns, header data rebinding and cleanup, and runtime template replacement/removal.
+- Docs
+  - Document row-header template ownership and the separation between reusable visuals and item-scoped attachment.
+- Design
+  - 补充 `pagination.root` / `pagination.item` 语义部件：`pagination.root` 指向模板内顶部/底部两处 `Pagination` 槽位（`Multiple`），`pagination.item` 经 `>> .semantic-pagination-root >> .semantic-item` 跨根路由命中页码项，与上游 Table 的 pagination 语义区域对齐；生成器产出 `DataGridPaginationRootStyle` / `DataGridPaginationItemStyle`。
+
+## 2026-09-13
+
+- Design
+  - 对齐 Ant Design 6.6.3 Table Semantic DOM：`DataGrid` 作为语义 owner 声明 `section`、`header.wrapper`、`header.cell`、`title`、`body.wrapper`、`body.row`、`body.cell`、`footer`、`content` 九个部件（`root` 由生成器隐式合成；`header.row` 无独立节点不声明）。
+  - `body.row` 同时覆盖数据行与分组头行；`header.cell`/`body.cell`/`body.row` 的 marker 由目标控件构造时注入并在类被 `Classes.Replace` 清空后重挂，列拖拽 ghost 显式排除。
+- API
+  - 新增生成的专用部件 Style 类（`DataGridSectionStyle`、`DataGridTitleStyle`、`DataGridContentStyle`、`DataGridHeaderWrapperStyle`、`DataGridHeaderCellStyle`、`DataGridBodyWrapperStyle`、`DataGridBodyRowStyle`、`DataGridBodyCellStyle`、`DataGridFooterStyle`）与 `DataGridSemanticParts` 常量（Since 6.2.0）。
+- Token
+  - `CellPaddingMD` 从 12×12 修正为横向 8、纵向 12（AntD `cellPaddingInlineMD=paddingXS`、`cellPaddingBlockMD=paddingSM`）。
+  - `HeaderSplitColor` 从 `ColorSplit` 修正为 `ColorBorderSecondary`（AntD `headerSplitColor`）。
+  - `FilterDropdownBg` 从 `ColorBgElevated` 修正为 `ColorBgContainer`（AntD `filterDropdownBg`）。
+  - 左右冻结列分界阴影从外扩 `±10px 0 8px 0` 修正为 `inset ±10px 0 8px -8px`（AntD `fixed.ts getShadowStyle`）。
+- Gallery and validation
+  - DataGrid Gallery 页迁移到 `GalleryShowCaseHost` 并新增 Semantic Parts 预览页签与 "Custom Semantic Part styling" 专用部件样式示例（延迟加载）。
+  - 新增 `DataGridSemanticPartTests`（描述符、静态 marker、运行时 marker、回收保持、专用 Style 命中）、`DataGridTokenAlignmentTests`（四处视觉对齐锁定）与 Gallery 语义高亮页面测试。
+
 ## 2026-09-06
 
 - Design

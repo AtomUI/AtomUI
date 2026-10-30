@@ -320,8 +320,8 @@ mixed-content 约束；SVG renderer 不创建第二次 Fetch。File source 在 B
 
 所有 reader、validator、codec 和 options 由显式代码构造，不扫描程序集、不反射创建类型、不动态生成 XML/CSS serializer。
 `SvgConformanceMode` 是封闭 enum，配置面不接受 delegate、反射类型名或运行时加载的 validator。
-NativeAOT linked registration 必须保留 `SvgImageCodec` 及其直接引用的 SVG dependency 类型。依赖升级后必须重新执行 Desktop
-NativeAOT publish/启动、Browser managed publish/启动和 Browser AOT publish 裁剪诊断。
+Package Core 的真实静态调用必须保留 `SvgImageCodec` 及其直接引用的 SVG dependency 类型。依赖升级后必须重新执行 Desktop
+NativeAOT 发布/启动、Browser 裁剪发布/启动和 Browser AOT 发布/启动；精细裁剪契约见 [AOT 架构](../../foundations/aot-and-trimming.md)。
 
 ## 验证
 

@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -26,6 +24,26 @@ public enum SplitButtonShowCaseLangResourceKind
     P2ContentDefault,
     P2ContentPrimary,
     P2ContentClickMe,
+    SemanticPrimaryDescription,
+    SemanticSecondaryDescription,
+    SemanticPopupRootDescription,
+    SemanticItemTitleDescription,
+    SemanticItemDescription,
+    SemanticItemContentDescription,
+    SemanticItemIconDescription,
+    SemanticPreviewGroupTitle,
+    SemanticPreviewFirstMenuItem,
+    SemanticPreviewSecondMenuItem,
+    SemanticPreviewSubMenu,
+    SemanticPreviewOption1,
+    SemanticPreviewOption2,
+    SemanticStylesTitle,
+    SemanticStylesDescription,
+    SemanticStylesObjectButton,
+    SemanticStylesObjectPrimary,
+    SemanticStylesItemProfile,
+    SemanticStylesItemSettings,
+    SemanticStylesItemLogout,
     PageSubtitle,
     PageDescription,
     ComponentCategory,

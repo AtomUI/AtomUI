@@ -4,20 +4,116 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:WindowMessageManager}" TargetType="atom:WindowMessageManager">
+        <Setter Property="Padding" Value="{atom:MessageCardTokenResource MessageTopMargin}" />
         <Setter Property="Template">
             <ControlTemplate>
-                <ReversibleStackPanel Name="PART_Items" />
+                <!-- release/6.0 堆叠结构：StackHost 按方位锚定并紧贴可见队列（hover 命中区与队列范围一致），
+                     presenter 拉满 StackHost，卡片间距由 FeedbackStackPanel 的 ExpandedGap 管理；
+                     semantic-list-content 标记 listContent 部件。 -->
+                <Grid Name="PART_StackHost"
+                      Margin="{TemplateBinding Padding}"
+                      ClipToBounds="False">
+                    <!-- Backplates stay arranged while transparent and never contribute to the host extent. -->
+                    <Panel Classes="message-backplates"
+                          Width="0" Height="0"
+                          HorizontalAlignment="Center"
+                          ClipToBounds="False"
+                          IsHitTestVisible="False">
+                        <Border Name="PART_SecondBackplate"
+                                Classes="message-backplate"
+                                Classes.stack-hidden="{Binding !IsSecondBackplateVisible, ElementName=PART_Items}"
+                                Width="{Binding SecondBackplateWidth, ElementName=PART_Items}"
+                                Margin="{Binding SecondBackplateMargin, ElementName=PART_Items}" />
+                        <Border Name="PART_FirstBackplate"
+                                Classes="message-backplate"
+                                Classes.stack-hidden="{Binding !IsFirstBackplateVisible, ElementName=PART_Items}"
+                                Width="{Binding FirstBackplateWidth, ElementName=PART_Items}"
+                                Margin="{Binding FirstBackplateMargin, ElementName=PART_Items}" />
+                    </Panel>
+                    <atom:FeedbackStackPresenter Name="PART_Items"
+                                          Classes.semantic-list-content="True" />
+                </Grid>
             </ControlTemplate>
         </Setter>
 
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
 
-        <Style Selector="^:topcenter">
-            <Style Selector="^ /template/ ReversibleStackPanel#PART_Items">
-                <Setter Property="ReverseOrder" Value="True"/>
-                <Setter Property="HorizontalAlignment" Value="Center"/>
-                <Setter Property="VerticalAlignment" Value="Top"/>
+        <Style Selector="^ /template/ Panel.message-backplates">
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+        <Style Selector="^ /template/ Border.message-backplate">
+            <Setter Property="Height" Value="16" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Background" Value="{atom:MessageCardTokenResource ContentBg}" />
+            <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsTertiary}" />
+            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="RenderTransform" Value="translate(0px, 0px)" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Width"
+                                      Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}"
+                                      Easing="0.645,0.045,0.355,1" />
+                    <DoubleTransition Property="Opacity"
+                                      Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}"
+                                      Easing="0.645,0.045,0.355,1" />
+                    <TransformOperationsTransition Property="RenderTransform"
+                                                   Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}"
+                                                   Easing="0.645,0.045,0.355,1" />
+                </Transitions>
+            </Setter>
+            <Style Selector="^.stack-hidden">
+                <Setter Property="Opacity" Value="0" />
+                <Setter Property="RenderTransform" Value="translate(0px, 16px)" />
             </Style>
+        </Style>
+
+        <Style Selector="^[Position=BottomLeft] /template/ Panel.message-backplates,
+                         ^[Position=BottomCenter] /template/ Panel.message-backplates,
+                         ^[Position=BottomRight] /template/ Panel.message-backplates">
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+        </Style>
+        <Style Selector="^[Position=BottomLeft] /template/ Border.message-backplate,
+                         ^[Position=BottomCenter] /template/ Border.message-backplate,
+                         ^[Position=BottomRight] /template/ Border.message-backplate">
+            <Style Selector="^.stack-hidden">
+                <Setter Property="RenderTransform" Value="translate(0px, -16px)" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[Position=TopLeft] /template/ Grid#PART_StackHost">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+        <Style Selector="^[Position=TopCenter] /template/ Grid#PART_StackHost">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+        <Style Selector="^[Position=TopRight] /template/ Grid#PART_StackHost">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+        <Style Selector="^[Position=BottomLeft] /template/ Grid#PART_StackHost">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+        </Style>
+        <Style Selector="^[Position=BottomCenter] /template/ Grid#PART_StackHost">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+        </Style>
+        <Style Selector="^[Position=BottomRight] /template/ Grid#PART_StackHost">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+        </Style>
+        <Style Selector="^[IsMotionEnabled=False] /template/ Border#PART_FirstBackplate">
+            <Setter Property="Transitions" Value="{x:Null}" />
+        </Style>
+        <Style Selector="^[IsMotionEnabled=False] /template/ Border#PART_SecondBackplate">
+            <Setter Property="Transitions" Value="{x:Null}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

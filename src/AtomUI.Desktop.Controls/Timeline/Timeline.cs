@@ -1,11 +1,12 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Commons;
+using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Icons.AntDesign;
 using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Timeline : AbstractTimeline
+public partial class Timeline : AbstractTimeline
 {
     public Timeline()
     {
@@ -13,10 +14,21 @@ public class Timeline : AbstractTimeline
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new TimelineItem
+        var timelineItem = new TimelineItem
         {
             IsPending = false
         };
+        timelineItem.Classes.Add(TimelineSemanticParts.ItemClass);
+        return timelineItem;
+    }
+
+    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
+    {
+        base.PrepareContainerForItemOverride(container, item, index);
+        if (container is TimelineItem timelineItem)
+        {
+            timelineItem.Classes.Add(TimelineSemanticParts.ItemClass);
+        }
     }
 
     protected override AbstractTimelineItem CreatePendingItem()
@@ -32,6 +44,7 @@ public class Timeline : AbstractTimeline
             IndicatorIcon = pathIcon,
             IsPending     = true
         };
+        item.Classes.Add(TimelineSemanticParts.ItemClass);
         return item;
     }
 }

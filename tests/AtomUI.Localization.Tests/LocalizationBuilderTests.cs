@@ -39,6 +39,8 @@ public class LocalizationBuilderTests
         runtime.LanguageManager.Current.CurrentLanguage.ShouldBe(LanguageTags.ZhCN);
         runtime.LanguageManager.SupportedLanguages.Select(static definition => definition.Tag)
                .ShouldBe([LanguageTags.ZhCN, LanguageTags.EnUS]);
+        runtime.Snapshots.Keys.ShouldBe([LanguageTags.ZhCN]);
+        runtime.LanguageManager.ChangeLanguage(LanguageTags.EnUS);
         runtime.Snapshots.Keys.ShouldBe([LanguageTags.ZhCN, LanguageTags.EnUS], ignoreOrder: true);
     }
 
@@ -148,7 +150,7 @@ public class LocalizationBuilderTests
     }
 
     [Fact]
-    public void Build_Prebuilds_Every_Supported_Language_Snapshot()
+    public void Build_Validates_Manual_Catalog_Coverage_For_Every_Supported_Language()
     {
         var builder = CreateBuilderWithEnglishCatalog();
         builder.ConfigureLanguages(

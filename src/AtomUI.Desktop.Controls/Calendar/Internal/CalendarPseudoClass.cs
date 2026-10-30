@@ -11,25 +11,3 @@ internal static class CalendarRootPseudoClass
     public const string Year = ":year";
     public const string ShowWeek = ":show-week";
 }
-
-/// <summary>
-/// CalendarViewCell 伪类。
-/// </summary>
-internal static class CalendarCellPseudoClass
-{
-    public const string Date = ":date";
-    public const string Month = ":month";
-    public const string Week = ":week";
-    public const string Today = ":today";
-    public const string Selected = ":selected";
-    public const string Outside = ":outside";
-    public const string Disabled = ":disabled";
-    public const string Focused = ":focused";
-}
-
-internal static class LunarCalendarCellPseudoClass
-{
-    public const string Weekend = ":weekend";
-    public const string Holiday = ":holiday";
-    public const string Workday = ":workday";
-}

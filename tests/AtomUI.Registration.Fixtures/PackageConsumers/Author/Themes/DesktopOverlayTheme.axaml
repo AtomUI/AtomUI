@@ -1,0 +1,9 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="using:Fixture.NuGetAuthor"
+                    x:Class="Fixture.NuGetAuthor.DesktopOverlayTheme"
+                    x:ClassModifier="internal">
+    <ControlTheme x:Key="FixtureDesktopOverlay" TargetType="local:AuthorControl">
+        <Setter Property="MinHeight" Value="27" />
+    </ControlTheme>
+</ResourceDictionary>

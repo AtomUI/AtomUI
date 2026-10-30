@@ -8,7 +8,8 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="InfoFrame" CornerRadius="{TemplateBinding CornerRadius}"
-                        Background="{TemplateBinding Background}">
+                        Background="{TemplateBinding Background}"
+                        Padding="{atom:UploadTokenResource TextListItemPadding}">
                     <DockPanel LastChildFill="True" Height="{TemplateBinding EffectiveLineHeight}">
                         <Panel DockPanel.Dock="Left">
                             <antdicons:PaperClipOutlined Name="NormalIcon" IsVisible="False"/>
@@ -37,7 +38,7 @@
         <Setter Property="Margin" Value="{atom:UploadTokenResource TextListItemMargin}" />
         <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillSecondary}" />
 
         <Style Selector="^ /template/ atom|IconButton">
             <Setter Property="IconBrush" Value="{atom:UploadTokenResource ActionsColor}" />
@@ -48,6 +49,7 @@
         <Style Selector="^[Status=Uploading]">
             <Style Selector="^ /template/ atom|Icon#LoadingIcon">
                 <Setter Property="IsVisible" Value="True" />
+                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
             </Style>
         </Style>
         <Style Selector="^:not(^[Status=Uploading])">
@@ -63,13 +65,19 @@
             </Style>
             <Style Selector="^ /template/ atom|IconButton">
                 <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="IsVisible" Value="True" />
             </Style>
             <Setter Property="atom:ToolTip.Tip" Value="{Binding ErrorMessage, RelativeSource={RelativeSource Self}}" />
             <Setter Property="atom:ToolTip.Placement" Value="Top" />
         </Style>
 
         <Style Selector="^ /template/ TextBlock#FileName">
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorLink}" />
             <Setter Property="Padding" Value="{atom:UploadTokenResource TextListNamePadding}" />
+        </Style>
+
+        <Style Selector="^[Status=Failed] /template/ TextBlock#FileName">
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorError}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pointerover">

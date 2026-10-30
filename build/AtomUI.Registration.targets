@@ -1,0 +1,141 @@
+<Project>
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Registration.Framework.targets" Condition="'$(AtomUIRegistrationFrameworkImported)' != 'true'" />
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Toolchain.Tasks.targets" Condition="'$(AtomUIToolchainTasksImported)' != 'true'" />
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Registration.Net8.targets" />
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Registration.Native8.targets" />
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Registration.Bridge.targets" />
+    <PropertyGroup>
+        <AtomUITypeMapCapability Condition="'$(AtomUITypeMapCapability)' == ''">atomui-typemap-v1-illink-10.0.8</AtomUITypeMapCapability>
+    </PropertyGroup>
+
+    <Target Name="AtomUIValidateNativeCompiler" BeforeTargets="IlcCompile" Condition="'$(PublishAot)' == 'true' and '$(_AtomUINative8Registration)' != 'true'">
+        <AtomUI.Build.Tasks.ValidateRegistrationToolchainTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            TargetFrameworkIdentifier="$(_AtomUIRegistrationFrameworkIdentifier)" TargetFrameworkVersion="$(_AtomUIRegistrationFrameworkVersion)"
+            NativeCompiler="$(IlcToolsPath)/ilc$(_ExeExt)" />
+    </Target>
+
+    <Target Name="AtomUIResolveRegistrationGenerator" BeforeTargets="CoreCompile" DependsOnTargets="ResolveReferences"
+            Condition="'$(IsRoslynComponent)' != 'true' and '$(MSBuildProjectName)' != 'AtomUI.Toolchain'">
+        <ItemGroup>
+            <_AtomUIRegistrationCandidate Include="@(AtomUIRegistrationToolCandidate)" />
+            <_AtomUIRegistrationCandidate Include="@(Analyzer)" Kind="Generator" Condition="'%(Analyzer.Filename)' == 'AtomUI.Generator'" />
+        </ItemGroup>
+        <!-- Repository tool paths alone do not mean this project consumes the generator.
+             Plain test projects have no tool build dependency and must not start its worker. -->
+        <AtomUI.Build.Tasks.ResolveRegistrationToolsTask Condition="'@(_AtomUIRegistrationCandidate->WithMetadataValue('Kind', 'Generator'))' != ''" TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)" Candidates="@(_AtomUIRegistrationCandidate)">
+            <Output TaskParameter="GeneratorAssembly" PropertyName="_AtomUIResolvedGenerator" />
+        </AtomUI.Build.Tasks.ResolveRegistrationToolsTask>
+        <ItemGroup Condition="'$(_AtomUIResolvedGenerator)' != ''">
+            <Analyzer Remove="@(Analyzer)" Condition="'%(Analyzer.Filename)' == 'AtomUI.Generator'" />
+            <Analyzer Include="$(_AtomUIResolvedGenerator)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- This target is reached only by an actual application link/AOT publish, including /t:Publish.
+         Ordinary builds (even with inherited PublishTrimmed) retain the ordinary full collector. -->
+    <Target Name="AtomUISetRegistrationPublishMode" BeforeTargets="PrepareForILLink"
+            Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">
+        <AtomUI.Build.Tasks.ValidateRegistrationToolchainTask Condition="'$(_AtomUINet8ManagedRegistration)' != 'true' and '$(_AtomUINative8Registration)' != 'true' and '$(RuntimeIdentifier)' != 'browser-wasm'" TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            TargetFrameworkIdentifier="$(_AtomUIRegistrationFrameworkIdentifier)" TargetFrameworkVersion="$(_AtomUIRegistrationFrameworkVersion)"
+            LinkerAssembly="$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(ILLinkTasksAssembly)')), 'illink.dll'))" />
+        <ItemGroup>
+            <RuntimeHostConfigurationOption Remove="AtomUI.Registration.Trimmed" />
+            <RuntimeHostConfigurationOption Include="AtomUI.Registration.Trimmed" Value="true" Trim="true" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="AtomUIPrepareTypeMapBackend" AfterTargets="PrepareForILLink" BeforeTargets="_RunILLink"
+            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">
+        <Error Condition="'$(_AtomUIRegistrationFrameworkFamily)' != 'OfficialTypeMap' or '$(_AtomUIRegistrationTargetPlatform)' != 'browser' or '$(TrimMode)' != 'full' or '$(RunILLink)' == 'false'" Code="ATOMUIREG006" Text="AtomUI Browser TypeMap requires net10.0-browser or later with actual full ILLink processing." />
+        <AtomUI.Build.Tasks.ResolveRegistrationToolsTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)" Candidates="@(AtomUIRegistrationToolCandidate)" IncludeBackend="true">
+            <Output TaskParameter="BackendAssembly" PropertyName="_AtomUIResolvedBackend" />
+        </AtomUI.Build.Tasks.ResolveRegistrationToolsTask>
+        <PropertyGroup>
+            <!-- Match the host fallback assigned inside the supported SDK's _RunILLink target. -->
+            <_DotNetHostDirectory Condition="'$(DOTNET_HOST_PATH)' == ''">$(NetCoreRoot)</_DotNetHostDirectory>
+            <_DotNetHostFileName Condition="'$(DOTNET_HOST_PATH)' == ''">dotnet</_DotNetHostFileName>
+            <_DotNetHostFileName Condition="'$(DOTNET_HOST_PATH)' == '' and $([MSBuild]::IsOSPlatform(`Windows`))">dotnet.exe</_DotNetHostFileName>
+            <_AtomUILinkHostPath>$(DOTNET_HOST_PATH)</_AtomUILinkHostPath>
+            <_AtomUILinkHostPath Condition="'$(_DotNetHostDirectory)' != '' and '$(_DotNetHostFileName)' != ''">$([System.IO.Path]::Combine('$(_DotNetHostDirectory)', '$(_DotNetHostFileName)'))</_AtomUILinkHostPath>
+            <AtomUITypeMapReceipt Condition="'$(AtomUITypeMapReceipt)' == ''">$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)AtomUI.TypeMap.receipt.json'))</AtomUITypeMapReceipt>
+            <_AtomUITypeMapSignature>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)AtomUI.TypeMap.inputs.json'))</_AtomUITypeMapSignature>
+            <_AtomUIActualLinker>$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(ILLinkTasksAssembly)')), 'illink.dll'))</_AtomUIActualLinker>
+        </PropertyGroup>
+        <ItemGroup>
+            <_TrimmerCustomSteps Include="$(_AtomUIResolvedBackend)" Type="AtomUI.TypeMap.Linker.MaterializeTypeMapsStep" AfterStep="MarkStep" />
+            <_TrimmerCustomData Include="AtomUITypeMapBackend" Value="$(AtomUITypeMapCapability)" />
+            <_TrimmerCustomData Include="AtomUITypeMapReceipt" Value="$(AtomUITypeMapReceipt)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- An optional ABI-only bridge runs after step injection and before this exact input capture.
+         The ordinary net10 path retains the same ordering and the same official linker inputs. -->
+    <Target Name="AtomUICaptureTypeMapBackendInputs" AfterTargets="AtomUIPrepareTypeMapBackend" BeforeTargets="_RunILLink"
+            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">
+        <ItemGroup>
+            <_AtomUITypeMapInput Include="$(MSBuildAllProjects);@(TrimmerRootDescriptor);@(AtomUITypeMapAdditionalLinkInput)" />
+            <!-- Custom steps must declare any additional opaque configuration/dynamic dependencies as
+                 AtomUITypeMapAdditionalLinkInput files; ordinary AtomUI consumers need no such items. -->
+            <_AtomUITypeMapInput Include="@(ReferencePath)" Kind="Reference" />
+            <_AtomUITypeMapInput Include="$(ILLinkTasksAssembly)" Kind="Tool" />
+            <_AtomUITypeMapInput Include="$([System.IO.Path]::GetFullPath('$([System.IO.Path]::GetDirectoryName('$(ILLinkTasksAssembly)'))/../../build/Microsoft.NET.ILLink.targets'))" />
+            <!-- Capture the effective linker configuration for incremental invalidation.
+                 Scalar empty values and ordered item metadata are serialized structurally by the worker. -->
+            <_AtomUILinkOption Include="TrimMode" Value="$(TrimMode)" />
+            <_AtomUILinkOption Include="DefaultAction" Value="$(_TrimmerDefaultAction)" />
+            <_AtomUILinkOption Include="RemoveSymbols" Value="$(TrimmerRemoveSymbols)" />
+            <_AtomUILinkOption Include="PreserveSymbolPaths" Value="$(_TrimmerPreserveSymbolPaths)" />
+            <_AtomUILinkOption Include="BeforeFieldInit" Value="$(_TrimmerBeforeFieldInit)" />
+            <_AtomUILinkOption Include="OverrideRemoval" Value="$(_TrimmerOverrideRemoval)" />
+            <_AtomUILinkOption Include="UnreachableBodies" Value="$(_TrimmerUnreachableBodies)" />
+            <_AtomUILinkOption Include="UnusedInterfaces" Value="$(_TrimmerUnusedInterfaces)" />
+            <_AtomUILinkOption Include="IPConstProp" Value="$(_TrimmerIPConstProp)" />
+            <_AtomUILinkOption Include="Sealer" Value="$(_TrimmerSealer)" />
+            <_AtomUILinkOption Include="Warn" Value="$(ILLinkWarningLevel)" />
+            <_AtomUILinkOption Include="NoWarn" Value="$(NoWarn)" />
+            <_AtomUILinkOption Include="TreatWarningsAsErrors" Value="$(ILLinkTreatWarningsAsErrors)" />
+            <_AtomUILinkOption Include="WarningsAsErrors" Value="$(WarningsAsErrors)" />
+            <_AtomUILinkOption Include="WarningsNotAsErrors" Value="$(WarningsNotAsErrors)" />
+            <_AtomUILinkOption Include="SingleWarn" Value="$(TrimmerSingleWarn)" />
+            <_AtomUILinkOption Include="DumpDependencies" Value="$(_TrimmerDumpDependencies)" />
+            <_AtomUILinkOption Include="DependenciesFileFormat" Value="$(_TrimmerDependenciesFileFormat)" />
+            <_AtomUILinkOption Include="ExtraArgs" Value="$(_ExtraTrimmerArgs)" />
+            <_AtomUILinkOption Include="ToolExe" Value="$(_DotNetHostFileName)" />
+            <_AtomUILinkOption Include="ToolPath" Value="$(_DotNetHostDirectory)" />
+            <_AtomUILinkOption Include="EffectiveToolPath" Value="$(_AtomUILinkHostPath)" />
+            <_AtomUILinkOption Include="ContinueOnError" Value="ErrorAndContinue" />
+            <_AtomUILinkItem Include="@(TrimmerRootAssembly)" Kind="RootAssemblyNames" />
+            <_AtomUILinkItem Include="@(TrimmerRootDescriptor)" Kind="RootDescriptorFiles" />
+            <_AtomUILinkItem Include="@(_TrimmerFeatureSettings)" Kind="FeatureSettings" />
+            <_AtomUILinkItem Include="@(_TrimmerCustomData)" Kind="CustomData" />
+            <_AtomUILinkItem Include="@(_TrimmerCustomSteps)" Kind="CustomSteps" />
+            <_AtomUILinkItem Include="@(_TrimmerKeepMetadata)" Kind="KeepMetadata" />
+        </ItemGroup>
+        <AtomUI.Build.Tasks.PrepareTypeMapLinkTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            WasmSdkTasksPath="$(WasmAppBuilderTasksAssemblyPath)"
+            BackendAssembly="$(_AtomUIResolvedBackend)" LinkerAssembly="$(_AtomUIActualLinker)" Capability="$(AtomUITypeMapCapability)"
+            ReceiptPath="$(AtomUITypeMapReceipt)" SignaturePath="$(_AtomUITypeMapSignature)" LinkSemaphore="$(_LinkSemaphore)" OutputDirectory="$(IntermediateLinkDir)"
+            Inputs="@(_AtomUITypeMapInput)" Assemblies="@(ManagedAssemblyToLink)" LinkOptions="@(_AtomUILinkOption)" LinkItems="@(_AtomUILinkItem)"
+            Configuration="$(TargetFramework)|$(RuntimeIdentifier)|$(RunAOTCompilation)|$(WasmEnableSIMD)|$(WasmEnableThreads)" />
+        <PropertyGroup><MSBuildAllProjects>$(MSBuildAllProjects);$(_AtomUITypeMapSignature)</MSBuildAllProjects></PropertyGroup>
+        <ItemGroup><FileWrites Include="$(_AtomUITypeMapSignature);$(AtomUITypeMapReceipt);$(AtomUITypeMapReceipt).binding" /></ItemGroup>
+    </Target>
+
+    <Target Name="AtomUIVerifyTypeMapLinkOutput" AfterTargets="_RunILLink"
+            Condition="'$(_AtomUITypeMapSignature)' != '' and ('$(_ILLinkExitCode)' == '' or '$(_ILLinkExitCode)' == '0')">
+        <AtomUI.Build.Tasks.VerifyTypeMapReceiptTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            ReceiptPath="$(AtomUITypeMapReceipt)" SignaturePath="$(_AtomUITypeMapSignature)" BindReceipt="true" />
+    </Target>
+
+    <!-- WASM publish runs native compilation in a nested build; derive the same paths in that invocation.
+         Validate the actual pre-AOT/bundle files, not later IL-stripped deployment bytes. -->
+    <Target Name="AtomUIVerifyTypeMapConsumedOutput" BeforeTargets="_WasmAotCompileApp;_WasmGenerateAppBundle"
+            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true' and '$(WasmBuildingForNestedPublish)' == 'true'">
+        <PropertyGroup>
+            <AtomUITypeMapReceipt Condition="'$(AtomUITypeMapReceipt)' == ''">$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)AtomUI.TypeMap.receipt.json'))</AtomUITypeMapReceipt>
+            <_AtomUITypeMapSignature>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)AtomUI.TypeMap.inputs.json'))</_AtomUITypeMapSignature>
+        </PropertyGroup>
+        <AtomUI.Build.Tasks.VerifyTypeMapReceiptTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            ReceiptPath="$(AtomUITypeMapReceipt)" SignaturePath="$(_AtomUITypeMapSignature)" ConsumedAssemblies="@(_WasmAssembliesInternal)" RequireConsumedAssemblies="true" />
+    </Target>
+</Project>

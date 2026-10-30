@@ -15,6 +15,7 @@
                       Margin="{TemplateBinding Level, Mode=OneWay, Converter={x:Static atom:TreeViewItemTheme.MarginMultiplierConverter}}">
                     <atom:NodeSwitcherButton
                         Name="PART_NodeSwitcherButton"
+                        Classes.semantic-item-switcher="True"
                         Grid.Column="0"
                         Focusable="False"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -28,6 +29,7 @@
                         IsLoading="{TemplateBinding IsLoading}" />
 
                     <atom:CheckBox Name="ToggleCheckbox"
+                                   Classes.semantic-item-indicator="True"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    Grid.Column="1"
@@ -43,6 +45,7 @@
                         </atom:RadioButton.IsEnabled>
                     </atom:CheckBox>
                     <atom:RadioButton Name="ToggleRadio"
+                                      Classes.semantic-item-indicator="True"
                                       HorizontalAlignment="Left"
                                       VerticalAlignment="Center"
                                       Grid.Column="1"
@@ -60,6 +63,7 @@
                     </atom:RadioButton>
 
                     <atom:IconPresenter Name="PART_IconPresenter"
+                                        Classes.semantic-item-icon="True"
                                         Grid.Column="2"
                                         Icon="{TemplateBinding Icon}"
                                         IsEnabled="{TemplateBinding IsEnabled}"
@@ -69,6 +73,7 @@
                             Background="{TemplateBinding ContentFrameBackground}">
                         <Panel>
                             <ContentPresenter Name="HeaderPresenter"
+                                              Classes.semantic-item-title="True"
                                               VerticalContentAlignment="Center"
                                               Content="{TemplateBinding Content}"
                                               ContentTemplate="{TemplateBinding ContentTemplate}"

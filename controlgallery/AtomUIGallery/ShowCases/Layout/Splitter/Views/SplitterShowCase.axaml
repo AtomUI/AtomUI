@@ -32,8 +32,8 @@
     </UserControl.Styles>
 
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Splitter"
                     Category="{gallery:SplitterShowCaseLangResource ComponentCategory}"
@@ -43,8 +43,46 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="TemplatedControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:SplitterViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview Name="SplitterSemanticPreview"
+                                                     SemanticOwner="{Binding #SplitterSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:Splitter}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:Splitter Name="SplitterSemanticOwner"
+                                               Orientation="Vertical"
+                                               Height="220">
+                                    <Border Classes="splitter-panel"
+                                            atom:Splitter.Size="45%">
+                                        <TextBlock Classes="splitter-label"
+                                                   Text="{gallery:SplitterShowCaseLangResource P2TextFirst}" />
+                                    </Border>
+                                    <Border Classes="splitter-panel alt">
+                                        <TextBlock Classes="splitter-label"
+                                                   Text="{gallery:SplitterShowCaseLangResource P2TextSecond}" />
+                                    </Border>
+                                </atom:Splitter>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:SplitterShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="panel"
+                                    Description="{gallery:SplitterShowCaseLangResource SemanticPanelDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="dragger"
+                                    Description="{gallery:SplitterShowCaseLangResource SemanticDraggerDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -201,6 +239,32 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
+                <gallery:ShowCaseItem Title="{gallery:SplitterShowCaseLangResource DoubleClickResetTitle}"
+                                      Description="{gallery:SplitterShowCaseLangResource DoubleClickResetDescription}"
+                                      SourceKey="splitter-double-click-reset"
+                                      IsOccupyEntireRow="True"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:SplitterViewModel">
+                    <Border Classes="splitter-surface">
+                        <atom:Splitter Orientation="Vertical"
+                                       Height="220"
+                                       DraggerDoubleClicked="HandleDraggerDoubleClicked">
+                            <Border Classes="splitter-panel" atom:Splitter.DefaultSize="30%">
+                                <TextBlock Classes="splitter-label" Text="{gallery:SplitterShowCaseLangResource P2TextPanel1}" />
+                            </Border>
+                            <Border Classes="splitter-panel alt" atom:Splitter.DefaultSize="40%">
+                                <TextBlock Classes="splitter-label" Text="{gallery:SplitterShowCaseLangResource P2TextPanel2}" />
+                            </Border>
+                            <Border Classes="splitter-panel" atom:Splitter.DefaultSize="30%">
+                                <TextBlock Classes="splitter-label" Text="{gallery:SplitterShowCaseLangResource P2TextPanel3}" />
+                            </Border>
+                        </atom:Splitter>
+                    </Border>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
                 <gallery:ShowCaseItem Title="{gallery:SplitterShowCaseLangResource LazyTitle}"
                                       Description="{gallery:SplitterShowCaseLangResource LazyDescription}"
                                       IsOccupyEntireRow="True"
@@ -258,7 +322,71 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem Title="{gallery:SplitterShowCaseLangResource SemanticPartStyleTitle}"
+                                      Description="{gallery:SplitterShowCaseLangResource SemanticPartStyleDescription}"
+                                      SourceKey="splitter-semantic-part"
+                                      BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                                      Span="Full"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:SplitterViewModel">
+                    <StackPanel Orientation="Vertical"
+                                Spacing="24">
+                        <StackPanel.Styles>
+                            <Style Selector="atom|Splitter.semantic-style-demo-default">
+                                <Setter Property="Height" Value="200" />
+                                <Setter Property="Background" Value="#FFFBE6" />
+                                <atom:SplitterDraggerStyle x:SetterTargetType="atom:Thumb">
+                                    <Setter Property="Background" Value="#66C2DFFC" />
+                                </atom:SplitterDraggerStyle>
+                            </Style>
+                            <Style Selector="atom|Splitter.semantic-style-demo-dashed">
+                                <Setter Property="Height" Value="200" />
+                                <Setter Property="BorderBrush" Value="#E0000000" />
+                                <Setter Property="BorderThickness" Value="2" />
+                                <Setter Property="BorderDashArray" Value="4,2" />
+                            </Style>
+                            <Style Selector="TextBlock.splitter-demo-label">
+                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter Property="Foreground" Value="#000000" />
+                            </Style>
+                        </StackPanel.Styles>
+
+                        <Border Classes="splitter-surface">
+                            <atom:Splitter Classes="semantic-style-demo-default"
+                                           Orientation="Vertical">
+                                <Border>
+                                    <TextBlock Classes="splitter-demo-label"
+                                               Text="{gallery:SplitterShowCaseLangResource P2TextFirst}" />
+                                </Border>
+                                <Border>
+                                    <TextBlock Classes="splitter-demo-label"
+                                               Text="{gallery:SplitterShowCaseLangResource P2TextSecond}" />
+                                </Border>
+                            </atom:Splitter>
+                        </Border>
+
+                        <Border Classes="splitter-surface">
+                            <atom:Splitter Classes="semantic-style-demo-dashed"
+                                           Orientation="Vertical">
+                                <Border>
+                                    <TextBlock Classes="splitter-label"
+                                               Text="{gallery:SplitterShowCaseLangResource P2TextFirst}" />
+                                </Border>
+                                <Border>
+                                    <TextBlock Classes="splitter-label"
+                                               Text="{gallery:SplitterShowCaseLangResource P2TextSecond}" />
+                                </Border>
+                            </atom:Splitter>
+                        </Border>
+                    </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

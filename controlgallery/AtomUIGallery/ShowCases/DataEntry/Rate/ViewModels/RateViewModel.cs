@@ -1,4 +1,3 @@
-using AtomUIGallery.Localization;
 using System.Reactive;
 using AtomUI.Controls;
 using ReactiveUI;

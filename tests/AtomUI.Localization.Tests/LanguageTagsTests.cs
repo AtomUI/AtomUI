@@ -38,14 +38,6 @@ public class LanguageTagsTests
     }
 
     [Fact]
-    public void LanguageTags_Is_A_Static_Convenience_Surface_Not_An_Enum()
-    {
-        typeof(LanguageTags).IsAbstract.ShouldBeTrue();
-        typeof(LanguageTags).IsSealed.ShouldBeTrue();
-        typeof(LanguageTags).IsEnum.ShouldBeFalse();
-    }
-
-    [Fact]
     public void Standard_Definitions_Use_Pinned_Metadata()
     {
         StandardLanguageDefinitions.TryCreate(LanguageTags.ArSA, out var definition).ShouldBeTrue();

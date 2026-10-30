@@ -2,11 +2,9 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using AtomUI.Utils;
 using Avalonia;
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -23,6 +21,20 @@ namespace AtomUI.Desktop.Controls;
 internal sealed class OverlayDialogPresenter : ContentControl,
                                                IDialogPresenter
 {
+    #region 公共属性定义
+
+    public IInputElement FocusScope => _surface;
+
+    #endregion
+
+    #region 公共事件定义
+
+    public event EventHandler<DialogPresenterCloseRequestedEventArgs>? CloseRequested;
+
+    #endregion
+
+    #region 内部属性定义
+
     internal static readonly StyledProperty<bool> IsModalProperty =
         Dialog.IsModalProperty.AddOwner<OverlayDialogPresenter>();
 
@@ -33,7 +45,10 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         Dialog.IsMotionEnabledProperty.AddOwner<OverlayDialogPresenter>();
 
     internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
-        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(MotionDuration));
+        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(MotionDuration), TimeSpan.FromMilliseconds(200));
+
+    internal static readonly StyledProperty<TimeSpan> OpeningMotionDurationProperty =
+        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(OpeningMotionDuration), TimeSpan.FromMilliseconds(300));
 
     internal bool IsModal
     {
@@ -59,6 +74,45 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         set => SetValue(MotionDurationProperty, value);
     }
 
+    internal TimeSpan OpeningMotionDuration
+    {
+        get => GetValue(OpeningMotionDurationProperty);
+        set => SetValue(OpeningMotionDurationProperty, value);
+    }
+
+    #endregion
+
+    #region 内部协作 API
+
+    internal DialogSurface Surface => _surface;
+
+    internal void UpdateLayerBounds(Size layerSize)
+    {
+        if (layerSize.Width <= 0 || layerSize.Height <= 0)
+        {
+            return;
+        }
+
+        var visibleFrameBounds = ResolveOwnerBounds(layerSize);
+        ApplyMaskBounds(layerSize);
+        if (_surface.IsDialogMaximized)
+        {
+            ApplyMaximizedBounds(ResolveDialogBodyOwnerBounds(visibleFrameBounds));
+            return;
+        }
+
+        var ownerBounds = ResolveDialogBodyOwnerBounds(visibleFrameBounds);
+        ApplyNormalSurfaceSizeConstraints(ownerBounds);
+        UpdateSurfacePlacement(ownerBounds);
+    }
+
+    internal bool TryInvokeStandardButton(Key key)
+    {
+        return _surface.TryInvokeStandardButton(key);
+    }
+
+    #endregion
+
     private readonly Dialog _dialog;
     private readonly Control _placementTarget;
     private readonly DialogSurface _surface;
@@ -68,8 +122,11 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     private Window? _ownerWindow;
     private IDisposable? _drawnChromeOverlaySuppression;
     private bool _ownerIsWayland;
-    private MotionActor? _maskMotionActor;
-    private MotionActor? _surfaceMotionActor;
+    private Border? _surfaceMotionRoot;
+    private CompositeDisposable? _entryPreparation;
+    private RelativePoint? _motionOrigin;
+    private bool _closeRequested;
+    private bool _presentationStarted;
     private OverlayDialogMask? _dialogMask;
     private CancellationTokenSource? _openingMotionCancellationSource;
     private Task? _showTask;
@@ -79,14 +136,10 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     private Point _surfacePosition;
     private DialogSizeConstraints _normalSizeConstraints;
     private Rect? _resizeOriginBounds;
-    private Rect? _restoreBounds;
+    // Normal Width/Height own each axis' sizing intent: NaN stays natural until explicitly sized.
+    // Maximization temporarily replaces those inputs, so retain them rather than actual bounds.
+    private Size? _restoreSize;
     private bool _isInitialSizeResolved;
-
-    internal DialogSurface Surface => _surface;
-
-    public event EventHandler<DialogPresenterCloseRequestedEventArgs>? CloseRequested;
-
-    public IInputElement FocusScope => _surface;
 
     internal OverlayDialogPresenter(Dialog dialog, Control placementTarget)
     {
@@ -131,8 +184,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     {
         base.OnApplyTemplate(e);
         ReleaseDialogMask();
-        _maskMotionActor = e.NameScope.Find<MotionActor>("PART_MaskMotionActor");
-        _surfaceMotionActor = e.NameScope.Find<MotionActor>("PART_SurfaceMotionActor");
+        _surfaceMotionRoot = e.NameScope.Find<Border>("PART_SurfaceMotionRoot");
         _dialogMask = e.NameScope.Find<OverlayDialogMask>("PART_DialogMask");
         if (_dialogMask is not null)
         {
@@ -142,7 +194,12 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
     public ValueTask ShowAsync(CancellationToken cancellationToken)
     {
-        _showTask ??= ShowCoreAsync(cancellationToken);
+        if (_showTask is null)
+        {
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _showTask = completion.Task;
+            _ = CompleteOperationAsync(completion, () => ShowCoreAsync(cancellationToken));
+        }
         return new ValueTask(_showTask);
     }
 
@@ -156,64 +213,134 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
         ((ISetInheritanceParent)this).SetParent(
             ((ILogical)_dialog).IsAttachedToLogicalTree ? _dialog : _placementTarget);
-        _dialogLayer = DialogOverlayLayer.GetOrCreate(_placementTarget);
-        _ownerWindow = TopLevel.GetTopLevel(_placementTarget) as Window;
+        _dialogLayer = DialogOverlayLayer.GetOrCreate(_placementTarget, _dialog.OverlayScope);
+        // 显式 OverlayScope 时宿主没有 Window frame 契约：不解析 owning Window，因此不参与 frame 内缩、
+        // 也不申请 drawn chrome 抑制。未显式指定时保持既有行为（owner window 仍按 placement target 的 TopLevel 解析，
+        // 与宿主 layer 的解析结果无关）。
+        _ownerWindow = _dialog.OverlayScope is null
+            ? TopLevel.GetTopLevel(_placementTarget) as Window
+            : null;
         _ownerIsWayland = OperatingSystem.IsLinux() &&
                           _ownerWindow is { } ownerWindow &&
                           AbstractLinuxWindowChromeManager.IsWayland(ownerWindow);
         UpdateDrawnChromeOverlaySuppression();
+        // 语义部件契约：owner 已附加到逻辑树时，把 presenter 逻辑挂到 Dialog 下，owner 作用域生成的 Semantic
+        // Style 才能沿逻辑祖先链命中 presenter 子树；必须在 layer.Children.Add 之前设置（Panel 不会覆盖已显式
+        // 设置的逻辑父，先例：DrawerContainer.AttachToLayer）。owner 未附加时保持 layer 所有权：此时 owner
+        // 作用域样式本就无法激活，也避免改变 presenter 的 Parent 语义。该条件与上面的 inheritance parent 一致。
+        if (((ILogical)_dialog).IsAttachedToLogicalTree)
+        {
+            ((ISetLogicalParent)this).SetParent(_dialog);
+        }
+
         _dialogLayer.Add(this);
+        _dialog.NotifyCrossRootsChanged();
         AttachOwnerGeometryBindings();
         UpdateLayerBounds(_dialogLayer.AvailableSize);
         ApplyTemplate();
         _surface.ApplyTemplate();
         UpdateLayerBounds(_dialogLayer.AvailableSize);
-        if (_surfaceMotionActor is not null)
+        if (IsMotionEnabled)
         {
-            _surfaceMotionActor.Opacity = IsMotionEnabled ? 0 : 1;
+            PrepareEntry();
         }
-
-        if (_maskMotionActor is not null)
-        {
-            _maskMotionActor.Opacity = IsMotionEnabled && IsModal ? 0 : 1;
-        }
-
         await Dispatcher.UIThread.InvokeAsync(
             () => UpdateLayerBounds(_dialogLayer?.AvailableSize ?? default),
             DispatcherPriority.Loaded);
         _isInitialSizeResolved = true;
-
-        if (IsMotionEnabled && _surfaceMotionActor is not null)
+        if (_closeRequested)
         {
-            _openingMotionCancellationSource =
-                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var motionTasks = new List<Task>
+            ReleaseEntryPreparation();
+            return;
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+        _motionOrigin = ResolveMotionOrigin();
+        if (IsMotionEnabled && _surfaceMotionRoot is { } target)
+        {
+            var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _openingMotionCancellationSource = cancellation;
+            var preparation = _entryPreparation;
+            _entryPreparation = null;
+            try
             {
-                CreateSurfaceMotion(isOpening: true)
-                    .RunAsync(
-                        _surfaceMotionActor,
-                        cancellationToken: _openingMotionCancellationSource.Token)
-            };
-            if (IsModal && _maskMotionActor is not null)
-            {
-                motionTasks.Add(new FadeInMotion(MotionDuration)
-                    .RunAsync(
-                        _maskMotionActor,
-                        cancellationToken: _openingMotionCancellationSource.Token));
+                Task<MotionResult> surfacePlayback;
+                Task<MotionResult>? maskPlayback = null;
+                using var contentCache = !_closeRequested && IsModal && _dialogMask is not null
+                    ? _ownerWindow?.AcquireContentCache(this) : null;
+                try
+                {
+                    surfacePlayback = CreateSurfaceMotion(true).PlayAsync(target, cancellation.Token);
+                    if (!_closeRequested && IsModal && _dialogMask is { } mask)
+                    {
+                        maskPlayback = new FadeInMotion(OpeningMotionDuration).PlayAsync(mask, cancellation.Token);
+                    }
+                }
+                finally
+                {
+                    preparation?.Dispose();
+                }
+                if (!_closeRequested)
+                {
+                    _presentationStarted = true;
+                }
+                else
+                {
+                    cancellation.Cancel();
+                }
+                if (maskPlayback is not null)
+                {
+                    await Task.WhenAll(surfacePlayback, maskPlayback);
+                }
+                var result = await surfacePlayback;
+                if (!_closeRequested && result.Outcome == MotionOutcome.NotReady)
+                {
+                    ResetMotionTargets();
+                }
+                if (!_closeRequested)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
             }
-
-            await Task.WhenAll(motionTasks);
+            finally
+            {
+                if (ReferenceEquals(_openingMotionCancellationSource, cancellation))
+                {
+                    _openingMotionCancellationSource = null;
+                }
+                cancellation.Dispose();
+            }
+        }
+        else
+        {
+            ReleaseEntryPreparation();
+            ResetMotionTargets();
+            _presentationStarted = true;
         }
     }
 
     public ValueTask CloseAsync()
     {
-        _closeTask ??= CloseCoreAsync();
+        if (_closeTask is null)
+        {
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _closeTask = completion.Task;
+            _ = CompleteOperationAsync(completion, CloseCoreAsync);
+        }
         return new ValueTask(_closeTask);
     }
 
     private async Task CloseCoreAsync()
     {
+        _closeRequested = true;
+        if (!_presentationStarted)
+        {
+            _surfaceMotionRoot?.SetCurrentValue(IsVisibleProperty, false);
+            _dialogMask?.SetCurrentValue(IsVisibleProperty, false);
+        }
+        // Start the replacement before cancelling the old request. Core samples
+        // the presented scale/opacity while the opening request still owns it.
+        var closing = _presentationStarted && IsMotionEnabled && _dialogLayer is not null
+            ? RunClosingMotionsAsync() : Task.CompletedTask;
         _openingMotionCancellationSource?.Cancel();
         if (_showTask is not null)
         {
@@ -223,72 +350,112 @@ internal sealed class OverlayDialogPresenter : ContentControl,
             }
             catch
             {
-                // Show failures are reported by the session; close still owns complete teardown.
+                // The session observes show failure; close still tears down its own host.
             }
         }
-
-        if (IsMotionEnabled && _surfaceMotionActor is not null && _dialogLayer is not null)
-        {
-            var motionTasks = new List<Task>
-            {
-                CreateSurfaceMotion(isOpening: false).RunAsync(_surfaceMotionActor)
-            };
-            if (_surface.SurfaceContentLayer is { } surfaceContentLayer)
-            {
-                motionTasks.Add(RunSurfaceContentCloseMotionAsync(surfaceContentLayer));
-            }
-
-            if (IsModal && _maskMotionActor is not null)
-            {
-                motionTasks.Add(new FadeOutMotion(MotionDuration, new CubicEaseIn())
-                    .RunAsync(_maskMotionActor));
-            }
-
-            await Task.WhenAll(motionTasks);
-        }
-
-        _surface.DisconnectCompositionChildren();
-        _surface.Dispose();
-        RemoveFromDialogLayer();
-    }
-
-    private async Task RunSurfaceContentCloseMotionAsync(Control surfaceContentLayer)
-    {
-        var animation = new Animation
-        {
-            Duration = MotionDuration,
-            Easing = new LinearEasing(),
-            FillMode = FillMode.Forward,
-            Children =
-            {
-                new KeyFrame
-                {
-                    Cue = new Cue(0),
-                    Setters = { new Setter(Visual.OpacityProperty, 1d) }
-                },
-                new KeyFrame
-                {
-                    Cue = new Cue(1),
-                    Setters = { new Setter(Visual.OpacityProperty, 0d) }
-                }
-            }
-        };
-
         try
         {
-            await animation.RunAsync(surfaceContentLayer);
+            await closing;
         }
         finally
         {
-            // The surface is torn down immediately after all close motions;
-            // restore the live tree for re-use if teardown is interrupted.
-            surfaceContentLayer.Opacity = 1;
+            ReleaseEntryPreparation();
+            ResetMotionTargets();
+            _surface.DisconnectCompositionChildren();
+            _surface.Dispose();
+            RemoveFromDialogLayer();
+        }
+    }
+
+    private async Task RunClosingMotionsAsync()
+    {
+        if (_surfaceMotionRoot is not { } target)
+        {
+            return;
+        }
+        var surface = CreateSurfaceMotion(false).PlayAsync(target);
+        if (IsModal && _dialogMask is { } mask)
+        {
+            // While the full-window mask fades, composite the cached window content instead of re-rendering it.
+            using var contentCache = _ownerWindow?.AcquireContentCache(this);
+            var masking = new FadeOutMotion(MotionDuration).PlayAsync(mask);
+            await Task.WhenAll(surface, masking);
+        }
+        else
+        {
+            await surface;
+        }
+    }
+
+    private static async Task CompleteOperationAsync(TaskCompletionSource completion, Func<Task> operation)
+    {
+        try
+        {
+            await operation();
+            completion.TrySetResult();
+        }
+        catch (OperationCanceledException exception)
+        {
+            completion.TrySetCanceled(exception.CancellationToken);
+        }
+        catch (Exception exception)
+        {
+            completion.TrySetException(exception);
+        }
+    }
+
+    private void PrepareEntry()
+    {
+        ReleaseEntryPreparation();
+        var preparation = new CompositeDisposable();
+        _entryPreparation = preparation;
+        if (_surfaceMotionRoot is { } target)
+        {
+            preparation.Add(target.SetValue(OpacityProperty, 0, Avalonia.Data.BindingPriority.Animation) ?? Disposable.Empty);
+        }
+        if (!_closeRequested && _dialogMask is { } mask)
+        {
+            preparation.Add(mask.SetValue(OpacityProperty, 0, Avalonia.Data.BindingPriority.Animation) ?? Disposable.Empty);
+        }
+    }
+
+    private void ReleaseEntryPreparation()
+    {
+        var preparation = _entryPreparation;
+        _entryPreparation = null;
+        preparation?.Dispose();
+    }
+
+    private void ResetMotionTargets()
+    {
+        if (_surfaceMotionRoot is { } target)
+        {
+            MotionPlayback.CancelAndReset(target);
+        }
+        if (_dialogMask is { } mask)
+        {
+            MotionPlayback.CancelAndReset(mask);
+        }
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == IsMotionEnabledProperty && !IsMotionEnabled)
+        {
+            ReleaseEntryPreparation();
+            ResetMotionTargets();
         }
     }
 
     public ValueTask DisposeAsync()
     {
-        _disposeTask ??= DisposeCoreAsync();
+        if (_disposeTask is null)
+        {
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _disposeTask = completion.Task;
+            _ = CompleteOperationAsync(completion, DisposeCoreAsync);
+        }
         return new ValueTask(_disposeTask);
     }
 
@@ -360,8 +527,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         Content = null;
         _ownerWindow = null;
         _ownerIsWayland = false;
-        _maskMotionActor = null;
-        _surfaceMotionActor = null;
+        _surfaceMotionRoot = null;
         try
         {
             ((ISetInheritanceParent)this).SetParent(null);
@@ -387,6 +553,13 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
         dialogLayer.Remove(this);
         _dialogLayer = null;
+        // 只清除本 presenter 自己建立的 owner 逻辑父，避免误清 layer 建立的所有权。
+        if (ReferenceEquals(((ILogical)this).LogicalParent, _dialog))
+        {
+            ((ISetLogicalParent)this).SetParent(null);
+        }
+
+        _dialog.NotifyCrossRootsChanged();
     }
 
     private void UpdateDrawnChromeOverlaySuppression()
@@ -406,36 +579,16 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _drawnChromeOverlaySuppression = null;
     }
 
-    internal void UpdateLayerBounds(Size layerSize)
-    {
-        if (layerSize.Width <= 0 || layerSize.Height <= 0)
-        {
-            return;
-        }
-
-        var visibleFrameBounds = ResolveOwnerBounds(layerSize);
-        ApplyMaskBounds(layerSize);
-        if (_surface.IsDialogMaximized)
-        {
-            ApplyMaximizedBounds(ResolveDialogBodyOwnerBounds(visibleFrameBounds));
-            return;
-        }
-
-        var ownerBounds = ResolveDialogBodyOwnerBounds(visibleFrameBounds);
-        ApplyNormalSurfaceSizeConstraints(ownerBounds);
-        UpdateSurfacePlacement(ownerBounds);
-    }
-
     private void ApplyNormalSurfaceSizeConstraints(Rect ownerBounds)
     {
         ResolveNormalSurfaceSizeConstraints(ownerBounds);
         if (!_isInitialSizeResolved)
         {
-            _surface.Width = ResolveInitialSize(
+            _surface.Width = ClampExplicitSize(
                 _dialog.HostWidth,
                 _normalSizeConstraints.MinWidth,
                 _normalSizeConstraints.MaxWidth);
-            _surface.Height = ResolveInitialSize(
+            _surface.Height = ClampExplicitSize(
                 _dialog.HostHeight,
                 _normalSizeConstraints.MinHeight,
                 _normalSizeConstraints.MaxHeight);
@@ -469,25 +622,20 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         }
 
         var clampedSize = _normalSizeConstraints.Clamp(actualSize);
+        // Owner-driven bounds correction is transient; OffsetX/Y retain the requested placement.
         var clampedPosition = ConstrainAndRoundSurfacePosition(ownerBounds, clampedSize, _surfacePosition);
         if (clampedSize == actualSize)
         {
-            if (clampedPosition != _surfacePosition)
-            {
-                SynchronizeDialogOffsets(ownerBounds, clampedSize, clampedPosition);
-                SetSurfacePosition(clampedPosition);
-            }
-
+            SetSurfacePosition(clampedPosition);
             return;
         }
 
-        SynchronizeDialogOffsets(ownerBounds, clampedSize, clampedPosition);
-        if (!MathUtils.AreClose(clampedSize.Width, actualSize.Width))
+        if (double.IsFinite(_surface.Width) && !MathUtils.AreClose(clampedSize.Width, actualSize.Width))
         {
             _surface.Width = clampedSize.Width;
         }
 
-        if (!MathUtils.AreClose(clampedSize.Height, actualSize.Height))
+        if (double.IsFinite(_surface.Height) && !MathUtils.AreClose(clampedSize.Height, actualSize.Height))
         {
             _surface.Height = clampedSize.Height;
         }
@@ -581,7 +729,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
     private void ApplyMaskBounds(Size layerSize)
     {
-        if (_maskMotionActor is null)
+        if (_dialogMask is null)
         {
             return;
         }
@@ -592,11 +740,11 @@ internal sealed class OverlayDialogPresenter : ContentControl,
                 TopLevel.GetTopLevel(this)?.RenderScaling ?? 1)
             : layerSize;
 
-        _maskMotionActor.HorizontalAlignment = HorizontalAlignment.Left;
-        _maskMotionActor.VerticalAlignment = VerticalAlignment.Top;
-        _maskMotionActor.Width = maskSize.Width;
-        _maskMotionActor.Height = maskSize.Height;
-        _maskMotionActor.Margin = default;
+        _dialogMask.HorizontalAlignment = HorizontalAlignment.Left;
+        _dialogMask.VerticalAlignment = VerticalAlignment.Top;
+        _dialogMask.Width = maskSize.Width;
+        _dialogMask.Height = maskSize.Height;
+        _dialogMask.Margin = default;
     }
 
     private static Point ConstrainSurfacePosition(Rect ownerBounds, Size surfaceSize, Point position)
@@ -657,11 +805,9 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         return new Rect(_surfacePosition, ResolveActualSurfaceSize());
     }
 
-    private void ApplyNormalSurfaceGeometry(Rect ownerBounds, Size size, Point position)
+    private void ApplyNormalSurfacePlacement(Rect ownerBounds, Size size, Point position)
     {
         SynchronizeDialogOffsets(ownerBounds, size, position);
-        _surface.Width = size.Width;
-        _surface.Height = size.Height;
         SetSurfacePosition(position);
     }
 
@@ -686,15 +832,13 @@ internal sealed class OverlayDialogPresenter : ContentControl,
             return;
         }
 
-        if (_surface.IsDialogMaximized && _restoreBounds is { } restoreBounds)
+        if (_surface.IsDialogMaximized && _restoreSize is { } restoreSize)
         {
-            _restoreBounds = new Rect(
-                restoreBounds.Position,
-                new Size(Math.Max(0, value), restoreBounds.Height));
+            _restoreSize = new Size(Math.Max(0, value), restoreSize.Height);
             return;
         }
 
-        ApplyRequestedWidth(value);
+        ApplyRequestedSize(new Size(value, _surface.Height));
     }
 
     private void HandleHostHeightChanged(double value)
@@ -704,18 +848,16 @@ internal sealed class OverlayDialogPresenter : ContentControl,
             return;
         }
 
-        if (_surface.IsDialogMaximized && _restoreBounds is { } restoreBounds)
+        if (_surface.IsDialogMaximized && _restoreSize is { } restoreSize)
         {
-            _restoreBounds = new Rect(
-                restoreBounds.Position,
-                new Size(restoreBounds.Width, Math.Max(0, value)));
+            _restoreSize = new Size(restoreSize.Width, Math.Max(0, value));
             return;
         }
 
-        ApplyRequestedHeight(value);
+        ApplyRequestedSize(new Size(_surface.Width, value));
     }
 
-    private void ApplyRequestedWidth(double requestedWidth)
+    private void ApplyRequestedSize(Size requestedSize)
     {
         if (_dialogLayer is null || !_isInitialSizeResolved)
         {
@@ -724,29 +866,15 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
         var ownerBounds = ResolveCurrentDialogBodyOwnerBounds();
         ResolveNormalSurfaceSizeConstraints(ownerBounds);
-        var actualBounds = ResolveActualSurfaceBounds();
-        var requestedSize = new Size(
-            Math.Clamp(requestedWidth, _normalSizeConstraints.MinWidth, _normalSizeConstraints.MaxWidth),
-            actualBounds.Height);
-        var position = ConstrainAndRoundSurfacePosition(ownerBounds, requestedSize, actualBounds.Position);
-        ApplyNormalSurfaceGeometry(ownerBounds, requestedSize, position);
-    }
-
-    private void ApplyRequestedHeight(double requestedHeight)
-    {
-        if (_dialogLayer is null || !_isInitialSizeResolved)
-        {
-            return;
-        }
-
-        var ownerBounds = ResolveCurrentDialogBodyOwnerBounds();
-        ResolveNormalSurfaceSizeConstraints(ownerBounds);
-        var actualBounds = ResolveActualSurfaceBounds();
-        var requestedSize = new Size(
-            actualBounds.Width,
-            Math.Clamp(requestedHeight, _normalSizeConstraints.MinHeight, _normalSizeConstraints.MaxHeight));
-        var position = ConstrainAndRoundSurfacePosition(ownerBounds, requestedSize, actualBounds.Position);
-        ApplyNormalSurfaceGeometry(ownerBounds, requestedSize, position);
+        _surface.Width = ClampExplicitSize(
+            requestedSize.Width, _normalSizeConstraints.MinWidth, _normalSizeConstraints.MaxWidth);
+        _surface.Height = ClampExplicitSize(
+            requestedSize.Height, _normalSizeConstraints.MinHeight, _normalSizeConstraints.MaxHeight);
+        // An explicit request may reflow the other natural axis before placement is resolved.
+        _surface.Measure(ownerBounds.Size);
+        var surfaceSize = _surface.DesiredSize;
+        var position = ConstrainAndRoundSurfacePosition(ownerBounds, surfaceSize, _surfacePosition);
+        ApplyNormalSurfacePlacement(ownerBounds, surfaceSize, position);
     }
 
     private Rect ResolveCurrentDialogBodyOwnerBounds()
@@ -771,38 +899,47 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         ApplyNormalSurfaceSizeConstraints(ownerBounds);
     }
 
-    private static double ResolveInitialSize(double value, double min, double max)
+    private static double ClampExplicitSize(double value, double min, double max)
     {
         return double.IsFinite(value) ? Math.Clamp(value, min, max) : double.NaN;
     }
 
     private AbstractMotion CreateSurfaceMotion(bool isOpening)
     {
-        if (!_dialog.UsesPlacementTargetAsMotionAnchor)
-        {
-            return isOpening
-                ? new FadeInMotion(MotionDuration, new CircularEaseOut())
-                : new FadeOutMotion(MotionDuration, new CubicEaseIn());
-        }
-
-        var origin = ResolveMotionOrigin();
+        var origin = _motionOrigin ?? ResolveMotionOrigin();
         return isOpening
-            ? new DialogZoomInMotion(origin, MotionDuration)
+            ? new DialogZoomInMotion(origin, OpeningMotionDuration)
             : new DialogZoomOutMotion(origin, MotionDuration);
     }
 
     private RelativePoint ResolveMotionOrigin()
     {
-        var targetCenter = new Point(
-            _placementTarget.Bounds.Width / 2,
-            _placementTarget.Bounds.Height / 2);
-        var presenterPoint = _placementTarget.TranslatePoint(targetCenter, this) ??
-                             new Point(Bounds.Width / 2, Bounds.Height / 2);
-        return new RelativePoint(presenterPoint, RelativeUnit.Absolute);
+        if (_surfaceMotionRoot is not { } target || !target.IsArrangeValid)
+        {
+            return new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+        }
+        if (_dialog.UsesPlacementTargetAsMotionAnchor)
+        {
+            var anchorCenter = new Point(_placementTarget.Bounds.Width / 2, _placementTarget.Bounds.Height / 2);
+            if (_placementTarget.TranslatePoint(anchorCenter, target) is { } anchor)
+            {
+                return new RelativePoint(anchor, RelativeUnit.Absolute);
+            }
+        }
+        var center = new Point(_surface.Bounds.Width / 2, _surface.Bounds.Height / 2);
+        return _surface.TranslatePoint(center, target) is { } surfaceCenter
+            ? new RelativePoint(surfaceCenter, RelativeUnit.Absolute)
+            : new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
     }
 
     private void HandleSurfaceCloseRequested(object? sender, DialogSurfaceCloseRequestedEventArgs e)
     {
+        // 钉住常开只拦截用户发起的关闭入口；外部 IsOpen 关闭走 presenter.CloseAsync，不经过这里。
+        if (_dialog.IsPinnedOpen)
+        {
+            return;
+        }
+
         CloseRequested?.Invoke(this,
             new DialogPresenterCloseRequestedEventArgs(e.Reason, e.Result, e.SourceButton));
     }
@@ -815,6 +952,12 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
     private void HandleHostCloseRequested(object? sender, EventArgs e)
     {
+        // 钉住常开同时覆盖遮罩外点（HandleMaskPointerPressed 复用本处理器）与宿主关闭请求。
+        if (_dialog.IsPinnedOpen)
+        {
+            return;
+        }
+
         CloseRequested?.Invoke(this,
             new DialogPresenterCloseRequestedEventArgs(
                 DialogCloseReason.HostCloseRequest,
@@ -823,7 +966,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
     private void HandleMaximizeRequested(object? sender, EventArgs e)
     {
-        _restoreBounds = ResolveActualSurfaceBounds();
+        _restoreSize = new Size(_surface.Width, _surface.Height);
         _resizeOriginBounds = null;
         _surface.IsDialogMaximized = true;
         var visibleFrameBounds = ResolveOwnerBounds(_dialogLayer?.AvailableSize ?? Bounds.Size);
@@ -836,14 +979,13 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _surface.ClearValue(TemplatedControl.CornerRadiusProperty);
         var ownerBounds = ResolveCurrentDialogBodyOwnerBounds();
         ResolveNormalSurfaceSizeConstraints(ownerBounds);
-        var restoreBounds = _restoreBounds ?? ResolveActualSurfaceBounds();
-        var restoreSize = _normalSizeConstraints.Clamp(restoreBounds.Size);
-        var restorePosition = ConstrainAndRoundSurfacePosition(
-            ownerBounds,
-            restoreSize,
-            restoreBounds.Position);
-        ApplyNormalSurfaceGeometry(ownerBounds, restoreSize, restorePosition);
-        _restoreBounds = null;
+        var restoreSize = _restoreSize ?? new Size(_surface.Width, _surface.Height);
+        _surface.Width = ClampExplicitSize(
+            restoreSize.Width, _normalSizeConstraints.MinWidth, _normalSizeConstraints.MaxWidth);
+        _surface.Height = ClampExplicitSize(
+            restoreSize.Height, _normalSizeConstraints.MinHeight, _normalSizeConstraints.MaxHeight);
+        _restoreSize = null;
+        UpdateSurfacePlacement(ownerBounds);
     }
 
     private void HandleResizeStarted(object? sender, OverlayDialogResizeEventArgs e)
@@ -906,12 +1048,23 @@ internal sealed class OverlayDialogPresenter : ContentControl,
             y = originBounds.Bottom - height;
         }
 
+        // Only a changed resize axis takes over natural sizing. An already fixed axis still
+        // follows the cumulative drag back towards its origin; unrelated axes retain their input.
+        var changesWidth = (e.Location & (ResizeHandleLocation.East | ResizeHandleLocation.West)) != 0;
+        var changesHeight = (e.Location & (ResizeHandleLocation.North | ResizeHandleLocation.South)) != 0;
+        if (changesWidth && (double.IsFinite(_surface.Width) || !MathUtils.AreClose(width, originBounds.Width)))
+        {
+            _surface.Width = width;
+        }
+
+        if (changesHeight && (double.IsFinite(_surface.Height) || !MathUtils.AreClose(height, originBounds.Height)))
+        {
+            _surface.Height = height;
+        }
+
         var surfaceSize = new Size(width, height);
-        var position = ConstrainAndRoundSurfacePosition(
-            ownerBounds,
-            surfaceSize,
-            new Point(x, y));
-        ApplyNormalSurfaceGeometry(ownerBounds, surfaceSize, position);
+        var position = ConstrainAndRoundSurfacePosition(ownerBounds, surfaceSize, new Point(x, y));
+        ApplyNormalSurfacePlacement(ownerBounds, surfaceSize, position);
     }
 
     private void HandleResizeCompleted(object? sender, OverlayDialogResizeEventArgs e)
@@ -1017,8 +1170,4 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _surface.Focus(NavigationMethod.Pointer);
     }
 
-    internal bool TryInvokeStandardButton(Key key)
-    {
-        return _surface.TryInvokeStandardButton(key);
-    }
 }

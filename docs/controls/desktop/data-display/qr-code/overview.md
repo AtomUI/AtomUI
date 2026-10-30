@@ -1,6 +1,9 @@
 # QRCode 桌面版架构设计
 
-本文档定义 `QRCode` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [QRCode 桌面版实现原理](implementation.md)，QRCode Token 的专项设计见 [QRCode Token 设计](token.md)，设计和契约变化记录见 [QRCode Changelog](changelog.md)。
+本文档定义 `QRCode` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见
+[控件研发标准](../../../../engineering/development/control-development-guidelines.md)，公开主题区域见
+[QRCode Semantic Part 契约](semantic-part.md)，内部实现原理见 [QRCode 桌面版实现原理](implementation.md)，QRCode Token 的专项设计见
+[QRCode Token 设计](token.md)，设计和契约变化记录见 [QRCode Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -29,7 +32,7 @@ QRCode 的设计语言围绕控件职责、可观察状态和主题契约组织�
 | --- | --- | --- |
 | 产品语义 | 控件在界面中承担的稳定职责。 | QRCode 是 AtomUI 桌面控件体系中的二维码控件，用于把文本或业务字符串渲染为可扫描二维码。 |
 | 内容承载 | 用户数据、展示内容、集合项或操作入口如何进入控件。 | `ExpiredContent`、`ExpiredContentTemplate`、`Icon`、`IconBgColor`、`IconSize`、`LoadingContent`、`LoadingContentTemplate`、`ScannedContent` 等 10 项。 |
-| 状态反馈 | public API、内部状态和伪类如何形成用户可感知反馈。 | loading/async、input/value、visual option。 |
+| 状态反馈 | public API、内部状态和模板节点如何形成用户可感知反馈。 | `Active`、`Loading`、`Expired`、`Scanned` 与刷新请求。 |
 | 主题语义 | ControlTheme、SharedToken、控件 Token 和模板绑定如何表达视觉。 | QRCode Token + ControlTheme。 |
 
 ## 3. API 与契约模型
@@ -41,11 +44,12 @@ QRCode 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
 | 内容与数据 | `ExpiredContent`、`ExpiredContentTemplate`、`Icon`、`IconBgColor`、`IconSize`、`LoadingContent`、`LoadingContentTemplate`、`ScannedContent`、`ScannedContentTemplate`、`Value` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
-| 交互与状态 | `IsBordered`、`Status` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
-| 视觉与布局 | `Color`、`Size` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
+| 交互与状态 | `IsBordered`、`Status`、`RefreshRequested` | 表达边框模式、状态遮罩和过期状态下的刷新请求。 |
+| 视觉与布局 | `Color`、`Size` 及继承的 root 表面属性 | `Size` 统一拥有二维码方形边长；颜色、背景、边框、圆角和 Padding 形成 root 视觉。 |
 | 其他稳定入口 | `EccLevel` | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
 
-当前没有抽取到控件专属 public 事件；交互通知主要来自继承事件、命令或 Gallery 可观察状态。
+`RefreshRequested` 是 QRCode 的控件专属 public 事件，由默认过期状态中的 `PART_RefreshButton` 触发。自定义
+`ExpiredContent` 不会自动转发该事件，调用方需要在自定义内容中显式处理自己的命令或事件。
 
 主要公开类型与枚举：
 
@@ -61,6 +65,10 @@ QRCode 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 
 当前未抽取到控件专属伪类；主题主要依赖 Avalonia 标准伪类、模板绑定和内部 StyledProperty。
 
+QRCode 公开 `root` 和 `cover` 两个 Semantic Part。`root` 是 QRCode owner；`cover` 是状态遮罩与状态内容共同占用的静态 overlay
+区域。完整 Selector、ContractType、cardinality 和定制边界见 [QRCode Semantic Part 契约](semantic-part.md)。二维码 bitmap、中心图标、
+刷新按钮和各状态内部内容不单独公开为 Semantic Part。
+
 ## 4. 行为与状态模型
 
 QRCode 的状态流按以下路径收敛：
@@ -75,10 +83,11 @@ Public API / inherited command / item source / user input
 
 状态维护规则：
 
-- Disabled 或不可交互状态优先屏蔽 pointer、keyboard、motion 和提交类反馈。
-- loading/async、input/value、visual option 状态由控件实例或明确的数据 owner 推导，不能在 template part 之间双向竞争。
-- 模板重套用时必须把 public API 对应状态回放到新的 part、伪类和主题变量。
-- 集合、弹层、异步、动效或窗口相关状态必须能处理 reset、close、cancel、detach 和 owner 释放。
+- `Active` 隐藏 cover；`Loading`、`Expired`、`Scanned` 显示同一个 cover 节点，并在节点内部切换对应状态内容。
+- `Value`、`Color`、`EccLevel` 或 `Size` 变化时重新生成透明背景 bitmap，不替换 Semantic target；`Background` 只更新 root 表面。
+- `Icon` 只控制二维码中心图标内容，不增加 Semantic Part，也不改变 root/cover 数量。
+- 模板重套用时重新接入 `PART_RefreshButton`，先移除旧按钮订阅，再回放当前 public API 状态。
+- `Size` 是二维码外框与绘制源的统一边长；Semantic Style 不建立第二套 Width/Height 尺寸 owner。
 
 ## 5. 视觉与主题模型
 
@@ -88,7 +97,8 @@ QRCode 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的�
 | --- | --- |
 | `QRCodeTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 
-QRCode 使用 `QRCodeToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 loading/async、input/value、visual option 运行时状态。
+QRCode 使用 `QRCodeToken` 作为控件 Token scope。Token 只表达文字色和 cover 背景色等视觉语义，不承载 `Status`、`Value` 或 bitmap
+运行时状态。
 
 主题维护规则：
 
@@ -120,7 +130,7 @@ QRCode 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证
 
 - 不擅自新增、删除、重命名或改变 public/protected API、Avalonia 属性、事件和默认值。
 - 不破坏 template part、伪类、ControlTheme key、Token 名称和资源 key。
-- 不改变 Gallery 已展示的 XAML 用法、默认外观、交互顺序和状态优先级。
+- 不改变 Gallery 已展示的 XAML 用法、默认外观、交互顺序和状态优先级；Semantic 示例必须保持与对应公开上游示例一致。
 - Template part 重新应用、集合替换、弹层关闭、窗口失活和控件 detach 时必须释放旧订阅和资源宿主。
 - 不通过隐藏延迟、强制刷新或吞异常掩盖状态同步问题。
 - 不引入运行时反射扫描作为 API、Token 或数据路径发现机制。
@@ -128,38 +138,24 @@ QRCode 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证
 
 ## 8. 专项模型
 
-### 8.1 视觉选项模型
+### 8.1 方形尺寸与绘制模型
 
-QRCode 的视觉选项通过 public API 归一为 theme variables、伪类或模板绑定。Token 保存组件语义值，不能保存实例运行时状态或业务色值。
+`Size` 同时决定二维码 bitmap 的像素边长和控件 root 的方形边长。root 的 Border、Padding 与 CornerRadius 位于该固定方形内部，二维码
+图像在扣除边框与 Padding 后的内容区域内缩放。调用方通过 `Size` 改变整体尺寸，不通过 Semantic Style 的 Width/Height 建立另一套尺寸源。
 
-## 9. 文档导航、LLMS 导出与验证策略
+### 8.2 状态 cover 模型
+
+cover 是一个静态、单一的 overlay 区域。`Active` 状态下它保留在模板中但不可见；其他状态下它覆盖完整 root，并承载 Loading、Expired
+或 Scanned 内容。该结构避免状态切换时创建或销毁 Visual，也保证 Semantic marker 身份稳定。
+
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [QRCode 桌面版实现原理](implementation.md)
+- [QRCode Semantic Part 契约](semantic-part.md)
 - [QRCode Token 设计](token.md)
 - [QRCode Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `QRCode` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/qr-code/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/qr-code/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -167,7 +163,7 @@ LLMS 导出来源：
 | --- | --- |
 | 文档改动 | 运行 `git diff --check`，检查相对链接存在。 |
 | Public API | 覆盖属性默认值、事件触发、命令和继承语义。 |
-| 状态模型 | 覆盖 loading/async、input/value、visual option、disabled、hover、pressed、focus 以及控件特有状态。 |
+| 状态模型 | 覆盖 Active/Loading/Expired/Scanned、刷新事件、三组自定义状态内容、bitmap 更新和 re-template。 |
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |

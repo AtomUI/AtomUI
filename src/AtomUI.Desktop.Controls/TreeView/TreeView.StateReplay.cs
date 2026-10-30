@@ -7,6 +7,207 @@ namespace AtomUI.Desktop.Controls;
 
 public partial class TreeView
 {
+    private readonly record struct ItemsSourceReplayState(
+        object[] SelectedItems,
+        object[] CheckedItems,
+        TreeNodePath? SelectedItemPath,
+        List<TreeNodePath>? SelectedItemPaths,
+        List<TreeNodePath>? CheckedItemPaths);
+
+    private ItemsSourceReplayState? _itemsSourceReplayState;
+    private int _itemsSourceReplayRevision;
+    private int _itemsSourceReplayInternalDepth;
+    private bool _hasExplicitSelectionUpdateDuringReplay;
+    private bool _hasExplicitSelectionAssignmentDuringReplay;
+    private bool _hasExplicitCheckedUpdateDuringReplay;
+    private bool _hasExplicitCheckedAssignmentDuringReplay;
+    private TreeNodePath? _explicitSelectedItemPath;
+    private List<TreeNodePath>? _explicitSelectedItemPaths;
+    private List<TreeNodePath>? _explicitCheckedItemPaths;
+
+    private bool IsItemsSourceReplayPending => _itemsSourceReplayState.HasValue;
+
+    private int BeginItemsSourceReplay()
+    {
+        var revision = ++_itemsSourceReplayRevision;
+        if (IsLoaded && (_itemsSourceReplayState == null || _itemsSourceReplayInternalDepth > 0))
+        {
+            var previous = _itemsSourceReplayState;
+            _hasExplicitSelectionUpdateDuringReplay = false;
+            _hasExplicitSelectionAssignmentDuringReplay = false;
+            _hasExplicitCheckedUpdateDuringReplay = false;
+            _hasExplicitCheckedAssignmentDuringReplay = false;
+            _explicitSelectedItemPath = null;
+            _explicitSelectedItemPaths = null;
+            _explicitCheckedItemPaths = null;
+            _itemsSourceReplayState = new ItemsSourceReplayState(
+                previous?.SelectedItems ?? CaptureSelectedItems(),
+                previous?.CheckedItems ?? CheckedItems.Cast<object>().ToArray(),
+                BuildNodeIdentityPath(SelectedItem as ITreeItemNode) ?? previous?.SelectedItemPath,
+                BuildNodeIdentityPaths(SelectedItems) ?? previous?.SelectedItemPaths,
+                BuildNodeIdentityPaths(CheckedItems) ?? previous?.CheckedItemPaths);
+        }
+        return revision;
+    }
+
+    private void CancelItemsSourceReplay()
+    {
+        _itemsSourceReplayRevision++;
+        _itemsSourceReplayState = null;
+        _hasExplicitSelectionUpdateDuringReplay = false;
+        _hasExplicitSelectionAssignmentDuringReplay = false;
+        _hasExplicitCheckedUpdateDuringReplay = false;
+        _hasExplicitCheckedAssignmentDuringReplay = false;
+        _explicitSelectedItemPath = null;
+        _explicitSelectedItemPaths = null;
+        _explicitCheckedItemPaths = null;
+    }
+
+    private void CompleteItemsSourceReplay(int revision)
+    {
+        if (revision != _itemsSourceReplayRevision || _itemsSourceReplayState is not { } state)
+        {
+            return;
+        }
+        if (!IsLoaded)
+        {
+            CancelItemsSourceReplay();
+            return;
+        }
+
+        _itemsSourceReplayInternalDepth++;
+        try
+        {
+            if (_hasExplicitSelectionAssignmentDuringReplay)
+            {
+                // A caller may mutate a plain IList after assigning SelectedItems. Such lists do
+                // not raise collection notifications, so read the assigned value at replay time.
+                _explicitSelectedItemPath = BuildNodeIdentityPath(SelectedItem as ITreeItemNode);
+                _explicitSelectedItemPaths = BuildNodeIdentityPaths(SelectedItems);
+            }
+            if (_hasExplicitCheckedAssignmentDuringReplay)
+            {
+                // CheckedItems likewise accepts a plain IList that may change without notification.
+                _explicitCheckedItemPaths = BuildNodeIdentityPaths(CheckedItems);
+            }
+            ConfigureStateAfterItemsSourceChanged(
+                state,
+                _hasExplicitSelectionUpdateDuringReplay,
+                _hasExplicitCheckedUpdateDuringReplay);
+        }
+        finally
+        {
+            _itemsSourceReplayInternalDepth--;
+            if (revision == _itemsSourceReplayRevision)
+            {
+                _itemsSourceReplayState = null;
+                _hasExplicitSelectionUpdateDuringReplay = false;
+                _hasExplicitSelectionAssignmentDuringReplay = false;
+                _hasExplicitCheckedUpdateDuringReplay = false;
+                _hasExplicitCheckedAssignmentDuringReplay = false;
+                _explicitSelectedItemPath = null;
+                _explicitSelectedItemPaths = null;
+                _explicitCheckedItemPaths = null;
+            }
+        }
+
+        if (revision != _itemsSourceReplayRevision)
+        {
+            // A property observer replaced ItemsSource during this replay. Its newer replay owns
+            // the snapshot and will publish the final difference after the nested reset settles.
+            return;
+        }
+
+        var selectedItems = CaptureSelectedItems();
+        var previousSet = new HashSet<object>(state.SelectedItems, ReferenceEqualityComparer.Instance);
+        var currentSet = new HashSet<object>(selectedItems, ReferenceEqualityComparer.Instance);
+        var removed = state.SelectedItems.Where(item =>
+            !currentSet.Contains(item)).ToArray();
+        var added = selectedItems.Where(item =>
+            !previousSet.Contains(item)).ToArray();
+        if (removed.Length > 0 || added.Length > 0)
+        {
+            RaiseEvent(new SelectionChangedEventArgs(
+                Avalonia.Controls.Primitives.SelectingItemsControl.SelectionChangedEvent,
+                removed,
+                added));
+            NotifyFormValueChanged((SelectionMode & SelectionMode.Multiple) == SelectionMode.Multiple
+                ? SelectedItems
+                : SelectedItem);
+        }
+
+        var checkedItems = CheckedItems.Cast<object>().ToArray();
+        var previousCheckedSet = new HashSet<object>(state.CheckedItems, ReferenceEqualityComparer.Instance);
+        var currentCheckedSet = new HashSet<object>(checkedItems, ReferenceEqualityComparer.Instance);
+        var removedChecked = state.CheckedItems.Where(item =>
+            !currentCheckedSet.Contains(item)).ToArray();
+        var addedChecked = checkedItems.Where(item =>
+            !previousCheckedSet.Contains(item)).ToArray();
+        if (removedChecked.Length > 0 || addedChecked.Length > 0)
+        {
+            CheckedItemsChanged?.Invoke(this, new TreeViewCheckedItemsChangedEventArgs(
+                removedChecked,
+                addedChecked));
+        }
+    }
+
+    private object[] CaptureSelectedItems()
+    {
+        var items = SelectedItems.Cast<object>().ToArray();
+        return items.Length == 0 && SelectedItem is { } selectedItem
+            ? [selectedItem]
+            : items;
+    }
+
+    private void HandleSelectionChangedDuringItemsSourceReplay(SelectionChangedEventArgs args)
+    {
+        if (IsItemsSourceReplayPending && ReferenceEquals(args.Source, this))
+        {
+            if (_itemsSourceReplayInternalDepth == 0)
+            {
+                RecordExplicitSelectionUpdateDuringReplay(false);
+            }
+            args.Handled = true;
+        }
+    }
+
+    private void RecordExplicitSelectionUpdateDuringReplay(bool propertyAssignment)
+    {
+        if (IsItemsSourceReplayPending && _itemsSourceReplayInternalDepth == 0 &&
+            (propertyAssignment || !SyncingSelectedItems))
+        {
+            _hasExplicitSelectionUpdateDuringReplay = true;
+            _hasExplicitSelectionAssignmentDuringReplay |= propertyAssignment;
+            _explicitSelectedItemPath = BuildNodeIdentityPath(SelectedItem as ITreeItemNode);
+            _explicitSelectedItemPaths = BuildNodeIdentityPaths(SelectedItems);
+        }
+    }
+
+    private void RecordExplicitCheckedUpdateDuringReplay(bool propertyAssignment)
+    {
+        if (IsItemsSourceReplayPending && _itemsSourceReplayInternalDepth == 0 &&
+            (propertyAssignment || !SyncingCheckedItems))
+        {
+            _hasExplicitCheckedUpdateDuringReplay = true;
+            _hasExplicitCheckedAssignmentDuringReplay |= propertyAssignment;
+            _explicitCheckedItemPaths = BuildNodeIdentityPaths(CheckedItems);
+        }
+    }
+
+    internal void CaptureOwnerSelectionForItemsSourceReplay()
+    {
+        if (!IsItemsSourceReplayPending)
+        {
+            return;
+        }
+
+        _hasExplicitSelectionUpdateDuringReplay = true;
+        _explicitSelectedItemPath = BuildNodeIdentityPath(SelectedItem as ITreeItemNode);
+        _explicitSelectedItemPaths = BuildNodeIdentityPaths(SelectedItems);
+        _hasExplicitCheckedUpdateDuringReplay = true;
+        _explicitCheckedItemPaths = BuildNodeIdentityPaths(CheckedItems);
+    }
+
     private void ReplayLoadedState()
     {
         ConfigureDefaultSelectedPaths();
@@ -24,7 +225,10 @@ public partial class TreeView
         }
     }
 
-    private void ConfigureStateAfterItemsSourceChanged()
+    private void ConfigureStateAfterItemsSourceChanged(
+        ItemsSourceReplayState state,
+        bool hasExplicitSelectionUpdate,
+        bool hasExplicitCheckedUpdate)
     {
         if (!IsLoaded)
         {
@@ -32,36 +236,46 @@ public partial class TreeView
         }
 
         var isMultiple        = (SelectionMode & SelectionMode.Multiple) == SelectionMode.Multiple;
-        var selectedItemPath  = BuildNodeIdentityPath(SelectedItem as ITreeItemNode);
-        var selectedItemPaths = BuildNodeIdentityPaths(SelectedItems);
-        var checkedItemPaths  = BuildNodeIdentityPaths(CheckedItems);
+        var selectedItemPath  = hasExplicitSelectionUpdate ? _explicitSelectedItemPath : state.SelectedItemPath;
+        var selectedItemPaths = hasExplicitSelectionUpdate ? _explicitSelectedItemPaths : state.SelectedItemPaths;
+        var checkedItemPaths  = hasExplicitCheckedUpdate ? _explicitCheckedItemPaths : state.CheckedItemPaths;
 
-        SetCurrentValue(SelectedItemProperty, null);
-        SelectedItems.Clear();
+        // Preserve realized selected containers when they still represent the same item instances.
+        // A changed path or item instance must still be remapped from the pre-reset snapshot.
+        var reuseSelection = CanReuseCurrentSelection(isMultiple, selectedItemPath, selectedItemPaths);
+        if (!reuseSelection)
+        {
+            SetCurrentValue(SelectedItemProperty, null);
+            SelectedItems.Clear();
+        }
+
         CheckedItems.Clear();
 
-        var selectionRestored = false;
-        if (isMultiple && selectedItemPaths is { Count: > 0 })
+        if (!reuseSelection)
         {
-            foreach (var path in selectedItemPaths)
+            var selectionRestored = false;
+            if (isMultiple && selectedItemPaths is { Count: > 0 })
             {
-                selectionRestored |= TrySelectNodePath(path);
+                foreach (var path in selectedItemPaths)
+                {
+                    selectionRestored |= TrySelectNodePath(path);
+                }
             }
-        }
-        if (!selectionRestored && selectedItemPath != null)
-        {
-            selectionRestored = TrySelectNodePath(selectedItemPath);
-        }
-        if (!selectionRestored && selectedItemPaths != null)
-        {
-            foreach (var path in selectedItemPaths)
+            if (!selectionRestored && selectedItemPath != null)
             {
-                selectionRestored |= TrySelectNodePath(path);
+                selectionRestored = TrySelectNodePath(selectedItemPath);
             }
-        }
-        if (!selectionRestored)
-        {
-            ConfigureDefaultSelectedPaths();
+            if (!selectionRestored && selectedItemPaths != null)
+            {
+                foreach (var path in selectedItemPaths)
+                {
+                    selectionRestored |= TrySelectNodePath(path);
+                }
+            }
+            if (!selectionRestored && !hasExplicitSelectionUpdate)
+            {
+                ConfigureDefaultSelectedPaths();
+            }
         }
 
         var checkedRestored = false;
@@ -72,7 +286,7 @@ public partial class TreeView
                 checkedRestored |= TryCheckNodePath(path);
             }
         }
-        if (!checkedRestored)
+        if (!checkedRestored && !hasExplicitCheckedUpdate)
         {
             ConfigureDefaultCheckedPaths();
         }
@@ -85,6 +299,60 @@ public partial class TreeView
         {
             ConfigureDefaultExpandedPaths();
         }
+    }
+
+    private bool CanReuseCurrentSelection(
+        bool isMultiple,
+        TreeNodePath? selectedItemPath,
+        List<TreeNodePath>? selectedItemPaths)
+    {
+        if (isMultiple)
+        {
+            if (selectedItemPaths == null ||
+                selectedItemPaths.Count == 0 ||
+                selectedItemPaths.Count != SelectedItems.Count)
+            {
+                return false;
+            }
+
+            var selectedInstances = new HashSet<object>(
+                SelectedItems.Cast<object>(), ReferenceEqualityComparer.Instance);
+            foreach (var path in selectedItemPaths)
+            {
+                if (!TryResolveSelectedNodePath(path, out var item) || !selectedInstances.Contains(item!))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        if (SelectedItem == null)
+        {
+            // Nothing to reuse; let the replay reapply DefaultSelectedPaths as before.
+            return false;
+        }
+
+        return selectedItemPath != null &&
+               TryResolveSelectedNodePath(selectedItemPath, out var selectedItem) &&
+               ReferenceEquals(selectedItem, SelectedItem);
+    }
+
+    private bool TryResolveSelectedNodePath(TreeNodePath path, out object? item)
+    {
+        object? resolved     = null;
+        var     containerSet = false;
+        TraverseDefaultStatePath(path, (treeViewItem, i) =>
+        {
+            if (i == path.Length - 1)
+            {
+                resolved     = TreeItemFromContainer(treeViewItem);
+                containerSet = treeViewItem.IsSelected;
+            }
+        });
+        item = resolved;
+        return resolved != null && containerSet;
     }
 
     private static List<TreeNodePath>? BuildNodeIdentityPaths(IList? nodes)
@@ -382,7 +650,7 @@ public partial class TreeView
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel != null)
             {
-                topLevel.GetLayoutManager()?.ExecuteLayoutPass();
+                topLevel.UpdateLayout();
             }
         }
         if (current.Presenter?.Panel is { })

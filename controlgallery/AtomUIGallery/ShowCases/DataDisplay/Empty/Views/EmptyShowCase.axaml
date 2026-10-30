@@ -6,8 +6,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Empty"
              x:DataType="vm:EmptyViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Empty"
                     Category="{gallery:EmptyShowCaseLangResource ComponentCategory}"
@@ -17,8 +17,48 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="TemplatedControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:EmptyViewModel">
+                    <gallery:SemanticPartPreview Name="EmptySemanticPreview"
+                                                 SemanticOwnerType="{x:Type atom:Empty}">
+                        <gallery:SemanticPartPreview.Styles>
+                            <Style Selector="atom|Empty.semantic-preview">
+                                <atom:EmptyImageStyle x:SetterTargetType="Control">
+                                    <Setter Property="Height" Value="60" />
+                                </atom:EmptyImageStyle>
+                            </Style>
+                        </gallery:SemanticPartPreview.Styles>
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Empty Name="EmptySemanticOwner"
+                                        Classes="semantic-preview"
+                                        PresetImage="Simple"
+                                        SizeType="Small"
+                                        Description="{gallery:EmptyShowCaseLangResource P2DescriptionCustomizeDescription}">
+                                <atom:Empty.Footer>
+                                    <atom:Button ButtonType="Primary"
+                                                 Content="{gallery:EmptyShowCaseLangResource P2ContentCreateNow}" />
+                                </atom:Empty.Footer>
+                            </atom:Empty>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:EmptyShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="image"
+                                Description="{gallery:EmptyShowCaseLangResource SemanticImageDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="description"
+                                Description="{gallery:EmptyShowCaseLangResource SemanticDescriptionDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="footer"
+                                Description="{gallery:EmptyShowCaseLangResource SemanticFooterDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -60,12 +100,14 @@
                     IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:EmptyViewModel">
-                    <StackPanel Orientation="Vertical" Spacing="10">
-                        <atom:Empty ImagePath="avares://AtomUIGallery/Assets/EmptyShowCase/empty.svg"
-                                             SizeType="Large"
-                                             Description="{gallery:EmptyShowCaseLangResource P2DescriptionCustomizeDescription}" />
-                        <atom:Button HorizontalAlignment="Center" ButtonType="Primary" Content="{gallery:EmptyShowCaseLangResource P2ContentCreateNow}" />
-                    </StackPanel>
+                    <atom:Empty ImagePath="avares://AtomUIGallery/Assets/EmptyShowCase/empty.svg"
+                                SizeType="Large"
+                                Description="{gallery:EmptyShowCaseLangResource P2DescriptionCustomizeDescription}">
+                        <atom:Empty.Footer>
+                            <atom:Button ButtonType="Primary"
+                                         Content="{gallery:EmptyShowCaseLangResource P2ContentCreateNow}" />
+                        </atom:Empty.Footer>
+                    </atom:Empty>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
@@ -80,7 +122,72 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem Title="{gallery:EmptyShowCaseLangResource SemanticPartStyleTitle}"
+                                      Description="{gallery:EmptyShowCaseLangResource SemanticPartStyleDescription}"
+                                      SourceKey="empty-semantic-part"
+                                      BadgeText="6.0.0"
+                                      Span="Full"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:EmptyViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="16">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Empty.semantic-style-demo">
+                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                        <Setter Property="Padding" Value="16" />
+                                        <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="StrokeDashArray" Value="4,2" />
+                                    </Style>
+                                    <Style Selector="atom|Empty.semantic-object-styles">
+                                        <Setter Property="Background" Value="#F5F5F5" />
+                                        <Setter Property="CornerRadius" Value="8" />
+                                        <atom:EmptyDescriptionStyle x:SetterTargetType="atom:TextBlock">
+                                            <Setter Property="Foreground" Value="#1890FF" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                        </atom:EmptyDescriptionStyle>
+                                        <atom:EmptyFooterStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Margin" Value="0,16,0,0" />
+                                        </atom:EmptyFooterStyle>
+                                    </Style>
+                                    <Style Selector="atom|Empty.semantic-function-styles">
+                                        <Setter Property="Background" Value="#E6F7FF" />
+                                        <Setter Property="BorderBrush" Value="#91D5FF" />
+                                        <Setter Property="StrokeDashArray" Value="{x:Null}" />
+                                        <atom:EmptyDescriptionStyle x:SetterTargetType="atom:TextBlock">
+                                            <Setter Property="Foreground" Value="#1890FF" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                        </atom:EmptyDescriptionStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:Empty Classes="semantic-style-demo semantic-object-styles"
+                                            PresetImage="Simple"
+                                            SizeType="Small"
+                                            Description="{gallery:EmptyShowCaseLangResource P2DescriptionObjectStyles}">
+                                    <atom:Empty.Footer>
+                                        <atom:Button ButtonType="Primary"
+                                                     Content="{gallery:EmptyShowCaseLangResource P2ContentCreateNow}" />
+                                    </atom:Empty.Footer>
+                                </atom:Empty>
+
+                                <atom:Empty Classes="semantic-style-demo semantic-function-styles"
+                                            PresetImage="Simple"
+                                            SizeType="Small"
+                                            Description="{gallery:EmptyShowCaseLangResource P2DescriptionFunctionStyles}">
+                                    <atom:Empty.Footer>
+                                        <atom:Button ButtonType="Primary"
+                                                     Content="{gallery:EmptyShowCaseLangResource P2ContentCreateNow}" />
+                                    </atom:Empty.Footer>
+                                </atom:Empty>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

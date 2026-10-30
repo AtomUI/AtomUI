@@ -6,8 +6,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.CheckBox"
              x:DataType="vm:CheckBoxViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="CheckBox"
                     Category="{gallery:CheckBoxShowCaseLangResource ComponentCategory}"
@@ -17,8 +17,31 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractCheckBox" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:CheckBoxViewModel">
+                    <gallery:SemanticPartPreview Name="CheckBoxSemanticPreview"
+                                                 SemanticOwner="{Binding #CheckBoxSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:CheckBox}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:CheckBox Name="CheckBoxSemanticOwner"
+                                           Content="{gallery:CheckBoxShowCaseLangResource P2ContentCheckbox}" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:CheckBoxShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="icon"
+                                Description="{gallery:CheckBoxShowCaseLangResource SemanticIconDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="label"
+                                Description="{gallery:CheckBoxShowCaseLangResource SemanticLabelDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -203,7 +226,54 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:CheckBoxShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:CheckBoxShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="checkbox-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:CheckBoxViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Left"
+                                        Spacing="12">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|CheckBox.semantic-fixed">
+                                        <atom:CheckBoxIconStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="CornerRadius" Value="6" />
+                                        </atom:CheckBoxIconStyle>
+                                        <atom:CheckBoxLabelStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#1677ff" />
+                                        </atom:CheckBoxLabelStyle>
+                                    </Style>
+                                    <Style Selector="atom|CheckBox.semantic-conditional">
+                                        <atom:CheckBoxIconStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="BorderBrush" Value="#faad14" />
+                                        </atom:CheckBoxIconStyle>
+                                    </Style>
+                                    <Style Selector="atom|CheckBox.semantic-conditional:checked">
+                                        <atom:CheckBoxIconStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="Background" Value="#faad14" />
+                                        </atom:CheckBoxIconStyle>
+                                        <atom:CheckBoxLabelStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#faad14" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                        </atom:CheckBoxLabelStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:CheckBox Classes="semantic-fixed"
+                                               Content="{gallery:CheckBoxShowCaseLangResource SemanticPartFixedTitle}" />
+                                <atom:CheckBox Classes="semantic-conditional"
+                                               IsChecked="True"
+                                               Content="{gallery:CheckBoxShowCaseLangResource SemanticPartConditionalTitle}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

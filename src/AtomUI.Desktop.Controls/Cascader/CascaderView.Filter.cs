@@ -6,6 +6,8 @@ namespace AtomUI.Desktop.Controls;
 
 public partial class CascaderView
 {
+    #region 内部属性定义
+
     internal static readonly DirectProperty<CascaderView, bool> IsFilteringProperty =
         AvaloniaProperty.RegisterDirect<CascaderView, bool>(nameof(IsFiltering),
             o => o.IsFiltering,
@@ -32,6 +34,8 @@ public partial class CascaderView
         set => SetAndRaise(FilteredPathInfosProperty, ref _filteredPathInfos, value);
     }
     
+    #endregion
+
     private List<CascaderViewFilterListItemData>? _allPathInfos;
     private CascaderViewFilterList? _filterList;
     
@@ -73,10 +77,13 @@ public partial class CascaderView
                     filteredPathInfos.Add(pathInfo);
                 }
             }
+            var previousCandidate = _filterList?.CandidateSelectedItem as CascaderViewFilterListItemData;
+            SetKeyboardCandidateOption(null);
             _filterList?.ClearCandidate();
             FilteredPathInfos = filteredPathInfos;
             IsFiltering       = true;
             FilterResultCount = FilteredPathInfos.Count;
+            _filterList?.RestoreCandidate(previousCandidate);
         }
         else
         {
@@ -123,14 +130,13 @@ public partial class CascaderView
     private void CollectionPaths(ICascaderOption option, List<CascaderViewFilterListItemData> result)
     {
         Debug.Assert(Filter != null);
+        if (!option.HasChildren() || IsAllowSelectParent || IsCheckable)
+        {
+            result.Add(GetFullPath(option));
+        }
         foreach (var childItem in option.Children)
         {
             CollectionPaths(childItem, result);
-        }
-
-        if (!option.HasChildren())
-        {
-            result.Add(GetFullPath(option));
         }
     }
     
@@ -143,6 +149,8 @@ public partial class CascaderView
         FilteredPathInfos = null;
         _allPathInfos     = null;
     }
+
+    #region 内部协作 API
 
     internal bool TryMoveFilterCandidate(int delta)
     {
@@ -161,9 +169,11 @@ public partial class CascaderView
             return false;
         }
 
-        var itemData = _filterList.GetCandidateOrFirstEnabledItem();
+        var itemData = _filterList.CandidateSelectedItem as CascaderViewFilterListItemData;
         return itemData != null && TrySelectFilterResult(itemData);
     }
+
+    #endregion
 
     private void HandleFilterListSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
@@ -175,23 +185,36 @@ public partial class CascaderView
 
     private bool TrySelectFilterResult(CascaderViewFilterListItemData itemData)
     {
-        if (!itemData.IsEnabled)
+        var paths = itemData.ExpandItems;
+        if (!itemData.IsEnabled || paths == null || paths.Count == 0)
         {
             return false;
         }
-
-        var paths = itemData.ExpandItems;
-        if (paths?.Count > 0)
+        var target = paths[^1];
+        if (!IsOptionInSource(target) || !IsOptionEnabled(target))
         {
-            var targetNode = paths[^1];
-            if (!IsCheckable)
-            {
-                ClearFilter();
-                SelectOptionFromInteraction(targetNode);
-                return true;
-            }
+            return false;
         }
-
-        return false;
+        if (IsCheckable)
+        {
+            if (!TryCommitOption(target))
+            {
+                return false;
+            }
+            ClearFilter();
+            SetKeyboardCandidateOption(target);
+            return true;
+        }
+        if (!target.IsEffectiveLeaf() && !IsAllowSelectParent)
+        {
+            return false;
+        }
+        ClearFilter();
+        if (!TryCommitOption(target))
+        {
+            return false;
+        }
+        CloseRequested?.Invoke(this, EventArgs.Empty);
+        return true;
     }
 }

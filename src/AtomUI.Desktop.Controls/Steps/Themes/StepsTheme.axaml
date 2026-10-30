@@ -8,18 +8,28 @@
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
         <Setter Property="Template">
             <ControlTemplate>
-                <ItemsPresenter Name="PART_ItemsPresenter">
-                    <ItemsPresenter.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <atom:StepsPanel
-                                Type="{Binding Type, RelativeSource={RelativeSource AncestorType=atom:Steps}}"
-                                Orientation="{Binding Orientation, RelativeSource={RelativeSource AncestorType=atom:Steps}}"
-                                Offset="{Binding Offset, RelativeSource={RelativeSource AncestorType=atom:Steps}}"
-                                HorizontalContentAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType=atom:Steps}}"
-                                TitlePlacement="{Binding TitlePlacement, RelativeSource={RelativeSource AncestorType=atom:Steps}}" />
-                        </ItemsPanelTemplate>
-                    </ItemsPresenter.ItemsPanel>
-                </ItemsPresenter>
+                <atom:DashedBorder Background="{TemplateBinding Background}"
+                                   BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                   BorderBrush="{TemplateBinding BorderBrush}"
+                                   BorderThickness="{TemplateBinding BorderThickness}"
+                                   CornerRadius="{TemplateBinding CornerRadius}"
+                                   Padding="{TemplateBinding Padding}"
+                                   StrokeDashArray="{TemplateBinding BorderDashArray}"
+                                   StrokeDaskOffset="{TemplateBinding BorderDashOffset}">
+                    <ItemsPresenter Name="PART_ItemsPresenter">
+                        <ItemsPresenter.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <atom:StepsPanel
+                                    Type="{Binding Type, RelativeSource={RelativeSource AncestorType=atom:Steps}}"
+                                    Orientation="{Binding Orientation, RelativeSource={RelativeSource AncestorType=atom:Steps}}"
+                                    Offset="{Binding Offset, RelativeSource={RelativeSource AncestorType=atom:Steps}}"
+                                    HorizontalContentAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType=atom:Steps}}"
+                                    TitlePlacement="{Binding TitlePlacement, RelativeSource={RelativeSource AncestorType=atom:Steps}}"
+                                    MinItemWidth="{atom:StepsTokenResource IconContainerSize}" />
+                            </ItemsPanelTemplate>
+                        </ItemsPresenter.ItemsPanel>
+                    </ItemsPresenter>
+                </atom:DashedBorder>
             </ControlTemplate>
         </Setter>
     </ControlTheme>

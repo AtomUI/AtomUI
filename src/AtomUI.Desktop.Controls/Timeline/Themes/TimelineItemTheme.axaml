@@ -11,41 +11,100 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <atomc:TimelineItemPanel Name="RootLayout"
-                                         IsOdd="{TemplateBinding IsOdd}"
-                                         Mode="{TemplateBinding Mode}"
-                                         Orientation="{TemplateBinding Orientation}"
-                                         IsLabelLayout="{TemplateBinding IsLabelLayout}"
-                                         IndicatorSpacing="{atom:SharedTokenResource UniformlyPaddingXS}">
-                    <atom:TextBlock Name="Label"
-                                    VerticalAlignment="Top"
-                                    TextWrapping="Wrap"
-                                    Text="{TemplateBinding Label}" />
-                    <atomc:TimelineIndicator Name="Indicator"
-                                             Orientation="{TemplateBinding Orientation}"
-                                             IsFirst="{TemplateBinding IsFirst}"
-                                             IsLast="{TemplateBinding IsLast}"
-                                             IndicatorColor="{TemplateBinding IndicatorColor}"
-                                             IndicatorIcon="{TemplateBinding IndicatorIcon}"
-                                             NextIsPending="{TemplateBinding NextIsPending}" />
-                    <ContentPresenter Name="ContentPresenter"
-                                      Content="{TemplateBinding Content, Converter={StaticResource StringToTextBlockConverter}}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                         Classes.semantic-item-wrapper="True">
+                    <atomc:TimelineSectionPanel Name="Section"
+                                                Classes.semantic-item-section="True"
+                                                IsOdd="{TemplateBinding IsOdd}"
+                                                Mode="{TemplateBinding Mode}"
+                                                Orientation="{TemplateBinding Orientation}"
+                                                IsLabelLayout="{TemplateBinding IsLabelLayout}"
+                                                AxisOverflow="{TemplateBinding Padding}"
+                                                IndicatorSpacing="{atom:SharedTokenResource UniformlyPaddingXS}">
+                        <StackPanel Name="Header" Classes.semantic-item-header="True">
+                            <atom:TextBlock Name="Label"
+                                            Classes.semantic-item-title="True"
+                                            VerticalAlignment="Top"
+                                            TextWrapping="Wrap"
+                                            IsVisible="{TemplateBinding Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                            Text="{TemplateBinding Label}" />
+                        </StackPanel>
+                        <atomc:TimelineIndicator Name="Indicator"
+                                                 Classes.semantic-indicator="True"
+                                                 Orientation="{TemplateBinding Orientation}"
+                                                 IsFirst="{TemplateBinding IsFirst}"
+                                                 IsLast="{TemplateBinding IsLast}"
+                                                 IndicatorColor="{TemplateBinding IndicatorColor}"
+                                                 IndicatorIcon="{TemplateBinding IndicatorIcon}"
+                                                 NextIsPending="{TemplateBinding NextIsPending}" />
+                        <ContentPresenter Name="ContentPresenter"
+                                          Classes.semantic-item-content="True"
+                                          Content="{TemplateBinding Content, Converter={StaticResource StringToTextBlockConverter}}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}" />
+                    </atomc:TimelineSectionPanel>
                 </atomc:TimelineItemPanel>
             </ControlTemplate>
         </Setter>
 
+        <!-- Theme defaults remain overridable by generated Semantic Part styles. -->
+        <Style Selector="^[Orientation=Vertical][Mode=Start][IsLabelLayout=False] /template/ ContentPresenter#ContentPresenter">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+        <Style Selector="^[Orientation=Vertical][Mode=End][IsLabelLayout=False] /template/ ContentPresenter#ContentPresenter">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+        <Style Selector="^[Orientation=Horizontal][Mode=Alternate] /template/ StackPanel#Header, ^[Orientation=Horizontal][IsLabelLayout=True] /template/ StackPanel#Header">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="^[Orientation=Horizontal][Mode=Alternate] /template/ ContentPresenter#ContentPresenter, ^[Orientation=Horizontal][IsLabelLayout=True] /template/ ContentPresenter#ContentPresenter">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="^[Orientation=Vertical][Mode=Start][IsLabelLayout=True]">
+            <Style Selector="^ /template/ atom|TextBlock#Label">
+                <Setter Property="TextAlignment" Value="Right" />
+            </Style>
+            <!-- Content may be created by a converter or supplied by the caller.
+                 Inherit alignment from the presenter instead of crossing its content tree. -->
+            <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="TextBlock.TextAlignment" Value="Left" />
+            </Style>
+        </Style>
+        <Style Selector="^[Orientation=Vertical][Mode=End][IsLabelLayout=True]">
+            <Style Selector="^ /template/ atom|TextBlock#Label">
+                <Setter Property="TextAlignment" Value="Left" />
+            </Style>
+            <!-- Content may be created by a converter or supplied by the caller.
+                 Inherit alignment from the presenter instead of crossing its content tree. -->
+            <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="TextBlock.TextAlignment" Value="Right" />
+            </Style>
+        </Style>
+        <Style Selector="^[Orientation=Vertical][Mode=Alternate][IsOdd=False]">
+            <Style Selector="^ /template/ atom|TextBlock#Label">
+                <Setter Property="TextAlignment" Value="Right" />
+            </Style>
+            <!-- Content may be created by a converter or supplied by the caller.
+                 Inherit alignment from the presenter instead of crossing its content tree. -->
+            <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="TextBlock.TextAlignment" Value="Left" />
+            </Style>
+        </Style>
+        <Style Selector="^[Orientation=Vertical][Mode=Alternate][IsOdd=True]">
+            <Style Selector="^ /template/ atom|TextBlock#Label">
+                <Setter Property="TextAlignment" Value="Left" />
+            </Style>
+            <!-- Content may be created by a converter or supplied by the caller.
+                 Inherit alignment from the presenter instead of crossing its content tree. -->
+            <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="TextBlock.TextAlignment" Value="Right" />
+            </Style>
+        </Style>
+
         <Style Selector="^[Orientation=Vertical]">
+            <Setter Property="Padding" Value="{atom:TimelineTokenResource ItemPaddingBottom}" />
+
             <Style Selector="^ /template/ atomc|TimelineIndicator#Indicator">
                 <Setter Property="Width" Value="{atom:TimelineTokenResource IndicatorSize}" />
                 <Setter Property="VerticalAlignment" Value="Stretch" />
-            </Style>
-
-            <Style Selector="^ /template/ atom|TextBlock#Label">
-                <Setter Property="Padding" Value="{atom:TimelineTokenResource ItemPaddingBottom}" />
-            </Style>
-
-            <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
-                <Setter Property="Padding" Value="{atom:TimelineTokenResource ItemPaddingBottom}" />
             </Style>
         </Style>
 
@@ -58,28 +117,19 @@
 
         <!-- 非 Reverse 状态下，下一个是 pending item 设置大内间距 -->
         <Style Selector="^[Orientation=Vertical][NextIsPending=True][IsReverse=False]">
-            <Style Selector="^ /template/ atom|TextBlock#Label">
-                <Setter Property="Padding"
-                        Value="{atom:TimelineTokenResource ItemPaddingBottomLG}" />
-            </Style>
-
-            <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
-                <Setter Property="Padding"
-                        Value="{atom:TimelineTokenResource ItemPaddingBottomLG}" />
-            </Style>
+            <Setter Property="Padding"
+                    Value="{atom:TimelineTokenResource ItemPaddingBottomLG}" />
         </Style>
 
         <!-- 在 Reverse 下，pending item 自己设置大内间距 -->
         <Style Selector="^[Orientation=Vertical][IsPending=True][IsReverse=True]">
-            <Style Selector="^ /template/ atom|TextBlock#Label">
-                <Setter Property="Padding"
-                        Value="{atom:TimelineTokenResource ItemPaddingBottomLG}" />
-            </Style>
+            <Setter Property="Padding"
+                    Value="{atom:TimelineTokenResource ItemPaddingBottomLG}" />
+        </Style>
 
-            <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
-                <Setter Property="Padding"
-                        Value="{atom:TimelineTokenResource ItemPaddingBottomLG}" />
-            </Style>
+        <!-- 对齐上游 li:last-child：最后一个节点不保留下内边距 -->
+        <Style Selector="^[Orientation=Vertical][IsLast=True]">
+            <Setter Property="Padding" Value="0" />
         </Style>
 
         <Style Selector="^[Orientation=Vertical][Mode=Start]">

@@ -5,11 +5,13 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomUICircleProgress = AtomUI.Desktop.Controls.CircleProgress;
 using AtomUIDashboardProgress = AtomUI.Desktop.Controls.DashboardProgress;
 using AtomUIProgressBar = AtomUI.Desktop.Controls.ProgressBar;
+using AtomUIStepsProgressBar = AtomUI.Desktop.Controls.StepsProgressBar;
 using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls.Tests.ProgressBar;
@@ -76,12 +78,12 @@ public class ProgressBarBehaviorTests
 
         ShowInWindow(progress, () =>
         {
-            var drawingGroup   = RenderToDrawingGroup(progress);
-            var successDrawing = EnumerateGeometryDrawings(drawingGroup)
-                .Single(drawing => ReferenceEquals(drawing.Brush, progress.SuccessStrokeBrush));
+            var successTrack = progress.GetVisualDescendants()
+                                       .OfType<Border>()
+                                       .Single(static border => border.Name == "PART_ProgressSuccess");
 
-            successDrawing.Geometry.ShouldNotBeNull();
-            successDrawing.Geometry!.Bounds.Width.ShouldBe(25, 0.001);
+            successTrack.Background.ShouldBeSameAs(progress.SuccessStrokeBrush);
+            successTrack.Bounds.Width.ShouldBe(25, 0.001);
         });
     }
 
@@ -137,6 +139,36 @@ public class ProgressBarBehaviorTests
         GetNonPublicProperty<double>(progress, "IndicatorAngle").ShouldBe(142.5d);
     }
 
+    [Fact]
+    public void Steps_Automatic_ChunkWidth_Remains_Automatic_Across_SizeType_Changes()
+    {
+        var progress = new AtomUIStepsProgressBar
+        {
+            Steps = 3,
+            IsProgressInfoVisible = false
+        };
+
+        ShowInWindow(progress, () =>
+        {
+            progress.ChunkWidth.ShouldBe(double.NaN);
+
+            progress.Measure(Size.Infinity);
+            progress.DesiredSize.Width.ShouldBe(46d);
+
+            progress.SizeType = global::AtomUI.SizeType.Middle;
+            Dispatcher.UIThread.RunJobs();
+            progress.Measure(Size.Infinity);
+            progress.ChunkWidth.ShouldBe(double.NaN);
+            progress.DesiredSize.Width.ShouldBe(22d);
+
+            progress.SizeType = global::AtomUI.SizeType.Small;
+            Dispatcher.UIThread.RunJobs();
+            progress.Measure(Size.Infinity);
+            progress.ChunkWidth.ShouldBe(double.NaN);
+            progress.DesiredSize.Width.ShouldBe(10d);
+        });
+    }
+
     private static void ShowInWindow(Control content, Action assertion)
     {
         var window = new AvaloniaWindow
@@ -155,29 +187,6 @@ public class ProgressBarBehaviorTests
         finally
         {
             window.Close();
-        }
-    }
-
-    private static DrawingGroup RenderToDrawingGroup(AtomUIProgressBar progress)
-    {
-        var drawingGroup = new DrawingGroup();
-        using var context = drawingGroup.Open();
-        progress.Render(context);
-        return drawingGroup;
-    }
-
-    private static IEnumerable<GeometryDrawing> EnumerateGeometryDrawings(Drawing drawing)
-    {
-        if (drawing is GeometryDrawing geometryDrawing)
-        {
-            yield return geometryDrawing;
-        }
-        else if (drawing is DrawingGroup drawingGroup)
-        {
-            foreach (var child in drawingGroup.Children.SelectMany(EnumerateGeometryDrawings))
-            {
-                yield return child;
-            }
         }
     }
 

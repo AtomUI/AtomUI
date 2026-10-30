@@ -1,3 +1,6 @@
+using Avalonia.Input;
+using Avalonia.Headless;
+using AtomUI.Controls.Commons;
 using System.ComponentModel;
 using AtomUI.Controls.Primitives;
 using Avalonia;
@@ -51,6 +54,30 @@ public class RateBindingTests
             Dispatcher.UIThread.RunJobs();
 
             viewModel.Value.ShouldBe(4.0);
+
+            var owner = TopLevel.GetTopLevel(rate).ShouldBeOfType<AvaloniaWindow>();
+            var star = rate.GetVisualDescendants().OfType<RateItem>().First();
+            var point = star.TranslatePoint(new Point(star.Bounds.Width / 2, star.Bounds.Height / 2), owner).ShouldNotBeNull();
+            var other = new AvaloniaWindow { Width = 360, Height = 240, Content = new Border { Background = Brushes.Blue } };
+            other.Show();
+            try
+            {
+                other.MouseMove(point);
+                other.MouseDown(point, MouseButton.Left);
+                other.MouseUp(point, MouseButton.Left);
+                rate.Value.ShouldBe(4.0);
+                viewModel.Value.ShouldBe(4.0, "foreign-window input must not write back a rating");
+
+                owner.MouseMove(point);
+                owner.MouseDown(point, MouseButton.Left);
+                owner.MouseUp(point, MouseButton.Left);
+                rate.Value.ShouldBe(1.0);
+                viewModel.Value.ShouldBe(1.0);
+            }
+            finally
+            {
+                other.Close();
+            }
         });
     }
 

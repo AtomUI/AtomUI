@@ -8,10 +8,31 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
-## 2026-09-05
+## 2026-10-04
 
 - Fix
+  - Remove inherited ListBox item dividers from the shared Mentions candidate dropdown.
+
+## 2026-09-05
+
+- API
+  - Promote `IsPopupPinnedOpen` from internal to public, aligning with Select and AutoComplete so the Gallery Semantic Parts preview can pin the candidate Popup open and expose the `popup.*` parts.
+- Architecture
+  - Publish the Mentions Semantic Part contract with nine parts (`root`, `prefix`, `content`, `placeholder`, `input`, `clear`, `popup.root`, `popup.list`, `popup.listItem`) aligned with the Ant Design Mentions semantic structure; see `Mentions.SemanticParts.cs` and `semantic-part.md`.
+  - Reuse the AutoCompleteTextArea cross-nested owner routing for the input region: `MentionTextArea` carries the `.semantic-scope-input` anchor, and `prefix` / `content` / `placeholder` / `input` / `clear` markers live in the shared `TextAreaTheme` and `TextAreaDecoratedBoxTheme`.
+  - Add the missing `.semantic-scope-prefix` anchor to the shared `TextAreaDecoratedBoxTheme` so the TextArea-based prefix part can route through the shared scope chain, matching `AddOnDecoratedBoxTheme` and `LineEditTheme`.
+  - Keep the popup triple-key structure (`popup.root` static `PopupFrame`, `popup.list` static `CandidateList`, `popup.listItem` runtime-injected at `CandidateList` container creation) identical to AutoComplete.
+- Tests
+  - Add `MentionsSemanticPartTests` covering descriptor shape, template marker inventory, default-theme non-consumption, generated style hits and popup part marker exposure.
+- Fix
   - The shared `CandidateList` now maintains `IsDefaultEmptyIndicatorVisible`, so a Mentions dropdown with no matching options shows the built-in default `Empty` indicator instead of a blank panel, matching Ant Design Mentions' default `notFoundContent` rendering. The `EmptyIndicator` / `EmptyIndicatorTemplate` / `IsShowEmptyIndicator` / `EmptyIndicatorPadding` public properties remain unwired for Mentions itself (see overview limitation note).
+
+## 2026-09-04
+
+- Behavior
+  - Apply pinned light-dismiss suppression before the first candidate Popup open and restore the template default after unpinning.
+- Tests
+  - Cover a pin request made before template materialization, including physical open state and unpin restoration.
 
 ## 2026-08-25
 

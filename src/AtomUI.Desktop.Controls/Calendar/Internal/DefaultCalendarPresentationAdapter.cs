@@ -23,37 +23,26 @@ internal sealed class DefaultCalendarPresentationAdapter : ICalendarPresentation
     public CalendarEffectiveRange GetEffectiveRange(CalendarDateRange? validRange) =>
         CalendarEffectiveRange.FromValidRange(validRange);
 
-    public CalendarViewCell CreateCell() => new();
+    public DateViewerCellContext? CreateCellContext(Internal.DateViewer.DatePanelSession session, Internal.DateViewer.DateViewerCellModel model) =>
+        model.Value is { } value && model.Kind != DateViewerCellType.Week
+            ? new CalendarCellContext(value, session.Input.Today, model.Kind, model.DisplayText,
+                model.IsToday, model.IsInView, model.IsSelected, model.IsDisabled, model.IsFocused) : null;
 
-    public CalendarCellContext CreateCellContext(CalendarView owner, CalendarViewCellModel model) =>
-        new(
-            model.Value,
-            owner.Today == default ? DateTime.Today : owner.Today.Date,
-            model.Kind == CalendarViewCellKind.Month ? CalendarCellType.Month : CalendarCellType.Date,
-            model.DisplayText,
-            model.IsToday,
-            model.IsInView,
-            model.IsSelected,
-            model.IsDisabled);
-
-    public void ApplyCellPresentation(CalendarViewCell cell, CalendarView owner, CalendarViewCellModel model)
+    public string GetAutomationName(Internal.DateViewer.DatePanelSession session, Internal.DateViewer.DateViewerCellModel model)
     {
-    }
+        if (model.Value is not { } value)
+        {
+            return string.Empty;
+        }
 
-    public void ClearCellPresentation(CalendarViewCell cell)
-    {
-    }
-
-    public string GetAutomationName(CalendarView owner, CalendarViewCellModel model)
-    {
-        var culture = owner.Culture ?? CultureInfo.CurrentCulture;
+        var culture = session.Input.Culture;
         var localizer = Application.Current is { } application
             ? global::AtomUI.ApplicationExtensions.GetLocalizer(application)
             : null;
         return model.Kind switch
         {
-            CalendarViewCellKind.Date => model.Value.ToString("D", culture),
-            CalendarViewCellKind.Month => model.Value.ToString("Y", culture),
+            DateViewerCellType.Date => value.ToString("D", culture),
+            DateViewerCellType.Month => value.ToString("Y", culture),
             _ => $"{localizer?.Get(CalendarControlLangResourceKind.Week) ?? CalendarControlLangResourceKind.Week.ToString()} {model.DisplayText}"
         };
     }

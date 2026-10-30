@@ -126,6 +126,51 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content region arranging the prefix, value, and suffix.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header region with bottom spacing and title layout.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped style selectors to customize Statistic's published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix content surface with inline placement and trailing spacing.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with the overall Statistic container surface.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix content surface with inline placement and leading spacing.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title content surface including typography and foreground.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticValueDescription">
+      <segment>
+        <source>Numeric value surface including typography and number presentation.</source>
+      </segment>
+    </unit>
     <unit id="TimerDescription">
       <segment>
         <source>Timer component.</source>

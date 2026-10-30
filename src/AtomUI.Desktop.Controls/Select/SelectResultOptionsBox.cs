@@ -1,4 +1,5 @@
 using AtomUI.Controls;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -260,6 +261,9 @@ internal class SelectResultOptionsBox : TemplatedControl
         {
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
+        // 多选/标签模式下的搜索输入是运行时创建的，静态模板中的 PART_SingleFilterInput
+        // 在非 Single 模式保持隐藏，因此此处注入 input 部件 marker 以便语义高亮/样式可达。
+        _searchTextBox.Classes.Add(SelectSemanticParts.InputClass);
         _searchInputEmptySubscription =
             _searchTextBox.GetObservable(TextBox.IsPlaceholderTextVisibleProperty)
                           .Subscribe(isEmpty => IsSearchInputEmpty = isEmpty);
@@ -308,6 +312,7 @@ internal class SelectResultOptionsBox : TemplatedControl
                             Text = option.Header?.ToString(),
                             Item    = option
                         };
+                        tag.Classes.Add(SelectSemanticParts.ItemClass);
                         BindTagMetrics(tag);
                         _defaultPanel.Children.Add(tag);
                     }
@@ -334,6 +339,7 @@ internal class SelectResultOptionsBox : TemplatedControl
                             Text = option.Header?.ToString(),
                             Item    = option
                         };
+                        tag.Classes.Add(SelectSemanticParts.ItemClass);
                         BindTagMetrics(tag);
                         _maxCountAwarePanel.Children.Add(tag);
                     }

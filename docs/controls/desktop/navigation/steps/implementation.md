@@ -1,22 +1,24 @@
 # Steps 桌面版实现原理
 
-本文档描述 Steps 桌面版的单一状态投影、容器生命周期、统一语义模板、布局 Panel、受控交互、Wave 和 Progress 实现边界。公共设计与 API 契约见 [Steps 桌面版架构设计](overview.md)，Token 语义见 [Steps Token 设计](token.md)，变化记录见 [Steps Changelog](changelog.md)。
+本文档描述 Steps 桌面版的单一状态投影、容器生命周期、统一语义模板、布局 Panel、受控交互、Wave 和 Progress 实现边界。公共设计与 API 契约见 [Steps 桌面版架构设计](overview.md)，Semantic Part 契约见 [Steps Semantic Part 契约](semantic-part.md)，Token 语义见 [Steps Token 设计](token.md)，变化记录见 [Steps Changelog](changelog.md)。
 
 ## 1. 实现定位
 
 Steps 的实现目标是在 `ItemsControl` 容器体系内，把根输入和 item 显式状态确定性投影为视觉状态。实现不依赖 Selection、模板应用顺序、VisualTree attach 顺序或上一次计算结果。
 
-本文档覆盖 `Steps`、`StepsItem`、`StepsItemIndicator`、两个 internal LayoutPanel、Panel item frame 和三个主题文件的稳定职责。通用 ItemsControl、TokenResource、Motion 和 PathIcon 实现不在本文档重复说明。
+本文档覆盖 `Steps`、`StepsItem`、`StepsItemIndicator`、三个 internal LayoutPanel、Panel item frame 和三个主题文件的稳定职责。通用 ItemsControl、TokenResource、Motion 和 PathIcon 实现不在本文档重复说明。
 
 ## 2. 源码文件结构
 
 主要源码：
 
 - `src/AtomUI.Desktop.Controls/Steps/Steps.cs`：public API、事件、容器生成、根输入分发和 item 状态协调。
+- `src/AtomUI.Desktop.Controls/Steps/Steps.SemanticParts.cs`：`Steps` 的 Semantic Part descriptor（`root` + `item` + 七个 item 子 Part）。
 - `src/AtomUI.Desktop.Controls/Steps/StepsItem.cs`：public item 契约、internal 派生状态、owner 生命周期和激活入口。
 - `src/AtomUI.Desktop.Controls/Steps/StepsItemIndicator.cs`：Indicator 状态、Wave part、Progress 绘制和渲染失效。
 - `src/AtomUI.Desktop.Controls/Steps/StepsPanel.cs`：item 间水平 flex、Navigation/Panel 等宽、Inline 和垂直 stack 布局。
-- `src/AtomUI.Desktop.Controls/Steps/StepsItemLayoutPanel.cs`：Indicator、Header、SubHeader、Connector、Content、NavigationArrow、PanelArrow 和 NavigationActiveIndicator 的 item 内布局。
+- `src/AtomUI.Desktop.Controls/Steps/StepsItemLayoutPanel.cs`：Indicator、Section、Connector、NavigationArrow、PanelArrow 和 NavigationActiveIndicator 的 item 内布局。
+- `src/AtomUI.Desktop.Controls/Steps/StepsItemSectionPanel.cs`：Header、SubHeader 与 Content 正文节点的分组测量与排列。
 - `src/AtomUI.Desktop.Controls/Steps/StepsPanelArrow.cs`：internal 可拉伸 Panel 楔形箭头绘制控件，负责 LTR/RTL 三角形和边框。
 - `src/AtomUI.Desktop.Controls/Steps/StepsPanelItemFrame.cs`：Panel item 的视觉外框；Filled 非首项使用左侧 notch 几何裁剪，Outlined 保持完整边框。
 - `src/AtomUI.Desktop.Controls/Steps/StepsToken.cs`：Steps 控件 Token。
@@ -26,7 +28,7 @@ Steps 的实现目标是在 `ItemsControl` 容器体系内，把根输入和 ite
 
 测试目录：
 
-- `tests/AtomUI.Desktop.Controls.Tests/Steps`：状态、Items、交互、Wave、Progress、布局和生命周期回归测试。
+- `tests/AtomUI.Desktop.Controls.Tests/Steps`：状态、Items、交互、Wave、Progress、布局、生命周期和 Semantic Part 回归测试。
 
 Gallery 目录：
 
@@ -72,10 +74,11 @@ Indicator 是 internal-observable 视觉控件：
 - `StepsPanel` 在 `Type=Panel` 时忽略请求的垂直方向，强制水平排列并为所有可见 item 分配等宽单元。
 - `StepsPanel.Offset` 只在 Inline 水平等宽布局中保留前置空单元，不影响状态编号。
 - `StepsPanel.HorizontalContentAlignment` 只在垂直 Navigation 布局中控制 item 列的水平对齐，默认居中。
-- `StepsItemLayoutPanel` 只排列固定语义子节点，不读取 Current、不修改 item 属性；Panel 下隐藏 Indicator/Connector 的节点不进入有效几何，ItemWrapper 覆盖完整单元，非首项内容按 `panel-padding + item-base-width` 内缩，PanelArrow 溢出到相邻单元外侧。
+- `StepsItemLayoutPanel` 只排列固定语义子节点和正文区域，不读取 Current、不修改 item 属性；Panel 下隐藏 Indicator/Connector 的节点不进入有效几何，ItemWrapper 覆盖完整单元，非首项内容按 `panel-padding + item-base-width` 内缩，PanelArrow 溢出到相邻单元外侧；垂直 item 间距由面板自身测量高度承担，不放进内容区域 padding。
+- `StepsItemSectionPanel` 是 item 正文区域（Header、SubHeader、Content）的分组容器：完成三个正文节点的测量与排列，承担 heading 同行/换行决策与垂直标题布局的对齐，向 `StepsItemLayoutPanel` 上报 HeadingHeight 与标题行右缘（HeadingLineRight）。
 - `StepsPanelItemFrame` 只承担 Panel item 的形状职责：Filled 非首项按箭头宽度裁出左侧 notch，避免后续 item 的矩形背景盖住前一项箭头；Outlined 不裁剪主体，只由箭头边框覆盖共享接缝。
 
-两个 Panel 都通过 `AffectsMeasure` / `AffectsArrange` 响应相关布局属性，不依赖根控件手工重建 Grid definitions。
+三个 Panel 都通过 `AffectsMeasure` / `AffectsArrange` 响应相关布局属性，不依赖根控件手工重建 Grid definitions。
 
 ## 4. 状态与数据流
 
@@ -170,13 +173,14 @@ Steps (public)
     └── StepsPanel (internal-observable)
         └── StepsItem (public container)
             └── StepsItemLayoutPanel (internal-observable)
+                ├── StepsPanelItemFrame#ItemWrapper (internal-observable)
                 ├── StepsItemIndicator#PART_Indicator (template-stable)
                 │   └── WaveSpiritDecorator#PART_WaveSpirit (internal-observable)
-                ├── ContentPresenter#HeaderPresenter (internal-observable)
-                ├── ContentPresenter#SubHeaderPresenter (internal-observable)
+                ├── StepsItemSectionPanel#Section (internal-observable)
+                │   ├── ContentPresenter#HeaderPresenter (internal-observable)
+                │   ├── ContentPresenter#SubHeaderPresenter (internal-observable)
+                │   └── ContentPresenter#ContentPresenter (internal-observable)
                 ├── PixelAlignedBorder#Connector (internal-observable)
-                ├── ContentPresenter#ContentPresenter (internal-observable)
-                ├── StepsPanelItemFrame#ItemWrapper (internal-observable)
                 ├── PathIcon#NavigationArrow (internal-observable)
                 ├── StepsPanelArrow#PanelArrow (internal-observable)
                 └── PixelAlignedBorder#NavigationActiveIndicator (internal-observable)
@@ -190,11 +194,12 @@ Steps (public)
 | `StepsItem` | public container | `StepsItem.cs` / `StepsItemTheme.axaml` | Steps container lifecycle | item API | public | 用户可直接声明。 |
 | `StepsPanel` | layout panel | `StepsTheme.axaml` | ItemsPresenter | Type、Orientation | internal-observable | 只用于理解布局，不作为用户 API。 |
 | `StepsItemLayoutPanel` | layout panel | `StepsItemTheme.axaml` | StepsItem template | Type、Orientation、TitlePlacement | internal-observable | 不直接依赖或替换。 |
+| `StepsItemSectionPanel` | layout panel | `StepsItemTheme.axaml` | StepsItem template | Type、Orientation、TitlePlacement、Header、SubHeader、Content | internal-observable | 不直接依赖或替换。 |
 | `PART_Indicator` | indicator | `StepsItemTheme.axaml` | StepsItem template | Icon、Status、Percent、Wave | template-stable | 自定义主题必须保留。 |
 | `PART_WaveSpirit` | wave decorator | `StepsItemIndicatorTheme.axaml` | Indicator template | IsMotionEnabled、pointer click | internal-observable | 不由用户直接调用。 |
 | `Connector` | border | `StepsItemTheme.axaml` | StepsItem template | ConnectorStatus、Type | internal-observable | ConnectorStatus 来自下一个 item EffectiveStatus。 |
 | `NavigationArrow` | path icon | `StepsItemTheme.axaml` | StepsItem template | Type、Orientation、SizeType | internal-observable | 只在 Navigation 类型可见。 |
-| `ItemWrapper` | Panel item frame | `StepsItemTheme.axaml` / `StepsPanelItemFrame.cs` | StepsItem template | Type、PanelVariant、IsFirst、SizeType | internal-observable | Filled 非首项裁出 notch；Outlined 保留边框主体。 |
+| `ItemWrapper` | Panel item frame | `StepsItemTheme.axaml` / `StepsPanelItemFrame.cs` | StepsItem template | Type、PanelVariant、IsFirst、SizeType | internal-observable | Filled notch 只在 Panel 类型非首项裁出；Inline 时为 antd v6 `-item-wrapper` 同构的 hover 背景（铺满条目格宽，块方向 padding 来自 `InlineItemPadding` token 绑定的 layout panel `Padding`：上 `paddingXS+lineWidth`、下 0，`borderRadiusSM`）；Outlined 保留边框主体。 |
 | `PanelArrow` | internal control | `StepsItemTheme.axaml` / `StepsPanelArrow.cs` | StepsItem template | Type、PanelVariant、SizeType、FlowDirection | internal-observable | 只在 Panel 非末项可见。 |
 | `NavigationActiveIndicator` | border | `StepsItemTheme.axaml` | StepsItem template | Type、Orientation、IsCurrent | internal-observable | 只在 Navigation 当前项可见。 |
 
@@ -242,6 +247,28 @@ Steps (public)
 
 不创建根级步骤页面内容 observable、长期 Relay Binding、全局事件订阅或 detach 后仍存活的 CompositeDisposable。
 
+### 6.5 Semantic marker 接入点
+
+- `Steps` 的 `item` descriptor 为运行时标记（`RuntimeCreated = true`），路由 `> .semantic-item`。
+  `Steps.PrepareContainerForItemOverride` 在容器准备时对每个 `StepsItem` 写入 `semantic-item` marker，
+  直接声明的 `StepsItem`、普通数据项生成的容器以及回收复用后重新准备的容器遵循同一规则；容器移除后
+  marker 随容器离开 owner 范围。
+- 七个 item 子 Part（`itemWrapper`、`itemIcon`、`itemTitle`、`itemSubtitle`、`itemSection`、`itemContent`、
+  `itemRail`）是 `StepsItemTheme.axaml` 内的静态 marker，分别声明在 `ItemWrapper`（`StepsPanelItemFrame`）、
+  `PART_Indicator`（`StepsItemIndicator`）、`HeaderPresenter`、`SubHeaderPresenter`、`Section`
+  （`StepsItemSectionPanel`）、`ContentPresenter` 与 `Connector`（`PixelAlignedBorder`）上。子 Part 路由为
+  `> .semantic-item /template/ .semantic-item-x`：`StepsItem` 是 ItemsControl 的逻辑子节点而非 owner 的
+  模板子节点，路由必须先经逻辑 `>` 到达容器，再经 `/template/` 进入 item 模板；应用不手写该路径，由生成的
+  子 Part Style 封装。
+- `StepsTheme.axaml` 根模板在 `PART_ItemsPresenter` 外包裹 TemplateBind 根视觉属性的 `atom:DashedBorder`：
+  `Background` / `BackgroundSizing` / `BorderBrush` / `BorderThickness` / `CornerRadius` / `Padding`
+  来自 `TemplatedControl`，`StrokeDashArray` / `StrokeDaskOffset` 来自 `Steps` 新增的 `BorderDashArray` /
+  `BorderDashOffset`，使 root Part 的边框（含虚线）、背景与内边距定制可渲染；默认值不改变既有外观。
+- `itemIcon` 的默认全圆不再由 `StepsItemIndicator.OnSizeChanged` 以 local value 写入（local value
+  优先级会阻止 Semantic Style setter）；`StepsItemIndicatorTheme.axaml` 以 style 优先级设置 CornerRadius
+  类型 Token `IconContainerCornerRadius`（`new CornerRadius(IconContainerSize)`），Semantic Style 的
+  Setter 以更高优先级直接覆盖。
+
 ## 7. 交互与事件处理
 
 ### 7.1 Pointer
@@ -273,16 +300,31 @@ CanInvoke=false 时不进入 Tab 焦点序列，不显示 hand cursor 和 clicka
 
 ### 8.2 布局算法
 
-`StepsPanel`：
+`StepsPanel` 按有效方向选择测量路径；Panel 即使请求垂直方向也使用水平测量。水平测量分两遍：第一遍以无限宽度测量可见 item，得到自然宽度作为 flex basis；随后计算整组自然宽度，并以它与可用宽度的较小值分配第二遍测量份额，使受限文本换行并上报完整行高。
 
-- Horizontal Default + horizontal title：非末 item 参与伸展，末 item 使用内容宽度。
-- Horizontal Dot / OutlineDot / vertical title / Inline：item 等宽，indicator 居中，rail 从当前 indicator 指向下一项。
+整组自然宽度遵循实际排列几何：普通水平标题布局为「最大非末项宽度 × 非末项数量 + 末项宽度」；Navigation、Panel 和垂直标题布局为「最大 item 宽度 × 单元数量」；Inline 的单元数量额外包含非负 `Offset`。除 Panel 外，单元宽度保留 `MinItemWidth` 下限。隐藏 item 不参与自然宽度，空集合返回零尺寸。
+
+`DesiredSize` 只包含所需单元和 Inline 前导单元，不包含父容器提供的额外伸展空间。Arrange 仍以实际 `finalSize.Width` 使用共享份额算法；缓存只在最终宽度等于第二遍测量宽度、可见 item 数量相同时复用，否则根据本轮自然 basis 重新分配。这样自然尺寸宿主不会被 Steps 撑满，固定宽度宿主仍能伸展；受限布局继续保留压缩与换行（份额模型见 overview.md 8.7）。
+
+水平份额规则：
+
+- Horizontal Default + horizontal title：宽容器时非末 item 等额伸展、末 item 保持内容宽度（既有伸展语义不变）；容器不足时所有 item 按自然宽度比例连续收缩（flex-shrink 语义），收缩下限为 `MinItemWidth`，触底的 item 冻结并退出分配，其余 item 继续分摊剩余缺口。容器比 item 数量 × 下限还窄时，item 停在下限并溢出容器。
+- Horizontal Dot / OutlineDot / vertical title / Inline：item 等宽，indicator 居中，rail 从当前 indicator 指向下一项；Inline 的 dot 上方 rail 连通，content 不参与显示，`Offset` 在可见 item 前方保留同等数量的空 item 单元。
 - Horizontal Navigation：item 等宽。
 - Panel：强制水平 item 等宽；Indicator 和 Connector 隐藏，PanelArrow 在非末项外侧绘制可拉伸楔形。
+- 单 item：取内容宽度与可用宽度的较小值，且不低于 `MinItemWidth`。
 - Inline：按 inline + dot + vertical-title 组合排列，item 等宽，dot 上方 rail 连通，content 不参与显示；`Offset` 会在可见 item 前方保留同等数量的空 item 单元。
 - Vertical：按 DesiredSize 顺序堆叠。
 
-`StepsItemLayoutPanel` 根据 Type、Orientation 和 EffectiveTitlePlacement 排列固定语义节点。Connector 的方向和伸展范围由布局 Panel 决定，状态由 item 投影决定。
+`MinItemWidth` 由主题绑定 `IconContainerSize` token，作为水平 item 的收缩下限。
+
+水平可见 Connector 的自然尺寸必须包含线段本身与 Margin。`StepsItemTheme` 通过 style setter 将现有 `SharedToken.UniformlyMargin` 提供给 internal `StepsItemLayoutPanel.PreferredHorizontalConnectorLength`。水平标题布局把该长度计入标题后方的 Connector extent；垂直标题布局同时预留 indicator 宽度、两侧 `HorizontalConnectorGap` 和线段长度。隐藏 Connector（含末项、Navigation、Panel）不预留线段。该值仅影响自然测量，不设置 Connector 的 `MinWidth`，受限排列仍可将线段压缩至零；资源变化通过面板的 measure invalidation 重新计算自然尺寸。
+
+`StepsItemLayoutPanel` 的水平标题路径以相同宽度测量和排列 body：测量时先把 indicator 按完整 item 宽度测量，再把正文区域 `StepsItemSectionPanel` 按「item 宽度 − indicator − spacing」测量，section 内部以同一宽度完成 Header / SubHeader / Content 的测量与排列，与排列时的 body 可用宽度一致。否则当份额落在文本自然宽度的邻近区间（份额 ≥ 文本自然宽度、但份额 − icon 区 < 文本自然宽度）时，文本会被测成单行、排列时再被压成更窄的一行——以裁剪代替换行。
+
+heading 行（Header 与 SubHeader 并排）的同行/换行决策由 `StepsItemSectionPanel` 在测量与排列中共享：测量阶段以 body 可用宽度测量 Header 与 SubHeader，若 `Header 宽度 + SubHeader 宽度 > body 宽度`，heading 高度取 `Header 高度 + SubHeader 高度`，body 宽度取三者宽度的最大值；排列阶段用同一条件判定，放不下时 SubHeader 换到 Header 下方独占一行并按测量宽度排列，而不是被安排成 `body 宽度 − Header 宽度` 的剩余宽度而裁成「00:0」。heading 高度随之增高，内容行整体下移，indicator 与 heading 块垂直居中。垂直标题布局中 section 先由 `StepsItemLayoutPanel` 按有效标题布局定位于 indicator 下方或右侧，再由自身完成逐行居中或贴边排列。
+
+`StepsItemLayoutPanel` 根据 Type、Orientation 和 EffectiveTitlePlacement 排列固定语义节点与正文区域，正文区域内部的标题行/内容行分组排列由 `StepsItemSectionPanel` 完成，两者通过共享的 `ResolveTitlePlacement` 解析同一有效标题布局。Connector 的方向和伸展范围由布局 Panel 决定，状态由 item 投影决定；item 压缩到标题行宽度以下时 rail 收缩为零宽。
 
 ### 8.3 Indicator 和 Progress
 
@@ -318,7 +360,7 @@ value > 100      -> 100
 - 单 item Status 变化 O(1)。
 - 根状态变化和 Reset O(n)。
 - 不维护第二份 item 列表、状态字典或延迟更新队列。
-- 两个 Panel 在 Measure/Arrange 中不创建视觉，不修改 public 状态。
+- 三个 Panel 在 Measure/Arrange 中不创建视觉，不修改 public 状态。
 
 AOT 边界：
 
@@ -343,7 +385,12 @@ AOT 边界：
 - 每个主题只维护一套语义模板。
 - 外部代码不得通过深层 selector 修改 StepsItem 内部节点；实例级 Header、SubHeader 和 Connector 定制由根控件三项 nullable 语义 API 进入。
 - 语义样式的 `null` 值必须完整回退 Token；容器清理和重新准备不得残留旧 owner 的显式值。
-- StepsPanel 和 StepsItemLayoutPanel 只负责布局。
+- Semantic Part descriptor、`semantic-item` 运行时 marker 与七个静态 `semantic-item-*` marker 的同步规则、`> .semantic-item /template/ .semantic-item-x` 容器边界路由形状以及生成的 Steps*Style 类型保持稳定；`itemIcon` 默认圆角只能由主题 style 优先级提供，代码不得再以 local value 写入。
+- StepsPanel、StepsItemLayoutPanel 和 StepsItemSectionPanel 只负责布局。
+- 水平布局的 item 收缩与文本换行遵循 overview.md 8.7 弹性模型的份额算法与 `IconContainerSize` 收缩下限；测量与排列共用份额算法，自然尺寸不包含父容器的富余空间；受限布局必须保留完整换行高度，任何路径不得以裁剪代替换行。
+- 水平标题 heading 行的同行/换行决策由测量与排列共用同一判定条件；Header 与 SubHeader 并排放不下时，SubHeader 必须换到 Header 下方独占一行并保持测量宽度，不得裁成剩余宽度。
+- 水平标题路径的 body 子项（Header / SubHeader / Content）必须按排列时的 body 可用宽度（item 宽度 − indicator − spacing）测量，不得按完整 item 宽度测量；否则份额落在文本自然宽度的邻近区间时会以裁剪代替换行。
+- 宽容器的既有伸展语义（非末 item 等额伸展、末 item 内容宽、单 item 内容宽）不得随压缩能力回归。
 - 容器清理必须释放 Owner，模板重套必须释放旧 part 引用。
 - Percent、Icon、Type 和 EffectiveStatus 运行时变化必须立即更新 Progress。
 
@@ -380,6 +427,9 @@ Progress：
 - Inline Offset 前置占位。
 - 语义节点唯一、Bounds 有效、无重叠、Connector 正确。
 - 运行时布局切换和动态 Items。
+- 弹性压缩：窄容器 item 按自然宽度比例收缩、item 总宽填满容器、`MinItemWidth` 收缩下限、极窄容器触底溢出。
+- 文本换行：压缩后标题、副标题与描述文本在受限宽度下换行，不以裁剪代替换行。
+- 宽容器伸展回归：非末 item 等额伸展、末 item 与单 item 内容宽不变；自然尺寸请求不随宿主富余宽度增长。
 
 生命周期：
 
@@ -396,4 +446,13 @@ Progress：
 - 直接 StepsItem、普通数据项生成容器、移除后复用和数据容器回收遵循同一投影与清理规则。
 - Gallery 不包含针对 StepsItem 内部节点的 `/template/` selector。
 
-收尾运行 Steps 定向测试、相邻 Desktop Controls 测试、Gallery 测试和 `git diff --check`。
+Semantic Part：
+
+- descriptor 排序、路由、ContractType、Cardinality 与 registry 反向查询。
+- `StepsItemTheme.axaml` 六个静态 marker 与 `StepsTheme.axaml` 语义约束。
+- 运行时 `semantic-item` marker 覆盖直接 item、数据生成容器与回收复用。
+- 生成的 `StepsItemIconStyle` 等 Style 经路由应用，并覆盖 `IconContainerCornerRadius` 默认全圆。
+- 根 `BorderDashArray` / `BorderDashOffset` 默认中性，并 TemplateBind 传播到根模板 `atom:DashedBorder`。
+- Gallery 语义预览、样式示例与四语言本地化文案。
+
+收尾运行 `StepsSemanticPartTests` / `StepsRootFrameTests` 与 Steps 定向测试、相邻 Desktop Controls 测试、Gallery 测试（含 `StepsShowCasePageTests`）和 `git diff --check`。

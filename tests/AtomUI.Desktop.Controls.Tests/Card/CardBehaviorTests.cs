@@ -2,6 +2,8 @@ using System.Reactive.Disposables;
 using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -84,6 +86,80 @@ public class CardBehaviorTests
     }
 
     [Fact]
+    public void Card_Frame_Arranges_Header_And_Actions_Inside_The_Outer_Border()
+    {
+        var card = new Desktop.Controls.Card
+        {
+            Width           = 320,
+            Header          = "Title",
+            Content         = "Body",
+            BorderThickness = new Thickness(1)
+        };
+        card.Actions.Add(new Desktop.Controls.CardActionButton());
+
+        ShowInWindow(card, () =>
+        {
+            var frame       = FindTemplatePixelAlignedBorder(card, "Frame");
+            var headerFrame = FindTemplatePixelAlignedBorder(card, "HeaderFrame");
+            var actionPanel = card.GetVisualDescendants()
+                                  .OfType<TemplatedControl>()
+                                  .Single(control => control.Name == "PART_ActionPanel");
+
+            frame.Child.ShouldNotBeNull();
+            headerFrame.TranslatePoint(default, frame).ShouldBe(new Point(1, 1));
+            var actionOffset = actionPanel.TranslatePoint(default, frame).ShouldNotBeNull();
+            actionOffset.X.ShouldBe(1);
+            headerFrame.Bounds.Width.ShouldBe(frame.Bounds.Width - 2);
+            actionPanel.Bounds.Width.ShouldBe(frame.Bounds.Width - 2);
+        });
+    }
+
+    [Fact]
+    public void Owner_Scoped_Root_Style_Can_Restore_A_Borderless_Card_Border()
+    {
+        var card = new Desktop.Controls.Card
+        {
+            Width        = 320,
+            Header       = "Title",
+            Content      = "Body",
+            StyleVariant = Desktop.Controls.CardStyleVariant.Borderless
+        };
+        card.Classes.Add("semantic-owner");
+        card.Styles.Add(new Style(selector =>
+            selector.OfType<Desktop.Controls.Card>().Class("semantic-owner"))
+        {
+            Setters =
+            {
+                new Setter(TemplatedControl.BorderThicknessProperty, new Thickness(1))
+            }
+        });
+
+        ShowInWindow(card, () =>
+        {
+            FindTemplatePixelAlignedBorder(card, "Frame")
+                .BorderThickness.ShouldBe(new Thickness(1));
+        });
+    }
+
+    [Fact]
+    public void Borderless_Card_Without_An_Owner_Override_Remains_Borderless()
+    {
+        var card = new Desktop.Controls.Card
+        {
+            Width        = 320,
+            Header       = "Title",
+            Content      = "Body",
+            StyleVariant = Desktop.Controls.CardStyleVariant.Borderless
+        };
+
+        ShowInWindow(card, () =>
+        {
+            FindTemplatePixelAlignedBorder(card, "Frame")
+                .BorderThickness.ShouldBe(new Thickness(0));
+        });
+    }
+
+    [Fact]
     public void Card_Releases_SizeType_Binding_From_Replaced_Special_Content()
     {
         var oldGridContent = new Desktop.Controls.CardGridContent();
@@ -136,7 +212,7 @@ public class CardBehaviorTests
     {
         return card.GetVisualDescendants()
                    .OfType<PixelAlignedBorder>()
-                   .Single(border => border.Name == name);
+                   .Single(border => border.Name == name && ReferenceEquals(border.TemplatedParent, card));
     }
 
     private static void ShowInWindow(Control content, Action assertion)

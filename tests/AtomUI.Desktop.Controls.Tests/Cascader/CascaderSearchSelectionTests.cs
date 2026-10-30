@@ -836,9 +836,14 @@ public class CascaderSearchSelectionTests
                 "the popup filter result list should be visible after setting a filter value.");
             filterList.ItemCount.ShouldBe(2);
 
-            RaiseKeyDown(cascader, Key.Down);
+            var input = cascader.GetVisualDescendants().OfType<SelectFilterTextBox>()
+                                .Single(control => control.Name == "PART_SingleFilterInput");
+            input.IsFocused.ShouldBeTrue();
+            window.KeyPress(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
+            window.KeyRelease(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
             Dispatcher.UIThread.RunJobs();
-            RaiseKeyDown(cascader, Key.Enter);
+            window.KeyPress(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
+            window.KeyRelease(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
             Dispatcher.UIThread.RunJobs();
 
             cascader.SelectedOption.ShouldBeSameAs(xuanwuLake);
@@ -927,6 +932,8 @@ public class CascaderSearchSelectionTests
             var cascaderView = GetCascaderView(cascader);
             FindCascaderViewItem(cascaderView, "Zhejiang").ShouldNotBeNull();
 
+            RaiseKeyDown(cascader, Key.Down);
+            Dispatcher.UIThread.RunJobs();
             RaiseKeyDown(cascader, Key.Right);
             Dispatcher.UIThread.RunJobs();
             WaitFor(() => FindCascaderViewItem(cascaderView, "Hangzhou"),
@@ -969,6 +976,8 @@ public class CascaderSearchSelectionTests
             Dispatcher.UIThread.RunJobs();
 
             var cascaderView = GetCascaderView(cascader);
+            RaiseKeyDown(cascader, Key.Down);
+            Dispatcher.UIThread.RunJobs();
             RaiseKeyDown(cascader, Key.Right);
             Dispatcher.UIThread.RunJobs();
             RaiseKeyDown(cascader, Key.Right);

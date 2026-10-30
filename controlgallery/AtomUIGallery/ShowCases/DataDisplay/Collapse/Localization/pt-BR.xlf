@@ -253,6 +253,48 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Body element with padding, color, background color and other styles for panel content area display</source>
+        <target state="translated">Body element com padding, color, background color e outro styles for panel content area display</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with flex layout, padding, color, line-height, cursor style, transition animations and other interactive styles for panel headers</source>
+        <target state="translated">Header element com flex layout, padding, color, line-height, cursor style, transition animations e outro interactive styles for panel headers</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with font size, transition animations, rotation transforms and other styles and animations for expand/collapse arrows</source>
+        <target state="translated">Icon element com font size, transition animations, rotation transforms e outro styles e animations for expand/collapse arrows</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Collapse property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">Use owner-scoped selectors e Collapse property selectors para customize o published Semantic Parts.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border, border-radius, background color and container styles that control the overall layout and appearance of collapse panels</source>
+        <target state="translated">Root element com border, border-radius, background color e container styles that control o overall layout e appearance of collapse panels</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with flex auto layout and margin styles for title text layout and typography</source>
+        <target state="translated">Title element com flex auto layout e margin styles for title text layout e typography</target>
+      </segment>
+    </unit>
     <unit id="SizeDescription">
       <segment>
         <source>Ant Design supports a default collapse size as well as a large and small size. If a large or small collapse is desired, set the size property to either large or small respectively. Omit the size property for a collapse with the default size.</source>

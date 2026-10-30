@@ -1,4 +1,4 @@
-﻿using AtomUI.Animations;
+using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -108,10 +108,46 @@ public abstract class AbstractToggleIconButton : ToggleButton, IMotionAwareContr
     
     #endregion
 
+    private readonly TransitionInitializationSession _transitionInitialization;
+
     static AbstractToggleIconButton()
     {
         AffectsMeasure<AbstractToggleIconButton>(CheckedIconProperty, UnCheckedIconProperty, IsCheckedProperty, IconWidthProperty, IconHeightProperty);
         AffectsRender<AbstractToggleIconButton>(IconBrushProperty);
+    }
+
+    protected AbstractToggleIconButton()
+    {
+        // Parent templates assign IconBrush and checked appearance through styles after
+        // this control is attached, so the initial appearance must commit without transitions.
+        _transitionInitialization = new TransitionInitializationSession(this);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _transitionInitialization.CompleteInitialization();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var size = base.MeasureOverride(availableSize);
+        // Template changes invalidate measure even when several changes coalesce back
+        // to the applied template and Avalonia skips OnApplyTemplate.
+        _transitionInitialization.CompleteInitialization();
+        return size;
     }
     
     public bool HitTest(Point point)
@@ -124,15 +160,4 @@ public abstract class AbstractToggleIconButton : ToggleButton, IMotionAwareContr
         return true;
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        this.Dispatcher.Post(this.EnableTransitions);
-    }
 }

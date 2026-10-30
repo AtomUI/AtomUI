@@ -1,13 +1,9 @@
-﻿using AtomUIGallery.Localization;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.Data;
 using Avalonia.Controls;
 using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -270,6 +266,16 @@ public partial class TreeViewShowCase : GalleryReactiveUserControl<TreeViewViewM
         viewModel.BasicTreeViewDefaultCheckedPaths =
         [
             new TreeNodePath("0-0/0-0-1/0-0-1-1")
+        ];
+
+        viewModel.SemanticPartTreeDefaultSelectedPaths =
+        [
+            new TreeNodePath("0-0/0-0-1")
+        ];
+
+        viewModel.SemanticPartPreviewDefaultSelectedPaths =
+        [
+            new TreeNodePath("0-0/0-0-0")
         ];
     }
 

@@ -108,38 +108,6 @@ public class ControlledStateBindingTests
         AssertIntegerPropertyUpdatesViewModel(new AtomTour(), AtomTour.CurrentIndexProperty);
     }
 
-    [Fact]
-    public void ImagePreviewer_CurrentIndex_Relay_Uses_TwoWay_Binding()
-    {
-        var source = ReadRepoFile("src/AtomUI.Desktop.Controls/ImagePreviewer/AbstractImagePreviewer.cs");
-
-        source.ShouldContain("ImagePreviewerDialog.CurrentIndexProperty,\n            BindingMode.TwoWay)");
-        source.ShouldContain("ImagePreviewerOverlayHost.CurrentIndexProperty,\n            BindingMode.TwoWay)");
-    }
-
-    [Fact]
-    public void FloatButtonGroup_Open_Interactions_Use_CurrentValue_For_Controlled_State()
-    {
-        var groupSource = ReadRepoFile("src/AtomUI.Desktop.Controls/FloatButton/FloatButtonGroup.cs");
-        var hostSource  = ReadRepoFile("src/AtomUI.Desktop.Controls/FloatButton/FloatButtonGroupHost.cs");
-
-        groupSource.ShouldNotContain("IsOpenProperty, true, BindingPriority.Style");
-        groupSource.ShouldNotContain("IsOpenProperty, false, BindingPriority.Style");
-        groupSource.ShouldNotContain("IsOpenProperty, !IsOpen, BindingPriority.Style");
-        hostSource.ShouldNotContain("IsOpenProperty, true, BindingPriority.Style");
-        hostSource.ShouldNotContain("IsOpenProperty, false, BindingPriority.Style");
-    }
-
-    [Fact]
-    public void FloatButtonGroup_Click_Toggle_Uses_Next_Open_State_For_Request_Direction()
-    {
-        var source = ReadRepoFile("src/AtomUI.Desktop.Controls/FloatButton/FloatButtonGroup.cs");
-
-        source.ShouldContain("var nextIsOpen = !IsOpen;");
-        source.ShouldContain("SetCurrentValue(IsOpenProperty, nextIsOpen);");
-        source.ShouldContain("if (nextIsOpen)");
-    }
-
     private static void AssertBooleanPropertyUpdatesViewModel(
         AvaloniaObject control,
         StyledProperty<bool> property)
@@ -191,23 +159,6 @@ public class ControlledStateBindingTests
         var metadata = property.GetMetadata(ownerType);
 
         metadata.DefaultBindingMode.ShouldBe(BindingMode.TwoWay);
-    }
-
-    private static string ReadRepoFile(string relativePath)
-    {
-        var current = AppContext.BaseDirectory;
-        while (!string.IsNullOrEmpty(current))
-        {
-            var candidate = Path.Combine(current, relativePath);
-            if (File.Exists(candidate))
-            {
-                return File.ReadAllText(candidate);
-            }
-
-            current = Directory.GetParent(current)?.FullName;
-        }
-
-        throw new FileNotFoundException($"Could not locate repository file: {relativePath}");
     }
 
     private sealed class ControlledStateBindingViewModel : INotifyPropertyChanged

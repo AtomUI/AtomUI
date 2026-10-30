@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using AtomUI.Controls;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -102,6 +102,16 @@ public class MenuFlyoutPresenter : MenuBase,
     internal static readonly StyledProperty<double> ItemHeightProperty =
         AvaloniaProperty.Register<MenuFlyoutPresenter, double>(nameof(ItemHeight));
 
+    // The presenter pins only its active branch; leaf and sibling containers do not inherit the pin.
+    internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+        Popup.IsPopupPinnedOpenProperty.AddOwner<MenuFlyoutPresenter>();
+
+    internal bool IsPopupPinnedOpen
+    {
+        get => GetValue(IsPopupPinnedOpenProperty);
+        set => SetValue(IsPopupPinnedOpenProperty, value);
+    }
+
     internal static readonly StyledProperty<double> MaxPopupHeightProperty =
         AvaloniaProperty.Register<MenuFlyoutPresenter, double>(nameof(MaxPopupHeight));
 
@@ -120,6 +130,7 @@ public class MenuFlyoutPresenter : MenuBase,
     #endregion
 
     private ArrowDecoratedBox? _arrowDecoratedBox;
+    private MenuPinnedOpenScope? _pinnedOpenScope;
 
     static MenuFlyoutPresenter()
     {
@@ -139,6 +150,11 @@ public class MenuFlyoutPresenter : MenuBase,
 
     public override void Close()
     {
+        if (IsPopupPinnedOpen)
+        {
+            return;
+        }
+
         if (InteractionHandler is DefaultMenuInteractionHandler interactionHandler)
         {
             interactionHandler.CancelPendingHoverOperations();
@@ -163,6 +179,41 @@ public class MenuFlyoutPresenter : MenuBase,
         {
             ConfigureMaxPopupHeight();
         }
+        else if (change.Property == IsPopupPinnedOpenProperty || change.Property == ItemCountProperty)
+        {
+            ReconcilePinnedOpenChildren();
+        }
+        else if (change.Property == SelectedIndexProperty)
+        {
+            _pinnedOpenScope?.SelectCurrent();
+        }
+    }
+
+    internal void ReconcilePinnedOpenChildren()
+    {
+        if (IsPopupPinnedOpen)
+        {
+            (_pinnedOpenScope ??= new MenuPinnedOpenScope(this)).Reconcile();
+        }
+        else
+        {
+            _pinnedOpenScope?.Release();
+        }
+    }
+
+    protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
+    {
+        base.ContainerForItemPreparedOverride(container, item, index);
+        ReconcilePinnedOpenChildren();
+    }
+
+    protected override void OnSubmenuOpened(RoutedEventArgs e)
+    {
+        if (e.Source is MenuItem item)
+        {
+            _pinnedOpenScope?.SubmenuOpened(item);
+        }
+        base.OnSubmenuOpened(e);
     }
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
@@ -172,12 +223,19 @@ public class MenuFlyoutPresenter : MenuBase,
             return new MenuSeparator();
         }
 
-        return new MenuItem();
+        if (item is MenuItemGroupData)
+        {
+            return new MenuItemGroup();
+        }
+
+        var menuItem = new MenuItem();
+        menuItem.Classes.Add(DropdownButtonSemanticParts.ItemClass);
+        return menuItem;
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
-        if (item is MenuItem or MenuSeparator)
+        if (item is MenuItem or MenuSeparator or MenuItemGroup)
         {
             recycleKey = null;
             return false;
@@ -191,6 +249,9 @@ public class MenuFlyoutPresenter : MenuBase,
     {
         if (container is MenuItem menuItem)
         {
+            menuItem.SemanticLevel = MenuSemanticLevel.None;
+            menuItem.Classes.Add(DropdownButtonSemanticParts.ItemClass);
+
             if (item != null && item is not Visual)
             {
                 if (!menuItem.IsSet(MenuItem.HeaderProperty))
@@ -239,6 +300,10 @@ public class MenuFlyoutPresenter : MenuBase,
         {
             menuSeparator.Orientation = Orientation.Horizontal;
         }
+        else if (container is MenuItemGroup group)
+        {
+            group.SemanticLevel = MenuSemanticLevel.None;
+        }
         else
         {
             throw new ArgumentOutOfRangeException(nameof(container),
@@ -271,12 +336,26 @@ public class MenuFlyoutPresenter : MenuBase,
         base.OnApplyTemplate(e);
         _arrowDecoratedBox =
             e.NameScope.Find<ArrowDecoratedBox>(AbstractArrowDecoratedBox.ArrowDecoratorPart);
+        // popup.root 语义部件指向弹层根视觉面（ArrowDecoratedBox），而非共享的
+        // MenuFlyoutPresenter 容器：边框 / 背景 / 圆角由 ArrowDecoratedBox 的
+        // PART_ContentDecorator 渲染。标记类无法在共享 ArrowDecoratedBox 主题上静态声明
+        // （会污染其他 ArrowDecoratedBox 弹层），因此按 DropdownButton 语义部件契约在
+        // 模板应用时运行时注入。
+        _arrowDecoratedBox?.Classes.Add(DropdownButtonSemanticParts.PopupRootClass);
         ConfigureMaxPopupHeight();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
+        // 钉住弹层的关闭来自放置目标生命周期失效（页签切走 / 滚出视口），属于可恢复的临时
+        // 关闭而非用户收起菜单：此时保留声明式子菜单状态，菜单树重新附着后由 MenuItem 的
+        // 延迟同步恢复子菜单呈现。清理只针对普通关闭，避免把声明式展开状态一并抹掉。
+        if (IsPopupPinnedOpen)
+        {
+            return;
+        }
+
         foreach (var i in LogicalChildren)
         {
             if (i is MenuItem menuItem)
@@ -315,37 +394,35 @@ public class MenuFlyoutPresenter : MenuBase,
 
     ArrowPosition IArrowAwareShadowMaskInfoProvider.GetArrowPosition()
     {
-        Debug.Assert(_arrowDecoratedBox != null);
-        return _arrowDecoratedBox.ArrowPosition;
+        return _arrowDecoratedBox?.ArrowPosition ?? default;
     }
 
     bool IArrowAwareShadowMaskInfoProvider.IsArrowVisible()
     {
-        Debug.Assert(_arrowDecoratedBox != null);
-        return _arrowDecoratedBox.IsArrowVisible;
+        // 箭头部件不可用时按无箭头报告，弹层据此降级阴影与定位
+        return _arrowDecoratedBox?.IsArrowVisible ?? false;
     }
 
     void IArrowAwareShadowMaskInfoProvider.SetArrowOpacity(double opacity)
     {
-        Debug.Assert(_arrowDecoratedBox != null);
-        _arrowDecoratedBox.ArrowOpacity = opacity;
+        if (_arrowDecoratedBox is not null)
+        {
+            _arrowDecoratedBox.ArrowOpacity = opacity;
+        }
     }
 
     Rect IArrowAwareShadowMaskInfoProvider.GetArrowIndicatorBounds()
     {
-        Debug.Assert(_arrowDecoratedBox != null);
-        return _arrowDecoratedBox.ArrowIndicatorBounds;
+        return _arrowDecoratedBox?.ArrowIndicatorBounds ?? default;
     }
 
     Rect IArrowAwareShadowMaskInfoProvider.GetArrowIndicatorLayoutBounds()
     {
-        Debug.Assert(_arrowDecoratedBox != null);
-        return _arrowDecoratedBox.ArrowIndicatorLayoutBounds;
+        return _arrowDecoratedBox?.ArrowIndicatorLayoutBounds ?? default;
     }
 
-    AbstractArrowDecoratedBox IArrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox()
+    AbstractArrowDecoratedBox? IArrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox()
     {
-        Debug.Assert(_arrowDecoratedBox != null);
         return _arrowDecoratedBox;
     }
 

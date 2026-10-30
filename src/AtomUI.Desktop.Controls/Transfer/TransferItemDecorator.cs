@@ -63,10 +63,10 @@ internal class TransferItemDecorator : TemplatedControl,
         AvaloniaProperty.Register<TransferItemDecorator, string?>(nameof(FilterPlaceholderText));
     
     public static readonly StyledProperty<object?> FooterProperty =
-        AvaloniaProperty.Register<ContentControl, object?>(nameof(Footer));
+        AvaloniaProperty.Register<TransferItemDecorator, object?>(nameof(Footer));
 
     public static readonly StyledProperty<IDataTemplate?> FooterTemplateProperty =
-        AvaloniaProperty.Register<ContentControl, IDataTemplate?>(nameof(FooterTemplate));
+        AvaloniaProperty.Register<TransferItemDecorator, IDataTemplate?>(nameof(FooterTemplate));
     
     public static readonly StyledProperty<double> ListHeightProperty =
         AbstractTransfer.ListHeightProperty.AddOwner<TransferItemDecorator>();

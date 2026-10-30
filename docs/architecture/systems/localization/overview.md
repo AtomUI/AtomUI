@@ -1,7 +1,7 @@
 # AtomUI 本地化系统架构
 
 本地化系统是面向整个应用的跨模块基础设施，不只服务 Control。它由 `AtomUI.Localization` 运行时、
-`AtomUI.Generator`、`AtomUI.Build.Tasks`、静态语言包和应用构建入口共同组成；语言状态、Catalog、编译后翻译表和
+`AtomUI.Generator`、Toolchain 的 Tasks worker、静态语言包和应用构建入口共同组成；语言状态、Catalog、编译后翻译表和
 Avalonia 资源桥与主题系统保持独立。
 
 ## 设计目标
@@ -22,6 +22,7 @@ Avalonia 资源桥与主题系统保持独立。
 | [公共 API](../../../reference/localization/public-api.md) | 启动配置、`LanguageTag`、`ILanguageManager`、`ILocalizer`、XAML 与 C# 使用面 |
 | [Catalog 与 XLIFF](../../../reference/localization/catalog-and-xliff.md) | Language Catalog 契约、目录约定、XLIFF 2.1、稳定 Key、格式化与覆盖规则 |
 | [runtime.md](runtime.md) | Registry、Snapshot、Manager、ResourceProvider、切换、回退、Culture 和 RTL |
+| [应用资源宿主设计](../theming/application-resource-host.md) | Core 拥有的主题/语言共同资源接入契约、覆盖与挂载释放边界；实施状态见配套验证页 |
 | [generation-and-build.md](generation-and-build.md) | Source Generator、应用 bootstrap、AdditionalFiles、`AtomUI.Build.Tasks` 与 NuGet 布局 |
 | [language-packs.md](language-packs.md) | 内置语言、官方聚合包、模块包、第三方语言包、模板和消费协议 |
 | [verification.md](verification.md) | 构建诊断、运行时不变量、Generator/Task/集成/AOT 验证要求 |
@@ -36,13 +37,14 @@ Avalonia 资源桥与主题系统保持独立。
 | `src/AtomUI.Localization` / `AtomUI.Localization` | 公共类型、运行时 Registry、Snapshot、Manager、Localizer 和 Avalonia 资源桥 | 是 |
 | `src/AtomUI.Core` / `AtomUI.Core` | 主题、Token、动画等基础设施；引用 `AtomUI.Localization` | 是 |
 | `src/AtomUI.Generator` / `AtomUI.Generator` | Catalog、翻译表、Markup Extension 和注册代码生成 | 否，Analyzer |
-| `src/AtomUI.Build.Tasks` | 静态语言包 pack 前校验、模板导出/合并、manifest/props 和包内容安全 | 否，MSBuild Task |
+| `src/AtomUI.Toolchain` 的 Tasks profile | 静态语言包 pack 前校验、模板导出/合并、manifest/props 和包内容安全 | 否，隔离 MSBuild worker |
 | `AtomUI.LanguagePack.Template` | 创建静态 I18n NuGet 项目的模板 | 否 |
 | `src/LanguagePacks/<language-tag>` | AtomUI 官方附加语言的模块级静态包与纯依赖聚合包 | 否 |
 
 `AtomUI.Localization` 是运行时基础设施包。构建期共享源码位于
-`src/AtomUI.Build.Tasks/LocalizationBuild`，使用内部命名空间 `AtomUI.Build.Tasks.LocalizationBuild`，但没有同名项目或
-NuGet 包；构建任务物理归属 `AtomUI.Build.Tasks`，Generator 只通过源码链接复用这层无副作用模型。
+`src/AtomUI.Toolchain/Common/Localization`，使用内部命名空间 `AtomUI.Build.Tasks.LocalizationBuild`，但没有同名项目或
+NuGet 包；构建任务物理归属统一 Toolchain 项目的 `Tasks/`，Generator 只通过源码链接复用这层无副作用模型。
+profile 与工具产物的隔离见 [Toolchain 模块](../../../modules/toolchain/overview.md)。
 
 ## 构建期权威边界
 
@@ -106,7 +108,7 @@ flowchart TD
 | `LocalizationHost` | 应用拥有的本地化服务组合和生命周期边界 |
 | `LanguageContext` | 原子持有并发布当前 `LanguageRevision` 的共享上下文 |
 | `LanguageRevision` | 同一次提交中的不可分割 `LanguageSnapshot` 与 `LanguageState` 组合 |
-| `LanguageSnapshot` | 某个当前语言已经完成回退解析的不可变资源快照 |
+| `LanguageSnapshot` | 某个语言的不可变查询视图，目录行首次查询完成回退解析并缓存 |
 | `LanguageState` | 当前语言、格式化 Culture、文字方向和 revision |
 
 ## 不可违反的不变量
@@ -115,7 +117,7 @@ flowchart TD
 2. `LanguageTag` 是开放值类型；不得重新引入只能表达固定语言集合的 locale enum。
 3. `LanguageTags.JaJP` 只表示标签已知，不表示日语翻译已经安装。
 4. 每个 Catalog 都必须拥有完整 `en-US` 源文本；`zh-CN` 和 `zh-TW` 不互相回退。
-5. 运行时只消费生成的 descriptor 和编译后字符串表，不解析 XLIFF、不扫描程序集。
+5. 运行时消费版本化模块数据与显式手工 descriptor，不解析 XLIFF、不扫描程序集；生成路径只建当前语言索引，目录首次查询才物化。
 6. 资源 Provider 生命周期稳定；语言切换只发布完整 Snapshot，不暴露半更新状态。
 7. 应用支持语言是一项覆盖契约；缺失翻译不能通过最终 `en-US` 回退伪装成完整支持。
 8. 翻译包没有运行时 DLL、初始化类或隐式加载代码；重复翻译不按注册顺序覆盖。

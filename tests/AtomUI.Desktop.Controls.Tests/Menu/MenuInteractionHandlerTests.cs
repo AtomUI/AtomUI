@@ -8,6 +8,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 
@@ -47,6 +48,48 @@ public class MenuInteractionHandlerTests
         var handler = new TestCustomMenuInteractionHandler();
 
         new InspectableMenuFlyoutPresenter(handler).Handler.ShouldBeSameAs(handler);
+    }
+
+    [Theory]
+    [InlineData(Key.Up, 0)]
+    [InlineData(Key.Down, 2)]
+    public void Keyboard_Vertical_Navigation_From_Open_Submenu_Does_Not_Open_Leaf_Submenu(
+        Key key,
+        int expectedSelectedIndex)
+    {
+        var runner = new QueuedDelayRunner();
+        using var handler = new TestMenuInteractionHandler(runner.Schedule);
+        var presenter = new MenuFlyoutPresenter(handler) { IsMotionEnabled = false };
+        var previousLeaf = new MenuItem { Header = "Previous" };
+        var openSubmenu = CreateSubMenu("Submenu");
+        var nextLeaf = new MenuItem { Header = "Next" };
+        presenter.Items.Add(previousLeaf);
+        presenter.Items.Add(openSubmenu);
+        presenter.Items.Add(nextLeaf);
+        using var tree = new DirectMenuTree(presenter);
+        presenter.SelectedIndex = 1;
+        openSubmenu.IsSubMenuOpen = true;
+        presenter.ContainerFromIndex(1).ShouldBeSameAs(openSubmenu);
+        openSubmenu.Parent.ShouldBeSameAs(presenter);
+        openSubmenu.IsSubMenuOpen.ShouldBeTrue();
+        Dispatcher.UIThread.RunJobs();
+        var openSubmenuPopup = openSubmenu.GetVisualDescendants()
+            .OfType<Popup>()
+            .Single();
+        openSubmenuPopup.IsOpen.ShouldBeTrue();
+
+        var args = handler.PressKey(openSubmenu, key);
+
+        args.Handled.ShouldBeTrue();
+        presenter.SelectedIndex.ShouldBe(expectedSelectedIndex);
+        var selectedLeaf = expectedSelectedIndex == 0 ? previousLeaf : nextLeaf;
+        selectedLeaf.IsSubMenuOpen.ShouldBeFalse();
+        Dispatcher.UIThread.RunJobs();
+        openSubmenuPopup.IsOpen.ShouldBeFalse();
+        selectedLeaf.GetVisualDescendants()
+            .OfType<Popup>()
+            .Single()
+            .IsOpen.ShouldBeFalse();
     }
 
     [Fact]
@@ -739,6 +782,39 @@ public class MenuInteractionHandlerTests
 
             property.ShouldNotBeNull();
             property.SetValue(visualLayerManager, true);
+        }
+    }
+
+    private sealed class DirectMenuTree : IDisposable
+    {
+        private readonly AtomUI.Desktop.Controls.Window _window;
+
+        public DirectMenuTree(MenuBase menu)
+        {
+            var visualLayerManager = new VisualLayerManager { Child = menu };
+            var enablePopupOverlayLayer = typeof(VisualLayerManager).GetProperty(
+                "EnablePopupOverlayLayer",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            enablePopupOverlayLayer.ShouldNotBeNull();
+            enablePopupOverlayLayer.SetValue(visualLayerManager, true);
+            _window = new AtomUI.Desktop.Controls.Window
+            {
+                Width = 320,
+                Height = 240,
+                Content = visualLayerManager
+            };
+            _window.Show();
+            for (var i = 0; i < 3; i++)
+            {
+                Dispatcher.UIThread.RunJobs();
+                _window.UpdateLayout();
+            }
+        }
+
+        public void Dispose()
+        {
+            _window.Close();
+            Dispatcher.UIThread.RunJobs();
         }
     }
 

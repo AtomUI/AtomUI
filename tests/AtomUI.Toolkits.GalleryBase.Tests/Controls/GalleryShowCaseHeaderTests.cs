@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using AtomUI.Desktop.Controls;
 using AtomUI.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
@@ -27,25 +29,6 @@ public class GalleryShowCaseHeaderTests
         header.CategoryTagColor.ShouldBe("blue");
         header.StatusTagColor.ShouldBe("success");
         header.IntroducedVersionTagColor.ShouldBe("blue");
-        typeof(GalleryShowCaseHeader)
-            .GetProperty("IsIntroducedVersionTagBordered")
-            .ShouldBeNull();
-    }
-
-    [Fact]
-    public void Uses_Explicit_Token_Resources_Without_Ambient_Scope_Registration()
-    {
-        var source = ReadRepoFile("src/AtomUI.Toolkits.GalleryBase/Controls/GalleryShowCaseHeader.cs");
-        var token  = ReadRepoFile("src/AtomUI.Toolkits.GalleryBase/Controls/GalleryShowCaseHeaderToken.cs");
-        var theme  = ReadRepoFile("src/AtomUI.Toolkits.GalleryBase/Controls/Themes/GalleryShowCaseHeaderTheme.axaml");
-
-        source.ShouldNotContain("RegisterTokenResourceScope");
-        token.ShouldNotContain("ScopeProvider");
-        theme.ShouldContain("{atom:SharedTokenResource ");
-        theme.ShouldNotContain("ControlTokenScope.Identity");
-        theme.ShouldNotContain("TokenSharedTokenResource");
-        theme.ShouldContain("MetadataValueFontFamily");
-        token.ShouldNotContain("FontFamily.Parse(\"Consolas\")");
     }
 
     [Fact]
@@ -237,6 +220,26 @@ public class GalleryShowCaseHeaderTests
     }
 
     [Fact]
+    public void Metadata_Font_Uses_The_Global_Ui_Font_Token()
+    {
+        var tokenSource = File.ReadAllText(GetRepoFile("src/AtomUI.Toolkits.GalleryBase/Controls/GalleryShowCaseHeaderToken.cs"));
+        Regex.IsMatch(tokenSource, @"\bMetadataValueFontFamily\s*=\s*EffectiveGlobalToken\.FontFamily\b")
+            .ShouldBeTrue();
+
+        var theme = XDocument.Load(GetRepoFile(
+            "src/AtomUI.Toolkits.GalleryBase/Controls/Themes/GalleryShowCaseHeaderTheme.axaml"));
+        var metadataTexts = theme.Descendants()
+            .Where(element => element.Name.LocalName == "GalleryShowCaseMetadataRowPanel")
+            .SelectMany(row => row.Elements().Where(element => element.Name.LocalName == "TextBlock"))
+            .ToArray();
+
+        metadataTexts.ShouldNotBeEmpty();
+        metadataTexts.ShouldAllBe(text =>
+            (string?)text.Attribute("FontFamily") ==
+            "{gallery:GalleryShowCaseHeaderTokenResource MetadataValueFontFamily}");
+    }
+
+    [Fact]
     public void Metadata_Row_Panel_Treats_Value_Width_As_Shrinkable_Preference()
     {
         var label = new FixedMeasureControl(new Size(180, 20));
@@ -329,6 +332,23 @@ public class GalleryShowCaseHeaderTests
             $"Expected metadata label '{label.Text}' and value '{value.Text}' to share font metrics.");
     }
 
+    private static string GetRepoFile(string relativePath)
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var path = Path.Combine(directory.FullName, relativePath);
+            if (File.Exists(path))
+            {
+                return path;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new FileNotFoundException($"Unable to locate repository file '{relativePath}'.");
+    }
+
     private static double GetVerticalCenter(Control control)
     {
         return control.Bounds.Y + control.Bounds.Height / 2;
@@ -372,28 +392,6 @@ public class GalleryShowCaseHeaderTests
             window.Close();
             Dispatcher.UIThread.RunJobs();
         }
-    }
-
-    private static string ReadRepoFile(string relativePath)
-    {
-        return File.ReadAllText(GetRepoFile(relativePath));
-    }
-
-    private static string GetRepoFile(string relativePath)
-    {
-        var directory = AppContext.BaseDirectory;
-        while (directory is not null)
-        {
-            var candidate = Path.Combine(directory, relativePath);
-            if (File.Exists(candidate) || Directory.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            directory = Directory.GetParent(directory)?.FullName;
-        }
-
-        throw new FileNotFoundException(relativePath);
     }
 
     private sealed class FixedMeasureControl : Control

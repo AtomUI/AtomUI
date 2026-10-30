@@ -3,7 +3,6 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
-using AtomUI.Animations;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Automation;
@@ -13,7 +12,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Interactivity;
+using AtomUI.Generated.AtomUIDesktopControlsDataGrid;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
@@ -146,6 +145,7 @@ public partial class DataGridRow : TemplatedControl
     
     public DataGridRow()
     {
+        Classes.Add(DataGridSemanticParts.BodyRowClass);
         MinHeight                 =  DefaultMinHeight;
         Index                     =  -1;
         IsValid                   =  true;
@@ -403,6 +403,11 @@ public partial class DataGridRow : TemplatedControl
                     }
                 }
             }
+
+            if (owner != null)
+            {
+                ApplyHeaderContentTemplate();
+            }
         }
         else if (change.Property == IsSelectedProperty)
         {
@@ -424,15 +429,4 @@ public partial class DataGridRow : TemplatedControl
         }
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(() => this.EnableTransitions());
-    }
 }

@@ -1,15 +1,14 @@
-using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
 using AvaloniaSplitView = Avalonia.Controls.SplitView;
 
+[global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
 public class SplitView : AvaloniaSplitView, IMotionAwareControl
 {
     #region 公共属性定义
@@ -17,10 +16,10 @@ public class SplitView : AvaloniaSplitView, IMotionAwareControl
         AvaloniaProperty.Register<SplitView, Easing?>(nameof(PaneMotionEasing));
 
     public static readonly StyledProperty<TimeSpan> PaneOpenMotionDurationProperty =
-        AvaloniaProperty.Register<StyledElement, TimeSpan>(nameof(PaneOpenMotionDuration));
+        AvaloniaProperty.Register<SplitView, TimeSpan>(nameof(PaneOpenMotionDuration));
 
     public static readonly StyledProperty<TimeSpan> PaneCloseMotionDurationProperty =
-        AvaloniaProperty.Register<StyledElement, TimeSpan>(nameof(PaneCloseMotionDuration));
+        AvaloniaProperty.Register<SplitView, TimeSpan>(nameof(PaneCloseMotionDuration));
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<SplitView>();
@@ -81,18 +80,6 @@ public class SplitView : AvaloniaSplitView, IMotionAwareControl
     }
 
     #endregion
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-    
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        this.EnableTransitions();
-    }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

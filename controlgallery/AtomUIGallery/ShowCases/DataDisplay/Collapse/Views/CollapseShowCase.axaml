@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Collapse"
              x:DataType="vm:CollapseViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Collapse"
                     Category="{gallery:CollapseShowCaseLangResource ComponentCategory}"
@@ -18,7 +18,40 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="SelectingItemsControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:CollapseViewModel">
+                    <gallery:SemanticPartPreview Name="CollapseSemanticPreview"
+                                                 SemanticOwner="{Binding #CollapseSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:Collapse}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Collapse Name="CollapseSemanticOwner">
+                                <atom:CollapseItem Header="This is panel header" IsSelected="True">
+                                    <atom:TextBlock TextWrapping="Wrap" Text="This is panel body" />
+                                </atom:CollapseItem>
+                            </atom:Collapse>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:CollapseShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="header"
+                                Description="{gallery:CollapseShowCaseLangResource SemanticHeaderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="icon"
+                                Description="{gallery:CollapseShowCaseLangResource SemanticIconDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="title"
+                                Description="{gallery:CollapseShowCaseLangResource SemanticTitleDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="body"
+                                Description="{gallery:CollapseShowCaseLangResource SemanticBodyDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -287,7 +320,75 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:CollapseShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:CollapseShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="collapse-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:CollapseViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="12">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Collapse.semantic-object">
+                                        <Setter Property="Background" Value="#fafafa" />
+                                        <Setter Property="BorderBrush" Value="#e0e0e0" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="CornerRadius" Value="8" />
+                                        <atom:CollapseHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
+                                            <Setter Property="Background" Value="#f0f0f0" />
+                                            <Setter Property="Padding" Value="16,12" />
+                                        </atom:CollapseHeaderStyle>
+                                        <atom:CollapseTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#141414" />
+                                        </atom:CollapseTitleStyle>
+                                    </Style>
+                                    <Style Selector="atom|Collapse.semantic-function">
+                                        <Setter Property="Background" Value="#ffffff" />
+                                        <Setter Property="BorderBrush" Value="#696fc7" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="CornerRadius" Value="8" />
+                                        <atom:CollapseHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
+                                            <Setter Property="Background" Value="#f5efff" />
+                                            <Setter Property="Padding" Value="16,12" />
+                                        </atom:CollapseHeaderStyle>
+                                        <atom:CollapseTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#141414" />
+                                        </atom:CollapseTitleStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:Collapse Classes="semantic-object">
+                                    <atom:CollapseItem Header="{gallery:CollapseShowCaseLangResource P2HeaderThisIsPanelHeaderN1}" IsSelected="True">
+                                        <atom:TextBlock TextWrapping="Wrap" Text="{gallery:CollapseShowCaseLangResource P2TextADogIsATypeOfDomesticatedAnimal}" />
+                                    </atom:CollapseItem>
+                                    <atom:CollapseItem Header="{gallery:CollapseShowCaseLangResource P2HeaderThisIsPanelHeaderN2}">
+                                        <atom:TextBlock TextWrapping="Wrap" Text="{gallery:CollapseShowCaseLangResource P2TextADogIsATypeOfDomesticatedAnimal}" />
+                                    </atom:CollapseItem>
+                                    <atom:CollapseItem Header="{gallery:CollapseShowCaseLangResource P2HeaderThisIsPanelHeaderN3}">
+                                        <atom:TextBlock TextWrapping="Wrap" Text="{gallery:CollapseShowCaseLangResource P2TextADogIsATypeOfDomesticatedAnimal}" />
+                                    </atom:CollapseItem>
+                                </atom:Collapse>
+
+                                <atom:Collapse Classes="semantic-function" SizeType="Large">
+                                    <atom:CollapseItem Header="{gallery:CollapseShowCaseLangResource P2HeaderThisIsPanelHeaderN1}">
+                                        <atom:TextBlock TextWrapping="Wrap" Text="{gallery:CollapseShowCaseLangResource P2TextADogIsATypeOfDomesticatedAnimal}" />
+                                    </atom:CollapseItem>
+                                    <atom:CollapseItem Header="{gallery:CollapseShowCaseLangResource P2HeaderThisIsPanelHeaderN2}" IsSelected="True">
+                                        <atom:TextBlock TextWrapping="Wrap" Text="{gallery:CollapseShowCaseLangResource P2TextADogIsATypeOfDomesticatedAnimal}" />
+                                    </atom:CollapseItem>
+                                    <atom:CollapseItem Header="{gallery:CollapseShowCaseLangResource P2HeaderThisIsPanelHeaderN3}">
+                                        <atom:TextBlock TextWrapping="Wrap" Text="{gallery:CollapseShowCaseLangResource P2TextADogIsATypeOfDomesticatedAnimal}" />
+                                    </atom:CollapseItem>
+                                </atom:Collapse>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

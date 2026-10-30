@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -40,6 +38,11 @@ public enum ListShowCaseLangResourceKind
     SearchableDescription,
     PaginationListTitle,
     PaginationListDescription,
+    SemanticRootDescription,
+    SemanticItemDescription,
+    SemanticGroupHeaderDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
     P2PlaceholderTextSearch,
     P2TextCustomEmptyIndicator,
     P2FilterValue,

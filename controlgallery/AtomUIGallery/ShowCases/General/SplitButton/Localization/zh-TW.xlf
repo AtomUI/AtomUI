@@ -145,6 +145,126 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Main content area of menu option, sets content layout and text styles</source>
+        <target state="translated">選單項目的主要內容區域，設定內容版面與文字樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Individual menu option element, sets interaction states and background styles</source>
+        <target state="translated">選單的單一選項元素，設定選項的互動狀態與背景樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIconDescription">
+      <segment>
+        <source>Icon area of menu option, sets icon size and spacing styles</source>
+        <target state="translated">選單項目的圖示區域，設定圖示的尺寸與間距樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemTitleDescription">
+      <segment>
+        <source>Title content area of a menu group, sets layout and text styles</source>
+        <target state="translated">選單分組的標題內容區域，設定版面與文字樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root element of the popup layer, sets border, background and corner styles</source>
+        <target state="translated">彈出層的根元素，設定邊框、背景與圓角樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewFirstMenuItem">
+      <segment>
+        <source>1st menu item</source>
+        <target state="translated">第一個選單項目</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewGroupTitle">
+      <segment>
+        <source>Group title</source>
+        <target state="translated">分組標題</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewOption1">
+      <segment>
+        <source>Option 1</source>
+        <target state="translated">選項 1</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewOption2">
+      <segment>
+        <source>Option 2</source>
+        <target state="translated">選項 2</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewSecondMenuItem">
+      <segment>
+        <source>2nd menu item</source>
+        <target state="translated">第二個選單項目</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewSubMenu">
+      <segment>
+        <source>SubMenu</source>
+        <target state="translated">子選單</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrimaryDescription">
+      <segment>
+        <source>Primary trigger button of the split button, sets content and shape styles</source>
+        <target state="translated">SplitButton 的主觸發按鈕，設定內容與形狀樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSecondaryDescription">
+      <segment>
+        <source>Secondary trigger button opening the flyout, sets indicator and shape styles</source>
+        <target state="translated">SplitButton 開啟彈出層的次觸發按鈕，設定指示圖示與形狀樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesDescription">
+      <segment>
+        <source>Owner-scoped styles targeting the SplitButton trigger and popup Semantic Parts via the generated semantic style classes.</source>
+        <target state="translated">使用產生的語義樣式類別定制 SplitButton 觸發側與彈出層的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesItemLogout">
+      <segment>
+        <source>Logout</source>
+        <target state="translated">登出</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesItemProfile">
+      <segment>
+        <source>Profile</source>
+        <target state="translated">個人資料</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesItemSettings">
+      <segment>
+        <source>Settings</source>
+        <target state="translated">設定</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesObjectButton">
+      <segment>
+        <source>Object Style</source>
+        <target state="translated">物件樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesObjectPrimary">
+      <segment>
+        <source>Primary Style</source>
+        <target state="translated">主按鈕樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
     <unit id="SizeDescription">
       <segment>
         <source>AtomUI supports three sizes of buttons: small, default, and large. If a large or small button is desired, set the size property to large or small respectively. Omit the size property for a button with the default size.</source>

@@ -1,6 +1,6 @@
 # Slider 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.Slider` 桌面版的设计定位、公共契约、状态模型、视觉主题关系和维护边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，多 handle 专项模型见 [Slider 多 Handle 设计](multi-handle-design.md)，内部实现原理见 [Slider 桌面版实现原理](implementation.md)，Token 语义见 [Slider Token 设计](token.md)，变化记录见 [Slider Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.Slider` 桌面版的设计定位、公共契约、状态模型、视觉主题关系和维护边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，多 handle 专项模型见 [Slider 多 Handle 设计](multi-handle-design.md)，Semantic Part 契约见 [Slider Semantic Part 契约](semantic-part.md)，内部实现原理见 [Slider 桌面版实现原理](implementation.md)，Token 语义见 [Slider Token 设计](token.md)，变化记录见 [Slider Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -94,6 +94,11 @@ Range 模式使用示例：
 
 SliderThumb 是 SliderTrack 管理的动态视觉节点，不作为固定数量的公共 Template Part 暴露。
 
+Semantic Part 由 `Slider` 单一 owner 公开：`root`、`rail`、`tracks`、`track`、`handle` 五个 Part 对齐上游
+`SliderSemanticType`（`classNames` / `styles` 均为 `{ root?, tracks?, track?, rail?, handle? }`）。rail / tracks /
+track 由 `SliderTrack` 代码创建的元素节点承载，handle 由动态 `SliderThumb` 承载，mark 与 Tooltip 不属于 Semantic
+Part。完整契约见 [Slider Semantic Part 契约](semantic-part.md)。
+
 ## 4. 行为与状态模型
 
 Slider 的核心状态流：
@@ -163,10 +168,12 @@ Slider 的默认视觉由三层主题组成：
 
 视觉模型：
 
-- `SliderTrack` 绘制 rail、`TracksBrush`、`TrackBarBrush`、mark 点和 mark 文本。
+- `SliderTrack` 管理 rail、整体活动范围、相邻 segment 与 mark 的**元素**节点并计算其几何：rail 元素（
+  `TrackGrooveBrush`）、tracks 元素（`TracksBrush`）、segment 元素（`TrackBarBrush`）按值比例排列，mark 点与文本
+  由 internal `SliderMarksElement` 自绘；四个区域元素化后与历史自绘几何一致，默认视觉不变。
 - `SliderThumb` 绘制圆点、边框和 focus / hover outline。
 - `TrackBarBrush` 只表达相邻 handle 之间的 segment。
-- `TracksBrush` 只表达首尾 handle 之间的整体范围。
+- `TracksBrush` 只表达整体活动范围（Range 模式首尾 handle 之间；单值模式 `Minimum → Value`）。
 - `IsIncluded=false` 时不绘制两种活动轨道和 mark 激活态。
 - disabled handle 使用对应 thumb disabled token，不改变其他 handle 的颜色。
 - 全部 handle disabled 时使用 Slider 整体 disabled 状态。
@@ -205,34 +212,15 @@ Slider 的多 handle 专项模型由 [Slider 多 Handle 设计](multi-handle-des
 
 该专项模型不支持运行时通过交互增删 handle，也不提供 `editable`、`minCount` 或 `maxCount`。handle 数量完全由调用方重新赋值的 `RangeValues` 快照决定。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Slider 多 Handle 设计](multi-handle-design.md)
+- [Slider Semantic Part 契约](semantic-part.md)
 - [Slider 桌面版实现原理](implementation.md)
 - [Slider Token 设计](token.md)
 - [Slider Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Slider` | 数据录入控件根语义区域，承载公共值、状态归一、主题入口和 Gallery 可观察行为。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `track` | `SliderTrack` | 承载 rail、整体活动范围、相邻 segment、mark 和动态 handle 布局。 | `RangeValues`、`DisabledHandles`、`TrackBarBrush`、`TracksBrush` | SliderToken 的轨道、rail 和 mark Token | internal-observable |
-| `thumb` | `SliderThumb` 动态节点 | 表达单个 handle 的值索引、pointer、focus、pressed 和 disabled 视觉。 | `RangeValues`、`DisabledHandles`、`ValueFormatTemplate` | SliderToken 的 thumb、outline 和 disabled Token | internal-observable |
-| `validation` | Form 校验反馈 | 承载 Slider 的 Form 值变更和数据校验错误。 | `Value`、`RangeValues` | SharedToken / Form 主题资源 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/slider/index-cn.md`。 |
-| 单控件语义文档 | `overview.md` + `implementation.md` + `Themes` 文件夹 | 生成 `controls/slider/semantic-cn.md`。 |
-| API 表 | `overview.md` 语义摘要 + Slider 源码 public surface | 不在源文档复制生成器的机械成员表。 |
-| Design Token 表 | `token.md` + `SliderToken` 类型或生成数据 | Token 源文档只维护语义和边界。 |
-| 示例 | Slider Gallery ShowCase + source snippet catalog | 只导出带稳定 `SourceKey` 的示例。 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题、测试和 Gallery。 |
 
 稳定 Gallery 示例包括：
 
@@ -249,5 +237,3 @@ LLMS 导出来源：
 | Token | 验证默认轨道、rail、thumb、mark、outline 和方向 padding。 |
 | Gallery | 验证两个 Slider Showcase 的结构、绑定和交互。 |
 | 文档 | 检查相对链接、命名一致性并运行 `git diff --check`。 |
-
-LLMS 内容由本目录文档、Slider public surface、Token 类型和 Gallery Showcase 生成，不直接维护生成文件。

@@ -25,6 +25,6 @@
             Value="{atom:ImagePreviewerTokenResource TitleBarBackgroundColor}" />
 
     <Style Selector="^ /template/ atom|ImagePreviewNavButton">
-        <Setter Property="Margin" Value="{atom:SharedTokenResource MarginXS}" />
+        <Setter Property="Margin" Value="{atom:SharedTokenResource MarginSM}" />
     </Style>
 </ControlTheme>

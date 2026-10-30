@@ -14,10 +14,14 @@
                 <ControlTemplate TargetType="atom:NumericUpDownSpinner">
                     <atom:ButtonSpinnerDecoratedBox
                         Name="PART_DecoratedBox"
+                        Classes.semantic-scope-frame="True"
+                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         LeftAddOn="{TemplateBinding LeftAddOn}"
                         LeftAddOnTemplate="{TemplateBinding LeftAddOnTemplate}"
                         RightAddOn="{TemplateBinding RightAddOn}"
                         RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
+                        ContentRightAddOn="{TemplateBinding InnerRightContent}"
+                        ContentRightAddOnTemplate="{TemplateBinding InnerRightContentTemplate}"
                         StyleVariant="{TemplateBinding StyleVariant}"
                         SizeType="{TemplateBinding SizeType}"
                         Status="{TemplateBinding Status}"
@@ -44,7 +48,8 @@
                                     Icon="{antdicons:AntDesignIconProvider MinusOutlined}"
                                     CornerRadius="0"
                                     BorderThickness="0"
-                                    Padding="{atom:NumericUpDownTokenResource InputPadding}"
+                                    Padding="0"
+                                    Width="{CompiledBinding $self.Bounds.Height}"
                                     BackgroundSizing="InnerBorderEdge"
                                     IconWidth="{atom:SharedTokenResource IconSize}"
                                     IconHeight="{atom:SharedTokenResource IconSize}"
@@ -61,7 +66,8 @@
                                     Icon="{antdicons:AntDesignIconProvider PlusOutlined}"
                                     CornerRadius="0"
                                     BorderThickness="0"
-                                    Padding="{atom:NumericUpDownTokenResource InputPadding}"
+                                    Padding="0"
+                                    Width="{CompiledBinding $self.Bounds.Height}"
                                     BackgroundSizing="InnerBorderEdge"
                                     IconWidth="{atom:SharedTokenResource IconSize}"
                                     IconHeight="{atom:SharedTokenResource IconSize}"
@@ -69,22 +75,16 @@
                                     VerticalAlignment="Stretch" />
                             </atom:PixelAlignedBorder>
                             <DockPanel LastChildFill="True">
-                                <atom:AddOnContentPresenter
-                                    DockPanel.Dock="Left"
-                                    VerticalAlignment="Stretch"
-                                    VerticalContentAlignment="Center"
-                                    HorizontalAlignment="Left"
+                                <!-- 宿主自身必须零占位（无边距、无可见性开销）：
+                                     InnerLeftContent 由 NumericUpDown 模板无条件注入
+                                     PART_InnerLeftContentPresenter，空内容时该 presenter
+                                     自折叠，InputPadding 外边距由它自己承担（见
+                                     NumericUpDownTheme 的 Spinner 模板），否则空边距会把
+                                     居中数字推向右侧。 -->
+                                <ContentPresenter
                                     Focusable="False"
                                     Content="{TemplateBinding InnerLeftContent}"
                                     ContentTemplate="{TemplateBinding InnerLeftContentTemplate}" />
-                                <atom:AddOnContentPresenter
-                                    DockPanel.Dock="Right"
-                                    VerticalAlignment="Stretch"
-                                    VerticalContentAlignment="Center"
-                                    HorizontalAlignment="Right"
-                                    Focusable="False"
-                                    Content="{TemplateBinding InnerRightContent}"
-                                    ContentTemplate="{TemplateBinding InnerRightContentTemplate}" />
                                 <ContentPresenter
                                     Content="{TemplateBinding Content}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />

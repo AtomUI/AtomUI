@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -15,6 +13,16 @@ public enum SpinShowCaseLangResourceKind
     CustomizedDescriptionDescription,
     EmbeddedModeTitle,
     EmbeddedModeDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticContainerDescription,
+    SemanticMaskDescription,
+    SemanticSectionDescription,
+    SemanticIndicatorDescription,
+    SemanticDescriptionDescription,
+    SemanticIndicatorRootDescription,
+    SemanticIndicatorContentDescription,
     PageSubtitle,
     PageDescription,
     ComponentCategory,

@@ -1,6 +1,5 @@
 using System.Reactive.Disposables;
 using System.Reactive.Threading.Tasks;
-using AtomUI.Controls;
 using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;

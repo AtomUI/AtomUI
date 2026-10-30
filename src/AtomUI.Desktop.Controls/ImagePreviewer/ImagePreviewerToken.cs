@@ -92,9 +92,9 @@ internal sealed class ImagePreviewerToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        PreviewOperationColor         = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.85);
-        PreviewOperationHoverColor    = EffectiveGlobalToken.ColorTextLightSolid;
-        PreviewOperationColorDisabled = EffectiveGlobalToken.ColorTextDisabled;
+        PreviewOperationColor         = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.65);
+        PreviewOperationHoverColor    = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.85);
+        PreviewOperationColorDisabled = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.25);
         PreviewOperationSize          = EffectiveGlobalToken.FontSizeIcon * 1.5;
         ImagePreviewSwitchSize        = EffectiveGlobalToken.ControlHeightLG;
         MaskBgColor                   = ColorUtils.FromRgbF(0.3, 0, 0, 0);
@@ -113,7 +113,7 @@ internal sealed class ImagePreviewerToken : AbstractControlDesignToken
 
         NavButtonBgColor             = EffectiveGlobalToken.ColorBgMask.SetAlphaF(0.1);
         NavButtonBgHoverColor        = EffectiveGlobalToken.ColorBgMask.SetAlphaF(0.2);
-        FloatToolbarPadding          = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG / 2, 0);
+        FloatToolbarPadding          = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG, 0);
         FloatToolbarIndicatorPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
     }
     

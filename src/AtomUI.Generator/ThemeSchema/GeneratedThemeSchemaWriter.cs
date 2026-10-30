@@ -7,29 +7,25 @@ namespace AtomUI.Generator;
 
 internal sealed class GeneratedThemeSchemaWriter
 {
-    private readonly SourceProductionContext _context;
+    private readonly GenerationOutput _context;
+    private readonly bool _compiledAbi;
     private readonly string _generatedNamespace;
-    private readonly string _packageId;
-    private readonly bool _emitLinkedRegistration;
     private readonly string _controlCatalog;
     private readonly IReadOnlyList<SchemaTokenInfo> _globalTokens;
     private readonly IReadOnlyList<ControlThemeInfo> _controls;
     private readonly IReadOnlyList<ThemeAlgorithmInfo> _algorithms;
 
     internal GeneratedThemeSchemaWriter(
-        SourceProductionContext context,
+        GenerationOutput context,
         string? assemblyName,
-        string packageId,
-        bool emitLinkedRegistration,
         string controlCatalog,
         IEnumerable<SchemaTokenInfo> globalTokens,
         IEnumerable<ControlThemeInfo> controls,
-        IEnumerable<ThemeAlgorithmInfo> algorithms)
+        IEnumerable<ThemeAlgorithmInfo> algorithms, bool compiledAbi = false)
     {
         _context = context;
+        _compiledAbi = compiledAbi;
         _generatedNamespace = GeneratedCodeNamespace.ForAssembly(assemblyName);
-        _packageId = packageId;
-        _emitLinkedRegistration = emitLinkedRegistration;
         _controlCatalog = controlCatalog;
         _globalTokens = globalTokens.OrderBy(static token => token.Name, StringComparer.Ordinal).ToArray();
         _controls = controls.OrderBy(static control => control.ControlName, StringComparer.Ordinal)
@@ -44,12 +40,6 @@ internal sealed class GeneratedThemeSchemaWriter
         _context.AddSource(
             "GeneratedThemeSchema.g.cs",
             GeneratedSourceText.From(BuildSource()));
-        if (_emitLinkedRegistration && _controls.Count != 0)
-        {
-            _context.AddSource(
-                "GeneratedRegistrationUnits.g.cs",
-                GeneratedSourceText.From(BuildRegistrationUnitsSource()));
-        }
     }
 
     private string BuildSource()
@@ -62,14 +52,23 @@ internal sealed class GeneratedThemeSchemaWriter
         source.AppendLine();
         source.AppendLine("internal static class GeneratedThemeSchema");
         source.AppendLine("{");
+        if (_globalTokens.Count != 0 || _algorithms.Count != 0)
+        {
+            // Compile-time identity of this assembly's global token and algorithm sections. Core's
+            // startup registry combines it with the per-package schema fingerprints; assemblies
+            // without globals or algorithms emit nothing and never participate in that section.
+            source.Append("    internal const ulong GlobalSchemaFingerprint = 0x")
+                  .Append(RegistrationFingerprint.ComputeGlobalSchema(_globalTokens, _algorithms).ToString("X16"))
+                  .AppendLine("UL;");
+            source.AppendLine();
+        }
         WriteGlobalTokens(source);
-        source.AppendLine();
-        WriteControls(source);
         source.AppendLine();
         WriteAlgorithms(source);
         source.AppendLine();
         source.AppendLine("    internal static global::System.Collections.Generic.IReadOnlyList<TokenDescriptor> GetGlobalTokens() => s_globalTokens;");
-        source.AppendLine("    internal static global::System.Collections.Generic.IReadOnlyList<ControlTokenDescriptor> GetControls() => s_controls;");
+        WriteGlobalCopy(source);
+
         source.AppendLine("    internal static global::System.Collections.Generic.IReadOnlyList<ThemeAlgorithmDescriptor> GetAlgorithms() => s_algorithms;");
         source.AppendLine("}");
         source.AppendLine();
@@ -90,87 +89,22 @@ internal sealed class GeneratedThemeSchemaWriter
         source.AppendLine("    };");
     }
 
-    private void WriteControls(StringBuilder source)
+    private void WriteGlobalCopy(StringBuilder source)
     {
-        source.AppendLine("    private static readonly ControlTokenDescriptor[] s_controls = new ControlTokenDescriptor[]");
+        if (_globalTokens.Count == 0)
+        {
+            return;
+        }
+        source.AppendLine("    internal static void CopyGlobalValues(global::AtomUI.Theme.DesignTokens.AbstractDesignToken source, global::AtomUI.Theme.DesignTokens.AbstractDesignToken target)");
         source.AppendLine("    {");
-        foreach (var control in _controls.Where(static control => control.HasDescriptor))
+        foreach (var token in _globalTokens)
         {
-            source.Append("        GeneratedThemeSchemaDescriptorFactory.")
-                  .Append(GetControlDescriptorFactoryMethodName(control))
-                  .AppendLine("(),");
+            source.Append("        ((").Append(token.DeclaringType).Append(")target).").Append(token.Name)
+                  .Append(" = CopyGlobalValue(((").Append(token.DeclaringType).Append(")source).")
+                  .Append(token.Name).AppendLine(");");
         }
-        source.AppendLine("    };");
-    }
-
-    private string BuildRegistrationUnitsSource()
-    {
-        var source = new StringBuilder();
-        source.AppendLine("// <auto-generated />");
-        source.AppendLine("#nullable enable");
-        source.AppendLine("using global::AtomUI.Theme.Schema;");
-        source.AppendLine();
-        var units = _controls.GroupBy(static control => control.UnitId, StringComparer.Ordinal)
-                             .OrderBy(static group => group.Key, StringComparer.Ordinal)
-                             .ToArray();
-        for (var unitIndex = 0; unitIndex < units.Length; unitIndex++)
-        {
-            var unit = units[unitIndex];
-            var fragmentName = LinkedRegistration.LinkedRegistrationFragmentName.ForUnit(unit.Key);
-            LinkedRegistration.Manifest.LinkedRegistrationMetadataWriter.Write(
-                source,
-                new LinkedRegistration.Manifest.LinkedUnitManifestRecord(
-                    _packageId,
-                    unit.Key,
-                    _generatedNamespace + ".LinkedRegistrationV1." + fragmentName,
-                    "Add",
-                    unitIndex));
-            foreach (var control in unit.Where(static control => control.OwnsControlMap)
-                                        .OrderBy(static control =>
-                                            control.ControlMetadataName,
-                                            StringComparer.Ordinal))
-            {
-                LinkedRegistration.Manifest.LinkedRegistrationMetadataWriter.Write(
-                    source,
-                    new LinkedRegistration.Manifest.LinkedControlMapManifestRecord(
-                        _packageId,
-                        control.ControlMetadataName,
-                        unit.Key));
-            }
-        }
-        source.AppendLine();
-        source.Append("namespace ").Append(_generatedNamespace).AppendLine(".LinkedRegistrationV1;");
-        source.AppendLine();
-        foreach (var unit in units)
-        {
-            var fragmentName = LinkedRegistration.LinkedRegistrationFragmentName.ForUnit(unit.Key);
-            source.AppendLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
-            source.Append("public static partial class ").Append(fragmentName).AppendLine();
-            source.AppendLine("{");
-            source.AppendLine("    public static void Add(");
-            source.AppendLine("        global::AtomUI.Registration.AotTrimControlPackageRegistrationBuilder builder)");
-            source.AppendLine("    {");
-            source.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(builder);");
-            foreach (var control in unit.Where(static control => control.HasDescriptor)
-                                        .OrderBy(static control =>
-                                            control.ControlMetadataName,
-                                            StringComparer.Ordinal))
-            {
-                source.AppendLine("        builder.AddControl(");
-                source.Append("            global::").Append(_generatedNamespace)
-                      .Append(".GeneratedThemeSchemaDescriptorFactory.")
-                      .Append(GetControlDescriptorFactoryMethodName(control))
-                      .AppendLine("());");
-            }
-            source.AppendLine("        AddThemes(builder);");
-            source.AppendLine("    }");
-            source.AppendLine();
-            source.AppendLine("    static partial void AddThemes(");
-            source.AppendLine("        global::AtomUI.Registration.AotTrimControlPackageRegistrationBuilder builder);");
-            source.AppendLine("}");
-            source.AppendLine();
-        }
-        return source.ToString();
+        source.AppendLine("    }");
+        source.AppendLine("    private static T CopyGlobalValue<T>(T value) => TokenValueCodec<T>.Copy(value);");
     }
 
     private void WriteDescriptorFactory(StringBuilder source)
@@ -190,6 +124,7 @@ internal sealed class GeneratedThemeSchemaWriter
                 token,
                 slot,
                 $"global::AtomUI.Theme.Resources.SharedTokenKind.{token.Name}",
+                GlobalTokenAccessorName,
                 "            ",
                 ";");
             source.AppendLine("    }");
@@ -208,6 +143,67 @@ internal sealed class GeneratedThemeSchemaWriter
             source.AppendLine();
         }
         source.AppendLine("}");
+
+        if (_globalTokens.Count != 0)
+        {
+            source.AppendLine();
+            WriteAccessor(source, GlobalTokenAccessorName, _globalTokens);
+        }
+        foreach (var control in _controls.Where(static control => control.HasDescriptor && control.HasOwnToken))
+        {
+            var tokens = OrderedOwnTokens(control);
+            if (tokens.Count == 0)
+            {
+                continue;
+            }
+            source.AppendLine();
+            WriteAccessor(source, GetControlTokenAccessorName(control), tokens);
+        }
+    }
+
+    // One accessor per token class keeps descriptors free of per-token delegates; an accessor is referenced only
+    // from its own descriptor factory, so it is trimmed together with an unused control descriptor.
+    private static void WriteAccessor(StringBuilder source, string className, IReadOnlyList<SchemaTokenInfo> tokens)
+    {
+        const string tokenType = "global::AtomUI.Theme.DesignTokens.AbstractDesignToken";
+        source.Append("internal sealed class ").Append(className).AppendLine(" : TokenValueAccessor");
+        source.AppendLine("{");
+        source.Append("    internal static readonly ").Append(className).Append(" Instance = new ")
+              .Append(className).AppendLine("();");
+        source.AppendLine();
+        source.Append("    public override object GetValue(").Append(tokenType).AppendLine(" token, int slot)");
+        WriteSwitch(source, tokens, static (builder, token) => builder
+            .Append("return ((").Append(token.DeclaringType).Append(")token).").Append(token.Name).Append(';'));
+        source.AppendLine();
+        source.Append("    public override void SetValue(").Append(tokenType).AppendLine(" token, int slot, object value)");
+        WriteSwitch(source, tokens, static (builder, token) => builder
+            .Append("((").Append(token.DeclaringType).Append(")token).").Append(token.Name)
+            .Append(" = (").Append(token.ValueType).Append(")value!; return;"));
+        source.AppendLine();
+        source.Append("    public override object ProjectResourceValue(").Append(tokenType).AppendLine(" token, int slot)");
+        WriteSwitch(source, tokens, static (builder, token) => builder
+            .Append("return global::AtomUI.Theme.Schema.ThemeResourceValue.Project(((").Append(token.DeclaringType)
+            .Append(")token).").Append(token.Name).Append(");"));
+        source.AppendLine("}");
+    }
+
+    private static void WriteSwitch(
+        StringBuilder source,
+        IReadOnlyList<SchemaTokenInfo> tokens,
+        Action<StringBuilder, SchemaTokenInfo> writeCase)
+    {
+        source.AppendLine("    {");
+        source.AppendLine("        switch (slot)");
+        source.AppendLine("        {");
+        for (var slot = 0; slot < tokens.Count; slot++)
+        {
+            source.Append("            case ").Append(slot).Append(": ");
+            writeCase(source, tokens[slot]);
+            source.AppendLine();
+        }
+        source.AppendLine("            default: throw new global::System.ArgumentOutOfRangeException(nameof(slot));");
+        source.AppendLine("        }");
+        source.AppendLine("    }");
     }
 
     private void WriteControlDescriptor(
@@ -223,22 +219,23 @@ internal sealed class GeneratedThemeSchemaWriter
         source.Append(indentation).Append("    typeof(").Append(controlType).AppendLine("),");
         if (!control.HasOwnToken)
         {
-            source.Append(indentation).Append("    new ControlTokenIdentity(")
+            source.Append(indentation).Append("    ControlTokenIdentity.ForControl(typeof(").Append(controlType).Append("), ")
                   .Append(catalog).Append(", ").Append(id).AppendLine(")");
             source.Append(indentation).Append(')').AppendLine(suffix);
             return;
         }
 
-        source.Append(indentation).Append("    new ControlTokenIdentity(")
+        source.Append(indentation).Append("    ControlTokenIdentity.ForControl(typeof(").Append(controlType).Append("), ")
               .Append(catalog).Append(", ").Append(id).AppendLine("),");
         var typeName = FullyQualify(control.OwnToken!.GetFullyQualifiedTokenTypeName());
         source.Append(indentation).AppendLine("    new TokenDescriptor[]");
         source.Append(indentation).AppendLine("    {");
-        var tokens = control.OwnSchemaTokens.OrderBy(static token => token.Name, StringComparer.Ordinal).ToArray();
-        for (var slot = 0; slot < tokens.Length; slot++)
+        var tokens = OrderedOwnTokens(control);
+        var accessor = GetControlTokenAccessorName(control);
+        for (var slot = 0; slot < tokens.Count; slot++)
         {
             var resourceKey = $"global::{control.ControlNamespace}.DesignTokens.{control.TokenKindType}.{tokens[slot].Name}";
-            WriteToken(source, tokens[slot], slot, resourceKey, indentation + "        ");
+            WriteToken(source, tokens[slot], slot, resourceKey, accessor, indentation + "        ");
         }
         source.Append(indentation).AppendLine("    },");
         source.Append(indentation).Append("    static () => new ").Append(typeName).AppendLine("(),");
@@ -262,39 +259,42 @@ internal sealed class GeneratedThemeSchemaWriter
         source.AppendLine("    };");
     }
 
-    private static void WriteToken(
+    private void WriteToken(
         StringBuilder source,
         SchemaTokenInfo token,
         int slot,
         string resourceKey,
+        string accessor,
         string indentation = "        ",
         string suffix = ",")
     {
         var name = SymbolDisplay.FormatLiteral(token.Name, quote: true);
-        source.Append(indentation).Append("new TokenDescriptor(").Append(name).Append(", ").Append(slot)
-              .Append(", TokenStage.").Append(token.Stage).Append(", typeof(").Append(token.ValueType)
-              .Append("), ").Append(resourceKey).AppendLine(",");
-        source.Append(indentation).Append("    static value => ThemeTokenValueParser.Parse<")
-              .Append(token.ValueType).AppendLine(">(value),");
-        source.Append(indentation).Append("    static value => ThemeTokenValueFormatter.Format((")
-              .Append(token.ValueType).AppendLine(")value!),");
-        source.Append(indentation).Append("    static token => ((").Append(token.DeclaringType).Append(")token).")
-              .Append(token.Name).AppendLine(",");
-        source.Append(indentation).Append("    static (token, value) => ((").Append(token.DeclaringType).Append(")token).")
-              .Append(token.Name).Append(" = (").Append(token.ValueType).AppendLine(")value!,");
-        source.Append(indentation).Append("    static token => ThemeResourceValue.Project(((")
-              .Append(token.DeclaringType).Append(")token).")
-              .Append(token.Name).Append("))").AppendLine(suffix);
+        source.Append(indentation).Append("TokenDescriptor.CreateGenerated(").Append(name).Append(", ").Append(slot)
+              .Append(", TokenStage.").Append(token.Stage)
+              .Append(", TokenValueCodec<").Append(token.ValueType).Append(">.Instance, ")
+              .Append(resourceKey).Append(", ").Append(accessor).Append(".Instance");
+        if (_compiledAbi && ThemeLiteralCodec.Supports(token.ValueType)) { source.Append(", 1"); }
+        source.Append(")").AppendLine(suffix);
     }
+
+    private static IReadOnlyList<SchemaTokenInfo> OrderedOwnTokens(ControlThemeInfo control) =>
+        control.OwnSchemaTokens.OrderBy(static token => token.Name, StringComparer.Ordinal).ToArray();
+
+    private const string GlobalTokenAccessorName = "GeneratedGlobalTokenAccessor";
 
     private static string GetGlobalTokenDescriptorFactoryMethodName(SchemaTokenInfo token)
     {
         return $"CreateGlobalTokenDescriptor_{token.Name}";
     }
 
-    private static string GetControlDescriptorFactoryMethodName(ControlThemeInfo control)
+    internal static string GetControlDescriptorFactoryMethodName(ControlThemeInfo control)
     {
         return $"CreateControlDescriptor_{ToIdentifier(control.ControlName)}_{ComputeHash(control.ControlMetadataName):X16}";
+    }
+
+    private static string GetControlTokenAccessorName(ControlThemeInfo control)
+    {
+        return $"GeneratedTokenAccessor_{ToIdentifier(control.ControlName)}_{ComputeHash(control.ControlMetadataName):X16}";
     }
 
     private static string ToIdentifier(string value)

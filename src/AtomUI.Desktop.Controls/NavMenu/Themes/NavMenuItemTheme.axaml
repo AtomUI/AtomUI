@@ -18,6 +18,7 @@
                 <ControlTemplate>
                     <Panel>
                         <atom:HorizontalNavMenuItemHeader Name="PART_Header"
+                                                           Classes.semantic-scope-header="True"
                                                            Icon="{TemplateBinding Icon}"
                                                            Header="{TemplateBinding Header}"
                                                            HeaderTemplate="{TemplateBinding HeaderTemplate}"
@@ -45,6 +46,7 @@
                                 </MultiBinding>
                             </atom:Popup.IsOpen>
                             <atom:NavMenuPopupFrame Name="PART_PopupFrame"
+                                                     Classes.semantic-popup-root="True"
                                                      MinWidth="{TemplateBinding EffectivePopupMinWidth}">
                                 <atom:ScrollViewer IsScrollChainingEnabled="False"
                                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -68,6 +70,7 @@
                 <ControlTemplate>
                     <Panel>
                         <atom:VerticalNavMenuItemHeader Name="PART_Header"
+                                                         Classes.semantic-scope-header="True"
                                                          Icon="{TemplateBinding Icon}"
                                                          Header="{TemplateBinding Header}"
                                                          NodeHeader="{TemplateBinding NodeHeader}"
@@ -99,7 +102,8 @@
                                 </MultiBinding>
                             </atom:Popup.IsOpen>
 
-                            <atom:NavMenuPopupFrame Name="PART_PopupFrame">
+                            <atom:NavMenuPopupFrame Name="PART_PopupFrame"
+                                                     Classes.semantic-popup-root="True">
                                 <atom:ScrollViewer IsScrollChainingEnabled="False"
                                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                                    IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
@@ -121,6 +125,7 @@
                     <StackPanel Orientation="Vertical">
                         <atom:InlineNavMenuItemHeader
                             Name="PART_Header"
+                            Classes.semantic-scope-header="True"
                             Icon="{TemplateBinding Icon}"
                             Header="{TemplateBinding Header}"
                             HeaderTemplate="{TemplateBinding HeaderTemplate}"
@@ -138,14 +143,23 @@
                             IsPointerHold="{TemplateBinding IsPointerHold}"
                             IsInlineCollapsed="{TemplateBinding IsInlineCollapsed}" />
 
-                        <atom:LayoutAwareMotionActor
-                            Name="PART_ChildItemsLayoutTransform">
+                        <atom:ContentViewport
+                            Name="PART_ChildItemsViewport"
+                            atom:Motion.IsVisible="{TemplateBinding IsSubMenuOpen}"
+                            atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}"
+                            atom:Motion.DurationOverride="{TemplateBinding OpenCloseMotionDuration}">
+                            <atom:Motion.Enter>
+                                <atom:ExpandMotion />
+                            </atom:Motion.Enter>
+                            <atom:Motion.Leave>
+                                <atom:CollapseMotion />
+                            </atom:Motion.Leave>
                             <Border Name="PART_ChildItemsFrame">
                                 <ItemsPresenter Name="ChildItemsPresenter"
                                                 Focusable="False"
                                                 ItemsPanel="{TemplateBinding ItemsPanel}" />
                             </Border>
-                        </atom:LayoutAwareMotionActor>
+                        </atom:ContentViewport>
                     </StackPanel>
                 </ControlTemplate>
             </Setter>

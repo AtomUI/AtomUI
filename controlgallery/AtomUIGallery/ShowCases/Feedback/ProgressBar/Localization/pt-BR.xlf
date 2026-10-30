@@ -169,6 +169,48 @@
         <target state="translated">Layout</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Body element, set progress bar layout and size styles</source>
+        <target state="translated">Elemento do corpo, define os estilos de layout e tamanho da barra de progresso</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorDescription">
+      <segment>
+        <source>Indicator element, set percentage text or icon position and font styles</source>
+        <target state="translated">Elemento indicador, define a posição do texto percentual ou do ícone e os estilos de fonte</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped style selectors to customize ProgressBar's published Semantic Parts.</source>
+        <target state="translated">Use seletores de estilo com escopo do proprietário para personalizar as Semantic Parts publicadas do ProgressBar.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRailDescription">
+      <segment>
+        <source>Rail element, set background track color and border radius styles. Not exist in steps mode</source>
+        <target state="translated">Elemento do trilho, define a cor do trilho de fundo e os estilos de raio da borda. Não existe no modo steps</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, set relative positioning and basic container styles</source>
+        <target state="translated">Elemento raiz, define o posicionamento relativo e os estilos básicos do contêiner</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTrackDescription">
+      <segment>
+        <source>Track element, set progress fill color and transition animation styles</source>
+        <target state="translated">Elemento da faixa, define a cor de preenchimento do progresso e os estilos de animação de transição</target>
+      </segment>
+    </unit>
     <unit id="SmallerCircularProgressBarDescription">
       <segment>
         <source>A smaller circular progress bar.</source>

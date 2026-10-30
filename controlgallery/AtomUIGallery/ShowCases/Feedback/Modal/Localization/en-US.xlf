@@ -321,6 +321,96 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Body element: content area padding and content host.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>Close element: the title bar close button.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticContainerDescription">
+      <segment>
+        <source>Container element: dialog body frame with background, corner radius and clipping.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>Footer element: action area frame with background and padding.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element: title bar frame with background and padding.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticMaskDescription">
+      <segment>
+        <source>Mask element: the modal mask background and pointer hit-testing.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewFooterLink">
+      <segment>
+        <source>More</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element: the Dialog owner itself, carrying the opening intent, content, result and events.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStageHint">
+      <segment>
+        <source>The overlay host is scoped to this stage, so the mask and the dialog stay inside it while each part is inspected.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesDescription">
+      <segment>
+        <source>Style Dialog and MessageBox Semantic Parts through the generated Semantic Style classes.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesHint">
+      <segment>
+        <source>Open the semantically styled Dialog, MessageBox and window-hosted Dialog:</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesOpenStyledDialog">
+      <segment>
+        <source>Open styled Dialog</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesOpenStyledMessageBox">
+      <segment>
+        <source>Open styled MessageBox</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesOpenStyledWindowDialog">
+      <segment>
+        <source>Open styled window Dialog</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element: title text typography and foreground color.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticWindowStageHint">
+      <segment>
+        <source>Open the native Window host with the stage button: parts highlight inside that window; the styled window opens from the styling example.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticWrapperDescription">
+      <segment>
+        <source>Wrapper element: the surface motion and transition container.</source>
+      </segment>
+    </unit>
     <unit id="StaticDialogApiDescription">
       <segment>
         <source>Creating a Dialog using the static method of Dialog.</source>

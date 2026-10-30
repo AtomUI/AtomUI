@@ -1,6 +1,6 @@
 # Tour 桌面版实现原理
 
-本文档描述 Tour 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Tour 桌面版架构设计](overview.md)，变化记录见 [Tour Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Tour Token 设计](token.md)。
+本文档描述 Tour 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Tour 桌面版架构设计](overview.md)，Semantic Part 契约见 [Tour Semantic Part 契约](semantic-part.md)，变化记录见 [Tour Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Tour Token 设计](token.md)。
 
 Popup 接入边界：`Tour` 负责业务状态和内容准备，`PART_Popup` 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
 
@@ -25,6 +25,7 @@ Popup 接入边界：`Tour` 负责业务状态和内容准备，`PART_Popup` 负
 - `src/AtomUI.Desktop.Controls/Tour/Themes/TourStepsViewTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Tour/Themes/TourTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Tour/Tour.cs`
+- `src/AtomUI.Desktop.Controls/Tour/Tour.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Tour/TourIndicator.cs`
 - `src/AtomUI.Desktop.Controls/Tour/TourLayer.cs`
 - `src/AtomUI.Desktop.Controls/Tour/TourPlacementMode.cs`
@@ -43,11 +44,11 @@ Popup 接入边界：`Tour` 负责业务状态和内容准备，`PART_Popup` 负
 
 ## 3. 核心类职责
 
-- `DefaultTourIndicator`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
+- `DefaultTourIndicator`：默认分步指示器，模板托管代码物化的圆点（见 5.1），维护 public surface 与主题可观察行为。
 - `TextTourIndicator`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
-- `Tour`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
+- `Tour`：public API 与运行状态 owner，并实现 `ISemanticPartCrossRootProvider` 把打开态的共享遮罩层上报为跨根宿主。
 - `TourIndicator`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
-- `TourLayer`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
+- `TourLayer`：共享遮罩层，自绘镂空几何（目标区域外全铺 mask）；经 `VisualLayerManager` 挂载，逻辑父归属当前打开的 Tour。
 - `TourStep`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `TourStepOption`：集合项、节点或容器类型，承载单项状态和模板协作。
 - `TourStepsView`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
@@ -60,6 +61,7 @@ Popup 接入边界：`Tour` 负责业务状态和内容准备，`PART_Popup` 负
 - Template part 是视觉协作对象，生命周期必须受 `OnApplyTemplate` 或模板加载流程管理。
 - 数据对象、选项对象、任务对象或节点对象只保存业务数据，不应反向持有不可释放的视觉对象。
 - 弹层、窗口、计时器、异步 loader 和全局管理器必须有明确关闭、解绑或释放路径。
+- 共享 `TourLayer` 遮罩遵循“谁打开谁拥有”：打开路径挂逻辑父并上报跨根，关闭路径解除逻辑父；跨 Tour 复用必须先 `SetParent(null)` 再挂新 owner（Avalonia `SetParent` 非 null 到非 null 会抛异常）。
 
 ## 4. 状态与数据流
 
@@ -77,7 +79,7 @@ Public API / ItemsSource / Command / Event
 
 - 内容与数据：`CloseIcon`、`CoverTemplate`、`Description`、`DescriptionTemplate`、`ItemSpacing`、`ItemTemplate`、`Title`、`TitleTemplate`。
 - 选择与集合：`ActiveIndex`、`CurrentIndex`、`IndicatorActiveColor`、`StepCount`。`CurrentIndex` 默认双向绑定。
-- 交互与状态：`IsArrowVisible`、`IsDisabledInteraction`、`IsMotionEnabled`、`IsOpen`、`IsPointAtCenter`、`IsScrollIntoView`、`IsShowMask`。`IsOpen` 默认双向绑定。
+- 交互与状态：`IsArrowVisible`、`IsDisabledInteraction`、`IsMotionEnabled`、`IsOpen`、`IsPointAtCenter`、`IsPopupPinnedOpen`、`IsScrollIntoView`、`IsShowMask`。`IsOpen` 默认双向绑定；`IsPopupPinnedOpen` 为 public，供语义预览与设计期检查钉住弹层。
 - 视觉与布局：`Background`、`GapOffsetX`、`GapOffsetY`、`GapRadius`、`IndicatorColor`、`IndicatorSize`、`MaskColor`、`Placement`、`StyleType`、`TargetRegionCornerRadius`。
 - 其他稳定入口：`Cover`、`Indicator`、`Target`、`TargetRegion`。
 
@@ -103,6 +105,14 @@ Public API / ItemsSource / Command / Event
 
 - `PART_ArrowDecorator`：稳定模板协作入口，重命名前必须同步主题和实现。
 - `PART_Popup`：承载弹层宿主、打开关闭或候选内容。
+
+### 5.1 语义部件与共享遮罩归属
+
+Semantic Part 的公共契约（13 个部件的字段、存在条件、数量语义与 Selector 用法）见 [Tour Semantic Part 契约](semantic-part.md)。实现侧需要维护的不变量：
+
+- marker 分布：`TourTheme` 的 `PART_ArrowDecorator`（ArrowDecoratedBox）挂 `popup.root`；`TourStepTheme` 挂 `popup.section` / `popup.header` / `popup.cover` / `popup.title` / `popup.close` / `popup.description`；`TourStepsViewTheme` 挂 `popup.footer` / `popup.indicators` / `popup.actions`；`DefaultTourIndicator` 的物化圆点由控件代码用生成常量挂 `popup.indicator`。内置主题默认视觉不使用 `.semantic-*` selector。
+- 共享遮罩跨根命中：`popup.mask` 的载体 `TourLayer` 由 `VisualLayerManager` 呈现，与 Tour 不在同一视觉子树；`AttachMaskLayer` 在打开路径把它挂为当前 Tour 的逻辑子节点并抛 `CrossRootsChanged`，owner 作用域 Semantic Style（`Tour.TourPopupMaskStyle`，即 `>> .semantic-popup-mask` descendant 路由）沿逻辑父链跨视觉根命中；关闭路径 `DetachMaskLayer` 解除逻辑父并再次通知。
+- `DefaultTourIndicator` 物化圆点没有 `TemplatedParent`，任何以 `/template/` 为锚的 selector 链都无法命中它们；圆点的尺寸/颜色/间距样式声明在模板内 `DotsLayout` 的 `Styles` 集合中，沿逻辑树流到物化圆点，绑定经 `RelativeSource AncestorType` 回到控件属性。`MeasureOverride` 布局契约保持 `StepCount*size + (StepCount+1)*spacing`。
 
 ## 6. 交互与事件处理
 
@@ -161,4 +171,5 @@ Tour 的交互事件应从输入源收敛到控件级语义事件：
 - 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- Semantic Part 声明或 marker 变更时同步 `semantic-part.md`，并保持 `TourSemanticPartTests` 与 Gallery Tour 语义预览/高亮测试通过。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

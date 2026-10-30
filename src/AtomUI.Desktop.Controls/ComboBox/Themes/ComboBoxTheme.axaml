@@ -9,6 +9,8 @@
                 <Panel>
                     <atom:AddOnDecoratedBox
                         Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
+                        Classes.semantic-scope-input="True"
+                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         Focusable="True"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
@@ -22,11 +24,21 @@
                         LeftAddOnTemplate="{TemplateBinding LeftAddOnTemplate}"
                         RightAddOn="{TemplateBinding RightAddOn}"
                         RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
-                        IsEnabled="{TemplateBinding IsEnabled}"
-                        ContentLeftAddOn="{TemplateBinding ContentLeftAddOn}"
-                        ContentLeftAddOnTemplate="{TemplateBinding ContentLeftAddOnTemplate}">
+                        IsEnabled="{TemplateBinding IsEnabled}">
+                        <atom:AddOnDecoratedBox.ContentLeftAddOn>
+                            <atom:AddOnContentPresenter
+                                Classes.semantic-prefix="True"
+                                Content="{CompiledBinding $parent[atom:ComboBox].ContentLeftAddOn}"
+                                ContentTemplate="{CompiledBinding $parent[atom:ComboBox].ContentLeftAddOnTemplate}"
+                                VerticalAlignment="Stretch"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Focusable="False" />
+                        </atom:AddOnDecoratedBox.ContentLeftAddOn>
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
-                             <StackPanel Orientation="Horizontal" Spacing="{atom:SharedTokenResource SpacingXS}">
+                             <StackPanel Orientation="Horizontal"
+                                        Classes.semantic-suffix="True"
+                                        Spacing="{atom:SharedTokenResource SpacingXS}">
                                  <atom:AddOnContentPresenter
                                      Name="PART_ContentRightAddOnPresenter"
                                      Content="{CompiledBinding $parent[atom:ComboBox].ContentRightAddOn}"
@@ -40,13 +52,15 @@
                                      Content="{CompiledBinding $parent[atom:ComboBox].FormFeedback}" />
                                  <atom:ComboBoxHandle
                                      Name="PART_ComboBoxHandle"
+                                     Classes.semantic-scope-handle="True"
                                      IsEnabled="{CompiledBinding $parent[atom:ComboBox].IsEnabled}"
                                      IsMotionEnabled="{CompiledBinding $parent[atom:ComboBox].IsMotionEnabled}" />
                              </StackPanel>
                         </atom:AddOnDecoratedBox.ContentRightAddOn>
-                        <Panel>
+                        <Panel Classes.semantic-content="True">
                             <atom:TextBlock
                                 Name="PlaceholderText"
+                                Classes.semantic-placeholder="True"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 TextTrimming="CharacterEllipsis"
@@ -66,6 +80,7 @@
                                 atom:OverflowTip.PlacementTarget="{Binding $parent[atom:AddOnDecoratedBox]}" />
                             <atom:ComboBoxTextBox
                                 Name="PART_EditableTextBox"
+                                Classes.semantic-input="True"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
                                 Background="Transparent"
@@ -81,20 +96,28 @@
                         </Panel>
                     </atom:AddOnDecoratedBox>
 
+                    <!--
+                        弹层不声明 IsOpen 模板绑定：Avalonia 只在弹层打开瞬间读取 IsLightDismissEnabled
+                        创建 light-dismiss 遮罩，而模板充气阶段的绑定求值会在控件抑制遮罩之前就打开弹层，
+                        使钉住（IsPopupPinnedOpen）场景留下一个只拦截输入、无法消除的遮罩层挡住整页交互。
+                        开合改由 ComboBox 以代码接管（OnApplyTemplate / IsDropDownOpen 变更），
+                        与共享 AbstractSelect 的既有约定一致。
+                    -->
                     <atom:Popup Name="PART_Popup"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="True"
                                 OverlayDismissEventPassThrough="True"
                                 ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}"
-                                RequestedPlacement="BottomEdgeAlignedLeft"
-                                IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}">
+                                RequestedPlacement="BottomEdgeAlignedLeft">
                         <Border
                             Name="PopupFrame"
+                            Classes.semantic-popup-root="True"
                             MaxHeight="{TemplateBinding MaxDropDownHeight}"
                             MinWidth="{TemplateBinding EffectivePopupWidth}"
                             Padding="{TemplateBinding PopupContentPadding}">
                             <Panel>
                                 <atom:ScrollViewer IsScrollChainingEnabled="False"
+                                                   Classes.semantic-popup-list="True"
                                                    IsVisible="{TemplateBinding IsEffectiveEmptyVisible, Converter={x:Static BoolConverters.Not}}"
                                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                                    IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
@@ -106,6 +129,7 @@
                                 </atom:ScrollViewer>
                                 <Border
                                     Name="PART_EmptyIndicator"
+                                    Classes.semantic-popup-empty="True"
                                     Padding="{atom:SharedTokenResource Padding}"
                                     IsVisible="{TemplateBinding IsEffectiveEmptyVisible}">
                                     <atom:Empty

@@ -19,7 +19,7 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class SplitButton : ContentControl, 
+public partial class SplitButton : ContentControl,
                            ICommandSource, 
                            ICustomizableSizeTypeAware,
                            IWaveSpiritAwareControl,
@@ -91,6 +91,9 @@ public class SplitButton : ContentControl,
 
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         Flyout.ShouldUseOverlayPopupProperty.AddOwner<SplitButton>();
+
+    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+        Flyout.IsPopupPinnedOpenProperty.AddOwner<SplitButton>();
 
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<SplitButton>();
@@ -236,6 +239,16 @@ public class SplitButton : ContentControl,
         set => SetValue(ShouldUseOverlayPopupProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the flyout popup stays pinned open. Used by
+    /// Gallery semantic part previews to keep the cross-visual-root popup materialized.
+    /// </summary>
+    public bool IsPopupPinnedOpen
+    {
+        get => GetValue(IsPopupPinnedOpenProperty);
+        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -254,12 +267,9 @@ public class SplitButton : ContentControl,
     internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
         CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<SplitButton>();
     
-    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty =
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<SplitButton>();
 
-    internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
-        Flyout.IsPopupPinnedOpenProperty.AddOwner<SplitButton>();
-    
     internal IBrush? SplitSeparatorBrush
     {
         get => GetValue(SplitSeparatorBrushProperty);
@@ -292,12 +302,15 @@ public class SplitButton : ContentControl,
         set => SetValue(IsUsedInCompactSpaceProperty, value);
     }
 
-    internal bool IsPopupPinnedOpen
-    {
-        get => GetValue(IsPopupPinnedOpenProperty);
-        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
-    }
-    
+    /// <summary>
+    /// primary 形态接缝分隔线当前是否以其对比线色呈现。对齐上游 solid 组合规则：线色 =
+    /// 次按钮 hover 背景 token（colorPrimaryHover / colorErrorHover），因此持线的次按钮被指向时
+    /// 接缝条带与按钮 hover 背景同色，分隔线视觉上隐藏——隐藏完全由颜色涌现，
+    /// 不允许改动次按钮几何（曾用左移覆盖实现，导致 hover 位移与边缘闪烁的体验回归）。
+    /// </summary>
+    internal bool IsSeparatorVisible =>
+        IsPrimaryButtonType && _secondaryButton is not null && !_isPointerOverSecondaryButton;
+
     #endregion
     
     private Button? _primaryButton;
@@ -307,6 +320,8 @@ public class SplitButton : ContentControl,
     private bool _commandCanExecute = true;
     private bool _isFlyoutOpen;
     private bool _isKeyboardPressed;
+    private bool _isPointerOverSecondaryButton;
+    private bool _isPinnedOpenRetryArmed;
     private readonly FlyoutStateHelper _flyoutStateHelper;
     
     private CompositeDisposable? _flyoutBindingDisposables;
@@ -465,6 +480,11 @@ public class SplitButton : ContentControl,
         {
             _primaryButton.Click -= HandlePrimaryButtonClick;
         }
+        if (_secondaryButton != null)
+        {
+            _secondaryButton.PointerEntered -= HandleSecondaryButtonPointerEntered;
+            _secondaryButton.PointerExited  -= HandleSecondaryButtonPointerExited;
+        }
         _primaryButton                  = e.NameScope.Find<Button>("PART_PrimaryButton");
         _secondaryButton                = e.NameScope.Find<Button>("PART_SecondaryButton");
         _flyoutStateHelper.AnchorTarget = _secondaryButton;
@@ -473,6 +493,11 @@ public class SplitButton : ContentControl,
         if (_primaryButton != null)
         {
             _primaryButton.Click += HandlePrimaryButtonClick;
+        }
+        if (_secondaryButton != null)
+        {
+            _secondaryButton.PointerEntered += HandleSecondaryButtonPointerEntered;
+            _secondaryButton.PointerExited  += HandleSecondaryButtonPointerExited;
         }
 
         if (IsPopupPinnedOpen && this.IsAttachedToVisualTree())
@@ -846,7 +871,53 @@ public class SplitButton : ContentControl,
             _isFlyoutOpen = false;
             UpdatePseudoClasses();
             OnFlyoutClosed();
+            if (IsPopupPinnedOpen && this.IsAttachedToVisualTree())
+            {
+                QueuePinnedOpenRetry();
+            }
         }
+    }
+
+    // Flyout 关闭（上游 HideCore）会清掉 Target 与 popup 的 PlacementTarget / 逻辑父子，
+    // Popup 侧的钉住恢复监控随之拆除。钉住弹层的关闭只能来自放置目标生命周期失效
+    //（页签切走 / 滚出视口），owner 持有钉住意图：锚点重新可见后重新 ShowAt 重建整条链。
+    private void QueuePinnedOpenRetry()
+    {
+        if (_isPinnedOpenRetryArmed)
+        {
+            return;
+        }
+
+        _isPinnedOpenRetryArmed = true;
+        LayoutUpdated += HandlePinnedOpenRetryLayoutUpdated;
+    }
+
+    private void HandlePinnedOpenRetryLayoutUpdated(object? sender, EventArgs e)
+    {
+        if (_isFlyoutOpen ||
+            !IsPopupPinnedOpen ||
+            !this.IsAttachedToVisualTree())
+        {
+            DisarmPinnedOpenRetry();
+            return;
+        }
+
+        if (IsEffectivelyVisible && _secondaryButton is { IsEffectivelyVisible: true })
+        {
+            DisarmPinnedOpenRetry();
+            QueuePinnedOpen();
+        }
+    }
+
+    private void DisarmPinnedOpenRetry()
+    {
+        if (!_isPinnedOpenRetryArmed)
+        {
+            return;
+        }
+
+        _isPinnedOpenRetryArmed = false;
+        LayoutUpdated -= HandlePinnedOpenRetryLayoutUpdated;
     }
 
     private bool IsOwnFlyoutTarget(Flyout? flyout)
@@ -883,16 +954,30 @@ public class SplitButton : ContentControl,
         return size;
     }
 
+    private void HandleSecondaryButtonPointerEntered(object? sender, PointerEventArgs e)
+    {
+        SetSeparatorVisibility(false);
+    }
+
+    private void HandleSecondaryButtonPointerExited(object? sender, PointerEventArgs e)
+    {
+        SetSeparatorVisibility(true);
+    }
+
+    private void SetSeparatorVisibility(bool visible)
+    {
+        // 分隔线的 hover 隐藏由颜色涌现实现（线色 = 次按钮 hover 背景 token），
+        // 状态翻转不驱动布局或重绘——改动次按钮几何会造成可见位移与边缘闪烁。
+        _isPointerOverSecondaryButton = !visible;
+    }
+
     public override void Render(DrawingContext context)
     {
-        if (IsPrimaryButtonType)
+        if (IsPrimaryButtonType && _secondaryButton is not null)
         {
-            if (_secondaryButton is not null)
-            {
-                var cornerRadius = (float)CornerRadius.TopLeft;
-                context.FillRectangle(SplitSeparatorBrush ?? Brushes.White, new Rect(0, 0, Bounds.Width, Bounds.Height),
-                    cornerRadius);
-            }
+            var cornerRadius = (float)CornerRadius.TopLeft;
+            context.FillRectangle(SplitSeparatorBrush ?? Brushes.White, new Rect(0, 0, Bounds.Width, Bounds.Height),
+                cornerRadius);
         }
     }
     

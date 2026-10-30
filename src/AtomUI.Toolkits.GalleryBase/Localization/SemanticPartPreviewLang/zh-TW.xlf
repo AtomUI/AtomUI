@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" trgLang="zh-TW" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUI.Toolkits.GalleryBase.Localization.SemanticPartPreviewLangResourceKind">
+    <unit id="CardinalityLabel">
+      <segment>
+        <source>Cardinality</source>
+        <target state="translated">數量約束</target>
+      </segment>
+    </unit>
+    <unit id="ContractTypeLabel">
+      <segment>
+        <source>Contract type</source>
+        <target state="translated">契約類型</target>
+      </segment>
+    </unit>
+    <unit id="CrossRootTag">
+      <segment>
+        <source>Cross visual root</source>
+        <target state="translated">跨視覺根</target>
+      </segment>
+    </unit>
+    <unit id="CustomizationLabel">
+      <segment>
+        <source>Customization</source>
+        <target state="translated">自訂方式</target>
+      </segment>
+    </unit>
+    <unit id="ExamplesTabLabel">
+      <segment>
+        <source>Examples</source>
+        <target state="translated">範例</target>
+      </segment>
+    </unit>
+    <unit id="InfoAction">
+      <segment>
+        <source>View technical details and styling example</source>
+        <target state="translated">檢視技術詳情與樣式範例</target>
+      </segment>
+    </unit>
+    <unit id="PartDetailsTitle">
+      <segment>
+        <source>Part details</source>
+        <target state="translated">部件詳情</target>
+      </segment>
+    </unit>
+    <unit id="PartFallbackDescription">
+      <segment>
+        <source>The {0} semantic region.</source>
+        <target state="translated">控制項的 {0} 語意區域。</target>
+      </segment>
+    </unit>
+    <unit id="PinAction">
+      <segment>
+        <source>Pin or unpin highlight</source>
+        <target state="translated">固定或取消固定醒目顯示</target>
+      </segment>
+    </unit>
+    <unit id="RootFallbackDescription">
+      <segment>
+        <source>The control root.</source>
+        <target state="translated">控制項根區域。</target>
+      </segment>
+    </unit>
+    <unit id="RuntimeCreatedTag">
+      <segment>
+        <source>Runtime-created</source>
+        <target state="translated">執行階段建立</target>
+      </segment>
+    </unit>
+    <unit id="SelectorLabel">
+      <segment>
+        <source>Selector</source>
+        <target state="translated">選擇器</target>
+      </segment>
+    </unit>
+    <unit id="SelectorRouteLabel">
+      <segment>
+        <source>Selector route</source>
+        <target state="translated">選擇器路徑</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartsTabLabel">
+      <segment>
+        <source>Semantic Parts</source>
+        <target state="translated">語意部件</target>
+      </segment>
+    </unit>
+    <unit id="StyleTypeLabel">
+      <segment>
+        <source>Style type</source>
+        <target state="translated">樣式類型</target>
+      </segment>
+    </unit>
+    <unit id="StylingExampleTitle">
+      <segment>
+        <source>Styling example</source>
+        <target state="translated">樣式範例</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

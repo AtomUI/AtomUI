@@ -6,8 +6,8 @@
              xmlns:atom="https://atomui.net"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="InfoFlyout"
                     Category="{gallery:InfoFlyoutShowCaseLangResource ComponentCategory}"
@@ -17,7 +17,50 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="ContentControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:InfoFlyoutViewModel">
+                    <gallery:SemanticPartPreview Name="InfoFlyoutSemanticPreview"
+                                                 Title="InfoFlyout"
+                                                 SemanticOwnerType="{x:Type atom:FlyoutHost}"
+                                                 Loaded="HandleSemanticPreviewLoaded"
+                                                 Unloaded="HandleSemanticPreviewUnloaded">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:FlyoutHost Name="InfoFlyoutSemanticOwner"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"
+                                             IsPopupPinnedOpen="True"
+                                             IsMotionEnabled="False"
+                                             IsArrowVisible="True"
+                                             Placement="Bottom">
+                                <atom:FlyoutHost.Flyout>
+                                    <atom:Flyout ShouldUseOverlayPopup="True">
+                                        <Border Width="240" Padding="16">
+                                            <TextBlock Text="{gallery:InfoFlyoutShowCaseLangResource SemanticPreviewContentText}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+                                    </atom:Flyout>
+                                </atom:FlyoutHost.Flyout>
+                                <atom:Button ButtonType="Primary"
+                                             Content="{gallery:InfoFlyoutShowCaseLangResource SemanticPreviewTriggerContent}" />
+                            </atom:FlyoutHost>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription Path="root"
+                                Description="{gallery:InfoFlyoutShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.root"
+                                Description="{gallery:InfoFlyoutShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.container"
+                                Description="{gallery:InfoFlyoutShowCaseLangResource SemanticPopupContainerDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.content"
+                                Description="{gallery:InfoFlyoutShowCaseLangResource SemanticPopupContentDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.arrow"
+                                Description="{gallery:InfoFlyoutShowCaseLangResource SemanticPopupArrowDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -85,6 +128,7 @@
     <gallery:ShowCaseItem
         Title="{gallery:InfoFlyoutShowCaseLangResource PlacementTitle}"
         Description="{gallery:InfoFlyoutShowCaseLangResource PlacementDescription}"
+        IsOccupyEntireRow="True"
         IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:InfoFlyoutViewModel">
@@ -226,6 +270,7 @@
     <gallery:ShowCaseItem
         Title="{gallery:InfoFlyoutShowCaseLangResource ArrowTitle}"
         Description="{gallery:InfoFlyoutShowCaseLangResource ArrowDescription}"
+        IsOccupyEntireRow="True"
         IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:InfoFlyoutViewModel">
@@ -420,7 +465,64 @@
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
 
+    <gallery:ShowCaseItem
+        Title="{gallery:InfoFlyoutShowCaseLangResource StyleClassTitle}"
+        Description="{gallery:InfoFlyoutShowCaseLangResource StyleClassDescription}"
+        SourceKey="infoflyout-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:InfoFlyoutViewModel">
+        <StackPanel Orientation="Horizontal" Spacing="16">
+            <StackPanel.Styles>
+                <Style Selector="atom|FlyoutHost.semantic-styles-object-demo">
+                    <atom:FlyoutHostPopupRootStyle x:SetterTargetType="atom:FlyoutPresenter">
+                        <Setter Property="Background" Value="#EEEEEE" />
+                        <Setter Property="Foreground" Value="#262626" />
+                        <Setter Property="Padding" Value="10" />
+                    </atom:FlyoutHostPopupRootStyle>
+                </Style>
+                <Style Selector="atom|FlyoutHost.semantic-styles-function-demo">
+                    <atom:FlyoutHostPopupRootStyle x:SetterTargetType="atom:FlyoutPresenter">
+                        <Setter Property="Background" Value="#CC35477D" />
+                        <Setter Property="Foreground" Value="White" />
+                        <Setter Property="Padding" Value="12" />
+                        <Setter Property="CornerRadius" Value="4" />
+                    </atom:FlyoutHostPopupRootStyle>
+                </Style>
+            </StackPanel.Styles>
+            <atom:FlyoutHost Classes="semantic-styles-object-demo"
+                             Trigger="Hover"
+                             ShouldUseOverlayPopup="False"
+                             IsArrowVisible="False"
+                             Placement="Top">
+                <atom:FlyoutHost.Flyout>
+                    <atom:Flyout>
+                        <TextBlock Text="{gallery:InfoFlyoutShowCaseLangResource SemanticStyleObjectContent}" />
+                    </atom:Flyout>
+                </atom:FlyoutHost.Flyout>
+                <atom:Button Content="{gallery:InfoFlyoutShowCaseLangResource SemanticStyleObjectTrigger}" />
+            </atom:FlyoutHost>
+
+            <atom:FlyoutHost Classes="semantic-styles-function-demo"
+                             Trigger="Hover"
+                             ShouldUseOverlayPopup="False"
+                             IsArrowVisible="False"
+                             Placement="Top">
+                <atom:FlyoutHost.Flyout>
+                    <atom:Flyout>
+                        <TextBlock Text="{gallery:InfoFlyoutShowCaseLangResource SemanticStyleFunctionContent}" />
+                    </atom:Flyout>
+                </atom:FlyoutHost.Flyout>
+                <atom:Button ButtonType="Primary"
+                             Content="{gallery:InfoFlyoutShowCaseLangResource SemanticStyleFunctionTrigger}" />
+            </atom:FlyoutHost>
+        </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

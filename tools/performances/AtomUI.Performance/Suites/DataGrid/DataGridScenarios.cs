@@ -283,12 +283,9 @@ internal static partial class Program
         {
             Header           = header,
             FieldId          = fieldId,
-            Binding          = new Binding(bindingPath)
+            Binding          = new Binding(bindingPath),
+            Filters          = filters
         };
-        foreach (var filter in filters)
-        {
-            column.Filters.Add(filter);
-        }
         return column;
     }
 

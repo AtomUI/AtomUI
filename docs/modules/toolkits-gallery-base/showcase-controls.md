@@ -9,6 +9,7 @@
 - 把控件与 AtomUI 产品内容分离，使其他产品可以使用同一套展示控件。
 - 保持 Browser 端渐进挂载和 ShowCaseItem 延迟创建能力。
 - 为复杂 Demo 页面提供统一场景切换和 lazy tab 缓存。
+- 为 Semantic Part Preview 提供独立 Tab、真延迟创建和临时 Adorner 高亮职责，且不修改产品 Control。
 
 ## 控件清单
 
@@ -22,9 +23,20 @@ GalleryBase 展示控件清单：
 | `GalleryShowCaseHeader` | 标准 ShowCase 文档页头，统一标题、标签、简介和 metadata 信息区 |
 | `GalleryStickyTabsHost` | 文档式页面宿主，Header、StickyContent、Content 同一滚动上下文 |
 | `GalleryStickyTabsPanel` | StickyContent 吸顶布局实现 |
-| `GalleryShowCaseScenarioController` | Examples/API/Design Token 等场景 lazy 创建和缓存 |
+| `GalleryShowCaseScenarioController` | Icon、Palette 等特殊示例分组的 lazy 创建和缓存 |
 | `GalleryReactiveUserControl<TViewModel>` | ReactiveUI View 激活辅助基类 |
 | `GalleryShowCaseRuntimeOptions` | 诊断开关和延迟创建运行时控制 |
+
+Semantic Part Preview 基础设施：
+
+| 类型 | 职责 |
+|---|---|
+| `GalleryShowCaseHost` | 组合 Header、标准 Examples/Semantic Parts Tab、内容 lazy factory 和 sticky host |
+| `SemanticPartPreview` | 展示真实 Control、descriptor 列表、Pin/Hover/Info 交互 |
+| `SemanticPartHighlightSession` | owner-scoped 解析、Adorner 创建、Popup 临时订阅和确定性释放；internal |
+| `SemanticPartAdorner` | 在目标所在 VisualRoot 中绘制无命中的高亮边框；internal |
+
+完整架构见 [Semantic Part Gallery Preview](../../gallery/authoring/semantic-part-preview.md)。
 
 ## 命名策略
 
@@ -64,6 +76,9 @@ public class ShowCaseItem : ContentControl
 - 已创建内容不回收，避免复杂控件状态、焦点、Popup/Flyout 生命周期被破坏。
 - `DeferredContent` 为空时使用 `DataContext` 构建模板。
 - DataContext 变化后，已创建内容需要同步 DataContext。
+- 延迟内容尚未创建时使用 AtomUI `Skeleton` 作为占位；`DeferredPlaceholderHeight` 表示预期内容高度，默认值为
+  `160`，`DeferredPlaceholderCornerRadius` 控制 Skeleton 占位框圆角。当示例内容高度不同且需要避免物化时的布局跳动时，
+  页面必须把 `DeferredPlaceholderHeight` 设置为实际预期高度。
 
 XAML 使用规范：
 
@@ -108,6 +123,7 @@ public class ShowCasePanel : TemplatedControl
 - 控制是否使用内部 ScrollViewer。
 - 在 Browser 端渐进挂载首批 item，降低初始渲染压力。
 - 使用一个 panel 级 `EffectiveViewportChanged` 监听 materialize 近 viewport item。
+- 初始数量和视口批量只计算同时启用 `IsDeferredContentEnabled` 且提供 `DeferredContentTemplate` 的卡片；其他卡片不占配额，也不触发后续批次重投。
 
 滚动规则：
 
@@ -127,6 +143,7 @@ public class ShowCasePanel : TemplatedControl
 - 新挂载、恢复可见或不再占满整行的 item 在首次重新进入普通布局时放入当前最短列。
 - 有效列数变化时清除旧列假设，并按当前最短列重新建立全部归属。
 - `ShowCaseItemSpan.Full` 或 `IsOccupyEntireRow=true` 占满整行，不进入普通列归属。
+- 测量与实际排列宽度不同时，按排列宽度重新测量子项，并在输入测量宽度不变的后续布局中沿用该宽度，避免分数缩放下重复失效；输入宽度变化或脱离视觉树时清除该记录。
 - 不做虚拟化，只负责已挂载 children 的测量和排列。
 
 该面板保持简单，不引入 ItemsControl、ItemsSource 或数据模板。ShowCase 页面是文档式页面，不是无限列表。
@@ -222,9 +239,9 @@ public class GalleryShowCaseHeader : TemplatedControl
     IntroducedVersion="{gallery:SplashShowCaseLangResource ComponentIntroducedVersion}"
     Subtitle="{gallery:SplashShowCaseLangResource PageSubtitle}"
     Description="{gallery:SplashShowCaseLangResource PageDescription}"
-    Namespace="AtomUI.Desktop.Controls"
-    Package="AtomUI.Desktop.Controls.Extras"
-    BaseClass="ContentControl"
+    Namespace="AtomUI.Controls"
+    Package="AtomUI.Controls"
+    BaseClass="TemplatedControl"
     MetadataValueWidth="240" />
 ```
 
@@ -251,29 +268,32 @@ GalleryStickyTabsHost
 - 提供页面级 ScrollViewer。
 - 让 Header、StickyContent、Content 共用一个滚动上下文。
 - StickyContent 到达顶部后保持可见。
-- 通过只读 sticky mirror 解决窗口级 Adorner 覆盖 sticky tabs 的问题。
+- 通过 sticky elevation（提升真实 StickyContent 宿主）解决窗口级 Adorner 覆盖 sticky tabs 的问题。
+- `IsContentHeightBounded=true` 时宿主在 code-behind 中把 Content 宿主 MaxHeight 计算为页面视口减去 Header 与
+  StickyContent 后的剩余高度（`UpdateContentMaxHeight`，随 ScrollChanged/LayoutUpdated 与属性变化更新），
+  供 Semantic Parts 单个 Preview 的 Part 列表填满剩余高度并在列表内部滚动；其余情况恢复无限高度。
 
 规则：
 
-- 真实 StickyContent 不移出原视觉树。
-- sticky mirror 只绘制视觉镜像，`IsHitTestVisible=false`。
-- sticky mirror 由 AtomUI 受控 adorner 层承载，并作为低 ZIndex 子项，低于 Drawer、Dialog、Tour 等真正浮层。
+- 吸顶期间真实 StickyContent 宿主被提升进 AtomUI 受控 adorner 层，作为低 ZIndex 子项，低于 Drawer、Dialog、Tour 等真正浮层；原 sticky 槽位由占位元素保留布局空间。
+- 不得用 VisualBrush 等像素快照实现吸顶镜像：Avalonia 12 只在 brush 创建时录制一次合成内容，选中态、hover 与窗口尺寸变化都不会刷新。
+- 取消吸顶、StickyContent 置空、宿主 detach 或模板重放时，宿主必须完整归还 `GalleryStickyTabsPanel` 并清理显式尺寸、Canvas 定位与提升期间的 DataContext 覆盖。
 - 不在滚动时销毁或重建 TabStrip。
-- detach 时释放 ScrollViewer、StickyPanel、LayoutUpdated 和 sticky mirror 资源。
+- detach 时释放 ScrollViewer、StickyPanel、LayoutUpdated 和 sticky elevation 资源。
 
 ## GalleryShowCaseScenarioController
 
 典型场景：
 
-- Examples
-- API
-- Design Token
+- Icon 的 Outlined、Filled、TwoTone 分组。
+- Palette 的 Light、Dark 分组。
+- 其他确实属于示例内容的互斥视图。
 
 职责：
 
 - 监听 `TabStrip.SelectionChanged`。
-- Examples 内容可预先存在。
-- API/Design Token 等内容首次切换时创建。
+- 默认示例内容可以预先存在。
+- 非默认示例分组首次切换时创建。
 - 创建后缓存，避免重复构建 DataGrid。
 - DataContext 变化时同步到已创建内容。
 - detach 时清理 lazy content cache。
@@ -288,7 +308,28 @@ _scenarioController = new GalleryShowCaseScenarioController(
     ExamplesContent);
 ```
 
-`CreateScenarioContent` 仍由产品 ShowCase 页面提供，因为 API 和 Design Token 控件属于产品内容。
+`CreateScenarioContent` 仍由特殊产品 ShowCase 页面提供。标准控件页面、Semantic Parts、API 和 Design Token 不使用该
+controller。
+
+## Semantic Part Preview
+
+GalleryBase 拥有以下实现边界：
+
+- `GalleryShowCaseHost` 组合现有 Header、sticky host、Examples 和真延迟的 Semantic Parts 内容根；内容根可以承载一个或多个
+  独立 `SemanticPartPreview`，宿主统一管理其激活、停用、DataContext 和释放。
+- `SemanticPartPreview` 读取冻结 descriptor，呈现真实 Control、Part 列表和用户侧代码片段。
+- internal `SemanticPartHighlightSession` 负责一次有效 Hover/Pin 选择期间的 owner-scoped 解析与资源释放。
+- `SemanticPartTargetResolver` 支持跨嵌套控件语义部件（`CrossNestedOwners=true`，如 AutoComplete 内嵌输入控件的
+  content/placeholder）：候选解析允许穿过其他已注册语义 owner 的视觉子树，路由锚点类仍要求出现在候选祖先链上。
+  popup.* 部件位于独立可视根，Preview 演示控件通过 `IsDropDownOpen` + `IsPopupPinnedOpen` 钉住弹层保持打开，
+  使弹层内部件可解析、可高亮；钉住语义由产品控件负责在弹层打开前抑制 light-dismiss 遮罩（见 AutoComplete
+  changelog），预览基础设施不干预弹层行为。
+- internal `SemanticPartAdorner` 只负责无命中的高亮绘制，不进入产品 Control 的模板或状态模型。
+- 具体产品 Gallery 只提供演示 Control、本地化职责描述和页面接入；Button 是首个完整样例，不是架构 owner。
+
+页面模型、目标解析算法、Popup/独立宿主规则、Adorner 生命周期、性能预算和验证矩阵统一见
+[Semantic Part Gallery Preview](../../gallery/authoring/semantic-part-preview.md)。本模块文档不复制这些跨 GalleryBase 与
+产品 Gallery 的稳定规则。
 
 ## GalleryReactiveUserControl
 
@@ -308,6 +349,8 @@ _scenarioController = new GalleryShowCaseScenarioController(
 - 环境变量关闭延迟创建。
 - F5/F6 自动切页压测时运行时关闭或恢复延迟创建。
 - 事件通知已存在 panel 更新 materialization 状态。
+- 环境变量值在进程内缓存；普通读取不再访问进程环境，只有显式设置
+  `IsDeferredLoadingDisabled` 或调用 `ResetDeferredLoadingDisabledOverride()` 时才重新读取并更新有效状态。
 
 环境变量沿用：
 
@@ -325,6 +368,8 @@ ShowCase 控件主题迁入 GalleryBase：
 - `ShowCasePanelTheme.axaml`
 - `GalleryShowCaseHeaderTheme.axaml`
 - `GalleryStickyTabsHostTheme.axaml`
+- `GalleryShowCaseHostTheme.axaml`
+- `SemanticPartPreviewTheme.axaml`
 
 主题必须使用 GalleryBase 的 XAML namespace：
 
@@ -338,11 +383,17 @@ xmlns:gallery="https://atomui.net/toolkits/gallery-base"
 - materialize 后不重复创建内容。
 - DataContext 变化同步到已 materialize 内容。
 - `ShowCasePanel` 只使用一个 panel 级 viewport 监听。
+- 混合可延迟与不可延迟卡片时，初始和视口批次跳过不可实例化卡片，并能继续创建后面的有效内容。
 - Browser 渐进挂载不影响 deferred content 策略。
 - Masonry full span item 占满整行。
 - `GalleryShowCaseHeader` 可按属性组合渲染分类、状态、引入版本和 metadata。
 - `GalleryShowCaseHeader` 对空值 Tag、空值文本行和空值 metadata 项执行隐藏规则。
 - `GalleryShowCaseHeader` 的 Tag 行在窄宽度下换行且不挤压标题。
 - `GalleryShowCaseHeader` metadata label 使用 GalleryBase 通用语言资源。
-- Sticky host detach 后释放 sticky mirror。
+- Sticky host detach 后归还被提升的 sticky 宿主并释放资源。
 - Scenario controller 首次切换创建 lazy content，后续切换复用缓存。
+- Semantic Part Preview 按正式设计验证真延迟 factory、owner-scoped 解析和确定性释放。
+- Semantic Part 内容根包含多个 Preview 时，factory 仍只构建一次，全部 Preview 在 Tab 切换时同步激活或停用，并在宿主 detach
+  时逐一释放。
+- Semantic Part Preview 使用单外框双栏和平铺分隔行；技术元数据在右栏延迟显示，代码示例在双栏下方全宽延迟显示。
+- GalleryBase 测试负责宿主与 Preview 基础设施；具体产品 Gallery 测试负责 Button 等页面接入和描述数据一致性。

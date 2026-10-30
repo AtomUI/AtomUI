@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 
@@ -5,6 +6,12 @@ namespace AtomUI.Desktop.Controls;
 
 internal class TreeViewSelectTreeViewItem : TreeViewItem
 {
+    public TreeViewSelectTreeViewItem()
+    {
+        // 容器运行时创建，标记在创建时注入，覆盖任意嵌套层级与容器回收。
+        Classes.Add(TreeSelectSemanticParts.PopupListItemClass);
+    }
+
     internal static readonly DirectProperty<TreeViewSelectTreeViewItem, bool> IsMaxSelectReachedProperty =
         AvaloniaProperty.RegisterDirect<TreeViewSelectTreeViewItem, bool>(nameof(IsMaxSelectReached),
             o => o.IsMaxSelectReached,

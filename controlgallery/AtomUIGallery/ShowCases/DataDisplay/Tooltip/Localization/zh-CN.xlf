@@ -277,5 +277,35 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticArrowDescription">
+      <segment>
+        <source>The arrow indicator pointing toward the anchored control.</source>
+        <target state="translated">指向锚定控件的箭头指示器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContainerDescription">
+      <segment>
+        <source>The content box carrying padding, background, corner radius and text styling.</source>
+        <target state="translated">内容盒，承载内边距、背景、圆角与文本样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Owner-scoped styles targeting public Semantic Parts of Tooltip via their real selectors.</source>
+        <target state="translated">使用 owner 作用域样式，通过真实选择器定制 Tooltip 公开的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Tooltip owner itself, hosting the arrow and the content box.</source>
+        <target state="translated">Tooltip 控件本体，承载箭头与内容盒。</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using ColorValue = Avalonia.Media.Color;
 
 namespace AtomUI.Theme.Algorithms;
 
@@ -37,7 +38,7 @@ public class PresetPrimaryColor : IEquatable<PresetPrimaryColor>
     public static readonly PresetPrimaryColor Magenta = new(PresetColorType.Magenta);
     public static readonly PresetPrimaryColor Grey = new(PresetColorType.Grey);
 
-    private static readonly PresetPrimaryColor[] s_allColorTypes =
+    private static readonly IReadOnlyList<PresetPrimaryColor> AllColors = Array.AsReadOnly<PresetPrimaryColor>(
     [
         Red,
         Volcano,
@@ -53,7 +54,7 @@ public class PresetPrimaryColor : IEquatable<PresetPrimaryColor>
         Pink,
         Magenta,
         Grey
-    ];
+    ]);
 
     public PresetColorType Type { get; }
     private readonly Color _color;
@@ -61,7 +62,7 @@ public class PresetPrimaryColor : IEquatable<PresetPrimaryColor>
     private PresetPrimaryColor(PresetColorType colorType)
     {
         Type   = colorType;
-        _color = Avalonia.Media.Color.Parse(RgbHex());
+        _color = ColorValue.FromUInt32(RgbValue());
     }
 
     public string Name()
@@ -88,23 +89,28 @@ public class PresetPrimaryColor : IEquatable<PresetPrimaryColor>
 
     public string RgbHex()
     {
+        return "#" + (RgbValue() & 0xFFFFFF).ToString("X6", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private uint RgbValue()
+    {
         return Type switch
         {
-            PresetColorType.Red => "#F5222D",
-            PresetColorType.Volcano => "#FA541C",
-            PresetColorType.Orange => "#FA8C16",
-            PresetColorType.Gold => "#FAAD14",
-            PresetColorType.Yellow => "#FADB14",
-            PresetColorType.Lime => "#A0D911",
-            PresetColorType.Green => "#52C41A",
-            PresetColorType.Cyan => "#13C2C2",
-            PresetColorType.Blue => "#1677FF",
-            PresetColorType.GeekBlue => "#2F54EB",
-            PresetColorType.Purple => "#722ED1",
-            PresetColorType.Magenta => "#EB2F96",
-            PresetColorType.Pink => "#EB2F96",
-            PresetColorType.Grey => "#666666",
-            _ => "#666666"
+            PresetColorType.Red => 0xFFF5222Du,
+            PresetColorType.Volcano => 0xFFFA541Cu,
+            PresetColorType.Orange => 0xFFFA8C16u,
+            PresetColorType.Gold => 0xFFFAAD14u,
+            PresetColorType.Yellow => 0xFFFADB14u,
+            PresetColorType.Lime => 0xFFA0D911u,
+            PresetColorType.Green => 0xFF52C41Au,
+            PresetColorType.Cyan => 0xFF13C2C2u,
+            PresetColorType.Blue => 0xFF1677FFu,
+            PresetColorType.GeekBlue => 0xFF2F54EBu,
+            PresetColorType.Purple => 0xFF722ED1u,
+            PresetColorType.Magenta => 0xFFEB2F96u,
+            PresetColorType.Pink => 0xFFEB2F96u,
+            PresetColorType.Grey => 0xFF666666u,
+            _ => 0xFF666666u
         };
     }
 
@@ -115,7 +121,7 @@ public class PresetPrimaryColor : IEquatable<PresetPrimaryColor>
 
     public static IEnumerable<PresetPrimaryColor> AllColorTypes()
     {
-        return s_allColorTypes;
+        return AllColors;
     }
 
     public static PresetPrimaryColor GetColor(PresetColorType type)

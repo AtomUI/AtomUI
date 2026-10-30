@@ -13,6 +13,12 @@ namespace AtomUI.Desktop.Controls.Primitives;
 
 public class CandidateList : ListBox, ICandidateList
 {
+    /// <summary>
+    /// 候选项容器的语义标记类，对应 AutoComplete 系列 popup.listItem 语义部件；
+    /// 容器运行时创建，标记与 ListBox 的 semantic-item 一样在容器创建时注入。
+    /// </summary>
+    internal const string PopupListItemClass = "semantic-popup-list-item";
+
     #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsCandidateItemNavigationEnabledProperty =
@@ -575,6 +581,7 @@ public class CandidateList : ListBox, ICandidateList
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         var listItem = new CandidateListItem();
+        listItem.Classes.Add(PopupListItemClass);
         NotifyContainerForItemCreated(listItem, item);
         return listItem;
     }

@@ -8,39 +8,57 @@
         <ControlTheme.BasedOn>
             <themes:AbstractSkeletonTheme TargetType="atom:Skeleton" />
         </ControlTheme.BasedOn>
+
+        <Setter Property="Background" Value="Transparent" />
+
         <Setter Property="Template">
             <ControlTemplate>
-                <Panel>
-                    <DockPanel LastChildFill="True" IsVisible="{TemplateBinding IsContentVisible, Converter={x:Static BoolConverters.Not}}">
-                        <atom:SkeletonAvatar DockPanel.Dock="Left"
-                                             Name="PART_Avatar"
-                                             SizeType="{TemplateBinding AvatarSizeType}"
-                                             Shape="{TemplateBinding AvatarShape}"
-                                             Size="{TemplateBinding AvatarSize}"
-                                             IsActive="{TemplateBinding IsActive}"
-                                             IsVisible="{TemplateBinding IsShowAvatar}"/>
-                        <StackPanel Orientation="Vertical"
-                                    Name="PART_Content">
-                            <atom:SkeletonTitle Name="PART_Title"
-                                                IsVisible="{TemplateBinding IsShowTitle}"
-                                                IsActive="{TemplateBinding IsActive}"
-                                                IsRound="{TemplateBinding IsRound}"
-                                                LineWidth="{TemplateBinding TitleWidth}"/>
-                            <atom:SkeletonParagraph Name="PART_Paragraph"
-                                                    IsVisible="{TemplateBinding IsShowParagraph}"
+                <Border Name="PART_RootLayout"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}">
+                    <Panel>
+                        <Grid ColumnDefinitions="Auto,*"
+                              IsVisible="{TemplateBinding IsContentVisible, Converter={x:Static BoolConverters.Not}}">
+                            <DockPanel Grid.Column="0"
+                                       Classes.semantic-header="True">
+                                <atom:SkeletonAvatar Name="PART_Avatar"
+                                                     Classes.semantic-avatar="True"
+                                                     SizeType="{TemplateBinding AvatarSizeType}"
+                                                     Shape="{TemplateBinding AvatarShape}"
+                                                     Size="{TemplateBinding AvatarSize}"
+                                                     IsActive="{TemplateBinding IsActive}"
+                                                     IsVisible="{TemplateBinding IsShowAvatar}"/>
+                            </DockPanel>
+                            <StackPanel Grid.Column="1"
+                                        Orientation="Vertical"
+                                        Name="PART_Content"
+                                        Classes.semantic-section="True">
+                                <atom:SkeletonTitle Name="PART_Title"
+                                                    Classes.semantic-title="True"
+                                                    IsVisible="{TemplateBinding IsShowTitle}"
                                                     IsActive="{TemplateBinding IsActive}"
                                                     IsRound="{TemplateBinding IsRound}"
-                                                    Rows="{TemplateBinding ParagraphRows}"
-                                                    LastLineWidth="{TemplateBinding ParagraphLastLineWidth}"
-                                                    LineWidths="{TemplateBinding ParagraphLineWidths}"/>
-                        </StackPanel>
-                    </DockPanel>
-                    <ContentPresenter IsVisible="{TemplateBinding IsContentVisible}"
-                                      Content="{TemplateBinding Content}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}"
-                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                </Panel>
+                                                    LineWidth="{TemplateBinding TitleWidth}"/>
+                                <atom:SkeletonParagraph Name="PART_Paragraph"
+                                                        Classes.semantic-paragraph="True"
+                                                        IsVisible="{TemplateBinding IsShowParagraph}"
+                                                        IsActive="{TemplateBinding IsActive}"
+                                                        IsRound="{TemplateBinding IsRound}"
+                                                        Rows="{TemplateBinding ParagraphRows}"
+                                                        LastLineWidth="{TemplateBinding ParagraphLastLineWidth}"
+                                                        LineWidths="{TemplateBinding ParagraphLineWidths}"/>
+                            </StackPanel>
+                        </Grid>
+                        <ContentPresenter IsVisible="{TemplateBinding IsContentVisible}"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Panel>
+                </Border>
             </ControlTemplate>
         </Setter>
         

@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AtomUI.Reflection;
 using Avalonia.Input;
@@ -9,10 +8,11 @@ internal static class FocusManagerReflectionExtensions
 {
     #region 反射信息定义
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(FocusManager))]
-    private static readonly Lazy<MethodInfo> GetFocusManagerMethodInfo = new Lazy<MethodInfo>(() =>
-        typeof(FocusManager).GetMethodInfoOrThrow("GetFocusManager",
-            BindingFlags.Static | BindingFlags.NonPublic));
+    private static readonly Lazy<MethodInfo> GetFocusManagerMethodInfo = new(() =>
+        FixedMemberReflection.RequireMethod(
+            typeof(FocusManager).GetMethod("GetFocusManager", BindingFlags.Static | BindingFlags.NonPublic),
+            typeof(FocusManager),
+            "GetFocusManager"));
 
     #endregion
 

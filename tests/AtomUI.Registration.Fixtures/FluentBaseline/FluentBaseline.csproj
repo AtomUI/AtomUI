@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Size reference for the Minimal fixture: the official Avalonia template (FluentTheme + Inter) with the same
+         Window/Button content and the same fixture build settings, but no AtomUI package. -->
+    <PropertyGroup><OutputType>Exe</OutputType><AssemblyName>AtomUI.Registration.FluentBaseline</AssemblyName></PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop" />
+        <PackageReference Include="Avalonia.Themes.Fluent" />
+        <PackageReference Include="Avalonia.Fonts.Inter" />
+    </ItemGroup>
+</Project>

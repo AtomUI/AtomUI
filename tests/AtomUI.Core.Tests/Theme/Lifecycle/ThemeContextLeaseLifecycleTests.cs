@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using AtomUI.Theme;
-using AtomUI.Theme.Resources;
 using Avalonia.Controls;
 using Shouldly;
 using Xunit;

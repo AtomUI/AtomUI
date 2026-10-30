@@ -2,6 +2,53 @@
 
 本文档记录 Calendar 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-04
+
+- Theme
+  - Mini DateViewer 高度改用模板绑定读取 Calendar 的有效展示资源，消除 IDE 对普通绑定路径的无法解析提示，保持 Gregorian 与 LunarCalendar 的动态尺寸。
+  - RangeBarPanel 通过 Calendar 已拥有的 DateViewer 模板部件只读属性与 TemplateBinding 获取布局源，消除模板兄弟节点名称绑定的 IDE 解析提示。
+  - 鼠标按下不再触发日期焦点描边，键盘可见焦点仍有提示；LunarCalendar Content 选中日期改为主色背景，公历和农历文字统一使用浅色。
+  - Mini 日期 Today/焦点边框改为独立覆盖层，选中与焦点切换不再缩小值框内容区或移动日期文字。
+  - Fullscreen 面板移除顶部横线，Mini 保留；Fullscreen 星期标题右对齐，并使用 Ant Design 6.0 的行高与右侧/底部留白。
+- Token
+  - CalendarToken 增加 WeekHeaderHeight 与 WeekHeaderPadding，按共享尺寸资源计算 Fullscreen 星期标题布局。
+
+## 2026-10-03
+
+- Architecture
+  - Calendar 正文组合 DateViewer，删除独立 View、Cell、Builder、Automation 与旧主题；Value/Mode 仍由 Calendar 拥有，月份选择保留并截断日号，周号选择以 Date 来源提交行首日期。
+  - CalendarCellContext 继承 DateViewerCellContext，构造参数与 CellType 统一使用 DateViewerCellType；Gallery 的业务模板同步消费共享类型。
+  - 农历投影直接消费共享 CellModel，缓存包含真实可见日期首尾；LunarCalendarCellContent 只呈现，统一 Cell 承担交互与 Automation。
+  - RangeBars 消费 DateViewer 的实际 arrange 几何，反向端点按升序绘制，不改写业务对象；移除重复布局输入和网格计算。
+- Theme
+  - header 定制覆盖稳定有效区域，item/itemContent 专用 Style 跨共享面板的真实模板路径，正式测试以编译 AXAML 声明专用样式。
+
+## 2026-10-02
+
+- Docs
+  - 按已批准的共享 DateViewer 架构重写架构、实现、行为、农历、范围条、Token 与 Semantic Part 文档；不宣称源码已迁移。
+  - 日期拓扑、基础 Cell、焦点与范围算法统一引用公共面板设计，删除独立 CalendarView 作为长期架构约束的描述。
+- Architecture
+  - Calendar 负责业务 Header、Value/Mode、事件、呈现与 RangeBars，LunarCalendar 在共享公历模型上扩展内容。
+  - 农历缓存按显示区域与 Provider revision 失效，业务条消费共享拓扑/实际几何，均不创建第二个选择 owner。
+  - 解除旧模板与 Semantic route 兼容约束，要求新专用 Style 按真实组合结构命中。
+
+## 2026-08-17
+
+- Semantic Part
+  - 为 `Calendar` 与 `LunarCalendar` 建立 `root`、`header`、`body`、`content`、`item` 和 `itemContent` 公共契约。
+  - `item` 与 `itemContent` 是运行时 Part，发布完整 owner-scoped `SelectorRoute`，经 scope marker 链跨越 Calendar 根模板与运行时 Cell 模板，不向用户暴露 internal 类型或 `PART_*` 名称。
+  - 将 Fullscreen 背景由 CellHost 上移到控件级，面板默认自带 `FullPanelBg`（Mini）/ `FullBg`（Fullscreen）背景，并把根表面的 Background、BorderBrush、BorderThickness、CornerRadius、Padding 投影到模板根 Border，使 root 表面定制只落在面板外圈，Part 与表面 Setter 按 Avalonia 原生样式优先级生效。
+- Theme
+  - 在默认 Header、BodyPresenter、CalendarView 和两个 Cell 模板的 ItemContent 节点声明静态 marker；Cell marker 在 `CalendarViewCell` 构造时经生成常量一次性添加，容器池复用与模式切换不改变 Part 身份。
+  - Fullscreen 单元格的 ItemContent 内容区域在没有自定义 `CellTemplate` 时也保持可见（对应 Ant Design full 单元格始终渲染的 `date-content` 区域，高度取自 `FullCellMinHeight` 中的 dateContentHeight 部分），使 `itemContent` 语义 Part 始终具备可标注的几何区域；Mini 单元格维持隐藏。
+  - LunarCalendar 根主题经元素语法 `ControlTheme.BasedOn` 继承；语义资产解析补齐元素语法 typed BasedOn 支持，纯继承主题同样通过模板验证。
+  - 默认 Header 的 Year/Month 选择器与 Month/Year 切换组补齐白色容器背景（`ColorBgContainer`），与 Ant Design Calendar Header 的 Select 与 Radio 按钮一致；边框与选中态沿用既有 outline 样式。年/月选择器直接使用标准 `ComboBox`，白色背景由 `AddOnDecoratedBox` outline 变体的默认背景提供；切换组白色背景经 `OptionButtonGroup` 自身 `Background` 绘制，不遮挡外框、分隔线与选中描边，也不改变 Header 区域自身背景。
+- Gallery
+  - 增加延迟创建的 Calendar Semantic Parts Preview（预览使用默认全屏 `Calendar`，与 Ant Design Semantic DOM 演示的裸 `<Calendar />` 一致，不设宽高、`Fullscreen` 或 `CellTemplate`），并增加 object/function 两种 root 表面定制对照示例（object：宽 600、圆角 8、Padding 10、`ColorPrimaryBg`；function：2px 绿色边框、圆角 10、Padding 10、半透明绿底），对齐 Ant Design `style-class` 示例经 `styles` 与 `classNames` 作用于根元素的全部取值。
+- Tests
+  - 覆盖 descriptor、静态与运行时 marker、42/48/12 网格拓扑、scope 链路由、根表面投影、容器复用，以及 Gallery 语义预览生命周期与样式示例生效。
+
 ## 2026-08-02
 
 - Fixed

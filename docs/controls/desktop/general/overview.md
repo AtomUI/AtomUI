@@ -5,6 +5,7 @@
 ## 控件文档
 
 - [Button 桌面版架构设计](button/overview.md)
+- [Button Semantic Part 契约](button/semantic-part.md)
 - [Button 桌面版实现原理](button/implementation.md)
 - [Button Token 设计](button/token.md)
 - [Button Changelog](button/changelog.md)
@@ -22,4 +23,5 @@
 - [Separator Changelog](separator/changelog.md)
 - [SplitButton 桌面版架构设计](split-button/overview.md)
 - [SplitButton 桌面版实现原理](split-button/implementation.md)
+- [SplitButton Semantic Part 契约](split-button/semantic-part.md)
 - [SplitButton Changelog](split-button/changelog.md)

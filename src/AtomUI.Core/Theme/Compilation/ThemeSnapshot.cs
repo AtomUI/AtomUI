@@ -9,7 +9,7 @@ internal sealed class ThemeSnapshot
 {
     internal ThemeSnapshot(
         string themeId,
-        BoundThemeDefinition definition,
+        PreparedThemeDefinition definition,
         ThemeDefinitionRevision definitionRevision,
         ThemeContentFingerprint contentFingerprint,
         ThemeAppearance appearance,
@@ -19,7 +19,7 @@ internal sealed class ThemeSnapshot
         TokenValueTable globalTokenValues,
         IReadOnlyDictionary<object, object?> globalResources,
         IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> presetColorPalettes,
-        IReadOnlyList<ControlThemeSnapshot> controlSlots)
+        LazyControlSnapshots controlSlots)
     {
         ThemeId = themeId;
         Definition = definition;
@@ -33,11 +33,14 @@ internal sealed class ThemeSnapshot
         GlobalResources = globalResources;
         PresetColorPalettes = presetColorPalettes;
         Controls = controlSlots;
-        EstimatedRetainedBytes = ThemeRetainedBytesEstimator.EstimateSnapshot(this);
+        // 全局输入和槽位表尺寸在构造期冻结；控件部分包含冷 source/config 或已物化值。
+        // cell 首次发布后通知缓存重新计费，避免插入期尺寸永久忽略后续物化。
+        // 共享 cell 保守重复计费；估算仍不是 GC 堆的精确字节统计。
+        _estimatedRetainedBytesBase = ThemeRetainedBytesEstimator.EstimateSnapshotBase(this);
     }
 
     internal string ThemeId { get; }
-    internal BoundThemeDefinition Definition { get; }
+    internal PreparedThemeDefinition Definition { get; }
     internal ThemeDefinitionRevision DefinitionRevision { get; }
     internal ThemeContentFingerprint ContentFingerprint { get; }
     internal ThemeAppearance Appearance { get; }
@@ -47,6 +50,9 @@ internal sealed class ThemeSnapshot
     internal TokenValueTable GlobalTokenValues { get; }
     internal IReadOnlyDictionary<object, object?> GlobalResources { get; }
     internal IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> PresetColorPalettes { get; }
-    internal IReadOnlyList<ControlThemeSnapshot> Controls { get; }
-    internal long EstimatedRetainedBytes { get; }
+    internal LazyControlSnapshots Controls { get; }
+    private readonly long _estimatedRetainedBytesBase;
+
+    internal long EstimatedRetainedBytes =>
+        ThemeRetainedBytesEstimator.Add(_estimatedRetainedBytesBase, Controls.EstimatedRetainedBytes);
 }

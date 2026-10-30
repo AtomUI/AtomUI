@@ -42,29 +42,36 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
     private const string TitleBarMenuResourceKey = "WorkspaceTitleBarMenu";
     private const string ThemeColorGroupName = "ThemeColor";
     private GalleryShellView? _shellView;
+    private bool _closed;
     private MenuItem? _themeMenuItem;
     private readonly List<MenuItem> _themeMenuItems = new();
     private PropertyChangedEventHandler? _viewModelPropertyChangedHandler;
 
     public WorkspaceWindow()
     {
+        // Splash 在提交前显示，主窗体出现时内核已就绪：窗口直接构建完整 shell，不再有加载占位。
         ViewModel = new WorkspaceWindowViewModel();
         InitializeComponent();
-        ConfigureThemeMenu();
+        BuildContent();
+    }
 
-        if (ViewModel is not null)
+    private void BuildContent()
+    {
+        if (ViewModel is null || _shellView is not null)
         {
-            var showCaseNavigation = new CaseNavigation
-            {
-                Name      = "ShowCaseNavigation",
-                ViewModel = ViewModel.CaseNavigation
-            };
-            _shellView = new GalleryShellView(
-                AtomUIGalleryModule.GetConfiguration(),
-                showCaseNavigation,
-                ViewModel.Router);
-            ShellHost.Children.Add(_shellView);
+            return;
         }
+        ConfigureThemeMenu();
+        var showCaseNavigation = new CaseNavigation
+        {
+            Name      = "ShowCaseNavigation",
+            ViewModel = ViewModel.CaseNavigation
+        };
+        _shellView = new GalleryShellView(
+            AtomUIGalleryModule.GetConfiguration(),
+            showCaseNavigation,
+            ViewModel.Router);
+        ShellHost.Children.Add(_shellView);
     }
 
     protected override WindowTitleBar? NotifyCreateTitleBar(WindowTitleBar? oldTitleBar)
@@ -91,8 +98,19 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
         AddHandler(MenuItem.ClickEvent, HandleMenuItemClick);
     }
 
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    protected override void OnClosed(EventArgs e)
     {
+        ReleaseWorkspace();
+        base.OnClosed(e);
+    }
+
+    private void ReleaseWorkspace()
+    {
+        if (_closed)
+        {
+            return;
+        }
+        _closed = true;
         RemoveHandler(MenuItem.ClickEvent, HandleMenuItemClick);
         if (ViewModel is not null && _viewModelPropertyChangedHandler is not null)
         {
@@ -102,6 +120,11 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
         _shellView?.Dispose();
         _shellView = null;
         ViewModel?.Dispose();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        ReleaseWorkspace();
         base.OnDetachedFromVisualTree(e);
     }
 
@@ -204,11 +227,17 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
 
     private void HandleMenuItemClick(object? sender, RoutedEventArgs e)
     {
-        if (ViewModel is null) return;
+        if (ViewModel is null)
+        {
+            return;
+        }
 
         if (e.Source is MenuItem menuItem && menuItem.Tag is WindowMenuItemKind kind)
         {
-            if (menuItem.ToggleType == MenuItemToggleType.None) return;
+            if (menuItem.ToggleType == MenuItemToggleType.None)
+            {
+                return;
+            }
 
             switch (kind)
             {

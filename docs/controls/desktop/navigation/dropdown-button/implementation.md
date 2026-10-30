@@ -1,6 +1,6 @@
 # DropdownButton 桌面版实现原理
 
-本文档描述 DropdownButton 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [DropdownButton 桌面版架构设计](overview.md)，变化记录见 [DropdownButton Changelog](changelog.md)。DropdownButton 没有独立 Token 文档；涉及主题变量时应回到 overview 的视觉与主题模型。
+本文档描述 DropdownButton 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [DropdownButton 桌面版架构设计](overview.md)，Semantic Part 契约见 [DropdownButton Semantic Part 契约](semantic-part.md)，变化记录见 [DropdownButton Changelog](changelog.md)。DropdownButton 没有独立 Token 文档；涉及主题变量时应回到 overview 的视觉与主题模型。
 
 Popup 接入边界：`DropdownButton` 负责业务状态和内容准备，`DropdownFlyout` / `MenuFlyout` 仅作为 relay 适配层，Flyout Popup 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
 
@@ -86,6 +86,23 @@ Public API / ItemsSource / Command / Event
 - `PART_LoadingIcon`：展示继承自 Button loading 状态的图标，并绑定 owner 的图标宽高。
 - `PART_ButtonIcon`：承载用户触发入口、导航或关闭动作。
 - `PART_ContentPresenter`：展示用户内容、文本、图标或模板化数据。
+
+### 5.1 Semantic Part marker 注入
+
+Semantic Part 的 marker 全部为运行时注入，完整契约见 [DropdownButton Semantic Part 契约](semantic-part.md)。
+对齐上游 antd Dropdown，DropdownButton 不发布触发侧 Semantic Part，五个弹层部件
+（`popup.root` / `itemTitle` / `item` / `itemContent` / `itemIcon`）为避免把 marker 静态写进被 SplitButton、
+DataGrid、TabControl、Transfer 等复用的共享 MenuFlyout / MenuItem 控件（沿用 FlyoutHost → FlyoutPresenter 的
+跨视觉根弹层先例）：
+
+- `MenuFlyoutPresenter.OnApplyTemplate` 定位弹层根视觉面 `ArrowDecoratedBox` 时注入 `popup.root` marker（边框 /
+  背景 / 圆角由 `ArrowDecoratedBox` 渲染，`MenuFlyoutPresenter` 是共享菜单宿主容器，不承载弹层根视觉）；
+- `MenuFlyoutPresenter` 与 `MenuItem` 的 `CreateContainerForItemOverride` / `PrepareContainerForItemOverride`
+  容器路径注入 `item` marker，覆盖顶层与嵌套子菜单项；
+- `MenuItemGroup.OnApplyTemplate` 向 `GroupTitlePresenter` 注入 `itemTitle` marker（分组容器本身带
+  `semantic-item-title-group` 中间标记类）；
+- `MenuItem.OnApplyTemplate` 向 `ItemIconPresenter` / `ItemTextPresenter` 注入 `itemIcon` / `itemContent`
+  marker。
 
 ## 6. 交互与事件处理
 

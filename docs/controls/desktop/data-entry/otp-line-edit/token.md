@@ -49,13 +49,12 @@ OtpLineEditToken 影响以下控件或主题：
 - `OtpLineEditCellTheme.axaml`
 - Gallery OtpLineEdit 示例
 - OtpLineEdit token.md 语义说明
-- LLMS `controls/otp-line-edit/index-cn.md` 和 `semantic-cn.md` 生成内容
 
 OtpLineEditToken 不影响 LineEdit、SearchEdit、TextArea 或其他输入控件的尺寸和主题。其他控件需要 OTP 风格分格输入时，应直接使用 OtpLineEdit，而不是复制 Token 或 cell 主题。
 
 ## 5. 兼容性要求
 
-OtpLineEditToken 属于 OtpLineEdit 的主题契约。即使 Token 类型是 internal，生成的 TokenKind、AXAML resource 使用点、Token 类型、生成数据和 token.md和 LLMS 产物都会形成稳定依赖。
+OtpLineEditToken 属于 OtpLineEdit 的主题契约。即使 Token 类型是 internal，生成的 TokenKind、AXAML resource 使用点、Token 类型、生成数据和 token.md 都会形成稳定依赖。
 
 Token 变更要求：
 
@@ -72,6 +71,6 @@ Token 变更要求：
 | --- | --- |
 | 修改 cell 宽度 Token | 验证 Large/Middle/Small/Custom 下的 cell 宽度、字符居中、focus ring 和 error 状态。 |
 | 修改 cell 间距 Token | 验证相邻 cell、清除按钮、Form feedback 和整体布局不重叠。 |
-| 修改 separator 模板布局 | 验证 `SeparatorInterval`、静态 separator、模板 separator 和不同 SizeType 的对齐。 |
+| 修改 separator 模板布局 | 验证静态 separator、模板 separator 和不同 SizeType 的对齐。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步 AXAML 引用、生成文件、Token 类型、生成数据和 token.md和控件文档。 |
 | 文档改动 | 运行 `git diff --check`，检查文档链接存在。 |

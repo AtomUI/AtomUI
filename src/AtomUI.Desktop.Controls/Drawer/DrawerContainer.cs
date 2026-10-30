@@ -1,11 +1,8 @@
-using System.Diagnostics;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using Avalonia;
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -14,14 +11,11 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Transformation;
 using Avalonia.VisualTree;
-using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
 internal class DrawerContainer : ContentControl
 {
-    private static readonly CubicEaseOut DefaultMotionEasing = new();
-
     #region 内部属性定义
 
     internal static readonly DirectProperty<DrawerContainer, DrawerPlacement> PlacementProperty =
@@ -214,13 +208,15 @@ internal class DrawerContainer : ContentControl
 
     internal WeakReference<Drawer>? Drawer { get; set; }
     
-    private BaseMotionActor? _motionActor;
+    private Border? _surface;
+    private Border? _mask;
+    private CompositeDisposable? _entryPreparation;
     private DrawerInfoContainer? _infoContainer;
     private ITransform? _originInfoContainerTransform;
     private WeakReference<Drawer>? _activeChildDrawer;
     private bool _isChildDrawerPushed;
-    private bool _openAnimating;
     private bool _closeAnimating;
+    private bool _presentationPending;
     private int _lifecycleVersion;
     private int _pushTransformVersion;
     private CompositeDisposable? _drawerBindingDisposables;
@@ -247,59 +243,34 @@ internal class DrawerContainer : ContentControl
             Bind(IsShowCloseButtonProperty, drawer[!AtomUI.Desktop.Controls.Drawer.IsShowCloseButtonProperty]),
             Bind(IsMotionEnabledProperty, drawer[!AtomUI.Desktop.Controls.Drawer.IsMotionEnabledProperty]),
             Bind(IsCloseOnMaskClickProperty, drawer[!AtomUI.Desktop.Controls.Drawer.IsCloseOnMaskClickProperty]),
-            Bind(PushOffsetPercentProperty, drawer[!AtomUI.Desktop.Controls.Drawer.PushOffsetPercentProperty])
+            Bind(PushOffsetPercentProperty, drawer[!AtomUI.Desktop.Controls.Drawer.PushOffsetPercentProperty]),
+            Bind(ThemeVariantScope.ActualThemeVariantProperty,
+                drawer.GetBindingObservable(ThemeVariantScope.ActualThemeVariantProperty))
         };
     }
 
     internal void Open(ScopeAwareAdornerLayer layer)
     {
-        if (Drawer != null && Drawer.TryGetTarget(out var drawer))
+        if (Drawer is null || !Drawer.TryGetTarget(out var drawer))
         {
-            var lifecycleVersion = ++_lifecycleVersion;
-            _closeAnimating = false;
-            PrepareOpenVisualState(drawer.IsMotionEnabled);
-            ScopeAwareAdornerLayer.SetAdornedElement(this, drawer.OpenOn);
-            ConfigureHostMargin(drawer.OpenOn);
-            AttachToLayer(layer);
-            ApplyTemplate();
-            PrepareOpenVisualState(drawer.IsMotionEnabled);
-            Dispatcher.InvokeAsync(async () =>
-            {
-                if (lifecycleVersion != _lifecycleVersion)
-                {
-                    return;
-                }
-
-                // 让 layer 更新
-                if (_motionActor is null || _openAnimating)
-                {
-                    return;
-                }
-
-                if (!IsMotionEnabled)
-                {
-                    _motionActor.Opacity = 1.0;
-                    drawer.NotifyOpened();
-                    return;
-                }
-
-                _openAnimating       = true;
-                _motionActor.Opacity = 0.0;
-
-                LayoutHelper.MeasureChild(_motionActor, DesiredSize, new Thickness());
-
-                var motion = BuildMotionByPlacement(Placement, MotionDuration, true);
-
-                await motion.RunAsync(_motionActor);
-                if (lifecycleVersion != _lifecycleVersion)
-                {
-                    return;
-                }
-                _openAnimating = false;
-                drawer.NotifyOpened();
-            });
-
+            return;
         }
+        var initialize = !this.IsAttachedToVisualTree();
+        var version = ++_lifecycleVersion;
+        _closeAnimating = false;
+        if (initialize)
+        {
+            PrepareOpenVisualState(drawer.IsMotionEnabled);
+        }
+        ScopeAwareAdornerLayer.SetAdornedElement(this, drawer.OpenOn);
+        ConfigureHostMargin(drawer.OpenOn);
+        AttachToLayer(layer);
+        ApplyTemplate();
+        if (initialize)
+        {
+            PrepareOpenVisualState(drawer.IsMotionEnabled);
+        }
+        SchedulePresentation(version, drawer, layer, true);
     }
 
     internal void UpdateOpenOn(Control? openOn, ScopeAwareAdornerLayer? layer)
@@ -315,64 +286,173 @@ internal class DrawerContainer : ContentControl
     private void PrepareOpenVisualState(bool isMotionEnabled)
     {
         ClearValue(BackgroundProperty);
-        if (_motionActor is not null)
+        if (!isMotionEnabled)
         {
-            _motionActor.MotionTransform           = null;
-            _motionActor.MotionTransformOperations = null;
-            _motionActor.Opacity = isMotionEnabled ? 0.0 : 1.0;
+            ClearEntryPreparation();
+            ResetPresentation();
+            return;
+        }
+        if (_surface is null || _entryPreparation is not null)
+        {
+            return;
+        }
+        _entryPreparation = new CompositeDisposable
+        {
+            _surface.SetValue(OpacityProperty, 0, Avalonia.Data.BindingPriority.Animation) ?? Disposable.Empty
+        };
+        if (_mask is { } mask)
+        {
+            _entryPreparation.Add(mask.SetValue(OpacityProperty, 0, Avalonia.Data.BindingPriority.Animation) ?? Disposable.Empty);
         }
     }
 
     internal void Close(ScopeAwareAdornerLayer layer)
     {
-        if (Drawer != null && Drawer.TryGetTarget(out var drawer))
+        if (Drawer is null || !Drawer.TryGetTarget(out var drawer) || _closeAnimating)
         {
-            if (_closeAnimating)
-            {
-                return;
-            }
+            return;
+        }
+        var version = ++_lifecycleVersion;
+        _closeAnimating = true;
+        ClearEntryPreparation();
+        SchedulePresentation(version, drawer, layer, false);
+    }
 
-            var lifecycleVersion = ++_lifecycleVersion;
-            _openAnimating = false;
-            if (_motionActor is null || !IsMotionEnabled)
+    private void SchedulePresentation(int version, Drawer drawer, ScopeAwareAdornerLayer layer, bool opening)
+    {
+        if (version != _lifecycleVersion)
+        {
+            return;
+        }
+        _presentationPending = true;
+        var surface = _surface;
+        var mask = _mask;
+        Dispatcher.Post(() => _ = PlayPresentationAsync(version, surface, mask, drawer, layer, opening),
+            Avalonia.Threading.DispatcherPriority.Loaded);
+    }
+
+    private async Task PlayPresentationAsync(int version, Border? surface, Border? mask,
+        Drawer drawer, ScopeAwareAdornerLayer layer, bool opening)
+    {
+        if (!IsCurrentPresentation(version, surface, drawer, opening))
+        {
+            return;
+        }
+        try
+        {
+            if (surface is not null && IsMotionEnabled)
             {
-                DetachFromLayer(layer);
-                drawer.NotifyClosed();
-                return;
-            }
-            
-            _closeAnimating = true;
-            SetCurrentValue(BackgroundProperty, Brushes.Transparent);
-            var duration = TimeSpan.Zero;
-            if (Transitions is not null)
-            {
-                foreach (var transition in Transitions)
+                UpdateLayout();
+                // The sliding panel and the mask repaint the window content they pass over on every frame; composite
+                // a cached copy of that content instead while the presentation plays.
+                using var contentCache = TopLevel.GetTopLevel(this) is Window window ? window.AcquireContentCache(this) : null;
+                Task<MotionResult> surfacePlayback;
+                Task<MotionResult>? maskPlayback = null;
+                var preparation = _entryPreparation;
+                _entryPreparation = null;
+                try
                 {
-                    if (transition is TransitionBase transitionBase)
+                    surfacePlayback = new DrawerPanelMotion(Placement, opening)
+                        .PlayAsync(surface, MotionDuration, CancellationToken.None);
+                    if (mask is not null && IsShowMask && IsCurrentPresentation(version, surface, drawer, opening))
                     {
-                        if (duration.CompareTo(transitionBase.Duration) < 0)
-                        {
-                            duration = transitionBase.Duration;
-                        }
+                        AbstractMotion maskMotion = opening ? new FadeInMotion() : new FadeOutMotion();
+                        maskMotion.Easing = MotionCurves.Ease;
+                        maskPlayback = maskMotion.PlayAsync(mask, MotionDuration, CancellationToken.None);
                     }
                 }
-            }
-
-            var motion = BuildMotionByPlacement(Placement, MotionDuration, false);
-            Dispatcher.InvokeAsync(async () =>
-            {
-                await Task.WhenAll(motion.RunAsync(_motionActor), Task.Delay(duration));
-                if (lifecycleVersion != _lifecycleVersion)
+                finally
                 {
-                    _closeAnimating = false;
+                    preparation?.Dispose();
+                }
+                if (maskPlayback is not null)
+                {
+                    await Task.WhenAll(surfacePlayback, maskPlayback);
+                }
+                var surfaceResult = await surfacePlayback;
+                var maskResult = maskPlayback is not null ? await maskPlayback : (MotionResult?)null;
+                if (!IsCurrentPresentation(version, surface, drawer, opening) ||
+                    !CanComplete(surface, surfaceResult) ||
+                    (maskResult is { } result && !CanComplete(mask!, result)))
+                {
                     return;
                 }
-                _closeAnimating      = false;
-                _motionActor.Opacity = 0.0;
-                DetachFromLayer(layer);
-                _motionActor.Opacity = 1.0;
-                drawer.NotifyClosed();
-            });
+                if (surfaceResult.Outcome == MotionOutcome.NotReady || maskResult?.Outcome == MotionOutcome.NotReady)
+                {
+                    ResetPresentation();
+                }
+            }
+            else
+            {
+                ClearEntryPreparation();
+                ResetPresentation();
+            }
+        }
+        catch (Exception exception)
+        {
+            Avalonia.Logging.Logger.TryGet(Avalonia.Logging.LogEventLevel.Error, AtomUILogArea.Control)?.Log(
+                this, "Drawer motion failed: {Exception}", exception);
+            if (!IsCurrentPresentation(version, surface, drawer, opening))
+            {
+                return;
+            }
+            ClearEntryPreparation();
+            ResetPresentation();
+        }
+        if (!IsCurrentPresentation(version, surface, drawer, opening))
+        {
+            return;
+        }
+        CompletePresentation(drawer, layer, opening);
+    }
+
+    private void CompletePresentation(Drawer drawer, ScopeAwareAdornerLayer layer, bool opening)
+    {
+        _presentationPending = false;
+        if (opening)
+        {
+            drawer.NotifyOpened();
+        }
+        else
+        {
+            _closeAnimating = false;
+            DetachFromLayer(layer);
+            drawer.NotifyClosed();
+        }
+    }
+
+    private bool IsCurrentPresentation(int version, Border? surface, Drawer drawer, bool opening) =>
+        version == _lifecycleVersion && ReferenceEquals(surface, _surface) &&
+        Drawer is not null && Drawer.TryGetTarget(out var currentDrawer) && ReferenceEquals(currentDrawer, drawer) &&
+        drawer.IsOpen == opening && this.IsAttachedToVisualTree();
+
+    private static bool CanComplete(Control target, MotionResult result) =>
+        result.Outcome == MotionOutcome.NotReady || (result.IsCompleted && Motion.IsCurrent(target, result));
+
+    private void ClearEntryPreparation()
+    {
+        var preparation = _entryPreparation;
+        _entryPreparation = null;
+        preparation?.Dispose();
+    }
+
+    private void ResetPresentation()
+    {
+        var version = _lifecycleVersion;
+        var surface = _surface;
+        var mask = _mask;
+        List<Exception>? failures = null;
+        if (surface is not null)
+        {
+            TryCleanup(() => MotionPlayback.CancelAndReset(surface), ref failures);
+        }
+        if (mask is not null && version == _lifecycleVersion)
+        {
+            TryCleanup(() => MotionPlayback.CancelAndReset(mask), ref failures);
+        }
+        if (failures is not null)
+        {
+            throw new AggregateException("Drawer presentation cleanup failed.", failures);
         }
     }
 
@@ -380,57 +460,82 @@ internal class DrawerContainer : ContentControl
     {
         ++_lifecycleVersion;
         ++_pushTransformVersion;
-        _openAnimating  = false;
         _closeAnimating = false;
-        DetachFromLayer(null);
-        _drawerBindingDisposables?.Dispose();
+        _presentationPending = false;
+        var preparation = _entryPreparation;
+        var surface = _surface;
+        var mask = _mask;
+        var bindings = _drawerBindingDisposables;
+        var hostMargin = _hostMarginSubscription;
+        var overlaySuppression = _drawnChromeOverlaySuppression;
+        var infoContainer = _infoContainer;
+        _entryPreparation = null;
+        _surface = null;
+        _mask = null;
         _drawerBindingDisposables = null;
-        ClearHostMargin();
-        ReleaseTemplateContent();
-
-        if (_infoContainer != null)
-        {
-            _infoContainer.CloseRequested -= HandleCloseRequested;
-            _infoContainer = null;
-        }
-
-        _motionActor                  = null;
+        _hostMarginSubscription = null;
+        _drawnChromeOverlaySuppression = null;
+        _infoContainer = null;
         _originInfoContainerTransform = null;
         _activeChildDrawer            = null;
         _isChildDrawerPushed          = false;
         Drawer                        = null;
+
+        List<Exception>? failures = null;
+        DisposeOwned(preparation, ref failures);
+        if (surface is not null)
+        {
+            TryCleanup(() => MotionPlayback.CancelAndReset(surface), ref failures);
+        }
+        if (mask is not null)
+        {
+            TryCleanup(() => MotionPlayback.CancelAndReset(mask), ref failures);
+        }
+        DisposeOwned(bindings, ref failures);
+        TryCleanup(() => hostMargin?.Dispose(), ref failures);
+        TryCleanup(() => overlaySuppression?.Dispose(), ref failures);
+        TryCleanup(() => DetachFromLayer(null), ref failures);
+        if (infoContainer is not null)
+        {
+            TryCleanup(() => infoContainer.CloseRequested -= HandleCloseRequested, ref failures);
+        }
+        ReleaseTemplateContent(infoContainer, ref failures);
+        if (failures is not null)
+        {
+            throw new AggregateException("Drawer release cleanup failed.", failures);
+        }
     }
 
-    private void ReleaseTemplateContent()
+    private void ReleaseTemplateContent(DrawerInfoContainer? infoContainer, ref List<Exception>? failures)
     {
-        ClearValue(DataContextProperty);
-        ClearValue(ContentProperty);
-        ClearValue(ContentTemplateProperty);
-        ClearValue(ContentPaddingProperty);
-        ClearValue(FooterProperty);
-        ClearValue(FooterTemplateProperty);
-        ClearValue(ExtraProperty);
-        ClearValue(ExtraTemplateProperty);
-        ClearValue(DialogSizeProperty);
-        ClearValue(PlacementProperty);
-        ClearValue(TitleProperty);
-        ClearValue(IsShowMaskProperty);
-        ClearValue(IsShowCloseButtonProperty);
-        ClearValue(IsMotionEnabledProperty);
-        ClearValue(IsCloseOnMaskClickProperty);
-        ClearValue(PushOffsetPercentProperty);
+        TryCleanup(() => ClearValue(DataContextProperty), ref failures);
+        TryCleanup(() => ClearValue(ContentProperty), ref failures);
+        TryCleanup(() => ClearValue(ContentTemplateProperty), ref failures);
+        TryCleanup(() => ClearValue(ContentPaddingProperty), ref failures);
+        TryCleanup(() => ClearValue(FooterProperty), ref failures);
+        TryCleanup(() => ClearValue(FooterTemplateProperty), ref failures);
+        TryCleanup(() => ClearValue(ExtraProperty), ref failures);
+        TryCleanup(() => ClearValue(ExtraTemplateProperty), ref failures);
+        TryCleanup(() => ClearValue(DialogSizeProperty), ref failures);
+        TryCleanup(() => ClearValue(PlacementProperty), ref failures);
+        TryCleanup(() => ClearValue(TitleProperty), ref failures);
+        TryCleanup(() => ClearValue(IsShowMaskProperty), ref failures);
+        TryCleanup(() => ClearValue(IsShowCloseButtonProperty), ref failures);
+        TryCleanup(() => ClearValue(IsMotionEnabledProperty), ref failures);
+        TryCleanup(() => ClearValue(IsCloseOnMaskClickProperty), ref failures);
+        TryCleanup(() => ClearValue(PushOffsetPercentProperty), ref failures);
 
-        if (_infoContainer == null)
+        if (infoContainer == null)
         {
             return;
         }
 
-        _infoContainer.Content         = null;
-        _infoContainer.ContentTemplate = null;
-        _infoContainer.Footer          = null;
-        _infoContainer.FooterTemplate  = null;
-        _infoContainer.Extra           = null;
-        _infoContainer.ExtraTemplate   = null;
+        TryCleanup(() => infoContainer.Content         = null, ref failures);
+        TryCleanup(() => infoContainer.ContentTemplate = null, ref failures);
+        TryCleanup(() => infoContainer.Footer          = null, ref failures);
+        TryCleanup(() => infoContainer.FooterTemplate  = null, ref failures);
+        TryCleanup(() => infoContainer.Extra           = null, ref failures);
+        TryCleanup(() => infoContainer.ExtraTemplate   = null, ref failures);
     }
 
     private void AttachToLayer(ScopeAwareAdornerLayer layer)
@@ -445,6 +550,14 @@ internal class DrawerContainer : ContentControl
             currentParent.Children.Remove(this);
         }
 
+        // 语义部件契约：容器必须逻辑挂到 Drawer owner 下，owner 嵌套的生成
+        // Semantic Style 才能命中容器子树。必须在 Children.Add 之前设置：
+        // Panel 收集子项不会覆盖已显式设置的逻辑父（先例：ImagePreviewer 的 OverlayHost）。
+        if (Drawer is not null && Drawer.TryGetTarget(out var drawer))
+        {
+            ((ISetLogicalParent)this).SetParent(drawer);
+        }
+
         if (!layer.Children.Contains(this))
         {
             layer.Children.Add(this);
@@ -453,17 +566,23 @@ internal class DrawerContainer : ContentControl
 
     private void DetachFromLayer(ScopeAwareAdornerLayer? layer)
     {
+        List<Exception>? failures = null;
         if (this.GetVisualParent() is Panel currentParent)
         {
-            currentParent.Children.Remove(this);
+            TryCleanup(() => currentParent.Children.Remove(this), ref failures);
         }
         else
         {
-            layer?.Children.Remove(this);
+            TryCleanup(() => layer?.Children.Remove(this), ref failures);
         }
 
-        ScopeAwareAdornerLayer.SetAdornedElement(this, null);
-        ClearHostMargin();
+        TryCleanup(() => ((ISetLogicalParent)this).SetParent(null), ref failures);
+        TryCleanup(() => ScopeAwareAdornerLayer.SetAdornedElement(this, null), ref failures);
+        TryCleanup(ClearHostMargin, ref failures);
+        if (failures is not null)
+        {
+            throw new AggregateException("Drawer host detachment failed.", failures);
+        }
     }
 
     private void ConfigureHostMargin(Control? host)
@@ -495,59 +614,46 @@ internal class DrawerContainer : ContentControl
 
     private void ClearHostMargin()
     {
-        _hostMarginSubscription?.Dispose();
+        var subscription = _hostMarginSubscription;
+        var suppression = _drawnChromeOverlaySuppression;
         _hostMarginSubscription = null;
-        _drawnChromeOverlaySuppression?.Dispose();
         _drawnChromeOverlaySuppression = null;
-        Margin       = default;
-        CornerRadius = default;
+        List<Exception>? failures = null;
+        TryCleanup(() => subscription?.Dispose(), ref failures);
+        TryCleanup(() => suppression?.Dispose(), ref failures);
+        TryCleanup(() => Margin = default, ref failures);
+        TryCleanup(() => CornerRadius = default, ref failures);
+        if (failures is not null)
+        {
+            throw new AggregateException("Drawer host geometry cleanup failed.", failures);
+        }
     }
 
-    private AbstractMotion BuildMotionByPlacement(DrawerPlacement placement, TimeSpan duration, bool isOpen)
+    private static void DisposeOwned(CompositeDisposable? subscriptions, ref List<Exception>? failures)
     {
-        AbstractMotion? motion = null;
-        Debug.Assert(_motionActor != null);
-        if (isOpen)
+        if (subscriptions is null)
         {
-            if (placement == DrawerPlacement.Left)
-            {
-                motion = new MoveLeftInMotion(_motionActor.DesiredSize.Width, duration, DefaultMotionEasing);
-            }
-            else if (placement == DrawerPlacement.Right)
-            {
-                motion = new MoveRightInMotion(_motionActor.DesiredSize.Width, duration, DefaultMotionEasing);
-            }
-            else if (placement == DrawerPlacement.Top)
-            {
-                motion = new MoveUpInMotion(_motionActor.DesiredSize.Height, duration, DefaultMotionEasing);
-            }
-            else
-            {
-                motion = new MoveDownInMotion(_motionActor.DesiredSize.Height, duration, DefaultMotionEasing);
-            }
+            return;
         }
-        else
+        foreach (var subscription in subscriptions.ToArray())
         {
-            if (placement == DrawerPlacement.Left)
-            {
-                motion = new MoveLeftOutMotion(_motionActor.DesiredSize.Width, duration, DefaultMotionEasing);
-            }
-            else if (placement == DrawerPlacement.Right)
-            {
-                motion = new MoveRightOutMotion(_motionActor.DesiredSize.Width, duration, DefaultMotionEasing);
-            }
-            else if (placement == DrawerPlacement.Top)
-            {
-                motion = new MoveUpOutMotion(_motionActor.DesiredSize.Height, duration, DefaultMotionEasing);
-            }
-            else
-            {
-                motion = new MoveDownOutMotion(_motionActor.DesiredSize.Height, duration, DefaultMotionEasing);
-            }
+            // Remove retires the handle before invoking it; one throwing binding
+            // must not prevent the remaining owned bindings from being released.
+            TryCleanup(() => subscriptions.Remove(subscription), ref failures);
         }
+        TryCleanup(subscriptions.Dispose, ref failures);
+    }
 
-        Debug.Assert(motion != null);
-        return motion;
+    private static void TryCleanup(Action cleanup, ref List<Exception>? failures)
+    {
+        try
+        {
+            cleanup();
+        }
+        catch (Exception exception)
+        {
+            (failures ??= []).Add(exception);
+        }
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -557,6 +663,11 @@ internal class DrawerContainer : ContentControl
         {
             if (Drawer != null && Drawer.TryGetTarget(out var drawer))
             {
+                if (drawer.IsPinnedOpen)
+                {
+                    return;
+                }
+
                 drawer.IsOpen = false;
             }
         }
@@ -564,8 +675,11 @@ internal class DrawerContainer : ContentControl
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        var previousSurface = _surface;
+        var previousMask = _mask;
         base.OnApplyTemplate(e);
-        _motionActor   = e.NameScope.Find<BaseMotionActor>("PART_InfoContainerMotionActor");
+        _surface = e.NameScope.Find<Border>("PART_Surface");
+        _mask = e.NameScope.Find<Border>("PART_Mask");
         
         if (_infoContainer != null)
         {
@@ -578,12 +692,58 @@ internal class DrawerContainer : ContentControl
             _infoContainer.CloseRequested += HandleCloseRequested;
         }
         RefreshActiveChildDrawerPushTransform();
+
+        if (previousSurface is not null && !ReferenceEquals(previousSurface, _surface))
+        {
+            var version = ++_lifecycleVersion;
+            ClearEntryPreparation();
+            MotionPlayback.CancelAndReset(previousSurface);
+            if (previousMask is not null)
+            {
+                MotionPlayback.CancelAndReset(previousMask);
+            }
+            if (version == _lifecycleVersion && _presentationPending && this.IsAttachedToVisualTree() &&
+                Drawer is not null && Drawer.TryGetTarget(out var drawer) &&
+                this.GetVisualParent() is ScopeAwareAdornerLayer layer)
+            {
+                _closeAnimating = !drawer.IsOpen;
+                if (drawer.IsOpen)
+                {
+                    PrepareOpenVisualState(IsMotionEnabled);
+                }
+                SchedulePresentation(version, drawer, layer, drawer.IsOpen);
+            }
+        }
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == IsMotionEnabledProperty && !IsMotionEnabled && _presentationPending &&
+            this.IsAttachedToVisualTree() && Drawer is not null && Drawer.TryGetTarget(out var drawer) &&
+            this.GetVisualParent() is ScopeAwareAdornerLayer layer)
+        {
+            var version = ++_lifecycleVersion;
+            var surface = _surface;
+            var opening = drawer.IsOpen;
+            ClearEntryPreparation();
+            ResetPresentation();
+            if (IsCurrentPresentation(version, surface, drawer, opening))
+            {
+                CompletePresentation(drawer, layer, opening);
+            }
+        }
     }
 
     private void HandleCloseRequested(object? sender, EventArgs e)
     {
         if (Drawer != null && Drawer.TryGetTarget(out var drawer))
         {
+            if (drawer.IsPinnedOpen)
+            {
+                return;
+            }
+
             drawer.IsOpen = false;
         }
     }

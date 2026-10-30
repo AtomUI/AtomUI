@@ -49,9 +49,19 @@ public class TabStripViewModel : ReactiveObject, IRoutableViewModel
 
     public AvaloniaList<TabItemData> TabStripItemDataSource { get; set; } = new();
 
+    public AvaloniaList<TabItemData> OverflowTabItems { get; } = [];
+
     public TabStripViewModel(IScreen screen)
     {
         HostScreen = screen;
+        for (var index = 0; index < 30; index++)
+        {
+            OverflowTabItems.Add(new TabItemData
+            {
+                Header = $"Tab-{index}",
+                IsEnabled = index != 28
+            });
+        }
     }
 
     public void HandlePlacementOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs args)

@@ -397,5 +397,89 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Content element with flex ratio, padding and overflow scrolling styles.</source>
+        <target state="translated">內容元素，包含佔比、內邊距、溢出滾動等內容區域的展示和佈局樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>Close button element with basic button styles.</source>
+        <target state="translated">關閉按鈕元素，包含按鈕的基礎樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraDescription">
+      <segment>
+        <source>Extra action element at the header trailing edge.</source>
+        <target state="translated">額外操作元素，位於頭部尾緣，控制額外操作內容的佈局與樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>Footer element with padding and top border styles.</source>
+        <target state="translated">底部元素，包含內邊距、上邊框等底部操作區域的樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with layout, alignment, padding and typography styles.</source>
+        <target state="translated">頭部元素，包含佈局、對齊方式、內邊距、字體、下邊框等頭部區域的樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMaskDescription">
+      <segment>
+        <source>Mask element with positioning, z-index, background and pointer-event controls.</source>
+        <target state="translated">遮罩層元素，包含定位、層級、背景色、指針事件等遮罩層的樣式與互動控制。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewFooterLink">
+      <segment>
+        <source>Footer</source>
+        <target state="translated">頁腳</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewTitleText">
+      <segment>
+        <source>Title</source>
+        <target state="translated">標題</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element that carries the semantic identity and the owner-level style customization entry.</source>
+        <target state="translated">根元素，承載語義身份與 owner 級樣式定製入口。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Drawer panel container with layout, size, overflow and background styles.</source>
+        <target state="translated">抽屜面板容器元素，包含佈局、寬高、溢出控制、背景色等抽屜主體的樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStageHint">
+      <segment>
+        <source>The drawer renders inline and stays open in this area.</source>
+        <target state="translated">抽屜在此區域內以內聯方式常開呈現。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesDescription">
+      <segment>
+        <source>Customize every semantic part with the generated part style classes.</source>
+        <target state="translated">使用生成的部件 Style 類定製全部語義部件。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with font weight, size and line-height styles.</source>
+        <target state="translated">標題元素，包含字體權重、字體大小、行高等標題文字的樣式。</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using AtomUI.Desktop.Controls;
 
 namespace AtomUI.Desktop.Controls.Tests.DataGrid.Virtualization;
 

@@ -1,4 +1,3 @@
-using AtomUIGallery.Localization;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reactive;
@@ -183,6 +182,30 @@ public class SelectViewModel : ReactiveObject, IRoutableViewModel
     {
         get => _selectOptionsAsyncLoader;
         set => this.RaiseAndSetIfChanged(ref _selectOptionsAsyncLoader, value);
+    }
+
+    private List<ISelectOption>? _semanticPreviewOptions;
+
+    public List<ISelectOption>? SemanticPreviewOptions
+    {
+        get => _semanticPreviewOptions;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewOptions, value);
+    }
+
+    private IList<ISelectOption>? _semanticPreviewSelectedOptions;
+
+    public IList<ISelectOption>? SemanticPreviewSelectedOptions
+    {
+        get => _semanticPreviewSelectedOptions;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewSelectedOptions, value);
+    }
+
+    private List<ISelectOption>? _styleClassOptions;
+
+    public List<ISelectOption>? StyleClassOptions
+    {
+        get => _styleClassOptions;
+        set => this.RaiseAndSetIfChanged(ref _styleClassOptions, value);
     }
 
     public SelectViewModel(IScreen screen)

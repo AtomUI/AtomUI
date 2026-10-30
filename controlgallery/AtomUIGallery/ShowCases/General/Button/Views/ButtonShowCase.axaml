@@ -7,8 +7,8 @@
              xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.Button"
              x:DataType="viewModels:ButtonViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Button"
                     Category="{gallery:ButtonShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,31 @@
                     Namespace="AtomUI.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AtomUIButton" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="viewModels:ButtonViewModel">
+                    <gallery:SemanticPartPreview SemanticOwnerType="{x:Type atom:Button}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Button Name="SemanticPartDemoButton"
+                                         ButtonType="Primary"
+                                         Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}"
+                                         Content="{gallery:ButtonShowCaseLangResource SemanticPartDemoContent}" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:ButtonShowCaseLangResource SemanticPartRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="icon"
+                                Description="{gallery:ButtonShowCaseLangResource SemanticPartIconDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:ButtonShowCaseLangResource SemanticPartContentDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -463,21 +486,21 @@
                                        LineSpacing="12">
                                 <atom:Button ButtonType="Primary"
                                              Content="{gallery:ButtonShowCaseLangResource P2ContentGradient}">
-                                    <atom:Button.CustomBackground>
+                                    <atom:Button.Background>
                                         <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
                                             <GradientStop Color="#6253E1" Offset="0" />
                                             <GradientStop Color="#04BEFE" Offset="1" />
                                         </LinearGradientBrush>
-                                    </atom:Button.CustomBackground>
+                                    </atom:Button.Background>
                                 </atom:Button>
                                 <atom:Button ButtonType="Primary"
                                              Content="{gallery:ButtonShowCaseLangResource P2ContentWarmGradient}">
-                                    <atom:Button.CustomBackground>
+                                    <atom:Button.Background>
                                         <LinearGradientBrush StartPoint="0%,100%" EndPoint="100%,0%">
                                             <GradientStop Color="#FF7A45" Offset="0" />
                                             <GradientStop Color="#FFD666" Offset="1" />
                                         </LinearGradientBrush>
-                                    </atom:Button.CustomBackground>
+                                    </atom:Button.Background>
                                 </atom:Button>
                             </WrapPanel>
                         </DataTemplate>
@@ -558,7 +581,58 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    SourceKey="button-semantic-part"
+                    Title="{gallery:ButtonShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:ButtonShowCaseLangResource SemanticPartStyleDescription}"
+                    Span="Full"
+                    BadgeText="v6.1.3"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="viewModels:ButtonViewModel">
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Left"
+                                        Spacing="8">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Button.semantic-part-demo">
+                                        <Setter Property="Margin" Value="0" />
+                                        <Setter Property="Padding" Value="16,8" />
+                                        <Setter Property="BorderBrush"
+                                                Value="{atom:SharedTokenResource ColorBorder}" />
+                                        <Setter Property="CornerRadius"
+                                                Value="{atom:SharedTokenResource BorderRadius}" />
+                                        <atom:ButtonContentStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground"
+                                                    Value="{atom:SharedTokenResource ColorText}" />
+                                        </atom:ButtonContentStyle>
+                                    </Style>
+                                    <Style Selector="atom|Button.semantic-part-demo.semantic-object">
+                                        <Setter Property="Effect">
+                                            <DropShadowEffect OffsetX="0"
+                                                              OffsetY="1"
+                                                              BlurRadius="2"
+                                                              Color="#0D000000" />
+                                        </Setter>
+                                    </Style>
+                                    <Style Selector="atom|Button.semantic-part-demo[ButtonType=Primary]">
+                                        <Setter Property="Background" Value="#171717" />
+                                        <atom:ButtonContentStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#FFFFFF" />
+                                        </atom:ButtonContentStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:Button Classes="semantic-part-demo semantic-object"
+                                             Content="{gallery:ButtonShowCaseLangResource P2ContentSemanticObject}" />
+                                <atom:Button Classes="semantic-part-demo"
+                                             ButtonType="Primary"
+                                             Content="{gallery:ButtonShowCaseLangResource P2ContentSemanticFunction}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -24,6 +22,14 @@ public enum DescriptionsShowCaseLangResourceKind
     VerticalBorderDescription,
     RowTitle,
     RowDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticHeaderDescription,
+    SemanticTitleDescription,
+    SemanticExtraDescription,
+    SemanticLabelDescription,
+    SemanticContentDescription,
     P2HeaderUserInfo,
     P2HeaderCustomSize,
     P2HeaderResponsiveDescriptions,

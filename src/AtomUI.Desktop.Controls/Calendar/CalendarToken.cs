@@ -1,10 +1,11 @@
 using AtomUI.Theme.DesignTokens;
+using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// Calendar 控件的 Design Token，收敛为八个公开视觉语义。
+/// Calendar 控件的 Design Token，承载产品视觉语义。
 /// </summary>
 [ControlDesignToken]
 internal sealed class CalendarToken : AbstractControlDesignToken
@@ -51,6 +52,12 @@ internal sealed class CalendarToken : AbstractControlDesignToken
     public double MiniContentHeight { get; set; }
 
     /// <summary>
+    /// Fullscreen 周标题的总高度和文字内边距。
+    /// </summary>
+    public double WeekHeaderHeight { get; set; }
+    public Thickness WeekHeaderPadding { get; set; }
+
+    /// <summary>
     /// Fullscreen 日期/月单元最小高度。
     /// </summary>
     public double FullCellMinHeight { get; set; }
@@ -74,6 +81,10 @@ internal sealed class CalendarToken : AbstractControlDesignToken
         MonthControlWidth = 70;
         YearMonthCellWidth = EffectiveGlobalToken.ControlHeightLG * 1.5;
         MiniContentHeight = 256;
+        WeekHeaderHeight = EffectiveGlobalToken.ControlHeightSM * 0.75 +
+                           EffectiveGlobalToken.UniformlyPaddingXXS;
+        WeekHeaderPadding = new Thickness(0, 0, EffectiveGlobalToken.UniformlyPaddingSM,
+            EffectiveGlobalToken.UniformlyPaddingXXS);
         FullCellMinHeight = EffectiveGlobalToken.ControlHeightSM +
                             dateContentHeight +
                             EffectiveGlobalToken.UniformlyPaddingXS / 2 +

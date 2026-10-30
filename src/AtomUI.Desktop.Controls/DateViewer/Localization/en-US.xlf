@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUI.Desktop.Controls.Localization.DateViewerLangResourceKind">
+    <unit id="PreviousPeriod">
+      <segment>
+        <source>Previous period</source>
+      </segment>
+    </unit>
+    <unit id="NextPeriod">
+      <segment>
+        <source>Next period</source>
+      </segment>
+    </unit>
+    <unit id="PreviousPage">
+      <segment>
+        <source>Previous page</source>
+      </segment>
+    </unit>
+    <unit id="NextPage">
+      <segment>
+        <source>Next page</source>
+      </segment>
+    </unit>
+    <unit id="ChoosePeriod">
+      <segment>
+        <source>Choose month or year</source>
+      </segment>
+    </unit>
+    <unit id="Week">
+      <segment>
+        <source>Week</source>
+      </segment>
+    </unit>
+    <unit id="Today">
+      <segment>
+        <source>Today</source>
+      </segment>
+    </unit>
+  </file>
+</xliff>

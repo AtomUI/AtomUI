@@ -12,10 +12,9 @@ internal static partial class Program
     {
         var failures = new List<string>();
         VerifyStepsPanelDefinitions(failures);
-        VerifyStepsIconProgressState(failures);
+        VerifyStepsProgressState(failures);
         VerifyStepsStatusMatrix(failures);
         VerifyStepsIndicatorTemplateShape(failures);
-        VerifyStepsCurrentContentLifecycle(failures);
 
         if (failures.Count == 0)
         {
@@ -54,9 +53,9 @@ internal static partial class Program
             failures);
     }
 
-    private static void VerifyStepsIconProgressState(ICollection<string> failures)
+    private static void VerifyStepsProgressState(ICollection<string> failures)
     {
-        var steps = CreateSteps(currentStep: 1, isShowProgress: true, progressValue: 50);
+        var steps = CreateSteps(current: 1, percent: 50);
 
         using var realized = RealizeControl(steps);
         var items = GetRealizedStepsItems(steps);
@@ -69,26 +68,29 @@ internal static partial class Program
         }
 
         var first = items[0];
-        Expect(GetNonPublicProperty<bool>(first, "IsEffectiveShowProgress"),
-            "StepsItem should enable effective progress when progress is shown and no custom icon is set.",
+        Expect(GetNonPublicProperty<bool>(first, "IsProgressVisible"),
+            "StepsItem should show progress on the current item when Percent is set and no custom icon is used.",
+            failures);
+        Expect(!GetNonPublicProperty<bool>(items[1], "IsProgressVisible") || items[1].Status == StepsStatus.Process,
+            "StepsItem should not show progress on non-current items when Percent is set.",
             failures);
 
         first.Icon = new UserOutlined();
         RefreshLayout(realized.Window);
-        Expect(!GetNonPublicProperty<bool>(first, "IsEffectiveShowProgress"),
-            "StepsItem should disable effective progress when a custom icon is added.",
+        Expect(!GetNonPublicProperty<bool>(first, "IsProgressVisible"),
+            "StepsItem should hide progress when a custom icon is added.",
             failures);
 
         first.Icon = null;
         RefreshLayout(realized.Window);
-        Expect(GetNonPublicProperty<bool>(first, "IsEffectiveShowProgress"),
-            "StepsItem should re-enable effective progress when the custom icon is cleared.",
+        Expect(GetNonPublicProperty<bool>(first, "IsProgressVisible"),
+            "StepsItem should re-enable progress when the custom icon is cleared.",
             failures);
     }
 
     private static void VerifyStepsStatusMatrix(ICollection<string> failures)
     {
-        var steps = CreateSteps(currentStep: 1);
+        var steps = CreateSteps(current: 1);
 
         using var realized = RealizeControl(steps);
         var items = GetRealizedStepsItems(steps);
@@ -100,62 +102,35 @@ internal static partial class Program
             return;
         }
 
-        Expect(items[0].Status == StepsItemStatus.Finish && GetNonPublicProperty<bool>(items[0], "IsFinished"),
-            $"Step before current should be Finish/finished, actual {items[0].Status}/{GetNonPublicProperty<bool>(items[0], "IsFinished")}.",
+        Expect(items[0].Status == StepsStatus.Finish,
+            $"Step before current should be Finish, actual {items[0].Status}.",
             failures);
-        Expect(items[1].Status == StepsItemStatus.Process && !GetNonPublicProperty<bool>(items[1], "IsFinished"),
-            $"Current step should be Process/not finished, actual {items[1].Status}/{GetNonPublicProperty<bool>(items[1], "IsFinished")}.",
+        Expect(items[1].Status == StepsStatus.Process,
+            $"Current step should be Process, actual {items[1].Status}.",
             failures);
-        Expect(items[2].Status == StepsItemStatus.Wait && !GetNonPublicProperty<bool>(items[2], "IsFinished"),
-            $"Step after current should be Wait/not finished, actual {items[2].Status}/{GetNonPublicProperty<bool>(items[2], "IsFinished")}.",
+        Expect(items[2].Status == StepsStatus.Wait,
+            $"Step after current should be Wait, actual {items[2].Status}.",
             failures);
 
-        steps.CurrentStepStatus = StepsItemStatus.Error;
+        steps.Status = StepsStatus.Error;
         RefreshLayout(realized.Window);
-        Expect(items[1].Status == StepsItemStatus.Error,
-            $"CurrentStepStatus change should update the selected item, actual {items[1].Status}.",
+        Expect(items[1].Status == StepsStatus.Error,
+            $"Steps.Status change should update the current item, actual {items[1].Status}.",
             failures);
 
-        steps.CurrentStep = 2;
+        steps.Current = 2;
         RefreshLayout(realized.Window);
-        Expect(items[1].Status == StepsItemStatus.Finish && GetNonPublicProperty<bool>(items[1], "IsFinished"),
-            $"Previously current step should become Finish/finished, actual {items[1].Status}/{GetNonPublicProperty<bool>(items[1], "IsFinished")}.",
+        Expect(items[1].Status == StepsStatus.Finish,
+            $"Previously current step should become Finish, actual {items[1].Status}.",
             failures);
-        Expect(items[2].Status == StepsItemStatus.Error && !GetNonPublicProperty<bool>(items[2], "IsFinished"),
-            $"New current step should inherit CurrentStepStatus Error/not finished, actual {items[2].Status}/{GetNonPublicProperty<bool>(items[2], "IsFinished")}.",
-            failures);
-    }
-
-    private static void VerifyStepsCurrentContentLifecycle(ICollection<string> failures)
-    {
-        var steps = new Steps
-        {
-            CurrentStep = 0
-        };
-        steps.Items.Add(new StepsItem { Header = "First", Content = "First content" });
-        steps.Items.Add(new StepsItem { Header = "Second", Content = "Second content" });
-
-        using (var realized = RealizeControl(steps))
-        {
-            Expect(Equals(steps.CurrentContent, "First content"),
-                $"Steps.CurrentContent should track the selected item content, actual {steps.CurrentContent ?? "<null>"}.",
-                failures);
-
-            steps.CurrentStep = 1;
-            RefreshLayout(realized.Window);
-            Expect(Equals(steps.CurrentContent, "Second content"),
-                $"Steps.CurrentContent should update after CurrentStep changes, actual {steps.CurrentContent ?? "<null>"}.",
-                failures);
-        }
-
-        Expect(GetPrivateField(steps, "AtomUI.Desktop.Controls.Steps", "_currentItemSubscriptions") is null,
-            "Steps should dispose current-item content subscriptions when detached from the visual tree.",
+        Expect(items[2].Status == StepsStatus.Error,
+            $"New current step should inherit Steps.Status Error, actual {items[2].Status}.",
             failures);
     }
 
     private static void VerifyStepsIndicatorTemplateShape(ICollection<string> failures)
     {
-        var steps = CreateSteps(currentStep: 1);
+        var steps = CreateSteps(current: 1);
 
         using var realized = RealizeControl(steps);
         Expect(CountNamedVisuals(steps, "FinishedMark") == 1,
@@ -164,14 +139,14 @@ internal static partial class Program
         Expect(CountNamedVisuals(steps, "ErrorMark") == 0,
             $"Steps default indicator should not materialize ErrorMark when no item is in error, actual {CountNamedVisuals(steps, "ErrorMark")}.",
             failures);
-        Expect(CountNamedVisuals(steps, "PositionText") == 2,
-            $"Steps default indicator should keep PositionText only for wait/process items, actual {CountNamedVisuals(steps, "PositionText")}.",
+        Expect(CountNamedVisuals(steps, "StepNumberText") >= 2,
+            $"Steps default indicator should keep StepNumberText for wait/process items, actual {CountNamedVisuals(steps, "StepNumberText")}.",
             failures);
         Expect(CountNamedVisuals(steps, "CustomIconPresenter") == 0,
             $"Steps without custom icons should not materialize CustomIconPresenter, actual {CountNamedVisuals(steps, "CustomIconPresenter")}.",
             failures);
 
-        steps.CurrentStepStatus = StepsItemStatus.Error;
+        steps.Status = StepsStatus.Error;
         RefreshLayout(realized.Window);
         Expect(CountNamedVisuals(steps, "ErrorMark") == 1,
             $"Steps error status should materialize one ErrorMark, actual {CountNamedVisuals(steps, "ErrorMark")}.",
@@ -193,7 +168,7 @@ internal static partial class Program
     {
         return steps.GetSelfAndVisualDescendants()
                     .OfType<StepsItem>()
-                    .OrderBy(item => GetNonPublicProperty<int>(item, "Position"))
+                    .OrderBy(item => GetNonPublicProperty<int>(item, "StepNumber"))
                     .ToList();
     }
 

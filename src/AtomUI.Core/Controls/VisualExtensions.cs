@@ -2,6 +2,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input.Raw;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Controls;
@@ -124,6 +125,22 @@ public static class VisualExtensions
     internal static Visual? GetVisualRoot(this Visual visual)
     {
         return visual.GetPresentationSource()?.RootVisual;
+    }
+
+    internal static bool TryGetInputPosition(this Visual visual, RawPointerEventArgs args, out Point position)
+    {
+        // Process observers run after routed input, which may have detached the target or closed its source.
+        if (visual.IsAttachedToVisualTree() &&
+            visual.GetPresentationSource() is { RootVisual: { } root } source &&
+            ReferenceEquals(source, args.Root) &&
+            root.TranslatePoint(args.Position, visual) is { } localPosition)
+        {
+            position = localPosition;
+            return true;
+        }
+
+        position = default;
+        return false;
     }
     
 }

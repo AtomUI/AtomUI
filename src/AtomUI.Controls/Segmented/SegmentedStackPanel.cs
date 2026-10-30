@@ -124,7 +124,8 @@ internal class SegmentedStackPanel : StackPanel
         {
             if (child is AbstractSegmentedItem { IsVisible: true } item)
             {
-                item.Arrange(new Rect(new Point(offsetX, 0), item.DesiredSize));
+                item.Arrange(new Rect(offsetX, 0, item.DesiredSize.Width,
+                    Math.Max(finalSize.Height, item.DesiredSize.Height)));
                 offsetX += item.DesiredSize.Width;
             }
         }
@@ -144,7 +145,7 @@ internal class SegmentedStackPanel : StackPanel
         {
             if (child is AbstractSegmentedItem { IsVisible: true } item)
             {
-                item.Arrange(new Rect(offsetX, 0, width, item.DesiredSize.Height));
+                item.Arrange(new Rect(offsetX, 0, width, Math.Max(finalSize.Height, item.DesiredSize.Height)));
                 offsetX += width;
             }
         }

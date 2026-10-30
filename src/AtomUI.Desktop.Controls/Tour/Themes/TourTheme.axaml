@@ -13,6 +13,7 @@
                             IsMotionEnabled="False"
                             ShouldUseOverlayLayer="True">
                     <atom:ArrowDecoratedBox Name="{x:Static atom:AbstractArrowDecoratedBox.ArrowDecoratorPart}"
+                                            Classes.semantic-popup-root="True"
                                             IsArrowVisible="{TemplateBinding CurrentArrowVisible}"
                                             ArrowPosition="{TemplateBinding ArrowPosition}">
                         <atom:TourStepsView Name="StepsView"

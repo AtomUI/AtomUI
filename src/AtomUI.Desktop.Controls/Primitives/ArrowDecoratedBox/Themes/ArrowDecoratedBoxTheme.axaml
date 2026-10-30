@@ -16,6 +16,7 @@
                         ClipToBounds="False">
                         <atom:ArrowIndicator
                             Name="PART_ArrowIndicator"
+                            Classes.semantic-arrow="True"
                             FilledColor="{TemplateBinding Background}"
                             ArrowSize="{TemplateBinding ArrowSize}"
                             StrokeBrush="{atom:ArrowDecoratedBoxTokenResource ArrowStrokeColor}"
@@ -24,9 +25,12 @@
                 </Panel>
                 <Border
                     Name="PART_ContentDecorator"
+                    Classes.semantic-container="True"
                     Margin="0"
                     BackgroundSizing="{TemplateBinding BackgroundSizing}"
                     Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     Padding="{TemplateBinding Padding}">
                     <ContentPresenter
@@ -42,10 +46,19 @@
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
         <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
         <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
         <Setter Property="Padding" Value="{atom:ArrowDecoratedBoxTokenResource ContentPadding}" />
         <Setter Property="ArrowSize" Value="{atom:ArrowDecoratedBoxTokenResource ArrowSize}" />
         <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+
+        <!--  带边框状态下浮动箭头无法与边框融合呈现,内置主题直接隐藏箭头  -->
+        <Style Selector="^:bordered">
+            <Style Selector="^ /template/ Panel#ArrowPositionLayout">
+                <Setter Property="IsVisible" Value="False" />
+            </Style>
+        </Style>
 
         <Style Selector="^[ArrowDirection=Top]">
             <Style Selector="^ /template/ Panel#ArrowPositionLayout">

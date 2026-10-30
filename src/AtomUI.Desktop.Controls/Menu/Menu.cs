@@ -11,10 +11,10 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaMenu = Avalonia.Controls.Menu;
 
-public class Menu : AvaloniaMenu,
-                    ICustomizableSizeTypeAware,
-                    IMotionAwareControl,
-                    IScrollAwareControl
+public partial class Menu : AvaloniaMenu,
+                            ICustomizableSizeTypeAware,
+                            IMotionAwareControl,
+                            IScrollAwareControl
 {
     #region 公共属性定义
 
@@ -33,7 +33,12 @@ public class Menu : AvaloniaMenu,
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         Flyout.ShouldUseOverlayPopupProperty.AddOwner<Menu>();
 
-    internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+    /// <summary>
+    /// Gets or sets a value indicating whether the submenu popup remains open without requiring
+    /// user interaction. Gallery semantic previews pin the popup open this way so the popup
+    /// parts can be inspected and highlighted.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<Menu>();
 
     public CustomizableSizeType SizeType
@@ -66,7 +71,12 @@ public class Menu : AvaloniaMenu,
         set => SetValue(ShouldUseOverlayPopupProperty, value);
     }
 
-    internal bool IsPopupPinnedOpen
+    /// <summary>
+    /// Gets or sets a value indicating whether the submenu popup remains open without requiring
+    /// user interaction. Gallery semantic previews pin the popup open this way so the popup
+    /// parts can be inspected and highlighted.
+    /// </summary>
+    public bool IsPopupPinnedOpen
     {
         get => GetValue(IsPopupPinnedOpenProperty);
         set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
@@ -76,6 +86,7 @@ public class Menu : AvaloniaMenu,
 
     private bool _isClosing;
     private bool _isClosingForLifecycle;
+    private bool _isApplyingPinnedOpen;
     private bool _isSyncingDetachedTitleBarRadioGroup;
     private IDisposable? _detachedTitleBarPopupDismissRoot;
     private MenuItem? _pinnedOpenMenuItem;
@@ -99,12 +110,17 @@ public class Menu : AvaloniaMenu,
             return new MenuSeparator();
         }
 
+        if (item is MenuItemGroupData)
+        {
+            return new MenuItemGroup();
+        }
+
         return new MenuItem();
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
-        if (item is MenuItem or MenuSeparator)
+        if (item is MenuItem or MenuSeparator or MenuItemGroup)
         {
             recycleKey = null;
             return false;
@@ -119,6 +135,9 @@ public class Menu : AvaloniaMenu,
         base.PrepareContainerForItemOverride(container, item, index);
         if (container is MenuItem menuItem)
         {
+            // plain Menu 菜单栏第一层：下发顶层语义层级，让容器带上互斥的一级 marker。
+            menuItem.SemanticLevel = MenuSemanticLevel.TopLevel;
+
             if (item != null && item is not Visual)
             {
                 if (!menuItem.IsSet(MenuItem.HeaderProperty))
@@ -162,10 +181,16 @@ public class Menu : AvaloniaMenu,
             menuItem[!MenuItem.ShouldUseOverlayPopupProperty]  = this[!ShouldUseOverlayPopupProperty];
 
             PrepareMenuItem(menuItem, item, index);
+            EnsurePinnedOpenMenuItemForContainer(menuItem, index);
         }
         else if (container is MenuSeparator menuSeparator)
         {
             menuSeparator.Orientation = Orientation.Vertical;
+        }
+        else if (container is MenuItemGroup menuItemGroup)
+        {
+            // 顶层分组：分组标题与分组列表归一级语义层级，组内菜单项继承一级层级。
+            menuItemGroup.SemanticLevel = MenuSemanticLevel.TopLevel;
         }
         else
         {
@@ -180,6 +205,11 @@ public class Menu : AvaloniaMenu,
         {
             menuItem.IsPopupPinnedOpen = false;
             menuItem.CloseForLifecycle();
+            menuItem.SemanticLevel = MenuSemanticLevel.None;
+        }
+        else if (container is MenuItemGroup menuItemGroup)
+        {
+            menuItemGroup.SemanticLevel = MenuSemanticLevel.None;
         }
 
         base.ClearContainerForItemOverride(container);
@@ -223,7 +253,7 @@ public class Menu : AvaloniaMenu,
 
     private void EnsurePinnedOpenMenuItem()
     {
-        if (!IsPopupPinnedOpen || !this.IsAttachedToVisualTree())
+        if (!IsPopupPinnedOpen || !this.IsAttachedToVisualTree() || _isApplyingPinnedOpen)
         {
             return;
         }
@@ -247,23 +277,60 @@ public class Menu : AvaloniaMenu,
             }
         }
 
-        if (menuItem == null)
+        // 容器尚未生成时请求不丢弃：IsPopupPinnedOpen 是持久请求，容器 prepare 阶段由
+        // EnsurePinnedOpenMenuItemForContainer 按同一份请求补齐。
+        if (menuItem is null)
         {
             return;
         }
 
-        if (!ReferenceEquals(_pinnedOpenMenuItem, menuItem))
+        ApplyPinnedOpenMenuItem(menuItem, index);
+    }
+
+    // 容器 prepare 阶段的钉住不变量。声明式用法（AXAML 在模板应用、容器生成之前写入
+    // IsPopupPinnedOpen="True"）此时才第一次拿到可钉住的容器，必须在容器实现时补齐请求。
+    private void EnsurePinnedOpenMenuItemForContainer(MenuItem menuItem, int index)
+    {
+        if (!IsPopupPinnedOpen ||
+            _pinnedOpenMenuItem is not null ||
+            !menuItem.HasSubMenu ||
+            !ReferenceEquals(menuItem.Parent, this))
         {
-            if (_pinnedOpenMenuItem != null)
-            {
-                _pinnedOpenMenuItem.IsPopupPinnedOpen = false;
-                _pinnedOpenMenuItem.CloseForLifecycle();
-            }
-            _pinnedOpenMenuItem = menuItem;
+            return;
         }
 
-        SetCurrentValue(SelectedIndexProperty, index);
-        menuItem.IsPopupPinnedOpen = true;
+        ApplyPinnedOpenMenuItem(menuItem, index);
+    }
+
+    private void ApplyPinnedOpenMenuItem(MenuItem menuItem, int index)
+    {
+        if (_isApplyingPinnedOpen)
+        {
+            return;
+        }
+
+        // SetCurrentValue(SelectedIndexProperty) 会再次触发钉住求值，用重入保护保证只应用一次。
+        _isApplyingPinnedOpen = true;
+        try
+        {
+            if (!ReferenceEquals(_pinnedOpenMenuItem, menuItem))
+            {
+                if (_pinnedOpenMenuItem != null)
+                {
+                    _pinnedOpenMenuItem.IsPopupPinnedOpen = false;
+                    _pinnedOpenMenuItem.CloseForLifecycle();
+                }
+
+                _pinnedOpenMenuItem = menuItem;
+            }
+
+            SetCurrentValue(SelectedIndexProperty, index);
+            menuItem.IsPopupPinnedOpen = true;
+        }
+        finally
+        {
+            _isApplyingPinnedOpen = false;
+        }
     }
 
     private void ClearPinnedOpenMenuItem()

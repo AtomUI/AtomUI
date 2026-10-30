@@ -6,22 +6,31 @@
     <ControlTheme x:Key="{x:Type atom:Descriptions}" TargetType="atom:Descriptions">
         <Setter Property="Template">
             <ControlTemplate>
-
-                <StackPanel Orientation="Vertical">
-                    <DockPanel Name="HeaderLayout" LastChildFill="True"
-                               IsVisible="{TemplateBinding IsHeaderLayoutVisible}">
-                        <ContentPresenter Name="ExtraPresenter" DockPanel.Dock="Right"
-                                          Content="{TemplateBinding Extra}"
-                                          ContentTemplate="{TemplateBinding ExtraTemplate}" />
-                        <ContentPresenter Name="HeaderPresenter"
-                                          Content="{TemplateBinding Header}"
-                                          ContentTemplate="{TemplateBinding HeaderTemplate}" />
-                    </DockPanel>
-                    <atom:PixelAlignedBorder Name="ContentFrame">
-                        <Grid Name="PART_GridLayout" />
-                    </atom:PixelAlignedBorder>
-                </StackPanel>
-
+                <atom:PixelAlignedBorder Name="RootFrame"
+                                         Background="{TemplateBinding Background}"
+                                         BorderBrush="{TemplateBinding BorderBrush}"
+                                         BorderThickness="{TemplateBinding BorderThickness}"
+                                         CornerRadius="{TemplateBinding CornerRadius}"
+                                         Padding="{TemplateBinding Padding}">
+                    <StackPanel Orientation="Vertical">
+                        <DockPanel Name="HeaderLayout" LastChildFill="True"
+                                   Classes.semantic-header="True"
+                                   IsVisible="{TemplateBinding IsHeaderLayoutVisible}">
+                            <ContentPresenter Name="ExtraPresenter" DockPanel.Dock="Right"
+                                              Classes.semantic-extra="True"
+                                              Content="{TemplateBinding Extra}"
+                                              ContentTemplate="{TemplateBinding ExtraTemplate}" />
+                            <ContentPresenter Name="HeaderPresenter"
+                                              Classes.semantic-title="True"
+                                              Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                        </DockPanel>
+                        <atom:PixelAlignedBorder Name="ContentFrame">
+                            <Grid Name="PART_GridLayout"
+                                  Classes.semantic-scope-items="True" />
+                        </atom:PixelAlignedBorder>
+                    </StackPanel>
+                </atom:PixelAlignedBorder>
             </ControlTemplate>
         </Setter>
 

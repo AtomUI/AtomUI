@@ -9,6 +9,21 @@ namespace AtomUI;
 public static class AppBuilderExtensions
 {
     /// <summary>
+    /// 启用 AtomUI。此处只登记配置；平台服务就绪后在 UI 线程执行配置回调，随后在后台准备全局 Token，
+    /// 与 Application 创建并行。回调执行时 Application 尚未创建、AtomUI 内核尚未提交；
+    /// 内核在生成的 RegisterServices 重写（ApplicationStartup.Attach）中提交。
+    /// </summary>
+    public static AppBuilder UseAtomUI(this AppBuilder appBuilder, Action<IAtomUIBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(appBuilder);
+        ArgumentNullException.ThrowIfNull(configure);
+        var configuration = StartupConfiguration.Register(appBuilder, configure);
+        return appBuilder.With(configuration)
+                         .AfterPlatformServicesSetup(configuration.ConfigureAndPrepareAfterPlatformSetup)
+                         .AfterApplicationSetup(StartupConfiguration.VerifyAttached);
+    }
+
+    /// <summary>
     /// 应用 AtomUI 推荐的平台默认配置。主要用途是规避当前 Avalonia 上游尚未修复、
     /// 对 AtomUI 体验影响较大的平台问题，让框架使用者默认就拿到最佳表现，无需自行配置。
     /// </summary>
@@ -23,10 +38,10 @@ public static class AppBuilderExtensions
     ///   </item>
     ///   <item>
     ///     <description>
-    ///     <b>macOS</b>：<see cref="AvaloniaNativePlatformOptions.RenderingMode"/> 把
-    ///     <see cref="AvaloniaNativeRenderingMode.OpenGl"/> 排在 <see cref="AvaloniaNativeRenderingMode.Metal"/>
-    ///     之前。Avalonia 12 的 Metal 后端在 live resize 时会让窗体内容可见抖动，
-    ///     切换到 OpenGL 渲染路径可完全规避。上游修复后可移除此默认。
+    ///     <b>macOS</b>：<see cref="AvaloniaNativePlatformOptions.RenderingMode"/> 固定
+    ///     <see cref="AvaloniaNativeRenderingMode.Metal"/> 优先。Metal 由渲染线程直接呈现，UI 线程忙于启动提交时
+    ///     合成层动画（如启动 Splash 的进度）仍能上屏；OpenGL 与 Software 经 IOSurface 呈现，需要主线程设置图层内容。
+    ///     早先 Metal 在 live resize 时窗体内容抖动的问题已由 Avalonia 12.1.0 修复（#21588，缩放帧同步呈现）。
     ///     </description>
     ///   </item>
     ///   <item>
@@ -56,8 +71,8 @@ public static class AppBuilderExtensions
             {
                 RenderingMode =
                 [
-                    AvaloniaNativeRenderingMode.OpenGl,
                     AvaloniaNativeRenderingMode.Metal,
+                    AvaloniaNativeRenderingMode.OpenGl,
                     AvaloniaNativeRenderingMode.Software
                 ]
             });
@@ -71,12 +86,14 @@ public static class AppBuilderExtensions
                     Win32RenderingMode.AngleEgl,
                     Win32RenderingMode.Software
                 ],
+                // RedirectionSurface 优先：只有 redirection surface 会被 DWM 与窗口几何变化同步合成，
+                // 拖动左/上边缘 live resize 时对向边缘不会错帧（WinUI/DComp/flip swapchain 均有 1 帧以上滞后）。
                 CompositionMode =
                 [
+                    Win32CompositionMode.RedirectionSurface,
                     Win32CompositionMode.WinUIComposition,
                     Win32CompositionMode.DirectComposition,
-                    Win32CompositionMode.LowLatencyDxgiSwapChain,
-                    Win32CompositionMode.RedirectionSurface
+                    Win32CompositionMode.LowLatencyDxgiSwapChain
                 ]
             });
         }

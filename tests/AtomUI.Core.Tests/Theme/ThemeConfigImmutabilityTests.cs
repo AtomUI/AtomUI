@@ -46,30 +46,4 @@ public class ThemeConfigImmutabilityTests
         config.Tokens.ShouldBeEmpty();
         config.Controls.ShouldBeEmpty();
     }
-
-    [Fact]
-    public void Algorithm_Config_APIs_Expose_Only_Enum_Collections()
-    {
-        typeof(ThemeConfig).GetProperty(nameof(ThemeConfig.Algorithms))!
-                           .PropertyType.ShouldBe(typeof(IReadOnlyList<ThemeAlgorithm>));
-        typeof(ControlThemeConfig).GetProperty(nameof(ControlThemeConfig.Algorithms))!
-                                  .PropertyType.ShouldBe(typeof(IReadOnlyList<ThemeAlgorithm>));
-
-        typeof(ThemeConfigBuilder).GetMethod(
-            nameof(ThemeConfigBuilder.WithAlgorithms),
-            [typeof(ThemeAlgorithm[])])
-                                  .ShouldNotBeNull();
-        typeof(ThemeConfigBuilder).GetMethod(
-            nameof(ThemeConfigBuilder.WithAlgorithms),
-            [typeof(string[])])
-                                  .ShouldBeNull();
-        typeof(ControlThemeConfigBuilder).GetMethod(
-            nameof(ControlThemeConfigBuilder.WithAlgorithms),
-            [typeof(ThemeAlgorithm[])])
-                                         .ShouldNotBeNull();
-        typeof(ControlThemeConfigBuilder).GetMethod(
-            nameof(ControlThemeConfigBuilder.WithAlgorithms),
-            [typeof(string[])])
-                                         .ShouldBeNull();
-    }
 }

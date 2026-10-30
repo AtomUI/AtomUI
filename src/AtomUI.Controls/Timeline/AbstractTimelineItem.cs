@@ -164,8 +164,33 @@ public abstract class AbstractTimelineItem : ContentControl
 
     static AbstractTimelineItem()
     {
+        // 指示器内的 rail 会跨出 item 底部边界去衔接下一项节点顶边；
+        // ContentControl 默认 ClipToBounds=true 会把这溢出的 rail 段切断。
+        ClipToBoundsProperty.OverrideDefaultValue<AbstractTimelineItem>(false);
         AffectsArrange<AbstractTimelineItem>(ModeProperty, OrientationProperty);
         AffectsMeasure<AbstractTimelineItem>(IsReverseProperty);
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        // 对齐上游 li 的 paddingBottom：间距由 item 的 Padding 承载，
+        // 模板根节点（wrapper）排列在内容区内，保持 wrapper/section 的语义框紧凑。
+        if (VisualChildren.Count > 0 && VisualChildren[0] is Layoutable root)
+        {
+            return LayoutHelper.MeasureChild(root, availableSize, Padding);
+        }
+
+        return base.MeasureOverride(availableSize);
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        if (VisualChildren.Count > 0 && VisualChildren[0] is Layoutable root)
+        {
+            return LayoutHelper.ArrangeChild(root, finalSize, Padding);
+        }
+
+        return base.ArrangeOverride(finalSize);
     }
 
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)

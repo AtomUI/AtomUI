@@ -43,7 +43,7 @@ FloatButton 的公共契约由 public/protected 类型成员、Avalonia 属性�
 | 内容与数据 | `CloseIcon`、`Description`、`DescriptionTemplate`、`Icon` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
 | 选择与集合 | `BadgeCount`、`BadgeOverflowCount`、`IsTriggerMode` | 维护选择、展开、过滤、分页、分组或集合状态。 |
 | 命令与动作 | `Command`、`CommandParameter`、`Href` | 通过 Avalonia `Button` 命令语义触发业务动作；host 只做投影转发，不自行执行命令。 |
-| 交互与状态 | `IsBadgeEnabled`、`IsDotBadge`、`IsMotionEnabled`、`IsOpen` | 表达用户可观察状态、可用性、清除、加载或反馈语义；`FloatButtonGroup.IsOpen` 与 `FloatButtonGroupHost.IsOpen` 默认双向绑定。 |
+| 交互与状态 | `IsBadgeEnabled`、`IsDotBadge`、`IsMotionEnabled`、`IsOpen`、`IsShowProgress` | 表达用户可观察状态、可用性、清除、加载或反馈语义；`FloatButtonGroup.IsOpen` 与 `FloatButtonGroupHost.IsOpen` 默认双向绑定；`IsShowProgress` 是 BackTop 进度环显示开关。 |
 | 视觉与布局 | `BadgeColor`、`BadgeOffset`、`BoxShadow`、`FloatOffsetX`、`FloatOffsetY`、`MenuPlacement`、`Orientation`、`Placement`、`SeparatorBrush`、`Shape` 等 12 项 | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
 | 动效与异步 | `MenuMotionDuration`、`MotionDuration`、`ToTopDuration` | 约束动效开关、异步加载、播放速度、超时和任务边界。 |
 | 其他稳定入口 | `ButtonType`、`Target`、`Tooltip`、`Trigger` | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
@@ -55,6 +55,8 @@ FloatButton 的公共契约由 public/protected 类型成员、Avalonia 属性�
 `FloatButtonGroupHost` 的 `Trigger` 是展开/收起语义，不默认承载业务 `Command`。业务动作应绑定在 group 内部的 `FloatButton` 子项上；这些子项必须能继承 host 的 `DataContext`，同时不得覆盖子项显式设置的本地 `DataContext`。
 
 `IsOpen` 是用户可拥有的受控打开状态，Avalonia Binding 默认使用 `TwoWay`；hover、click 和 host 转接触发的打开/关闭都必须回写同一 public 属性。该状态不是 Form value，不写入 `DataValidationErrors`。
+
+`IsShowProgress` 是回到顶部进度环的显示开关，类型 `bool`，默认 `false`，语义对齐上游参考实现 `FloatButton.BackTop` 的 `showProgress`（版本注记见专项模型与变更记录）。该属性注册在 `AbstractBackTopFloatButton` 上并由 `BackTopFloatButton` 直接继承；`AbstractBackTopFloatButtonHost` 通过 `AddOwner` 暴露同一属性，`BackTopFloatButtonHost` 将其投影到 overlay 中创建的真实按钮。开关只控制进度环显隐，不改变 `Target`、`VisibilityHeight` 与回到顶部动作语义。
 
 主要公开类型与枚举：
 
@@ -87,6 +89,7 @@ Public API / inherited command / item source / user input
 - Disabled 或不可交互状态优先屏蔽 pointer、keyboard、motion 和提交类反馈。
 - `Command.CanExecute=false` 必须通过 Avalonia Button 语义反映为不可执行状态；BackTop 场景下不可执行命令也应阻止回到顶部动作。
 - open/close、motion、visual option 状态由控件实例或明确的数据 owner 推导，不能在 template part 之间双向竞争。
+- `IsShowProgress` 开启时，滚动进度由 `Target` 滚动几何派生为 0~1 的 internal 状态；进度值是派生状态，不通过 public API 暴露，也不参与命令或显隐阈值语义。
 - `IsOpen` 是默认 `TwoWay` 的受控状态；交互路径应使用 current value 语义更新，不得用样式优先级写入破坏用户绑定。
 - Host 创建的 overlay 按钮只能接收 host 公共属性投影；命令执行、`CanExecute`、事件顺序和禁用状态仍由真实 `FloatButton` 作为交互 owner。
 - Group host 搬移子按钮到 overlay group 时必须保留原有绑定语义，使未设置本地 `DataContext` 的子项继承 host 数据上下文。
@@ -109,6 +112,8 @@ FloatButton 的视觉模型由控件模板、ControlTheme、SharedToken 和必�
 | `FloatButtonTheme.axaml` | 定义局部操作入口、按钮或 handle 的状态视觉。 |
 
 FloatButton 使用 `FloatButtonToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 open/close、motion、visual option 运行时状态。
+
+BackTop 进度环不使用控件专属 Token：`BackTopFloatButtonTheme.axaml` 中的进度环节点直接引用全局 SharedToken（`LineWidthBold`、`ColorBorderSecondary`、`ColorPrimary`），显隐由 `IsShowProgress` 驱动的主题 selector 控制。
 
 主题维护规则：
 
@@ -183,34 +188,21 @@ FloatButton 家族的业务命令只属于真实交互按钮。普通 `FloatButt
 
 该模型保证 host、overlay 和 group 搬移不会形成第二套命令系统，也不会让 `CanExecute`、禁用状态、点击事件顺序和 BackTop 行为出现分裂。
 
-## 9. 文档导航、LLMS 导出与验证策略
+### 8.6 回到顶部进度环模型
+
+`IsShowProgress` 开启后，`BackTopFloatButton` 在按钮边缘显示滚动进度环：进度从 `Target` 的滚动几何派生为 0~1 的 internal 状态，视觉由 `BackTopFloatButtonTheme.axaml` 中的进度环节点表达，线宽与颜色取全局 Token。该模型对齐 antd 6.6.0 `FloatButton.BackTop` 的 `showProgress`。进度环只提供滚动反馈，不改变 `VisibilityHeight` 显隐阈值、命令语义和动效模型；开关关闭时进度环默认隐藏。
+
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [FloatButton 桌面版实现原理](implementation.md)
 - [FloatButton Token 设计](token.md)
+- [FloatButton Semantic Part 契约](semantic-part.md)
 - [FloatButton Changelog](changelog.md)
 
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `FloatButton` | 控件根语义区域，承载 public API、状态归一、主题入口和 Gallery 可观察行为。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载用户内容、图标、文本或装饰性展示。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `command` | `真实 FloatButton` | 承载 `Command`、`CommandParameter`、`CanExecute`、点击和禁用语义；host 只做投影。 | `Command`、`CommandParameter`、`Href` | 见视觉与主题模型 | stable |
-| `state` | `状态区域` | 表达 hover、pressed、disabled、loading、selected 或控件专属状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `theme` | `主题区域` | 连接 ControlTheme、SharedToken、控件 Token 和资源键。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/float-button/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/float-button/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+`BackTopFloatButton` 的 `root/icon/content` 与 `FloatButtonGroup` 的 `root/trigger/list` descriptor 与主控件分开维护，
+完整契约见 [FloatButton Semantic Part 契约](semantic-part.md)。
 
 验证策略：
 

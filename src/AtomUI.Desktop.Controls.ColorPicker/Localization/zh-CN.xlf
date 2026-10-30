@@ -7,5 +7,17 @@
         <target state="translated">无色</target>
       </segment>
     </unit>
+    <unit id="Confirm">
+      <segment>
+        <source>Confirm</source>
+        <target state="translated">确定</target>
+      </segment>
+    </unit>
+    <unit id="Cancel">
+      <segment>
+        <source>Cancel</source>
+        <target state="translated">取消</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

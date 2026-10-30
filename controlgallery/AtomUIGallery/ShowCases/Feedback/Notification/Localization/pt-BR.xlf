@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="2.1" srcLang="en-US" trgLang="pt-BR" xmlns="urn:oasis:names:tc:xliff:document:2.0">
   <file id="AtomUIGallery.Localization.NotificationShowCaseLangResourceKind">
+    <unit id="ActionsDescription">
+      <segment>
+        <source>Add action buttons to the bottom-right of the notification through the Actions API.</source>
+        <target state="translated">Adicione botões de ação ao canto inferior direito da notificação através da API Actions.</target>
+      </segment>
+    </unit>
+    <unit id="ActionsTitle">
+      <segment>
+        <source>Notification with actions</source>
+        <target state="translated">Notificação com ações</target>
+      </segment>
+    </unit>
     <unit id="ApiMethodManagerShow">
       <segment>
         <source>Shows an INotification instance and applies optional style classes.</source>
@@ -73,6 +85,24 @@
         <target state="translated">BottomRight</target>
       </segment>
     </unit>
+    <unit id="P2ContentConfirm">
+      <segment>
+        <source>Confirm</source>
+        <target state="translated">Confirmar</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentDefaultNotification">
+      <segment>
+        <source>Default Notification</source>
+        <target state="translated">Notificação padrão</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentDestroyAll">
+      <segment>
+        <source>Destroy all</source>
+        <target state="translated">Destruir todas</target>
+      </segment>
+    </unit>
     <unit id="P2ContentDonTPauseOnHover">
       <segment>
         <source>Don't pause on hover</source>
@@ -83,6 +113,12 @@
       <segment>
         <source>Error</source>
         <target state="translated">Erro</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentErrorNotification">
+      <segment>
+        <source>Error Notification</source>
+        <target state="translated">Notificação de erro</target>
       </segment>
     </unit>
     <unit id="P2ContentInfo">
@@ -139,6 +175,12 @@
         <target state="translated">Aviso</target>
       </segment>
     </unit>
+    <unit id="P2NotificationActionsContent">
+      <segment>
+        <source>A function will be called after the notification is closed (automatically after the "duration" time or manually).</source>
+        <target state="translated">Uma função será chamada após a notificação ser fechada (automaticamente após o tempo de "duration" ou manualmente).</target>
+      </segment>
+    </unit>
     <unit id="P2NotificationBottomLeftTitle">
       <segment>
         <source>Notification BottomLeft</source>
@@ -163,16 +205,40 @@
         <target state="translated">Este é o conteúdo de o notificação. Este é o conteúdo de o notificação. Este é o conteúdo de o notificação.</target>
       </segment>
     </unit>
+    <unit id="P2NotificationDescription">
+      <segment>
+        <source>This is a notification description.</source>
+        <target state="translated">Esta é uma descrição de notificação.</target>
+      </segment>
+    </unit>
     <unit id="P2NotificationHello">
       <segment>
         <source>Hello, AtomUI/Avalonia!</source>
         <target state="translated">Hello, AtomUI/Avalonia!</target>
       </segment>
     </unit>
+    <unit id="P2NotificationLongStackedFormat">
+      <segment>
+        <source>Notification {0}: This is a deliberately longer stacked notification used to verify variable-height cards.</source>
+        <target state="translated">Notificação {0}: Esta é uma notificação empilhada propositalmente mais longa para verificar cartões de alturas variáveis.</target>
+      </segment>
+    </unit>
     <unit id="P2NotificationNeverCloseContent">
       <segment>
         <source>I will never close automatically. This is a purposely very very long description that has many many characters and words.</source>
         <target state="translated">I irá never fechar automatically. Este é a purposely very very longo descrição que has many many characters e words.</target>
+      </segment>
+    </unit>
+    <unit id="P2NotificationStackedFormat">
+      <segment>
+        <source>Notification {0}: This is a stacked notification.</source>
+        <target state="translated">Notificação {0}: Esta é uma notificação empilhada.</target>
+      </segment>
+    </unit>
+    <unit id="P2NotificationStackedTitleFormat">
+      <segment>
+        <source>Notification {0}</source>
+        <target state="translated">Notificação {0}</target>
       </segment>
     </unit>
     <unit id="P2NotificationTitle">
@@ -239,6 +305,108 @@
       <segment>
         <source>Examples</source>
         <target state="translated">Exemplos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticActionsDescription">
+      <segment>
+        <source>The action group element at the bottom-right of the notice. It hosts the caller actions.</source>
+        <target state="translated">O elemento do grupo de ações no canto inferior direito do aviso. Ele hospeda as ações do chamador.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>The close button overlay at the top-right corner. Customize its position, size and interaction.</source>
+        <target state="translated">O botão de fechar sobreposto no canto superior direito. Personalize sua posição, tamanho e interação.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>The description element below the title. Customize its font size, color and padding.</source>
+        <target state="translated">O elemento de descrição abaixo do título. Personalize seu tamanho de fonte, cor e preenchimento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>The status icon element. Customize its size, brush and line height.</source>
+        <target state="translated">O elemento de ícone de status. Personalize seu tamanho, pincel e altura de linha.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListContentDescription">
+      <segment>
+        <source>The notice arrangement container of the notification list. Customize its direction, order and alignment.</source>
+        <target state="translated">O contêiner de disposição dos avisos da lista de notificações. Personalize sua direção, ordem e alinhamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListRootDescription">
+      <segment>
+        <source>The notification list root. It hosts the cards, queue, timeout and host layer lifecycle.</source>
+        <target state="translated">A raiz da lista de notificações. Ela hospeda os cartões, a fila, o tempo limite e o ciclo de vida da camada de host.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the upstream style-class demo: default and error-branched styles shape the notice root, icon, title and description through owner-scoped Semantic Part styles.</source>
+        <target state="translated">Espelha a demonstração style-class do upstream: os estilos padrão e com ramificação de erro moldam a raiz do aviso, o ícone, o título e a descrição através de estilos de Semantic Part com escopo do owner.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticProgressDescription">
+      <segment>
+        <source>The progress overlay at the bottom of the notice. It shows the remaining auto-close time.</source>
+        <target state="translated">A sobreposição de progresso na parte inferior do aviso. Ela mostra o tempo restante para o fechamento automático.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The notice root. It hosts the content, type, close state and enter/leave motion.</source>
+        <target state="translated">A raiz do aviso. Ela hospeda o conteúdo, o tipo, o estado de fechamento e a animação de entrada/saída.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>The content section that wraps the title and description. Customize the vertical gap and alignment.</source>
+        <target state="translated">A seção de conteúdo que envolve o título e a descrição. Personalize o espaçamento vertical e o alinhamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>The title element. Customize its color, font size, line height and right padding.</source>
+        <target state="translated">O elemento de título. Personalize sua cor, tamanho de fonte, altura de linha e preenchimento à direita.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticWrapperDescription">
+      <segment>
+        <source>The wrapping element for the icon and section. Customize the layout, alignment and icon gap.</source>
+        <target state="translated">O elemento de envolvimento do ícone e da seção. Personalize o layout, o alinhamento e o espaçamento do ícone.</target>
+      </segment>
+    </unit>
+    <unit id="StackDescription">
+      <segment>
+        <source>Stack is disabled by default. This example enables it; notifications stack when their amount is over threshold, and hover expands all notifications.</source>
+        <target state="translated">A pilha fica desativada por padrão. Este exemplo a ativa; as notificações são empilhadas quando excedem o limite, e passar o ponteiro sobre a pilha expande todas.</target>
+      </segment>
+    </unit>
+    <unit id="StackEnabledLabel">
+      <segment>
+        <source>Enabled:</source>
+        <target state="translated">Ativado:</target>
+      </segment>
+    </unit>
+    <unit id="StackThresholdLabel">
+      <segment>
+        <source>Threshold:</source>
+        <target state="translated">Limite:</target>
+      </segment>
+    </unit>
+    <unit id="StackTitle">
+      <segment>
+        <source>Stack</source>
+        <target state="translated">Pilha</target>
       </segment>
     </unit>
     <unit id="WithIconDescription">

@@ -151,7 +151,11 @@ container clear / detach -> dispose attachment and subscriptions
 
 `CascaderView.OnApplyTemplate()` 获取 `PART_ItemsPanel`、`PART_RootLevelList` 和 `PART_FilterList`。Root level list 设置 `Level=1` 和 `OwnerView=this`，filter list 必须解除旧 selection 订阅再订阅新实例。
 
-`CascaderView` 分别持有树列和过滤列的 active candidate owner。普通树列的 pointer move 先把 enabled item 提升为 active candidate，再按 `ExpandTrigger` 执行展开；过滤列 pointer move 同样迁移过滤候选，不再无条件清除。过滤结果重建或清空、filter list 重套模板、popup 关闭时 `ResetInteractionState()` 清除两类候选并折叠展开路径。虚拟化树容器回收时必须清除 `IsCandidateSelectedProperty`，不能让候选视觉进入下一个 option 的复用容器。
+钉住弹层（`IsPopupPinnedOpen`）的遮罩抑制机制由 `AbstractSelect` 统一承载（与 `AbstractAutoComplete` 同构）：`OnPropertyChanged` 的钉住分支在自动打开前抑制 `PART_Popup.IsLightDismissEnabled`，`OnApplyTemplate` 在 relay 绑定后按钉住状态抑制，尾部 `IsDropDownOpen && !Popup.IsOpen → OpeningDropDown(false)` 负责模板应用后的打开；`PopupClosed` 强制回写 `IsDropDownOpen=false`，覆盖 light-dismiss 关闭路径的状态同步。Cascader 模板的 Popup 因此不声明 `IsOpen` 模板绑定——模板充气阶段的绑定求值会在抑制之前打开弹层并留下不可消除的遮罩层。取消钉住时抑制恢复模板默认 true，下一轮打开恢复常规遮罩行为；该机制只服务 Gallery 语义预览等钉住场景，不改变普通打开/关闭流程。
+
+Semantic Part marker 的维护边界：`CascaderTheme.axaml` 承载触发区静态 marker（`semantic-scope-input`、`semantic-prefix`、`semantic-suffix`、`semantic-scope-handle`、`semantic-content`、`semantic-placeholder`、`semantic-input`、`semantic-popup-root`、`semantic-scope-view`）；`CascaderViewTheme.axaml` 承载 `semantic-scope-frame` 与根列、过滤列表的 `semantic-popup-list` 静态 marker；共享 `SelectHandleTheme.axaml` 承载清除按钮的 `semantic-clear` marker（`clear` Part 声明 `CrossNestedOwners=true`，生成器沿 SelectHandle 主题链校验）。运行时注入点：`CascaderView` 创建子级列时追加 `CascaderSemanticParts.PopupListClass`；`CascaderViewLevelList.CreateContainerForItemOverride()` 与 `CascaderViewFilterList.CreateContainerForItemOverride()` 向容器追加 `CascaderSemanticParts.PopupListItemClass`。marker 随容器实例创建一次，prepare/clear/recycle 路径不得增删。
+
+`CascaderView` 以数据节点 `_keyboardCandidateOption` 持有树列活动位置，从其祖先链解析当前列。过滤列表持有结果候选，两者不以虚拟化容器作为状态 owner。pointer move 仍迁移候选并按 `ExpandTrigger` 展开；键盘激活才滚动目标。查询重建按完整路径保留有效过滤候选，源替换、清空和关闭则清理失效状态。树容器准备时重新投影 `IsCandidateSelectedProperty`，回收时清除，防止高亮进入下一个 option 的复用容器。
 
 `CascaderViewLevelList.ContainerForItemPreparedOverride()` 对每个 `ICascaderOption` 调用 `CascaderViewItem.PrepareCascaderOptionData()`。如果 option 是 `BindableCascaderOption`，容器创建同一生命周期的 `CompositeDisposable`，用于保存 resource host attachment、属性订阅和 children 集合订阅。
 
@@ -173,12 +177,13 @@ Pointer 路径：
 
 键盘路径：
 
-- popup 打开时，按键先交给 `_cascaderView.HandleKeyDown()`。
-- 过滤模式的 `Up` / `Down` 由 `CascaderViewFilterList` 在 displayed result order 中循环查找 enabled item，并只更新 `CandidateSelectedItem` / `CandidateSelectedIndex` 和容器候选视觉；`Enter` 通过 `GetCandidateOrFirstEnabledItem()` 取得当前候选或第一个 enabled result，再进入与 pointer selection 相同的 `TrySelectFilterResult()` 提交流程。
-- 树模式的 `Up` / `Down` 从当前所有已展开列收集 realized、enabled 的 `CascaderViewItem` 并循环移动 `_keyboardCandidateItem`。`Right` 展开当前或第一个候选并在布局完成后进入第一个 enabled child；`Left` 从子级返回 parent，位于展开根节点时折叠；`Enter` 提交 enabled、非 loading 的 leaf 或允许选择的 parent，否则执行同一展开/进入子级流程。
-- 两类候选都只写 `IsCandidateSelected` 高亮，不写 `SelectedIndex`、`SelectedOption` 或 `SelectedOptions`；真实选择只在 Enter 或 pointer 提交路径发生。
-- `Escape` 关闭 popup。
-- popup 关闭时，`Down` 打开 popup，`F4` 切换 popup。
+- Cascader 在隧道路由阶段接收搜索输入的候选键，防止 TextBox 提前消费方向键；过滤中的左右键与修饰键保持文本编辑语义，preedit 非空时不导航或提交。
+- Cascader 与 CascaderView 的 Enter 按下状态分别属于宿主输入周期和视图转发周期；KeyUp 释放状态，失焦、detach 和模板生命周期不能留下锁定。关闭状态的 Enter/Space/Down 只负责打开。
+- 过滤上下键在 displayed result order 中循环，更新 `CandidateSelectedItem` / `CandidateSelectedIndex` 并滚动目标；结果重建通过完整 option 路径重新定位仍有效的候选。Enter 不提供首项兜底，进入与 pointer 结果选择相同的校验和提交路径。
+- 树上下键枚举当前活动节点的同级数据。激活分支调用既有展开流程显示子列，不改变活动深度；Right/Left 分别进入可用子项或返回父节点，RTL 映射方向。根层返回、Escape 与单选键盘提交通过 internal `CloseRequested` 交给 popup 宿主。
+- 展开在异步加载前标记节点为打开；等待数据期间允许后续分支将其折叠，完成后检查该状态，避免旧分支重新展开。键盘展开后也核对活动节点、源归属、过滤和加载状态，过期请求不再投影候选。
+- 单选 Enter 只提交叶节点或允许选择的父节点；多选进入既有 CheckedSubTree/UnCheckedSubTree，遵守禁用与最大选择限制。候选迁移不写 `SelectedIndex`、`SelectedOption` 或 `SelectedOptions`。
+- Gallery 的两个独立 SearchEdit 组合在公共宿主转发按键；通过实例级关闭默认 Enter 搜索，统一新查询搜索与当前候选确认。转发完整 KeyDown/KeyUp，焦点保留在输入框，不复制候选算法。
 
 单选路径：
 
@@ -190,13 +195,14 @@ Pointer 路径：
 
 - `IsMultiple=true` 时，`CascaderViewItem.CheckedEvent` 触发 subtree check / uncheck。
 - `SelectedOptionsChanged` 从内部 view 同步到外层 Cascader。
+- 多选结果使用共享 `SelectTagAwareTextBox`；刷新 tags 时保留行内搜索框节点，仅替换 tags 和剩余数量节点，避免丢失输入焦点与待释放的 KeyUp。
 - 外部 `SelectedOptions` 替换或原地集合变化同步到内部 view 时按差量更新，只勾选新增项、取消移除项，避免先清空再重选造成状态闪烁。
 - tag close 通过 `SelectTag.ClosedEvent` 移除目标 option 及其子孙。
 
 过滤路径：
 
 - `SelectFilterTextBox.TextChangedEvent` 更新 `FilterValue`。
-- `CascaderViewFilterList.SelectionChanged` 选择过滤结果，并在单选模式下提交目标 option。
+- `CascaderViewFilterList.SelectionChanged` 选择过滤结果，并按模式提交单选或切换子树勾选。
 
 ## 7. 内部算法与关键流程
 
@@ -280,6 +286,8 @@ Pointer 路径：
 - `CascaderLazyLoadTests`：异步加载时弹层保持打开、loading 和 loaded children。
 - `CascaderChangeOnSelectTests`：父级可选时立即选择并保持弹层打开。
 - `CascaderThemeContractTests`：主题 binding 和模板契约。
+- `CascaderSemanticPartTests`：descriptor 十 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中触发区目标。
+- `CascaderPinnedPopupTests`：钉住弹层打开前抑制 light-dismiss、`popup.list` / `popup.listItem` 部件命中、重开与数据源重置后 marker 保持。
 
 验证命令：
 

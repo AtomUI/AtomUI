@@ -39,8 +39,8 @@ SearchEdit 专项 API：
 
 | API | 类型 | 语义 |
 | --- | --- | --- |
-| `SearchButtonStyle` | `SearchEditButtonStyle` | 搜索按钮样式，支持 `Default` 和 `Primary`。 |
-| `SearchButtonText` | `string` | 搜索按钮显示文本；未设置时按钮以搜索图标为主要视觉。 |
+| `SearchButtonStyle` | `SearchButtonType` | 搜索按钮样式，支持 `Default` 和 `Primary`。 |
+| `SearchButtonText` | `object?` | 搜索按钮显示文本；未设置时按钮以搜索图标为主要视觉。 |
 | `IsOperating` | `bool` | 搜索进行中状态；为 `true` 时显示按钮 loading 并阻止重复触发搜索请求。 |
 | `IsSearchOnEnterEnabled` | `bool` | 是否允许未处理的 Enter `KeyUp` 触发搜索请求，默认值为 `true`。 |
 | `SearchButtonTheme` | `ControlTheme?` | 搜索按钮 Semantic Part Theme；`TargetType` 必须兼容 public `Button`。 |
@@ -55,7 +55,7 @@ SearchEdit 专项 API：
 | `StyleVariant` | 输入表面样式。 |
 | `Status` | 显式输入反馈状态；最终视觉由 `InputControlFrame.EffectiveStatus` 计算，native validation error 以 `DataValidationErrors` 为唯一真源。 |
 | `IsAllowClear` / `ClearIcon` | 搜索文本清除入口。 |
-| `InnerLeftContent` / `InnerRightContent` | 输入框内部前后缀内容。 |
+| `InnerLeftContentTemplate` / `InnerRightContentTemplate` | 输入框内部前后缀内容模板。 |
 | `LeftAddOn` / `LeftAddOnTemplate` | 输入框左侧外部附加内容。 |
 | `IsMotionEnabled` | 内部按钮和输入壳体动效开关。 |
 
@@ -140,7 +140,7 @@ Token。合法但没有被当前主题直接或间接消费的 Global Token 可�
 | `ButtonTokenResource` | 由真实 Button 和 `SearchButtonTheme` 显式读取 Button Own/Effective Global Token，负责按钮基础视觉。 |
 | `SharedTokenResource` | 读取真正的 Global Token，只用于不响应 SearchEdit Control 级覆盖的共享值。 |
 
-`SearchButtonTheme` 的 `TargetType` 是 Button，但资产 owner 和组合语义属于 SearchEdit。它可以同时使用
+`SearchButtonTheme` 的 `TargetType` 是 Button，但它是由 SearchEdit 主题实际构造的定制主题，不是全局导出的 Button 默认主题；不能据 TargetType 反向保留 SearchEdit。它可以同时使用
 `SearchEditTokenResource` 与 `ButtonTokenResource`；这是显式跨 Control 资源引用，不是 SearchEdit 借用 Button
 或 LineEdit identity。
 
@@ -191,7 +191,7 @@ SearchEdit 的 `SizeType=Custom` 走 LineEdit 家族的 Custom size 规则。未
 
 `AutoCompleteSearchEdit` 暴露 SearchEdit 的搜索按钮属性、`IsOperating`、`IsSearchOnEnterEnabled` 和 `SearchRequested`，并在模板内部使用 `AutoCompleteSearchEditBox`。`AutoCompleteSearchEditBox` 继承 SearchEdit 并把 `StyleKeyOverride` 指向 SearchEdit，使搜索输入视觉与搜索请求语义保持一致。AutoComplete 的候选项、popup、异步加载和选择状态不属于 SearchEdit 控件职责。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
@@ -200,31 +200,19 @@ SearchEdit 的 `SizeType=Custom` 走 LineEdit 家族的 Custom size 规则。未
 - [LineEdit 桌面版架构设计](../line-edit/overview.md)
 - [AtomUI Control Token 设计规范](../../../../engineering/development/control-token-guidelines.md)
 
-LLMS 语义区域：
+路由说明：
 
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `SearchEdit` | 数据录入控件根语义区域，承载 public API、值状态、验证状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `input` | `输入或编辑区域` | 承载用户输入、当前值、占位、格式化或只读状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载清除、展开、提交、步进、上传或辅助操作。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或候选区域` | 承载下拉、候选项、日历、颜色面板或异步内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `validation` | `校验反馈区域` | 承载 Form、status、错误、警告、help 或 loading 状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
+- 5 个 Part 的 `SelectorRoute` 全部以 `/template/ .semantic-scope-input-frame` 为锚点，经
+  `SearchEditDecoratedBoxTheme.axaml` 里的 `semantic-scope-prefix` / `semantic-scope-suffix` 作用域类收敛到具体节点。
+  `button` 的 `RuntimeCreated=true`（节点由 `SearchEditDecoratedBoxTheme.axaml` 的 `PART_RightAddOn` 承载，
+  以 public `Button` 为 `ContractType`）。
+- `SearchEditTheme.axaml` 另含 `semantic-content`（`Panel`）与 `semantic-placeholder`（`TextBlock`）两个
+  **非 Part 的路由/视觉辅助 marker**，它们不注册 descriptor、不生成 Style，也不属于对外语义契约。
+  维护时不要把它们当作 Public Part 使用。
 
 Token 说明：
 
-- SearchEdit 当前没有 Own Token，因此没有专属 `token.md`；LLMS 生成按第 5 节说明独立 SearchEdit identity、完整 Effective Global Token、Button Semantic Part 和显式跨 Control 资源边界。
-
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/search-edit/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/search-edit/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+- SearchEdit 当前没有 Own Token，因此没有专属 `token.md`；Token 边界按第 5 节说明独立 SearchEdit identity、完整 Effective Global Token、Button Semantic Part 和显式跨 Control 资源边界。
 
 验证策略：
 

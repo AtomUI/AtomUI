@@ -76,7 +76,12 @@ internal sealed class ListViewToken : AbstractControlDesignToken
     /// 分组标题的颜色
     /// </summary>
     public Color GroupHeaderColor { get; set; }
-    
+
+    /// <summary>
+    /// 分组标题的内间距
+    /// </summary>
+    public Thickness GroupHeaderPadding { get; set; }
+
     /// <summary>
     /// 列表项选中标记的外间距
     /// </summary>
@@ -103,10 +108,13 @@ internal sealed class ListViewToken : AbstractControlDesignToken
         ItemPaddingSM = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
         ItemPadding   = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, 0);
 
-        ContentPadding          = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS / 2);
-        ItemMargin              = new Thickness(0, 0.5);
+        ContentPadding          = new Thickness(0);
+        ItemMargin              = new Thickness(0);
         PaginationMargin        = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS);
         GroupHeaderColor        = EffectiveGlobalToken.ColorTextDescription;
+        GroupHeaderPadding      = new Thickness(
+            EffectiveGlobalToken.UniformlyPaddingSM,
+            EffectiveGlobalToken.UniformlyPaddingXS);
         SelectedIndicatorMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0, 0, 0);
     }
     

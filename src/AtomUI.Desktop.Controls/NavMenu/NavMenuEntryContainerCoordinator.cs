@@ -1,6 +1,9 @@
 using System.Reactive.Disposables;
 using AtomUI.Data;
+using AtomUI.Generated.AtomUIDesktopControls;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -9,6 +12,11 @@ internal static class NavMenuEntryContainerCoordinator
     private static readonly object NodeRecycleKey = new();
     private static readonly object GroupRecycleKey = new();
     private static readonly object DividerRecycleKey = new();
+
+    // 分组容器的语义层级跳点类。一级分组与子菜单内分组互斥，供 itemTitle/list 与
+    // subMenu.itemTitle/subMenu.list 的 route 区分层级。分组不是公开 owner，没有生成的 Part 常量。
+    private const string TopLevelGroupSemanticClass = "semantic-scope-group";
+    private const string SubMenuGroupSemanticClass  = "semantic-sub-menu-group";
 
     public static bool NeedsContainer(
         ItemsControl owner,
@@ -106,19 +114,28 @@ internal static class NavMenuEntryContainerCoordinator
             context.Level,
             context.IsTopLevel,
             owner);
+        ApplySemanticLevelClass(
+            menuItem,
+            NavMenuSemanticParts.ItemClass,
+            NavMenuSemanticParts.SubMenuItemClass,
+            context.IsTopLevel);
 
         var nodeBindingDisposables = menuItem.ResetNodeBindingDisposables();
         var resourceHost = context.OwnerMenu is not null ? context.OwnerMenu : owner;
-        NavMenuItemContainerBinder.BindNode(menuItem, item, resourceHost, nodeBindingDisposables);
-
-        if (!NavMenuItemContainerBinder.TryBindNodeHeaderTemplate(menuItem, item, nodeBindingDisposables) &&
-            owner.ItemTemplate != null)
+        // Node identity survives visual detach; subscriptions are scoped to the mounted menu.
+        menuItem.SetCurrentValue(NavMenuItem.HeaderProperty, item);
+        BindEntryLifetime(resourceHost, bindings =>
         {
-            nodeBindingDisposables.Add(BindUtils.RelayBind(
-                owner,
-                ItemsControl.ItemTemplateProperty,
-                menuItem,
-                NavMenuItem.HeaderTemplateProperty));
+            if (item is NavMenuNode node)
+            {
+                bindings.Add(node.AttachResourceHost(resourceHost));
+            }
+            NavMenuItemContainerBinder.BindNode(menuItem, item, bindings);
+            NavMenuItemContainerBinder.BindNodeHeaderTemplate(menuItem, (INavMenuNode)item, owner, bindings);
+        }, nodeBindingDisposables);
+        if (nodeBindingDisposables.IsDisposed)
+        {
+            return;
         }
 
         BindNodeOwnerState(owner, menuItem, nodeBindingDisposables);
@@ -159,6 +176,7 @@ internal static class NavMenuEntryContainerCoordinator
         }
 
         context.OwnerMenu?.ApplySelectionStateToPreparedContainer(menuItem);
+        context.OwnerMenu?.ApplyPinnedOpenStateToPreparedContainer(menuItem);
     }
 
     private static void PrepareGroupContainer(
@@ -172,20 +190,40 @@ internal static class NavMenuEntryContainerCoordinator
             context.SemanticParentItem,
             context.Level,
             context.IsTopLevel);
+        ApplySemanticLevelClass(
+            groupItem,
+            TopLevelGroupSemanticClass,
+            SubMenuGroupSemanticClass,
+            context.IsTopLevel);
 
         var disposables = groupItem.ResetEntryBindingDisposables();
         var resourceHost = context.OwnerMenu is not null ? context.OwnerMenu : owner;
-        disposables.Add(group.AttachResourceHost(resourceHost));
-        disposables.Add(BindUtils.RelayBind(
-            group,
-            NavMenuGroup.HeaderProperty,
-            groupItem,
-            NavMenuGroupItem.HeaderProperty));
-        disposables.Add(BindUtils.RelayBind(
-            group,
-            NavMenuGroup.HeaderTemplateProperty,
-            groupItem,
-            NavMenuGroupItem.HeaderTemplateProperty));
+        BindEntryLifetime(resourceHost, bindings =>
+        {
+            bindings.Add(group.AttachResourceHost(resourceHost));
+            if (bindings.IsDisposed)
+            {
+                return;
+            }
+            bindings.Add(BindUtils.RelayBind(
+                group,
+                NavMenuGroup.HeaderProperty,
+                groupItem,
+                NavMenuGroupItem.HeaderProperty));
+            if (bindings.IsDisposed)
+            {
+                return;
+            }
+            bindings.Add(BindUtils.RelayBind(
+                group,
+                NavMenuGroup.HeaderTemplateProperty,
+                groupItem,
+                NavMenuGroupItem.HeaderTemplateProperty));
+        }, disposables);
+        if (disposables.IsDisposed)
+        {
+            return;
+        }
 
         groupItem.SetCurrentValue(ItemsControl.ItemsSourceProperty, group.Entries);
         BindGroupOwnerState(owner, groupItem, disposables);
@@ -238,6 +276,52 @@ internal static class NavMenuEntryContainerCoordinator
                     dividerItem,
                     NavMenuDividerItem.IsDarkStyleProperty));
                 break;
+        }
+    }
+
+    private static void BindEntryLifetime(
+        Control owner,
+        Action<CompositeDisposable> bindEntry,
+        CompositeDisposable disposables)
+    {
+        var attachment = new SerialDisposable();
+        void Attach(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            BindCurrentEntry();
+        }
+
+        void Detach(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            attachment.Disposable = null;
+        }
+
+        void BindCurrentEntry()
+        {
+            var bindings = new CompositeDisposable();
+            // Own the scope before publishing properties: callbacks can detach the owner,
+            // recycle the container, or synchronously attach another scope.
+            attachment.Disposable = bindings;
+            if (!bindings.IsDisposed)
+            {
+                bindEntry(bindings);
+            }
+            if (!owner.IsAttachedToVisualTree())
+            {
+                bindings.Dispose();
+            }
+        }
+
+        owner.AttachedToVisualTree += Attach;
+        owner.DetachedFromVisualTree += Detach;
+        disposables.Add(Disposable.Create(() =>
+        {
+            owner.AttachedToVisualTree -= Attach;
+            owner.DetachedFromVisualTree -= Detach;
+            attachment.Dispose();
+        }));
+        if (owner.IsAttachedToVisualTree())
+        {
+            BindCurrentEntry();
         }
     }
 
@@ -365,6 +449,28 @@ internal static class NavMenuEntryContainerCoordinator
         menuItem.ClearValue(NavMenuItem.IsSelectedProperty);
         menuItem.ClearValue(NavMenuItem.IsSubMenuOpenProperty);
         menuItem.ClearValue(NavMenuItem.IsPopupPinnedOpenProperty);
+    }
+
+    // 一级与子菜单层级的 marker 互斥：容器在 owner 之间转移或被回收复用时，先移除另一层级的类，
+    // 再幂等补齐当前层级，保证 marker 不随旧 owner 残留、也不会重复添加。
+    private static void ApplySemanticLevelClass(
+        Control container,
+        string topLevelClass,
+        string subMenuClass,
+        bool isTopLevel)
+    {
+        var keep = isTopLevel ? topLevelClass : subMenuClass;
+        var drop = isTopLevel ? subMenuClass : topLevelClass;
+
+        if (container.Classes.Contains(drop))
+        {
+            container.Classes.Remove(drop);
+        }
+
+        if (!container.Classes.Contains(keep))
+        {
+            container.Classes.Add(keep);
+        }
     }
 
     private static EntryContext ResolveContext(ItemsControl owner)

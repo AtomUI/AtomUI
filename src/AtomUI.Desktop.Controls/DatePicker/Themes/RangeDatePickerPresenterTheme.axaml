@@ -7,4 +7,45 @@
     <ControlTheme.BasedOn>
         <atom:DatePickerPresenterTheme TargetType="atom:RangeDatePickerPresenter" />
     </ControlTheme.BasedOn>
+    <ControlTheme.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/DatePicker/Themes/DatePickerPresenterResources.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ControlTheme.Resources>
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:RangeDatePickerPresenter">
+            <DockPanel Name="RootLayout" Classes.semantic-popup-container="True" LastChildFill="True">
+                <atom:PixelAlignedBorder Name="ButtonsFrame" Classes.semantic-popup-footer="True"
+                    BorderThickness="{TemplateBinding BorderThickness, Converter={x:Static atom:DatePickerPresenterTheme.BorderThicknessFilterConverter}}"
+                    IsVisible="{TemplateBinding IsButtonsPanelVisible}" DockPanel.Dock="Bottom">
+                    <Panel Name="ButtonsLayout">
+                        <atom:Button Name="PART_NowButton" ButtonType="Link" HorizontalAlignment="Left" SizeType="Small"
+                                     Content="{atom:DatePickerLangResource Now}" />
+                        <atom:Button Name="PART_TodayButton" ButtonType="Link" HorizontalAlignment="Left" SizeType="Small"
+                                     Content="{atom:DatePickerLangResource Today}" />
+                        <atom:Button Name="PART_ConfirmButton" ButtonType="Primary" HorizontalAlignment="Right" SizeType="Small"
+                                     Content="{atom:CommonLangResource Ok}" />
+                    </Panel>
+                </atom:PixelAlignedBorder>
+                <StackPanel Orientation="Horizontal">
+                    <atom:RangeDateViewer Name="PART_RangeDateViewer" Padding="0" Presentation="Compact"
+                                          Height="{TemplateBinding PanelHeight}"
+                                          PanelSpacing="{atom:DatePickerTokenResource RangePanelSpacing}"
+                                          HeaderTemplate="{StaticResource RangeDatePickerViewerHeader}" />
+                    <atom:TimeView Name="PART_TimeView" VerticalAlignment="Top"
+                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                   ClockIdentifier="{TemplateBinding ClockIdentifier}"
+                                   IsVisible="{TemplateBinding IsTimeSelectionVisible}" />
+                </StackPanel>
+            </DockPanel>
+        </ControlTemplate>
+    </Setter>
+    <Style Selector="^ /template/ Panel#ButtonsLayout">
+        <Setter Property="Margin" Value="{atom:DatePickerTokenResource ButtonsPanelMargin}" />
+    </Style>
+    <Style Selector="^ /template/ atom|TimeView#PART_TimeView">
+        <Setter Property="Padding" Value="{atom:DatePickerTokenResource PanelContentPadding}" />
+    </Style>
 </ControlTheme>

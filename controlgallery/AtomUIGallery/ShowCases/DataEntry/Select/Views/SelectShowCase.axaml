@@ -8,8 +8,8 @@
              xmlns:views="using:AtomUIGallery.ShowCases.Select"
              x:DataType="vm:SelectViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Select"
                     Category="{gallery:SelectShowCaseLangResource ComponentCategory}"
@@ -20,7 +20,72 @@
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="Select"
                     MetadataValueWidth="220" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:SelectViewModel">
+                    <gallery:SemanticPartPreview Name="SelectSemanticPreview"
+                                                 Title="Select"
+                                                 SemanticOwner="{Binding #SelectSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:Select}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Select Name="SelectSemanticOwner"
+                                         Width="420"
+                                         IsAllowClear="True"
+                                         IsMotionEnabled="False"
+                                         IsDropDownOpen="True"
+                                         IsPopupPinnedOpen="True"
+                                         Mode="Multiple"
+                                         IsFilterEnabled="True"
+                                         ContentLeftAddOn="prefix"
+                                         SelectedOptions="{Binding SemanticPreviewSelectedOptions}"
+                                         OptionsSource="{Binding SemanticPreviewOptions}"
+                                         PlaceholderText="{gallery:SelectShowCaseLangResource P2PlaceholderTextPleaseSelect}" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:SelectShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="prefix"
+                                Description="{gallery:SelectShowCaseLangResource SemanticPrefixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:SelectShowCaseLangResource SemanticContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="placeholder"
+                                Description="{gallery:SelectShowCaseLangResource SemanticPlaceholderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="input"
+                                Description="{gallery:SelectShowCaseLangResource SemanticInputDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="suffix"
+                                Description="{gallery:SelectShowCaseLangResource SemanticSuffixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="item"
+                                Description="{gallery:SelectShowCaseLangResource SemanticItemDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="itemContent"
+                                Description="{gallery:SelectShowCaseLangResource SemanticItemContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="itemRemove"
+                                Description="{gallery:SelectShowCaseLangResource SemanticItemRemoveDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="clear"
+                                Description="{gallery:SelectShowCaseLangResource SemanticClearDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.root"
+                                Description="{gallery:SelectShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.list"
+                                Description="{gallery:SelectShowCaseLangResource SemanticPopupListDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.listItem"
+                                Description="{gallery:SelectShowCaseLangResource SemanticPopupListItemDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -501,7 +566,64 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+        Title="{gallery:SelectShowCaseLangResource StyleClassTitle}"
+        Description="{gallery:SelectShowCaseLangResource StyleClassDescription}"
+        SourceKey="select-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:SelectViewModel">
+        <StackPanel HorizontalAlignment="Left" Spacing="20">
+            <StackPanel.Styles>
+                <Style Selector="atom|Select.semantic-styles-demo">
+                    <atom:SelectPrefixStyle x:SetterTargetType="ContentPresenter">
+                        <Style Selector="^ atom|Icon">
+                            <Setter Property="StrokeBrush" Value="#1890FF" />
+                        </Style>
+                    </atom:SelectPrefixStyle>
+                    <atom:SelectSuffixStyle x:SetterTargetType="StackPanel">
+                        <Setter Property="TextElement.Foreground" Value="#1890FF" />
+                    </atom:SelectSuffixStyle>
+                </Style>
+                <Style Selector="atom|Select.semantic-styles-filled-demo">
+                    <atom:SelectPrefixStyle x:SetterTargetType="ContentPresenter">
+                        <Style Selector="^ atom|Icon">
+                            <Setter Property="StrokeBrush" Value="#722ED1" />
+                        </Style>
+                    </atom:SelectPrefixStyle>
+                    <atom:SelectSuffixStyle x:SetterTargetType="StackPanel">
+                        <Setter Property="TextElement.Foreground" Value="#722ED1" />
+                    </atom:SelectSuffixStyle>
+                    <atom:SelectPopupRootStyle x:SetterTargetType="Border">
+                        <Setter Property="BorderBrush" Value="#722ED1" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </atom:SelectPopupRootStyle>
+                </Style>
+            </StackPanel.Styles>
+            <atom:Select Classes="semantic-styles-demo"
+                         Name="ObjectStylesSelect"
+                         Mode="Single"
+                         Width="300"
+                         IsAllowClear="True"
+                         ContentLeftAddOn="{antdicons:AntDesignIconProvider Kind=MehOutlined}"
+                         OptionsSource="{Binding StyleClassOptions}"
+                         PlaceholderText="Object" />
+            <atom:Select Classes="semantic-styles-demo semantic-styles-filled-demo"
+                         Name="FunctionStylesSelect"
+                         Mode="Single"
+                         Width="300"
+                         IsAllowClear="True"
+                         StyleVariant="Filled"
+                         ContentLeftAddOn="{antdicons:AntDesignIconProvider Kind=MehOutlined}"
+                         OptionsSource="{Binding StyleClassOptions}"
+                         PlaceholderText="Function" />
+        </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

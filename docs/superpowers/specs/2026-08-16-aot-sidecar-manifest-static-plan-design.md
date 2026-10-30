@@ -1,10 +1,13 @@
 # AOT Sidecar Manifest 与静态注册计划优化设计
 
-> 状态：2026-08-16 提案，待实现与基线验证。
+> 历史记录：本文涉及的旧控件注册/裁剪方案已被 [TypeMap 正式架构](../../architecture/foundations/aot-and-trimming.md)替代，不再作为维护约束。其余内容保留当时的设计上下文。
+
+
+> 当时记录的状态：2026-08-16 提案，待实现与基线验证。
 >
 > 本文记录方案选择、迁移路径和验收门槛。实现稳定后，长期契约应同步到
 > [`docs/architecture/foundations/aot-and-trimming.md`](../../architecture/foundations/aot-and-trimming.md)、
-> [`docs/architecture/foundations/aot-registration-unit-granularity.md`](../../architecture/foundations/aot-registration-unit-granularity.md)
+> [`docs/architecture/foundations/aot-registration-unit-granularity.md`](../../architecture/foundations/control-registration-contracts.md)
 > 和 AOT 开发规范；正式架构文档不依赖本文才能成立。
 
 ## 1. 结论

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Xml.Linq;
 using Shouldly;
 using Xunit;
@@ -7,36 +6,24 @@ namespace AtomUI.Generator.Tests.BuildInfrastructure;
 
 public sealed class BuildLayoutTests
 {
-    private static readonly string[] s_expectedBuildFiles =
-    [
-        "AtomUI.Generator.props",
-        "AtomUI.Generator.targets",
-        "AtomUI.GeneratorConsumer.targets",
-        "AtomUI.LinkedRegistration.props",
-        "AtomUI.LinkedRegistration.targets",
-        "AtomUI.LinkedRegistration.SidecarConsumer.targets",
-        "AtomUI.Localization.props",
-        "AtomUI.Localization.targets",
-        "AtomUI.Repository.props",
-        "AtomUI.Repository.targets",
-        "AtomUI.ThemeAssets.targets",
-        "MacOSHomebrewNativeAot.targets",
-        "OutputPaths.props",
-        "PackageMetadata.props",
-        "ProjectDefaults.props",
-        "Versions.props"
-    ];
-
     private static readonly string[] s_expectedNuGetBuildAssets =
     [
         "AtomUI.Generator.props",
+        "AtomUI.Toolchain.Tasks.targets",
         "AtomUI.Generator.targets",
-        "AtomUI.LinkedRegistration.props",
-        "AtomUI.LinkedRegistration.targets",
-        "AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "AtomUI.Registration.targets",
+        "AtomUI.Registration.Framework.targets",
+        "AtomUI.Registration.Net8.targets",
+        "AtomUI.Registration.Net8.Host.targets",
+        "AtomUI.Registration.Net8.Transforms.targets",
+        "AtomUI.Registration.Native8.targets",
+        "AtomUI.Registration.Bridge.targets",
+        "AtomUI.Net8.ILLink.Task.cs",
         "AtomUI.Localization.props",
         "AtomUI.Localization.targets",
-        "AtomUI.ThemeAssets.targets"
+        "AtomUI.ThemeAssets.targets",
+        "AtomUI.CompiledThemes.targets",
+        "AtomUI.Build.Tasks.Process.cs"
     ];
 
     [Fact]
@@ -57,9 +44,94 @@ public sealed class BuildLayoutTests
             "$(MSBuildThisFileDirectory)ProjectDefaults.props",
             "$(MSBuildThisFileDirectory)PackageMetadata.props",
             "$(MSBuildThisFileDirectory)OutputPaths.props",
-            "$(OutputPathWithoutFramework)/netstandard2.0/AtomUI.BuildTasks.ShadowKey.props",
+            "$(MSBuildThisFileDirectory)PackageValidation.props",
             "$(MSBuildThisFileDirectory)AtomUI.Generator.props"
         ]);
+    }
+
+    [Fact]
+    public void Package_Validation_Is_Opt_In_And_Mechanically_Enforced()
+    {
+        // The props file must be imported only for validation runs. An unconditional import would
+        // be evaluated for every project in the ordinary Debug loop, so keep it gated.
+        var repositoryProps = XDocument.Load(GetRepoFile("build/AtomUI.Repository.props"));
+        var validationImport = repositoryProps.Descendants("Import")
+                                              .Single(element =>
+                                                  ((string?)element.Attribute("Project") ?? string.Empty)
+                                                  .EndsWith("PackageValidation.props", StringComparison.Ordinal));
+        var importCondition = (string?)validationImport.Attribute("Condition");
+        importCondition.ShouldNotBeNullOrWhiteSpace();
+        importCondition.ShouldContain("AtomUIPackageValidationBaselineVersion");
+
+        var validationProps = XDocument.Load(GetRepoFile("build/PackageValidation.props"));
+
+        // Opt-in: validation only engages when the release flow supplies the baseline version, so
+        // ordinary development builds stay fast and need no baseline packages.
+        var enableValidation = validationProps.Descendants("EnablePackageValidation").ShouldHaveSingleItem();
+        enableValidation.Value.ShouldBe("true");
+        ((string?)enableValidation.Parent?.Attribute("Condition"))
+            .ShouldBe("'$(AtomUIPackageValidationBaselineVersion)' != ''");
+
+        var baselineVersion = validationProps.Descendants("PackageValidationBaselineVersion")
+                                             .ShouldHaveSingleItem();
+        ((string?)baselineVersion.Attribute("Condition"))
+            .ShouldBe("'$(PackageValidationBaselineVersion)' == ''");
+        baselineVersion.Value.ShouldBe("$(AtomUIPackageValidationBaselineVersion)");
+
+        // Avalonia's private-API target replaces the facade with real split assemblies only before
+        // CoreCompile. Package validation stops at ResolveReferences, so extend the SDK's collected
+        // per-TFM reference paths after _GetReferencePathFromInnerProjects has populated them.
+        var validationDependsOn = validationProps.Descendants("RunPackageValidationDependsOn")
+                                                   .ShouldHaveSingleItem();
+        validationDependsOn.Value.ShouldContain("AtomUIAddAvaloniaPackageValidationReferences");
+        validationDependsOn.Value.ShouldContain("$(RunPackageValidationDependsOn)");
+
+        var avaloniaReferencesTarget = validationProps.Descendants("Target")
+                                                       .Single(element =>
+                                                           (string?)element.Attribute("Name") ==
+                                                           "AtomUIAddAvaloniaPackageValidationReferences");
+        var avaloniaTargetCondition = ((string?)avaloniaReferencesTarget.Attribute("Condition"))
+            .ShouldNotBeNull();
+        avaloniaTargetCondition.ShouldContain("AvaloniaAccessUnstablePrivateApis");
+        var avaloniaReferences = avaloniaReferencesTarget
+                                 .Descendants("_AtomUIAvaloniaPackageValidationReference")
+                                 .ShouldHaveSingleItem();
+        ((string?)avaloniaReferences.Attribute("Include"))
+            .ShouldBe("$(NuGetPackageRoot)avalonia/$(AvaloniaVersion)/lib/$(_AtomUIAvaloniaPackageValidationFramework)/*.dll");
+
+        var packageValidationReferences = avaloniaReferencesTarget
+                                          .Descendants("PackageValidationReferencePath")
+                                          .ShouldHaveSingleItem();
+        ((string?)packageValidationReferences.Attribute("Update"))
+            .ShouldBe("@(PackageValidationReferencePath)");
+        var referencePath = packageValidationReferences.Element("ReferencePath")
+                                                       .ShouldNotBeNull()
+                                                       .Value;
+        referencePath.ShouldContain("%(PackageValidationReferencePath.ReferencePath)");
+        referencePath.ShouldContain("@(_AtomUIAvaloniaPackageValidationReference->'%(FullPath)', ',')");
+        avaloniaReferencesTarget.Descendants("Error").ShouldHaveSingleItem();
+
+        // The release script must accept the baseline and must run both gates. ApiCompat only reads
+        // lib/, so verify-package-layout.ps1 is what covers tools/ and buildTransitive/.
+        var buildScript = File.ReadAllText(GetRepoFile("scripts/BuildNuGetPackages.ps1"));
+        buildScript.ShouldContain("$PackageValidationBaselineVersion");
+        buildScript.ShouldContain("AtomUIPackageValidationBaselineVersion=");
+        buildScript.ShouldContain("verification/verify-package-layout.ps1");
+
+        // Prerequisite tool projects are not published packages and must never be validated against
+        // a released baseline.
+        var prerequisiteBuild = buildScript.IndexOf(
+            "foreach ($project in $AtomUIReleaseBuildPrerequisiteProjects)", StringComparison.Ordinal);
+        var prerequisiteBlockEnd = buildScript.IndexOf(
+            "foreach ($project in $AtomUIReleasePackageProjects)", prerequisiteBuild, StringComparison.Ordinal);
+        prerequisiteBuild.ShouldBeGreaterThanOrEqualTo(0);
+        prerequisiteBlockEnd.ShouldBeGreaterThan(prerequisiteBuild);
+        buildScript[prerequisiteBuild..prerequisiteBlockEnd].ShouldNotContain("$validationArguments");
+
+        // The release workflow must expose the baseline input and forward it to the script.
+        var workflow = File.ReadAllText(GetRepoFile(".github/workflows/release-nuget-packages.yml"));
+        workflow.ShouldContain("PackageValidationBaselineVersion:");
+        workflow.ShouldContain("-PackageValidationBaselineVersion");
     }
 
     [Fact]
@@ -71,35 +143,6 @@ public sealed class BuildLayoutTests
             .ShouldBe(["$(MSBuildThisFileDirectory)AtomUI.Generator.targets"]);
         GetTargetNames(repositoryTargets)
             .ShouldContain("AtomUIPrepareGeneratorConsumerPackageAssets");
-    }
-
-    [Fact]
-    public void Build_Task_Shadow_Copies_Are_Not_Removed_During_Consumer_Builds()
-    {
-        var repositoryTargets = XDocument.Load(GetRepoFile("build/AtomUI.Repository.targets"));
-        var stagingTarget = repositoryTargets.Descendants("Target")
-                                              .Single(element =>
-                                                  (string?)element.Attribute("Name") ==
-                                                  "_AtomUIStageBuildTasksToolset");
-
-        stagingTarget.Descendants()
-                     .Where(element => element.Name.LocalName == "RemoveDir")
-                     .ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void Build_Task_Shadow_Copies_Are_Staged_For_Cross_Targeting_Pack_Targets()
-    {
-        var repositoryTargets = XDocument.Load(GetRepoFile("build/AtomUI.Repository.targets"));
-        var stagingTarget = repositoryTargets.Descendants("Target")
-                                              .Single(element =>
-                                                  (string?)element.Attribute("Name") ==
-                                                  "_AtomUIStageBuildTasksToolset");
-
-        ((string?)stagingTarget.Attribute("BeforeTargets")).ShouldNotBeNull()
-            .ShouldContain("AtomUIPrepareLanguageModuleAssets");
-        ((string?)stagingTarget.Attribute("Condition")).ShouldNotBeNull()
-            .ShouldNotContain("IsCrossTargetingBuild");
     }
 
     [Fact]
@@ -119,13 +162,13 @@ public sealed class BuildLayoutTests
                    .ShouldHaveSingleItem()
                    .Value.ShouldBe("buildTransitive/%(Filename)%(Extension)");
 
-        var toolAssets = repositoryProps.Descendants("AtomUIGeneratorToolAsset").ShouldHaveSingleItem();
+        var toolAssets = repositoryProps.Descendants("AtomUIGeneratorToolAsset").Single(element => ((string?)element.Attribute("Include"))?.Contains("AtomUI.Build.Tasks.dll", StringComparison.Ordinal) == true);
         var toolIncludes = ((string?)toolAssets.Attribute("Include")).ShouldNotBeNull();
-        toolIncludes.ShouldContain("AtomUI.Generator.dll");
+        toolIncludes.ShouldContain("AtomUI.Build.Tasks.runtimeconfig.json");
         toolIncludes.ShouldContain("AtomUI.Build.Tasks.dll");
         toolAssets.Elements("PackagePath")
                   .ShouldHaveSingleItem()
-                  .Value.ShouldBe("tools/netstandard2.0/%(Filename)%(Extension)");
+                  .Value.ShouldBe("tools/net10.0/%(Filename)%(Extension)");
 
         var generatorProject = XDocument.Load(GetRepoFile("src/AtomUI.Generator/AtomUI.Generator.csproj"));
         generatorProject.Descendants("ProjectReference")
@@ -147,21 +190,18 @@ public sealed class BuildLayoutTests
                          .ShouldContain(element =>
                              (string?)element.Attribute("Include") == "@(AtomUIGeneratorToolAsset)");
 
-        var linkedPackTarget = generatorProject.Descendants("Target")
-                                               .Single(element =>
-                                                   (string?)element.Attribute("Name") ==
-                                                   "AtomUIPrepareLinkedPublishGeneratorForPack");
-        ((string?)linkedPackTarget.Attribute("BeforeTargets")).ShouldBe("_GetPackageFiles");
-        linkedPackTarget.Descendants("MSBuild")
-                        .Single()
-                        .Attribute("Projects")!
-                        .Value.ShouldContain("AtomUI.Generator.LinkedPublish.csproj");
-        ((string?)linkedPackTarget.Descendants("MSBuild").Single().Attribute("Condition"))
-            .ShouldBe("'$(NoBuild)' != 'true'");
-        linkedPackTarget.Descendants("Error")
-                        .Single()
-                        .Attribute("Condition")!
-                        .Value.ShouldContain("AtomUILinkedPublishGeneratorAssembly");
+        // Normal generator builds depend only on the worker. Packaging explicitly asks the
+        // single toolchain owner to restore/build all engine profiles before collecting files.
+        var reference = generatorProject.Descendants("ProjectReference").ShouldHaveSingleItem();
+        ((string?)reference.Attribute("Include")).ShouldBe("../AtomUI.Toolchain/AtomUI.Toolchain.csproj");
+        ((string?)reference.Attribute("ReferenceOutputAssembly")).ShouldBe("false");
+        ((string?)reference.Attribute("PrivateAssets")).ShouldBe("all");
+        generatorProject.Descendants("MSBuild").ShouldBeEmpty();
+        var prepare = repositoryTargets.Descendants("Target")
+            .Single(element => (string?)element.Attribute("Name") == "AtomUIPrepareRepositoryPackageTools")
+            .Descendants("MSBuild").ShouldHaveSingleItem();
+        ((string?)prepare.Attribute("Projects")).ShouldBe("$(AtomUIToolchainProject)");
+        ((string?)prepare.Attribute("Targets")).ShouldBe("BuildToolchain");
     }
 
     [Fact]
@@ -177,7 +217,7 @@ public sealed class BuildLayoutTests
         ((string?)fallback.Attribute("Condition"))
             .ShouldBe("'$(AtomUIBuildTasksAssembly)' == ''");
         fallback.Value.Trim().ShouldBe(
-            "$(MSBuildThisFileDirectory)../tools/netstandard2.0/AtomUI.Build.Tasks.dll");
+            "$(MSBuildThisFileDirectory)../tools/net10.0/AtomUI.Build.Tasks.dll");
 
         var buildRoot = Path.Combine(GetRepositoryRoot(), "build");
         var featureFiles = s_expectedNuGetBuildAssets
@@ -187,7 +227,7 @@ public sealed class BuildLayoutTests
                                      .ToArray();
         usingTasks.ShouldNotBeEmpty();
         usingTasks.ShouldAllBe(element =>
-            (string?)element.Attribute("AssemblyFile") == "$(AtomUIBuildTasksAssembly)");
+            (string?)element.Attribute("AssemblyFile") == "$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll");
 
         File.Exists(Path.Combine(buildRoot, "BuildTasks.props")).ShouldBeFalse();
         var buildText = string.Join('\n', Directory.EnumerateFiles(buildRoot).Select(File.ReadAllText));
@@ -196,7 +236,7 @@ public sealed class BuildLayoutTests
     }
 
     [Fact]
-    public void NuGet_Build_Tasks_Load_From_Shadow_Copy_In_Process()
+    public void NuGet_Build_Tasks_Use_The_SDK_Source_Adapter()
     {
         var buildRoot = Path.Combine(GetRepositoryRoot(), "build");
         var usingTasks = s_expectedNuGetBuildAssets
@@ -206,14 +246,14 @@ public sealed class BuildLayoutTests
                 .Descendants()
                 .Where(element => element.Name.LocalName == "UsingTask"))
             .Where(element =>
-                (string?)element.Attribute("AssemblyFile") == "$(AtomUIBuildTasksAssembly)")
+                (string?)element.Attribute("AssemblyFile") == "$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll")
             .ToArray();
 
         usingTasks.ShouldNotBeEmpty();
         usingTasks.ShouldAllBe(element =>
             element.Attribute("Runtime") == null);
         usingTasks.ShouldAllBe(element =>
-            element.Attribute("TaskFactory") == null);
+            (string?)element.Attribute("TaskFactory") == "RoslynCodeTaskFactory");
     }
 
     [Fact]
@@ -223,15 +263,6 @@ public sealed class BuildLayoutTests
         var isTestProject = defaults.Descendants("IsTestProject").ShouldHaveSingleItem();
 
         isTestProject.Value.ShouldBe("true");
-    }
-
-    [Fact]
-    public void Repository_Defaults_Exclude_Stale_Project_Local_Obj_Files()
-    {
-        var defaults = XDocument.Load(GetRepoFile("build/ProjectDefaults.props"));
-        var excludes = defaults.Descendants("DefaultItemExcludes").ShouldHaveSingleItem();
-
-        excludes.Value.ShouldContain("$(MSBuildProjectDirectory)/obj/**");
     }
 
     [Fact]
@@ -249,6 +280,7 @@ public sealed class BuildLayoutTests
                    .ShouldHaveSingleItem()
                    .Value.ShouldBe("$(OutputPathWithoutFramework)");
         outputPaths.Descendants("BaseIntermediateOutputPath")
+                   .Where(element => element.Attribute("Condition") is null)
                    .ShouldHaveSingleItem()
                    .Value.ShouldBe(
                        "$(MSBuildThisFileDirectory)../.artifacts/$(MSBuildProjectName)/obj");
@@ -345,15 +377,6 @@ public sealed class BuildLayoutTests
     }
 
     [Fact]
-    public void Tool_Source_Files_Stay_Trackable_While_Tool_Build_Outputs_Are_Ignored()
-    {
-        IsIgnoredByGit("tools/AtomUI.Docs.LLMsGenerator/Program.cs").ShouldBeFalse();
-        IsIgnoredByGit("tools/performances/AtomUI.Performance/Program.cs").ShouldBeFalse();
-        IsIgnoredByGit("tools/AtomUI.Docs.LLMsGenerator/bin/Debug/tool.dll").ShouldBeTrue();
-        IsIgnoredByGit("tools/performances/AtomUI.Performance/obj/project.assets.json").ShouldBeTrue();
-    }
-
-    [Fact]
     public void Repository_Targets_Exclude_Compiler_Generated_Files_Once()
     {
         const string generatedFilesPattern = "$(CompilerGeneratedFilesOutputPath)/**/*.cs";
@@ -402,26 +425,16 @@ public sealed class BuildLayoutTests
     }
 
     [Fact]
-    public void Desktop_Project_Does_Not_Keep_Stale_Window_Directory_Exclusions()
-    {
-        var project = File.ReadAllText(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj"));
-
-        project.ShouldNotContain("Window\\Reflection");
-        project.ShouldNotContain("Window\\Visuals");
-    }
-
-    [Fact]
     public void NuGet_Generator_Entry_Points_Import_Flat_Feature_Files()
     {
         GetImports("build/AtomUI.Generator.props").ShouldBe([
-            "$(MSBuildThisFileDirectory)AtomUI.LinkedRegistration.props",
             "$(MSBuildThisFileDirectory)AtomUI.Localization.props"
         ]);
         GetImports("build/AtomUI.Generator.targets").ShouldBe([
-            "$(MSBuildThisFileDirectory)AtomUI.LinkedRegistration.targets",
+            "$(MSBuildThisFileDirectory)AtomUI.Registration.targets",
             "$(MSBuildThisFileDirectory)AtomUI.Localization.targets",
-            "$(MSBuildThisFileDirectory)AtomUI.ThemeAssets.targets"
+            "$(MSBuildThisFileDirectory)AtomUI.ThemeAssets.targets",
+            "$(MSBuildThisFileDirectory)AtomUI.CompiledThemes.targets"
         ]);
     }
 
@@ -430,7 +443,7 @@ public sealed class BuildLayoutTests
     {
         var targets = XDocument.Load(GetRepoFile("build/AtomUI.Localization.targets"));
 
-        GetImports("build/AtomUI.Localization.targets").ShouldBeEmpty();
+        GetImports("build/AtomUI.Localization.targets").ShouldBe(["$(MSBuildThisFileDirectory)AtomUI.Toolchain.Tasks.targets"]);
         targets.Descendants("AdditionalFiles").ShouldNotBeEmpty();
         targets.Descendants("CompilerVisibleItemMetadata").ShouldNotBeEmpty();
         GetTargetNames(targets).ShouldBe([
@@ -443,19 +456,6 @@ public sealed class BuildLayoutTests
             "AtomUIPrepareLanguagePackage",
             "AtomUIPrepareLanguageModuleAssets"
         ]);
-    }
-
-    [Fact]
-    public void Build_Root_Is_A_Flat_Explicit_MSBuild_Surface()
-    {
-        var buildRoot = Path.Combine(GetRepositoryRoot(), "build");
-        Directory.EnumerateDirectories(buildRoot).ShouldBeEmpty();
-        Directory.EnumerateFiles(buildRoot)
-                 .Select(Path.GetFileName)
-                 .ShouldBe(s_expectedBuildFiles, ignoreOrder: true);
-        Directory.EnumerateFiles(buildRoot)
-                 .All(file => Path.GetExtension(file) is ".props" or ".targets")
-                 .ShouldBeTrue();
     }
 
     private static string[] GetImports(string relativePath)
@@ -505,28 +505,5 @@ public sealed class BuildLayoutTests
         }
 
         throw new DirectoryNotFoundException("Could not locate the AtomUI repository root.");
-    }
-
-    private static bool IsIgnoredByGit(string relativePath)
-    {
-        using var process = Process.Start(new ProcessStartInfo
-        {
-            FileName               = "git",
-            WorkingDirectory       = GetRepositoryRoot(),
-            RedirectStandardOutput = true,
-            RedirectStandardError  = true,
-            ArgumentList =
-            {
-                "check-ignore",
-                "--quiet",
-                "--no-index",
-                "--",
-                relativePath
-            }
-        });
-        process.ShouldNotBeNull();
-        process.WaitForExit();
-        process.ExitCode.ShouldBeOneOf(0, 1);
-        return process.ExitCode == 0;
     }
 }

@@ -12,8 +12,8 @@ internal sealed class Localizer : ILocalizer
     public string Get<TResourceKind>(TResourceKind key)
         where TResourceKind : struct, Enum
     {
-        var revision = _context.Current;
-        var resolved = Resolve(revision, key);
+        var view = _context.Capture();
+        var resolved = Resolve(view, key);
         return resolved.Entry.Text;
     }
 
@@ -21,8 +21,9 @@ internal sealed class Localizer : ILocalizer
         where TResourceKind : struct, Enum
     {
         ArgumentNullException.ThrowIfNull(arguments);
-        var revision = _context.Current;
-        var resolved = Resolve(revision, key);
+        var view = _context.Capture();
+        var revision = view.Revision;
+        var resolved = Resolve(view, key);
         if (resolved.Entry.CompositeFormat is null)
         {
             return resolved.Entry.Text;
@@ -46,25 +47,22 @@ internal sealed class Localizer : ILocalizer
     }
 
     private ResolvedLanguageValue Resolve<TResourceKind>(
-        LanguageRevision revision,
+        LanguageReadView view,
         TResourceKind key)
         where TResourceKind : struct, Enum
     {
         var resourceKindType = typeof(TResourceKind);
-        if (!_context.Registry.TryGetCatalogSlot(resourceKindType, out var catalogSlot))
+        if (!view.Registry.TryGetCatalogSlot(resourceKindType, out var catalogSlot))
         {
             throw new LanguageCatalogException(
                 $"Resource enum type '{resourceKindType.FullName}' is not registered as a language Catalog.");
         }
 
-        var catalog = _context.Registry.Catalogs[catalogSlot];
-        if (catalog is not LanguageCatalogDescriptor<TResourceKind> typedCatalog)
-        {
-            throw new LanguageCatalogException(
-                $"Catalog '{catalog.CatalogId}' is registered with incompatible resource enum type " +
-                $"'{catalog.ResourceKindType.FullName}'.");
-        }
-        if (!typedCatalog.TryGetUnitSlot(key, out var unitSlot))
+        var catalog = view.Registry.Catalogs[catalogSlot];
+        var found = catalog is LanguageCatalogDescriptor<TResourceKind> typedCatalog
+            ? typedCatalog.TryGetUnitSlot(key, out var unitSlot)
+            : catalog.TryGetUnitSlot(key, out unitSlot);
+        if (!found)
         {
             throw new LanguageCatalogException(
                 $"A value of resource enum type '{resourceKindType.FullName}' is not mapped to any unit " +
@@ -74,7 +72,7 @@ internal sealed class Localizer : ILocalizer
         return new ResolvedLanguageValue(
             catalog,
             catalog.Units[unitSlot],
-            revision.Snapshot.GetEntry(catalogSlot, unitSlot));
+            view.Revision.Snapshot.GetEntry(catalogSlot, unitSlot));
     }
 
     private readonly record struct ResolvedLanguageValue(

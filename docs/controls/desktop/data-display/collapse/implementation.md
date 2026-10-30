@@ -1,6 +1,6 @@
 # Collapse 桌面版实现原理
 
-本文档描述 Collapse 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Collapse 桌面版架构设计](overview.md)，变化记录见 [Collapse Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Collapse Token 设计](token.md)。
+本文档描述 Collapse 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Collapse 桌面版架构设计](overview.md)，Semantic Part 契约见 [Collapse Semantic Part 契约](semantic-part.md)，变化记录见 [Collapse Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Collapse Token 设计](token.md)。
 
 ## 1. 实现定位
 
@@ -11,10 +11,12 @@
 主要源码文件：
 
 - `src/AtomUI.Desktop.Controls/Collapse/Collapse.cs`
+- `src/AtomUI.Desktop.Controls/Collapse/Collapse.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Collapse/CollapseItem.cs`
 - `src/AtomUI.Desktop.Controls/Collapse/CollapseToken.cs`
 - `src/AtomUI.Desktop.Controls/Collapse/ICollapseItemData.cs`
-- `src/AtomUI.Core/MotionScene/ContentExpansionAnimator.cs`：三个控件共用的内容测量、进度插值和执行资源 owner。
+- `src/AtomUI.Core/Animations/Motion`：动效定义、请求身份、框架时钟、属性覆盖与可见性生命周期。
+- `src/AtomUI.Controls/Primitives/ContentViewport.cs`：自然内容测量、实际视口、占位与方向锚定。
 - `src/AtomUI.Desktop.Controls/Collapse/Themes/CollapseItemTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Collapse/Themes/CollapseTheme.axaml`
 
@@ -66,20 +68,44 @@ Pointer / keyboard / CollapseItem.IsSelected / inherited selection API
 ```text
 Collapse
 └── PixelAlignedBorder#PART_Frame
-    └── ItemsPresenter#PART_ItemsPresenter
-        └── CollapseItem
-            └── item shell border
-                └── DockPanel#PART_MainLayout
-                    ├── PixelAlignedBorder#PART_HeaderDecorator
-                    │   ├── IconButton#PART_ExpandButton
-                    │   ├── ContentPresenter#PART_HeaderPresenter
-                    │   └── ContentPresenter#PART_AddOnContentPresenter
-                    └── LayoutAwareMotionActor#PART_ContentMotionActor
-                        └── PixelAlignedBorder#PART_ContentFrame
-                            └── ContentPresenter#PART_ContentPresenter
+    └── ItemsPresenter#PART_ItemsPresenter              ← .semantic-scope-items
+        └── ItemsPanel（运行时 StackPanel）              ← .semantic-scope-panel（运行时）
+            └── CollapseItem × N                         ← .semantic-scope-item（运行时）
+                └── item shell border
+                    └── DockPanel#PART_MainLayout
+                        ├── PixelAlignedBorder#PART_HeaderDecorator   ← .semantic-header
+                        │   ├── IconButton#PART_ExpandButton          ← .semantic-icon
+                        │   ├── ContentPresenter#PART_HeaderPresenter ← .semantic-title
+                        │   └── ContentPresenter#PART_AddOnContentPresenter
+                        └── ContentViewport#PART_ContentViewport
+                            └── PixelAlignedBorder#PART_ContentFrame  ← .semantic-body
+                                └── ContentPresenter#PART_ContentPresenter
 ```
 
-边框职责固定为：`PART_Frame` 绘制外框；item shell 绘制非末项底线；`PART_ContentFrame` 在默认 bordered 模式绘制内容顶线。Header 不承担 item 分隔线，动效状态不参与边框计算。
+边框职责固定为：`PART_Frame` 绘制外框；item shell 绘制非末项底线；`PART_ContentFrame` 在默认 bordered 模式绘制内容顶线。Header 不承担 item 分隔线，动效状态不参与边框计算。root 表面投影把 owner 的 `Background`、`BorderBrush`、`BorderThickness`、`CornerRadius` 与 `Padding` 绑定到 `PART_Frame`；默认主题不设置根背景，root 背景由 Semantic Setter 或应用级样式提供。圆角按 antd collapse 样式规则分发：首项 header 承接容器上圆角、末项 header 与 content 承接下圆角（`HeaderCornerRadius`/`ContentCornerRadius` 由 owner 的 `CornerRadius` 与 item 位置计算），使 header/body 的背景沿容器圆角绘制而非盖住圆角边框。
+
+### 4.2 Semantic Part marker 放置
+
+marker 与 descriptor 声明、生成常量的对应关系：
+
+| marker | 放置方式 | 位置 |
+| --- | --- | --- |
+| `.semantic-scope-items` | 静态 `Classes.semantic-scope-items="True"` | `CollapseTheme.axaml` 的 `ItemsPresenter#PART_ItemsPresenter`，items host 链的静态锚点标识 |
+| `.semantic-scope-panel` | 运行时一次性 `Classes.Add` | `Collapse.DefaultPanel` FuncTemplate 创建的默认 ItemsPanel（`StackPanel`）；items host 链标识，不参与 Part 路由 |
+| `.semantic-scope-item` | 运行时幂等 `Classes.Add` | 容器创建路径（`CreateContainerForItemOverride`）与 `PrepareContainerForItemOverride` 的每个 `CollapseItem` 容器；Part 路由必经步骤 |
+| `.semantic-header` | 静态 `Classes.semantic-header="True"` | `CollapseItemTheme.axaml` 的 `PixelAlignedBorder#PART_HeaderDecorator` |
+| `.semantic-icon` | 静态 `Classes.semantic-icon="True"` | `CollapseItemTheme.axaml` 的 `IconButton#PART_ExpandButton` |
+| `.semantic-title` | 静态 `Classes.semantic-title="True"` | `CollapseItemTheme.axaml` 的 `ContentPresenter#PART_HeaderPresenter` |
+| `.semantic-body` | 静态 `Classes.semantic-body="True"` | `CollapseItemTheme.axaml` 的 `PixelAlignedBorder#PART_ContentFrame` |
+
+`header`、`icon`、`title`、`body` 的节点位于 `CollapseItem` 自己的模板内，而容器由 `SelectingItemsControl` 的容器生命周期
+运行时创建（`TemplatedParent` 为 null），因此四个 Part 声明 `RuntimeCreated=true` 并携带显式 SelectorRoute。`/template/`
+只能命中 `TemplatedParent` 非 null 的模板节点，而 Avalonia 的 `>` 步骤沿逻辑树（`LogicalParent`）行走：ItemsControl
+生成的容器逻辑父级是 Collapse owner 本身（而非运行时 ItemsPanel），所以路由从 owner 出发经一步 `>` 直达
+`.semantic-scope-item` 容器，再以 `/template/` 进入容器模板命中 Part 节点。`.semantic-scope-items` 与
+`.semantic-scope-panel` 只标识 items host 链、不参与路由；scope marker 均不发布为 Part；容器复用/回收、items 集合变化
+与模板重应用不增删 scope 或 Part marker。用户自定义 `ItemsPanel` 不影响 Part 路由（容器逻辑父级始终是 Collapse
+owner）；建议自定义面板根节点声明 `Classes.semantic-scope-panel="True"` 以保持 items host 链标识一致。
 
 ## 5. 生命周期与模板接入
 
@@ -94,7 +120,7 @@ Collapse
 稳定 template part 接入点：
 
 - `PART_AddOnContentPresenter`：展示用户内容、文本、图标或模板化数据。
-- `PART_ContentMotionActor`：稳定模板协作入口，重命名前必须同步主题和实现。
+- `PART_ContentViewport`：稳定模板协作入口，重命名前必须同步主题和实现。
 - `PART_ContentPresenter`：展示用户内容、文本、图标或模板化数据。
 - `PART_ExpandButton`：承载用户触发入口、导航或关闭动作。
 - `PART_Frame`：承载根视觉、边框、背景或尺寸基线。
@@ -116,23 +142,23 @@ Header 模式下，header 区域和展开图标触发 selection；Icon 模式下
 关键流程：
 
 1. `IsAccordion` 变化时先切换 selection mode，再通过 selection model 归一非法多选状态；容器准备期间若新容器携带显式选中值，则在基础 selection 投影后保留已有的较小已选索引。
-2. 容器 prepare 和 index change 只投影 owner 属性、padding 和“是否末项”结构状态，不根据 selection 重算边框。
+2. 容器 prepare 和 index change 只投影 owner 属性、padding 和“是否末项”结构状态（含角半径分发），不根据 selection 重算边框。
 3. `CollapseItem.IsSelected` 变化只改变内容目标可见性和箭头方向。
 4. 新 content motion 开始前取消旧 motion；完成时仅在目标仍与最新 `IsSelected` 一致时应用稳定状态。
 5. content 顶边是 content frame 的固定视觉，收起时随 content 一起被裁剪，不需要父控件等待动画完成。
 
 ### 7.2 共用内容展开执行链
 
-`CollapseItem` 为当前 `PART_ContentMotionActor` 持有 Core 内部 `ContentExpansionAnimator`，直接把
-`IsSelected`、`Direction.Bottom` 和有效 `MotionDuration` 提交给动画执行器。动画执行器使用同一个 Avalonia 原生
-`Animation` 驱动存储在 actor 上的私有展开进度附加属性与 `Opacity`，收放共用 `Spline(0.645, 0.045, 0.355, 1)`。
-进度属性及其布局失效通知由动画执行器拥有；`BaseMotionActor` 仅通过内部 `IMotionActorLayout` 委托测量和排列。
-视口高度参与父布局并裁剪完整尺寸的内容，不缩放文字或图标。
+主题将 `CollapseItem.IsSelected` 绑定到 `PART_ContentViewport` 的 `atom:Motion.IsVisible`，
+声明 `ExpandMotion` 和 `CollapseMotion`，并绑定启用状态及有效时长。Core Motion 通过每次执行独立的非视觉进度源
+接入 Avalonia 框架时钟，收放共用 `Spline(0.645, 0.045, 0.355, 1)`。
+`ContentViewport` 实现公开的 `IMotionLayout` 能力，以布局租约控制占位和实际视口，
+完整内容按自然尺寸排版，不缩放文字或图标；`CollapseItem` 不持有执行器或完成回调。
 源码所有权与算法见 [内容展开与收起动效设计](../../../../architecture/systems/control-infrastructure/content-expansion.md)。
 
-动画执行器在取消旧动画前采样当前 Bounds 高度和有效透明度，使旧执行身份失效后建立新起点。内部进度的同步起点覆盖
-首个 tick 前的绘制窗口，`FillMode.Forward` 保持最终 tick 到异步 continuation 的终点。只有当前执行可以提交稳定
-显示状态及 actor 完成通知；item 的 selection 与图标状态继续由 `IsSelected` 决定。
+新请求在旧执行清理前捕获当前 Bounds 和有效透明度，连续替代旧动画。同步起点覆盖首个 tick 前的绘制窗口，
+`FillMode.Both` 保持首尾帧；只有当前请求可以提交稳定显示状态。收起后隐藏视口并释放属性覆盖，恢复底层透明度来源；
+item 的 selection 与图标状态继续由 `IsSelected` 决定。
 
 ### 7.3 接入与生命周期边界
 
@@ -172,6 +198,10 @@ Header 模式下，header 区域和展开图标触发 selection；Icon 模式下
 - 分隔线只由 item 位置、视觉模式和固定模板结构决定，不能依赖 selection 或 motion 时序。
 - 旧 template part、事件订阅和 content motion cancellation 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
+- Semantic Part 的 marker 放置（`CollapseTheme.axaml` 的 `semantic-scope-items` 静态节点、默认 ItemsPanel 的
+  `.semantic-scope-panel`、容器创建/prepare 路径的 `.semantic-scope-item`、`CollapseItemTheme.axaml` 的四个静态 Part
+  marker）属于维护不变量：状态切换、容器复用/回收、items
+  集合变化与模板重应用不得增删 marker，默认主题不得消费 `.semantic-*` selector，root 表面投影不得丢失。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 
 ## 10. 测试与验证
@@ -183,6 +213,11 @@ Header 模式下，header 区域和展开图标触发 selection；Icon 模式下
 - 输入测试覆盖 Header、Icon、keyboard 和 disabled。
 - 视觉测试覆盖默认、Borderless、Ghost 的首项、中间项、末项以及展开/收起/反向动画过程。
 - 生命周期测试覆盖 template reapply、旧按钮解绑、detach 和 motion cancellation。
+- Semantic Part 测试覆盖 descriptor 的五个 Part 数量、顺序与字段（`header`/`icon`/`title`/`body` 为 `Multiple`、
+  `RuntimeCreated=true` 且携带显式 route）；N 个面板时四个 Part 各 N 个节点、空集合为 0、items reset/replace/clear 后
+  数量跟随容器；`IsShowExpandIcon=False` 时 `semantic-icon` 节点隐藏但存在；状态与视觉模式切换不改变 marker 数量；root
+  表面投影与生成 Style 对 `header`/`body`/`title`/`icon` 的局部 Setter 生效，见
+  [semantic-part.md §7](semantic-part.md#7-兼容性与验证)。
 - 运行 Collapse 定向测试、Gallery 测试和 `git diff --check`。
 
 共享动效设计的验证要求：

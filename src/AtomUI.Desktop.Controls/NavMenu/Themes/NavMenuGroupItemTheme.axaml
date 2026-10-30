@@ -16,6 +16,8 @@
             <ControlTemplate>
                 <StackPanel>
                     <ContentPresenter Name="PART_HeaderPresenter"
+                                      Classes.semantic-item-title="True"
+                                      Classes.semantic-sub-menu-item-title="True"
                                       Height="{atom:NavMenuTokenResource GroupTitleLineHeight}"
                                       Margin="{atom:NavMenuTokenResource ItemContentMargin}"
                                       Padding="{atom:NavMenuTokenResource ItemContentPadding}"
@@ -26,6 +28,8 @@
                                       TextElement.FontSize="{atom:NavMenuTokenResource GroupTitleFontSize}"
                                       TextElement.Foreground="{atom:NavMenuTokenResource GroupTitleColor}" />
                     <ItemsPresenter Name="PART_ItemsPresenter"
+                                    Classes.semantic-list="True"
+                                    Classes.semantic-sub-menu-list="True"
                                     ItemsPanel="{TemplateBinding ItemsPanel}" />
                 </StackPanel>
             </ControlTemplate>

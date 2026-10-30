@@ -19,6 +19,13 @@
                                          VerticalAlignment="Center"
                                          Icon="{TemplateBinding Icon}"
                                          IsEnabled="{TemplateBinding IsEnabled}" />
+                    <atom:IconPresenter Name="JumpIconPresenter"
+                                         IsVisible="False"
+                                         Opacity="0"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         Icon="{TemplateBinding JumpIcon}"
+                                         IsEnabled="{TemplateBinding IsEnabled}" />
                     <ContentPresenter Name="ContentPresenter"
                                       HorizontalAlignment="Center"
                                       VerticalAlignment="Center"
@@ -40,22 +47,43 @@
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
             <Setter Property="IconBrush" Value="{TemplateBinding Foreground}" />
         </Style>
+        <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
+            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+        </Style>
 
         <Style Selector="^[PaginationItemType=PageIndicator]">
             <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
-        <Style Selector="^:not(^[PaginationItemType=PageIndicator])">
+        <Style Selector="^[PaginationItemType=Previous], ^[PaginationItemType=Next]">
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
 
-        <Style Selector="^[IsEnabled=True]">
-            <Style Selector="^:not(^[PaginationItemType=Ellipses])">
-                <Setter Property="Cursor" Value="Hand" />
+        <Style Selector="^[PaginationItemType=JumpPrevious], ^[PaginationItemType=JumpNext]">
+            <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+                <Setter Property="IsVisible" Value="True" />
+                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                <Setter Property="Opacity" Value="1" />
             </Style>
+            <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
+                <Setter Property="IsVisible" Value="True" />
+                <Setter Property="Opacity" Value="0" />
+            </Style>
+            <Style Selector="^:pointerover, ^:focus-visible">
+                <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+                    <Setter Property="Opacity" Value="0" />
+                </Style>
+                <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
+                    <Setter Property="Opacity" Value="1" />
+                </Style>
+            </Style>
+        </Style>
+
+        <Style Selector="^[IsEnabled=True]">
+            <Setter Property="Cursor" Value="Hand" />
 
             <Style Selector="^[PaginationItemType=PageIndicator]">
                 <Style Selector="^:selected">
@@ -110,6 +138,10 @@
                 <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeLG}" />
                 <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeLG}" />
             </Style>
+            <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
+                <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeLG}" />
+                <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeLG}" />
+            </Style>
 
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
@@ -119,11 +151,19 @@
                 <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
                 <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
             </Style>
+            <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
+                <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
+                <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
+            </Style>
         </Style>
         <Style Selector="^[SizeType=Small]">
             <Setter Property="Height" Value="{atom:PaginationTokenResource ItemSizeSM}" />
             <Setter Property="MinWidth" Value="{atom:PaginationTokenResource ItemSizeSM}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+                <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeSM}" />
+                <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeSM}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
                 <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeSM}" />
                 <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeSM}" />
             </Style>
@@ -138,6 +178,16 @@
                         Value="{atom:PaginationTokenResource ItemActiveBgDisabled}" />
             </Style>
 
+            <Style Selector="^[PaginationItemType=JumpPrevious], ^[PaginationItemType=JumpNext]">
+                <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+                    <Setter Property="Opacity" Value="1" />
+                </Style>
+                <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                </Style>
+            </Style>
+
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
@@ -148,6 +198,13 @@
                     <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                 </Transitions>
             </Setter>
+            <Style Selector="^ /template/ atom|IconPresenter#IconPresenter, ^ /template/ atom|IconPresenter#JumpIconPresenter">
+                <Setter Property="Transitions">
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+                    </Transitions>
+                </Setter>
+            </Style>
         </Style>
     </ControlTheme>
 </ResourceDictionary>

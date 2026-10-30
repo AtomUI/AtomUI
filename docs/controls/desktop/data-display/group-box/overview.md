@@ -1,6 +1,6 @@
 # GroupBox 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.GroupBox` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [GroupBox 桌面版实现原理](implementation.md)，GroupBox Token 的专项设计见 [GroupBox Token 设计](token.md)，设计和契约变化记录见 [GroupBox Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.GroupBox` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [GroupBox 桌面版实现原理](implementation.md)，Semantic Part 契约见 [GroupBox Semantic Part 契约](semantic-part.md)，GroupBox Token 的专项设计见 [GroupBox Token 设计](token.md)，设计和契约变化记录见 [GroupBox Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -59,6 +59,36 @@ GroupBox 在未显式设置 `Height` / `MaxHeight` 等外部约束时，会根�
 | `PART_HeaderPresenter` | `TextBlock` | Header 标题展示。 |
 | `PART_ContentPresenter` | `ContentPresenter` | 内容承载。 |
 
+### 3.5 Semantic Part 契约
+
+`GroupBox` 公开 `root`、`header`、`icon`、`title`、`content` 五个职责区域，完整契约见 [GroupBox Semantic Part 契约](semantic-part.md)：
+
+| Part | Selector | AtomUI 节点 | Cardinality | 定制方式 |
+| --- | --- | --- | --- | --- |
+| `root` | 控件本身 | `GroupBox` owner（边框与背景由 owner 自绘） | `Single` | owner 选择器 + 公开属性 |
+| `header` | `.semantic-header` | `Border#PART_HeaderContent` | `Single` | `GroupBoxHeaderStyle` |
+| `icon` | `.semantic-icon` | `IconPresenter#PART_HeaderIconPresenter` | `Single` | `GroupBoxIconStyle` |
+| `title` | `.semantic-title` | `TextBlock#PART_HeaderPresenter` | `Single` | `GroupBoxTitleStyle` |
+| `content` | `.semantic-content` | `ContentPresenter#PART_ContentPresenter` | `Single` | `GroupBoxContentStyle` |
+
+GroupBox 是独立控件，五个 Part 全部是 `GroupBoxTheme.axaml` 单一模板内的静态节点，`TemplatedParent` 为 GroupBox owner
+本身。因此四个非 root Part 都声明 `RuntimeCreated=false`、`CrossVisualRoot=false`，生成 Style 路由是单一的 `/template/`
+边界，没有 `.semantic-scope-*` 中间锚点，也没有条件分支模板、容器创建、prepare/clear/recycle 或跨视觉根路径；五个 Part
+在任何状态下都恰好命中一个，不存在 `Optional` 或 `Multiple` Part。定制摘要：
+
+- 分组边框与背景（`BorderBrush`、`Background`、`BorderThickness`、`CornerRadius`）由 owner 自绘，模板中没有承载它们的
+  节点，因此只能通过 root 的公开属性定制；任何 Part 上的 `Background` / `BorderBrush` Setter 只作用于该 Part 自身，不会
+  改变分组边框。见 [semantic-part.md §2.1](semantic-part.md#21-root)。
+- Header 区域的背景、内边距与标题/图标样式通过生成的 Semantic Style 定制；缺口是几何排除而非背景遮挡，因此给 `header`
+  设置不透明背景不会在标题下方还原出边框短线。
+- `header` 的承载节点在本次改造中由 `Decorator` 提升为 `Border`，以获得 `Background` 能力；它仍是 `Decorator` 的子类，
+  模板 part 查找、`Bounds` 语义与缺口几何都不变。
+- 标题字体/颜色与内容内边距的主路径仍是 owner 的 `HeaderTitleColor`、`HeaderFontSize`、`HeaderFontWeight`、
+  `HeaderFontStyle` 与 `Padding`；Semantic Style 用于 class 级批量覆盖以及 owner 未暴露的属性（如 `TextDecorations`、
+  图标尺寸与图标颜色）。
+- Header 缺口几何、`PART_Frame`、`PART_HeaderContainer` 与 Token 保留值都不属于 Semantic Part，见
+  [semantic-part.md §6](semantic-part.md#6-定制边界)。
+
 ## 4. 行为与状态模型
 
 GroupBox 自身没有 hover、pressed、loading、selected、expanded 或 checked 状态。它不拦截输入事件，也不为 Header 提供默认点击行为。
@@ -113,7 +143,8 @@ GroupBox 不实现 `IFormItemAware`、`ICompactSpaceAware` 或 ItemsControl 相�
 - `HeaderTitle`、`HeaderTitleColor`、`HeaderIcon`、`HeaderTitlePosition`、`HeaderFontSize`、`HeaderFontStyle`、`HeaderFontWeight` 的 API 名称、类型和默认语义不变。
 - `GroupBoxTitlePosition.Left`、`Right`、`Center` 的名称和含义不变。
 - `PART_Frame`、`PART_HeaderContainer`、`PART_HeaderContent`、`PART_HeaderIconPresenter`、`PART_HeaderPresenter`、`PART_ContentPresenter` 的 template part 名称不变。
-- `Background="Transparent"` 时内容区保持透明，同时 Header 标题下方不应出现边框短线。
+- `PART_HeaderContent` 保持为 `Decorator` 的子类（当前为 `Border`，用于承载 Semantic Part `header` 的背景能力），缺口几何继续以它的实际 `Bounds` 为准。
+- `Background="Transparent"` 时内容区保持透明，同时 Header 标题下方不应出现边框短线；该契约在 Header 设置不透明背景时同样成立，缺口始终是几何排除而非背景遮挡。
 - 未设置显式高度时，GroupBox 的 `DesiredSize.Height` 必须包含 Header 通道、内容内边距和内容自身期望高度，避免内容多时被 Header 或边框区域挤压。
 - Header 图标为 `null` 时图标节点不可见，不保留额外图标占位宽度。
 - Header 内容位置改变只影响 Header 水平对齐，不改变内容区域布局语义。
@@ -132,34 +163,19 @@ GroupBox 的边框不是普通完整矩形边框。Header 内容嵌入在边框�
 - 圆角、边框厚度和 DPI 半像素对齐不应因为缺口绘制出现断裂、重叠或多余短线。
 - 透明背景、半透明背景和父容器复杂背景下都不能依赖背景遮挡边框线。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [GroupBox 桌面版实现原理](implementation.md)
+- [GroupBox Semantic Part 契约](semantic-part.md)
 - [GroupBox Token 设计](token.md)
 - [GroupBox Changelog](changelog.md)
 
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `GroupBox` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/group-box/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/group-box/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+本次改造同时移除了此前生成器回退路径产出的占位行 `item` 与 `motion`：GroupBox 没有 item 集合、容器生命周期或动效区域，
+按 [Semantic Part 全量改造设计 §5.1](../../../../superpowers/specs/2026-08-12-semantic-part-control-rollout-design.md)不得为了
+覆盖率虚构这两类区域。五个区域的真实节点映射与 `PART_Frame`、`PART_HeaderContainer` 的排除依据见
+[GroupBox Semantic Part 契约](semantic-part.md)。
 
 验证策略：
 

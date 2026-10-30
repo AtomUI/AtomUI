@@ -1,4 +1,5 @@
 using Avalonia.Controls.Primitives;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Primitives;
 
@@ -9,10 +10,9 @@ internal class VisualLayerManagerUtils
     
     internal static T? FindLayer<T>(VisualLayerManager visualLayerManager) where T : class
     {
-        var layers = visualLayerManager.GetLayers();
-        foreach (var layer in layers)
+        foreach (var layer in visualLayerManager.GetVisualChildren())
         {
-            if (layer is T match)
+            if (layer != visualLayerManager.Child && layer is T match)
             {
                 return match;
             }

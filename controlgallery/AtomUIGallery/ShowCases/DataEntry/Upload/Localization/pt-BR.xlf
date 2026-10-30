@@ -229,6 +229,36 @@
         <target state="translated">Scrollable lista</target>
       </segment>
     </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Each realized file container. The PictureCard and PictureCircle append trigger is not a file item.</source>
+        <target state="translated">Cada contêiner de arquivo realizado. O gatilho de anexação de PictureCard e PictureCircle não é um item de arquivo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListDescription">
+      <segment>
+        <source>The active file list for every ListType, including the PictureCard and PictureCircle wrap layout.</source>
+        <target state="translated">A lista de arquivos ativa para cada ListType, incluindo o layout de quebra de PictureCard e PictureCircle.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize the Upload root, list region, and every realized file item with generated semantic styles.</source>
+        <target state="translated">Personalize a raiz de Upload, a região da lista e cada item de arquivo realizado com estilos semânticos gerados.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Upload owner that coordinates the trigger and list layout through the Upload control contract.</source>
+        <target state="translated">O proprietário Upload que coordena o gatilho e o layout da lista por meio do contrato do controle Upload.</target>
+      </segment>
+    </unit>
     <unit id="SuccessAutoRemoveDescription">
       <segment>
         <source>Use SuccessAutoRemoveDelay to remove successful files after a short delay.</source>

@@ -1,9 +1,12 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Media;
+using System.Reactive.Disposables;
 
 namespace AtomUI.Controls;
 
-public abstract class WatermarkGlyph : AvaloniaObject
+[GenerateScopedResourceHost]
+public abstract partial class WatermarkGlyph : AvaloniaObject
 {
     public double HorizontalSpace
     {
@@ -80,4 +83,47 @@ public abstract class WatermarkGlyph : AvaloniaObject
     public abstract void Render(DrawingContext context);
 
     public abstract Size GetDesiredSize();
+
+    private readonly LinkedList<IResourceHost> _resourceOwners = new();
+    private IDisposable? _resourceOwnerAttachment;
+
+    // 一个共享 Glyph 只有一套属性值：最后挂载的活动 owner 提供资源作用域。
+    // 生成器管理单一宿主的订阅，本列表只管理共享使用者的选择与退出。
+    internal IDisposable AttachToResourceOwner(IResourceHost owner)
+    {
+        var node = _resourceOwners.AddLast(owner);
+        UpdateResourceOwner();
+        return Disposable.Create(() => DetachResourceOwner(node));
+    }
+
+    private void DetachResourceOwner(LinkedListNode<IResourceHost> node)
+    {
+        if (node != _resourceOwners.Last)
+        {
+            _resourceOwners.Remove(node);
+            return;
+        }
+
+        _resourceOwners.Remove(node);
+        UpdateResourceOwner();
+    }
+
+    private void UpdateResourceOwner()
+    {
+        var previousAttachment = _resourceOwnerAttachment;
+        if (_resourceOwners.Last is { } owner)
+        {
+            // 资源通知可同步挂载另一个 owner；先建立当前代次的释放槽，
+            // 避免外层 Attach 返回后覆盖内层已经接管的 attachment。
+            var attachment = new SingleAssignmentDisposable();
+            _resourceOwnerAttachment = attachment;
+            attachment.Disposable = AttachResourceHost(owner.Value);
+        }
+        else
+        {
+            _resourceOwnerAttachment = null;
+        }
+        // 新宿主接管时生成器先解绑旧宿主；再释放旧 token，避免资源暂时回退到 Application。
+        previousAttachment?.Dispose();
+    }
 }

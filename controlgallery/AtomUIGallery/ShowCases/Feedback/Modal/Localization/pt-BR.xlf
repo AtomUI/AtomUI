@@ -385,6 +385,114 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Body element: content area padding and content host.</source>
+        <target state="translated">Elemento de corpo: espaçamento e host de conteúdo da área de conteúdo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>Close element: the title bar close button.</source>
+        <target state="translated">Elemento de fechar: botão de fechar da barra de título.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContainerDescription">
+      <segment>
+        <source>Container element: dialog body frame with background, corner radius and clipping.</source>
+        <target state="translated">Elemento de contêiner: moldura do corpo do diálogo com fundo, raio de canto e recorte.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>Footer element: action area frame with background and padding.</source>
+        <target state="translated">Elemento de rodapé: moldura da área de ações com fundo e espaçamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element: title bar frame with background and padding.</source>
+        <target state="translated">Elemento de cabeçalho: moldura da barra de título com fundo e espaçamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMaskDescription">
+      <segment>
+        <source>Mask element: the modal mask background and pointer hit-testing.</source>
+        <target state="translated">Elemento de máscara: fundo da máscara modal e teste de hit do ponteiro.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewFooterLink">
+      <segment>
+        <source>More</source>
+        <target state="translated">Mais</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element: the Dialog owner itself, carrying the opening intent, content, result and events.</source>
+        <target state="translated">Elemento raiz: o próprio Dialog, com a intenção de abertura, conteúdo, resultado e eventos.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStageHint">
+      <segment>
+        <source>The overlay host is scoped to this stage, so the mask and the dialog stay inside it while each part is inspected.</source>
+        <target state="translated">O host Overlay é limitado a este palco, então a máscara e o diálogo permanecem dentro dele enquanto cada parte é inspecionada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesDescription">
+      <segment>
+        <source>Style Dialog and MessageBox Semantic Parts through the generated Semantic Style classes.</source>
+        <target state="translated">Estilize as Semantic Parts do Dialog e do MessageBox com as classes Semantic Style geradas.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesHint">
+      <segment>
+        <source>Open the semantically styled Dialog, MessageBox and window-hosted Dialog:</source>
+        <target state="translated">Abra o Dialog, o MessageBox e o Dialog em janela com estilos semânticos:</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesOpenStyledDialog">
+      <segment>
+        <source>Open styled Dialog</source>
+        <target state="translated">Abrir Dialog estilizado</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesOpenStyledMessageBox">
+      <segment>
+        <source>Open styled MessageBox</source>
+        <target state="translated">Abrir MessageBox estilizado</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesOpenStyledWindowDialog">
+      <segment>
+        <source>Open styled window Dialog</source>
+        <target state="translated">Abrir Dialog em janela estilizado</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element: title text typography and foreground color.</source>
+        <target state="translated">Elemento de título: tipografia e cor do texto do título.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticWindowStageHint">
+      <segment>
+        <source>Open the native Window host with the stage button: parts highlight inside that window; the styled window opens from the styling example.</source>
+        <target state="translated">Abra o host Window nativo com o botão do palco: as partes são destacadas dentro dessa janela; a janela estilizada abre pelo exemplo de estilos.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticWrapperDescription">
+      <segment>
+        <source>Wrapper element: the surface motion and transition container.</source>
+        <target state="translated">Elemento de invólucro: contêiner de movimento e transição da superfície.</target>
+      </segment>
+    </unit>
     <unit id="StaticDialogApiDescription">
       <segment>
         <source>Creating a Dialog using the static method of Dialog.</source>

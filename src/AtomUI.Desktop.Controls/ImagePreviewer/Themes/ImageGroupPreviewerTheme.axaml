@@ -12,11 +12,15 @@
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          CornerRadius="{TemplateBinding CornerRadius}">
                     <ItemsControl Name="PART_CoverItemsControl"
+                                  Classes.semantic-scope-items="True"
                                   ItemsSource="{TemplateBinding EffectiveItems}"
                                   ItemsPanel="{TemplateBinding ItemsPanel}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="atom:ImagePreviewEntry">
                                 <atom:ImagePreviewerCover ImageSource="{Binding ThumbnailImage}"
+                                                          OwnerPadding="{Binding Padding, RelativeSource={RelativeSource AncestorType=atom:ImageGroupPreviewer}}"
+                                                          OwnerBorderThickness="{Binding BorderThickness, RelativeSource={RelativeSource AncestorType=atom:ImageGroupPreviewer}}"
+                                                          OwnerCornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType=atom:ImageGroupPreviewer}}"
                                                           IsLoading="{Binding IsThumbnailLoading}"
                                                           IsFailed="{Binding IsThumbnailFailed}"
                                                           LoadingContent="{Binding LoadingContent, RelativeSource={RelativeSource AncestorType=atom:ImageGroupPreviewer}}"

@@ -7,8 +7,8 @@
              xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.Transfer"
              x:DataType="vm:TransferViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Transfer"
                     Category="{gallery:TransferShowCaseLangResource ComponentCategory}"
@@ -19,7 +19,228 @@
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="ListTransfer / TreeTransfer"
                     MetadataValueWidth="220" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:TransferViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview Name="ListTransferSemanticPreview"
+                                                     Title="ListTransfer"
+                                                     SemanticOwner="{Binding #ListTransferSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:ListTransfer}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <StackPanel>
+                                    <StackPanel.Styles>
+                                        <Style Selector="atom|ListTransfer.semantic-antd-preview">
+                                            <atom:ListTransferSourceSectionStyle x:SetterTargetType="TemplatedControl">
+                                                <Setter Property="Background" Value="#FFF7E6" />
+                                            </atom:ListTransferSourceSectionStyle>
+                                            <atom:ListTransferTargetSectionStyle x:SetterTargetType="TemplatedControl">
+                                                <Setter Property="Background" Value="#E6F7FF" />
+                                            </atom:ListTransferTargetSectionStyle>
+                                        </Style>
+                                    </StackPanel.Styles>
+                                    <atom:ListTransfer Name="ListTransferSemanticOwner"
+                                                       Classes="semantic-antd-preview"
+                                                       IsFilterEnabled="True"
+                                                       FilterPlaceholderText="{gallery:TransferShowCaseLangResource P2FilterPlaceholderTextSearchHere}"
+                                                       ListWidth="200"
+                                                       ListHeight="210"
+                                                       SourceTitle="{gallery:TransferShowCaseLangResource P2SourceTitle}"
+                                                       TargetTitle="{gallery:TransferShowCaseLangResource P2TargetTitle}"
+                                                       ItemsSource="{Binding BasicTransferItems}"
+                                                       TargetKeys="{Binding SemanticPreviewTargetKeys}">
+                                        <atom:ListTransfer.SourceViewFooter>
+                                            <TextBlock Text="{gallery:TransferShowCaseLangResource SemanticPartFooterText}" />
+                                        </atom:ListTransfer.SourceViewFooter>
+                                        <atom:ListTransfer.TargetViewFooter>
+                                            <TextBlock Text="{gallery:TransferShowCaseLangResource SemanticPartFooterText}" />
+                                        </atom:ListTransfer.TargetViewFooter>
+                                    </atom:ListTransfer>
+                                </StackPanel>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.section"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.section"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="actions"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticActionsDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="header"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticHeaderDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="title"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="body"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticBodyDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="list"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticListDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="footer"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticFooterDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.header"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceHeaderDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.header"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetHeaderDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.title"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.title"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.body"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceBodyDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.body"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetBodyDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.list"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceListDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.list"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetListDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.footer"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceFooterDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.footer"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetFooterDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.item"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.item"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemIcon"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticItemIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.itemIcon"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceItemIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.itemIcon"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetItemIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemContent"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticItemContentDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.itemContent"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceItemContentDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.itemContent"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetItemContentDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="TreeTransferSemanticPreview"
+                                                     Title="TreeTransfer"
+                                                     SemanticOwner="{Binding #TreeTransferSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:TreeTransfer}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:TreeTransfer Name="TreeTransferSemanticOwner"
+                                                   SourceTitle="{gallery:TransferShowCaseLangResource P2SourceTitle}"
+                                                   TargetTitle="{gallery:TransferShowCaseLangResource P2TargetTitle}"
+                                                   IsStretchView="True"
+                                                   ItemsSource="{Binding TransferTreeNodes}"
+                                                   TargetKeys="{Binding SemanticTreePreviewTargetKeys}">
+                                    <atom:TreeTransfer.SourceView>
+                                        <atom:TransferTreeView IsDefaultExpandAll="True" />
+                                    </atom:TreeTransfer.SourceView>
+                                    <atom:TreeTransfer.SourceViewFooter>
+                                        <TextBlock Text="{gallery:TransferShowCaseLangResource SemanticPartFooterText}" />
+                                    </atom:TreeTransfer.SourceViewFooter>
+                                    <atom:TreeTransfer.TargetViewFooter>
+                                        <TextBlock Text="{gallery:TransferShowCaseLangResource SemanticPartFooterText}" />
+                                    </atom:TreeTransfer.TargetViewFooter>
+                                </atom:TreeTransfer>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.section"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.section"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="actions"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticActionsDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="header"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticHeaderDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="title"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="body"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticBodyDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="list"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticListDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="footer"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticFooterDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.header"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceHeaderDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.header"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetHeaderDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.title"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.title"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.body"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceBodyDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.body"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetBodyDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.list"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceListDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.list"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetListDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.footer"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceFooterDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.footer"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetFooterDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="source.item"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticSourceItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="target.item"
+                                    Description="{gallery:TransferShowCaseLangResource SemanticTargetItemDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -204,7 +425,63 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+    <gallery:ShowCaseItem
+        Title="{gallery:TransferShowCaseLangResource SemanticPartStyleTitle}"
+        Description="{gallery:TransferShowCaseLangResource SemanticPartStyleDescription}"
+        SourceKey="transfer-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        IsOccupyEntireRow="True"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:TransferViewModel">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Spacing="20">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|ListTransfer.semantic-classnames-demo">
+                            <atom:ListTransferSourceSectionStyle x:SetterTargetType="TemplatedControl">
+                                <Setter Property="Background" Value="#80FAFAFA" />
+                            </atom:ListTransferSourceSectionStyle>
+                            <atom:ListTransferTargetSectionStyle x:SetterTargetType="TemplatedControl">
+                                <Setter Property="Background" Value="#80FAFAFA" />
+                            </atom:ListTransferTargetSectionStyle>
+                            <atom:ListTransferHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
+                                <Setter Property="TextElement.Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+                                <Setter Property="TextElement.FontWeight" Value="Bold" />
+                            </atom:ListTransferHeaderStyle>
+                            <atom:ListTransferActionsStyle x:SetterTargetType="StackPanel">
+                                <Style Selector="^ atom|Button">
+                                    <Setter Property="Background" Value="#99FFF2E8" />
+                                </Style>
+                            </atom:ListTransferActionsStyle>
+                        </Style>
+                        <Style Selector="atom|ListTransfer.semantic-styles-demo">
+                            <atom:ListTransferSourceSectionStyle x:SetterTargetType="TemplatedControl">
+                                <Setter Property="Background" Value="#99F6FFED" />
+                                <Setter Property="BorderBrush" Value="#B7EB8F" />
+                            </atom:ListTransferSourceSectionStyle>
+                            <atom:ListTransferTargetSectionStyle x:SetterTargetType="TemplatedControl">
+                                <Setter Property="Background" Value="#99F6FFED" />
+                                <Setter Property="BorderBrush" Value="#B7EB8F" />
+                            </atom:ListTransferTargetSectionStyle>
+                            <atom:ListTransferHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
+                                <Setter Property="TextElement.Foreground" Value="#8DBCC7" />
+                            </atom:ListTransferHeaderStyle>
+                        </Style>
+                    </StackPanel.Styles>
+
+                    <atom:ListTransfer Classes="semantic-classnames-demo"
+                                       Status="Error"
+                                       ItemsSource="{Binding BasicTransferItems}"
+                                       TargetKeys="{Binding SemanticDemoTargetKeys}" />
+
+                    <atom:ListTransfer Classes="semantic-classnames-demo semantic-styles-demo"
+                                       Status="Warning"
+                                       ItemsSource="{Binding BasicTransferItems}"
+                                       TargetKeys="{Binding SemanticDemoTargetKeys}" />
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

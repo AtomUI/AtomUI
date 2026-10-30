@@ -187,6 +187,42 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon region of each option, with state icon brush and icon size</source>
+        <target state="translated">Região do ícone de cada opção, com cor do ícone por estado e tamanho do ícone</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item container, with state backgrounds, corner radius and padding</source>
+        <target state="translated">Contêiner de opção, com planos de fundo de estado, raio dos cantos e preenchimento</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label region of each option, with text and icon-text spacing</source>
+        <target state="translated">Região de rótulo de cada opção, com texto e espaçamento entre ícone e texto</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use generated style classes to customize the published Semantic Parts.</source>
+        <target state="translated">Use as classes de estilo geradas para personalizar as Semantic Parts publicadas.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, the track surface with background and corner radius</source>
+        <target state="translated">Elemento raiz, a superfície da trilha com plano de fundo e raio dos cantos</target>
+      </segment>
+    </unit>
     <unit id="ThreeSizesDescription">
       <segment>
         <source>Segmented supports large (40px), default (32px), small (24px), and custom size.</source>

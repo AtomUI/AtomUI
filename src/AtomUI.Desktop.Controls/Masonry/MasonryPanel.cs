@@ -2,7 +2,11 @@ using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
-
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
+using Avalonia.Data;
+using Avalonia.Styling;
+using System.Collections.Specialized;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
@@ -41,6 +45,12 @@ internal class MasonryPanel : Panel
 
     public static readonly StyledProperty<MasonryLayoutStrategy> LayoutStrategyProperty =
         Masonry.LayoutStrategyProperty.AddOwner<MasonryPanel>();
+
+    public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
+        Masonry.MotionDurationProperty.AddOwner<MasonryPanel>();
+
+    public static readonly StyledProperty<TimeSpan> LeaveMotionDurationProperty =
+        Masonry.LeaveMotionDurationProperty.AddOwner<MasonryPanel>();
 
     public int ColumnCount
     {
@@ -90,6 +100,18 @@ internal class MasonryPanel : Panel
         set => SetValue(LayoutStrategyProperty, value);
     }
 
+    public TimeSpan MotionDuration
+    {
+        get => GetValue(MotionDurationProperty);
+        set => SetValue(MotionDurationProperty, value);
+    }
+
+    public TimeSpan LeaveMotionDuration
+    {
+        get => GetValue(LeaveMotionDurationProperty);
+        set => SetValue(LeaveMotionDurationProperty, value);
+    }
+
     #endregion
 
     private List<Rect> _arrangeRects = new();
@@ -107,8 +129,94 @@ internal class MasonryPanel : Panel
     private MediaBreakPoint? _breakPoint;
     private IMediaBreakAwareControl? _mediaOwner;
 
+    // antd motionEaseOut == cubic-bezier(0.215, 0.61, 0.355, 1) == easeOutCubic == Avalonia
+    // CubicEaseOut（与 DrawerContainer 默认动效缓动一致）。
+    private static readonly CubicEaseOut MotionEasing = new();
+
+    private readonly Dictionary<Control, Rect> _lastVisualRects = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<Control, ItemMotionState> _itemMotions = new(ReferenceEqualityComparer.Instance);
+    private Masonry? _motionOwner;
+
+    private sealed class ItemMotionState
+    {
+        public CancellationTokenSource Cancellation = new();
+        public bool IsGlide;
+    }
+
+    /// <summary>被移除子项及其最后视觉矩形（面板坐标空间）。</summary>
+    internal readonly record struct MasonryRemovedItem(Control Container, Rect Rect);
+
+    /// <summary>
+    /// 在 base 同步 VisualChildren 之前处理动效语义：
+    /// Add 先释放 ghost 托管（否则容器仍有 ghost host 视觉父级，base 的
+    /// VisualChildren 插入会抛"already has a visual parent"）；
+    /// Remove/Replace 在 base 之后收集被移除子项并上报 Masonry 托管淡出。
+    /// </summary>
+    protected override void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        List<MasonryRemovedItem>? removed = null;
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Add:
+                if (e.NewItems is not null)
+                {
+                    foreach (Control child in e.NewItems)
+                    {
+                        _motionOwner?.TryReleaseMotionGhost(child);
+                    }
+                }
+                break;
+            case NotifyCollectionChangedAction.Remove:
+                base.ChildrenChanged(sender, e);
+                if (e.OldItems is not null)
+                {
+                    foreach (Control child in e.OldItems)
+                    {
+                        CollectRemovedChild(child, ref removed);
+                    }
+                }
+                NotifyRemovedToOwner(removed);
+                return;
+            case NotifyCollectionChangedAction.Replace:
+                foreach (Control child in e.NewItems!)
+                {
+                    _motionOwner?.TryReleaseMotionGhost(child);
+                }
+                base.ChildrenChanged(sender, e);
+                if (e.OldItems is not null)
+                {
+                    foreach (Control child in e.OldItems)
+                    {
+                        CollectRemovedChild(child, ref removed);
+                    }
+                }
+                NotifyRemovedToOwner(removed);
+                return;
+        }
+        base.ChildrenChanged(sender, e);
+    }
+
+    private void CollectRemovedChild(Control child, ref List<MasonryRemovedItem>? removed)
+    {
+        if (_lastVisualRects.TryGetValue(child, out var rect))
+        {
+            (removed ??= new List<MasonryRemovedItem>()).Add(new MasonryRemovedItem(child, rect));
+            _lastVisualRects.Remove(child);
+        }
+    }
+
+    private void NotifyRemovedToOwner(List<MasonryRemovedItem>? removed)
+    {
+        if (removed is { Count: > 0 } && _motionOwner is not null && this.GetVisualRoot() is not null)
+        {
+            _motionOwner.NotifyItemsRemoved(this, removed);
+        }
+    }
+
     static MasonryPanel()
     {
+        // RenderTransform（ITransform?）默认无关键帧插值器（见 MasonryItemTransformAnimator 说明）
+        Animation.RegisterCustomAnimator<Avalonia.Media.ITransform?, MasonryInternal.MasonryItemTransformAnimator>();
         AffectsMeasure<MasonryPanel>(
             ColumnCountProperty,
             ColumnInfoProperty,
@@ -123,6 +231,7 @@ internal class MasonryPanel : Panel
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        _motionOwner = this.FindAncestorOfType<Masonry>();
         if (MediaQueryHost.FindOwner(this) is { } mediaOwner)
         {
             _mediaOwner = mediaOwner;
@@ -138,11 +247,23 @@ internal class MasonryPanel : Panel
         {
             ClearStableAssignments();
         }
+        if (change.Property == FlowDirectionProperty)
+        {
+            // Mirror direction changed: re-arrange existing children at their mirrored rects.
+            InvalidateArrange();
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
+        foreach (var state in _itemMotions.Values)
+        {
+            state.Cancellation.Cancel();
+        }
+        _itemMotions.Clear();
+        _lastVisualRects.Clear();
+        _motionOwner = null;
         _hasMeasuredLayout = false;
         _measuredLayout = null;
         ClearStableAssignments();
@@ -193,14 +314,186 @@ internal class MasonryPanel : Panel
         _measuredLayout = null;
         PublishLayout(layout);
 
+        // RTL mirrors the column order (antd `-rtl` + `insetInlineStart` equivalent). The
+        // published rects stay in logical (LTR) space; only the arranged visual rect is mirrored.
+        var isRtl = FlowDirection == Avalonia.Media.FlowDirection.RightToLeft;
         for (var i = 0; i < Children.Count; i++)
         {
-            Children[i].Arrange(_arrangeRects[i]);
+            var visualRect = MirrorForRtl(_arrangeRects[i], finalSize.Width, isRtl);
+            ApplyItemMotion(Children[i], visualRect);
+            Children[i].Arrange(visualRect);
         }
 
         CommitStableAssignments(layout);
         MaybeNotifyLayoutChanged();
         return finalSize;
+    }
+
+    private static Rect MirrorForRtl(Rect rect, double width, bool isRtl)
+    {
+        return isRtl ? rect.WithX(width - rect.Right) : rect;
+    }
+
+    // 动效偏移来自旧/新 Arrange 矩形（运行时布局状态），ControlTheme 无法表达，故在面板代码驱动；
+    // 时长值由 ControlTheme 从 token Setter 提供（见 MasonryTheme.axaml）。
+    private void ApplyItemMotion(Control child, Rect visualRect)
+    {
+        if (_motionOwner is null)
+        {
+            return;
+        }
+
+        if (!_lastVisualRects.TryGetValue(child, out var previousRect))
+        {
+            // First arrange: appear fade-in only, no glide (antd motionAppear without position transition).
+            _lastVisualRects[child] = visualRect;
+            StartAppearMotion(child);
+            return;
+        }
+
+        _lastVisualRects[child] = visualRect;
+        var offset = previousRect.TopLeft - visualRect.TopLeft;
+        if (offset != default && !_itemMotions.ContainsKey(child))
+        {
+            // Existing item repositioned: glide only, no fade (antd `&:not(item-fade)` transition).
+            StartGlideMotion(child, offset);
+        }
+    }
+
+    private void StartAppearMotion(Control child)
+    {
+        var duration = MotionDuration;
+        if (!child.IsVisible || duration <= TimeSpan.Zero)
+        {
+            return;
+        }
+
+        var state = new ItemMotionState();
+        _itemMotions[child] = state;
+        _ = RunAppearMotionAsync(child, duration, state);
+    }
+
+    private async Task RunAppearMotionAsync(Control child, TimeSpan duration, ItemMotionState state)
+    {
+        IDisposable? preset = null;
+        try
+        {
+            // 预置起始值（动画优先级），避免首帧闪烁。注意释放方式：AvaloniaObject.SetValue 对
+            // 非 LocalValue 优先级的 UnsetValue 是静默忽略的，必须 Dispose 返回的句柄才能回落基值。
+            preset = child.SetValue(Visual.OpacityProperty, 0d, BindingPriority.Animation);
+            var animation = new Animation
+            {
+                Duration = duration,
+                Easing   = MotionEasing,
+                Children =
+                {
+                    new KeyFrame { Cue = new Cue(0d), Setters = { new Setter(Visual.OpacityProperty, 0d) } },
+                    new KeyFrame { Cue = new Cue(1d), Setters = { new Setter(Visual.OpacityProperty, 1d) } },
+                }
+            };
+            await animation.RunAsync(child, state.Cancellation.Token);
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            if (_itemMotions.TryGetValue(child, out var current) && ReferenceEquals(current, state))
+            {
+                _itemMotions.Remove(child);
+            }
+            preset?.Dispose();
+        }
+    }
+
+    private void StartGlideMotion(Control child, Vector offset)
+    {
+        var duration = MotionDuration;
+        if (!child.IsVisible || duration <= TimeSpan.Zero)
+        {
+            return;
+        }
+
+        if (_itemMotions.TryGetValue(child, out var existing))
+        {
+            if (!existing.IsGlide)
+            {
+                // 入场淡入激活中的项不做位置过渡（antd `-fade` 项语义）
+                return;
+            }
+            // 滑动中再次变位：先冻结当前视觉平移（在取消前读取），再取消旧动画续滑
+            var resumeOffset = ReadCurrentTranslate(child);
+            existing.Cancellation.Cancel();
+            existing.Cancellation = new CancellationTokenSource();
+            _ = RunGlideMotionAsync(child, duration, existing, resumeOffset);
+            return;
+        }
+
+        var state = new ItemMotionState { IsGlide = true };
+        _itemMotions[child] = state;
+        _ = RunGlideMotionAsync(child, duration, state, offset);
+    }
+
+    private async Task RunGlideMotionAsync(Control child, TimeSpan duration, ItemMotionState state,
+        Vector startOffset)
+    {
+        IDisposable? preset = null;
+        try
+        {
+            // 预置旧位置偏移（动画优先级），布局矩形已是最终位置；结束 Dispose 释放回落用户基值
+            if (startOffset != default)
+            {
+                preset = child.SetValue(Visual.RenderTransformProperty, BuildTranslate(startOffset),
+                    BindingPriority.Animation);
+            }
+            var animation = new Animation
+            {
+                Duration = duration,
+                Easing   = MotionEasing,
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Cue = new Cue(0d),
+                        Setters = { new Setter(Visual.RenderTransformProperty, BuildTranslate(startOffset)) }
+                    },
+                    new KeyFrame
+                    {
+                        Cue = new Cue(1d),
+                        Setters = { new Setter(Visual.RenderTransformProperty, BuildTranslate(default)) }
+                    },
+                }
+            };
+            await animation.RunAsync(child, state.Cancellation.Token);
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            if (_itemMotions.TryGetValue(child, out var current) && ReferenceEquals(current, state))
+            {
+                _itemMotions.Remove(child);
+            }
+            // 取消续滑（有新动画接管属性）时不释放，避免把新动画刚预置的偏移清掉
+            if (!state.Cancellation.IsCancellationRequested)
+            {
+                preset?.Dispose();
+            }
+        }
+    }
+
+    private static Avalonia.Media.Transformation.TransformOperations BuildTranslate(Vector offset)
+    {
+        var builder = new Avalonia.Media.Transformation.TransformOperations.Builder(1);
+        builder.AppendTranslate(offset.X, offset.Y);
+        return builder.Build();
+    }
+
+    private static Vector ReadCurrentTranslate(Control child)
+    {
+        if (child.RenderTransform is Avalonia.Media.ITransform transform)
+        {
+            var matrix = transform.Value;
+            return new Vector(matrix.M31, matrix.M32);
+        }
+        return default;
     }
 
     private void PublishLayout(MasonryLayout layout)

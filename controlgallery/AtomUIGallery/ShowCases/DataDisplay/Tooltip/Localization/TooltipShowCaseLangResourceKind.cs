@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -50,5 +48,10 @@ public enum TooltipShowCaseLangResourceKind
     PageSubtitle,
     PageDescription,
     ComponentCategory,
-    ComponentStatusStable
+    ComponentStatusStable,
+    SemanticRootDescription,
+    SemanticContainerDescription,
+    SemanticArrowDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription
 }

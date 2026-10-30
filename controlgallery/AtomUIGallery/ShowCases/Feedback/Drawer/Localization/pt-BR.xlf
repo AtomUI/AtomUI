@@ -397,5 +397,89 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Content element with flex ratio, padding and overflow scrolling styles.</source>
+        <target state="translated">Elemento de conteúdo com estilos de proporção flex, preenchimento e rolagem de overflow.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>Close button element with basic button styles.</source>
+        <target state="translated">Elemento do botão de fechar com estilos básicos de botão.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraDescription">
+      <segment>
+        <source>Extra action element at the header trailing edge.</source>
+        <target state="translated">Elemento de ação extra na borda final do cabeçalho.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>Footer element with padding and top border styles.</source>
+        <target state="translated">Elemento inferior com estilos de preenchimento e borda superior.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with layout, alignment, padding and typography styles.</source>
+        <target state="translated">Elemento de cabeçalho com estilos de layout, alinhamento, preenchimento e tipografia.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMaskDescription">
+      <segment>
+        <source>Mask element with positioning, z-index, background and pointer-event controls.</source>
+        <target state="translated">Elemento de máscara com posicionamento, z-index, cor de fundo e controles de eventos de ponteiro.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewFooterLink">
+      <segment>
+        <source>Footer</source>
+        <target state="translated">Rodapé</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewTitleText">
+      <segment>
+        <source>Title</source>
+        <target state="translated">Título</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element that carries the semantic identity and the owner-level style customization entry.</source>
+        <target state="translated">Elemento raiz que carrega a identidade semântica e a entrada de personalização de estilo no nível do owner.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Drawer panel container with layout, size, overflow and background styles.</source>
+        <target state="translated">Contêiner do painel do drawer com estilos de layout, tamanho, overflow e fundo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStageHint">
+      <segment>
+        <source>The drawer renders inline and stays open in this area.</source>
+        <target state="translated">O drawer é renderizado embutido e permanece aberto nesta área.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesDescription">
+      <segment>
+        <source>Customize every semantic part with the generated part style classes.</source>
+        <target state="translated">Personalize cada parte semântica com as classes de estilo de parte geradas.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with font weight, size and line-height styles.</source>
+        <target state="translated">Elemento de título com estilos de peso, tamanho e altura de linha da fonte.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

@@ -1,4 +1,9 @@
 using AtomUI.Localization;
+using AtomUI.Registration;
+using AtomUI.Theme;
+using AtomUI.Theme.Definitions;
+using AtomUI.Theme.Resources;
+using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -19,13 +24,17 @@ public class ApplicationScopeTests
 
             scope.InitializeApplication();
 
-            application.Resources.MergedDictionaries
+            application.Styles.Resources.MergedDictionaries
                        .Count(provider => ReferenceEquals(provider, scope.ResourceProvider))
                        .ShouldBe(1);
             scope.ResourceProvider.Owner.ShouldBeSameAs(application);
             ApplicationScopeRegistry.Get(application).ShouldBeSameAs(scope);
             scope.LanguageManager.ShouldBeSameAs(scope.LocalizationHost.LanguageManager);
             scope.Localizer.ShouldBeSameAs(scope.LocalizationHost.Localizer);
+
+            application.Resources = new ResourceDictionary { ["ApplicationOverride"] = "preserved" };
+            application.TryGetResource(LanguageResourceKeys.FlowDirection, null, out var direction).ShouldBeTrue();
+            direction.ShouldBe(FlowDirection.LeftToRight);
         });
     }
 
@@ -67,10 +76,10 @@ public class ApplicationScopeTests
             using var second = CreateScope(application);
             first.InitializeApplication();
 
-            var exception = Should.Throw<InvalidOperationException>(second.InitializeApplication);
+            var exception = Should.Throw<InvalidOperationException>(() => second.InitializeApplication());
 
             exception.Message.ShouldContain("already initialized");
-            application.Resources.MergedDictionaries
+            application.Styles.Resources.MergedDictionaries
                        .Count(provider => ReferenceEquals(provider, second.ResourceProvider))
                        .ShouldBe(0);
         });
@@ -89,7 +98,7 @@ public class ApplicationScopeTests
 
             scope.Dispose();
 
-            application.Resources.MergedDictionaries.Contains(provider).ShouldBeFalse();
+            application.Styles.Resources.MergedDictionaries.Contains(provider).ShouldBeFalse();
             application.Styles.Contains(flowDirectionStyle).ShouldBeFalse();
             ApplicationScopeRegistry.Get(application).ShouldBeNull();
             Should.Throw<InvalidOperationException>(() =>
@@ -135,7 +144,7 @@ public class ApplicationScopeTests
             var third = new TrackingOwnedService("third", log);
             var scope = CreateScope(application, ownedServices: [first, second, third]);
 
-            Should.Throw<InvalidOperationException>(scope.InitializeApplication)
+            Should.Throw<InvalidOperationException>(() => scope.InitializeApplication())
                   .Message.ShouldContain("attach:second");
 
             log.ShouldBe([
@@ -144,7 +153,7 @@ public class ApplicationScopeTests
                 "detach:first"
             ]);
             ApplicationScopeRegistry.Get(application).ShouldBeNull();
-            application.Resources.MergedDictionaries.Contains(scope.ResourceProvider).ShouldBeFalse();
+            application.Styles.Resources.MergedDictionaries.Contains(scope.ResourceProvider).ShouldBeFalse();
             application.Styles.Contains(scope.FlowDirectionStyle).ShouldBeFalse();
 
             scope.Dispose();
@@ -183,7 +192,7 @@ public class ApplicationScopeTests
                 "dispose:first"
             ]);
             ApplicationScopeRegistry.Get(application).ShouldBeNull();
-            application.Resources.MergedDictionaries.Contains(scope.ResourceProvider).ShouldBeFalse();
+            application.Styles.Resources.MergedDictionaries.Contains(scope.ResourceProvider).ShouldBeFalse();
             application.Styles.Contains(scope.FlowDirectionStyle).ShouldBeFalse();
         });
     }
@@ -199,7 +208,7 @@ public class ApplicationScopeTests
             var second = new TrackingOwnedService("second", log) { ThrowOnAttach = true };
             var scope = CreateScope(application, ownedServices: [first, second]);
 
-            var exception = Should.Throw<AggregateException>(scope.InitializeApplication);
+            var exception = Should.Throw<AggregateException>(() => scope.InitializeApplication());
 
             exception.InnerExceptions.Count.ShouldBe(2);
             log.ShouldBe([
@@ -222,7 +231,7 @@ public class ApplicationScopeTests
             var first = new TrackingOwnedService("first", log);
             var second = new TrackingOwnedService("second", log);
 
-            var exception = Should.Throw<InvalidOperationException>(() => application.UseAtomUI(builder =>
+            var exception = Should.Throw<InvalidOperationException>(() => ApplicationStartup.AttachWith(application, builder =>
             {
                 var atomBuilder = (AtomUIBuilder)builder;
                 atomBuilder.AddOwnedService("first", _ => first);
@@ -246,14 +255,65 @@ public class ApplicationScopeTests
         Action<IAtomUIBuilder>? configure = null,
         IReadOnlyList<IAtomUIOwnedService>? ownedServices = null)
     {
-        var builder = new AtomUIBuilder(application);
+        var builder = new AtomUIBuilder(application.GetType());
         configure?.Invoke(builder);
         return new ApplicationScope(
             application,
             builder.ThemeManagerBuilder.Build(),
             builder.LocalizationBuilder.Build(),
-            ownedServices ?? []);
+            ownedServices ?? [],
+            new StartupProcess());
     }
+
+    private static void RegisterSemanticPackage(IAtomUIBuilder builder, ControlTokenIdentity identity)
+    {
+        ControlRegistrationRuntime.RegisterPackage(
+            builder,
+            "Deferred.Package",
+            static () => new DeferredProvider("Deferred.Package"),
+            collection => collection.AddSemanticControl(new ControlSemanticDescriptor(
+                typeof(Button),
+                identity,
+                [new SemanticPartDescriptor(
+                    "root",
+                    "root",
+                    null,
+                    typeof(Button),
+                    SemanticPartCardinality.Single,
+                    SemanticPartCustomization.Root,
+                    null,
+                    false,
+                    null,
+                    false)])));
+    }
+
+    private sealed class FailingResolver : IThemeDefinitionResolver
+    {
+        public string Id => nameof(FailingResolver);
+        public bool SupportsReload => false;
+
+        public ThemeDefinitionResolveResult Resolve(ThemeDefinitionResolveContext context)
+        {
+            return new ThemeDefinitionResolveResult(
+                [],
+                [new ThemeDiagnostic(
+                    "TEST-STAGE-TWO",
+                    ThemeDiagnosticSeverity.Error,
+                    Id,
+                    "$",
+                    "Stage 2 preparation failure")]);
+        }
+    }
+
+    private sealed class DeferredProvider : ControlThemesProvider
+    {
+        internal DeferredProvider(string id)
+        {
+            Id = id;
+        }
+    }
+
+    private sealed class TestSubscriberException : Exception;
 
     private sealed class TrackingOwnedService : IAtomUIOwnedService
     {

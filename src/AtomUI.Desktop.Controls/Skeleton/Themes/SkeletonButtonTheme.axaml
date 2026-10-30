@@ -8,10 +8,36 @@
         <ControlTheme.BasedOn>
             <themes:SkeletonElementTheme TargetType="atom:SkeletonButton" />
         </ControlTheme.BasedOn>
+
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:SkeletonButton">
+                <Panel Name="PART_RootLayout">
+                    <Border Name="PART_ActiveAnimationLayer"
+                            Classes.semantic-content="True"
+                            Height="{TemplateBinding Height}"
+                            MinWidth="{TemplateBinding MinWidth}"
+                            HorizontalAlignment="Left"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            IsVisible="{TemplateBinding IsActive}" />
+                    <Border Name="PART_ContentLayer"
+                            Classes.semantic-content="True"
+                            Height="{TemplateBinding Height}"
+                            MinWidth="{TemplateBinding MinWidth}"
+                            HorizontalAlignment="Left"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
         
         <Style Selector="^[Shape=Square]">
             <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}"/>
         </Style>
-        
+
     </ControlTheme>
 </ResourceDictionary>

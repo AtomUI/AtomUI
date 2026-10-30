@@ -2,6 +2,7 @@
     <PropertyGroup>
         <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
         <Nullable>enable</Nullable>
+        <AtomUIRegistrationPackageId>AtomUI.Controls.Common</AtomUIRegistrationPackageId>
         <RootNamespace>AtomUI.Controls</RootNamespace>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>GeneratedFiles</CompilerGeneratedFilesOutputPath>
@@ -33,6 +34,14 @@
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.ColorPicker" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Extras" />
         <InternalsVisibleTo Include="AtomUI.Controls.Tests" />
+        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Splash owns this startup theme before package commit; keep its logical resource path outside Themes
+             so the package theme-asset pipeline does not register or defer it. -->
+        <AvaloniaXaml Update="Splash/Themes/SplashDefaultTheme.axaml"
+                      Link="Splash/SplashDefaultTheme.axaml" />
     </ItemGroup>
 
 </Project>

@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><IsTrimmable>false</IsTrimmable><EnableTypeMapBackend>false</EnableTypeMapBackend></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.ILLink.Tasks" VersionOverride="10.0.8" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="all" />
+    <Reference Include="Mono.Cecil" HintPath="$(PkgMicrosoft_NET_ILLink_Tasks)/tools/net/Mono.Cecil.dll" />
+  </ItemGroup>
+</Project>

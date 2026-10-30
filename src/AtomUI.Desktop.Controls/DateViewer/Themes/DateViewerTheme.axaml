@@ -1,0 +1,49 @@
+<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
+              x:Class="AtomUI.Desktop.Controls.Themes.DateViewerTheme"
+              x:ClassModifier="internal" TargetType="atom:DateViewer">
+    <Setter Property="Background" Value="{atom:DateViewerTokenResource PanelBg}" />
+    <Setter Property="Padding" Value="{atom:DateViewerTokenResource PanelPadding}" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:DateViewer">
+            <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
+                <DockPanel LastChildFill="True">
+                    <viewer:DateViewerHeader DockPanel.Dock="Top" Classes.semantic-header="True"
+                                             Context="{TemplateBinding HeaderContext}"
+                                             HeaderTemplate="{TemplateBinding HeaderTemplate}"
+                                             IsVisible="{TemplateBinding ShowHeader}" />
+                    <atom:PixelAlignedBorder Name="PART_DefaultFooter" Classes.semantic-footer="True" DockPanel.Dock="Bottom"
+                                             IsVisible="{TemplateBinding IsDefaultFooterVisible}">
+                        <atom:Button Name="PART_StandaloneTodayButton" ButtonType="Link" SizeType="Small"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                     Content="{atom:DateViewerLangResource Today}"
+                                     Command="{TemplateBinding TodayCommand}" />
+                    </atom:PixelAlignedBorder>
+                    <Panel Classes.semantic-body="True">
+                    <viewer:DatePanel Classes.semantic-content="True" Name="PART_PrimaryPanel"
+                                  Session="{TemplateBinding PanelSession}"
+                                  Theme="{TemplateBinding PanelTheme}"
+                                  CellTemplate="{TemplateBinding CellTemplate}"
+                                  FullCellTemplate="{TemplateBinding FullCellTemplate}"
+                                  DefaultFullCellTemplate="{TemplateBinding DefaultFullCellTemplate}"
+                                  CellTheme="{TemplateBinding CellTheme}"
+                                  Presentation="{TemplateBinding Presentation}" />
+                    </Panel>
+                </DockPanel>
+            </Border>
+        </ControlTemplate>
+    </Setter>
+    <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_DefaultFooter">
+        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
+    </Style>
+    <Style Selector="^[Presentation=Content]">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+</ControlTheme>

@@ -8,9 +8,8 @@
              xmlns:views="using:AtomUIGallery.ShowCases.Tour"
              x:DataType="vm:TourViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0"
-                                       IsStickyMirrorEnabled="False">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Tour"
                     Category="{gallery:TourShowCaseLangResource ComponentCategory}"
@@ -21,8 +20,108 @@
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="Tour"
                     MetadataValueWidth="220" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <!-- 语义预览对齐 antd Tour _semantic 演示：Tour 默认打开、舞台居中
+                 锚点按钮、第一步带封面与遮罩，切换部件时高亮相应节点。 -->
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:TourViewModel">
+                    <gallery:SemanticPartPreview Name="TourSemanticPreview"
+                                                 Title="Tour"
+                                                 SemanticOwner="{Binding #TourSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:Tour}"
+                                                 PreviewStageMinHeight="600">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <!-- 对齐上游 SemanticPreview 舞台（position:relative + overflow:hidden +
+                                 getPopupContainer=false）：遮罩的共享 TourLayer 宿主在舞台内嵌的
+                                 VisualLayerManager，只覆盖舞台区域，不覆盖整个窗口。 -->
+                            <Border Name="TourSemanticStage"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    Height="600"
+                                    ClipToBounds="True">
+                                <VisualLayerManager>
+                                    <StackPanel HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Spacing="10"
+                                                Name="TourSemanticStagePanel"
+                                                AttachedToVisualTree="HandleSemanticStageAttached">
+                                    <StackPanel.Styles>
+                                        <!-- 对齐 antd mask 语义的"指针事件"定制维度：
+                                             预览舞台上让遮罩不参与命中测试，部件卡可 hover。 -->
+                                        <Style Selector="atom|Tour.semantic-preview-stage">
+                                            <atom:TourPopupMaskStyle x:SetterTargetType="Control">
+                                                <Setter Property="IsHitTestVisible" Value="False" />
+                                            </atom:TourPopupMaskStyle>
+                                        </Style>
+                                    </StackPanel.Styles>
+                                    <atom:Button Name="TourSemanticAnchorButton"
+                                                 Content="Show" />
+                                    <atom:Tour Name="TourSemanticOwner"
+                                               Classes="semantic-preview-stage"
+                                               IsMotionEnabled="False"
+                                               IsPopupPinnedOpen="True"
+                                               IsShowMask="True">
+                                        <atom:TourStep Name="TourSemanticHelloStep"
+                                                       Title="{gallery:TourShowCaseLangResource P2SemanticStepTitle}"
+                                                       Description="{gallery:TourShowCaseLangResource P2SemanticStepDescription}">
+                                            <atom:TourStep.Cover>
+                                                <Image Source="/Assets/TourShowCase/Cover.png"
+                                                       Width="360" />
+                                            </atom:TourStep.Cover>
+                                        </atom:TourStep>
+                                        <atom:TourStep Name="TourSemanticSaveStep"
+                                                       Title="{gallery:TourShowCaseLangResource P2SemanticStepSaveTitle}"
+                                                       Description="{gallery:TourShowCaseLangResource P2SemanticStepSaveDescription}" />
+                                    </atom:Tour>
+                                </StackPanel>
+                                </VisualLayerManager>
+                            </Border>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:TourShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.root"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.mask"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupMaskDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.section"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupSectionDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.cover"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupCoverDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.close"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupCloseDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.header"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupHeaderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.title"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupTitleDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.description"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupDescriptionDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.footer"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupFooterDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.actions"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupActionsDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.indicators"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupIndicatorsDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.indicator"
+                                Description="{gallery:TourShowCaseLangResource SemanticPopupIndicatorDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -290,8 +389,130 @@
 
                 </gallery:ShowCaseItem>
 
+                <gallery:ShowCaseItem
+                    Title="{gallery:TourShowCaseLangResource SemanticStylesTitle}"
+                    Description="{gallery:TourShowCaseLangResource SemanticStylesDescription}"
+                    IsOccupyEntireRow="True" IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:TourViewModel">
+                            <StackPanel Orientation="Vertical" Spacing="10" Loaded="HandleTourExampleLoaded">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <atom:Button ButtonType="Primary" Click="HandleSemanticStylesObjectBeginTour"
+                                                 Content="{gallery:TourShowCaseLangResource SemanticStylesObjectButton}" />
+                                    <atom:Button ButtonType="Primary" Click="HandleSemanticStylesFunctionBeginTour"
+                                                 Content="{gallery:TourShowCaseLangResource SemanticStylesFunctionButton}" />
+                                </StackPanel>
+                                <atom:Separator />
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <atom:Button Name="SemanticStylesUpload" Content="{gallery:TourShowCaseLangResource P2ContentUpload}" />
+                                    <atom:Button ButtonType="Primary" Name="SemanticStylesSave" Content="{gallery:TourShowCaseLangResource P2ContentSave}" />
+                                    <atom:Button Name="SemanticStylesEllipsis"
+                                                 Icon="{antdicons:AntDesignIconProvider EllipsisOutlined}" />
+                                </StackPanel>
+
+                                <!-- 对象样式：语义部件专用 Style 定制 root/section/cover/mask -->
+                                <atom:Tour Name="SemanticStylesObjectTour"
+                                           Classes="semantic-object-style-demo"
+                                           IsOpen="{Binding SemanticStylesObjectTourOpened, Mode=TwoWay}"
+                                           MaskColor="#73000000"
+                                           IsArrowVisible="False">
+                                    <atom:Tour.Styles>
+                                        <Style Selector="atom|Tour.semantic-object-style-demo">
+                                            <atom:TourPopupRootStyle x:SetterTargetType="atom:ArrowDecoratedBox">
+                                                <Setter Property="CornerRadius" Value="4" />
+                                            </atom:TourPopupRootStyle>
+                                            <atom:TourPopupSectionStyle x:SetterTargetType="Border">
+                                                <Setter Property="CornerRadius" Value="8" />
+                                                <Setter Property="BorderBrush" Value="#4096ff" />
+                                                <Setter Property="BorderThickness" Value="2" />
+                                                <Setter Property="BoxShadow" Value="0 4 12 0 #26000000" />
+                                            </atom:TourPopupSectionStyle>
+                                            <atom:TourPopupCoverStyle x:SetterTargetType="ContentPresenter">
+                                                <Setter Property="CornerRadius" Value="12,12,0,0" />
+                                            </atom:TourPopupCoverStyle>
+                                        </Style>
+                                    </atom:Tour.Styles>
+                                    <atom:TourStep Name="SemanticStylesObjectUploadStep"
+                                                   Title="{gallery:TourShowCaseLangResource P2TitleUploadFile}"
+                                                   Description="{gallery:TourShowCaseLangResource P2DescriptionPutYourFilesHere}">
+                                        <atom:TourStep.Cover>
+                                            <Image Source="/Assets/TourShowCase/Cover.png"
+                                                   Width="400" />
+                                        </atom:TourStep.Cover>
+                                    </atom:TourStep>
+                                    <atom:TourStep Name="SemanticStylesObjectSaveStep"
+                                                   Title="{gallery:TourShowCaseLangResource P2TitleSave}"
+                                                   Description="{gallery:TourShowCaseLangResource P2DescriptionSaveYourChanges}" />
+                                    <atom:TourStep Name="SemanticStylesObjectEllipsisStep"
+                                                   Title="{gallery:TourShowCaseLangResource P2TitleOtherActions}"
+                                                   Description="{gallery:TourShowCaseLangResource P2DescriptionClickToSeeOtherActions}" />
+                                </atom:Tour>
+
+                                <!-- 函数样式：primary 变体的 section/mask 定制 -->
+                                <atom:Tour Name="SemanticStylesFunctionTour"
+                                           Classes="semantic-function-style-demo"
+                                           StyleType="Primary"
+                                           IsOpen="{Binding SemanticStylesFunctionTourOpened, Mode=TwoWay}"
+                                           MaskColor="#73000000"
+                                           IsArrowVisible="False">
+                                    <atom:Tour.Styles>
+                                        <Style Selector="atom|Tour.semantic-function-style-demo">
+                                            <atom:TourPopupSectionStyle x:SetterTargetType="Border">
+                                                <Setter Property="Background" Value="#CCCDC1FF" />
+                                                <Setter Property="CornerRadius" Value="8" />
+                                            </atom:TourPopupSectionStyle>
+                                            <atom:TourPopupIndicatorStyle x:SetterTargetType="Ellipse">
+                                                <Setter Property="Fill" Value="#CDC1FF" />
+                                            </atom:TourPopupIndicatorStyle>
+                                            <!-- 对齐上游 style-class demo 的 btnProps（prev 紫底白字，next 白底紫描边紫字）
+                                                 叠加 tour primary 的 hover 规则：prev 仅边框变化（白@15% → 透明），
+                                                 next 仅背景变化（ColorBgTextHover 叠白 = PrimaryNextBtnHoverBg）。
+                                                 owner 作用域的无激活 Setter 优先级高于 ControlTheme 的 :pointerover
+                                                 激活式 Setter，伪类态必须在 owner 作用域显式声明才能生效。 -->
+                                            <atom:TourPopupActionsStyle x:SetterTargetType="StackPanel">
+                                                <Style Selector="^ atom|Button.previous-btn">
+                                                    <Setter Property="Foreground" Value="#FFFFFF" />
+                                                    <Setter Property="Background" Value="#CDC1FF" />
+                                                    <Setter Property="BorderBrush" Value="#26FFFFFF" />
+                                                </Style>
+                                                <Style Selector="^ atom|Button.previous-btn:pointerover">
+                                                    <Setter Property="BorderBrush" Value="Transparent" />
+                                                </Style>
+                                                <Style Selector="^ atom|Button.next-btn">
+                                                    <Setter Property="Foreground" Value="#CDC1FF" />
+                                                    <Setter Property="Background" Value="#FFFFFF" />
+                                                    <Setter Property="BorderBrush" Value="#CDC1FF" />
+                                                    <Setter Property="BorderThickness" Value="1" />
+                                                </Style>
+                                                <Style Selector="^ atom|Button.next-btn:pointerover">
+                                                    <Setter Property="Background" Value="{atom:TourTokenResource PrimaryNextBtnHoverBg}" />
+                                                </Style>
+                                            </atom:TourPopupActionsStyle>
+                                        </Style>
+                                    </atom:Tour.Styles>
+                                    <atom:TourStep Name="SemanticStylesFunctionUploadStep"
+                                                   Title="{gallery:TourShowCaseLangResource P2TitleUploadFile}"
+                                                   Description="{gallery:TourShowCaseLangResource P2DescriptionPutYourFilesHere}">
+                                        <atom:TourStep.Cover>
+                                            <Image Source="/Assets/TourShowCase/Cover.png"
+                                                   Width="400" />
+                                        </atom:TourStep.Cover>
+                                    </atom:TourStep>
+                                    <atom:TourStep Name="SemanticStylesFunctionSaveStep"
+                                                   Title="{gallery:TourShowCaseLangResource P2TitleSave}"
+                                                   Description="{gallery:TourShowCaseLangResource P2DescriptionSaveYourChanges}" />
+                                    <atom:TourStep Name="SemanticStylesFunctionEllipsisStep"
+                                                   Title="{gallery:TourShowCaseLangResource P2TitleOtherActions}"
+                                                   Description="{gallery:TourShowCaseLangResource P2DescriptionClickToSeeOtherActions}" />
+                                </atom:Tour>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+
+                </gallery:ShowCaseItem>
+
 
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

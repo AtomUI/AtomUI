@@ -119,6 +119,9 @@ public class MenuFlyout : Flyout, IScrollAwareControl
         _presenterBindingDisposables.Add(
             BindUtils.RelayBind(this, ArrowPositionProperty, Presenter,
                 MenuFlyoutPresenter.ArrowPositionProperty));
+        _presenterBindingDisposables.Add(
+            BindUtils.RelayBind(this, IsPopupPinnedOpenProperty, Presenter,
+                MenuFlyoutPresenter.IsPopupPinnedOpenProperty));
         ConfigureArrowPosition();
         ConfigureShowArrowEffective();
         return Presenter;

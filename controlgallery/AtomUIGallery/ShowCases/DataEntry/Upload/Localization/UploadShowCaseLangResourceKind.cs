@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -48,5 +46,10 @@ public enum UploadShowCaseLangResourceKind
     PageDescription,
     ComponentCategory,
     ComponentStatusStable,
-    ScenarioExamples
+    ScenarioExamples,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticListDescription,
+    SemanticItemDescription
 }

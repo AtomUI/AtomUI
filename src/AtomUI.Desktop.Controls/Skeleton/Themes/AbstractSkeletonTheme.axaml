@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:system="using:System"
     x:Class="AtomUI.Desktop.Controls.Themes.AbstractSkeletonTheme"
     TargetType="atom:AbstractSkeleton"
     x:ClassModifier="internal">
@@ -10,11 +11,16 @@
         <ControlTemplate TargetType="atom:AbstractSkeleton">
             <Panel Name="PART_RootLayout">
                 <Border Name="PART_ActiveAnimationLayer"
-                        Background="{TemplateBinding AnimationLayerFill}"
+                        Classes.semantic-content="True"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         IsVisible="{TemplateBinding IsActive}"/>
                 <Border Name="PART_ContentLayer"
+                        Classes.semantic-content="True"
                         Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}"/>
             </Panel>
@@ -29,5 +35,10 @@
         <Setter Property="LoadingBackgroundStart" Value="{atom:SkeletonTokenResource LoadingBackgroundStart}"/>
         <Setter Property="LoadingBackgroundMiddle" Value="{atom:SkeletonTokenResource LoadingBackgroundMiddle}"/>
         <Setter Property="LoadingBackgroundEnd" Value="{atom:SkeletonTokenResource LoadingBackgroundEnd}"/>
+
+        <Style Selector="^:is(atom|AbstractSkeleton).semantic-preview-owner">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="MaxWidth" Value="{x:Static system:Double.PositiveInfinity}" />
+        </Style>
     </Style>
 </ControlTheme>

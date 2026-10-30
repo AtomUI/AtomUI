@@ -157,6 +157,7 @@ $RECYCLE.BIN/
 #################
 ## Cake
 #################
+!tools/performances/**
 tools/**/[Bb]in/
 tools/**/[Oo]bj/
 .nuget
@@ -195,6 +196,8 @@ api/diff
 
 # Project generation intermediate results storage
 .artifacts/
+__pycache__/
+*.pyc
 output/
 outputs/
 cmake-build-*/
@@ -215,4 +218,8 @@ cmake-build-*/
 .worktrees/
 .zcode/
 tmp/
-docs/superpowers/plans
+
+# docs/superpowers 只存 Markdown 开发日志与任务规划（见 AGENTS.md“Superpowers 产物存放强约束”）
+docs/superpowers/**
+!docs/superpowers/**/
+!docs/superpowers/**/*.md

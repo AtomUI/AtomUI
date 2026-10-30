@@ -226,3 +226,30 @@ For layout-only work, verify:
 - no template part, pseudo-class, token, or resource key changed
 - tests still pass for the owning control project
 - `git diff --check` is clean
+
+
+## Executable Member Layout Gate
+
+Functional tests and compilation do not prove member organization. Before declaring a touched control complete, run this read-only audit against every touched control file or the complete affected control family:
+
+```bash
+python3 .agents/skills/atomui-control-optimization/scripts/check-member-layout.py --path src/AtomUI.Desktop.Controls/ImagePreviewer
+```
+
+The command uses the installed .NET 10 SDK's Roslyn parser, builds its helper in system temp, and removes build artifacts when it exits. It requires explicit `--path` arguments and does not modify source, stage files, or run regression tests. Repeat `--path` for disjoint scopes. Non-control utility types without Avalonia registrations are exempt from control-region checks; their control-flow braces are still inspected.
+
+Review and resolve its findings for:
+
+- public/protected versus internal property registration and wrapper regions;
+- registration blocks, wrapper order and adjacent DirectProperty backing fields;
+- runtime fields, public events, internal collaboration methods/events and constructors;
+- public-contract prelude, explicit interface regions and API/private-method placement;
+- control-flow braces and C# syntax errors.
+
+Registration fields and CLR wrappers are classified by their own declared accessibility. An internal registration with a public wrapper can be intentional; preserve both access levels and place each in its own region. Do not change accessibility merely to make the audit pass.
+
+For layout-only work, `--snapshot <external-text-path>` records per-member syntax-token fingerprints, and `--inventory <external-text-path>` provides a review inventory. Compare snapshots before and after; classify every non-layout difference separately. The tool is a syntax audit, not cross-project semantic compilation or an automatic formatter. Partial types are inspected per file; inherited APIs and conditional-compilation alternatives still require review.
+
+Before moving static fields or auto-property initializers, inspect their dependencies and allocation timing. Moving a default-value helper after its registration can silently register null/default. Prefer an equivalent inline initializer when a private helper has only that registration as a consumer, and verify the original default behavior. Do not use region cleanup as permission for behavioral changes.
+
+Report the explicit scope, inspected file/control counts and remaining findings. Passing module tests without this structural result is not completion evidence for a member-layout change.

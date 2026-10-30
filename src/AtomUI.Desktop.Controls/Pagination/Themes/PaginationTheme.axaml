@@ -7,23 +7,34 @@
     <ControlTheme x:Key="{x:Type atom:Pagination}" TargetType="atom:Pagination">
         <Setter Property="Template">
             <ControlTemplate>
-                <StackPanel Name="PART_RootLayout"
-                            Orientation="Horizontal"
-                            IsVisible="{TemplateBinding IsEffectiveVisible}">
-                    <ContentPresenter Name="PART_TotalInfoPresenter"
-                                      IsVisible="{TemplateBinding IsShowTotalInfo}"
-                                      Content="{TemplateBinding TotalInfoText, Mode=Default, Converter={StaticResource StringToTextBlockConverter}}" />
-                    <atom:PaginationNav
-                        Name="PART_Nav"
-                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                        SizeType="{TemplateBinding SizeType}" />
-                    <ContentPresenter Name="PART_SizeChangerPresenter"
-                                      IsVisible="{TemplateBinding IsShowSizeChanger}"
-                                      Content="{TemplateBinding SizeChanger}" />
-                    <ContentPresenter Name="PART_QuickJumperBarPresenter"
-                                      IsVisible="{TemplateBinding IsShowQuickJumper}"
-                                      Content="{TemplateBinding QuickJumperBar}" />
-                </StackPanel>
+                <atom:DashedBorder Background="{TemplateBinding Background}"
+                                  BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                  CornerRadius="{TemplateBinding CornerRadius}"
+                                  Padding="{TemplateBinding Padding}"
+                                  StrokeDashArray="{TemplateBinding BorderDashArray}"
+                                  StrokeDaskOffset="{TemplateBinding BorderDashOffset}">
+                    <StackPanel Name="PART_RootLayout"
+                                Orientation="Horizontal"
+                                IsVisible="{TemplateBinding IsEffectiveVisible}">
+                        <ContentPresenter Name="PART_TotalInfoPresenter"
+                                          IsVisible="{TemplateBinding IsShowTotalInfo}"
+                                          Content="{TemplateBinding TotalInfoText, Mode=Default, Converter={StaticResource StringToTextBlockConverter}}" />
+                        <atom:PaginationNav
+                            Name="PART_Nav"
+                            Classes.semantic-scope-nav="True"
+                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                            SizeType="{TemplateBinding SizeType}" />
+                        <ContentPresenter Name="PART_SizeChangerPresenter"
+                                          IsVisible="{TemplateBinding IsShowSizeChanger}"
+                                          Content="{TemplateBinding EffectiveSizeChangerContent}"
+                                          ContentTemplate="{TemplateBinding EffectiveSizeChangerTemplate}" />
+                        <ContentPresenter Name="PART_QuickJumperBarPresenter"
+                                          IsVisible="{TemplateBinding IsShowQuickJumper}"
+                                          Content="{TemplateBinding QuickJumperBar}" />
+                    </StackPanel>
+                </atom:DashedBorder>
             </ControlTemplate>
         </Setter>
         

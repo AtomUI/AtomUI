@@ -3,7 +3,7 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-public class AutoComplete : CompactSpaceAwareAutoComplete
+public partial class AutoComplete : CompactSpaceAwareAutoComplete
 {
     private AutoCompleteLineEditBox? _lineEditBox;
 

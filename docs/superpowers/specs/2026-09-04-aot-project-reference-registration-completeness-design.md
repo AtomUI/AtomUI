@@ -1,11 +1,14 @@
 # AOT ProjectReference 注册闭包完整性设计
 
-> 状态：2026-09-05 已实现并通过源码 ProjectReference、预编译 DLL 与缺失入口回归验证。
+> 历史记录：本文涉及的旧控件注册/裁剪方案已被 [TypeMap 正式架构](../../architecture/foundations/aot-and-trimming.md)替代，不再作为维护约束。其余内容保留当时的设计上下文。
+
+
+> 当时记录的状态：2026-09-05 已实现并通过源码 ProjectReference、预编译 DLL 与缺失入口回归验证。
 >
 > 关联问题：[AtomUI/AtomUI#453](https://github.com/AtomUI/AtomUI/issues/453)。
 >
 > 本文细化多项目 AOT/Trim 发布中的注册闭包完整性。实现稳定后，长期契约同步到
-> [`docs/architecture/foundations/aot-linked-registration-pipeline.md`](../../architecture/foundations/aot-linked-registration-pipeline.md)
+> [`docs/architecture/foundations/aot-linked-registration-pipeline.md`](../../architecture/foundations/aot-typemap-registration.md)
 > 和 [`docs/engineering/development/aot-programming-guidelines.md`](../../engineering/development/aot-programming-guidelines.md)。
 
 ## 1. 结论

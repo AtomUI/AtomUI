@@ -393,7 +393,9 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
             // we waited until now to measure each cell
             double leftEdge = 0;
             if (autoSizeHeight)
+            {
                 _desiredHeight = 0;
+            }
 
             for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
             {

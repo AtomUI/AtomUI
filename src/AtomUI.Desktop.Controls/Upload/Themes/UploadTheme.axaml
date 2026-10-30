@@ -17,6 +17,7 @@
                                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
                         <atom:UploadList Name="PART_UploadList"
+                                         Classes.semantic-list="True"
                                          ListType="{TemplateBinding ListType}"
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                          IsVisible="{TemplateBinding IsShowUploadList}"
@@ -35,6 +36,7 @@
                                 Orientation="Vertical"
                                 Spacing="{atom:SharedTokenResource SpacingXS}">
                         <atom:UploadPictureShapeList Name="PART_UploadList"
+                                                     Classes.semantic-list="True"
                                                      ListType="{TemplateBinding ListType}"
                                                      IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                                      IsShowUploadList="{TemplateBinding IsShowUploadList}"

@@ -27,7 +27,7 @@ public record SliderMark(string Label, double Value)
 }
 
 [PseudoClasses(StdPseudoClass.Vertical, StdPseudoClass.Horizontal, StdPseudoClass.Pressed)]
-public class Slider : RangeBase,
+public partial class Slider : RangeBase,
                       IMotionAwareControl,
                       IFormItemAware
 {

@@ -3,8 +3,9 @@
 本文档描述 DataGrid 桌面版的内部 ownership、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见
 [DataGrid 桌面版架构设计](overview.md)，不可变查询、范围数据源、异步协调和虚拟化算法见
 [DataGrid Query 与 Range Source 设计](query-range-source-design.md)，列宽算法和 presenter 协作见
-[DataGrid 列宽分配设计](column-sizing-design.md)，Control Own Token 见 [DataGrid Token 设计](token.md)，变化记录见
-[DataGrid Changelog](changelog.md)。
+[DataGrid 列宽分配设计](column-sizing-design.md)，分页面板 Extra Content 组合与对齐见
+[DataGrid 分页面板 Extra Content 设计](pagination-extra-content-design.md)，Control Own Token 见
+[DataGrid Token 设计](token.md)，变化记录见 [DataGrid Changelog](changelog.md)。
 
 Popup 接入边界：`DataGrid` 负责 column-filter Query intent 与候选内容，filter Flyout 只作为 relay 适配层，filter Popup 负责
 实际显示。模板重建或宿主切换时先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被
@@ -63,6 +64,7 @@ src/AtomUI.Desktop.Controls.DataGrid/
 | --- | --- | --- |
 | `DataGrid` | public API、模板生命周期、presentation transition | 接收 Query/Source/input，发布 applied state 与视觉更新。 |
 | `DataGridQueryController` | Query validation、revision 和交互策略 | 把外部设置、sort/filter/group intent 归一为唯一 Query。 |
+| 分页面板 Extra Content | Content/Template presentation | 把顶部/底部 Extra Content 投影到 Pagination 对侧，不拥有分页或 Source 状态。 |
 | `IDataGridSource` | schema、range fetch、snapshot 与 invalidation | 消费 DataGridFetchRequest，返回不可变精确切片。 |
 | `DataGridRangeCoordinator` | generation、viewport scope、请求优先级、block lease、pending cache 和错误 | 保留最新目标仍需要的工作，取消过时工作，确保 visible range 覆盖并形成可提交 snapshot。 |
 | `DataGridPresentationSnapshot` | 一次完整 applied presentation | 固定 Source/query/generation/snapshot、page、expansion、totals 与 viewport。 |
@@ -167,16 +169,19 @@ Row/Cell 只投影当前 entry 的判定结果，container recycle 不改变 sel
 ### 4.5 分页
 
 ```text
-PageSize / current page intent
+IsShowPageSizeSelector / PageSize / current page intent
   -> checked DataGridPageRequest(long data start, int count)
   -> DataGridFetchRequest
   -> applied TotalDataCount and page state
-  -> PART_TopPagination / PART_BottomPagination
+  -> PART_TopPaginationPanel / PART_BottomPaginationPanel
+     -> Extra Content Presenter + PART_TopPagination / PART_BottomPagination
 ```
 
-PageSize 为 0 时使用连续模式。非零时先按业务行切 PageRequest，再插入 group header、应用 expansion 和 display Range。上下两个
-Pagination 只投影同一 applied state；模板 reapply 先回放 state，再订阅 input。翻页成功后 vertical offset 归零，失败时整体
-回退。
+`IsShowPageSizeSelector` 只把可见性转发给两个 `Pagination.IsShowSizeChanger`。PageSize 为 0 时使用连续模式；非零时先按业务行切
+PageRequest，再插入 group header、应用 expansion 和 display Range。页大小选择器更新 `Pagination.PageSize` 后，DataGrid 将
+`PageChangedEventArgs.PageSize` 转换为新的 `DataGridPageRequest`，保持可保留的页序号并在新页数不足时收敛到最后一页。上下两个
+Pagination 只投影同一 applied state；模板 reapply 先回放 state，再订阅 input。翻页成功后 vertical offset 归零，失败时整体回退。
+Extra Content 使用独立顶部/底部 Content/Template 属性，位置由 Pagination Align 推导到相反一侧，不进入该状态流。
 
 ### 4.6 列宽
 
@@ -248,10 +253,14 @@ DataGrid (DataGridTheme.axaml)
      -> Border#FrameContentClip (template-stable)
         -> Spin (internal-observable)
            -> DockPanel
-              -> Pagination#PART_TopPagination (template-stable)
+              -> DockPanel#PART_TopPaginationPanel (template-stable)
+                 -> ContentPresenter#PART_TopPaginationExtraContentPresenter (template-stable)
+                 -> Pagination#PART_TopPagination (template-stable)
               -> PixelAlignedBorder#TitleFrame
                  -> ContentPresenter#Title
-              -> Pagination#PART_BottomPagination (template-stable)
+              -> DockPanel#PART_BottomPaginationPanel (template-stable)
+                 -> ContentPresenter#PART_BottomPaginationExtraContentPresenter (template-stable)
+                 -> Pagination#PART_BottomPagination (template-stable)
               -> ContentPresenter#Footer
               -> Grid
                  -> DataGridTopLeftColumnHeader#PART_TopLeftCorner (template-stable)
@@ -281,7 +290,9 @@ DataGrid (DataGridTheme.axaml)
 | DataGrid | public control | `DataGrid.cs` | 应用/VisualTree | Source、Query、Selection、layout/theme API | public | 唯一 UI state owner。 |
 | Frame / FrameContentClip | template node | `DataGridTheme.axaml` | DataGrid template | border、corner、background | template-stable | 维护外框和内容裁剪，不能下沉到 row。 |
 | Spin | public child control | `DataGridTheme.axaml` | DataGrid template | IsOperating、LoadState | internal-observable | 只投影 effective operating state。 |
-| Top/Bottom Pagination | public child control | `DataGridTheme.axaml` | DataGrid template | PageSize、visibility、align | template-stable | 只投影 applied page state。 |
+| Top/Bottom Pagination Panel | template node | `DataGridTheme.axaml` | DataGrid template | PaginationAlign、Extra Content、visibility | template-stable | 组合 Extra Content 与 Pagination；Extra Content 始终位于 Pagination 对侧。 |
+| Top/Bottom Extra Content Presenter | `ContentPresenter` | `DataGridTheme.axaml` | DataGrid template | Top/Bottom Extra Content 与 Template | template-stable | 只物化应用内容，不保存分页、Query 或 Source 状态。 |
+| Top/Bottom Pagination | public child control | `DataGridTheme.axaml` | DataGrid template | `IsShowPageSizeSelector`、PageSize、visibility、align | template-stable | `IsShowPageSizeSelector` 转发到 `Pagination.IsShowSizeChanger`；只投影 applied page state。 |
 | Column headers presenters | internal presenters | `DataGridTheme.axaml` | DataGrid template | headers、column width、Query intent | template-stable | 提供测量与交互，不拥有 Query。 |
 | RowsPresenter | internal presenter | `DataGridTheme.axaml` | DataGrid template | rows、scrolling、selection | template-stable | 只布局 committed entries，不调用 Source。 |
 | Row / GroupHeader | item containers | C# container generation | DataGridDisplayData | item/group/details/selection | internal-observable | recycle 时完整清理 entry state。 |
@@ -328,12 +339,46 @@ Source replacement 遵循预验证事务：候选 schema、当前 Query、列与
 - `PART_RowPresenter` 只承载 committed row/group containers；空数据隐藏，不成为列宽求解前置。
 - 显式有限高度的首个 snapshot 可以先只提交数据，由首次布局按真实 viewport 实现 rows；自动高度且尚无 Bounds 的嵌套
   DataGrid 在模板就绪后实现一个已提交 bootstrap entry，以建立非零 DesiredSize，期间不从 Measure 请求 Source。
-- `PART_TopPagination` 与 `PART_BottomPagination` 先接收 applied state，再订阅翻页 intent。
+- `PART_TopPaginationPanel` 与 `PART_BottomPaginationPanel` 先建立 Extra Content/Pagination 组合和有效可见性，再让内部 Pagination 接收 applied state、订阅翻页和页大小 intent；`IsShowPageSizeSelector` 通过模板绑定同步到两个 `Pagination.IsShowSizeChanger`。
+- `PART_TopPaginationExtraContentPresenter` 与 `PART_BottomPaginationExtraContentPresenter` 独立解析 Content/Template；模板替换和 re-template 不复用旧 Visual，不把同一个 Control 实例挂到两个 Presenter。
 - `PART_ColumnHeadersPresenter` 与 `PART_GroupColumnHeadersPresenter` 接入同一个 DataGrid-owned column-width solver。
 - 现有 Spin 绑定 EffectiveIsOperating；首次异步 loading 显示 Spin，refreshing 保持已提交内容完全可见，两者都不改变
   Frame/Header/scroll geometry。
 - SortIndicator、FilterIndicator、row/cell/group header 继续使用既有 theme、part 与 pseudo-class。
 - FrameContentClip、FrameCornerRadius 和 FrameBorderThickness 的 ownership 不因异步数据架构改变。
+
+### 6.5 语义部件（Semantic Part）接入
+
+语义部件对齐 Ant Design 6.6.3 Table Semantic DOM，owner 为 `DataGrid`（public、非泛型，满足契约校验器）。声明位于 `DataGrid.SemanticParts.cs`，生成器为每个部件产出专用 Style 类（`DataGrid<PartPath>Style`，如 `header.wrapper` → `DataGridHeaderWrapperStyle`）与 marker 常量。
+
+Owner 事实表：
+
+| 部件 | 声明者 | 目标控件可见性 | SelectorRoute | 基数 | RuntimeCreated |
+| --- | --- | --- | --- | --- | --- |
+| `root` | 生成器隐式合成 | `DataGrid` 控件自身 | 无（Customization=Root） | Single | 否 |
+| `section` | `DataGrid` | 模板静态节点 | `/template/ .semantic-section` | Single | 否 |
+| `title` | `DataGrid` | 模板静态节点 | `/template/ .semantic-title` | Single | 否 |
+| `content` | `DataGrid` | 模板静态节点（主 Grid） | `/template/ .semantic-content` | Single | 否 |
+| `header.wrapper` | `DataGrid` | 模板静态节点 | `/template/ .semantic-header-wrapper` | Single | 否 |
+| `header.cell` | `DataGrid` | `DataGridColumnHeader`（internal） | `>> .semantic-header-cell` | Multiple | 是 |
+| `body.wrapper` | `DataGrid` | 模板静态节点 | `/template/ .semantic-body-wrapper` | Single | 否 |
+| `body.row` | `DataGrid` | `DataGridRow` / `DataGridRowGroupHeader`（public） | `>> .semantic-body-row` | Multiple | 是 |
+| `body.cell` | `DataGrid` | `DataGridCell`（public） | `>> .semantic-body-row >> .semantic-body-cell`（CrossNestedOwners） | Multiple | 是 |
+| `footer` | `DataGrid` | 模板静态节点 | `/template/ .semantic-footer` | Single | 否 |
+
+Marker 预算与注入方式：
+
+- 静态模板 marker 共 8 个（section/title/content/header.wrapper/body.wrapper/footer/pagination.root×2），在 `DataGridTheme.axaml` 模板节点上以 `Classes.semantic-*="True"` 一次性声明；内置主题默认视觉不消费 `.semantic-*` selector，继续使用 `^ /template/ Type#Name` 形态。
+- 运行时 marker 共 4 类：`DataGridColumnHeader`、`DataGridRow`、`DataGridRowGroupHeader` 与 `DataGridCell` 在模板根应用时用生成常量注入（构造或 ApplyTemplate 一次 `Classes.Add`，回收复用不重复注入）；`pagination.item` 复用 `Pagination` 模板既有的 `semantic-item` class，经 `>> .semantic-pagination-root >> .semantic-item` 跨根路由命中。
+- 分组头行（`DataGridRowGroupHeader`）同样注入 `semantic-body-row`：分组头在视觉上属于表体行，用户对 `body.row` 的定制应自然覆盖。
+- `header.row` 不声明：AtomUI 模板中表头 presenter 直接承载列头，不存在独立表头行节点，不为对齐上游而虚构结构。
+- `pagination.root` 指向模板内两处 `Pagination` 槽位（顶部/底部，`Multiple`）；`pagination.item` 经 `>> .semantic-pagination-root >> .semantic-item` 跨视觉根命中分页器内部页码项，与上游 Table 的 pagination 区域对齐。
+
+虚拟化 ownership 与性能边界：
+
+- `body.row` / `body.cell` 目标节点由 DisplayData slot 回收与 Range 管线在运行时创建/回收；marker 只在控件模板应用时注入一次，回收复用不产生额外 Classes 写入或 VisualTree 扫描。
+- 语义系统构造时不读 registry；descriptor 查询只发生在专用 Style 解析阶段。
+- 冻结列、分组模式、行详情与拖动指示器不改变上述 selector 命中拓扑。
 
 ## 7. 交互与事件处理
 
@@ -431,6 +476,13 @@ Maximum 触发 Avalonia RangeBase 校验异常。
 cell sort/filter 状态和事件订阅。`DataGridDisplayData` 继续复用循环 displayed list 与 row/group pool；不能引入第二个
 ItemsRepeater、VirtualizingStackPanel 或 scroll owner。
 
+行头模板由 `DataGridRow` 持有，优先使用行级 `HeaderContentTemplate`，其次使用表格级 `RowHeaderContentTemplate`。
+行数据变化时通过 `IRecyclingDataTemplate.Build` 由模板决定能否复用旧视觉；普通 `IDataTemplate` 为当前数据重新创建内容。
+模板缓存不代表内容仍挂接在 `Header` 上。回收时解除挂接并清空内容的 DataContext，复用时为当前数据重新应用模板并挂接内容，
+非回收卸载时同时释放模板缓存。同模板的重复应用保留调用方显式设置的 `Header`；有效模板变更后由新模板接管生成内容。
+替换或清空模板必须释放旧内容的数据引用，包括行头隐藏时；新内容的创建仍等待行头可见。行头模板更新独立于 RowDetails 的
+可见性和加载/卸载事件，不能复用详情的状态标志。
+
 RowsPresenter.Children 只包含 visible 加一个 editing row 和一个 drag row 上限的 controls。Measure、Arrange、prepare 和 recycle
 不 fetch、不等待、不分配 range buffer。嵌套滚动在内部边界前由 DataGrid 消费，到边界后交给外层 ScrollViewer。
 
@@ -476,6 +528,7 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 ### 8.9 Frame、列宽与水平 virtualization
 
 - FrameCornerRadius 与 FrameContentClip 共同约束根内容裁剪；FrameBorderThickness 只由 frame border option 决定。
+- 默认 ControlTheme 将 Background 设为 Transparent，根 Frame 通过既有 TemplateBinding 接收背景，使固定尺寸中的空白区域参与命中；背景仍由应用属性或样式覆盖，不依赖指针事件转发。
 - 最后一行 divider 与 Frame 底边保持唯一绘制责任；Footer、底部分页或横向滚动条存在时恢复行 divider。
 - 有限列 viewport 只进入 DataGrid-owned solver；Auto completion 与 star distribution 是独立阶段。
 - `Auto` / `SizeToCells` 只消费已实现 cells 的正常 measure 结果；列宽发现不得 fetch 未显示 range 或扩大纵向 realized window。
@@ -542,7 +595,8 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 - 列宽 solver 不依赖 RowsPresenter 可见性；filler 不掩盖 star 分配。
 - ControlTheme key、Template Part、伪类、Token、Semantic Part 和 Ready 视觉优先级。
 - Light/Dark、Browser/Desktop、SizeType、冻结列、RowDetails 和 nested scrolling 的一致语义。
-- 文档、源码 public surface、Gallery、tests 与 generated LLMS 的一致性。
+- 文档、源码 public surface、Gallery 与 tests 的一致性。
+- Extra Content 与 Pagination 共享有效可见性；Pagination Align 为 Start/End 时分别形成左右相反布局，Center 使用右侧 Extra Content 加剩余区域居中 Pagination。
 
 ## 11. 测试与验证
 
@@ -554,6 +608,7 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 - viewport scope 替换、共享 block lease 转移、orphaned request 协作取消、取消后 inflight 不可复用和 visible/prefetch 优先级。
 - Initial error、refreshing error、stale invalidation、Query/page/group/scroll rollback。
 - LocalSource typed filter/sort/group/page、stable tie-break、collection invalidation、cancellation 与 NativeAOT。
+- 分页页大小选择器转发、页大小变化生成 `DataGridPageRequest`、页序号保持/末页收敛，以及顶部/底部状态同步。
 
 ### 11.2 虚拟化与交互
 
@@ -567,12 +622,13 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 - selection/current 跨 range/page/recycle；全量选择不枚举数据；无 bulk capability 时不伪造全量命令成功。
 - row reorder threshold、capture lost、session revalidation、key-relative target、source replacement 和异常清理。
 - nested scrolling 在 DataGrid 边界处正确向外层 ScrollViewer 链接。
+- 分页 Extra Content 覆盖四个 API、Content/Template 解析、顶部/底部独立实例、Start/End/Center 对齐、全部可见性条件和 re-template 生命周期。
 
 ### 11.3 视觉、性能和发布
 
-- Light/Dark、所有 SizeType、普通/分组 header、empty/data、Title/Footer、上下 pagination、冻结列、scrollbar 与 RowDetails。
+- Light/Dark、所有 SizeType、普通/分组 header、empty/data、Title/Footer、上下 pagination、Extra Content 对侧布局、冻结列、scrollbar 与 RowDetails。
 - selected/sorted、hover/focus/disabled、Loading/Refreshing 与 rollback 的结构和截图基线。
 - 100 万本地/逻辑远端行的 sort、首屏、连续滚动、快速跳转、cache、并发、offset lookup 与 allocation。
 - DataGrid detail/recycle/offset/extent 测试保持或加强，不删除或放宽既有行为断言。
-- 运行 DataGrid 专用测试、完整 solution tests、DataGrid performance state verifier、LLMS verify、AOT/trim verify、Gallery
+- 运行 DataGrid 专用测试、完整 solution tests、DataGrid performance state verifier、AOT/trim verify、Gallery
   NativeAOT publish/startup smoke 和 `git diff --check`。

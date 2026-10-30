@@ -41,6 +41,21 @@
         <source>.NET 10</source>
       </segment>
     </unit>
+    <unit id="CustomComponentAutomationName">
+      <segment>
+        <source>Page size</source>
+      </segment>
+    </unit>
+    <unit id="CustomComponentDescription">
+      <segment>
+        <source>Replace the page size changer with a custom NumericUpDown.</source>
+      </segment>
+    </unit>
+    <unit id="CustomComponentTitle">
+      <segment>
+        <source>Custom component</source>
+      </segment>
+    </unit>
     <unit id="MiniSizeDescription">
       <segment>
         <source>Mini size pagination.</source>
@@ -53,7 +68,7 @@
     </unit>
     <unit id="MoreDescription">
       <segment>
-        <source>More pages.</source>
+        <source>Hover or focus an ellipsis to reveal a five-page jump action.</source>
       </segment>
     </unit>
     <unit id="MoreTitle">
@@ -94,6 +109,31 @@
     <unit id="ScenarioExamples">
       <segment>
         <source>Examples</source>
+      </segment>
+    </unit>
+    <unit id="SemanticInfoDescription">
+      <segment>
+        <source>Info element, set font, color and alignment styles for the page info text</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, set size, padding, border, background color, hover state and active state styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Style the root and items through generated Semantic Part styles: a dashed outline around the root, rounded item corners, and item backgrounds that apply only at small size.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, set flex layout, alignment, flex wrap and list styles</source>
       </segment>
     </unit>
     <unit id="SimpleModeDescription">

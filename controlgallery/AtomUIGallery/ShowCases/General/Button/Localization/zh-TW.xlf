@@ -415,6 +415,18 @@
         <target state="translated">搜索</target>
       </segment>
     </unit>
+    <unit id="P2ContentSemanticFunction">
+      <segment>
+        <source>Function</source>
+        <target state="translated">函式</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentSemanticObject">
+      <segment>
+        <source>Object</source>
+        <target state="translated">物件</target>
+      </segment>
+    </unit>
     <unit id="P2ContentSmall">
       <segment>
         <source>Small</source>
@@ -485,6 +497,42 @@
       <segment>
         <source>Examples</source>
         <target state="translated">示例</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartContentDescription">
+      <segment>
+        <source>The content region presents the Button label.</source>
+        <target state="translated">內容區域顯示 Button 標籤。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartDemoContent">
+      <segment>
+        <source>Search</source>
+        <target state="translated">搜尋</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartIconDescription">
+      <segment>
+        <source>The icon region presents the leading or trailing icon and its loading replacement.</source>
+        <target state="translated">圖示區域顯示起始或末尾圖示，以及載入狀態下的替代圖示。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartRootDescription">
+      <segment>
+        <source>The Button root owns interaction states, background, border, and overall layout.</source>
+        <target state="translated">Button 根區域承載互動狀態、背景、邊框與整體配置。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Button state selectors to customize published Semantic Parts.</source>
+        <target state="translated">使用擁有者作用域選擇器和 Button 狀態選擇器，自訂已發布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
       </segment>
     </unit>
     <unit id="SizeDescription">

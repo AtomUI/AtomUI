@@ -140,18 +140,6 @@ public class TabActivationTests
     }
 
     [Fact]
-    public void TabItem_Release_Selects_Before_Base_Clears_Pressed_State()
-    {
-        var source = ReadRepoFile("src/AtomUI.Desktop.Controls/TabControl/TabItem.cs");
-
-        source.ShouldContain(
-            """
-                    UpdateSelectionFromEvent(e);
-                    base.OnPointerReleased(e);
-            """);
-    }
-
-    [Fact]
     public void TabStrip_Default_Activates_Tab_On_Same_Tab_Release()
     {
         var tabStrip = CreateTabStrip();
@@ -270,18 +258,6 @@ public class TabActivationTests
         source.ShouldNotContain("ControlTokenScope.Identity");
     }
 
-    [Fact]
-    public void TabStripItem_Release_Selects_Before_Base_Clears_Pressed_State()
-    {
-        var source = ReadRepoFile("src/AtomUI.Desktop.Controls/TabControl/TabStrip/TabStripItem.cs");
-
-        source.ShouldContain(
-            """
-                    tabStrip?.UpdateSelectionFromEvent(this, e);
-                    base.OnPointerReleased(e);
-            """);
-    }
-
     private static AtomTabControl CreateTabControl()
     {
         var tabControl = new AtomTabControl
@@ -359,6 +335,22 @@ public class TabActivationTests
         }
     }
 
+    private static void WaitForForegroundChanged(Func<object?> foregroundAccessor, object? normalForeground)
+    {
+        for (var i = 0; i < 32; i++)
+        {
+            Dispatcher.UIThread.RunJobs();
+            if (!Equals(foregroundAccessor(), normalForeground))
+            {
+                return;
+            }
+
+            // The pressed foreground is applied through a theme transition driven by
+            // the render clock. Force a tick so the wait does not depend on wall-clock
+            // scheduling while other test collections run in parallel.
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+        }
+    }
     private static string ReadRepoFile(string relativePath)
     {
         var repoRoot = FindRepoRoot(AppContext.BaseDirectory);

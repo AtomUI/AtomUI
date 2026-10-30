@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="2.1" srcLang="en-US" trgLang="zh-CN" xmlns="urn:oasis:names:tc:xliff:document:2.0">
   <file id="AtomUIGallery.Localization.NotificationShowCaseLangResourceKind">
+    <unit id="ActionsDescription">
+      <segment>
+        <source>Add action buttons to the bottom-right of the notification through the Actions API.</source>
+        <target state="translated">通过 Actions API 在通知右下角添加操作按钮。</target>
+      </segment>
+    </unit>
+    <unit id="ActionsTitle">
+      <segment>
+        <source>Notification with actions</source>
+        <target state="translated">带操作的通知</target>
+      </segment>
+    </unit>
     <unit id="ApiMethodManagerShow">
       <segment>
         <source>Shows an INotification instance and applies optional style classes.</source>
@@ -73,6 +85,24 @@
         <target state="translated">右下</target>
       </segment>
     </unit>
+    <unit id="P2ContentConfirm">
+      <segment>
+        <source>Confirm</source>
+        <target state="translated">确认</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentDefaultNotification">
+      <segment>
+        <source>Default Notification</source>
+        <target state="translated">默认通知</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentDestroyAll">
+      <segment>
+        <source>Destroy all</source>
+        <target state="translated">销毁全部</target>
+      </segment>
+    </unit>
     <unit id="P2ContentDonTPauseOnHover">
       <segment>
         <source>Don't pause on hover</source>
@@ -83,6 +113,12 @@
       <segment>
         <source>Error</source>
         <target state="translated">错误</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentErrorNotification">
+      <segment>
+        <source>Error Notification</source>
+        <target state="translated">错误通知</target>
       </segment>
     </unit>
     <unit id="P2ContentInfo">
@@ -139,6 +175,12 @@
         <target state="translated">警告</target>
       </segment>
     </unit>
+    <unit id="P2NotificationActionsContent">
+      <segment>
+        <source>A function will be called after the notification is closed (automatically after the "duration" time or manually).</source>
+        <target state="translated">通知关闭后会调用函数（在 duration 时间后自动关闭，或手动关闭）。</target>
+      </segment>
+    </unit>
     <unit id="P2NotificationBottomLeftTitle">
       <segment>
         <source>Notification BottomLeft</source>
@@ -163,16 +205,40 @@
         <target state="translated">这是通知内容。这是通知内容。这是通知内容。</target>
       </segment>
     </unit>
+    <unit id="P2NotificationDescription">
+      <segment>
+        <source>This is a notification description.</source>
+        <target state="translated">这是一段通知描述。</target>
+      </segment>
+    </unit>
     <unit id="P2NotificationHello">
       <segment>
         <source>Hello, AtomUI/Avalonia!</source>
         <target state="translated">你好，AtomUI/Avalonia！</target>
       </segment>
     </unit>
+    <unit id="P2NotificationLongStackedFormat">
+      <segment>
+        <source>Notification {0}: This is a deliberately longer stacked notification used to verify variable-height cards.</source>
+        <target state="translated">通知 {0}：这是一条特意加长的堆叠通知，用于验证不同高度的通知卡片。</target>
+      </segment>
+    </unit>
     <unit id="P2NotificationNeverCloseContent">
       <segment>
         <source>I will never close automatically. This is a purposely very very long description that has many many characters and words.</source>
         <target state="translated">我不会自动关闭。这是一段特意写得很长的描述，包含很多字符和词语。</target>
+      </segment>
+    </unit>
+    <unit id="P2NotificationStackedFormat">
+      <segment>
+        <source>Notification {0}: This is a stacked notification.</source>
+        <target state="translated">通知 {0}：这是一条堆叠通知。</target>
+      </segment>
+    </unit>
+    <unit id="P2NotificationStackedTitleFormat">
+      <segment>
+        <source>Notification {0}</source>
+        <target state="translated">通知 {0}</target>
       </segment>
     </unit>
     <unit id="P2NotificationTitle">
@@ -239,6 +305,108 @@
       <segment>
         <source>Examples</source>
         <target state="translated">示例</target>
+      </segment>
+    </unit>
+    <unit id="SemanticActionsDescription">
+      <segment>
+        <source>The action group element at the bottom-right of the notice. It hosts the caller actions.</source>
+        <target state="translated">通知右下角的操作组元素，承载调用方传入的操作内容。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>The close button overlay at the top-right corner. Customize its position, size and interaction.</source>
+        <target state="translated">右上角的关闭按钮覆盖元素，可定制位置、尺寸与交互。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>The description element below the title. Customize its font size, color and padding.</source>
+        <target state="translated">标题下方的描述元素，可定制字号、颜色与内边距。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>The status icon element. Customize its size, brush and line height.</source>
+        <target state="translated">状态图标元素，可定制尺寸、画刷与行高。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListContentDescription">
+      <segment>
+        <source>The notice arrangement container of the notification list. Customize its direction, order and alignment.</source>
+        <target state="translated">通知列表的条目排列容器，可定制排列方向、顺序与对齐。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListRootDescription">
+      <segment>
+        <source>The notification list root. It hosts the cards, queue, timeout and host layer lifecycle.</source>
+        <target state="translated">通知列表根元素，承载卡片、队列、超时与宿主层生命周期。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the upstream style-class demo: default and error-branched styles shape the notice root, icon, title and description through owner-scoped Semantic Part styles.</source>
+        <target state="translated">对齐上游 style-class 示例：通过 owner 作用域的语义部件样式定制通知根元素、图标、标题与描述。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticProgressDescription">
+      <segment>
+        <source>The progress overlay at the bottom of the notice. It shows the remaining auto-close time.</source>
+        <target state="translated">通知底部的进度覆盖元素，展示剩余自动关闭时间。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The notice root. It hosts the content, type, close state and enter/leave motion.</source>
+        <target state="translated">通知项根元素，承载内容、类型、关闭状态与进出场动效。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>The content section that wraps the title and description. Customize the vertical gap and alignment.</source>
+        <target state="translated">包裹标题与描述的内容区域元素，可定制纵向间距与对齐。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>The title element. Customize its color, font size, line height and right padding.</source>
+        <target state="translated">标题元素，可定制颜色、字号、行高与右侧留白。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticWrapperDescription">
+      <segment>
+        <source>The wrapping element for the icon and section. Customize the layout, alignment and icon gap.</source>
+        <target state="translated">图标与内容区域的包裹元素，可定制布局、对齐与图标间距。</target>
+      </segment>
+    </unit>
+    <unit id="StackDescription">
+      <segment>
+        <source>Stack is disabled by default. This example enables it; notifications stack when their amount is over threshold, and hover expands all notifications.</source>
+        <target state="translated">默认关闭堆叠。本示例将其开启；通知数量超过阈值后会折叠显示，悬停堆叠区域可展开全部通知。</target>
+      </segment>
+    </unit>
+    <unit id="StackEnabledLabel">
+      <segment>
+        <source>Enabled:</source>
+        <target state="translated">开启：</target>
+      </segment>
+    </unit>
+    <unit id="StackThresholdLabel">
+      <segment>
+        <source>Threshold:</source>
+        <target state="translated">阈值：</target>
+      </segment>
+    </unit>
+    <unit id="StackTitle">
+      <segment>
+        <source>Stack</source>
+        <target state="translated">堆叠</target>
       </segment>
     </unit>
     <unit id="WithIconDescription">

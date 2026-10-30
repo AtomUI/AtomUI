@@ -37,6 +37,18 @@
         <target state="translated">Composite</target>
       </segment>
     </unit>
+    <unit id="DoubleClickResetDescription">
+      <segment>
+        <source>Double-click a dragger to reset all panels to their default sizes.</source>
+        <target state="translated">Clique duas vezes no divisor para restaurar todos os painéis aos tamanhos padrão.</target>
+      </segment>
+    </unit>
+    <unit id="DoubleClickResetTitle">
+      <segment>
+        <source>Double-clicked reset</source>
+        <target state="translated">Redefinir com clique duplo</target>
+      </segment>
+    </unit>
     <unit id="HorizontalDescription">
       <segment>
         <source>Top-bottom splitter with collapsible icons.</source>
@@ -151,6 +163,24 @@
         <target state="translated">Não Resizable</target>
       </segment>
     </unit>
+    <unit id="P2TextPanel1">
+      <segment>
+        <source>Panel 1</source>
+        <target state="translated">Painel 1</target>
+      </segment>
+    </unit>
+    <unit id="P2TextPanel2">
+      <segment>
+        <source>Panel 2</source>
+        <target state="translated">Painel 2</target>
+      </segment>
+    </unit>
+    <unit id="P2TextPanel3">
+      <segment>
+        <source>Panel 3</source>
+        <target state="translated">Painel 3</target>
+      </segment>
+    </unit>
     <unit id="P2TextResizable">
       <segment>
         <source>Resizable</source>
@@ -209,6 +239,36 @@
       <segment>
         <source>Examples</source>
         <target state="translated">Exemplos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDraggerDescription">
+      <segment>
+        <source>Drag bar element carrying the semantic-dragger class that resizes adjacent panels.</source>
+        <target state="translated">Elemento da barra de arrasto com a classe semantic-dragger que redimensiona os painéis adjacentes.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPanelDescription">
+      <segment>
+        <source>Panel container element carrying the semantic-panel class with adjustable size and clipped content.</source>
+        <target state="translated">Elemento contêiner do painel com a classe semantic-panel, com tamanho ajustável e conteúdo recortado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the Ant Design style-class demo: customize the root background and the dragger through generated Semantic Part styles, and outline the root with a dashed border.</source>
+        <target state="translated">Espelha o demo style-class do Ant Design: personalize o fundo do root e a barra de arrasto por meio dos estilos de Semantic Part gerados e contorne o root com uma borda tracejada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root container element that arranges panels and drag bars along the split direction.</source>
+        <target state="translated">Elemento contêiner raiz que organiza painéis e barras de arrasto ao longo da direção de divisão.</target>
       </segment>
     </unit>
     <unit id="ShowCollapsibleIconDescription">

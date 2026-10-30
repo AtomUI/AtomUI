@@ -159,7 +159,7 @@ public class SelectableTextBlock : TextBlock
     /// </summary>
     public void SelectAll()
     {
-        var text = this.GetHasComplexContent() ? Inlines?.Text : Text;
+        var text = Inlines is { Count: > 0 } ? Inlines?.Text : Text;
 
         SetCurrentValue(SelectionStartProperty, 0);
         SetCurrentValue(SelectionEndProperty, text?.Length ?? 0);
@@ -327,7 +327,7 @@ public class SelectableTextBlock : TextBlock
     {
         base.OnPointerPressed(e);
 
-        var text      = this.GetHasComplexContent() ? Inlines?.Text : Text;
+        var text      = Inlines is { Count: > 0 } ? Inlines?.Text : Text;
         var clickInfo = e.GetCurrentPoint(this);
 
         if (text != null && clickInfo.Properties.IsLeftButtonPressed)
@@ -409,7 +409,7 @@ public class SelectableTextBlock : TextBlock
         // selection should not change during pointer move if the user right clicks
         if (e.Pointer.Captured == this && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
-            var text    = this.GetHasComplexContent() ? Inlines?.Text : Text;
+            var text    = Inlines is { Count: > 0 } ? Inlines?.Text : Text;
             var padding = Padding;
 
             var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
@@ -491,7 +491,7 @@ public class SelectableTextBlock : TextBlock
 
     private string GetSelection()
     {
-        var text = this.GetHasComplexContent() ? Inlines?.Text : Text;
+        var text = Inlines is { Count: > 0 } ? Inlines?.Text : Text;
 
         var textLength = text?.Length ?? 0;
 

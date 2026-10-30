@@ -1,3 +1,4 @@
+using Avalonia.Controls.Primitives;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
@@ -13,7 +14,7 @@ namespace AtomUI.Desktop.Controls;
 
 public class ListViewItem : ContentControl,
                             IListItemVirtualizingContextAware,
-                            ISelectable
+                            ISelectable, ITransitionInitializationOwner
 {
     #region 公共属性定义
 
@@ -75,6 +76,21 @@ public class ListViewItem : ContentControl,
     internal static readonly StyledProperty<bool> IsGroupItemProperty =
         AvaloniaProperty.Register<ListViewItem, bool>(nameof(IsGroupItem));
 
+    internal static readonly DirectProperty<ListViewItem, Thickness> EffectiveBorderThicknessProperty =
+        AvaloniaProperty.RegisterDirect<ListViewItem, Thickness>(nameof(EffectiveBorderThickness),
+            o => o.EffectiveBorderThickness,
+            (o, v) => o.EffectiveBorderThickness = v);
+
+    internal static readonly DirectProperty<ListViewItem, bool> IsSplitLineVisibleProperty =
+        AvaloniaProperty.RegisterDirect<ListViewItem, bool>(nameof(IsSplitLineVisible),
+            o => o.IsSplitLineVisible,
+            (o, v) => o.IsSplitLineVisible = v);
+
+    internal static readonly DirectProperty<ListViewItem, bool> IsSplitLineEffectiveVisibleProperty =
+        AvaloniaProperty.RegisterDirect<ListViewItem, bool>(nameof(IsSplitLineEffectiveVisible),
+            o => o.IsSplitLineEffectiveVisible,
+            (o, v) => o.IsSplitLineEffectiveVisible = v);
+
     internal static readonly StyledProperty<ClickMode> ItemClickModeProperty =
         ListView.ItemClickModeProperty.AddOwner<ListViewItem>();
     
@@ -132,6 +148,30 @@ public class ListViewItem : ContentControl,
         set => SetValue(IsGroupItemProperty, value);
     }
     
+    private Thickness _effectiveBorderThickness;
+
+    internal Thickness EffectiveBorderThickness
+    {
+        get => _effectiveBorderThickness;
+        private set => SetAndRaise(EffectiveBorderThicknessProperty, ref _effectiveBorderThickness, value);
+    }
+
+    private bool _isSplitLineVisible;
+
+    internal bool IsSplitLineVisible
+    {
+        get => _isSplitLineVisible;
+        set => SetAndRaise(IsSplitLineVisibleProperty, ref _isSplitLineVisible, value);
+    }
+
+    private bool _isSplitLineEffectiveVisible;
+
+    internal bool IsSplitLineEffectiveVisible
+    {
+        get => _isSplitLineEffectiveVisible;
+        private set => SetAndRaise(IsSplitLineEffectiveVisibleProperty, ref _isSplitLineEffectiveVisible, value);
+    }
+
     internal ClickMode ItemClickMode
     {
         get => GetValue(ItemClickModeProperty);
@@ -147,15 +187,47 @@ public class ListViewItem : ContentControl,
     
     private static readonly Point s_invalidPoint = new(double.NaN, double.NaN);
     private Point _pointerDownPoint = s_invalidPoint;
-    int IListItemVirtualizingContextAware.VirtualIndex { get; set; } = -1;
-    bool IListItemVirtualizingContextAware.VirtualContextOperating { get; set; }
     
+    private readonly TransitionInitializationSession _transitionInitialization;
+
     static ListViewItem()
     {
+        // ListViewItem may be initialized first by a deferred theme. Register only after
+        // both types' static fields are ready to avoid a ListView/ListViewItem cctor cycle.
+        ListView.RegisterItemClickedEvent(ClickedEvent);
         SelectableMixin.Attach<ListViewItem>(IsSelectedProperty);
         PressedMixin.Attach<ListViewItem>();
         FocusableProperty.OverrideDefaultValue<ListViewItem>(true);
         AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<ListViewItem>(IsOffscreenBehavior.FromClip);
+    }
+
+    public ListViewItem()
+    {
+        _transitionInitialization = new TransitionInitializationSession(this);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _transitionInitialization.CompleteInitialization();
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -167,25 +239,26 @@ public class ListViewItem : ContentControl,
         {
             ConfigureSelectedIndicator();
         }
+
+        if (change.Property == BorderThicknessProperty ||
+            change.Property == IsGroupItemProperty ||
+            change.Property == IsSplitLineVisibleProperty)
+        {
+            ConfigureEffectiveBorderThickness();
+        }
     }
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
         ConfigureSelectedIndicator();
-        this.DisableTransitions();
+        ConfigureEffectiveBorderThickness();
+
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 
-    private void ConfigureSelectedIndicator()
-    {
-        SetCurrentValue(IsSelectedIndicatorVisibleProperty, IsShowSelectedIndicator && IsSelected);
-    }
+
+
     
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
@@ -279,4 +352,30 @@ public class ListViewItem : ContentControl,
 
         _pointerDownPoint = s_invalidPoint;
     }
+    #region 实现 IListItemVirtualizingContextAware 接口
+
+    int IListItemVirtualizingContextAware.VirtualIndex { get; set; } = -1;
+    bool IListItemVirtualizingContextAware.VirtualContextOperating { get; set; }
+
+    #endregion
+
+    #region 实现 ITransitionInitializationOwner 接口
+
+    TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
+
+    #endregion
+
+    private void ConfigureSelectedIndicator()
+    {
+        SetCurrentValue(IsSelectedIndicatorVisibleProperty, IsShowSelectedIndicator && IsSelected);
+    }
+
+    private void ConfigureEffectiveBorderThickness()
+    {
+        var showSplitLine = IsSplitLineVisible && !IsGroupItem && BorderThickness.Bottom > 0;
+        IsSplitLineEffectiveVisible = showSplitLine;
+        EffectiveBorderThickness = showSplitLine ? BorderThickness : new Thickness(0);
+    }
+
+
 }

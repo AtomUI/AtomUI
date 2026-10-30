@@ -3,8 +3,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Controls.Utils;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Collections;
@@ -12,6 +14,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
@@ -35,10 +38,10 @@ public enum SpaceItemsAlignment
     End,
 }
 
-public class Space : Control,
-                     IChildIndexProvider, 
-                     ICustomizableSizeTypeAware,
-                     INavigableContainer
+public partial class Space : Control,
+                             IChildIndexProvider,
+                             ICustomizableSizeTypeAware,
+                             INavigableContainer
 {
     #region 公共属性定义
     public static readonly StyledProperty<double> ItemSpacingProperty =
@@ -65,6 +68,27 @@ public class Space : Control,
     public static readonly StyledProperty<ITemplate<Control>?> SplitTemplateProperty =
         AvaloniaProperty.Register<Space, ITemplate<Control>?>(
             nameof(SplitTemplate));
+
+    public static readonly StyledProperty<IBrush?> BackgroundProperty =
+        AvaloniaProperty.Register<Space, IBrush?>(nameof(Background));
+
+    public static readonly StyledProperty<IBrush?> BorderBrushProperty =
+        AvaloniaProperty.Register<Space, IBrush?>(nameof(BorderBrush));
+
+    public static readonly StyledProperty<Thickness> BorderThicknessProperty =
+        AvaloniaProperty.Register<Space, Thickness>(nameof(BorderThickness));
+
+    public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
+        AvaloniaProperty.Register<Space, CornerRadius>(nameof(CornerRadius));
+
+    public static readonly StyledProperty<Thickness> PaddingProperty =
+        AvaloniaProperty.Register<Space, Thickness>(nameof(Padding));
+
+    public static readonly StyledProperty<IReadOnlyList<double>?> BorderDashArrayProperty =
+        AvaloniaProperty.Register<Space, IReadOnlyList<double>?>(nameof(BorderDashArray));
+
+    public static readonly StyledProperty<double> BorderDashOffsetProperty =
+        AvaloniaProperty.Register<Space, double>(nameof(BorderDashOffset));
     
     public CustomizableSizeType SizeType
     {
@@ -113,6 +137,48 @@ public class Space : Control,
         get => GetValue(SplitTemplateProperty);
         set => SetValue(SplitTemplateProperty, value);
     }
+
+    public IBrush? Background
+    {
+        get => GetValue(BackgroundProperty);
+        set => SetValue(BackgroundProperty, value);
+    }
+
+    public IBrush? BorderBrush
+    {
+        get => GetValue(BorderBrushProperty);
+        set => SetValue(BorderBrushProperty, value);
+    }
+
+    public Thickness BorderThickness
+    {
+        get => GetValue(BorderThicknessProperty);
+        set => SetValue(BorderThicknessProperty, value);
+    }
+
+    public CornerRadius CornerRadius
+    {
+        get => GetValue(CornerRadiusProperty);
+        set => SetValue(CornerRadiusProperty, value);
+    }
+
+    public Thickness Padding
+    {
+        get => GetValue(PaddingProperty);
+        set => SetValue(PaddingProperty, value);
+    }
+
+    public IReadOnlyList<double>? BorderDashArray
+    {
+        get => GetValue(BorderDashArrayProperty);
+        set => SetValue(BorderDashArrayProperty, value);
+    }
+
+    public double BorderDashOffset
+    {
+        get => GetValue(BorderDashOffsetProperty);
+        set => SetValue(BorderDashOffsetProperty, value);
+    }
     
     [Content]
     public AvaloniaList<Control> Children { get; } = new();
@@ -123,7 +189,9 @@ public class Space : Control,
 
     private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
     private CompositeDisposable? _spacingBindings;
-    
+    private readonly HashSet<Control> _semanticItemMarkerOwners = new();
+    private BorderRenderHelper? _borderRenderHelper;
+
     static Space()
     {
         AffectsMeasure<Space>(ItemSpacingProperty, 
@@ -131,8 +199,16 @@ public class Space : Control,
             OrientationProperty, 
             ItemWidthProperty,
             ItemHeightProperty,
-            SizeTypeProperty);
+            SizeTypeProperty,
+            BorderThicknessProperty,
+            PaddingProperty);
         AffectsArrange<Space>(ItemsAlignmentProperty);
+        AffectsRender<Space>(BackgroundProperty,
+            BorderBrushProperty,
+            BorderThicknessProperty,
+            CornerRadiusProperty,
+            BorderDashArrayProperty,
+            BorderDashOffsetProperty);
         CustomizableSizeTypeControlProperty.SizeTypeProperty.OverrideDefaultValue<Space>(CustomizableSizeType.Small);
     }
     
@@ -145,6 +221,11 @@ public class Space : Control,
     {
         base.OnAttachedToVisualTree(e);
         ApplySpacingTokenBinding();
+
+        if (SplitTemplate != null)
+        {
+            HandleSplitTemplateChanged();
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -172,6 +253,8 @@ public class Space : Control,
 
     protected virtual void HandleChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        ConfigureSemanticItemMarkers(e);
+
         if (SplitTemplate == null)
         {
             switch (e.Action)
@@ -205,6 +288,7 @@ public class Space : Control,
                     {
                         var index = i + e.OldStartingIndex;
                         var child = (Control)e.NewItems![i]!;
+                        EnsureSemanticItemMarker(child);
                         if (!IsItemsHost)
                         {
                             LogicalChildren[index] = child;
@@ -230,6 +314,21 @@ public class Space : Control,
         InvalidateMeasure();
     }
     
+    public sealed override void Render(DrawingContext context)
+    {
+        var borderRenderHelper = _borderRenderHelper ??= new BorderRenderHelper();
+        borderRenderHelper.Render(
+            context,
+            Bounds.Size,
+            BorderThickness,
+            CornerRadius,
+            BackgroundSizing.InnerBorderEdge,
+            Background,
+            BorderBrush,
+            BorderDashArray,
+            BorderDashOffset);
+    }
+
     protected override Size MeasureOverride(Size constraint)
     {
         double itemWidth     = ItemWidth;
@@ -238,17 +337,21 @@ public class Space : Control,
         double lineSpacing   = LineSpacing;
         var    orientation   = Orientation;
         var    children      = VisualChildren;
+        var    frameInset    = Padding + BorderThickness;
+        var    layoutConstraint = new Size(
+            Math.Max(0, constraint.Width - frameInset.Left - frameInset.Right),
+            Math.Max(0, constraint.Height - frameInset.Top - frameInset.Bottom));
         var    curLineSize   = new UVSize(orientation);
         var    panelSize     = new UVSize(orientation);
-        var    uvConstraint  = new UVSize(orientation, constraint.Width, constraint.Height);
+        var    uvConstraint  = new UVSize(orientation, layoutConstraint.Width, layoutConstraint.Height);
         bool   itemWidthSet  = !double.IsNaN(itemWidth);
         bool   itemHeightSet = !double.IsNaN(itemHeight);
         bool   itemExists    = false;
         bool   lineExists    = false;
 
         var childConstraint = new Size(
-            itemWidthSet ? itemWidth : constraint.Width,
-            itemHeightSet ? itemHeight : constraint.Height);
+            itemWidthSet ? itemWidth : layoutConstraint.Width,
+            itemHeightSet ? itemHeight : layoutConstraint.Height);
 
         for (int i = 0, count = children.Count; i < count; ++i)
         {
@@ -291,7 +394,7 @@ public class Space : Control,
         panelSize.V += curLineSize.V + (lineExists ? lineSpacing : 0);
 
         // Go from UV space to W/H space
-        return new Size(panelSize.Width, panelSize.Height);
+        return new Size(panelSize.Width, panelSize.Height).Inflate(frameInset);
     }
     
     protected override Size ArrangeOverride(Size finalSize)
@@ -303,12 +406,14 @@ public class Space : Control,
         var    orientation   = Orientation;
         bool   isHorizontal  = orientation == Orientation.Horizontal;
         var    children      = VisualChildren;
+        var    frameInset    = Padding + BorderThickness;
+        var    layoutSize    = finalSize.Deflate(frameInset);
         int    firstInLine   = 0;
         double accumulatedV  = 0;
         double itemU         = isHorizontal ? itemWidth : itemHeight;
         double itemV         = isHorizontal ? itemHeight : itemWidth;
         var    curLineSize   = new UVSize(orientation);
-        var    uvFinalSize   = new UVSize(orientation, finalSize.Width, finalSize.Height);
+        var    uvFinalSize   = new UVSize(orientation, layoutSize.Width, layoutSize.Height);
         bool   itemWidthSet  = !double.IsNaN(itemWidth);
         bool   itemHeightSet = !double.IsNaN(itemHeight);
         bool   itemExists    = false;
@@ -388,7 +493,8 @@ public class Space : Control,
                         _ => throw new ArgumentOutOfRangeException(nameof(ItemsAlignment), ItemsAlignment, null),
                     };
                 }
-                newChild.Arrange(isHorizontal ? new(u, v, layoutSlotU, layoutSlotV) : new(v, u, layoutSlotV, layoutSlotU));
+                newChild.Arrange(isHorizontal ? new(u + frameInset.Left, v + frameInset.Top, layoutSlotU, layoutSlotV)
+                                              : new(v + frameInset.Left, u + frameInset.Top, layoutSlotV, layoutSlotU));
                 u += layoutSlotU;
                 first = false;
             }
@@ -526,6 +632,7 @@ public class Space : Control,
         for (var i = 0; i < Children.Count; ++i)
         {
             var child = Children[i];
+            EnsureSemanticItemMarker(child);
             if (!IsItemsHost)
             {
                 LogicalChildren.Add(child);
@@ -535,7 +642,7 @@ public class Space : Control,
             {
                 if (i != Children.Count - 1)
                 {
-                    var split = SplitTemplate.Build();
+                    var split = CreateSemanticSeparator();
                     if (!IsItemsHost)
                     {
                         LogicalChildren.Add(split);
@@ -544,6 +651,87 @@ public class Space : Control,
                 }
             }
         }
+    }
+
+    private void ConfigureSemanticItemMarkers(NotifyCollectionChangedEventArgs e)
+    {
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Add:
+                foreach (Control child in e.NewItems!)
+                {
+                    EnsureSemanticItemMarker(child);
+                }
+                break;
+
+            case NotifyCollectionChangedAction.Remove:
+                foreach (Control child in e.OldItems!)
+                {
+                    ReleaseSemanticItemMarker(child);
+                }
+                break;
+
+            case NotifyCollectionChangedAction.Replace:
+                foreach (Control child in e.OldItems!)
+                {
+                    ReleaseSemanticItemMarker(child);
+                }
+
+                foreach (Control child in e.NewItems!)
+                {
+                    EnsureSemanticItemMarker(child);
+                }
+                break;
+
+            case NotifyCollectionChangedAction.Move:
+                break;
+
+            case NotifyCollectionChangedAction.Reset:
+                ReleaseStaleSemanticItemMarkers();
+                break;
+        }
+    }
+
+    private void EnsureSemanticItemMarker(Control child)
+    {
+        if (child.Classes.Contains(SpaceSemanticParts.ItemClass))
+        {
+            return;
+        }
+
+        child.Classes.Add(SpaceSemanticParts.ItemClass);
+        _semanticItemMarkerOwners.Add(child);
+    }
+
+    private void ReleaseSemanticItemMarker(Control child)
+    {
+        if (_semanticItemMarkerOwners.Remove(child))
+        {
+            child.Classes.Remove(SpaceSemanticParts.ItemClass);
+        }
+    }
+
+    private void ReleaseStaleSemanticItemMarkers()
+    {
+        foreach (var child in _semanticItemMarkerOwners.ToArray())
+        {
+            if (!Children.Contains(child))
+            {
+                ReleaseSemanticItemMarker(child);
+            }
+        }
+    }
+
+    private Control CreateSemanticSeparator()
+    {
+        Debug.Assert(SplitTemplate != null);
+        var separator = SplitTemplate.Build();
+        if (!separator.Classes.Contains(SpaceSemanticParts.SeparatorClass))
+        {
+            separator.Classes.Add(SpaceSemanticParts.SeparatorClass);
+        }
+
+        return separator;
     }
 
     private void HandleChildrenPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -577,12 +765,28 @@ public class Space : Control,
         internal double Width
         {
             get => _orientation == Orientation.Horizontal ? U : V;
-            set { if (_orientation == Orientation.Horizontal) U = value; else V = value; }
+            set { if (_orientation == Orientation.Horizontal)
+                {
+                    U = value;
+                }
+                else
+                {
+                    V = value;
+                }
+            }
         }
         internal double Height
         {
             get => _orientation == Orientation.Horizontal ? V : U;
-            set { if (_orientation == Orientation.Horizontal) V = value; else U = value; }
+            set { if (_orientation == Orientation.Horizontal)
+                {
+                    V = value;
+                }
+                else
+                {
+                    U = value;
+                }
+            }
         }
     }
 }

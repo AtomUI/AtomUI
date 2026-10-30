@@ -9,6 +9,7 @@
             <ControlTemplate>
                 <atom:IconButton
                     Name="PART_OpenIndicatorButton"
+                    Classes.semantic-indicator="True"
                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                     IsEnabled="{TemplateBinding IsEnabled}"
                     Icon="{antdicons:AntDesignIconProvider DownOutlined}"

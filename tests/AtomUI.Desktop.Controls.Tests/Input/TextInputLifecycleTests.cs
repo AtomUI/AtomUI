@@ -1,7 +1,9 @@
 using AtomUI.Controls;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -21,6 +23,74 @@ public class TextInputLifecycleTests
     static TextInputLifecycleTests()
     {
         AvaloniaTestApp.EnsureInitialized();
+    }
+
+    [Fact]
+    public void TextArea_Caret_And_Mention_Geometry_Use_The_Current_Template_Presenter()
+    {
+        var autoComplete = new TestAutoCompleteTextAreaBox
+        {
+            Text = "value",
+            CaretIndex = 2
+        };
+        var firstAutoPresenter = CreatePresenter("value", 12);
+        autoComplete.ApplyPresenter(firstAutoPresenter);
+        var firstAutoBounds = autoComplete.GetCaretBounds();
+
+        var secondAutoPresenter = CreatePresenter("value", 28);
+        autoComplete.ApplyPresenter(secondAutoPresenter);
+        var secondAutoBounds = autoComplete.GetCaretBounds();
+
+        secondAutoBounds.ShouldBe(secondAutoPresenter.TextLayout.HitTestTextPosition(autoComplete.CaretIndex));
+        secondAutoBounds.ShouldNotBe(firstAutoBounds);
+
+        var mention = new TestMentionTextArea
+        {
+            TriggerPrefix = ["@"]
+        };
+        var firstMentionPresenter = CreatePresenter("@a", 12);
+        mention.ApplyPresenter(firstMentionPresenter);
+        Rect? firstTriggerBounds = null;
+        EventHandler<ShowMentionCandidateRequestEventArgs> firstHandler =
+            (_, args) => firstTriggerBounds = args.TriggerBounds;
+        mention.CandidateOpenRequest += firstHandler;
+        mention.Text = "@a";
+        mention.CaretIndex = 2;
+        mention.CandidateOpenRequest -= firstHandler;
+        firstTriggerBounds.ShouldBe(firstMentionPresenter.TextLayout.HitTestTextPosition(0));
+
+        var secondMentionPresenter = CreatePresenter("@ab", 28);
+        mention.ApplyPresenter(secondMentionPresenter);
+        Rect? secondTriggerBounds = null;
+        mention.CandidateOpenRequest += (_, args) => secondTriggerBounds = args.TriggerBounds;
+        mention.Text = "@ab";
+        mention.CaretIndex = 3;
+
+        secondTriggerBounds.ShouldBe(secondMentionPresenter.TextLayout.HitTestTextPosition(0));
+        secondTriggerBounds.ShouldNotBe(firstTriggerBounds);
+    }
+
+    [Fact]
+    public void TextArea_Template_Still_Requires_PART_TextPresenter()
+    {
+        Should.Throw<KeyNotFoundException>(() => new TestAutoCompleteTextAreaBox().ApplyMissingPresenter());
+        Should.Throw<KeyNotFoundException>(() => new TestMentionTextArea().ApplyMissingPresenter());
+    }
+
+    [Fact]
+    public void TextArea_Geometry_Does_Not_Reflect_The_Base_Presenter_Field()
+    {
+        var repoRoot = GetRepoRoot();
+        File.ReadAllText(Path.Combine(repoRoot,
+                "src/AtomUI.Desktop.Controls/AutoComplete/AutoCompleteTextAreaBox.cs"))
+            .ShouldNotContain("this.GetTextPresenter()");
+        File.ReadAllText(Path.Combine(repoRoot,
+                "src/AtomUI.Desktop.Controls/Mentions/MentionTextArea.cs"))
+            .ShouldNotContain("this.GetTextPresenter()");
+        var reflectionSource = File.ReadAllText(Path.Combine(repoRoot,
+            "src/AtomUI.Desktop.Controls/Input/Utils/TextBoxReflectionExtensions.cs"));
+        reflectionSource.ShouldNotContain("TextPresenterFieldInfo");
+        reflectionSource.ShouldNotContain("GetTextPresenter(");
     }
 
     [Theory]
@@ -72,7 +142,45 @@ public class TextInputLifecycleTests
             var clearButton = FindTemplatePart<InputClearIconButton>(input, "PART_ClearButton");
             clearButton.IsVisible.ShouldBeTrue($"{inputType.Name} clear visibility must remain bound after reattach.");
 
-            if (input is AtomUILineEdit lineEdit)
+            if (input is AtomUITextBox textBox)
+            {
+                var scrollViewer = FindTemplatePart<ScrollViewer>(input, "ScrollViewer");
+                var emptyContentBounds = scrollViewer.Bounds;
+                var leftContent = new Border { Width = 18, Height = 18 };
+                var rightContent = new Border { Width = 24, Height = 18 };
+                textBox.InnerLeftContent = leftContent;
+                textBox.InnerRightContent = rightContent;
+                Dispatcher.UIThread.RunJobs();
+
+                var leftPresenter = FindTemplatePart<ContentPresenter>(input, "InnerLeftContentPresenter");
+                var rightPresenter = FindTemplatePart<ContentPresenter>(input, "InnerRightContentPresenter");
+                leftPresenter.Child.ShouldBeSameAs(leftContent);
+                rightPresenter.Child.ShouldBeSameAs(rightContent);
+                leftContent.Bounds.Width.ShouldBeGreaterThan(0);
+                rightContent.Bounds.Width.ShouldBeGreaterThan(0);
+                scrollViewer.Bounds.Width.ShouldBeLessThan(emptyContentBounds.Width);
+                input.TryFindResource(SharedTokenKind.SpacingXXS, out var spacingValue).ShouldBeTrue();
+                var expectedSpacing = spacingValue.ShouldBeOfType<double>();
+                var leftContentEnd = leftContent.TranslatePoint(new Point(leftContent.Bounds.Width, 0), input)!.Value.X;
+                var viewportStart = scrollViewer.TranslatePoint(default, input)!.Value.X;
+                var viewportEnd = scrollViewer.TranslatePoint(new Point(scrollViewer.Bounds.Width, 0), input)!.Value.X;
+                var clearButtonStart = clearButton.TranslatePoint(default, input)!.Value.X;
+                (viewportStart - leftContentEnd).ShouldBe(expectedSpacing, 0.01);
+                (clearButtonStart - viewportEnd).ShouldBe(expectedSpacing, 0.01);
+
+                textBox.InnerLeftContent = null;
+                textBox.InnerRightContent = null;
+                Dispatcher.UIThread.RunJobs();
+
+                leftPresenter.IsVisible.ShouldBeFalse();
+                rightPresenter.IsVisible.ShouldBeFalse();
+                leftContent.GetVisualParent().ShouldBeNull();
+                rightContent.GetVisualParent().ShouldBeNull();
+                scrollViewer.Bounds.ShouldBe(emptyContentBounds);
+                var emptyViewportEnd = scrollViewer.TranslatePoint(new Point(scrollViewer.Bounds.Width, 0), input)!.Value.X;
+                (clearButton.TranslatePoint(default, input)!.Value.X - emptyViewportEnd).ShouldBe(0, 0.01);
+            }
+            else if (input is AtomUILineEdit lineEdit)
             {
                 var content = new Border();
                 lineEdit.InnerRightContent = content;
@@ -218,6 +326,33 @@ public class TextInputLifecycleTests
         return input;
     }
 
+    private static TextPresenter CreatePresenter(string text, double fontSize)
+    {
+        var presenter = new TextPresenter
+        {
+            Text = text,
+            FontSize = fontSize
+        };
+        presenter.Measure(new Size(300, 100));
+        return presenter;
+    }
+
+    private static string GetRepoRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (Directory.Exists(Path.Combine(directory.FullName, "src/AtomUI.Desktop.Controls")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Unable to locate the AtomUI repository root.");
+    }
+
     private static FeedbackLifecycleCase CreateFeedbackLifecycleCase(
         string controlKind,
         FormValidateFeedback feedback)
@@ -305,4 +440,38 @@ public class TextInputLifecycleTests
     }
 
     private sealed record FeedbackLifecycleCase(Control Control, Func<bool> IsFeedbackVisible);
+
+    private sealed class TestAutoCompleteTextAreaBox : AutoCompleteTextAreaBox
+    {
+        internal void ApplyPresenter(TextPresenter presenter) => ApplyTemplatePart(presenter);
+
+        internal void ApplyMissingPresenter() => ApplyTemplatePart(null);
+
+        private void ApplyTemplatePart(TextPresenter? presenter)
+        {
+            var nameScope = new NameScope();
+            if (presenter is not null)
+            {
+                nameScope.Register("PART_TextPresenter", presenter);
+            }
+            OnApplyTemplate(new TemplateAppliedEventArgs(nameScope));
+        }
+    }
+
+    private sealed class TestMentionTextArea : MentionTextArea
+    {
+        internal void ApplyPresenter(TextPresenter presenter) => ApplyTemplatePart(presenter);
+
+        internal void ApplyMissingPresenter() => ApplyTemplatePart(null);
+
+        private void ApplyTemplatePart(TextPresenter? presenter)
+        {
+            var nameScope = new NameScope();
+            if (presenter is not null)
+            {
+                nameScope.Register("PART_TextPresenter", presenter);
+            }
+            OnApplyTemplate(new TemplateAppliedEventArgs(nameScope));
+        }
+    }
 }

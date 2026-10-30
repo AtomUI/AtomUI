@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -239,30 +240,59 @@ public class ScopeAwareAdornerLayer : Canvas
                 adorner.SetValue(AdornedElementInfoProperty, info);
             }
 
-            info.Subscription = adorned.GetObservable(BoundsProperty).Subscribe(x =>
+            void TakeBoundsSnapshot()
             {
                 Debug.Assert(LayerHost != null);
-                double offsetX = 0d;
-                double offsetY = 0d;
 
-                var relateToHostPoint = adorned.TranslatePoint(new Point(0, 0), LayerHost) ?? new Point(0, 0);
-                if (LayerHost is ScrollContentPresenter scrollContentPresenter)
+                // 层与被装饰元素位于同一内容子树时（层注入路径：层是被装饰元素
+                // 所在内容根的兄弟节点），直接换算到层坐标：滚动平移在链路上抵消，
+                // 结果对滚动不变。回退路径按 LayerHost 换算并补偿宿主
+                // ScrollContentPresenter 的滚动偏移。
+                var translation = adorned.TranslatePoint(new Point(0, 0), this);
+                if (translation is null)
                 {
-                    offsetX = scrollContentPresenter.Offset.X;
-                    offsetY = scrollContentPresenter.Offset.Y;
+                    double offsetX = 0d;
+                    double offsetY = 0d;
+                    var relateToHostPoint = adorned.TranslatePoint(new Point(0, 0), LayerHost) ?? new Point(0, 0);
+                    if (LayerHost is ScrollContentPresenter scrollContentPresenter)
+                    {
+                        offsetX = scrollContentPresenter.Offset.X;
+                        offsetY = scrollContentPresenter.Offset.Y;
+                    }
+
+                    offsetX += relateToHostPoint.X;
+                    offsetY += relateToHostPoint.Y;
+                    translation = new Point(offsetX, offsetY);
                 }
 
-                offsetX += relateToHostPoint.X;
-                offsetY += relateToHostPoint.Y;
-                var translationMatrix = LayerHost != null
-                    ? Matrix.CreateTranslation(offsetX, offsetY)
-                    : Matrix.Identity;
-                var adornedWidth  = Math.Max(adorned.Bounds.Width, adorned.DesiredSize.Width);
-                var adornedHeight = Math.Max(adorned.Bounds.Height, adorned.DesiredSize.Height);
+                var translationMatrix = Matrix.CreateTranslation(translation.Value.X, translation.Value.Y);
+                // 尺寸必须取被装饰元素的排列盒（Bounds，不含 Margin）：DesiredSize
+                // 包含 Margin，直接取大会把容器放大成 margin box，遮罩与面板会
+                // 越出宿主的可见边界（带边距的宿主元素尤甚）。仅在尚未排列
+                // （Bounds 为空）时回退到「DesiredSize - Margin」的测量值。
+                var adornedWidth  = adorned.Bounds.Width > 0
+                    ? adorned.Bounds.Width
+                    : Math.Max(0, adorned.DesiredSize.Width - adorned.Margin.Left - adorned.Margin.Right);
+                var adornedHeight = adorned.Bounds.Height > 0
+                    ? adorned.Bounds.Height
+                    : Math.Max(0, adorned.DesiredSize.Height - adorned.Margin.Top - adorned.Margin.Bottom);
                 info.Bounds = new TransformedBounds(new Rect(new Size(adornedWidth, adornedHeight)),
                     new Rect(new Size(adornedWidth, adornedHeight)),
                     translationMatrix);
                 InvalidateMeasure();
+            }
+
+            // 层注入把层挂进全新的包裹面板，首次快照发生在面板/层尚未 arrange 的
+            // 瞬态，换算链不可用（得到未补偿滚动的错误位置，且被装饰元素的 Bounds
+            // 不会随之再变，错误会一直保持到下一次开合）。订阅层自身 Bounds：注入
+            // 后层被 arrange（0 → 实际值）时换算链就绪、快照自愈；正常滚动不改变
+            // 层的 Bounds，不会引入「旧位置 + 新偏移」的混态重算。
+            var adornedSubscription = adorned.GetObservable(BoundsProperty).Subscribe(_ => TakeBoundsSnapshot());
+            var layerSubscription   = this.GetObservable(BoundsProperty).Subscribe(_ => TakeBoundsSnapshot());
+            info.Subscription = Disposable.Create(() =>
+            {
+                adornedSubscription.Dispose();
+                layerSubscription.Dispose();
             });
         }
     }
@@ -304,6 +334,12 @@ public class ScopeAwareAdornerLayer : Canvas
             Detach(visual, oldAdorner);
         }
 
+        // Detach 可同步触发用户更换 adorner；只让当前属性指向的实例进入层。
+        if (!ReferenceEquals(GetAdorner(visual), newAdorner))
+        {
+            return;
+        }
+
         if (newAdorner is { })
         {
             visual.AttachedToVisualTree   += VisualOnAttachedToVisualTree;
@@ -315,15 +351,17 @@ public class ScopeAwareAdornerLayer : Canvas
     private static void Attach(Visual visual, Control adorner)
     {
         var layer = ScopeAwareAdornerLayer.GetLayer(visual);
-        AddVisualAdorner(visual, adorner, layer);
+        // 加入视觉树会同步触发资源绑定与用户回调；回调可能立即移除 adorner。
+        // 必须先记录退出所需的层，避免重入 Detach 找不到尚未写入的宿主。
         visual.SetValue(SavedAdornerLayerProperty, layer);
+        AddVisualAdorner(visual, adorner, layer);
     }
 
     private static void Detach(Visual visual, Control adorner)
     {
         var layer = visual.GetValue(SavedAdornerLayerProperty);
-        RemoveVisualAdorner(visual, adorner, layer);
         visual.ClearValue(SavedAdornerLayerProperty);
+        RemoveVisualAdorner(visual, adorner, layer);
     }
 
     private static void AddVisualAdorner(Visual visual, Control? adorner, ScopeAwareAdornerLayer? layer)
@@ -336,6 +374,11 @@ public class ScopeAwareAdornerLayer : Canvas
         SetAdornedElement(adorner, visual);
 
         adorner.SetLogicalParent(visual);
+        if (!ReferenceEquals(GetAdorner(visual), adorner))
+        {
+            adorner.SetLogicalParent(null);
+            return;
+        }
         layer.Children.Add(adorner);
     }
 

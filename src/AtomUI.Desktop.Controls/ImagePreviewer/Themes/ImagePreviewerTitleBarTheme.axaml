@@ -71,8 +71,20 @@
                                               ContentTemplate="{TemplateBinding RightAddOnTemplate}"
                                               IsVisible="{TemplateBinding RightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             <atom:CaptionButtonGroup Name="PART_CaptionButtonGroup"
+                                                     OsType="{TemplateBinding OsType}"
                                                      IsWindowActive="{TemplateBinding IsWindowActive}"
-                                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                     HostWindowState="{TemplateBinding HostWindowState}"
+                                                     IsWindowTopmost="{TemplateBinding IsWindowTopmost}"
+                                                     IsMinimizeCaptionButtonVisible="{TemplateBinding IsMinimizeCaptionButtonVisible}"
+                                                     IsMaximizeCaptionButtonVisible="{TemplateBinding IsMaximizeCaptionButtonVisible}"
+                                                     IsCloseCaptionButtonVisible="{TemplateBinding IsCloseCaptionButtonVisible}"
+                                                     IsFullScreenCaptionButtonVisible="{TemplateBinding IsFullScreenCaptionButtonVisible}"
+                                                     IsPinCaptionButtonVisible="{TemplateBinding IsPinCaptionButtonVisible}"
+                                                     CanMinimize="{TemplateBinding CanMinimize}"
+                                                     CanMaximize="{TemplateBinding CanMaximize}"
+                                                     IsPinCaptionButtonSupported="{TemplateBinding IsPinCaptionButtonSupported}"
+                                                     CaptionButtonCommand="{TemplateBinding CaptionButtonCommand}" />
                         </StackPanel>
                     </atom:WindowTitleBarLayoutPanel>
                 </Border>
@@ -134,8 +146,20 @@
                                               ContentTemplate="{TemplateBinding RightAddOnTemplate}"
                                               IsVisible="{TemplateBinding RightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             <atom:CaptionButtonGroup Name="PART_CaptionButtonGroup"
+                                                     OsType="{TemplateBinding OsType}"
                                                      IsWindowActive="{TemplateBinding IsWindowActive}"
-                                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                     HostWindowState="{TemplateBinding HostWindowState}"
+                                                     IsWindowTopmost="{TemplateBinding IsWindowTopmost}"
+                                                     IsMinimizeCaptionButtonVisible="{TemplateBinding IsMinimizeCaptionButtonVisible}"
+                                                     IsMaximizeCaptionButtonVisible="{TemplateBinding IsMaximizeCaptionButtonVisible}"
+                                                     IsCloseCaptionButtonVisible="{TemplateBinding IsCloseCaptionButtonVisible}"
+                                                     IsFullScreenCaptionButtonVisible="{TemplateBinding IsFullScreenCaptionButtonVisible}"
+                                                     IsPinCaptionButtonVisible="{TemplateBinding IsPinCaptionButtonVisible}"
+                                                     CanMinimize="{TemplateBinding CanMinimize}"
+                                                     CanMaximize="{TemplateBinding CanMaximize}"
+                                                     IsPinCaptionButtonSupported="{TemplateBinding IsPinCaptionButtonSupported}"
+                                                     CaptionButtonCommand="{TemplateBinding CaptionButtonCommand}" />
                         </StackPanel>
                     </atom:WindowTitleBarLayoutPanel>
                 </Border>
@@ -197,8 +221,20 @@
                                               ContentTemplate="{TemplateBinding RightAddOnTemplate}"
                                               IsVisible="{TemplateBinding RightAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             <atom:CaptionButtonGroup Name="PART_CaptionButtonGroup"
+                                                     OsType="{TemplateBinding OsType}"
                                                      IsWindowActive="{TemplateBinding IsWindowActive}"
-                                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                                     HostWindowState="{TemplateBinding HostWindowState}"
+                                                     IsWindowTopmost="{TemplateBinding IsWindowTopmost}"
+                                                     IsMinimizeCaptionButtonVisible="{TemplateBinding IsMinimizeCaptionButtonVisible}"
+                                                     IsMaximizeCaptionButtonVisible="{TemplateBinding IsMaximizeCaptionButtonVisible}"
+                                                     IsCloseCaptionButtonVisible="{TemplateBinding IsCloseCaptionButtonVisible}"
+                                                     IsFullScreenCaptionButtonVisible="{TemplateBinding IsFullScreenCaptionButtonVisible}"
+                                                     IsPinCaptionButtonVisible="{TemplateBinding IsPinCaptionButtonVisible}"
+                                                     CanMinimize="{TemplateBinding CanMinimize}"
+                                                     CanMaximize="{TemplateBinding CanMaximize}"
+                                                     IsPinCaptionButtonSupported="{TemplateBinding IsPinCaptionButtonSupported}"
+                                                     CaptionButtonCommand="{TemplateBinding CaptionButtonCommand}" />
                         </StackPanel>
                     </atom:WindowTitleBarLayoutPanel>
                 </Border>

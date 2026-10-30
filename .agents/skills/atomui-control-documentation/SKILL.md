@@ -1,6 +1,6 @@
 ---
 name: atomui-control-documentation
-description: Use when creating, completing, splitting, reviewing, or synchronizing AtomUI control documentation under docs/controls, including overview.md, implementation.md, token.md, changelog.md, topic design documents, LLMS source coverage, Gallery API/Token/ShowCase alignment, or documentation impact from control API, theme, behavior, and architecture changes.
+description: Use when creating, completing, splitting, reviewing, or synchronizing AtomUI control documentation under docs/controls, including overview.md, implementation.md, token.md, changelog.md, topic design documents, Gallery API/Token/ShowCase alignment, or documentation impact from control API, theme, behavior, and architecture changes.
 ---
 
 # AtomUI Control Documentation
@@ -23,7 +23,7 @@ Choose the document by responsibility before writing:
 
 | Document | Owns | Must not become |
 | --- | --- | --- |
-| `overview.md` | Current design positioning, public contract, state/behavior model, visual/theme model, compatibility, navigation, LLMS source map | Implementation walkthrough or API dump |
+| `overview.md` | Current design positioning, public contract, state/behavior model, visual/theme model, compatibility, navigation | Implementation walkthrough or API dump |
 | `implementation.md` | Current source ownership, composition, data/state flow, lifecycle, algorithms, resource/performance/AOT boundaries, maintenance invariants | User guide, design history, or private-method catalog |
 | `<topic>-design.md` | One stable cross-cutting design spanning model/API, strategy, architecture, Template, algorithm, compatibility, and verification | Issue analysis, ADR, option comparison, or implementation plan |
 | `token.md` | Control-specific Token semantics, categories, family impact, compatibility, validation | Generated Token table or runtime state model |
@@ -113,11 +113,9 @@ Position -> Principles -> Model/API -> Variant strategy -> Architecture/ownershi
 
 - Keep `overview.md` and `implementation.md` as the primary entry points.
 - Add bidirectional links for each topic design document.
-- Keep enough API and semantic summary in the main documents for LLMS generation.
 - Update `changelog.md` for actual design, API, theme, Token, or implementation-structure changes.
 - Update the category index when adding a new control directory.
 - Check Gallery API/Token tables and ShowCase examples when public usage changes.
-- Do not hand-edit generated files under `docs/AI/generated/llms`; update their source documents or generator input.
 
 ### 5. Review
 
@@ -142,7 +140,6 @@ Stop and reshape the document when any of these appear:
 - Public API is listed only in a topic document and absent from the overview summary.
 - Template/composition claims are not grounded in actual Themes or an approved design contract.
 - Internal types are presented as user APIs.
-- Generated LLMS output is edited directly.
 - A control-level document repeats global AOT, Token, Gallery, or documentation rules.
 - A new helper document has no independent audience, lifecycle, or ownership boundary.
 - A Mobile Control directory is created before Public API source, Theme, Contract/Headless tests, and Gallery API/Token/ShowCase evidence exist.
@@ -161,7 +158,6 @@ Then verify according to impact:
 - Public API or behavior: run the targeted control tests and verify Gallery API/example synchronization.
 - Theme/Template: run theme contract tests and inspect Light/Dark plus affected platform hosts.
 - Gallery source changes: run `tests/AtomUIGallery.Tests`.
-- LLMS source changes: run the repository LLMS verification command when available; never claim generated output is current without it.
 - AOT-sensitive changes: run the required NativeAOT publish validation.
 
 ## Completion Report
@@ -172,7 +168,6 @@ Report:
 Documents created/updated:
 Contract or design represented:
 Source/Theme/Gallery evidence:
-LLMS impact:
 Validation performed:
 Known mismatch or residual platform validation:
 Commit created: No unless explicitly requested

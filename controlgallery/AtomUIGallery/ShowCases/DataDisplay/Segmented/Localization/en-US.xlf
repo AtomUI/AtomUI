@@ -156,6 +156,36 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon region of each option, with state icon brush and icon size</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item container, with state backgrounds, corner radius and padding</source>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label region of each option, with text and icon-text spacing</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use generated style classes to customize the published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, the track surface with background and corner radius</source>
+      </segment>
+    </unit>
     <unit id="ThreeSizesDescription">
       <segment>
         <source>Segmented supports large (40px), default (32px), small (24px), and custom size.</source>

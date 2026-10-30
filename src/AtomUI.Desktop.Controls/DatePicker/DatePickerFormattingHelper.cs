@@ -2,14 +2,17 @@
 using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls.Localization;
 using AtomUI.Media;
+using AtomUI.Desktop.Controls.Internal.DateViewer;
 using Avalonia;
 using Avalonia.Media;
-using AtomUI.Desktop.Controls.CalendarView.Infrastructure;
 
 namespace AtomUI.Desktop.Controls;
 
 internal static class DatePickerFormattingHelper
 {
+    internal static CultureInfo GetFormattingCulture() => Application.Current is { } application
+        ? global::AtomUI.ApplicationExtensions.GetLanguageManager(application)?.Current.FormattingCulture ?? CultureInfo.CurrentCulture
+        : CultureInfo.CurrentCulture;
     private const string AntDesignDefaultDatePickerInputWidthReferenceText = "Select quarter";
 
     internal static string GetEffectiveFormat(string? format, bool isShowTime, ClockIdentifierType clockIdentifier)
@@ -281,12 +284,12 @@ internal static class DatePickerFormattingHelper
         return ApplyWidthBounds(preferredWidth, minWidth, maxWidth);
     }
 
-    internal static DateTime NormalizeDateTime(DateTime dateTime, DatePickerMode pickerMode, DayOfWeek firstDayOfWeek = DayOfWeek.Monday)
+    internal static DateTime NormalizeDateTime(DateTime dateTime, DatePickerMode pickerMode, DayOfWeek? firstDayOfWeek = null)
     {
-        var date = DateTimeHelper.DiscardTime(dateTime);
+        var date = dateTime.Date;
         return pickerMode switch
         {
-            DatePickerMode.Week    => GetWeekStart(date, firstDayOfWeek),
+            DatePickerMode.Week    => GetWeekStart(date, firstDayOfWeek ?? DatePanelAlgorithms.GetWeekFirstDay(GetFormattingCulture())),
             DatePickerMode.Month   => new DateTime(date.Year, date.Month, 1),
             DatePickerMode.Quarter => new DateTime(date.Year, ((date.Month - 1) / 3 * 3) + 1, 1),
             DatePickerMode.Year    => new DateTime(date.Year, 1, 1),
@@ -298,20 +301,28 @@ internal static class DatePickerFormattingHelper
     {
         return pickerMode switch
         {
-            DatePickerMode.Week    => ISOWeek.GetYear(first) == ISOWeek.GetYear(second) &&
-                                      ISOWeek.GetWeekOfYear(first) == ISOWeek.GetWeekOfYear(second),
+            DatePickerMode.Week    => NormalizeDateTime(first, pickerMode) == NormalizeDateTime(second, pickerMode),
             DatePickerMode.Month   => first.Year == second.Year && first.Month == second.Month,
             DatePickerMode.Quarter => first.Year == second.Year && ((first.Month - 1) / 3) == ((second.Month - 1) / 3),
             DatePickerMode.Year    => first.Year == second.Year,
-            _                      => DateTimeHelper.CompareDays(first, second) == 0
+            _                      => first.Date == second.Date
         };
     }
 
     private static string FormatWeek(DateTime dateTime)
     {
-        var weekYear = ISOWeek.GetYear(dateTime);
-        var week     = ISOWeek.GetWeekOfYear(dateTime);
-        return string.Create(CultureInfo.InvariantCulture, $"{weekYear:D4}-{week:D2}周");
+        var culture = GetFormattingCulture();
+        var (year, week) = DatePanelAlgorithms.GetWeekIdentity(dateTime, culture, DatePanelAlgorithms.GetWeekFirstDay(culture));
+        var suffix = culture.TwoLetterISOLanguageName switch
+        {
+            "zh" when culture.Name.EndsWith("-TW", StringComparison.OrdinalIgnoreCase) || culture.Name.Equals("zh-Hant", StringComparison.OrdinalIgnoreCase) => "週",
+            "zh" => "周",
+            "en" when week % 100 is >= 11 and <= 13 => "th",
+            "en" => (week % 10) switch { 1 => "st", 2 => "nd", 3 => "rd", _ => "th" },
+            "pt" => "º",
+            _ => string.Empty
+        };
+        return string.Create(CultureInfo.InvariantCulture, $"{year:D4}-{week}{suffix}");
     }
 
     private static string FormatQuarter(DateTime dateTime)
@@ -323,7 +334,7 @@ internal static class DatePickerFormattingHelper
     private static DateTime GetWeekStart(DateTime date, DayOfWeek firstDayOfWeek)
     {
         var offset = ((int)date.DayOfWeek - (int)firstDayOfWeek + 7) % 7;
-        return date.AddDays(-offset);
+        return new DateTime(Math.Max(DateTime.MinValue.Ticks, date.Ticks - offset * TimeSpan.TicksPerDay));
     }
 
     private static double ApplyWidthBounds(double preferredWidth, double minWidth, double maxWidth)

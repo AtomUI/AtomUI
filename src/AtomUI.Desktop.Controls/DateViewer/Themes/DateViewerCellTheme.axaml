@@ -1,0 +1,239 @@
+<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
+              x:Class="AtomUI.Desktop.Controls.Themes.DateViewerCellTheme"
+              x:ClassModifier="internal" TargetType="viewer:DateViewerCell">
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Background" Value="Transparent" />
+    <ControlTheme.Resources>
+        <atom:CornerRadiusFilterConverter x:Key="StartCorners" TopRight="False" BottomRight="False" />
+        <atom:CornerRadiusFilterConverter x:Key="EndCorners" TopLeft="False" BottomLeft="False" />
+    </ControlTheme.Resources>
+    <Setter Property="MinHeight" Value="{atom:DateViewerTokenResource CellRowHeight}" />
+    <Setter Property="Template">
+        <ControlTemplate TargetType="viewer:DateViewerCell">
+            <Border Name="PART_CellRoot" Background="Transparent">
+                <Grid Name="PART_Layout" RowDefinitions="Auto,*">
+                    <Border Name="PART_CellSurface" Grid.RowSpan="2" />
+                    <Grid Grid.Row="0" ColumnDefinitions="*,*">
+                        <Border Name="PART_RangeMiddle" Grid.ColumnSpan="2" IsVisible="False"
+                                Background="{atom:DateViewerTokenResource CellRangeBg}" />
+                        <Border Name="PART_RangeStart" Grid.Column="1" IsVisible="False"
+                                Background="{atom:DateViewerTokenResource CellRangeBg}" />
+                        <Border Name="PART_RangeEnd" Grid.Column="0" IsVisible="False"
+                                Background="{atom:DateViewerTokenResource CellRangeBg}" />
+                        <Border Name="PART_WeekSelection" Grid.ColumnSpan="2" />
+                    </Grid>
+                    <Border Name="PART_ValueFrame" Grid.Row="0"
+                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <atom:TextBlock Name="PART_Value" Text="{TemplateBinding DisplayText}"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Foreground="{TemplateBinding Foreground}" />
+                    </Border>
+                    <ContentControl Name="PART_CellContent" Classes.semantic-cell-content="True" Grid.Row="1"
+                                    Content="{TemplateBinding Context}" ContentTemplate="{TemplateBinding CellTemplate}"
+                                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                    IsVisible="False" />
+                </Grid>
+            </Border>
+        </ControlTemplate>
+    </Setter>
+    <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+    <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+    <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+    <Style Selector="^ /template/ Border#PART_ValueFrame">
+        <Setter Property="Background" Value="{TemplateBinding Background}" />
+        <Setter Property="BorderBrush" Value="{TemplateBinding BorderBrush}" />
+        <Setter Property="BorderThickness" Value="{TemplateBinding BorderThickness}" />
+        <Setter Property="MinWidth" Value="{atom:DateViewerTokenResource CellWidth}" />
+        <Setter Property="MinHeight" Value="{atom:DateViewerTokenResource CellHeight}" />
+        <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
+    </Style>
+    <Style Selector="^[IsMotionEnabled=True] /template/ Border#PART_ValueFrame">
+        <Setter Property="Transitions">
+            <Transitions>
+                <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="^ /template/ Border#PART_WeekSelection">
+        <Setter Property="IsVisible" Value="False" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="^:week-mode /template/ Border#PART_WeekSelection">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^[IsMotionEnabled=True]:week-mode /template/ Border#PART_WeekSelection">
+        <Setter Property="Transitions">
+            <Transitions>
+                <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="^:today:date:not(:disabled)">
+        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+    </Style>
+    <Style Selector="^:month /template/ Border#PART_ValueFrame, ^:quarter /template/ Border#PART_ValueFrame, ^:year /template/ Border#PART_ValueFrame">
+        <Setter Property="Width" Value="{atom:DateViewerTokenResource PeriodCellWidth}" />
+        <Setter Property="Padding" Value="{atom:DateViewerTokenResource PeriodCellPadding}" />
+    </Style>
+    <Style Selector="^:visual-endpoint:not(:disabled), ^:navigation-current:not(:disabled)">
+        <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
+        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+    </Style>
+    <Style Selector="^:range-middle:not(:week-mode):not(:has-preview):not(:outside) /template/ Border#PART_RangeMiddle, ^:range-preview-middle:not(:week-mode):not(:outside) /template/ Border#PART_RangeMiddle">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:range-start:not(:week-mode):not(:range-end):not(:has-preview):not(:outside) /template/ Border#PART_RangeStart, ^:range-preview-start:not(:week-mode):not(:range-preview-end):not(:outside) /template/ Border#PART_RangeStart">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:range-end:not(:week-mode):not(:range-start):not(:has-preview):not(:outside) /template/ Border#PART_RangeEnd, ^:range-preview-end:not(:week-mode):not(:range-preview-start):not(:outside) /template/ Border#PART_RangeEnd">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:week-mode /template/ Border#PART_RangeMiddle, ^:week-mode /template/ Border#PART_RangeStart, ^:week-mode /template/ Border#PART_RangeEnd">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:range-start:not(:range-end):not(:range-preview-end) /template/ Border#PART_ValueFrame, ^:range-preview-start:not(:range-end):not(:range-preview-end) /template/ Border#PART_ValueFrame">
+        <Setter Property="CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType=viewer:DateViewerCell}, Converter={StaticResource StartCorners}}" />
+    </Style>
+    <Style Selector="^:range-end:not(:range-start):not(:range-preview-start) /template/ Border#PART_ValueFrame, ^:range-preview-end:not(:range-start):not(:range-preview-start) /template/ Border#PART_ValueFrame">
+        <Setter Property="CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType=viewer:DateViewerCell}, Converter={StaticResource EndCorners}}" />
+    </Style>
+    <Style Selector="^:week-selection-start, ^:week-selection-middle, ^:week-selection-end, ^:week-mode:hovered">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+    </Style>
+    <Style Selector="^:week-selection-start /template/ Border#PART_WeekSelection, ^:week-selection-middle /template/ Border#PART_WeekSelection, ^:week-selection-end /template/ Border#PART_WeekSelection, ^:week-mode:hovered /template/ Border#PART_WeekSelection">
+        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
+    </Style>
+    <Style Selector="^:week-mode:range-middle /template/ Border#PART_WeekSelection, ^:week-mode:range-preview-middle /template/ Border#PART_WeekSelection">
+        <Setter Property="Background" Value="{atom:DateViewerTokenResource CellRangeBg}" />
+    </Style>
+    <Style Selector="^:week-selection-start /template/ Border#PART_WeekSelection">
+        <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource StartCorners}}" />
+    </Style>
+    <Style Selector="^:week-selection-end /template/ Border#PART_WeekSelection">
+        <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource EndCorners}}" />
+    </Style>
+    <Style Selector="^:week-mode:week /template/ Border#PART_WeekSelection">
+        <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource StartCorners}}" />
+    </Style>
+    <Style Selector="^:week-mode:last-week-day /template/ Border#PART_WeekSelection">
+        <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource EndCorners}}" />
+    </Style>
+    <Style Selector="^ /template/ Border#PART_RangeMiddle, ^ /template/ Border#PART_RangeStart, ^ /template/ Border#PART_RangeEnd, ^ /template/ Border#PART_WeekSelection">
+        <Setter Property="Height" Value="{atom:DateViewerTokenResource CellHeight}" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+    </Style>
+    <Style Selector="^:pointerover:not(:week-mode):not(:selected):not(:disabled):not(:navigation-current):not(:range-start):not(:range-middle):not(:range-end):not(:range-preview-start):not(:range-preview-middle):not(:range-preview-end):not(:week-selection-start):not(:week-selection-middle):not(:week-selection-end)">
+        <Setter Property="Background" Value="{atom:DateViewerTokenResource CellHoverBg}" />
+    </Style>
+    <Style Selector="^:outside">
+        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+    </Style>
+    <Style Selector="^:week">
+        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+    </Style>
+    <Style Selector="^:week-selection-start, ^:week-selection-middle, ^:week-selection-end, ^:week-mode:hovered">
+        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+    </Style>
+    <Style Selector="^:week-mode:week /template/ atom|TextBlock#PART_Value">
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
+    <Style Selector="^:disabled">
+        <Setter Property="Cursor" Value="Arrow" />
+        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+    </Style>
+    <Style Selector="^:cell-template /template/ ContentControl#PART_CellContent">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:full-template /template/ ContentControl#PART_CellContent">
+        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Grid.Row" Value="0" />
+        <Setter Property="Grid.RowSpan" Value="2" />
+        <Setter Property="ContentTemplate" Value="{TemplateBinding EffectiveFullCellTemplate}" />
+    </Style>
+    <Style Selector="^:full-template /template/ Border#PART_ValueFrame">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^[Presentation=Content]">
+        <Setter Property="MinHeight" Value="{atom:DateViewerTokenResource ContentCellMinHeight}" />
+    </Style>
+    <Style Selector="^[Presentation=Content] /template/ Border#PART_CellSurface">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
+        <Setter Property="BorderThickness" Value="{atom:DateViewerTokenResource ContentCellTopBorderThickness}" />
+        <Setter Property="Margin" Value="{atom:DateViewerTokenResource ContentCellSurfaceMargin}" />
+    </Style>
+    <Style Selector="^[Presentation=Content] /template/ Border#PART_ValueFrame">
+        <Setter Property="Margin" Value="{atom:DateViewerTokenResource ContentCellValueMargin}" />
+    </Style>
+    <Style Selector="^[Presentation=Content] /template/ ContentControl#PART_CellContent">
+        <Setter Property="Margin" Value="{atom:DateViewerTokenResource ContentCellContentMargin}" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:full-template /template/ ContentControl#PART_CellContent">
+        <Setter Property="Margin" Value="{atom:DateViewerTokenResource ContentCellValueMargin}" />
+    </Style>
+    <Style Selector="^[Presentation=Content][IsMotionEnabled=True] /template/ Border#PART_CellSurface">
+        <Setter Property="Transitions">
+            <Transitions>
+                <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="^[Presentation=Content][IsMotionEnabled=True] /template/ atom|TextBlock#PART_Value">
+        <Setter Property="Transitions">
+            <Transitions>
+                <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="^[Presentation=Content] /template/ Border#PART_ValueFrame">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:today:date:not(:disabled) /template/ Border#PART_CellSurface">
+        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:today:date:not(:week-mode):not(:visual-endpoint):not(:range-middle):not(:range-preview-middle)">
+        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:today:date:not(:week-mode):not(:visual-endpoint):not(:range-middle):not(:range-preview-middle) /template/ Border#PART_CellSurface">
+        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+        <Setter Property="Background" Value="{atom:SharedTokenResource ControlItemBgActive}" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:selected:not(:range-start):not(:range-end)">
+        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:selected:not(:range-start):not(:range-end) /template/ Border#PART_CellSurface">
+        <Setter Property="Background" Value="{atom:SharedTokenResource ControlItemBgActive}" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:range-start /template/ Border#PART_ValueFrame">
+        <Setter Property="Background" Value="{TemplateBinding Background}" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:range-end /template/ Border#PART_ValueFrame">
+        <Setter Property="Background" Value="{TemplateBinding Background}" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:range-preview-start /template/ Border#PART_ValueFrame">
+        <Setter Property="Background" Value="{TemplateBinding Background}" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:range-preview-end /template/ Border#PART_ValueFrame">
+        <Setter Property="Background" Value="{TemplateBinding Background}" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:range-start /template/ Border#PART_ValueFrame, ^[Presentation=Content]:range-end /template/ Border#PART_ValueFrame, ^[Presentation=Content]:range-preview-start /template/ Border#PART_ValueFrame, ^[Presentation=Content]:range-preview-end /template/ Border#PART_ValueFrame">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="^[Presentation=Content]:pointerover:not(:selected):not(:disabled):not(:week) /template/ Border#PART_CellSurface">
+        <Setter Property="Background" Value="{atom:SharedTokenResource ControlItemBgHover}" />
+    </Style>
+    <Style Selector="^[Presentation=Compact] /template/ Grid#PART_Layout">
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+</ControlTheme>

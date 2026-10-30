@@ -12,7 +12,7 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Descriptions : TemplatedControl, ISizeTypeAware
+public partial class Descriptions : TemplatedControl, ISizeTypeAware
 {
     #region 公共属性定义
 
@@ -662,6 +662,7 @@ public class Descriptions : TemplatedControl, ISizeTypeAware
             Header  = item.Label,
             Content = item.Content
         };
+        descriptionDefaultItem[!DescriptionDefaultItem.SizeTypeProperty] = this[!SizeTypeProperty];
         descriptionDefaultItem[!DescriptionDefaultItem.IsColonVisibleProperty] = this[!IsShowColonProperty];
         if (Layout == Orientation.Vertical)
         {
@@ -678,6 +679,7 @@ public class Descriptions : TemplatedControl, ISizeTypeAware
             return;
         }
 
+        child.Classes.Add("semantic-scope-item");
         if (gridChildIndex.HasValue && gridChildIndex.Value <= _gridLayout.Children.Count)
         {
             _gridLayout.Children.Insert(gridChildIndex.Value, child);

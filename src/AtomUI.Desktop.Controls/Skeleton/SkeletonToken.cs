@@ -59,7 +59,7 @@ internal sealed class SkeletonToken : AbstractControlDesignToken
     /// </summary>
     public TimeSpan LoadingMotionDuration { get; set; }
     
-    // 流光动画背景定义，等价于 Ant Design 的 400% 背景平移动效。
+    // 流光动画背景定义，背景按 400% 宽度平移形成扫光效果。
     public IBrush? LoadingBackgroundStart { get; set; }
     public IBrush? LoadingBackgroundMiddle { get; set; }
     public IBrush? LoadingBackgroundEnd { get; set; }

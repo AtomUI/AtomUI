@@ -160,6 +160,10 @@ Generator 测试按生产职责拆分，避免继续扩张单个 `LanguageCatalo
 
 ## Avalonia 集成测试
 
+语言 Provider 的应用宿主迁移还需满足
+[应用资源宿主验证](../theming/application-resource-host-verification.md)中的原始 AXAML、用户覆盖、生命周期与性能矩阵。
+该页单独记录宿主实现的实测证据和平台缺口，下面的通用要求不代表所有平台已经验收。
+
 - `{atom:DatePickerLangResource Today}` 和应用 `{login:LoginLangResource Title}` 均能通过 compiled XAML。
 - 多次切换语言始终复用同一个 `LanguageResourceProvider`，每次成功切换只发布一次资源通知。
 - `StyledElement` 动态资源刷新，非 StyledElement 的静态 ProvideValue 行为符合文档。
@@ -171,10 +175,10 @@ Generator 测试按生产职责拆分，避免继续扩张单个 `LanguageCatalo
 
 基准至少记录：
 
-- Registry 和所有支持语言 Snapshot 的启动构建时间、分配和包体积。
+- Registry 和当前语言 Snapshot 索引的启动构建时间、分配和包体积；未查询目录不得创建值行。
 - `ILocalizer.Get()` 的热路径吞吐与分配。
 - 语言切换提交时间、资源通知数量和 UI 更新期间分配。
-- Catalog/语言数量增长时 Snapshot 内存的线性关系。
+- Catalog/语言数量增长时索引内存、首次查询目录值行及首次切换目标语言的分配和复用关系。
 
 不得为了减少启动时间恢复运行时按需 XLIFF 解析。需要优化时应改进生成表布局、字符串去重或 Snapshot 构建，
 保持运行时输入仍为编译后数据。

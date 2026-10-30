@@ -343,6 +343,54 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Each materialized description value presenter.</source>
+        <target state="translated">每个已物化描述项的值展示区域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraDescription">
+      <segment>
+        <source>The presenter for the header extra content.</source>
+        <target state="translated">展示头部附加内容的区域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>The header layout containing title and extra content.</source>
+        <target state="translated">包含标题和附加内容的头部布局区域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Each materialized description label presenter.</source>
+        <target state="translated">每个已物化描述项的标签展示区域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize the root and label styles of Descriptions through Semantic Parts.</source>
+        <target state="translated">通过 Semantic Part 定制 Descriptions 的 root 和 label 样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Descriptions owner and state boundary.</source>
+        <target state="translated">Descriptions 的 owner 与状态边界。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>The presenter for the header title.</source>
+        <target state="translated">展示头部标题的区域。</target>
+      </segment>
+    </unit>
     <unit id="VerticalBorderDescription">
       <segment>
         <source>Descriptions with border and background color.</source>

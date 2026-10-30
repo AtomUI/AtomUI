@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -21,6 +19,8 @@ public enum TabControlShowCaseLangResourceKind
     TabControlIconDescription,
     TabControlSlideTitle,
     TabControlSlideDescription,
+    TabControlOverflowPopupSearchTitle,
+    TabControlOverflowPopupSearchDescription,
     TabControlCardTypeTitle,
     TabControlCardTypeDescription,
     TabControlClosableTitle,
@@ -82,6 +82,8 @@ public enum TabControlShowCaseLangResourceKind
     P2ContentContentOfTabPaneN18,
     P2ContentContentOfTabPaneN19,
     P2ContentContentOfTabPaneN20,
+    P2PlaceholderSearchTabs,
+    P2TextNoMatchingTabs,
     P2ContentDynamicTabContentN1,
     P2ContentDynamicTabContentN2,
     P2ContentNewTabContentFormat,
@@ -95,5 +97,15 @@ public enum TabControlShowCaseLangResourceKind
     P2ContentLarge,
     P2ContentStartExtraAction,
     P2ContentEndExtraAction,
-    P2HeaderNewTabFormat
+    P2HeaderNewTabFormat,
+    SemanticRootDescription,
+    SemanticHeaderDescription,
+    SemanticContentDescription,
+    SemanticItemDescription,
+    SemanticAddDescription,
+    SemanticIconDescription,
+    SemanticCloseDescription,
+    SemanticIndicatorDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription
 }

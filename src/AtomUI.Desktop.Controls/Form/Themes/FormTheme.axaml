@@ -9,7 +9,11 @@
             <ControlTemplate>
                 <Border Name="Frame"
                         CornerRadius="{TemplateBinding CornerRadius}"
-                        Padding="{TemplateBinding Padding}">
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        BoxShadow="{TemplateBinding BoxShadow}">
                     <ItemsPresenter Name="PART_ItemsPresenter">
                         <ItemsPresenter.ItemsPanel>
                             <ItemsPanelTemplate>

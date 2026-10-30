@@ -1,0 +1,5 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:Fixture.NuGetAuthor">
+    <ControlTheme x:Key="{x:Type local:TypedKeyHostControl}" TargetType="local:TypedKeyHostControl">
+        <Setter Property="Tag" Value="{StaticResource {x:Type local:TypedKeyDependencyControl}}" />
+    </ControlTheme>
+</ResourceDictionary>

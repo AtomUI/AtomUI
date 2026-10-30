@@ -26,6 +26,8 @@
                             </Grid.ColumnDefinitions>
                             <atom:IconPresenter
                                 Name="ItemIconPresenter"
+                                Classes.semantic-item-icon="True"
+                                Classes.semantic-sub-menu-item-icon="True"
                                 Grid.Column="0"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -34,6 +36,8 @@
                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             <ContentPresenter
                                 Name="ItemTextPresenter"
+                                Classes.semantic-item-content="True"
+                                Classes.semantic-sub-menu-item-content="True"
                                 Grid.Column="1"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"

@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -45,5 +43,26 @@ public enum TourShowCaseLangResourceKind
     P2ContentSkip,
     P2TextRadius,
     P2TextHorizontalOffset,
-    P2TextVerticalOffset
+    P2TextVerticalOffset,
+    SemanticRootDescription,
+    SemanticPopupMaskDescription,
+    SemanticPopupSectionDescription,
+    SemanticPopupCoverDescription,
+    SemanticPopupCloseDescription,
+    SemanticPopupHeaderDescription,
+    SemanticPopupTitleDescription,
+    SemanticPopupDescriptionDescription,
+    SemanticPopupFooterDescription,
+    SemanticPopupActionsDescription,
+    SemanticPopupIndicatorsDescription,
+    SemanticPopupIndicatorDescription,
+    SemanticPopupRootDescription,
+    P2SemanticStepTitle,
+    P2SemanticStepDescription,
+    P2SemanticStepSaveTitle,
+    P2SemanticStepSaveDescription,
+    SemanticStylesTitle,
+    SemanticStylesDescription,
+    SemanticStylesObjectButton,
+    SemanticStylesFunctionButton
 }

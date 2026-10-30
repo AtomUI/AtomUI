@@ -187,11 +187,20 @@ internal class VirtualizingCarouselPanel: VirtualizingPanel, ILogicalScrollable
     protected override Control? ContainerFromIndex(int index)
     {
         if (index < 0 || index >= Items.Count)
+        {
             return null;
+        }
+
         if (index == _realizedIndex)
+        {
             return _realized;
+        }
+
         if (Items[index] is Control c && c.GetValue(RecycleKeyProperty) == ItemIsItsOwnContainer)
+        {
             return c;
+        }
+
         return null;
     }
 
@@ -217,7 +226,9 @@ internal class VirtualizingCarouselPanel: VirtualizingPanel, ILogicalScrollable
         void Add(int index, int count)
         {
             if (index <= _realizedIndex)
+            {
                 _realizedIndex += count;
+            }
         }
 
         void Remove(int index, int count)
@@ -340,7 +351,9 @@ internal class VirtualizingCarouselPanel: VirtualizingPanel, ILogicalScrollable
         Debug.Assert(ItemContainerGenerator is not null);
 
         if (recycleKey is null)
+        {
             return null;
+        }
 
         var generator = ItemContainerGenerator!;
 

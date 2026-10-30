@@ -245,10 +245,26 @@ public abstract class AbstractProgressBar : RangeBase,
 
     #endregion
 
+    #region 内部协作 API
+
+    internal const string ProgressBodyPart = "PART_ProgressBody";
+    internal const string ProgressRailPart = "PART_ProgressRail";
+    internal const string ProgressTrackPart = "PART_ProgressTrack";
+    internal const string ProgressSuccessPart = "PART_ProgressSuccess";
+    internal const string ProgressIndicatorPart = "PART_ProgressIndicator";
+    internal const string LayoutTransformControlPart = "PART_LayoutTransformControl";
+    internal const string PercentageLabelPart = "PART_PercentageLabel";
+    internal const string ExceptionCompletedIconPresenterPart = "PART_ExceptionCompletedIconPresenter";
+    internal const string SuccessCompletedIconPresenterPart = "PART_SuccessCompletedIconPresenter";
+
+    #endregion
+
     protected LayoutTransformControl? LayoutTransformLabel;
     protected Label? PercentageLabel;
+    private protected Panel? ProgressIndicator;
     protected IconPresenter? SuccessCompletedIconPresenter;
     protected IconPresenter? ExceptionCompletedIconPresenter;
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static AbstractProgressBar()
     {
@@ -269,6 +285,7 @@ public abstract class AbstractProgressBar : RangeBase,
 
     public AbstractProgressBar()
     {
+        _transitionInitialization = new TransitionInitializationSession(this);
         _effectiveSizeType = SizeType;
     }
 
@@ -295,11 +312,17 @@ public abstract class AbstractProgressBar : RangeBase,
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        LayoutTransformLabel = null;
+        PercentageLabel = null;
+        ProgressIndicator = null;
+        ExceptionCompletedIconPresenter = null;
+        SuccessCompletedIconPresenter = null;
         base.OnApplyTemplate(e);
-        LayoutTransformLabel = e.NameScope.Find<LayoutTransformControl>("PART_LayoutTransformControl");
-        PercentageLabel = e.NameScope.Find<Label>("PART_PercentageLabel");
-        ExceptionCompletedIconPresenter = e.NameScope.Find<IconPresenter>("PART_ExceptionCompletedIconPresenter");
-        SuccessCompletedIconPresenter = e.NameScope.Find<IconPresenter>("PART_SuccessCompletedIconPresenter");
+        LayoutTransformLabel = e.NameScope.Find<LayoutTransformControl>(LayoutTransformControlPart);
+        PercentageLabel = e.NameScope.Find<Label>(PercentageLabelPart);
+        ProgressIndicator = e.NameScope.Find<Panel>(ProgressIndicatorPart);
+        ExceptionCompletedIconPresenter = e.NameScope.Find<IconPresenter>(ExceptionCompletedIconPresenterPart);
+        SuccessCompletedIconPresenter = e.NameScope.Find<IconPresenter>(SuccessCompletedIconPresenterPart);
         // 创建完更新调用一次
         NotifyEffectSizeTypeChanged();
         UpdateProgress();
@@ -320,9 +343,26 @@ public abstract class AbstractProgressBar : RangeBase,
     protected abstract void RenderIndicatorBar(DrawingContext context);
     protected abstract void CalculateStrokeThickness();
 
+    private protected virtual bool HasTemplateProgressVisuals => false;
+
     protected virtual void NotifyEffectSizeTypeChanged()
     {
         CalculateStrokeThickness();
+    }
+
+    private protected void ArrangeProgressIndicator(Rect bounds)
+    {
+        if (ProgressIndicator is null)
+        {
+            return;
+        }
+
+        Canvas.SetLeft(ProgressIndicator, bounds.X);
+        Canvas.SetTop(ProgressIndicator, bounds.Y);
+        ProgressIndicator.Width = bounds.Width;
+        ProgressIndicator.Height = bounds.Height;
+        ProgressIndicator.Measure(bounds.Size);
+        ProgressIndicator.Arrange(bounds);
     }
 
     private protected double CalculateProgressRatio(double value)
@@ -407,6 +447,11 @@ public abstract class AbstractProgressBar : RangeBase,
 
     public override void Render(DrawingContext context)
     {
+        if (HasTemplateProgressVisuals)
+        {
+            return;
+        }
+
         NotifyPrepareDrawingContext(context);
         RenderGroove(context);
         RenderIndicatorBar(context);
@@ -416,15 +461,15 @@ public abstract class AbstractProgressBar : RangeBase,
     {
     }
 
-    protected override void OnInitialized()
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        base.OnInitialized();
-        this.DisableTransitions();
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        _transitionInitialization.CompleteInitialization();
     }
 }

@@ -6,7 +6,6 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
@@ -102,7 +101,6 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
     #endregion
     
     private TextBlock? _labelText;
-    private Geometry? _cornerGeometry;
     private Color? _cornerBrushSourceColor;
     private int _cornerBrushDarkenAmount;
     private IBrush? _cornerBrush;
@@ -112,11 +110,12 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
     static AbstractRibbonBadgeAdorner()
     {
         AffectsMeasure<AbstractRibbonBadgeAdorner>(TextProperty, IsAdornerModeProperty,
-            PlacementProperty, BadgeRibbonOffsetProperty);
+            PlacementProperty, BadgeRibbonOffsetProperty, BadgeRibbonCornerTransformProperty);
         AffectsArrange<AbstractRibbonBadgeAdorner>(OffsetProperty, PlacementProperty,
-            BadgeRibbonOffsetProperty);
+            BadgeRibbonOffsetProperty, BadgeRibbonCornerTransformProperty);
         AffectsRender<AbstractRibbonBadgeAdorner>(RibbonColorProperty, OffsetProperty,
-            BadgeRibbonCornerDarkenAmountProperty);
+            PlacementProperty, BadgeRibbonOffsetProperty, BadgeRibbonCornerDarkenAmountProperty,
+            BadgeRibbonCornerTransformProperty);
     }
 
     public AbstractRibbonBadgeAdorner()
@@ -128,21 +127,23 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
     {
         base.OnApplyTemplate(e);
         _labelText = e.NameScope.Find<TextBlock>("PART_LabelPart");
-        BuildCornerGeometry();
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var size         = base.MeasureOverride(availableSize);
-        var cornerHeight = _cornerGeometry?.Bounds.Height ?? 0;
-        var targetWidth  = double.IsFinite(availableSize.Width) ? availableSize.Width : size.Width;
-        var targetHeight = double.IsFinite(availableSize.Height) ? availableSize.Height : size.Height + cornerHeight;
+        var size     = base.MeasureOverride(availableSize);
+        var foldSize = GetFold().Size;
         if (!IsAdornerMode)
         {
-            targetHeight = size.Height + cornerHeight;
-            targetWidth  = size.Width;
+            return new Size(Math.Max(size.Width, foldSize.Width), size.Height + foldSize.Height);
         }
 
+        var targetWidth = double.IsFinite(availableSize.Width)
+            ? availableSize.Width
+            : size.Width;
+        var targetHeight = double.IsFinite(availableSize.Height)
+            ? availableSize.Height
+            : BadgeRibbonOffset.Y + size.Height + foldSize.Height;
         return new Size(targetWidth, targetHeight);
     }
 
@@ -151,35 +152,28 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
         _arrangedSize = finalSize;
         if (_labelText is not null)
         {
-            _labelText.Arrange(GetTextRect());
+            _labelText.Arrange(GetLayout(finalSize).BodyRect);
         }
 
         return finalSize;
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (this.IsAttachedToVisualTree())
-        {
-            if (change.Property == PlacementProperty || change.Property == BadgeRibbonOffsetProperty)
-            {
-                BuildCornerGeometry(true);
-            }
-        }
-    }
-
     public override void Render(DrawingContext context)
     {
+        if (_labelText is null)
+        {
+            return;
+        }
+
+        var layout          = GetLayout(_arrangedSize);
         var backgroundBrush = RibbonColor as ISolidColorBrush;
         {
-            var       textRect = GetTextRect();
-            using var state    = context.PushTransform(Matrix.CreateTranslation(textRect.X, textRect.Y));
+            using var state = context.PushTransform(Matrix.CreateTranslation(layout.BodyRect.X, layout.BodyRect.Y));
 
             _borderRenderHelper.Render(context,
                 borderThickness: new Thickness(0),
                 backgroundSizing: BackgroundSizing.OuterBorderEdge,
-                finalSize: textRect.Size,
+                finalSize: layout.BodyRect.Size,
                 cornerRadius: new CornerRadius(CornerRadius.TopLeft,
                     CornerRadius.TopRight,
                     bottomLeft: Placement == RibbonBadgePlacement.Start
@@ -193,11 +187,10 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
                 boxShadows: new BoxShadows());
         }
         {
-            var       cornerRect      = GetCornerRect();
-            using var state           = context.PushTransform(Matrix.CreateTranslation(cornerRect.X, cornerRect.Y));
+            using var state           = context.PushTransform(Matrix.CreateTranslation(layout.FoldOrigin.X, layout.FoldOrigin.Y));
             var       backgroundColor = backgroundBrush?.Color;
             var       cornerBrush     = GetCornerBrush(backgroundColor);
-            context.DrawGeometry(cornerBrush, null, _cornerGeometry!);
+            context.DrawGeometry(cornerBrush, null, BuildFoldGeometry(layout.Fold));
         }
     }
 
@@ -224,22 +217,24 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
         return _cornerBrush;
     }
 
-    private Rect GetTextRect()
+    private RibbonBadgeLayout GetLayout(Size finalSize)
     {
         if (_labelText is null)
         {
             return default;
         }
 
+        var fold     = GetFold();
+        var bodySize = _labelText.DesiredSize;
         var offsetX = 0d;
         var offsetY = 0d;
         if (IsAdornerMode)
         {
             offsetY += BadgeRibbonOffset.Y + Offset.Y;
-            var targetWidth = _arrangedSize.Width > 0 ? _arrangedSize.Width : DesiredSize.Width;
+            var targetWidth = finalSize.Width > 0 ? finalSize.Width : DesiredSize.Width;
             if (Placement == RibbonBadgePlacement.End)
             {
-                offsetX = targetWidth - _labelText.DesiredSize.Width + BadgeRibbonOffset.X + Offset.X;
+                offsetX = targetWidth - bodySize.Width + BadgeRibbonOffset.X + Offset.X;
             }
             else
             {
@@ -247,70 +242,49 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
             }
         }
 
-        return new Rect(new Point(offsetX, offsetY), _labelText.DesiredSize);
+        var bodyRect    = new Rect(new Point(offsetX, offsetY), bodySize);
+        var foldOriginX = Placement == RibbonBadgePlacement.End
+            ? bodyRect.Right - fold.Size.Width
+            : bodyRect.Left;
+        var foldOrigin = new Point(foldOriginX, bodyRect.Bottom);
+        return new RibbonBadgeLayout(bodyRect, foldOrigin, fold);
     }
 
-    private Rect GetCornerRect()
+    private RibbonBadgeFold GetFold()
     {
-        if (_cornerGeometry is null)
+        var width  = Math.Max(0, BadgeRibbonOffset.X);
+        var height = Math.Max(0, BadgeRibbonOffset.Y);
+        var transform = BadgeRibbonCornerTransform?.Value ?? Matrix.Identity;
+        if (Placement == RibbonBadgePlacement.Start)
         {
-            return default;
+            transform = transform.Append(Matrix.CreateScale(-1, 1));
         }
 
-        var targetWidth  = _cornerGeometry.Bounds.Width;
-        var targetHeight = _cornerGeometry.Bounds.Height;
-        var offsetX      = 0d;
-        var offsetY      = 0d;
-        if (!IsAdornerMode)
-        {
-            offsetY = DesiredSize.Height - targetHeight;
-            if (Placement == RibbonBadgePlacement.End)
-            {
-                offsetX = DesiredSize.Width - targetWidth;
-            }
-        }
-        else
-        {
-            var textRect = GetTextRect();
-            if (Placement == RibbonBadgePlacement.End)
-            {
-                offsetX = textRect.Right - targetWidth;
-            }
-
-            offsetY = textRect.Bottom;
-        }
-
-        return new Rect(new Point(offsetX, offsetY), new Size(targetWidth, targetHeight));
+        var p1 = transform.Transform(new Point(0, 0));
+        var p2 = transform.Transform(new Point(0, height));
+        var p3 = transform.Transform(new Point(width, 0));
+        var left = Math.Min(Math.Min(p1.X, p2.X), p3.X);
+        var top  = Math.Min(Math.Min(p1.Y, p2.Y), p3.Y);
+        p1 = new Point(p1.X - left, p1.Y - top);
+        p2 = new Point(p2.X - left, p2.Y - top);
+        p3 = new Point(p3.X - left, p3.Y - top);
+        var right  = Math.Max(Math.Max(p1.X, p2.X), p3.X);
+        var bottom = Math.Max(Math.Max(p1.Y, p2.Y), p3.Y);
+        return new RibbonBadgeFold(p1, p2, p3, new Size(right, bottom));
     }
 
-    private void BuildCornerGeometry(bool force = false)
+    private static StreamGeometry BuildFoldGeometry(RibbonBadgeFold fold)
     {
-        if (force || _cornerGeometry is null)
-        {
-            var       width          = BadgeRibbonOffset.X;
-            var       height         = BadgeRibbonOffset.Y;
-            var       geometryStream = new StreamGeometry();
-            using var context        = geometryStream.Open();
-            var       p1             = new Point(0, 0);
-            var       p2             = new Point(0, height);
-            var       p3             = new Point(width, 0);
-            context.LineTo(p1, true);
-            context.LineTo(p2);
-            context.LineTo(p3);
-            context.EndFigure(true);
-            _cornerGeometry = geometryStream;
-            var transforms = new TransformGroup();
-            if (BadgeRibbonCornerTransform is not null)
-            {
-                transforms.Children.Add(new MatrixTransform(BadgeRibbonCornerTransform.Value));
-            }
-
-            if (Placement == RibbonBadgePlacement.Start)
-            {
-                transforms.Children.Add(new ScaleTransform(-1, 1));
-            }
-
-            _cornerGeometry.Transform = transforms;
-        }
+        var geometry = new StreamGeometry();
+        using var context = geometry.Open();
+        context.BeginFigure(fold.P1, true);
+        context.LineTo(fold.P2);
+        context.LineTo(fold.P3);
+        context.EndFigure(true);
+        return geometry;
     }
+
+    private readonly record struct RibbonBadgeLayout(Rect BodyRect, Point FoldOrigin, RibbonBadgeFold Fold);
+
+    private readonly record struct RibbonBadgeFold(Point P1, Point P2, Point P3, Size Size);
 }

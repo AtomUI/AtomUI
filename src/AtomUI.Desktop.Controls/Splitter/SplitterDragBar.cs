@@ -53,13 +53,27 @@ internal class SplitterDragBar : AtomUIThumb
         get => GetValue(IsDragEnabledProperty);
         set => SetValue(IsDragEnabledProperty, value);
     }
+
+    public event EventHandler? DoubleClicked;
+
+    private bool _doubleClickPending;
     
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
+        _doubleClickPending = false;
+        if (e.ClickCount == 2 && e.Properties.IsLeftButtonPressed)
+        {
+            _doubleClickPending = true;
+            e.Handled           = true;
+            e.PreventGestureRecognition();
+            return;
+        }
+
         if (!IsDragEnabled)
         {
             return;
         }
+
         base.OnPointerPressed(e);
     }
 
@@ -74,11 +88,28 @@ internal class SplitterDragBar : AtomUIThumb
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
+        if (_doubleClickPending)
+        {
+            _doubleClickPending = false;
+            if (e.InitialPressMouseButton == MouseButton.Left)
+            {
+                e.Handled = true;
+                DoubleClicked?.Invoke(this, EventArgs.Empty);
+            }
+            return;
+        }
+
         if (!IsDragEnabled)
         {
             return;
         }
         base.OnPointerReleased(e);
+    }
+
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    {
+        _doubleClickPending = false;
+        base.OnPointerCaptureLost(e);
     }
 
     internal void SetDragging(bool isDragging)

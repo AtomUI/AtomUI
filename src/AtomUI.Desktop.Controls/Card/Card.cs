@@ -1,13 +1,11 @@
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
-using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -26,7 +24,7 @@ internal enum CardContentType
     Tabs
 }
 
-public class Card : HeaderedContentControl,
+public partial class Card : HeaderedContentControl,
                     ISizeTypeAware,
                     IMotionAwareControl
 {
@@ -305,14 +303,7 @@ public class Card : HeaderedContentControl,
     
     private void ConfigureContentBorderThickness()
     {
-        if (StyleVariant == CardStyleVariant.Outlined)
-        {
-            SetCurrentValue(EffectiveBorderThicknessProperty, BorderThickness);
-        }
-        else if (StyleVariant == CardStyleVariant.Borderless)
-        {
-            SetCurrentValue(EffectiveBorderThicknessProperty, new Thickness(0));
-        }
+        SetCurrentValue(EffectiveBorderThicknessProperty, BorderThickness);
     }
 
     private void ConfigureHeaderBorderThickness()
@@ -395,15 +386,4 @@ public class Card : HeaderedContentControl,
         SetCurrentValue(IsActionsPanelVisibleProperty, Actions.Count > 0);
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(() => this.EnableTransitions());
-    }
 }

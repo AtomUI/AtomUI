@@ -19,10 +19,11 @@ internal sealed class ImageLoader : IImageLoader, IAtomUIOwnedService
     internal ImageLoader(
         ImageLoadingOptions options,
         IEnumerable<ImageCodec> codecs,
-        HttpMessageHandler? httpMessageHandler = null)
+        HttpMessageHandler? httpMessageHandler = null,
+        Func<HttpImageTransport>? httpTransportFactory = null)
     {
         _options = options;
-        _pipeline = new ImageLoaderPipeline(options, codecs, httpMessageHandler);
+        _pipeline = new ImageLoaderPipeline(options, codecs, httpMessageHandler, httpTransportFactory);
     }
 
     internal bool IsDisposed => Volatile.Read(ref _disposed) != 0;
@@ -198,6 +199,7 @@ internal sealed class ImageLoader : IImageLoader, IAtomUIOwnedService
         {
             ImageLoaderStore.Detach(application, this);
         }
+        _pipeline.BeginDispose();
         _rootCancellation.Cancel();
         LoadEvent = null;
         if (Dispatcher.UIThread.CheckAccess() && _pipeline.HasInFlightWork)

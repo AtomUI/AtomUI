@@ -199,5 +199,107 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticPopupActionsDescription">
+      <segment>
+        <source>Confirm and cancel action row.</source>
+        <target state="translated">Linha de ações de confirmação e cancelamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupArrowDescription">
+      <segment>
+        <source>Arrow indicator pointing to the anchor.</source>
+        <target state="translated">Indicador de seta apontando para a âncora.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContainerDescription">
+      <segment>
+        <source>Inner container carrying the popup background, border and padding.</source>
+        <target state="translated">Contêiner interno que carrega o fundo, a borda e o preenchimento do popup.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContentDescription">
+      <segment>
+        <source>Content surface of the popup frame that hosts the confirmation body.</source>
+        <target state="translated">Superfície de conteúdo do quadro do popup que hospeda o corpo de confirmação.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupDescriptionDescription">
+      <segment>
+        <source>Confirmation description text.</source>
+        <target state="translated">Texto de descrição da confirmação.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupIconDescription">
+      <segment>
+        <source>Confirmation status icon, colored by ConfirmStatus.</source>
+        <target state="translated">Ícone de status de confirmação, colorido por ConfirmStatus.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root surface of the confirmation popup.</source>
+        <target state="translated">Superfície raiz do popup de confirmação.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupTitleDescription">
+      <segment>
+        <source>Confirmation title.</source>
+        <target state="translated">Título da confirmação.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewContentText">
+      <segment>
+        <source>Semantic structure of the PopupConfirm popup.</source>
+        <target state="translated">Estrutura semântica do popup do PopupConfirm.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewTriggerContent">
+      <segment>
+        <source>Semantic Part</source>
+        <target state="translated">Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The PopupConfirm host itself.</source>
+        <target state="translated">O próprio componente PopupConfirm.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleFunctionContent">
+      <segment>
+        <source>Function text</source>
+        <target state="translated">Function text</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleFunctionTrigger">
+      <segment>
+        <source>Function Style</source>
+        <target state="translated">Function Style</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleObjectContent">
+      <segment>
+        <source>Object text</source>
+        <target state="translated">Object text</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleObjectTrigger">
+      <segment>
+        <source>Object Style</source>
+        <target state="translated">Object Style</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of the PopupConfirm popup with semantic part styles.</source>
+        <target state="translated">Personalize o estilo da estrutura semântica do popup do PopupConfirm com estilos de partes semânticas.</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

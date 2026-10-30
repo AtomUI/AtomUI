@@ -1,6 +1,6 @@
 using System.Collections.Specialized;
 using AtomUI.Controls;
-using AtomUI.Utils;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -15,6 +15,7 @@ internal class ImagePreviewerDialog : Window,
                                       IMotionAwareControl
 {
     #region 公共属性定义
+
     public static readonly StyledProperty<IList<ImagePreviewEntry>?> ItemsSourceProperty =
         AvaloniaProperty.Register<ImagePreviewerDialog, IList<ImagePreviewEntry>?>(nameof(ItemsSource));
 
@@ -29,6 +30,9 @@ internal class ImagePreviewerDialog : Window,
 
     public static readonly StyledProperty<double> MaxScaleProperty =
         AvaloniaProperty.Register<ImagePreviewerDialog, double>(nameof(MaxScale), 50.0);
+
+    public static readonly StyledProperty<bool> IsWheelZoomEnabledProperty =
+        AvaloniaProperty.Register<ImagePreviewerDialog, bool>(nameof(IsWheelZoomEnabled), true);
 
     public static readonly StyledProperty<bool> IsModalProperty =
         AvaloniaProperty.Register<ImagePreviewerDialog, bool>(nameof(IsModal));
@@ -95,6 +99,12 @@ internal class ImagePreviewerDialog : Window,
         set => SetValue(MaxScaleProperty, value);
     }
 
+    public bool IsWheelZoomEnabled
+    {
+        get => GetValue(IsWheelZoomEnabledProperty);
+        set => SetValue(IsWheelZoomEnabledProperty, value);
+    }
+
     public bool IsModal
     {
         get => GetValue(IsModalProperty);
@@ -149,18 +159,18 @@ internal class ImagePreviewerDialog : Window,
         set => SetValue(TitleIconProperty, value);
     }
 
-    public Transform? Transform
-    {
-        get => GetValue(TransformProperty);
-        set => SetValue(TransformProperty, value);
-    }
-
     private int _count;
 
     public int Count
     {
         get => _count;
         internal set => SetAndRaise(CountProperty, ref _count, value);
+    }
+
+    public Transform? Transform
+    {
+        get => GetValue(TransformProperty);
+        set => SetValue(TransformProperty, value);
     }
 
     public TopLevel ParentTopLevel { get; }
@@ -381,15 +391,26 @@ internal class ImagePreviewerDialog : Window,
 
     #endregion
 
-    protected override Type StyleKeyOverride { get; } = typeof(ImagePreviewerDialog);
+    #region 内部协作 API
+
+    internal void RefreshImageSwitchMode()
+    {
+        _displayTracker.Refresh();
+    }
+
+    #endregion
 
     private readonly AbstractImagePreviewer _imagePreviewer;
+
     private readonly ImageViewer _imageViewer;
+
     private readonly ImagePreviewDisplayTracker _displayTracker;
+
     private INotifyCollectionChanged? _observedItemsSource;
+
     private bool _firstSizeCalculated;
+
     private int _windowResizeTransformSuppressionVersion;
-    private ImageSwitchTransformPolicy _switchTransformPolicy = ImageSwitchTransformPolicy.CreateDefault();
 
     static ImagePreviewerDialog()
     {
@@ -397,22 +418,22 @@ internal class ImagePreviewerDialog : Window,
         AffectsRender<ImagePreviewerDialog>(CurrentImageProperty);
         ImagePreviewBaseToolbar.HorizontalFlipRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleHorizontalFlipRequest(args);
+            dialog.HandleHorizontalFlipRequest();
             args.Handled = true;
         });
         ImagePreviewBaseToolbar.VerticalFlipRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleVerticalFlipRequest(args);
+            dialog.HandleVerticalFlipRequest();
             args.Handled = true;
         });
         ImagePreviewBaseToolbar.RotateLeftRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleRotateLeftRequest(args);
+            dialog.HandleRotateLeftRequest();
             args.Handled = true;
         });
         ImagePreviewBaseToolbar.RotateRightRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleRotateRightRequest(args);
+            dialog.HandleRotateRightRequest();
             args.Handled = true;
         });
         ImagePreviewBaseToolbar.ScaleDownRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
@@ -427,39 +448,45 @@ internal class ImagePreviewerDialog : Window,
         });
         ImagePreviewBaseToolbar.FitToWindowRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleFitToWindowRequest(args.IsFitToWindow);
+            dialog.HandleFitToWindowRequest();
             args.Handled = true;
         });
         ImagePreviewBaseToolbar.PreviousRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandlePreviousRequest(useTransformPolicy: true);
+            dialog.HandlePreviousRequest();
             args.Handled = true;
         });
         ImagePreviewBaseToolbar.NextRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleNextImageRequest(useTransformPolicy: true);
+            dialog.HandleNextImageRequest();
             args.Handled = true;
         });
         ImageViewer.PreviousRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandlePreviousRequest(useTransformPolicy: true);
+            dialog.HandlePreviousRequest();
             args.Handled = true;
         });
         ImageViewer.NextRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
-            dialog.HandleNextImageRequest(useTransformPolicy: true);
+            dialog.HandleNextImageRequest();
             args.Handled = true;
         });
         ImageViewer.ScaleDownRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
             var viewer = args.Source as ImageViewer;
-            dialog.HandleScaleDownRequest(viewer?.WheelScaleStep);
+            if (viewer is not null)
+            {
+                dialog.SyncTransformFromViewer();
+            }
             args.Handled = true;
         });
         ImageViewer.ScaleUpRequestEvent.AddClassHandler<ImagePreviewerDialog>((dialog, args) =>
         {
             var viewer = args.Source as ImageViewer;
-            dialog.HandleScaleUpRequest(viewer?.WheelScaleStep);
+            if (viewer is not null)
+            {
+                dialog.SyncTransformFromViewer();
+            }
             args.Handled = true;
         });
     }
@@ -473,43 +500,21 @@ internal class ImagePreviewerDialog : Window,
             UpdateCurrentImageState,
             () => _imagePreviewer.LatestLoadedFullEntry);
         _imageViewer    = CreateImageViewer();
-        Content         = _imageViewer;
+        _imageViewer.PreviewChanged += HandleViewerPreviewChanged;
+        // popup.root：native dialog 的内容根包裹 Panel，用生成的 SemanticPart 常量注入
+        // marker（overlay 宿主在模板根静态声明同一 marker）。owner 作用域 Semantic Style
+        // 不跨 Window/TopLevel 级联，仅 overlay 宿主可命中，见 semantic-part.md。
+        Content = new Panel
+        {
+            Children = { _imageViewer },
+            Classes  = { ImagePreviewerSemanticParts.PopupRootClass }
+        };
         SetCurrentValue(TitleProperty, null);
 
         AddHandler(KeyDownEvent, HandleDialogKeyDown, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
     }
 
-    private ImageViewer CreateImageViewer()
-    {
-        var viewer = new ImageViewer
-        {
-            Name = "PART_ImageViewer"
-        };
-        viewer[!ImageViewer.BackgroundProperty]                 = this[!BackgroundProperty];
-        viewer[!ImageViewer.CountProperty]                      = this[!CountProperty];
-        viewer[!ImageViewer.CurrentIndexProperty]               = this[!CurrentIndexProperty];
-        viewer[!ImageViewer.CurrentImageProperty]               = this[!CurrentImageProperty];
-        viewer[!ImageViewer.IsCurrentImageLoadingProperty]      = this[!IsCurrentImageLoadingProperty];
-        viewer[!ImageViewer.IsCurrentImageFailedProperty]       = this[!IsCurrentImageFailedProperty];
-        viewer[!ImageViewer.LoadingContentProperty]             = this[!LoadingContentProperty];
-        viewer[!ImageViewer.LoadingContentTemplateProperty]     = this[!LoadingContentTemplateProperty];
-        viewer[!ImageViewer.ErrorContentProperty]               = this[!ErrorContentProperty];
-        viewer[!ImageViewer.ErrorContentTemplateProperty]       = this[!ErrorContentTemplateProperty];
-        viewer[!ImageViewer.IsFirstImageProperty]               = this[!IsFirstImageProperty];
-        viewer[!ImageViewer.IsLastImageProperty]                = this[!IsLastImageProperty];
-        viewer[!ImageViewer.IsMultiImagesProperty]              = this[!IsMultiImagesProperty];
-        viewer[!ImageViewer.IsScaleUpEnabledProperty]           = this[!IsScaleUpEnabledProperty];
-        viewer[!ImageViewer.IsScaleDownEnabledProperty]         = this[!IsScaleDownEnabledProperty];
-        viewer[!ImageViewer.IsMotionEnabledProperty]            = this[!IsMotionEnabledProperty];
-        viewer[!ImageViewer.ImageScaleXProperty]                = this[!ImageScaleXProperty];
-        viewer[!ImageViewer.ImageScaleYProperty]                = this[!ImageScaleYProperty];
-        viewer[!ImageViewer.ImageRotateProperty]                = this[!ImageRotateProperty];
-        viewer[!ImageViewer.IsImageMovableProperty]             = this[!IsImageMovableProperty];
-        viewer[!ImageViewer.IsImageFitToWindowProperty]         = this[!IsImageFitToWindowProperty];
-        viewer[!ImageViewer.SuppressTransformAnimationProperty] = this[!SuppressTransformAnimationProperty];
-        viewer[!ImageViewer.ImageScaleChangedProperty]          = this[!ImageScaleChangedProperty];
-        return viewer;
-    }
+    protected override Type StyleKeyOverride { get; } = typeof(ImagePreviewerDialog);
 
     protected override void OnOpened(EventArgs e)
     {
@@ -522,30 +527,6 @@ internal class ImagePreviewerDialog : Window,
         var calculatedSize = CalculateWindowSize();
         base.MeasureOverride(calculatedSize);
         return calculatedSize;
-    }
-
-    private Size CalculateWindowSize()
-    {
-        if (!_firstSizeCalculated)
-        {
-            var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
-            if (screen is null)
-            {
-                _firstSizeCalculated = true;
-                return ClientSize;
-            }
-
-            const double ratio     = 0.70d;
-            var workingArea        = screen.WorkingArea;
-            var scale              = DesktopScaling;
-            var logicalWorkingSize = new Size(workingArea.Width / scale, workingArea.Height / scale);
-            var width              = logicalWorkingSize.Width * ratio;
-            var height             = logicalWorkingSize.Height * ratio;
-            ClientSize             = new Size(width, height);
-            _firstSizeCalculated   = true;
-            return new Size(width, height);
-        }
-        return ClientSize;
     }
 
     protected override void OnClosing(WindowClosingEventArgs e)
@@ -586,7 +567,9 @@ internal class ImagePreviewerDialog : Window,
         }
 
         if (change.Property == ImageScaleXProperty ||
-            change.Property == ImageScaleYProperty)
+            change.Property == ImageScaleYProperty ||
+            change.Property == MinScaleProperty ||
+            change.Property == MaxScaleProperty)
         {
             UpdateScaleCapability();
         }
@@ -596,6 +579,103 @@ internal class ImagePreviewerDialog : Window,
     {
         base.OnSizeChanged(e);
         SuppressResizeMotion();
+    }
+
+    public void Close(Action? callback = null)
+    {
+        UnobserveItemsSource();
+        _imageViewer.PreviewChanged -= HandleViewerPreviewChanged;
+        _displayTracker.Clear();
+        base.Close();
+        callback?.Invoke();
+    }
+
+    protected override WindowTitleBar? NotifyCreateTitleBar(WindowTitleBar? oldTitleBar)
+    {
+        return new ImagePreviewerTitleBar
+        {
+            Name = "PART_TitleBar"
+        };
+    }
+
+    protected override void NotifyConfigureTitleBar(WindowTitleBar titleBar)
+    {
+        base.NotifyConfigureTitleBar(titleBar);
+
+        // 使用预览标题算法结果，而不是直接展示 Window.Title。
+        titleBar[!WindowTitleBar.TitleProperty] = this[!EffectivePreviewTitleProperty];
+
+        if (titleBar is ImagePreviewerTitleBar previewerTitleBar)
+        {
+            previewerTitleBar[!ImagePreviewerTitleBar.IconProperty]               = this[!TitleIconProperty];
+            previewerTitleBar[!ImagePreviewerTitleBar.CurrentIndexProperty]       = this[!CurrentIndexProperty];
+            previewerTitleBar[!ImagePreviewerTitleBar.CountProperty]              = this[!CountProperty];
+            previewerTitleBar[!ImagePreviewerTitleBar.IsScaleDownEnabledProperty] = this[!IsScaleDownEnabledProperty];
+            previewerTitleBar[!ImagePreviewerTitleBar.IsScaleUpEnabledProperty]   = this[!IsScaleUpEnabledProperty];
+            previewerTitleBar[!ImagePreviewerTitleBar.IsImageFitToWindowProperty] = this[!IsImageFitToWindowProperty];
+            previewerTitleBar[!ImagePreviewerTitleBar.IsFirstImageProperty]       = this[!IsFirstImageProperty];
+            previewerTitleBar[!ImagePreviewerTitleBar.IsLastImageProperty]        = this[!IsLastImageProperty];
+        }
+    }
+
+    private ImageViewer CreateImageViewer()
+    {
+        // The viewer is code-created Content, outside this host's ControlTemplate.
+        // ControlTheme cannot reach it through /template/; these bindings live with the host.
+        var viewer = new ImageViewer
+        {
+            Name = "PART_ImageViewer"
+        };
+        viewer[!ImageViewer.BackgroundProperty]                 = this[!BackgroundProperty];
+        viewer[!ImageViewer.CountProperty]                      = this[!CountProperty];
+        viewer[!ImageViewer.CurrentIndexProperty]               = this[!CurrentIndexProperty];
+        viewer[!ImageViewer.CurrentImageProperty]               = this[!CurrentImageProperty];
+        viewer[!ImageViewer.IsCurrentImageLoadingProperty]      = this[!IsCurrentImageLoadingProperty];
+        viewer[!ImageViewer.IsCurrentImageFailedProperty]       = this[!IsCurrentImageFailedProperty];
+        viewer[!ImageViewer.LoadingContentProperty]             = this[!LoadingContentProperty];
+        viewer[!ImageViewer.LoadingContentTemplateProperty]     = this[!LoadingContentTemplateProperty];
+        viewer[!ImageViewer.ErrorContentProperty]               = this[!ErrorContentProperty];
+        viewer[!ImageViewer.ErrorContentTemplateProperty]       = this[!ErrorContentTemplateProperty];
+        viewer[!ImageViewer.IsFirstImageProperty]               = this[!IsFirstImageProperty];
+        viewer[!ImageViewer.IsLastImageProperty]                = this[!IsLastImageProperty];
+        viewer[!ImageViewer.IsMultiImagesProperty]              = this[!IsMultiImagesProperty];
+        viewer[!ImageViewer.IsMotionEnabledProperty]            = this[!IsMotionEnabledProperty];
+        viewer[!ImageViewer.ImageScaleXProperty]                = this[!ImageScaleXProperty];
+        viewer[!ImageViewer.ImageScaleYProperty]                = this[!ImageScaleYProperty];
+        viewer[!ImageViewer.ImageRotateProperty]                = this[!ImageRotateProperty];
+        viewer[!ImageViewer.IsImageMovableProperty]             = this[!IsImageMovableProperty];
+        viewer[!ImageViewer.MinScaleProperty]                   = this[!MinScaleProperty];
+        viewer[!ImageViewer.MaxScaleProperty]                   = this[!MaxScaleProperty];
+        viewer[!ImageViewer.ScaleStepProperty]                  = this[!ScaleStepProperty];
+        viewer[!ImageViewer.IsWheelZoomEnabledProperty]         = this[!IsWheelZoomEnabledProperty];
+        viewer[!ImageViewer.IsImageFitToWindowProperty]         = this[!IsImageFitToWindowProperty];
+        viewer[!ImageViewer.SuppressTransformAnimationProperty] = this[!SuppressTransformAnimationProperty];
+        viewer[!ImageViewer.ImageScaleChangedProperty]          = this[!ImageScaleChangedProperty];
+        return viewer;
+    }
+
+    private Size CalculateWindowSize()
+    {
+        if (!_firstSizeCalculated)
+        {
+            var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
+            if (screen is null)
+            {
+                _firstSizeCalculated = true;
+                return ClientSize;
+            }
+
+            const double ratio     = 0.70d;
+            var workingArea        = screen.WorkingArea;
+            var scale              = DesktopScaling;
+            var logicalWorkingSize = new Size(workingArea.Width / scale, workingArea.Height / scale);
+            var width              = logicalWorkingSize.Width * ratio;
+            var height             = logicalWorkingSize.Height * ratio;
+            ClientSize             = new Size(width, height);
+            _firstSizeCalculated   = true;
+            return new Size(width, height);
+        }
+        return ClientSize;
     }
 
     private void SuppressResizeMotion()
@@ -616,7 +696,12 @@ internal class ImagePreviewerDialog : Window,
         if (ItemsSource is { Count: > 0 } items)
         {
             var currentIndex = ResolveDisplayCurrentIndex(items.Count);
-            _displayTracker.SetCurrentItem(items[currentIndex]);
+            var entry = items[currentIndex];
+            if (!ReferenceEquals(_displayTracker.CurrentItem, entry))
+            {
+                _imageViewer.ApplyReset();
+            }
+            _displayTracker.SetCurrentItem(entry);
             SetCurrentValue(IsFirstImageProperty, currentIndex == 0);
             SetCurrentValue(IsLastImageProperty, currentIndex == items.Count - 1);
         }
@@ -630,17 +715,13 @@ internal class ImagePreviewerDialog : Window,
         UpdateEffectivePreviewTitle();
     }
 
-    internal void RefreshImageSwitchMode()
-    {
-        _displayTracker.Refresh();
-    }
-
     private void UpdateCurrentImageState()
     {
+        _imageViewer.SetImageSize(_displayTracker.EffectiveImageSize);
         SetCurrentValue(CurrentImageProperty, _displayTracker.EffectiveImage);
         SetCurrentValue(IsCurrentImageLoadingProperty, _displayTracker.IsCurrentLoading);
         SetCurrentValue(IsCurrentImageFailedProperty, _displayTracker.IsCurrentFailed);
-        UpdateScaleCapability();
+        HandleViewerPreviewChanged(_imageViewer, EventArgs.Empty);
     }
 
     private void UpdateEffectivePreviewTitle()
@@ -693,23 +774,8 @@ internal class ImagePreviewerDialog : Window,
 
     private void UpdateScaleCapability()
     {
-        var canTransform = CurrentImage != null;
-        SetCurrentValue(IsScaleDownEnabledProperty,
-            canTransform &&
-            MathUtils.GreaterThan(Math.Abs(ImageScaleX), MinScale) &&
-            MathUtils.GreaterThan(Math.Abs(ImageScaleY), MinScale));
-        SetCurrentValue(IsScaleUpEnabledProperty,
-            canTransform &&
-            MathUtils.LessThan(Math.Abs(ImageScaleX), MaxScale) &&
-            MathUtils.LessThan(Math.Abs(ImageScaleY), MaxScale));
-    }
-
-    public void Close(Action? callback = null)
-    {
-        UnobserveItemsSource();
-        _displayTracker.Clear();
-        base.Close();
-        callback?.Invoke();
+        SetCurrentValue(IsScaleDownEnabledProperty, _imageViewer.IsScaleDownEnabled);
+        SetCurrentValue(IsScaleUpEnabledProperty, _imageViewer.IsScaleUpEnabled);
     }
 
     private void ObserveItemsSource()
@@ -749,167 +815,72 @@ internal class ImagePreviewerDialog : Window,
         HandleCurrentIndexChanged();
     }
 
-    private void UpdateSwitchTransformPolicy(ImagePreviewToolbarSource source)
-    {
-        if (source == ImagePreviewToolbarSource.TitleBar)
-        {
-            _switchTransformPolicy.RetentionMode = ImageTransformRetentionMode.Retain;
-            _switchTransformPolicy.SuppressResetAnimation = false;
-            return;
-        }
-
-        _switchTransformPolicy.RetentionMode = ImageTransformRetentionMode.Reset;
-        _switchTransformPolicy.SuppressResetAnimation = true;
-    }
-
-    private void CaptureRetainedFlipRotateState()
-    {
-        _switchTransformPolicy.RetainedScaleX = ImageScaleX > 0.0 ? 1.0 : -1.0;
-        _switchTransformPolicy.RetainedScaleY = ImageScaleY > 0.0 ? 1.0 : -1.0;
-        _switchTransformPolicy.RetainedRotate = ImageRotate;
-    }
-
-    private bool ShouldRetainFlipRotateOnSwitch => _switchTransformPolicy.RetentionMode == ImageTransformRetentionMode.Retain;
-
-    private void HandleHorizontalFlipRequest(ImagePreviewToolbarRequestEventArgs args)
+    private void HandleHorizontalFlipRequest()
     {
         if (CurrentImage == null)
         {
             return;
         }
 
-        UpdateSwitchTransformPolicy(args.ToolbarSource);
-        SetCurrentValue(ImageScaleXProperty, -1 * ImageScaleX);
-        if (ShouldRetainFlipRotateOnSwitch)
-        {
-            CaptureRetainedFlipRotateState();
-        }
+        _imageViewer.ApplyFlip(horizontal: true);
     }
 
-    private void HandleVerticalFlipRequest(ImagePreviewToolbarRequestEventArgs args)
+    private void HandleVerticalFlipRequest()
     {
         if (CurrentImage == null)
         {
             return;
         }
 
-        UpdateSwitchTransformPolicy(args.ToolbarSource);
-        SetCurrentValue(ImageScaleYProperty, -1 * ImageScaleY);
-        if (ShouldRetainFlipRotateOnSwitch)
-        {
-            CaptureRetainedFlipRotateState();
-        }
+        _imageViewer.ApplyFlip(horizontal: false);
     }
 
-    private void HandleRotateLeftRequest(ImagePreviewToolbarRequestEventArgs args)
+    private void HandleRotateLeftRequest()
     {
         if (CurrentImage == null)
         {
             return;
         }
 
-        UpdateSwitchTransformPolicy(args.ToolbarSource);
-        SetCurrentValue(ImageRotateProperty, ImageRotate - MathUtils.Deg2Rad(90));
-        if (ShouldRetainFlipRotateOnSwitch)
-        {
-            CaptureRetainedFlipRotateState();
-        }
+        _imageViewer.ApplyRotate(-90);
     }
 
-    private void HandleRotateRightRequest(ImagePreviewToolbarRequestEventArgs args)
+    private void HandleRotateRightRequest()
     {
         if (CurrentImage == null)
         {
             return;
         }
 
-        UpdateSwitchTransformPolicy(args.ToolbarSource);
-        SetCurrentValue(ImageRotateProperty, ImageRotate + MathUtils.Deg2Rad(90));
-        if (ShouldRetainFlipRotateOnSwitch)
-        {
-            CaptureRetainedFlipRotateState();
-        }
+        _imageViewer.ApplyRotate(90);
     }
 
     private void HandleScaleDownRequest(double? scaleStep = null)
     {
-        if (CurrentImage == null)
-        {
-            return;
-        }
-
-        var step = ResolveScaleStep(scaleStep);
-        var scaleX = ImageScaleX * (1 / (1 + step));
-        var scaleY = ImageScaleY * (1 / (1 + step));
-        if (MathUtils.LessThan(Math.Abs(scaleX), MinScale))
-        {
-            if (scaleX > 0)
-            {
-                scaleX = MinScale;
-            }
-            else
-            {
-                scaleX = -MinScale;
-            }
-        }
-        if (MathUtils.LessThan(Math.Abs(scaleY), MinScale))
-        {
-            if (scaleY > 0)
-            {
-                scaleY = MinScale;
-            }
-            else
-            {
-                scaleY = -MinScale;
-            }
-        }
-        SetCurrentValue(ImageScaleXProperty, scaleX);
-        SetCurrentValue(ImageScaleYProperty, scaleY);
-        SetCurrentValue(ImageScaleChangedProperty, true);
+        _imageViewer.ApplyScaleDown(scaleStep);
     }
 
     private void HandleScaleUpRequest(double? scaleStep = null)
     {
-        if (CurrentImage == null)
-        {
-            return;
-        }
-
-        var step = ResolveScaleStep(scaleStep);
-        var scaleX = ImageScaleX * (1 + step);
-        var scaleY = ImageScaleY * (1 + step);
-
-        if (MathUtils.GreaterThan(Math.Abs(scaleX), MaxScale))
-        {
-            if (scaleX > 0)
-            {
-                scaleX = MaxScale;
-            }
-            else
-            {
-                scaleX = -MaxScale;
-            }
-        }
-        if (MathUtils.GreaterThan(Math.Abs(scaleY), MaxScale))
-        {
-            if (scaleY > 0)
-            {
-                scaleY = MaxScale;
-            }
-            else
-            {
-                scaleY = -MaxScale;
-            }
-        }
-        SetCurrentValue(ImageScaleXProperty, scaleX);
-        SetCurrentValue(ImageScaleYProperty, scaleY);
-        SetCurrentValue(ImageScaleChangedProperty, true);
+        _imageViewer.ApplyScaleUp(scaleStep);
     }
 
-    private double ResolveScaleStep(double? scaleStep)
+    private void HandleViewerPreviewChanged(object? sender, EventArgs e)
     {
-        var step = scaleStep ?? ScaleStep;
-        return MathUtils.LessThanOrClose(step, 0.0) ? 0.1 : step;
+        SyncTransformFromViewer();
+        _imagePreviewer.NotifyPreviewDecodeSize(
+            _displayTracker.CurrentItem,
+            _imageViewer.DecodeImageSize,
+            _imageViewer.DecodeSize);
+    }
+
+    private void SyncTransformFromViewer()
+    {
+        SetCurrentValue(ImageScaleXProperty, _imageViewer.ImageScaleX);
+        SetCurrentValue(ImageScaleYProperty, _imageViewer.ImageScaleY);
+        SetCurrentValue(ImageRotateProperty, _imageViewer.ImageRotate);
+        SetCurrentValue(ImageScaleChangedProperty, _imageViewer.ImageScaleChanged);
+        UpdateScaleCapability();
     }
 
     private void HandleImageSwitchKeyDown(KeyEventArgs e)
@@ -925,7 +896,7 @@ internal class ImagePreviewerDialog : Window,
             e.Handled = true;
             if (CurrentIndex < imageCount - 1)
             {
-                HandleNextImageRequest(useTransformPolicy: true);
+                HandleNextImageRequest();
             }
         }
         else if (e.Key == Key.Left)
@@ -933,7 +904,7 @@ internal class ImagePreviewerDialog : Window,
             e.Handled = true;
             if (CurrentIndex > 0)
             {
-                HandlePreviousRequest(useTransformPolicy: true);
+                HandlePreviousRequest();
             }
         }
     }
@@ -948,17 +919,15 @@ internal class ImagePreviewerDialog : Window,
         HandleImageSwitchKeyDown(e);
     }
 
-    private void HandleFitToWindowRequest(bool isFitToWindow)
+    private void HandleFitToWindowRequest()
     {
         if (CurrentImage == null)
         {
             return;
         }
 
-        SetCurrentValue(ImageScaleXProperty, ImageScaleX > 0.0 ? 1.0 : -1.0);
-        SetCurrentValue(ImageScaleYProperty, ImageScaleY > 0.0 ? 1.0 : -1.0);
-        SetCurrentValue(ImageScaleChangedProperty, false);
-        SetCurrentValue(IsImageFitToWindowProperty, isFitToWindow);
+        _imageViewer.ApplyReset();
+        SetCurrentValue(IsImageFitToWindowProperty, true);
     }
 
     private void EnsureDialogKeyboardFocus()
@@ -979,116 +948,27 @@ internal class ImagePreviewerDialog : Window,
         }, DispatcherPriority.Background);
     }
 
-    private void ResetImageStateBeforeSwitch(bool useTransformPolicy)
-    {
-        SetCurrentValue(IsImageFitToWindowProperty, true);
-        SetCurrentValue(ImageScaleChangedProperty, false);
-
-        if (useTransformPolicy && ShouldRetainFlipRotateOnSwitch)
-        {
-            SetCurrentValue(ImageScaleXProperty, _switchTransformPolicy.RetainedScaleX);
-            SetCurrentValue(ImageScaleYProperty, _switchTransformPolicy.RetainedScaleY);
-            SetCurrentValue(ImageRotateProperty, _switchTransformPolicy.RetainedRotate);
-            return;
-        }
-
-        SetCurrentValue(ImageScaleXProperty, 1.0);
-        SetCurrentValue(ImageScaleYProperty, 1.0);
-        if (useTransformPolicy)
-        {
-            SetCurrentValue(ImageRotateProperty, 0.0);
-        }
-    }
-
-    private void SwitchImage(int offset, bool useTransformPolicy)
+    private void SwitchImage(int offset)
     {
         if (Count <= 0 || offset == 0)
         {
             return;
         }
 
-        var suppressTransformAnimation = useTransformPolicy && _switchTransformPolicy.SuppressResetAnimation;
-        if (suppressTransformAnimation)
-        {
-            SetCurrentValue(SuppressTransformAnimationProperty, true);
-        }
-
-        ResetImageStateBeforeSwitch(useTransformPolicy);
         var targetIndex = offset > 0
             ? Math.Min(CurrentIndex + offset, Count - 1)
             : Math.Max(CurrentIndex + offset, 0);
         SetCurrentValue(CurrentIndexProperty, targetIndex);
-
-        if (suppressTransformAnimation)
-        {
-            SetCurrentValue(SuppressTransformAnimationProperty, false);
-        }
-
         EnsureDialogKeyboardFocus();
     }
 
-    private void HandleNextImageRequest(bool useTransformPolicy = false)
+    private void HandleNextImageRequest()
     {
-        SwitchImage(1, useTransformPolicy);
+        SwitchImage(1);
     }
 
-    private void HandlePreviousRequest(bool useTransformPolicy = false)
+    private void HandlePreviousRequest()
     {
-        SwitchImage(-1, useTransformPolicy);
-    }
-
-    protected override WindowTitleBar? NotifyCreateTitleBar(WindowTitleBar? oldTitleBar)
-    {
-        return new ImagePreviewerTitleBar
-        {
-            Name = "PART_TitleBar"
-        };
-    }
-
-    protected override void NotifyConfigureTitleBar(WindowTitleBar titleBar)
-    {
-        base.NotifyConfigureTitleBar(titleBar);
-
-        // 使用预览标题算法结果，而不是直接展示 Window.Title。
-        titleBar[!WindowTitleBar.TitleProperty] = this[!EffectivePreviewTitleProperty];
-
-        if (titleBar is ImagePreviewerTitleBar previewerTitleBar)
-        {
-            previewerTitleBar[!ImagePreviewerTitleBar.IconProperty]               = this[!TitleIconProperty];
-            previewerTitleBar[!ImagePreviewerTitleBar.CurrentIndexProperty]       = this[!CurrentIndexProperty];
-            previewerTitleBar[!ImagePreviewerTitleBar.CountProperty]              = this[!CountProperty];
-            previewerTitleBar[!ImagePreviewerTitleBar.IsScaleDownEnabledProperty] = this[!IsScaleDownEnabledProperty];
-            previewerTitleBar[!ImagePreviewerTitleBar.IsScaleUpEnabledProperty]   = this[!IsScaleUpEnabledProperty];
-            previewerTitleBar[!ImagePreviewerTitleBar.IsImageFitToWindowProperty] = this[!IsImageFitToWindowProperty];
-            previewerTitleBar[!ImagePreviewerTitleBar.IsFirstImageProperty]       = this[!IsFirstImageProperty];
-            previewerTitleBar[!ImagePreviewerTitleBar.IsLastImageProperty]        = this[!IsLastImageProperty];
-        }
-    }
-
-    private enum ImageTransformRetentionMode
-    {
-        Reset,
-        Retain
-    }
-
-    private struct ImageSwitchTransformPolicy
-    {
-        public ImageTransformRetentionMode RetentionMode;
-        public bool SuppressResetAnimation;
-        public double RetainedScaleX;
-        public double RetainedScaleY;
-        public double RetainedRotate;
-
-        public static ImageSwitchTransformPolicy CreateDefault()
-        {
-            return new ImageSwitchTransformPolicy
-            {
-                RetentionMode          = ImageTransformRetentionMode.Reset,
-                SuppressResetAnimation = false,
-                RetainedScaleX         = 1.0,
-                RetainedScaleY         = 1.0,
-                RetainedRotate         = 0.0
-            };
-        }
+        SwitchImage(-1);
     }
 }

@@ -21,8 +21,8 @@
     </unit>
     <unit id="BasicUsageDescription">
       <segment>
-        <source>Click the image to zoom in.</source>
-        <target state="translated">Clique o imagem para zoom em.</target>
+        <source>Open a fitted preview, then zoom between 0.1 and 8 times its initial size. Disable wheel zoom to keep toolbar and touch zoom available.</source>
+        <target state="translated">Abra a imagem ajustada à área de visualização e amplie entre 0,1 e 8 vezes o tamanho inicial. Desativar o zoom da roda mantém o zoom pela barra de ferramentas e por toque.</target>
       </segment>
     </unit>
     <unit id="BasicUsageTitle">
@@ -175,6 +175,66 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticCoverDescription">
+      <segment>
+        <source>Cover hover overlay (mask and indicator content) of the shared cover template.</source>
+        <target state="translated">Sobreposição de capa (máscara e conteúdo indicador) do template de capa compartilhado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticImageDescription">
+      <segment>
+        <source>Cover image element rendered inside the shared cover template.</source>
+        <target state="translated">Elemento de imagem da capa renderizado dentro do template de capa compartilhado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Owner-scoped styles targeting public Semantic Parts of the ImagePreviewer family via their real selectors.</source>
+        <target state="translated">Estilos com escopo de owner que visam as Semantic Parts públicas da família ImagePreviewer através de seus seletores reais.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupActionsDescription">
+      <segment>
+        <source>Capsule action-button group inside the preview footer.</source>
+        <target state="translated">Grupo de botões de ação em cápsula dentro do rodapé da pré-visualização.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupBodyDescription">
+      <segment>
+        <source>Centered image interaction area of the preview viewer.</source>
+        <target state="translated">Área central de interação da imagem do visualizador de pré-visualização.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupFooterDescription">
+      <segment>
+        <source>Bottom toolbar area with the page indicator and action group.</source>
+        <target state="translated">Área da barra de ferramentas inferior com o indicador de página e o grupo de ações.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupMaskDescription">
+      <segment>
+        <source>Full-surface translucent mask of the overlay preview surface (overlay host only).</source>
+        <target state="translated">Máscara translúcida de tela cheia da superfície de pré-visualização em overlay (apenas host overlay).</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root container of the preview surface (dialog content wrapper / overlay template root).</source>
+        <target state="translated">Contêiner raiz da superfície de pré-visualização (wrapper do conteúdo do dialog / raiz do template overlay).</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The trigger control root (single or multi cover entry).</source>
+        <target state="translated">A raiz do controle de disparo (entrada de capa única ou múltipla).</target>
+      </segment>
+    </unit>
     <unit id="TwentyRemoteImagesDescription">
       <segment>
         <source>Load a fixed set of 20 public images with cover-only loading and neighbor preloading.</source>
@@ -185,6 +245,12 @@
       <segment>
         <source>20 remote images</source>
         <target state="translated">20 remote imagens</target>
+      </segment>
+    </unit>
+    <unit id="WheelZoomEnabled">
+      <segment>
+        <source>Enable wheel zoom</source>
+        <target state="translated">Ativar zoom com a roda</target>
       </segment>
     </unit>
   </file>

@@ -16,6 +16,7 @@ internal sealed class WindowsWindowChromeManager : IWindowChromeManager
 {
     private readonly Window _window;
     private INativeWindowBackgroundHook? _backgroundHook;
+    private IDisposable? _legacyFrameMarginHook;
     private bool _initialShowStatePrepared;
     private bool _frameGeometryUpdateQueued;
 
@@ -47,6 +48,7 @@ internal sealed class WindowsWindowChromeManager : IWindowChromeManager
         // background fill and DWM dark-frame setup can target a real platform handle.
         _window.PreparePlatformChromeInitialShowHandle();
         EnsureBackgroundHook();
+        _legacyFrameMarginHook ??= NativeWindowFrame.TryAttachLegacyFrameMarginHook(_window);
         UpdateNativeBackgroundHook();
         _backgroundHook?.PaintClientArea();
         return null;
@@ -132,6 +134,8 @@ internal sealed class WindowsWindowChromeManager : IWindowChromeManager
     {
         _backgroundHook?.Dispose();
         _backgroundHook = null;
+        _legacyFrameMarginHook?.Dispose();
+        _legacyFrameMarginHook = null;
         _window.ScalingChanged -= HandleScalingChanged;
         _window.Closed -= HandleWindowClosed;
     }

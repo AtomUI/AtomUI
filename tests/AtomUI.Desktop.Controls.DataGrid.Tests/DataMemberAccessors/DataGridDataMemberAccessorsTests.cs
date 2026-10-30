@@ -4,7 +4,6 @@ using AtomUI.Controls.Data;
 using AtomUI.Desktop.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Data.Core;
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Threading;
 using Shouldly;

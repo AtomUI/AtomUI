@@ -3,6 +3,27 @@
 本文档记录 ListBox 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-20
+
+- Fixed
+  - `ListBoxItem` 在构造阶段抑制过渡，覆盖生成容器挂载后才写入的初始选择；自身加载完成后恢复最新集合。父控件在清理容器之前复位会话，使虚拟化清理和下次挂载共用初始化边界。
+
+## 2026-08-18
+
+- Design
+  - 确立 root 外框与条目分割线统一使用 `ColorSplit` 的视觉基线，root 外框承担列表闭合线。
+  - 条目表面保持直角，`ContentPadding` / `ItemMargin` 归零，条目直接贴合 root 外框内边缘。
+  - 定义条目分割线状态机：最后一项分割线由 root 外框下边缘闭合，`IsBorderless` 时保留；集合变化后重新同步所有
+    已实现容器。
+  - root `Frame` 开启 `ClipContentToCornerRadius` 内容裁剪（DashedBorder 按外框内边缘构建圆角裁剪几何），条目
+    hover / selected 背景不溢出圆角内边缘；外框环由 `Frame` 自身一次绘制，无叠加节点。
+- Token
+  - `ContentPadding` 与 `ItemMargin` 默认值改为 `Thickness(0)`；`ItemPaddingSM` / `ItemPadding` / `ItemPaddingLG`
+    改为仅水平 padding。
+- Docs
+  - 新增 [ListBox Semantic Part 契约](semantic-part.md)，定义 `root` / `item` 的 Selector、类型、数量、分割线基线与
+    验证契约。
+
 ## 2026-06-26
 
 - Docs

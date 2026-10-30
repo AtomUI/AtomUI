@@ -1,6 +1,9 @@
 # Control Design Token 继承架构设计
 
-> 状态：2026-09-07 已获用户确认，待按实施计划执行。
+> 历史记录：本文涉及的旧控件注册/裁剪方案已被 [TypeMap 正式架构](../../architecture/foundations/aot-and-trimming.md)替代，不再作为维护约束。其余内容保留当时的设计上下文。
+
+
+> 当时记录的状态：2026-09-07 已获用户确认，待按实施计划执行。
 >
 > 范围：仅适用于 `AbstractControlDesignToken` 下的 Control Own Token，不包含 Global DesignToken、Seed/Map/Alias Token。
 

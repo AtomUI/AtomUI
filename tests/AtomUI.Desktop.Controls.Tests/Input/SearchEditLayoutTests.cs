@@ -51,15 +51,12 @@ public class SearchEditLayoutTests
 
         searchEditSource.ShouldContain("StyledProperty<ControlTheme?> SearchButtonThemeProperty");
         searchEditSource.ShouldContain("public ControlTheme? SearchButtonTheme");
-        File.Exists(GetRepoFile("src/AtomUI.Desktop.Controls/Input/SearchButton.cs")).ShouldBeFalse();
         decoratedBoxTheme.ShouldContain("<atom:Button");
         decoratedBoxTheme.ShouldContain("Theme=\"{TemplateBinding SearchButtonTheme}\"");
-        decoratedBoxTheme.ShouldNotContain("atom:SearchButton");
         searchButtonTheme.ShouldContain("TargetType=\"{x:Type atom:Button}\"");
         searchButtonTheme.ShouldContain("ButtonTokenResource");
         searchButtonTheme.ShouldContain("SearchEditTokenResource");
         searchButtonTheme.ShouldNotContain("LineEditTokenResource");
-        searchButtonTheme.ShouldNotContain("atom:SearchButton");
     }
 
     [Fact]

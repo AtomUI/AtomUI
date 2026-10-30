@@ -5,56 +5,36 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class CardShowCasePageTests
 {
+
     [Fact]
-    public void Card_ShowCase_Uses_Document_Layout_With_Examples()
+    public void Card_ShowCase_Declares_Deferred_Semantic_Part_Previews_And_Example()
     {
         var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Card/Views/CardShowCase.axaml");
 
-        source.ShouldContain("CardShowCaseLangResource PageSubtitle");
-        source.ShouldContain("CardShowCaseLangResource PageDescription");
-        source.ShouldNotContain("CardShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("CardShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("CardShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("CardShowCaseLangResource ComponentCategory");
-        source.ShouldContain("CardShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("CardShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("CardShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("CardShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:CardShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("CardShowCaseLangResource BasicTitle");
-        source.ShouldContain("CardShowCaseLangResource NoBorderTitle");
-        source.ShouldContain("CardShowCaseLangResource CardInColumnTitle");
-        source.ShouldContain("CardShowCaseLangResource LoadingCardTitle");
-        source.ShouldContain("CardShowCaseLangResource MoreContentConfigurationTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
+        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
+        source.ShouldContain("Name=\"CardSemanticPreview\"");
+        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:Card}\"");
+        source.ShouldContain("Name=\"CardSemanticOwner\"");
+        source.ShouldContain("Name=\"CardMetaSemanticPreview\"");
+        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:CardMetaContent}\"");
+        source.ShouldContain("SemanticOwner=\"{Binding #CardMetaSemanticOwner}\"");
+        source.ShouldContain("<atom:Card Width=\"300\">");
+        source.ShouldContain("Name=\"CardMetaSemanticOwner\"");
+        CountOccurrences(source, "<gallery:SemanticPartDescription").ShouldBe(12);
 
-    [Fact]
-    public void Card_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Card/Views/CardShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/CardShowCaseExamples.snapshot");
+        foreach (var path in new[]
+                 {
+                     "root", "header", "title", "extra", "cover", "body", "actions",
+                     "section", "avatar", "description"
+                 })
+        {
+            source.ShouldContain($"Path=\"{path}\"");
+        }
 
-        NormalizeMarkup(ExtractCardExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
+        source.ShouldContain("SourceKey=\"card-semantic-part\"");
+        source.ShouldContain("<atom:CardHeaderStyle x:SetterTargetType=\"atom:DashedBorder\">");
+        source.ShouldContain("<atom:CardTitleStyle x:SetterTargetType=\"ContentPresenter\">");
+        source.ShouldContain("<atom:CardMetaContentDescriptionStyle x:SetterTargetType=\"ContentPresenter\">");
     }
 
     private static string ExtractCardExampleItems(string source)

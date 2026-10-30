@@ -1,6 +1,6 @@
 # ListView 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.ListView` 桌面版的最新设计定位、公共契约、行为状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [ListView 桌面版实现原理](implementation.md)，选择专项设计见 [ListView 选择模型设计](selection-model-design.md)，ListView Token 的专项设计见 [ListView Token 设计](token.md)，设计和契约变化记录见 [ListView Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.ListView` 桌面版的最新设计定位、公共契约、行为状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，公共语义区域见 [ListView Semantic Part 契约](semantic-part.md)，内部实现原理见 [ListView 桌面版实现原理](implementation.md)，选择专项设计见 [ListView 选择模型设计](selection-model-design.md)，ListView Token 的专项设计见 [ListView Token 设计](token.md)，设计和契约变化记录见 [ListView Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -119,13 +119,14 @@ ListView public 分组模型是单层分组模型。`IsGroupEnabled=true` 时，
 
 | 名称 | 所属控件 | 职责 |
 | --- | --- | --- |
-| `Frame` | `ListView` | root 背景、边框、圆角、padding 和 margin 边界。 |
+| `Frame` | `ListView` | root 背景、边框、圆角、padding、margin 与外框闭合边界。 |
 | `TopPaginationPresenter` | `ListView` | 顶部分页器展示入口。 |
 | `BottomPaginationPresenter` | `ListView` | 底部分页器展示入口。 |
 | `PART_ScrollViewer` | `ListView` | 列表滚动容器。 |
 | `ItemsPresenter` | `ListView` | 条目容器承载入口。 |
 | `EmptyIndicator` | `ListView` | 空状态内容展示。 |
-| `Frame` | `ListViewItem` | 条目背景、圆角和 padding 边界。 |
+| `Frame` | `ListViewItem` | 条目背景与 padding 边界。 |
+| `SplitLineFrame` | `ListViewItem` | 条目底部分割线表面。 |
 | `SelectedIndicator` | `ListViewItem` | 选中标记展示入口。 |
 | `ContentPresenter` | `ListViewItem` | 普通内容或组标题内容展示入口。 |
 
@@ -203,7 +204,7 @@ ListView 主题按 root、分页、操作态、滚动内容、空状态和 item 
 
 ```text
 ListViewTheme
-  Frame
+  Frame（ClipContentToCornerRadius=True）
   TopPaginationPresenter
   BottomPaginationPresenter
   Spin
@@ -215,15 +216,19 @@ ListViewItemTheme
   Frame
     SelectedIndicator
     ContentPresenter
+  SplitLineFrame
 ```
 
 视觉规则：
 
-- root 边框由 `BorderBrush`、`BorderThickness`、`CornerRadius` 和 `IsBorderless` 共同决定。
-- `SizeType` 控制 root 圆角、空状态 padding、条目最小高度、条目 padding 和条目圆角。
-- 默认条目背景透明，hover 使用 `ItemHoverBg`，selected 使用 `ItemSelectedBg`。
-- 组标题使用 `GroupHeaderColor`，不应用普通条目的 hover / selected 状态背景。
-- selected indicator 默认使用 默认 `CheckOutlined`，颜色和尺寸来自 SharedToken。
+- root 外框由 `BorderBrush`、`BorderThickness`、`CornerRadius` 和 `IsBorderless` 共同决定。默认外框颜色是 `ColorSplit`，与条目分割线同色，表达“外框即列表闭合线”。
+- root `Frame` 开启 `ClipContentToCornerRadius`：内容被裁剪到外框圆角内边缘，条目 hover / selected 背景等溢出圆角内边缘的内容被裁剪，不在圆角口袋区溢出；外框环由 `Frame` 自身一次绘制（`ColorSplit`），无叠加节点。
+- `SizeType` 控制 root 圆角、空状态 padding、条目最小高度和条目 padding。条目表面保持直角，主题不设置条目圆角。
+- 条目直接贴合 root 外框内边缘：`ContentPadding` 与 `ItemMargin` 均为 `Thickness(0)`，条目之间不留垂直间距，列表紧凑感由条目高度与分割线表达。
+- 条目底部分割线默认是 1 DIP `ColorSplit` 底边线，由条目 `BorderThickness` / `BorderBrush` 驱动。无 `BottomPagination` 时最后一项的底部分割线被抑制，由 root 外框下边缘承担闭合线；配置 `BottomPagination` 时最后一项保留分割线（分隔条目区与分页器）；`IsBorderless` 时也保留（外框消失后由分割线承担闭合线）。
+- 默认条目背景透明，hover 使用 `ItemHoverBg`，selected 使用 `ItemSelectedBg`；hover / selected 背景延伸到外框内边缘，溢出圆角口袋区的部分由 `Frame` 的圆角内容裁剪约束。
+- 组标题使用 `GroupHeaderColor`，不应用普通条目的 hover / selected 状态背景，也不显示底部分割线。
+- selected indicator 默认使用 `CheckOutlined`，颜色和尺寸来自 SharedToken。
 - 空状态默认使用 `Empty` 的 simple preset image。
 - 分页器 margin 使用 ListViewToken 的 `PaginationMargin`。
 
@@ -237,7 +242,9 @@ ListView 属于 Data Display 分类，与 ListBox、TreeView、DataGrid、Card�
 
 - Avalonia `ItemsControl`：提供 Items、ItemsSource、容器生成、ItemsPresenter 和默认虚拟化入口。
 - `ListCollectionView`：提供排序、过滤、分组、分页、当前视图枚举和源集合桥接。
-- `ListViewItem`：条目容器，承载内容、组标题状态、选择状态、点击事件、pointer 输入和 selected indicator。
+- `ListViewItem`：条目容器，承载内容、组标题状态、选择状态、点击事件、pointer 输入和 selected indicator；非分组条目
+  容器是 Semantic Part `item` 的节点。分组标题使用专用容器类型 `GroupHeaderItem`（继承 `ListViewItem`，
+  `IsGroupItem` 恒为 true），是 Semantic Part `groupHeader` 的节点；两类容器的 marker 在构造时一次性建立。
 - `IListItemData` / `ListItemData` / `GroupListItemData`：默认数据项和组标题数据契约。
 - `ListViewSelectionModel`：选择状态 owner，以 EntryId 保存选择并向外投影 source index 和 item。
 - `AbstractPagination`：顶部和底部分页器的交互与显示协作对象。
@@ -263,6 +270,15 @@ ListView 与 ListBox 有相似条目视觉语义，但职责不同。ListBox 是
 - `PART_ScrollViewer`、`ItemsPresenter`、`EmptyIndicator`、分页 presenter、`SelectedIndicator` 和 `ContentPresenter` 的职责不得被无兼容说明地改变。
 - 选中指示器、空状态和操作态节点应留在 AXAML 静态模板中，通过状态属性控制，不作为普通性能优化迁移到 C# 动态创建。
 - 虚拟化容器回收时，容器本地值必须对称保存、恢复和清理，避免 disabled、group item、selected indicator 或 content 状态串扰。
+- `ListView` 的 `root` / `item` / `groupHeader` Semantic Part 对齐上游 Listy 的 Semantic DOM：marker 放置、ContractType、
+  cardinality 与根表面投影属于主题兼容契约，状态切换、容器复用/回收与模板重应用不得增删 marker；`item` 与
+  `groupHeader` 的 marker 分别在 `ListViewItem` 与专用 `GroupHeaderItem` 容器构造时一次性建立，不随
+  `IsGroupItem` 状态切换。
+- root 外框与条目分割线必须保持同一 `ColorSplit` 基线；root `Frame` 的 `ClipContentToCornerRadius` 圆角内容裁剪保证条目状态背景不溢出圆角内边缘。
+- 条目表面保持直角与贴边：不恢复条目圆角，不重新引入 `ContentPadding` / `ItemMargin` 垂直间距。
+- 最后一项分割线抑制规则由控件状态机决定：无 `BottomPagination` 时最后一项不显示底部分割线，由 root 外框下边缘
+  闭合；`BottomPagination` 或 `IsBorderless` 时保留；集合追加、删除与分页配置变化后必须重新同步所有已实现容器，
+  Semantic Style 不能绕过该规则。
 - Token 只表达组件设计语义，不承载选择、过滤、分页、空状态或虚拟化运行时状态。
 
 ## 8. 专项模型
@@ -299,35 +315,15 @@ ListView 为原始数据源中的每一次出现建立独立 source entry，并�
 
 `IsOperating` 不改变数据、选择或分页状态，只在视觉上通过 `Spin` 覆盖当前列表内容。外部异步加载、刷新或批量操作应通过此模型表达忙碌状态，而不是在 ListView 内部引入远程请求或任务编排。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 文档导航：
 
+- [ListView Semantic Part 契约](semantic-part.md)
 - [ListView 桌面版实现原理](implementation.md)
 - [ListView 选择模型设计](selection-model-design.md)
 - [ListView Token 设计](token.md)
 - [ListView Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `ListView` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/list-view/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/list-view/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -337,7 +333,7 @@ LLMS 导出来源：
 | 数据状态 | 覆盖 ItemsSource 包装、entry-capable view 直连、普通 `IListCollectionView` 重新归一、排序、过滤、分组、分页和 `TotalItemCount`。 |
 | 分组状态 | 覆盖默认 group selector、自定义 group selector、空 group key、组标题模板、组标题 pointer 不可选、排序 / 过滤 / 分页组合和虚拟化回收。 |
 | 选择状态 | 覆盖重复 item、source-index 投影、selectable、AlwaysSelected、多选、Reset key 恢复、视图组合、SelectedValue 和 text search。 |
-| AXAML | 检查 root、pagination、Spin、ScrollViewer、EmptyIndicator、item 和 group item 在 light / dark 和三种 SizeType 下显示稳定。 |
+| AXAML | 检查 root、pagination、Spin、ScrollViewer、EmptyIndicator、item 和 group item 在 light / dark 和三种 SizeType 下显示稳定，外框 / 分割线 / 圆角内容裁剪规则一致。 |
 | Token | 检查 `ListViewTokenKind`、AXAML token resource 和 token.md 语义说明保持一致。 |
 | 虚拟化 | 覆盖 container prepare / clear、上下滚动后 disabled、group item 和 selected 状态不串扰。 |
 | 文档 | 运行 `git diff --check`，确认链接存在且只记录最新设计状态。 |

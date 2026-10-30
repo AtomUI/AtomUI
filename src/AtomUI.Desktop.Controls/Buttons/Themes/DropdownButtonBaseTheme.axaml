@@ -24,10 +24,6 @@
                                            BackgroundSizing="{TemplateBinding BackgroundSizing}"
                                            CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                            Background="{TemplateBinding Background}" />
-                        <Border Name="CustomBackgroundLayer"
-                                IsHitTestVisible="False"
-                                Background="{TemplateBinding CustomBackground}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}" />
                         <Border Padding="{TemplateBinding Padding}">
                             <DockPanel Name="PART_RootLayout"
                                        LastChildFill="True"
@@ -65,6 +61,13 @@
                                     IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             </DockPanel>
                         </Border>
+                        <Border Name="FocusVisual"
+                                IsVisible="False"
+                                IsHitTestVisible="False"
+                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
+                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
+                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -82,10 +85,6 @@
                         <Border Name="ShadowsFrame"
                                 CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                 Background="{TemplateBinding Background}" />
-                        <Border Name="CustomBackgroundLayer"
-                                IsHitTestVisible="False"
-                                Background="{TemplateBinding CustomBackground}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}" />
                         <atom:DashedBorder Name="Frame"
                                            Height="{TemplateBinding Height}"
                                            Padding="{TemplateBinding Padding}"
@@ -130,6 +129,13 @@
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />
                             </DockPanel>
                         </atom:DashedBorder>
+                        <Border Name="FocusVisual"
+                                IsVisible="False"
+                                IsHitTestVisible="False"
+                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
+                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
+                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -147,10 +153,6 @@
                         <Border Name="ShadowsFrame"
                                 CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                 Background="{TemplateBinding Background}" />
-                        <Border Name="CustomBackgroundLayer"
-                                IsHitTestVisible="False"
-                                Background="{TemplateBinding CustomBackground}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}" />
                         <atom:DashedBorder Name="Frame"
                                            Height="{TemplateBinding Height}"
                                            Padding="{TemplateBinding Padding}"
@@ -195,6 +197,13 @@
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />
                             </DockPanel>
                         </atom:DashedBorder>
+                        <Border Name="FocusVisual"
+                                IsVisible="False"
+                                IsHitTestVisible="False"
+                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
+                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
+                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -355,27 +364,9 @@
             <Setter Property="IsVisible" Value="True" />
         </Style>
 
-        <Style Selector="^ /template/ Border#CustomBackgroundLayer">
-            <Setter Property="IsVisible" Value="False" />
-            <Setter Property="Opacity" Value="0" />
-        </Style>
 
-        <Style Selector="^[IsMotionEnabled=True] /template/ Border#CustomBackgroundLayer">
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity"
-                                      Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
-            </Setter>
-        </Style>
 
-        <Style Selector="^[HasCustomBackground=True] /template/ Border#CustomBackgroundLayer">
-            <Setter Property="IsVisible" Value="True" />
-        </Style>
 
-        <Style Selector="^[HasCustomBackground=True]:not(:pointerover):not(:pressed) /template/ Border#CustomBackgroundLayer">
-            <Setter Property="Opacity" Value="1" />
-        </Style>
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"

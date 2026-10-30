@@ -1,5 +1,8 @@
 using System.Reflection;
 using AtomUI.Desktop.Controls;
+using AtomUI.Theme;
+using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Configuration;
 using Avalonia;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -174,15 +177,18 @@ internal static partial class Program
     private static void VerifySplitButtonSecondaryButtonRearrangesAfterCompactThemeToggle(ICollection<string> failures)
     {
         var application = Application.Current;
-        Expect(application is not null,
-            "SplitButton compact theme layout verification requires an Avalonia application.",
+        var themeManager = application?.GetThemeManager();
+        Expect(themeManager is not null,
+            "SplitButton compact theme layout verification requires the AtomUI theme manager.",
             failures);
-        if (application is null)
+        if (themeManager is null)
         {
             return;
         }
 
-        application.SetCompactThemeMode(false);
+        // SetCompactThemeMode 扩展已随旧 ThemeManager 移除：
+        // 紧凑模式现在通过 ThemeAlgorithm.Compact 算法以 ApplyThemeAsync 应用。
+        ApplyCompactThemeMode(themeManager, isCompact: false);
         var splitButton = new SplitButton
         {
             Content             = "Split",
@@ -199,24 +205,39 @@ internal static partial class Program
             failures);
         if (secondaryButton is null)
         {
+            ApplyCompactThemeMode(themeManager, isCompact: false);
             return;
         }
 
-        application.SetCompactThemeMode(true);
+        ApplyCompactThemeMode(themeManager, isCompact: true);
         RefreshLayout(realized.Window);
 
         Expect(Math.Abs(secondaryButton.Bounds.Right - splitButton.Bounds.Width) <= 0.001,
             $"Secondary button should be rearranged after compact theme is enabled. SplitButton width: {splitButton.Bounds.Width:0.###}, secondary right: {secondaryButton.Bounds.Right:0.###}.",
             failures);
 
-        application.SetCompactThemeMode(false);
+        ApplyCompactThemeMode(themeManager, isCompact: false);
         RefreshLayout(realized.Window);
 
         Expect(Math.Abs(secondaryButton.Bounds.Right - splitButton.Bounds.Width) <= 0.001,
             $"Secondary button should be rearranged after compact theme is disabled. SplitButton width: {splitButton.Bounds.Width:0.###}, secondary right: {secondaryButton.Bounds.Right:0.###}.",
             failures);
 
-        application.SetCompactThemeMode(false);
+        ApplyCompactThemeMode(themeManager, isCompact: false);
+    }
+
+    private static void ApplyCompactThemeMode(IThemeManager themeManager, bool isCompact)
+    {
+        var algorithms = isCompact
+            ? new[] { ThemeAlgorithm.Default, ThemeAlgorithm.Compact }
+            : new[] { ThemeAlgorithm.Default };
+        var config = new ThemeConfigBuilder()
+                     .WithAlgorithms(algorithms)
+                     .Build();
+        themeManager.ApplyThemeAsync(new ThemeRequest(
+            themeManager.CurrentTheme?.ThemeId ?? IThemeManager.DEFAULT_THEME_ID,
+            config,
+            ThemeTransitionReason.UserRequest)).GetAwaiter().GetResult();
     }
 
     private static int GetFlyoutOpenedHandlerCount(FlyoutBase flyout)

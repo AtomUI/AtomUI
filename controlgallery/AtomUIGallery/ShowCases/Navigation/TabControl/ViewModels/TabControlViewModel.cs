@@ -49,9 +49,20 @@ public class TabControlViewModel : ReactiveObject, IRoutableViewModel
 
     public AvaloniaList<TabItemData> TabItemDataSource { get; set; } = new();
 
+    public AvaloniaList<MyTabItemData> OverflowTabItems { get; } = [];
+
     public TabControlViewModel(IScreen screen)
     {
         HostScreen = screen;
+        for (var index = 0; index < 30; index++)
+        {
+            OverflowTabItems.Add(new MyTabItemData
+            {
+                Header = $"Tab-{index}",
+                Content = $"Content of tab {index}",
+                IsEnabled = index != 28
+            });
+        }
     }
 
     public void HandlePlacementOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs args)

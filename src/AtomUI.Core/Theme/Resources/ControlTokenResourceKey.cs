@@ -19,6 +19,7 @@ public readonly record struct ControlTokenResourceKey
         ControlSlot = -1;
         Kind        = kind;
         Identity    = identity;
+        IdentityOwnerType = identity.OwnerType;
         ControlType = null;
         IsBound     = false;
     }
@@ -36,6 +37,7 @@ public readonly record struct ControlTokenResourceKey
     internal int ControlSlot { get; }
     internal SharedTokenKind Kind { get; }
     internal SchemaControlTokenIdentity Identity { get; }
+    internal Type? IdentityOwnerType { get; }
     internal Type? ControlType { get; }
     internal bool IsBound { get; }
 
@@ -50,6 +52,9 @@ public readonly record struct ControlTokenResourceKey
     {
         return new ControlTokenResourceKey(controlType, kind);
     }
+
+    public static object Own(SchemaControlTokenIdentity identity, object resourceKey) =>
+        new ControlOwnTokenResourceKey(identity, resourceKey);
 
     internal static object Own(Type controlType, object resourceKey)
     {
@@ -67,6 +72,16 @@ internal readonly record struct ControlOwnTokenResourceKey
         ResourceKey = resourceKey;
     }
 
-    internal Type ControlType { get; }
+    internal ControlOwnTokenResourceKey(SchemaControlTokenIdentity identity, object resourceKey)
+    {
+        ArgumentNullException.ThrowIfNull(resourceKey);
+        Identity = identity;
+        IdentityOwnerType = identity.OwnerType;
+        ResourceKey = resourceKey;
+    }
+
+    internal Type? ControlType { get; }
+    internal SchemaControlTokenIdentity Identity { get; }
+    internal Type? IdentityOwnerType { get; }
     internal object ResourceKey { get; }
 }

@@ -1,0 +1,89 @@
+<Project>
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Registration.Framework.targets" Condition="'$(AtomUIRegistrationFrameworkImported)' != 'true'" />
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Toolchain.Tasks.targets" Condition="'$(AtomUIToolchainTasksImported)' != 'true'" />
+    <!-- Framework routing is automatic; the platform/runtime capability gate remains explicit. -->
+    <PropertyGroup>
+        <AtomUINative8ManagedCompilerBundle Condition="'$(AtomUINative8ManagedCompilerBundle)' == ''">$(MSBuildThisFileDirectory)../tools/registration/net8/ilc/managed-bundle/</AtomUINative8ManagedCompilerBundle>
+    </PropertyGroup>
+    <Target Name="AtomUIScopeNative8Outputs" BeforeTargets="WriteIlcRspFileForCompilation"
+            Condition="'$(_AtomUINative8Registration)' == 'true'">
+        <!-- Keep controlled objects separate from stock ILC timestamp outputs. A different
+             engine/tool invocation must never reuse a selected object from this backend. -->
+        <PropertyGroup>
+            <AtomUINative8IntermediateRoot Condition="'$(AtomUINative8IntermediateRoot)' == ''">$(IntermediateOutputPath)AtomUIRegistration/native8</AtomUINative8IntermediateRoot>
+            <_AtomUINative8InvocationId>$([System.Guid]::NewGuid().ToString('N'))</_AtomUINative8InvocationId>
+            <_AtomUINative8OwnedRoot>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(AtomUINative8IntermediateRoot)', 'invocations', '$(_AtomUINative8InvocationId)'))</_AtomUINative8OwnedRoot>
+            <_AtomUINative8ScopedIntermediate>$(_AtomUINative8OwnedRoot)/native/</_AtomUINative8ScopedIntermediate>
+            <_AtomUINative8ScopedOutput>$(_AtomUINative8OwnedRoot)/bin/</_AtomUINative8ScopedOutput>
+            <NativeIntermediateOutputPath>$(_AtomUINative8ScopedIntermediate)</NativeIntermediateOutputPath>
+            <NativeOutputPath>$(_AtomUINative8ScopedOutput)</NativeOutputPath>
+            <NativeObject>$(NativeIntermediateOutputPath)$(TargetName)$(NativeObjectExt)</NativeObject>
+            <NativeBinary>$(NativeOutputPath)$(TargetName)$(NativeBinaryExt)</NativeBinary>
+            <ExportsFile>$(NativeIntermediateOutputPath)$(TargetName)$(ExportsFileExt)</ExportsFile>
+            <IlcCompileOutput>$(NativeObject)</IlcCompileOutput>
+        </PropertyGroup>
+        <Error Condition="'$(NativeIntermediateOutputPath)' != '$(_AtomUINative8ScopedIntermediate)' or '$(NativeOutputPath)' != '$(_AtomUINative8ScopedOutput)' or
+            '$(NativeObject)' != '$(NativeIntermediateOutputPath)$(TargetName)$(NativeObjectExt)' or '$(ExportsFile)' != '$(NativeIntermediateOutputPath)$(TargetName)$(ExportsFileExt)'"
+            Code="ATOMUIREG008" Text="Native8 requires isolated object/export paths; global output overrides must allow the registration scope." />
+        <MakeDir Directories="$(_AtomUINative8OwnedRoot)" />
+        <ItemGroup>
+            <ManagedBinary Update="@(ManagedBinary)">
+                <IlcRspFile>$(NativeIntermediateOutputPath)%(Filename).ilc.rsp</IlcRspFile>
+                <IlcOutputFile>$(NativeIntermediateOutputPath)%(Filename)$(IlcOutputFileExt)</IlcOutputFile>
+            </ManagedBinary>
+        </ItemGroup>
+    </Target>
+    <Target Name="AtomUIPrepareNative8Registration" BeforeTargets="IlcCompile"
+            Condition="'$(_AtomUINative8Registration)' == 'true'">
+        <Error Condition="'$(TargetFramework)' != 'net8.0' or '$(NETCoreSdkVersion)' != '10.0.300' or '$(RuntimeFrameworkVersion)' != '8.0.27' or '$(TrimMode)' != 'full'"
+               Code="ATOMUIREG008" Text="Native8 registration currently requires net8.0, SDK 10.0.300, target runtime 8.0.27 and full trimming." />
+        <Error Condition="'$(NativeLib)' != '' or '$(IlcMultiModule)' == 'true' or '$(ExportsFile)' == ''"
+               Code="ATOMUIREG008" Text="Native8 registration currently verifies whole-program executables with the SDK exports file." />
+        <PropertyGroup>
+            <_AtomUINative8OriginalToolsPath>$(IlcToolsPath)</_AtomUINative8OriginalToolsPath>
+            <_AtomUINative8OriginalLinker>$(CppLinker)</_AtomUINative8OriginalLinker>
+            <_AtomUINative8OriginalEnvironment>$(_IlcEnvironmentVariables)</_AtomUINative8OriginalEnvironment>
+        </PropertyGroup>
+        <!-- The SDK timestamp set omits some supported extras (e.g. MIBC/substitution files).
+             Until content-aware SDK incrementality is integrated, each compatibility publish recompiles. -->
+        <AtomUI.Build.Tasks.PrepareNative8RegistrationTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            ManagedCompilerBundle="$(AtomUINative8ManagedCompilerBundle)" IlcHostPackagePath="$(IlcHostPackagePath)"
+            HostRid="$(_hostOS)-$(_hostArchitecture)" TargetRid="$(RuntimeIdentifier)"
+            IntermediateRoot="$(AtomUINative8IntermediateRoot)" DotNetHostPath="$(DOTNET_HOST_PATH)"
+            InvocationId="$(_AtomUINative8InvocationId)" OwnedRoot="$(_AtomUINative8OwnedRoot)"
+            NativeObject="$(NativeObject)" ExportsFile="$(ExportsFile)" NativeBinary="$(NativeBinary)" NativeLinker="$(CppLinker)">
+            <Output TaskParameter="ScopedIlcToolsPath" PropertyName="IlcToolsPath" />
+            <Output TaskParameter="ScopedNativeLinkerPath" PropertyName="CppLinker" />
+            <Output TaskParameter="PrepareInputsRoot" PropertyName="_AtomUINative8InputsRoot" />
+            <Output TaskParameter="ReceiptPointer" PropertyName="_AtomUINative8ReceiptPointer" />
+            <Output TaskParameter="HostFingerprint" PropertyName="_AtomUINative8HostFingerprint" />
+        </AtomUI.Build.Tasks.PrepareNative8RegistrationTask>
+        <PropertyGroup>
+            <_IlcEnvironmentVariables>$(_IlcEnvironmentVariables);ATOMUI_ILC8_PREPARE_ROOT=$(_AtomUINative8InputsRoot);ATOMUI_ILC8_RECEIPT=$(_AtomUINative8ReceiptPointer);ATOMUI_ILC8_INVOCATION_ID=$(_AtomUINative8InvocationId);ATOMUI_ILC8_OWNED_ROOT=$(_AtomUINative8OwnedRoot)</_IlcEnvironmentVariables>
+        </PropertyGroup>
+    </Target>
+    <Target Name="AtomUIRestoreNative8CompilerScope" AfterTargets="IlcCompile" Condition="'$(_AtomUINative8Registration)' == 'true'">
+        <PropertyGroup>
+            <IlcToolsPath>$(_AtomUINative8OriginalToolsPath)</IlcToolsPath>
+            <_IlcEnvironmentVariables>$(_AtomUINative8OriginalEnvironment)</_IlcEnvironmentVariables>
+        </PropertyGroup>
+    </Target>
+    <Target Name="AtomUIVerifyNative8Registration" AfterTargets="LinkNative" Condition="'$(_AtomUINative8Registration)' == 'true'">
+        <PropertyGroup><CppLinker>$(_AtomUINative8OriginalLinker)</CppLinker></PropertyGroup>
+        <AtomUI.Build.Tasks.VerifyNative8RegistrationTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            ReceiptPointer="$(_AtomUINative8ReceiptPointer)" NativeObject="$(NativeObject)"
+            ExportsFile="$(ExportsFile)" NativeBinary="$(NativeBinary)" Phase="linked"
+            InvocationId="$(_AtomUINative8InvocationId)" OwnedRoot="$(_AtomUINative8OwnedRoot)">
+            <Output TaskParameter="LinkedReceiptHash" PropertyName="_AtomUINative8LinkedReceiptHash" />
+            <Output TaskParameter="VerifiedReceipt" PropertyName="AtomUINative8VerifiedReceipt" />
+        </AtomUI.Build.Tasks.VerifyNative8RegistrationTask>
+    </Target>
+    <Target Name="AtomUIVerifyPublishedNative8Registration" AfterTargets="CopyNativeBinary" Condition="'$(_AtomUINative8Registration)' == 'true'">
+        <AtomUI.Build.Tasks.VerifyNative8RegistrationTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            ReceiptPointer="$(_AtomUINative8ReceiptPointer)" NativeObject="$(NativeObject)"
+            ExportsFile="$(ExportsFile)" NativeBinary="$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(PublishDir)', '$(TargetName)$(NativeBinaryExt)'))" Phase="published"
+            InvocationId="$(_AtomUINative8InvocationId)" OwnedRoot="$(_AtomUINative8OwnedRoot)" ExpectedLinkedReceiptHash="$(_AtomUINative8LinkedReceiptHash)">
+            <Output TaskParameter="VerifiedReceipt" PropertyName="AtomUINative8VerifiedReceipt" />
+        </AtomUI.Build.Tasks.VerifyNative8RegistrationTask>
+    </Target>
+</Project>

@@ -335,11 +335,9 @@ public partial class DataGridRow
     private double _detailsDesiredHeight;
 
     private bool _detailsLoaded;
-    private bool _headerContentLoaded;
     private bool _detailsVisibilityNotificationPending;
     private Control? _detailsContent;
     private Control? _headerContent;
-    private IDisposable? _headerContentSizeSubscription;
     private IDisposable? _detailsContentSizeSubscription;
     private DataGridDetailsPresenter? _detailsElement;
     
@@ -515,37 +513,49 @@ public partial class DataGridRow
     internal void ApplyHeaderContentTemplate()
     {
         Debug.Assert(OwningGrid != null);
-        if (HeaderCell != null && OwningGrid.IsRowHeadersVisible)
+        var template = ActualHeaderContentTemplate;
+        if (template != _appliedHeaderContentTemplate)
         {
-            if (ActualHeaderContentTemplate != null && ActualHeaderContentTemplate != _appliedHeaderContentTemplate)
+            if (_headerContent != null)
             {
-                if (_headerContent != null)
+                if (ReferenceEquals(Header, _headerContent))
                 {
-                    _headerContentSizeSubscription?.Dispose();
-                    _headerContentSizeSubscription = null;
-                    if (_detailsLoaded)
-                    {
-                        OwningGrid.NotifyUnloadingRowDetails(this, _headerContent);
-                        _detailsLoaded = false;
-                    }
+                    Header = null;
                 }
-
-                HeaderCell.Content = null;
-
-                _headerContent                = ActualHeaderContentTemplate.Build(DataContext);
-                _appliedHeaderContentTemplate = ActualHeaderContentTemplate;
-
-                if (_headerContent != null)
-                {
-                    Header = _headerContent;
-                }
+                _headerContent.DataContext = null;
             }
+            _headerContent = null;
+            _appliedHeaderContentTemplate = null;
+        }
 
-            if (_headerContent != null && !_headerContentLoaded)
+        if (HeaderCell == null || !OwningGrid.IsRowHeadersVisible || template == null)
+        {
+            return;
+        }
+
+        if (template != _appliedHeaderContentTemplate || _headerContent == null ||
+            !ReferenceEquals(_headerContent.DataContext, DataContext))
+        {
+            var content = template is IRecyclingDataTemplate recyclingTemplate
+                ? recyclingTemplate.Build(DataContext, _headerContent)
+                : template.Build(DataContext);
+
+            // A new template owns the header; reusing the same template preserves an explicit Header.
+            if (_appliedHeaderContentTemplate == null || Header == null || ReferenceEquals(Header, _headerContent))
             {
-                _headerContentLoaded       = true;
-                _headerContent.DataContext = DataContext;
+                Header = content;
             }
+            if (_headerContent != null && !ReferenceEquals(_headerContent, content))
+            {
+                _headerContent.DataContext = null;
+            }
+            _headerContent = content;
+            _appliedHeaderContentTemplate = template;
+        }
+
+        if (_headerContent != null)
+        {
+            _headerContent.DataContext = DataContext;
         }
     }
      
@@ -620,6 +630,20 @@ public partial class DataGridRow
         if (wasAttached)
         {
             UnloadDetailsTemplate(recycle);
+        }
+
+        if (_headerContent != null)
+        {
+            if (ReferenceEquals(Header, _headerContent))
+            {
+                Header = null;
+            }
+            _headerContent.DataContext = null;
+        }
+        if (!recycle)
+        {
+            _headerContent = null;
+            _appliedHeaderContentTemplate = null;
         }
 
         if (recycle && wasAttached)

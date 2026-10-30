@@ -7,11 +7,14 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder Name="PART_Frame"
+                                         Background="{TemplateBinding Background}"
+                                         Padding="{TemplateBinding Padding}"
                                          BorderThickness="{TemplateBinding EffectiveBorderThickness}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          CornerRadius="{TemplateBinding CornerRadius}"
                                          ClipToBounds="True">
                     <ItemsPresenter Name="PART_ItemsPresenter"
+                                    Classes.semantic-scope-items="True"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"/>
                 </atom:PixelAlignedBorder>
             </ControlTemplate>

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
+using System.Collections.Specialized;
 using AtomUI.Animations;
 using AtomUI.Controls;
-using AtomUI.Data;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -21,7 +21,8 @@ using AvaloniaTabStrip = Avalonia.Controls.Primitives.TabStrip;
 
 public abstract class BaseTabStrip : AvaloniaTabStrip, 
                                      ISizeTypeAware,
-                                     IMotionAwareControl
+                                     IMotionAwareControl,
+                                     ITabOverflowOwner
 {
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new StackPanel());
@@ -65,6 +66,9 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     
     public static readonly StyledProperty<IDataTemplate?> HeaderEndExtraContentTemplateProperty =
         AvaloniaProperty.Register<BaseTabStrip, IDataTemplate?>(nameof(HeaderEndExtraContentTemplate));
+
+    public static readonly StyledProperty<IDataTemplate?> OverflowPopupTemplateProperty =
+        BaseTabControl.OverflowPopupTemplateProperty.AddOwner<BaseTabStrip>();
     
     public static readonly StyledProperty<bool> IsTabClosableProperty =
         AvaloniaProperty.Register<BaseTabStrip, bool>(nameof(IsTabClosable));
@@ -144,6 +148,16 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     {
         get => GetValue(HeaderEndExtraContentTemplateProperty);
         set => SetValue(HeaderEndExtraContentTemplateProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the template used to present tabs that are not fully visible in the tab viewport.
+    /// The template data item is a <see cref="TabOverflowPopupContext"/>.
+    /// </summary>
+    public IDataTemplate? OverflowPopupTemplate
+    {
+        get => GetValue(OverflowPopupTemplateProperty);
+        set => SetValue(OverflowPopupTemplateProperty, value);
     }
     
     public bool IsTabClosable
@@ -228,9 +242,8 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     private Pen? _tabStripBorderPen;
     private IBrush? _tabStripBorderPenBrush;
     private double _tabStripBorderPenThickness;
-    private BaseTabScrollViewer? _tabReorderScrollViewer;
-    private BaseTabScrollViewer? _popupPinnedOpenScrollViewer;
-    private IDisposable? _popupPinnedOpenRelay;
+    private TabScrollViewer? _tabReorderScrollViewer;
+    private EventHandler? _overflowSelectionChanged;
     private DispatcherTimer? _tabReorderAutoScrollTimer;
     private TabStripItem? _pendingTabActivationContainer;
     private IPointer? _pendingTabActivationPointer;
@@ -243,7 +256,7 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     private Point _tabReorderStartPointerRootPosition;
     private double _tabReorderPointerAnchorPrimary;
     private bool _isTabReorderDragging;
-    private bool _isTabReorderSelectedIndicatorTransitionSuppressed;
+    private TransitionSuppressionScope? _tabReorderIndicatorSuppression;
     private bool _isTabReorderIndicatorRefreshDeferred;
     private bool _isTabReorderIndicatorRefreshPending;
     private readonly Dictionary<Control, ITransform?> _tabReorderOriginalTransforms = new();
@@ -283,42 +296,57 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
             return false;
         }
 
-        var index = IndexFromContainer(tabStripItem);
-        if (!TabReorderHelper.IsValidIndex(index, list.Count))
-        {
-            index = list.IndexOf(tabStripItem);
-        }
-
+        var index = TabReorderHelper.FindContainerIndex(this, list, tabStripItem);
         if (!TabReorderHelper.IsValidIndex(index, list.Count))
         {
             return false;
         }
 
+        var item = list[index];
         var closingArgs = new TabStripClosingEventArgs(ClosingEvent, tabStripItem);
         RaiseEvent(closingArgs);
 
-        if (closingArgs.Cancel)
+        if (closingArgs.Cancel || !tabStripItem.IsClosable ||
+            !TabReorderHelper.TryGetCurrentItemIndex(this, list, tabStripItem, item, out index))
         { 
             return false;
         }
 
-        if (SelectedIndex == index)
+        var nextSelectionIndex = SelectedIndex;
+        if (nextSelectionIndex == index)
         {
             if (index > 0)
             {
-                SelectedIndex = index - 1;
+                nextSelectionIndex = index - 1;
             }
             else if (list.Count > 1)
             {
-                SelectedIndex = 1;
+                nextSelectionIndex = 1;
             }
             else
             {
-                SelectedIndex = -1;
+                nextSelectionIndex = -1;
             }
         }
+        var nextSelectedItem = TabReorderHelper.IsValidIndex(nextSelectionIndex, list.Count)
+            ? list[nextSelectionIndex]
+            : null;
+        SelectedIndex = nextSelectionIndex;
         
+        if (!tabStripItem.IsClosable ||
+            !TabReorderHelper.TryGetCurrentItemIndex(this, list, tabStripItem, item, out index))
+        {
+            return false;
+        }
+        var itemAfterCallback = SelectedItem;
+        // A collection change during SelectionChanged can recommit the original numeric index.
+        var selectionDrifted = SelectedIndex == nextSelectionIndex &&
+                               !TabReorderHelper.IsSameItem(itemAfterCallback, nextSelectedItem);
         list.RemoveAt(index);
+        if (selectionDrifted)
+        {
+            TabReorderHelper.RestoreSelectionAfterClose(this, list, nextSelectedItem, itemAfterCallback);
+        }
         
         var closedArgs = new TabStripClosedEventArgs(ClosedEvent, tabStripItem);
         RaiseEvent(closedArgs);
@@ -505,8 +533,21 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
         if (element is TabStripItem tabStripItem)
         {
             tabStripItem.IsIconSlotReserved = false;
+            ReleaseTabStripItemOwnerBindings(tabStripItem);
         }
         UpdateIconSlotReservation();
+    }
+
+    // The indexer bindings created in PrepareContainerForItemOverride subscribe to this
+    // owner's PropertyChanged, and Avalonia never disposes them on its own: without this
+    // release every removed item stays alive for the owner's lifetime. Avalonia skips
+    // ClearContainerForItemOverride for items that are their own container, so TabStripItem
+    // also routes its direct logical detach into this method.
+    internal virtual void ReleaseTabStripItemOwnerBindings(TabStripItem tabStripItem)
+    {
+        BindingOperations.GetBindingExpressionBase(tabStripItem, TabStripItem.SizeTypeProperty)?.Dispose();
+        BindingOperations.GetBindingExpressionBase(tabStripItem, TabStripItem.IsMotionEnabledProperty)?.Dispose();
+        BindingOperations.GetBindingExpressionBase(tabStripItem, TabItem.ContentTemplateProperty)?.Dispose();
     }
 
     protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
@@ -525,6 +566,10 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == SelectedIndexProperty)
+        {
+            _overflowSelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
         if (change.Property == TabStripPlacementProperty)
         {
             UpdatePseudoClasses();
@@ -551,8 +596,7 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
             {
                 for (int i = 0; i < ItemCount; i++)
                 {
-                    var item = Items[i];
-                    if (item is TabStripItem tabStripItem)
+                    if ((ContainerFromIndex(i) ?? Items[i]) is TabStripItem tabStripItem)
                     {
                         ConfigureTabStripItem(tabStripItem);
                     }
@@ -644,10 +688,10 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     {
         ClearPendingTabActivation();
         CancelTabReorder();
-        ReleasePopupPinnedOpenScrollViewer();
+        DetachTabScrollViewer();
         base.OnApplyTemplate(e);
         _tabReorderScrollViewer = TabReorderHelper.FindTabScrollViewer(e.NameScope);
-        ReplacePopupPinnedOpenScrollViewer(_tabReorderScrollViewer);
+        _tabReorderScrollViewer?.AttachOverflowOwner(this);
         ConfigureEffectiveHeaderPadding();
         UpdateIconSlotReservation();
     }
@@ -655,56 +699,24 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        ResumePopupPinnedOpenRelay();
+        _tabReorderScrollViewer?.AttachOverflowOwner(this);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        SuspendPopupPinnedOpenRelay();
+        _tabReorderScrollViewer?.DetachOverflowOwner(this);
         ClearPendingTabActivation();
         CancelTabReorder();
-        _tabReorderScrollViewer = null;
         base.OnDetachedFromVisualTree(e);
     }
 
-    private void ReplacePopupPinnedOpenScrollViewer(BaseTabScrollViewer? scrollViewer)
+    private void DetachTabScrollViewer()
     {
-        _popupPinnedOpenScrollViewer = scrollViewer;
-        ResumePopupPinnedOpenRelay();
-    }
-
-    private void ResumePopupPinnedOpenRelay()
-    {
-        if (_popupPinnedOpenRelay is not null || _popupPinnedOpenScrollViewer is not { } scrollViewer)
+        if (_tabReorderScrollViewer is { } scrollViewer)
         {
-            return;
+            scrollViewer.DetachOverflowOwner(this);
         }
-
-        _popupPinnedOpenRelay = BindUtils.RelayBind(
-            this,
-            IsPopupPinnedOpenProperty,
-            scrollViewer,
-            BaseTabScrollViewer.IsPopupPinnedOpenProperty);
-    }
-
-    private void SuspendPopupPinnedOpenRelay()
-    {
-        if (_popupPinnedOpenScrollViewer is { } scrollViewer)
-        {
-            scrollViewer.CloseForLifecycle();
-        }
-
-        _popupPinnedOpenRelay?.Dispose();
-        _popupPinnedOpenRelay = null;
-        _popupPinnedOpenScrollViewer?.SetCurrentValue(
-            BaseTabScrollViewer.IsPopupPinnedOpenProperty,
-            false);
-    }
-
-    private void ReleasePopupPinnedOpenScrollViewer()
-    {
-        SuspendPopupPinnedOpenRelay();
-        _popupPinnedOpenScrollViewer = null;
+        _tabReorderScrollViewer = null;
     }
 
     protected override bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs)
@@ -1102,17 +1114,22 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
 
         var shouldHandle = _isTabReorderDragging;
         var reorderCommitted = false;
-        if (_isTabReorderDragging)
+        try
         {
-            BeginTabReorderIndicatorRefreshDeferral();
-            reorderCommitted = CommitTabReorder();
-            if (!reorderCommitted)
+            if (_isTabReorderDragging)
             {
-                RestoreSelectionAfterCanceledReorder();
+                BeginTabReorderIndicatorRefreshDeferral();
+                reorderCommitted = CommitTabReorder();
+                if (!reorderCommitted)
+                {
+                    RestoreSelectionAfterCanceledReorder();
+                }
             }
         }
-
-        ClearTabReorder(releasePointer: true, deferIndicatorRefresh: reorderCommitted);
+        finally
+        {
+            ClearTabReorder(releasePointer: true, deferIndicatorRefresh: reorderCommitted);
+        }
         return shouldHandle;
     }
 
@@ -1136,17 +1153,20 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
             return false;
         }
 
-        var reorderingArgs = new TabReorderingEventArgs(TabReorderingEvent, _tabReorderItem, oldIndex, newIndex);
-        RaiseEvent(reorderingArgs);
-        if (reorderingArgs.Cancel)
+        var draggedContainer = _tabReorderContainer;
+        var item = _tabReorderItem;
+        var selectedItem = _tabReorderSelectedItem;
+        var reorderingArgs = new TabReorderingEventArgs(TabReorderingEvent, item, oldIndex, newIndex);
+        if (!TabReorderHelper.RaiseReorderingEvent(this, list, reorderingArgs) ||
+            !ReferenceEquals(_tabReorderContainer, draggedContainer))
         {
             return false;
         }
 
         TabReorderHelper.MoveItem(list, oldIndex, newIndex);
-        RestoreSelectionAfterReorder(list, _tabReorderSelectedItem);
+        RestoreSelectionAfterReorder(list, selectedItem);
 
-        var reorderedArgs = new TabReorderedEventArgs(TabReorderedEvent, _tabReorderItem, oldIndex, newIndex);
+        var reorderedArgs = new TabReorderedEventArgs(TabReorderedEvent, item, oldIndex, newIndex);
         RaiseEvent(reorderedArgs);
         return true;
     }
@@ -1265,8 +1285,14 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     private void CompleteTabReorderIndicatorRefresh()
     {
         _isTabReorderIndicatorRefreshDeferred = false;
-        NotifyTabReorderPreviewChanged();
-        SetTabReorderIndicatorTransitionSuppressed(false);
+        try
+        {
+            NotifyTabReorderPreviewChanged();
+        }
+        finally
+        {
+            SetTabReorderIndicatorTransitionSuppressed(false);
+        }
     }
 
     private void CancelPendingTabReorderIndicatorRefresh()
@@ -1300,20 +1326,76 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
 
     private void SetTabReorderIndicatorTransitionSuppressed(bool isSuppressed)
     {
-        if (_isTabReorderSelectedIndicatorTransitionSuppressed == isSuppressed)
-        {
-            return;
-        }
-
-        _isTabReorderSelectedIndicatorTransitionSuppressed = isSuppressed;
         if (isSuppressed)
         {
-            this.DisableTransitions();
+            _tabReorderIndicatorSuppression ??= new TransitionSuppressionScope(this);
         }
         else
         {
-            this.EnableTransitions();
+            var suppression = _tabReorderIndicatorSuppression;
+            _tabReorderIndicatorSuppression = null;
+            suppression?.Dispose();
         }
+    }
+
+    int ITabOverflowOwner.OverflowItemCount => ItemCount;
+
+    int ITabOverflowOwner.OverflowSelectedIndex => SelectedIndex;
+
+    INotifyCollectionChanged ITabOverflowOwner.OverflowItems => ItemsView;
+
+    event EventHandler? ITabOverflowOwner.OverflowSelectionChanged
+    {
+        add => _overflowSelectionChanged += value;
+        remove => _overflowSelectionChanged -= value;
+    }
+
+    Control? ITabOverflowOwner.GetOverflowContainer(int index) => ContainerFromIndex(index);
+
+    object? ITabOverflowOwner.GetOverflowLogicalItem(int index) =>
+        index >= 0 && index < ItemsView.Count ? ItemsView[index] : null;
+
+    TabOverflowItem ITabOverflowOwner.CreateOverflowItem(int index, object? logicalItem, Control container)
+    {
+        if (container is not TabStripItem tabStripItem)
+        {
+            throw new ArgumentException("TabStrip overflow containers must be TabStripItem instances.", nameof(container));
+        }
+
+        return new TabOverflowItem(
+            logicalItem,
+            tabStripItem.Content,
+            tabStripItem.ContentTemplate,
+            tabStripItem.IsEffectivelyEnabled,
+            index == SelectedIndex,
+            tabStripItem.IsClosable);
+    }
+
+    bool ITabOverflowOwner.TryActivateOverflowItem(int index, object? logicalItem, Control container)
+    {
+        if (!IsCurrentOverflowEntry(index, logicalItem, container) || !container.IsEffectivelyEnabled)
+        {
+            return false;
+        }
+
+        container.BringIntoView();
+        SelectedIndex = index;
+        return true;
+    }
+
+    bool ITabOverflowOwner.TryCloseOverflowItem(int index, object? logicalItem, Control container)
+    {
+        return IsCurrentOverflowEntry(index, logicalItem, container) &&
+               container is TabStripItem tabStripItem &&
+               CloseTab(tabStripItem);
+    }
+
+    private bool IsCurrentOverflowEntry(int index, object? logicalItem, Control container)
+    {
+        return index >= 0 &&
+               index < ItemsView.Count &&
+               ReferenceEquals(ContainerFromIndex(index), container) &&
+               Equals(ItemsView[index], logicalItem);
     }
 }
 

@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AtomUI.Reflection;
 using Avalonia.Controls.Primitives;
@@ -10,15 +9,17 @@ namespace AtomUI.Controls.Commons;
 internal static class ScrollBarReflectionExtensions
 {
     #region 反射信息定义
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(ScrollBar))]
-    private static readonly Lazy<FieldInfo> TimerFieldInfo = new Lazy<FieldInfo>(() => 
-        typeof(ScrollBar).GetFieldInfoOrThrow("_timer",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+    private static readonly Lazy<FieldInfo> TimerFieldInfo = new(() =>
+        FixedMemberReflection.RequireField(
+            typeof(ScrollBar).GetField("_timer", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(ScrollBar),
+            "_timer"));
     
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicProperties, typeof(ScrollBar))]
-    private static readonly Lazy<PropertyInfo> IsExpandedPropertyInfo = new Lazy<PropertyInfo>(() =>
-        typeof(ScrollBar).GetPropertyInfoOrThrow("IsExpanded",
-            BindingFlags.Instance | BindingFlags.Public));
+    private static readonly Lazy<PropertyInfo> IsExpandedPropertyInfo = new(() =>
+        FixedMemberReflection.RequireProperty(
+            typeof(ScrollBar).GetProperty("IsExpanded", BindingFlags.Instance | BindingFlags.Public),
+            typeof(ScrollBar),
+            "IsExpanded"));
     #endregion
     
     public static DispatcherTimer? GetTimer(this ScrollBar scrollBar)

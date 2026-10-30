@@ -12,11 +12,14 @@
                     Margin="{TemplateBinding Margin}">
                 <StackPanel Name="ContentLayout" Orientation="Horizontal">
                     <atom:IconPresenter Name="ItemIconPresenter"
+                                        Classes.semantic-icon="True"
                                         Icon="{TemplateBinding Icon}" />
                     <ContentPresenter Name="ContentPresenter"
+                                      Classes.semantic-label="True"
                                       Content="{TemplateBinding Content}"
                                       ContentTemplate="{TemplateBinding ContentTemplate, Converter={x:Static atom:BaseTabStripItemTheme.StringToTextBlockConverter}}" />
                     <atom:IconButton Name="PART_ItemCloseButton"
+                                     Classes.semantic-close="True"
                                      Icon="{TemplateBinding CloseIcon}"
                                      Opacity="{TemplateBinding CloseButtonOpacity}"
                                      VerticalAlignment="Center" />

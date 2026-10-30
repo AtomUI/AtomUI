@@ -3,11 +3,56 @@
 本文档记录 TreeView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-28
+
+- Motion
+  - `OpenMotion` / `CloseMotion` 的值类型改为 `AbstractMotion`，`Motion` 专门拥有附加属性和目标级操作；TreeView 子项的 AXAML 接入与布局协议保持不变。
+
+## 2026-10-27
+
+- Motion
+  - `OpenMotion` / `CloseMotion` 改为 `Motion`，控件不再修改共享定义的 Duration。
+  - 子项采用 `ContentViewport#PART_ChildrenViewport`，TreeSelect/Transfer 复用相同布局能力。
+  - 反向意图连续替代播放，移除 switcher 的播放期禁点和丢弃请求 guard；旧模板的完成无权修改当前状态。
+
+## 2026-10-19
+
+- Behavior
+  - Preserve pre-reset TreeView selection and checked state across `ItemsSource` replay and publish only final `SelectionChanged`, `CheckedItemsChanged` and Form value differences. Consecutive explicit collection edits and assignments made before replay completes take precedence; a nested source replacement takes over the pending replay; a filter failure clears the replay transaction.
+
+## 2026-10-03
+
+- Implementation
+  - Establish drag state synchronously and finish it before completion callbacks. Release previews through their actual visual parent; detach cancels pending drops and ends the drag without queued access to a cleared node.
+
 ## 2026-08-25
 
 - Docs
   - Add the shared Popup pinned-open design link and record TreeView as the semantic owner, with TreeViewFlyout used only as the relay adapter.
   - Preserve ordinary close behavior after unpinning and allow lifecycle teardown to release the Popup host.
+
+## 2026-08-20
+
+- Design
+  - 新增 `semantic-part.md`，定义 TreeView Semantic Part 契约：TreeView 是递归层级容器，用 `TreeView` 与
+    `TreeViewItem` 两个递归 Semantic owner 表达 `root`、`item`、`itemSwitcher`、`itemIndicator`、`itemIcon`、
+    `itemTitle` 六个 Part，对齐 Ant Design 6.6.0 `TreeSemanticType`（`root` / `item` / `itemIcon` / `itemTitle` /
+    `itemSwitcher`），并额外公开 AtomUI 扩展 `itemIndicator`（checkbox / radio 勾选指示）。
+  - `TreeView` owner 公开 `root`、`item`（顶层容器）；`TreeViewItem` owner 公开 `root`、`item`（子容器）与
+    `itemSwitcher` / `itemIndicator` / `itemIcon` / `itemTitle`（节点内容区域）。二者用同一 `.semantic-item` 身份保证
+    任意深度节点可达。
+  - `TreeViewItemHeader`、`NodeSwitcherButton`、`CheckBoxIndicator`、`FloatableTreeView` 不持有独立 Semantic
+    descriptor：`itemSwitcher` 与 `itemIndicator` 的 `ContractType` 使用公开基类 `ToggleButton`。
+  - 定义 marker 路由：`.semantic-item`（容器，`> .semantic-item`，`TreeView` 与 `TreeViewItem` 各自声明）、
+    `.semantic-scope-header`（internal 跳点）、`.semantic-item-switcher` / `.semantic-item-indicator` /
+    `.semantic-item-icon` / `.semantic-item-title`（header 模板静态 marker，route 从 `TreeViewItem` owner 出发）。
+    `itemIndicator` 是 checkbox / radio 两个备选节点共用的单一 Part。
+- Docs
+  - 更新 `overview.md` §3.1 Semantic Part 摘要、§9 LLMS 语义区域映射与验证策略。
+  - 更新 `implementation.md` 源码文件结构、§5.1 Semantic Part marker 放置与路由、维护不变量与验证范围。
+- Tests
+  - 新增 `TreeViewSemanticPartTests`，覆盖两个 descriptor 的 Part 数量/顺序/字段、模板 marker 静态声明、运行时 marker
+    数量、`TreeView` 顶层 route 与 `TreeViewItem` 递归 route 命中、生成 Style 的 Setter 生效。
 
 ## 2026-07-08
 

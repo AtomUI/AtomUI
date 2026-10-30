@@ -109,6 +109,24 @@
         <target state="translated">Users</target>
       </segment>
     </unit>
+    <unit id="P2StyleItemAntDesign">
+      <segment>
+        <source>Ant Design</source>
+        <target state="translated">Ant Design</target>
+      </segment>
+    </unit>
+    <unit id="P2StyleItemBreadcrumb">
+      <segment>
+        <source>Breadcrumb</source>
+        <target state="translated">面包屑</target>
+      </segment>
+    </unit>
+    <unit id="P2StyleItemComponent">
+      <segment>
+        <source>Component</source>
+        <target state="translated">组件</target>
+      </segment>
+    </unit>
     <unit id="PageDescription">
       <segment>
         <source>Breadcrumb helps users understand where they are and move back through parent levels. It supports icons, custom separators, route context, URI navigation, and item templates.</source>
@@ -125,6 +143,36 @@
       <segment>
         <source>Examples</source>
         <target state="translated">示例</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartItemDescription">
+      <segment>
+        <source>Item element with text color, link color transitions, hover effects, padding, border-radius, height, and margin styles</source>
+        <target state="translated">Item 元素，包含文字颜色、链接的颜色变化、悬浮效果、内边距、圆角、高度、外边距等样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartRootDescription">
+      <segment>
+        <source>Root element with text color, font size, icon size and other basic styles, using flex layout with ordered list</source>
+        <target state="translated">根元素，包含文字颜色、字体大小、图标尺寸等基础样式，内部使用 flex 布局的有序列表</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartSeparatorDescription">
+      <segment>
+        <source>Separator element with margin and color styles for the divider</source>
+        <target state="translated">分隔符元素，包含分隔符的外边距和颜色样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the Ant Design style-class demo: customize the root border, item color and separator color through generated Semantic Part styles.</source>
+        <target state="translated">对齐 Ant Design 的 style-class demo：通过生成的 Semantic Part 样式定制根边框、条目颜色与分隔符颜色。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
       </segment>
     </unit>
     <unit id="WithIconDescription">

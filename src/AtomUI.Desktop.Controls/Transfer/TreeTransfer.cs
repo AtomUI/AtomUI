@@ -5,7 +5,7 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TreeTransfer : AbstractTransfer
+public partial class TreeTransfer : AbstractTransfer
 {
     #region 公共属性定义
     public static readonly StyledProperty<ITransferTreeView?> SourceViewProperty =
@@ -57,7 +57,7 @@ public class TreeTransfer : AbstractTransfer
 
         if (targetChanged)
         {
-            IEnumerable<IListItemData> targetPanelSource = targetKeySet == null || ItemsSource == null
+            IReadOnlyList<IListItemData> targetPanelSource = targetKeySet == null || ItemsSource == null
                 ? Array.Empty<IListItemData>()
                 : CalculateTargetItemsSource(ItemsSource, targetKeySet);
             targetPanelSourceChanged = TargetViewSource != targetPanelSource;

@@ -2,6 +2,85 @@
 
 本文档记录 Popup 控件级 API、Theme、Token、实现结构和设计契约变化，不替代仓库根目录 `CHANGELOG.md`。
 
+## 2026-10-29
+
+- Token
+  - `PopupToken.PopupRootShadow` 与 `FlyoutHostToken.PopupRootShadow` 改为 `BoxShadowsSecondary`，窗口型与 Overlay Popup 阴影一致。
+- Input（Windows）
+  - 窗口型 Popup 阴影区域输入穿透：`WM_NCHITTEST` 在内容形状外返回 `HTTRANSPARENT`（同进程）；阴影超出主窗口时临时加
+    `WS_EX_TRANSPARENT` 并按帧轮询光标恢复（跨进程）。打开/关闭动效期间整窗穿透。
+- Input（Linux X11）
+  - 窗口型 Popup 阴影区域输入穿透：SHAPE input region 收缩到内容形状（圆角矩形 + 箭头三角形，逐像素行光栅化为多矩形），
+    同进程与跨进程一致生效；打开/关闭动效期间为空区域，且在窗口映射前即置空，避免映射瞬间下方控件丢失悬停。
+- Input（Linux Wayland）
+  - 窗口型 Popup 阴影区域输入穿透：`wl_surface.set_input_region` 收缩到同一内容形状（surface 逻辑坐标），经 Avalonia
+    Wayland worker 的合成批次提交，跨客户端生效；打开/关闭动效期间为 surface 原点 1×1 占位区域（GNOME Mutter 上以空区域
+    映射的 popup 不再接收后续输入区域）。首次提交先于首帧映射，Hover 浮层不再在映射瞬间反复开关。
+- Input（macOS）
+  - 窗口型 Popup 阴影区域输入穿透：原始指针移入阴影时整窗 `ignoresMouseEvents`，按帧读取
+    `mouseLocationOutsideOfEventStream`，回到内容或离开窗口时恢复；同进程与跨进程一致生效。打开/关闭动效期间整窗穿透，
+    且在窗口显示前即穿透。
+- Fixed
+  - `ShadowsAwareContainer.GetContentShape()` 的箭头位置把相对模板箭头定位面板的 `ArrowIndicatorLayoutBounds` 当作相对
+    `ArrowDecoratedBox` 使用，底部/右侧箭头被算到主体内部，X11 输入形状缺失箭头；改为按箭头布局部件自身变换。
+  - native 定位在 `MarginToAnchor` 非零时忽略朝向 anchor 一侧的残余阴影，阴影变大后内容离 anchor 过远；改为
+    `MarginToAnchor - 残余阴影`，并移除箭头隐藏时的单独补偿（已被统一规则覆盖）。12 个方向 × 箭头显示/隐藏/居中与
+    Overlay 路径逐像素对比一致。
+
+## 2026-10-28
+
+- Motion
+  - Popup 及 Flyout/ContextMenu 接入的 `OpenMotion` / `CloseMotion` 值类型统一为 `AbstractMotion`；目标级操作继续使用 `Motion`，原有 AXAML 附加属性写法保持不变。
+
+## 2026-10-27
+
+- Motion
+  - `OpenMotion` / `CloseMotion` 使用新的 `Motion` 定义，时长通过播放请求覆盖，不再修改定义对象。
+  - 实际表面改为 `PopupSurface : Panel`，去除 Actor 包装；显示前准备使用可释放的属性覆盖。
+  - 入场替代离场保持当前值，关闭 completion 与排队 Close 均核对请求版本和表面身份。
+  - Direct Popup 同时支持 visual attach 就绪，不依赖 rooted logical owner。
+
+## 2026-10-03
+
+- Fixed
+  - native Popup 使用统一阴影内槽测量/排列，尊重 Padding；上/左箭头 frame 保留 Child 原点偏移。
+
+## 2026-09-28
+
+- native/overlay 翻转预测和 CSD 可见区域约束统一使用扣除 Child Margin 后的有效定位尺寸。
+- 补充非对称 Margin、零 Margin、水平/垂直边缘、CSD 和 native 屏幕坐标预测回归，保留原有 shadow/motion 宿主结构。
+- 删除无调用的 open-state flag 和 closing 解绑反射封装，保留实际使用的生命周期桥接。
+
+## 2026-09-18
+
+- 将 pin 对 light-dismiss 的有效值计算收敛到共享 Popup，保留原始配置与绑定。
+- 运行中同步当前 Popup 会话的遮罩 registration，不重建 host，不通过隐藏共享遮罩影响其他弹层。
+
+## 2026-09-17
+
+- Design
+  - Document `IArrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox()` as a nullable contract: providers may transiently or permanently lack the arrow part, and consumers must degrade to arrowless behavior instead of assuming a non-null result (issue #477).
+- Implementation
+  - `ShadowsAwareContainer` degrades to `IsArrowVisible=false` and default corner radius when the provider cannot supply the arrow part, subscribes the provider's `TemplateApplied` while degraded, and re-probes on the next template application so arrow relay bindings are established once the part becomes available.
+  - `Popup.ApplyCustomPlacement` treats an unavailable arrow part like a hidden arrow, reusing the existing shadow-thickness compensation path instead of dereferencing the part.
+
+## 2026-09-07
+
+- Fix
+  - `ShadowsAwareContainer` and `AbstractArrowDecoratedBox.GetMaskCornerRadius` now derive the shadow mask radius from the visible content decorator (`PART_ContentDecorator`) instead of the `ArrowDecoratedBox`'s own `CornerRadius`; a semantic-part style that only overrides the container `Border` radius (for example `ToolTipContainerStyle`) no longer leaves white corner gaps between the surface and the popup shadow.
+- Tests
+  - Add regressions for the mask-radius contract and for `ShadowsAwareContainer` corner-radius tracking of arrow-decorated children.
+## 2026-09-04
+
+- Motion
+  - Reconcile both `Opened -> PopupMotionActor ready` and `actor ready -> Opened` orderings so a lazily materialized popup cannot remain physically open but transparent until its second open.
+- Pinned open
+  - Suppress light-dismiss before first pinned open in shared Flyout, ComboBox, Mentions and InfoPickerInput owners; Flyout restores its configured Click/Hover/Focus value through `configured && !pinned` rather than a fixed default.
+- Tests
+  - Add a late-actor visual-state regression and first-open light-dismiss regressions for each newly covered direct owner.
+- Docs
+  - Record the incident and repository-wide audit in the long-lived [Semantic Part Popup first-open lifecycle case study](../../../../engineering/case-studies/semantic-part-popup-first-open-lifecycle-case-study.md).
+
 ## 2026-08-25
 
 - Design

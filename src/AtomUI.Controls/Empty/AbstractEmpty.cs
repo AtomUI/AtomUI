@@ -3,6 +3,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
+using Avalonia.Metadata;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
@@ -30,6 +32,15 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
 
     public static readonly StyledProperty<bool> IsDescriptionVisibleProperty =
         AvaloniaProperty.Register<AbstractEmpty, bool>(nameof(IsDescriptionVisible), true);
+
+    public static readonly StyledProperty<object?> FooterProperty =
+        AvaloniaProperty.Register<AbstractEmpty, object?>(nameof(Footer));
+
+    public static readonly StyledProperty<IDataTemplate?> FooterTemplateProperty =
+        AvaloniaProperty.Register<AbstractEmpty, IDataTemplate?>(nameof(FooterTemplate));
+
+    public static readonly StyledProperty<IReadOnlyList<double>?> StrokeDashArrayProperty =
+        AvaloniaProperty.Register<AbstractEmpty, IReadOnlyList<double>?>(nameof(StrokeDashArray));
 
     public PresetEmptyImage? PresetImage
     {
@@ -65,6 +76,25 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
     {
         get => GetValue(IsDescriptionVisibleProperty);
         set => SetValue(IsDescriptionVisibleProperty, value);
+    }
+
+    [DependsOn(nameof(FooterTemplate))]
+    public object? Footer
+    {
+        get => GetValue(FooterProperty);
+        set => SetValue(FooterProperty, value);
+    }
+
+    public IDataTemplate? FooterTemplate
+    {
+        get => GetValue(FooterTemplateProperty);
+        set => SetValue(FooterTemplateProperty, value);
+    }
+
+    public IReadOnlyList<double>? StrokeDashArray
+    {
+        get => GetValue(StrokeDashArrayProperty);
+        set => SetValue(StrokeDashArrayProperty, value);
     }
 
     #endregion
@@ -127,6 +157,8 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
             ImageSourceProperty,
             DescriptionProperty,
             IsDescriptionVisibleProperty,
+            FooterProperty,
+            FooterTemplateProperty,
             BorderColorProperty,
             BorderColorSecondaryProperty,
             ShadowColorProperty,
@@ -165,7 +197,14 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
         base.OnPropertyChanged(change);
         if (this.IsAttachedToVisualTree())
         {
-            if (change.Property == BorderColorProperty ||
+            if (change.Property == PresetImageProperty ||
+                change.Property == ImagePathProperty ||
+                change.Property == ImageSourceProperty)
+            {
+                CheckImageSource();
+                SetupImage();
+            }
+            else if (change.Property == BorderColorProperty ||
                 change.Property == BorderColorSecondaryProperty ||
                 change.Property == ShadowColorProperty ||
                 change.Property == ContentColorProperty ||
@@ -185,6 +224,8 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
 
         if (PresetImage is not null)
         {
+            _svg.Path   = null;
+            _svg.Source = null;
             if (BorderColor != null && ShadowColor != null && ContentColor != null && BgColor != null && BorderColorSecondary != null)
             {
                 var colorBgContainer = ((ISolidColorBrush)BgColor!).Color;
@@ -205,11 +246,18 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
         }
         else if (ImageSource is not null)
         {
+            _svg.Path   = null;
             _svg.Source = ImageSource;
         }
         else if (ImagePath is not null)
         {
+            _svg.Source = null;
             _svg.Path = ImagePath;
+        }
+        else
+        {
+            _svg.Source = null;
+            _svg.Path   = null;
         }
     }
 

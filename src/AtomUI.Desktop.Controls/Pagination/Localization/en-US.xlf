@@ -6,9 +6,29 @@
         <source>Go to</source>
       </segment>
     </unit>
+    <unit id="NextPageText">
+      <segment>
+        <source>Next Page</source>
+      </segment>
+    </unit>
+    <unit id="NextPagesTextFormat">
+      <segment>
+        <source>Next {0} Pages</source>
+      </segment>
+    </unit>
     <unit id="PageText">
       <segment>
         <source>Page</source>
+      </segment>
+    </unit>
+    <unit id="PreviousPageText">
+      <segment>
+        <source>Previous Page</source>
+      </segment>
+    </unit>
+    <unit id="PreviousPagesTextFormat">
+      <segment>
+        <source>Previous {0} Pages</source>
       </segment>
     </unit>
     <unit id="TotalInfoFormat">

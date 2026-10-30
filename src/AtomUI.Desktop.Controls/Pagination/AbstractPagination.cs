@@ -18,6 +18,12 @@ public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTy
     public static readonly StyledProperty<PaginationAlign> AlignProperty =
         AvaloniaProperty.Register<AbstractPagination, PaginationAlign>(nameof(Align));
     
+    public static readonly StyledProperty<IReadOnlyList<double>?> BorderDashArrayProperty =
+        AvaloniaProperty.Register<AbstractPagination, IReadOnlyList<double>?>(nameof(BorderDashArray));
+
+    public static readonly StyledProperty<double> BorderDashOffsetProperty =
+        AvaloniaProperty.Register<AbstractPagination, double>(nameof(BorderDashOffset));
+
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractPagination>();
     
@@ -58,6 +64,18 @@ public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTy
         set => SetValue(AlignProperty, value);
     }
     
+    public IReadOnlyList<double>? BorderDashArray
+    {
+        get => GetValue(BorderDashArrayProperty);
+        set => SetValue(BorderDashArrayProperty, value);
+    }
+
+    public double BorderDashOffset
+    {
+        get => GetValue(BorderDashOffsetProperty);
+        set => SetValue(BorderDashOffsetProperty, value);
+    }
+
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
@@ -165,7 +183,12 @@ public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTy
         var pageSize    = PageSize <= 0 ? DefaultPageSize : PageSize;
         var pageCount   = (int)Math.Ceiling(total / (double)pageSize);
         var currentPage = Math.Max(1, Math.Min(CurrentPage, pageCount));
-        SetCurrentValue(CurrentPageProperty, currentPage);
+        if (CurrentPage != currentPage)
+        {
+            SetCurrentValue(CurrentPageProperty, currentPage);
+            return;
+        }
+
         PageCount = pageCount;
         NotifyPageConditionChanged(currentPage, pageCount, pageSize, total);
     }

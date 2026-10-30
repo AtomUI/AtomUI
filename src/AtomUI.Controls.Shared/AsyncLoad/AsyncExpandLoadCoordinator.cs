@@ -11,7 +11,9 @@ public sealed class AsyncExpandLoadCoordinator<TContext, TResult>
     where TContext : notnull
     where TResult : class
 {
-    private readonly ConcurrentDictionary<TContext, Task<AsyncLoadOutcome<TResult>>> _inFlight;
+    private readonly ConcurrentDictionary<
+        TContext,
+        TaskCompletionSource<AsyncLoadOutcome<TResult>>> _inFlight;
     private readonly ConcurrentDictionary<CancellationTokenSource, byte> _activeCts = new();
 
     public AsyncExpandLoadCoordinator() : this(null)
@@ -20,7 +22,9 @@ public sealed class AsyncExpandLoadCoordinator<TContext, TResult>
 
     public AsyncExpandLoadCoordinator(IEqualityComparer<TContext>? dedupComparer)
     {
-        _inFlight = new ConcurrentDictionary<TContext, Task<AsyncLoadOutcome<TResult>>>(
+        _inFlight = new ConcurrentDictionary<
+            TContext,
+            TaskCompletionSource<AsyncLoadOutcome<TResult>>>(
             dedupComparer ?? EqualityComparer<TContext>.Default);
     }
 
@@ -34,7 +38,15 @@ public sealed class AsyncExpandLoadCoordinator<TContext, TResult>
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(loader);
 
-        return _inFlight.GetOrAdd(context, ctx => RunAsync(ctx, loader, external));
+        var candidate = new TaskCompletionSource<AsyncLoadOutcome<TResult>>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var operation = _inFlight.GetOrAdd(context, candidate);
+        if (ReferenceEquals(operation, candidate))
+        {
+            _ = CompleteAsync(context, loader, external, candidate);
+        }
+
+        return operation.Task;
     }
 
     public void CancelAll()
@@ -90,10 +102,30 @@ public sealed class AsyncExpandLoadCoordinator<TContext, TResult>
         }
         finally
         {
-            _inFlight.TryRemove(context, out _);
             _activeCts.TryRemove(linkedCts, out _);
             linkedCts.Dispose();
         }
     }
-}
 
+    private async Task CompleteAsync(
+        TContext context,
+        Func<TContext, CancellationToken, Task<TResult>> loader,
+        CancellationToken external,
+        TaskCompletionSource<AsyncLoadOutcome<TResult>> completion)
+    {
+        try
+        {
+            completion.TrySetResult(await RunAsync(context, loader, external).ConfigureAwait(false));
+        }
+        catch (Exception exception)
+        {
+            completion.TrySetException(exception);
+        }
+        finally
+        {
+            _inFlight.TryRemove(new KeyValuePair<
+                TContext,
+                TaskCompletionSource<AsyncLoadOutcome<TResult>>>(context, completion));
+        }
+    }
+}

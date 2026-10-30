@@ -151,14 +151,14 @@ internal class MentionTextArea : TextArea
         }
     }
     
-    internal Rect GetTextPresenterBounds()
+    internal Rect GetTriggerBounds(Rect triggerBounds, Control? relativeControl = null)
     {
-        if (_textPresenter != null)
+        if (relativeControl != null && _textPresenter != null)
         {
-            var offset = _textPresenter.TranslatePoint(new Point(0, 0), this) ?? new Point(0, 0);
-            return new Rect(offset.X, offset.Y, _textPresenter.DesiredSize.Width, _textPresenter.DesiredSize.Height);
+            var offset = _textPresenter.TranslatePoint(triggerBounds.Position, relativeControl) ?? triggerBounds.Position;
+            return new Rect(offset, triggerBounds.Size);
         }
-        return default;
+        return triggerBounds;
     }
 
     private bool TryGetTriggerPrefix(char ch, out string triggerText)
@@ -201,7 +201,8 @@ internal class MentionTextArea : TextArea
             if (TryGetTriggerPrefix(ch, out var triggerText))
             {
                 var triggerIndex  = index - 1;
-                var presenter     = this.GetTextPresenter();
+                var presenter = _textPresenter ??
+                    throw new InvalidOperationException("PART_TextPresenter is not available for mention geometry.");
                 var textLayout    = presenter.TextLayout;
                 var triggerBounds = textLayout.HitTestTextPosition(triggerIndex);
                 var predicate     = text.Substring(index, CaretIndex - index);

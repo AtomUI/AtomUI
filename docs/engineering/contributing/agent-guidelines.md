@@ -13,9 +13,23 @@
 
 当用户说“参考某个项目源码”或表达同等意图时，必须先执行 [参考项目源码查找规范](reference-project-source-guidelines.md) 中规定的本地优先查找流程。不得跳过项目目录下的 `.referenceprojects`、逐级向上的 `ReferenceProjects`，直接去 GitHub；只有所有本地位置都未命中时，GitHub 才是允许的兜底来源。
 
+## 新增功能与 Bug 修复的测试生命周期
+
+所有新增功能和 Bug 修复必须遵守[测试价值与生命周期规范](../development/test-value-and-lifecycle.md)。新增测试默认
+属于临时验证，必须优先放在系统临时目录或所属测试项目的 `Temporary/<任务标识>/` 目录，并在功能或修复完成后
+删除。最终评审、合并、发布或交付分支不得残留临时测试及其专用 helper、fixture 和资源。
+
+全局测试集合默认净新增为 0。只有现有测试、编译器、生成器诊断、ApiCompat、真实打包和专项验证均无法覆盖，
+并且测试同时满足契约明确、独立检错、长期收益和成本合理四项条件时，才允许永久保留。保留时必须在交付记录中
+写明不可替代性、全局运行必要性、运行成本和重复测试处置。未完成临时测试清理或无理由扩大全局测试集合，
+不算完成新增功能或 Bug 修复。
+
 ## Bug 修复
 
 修复 bug 时必须优先寻找从根源杜绝问题的方案，而不是只在触发点打补丁。
+
+新建复现测试按上一节的临时目录规则执行。未完成修复前后验证、测试去留判定、清理、最终模块验证和交付记录，
+不算完成 Bug 修复，不得宣称“已修复”。TDD 要求有效验证，不要求永久保存复现代码。
 
 编写 BUG 类型 Issue 时，按 [BUG Issue 规范](bug-issue-guidelines.md) 收集上下文并描述期望行为；不要在 Issue 中混入实现方案、验收清单或测试计划。
 
@@ -24,9 +38,10 @@
 1. 复现或从错误栈、日志、截图、用户步骤中还原触发路径。
 2. 追踪坏状态、异常或错误行为的来源，直到能解释为什么会发生。
 3. 搜索同类实现和同类触发入口，判断是否存在同源 bug。
-4. 先补能失败的回归测试；无法自动化时，说明原因并保留可复查的手动验证步骤。
+4. 优先复用已有测试；必要时编写临时测试，确认修复前因目标问题失败。确实无法自动化时，说明原因并记录可复查的手动步骤与前后证据。
 5. 在源头修复共享逻辑、状态模型、生成器、生命周期或契约，而不是只拦截当前样例。
-6. 修复后按照“回归测试范围”规则重跑回归测试，并根据影响面补跑必要的相邻模块测试。
+6. 在原始触发条件下验证修复，按测试价值规范决定删除、合并或保留，清理临时测试及专用辅助产物。
+7. 按“回归测试范围”验证清理后的最终工作树，提供测试处置记录；满足测试价值规范的全部完成门禁后才能结案。
 
 不要把这些行为当作根因修复：
 
@@ -34,6 +49,19 @@
 - 对当前控件或当前 Demo 写特殊判断，但共享路径仍然会失败。
 - 加延时、重试或强制刷新来掩盖状态同步问题。
 - 用 `UnconditionalSuppressMessage` 或条件编译隐藏 AOT/trim warning，但没有改变运行时动态行为。
+
+### UI 输入与滚动 Bug
+
+调查 hover、pointer、hit testing、滚轮、滚动、裁剪或覆盖层问题时，必须遵循以下纪律：
+
+- 把用户指出的鼠标位置、截图和视频作为一手证据。只有局部区域响应时，优先调查几何范围、裁剪、覆盖层和命中边界，不要先假设是事件处理逻辑错误。
+- 修改前先锁定完整 UX 契约，包括控件尺寸、可见滚动条、嵌套滚动、滚动链、布局和交互。未经用户明确允许，不得通过降低或删除这些行为来规避问题。
+- 必须保留原始触发条件复现。不得删除高度限制、溢出、嵌套滚动、标题、内容或其他触发因素，只为了让症状消失。
+- 修改事件代码前，检查完整输入几何链：visual/logical ancestors、Bounds、transform、viewport、extent、offset、clip chain、ZIndex、overlay、`IsHitTestVisible`，以及指针位置实际命中的 Visual。
+- 使用单变量 A/B 证明因果关系。裁剪、布局、标题、高度约束和事件路由一次只改变一个因素。
+- 临时验证与常驻回归测试都必须保留原始复现条件，并且能在修复前失败。UI 测试同时断言视觉与交互契约，例如滚动条可见性、viewport 范围、行左/中/右位置的 hover、内层滚动，以及到达边界后的外层滚动链；测试是否长期保留按测试价值规范判定。
+- 测试通过不等于产品体验正确。必须对照用户要求检查最终渲染结果；原有正确设计没有保留时，不得声称问题已经修复。
+- 优先提交最小根因修复。通过删除触发条件或牺牲预期体验让 bug 消失的方案只能标记为 workaround，未经用户明确同意不得作为正式修复。
 
 ## 临时复现 Demo
 
@@ -47,10 +75,10 @@
   启动路径；不要用不同依赖组合制造新的变量。
 - Demo 必须保留原始触发条件，例如尺寸约束、滚动、冻结列、标题、Header 可见性、GridLine 设置、数据量和溢出
   条件。不得通过移除触发条件让症状消失后宣称修复。
-- 如果 Demo 只用于复现或人工确认，修复完成并得到用户确认后必须停止相关进程、关闭可控会话，并删除临时 Demo
-  目录。删除前如需保留证据，只保留必要日志、截图路径或简短结果说明，不保留可运行 Demo 工程。
-- 临时 Demo 不能替代回归测试。只要修复落入仓库代码，就必须优先补可自动化失败的回归测试；确实无法自动化时，
-  才记录手动 Demo 验证步骤和无法自动化的原因。
+- 如果 Demo 只用于复现或人工确认，完成原始场景验证及必要的人工复核后，必须停止相关进程、关闭可控会话，并在
+  宣称修复完成前删除临时 Demo 目录。删除前如需保留证据，只保留必要日志、截图路径或简短结果说明，不保留可运行 Demo 工程。
+- 临时 Demo 不能替代可自动化验证。优先通过已有或临时测试完成修复前后验证，验证代码的去留按测试价值规范判定；
+  确实无法自动化时，才记录手动 Demo 验证步骤、前后证据和无法自动化的原因。
 - 最终汇报要说明临时 Demo 是否已删除、仓库中保留了哪些正式修复和测试，以及是否仍有长运行进程需要用户处理。
 
 ## Public API 变更约束
@@ -107,14 +135,22 @@ Gallery 改动时注意：
 
 ## 测试与验证
 
-选择验证命令时按风险扩大范围：
+测试准入、临时目录优先、默认删除、存量清理，以及新增功能和 Bug 修复交付记录统一遵循
+[测试价值与生命周期规范](../development/test-value-and-lifecycle.md)。一般 skill 中“补测试”的要求不自动赋予测试
+永久保留资格；模块测试通过也不能代替测试处置和清理验收。最终分支存在 `Temporary/<任务标识>/` 测试，或全局
+测试净新增却没有完整保留理由时，不得宣称工作完成。
 
-- 纯共享数据结构：先跑对应 shared tests。
-- Desktop 控件行为：跑对应 `AtomUI.Desktop.Controls.Tests`。
-- DataGrid：跑 `AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 页面或 ViewModel：跑 `AtomUIGallery.Tests`。
-- AOT、trim、发布配置、source generator 运行时注册：跑真实 NativeAOT publish。
-- 每次收尾都运行 `git diff --check`。
+日常验证必须先使用 [按改动影响选择验证](../workflows/affected-verification.md) 的统一入口：
+
+- `python3 scripts/verification/test.py plan`：检查改动、功能域、消费路径与专项义务。
+- Bug 修复开发过程中必须使用 `run --scope iterate --path <缺陷模块路径>`；`--path` 可重复提供生产文件和对应测试文件。
+- 本地 `change` 只允许显式提供 `--base <目标分支>` 的分支/CI 比较，不得作为 Bug 修复过程中的扩大验证步骤。
+- `--include-test <测试源文件模式>` 只追加检查；不得用手选子集代替 change 计划后声称完成交付验证。
+- 不因修改一个控件而默认运行整个 Desktop 测试项目。需要扩大范围时由共享规则或明确影响证据说明原因。
+- 规则 gap、零测试、skip、陈旧产物或 pending 专项义务都不能报告为完整通过；按报告处理缺口和真实发布验证。
+- 无新增改动且输入、配置、产物匹配的成功 receipt 可以复用；不得为了收尾重复已通过的同一份验证。
+- 直接 `dotnet test --filter ...` 用于稳定复现和红绿迭代；agent 的最终全量入口只能使用 `scripts/run-full-regression.sh`。
+- 每次收尾仍运行 `git diff --check`，保留原始 UX、AOT、资源生命周期验证要求。
 
 测试运行产生的本地临时结果必须由仓库构建入口自动清理。不得在 `tests/**/TestResults`、`.artifacts/TestResults`
 或工作树副本中长期保留 VSTest 结果、hang dump、crash dump、coverage 临时文件等占用存储的测试产物；需要诊断 dump
@@ -122,9 +158,12 @@ Gallery 改动时注意：
 
 ### 回归测试范围（硬约束）
 
-- 新增、修改或删除代码后，如需执行回归测试，默认只运行与改动代码直接相关的模块回归测试，以及验证直接影响所必需的相邻模块测试。
-- 常规代码改动默认不执行全量回归测试，不得将全量回归测试作为常规默认步骤。
-- 只有在用户明确要求，或执行 `version-release` skill 时，才执行全量回归测试。
+- Bug 修复必须先以精确失败用例复现；修复迭代期间只运行缺陷所属模块和该模块显式映射的测试，不得运行 affected-wide 或全量回归。
+- focused runner 必须显式传入一个或多个 `--path`。禁止直接对包含多个无关改动的整个工作树运行 iterate，并禁止用 `--include-test` 冒充模块路径范围。
+- Bug 修复与普通代码改动的执行门禁都是“所修改模块的测试全绿”，不再自行追加全量回归或本地 change 范围。
+  Bug 修复还必须完成测试价值规范中的测试处置、清理、适用专项和交付记录；只通过模块测试不算完成修复。
+- `scripts/run-full-regression.sh` 只在用户明确要求或发版（执行 `version-release` skill）时运行。
+- 确需运行的全量回归遇到失败时必须让脚本继续收集所有项目结果；随后逐项做 focused 修复。全部局部转绿后只再运行一次最终全量确认，禁止每修一个失败就重跑全量。
 - 验证结果必须明确记录实际执行的测试范围、命令和结果；未执行的全量回归测试不得表述为已完成。
 
 不要在没有最新验证输出时声称“已修复”“测试通过”或“发布可用”。
@@ -137,6 +176,7 @@ Gallery 改动时注意：
 - AOT、trim、source generator：`aot-programming-guidelines.md`。
 - Gallery 页面结构：`gallery-showcase-design-pattern.md`。
 - Gallery AOT 发布：`gallery-aot-release-workflow.md`。
+- 版本发布准备与破坏性变更判定：`../workflows/release-preparation.md`。
 - 控件研发标准：`control-development-guidelines.md`。
 - 模块架构：`docs/modules/**/overview.md`。
 - 控件用户文档：`docs/controls/**`。
@@ -155,9 +195,46 @@ Gallery 改动时注意：
 - 抽象只在能消除实际重复、降低共享复杂度或匹配既有模式时引入。
 - 生成文件不要手改；改 generator 或输入源，并验证输出。
 
+### 命名约定
+
+C# 命名约定的唯一事实来源是仓库根目录的 [.editorconfig](../../../.editorconfig)（`dotnet_naming_rule` 机器规则，IDE 与
+`dotnet format style` 均可执行）。核心约定：
+
+- 局部变量、模式匹配命名变量（`is Type name`）、`out var` 命名使用 camelCase。
+- 方法参数使用 camelCase。
+- 私有实例字段使用 `_camelCase`；私有静态可变字段使用 `s_camelCase`；私有 `static readonly` 与 `const` 字段使用 PascalCase。
+- 公共/受保护/内部成员与类型使用 PascalCase；接口以 `I` 为前缀。
+
+提交前可用 `dotnet format style --verify-no-changes` 检查命名违规（默认报告 warning 级以上，`--severity info`
+可查看全部）。存量违规随触及文件逐步清理，不做一次性全仓重命名。
+
 ## 控件研发标准
 
 控件 C# 实现、AXAML 主题、API 和主题契约变更必须遵循 [AtomUI 控件研发标准规范](../development/control-development-guidelines.md)。优化代码和修复 bug 时，如果涉及控件既有 API、主题契约或可观察行为变化，必须先获得用户明确授权。
+
+## 语义部件复用
+
+为控件新增或改造 Semantic Part 前，必须先读 [Semantic Part 系统设计](../../architecture/systems/theming/semantic-parts.md)
+的相关章节，并复用既有底层机制，禁止重新发明等价轮子：
+
+- Gallery 示例、文档示例与测试的样式定制必须用生成的专用 Semantic Part Style 类在 AXAML 声明式应用（见该文档
+  5.4）；禁止在 code-behind 获取目标节点后直接设置属性。生成 Style 未命中目标节点属于 route/拓扑契约缺陷，先修
+  `SelectorRoute` 并补命中回归，不写“无法命中”限制、不做代码回退。
+- 目标在内嵌控件自己的模板内（宿主把功能区整体委托给内嵌控件）→ `CrossNestedOwners=true` + `>>` 或二次
+  `/template/` 路由（见该文档 3.3.1），生成器自动切换为跨主题资产校验。
+- 目标在模板 Popup 独立可视根内 → `CrossVisualRoot=true` + `popup.root` / `popup.list` / `popup.listItem` 三级键
+  （见该文档 9.1）。
+- 目标在独立宿主弹层内（Flyout / FlyoutHost 代码创建的 presenter，经 Popup `PlacementTarget` 挂在 owner 逻辑树）→
+  `CrossVisualRoot=true` + `RuntimeCreated=true` + 以 `>>` 开头的 `SelectorRoute`（见该文档 9.2；先例 InfoFlyout 的
+  `popup.root` 等四个部件）。
+- 运行时创建的列表容器 → 容器创建时注入 semantic class（见该文档 8.3；先例 `ListBox`、`CandidateList`），
+  marker 不得放在 item 的 ControlTheme 模板内部。
+- Gallery 语义预览钉住弹层 → `IsDropDownOpen` + `IsPopupPinnedOpen`；light-dismiss 遮罩抑制由产品控件在弹层打开前
+  完成（见 [Semantic Part Gallery Preview](../../gallery/authoring/semantic-part-preview.md) 第 10 节），预览基础设施
+  不干预 Popup 行为。
+- Popup 首次物化 → 分别验证请求、业务 open、物理 `Popup.IsOpen` 和视觉 actor 状态，并覆盖 `Opened` 与 actor-ready
+  的两种顺序；不得用永久关闭 motion 掩盖时序问题。案例与全局审计见
+  [Semantic Part Popup 首次打开生命周期竞态案例](../case-studies/semantic-part-popup-first-open-lifecycle-case-study.md)。
 
 ## Changelog 与发布
 

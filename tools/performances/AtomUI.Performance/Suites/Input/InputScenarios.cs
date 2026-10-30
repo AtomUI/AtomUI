@@ -30,8 +30,8 @@ internal static partial class Program
                 rightAddOn: new Avalonia.Controls.TextBlock { Text = ".com" })),
             new PerfScenario("SearchEdit.Default", _ => CreateSearchEdit()),
             new PerfScenario("SearchEdit.TextButton", _ => CreateSearchEdit(searchButtonText: "Search")),
-            new PerfScenario("SearchEdit.Primary", _ => CreateSearchEdit(searchButtonText: "Search", searchButtonStyle: SearchEditButtonStyle.Primary)),
-            new PerfScenario("SearchEdit.Loading", _ => CreateSearchEdit(searchButtonStyle: SearchEditButtonStyle.Primary, isOperating: true)),
+            new PerfScenario("SearchEdit.Primary", _ => CreateSearchEdit(searchButtonText: "Search", searchButtonStyle: SearchButtonType.Primary)),
+            new PerfScenario("SearchEdit.Loading", _ => CreateSearchEdit(searchButtonStyle: SearchButtonType.Primary, isOperating: true)),
             new PerfScenario("SearchEdit.AllowClear", _ => CreateSearchEdit(text: "search", isAllowClear: true)),
             new PerfScenario("SearchEdit.InnerRight", _ => CreateSearchEdit(innerRightContent: new AudioOutlined { Width = 16, Height = 16 })),
             new PerfScenario("SearchEdit.LeftAddOn", _ => CreateSearchEdit(leftAddOn: new Avalonia.Controls.TextBlock { Text = "https://" })),
@@ -111,7 +111,7 @@ internal static partial class Program
     private static SearchEdit CreateSearchEdit(
         string? text = null,
         bool isAllowClear = false,
-        SearchEditButtonStyle searchButtonStyle = SearchEditButtonStyle.Default,
+        SearchButtonType searchButtonStyle = SearchButtonType.Default,
         string? searchButtonText = null,
         bool isOperating = false,
         object? innerRightContent = null,
@@ -192,7 +192,7 @@ internal static partial class Program
             panel.Children.Add(CreateSearchEdit(
                 text: i % 5 == 0 ? "search" : null,
                 isAllowClear: i % 9 == 0,
-                searchButtonStyle: i % 3 == 0 ? SearchEditButtonStyle.Primary : SearchEditButtonStyle.Default,
+                searchButtonStyle: i % 3 == 0 ? SearchButtonType.Primary : SearchButtonType.Default,
                 searchButtonText: i % 2 == 0 ? "Search" : null,
                 isOperating: i % 11 == 0,
                 innerRightContent: i % 10 == 0 ? new AudioOutlined { Width = 16, Height = 16 } : null,

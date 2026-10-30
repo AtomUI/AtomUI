@@ -23,7 +23,7 @@ public class TabPlacementBehaviorTests
     [Theory]
     [InlineData(Dock.Left)]
     [InlineData(Dock.Right)]
-    public void TabControl_Default_Line_Vertical_Placement_Uses_Compact_Item_Gap(Dock placement)
+    public void TabControl_Default_Line_Vertical_Placement_Uses_Compact_Item_Gap_And_Height(Dock placement)
     {
         var tabControl = CreateTabControl(placement);
 
@@ -31,18 +31,6 @@ public class TabPlacementBehaviorTests
         {
             GetVerticalGap(tabControl, 0, 1).ShouldBeLessThanOrEqualTo(4);
             GetVerticalGap(tabControl, 1, 2).ShouldBeLessThanOrEqualTo(4);
-        });
-    }
-
-    [Theory]
-    [InlineData(Dock.Left)]
-    [InlineData(Dock.Right)]
-    public void TabControl_Default_Line_Vertical_Placement_Uses_Compact_Item_Height(Dock placement)
-    {
-        var tabControl = CreateTabControl(placement);
-
-        ShowInWindow(tabControl, _ =>
-        {
             GetContainer<Control>(tabControl, 0).Bounds.Height.ShouldBeLessThanOrEqualTo(28);
             GetContainer<Control>(tabControl, 1).Bounds.Height.ShouldBeLessThanOrEqualTo(28);
         });
@@ -51,7 +39,7 @@ public class TabPlacementBehaviorTests
     [Theory]
     [InlineData(Dock.Left)]
     [InlineData(Dock.Right)]
-    public void TabStrip_Default_Line_Vertical_Placement_Uses_Compact_Item_Gap(Dock placement)
+    public void TabStrip_Default_Line_Vertical_Placement_Uses_Compact_Item_Gap_And_Height(Dock placement)
     {
         var tabStrip = CreateTabStrip(placement);
 
@@ -59,18 +47,6 @@ public class TabPlacementBehaviorTests
         {
             GetVerticalGap(tabStrip, 0, 1).ShouldBeLessThanOrEqualTo(4);
             GetVerticalGap(tabStrip, 1, 2).ShouldBeLessThanOrEqualTo(4);
-        });
-    }
-
-    [Theory]
-    [InlineData(Dock.Left)]
-    [InlineData(Dock.Right)]
-    public void TabStrip_Default_Line_Vertical_Placement_Uses_Compact_Item_Height(Dock placement)
-    {
-        var tabStrip = CreateTabStrip(placement);
-
-        ShowInWindow(tabStrip, _ =>
-        {
             GetContainer<Control>(tabStrip, 0).Bounds.Height.ShouldBeLessThanOrEqualTo(28);
             GetContainer<Control>(tabStrip, 1).Bounds.Height.ShouldBeLessThanOrEqualTo(28);
         });

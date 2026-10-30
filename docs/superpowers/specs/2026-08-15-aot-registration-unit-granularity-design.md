@@ -1,9 +1,12 @@
 # AOT Registration Unit 粒度收敛设计
 
+> 历史记录：本文涉及的旧控件注册/裁剪方案已被 [TypeMap 正式架构](../../architecture/foundations/aot-and-trimming.md)替代，不再作为维护约束。其余内容保留当时的设计上下文。
+
+
 > 日期：2026-08-15
 >
-> 状态：方案已确认并于 2026-08-15 实现、验证完成。正式契约由
-> [AOT Registration Unit 粒度](../../architecture/foundations/aot-registration-unit-granularity.md) 所有，本文保留问题证据、
+> 当时记录的状态：方案已确认并于 2026-08-15 实现、验证完成。正式契约由
+> [AOT Registration Unit 粒度](../../architecture/foundations/control-registration-contracts.md) 所有，本文保留问题证据、
 > 方案比较、实施边界和验收基线。
 
 ## 背景

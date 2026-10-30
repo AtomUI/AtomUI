@@ -355,6 +355,54 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticGroupItemDescription">
+      <segment>
+        <source>Each checkable option container with checked, hover, pressed and disabled states</source>
+        <target state="translated">Cada contêiner de opção selecionável com estados marcado, hover, pressionado e desabilitado</target>
+      </segment>
+    </unit>
+    <unit id="SemanticGroupRootDescription">
+      <segment>
+        <source>Root element of the group owning options, selection mode and checked values</source>
+        <target state="translated">Elemento raiz do grupo, dono das opções, modo de seleção e valores marcados</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Style Tag and CheckableTagGroup parts through the generated semantic style types</source>
+        <target state="translated">Estilize as partes de Tag e CheckableTagGroup pelos tipos de estilo semântico gerados</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTagCloseDescription">
+      <segment>
+        <source>Close entry raising the Closed event with a small close icon</source>
+        <target state="translated">Entrada de fechamento que dispara o evento Closed com um pequeno ícone de fechar</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTagContentDescription">
+      <segment>
+        <source>Content text area with line height and inline padding</source>
+        <target state="translated">Área de texto do conteúdo com altura de linha e preenchimento inline</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTagIconDescription">
+      <segment>
+        <source>Icon area sized by the tag icon token and colored by the root foreground</source>
+        <target state="translated">Área do ícone dimensionada pelo token de ícone da tag e colorida pelo primeiro plano da raiz</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTagRootDescription">
+      <segment>
+        <source>Root element of the tag carrying color, variant, content and the close entry</source>
+        <target state="translated">Elemento raiz da tag que carrega cor, variante, conteúdo e a entrada de fechamento</target>
+      </segment>
+    </unit>
     <unit id="StatusTagDescription">
       <segment>
         <source>We preset five different colors, you can set color property such as success,processing,error,default and warning to indicate specific status.</source>

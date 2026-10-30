@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUI.Toolkits.GalleryBase.Localization.SemanticPartPreviewLangResourceKind">
+    <unit id="CardinalityLabel">
+      <segment>
+        <source>Cardinality</source>
+      </segment>
+    </unit>
+    <unit id="ContractTypeLabel">
+      <segment>
+        <source>Contract type</source>
+      </segment>
+    </unit>
+    <unit id="CrossRootTag">
+      <segment>
+        <source>Cross visual root</source>
+      </segment>
+    </unit>
+    <unit id="CustomizationLabel">
+      <segment>
+        <source>Customization</source>
+      </segment>
+    </unit>
+    <unit id="ExamplesTabLabel">
+      <segment>
+        <source>Examples</source>
+      </segment>
+    </unit>
+    <unit id="InfoAction">
+      <segment>
+        <source>View technical details and styling example</source>
+      </segment>
+    </unit>
+    <unit id="PartDetailsTitle">
+      <segment>
+        <source>Part details</source>
+      </segment>
+    </unit>
+    <unit id="PartFallbackDescription">
+      <segment>
+        <source>The {0} semantic region.</source>
+      </segment>
+    </unit>
+    <unit id="PinAction">
+      <segment>
+        <source>Pin or unpin highlight</source>
+      </segment>
+    </unit>
+    <unit id="RootFallbackDescription">
+      <segment>
+        <source>The control root.</source>
+      </segment>
+    </unit>
+    <unit id="RuntimeCreatedTag">
+      <segment>
+        <source>Runtime-created</source>
+      </segment>
+    </unit>
+    <unit id="SelectorLabel">
+      <segment>
+        <source>Selector</source>
+      </segment>
+    </unit>
+    <unit id="SelectorRouteLabel">
+      <segment>
+        <source>Selector route</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartsTabLabel">
+      <segment>
+        <source>Semantic Parts</source>
+      </segment>
+    </unit>
+    <unit id="StyleTypeLabel">
+      <segment>
+        <source>Style type</source>
+      </segment>
+    </unit>
+    <unit id="StylingExampleTitle">
+      <segment>
+        <source>Styling example</source>
+      </segment>
+    </unit>
+  </file>
+</xliff>

@@ -1,0 +1,163 @@
+<Project>
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Registration.Framework.targets" Condition="'$(AtomUIRegistrationFrameworkImported)' != 'true'" />
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Toolchain.Tasks.targets" Condition="'$(AtomUIToolchainTasksImported)' != 'true'" />
+    <!-- The framework policy selects this backend; its exact tool capability remains gated.
+         This file never replaces the SDK _RunILLink target or reconstructs its option surface. -->
+    <PropertyGroup>
+        <AtomUINet8LinkerBackendAssembly Condition="'$(AtomUINet8LinkerBackendAssembly)' == ''">$(MSBuildThisFileDirectory)../tools/registration/net8/illink/AtomUI.Registration.ILLink8.dll</AtomUINet8LinkerBackendAssembly>
+        <AtomUINet8ToolsRoot Condition="'$(AtomUINet8ToolsRoot)' == ''">$(BaseIntermediateOutputPath)AtomUIRegistration/tools/net8</AtomUINet8ToolsRoot>
+        <AtomUINet8InputsRoot Condition="'$(AtomUINet8InputsRoot)' == ''">$(IntermediateOutputPath)AtomUIRegistration/net8</AtomUINet8InputsRoot>
+        <AfterMicrosoftNETSdkTargets Condition="'$(_AtomUINet8ManagedRegistration)' == 'true' and '$(AtomUINet8RegistrationTargetsImported)' != 'true'">$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)AtomUI.Registration.Net8.Host.targets</AfterMicrosoftNETSdkTargets>
+    </PropertyGroup>
+
+    <!-- _RunILLink is an actual publish target; ordinary builds with PublishTrimmed do not reach it.
+         Explicit dependencies ensure SDK item metadata and feature defaults are final before freezing. -->
+    <Target Name="AtomUIPrepareNet8ManagedRegistration" BeforeTargets="_RunILLink"
+            DependsOnTargets="_ComputeManagedAssemblyToLink;PrepareForILLink"
+            Condition="'$(_AtomUINet8ManagedRegistration)' == 'true' and '$(RunILLink)' != 'false'">
+        <Error Condition="'$(TrimMode)' != 'full'" Code="ATOMUIREG006" Text="AtomUI .NET 8 conditional registration requires full managed trimming." />
+        <ItemGroup>
+            <_AtomUINet8ToolCandidates Include="@(AtomUIRegistrationToolCandidate)" />
+            <_AtomUINet8ToolCandidates Include="$(AtomUINet8LinkerBackendAssembly)" Kind="Net8Backend" />
+        </ItemGroup>
+        <AtomUI.Build.Tasks.ResolveRegistrationToolsTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            Candidates="@(_AtomUINet8ToolCandidates)" IncludeNet8Backend="true">
+            <Output TaskParameter="Net8BackendAssembly" PropertyName="_AtomUINet8ResolvedBackend" />
+        </AtomUI.Build.Tasks.ResolveRegistrationToolsTask>
+        <AtomUI.Build.Tasks.PrepareNet8LinkHostTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            LinkerTaskAssembly="$(ILLinkTasksAssembly)" BackendAssembly="$(_AtomUINet8ResolvedBackend)"
+            OverrideSourceTemplate="$(MSBuildThisFileDirectory)AtomUI.Net8.ILLink.Task.cs"
+            OverrideSourceText="$(_AtomUINet8CapturedHostSource)" OutputRoot="$(AtomUINet8ToolsRoot)">
+            <Output TaskParameter="LinkerPath" PropertyName="_AtomUINet8ControlledLinker" />
+            <Output TaskParameter="TaskOverrideSource" PropertyName="_AtomUINet8TaskOverrideSource" />
+            <Output TaskParameter="HostFingerprint" PropertyName="_AtomUINet8HostFingerprint" />
+            <Output TaskParameter="HostInputs" ItemName="_AtomUINet8HostInputs" />
+        </AtomUI.Build.Tasks.PrepareNet8LinkHostTask>
+        <PropertyGroup>
+            <_AtomUINet8OriginalHostDirectory>$([System.IO.Path]::GetDirectoryName('$(_AtomUINet8TaskOverrideSource)'))</_AtomUINet8OriginalHostDirectory>
+            <_AtomUINet8OriginalExtraTrimmerArgs>$(_ExtraTrimmerArgs)</_AtomUINet8OriginalExtraTrimmerArgs>
+        </PropertyGroup>
+        <ItemGroup>
+            <_AtomUINet8OriginalAssemblies Include="@(ManagedAssemblyToLink)" />
+            <_AtomUINet8OriginalRoots Include="@(TrimmerRootAssembly)" />
+            <_AtomUINet8OriginalDescriptors Include="@(TrimmerRootDescriptor)" />
+            <_AtomUINet8OriginalReferences Include="@(ReferencePath)" />
+            <_AtomUINet8OriginalCustomSteps Include="@(_TrimmerCustomSteps)" />
+            <_AtomUINet8OriginalCustomData Include="@(_TrimmerCustomData)" />
+            <_AtomUINet8RootsToMap Include="@(TrimmerRootAssembly)">
+                <AtomUIOriginalRootItemSpec>%(Identity)</AtomUIOriginalRootItemSpec>
+            </_AtomUINet8RootsToMap>
+            <_AtomUINet8AdditionalInputs Include="$(MSBuildAllProjects)" Kind="configuration" />
+            <_AtomUINet8AdditionalInputs Include="@(TrimmerRootDescriptor)" Kind="root-descriptor" />
+            <_AtomUINet8AdditionalInputs Include="@(ReferencePath)" Kind="reference" />
+            <_AtomUINet8AdditionalInputs Include="@(_PDBToLink)" Kind="symbol" />
+            <_AtomUINet8AdditionalInputs Include="@(_TrimmerCustomSteps)" Kind="custom-step" />
+            <_AtomUINet8AdditionalInputs Include="@(_ILLinkSuppressions)" Kind="configuration" EngineOption="link-attributes" />
+            <_AtomUINet8AdditionalInputs Include="@(_AtomUINet8HostInputs)" Kind="tool" AtomUIBundleRoot="$(_AtomUINet8OriginalHostDirectory)" />
+            <_AtomUINet8DeclaredExtra Include="@(AtomUITypeMapAdditionalLinkInput);@(AtomUIRegistrationAdditionalLinkInput)" />
+            <_AtomUINet8DeclaredExtra Condition="'%(_AtomUINet8DeclaredExtra.Kind)' == ''"><Kind>opaque</Kind></_AtomUINet8DeclaredExtra>
+            <_AtomUINet8DeclaredOpaque Include="@(_AtomUINet8DeclaredExtra)" Condition="'%(_AtomUINet8DeclaredExtra.Kind)' == 'opaque'" />
+            <_AtomUINet8AdditionalInputs Include="@(_AtomUINet8DeclaredExtra)" Condition="'%(_AtomUINet8DeclaredExtra.Kind)' != 'opaque'" />
+        </ItemGroup>
+        <JoinItems Left="@(_TrimmerCustomData)" LeftKey="Identity" LeftMetadata="Value"
+                   Right="@(_AtomUINet8DeclaredOpaque)" RightKey="CustomDataKey" RightMetadata="*" ItemSpecToUse="Right">
+            <Output TaskParameter="JoinResult" ItemName="_AtomUINet8BoundOpaque" />
+        </JoinItems>
+        <Error Condition="'@(_AtomUINet8BoundOpaque->Count())' != '@(_AtomUINet8DeclaredOpaque->Count())'" Code="ATOMUIREG006"
+               Text="Each opaque input must declare CustomDataKey matching exactly one structured custom-data item containing its original file path." />
+        <ItemGroup><_AtomUINet8AdditionalInputs Include="@(_AtomUINet8BoundOpaque)" /></ItemGroup>
+        <AtomUI.Build.Tasks.PrepareConditionalRegistrationInputsTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            OutputRoot="$(AtomUINet8InputsRoot)" Assemblies="@(ManagedAssemblyToLink)" AdditionalInputs="@(_AtomUINet8AdditionalInputs)" EngineArguments="$(_ExtraTrimmerArgs)"
+            Configuration="$(TargetFramework)|$(RuntimeIdentifier)|$(Configuration)|$(TrimMode)|$(TrimmerRemoveSymbols)|$(_TrimmerBeforeFieldInit)|$(_TrimmerOverrideRemoval)|$(_TrimmerUnreachableBodies)|$(_TrimmerUnusedInterfaces)|$(_TrimmerIPConstProp)|$(_TrimmerSealer)|$(ILLinkWarningLevel)|$(NoWarn)|$(ILLinkTreatWarningsAsErrors)|$(WarningsAsErrors)|$(WarningsNotAsErrors)|$(TrimmerSingleWarn)|$(_TrimmerDumpDependencies)|$(_TrimmerDependenciesFileFormat)|$(_ExtraTrimmerArgs)|@(_TrimmerFeatureSettings->'%(Identity)=%(Value)')|@(_TrimmerCustomData->'%(Identity)=%(Value)')|@(_TrimmerCustomSteps->'%(Identity)=%(Type):%(BeforeStep):%(AfterStep)')|$(AtomUINet8LinkerBackendAssembly)">
+            <Output TaskParameter="InputsPath" PropertyName="AtomUINet8RegistrationInputs" />
+            <Output TaskParameter="PreparedAssemblies" ItemName="_AtomUINet8PreparedAssemblies" />
+            <Output TaskParameter="PreparedAdditionalInputs" ItemName="_AtomUINet8PreparedAdditionalInputs" />
+            <Output TaskParameter="PreparedEngineArguments" PropertyName="_AtomUINet8PreparedEngineArguments" />
+        </AtomUI.Build.Tasks.PrepareConditionalRegistrationInputsTask>
+        <JoinItems Left="@(_AtomUINet8RootsToMap)" LeftKey="FullPath" LeftMetadata="*"
+                   Right="@(_AtomUINet8PreparedAssemblies)" RightKey="AtomUIOriginalPath" RightMetadata="AtomUIOriginalPath" ItemSpecToUse="Right">
+            <Output TaskParameter="JoinResult" ItemName="_AtomUINet8PreparedRoots" />
+        </JoinItems>
+        <ItemGroup>
+            <_AtomUINet8FrozenDescriptors Include="@(_AtomUINet8PreparedAdditionalInputs)" Condition="'%(_AtomUINet8PreparedAdditionalInputs.Kind)' == 'root-descriptor'" />
+            <_AtomUINet8FrozenReferences Include="@(_AtomUINet8PreparedAdditionalInputs)" Condition="'%(_AtomUINet8PreparedAdditionalInputs.Kind)' == 'reference'" />
+            <_AtomUINet8FrozenCustomSteps Include="@(_AtomUINet8PreparedAdditionalInputs)" Condition="'%(_AtomUINet8PreparedAdditionalInputs.Kind)' == 'custom-step'" />
+            <_AtomUINet8FrozenOpaque Include="@(_AtomUINet8PreparedAdditionalInputs)" Condition="'%(_AtomUINet8PreparedAdditionalInputs.Kind)' == 'opaque'" />
+            <_AtomUINet8FrozenLinker Include="@(_AtomUINet8PreparedAdditionalInputs)" Condition="'%(_AtomUINet8PreparedAdditionalInputs.Kind)' == 'tool' and '%(_AtomUINet8PreparedAdditionalInputs.AtomUIOriginalPath)' == '$(_AtomUINet8ControlledLinker)'" />
+            <_AtomUINet8FrozenTaskSource Include="@(_AtomUINet8PreparedAdditionalInputs)" Condition="'%(_AtomUINet8PreparedAdditionalInputs.Kind)' == 'tool' and '%(_AtomUINet8PreparedAdditionalInputs.AtomUIOriginalPath)' == '$(_AtomUINet8TaskOverrideSource)'" />
+        </ItemGroup>
+        <Error Condition="'@(_AtomUINet8FrozenLinker->Count())' != '1' or '@(_AtomUINet8FrozenTaskSource->Count())' != '1'" Code="ATOMUIREG006" Text="The controlled host must be present exactly once in the immutable input bundle." />
+        <PropertyGroup>
+            <_ExtraTrimmerArgs>$(_AtomUINet8PreparedEngineArguments)</_ExtraTrimmerArgs>
+            <_AtomUINet8ControlledLinker>@(_AtomUINet8FrozenLinker)</_AtomUINet8ControlledLinker>
+            <_AtomUINet8TaskOverrideSource>@(_AtomUINet8FrozenTaskSource)</_AtomUINet8TaskOverrideSource>
+            <_AtomUINet8HostDirectory>$([System.IO.Path]::GetDirectoryName('$(_AtomUINet8TaskOverrideSource)'))</_AtomUINet8HostDirectory>
+            <IntermediateLinkDir>$([System.IO.Path]::GetDirectoryName('$(AtomUINet8RegistrationInputs)'))/linked/</IntermediateLinkDir>
+            <_LinkSemaphore>$(IntermediateLinkDir)Link.semaphore</_LinkSemaphore>
+            <AtomUINet8VerifiedReceipt>$([System.IO.Path]::GetDirectoryName('$(AtomUINet8RegistrationInputs)'))/verified.json</AtomUINet8VerifiedReceipt>
+            <MSBuildAllProjects>$(MSBuildAllProjects);$(AtomUINet8RegistrationInputs)</MSBuildAllProjects>
+        </PropertyGroup>
+        <ItemGroup>
+            <ManagedAssemblyToLink Remove="@(ManagedAssemblyToLink)" />
+            <ManagedAssemblyToLink Include="@(_AtomUINet8PreparedAssemblies)" />
+            <TrimmerRootAssembly Remove="@(_AtomUINet8PreparedRoots->'%(AtomUIOriginalRootItemSpec)')" />
+            <TrimmerRootAssembly Include="@(_AtomUINet8PreparedRoots)" />
+            <TrimmerRootDescriptor Remove="@(TrimmerRootDescriptor)" />
+            <TrimmerRootDescriptor Include="@(_AtomUINet8FrozenDescriptors)" />
+            <ReferencePath Remove="@(ReferencePath)" />
+            <ReferencePath Include="@(_AtomUINet8FrozenReferences)" />
+            <_TrimmerCustomSteps Remove="@(_TrimmerCustomSteps)" />
+            <_TrimmerCustomSteps Include="@(_AtomUINet8FrozenCustomSteps)" />
+            <_TrimmerCustomData Remove="@(_AtomUINet8FrozenOpaque->'%(CustomDataKey)')" />
+            <_TrimmerCustomData Include="@(_AtomUINet8FrozenOpaque->'%(CustomDataKey)')"><Value>%(_AtomUINet8FrozenOpaque.Identity)</Value></_TrimmerCustomData>
+            <_TrimmerCustomData Remove="AtomUIControlledLinkerPath;AtomUIControlledRuntimeConfig;AtomUIConditionalInputs" />
+            <_TrimmerCustomData Include="AtomUIControlledLinkerPath" Value="$(_AtomUINet8ControlledLinker)" />
+            <_TrimmerCustomData Include="AtomUIControlledRuntimeConfig" Value="$(_AtomUINet8HostDirectory)/atomui.net8-linkhost.runtimeconfig.json" />
+            <_TrimmerCustomData Include="AtomUIConditionalInputs" Value="$(AtomUINet8RegistrationInputs)" />
+            <_TrimmerCustomSteps Include="$(_AtomUINet8HostDirectory)/adapter/AtomUI.Registration.ILLink8.dll"
+                                Type="AtomUI.Registration.ILLink8.Input.InitializeStep" BeforeStep="MarkStep" />
+            <!-- Same candidate construction as SDK8, relocated into this invocation's isolated output. -->
+            <_LinkedResolvedFileToPublishCandidate Remove="@(_LinkedResolvedFileToPublishCandidate)" />
+            <_LinkedResolvedFileToPublishCandidate Include="@(ManagedAssemblyToLink->'$(IntermediateLinkDir)%(Filename)%(Extension)')" />
+            <_LinkedResolvedFileToPublishCandidate Include="@(_PDBToLink->'$(IntermediateLinkDir)%(Filename)%(Extension)')" />
+        </ItemGroup>
+        <!-- Analysis reuse is deliberately disabled until the verified/consumed cache gate owns it. -->
+        <Delete Files="$(_LinkSemaphore)" />
+    </Target>
+
+    <Target Name="AtomUIRestoreNet8SdkInputIdentities" AfterTargets="_RunILLink"
+            Condition="'$(_AtomUINet8ManagedRegistration)' == 'true' and '$(AtomUINet8RegistrationInputs)' != ''">
+        <PropertyGroup><_ExtraTrimmerArgs>$(_AtomUINet8OriginalExtraTrimmerArgs)</_ExtraTrimmerArgs></PropertyGroup>
+        <ItemGroup>
+            <!-- The SDK ILLink target must remove original publish items, not the frozen input paths. -->
+            <ManagedAssemblyToLink Remove="@(ManagedAssemblyToLink)" />
+            <ManagedAssemblyToLink Include="@(_AtomUINet8OriginalAssemblies)" />
+            <TrimmerRootAssembly Remove="@(TrimmerRootAssembly)" />
+            <TrimmerRootAssembly Include="@(_AtomUINet8OriginalRoots)" />
+            <TrimmerRootDescriptor Remove="@(TrimmerRootDescriptor)" />
+            <TrimmerRootDescriptor Include="@(_AtomUINet8OriginalDescriptors)" />
+            <ReferencePath Remove="@(ReferencePath)" />
+            <ReferencePath Include="@(_AtomUINet8OriginalReferences)" />
+            <_TrimmerCustomSteps Remove="@(_TrimmerCustomSteps)" />
+            <_TrimmerCustomSteps Include="@(_AtomUINet8OriginalCustomSteps)" />
+            <_TrimmerCustomData Remove="@(_TrimmerCustomData)" />
+            <_TrimmerCustomData Include="@(_AtomUINet8OriginalCustomData)" />
+        </ItemGroup>
+    </Target>
+    <Target Name="AtomUIVerifyNet8LinkedOutput" AfterTargets="_RunILLink"
+            DependsOnTargets="AtomUIRestoreNet8SdkInputIdentities"
+            Condition="'$(_AtomUINet8ManagedRegistration)' == 'true' and '$(AtomUINet8RegistrationInputs)' != '' and '$(_ILLinkExitCode)' == '0'">
+        <AtomUI.Build.Tasks.VerifyConditionalRegistrationOutputTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            InputsPath="$(AtomUINet8RegistrationInputs)" OutputDirectory="$(IntermediateLinkDir)"
+            ReceiptPath="$(AtomUINet8VerifiedReceipt)" LinkerAssembly="$(_AtomUINet8ControlledLinker)" />
+    </Target>
+    <Target Name="AtomUIVerifyNet8PublishedOutput" AfterTargets="CopyFilesToPublishDirectory"
+            DependsOnTargets="AtomUIVerifyNet8LinkedOutput"
+            Condition="'$(_AtomUINet8ManagedRegistration)' == 'true' and '$(AtomUINet8RegistrationInputs)' != '' and '$(_ILLinkExitCode)' == '0' and '$(PublishReadyToRun)' != 'true' and '$(PublishSingleFile)' != 'true'">
+        <AtomUI.Build.Tasks.VerifyConditionalRegistrationOutputTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            InputsPath="$(AtomUINet8RegistrationInputs)" OutputDirectory="$(PublishDir)" VerifyConsumed="true"
+            ReceiptPath="$(AtomUINet8VerifiedReceipt)" LinkerAssembly="$(_AtomUINet8ControlledLinker)" />
+    </Target>
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Registration.Net8.Transforms.targets" />
+    <PropertyGroup><AtomUINet8RegistrationTargetsImported>true</AtomUINet8RegistrationTargetsImported></PropertyGroup>
+</Project>

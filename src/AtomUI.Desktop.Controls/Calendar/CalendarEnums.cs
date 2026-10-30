@@ -22,12 +22,3 @@ public enum CalendarSelectSource
     Date,
     Customize
 }
-
-/// <summary>
-/// Cell 模板上下文的单元格类型。
-/// </summary>
-public enum CalendarCellType
-{
-    Date,
-    Month
-}

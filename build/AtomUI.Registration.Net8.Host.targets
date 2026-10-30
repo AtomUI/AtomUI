@@ -1,0 +1,18 @@
+<Project>
+    <!-- The SDK resolves ILLinkTasksAssembly after Directory.Build.targets. Its documented late
+         import preserves the actual SDK-selected task path without guessing a NuGet cache layout. -->
+    <PropertyGroup Condition="'$(AtomUINet8HostTaskOwnerPath)' == ''">
+        <AtomUINet8HostTaskOwnerPath>$(MSBuildThisFileFullPath)</AtomUINet8HostTaskOwnerPath>
+        <!-- Capture during evaluation. Code Source would reopen the mutable original only when
+             the SDK first instantiates the task, after input preparation has already completed. -->
+        <_AtomUINet8CapturedHostSource>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)AtomUI.Net8.ILLink.Task.cs'))</_AtomUINet8CapturedHostSource>
+    </PropertyGroup>
+    <UsingTask TaskName="AtomUI.ControlledNet8.ILLink" Override="true" TaskFactory="RoslynCodeTaskFactory"
+               AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll"
+               Condition="'$(_AtomUINet8ManagedRegistration)' == 'true' and '$(ILLinkTasksAssembly)' != '' and '$(AtomUINet8HostTaskOwnerPath)' == '$(MSBuildThisFileFullPath)'">
+        <Task>
+            <Reference Include="$(ILLinkTasksAssembly)" />
+            <Code Type="Class" Language="cs"><![CDATA[$([MSBuild]::Unescape(`$(_AtomUINet8CapturedHostSource)`))]]></Code>
+        </Task>
+    </UsingTask>
+</Project>

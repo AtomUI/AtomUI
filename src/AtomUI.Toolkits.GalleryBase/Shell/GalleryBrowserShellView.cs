@@ -110,7 +110,7 @@ public class GalleryBrowserShellView : UserControl, IScreen, IMediaBreakAwareCon
         visualLayerManager.EnableOverlayLayer = true;
         SetVisualLayerManagerProperty(visualLayerManager, "EnablePopupOverlayLayer", true);
 
-        _ = GetVisualLayerManagerPropertyValue(visualLayerManager, "OverlayLayer");
+        _ = OverlayLayer.GetOverlayLayer(visualLayerManager);
         _ = GetVisualLayerManagerPropertyValue(visualLayerManager, "PopupOverlayLayer");
         _ = GetVisualLayerManagerPropertyValue(visualLayerManager, "LightDismissOverlayLayer");
     }

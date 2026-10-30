@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Card"
              x:DataType="vm:CardViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Card"
                     Category="{gallery:CardShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,102 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="HeaderedContentControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:CardViewModel">
+                    <StackPanel>
+                        <atom:TextBlock Margin="24,24,24,0"
+                                        FontSize="20"
+                                        FontWeight="SemiBold"
+                                        Text="Card" />
+                        <gallery:SemanticPartPreview Name="CardSemanticPreview"
+                                                     SemanticOwnerType="{x:Type atom:Card}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:Card Name="CardSemanticOwner"
+                                           Width="300"
+                                           Header="{gallery:CardShowCaseLangResource P2HeaderCardTitle}">
+                                    <atom:Card.Extra>
+                                        <atom:HyperLinkButton Content="{gallery:CardShowCaseLangResource P2ContentMore}" />
+                                    </atom:Card.Extra>
+                                    <atom:Card.Cover>
+                                        <Image Height="140"
+                                               Stretch="UniformToFill"
+                                               Source="/Assets/CardShowCase/Cover2.png" />
+                                    </atom:Card.Cover>
+                                    <atom:CardMetaContent Header="{gallery:CardShowCaseLangResource P2HeaderEuropeStreetBeat}"
+                                                          Content="{gallery:CardShowCaseLangResource P2ContentThisIsTheDescription}" />
+                                    <atom:Card.Actions>
+                                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}" />
+                                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}" />
+                                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EllipsisOutlined}" />
+                                    </atom:Card.Actions>
+                                </atom:Card>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:CardShowCaseLangResource SemanticCardRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="header"
+                                    Description="{gallery:CardShowCaseLangResource SemanticCardHeaderDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="title"
+                                    Description="{gallery:CardShowCaseLangResource SemanticCardTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="extra"
+                                    Description="{gallery:CardShowCaseLangResource SemanticCardExtraDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="cover"
+                                    Description="{gallery:CardShowCaseLangResource SemanticCardCoverDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="body"
+                                    Description="{gallery:CardShowCaseLangResource SemanticCardBodyDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="actions"
+                                    Description="{gallery:CardShowCaseLangResource SemanticCardActionsDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <atom:TextBlock Margin="24,0,24,0"
+                                        FontSize="20"
+                                        FontWeight="SemiBold"
+                                        Text="CardMetaContent" />
+                        <gallery:SemanticPartPreview Name="CardMetaSemanticPreview"
+                                                     SemanticOwnerType="{x:Type atom:CardMetaContent}"
+                                                     SemanticOwner="{Binding #CardMetaSemanticOwner}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:Card Width="300">
+                                    <atom:CardMetaContent Name="CardMetaSemanticOwner"
+                                                          Header="{gallery:CardShowCaseLangResource P2HeaderCardTitle}"
+                                                          Content="{gallery:CardShowCaseLangResource P2ContentThisIsTheDescription}">
+                                        <atom:CardMetaContent.Avatar>
+                                            <atom:Avatar Source="avares://AtomUIGallery/Assets/AvatarShowCase/PeopleAvatar1.svg" />
+                                        </atom:CardMetaContent.Avatar>
+                                    </atom:CardMetaContent>
+                                </atom:Card>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:CardShowCaseLangResource SemanticMetaRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="section"
+                                    Description="{gallery:CardShowCaseLangResource SemanticMetaSectionDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="avatar"
+                                    Description="{gallery:CardShowCaseLangResource SemanticMetaAvatarDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="title"
+                                    Description="{gallery:CardShowCaseLangResource SemanticMetaTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="description"
+                                    Description="{gallery:CardShowCaseLangResource SemanticMetaDescriptionDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -327,7 +421,117 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem Title="{gallery:CardShowCaseLangResource SemanticPartStyleTitle}"
+                                      Description="{gallery:CardShowCaseLangResource SemanticPartStyleDescription}"
+                                      SourceKey="card-semantic-part"
+                                      BadgeText="v6.1.3"
+                                      Span="Full"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:CardViewModel">
+                            <WrapPanel ItemSpacing="16"
+                                       LineSpacing="16">
+                                <WrapPanel.Styles>
+                                    <Style Selector="atom|Card.semantic-card">
+                                        <Setter Property="Width" Value="300" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="BorderBrush"
+                                                Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+                                        <Setter Property="CornerRadius"
+                                                Value="{atom:SharedTokenResource BorderRadius}" />
+                                        <Setter Property="BoxShadow" Value="0 2 8 0 #1A000000" />
+                                        <atom:CardHeaderStyle x:SetterTargetType="atom:DashedBorder">
+                                            <Setter Property="BorderThickness" Value="0" />
+                                            <Setter Property="Padding" Value="24,0,24,8" />
+                                        </atom:CardHeaderStyle>
+                                        <atom:CardBodyStyle x:SetterTargetType="Border">
+                                            <Setter Property="Padding" Value="24,0,24,24" />
+                                        </atom:CardBodyStyle>
+                                    </Style>
+                                    <Style Selector="atom|Card.semantic-object">
+                                        <Setter Property="CornerRadius" Value="8" />
+                                        <Setter Property="BoxShadow" Value="0 2 8 0 #0F000000" />
+                                        <atom:CardTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="FontSize" Value="16" />
+                                            <Setter Property="FontWeight" Value="Medium" />
+                                        </atom:CardTitleStyle>
+                                    </Style>
+                                    <Style Selector="atom|Card.semantic-function[StyleVariant=Outlined]">
+                                        <Setter Property="Width" Value="300" />
+                                        <Setter Property="BorderBrush" Value="#696FC7" />
+                                        <Setter Property="CornerRadius" Value="8" />
+                                        <Setter Property="BoxShadow" Value="0 2 8 0 #A7AAE1" />
+                                        <atom:CardExtraStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#696FC7" />
+                                        </atom:CardExtraStyle>
+                                        <atom:CardTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#A7AAE1" />
+                                            <Setter Property="FontSize" Value="16" />
+                                            <Setter Property="FontWeight" Value="Medium" />
+                                        </atom:CardTitleStyle>
+                                    </Style>
+                                    <Style Selector="atom|CardMetaContent.semantic-meta">
+                                        <atom:CardMetaContentTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#A7AAE1" />
+                                        </atom:CardMetaContentTitleStyle>
+                                        <atom:CardMetaContentDescriptionStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#A7AAE1" />
+                                        </atom:CardMetaContentDescriptionStyle>
+                                    </Style>
+                                </WrapPanel.Styles>
+
+                                <atom:Card Classes="semantic-card semantic-object"
+                                           SizeType="Large"
+                                           Header="{gallery:CardShowCaseLangResource P2HeaderObjectCard}"
+                                           StyleVariant="Borderless">
+                                    <atom:Card.Extra>
+                                        <atom:HyperLinkButton Content="{gallery:CardShowCaseLangResource P2ContentMore}" />
+                                    </atom:Card.Extra>
+                                    <atom:CardMetaContent Header="{gallery:CardShowCaseLangResource P2HeaderObjectCardMeta}"
+                                                          Content="{gallery:CardShowCaseLangResource P2ContentThisIsTheDescription}">
+                                        <atom:CardMetaContent.Avatar>
+                                            <atom:Avatar Source="avares://AtomUIGallery/Assets/AvatarShowCase/PeopleAvatar1.svg" />
+                                        </atom:CardMetaContent.Avatar>
+                                    </atom:CardMetaContent>
+                                    <atom:Card.Actions>
+                                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=HeartOutlined}"
+                                                               IconBrush="#ff6b6b" />
+                                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=ShareAltOutlined}"
+                                                               IconBrush="#4ecdc4" />
+                                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}"
+                                                               IconBrush="#45b7d1" />
+                                    </atom:Card.Actions>
+                                </atom:Card>
+
+                                <atom:Card Classes="semantic-card semantic-function"
+                                           SizeType="Large"
+                                           Header="{gallery:CardShowCaseLangResource P2HeaderFunctionCard}">
+                                    <atom:Card.Extra>
+                                        <atom:HyperLinkButton Content="{gallery:CardShowCaseLangResource P2ContentMore}"
+                                                              Foreground="#A7AAE1" />
+                                    </atom:Card.Extra>
+                                    <atom:CardMetaContent Classes="semantic-meta"
+                                                          Header="{gallery:CardShowCaseLangResource P2HeaderFunctionCardMeta}"
+                                                          Content="{gallery:CardShowCaseLangResource P2ContentThisIsTheDescription}">
+                                        <atom:CardMetaContent.Avatar>
+                                            <atom:Avatar Source="avares://AtomUIGallery/Assets/AvatarShowCase/PeopleAvatar1.svg" />
+                                        </atom:CardMetaContent.Avatar>
+                                    </atom:CardMetaContent>
+                                    <atom:Card.Actions>
+                                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=HeartOutlined}"
+                                                               IconBrush="#ff6b6b" />
+                                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=ShareAltOutlined}"
+                                                               IconBrush="#4ecdc4" />
+                                        <atom:CardActionButton Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}"
+                                                               IconBrush="#45b7d1" />
+                                    </atom:Card.Actions>
+                                </atom:Card>
+                            </WrapPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

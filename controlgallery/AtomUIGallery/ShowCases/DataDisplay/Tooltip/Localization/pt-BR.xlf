@@ -277,5 +277,35 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticArrowDescription">
+      <segment>
+        <source>The arrow indicator pointing toward the anchored control.</source>
+        <target state="translated">O indicador de seta apontando para o controle ancorado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContainerDescription">
+      <segment>
+        <source>The content box carrying padding, background, corner radius and text styling.</source>
+        <target state="translated">A caixa de conteúdo que carrega preenchimento, fundo, raio de canto e estilo de texto.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Owner-scoped styles targeting public Semantic Parts of Tooltip via their real selectors.</source>
+        <target state="translated">Estilos com escopo de owner que direcionam os Semantic Parts públicos do Tooltip por meio de seus seletores reais.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Tooltip owner itself, hosting the arrow and the content box.</source>
+        <target state="translated">O próprio controle Tooltip, que hospeda a seta e a caixa de conteúdo.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

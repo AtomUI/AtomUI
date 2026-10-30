@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -29,6 +27,17 @@ public enum FloatButtonShowCaseLangResourceKind
     BadgeDescription,
     BackTopTitle,
     BackTopDescription,
+    BackTopProgressTitle,
+    BackTopProgressDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticIconDescription,
+    SemanticContentDescription,
+    SemanticBackTopRootDescription,
+    SemanticGroupRootDescription,
+    SemanticTriggerDescription,
+    SemanticListDescription,
     P2TooltipSinceN5N25N0,
     P2TooltipDocuments,
     P2DescriptionHelpInfo,

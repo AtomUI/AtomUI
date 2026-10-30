@@ -261,6 +261,66 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticCountIndicatorDescription">
+      <segment>
+        <source>The complete count indicator visual, including its background and count text.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCountRootDescription">
+      <segment>
+        <source>The CountBadge owner that controls count, visibility, color, size, offset, and decorated content.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticDotIndicatorDescription">
+      <segment>
+        <source>The status dot visual and its motion boundary.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticDotRootDescription">
+      <segment>
+        <source>The DotBadge owner that controls status, text, color, visibility, offset, and decorated content.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartCardContent">
+      <segment>
+        <source>This card customizes its ribbon with Semantic Part style selectors.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartCardHeader">
+      <segment>
+        <source>Card with custom ribbon</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartRibbonText">
+      <segment>
+        <source>Custom Ribbon</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped style selectors to customize Badge's published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRibbonContentDescription">
+      <segment>
+        <source>The ribbon text display region.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRibbonIndicatorDescription">
+      <segment>
+        <source>The complete ribbon visual, including its positioning and drawing boundary.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRibbonRootDescription">
+      <segment>
+        <source>The RibbonBadge owner that controls text, color, placement, visibility, offset, and decorated content.</source>
+      </segment>
+    </unit>
     <unit id="SizeDescription">
       <segment>
         <source>Set size of numeral Badge.</source>

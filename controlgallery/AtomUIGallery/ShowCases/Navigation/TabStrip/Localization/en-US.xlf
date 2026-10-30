@@ -176,6 +176,16 @@
         <source>Top</source>
       </segment>
     </unit>
+    <unit id="P2PlaceholderSearchTabs">
+      <segment>
+        <source>Search tabs...</source>
+      </segment>
+    </unit>
+    <unit id="P2TextNoMatchingTabs">
+      <segment>
+        <source>No matching tabs</source>
+      </segment>
+    </unit>
     <unit id="P2TextTabContent">
       <segment>
         <source>Tab Content</source>
@@ -199,6 +209,46 @@
     <unit id="ScenarioExamples">
       <segment>
         <source>Examples</source>
+      </segment>
+    </unit>
+    <unit id="SemanticAddDescription">
+      <segment>
+        <source>Add element, set size, color and corner radius styles for the plus button</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>Close element, set size and color styles for the close button</source>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element, set size and margin styles for the tab icon</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, set size, padding, hover state and selected state styles for each tab</source>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label element, set font and color styles for the tab title</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Style tabs through generated Semantic Part styles: tab spacing and selected background, icon and title margins, and plus button corner radius.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, set overall size, padding, border and background styles</source>
       </segment>
     </unit>
     <unit id="TabStripAddCloseDescription">
@@ -289,6 +339,16 @@
     <unit id="TabStripItemsSourceTitle">
       <segment>
         <source>Items from ItemSource datasource</source>
+      </segment>
+    </unit>
+    <unit id="TabStripOverflowPopupSearchDescription">
+      <segment>
+        <source>Customize the overflow popup with search and keyboard navigation.</source>
+      </segment>
+    </unit>
+    <unit id="TabStripOverflowPopupSearchTitle">
+      <segment>
+        <source>Custom Popup Search</source>
       </segment>
     </unit>
     <unit id="TabStripPositionDescription">

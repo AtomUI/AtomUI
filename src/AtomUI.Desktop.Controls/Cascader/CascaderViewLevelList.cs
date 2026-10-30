@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using AtomUI.Controls;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -56,6 +57,7 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         var cascaderViewItem = new CascaderViewItem();
+        cascaderViewItem.Classes.Add(CascaderSemanticParts.PopupListItemClass);
         if (item is ICascaderOption option)
         {
             CascaderViewItem.ApplyOptionData(cascaderViewItem, option);
@@ -97,6 +99,10 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
                 }
             }
             
+            OwnerView.UpdateKeyboardCandidateContainer(cascaderViewItem);
+
+            // Containers are prepared/recycled before their ancestor theme bindings are attached.
+            // These owner bindings must share the preparation lifetime and local-value priority.
             if (ItemTemplate != null)
             {
                 cascaderViewItem[!CascaderViewItem.HeaderTemplateProperty] = this[!ItemTemplateProperty];
@@ -115,6 +121,8 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
         }
     }
     
+    #region 内部协作 API
+
     internal bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
     {
         var container = GetContainerFromEventSource(e.Source);
@@ -124,6 +132,8 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
         }
         return false;
     }
+
+    #endregion
     
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
@@ -135,6 +145,121 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
             HandlePointerPressed(source, point);
         }
     }
+
+    protected override void ClearContainerForItemOverride(Control element)
+    {
+        if (this is IListVirtualizingContextAware list && element is IListItemVirtualizingContextAware listItem)
+        {
+            var context = new Dictionary<object, object?>(5);
+            list.SaveVirtualizingContext(element, context);
+            _virtualRestoreContext[listItem.VirtualIndex] = context;
+            list.ClearContainerValues(element);
+        }
+        
+        base.ClearContainerForItemOverride(element);
+    }
+
+    protected virtual void NotifyRestoreDefaultContext(CascaderViewItem item, ICascaderOption option)
+    {
+        item.PrepareCascaderOptionData(option, GetResourceHost());
+    }
+
+    protected void NotifySaveVirtualizingContext(CascaderViewItem item, IDictionary<object, object?> context)
+    {
+        context.Add(CascaderViewItem.IsEnabledProperty, item.IsEnabled);
+        context.Add(CascaderViewItem.IsCheckedProperty, item.IsChecked);
+        context.Add(CascaderViewItem.IsCheckBoxEnabledProperty, item.IsCheckBoxEnabled);
+        context.Add(nameof(CascaderViewItem.AsyncLoaded), item.AsyncLoaded);
+    }
+
+    protected virtual void NotifyRestoreVirtualizingContext(CascaderViewItem item, IDictionary<object, object?> context)
+    {
+        {
+            if (context.TryGetValue(CascaderViewItem.IsEnabledProperty, out var value))
+            {
+                if (value is bool isEnabled)
+                {
+                    item.SetCurrentValue(CascaderViewItem.IsEnabledProperty, isEnabled);
+                }
+            }
+        }
+        {
+            if (context.TryGetValue(CascaderViewItem.IsCheckedProperty, out var value))
+            {
+                var isChecked = (bool?)value;
+                item.SetCurrentValue(CascaderViewItem.IsCheckedProperty, isChecked);
+            }
+        }
+        {
+            if (context.TryGetValue(CascaderViewItem.IsCheckBoxEnabledProperty, out var value))
+            {
+                if (value is bool isCheckBoxEnabled)
+                {
+                    item.SetCurrentValue(CascaderViewItem.IsCheckBoxEnabledProperty, isCheckBoxEnabled);
+                }
+            }
+        }
+        {
+            if (context.TryGetValue(nameof(CascaderViewItem.AsyncLoaded), out var value))
+            {
+                if (value is bool asyncLoaded)
+                {
+                    item.AsyncLoaded = asyncLoaded;
+                }
+            }
+        }
+    }
+
+    protected virtual void NotifyClearContainerForVirtualizingContext(CascaderViewItem item)
+    {
+        item.ClearPreparedCascaderOptionData();
+        item.ClearValue(CascaderViewItem.HeaderProperty);
+        item.ClearValue(CascaderViewItem.ValueProperty);
+        item.ItemKey = null;
+        item.ClearValue(CascaderViewItem.IconProperty);
+        item.ClearValue(CascaderViewItem.IsEnabledProperty);
+        item.ClearValue(CascaderViewItem.IsCheckedProperty);
+        item.ClearValue(CascaderViewItem.IsExpandedProperty);
+        item.ClearValue(CascaderViewItem.IsCheckBoxEnabledProperty);
+        item.ClearValue(CascaderViewItem.IsCandidateSelectedProperty);
+        item.AsyncLoaded = false;
+    }
+
+    #region 实现 IListVirtualizingContextAware 接口
+
+    void IListVirtualizingContextAware.SaveVirtualizingContext(Control item, IDictionary<object, object?> context)
+    {
+        if (item is CascaderViewItem cascaderViewItem)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, listItem => NotifySaveVirtualizingContext(listItem, context));
+        }
+    }
+
+    void IListVirtualizingContextAware.RestoreVirtualizingContext(Control item, IDictionary<object, object?> context)
+    {
+        if (item is CascaderViewItem cascaderViewItem)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, listItem => NotifyRestoreVirtualizingContext(listItem, context));
+        }
+    }
+
+    void IListVirtualizingContextAware.RestoreDefaultContext(Control item, object defaultContext)
+    {
+        if (item is CascaderViewItem cascaderViewItem && defaultContext is ICascaderOption option)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, listItem => NotifyRestoreDefaultContext(listItem, option));
+        }
+    }
+
+    void IListVirtualizingContextAware.ClearContainerValues(Control item)
+    {
+        if (item is CascaderViewItem cascaderViewItem)
+        {
+            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, NotifyClearContainerForVirtualizingContext);
+        }
+    }
+
+    #endregion
 
     private void HandlePointerPressed(Visual item, PointerPoint point)
     {
@@ -161,7 +286,7 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
             }
         }
     }
-    
+
     private void HandleCascaderItemDoubleClicked(TappedEventArgs e)
     {
         if (e.Source is Visual source)
@@ -219,123 +344,15 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
 
         return true;
     }
-    
-    #region 虚拟化上下文管理
-    protected override void ClearContainerForItemOverride(Control element)
-    {
-        if (this is IListVirtualizingContextAware list && element is IListItemVirtualizingContextAware listItem)
-        {
-            var context = new Dictionary<object, object?>(5);
-            list.SaveVirtualizingContext(element, context);
-            _virtualRestoreContext[listItem.VirtualIndex] = context;
-            list.ClearContainerValues(element);
-        }
-        
-        base.ClearContainerForItemOverride(element);
-    }
-    
-    protected virtual void NotifyRestoreDefaultContext(CascaderViewItem item, ICascaderOption option)
-    {
-        item.PrepareCascaderOptionData(option, GetResourceHost());
-    }
-    
-    protected void NotifySaveVirtualizingContext(CascaderViewItem item, IDictionary<object, object?> context)
-    {
-        context.Add(CascaderViewItem.IsEnabledProperty, item.IsEnabled);
-        context.Add(CascaderViewItem.IsCheckedProperty, item.IsChecked);
-        context.Add(CascaderViewItem.IsCheckBoxEnabledProperty, item.IsCheckBoxEnabled);
-        context.Add(nameof(CascaderViewItem.AsyncLoaded), item.AsyncLoaded);
-    }
-    
-    protected virtual void NotifyRestoreVirtualizingContext(CascaderViewItem item, IDictionary<object, object?> context)
-    {
-        {
-            if (context.TryGetValue(CascaderViewItem.IsEnabledProperty, out var value))
-            {
-                if (value is bool isEnabled)
-                {
-                    item.SetCurrentValue(CascaderViewItem.IsEnabledProperty, isEnabled);
-                }
-            }
-        }
-        {
-            if (context.TryGetValue(CascaderViewItem.IsCheckedProperty, out var value))
-            {
-                var isChecked = (bool?)value;
-                item.SetCurrentValue(CascaderViewItem.IsCheckedProperty, isChecked);
-            }
-        }
-        {
-            if (context.TryGetValue(CascaderViewItem.IsCheckBoxEnabledProperty, out var value))
-            {
-                if (value is bool isCheckBoxEnabled)
-                {
-                    item.SetCurrentValue(CascaderViewItem.IsCheckBoxEnabledProperty, isCheckBoxEnabled);
-                }
-            }
-        }
-        {
-            if (context.TryGetValue(nameof(CascaderViewItem.AsyncLoaded), out var value))
-            {
-                if (value is bool asyncLoaded)
-                {
-                    item.AsyncLoaded = asyncLoaded;
-                }
-            }
-        }
-    }
-    
-    protected virtual void NotifyClearContainerForVirtualizingContext(CascaderViewItem item)
-    {
-        item.ClearPreparedCascaderOptionData();
-        item.ClearValue(CascaderViewItem.HeaderProperty);
-        item.ClearValue(CascaderViewItem.ValueProperty);
-        item.ItemKey = null;
-        item.ClearValue(CascaderViewItem.IconProperty);
-        item.ClearValue(CascaderViewItem.IsEnabledProperty);
-        item.ClearValue(CascaderViewItem.IsCheckedProperty);
-        item.ClearValue(CascaderViewItem.IsExpandedProperty);
-        item.ClearValue(CascaderViewItem.IsCheckBoxEnabledProperty);
-        item.ClearValue(CascaderViewItem.IsCandidateSelectedProperty);
-        item.AsyncLoaded = false;
-    }
+
+    #region 内部协作 API
 
     internal void ResetVirtualizingContext()
     {
         _virtualRestoreContext.Clear();
     }
 
-    void IListVirtualizingContextAware.SaveVirtualizingContext(Control item, IDictionary<object, object?> context)
-    {
-        if (item is CascaderViewItem cascaderViewItem)
-        {
-            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, listItem => NotifySaveVirtualizingContext(listItem, context));
-        }
-    }
-
-    void IListVirtualizingContextAware.RestoreVirtualizingContext(Control item, IDictionary<object, object?> context)
-    {
-        if (item is CascaderViewItem cascaderViewItem)
-        {
-            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, listItem => NotifyRestoreVirtualizingContext(listItem, context));
-        }
-    }
-
-    void IListVirtualizingContextAware.RestoreDefaultContext(Control item, object defaultContext)
-    {
-        if (item is CascaderViewItem cascaderViewItem && defaultContext is ICascaderOption option)
-        {
-            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, listItem => NotifyRestoreDefaultContext(listItem, option));
-        }
-    }
-
-    void IListVirtualizingContextAware.ClearContainerValues(Control item)
-    {
-        if (item is CascaderViewItem cascaderViewItem)
-        {
-            ListVirtualizingContextAwareUtils.ExecuteWithinContextClosure(cascaderViewItem, NotifyClearContainerForVirtualizingContext);
-        }
-    }
+    #endregion
 
     private IResourceHost GetResourceHost()
     {
@@ -346,5 +363,4 @@ internal class CascaderViewLevelList : SelectingItemsControl, IListVirtualizingC
 
         return this;
     }
-    #endregion
 }

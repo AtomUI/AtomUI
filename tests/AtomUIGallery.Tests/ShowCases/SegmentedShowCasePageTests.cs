@@ -7,61 +7,73 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class SegmentedShowCasePageTests
 {
-    [Fact]
-    public void Segmented_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Segmented/Views/SegmentedShowCase.axaml");
 
-        source.ShouldContain("SegmentedShowCaseLangResource PageSubtitle");
-        source.ShouldContain("SegmentedShowCaseLangResource PageDescription");
-        source.ShouldNotContain("SegmentedShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("SegmentedShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("SegmentedShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("SegmentedShowCaseLangResource ComponentCategory");
-        source.ShouldContain("SegmentedShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("SegmentedShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("SegmentedShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("SegmentedShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:SegmentedShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("SegmentedShowCaseLangResource BasicTitle");
-        source.ShouldContain("SegmentedShowCaseLangResource BlockSegmentedTitle");
-        source.ShouldContain("SegmentedShowCaseLangResource DisabledTitle");
-        source.ShouldContain("SegmentedShowCaseLangResource ThreeSizesTitle");
-        source.ShouldContain("SegmentedShowCaseLangResource VerticalTitle");
-        source.ShouldContain("SegmentedShowCaseLangResource RoundShapeTitle");
-        source.ShouldContain("SegmentedShowCaseLangResource DynamicTitle");
-        source.ShouldContain("SegmentedShowCaseLangResource IconOnlyTitle");
-        source.ShouldContain("SegmentedShowCaseLangResource WithIconTitle");
+    [Fact]
+    public void Segmented_ShowCase_Declares_The_Semantic_Previews_And_Style_Example()
+    {
+        var source = ReadRepoFile(
+            "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Segmented/Views/SegmentedShowCase.axaml");
+        var english = ReadRepoFile(
+            "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Segmented/Localization/en-US.xlf");
+        var semanticSource = ExtractSemanticStyleItem(source);
+
+        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
+        source.ShouldContain("Name=\"SegmentedSemanticPreview\"");
+        source.ShouldContain("SemanticOwner=\"{Binding #SegmentedSemanticOwner}\"");
+        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:Segmented}\"");
+        source.ShouldNotContain("Name=\"VerticalSegmentedSemanticPreview\"");
+        source.ShouldContain("Name=\"VerticalSegmentedSemanticOwner\"");
         source.ShouldContain("Orientation=\"Vertical\"");
-        source.ShouldContain("Shape=\"Round\"");
-        source.ShouldContain("SizeType=\"{Binding RoundShapeSizeType}\"");
-        source.ShouldContain("SelectionChanged=\"HandleRoundShapeSizeSelectionChanged\"");
-        source.ShouldContain("Kind=SunOutlined");
-        source.ShouldContain("Kind=MoonOutlined");
-        source.ShouldContain("SourceKey=\"segmented-dynamic\"");
-        source.ShouldContain("ItemsSource=\"{Binding DynamicOptions}\"");
-        source.ShouldContain("Command=\"{Binding LoadMoreOptionsCommand}\"");
-        source.ShouldContain("IsEnabled=\"{Binding IsDynamicOptionsLoaded, Converter={x:Static BoolConverters.Not}}\"");
-        source.ShouldContain("Content=\"Load more options\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
+        CountOccurrences(source, "<gallery:SemanticPartDescription").ShouldBe(4);
+        CountOccurrences(source, "Path=\"root\"").ShouldBe(1);
+        CountOccurrences(source, "Path=\"item\"").ShouldBe(1);
+        CountOccurrences(source, "Path=\"icon\"").ShouldBe(1);
+        CountOccurrences(source, "Path=\"label\"").ShouldBe(1);
+        source.ShouldContain("SegmentedShowCaseLangResource SemanticRootDescription");
+        source.ShouldContain("SegmentedShowCaseLangResource SemanticItemDescription");
+        source.ShouldContain("SegmentedShowCaseLangResource SemanticIconDescription");
+        source.ShouldContain("SegmentedShowCaseLangResource SemanticLabelDescription");
+
+        semanticSource.ShouldContain("SourceKey=\"segmented-semantic-part\"");
+        semanticSource.ShouldContain("SegmentedShowCaseLangResource SemanticPartStyleTitle");
+        semanticSource.ShouldContain("SegmentedShowCaseLangResource SemanticPartStyleDescription");
+        semanticSource.ShouldContain("Selector=\"atom|Segmented.semantic-object\"");
+        semanticSource.ShouldContain("<atom:SegmentedItemStyle x:SetterTargetType=\"atom:SegmentedItem\">");
+        semanticSource.ShouldContain("<atom:SegmentedIconStyle x:SetterTargetType=\"atom:IconPresenter\">");
+        semanticSource.ShouldContain("<atom:SegmentedLabelStyle x:SetterTargetType=\"ContentPresenter\">");
+        semanticSource.ShouldContain("Classes=\"semantic-object\"");
+        CountOccurrences(semanticSource, "Classes=\"semantic-object\"").ShouldBe(2);
+        semanticSource.ShouldContain("Orientation=\"Vertical\"");
+
+        foreach (var key in new[]
+                 {
+                     "SemanticRootDescription",
+                     "SemanticItemDescription",
+                     "SemanticIconDescription",
+                     "SemanticLabelDescription",
+                     "SemanticPartStyleTitle",
+                     "SemanticPartStyleDescription"
+                 })
+        {
+            english.ShouldContain($"<unit id=\"{key}\">");
+        }
+    }
+
+    private static string ExtractSemanticStyleItem(string source)
+    {
+        const string sourceKeyMarker = "segmented-semantic-part";
+        const string panelCloseMarker = "</gallery:ShowCasePanel>";
+
+        var keyIndex = source.IndexOf(sourceKeyMarker, StringComparison.Ordinal);
+        keyIndex.ShouldBeGreaterThanOrEqualTo(0);
+
+        var itemStart = source.LastIndexOf("<gallery:ShowCaseItem", keyIndex, StringComparison.Ordinal);
+        itemStart.ShouldBeGreaterThanOrEqualTo(0);
+
+        var panelCloseStart = source.IndexOf(panelCloseMarker, keyIndex, StringComparison.Ordinal);
+        panelCloseStart.ShouldBeGreaterThan(keyIndex);
+
+        return source[itemStart..panelCloseStart];
     }
 
     [Fact]
@@ -80,16 +92,6 @@ public class SegmentedShowCasePageTests
 
         command.Execute(null);
         viewModel.DynamicOptions.ShouldBe(new[] { "Daily", "Weekly", "Monthly", "Quarterly", "Yearly" });
-    }
-
-    [Fact]
-    public void Segmented_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Segmented/Views/SegmentedShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/SegmentedShowCaseExamples.snapshot");
-
-        NormalizeMarkup(ExtractSegmentedExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
     }
 
     private static string ExtractSegmentedExampleItems(string source)

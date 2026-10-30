@@ -2,7 +2,7 @@
 
 本文档定义 `AtomUI.Desktop.Controls.NavMenu` 桌面版的最新设计定位、公共契约、导航状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [NavMenu 桌面版实现原理](implementation.md)，NavMenu Token 的专项设计见 [NavMenu Token 设计](token.md)，项激活的提交契约见 [NavMenu 项激活事务设计](item-activation-design.md)，设计和契约变化记录见 [NavMenu Changelog](changelog.md)。
 
-该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `NavMenu` / `NavMenuItem`，其 internal `IsPopupPinnedOpen` 只供测试和内部诊断使用；设置为 true 时保持 submenu open state 并 relay 到 submenu Popup，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
+该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `NavMenu` / `NavMenuItem`：`NavMenu.IsPopupPinnedOpen` 是公开属性（与 `Tour`、`DropdownButton`、`AbstractSelect` 等家族约定一致），因为跨程序集的 Gallery 语义预览需要在 AXAML 中声明钉住；`NavMenuItem` 上的同名属性保持 internal。设置为 true 时，NavMenu 选择首个可展开项并在路径上打开、钉住 submenu open state 并 relay 到 submenu Popup；设置为 false 时只解除关闭拦截。钉住请求以 `INavMenuNode` 为键保存在 `NavMenu` 上，独立于运行时生成的容器生命周期，因此声明式钉住在模板应用、容器生成之前写入也能对晚到或重建的容器生效。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
 
 ## 1. 控件定位
 
@@ -105,21 +105,23 @@ NavMenu 的公共 API 分为控件 API、节点 API 和事件 API。
 | `NavMenuItemClick` | `NavMenuItemClickEventArgs` | 菜单项点击事件，事件参数暴露 `INavMenuItem` 作为只读交互上下文。 |
 | `NavMenuNodeSelected` | `NavMenuNodeSelectedEventArgs` | 叶子节点选中事件，事件参数暴露 `INavMenuNode`。 |
 
-`DefaultSelectedPath` 和 `DefaultOpenPaths` 是默认值入口，不是持续受控展开状态。运行期受控选择应使用 `SelectedItem`。
+`DefaultSelectedPath` 和 `DefaultOpenPaths` 是默认值入口，不是持续受控展开状态。运行期受控选择应使用 `SelectedItem`。默认选中路径排队后若发生显式选择，旧请求必须失效，不能覆盖用户最新选择。
+
+节点 `HeaderTemplate` 与 `ItemKey` 在容器实现后继续响应属性通知。节点模板为 `null` 时使用当前 owner 的 `ItemTemplate`；设置节点模板后优先使用节点值，清空后恢复当前 owner 模板。自定义节点通过 `INotifyPropertyChanged` 通知这些变化；不可通知的节点在容器准备或重新挂载时读取当前值。
 
 `NavMenuNode.Entries` 是内置节点子结构的唯一真源。`Children` 保持既有类型和节点语义：枚举时递归穿过同一语义层级内的 `NavMenuGroup`，但不进入子节点自身的后代；`Add` 把节点追加为直接 entry，`Insert`、替换和删除写回节点当前所在的实际 entry owner，`Clear` 清空当前节点的整个 `Entries`。`INavMenuNode.Entries` 使用 `IEnumerable<INavMenuEntry>`，利用 `IEnumerable<T>` 协变在接口默认实现中直接返回既有 `IEnumerable<INavMenuNode> Children`，不创建适配集合；`NavMenuNode` 通过显式接口实现把其可写 `Entries` 投影为该读取契约。因此既有纯节点自定义实现保持源码兼容，并继续由原 `Children` 集合通知驱动容器更新。
 
 根 `NavMenu.Items`、根 `ItemsSource`、`NavMenuNode.Entries` 和 `NavMenuGroup.Entries` 使用同一 entry 类型边界：集合中的每一项必须是 `INavMenuNode`、`NavMenuGroup` 或 `NavMenuDivider`；`null`、普通业务对象、内部生成容器和仅实现 marker 的其他类型都不是合法数据项。直接 `Items` 变更与 `ItemsSource` 的初始装载、替换以及 Add、Replace、Reset 通知必须进入同一验证入口；发现非法项时立即抛出包含来源和索引信息的 `InvalidOperationException`，不能静默跳过、按普通内容呈现或等到容器绑定阶段再产生类型错误。
 
-内置 `NavMenuNode` 和 `NavMenuGroup` 是有状态结构 entry，同一实例在整个 entry 树中只能拥有一个直接结构 owner，不能在同一集合重复，也不能同时挂到两个节点、分组或根 `NavMenu`。从原 owner Remove、Replace、Clear 或移除根 source 后，该实例可以重新挂载。结构 owner 使用弱引用，外部长期持有 node/group 不会反向保留已经不可达的根菜单。`NavMenuDivider` 不保存选择、展开、父级、资源或容器状态，因此同一 divider 实例允许在多个位置复用。
+内置 `NavMenuNode` 和 `NavMenuGroup` 是有状态结构 entry，同一实例在整个 entry 树中只能拥有一个直接结构 owner，不能在同一集合重复，也不能同时挂到两个节点、分组或根 `NavMenu`。从原 owner Remove、Replace、Clear 或移除根 source 后，该实例可以重新挂载。结构 owner 使用弱引用；资源宿主 attachment 与 node/group 到容器的属性订阅随根菜单 visual detach 释放，重新挂载时按当前数据恢复。因此外部长期持有 node/group 不会反向保留已卸载且不可达的根菜单。普通子菜单关闭不结束根菜单的资源作用域。`NavMenuDivider` 不保存选择、展开、父级、资源或容器状态，因此同一 divider 实例允许在多个位置复用。
 
 自定义 `INavMenuNode` 实例自身保持既有兼容契约，不强制登记内置 structural owner；但其 `Entries` / `Children` 中出现的内置 `NavMenuNode` 或 `NavMenuGroup` 仍必须参加完整引用唯一性检查。每个内置 `NavMenuNode` / `NavMenuGroup` entry owner 和根 `NavMenu` 都协调自己的结构 scope：遍历直接 entry，并递归穿过 custom node；遇到内置 node/group 后由该内置 entry 自己的协调器接管后代。custom node 下的内置后代继承最近的内置 entry owner，只有根级 custom node 的内置后代才由根菜单作为结构 owner。所有 scope 组合后覆盖完整 entry 图，因此离线构造的树也不能通过 custom wrapper 绕过唯一性，同时纯 built-in 深树不会形成祖先对后代集合的重复订阅。协调器只弱订阅当前 scope 内可通知的 custom entry source；custom node 增删内置后代时立即重新协调，在加入时拒绝指回当前 built-in owner 或任意 built-in 祖先的动态环，并在移除后释放 owner。不可通知的自定义 enumerable 按每次所属集合或可通知 custom 祖先变化时取得的当前快照校验。
 
-`NavMenuNode.Entries` 和 `NavMenuGroup.Entries` 是控件拥有的可写集合，单项 Add、Insert、Replace 以及批量初始化先完成类型、循环、直接 owner 和批次重复校验，失败时不产生部分写入。成功写入先同步完整 structural ownership，再调用自定义节点的 parent callback 或分组语义父级投影，最后发送集合通知；因此可重入回调和观察者都不能抢占已经属于本次写入的 entry 或内置后代。批量初始化一次提交完整批次，并只发送单次 Add 通知。根 direct `Items` 与任意外部 `ItemsSource` 都通过 post-mutation 的 `ItemsView.CollectionChanged` 到达控件；根 `NavMenu` 对完整 entry 图做校验并确定性抛错，但不通过重入 Remove/Replace 回滚或篡改数据源。Move 和 Remove 仍执行正常的 owner、父级、容器和生命周期协调。
+`NavMenuNode.Entries` 和 `NavMenuGroup.Entries` 是控件拥有的可写集合，单项 Add、Insert、Replace 以及批量初始化先完成类型、循环、直接 owner 和批次重复校验，失败时不产生部分写入。成功写入先同步完整 structural ownership，再调用自定义节点的 parent callback 或分组语义父级投影，最后发送集合通知；因此可重入回调和观察者都不能抢占已经属于本次写入的 entry 或内置后代。Replace 先提交新旧成员与结构所有权，再执行父关系投影；投影和通知期间拒绝重入修改同一集合。已提交 Replace 遇到回调异常时，继续完成其他父关系投影（包括嵌套分组）和后续通知，再向调用者传播异常。批量初始化一次提交完整批次，并只发送单次 Add 通知。根 direct `Items` 与任意外部 `ItemsSource` 都通过 post-mutation 的 `ItemsView.CollectionChanged` 到达控件；根 `NavMenu` 对完整 entry 图做校验并确定性抛错，但不通过重入 Remove/Replace 回滚或篡改数据源。Move 和 Remove 仍执行正常的 owner、父级、容器和生命周期协调。
 
 `IsInlineCollapsed` 是唯一折叠状态源。NavMenu 不增加语义相反的 `Expanded` / `IsExpanded` 属性；调用方需要正向展开状态时，通过双向 binding converter 映射 `IsInlineCollapsed`，避免两个公共状态互相写回。
 
-节点命令遵守 Avalonia 命令语义：`NavMenuNode` / `INavMenuNode` 只保存 `Command` 和 `CommandParameter`，实际执行、`CanExecute` 评估和 `CanExecuteChanged` 生命周期由生成出的 `NavMenuItem` 容器负责。`INavMenuNode` 为两个成员提供 `null` 默认实现，使既有自定义节点实现无需声明命令也能继续工作。`CommandParameter=null` 表示显式空参数，控件不能自动替换为 `ItemKey`；需要使用业务 key 时，应显式把 `ItemKey` 绑定或赋值给 `CommandParameter`。容器按 UI 周期合并连续的 `CanExecuteChanged` 通知：持续的 `false` 仍进入 disabled，同一同步执行周期内的 `false -> true` 瞬时变化只投影最终状态，避免多个共享命令节点触发无业务意义的禁用颜色闪动。
+节点命令遵守 Avalonia 命令语义：`NavMenuNode` / `INavMenuNode` 只保存 `Command` 和 `CommandParameter`，实际执行、`CanExecute` 评估和 `CanExecuteChanged` 生命周期由生成出的 `NavMenuItem` 容器负责。`INavMenuNode` 为两个成员提供 `null` 默认实现，使既有自定义节点实现无需声明命令也能继续工作。`CommandParameter=null` 表示显式空参数，控件不能自动替换为 `ItemKey`；需要使用业务 key 时，应显式把 `ItemKey` 绑定或赋值给 `CommandParameter`。命令只由实际激活项执行，子项 Click 冒泡不能执行祖先命令。子菜单重新打开时刷新当前已生成的语义子项（穿透分组）的 `CanExecute`，使关闭期间的命令状态变化在重新打开时生效。容器按 UI 周期合并连续的 `CanExecuteChanged` 通知：持续的 `false` 仍进入 disabled，同一同步执行周期内的 `false -> true` 瞬时变化只投影最终状态，避免多个共享命令节点触发无业务意义的禁用颜色闪动。
 
 `IsInlineCollapsed` 只对 `Mode=Inline` 生效。`Mode=Vertical` 或 `Mode=Horizontal` 时设置该属性不应改变当前模式的 popup、布局或键盘语义。`InlineCollapsedWidth` 参与布局测量，默认通过 theme setter 取得 `NavMenuToken.InlineCollapsedWidth`；collapsed 状态下由控件内部对 `Width` / `MinWidth` 做有效值 coercion，本地设置的属性值应按 Avalonia 属性优先级覆盖 token 默认值，展开后原始 `Width` 或绑定必须恢复。
 
@@ -136,10 +138,45 @@ NavMenu 的公共 API 分为控件 API、节点 API 和事件 API。
 | `PART_Header` | `BaseNavMenuItemHeader` 的 mode 专用实现 | 菜单项 header，承载文字、图标、箭头和交互视觉。 |
 | `PART_Popup` | `Popup` | `Vertical` / `Horizontal` 模式下的子菜单浮层。 |
 | `PART_PopupFrame` | `NavMenuPopupFrame` | Popup 背景、圆角、尺寸约束和内容边距。 |
-| `PART_ChildItemsLayoutTransform` | `LayoutAwareMotionActor` | `Inline` 模式下的子菜单展开收起 motion 容器。 |
+| `PART_ChildItemsViewport` | `ContentViewport` | `Inline` 模式下的子菜单展开收起 motion 容器。 |
 | `PART_ChildItemsFrame` | `Border` | `Inline` 模式下的子菜单背景块。 |
 | `ChildItemsPresenter` | `ItemsPresenter` | `Inline` 模式下的子菜单内容承载。 |
 | `PART_ActiveIndicator` | `Rectangle` | `Horizontal` 顶层 light style 下的活动指示条。 |
+
+### 3.1 Semantic Part 契约摘要
+
+NavMenu 家族对应用公开基于 Selector 的 Semantic Part 契约，完整定义见
+[NavMenu Semantic Part 契约](semantic-part.md)。Part 只描述与实现结构无关的稳定视觉职责，不替代 StyledProperty、
+伪类、事件或 Token；AtomUI 默认主题不消费 `.semantic-*`。
+
+上游基线为 6.6.3 稳定发布源码公开的 12 个 Semantic 键路径：一级 `root`、`item`、`itemIcon`、`itemContent`、
+`itemTitle`、`list`，子菜单 `subMenu.item`、`subMenu.itemIcon`、`subMenu.itemContent`、`subMenu.itemTitle`、
+`subMenu.list`，以及 `popup.root`。Part 名称逐字沿用这些键路径，不新增、不改名、不合并。
+
+NavMenu 家族只有 `NavMenu` 一个 public owner：`NavMenuItem`、`NavMenuGroupItem`、`NavMenuDividerItem` 都是 internal
+容器，不能持有 descriptor，也不能作为 `ContractType`（菜单项容器取其最近 public 基类 `HeaderedSelectingItemsControl`）。
+因此不能像 `TreeView` / `TreeViewItem` 那样按递归 owner 拆分，全部 12 个键声明在 `NavMenu` 上。
+
+关键边界：
+
+- `root` 是隐式 Part，不声明 `.semantic-root` marker，也不生成 Style；通过 owner 属性、owner-scoped Style 或替换
+  ControlTheme 定制。
+- 层级靠**互斥 marker**区分，不靠 DOM class：一级菜单项容器 `.semantic-item`、子菜单容器 `.semantic-sub-menu-item`；
+  一级分组容器 `.semantic-scope-group`、子菜单内分组 `.semantic-sub-menu-group`。协调器在 prepare 时先移除另一层级的
+  类再补齐当前层级，保证容器转移与回收复用不残留。
+- 全部非 root Part 的 route 以 `>>` 开头并按生成器语法声明 `CrossNestedOwners`：容器是运行时生成物，不在 `NavMenu`
+  模板内，无法用 `/template/` 到达；`popup.root` 的节点还位于 `Popup.Child` 属性值子树，因此同时声明
+  `CrossVisualRoot`。
+- `popup.root` 的 `Cardinality` 为 `Multiple`；Inline 模式在视觉树内展开，模板没有弹层节点，该模式实例数为 0。
+- `NavMenuGroupItem`、`NavMenuDividerItem` 与三个 `*NavMenuItemHeader` 不持有 descriptor；分组标题与分组列表归
+  `NavMenu` owner，分隔线在上游没有 semantic 键。
+- 根 Header / Footer、`PART_HorizontalLine`、`PART_ActiveIndicator`、inline collapsed 首字符节点与 inline 子菜单内容容器
+  不开放为 Part。
+- 用户入口是生成的强类型 Semantic Style（如 `NavMenuItemStyle`、`NavMenuSubMenuItemStyle`、`NavMenuPopupRootStyle`），
+  在 AXAML 中作为 `atom|NavMenu` owner-scoped 普通 Style 的嵌套样式声明，并显式给出 `x:SetterTargetType`。
+
+Part 的 Selector、ContractType、cardinality、marker 放置、数量语义、尺寸基线、定制边界与验证矩阵以
+[NavMenu Semantic Part 契约](semantic-part.md) 为准。
 
 ## 4. 行为与状态模型
 
@@ -148,7 +185,7 @@ NavMenu 的交互行为由 mode 决定。所有 mode 共用项激活事务契约
 `Inline` 模式：
 
 - 合法释放带子菜单的项目时切换 `IsSubMenuOpen`。
-- 子菜单在当前视觉树中展开，使用 `LayoutAwareMotionActor` 承载展开收起 motion。
+- 子菜单在当前视觉树中展开，使用 `ContentViewport` 承载展开收起 motion。
 - 合法释放叶子节点时提交选择，并更新所有祖先 `IsInSelectedPath`。
 - `IsAccordionMode=true` 时，顶层子菜单互斥展开；Inline 模式下旧分支收起与新分支展开同时开始，高度连续变化，动画期间再次点击可从当前进度反向切换。
 - `IsInlineCollapsed=true` 时，public `Mode` 仍保持 `Inline`，但内部有效模式切换为 vertical popup 语义：顶层只显示图标或无图标首字符，inline 子树不在主视觉树中展开，带子菜单的顶层项目通过 popup 打开。
@@ -241,7 +278,7 @@ NavMenu 位于 Desktop Navigation 分类，与 Breadcrumb、Pagination、Steps�
 - `ItemsControl`：承载 `Items`、`ItemsSource`、`ItemTemplate` 和容器生成。
 - AtomUI Token：通过 `NavMenuToken.ScopeProvider` 注册控件级资源。
 - Popup/Overlay：`Vertical` 和 `Horizontal` 子菜单通过 `Popup` 展开，并由 `ShouldUseOverlayPopup` 控制 overlay 使用策略。
-- MotionScene：`Inline` 子菜单展开收起使用 slide motion。
+- Motion：Inline 子菜单使用内容布局能力与 Expand / Collapse；根宽度保持控件拥有的原生布局动画。
 - Resource Host：`NavMenuNode` 使用 scoped resource-host generator 实现 `IResourceHost` / `IThemeVariantHost`，由当前 owner menu/container attach，并通过可释放 token 使 `Header`、`Tooltip` 等节点动态资源跟随菜单资源域。
 - Group Resource Host：`NavMenuGroup` 使用相同 scoped resource-host 规则，使动态 `Header` 和 `HeaderTemplate` 跟随当前菜单资源域，并在结构容器回收时释放 attachment。
 - Gallery：除 inline、vertical、horizontal、dark、items source、默认选中路径和默认展开路径外，最后一个结构化示例同时展示固定 Header/Footer、根分组、嵌套分组、分隔线和显式 `ItemSpacing`。
@@ -300,7 +337,7 @@ NavMenu 不实现 Form、CompactSpace 或 Button 家族接口。
 
 | Mode | 子菜单承载 | 顶层排列 |
 | --- | --- | --- |
-| `Inline` | 视觉树内 `LayoutAwareMotionActor` | Vertical StackPanel |
+| `Inline` | 视觉树内 `ContentViewport` | Vertical StackPanel |
 | `Vertical` | Popup | Vertical StackPanel |
 | `Horizontal` | Popup | Horizontal StackPanel |
 
@@ -417,36 +454,16 @@ Core 共用机制的动画执行器、尺寸测量和裁剪只承担内部呈现
 键盘导航或业务命令。嵌套子菜单改变内容尺寸时，外层自然测量需要失效，不能因临时固定高度长期裁掉内层内容。
 算法与生命周期约束统一引用 [内容展开与收起动效设计](../../../../architecture/systems/control-infrastructure/content-expansion.md)。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [NavMenu 桌面版实现原理](implementation.md)
 - [NavMenu 项激活事务设计](item-activation-design.md)
+- [NavMenu Semantic Part 契约](semantic-part.md)
 - [内容展开与收起动效设计](../../../../architecture/systems/control-infrastructure/content-expansion.md)
 - [NavMenu Token 设计](token.md)
 - [NavMenu Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `NavMenu` | 导航控件根语义区域，承载 public API、状态归一和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载点击、键盘、打开关闭、跳转或提交入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `导航项区域` | 承载当前项、选中项、禁用项、层级项或分页项状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或内容区域` | 承载 flyout、dropdown、tab content、submenu 或候选内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效区域` | 表达打开关闭、选中指示、切换和过渡反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/nav-menu/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/nav-menu/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -465,6 +482,7 @@ LLMS 导出来源：
 | Command | `Command` / `CommandParameter` 投影、pointer / keyboard 单次执行、`CanExecute` disabled、命令替换解绑、container recycle、re-template、Items reset 和页面释放测试覆盖。 |
 | Resource lifecycle | `NavMenuNode` / `NavMenuGroup` generated scoped resource host、owner resource 优先级、repeated attach、attach token 释放、container recycle 交互状态失效和 WeakReference 测试覆盖。 |
 | AXAML | Template part 名称、header theme、popup frame、inline child frame、active indicator 和 item background selector 稳定。 |
+| Semantic Part | `NavMenu` 与 `NavMenuItem` descriptor 的 Part 名称、Selector、route、ContractType、cardinality 与语义部件契约一致；三种 mode 与 inline collapsed 下 marker 可达且数量正确；容器 prepare / clear / recycle 与 re-template 不重复添加或丢失 marker；用户 Semantic Style 通过专用生成 Style 命中，默认主题不消费 `.semantic-*`。 |
 | Layout | root item margin、inline child gap、popup item inset、background-enabled true/false gap 与 参考设计体系 规则一致。 |
 | Root slots / spacing | Header/Footer 固定区域、空 slot 退化、Horizontal 左右布局和 `ItemSpacing` 在 root、submenu、group 中一致。 |
 | Token | `NavMenuToken` 默认值、`InlineCollapsedWidth`、dark token、popup token 和 spacing token 与测试一致。 |

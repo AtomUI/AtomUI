@@ -2,28 +2,29 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using AtomImagePreviewer = AtomUI.Desktop.Controls.ImagePreviewer;
 using AtomImageGroupPreviewer = AtomUI.Desktop.Controls.ImageGroupPreviewer;
+using ImagePreviewItem = AtomUI.Desktop.Controls.ImagePreviewItem;
+using ImageSource = AtomUI.Controls.ImageSource;
 
 namespace AtomUI.Performance;
 
 internal static partial class Program
 {
-    private static readonly string[] ImagePreviewerDefaultImages =
-    [
-        GetImagePreviewerAssetUri("1.png")
-    ];
+    // ImagePreviewer API 演进：ItemsSource 从 string[] 变为 IEnumerable<ImagePreviewItem>，
+    // 图片地址需通过 ImageSource.Parse 包装；FallbackImageSrc / CoverImageSrc 已移除，
+    // 分别由 ImagePreviewItem.FallbackSource / ThumbnailSource 取代。
+    private static readonly ImagePreviewItem[] ImagePreviewerDefaultImages =
+        CreateImagePreviewerItems(GetImagePreviewerAssetUri("1.png"));
 
-    private static readonly string[] ImagePreviewerThreeImages =
-    [
-        GetImagePreviewerAssetUri("4.webp"),
-        GetImagePreviewerAssetUri("5.webp"),
-        GetImagePreviewerAssetUri("6.webp")
-    ];
+    private static readonly ImagePreviewItem[] ImagePreviewerThreeImages =
+        CreateImagePreviewerItems(
+            GetImagePreviewerAssetUri("4.webp"),
+            GetImagePreviewerAssetUri("5.webp"),
+            GetImagePreviewerAssetUri("6.webp"));
 
-    private static readonly string[] ImagePreviewerTwoImages =
-    [
-        GetImagePreviewerAssetUri("2.svg"),
-        GetImagePreviewerAssetUri("3.svg")
-    ];
+    private static readonly ImagePreviewItem[] ImagePreviewerTwoImages =
+        CreateImagePreviewerItems(
+            GetImagePreviewerAssetUri("2.svg"),
+            GetImagePreviewerAssetUri("3.svg"));
 
     private static readonly string ImagePreviewerFallbackImage = GetImagePreviewerAssetUri("Fallback.png");
     private static readonly string ImagePreviewerBlurImage = GetImagePreviewerAssetUri("Blur.png");
@@ -41,6 +42,13 @@ internal static partial class Program
         ];
     }
 
+    private static ImagePreviewItem[] CreateImagePreviewerItems(params string[] sources)
+    {
+        return sources
+            .Select(source => new ImagePreviewItem(ImageSource.Parse(source)))
+            .ToArray();
+    }
+
     private static AtomImagePreviewer CreateBasicImagePreviewer()
     {
         return new AtomImagePreviewer
@@ -52,10 +60,17 @@ internal static partial class Program
 
     private static AtomImagePreviewer CreateFallbackImagePreviewer()
     {
+        // FallbackImageSrc 已移除：回退图改为 ImagePreviewItem.FallbackSource
         return new AtomImagePreviewer
         {
-            Width            = 200,
-            FallbackImageSrc = ImagePreviewerFallbackImage
+            Width       = 200,
+            ItemsSource = new[]
+            {
+                new ImagePreviewItem(ImageSource.Parse(GetImagePreviewerAssetUri("1.png")))
+                {
+                    FallbackSource = ImageSource.Parse(ImagePreviewerFallbackImage)
+                }
+            }
         };
     }
 
@@ -70,11 +85,17 @@ internal static partial class Program
 
     private static AtomImagePreviewer CreateCustomCoverImagePreviewer()
     {
+        // CoverImageSrc 已移除：自定义封面改为 ImagePreviewItem.ThumbnailSource
         return new AtomImagePreviewer
         {
-            Width         = 200,
-            ItemsSource   = ImagePreviewerDefaultImages,
-            CoverImageSrc = ImagePreviewerBlurImage
+            Width       = 200,
+            ItemsSource = new[]
+            {
+                new ImagePreviewItem(ImageSource.Parse(GetImagePreviewerAssetUri("1.png")))
+                {
+                    ThumbnailSource = ImageSource.Parse(ImagePreviewerBlurImage)
+                }
+            }
         };
     }
 

@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using AtomUI.Generator.Localization.Catalog;
 using AtomUI.Generator.Localization.Xliff;
 using AtomUI.Build.Tasks.LocalizationBuild;

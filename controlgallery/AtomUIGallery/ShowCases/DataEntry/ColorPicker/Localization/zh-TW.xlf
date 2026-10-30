@@ -211,6 +211,48 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Color block container with background color, border styles</source>
+        <target state="translated">色塊容器，包含底色、邊框等樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Color block element with actual selected color styles</source>
+        <target state="translated">色塊顏色元素，包含實際選擇的顏色樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>Description text content with font styles and color</source>
+        <target state="translated">描述文本內容，包含字體樣式、顏色等樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Popup panel root container with background color, shadow effects, color selection panel, slider controls and preset colors</source>
+        <target state="translated">彈出面板根容器，包含背景色、陰影效果、色彩選擇面板、滑塊控制和預設顏色等樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Trigger container with border styles, transition animations, size controls, displaying color block and text content</source>
+        <target state="translated">觸發器容器，包含邊框樣式、過渡動畫、尺寸控制等樣式，顯示顏色塊和文本內容</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of ColorPicker with semantic part styles.</source>
+        <target state="translated">透過語義部件樣式自訂 ColorPicker 的語義結構樣式。</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
     <unit id="TriggerSizeDescription">
       <segment>
         <source>Ant Design supports three trigger sizes: small, default and large.If a large or small trigger is desired, set the size property to either large or small.respectively. Omit the size property for a trigger with the default size.</source>
@@ -233,6 +275,18 @@
       <segment>
         <source>Value binding</source>
         <target state="translated">Value 綁定</target>
+      </segment>
+    </unit>
+    <unit id="NeedConfirmTitle">
+      <segment>
+        <source>Need Confirm</source>
+        <target state="translated">需要確認</target>
+      </segment>
+    </unit>
+    <unit id="NeedConfirmDescription">
+      <segment>
+        <source>Try a color or gradient in the panel, then choose Confirm to update the bound value. Cancel, Escape, or dismissing the panel discards the draft. Clearing a color also requires confirmation.</source>
+        <target state="translated">在面板中試選純色或漸層，點擊確定後才更新繫結值。取消、Escape 或關閉面板會放棄本次修改；清除顏色同樣需要確認。</target>
       </segment>
     </unit>
   </file>

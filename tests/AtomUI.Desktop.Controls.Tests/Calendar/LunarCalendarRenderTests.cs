@@ -5,6 +5,9 @@ using Avalonia;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Headless;
+using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using System.Reflection;
@@ -12,7 +15,7 @@ using Shouldly;
 using Xunit;
 using AvaloniaWindow = Avalonia.Controls.Window;
 using LunarCalendarControl = AtomUI.Desktop.Controls.LunarCalendar;
-using CalendarViewControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarView;
+using CalendarViewControl = AtomUI.Desktop.Controls.Internal.DateViewer.DatePanel;
 
 namespace AtomUI.Desktop.Controls.Tests.Calendar;
 
@@ -39,11 +42,11 @@ public class LunarCalendarRenderTests
         var window = Show(calendar, fullscreen ? 900 : 420, fullscreen ? 720 : 420);
         try
         {
-            var cells = calendar.GetVisualDescendants().OfType<LunarCalendarViewCell>().ToList();
+            var cells = calendar.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>().ToList();
             cells.Count.ShouldBe(expectedCount);
             foreach (var cell in cells)
             {
-                cell.LunarContext.ShouldNotBeNull();
+                (cell.Context as LunarCalendarCellContext).ShouldNotBeNull();
             }
         }
         finally
@@ -64,19 +67,22 @@ public class LunarCalendarRenderTests
         try
         {
             var cell = calendar.GetVisualDescendants()
-                .OfType<LunarCalendarViewCell>()
+                .OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>()
                 .Single(item => item.Model?.Value == calendar.Value);
             var value = cell.GetVisualDescendants()
                 .OfType<AtomUI.Desktop.Controls.TextBlock>()
-                .Single(text => text.Name == "PART_Value");
+                .Single(text => text.Name == "PART_Value" && text.IsVisible);
             var secondary = cell.GetVisualDescendants()
                 .OfType<AtomUI.Desktop.Controls.TextBlock>()
                 .Single(text => text.Name == "PART_SecondaryText");
 
             value.Text.ShouldBe("10");
-            secondary.Text.ShouldBe(cell.LunarContext!.SecondaryText);
+            secondary.Text.ShouldBe(((LunarCalendarCellContext)cell.Context!).SecondaryText);
             secondary.Text.ShouldNotBeEmpty();
             secondary.IsVisible.ShouldBeTrue();
+            var lightText = BrushColor(GetThemeResource<IBrush>(SharedTokenKind.ColorTextLightSolid));
+            BrushColor(value.Foreground).ShouldBe(lightText);
+            BrushColor(secondary.Foreground).ShouldBe(lightText);
         }
         finally
         {
@@ -96,7 +102,7 @@ public class LunarCalendarRenderTests
         var window = Show(calendar, 600, 600);
         try
         {
-            var cells = calendar.GetVisualDescendants().OfType<LunarCalendarViewCell>().ToList();
+            var cells = calendar.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>().ToList();
             var selectedInner = GetCellInner(cells.Single(cell => cell.Model?.Value == new DateTime(2021, 4, 2)));
             var nextWeekInner = GetCellInner(cells.Single(cell => cell.Model?.Value == new DateTime(2021, 4, 9)));
             var selectedTop = selectedInner.TranslatePoint(default, calendar).ShouldNotBeNull().Y;
@@ -107,7 +113,7 @@ public class LunarCalendarRenderTests
                 .ShouldBeGreaterThanOrEqualTo(expectedGap - 0.5);
 
             var view = calendar.GetVisualDescendants().OfType<CalendarViewControl>().Single();
-            view.Bounds.Height.ShouldBe(GetThemeResource<double>(LunarCalendarTokenKind.MiniContentHeight), 0.5);
+            calendar.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.DateViewer>().Single().Bounds.Height.ShouldBe(GetThemeResource<double>(LunarCalendarTokenKind.MiniContentHeight), 0.5);
         }
         finally
         {
@@ -127,7 +133,7 @@ public class LunarCalendarRenderTests
         try
         {
             var cell = calendar.GetVisualDescendants()
-                .OfType<LunarCalendarViewCell>()
+                .OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>()
                 .Single(item => item.Model?.Value == calendar.Value);
             var presenter = cell.GetVisualDescendants()
                 .OfType<Avalonia.Controls.Grid>()
@@ -135,9 +141,46 @@ public class LunarCalendarRenderTests
             var secondary = cell.GetVisualDescendants()
                 .OfType<AtomUI.Desktop.Controls.TextBlock>()
                 .Single(text => text.Name == "PART_SecondaryText");
+            var value = cell.GetVisualDescendants()
+                .OfType<AtomUI.Desktop.Controls.TextBlock>()
+                .Single(text => text.Name == "PART_Value" && text.IsVisible);
 
             presenter.HorizontalAlignment.ShouldBe(Avalonia.Layout.HorizontalAlignment.Right);
             secondary.TextAlignment.ShouldBe(Avalonia.Media.TextAlignment.Right);
+            var primary = BrushColor(GetThemeResource<IBrush>(SharedTokenKind.ColorPrimary));
+            var lightText = BrushColor(GetThemeResource<IBrush>(SharedTokenKind.ColorTextLightSolid));
+            var selectedInner = GetCellInner(cell);
+            BrushColor(selectedInner.Background).ShouldBe(primary);
+            selectedInner.CornerRadius.TopLeft.ShouldBeGreaterThan(0);
+            BrushColor(value.Foreground).ShouldBe(lightText);
+            BrushColor(secondary.Foreground).ShouldBe(lightText);
+
+            var pressedCell = calendar.GetVisualDescendants()
+                .OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>()
+                .Single(item => item.Model?.Value == new DateTime(2024, 2, 14));
+            var normalCell = calendar.GetVisualDescendants()
+                .OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>()
+                .Single(item => item.Model?.Value == new DateTime(2024, 2, 15));
+            var center = pressedCell.TranslatePoint(
+                new Point(pressedCell.Bounds.Width / 2, pressedCell.Bounds.Height / 2), window)!.Value;
+            window.MouseMove(center);
+            window.MouseDown(center, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+            calendar.Value.ShouldBe(new DateTime(2024, 2, 10));
+            BrushColor(GetCellInner(pressedCell).GetBaseValue(Border.BorderBrushProperty).Value)
+                .ShouldBe(BrushColor(GetCellInner(normalCell).GetBaseValue(Border.BorderBrushProperty).Value));
+            window.MouseUp(center, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+            calendar.Value.ShouldBe(new DateTime(2024, 2, 14));
+            var newSelected = calendar.GetVisualDescendants()
+                .OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>()
+                .Single(item => item.Model?.Value == calendar.Value);
+            BrushColor(GetCellInner(newSelected).GetBaseValue(Border.BackgroundProperty).Value)
+                .ShouldBe(primary);
+            var selectedContent = newSelected.GetVisualDescendants().OfType<LunarCalendarCellContent>().Single();
+            BrushColor(selectedContent.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.TextBlock>()
+                    .Single(text => text.Name == "PART_SecondaryText").Foreground)
+                .ShouldBe(lightText);
         }
         finally
         {
@@ -159,20 +202,15 @@ public class LunarCalendarRenderTests
         try
         {
             var cell = calendar.GetVisualDescendants()
-                .OfType<LunarCalendarViewCell>()
+                .OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>()
                 .Single(item => item.Model?.Value == calendar.Value);
 
             cell.GetVisualDescendants().OfType<Control>().Any(control => Equals(control.Tag, "full")).ShouldBeTrue();
             cell.GetVisualDescendants().OfType<Control>().Any(control => Equals(control.Tag, "cell")).ShouldBeFalse();
-            cell.ShowSecondaryContent.ShouldBeFalse();
-            cell.GetVisualDescendants()
-                .OfType<AtomUI.Desktop.Controls.TextBlock>()
-                .Single(text => text.Name == "PART_Value")
-                .IsVisible.ShouldBeFalse();
-            cell.GetVisualDescendants()
-                .OfType<AtomUI.Desktop.Controls.TextBlock>()
-                .Single(text => text.Name == "PART_SecondaryText")
-                .IsVisible.ShouldBeFalse();
+            cell.Context.ShouldBeOfType<LunarCalendarCellContext>();
+            cell.GetVisualDescendants().OfType<Control>()
+                .Where(control => control.Name is "PART_Value" or "PART_SecondaryText")
+                .ShouldAllBe(control => !control.IsVisible);
         }
         finally
         {
@@ -188,13 +226,13 @@ public class LunarCalendarRenderTests
         try
         {
             var cell = calendar.GetVisualDescendants()
-                .OfType<LunarCalendarViewCell>()
+                .OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>()
                 .Single(item => item.Model?.Value == calendar.Value);
             var peer = ControlAutomationPeer.CreatePeerForElement(cell)
-                .ShouldBeOfType<CalendarViewCellAutomationPeer>();
+                .ShouldBeOfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCellAutomationPeer>();
 
             peer.GetName().ShouldContain("2024");
-            peer.GetName().ShouldContain(cell.LunarContext!.SecondaryText);
+            peer.GetName().ShouldContain(((LunarCalendarCellContext)cell.Context!).SecondaryText);
         }
         finally
         {
@@ -224,7 +262,7 @@ public class LunarCalendarRenderTests
         {
             var panel = calendar.GetVisualDescendants().OfType<CalendarRangeBarPanel>().Single();
             var cell = calendar.GetVisualDescendants()
-                .OfType<LunarCalendarViewCell>()
+                .OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>()
                 .Single(item => item.Model?.Value == calendar.Value);
             var secondary = cell.GetVisualDescendants()
                 .OfType<AtomUI.Desktop.Controls.TextBlock>()
@@ -253,17 +291,17 @@ public class LunarCalendarRenderTests
             calendar.Mode = CalendarMode.Year;
             Dispatcher.UIThread.RunJobs();
 
-            var pool = (IReadOnlyList<CalendarViewCell>)typeof(CalendarViewControl)
-                .GetField("_cellPool", BindingFlags.Instance | BindingFlags.NonPublic)!
+            var pool = (IReadOnlyList<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>)typeof(CalendarViewControl)
+                .GetField("_pool", BindingFlags.Instance | BindingFlags.NonPublic)!
                 .GetValue(view)!;
             pool.Count.ShouldBe(42);
             foreach (var cell in pool.Take(12))
             {
-                cell.ShouldBeOfType<LunarCalendarViewCell>().LunarContext.ShouldNotBeNull();
+                cell.Context.ShouldNotBeNull();
             }
             foreach (var cell in pool.Skip(12))
             {
-                cell.ShouldBeOfType<LunarCalendarViewCell>().LunarContext.ShouldBeNull();
+                cell.Context.ShouldBeNull();
             }
         }
         finally
@@ -280,7 +318,7 @@ public class LunarCalendarRenderTests
             Height = 8
         });
 
-    private static Border GetCellInner(LunarCalendarViewCell cell) =>
+    private static Border GetCellInner(AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell cell) =>
         cell.GetVisualDescendants()
             .OfType<Border>()
             .Single(border => border.Name == "PART_CellInner");
@@ -292,6 +330,8 @@ public class LunarCalendarRenderTests
         value.ShouldBeAssignableTo<T>();
         return (T)value!;
     }
+
+    private static Color? BrushColor(IBrush? brush) => (brush as ISolidColorBrush)?.Color;
 
     private static AvaloniaWindow Show(Control content, double width = 420, double height = 420)
     {

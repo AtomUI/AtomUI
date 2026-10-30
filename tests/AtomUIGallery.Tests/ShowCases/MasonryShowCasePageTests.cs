@@ -1,15 +1,24 @@
 using System.Windows.Input;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
+using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.Masonry;
 using Avalonia.Controls;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
+using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUIGallery.Tests.ShowCases;
 
 public class MasonryShowCasePageTests
 {
+    static MasonryShowCasePageTests()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+    }
+
     [Fact]
     public void Masonry_ShowCase_Uses_AtomUI_AsyncImage_Without_Runtime_Binding()
     {
@@ -23,6 +32,172 @@ public class MasonryShowCasePageTests
         source.ShouldNotContain("asyncImageLoader:");
         codeBehind.ShouldNotContain("BindUtils.RelayBind");
         codeBehind.ShouldNotContain("new Binding");
+    }
+
+    [Fact]
+    public void Masonry_ShowCase_Declares_A_Deferred_Semantic_Part_Preview()
+    {
+        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Layout/Masonry/Views/MasonryShowCase.axaml");
+
+        source.ShouldContain("<gallery:GalleryShowCaseHost");
+        source.ShouldContain("<gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>");
+        source.ShouldContain("<gallery:SemanticPartPreview");
+        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:Masonry}\"");
+        source.ShouldContain("Name=\"MasonrySemanticOwner\"");
+        CountOccurrences(source, "<gallery:SemanticPartDescription").ShouldBe(2);
+        source.ShouldContain("Path=\"root\"");
+        source.ShouldContain("Path=\"item\"");
+        source.ShouldNotContain("GalleryStickyTabsHost");
+    }
+
+    [Fact]
+    public void Masonry_Semantic_Preview_Is_Materialized_Only_After_The_Tab_Is_Selected()
+    {
+        var page = new MasonryShowCase
+        {
+            DataContext = new MasonryViewModel(new TestScreen())
+        };
+
+        ShowInWindow(page, 1280, 900, () =>
+        {
+            page.GetVisualDescendants().OfType<SemanticPartPreview>().ShouldBeEmpty();
+            page.GetVisualDescendants()
+                .OfType<AtomUI.Desktop.Controls.Masonry>()
+                .ShouldNotContain(static masonry => masonry.Name == "MasonrySemanticOwner");
+
+            var host = page.GetVisualDescendants().OfType<GalleryShowCaseHost>().Single();
+            host.SelectedTab = GalleryShowCaseTab.SemanticParts;
+            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs();
+
+            page.GetVisualDescendants().OfType<SemanticPartPreview>().Count().ShouldBe(1);
+            var semanticMasonry = page.GetVisualDescendants()
+                                      .OfType<AtomUI.Desktop.Controls.Masonry>()
+                                      .Single(static masonry => masonry.Name == "MasonrySemanticOwner");
+            page.GetVisualDescendants()
+                .OfType<AtomUI.Desktop.Controls.Masonry>()
+                .Count(static masonry => masonry.Name == "MasonrySemanticOwner")
+                .ShouldBe(1);
+            semanticMasonry.GetVisualDescendants()
+                           .OfType<Control>()
+                           .Count(static control => control.Classes.Contains("semantic-item"))
+                           .ShouldBe(7);
+        });
+    }
+
+    [Fact]
+    public void Masonry_Semantic_Part_Example_Is_The_Last_ShowCaseItem()
+    {
+        var page = new MasonryShowCase
+        {
+            DataContext = new MasonryViewModel(new TestScreen())
+        };
+
+        ShowInWindow(page, 1280, 900, () =>
+        {
+            var panel = page.GetVisualDescendants().OfType<ShowCasePanel>().Single();
+            panel.Children.OfType<ShowCaseItem>().Last().SourceKey.ShouldBe("masonry-semantic-part");
+        });
+    }
+
+    [Fact]
+    public void Masonry_Semantic_Part_Example_Matches_Contract()
+    {
+        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Layout/Masonry/Views/MasonryShowCase.axaml");
+        var localization = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Layout/Masonry/Localization/en-US.xlf");
+
+        var item = ExtractShowCaseItemByTitle(
+            source,
+            "MasonryShowCaseLangResource SemanticPartStyleTitle");
+
+        item.ShouldContain("SourceKey=\"masonry-semantic-part\"");
+        item.ShouldContain("Span=\"Full\"");
+        item.ShouldContain("IsDeferredContentEnabled=\"True\"");
+        item.ShouldContain("SemanticPartStyleDescription");
+        item.ShouldContain("SemanticObjectStylesTitle");
+        item.ShouldContain("SemanticFunctionStylesTitle");
+        item.ShouldContain("Name=\"MasonrySemanticObject\"");
+        item.ShouldContain("Name=\"MasonrySemanticFunction\"");
+        item.ShouldContain("Selector=\"atom|Masonry.semantic-style-demo.semantic-object-styles\"");
+        item.ShouldContain("Selector=\"atom|Masonry.semantic-style-demo.semantic-function-styles[ColumnCount=3]\"");
+        CountOccurrences(item, "<atom:MasonryItemStyle x:SetterTargetType=\"Border\">").ShouldBe(2);
+        item.ShouldContain("<Setter Property=\"Background\" Value=\"#FAFAFA\" />");
+        item.ShouldContain("<Setter Property=\"Background\" Value=\"#F0F8FF\" />");
+        item.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"#D9D9D9\" />");
+        item.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"#1890FF\" />");
+        item.ShouldContain("<Setter Property=\"Padding\" Value=\"16\" />");
+        item.ShouldContain("<Setter Property=\"Padding\" Value=\"16,12\" />");
+        item.ShouldContain("ColumnCount=\"4\"");
+        item.ShouldContain("ColumnCount=\"3\"");
+        item.ShouldNotContain("Selector=\".semantic-item\"");
+        item.ShouldNotContain("> .semantic-item");
+        localization.ShouldContain("<source>Custom Semantic Part styling</source>");
+        localization.ShouldContain(
+            "<source>Use owner-scoped styles and the MasonryItemStyle semantic part style to customize Masonry's published Semantic Parts.</source>");
+        localization.ShouldContain("<source>Style matched by class</source>");
+        localization.ShouldContain("<source>Style matched by property state</source>");
+        localization.ShouldContain(
+            "<source>Root element, provides the root chrome, column and gutter layout inputs, and the ItemsControl entry.</source>");
+        localization.ShouldContain(
+            "<source>Item container measured, column-assigned and arranged by the masonry layout, carrying the Masonry.Column and Masonry.Span metadata.</source>");
+        localization.ShouldNotContain("classNames", Case.Insensitive);
+        localization.ShouldNotContain("semantic dom", Case.Insensitive);
+        localization.ShouldNotContain("absolute positioning", Case.Insensitive);
+        localization.ShouldNotContain("flex layout", Case.Insensitive);
+    }
+
+    [Fact]
+    public void Masonry_Semantic_Part_Example_Applies_Styles_To_Item_Containers()
+    {
+        var page = new MasonryShowCase
+        {
+            DataContext = new MasonryViewModel(new TestScreen())
+        };
+
+        ShowInWindow(page, 1280, 1000, () =>
+        {
+            var panel = page.GetVisualDescendants().OfType<ShowCasePanel>().Single();
+            var item = panel.Children
+                            .OfType<ShowCaseItem>()
+                            .Single(static candidate => candidate.SourceKey == "masonry-semantic-part");
+            item.MaterializeDeferredContent();
+            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs();
+
+            var objectMasonry = page.GetVisualDescendants()
+                                    .OfType<AtomUI.Desktop.Controls.Masonry>()
+                                    .Single(static candidate => candidate.Name == "MasonrySemanticObject");
+            objectMasonry.ColumnCount.ShouldBe(4);
+            objectMasonry.ColumnGap.ShouldBe(16);
+            objectMasonry.RowGap.ShouldBe(16);
+            objectMasonry.Height.ShouldBe(260);
+
+            var objectContainers = objectMasonry.GetVisualDescendants()
+                                                .OfType<Border>()
+                                                .Where(static border => border.Classes.Contains("semantic-item"))
+                                                .ToArray();
+            objectContainers.Length.ShouldBe(8);
+            objectContainers.ShouldAllBe(static container => container.BorderThickness == new Avalonia.Thickness(1));
+            objectContainers.ShouldAllBe(static container => container.CornerRadius == new Avalonia.CornerRadius(12));
+            objectContainers.ShouldAllBe(static container => container.Padding == new Avalonia.Thickness(16, 12));
+
+            var functionMasonry = page.GetVisualDescendants()
+                                      .OfType<AtomUI.Desktop.Controls.Masonry>()
+                                      .Single(static candidate => candidate.Name == "MasonrySemanticFunction");
+            functionMasonry.ColumnCount.ShouldBe(3);
+            functionMasonry.ColumnGap.ShouldBe(16);
+            functionMasonry.RowGap.ShouldBe(16);
+            functionMasonry.Height.ShouldBe(280);
+
+            var functionContainers = functionMasonry.GetVisualDescendants()
+                                                    .OfType<Border>()
+                                                    .Where(static border => border.Classes.Contains("semantic-item"))
+                                                    .ToArray();
+            functionContainers.Length.ShouldBe(6);
+            functionContainers.ShouldAllBe(static container => container.BorderThickness == new Avalonia.Thickness(1));
+            functionContainers.ShouldAllBe(static container => container.CornerRadius == new Avalonia.CornerRadius(12));
+            functionContainers.ShouldAllBe(static container => container.Padding == new Avalonia.Thickness(16, 12));
+        });
     }
 
     [Fact]
@@ -81,6 +256,19 @@ public class MasonryShowCasePageTests
                 "https://images.unsplash.com/photo-1491961865842-98f7befd1a60?w=523&auto=format").ToString());
         viewModel.BasicItems[4].Title.ShouldBe("I'm Special");
         viewModel.BasicItems[4].Description.ShouldBe("Let's have a meal");
+    }
+
+    [Fact]
+    public void Masonry_ShowCase_Semantic_Items_Mirror_Ant_Design_Semantic_Demo()
+    {
+        var viewModel = new MasonryViewModel(null!);
+
+        viewModel.SemanticItems.ShouldNotBeNull();
+        viewModel.SemanticItems!.Select(item => item.Height).ShouldBe(new double[]
+        {
+            75, 50, 70, 60, 85, 75, 50
+        });
+        viewModel.SemanticItems.Select(item => item.Index).ShouldBe(Enumerable.Range(1, 7));
     }
 
     [Fact]
@@ -255,6 +443,56 @@ public class MasonryShowCasePageTests
         masonryEnd.ShouldBeGreaterThan(masonryStart);
 
         return source[masonryStart..(masonryEnd + masonryEndMarker.Length)];
+    }
+
+    private static string ExtractShowCaseItemByTitle(string source, string titleMarker)
+    {
+        var titleIndex = source.IndexOf(titleMarker, StringComparison.Ordinal);
+        titleIndex.ShouldBeGreaterThanOrEqualTo(0);
+
+        const string itemStartMarker = "<gallery:ShowCaseItem";
+        const string itemEndMarker   = "</gallery:ShowCaseItem>";
+        var itemStart = source.LastIndexOf(itemStartMarker, titleIndex, StringComparison.Ordinal);
+        itemStart.ShouldBeGreaterThanOrEqualTo(0);
+
+        var itemEnd = source.IndexOf(itemEndMarker, itemStart, StringComparison.Ordinal);
+        itemEnd.ShouldBeGreaterThan(itemStart);
+        return source[itemStart..(itemEnd + itemEndMarker.Length)];
+    }
+
+    private static int CountOccurrences(string value, string marker)
+    {
+        var count = 0;
+        var index = 0;
+        while ((index = value.IndexOf(marker, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += marker.Length;
+        }
+
+        return count;
+    }
+
+    private static void ShowInWindow(Control content, int width, int height, Action assertion)
+    {
+        var window = new AvaloniaWindow
+        {
+            Width   = width,
+            Height  = height,
+            Content = content
+        };
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            assertion();
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
     }
 
     private static string ReadRepoFile(string relativePath)

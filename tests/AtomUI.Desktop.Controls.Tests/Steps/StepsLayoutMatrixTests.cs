@@ -20,23 +20,39 @@ public class StepsLayoutMatrixTests
         AvaloniaTestApp.EnsureInitialized();
     }
 
-    public static IEnumerable<object[]> LayoutCases
+    public static IEnumerable<object[]> LayoutTypes
     {
         get
         {
             foreach (var type in Enum.GetValues<Desktop.Controls.StepsType>())
-            foreach (var orientation in Enum.GetValues<Orientation>())
-            foreach (var titlePlacement in Enum.GetValues<Orientation>())
-            foreach (var sizeType in new[] { AtomUISizeType.Middle, AtomUISizeType.Small })
             {
-                yield return [type, orientation, titlePlacement, sizeType];
+                yield return [type];
             }
         }
     }
 
     [Theory]
-    [MemberData(nameof(LayoutCases))]
-    public void Every_Layout_Combination_Uses_One_Finite_Semantic_Tree(
+    [MemberData(nameof(LayoutTypes))]
+    public void Every_Layout_Combination_Uses_One_Finite_Semantic_Tree(Desktop.Controls.StepsType type)
+    {
+        foreach (var orientation in Enum.GetValues<Orientation>())
+        foreach (var titlePlacement in Enum.GetValues<Orientation>())
+        foreach (var sizeType in new[] { AtomUISizeType.Middle, AtomUISizeType.Small })
+        {
+            try
+            {
+                AssertLayoutCombination(type, orientation, titlePlacement, sizeType);
+            }
+            catch (Exception exception)
+            {
+                throw new InvalidOperationException(
+                    $"Steps layout failed for type={type}, orientation={orientation}, titlePlacement={titlePlacement}, sizeType={sizeType}.",
+                    exception);
+            }
+        }
+    }
+
+    private static void AssertLayoutCombination(
         Desktop.Controls.StepsType type,
         Orientation orientation,
         Orientation titlePlacement,
@@ -72,11 +88,11 @@ public class StepsLayoutMatrixTests
                     indicator.Bounds.Width.ShouldBeGreaterThan(0);
                     indicator.Bounds.Height.ShouldBeGreaterThan(0);
                 }
-                AssertNoInteriorOverlap(indicator, header);
-                AssertNoInteriorOverlap(indicator, subHeader);
-                AssertNoInteriorOverlap(indicator, content);
-                AssertNoInteriorOverlap(header, content);
-                AssertNoInteriorOverlap(subHeader, content);
+                AssertNoInteriorOverlap(indicator, header, item);
+                AssertNoInteriorOverlap(indicator, subHeader, item);
+                AssertNoInteriorOverlap(indicator, content, item);
+                AssertNoInteriorOverlap(header, content, item);
+                AssertNoInteriorOverlap(subHeader, content, item);
 
                 content.IsVisible.ShouldBe(type != Desktop.Controls.StepsType.Inline);
                 connector.IsVisible.ShouldBe(
@@ -109,11 +125,11 @@ public class StepsLayoutMatrixTests
             var arrow = FindControl(item, "NavigationArrow");
             var middleWidth = indicator.Bounds.Width;
 
-            header.Bounds.X.ShouldBeGreaterThanOrEqualTo(indicator.Bounds.Right);
+            GetBoundsInItem(header, item).X.ShouldBeGreaterThanOrEqualTo(indicator.Bounds.Right);
 
             steps.Type = Desktop.Controls.StepsType.Dot;
             Relayout();
-            header.Bounds.Y.ShouldBeGreaterThanOrEqualTo(indicator.Bounds.Bottom);
+            GetBoundsInItem(header, item).Y.ShouldBeGreaterThanOrEqualTo(indicator.Bounds.Bottom);
 
             steps.Type = Desktop.Controls.StepsType.Navigation;
             steps.Orientation = Orientation.Vertical;
@@ -121,7 +137,7 @@ public class StepsLayoutMatrixTests
             Relayout();
             connector.IsVisible.ShouldBeFalse();
             arrow.IsVisible.ShouldBeTrue();
-            arrow.Bounds.Y.ShouldBeGreaterThanOrEqualTo(header.Bounds.Bottom);
+            arrow.Bounds.Y.ShouldBeGreaterThanOrEqualTo(GetBoundsInItem(header, item).Bottom);
 
             steps.Type = Desktop.Controls.StepsType.Default;
             steps.Orientation = Orientation.Horizontal;
@@ -175,6 +191,9 @@ public class StepsLayoutMatrixTests
             Orientation.Horizontal,
             Orientation.Horizontal,
             sizeType);
+        // The rail geometry assertions assume an uncompressed item; keep the
+        // container wide enough that the items never shrink below their content.
+        steps.Width = 1400;
         steps.Items[0].ShouldBeOfType<Desktop.Controls.StepsItem>().Content =
             "A description that is deliberately wider than the title row";
 
@@ -185,7 +204,11 @@ public class StepsLayoutMatrixTests
             var header = FindControl(first, "HeaderPresenter");
             var subHeader = FindControl(first, "SubHeaderPresenter");
             var connector = FindControl(first, "Connector");
-            var headerRowRight = Math.Max(header.Bounds.Right, subHeader.Bounds.Right);
+            // The heading presenters live inside the item's section panel, so their
+            // Bounds are section-relative; compare the row edge in item coordinates.
+            var headerRowRight = Math.Max(
+                GetBoundsInItem(header, first).Right,
+                GetBoundsInItem(subHeader, first).Right);
 
             connector.Margin.Left.ShouldBeGreaterThan(0);
             connector.Margin.Right.ShouldBe(connector.Margin.Left);
@@ -230,6 +253,7 @@ public class StepsLayoutMatrixTests
 
         ShowInWindow(steps, () =>
         {
+            LayoutAtNaturalWidth(steps);
             var items = steps.Items.Cast<Desktop.Controls.StepsItem>().ToArray();
             var centerY = GetIndicator(items[0]).Bounds.Center.Y;
 
@@ -261,6 +285,7 @@ public class StepsLayoutMatrixTests
 
         ShowInWindow(steps, () =>
         {
+            LayoutAtNaturalWidth(steps);
             var items = steps.Items.Cast<Desktop.Controls.StepsItem>().ToArray();
             var contentY = FindControl(items[0], "ContentPresenter").Bounds.Y;
 
@@ -284,6 +309,7 @@ public class StepsLayoutMatrixTests
 
         ShowInWindow(steps, () =>
         {
+            LayoutAtNaturalWidth(steps);
             var second = steps.Items[1].ShouldBeOfType<Desktop.Controls.StepsItem>();
             var header = FindControl(second, "HeaderPresenter");
             var subHeader = FindControl(second, "SubHeaderPresenter");
@@ -309,6 +335,9 @@ public class StepsLayoutMatrixTests
             sizeType);
         steps.Items[0].ShouldBeOfType<Desktop.Controls.StepsItem>().SubHeader = null;
         steps.Items[2].ShouldBeOfType<Desktop.Controls.StepsItem>().SubHeader = null;
+        // The heading-row geometry assertions assume uncompressed items; keep the
+        // container wide enough that no header wraps.
+        steps.Width = 1400;
 
         ShowInWindow(steps, () =>
         {
@@ -328,7 +357,8 @@ public class StepsLayoutMatrixTests
 
             var firstHeader = FindControl(items[0], "HeaderPresenter");
             var firstConnector = FindControl(items[0], "Connector");
-            firstConnector.Bounds.X.ShouldBe(firstHeader.Bounds.Right + firstConnector.Margin.Left, 0.01);
+            firstConnector.Bounds.X.ShouldBe(
+                GetBoundsInItem(firstHeader, items[0]).Right + firstConnector.Margin.Left, 0.01);
         });
     }
 
@@ -495,6 +525,11 @@ public class StepsLayoutMatrixTests
         return control.TranslatePoint(default, item)!.Value.X;
     }
 
+    private static Rect GetBoundsInItem(Control control, Desktop.Controls.StepsItem item)
+    {
+        return new Rect(control.TranslatePoint(default, item)!.Value, control.Bounds.Size);
+    }
+
     private static void AssertFinite(Control control)
     {
         double.IsFinite(control.Bounds.X).ShouldBeTrue();
@@ -505,14 +540,19 @@ public class StepsLayoutMatrixTests
         control.Bounds.Height.ShouldBeGreaterThanOrEqualTo(0);
     }
 
-    private static void AssertNoInteriorOverlap(Control first, Control second)
+    private static void AssertNoInteriorOverlap(
+        Control first,
+        Control second,
+        Desktop.Controls.StepsItem item)
     {
         if (!first.IsVisible || !second.IsVisible)
         {
             return;
         }
 
-        var intersection = first.Bounds.Intersect(second.Bounds);
+        // The body parts live inside the item's section panel, so their Bounds are
+        // section-relative; compare in the item's coordinate space.
+        var intersection = GetBoundsInItem(first, item).Intersect(GetBoundsInItem(second, item));
         (intersection.Width > 0 && intersection.Height > 0).ShouldBeFalse(
             $"{first.Name ?? first.GetType().Name} overlaps {second.Name ?? second.GetType().Name}.");
     }
@@ -522,6 +562,17 @@ public class StepsLayoutMatrixTests
         Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
         Dispatcher.UIThread.RunJobs();
+    }
+
+    private static void LayoutAtNaturalWidth(Desktop.Controls.Steps steps)
+    {
+        // Heading-row geometry assertions assume uncompressed items with the header
+        // and subheader on one row; size the container to the measured natural width
+        // so the test font can never compress the items and stack the subheader.
+        steps.Width = double.NaN;
+        steps.Measure(Size.Infinity);
+        steps.Width = steps.DesiredSize.Width;
+        Relayout();
     }
 
     private static void ShowInWindow(Control content, Action assertion)

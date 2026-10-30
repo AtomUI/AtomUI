@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -61,6 +59,13 @@ public enum RadioButtonShowCaseLangResourceKind
     P2ContentNone,
     P2CheckedItemSummaryFormat,
     ScenarioExamples,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticIconDescription,
+    SemanticLabelDescription,
+    SemanticPartFixedTitle,
+    SemanticPartConditionalTitle,
     PageSubtitle,
     PageDescription,
     ComponentCategory,

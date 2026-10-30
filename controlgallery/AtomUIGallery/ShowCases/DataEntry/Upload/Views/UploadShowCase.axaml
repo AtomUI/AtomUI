@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Upload"
              x:DataType="vm:UploadViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Upload"
                     Category="{gallery:UploadShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,46 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="ContentControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:UploadViewModel">
+                    <gallery:SemanticPartPreview Name="UploadSemanticPreview"
+                                                 SemanticOwner="{Binding #UploadSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:Upload}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Upload Name="UploadSemanticOwner"
+                                         AutoUpload="False"
+                                         Files="{Binding DefaultFiles}"
+                                         HorizontalAlignment="Stretch"
+                                         VerticalAlignment="Center">
+                                <atom:Upload.TriggerContent>
+                                    <atom:UploadTrigger SourceKind="Files">
+                                        <Border HorizontalAlignment="Left"
+                                                Background="#E6E6FA"
+                                                CornerRadius="8"
+                                                Padding="8">
+                                            <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}"
+                                                         Content="{gallery:UploadShowCaseLangResource P2TextUpload}" />
+                                        </Border>
+                                    </atom:UploadTrigger>
+                                </atom:Upload.TriggerContent>
+                            </atom:Upload>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:UploadShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="list"
+                                Description="{gallery:UploadShowCaseLangResource SemanticListDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="item"
+                                Description="{gallery:UploadShowCaseLangResource SemanticItemDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -352,7 +390,72 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    SourceKey="upload-semantic-part"
+                    Title="{gallery:UploadShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:UploadShowCaseLangResource SemanticPartStyleDescription}"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    IsOccupyEntireRow="True"
+                    MinHeight="300"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:UploadViewModel">
+                            <StackPanel Spacing="24">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Upload.semantic-style-demo-object">
+                                        <atom:UploadListStyle x:SetterTargetType="ItemsControl">
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+                                        </atom:UploadListStyle>
+                                        <atom:UploadItemStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillSecondary}" />
+                                        </atom:UploadItemStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+                                <atom:Upload AutoUpload="False"
+                                             Classes="semantic-style-demo-object"
+                                             Files="{Binding DefaultFiles}"
+                                             HorizontalAlignment="Stretch">
+                                    <atom:Upload.TriggerContent>
+                                        <atom:UploadTrigger SourceKind="Files">
+                                            <Border HorizontalAlignment="Left"
+                                                    Background="#E6E6FA"
+                                                    CornerRadius="8"
+                                                    Padding="8">
+                                                <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}"
+                                                             Content="{gallery:UploadShowCaseLangResource P2TextUpload}" />
+                                            </Border>
+                                        </atom:UploadTrigger>
+                                    </atom:Upload.TriggerContent>
+                                </atom:Upload>
+                                <Border Classes="semantic-style-demo-frame"
+                                        CornerRadius="8"
+                                        Background="{atom:SharedTokenResource ColorBgContainer}"
+                                        BorderBrush="#5459AC"
+                                        BorderThickness="1"
+                                        Padding="12">
+                                    <atom:Upload AutoUpload="False"
+                                                 Classes="semantic-style-demo-object"
+                                                 Files="{Binding DefaultFiles}"
+                                                 HorizontalAlignment="Stretch">
+                                        <atom:Upload.TriggerContent>
+                                            <atom:UploadTrigger SourceKind="Files">
+                                                <Border HorizontalAlignment="Left"
+                                                        Background="#E6E6FA"
+                                                        CornerRadius="8"
+                                                        Padding="8">
+                                                    <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}"
+                                                                 Content="{gallery:UploadShowCaseLangResource P2TextUpload}" />
+                                                </Border>
+                                            </atom:UploadTrigger>
+                                        </atom:Upload.TriggerContent>
+                                    </atom:Upload>
+                                </Border>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AtomUI.Reflection;
 using Avalonia.Controls.Primitives;
@@ -11,30 +10,35 @@ using AvaloniaPopup = Avalonia.Controls.Primitives.Popup;
 
 internal static class PopupFlyoutBaseReflectionExtensions
 {
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(PopupFlyoutBase))]
     private static readonly Lazy<FieldInfo> PopupLazyFieldInfo = new(() =>
-        typeof(PopupFlyoutBase).GetFieldInfoOrThrow("_popupLazy",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+        FixedMemberReflection.RequireField(
+            typeof(PopupFlyoutBase).GetField("_popupLazy", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(PopupFlyoutBase),
+            "_popupLazy"));
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(PopupFlyoutBase))]
     private static readonly Lazy<MethodInfo> OnPopupOpenedMethodInfo = new(() =>
-        typeof(PopupFlyoutBase).GetMethodInfoOrThrow("OnPopupOpened",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+        FixedMemberReflection.RequireMethod(
+            typeof(PopupFlyoutBase).GetMethod("OnPopupOpened", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(PopupFlyoutBase),
+            "OnPopupOpened"));
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(PopupFlyoutBase))]
     private static readonly Lazy<MethodInfo> OnPopupClosedMethodInfo = new(() =>
-        typeof(PopupFlyoutBase).GetMethodInfoOrThrow("OnPopupClosed",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+        FixedMemberReflection.RequireMethod(
+            typeof(PopupFlyoutBase).GetMethod("OnPopupClosed", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(PopupFlyoutBase),
+            "OnPopupClosed"));
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(PopupFlyoutBase))]
     private static readonly Lazy<MethodInfo> OnPopupClosingMethodInfo = new(() =>
-        typeof(PopupFlyoutBase).GetMethodInfoOrThrow("OnPopupClosing",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+        FixedMemberReflection.RequireMethod(
+            typeof(PopupFlyoutBase).GetMethod("OnPopupClosing", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(PopupFlyoutBase),
+            "OnPopupClosing"));
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(PopupFlyoutBase))]
     private static readonly Lazy<MethodInfo> OnPlacementTargetOrPopupKeyUpMethodInfo = new(() =>
-        typeof(PopupFlyoutBase).GetMethodInfoOrThrow("OnPlacementTargetOrPopupKeyUp",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+        FixedMemberReflection.RequireMethod(
+            typeof(PopupFlyoutBase).GetMethod("OnPlacementTargetOrPopupKeyUp", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(PopupFlyoutBase),
+            "OnPlacementTargetOrPopupKeyUp"));
 
     public static void SetPopupLazy(this PopupFlyoutBase flyoutBase, Lazy<AvaloniaPopup> popupFactory)
     {

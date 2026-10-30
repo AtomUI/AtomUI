@@ -151,6 +151,60 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with inline-block display, padding and other divider text content styles</source>
+        <target state="translated">内容元素，包含行内块显示、内边距等分割线文本内容的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartAllPartsTitle">
+      <segment>
+        <source>All parts</source>
+        <target state="translated">全部部件</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartDashedRailTitle">
+      <segment>
+        <source>Dashed rail</source>
+        <target state="translated">虚线连接条</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartSmallSizeTitle">
+      <segment>
+        <source>Small size</source>
+        <target state="translated">小尺寸</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Separator property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域选择器和 Separator 属性选择器定制已发布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartTitlePlacementTitle">
+      <segment>
+        <source>Title placement</source>
+        <target state="translated">标题位置</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRailDescription">
+      <segment>
+        <source>Background rail element with border-top style and other divider connection line styles</source>
+        <target state="translated">背景条元素，包含边框顶部样式等分割线连接条的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border-top style, divider styling and other basic divider container styles</source>
+        <target state="translated">根元素，包含边框顶部样式、分隔线样式等分割线容器的基础样式</target>
+      </segment>
+    </unit>
     <unit id="SpacingSizeDescription">
       <segment>
         <source>The size of the spacing.</source>

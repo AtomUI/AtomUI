@@ -1,4 +1,3 @@
-using AtomUIGallery.Localization;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -94,6 +93,20 @@ public class TreeViewViewModel : ReactiveObject, IRoutableViewModel
     {
         get => _customizeCollapseExpandTreeDefaultExpandedPaths;
         set => this.RaiseAndSetIfChanged(ref _customizeCollapseExpandTreeDefaultExpandedPaths, value);
+    }
+
+    private IList<TreeNodePath>? _semanticPartTreeDefaultSelectedPaths;
+    public IList<TreeNodePath>? SemanticPartTreeDefaultSelectedPaths
+    {
+        get => _semanticPartTreeDefaultSelectedPaths;
+        set => this.RaiseAndSetIfChanged(ref _semanticPartTreeDefaultSelectedPaths, value);
+    }
+
+    private IList<TreeNodePath>? _semanticPartPreviewDefaultSelectedPaths;
+    public IList<TreeNodePath>? SemanticPartPreviewDefaultSelectedPaths
+    {
+        get => _semanticPartPreviewDefaultSelectedPaths;
+        set => this.RaiseAndSetIfChanged(ref _semanticPartPreviewDefaultSelectedPaths, value);
     }
 
     private IList<ITreeItemNode>? _asyncLoadTreeNodes;

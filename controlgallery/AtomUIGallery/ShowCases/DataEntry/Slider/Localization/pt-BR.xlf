@@ -157,6 +157,48 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticHandleDescription">
+      <segment>
+        <source>Slider handle control element with absolute positioning, size, outline, user selection, background color, border shadow, border radius, cursor style and transition animation</source>
+        <target state="translated">Elemento do ponto de controle do slider com posicionamento absoluto, tamanho, contorno, seleção do usuário, cor de fundo, sombra de borda, raio de borda, estilo de cursor e animação de transição</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and generated Semantic Part styles to customize the published rail, tracks, track and handle parts.</source>
+        <target state="translated">Use seletores com escopo do owner e estilos de Semantic Part gerados para personalizar os parts publicados de trilha de fundo, contêiner de trilhas, barra de seleção e ponto de controle.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRailDescription">
+      <segment>
+        <source>Background rail element with absolute positioning, background color, border radius and transition animation styles</source>
+        <target state="translated">Elemento da trilha de fundo com posicionamento absoluto, cor de fundo, raio de borda e estilos de animação de transição</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with relative positioning, height, margin, padding, cursor style and touch action control</source>
+        <target state="translated">Elemento raiz com posicionamento relativo, altura, margem, preenchimento, estilo de cursor e controle de ação de toque</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTrackDescription">
+      <segment>
+        <source>Track selection bar element with absolute positioning, background color, border radius and transition animation styles</source>
+        <target state="translated">Elemento da barra de seleção da trilha com posicionamento absoluto, cor de fundo, raio de borda e estilos de animação de transição</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTracksDescription">
+      <segment>
+        <source>Multi-segment track container element with absolute positioning and transition animation styles</source>
+        <target state="translated">Elemento contêiner de trilha de múltiplos segmentos com posicionamento absoluto e estilos de animação de transição</target>
+      </segment>
+    </unit>
     <unit id="VerticalDescription">
       <segment>
         <source>The vertical Slider.</source>

@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.1.8-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.10-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-stars-shield]][github-stars-link]
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
@@ -69,18 +69,23 @@ requests are welcome.
 
 #### Requirements
 
-.NET 8 or later (development supports .NET 10)<br>
-Avalonia 12.1.2<br>
+.NET 10 (the .NET 10 SDK is required to build AtomUI MSBuild integration)<br>
+Avalonia 12.1.4<br>
 Windows, macOS and Linux<br>
+
+TypeMap publishing supports .NET 10 and later stable versions by default. Browser trimmed and AOT publishing follows
+the SDK-selected ILLink and WASM toolchain, without SDK or servicing-version allowlists. Publish checks validate the
+converted maps and consumed outputs. The separate net8-only package compatibility bridge retains its documented
+toolchain requirements.
 
 #### Latest Release Notes
 
-AtomUI 6.1.8 reworks DataGrid around a range-based `IDataGridSource` with immutable query and selection state,
-replaces the image-source model with a closed `ImageSource` hierarchy and independent cache policies, and requires
-concrete `[ControlDesignToken]` types to be sealed. It also adds `Window.IsTitleVisible`, tightens NavMenu activation,
-fixes Select-family multi-select spacing, and improves NativeAOT linked-registration closure for trimmed applications.
-This release contains breaking DataGrid, image-loading and theme-token API changes; review the
-[Changelog](./CHANGELOG.md) before upgrading.
+AtomUI 6.2.10 replaces the actor-based motion library with frame-driven motions that play directly on controls,
+lets the shadow of window-type popups pass input through on Windows, Linux and macOS, and removes live-resize lag on
+Windows by preferring the redirection surface. This release contains breaking changes: motion types move to
+`AtomUI.Animations`, motion actors and template parts change, and Acrylic/Mica now need an explicit composition order.
+Upgrade AtomUI packages and the Generator together and rebuild compiled consumers; see the
+[6.2.10 migration guide](docs/releases/6.2.10-api-changes.md) and [Changelog](./CHANGELOG.md).
 
 #### Incubator
 
@@ -135,10 +140,10 @@ The packages we have released are as follows:
 | AtomUI.Generator                    | Source generators for custom controls, tokens and localization             |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.1.8
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.1.8
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.1.8
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.1.8
+dotnet add package AtomUI.Desktop.Controls --version 6.2.10
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.10
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.10
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.10
 ```
 
 You can also install the packages from your IDE's NuGet package manager. In Rider, open:
@@ -158,7 +163,7 @@ Search for "AtomUI" and install the packages your project needs.
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
@@ -166,10 +171,10 @@ Search for "AtomUI" and install the packages your project needs.
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.1.8"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.1.8"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.1.8"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.1.8"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.10"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.10"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.10"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.10"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>
@@ -177,10 +182,15 @@ Search for "AtomUI" and install the packages your project needs.
 
 ###### Program.cs Configure
 
+Enable AtomUI on the `AppBuilder` chain:
+
 ```csharp
 using Avalonia;
 using System;
 using AtomUI;
+using AtomUI.Desktop.Controls;
+using AtomUI.Localization;
+using AtomUI.Theme;
 using ReactiveUI.Avalonia;
 
 namespace AtomUIProgressApp;
@@ -197,55 +207,54 @@ internal class Program
                          .UseReactiveUI()
                          .UseAtomUIPlatformDetect()
                          .WithAtomUIDefaultOptions()
+                         .UseAtomUI(builder =>
+                         {
+                             builder.UseLanguages(
+                                 LanguageTags.EnUS,
+                                 [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
+                             builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+                             builder.UseAlibabaSansFont();
+                             builder.UseDesktopControls();
+                             builder.UseDesktopColorPicker();   // optional
+                             builder.UseDesktopDataGrid();      // optional
+                         })
                          .WithDeveloperTools()
                          .LogToTrace();
     }
 }
 ```
 
-###### Enable `AtomUI` in the `Application` Class
+###### Declare the `Application` Class as `partial`
+
+The AtomUI generator hooks the `partial` application class into startup, so AtomUI is ready before `Initialize()` runs:
 
 ```csharp
-using AtomUI;
-using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
-using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 
 public partial class App : Application
 {
-    public override void Initialize()
-    {
-        AvaloniaXamlLoader.Load(this);
-
-        this.UseAtomUI(builder =>
-        {
-            builder.UseLanguages(
-                LanguageTags.EnUS,
-                [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
-            builder.WithDefaultTheme(IThemeManager.DEFAULT_THEME_ID);
-            builder.UseAlibabaSansFont();
-            builder.UseDesktopControls();
-            builder.UseDesktopColorPicker();   // optional
-            builder.UseDesktopDataGrid();      // optional
-            builder.UseDesktopExtras();        // optional
-        });
-    }
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
 }
 ```
 
 To make the first rendered frame use the dark theme, configure the initial theme algorithm in the builder:
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
-    builder.WithDefaultTheme(IThemeManager.DEFAULT_THEME_ID, ThemeAlgorithm.Dark);
+    builder.WithInitialTheme(
+        IThemeManager.DEFAULT_THEME_ID,
+        new ThemeConfigBuilder()
+            .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
+            .Build());
     builder.UseDesktopControls();
-});
+})
 ```
 
-`SetDarkThemeMode(true)` is intended for runtime theme switching after AtomUI has been initialized.
+`ThemeConfigBuilder` is in `AtomUI.Theme.Configuration` and `ThemeAlgorithm` is in `AtomUI.Theme.Algorithms`. Use
+`IThemeManager.ApplyThemeAsync` to switch themes at runtime. To show a startup splash, see the
+[startup guide](docs/guides/startup/overview.md).
 
 ###### Start building with AtomUI
 

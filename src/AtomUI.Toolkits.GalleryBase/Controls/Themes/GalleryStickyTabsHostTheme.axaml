@@ -19,7 +19,8 @@
                                    BringIntoViewOnFocusChange="False"
                                    IsLiteMode="False">
                     <gallery:GalleryStickyTabsPanel Name="PART_StickyPanel">
-                        <ContentPresenter Content="{TemplateBinding Header}" />
+                        <ContentPresenter Name="PART_HeaderHost"
+                                          Content="{TemplateBinding Header}" />
                         <atom:PixelAlignedBorder Name="PART_StickyContentHost"
                                                  Background="{TemplateBinding StickyBackground}"
                                                  BorderBrush="{TemplateBinding StickyBorderBrush}"
@@ -29,7 +30,8 @@
                                                  ZIndex="1">
                             <ContentPresenter Content="{TemplateBinding StickyContent}" />
                         </atom:PixelAlignedBorder>
-                        <ContentPresenter Content="{TemplateBinding Content}" />
+                        <ContentPresenter Name="PART_ContentHost"
+                                          Content="{TemplateBinding Content}" />
                     </gallery:GalleryStickyTabsPanel>
                 </atom:ScrollViewer>
             </ControlTemplate>

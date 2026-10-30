@@ -1519,6 +1519,108 @@
         <target state="translated">Validation</target>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with form content area layout, styling and control container related styles</source>
+        <target state="translated">Elemento de conteúdo com layout da área de conteúdo do formulário, estilos e estilos relacionados ao contêiner de controle</target>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraDescription">
+      <segment>
+        <source>Extra prompt container element with spacing, color, and typography styles for supplementary text</source>
+        <target state="translated">Elemento contêiner de dica extra com espaçamento, cor e estilos tipográficos para textos complementares</target>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraPasswordMustContainLettersAndNumbers">
+      <segment>
+        <source>Password must contain letters and numbers.</source>
+        <target state="translated">A senha deve conter letras e números.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHelpDescription">
+      <segment>
+        <source>Help container element with spacing, motion, and presentation styles for help and validation areas</source>
+        <target state="translated">Elemento contêiner de ajuda com espaçamento, animação e estilos de apresentação para as áreas de ajuda e validação</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHelpItemDescription">
+      <segment>
+        <source>Single help message item with typography styles for prompt, error, and warning text</source>
+        <target state="translated">Item único de mensagem de ajuda com estilos tipográficos para textos de aviso, erro e alerta</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHelpUse4To16Characters">
+      <segment>
+        <source>Use 4 to 16 characters.</source>
+        <target state="translated">Use de 4 a 16 caracteres.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label element with flex layout, overflow hidden, whitespace nowrap, text alignment, vertical alignment, plus label color, font size, height, required marks and other label display styles</source>
+        <target state="translated">Elemento de rótulo com layout flex, overflow oculto, sem quebra de linha, alinhamento de texto, alinhamento vertical, além de cor, tamanho da fonte, altura, marcações de obrigatório e outros estilos de exibição do rótulo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMessageUseAtLeast8Characters">
+      <segment>
+        <source>Use at least 8 characters.</source>
+        <target state="translated">Use pelo menos 8 caracteres.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with form item margin-bottom, vertical-align, transitions, hidden states, error/warning states and other basic form item container styles</source>
+        <target state="translated">Elemento raiz com margem inferior do item de formulário, alinhamento vertical, transições, estados ocultos, estados de erro/aviso e outros estilos básicos do contêiner de item de formulário</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleEmailPlaceholder">
+      <segment>
+        <source>Please enter email</source>
+        <target state="translated">Insira o e-mail</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleMessagePleaseEnterEmail">
+      <segment>
+        <source>Please enter email!</source>
+        <target state="translated">Por favor, insira o e-mail!</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleMessagePleaseEnterUsername">
+      <segment>
+        <source>Please enter username!</source>
+        <target state="translated">Por favor, insira o nome de usuário!</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleResetButtonText">
+      <segment>
+        <source>reset</source>
+        <target state="translated">redefinir</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleSubmitButtonText">
+      <segment>
+        <source>Submit</source>
+        <target state="translated">Enviar</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleUsernamePlaceholder">
+      <segment>
+        <source>Please enter username</source>
+        <target state="translated">Insira o nome de usuário</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylingDescription">
+      <segment>
+        <source>You can customize the semantic style of Form by passing objects/functions through `classNames` and `styles`.</source>
+        <target state="translated">Você pode personalizar o estilo semântico do Form passando objetos/funções através de `classNames` e `styles`.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylingTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
     <unit id="TimeRelatedControlsDescription">
       <segment>
         <source>The value of time-related components is a dayjs object, which we need to pre-process it before we submit to server.</source>

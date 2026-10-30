@@ -42,6 +42,10 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
 
     internal IImage? ThumbnailImage => _thumbnailResult?.Image ?? FullImage;
 
+    internal Size FullImageSize => _fullResult is { OriginalPixelWidth: > 0, OriginalPixelHeight: > 0 } result
+        ? new Size(result.OriginalPixelWidth, result.OriginalPixelHeight)
+        : FullImage?.Size ?? default;
+
     internal ImageLoadState FullState
     {
         get => _fullState;

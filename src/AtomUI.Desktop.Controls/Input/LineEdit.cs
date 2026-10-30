@@ -7,7 +7,7 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-public class LineEdit : AbstractTextInput
+public partial class LineEdit : AbstractTextInput
 {
     #region 公共属性定义
 

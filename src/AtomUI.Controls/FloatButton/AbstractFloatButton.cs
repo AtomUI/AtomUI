@@ -1,11 +1,10 @@
-using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
+using Avalonia.Data;
 using Avalonia.Media;
 
 namespace AtomUI.Controls.Commons;
@@ -209,10 +208,10 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         base.OnSizeChanged(e);
         if (Shape == FloatButtonShape.Circle)
         {
-            SetCurrentValue(CornerRadiusProperty, new CornerRadius(e.NewSize.Height / 2));
+            SetValue(CornerRadiusProperty, new CornerRadius(e.NewSize.Height / 2), BindingPriority.Template);
         }
 
-        if (IsEmbedMode && _overlayLayer != null)
+        if (_overlayLayer != null)
         {
             CalculatePosition(this, _overlayLayer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
         }
@@ -281,13 +280,7 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
     {
         base.OnInitialized();
         ConfigureDefaultIcon();
-        this.DisableTransitions();
-    }
 
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(() => AnimatableReflectionExtensions.EnableTransitions(this));
     }
 
     protected virtual void UpdatePseudoClasses()

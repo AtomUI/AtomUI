@@ -8,8 +8,8 @@
              x:DataType="viewModels:MenuViewModel"
              x:CompileBindings="True">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Menu"
                     Category="{gallery:MenuShowCaseLangResource ComponentCategory}"
@@ -19,8 +19,208 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="ItemsControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="viewModels:MenuViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview Name="NavMenuSemanticPreview"
+                                                     SemanticOwner="{Binding #NavMenuSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:NavMenu}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:NavMenu Name="NavMenuSemanticOwner"
+                                              Mode="Inline"
+                                              Width="260"
+                                              IsMotionEnabled="False"
+                                              DefaultOpenPaths="{Binding SemanticPreviewOpenPaths}"
+                                              DefaultSelectedPath="{Binding SemanticPreviewSelectedPath}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center">
+                                    <atom:NavMenuNode ItemKey="nav-one"
+                                                      Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationOne}"
+                                                      Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
+                                    <atom:NavMenuNode ItemKey="sub-menu"
+                                                      Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationTwo}"
+                                                      Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}">
+                                        <atom:NavMenuGroup Header="{gallery:MenuShowCaseLangResource P2HeaderItemN1}">
+                                            <atom:NavMenuNode ItemKey="option-1"
+                                                              Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN1}"
+                                                              Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
+                                            <atom:NavMenuNode ItemKey="option-2"
+                                                              Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN2}" />
+                                        </atom:NavMenuGroup>
+                                    </atom:NavMenuNode>
+                                    <atom:NavMenuGroup Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationThree}">
+                                        <atom:NavMenuNode ItemKey="option-3"
+                                                          Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN3}" />
+                                        <atom:NavMenuNode ItemKey="option-4"
+                                                          Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN4}" />
+                                    </atom:NavMenuGroup>
+                                </atom:NavMenu>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription Path="root"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription Path="item"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemDescription}" />
+                                <gallery:SemanticPartDescription Path="itemIcon"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemIconDescription}" />
+                                <gallery:SemanticPartDescription Path="itemContent"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemContentDescription}" />
+                                <gallery:SemanticPartDescription Path="itemTitle"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemTitleDescription}" />
+                                <gallery:SemanticPartDescription Path="list"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticListDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.item"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.itemIcon"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemIconDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.itemContent"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemContentDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.itemTitle"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemTitleDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.list"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuListDescription}" />
+                                <gallery:SemanticPartDescription Path="popup.root"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticPopupRootDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <!-- Vertical 预览：子菜单以弹层打开，popup.root 只有在弹层真实打开后才
+                             挂上视觉树并成为可定位目标（Inline 模式模板里没有弹层节点，该键实例数
+                             恒为 0）。弹层框体位于菜单项模板的 Popup.Child 子树，GetTemplateDescendants
+                             在运行时生成的容器处中断，无法自动发现，因此在 code-behind 里把
+                             Popup.Child 注册进 AdditionalRoots。 -->
+                        <gallery:SemanticPartPreview Name="VerticalNavMenuSemanticPreview"
+                                                     SemanticOwner="{Binding #VerticalNavMenuSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:NavMenu}"
+                                                     Loaded="HandleVerticalSemanticPreviewLoaded"
+                                                     Unloaded="HandleVerticalSemanticPreviewUnloaded">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:NavMenu Name="VerticalNavMenuSemanticOwner"
+                                              Mode="Vertical"
+                                              Width="260"
+                                              IsMotionEnabled="False"
+                                              IsPopupPinnedOpen="True"
+                                              DefaultOpenPaths="{Binding SemanticPreviewOpenPaths}"
+                                              DefaultSelectedPath="{Binding SemanticPreviewSelectedPath}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center">
+                                    <atom:NavMenuNode ItemKey="nav-one"
+                                                      Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationOne}"
+                                                      Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
+                                    <atom:NavMenuNode ItemKey="sub-menu"
+                                                      Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationTwo}"
+                                                      Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}">
+                                        <atom:NavMenuGroup Header="{gallery:MenuShowCaseLangResource P2HeaderItemN1}">
+                                            <atom:NavMenuNode ItemKey="option-1"
+                                                              Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN1}"
+                                                              Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
+                                            <atom:NavMenuNode ItemKey="option-2"
+                                                              Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN2}" />
+                                        </atom:NavMenuGroup>
+                                    </atom:NavMenuNode>
+                                    <atom:NavMenuGroup Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationThree}">
+                                        <atom:NavMenuNode ItemKey="option-3"
+                                                          Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN3}" />
+                                        <atom:NavMenuNode ItemKey="option-4"
+                                                          Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN4}" />
+                                    </atom:NavMenuGroup>
+                                </atom:NavMenu>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription Path="root"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription Path="item"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemDescription}" />
+                                <gallery:SemanticPartDescription Path="itemIcon"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemIconDescription}" />
+                                <gallery:SemanticPartDescription Path="itemContent"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemContentDescription}" />
+                                <gallery:SemanticPartDescription Path="itemTitle"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemTitleDescription}" />
+                                <gallery:SemanticPartDescription Path="list"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticListDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.item"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.itemIcon"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemIconDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.itemContent"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemContentDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.itemTitle"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemTitleDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.list"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuListDescription}" />
+                                <gallery:SemanticPartDescription Path="popup.root"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticPopupRootDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <!-- 普通 Menu 预览：菜单栏顶层项用 TopLevelMenuItemTheme（无弹层时只暴露
+                             一级 item/itemIcon/itemContent），子菜单项用 MenuItemTheme，弹层框体与
+                             分组标题/列表在弹层打开并展开子菜单后才成为可定位目标。与两个 NavMenu
+                             预览并列，覆盖普通 Menu 自己的 12 个键路径。 -->
+                        <gallery:SemanticPartPreview Name="MenuSemanticPreview"
+                                                     SemanticOwner="{Binding #MenuSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:Menu}"
+                                                     Loaded="HandleMenuSemanticPreviewLoaded"
+                                                     Unloaded="HandleMenuSemanticPreviewUnloaded">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:Menu Name="MenuSemanticOwner"
+                                           IsMotionEnabled="False"
+                                           IsPopupPinnedOpen="True"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                    <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderFile}"
+                                                   Icon="{antdicons:AntDesignIconProvider Kind=FileOutlined}">
+                                        <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderNewTextFile}"
+                                                       Icon="{antdicons:AntDesignIconProvider Kind=FileAddOutlined}"
+                                                       InputGesture="Ctrl+N" />
+                                        <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderNewFile}" />
+                                        <atom:MenuSeparator />
+                                        <atom:MenuItemGroup Header="{gallery:MenuShowCaseLangResource P2HeaderItemN1}">
+                                            <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderSave}" />
+                                            <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderSaveAs}" />
+                                        </atom:MenuItemGroup>
+                                    </atom:MenuItem>
+                                    <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderEdit}"
+                                                   Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}">
+                                        <atom:MenuSeparator />
+                                        <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderCut}"
+                                                       InputGesture="Ctrl+X" />
+                                    </atom:MenuItem>
+                                </atom:Menu>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription Path="root"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription Path="item"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemDescription}" />
+                                <gallery:SemanticPartDescription Path="itemIcon"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemIconDescription}" />
+                                <gallery:SemanticPartDescription Path="itemContent"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemContentDescription}" />
+                                <gallery:SemanticPartDescription Path="itemTitle"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticItemTitleDescription}" />
+                                <gallery:SemanticPartDescription Path="list"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticListDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.item"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.itemIcon"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemIconDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.itemContent"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemContentDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.itemTitle"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuItemTitleDescription}" />
+                                <gallery:SemanticPartDescription Path="subMenu.list"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticSubMenuListDescription}" />
+                                <gallery:SemanticPartDescription Path="popup.root"
+                                                                 Description="{gallery:MenuShowCaseLangResource SemanticPopupRootDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -702,7 +902,203 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:MenuShowCaseLangResource SemanticPartStyleTitle}"
+        Description="{gallery:MenuShowCaseLangResource SemanticPartStyleDescription}"
+        SourceKey="menu-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        Span="Full"
+        MinHeight="300"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="viewModels:MenuViewModel">
+                <StackPanel Spacing="16">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|NavMenu.semantic-style-demo">
+                            <Setter Property="Background" Value="#FAFAFA" />
+                            <Setter Property="BorderBrush" Value="#D9D9D9" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Setter Property="CornerRadius" Value="8" />
+                            <Setter Property="Padding" Value="8" />
+                            <atom:NavMenuItemStyle x:SetterTargetType="HeaderedSelectingItemsControl">
+                                <Setter Property="Foreground" Value="#1677FF" />
+                                <Setter Property="MinHeight" Value="36" />
+                            </atom:NavMenuItemStyle>
+                            <atom:NavMenuItemIconStyle x:SetterTargetType="atom:IconPresenter">
+                                <Setter Property="IconBrush" Value="#1677FF" />
+                            </atom:NavMenuItemIconStyle>
+                            <atom:NavMenuItemContentStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </atom:NavMenuItemContentStyle>
+                            <atom:NavMenuItemTitleStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="TextElement.FontWeight" Value="SemiBold" />
+                            </atom:NavMenuItemTitleStyle>
+                            <atom:NavMenuListStyle x:SetterTargetType="ItemsPresenter">
+                                <Setter Property="Margin" Value="0,2,0,0" />
+                            </atom:NavMenuListStyle>
+                            <atom:NavMenuPopupRootStyle x:SetterTargetType="Border">
+                                <Setter Property="BorderBrush" Value="#D9D9D9" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="CornerRadius" Value="8" />
+                                <Setter Property="Padding" Value="8" />
+                            </atom:NavMenuPopupRootStyle>
+                        </Style>
+                        <Style Selector="atom|NavMenu.semantic-inline-style-demo">
+                            <Setter Property="Background" Value="#F0F5FF" />
+                            <atom:NavMenuSubMenuItemStyle x:SetterTargetType="HeaderedSelectingItemsControl">
+                                <Setter Property="Foreground" Value="#FA541C" />
+                            </atom:NavMenuSubMenuItemStyle>
+                            <atom:NavMenuSubMenuListStyle x:SetterTargetType="ItemsPresenter">
+                                <Setter Property="Margin" Value="0,4,0,0" />
+                            </atom:NavMenuSubMenuListStyle>
+                            <atom:NavMenuSubMenuItemTitleStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="TextElement.FontWeight" Value="SemiBold" />
+                            </atom:NavMenuSubMenuItemTitleStyle>
+                            <atom:NavMenuSubMenuItemContentStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </atom:NavMenuSubMenuItemContentStyle>
+                        </Style>
+                        <Style Selector="atom|Menu.semantic-style-demo">
+                            <Setter Property="Background" Value="#FAFAFA" />
+                            <Setter Property="BorderBrush" Value="#D9D9D9" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Setter Property="CornerRadius" Value="8" />
+                            <Setter Property="Padding" Value="4" />
+                            <atom:MenuItemStyle x:SetterTargetType="MenuItem">
+                                <Setter Property="Foreground" Value="#1677FF" />
+                                <Setter Property="MinHeight" Value="36" />
+                            </atom:MenuItemStyle>
+                            <atom:MenuItemIconStyle x:SetterTargetType="atom:IconPresenter">
+                                <Setter Property="IconBrush" Value="#1677FF" />
+                            </atom:MenuItemIconStyle>
+                            <atom:MenuItemContentStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </atom:MenuItemContentStyle>
+                            <atom:MenuPopupRootStyle x:SetterTargetType="Border">
+                                <Setter Property="BorderBrush" Value="#D9D9D9" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="CornerRadius" Value="8" />
+                                <Setter Property="Padding" Value="8" />
+                            </atom:MenuPopupRootStyle>
+                        </Style>
+                        <Style Selector="atom|Menu.semantic-sub-menu-style-demo">
+                            <Setter Property="Background" Value="#F0F5FF" />
+                            <Setter Property="Padding" Value="4" />
+                            <atom:MenuSubMenuItemStyle x:SetterTargetType="MenuItem">
+                                <Setter Property="Foreground" Value="#FA541C" />
+                            </atom:MenuSubMenuItemStyle>
+                            <atom:MenuSubMenuItemIconStyle x:SetterTargetType="atom:IconPresenter">
+                                <Setter Property="IconBrush" Value="#FA541C" />
+                            </atom:MenuSubMenuItemIconStyle>
+                            <atom:MenuSubMenuItemContentStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </atom:MenuSubMenuItemContentStyle>
+                            <atom:MenuSubMenuItemTitleStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="TextElement.FontWeight" Value="SemiBold" />
+                            </atom:MenuSubMenuItemTitleStyle>
+                            <atom:MenuSubMenuListStyle x:SetterTargetType="ItemsPresenter">
+                                <Setter Property="Margin" Value="0,4,0,0" />
+                            </atom:MenuSubMenuListStyle>
+                        </Style>
+                    </StackPanel.Styles>
+
+                    <!-- 第一行：两个 NavMenu 并排对照 -->
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <atom:NavMenu Classes="semantic-style-demo"
+                                      Mode="Vertical"
+                                      Width="240"
+                                      VerticalAlignment="Top"
+                                      DefaultOpenPaths="{Binding SemanticPreviewOpenPaths}">
+                            <atom:NavMenuNode ItemKey="sub-menu"
+                                              Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationOne}"
+                                              Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}">
+                                <atom:NavMenuGroup Header="{gallery:MenuShowCaseLangResource P2HeaderItemN1}">
+                                    <atom:NavMenuNode ItemKey="option-1"
+                                                      Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN1}"
+                                                      Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
+                                    <atom:NavMenuNode ItemKey="option-2"
+                                                      Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN2}" />
+                                </atom:NavMenuGroup>
+                            </atom:NavMenuNode>
+                            <atom:NavMenuNode ItemKey="nav-two"
+                                              Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationTwo}" />
+                            <atom:NavMenuGroup Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationThree}">
+                                <atom:NavMenuNode ItemKey="option-3"
+                                                  Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN3}" />
+                                <atom:NavMenuNode ItemKey="option-4"
+                                                  Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN4}" />
+                            </atom:NavMenuGroup>
+                        </atom:NavMenu>
+
+                        <atom:NavMenu Classes="semantic-inline-style-demo"
+                                      Mode="Inline"
+                                      Width="240"
+                                      VerticalAlignment="Top"
+                                      DefaultOpenPaths="{Binding SemanticPreviewOpenPaths}">
+                            <atom:NavMenuNode ItemKey="sub-menu"
+                                              Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationOne}"
+                                              Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}">
+                                <atom:NavMenuGroup Header="{gallery:MenuShowCaseLangResource P2HeaderItemN1}">
+                                    <atom:NavMenuNode ItemKey="option-1"
+                                                      Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN1}"
+                                                      Icon="{antdicons:AntDesignIconProvider Kind=MailOutlined}" />
+                                    <atom:NavMenuNode ItemKey="option-2"
+                                                      Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN2}" />
+                                </atom:NavMenuGroup>
+                            </atom:NavMenuNode>
+                            <atom:NavMenuNode ItemKey="nav-two"
+                                              Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationTwo}" />
+                            <atom:NavMenuGroup Header="{gallery:MenuShowCaseLangResource P2HeaderNavigationThree}">
+                                <atom:NavMenuNode ItemKey="option-3"
+                                                  Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN3}" />
+                                <atom:NavMenuNode ItemKey="option-4"
+                                                  Header="{gallery:MenuShowCaseLangResource P2HeaderOptionN4}" />
+                            </atom:NavMenuGroup>
+                        </atom:NavMenu>
+                    </StackPanel>
+
+                    <!-- 第二行：两个普通 Menu 菜单栏并排；弹层完全收起，点击菜单项展开 -->
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <!-- 一级 item 部件：菜单栏顶层项，只命中一级 marker。 -->
+                        <atom:Menu Classes="semantic-style-demo"
+                                   IsMotionEnabled="False"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top">
+                            <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderFile}"
+                                           Icon="{antdicons:AntDesignIconProvider Kind=FileOutlined}">
+                                <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderNewTextFile}" />
+                                <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderNewFile}" />
+                            </atom:MenuItem>
+                            <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderEdit}"
+                                           Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}">
+                                <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderCut}" />
+                            </atom:MenuItem>
+                        </atom:Menu>
+
+                        <!-- subMenu.* 部件：弹层内部的菜单项、分组标题与分组列表。 -->
+                        <atom:Menu Classes="semantic-sub-menu-style-demo"
+                                   IsMotionEnabled="False"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top">
+                            <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderFile}"
+                                           Icon="{antdicons:AntDesignIconProvider Kind=FileOutlined}">
+                                <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderNewTextFile}"
+                                               Icon="{antdicons:AntDesignIconProvider Kind=FileAddOutlined}" />
+                                <atom:MenuItemGroup Header="{gallery:MenuShowCaseLangResource P2HeaderItemN1}">
+                                    <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderSave}"
+                                                   Icon="{antdicons:AntDesignIconProvider Kind=SaveOutlined}" />
+                                    <atom:MenuItem Header="{gallery:MenuShowCaseLangResource P2HeaderSaveAs}"
+                                                   Icon="{antdicons:AntDesignIconProvider Kind=SaveOutlined}" />
+                                </atom:MenuItemGroup>
+                            </atom:MenuItem>
+                        </atom:Menu>
+                    </StackPanel>
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

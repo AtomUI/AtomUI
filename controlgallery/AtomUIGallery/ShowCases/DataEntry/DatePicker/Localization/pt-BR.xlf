@@ -379,6 +379,84 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button in the suffix area, rendered in clear mode.</source>
+        <target state="translated">Botão de limpar na área de sufixo, renderizado no modo de limpeza.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Start date text input of the picker.</source>
+        <target state="translated">Campo de texto da data inicial do seletor.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupBodyDescription">
+      <segment>
+        <source>Date panel table container; in dual-month layout it hosts both month tables.</source>
+        <target state="translated">Contêiner da tabela do painel de datas; no layout de dois meses, hospeda as duas tabelas.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupCellDescription">
+      <segment>
+        <source>Date cell button carrying selected, range, today and disabled states.</source>
+        <target state="translated">Botão da célula de data que carrega os estados selecionado, de intervalo, hoje e desabilitado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContainerDescription">
+      <segment>
+        <source>Panel content container organizing the calendar body and the footer buttons.</source>
+        <target state="translated">Contêiner de conteúdo do painel do calendário, organizando a área principal e os botões do rodapé.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContentDescription">
+      <segment>
+        <source>One month date table with the day cells and the week number column variant.</source>
+        <target state="translated">Tabela de datas de um único mês, com as células de data e a variante da coluna de número da semana.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupFooterDescription">
+      <segment>
+        <source>Footer area with the Now, Today and OK buttons.</source>
+        <target state="translated">Área de rodapé com os botões Agora, Hoje e OK.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupHeaderDescription">
+      <segment>
+        <source>Calendar header with the year/month title and the navigation buttons.</source>
+        <target state="translated">Cabeçalho de navegação do calendário com o título de ano/mês e os botões de navegação.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root visual box of the popup layer with the floating arrow.</source>
+        <target state="translated">Caixa visual raiz da camada de popup, com a seta flutuante.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix area hosting the ContentLeftAddOn content inside the input.</source>
+        <target state="translated">Área de prefixo do conteúdo da entrada, hospedando o conteúdo do usuário de ContentLeftAddOn.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The RangeDatePicker owner itself.</source>
+        <target state="translated">O próprio controle RangeDatePicker.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSecondaryInputDescription">
+      <segment>
+        <source>End date text input of the range picker.</source>
+        <target state="translated">Campo de texto da data final da seleção de intervalo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix area hosting the clear button, the form feedback and the user suffix content.</source>
+        <target state="translated">Área de sufixo da entrada, hospedando o botão de limpar, o feedback do formulário e o conteúdo de sufixo do usuário.</target>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to DatePicker with status, which could be error or warning.</source>
@@ -389,6 +467,18 @@
       <segment>
         <source>Status</source>
         <target state="translated">Status</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Apply owner-scoped styles with the public Semantic Parts of the picker to customize the prefix, both inputs, the date cells and the popup layer.</source>
+        <target state="translated">Aplique estilos com escopo no owner e as partes semânticas públicas do seletor para personalizar o prefixo, as duas entradas, as células de data e a camada de popup.</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
       </segment>
     </unit>
     <unit id="SwitchableDescription">

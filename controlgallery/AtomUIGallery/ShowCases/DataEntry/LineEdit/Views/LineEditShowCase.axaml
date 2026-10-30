@@ -11,8 +11,8 @@
     </UserControl.Resources>
 
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="LineEdit"
                     Category="{gallery:LineEditShowCaseLangResource ComponentCategory}"
@@ -22,7 +22,179 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="TextBox" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:LineEditViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview Name="LineEditSemanticPreview"
+                                                     Title="LineEdit"
+                                                     SemanticOwner="{Binding #LineEditSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:LineEdit}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:LineEdit Name="LineEditSemanticOwner"
+                                               Width="420"
+                                               SizeType="Middle"
+                                               StyleVariant="Outlined"
+                                               Text="atomui"
+                                               InnerLeftContent="https://"
+                                               InnerRightContent=".com"
+                                               IsAllowClear="True"
+                                               IsShowCount="True"
+                                               MaxLength="20" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="prefix"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticPrefixDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="input"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticInputDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="suffix"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticSuffixDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="clear"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticClearDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="count"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticCountDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="PasswordSemanticPreview"
+                                                     Title="Password"
+                                                     SemanticOwner="{Binding #PasswordSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:LineEdit}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:LineEdit Name="PasswordSemanticOwner"
+                                               Width="420"
+                                               SizeType="Middle"
+                                               StyleVariant="Outlined"
+                                               Text="AtomUI!Password42"
+                                               PasswordChar="•"
+                                               RevealPassword="False"
+                                               IsEnableRevealButton="True"
+                                               InnerLeftContent="{antdicons:AntDesignIconProvider Kind=UserOutlined}"
+                                               IsAllowClear="True"
+                                               IsShowCount="True"
+                                               MaxLength="20" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticPasswordRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="prefix"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticPasswordPrefixDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="input"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticPasswordInputDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="suffix"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticPasswordSuffixDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="clear"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticPasswordClearDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="count"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticPasswordCountDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="TextAreaSemanticPreview"
+                                                     Title="TextArea"
+                                                     SemanticOwner="{Binding #TextAreaSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:TextArea}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:TextArea Name="TextAreaSemanticOwner"
+                                               Text="Hello, AtomUI"
+                                               Lines="3"
+                                               IsAllowClear="True"
+                                               IsShowCount="True"
+                                               MaxLength="100" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticTextAreaRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="textarea"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticTextAreaDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="clear"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticTextAreaClearDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="count"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticTextAreaCountDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="SearchEditSemanticPreview"
+                                                     Title="SearchEdit"
+                                                     SemanticOwner="{Binding #SearchEditSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:SearchEdit}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:SearchEdit Name="SearchEditSemanticOwner"
+                                                 Text="Hello, AtomUI"
+                                                 InnerLeftContent="{antdicons:AntDesignIconProvider Kind=UserOutlined}"
+                                                 IsAllowClear="True"
+                                                 SearchButtonStyle="Primary"
+                                                 SearchButtonText="Searching..."
+                                                 IsOperating="True" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticSearchRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="prefix"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticSearchPrefixDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="input"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticSearchInputDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="suffix"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticSearchSuffixDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="clear"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticSearchClearDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="button"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticSearchButtonDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="OtpSemanticPreview"
+                                                     Title="OtpLineEdit"
+                                                     SemanticOwner="{Binding #OtpSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:OtpLineEdit}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:OtpLineEdit Name="OtpSemanticOwner"
+                                                  Length="6"
+                                                  Separator="-" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticOtpRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="cellList"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticOtpCellListDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="cell"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticOtpCellDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="separator"
+                                    Description="{gallery:LineEditShowCaseLangResource SemanticOtpSeparatorDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -279,16 +451,14 @@
                 <atom:TextBlock Text="With custom separator"
                                 FontSize="16"
                                 FontWeight="SemiBold" />
-                <atom:OtpLineEdit Separator="/"
-                                  SeparatorInterval="1" />
+                <atom:OtpLineEdit Separator="/" />
             </StackPanel>
 
             <StackPanel Orientation="Vertical" Spacing="14">
                 <atom:TextBlock Text="With custom function separator"
                                 FontSize="16"
                                 FontWeight="SemiBold" />
-                <atom:OtpLineEdit Separator="—"
-                                  SeparatorInterval="1">
+                <atom:OtpLineEdit Separator="—">
                     <atom:OtpLineEdit.SeparatorTemplate>
                         <DataTemplate x:DataType="atom:OtpLineEditSeparatorContext">
                             <TextBlock Text="{Binding Content}"
@@ -671,7 +841,97 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:LineEditShowCaseLangResource SemanticPartStyleTitle}"
+        Description="{gallery:LineEditShowCaseLangResource SemanticPartStyleDescription}"
+        SourceKey="line-edit-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:LineEditViewModel">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Spacing="24">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|LineEdit.style-class-base">
+                            <Setter Property="Width" Value="320" />
+                        </Style>
+                        <Style Selector="atom|LineEdit.style-class-object">
+                            <Setter Property="Width" Value="320" />
+                            <Setter Property="BorderBrush" Value="#D9D9D9" />
+                        </Style>
+                        <Style Selector="atom|LineEdit.style-class-object:focus-within">
+                            <Setter Property="BorderBrush" Value="#A9A9A9" />
+                        </Style>
+                        <Style Selector="atom|LineEdit.style-class-fn">
+                            <Setter Property="BorderBrush" Value="#696FC7" />
+                        </Style>
+                        <Style Selector="atom|TextArea.style-class-textarea">
+                            <Setter Property="Width" Value="320" />
+                            <Setter Property="BorderBrush" Value="#BDE3C3" />
+                            <atom:TextAreaCountStyle x:SetterTargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#BDE3C3" />
+                            </atom:TextAreaCountStyle>
+                        </Style>
+                        <Style Selector="atom|LineEdit.style-class-password">
+                            <Setter Property="BorderBrush" Value="#F5D3C4" />
+                        </Style>
+                        <Style Selector="atom|OtpLineEdit.style-class-otp">
+                            <Setter Property="CellWidth" Value="32" />
+                            <Setter Property="CellBorderBrush" Value="#6E8CFB" />
+                        </Style>
+                        <Style Selector="atom|SearchEdit.style-class-search">
+                            <Setter Property="Width" Value="320" />
+                            <Setter Property="Foreground" Value="#4DA8DA" />
+                            <Setter Property="BorderBrush" Value="#4DA8DA" />
+                            <Setter Property="CaretBrush" Value="#4DA8DA" />
+                            <atom:SearchEditInputStyle x:SetterTargetType="TextPresenter">
+                                <Setter Property="TextElement.Foreground" Value="#4DA8DA" />
+                            </atom:SearchEditInputStyle>
+                            <atom:SearchEditButtonStyle x:SetterTargetType="atom:Button">
+                                <Setter Property="Foreground" Value="#4DA8DA" />
+                                <Setter Property="BorderBrush" Value="#4DA8DA" />
+                            </atom:SearchEditButtonStyle>
+                        </Style>
+                    </StackPanel.Styles>
+
+                    <atom:LineEdit
+                        Classes="style-class-base style-class-object"
+                        PlaceholderText="Object" />
+
+                    <atom:LineEdit
+                        Classes="style-class-base style-class-fn"
+                        PlaceholderText="Function"
+                        SizeType="Middle" />
+
+                    <atom:TextArea
+                        Classes="style-class-textarea"
+                        Text="TextArea"
+                        IsShowCount="True"
+                        MaxLength="100"
+                        IsResizable="False" />
+
+                    <atom:LineEdit
+                        Classes="style-class-base style-class-password"
+                        Text="Password"
+                        RevealPassword="False"
+                        PasswordChar="•"
+                        IsEnableRevealButton="True"
+                        SizeType="Middle" />
+
+                    <atom:OtpLineEdit
+                        Classes="style-class-otp"
+                        Length="6"
+                        Separator="*" />
+
+                    <atom:SearchEdit
+                        Classes="style-class-search"
+                        PlaceholderText="Search"
+                        SizeType="Large" />
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

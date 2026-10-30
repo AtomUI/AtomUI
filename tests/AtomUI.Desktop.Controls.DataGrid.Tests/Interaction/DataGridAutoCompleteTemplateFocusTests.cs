@@ -72,7 +72,9 @@ public class DataGridAutoCompleteTemplateFocusTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            var textInput = FindTextInput(autoComplete);
+            var textInput = autoComplete.GetVisualDescendants()
+                                        .OfType<AbstractTextInput>()
+                                        .Single();
 
             Click(textInput, window);
             Dispatcher.UIThread.RunJobs();
@@ -141,7 +143,7 @@ public class DataGridAutoCompleteTemplateFocusTests
         return autoComplete;
     }
 
-    private static AbstractTextInput FindTextInput(AbstractAutoComplete autoComplete)
+    private static Control FindTextInput(AbstractAutoComplete autoComplete)
     {
         return autoComplete.GetVisualDescendants()
                            .OfType<AbstractTextInput>()

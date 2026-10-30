@@ -1,6 +1,4 @@
-using AtomUI.Desktop.Controls;
 using AtomUI.Desktop.Controls.Tests.DataGrid.Data.Source;
-using Avalonia.Controls;
 using Avalonia.Threading;
 using Shouldly;
 using Xunit;

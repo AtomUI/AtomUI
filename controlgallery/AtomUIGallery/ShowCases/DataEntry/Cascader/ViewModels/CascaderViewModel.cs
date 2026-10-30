@@ -214,6 +214,30 @@ public class CascaderViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _defaultExpandPath, value);
     }
 
+    private List<ICascaderOption>? _semanticPreviewOptions;
+
+    public List<ICascaderOption>? SemanticPreviewOptions
+    {
+        get => _semanticPreviewOptions;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewOptions, value);
+    }
+
+    private IList<ICascaderOption>? _semanticPreviewSelectedOptions;
+
+    public IList<ICascaderOption>? SemanticPreviewSelectedOptions
+    {
+        get => _semanticPreviewSelectedOptions;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewSelectedOptions, value);
+    }
+
+    private List<ICascaderOption>? _styleClassOptions;
+
+    public List<ICascaderOption>? StyleClassOptions
+    {
+        get => _styleClassOptions;
+        set => this.RaiseAndSetIfChanged(ref _styleClassOptions, value);
+    }
+
     public CascaderViewModel(IScreen screen)
     {
         HostScreen = screen;

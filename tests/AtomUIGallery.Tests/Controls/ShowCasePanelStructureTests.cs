@@ -1,5 +1,4 @@
 using AtomUI.Toolkits.GalleryBase.Controls;
-using AtomUI.Toolkits.GalleryBase.Controls.DesignTokens;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -72,13 +71,13 @@ public class ShowCasePanelStructureTests
         var headerTheme       = ReadRepoFile("src/AtomUI.Toolkits.GalleryBase/Controls/Themes/GalleryShowCaseHeaderTheme.axaml");
         var headerToken       = ReadRepoFile("src/AtomUI.Toolkits.GalleryBase/Controls/GalleryShowCaseHeaderToken.cs");
         var assetManifest     = ReadRepoFile(
-            "src/AtomUI.Toolkits.GalleryBase/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.ThemeAssetManifestGenerator/GeneratedControlThemeAssetManifest.g.cs");
+            "src/AtomUI.Toolkits.GalleryBase/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedTypeMapRegistration.g.cs");
         var assemblyInfo      = ReadRepoFile("src/AtomUI.Toolkits.GalleryBase/Properties/AssemblyInfo.cs");
         var tokenResources    = ReadRepoFile("src/AtomUI.Toolkits.GalleryBase/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/TokenResourceConst.g.cs");
         var languageResources = ReadRepoFile(
             "src/AtomUI.Toolkits.GalleryBase/Localization/GalleryShowCaseHeaderLang/GalleryShowCaseHeaderLangResourceKind.cs");
-        var languageRegistration = ReadRepoFile(
-            "src/AtomUI.Toolkits.GalleryBase/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.LocalizationGenerator/AtomUI.Toolkits.GalleryBase.Localization.GalleryShowCaseHeaderLangResourceKind.LanguageCatalogRegistration.g.cs");
+        var languageModuleRegistration = ReadRepoFile(
+            "src/AtomUI.Toolkits.GalleryBase/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.LocalizationGenerator/GeneratedLanguageModuleRegistration.g.cs");
 
         headerSource.ShouldContain("public const string LanguageId = \"GalleryShowCaseHeader\"");
         headerSource.ShouldNotContain("RegisterTokenResourceScope");
@@ -111,17 +110,19 @@ public class ShowCasePanelStructureTests
         assetManifest.ShouldContain("Controls/Themes/GalleryShowCaseHeaderTheme.axaml");
         assemblyInfo.ShouldContain("AtomUI.Toolkits.GalleryBase.Localization");
         tokenResources.ShouldContain("enum GalleryShowCaseHeaderTokenKind");
-        tokenResources.ShouldContain("ControlTokenIdentity(\"AtomUI\", \"GalleryShowCaseHeader\")");
+        tokenResources.ShouldContain("ControlTokenIdentity.ForControl(typeof(global::AtomUI.Toolkits.GalleryBase.Controls.GalleryShowCaseHeader), \"AtomUI\", \"GalleryShowCaseHeader\")");
         tokenResources.ShouldContain("GalleryShowCaseHeaderTokenResourceExtension");
         languageResources.ShouldContain("enum GalleryShowCaseHeaderLangResourceKind");
         languageResources.ShouldContain("[LanguageCatalog]");
         languageResources.ShouldContain("NamespaceLabel");
         languageResources.ShouldContain("PackageLabel");
         languageResources.ShouldContain("BaseClassLabel");
-        languageRegistration.ShouldContain("builder.AddCatalog(");
-        languageRegistration.ShouldContain("LanguageTag.Parse(\"en-US\")");
-        languageRegistration.ShouldContain("LanguageTag.Parse(\"zh-CN\")");
-        languageRegistration.ShouldContain("LanguageTag.Parse(\"zh-TW\")");
+        languageModuleRegistration.ShouldContain("LanguageModuleManifestAttribute(1, \"AtomUI.Toolkits.GalleryBase\"");
+        languageModuleRegistration.ShouldContain("builder.AddModuleData(\"AtomUI.Toolkits.GalleryBase\", Data)");
+        languageModuleRegistration.ShouldContain("GalleryShowCaseHeaderLangResourceKind");
+        languageModuleRegistration.ShouldContain("en-US");
+        languageModuleRegistration.ShouldContain("zh-CN");
+        languageModuleRegistration.ShouldContain("zh-TW");
     }
 
     [Fact]
@@ -443,8 +444,8 @@ public class ShowCasePanelStructureTests
     [Fact]
     public void ShowCase_Runtime_Options_Do_Not_Let_Runtime_Stop_Override_Environment_Disable()
     {
-        GalleryShowCaseRuntimeOptions.ResetDeferredLoadingDisabledOverride();
         var oldValue = SetDeferredLoadingEnvironment("1");
+        GalleryShowCaseRuntimeOptions.ResetDeferredLoadingDisabledOverride();
         try
         {
             GalleryShowCaseRuntimeOptions.IsDeferredLoadingDisabled.ShouldBeTrue();

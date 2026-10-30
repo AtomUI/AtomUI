@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using AtomUI.Controls;
+using AtomUI.Generated.AtomUIDesktopControlsDataGrid;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Automation;
@@ -208,6 +209,11 @@ public class DataGridCell : ContentControl
         AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<DataGridCell>(
             IsOffscreenBehavior.FromClip);
         AffectsRender<DataGridCell>(IsShowFrozenShadowProperty);
+    }
+
+    public DataGridCell()
+    {
+        Classes.Add(DataGridSemanticParts.BodyCellClass);
     }
 
     /// <summary>
@@ -427,6 +433,7 @@ public class DataGridCell : ContentControl
         if (column == null)
         {
             Classes.Clear();
+            Classes.Add(DataGridSemanticParts.BodyCellClass);
             ClearValue(ThemeProperty);
         }
         else
@@ -437,6 +444,7 @@ public class DataGridCell : ContentControl
             }
 
             Classes.Replace(column.CellStyleClasses);
+            Classes.Add(DataGridSemanticParts.BodyCellClass);
         }
     }
 }

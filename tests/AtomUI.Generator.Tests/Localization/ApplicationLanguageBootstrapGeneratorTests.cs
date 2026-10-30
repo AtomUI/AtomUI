@@ -56,11 +56,12 @@ public class ApplicationLanguageBootstrapGeneratorTests
             StaticPackFile());
 
         execution.Result.Diagnostics.ShouldBeEmpty();
-        execution.Result.GeneratedSources.ShouldHaveSingleItem();
+        execution.Result.GeneratedSources.Length.ShouldBe(2);
         var source = GetBootstrapSource(execution.Result);
         source.ShouldNotContain("GeneratedLanguageModuleRegistration.Register(builder)");
-        source.ShouldContain("TranslationSourceKind.StaticLanguagePack");
-        source.ShouldContain("External.Package:External.Localization.ExternalLangResourceKind");
+        source.ShouldContain("GeneratedApplicationLanguageData.Register(builder)");
+        ReadApplicationData(execution.Result).Bundles.ShouldHaveSingleItem().CatalogId
+            .ShouldBe("External.Package:External.Localization.ExternalLangResourceKind");
         AssertCompiles(execution);
     }
 
@@ -76,7 +77,7 @@ public class ApplicationLanguageBootstrapGeneratorTests
 
         execution.Result.Diagnostics.ShouldBeEmpty();
         var source = GetBootstrapSource(execution.Result);
-        source.ShouldContain("TranslationSourceKind.StaticLanguagePack");
+        source.ShouldContain("GeneratedApplicationLanguageData.Register(builder)");
         source.ShouldNotContain("TranslationSourceKind.ModuleBuiltIn");
         AssertCompiles(execution);
     }
@@ -91,8 +92,10 @@ public class ApplicationLanguageBootstrapGeneratorTests
 
         execution.Result.Diagnostics.ShouldBeEmpty();
         var bootstrap = GetBootstrapSource(execution.Result);
-        bootstrap.ShouldContain("TranslationSourceKind.ApplicationOverride");
-        bootstrap.ShouldContain("null,");
+        bootstrap.ShouldContain("GeneratedApplicationLanguageData.Register(builder)");
+        var bundle = ReadApplicationData(execution.Result).Bundles.ShouldHaveSingleItem();
+        bundle.SourceKind.ShouldBe(2);
+        bundle.Values.ShouldContain(static value => value == null);
         GetGeneratedSource(execution.Result, "GeneratedLanguageModuleRegistration.g.cs")
             .ShouldNotContain("TranslationSourceKind.ApplicationOverride");
         AssertCompiles(execution);
@@ -166,6 +169,16 @@ public class ApplicationLanguageBootstrapGeneratorTests
         var execution = RunApplication(declaration, SourceFile());
 
         AssertApplicationDiagnostic(execution.Result, "App", messageFragment);
+    }
+
+    private static AtomUI.Localization.Data.LanguageModuleData ReadApplicationData(GeneratorRunResult result)
+    {
+        var tree = result.GeneratedSources.Single(static source =>
+            source.HintName == "GeneratedApplicationLanguageData.g.cs").SyntaxTree;
+        var value = tree.GetRoot(TestContext.Current.CancellationToken).DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax>()
+            .Single(static variable => variable.Identifier.ValueText == "Data").Initializer!.Value;
+        return AtomUI.Localization.Data.LanguageModuleDataCodec.Read("TestApp:ApplicationTranslations",
+            ((Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax)value).Token.ValueText);
     }
 
     private static TestGeneratorExecution RunApplication(
@@ -357,8 +370,15 @@ public class ApplicationLanguageBootstrapGeneratorTests
                 protected LanguageResourceExtension(TResourceKind kind) { }
             }
 
+            [System.AttributeUsage(System.AttributeTargets.Assembly, AllowMultiple = true)]
+            public sealed class LanguageModuleManifestAttribute : System.Attribute
+            {
+                public LanguageModuleManifestAttribute(int version, string moduleId, string data) { }
+            }
+
             public interface ILocalizationBuilder
             {
+                void AddModuleData(string moduleId, string data);
                 void AddCatalog(LanguageCatalogDescriptor descriptor);
                 void AddTranslationBundle(TranslationBundleDescriptor descriptor);
             }

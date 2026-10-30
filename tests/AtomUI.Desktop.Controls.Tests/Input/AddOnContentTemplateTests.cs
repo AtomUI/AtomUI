@@ -60,6 +60,27 @@ public class AddOnContentTemplateTests
     }
 
     [Fact]
+    public void LineEdit_TemplateOnly_InnerLeftContent_Creates_Prefix_Content()
+    {
+        var lineEdit = new LineEdit
+        {
+            Width                    = 240,
+            InnerLeftContentTemplate = CreateTemplate("line-edit-left")
+        };
+
+        ShowInWindow(lineEdit, () =>
+        {
+            var prefix = lineEdit.GetVisualDescendants()
+                                 .OfType<ContentPresenter>()
+                                 .Single(static presenter =>
+                                     presenter.Classes.Contains("semantic-prefix"));
+            prefix.IsVisible.ShouldBeTrue();
+            prefix.Child.ShouldNotBeNull();
+            prefix.Child!.Tag.ShouldBe("line-edit-left");
+        });
+    }
+
+    [Fact]
     public void TextArea_InnerRightContent_And_Template_Are_Visible()
     {
         var directContent = new Border { Tag = "direct-right" };

@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Commons;
+using AtomUI.Media;
 using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
@@ -45,6 +46,21 @@ public class TagColorVariantTests
             filled.BorderThickness.ShouldBe(outlined.BorderThickness);
             solid.BorderThickness.ShouldBe(outlined.BorderThickness);
             outlined.BorderThickness.ShouldNotBe(new Thickness());
+        });
+    }
+
+    [Fact]
+    public void Default_Background_Composites_ColorFillTertiary_On_Container()
+    {
+        var tag = new AtomUITag { Text = "Default" };
+
+        ShowInWindow(tag, () =>
+        {
+            var fillTertiary = GetThemeColor(SharedTokenKind.ColorFillTertiary);
+            var bgContainer  = GetThemeColor(SharedTokenKind.ColorBgContainer);
+
+            GetBrushColor(tag.Background)
+                .ShouldBe(ColorUtils.OnBackground(fillTertiary, bgContainer));
         });
     }
 

@@ -5,6 +5,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="../AtomUI.Generator/Localization/LanguageModuleDataCodec.cs" Link="Catalog/LanguageModuleDataCodec.cs" />
+        <Compile Include="../AtomUI.Toolchain/Common/Localization/Language/LanguageFallbackChain.cs" Link="LanguageFallbackChain.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Avalonia" />
     </ItemGroup>
 
@@ -25,11 +30,8 @@
     <ItemGroup>
         <InternalsVisibleTo Include="AtomUI.Core" />
         <InternalsVisibleTo Include="AtomUI.Core.Tests" />
+        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
         <InternalsVisibleTo Include="AtomUI.Localization.Tests" />
-        <InternalsVisibleTo Include="AtomUI.LinkedRegistration.Fixtures.Minimal" />
-        <InternalsVisibleTo Include="AtomUI.LinkedRegistration.Fixtures.TwoUnits" />
-        <InternalsVisibleTo Include="AtomUI.LinkedRegistration.Fixtures.DynamicFallback" />
-        <InternalsVisibleTo Include="AtomUI.LinkedRegistration.Fixtures.Full" />
         <InternalsVisibleTo Include="AtomUI.Localization.Performance" />
         <InternalsVisibleTo Include="AtomUI.Performance" />
     </ItemGroup>

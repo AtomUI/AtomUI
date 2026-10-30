@@ -14,6 +14,7 @@
                                 CornerRadius="{TemplateBinding LineCornerRadius}"
                                 IsHitTestVisible="False" />
                         <atom:SplitterDragBar Name="PART_DragBar"
+                                              Classes.semantic-dragger="True"
                                               Orientation="{TemplateBinding Orientation}"
                                               LineBrush="{atom:SharedTokenResource ColorFill}"
                                               LineThickness="{TemplateBinding LineThickness}"

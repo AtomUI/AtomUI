@@ -224,7 +224,7 @@ public class OverflowTipTests
     }
 
     [Fact]
-    public void OverflowTip_Does_Not_Query_TextBox_Template_Internals()
+    public void OverflowTip_Does_Not_Query_Input_Template_Internals()
     {
         var source = ReadRepoFile("src/AtomUI.Desktop.Controls/Tooltip/OverflowTip.cs");
 

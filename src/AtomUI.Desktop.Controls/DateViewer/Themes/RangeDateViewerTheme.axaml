@@ -1,0 +1,78 @@
+<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
+              x:Class="AtomUI.Desktop.Controls.Themes.RangeDateViewerTheme"
+              x:ClassModifier="internal" TargetType="atom:RangeDateViewer">
+    <Setter Property="Background" Value="{atom:DateViewerTokenResource PanelBg}" />
+    <Setter Property="Padding" Value="{atom:DateViewerTokenResource PanelPadding}" />
+    <Setter Property="PanelSpacing" Value="{atom:DateViewerTokenResource PanelSpacing}" />
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:RangeDateViewer">
+            <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
+                <DockPanel LastChildFill="True">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="{TemplateBinding PanelSpacing}"
+                                IsVisible="{TemplateBinding ShowHeader}">
+                        <viewer:DateViewerHeader Classes.semantic-header="True"
+                                                 Width="{atom:DateViewerTokenResource PanelWidth}"
+                                                 Context="{TemplateBinding HeaderContext}"
+                                                 HeaderTemplate="{TemplateBinding HeaderTemplate}" />
+                        <viewer:DateViewerHeader Classes.semantic-header="True"
+                                                 Width="{atom:DateViewerTokenResource PanelWidth}"
+                                                 Context="{TemplateBinding SecondaryHeaderContext}"
+                                                 HeaderTemplate="{TemplateBinding HeaderTemplate}"
+                                                 IsVisible="{TemplateBinding HasSecondaryPanel}" />
+                    </StackPanel>
+                    <StackPanel Classes.semantic-body="True" Orientation="Horizontal" Spacing="{TemplateBinding PanelSpacing}">
+                    <viewer:DatePanel Classes.semantic-content="True" Name="PART_PrimaryPanel"
+                                  Session="{TemplateBinding PanelSession}"
+                                  Theme="{TemplateBinding PanelTheme}"
+                                      CellTemplate="{TemplateBinding CellTemplate}"
+                                  FullCellTemplate="{TemplateBinding FullCellTemplate}"
+                                  DefaultFullCellTemplate="{TemplateBinding DefaultFullCellTemplate}"
+                                  CellTheme="{TemplateBinding CellTheme}"
+                                      Presentation="{TemplateBinding Presentation}" />
+                    <viewer:DatePanel Classes.semantic-content="True" Name="PART_SecondaryPanel" PanelIndex="1"
+                                      IsVisible="{TemplateBinding HasSecondaryPanel}"
+                                      Session="{TemplateBinding PanelSession}"
+                                      Theme="{TemplateBinding PanelTheme}"
+                                      CellTemplate="{TemplateBinding CellTemplate}"
+                                      FullCellTemplate="{TemplateBinding FullCellTemplate}"
+                                      DefaultFullCellTemplate="{TemplateBinding DefaultFullCellTemplate}"
+                                      CellTheme="{TemplateBinding CellTheme}"
+                                      Presentation="{TemplateBinding Presentation}" />
+                </StackPanel>
+                </DockPanel>
+            </Border>
+        </ControlTemplate>
+    </Setter>
+    <Style Selector="^:single-panel">
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:RangeDateViewer">
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
+                    <DockPanel LastChildFill="True">
+                        <viewer:DateViewerHeader DockPanel.Dock="Top" Classes.semantic-header="True"
+                                                 Width="{atom:DateViewerTokenResource PanelWidth}"
+                                                 Context="{TemplateBinding HeaderContext}"
+                                                 HeaderTemplate="{TemplateBinding HeaderTemplate}"
+                                                 IsVisible="{TemplateBinding ShowHeader}" />
+                        <Panel Classes.semantic-body="True">
+                            <viewer:DatePanel Classes.semantic-content="True" Name="PART_PrimaryPanel"
+                                              Session="{TemplateBinding PanelSession}"
+                                              Theme="{TemplateBinding PanelTheme}"
+                                              CellTemplate="{TemplateBinding CellTemplate}"
+                                              FullCellTemplate="{TemplateBinding FullCellTemplate}"
+                                              DefaultFullCellTemplate="{TemplateBinding DefaultFullCellTemplate}"
+                                              CellTheme="{TemplateBinding CellTheme}"
+                                              Presentation="{TemplateBinding Presentation}" />
+                        </Panel>
+                    </DockPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</ControlTheme>

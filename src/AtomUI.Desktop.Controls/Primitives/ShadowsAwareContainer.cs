@@ -2,6 +2,7 @@ using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Media;
+using AtomUI.Native;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -94,7 +95,10 @@ internal class ShadowsAwareContainer : Decorator
     
     private PopupFrameRenderer? _frameRenderer;
     private CompositeDisposable? _frameRenderBindings;
-    private IDisposable? _contentPresenterChildSubscription;
+    private readonly List<ContentPresenter> _contentPresenterChain = [];
+    private CompositeDisposable? _surfaceBindings;
+    private AbstractArrowDecoratedBox? _arrowDecoratedBox;
+    private bool _isContentSurfaceTrackingActive;
 
     private bool HasBoxShadow => BoxShadow.Count != 0;
     private bool HasSurfaceBackground => SurfaceBackground is not null;
@@ -130,6 +134,8 @@ internal class ShadowsAwareContainer : Decorator
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
+        _isContentSurfaceTrackingActive = true;
+        ConfigureContentSurface();
         var popup = this.FindLogicalAncestorOfType<Popup>();
         if (popup != null)
         {
@@ -144,61 +150,30 @@ internal class ShadowsAwareContainer : Decorator
 
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
-        base.OnDetachedFromLogicalTree(e);
+        _isContentSurfaceTrackingActive = false;
+        ClearContentSurfaceTracking();
         _frameRenderBindings?.Dispose();
         _frameRenderBindings = null;
-        _contentPresenterChildSubscription?.Dispose();
-        _contentPresenterChildSubscription = null;
+        base.OnDetachedFromLogicalTree(e);
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var size   = base.MeasureOverride(availableSize);
-        var width  = size.Width;
-        var height = size.Height;
-        if (HasBoxShadow)
-        {
-            var shadowThickness = BoxShadow.Thickness();
-            var effectiveShadowThickness = GetEffectiveShadowThickness(shadowThickness);
-
-            if (!IsOverlayMode)
-            {
-                width  += effectiveShadowThickness.Left + effectiveShadowThickness.Right;
-                height += effectiveShadowThickness.Top  + effectiveShadowThickness.Bottom;
-            }
-        }
-
-        return new Size(width, height);
+        var shadowThickness = !IsOverlayMode && HasBoxShadow
+            ? GetEffectiveShadowThickness(BoxShadow.Thickness())
+            : default;
+        var size = base.MeasureOverride(availableSize.Deflate(shadowThickness));
+        return size.Inflate(shadowThickness);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        var offsetX               = 0.0d;
-        var offsetY               = 0.0d;
         if (!IsOverlayMode)
         {
-            if (HasBoxShadow)
-            {
-                var shadowThickness = BoxShadow.Thickness();
-                offsetX = shadowThickness.Left;
-                offsetY = shadowThickness.Top;
-
-                if (IsArrowVisible)
-                {
-                    if (ArrowDirection == Direction.Left)
-                    {
-                        offsetX = Math.Max(offsetX - ArrowIndicatorLayoutBounds.Width, 0);
-                    }
-                    else if (ArrowDirection == Direction.Top)
-                    {
-                        offsetY = Math.Max(offsetY - ArrowIndicatorLayoutBounds.Height, 0);
-                    }
-                }
-            }
-            if (Child != null)
-            {
-                Child.Arrange(new Rect(offsetX, offsetY, Child.DesiredSize.Width, Child.DesiredSize.Height));
-            }
+            var shadowThickness = HasBoxShadow
+                ? GetEffectiveShadowThickness(BoxShadow.Thickness())
+                : default;
+            Child?.Arrange(new Rect(finalSize).Deflate(shadowThickness).Deflate(Padding));
         }
         else
         {
@@ -213,7 +188,7 @@ internal class ShadowsAwareContainer : Decorator
                 var effectiveDirection = ArrowDirection;
                 if (effectiveDirection == Direction.Top)
                 {
-                    shadowBounds = shadowBounds.WithY(ArrowIndicatorLayoutBounds.Height)
+                    shadowBounds = shadowBounds.WithY(shadowBounds.Y + ArrowIndicatorLayoutBounds.Height)
                                                .WithHeight(shadowBounds.Height - ArrowIndicatorLayoutBounds.Height);
                 }
                 else if (effectiveDirection == Direction.Bottom)
@@ -222,7 +197,7 @@ internal class ShadowsAwareContainer : Decorator
                 }
                 else if (effectiveDirection == Direction.Left)
                 {
-                    shadowBounds = shadowBounds.WithX(ArrowIndicatorLayoutBounds.Width)
+                    shadowBounds = shadowBounds.WithX(shadowBounds.X + ArrowIndicatorLayoutBounds.Width)
                                                .WithWidth(shadowBounds.Width - ArrowIndicatorLayoutBounds.Width);
                 }
                 else
@@ -235,26 +210,55 @@ internal class ShadowsAwareContainer : Decorator
         return finalSize;
     }
 
+    /// <summary>
+    /// 内容形状（frame renderer 绘制的圆角矩形 + 箭头，不含阴影），<paramref name="relativeTo"/> 坐标系下的 DIP 几何；
+    /// 无法计算时返回 <c>null</c>。只在无动效变换时使用：圆角按未缩放处理，变换只取外包矩形。
+    /// </summary>
+    internal PopupContentShape? GetContentShape(Visual relativeTo)
+    {
+        if (this.TransformToVisual(relativeTo) is not { } transform)
+        {
+            return null;
+        }
+
+        var body = _frameRenderer?.Bounds ?? Child?.Bounds ?? default;
+        if (body.Width <= 0 || body.Height <= 0)
+        {
+            return null;
+        }
+
+        var arrowBounds = default(Rect);
+        var arrowSide   = PopupArrowSide.None;
+        // ArrowIndicatorLayoutBounds 相对模板内的箭头定位面板（底部/右侧箭头时不与 ArrowDecoratedBox 原点重合），
+        // 因此直接按箭头布局部件自身变换到目标坐标系
+        if (_frameRenderer is not null &&
+            IsArrowVisible &&
+            _arrowDecoratedBox?.ArrowIndicatorLayoutPart is { } arrowLayout &&
+            arrowLayout.TransformToVisual(relativeTo) is { } arrowTransform)
+        {
+            arrowBounds = new Rect(arrowLayout.Bounds.Size).TransformToAABB(arrowTransform);
+            arrowSide = ArrowDirection switch
+            {
+                Direction.Left => PopupArrowSide.Left,
+                Direction.Top => PopupArrowSide.Top,
+                Direction.Right => PopupArrowSide.Right,
+                _ => PopupArrowSide.Bottom
+            };
+        }
+
+        return new PopupContentShape(body.TransformToAABB(transform), CornerRadius, arrowBounds, arrowSide);
+    }
+
     private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
     {
         if (HasBoxShadow || HasSurfaceBackground)
         {
             EnsureFrameRenderer();
         }
-        _contentPresenterChildSubscription?.Dispose();
-        _contentPresenterChildSubscription = null;
 
-        if (Child is ContentPresenter contentPresenter)
+        if (_isContentSurfaceTrackingActive)
         {
-            _contentPresenterChildSubscription = contentPresenter
-                .GetObservable(ContentPresenter.ChildProperty)
-                .Subscribe(PostConfigureShadowsInfo);
-
-            PostConfigureShadowsInfo(contentPresenter.Child);
-        }
-        else if (Child != null)
-        {
-            ConfigureShadowsInfo(Child);
+            ConfigureContentSurface();
         }
     }
 
@@ -305,35 +309,113 @@ internal class ShadowsAwareContainer : Decorator
         LogicalChildren.Insert(0, _frameRenderer);
     }
 
-    private void PostConfigureShadowsInfo(Control? child)
+    private void ConfigureContentSurface()
     {
-        if (child != null)
+        ClearContentSurfaceTracking();
+
+        Control? surface = Child;
+        while (surface is ContentPresenter presenter)
         {
-            ConfigureShadowsInfo(child);
+            presenter.PropertyChanged += HandleContentPresenterPropertyChanged;
+            _contentPresenterChain.Add(presenter);
+            surface = presenter.Child;
+        }
+
+        ConfigureShadowsInfo(surface);
+    }
+
+    private void ClearContentSurfaceTracking()
+    {
+        foreach (var presenter in _contentPresenterChain)
+        {
+            presenter.PropertyChanged -= HandleContentPresenterPropertyChanged;
+        }
+        _contentPresenterChain.Clear();
+
+        _surfaceBindings?.Dispose();
+        _surfaceBindings = null;
+        _arrowDecoratedBox = null;
+    }
+
+    private void HandleContentPresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == ContentPresenter.ChildProperty)
+        {
+            ConfigureContentSurface();
         }
     }
 
-    private void ConfigureShadowsInfo(Control child)
+    private void ConfigureShadowsInfo(Control? child)
     {
+        _surfaceBindings = new CompositeDisposable();
         if (child is IArrowAwareShadowMaskInfoProvider arrowAwareShadowMaskInfoProvider)
         {
             var arrowDecoratedBox = arrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox();
-            this[!CornerRadiusProperty]               = arrowDecoratedBox[!CornerRadiusProperty];
-            this[!ArrowSizeProperty]                  = arrowDecoratedBox[!ArrowSizeProperty];
-            this[!ArrowIndicatorLayoutBoundsProperty] = arrowDecoratedBox[!ArrowDecoratedBox.ArrowIndicatorLayoutBoundsProperty];
-            this[!ArrowDirectionProperty]             = arrowDecoratedBox[!ArrowDirectionProperty];
-            this[!IsArrowVisibleProperty]             = arrowDecoratedBox[!IsArrowVisibleProperty];
+            if (arrowDecoratedBox is not null)
+            {
+                _arrowDecoratedBox = arrowDecoratedBox;
+                // 强制实例化 ArrowDecoratedBox 自身的模板，保证容器 Border 已就绪；
+                // 阴影圆角必须跟随真正可见的内容装饰器（容器 Border）：语义部件样式可能只覆盖
+                // 容器 Border 的圆角，此时 ArrowDecoratedBox 自身的 CornerRadius 与可见形状不一致，
+                // 直接绑定会导致角落出现白底空隙。
+                arrowDecoratedBox.ApplyTemplate();
+                if (arrowDecoratedBox.ContentDecorator is { } contentDecorator)
+                {
+                    _surfaceBindings.Add(BindUtils.RelayBind(
+                        contentDecorator, Border.CornerRadiusProperty, this, CornerRadiusProperty));
+                }
+                else
+                {
+                    _surfaceBindings.Add(BindUtils.RelayBind(
+                        arrowDecoratedBox, ArrowDecoratedBox.CornerRadiusProperty, this, CornerRadiusProperty));
+                }
+                _surfaceBindings.Add(BindUtils.RelayBind(
+                    arrowDecoratedBox, ArrowDecoratedBox.ArrowSizeProperty, this, ArrowSizeProperty));
+                _surfaceBindings.Add(BindUtils.RelayBind(
+                    arrowDecoratedBox,
+                    ArrowDecoratedBox.ArrowIndicatorLayoutBoundsProperty,
+                    this,
+                    ArrowIndicatorLayoutBoundsProperty));
+                _surfaceBindings.Add(BindUtils.RelayBind(
+                    arrowDecoratedBox, ArrowDecoratedBox.ArrowDirectionProperty, this, ArrowDirectionProperty));
+                _surfaceBindings.Add(BindUtils.RelayBind(
+                    arrowDecoratedBox, ArrowDecoratedBox.IsArrowVisibleProperty, this, IsArrowVisibleProperty));
+            }
+            else
+            {
+                // 箭头部件尚未就绪（模板未应用或主题未提供 PART_ArrowDecorator）：先按无箭头降级；
+                // 模板后续（重新）应用时重新探测，部件就绪即恢复箭头绑定
+                SetCurrentValue(IsArrowVisibleProperty, false);
+                SetCurrentValue(CornerRadiusProperty, default);
+                if (child is TemplatedControl templatedChild)
+                {
+                    templatedChild.TemplateApplied += HandleSurfaceTemplateApplied;
+                    _surfaceBindings.Add(Disposable.Create(() => templatedChild.TemplateApplied -= HandleSurfaceTemplateApplied));
+                }
+            }
         }
         else if (child is Border bordered)
         {
             SetCurrentValue(IsArrowVisibleProperty, false);
-            this[!CornerRadiusProperty] = bordered[!Border.CornerRadiusProperty];
+            _surfaceBindings.Add(BindUtils.RelayBind(
+                bordered, Border.CornerRadiusProperty, this, CornerRadiusProperty));
         }
         else if (child is TemplatedControl templatedControl)
         {
             SetCurrentValue(IsArrowVisibleProperty, false);
-            this[!CornerRadiusProperty] = templatedControl[!TemplatedControl.CornerRadiusProperty];
+            _surfaceBindings.Add(BindUtils.RelayBind(
+                templatedControl, TemplatedControl.CornerRadiusProperty, this, CornerRadiusProperty));
         }
+        else
+        {
+            SetCurrentValue(IsArrowVisibleProperty, false);
+            SetCurrentValue(CornerRadiusProperty, default);
+        }
+    }
+
+    private void HandleSurfaceTemplateApplied(object? sender, TemplateAppliedEventArgs e)
+    {
+        ConfigureContentSurface();
     }
 
     private sealed class PopupFrameRenderer : Control

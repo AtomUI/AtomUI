@@ -1,8 +1,10 @@
-using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.VisualTree;
+using AtomUI.Desktop.Controls.Internal.DateViewer;
+using DateViewerControl = AtomUI.Desktop.Controls.DateViewer;
 
 namespace AtomUI.Desktop.Controls.Internal.Calendar;
 
@@ -10,8 +12,9 @@ internal sealed class CalendarRangeBarPanel : Panel
 {
     #region 公共属性定义
 
-    public static readonly StyledProperty<DateTime> ValueProperty =
-        AvaloniaProperty.Register<CalendarRangeBarPanel, DateTime>(nameof(Value));
+    public static readonly StyledProperty<DateViewerControl?> LayoutSourceProperty =
+        AvaloniaProperty.Register<CalendarRangeBarPanel, DateViewerControl?>(nameof(LayoutSource));
+    public DateViewerControl? LayoutSource { get => GetValue(LayoutSourceProperty); set => SetValue(LayoutSourceProperty, value); }
 
     public static readonly StyledProperty<CalendarMode> ModeProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, CalendarMode>(nameof(Mode));
@@ -19,32 +22,17 @@ internal sealed class CalendarRangeBarPanel : Panel
     public static readonly StyledProperty<bool> FullscreenProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, bool>(nameof(Fullscreen), true);
 
-    public static readonly StyledProperty<bool> ShowWeekProperty =
-        AvaloniaProperty.Register<CalendarRangeBarPanel, bool>(nameof(ShowWeek));
-
     public static readonly StyledProperty<CalendarRangeBarCollection?> RangeBarsProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, CalendarRangeBarCollection?>(nameof(RangeBars));
 
-    public static readonly StyledProperty<CultureInfo?> CultureProperty =
-        AvaloniaProperty.Register<CalendarRangeBarPanel, CultureInfo?>(nameof(Culture));
-
     public static readonly StyledProperty<double> RangeBarHeightProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarHeight), double.NaN);
-
-    public static readonly StyledProperty<double> WeekHeaderHeightProperty =
-        AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(WeekHeaderHeight), 32);
 
     public static readonly StyledProperty<double> RangeBarTopOffsetProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarTopOffset), 32);
 
     public static readonly StyledProperty<double> RangeBarHorizontalInsetProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarHorizontalInset), 4);
-
-    public DateTime Value
-    {
-        get => GetValue(ValueProperty);
-        set => SetValue(ValueProperty, value);
-    }
 
     public CalendarMode Mode
     {
@@ -58,34 +46,16 @@ internal sealed class CalendarRangeBarPanel : Panel
         set => SetValue(FullscreenProperty, value);
     }
 
-    public bool ShowWeek
-    {
-        get => GetValue(ShowWeekProperty);
-        set => SetValue(ShowWeekProperty, value);
-    }
-
     public CalendarRangeBarCollection? RangeBars
     {
         get => GetValue(RangeBarsProperty);
         set => SetValue(RangeBarsProperty, value);
     }
 
-    public CultureInfo? Culture
-    {
-        get => GetValue(CultureProperty);
-        set => SetValue(CultureProperty, value);
-    }
-
     public double RangeBarHeight
     {
         get => GetValue(RangeBarHeightProperty);
         set => SetValue(RangeBarHeightProperty, value);
-    }
-
-    public double WeekHeaderHeight
-    {
-        get => GetValue(WeekHeaderHeightProperty);
-        set => SetValue(WeekHeaderHeightProperty, value);
     }
 
     public double RangeBarTopOffset
@@ -109,14 +79,10 @@ internal sealed class CalendarRangeBarPanel : Panel
 
     private static readonly HashSet<AvaloniaProperty> LayoutTriggers = new()
     {
-        ValueProperty,
         ModeProperty,
         FullscreenProperty,
-        ShowWeekProperty,
         RangeBarsProperty,
-        CultureProperty,
         RangeBarHeightProperty,
-        WeekHeaderHeightProperty,
         RangeBarTopOffsetProperty,
         RangeBarHorizontalInsetProperty,
         FlowDirectionProperty
@@ -125,6 +91,7 @@ internal sealed class CalendarRangeBarPanel : Panel
     private readonly List<CalendarRangeBarSegment> _segments = new();
     private Size _realizedSize;
     private bool _segmentsDirty = true;
+    private DateViewerControl? _subscribedLayoutSource;
 
     public CalendarRangeBarPanel()
     {
@@ -143,22 +110,55 @@ internal sealed class CalendarRangeBarPanel : Panel
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == ValueProperty &&
-            change.OldValue is DateTime oldValue &&
-            change.NewValue is DateTime newValue &&
-            oldValue.Date.Year == newValue.Date.Year &&
-            oldValue.Date.Month == newValue.Date.Month)
+        if (change.Property == LayoutSourceProperty)
         {
-            // The date grid origin is stable within one month, so range-bar
-            // geometry and segment topology do not change with the selected day.
-            return;
-        }
+            UnsubscribeLayoutSource();
+            if (this.IsAttachedToVisualTree())
+            {
+                SubscribeLayoutSource();
+            }
 
+            InvalidateRangeBars();
+        }
         if (LayoutTriggers.Contains(change.Property))
         {
             InvalidateRangeBars();
         }
     }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        SubscribeLayoutSource();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        UnsubscribeLayoutSource();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void SubscribeLayoutSource()
+    {
+        UnsubscribeLayoutSource();
+        _subscribedLayoutSource = LayoutSource;
+        if (_subscribedLayoutSource is not null)
+        {
+            _subscribedLayoutSource.CellLayoutChanged += OnCellLayoutChanged;
+        }
+    }
+
+    private void UnsubscribeLayoutSource()
+    {
+        if (_subscribedLayoutSource is not null)
+        {
+            _subscribedLayoutSource.CellLayoutChanged -= OnCellLayoutChanged;
+        }
+
+        _subscribedLayoutSource = null;
+    }
+
+    private void OnCellLayoutChanged(object? sender, EventArgs e) => InvalidateRangeBars();
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -207,48 +207,31 @@ internal sealed class CalendarRangeBarPanel : Panel
     private void BuildSegments(Size size)
     {
         _segments.Clear();
-        if (!CanRender(size))
+        if (!CanRender(size) || LayoutSource is not { } source || source.TransformToVisual(this) is not { } transform)
         {
             return;
         }
 
-        var culture = Culture ?? CultureInfo.CurrentCulture;
-        var firstDayOfWeek = culture.DateTimeFormat.FirstDayOfWeek;
-        var gridStart = CalendarViewCellBuilder.GetDateGridStart(Value.Date, firstDayOfWeek);
-        var gridEnd = gridStart.AddDays(CalendarViewCellBuilder.DateGridCellCount - 1);
-        var totalColumns = ShowWeek
-            ? CalendarViewCellBuilder.DateGridColumns + 1
-            : CalendarViewCellBuilder.DateGridColumns;
-        var dateColumnOffset = ShowWeek ? 1 : 0;
-        var weekHeaderHeight = ClampMetric(WeekHeaderHeight, 0, size.Height);
-        var dateAreaHeight = Math.Max(0, size.Height - weekHeaderHeight);
-        var cellWidth = size.Width / totalColumns;
-        var cellHeight = dateAreaHeight / CalendarViewCellBuilder.DateGridRows;
-        var horizontalInset = ClampMetric(RangeBarHorizontalInset, 0, cellWidth / 2);
-        var laneEnds = new List<DateTime>();
+        var dates = source.CellLayouts.Where(cell => cell.Kind == DateViewerCellType.Date)
+            .Select(cell => cell with { Bounds = cell.Bounds.TransformToAABB(transform) })
+            .OrderBy(cell => cell.Value).ToArray();
+        if (dates.Length == 0)
+        {
+            return;
+        }
 
+        var gridStart = dates[0].Value;
+        var gridEnd = dates[^1].Value;
+        var laneEnds = new List<DateTime>();
         foreach (var rangeBar in RangeBars!)
         {
-            if (!TryNormalizeRange(rangeBar, gridStart, gridEnd, out var rangeStart, out var rangeEnd, out var barHeight))
+            if (!TryNormalizeRange(rangeBar, gridStart, gridEnd, out var rangeStart, out var rangeEnd, out var height))
             {
                 continue;
             }
 
             var lane = AllocateLane(laneEnds, rangeStart, rangeEnd);
-            AddRowSegments(
-                rangeBar,
-                rangeStart,
-                rangeEnd,
-                lane,
-                gridStart,
-                gridEnd,
-                weekHeaderHeight,
-                cellWidth,
-                cellHeight,
-                dateColumnOffset,
-                horizontalInset,
-                barHeight,
-                size.Width);
+            AddRowSegments(rangeBar, rangeStart, rangeEnd, lane, dates, height);
         }
     }
 
@@ -280,7 +263,12 @@ internal sealed class CalendarRangeBarPanel : Panel
 
         rangeStart = rangeBar.StartDate.Value.Date;
         rangeEnd = rangeBar.EndDate.Value.Date;
-        if (rangeEnd < rangeStart || rangeStart > gridEnd || rangeEnd < gridStart)
+        if (rangeEnd < rangeStart)
+        {
+            (rangeStart, rangeEnd) = (rangeEnd, rangeStart);
+        }
+
+        if (rangeStart > gridEnd || rangeEnd < gridStart)
         {
             return false;
         }
@@ -319,67 +307,35 @@ internal sealed class CalendarRangeBarPanel : Panel
         return laneEnds.Count - 1;
     }
 
-    private void AddRowSegments(
-        CalendarRangeBar rangeBar,
-        DateTime rangeStart,
-        DateTime rangeEnd,
-        int lane,
-        DateTime gridStart,
-        DateTime gridEnd,
-        double weekHeaderHeight,
-        double cellWidth,
-        double cellHeight,
-        int dateColumnOffset,
-        double horizontalInset,
-        double requestedBarHeight,
-        double panelWidth)
+    private void AddRowSegments(CalendarRangeBar rangeBar, DateTime rangeStart, DateTime rangeEnd,
+        int lane, IReadOnlyList<DateCellLayout> dates, double requestedHeight)
     {
-        for (var row = 0; row < CalendarViewCellBuilder.DateGridRows; row++)
+        foreach (var row in dates.GroupBy(cell => cell.Row))
         {
-            var rowStart = gridStart.AddDays(row * CalendarViewCellBuilder.DateGridColumns);
-            var rowEnd = rowStart.AddDays(CalendarViewCellBuilder.DateGridColumns - 1);
-            if (rangeEnd < rowStart || rangeStart > rowEnd)
+            var included = row.Where(cell => cell.Value >= rangeStart && cell.Value <= rangeEnd).ToArray();
+            if (included.Length == 0)
             {
                 continue;
             }
 
-            var segmentStart = MaxDate(rangeStart, rowStart, gridStart);
-            var segmentEnd = MinDate(rangeEnd, rowEnd, gridEnd);
-            var startColumn = (segmentStart - rowStart).Days;
-            var endColumn = (segmentEnd - rowStart).Days;
-            var x = (dateColumnOffset + startColumn) * cellWidth + horizontalInset;
-            var width = (endColumn - startColumn + 1) * cellWidth - horizontalInset * 2;
-            if (width <= 0)
+            var left = included.Min(cell => cell.Bounds.Left);
+            var right = included.Max(cell => cell.Bounds.Right);
+            var top = included.Min(cell => cell.Bounds.Top);
+            var bottom = included.Min(cell => cell.Bounds.Bottom);
+            var inset = ClampMetric(RangeBarHorizontalInset, 0, included.Min(cell => cell.Bounds.Width) / 2);
+            var offset = GetLaneOffset(lane, requestedHeight);
+            var width = right - left - inset * 2;
+            var height = Math.Min(requestedHeight, Math.Max(0, bottom - top - offset));
+            if (width <= 0 || height <= 0)
             {
                 continue;
-            }
-
-            var rowTop = weekHeaderHeight + row * cellHeight;
-            var laneOffset = GetLaneOffset(lane, requestedBarHeight);
-            if (laneOffset >= cellHeight)
-            {
-                continue;
-            }
-
-            var height = Math.Min(requestedBarHeight, Math.Max(0, cellHeight - laneOffset));
-            if (height <= 0)
-            {
-                continue;
-            }
-
-            var rect = new Rect(x, rowTop + laneOffset, width, height);
-            var startsRange = segmentStart == rangeStart;
-            var endsRange = segmentEnd == rangeEnd;
-            if (FlowDirection == FlowDirection.RightToLeft)
-            {
-                rect = rect.WithX(panelWidth - rect.X - rect.Width);
             }
 
             _segments.Add(new CalendarRangeBarSegment(
-                rect,
+                new Rect(left + inset, top + offset, width, height),
                 rangeBar.Background ?? Brushes.Transparent,
-                BuildCornerRadius(height / 2, startsRange, endsRange),
-                startsRange ? rangeBar.Label : null));
+                BuildCornerRadius(height / 2, included.Any(cell => cell.Value == rangeStart), included.Any(cell => cell.Value == rangeEnd)),
+                included.Any(cell => cell.Value == rangeStart) ? rangeBar.Label : null));
         }
     }
 
@@ -398,18 +354,6 @@ internal sealed class CalendarRangeBarPanel : Panel
             rightRadius ? radius : 0,
             rightRadius ? radius : 0,
             leftRadius ? radius : 0);
-    }
-
-    private static DateTime MaxDate(DateTime first, DateTime second, DateTime third)
-    {
-        var result = first > second ? first : second;
-        return result > third ? result : third;
-    }
-
-    private static DateTime MinDate(DateTime first, DateTime second, DateTime third)
-    {
-        var result = first < second ? first : second;
-        return result < third ? result : third;
     }
 
     private static double ClampMetric(double value, double min, double max)

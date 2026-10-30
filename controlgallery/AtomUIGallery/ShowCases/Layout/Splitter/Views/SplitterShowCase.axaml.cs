@@ -65,4 +65,21 @@ public partial class SplitterShowCase : GalleryReactiveUserControl<SplitterViewM
             ShowCollapsibleIcon = mode
         });
     }
+
+    private void HandleDraggerDoubleClicked(object? sender, SplitterDraggerDoubleClickedEventArgs e)
+    {
+        if (sender is not AtomUISplitter splitter)
+        {
+            return;
+        }
+
+        foreach (var panel in splitter.Children)
+        {
+            var defaultSize = AtomUISplitter.GetDefaultSize(panel);
+            if (defaultSize.HasValue)
+            {
+                AtomUISplitter.SetSize(panel, defaultSize);
+            }
+        }
+    }
 }

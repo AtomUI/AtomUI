@@ -158,7 +158,7 @@ public abstract class Icon : PathIcon, ICustomHitTest
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        var strokeIndex          = (int)IconBrushType.Fallback;
+        var strokeIndex          = (int)IconBrushType.Stroke;
         var fillIndex            = (int)IconBrushType.Fill;
         var secondaryStrokeIndex = (int)IconBrushType.SecondaryStroke;
         var secondaryFillIndex   = (int)IconBrushType.SecondaryFill;

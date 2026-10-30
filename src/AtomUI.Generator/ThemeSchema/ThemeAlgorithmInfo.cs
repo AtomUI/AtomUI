@@ -26,9 +26,12 @@ internal sealed class ThemeAlgorithmInfo
     public string AppearanceEffect { get; }
     public string TypeName { get; }
 
-    internal static ThemeAlgorithmInfo? Create(GeneratorAttributeSyntaxContext context)
+    internal static ThemeAlgorithmInfo? Create(GeneratorAttributeSyntaxContext context) =>
+        context.TargetSymbol is INamedTypeSymbol type ? Create(type) : null;
+
+    internal static ThemeAlgorithmInfo? Create(INamedTypeSymbol type)
     {
-        if (context.TargetSymbol is not INamedTypeSymbol type ||
+        if (
             type.IsAbstract ||
             type.IsGenericType ||
             !ImplementsThemeAlgorithm(type))
@@ -36,7 +39,7 @@ internal sealed class ThemeAlgorithmInfo
             return null;
         }
 
-        var attribute = context.Attributes.FirstOrDefault();
+        var attribute = type.GetAttributes().FirstOrDefault(attribute => attribute.AttributeClass?.ToDisplayString() == TargetMarkConstants.ThemeAlgorithmAttribute);
         if (attribute is null ||
             attribute.ConstructorArguments.Length != 3 ||
             attribute.ConstructorArguments[0] is not

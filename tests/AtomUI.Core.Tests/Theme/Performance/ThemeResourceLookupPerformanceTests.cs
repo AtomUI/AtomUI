@@ -1,3 +1,4 @@
+using AtomUI.Registration;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
@@ -12,7 +13,7 @@ public class ThemeResourceLookupPerformanceTests
     private static int s_lookupHits;
 
     [Fact]
-    public void Global_Control_Shared_Control_Own_And_Miss_Lookups_Allocate_Zero_Bytes_After_Warmup()
+    public void Global_Control_Type_Identity_And_Miss_Lookups_Allocate_Zero_Bytes_After_Warmup()
     {
         var button = ThemeCompilerTests.CreateCompilerButtonDescriptor();
         var config = new ThemeConfigBuilder()
@@ -27,7 +28,7 @@ public class ThemeResourceLookupPerformanceTests
         var snapshot = ThemeTestSnapshotFactory.Compile(config, button);
         var provider = new ThemeTokenResourceProvider(snapshot);
         object globalKey = SharedTokenKind.ColorPrimary;
-        var controlSharedKey = snapshot.Registry.GetControlSharedResourceKey(
+        var controlSharedKey = ControlTokenResourceKey.Global(
             button.Identity,
             SharedTokenKind.ColorPrimary);
         var controlOwnKey = button.OwnTokens.ShouldHaveSingleItem().ResourceKey;
@@ -49,6 +50,16 @@ public class ThemeResourceLookupPerformanceTests
             .ShouldBe(0, "Control own hit must not allocate");
         MeasureAllocations(() => provider.TryGetResource(missingKey, null, out _))
             .ShouldBe(0, "miss must not allocate");
+
+        var ownerType = button.ControlType;
+        var typeKey = ownerType.Assembly.GetName().Name + "|" + ownerType.FullName;
+        var resourceKey = "t:" + typeKey;
+        StartupPackageIndex.TypeKey(ownerType).ShouldBe(typeKey);
+        StartupPackageIndex.ResourceKey(ownerType).ShouldBe(resourceKey);
+        MeasureAllocations(() => StartupPackageIndex.TypeKey(ownerType) == typeKey)
+            .ShouldBe(0, "warmed Control type identity lookup must not allocate");
+        MeasureAllocations(() => StartupPackageIndex.ResourceKey(ownerType) == resourceKey)
+            .ShouldBe(0, "warmed Control theme key lookup must not allocate");
     }
 
     [Fact]

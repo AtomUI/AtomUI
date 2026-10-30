@@ -72,8 +72,7 @@ public class GalleryBasePackagingTests
         prerequisiteBuild.ShouldBeGreaterThanOrEqualTo(0);
         packageBuild.ShouldBeGreaterThan(prerequisiteBuild);
         packagePack.ShouldBeGreaterThan(packageBuild);
-        manifest.ShouldContain("src/AtomUI.Build.Tasks/AtomUI.Build.Tasks.csproj");
-        manifest.ShouldContain("src/AtomUI.Generator.LinkedPublish/AtomUI.Generator.LinkedPublish.csproj");
+        manifest.ShouldContain("src/AtomUI.Toolchain/AtomUI.Toolchain.csproj");
         script.ShouldContain("--disable-build-servers");
         script.ShouldContain("-m:1");
         script.ShouldContain("/nr:false");
@@ -96,15 +95,6 @@ public class GalleryBasePackagingTests
         script.ShouldNotContain("$AtomUIBasePackageProjects");
         script.ShouldNotContain("$AtomUIExtensionPackageProjects");
         script.ShouldNotContain("$AtomUILanguagePackageProjects");
-    }
-
-    [Fact]
-    public void Packaging_Docs_List_GalleryBase_As_Main_Package()
-    {
-        var packagingDoc = ReadRepoFile("docs/architecture/foundations/build-and-packaging.md");
-
-        packagingDoc.ShouldContain("- `AtomUI.Toolkits.GalleryBase`");
-        packagingDoc.ShouldContain("- `AtomUI.Desktop.Controls.Extras`");
     }
 
     private static string ReadRepoFile(string relativePath)

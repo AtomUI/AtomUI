@@ -2,7 +2,7 @@
 
 本文档定义 `Menu` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Menu 桌面版实现原理](implementation.md)，弹层滚动专项设计见 [Menu 弹层滚动模式设计](popup-scroll-design.md)，Menu Token 的专项设计见 [Menu Token 设计](token.md)，设计和契约变化记录见 [Menu Changelog](changelog.md)。
 
-该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `Menu` / MenuFlyout，其 internal `IsPopupPinnedOpen` 只供测试和内部诊断使用；设置为 true 时保持 menu open state 并 relay 到 menu Flyout Popup，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
+该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `Menu` 与 `MenuFlyout` 各自的具体控件：`Menu.IsPopupPinnedOpen` 是公开属性（与 `NavMenu`、`Tour`、`DropdownButton` 等家族约定一致），因为跨程序集的 Gallery 语义预览需要在 AXAML 中声明钉住；`MenuFlyout` 一侧的钉住入口保持 internal。设置为 true 时保持 menu open state 并 relay 到子菜单 Popup，设置为 false 时只解除关闭拦截。声明式钉住在容器生成之前写入时，`Menu` 在容器 prepare 阶段按同一份请求补齐，晚到的容器同样被钉住。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
 
 ## 1. 控件定位
 
@@ -64,6 +64,29 @@ Menu 的公共契约由 public/protected 类型成员、Avalonia 属性、事件
 | `PART_ToggleRadio` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 
 控件专属或内部伪类包括 `MenuItemPseudoClass.TopLevel`、`TopLevel=:toplevel`。这些伪类属于主题 selector 可观察契约，不能在未同步主题和 Gallery 的情况下重命名或删除。
+
+### 3.1 Semantic Part 契约摘要
+
+Menu 家族对应用公开基于 Selector 的 Semantic Part 契约，完整定义见 [Menu Semantic Part 契约](semantic-part.md)。Part 只描述
+与实现结构无关的稳定视觉职责，不替代 StyledProperty、伪类、事件或 Token；AtomUI 默认主题不消费 `.semantic-*`。
+
+上游基线为 6.6.3 稳定发布源码公开的 12 个 Semantic 键路径，与 NavMenu 逐字相同：一级 `root`、`item`、`itemIcon`、
+`itemContent`、`itemTitle`、`list`，子菜单 `subMenu.item`、`subMenu.itemIcon`、`subMenu.itemContent`、
+`subMenu.itemTitle`、`subMenu.list`，以及 `popup.root`。Part 名称逐字沿用这些键路径，不新增、不改名、不合并。
+
+关键边界：
+
+- `Menu` 是 plain Menu 语义的唯一 owner；`MenuItem`、`MenuItemGroup`、`MenuSeparator` 虽是 public 类型，但被
+  ContextMenu / MenuFlyout / DropdownButton 弹层复用，因此不持有 descriptor。
+- 层级靠**互斥 marker**区分：一级容器 `.semantic-item` / 分组 `.semantic-scope-group`，子菜单容器
+  `.semantic-sub-menu-item` / 分组 `.semantic-sub-menu-group`。层级只在 plain Menu 子树内由 `Menu` / `MenuItem` /
+  `MenuItemGroup` 下发，复用方保持既有 `.semantic-item` 行为不变。
+- 全部非 root Part 的 route 以 `>>` 开头并按生成器语法声明 `CrossNestedOwners`：容器是运行时生成物；`popup.root` 与
+  全部 `subMenu.*` 位于 `Popup.Child` 属性值子树，因此同时声明 `CrossVisualRoot`。
+- `itemTitle` / `list` 是分组标题与分组列表。`Menu` 是菜单栏（horizontal 语义），一级 `itemTitle` / `list` 恒为 0 实例
+  （与上游 horizontal 一致）；子菜单内分组提供 `subMenu.itemTitle` / `subMenu.list`。
+- 用户入口是生成的强类型 Semantic Style（如 `MenuItemStyle`、`MenuSubMenuItemStyle`、`MenuPopupRootStyle`），在 AXAML 中
+  作为 `atom|Menu` owner-scoped 普通 Style 的嵌套样式声明，并显式给出 `x:SetterTargetType`。
 
 ## 4. 行为与状态模型
 
@@ -202,36 +225,15 @@ Menu 家族弹层滚动模式由 `IsScrollEnabled` 和 `DisplayPageSize` 共同�
 
 `Menu`、`ContextMenu`、`MenuItem`、`MenuFlyout` 和 `MenuFlyoutPresenter` 共享同一公共语义。详细 API、模板、算法和验证边界见 [Menu 弹层滚动模式设计](popup-scroll-design.md)。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Menu 桌面版实现原理](implementation.md)
+- [Menu Semantic Part 契约](semantic-part.md)
 - [Menu 弹层滚动模式设计](popup-scroll-design.md)
 - [Menu Token 设计](token.md)
 - [Menu Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Menu` | 导航控件根语义区域，承载 public API、状态归一和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载点击、键盘、打开关闭、跳转或提交入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `导航项区域` | 承载当前项、选中项、禁用项、层级项或分页项状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或内容区域` | 承载 flyout、dropdown、tab content、submenu 或候选内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup-scroll-host` | `MenuPopupScrollHost` | 在弹层内容区域内根据 `IsScrollEnabled` 选择是否创建 `ScrollViewer`。 | `IsScrollEnabled`、`DisplayPageSize` | 不适用 | internal-observable |
-| `motion` | `动效区域` | 表达打开关闭、选中指示、切换和过渡反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/menu/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/menu/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -243,3 +245,4 @@ LLMS 导出来源：
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+| Semantic Part | `Menu` descriptor 的 Part 名称、Selector、route、ContractType、cardinality 与契约一致；一级 / 子菜单层级 marker 互斥且数量正确；容器 prepare / recycle 与 re-template 不重复添加或丢失 marker；复用方 marker 行为不变；用户 Semantic Style 通过专用生成 Style 命中，默认主题不消费 `.semantic-*`。 |

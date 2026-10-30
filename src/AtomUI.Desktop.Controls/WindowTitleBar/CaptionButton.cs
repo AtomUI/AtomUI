@@ -1,16 +1,14 @@
-using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
 using AvaloniaButton = Avalonia.Controls.Button;
 
+[global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
 internal class CaptionButton : AvaloniaButton
 {
     #region 公共属性定义
@@ -154,18 +152,6 @@ internal class CaptionButton : AvaloniaButton
     {
         base.OnPointerMoved(e);
         e.Handled = true;
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
     }
 
     protected override Size MeasureOverride(Size availableSize)

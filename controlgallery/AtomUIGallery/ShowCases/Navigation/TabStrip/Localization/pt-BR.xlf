@@ -211,6 +211,18 @@
         <target state="translated">Superior</target>
       </segment>
     </unit>
+    <unit id="P2PlaceholderSearchTabs">
+      <segment>
+        <source>Search tabs...</source>
+        <target state="translated">Pesquisar abas...</target>
+      </segment>
+    </unit>
+    <unit id="P2TextNoMatchingTabs">
+      <segment>
+        <source>No matching tabs</source>
+        <target state="translated">Nenhuma aba correspondente</target>
+      </segment>
+    </unit>
     <unit id="P2TextTabContent">
       <segment>
         <source>Tab Content</source>
@@ -239,6 +251,54 @@
       <segment>
         <source>Examples</source>
         <target state="translated">Exemplos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticAddDescription">
+      <segment>
+        <source>Add element, set size, color and corner radius styles for the plus button</source>
+        <target state="translated">Elemento de adição, define tamanho, cor e estilos de raio de canto para o botão de mais</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>Close element, set size and color styles for the close button</source>
+        <target state="translated">Elemento de fechamento, define tamanho e estilos de cor para o botão de fechar</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element, set size and margin styles for the tab icon</source>
+        <target state="translated">Elemento de ícone, define tamanho e estilos de margem para o ícone da aba</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, set size, padding, hover state and selected state styles for each tab</source>
+        <target state="translated">Elemento de item, define tamanho, preenchimento, estado de foco e estado selecionado para cada aba</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label element, set font and color styles for the tab title</source>
+        <target state="translated">Elemento de rótulo, define estilos de fonte e cor para o título da aba</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Style tabs through generated Semantic Part styles: tab spacing and selected background, icon and title margins, and plus button corner radius.</source>
+        <target state="translated">Personalize as abas por meio dos estilos de Semantic Part gerados: espaçamento de abas e fundo selecionado, margens de ícone e título e raio de canto do botão de mais.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, set overall size, padding, border and background styles</source>
+        <target state="translated">Elemento raiz, define tamanho geral, preenchimento, borda e estilos de fundo</target>
       </segment>
     </unit>
     <unit id="TabStripAddCloseDescription">
@@ -347,6 +407,18 @@
       <segment>
         <source>Items from ItemSource datasource</source>
         <target state="translated">Itens de ItemSource datasource</target>
+      </segment>
+    </unit>
+    <unit id="TabStripOverflowPopupSearchDescription">
+      <segment>
+        <source>Customize the overflow popup with search and keyboard navigation.</source>
+        <target state="translated">Personalize o popup de excedentes com pesquisa e navegação pelo teclado.</target>
+      </segment>
+    </unit>
+    <unit id="TabStripOverflowPopupSearchTitle">
+      <segment>
+        <source>Custom Popup Search</source>
+        <target state="translated">Pesquisa personalizada no popup</target>
       </segment>
     </unit>
     <unit id="TabStripPositionDescription">

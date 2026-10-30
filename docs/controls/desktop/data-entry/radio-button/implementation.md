@@ -1,6 +1,6 @@
 # RadioButton 桌面版实现原理
 
-本文档描述 RadioButton、RadioButtonGroup、OptionButton 和 OptionButtonGroup 桌面控件家族的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [RadioButton 桌面版架构设计](overview.md)，OptionButtonGroup 的方向与组合几何见 [OptionButtonGroup 方向布局设计](option-button-group-orientation-design.md)，变化记录见 [RadioButton Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [RadioButton Token 设计](token.md)。
+本文档描述 RadioButton、RadioButtonGroup、OptionButton 和 OptionButtonGroup 桌面控件家族的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [RadioButton 桌面版架构设计](overview.md)，OptionButtonGroup 的方向与组合几何见 [OptionButtonGroup 方向布局设计](option-button-group-orientation-design.md)，变化记录见 [RadioButton Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [RadioButton Token 设计](token.md)，Semantic Part 契约见 [RadioButton Semantic Part 契约](semantic-part.md)。
 
 ## 1. 实现定位
 
@@ -81,7 +81,7 @@ Public API / ItemsSource / Command / Event
 - 内容与数据：`CheckedItem`、`DotSizeValue`、`ItemSpacing`。
 - 选择与集合：`IsChecked`。
 - 交互与状态：`IsMotionEnabled`、`IsWaveSpiritEnabled`。
-- 视觉与布局：`DotPadding`、`LineSpacing`、`Orientation`、`PaddingInline`、`RadioBackground`、`RadioBorderBrush`、`RadioBorderThickness`、`RadioDotEffectSize`、`RadioInnerBackground`、`RadioSize`。
+- 视觉与布局：`DotPadding`、`LineSpacing`、`Orientation`、`PaddingInline`、`Background`、`BorderBrush`、`BorderThickness`、`RadioDotEffectSize`、`RadioInnerBackground`、`RadioSize`。
 - OptionButtonGroup：`SelectedIndex` / `SelectedItem` 持有按钮组选中值，`Orientation` 持有排列与组合方向，`ButtonStyle` 持有 Outline/Solid 状态视觉。
 
 维护要求：
@@ -125,6 +125,23 @@ OptionButtonGroup.Orientation
 - `PART_WaveSpirit`：稳定模板协作入口，重命名前必须同步主题和实现。
 
 OptionButtonGroup 的 `PART_ItemsPresenter` 使用绑定 Orientation 的标准 StackPanel。OptionButton 的 `PART_WaveSpirit` 使用 EffectiveCornerRadius；横向 ContentLayout 居中，纵向 ContentLayout Stretch 并从内容起始侧对齐。
+
+`RadioButtonTheme` 的模板根节点是一个 `PixelAlignedBorder#Frame`，内含一个 `DockPanel`，左停靠
+`RadioIndicator#Indicator`、剩余为 `ContentPresenter#ContentPresenter`。Semantic Part 节点映射如下：
+`RadioIndicator#Indicator` 对应 `icon`（`.semantic-icon`），`ContentPresenter#ContentPresenter` 对应
+`label`（`.semantic-label`），`root` 是 RadioButton owner 本身。两个 marker 使用静态
+`Classes.semantic-*="True"` 标记，不使用 Binding 或运行时赋值。
+
+checked 与 unchecked 不是两个替代实现节点：`RadioIndicator` 通过 `:checked` / `:unchecked` 伪类切换 `Render`
+绘制结果，模板中始终只有一个指示圆环节点，因此 `icon` 基数恒为 `Single`。`ContentPresenter` 的 `IsVisible`
+绑定到 `Content` 非空，`Content` 为空时节点隐藏但仍存在，因此 `label` 基数也恒为 `Single`。`RadioButtonGroup`
+创建/回收的每个 `RadioButton` 容器都套用同一 `RadioButtonTheme`，各自公开同一 `icon` / `label` marker 契约。
+
+`RadioButtonGroup`、`RadioIndicator`、`OptionButton` 与 `OptionButtonGroup` 不持有 Semantic descriptor：上游
+Radio.Group 不提供 Semantic API，`RadioIndicator` 是 internal 类型，上游 Radio.Button 也不公开自身
+`classNames` / `styles`，因此集合布局、items presenter 与按钮式选项内容不属于 RadioButton 的 Semantic Part 契约。
+模板重套用后由新模板重新提供同一 `icon` / `label` marker 契约；选中状态或 `Content` 变化不增删 marker。完整契约见
+[RadioButton Semantic Part 契约](semantic-part.md)。
 
 ## 6. 交互与事件处理
 
@@ -197,3 +214,10 @@ RadioButton 的交互事件应从输入源收敛到控件级语义事件：
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
 - OptionButtonGroup 覆盖 Orientation x ButtonStyle x SizeType、Stretch/自然/显式宽度、集合变更、非对称圆角、SelectedIndex 数据项模式和多种 render scaling。
+
+## 状态动效初始化
+
+内部 `RadioIndicator` 构造时持有共享初始化会话，挂载后计算的圆点尺寸直接提交，加载后才恢复过渡。初始 checked 不创建波纹任务，待执行波纹在分离和模板变更时取消。
+共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。
+
+`AbstractOptionButton` 同样持有会话，覆盖 `OptionButtonGroup` 在容器挂载后赋予的初始 checked 外观；父组的选择模型、按压反馈和后续状态切换保持原有语义。

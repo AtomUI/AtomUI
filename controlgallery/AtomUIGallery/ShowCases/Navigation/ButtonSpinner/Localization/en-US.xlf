@@ -86,6 +86,51 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticActionsDescription">
+      <segment>
+        <source>Step handle region holding both step buttons, its background, divider strokes and corner radius</source>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Main content element rendered inside the input frame</source>
+      </segment>
+    </unit>
+    <unit id="SemanticDecreaseButtonDescription">
+      <segment>
+        <source>Decrease step button inside the step handle</source>
+      </segment>
+    </unit>
+    <unit id="SemanticIncreaseButtonDescription">
+      <segment>
+        <source>Increase step button inside the step handle</source>
+      </segment>
+    </unit>
+    <unit id="SemanticInnerLeftContentDescription">
+      <segment>
+        <source>Inner content element rendered before the main content</source>
+      </segment>
+    </unit>
+    <unit id="SemanticInnerRightContentDescription">
+      <segment>
+        <source>Inner content element rendered after the main content</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use the generated ButtonSpinner Semantic Part styles to customize the published parts declaratively.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with size, variant, status, spin enablement and other basic spinner container styles</source>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to Input with status, which could be error or warning.</source>

@@ -1,10 +1,13 @@
 # AtomUI 主题系统架构
 
-本文是 AtomUI 主题系统唯一的长期架构设计文档。它定义当前运行时模型、公开配置语义、主题来源解析、主题文件
+本文定义 AtomUI 主题系统的运行时模型、公开配置语义、主题来源解析、主题文件
 处理、Catalog 刷新、Token 编译、动态作用域、资源发布、事件契约、AOT 边界和验收标准。
 
 本文定义当前架构。既有兼容对象不得成为绕过这些约束的旁路。面向主题作者和 Control 开发者的分层讲解与定制
 示例见 [AtomUI 主题定制指南](../../../guides/theming/customization.md)。
+
+包内 XML 类型化注册与默认赋值见[编译主题包](compiled-theme-packages/overview.md)。派生算法统一在运行时执行，
+并遵守本文的配置、Snapshot、事务与资源语义；当前验证状态由编译主题包文档维护，已发布能力以对应发布记录为准。
 
 ## 1. 设计目标
 
@@ -280,17 +283,19 @@ Global Token snapshot。
 
 ## 5. Theme Schema 与注册
 
+> 本节注册与资产模型对应本地已实现的 TypeMap 契约，验证与发布状态见 [AOT 与裁剪架构](../../foundations/aot-and-trimming.md#1-状态与事实边界)。
+
 `ThemeSchemaRegistry` 在应用主题初始化前一次性构建。Control、Token 和主题资产只来自源生成结果；
 主题算法可以通过显式 `ThemeAlgorithmDescriptor` 注册：
 
 ```text
 ThemeSchemaRegistry
 +-- GlobalTokenSchema
-|   \-- token name, kind, stage, value type, parser, setter, getter, resource key
+|   \-- token name, kind, stage, value codec, token accessor, resource key
 +-- ControlTokenDescriptor[ControlTokenIdentity]
 |   \-- exact CLR type, factory, own token schema, evaluator, resource projector
 +-- ControlThemeAssetManifest
-|   \-- theme asset, owner identity, referenced Control identities, semantic part contract
+|   \-- asset identity, exported themes, required Token owners, semantic bindings, resource order
 \-- ThemeAlgorithmDescriptor[ThemeAlgorithm]
     \-- revision, evaluator, AOT factory, appearance effect
 ```
@@ -324,23 +329,26 @@ revision。
 Registry 在首个 snapshot 编译前冻结。Manager 构建完成后不能追加 Token、Control、算法或主题资产
 descriptor；可选控件包必须在 `UseAtomUI` Builder 阶段完成显式注册。
 
-生成器分配的 Token 和 Control slot 只保证在同一 registry revision 生命周期内稳定。不同 revision 可以重新
+Token schema slot 与冻结时绑定的 Control slot 只保证在同一 registry revision 生命周期内稳定。不同 revision 可以重新
 分配 slot，公开协议、持久化配置和跨版本缓存不得依赖整数 slot 不变，而应使用稳定 identity 并在绑定后解析
 当前 revision 的 slot。
 
 源生成器必须为每个内置、对外可主题化的 Control 生成以下内容；Control 没有 Own Token 时仍生成 identity、
 descriptor 和资源扩展，只省略 Own Token builder/schema：
 
-- 稳定的 `ControlTokenIdentity`，包括 catalog 和 control id。
+- 稳定的 `ControlTokenIdentity`，以 catalog/control id 保持字符串相等语义；生成身份附带实际使用和校验的 owner Type。
 - 发现无参数 `[ControlDesignToken]` 标记的可选 Own Token 类型；标记的抽象类型只贡献
   定义，标记的 `sealed` 具体类型是终端 Own Token。Attribute 和抽象定义层都不参与 Control identity 或资产关联。
-- Own Token name 对应的强类型赋值委托查找表；没有 Own Token 时为空。
-- Own Token value 到 Avalonia resource value 的投影；没有 Own Token 时为空。
+- Own Token 的强类型读写与 Avalonia resource value 投影；没有 Own Token 时为空。生成代码不为每个 Token 生成委托：
+  隐藏 ABI `TokenDescriptor.CreateGenerated(name, slot, stage, codec, resourceKey, accessor)` 接收按值类型共享的
+  `TokenValueCodec<T>.Instance`（Parse/Format）和按 Token 类生成的 `TokenValueAccessor` 子类（按 descriptor slot
+  switch 读写与投影，投影仍用属性静态类型选择 `ThemeResourceValue.Project` 重载）。accessor 只由所属 descriptor
+  工厂引用，随未用控件一起裁剪；包级 lambda 静态缓存不再随全部 Token 保留。公开委托构造函数保留，旧生成代码无需重编。
 - 可选 Own Token builder 的直接构造委托。
 - Control CLR type 和 Own Token schema；descriptor 不包含 Global Token 消费白名单。
 - 生成式 `XxxTokens.Identity`、`XxxTokenKey` 和 `XxxTokenResourceExtension`；Token key 必须强类型化，不能在
   ProvideValue 热路径解析字符串。
-- 每个主题资产的 URI、owner Control identity、引用的 Control identities 和 Semantic Part Theme 资产关系。
+- 每个资产的 AssetId/URI、导出的默认或命名主题、RequiredTokenOwners、Semantic Theme 关联和确定资源顺序。
 - 每个 Control 的生成式 Semantic Part descriptor、Selector class、ContractType 和 cardinality。
 - 每个包的生成式注册 helper 和 manifest；由包作者的公开 `UseXxxControls()` 入口一次注册完整 descriptor 和资产，
   不要求逐 Control 手工注册。
@@ -357,12 +365,16 @@ Control Design Token CLR 继承只在生成期复用 Own Token 定义。Generato
 descriptor，运行时不保存声明层、继承深度或基类 identity。完整契约见
 [Control Design Token 继承架构](control-design-token-inheritance.md)。
 
-第三方 Control 包必须使用 AtomUI 源生成器，并且只通过一个带 `[ControlPackageRegistrationEntry]` 的公开包级入口注册
-Control descriptor、可选 Own Token 和主题资产。普通第三方包默认以整个 Package 作为一个安全 Registration Unit，不维护
-Unit ownership 或依赖图。Own Token 使用无参数 `[ControlDesignToken]` 供生成器发现，但不声明 Control 类型、identity 或
-ID。目标继承契约允许第三方包从上游 `public abstract` `[ControlDesignToken]` 定义层派生自己的 `sealed` 终端 Token；抽象层不生成
-注册产物。不存在手写 descriptor/manifest、运行时程序集扫描或 AXAML 文本扫描 fallback。完整接入步骤见
-[第三方 AtomUI Control Package 指南](../../../guides/theming/third-party-control-packages.md)。
+第三方控件包调用统一的生成式包注册 helper，作者只维护 Provider 和正常生命周期逻辑。普通生成器提供逐控件片段、
+TypeMap 条件及包引导信息；Runtime 只查询映射和收集记录，官方 linker 计算保留闭包。内部资源控件不被迫拥有公开 Token
+身份；普通与裁剪路径调用同一 descriptor factory。完整接入见[第三方控件包指南](../../../guides/theming/third-party-control-packages.md)。
+
+带 owner 的 identity 在配置/资产/注册集合去重之前规范化：raw 与 typed 合并保留 owner，冲突 owner 立即失败，最终 registry
+再次验证实际 ControlType。不得让 Dictionary 保留旧的 raw key 而丢失新输入的类型约束。
+
+所有包先收集后统一校验跨包依赖；资源按 PackageCommitOrdinal 和包内声明规则排序。全量与选中路径共同保留的资产具有同样的
+相对优先级，开放宿主资源输入遵守相同契约。注册表冻结后不再追加片段。详细事实由
+[控件与资源注册契约](../../foundations/control-registration-contracts.md)拥有。
 
 ## 6. 主题文件
 
@@ -420,6 +432,10 @@ ID。目标继承契约允许第三方包从上游 `public abstract` `[ControlDe
 - 保留源码位置并执行 XML 元素总数等 Reader 级资源限制。
 - 输出不依赖当前 Control 注册集合的 `ThemeDocument`。
 
+显式编译的包内 XML 在构建时由 Toolchain Tasks worker 链接同一 Reader 源码和权威 XSD 校验，向 Generator 提供
+有界中立输入、source location 和原始字节 SHA-256；无效输入阻止构建。运行时使用生成的类型化程序，
+不创建 syntax document 或初始化运行时 XSD。原始 avares 资源仍可保留；显式动态 XML 继续经过标准 Reader。
+
 `ThemeDefinitionBinder` 负责：
 
 - 使用 `ThemeSchemaRegistry` 解析 Token，并按 Reader 已转换的 `ThemeAlgorithm` 枚举绑定算法 descriptor。
@@ -431,12 +447,12 @@ Reader 不得因为某个可选控件包没有安装而修改或过滤语法树�
 定义是否可用于当前 registry。`ThemeDefinitionRevision` 是由 Catalog 生成的结构化值，至少包含稳定 source
 identity、source revision 和内容摘要：文件来源使用实际字节内容摘要，不能只使用时间戳；包内资源包含包版本、
 资源路径和内容摘要；程序化来源必须显式提供 revision。来源字节或程序化定义语义变化时 revision 必须变化。
-同一 definition revision 在进程中最多成功读取一次；同一 `(definition revision, registry revision)` 最多成功
-绑定一次。更换 registry revision 只重新绑定已有 `ThemeDocument`，不重复解析来源 XML。
+有效缓存可复用同一内容摘要的解析结果，以及同一真实 registry 实例上的绑定结果；驱逐后允许重新准备，不能承诺
+进程生命周期内只执行一次。更换 registry 时不能复用旧 slot；可在有界缓存命中时复用已有 `ThemeDocument`。
 
 ### 6.3 Theme Definition Resolver
 
-主题来源统一通过 Resolver 发现。Resolver 只描述“有哪些来源以及如何读取原始字节”，不得自行执行 XML 解析、
+动态 XML 来源通过 Resolver 发现。Resolver 只描述“有哪些来源以及如何读取原始字节”，不得自行执行 XML 解析、
 Token 绑定、算法求值或资源发布。公开契约使用 `Definition` 而不是 `Config` 术语，因为 `ThemeConfig` 已经专指
 运行时 Token/Algorithm 覆盖；主题 XML 是包含 Id、Name、Appearance、默认标记和 revision 的完整 definition。
 
@@ -467,9 +483,14 @@ public interface IThemeDefinitionSource
 线程调用同一同步合约，再进入统一 Reader/Binder/Compiler；不为了运行时刷新把应用启动改成先挂载空主题的异步
 流程。
 
+启动期只有实现 `IBackgroundThemeDefinitionResolver` 的自定义来源才参与提前后台 Prepare；普通来源在需要 Splash
+时先于 UI 线程同步 Prepare，否则随初始提交解析。该可选接口声明 `Resolve` 和返回来源的 `OpenRead` 可在后台调用，
+且可与超时后的 UI 回退并发。
+运行时刷新仍在后台调用 `SupportsReload=true` 的来源，因此可刷新来源也必须具备相应线程安全性；只能在 UI 线程
+访问的来源应返回 `SupportsReload=false`。
+
 标准 Resolver 分为：
 
-- `BuiltInThemeDefinitionResolver`：显式列出 AtomUI Core 的 `avares://` 主题，必须成功，不支持刷新。
 - `AvaloniaAssetThemeDefinitionResolver`：由应用或控件包显式列出 `avares://` 主题，必须成功，不支持刷新。
 - `UserDirectoryThemeDefinitionResolver`：读取应用用户配置目录中的 `*.theme.xml`，允许启动降级，支持手动刷新。
 
@@ -477,12 +498,14 @@ Builder 公开注册入口为：
 
 ```csharp
 void AddThemeDefinitionResolver(IThemeDefinitionResolver resolver);
+void AddCompiledThemePackage(CompiledThemePackage package);
 void WithApplicationId(string applicationId);
 void UseUserThemeDirectory();
 void UseUserThemeDirectory(string directory);
 ```
 
-Resolver Id 在一次 Builder 中必须非空且唯一。内置 Resolver 总是最先注册，应用 Resolver 按显式注册顺序追加；
+Resolver 与编译包使用显式来源联合；注册 Id 在一次 Builder 中必须非空且唯一。Core 生成的默认主题包最先注册，
+应用 Resolver/编译包按显式注册顺序追加。编译包不伪造 OpenRead 字节流；两者共用 Catalog 的冲突、唯一默认与刷新规则。
 不执行程序集扫描、资源目录枚举或基于命名约定的类型发现。
 
 ### 6.4 Application Id 与用户主题目录
@@ -522,7 +545,7 @@ Resolver 在枚举前冻结规范化后的目录真实路径；打开文件时�
 来源顺序只决定 `AvailableThemes` 的稳定展示顺序，不提供覆盖语义：
 
 ```text
-Core built-in -> application/package avares -> user directory
+Core compiled package -> application compiled packages / XML resolvers -> user directory
 ```
 
 - 任意来源之间重复 `Theme.Id` 都是错误，不使用 first-wins、last-wins 或静默覆盖。
@@ -539,20 +562,29 @@ Core built-in -> application/package avares -> user directory
 
 ### 6.6 Catalog 构建
 
-Catalog 对所有 Resolver 结果执行同一管线：
+Catalog 对外部 Resolver 结果执行以下管线：
 
 ```text
 Resolver source
     -> bounded byte copy + SHA-256
     -> ThemeDocumentReader + v1 XSD
     -> ThemeDefinitionBinder + frozen ThemeSchemaRegistry
-    -> BoundThemeDefinition + ThemeDefinitionRevision
+    -> PreparedThemeDefinition + ThemeDefinitionRevision
     -> immutable CompiledThemeCatalog
 ```
 
 `ThemeDefinitionRevision.SourceIdentity` 来自 source identity；`SourceRevision` 来自 Resolver 的结构化 revision；
 `ContentDigest` 必须根据本次实际读取的字节计算。文件长度或修改时间只能筛选缓存候选，不能代替内容摘要。
 Catalog 构建期间只使用本次复制的字节，避免文件枚举后修改造成 Reader 与 digest 针对不同内容。
+
+包内 `AtomUIThemeDefinition` 使用构建期类型化入口，直接在实际 registry 校验契约并产生同一 PreparedThemeDefinition，
+不创建 ThemeDocument 或重复解析静态值。Core 默认主题与 Gallery 产品主题已按此路径接线，原始 avares XML 仍可显式
+读取。程序摘要和实际 registry 身份共同限定复用边界；生成 ABI 与实施验收状态见
+[编译主题包](compiled-theme-packages/overview.md)及[生成 ABI](../../../reference/theming/compiled-theme-abi-v1.md)。
+
+外部 bounded byte copy 使用小型池化 scratch buffer，完整读取到 EOF，不依赖流的 Length/CanSeek/Position；
+实际字节数决定限额和摘要。用户目录完整枚举并规范化路径，只保留上限内的路径；超限保留精确计数和后续枚举
+错误优先级，合法目录仍按 ordinal 顺序处理。
 
 ## 7. 编译器
 
@@ -566,13 +598,14 @@ ThemeCompileInput
   -> apply Map overrides
   -> format Alias Token
   -> apply Alias overrides and AtomUI final normalization
-  -> evaluate each registered Control
-  -> freeze token values and resources
-  -> ThemeSnapshot
+  -> resolve each registered Control slot state (cheap config comparison)
+  -> freeze global token values and resources
+  -> ThemeSnapshot (control slots compile on first query)
 ```
 
-编译阶段允许使用可变 builder，因为算法天然需要逐步派生。builder 的生命周期只限于一次编译，不能进入
-snapshot，也不能通过公开 API 返回。
+编译阶段允许使用可变 builder，因为算法天然需要逐步派生。目标是将其生命周期限制在一次编译，并且不通过
+公开 API 返回。惰性 cell 持有独立编译 source；全局结果复用时，仅首次实际编译控件才恢复可变 builder，
+不捕获历史 snapshot。详见[惰性物化设计](lazy-materialization.md)。
 
 全局计算顺序固定为：
 
@@ -598,7 +631,16 @@ snapshot，也不能通过公开 API 返回。
 Control 默认 Token evaluator 必须接收 Control appearance 和 Effective Global Token，不能继续只读取全局
 `IsDark`。
 
-任何 validation、conversion 或 algorithm 错误都返回失败结果，不返回部分 snapshot。
+控件槽位编译契约：`ApplyTheme` 返回时全局 token 与资源完整提交；控件级 `ControlThemeSnapshot`
+按槽位惰性编译，首次查询时经同一 `CompileControl` 函数与同一缓存键编译，结果值与急切编译逐位
+相等；编译结果由现有 Token 值、算法、资源投影与缓存契约测试验证，不保留未被执行的急切参考实现。
+首帧内首次查询的控件一次性支付内联编译成本，具体耗时依赖控件与运行环境。
+跨快照复用独立 cell，物化结果不保留历史 snapshot，见[惰性槽生命周期设计](lazy-materialization.md#2-独立惰性槽与历史快照释放)。
+失败语义同步后移：控件级编译错误（不支持的算法模式、evaluator 抛出等）不再使
+`ApplyTheme` 整体失败，而是在首次查询该槽位时抛出、后续每次查询重复抛出。
+
+任何 validation、conversion 或 algorithm 错误都返回失败结果，不返回部分 snapshot——该原子性指
+全局维度（Seed/算法链/全局 token/资源）；控件维度的失败面按槽位延后到首查（见上方契约段）。
 
 ## 8. ThemeSnapshot
 
@@ -613,7 +655,7 @@ ThemeSnapshot
 +-- GlobalTokenValues: dense immutable TokenValueTable
 +-- GlobalResources
 +-- PresetColorPalettes
-\-- Controls[registry control slot]
+\-- Controls: LazyControlSnapshots[registry control slot]  (compile on first query)
     +-- Appearance
     +-- EffectiveGlobalTokenDelta
     +-- ControlTokenValues: dense immutable TokenValueTable
@@ -625,10 +667,17 @@ ThemeSnapshot
 - Token schema 由生成器分配在当前 registry revision 内稳定的 slot；完整 Token 值表使用稠密不可变数组，不使用
   object-key 字典保存每个值。
 - Control 表按 registry slot 存放引用，`ControlTokenIdentity` 只用于配置边界和诊断。
+- Control 表是按槽位惰性编译的容器（只暴露 Count 与索引器，不实现枚举）；构造期解析槽位状态
+  （已物化 / 复用独立 cell / 待编译），保留字节估算为构造期基线加首访物化增量。缓存在插入时采样
+  `EstimatedRetainedBytes`，物化后通过弱 cache 通知回灌增量并重新检查预算。单快照槽数有限不构成整个应用的
+  保留上界证明；完整计费与释放契约见[内存计费与释放](lazy-materialization.md#7-内存计费与释放)。
 - 稀疏覆盖、Control Effective Global Token 差量和 Avalonia 资源投影使用不可变集合或 `FrozenDictionary`。
 - 颜色资源在 snapshot 中已经转换为不可变 Brush。
 - palette、集合和其他引用值必须在冻结前深复制为不可变值。
-- 不保存 `DesignToken`、`IControlDesignToken`、Control、Visual、Provider、事件或订阅。
+- 不保存 Control、Visual、Provider、事件或订阅。独立 source 保留当前全局输入及按需 workspace；复用全局值时
+  不急切恢复 builder，非复用路径可持有已有 builder。cell 物化成功后释放 source 引用；最后依赖 cell 释放后，
+  source/builder 可回收，不保留父 snapshot 链。source 弱引用 control cache，合法旧视图不会经缓存保活其他历史输入；
+  关闭与纯值首查边界见[生命周期契约](compiled-theme-packages/execution-and-lifetime.md#8-实现边界与后续变更要求)。
 - 不提供 `SharedToken`、`ControlToken`、`Clone` 或可变字典查询 API。
 - imperative 消费者通过只读 Token resolver 查询 snapshot 值。
 - `ContentFingerprint` 是规范化内容的快速 hash，不是无碰撞的唯一身份。snapshot 的语义相等性必须比较对应的
@@ -643,7 +692,7 @@ ThemeSnapshot
 - 完整的不可变 `ThemeDefinition` 结构化 key，包括 definition revision 和 typed 内容。
 - 完整的不可变 `NormalizedThemeConfig` 结构化 key。
 - 有序算法 descriptor `(id, revision)`。
-- `ThemeSchemaRegistry` revision。
+- `ThemeSchemaRegistry` revision 与实际绑定身份；相同元数据的不同委托实现不能共享结果。
 
 父主题的影响已经包含在合并后的有效配置中，因此 cache key 不包含父 snapshot 的发布序号。
 
@@ -938,8 +987,8 @@ AvailableThemes 中”的悬空状态。
 根 ThemeContext 的 Provider 在 ThemeManager 初始化时挂载一次。每个局部 ThemeContext 也只拥有一个
 Provider。主题切换不追加 `MergedDictionaries`，不创建新的 Provider。
 
-Root Provider 由 ThemeManager 的 Styles 资源拥有；局部 Provider 由对应 ThemeConfigProvider.Resources
-拥有；独立 TopLevel 通过自己的 ResourceBridge 委托给 owner context。Provider 和 bridge 都忽略调用方传入的
+Root Provider 位于 ThemeManager.Resources，由根 Styles.Resources 宿主挂入应用；局部 Provider 由对应
+ThemeConfigProvider.Resources 拥有；独立 TopLevel 通过自己的 ResourceBridge 委托给 owner context。Provider 和 bridge 都忽略调用方传入的
 自定义 AtomUI theme id，只使用已提交 snapshot；Avalonia 的 `ThemeVariant` 参数仍用于同一资源树中的普通
 ThemeDictionary 查询。
 
@@ -1013,6 +1062,10 @@ TokenResourceBinder.CreateControlTokenBinding(
 `ControlTokenAccessor.Capture(owner)` 获取同一 snapshot 中的 `GetEffectiveGlobal<T>()` 与经过 owner 校验的
 `GetOwn<T>()`。Binding 跟随 ThemeContext 发布自动更新；命令式路径在通知后重新 capture。实现不得创建只用于
 转运 Token 的隐藏 StyledProperty，也不得在运行时观察资源访问来推导 schema。
+非 Visual `AvaloniaObject` 的程序化绑定优先使用它自己的 scoped `IResourceHost`，其次使用其
+`IResourceProvider` owner；没有局部资源宿主时才使用应用全局资源。所有路径都兑现传入的 converter 与
+`BindingPriority`，调用方持有并释放返回的 `IDisposable`。全局资源 observable 省略 `ThemeVariant` 时跟随应用
+实际变体变化；显式传入变体才固定到该变体。
 
 基类代码读取 Effective Global Token 时按实例 exact CLR type 解析，因此注册的派生 Control 使用自己的 identity。
 Own Token 始终显式属于某一终端 Control，不随 Control CLR 继承或 Token 定义继承动态替换。在目标继承模型中，Token
@@ -1127,7 +1180,7 @@ Token，也不由某个控件实例创建私有子作用域。当前 `ThemeConte
 
 ## 16. 启动时序
 
-`Application.UseAtomUI()` 的主题启动顺序固定为：
+内核提交（见[启动生命周期](../startup/lifecycle.md#4-提交一次)）时的主题启动顺序固定为：
 
 1. Builder 解析并冻结 Application Id，收集 Theme Definition Resolver、算法 descriptor、Control theme asset
    manifest、不可变初始 root request 模板和语言配置。
@@ -1138,14 +1191,20 @@ Token，也不由某个控件实例创建私有子作用域。当前 `ThemeConte
    保存 diagnostics。
 4. 如果启用 FollowSystem，先同步读取初始系统 appearance，再从 Light/Dark 不可变 request 模板中选择首帧
    request；不得先按 Default 编译后再补一次 Dark/Light 切换。
-5. 同步完成初始 request 的 Capture/Prepare，生成第一个完整根 `ThemeSnapshot`。
-6. 使用该 snapshot 创建 Root ThemeContext、稳定 Provider 和唯一 ThemeManager；Manager 的 Styles 同时预装
-   Control themes、语言资源入口以及向全部 TopLevel 注入 Root ThemeContext 的全局 style。
-7. 将同一个已完整初始化的 ThemeManager 实例挂载到 Application Styles，并绑定为 `IThemeManager` 服务。
+5. 同步完成初始 request 的 Capture/Prepare，生成第一个完整根 `ThemeSnapshot`；启动前后台 Prepare 产出的全局层
+   作为可复用父层传入，不重复编译全局层。
+6. 使用该 snapshot 创建 Root ThemeContext 和稳定 Token provider；唯一 ThemeManager 持有完整主题资源字典，
+   语言 Provider 与服务关系由独立 LocalizationHost 持有，不归 ThemeManager 管理。
+7. 服务绑定及应用级资源/Style 挂载采用[应用资源宿主设计](application-resource-host.md)：主题 Resources 与根
+   Context Style 分开挂载，语言 Provider 接入共同资源宿主。实现证据与平台验收边界见
+   [资源宿主验证](application-resource-host-verification.md)。
 8. 显式设置与 snapshot appearance 一致的 Avalonia Light/Dark variant，并且只发布一次初始 Token 资源通知。
 9. 执行与主题生命周期无关的模块初始化。
 
 不得先挂载空资源层再异步补主题，也不得通过 ThemeLoaded 事件修补 DefaultFont、断点或其他 Token。
+
+全部包片段在提交时一次补齐；资源字典与控件快照按需创建。主题侧资源索引、全局计算身份拆分与惰性 cell 由
+[惰性物化与资源查询](lazy-materialization.md)定义。
 
 独立 `TopLevel` 的首帧还包括平台窗口在 Avalonia 完成 `ApplyStyling` 前可能展示的客户区表面。宿主必须在调用
 平台 `Show` 前挂载目标 `ThemeContext`、设置与 snapshot 一致的显式 variant，并从当前作用域 Snapshot 同步读取窗口
@@ -1258,7 +1317,8 @@ Child snapshot C (Button override only)
 ### 18.3 编译分配
 
 - 编译前根据 schema 中已知的 Token 和 Control 数量预分配数组及稀疏字典容量。
-- 临时 builder 使用 copy-on-write global token overlay，Control 计算不得深克隆完整 `DesignToken` 对象图。
+- 减少临时 builder 的完整复制是优化目标；当前 Control 计算仍调用 `CopyBuilder`，尚未实现 copy-on-write global
+  token overlay。编译主题包的类型化复制必须保持值隔离，不能把这个目标当作现有零复制保证。
 - 大型临时数组可以由有界 workspace pool 复用，但 pooled buffer 绝不进入 snapshot。
 - 取消、异常和 stale generation 路径必须在 `finally` 中归还 workspace。
 - 同一 ThemeManager 同时只运行一个根事务准备管线；后续请求合并，避免并发编译造成内存峰值。
@@ -1305,11 +1365,13 @@ ThemeScopeGraph 在注册有效期间强持有 ScopeNode 和对应 ThemeConfigPr
 - imperative Token 订阅返回 `IDisposable`，由控件在 detach、re-template 或 owner 变化时释放。
 - 非 Visual `AvaloniaObject` 使用 DynamicResource 时必须有 scoped `IResourceHost` 和对称 release 路径。
 - 普通 Popup、Flyout 和逻辑树内 overlay 不额外创建 ThemeContext 传播订阅；仅独立资源根使用 lease/bridge。
-- static cache 只能持有 schema、descriptor 和不可变无 UI 值，不得持有 ThemeContext、Provider、Control 或 Visual。
+- static cache 不得持有 ThemeContext、Provider、Control 或 Visual。schema、descriptor、Type 与无捕获委托也可能
+  保活可卸载程序集；相关绑定应由所属注册域/合法视图持有或使用可回收结构，不得建立进程级强根。
 - 事件 dispatcher 不保留已完成 transaction、event args 或 invocation list。
 
-旧 snapshot 的可达数量上界必须由“活动 context 数量 + 有界 cache entry + 当前事务 staged snapshot”解释。
-无法解释的额外存活 snapshot 视为内存泄漏。
+旧 snapshot 的存活必须由活动 context、有界 cache、当前事务候选或调用者合法持有的读取视图解释。
+cache 预算不限制调用者主动保留的视图；这些视图不能经父链或缓存额外保活无关历史版本。无法解释的额外存活
+snapshot 视为内存泄漏。
 
 ### 18.6 性能验证
 
@@ -1529,8 +1591,8 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
   `ActualThemeVariant`；Control custom algorithm 的 appearance 不泄漏到作用域 variant。
 - 无 owner 的静态 Dialog、Notification 等 API 始终使用 Root ThemeContext，并产生可诊断的根主题语义，不能
   根据当前焦点猜测局部作用域。
-- Resolver 只产生 source，不产生 `ThemeConfig`、`ThemeDocument`、Token 或 snapshot；所有来源统一经过标准
-  Reader/Binder/Compiler。
+- 公开 Resolver 只产生 source，不产生 `ThemeConfig`、`ThemeDocument`、Token 或 snapshot；所有来源使用标准
+  Reader/Binder/Compiler。固定内置 XML 的 Reader 阶段在构建时完成，Binder/Compiler 仍在运行时执行。
 - 默认 Application Id 来自具体 Application 类型程序集名，显式 `WithApplicationId` 可稳定覆盖；
   `Application.Name` 不参与路径身份。
 - 用户主题目录固定为应用配置根下 `{ApplicationId}/Themes`，不递归、不跟随链接、不访问网络。

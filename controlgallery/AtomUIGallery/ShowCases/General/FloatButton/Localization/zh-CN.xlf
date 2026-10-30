@@ -7,6 +7,18 @@
         <target state="translated">BackTop 可以方便地回到页面顶部。</target>
       </segment>
     </unit>
+    <unit id="BackTopProgressDescription">
+      <segment>
+        <source>Show the current scroll progress around the BackTop button edge.</source>
+        <target state="translated">在 BackTop 按钮边缘显示当前滚动进度。</target>
+      </segment>
+    </unit>
+    <unit id="BackTopProgressTitle">
+      <segment>
+        <source>BackTop with progress</source>
+        <target state="translated">回到顶部（进度环）</target>
+      </segment>
+    </unit>
     <unit id="BackTopTitle">
       <segment>
         <source>BackTop</source>
@@ -185,6 +197,60 @@
       <segment>
         <source>Examples</source>
         <target state="translated">示例</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBackTopRootDescription">
+      <segment>
+        <source>Root element of a BackTopFloatButton component.</source>
+        <target state="translated">BackTopFloatButton 组件的根元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with font size, foreground, line height and other description styles, available in the square shape.</source>
+        <target state="translated">内容元素，包含字号、前景色、行高等描述样式，仅在方形形状下存在。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticGroupRootDescription">
+      <segment>
+        <source>Root element of a FloatButtonGroup component with placement, trigger and open state entry.</source>
+        <target state="translated">FloatButtonGroup 组件的根元素，包含位置、触发方式和展开状态入口。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with brush, size and other icon styles.</source>
+        <target state="translated">图标元素，包含画刷、尺寸等图标样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListDescription">
+      <segment>
+        <source>List element with background, corner radius, spacing and other menu item container styles.</source>
+        <target state="translated">列表元素，包含背景、圆角、间距等菜单项容器样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize FloatButton's published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域样式定制 FloatButton 已发布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with the float button's shape, type, shadow and theme entry styles.</source>
+        <target state="translated">根元素，包含悬浮按钮的形状、类型、阴影和主题入口样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTriggerDescription">
+      <segment>
+        <source>Trigger element with the group's main button styles, shown in click or hover trigger mode.</source>
+        <target state="translated">触发器元素，包含组主按钮样式，在点击或悬停触发模式下显示。</target>
       </segment>
     </unit>
     <unit id="ShapeDescription">

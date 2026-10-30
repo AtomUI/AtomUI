@@ -14,10 +14,12 @@ Popup 接入边界：`ToolTip` 负责业务状态和内容准备，manually crea
 
 - `src/AtomUI.Desktop.Controls/Tooltip/Themes/ToolTipTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Tooltip/ToolTip.cs`
+- `src/AtomUI.Desktop.Controls/Tooltip/ToolTip.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Tooltip/ToolTipPseudoClass.cs`
 - `src/AtomUI.Desktop.Controls/Tooltip/ToolTipToken.cs`
 - `src/AtomUI.Desktop.Controls/Tooltip/OverflowTip.cs`
-- `src/AtomUI.Desktop.Controls/PackageCore/ToolTipService.cs`
+- `src/AtomUI.Desktop.Controls/Tooltip/ToolTipService.cs`
+- `src/AtomUI.Desktop.Controls/Primitives/ArrowDecoratedBox/Themes/ArrowDecoratedBoxTheme.axaml`（共享 `container`/`arrow` marker 宿主）
 
 职责边界：
 
@@ -31,7 +33,7 @@ Popup 接入边界：`ToolTip` 负责业务状态和内容准备，manually crea
 - `ToolTip`：tooltip 内容与视觉宿主，持有游离 `Popup` 作为物理弹层，是打开状态调和流程的唯一执行者。
 - `ToolTipPseudoClass`：伪类常量定义，维护 `:open` 主题可观察契约。
 - `ToolTipToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
-- `ToolTipService`：全局悬停服务，订阅 `InputManager` 原始指针事件识别 tooltip 宿主与出现时机，只写 `ToolTip.IsOpen` 附加属性，不直接持有或开关 popup。
+- `ToolTipService`：全局悬停服务，订阅 `InputManager` 原始指针事件识别 tooltip 宿主与出现时机，只写 `ToolTip.IsOpen` 附加属性，不直接持有或开关 popup。服务属于包入口的明确初始化逻辑，其存在由实际静态调用决定，不依赖目录裁剪归属；注册遵循 [TypeMap 架构](../../../../architecture/foundations/aot-and-trimming.md)。
 - `OverflowTip`：附加到文本展示节点的共享溢出提示 behavior，只管理自己写入的 tooltip，并在文本实际超出可见宽度时启用提示。
 
 核心协作规则：
@@ -40,6 +42,10 @@ Popup 接入边界：`ToolTip` 负责业务状态和内容准备，manually crea
 - Template part 是视觉协作对象，生命周期必须受 `OnApplyTemplate` 或模板加载流程管理。
 - 数据对象、选项对象、任务对象或节点对象只保存业务数据，不应反向持有不可释放的视觉对象。
 - 弹层、窗口、计时器、异步 loader 和全局管理器必须有明确关闭、解绑或释放路径。
+
+悬停服务按输入根节点身份识别宿主窗口和原生 Tooltip 窗口。原始输入进入服务前，控件事件可能已同步关闭窗口，
+因此事件根节点仍存在不代表其 `RootVisual` 仍存在。Overlay Tooltip 与宿主共享输入根，服务通过命中元素的祖先链
+识别 Tooltip 内部移动，不能把同窗全部输入都当作 Tooltip 窗口输入。
 
 ## 4. 状态与数据流
 
@@ -102,6 +108,10 @@ attached properties + target text/font
 - 控件卸载、弹层关闭、窗口关闭、集合替换或 container recycle 时释放事件订阅和资源宿主。
 - DynamicResource、TokenResourceBinder 或 C# binding 必须有明确 owner 和释放点。
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
+- `ToolTipService` 跟踪宿主时订阅其 visual-tree detach，宿主切换、移出窗口、detach 或服务 dispose 时解除该跟踪。
+  detach 同步停止待显示定时器、清空定时器宿主引用并释放当前宿主；陈旧命中结果不能重新跟踪已卸载或属于其他输入根的宿主。
+  detach 先解除 Tooltip 的指针退出处理器，避免原生弹层销毁时的退出事件被解释为用户关闭；关闭事件继续记录关闭时间并退订。
+  服务结束跟踪不重置声明式 `IsOpen`，物理弹层关闭与重新挂载后的重开继续由 `ToolTip` 调和流程负责。
 - `OverflowTipState` 对 owner bounds、文本、字体、tooltip 和内部 text viewport metric 的订阅必须由同一个 disposable owner 管理；禁用 behavior 时统一释放。
 - TextBox/TextArea 的 template part 由输入控件自己获取和管理。`OverflowTip` 不得调用 `GetVisualDescendants()`、查找 `PART_TextPresenter` 或持有输入控件的 presenter/scroller。
 - `IsOpen` 为 `true` 且宿主尚未挂入 visual tree 时，`ToolTip` 对宿主的 `AttachedToVisualTree` 建立一次性订阅；宿主挂入或 `IsOpen` 转为 `false` 时退订。该订阅生命周期自限，不随控件树重建累积。
@@ -111,8 +121,29 @@ attached properties + target text/font
 
 稳定 template part 接入点：
 
-- `PART_ArrowDecorator`：稳定模板协作入口，重命名前必须同步主题和实现。
+- `PART_ArrowDecorator`：稳定模板协作入口，重命名前必须同步主题和实现。主题未提供该部件时控件按无箭头降级：
+  弹层阴影容器关闭箭头预留，custom placement 复用箭头隐藏补偿；部件在后续模板应用中出现时，箭头设置与弹层绑定
+  自动补齐。
 - `PART_ContentPresenter`：展示用户内容、文本、图标或模板化数据。
+
+### 5.1 Semantic Part marker 映射
+
+Tooltip 公开 `root`/`container`/`arrow` 三个 Semantic Part，descriptor 位于 `ToolTip.SemanticParts.cs`。
+marker 与真实模板节点的对应关系：
+
+- `root`：owner 本身，无 marker。
+- `container`：marker `.semantic-container` 位于共享 `ArrowDecoratedBoxTheme.axaml` 的
+  `Border#PART_ContentDecorator`。
+- `arrow`：marker `.semantic-arrow` 位于共享 `ArrowDecoratedBoxTheme.axaml` 的
+  `ArrowIndicator#PART_ArrowIndicator`。
+
+`container` 与 `arrow` 声明 `CrossNestedOwners=true`。`ToolTip` 的模板只把自己的内容交给
+`ArrowDecoratedBox#PART_ArrowDecorator`（带 `.semantic-scope-arrow-decorated-box` scope 锚点），marker 节点位于
+`ArrowDecoratedBox` 自身模板中，`/template/` 链不能直接跨越嵌套 owner 进入该模板；生成 Style 通过 scope 锚点
+`/template/ .semantic-scope-arrow-decorated-box /template/ .semantic-*` 路由命中，解析器被允许跨越嵌套 owner 边界。
+
+descriptor 与 marker 均属于编译期生成与静态主题输入，不引入运行时反射或 VisualTree 扫描（系统规则见
+[AtomUI Semantic Part 系统设计](../../../../architecture/systems/theming/semantic-parts.md)）。
 
 ## 6. 交互与事件处理
 
@@ -171,6 +202,9 @@ Tooltip 的交互事件应从输入源收敛到控件级语义事件：
 
 - Public API、默认值、事件顺序和 Gallery 可观察行为。
 - Template part 名称、ControlTheme key、伪类和资源 key。
+- Semantic Part 契约：descriptor 字段、selector class、route、`ContractType` 与 cardinality（见
+  [Tooltip Semantic Part 契约](semantic-part.md)）；marker 位于共享 `ArrowDecoratedBoxTheme.axaml`，结构性变更必须
+  同步评估 `ArrowDecoratedBox` 的家庭消费者。
 - 旧 template part、事件订阅、Popup/Flyout/Window host 和 collection view 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
@@ -184,6 +218,9 @@ Tooltip 的交互事件应从输入源收敛到控件级语义事件：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
 - 打开状态调和回归：XAML 声明式 `IsOpen=True` 打开、`Tip` 晚于 `IsOpen` 就绪、宿主 detach/reattach 重开、`ToolTipOpening` 否决、attach 订阅无残留。
+- 悬停服务回归使用真实输入分发验证指针事件中同步关闭窗口后仍能处理该条原始输入，并覆盖 Overlay 同窗宿主切换、
+  原生 Tooltip 同时间戳跨根移动，以及待显示宿主卸载后定时器和强引用释放。
+- Semantic Part 回归：descriptor 三键、`ToolTipTheme.axaml` scope 锚点、共享 `ArrowDecoratedBoxTheme.axaml` 两个 marker、生成 Style 跨嵌套 owner 命中最低 `ContractType`（见 `tests/AtomUI.Desktop.Controls.Tests/Tooltip/ToolTipSemanticPartTests.cs`）。
 - 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。

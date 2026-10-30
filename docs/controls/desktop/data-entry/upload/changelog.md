@@ -10,6 +10,7 @@
   - Lock the existing DropZone/DropArea ControlTheme, layout, Token mapping and rendered result as compatibility invariants.
   - Define typed StorageItem/source ownership, validated transfers and full cleanup aggregation for every input batch.
 - API
+  - Publish the `root`, `list` and runtime-created `item` Semantic Part contract for `Upload`, including generated `UploadListStyle` and `UploadItemStyle` selectors.
   - Remove `Upload.IsOpenFileDialogOnClick`; click-to-select ownership moves to `UploadDropZone.IsOpenFileDialogOnClick` and `UploadDropZone.SourceKind`.
   - Remove `Upload.Accepts`; replace it with `Upload.AllowedFileTypes` based on `FilePickerFileType`.
   - Add `Upload.CountOverflowBehavior`, `Upload.AdmissionPolicy` and `Upload.InputBatchCompleted` for deterministic batch admission and diagnostics.
@@ -23,6 +24,7 @@
   - Redesign Upload around `Files` as the single state owner.
   - Replace directory mode with composable `UploadTrigger.SourceKind`.
 - Theme
+  - Add static Semantic Part markers to both Upload list templates and runtime item markers to every `UploadList` container while excluding the picture append trigger.
   - Move list scrolling into `UploadList`.
   - Replace picture trigger fake task with append trigger content.
 - Behavior
@@ -39,6 +41,10 @@
   - Continue cancellation and source lease release when collection, Form, batch-completion or task callbacks throw, then propagate the cleanup error.
   - Add configurable success auto-remove and pending text.
   - Unify file picker, directory picker and Drop top-level item counts under `Upload.IsMultipleEnabled`; keep directory expansion and explicit programmatic batches independent.
+- Gallery
+  - Add the Upload Semantic Part preview, generated Semantic Style example and root/list/item highlight coverage.
+- Docs
+  - Add `semantic-part.md` and synchronize the Upload overview and implementation documentation with the public Semantic Part contract.
 
 ## 2026-06-26
 

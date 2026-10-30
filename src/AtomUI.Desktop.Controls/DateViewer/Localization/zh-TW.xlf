@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" trgLang="zh-TW" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUI.Desktop.Controls.Localization.DateViewerLangResourceKind">
+    <unit id="PreviousPeriod">
+      <segment>
+        <source>Previous period</source>
+        <target state="translated">上一週期</target>
+      </segment>
+    </unit>
+    <unit id="NextPeriod">
+      <segment>
+        <source>Next period</source>
+        <target state="translated">下一週期</target>
+      </segment>
+    </unit>
+    <unit id="PreviousPage">
+      <segment>
+        <source>Previous page</source>
+        <target state="translated">上一頁</target>
+      </segment>
+    </unit>
+    <unit id="NextPage">
+      <segment>
+        <source>Next page</source>
+        <target state="translated">下一頁</target>
+      </segment>
+    </unit>
+    <unit id="ChoosePeriod">
+      <segment>
+        <source>Choose month or year</source>
+        <target state="translated">選擇月份或年份</target>
+      </segment>
+    </unit>
+    <unit id="Week">
+      <segment>
+        <source>Week</source>
+        <target state="translated">週</target>
+      </segment>
+    </unit>
+    <unit id="Today">
+      <segment>
+        <source>Today</source>
+        <target state="translated">今天</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

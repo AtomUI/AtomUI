@@ -387,7 +387,7 @@ public partial class DataGrid
     private static void CleanupRowReorderSession(RowReorderSession session, bool releasePointerCapture)
     {
         var hadDragVisual = session.RowsPresenter.DraggedRowIndex is not null;
-        session.Handle.DisableIndicatorTransitions();
+        using var suppression = session.Handle.SuppressIndicatorTransitions();
         if (releasePointerCapture)
         {
             ReleaseRowReorderPointerCapture(session);
@@ -400,7 +400,6 @@ public partial class DataGrid
         {
             session.RowsPresenter.InvalidateArrange();
         }
-        session.Handle.EnableIndicatorTransitions();
     }
 
     private static void ReleaseRowReorderPointerCapture(RowReorderSession session)

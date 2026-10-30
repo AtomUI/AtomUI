@@ -1,0 +1,114 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:TabOverflowMenu}" TargetType="atom:TabOverflowMenu">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <atom:ScrollViewer MaxHeight="300"
+                                   HorizontalScrollBarVisibility="Disabled"
+                                   VerticalScrollBarVisibility="Hidden">
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}"
+                            MinWidth="{atom:MenuTokenResource MenuPopupMinWidth}"
+                            MaxWidth="{atom:MenuTokenResource MenuPopupMaxWidth}"
+                            Grid.IsSharedSizeScope="True">
+                        <ItemsPresenter Name="PART_ItemsPresenter"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                        KeyboardNavigation.TabNavigation="Continue" />
+                    </Border>
+                </atom:ScrollViewer>
+            </ControlTemplate>
+        </Setter>
+        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+        <Setter Property="CornerRadius" Value="{atom:PopupTokenResource PopupCornerRadius}" />
+        <Setter Property="Padding" Value="{atom:MenuTokenResource MenuPopupContentPadding}" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel />
+            </ItemsPanelTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type atom:TabOverflowMenuItem}" TargetType="atom:TabOverflowMenuItem">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Frame"
+                        Background="{TemplateBinding Background}"
+                        Padding="{TemplateBinding Padding}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MenuCloseIcon" />
+                        </Grid.ColumnDefinitions>
+
+                        <ContentPresenter Name="ItemTextPresenter"
+                                          Grid.Column="0"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Center"
+                                          IsHitTestVisible="False"
+                                          Content="{TemplateBinding Header}"
+                                          ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                        <atom:IconButton Name="PART_ItemCloseButton"
+                                         Grid.Column="1"
+                                         HorizontalAlignment="Right"
+                                         VerticalAlignment="Center"
+                                         Icon="{antdicons:AntDesignIconProvider CloseOutlined}" />
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Setter Property="Foreground" Value="{atom:MenuTokenResource ItemColor}" />
+
+        <Setter Property="Height" Value="{atom:MenuTokenResource ItemHeight}" />
+        <Setter Property="Padding" Value="{atom:MenuTokenResource ItemPaddingInline}" />
+        <Setter Property="Background" Value="{atom:MenuTokenResource ItemBg}" />
+        <Setter Property="CornerRadius" Value="{atom:MenuTokenResource ItemBorderRadius}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        
+        <Style Selector="^:pointerover">
+            <Setter Property="Foreground" Value="{atom:MenuTokenResource ItemHoverColor}" />
+            <Setter Property="Background" Value="{atom:MenuTokenResource ItemHoverBg}" />
+        </Style>
+
+        <Style Selector="^:selected">
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="Background" Value="{atom:MenuTokenResource ItemHoverBg}" />
+        </Style>
+
+        <Style Selector="^ /template/ ContentPresenter#ItemTextPresenter">
+            <Setter Property="Margin" Value="{atom:MenuTokenResource ItemMargin}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|IconButton#PART_ItemCloseButton">
+            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="^[IsClosable=True]">
+            <Style Selector="^ /template/ atom|IconButton#PART_ItemCloseButton">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+        </Style>
+        
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{atom:MenuTokenResource ItemDisabledColor}" />
+        </Style>
+
+        <Style Selector="^[IsMotionEnabled=True]">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+                    <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+                </Transitions>
+            </Setter>
+        </Style>
+
+    </ControlTheme>
+</ResourceDictionary>

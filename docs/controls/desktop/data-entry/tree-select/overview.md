@@ -4,6 +4,8 @@
 
 该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `AbstractSelect`，其 internal `IsPopupPinnedOpen` 只供测试和内部诊断使用；设置为 true 时保持 `IsDropDownOpen` 并 relay 到 `PART_Popup`，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
 
+TreeSelect 公开 13 个 Semantic Part（`root`、`prefix`、`content`、`placeholder`、`input`、`suffix`、`clear`、`item`、`itemContent`、`itemRemove`、`popup.root`、`popup.list`、`popup.listItem`），与 Ant Design TreeSelect 的 Semantic Part 语义对齐（弹层树节点内部槽位由 `TreeViewItem` 契约承载）；完整 Part 表、单选/多选存在条件、Selector 用法与定制边界见 [TreeSelect Semantic Part 契约](semantic-part.md)。
+
 ## 1. 控件定位
 
 | 项 | 值 |
@@ -115,6 +117,7 @@ Form value + MaxCount state
 - `IsTreeCheckable=true` 使用 checkbox 作为节点切换入口，TreeView selection 不再作为主要选择入口。
 - `ShowCheckedStrategy` 只影响多选 tag 展示集合，不改变 `SelectedItems` 的真实值。
 - `SelectedItems` 是用户拥有的受控集合。集合引用替换和 `ObservableCollection` 等 `INotifyCollectionChanged` 原地 `Add`、`Remove`、`Reset` 都必须刷新 tag、`SelectedCount`、Form value changed、候选树 selection / checked items 和最大选择数状态。
+- 弹层 TreeView 因 `ItemsSource` 换源而清理、回放选中或勾选状态时，TreeSelect 只响应最终变化，不把中间状态重复上报给 Form；已关闭的弹层树不作为选择或勾选输入来源。
 
 过滤行为：
 
@@ -189,9 +192,10 @@ TreeSelect 属于 Data Entry 选择控件家族，与 Select、Cascader、DatePi
 
 TreeSelect 使用节点的 `ItemKey` 或 `Value` 组成 `TreeNodePath`，用于 `ItemsSource` 替换后的选择重映射。节点缺少稳定 identity 时，控件无法可靠地跨数据源替换保留选择。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 - [TreeSelect 桌面版实现原理](implementation.md)
+- [TreeSelect Semantic Part 契约](semantic-part.md)
 - [TreeSelect Token 设计](token.md)
 - [TreeSelect Changelog](changelog.md)
 
@@ -205,24 +209,3 @@ TreeSelect 使用节点的 `ItemKey` 或 `Value` 组成 `TreeNodePath`，用于 
 | AXAML 或 template part | 验证右侧 AddOn/count/handle binding、hover/pressed relay、popup 内容和 Gallery 示例。 |
 | Token 或尺寸 | 验证 Large / Middle / Small / Custom、tag 高度、popup padding 和最小宽度。 |
 | 文档改动 | 运行 `git diff --check`，检查文档链接存在。 |
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `TreeSelect` | 数据录入控件根语义区域，承载 public API、值状态、验证状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `input` | `输入或编辑区域` | 承载用户输入、当前值、占位、格式化或只读状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载清除、展开、提交、步进、上传或辅助操作。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或候选区域` | 承载下拉、候选项、日历、颜色面板或异步内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `validation` | `校验反馈区域` | 承载 Form、status、错误、警告、help 或 loading 状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/tree-select/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/tree-select/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |

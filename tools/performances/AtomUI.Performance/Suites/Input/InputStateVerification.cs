@@ -1,5 +1,7 @@
 using AtomUI.Desktop.Controls;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.DesignTokens;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -36,8 +38,11 @@ internal static partial class Program
 
     private static void VerifyInputSelectionTokenMapping(ICollection<string> failures)
     {
+        // 主题算法 API 演进：Calculate(token) → Evaluate(effectiveSeed, previousMap, nextMap)。
+        // 与 ThemeCompiler 一致，seed 与 map 使用独立实例（Dark 算法在 previousMap 为 null 时
+        // 会先执行 Default 算法并写回 nextMap，若 seed 与 map 同实例会污染 Dark 的基色读取）。
         var defaultToken = new DesignToken();
-        new DefaultThemeVariantCalculator().Calculate(defaultToken);
+        new DefaultThemeVariantCalculator().Evaluate(new DesignToken(), null, defaultToken);
 
         Expect(defaultToken.SelectionBackground == defaultToken.ColorPrimary,
             $"Default SelectionBackground should use ColorPrimary ({defaultToken.ColorPrimary}), actual {defaultToken.SelectionBackground}.",
@@ -47,7 +52,7 @@ internal static partial class Program
             failures);
 
         var darkToken = new DesignToken();
-        new DarkThemeVariantCalculator(new DefaultThemeVariantCalculator()).Calculate(darkToken);
+        new DarkThemeVariantCalculator().Evaluate(new DesignToken(), null, darkToken);
 
         Expect(darkToken.SelectionBackground == darkToken.ColorPrimary,
             $"Dark SelectionBackground should use ColorPrimary ({darkToken.ColorPrimary}), actual {darkToken.SelectionBackground}.",
@@ -319,7 +324,8 @@ internal static partial class Program
         };
         using var realized = RealizeControl(searchEdit);
 
-        Expect(FindVisualByName<SearchButton>(searchEdit, "PART_RightAddOn") != null,
+        // SearchButton 控件类型已移除：搜索按钮现在是 SearchEditDecoratedBox 模板中的 atom:Button#PART_RightAddOn
+        Expect(FindVisualByName<Button>(searchEdit, "PART_RightAddOn") != null,
             "SearchEdit should keep its search button.", failures);
         Expect(FindVisualByName<InputClearIconButton>(searchEdit, "PART_ClearButton") == null,
             "SearchEdit default should not create a clear button.", failures);

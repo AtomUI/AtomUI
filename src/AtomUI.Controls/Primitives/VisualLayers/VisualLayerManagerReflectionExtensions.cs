@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AtomUI.Reflection;
 using Avalonia;
@@ -13,33 +11,23 @@ using AvaloniaVisualLayerManager = Avalonia.Controls.Primitives.VisualLayerManag
 internal static class VisualLayerManagerReflectionExtensions
 {
     #region 反射信息定义
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(AvaloniaVisualLayerManager))]
-    private static readonly Lazy<MethodInfo> AddLayerMethodInfo = new Lazy<MethodInfo>(() =>
-        typeof(AvaloniaVisualLayerManager).GetMethodInfoOrThrow("AddLayer",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+    private static readonly Lazy<MethodInfo> AddLayerMethodInfo = new(() =>
+        FixedMemberReflection.RequireMethod(
+            typeof(AvaloniaVisualLayerManager).GetMethod("AddLayer", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(AvaloniaVisualLayerManager),
+            "AddLayer"));
     
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(AvaloniaVisualLayerManager))]
-    private static readonly Lazy<FieldInfo> LayersFieldInfo = new Lazy<FieldInfo>(() => 
-        typeof(AvaloniaVisualLayerManager).GetFieldInfoOrThrow("_layers",
-            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
-
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicProperties, typeof(AvaloniaVisualLayerManager))]
-    private static readonly Lazy<PropertyInfo> PopupOverlayLayerPropertyInfo = new Lazy<PropertyInfo>(() =>
-        typeof(AvaloniaVisualLayerManager).GetPropertyInfoOrThrow("PopupOverlayLayer",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+    private static readonly Lazy<PropertyInfo> PopupOverlayLayerPropertyInfo = new(() =>
+        FixedMemberReflection.RequireProperty(
+            typeof(AvaloniaVisualLayerManager).GetProperty("PopupOverlayLayer", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(AvaloniaVisualLayerManager),
+            "PopupOverlayLayer"));
 
     #endregion
     
     internal static void AddLayer(this AvaloniaVisualLayerManager visualLayerManager, Control layer, int zindex)
     {
         AddLayerMethodInfo.Value.Invoke(visualLayerManager, [layer, zindex]);
-    }
-
-    internal static List<Control> GetLayers(this AvaloniaVisualLayerManager visualLayerManager)
-    {
-        var layers = LayersFieldInfo.Value.GetValue(visualLayerManager) as List<Control>;
-        Debug.Assert(layers != null);
-        return layers;
     }
 
     internal static Control? GetPopupOverlayLayer(this AvaloniaVisualLayerManager visualLayerManager)

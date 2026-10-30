@@ -4,10 +4,29 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Masonry}" TargetType="atom:Masonry">
+        <!-- Item 动效时长（appear/glide 用 Slow，leave 用 Fast），全局禁用动效时 token 值为 0，动效自动退化为瞬时 -->
+        <Setter Property="MotionDuration"
+                Value="{atom:SharedTokenResource MotionDurationSlow}" />
+        <Setter Property="LeaveMotionDuration"
+                Value="{atom:SharedTokenResource MotionDurationFast}" />
         <Setter Property="Template">
             <ControlTemplate>
-                <ItemsPresenter Name="PART_ItemsPresenter"
-                                ItemsPanel="{TemplateBinding ItemsPanel}" />
+                <atom:PixelAlignedBorder Name="PART_RootBorder"
+                                         Background="{TemplateBinding Background}"
+                                         BorderBrush="{TemplateBinding BorderBrush}"
+                                         BorderThickness="{TemplateBinding BorderThickness}"
+                                         CornerRadius="{TemplateBinding CornerRadius}"
+                                         Padding="{TemplateBinding Padding}"
+                                         ClipToBounds="{TemplateBinding ClipToBounds}">
+                    <Grid>
+                        <ItemsPresenter Name="PART_ItemsPresenter"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}" />
+                        <!-- 离场淡出托管层：移除的容器在原位置淡出（antd CSSMotion leave 期间节点保留），
+                             不参与命中测试与布局 -->
+                        <Canvas Name="PART_MotionGhostLayer"
+                                IsHitTestVisible="False" />
+                    </Grid>
+                </atom:PixelAlignedBorder>
             </ControlTemplate>
         </Setter>
 
@@ -21,7 +40,9 @@
                     ColumnGap="{Binding ColumnGap, RelativeSource={RelativeSource AncestorType=atom:Masonry}}"
                     RowGap="{Binding RowGap, RelativeSource={RelativeSource AncestorType=atom:Masonry}}"
                     Gutter="{Binding Gutter, RelativeSource={RelativeSource AncestorType=atom:Masonry}}"
-                    LayoutStrategy="{Binding LayoutStrategy, RelativeSource={RelativeSource AncestorType=atom:Masonry}}" />
+                    LayoutStrategy="{Binding LayoutStrategy, RelativeSource={RelativeSource AncestorType=atom:Masonry}}"
+                    MotionDuration="{Binding MotionDuration, RelativeSource={RelativeSource AncestorType=atom:Masonry}}"
+                    LeaveMotionDuration="{Binding LeaveMotionDuration, RelativeSource={RelativeSource AncestorType=atom:Masonry}}" />
             </ItemsPanelTemplate>
         </Setter>
     </ControlTheme>

@@ -18,6 +18,13 @@
     <Setter Property="IsAllowClear" Value="False" />
     <Setter Property="IsEnableRevealButton" Value="False" />
 
+    <!-- Embedded hosts (spinner middle segment, picker filters) can stretch the text box
+         beyond its natural line height; the inner frame must follow so the text stays
+         vertically centered instead of pinning to the theme's Top default. -->
+    <Style Selector="^ /template/ atom|InputControlFrame#PART_InputControlFrame">
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+    </Style>
+
     <Style Selector="^:pointerover /template/ atom|PixelAlignedBorder#InnerBoxDecorator">
         <Setter Property="BorderBrush" Value="Transparent" />
     </Style>

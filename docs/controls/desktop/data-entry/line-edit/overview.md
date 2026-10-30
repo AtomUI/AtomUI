@@ -1,6 +1,6 @@
 # LineEdit 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.LineEdit` 输入控件家族的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。输入控件共享分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [LineEdit 桌面版实现原理](implementation.md)，Token 专项设计见 [LineEdit Token 设计](token.md)，设计和契约变化记录见 [LineEdit Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.LineEdit` 输入控件家族的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。输入控件共享分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，公开主题区域见 [LineEdit Semantic Part 契约](semantic-part.md)，内部实现原理见 [LineEdit 桌面版实现原理](implementation.md)，Token 专项设计见 [LineEdit Token 设计](token.md)，设计和契约变化记录见 [LineEdit Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -19,7 +19,7 @@ LineEdit 家族包含以下稳定入口：
 | 类型 | 定位 |
 | --- | --- |
 | `AbstractTextInput` | 公开但不作为直接实例化入口的抽象文本输入基类，统一尺寸、输入表面状态、清除、reveal、字数统计、Form、native validation、CompactSpace 和文本 viewport 度量。 |
-| `TextBox` | AtomUI 基础文本框，继承 `AbstractTextInput`，提供单行文本编辑和基础输入模板。 |
+| `TextBox` | AtomUI 基础文本框，继承 `AbstractTextInput`，提供单行文本编辑、内部左右内容和基础输入模板。 |
 | `LineEdit` | 标准单行输入框，继承 `AbstractTextInput`，提供外部 AddOn、单行布局和搜索/组合控件复用入口。 |
 | `SearchEdit` | 搜索输入框，在 `LineEdit` 基础上加入搜索按钮、搜索按钮样式、加载态和搜索事件；独立契约见 [SearchEdit 桌面版架构设计](../search-edit/overview.md)。 |
 | `TextArea` | 多行输入框，继承 `AbstractTextInput`，复用输入状态、尺寸、清除、字数统计、Form 和 TextArea 专属 resize 模型。 |
@@ -100,7 +100,18 @@ AtomUI 输入扩展 API：
 | `Status` | `TextBox`、`LineEdit`、`SearchEdit`、`TextArea` | 显式输入反馈状态；最终视觉由 `InputControlFrame.EffectiveStatus` 计算，native validation error 仍以 `DataValidationErrors` 为唯一真源。 |
 | `LeftAddOn` / `LeftAddOnTemplate` | `LineEdit`、`SearchEdit` | 外部左侧附加内容和模板。 |
 | `RightAddOn` / `RightAddOnTemplate` | `LineEdit` | 外部右侧附加内容和模板；SearchEdit 的右侧外部 add-on 位置由搜索按钮占用。 |
+| `InnerLeftContent` / `InnerRightContent` | `TextBox`、`LineEdit`、`TextArea` | 继承的内部左右内容，支持文本、控件和隐式 DataTemplate；内容不随编辑区滚动，置空时不占布局空间。 |
 | `InnerLeftContentTemplate` / `InnerRightContentTemplate` | `LineEdit`、`TextArea` | 内部前后缀模板。 |
+
+`TextBox` 的内部左右内容位于输入边框内，不提供 `LineEdit` 的外部 AddOn 能力。左右内容跟随 `VerticalContentAlignment`，右侧内容与清除、密码 reveal、Form feedback 和字数统计共用辅助区。设置内部左右内容时，非空辅助区与文本编辑区之间采用 `SpacingXXS` 间距；两侧内容均为空时保留原有编辑区和辅助按钮布局。`TextBox` 不增加专用的内容模板属性，数据对象通过标准 `DataTemplates` 渲染。
+
+密码掩码沿用 `PasswordChar` 指定字符的字体字形和原生文本布局。需要常规圆点外观时可设置 `PasswordChar="●"`；星号 `*` 在字体行框中通常偏上，不通过平移整个文本 presenter 补偿，以保持光标、选择和命中位置一致。
+
+Root 表面定制 API：
+
+| API | 语义 |
+| --- | --- |
+| `Background` / `BorderBrush` | `TemplatedControl` 标准属性，是输入表面 root 定制的唯一通道，不引入平行定制属性。owner 上出现任何有效值（本地值、应用层 Style Setter 或 `DynamicResource` 求值结果）时，由 `AbstractTextInput` 以 LocalValue 中继到 `InputControlFrame` 同名属性，优先级高于 frame 状态机：定制期间 hover / pressed / focus 引起的边框变色让位，focus 的 `BoxShadow` 光晕作用在独立属性槽、不受边框定制影响。清除定制（置 `null`）后 frame 恢复主题状态机。语义与内联样式（本地值优先于状态类）一致。 |
 
 SearchEdit 专项 API：
 
@@ -240,10 +251,14 @@ LineEdit 是 Data Entry 文本输入家族的根入口，与 NumericUpDown、Dat
 - `InputControlFrame` 是所有输入表面状态 selector、边框、背景、focus shadow、error/warning、disabled 和 motion 的唯一 owner。
 - `AddOnDecoratedBox` 及其派生类型只承载 AddOn、内部内容和专用布局，不复制 frame 的状态计算或视觉 selector。
 - `StyleVariant`、`Status`、`SizeType`、Form 状态和 native validation 必须先由 `AbstractTextInput` 归一，再通过稳定绑定传给 frame。
+- 输入主题不在 owner 层携带 `Background` / `BorderBrush` 默认值，frame 主题是 rest 态取值的唯一来源；`TextBox` 模板不以 `TemplateBinding` 绑定这两个属性。owner 值是“用户是否定制 root 表面”的判定输入，恢复任何 owner 层默认都会使中继判定失效。
+- root `Background` / `BorderBrush` 中继语义保持不变：owner 有值 → frame 以 LocalValue 接管（定制期间该属性槽的交互态变色冻结），owner 置空 → frame `ClearValue` 恢复状态机；focus 反馈依赖 `BoxShadow` 独立属性槽，不随边框定制失效。
 - `SearchEdit.IsOperating=true` 时按钮和 Enter 键不重复触发 `SearchRequested`。
 - `TextArea.Lines` 必须遵守 `MinLines` / `MaxLines`，resize 不得突破行数边界。
 - Form feedback 订阅必须在 detach 时释放。
 - TextPresenter 的 margin、placeholder、selection、caret 和 disabled 文本色属于输入模板契约，不应在业务控件中用 magic width 补偿。
+- LineEdit 的 `root`、`prefix`、`input`、`suffix`、`clear`、`count` Part 名称、route、最低 public `ContractType` 与 `Single` 数量语义必须保持稳定。
+- `SearchEdit` 与 `TextArea` 拥有各自注册的 descriptor（见 Semantic Part 契约 1.7 / 1.8）；`TextBox` 不因继承或模板复用自动获得家族 descriptor，扩展其契约必须单独评审 public owner 边界。
 
 ## 8. 专项模型
 
@@ -259,41 +274,32 @@ SearchEdit 将搜索按钮视为输入框的一部分。搜索按钮从 `InputCo
 
 TextArea 支持固定行数、自动高度和拖拽 resize。固定行数模式下，控件根据字体、line height 和文本 presenter/scroll viewer 的垂直间距计算高度。resize 模式记录拖拽开始时的高度，并把高度限制在 `MinLines` / `MaxLines` 对应的范围内。
 
-## 9. 文档导航、LLMS 导出与验证策略
+### 8.4 Semantic Part
+
+`LineEdit` 公开 `root`、`prefix`、`input`、`suffix`、`clear`、`count` 六个职责区域。所有 Part 均为 `Single`；prefix、
+suffix、clear、count 的内容或可见性变化不增删 marker。完整 selector route、`ContractType`、尺寸矩阵和定制边界见
+[LineEdit Semantic Part 契约](semantic-part.md)。
+
+`LineEdit`、`SearchEdit` 与 `TextArea` 各自注册独立 descriptor：`SearchEdit` 额外提供 `button` Part，
+`TextArea` 提供 `textarea` Part。placeholder、reveal、Form feedback、外部 AddOn 和用户内容模板子树仍不属于
+Semantic Part；完整 selector route、`ContractType` 与定制边界见
+[LineEdit 家族 Semantic Part 契约](semantic-part.md)。
+
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [LineEdit 桌面版实现原理](implementation.md)
+- [LineEdit Semantic Part 契约](semantic-part.md)
 - [LineEdit Token 设计](token.md)
 - [LineEdit Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `LineEdit` | 数据录入控件根语义区域，承载 public API、值状态、验证状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `input` | `输入或编辑区域` | 承载用户输入、当前值、占位、格式化或只读状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载清除、展开、提交、步进、上传或辅助操作。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或候选区域` | 承载下拉、候选项、日历、颜色面板或异步内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `validation` | `校验反馈区域` | 承载 Form、status、错误、警告、help 或 loading 状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/line-edit/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/line-edit/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
 | 层次 | 验证内容 |
 | --- | --- |
-| 文档 | `overview.md`、`implementation.md`、`token.md`、`changelog.md` 链接有效，Data Entry 分类入口包含 LineEdit。 |
+| 文档 | `overview.md`、`implementation.md`、`semantic-part.md`、`token.md`、`changelog.md` 链接有效，Data Entry 分类入口包含 LineEdit。 |
 | C# 状态 | 清除按钮、字数统计、Form value、Form feedback、CompactSpace、SearchEdit loading 和 TextArea resize。 |
-| AXAML/Theme | template part、variant、status、focus、disabled、SizeType、Custom size、AddOn、TextArea resize handle。 |
+| AXAML/Theme | template part、Semantic marker / route、variant、status、focus、disabled、SizeType、Custom size、AddOn、TextArea resize handle。 |
 | Token | `LineEditToken`、`TextAreaToken`、生成的 TokenKind、Token 类型、生成数据和主题引用一致。 |
-| Gallery | 走查基础用法、尺寸、variant、AddOn、清除、密码、前后缀、状态、SearchEdit、TextArea、自动高度、字数统计和 resize 示例。 |
+| Gallery | 走查 Semantic Preview / Style、基础用法、尺寸、variant、AddOn、清除、密码、前后缀、状态、SearchEdit、TextArea、自动高度、字数统计和 resize 示例。 |

@@ -13,6 +13,9 @@ internal sealed class StepsPanelItemFrame : Border
     public static readonly StyledProperty<StepsPanelVariant> PanelVariantProperty =
         AvaloniaProperty.Register<StepsPanelItemFrame, StepsPanelVariant>(nameof(PanelVariant), StepsPanelVariant.Filled);
 
+    public static readonly StyledProperty<StepsType> TypeProperty =
+        AvaloniaProperty.Register<StepsPanelItemFrame, StepsType>(nameof(Type), StepsType.Default);
+
     public static readonly StyledProperty<bool> IsFirstProperty =
         AvaloniaProperty.Register<StepsPanelItemFrame, bool>(nameof(IsFirst));
 
@@ -23,6 +26,12 @@ internal sealed class StepsPanelItemFrame : Border
     {
         get => GetValue(PanelVariantProperty);
         set => SetValue(PanelVariantProperty, value);
+    }
+
+    public StepsType Type
+    {
+        get => GetValue(TypeProperty);
+        set => SetValue(TypeProperty, value);
     }
 
     public bool IsFirst
@@ -40,6 +49,7 @@ internal sealed class StepsPanelItemFrame : Border
     static StepsPanelItemFrame()
     {
         AffectsRender<StepsPanelItemFrame>(
+            TypeProperty,
             PanelVariantProperty,
             IsFirstProperty,
             ArrowWidthProperty,
@@ -57,7 +67,8 @@ internal sealed class StepsPanelItemFrame : Border
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == PanelVariantProperty ||
+        if (change.Property == TypeProperty ||
+            change.Property == PanelVariantProperty ||
             change.Property == IsFirstProperty ||
             change.Property == ArrowWidthProperty ||
             change.Property == BorderThicknessProperty ||
@@ -69,7 +80,13 @@ internal sealed class StepsPanelItemFrame : Border
 
     private void UpdateFilledClip(Size size)
     {
-        Clip = PanelVariant == StepsPanelVariant.Filled && !IsFirst
+        // The Filled leading notch mirrors antd's `.ant-steps-panel-filled
+        // .ant-steps-item:not(:first-child)` clip-path and must stay exclusive to
+        // the Panel type: every other type only paints this frame as a hover or
+        // focus background, where an arrow-shaped clip would corrupt it.
+        Clip = Type == StepsType.Panel &&
+               PanelVariant == StepsPanelVariant.Filled &&
+               !IsFirst
             ? CreateFilledClip(size)
             : null;
     }

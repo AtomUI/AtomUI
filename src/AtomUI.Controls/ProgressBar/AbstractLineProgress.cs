@@ -165,8 +165,8 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         _extraInfoSize = CalculateExtraInfoSize(FontSize);
         NotifyOrientationChanged();
         
-        ExceptionCompletedIconPresenter = e.NameScope.Find<IconPresenter>("PART_ExceptionCompletedIconPresenter");
-        SuccessCompletedIconPresenter   = e.NameScope.Find<IconPresenter>("PART_SuccessCompletedIconPresenter");
+        ExceptionCompletedIconPresenter = e.NameScope.Find<IconPresenter>(ExceptionCompletedIconPresenterPart);
+        SuccessCompletedIconPresenter   = e.NameScope.Find<IconPresenter>(SuccessCompletedIconPresenterPart);
         if (ExceptionCompletedIcon == null)
         {
             SetValue(ExceptionCompletedIconProperty, new CloseCircleFilled(), BindingPriority.Template);

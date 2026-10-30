@@ -8,8 +8,8 @@
              x:DataType="vm:TagViewModel"
              x:CompileBindings="True">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Tag"
                     Category="{gallery:TagShowCaseLangResource ComponentCategory}"
@@ -19,7 +19,61 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractTag" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:TagViewModel">
+                    <StackPanel Orientation="Vertical" Spacing="16">
+                        <gallery:SemanticPartPreview
+                            Name="TagSemanticPreview"
+                            SemanticOwner="{Binding #TagSemanticOwner}"
+                            SemanticOwnerType="{x:Type atom:Tag}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <StackPanel Orientation="Vertical"
+                                            HorizontalAlignment="Left">
+                                    <atom:Tag Name="TagSemanticOwner"
+                                              IsClosable="True"
+                                              Icon="{antdicons:AntDesignIconProvider Kind=SmileOutlined}"
+                                              Text="{gallery:TagShowCaseLangResource P2ContentTagN1}" />
+                                </StackPanel>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TagShowCaseLangResource SemanticTagRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="icon"
+                                    Description="{gallery:TagShowCaseLangResource SemanticTagIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="content"
+                                    Description="{gallery:TagShowCaseLangResource SemanticTagContentDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="close"
+                                    Description="{gallery:TagShowCaseLangResource SemanticTagCloseDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview
+                            Name="CheckableTagGroupSemanticPreview"
+                            SemanticOwner="{Binding #CheckableTagGroupSemanticOwner}"
+                            SemanticOwnerType="{x:Type atom:CheckableTagGroup}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:CheckableTagGroup Name="CheckableTagGroupSemanticOwner"
+                                                        HorizontalAlignment="Left"
+                                                        Options="{Binding CheckableTagOptions}" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TagShowCaseLangResource SemanticGroupRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:TagShowCaseLangResource SemanticGroupItemDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -334,7 +388,49 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
+                <gallery:ShowCaseItem
+                    SourceKey="tag-semantic-part"
+                    Title="{gallery:TagShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:TagShowCaseLangResource SemanticPartStyleDescription}"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:TagViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="12">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Tag.semantic-object">
+                                        <Setter Property="Background" Value="#e6f4ff" />
+                                        <atom:TagIconStyle x:SetterTargetType="atom:IconPresenter">
+                                            <Setter Property="IconBrush" Value="#1677ff" />
+                                        </atom:TagIconStyle>
+                                        <atom:TagContentStyle x:SetterTargetType="atom:TextBlock">
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                        </atom:TagContentStyle>
+                                        <atom:TagCloseStyle x:SetterTargetType="atom:IconButton">
+                                            <Setter Property="IconBrush" Value="#ff4d4f" />
+                                        </atom:TagCloseStyle>
+                                    </Style>
+                                    <Style Selector="atom|CheckableTagGroup.semantic-object">
+                                        <atom:CheckableTagGroupItemStyle x:SetterTargetType="atom:CheckableTag">
+                                            <Setter Property="CornerRadius" Value="6" />
+                                        </atom:CheckableTagGroupItemStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+                                <atom:Tag Classes="semantic-object"
+                                          IsClosable="True"
+                                          Icon="{antdicons:AntDesignIconProvider Kind=SmileOutlined}"
+                                          Text="{gallery:TagShowCaseLangResource P2ContentTagN1}" />
+                                <atom:CheckableTagGroup Classes="semantic-object"
+                                                        Options="{Binding CheckableTagOptions}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

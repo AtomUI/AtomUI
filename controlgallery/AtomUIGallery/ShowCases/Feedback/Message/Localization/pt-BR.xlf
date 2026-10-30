@@ -67,6 +67,12 @@
         <target state="translated">Outro types de mensagem</target>
       </segment>
     </unit>
+    <unit id="P2ContentDestroyAll">
+      <segment>
+        <source>Destroy all</source>
+        <target state="translated">Destruir todas</target>
+      </segment>
+    </unit>
     <unit id="P2ContentDisplayALoadingIndicator">
       <segment>
         <source>Display a loading indicator</source>
@@ -85,10 +91,28 @@
         <target state="translated">Erro</target>
       </segment>
     </unit>
+    <unit id="P2ContentFunctionStyle">
+      <segment>
+        <source>Function style</source>
+        <target state="translated">Estilo de função</target>
+      </segment>
+    </unit>
     <unit id="P2ContentInfo">
       <segment>
         <source>Info</source>
         <target state="translated">Informação</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentObjectStyle">
+      <segment>
+        <source>Object style</source>
+        <target state="translated">Estilo de objeto</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentOpenMessageBox">
+      <segment>
+        <source>Open the message box</source>
+        <target state="translated">Abrir a caixa de mensagens</target>
       </segment>
     </unit>
     <unit id="P2ContentSuccess">
@@ -115,6 +139,12 @@
         <target state="translated">Este é an erro mensagem.</target>
       </segment>
     </unit>
+    <unit id="P2MessageFunctionStyles">
+      <segment>
+        <source>This is a message with function styles</source>
+        <target state="translated">Esta é uma mensagem com estilos de função</target>
+      </segment>
+    </unit>
     <unit id="P2MessageHelloAtomUIAvalonia">
       <segment>
         <source>Hello, AtomUI/Avalonia!</source>
@@ -131,6 +161,24 @@
       <segment>
         <source>Loading finished</source>
         <target state="translated">Carregando finished</target>
+      </segment>
+    </unit>
+    <unit id="P2MessageLongStackedFormat">
+      <segment>
+        <source>Message {0}: This is a slightly longer stacked message.</source>
+        <target state="translated">Mensagem {0}: Esta é uma mensagem empilhada um pouco mais longa.</target>
+      </segment>
+    </unit>
+    <unit id="P2MessageObjectStyles">
+      <segment>
+        <source>This is a message with object styles</source>
+        <target state="translated">Esta é uma mensagem com estilos de objeto</target>
+      </segment>
+    </unit>
+    <unit id="P2MessageStackedFormat">
+      <segment>
+        <source>Message {0}: This is a stacked message.</source>
+        <target state="translated">Mensagem {0}: Esta é uma mensagem empilhada.</target>
       </segment>
     </unit>
     <unit id="P2MessageSuccess">
@@ -161,6 +209,78 @@
       <segment>
         <source>Examples</source>
         <target state="translated">Exemplos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>The status icon of the message card. Customize its size, brush and line height.</source>
+        <target state="translated">O ícone de status do cartão de mensagem. Personalize tamanho, pincel e altura da linha.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListContentDescription">
+      <segment>
+        <source>The notice arrangement container of the message list. Customize its direction, order and alignment.</source>
+        <target state="translated">O contêiner de organização dos avisos da lista de mensagens. Personalize direção, ordem e alinhamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListRootDescription">
+      <segment>
+        <source>The message list root. It hosts the cards, queue, timeout and host layer lifecycle.</source>
+        <target state="translated">A raiz da lista de mensagens. Ela hospeda os cartões, fila, tempo limite e ciclo de vida da camada host.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the upstream style-class demo: object styles and type-branched function styles shape the card root, icon and title through owner-scoped Semantic Part styles.</source>
+        <target state="translated">Espelha o demo style-class do upstream: estilos de objeto e estilos de função ramificados por tipo moldam o root, o icon e o title do cartão por meio de estilos de Semantic Part com escopo de owner.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The message card root. It hosts the content, type, close state and enter/leave motion.</source>
+        <target state="translated">A raiz do cartão de mensagem. Ela hospeda o conteúdo, tipo, estado de fechamento e movimento de entrada/saída.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>The message text element. Customize its color, font size, line height and wrapping.</source>
+        <target state="translated">O elemento de texto da mensagem. Personalize cor, tamanho da fonte, altura da linha e quebra.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticWrapperDescription">
+      <segment>
+        <source>The wrapping element for the icon and title. Customize the layout, alignment and gap.</source>
+        <target state="translated">O elemento envolvente do ícone e do título. Personalize layout, alinhamento e espaçamento.</target>
+      </segment>
+    </unit>
+    <unit id="StackDescription">
+      <segment>
+        <source>Stack configuration, disabled by default. Messages will be stacked when the amount is over threshold. Only the latest message is shown in the collapsed stack.</source>
+        <target state="translated">A configuração de empilhamento fica desativada por padrão. As mensagens serão empilhadas quando a quantidade ultrapassar o limite. Apenas a mensagem mais recente aparece na pilha recolhida.</target>
+      </segment>
+    </unit>
+    <unit id="StackEnabledLabel">
+      <segment>
+        <source>Enabled:</source>
+        <target state="translated">Ativado:</target>
+      </segment>
+    </unit>
+    <unit id="StackThresholdLabel">
+      <segment>
+        <source>Threshold:</source>
+        <target state="translated">Limite:</target>
+      </segment>
+    </unit>
+    <unit id="StackTitle">
+      <segment>
+        <source>Stack</source>
+        <target state="translated">Empilhamento</target>
       </segment>
     </unit>
   </file>

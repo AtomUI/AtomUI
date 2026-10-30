@@ -1,6 +1,5 @@
 using System.Reflection;
 using AtomUI.Desktop.Controls.DesignTokens;
-using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;

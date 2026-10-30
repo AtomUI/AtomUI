@@ -1,15 +1,14 @@
-using System.Collections.ObjectModel;
-
 namespace AtomUI.Localization;
 
 public abstract class LanguageCatalogDescriptor
 {
-    private readonly ReadOnlyCollection<LanguageCatalogUnitDescriptor> _units;
+    private readonly IReadOnlyList<LanguageCatalogUnitDescriptor> _units;
 
     private protected LanguageCatalogDescriptor(
         string catalogId,
         Type resourceKindType,
-        IReadOnlyList<LanguageCatalogUnitDescriptor> units)
+        IReadOnlyList<LanguageCatalogUnitDescriptor> units,
+        bool retainUnits = false)
     {
         LanguageCatalogIdentity.Validate(catalogId);
         ArgumentNullException.ThrowIfNull(resourceKindType);
@@ -17,6 +16,14 @@ public abstract class LanguageCatalogDescriptor
         if (units.Count == 0)
         {
             throw new ArgumentException("A language Catalog must contain at least one unit.", nameof(units));
+        }
+
+        if (retainUnits)
+        {
+            CatalogId = catalogId;
+            ResourceKindType = resourceKindType;
+            _units = units;
+            return;
         }
 
         var unitArray = new LanguageCatalogUnitDescriptor[units.Count];

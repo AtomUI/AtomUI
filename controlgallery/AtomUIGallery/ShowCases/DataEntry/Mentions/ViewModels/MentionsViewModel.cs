@@ -30,6 +30,22 @@ public class MentionsViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _mentionOptionAsyncLoader, value);
     }
 
+    private List<IMentionOption>? _semanticPreviewOptions;
+
+    public List<IMentionOption>? SemanticPreviewOptions
+    {
+        get => _semanticPreviewOptions;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewOptions, value);
+    }
+
+    private List<IMentionOption>? _styleClassOptions;
+
+    public List<IMentionOption>? StyleClassOptions
+    {
+        get => _styleClassOptions;
+        set => this.RaiseAndSetIfChanged(ref _styleClassOptions, value);
+    }
+
     private List<string>? _mentionTriggers = [];
 
     public List<string>? MentionTriggers

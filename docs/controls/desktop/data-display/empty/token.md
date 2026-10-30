@@ -17,7 +17,7 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `EmptyImgHeight`、`EmptyImgHeightSM`、`EmptyImgHeightMD` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `DescriptionMargin`、`DescriptionMarginSM` |
+| 间距与布局 | image、description 与 footer 之间的稳定间距。 | `DescriptionMargin`、`DescriptionMarginSM`、`FooterMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 按源码 Token 语义维护 |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
 
@@ -37,6 +37,7 @@ Empty 的控件专项模型通过 Theme 消费 Token：
 调整 Empty Token 时必须评估以下范围：
 
 - `Empty`
+- `Empty.Footer` 及其 Semantic footer 区域。
 - 对应 Gallery ShowCase 的示例和源码片段。
 - Light/Dark 主题、Browser/Desktop 主题和 Compact/Form/Popup 集成场景。
 

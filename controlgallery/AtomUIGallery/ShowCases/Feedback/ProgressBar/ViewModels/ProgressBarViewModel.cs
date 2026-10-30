@@ -1,4 +1,5 @@
 using AtomUI.Controls;
+using Avalonia;
 using Avalonia.Media;
 using ReactiveUI;
 
@@ -108,6 +109,47 @@ public class ProgressBarViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _toggleStatus, value);
     }
 
+    private int _semanticPreviewIndex;
+
+    public int SemanticPreviewIndex
+    {
+        get => _semanticPreviewIndex;
+        set
+        {
+            if (_semanticPreviewIndex == value)
+            {
+                return;
+            }
+
+            this.RaiseAndSetIfChanged(ref _semanticPreviewIndex, value);
+            this.RaisePropertyChanged(nameof(IsLineSemanticPreviewVisible));
+            this.RaisePropertyChanged(nameof(IsStepsSemanticPreviewVisible));
+            this.RaisePropertyChanged(nameof(IsCircleSemanticPreviewVisible));
+            this.RaisePropertyChanged(nameof(IsDashboardSemanticPreviewVisible));
+        }
+    }
+
+    public bool IsLineSemanticPreviewVisible => SemanticPreviewIndex == 0;
+    public bool IsStepsSemanticPreviewVisible => SemanticPreviewIndex == 1;
+    public bool IsCircleSemanticPreviewVisible => SemanticPreviewIndex == 2;
+    public bool IsDashboardSemanticPreviewVisible => SemanticPreviewIndex == 3;
+
+    private bool _isSemanticGradientEnabled;
+
+    public bool IsSemanticGradientEnabled
+    {
+        get => _isSemanticGradientEnabled;
+        set => this.RaiseAndSetIfChanged(ref _isSemanticGradientEnabled, value);
+    }
+
+    public LinearGradientBrush SemanticPreviewGradientBrush { get; }
+    public LinearGradientBrush SemanticTrackBrush10 { get; }
+    public LinearGradientBrush SemanticTrackBrush20 { get; }
+    public LinearGradientBrush SemanticTrackBrush40 { get; }
+    public LinearGradientBrush SemanticTrackBrush60 { get; }
+    public LinearGradientBrush SemanticTrackBrush80 { get; }
+    public LinearGradientBrush SemanticTrackBrush99 { get; }
+
     public ProgressBarViewModel(IScreen screen)
     {
         HostScreen = screen;
@@ -128,6 +170,15 @@ public class ProgressBarViewModel : ReactiveObject, IRoutableViewModel
                 new GradientStop(Color.Parse("#ffccc7"), 1)
             }
         };
+        SemanticPreviewGradientBrush = CreateHorizontalGradient(
+            Color.Parse("#108ee9"),
+            Color.Parse("#87d068"));
+        SemanticTrackBrush10 = CreateSemanticTrackBrush(10);
+        SemanticTrackBrush20 = CreateSemanticTrackBrush(20);
+        SemanticTrackBrush40 = CreateSemanticTrackBrush(40);
+        SemanticTrackBrush60 = CreateSemanticTrackBrush(60);
+        SemanticTrackBrush80 = CreateSemanticTrackBrush(80);
+        SemanticTrackBrush99 = CreateSemanticTrackBrush(99);
         _stepsChunkBrushes = new List<IBrush>
         {
             new SolidColorBrush(Colors.Green),
@@ -203,6 +254,28 @@ public class ProgressBarViewModel : ReactiveObject, IRoutableViewModel
         {
             ToggleDisabledText = "Enable";
         }
+    }
+
+    private static LinearGradientBrush CreateSemanticTrackBrush(double percent)
+    {
+        var hue = Math.Round(200 - percent * 2);
+        return CreateHorizontalGradient(
+            HslColor.FromAhsl(1, hue, 0.85, 0.65).ToRgb(),
+            HslColor.FromAhsl(0.95, hue + 30, 0.9, 0.55).ToRgb());
+    }
+
+    private static LinearGradientBrush CreateHorizontalGradient(Color start, Color end)
+    {
+        return new LinearGradientBrush
+        {
+            StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
+            EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
+            GradientStops =
+            {
+                new GradientStop(start, 0),
+                new GradientStop(end, 1)
+            }
+        };
     }
 
 }

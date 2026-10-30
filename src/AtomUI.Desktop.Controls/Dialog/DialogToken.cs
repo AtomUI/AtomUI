@@ -51,6 +51,11 @@ internal sealed class DialogToken : AbstractControlDesignToken
     /// 内容区域内间距
     /// </summary>
     public Thickness ContentPadding { get; set; }
+
+    /// <summary>
+    /// 原生窗口宿主内容区域内间距
+    /// </summary>
+    public Thickness WindowContentPadding { get; set; }
     
     /// <summary>
     /// 底部区域背景色
@@ -107,6 +112,11 @@ internal sealed class DialogToken : AbstractControlDesignToken
         HeaderColor    = EffectiveGlobalToken.ColorTextHeading;
         ContentPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, 0,
             EffectiveGlobalToken.PaddingContentHorizontalLG, 0);
+        WindowContentPadding = new Thickness(
+            EffectiveGlobalToken.PaddingContentHorizontalLG,
+            EffectiveGlobalToken.PaddingContentVerticalLG,
+            EffectiveGlobalToken.PaddingContentHorizontalLG,
+            EffectiveGlobalToken.PaddingContentVerticalLG);
         HeaderPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, EffectiveGlobalToken.UniformlyPaddingSM,
             EffectiveGlobalToken.PaddingContentHorizontalSM, 0);
         HeaderMarginBottom = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXS);

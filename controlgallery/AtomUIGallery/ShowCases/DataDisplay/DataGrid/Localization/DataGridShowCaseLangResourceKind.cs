@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -49,6 +47,7 @@ public enum DataGridShowCaseLangResourceKind
     EditableCellsDescription,
     BasicPagingTitle,
     BasicPagingDescription,
+    BasicPagingExtraContentText,
     RemoteRangeTitle,
     RemoteRangeDescription,
     RemoteRangeReload,
@@ -124,6 +123,7 @@ public enum DataGridShowCaseLangResourceKind
     P2HeaderCompany,
     P2HeaderCompanyAddress,
     P2HeaderCompanyName,
+    P2HeaderDescription,
     P2TitleHeader,
     P2TitleFooter,
     P2ContentToggleData,
@@ -152,5 +152,21 @@ public enum DataGridShowCaseLangResourceKind
     ComponentStatusStable,
     PageSubtitle,
     PageDescription,
-    ScenarioExamples
+    ScenarioExamples,
+    SemanticRootDescription,
+    SemanticSectionDescription,
+    SemanticHeaderWrapperDescription,
+    SemanticHeaderCellDescription,
+    SemanticTitleDescription,
+    SemanticBodyWrapperDescription,
+    SemanticBodyRowDescription,
+    SemanticBodyCellDescription,
+    SemanticFooterDescription,
+    SemanticContentDescription,
+    SemanticPaginationItemDescription,
+    SemanticPaginationRootDescription,
+    SemanticPreviewTitleText,
+    SemanticPreviewFooterText,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription
 }

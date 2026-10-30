@@ -4,6 +4,278 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## 6.2.10
+
+`2026-10-30`
+
+- Breaking Changes
+  - Motion: public motion types move from `AtomUI.MotionScene` to `AtomUI.Animations`; `IMotion`, `MotionSpiritType`, the motion actors (`BaseMotionActor`, `BaseLayoutAwareMotionActor`, `MotionActor`, `LayoutAwareMotionActor`, `IMotionActor`) and the actor-based `Run`/`RunAsync` are removed. `AbstractMotion` becomes abstract with `Build(MotionBuilder, in MotionContext)` and `PlayAsync(Control)`, and its `Duration`/`Easing` defaults now follow theme tokens; see the [6.2.10 migration guide](docs/releases/6.2.10-api-changes.md).
+  - Controls: `OpenMotion`/`CloseMotion` on Popup, Flyout, FlyoutHost, ContextMenu and TreeView now use `AtomUI.Animations.AbstractMotion`, and motion template parts are renamed in Badge, Collapse, Expander, Dialog, Drawer, FloatButton, Message, Notification, NavMenu, TreeView, TreeSelect and Transfer themes; see the [6.2.10 migration guide](docs/releases/6.2.10-api-changes.md).
+  - Window: `WithAtomUIDefaultOptions()` now prefers `RedirectionSurface` on Windows, so `AcrylicBlur` and `Mica` require configuring `WinUIComposition` first; see the [6.2.10 migration guide](docs/releases/6.2.10-api-changes.md).
+  - Registration: generated `ControlPackageGroup_*` identities change with the 6.2.10 assembly version. Upgrade AtomUI packages and the Generator together, rebuild compiled consumers, and republish trimmed/NativeAOT applications; see the [6.2.10 migration guide](docs/releases/6.2.10-api-changes.md).
+- Motion
+  - Play motions directly on controls with frame-driven, compositor-channel transforms instead of actor wrappers; reversed requests continue from the presented value instead of restarting.
+  - Declare show/hide and expand/collapse motion with `Motion.IsVisible`/`Enter`/`Leave` and the new `ContentViewport`, and add `SequenceMotion` and `ParallelMotion`.
+  - Limit layout-motion invalidation to the animated viewport and re-arrange only ancestors whose size changed, removing per-frame full-window redraws in submenus, Expander, Collapse and TreeView.
+  - Fix opening content briefly exposing its natural height, and preparation re-entrancy that let an earlier request overwrite a newer layout.
+- Popup
+  - Use the same `BoxShadowsSecondary` shadow for window-type popups as for overlay popups, and keep content at the same distance from the anchor.
+  - Let the shadow area of window-type popups pass pointer input to the content below on Windows, X11, Wayland and macOS, including other applications.
+- Window
+  - Eliminate opposite-edge lag and white flashes during live resize on Windows by preferring `RedirectionSurface`.
+  - Restore the active-state left, right and bottom frame borders on Windows 10 under `RedirectionSurface`.
+  - Predict the Wayland window scale before the first layout, removing the relayout about 250 ms after startup.
+- Dialog and Drawer
+  - Composite cached window content while the modal mask or drawer animates, cutting render-thread time per frame by about 70% on the measured Wayland Gallery.
+  - Zoom dialogs without a placement target from the panel center.
+- NavMenu
+  - Drive inline-collapsed width animation from the native clock instead of a 16 ms timer loop.
+- Wayland
+  - Submit prepared EGL frames with presentation-time pacing by default; opt out with the `AtomUI.Experimental.WaylandFramePacing` AppContext switch.
+- DataGrid
+  - Open the context menu when right-clicking the blank area of a grid that is not filled by rows.
+- Documentation
+  - Add Chinese and English design language and theme customization guidelines.
+
+## 6.2.9
+
+`2026-10-25`
+
+- Breaking Changes
+  - Registration: generated `ControlPackageGroup_*` identities change with the 6.2.9 assembly version. Upgrade AtomUI packages and the Generator together, rebuild compiled consumers, and republish trimmed/NativeAOT applications; see the [6.2.9 migration guide](docs/releases/6.2.9-api-changes.md).
+- Splash
+  - Restore the full card shadow and cache the static shadow separately from animated content, preserving card clipping and appearance customization.
+- Fonts and Packaging
+  - Include `AtomUI.Fonts.AlibabaPuHuiTi` in the standard NuGet release, with the existing PuHuiTi 3.0 Regular font.
+  - Allow the first publication of the explicitly marked font package to omit a nonexistent historical baseline only after NuGet confirms that no versions exist; retain ordinary baseline checks for published packages and network failures.
+- Documentation
+  - Add the Headless and xUnit testing integration guide. #512
+
+## 6.2.8
+
+`2026-10-21`
+
+- Breaking Changes
+  - Registration: generated `ControlPackageGroup_*` identities change with the 6.2.8 assembly version. Upgrade AtomUI packages and the Generator together, rebuild compiled consumers, and republish trimmed/NativeAOT applications; see the [6.2.8 migration guide](docs/releases/6.2.8-api-changes.md).
+  - Window tokens: adding the Windows 10 frame-border tokens shifts existing generated `WindowTokenKind` and `WindowTokenKey` values. Recompile custom themes and resource consumers, and replace persisted or hard-coded token numbers with named members; see the migration guide.
+- DashedBorder
+  - Fix crashes during display scaling by updating child clipping before rendering, while preserving rounded clipping and fractional-scale border alignment.
+- Window
+  - Restore the missing Windows 10 CSD top frame border with active/inactive colors and a one-physical-pixel thickness at high DPI; preserve platform-owned borders on other platforms and window states.
+- ImagePreviewer
+  - Keep rotation continuous during rapid repeated clicks instead of reversing direction or oscillating.
+- TypeMap and Build
+  - Default TypeMap publishing to .NET 10 and later stable versions, remove SDK/servicing-version allowlists, and follow the SDK-selected Browser ILLink/WASM toolchain while retaining mapping conversion, ABI and consumed-output checks. #510
+  - Allow build tools to roll forward to later runtime majors; use the TypeMap introduction version, 10.0.0, as the minimum tool version.
+
+## 6.2.7
+
+`2026-10-20`
+
+- Breaking Changes
+  - Startup: execute `UseAtomUI` application configuration after platform services are ready, before Application construction. Callback side effects and exceptions occur during platform setup rather than during the registration call; see the [6.2.7 migration guide](docs/releases/6.2.7-api-changes.md).
+  - Registration: generated registration group identities follow the 6.2.7 assembly version. Upgrade AtomUI packages and the Generator together, rebuild compiled consumers, and republish trimmed/NativeAOT applications; see the migration guide.
+  - Theme resources: AtomUI defaults now resolve before resources in independent application Style children. Move intentional global same-key overrides from `Style.Resources` to `Application.Resources`; ordinary setters and local scopes keep their precedence. See the migration guide.
+- Theme and Localization
+  - Keep AtomUI window decorations when FluentTheme is declared in App.axaml, and preserve language resources when AXAML replaces Application.Resources. #506 #507
+  - Preserve explicit application overrides and existing merged-dictionary order; keep theme/language providers stable through changes and clean partial ownership failures.
+  - Add the developer guide for integrating AtomUI with other frameworks' themes.
+- Startup and Core
+  - Prevent ordinary module configuration that indirectly creates an AvaloniaObject from creating the Dispatcher before platform initialization and causing persistent animation/timer stalls.
+  - Preserve background theme preparation, per-Application configuration isolation and AtomUI commit before Initialize; add an on-demand native process acceptance entry for startup ordering and steady-state timer behavior.
+- Controls and Motion
+  - Commit parent-template IconButton and ToggleIconButton appearance immediately, including Tag close-button foreground, while preserving subsequent transitions across remounts and template replacement.
+  - Commit the initial state of ToggleSwitch, Segmented, TabControl, TabStrip, RadioButton, ListBox, ListView, ComboBox, Carousel, Pagination, Breadcrumb and icon buttons directly instead of replaying selection, size or appearance transitions on first display, remount and template reapplication; later user-driven changes keep their normal duration and easing.
+  - Center ToggleSwitch default text by the actual glyph outline, including font fallback and shaping offsets.
+
+## 6.2.6
+
+`2026-10-19`
+
+- Breaking Changes
+  - Startup and Theme: move AtomUI configuration to `AppBuilder.UseAtomUI`, require generated application startup hookup, replace the legacy Extras Splash with the framework-managed `AtomUI.Controls` Splash, introduce staged package loading and generated compiled-theme registration, and advance the startup package manifest to version 2. Applications and generated consumers must follow the [6.2.6 API migration guide](docs/releases/6.2.6-api-changes.md).
+  - Registration: generated `ControlPackageGroup_*` type names change with the 6.2.6 assembly identity in six control packages, and the font packages now join the registration pipeline. Upgrade AtomUI packages and the Generator together, rebuild compiled consumers and republish trimmed/NativeAOT applications; see the migration guide.
+  - Dependencies: require Avalonia 12.1.4. Applications pinned to 12.1.3 must upgrade Avalonia before installing AtomUI 6.2.6; see the migration guide.
+- Startup and Core
+  - Reduce startup work, allocations and theme/resource initialization cost through staged registration, lazy theme compilation and generated registration.
+  - Fix Splash handoff after the main window's first rendered batch and share the Wayland dispatcher clock to prevent animation timing stalls.
+  - Update the Wayland compatibility path for Avalonia 12.1.4 by validating the dispatcher backend and clock structure rather than a hard-coded assembly version.
+  - Isolate Avalonia Grid measurement scratch to prevent retained Grids from keeping closed dialogs alive; automatically skip the compatibility path when upstream measurement cleanup is detected.
+- Cascader
+  - Align keyboard navigation with Ant Design and fix search focus routing. #502
+- NumericUpDown, Skeleton and Window
+  - Fix clear-button hit testing and square step-button layout in NumericUpDown.
+  - Drive Skeleton shimmer through styles and observe asynchronous animation failures.
+  - Fix `TitleBarFrameBackground` updates.
+- Dialog, ImagePreviewer and SplitView
+  - Fix Dialog overlay natural-size restoration, independent axis state and scale offsets. #499
+  - Unify ImagePreviewer zoom transforms and correct layout checks.
+  - Correct SplitView motion-property and scrollbar owner registration.
+- Controls and Gallery
+  - Correct owner registration for styled properties and routed events across shared and desktop controls.
+  - Fix TreeView `ItemsSource` replay exposing transient selection, checked-state and Form value changes, which caused duplicate TreeSelect Form notifications; preserve consecutive edits and nested source replacements, and remap equal-valued nodes to their new instances.
+  - Fix intermittent missing Gallery code highlighting caused by concurrent access to TextMate tokenization state.
+  - Reuse Gallery route configuration and defer command/timer creation to reduce startup overhead.
+- Build and Dependencies
+  - Add `buildTransitive/AtomUI.CompiledThemes.targets` and the Avalonia assemblies the compiled-theme build task loads from `tools/net10.0`; the font packages now ship the registration payload.
+  - Upgrade the supported Avalonia dependency and package-consumer fixtures to 12.1.4.
+
+## 6.2.5
+
+`2026-10-10`
+
+- Breaking Changes
+  - Registration: version-specific public `ControlPackageGroup_*` types change in six control packages. Upgrade AtomUI packages together, rebuild compiled consumers and republish trimmed/NativeAOT applications; see the [6.2.5 API migration guide](docs/releases/6.2.5-api-changes.md).
+- Window
+  - Fix the content background failing to update when the application theme changes, while preserving transparency behavior and explicit fallback backgrounds. #496
+
+## 6.2.4
+
+`2026-10-07`
+
+- Breaking Changes
+  - TimePicker and RangeTimePicker: enable `IsNeedConfirm` by default, use the 24-hour clock and make ordinary scrolling browse without selection. Configure individual modes explicitly and review changed submission/Now timing; review the [6.2.4 API migration guide](docs/releases/6.2.4-api-changes.md).
+  - TimePicker themes: update column sizing, item padding and cyclic scrolling templates; review custom themes and scroll assumptions against the migration guide.
+  - Packaging and registration: restore Release `net8.0` alongside `net10.0` and add .NET 8 trimming/AOT build assets. Upgrade AtomUI packages together, rebuild precompiled consumers and republish trimmed/AOT applications; see the migration guide for build prerequisites and platform limits.
+- TimePicker
+  - Separate committed values, candidates and hover previews; apply valid candidates consistently on explicit confirmation or on close/focus loss when confirmation is disabled.
+  - Add `IsChangeOnScroll`, keep cyclic hour/minute/second selections centered, and prevent column focus scrolling from moving the surrounding page.
+  - Fix invalid text, external updates, range endpoint switching and repeated confirmation in pinned popups; align Gallery examples with committed-value feedback.
+- ColorPicker
+  - Add optional `IsNeedConfirm` to ColorPicker and GradientColorPicker, with localized confirmation and cancellation actions.
+  - Keep draft edits and clearing cancellable, isolate gradient drafts, and commit valid input once while preserving the existing default synchronization mode.
+- NativeAOT, Build and Packaging
+  - Use the .NET 8 compatibility dependency backend only for .NET 8 targets; modern targets use the matching official TypeMap engine, with automatic input conversion for supported precompiled .NET 8 packages.
+  - Consolidate tooling in AtomUI.Toolchain, validate package framework/content contracts, and keep tool runtime files out of application output.
+  - Fix clean/parallel builds of test projects without Generator references and prevent re-export of imported localization catalogs.
+- Gallery
+  - Fix fractional-scale ShowCase layout loops that hide Form labels and start DateViewer deferred examples with one materialized item.
+
+## 6.2.3
+
+`2026-10-05`
+
+- Breaking Changes
+  - Calendar: replace `CalendarCellType` with `DateViewerCellType` and make `CalendarCellContext` inherit `DateViewerCellContext`; rebuild custom cell contexts and templates. See the [6.2.3 API migration guide](docs/releases/6.2.3-api-changes.md).
+  - DatePicker: remove the public legacy `CalendarView` types, move and seal `DateSelectedEventArgs`, and seal `ChoosingStatusEventArgs`; migrate to the shared viewer contracts described in the guide.
+  - Theme and Tokens: replace legacy date-panel templates and Semantic Part targets, remove obsolete DatePicker token keys, rename `RangeCalendarSpacing` to `RangePanelSpacing`, and change generated Calendar/DatePicker token enum values. Rebuild custom themes and use named token members; see the migration guide.
+  - Registration: version-specific generated `ControlPackageGroup_*` identities change in six control packages; rebuild generated-registration consumers and republish trimmed/NativeAOT applications. See the migration guide.
+- DateViewer, Calendar and DatePicker
+  - Add standalone DateViewer and RangeDateViewer with Date, Week, Month, Quarter and Year selection, Compact/Content presentation, typed templates, atomic ranges and Semantic Part styles.
+  - Share date panels across Calendar, LunarCalendar and DatePicker, preserving Calendar business headers, lunar content and range bars.
+  - Improve date-panel geometry, Today/focus visuals, week formatting and language switching; align range highlights and endpoint corners.
+  - Fix RangeDatePicker endpoint rotation, popup anchoring, reverse hover previews and partial confirmation across close/reopen; keep reusable confirm and time controls interactive.
+- Input and Window Lifecycle
+  - Prevent cross-window pointer input from changing Rate, Slider, TimePicker, ButtonSpinner, ToolTip and TreeView drag state; release transient state safely on disable, detach and window close.
+  - Remove inherited dividers from CandidateList, Select and Cascader dropdown items.
+- Watermark and Layout
+  - Fix localized Watermark glyph resources, owner attachment and theme/language updates; skip invalid or fully clipped tiles without changing rotation, stagger or mirror phases.
+  - Correct final-bounds geometry for Rate, ToggleSwitch, Segmented, Skeleton, ColorBlock and popup shadow/arrow layouts, including margins and scaling.
+- Gallery and Generator
+  - Add localized DateViewer examples and Semantic Part previews.
+  - Fix deferred ShowCase materialization and placeholder visuals; improve zoomed content bounds, overlays and hit testing while preserving scrolling.
+  - Cache generated registration descriptors to reduce startup work without changing registration contracts.
+
+## 6.2.2
+
+`2026-09-30`
+
+- Breaking Changes
+  - Packaging: product packages now ship only `lib/net10.0`; applications and libraries targeting `net8.0` must move to `net10.0` and use a .NET 10 SDK. See the [6.2.2 API migration guide](docs/releases/6.2.2-api-changes.md).
+  - Registration and Theme: replace the Unit/Plan/Sidecar AOT registration ABI with generated TypeMaps and remove the old registration, single-theme provider and asset-schema contracts. Third-party control packages must rebuild with the v6.2.2 generator; see the migration guide.
+  - Build and platform metadata: retire `AtomUI.LinkedRegistration*` assets and custom theme-platform metadata in favor of `AtomUI.Registration.targets` and standard platform attributes. Custom build imports and theme authors must migrate as described in the guide.
+  - Generated tokens and desktop registration: remove token-key types for controls without an own token and `UseAllDesktopControls()`; DataGrid and WindowTitleBar token enum numbers change. Rebuild integrations and use `UseDesktopControls()` and named token members; see the migration guide.
+- DataGrid
+  - Add top and bottom pagination extra content and templates, plus `IsShowPageSizeSelector` for page-size selector visibility.
+- Button, WindowTitleBar and Steps
+  - Restore the Button keyboard focus ring and align WindowTitleBar AddOn/caption geometry.
+  - Fix Steps natural-size measurement while preserving connector lines.
+- Flyout, FloatButton and RibbonBadge
+  - Support keyboard-triggered Flyout and FloatButton group expansion and collapse.
+  - Fix RibbonBadge corner rendering coordinates.
+- Dialog, Motion and Gallery
+  - Move Dialog overlay motion to the compositor and unify zoom state.
+  - Add Gallery showcase zoom and DataGrid pagination examples; update Badge examples and Gallery branding.
+- NativeAOT, Build and Dependencies
+  - Replace linked registration and trimming with the TypeMap pipeline, improve reflection trimming and reduce generated Token descriptor size.
+  - Keep desktop trimmed and NativeAOT publishing compatible with later .NET 10 patch toolchains while retaining the pinned Browser toolchain.
+  - Upgrade Avalonia to 12.1.3.
+
+## 6.2.1
+
+`2026-09-22`
+
+- Breaking Changes
+  - Pagination: reduce the fixed navigation container and Semantic Part marker pool from 11 to 9 while aligning the visible page window and jump behavior with Ant Design. Snapshot, automation or theme tooling that depends on the previous count must update; see the [6.2.1 API change examples](docs/releases/6.2.1-api-changes.md).
+- Pagination
+  - Add interactive previous/next jump items with pointer and Enter-key activation, localized automation names, five-page default jumps and three-page jumps when `IsShowLessItems=true`.
+  - Add `IsShowLessItems` and `IsShowPrevNextJumpers`, and preserve hover/focus transitions by reusing stable navigation containers during page-window updates.
+  - Add `SizeChangerTemplate` and `PaginationSizeChangerContext` so applications can replace the default page-size ComboBox without taking ownership of Pagination state or breaking TwoWay bindings.
+- Menu
+  - Prevent keyboard navigation from opening an empty submenu on leaf items, and reconcile pinned or dynamically populated submenu state after collection changes.
+- Steps
+  - Fix vertical subtitle overlap and align Inline hover backgrounds and Panel clipping with the selected Steps type.
+- Message and Notification
+  - Keep cross-manager feedback stacking deterministic by reactivating a window feedback layer when its manager becomes active.
+- Gallery
+  - Fix the login Form options-row layout.
+  - Keep the ColorPicker Semantic Part trigger fully visible above its pinned popup and add the Pagination custom size-changer example.
+
+## 6.2.0
+
+`2026-09-18`
+
+- Breaking Changes
+  - SearchEdit: rename the public `SearchEditButtonStyle` enum to `SearchButtonType`. `SearchButtonStyle` keeps its name and values; update the enum type in C# and XAML integrations. See [6.2.0 API change examples](docs/releases/6.2.0-api-changes.md).
+  - OtpLineEdit: remove `SeparatorInterval`. `Separator` now renders between every adjacent cell; use `SeparatorTemplate` and `OtpLineEditToken.CellGap` for customization. See the migration guide.
+  - Button: remove `CustomBackground` and use the standard `Background` and `BorderBrush` properties. See the migration guide.
+  - ProgressBar: remove the protected `AbstractGeneralProgressBar.DrawIndicatorBar` helper; custom derived controls must own their drawing path or use template/Semantic Part styling.
+  - Separator: remove `AbstractSeparator.DashStyle` and `DotStyle`; use `SeparatorRail.DashStyle` and `SeparatorRail.DotStyle` for standard dash definitions.
+  - Theme manager: add `IThemeManager.SemanticParts` for the Semantic Part registry. Custom implementations must add the property; the built-in `ThemeManager` needs no change. See the migration guide.
+  - Notification: remove the legacy eight-parameter constructor and the `CardExpiredPollingInterval` / `CleanupPollingInterval` properties; the lifetime scheduler is now the only expiration coordinator.
+  - Notification managers: add `IMessageManager.DestroyAll()` and `INotificationManager.DestroyAll()`; custom implementations must add these methods.
+  - Transfer: change the protected `BuildSourcePanelSource` and `BuildTargetPanelSource` return types to `IReadOnlyList<IItemKey>?`; custom derived controls must update overrides and callers.
+  - Notification tokens: remove `NotificationMarginBottom`, `NotificationContentMargin`, and `HeaderMargin`; generated token enum values follow the current declarations.
+- Semantic Parts and Gallery
+  - Add generated Semantic Part contracts and dedicated style entry points across the control families, including input, navigation, data display, feedback and layout controls.
+  - Add Gallery previews and cross-visual-root highlighting for popups, dialogs, drawers, tours and image previews, with owner-scoped styling and corrected localization catalogs.
+  - Add semantic examples for ComboBox, Splash, GroupBox, Expander, DataGrid, Menu, TabControl, TabStrip, NumericUpDown and related controls.
+  - Fix a queued sticky-tab elevation update racing template teardown and dereferencing released visual parts.
+- Popup, Dialog and Theme
+  - Fix pinned overlay ownership, cross-window popup routing, semantic scope tracking and root surface customization across Dialog, Drawer, PopupConfirm, Menu and picker controls.
+  - Fix theme source namespace drift and keep Semantic Part preview contracts in the public `AtomUI.Theme` namespace.
+- Async, Motion and Caching
+  - Prevent duplicate concurrent async expand/search loads, classify explicit cancellation correctly, and close completion-publication races in the bounded theme cache.
+  - Improve feedback stacking, masonry motion, segmented selection transitions and hidden-control shutdown behavior.
+- Localization, Build and AOT
+  - Align generated design-token enums with the current source declarations; adding or renaming token properties is part of the v6.2.0 API surface.
+  - Restore canonical XLIFF ordering and Portuguese (Brazil) catalog coverage across the Gallery.
+  - Add release API and package-layout validation against the previous NuGet release and use content-addressed repository task tooling to avoid stale MSBuild assemblies.
+  - Keep linked registration, trimming and NativeAOT Gallery validation paths aligned with the expanded semantic control surface.
+
+## 6.1.9
+
+`2026-09-11`
+
+- Breaking Changes
+  - Build: AtomUI MSBuild tasks now run through the SDK compiler adapter in single-use .NET processes instead of loading `AtomUI.Build.Tasks` in-process from a shadow copy. The build tools ship as `net10.0` assemblies, so consuming projects must build with the .NET 10 SDK; the previous in-process entry points and shadow-directory layout are removed. Product target frameworks are unchanged. See [6.1.9 API change examples](docs/releases/6.1.9-api-changes.md).
+- DataGrid
+  - Fix single-row selection needing a second click when switching between rows. #461
+  - Fix recycled cells leaking sort state after sorting. #462
+  - Fix dynamically changing the right frozen column count not taking effect.
+- Motion, Collapse, Expander and NavMenu
+  - Unify content expand/collapse motion over a shared animator: full-height and opacity interpolation, stable content clipping, reversal continuity and a single execution owner with one clock. Fix accordion flicker and jitter during expand/collapse and rapid branch switching.
+- Window and ImagePreviewer
+  - Fix a crash caused by mounting the fullscreen title-bar logo twice.
+  - Fix ImagePreviewer title-bar buttons not being clickable, and align the Windows title-bar AddOn button and toggle geometry with managed caption buttons while keeping Linux/macOS visuals.
+- Avatar and Image Loading
+  - Support safe local SVG resources with duplicate ids through the new `SvgConformanceMode` option: `Compatible` (default) tolerates duplicate ids, while `Strict` rejects them as `InvalidImageData`.
+  - Fix Avatar text centering for short, boundary-width and long labels by moving text measurement, downscaling and centering into the template.
+- BorderBeam
+  - Add the `Count` property to draw multiple equidistant beams from one animation clock and presenter.
+  - Fix the default border geometry so the beam hugs the content boundary when `Outset` is not set.
+  - Add Gallery examples for multiple beams, hover-triggered beams and custom containers.
+
 ## 6.1.8
 
 `2026-09-08`

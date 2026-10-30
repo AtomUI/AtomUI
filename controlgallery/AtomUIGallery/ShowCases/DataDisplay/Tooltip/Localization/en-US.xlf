@@ -231,5 +231,30 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticArrowDescription">
+      <segment>
+        <source>The arrow indicator pointing toward the anchored control.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticContainerDescription">
+      <segment>
+        <source>The content box carrying padding, background, corner radius and text styling.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Owner-scoped styles targeting public Semantic Parts of Tooltip via their real selectors.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Tooltip owner itself, hosting the arrow and the content box.</source>
+      </segment>
+    </unit>
   </file>
 </xliff>

@@ -1,0 +1,55 @@
+<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              xmlns:calendar="clr-namespace:AtomUI.Desktop.Controls.Internal.Calendar"
+              x:Class="AtomUI.Desktop.Controls.Themes.LunarCalendarCellContentTheme"
+              TargetType="calendar:LunarCalendarCellContent" x:ClassModifier="internal">
+    <Setter Property="Template">
+        <ControlTemplate TargetType="calendar:LunarCalendarCellContent">
+            <Grid RowDefinitions="Auto,*">
+                <atom:TextBlock Name="PART_Value" Text="{Binding Context.DisplayValue, RelativeSource={RelativeSource TemplatedParent}}"
+                                Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Grid Name="PART_SecondaryPresenter" Grid.Row="1" ColumnDefinitions="Auto,*"
+                      HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Border Name="PART_Marker" Classes.semantic-marker="True" Width="4" Height="4" Margin="0,0,4,0"
+                            CornerRadius="2" IsVisible="{TemplateBinding ShowMarker}" VerticalAlignment="Center"
+                            Background="{atom:LunarCalendarTokenResource HolidayMarkerColor}" />
+                    <atom:TextBlock Name="PART_SecondaryText" Classes.semantic-secondary-text="True" Grid.Column="1"
+                                    Text="{Binding Context.SecondaryText, RelativeSource={RelativeSource TemplatedParent}}"
+                                    TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    FontSize="{atom:LunarCalendarTokenResource SecondaryTextFontSize}"
+                                    LineHeight="{atom:LunarCalendarTokenResource SecondaryTextLineHeight}" />
+                </Grid>
+            </Grid>
+        </ControlTemplate>
+    </Setter>
+    <Style Selector="^ /template/ atom|TextBlock#PART_SecondaryText">
+        <Setter Property="Foreground" Value="{atom:LunarCalendarTokenResource SecondaryTextColor}" />
+    </Style>
+    <Style Selector="^[Presentation=Content] /template/ atom|TextBlock#PART_Value">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+    </Style>
+    <Style Selector="^[Presentation=Content] /template/ Grid#PART_SecondaryPresenter">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+    </Style>
+    <Style Selector="^[Presentation=Content] /template/ atom|TextBlock#PART_SecondaryText">
+        <Setter Property="TextAlignment" Value="Right" />
+    </Style>
+    <Style Selector="^:weekend:not(:selected):not(:disabled):not(:outside) /template/ atom|TextBlock#PART_Value">
+        <Setter Property="Foreground" Value="{atom:LunarCalendarTokenResource WeekendTextColor}" />
+    </Style>
+    <Style Selector="^:workday /template/ Border#PART_Marker">
+        <Setter Property="Background" Value="{atom:LunarCalendarTokenResource WorkdayMarkerColor}" />
+    </Style>
+    <Style Selector="^:selected:not(:disabled) /template/ atom|TextBlock#PART_SecondaryText">
+        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+    </Style>
+    <Style Selector="^:selected:not(:disabled) /template/ atom|TextBlock#PART_Value">
+        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+    </Style>
+    <Style Selector="^:outside /template/ atom|TextBlock#PART_SecondaryText, ^:disabled /template/ atom|TextBlock#PART_SecondaryText, ^:outside /template/ atom|TextBlock#PART_Value, ^:disabled /template/ atom|TextBlock#PART_Value">
+        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+    </Style>
+</ControlTheme>

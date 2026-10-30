@@ -3,7 +3,7 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-public class ListTransfer : AbstractTransfer
+public partial class ListTransfer : AbstractTransfer
 {
     #region 公共属性定义
     

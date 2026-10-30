@@ -7,8 +7,8 @@
              xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.PopupConfirm"
              x:DataType="viewModels:PopupConfirmViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="PopupConfirm"
                     Category="{gallery:PopupConfirmShowCaseLangResource ComponentCategory}"
@@ -18,7 +18,55 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="FlyoutHost" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="viewModels:PopupConfirmViewModel">
+                    <gallery:SemanticPartPreview Name="PopupConfirmSemanticPreview"
+                                                 Title="PopupConfirm"
+                                                 SemanticOwnerType="{x:Type atom:PopupConfirm}"
+                                                 Loaded="HandleSemanticPreviewLoaded"
+                                                 Unloaded="HandleSemanticPreviewUnloaded">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:PopupConfirm Name="PopupConfirmSemanticOwner"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               IsPopupPinnedOpen="True"
+                                               IsMotionEnabled="False"
+                                               IsArrowVisible="True"
+                                               Placement="Bottom"
+                                               Title="{gallery:PopupConfirmShowCaseLangResource P2TitleDeleteTheTask}"
+                                               ConfirmContent="{gallery:PopupConfirmShowCaseLangResource P2ConfirmContentAreYouSureToDeleteThisTask}"
+                                               OkText="{gallery:PopupConfirmShowCaseLangResource P2OkTextOk}"
+                                               CancelText="{gallery:PopupConfirmShowCaseLangResource P2CancelTextCancel}">
+                                <atom:Button ButtonType="Primary"
+                                             IsDanger="True"
+                                             Content="{gallery:PopupConfirmShowCaseLangResource SemanticPreviewTriggerContent}" />
+                            </atom:PopupConfirm>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription Path="root"
+                                Description="{gallery:PopupConfirmShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.root"
+                                Description="{gallery:PopupConfirmShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.container"
+                                Description="{gallery:PopupConfirmShowCaseLangResource SemanticPopupContainerDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.content"
+                                Description="{gallery:PopupConfirmShowCaseLangResource SemanticPopupContentDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.arrow"
+                                Description="{gallery:PopupConfirmShowCaseLangResource SemanticPopupArrowDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.icon"
+                                Description="{gallery:PopupConfirmShowCaseLangResource SemanticPopupIconDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.title"
+                                Description="{gallery:PopupConfirmShowCaseLangResource SemanticPopupTitleDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.description"
+                                Description="{gallery:PopupConfirmShowCaseLangResource SemanticPopupDescriptionDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.actions"
+                                Description="{gallery:PopupConfirmShowCaseLangResource SemanticPopupActionsDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -66,6 +114,7 @@
     <gallery:ShowCaseItem
         Title="{gallery:PopupConfirmShowCaseLangResource PlacementTitle}"
         Description="{gallery:PopupConfirmShowCaseLangResource PlacementDescription}"
+        IsOccupyEntireRow="True"
         IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="viewModels:PopupConfirmViewModel">
@@ -222,7 +271,70 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:PopupConfirmShowCaseLangResource StyleClassTitle}"
+        Description="{gallery:PopupConfirmShowCaseLangResource StyleClassDescription}"
+        SourceKey="popupconfirm-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="viewModels:PopupConfirmViewModel">
+        <StackPanel Orientation="Horizontal" Spacing="16">
+            <StackPanel.Styles>
+                <Style Selector="atom|PopupConfirm.semantic-styles-object-demo">
+                    <atom:PopupConfirmPopupContainerStyle x:SetterTargetType="Border">
+                        <Setter Property="Background" Value="#EEEEEE" />
+                        <Setter Property="Padding" Value="16" />
+                    </atom:PopupConfirmPopupContainerStyle>
+                    <atom:PopupConfirmPopupTitleStyle x:SetterTargetType="TextBlock">
+                        <Setter Property="Foreground" Value="#262626" />
+                    </atom:PopupConfirmPopupTitleStyle>
+                </Style>
+                <Style Selector="atom|PopupConfirm.semantic-styles-function-demo">
+                    <atom:PopupConfirmPopupRootStyle x:SetterTargetType="atom:FlyoutPresenter">
+                        <Setter Property="Background" Value="#CC35477D" />
+                        <Setter Property="Foreground" Value="White" />
+                        <Setter Property="Padding" Value="12" />
+                        <Setter Property="CornerRadius" Value="4" />
+                    </atom:PopupConfirmPopupRootStyle>
+                    <atom:PopupConfirmPopupTitleStyle x:SetterTargetType="TextBlock">
+                        <Setter Property="Foreground" Value="White" />
+                    </atom:PopupConfirmPopupTitleStyle>
+                    <atom:PopupConfirmPopupActionsStyle x:SetterTargetType="StackPanel">
+                        <Setter Property="Spacing" Value="12" />
+                    </atom:PopupConfirmPopupActionsStyle>
+                </Style>
+            </StackPanel.Styles>
+            <atom:PopupConfirm Classes="semantic-styles-object-demo"
+                               Trigger="Click"
+                               ShouldUseOverlayPopup="False"
+                               IsArrowVisible="False"
+                               Placement="Top"
+                               Title="{gallery:PopupConfirmShowCaseLangResource P2TitleDeleteTheTask}"
+                               ConfirmContent="{gallery:PopupConfirmShowCaseLangResource P2ConfirmContentAreYouSureToDeleteThisTask}"
+                               OkText="{gallery:PopupConfirmShowCaseLangResource P2OkTextOk}"
+                               CancelText="{gallery:PopupConfirmShowCaseLangResource P2CancelTextCancel}">
+                <atom:Button Content="{gallery:PopupConfirmShowCaseLangResource SemanticStyleObjectTrigger}" />
+            </atom:PopupConfirm>
+
+            <atom:PopupConfirm Classes="semantic-styles-function-demo"
+                               Trigger="Click"
+                               ShouldUseOverlayPopup="False"
+                               IsArrowVisible="False"
+                               Placement="Top"
+                               Title="{gallery:PopupConfirmShowCaseLangResource P2TitleDeleteTheTask}"
+                               ConfirmContent="{gallery:PopupConfirmShowCaseLangResource P2ConfirmContentAreYouSureToDeleteThisTask}"
+                               OkText="{gallery:PopupConfirmShowCaseLangResource P2OkTextOk}"
+                               CancelText="{gallery:PopupConfirmShowCaseLangResource P2CancelTextCancel}">
+                <atom:Button ButtonType="Primary"
+                             Content="{gallery:PopupConfirmShowCaseLangResource SemanticStyleFunctionTrigger}" />
+            </atom:PopupConfirm>
+        </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

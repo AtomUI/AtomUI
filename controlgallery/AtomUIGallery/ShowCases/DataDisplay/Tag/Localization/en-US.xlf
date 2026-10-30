@@ -296,6 +296,46 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticGroupItemDescription">
+      <segment>
+        <source>Each checkable option container with checked, hover, pressed and disabled states</source>
+      </segment>
+    </unit>
+    <unit id="SemanticGroupRootDescription">
+      <segment>
+        <source>Root element of the group owning options, selection mode and checked values</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Style Tag and CheckableTagGroup parts through the generated semantic style types</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTagCloseDescription">
+      <segment>
+        <source>Close entry raising the Closed event with a small close icon</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTagContentDescription">
+      <segment>
+        <source>Content text area with line height and inline padding</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTagIconDescription">
+      <segment>
+        <source>Icon area sized by the tag icon token and colored by the root foreground</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTagRootDescription">
+      <segment>
+        <source>Root element of the tag carrying color, variant, content and the close entry</source>
+      </segment>
+    </unit>
     <unit id="StatusTagDescription">
       <segment>
         <source>We preset five different colors, you can set color property such as success,processing,error,default and warning to indicate specific status.</source>

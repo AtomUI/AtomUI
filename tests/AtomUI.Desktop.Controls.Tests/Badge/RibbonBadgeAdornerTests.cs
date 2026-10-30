@@ -1,6 +1,8 @@
+using AtomUI.Controls.Commons;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -148,6 +150,34 @@ public class RibbonBadgeAdornerTests
             "the end ribbon should overhang the decorated target's final right edge instead of stopping inside it.");
     }
 
+    [Fact]
+    public void RibbonBadge_Standalone_Start_Fold_Stays_Inside_Desired_Visual_Bounds()
+    {
+        var adorner = CreateMeasuredRibbonAdorner(RibbonBadgePlacement.Start, isAdornerMode: false);
+        using var context = ShowInAdornerHost(adorner, width: 160, height: 80);
+
+        var foldBounds = GetFoldBounds(adorner);
+
+        foldBounds.Left.ShouldBeGreaterThanOrEqualTo(-0.001,
+            "standalone start ribbons must reserve their complete fold instead of drawing it outside the desired visual bounds.");
+        foldBounds.Right.ShouldBeLessThanOrEqualTo(adorner.DesiredSize.Width + 0.001);
+    }
+
+    [Fact]
+    public void RibbonBadge_Fold_Geometry_Uses_Updated_Corner_Transform()
+    {
+        var adorner = CreateMeasuredRibbonAdorner(RibbonBadgePlacement.End, isAdornerMode: true);
+        using var context = ShowInAdornerHost(adorner, width: 160, height: 80);
+
+        adorner.BadgeRibbonCornerTransform = new ScaleTransform(1, 0.25).ToImmutable();
+        Dispatcher.UIThread.RunJobs();
+
+        var foldBounds = GetFoldBounds(adorner);
+
+        foldBounds.Height.ShouldBe(2, 0.001,
+            "changing the corner transform must rebuild the fold geometry instead of reusing the previous cached triangle.");
+    }
+
     private static double GetRibbonLabelX(Point offset)
     {
         var ribbonBadge = new AtomUI.Desktop.Controls.RibbonBadge
@@ -168,6 +198,58 @@ public class RibbonBadgeAdornerTests
                       .Single(textBlock => textBlock.Text == "v6.0.5")
                       .Bounds
                       .X;
+    }
+
+    private static RibbonBadgeAdorner CreateMeasuredRibbonAdorner(
+        RibbonBadgePlacement placement,
+        bool isAdornerMode)
+    {
+        return new RibbonBadgeAdorner
+        {
+            Text                            = "Ribbon",
+            Placement                       = placement,
+            IsAdornerMode                   = isAdornerMode,
+            BadgeRibbonOffset               = new Point(8, 8),
+            BadgeRibbonCornerTransform      = new ScaleTransform(1, 0.75).ToImmutable(),
+            BadgeRibbonCornerDarkenAmount   = 15,
+            RibbonColor                     = new SolidColorBrush(Color.Parse("#1677ff"))
+        };
+    }
+
+    private static Rect GetFoldBounds(RibbonBadgeAdorner adorner)
+    {
+        var drawingGroup = RenderToDrawingGroup(adorner);
+        return EnumerateGeometryBounds(drawingGroup)
+            .Where(bounds => bounds.Width > 0 && bounds.Height > 0)
+            .OrderBy(bounds => bounds.Height)
+            .First();
+    }
+
+    private static DrawingGroup RenderToDrawingGroup(Control control)
+    {
+        var drawingGroup = new DrawingGroup();
+        using var context = drawingGroup.Open();
+        control.Render(context);
+        return drawingGroup;
+    }
+
+    private static IEnumerable<Rect> EnumerateGeometryBounds(Drawing drawing)
+    {
+        if (drawing is GeometryDrawing geometryDrawing)
+        {
+            var geometry = geometryDrawing.Geometry;
+            if (geometry is not null)
+            {
+                yield return geometry.Bounds;
+            }
+        }
+        else if (drawing is DrawingGroup drawingGroup)
+        {
+            foreach (var child in drawingGroup.Children.SelectMany(EnumerateGeometryBounds))
+            {
+                yield return child;
+            }
+        }
     }
 
     private static Control? FindNativeAdorner(Control badge)

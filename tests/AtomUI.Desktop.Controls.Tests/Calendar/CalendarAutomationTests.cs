@@ -1,4 +1,4 @@
-using AtomUI.Desktop.Controls.Internal.Calendar;
+using AtomUI.Desktop.Controls.Internal.DateViewer;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Threading;
@@ -6,8 +6,8 @@ using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomUICalendar = AtomUI.Desktop.Controls.Calendar;
-using CalendarCellControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarViewCell;
-using CalendarViewControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarView;
+using CalendarCellControl = AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell;
+using CalendarViewControl = AtomUI.Desktop.Controls.Internal.DateViewer.DatePanel;
 
 namespace AtomUI.Desktop.Controls.Tests.Calendar;
 
@@ -27,7 +27,7 @@ public class CalendarAutomationTests
         {
             var view = calendar.GetVisualDescendants().OfType<CalendarViewControl>().Single();
             var peer = ControlAutomationPeer.CreatePeerForElement(view)
-                .ShouldBeOfType<CalendarViewAutomationPeer>();
+                .ShouldBeOfType<DatePanelAutomationPeer>();
             var provider = peer.ShouldBeAssignableTo<ISelectionProvider>();
 
             provider.CanSelectMultiple.ShouldBeFalse();
@@ -51,10 +51,10 @@ public class CalendarAutomationTests
             var cell = calendar.GetVisualDescendants().OfType<CalendarCellControl>()
                 .Single(item => item.Model is { IsSelected: true });
             var viewPeer = ControlAutomationPeer.CreatePeerForElement(view)
-                .ShouldBeOfType<CalendarViewAutomationPeer>();
+                .ShouldBeOfType<DatePanelAutomationPeer>();
             var viewProvider = viewPeer.ShouldBeAssignableTo<ISelectionProvider>();
             var cellPeer = ControlAutomationPeer.CreatePeerForElement(cell)
-                .ShouldBeOfType<CalendarViewCellAutomationPeer>();
+                .ShouldBeOfType<DateViewerCellAutomationPeer>();
 
             cellPeer.GetName().ShouldContain("2026");
             cellPeer.GetName().ShouldNotBe(cell.DisplayText);

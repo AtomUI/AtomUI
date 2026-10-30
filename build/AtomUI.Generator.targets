@@ -1,24 +1,7 @@
 <Project>
-    <Import Project="$(MSBuildThisFileDirectory)AtomUI.LinkedRegistration.targets"
-            Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
-    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Localization.targets"
-            Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
-    <Import Project="$(MSBuildThisFileDirectory)AtomUI.ThemeAssets.targets"
-            Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
-    <PropertyGroup Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'">
-        <AtomUIGeneratorTargetsImported>true</AtomUIGeneratorTargetsImported>
-    </PropertyGroup>
-
-    <Target Name="AtomUIAddLinkedPublishAnalyzer"
-            BeforeTargets="CoreCompile"
-            Condition="('$(AtomUILinkedPublish)' == 'true' or '$(AtomUIEmitLinkedManifest)' == 'true') and '$(MSBuildProjectName)' != 'AtomUI.Generator' and '$(MSBuildProjectName)' != 'AtomUI.Generator.LinkedPublish' and '$(MSBuildProjectName)' != 'AtomUI.Build.Tasks'">
-        <ItemGroup>
-            <_AtomUIExistingLinkedPublishAnalyzer Include="@(Analyzer)"
-                                                  Condition="'%(Filename)' == 'AtomUI.Generator.LinkedPublish'" />
-            <Analyzer Include="$(AtomUILinkedPublishGeneratorAssembly)"
-                      Condition="'@(_AtomUIExistingLinkedPublishAnalyzer)' == '' and Exists('$(AtomUILinkedPublishGeneratorAssembly)')" />
-        </ItemGroup>
-        <Error Condition="!Exists('$(AtomUILinkedPublishGeneratorAssembly)')"
-               Text="AtomUI linked-publish Generator could not be found at '$(AtomUILinkedPublishGeneratorAssembly)'." />
-    </Target>
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Registration.targets" Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Localization.targets" Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.ThemeAssets.targets" Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.CompiledThemes.targets" Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
+    <PropertyGroup><AtomUIGeneratorTargetsImported>true</AtomUIGeneratorTargetsImported></PropertyGroup>
 </Project>

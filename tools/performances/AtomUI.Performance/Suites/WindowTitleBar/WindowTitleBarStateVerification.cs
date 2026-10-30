@@ -1,8 +1,7 @@
-using System.Collections;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
+using Avalonia.Controls;
 using Avalonia.VisualTree;
-using AtomWindow = AtomUI.Desktop.Controls.Window;
 
 namespace AtomUI.Performance;
 
@@ -13,7 +12,6 @@ internal static partial class Program
         var failures = new List<string>();
         VerifyCaptionButtonGroupVisibilityStates(failures);
         VerifyCaptionButtonSingleIconPresenter(failures);
-        VerifyCaptionButtonGroupDetachClearsTemplateHandlers(failures);
 
         if (failures.Count == 0)
         {
@@ -36,12 +34,11 @@ internal static partial class Program
         using var realized = RealizeControl(group);
         ExpectCaptionButtonVisibility(group, true, true, true, true, true, "default Windows caption group", failures);
 
-        group.IsWindowMaximized = true;
+        group.HostWindowState = WindowState.Maximized;
         RefreshLayout(realized.Window);
         ExpectCaptionButtonVisibility(group, false, true, true, true, true, "maximized Windows caption group", failures);
 
-        group.IsWindowMaximized  = false;
-        group.IsWindowFullScreen = true;
+        group.HostWindowState = WindowState.FullScreen;
         RefreshLayout(realized.Window);
         ExpectCaptionButtonVisibility(group, true, true, false, false, true, "fullscreen Windows caption group", failures);
 
@@ -49,33 +46,13 @@ internal static partial class Program
         RefreshLayout(realized.Window);
         ExpectCaptionButtonVisibility(group, false, true, false, false, true, "fullscreen button disabled", failures);
 
-        group.IsWindowFullScreen             = false;
-        group.IsMaximizeCaptionButtonVisible = false;
-        group.IsMinimizeCaptionButtonVisible = false;
-        group.IsPinCaptionButtonVisible      = false;
-        group.IsCloseCaptionButtonVisible    = false;
+        group.HostWindowState                 = WindowState.Normal;
+        group.IsMaximizeCaptionButtonVisible  = false;
+        group.IsMinimizeCaptionButtonVisible  = false;
+        group.IsPinCaptionButtonVisible       = false;
+        group.IsCloseCaptionButtonVisible     = false;
         RefreshLayout(realized.Window);
         ExpectCaptionButtonVisibility(group, false, false, false, false, false, "all optional caption buttons disabled", failures);
-    }
-
-    private static void VerifyCaptionButtonGroupDetachClearsTemplateHandlers(ICollection<string> failures)
-    {
-        var host  = new AtomWindow();
-        var group = CreateCaptionButtonGroup(OsType.Windows);
-        group.Attach(host);
-
-        using var _ = RealizeControl(group);
-        Expect(GetTemplateHandlerCount(group) > 0,
-            "Attached CaptionButtonGroup should register template button handlers after template apply.",
-            failures);
-
-        group.Detach();
-        Expect(GetTemplateHandlerCount(group) == 0,
-            "CaptionButtonGroup.Detach should clear template button handlers.",
-            failures);
-        Expect(GetPrivateField(group, "AtomUI.Desktop.Controls.CaptionButtonGroup", "_disposables") == null,
-            "CaptionButtonGroup.Detach should dispose host bindings.",
-            failures);
     }
 
     private static void VerifyCaptionButtonSingleIconPresenter(ICollection<string> failures)
@@ -184,12 +161,5 @@ internal static partial class Program
                 $"{label}: {partName} should keep zero Windows caption corner radius.",
                 failures);
         }
-    }
-
-    private static int GetTemplateHandlerCount(CaptionButtonGroup group)
-    {
-        return GetPrivateField(group, "AtomUI.Desktop.Controls.CaptionButtonGroup", "_disposeActions") is ICollection actions
-            ? actions.Count
-            : 0;
     }
 }

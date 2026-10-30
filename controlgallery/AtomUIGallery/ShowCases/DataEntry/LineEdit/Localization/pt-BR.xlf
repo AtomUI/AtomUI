@@ -505,6 +505,174 @@
         <target state="translated">SearchEdit tamanho</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear action button that removes the current text.</source>
+        <target state="translated">Botão de ação que limpa o texto atual.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCountDescription">
+      <segment>
+        <source>Character count indicator for the current text and maximum length.</source>
+        <target state="translated">Indicador da contagem de caracteres do texto atual e do comprimento máximo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Text presentation and editing area for value, placeholder, caret, and selection.</source>
+        <target state="translated">Área de apresentação e edição do valor, placeholder, cursor e seleção.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpCellDescription">
+      <segment>
+        <source>Single input cell that renders one character with placeholder, mask, active, focus, and error states.</source>
+        <target state="translated">Célula de entrada individual que exibe um caractere com estados de espaço reservado, máscara, ativo, foco e erro.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpCellListDescription">
+      <segment>
+        <source>Cell list container that arranges the input cells and separators by Length.</source>
+        <target state="translated">Contêiner da lista de células que organiza as células de entrada e os separadores conforme o comprimento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpRootDescription">
+      <segment>
+        <source>Root element owning the inline flex layout, alignment, column gap, and wrapper styles.</source>
+        <target state="translated">Elemento raiz responsável pelo layout flexível em linha, alinhamento, espaçamento entre colunas e estilos de invólucro.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpSeparatorDescription">
+      <segment>
+        <source>Separator element displayed between the OTP input cells.</source>
+        <target state="translated">Elemento separador exibido entre as células de entrada do código.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>You can customize the semantic dom style of Input by passing objects/functions through `classNames` and `styles`.</source>
+        <target state="translated">É possível personalizar o estilo semântico do dom do Input passando objetos/funções por `classNames` e `styles`.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordClearDescription">
+      <segment>
+        <source>Clear button element for resetting the entered password.</source>
+        <target state="translated">Botão de limpeza para redefinir a senha digitada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordCountDescription">
+      <segment>
+        <source>Character count indicator for the entered password and maximum length.</source>
+        <target state="translated">Indicador de contagem de caracteres da senha digitada e do comprimento máximo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordInputDescription">
+      <segment>
+        <source>Masked text presentation and editing area for the password value, placeholder, caret, and selection.</source>
+        <target state="translated">Área de apresentação e edição do texto mascarado da senha, com espaço reservado, cursor e seleção.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordPrefixDescription">
+      <segment>
+        <source>Leading inner content shown before the masked password text, such as a user icon.</source>
+        <target state="translated">Conteúdo interno inicial exibido antes do texto mascarado da senha, como um ícone de usuário.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordRootDescription">
+      <segment>
+        <source>Root input surface for the password value, owning size, variant, border, background, focus, and validation state.</source>
+        <target state="translated">Superfície raiz da entrada de senha, responsável por tamanho, variante, borda, fundo, foco e estado de validação.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordSuffixDescription">
+      <segment>
+        <source>Trailing action cluster containing the reveal-password toggle, clear button, and count content.</source>
+        <target state="translated">Área final de ações com o botão de revelar senha, o botão de limpeza e a contagem de caracteres.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Leading inner content shown before the text editing area.</source>
+        <target state="translated">Conteúdo interno inicial exibido antes da área de edição de texto.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root input surface that owns size, variant, border, background, focus, and validation state.</source>
+        <target state="translated">Superfície raiz da entrada que controla tamanho, variante, borda, fundo, foco e estado de validação.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchButtonDescription">
+      <segment>
+        <source>Search button that triggers the search action and shows the loading state.</source>
+        <target state="translated">Botão de pesquisa que dispara a ação de busca e mostra o estado de carregamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchClearDescription">
+      <segment>
+        <source>Clear button element for resetting the search value.</source>
+        <target state="translated">Elemento de botão de limpar para redefinir o valor de pesquisa.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchInputDescription">
+      <segment>
+        <source>Text presentation and editing area for the search value.</source>
+        <target state="translated">Área de apresentação e edição de texto para o valor de pesquisa.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchPrefixDescription">
+      <segment>
+        <source>Leading inner content shown before the text editing area.</source>
+        <target state="translated">Conteúdo inicial exibido antes da área de edição de texto.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchRootDescription">
+      <segment>
+        <source>Root element combining the input area and the search button.</source>
+        <target state="translated">Elemento raiz que combina a área de entrada e o botão de pesquisa.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchSuffixDescription">
+      <segment>
+        <source>Trailing inner content shown before the search button.</source>
+        <target state="translated">Conteúdo final exibido antes do botão de pesquisa.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Trailing content and action cluster for reveal, feedback, custom suffix, clear, and count content.</source>
+        <target state="translated">Área final de conteúdo e ações para revelar senha, feedback, sufixo personalizado, limpeza e contagem.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaClearDescription">
+      <segment>
+        <source>Clear button element with layout, visibility, and interaction styles for clearing content.</source>
+        <target state="translated">Elemento de botão de limpar com layout, visibilidade e estilos de interação para limpar o conteúdo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaCountDescription">
+      <segment>
+        <source>Count element with character count display position, font, color and numeric statistics styles.</source>
+        <target state="translated">Elemento de contagem de caracteres com posição de exibição, fonte, cor e estilos de estatísticas numéricas.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaDescription">
+      <segment>
+        <source>Textarea element with font, line height, padding, color, background, border, text input and multi-line text display styles.</source>
+        <target state="translated">Elemento de textarea com fonte, altura de linha, preenchimento, cor, fundo, borda, entrada de texto e estilos de exibição de texto multilinha.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaRootDescription">
+      <segment>
+        <source>Root element with textarea wrapper styles, border, border radius, transition animation and state control.</source>
+        <target state="translated">Elemento raiz com estilos de wrapper de textarea, borda, raio de borda, animação de transição e controle de estado.</target>
+      </segment>
+    </unit>
     <unit id="TextAreaDescription">
       <segment>
         <source>For multi-line input.</source>

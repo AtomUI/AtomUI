@@ -371,6 +371,31 @@
         <source>Selection</source>
       </segment>
     </unit>
+    <unit id="SemanticGroupHeaderDescription">
+      <segment>
+        <source>Group header element, with sticky positioning and background color</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, with padding, split line and hover background</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use generated style classes to customize the published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, the scroll container, with font and relative positioning</source>
+      </segment>
+    </unit>
     <unit id="SimpleListBoxDescription">
       <segment>
         <source>Basic usage example.</source>

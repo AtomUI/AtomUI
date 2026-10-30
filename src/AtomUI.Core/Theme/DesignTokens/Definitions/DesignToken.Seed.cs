@@ -71,7 +71,7 @@ public partial class DesignToken
     //  ----------   Font   ---------- //
     /// <summary>
     /// 字体
-    /// Ant Design 的字体家族中优先使用系统默认的界面字体，同时提供了一套利于屏显的备用字体库，来维护在不同平台以及浏览器的显示下，字体始终保持良好的易读性和可读性，体现了友好、稳定和专业的特性。
+    /// 字体家族优先使用系统默认的界面字体，同时提供一套利于屏显的备用字体库，保证在不同平台与显示密度下字体始终保持良好的易读性与可读性。
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public FontFamily? FontFamily { get; set; }
@@ -108,7 +108,7 @@ public partial class DesignToken
 
     /// <summary>
     /// 尺寸变化单位
-    /// 用于控制组件尺寸的变化单位，在 Ant Design 中我们的基础单位为 4 ，便于更加细致地控制尺寸梯度
+    /// 用于控制组件尺寸的变化单位，基础单位为 4，便于更加细致地控制尺寸梯度
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public double SizeUnit { get; set; } = 4;

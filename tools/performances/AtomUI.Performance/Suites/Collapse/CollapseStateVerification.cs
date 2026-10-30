@@ -39,14 +39,14 @@ internal static partial class Program
         var collapse = CreateVerificationCollapse(item);
         using var _ = RealizeControl(collapse);
 
-        var motionActor = FindVisualByName<Control>(item, "PART_ContentMotionActor");
-        Expect(motionActor != null,
-            "Closed CollapseItem should keep static PART_ContentMotionActor in the template.",
+        var viewport = FindVisualByName<Control>(item, "PART_ContentViewport");
+        Expect(viewport != null,
+            "Closed CollapseItem should keep static PART_ContentViewport in the template.",
             failures);
-        Expect(motionActor?.IsVisible == false,
-            "Closed CollapseItem should hide PART_ContentMotionActor before first expand.",
+        Expect(viewport?.IsVisible == false,
+            "Closed CollapseItem should hide PART_ContentViewport before first expand.",
             failures);
-        var contentPresenter = (motionActor as ContentControl)?.Content as ContentPresenter;
+        var contentPresenter = (viewport as ContentControl)?.Content as ContentPresenter;
         Expect(contentPresenter != null,
             "Closed CollapseItem should keep static PART_ContentPresenter in the template.",
             failures);
@@ -166,40 +166,40 @@ internal static partial class Program
         collapse.IsMotionEnabled = false;
         using var realized = RealizeControl(collapse);
 
-        var firstActor = FindCollapseItemTemplatePart<Control>(item, "PART_ContentMotionActor");
-        Expect(firstActor != null,
-            "Closed CollapseItem should keep static content motion actor.",
+        var firstViewport = FindCollapseItemTemplatePart<Control>(item, "PART_ContentViewport");
+        Expect(firstViewport != null,
+            "Closed CollapseItem should keep static content content viewport.",
             failures);
-        Expect(firstActor?.IsVisible == false,
-            "Closed CollapseItem should hide content motion actor before first expand.",
+        Expect(firstViewport?.IsVisible == false,
+            "Closed CollapseItem should hide content content viewport before first expand.",
             failures);
 
         item.IsSelected = true;
         RefreshLayout(realized.Window);
-        var firstPresenter = (firstActor as ContentControl)?.Content as ContentPresenter;
-        Expect(firstActor != null,
-            "CollapseItem should keep content motion actor on first expand.",
+        var firstPresenter = FindCollapseItemTemplatePart<ContentPresenter>(item, "PART_ContentPresenter");
+        Expect(firstViewport != null,
+            "CollapseItem should keep content content viewport on first expand.",
             failures);
         Expect(firstPresenter != null,
             "CollapseItem should keep content presenter on first expand.",
             failures);
-        Expect(firstActor?.IsVisible == true,
-            "Expanded CollapseItem should show content motion actor.",
+        Expect(firstViewport?.IsVisible == true,
+            "Expanded CollapseItem should show content content viewport.",
             failures);
 
         item.IsSelected = false;
         RefreshLayout(realized.Window);
-        Expect(CountCollapseVisualsByName(item, "PART_ContentMotionActor") == 1,
-            "CollapseItem should keep one materialized motion actor after collapse, not duplicate it.",
+        Expect(CountCollapseVisualsByName(item, "PART_ContentViewport") == 1,
+            "CollapseItem should keep one materialized content viewport after collapse, not duplicate it.",
             failures);
 
         item.IsSelected = true;
         RefreshLayout(realized.Window);
-        var secondActor = FindCollapseItemTemplatePart<Control>(item, "PART_ContentMotionActor");
-        Expect(ReferenceEquals(firstActor, secondActor),
-            "CollapseItem should reuse the materialized motion actor on second expand.",
+        var secondViewport = FindCollapseItemTemplatePart<Control>(item, "PART_ContentViewport");
+        Expect(ReferenceEquals(firstViewport, secondViewport),
+            "CollapseItem should reuse the materialized content viewport on second expand.",
             failures);
-        Expect(ReferenceEquals(firstPresenter, (secondActor as ContentControl)?.Content),
+        Expect(ReferenceEquals(firstPresenter, FindCollapseItemTemplatePart<ContentPresenter>(item, "PART_ContentPresenter")),
             "CollapseItem should not duplicate content presenter across expand/collapse toggles.",
             failures);
         Expect(firstPresenter == null || firstPresenter.TemplatedParent == item,
@@ -235,20 +235,23 @@ internal static partial class Program
         Expect(explicitItem.EffectiveContentPadding == new Thickness(4),
             "Collapse should not override an item-level ContentPadding local value.",
             failures);
-        Expect(normalItem.HeaderBorderThickness == new Thickness(0, 0, 0, 1),
-            $"Collapsed non-last CollapseItem should keep a header bottom separator, actual {DescribeThickness(normalItem.HeaderBorderThickness)}.",
+        // CollapseItem 边框 API 演进：旧 HeaderBorderThickness 由 ItemBorderThickness 取代
+        // （分隔线移到包裹整个 item 的 shell 边框，不再区分展开/收起状态）；
+        // ContentBorderThickness 恒为顶部单边分隔线 (0, line, 0, 0)。
+        Expect(normalItem.ItemBorderThickness == new Thickness(0, 0, 0, 1),
+            $"Collapsed non-last CollapseItem should keep an item shell bottom separator, actual {DescribeThickness(normalItem.ItemBorderThickness)}.",
             failures);
-        Expect(normalItem.ContentBorderThickness == new Thickness(0),
-            $"Collapsed CollapseItem should not keep a content border, actual {DescribeThickness(normalItem.ContentBorderThickness)}.",
+        Expect(normalItem.ContentBorderThickness == new Thickness(0, 1, 0, 0),
+            $"Collapsed CollapseItem should keep the constant content top separator (content frame is hidden while collapsed), actual {DescribeThickness(normalItem.ContentBorderThickness)}.",
             failures);
-        Expect(explicitItem.HeaderBorderThickness == new Thickness(0),
-            $"Expanded non-last CollapseItem should not draw the header/content separator on the header, actual {DescribeThickness(explicitItem.HeaderBorderThickness)}.",
+        Expect(explicitItem.ItemBorderThickness == new Thickness(0, 0, 0, 1),
+            $"Expanded non-last CollapseItem should keep the item shell bottom separator, actual {DescribeThickness(explicitItem.ItemBorderThickness)}.",
             failures);
-        Expect(explicitItem.ContentBorderThickness == new Thickness(0, 1, 0, 1),
-            $"Expanded non-last CollapseItem should use content top and bottom borders, actual {DescribeThickness(explicitItem.ContentBorderThickness)}.",
+        Expect(explicitItem.ContentBorderThickness == new Thickness(0, 1, 0, 0),
+            $"Expanded non-last CollapseItem should use the content top separator, actual {DescribeThickness(explicitItem.ContentBorderThickness)}.",
             failures);
-        Expect(lastItem.HeaderBorderThickness == new Thickness(0),
-            $"Expanded last CollapseItem should not keep a header bottom border, actual {DescribeThickness(lastItem.HeaderBorderThickness)}.",
+        Expect(lastItem.ItemBorderThickness == new Thickness(0),
+            $"Expanded last CollapseItem should not keep an item shell border, actual {DescribeThickness(lastItem.ItemBorderThickness)}.",
             failures);
         Expect(lastItem.ContentBorderThickness == new Thickness(0, 1, 0, 0),
             $"Expanded last CollapseItem should keep only the content top separator, actual {DescribeThickness(lastItem.ContentBorderThickness)}.",

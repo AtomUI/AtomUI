@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using AtomUI.Registration;
 using AtomUI.Generated.AtomUICore;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
@@ -14,22 +15,31 @@ using Avalonia.Threading;
 
 namespace AtomUI.Theme;
 
-internal class ThemeManager : Styles, IThemeManager, IDisposable
+internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 {
     public FontFamily? FontFamily { get; internal set; }
-    internal ThemeSnapshot? CurrentSnapshot => Volatile.Read(ref _currentSnapshot);
-    public ThemeState? CurrentTheme => Volatile.Read(ref _currentTheme);
+    internal ThemeSnapshot? CurrentSnapshot => PackageReadUpdate?.Snapshot ?? Volatile.Read(ref _currentSnapshot);
+    public ThemeState? CurrentTheme => PackageReadUpdate?.Theme ?? Volatile.Read(ref _currentTheme);
     public IReadOnlyList<ThemeInfo> AvailableThemes =>
-        Volatile.Read(ref _compiledThemeCatalog)?.AvailableThemes ?? Array.Empty<ThemeInfo>();
+        (PackageReadUpdate?.Catalog ?? Volatile.Read(ref _compiledThemeCatalog))?.AvailableThemes ?? Array.Empty<ThemeInfo>();
     public IReadOnlyList<ThemeDiagnostic> ThemeCatalogDiagnostics =>
         Volatile.Read(ref _themeCatalogDiagnostics);
+    private SemanticPartRegistry _semanticParts = SemanticPartRegistry.Empty;
+    public SemanticPartRegistry SemanticParts
+    {
+        get => PackageReadUpdate?.Semantics ?? Volatile.Read(ref _semanticParts);
+        internal set => Volatile.Write(ref _semanticParts, value);
+    }
     internal CompiledThemeCatalog CompiledThemeCatalog =>
-        Volatile.Read(ref _compiledThemeCatalog) ??
+        PackageReadUpdate?.Catalog ?? Volatile.Read(ref _compiledThemeCatalog) ??
         throw new InvalidOperationException("The compiled theme catalog has not been initialized.");
 
     public event EventHandler<ThemeChangedEventArgs>? ThemeChanged;
     public event EventHandler<ThemeChangeFailedEventArgs>? ThemeChangeFailed;
     public event EventHandler<ThemeCatalogChangedEventArgs>? ThemeCatalogChanged;
+    internal event Action<object, ControlTheme>? ControlThemeResolved;
+
+    internal void NotifyControlThemeResolved(object key, ControlTheme theme) => ControlThemeResolved?.Invoke(key, theme);
 
     private readonly List<ControlTokenDescriptor> _controlTokenDescriptors;
     private readonly List<ControlThemeAssetDescriptor> _controlThemeAssetDescriptors;
@@ -55,17 +65,25 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     private ThemeSnapshotCacheKey? _currentSnapshotKey;
     private ThemeConfigNormalizeResult? _normalizedInitialConfig;
     private ThemeConfigNormalizeResult? _normalizedRuntimeDefaultConfig;
-    private ThemeTokenResourceProvider? _rootTokenResourceProvider;
     private ThemeContext? _rootContext;
     private readonly ThemeScopeGraph _scopeGraph;
     private ThemeState? _currentTheme;
     private Application? _application;
+    private IResourceDictionary? _applicationResources;
+    private Style? _rootContextStyle;
+    private readonly Dictionary<IControlThemesProvider, List<ControlThemeResourceRegistration>> _stagedThemeResources = new();
+    private readonly List<IControlThemesProvider> _registeredControlThemesProviders = [];
+    private readonly Dictionary<IControlThemesProvider, IReadOnlyList<IResourceProvider>>
+        _controlThemeProviderBaseResources = new(ReferenceEqualityComparer.Instance);
+    private StaticThemeResourceProvider? _staticResourceProvider;
+    // 语义部件描述符登记表（提交时由 BuildCore 一次写入）：SemanticParts 由其按需重建。
+    private readonly List<ControlSemanticDescriptor> _stagedSemanticControls = [];
     private ThemeSchemaRegistry? _startupRegistry;
-    private ControlThemeAssetManifest? _startupControlThemeAssetManifest;
+    private IReadOnlyList<PackageSchemaFingerprint>? _packageSchemaFingerprints;
     private CompiledThemeCatalog? _compiledThemeCatalog;
     private readonly ThemeDefinitionLoadCache _themeDefinitionLoadCache;
-    private IReadOnlyList<IThemeDefinitionResolver> _themeDefinitionResolvers =
-        Array.AsReadOnly(new[] { CoreThemeDefinitionResolver.Create() });
+    private IReadOnlyList<ThemeDefinitionRegistration> _themeDefinitionResolvers =
+        Array.AsReadOnly(new[] { new ThemeDefinitionRegistration(Generated.AtomUICore.GeneratedThemePackageRegistration.CreatePackage()) });
     private string _applicationId = typeof(ThemeManager).Assembly.GetName().Name!;
     private string _applicationDataRoot = string.Empty;
     private IReadOnlyList<ThemeDiagnostic> _themeCatalogDiagnostics = Array.Empty<ThemeDiagnostic>();
@@ -75,10 +93,13 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
         ThemeTransitionReason.Startup);
     private ThemeRequest? _followSystemLightRequest;
     private ThemeRequest? _followSystemDarkRequest;
+    private ThemeSnapshot? _startupGlobalParent;
+    private StartupPackageIndex? _startupPackageIndex;
+    private StartupResourceProvider? _startupResourceProvider;
     private bool _applicationInitialized;
     private long _generation;
     private long _nextTransitionId;
-    private long _nextCatalogReloadGeneration;
+    private long _nextCatalogGeneration;
     
     internal ThemeManager(
         Func<bool>? themeTransitionAccessCheck = null,
@@ -119,7 +140,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     }
 
     internal void ConfigureThemeDefinitions(
-        IReadOnlyList<IThemeDefinitionResolver> resolvers,
+        IReadOnlyList<ThemeDefinitionRegistration> resolvers,
         string applicationId,
         string applicationDataRoot)
     {
@@ -134,7 +155,8 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
 
     internal void InitializeApplication(
         Application application,
-        ThemeAppearance? initialSystemAppearance = null)
+        ThemeAppearance? initialSystemAppearance = null,
+        ThemeSnapshot? startupGlobalParent = null)
     {
         ArgumentNullException.ThrowIfNull(application);
         if (_applicationInitialized)
@@ -142,59 +164,87 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
             throw new InvalidOperationException("ThemeManager is already initialized.");
         }
 
+        ObjectDisposedException.ThrowIf(_disposeRequested, this);
         _application = application;
-        _startupRegistry = CreateStartupRegistry();
-        _normalizedRuntimeDefaultConfig = ThemeConfigNormalizer.Normalize(
-            AddDefaultFont(null) ?? ThemeConfig.Empty,
-            _startupRegistry);
-        _normalizedInitialConfig = _initialRequest.Config is null
-            ? _normalizedRuntimeDefaultConfig
-            : ThemeConfigNormalizer.Normalize(
-                AddDefaultFont(_initialRequest.Config)!,
-                _startupRegistry);
-        var catalogResult = CompiledThemeCatalog.LoadInitial(
-            _startupRegistry,
-            _themeDefinitionResolvers,
-            new ThemeDefinitionResolveContext(
-                _applicationId,
-                _applicationDataRoot,
-                false,
-                0),
-            _themeDefinitionLoadCache);
-        if (!catalogResult.Success)
+        try
         {
-            throw new ThemeLoadException(
-                CompiledThemeCatalog.Describe(catalogResult.Diagnostics),
-                catalogResult.Exception);
-        }
-        _compiledThemeCatalog = catalogResult.Catalog;
-        _themeCatalogDiagnostics = catalogResult.Diagnostics;
-        MountStaticResources();
+            PrepareRegistrationSchema();
+            var registry = _startupRegistry!;
+            var (runtimeConfig, initialConfig, catalogResult) = PrepareRegistrationThemeInputs(registry, _themeDefinitionResolvers);
+            _normalizedRuntimeDefaultConfig = runtimeConfig;
+            _normalizedInitialConfig = initialConfig;
+            _compiledThemeCatalog = catalogResult.Catalog;
+            _themeCatalogDiagnostics = catalogResult.Diagnostics;
+            MountStaticResources();
 
-        var request = _followSystemLightRequest is null
-            ? _initialRequest
-            : (initialSystemAppearance ?? ResolveSystemAppearance(application)) == ThemeAppearance.Dark
-                ? _followSystemDarkRequest!
-                : _followSystemLightRequest;
-        var result = ApplyThemeAsync(request).GetAwaiter().GetResult();
-        if (result.Status is not ThemeTransitionStatus.Committed and not ThemeTransitionStatus.NoOp)
+            var request = _followSystemLightRequest is null
+                ? _initialRequest
+                : (initialSystemAppearance ?? ResolveSystemAppearance(application)) == ThemeAppearance.Dark
+                    ? _followSystemDarkRequest!
+                    : _followSystemLightRequest;
+            _startupGlobalParent = startupGlobalParent;
+            ThemeTransitionResult result;
+            try
+            {
+                result = ApplyThemeAsync(request).GetAwaiter().GetResult();
+            }
+            finally
+            {
+                _startupGlobalParent = null;
+            }
+            if (result.Status is not ThemeTransitionStatus.Committed and not ThemeTransitionStatus.NoOp)
+            {
+                var exceptionMessage = result.Exception is null
+                    ? string.Empty
+                    : $" {result.Exception.GetBaseException().Message}";
+                throw new ThemeLoadException(
+                    $"Initial theme '{request.ThemeId}' failed with status '{result.Status}': " +
+                    string.Join(" ", result.Diagnostics.Select(static diagnostic => diagnostic.Message)) +
+                    exceptionMessage,
+                    result.Exception);
+            }
+
+            // Framework resources precede external theme children without outranking the
+            // application's existing merged dictionaries or its explicit Resources overrides.
+            _applicationResources = application.Styles.Resources;
+            _applicationResources.MergedDictionaries.Insert(0, Resources);
+            _rootContextStyle = new Style(selector => selector.OfType<TopLevel>());
+            _rootContextStyle.Setters.Add(new Setter(ThemeScope.ContextProperty, RootContext));
+            application.Styles.Add(_rootContextStyle);
+            _applicationInitialized = true;
+            SubscribeSystemAppearance(application);
+        }
+        catch (Exception initializationException)
         {
-            var exceptionMessage = result.Exception is null
-                ? string.Empty
-                : $" {result.Exception.GetBaseException().Message}";
-            throw new ThemeLoadException(
-                $"Initial theme '{request.ThemeId}' failed with status '{result.Status}': " +
-                string.Join(" ", result.Diagnostics.Select(static diagnostic => diagnostic.Message)) +
-                exceptionMessage,
-                result.Exception);
+            try
+            {
+                Dispose();
+            }
+            catch (Exception cleanupException)
+            {
+                throw new AggregateException("ThemeManager initialization and cleanup failed.",
+                    initializationException, cleanupException);
+            }
+            throw;
         }
+    }
 
-        var rootContextStyle = new Style(selector => selector.OfType<TopLevel>());
-        rootContextStyle.Setters.Add(new Setter(ThemeScope.ContextProperty, RootContext));
-        Add(rootContextStyle);
-        application.Styles.Add(this);
-        _applicationInitialized = true;
-        SubscribeSystemAppearance(application);
+    internal void CompleteStartupRegistration()
+    {
+        if (_startupPackageIndex is null)
+        {
+            _startupPackageIndex = StartupPackageIndex.Create([], null, _startupRegistry,
+                SemanticParts.Controls, _controlThemeAssetDescriptors);
+        }
+        // 注册终态之后，查询由 registry、SemanticParts 和稳定资源表承担，不保留第二套构建数据库。
+        _controlTokenDescriptors.Clear();
+        _controlThemeAssetDescriptors.Clear();
+        _stagedSemanticControls.Clear();
+        _controlThemesProviders.Clear();
+        _registeredControlThemesProviders.Clear();
+        _controlThemeProviderBaseResources.Clear();
+        _stagedThemeResources.Clear();
+        _packageSchemaFingerprints = null;
     }
 
     internal Task<ThemeTransitionResult> ApplySystemAppearanceAsync(
@@ -306,36 +356,16 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
         long mutationGeneration;
         long reloadGeneration;
         long transitionId;
-        ThemeScopeCapture scopeCapture;
-        CompiledThemeCatalog currentCatalog;
-        ThemeSnapshot currentSnapshot;
-        ThemeSnapshotCacheKey? currentSnapshotKey;
-        ThemeRequest currentRequest;
-        IReadOnlyList<ThemeDiagnostic> currentDiagnostics;
         lock (_transactionGate)
         {
             mutationGeneration = ++_generation;
-            reloadGeneration = ++_nextCatalogReloadGeneration;
+            reloadGeneration = ++_nextCatalogGeneration;
             _catalogReloadOperationCount++;
             transitionId = NextTransitionId();
-            scopeCapture = _scopeGraph.CaptureAll();
-            currentCatalog = _compiledThemeCatalog;
-            currentSnapshot = _currentSnapshot;
-            currentSnapshotKey = _currentSnapshotKey;
-            currentRequest = _lastCommittedRequest;
-            currentDiagnostics = _themeCatalogDiagnostics;
+
         }
 
-        var transaction = ProcessCatalogReloadAsync(
-            mutationGeneration,
-            reloadGeneration,
-            transitionId,
-            scopeCapture,
-            currentCatalog,
-            currentSnapshot,
-            currentSnapshotKey,
-            currentRequest,
-            currentDiagnostics);
+        var transaction = ProcessCatalogReloadAsync(mutationGeneration, reloadGeneration, transitionId);
         return cancellationToken.CanBeCanceled
             ? transaction.WaitAsync(cancellationToken)
             : transaction;
@@ -344,17 +374,33 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     private async Task<ThemeCatalogReloadResult> ProcessCatalogReloadAsync(
         long mutationGeneration,
         long reloadGeneration,
-        long transitionId,
-        ThemeScopeCapture scopeCapture,
-        CompiledThemeCatalog currentCatalog,
-        ThemeSnapshot currentSnapshot,
-        ThemeSnapshotCacheKey? currentSnapshotKey,
-        ThemeRequest currentRequest,
-        IReadOnlyList<ThemeDiagnostic> currentDiagnostics)
+        long transitionId)
     {
         await EnterTransactionExecutionGateAsync().ConfigureAwait(true);
         try
         {
+            ThemeScopeCapture scopeCapture;
+            CompiledThemeCatalog currentCatalog;
+            ThemeSnapshot currentSnapshot;
+            ThemeSnapshotCacheKey? currentSnapshotKey;
+            ThemeRequest currentRequest;
+            IReadOnlyList<ThemeDiagnostic> currentDiagnostics;
+            lock (_transactionGate)
+            {
+                if (mutationGeneration != _generation)
+                {
+                    return new ThemeCatalogReloadResult(reloadGeneration, ThemeCatalogReloadStatus.Superseded,
+                        AvailableThemes, _currentTheme, [], [], null);
+                }
+                // 排队期间可能有新的主题变更提交，使本次请求的代际过期。进入执行门后一起捕获完整基线，
+                // 避免旧目录静态切片与新 resolver 集合混代；请求代际仍保留调用顺序。
+                scopeCapture = _scopeGraph.CaptureAll();
+                currentCatalog = _compiledThemeCatalog!;
+                currentSnapshot = _currentSnapshot!;
+                currentSnapshotKey = _currentSnapshotKey;
+                currentRequest = _lastCommittedRequest!;
+                currentDiagnostics = _themeCatalogDiagnostics;
+            }
             CatalogReloadPreparation prepared;
             try
             {
@@ -457,15 +503,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
                 publishDiagnostics.AddRange(Publish(prepared.ThemeTransaction!));
             }
 
-            ThemeEventDispatcher.Dispatch(
-                ThemeCatalogChanged,
-                this,
-                new ThemeCatalogChangedEventArgs(
-                    reloadGeneration,
-                    AvailableThemes,
-                    CurrentTheme),
-                publishDiagnostics,
-                nameof(ThemeCatalogChanged));
+            PublishCatalogChanged(reloadGeneration, publishDiagnostics);
             return new ThemeCatalogReloadResult(
                 reloadGeneration,
                 ThemeCatalogReloadStatus.Committed,
@@ -484,6 +522,16 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
             ExitTransactionExecutionGate();
             StartPendingScopeUpdateProcessor();
         }
+    }
+
+    private void PublishCatalogChanged(long generation, List<ThemeDiagnostic> publishDiagnostics)
+    {
+        ThemeEventDispatcher.Dispatch(
+            ThemeCatalogChanged,
+            this,
+            new ThemeCatalogChangedEventArgs(generation, AvailableThemes, CurrentTheme),
+            publishDiagnostics,
+            nameof(ThemeCatalogChanged));
     }
 
     private CatalogReloadPreparation PrepareCatalogReload(
@@ -613,9 +661,11 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
         try
         {
             transaction.Phase = ThemeTransactionPhase.Prepare;
+            // 启动首次编译时 CurrentSnapshot 为空：使用后台 Prepare 的全局层作为 ReusableParent，
+            // ThemeCompiler.CanReuseGlobal 成立时直接复用全局 Token 值表与资源表。
             var preparation = await _prepareTheme(
                 transaction.Request,
-                CurrentSnapshot,
+                CurrentSnapshot ?? _startupGlobalParent,
                 CancellationToken.None).ConfigureAwait(true);
             transaction.Preparation = preparation;
             lock (_transactionGate)
@@ -759,7 +809,6 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
         }
 
         _rootContext               = rootContext;
-        _rootTokenResourceProvider = rootContext.ResourceProvider;
         _currentSnapshot           = preparation.Snapshot;
         _currentSnapshotKey        = preparation.SnapshotKey;
         _currentTheme              = transaction.PreparedState;
@@ -958,6 +1007,10 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
             throw new InvalidOperationException("Theme transitions must be captured on the UI thread.");
         }
         ObjectDisposedException.ThrowIf(_disposeRequested, this);
+        if (_loadingPackages)
+        {
+            throw new InvalidOperationException("Theme mutations cannot run during package loading.");
+        }
     }
 
     internal void RegisterContextLease(ThemeContextLease lease)
@@ -982,6 +1035,10 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
 
     public void Dispose()
     {
+        if (_loadingPackages)
+        {
+            throw new InvalidOperationException("ThemeManager cannot be disposed during package loading.");
+        }
         if (!_checkTransitionAccess())
         {
             throw new InvalidOperationException("ThemeManager must be disposed on the UI thread.");
@@ -1034,31 +1091,59 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
         _contextLeases.Clear();
 
         DisposeBoundary(_scopeGraph.DisposeAll);
-        if (application is not null)
+        DisposeBoundary(() => _startupPackageIndex?.Release());
+        if (_rootContextStyle is { } rootContextStyle && application is not null)
         {
-            DisposeBoundary(() => application.Styles.Remove(this));
+            DisposeBoundary(() => application.Styles.Remove(rootContextStyle));
+        }
+        _rootContextStyle = null;
+        var applicationResources = _applicationResources;
+        _applicationResources = null;
+        if (applicationResources is not null)
+        {
+            DisposeBoundary(() => applicationResources.MergedDictionaries.Remove(Resources));
+            if (application is not null)
+            {
+                DisposeBoundary(() => ((IResourceProvider)Resources).RemoveOwner(application));
+                // ResourceDictionary stops removing child owners if a notification throws.
+                // Snapshot our root providers so callbacks cannot interrupt sibling cleanup.
+                foreach (var resource in Resources.MergedDictionaries.Concat(Resources.ThemeDictionaries.Values).ToArray())
+                {
+                    DisposeBoundary(() => resource.RemoveOwner(application));
+                }
+            }
         }
         DisposeBoundary(Resources.MergedDictionaries.Clear);
         DisposeBoundary(Resources.Clear);
         DisposeBoundary(Clear);
 
         _themeDefinitionLoadCache.Dispose();
+        if (_themeSnapshotCache is { } snapshotCache)
+        {
+            DisposeBoundary(snapshotCache.Dispose);
+        }
         _controlTokenDescriptors.Clear();
         _controlThemeAssetDescriptors.Clear();
         _controlThemesProviders.Clear();
-        _themeDefinitionResolvers = Array.Empty<IThemeDefinitionResolver>();
+        _themeDefinitionResolvers = Array.Empty<ThemeDefinitionRegistration>();
         _pendingScopeUpdates.Clear();
         _scopeUpdateProcessorRunning = false;
 
         _application = null;
         _applicationInitialized = false;
+        _stagedThemeResources.Clear();
+        _registeredControlThemesProviders.Clear();
+        _controlThemeProviderBaseResources.Clear();
+        _staticResourceProvider = null;
+        _stagedSemanticControls.Clear();
         _startupRegistry = null;
-        _startupControlThemeAssetManifest = null;
+        _startupPackageIndex = null;
+        _startupResourceProvider = null;
+        _packageSchemaFingerprints = null;
         _compiledThemeCatalog = null;
         _themeCatalogDiagnostics = Array.Empty<ThemeDiagnostic>();
         _themeCompiler = null;
         _themeSnapshotCache = null;
-        _rootTokenResourceProvider = null;
         _rootContext = null;
         _currentSnapshot = null;
         _currentSnapshotKey = null;
@@ -1069,6 +1154,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
         _followSystemDarkRequest = null;
 
         ThemeChanged = null;
+        ControlThemeResolved = null;
         ThemeChangeFailed = null;
         ThemeCatalogChanged = null;
         _transactionExecutionGate.Dispose();
@@ -1107,7 +1193,16 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
 
     internal void RegisterControlThemesProvider(IControlThemesProvider controlThemesProvider)
     {
-        _controlThemesProviders.Add(controlThemesProvider);
+        ArgumentNullException.ThrowIfNull(controlThemesProvider);
+        if (!_registeredControlThemesProviders.Any(provider =>
+                ReferenceEquals(provider, controlThemesProvider)))
+        {
+            _registeredControlThemesProviders.Add(controlThemesProvider);
+        }
+        if (!_controlThemesProviders.Any(provider => ReferenceEquals(provider, controlThemesProvider)))
+        {
+            _controlThemesProviders.Add(controlThemesProvider);
+        }
     }
 
     internal void RegisterControlTokenDescriptor(ControlTokenDescriptor descriptor)
@@ -1118,6 +1213,15 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     internal void RegisterControlThemeAssetDescriptor(ControlThemeAssetDescriptor descriptor)
     {
         _controlThemeAssetDescriptors.Add(descriptor);
+    }
+
+    /// <summary>
+    /// 语义部件描述符登记：BuildCore 一次登记全部包贡献。SemanticParts 由其按需重建。
+    /// </summary>
+    internal void StageSemanticControlDescriptors(IReadOnlyList<ControlSemanticDescriptor> descriptors)
+    {
+        ArgumentNullException.ThrowIfNull(descriptors);
+        _stagedSemanticControls.AddRange(descriptors);
     }
 
     internal ThemeScopeRegistration RegisterScope(
@@ -1587,14 +1691,18 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
     private ThemeTransactionPreparation PrepareCompiledTheme(
         ThemeRequest request,
         ThemeSnapshot? currentSnapshot,
-        CompiledThemeCatalog? catalog = null)
+        CompiledThemeCatalog? catalog = null,
+        ThemeSchemaRegistry? registry = null,
+        ThemeConfigNormalizeResult? runtimeDefaultConfig = null,
+        ThemeConfigNormalizeResult? initialConfig = null)
     {
+        registry ??= _startupRegistry!;
         try
         {
             var entry = (catalog ?? _compiledThemeCatalog!).Get(request.ThemeId);
             var normalizedRuntime = request.Config is null
-                ? _normalizedRuntimeDefaultConfig!
-                : ThemeConfigNormalizer.Normalize(AddDefaultFont(request.Config)!, _startupRegistry!);
+                ? runtimeDefaultConfig ?? _normalizedRuntimeDefaultConfig!
+                : ThemeConfigNormalizer.Normalize(AddDefaultFont(request.Config)!, registry);
             if (!normalizedRuntime.Success)
             {
                 return ThemeTransactionPreparation.Failed(
@@ -1603,22 +1711,18 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
 
             var defaults = ThemeCompiler.CreateDefinitionDefaults(
                 entry.Definition,
-                _startupRegistry!);
-            var normalizedInitial = _normalizedInitialConfig!;
+                registry);
+            var normalizedInitial = initialConfig ?? _normalizedInitialConfig!;
             if (!normalizedInitial.Success)
             {
                 return ThemeTransactionPreparation.Failed(
                     ConvertDiagnostics(normalizedInitial.Diagnostics));
             }
 
-            var applicationConfig = ThemeConfigMerger.Merge(
+            var effective = ThemeStartupCompilation.MergeEffectiveConfig(
                 defaults,
-                null,
-                normalizedInitial.Config!).EffectiveConfig;
-            var effective = ThemeConfigMerger.Merge(
-                defaults,
-                applicationConfig,
-                normalizedRuntime.Config!).EffectiveConfig;
+                normalizedInitial.Config!,
+                normalizedRuntime.Config!);
             var changeSet = currentSnapshot is null
                 ? null
                 : ThemeConfigMerger.Compare(currentSnapshot.EffectiveConfig, effective);
@@ -1626,7 +1730,7 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
                 entry.Definition,
                 entry.Revision,
                 effective,
-                _startupRegistry!,
+                registry,
                 currentSnapshot,
                 changeSet);
             var key = ThemeSnapshotCacheKey.Create(input);
@@ -1660,26 +1764,24 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
         }
     }
 
-    private ThemeConfig? AddDefaultFont(ThemeConfig? config)
+    private (ThemeConfigNormalizeResult Runtime, ThemeConfigNormalizeResult Initial, ThemeCatalogLoadResult Catalog)
+        PrepareRegistrationThemeInputs(ThemeSchemaRegistry registry, IReadOnlyList<ThemeDefinitionRegistration> resolvers)
     {
-        const string fontFamilyToken = "FontFamily";
-        if (FontFamily is null ||
-            config?.Tokens.ContainsKey(fontFamilyToken) == true)
+        var runtimeConfig = ThemeConfigNormalizer.Normalize(AddDefaultFont(null) ?? ThemeConfig.Empty, registry);
+        var initialConfig = _initialRequest.Config is null
+            ? runtimeConfig
+            : ThemeConfigNormalizer.Normalize(AddDefaultFont(_initialRequest.Config)!, registry);
+        var catalog = CompiledThemeCatalog.LoadInitial(registry, resolvers,
+            new ThemeDefinitionResolveContext(_applicationId, _applicationDataRoot, false, 0), _themeDefinitionLoadCache);
+        if (!catalog.Success)
         {
-            return config;
+            throw new ThemeLoadException(CompiledThemeCatalog.Describe(catalog.Diagnostics), catalog.Exception);
         }
-
-        var tokens = config is null
-            ? new Dictionary<string, string>(StringComparer.Ordinal)
-            : new Dictionary<string, string>(config.Tokens, StringComparer.Ordinal);
-        tokens[fontFamilyToken] = FontFamily.ToString();
-        return new ThemeConfig(
-            config?.Inherit ?? true,
-            config?.Algorithms,
-            tokens,
-            config?.Controls ??
-            new Dictionary<Schema.ControlTokenIdentity, ControlThemeConfig>());
+        return (runtimeConfig, initialConfig, catalog);
     }
+
+    private ThemeConfig? AddDefaultFont(ThemeConfig? config) =>
+        ThemeStartupCompilation.AddDefaultFont(config, FontFamily);
 
     private static IReadOnlyList<ThemeDiagnostic> ConvertDiagnostics(
         IReadOnlyList<Definitions.ThemeDefinitionDiagnostic> diagnostics)
@@ -1710,33 +1812,176 @@ internal class ThemeManager : Styles, IThemeManager, IDisposable
         return _themeSnapshotCache ??= new ThemeSnapshotCache();
     }
 
+    internal void PrepareRegistrationSchema()
+    {
+        if (_startupRegistry is null)
+        {
+            var registry = CreateStartupRegistry();
+            var semantics = CreateSemanticRegistry(registry);
+            if (_startupPackageIndex is null)
+            {
+                _ = new ControlThemeAssetManifest(registry);
+            }
+            else if (_controlThemeAssetDescriptors.Count != 0)
+            {
+                _ = new ControlThemeAssetManifest(registry, _controlThemeAssetDescriptors);
+            }
+            _startupRegistry = registry;
+            SemanticParts = semantics;
+            _stagedSemanticControls.Clear();
+        }
+    }
+
+    /// <summary>
+    /// 全部生成包携带的编译期 schema 指纹；null 表示至少一个包缺失（启动 Revision 走全量算法）。
+    /// 必须在 PrepareRegistrationSchema 之前调用。
+    /// </summary>
+    internal void SetPackageSchemaFingerprints(IReadOnlyList<PackageSchemaFingerprint>? packageFingerprints) =>
+        _packageSchemaFingerprints = packageFingerprints;
+
+    internal ThemeSchemaRevision? StartupRegistryRevision => PackageReadUpdate?.Snapshot.RegistryRevision ?? _startupRegistry?.Revision;
+
+    internal void ConfigureStartupPackages(IReadOnlyList<EnabledControlPackage> packages, StartupImage? image)
+    {
+        var manualRegistry = _controlTokenDescriptors.Count == 0 ? null : new ThemeSchemaRegistry(
+            GeneratedThemeSchema.GetGlobalTokens(), _controlTokenDescriptors, GeneratedThemeSchema.GetAlgorithms());
+        _startupPackageIndex = StartupPackageIndex.Create(packages, image, manualRegistry, _stagedSemanticControls, _controlThemeAssetDescriptors);
+        _startupResourceProvider = new StartupResourceProvider(_startupPackageIndex, this);
+    }
+
+    internal void StageControlThemeResources(IControlThemesProvider provider, IReadOnlyList<ControlThemeResourceRegistration> resources)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(resources);
+        // 提交一次：每个 provider 只登记一次（Builder 按完整排序键准备好资源）。Build() 每次新建 ThemeManager，
+        // 表在本次提交内不会出现第二个输入，故直接登记，不做归并。Provider 必须在登记资源前进入注册表，
+        // 因为静态资源表按已注册 provider 构建。
+        RegisterControlThemesProvider(provider);
+        _stagedThemeResources[provider] = resources.ToList();
+    }
+
     private void MountStaticResources()
     {
-        foreach (var provider in _controlThemesProviders)
+        _startupResourceProvider ??= new StartupResourceProvider(StartupPackageIndex.Create([]), this);
+        if (_startupResourceProvider is not null && !Resources.MergedDictionaries.Contains(_startupResourceProvider))
         {
-            foreach (var resourceProvider in provider.ControlThemes)
+            Resources.MergedDictionaries.Add(_startupResourceProvider);
+        }
+        // 即使没有任何包也先固定静态层，保证它相对 Token provider 的优先级稳定。
+        if (_staticResourceProvider is null)
+        {
+            _staticResourceProvider = new StaticThemeResourceProvider(this);
+            Resources.MergedDictionaries.Add(_staticResourceProvider);
+        }
+        _staticResourceProvider.CommitTable(PrepareStaticResourceTable());
+        _controlThemesProviders.Clear();
+    }
+
+    private StaticThemeResourceProvider.ResourceTable PrepareStaticResourceTable()
+    {
+        if (_controlThemesProviders.Count == 0)
+        {
+            return _staticResourceProvider!.CurrentTable;
+        }
+
+        var resources = new List<IResourceProvider>();
+
+        foreach (var provider in _registeredControlThemesProviders)
+        {
+            if (!_controlThemeProviderBaseResources.TryGetValue(provider, out var baseResources))
             {
-                Resources.MergedDictionaries.Add(resourceProvider);
+                baseResources = provider.ControlThemes
+                    .Where(static resource => resource is not DeferredControlThemeResourceProvider)
+                    .ToArray();
+                _controlThemeProviderBaseResources.Add(provider, baseResources);
+            }
+            var existingDeferred = provider.ControlThemes
+                .OfType<DeferredControlThemeResourceProvider>()
+                .ToDictionary(static resource => resource.AssetId, StringComparer.Ordinal);
+            provider.ControlThemes.Clear();
+            foreach (var resource in baseResources)
+            {
+                provider.ControlThemes.Add(resource);
+            }
+            if (_stagedThemeResources.TryGetValue(provider, out var registrations))
+            {
+                foreach (var registration in registrations)
+                {
+                    // 惰性挂载：注册工厂推迟到首次资源查找执行。wrapper 字典的构造即编译期
+                    // populate（急切构建合并主题），直接执行会让启动为全部资产付费；代理保持
+                    // 合并位置与查找顺序不变，空窗口为零消费资产零付费。
+                    provider.ControlThemes.Add(existingDeferred.TryGetValue(registration.AssetId, out var existing)
+                        ? existing
+                        : new DeferredControlThemeResourceProvider(
+                            registration.AssetId,
+                            registration.Factory,
+                            registration.ResourceKeys, provider.Id,
+                            _controlThemeAssetDescriptors.FirstOrDefault(asset => asset.AssetId == registration.AssetId)?.ExportedThemes
+                                .Select(export => export.ResourceKey).ToArray()));
+                }
+            }
+            foreach (var resource in provider.ControlThemes)
+            {
+                resources.Add(resource);
             }
         }
-        _controlThemesProviders.Clear();
-
+        return _staticResourceProvider!.PrepareTable(resources);
     }
 
     private ThemeSchemaRegistry CreateStartupRegistry()
     {
-        var registry = new ThemeSchemaRegistry(
-            GeneratedThemeSchema.GetGlobalTokens(),
-            _controlTokenDescriptors,
-            GeneratedThemeSchema.GetAlgorithms(),
-            _controlThemeAssetDescriptors);
-        _startupControlThemeAssetManifest = new ControlThemeAssetManifest(
-            registry,
-            _controlThemeAssetDescriptors);
+        if (_startupPackageIndex is { } index)
+        {
+            return new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, GeneratedThemeSchema.GetAlgorithms());
+        }
+        var registry = _packageSchemaFingerprints is { } packageFingerprints
+            ? new ThemeSchemaRegistry(
+                GeneratedThemeSchema.GetGlobalTokens(),
+                _controlTokenDescriptors,
+                GeneratedThemeSchema.GetAlgorithms(),
+                _controlThemeAssetDescriptors,
+                GeneratedThemeSchema.GlobalSchemaFingerprint,
+                packageFingerprints)
+            : new ThemeSchemaRegistry(
+                GeneratedThemeSchema.GetGlobalTokens(),
+                _controlTokenDescriptors,
+                GeneratedThemeSchema.GetAlgorithms(),
+                _controlThemeAssetDescriptors);
         return registry;
     }
 
-    private static ThemeAppearance ResolveSystemAppearance(Application application)
+    private SemanticPartRegistry CreateSemanticRegistry(ThemeSchemaRegistry registry)
+    {
+        var semanticParts = _startupPackageIndex is { } index ? new SemanticPartRegistry(index) : _stagedSemanticControls.Count == 0
+            ? SemanticParts
+            : new SemanticPartRegistry(SemanticParts.Controls.Concat(_stagedSemanticControls));
+        foreach (var semantic in _startupPackageIndex is not null ? _stagedSemanticControls : semanticParts.Controls)
+        {
+            var raw = new Schema.ControlTokenIdentity(semantic.Identity.Catalog, semantic.Identity.Id);
+            if (!ControlTokenIdentityCanonicalizer.Matches(semantic.Identity, semantic.ControlType) ||
+                (registry.TryGetControl(raw, out var token) && token.ControlType != semantic.ControlType) ||
+                (registry.TryGetControl(semantic.ControlType, out token) && token.Identity != semantic.Identity))
+            {
+                throw new ThemeSchemaException($"Semantic Control '{semantic.Identity}' conflicts with the registered Token owner.");
+            }
+        }
+        foreach (var asset in _controlThemeAssetDescriptors)
+        {
+            foreach (var binding in asset.SemanticThemeBindings)
+            {
+                if (!semanticParts.TryGetControlMetadata(binding.OwnerIdentity, out var semantic) ||
+                    !semantic.Parts.Any(part => part.Theme is { } theme &&
+                        theme.PropertyName == binding.PropertyName &&
+                        theme.TargetType == binding.TargetType))
+                {
+                    throw new ThemeSchemaException($"Theme asset '{asset.AssetId}' has an invalid semantic binding '{binding.OwnerIdentity}.{binding.PropertyName}'.");
+                }
+            }
+        }
+        return semanticParts;
+    }
+
+    internal static ThemeAppearance ResolveSystemAppearance(Application application)
     {
         if (application.PlatformSettings is { } settings)
         {

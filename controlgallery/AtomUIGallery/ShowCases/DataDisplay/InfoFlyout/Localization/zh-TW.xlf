@@ -181,6 +181,84 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticPopupArrowDescription">
+      <segment>
+        <source>Arrow indicator pointing to the anchor.</source>
+        <target state="translated">指向錨點的箭頭指示器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContainerDescription">
+      <segment>
+        <source>Inner container that carries the popup background, padding and border.</source>
+        <target state="translated">承載彈層背景、內邊距與邊框的內層容器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContentDescription">
+      <segment>
+        <source>Content region of the popup.</source>
+        <target state="translated">彈層內容區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root container of the popup layer.</source>
+        <target state="translated">彈層的根容器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewContentText">
+      <segment>
+        <source>Semantic structure of the InfoFlyout popup.</source>
+        <target state="translated">InfoFlyout 彈層的語義結構。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewTriggerContent">
+      <segment>
+        <source>Semantic Part</source>
+        <target state="translated">Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The InfoFlyout host itself.</source>
+        <target state="translated">InfoFlyout 控制項本體。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleFunctionContent">
+      <segment>
+        <source>Function text</source>
+        <target state="translated">Function text</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleFunctionTrigger">
+      <segment>
+        <source>Function Style</source>
+        <target state="translated">Function Style</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleObjectContent">
+      <segment>
+        <source>Object text</source>
+        <target state="translated">Object text</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleObjectTrigger">
+      <segment>
+        <source>Object Style</source>
+        <target state="translated">Object Style</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of the InfoFlyout popup with semantic part styles.</source>
+        <target state="translated">透過語義部件樣式自訂 InfoFlyout 彈層的語義結構樣式。</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
     <unit id="TriggerWaysDescription">
       <segment>
         <source>Mouse to click, focus and move in.</source>

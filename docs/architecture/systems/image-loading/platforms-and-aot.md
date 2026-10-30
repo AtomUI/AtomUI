@@ -16,7 +16,7 @@
 | raster codec | 支持 | 支持平台可用格式 | 显式注册并探测 capability |
 | 受限静态 SVG | HTTP、Asset、File、Storage、Bytes、Stream | HTTP、Asset、Storage、Bytes、Stream；File 仍受平台限制 | Shared 安全验证，Controls 显式 `SvgImageCodec`；renderer 不发起外部 I/O |
 | persistent cache | 可选、默认关闭 | 不可用 | Browser 配置启用时启动失败并给出 diagnostics |
-| NativeAOT/trimming | publish/启动必须验证 | AOT publish 用于裁剪诊断；当前不要求启动 | 不使用动态发现或未声明反射 |
+| NativeAOT/trimming | publish/启动必须验证 | 裁剪运行与 AOT 均须 publish、启动和精细保留验证 | 按已采纳 TypeMap 架构验收，不使用动态发现 |
 
 移动产品包尚未落地，不能在本架构中宣称 iOS/Android 已验证。任何 Mobile adapter 必须复用 Shared 的 source/key/cache/
 security contract，并在 [Mobile 系统架构](../mobile/overview.md) 的平台验证矩阵中补充真实证据，不能复制一套 loader。
@@ -112,17 +112,17 @@ Loader snapshot 和 event 只暴露有界 diagnostics：队列长度、active co
 - `ImageSourceConverter` 是直接引用的 converter 类型，不按名称反射查找。
 - AXAML 只绑定公开/生成式可保留成员；`AsyncImage` Theme 与 Avatar Theme 的 Source/状态属性进入正常 Control descriptor/asset
   注册，不通过运行时枚举属性。
-- linked publish 的 registration closure 必须保留 `UseCommonControls()` 引入的 image service factory、raster reader/codec、
-  `SvgImageCodec`、安全验证器和直接引用的 SVG dependency 类型，即使静态分析只看到 AXAML 中的 `AsyncImage`。
+- `UseCommonControls()` 的 Package Core 以真实静态调用保留 image service factory、raster reader/codec、
+  `SvgImageCodec`、安全验证器和直接引用的 SVG dependency 类型；AsyncImage/Avatar 的契约片段由官方 TypeMap 条件选择。
+- HTTP transport 的实例在首次网络 source read 时才创建，以避免未使用图片应用的启动对象；网络 reader 与 transport
+  类型仍属于 `UseCommonControls()` 的静态能力闭包。这一延迟只承诺减少未使用路径的运行时构造，不承诺链接器删除
+  `System.Net.Http` 或缩小 NativeAOT 文件，体积结论必须来自同口径发布测量。
 - 未被应用显式注册的自定义 codec/reader 不作为动态 fallback 保留。
 
-当前 Browser 交付门禁以 `RunAOTCompilation=false`、`WasmEnableWebcil=false` 的 publish 和实际启动为准。Browser AOT publish
-用于验证 linked registration closure、converter、AXAML property 和 codec 没有在裁剪阶段丢失；它不是当前图片模块的运行
-完成门禁。仓库现行工具链下，Browser AOT 产物会在 `mono_wasm_load_runtime` 阶段以
-`RuntimeError: remainder by zero` 失败，尚未进入 managed `Main`，因此不能把该失败归因于图片加载实现，也不能通过修改业务
-代码规避。只有 SDK、wasm-tools、runtime pack、Avalonia Browser 或浏览器升级后，按
-[AOT 编程规范的当前 Browser AOT 结论](../../../engineering/development/aot-programming-guidelines.md#当前-browser-aot-结论)
-重新证明 AOT 产物可启动，才能把 Browser AOT 启动恢复为图片系统门禁。
+Browser 的交付门槛同时包含裁剪运行与 AOT 的真实启动、图片/主题行为和未用类型保留检查。
+既往 Gallery 环境失败不构成永久豁免，小型 TypeMap 原型通过也不代表完整图片管线已验收。当前源码与已采纳目标的状态见
+[AOT 与裁剪架构](../../foundations/aot-and-trimming.md#1-状态与事实边界)，验收规则见
+[AOT 编程规范](../../../engineering/development/aot-programming-guidelines.md)。不能以全量注册绕过 Browser 精细裁剪要求。
 
 当前实现不得复制 `AsyncImageLoader.Avalonia` 的静态 service locator 或通过反射发现 loader。可借鉴的是请求取消、缓存和
 attached-control 生命周期经验，但 AtomUI 的正式边界是 Application scoped loader、显式 registry、租约和安全校验。

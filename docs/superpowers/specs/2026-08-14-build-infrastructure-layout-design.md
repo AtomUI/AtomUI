@@ -1,5 +1,8 @@
 # Build 基础设施扁平化设计
 
+> 历史记录：本文涉及的旧控件注册/裁剪方案已被 [TypeMap 正式架构](../../architecture/foundations/aot-and-trimming.md)替代，不再作为维护约束。其余内容保留当时的设计上下文。
+
+
 > 本文记录 2026-08-14 的 Build 基础设施重组决策。长期事实同步到
 > [`docs/architecture/foundations/build-and-packaging.md`](../../architecture/foundations/build-and-packaging.md)；
 > 本文保留方案取舍、迁移范围和验收依据。

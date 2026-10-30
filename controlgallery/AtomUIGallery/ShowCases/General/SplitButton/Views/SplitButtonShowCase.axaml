@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.SplitButton"
              x:DataType="vm:SplitButtonViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="SplitButton"
                     Category="{gallery:SplitButtonShowCaseLangResource ComponentCategory}"
@@ -18,7 +18,67 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="ContentControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:SplitButtonViewModel">
+                    <gallery:SemanticPartPreview Name="SplitButtonSemanticPreview"
+                                                 Title="SplitButton"
+                                                 Loaded="HandleSemanticPreviewLoaded"
+                                                 Unloaded="HandleSemanticPreviewUnloaded"
+                                                 PreviewStageMinHeight="420"
+                                                 PreviewContentAlignment="Top"
+                                                 SemanticOwner="{Binding #SplitButtonSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:SplitButton}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:SplitButton Name="SplitButtonSemanticOwner"
+                                              IsPrimaryButtonType="True"
+                                              HorizontalAlignment="Center"
+                                              Content="{gallery:SplitButtonShowCaseLangResource SemanticStylesObjectPrimary}"
+                                              IsMotionEnabled="False"
+                                              IsPopupPinnedOpen="True">
+                                <atom:SplitButton.Flyout>
+                                    <atom:MenuFlyout>
+                                        <atom:MenuItemGroup Header="{gallery:SplitButtonShowCaseLangResource SemanticPreviewGroupTitle}">
+                                            <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource SemanticPreviewFirstMenuItem}"
+                                                           Icon="{antdicons:AntDesignIconProvider Kind=SaveOutlined}" />
+                                            <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource SemanticPreviewSecondMenuItem}"
+                                                           Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}" />
+                                        </atom:MenuItemGroup>
+                                        <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource SemanticPreviewSubMenu}"
+                                                       IsSubMenuOpen="True">
+                                            <atom:MenuItemGroup Header="{gallery:SplitButtonShowCaseLangResource SemanticPreviewGroupTitle}">
+                                                <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource SemanticPreviewOption1}" />
+                                                <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource SemanticPreviewOption2}" />
+                                            </atom:MenuItemGroup>
+                                        </atom:MenuItem>
+                                        <atom:MenuSeparator />
+                                        <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource P2HeaderDelete}"
+                                                       Foreground="{atom:SharedTokenResource ColorError}"
+                                                       Icon="{antdicons:AntDesignIconProvider Kind=DeleteOutlined}" />
+                                    </atom:MenuFlyout>
+                                </atom:SplitButton.Flyout>
+                            </atom:SplitButton>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription Path="primary"
+                                Description="{gallery:SplitButtonShowCaseLangResource SemanticPrimaryDescription}" />
+                            <gallery:SemanticPartDescription Path="secondary"
+                                Description="{gallery:SplitButtonShowCaseLangResource SemanticSecondaryDescription}" />
+                            <gallery:SemanticPartDescription Path="popup.root"
+                                Description="{gallery:SplitButtonShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription Path="itemTitle"
+                                Description="{gallery:SplitButtonShowCaseLangResource SemanticItemTitleDescription}" />
+                            <gallery:SemanticPartDescription Path="item"
+                                Description="{gallery:SplitButtonShowCaseLangResource SemanticItemDescription}" />
+                            <gallery:SemanticPartDescription Path="itemContent"
+                                Description="{gallery:SplitButtonShowCaseLangResource SemanticItemContentDescription}" />
+                            <gallery:SemanticPartDescription Path="itemIcon"
+                                Description="{gallery:SplitButtonShowCaseLangResource SemanticItemIconDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -328,7 +388,80 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:SplitButtonShowCaseLangResource SemanticStylesTitle}"
+        Description="{gallery:SplitButtonShowCaseLangResource SemanticStylesDescription}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:SplitButtonViewModel">
+                <StackPanel Spacing="24">
+                    <atom:SplitButton Classes="semantic-object-style-demo"
+                                      Content="{gallery:SplitButtonShowCaseLangResource SemanticStylesObjectButton}">
+                        <atom:SplitButton.Flyout>
+                            <atom:MenuFlyout>
+                                <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource SemanticStylesItemProfile}" />
+                                <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource SemanticStylesItemSettings}"
+                                               Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}" />
+                                <atom:MenuSeparator />
+                                <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource SemanticStylesItemLogout}"
+                                               Foreground="{atom:SharedTokenResource ColorError}"
+                                               Icon="{antdicons:AntDesignIconProvider Kind=LogoutOutlined}" />
+                            </atom:MenuFlyout>
+                        </atom:SplitButton.Flyout>
+                        <atom:SplitButton.Styles>
+                            <Style Selector="atom|SplitButton.semantic-object-style-demo">
+                                <atom:SplitButtonPopupRootStyle x:SetterTargetType="atom:ArrowDecoratedBox">
+                                    <Setter Property="BorderBrush" Value="#d9d9d9" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                    <Setter Property="CornerRadius" Value="4" />
+                                </atom:SplitButtonPopupRootStyle>
+                                <atom:SplitButtonItemStyle x:SetterTargetType="atom:MenuItem">
+                                    <Setter Property="Foreground" Value="#1677ff" />
+                                </atom:SplitButtonItemStyle>
+                                <atom:SplitButtonItemIconStyle x:SetterTargetType="atom:IconPresenter">
+                                    <Setter Property="Opacity" Value="0.6" />
+                                </atom:SplitButtonItemIconStyle>
+                                <atom:SplitButtonItemContentStyle x:SetterTargetType="ContentPresenter">
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                </atom:SplitButtonItemContentStyle>
+                            </Style>
+                        </atom:SplitButton.Styles>
+                    </atom:SplitButton>
+
+                    <atom:SplitButton Classes="semantic-function-style-demo"
+                                      IsPrimaryButtonType="True"
+                                      Content="{gallery:SplitButtonShowCaseLangResource SemanticStylesObjectPrimary}">
+                        <atom:SplitButton.Flyout>
+                            <atom:MenuFlyout>
+                                <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource SemanticStylesItemProfile}" />
+                                <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource SemanticStylesItemSettings}"
+                                               Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}" />
+                                <atom:MenuSeparator />
+                                <atom:MenuItem Header="{gallery:SplitButtonShowCaseLangResource SemanticStylesItemLogout}"
+                                               Foreground="{atom:SharedTokenResource ColorError}"
+                                               Icon="{antdicons:AntDesignIconProvider Kind=LogoutOutlined}" />
+                            </atom:MenuFlyout>
+                        </atom:SplitButton.Flyout>
+                        <atom:SplitButton.Styles>
+                            <Style Selector="atom|SplitButton.semantic-function-style-demo">
+                                <atom:SplitButtonSecondaryStyle x:SetterTargetType="atom:Button">
+                                    <Setter Property="CornerRadius" Value="0,6,6,0" />
+                                </atom:SplitButtonSecondaryStyle>
+                                <atom:SplitButtonPopupRootStyle x:SetterTargetType="atom:ArrowDecoratedBox">
+                                    <Setter Property="BorderBrush" Value="#1890ff" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                    <Setter Property="CornerRadius" Value="8" />
+                                </atom:SplitButtonPopupRootStyle>
+                            </Style>
+                        </atom:SplitButton.Styles>
+                    </atom:SplitButton>
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

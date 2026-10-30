@@ -21,7 +21,7 @@
 
 ## Tech Stack
 
-- **Runtime**: .NET 10 (development) / .NET 8 (production); multi-target via `$(AtomUITargetFrameworks)`
+- **Runtime**: .NET 10 for development and production via `$(AtomUITargetFrameworks)`
 - **UI Framework**: Avalonia v11 (currently 11.3.x)
 - **Language**: C# (latest version, nullable enabled, implicit usings)
 - **Reactive**: ReactiveUI.Avalonia + System.Reactive
@@ -458,7 +458,7 @@ public static readonly StyledProperty<SizeType> SizeTypeProperty =
 ## Build & Development
 
 - **Solution**: `AtomUI.slnx`
-- **Build**: `dotnet build` (Debug targets `net10.0` only; Release targets `net10.0;net8.0`)
+- **Build**: `dotnet build` (Debug and Release target `net10.0`)
 - **Test**: `dotnet test` (xUnit v3 test projects under `tests/`)
 - **Gallery App**: `controlgallery/AtomUIGallery.Desktop/` — run for visual testing of all controls
 - **Publish**: `scripts/PublishToLocalSources.ps1`

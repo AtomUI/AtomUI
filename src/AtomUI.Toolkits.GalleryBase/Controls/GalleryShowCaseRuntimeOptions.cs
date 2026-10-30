@@ -5,12 +5,13 @@ public static class GalleryShowCaseRuntimeOptions
     public const string DisableDeferredLoadingEnvironmentVariable = "ATOMUI_GALLERY_DISABLE_SHOWCASE_DEFERRED";
 
     private static bool s_isDeferredLoadingDisabledOverride;
+    private static bool s_isEnvironmentDeferredLoadingDisabled = IsEnvironmentDeferredLoadingDisabled();
 
     public static event EventHandler? DeferredLoadingDisabledChanged;
 
     public static bool IsDeferredLoadingDisabled
     {
-        get => s_isDeferredLoadingDisabledOverride || IsEnvironmentDeferredLoadingDisabled();
+        get => s_isDeferredLoadingDisabledOverride || s_isEnvironmentDeferredLoadingDisabled;
         set => SetDeferredLoadingDisabledOverride(value);
     }
 
@@ -23,6 +24,7 @@ public static class GalleryShowCaseRuntimeOptions
     {
         var oldValue = IsDeferredLoadingDisabled;
         s_isDeferredLoadingDisabledOverride = value;
+        s_isEnvironmentDeferredLoadingDisabled = IsEnvironmentDeferredLoadingDisabled();
         var newValue = IsDeferredLoadingDisabled;
         if (oldValue != newValue)
         {

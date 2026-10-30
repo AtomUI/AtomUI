@@ -1,0 +1,59 @@
+<Project>
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Toolchain.Tasks.targets" Condition="'$(AtomUIToolchainTasksImported)' != 'true'" />
+
+    <Target Name="AtomUICaptureNet8R2RInputs" AfterTargets="_PrepareForReadyToRunCompilation" BeforeTargets="_CreateR2RImages"
+            DependsOnTargets="AtomUIVerifyNet8LinkedOutput"
+            Condition="'$(_AtomUINet8ManagedRegistration)' == 'true' and '$(PublishReadyToRun)' == 'true' and '$(AtomUINet8RegistrationInputs)' != ''">
+        <PropertyGroup><AtomUINet8TransformReceipt>$([System.IO.Path]::GetDirectoryName('$(AtomUINet8RegistrationInputs)'))/transforms.json</AtomUINet8TransformReceipt></PropertyGroup>
+        <ItemGroup>
+            <_AtomUIOriginalCrossgen2Tool Include="@(Crossgen2Tool)" />
+            <_AtomUIOriginalR2RPgo Include="@(_ReadyToRunPgoFiles)" />
+            <_AtomUIR2RTools Include="@(Crossgen2Tool)" Kind="compiler" />
+            <_AtomUIR2RTools Include="@(_ReadyToRunPgoFiles)" Kind="profile" />
+        </ItemGroup>
+        <AtomUI.Build.Tasks.ConditionalPublishTransformTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            Operation="capture-r2r" InputsPath="$(AtomUINet8RegistrationInputs)" VerifiedReceiptPath="$(AtomUINet8VerifiedReceipt)" StatePath="$(AtomUINet8TransformReceipt)"
+            Files="@(_ReadyToRunCompileList)" References="@(_ReadyToRunAssembliesToReference);@(_ReadyToRunCompositeBuildReferences);@(_ReadyToRunCompositeBuildInput)"
+            Tools="@(_AtomUIR2RTools)" ExtraOutputs="@(_ReadyToRunFilesToPublish)"
+            Options="$(RuntimeIdentifier)|$(PublishReadyToRunUseCrossgen2)|$(PublishReadyToRunComposite)|$(PublishReadyToRunEmitSymbols)|$(PublishReadyToRunCrossgen2ExtraArgs)">
+            <Output TaskParameter="PreparedTools" ItemName="_AtomUIPreparedR2RTools" />
+        </AtomUI.Build.Tasks.ConditionalPublishTransformTask>
+        <ItemGroup>
+            <Crossgen2Tool Remove="@(Crossgen2Tool)" />
+            <Crossgen2Tool Include="@(_AtomUIPreparedR2RTools)" Condition="'%(_AtomUIPreparedR2RTools.Kind)' == 'compiler'" />
+            <_ReadyToRunPgoFiles Remove="@(_ReadyToRunPgoFiles)" />
+            <_ReadyToRunPgoFiles Include="@(_AtomUIPreparedR2RTools)" Condition="'%(_AtomUIPreparedR2RTools.Kind)' == 'profile'" />
+        </ItemGroup>
+    </Target>
+    <Target Name="AtomUIVerifyNet8R2ROutputs" AfterTargets="CreateReadyToRunImages"
+            Condition="'$(_AtomUINet8ManagedRegistration)' == 'true' and '$(PublishReadyToRun)' == 'true' and '$(AtomUINet8TransformReceipt)' != ''">
+        <AtomUI.Build.Tasks.ConditionalPublishTransformTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            Operation="verify-r2r" InputsPath="$(AtomUINet8RegistrationInputs)" VerifiedReceiptPath="$(AtomUINet8VerifiedReceipt)" StatePath="$(AtomUINet8TransformReceipt)" />
+        <ItemGroup>
+            <Crossgen2Tool Remove="@(Crossgen2Tool)" /><Crossgen2Tool Include="@(_AtomUIOriginalCrossgen2Tool)" />
+            <_ReadyToRunPgoFiles Remove="@(_ReadyToRunPgoFiles)" /><_ReadyToRunPgoFiles Include="@(_AtomUIOriginalR2RPgo)" />
+        </ItemGroup>
+    </Target>
+    <Target Name="AtomUICaptureNet8BundleInputs" BeforeTargets="GenerateSingleFileBundle"
+            DependsOnTargets="PrepareForBundle;AtomUIVerifyNet8LinkedOutput;AtomUIVerifyNet8R2ROutputs"
+            Condition="'$(_AtomUINet8ManagedRegistration)' == 'true' and '$(PublishSingleFile)' == 'true' and '$(AtomUINet8RegistrationInputs)' != ''">
+        <PropertyGroup><AtomUINet8TransformReceipt>$([System.IO.Path]::GetDirectoryName('$(AtomUINet8RegistrationInputs)'))/transforms.json</AtomUINet8TransformReceipt></PropertyGroup>
+        <ItemGroup><_AtomUIBundleTools Include="$(MicrosoftNETBuildTasksAssembly);$(MSBuildToolsPath)/Microsoft.NET.HostModel.dll" /></ItemGroup>
+        <AtomUI.Build.Tasks.ConditionalPublishTransformTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            Operation="capture-bundle" InputsPath="$(AtomUINet8RegistrationInputs)" VerifiedReceiptPath="$(AtomUINet8VerifiedReceipt)" StatePath="$(AtomUINet8TransformReceipt)"
+            Files="@(FilesToBundle)" BundlePath="$(PublishedSingleFilePath)" Tools="@(_AtomUIBundleTools)"
+            Options="$(RuntimeIdentifier)|$(IncludeSymbolsInSingleFile)|$(IncludeAllContentForSelfExtract)|$(IncludeNativeLibrariesForSelfExtract)|$(EnableCompressionInSingleFile)|$(_EnableMacOSCodeSign)" />
+    </Target>
+    <Target Name="AtomUIVerifyNet8BundleOutput" AfterTargets="GenerateSingleFileBundle"
+            Condition="'$(_AtomUINet8ManagedRegistration)' == 'true' and '$(PublishSingleFile)' == 'true' and '$(AtomUINet8TransformReceipt)' != ''">
+        <AtomUI.Build.Tasks.ConditionalPublishTransformTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            Operation="verify-bundle" InputsPath="$(AtomUINet8RegistrationInputs)" VerifiedReceiptPath="$(AtomUINet8VerifiedReceipt)" StatePath="$(AtomUINet8TransformReceipt)" />
+    </Target>
+    <Target Name="AtomUIVerifyNet8PublishedTransforms" AfterTargets="CopyFilesToPublishDirectory"
+            DependsOnTargets="AtomUIVerifyNet8R2ROutputs;AtomUIVerifyNet8BundleOutput"
+            Condition="'$(_AtomUINet8ManagedRegistration)' == 'true' and '$(AtomUINet8TransformReceipt)' != ''">
+        <AtomUI.Build.Tasks.ConditionalPublishTransformTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            Operation="verify-published" InputsPath="$(AtomUINet8RegistrationInputs)" VerifiedReceiptPath="$(AtomUINet8VerifiedReceipt)" StatePath="$(AtomUINet8TransformReceipt)"
+            PublishDirectory="$(PublishDir)" />
+    </Target>
+</Project>

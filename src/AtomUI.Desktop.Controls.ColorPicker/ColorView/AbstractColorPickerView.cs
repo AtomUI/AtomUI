@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -227,6 +228,128 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     internal IBrush HsvColorWithoutAlphaBrush => _hsvColorWithoutAlphaBrush;
     #endregion
 
+    internal static readonly StyledProperty<bool> IsNeedConfirmProperty =
+        AvaloniaProperty.Register<AbstractColorPickerView, bool>(nameof(IsNeedConfirm));
+
+    internal bool IsNeedConfirm
+    {
+        get => GetValue(IsNeedConfirmProperty);
+        set => SetValue(IsNeedConfirmProperty, value);
+    }
+
+    internal static readonly StyledProperty<bool> CanConfirmProperty =
+        AvaloniaProperty.Register<AbstractColorPickerView, bool>(nameof(CanConfirm), true);
+
+    internal static readonly StyledProperty<bool> IsEmptyDraftProperty =
+        AvaloniaProperty.Register<AbstractColorPickerView, bool>(nameof(IsEmptyDraft));
+
+    internal bool CanConfirm
+    {
+        get => GetValue(CanConfirmProperty);
+        set => SetValue(CanConfirmProperty, value);
+    }
+
+    internal bool IsEmptyDraft
+    {
+        get => GetValue(IsEmptyDraftProperty);
+        set => SetValue(IsEmptyDraftProperty, value);
+    }
+
+    internal event EventHandler? ConfirmRequested;
+    internal event EventHandler? CancelRequested;
+    internal bool IsEditing { get; private set; }
+
+    internal void BeginEdit()
+    {
+        IsEditing = true;
+        _colorInput?.ResetInput();
+    }
+    internal void EndEdit() => IsEditing = false;
+
+    internal void RequestConfirm()
+    {
+        if (!IsNeedConfirm || !IsEditing || !(_colorInput?.TryCommitInput() ?? true))
+        {
+            return;
+        }
+        EndEdit();
+        ConfirmRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    internal void RequestCancel()
+    {
+        if (!IsNeedConfirm || !IsEditing)
+        {
+            return;
+        }
+        EndEdit();
+        CancelRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private Avalonia.Controls.Button? _confirmButton;
+    private Avalonia.Controls.Button? _cancelButton;
+    private ColorPickerInput? _colorInput;
+
+    internal virtual void NotifyInputColorEdited()
+    {
+    }
+
+    private void HandleInputColorEdited(object? sender, EventArgs args)
+    {
+        if (IsNeedConfirm && IsEditing)
+        {
+            NotifyInputColorEdited();
+        }
+    }
+
+    private void HandleConfirmClicked(object? sender, RoutedEventArgs args) => RequestConfirm();
+    private void HandleCancelClicked(object? sender, RoutedEventArgs args) => RequestCancel();
+
+    private void ReleaseFooterHandlers()
+    {
+        if (_colorInput != null)
+        {
+            _colorInput.ColorInputEdited -= HandleInputColorEdited;
+        }
+        if (_confirmButton != null)
+        {
+            _confirmButton.Click -= HandleConfirmClicked;
+        }
+        if (_cancelButton != null)
+        {
+            _cancelButton.Click -= HandleCancelClicked;
+        }
+    }
+
+    private void AttachFooterHandlers()
+    {
+        ReleaseFooterHandlers();
+        if (_colorInput != null)
+        {
+            _colorInput.ColorInputEdited += HandleInputColorEdited;
+        }
+        if (_confirmButton != null)
+        {
+            _confirmButton.Click += HandleConfirmClicked;
+        }
+        if (_cancelButton != null)
+        {
+            _cancelButton.Click += HandleCancelClicked;
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        ReleaseFooterHandlers();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        AttachFooterHandlers();
+    }
+
     private ColorBlock? _clearColorButton;
     private ColorPickerPaletteGroup? _paletteGroup;
     private protected bool IgnorePropertyChanged = false;
@@ -325,7 +448,12 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        ReleaseFooterHandlers();
         base.OnApplyTemplate(e);
+        _confirmButton = e.NameScope.Find<Avalonia.Controls.Button>("PART_ConfirmButton");
+        _cancelButton = e.NameScope.Find<Avalonia.Controls.Button>("PART_CancelButton");
+        _colorInput = e.NameScope.Find<ColorPickerInput>("PART_ColorInput");
+        AttachFooterHandlers();
         ConfigureAlphaEffectiveVisible();
 
         if (_clearColorButton != null)

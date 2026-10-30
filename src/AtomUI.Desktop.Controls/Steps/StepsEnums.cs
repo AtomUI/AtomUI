@@ -28,6 +28,7 @@ internal enum StepsItemLayoutRole
 {
     ItemWrapper,
     Indicator,
+    Section,
     Header,
     SubHeader,
     Connector,

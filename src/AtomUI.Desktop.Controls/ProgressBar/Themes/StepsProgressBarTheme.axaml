@@ -2,12 +2,49 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:atomc="https://atomui.net/common-controls"
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:StepsProgressBar}" TargetType="atom:StepsProgressBar">
         <ControlTheme.BasedOn>
             <themes:AbstractLineProgressTheme TargetType="atom:StepsProgressBar" />
         </ControlTheme.BasedOn>
+
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:StepsProgressBar">
+                <atomc:StepsProgressPanel Name="PART_ProgressBody"
+                                          Classes.semantic-body="True">
+                    <atomc:StepsProgressPanel.Styles>
+                        <Style Selector="atomc|ProgressStepRectangle">
+                            <Setter Property="Fill"
+                                    Value="{Binding StepBrush, RelativeSource={RelativeSource Self}}" />
+                        </Style>
+                    </atomc:StepsProgressPanel.Styles>
+
+                    <Canvas Name="PART_ProgressIndicator"
+                            Classes.semantic-indicator="True"
+                            IsVisible="{TemplateBinding IsProgressInfoVisible}">
+                        <LayoutTransformControl Name="PART_LayoutTransformControl">
+                            <Label Name="PART_PercentageLabel"
+                                   Padding="0"
+                                   Margin="0"
+                                   VerticalContentAlignment="Center"
+                                   IsEnabled="{TemplateBinding IsEnabled}" />
+                        </LayoutTransformControl>
+
+                        <atom:IconPresenter
+                            Name="PART_ExceptionCompletedIconPresenter"
+                            Icon="{TemplateBinding ExceptionCompletedIcon}"
+                            HorizontalAlignment="Left" />
+
+                        <atom:IconPresenter
+                            Name="PART_SuccessCompletedIconPresenter"
+                            Icon="{TemplateBinding SuccessCompletedIcon}"
+                            HorizontalAlignment="Left" />
+                    </Canvas>
+                </atomc:StepsProgressPanel>
+            </ControlTemplate>
+        </Setter>
 
         <Style Selector="^[Orientation=Horizontal]">
             <Setter Property="HorizontalAlignment" Value="Left" />

@@ -1,6 +1,6 @@
 # ProgressBar 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.ProgressBar` 家族桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [ProgressBar 桌面版实现原理](implementation.md)，ProgressBar Token 的专项设计见 [ProgressBar Token 设计](token.md)，设计和契约变化记录见 [ProgressBar Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.ProgressBar` 家族桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，公开主题区域见 [ProgressBar Semantic Part 契约](semantic-part.md)，内部实现原理见 [ProgressBar 桌面版实现原理](implementation.md)，ProgressBar Token 的专项设计见 [ProgressBar Token 设计](token.md)，设计和契约变化记录见 [ProgressBar Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -167,17 +167,18 @@ ProgressBar 的默认视觉由抽象主题和具体控件主题组合：
 | `AbstractLineProgressTheme.axaml` | 线形模板、百分比 label、状态图标、线形尺寸和图标尺寸。 |
 | `ProgressBarTheme.axaml` | 普通线形控件主题、内嵌百分比伪类、垂直文本旋转、内嵌图标隐藏规则。 |
 | `StepsProgressBarTheme.axaml` | 步骤线形控件主题、方向对齐和百分比位置对应图标对齐。 |
-| `AbstractCircleProgressTheme.axaml` | 圆形模板、居中文本和居中状态图标。 |
-| `CircleProgressTheme.axaml` | 圆形进度具体主题入口。 |
-| `DashboardProgressTheme.axaml` | 仪表盘进度具体主题入口。 |
+| `AbstractCircleProgressTheme.axaml` | 圆形家族共享 Token、Shape stroke 和居中状态图标 selector，不拥有 concrete Template。 |
+| `CircleProgressTheme.axaml` | 圆形进度 leaf Theme 和 concrete Template，拥有静态 Semantic marker。 |
+| `DashboardProgressTheme.axaml` | 仪表盘进度 leaf Theme 和 concrete Template，拥有静态 Semantic marker。 |
 
-视觉绘制由控件直接渲染完成：
+进度视觉由模板中的真实 Semantic target 承载，owner 继续负责全部值、尺寸和角度计算：
 
-- 线形进度绘制 groove、已完成段和可选成功段。
-- 步骤进度绘制固定数量 chunk，再按 `Percentage` 绘制已完成 chunk。
-- 圆形进度绘制完整圆或分段圆弧。
-- 仪表盘进度绘制带缺口的圆弧或分段圆弧。
-- 状态图标和百分比文本通过模板 part 布局，不参与进度几何绘制。
+- 普通线形 rail/track 由静态 `Border` target 表达，可选成功段保持内部 `Border` 附加层；`LineProgressPanel`
+  是这些盒视觉和 indicator 的唯一布局所有者。
+- 步骤进度按 `Steps` 创建 track `Rectangle` target，并根据 `Percentage` 切换每个 target 的 active/remaining Brush；steps 不公开 rail。
+- 圆形进度用静态 Shape 承载完整圆或组合分段圆弧。
+- 仪表盘进度用静态 Shape 承载带缺口的连续或组合分段圆弧。
+- 状态图标和百分比文本统一位于 indicator Panel 内，不参与进度几何计算。
 
 ProgressBarToken 提供默认进度色、剩余轨道色、圆形文字和图标最小尺寸、线形文本间距、线形内部 padding 和线形图标尺寸。状态色主要来自 SharedToken。
 
@@ -201,7 +202,8 @@ ProgressBar 不参与 Form 值提交，不实现选择、输入、弹出层或�
 
 维护 ProgressBar 时必须保持以下不变量：
 
-- 不修改 `ProgressBar`、`StepsProgressBar`、`CircleProgress`、`DashboardProgress` 的 public API、默认值、Template Part、伪类和 Token 名称。
+- 不修改 `ProgressBar`、`StepsProgressBar`、`CircleProgress`、`DashboardProgress` 的既有 public API、默认值、Template Part、伪类和 Token 名称。
+- 不删除或重命名四个 owner 的 `root`、`body`、`rail`、`track`、`indicator`，也不改变 selector route、ContractType 或 cardinality。
 - `Value`、`Minimum`、`Maximum` 必须继续遵循 `RangeBase` 语义。
 - `Percentage` 和所有绘制位置必须以 `(value - Minimum) / (Maximum - Minimum)` 为基准。
 - `IsIndeterminate` 不得写入或重置 `Value`。
@@ -248,34 +250,30 @@ ProgressBar 不参与 Form 值提交，不实现选择、输入、弹出层或�
 
 `DashboardProgress` 使用 `DashboardGapPosition` 和 `GapDegree` 计算绘制起始角和总跨度。`GapDegree` 被限制在 `[0, 295]`，保证仪表盘仍保留可见进度弧。
 
-## 9. 文档导航、LLMS 导出与验证策略
+### 8.5 Semantic Part
+
+`ProgressBar`、`StepsProgressBar`、`CircleProgress` 和 `DashboardProgress` 各自拥有独立 descriptor，并对齐上游 Progress
+语义结构的 `root`、`body`、`rail`、`track`、`indicator` 命名集：
+
+| Public owner | Part | 职责摘要 |
+| --- | --- | --- |
+| 四个 public owner | `root` | 对应控件实例，承载 public 状态、尺寸、颜色和样式作用域。 |
+| 四个 public owner | `body` | 承载进度几何与信息区域的稳定主体布局。 |
+| `ProgressBar`、`CircleProgress`、`DashboardProgress` | `rail` | 表达未完成轨道；官方 steps 模式不存在 rail。 |
+| 四个 public owner | `track` | 表达当前进度；Steps 的全部 runtime Rectangle 都属于 track。 |
+| 四个 public owner | `indicator` | 统一承载百分比、成功图标和异常图标的替代呈现。 |
+
+完整 Selector、Style Type、ContractType、数量语义、尺寸基线、官方 Gallery 映射与排除边界见
+[ProgressBar Semantic Part 契约](semantic-part.md)。
+
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [ProgressBar 桌面版实现原理](implementation.md)
+- [ProgressBar Semantic Part 契约](semantic-part.md)
 - [ProgressBar Token 设计](token.md)
 - [ProgressBar Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `ProgressBar` | 反馈控件根语义区域，承载 public API、反馈状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `host` | `宿主或弹层区域` | 承载 overlay、popup、portal、message host、drawer 或 modal 容器。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `surface` | `反馈表面` | 承载背景、边框、阴影、尺寸、placement 和视觉状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载标题、正文、图标、进度、结果、操作或关闭入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效区域` | 表达进入退出、loading、progress、skeleton 或水印刷新反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/progress-bar/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/progress-bar/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -283,7 +281,7 @@ LLMS 导出来源：
 | --- | --- |
 | Public API | 检查四个具体控件、控件文档 API 摘要和源码属性保持一致。 |
 | 行为状态 | 验证 RangeBase 值、`Percentage`、`IsIndeterminate`、completed、status、success threshold 和 disabled。 |
-| AXAML | 验证四类主题入口、template part、伪类 selector、状态图标和内嵌百分比布局。 |
+| AXAML | 验证四类主题入口、template part、Semantic marker、伪类 selector、状态图标和内嵌百分比布局。 |
 | Token | 验证 `ProgressBarTokenKind`、主题引用和 Token 类型、生成数据和 token.md 语义说明一致。 |
-| 渲染 | 验证水平、垂直、步骤、圆形、仪表盘、分段、线帽和渐变画刷。 |
+| 渲染 | 验证水平、垂直、步骤、圆形、仪表盘、分段、线帽、渐变画刷，以及线形 `Border`、步骤 `Rectangle`、圆形/仪表盘 `Shape` target。 |
 | 文档 | 运行 `git diff --check`，并检查控件文档相对链接存在。 |

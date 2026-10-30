@@ -49,7 +49,7 @@ public sealed class ControlTokenDescriptor
                 nameof(controlType));
         }
 
-        var ownTokenArray = ownTokens.OrderBy(static token => token.Slot).ToArray();
+        var ownTokenArray = OrderOwnTokens(ownTokens);
         if (ownTokenArray.Length == 0)
         {
             if (factory is not null || evaluator is not null)
@@ -67,6 +67,7 @@ public sealed class ControlTokenDescriptor
         }
 
         ControlType = controlType;
+        CompilationIdentity = new object();
         Identity    = identity;
         Slot        = slot;
         OwnTokens   = Array.AsReadOnly(ownTokenArray);
@@ -74,7 +75,20 @@ public sealed class ControlTokenDescriptor
         _evaluator  = evaluator;
     }
 
+    private ControlTokenDescriptor(ControlTokenDescriptor source, int slot)
+    {
+        ControlType = source.ControlType;
+        CompilationIdentity = source.CompilationIdentity;
+        Identity    = source.Identity;
+        Slot        = slot;
+        // Public construction already copied, ordered and sealed this metadata.
+        OwnTokens   = source.OwnTokens;
+        _factory    = source._factory;
+        _evaluator  = source._evaluator;
+    }
+
     public Type ControlType { get; }
+    internal object CompilationIdentity { get; }
     public ControlTokenIdentity Identity { get; }
     public int Slot { get; }
     public IReadOnlyList<TokenDescriptor> OwnTokens { get; }
@@ -95,13 +109,22 @@ public sealed class ControlTokenDescriptor
     internal ControlTokenDescriptor Bind(int slot)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
-        return new ControlTokenDescriptor(
-            ControlType,
-            Identity,
-            slot,
-            OwnTokens,
-            _factory,
-            _evaluator);
+        return new ControlTokenDescriptor(this, slot);
+    }
+
+    // Generated factories emit own Tokens slot-ascending (slot == emission index); the O(n) scan lets
+    // that input skip the OrderBy wrapper while unsorted public input keeps the stable-sort contract.
+    private static TokenDescriptor[] OrderOwnTokens(IEnumerable<TokenDescriptor> ownTokens)
+    {
+        var array = ownTokens.ToArray();
+        for (var index = 1; index < array.Length; index++)
+        {
+            if (array[index - 1].Slot > array[index].Slot)
+            {
+                return array.OrderBy(static token => token.Slot).ToArray();
+            }
+        }
+        return array;
     }
 
     internal bool TryGetOwnToken(

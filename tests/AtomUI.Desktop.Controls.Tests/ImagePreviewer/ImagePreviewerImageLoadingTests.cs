@@ -879,7 +879,8 @@ public class ImagePreviewerImageLoadingTests
 
             dialog.CurrentImage.ShouldBeNull();
             dialog.IsCurrentImageLoading.ShouldBeTrue();
-            var viewer = dialog.Content.ShouldBeOfType<ImageViewer>();
+            var viewer = dialog.Content.ShouldBeOfType<Panel>()
+                                  .Children.OfType<ImageViewer>().Single();
             viewer.Classes.Contains(":has-image").ShouldBeFalse();
             viewer.Classes.Contains(":loading").ShouldBeTrue();
 

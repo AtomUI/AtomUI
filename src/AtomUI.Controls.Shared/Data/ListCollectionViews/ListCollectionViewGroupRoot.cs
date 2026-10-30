@@ -20,7 +20,7 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
     /// <summary>
     /// Private accessor for the top level GroupDescription
     /// </summary>
-    private static IListGroupDescription? _topLevelGroupDescription;
+    private static IListGroupDescription? s_topLevelGroupDescription;
 
     /// <summary>
     /// Private accessor for an ObservableCollection containing group descriptions
@@ -96,9 +96,9 @@ internal class ListCollectionViewGroupRoot : ListCollectionViewGroupInternal, IN
     /// </summary>
     internal void Initialize()
     {
-        if (_topLevelGroupDescription == null)
+        if (s_topLevelGroupDescription == null)
         {
-            _topLevelGroupDescription = new TopLevelGroupDescription();
+            s_topLevelGroupDescription = new TopLevelGroupDescription();
         }
 
         InitializeGroup(this, 0, null);

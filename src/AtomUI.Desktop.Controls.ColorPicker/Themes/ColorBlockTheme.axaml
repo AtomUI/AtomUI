@@ -12,6 +12,7 @@
                             Background="{TemplateBinding TransparentBgBrush}"
                             IsVisible="{TemplateBinding IsEmptyColorMode, Converter={x:Static BoolConverters.Not}}">
                         <Border Name="PART_ColorPreview"
+                                Classes.semantic-content="True"
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
                                 BoxShadow="{atom:ColorPickerTokenResource ColorBlockInnerShadows}"/>

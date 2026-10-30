@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -51,6 +49,18 @@ public enum NumberUpDownShowCaseLangResourceKind
     P2TextRawValuePrefix,
     P2ContentKeyboardEnabled,
     ScenarioExamples,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticPrefixDescription,
+    SemanticInputDescription,
+    SemanticSuffixDescription,
+    SemanticClearDescription,
+    SemanticSpinnerRootDescription,
+    SemanticSpinnerPrefixDescription,
+    SemanticSpinnerInputDescription,
+    SemanticSpinnerSuffixDescription,
+    SemanticSpinnerClearDescription,
     PageSubtitle,
     PageDescription,
     ComponentCategory,

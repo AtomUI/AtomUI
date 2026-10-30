@@ -1,0 +1,95 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:gallery="https://atomui.net/toolkits/gallery-base"
+    x:Class="AtomUI.Toolkits.GalleryBase.Controls.SemanticPartPreviewInfoControl"
+    x:DataType="gallery:SemanticPartPreviewItem">
+    <Border Padding="16">
+        <StackPanel Spacing="14">
+            <atom:TextBlock Text="{gallery:SemanticPartPreviewLangResource PartDetailsTitle}"
+                            FontWeight="SemiBold" />
+            <Grid ColumnDefinitions="Auto,*"
+                  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                  ColumnSpacing="16"
+                  RowSpacing="8">
+                <atom:TextBlock Grid.Row="0"
+                                Grid.Column="0"
+                                Text="{gallery:SemanticPartPreviewLangResource SelectorLabel}"
+                                VerticalAlignment="Center"
+                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                <atom:TextBlock Grid.Row="0"
+                                Grid.Column="1"
+                                Text="{Binding Selector}"
+                                FontFamily="monospace"
+                                VerticalAlignment="Center"
+                                TextWrapping="Wrap" />
+
+                <atom:TextBlock Grid.Row="1"
+                                Grid.Column="0"
+                                Text="{gallery:SemanticPartPreviewLangResource SelectorRouteLabel}"
+                                VerticalAlignment="Center"
+                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                <atom:TextBlock Grid.Row="1"
+                                Grid.Column="1"
+                                Text="{Binding SelectorRoute}"
+                                FontFamily="monospace"
+                                VerticalAlignment="Center"
+                                TextWrapping="Wrap" />
+
+                <atom:TextBlock Grid.Row="2"
+                                Grid.Column="0"
+                                Text="{gallery:SemanticPartPreviewLangResource ContractTypeLabel}"
+                                VerticalAlignment="Center"
+                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                <atom:TextBlock Grid.Row="2"
+                                Grid.Column="1"
+                                Text="{Binding ContractType}"
+                                FontFamily="monospace"
+                                VerticalAlignment="Center"
+                                TextWrapping="Wrap" />
+
+                <atom:TextBlock Grid.Row="3"
+                                Grid.Column="0"
+                                Text="{gallery:SemanticPartPreviewLangResource StyleTypeLabel}"
+                                VerticalAlignment="Center"
+                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                <atom:TextBlock Grid.Row="3"
+                                Grid.Column="1"
+                                Text="{Binding StyleType}"
+                                FontFamily="monospace"
+                                VerticalAlignment="Center"
+                                TextWrapping="Wrap" />
+
+                <atom:TextBlock Grid.Row="4"
+                                Grid.Column="0"
+                                Text="{gallery:SemanticPartPreviewLangResource CardinalityLabel}"
+                                VerticalAlignment="Center"
+                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                <atom:TextBlock Grid.Row="4"
+                                Grid.Column="1"
+                                Text="{Binding Cardinality}"
+                                VerticalAlignment="Center" />
+
+                <atom:TextBlock Grid.Row="5"
+                                Grid.Column="0"
+                                Text="{gallery:SemanticPartPreviewLangResource CustomizationLabel}"
+                                VerticalAlignment="Center"
+                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                <atom:TextBlock Grid.Row="5"
+                                Grid.Column="1"
+                                Text="{Binding Customization}"
+                                VerticalAlignment="Center" />
+            </Grid>
+
+            <WrapPanel ItemSpacing="6"
+                       LineSpacing="6">
+                <atom:Tag Text="{gallery:SemanticPartPreviewLangResource CrossRootTag}"
+                          IsVisible="{Binding IsCrossRoot}" />
+                <atom:Tag Text="{gallery:SemanticPartPreviewLangResource RuntimeCreatedTag}"
+                          IsVisible="{Binding IsRuntimeCreated}" />
+            </WrapPanel>
+
+        </StackPanel>
+    </Border>
+</UserControl>

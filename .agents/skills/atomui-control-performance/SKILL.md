@@ -258,7 +258,7 @@ The following model records implementation evidence used to form and falsify per
 
 | Topic | Verified behavior | Source | Implication |
 | --- | --- | --- | --- |
-| `Animatable.Transitions` activation | `EnableTransitions()` is called on `OnAttachedToVisualTree`. Until then, `CollectionChanged` is not subscribed and value changes don't run transitions. | `Avalonia.Base/Animation/Animatable.cs:62-103`, `:87-103` | Setting `Transitions` in constructor is fine. Initial-value setup before attach won't animate; explicit `DisableTransitions` / `EnableTransitions` brackets are still required when you set values during initialization mid-tree. |
+| `Animatable.Transitions` activation | `EnableTransitions()` is called on `OnAttachedToVisualTree`. Until then, `CollectionChanged` is not subscribed and value changes don't run transitions. | `Avalonia.Base/Animation/Animatable.cs:62-103`, `:87-103` | Pre-attach writes normally do not animate. Attached-tree initialization uses owner-held `TransitionInitializationSession` suppression acquired before attachment; template targets opt in during construction. Follow the [state motion contract](../../../docs/architecture/systems/control-infrastructure/transition-initialization.md), not private reflection toggles or queued readiness. |
 
 ---
 
@@ -680,7 +680,7 @@ Before writing any C# code that creates / subscribes / captures, list the pair u
 | `pointer.Capture(this);` | `pointer.Capture(null);` | The terminating gesture event (`PointerReleased`, `PointerCaptureLost`). Never on a timer. |
 | `_timer = new DispatcherTimer(...); _timer.Tick += ...; _timer.Start();` | `_timer.Stop(); _timer.Tick -= ...; _timer = null;` | `OnDetachedFromVisualTree` AND any explicit "stop" path. |
 | `_topLevel.Deactivated += ...;` (any TopLevel / Window-scoped subscription) | matching `-=` | `OnDetachedFromVisualTree`. The TopLevel can outlive the control by far. |
-| `EnableTransitions();` | `DisableTransitions();` | Around any block that mutates animatable properties before attach. Must be paired even if the mutation throws — use `try/finally`. |
+| `TransitionInitializationSession` / `TransitionSuppressionScope` | Commit a complete loaded baseline / dispose the owned override | Acquire before initial attached-tree writes; reset before detach, template replacement or container cleanup. Runtime snapping uses a separate `using` scope; restore the latest underlying collection and bindings. |
 | `_popupHost.Open();` | `_popupHost.Close();` | Detach, re-template, or explicit close. The popup host is a separate visual root and will not auto-close on owner detach unless told. |
 
 ### Required practice
@@ -719,7 +719,7 @@ rg "_[a-z]\\w+Disposables\\b" --type cs src/
 # SetTemplatedParent(this) calls — each should have a matching SetTemplatedParent(null)
 rg "SetTemplatedParent\\(this\\)" --type cs src/
 
-# DisableTransitions/EnableTransitions pairing
+# Legacy private toggles: classify process exceptions; do not copy into new state targets
 rg "DisableTransitions\\(\\)|EnableTransitions" --type cs src/
 ```
 
@@ -778,7 +778,7 @@ Do not report "assumed" cost savings. Every cost claim must include:
 ## Style & Best Practice
 
 - Reuse `AtomUI.Utils.MathUtils` (`AreClose`, `IsZero`, `GreaterThan`, `LessThanOrClose`, etc.) for floating-point comparison, epsilon checks, zero/one checks, ordering with tolerance, angle conversion, fixed-point rounding. Do not introduce hand-written `Math.Abs(...) < eps`, new epsilon constants, or duplicate helpers.
-- `Dispatcher.Post(this.EnableTransitions);` — method-group form. Do not wrap in lambda.
+- State initialization follows [the shared architecture](../../../docs/architecture/systems/control-infrastructure/transition-initialization.md): identify actual targets and complete baselines; do not use `Dispatcher.Post` to guess readiness. Keep `Transitions` in ControlTheme style setters. Test real parent/container preparation, remount and the first subsequent change; standalone preselected containers cannot prove initialization correctness. Loading, progress and explicit entrance animations retain separate contracts.
 - Never `Debug.Assert(value != null)` immediately followed by a nullable guard for the same value. Express the invariant in the type, helper return value, or use a real runtime guard with explicit recovery.
 - Remove unused `using` directives introduced by the change.
 - Prefer no API change. AtomUI has no formal release yet; API changes need explicit justification.

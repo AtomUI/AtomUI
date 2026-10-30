@@ -109,6 +109,36 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with block display, overflow hidden, border radius, height, padding, transition animations and other switch content area layout and styles</source>
+        <target state="translated">Content element com block display, overflow hidden, border radius, height, padding, transition animations e outros switch content area layout e styles</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorDescription">
+      <segment>
+        <source>Indicator element with absolute positioning, width, height, background color, border radius, shadow, transition animations and other switch handle styles and interactive effects</source>
+        <target state="translated">Indicator element com absolute positioning, width, height, background color, border radius, shadow, transition animations e outros switch handle styles e interactive effects</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and ToggleSwitch property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">Use owner-scoped selectors e ToggleSwitch property selectors para customize o published Semantic Parts.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with min-width, height, line-height, vertical alignment, background color, border, border radius, cursor style, transition animations, user selection and other basic switch container styles</source>
+        <target state="translated">Root element com min-width, height, line-height, vertical alignment, background color, border, border radius, cursor style, transition animations, user selection e outros basic switch container styles</target>
+      </segment>
+    </unit>
     <unit id="TextAndIconDescription">
       <segment>
         <source>With text and icon.</source>

@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Rendering;
 
 namespace AtomUI.Desktop.Controls;
@@ -35,7 +36,15 @@ internal class TabScrollContentPresenter : ScrollContentPresenter, ICustomHitTes
             if (TabStripPlacement == Dock.Top || TabStripPlacement == Dock.Bottom)
             {
                 // Horizontal tabs prefer horizontal delta, fall back to vertical delta when horizontal is zero
-                var dx = delta.X != 0 ? delta.X : delta.Y;
+                var dx = delta.X;
+                if (dx == 0)
+                {
+                    dx = delta.Y;
+                }
+                else if (FlowDirection == FlowDirection.RightToLeft)
+                {
+                    dx = -dx;
+                }
                 delta  = new Vector(dx, 0);
             }
             else

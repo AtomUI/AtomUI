@@ -7,7 +7,7 @@ public class DatePickerDateRangeConstraintTests
 {
     [Theory]
     [InlineData(DatePickerMode.Date, 2026, 7, 15, 2026, 10, 31)]
-    [InlineData(DatePickerMode.Week, 2026, 7, 13, 2026, 10, 26)]
+    [InlineData(DatePickerMode.Week, 2026, 7, 12, 2026, 10, 25)]
     [InlineData(DatePickerMode.Month, 2026, 7, 1, 2026, 10, 1)]
     [InlineData(DatePickerMode.Quarter, 2026, 7, 1, 2026, 10, 1)]
     [InlineData(DatePickerMode.Year, 2026, 1, 1, 2026, 1, 1)]

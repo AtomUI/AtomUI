@@ -494,8 +494,8 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
             }
         }
   
-        newDisplayValue = Math.Min(double.MaxValue, newValue);
-        newWidth        = new DataGridLength(newDisplayValue, newUnitType, newDesiredValue, newDisplayValue);
+        newValue = Math.Min(double.MaxValue, newValue);
+        newWidth = new DataGridLength(newValue, newUnitType, newDesiredValue, newDisplayValue);
         SetWidthInternalNoCallback(newWidth);
         // TODO 不知道为什么如果这里不强制通知会造成 Header 的分割线渲染宽度丢失
         // newWidth != oldWidth 命名加上了这个，不知道为啥

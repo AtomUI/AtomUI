@@ -10,6 +10,10 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets/**/*.*"/>
+        <AtomUIThemeDefinition Include="Assets/Themes/PolarGreen.theme.xml" />
+        <AtomUIThemeDefinition Include="Assets/Themes/SunsetOrange.theme.xml" />
+        <AtomUIThemeDefinition Include="Assets/Themes/GoldenPurple.theme.xml" />
+        <AtomUIThemeDefinition Include="Assets/Themes/Magenta.theme.xml" />
         <GallerySourceCodeDisplaySource Include="ShowCases/**/*.axaml" />
         <GallerySourceCodeDisplaySource Include="ShowCases/**/*.axaml.cs" />
         <GallerySourceCodeDisplaySource Include="ShowCases/**/ViewModels/**/*.cs" />

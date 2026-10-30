@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AtomUI.Reflection;
 using Avalonia.Controls;
@@ -8,11 +7,12 @@ namespace AtomUI.Controls;
 internal static class ItemCollectionReflectionExtensions
 {
     #region 反射信息定义
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicEvents, typeof(ItemCollection))]
-    private static readonly Lazy<MethodInfo> SourceChangedAddMethodInfo = new Lazy<MethodInfo>(() =>
+    private static readonly Lazy<MethodInfo> SourceChangedAddMethodInfo = new(() =>
     {
-        var eventInfo = typeof(ItemCollection).GetEventInfoOrThrow("SourceChanged",
-            BindingFlags.Instance | BindingFlags.NonPublic);
+        var eventInfo = FixedMemberReflection.RequireEvent(
+            typeof(ItemCollection).GetEvent("SourceChanged", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(ItemCollection),
+            "SourceChanged");
         // 获取 add 方法（true 表示允许获取非公共方法）
         var addMethod = eventInfo.GetAddMethod(true);
         if (addMethod == null)

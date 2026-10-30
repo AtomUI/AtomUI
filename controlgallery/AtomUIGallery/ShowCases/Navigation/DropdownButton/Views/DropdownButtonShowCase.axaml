@@ -8,8 +8,8 @@
              x:DataType="vm:DropdownButtonViewModel"
              x:CompileBindings="True">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="DropdownButton"
                     Category="{gallery:DropdownButtonShowCaseLangResource ComponentCategory}"
@@ -19,7 +19,61 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="Button" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:DropdownButtonViewModel">
+                    <gallery:SemanticPartPreview Name="DropdownButtonSemanticPreview"
+                                                 Title="DropdownButton"
+                                                 Loaded="HandleSemanticPreviewLoaded"
+                                                 Unloaded="HandleSemanticPreviewUnloaded"
+                                                 SemanticOwner="{Binding #DropdownButtonSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:DropdownButton}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:DropdownButton Name="DropdownButtonSemanticOwner"
+                                                 ButtonType="Link"
+                                                 TriggerType="Hover"
+                                                 Content="{gallery:DropdownButtonShowCaseLangResource P2ContentHoverMe}"
+                                                 IsMotionEnabled="False"
+                                                 IsPopupPinnedOpen="True">
+                                <atom:DropdownButton.DropdownFlyout>
+                                    <atom:MenuFlyout>
+                                        <atom:MenuItemGroup Header="{gallery:DropdownButtonShowCaseLangResource SemanticPreviewGroupTitle}">
+                                            <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource SemanticPreviewFirstMenuItem}"
+                                                           Icon="{antdicons:AntDesignIconProvider Kind=SaveOutlined}" />
+                                            <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource SemanticPreviewSecondMenuItem}"
+                                                           Icon="{antdicons:AntDesignIconProvider Kind=EditOutlined}" />
+                                        </atom:MenuItemGroup>
+                                        <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource SemanticPreviewSubMenu}"
+                                                       IsSubMenuOpen="True">
+                                            <atom:MenuItemGroup Header="{gallery:DropdownButtonShowCaseLangResource SemanticPreviewItem1}">
+                                                <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource SemanticPreviewOption1}" />
+                                                <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource SemanticPreviewOption2}" />
+                                            </atom:MenuItemGroup>
+                                        </atom:MenuItem>
+                                        <atom:MenuSeparator />
+                                        <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource P2HeaderDelete}"
+                                                       Foreground="{atom:SharedTokenResource ColorError}"
+                                                       Icon="{antdicons:AntDesignIconProvider Kind=DeleteOutlined}" />
+                                    </atom:MenuFlyout>
+                                </atom:DropdownButton.DropdownFlyout>
+                            </atom:DropdownButton>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription Path="popup.root"
+                                Description="{gallery:DropdownButtonShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription Path="itemTitle"
+                                Description="{gallery:DropdownButtonShowCaseLangResource SemanticItemTitleDescription}" />
+                            <gallery:SemanticPartDescription Path="item"
+                                Description="{gallery:DropdownButtonShowCaseLangResource SemanticItemDescription}" />
+                            <gallery:SemanticPartDescription Path="itemContent"
+                                Description="{gallery:DropdownButtonShowCaseLangResource SemanticItemContentDescription}" />
+                            <gallery:SemanticPartDescription Path="itemIcon"
+                                Description="{gallery:DropdownButtonShowCaseLangResource SemanticItemIconDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -412,7 +466,79 @@
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
 
+    <gallery:ShowCaseItem
+        Title="{gallery:DropdownButtonShowCaseLangResource SemanticStylesTitle}"
+        Description="{gallery:DropdownButtonShowCaseLangResource SemanticStylesDescription}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:DropdownButtonViewModel">
+                <StackPanel Spacing="24">
+                    <atom:DropdownButton Classes="semantic-object-style-demo"
+                                         IsPopupMatchSelectWidth="True"
+                                         Content="{gallery:DropdownButtonShowCaseLangResource SemanticStylesObjectButton}">
+                        <atom:DropdownButton.DropdownFlyout>
+                            <atom:MenuFlyout>
+                                <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource SemanticStylesItemProfile}" />
+                                <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource SemanticStylesItemSettings}"
+                                               Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}" />
+                                <atom:MenuSeparator />
+                                <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource SemanticStylesItemLogout}"
+                                               Foreground="{atom:SharedTokenResource ColorError}"
+                                               Icon="{antdicons:AntDesignIconProvider Kind=LogoutOutlined}" />
+                            </atom:MenuFlyout>
+                        </atom:DropdownButton.DropdownFlyout>
+                        <atom:DropdownButton.Styles>
+                            <Style Selector="atom|DropdownButton.semantic-object-style-demo">
+                                <atom:DropdownButtonPopupRootStyle x:SetterTargetType="atom:ArrowDecoratedBox">
+                                    <Setter Property="BorderBrush" Value="#d9d9d9" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                    <Setter Property="CornerRadius" Value="4" />
+                                </atom:DropdownButtonPopupRootStyle>
+                                <atom:DropdownButtonItemStyle x:SetterTargetType="atom:MenuItem">
+                                    <Setter Property="Foreground" Value="#1677ff" />
+                                </atom:DropdownButtonItemStyle>
+                                <atom:DropdownButtonItemIconStyle x:SetterTargetType="atom:IconPresenter">
+                                    <Setter Property="Opacity" Value="0.6" />
+                                </atom:DropdownButtonItemIconStyle>
+                                <atom:DropdownButtonItemContentStyle x:SetterTargetType="ContentPresenter">
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                </atom:DropdownButtonItemContentStyle>
+                            </Style>
+                        </atom:DropdownButton.Styles>
+                    </atom:DropdownButton>
+
+                    <atom:DropdownButton Classes="semantic-function-style-demo"
+                                         ButtonType="Primary"
+                                         TriggerType="Click"
+                                         IsPopupMatchSelectWidth="True"
+                                         Content="{gallery:DropdownButtonShowCaseLangResource SemanticStylesFunctionButton}">
+                        <atom:DropdownButton.DropdownFlyout>
+                            <atom:MenuFlyout>
+                                <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource SemanticStylesItemProfile}" />
+                                <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource SemanticStylesItemSettings}"
+                                               Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}" />
+                                <atom:MenuSeparator />
+                                <atom:MenuItem Header="{gallery:DropdownButtonShowCaseLangResource SemanticStylesItemLogout}"
+                                               Foreground="{atom:SharedTokenResource ColorError}"
+                                               Icon="{antdicons:AntDesignIconProvider Kind=LogoutOutlined}" />
+                            </atom:MenuFlyout>
+                        </atom:DropdownButton.DropdownFlyout>
+                        <atom:DropdownButton.Styles>
+                            <Style Selector="atom|DropdownButton.semantic-function-style-demo">
+                                <atom:DropdownButtonPopupRootStyle x:SetterTargetType="atom:ArrowDecoratedBox">
+                                    <Setter Property="BorderBrush" Value="#1890ff" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                    <Setter Property="CornerRadius" Value="8" />
+                                </atom:DropdownButtonPopupRootStyle>
+                            </Style>
+                        </atom:DropdownButton.Styles>
+                    </atom:DropdownButton>
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

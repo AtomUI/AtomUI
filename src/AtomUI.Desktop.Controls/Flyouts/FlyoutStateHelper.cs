@@ -400,8 +400,13 @@ internal class FlyoutStateHelper : AvaloniaObject
         var anchor = AnchorTarget!;
         anchor.AddHandler(InputElement.PointerPressedEvent, HandleClickModePointerPressed,
             handledEventsToo: true);
+        anchor.AddHandler(InputElement.KeyDownEvent, HandleClickModeKeyDown,
+            handledEventsToo: true);
         _subscriptions!.Add(Disposable.Create(() =>
-            anchor.RemoveHandler(InputElement.PointerPressedEvent, HandleClickModePointerPressed)));
+        {
+            anchor.RemoveHandler(InputElement.PointerPressedEvent, HandleClickModePointerPressed);
+            anchor.RemoveHandler(InputElement.KeyDownEvent, HandleClickModeKeyDown);
+        }));
     }
 
     private void HandleClickModePointerPressed(object? sender, PointerPressedEventArgs e)
@@ -411,6 +416,24 @@ internal class FlyoutStateHelper : AvaloniaObject
             return;
         }
 
+        ToggleClickModeFlyout();
+    }
+
+    private void HandleClickModeKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key is not (Key.Enter or Key.Space) ||
+            !IsAnchorReady ||
+            !IsAnchorKeyboardFocused())
+        {
+            return;
+        }
+
+        ToggleClickModeFlyout();
+        e.Handled = true;
+    }
+
+    private void ToggleClickModeFlyout()
+    {
         if (Flyout!.IsOpen)
         {
             HideFlyout(immediately: true);
@@ -419,6 +442,17 @@ internal class FlyoutStateHelper : AvaloniaObject
         {
             ShowFlyout(immediately: true);
         }
+    }
+
+    private bool IsAnchorKeyboardFocused()
+    {
+        if (AnchorTarget is null)
+        {
+            return false;
+        }
+
+        var topLevel = TopLevel.GetTopLevel(AnchorTarget);
+        return ReferenceEquals(topLevel?.FocusManager?.GetFocusedElement(), AnchorTarget);
     }
 
     #endregion

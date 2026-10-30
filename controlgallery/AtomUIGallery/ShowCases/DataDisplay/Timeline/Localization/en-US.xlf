@@ -81,6 +81,11 @@
         <source>AtomUI Officially Initiated</source>
       </segment>
     </unit>
+    <unit id="P2ContentCreateAServices">
+      <segment>
+        <source>Create a services</source>
+      </segment>
+    </unit>
     <unit id="P2ContentCreateAServicesSite">
       <segment>
         <source>Create a services site</source>
@@ -136,9 +141,19 @@
         <source>Recording...</source>
       </segment>
     </unit>
+    <unit id="P2ContentSolveInitialNetworkProblems">
+      <segment>
+        <source>Solve initial network problems</source>
+      </segment>
+    </unit>
     <unit id="P2ContentStart">
       <segment>
         <source>Start</source>
+      </segment>
+    </unit>
+    <unit id="P2ContentTechnicalTesting">
+      <segment>
+        <source>Technical testing</source>
       </segment>
     </unit>
     <unit id="P2ContentToggleReverse">
@@ -159,6 +174,106 @@
     <unit id="ScenarioExamples">
       <segment>
         <source>Examples</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Timeline's published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemContentDescription">
+      <segment>
+        <source>Content area of the node presented beside the axis</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemDescription">
+      <segment>
+        <source>Each timeline node container projected from the items collection</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemHeaderDescription">
+      <segment>
+        <source>Header column grouping the title text of the node</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemIconDescription">
+      <segment>
+        <source>Icon area of the node masking the rail and replacing the built-in dot</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemRailDescription">
+      <segment>
+        <source>Rail line running along the axis, clipped at the node center</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemSectionDescription">
+      <segment>
+        <source>Section pairing the header with the content around the axis</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemTitleDescription">
+      <segment>
+        <source>Title text of the node rendered inside the header</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemWrapperDescription">
+      <segment>
+        <source>Item wrapper filling the item template and hosting the section</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsContentDescription">
+      <segment>
+        <source>Item content element</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsHeaderDescription">
+      <segment>
+        <source>Item header element</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsIconDescription">
+      <segment>
+        <source>Item icon element</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsItemDescription">
+      <segment>
+        <source>Item element</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsRailDescription">
+      <segment>
+        <source>Item rail element</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsRootDescription">
+      <segment>
+        <source>Root element</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsSectionDescription">
+      <segment>
+        <source>Item section element</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsTitleDescription">
+      <segment>
+        <source>Item title element</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsWrapperDescription">
+      <segment>
+        <source>Item wrapper element</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineRootDescription">
+      <segment>
+        <source>Root element of the timeline owning the item collection, orientation, mode, pending and reverse state</source>
       </segment>
     </unit>
   </file>

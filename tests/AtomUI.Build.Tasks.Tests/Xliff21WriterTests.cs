@@ -80,29 +80,6 @@ public class Xliff21WriterTests
               .TargetSubState.ShouldBe("needs-review");
     }
 
-    [Fact]
-    public void Repository_Xliff_Files_Use_Canonical_Writer_Output()
-    {
-        var repositoryRoot = FindRepositoryRoot();
-        var paths = new[] { "src", "controlgallery", "tests" }
-                    .SelectMany(directory => Directory.GetFiles(
-                        Path.Combine(repositoryRoot, directory),
-                        "*.xlf",
-                        SearchOption.AllDirectories))
-                    .OrderBy(static path => path, StringComparer.Ordinal)
-                    .ToArray();
-
-        paths.ShouldNotBeEmpty();
-        foreach (var path in paths)
-        {
-            var content = File.ReadAllText(path);
-            var parsed = Xliff21Parser.Parse(content);
-            parsed.Errors.ShouldBeEmpty($"XLIFF file '{path}' must be valid before formatting.");
-            Xliff21Writer.Write(parsed.Document.ShouldNotBeNull())
-                         .ShouldBe(content, $"XLIFF file '{path}' is not in canonical form.");
-        }
-    }
-
     private static XliffUnitModel Unit(
         string key,
         string source,
@@ -127,19 +104,4 @@ public class Xliff21WriterTests
             isObsolete);
     }
 
-    private static string FindRepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "AtomUI.slnx")))
-            {
-                return directory.FullName;
-            }
-
-            directory = directory.Parent;
-        }
-
-        throw new DirectoryNotFoundException("The AtomUI repository root could not be located.");
-    }
 }

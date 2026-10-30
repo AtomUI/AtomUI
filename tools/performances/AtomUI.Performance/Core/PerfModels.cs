@@ -88,7 +88,7 @@ internal sealed record TreeStats(
     double CardTabsContentPerRoot,
     double CollapsePerRoot,
     double CollapseItemPerRoot,
-    double CollapseContentMotionActorPerRoot,
+    double CollapseContentViewportPerRoot,
     double CollapseExpandButtonPerRoot,
     double CollapseAddOnPresenterPerRoot,
     double CarouselPerRoot,
@@ -144,7 +144,7 @@ internal sealed record TreeStats(
     double DotBadgeAdornerPerRoot,
     double RibbonBadgeAdornerPerRoot,
     double DotBadgeIndicatorPerRoot,
-    double MotionActorPerRoot,
+    double MotionTargetPerRoot,
     double LabelPerRoot,
     double FloatButtonHostPerRoot,
     double FloatButtonGroupHostPerRoot,
@@ -236,7 +236,7 @@ internal sealed record TreeStats(
         var cardTabsContentCount             = 0;
         var collapseCount                    = 0;
         var collapseItemCount                = 0;
-        var collapseContentMotionActorCount  = 0;
+        var collapseContentViewportCount  = 0;
         var collapseExpandButtonCount        = 0;
         var collapseAddOnPresenterCount      = 0;
         var carouselCount                    = 0;
@@ -292,7 +292,7 @@ internal sealed record TreeStats(
         var dotBadgeAdornerCount        = 0;
         var ribbonBadgeAdornerCount     = 0;
         var dotBadgeIndicatorCount      = 0;
-        var motionActorCount            = 0;
+        var motionTargetCount            = 0;
         var labelCount                  = 0;
         var floatButtonHostCount        = 0;
         var floatButtonGroupHostCount   = 0;
@@ -500,11 +500,11 @@ internal sealed record TreeStats(
                 {
                     collapseItemCount++;
                 }
-                if (visual is Control { Name: "PART_ContentMotionActor" } contentMotionActor &&
-                    contentMotionActor.GetVisualAncestors().Any(ancestor =>
+                if (visual is Control { Name: "PART_ContentViewport" } contentViewport &&
+                    contentViewport.GetVisualAncestors().Any(ancestor =>
                         IsTypeOrDerived(ancestor.GetType(), "AtomUI.Desktop.Controls.CollapseItem")))
                 {
-                    collapseContentMotionActorCount++;
+                    collapseContentViewportCount++;
                 }
                 if (visual is Control { Name: "PART_ExpandButton" } expandButton &&
                     expandButton.GetVisualAncestors().Any(ancestor =>
@@ -628,9 +628,14 @@ internal sealed record TreeStats(
                 {
                     dotBadgeIndicatorCount++;
                 }
-                if (IsTypeOrDerived(type, "AtomUI.MotionScene.BaseMotionActor"))
+                if (visual is Control motionTarget &&
+                    (IsTypeOrDerived(type, "AtomUI.Controls.Primitives.ContentViewport") ||
+                     motionTarget.Name is "PART_SurfaceMotionRoot" or "PART_Surface" or "PART_MenuSurface" or
+                         "PART_VisibilityRoot" or "PART_PopupSurface" or "PART_IndicatorSurface" ||
+                     (motionTarget.Name is "Frame" or "PART_Frame" &&
+                      motionTarget.GetVisualParent()?.GetType().Name is "MessageCard" or "NotificationCard")))
                 {
-                    motionActorCount++;
+                    motionTargetCount++;
                 }
                 if (visual is Label)
                 {
@@ -991,7 +996,7 @@ internal sealed record TreeStats(
             cardTabsContentCount / (double)rootCount,
             collapseCount / (double)rootCount,
             collapseItemCount / (double)rootCount,
-            collapseContentMotionActorCount / (double)rootCount,
+            collapseContentViewportCount / (double)rootCount,
             collapseExpandButtonCount / (double)rootCount,
             collapseAddOnPresenterCount / (double)rootCount,
             carouselCount / (double)rootCount,
@@ -1047,7 +1052,7 @@ internal sealed record TreeStats(
             dotBadgeAdornerCount / (double)rootCount,
             ribbonBadgeAdornerCount / (double)rootCount,
             dotBadgeIndicatorCount / (double)rootCount,
-            motionActorCount / (double)rootCount,
+            motionTargetCount / (double)rootCount,
             labelCount / (double)rootCount,
             floatButtonHostCount / (double)rootCount,
             floatButtonGroupHostCount / (double)rootCount,

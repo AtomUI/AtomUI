@@ -36,25 +36,27 @@ public static class TestAppBuilder
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder.Configure<TestApplication>()
-                         .UseHeadless(new AvaloniaHeadlessPlatformOptions());
+                         .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                         .UseAtomUI(builder => builder.UseDesktopControls()
+                                                      .UseImageLoading(options =>
+                                                      {
+                                                          options.MaxConcurrentDownloads = 1;
+                                                          options.MaxConcurrentLocalReads = 1;
+                                                          options.MaxConcurrentDecodes = 1;
+                                                      })
+                                                      .UseDesktopColorPicker()
+                                                      .UseDesktopExtras()
+                                                      .UseLanguages(
+                                                          LanguageTags.EnUS,
+                                                          [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]));
     }
 }
 
 internal sealed class TestApplication : Application
 {
-    public override void Initialize()
+    public override void RegisterServices()
     {
-        this.UseAtomUI(builder => builder.UseDesktopControls()
-                                         .UseImageLoading(options =>
-                                         {
-                                             options.MaxConcurrentDownloads = 1;
-                                             options.MaxConcurrentLocalReads = 1;
-                                             options.MaxConcurrentDecodes = 1;
-                                         })
-                                         .UseDesktopColorPicker()
-                                         .UseDesktopExtras()
-                                         .UseLanguages(
-                                             LanguageTags.EnUS,
-                                             [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]));
+        base.RegisterServices();
+        ApplicationStartup.Attach(this);
     }
 }

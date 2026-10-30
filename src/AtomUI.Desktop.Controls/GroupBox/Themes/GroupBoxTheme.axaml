@@ -12,14 +12,20 @@
                     <DockPanel LastChildFill="True">
                         <Panel Name="PART_HeaderContainer"
                                DockPanel.Dock="Top">
-                            <Decorator Name="PART_HeaderContent"
-                                       VerticalAlignment="Center">
+                            <!-- Border（而非 Decorator）用于承载 Semantic Part header：
+                                 Decorator 没有 Background，无法满足“给标题区域一个背景”的定制诉求。
+                                 Border 继承 Decorator，PART_HeaderContent 的查找路径与缺口 Bounds 语义不变。 -->
+                            <Border Name="PART_HeaderContent"
+                                    Classes.semantic-header="True"
+                                    VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <atom:IconPresenter
                                         Name="PART_HeaderIconPresenter"
+                                        Classes.semantic-icon="True"
                                         IsVisible="{TemplateBinding HeaderIcon, Converter={x:Static ObjectConverters.IsNotNull}}"
                                         Icon="{TemplateBinding HeaderIcon}" />
                                     <atom:TextBlock Name="PART_HeaderPresenter"
+                                                    Classes.semantic-title="True"
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Center"
                                                     Text="{TemplateBinding HeaderTitle}"
@@ -28,10 +34,11 @@
                                                     FontStyle="{TemplateBinding HeaderFontStyle}"
                                                     FontWeight="{TemplateBinding HeaderFontWeight}" />
                                 </StackPanel>
-                            </Decorator>
+                            </Border>
                         </Panel>
 
                         <ContentPresenter Name="PART_ContentPresenter"
+                                          Classes.semantic-content="True"
                                           Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}"
                                           Margin="{TemplateBinding Padding}"/>
@@ -51,7 +58,7 @@
             <Setter Property="Margin" Value="{atom:GroupBoxTokenResource HeaderContainerMargin}" />
         </Style>
 
-        <Style Selector="^ /template/ Decorator#PART_HeaderContent">
+        <Style Selector="^ /template/ Border#PART_HeaderContent">
             <Setter Property="Padding" Value="{atom:GroupBoxTokenResource HeaderContentPadding}" />
         </Style>
 
@@ -66,19 +73,19 @@
         <Setter Property="Padding" Value="{atom:GroupBoxTokenResource ContentPadding}" />
 
         <Style Selector="^[HeaderTitlePosition=Left]">
-            <Style Selector="^ /template/ Decorator#PART_HeaderContent">
+            <Style Selector="^ /template/ Border#PART_HeaderContent">
                 <Setter Property="HorizontalAlignment" Value="Left" />
             </Style>
         </Style>
 
         <Style Selector="^[HeaderTitlePosition=Center]">
-            <Style Selector="^ /template/ Decorator#PART_HeaderContent">
+            <Style Selector="^ /template/ Border#PART_HeaderContent">
                 <Setter Property="HorizontalAlignment" Value="Center" />
             </Style>
         </Style>
 
         <Style Selector="^[HeaderTitlePosition=Right]">
-            <Style Selector="^ /template/ Decorator#PART_HeaderContent">
+            <Style Selector="^ /template/ Border#PART_HeaderContent">
                 <Setter Property="HorizontalAlignment" Value="Right" />
             </Style>
         </Style>

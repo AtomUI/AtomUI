@@ -1,9 +1,10 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using AtomUI.Desktop.Controls;
 using AtomUI.Desktop.Controls.Tests.DataGrid.Data.Source;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Threading;
@@ -93,6 +94,322 @@ public class DataGridPagingGroupingTests
             Complete(source, 1, totalDataCount: 100, "s2");
             PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
             Paginations(grid).ShouldAllBe(control => control.CurrentPage == 4);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void IsShowPageSizeSelector_Forwards_To_Both_Pagination_Parts()
+    {
+        var source = Source();
+        var grid = Grid(source, new DataGridPageRequest(0, 10));
+        var window = Show(grid);
+        try
+        {
+            grid.IsShowPageSizeSelector.ShouldBeTrue();
+            Paginations(grid).ShouldAllBe(control => control.IsShowSizeChanger);
+
+            grid.IsShowPageSizeSelector = false;
+            Dispatcher.UIThread.RunJobs();
+            Paginations(grid).ShouldAllBe(control => !control.IsShowSizeChanger);
+
+            grid.IsShowPageSizeSelector = true;
+            Dispatcher.UIThread.RunJobs();
+            Paginations(grid).ShouldAllBe(control => control.IsShowSizeChanger);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void Pagination_ExtraContent_Uses_Opposite_Sides_For_Start_And_End()
+    {
+        var source = Source();
+        var grid = Grid(source, new DataGridPageRequest(0, 10));
+        grid.PaginationVisibility = DataGridPaginationVisibility.All;
+        grid.TopPaginationAlign = PaginationAlign.Start;
+        grid.BottomPaginationAlign = PaginationAlign.End;
+        grid.TopPaginationExtraContent = new Button { Content = "top" };
+        grid.BottomPaginationExtraContent = new Button { Content = "bottom" };
+
+        var window = Show(grid);
+        try
+        {
+            Complete(source, 0, totalDataCount: 100, "s1");
+            PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
+            var topPanel = grid.GetVisualDescendants()
+                               .OfType<DockPanel>()
+                               .Single(control => control.Name == "PART_TopPaginationPanel");
+            var bottomPanel = grid.GetVisualDescendants()
+                                  .OfType<DockPanel>()
+                                  .Single(control => control.Name == "PART_BottomPaginationPanel");
+            var topExtra = topPanel.Children.OfType<ContentPresenter>()
+                                  .Single(control => control.Name == "PART_TopPaginationExtraContentPresenter");
+            var bottomExtra = bottomPanel.Children.OfType<ContentPresenter>()
+                                        .Single(control => control.Name == "PART_BottomPaginationExtraContentPresenter");
+            var topPagination = topPanel.Children.OfType<Pagination>().Single();
+            var bottomPagination = bottomPanel.Children.OfType<Pagination>().Single();
+
+            DockPanel.GetDock(topExtra).ShouldBe(Dock.Right);
+            DockPanel.GetDock(bottomExtra).ShouldBe(Dock.Left);
+            topPanel.Margin.Left.ShouldBeGreaterThan(0);
+            topPanel.Margin.Right.ShouldBeGreaterThan(0);
+            bottomPanel.Margin.Left.ShouldBeGreaterThan(0);
+            bottomPanel.Margin.Right.ShouldBeGreaterThan(0);
+            topExtra.Bounds.X.ShouldBeGreaterThan(topPagination.Bounds.X);
+            bottomExtra.Bounds.X.ShouldBeLessThan(bottomPagination.Bounds.X);
+
+            var topContent = topExtra.GetVisualDescendants().OfType<Button>().Single();
+            var bottomContent = bottomExtra.GetVisualDescendants().OfType<Button>().Single();
+            var topContentCenter = topContent.TranslatePoint(
+                new Point(0, topContent.Bounds.Height / 2), topPanel).ShouldNotBeNull();
+            var topPaginationCenter = topPagination.TranslatePoint(
+                new Point(0, topPagination.Bounds.Height / 2), topPanel).ShouldNotBeNull();
+            var bottomContentCenter = bottomContent.TranslatePoint(
+                new Point(0, bottomContent.Bounds.Height / 2), bottomPanel).ShouldNotBeNull();
+            var bottomPaginationCenter = bottomPagination.TranslatePoint(
+                new Point(0, bottomPagination.Bounds.Height / 2), bottomPanel).ShouldNotBeNull();
+            Math.Abs(topContentCenter.Y - topPaginationCenter.Y)
+                .ShouldBeLessThan(1);
+            Math.Abs(bottomContentCenter.Y - bottomPaginationCenter.Y)
+                .ShouldBeLessThan(1);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void Pagination_ExtraContent_Center_Keeps_Extra_Content_On_Right()
+    {
+        var source = Source();
+        var grid = Grid(source, new DataGridPageRequest(0, 10));
+        grid.PaginationVisibility = DataGridPaginationVisibility.All;
+        grid.TopPaginationAlign = PaginationAlign.Center;
+        grid.TopPaginationExtraContent = new TextBlock { Text = "top" };
+
+        var window = Show(grid);
+        try
+        {
+            Complete(source, 0, totalDataCount: 100, "s1");
+            PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
+
+            var topPanel = grid.GetVisualDescendants()
+                               .OfType<DockPanel>()
+                               .Single(control => control.Name == "PART_TopPaginationPanel");
+            var topExtra = topPanel.Children.OfType<ContentPresenter>()
+                                  .Single(control => control.Name == "PART_TopPaginationExtraContentPresenter");
+            var topPagination = topPanel.Children.OfType<Pagination>().Single();
+
+            DockPanel.GetDock(topExtra).ShouldBe(Dock.Right);
+            topPagination.Align.ShouldBe(PaginationAlign.Center);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Theory]
+    [InlineData(DataGridPaginationVisibility.None, false, false)]
+    [InlineData(DataGridPaginationVisibility.Top, true, false)]
+    [InlineData(DataGridPaginationVisibility.Bottom, false, true)]
+    [InlineData(DataGridPaginationVisibility.All, true, true)]
+    public void Pagination_ExtraContent_Honors_Pagination_Visibility(
+        DataGridPaginationVisibility visibility,
+        bool topVisible,
+        bool bottomVisible)
+    {
+        var source = Source();
+        var grid = Grid(source, new DataGridPageRequest(0, 10));
+        grid.PaginationVisibility = visibility;
+        grid.TopPaginationExtraContent = new TextBlock { Text = "top" };
+        grid.BottomPaginationExtraContent = new TextBlock { Text = "bottom" };
+        var window = Show(grid);
+        try
+        {
+            Complete(source, 0, totalDataCount: 100, "s1");
+            PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
+
+            var panels = grid.GetVisualDescendants()
+                             .OfType<DockPanel>()
+                             .Where(control => control.Name is "PART_TopPaginationPanel" or "PART_BottomPaginationPanel")
+                             .ToDictionary(control => control.Name!);
+            panels["PART_TopPaginationPanel"].IsVisible.ShouldBe(topVisible);
+            panels["PART_BottomPaginationPanel"].IsVisible.ShouldBe(bottomVisible);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void Pagination_ExtraContent_Template_Replacement_Detaches_Old_Visual()
+    {
+        var source = Source();
+        var grid = Grid(source, new DataGridPageRequest(0, 10));
+        grid.TopPaginationExtraContent = "top";
+        grid.TopPaginationExtraContentTemplate = new FuncDataTemplate<string>(
+            (_, _) => new TextBlock { Name = "FirstExtraVisual", Text = "first" });
+        var window = Show(grid);
+        TextBlock? firstVisual = null;
+        try
+        {
+            Complete(source, 0, totalDataCount: 100, "s1");
+            PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
+            firstVisual = grid.GetVisualDescendants()
+                              .OfType<TextBlock>()
+                              .Single(control => control.Name == "FirstExtraVisual");
+
+            grid.TopPaginationExtraContentTemplate = new FuncDataTemplate<string>(
+                (_, _) => new TextBlock { Name = "SecondExtraVisual", Text = "second" });
+            Dispatcher.UIThread.RunJobs();
+
+            firstVisual.IsAttachedToVisualTree().ShouldBeFalse();
+            var secondVisual = grid.GetVisualDescendants()
+                                   .OfType<TextBlock>()
+                                   .Single(control => control.Name == "SecondExtraVisual");
+            secondVisual.Text.ShouldBe("second");
+
+            grid.SetValue(TemplatedControl.TemplateProperty, null);
+            grid.ApplyTemplate();
+            Dispatcher.UIThread.RunJobs();
+
+            secondVisual.IsAttachedToVisualTree().ShouldBeFalse();
+
+            grid.ClearValue(TemplatedControl.TemplateProperty);
+            grid.ApplyTemplate();
+            Dispatcher.UIThread.RunJobs();
+            grid.GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Single(control => control.Name == "SecondExtraVisual")
+                .ShouldNotBeSameAs(secondVisual);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+            firstVisual?.IsAttachedToVisualTree().ShouldBeFalse();
+        }
+    }
+
+    [Fact]
+    public void Pagination_ExtraContent_Does_Not_Materialize_When_Content_Is_Unset()
+    {
+        var source = Source();
+        var grid = Grid(source, new DataGridPageRequest(0, 10));
+        var window = Show(grid);
+        try
+        {
+            Complete(source, 0, totalDataCount: 100, "s1");
+            PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
+
+            var extraPresenters = grid.GetVisualDescendants()
+                                      .OfType<ContentPresenter>()
+                                      .Where(control => control.Name is "PART_TopPaginationExtraContentPresenter"
+                                                          or "PART_BottomPaginationExtraContentPresenter");
+            extraPresenters.ShouldAllBe(control => !control.GetVisualChildren().Any());
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void Pagination_ExtraContent_Hides_With_Single_Page_Pagination()
+    {
+        var source = Source();
+        var grid = Grid(source, new DataGridPageRequest(0, 10));
+        grid.PaginationVisibility = DataGridPaginationVisibility.All;
+        grid.IsHideOnSinglePage = true;
+        grid.TopPaginationExtraContent = new TextBlock { Text = "top" };
+        grid.BottomPaginationExtraContent = new TextBlock { Text = "bottom" };
+        var window = Show(grid);
+        try
+        {
+            Complete(source, 0, totalDataCount: 5, "s1");
+            PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
+
+            grid.GetVisualDescendants()
+                .OfType<DockPanel>()
+                .Where(control => control.Name is "PART_TopPaginationPanel" or "PART_BottomPaginationPanel")
+                .ShouldAllBe(control => !control.IsVisible);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void PageSizeSelector_Change_Updates_PageRequest_And_Applied_State()
+    {
+        var source = Source();
+        var grid = Grid(source, new DataGridPageRequest(20, 10));
+        var window = Show(grid);
+        try
+        {
+            Complete(source, 0, totalDataCount: 100, "s1");
+            PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
+
+            var bottom = Paginations(grid).Single(control => control.Name == "PART_BottomPagination");
+            bottom.PageSize = 25;
+
+            source.WaitForRequestCount(2);
+            source.RequestAt(1).Request.PageRequest.ShouldBe(new DataGridPageRequest(50, 25));
+            grid.PageRequest!.Value.DataStartIndex.ShouldBe(50);
+            grid.PageRequest.Value.DataCount.ShouldBe(25);
+            grid.PageSize.ShouldBe(25);
+
+            Complete(source, 1, totalDataCount: 100, "s2");
+            PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
+            grid.AppliedPageRequest.ShouldBe(new DataGridPageRequest(50, 25));
+            Paginations(grid).ShouldAllBe(control => control.PageSize == 25 && control.CurrentPage == 3);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void PageSizeSelector_Change_Clamps_Page_When_New_Size_Reduces_Page_Count()
+    {
+        var source = Source();
+        var grid = Grid(source, new DataGridPageRequest(90, 10));
+        var window = Show(grid);
+        try
+        {
+            Complete(source, 0, totalDataCount: 100, "s1");
+            PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
+
+            var bottom = Paginations(grid).Single(control => control.Name == "PART_BottomPagination");
+            bottom.PageSize = 100;
+
+            source.WaitForRequestCount(2);
+            source.RequestAt(1).Request.PageRequest.ShouldBe(new DataGridPageRequest(0, 100));
+            grid.PageRequest!.Value.DataStartIndex.ShouldBe(0);
+            grid.PageRequest.Value.DataCount.ShouldBe(100);
+
+            Complete(source, 1, totalDataCount: 100, "s2");
+            PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
+            Paginations(grid).ShouldAllBe(control => control.PageSize == 100 && control.CurrentPage == 1);
         }
         finally
         {

@@ -201,7 +201,7 @@ internal static class ThemeConfigNormalizer
                 out var globalTokens,
                 out var ownTokens);
             result.Add(new NormalizedControlThemeConfig(
-                identity,
+                ControlTokenIdentity.ForControl(descriptor.ControlType, identity.Catalog, identity.Id),
                 config.Algorithm,
                 algorithms,
                 globalTokens,

@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     xmlns:atomc="https://atomui.net/common-controls"
+    x:Class="AtomUI.Desktop.Controls.Themes.AvaScrollBarTheme"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type ScrollBar}" TargetType="ScrollBar">
         <Style Selector="^:vertical">

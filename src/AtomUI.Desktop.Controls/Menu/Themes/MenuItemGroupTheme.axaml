@@ -1,0 +1,26 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:MenuItemGroup}" TargetType="atom:MenuItemGroup">
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:MenuItemGroup">
+                <StackPanel>
+                    <ContentPresenter Name="GroupTitlePresenter"
+                                      Classes.semantic-item-title="True"
+                                      Classes.semantic-sub-menu-item-title="True"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Center"
+                                      Foreground="{atom:SharedTokenResource ColorTextDescription}"
+                                      Padding="16,8"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                    <ItemsPresenter Name="PART_ItemsPresenter"
+                                    Classes.semantic-list="True"
+                                    Classes.semantic-sub-menu-list="True" />
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -53,5 +51,36 @@ public enum TransferShowCaseLangResourceKind
     P2ItemDescriptionFormat,
     P2TagCat,
     P2TagDog,
-    P2TagBird
+    P2TagBird,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticPartFooterText,
+    SemanticRootDescription,
+    SemanticSourceDescription,
+    SemanticTargetDescription,
+    SemanticActionsDescription,
+    SemanticHeaderDescription,
+    SemanticTitleDescription,
+    SemanticBodyDescription,
+    SemanticListDescription,
+    SemanticFooterDescription,
+    SemanticSourceHeaderDescription,
+    SemanticTargetHeaderDescription,
+    SemanticSourceTitleDescription,
+    SemanticTargetTitleDescription,
+    SemanticSourceBodyDescription,
+    SemanticTargetBodyDescription,
+    SemanticSourceListDescription,
+    SemanticTargetListDescription,
+    SemanticSourceFooterDescription,
+    SemanticTargetFooterDescription,
+    SemanticItemContentDescription,
+    SemanticItemDescription,
+    SemanticItemIconDescription,
+    SemanticSourceItemContentDescription,
+    SemanticSourceItemDescription,
+    SemanticSourceItemIconDescription,
+    SemanticTargetItemContentDescription,
+    SemanticTargetItemDescription,
+    SemanticTargetItemIconDescription
 }

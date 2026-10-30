@@ -1,6 +1,6 @@
 # SplitButton 桌面版实现原理
 
-本文档描述 SplitButton 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [SplitButton 桌面版架构设计](overview.md)，变化记录见 [SplitButton Changelog](changelog.md)。SplitButton 没有独立 Token 文档；涉及主题变量时应回到 overview 的视觉与主题模型。
+本文档描述 SplitButton 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [SplitButton 桌面版架构设计](overview.md)，Semantic Part 契约见 [SplitButton Semantic Part 契约](semantic-part.md)，变化记录见 [SplitButton Changelog](changelog.md)。SplitButton 没有独立 Token 文档；涉及主题变量时应回到 overview 的视觉与主题模型。
 
 Popup 接入边界：`SplitButton` 负责业务状态和内容准备，关联 `Flyout` 仅作为 relay 适配层，Flyout Popup 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
 
@@ -13,6 +13,8 @@ Popup 接入边界：`SplitButton` 负责业务状态和内容准备，关联 `F
 主要源码文件：
 
 - `src/AtomUI.Desktop.Controls/SplitButton/SplitButton.cs`
+- `src/AtomUI.Desktop.Controls/SplitButton/SplitButton.SemanticParts.cs`
+- `src/AtomUI.Desktop.Controls/SplitButton/SplitButtonToken.cs`
 - `src/AtomUI.Desktop.Controls/Buttons/Themes/SplitButtonTheme.axaml`
 
 职责边界：
@@ -80,6 +82,28 @@ Public API / ItemsSource / Command / Event
 - `PART_PrimaryButton`：承载用户触发入口、导航或关闭动作。
 - `PART_SecondaryButton`：承载用户触发入口、导航或关闭动作。
 
+### 5.1 Semantic Part marker 注入
+
+完整契约见 [SplitButton Semantic Part 契约](semantic-part.md)。marker 分两类：
+
+- **触发侧静态 marker**：`primary` / `secondary` 写在 `SplitButtonTheme.axaml` 模板的 `PART_PrimaryButton` /
+  `PART_SecondaryButton` 上（`Classes.semantic-primary` / `Classes.semantic-secondary`），随模板应用与重套用保持。
+- **弹层侧运行时 marker**：五个弹层部件（`popup.root` / `itemTitle` / `item` / `itemContent` / `itemIcon`）
+  复用 DropdownButton 建立的共享注入路径，marker 不写进被 SplitButton、DropdownButton、DataGrid、TabControl、
+  Transfer 等复用的共享 MenuFlyout / MenuItem 控件（沿用 FlyoutHost → FlyoutPresenter 的跨视觉根弹层先例）：
+  - `MenuFlyoutPresenter.OnApplyTemplate` 定位弹层根视觉面 `ArrowDecoratedBox` 时注入 `popup.root` marker
+    （边框 / 背景 / 圆角由 `ArrowDecoratedBox` 渲染，`MenuFlyoutPresenter` 是共享菜单宿主容器）；
+  - `MenuFlyoutPresenter` 与 `MenuItem` 的 `CreateContainerForItemOverride` / `PrepareContainerForItemOverride`
+    容器路径注入 `item` marker，覆盖顶层与嵌套子菜单项；
+  - `MenuItemGroup.OnApplyTemplate` 向 `GroupTitlePresenter` 注入 `itemTitle` marker（分组容器本身带
+    `semantic-item-title-group` 中间标记类）；
+  - `MenuItem.OnApplyTemplate` 向 `ItemIconPresenter` / `ItemTextPresenter` 注入 `itemIcon` / `itemContent`
+    marker。
+
+  弹层锚定在模板内 `PART_SecondaryButton` 上（`FlyoutStateHelper.AnchorTarget`），弹层侧节点的逻辑祖先链经
+  Popup `PlacementTarget` 回到 SplitButton，owner-scoped 生成 Style 沿该链跨视觉根命中目标。弹层侧部件仅在
+  `Flyout` 为 `MenuFlyout`（或其派生）时物化。
+
 ## 6. 交互与事件处理
 
 SplitButton 的交互事件应从输入源收敛到控件级语义事件：
@@ -134,7 +158,9 @@ SplitButton 的交互事件应从输入源收敛到控件级语义事件：
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
+- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试；Semantic Part 契约由
+  `tests/AtomUI.Desktop.Controls.Tests/Buttons/SplitButtonSemanticPartTests.cs` 覆盖（descriptor 形态、触发侧
+  静态 marker、pinned-open 弹层物化、生成 Style 命中）。
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

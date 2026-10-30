@@ -25,6 +25,9 @@ public class Form : ItemsControl,
     public static readonly StyledProperty<bool> IsShowColonProperty =
         AvaloniaProperty.Register<Form, bool>(
             nameof(IsShowColon), true);
+
+    public static readonly StyledProperty<BoxShadows?> BoxShadowProperty =
+        AvaloniaProperty.Register<Form, BoxShadows?>(nameof(BoxShadow));
     
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
         InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<Form>();
@@ -146,6 +149,12 @@ public class Form : ItemsControl,
     {
         get => GetValue(IsShowColonProperty);
         set => SetValue(IsShowColonProperty, value);
+    }
+
+    public BoxShadows? BoxShadow
+    {
+        get => GetValue(BoxShadowProperty);
+        set => SetValue(BoxShadowProperty, value);
     }
     
     public InputControlStyleVariant StyleVariant

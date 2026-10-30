@@ -1,4 +1,3 @@
-using AtomUI.Localization;
 using Avalonia;
 
 namespace AtomUI.Toolkits.GalleryBase.Localization;

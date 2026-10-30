@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Converters;
@@ -57,6 +58,140 @@ internal class ColorPickerInput : TemplatedControl
     }
     #endregion
 
+    internal static readonly StyledProperty<bool> IsNeedConfirmProperty =
+        AbstractColorPickerView.IsNeedConfirmProperty.AddOwner<ColorPickerInput>();
+
+    internal static readonly StyledProperty<bool> IsInputValidProperty =
+        AvaloniaProperty.Register<ColorPickerInput, bool>(nameof(IsInputValid), true);
+
+    internal bool IsNeedConfirm
+    {
+        get => GetValue(IsNeedConfirmProperty);
+        set => SetValue(IsNeedConfirmProperty, value);
+    }
+
+    internal bool IsInputValid
+    {
+        get => GetValue(IsInputValidProperty);
+        private set => SetCurrentValue(IsInputValidProperty, value);
+    }
+
+    internal event EventHandler? ColorInputEdited;
+
+    private bool _hasPendingInput;
+
+    internal void ResetInput()
+    {
+        using var scope = BeginIgnoringConfigureValues();
+        ConfigureColorValues();
+        foreach (var input in GetInputs().OfType<NumericUpDown>())
+        {
+            // Value equality must not preserve discarded invalid text.
+            input.SetCurrentValue(NumericUpDown.TextProperty,
+                input.Value?.ToString(input.FormatString, input.NumberFormat ?? CultureInfo.CurrentCulture.NumberFormat));
+        }
+        _hasPendingInput = false;
+        IsInputValid = true;
+    }
+
+    internal bool TryCommitInput()
+    {
+        if (!TryReadInput(out var color))
+        {
+            IsInputValid = false;
+            return false;
+        }
+        IsInputValid = true;
+        if (_hasPendingInput)
+        {
+            using var scope = BeginIgnoringConfigureValues();
+            SetCurrentValue(ColorValueProperty, color);
+            ColorInputEdited?.Invoke(this, EventArgs.Empty);
+            _hasPendingInput = false;
+        }
+        return true;
+    }
+
+    private bool TryReadInput(out HsvColor color)
+    {
+        color = ColorValue;
+        if (_hexValueInput == null)
+        {
+            return true;
+        }
+        var alpha = ColorValue.A * 100;
+        if (IsAlphaVisible && !TryReadNumeric(_alphaInput, out alpha))
+        {
+            return false;
+        }
+        if (Format == ColorFormat.Hex)
+        {
+            if (!Color.TryParse((_hexValueInput.Text ?? string.Empty).AsSpan().Trim(), out var rgb))
+            {
+                return false;
+            }
+            color = Color.FromArgb((byte)((decimal)alpha * 2.55m), rgb.R, rgb.G, rgb.B).ToHsv();
+            return true;
+        }
+        if (Format == ColorFormat.Hsva)
+        {
+            if (!TryReadNumeric(_hValueInput, out var hue) || !TryReadNumeric(_sValueInput, out var saturation) ||
+                !TryReadNumeric(_vValueInput, out var value))
+            {
+                return false;
+            }
+            color = HsvColor.FromAhsv(alpha / 100, hue, saturation / 100, value / 100);
+            return true;
+        }
+        if (!TryReadNumeric(_rValueInput, out var red) || !TryReadNumeric(_gValueInput, out var green) ||
+            !TryReadNumeric(_bValueInput, out var blue))
+        {
+            return false;
+        }
+        color = Color.FromArgb((byte)((decimal)alpha * 2.55m), (byte)red, (byte)green, (byte)blue).ToHsv();
+        return true;
+    }
+
+    private static bool TryReadNumeric(NumericUpDown? input, out double value)
+    {
+        value = 0;
+        if (input == null)
+        {
+            return false;
+        }
+        var text = input.Text?.Trim().TrimEnd('%').Trim();
+        if (!decimal.TryParse(text, input.ParsingNumberStyle, input.NumberFormat ?? CultureInfo.CurrentCulture.NumberFormat, out var number) ||
+            number < input.Minimum || number > input.Maximum)
+        {
+            return false;
+        }
+        value = (double)number;
+        return true;
+    }
+
+    private void HandleConfirmationInputChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        if (!IsNeedConfirm || _ignoringConfigureValues ||
+            (args.Property != LineEdit.TextProperty && args.Property != NumericUpDown.TextProperty))
+        {
+            return;
+        }
+        _hasPendingInput = true;
+        IsInputValid = TryReadInput(out var color);
+        if (IsInputValid)
+        {
+            using var scope = BeginIgnoringConfigureValues();
+            SetCurrentValue(ColorValueProperty, color);
+            ColorInputEdited?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private IEnumerable<Control> GetInputs()
+    {
+        return new Control?[] { _hexValueInput, _alphaInput, _hValueInput, _sValueInput, _vValueInput,
+            _rValueInput, _gValueInput, _bValueInput }.OfType<Control>();
+    }
+
     private ComboBox? _colorFormatComboBox;
     private NumericUpDown? _alphaInput;
     private LineEdit? _hexValueInput;
@@ -76,6 +211,25 @@ internal class ColorPickerInput : TemplatedControl
     private bool _gValueInputPassiveChanged;
     private bool _bValueInputPassiveChanged;
 
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        foreach (var input in GetInputs())
+        {
+            input.PropertyChanged -= HandleConfirmationInputChanged;
+        }
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        foreach (var input in GetInputs())
+        {
+            input.PropertyChanged -= HandleConfirmationInputChanged;
+            input.PropertyChanged += HandleConfirmationInputChanged;
+        }
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -87,7 +241,7 @@ internal class ColorPickerInput : TemplatedControl
                 {
                     return;
                 }
-                ConfigureColorValues();
+                ResetInput();
             }
             else if (change.Property == FormatProperty)
             {
@@ -122,6 +276,10 @@ internal class ColorPickerInput : TemplatedControl
             _alphaInputPassiveChanged = false;
             return;
         }
+        if (IsNeedConfirm)
+        {
+            return;
+        }
         SyncInputValue();
     }
 
@@ -130,6 +288,10 @@ internal class ColorPickerInput : TemplatedControl
         if (_hexValueInputPassiveChanged)
         {
             _hexValueInputPassiveChanged = false;
+            return;
+        }
+        if (IsNeedConfirm)
+        {
             return;
         }
         SyncInputValue();
@@ -142,6 +304,10 @@ internal class ColorPickerInput : TemplatedControl
             _hValueInputPassiveChanged = false;
             return;
         }
+        if (IsNeedConfirm)
+        {
+            return;
+        }
         SyncInputValue();
     }
 
@@ -150,6 +316,10 @@ internal class ColorPickerInput : TemplatedControl
         if (_sValueInputPassiveChanged)
         {
             _sValueInputPassiveChanged = false;
+            return;
+        }
+        if (IsNeedConfirm)
+        {
             return;
         }
         SyncInputValue();
@@ -162,6 +332,10 @@ internal class ColorPickerInput : TemplatedControl
             _vValueInputPassiveChanged = false;
             return;
         }
+        if (IsNeedConfirm)
+        {
+            return;
+        }
         SyncInputValue();
     }
 
@@ -170,6 +344,10 @@ internal class ColorPickerInput : TemplatedControl
         if (_rValueInputPassiveChanged)
         {
             _rValueInputPassiveChanged = false;
+            return;
+        }
+        if (IsNeedConfirm)
+        {
             return;
         }
         SyncInputValue();
@@ -182,6 +360,10 @@ internal class ColorPickerInput : TemplatedControl
             _gValueInputPassiveChanged = false;
             return;
         }
+        if (IsNeedConfirm)
+        {
+            return;
+        }
         SyncInputValue();
     }
 
@@ -192,11 +374,19 @@ internal class ColorPickerInput : TemplatedControl
             _bValueInputPassiveChanged = false;
             return;
         }
+        if (IsNeedConfirm)
+        {
+            return;
+        }
         SyncInputValue();
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        foreach (var input in GetInputs())
+        {
+            input.PropertyChanged -= HandleConfirmationInputChanged;
+        }
         if (_alphaInput != null)
         {
             _alphaInput.ValueChanged -= HandleAlphaInputValueChanged;
@@ -291,7 +481,11 @@ internal class ColorPickerInput : TemplatedControl
         {
             _bValueInput.ValueChanged += HandleBValueInputValueChanged;
         }
-        ConfigureColorValues();
+        foreach (var input in GetInputs())
+        {
+            input.PropertyChanged += HandleConfirmationInputChanged;
+        }
+        ResetInput();
     }
 
     private void HandleFormatChanged(object? sender, SelectionChangedEventArgs args)
@@ -301,41 +495,49 @@ internal class ColorPickerInput : TemplatedControl
         {
             Format = colorFormat;
             using var scope = BeginIgnoringConfigureValues();
-            ConfigureColorValues();
+            ResetInput();
         }
     }
 
     private void ConfigureColorValues()
     {
-        _alphaInputPassiveChanged = true;
-        _hexValueInputPassiveChanged = true;
-        _hValueInputPassiveChanged = true;
-        _sValueInputPassiveChanged = true;
-        _vValueInputPassiveChanged = true;
-        _rValueInputPassiveChanged = true;
-        _gValueInputPassiveChanged = true;
-        _bValueInputPassiveChanged = true;
+        _alphaInputPassiveChanged = false;
+        _hexValueInputPassiveChanged = false;
+        _hValueInputPassiveChanged = false;
+        _sValueInputPassiveChanged = false;
+        _vValueInputPassiveChanged = false;
+        _rValueInputPassiveChanged = false;
+        _gValueInputPassiveChanged = false;
+        _bValueInputPassiveChanged = false;
         if (Format == ColorFormat.Hex)
         {
             var rgbValue = ColorValue.ToRgb();
             if (_hexValueInput != null)
             {
-                _hexValueInput.Text = ColorToHexConverter.ToHexString(rgbValue, AlphaComponentPosition.Leading, false, true);
+                var colorText = ColorToHexConverter.ToHexString(rgbValue, AlphaComponentPosition.Leading, false, true);
+                _hexValueInputPassiveChanged = _hexValueInput.Text != colorText;
+                _hexValueInput.Text = colorText;
             }
         }
         else if (Format == ColorFormat.Hsva)
         {
             if (_hValueInput != null)
             {
-                _hValueInput.Value = (int)ColorValue.H;
+                var inputValue = (int)ColorValue.H;
+                _hValueInputPassiveChanged = _hValueInput.Value != inputValue;
+                _hValueInput.Value = inputValue;
             }
             if (_sValueInput != null)
             {
-                _sValueInput.Value = new decimal(ColorValue.S * 100);
+                var inputValue = new decimal(ColorValue.S * 100);
+                _sValueInputPassiveChanged = _sValueInput.Value != inputValue;
+                _sValueInput.Value = inputValue;
             }
             if (_vValueInput != null)
             {
-                _vValueInput.Value = new decimal(ColorValue.V * 100);
+                var inputValue = new decimal(ColorValue.V * 100);
+                _vValueInputPassiveChanged = _vValueInput.Value != inputValue;
+                _vValueInput.Value = inputValue;
             }
         }
         else if (Format == ColorFormat.Rgba)
@@ -343,22 +545,29 @@ internal class ColorPickerInput : TemplatedControl
             var rgbValue = ColorValue.ToRgb();
             if (_rValueInput != null)
             {
-                _rValueInput.Value = rgbValue.R;
+                var inputValue = rgbValue.R;
+                _rValueInputPassiveChanged = _rValueInput.Value != inputValue;
+                _rValueInput.Value = inputValue;
             }
 
             if (_gValueInput != null)
             {
-                _gValueInput.Value = rgbValue.G;
+                var inputValue = rgbValue.G;
+                _gValueInputPassiveChanged = _gValueInput.Value != inputValue;
+                _gValueInput.Value = inputValue;
             }
 
             if (_bValueInput != null)
             {
-                _bValueInput.Value = rgbValue.B;
+                var inputValue = rgbValue.B;
+                _bValueInputPassiveChanged = _bValueInput.Value != inputValue;
+                _bValueInput.Value = inputValue;
             }
         }
         if (_alphaInput != null)
         {
             var alpha = (int)(ColorValue.A * 100);
+            _alphaInputPassiveChanged = _alphaInput.Value != alpha;
             _alphaInput.Value = alpha;
         }
     }

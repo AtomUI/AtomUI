@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable><IsTrimmable>true</IsTrimmable>
+        <AtomUIFixtureVersion Condition="'$(AtomUIFixtureVersion)' == ''">6.2.1</AtomUIFixtureVersion>
+    </PropertyGroup>
+</Project>

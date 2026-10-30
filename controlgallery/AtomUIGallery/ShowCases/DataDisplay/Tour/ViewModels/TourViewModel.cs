@@ -100,6 +100,22 @@ public class TourViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _customActionTourOpened, value);
     }
 
+    private bool _semanticStylesObjectTourOpened;
+
+    public bool SemanticStylesObjectTourOpened
+    {
+        get => _semanticStylesObjectTourOpened;
+        set => this.RaiseAndSetIfChanged(ref _semanticStylesObjectTourOpened, value);
+    }
+
+    private bool _semanticStylesFunctionTourOpened;
+
+    public bool SemanticStylesFunctionTourOpened
+    {
+        get => _semanticStylesFunctionTourOpened;
+        set => this.RaiseAndSetIfChanged(ref _semanticStylesFunctionTourOpened, value);
+    }
+
     public TourViewModel(IScreen screen)
     {
         HostScreen = screen;

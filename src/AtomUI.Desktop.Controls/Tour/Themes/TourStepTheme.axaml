@@ -9,22 +9,28 @@
                 <Border Name="Frame" Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}">
                     <DockPanel LastChildFill="True" Name="RootLayout">
-                        <DockPanel LastChildFill="True"
-                                   DockPanel.Dock="Top">
-                            <atom:DialogCaptionButton
-                                Name="CloseButton"
-                                DockPanel.Dock="Right"
-                                NormalIcon="{TemplateBinding CloseIcon}"
-                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
-                            <ContentPresenter Name="Title"
-                                              Content="{TemplateBinding Title}"
-                                              ContentTemplate="{TemplateBinding TitleTemplate}" />
-                        </DockPanel>
+                        <Border Classes.semantic-popup-header="True"
+                                DockPanel.Dock="Top">
+                            <DockPanel LastChildFill="True">
+                                <atom:DialogCaptionButton
+                                    Name="CloseButton"
+                                    Classes.semantic-popup-close="True"
+                                    DockPanel.Dock="Right"
+                                    NormalIcon="{TemplateBinding CloseIcon}"
+                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                                <ContentPresenter Name="Title"
+                                                  Classes.semantic-popup-title="True"
+                                                  Content="{TemplateBinding Title}"
+                                                  ContentTemplate="{TemplateBinding TitleTemplate}" />
+                            </DockPanel>
+                        </Border>
                         <StackPanel Orientation="Vertical" Name="ContentLayout">
                             <ContentPresenter Name="CoverPresenter"
+                                              Classes.semantic-popup-cover="True"
                                               Content="{TemplateBinding Cover}"
                                               ContentTemplate="{TemplateBinding CoverTemplate}" />
                             <ContentPresenter Name="DescriptionPresenter"
+                                              Classes.semantic-popup-description="True"
                                               Content="{TemplateBinding Description}"
                                               ContentTemplate="{TemplateBinding DescriptionTemplate}" />
                         </StackPanel>

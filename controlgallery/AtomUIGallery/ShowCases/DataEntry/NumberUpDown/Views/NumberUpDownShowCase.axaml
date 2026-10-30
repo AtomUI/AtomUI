@@ -7,8 +7,8 @@
              xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="NumberUpDown"
                     Category="{gallery:NumberUpDownShowCaseLangResource ComponentCategory}"
@@ -18,7 +18,78 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="Avalonia.Controls.NumericUpDown" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:NumberUpDownViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview Name="NumberUpDownSemanticPreview"
+                                                     Title="NumericUpDown"
+                                                     SemanticOwner="{Binding #NumberUpDownSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:NumericUpDown}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:NumericUpDown Name="NumberUpDownSemanticOwner"
+                                                    Width="320"
+                                                    Value="10"
+                                                    IsAllowClear="True"
+                                                    InnerLeftContent="$"
+                                                    InnerRightContent="kg" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:NumberUpDownShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="prefix"
+                                    Description="{gallery:NumberUpDownShowCaseLangResource SemanticPrefixDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="input"
+                                    Description="{gallery:NumberUpDownShowCaseLangResource SemanticInputDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="suffix"
+                                    Description="{gallery:NumberUpDownShowCaseLangResource SemanticSuffixDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="clear"
+                                    Description="{gallery:NumberUpDownShowCaseLangResource SemanticClearDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="SpinnerModeSemanticPreview"
+                                                     Title="Spinner mode"
+                                                     SemanticOwner="{Binding #SpinnerModeSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:NumericUpDown}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:NumericUpDown Name="SpinnerModeSemanticOwner"
+                                                    Width="320"
+                                                    Mode="Spinner"
+                                                    Minimum="1"
+                                                    Maximum="100"
+                                                    Value="10"
+                                                    IsAllowClear="True"
+                                                    InnerLeftContent="$"
+                                                    InnerRightContent="kg" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:NumberUpDownShowCaseLangResource SemanticSpinnerRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="prefix"
+                                    Description="{gallery:NumberUpDownShowCaseLangResource SemanticSpinnerPrefixDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="input"
+                                    Description="{gallery:NumberUpDownShowCaseLangResource SemanticSpinnerInputDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="suffix"
+                                    Description="{gallery:NumberUpDownShowCaseLangResource SemanticSpinnerSuffixDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="clear"
+                                    Description="{gallery:NumberUpDownShowCaseLangResource SemanticSpinnerClearDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -331,7 +402,40 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+    <gallery:ShowCaseItem
+        Title="{gallery:NumberUpDownShowCaseLangResource SemanticPartStyleTitle}"
+        Description="{gallery:NumberUpDownShowCaseLangResource SemanticPartStyleDescription}"
+        SourceKey="numericupdown-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        Span="Full"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:NumberUpDownViewModel">
+                <StackPanel Orientation="Vertical"
+                            HorizontalAlignment="Left"
+                            Spacing="12">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|NumericUpDown.semantic-object">
+                            <Setter Property="BorderBrush" Value="#1677FF" />
+                        </Style>
+                        <Style Selector="atom|NumericUpDown.semantic-function">
+                            <Setter Property="BorderBrush" Value="#722ED1" />
+                        </Style>
+                    </StackPanel.Styles>
+
+                    <atom:NumericUpDown Classes="semantic-object"
+                                        Width="320"
+                                        HorizontalAlignment="Left"
+                                        PlaceholderText="Object" />
+                    <atom:NumericUpDown Classes="semantic-function"
+                                        Width="320"
+                                        HorizontalAlignment="Left"
+                                        PlaceholderText="Function" />
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

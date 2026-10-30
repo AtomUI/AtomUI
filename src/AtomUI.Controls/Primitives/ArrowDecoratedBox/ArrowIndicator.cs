@@ -12,7 +12,7 @@ public class ArrowIndicator : Control
         AvaloniaProperty.Register<ArrowIndicator, double>(nameof(ArrowSize));
 
     public static readonly StyledProperty<IBrush?> FilledColorProperty =
-        AvaloniaProperty.Register<Border, IBrush?>(nameof(FilledColor));
+        AvaloniaProperty.Register<ArrowIndicator, IBrush?>(nameof(FilledColor));
 
     public static readonly StyledProperty<IBrush?> StrokeBrushProperty =
         AvaloniaProperty.Register<ArrowIndicator, IBrush?>(nameof(StrokeBrush));

@@ -1,14 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="2.1" srcLang="en-US" xmlns="urn:oasis:names:tc:xliff:document:2.0">
   <file id="AtomUIGallery.Localization.AutoCompleteShowCaseLangResourceKind">
-    <unit id="BasicUsageDescription">
+    <unit id="AllowClearDescription">
+      <segment>
+        <source>Customize clear button.</source>
+      </segment>
+    </unit>
+    <unit id="AllowClearTitle">
+      <segment>
+        <source>Customize clear button</source>
+      </segment>
+    </unit>
+    <unit id="BasicDescription">
       <segment>
         <source>Basic usage, set data source of autocomplete with options property.</source>
       </segment>
     </unit>
-    <unit id="BasicUsageTitle">
+    <unit id="BasicTitle">
       <segment>
         <source>Basic Usage</source>
+      </segment>
+    </unit>
+    <unit id="CertainCategoryDescription">
+      <segment>
+        <source>Demonstration of Lookup Patterns: Certain Category.</source>
+      </segment>
+    </unit>
+    <unit id="CertainCategoryTitle">
+      <segment>
+        <source>Lookup Patterns - Certain Category</source>
       </segment>
     </unit>
     <unit id="ComponentCategory">
@@ -21,44 +41,24 @@
         <source>Stable</source>
       </segment>
     </unit>
-    <unit id="CustomOptionRenderingDescription">
+    <unit id="CustomInputDescription">
       <segment>
-        <source>Use OptionTemplate to render rich option content with multiple fields, badges, and multi-line layout.</source>
+        <source>Customize the input component.</source>
       </segment>
     </unit>
-    <unit id="CustomOptionRenderingTitle">
+    <unit id="CustomInputTitle">
       <segment>
-        <source>Custom option rendering</source>
+        <source>Customize Input Component</source>
       </segment>
     </unit>
-    <unit id="CustomizeClearButtonDescription">
-      <segment>
-        <source>Customize clear button.</source>
-      </segment>
-    </unit>
-    <unit id="CustomizeClearButtonTitle">
-      <segment>
-        <source>Customize clear button</source>
-      </segment>
-    </unit>
-    <unit id="CustomizedDescription">
+    <unit id="CustomOptionsDescription">
       <segment>
         <source>You could set custom Option label.</source>
       </segment>
     </unit>
-    <unit id="CustomizedTitle">
+    <unit id="CustomOptionsTitle">
       <segment>
-        <source>Customized</source>
-      </segment>
-    </unit>
-    <unit id="LookupPatternsUncertainCategoryDescription">
-      <segment>
-        <source>Demonstration of Lookup Patterns: Uncertain Category.</source>
-      </segment>
-    </unit>
-    <unit id="LookupPatternsUncertainCategoryTitle">
-      <segment>
-        <source>Lookup-Patterns - Uncertain Category</source>
+        <source>Customize Options</source>
       </segment>
     </unit>
     <unit id="NonCaseSensitiveDescription">
@@ -71,29 +71,39 @@
         <source>Non-case-sensitive AutoComplete</source>
       </segment>
     </unit>
-    <unit id="P2PlaceholderSizeTypeCustom">
+    <unit id="P2ItemAntDesign">
       <segment>
-        <source>SizeType: Custom</source>
+        <source>AntDesign</source>
       </segment>
     </unit>
-    <unit id="P2PlaceholderSizeTypeLarge">
+    <unit id="P2ItemAntDesignFaq">
       <segment>
-        <source>SizeType: Large</source>
+        <source>AntDesign FAQ</source>
       </segment>
     </unit>
-    <unit id="P2PlaceholderSizeTypeMiddle">
+    <unit id="P2ItemAntDesignUi">
       <segment>
-        <source>SizeType: Middle</source>
+        <source>AntDesign UI</source>
       </segment>
     </unit>
-    <unit id="P2PlaceholderSizeTypeSmall">
+    <unit id="P2ItemAntDesignUiFaq">
       <segment>
-        <source>SizeType: Small</source>
+        <source>AntDesign UI FAQ</source>
+      </segment>
+    </unit>
+    <unit id="P2ItemDesignLanguage">
+      <segment>
+        <source>AntDesign design language</source>
       </segment>
     </unit>
     <unit id="P2PlaceholderTextBorderless">
       <segment>
         <source>Borderless</source>
+      </segment>
+    </unit>
+    <unit id="P2PlaceholderTextControlMode">
+      <segment>
+        <source>Control mode</source>
       </segment>
     </unit>
     <unit id="P2PlaceholderTextCustomizedClearIcon">
@@ -113,12 +123,7 @@
     </unit>
     <unit id="P2PlaceholderTextOutline">
       <segment>
-        <source>Outline</source>
-      </segment>
-    </unit>
-    <unit id="P2PlaceholderTextTryAOrB">
-      <segment>
-        <source>try 'a' or 'b'</source>
+        <source>Outlined</source>
       </segment>
     </unit>
     <unit id="P2PlaceholderTextTryToTypeB">
@@ -136,9 +141,29 @@
         <source>Underlined</source>
       </segment>
     </unit>
+    <unit id="P2TextArticles">
+      <segment>
+        <source>Articles</source>
+      </segment>
+    </unit>
+    <unit id="P2TextLibraries">
+      <segment>
+        <source>Libraries</source>
+      </segment>
+    </unit>
+    <unit id="P2TextMore">
+      <segment>
+        <source>more</source>
+      </segment>
+    </unit>
     <unit id="P2TextResults">
       <segment>
         <source>results</source>
+      </segment>
+    </unit>
+    <unit id="P2TextSolutions">
+      <segment>
+        <source>Solutions</source>
       </segment>
     </unit>
     <unit id="PageDescription">
@@ -156,14 +181,49 @@
         <source>Examples</source>
       </segment>
     </unit>
-    <unit id="SizeTypeDescription">
+    <unit id="SemanticClearDescription">
       <segment>
-        <source>AutoComplete supports large, middle, small, and Custom sizes with local height overrides.</source>
+        <source>Clear button in the suffix area, rendered when IsAllowClear is enabled.</source>
       </segment>
     </unit>
-    <unit id="SizeTypeTitle">
+    <unit id="SemanticContentDescription">
       <segment>
-        <source>SizeType</source>
+        <source>Input content panel hosting the text presenter and placeholder.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Text presenter of the editable input surface.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPlaceholderDescription">
+      <segment>
+        <source>Placeholder text shown while the input is empty.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListDescription">
+      <segment>
+        <source>Candidate list container inside the popup.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListItemDescription">
+      <segment>
+        <source>Individual candidate item, created at runtime for each option.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root border of the candidate popup layer.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix area of the input frame.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The AutoComplete owner itself.</source>
       </segment>
     </unit>
     <unit id="StatusDescription">
@@ -173,27 +233,37 @@
     </unit>
     <unit id="StatusTitle">
       <segment>
-        <source>Status</source>
+        <source>Customize Status</source>
       </segment>
     </unit>
-    <unit id="TextAreaAutoCompletionDescription">
+    <unit id="StyleClassDescription">
       <segment>
-        <source>You can use the TextArea type for autocomplete.</source>
+        <source>Customize the semantic structure style of AutoComplete with semantic part styles.</source>
       </segment>
     </unit>
-    <unit id="TextAreaAutoCompletionTitle">
+    <unit id="StyleClassTitle">
       <segment>
-        <source>TextArea type auto-completion</source>
+        <source>Custom Semantic Part styling</source>
       </segment>
     </unit>
-    <unit id="VariantsDescription">
+    <unit id="UncertainCategoryDescription">
+      <segment>
+        <source>Demonstration of Lookup Patterns: Uncertain Category.</source>
+      </segment>
+    </unit>
+    <unit id="UncertainCategoryTitle">
+      <segment>
+        <source>Lookup Patterns - Uncertain Category</source>
+      </segment>
+    </unit>
+    <unit id="VariantDescription">
       <segment>
         <source>There are outlined, filled, borderless, and underlined variants to choose from.</source>
       </segment>
     </unit>
-    <unit id="VariantsTitle">
+    <unit id="VariantTitle">
       <segment>
-        <source>Variants</source>
+        <source>Customize Variants</source>
       </segment>
     </unit>
   </file>

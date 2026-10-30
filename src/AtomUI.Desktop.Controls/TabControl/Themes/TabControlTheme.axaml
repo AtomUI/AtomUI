@@ -10,12 +10,21 @@
         </ControlTheme.BasedOn>
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Name="Frame">
+                <atom:PixelAlignedBorder Name="Frame"
+                                         Background="{TemplateBinding Background}"
+                                         BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                         BorderBrush="{TemplateBinding BorderBrush}"
+                                         BorderThickness="{TemplateBinding BorderThickness}"
+                                         CornerRadius="{TemplateBinding CornerRadius}"
+                                         Padding="{TemplateBinding Padding}"
+                                         StrokeDashArray="{TemplateBinding BorderDashArray}"
+                                         StrokeDaskOffset="{TemplateBinding BorderDashOffset}">
                     <DockPanel>
                         <Panel Name="PART_AlignWrapper"
                                DockPanel.Dock="{TemplateBinding TabStripPlacement}"
                                Margin="{TemplateBinding TabStripMargin}">
-                            <Border Padding="{TemplateBinding EffectiveHeaderPadding}">
+                            <Border Classes.semantic-header="True"
+                                    Padding="{TemplateBinding EffectiveHeaderPadding}">
                                 <DockPanel LastChildFill="True" Name="HeaderLayout">
                                     <ContentPresenter Name="HeaderStartExtraContent"
                                                       Content="{TemplateBinding HeaderStartExtraContent}"
@@ -23,36 +32,40 @@
                                     <ContentPresenter Name="HeaderEndExtraContent"
                                                       Content="{TemplateBinding HeaderEndExtraContent}"
                                                       ContentTemplate="{TemplateBinding HeaderEndExtraContentTemplate}" />
-                                    <atom:TabControlScrollViewer
+                                    <atom:TabScrollViewer
                                         Name="PART_TabsContainer"
                                         IsScrollChainingEnabled="False"
                                         TabStripPlacement="{TemplateBinding TabStripPlacement}"
-                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                        IsPopupPinnedOpen="{TemplateBinding IsPopupPinnedOpen}"
+                                        OverflowPopupTemplate="{TemplateBinding OverflowPopupTemplate}">
                                         <Panel>
                                             <ItemsPresenter
                                                 Name="PART_ItemsPresenter"
                                                 ItemsPanel="{TemplateBinding ItemsPanel}" />
                                             <Border
                                                 Name="PART_SelectedItemIndicator"
+                                                Classes.semantic-indicator="True"
                                                 RenderTransform="{TemplateBinding SelectedIndicatorRenderTransform}"/>
                                         </Panel>
-                                    </atom:TabControlScrollViewer>
+                                    </atom:TabScrollViewer>
                                 </DockPanel>
                             </Border>
                         </Panel>
 
-                        <ContentPresenter Padding="{TemplateBinding ContentPadding}"
+                        <ContentPresenter Classes.semantic-content="True"
+                                          Padding="{TemplateBinding ContentPadding}"
                                           Content="{TemplateBinding SelectedContent}"
                                           ContentTemplate="{TemplateBinding SelectedContentTemplate}"
                                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
                     </DockPanel>
-                </Border>
+                </atom:PixelAlignedBorder>
             </ControlTemplate>
         </Setter>
         
         <Setter Property="SelectedIndicatorThickness"
-                Value="{atom:SharedTokenResource LineWidthBold}" />
+                Value="{atom:TabControlTokenResource InkBarThickness}" />
         <Style Selector="^ /template/ Border#PART_SelectedItemIndicator">
             <Setter Property="Background" Value="{atom:TabControlTokenResource InkBarColor}" />
         </Style>
@@ -110,7 +123,7 @@
             <!-- tabs 是否居中 -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#PART_AlignWrapper > Border">
-                    <Setter Property="HorizontalAlignment" Value="Center" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
             </Style>
 
@@ -178,7 +191,7 @@
             <!-- tabs 是否居中 -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#PART_AlignWrapper > Border">
-                    <Setter Property="HorizontalAlignment" Value="Center" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
             </Style>
 

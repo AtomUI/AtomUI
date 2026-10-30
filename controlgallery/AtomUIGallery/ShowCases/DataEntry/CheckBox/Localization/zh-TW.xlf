@@ -241,6 +241,48 @@
         <target state="translated">範例</target>
       </segment>
     </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Checkbox icon element with size, direction, background, border, border-radius, transitions, and checked state checkmark styles</source>
+        <target state="translated">複選框圖示元素，包含尺寸、方向、背景色、邊框、圓角、過渡動畫，以及選中狀態的勾選標記樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label text element with padding and spacing styles relative to the checkbox</source>
+        <target state="translated">標籤文字元素，包含文字的內邊距和與複選框的間距樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartConditionalTitle">
+      <segment>
+        <source>Conditional styling</source>
+        <target state="translated">條件樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartFixedTitle">
+      <segment>
+        <source>Fixed styling</source>
+        <target state="translated">固定樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and CheckBox property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域選擇器和 CheckBox 屬性選擇器自訂已發佈的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with inline-flex layout, baseline alignment, cursor style, reset styles and other basic checkbox container styles</source>
+        <target state="translated">根元素，包含行內 flex 佈局、基線對齊、游標樣式、重置樣式等複選框容器的基礎樣式</target>
+      </segment>
+    </unit>
     <unit id="UseWithGridDescription">
       <segment>
         <source>We can use Checkbox and Grid in Checkbox.Group, to implement complex layout.</source>

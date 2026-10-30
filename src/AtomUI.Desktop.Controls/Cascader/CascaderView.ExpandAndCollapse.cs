@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -99,6 +100,10 @@ public partial class CascaderView
                     if (!IsReallyExpanded(currentCascaderItem))
                     {
                         await DoExpandItemAsync(currentCascaderItem);
+                        if (!currentCascaderItem.IsExpanded || !IsOptionInSource(currentNode))
+                        {
+                            return null;
+                        }
                     }
                     else
                     {
@@ -166,6 +171,8 @@ public partial class CascaderView
         Debug.Assert(_itemsPanel != null);
         var attachedOption = cascaderViewItem.AttachedOption;
         Debug.Assert(attachedOption != null);
+        // Mark the path open before awaiting data; another branch can collapse it while loading.
+        cascaderViewItem.SetCurrentValue(CascaderViewItem.IsExpandedProperty, true);
         if (!attachedOption.HasChildren() && !cascaderViewItem.AsyncLoaded && !attachedOption.IsLeaf)
         {
             if (DataLoader != null)
@@ -255,7 +262,7 @@ public partial class CascaderView
     private void ExecuteLayoutPass()
     {
         var topLevel = TopLevel.GetTopLevel(this);
-        topLevel?.GetLayoutManager()?.ExecuteLayoutPass();
+        topLevel?.UpdateLayout();
     }
 
     private void CollapseSiblingOptionsAtLevel(CascaderViewLevelList levelList, ICascaderOption currentNode)
@@ -311,6 +318,7 @@ public partial class CascaderView
         childLevelList[!CascaderViewLevelList.ItemTemplateProperty]        = this[!OptionTemplateProperty];
         childLevelList[!CascaderViewLevelList.IsAllowSelectParentProperty] = this[!IsAllowSelectParentProperty];
         childLevelList[!CascaderViewLevelList.ExpandTriggerProperty]       = this[!ExpandTriggerProperty];
+        childLevelList.Classes.Add(CascaderSemanticParts.PopupListClass);
 
         _itemsPanel.Children.Add(childLevelList);
     }

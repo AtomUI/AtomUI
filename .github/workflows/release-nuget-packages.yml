@@ -15,6 +15,11 @@ on:
             options:
                - Release
                - Debug
+         PackageValidationBaselineVersion:
+            description: 'Released version to validate packages against (e.g. 6.1.8). Empty skips validation.'
+            type: string
+            required: false
+            default: ''
          PublishToNuget:
             description: 'Publish to nuget.org'
             type: boolean
@@ -55,7 +60,8 @@ jobs:
             run: |
                ./scripts/BuildNuGetPackages.ps1 `
                   -BuildType "${{ inputs.BuildType }}" `
-                  -PackageOutputDir $env:BASE_OUTPUT_DIR
+                  -PackageOutputDir $env:BASE_OUTPUT_DIR `
+                  -PackageValidationBaselineVersion "${{ inputs.PackageValidationBaselineVersion }}"
          -  name: Validate packages with local NuGet feed
             shell: pwsh
             run: |

@@ -2,7 +2,7 @@ using AtomUI.Controls.Commons;
 
 namespace AtomUI.Desktop.Controls;
 
-public class CountBadge : AbstractCountBadge
+public partial class CountBadge : AbstractCountBadge
 {
     public CountBadge()
     {
@@ -13,6 +13,7 @@ public class CountBadge : AbstractCountBadge
         if (_badgeAdorner is null)
         {
             _badgeAdorner = new CountBadgeAdorner();
+            _badgeAdorner.Classes.Add("semantic-scope-indicator");
             SetupTokenBindings();
             NotifyDecoratedTargetChanged();
             if (BadgeColor is not null)

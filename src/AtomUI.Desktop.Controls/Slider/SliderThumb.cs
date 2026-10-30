@@ -1,4 +1,3 @@
-﻿using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Media;
 using Avalonia;
@@ -238,15 +237,4 @@ public class SliderThumb : TemplatedControl
         context.DrawEllipse(null, _outlinePen, centerPos, outlinePenRadius, outlinePenRadius);
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 }

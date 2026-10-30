@@ -20,12 +20,12 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Styling;
 
 namespace AtomUI.Desktop.Controls;
 
 using AvaloniaWindow = Avalonia.Controls.Window;
 
+[global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
 public partial class Window : AvaloniaWindow,
                               IOperationSystemAware,
                               IMediaBreakAwareControl
@@ -343,6 +343,16 @@ public partial class Window : AvaloniaWindow,
             nameof(IsDrawnChromeOverlayVisible),
             o => o.IsDrawnChromeOverlayVisible);
 
+    internal static readonly DirectProperty<Window, bool> IsLegacyWindowsFrameBorderVisibleProperty =
+        AvaloniaProperty.RegisterDirect<Window, bool>(
+            nameof(IsLegacyWindowsFrameBorderVisible),
+            o => o.IsLegacyWindowsFrameBorderVisible);
+
+    internal static readonly DirectProperty<Window, double> LegacyWindowsFrameBorderThicknessProperty =
+        AvaloniaProperty.RegisterDirect<Window, double>(
+            nameof(LegacyWindowsFrameBorderThickness),
+            o => o.LegacyWindowsFrameBorderThickness);
+
     internal static readonly DirectProperty<Window, bool> IsEffectiveFullscreenLogoVisibleProperty =
         AvaloniaProperty.RegisterDirect<Window, bool>(
             nameof(IsEffectiveFullscreenLogoVisible),
@@ -357,6 +367,16 @@ public partial class Window : AvaloniaWindow,
         AvaloniaProperty.RegisterDirect<Window, IDataTemplate?>(
             nameof(EffectiveLogoTemplate),
             o => o.EffectiveLogoTemplate);
+
+    internal static readonly DirectProperty<Window, object?> EffectiveFullscreenLogoProperty =
+        AvaloniaProperty.RegisterDirect<Window, object?>(
+            nameof(EffectiveFullscreenLogo),
+            o => o.EffectiveFullscreenLogo);
+
+    internal static readonly DirectProperty<Window, IDataTemplate?> EffectiveFullscreenLogoTemplateProperty =
+        AvaloniaProperty.RegisterDirect<Window, IDataTemplate?>(
+            nameof(EffectiveFullscreenLogoTemplate),
+            o => o.EffectiveFullscreenLogoTemplate);
 
     internal static readonly DirectProperty<Window, bool> IsEffectiveFullscreenTitleVisibleProperty =
         AvaloniaProperty.RegisterDirect<Window, bool>(
@@ -456,6 +476,36 @@ public partial class Window : AvaloniaWindow,
             value);
     }
 
+    private bool _isLegacyWindowsFrameBorderVisible;
+
+    /// <summary>
+    /// Windows 10 CSD 的客户区顶边需要自绘 1px 边框：Avalonia 在该平台把客户区顶到窗口最上沿，
+    /// DWM 的顶边边框因此被遮住。Windows 11 由 DWM 的可见边框承担，不再自绘。
+    /// </summary>
+    internal bool IsLegacyWindowsFrameBorderVisible
+    {
+        get => _isLegacyWindowsFrameBorderVisible;
+        private set => SetAndRaise(
+            IsLegacyWindowsFrameBorderVisibleProperty,
+            ref _isLegacyWindowsFrameBorderVisible,
+            value);
+    }
+
+    private double _legacyWindowsFrameBorderThickness = 1;
+
+    /// <summary>
+    /// 自绘顶边边框的 DIP 厚度：原生 DWM 边框是 1 个物理像素，
+    /// 这里按 RenderScaling 折算，避免高 DPI 下画成 2 个像素。
+    /// </summary>
+    internal double LegacyWindowsFrameBorderThickness
+    {
+        get => _legacyWindowsFrameBorderThickness;
+        private set => SetAndRaise(
+            LegacyWindowsFrameBorderThicknessProperty,
+            ref _legacyWindowsFrameBorderThickness,
+            value);
+    }
+
     private bool _isEffectiveFullscreenLogoVisible;
 
     internal bool IsEffectiveFullscreenLogoVisible
@@ -478,6 +528,28 @@ public partial class Window : AvaloniaWindow,
     {
         get => _effectiveLogoTemplate;
         private set => SetAndRaise(EffectiveLogoTemplateProperty, ref _effectiveLogoTemplate, value);
+    }
+
+    private object? _effectiveFullscreenLogo;
+
+    internal object? EffectiveFullscreenLogo
+    {
+        get => _effectiveFullscreenLogo;
+        private set => SetAndRaise(
+            EffectiveFullscreenLogoProperty,
+            ref _effectiveFullscreenLogo,
+            value);
+    }
+
+    private IDataTemplate? _effectiveFullscreenLogoTemplate;
+
+    internal IDataTemplate? EffectiveFullscreenLogoTemplate
+    {
+        get => _effectiveFullscreenLogoTemplate;
+        private set => SetAndRaise(
+            EffectiveFullscreenLogoTemplateProperty,
+            ref _effectiveFullscreenLogoTemplate,
+            value);
     }
 
     private bool _isEffectiveFullscreenTitleVisible;
@@ -545,8 +617,10 @@ public partial class Window : AvaloniaWindow,
     private readonly WindowCaptionButtonCommand _captionButtonCommand;
     private FullscreenPopoverLayer? _fullscreenPopoverLayer;
     private WindowResizer? _windowResizer;
+    private Border? _transparencyFallbackBorder;
     private MediaBreakPointIndicator? _mediaBreakPointIndicator;
     private CompositeDisposable? _defaultTitleBarBindings;
+    private IDisposable? _titleBarFrameBackgroundProjection;
     private Window? _mainWindowLogoFallbackSource;
     private CompositeDisposable? _mainWindowLogoFallbackLease;
     private bool _isOpened;
@@ -581,8 +655,13 @@ public partial class Window : AvaloniaWindow,
     {
         _captionButtonCommand = new WindowCaptionButtonCommand(this);
         ConfigureCsdStatus();
+        UpdateLegacyWindowsFrameBorderVisibility();
+        ScalingChanged += HandleWindowScalingChanged;
         _platformChromeManager = WindowChromeManager.Attach(this);
         UpdateCaptionButtonCapabilities();
+        // Before the first layout: Wayland would otherwise lay out and render at scale 1 until the compositor
+        // reports the preferred scale after mapping, then re-lay out the whole window.
+        WaylandInitialScaling.Apply(PlatformImpl);
     }
 
     internal IDisposable SuppressDrawnChromeOverlay()
@@ -877,7 +956,10 @@ public partial class Window : AvaloniaWindow,
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        _transparencyFallbackBorder = null;
         base.OnApplyTemplate(e);
+        _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
+        AttachContentCacheParts(e.NameScope);
 
         HandleCreateTitleBar();
         EnsureWindowsCsdMinimumHeight();
@@ -933,6 +1015,8 @@ public partial class Window : AvaloniaWindow,
     {
         _defaultTitleBarBindings?.Dispose();
         _defaultTitleBarBindings = null;
+        _titleBarFrameBackgroundProjection?.Dispose();
+        _titleBarFrameBackgroundProjection = null;
         titleBar.SizeChanged -= HandleTitleBarSizeChanged;
         titleBar.DetachHost(this);
     }
@@ -1175,7 +1259,49 @@ public partial class Window : AvaloniaWindow,
             WindowDecorationMargin,
             IsCsdEnabled,
             IsTitleBarVisible,
-            this.GetDrawnDecorationsTitleBarHeight());
+            IsCsdEnabled && !IsTitleBarVisible ? this.GetDrawnDecorationsTitleBarHeight() : 0);
+    }
+
+    internal static bool ShouldDrawLegacyWindowsFrameBorder(
+        OsType osType,
+        Version osVersion,
+        bool isCsdEnabled,
+        bool extendClientAreaToDecorations,
+        WindowDecorations decorations,
+        WindowState windowState)
+    {
+        // Win10 的 DWM 在扩展客户区下把窗口顶边让给客户区，导致可见边框只剩左右下三边。
+        // Win11 的 DWM 会在窗口内部绘制 1px 可见边框，不需要客户区补偿。
+        return osType == OsType.Windows &&
+               isCsdEnabled &&
+               extendClientAreaToDecorations &&
+               decorations == WindowDecorations.Full &&
+               windowState == WindowState.Normal &&
+               osVersion.Major >= 10 &&
+               osVersion.Build < 22000;
+    }
+
+    private void UpdateLegacyWindowsFrameBorderVisibility()
+    {
+        IsLegacyWindowsFrameBorderVisible = ShouldDrawLegacyWindowsFrameBorder(
+            OsType,
+            OsVersion,
+            IsCsdEnabled,
+            ExtendClientAreaToDecorationsHint,
+            WindowDecorations,
+            WindowState);
+        UpdateLegacyWindowsFrameBorderThickness();
+    }
+
+    private void UpdateLegacyWindowsFrameBorderThickness()
+    {
+        var scaling = RenderScaling;
+        LegacyWindowsFrameBorderThickness = 1 / (double.IsFinite(scaling) && scaling > 0 ? scaling : 1);
+    }
+
+    private void HandleWindowScalingChanged(object? sender, EventArgs e)
+    {
+        UpdateLegacyWindowsFrameBorderThickness();
     }
 
     private void EnsureWindowsCsdMinimumHeight(double measuredTitleBarHeight = 0)
@@ -1274,6 +1400,8 @@ public partial class Window : AvaloniaWindow,
     protected virtual void NotifyConfigureTitleBar(WindowTitleBar titleBar)
     {
         _defaultTitleBarBindings?.Dispose();
+        _titleBarFrameBackgroundProjection?.Dispose();
+        _titleBarFrameBackgroundProjection = null;
         _defaultTitleBarBindings = new CompositeDisposable
         {
             titleBar.Bind(WindowTitleBar.TitleProperty, this.GetObservable(TitleProperty)),
@@ -1297,8 +1425,40 @@ public partial class Window : AvaloniaWindow,
             titleBar.Bind(
                 WindowTitleBar.RightAddOnTemplateProperty,
                 this.GetObservable(RightAddOnTemplateProperty),
-                BindingPriority.Template)
+                BindingPriority.Template),
+            // TitleBarFrameBackground 不能放进 ControlTheme：默认标题栏由 Window 在
+            // OnApplyTemplate 中创建，且属性为 null 时必须回退到 ControlTheme 的
+            // ColorBgContainer DynamicResource。Template 优先级可覆盖 ControlTheme，
+            // 同时保留用户 LocalValue 的优先级。
+            this.GetObservable(TitleBarFrameBackgroundProperty).Subscribe(
+                brush => ProjectTitleBarFrameBackground(titleBar, brush)),
+            this.GetObservable(IsCsdEnabledProperty).Subscribe(
+                _ => ProjectTitleBarFrameBackground(titleBar, TitleBarFrameBackground))
         };
+    }
+
+    private void ProjectTitleBarFrameBackground(WindowTitleBar titleBar, IBrush? brush)
+    {
+        _titleBarFrameBackgroundProjection?.Dispose();
+
+        // Linux CSD 的标题栏背景由 drawn decorations overlay 的
+        // WindowTitleBarShadowBackground 按 frame 裁剪绘制；默认标题栏必须保持透明，
+        // 否则不透明背景会盖住该绘制层。其他平台由默认标题栏直接绘制。
+        if (OsType == OsType.Linux && IsCsdEnabled)
+        {
+            _titleBarFrameBackgroundProjection = titleBar.SetValue(
+                WindowTitleBar.BackgroundProperty,
+                Brushes.Transparent,
+                BindingPriority.Template);
+            return;
+        }
+
+        _titleBarFrameBackgroundProjection = brush is null
+            ? null
+            : titleBar.SetValue(
+                WindowTitleBar.BackgroundProperty,
+                brush,
+                BindingPriority.Template);
     }
 
     private bool CanExecuteCaptionButtonAction(CaptionButtonAction action)
@@ -1480,6 +1640,8 @@ public partial class Window : AvaloniaWindow,
     protected override void OnClosed(EventArgs e)
     {
         _isOpened = false;
+        ScalingChanged -= HandleWindowScalingChanged;
+        _transparencyFallbackBorder = null;
         StopMacOsWindowButtonObserver();
         if (_titleBar != null)
         {
@@ -1616,6 +1778,15 @@ public partial class Window : AvaloniaWindow,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == TransparencyBackgroundFallbackProperty &&
+            ActualTransparencyLevel == WindowTransparencyLevel.None &&
+            _transparencyFallbackBorder is not null)
+        {
+            // TopLevel writes this part's Background as a local value when applying the template
+            // or changing transparency, overriding ControlTheme setters and TemplateBinding.
+            // Mirror later fallback changes here; TopLevel still owns transparency transitions.
+            _transparencyFallbackBorder.Background = TransparencyBackgroundFallback;
+        }
         if (change.Property == WindowStateProperty)
         {
             var (oldState, newState) = change.GetOldAndNewValue<WindowState>();
@@ -1656,6 +1827,15 @@ public partial class Window : AvaloniaWindow,
             change.Property == ActualThemeVariantProperty)
         {
             ApplyCurrentWindowsCsdFrameTheme();
+        }
+        if (change.Property == WindowStateProperty ||
+            change.Property == WindowDecorationsProperty ||
+            change.Property == ExtendClientAreaToDecorationsHintProperty ||
+            change.Property == IsCsdEnabledProperty ||
+            change.Property == OsTypeProperty ||
+            change.Property == OsVersionProperty)
+        {
+            UpdateLegacyWindowsFrameBorderVisibility();
         }
         _platformChromeManager?.HandlePropertyChanged(change.Property);
         if (change.Property == IsExtendedIntoWindowDecorationsProperty)
@@ -1698,7 +1878,8 @@ public partial class Window : AvaloniaWindow,
             change.Property == EffectiveLogoTemplateProperty ||
             change.Property == LogoVisibilityProperty ||
             change.Property == TitleProperty ||
-            change.Property == IsTitleVisibleProperty)
+            change.Property == IsTitleVisibleProperty ||
+            change.Property == WindowStateProperty)
         {
             UpdateEffectiveFullscreenLogoVisible();
         }
@@ -1712,12 +1893,28 @@ public partial class Window : AvaloniaWindow,
     private void UpdateEffectiveFullscreenLogoVisible()
     {
         var hasLogo = EffectiveLogo is not null || EffectiveLogoTemplate is not null;
-        IsEffectiveFullscreenLogoVisible = LogoVisibility switch
+        var isLogoVisibleByMode = LogoVisibility switch
         {
             WindowTitleBarLogoVisibility.Always => hasLogo,
             WindowTitleBarLogoVisibility.Never => false,
             _ => hasLogo && HasTitleContent(Title) && IsEffectiveFullscreenTitleVisible
         };
+        IsEffectiveFullscreenLogoVisible = WindowState == WindowState.FullScreen && isLogoVisibleByMode;
+        UpdateEffectiveFullscreenLogo();
+    }
+
+    private void UpdateEffectiveFullscreenLogo()
+    {
+        if (IsEffectiveFullscreenLogoVisible)
+        {
+            EffectiveFullscreenLogo         = EffectiveLogo;
+            EffectiveFullscreenLogoTemplate = EffectiveLogoTemplate;
+        }
+        else
+        {
+            EffectiveFullscreenLogo         = null;
+            EffectiveFullscreenLogoTemplate = null;
+        }
     }
 
     private static bool HasTitleContent(object? title)

@@ -1,0 +1,15 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:gallery="https://atomui.net/toolkits/gallery-base"
+    x:Class="AtomUI.Toolkits.GalleryBase.Controls.SemanticPartPreviewCodeExampleControl">
+    <Border Padding="16">
+        <StackPanel Spacing="14">
+            <atom:TextBlock Text="{gallery:SemanticPartPreviewLangResource StylingExampleTitle}"
+                            FontWeight="SemiBold" />
+            <ContentControl Name="PART_CodeHost"
+                            Height="220" />
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -175,5 +175,65 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticAvatarDescription">
+      <segment>
+        <source>Avatar element with inline-block display, vertical alignment, background color, size, border radius and other avatar placeholder styles.</source>
+        <target state="translated">Elemento avatar com display inline-block, alinhamento vertical, cor de fundo, tamanho, raio da borda e outros estilos de placeholder do avatar.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticElementContentDescription">
+      <segment>
+        <source>Content element with placeholder background, border, radius and size styles.</source>
+        <target state="translated">Elemento de conteúdo com estilos de fundo, borda, raio e tamanho do placeholder.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticElementRootDescription">
+      <segment>
+        <source>Root element of a Skeleton element component.</source>
+        <target state="translated">Elemento raiz de um componente de elemento Skeleton.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with table cell, padding, vertical alignment and other avatar placeholder area layout styles.</source>
+        <target state="translated">Elemento header com table-cell, padding, alinhamento vertical e outros estilos de layout da área de placeholder do avatar.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticParagraphDescription">
+      <segment>
+        <source>Paragraph element with padding, list item styles, background color, border radius and other paragraph placeholder styles.</source>
+        <target state="translated">Elemento paragraph com padding, estilos de itens da lista, cor de fundo, raio da borda e outros estilos de placeholder do parágrafo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Skeleton's published Semantic Parts.</source>
+        <target state="translated">Use estilos com escopo do owner para personalizar as Semantic Parts publicadas do Skeleton.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with table display, width, animation effects, border radius and other skeleton container basic styles.</source>
+        <target state="translated">Elemento raiz com display table, largura, efeitos de animação, raio da borda e outros estilos básicos do contêiner Skeleton.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Section element with skeleton content area layout styles.</source>
+        <target state="translated">Elemento section com estilos de layout da área de conteúdo do Skeleton.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with width, height, background color, border radius and other title placeholder styles.</source>
+        <target state="translated">Elemento title com largura, altura, cor de fundo, raio da borda e outros estilos de placeholder do título.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

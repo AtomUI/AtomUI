@@ -1,6 +1,5 @@
 using System.Reflection;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -9,6 +8,7 @@ using Xunit;
 
 namespace AtomUI.Desktop.Controls.Tests.Dialog;
 
+[Collection(DialogLifecycleTestCollection.Name)]
 public class DialogMotionAnchorTests
 {
     static DialogMotionAnchorTests()
@@ -17,14 +17,14 @@ public class DialogMotionAnchorTests
     }
 
     [Fact]
-    public void Dialog_Without_Explicit_PlacementTarget_Uses_Fade_Motion()
+    public void Dialog_Without_Explicit_PlacementTarget_Uses_Centered_Zoom_Motion()
     {
         var placementTarget = new Border();
         var dialog = new AtomUI.Desktop.Controls.Dialog();
         var presenter = new OverlayDialogPresenter(dialog, placementTarget);
 
-        CreateSurfaceMotion(presenter, isOpening: true).ShouldBeOfType<FadeInMotion>();
-        CreateSurfaceMotion(presenter, isOpening: false).ShouldBeOfType<FadeOutMotion>();
+        CreateSurfaceMotion(presenter, isOpening: true).ShouldBeOfType<DialogZoomInMotion>();
+        CreateSurfaceMotion(presenter, isOpening: false).ShouldBeOfType<DialogZoomOutMotion>();
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class DialogMotionAnchorTests
         }
         else
         {
-            openingMotion.ShouldBeOfType<FadeInMotion>();
+            openingMotion.ShouldBeOfType<DialogZoomInMotion>();
         }
     }
 
@@ -161,12 +161,13 @@ public class DialogMotionAnchorTests
 
     private static void WaitWithDispatcherPump(Task task)
     {
-        var timeoutAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
-        while (!task.IsCompleted && DateTimeOffset.UtcNow < timeoutAt)
-        {
-            Dispatcher.UIThread.RunJobs();
-            Thread.Sleep(1);
-        }
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        _ = task.ContinueWith(
+            _ => cancellation.Cancel(),
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+        Dispatcher.UIThread.MainLoop(cancellation.Token);
 
         task.IsCompleted.ShouldBeTrue();
         task.GetAwaiter().GetResult();

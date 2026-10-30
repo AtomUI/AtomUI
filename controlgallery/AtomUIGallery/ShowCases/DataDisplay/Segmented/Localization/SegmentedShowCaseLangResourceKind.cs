@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -41,5 +39,11 @@ public enum SegmentedShowCaseLangResourceKind
     PageDescription,
     ComponentCategory,
     ComponentStatusStable,
-    ApiEventSelectionChanged
+    ApiEventSelectionChanged,
+    SemanticRootDescription,
+    SemanticItemDescription,
+    SemanticIconDescription,
+    SemanticLabelDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription
 }

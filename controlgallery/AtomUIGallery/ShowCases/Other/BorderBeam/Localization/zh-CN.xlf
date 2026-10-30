@@ -193,6 +193,30 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="ShowOnHoverCardDescription">
+      <segment>
+        <source>The border beam appears when the pointer moves over this card.</source>
+        <target state="translated">当指针移到此卡片上时，边框流光会显示。</target>
+      </segment>
+    </unit>
+    <unit id="ShowOnHoverCardTitle">
+      <segment>
+        <source>Hover over the card</source>
+        <target state="translated">将指针移到卡片上</target>
+      </segment>
+    </unit>
+    <unit id="ShowOnHoverDescription">
+      <segment>
+        <source>Hide the border beam by default, and reveal it when hovering over the container.</source>
+        <target state="translated">默认隐藏流光，当指针悬停在容器上时显示。</target>
+      </segment>
+    </unit>
+    <unit id="ShowOnHoverTitle">
+      <segment>
+        <source>Show on hover</source>
+        <target state="translated">悬停显示</target>
+      </segment>
+    </unit>
     <unit id="SizeCompactCardDescription">
       <segment>
         <source>Keeps the highlight shorter for dense card groups.</source>
@@ -239,30 +263,6 @@
       <segment>
         <source>Size</source>
         <target state="translated">尺寸</target>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverCardDescription">
-      <segment>
-        <source>The border beam appears when the pointer moves over this card.</source>
-        <target state="translated">当指针移到此卡片上时，边框流光会显示。</target>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverCardTitle">
-      <segment>
-        <source>Hover over the card</source>
-        <target state="translated">将指针移到卡片上</target>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverDescription">
-      <segment>
-        <source>Hide the border beam by default, and reveal it when hovering over the container.</source>
-        <target state="translated">默认隐藏流光，当指针悬停在容器上时显示。</target>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverTitle">
-      <segment>
-        <source>Show on hover</source>
-        <target state="translated">悬停显示</target>
       </segment>
     </unit>
   </file>

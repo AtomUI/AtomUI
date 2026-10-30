@@ -1,5 +1,10 @@
+using Avalonia.Data;
+using Avalonia.Controls.Templates;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
+using AtomUI.Controls.Converters;
+using Avalonia.Layout;
+using AtomUI.Animations;
+using MotionApi = AtomUI.Animations.Motion;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
@@ -26,6 +31,65 @@ public class ExpanderBehaviorTests
     static ExpanderBehaviorTests()
     {
         AvaloniaTestApp.EnsureInitialized();
+    }
+
+    [Fact]
+    public void Content_Converter_Is_Owned_By_The_Expander_Theme_Dictionary()
+    {
+        // This is the compiled wrapper for Expander/Themes/ExpanderTheme.axaml.
+        var dictionary = new AtomUI.Generated.AtomUIDesktopControls.GeneratedThemeAssetResource_AD9E7F86B0580549();
+        dictionary.TryGetResource("StringToTextBlockConverter", null, out var resource).ShouldBeTrue();
+        var converter = resource.ShouldBeOfType<StringToTextBlockConverter>();
+        converter.VerticalAlignment.ShouldBe(VerticalAlignment.Center);
+        converter.HorizontalAlignment.ShouldBe(HorizontalAlignment.Stretch);
+        converter.TextWrapping.ShouldBe(TextWrapping.Wrap);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void String_Content_Keeps_Wrapping_And_Alignment_Despite_A_Host_Converter(bool injectHostConverter)
+    {
+        var expander = new AtomUIExpander { Header = "Header", Content = "A long string content", IsExpanded = true, IsMotionEnabled = false };
+        if (injectHostConverter)
+        {
+            expander.Resources["StringToTextBlockConverter"] = new StringToTextBlockConverter
+            {
+                VerticalAlignment = VerticalAlignment.Top,
+                TextWrapping = TextWrapping.NoWrap
+            };
+        }
+        var window = ShowInWindow(expander);
+        try
+        {
+            var presenter = FindTemplatePart<ContentPresenter>(expander, "PART_ContentPresenter");
+            presenter.ShouldNotBeNull();
+            var content = presenter.Content.ShouldBeOfType<Avalonia.Controls.TextBlock>();
+            content.Text.ShouldBe("A long string content");
+            content.VerticalAlignment.ShouldBe(VerticalAlignment.Center);
+            content.HorizontalAlignment.ShouldBe(HorizontalAlignment.Stretch);
+            content.TextWrapping.ShouldBe(TextWrapping.Wrap);
+            expander.Content = "Updated content";
+            Dispatcher.UIThread.RunJobs();
+            presenter.Content.ShouldBeOfType<Avalonia.Controls.TextBlock>().Text.ShouldBe("Updated content");
+        }
+        finally { window.Close(); }
+    }
+
+    [Fact]
+    public void Non_String_Content_Is_Preserved_By_The_Local_Converter()
+    {
+        var content = new Border { Width = 80, Height = 24 };
+        var expander = new AtomUIExpander { Header = "Header", Content = content, IsExpanded = true, IsMotionEnabled = false };
+        var window = ShowInWindow(expander);
+        try
+        {
+            var presenter = FindTemplatePart<ContentPresenter>(expander, "PART_ContentPresenter");
+            presenter.ShouldNotBeNull();
+            presenter.Content.ShouldBeSameAs(content);
+            content.GetVisualAncestors().ShouldContain(presenter);
+        }
+        finally { window.Close(); }
     }
 
     [Fact]
@@ -147,6 +211,102 @@ public class ExpanderBehaviorTests
             contentBorder.BorderThickness.ShouldBe(new Thickness(0, 1, 0, 0));
             DrawingGroupHasFillWithBrush(RenderToDrawingGroup(contentBorder), borderBrush)
                 .ShouldBeTrue("the expanded expander content must render the separator line");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// 回归：<c>PART_Frame</c> 自己画圆角，而 header/body 是它的子节点且各自带背景。
+    /// <c>ClipToBounds</c> 只做矩形裁剪、不做圆角裁剪，所以模板必须开启
+    /// <c>ClipContentToCornerRadius</c>，否则子节点的不透明背景会平铺到方形边界、
+    /// 把圆角覆盖掉（默认主题的 HeaderBg alpha≈2%，缺陷几乎不可见；
+    /// 一旦用户通过 Semantic Part 或 <c>IsGhostStyle</c> 设不透明背景就显形）。
+    /// <para>
+    /// 这里只能断言模板契约与几何前置条件：headless 平台的几何包含性无法表示圆角图形，
+    /// <c>DashedBorder.UpdateClip</c> 会按设计降级为不应用（见
+    /// <c>DashedBorderClipContentTests.Clip_Is_Not_Applied_When_The_Platform_Cannot_Hit_Test_The_Rounded_Figure</c>），
+    /// 因此 <c>Child.Clip</c> 在测试宿主里始终为 null，无法直接观测。真实 Skia 后端会走裁剪路径。
+    /// </para>
+    /// </summary>
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(true, false, true)]
+    public void Frame_Enables_Content_Clip_To_Corner_Radius(
+        bool isExpanded,
+        bool isGhostStyle,
+        bool isBorderless)
+    {
+        var expander = new AtomUIExpander
+        {
+            Header          = "Header",
+            Content         = "Content",
+            IsExpanded      = isExpanded,
+            IsGhostStyle    = isGhostStyle,
+            IsBorderless    = isBorderless,
+            IsMotionEnabled = false
+        };
+
+        var window = ShowInWindow(expander);
+        try
+        {
+            var frame = FindVisualByName<PixelAlignedBorder>(expander, "PART_Frame");
+            frame.ShouldNotBeNull();
+
+            frame!.ClipContentToCornerRadius.ShouldBeTrue(
+                "PART_Frame must clip its content to the rounded corner; without it the header " +
+                "background squares off the top corners");
+            frame.ClipToBounds.ShouldBeTrue();
+            frame.CornerRadius.TopLeft.ShouldBeGreaterThan(0);
+
+            // header 的左上角必须落在 frame 的圆角方形区域内，否则这条裁剪就没有存在意义
+            // （说明圆角位置没有内容覆盖）。二者一起构成"不开启就会露出方角"的证据。
+            var headerOrigin = GetHeaderDecorator(expander).TranslatePoint(new Point(), frame);
+            headerOrigin.ShouldNotBeNull();
+            headerOrigin!.Value.X.ShouldBeLessThan(frame.CornerRadius.TopLeft);
+            headerOrigin.Value.Y.ShouldBeLessThan(frame.CornerRadius.TopLeft);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// frame 的圆角与边框宽度由主题 Style 在模板实例化之后写入，而不是 owner 属性投影。
+    /// 裁剪必须在这些值落地后重算，因此这里验证它们在运行期确实已生效且非退化。
+    /// </summary>
+    [Fact]
+    public void Frame_Corner_Radius_Comes_From_The_Theme_And_Stays_Non_Degenerate()
+    {
+        var expander = new AtomUIExpander
+        {
+            Header          = "Header",
+            Content         = "Content",
+            IsExpanded      = true,
+            IsMotionEnabled = false
+        };
+
+        var window = ShowInWindow(expander);
+        try
+        {
+            var frame = FindVisualByName<PixelAlignedBorder>(expander, "PART_Frame");
+            frame.ShouldNotBeNull();
+
+            // ExpanderBorderRadius = BorderRadiusLG（见 ExpanderToken.CalculateTokenValues）。
+            var expectedRadius = GetThemeResource<CornerRadius>(SharedTokenKind.BorderRadiusLG);
+            frame!.CornerRadius.ShouldBe(expectedRadius);
+            expectedRadius.TopLeft.ShouldBeGreaterThan(0);
+
+            // 圆角是 Style 写入的，运行期改动必须能反映到节点上（裁剪跟随该属性重算）。
+            frame.CornerRadius = new CornerRadius(16);
+            Dispatcher.UIThread.RunJobs();
+            frame.CornerRadius.TopLeft.ShouldBe(16);
         }
         finally
         {
@@ -354,7 +514,7 @@ public class ExpanderBehaviorTests
         var window = ShowInWindow(expander);
         try
         {
-            var motionActor = GetContentMotionActor(expander);
+            var motionActor = GetContentViewport(expander);
             var initialContentBorderThickness = expander.ContentBorderThickness;
             var contentBorderChangeCount = 0;
             using var contentBorderSubscription =
@@ -365,22 +525,22 @@ public class ExpanderBehaviorTests
 
             expander.IsExpanded = true;
             Dispatcher.UIThread.RunJobs();
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeTrue();
 
             expander.IsExpanded = false;
             Dispatcher.UIThread.RunJobs();
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeTrue();
 
             expander.IsExpanded = true;
             Dispatcher.UIThread.RunJobs();
             WaitForLayoutCondition(() => motionActor.IsVisible &&
-                                         !motionActor.IsAnimating(Visual.OpacityProperty) &&
+                                         !(!MotionApi.GetVisibilityTask(motionActor).IsCompleted) &&
                                          motionActor.Opacity == 1);
 
             expander.IsExpanded.ShouldBeTrue();
             motionActor.IsVisible.ShouldBe(expander.IsExpanded);
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
-            motionActor.MotionTransform.ShouldBeNull();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeFalse();
+            motionActor.RenderTransform.ShouldBeNull();
             motionActor.Transitions.ShouldBeNull();
             contentBorderChangeCount.ShouldBe(0);
             expander.ContentBorderThickness.ShouldBe(initialContentBorderThickness);
@@ -398,8 +558,8 @@ public class ExpanderBehaviorTests
         var oldButton = new IconButton();
         var newButton = new IconButton();
 
-        expander.ApplyTemplateParts(oldButton, new LayoutAwareMotionActor());
-        expander.ApplyTemplateParts(newButton, new LayoutAwareMotionActor());
+        expander.ApplyTemplateParts(oldButton, new ContentViewport());
+        expander.ApplyTemplateParts(newButton, new ContentViewport());
 
         oldButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent, oldButton));
         expander.IsExpanded.ShouldBeFalse();
@@ -425,22 +585,21 @@ public class ExpanderBehaviorTests
             expander.IsExpanded = true;
             Dispatcher.UIThread.RunJobs();
 
-            var oldMotionActor = GetContentMotionActor(expander);
-            oldMotionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
-            oldMotionActor.MotionTransformOperations = TransformOperations.Identity;
+            var oldMotionActor = GetContentViewport(expander);
+            (!MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted).ShouldBeTrue();
+            oldMotionActor.RenderTransform = TransformOperations.Identity;
             oldMotionActor.Height = 42;
-            oldMotionActor.MotionTransformOperations.ShouldNotBeNull();
+            oldMotionActor.RenderTransform.ShouldNotBeNull();
             oldMotionActor.Height.ShouldBe(42);
-            var lateCompletionCount = 0;
-            oldMotionActor.Completed += (_, _) => lateCompletionCount++;
+            var obsoletePlayback = MotionApi.GetVisibilityTask(oldMotionActor);
 
-            expander.ApplyTemplateParts(new IconButton(), new LayoutAwareMotionActor());
+            expander.ApplyTemplateParts(new IconButton(), new ContentViewport());
 
-            oldMotionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+            (!MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted).ShouldBeFalse();
             oldMotionActor.IsVisible.ShouldBeTrue();
             oldMotionActor.Opacity.ShouldBe(1);
-            oldMotionActor.MotionTransform.ShouldBeNull();
-            oldMotionActor.MotionTransformOperations.ShouldBe(TransformOperations.Identity);
+            MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted.ShouldBeTrue();
+            oldMotionActor.RenderTransform.ShouldBe(TransformOperations.Identity);
             oldMotionActor.Transitions.ShouldBeNull();
             oldMotionActor.Height.ShouldBe(42);
 
@@ -448,14 +607,14 @@ public class ExpanderBehaviorTests
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
 
-            oldMotionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+            (!MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted).ShouldBeFalse();
             oldMotionActor.IsVisible.ShouldBeTrue();
             oldMotionActor.Opacity.ShouldBe(1);
-            oldMotionActor.MotionTransform.ShouldBeNull();
-            oldMotionActor.MotionTransformOperations.ShouldBe(TransformOperations.Identity);
+            MotionApi.GetVisibilityTask(oldMotionActor).IsCompleted.ShouldBeTrue();
+            oldMotionActor.RenderTransform.ShouldBe(TransformOperations.Identity);
             oldMotionActor.Transitions.ShouldBeNull();
             oldMotionActor.Height.ShouldBe(42);
-            lateCompletionCount.ShouldBe(0);
+            obsoletePlayback.IsCompletedSuccessfully.ShouldBeTrue();
         }
         finally
         {
@@ -480,23 +639,22 @@ public class ExpanderBehaviorTests
             expander.IsExpanded = true;
             Dispatcher.UIThread.RunJobs();
 
-            var motionActor = GetContentMotionActor(expander);
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
-            motionActor.MotionTransformOperations = TransformOperations.Identity;
+            var motionActor = GetContentViewport(expander);
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeTrue();
+            motionActor.RenderTransform = TransformOperations.Identity;
             motionActor.Height = 42;
-            motionActor.MotionTransformOperations.ShouldNotBeNull();
+            motionActor.RenderTransform.ShouldNotBeNull();
             motionActor.Height.ShouldBe(42);
-            var lateCompletionCount = 0;
-            motionActor.Completed += (_, _) => lateCompletionCount++;
+            var obsoletePlayback = MotionApi.GetVisibilityTask(motionActor);
 
             window.Content = null;
             Dispatcher.UIThread.RunJobs();
 
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeFalse();
             motionActor.IsVisible.ShouldBeTrue();
             motionActor.Opacity.ShouldBe(1);
-            motionActor.MotionTransform.ShouldBeNull();
-            motionActor.MotionTransformOperations.ShouldBe(TransformOperations.Identity);
+            MotionApi.GetVisibilityTask(motionActor).IsCompleted.ShouldBeTrue();
+            motionActor.RenderTransform.ShouldBe(TransformOperations.Identity);
             motionActor.Transitions.ShouldBeNull();
             motionActor.Height.ShouldBe(42);
 
@@ -504,14 +662,14 @@ public class ExpanderBehaviorTests
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
 
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeFalse();
             motionActor.IsVisible.ShouldBeTrue();
             motionActor.Opacity.ShouldBe(1);
-            motionActor.MotionTransform.ShouldBeNull();
-            motionActor.MotionTransformOperations.ShouldBe(TransformOperations.Identity);
+            MotionApi.GetVisibilityTask(motionActor).IsCompleted.ShouldBeTrue();
+            motionActor.RenderTransform.ShouldBe(TransformOperations.Identity);
             motionActor.Transitions.ShouldBeNull();
             motionActor.Height.ShouldBe(42);
-            lateCompletionCount.ShouldBe(0);
+            obsoletePlayback.IsCompletedSuccessfully.ShouldBeTrue();
         }
         finally
         {
@@ -534,34 +692,35 @@ public class ExpanderBehaviorTests
         var window = ShowInWindow(expander);
         try
         {
-            var motionActor = GetContentMotionActor(expander);
+            var motionActor = GetContentViewport(expander);
             motionActor.IsVisible.ShouldBeTrue();
 
             expander.IsExpanded = false;
             Dispatcher.UIThread.RunJobs();
             motionActor.IsVisible.ShouldBeTrue();
-            motionActor.IsAnimating(Visual.OpacityProperty).ShouldBeTrue();
+            (!MotionApi.GetVisibilityTask(motionActor).IsCompleted).ShouldBeTrue();
 
             window.Content = null;
             Dispatcher.UIThread.RunJobs();
 
             expander.IsExpanded.ShouldBeFalse();
-            motionActor.IsVisible.ShouldBeFalse();
-            motionActor.Opacity.ShouldBe(0);
+            motionActor.IsAttachedToVisualTree().ShouldBeFalse();
+            MotionApi.GetVisibilityTask(motionActor).IsCompleted.ShouldBeTrue();
+            motionActor.Opacity.ShouldBe(1, "Hidden stable state releases the Motion override and preserves the underlying opacity.");
 
             window.Content = expander;
             Dispatcher.UIThread.RunJobs();
 
-            ReferenceEquals(GetContentMotionActor(expander), motionActor).ShouldBeTrue();
+            ReferenceEquals(GetContentViewport(expander), motionActor).ShouldBeTrue();
             motionActor.IsVisible.ShouldBe(expander.IsExpanded);
-            motionActor.Opacity.ShouldBe(0);
+            motionActor.Opacity.ShouldBe(1, "Hidden stable state releases the Motion override and preserves the underlying opacity.");
 
             Thread.Sleep(expander.MotionDuration + TimeSpan.FromMilliseconds(50));
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
 
             motionActor.IsVisible.ShouldBe(expander.IsExpanded);
-            motionActor.Opacity.ShouldBe(0);
+            motionActor.Opacity.ShouldBe(1, "Hidden stable state releases the Motion override and preserves the underlying opacity.");
         }
         finally
         {
@@ -617,16 +776,16 @@ public class ExpanderBehaviorTests
         return presenter!;
     }
 
-    private static BaseMotionActor GetContentMotionActor(AtomUIExpander expander)
+    private static ContentViewport GetContentViewport(AtomUIExpander expander)
     {
-        var motionActor = FindTemplatePart<BaseMotionActor>(expander, "PART_ContentMotionActor");
+        var motionActor = FindTemplatePart<ContentViewport>(expander, "PART_ContentViewport");
         motionActor.ShouldNotBeNull();
         return motionActor!;
     }
 
     private static PixelAlignedBorder GetContentBorder(AtomUIExpander expander)
     {
-        var motionActor = GetContentMotionActor(expander);
+        var motionActor = GetContentViewport(expander);
         motionActor.Content.ShouldBeOfType<PixelAlignedBorder>();
         var contentBorder = (PixelAlignedBorder)motionActor.Content!;
         string.IsNullOrEmpty(contentBorder.Name).ShouldBeTrue();
@@ -832,13 +991,20 @@ public class ExpanderBehaviorTests
     {
         protected override Type StyleKeyOverride => typeof(AtomUIExpander);
 
-        public void ApplyTemplateParts(IconButton expandButton, BaseMotionActor motionActor)
+        public void ApplyTemplateParts(IconButton expandButton, ContentViewport motionActor)
         {
-            var nameScope = new NameScope();
-            nameScope.Register("PART_ExpandButton", expandButton);
-            nameScope.Register("PART_ContentMotionActor", motionActor);
-
-            OnApplyTemplate(new TemplateAppliedEventArgs(nameScope));
+            Template = new FuncControlTemplate((owner, scope) =>
+            {
+                scope.Register("PART_ExpandButton", expandButton);
+                scope.Register("PART_ContentViewport", motionActor);
+                MotionApi.SetEnter(motionActor, new ExpandMotion());
+                MotionApi.SetLeave(motionActor, new CollapseMotion());
+                motionActor.Bind(MotionApi.IsVisibleProperty, new TemplateBinding(IsExpandedProperty));
+                motionActor.Bind(MotionApi.IsEnabledProperty, new TemplateBinding(IsMotionEnabledProperty));
+                motionActor.Bind(MotionApi.DurationOverrideProperty, new TemplateBinding(MotionDurationProperty));
+                return new StackPanel { Children = { expandButton, motionActor } };
+            });
+            ApplyTemplate();
         }
     }
 }

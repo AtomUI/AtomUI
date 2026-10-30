@@ -60,7 +60,7 @@ internal class GradientColorSlider : AbstractColorSlider
     #endregion
 
     internal static readonly RoutedEvent<GradientActiveStopChangedEventArgs> GradientActiveStopChangedEvent =
-        RoutedEvent.Register<Thumb, GradientActiveStopChangedEventArgs>(nameof(GradientActiveStopChanged), RoutingStrategies.Bubble);
+        RoutedEvent.Register<GradientColorSlider, GradientActiveStopChangedEventArgs>(nameof(GradientActiveStopChanged), RoutingStrategies.Bubble);
 
     public event EventHandler<GradientActiveStopChangedEventArgs>? GradientActiveStopChanged
     {

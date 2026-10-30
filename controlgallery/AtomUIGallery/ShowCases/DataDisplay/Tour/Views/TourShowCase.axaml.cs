@@ -76,6 +76,22 @@ public partial class TourShowCase : GalleryReactiveUserControl<TourViewModel>
         }
     }
 
+    private void HandleSemanticStylesObjectBeginTour(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is TourViewModel vm)
+        {
+            vm.SemanticStylesObjectTourOpened = true;
+        }
+    }
+
+    private void HandleSemanticStylesFunctionBeginTour(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is TourViewModel vm)
+        {
+            vm.SemanticStylesFunctionTourOpened = true;
+        }
+    }
+
     private void HandleTourExampleLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         if (sender is not Control root)
@@ -83,8 +99,7 @@ public partial class TourShowCase : GalleryReactiveUserControl<TourViewModel>
             return;
         }
 
-        SetTourStepTarget(root, "BasicCaseUploadStep", "BasicCaseUpload");
-        SetTourStepTarget(root, "BasicCaseSaveStep", "BasicCaseSave");
+        SetTourStepTarget(root, "BasicCaseUploadStep", "BasicCaseUpload");        SetTourStepTarget(root, "BasicCaseSaveStep", "BasicCaseSave");
         SetTourStepTarget(root, "BasicCaseEllipsisStep", "BasicCaseEllipsis");
         SetTourStepTarget(root, "NonMaskCaseUploadStep", "NonMaskCaseUpload");
         SetTourStepTarget(root, "NonMaskSaveStep", "NonMaskSave");
@@ -102,6 +117,26 @@ public partial class TourShowCase : GalleryReactiveUserControl<TourViewModel>
         SetTourStepTarget(root, "CustomActionSaveStep", "CustomActionSave");
         SetTourStepTarget(root, "CustomActionEllipsisStep", "CustomActionEllipsis");
         SetTourStepTarget(root, "CustomGapStep", "CustomGapControl");
+        SetTourStepTarget(root, "SemanticStylesObjectUploadStep", "SemanticStylesUpload");
+        SetTourStepTarget(root, "SemanticStylesObjectSaveStep", "SemanticStylesSave");
+        SetTourStepTarget(root, "SemanticStylesObjectEllipsisStep", "SemanticStylesEllipsis");
+        SetTourStepTarget(root, "SemanticStylesFunctionUploadStep", "SemanticStylesUpload");
+        SetTourStepTarget(root, "SemanticStylesFunctionSaveStep", "SemanticStylesSave");
+        SetTourStepTarget(root, "SemanticStylesFunctionEllipsisStep", "SemanticStylesEllipsis");
+    }
+
+    // 语义预览舞台：对齐 antd _semantic 演示，两步都锚定到居中的 Show 按钮。
+    // Tour 在 Loaded 时即按 IsPopupPinnedOpen 打开，锚点必须在 attach 阶段
+    // 先行设置，确保首步定位到 Show 按钮而不是空目标。
+    private void HandleSemanticStageAttached(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is not Control stage)
+        {
+            return;
+        }
+
+        SetTourStepTarget(stage, "TourSemanticHelloStep", "TourSemanticAnchorButton");
+        SetTourStepTarget(stage, "TourSemanticSaveStep", "TourSemanticAnchorButton");
     }
 
     internal static void SetTourStepTarget(Control root, string stepName, string targetName)

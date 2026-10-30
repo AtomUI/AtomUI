@@ -7,5 +7,9 @@ public enum PaginationLangResourceKind
 {
     JumpToText,
     PageText,
-    TotalInfoFormat
+    TotalInfoFormat,
+    PreviousPageText,
+    NextPageText,
+    PreviousPagesTextFormat,
+    NextPagesTextFormat
 }

@@ -1,6 +1,6 @@
 # TreeView 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.TreeView` 桌面版的最新设计定位、公共契约、行为状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [TreeView 桌面版实现原理](implementation.md)，TreeView Token 的专项设计见 [TreeView Token 设计](token.md)，设计和契约变化记录见 [TreeView Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.TreeView` 桌面版的最新设计定位、公共契约、行为状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [TreeView 桌面版实现原理](implementation.md)，Semantic Part 契约见 [TreeView Semantic Part 契约](semantic-part.md)，TreeView Token 的专项设计见 [TreeView Token 设计](token.md)，设计和契约变化记录见 [TreeView Changelog](changelog.md)。
 
 该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `TreeView`，其 internal `IsPopupPinnedOpen` 只供测试和内部诊断使用；设置为 true 时保持 tree Flyout open state，并 relay 到 `TreeViewFlyout` 及其 Popup，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
 
@@ -69,7 +69,7 @@ TreeView 核心 API：
 | `Filter` / `FilterValue` / `FilterValueSelector` / `FilterStrategy` | 过滤、高亮、展开路径和隐藏未命中节点入口。 |
 | `FilterResultCount` | 当前过滤命中数量。 |
 | `EmptyIndicator` / `EmptyIndicatorTemplate` / `IsShowEmptyIndicator` / `EmptyIndicatorPadding` | 空状态展示入口。 |
-| `IsMotionEnabled` / `OpenMotion` / `CloseMotion` | 展开收起动效入口。 |
+| `IsMotionEnabled` / `OpenMotion` / `CloseMotion` | 展开收起动效入口，OpenMotion/CloseMotion 接收 AbstractMotion 定义。 |
 
 TreeViewItem 节点 API：
 
@@ -114,7 +114,7 @@ TreeViewItem 节点 API：
 | `ItemsPresenter` | `TreeView` | 承载顶层节点容器。 |
 | `EmptyIndicator` | `TreeView` | 空状态内容展示。 |
 | `Header` | `TreeViewItem` | 节点 header 控件。 |
-| `PART_ItemsPresenterMotionActor` | `TreeViewItem` | 子节点展开收起动效容器。 |
+| `PART_ChildrenViewport` | `TreeViewItem` | 子节点展开收起动效容器。 |
 | `PART_NodeSwitcherButton` | `TreeViewItemHeader` | 展开、收起、加载和叶子图标入口。 |
 | `PART_IconPresenter` | `TreeViewItemHeader` | 节点图标展示。 |
 | `PART_HeaderContentFrame` | `TreeViewItemHeader` | header 内容背景、hover、selected、pressed 和 pointer 事件边界。 |
@@ -125,6 +125,43 @@ TreeViewItem 节点 API：
 - `TreeViewItem :toggle` 表示 checkbox 模式。
 - `TreeViewItem :radio` 表示 radio 模式。
 - `TreeViewItemHeader :toggle` / `:radio` 与节点 toggle 模式同步。
+
+### 3.1 Semantic Part 契约
+
+TreeView 是递归层级容器，使用两个递归 Semantic owner 表达与上游 Tree 稳定 Semantic DOM 对齐的六个 Part，完整契约见
+[TreeView Semantic Part 契约](semantic-part.md)：
+
+| Owner | Part | Selector | AtomUI 节点 | Cardinality | 定制方式 |
+| --- | --- | --- | --- | --- | --- |
+| `TreeView` | `root` | 控件本身 | `TreeView` owner | `Single` | owner 选择器 + 公开属性 |
+| `TreeView` | `item` | `.semantic-item` | 每个顶层 `TreeViewItem` 容器 | `Multiple` | `TreeViewItemStyle` |
+| `TreeViewItem` | `root` | 控件本身 | 每个 `TreeViewItem` 容器 | `Single` | owner 选择器 + 公开属性 |
+| `TreeViewItem` | `item` | `.semantic-item` | 每个子级 `TreeViewItem` 容器 | `Multiple` | `TreeViewItemItemStyle` |
+| `TreeViewItem` | `itemSwitcher` | `.semantic-item-switcher` | 每个 header 模板的 `PART_NodeSwitcherButton` | `Multiple` | `TreeViewItemItemSwitcherStyle` |
+| `TreeViewItem` | `itemIndicator` | `.semantic-item-indicator` | 每个 header 模板的 `ToggleCheckbox` / `ToggleRadio` | `Multiple` | `TreeViewItemItemIndicatorStyle` |
+| `TreeViewItem` | `itemIcon` | `.semantic-item-icon` | 每个 header 模板的 `PART_IconPresenter` | `Multiple` | `TreeViewItemItemIconStyle` |
+| `TreeViewItem` | `itemTitle` | `.semantic-item-title` | 每个 header 模板的 `HeaderPresenter` | `Multiple` | `TreeViewItemItemTitleStyle` |
+
+`TreeView` 与 `TreeViewItem` 是递归 owner：`TreeView.item` 覆盖顶层容器，`TreeViewItem.item` 递归覆盖下一层子容器，
+二者使用同一 `.semantic-item` 身份，保证任意深度的节点都可命中。`itemSwitcher` / `itemIndicator` / `itemIcon` /
+`itemTitle` 声明在 `TreeViewItem` 上，route 从 `TreeViewItem` owner 出发经 `.semantic-scope-header` 跳点以两次
+`/template/` 进入 header 模板，因此对每个节点（无论层级）都可达。`TreeViewItem` 因此持有独立 descriptor（与
+`SegmentedItem` 不同；与单层容器的 `ListView` / `ListBox` 也不同，见 [semantic-part.md §1](semantic-part.md#1-owner-边界)）。
+
+`item`、`itemSwitcher`、`itemIndicator`、`itemIcon`、`itemTitle` 是运行时生成 Part：`.semantic-item` 在容器创建与
+prepare 路径幂等添加，其余四个 marker 静态声明于 `TreeViewItemHeaderTheme.axaml`。`itemIndicator` 是 checkbox / radio
+两个备选节点共用的单一 Part，每个容器恒有两个 marker 实例（对应两个备选节点），同一时刻最多一个可见。marker 不随
+展开/收起、勾选、禁用、拖拽、过滤、ToggleType 切换与容器回收增删。定制摘要：
+
+- 状态型定制（选择、勾选、展开、禁用、拖拽、过滤、hover mode、show-line/show-icon）通过 owner 公开属性完成，不改变
+  marker 数量。
+- 局部视觉定制通过生成的 Semantic Style 完成，`ContractType` 收缩到公开类型（`TreeViewItem` / `ToggleButton` /
+  `IconPresenter` / `ContentPresenter`），internal 节点（`NodeSwitcherButton`、`CheckBoxIndicator`、
+  `TreeViewItemHeader`）不作为公共依赖类型。
+- `TreeViewItemHeader`、`NodeSwitcherButton`、`FloatableTreeView` 不持有独立 Semantic descriptor；`FloatableTreeView`
+  复用 `TreeView` owner scope。
+- checkbox / radio 勾选指示、过滤高亮节点、header 内容框与树形连线自绘逻辑不属于 Semantic Part，见
+  [semantic-part.md §7](semantic-part.md#7-定制边界)。
 
 ## 4. 行为与状态模型
 
@@ -257,6 +294,7 @@ TreeView 不实现 CompactSpace、Button 家族或 Popup 菜单导航模型。
 - `ToggleType=Radio` 只在叶子节点显示 radio，并遵守 `GroupName` 分组。
 - `TreeNodePath` 匹配优先使用 `ItemKey`，没有 `ItemKey` 时才使用 `Value` 字符串。
 - `ItemsSource` 变化后应尽量按节点身份路径恢复运行期选择和勾选状态，再回放默认状态。
+- `ItemsSource` 替换期间的容器清理和状态回放不应对外暴露中间选择或勾选；最终状态未变时不触发对应事件，真正变化时 `SelectionChanged`、`CheckedItemsChanged` 与 Form 值变更只通知最终差异。
 - 多选模式下 `SelectedItems` 是运行期选择恢复的权威来源，`ItemsSource` 变化或容器首次回放不能因 `SelectedItem` 非空而把多选折叠成单选。
 - filter 清除后必须恢复过滤前节点可见性、展开状态和高亮状态。
 - 异步加载只在数据节点模型下写入 `ITreeItemNode.Children`，不修改普通手写 `TreeViewItem` 子树。
@@ -318,40 +356,20 @@ TreeView 同时支持 checkbox 和 radio。checkbox 可以按 `IsCheckStrictly` 
 - `Header` 仍遵守 Avalonia TreeView 数据项语义：生成容器的 `Header` 是节点对象，`node.Header` 通过 `TreeDataTemplate` 绑定更新展示内容。
 - 普通 `TreeItemNode`、用户自定义 `ITreeItemNode` 与 `BindableTreeItemNode` 可以在同一个 TreeView 数据源中并存。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [TreeView 桌面版实现原理](implementation.md)
+- [TreeView Semantic Part 契约](semantic-part.md)
 - [TreeView Token 设计](token.md)
 - [TreeView Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `TreeView` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/tree-view/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/tree-view/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
 | 层次 | 验证内容 |
 | --- | --- |
-| 文档 | `overview.md`、`implementation.md`、`token.md`、`changelog.md` 链接有效。 |
+| 文档 | `overview.md`、`implementation.md`、`semantic-part.md`、`token.md`、`changelog.md` 链接有效。 |
 | Public API | TreeView、TreeViewItem、ITreeItemNode、事件参数和默认值与源码一致。 |
 | 状态回放 | 默认选中、默认勾选、默认展开、默认展开全部和 ItemsSource 变化恢复。 |
 | 勾选 | strict / cascading、半选、CheckedItems 同步、radio group。 |
@@ -360,3 +378,4 @@ LLMS 导出来源：
 | 绑定型节点 | XAML binding target、DynamicResource、owner resource 优先级、属性变化同步容器、container clear 释放。 |
 | 拖拽 | preview、drop indicator、根 / 子级插入、自身后代保护和事件顺序。 |
 | Theme / Token | template part、hover mode、selected / disabled、line、switcher、drag indicator 和 token 表。 |
+| Semantic Part | 检查 descriptor 数量/顺序/字段、marker 数量与类型、容器回收后的 marker 身份，见 [semantic-part.md §8](semantic-part.md#8-兼容性与验证)。 |

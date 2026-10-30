@@ -168,8 +168,13 @@ internal sealed class WindowDialogPresenter : IDialogPresenter
             HostWindow.Show();
         }
 
+        // 语义部件契约：窗口已显示即成为跨根，通知语义预览重新解析（Overlay 宿主在挂层时同样上报）。
+        _dialog.NotifyCrossRootsChanged();
+
         await _openedSource.Task.WaitAsync(openingCancellationToken);
         openingCancellationToken.ThrowIfCancellationRequested();
+        // Opened 后模板已应用，宿主表面就绪，再通知一次覆盖“窗口先显示、模板后应用”的顺序。
+        _dialog.NotifyCrossRootsChanged();
     }
 
     private MacOsDisabledOwnerInputActivationScope? CreateMacOsDisabledOwnerInputActivationScope(Window ownerWindow)
@@ -611,6 +616,9 @@ internal sealed class WindowDialogPresenter : IDialogPresenter
             {
                 firstException ??= ex;
             }
+
+            // 宿主窗口回收后跨根消失，通知语义预览清空该根下的高亮。
+            _dialog.NotifyCrossRootsChanged();
         });
 
         if (firstException is not null)

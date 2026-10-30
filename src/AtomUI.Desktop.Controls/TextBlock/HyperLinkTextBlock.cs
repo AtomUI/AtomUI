@@ -1,5 +1,4 @@
 using System.Windows.Input;
-using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -49,13 +48,13 @@ public class HyperLinkTextBlock : TemplatedControl, IMotionAwareControl
     /// Defines the <see cref="Command"/> property.
     /// </summary>
     public static readonly StyledProperty<ICommand?> CommandProperty =
-        AvaloniaProperty.Register<Button, ICommand?>(nameof(Command), enableDataValidation: true);
+        AvaloniaProperty.Register<HyperLinkTextBlock, ICommand?>(nameof(Command), enableDataValidation: true);
     
     /// <summary>
     /// Defines the <see cref="CommandParameter"/> property.
     /// </summary>
     public static readonly StyledProperty<object?> CommandParameterProperty =
-        AvaloniaProperty.Register<Button, object?>(nameof(CommandParameter));
+        AvaloniaProperty.Register<HyperLinkTextBlock, object?>(nameof(CommandParameter));
     
     /// <summary>
     /// Gets or sets the text.
@@ -336,15 +335,4 @@ public class HyperLinkTextBlock : TemplatedControl, IMotionAwareControl
         }
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        this.Dispatcher.Post(this.EnableTransitions);
-    }
 }

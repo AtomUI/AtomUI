@@ -25,7 +25,7 @@ ListBoxToken 当前按 ListBox 语义分为五类。
 
 - `ContentPadding`
 
-`ContentPadding` 控制 ListBox root 内容区 padding，作用于 `ListBoxTheme` 的 root `Frame`。它来自 `SharedToken.UniformlyPaddingXXS / 2`，保持轻量列表紧凑可扫描。
+`ContentPadding` 控制 ListBox root 内容区 padding，作用于 `ListBoxTheme` 的 root `Frame`。当前默认值为 `Thickness(0)`：条目表面直接贴合 root 外框内边缘，列表紧凑感由条目高度与分割线表达，不再在内容区与外框之间预留内边距。
 
 ### 2.2 条目文字 Token
 
@@ -70,11 +70,11 @@ disabled 颜色在 theme 中也可由 SharedToken 直接作用到内容 presente
 
 这些 Token 控制 ListBoxItem 的密度和选中标记间距：
 
-- `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG` 分别对应 small、middle/custom、large 尺寸。
-- `ItemMargin` 控制条目之间的垂直间距。
+- `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG` 分别对应 small、middle/custom、large 尺寸，只表达水平 padding（垂直 padding 为 0），条目高度由 SizeType 分支的 `MinHeight` 控制。
+- `ItemMargin` 控制条目之间的垂直间距，当前默认值为 `Thickness(0)`：条目纵向密度由分割线表达，条目之间以及条目与外框之间不留间距。
 - `SelectedIndicatorMargin` 控制 selected indicator 与内容区域的距离。
 
-条目最小高度和圆角来自 SharedToken，由 SizeType selector 选择，不在 ListBoxToken 中重复定义。
+条目最小高度来自 SharedToken，由 SizeType selector 选择。条目表面保持直角，主题不设置条目圆角。条目底部分割线使用 SharedToken `ColorSplit` 与 1 DIP 线宽（条目 `BorderThickness` 默认 `0,0,0,1`），不在 ListBoxToken 中重复定义。
 
 ### 2.5 过滤 Token
 
@@ -86,7 +86,7 @@ disabled 颜色在 theme 中也可由 SharedToken 直接作用到内容 presente
 
 ListBoxToken 主要参与以下专项模型：
 
-- SizeType：条目 padding 来自 `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG`，root 圆角和高度来自 SharedToken。
+- SizeType：条目 padding 来自 `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG`，root 圆角和条目最小高度来自 SharedToken；条目不设圆角。
 - selected indicator：`SelectedIndicatorMargin` 控制右侧选中图标与内容之间的间距，图标尺寸和颜色来自 SharedToken。
 - hover / selected：`ItemHoverBgColor` 和 `ItemSelectedBgColor` 通过 public property 默认值传递给 ListBoxItem。
 - filter：`FilterHighlightColor` 通过 `FilterHighlightForeground` 传递到 `HighlightableTextBlock`。
@@ -122,11 +122,11 @@ ListBoxToken 不影响 ListViewToken。ListView 和 ListBox 有相似的列表�
 ListBoxToken 变更验证：
 
 - `ListBoxTokenKind` 与 token.md 语义说明保持一致。
-- `ContentPadding` 影响 root 内容区，不造成 ScrollViewer 与 EmptyIndicator 重叠。
+- `ContentPadding` 保持 `Thickness(0)`，条目与外框内边缘贴合，不造成 ScrollViewer 与 EmptyIndicator 重叠。
 - `ItemColor`、`ItemHoverColor`、`ItemSelectedColor` 和 `ItemDisabledColor` 在 light / dark 主题下可读。
 - `ItemBgColor`、`ItemHoverBgColor` 和 `ItemSelectedBgColor` 能正确传递到 ListBoxItem hover / selected 状态。
 - `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG` 与 SizeType selector 对齐。
-- `ItemMargin` 不破坏列表扫描密度。
+- `ItemMargin` 保持 `Thickness(0)`，列表扫描密度由分割线表达。
 - `SelectedIndicatorMargin` 不造成内容和 selected indicator 重叠。
 - `FilterHighlightColor` 能传递到过滤高亮文本。
 - CandidateList 和 Cascader filter list 继承后的视觉语义稳定。

@@ -110,36 +110,36 @@ internal static partial class Program
             return;
         }
 
-        var leafMotionActor = FindVisualByTypeName(leaf, "LayoutAwareMotionActor", "PART_ChildItemsLayoutTransform");
-        var firstMotionActor = FindVisualByTypeName(submenu, "LayoutAwareMotionActor", "PART_ChildItemsLayoutTransform");
+        var leafViewport = FindVisualByTypeName(leaf, "ContentViewport", "PART_ChildItemsViewport");
+        var firstViewport = FindVisualByTypeName(submenu, "ContentViewport", "PART_ChildItemsViewport");
 
-        Expect(leafMotionActor != null,
-            "Inline NavMenu leaf should keep the template child LayoutAwareMotionActor.",
+        Expect(leafViewport != null,
+            "Inline NavMenu leaf should keep the template child ContentViewport.",
             failures);
-        Expect(firstMotionActor != null,
-            "Inline NavMenu submenu should keep the template child LayoutAwareMotionActor.",
+        Expect(firstViewport != null,
+            "Inline NavMenu submenu should keep the template child ContentViewport.",
             failures);
-        Expect(firstMotionActor?.IsVisible == false,
-            "Closed inline NavMenu submenu motion actor should be hidden.",
+        Expect(firstViewport?.IsVisible == false,
+            "Closed inline NavMenu submenu content viewport should be hidden.",
             failures);
 
         submenu.IsSubMenuOpen = true;
         RefreshLayout(realized.Window);
-        Expect(firstMotionActor?.IsVisible == true,
-            "Opened inline NavMenu submenu motion actor should be visible.",
+        Expect(firstViewport?.IsVisible == true,
+            "Opened inline NavMenu submenu content viewport should be visible.",
             failures);
 
         submenu.IsSubMenuOpen = false;
         RefreshLayout(realized.Window);
-        Expect(firstMotionActor?.IsVisible == false,
-            "Closed inline NavMenu submenu motion actor should be hidden.",
+        Expect(firstViewport?.IsVisible == false,
+            "Closed inline NavMenu submenu content viewport should be hidden.",
             failures);
 
         submenu.IsSubMenuOpen = true;
         RefreshLayout(realized.Window);
-        Expect(ReferenceEquals(firstMotionActor,
-                FindVisualByTypeName(submenu, "LayoutAwareMotionActor", "PART_ChildItemsLayoutTransform")),
-            "Inline NavMenu submenu should reuse child LayoutAwareMotionActor on second open.",
+        Expect(ReferenceEquals(firstViewport,
+                FindVisualByTypeName(submenu, "ContentViewport", "PART_ChildItemsViewport")),
+            "Inline NavMenu submenu should reuse child ContentViewport on second open.",
             failures);
     }
 

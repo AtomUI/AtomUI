@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
+        <TargetFrameworks>$(AtomUIDevelopTargetFramework)</TargetFrameworks>
         <OutputType>Exe</OutputType>
         <RootNamespace>AtomUI.DataGridPerformance</RootNamespace>
         <AssemblyName>AtomUI.DataGridPerformance</AssemblyName>

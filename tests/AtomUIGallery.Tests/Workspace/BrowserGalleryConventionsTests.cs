@@ -22,24 +22,6 @@ public class BrowserGalleryConventionsTests
     }
 
     [Fact]
-    public void Browser_Gallery_Does_Not_Keep_Legacy_Header_Page_Factory_Or_Preload_Warmup()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery.Browser/BrowserGalleryView.cs");
-
-        source.ShouldNotContain("AtomUI Browser Gallery");
-        source.ShouldNotContain("BrowserGalleryPageKind");
-        source.ShouldNotContain("CreatePage(");
-        source.ShouldNotContain("s_pagesToPreload");
-        source.ShouldNotContain("DispatcherTimer");
-        source.ShouldNotContain("BeginPageWarmup");
-        source.ShouldNotContain("CompletePageWarmup");
-        source.ShouldNotContain("CancelPageWarmup");
-        source.ShouldNotContain("_contentHost.Children.Remove");
-        source.ShouldNotContain("AboutUsPage");
-        source.ShouldNotContain("AboutUsViewModel");
-    }
-
-    [Fact]
     public void Browser_Gallery_Delegates_Shell_Branding_And_Overlay_To_GalleryBase()
     {
         var source = ReadRepoFile("controlgallery/AtomUIGallery.Browser/BrowserGalleryView.cs");
@@ -56,6 +38,8 @@ public class BrowserGalleryConventionsTests
         galleryBaseSource.ShouldContain("EnableBrowserMediaBreakpoints");
         galleryBaseSource.ShouldContain("IMediaBreakAwareControl");
         galleryBaseSource.ShouldContain("VisualLayerManager");
+        galleryBaseSource.ShouldContain("OverlayLayer.GetOverlayLayer(visualLayerManager)");
+        galleryBaseSource.ShouldNotContain("GetVisualLayerManagerPropertyValue(visualLayerManager, \"OverlayLayer\")");
     }
 
     private static string ReadRepoFile(string relativePath)

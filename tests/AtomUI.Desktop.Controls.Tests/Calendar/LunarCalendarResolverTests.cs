@@ -6,37 +6,44 @@ namespace AtomUI.Desktop.Controls.Tests.Calendar;
 
 public class LunarCalendarResolverTests
 {
-    [Theory]
-    [InlineData(ChineseSolarTerm.MinorCold, 1, 6)]
-    [InlineData(ChineseSolarTerm.MajorCold, 1, 20)]
-    [InlineData(ChineseSolarTerm.StartOfSpring, 2, 4)]
-    [InlineData(ChineseSolarTerm.RainWater, 2, 19)]
-    [InlineData(ChineseSolarTerm.AwakeningOfInsects, 3, 5)]
-    [InlineData(ChineseSolarTerm.SpringEquinox, 3, 20)]
-    [InlineData(ChineseSolarTerm.PureBrightness, 4, 4)]
-    [InlineData(ChineseSolarTerm.GrainRain, 4, 19)]
-    [InlineData(ChineseSolarTerm.StartOfSummer, 5, 5)]
-    [InlineData(ChineseSolarTerm.GrainBuds, 5, 20)]
-    [InlineData(ChineseSolarTerm.GrainInEar, 6, 5)]
-    [InlineData(ChineseSolarTerm.SummerSolstice, 6, 21)]
-    [InlineData(ChineseSolarTerm.MinorHeat, 7, 6)]
-    [InlineData(ChineseSolarTerm.MajorHeat, 7, 22)]
-    [InlineData(ChineseSolarTerm.StartOfAutumn, 8, 7)]
-    [InlineData(ChineseSolarTerm.EndOfHeat, 8, 22)]
-    [InlineData(ChineseSolarTerm.WhiteDew, 9, 7)]
-    [InlineData(ChineseSolarTerm.AutumnEquinox, 9, 22)]
-    [InlineData(ChineseSolarTerm.ColdDew, 10, 8)]
-    [InlineData(ChineseSolarTerm.FrostDescent, 10, 23)]
-    [InlineData(ChineseSolarTerm.StartOfWinter, 11, 7)]
-    [InlineData(ChineseSolarTerm.MinorSnow, 11, 22)]
-    [InlineData(ChineseSolarTerm.MajorSnow, 12, 6)]
-    [InlineData(ChineseSolarTerm.WinterSolstice, 12, 21)]
-    public void SolarTermTable_ReturnsKnown2024Dates(ChineseSolarTerm term, int month, int day)
+    [Fact]
+    public void SolarTermTable_ReturnsKnown2024Dates()
     {
-        var date = SolarTermResolver.GetDate(2024, term);
+        (ChineseSolarTerm Term, int Month, int Day)[] expectedDates =
+        [
+            (ChineseSolarTerm.MinorCold, 1, 6),
+            (ChineseSolarTerm.MajorCold, 1, 20),
+            (ChineseSolarTerm.StartOfSpring, 2, 4),
+            (ChineseSolarTerm.RainWater, 2, 19),
+            (ChineseSolarTerm.AwakeningOfInsects, 3, 5),
+            (ChineseSolarTerm.SpringEquinox, 3, 20),
+            (ChineseSolarTerm.PureBrightness, 4, 4),
+            (ChineseSolarTerm.GrainRain, 4, 19),
+            (ChineseSolarTerm.StartOfSummer, 5, 5),
+            (ChineseSolarTerm.GrainBuds, 5, 20),
+            (ChineseSolarTerm.GrainInEar, 6, 5),
+            (ChineseSolarTerm.SummerSolstice, 6, 21),
+            (ChineseSolarTerm.MinorHeat, 7, 6),
+            (ChineseSolarTerm.MajorHeat, 7, 22),
+            (ChineseSolarTerm.StartOfAutumn, 8, 7),
+            (ChineseSolarTerm.EndOfHeat, 8, 22),
+            (ChineseSolarTerm.WhiteDew, 9, 7),
+            (ChineseSolarTerm.AutumnEquinox, 9, 22),
+            (ChineseSolarTerm.ColdDew, 10, 8),
+            (ChineseSolarTerm.FrostDescent, 10, 23),
+            (ChineseSolarTerm.StartOfWinter, 11, 7),
+            (ChineseSolarTerm.MinorSnow, 11, 22),
+            (ChineseSolarTerm.MajorSnow, 12, 6),
+            (ChineseSolarTerm.WinterSolstice, 12, 21)
+        ];
 
-        date.ShouldBe(new DateTime(2024, month, day));
-        SolarTermResolver.GetSolarTerm(date).ShouldBe(term);
+        foreach (var (term, month, day) in expectedDates)
+        {
+            var date = SolarTermResolver.GetDate(2024, term);
+
+            date.ShouldBe(new DateTime(2024, month, day), $"solar term {term}");
+            SolarTermResolver.GetSolarTerm(date).ShouldBe(term, $"solar term {term} on {date:yyyy-MM-dd}");
+        }
     }
 
     [Fact]
@@ -54,25 +61,27 @@ public class LunarCalendarResolverTests
         }
     }
 
-    [Theory]
-    [InlineData(2024, 1, 1, false, ChineseTraditionalFestival.SpringFestival)]
-    [InlineData(2024, 1, 15, false, ChineseTraditionalFestival.LanternFestival)]
-    [InlineData(2024, 2, 2, false, ChineseTraditionalFestival.DragonHeadFestival)]
-    [InlineData(2024, 5, 5, false, ChineseTraditionalFestival.DragonBoatFestival)]
-    [InlineData(2024, 7, 7, false, ChineseTraditionalFestival.QixiFestival)]
-    [InlineData(2024, 7, 15, false, ChineseTraditionalFestival.ZhongyuanFestival)]
-    [InlineData(2024, 8, 15, false, ChineseTraditionalFestival.MidAutumnFestival)]
-    [InlineData(2024, 9, 9, false, ChineseTraditionalFestival.DoubleNinthFestival)]
-    [InlineData(2024, 12, 8, false, ChineseTraditionalFestival.LabaFestival)]
-    public void TraditionalFestivalResolver_ReturnsFixedLunarFestivals(
-        int year,
-        int month,
-        int day,
-        bool isLeap,
-        ChineseTraditionalFestival expected)
+    [Fact]
+    public void TraditionalFestivalResolver_ReturnsFixedLunarFestivals()
     {
-        TraditionalFestivalResolver.Resolve(new ChineseLunarDate(year, month, day, isLeap), null)
-            .ShouldContain(expected);
+        (int Month, int Day, ChineseTraditionalFestival Festival)[] expectedFestivals =
+        [
+            (1, 1, ChineseTraditionalFestival.SpringFestival),
+            (1, 15, ChineseTraditionalFestival.LanternFestival),
+            (2, 2, ChineseTraditionalFestival.DragonHeadFestival),
+            (5, 5, ChineseTraditionalFestival.DragonBoatFestival),
+            (7, 7, ChineseTraditionalFestival.QixiFestival),
+            (7, 15, ChineseTraditionalFestival.ZhongyuanFestival),
+            (8, 15, ChineseTraditionalFestival.MidAutumnFestival),
+            (9, 9, ChineseTraditionalFestival.DoubleNinthFestival),
+            (12, 8, ChineseTraditionalFestival.LabaFestival)
+        ];
+
+        foreach (var (month, day, festival) in expectedFestivals)
+        {
+            TraditionalFestivalResolver.Resolve(new ChineseLunarDate(2024, month, day, false), null)
+                .ShouldContain(festival, $"lunar date 2024-{month:D2}-{day:D2}");
+        }
     }
 
     [Fact]

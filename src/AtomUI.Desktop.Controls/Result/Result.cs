@@ -9,7 +9,7 @@ namespace AtomUI.Desktop.Controls;
 
 using IconControl = AtomUI.Controls.Icon;
 
-public class Result : AbstractResult
+public partial class Result : AbstractResult
 {
     internal static readonly StyledProperty<double> StatusIconSizeProperty =
         AvaloniaProperty.Register<Result, double>(nameof(StatusIconSize), double.NaN);

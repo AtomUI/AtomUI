@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Spin"
              x:DataType="vm:SpinViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Spin"
                     Category="{gallery:SpinShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,69 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractSpin" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:SpinViewModel">
+                    <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Stretch"
+                                Spacing="24">
+                        <gallery:SemanticPartPreview Name="SpinSemanticPreview"
+                                                     SemanticOwner="{Binding #SpinSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:Spin}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:Spin Name="SpinSemanticOwner"
+                                           IsSpinning="True"
+                                           IsTipVisible="True"
+                                           IsMaskBackgroundEnabled="True"
+                                           HorizontalAlignment="Stretch"
+                                           Tip="{gallery:SpinShowCaseLangResource P2TipLoading}">
+                                    <Border MinHeight="120"
+                                            Background="#0D000000" />
+                                </atom:Spin>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:SpinShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="container"
+                                    Description="{gallery:SpinShowCaseLangResource SemanticContainerDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="mask"
+                                    Description="{gallery:SpinShowCaseLangResource SemanticMaskDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="section"
+                                    Description="{gallery:SpinShowCaseLangResource SemanticSectionDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="indicator"
+                                    Description="{gallery:SpinShowCaseLangResource SemanticIndicatorDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="description"
+                                    Description="{gallery:SpinShowCaseLangResource SemanticDescriptionDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="SpinIndicatorSemanticPreview"
+                                                     SemanticOwner="{Binding #SpinIndicatorSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:SpinIndicator}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:SpinIndicator Name="SpinIndicatorSemanticOwner"
+                                                    SizeType="Middle"
+                                                    HorizontalAlignment="Center" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:SpinShowCaseLangResource SemanticIndicatorRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="content"
+                                    Description="{gallery:SpinShowCaseLangResource SemanticIndicatorContentDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -27,125 +88,161 @@
                                    InitialDeferredLoadItemCount="4"
                                    DeferredLoadBatchSize="2"
                                    ContentMargin="28,10,28,28">
-    <gallery:ShowCaseItem
-        Title="{gallery:SpinShowCaseLangResource BasicUsageTitle}"
-        Description="{gallery:SpinShowCaseLangResource BasicUsageDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:SpinViewModel">
-        <atom:SpinIndicator />
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:SpinShowCaseLangResource BasicUsageTitle}"
+                    Description="{gallery:SpinShowCaseLangResource BasicUsageDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:SpinViewModel">
+                            <atom:SpinIndicator />
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:SpinShowCaseLangResource SizeTitle}"
-        Description="{gallery:SpinShowCaseLangResource SizeDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:SpinViewModel">
-        <StackPanel Orientation="Horizontal" Spacing="10">
-            <atom:SpinIndicator SizeType="Small" VerticalAlignment="Center" />
-            <atom:SpinIndicator SizeType="Middle" VerticalAlignment="Center" />
-            <atom:SpinIndicator SizeType="Large" VerticalAlignment="Center" />
-            <atom:SpinIndicator SizeType="Custom" IndicatorSize="44" DotSize="14" VerticalAlignment="Center" />
-        </StackPanel>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:SpinShowCaseLangResource SizeTitle}"
+                    Description="{gallery:SpinShowCaseLangResource SizeDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:SpinViewModel">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <atom:SpinIndicator SizeType="Small" VerticalAlignment="Center" />
+                                <atom:SpinIndicator SizeType="Middle" VerticalAlignment="Center" />
+                                <atom:SpinIndicator SizeType="Large" VerticalAlignment="Center" />
+                                <atom:SpinIndicator SizeType="Custom" IndicatorSize="44" DotSize="14" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:SpinShowCaseLangResource CustomizedDescriptionTitle}"
-        Description="{gallery:SpinShowCaseLangResource CustomizedDescriptionDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:SpinViewModel">
-        <StackPanel Orientation="Vertical" Spacing="10">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <atom:Spin IsSpinning="True" SizeType="Small"
-                           IsTipVisible="True"
-                           Tip="{gallery:SpinShowCaseLangResource P2TipLoading}">
-                    <Border Width="100" Height="100" Background="#0D000000" />
-                </atom:Spin>
-                <atom:Spin IsSpinning="True" SizeType="Middle"
-                           IsTipVisible="True"
-                           Tip="{gallery:SpinShowCaseLangResource P2TipLoading}">
-                    <Border Width="100" Height="100" Background="#0D000000" />
-                </atom:Spin>
-                <atom:Spin IsSpinning="True" SizeType="Large"
-                           IsTipVisible="True"
-                           Tip="{gallery:SpinShowCaseLangResource P2TipLoading}">
-                    <Border Width="100" Height="100" Background="#0D000000" />
-                </atom:Spin>
-            </StackPanel>
-            <atom:Spin IsSpinning="True"
-                       IsTipVisible="True"
-                       Tip="{gallery:SpinShowCaseLangResource P2TipLoading}">
-                <atom:Alert Message="{gallery:SpinShowCaseLangResource P2MessageAlertMessageTitle}"
-                            Description="{gallery:SpinShowCaseLangResource P2DescriptionFurtherDetailsAboutTheContextOfThisAlert}"
-                            Type="Info" />
-            </atom:Spin>
-        </StackPanel>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:SpinShowCaseLangResource EmbeddedModeTitle}"
+                    Description="{gallery:SpinShowCaseLangResource EmbeddedModeDescription}"
+                    IsOccupyEntireRow="True"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:SpinViewModel">
+                            <StackPanel Orientation="Vertical" Spacing="10">
+                                <atom:Spin IsSpinning="{Binding IsLoadingSwitchChecked}"
+                                           IsTipVisible="True"
+                                           HorizontalAlignment="Stretch"
+                                           Tip="{gallery:SpinShowCaseLangResource P2TipLoading}">
+                                    <atom:Alert Message="{gallery:SpinShowCaseLangResource P2MessageAlertMessageTitle}"
+                                                Description="{gallery:SpinShowCaseLangResource P2DescriptionFurtherDetailsAboutTheContextOfThisAlert}"
+                                                Type="Info" />
+                                </atom:Spin>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:SpinShowCaseLangResource CustomIndicatorTitle}"
-        Description="{gallery:SpinShowCaseLangResource CustomIndicatorDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:SpinViewModel">
-        <StackPanel Orientation="Horizontal" Spacing="10">
-            <atom:SpinIndicator SizeType="Small"
-                                VerticalAlignment="Center"
-                                CustomIndicator="{antdicons:AntDesignIconProvider Kind=LoadingOutlined, StrokeBrush=#1677ff}" />
-            <atom:SpinIndicator SizeType="Middle"
-                                VerticalAlignment="Center"
-                                CustomIndicator="{antdicons:AntDesignIconProvider Kind=LoadingOutlined, StrokeBrush=#1677ff}" />
-            <atom:SpinIndicator SizeType="Large"
-                                VerticalAlignment="Center"
-                                CustomIndicator="{antdicons:AntDesignIconProvider Kind=LoadingOutlined, StrokeBrush=#1677ff}" />
-        </StackPanel>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                                <atom:Spin IsSpinning="{Binding IsLoadingSwitchChecked}"
+                                           IsTipVisible="True"
+                                           Tip="{gallery:SpinShowCaseLangResource P2TipLoading}"
+                                           HorizontalAlignment="Stretch"
+                                           IsMaskBlurEnabled="True">
+                                    <atom:Alert Message="{gallery:SpinShowCaseLangResource P2MessageAlertMessageTitle}"
+                                                Description="{gallery:SpinShowCaseLangResource P2DescriptionFurtherDetailsAboutTheContextOfThisAlert}"
+                                                Type="Info" />
+                                </atom:Spin>
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <atom:TextBlock Text="{gallery:SpinShowCaseLangResource P2TextLoadingState}" />
+                                    <atom:ToggleSwitch IsChecked="{Binding IsLoadingSwitchChecked}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:SpinShowCaseLangResource EmbeddedModeTitle}"
-        Description="{gallery:SpinShowCaseLangResource EmbeddedModeDescription}"
-        IsOccupyEntireRow="True"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:SpinViewModel">
-        <StackPanel Orientation="Vertical" Spacing="10">
-            <atom:Spin IsSpinning="{Binding IsLoadingSwitchChecked}"
-                       IsTipVisible="True"
-                       HorizontalAlignment="Stretch"
-                       Tip="{gallery:SpinShowCaseLangResource P2TipLoading}">
-                <atom:Alert Message="{gallery:SpinShowCaseLangResource P2MessageAlertMessageTitle}"
-                            Description="{gallery:SpinShowCaseLangResource P2DescriptionFurtherDetailsAboutTheContextOfThisAlert}"
-                            Type="Info" />
-            </atom:Spin>
+                <gallery:ShowCaseItem
+                    Title="{gallery:SpinShowCaseLangResource CustomizedDescriptionTitle}"
+                    Description="{gallery:SpinShowCaseLangResource CustomizedDescriptionDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:SpinViewModel">
+                            <StackPanel Orientation="Vertical" Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <atom:Spin IsSpinning="True" SizeType="Small"
+                                               IsTipVisible="True"
+                                               Tip="{gallery:SpinShowCaseLangResource P2TipLoading}">
+                                        <Border Width="100" Height="100" Background="#0D000000" />
+                                    </atom:Spin>
+                                    <atom:Spin IsSpinning="True" SizeType="Middle"
+                                               IsTipVisible="True"
+                                               Tip="{gallery:SpinShowCaseLangResource P2TipLoading}">
+                                        <Border Width="100" Height="100" Background="#0D000000" />
+                                    </atom:Spin>
+                                    <atom:Spin IsSpinning="True" SizeType="Large"
+                                               IsTipVisible="True"
+                                               Tip="{gallery:SpinShowCaseLangResource P2TipLoading}">
+                                        <Border Width="100" Height="100" Background="#0D000000" />
+                                    </atom:Spin>
+                                </StackPanel>
+                                <atom:Spin IsSpinning="True"
+                                           IsTipVisible="True"
+                                           Tip="{gallery:SpinShowCaseLangResource P2TipLoading}">
+                                    <atom:Alert Message="{gallery:SpinShowCaseLangResource P2MessageAlertMessageTitle}"
+                                                Description="{gallery:SpinShowCaseLangResource P2DescriptionFurtherDetailsAboutTheContextOfThisAlert}"
+                                                Type="Info" />
+                                </atom:Spin>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-            <atom:Spin IsSpinning="{Binding IsLoadingSwitchChecked}"
-                       IsTipVisible="True"
-                       Tip="{gallery:SpinShowCaseLangResource P2TipLoading}"
-                       HorizontalAlignment="Stretch"
-                       IsMaskBlurEnabled="True">
-                <atom:Alert Message="{gallery:SpinShowCaseLangResource P2MessageAlertMessageTitle}"
-                            Description="{gallery:SpinShowCaseLangResource P2DescriptionFurtherDetailsAboutTheContextOfThisAlert}"
-                            Type="Info" />
-            </atom:Spin>
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <atom:TextBlock Text="{gallery:SpinShowCaseLangResource P2TextLoadingState}" />
-                <atom:ToggleSwitch IsChecked="{Binding IsLoadingSwitchChecked}" />
-            </StackPanel>
-        </StackPanel>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:SpinShowCaseLangResource CustomIndicatorTitle}"
+                    Description="{gallery:SpinShowCaseLangResource CustomIndicatorDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:SpinViewModel">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <atom:SpinIndicator SizeType="Small"
+                                                    VerticalAlignment="Center"
+                                                    CustomIndicator="{antdicons:AntDesignIconProvider Kind=LoadingOutlined, StrokeBrush=#1677ff}" />
+                                <atom:SpinIndicator SizeType="Middle"
+                                                    VerticalAlignment="Center"
+                                                    CustomIndicator="{antdicons:AntDesignIconProvider Kind=LoadingOutlined, StrokeBrush=#1677ff}" />
+                                <atom:SpinIndicator SizeType="Large"
+                                                    VerticalAlignment="Center"
+                                                    CustomIndicator="{antdicons:AntDesignIconProvider Kind=LoadingOutlined, StrokeBrush=#1677ff}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:SpinShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:SpinShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="spin-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:SpinViewModel">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="16">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Spin.semantic-style-demo">
+                                        <atom:SpinIndicatorStyle x:SetterTargetType="atom:SpinIndicator">
+                                            <Setter Property="DotBgBrush"
+                                                    Value="#00d4ff" />
+                                        </atom:SpinIndicatorStyle>
+                                    </Style>
+                                    <Style Selector="atom|Spin.semantic-function-demo[SizeType=Small]">
+                                        <atom:SpinIndicatorStyle x:SetterTargetType="atom:SpinIndicator">
+                                            <Setter Property="DotBgBrush"
+                                                    Value="#722ed1" />
+                                        </atom:SpinIndicatorStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:Spin Classes="semantic-style-demo"
+                                           IsSpinning="True" />
+                                <atom:Spin Classes="semantic-function-demo"
+                                           SizeType="Small"
+                                           IsSpinning="True" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

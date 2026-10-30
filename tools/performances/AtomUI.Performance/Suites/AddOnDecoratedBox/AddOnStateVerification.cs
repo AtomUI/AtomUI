@@ -10,6 +10,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using System.Collections;
 using System.Reflection;
 using AtomTextBox = AtomUI.Desktop.Controls.TextBox;
 
@@ -177,7 +178,9 @@ internal static partial class Program
         };
 
         using var realized = RealizeControl(box);
-        var contentFrame = FindVisualByName<Border>(box, AddOnDecoratedBoxThemeConstants.ContentFramePart);
+        // ContentFrame 基类从 Border 改为 PixelAlignedBorder（DashedBorder/Decorator 系），
+        // 按 Control 查找再断言具体类型；Padding 断言保留，StyleKey 检查随 Border 基类移除而删除。
+        var contentFrame = FindVisualByName<Decorator>(box, AddOnDecoratedBoxThemeConstants.ContentFramePart);
         Expect(contentFrame is AddOnDecoratedBoxContentFrame,
             $"Content frame should use {nameof(AddOnDecoratedBoxContentFrame)} to avoid per-instance pointer handlers.",
             failures);
@@ -185,9 +188,6 @@ internal static partial class Program
         {
             return;
         }
-        Expect(contentFrame.StyleKey == typeof(Border),
-            $"Content frame should keep Border StyleKey so Border#PART_ContentFrame padding styles apply, actual {contentFrame.StyleKey}.",
-            failures);
         Expect(contentFrame.Padding.Left > 0 && contentFrame.Padding.Top > 0,
             $"Content frame should keep token padding after replacing the template Border, actual {contentFrame.Padding}.",
             failures);
@@ -253,6 +253,85 @@ internal static partial class Program
             1,
             properties,
             KeyModifiers.None));
+    }
+
+    // 以下三个 helper 原先定义在 DataGrid 套件中，DataGrid 套件移除后由本文件承接，
+    // 供 AddOnDecoratedBox / PopupConfirm / DatePicker 套件共享（partial class Program）。
+    private static HashSet<string> GetLocalRoutedHandlerNames(Control control)
+    {
+        var field = typeof(Interactive).GetField("_eventHandlers", BindingFlags.Instance | BindingFlags.NonPublic);
+        if (field?.GetValue(control) is not IDictionary eventHandlers)
+        {
+            return [];
+        }
+
+        var names = new HashSet<string>();
+        foreach (DictionaryEntry entry in eventHandlers)
+        {
+            if (entry.Key != null)
+            {
+                names.Add(entry.Key.ToString() ?? string.Empty);
+            }
+        }
+        return names;
+    }
+
+    private static void RaiseControlPrimaryPointerPressed(Control target, Visual root)
+    {
+        var localPoint = new Point(
+            Math.Max(1, target.Bounds.Width / 2),
+            Math.Max(1, target.Bounds.Height / 2));
+        var rootPoint = target.TranslatePoint(localPoint, root) ?? localPoint;
+
+        target.RaiseEvent(CreatePrimaryPointerPressedEventArgs(target, root, rootPoint));
+    }
+
+    private static void RaiseControlPrimaryPointerReleased(Control target, Visual root)
+    {
+        var pointer = new Avalonia.Input.Pointer(
+            Avalonia.Input.Pointer.GetNextFreeId(),
+            PointerType.Mouse,
+            true);
+        var properties = new PointerPointProperties(
+            RawInputModifiers.None,
+            PointerUpdateKind.LeftButtonReleased);
+        var localPoint = new Point(
+            Math.Max(1, target.Bounds.Width / 2),
+            Math.Max(1, target.Bounds.Height / 2));
+        var rootPoint = target.TranslatePoint(localPoint, root) ?? localPoint;
+
+        target.RaiseEvent(new PointerReleasedEventArgs(
+            target,
+            pointer,
+            root,
+            rootPoint,
+            1,
+            properties,
+            KeyModifiers.None,
+            MouseButton.Left));
+    }
+
+    private static PointerPressedEventArgs CreatePrimaryPointerPressedEventArgs(
+        Control source,
+        Visual root,
+        Point rootPoint)
+    {
+        var pointer = new Avalonia.Input.Pointer(
+            Avalonia.Input.Pointer.GetNextFreeId(),
+            PointerType.Mouse,
+            true);
+        var properties = new PointerPointProperties(
+            RawInputModifiers.LeftMouseButton,
+            PointerUpdateKind.LeftButtonPressed);
+
+        return new PointerPressedEventArgs(
+            source,
+            pointer,
+            root,
+            rootPoint,
+            1,
+            properties,
+            KeyModifiers.None);
     }
 
     private static void VerifyCompactSpaceGeometry(ICollection<string> failures)

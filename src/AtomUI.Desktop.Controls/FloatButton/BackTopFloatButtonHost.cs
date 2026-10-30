@@ -15,6 +15,7 @@ public class BackTopFloatButtonHost : AbstractBackTopFloatButtonHost
         disposables.Add(BindUtils.RelayBind(this, TargetProperty, floatButton, BackTopFloatButton.TargetProperty));
         disposables.Add(BindUtils.RelayBind(this, VisibilityHeightProperty, floatButton, BackTopFloatButton.VisibilityHeightProperty));
         disposables.Add(BindUtils.RelayBind(this, MotionDurationProperty, floatButton, BackTopFloatButton.MotionDurationProperty));
+        disposables.Add(BindUtils.RelayBind(this, IsShowProgressProperty, floatButton, BackTopFloatButton.IsShowProgressProperty));
         
         return floatButton;
     }

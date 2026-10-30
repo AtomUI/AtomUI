@@ -9,7 +9,7 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaTextBlock = Avalonia.Controls.TextBlock;
 
-public class GradientColorPicker : AbstractColorPicker
+public partial class GradientColorPicker : AbstractColorPicker
 {
     #region 公共属性定义
     public static readonly StyledProperty<LinearGradientBrush?> DefaultValueProperty =
@@ -102,6 +102,10 @@ public class GradientColorPicker : AbstractColorPicker
         base.OnPropertyChanged(change);
         if (change.Property == ValueProperty)
         {
+            if (IsNeedConfirm && _presenter is { IsEditing: true })
+            {
+                ResetConfirmationDraft();
+            }
             NotifyValueChanged(new GradientColorChangedEventArgs(change.GetOldValue<LinearGradientBrush?>(),
                 change.GetNewValue<LinearGradientBrush?>()));
             NotifyFormValueChanged();
@@ -120,7 +124,7 @@ public class GradientColorPicker : AbstractColorPicker
             }
             else if (change.Property == ValueProperty)
             {
-                if (Value != null)
+                if (!IsNeedConfirm && Value != null)
                 {
                     Value.StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative);
                     Value.EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative);
@@ -232,6 +236,8 @@ public class GradientColorPicker : AbstractColorPicker
 
     protected override Control CreatePresenter()
     {
+        // The runtime-created presenter is outside the owner's template selector chain.
+        // Its independent Content subtree cannot receive these bindings from ControlTheme.
         var presenter = new GradientColorPickerView();
         presenter[!GradientColorPickerView.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
         presenter[!GradientColorPickerView.IsClearEnabledProperty] = this[!IsClearEnabledProperty];
@@ -251,7 +257,7 @@ public class GradientColorPicker : AbstractColorPicker
 
     private void HandleColorPickerViewValueChanged(object? sender, GradientColorChangedEventArgs args)
     {
-        if (IsPickerOpen)
+        if (IsPickerOpen && !IsNeedConfirm)
         {
             SetCurrentValue(ValueProperty, args.NewColor);
         }
@@ -262,11 +268,15 @@ public class GradientColorPicker : AbstractColorPicker
         base.NotifyPickerOpened();
         if (_presenter != null)
         {
+            if (IsNeedConfirm)
+            {
+                _presenter.ResetDraft(Value);
+            }
             _presenter.GradientValueChanged += HandleColorPickerViewValueChanged;
             _presenter.ColorValueCleared += HandleColorCleared;
             var effectiveColor = Value ?? DefaultValue;
             this[!ActivatedStopIndexProperty] = _presenter[!GradientColorPickerView.ActivatedStopIndexProperty];
-            if (effectiveColor != null)
+            if (!IsNeedConfirm && effectiveColor != null)
             {
                 _presenter.SetCurrentValue(GradientColorPickerView.ValueProperty, effectiveColor);
                 _presenter.SetCurrentValue(GradientColorPickerView.ActivatedStopIndexProperty, _latestActivatedStopIndex ?? 0);
@@ -278,7 +288,8 @@ public class GradientColorPicker : AbstractColorPicker
     {
         if (_presenter != null)
         {
-            if (Value != null)
+            _presenter.EndEdit();
+            if (!IsNeedConfirm && !IsConfirmationOperationActive && Value != null)
             {
                 ValueSelected?.Invoke(this, new GradientColorSelectedEventArgs(Value));
             }
@@ -312,6 +323,33 @@ public class GradientColorPicker : AbstractColorPicker
         }
     }
 
+    internal override void ResetConfirmationDraft()
+    {
+        if (_presenter == null)
+        {
+            return;
+        }
+        _presenter.GradientValueChanged -= HandleColorPickerViewValueChanged;
+        _presenter.ResetDraft(Value);
+        if (IsPickerOpen)
+        {
+            _presenter.GradientValueChanged += HandleColorPickerViewValueChanged;
+        }
+    }
+
+    internal override void CommitConfirmationDraft()
+    {
+        var draft = _presenter?.DraftValue;
+        if (!GradientColorPickerView.GradientEquals(Value, draft))
+        {
+            SetCurrentValue(ValueProperty, GradientColorPickerView.CopyGradient(draft));
+        }
+        if (Value is { } value)
+        {
+            ValueSelected?.Invoke(this, new GradientColorSelectedEventArgs(value));
+        }
+    }
+
     internal void NotifyValueChanged(GradientColorChangedEventArgs e)
     {
         GradientValueChanged?.Invoke(this, e);
@@ -329,7 +367,10 @@ public class GradientColorPicker : AbstractColorPicker
 
     private void HandleColorCleared(object? sender, EventArgs args)
     {
-        ClearColor();
+        if (!IsNeedConfirm)
+        {
+            ClearColor();
+        }
     }
 
     private void ClearColor()

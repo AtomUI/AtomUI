@@ -1,6 +1,6 @@
 # PopupConfirm 桌面版实现原理
 
-本文档描述 PopupConfirm 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [PopupConfirm 桌面版架构设计](overview.md)，变化记录见 [PopupConfirm Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [PopupConfirm Token 设计](token.md)。
+本文档描述 PopupConfirm 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [PopupConfirm 桌面版架构设计](overview.md)，公共 Semantic Part 契约见 [PopupConfirm Semantic Part 契约](semantic-part.md)，变化记录见 [PopupConfirm Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [PopupConfirm Token 设计](token.md)。
 
 Popup 接入边界：`PopupConfirm` 负责业务状态和内容准备，`FlyoutHost` 提供继承的语义属性，`PopupConfirmFlyout` 仅作为 relay 适配层，confirmation Flyout Popup 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
 
@@ -13,6 +13,7 @@ Popup 接入边界：`PopupConfirm` 负责业务状态和内容准备，`FlyoutH
 主要源码文件：
 
 - `src/AtomUI.Desktop.Controls/PopupConfirm/PopupConfirm.cs`
+- `src/AtomUI.Desktop.Controls/PopupConfirm/PopupConfirm.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/PopupConfirm/PopupConfirmContainer.cs`
 - `src/AtomUI.Desktop.Controls/PopupConfirm/PopupConfirmFlyout.cs`
 - `src/AtomUI.Desktop.Controls/PopupConfirm/PopupConfirmPseudoClass.cs`
@@ -88,6 +89,28 @@ Public API / ItemsSource / Command / Event
 - `PART_OkButton`：承载用户触发入口、导航或关闭动作。
 - `PART_Title`：稳定模板协作入口，重命名前必须同步主题和实现。
 
+### Semantic Part 映射
+
+`PopupConfirm` 自持完整的 Semantic 契约（继承 `FlyoutHost` 但不复用其 descriptor），声明在
+`PopupConfirm.SemanticParts.cs`。8 个公开 Part 全部 `CrossVisualRoot=true` + `RuntimeCreated=true`，
+`SelectorRoute` 使用 `>> .semantic-popup-root >> .semantic-<part>` 的 owner 逻辑后代路由。marker 注入分两条路径：
+
+| Part | marker 节点 | 注入路径 |
+| --- | --- | --- |
+| `popup.root` | `FlyoutPresenter` | `Flyout.CreatePresenter()` 创建 presenter 时注入 `semantic-popup-root` |
+| `popup.container` | `Border#PART_ContentDecorator` | `FlyoutPresenter.OnApplyTemplate` 注入 `semantic-popup-container` |
+| `popup.content` | `ContentPresenter#ContentPresenter` | `FlyoutPresenter.OnApplyTemplate` 注入 `semantic-popup-content` |
+| `popup.arrow` | `ArrowIndicator#PART_ArrowIndicator` | `FlyoutPresenter.OnApplyTemplate` 注入 `semantic-popup-arrow` |
+| `popup.icon` | `IconPresenter#PART_IconPresenter` | `PopupConfirmContainerTheme.axaml` 静态声明 `semantic-popup-icon` |
+| `popup.title` | `TextBlock#PART_Title` | `PopupConfirmContainerTheme.axaml` 静态声明 `semantic-popup-title` |
+| `popup.description` | `ContentPresenter#PART_Content` | `PopupConfirmContainerTheme.axaml` 静态声明 `semantic-popup-description` |
+| `popup.actions` | `StackPanel#PART_ButtonLayout` | `PopupConfirmContainerTheme.axaml` 静态声明 `semantic-popup-actions` |
+
+前四个框体件的 marker 与 `FlyoutHost` 共用同一套代码注入路径，不能静态声明在共享
+`ArrowDecoratedBoxTheme.axaml` 上，否则会污染其它 `ArrowDecoratedBox` 弹层；后四个确认体件的 marker 位于
+`PopupConfirmContainer` 自身主题，静态声明不会污染其它控件。完整的 Part 表、存在条件与定制边界见
+[PopupConfirm Semantic Part 契约](semantic-part.md)。
+
 ## 6. 交互与事件处理
 
 PopupConfirm 的交互事件应从输入源收敛到控件级语义事件：
@@ -136,13 +159,15 @@ PopupConfirm 的交互事件应从输入源收敛到控件级语义事件：
 - 旧 template part、事件订阅、Popup/Flyout/Window host 和 collection view 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
+- 已发布的 Semantic Part 名称、selector class / route、ContractType 和数量语义（见 [Semantic Part 契约](semantic-part.md)）。
 
 ## 10. 测试与验证
 
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
+- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试；Semantic Part 契约变更运行
+  `tests/AtomUI.Desktop.Controls.Tests/PopupConfirm/PopupConfirmSemanticPartTests.cs`。
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

@@ -1,6 +1,6 @@
 # ToggleSwitch 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.ToggleSwitch` 桌面版开关控件的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [ToggleSwitch 桌面版实现原理](implementation.md)，Token 专项设计见 [ToggleSwitch Token 设计](token.md)，设计和契约变化记录见 [ToggleSwitch Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.ToggleSwitch` 桌面版开关控件的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [ToggleSwitch 桌面版实现原理](implementation.md)，Semantic Part 契约见 [ToggleSwitch Semantic Part 契约](semantic-part.md)，Token 专项设计见 [ToggleSwitch Token 设计](token.md)，设计和契约变化记录见 [ToggleSwitch Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -52,7 +52,7 @@ ToggleSwitch 的公共契约由 Avalonia `ToggleButton` 状态和 AtomUI 扩展�
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
 | `PART_WaveSpirit` | `WaveSpiritDecorator` | checked 变化时播放胶囊波纹。 |
-| `PART_MainContainer` | `Canvas` | 承载内容 presenter 和把手，并提供裁剪边界。 |
+| `PART_MainContainer` | `Canvas` 的内部派生类型 | 承载内容 presenter，传播内容尺寸变化并提供裁剪边界；把手位于画布之外。 |
 | `PART_OnContentPresenter` | `ContentPresenter` | checked 状态下内容承载。 |
 | `PART_OffContentPresenter` | `ContentPresenter` | unchecked 状态下内容承载。 |
 | `PART_SwitchKnob` | `SwitchKnob` | 把手、加载指示和把手动画承载。 |
@@ -67,6 +67,11 @@ ToggleSwitch 的公共契约由 Avalonia `ToggleButton` 状态和 AtomUI 扩展�
 | `IFormItemAware` | Form 以 `IsChecked` 作为表单值。 |
 
 ## 4. 行为与状态模型
+
+首帧状态契约：把手、内容偏移和轨道外观直接呈现当前 `IsChecked`；后续有效切换保留主题过渡。loading 旋转属于
+过程反馈，保持独立语义。根控件与把手的基线提交和主题就绪条件见
+[状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)，源码接入差异及证据见
+[状态动效初始化验证](../../../../architecture/systems/control-infrastructure/transition-initialization-verification.md)。
 
 ToggleSwitch 的交互优先级：
 
@@ -145,7 +150,7 @@ ToggleSwitch 属于 Data Entry 控件，常用于设置项、表单布尔项和�
 
 ### 8.1 内容模型
 
-`OnContent` 和 `OffContent` 可以是文本、图标或任意模板化对象。内容位置由控件测量当前两个 presenter 的最大宽度后计算，确保开/关切换时轨道宽度能容纳较宽的一侧。
+`OnContent` 和 `OffContent` 可以是文本、图标或任意模板化对象。默认字符串按实际可见字形垂直居中，字体行盒的下伸预留空间不参与标签视觉中心；自定义模板与控件内容保持自身布局。内容位置由控件测量当前两个 presenter 的最大宽度后计算，确保开/关切换时轨道宽度能容纳较宽的一侧。
 
 图标内容使用 `BindUtils.RelayBind` 同步 `IconSize`、`Foreground`、`Icon.FillBrush` 和 `Icon.StrokeBrush`。这些绑定由 on/off 两组 disposable 管理，在内容替换时释放。
 
@@ -166,34 +171,18 @@ ToggleSwitch.IsLoading
 
 ToggleSwitch 当前主题提供普通和小号两组尺寸。`Middle`、`Large` 和 `Custom` 共用普通尺寸，`Small` 使用 small token。控件测量宽度时取 `TrackMinWidth` 与内容宽度加内部边距的较大值。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [ToggleSwitch 桌面版实现原理](implementation.md)
+- [ToggleSwitch Semantic Part 契约](semantic-part.md)
 - [ToggleSwitch Token 设计](token.md)
 - [ToggleSwitch Changelog](changelog.md)
 
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `ToggleSwitch` | 数据录入控件根语义区域，承载 public API、值状态、验证状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `input` | `输入或编辑区域` | 承载用户输入、当前值、占位、格式化或只读状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载清除、展开、提交、步进、上传或辅助操作。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或候选区域` | 承载下拉、候选项、日历、颜色面板或异步内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `validation` | `校验反馈区域` | 承载 Form、status、错误、警告、help 或 loading 状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/toggle-switch/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/toggle-switch/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+`content` 与上游 Switch `content` 语义对齐，由模板中的两个 `ContentPresenter` 节点承载并以 `Multiple` 基数公开；
+`indicator` 对应上游 `indicator` 语义，由 `SwitchKnob` 节点承载并以 `Single` 基数公开。完整契约见
+[ToggleSwitch Semantic Part 契约](semantic-part.md)。
 
 验证策略：
 

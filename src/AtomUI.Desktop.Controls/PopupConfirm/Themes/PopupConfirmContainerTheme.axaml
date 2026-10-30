@@ -10,6 +10,7 @@
                            LastChildFill="True"
                            ClipToBounds="{TemplateBinding ClipToBounds}">
                     <StackPanel Name="PART_ButtonLayout"
+                                Classes.semantic-popup-actions="True"
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"
@@ -29,15 +30,18 @@
                     <DockPanel LastChildFill="True">
                         <atom:IconPresenter
                             Name="PART_IconPresenter"
+                            Classes.semantic-popup-icon="True"
                             Icon="{TemplateBinding Icon}"
                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
                             DockPanel.Dock="Left" />
                         <StackPanel>
                             <atom:TextBlock Name="PART_Title"
+                                            Classes.semantic-popup-title="True"
                                             VerticalAlignment="Center"
                                             Text="{TemplateBinding Title}"
                                             DockPanel.Dock="Top" />
                             <ContentPresenter Name="PART_Content"
+                                              Classes.semantic-popup-description="True"
                                               Content="{TemplateBinding ConfirmContent}"
                                               ContentTemplate="{TemplateBinding ConfirmContentTemplate}"
                                               IsVisible="{TemplateBinding ConfirmContent, Converter={x:Static ObjectConverters.IsNotNull}}" />

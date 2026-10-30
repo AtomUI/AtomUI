@@ -15,52 +15,53 @@ public class PopupPinnedOpenContractTests
         typeof(global::AtomUI.Desktop.Controls.AbstractColorPicker).Assembly;
     private static readonly Assembly DataGridAssembly = typeof(global::AtomUI.Desktop.Controls.DataGrid).Assembly;
 
-    public static IEnumerable<object[]> DirectContractOwners()
+    private static IEnumerable<object[]> DirectContractOwners()
     {
-        foreach (var type in new[]
+        // Semantic preview owners expose the pin publicly; physical/internal owners retain internal access.
+        foreach (var (type, isPublic) in new[]
                  {
-                     DesktopType("AtomUI.Desktop.Controls.Popup"),
-                     DesktopType("AtomUI.Desktop.Controls.Flyout"),
-                     DesktopType("AtomUI.Desktop.Controls.FlyoutHost"),
-                     DesktopType("AtomUI.Desktop.Controls.AbstractSelect"),
-                     DesktopType("AtomUI.Desktop.Controls.InfoPickerInput"),
-                     DesktopType("AtomUI.Desktop.Controls.AbstractAutoComplete"),
-                     DesktopType("AtomUI.Desktop.Controls.ComboBox"),
-                     ColorPickerType("AtomUI.Desktop.Controls.AbstractColorPicker"),
-                     DesktopType("AtomUI.Desktop.Controls.Mentions"),
-                     DesktopType("AtomUI.Desktop.Controls.Menu"),
-                     DesktopType("AtomUI.Desktop.Controls.MenuItem"),
-                     DesktopType("AtomUI.Desktop.Controls.ContextMenu"),
-                     DesktopType("AtomUI.Desktop.Controls.NavMenu"),
-                     DesktopType("AtomUI.Desktop.Controls.NavMenuItem"),
-                     DesktopType("AtomUI.Desktop.Controls.Tour"),
-                     DesktopType("AtomUI.Desktop.Controls.TreeView"),
-                     DesktopType("AtomUI.Desktop.Controls.AbstractTransfer"),
-                     DesktopType("AtomUI.Desktop.Controls.TransferSelectDropdown"),
-                     DesktopType("AtomUI.Desktop.Controls.BaseTabControl"),
-                     DesktopType("AtomUI.Desktop.Controls.BaseTabStrip"),
-                     DesktopType("AtomUI.Desktop.Controls.BaseTabScrollViewer"),
-                     DesktopType("AtomUI.Desktop.Controls.DropdownButton"),
-                     DesktopType("AtomUI.Desktop.Controls.SplitButton"),
-                     DesktopType("AtomUI.Desktop.Controls.AvatarGroup"),
-                     DataGridType("AtomUI.Desktop.Controls.DataGrid"),
-                     DataGridType("AtomUI.Desktop.Controls.DataGridColumnHeader"),
-                     DataGridType("AtomUI.Desktop.Controls.DataGridFilterIndicator")
+                     (DesktopType("AtomUI.Desktop.Controls.Popup"), false),
+                     (DesktopType("AtomUI.Desktop.Controls.Flyout"), false),
+                     (DesktopType("AtomUI.Desktop.Controls.FlyoutHost"), true),
+                     (DesktopType("AtomUI.Desktop.Controls.AbstractSelect"), true),
+                     (typeof(global::AtomUI.Desktop.Controls.Primitives.InfoPickerInput), true),
+                     (DesktopType("AtomUI.Desktop.Controls.AbstractAutoComplete"), true),
+                     (DesktopType("AtomUI.Desktop.Controls.ComboBox"), true),
+                     (ColorPickerType("AtomUI.Desktop.Controls.AbstractColorPicker"), true),
+                     (DesktopType("AtomUI.Desktop.Controls.Mentions"), true),
+                     (DesktopType("AtomUI.Desktop.Controls.Menu"), true),
+                     (DesktopType("AtomUI.Desktop.Controls.MenuItem"), false),
+                     (DesktopType("AtomUI.Desktop.Controls.ContextMenu"), false),
+                     (DesktopType("AtomUI.Desktop.Controls.NavMenu"), true),
+                     (DesktopType("AtomUI.Desktop.Controls.NavMenuItem"), false),
+                     (DesktopType("AtomUI.Desktop.Controls.Tour"), true),
+                     (DesktopType("AtomUI.Desktop.Controls.TreeView"), false),
+                     (DesktopType("AtomUI.Desktop.Controls.AbstractTransfer"), false),
+                     (DesktopType("AtomUI.Desktop.Controls.TransferSelectDropdown"), false),
+                     (DesktopType("AtomUI.Desktop.Controls.BaseTabControl"), false),
+                     (DesktopType("AtomUI.Desktop.Controls.BaseTabStrip"), false),
+                     (DesktopType("AtomUI.Desktop.Controls.TabScrollViewer"), false),
+                     (DesktopType("AtomUI.Desktop.Controls.DropdownButton"), true),
+                     (DesktopType("AtomUI.Desktop.Controls.SplitButton"), true),
+                     (DesktopType("AtomUI.Desktop.Controls.AvatarGroup"), false),
+                     (DataGridType("AtomUI.Desktop.Controls.DataGrid"), false),
+                     (DataGridType("AtomUI.Desktop.Controls.DataGridColumnHeader"), false),
+                     (DataGridType("AtomUI.Desktop.Controls.DataGridFilterIndicator"), false)
                  })
         {
-            yield return [type];
+            yield return [type, isPublic];
         }
     }
 
-    public static IEnumerable<object[]> InheritedContractOwners()
+    private static IEnumerable<object[]> InheritedContractOwners()
     {
         yield return [DesktopType("AtomUI.Desktop.Controls.Select"), DesktopType("AtomUI.Desktop.Controls.AbstractSelect")];
         yield return [DesktopType("AtomUI.Desktop.Controls.TreeSelect"), DesktopType("AtomUI.Desktop.Controls.AbstractSelect")];
         yield return [DesktopType("AtomUI.Desktop.Controls.Cascader"), DesktopType("AtomUI.Desktop.Controls.AbstractSelect")];
-        yield return [DesktopType("AtomUI.Desktop.Controls.DatePicker"), DesktopType("AtomUI.Desktop.Controls.InfoPickerInput")];
-        yield return [DesktopType("AtomUI.Desktop.Controls.RangeDatePicker"), DesktopType("AtomUI.Desktop.Controls.InfoPickerInput")];
-        yield return [DesktopType("AtomUI.Desktop.Controls.TimePicker"), DesktopType("AtomUI.Desktop.Controls.InfoPickerInput")];
-        yield return [DesktopType("AtomUI.Desktop.Controls.RangeTimePicker"), DesktopType("AtomUI.Desktop.Controls.InfoPickerInput")];
+        yield return [DesktopType("AtomUI.Desktop.Controls.DatePicker"), typeof(global::AtomUI.Desktop.Controls.Primitives.InfoPickerInput)];
+        yield return [DesktopType("AtomUI.Desktop.Controls.RangeDatePicker"), typeof(global::AtomUI.Desktop.Controls.Primitives.InfoPickerInput)];
+        yield return [DesktopType("AtomUI.Desktop.Controls.TimePicker"), typeof(global::AtomUI.Desktop.Controls.Primitives.InfoPickerInput)];
+        yield return [DesktopType("AtomUI.Desktop.Controls.RangeTimePicker"), typeof(global::AtomUI.Desktop.Controls.Primitives.InfoPickerInput)];
         yield return [DesktopType("AtomUI.Desktop.Controls.MenuFlyout"), DesktopType("AtomUI.Desktop.Controls.Flyout")];
         yield return [DesktopType("AtomUI.Desktop.Controls.TreeViewFlyout"), DesktopType("AtomUI.Desktop.Controls.Flyout")];
         yield return [DesktopType("AtomUI.Desktop.Controls.FloatableTreeView"), DesktopType("AtomUI.Desktop.Controls.TreeView")];
@@ -69,38 +70,72 @@ public class PopupPinnedOpenContractTests
         yield return [DesktopType("AtomUI.Desktop.Controls.PopupConfirm"), DesktopType("AtomUI.Desktop.Controls.FlyoutHost")];
     }
 
-    [Theory]
-    [MemberData(nameof(DirectContractOwners))]
-    public void Direct_Popup_Pinned_Open_Contracts_Are_Internal(Type ownerType)
+    [Fact]
+    public void Direct_Popup_Pinned_Open_Contracts_Keep_Their_Declared_Visibility()
+    {
+        foreach (var contract in DirectContractOwners())
+        {
+            var ownerType = (Type)contract[0];
+            var isPublic = (bool)contract[1];
+            try
+            {
+                AssertDirectContract(ownerType, isPublic);
+            }
+            catch (Exception exception)
+            {
+                throw new InvalidOperationException($"Popup pin contract mismatch: {ownerType.FullName}.", exception);
+            }
+        }
+    }
+
+    private static void AssertDirectContract(Type ownerType, bool isPublic)
     {
         const BindingFlags propertyFlags =
-            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
         const BindingFlags fieldFlags =
-            BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
 
         var property = ownerType.GetProperty(PropertyName, propertyFlags);
         property.ShouldNotBeNull($"{ownerType.FullName} must declare the popup pin CLR property.");
         property.PropertyType.ShouldBe(typeof(bool));
-        AssertInternal(property.GetMethod.ShouldNotBeNull());
-        AssertInternal(property.SetMethod.ShouldNotBeNull());
+        AssertVisibility(property.GetMethod.ShouldNotBeNull(), isPublic);
+        AssertVisibility(property.SetMethod.ShouldNotBeNull(), isPublic);
 
         var propertyField = ownerType.GetField(PropertyFieldName, fieldFlags);
         propertyField.ShouldNotBeNull($"{ownerType.FullName} must declare the popup pin Avalonia property field.");
-        propertyField.IsAssembly.ShouldBeTrue();
+        propertyField.IsPublic.ShouldBe(isPublic);
+        propertyField.IsAssembly.ShouldBe(!isPublic);
         propertyField.IsInitOnly.ShouldBeTrue();
         typeof(AvaloniaProperty).IsAssignableFrom(propertyField.FieldType).ShouldBeTrue();
 
+        var oppositeVisibility = isPublic ? BindingFlags.NonPublic : BindingFlags.Public;
         ownerType.GetProperty(
             PropertyName,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).ShouldBeNull();
+            BindingFlags.Instance | oppositeVisibility | BindingFlags.DeclaredOnly).ShouldBeNull();
         ownerType.GetField(
             PropertyFieldName,
-            BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly).ShouldBeNull();
+            BindingFlags.Static | oppositeVisibility | BindingFlags.DeclaredOnly).ShouldBeNull();
     }
 
-    [Theory]
-    [MemberData(nameof(InheritedContractOwners))]
-    public void Leaf_Controls_Inherit_The_Contract_From_Their_Semantic_Owner(Type leafType, Type expectedOwnerType)
+    [Fact]
+    public void Leaf_Controls_Inherit_The_Contract_From_Their_Semantic_Owner()
+    {
+        foreach (var contract in InheritedContractOwners())
+        {
+            var leafType = (Type)contract[0];
+            var expectedOwnerType = (Type)contract[1];
+            try
+            {
+                AssertInheritedContract(leafType, expectedOwnerType);
+            }
+            catch (Exception exception)
+            {
+                throw new InvalidOperationException($"Popup pin inheritance mismatch: {leafType.FullName}.", exception);
+            }
+        }
+    }
+
+    private static void AssertInheritedContract(Type leafType, Type expectedOwnerType)
     {
         var property = FindDeclaredProperty(leafType, PropertyName);
         property.ShouldNotBeNull($"{leafType.FullName} must inherit the popup pin contract.");
@@ -138,15 +173,20 @@ public class PopupPinnedOpenContractTests
         }
     }
 
-    [Theory]
-    [InlineData("AtomUI.Desktop.Controls.Dialog")]
-    [InlineData("AtomUI.Desktop.Controls.Drawer")]
-    [InlineData("AtomUI.Desktop.Controls.ImagePreviewer")]
-    public void Non_Popup_Session_Controls_Do_Not_Expose_The_Contract(string typeName)
+    [Fact]
+    public void Non_Popup_Session_Controls_Do_Not_Expose_The_Contract()
     {
-        var controlType = DesktopType(typeName);
-        FindDeclaredProperty(controlType, PropertyName).ShouldBeNull();
-        FindDeclaredField(controlType, PropertyFieldName).ShouldBeNull();
+        foreach (var typeName in new[]
+                 {
+                     "AtomUI.Desktop.Controls.Dialog",
+                     "AtomUI.Desktop.Controls.Drawer",
+                     "AtomUI.Desktop.Controls.ImagePreviewer"
+                 })
+        {
+            var controlType = DesktopType(typeName);
+            FindDeclaredProperty(controlType, PropertyName).ShouldBeNull($"{typeName} must not expose popup pin state.");
+            FindDeclaredField(controlType, PropertyFieldName).ShouldBeNull($"{typeName} must not register popup pin state.");
+        }
     }
 
     [Fact]
@@ -165,10 +205,12 @@ public class PopupPinnedOpenContractTests
             .DeclaringType.ShouldBe(DesktopType("AtomUI.Desktop.Controls.FlyoutHost"));
     }
 
-    private static void AssertInternal(MethodBase accessor)
+    private static void AssertInternal(MethodBase accessor) => AssertVisibility(accessor, isPublic: false);
+
+    private static void AssertVisibility(MethodBase accessor, bool isPublic)
     {
-        accessor.IsAssembly.ShouldBeTrue();
-        accessor.IsPublic.ShouldBeFalse();
+        accessor.IsAssembly.ShouldBe(!isPublic);
+        accessor.IsPublic.ShouldBe(isPublic);
         accessor.IsFamily.ShouldBeFalse();
         accessor.IsFamilyOrAssembly.ShouldBeFalse();
     }
@@ -179,7 +221,7 @@ public class PopupPinnedOpenContractTests
         {
             var property = current.GetProperty(
                 propertyName,
-                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
             if (property is not null)
             {
                 return property;

@@ -1,6 +1,8 @@
 using System.Collections.Immutable;
 using System.Text;
 using AtomUI.Generator.Localization.Catalog;
+using AtomUI.Generator.Localization.Xliff;
+using AtomUI.Localization.Data;
 using AtomUI.SourceGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -9,132 +11,105 @@ namespace AtomUI.Generator.Localization;
 
 internal static class LanguageModuleSourceWriter
 {
-    internal static void Write(
-        SourceProductionContext context,
-        string? assemblyName,
+    internal static void Write(SourceProductionContext context, string? assemblyName,
         ImmutableArray<CompiledLanguageCatalog> compiledCatalogs)
     {
-        var ownedCatalogs = compiledCatalogs.Where(static catalog => catalog.OwnsCatalog)
-                                             .OrderBy(static catalog => catalog.Catalog.CatalogId,
-                                                 StringComparer.Ordinal)
-                                             .ToArray();
-        if (ownedCatalogs.Length == 0)
+        var owned = compiledCatalogs.Where(static catalog => catalog.OwnsCatalog)
+            .OrderBy(static catalog => catalog.Catalog.CatalogId, StringComparer.Ordinal).ToArray();
+        if (owned.Length > 0)
         {
-            return;
+            var moduleId = owned[0].Catalog.ModuleId;
+            context.AddSource("GeneratedLanguageModuleRegistration.g.cs", GeneratedSourceText.From(
+                BuildSource(assemblyName, moduleId, "GeneratedLanguageModuleRegistration",
+                    Encode(assemblyName, moduleId, owned, builtIn: true), emitModuleId: true)));
         }
-
-        context.AddSource(
-            "GeneratedLanguageModuleRegistration.g.cs",
-            GeneratedSourceText.From(BuildSource(assemblyName, ownedCatalogs)));
+        if (compiledCatalogs.Any(static catalog => catalog.Bundles.Any(static bundle =>
+                bundle.SourceKind != LanguageFileSourceKind.ModuleBuiltIn)))
+        {
+            var moduleId = (assemblyName ?? "Application") + ":ApplicationTranslations";
+            context.AddSource("GeneratedApplicationLanguageData.g.cs", GeneratedSourceText.From(
+                BuildSource(assemblyName, moduleId, "GeneratedApplicationLanguageData",
+                    Encode(assemblyName, moduleId, compiledCatalogs, builtIn: false), emitModuleId: false)));
+        }
     }
 
-    private static string BuildSource(
-        string? assemblyName,
-        IReadOnlyList<CompiledLanguageCatalog> catalogs)
+    internal static string Encode(string? assemblyName, string moduleId,
+        IReadOnlyList<CompiledLanguageCatalog> catalogs, bool builtIn)
+    {
+        var data = new StringBuilder(LanguageModuleDataCodec.Header);
+        LanguageModuleDataCodec.WriteText(data, moduleId);
+        LanguageModuleDataCodec.WriteNumber(data, builtIn ? catalogs.Count : 0);
+        if (builtIn)
+        {
+            foreach (var compiled in catalogs)
+            {
+                var catalog = compiled.Catalog;
+                LanguageModuleDataCodec.WriteText(data, catalog.CatalogId);
+                LanguageModuleDataCodec.WriteText(data, assemblyName ?? "Application");
+                LanguageModuleDataCodec.WriteText(data, catalog.MetadataName);
+                LanguageModuleDataCodec.WriteNumber(data, catalog.Units.Length);
+                for (var slot = 0; slot < catalog.Units.Length; slot++)
+                {
+                    LanguageModuleDataCodec.WriteText(data, catalog.Units[slot].Key);
+                    LanguageModuleDataCodec.WriteNumber(data, catalog.Units[slot].EnumValue);
+                    LanguageModuleDataCodec.WriteNumber(data, compiled.FormattedUnits[slot] ? 1 : 0);
+                }
+            }
+        }
+        var bundles = catalogs.OrderBy(static catalog => catalog.Catalog.CatalogId, StringComparer.Ordinal)
+            .SelectMany(catalog => catalog.Bundles.Where(bundle =>
+                    (bundle.SourceKind == LanguageFileSourceKind.ModuleBuiltIn) == builtIn)
+                .Select(bundle => (catalog.Catalog.CatalogId, Bundle: bundle))).ToArray();
+        LanguageModuleDataCodec.WriteNumber(data, bundles.Length);
+        foreach (var item in bundles)
+        {
+            var bundle = item.Bundle;
+            LanguageModuleDataCodec.WriteText(data, item.CatalogId);
+            LanguageModuleDataCodec.WriteText(data, bundle.Language);
+            LanguageModuleDataCodec.WriteNumber(data, (int)bundle.SourceKind);
+            LanguageModuleDataCodec.WriteText(data, bundle.SourceIdentity);
+            LanguageModuleDataCodec.WriteNumber(data, bundle.Values.Length);
+            foreach (var value in bundle.Values)
+            {
+                LanguageModuleDataCodec.WriteText(data, value);
+            }
+        }
+        return data.ToString();
+    }
+
+    private static string BuildSource(string? assemblyName, string moduleId, string typeName,
+        string data, bool emitModuleId)
     {
         var source = new StringBuilder();
         source.AppendLine("// <auto-generated />");
         source.AppendLine("#nullable enable");
         source.AppendLine();
-        source.Append("[assembly: global::System.Reflection.AssemblyMetadata(")
-              .Append(ToStringLiteral("AtomUILanguageModuleId"))
-              .Append(", ")
-              .Append(ToStringLiteral(catalogs[0].Catalog.ModuleId))
-              .AppendLine(")]");
+        if (emitModuleId)
+        {
+            source.Append("[assembly: global::System.Reflection.AssemblyMetadata(\"AtomUILanguageModuleId\", ")
+                .Append(ToStringLiteral(moduleId)).AppendLine(")]");
+        }
+        source.Append("[assembly: global::AtomUI.Localization.LanguageModuleManifestAttribute(1, ")
+            .Append(ToStringLiteral(moduleId)).Append(", global::")
+            .Append(GeneratedCodeNamespace.ForAssembly(assemblyName)).Append('.').Append(typeName)
+            .AppendLine(".Data)]");
         source.AppendLine();
-        source.Append("namespace ")
-              .Append(GeneratedCodeNamespace.ForAssembly(assemblyName))
-              .AppendLine();
+        source.Append("namespace ").Append(GeneratedCodeNamespace.ForAssembly(assemblyName)).AppendLine();
         source.AppendLine("{");
-        source.AppendLine("    internal static class GeneratedLanguageModuleRegistration");
+        source.Append("    internal static class ").Append(typeName).AppendLine();
         source.AppendLine("    {");
+        source.Append("        internal const string Data = ").Append(ToStringLiteral(data)).AppendLine(";");
+        source.AppendLine();
         source.AppendLine("        internal static void Register(global::AtomUI.Localization.ILocalizationBuilder builder)");
         source.AppendLine("        {");
         source.AppendLine("            global::System.ArgumentNullException.ThrowIfNull(builder);");
-
-        foreach (var catalog in catalogs)
-        {
-            source.Append("            global::")
-                  .Append(GeneratedCodeNamespace.ForAssembly(assemblyName))
-                  .Append('.')
-                  .Append(LanguageCatalogSourceWriter.GetRegistrationTypeName(catalog.Catalog.CatalogId))
-                  .AppendLine(".Register(builder);");
-        }
-
+        source.Append("            builder.AddModuleData(").Append(ToStringLiteral(moduleId)).AppendLine(", Data);");
         source.AppendLine("        }");
         source.AppendLine("    }");
         source.AppendLine("}");
         return source.ToString();
     }
 
-    internal static void WriteCatalog(
-        StringBuilder source,
-        CompiledLanguageCatalog compiledCatalog,
-        string indent)
-    {
-        var catalog = compiledCatalog.Catalog;
-        source.Append(indent).AppendLine("builder.AddCatalog(");
-        source.Append(indent).Append("    new global::AtomUI.Localization.LanguageCatalogDescriptor<")
-              .Append(catalog.TypeName).AppendLine(">(");
-        source.Append(indent).Append("        ").Append(ToStringLiteral(catalog.CatalogId)).AppendLine(",");
-        source.Append(indent).AppendLine("        new global::AtomUI.Localization.LanguageCatalogUnitDescriptor[]");
-        source.Append(indent).AppendLine("        {");
-        for (var slot = 0; slot < catalog.Units.Length; slot++)
-        {
-            var unit = catalog.Units[slot];
-            source.Append(indent).Append("            new global::AtomUI.Localization.LanguageCatalogUnitDescriptor(")
-                  .Append(ToStringLiteral(unit.Key)).Append(", ")
-                  .Append(compiledCatalog.FormattedUnits[slot] ? "true" : "false")
-                  .AppendLine("),");
-        }
-        source.Append(indent).AppendLine("        },");
-        source.Append(indent).AppendLine("        static kind => kind switch");
-        source.Append(indent).AppendLine("        {");
-        for (var slot = 0; slot < catalog.Units.Length; slot++)
-        {
-            source.Append(indent).Append("            ").Append(catalog.TypeName).Append('.')
-                  .Append(ToIdentifier(catalog.Units[slot].Key))
-                  .Append(" => ").Append(slot).AppendLine(",");
-        }
-        source.Append(indent).AppendLine("            _ => -1,");
-        source.Append(indent).AppendLine("        }));");
-    }
-
-    internal static void WriteBundle(
-        StringBuilder source,
-        LanguageCatalogInfo catalog,
-        CompiledTranslationBundle bundle,
-        string indent)
-    {
-        source.Append(indent).AppendLine("builder.AddTranslationBundle(");
-        source.Append(indent).AppendLine("    new global::AtomUI.Localization.TranslationBundleDescriptor(");
-        source.Append(indent).Append("        ").Append(ToStringLiteral(catalog.CatalogId)).AppendLine(",");
-        source.Append(indent).Append("        global::AtomUI.Localization.LanguageTag.Parse(")
-              .Append(ToStringLiteral(bundle.Language)).AppendLine("),");
-        source.Append(indent).Append("        global::AtomUI.Localization.TranslationSourceKind.")
-              .Append(bundle.SourceKind).AppendLine(",");
-        source.Append(indent).Append("        ").Append(ToStringLiteral(bundle.SourceIdentity)).AppendLine(",");
-        source.Append(indent).AppendLine("        new string?[]");
-        source.Append(indent).AppendLine("        {");
-        foreach (var value in bundle.Values)
-        {
-            source.Append(indent).Append("            ")
-                  .Append(value is null ? "null" : ToStringLiteral(value))
-                  .AppendLine(",");
-        }
-        source.Append(indent).AppendLine("        }));");
-    }
-
-    private static string ToStringLiteral(string value)
-    {
-        return SyntaxFactory.LiteralExpression(
-                                SyntaxKind.StringLiteralExpression,
-                                SyntaxFactory.Literal(value))
-                            .ToFullString();
-    }
-
-    private static string ToIdentifier(string value)
-    {
-        return SyntaxFacts.GetKeywordKind(value) == SyntaxKind.None ? value : "@" + value;
-    }
+    private static string ToStringLiteral(string value) => SyntaxFactory.LiteralExpression(
+        SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(value)).ToFullString();
 }

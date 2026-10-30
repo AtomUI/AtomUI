@@ -553,6 +553,54 @@
         <target state="translated">SelectedItems 绑定</target>
       </segment>
     </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Node container, carrying node state, line rendering and nested children.</source>
+        <target state="translated">节点容器，承载节点状态、树形连线渲染与子节点。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIconDescription">
+      <segment>
+        <source>Icon region of each node, with icon size and margin.</source>
+        <target state="translated">每个节点的图标区域，控制图标尺寸与边距。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIndicatorDescription">
+      <segment>
+        <source>Checkbox or radio toggle indicator of each node, driven by ToggleType and check state.</source>
+        <target state="translated">每个节点的勾选指示（checkbox 或 radio），由 ToggleType 与勾选状态驱动。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemSwitcherDescription">
+      <segment>
+        <source>Expand/collapse switcher of each node, with state icons.</source>
+        <target state="translated">每个节点的展开/收起 switcher，控制状态图标。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemTitleDescription">
+      <segment>
+        <source>Title region of each node, with text color and alignment.</source>
+        <target state="translated">每个节点的标题区域，控制文字颜色与对齐。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticNodeRootDescription">
+      <segment>
+        <source>Single node container root, the owner scope of nested items and node content.</source>
+        <target state="translated">单个节点容器本身，作为子节点与节点内容的 owner 作用域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and generated Semantic Part styles to customize the published node container, switcher, icon and title parts.</source>
+        <target state="translated">使用 owner 作用域选择器与生成的 Semantic Part 样式，定制已发布的节点容器、switcher、图标与标题 Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
     <unit id="TreeWithLineDescription">
       <segment>
         <source>Tree with connected line between nodes, turn on by showLine, customize the preset icon by switcherIcon.</source>

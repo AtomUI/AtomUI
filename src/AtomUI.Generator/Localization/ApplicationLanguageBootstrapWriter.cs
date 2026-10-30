@@ -66,19 +66,12 @@ internal static class ApplicationLanguageBootstrapWriter
                   .AppendLine(".GeneratedLanguageModuleRegistration.Register(builder);");
         }
 
-        foreach (var catalog in compiledCatalogs.OrderBy(
-                     static catalog => catalog.Catalog.CatalogId,
-                     StringComparer.Ordinal))
+        if (compiledCatalogs.Any(static catalog => catalog.Bundles.Any(static bundle =>
+                bundle.SourceKind != LanguageFileSourceKind.ModuleBuiltIn)))
         {
-            foreach (var bundle in catalog.Bundles.Where(static bundle =>
-                         bundle.SourceKind != LanguageFileSourceKind.ModuleBuiltIn))
-            {
-                LanguageModuleSourceWriter.WriteBundle(
-                    source,
-                    catalog.Catalog,
-                    bundle,
-                    bodyIndent);
-            }
+            source.Append(bodyIndent).Append("global::")
+                  .Append(GeneratedCodeNamespace.ForAssembly(assemblyName))
+                  .AppendLine(".GeneratedApplicationLanguageData.Register(builder);");
         }
 
         source.Append(memberIndent).AppendLine("}");

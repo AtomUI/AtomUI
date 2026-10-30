@@ -13,15 +13,17 @@ internal sealed class ImageLoaderPipeline : IDisposable
     private readonly ImageSourceReaderRegistry _readers;
     private readonly ImageContentValidator _validator;
     private readonly ImageCodecRegistry _codecs;
-    private readonly HttpImageTransport _transport;
+    private readonly DeferredHttpImageTransport _transport;
     private readonly Dictionary<string, long> _partitionEpochs = [];
     private long _globalEpoch;
+    private int _disposeRequested;
     private bool _disposed;
 
     internal ImageLoaderPipeline(
         ImageLoadingOptions options,
         IEnumerable<ImageCodec> codecs,
-        HttpMessageHandler? httpMessageHandler = null)
+        HttpMessageHandler? httpMessageHandler = null,
+        Func<HttpImageTransport>? httpTransportFactory = null)
     {
         _encodedCache = new ImageEncodedCache(options.EncodedMemoryCacheBytes, options.EncodedMemoryCacheEntries);
         _decodedCache = new ImageDecodedCache(options.DecodedMemoryCacheBytes, options.DecodedMemoryCacheEntries);
@@ -38,10 +40,12 @@ internal sealed class ImageLoaderPipeline : IDisposable
         _coordinator = new ImageRequestCoordinator();
         _validator = new ImageContentValidator(options);
         _codecs = new ImageCodecRegistry(codecs);
-        _transport = new HttpImageTransport(options, httpMessageHandler);
+        _transport = new DeferredHttpImageTransport(
+            httpTransportFactory ?? (() => new HttpImageTransport(options, httpMessageHandler)),
+            httpTransportFactory is null ? httpMessageHandler : null);
         _readers = new ImageSourceReaderRegistry(
         [
-            new HttpImageSourceReader(_transport),
+            new HttpImageSourceReader(_transport.Get),
             new FileImageSourceReader(options),
             new AssetImageSourceReader(options),
             new StorageFileImageSourceReader(options),
@@ -70,7 +74,7 @@ internal sealed class ImageLoaderPipeline : IDisposable
         NormalizedImageRequest request,
         CancellationToken cancellationToken)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(_disposed || Volatile.Read(ref _disposeRequested) != 0, this);
         ImageProgressDispatcher.Report(request.Progress, ImageLoadProgress.Create(ImageLoadStage.Resolving));
         if (request.Source.Kind == ImageSourceKind.Borrowed)
         {
@@ -135,7 +139,7 @@ internal sealed class ImageLoaderPipeline : IDisposable
         ImageCacheClearRequest request,
         CancellationToken cancellationToken)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(_disposed || Volatile.Read(ref _disposeRequested) != 0, this);
         ArgumentNullException.ThrowIfNull(request);
         var partitionHash = request.CachePartition is null
             ? null
@@ -170,6 +174,7 @@ internal sealed class ImageLoaderPipeline : IDisposable
 
     public void Dispose()
     {
+        BeginDispose();
         if (_disposed)
         {
             return;
@@ -181,6 +186,14 @@ internal sealed class ImageLoaderPipeline : IDisposable
         _encodedCache.Dispose();
         _fileCache?.Dispose();
         _transport.Dispose();
+    }
+
+    internal void BeginDispose()
+    {
+        if (Interlocked.Exchange(ref _disposeRequested, 1) == 0)
+        {
+            _transport.CloseAcquisition();
+        }
     }
 
     private async Task<ImageDecodedCacheEntry> DecodeCoreAsync(

@@ -1,9 +1,7 @@
-﻿using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 
@@ -107,6 +105,26 @@ internal class CheckBoxIndicator : TemplatedControl
         PseudoClasses.Set(StdPseudoClass.Indeterminate, State == CheckBoxIndicatorState.Indeterminate);
     }
 
+    private void PlayWaveSpirit()
+    {
+        if (_waveSpiritDecorator is null)
+        {
+            return;
+        }
+
+        var waveBrush = WaveSpiritDecorator.ResolveWaveSpiritBrush(BorderBrush, Background);
+        if (waveBrush is not null)
+        {
+            _waveSpiritDecorator.WaveBrush = waveBrush;
+        }
+        else
+        {
+            _waveSpiritDecorator.ClearValue(WaveSpiritDecorator.WaveBrushProperty);
+        }
+
+        _waveSpiritDecorator.Play();
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -122,7 +140,7 @@ internal class CheckBoxIndicator : TemplatedControl
                 IsLoaded &&
                 PseudoClasses.Contains(StdPseudoClass.Checked))
             {
-                _waveSpiritDecorator?.Play();
+                Dispatcher.Post(PlayWaveSpirit);
             }
         }
     }
@@ -134,15 +152,4 @@ internal class CheckBoxIndicator : TemplatedControl
         _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>(WaveSpiritDecorator.WaveSpiritPart);
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.UIThread.Post(this.EnableTransitions);
-    }
 }

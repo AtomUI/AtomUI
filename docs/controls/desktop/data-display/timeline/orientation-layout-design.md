@@ -117,17 +117,23 @@ Timeline
 
 TimelineItem
   -> TimelineItemPanel#RootLayout
-     -> TextBlock#Label
-     -> TimelineIndicator#Indicator
-        -> IconPresenter#PART_IconPresenter
-     -> ContentPresenter#ContentPresenter
+     -> TimelineSectionPanel#Section
+        -> StackPanel#Header
+           -> TextBlock#Label
+        -> TimelineIndicator#Indicator
+           -> Border#PART_Rail
+           -> Border#PART_Dot
+           -> Border#PART_IconHost
+              -> IconPresenter#PART_IconPresenter
+        -> ContentPresenter#ContentPresenter
 ```
 
 `Orientation` 从 Timeline 传递给 TimelineStackPanel 和每个 TimelineItem，再由 Item 模板传递给 TimelineItemPanel 与 TimelineIndicator。`Mode` 和视觉顺序状态沿同一路径单向传递。
 
 模板维护必须遵守：
 
-- 保留 `PART_IconPresenter`、`RootLayout`、`Label`、`Indicator` 和 `ContentPresenter` 的稳定职责。
+- 保留 `RootLayout`、`Section`、`Header`、`Label`、`Indicator`、`PART_Rail`、`PART_Dot`、`PART_IconHost`、
+  `PART_IconPresenter` 和 `ContentPresenter` 的稳定职责。
 - Vertical 专属的 item bottom padding 和 Pending 大间距不能泄漏到 Horizontal 布局。
 - Horizontal Indicator 沿横向 Stretch；Vertical Indicator 保持固定的交叉轴尺寸。
 - Mode 和 Orientation 差异通过属性、selector 和 Panel 布局表达，不复制模板。
@@ -181,18 +187,22 @@ Vertical 布局沿用 Label、Indicator、Content 的水平三段模型。存在
 Horizontal 布局分为：
 
 - 单侧布局：无可见 Label 且 Mode 不是 Alternate。Start 按 Indicator、gap、Content 排列；End 按 Content、gap、Indicator 排列。
-- 双侧布局：存在可见 Label 或 Mode 为 Alternate。Panel 使用上方区域、Indicator 区域、下方区域，并根据 Effective Mode 交换 Label 与 Content。
+- Label 堆叠布局：存在可见 Label 且 Mode 不是 Alternate。Start 按 Indicator、gap、Label、gap、Content 依次向下排列（轴线在上，Label 与 Content 在下并对轴线水平居中）；End 按 Label、gap、Content、gap、Indicator 排列（轴线在下）。Label 与 Content 各取自然高度，无 Label 的 Item 收缩为单侧布局的尺寸。
+- Alternate 布局：Mode 为 Alternate。Panel 使用上方区域、Indicator 区域、下方区域，并根据 Effective Mode 交换 Label 与 Content，Label 与 Content 对轴线水平居中。
 
-双侧布局中，每个 Item 使用 Label 和 Content 高度的较大值作为单侧 extent。DesiredHeight 由两倍 side extent、Indicator extent 和两侧 gap 组成；TimelineStackPanel 再取所有 Item 的最大高度，确保节点在同一水平轴线上。文本宽度始终受 slotWidth 约束，因此长文本在 Item 内换行。
+Alternate 布局中，每个 Item 使用 Label 和 Content 高度的较大值作为单侧 extent。DesiredHeight 由两倍 side extent、Indicator extent 和两侧 gap 组成；TimelineStackPanel 再取所有 Item 的最大高度，确保节点在同一水平轴线上。文本宽度始终受 slotWidth 约束，因此长文本在 Item 内换行。
 
-### 7.5 Indicator 绘制
+### 7.5 Indicator 轴线几何
 
-- Vertical 模式在节点中心上方和下方绘制连接线。
-- Horizontal 模式在节点中心的主轴前方和后方绘制连接线。
-- `IsFirst` 阻止绘制视觉顺序前方的线段，`IsLast` 阻止绘制后方线段。
-- 内置圆点使用 `IndicatorDotSize` 和 `IndicatorDotBorderWidth` 计算连接点。
-- 自定义图标使用 `PART_IconPresenter` 的实际 Bounds 作为连接线终点，连接线不能穿过图标。
-- Orientation、首尾状态、图标、尺寸、颜色和线宽变化必须使对应 Measure 或 Render 失效。
+- Vertical 模式的 rail 覆盖节点中心上方和下方的轴线区间。
+- Horizontal 模式的 rail 覆盖节点中心主轴前方和后方。
+- 垂直方向对齐上游 rail 分段语义：每段从自身节点底边延伸到下一节点顶边（贯穿 item 边界），线紧贴
+  节点并掩膜遮盖、视觉连续；末项（含单 Item）rail 收缩为零尺寸，语义框以节点为界。
+- 水平方向 rail 贯穿相邻 item 连成完整轴线（节点位于 item 中心、单段只能覆盖到 item 边缘）：首项从
+  自身节点起、末项止于自身节点、中间项全宽贯通，交叉区域由节点掩膜遮盖。
+- 内置圆点使用 `IndicatorDotSize` 和 `IndicatorDotBorderWidth` 计算中心与盒尺寸。
+- 自定义图标使用 `PART_IconHost` 的实际 Bounds 中心作为 rail 裁剪点，不透明宿主掩膜 rail。
+- Orientation、首尾状态、图标、尺寸变化必须使对应 Measure 或 Arrange 失效。
 
 ### 7.6 重新计算与重新布局
 
@@ -209,7 +219,7 @@ Horizontal 布局分为：
 
 - 视觉顺序计算为 O(N)，只在集合、可见性、Label、Reverse 或 Pending 结构状态变化时执行，不进入 Render 热路径。
 - 水平 Measure 和 Arrange 均为 O(N)，不创建方向专用 Visual，也不复制 Item 模板。
-- TimelineIndicator 继续缓存 dot Pen 和 line Pen；只有 Brush 或宽度变化时重建。
+- TimelineIndicator 不再自绘：rail、圆点与图标宿主都是模板元素，几何在 Arrange 阶段计算，无 Pen 缓存。
 - Orientation 和 Mode 使用静态 AvaloniaProperty 注册及模板绑定，不使用反射、动态类型发现或运行时扫描。
 - Item 通过 owner 回调触发结构重算，不为每个 Item 建立无释放路径的长期订阅。
 - 设计不新增 timer、异步任务、Popup、DynamicResource owner 或 NativeAOT 动态入口。
@@ -232,7 +242,7 @@ Horizontal 布局分为：
 | 状态 | 可见项视觉索引、Alternate 首项、Reverse、隐藏项、首尾、Label 和 Pending 邻接。 |
 | Panel | Vertical 既有布局、Horizontal 等宽、Spacing、零项、无限宽和 final width 重算。 |
 | Item | Orientation x Start/End/Alternate x Label 矩阵、长文本换行和轴线对齐。 |
-| Renderer | 垂直/水平首尾线段、内置圆点、自定义图标边界和 Pen 缓存失效。 |
+| Indicator | 垂直/水平首尾 rail 裁剪、内置圆点几何、图标宿主掩膜与 `:icon-present` 切换。 |
 | Theme | Orientation/Mode 传递、方向 selector、Template Part、Light/Dark 和 Browser/Desktop 一致性。 |
 | RTL | 垂直 Start/End 左右镜像，水平上下语义保持不变。 |
 | Gallery | Start、End、Alternate 三种水平示例以及动态 Mode 示例。 |

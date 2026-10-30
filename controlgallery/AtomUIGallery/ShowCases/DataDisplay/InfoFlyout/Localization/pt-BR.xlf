@@ -181,6 +181,84 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticPopupArrowDescription">
+      <segment>
+        <source>Arrow indicator pointing to the anchor.</source>
+        <target state="translated">Indicador de seta apontando para a âncora.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContainerDescription">
+      <segment>
+        <source>Inner container that carries the popup background, padding and border.</source>
+        <target state="translated">Contêiner interno que carrega o fundo, o preenchimento e a borda do popup.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContentDescription">
+      <segment>
+        <source>Content region of the popup.</source>
+        <target state="translated">Região de conteúdo do popup.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root container of the popup layer.</source>
+        <target state="translated">Contêiner raiz da camada popup.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewContentText">
+      <segment>
+        <source>Semantic structure of the InfoFlyout popup.</source>
+        <target state="translated">Estrutura semântica do popup do InfoFlyout.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewTriggerContent">
+      <segment>
+        <source>Semantic Part</source>
+        <target state="translated">Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The InfoFlyout host itself.</source>
+        <target state="translated">O próprio componente InfoFlyout.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleFunctionContent">
+      <segment>
+        <source>Function text</source>
+        <target state="translated">Function text</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleFunctionTrigger">
+      <segment>
+        <source>Function Style</source>
+        <target state="translated">Function Style</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleObjectContent">
+      <segment>
+        <source>Object text</source>
+        <target state="translated">Object text</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleObjectTrigger">
+      <segment>
+        <source>Object Style</source>
+        <target state="translated">Object Style</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of the InfoFlyout popup with semantic part styles.</source>
+        <target state="translated">Personalize o estilo da estrutura semântica do popup do InfoFlyout com estilos de partes semânticas.</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
     <unit id="TriggerWaysDescription">
       <segment>
         <source>Mouse to click, focus and move in.</source>

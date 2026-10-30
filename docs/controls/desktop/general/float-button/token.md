@@ -31,6 +31,7 @@ FloatButton 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+- BackTop 进度环不引入控件专属 Token；`BackTopFloatButtonTheme.axaml` 中的进度环节点直接引用全局 SharedToken——线宽取 `LineWidthBold`，轨道色取 `ColorBorderSecondary`，进度色取 `ColorPrimary`。
 
 ## 4. 控件家族影响
 

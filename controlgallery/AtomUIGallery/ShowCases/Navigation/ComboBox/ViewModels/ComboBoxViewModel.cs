@@ -33,10 +33,28 @@ public class ComboBoxViewModel : ReactiveObject, IRoutableViewModel
 
     public string BoundSelectedItemText => BoundSelectedItem?.Text ?? "-";
 
+    private List<ComboBoxItemData>? _semanticPreviewItems;
+
+    public List<ComboBoxItemData>? SemanticPreviewItems
+    {
+        get => _semanticPreviewItems;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewItems, value);
+    }
+
+    private List<ComboBoxItemData>? _styleClassItems;
+
+    public List<ComboBoxItemData>? StyleClassItems
+    {
+        get => _styleClassItems;
+        set => this.RaiseAndSetIfChanged(ref _styleClassItems, value);
+    }
+
     public ComboBoxViewModel(IScreen screen)
     {
         HostScreen                    = screen;
         ComboBoxItems                 = CreateComboBoxItems();
+        SemanticPreviewItems          = CreateSemanticPreviewItems();
+        StyleClassItems               = CreateSemanticPreviewItems();
         BoundSelectedItem             = ComboBoxItems[1];
         SetBoundSelectedItemCommand   = ReactiveCommand.Create(SetBoundSelectedItem);
         ClearBoundSelectedItemCommand = ReactiveCommand.Create(ClearBoundSelectedItem);
@@ -70,9 +88,24 @@ public class ComboBoxViewModel : ReactiveObject, IRoutableViewModel
         ];
     }
 
+    private static List<ComboBoxItemData> CreateSemanticPreviewItems()
+    {
+        return
+        [
+            new ComboBoxItemData { Text = "Alpha" },
+            new ComboBoxItemData { Text = "Beta" },
+            new ComboBoxItemData { Text = "Gamma" }
+        ];
+    }
+
 }
 
 public class ComboBoxItemData
 {
     public string Text { get; set; } = string.Empty;
+
+    // ComboBox 从候选项推导显示文本时（可编辑输入框的 Text、溢出提示、过滤匹配）会依次尝试
+    // TextSearch.Text、DisplayMemberBinding，最后回落到 object.ToString()。本演示模型不带绑定，
+    // 若不声明文本表示，输入框会显示类型全名而不是候选项文本。
+    public override string ToString() => Text;
 }

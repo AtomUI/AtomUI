@@ -11,37 +11,46 @@
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          CornerRadius="{TemplateBinding CornerRadius}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
+                                         StrokeDashArray="{TemplateBinding StrokeDashArray}"
                                          Padding="{TemplateBinding Padding}">
                     <DockPanel Name="RootLayout" LastChildFill="True">
                         <Panel IsVisible="{TemplateBinding IsShowIcon}"
                                DockPanel.Dock="Left">
                             <antdicons:CheckCircleFilled Name="SuccessIcon"
+                                                         Classes.semantic-icon="True"
                                                          FillBrush="{atom:SharedTokenResource ColorSuccess}"
                                                          IsVisible="False"/>
                             <antdicons:InfoCircleFilled Name="InfoIcon"
+                                                        Classes.semantic-icon="True"
                                                         FillBrush="{atom:SharedTokenResource ColorPrimary}"
                                                         IsVisible="False"/>
                             <antdicons:ExclamationCircleFilled Name="WarningIcon"
+                                                               Classes.semantic-icon="True"
                                                                FillBrush="{atom:SharedTokenResource ColorWarning}"
                                                                IsVisible="False"/>
                             <antdicons:CloseCircleFilled Name="ErrorIcon"
+                                                         Classes.semantic-icon="True"
                                                          FillBrush="{atom:SharedTokenResource ColorError}"
                                                          IsVisible="False"/>
                         </Panel>
                         
                         <atom:IconButton
                             Name="PART_CloseBtn"
+                            Classes.semantic-close="True"
                             IsVisible="{TemplateBinding IsClosable}"
                             Icon="{TemplateBinding CloseIcon}"
                             DockPanel.Dock="Right" />
                         <ContentPresenter Name="ExtraActionPresenter"
+                                          Classes.semantic-actions="True"
                                           DockPanel.Dock="Right" 
                                           IsVisible="{TemplateBinding ExtraAction, Converter={x:Static ObjectConverters.IsNotNull}}"
                                           Content="{TemplateBinding ExtraAction}" />
                         <StackPanel Orientation="Vertical"
+                                    Classes.semantic-section="True"
                                     VerticalAlignment="Center"
                                     ClipToBounds="True">
                             <Label Name="MessageLabel"
+                                   Classes.semantic-title="True"
                                    HorizontalAlignment="Stretch"
                                    HorizontalContentAlignment="Left"
                                    VerticalContentAlignment="Center"
@@ -50,11 +59,13 @@
                                    Content="{TemplateBinding Message}" />
                             <atom:MarqueeLabel
                                 Name="MarqueeLabel"
+                                Classes.semantic-title="True"
                                 HorizontalAlignment="Stretch"
                                 Padding="0"
                                 IsVisible="{TemplateBinding IsMessageMarqueeEnabled}"
                                 Text="{TemplateBinding Message}" />
                             <Label Name="DescriptionLabel"
+                                   Classes.semantic-description="True"
                                    HorizontalAlignment="Stretch"
                                    HorizontalContentAlignment="Left"
                                    VerticalContentAlignment="Center"

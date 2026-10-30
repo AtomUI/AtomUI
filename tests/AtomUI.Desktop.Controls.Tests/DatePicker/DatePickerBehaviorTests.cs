@@ -40,6 +40,33 @@ public class DatePickerBehaviorTests
     }
 
     [Fact]
+    public void Pinned_Open_Request_Suppresses_Light_Dismiss_Before_First_Open_And_Unpin_Restores_It()
+    {
+        var datePicker = new Desktop.Controls.DatePicker
+        {
+            Width             = 240,
+            IsMotionEnabled   = false,
+            IsPopupPinnedOpen = true
+        };
+
+        ShowInWindow(datePicker, () =>
+        {
+            var popup = datePicker.GetVisualDescendants()
+                                  .OfType<Popup>()
+                                  .Single(item => item.Name == "PART_Popup");
+
+            popup.IsOpen.ShouldBeTrue();
+            popup.IsLightDismissEnabled.ShouldBeFalse();
+
+            datePicker.IsPopupPinnedOpen = false;
+            Dispatcher.UIThread.RunJobs();
+
+            popup.IsPopupPinnedOpen.ShouldBeFalse();
+            popup.IsLightDismissEnabled.ShouldBeTrue();
+        });
+    }
+
+    [Fact]
     public void Pinned_DatePicker_Rejects_ClosePickerFlyout_Request()
     {
         var datePicker = new Desktop.Controls.DatePicker

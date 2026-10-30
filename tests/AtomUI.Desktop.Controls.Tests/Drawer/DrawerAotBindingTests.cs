@@ -1,6 +1,6 @@
 using System.Reflection;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -65,8 +65,8 @@ public class DrawerAotBindingTests
 
             var container = layer.Children.Single();
             var staleMotionActor = container.GetVisualDescendants()
-                                            .OfType<BaseMotionActor>()
-                                            .Single();
+                                            .OfType<Border>()
+                                            .Single(control => control.Name == "PART_Surface");
             staleMotionActor.Opacity = 1.0;
             SetInternalProperty(container, "IsMotionEnabled", false);
             layer.Children.Remove(container);
@@ -82,8 +82,8 @@ public class DrawerAotBindingTests
             drawer.IsOpen          = true;
 
             var motionActor = layer.GetVisualDescendants()
-                                   .OfType<BaseMotionActor>()
-                                   .Single();
+                                   .OfType<Border>()
+                                   .Single(control => control.Name == "PART_Surface");
 
             motionActor.Opacity.ShouldBe(
                 0.0,

@@ -15,18 +15,28 @@
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:AbstractSkeleton">
             <Panel Name="PART_RootLayout">
-                <Border Name="PART_ContentLayer"
-                        Background="{TemplateBinding Background}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}" />
-                <Border Name="PART_ActiveAnimationLayer"
-                        Background="{TemplateBinding AnimationLayerFill}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        IsVisible="{TemplateBinding IsActive}" />
-                <antdicons:ImageFilled Name="Image"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       FillBrush="#bfbfbf" />
+                <Panel Name="PART_ContentLayout"
+                       Width="{TemplateBinding Height}"
+                       Height="{TemplateBinding Height}"
+                       HorizontalAlignment="Left">
+                    <Border Name="PART_ContentLayer"
+                            Classes.semantic-content="True"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}" />
+                    <Border Name="PART_ActiveAnimationLayer"
+                            Classes.semantic-content="True"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            IsVisible="{TemplateBinding IsActive}" />
+                    <antdicons:ImageFilled Name="Image"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FillBrush="#bfbfbf" />
+                </Panel>
             </Panel>
         </ControlTemplate>
     </Setter>
@@ -42,5 +52,6 @@
             <Setter Property="Width" Value="{atom:SkeletonTokenResource ImageSize}" />
             <Setter Property="Height" Value="{atom:SkeletonTokenResource ImageSize}" />
         </Style>
+
     </Style>
 </ControlTheme>

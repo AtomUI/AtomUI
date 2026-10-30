@@ -7,10 +7,34 @@
         <target state="final">Ir para</target>
       </segment>
     </unit>
+    <unit id="NextPageText">
+      <segment>
+        <source>Next Page</source>
+        <target state="final">Próxima página</target>
+      </segment>
+    </unit>
+    <unit id="NextPagesTextFormat">
+      <segment>
+        <source>Next {0} Pages</source>
+        <target state="final">Avançar {0} páginas</target>
+      </segment>
+    </unit>
     <unit id="PageText">
       <segment>
         <source>Page</source>
         <target state="final">Página</target>
+      </segment>
+    </unit>
+    <unit id="PreviousPageText">
+      <segment>
+        <source>Previous Page</source>
+        <target state="final">Página anterior</target>
+      </segment>
+    </unit>
+    <unit id="PreviousPagesTextFormat">
+      <segment>
+        <source>Previous {0} Pages</source>
+        <target state="final">Voltar {0} páginas</target>
       </segment>
     </unit>
     <unit id="TotalInfoFormat">

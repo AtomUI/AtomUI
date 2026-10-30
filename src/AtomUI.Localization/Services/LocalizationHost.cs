@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 namespace AtomUI.Localization;
 
 internal sealed class LocalizationHost : IDisposable
@@ -13,18 +11,16 @@ internal sealed class LocalizationHost : IDisposable
         Localizer localizer,
         LanguageResourceProvider resourceProvider)
     {
-        Registry = registry ?? throw new ArgumentNullException(nameof(registry));
+        ArgumentNullException.ThrowIfNull(registry);
         ArgumentNullException.ThrowIfNull(snapshots);
         LanguageManager = languageManager ?? throw new ArgumentNullException(nameof(languageManager));
         Localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         ResourceProvider = resourceProvider ?? throw new ArgumentNullException(nameof(resourceProvider));
-        Snapshots = new ReadOnlyDictionary<LanguageTag, LanguageSnapshot>(
-            new Dictionary<LanguageTag, LanguageSnapshot>(snapshots));
     }
 
-    internal LanguageCatalogRegistry Registry { get; }
+    internal LanguageCatalogRegistry Registry => LanguageManager.Registry;
 
-    internal IReadOnlyDictionary<LanguageTag, LanguageSnapshot> Snapshots { get; }
+    internal IReadOnlyDictionary<LanguageTag, LanguageSnapshot> Snapshots => LanguageManager.Snapshots;
 
     internal LanguageManager LanguageManager { get; }
 

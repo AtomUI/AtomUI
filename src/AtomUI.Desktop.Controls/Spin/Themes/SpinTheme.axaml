@@ -8,16 +8,19 @@
             <ControlTemplate>
                 <Panel Name="RootLayout">
                     <ContentPresenter Name="ContentPresenter"
+                        Classes.semantic-container="True"
                         Content="{TemplateBinding Content}"
                         ContentTemplate="{TemplateBinding ContentTemplate}"
                         Opacity="{TemplateBinding MaskOpacity}" />
                     <Panel Name="MaskLayout" IsVisible="{TemplateBinding IsSpinning}">
-                        <Border Name="Mask" Background="Transparent"/>
+                        <Border Name="Mask" Classes.semantic-mask="True" Background="Transparent"/>
                         <StackPanel Orientation="Vertical"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
+                                    Classes.semantic-section="True"
                                     Name="IndicatorLayout">
                             <atom:SpinIndicator Name="Indicator"
+                                                Classes.semantic-indicator="True"
                                                 SizeType="{TemplateBinding SizeType}"
                                                 MotionDuration="{TemplateBinding MotionDuration}"
                                                 MotionEasingCurve="{TemplateBinding MotionEasingCurve}"
@@ -27,6 +30,7 @@
                                                 CustomIndicatorTemplate="{TemplateBinding CustomIndicatorTemplate}"/>
                             <atom:TextBlock
                                 Name="Tip"
+                                Classes.semantic-description="True"
                                 Text="{TemplateBinding Tip}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"

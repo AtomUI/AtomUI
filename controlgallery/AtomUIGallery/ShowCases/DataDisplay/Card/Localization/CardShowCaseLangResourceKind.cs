@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -33,6 +31,20 @@ public enum CardShowCaseLangResourceKind
     WithTabsDescription,
     MoreContentConfigurationTitle,
     MoreContentConfigurationDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticCardRootDescription,
+    SemanticCardHeaderDescription,
+    SemanticCardTitleDescription,
+    SemanticCardExtraDescription,
+    SemanticCardCoverDescription,
+    SemanticCardBodyDescription,
+    SemanticCardActionsDescription,
+    SemanticMetaRootDescription,
+    SemanticMetaSectionDescription,
+    SemanticMetaAvatarDescription,
+    SemanticMetaTitleDescription,
+    SemanticMetaDescriptionDescription,
     P2HeaderLargeSizeCard,
     P2HeaderDefaultSizeCard,
     P2HeaderSmallSizeCard,
@@ -44,6 +56,10 @@ public enum CardShowCaseLangResourceKind
     P2HeaderArticle,
     P2HeaderApp,
     P2HeaderProject,
+    P2HeaderObjectCard,
+    P2HeaderObjectCardMeta,
+    P2HeaderFunctionCard,
+    P2HeaderFunctionCardMeta,
     P2ContentMore,
     P2TextCardContent,
     P2TextThisIsTheDescription,

@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -37,5 +35,22 @@ public enum PopupConfirmShowCaseLangResourceKind
     P2ContentRb,
     P2ContentBl,
     P2ContentBottom,
-    P2ContentBr
+    P2ContentBr,
+    SemanticRootDescription,
+    SemanticPopupRootDescription,
+    SemanticPopupContainerDescription,
+    SemanticPopupContentDescription,
+    SemanticPopupArrowDescription,
+    SemanticPopupIconDescription,
+    SemanticPopupTitleDescription,
+    SemanticPopupDescriptionDescription,
+    SemanticPopupActionsDescription,
+    SemanticPreviewContentText,
+    SemanticPreviewTriggerContent,
+    StyleClassTitle,
+    StyleClassDescription,
+    SemanticStyleObjectContent,
+    SemanticStyleObjectTrigger,
+    SemanticStyleFunctionContent,
+    SemanticStyleFunctionTrigger
 }

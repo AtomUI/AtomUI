@@ -167,34 +167,31 @@ Transfer 的动效只表达状态变化反馈，不应改变 public API 语义�
 
 Transfer 的视觉选项通过 public API 归一为 theme variables、伪类或模板绑定。Token 保存组件语义值，不能保存实例运行时状态或业务色值。
 
-## 9. 文档导航、LLMS 导出与验证策略
+### 8.5 Semantic Part
+
+`ListTransfer` 与 `TreeTransfer` 公开 `root`、`source.section`、`target.section`、`actions`、`header`、`title`、
+`body`、`list`、`footer` 九个职责区域及十个方向限定变体（`source.header` / `target.header` / `source.title` /
+`target.title` / `source.body` / `target.body` / `source.list` / `target.list` / `source.footer` /
+`target.footer`），与上游 Transfer 语义键逐字对齐（`.` 为层级分隔符）；两个 owner 发布相同 Part 集合，
+`source.section` / `target.section` /
+`actions` 为 `Single`，`header` / `title` / `body` / `list` / `footer` 位于共享分区模板内为 `Multiple`（源、目标
+各一）。条目容器 `TransferListItem` 自身发布 `itemIcon` / `itemContent`，上游 `item` 键由 `TransferListView`
+继承 `ListView` 的 `item` 契约覆盖。完整 selector route、`ContractType`、状态矩阵和定制边界见
+[Transfer Semantic Part 契约](semantic-part.md)。
+
+操作按钮属于 Button 家族、过滤输入属于 LineEdit 家族，均不由 Transfer Part 承担；上游的方向作用域内层区域
+方向差异化由分区级与条目级限定 Part 直接承担：分区内部件经 `.semantic-source` / `.semantic-target` 方向锚点
+路由限定，条目级（`source.item` / `target.item` / `source.itemIcon` 等）由视图 `ViewType` 在 prepare 路径一次性
+补挂方向条目类区分。
+
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Transfer 桌面版实现原理](implementation.md)
+- [Transfer Semantic Part 契约](semantic-part.md)
 - [Transfer Token 设计](token.md)
 - [Transfer Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Transfer` | 数据录入控件根语义区域，承载 public API、值状态、验证状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `input` | `输入或编辑区域` | 承载用户输入、当前值、占位、格式化或只读状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载清除、展开、提交、步进、上传或辅助操作。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或候选区域` | 承载下拉、候选项、日历、颜色面板或异步内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `validation` | `校验反馈区域` | 承载 Form、status、错误、警告、help 或 loading 状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/transfer/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/transfer/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 

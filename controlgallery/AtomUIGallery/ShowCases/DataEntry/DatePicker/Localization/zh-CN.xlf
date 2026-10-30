@@ -379,6 +379,84 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button in the suffix area, rendered in clear mode.</source>
+        <target state="translated">后缀区清除按钮,进入清除模式时渲染。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Start date text input of the picker.</source>
+        <target state="translated">选择器的起始日期文本输入框。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupBodyDescription">
+      <segment>
+        <source>Date panel table container; in dual-month layout it hosts both month tables.</source>
+        <target state="translated">日期面板表格容器;双月布局时同时承载两张月表。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupCellDescription">
+      <segment>
+        <source>Date cell button carrying selected, range, today and disabled states.</source>
+        <target state="translated">日期格子按钮,承载选中、范围、今天与禁用等状态。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContainerDescription">
+      <segment>
+        <source>Panel content container organizing the calendar body and the footer buttons.</source>
+        <target state="translated">日历面板内容容器,组织主体区与底部按钮区布局。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContentDescription">
+      <segment>
+        <source>One month date table with the day cells and the week number column variant.</source>
+        <target state="translated">单个月份的日期表格,含日期格子与周序号列变体。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupFooterDescription">
+      <segment>
+        <source>Footer area with the Now, Today and OK buttons.</source>
+        <target state="translated">面板底部操作区,承载此刻、今天与确定按钮。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupHeaderDescription">
+      <segment>
+        <source>Calendar header with the year/month title and the navigation buttons.</source>
+        <target state="translated">日历年月导航头部,承载年月标题与导航按钮。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root visual box of the popup layer with the floating arrow.</source>
+        <target state="translated">弹层内容根视觉盒子,带浮动箭头。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix area hosting the ContentLeftAddOn content inside the input.</source>
+        <target state="translated">输入区内容前缀区域,承载 ContentLeftAddOn 用户内容。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The RangeDatePicker owner itself.</source>
+        <target state="translated">RangeDatePicker 控件本体。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSecondaryInputDescription">
+      <segment>
+        <source>End date text input of the range picker.</source>
+        <target state="translated">范围选择的结束日期文本输入框。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix area hosting the clear button, the form feedback and the user suffix content.</source>
+        <target state="translated">输入区后缀区域,承载清除按钮、表单反馈与用户后缀内容。</target>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to DatePicker with status, which could be error or warning.</source>
@@ -389,6 +467,18 @@
       <segment>
         <source>Status</source>
         <target state="translated">状态</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Apply owner-scoped styles with the public Semantic Parts of the picker to customize the prefix, both inputs, the date cells and the popup layer.</source>
+        <target state="translated">通过 owner 作用域样式与控件公开的语义部件,定制前缀、两端输入、日期格子与弹层视觉。</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
       </segment>
     </unit>
     <unit id="SwitchableDescription">

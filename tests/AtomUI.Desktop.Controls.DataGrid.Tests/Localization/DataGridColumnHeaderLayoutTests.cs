@@ -1,8 +1,6 @@
 using System.Reflection;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Headless;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Threading;
 using Shouldly;

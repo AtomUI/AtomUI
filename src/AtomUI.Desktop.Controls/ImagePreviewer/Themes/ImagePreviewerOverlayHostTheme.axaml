@@ -10,7 +10,9 @@
         <Setter Property="ImageScaleY" Value="1.0" />
         <Setter Property="Template">
             <ControlTemplate>
-                <Panel Background="#E6000000">
+                <Panel Classes.semantic-popup-root="True">
+                    <Panel Classes.semantic-popup-mask="True"
+                           Background="{atom:SharedTokenResource ColorBgMask}" />
                     <ContentPresenter Content="{TemplateBinding Content}"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Stretch" />
@@ -18,20 +20,20 @@
                                      Icon="{antdicons:AntDesignIconProvider CloseOutlined}"
                                      HorizontalAlignment="Right"
                                      VerticalAlignment="Top"
-                                     Margin="{atom:SharedTokenResource MarginLG}" />
+                                     Margin="{atom:SharedTokenResource MarginSM}" />
                 </Panel>
             </ControlTemplate>
         </Setter>
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton">
             <Setter Property="IconWidth" Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}" />
             <Setter Property="IconHeight" Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}" />
-            <Setter Property="IconBrush" Value="{atom:ImagePreviewerTokenResource PreviewOperationColor}" />
-            <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource NavButtonBgHoverColor}" />
+            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+            <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource NavButtonBgColor}" />
             <Setter Property="CornerRadius" Value="100" />
             <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingSM}" />
         </Style>
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover">
-            <Setter Property="IconBrush" Value="{atom:ImagePreviewerTokenResource PreviewOperationHoverColor}" />
+            <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource NavButtonBgHoverColor}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

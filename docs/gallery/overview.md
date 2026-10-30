@@ -6,6 +6,8 @@
 ## Authoring
 
 - [ShowCase 页面设计](authoring/gallery-showcase-design-pattern.md)
+- [Semantic Part Gallery Preview](authoring/semantic-part-preview.md)：独立 Tab、真延迟创建、descriptor 驱动目标解析、
+  Adorner 生命周期和零 Control 增量边界。
 - [ShowCase 组织规范](authoring/organization.md)
 
 ## Platforms

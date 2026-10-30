@@ -18,22 +18,43 @@
                         CornerRadius="{gallery:ShowCaseItemTokenResource CardCornerRadius}">
                     <StackPanel Orientation="Vertical">
                         <Grid Margin="{gallery:ShowCaseItemTokenResource PreviewMargin}">
-                            <Border Name="PART_DeferredPlaceholder"
-                                    IsVisible="False"
-                                    MinHeight="{TemplateBinding DeferredPlaceholderHeight}"
-                                    Background="{atom:SharedTokenResource ColorFillTertiary}"
-                                    CornerRadius="{gallery:ShowCaseItemTokenResource DeferredPlaceholderCornerRadius}" />
+                            <atom:Skeleton Name="PART_DeferredPlaceholder"
+                                           IsVisible="False"
+                                           IsLoading="True"
+                                           IsActive="True"
+                                           IsShowTitle="False"
+                                           ParagraphRows="4"
+                                           MinHeight="{TemplateBinding DeferredPlaceholderHeight}"
+                                           HorizontalAlignment="Stretch"
+                                           VerticalAlignment="Stretch"
+                                           BorderBrush="{atom:SharedTokenResource ColorFillTertiary}"
+                                           BorderThickness="{atom:SharedTokenResource BorderThickness}"
+                                           CornerRadius="{gallery:ShowCaseItemTokenResource DeferredPlaceholderCornerRadius}"
+                                           ClipToBounds="True" />
                             <ContentPresenter Name="PART_ContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               ContentTemplate="{TemplateBinding ContentTemplate}" />
                         </Grid>
-                        <Grid ColumnDefinitions="*,Auto">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
                             <atom:Separator TitlePosition="Left"
                                             Grid.Column="0"
                                             FontWeight="{gallery:ShowCaseItemTokenResource TitleFontWeight}"
                                             Title="{TemplateBinding Title}" />
-                            <atom:IconButton Name="PART_ShowSourceButton"
+                            <atom:IconButton Name="PART_ZoomButton"
                                              Grid.Column="1"
+                                             Width="28"
+                                             Height="28"
+                                             IconWidth="16"
+                                             IconHeight="16"
+                                             VerticalAlignment="Center"
+                                             IsVisible="{Binding IsZoomActionVisible, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}"
+                                             atom:ToolTip.Tip="Zoom">
+                                <atom:IconButton.Icon>
+                                    <antdicons:ExpandOutlined />
+                                </atom:IconButton.Icon>
+                            </atom:IconButton>
+                            <atom:IconButton Name="PART_ShowSourceButton"
+                                             Grid.Column="2"
                                              Width="28"
                                              Height="28"
                                              IconWidth="16"
@@ -68,23 +89,44 @@
                                 CornerRadius="{gallery:ShowCaseItemTokenResource CardCornerRadius}">
                             <StackPanel Orientation="Vertical">
                                 <Grid Margin="{gallery:ShowCaseItemTokenResource BadgePreviewMargin}">
-                                    <Border Name="PART_DeferredPlaceholder"
-                                            IsVisible="{Binding IsDeferredPlaceholderVisible, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}"
-                                            MinHeight="{Binding DeferredPlaceholderHeight, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}"
-                                            Background="{atom:SharedTokenResource ColorFillTertiary}"
-                                            CornerRadius="{gallery:ShowCaseItemTokenResource DeferredPlaceholderCornerRadius}" />
+                                    <atom:Skeleton Name="PART_DeferredPlaceholder"
+                                                   IsVisible="{Binding IsDeferredPlaceholderVisible, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}"
+                                                   IsLoading="True"
+                                                   IsActive="True"
+                                                   IsShowTitle="False"
+                                                   ParagraphRows="4"
+                                                   MinHeight="{Binding DeferredPlaceholderHeight, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}"
+                                                   HorizontalAlignment="Stretch"
+                                                   VerticalAlignment="Stretch"
+                                                   BorderBrush="{atom:SharedTokenResource ColorFillTertiary}"
+                                                   BorderThickness="{atom:SharedTokenResource BorderThickness}"
+                                                   CornerRadius="{gallery:ShowCaseItemTokenResource DeferredPlaceholderCornerRadius}"
+                                                   ClipToBounds="True" />
                                     <ContentPresenter Name="PART_ContentPresenter"
                                                       IsVisible="{Binding IsDeferredPlaceholderVisible, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}, Converter={x:Static BoolConverters.Not}}"
                                                       Content="{Binding Content, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}"
                                                       ContentTemplate="{Binding ContentTemplate, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}" />
                                 </Grid>
-                                <Grid ColumnDefinitions="*,Auto">
+                                <Grid ColumnDefinitions="*,Auto,Auto">
                                     <atom:Separator TitlePosition="Left"
                                                     Grid.Column="0"
                                                     FontWeight="{gallery:ShowCaseItemTokenResource TitleFontWeight}"
                                                     Title="{Binding Title, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}" />
-                                    <atom:IconButton Name="PART_ShowSourceButton"
+                                    <atom:IconButton Name="PART_ZoomButton"
                                                      Grid.Column="1"
+                                                     Width="28"
+                                                     Height="28"
+                                                     IconWidth="16"
+                                                     IconHeight="16"
+                                                     VerticalAlignment="Center"
+                                                     IsVisible="{Binding IsZoomActionVisible, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}"
+                                                     atom:ToolTip.Tip="Zoom">
+                                        <atom:IconButton.Icon>
+                                            <antdicons:ExpandOutlined />
+                                        </atom:IconButton.Icon>
+                                    </atom:IconButton>
+                                    <atom:IconButton Name="PART_ShowSourceButton"
+                                                     Grid.Column="2"
                                                      Width="28"
                                                      Height="28"
                                                      IconWidth="16"
@@ -114,7 +156,10 @@
         <Style Selector="^[IsFake=True] /template/ atom|Separator">
             <Setter Property="IsVisible" Value="False" />
         </Style>
-        <Style Selector="^[IsDeferredPlaceholderVisible=True] /template/ Border#PART_DeferredPlaceholder">
+        <Style Selector="^[IsFake=True] /template/ atom|IconButton#PART_ZoomButton">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="^[IsDeferredPlaceholderVisible=True] /template/ atom|Skeleton#PART_DeferredPlaceholder">
             <Setter Property="IsVisible" Value="True" />
         </Style>
         <Style Selector="^[IsDeferredPlaceholderVisible=True] /template/ ContentPresenter#PART_ContentPresenter">

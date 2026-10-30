@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:atomc="https://atomui.net/common-controls"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:BackTopFloatButton}" TargetType="atom:BackTopFloatButton">
         <ControlTheme.BasedOn>
@@ -11,9 +12,25 @@
         <Style Selector="^[Shape=Square]">
             <Setter Property="Template">
                 <ControlTemplate TargetType="atom:BackTopFloatButton">
-                    <atom:MotionActor Name="{x:Static atom:BaseMotionActor.MotionActorPart}"
-                                      ClipToBounds="False">
-                        <Panel>
+                    <Panel Name="PART_VisibilityRoot"
+                           ClipToBounds="False"
+                           atom:Motion.IsVisible="{TemplateBinding IsActive}"
+                           atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}"
+                           atom:Motion.DurationOverride="{TemplateBinding MotionDuration}">
+                        <atom:Motion.Enter>
+                            <atom:FadeInMotion>
+                                <atom:FadeInMotion.Easing>
+                                    <QuadraticEaseOut />
+                                </atom:FadeInMotion.Easing>
+                            </atom:FadeInMotion>
+                        </atom:Motion.Enter>
+                        <atom:Motion.Leave>
+                            <atom:FadeOutMotion>
+                                <atom:FadeOutMotion.Easing>
+                                    <QuadraticEaseOut />
+                                </atom:FadeOutMotion.Easing>
+                            </atom:FadeOutMotion>
+                        </atom:Motion.Leave>
                             <Border Name="BackgroundFrame"
                                     BoxShadow="{TemplateBinding BoxShadow}"
                                     CornerRadius="{TemplateBinding CornerRadius}" />
@@ -24,17 +41,21 @@
                                     Cursor="{TemplateBinding Cursor}">
                                 <StackPanel Name="RootLayout">
                                     <atom:IconPresenter Name="IconPresenter" Icon="{TemplateBinding Icon}"
+                                                        Classes.semantic-icon="True"
                                                         IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                     <ContentPresenter Content="{TemplateBinding Content}"
+                                                      Classes.semantic-content="True"
                                                       TextWrapping="Wrap"
                                                       HorizontalContentAlignment="Center"
                                                       ContentTemplate="{TemplateBinding ContentTemplate}"
                                                       IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                 </StackPanel>
                             </Border>
+                            <atomc:BackTopProgressRing Name="ProgressRing"
+                                                        Progress="{TemplateBinding ScrollProgress}"
+                                                        CornerRadius="{TemplateBinding CornerRadius}" />
                             <Canvas Name="BadgeLayout" />
-                        </Panel>
-                    </atom:MotionActor>
+                    </Panel>
                 </ControlTemplate>
             </Setter>
         </Style>
@@ -42,9 +63,25 @@
         <Style Selector="^[Shape=Circle]">
             <Setter Property="Template">
                 <ControlTemplate TargetType="atom:BackTopFloatButton">
-                    <atom:MotionActor Name="{x:Static atom:BaseMotionActor.MotionActorPart}"
-                                      ClipToBounds="False">
-                        <Panel>
+                    <Panel Name="PART_VisibilityRoot"
+                           ClipToBounds="False"
+                           atom:Motion.IsVisible="{TemplateBinding IsActive}"
+                           atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}"
+                           atom:Motion.DurationOverride="{TemplateBinding MotionDuration}">
+                        <atom:Motion.Enter>
+                            <atom:FadeInMotion>
+                                <atom:FadeInMotion.Easing>
+                                    <QuadraticEaseOut />
+                                </atom:FadeInMotion.Easing>
+                            </atom:FadeInMotion>
+                        </atom:Motion.Enter>
+                        <atom:Motion.Leave>
+                            <atom:FadeOutMotion>
+                                <atom:FadeOutMotion.Easing>
+                                    <QuadraticEaseOut />
+                                </atom:FadeOutMotion.Easing>
+                            </atom:FadeOutMotion>
+                        </atom:Motion.Leave>
                             <Border Name="BackgroundFrame"
                                     BoxShadow="{TemplateBinding BoxShadow}"
                                     CornerRadius="{TemplateBinding CornerRadius}" />
@@ -54,19 +91,34 @@
                                     CornerRadius="{TemplateBinding CornerRadius}"
                                     Cursor="{TemplateBinding Cursor}">
                                 <atom:IconPresenter Name="IconPresenter"
+                                                    Classes.semantic-icon="True"
                                                     Icon="{TemplateBinding Icon}"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center" />
                             </Border>
+                            <atomc:BackTopProgressRing Name="ProgressRing"
+                                                        Progress="{TemplateBinding ScrollProgress}"
+                                                        CornerRadius="{TemplateBinding CornerRadius}" />
                             <Canvas Name="BadgeLayout" />
-                        </Panel>
-                    </atom:MotionActor>
+                    </Panel>
                 </ControlTemplate>
             </Setter>
         </Style>
         
         <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
         <Setter Property="IsActive" Value="True" />
-        
+
+        <Style Selector="^ /template/ atomc|BackTopProgressRing#ProgressRing">
+            <!-- 默认隐藏：由 IsShowProgress=True 的下述选择器置 True（后序样式覆盖先序） -->
+            <Setter Property="IsVisible" Value="False" />
+            <Setter Property="StrokeThickness" Value="{atom:SharedTokenResource LineWidthBold}" />
+            <Setter Property="TrackBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+            <Setter Property="IndicatorBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+        </Style>
+
+        <Style Selector="^[IsShowProgress=True] /template/ atomc|BackTopProgressRing#ProgressRing">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+
     </ControlTheme>
 </ResourceDictionary>

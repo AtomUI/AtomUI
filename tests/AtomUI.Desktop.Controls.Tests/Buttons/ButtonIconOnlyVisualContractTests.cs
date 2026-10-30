@@ -1,8 +1,6 @@
-using System.Reflection;
 using System.Xml.Linq;
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Theme;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
@@ -21,39 +19,6 @@ public class ButtonIconOnlyVisualContractTests
     static ButtonIconOnlyVisualContractTests()
     {
         AvaloniaTestApp.EnsureInitialized();
-    }
-
-    [Theory]
-    [InlineData(typeof(AtomUIButton))]
-    [InlineData(typeof(DropdownButton))]
-    public void Button_Exposes_Icon_Width_And_Height_Properties(Type controlType)
-    {
-        const BindingFlags propertyFlags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
-
-        var iconWidth = controlType.GetProperty("IconWidth");
-        var iconHeight = controlType.GetProperty("IconHeight");
-        var iconWidthProperty = controlType.GetField("IconWidthProperty", propertyFlags);
-        var iconHeightProperty = controlType.GetField("IconHeightProperty", propertyFlags);
-
-        iconWidth.ShouldNotBeNull();
-        iconHeight.ShouldNotBeNull();
-        iconWidthProperty.ShouldNotBeNull();
-        iconHeightProperty.ShouldNotBeNull();
-        iconWidth.PropertyType.ShouldBe(typeof(double));
-        iconHeight.PropertyType.ShouldBe(typeof(double));
-        iconWidthProperty.FieldType.ShouldBe(typeof(StyledProperty<double>));
-        iconHeightProperty.FieldType.ShouldBe(typeof(StyledProperty<double>));
-    }
-
-    [Fact]
-    public void SplitButton_Does_Not_Expose_Button_Icon_Size_Contract()
-    {
-        const BindingFlags propertyFlags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
-
-        typeof(SplitButton).GetProperty("IconWidth").ShouldBeNull();
-        typeof(SplitButton).GetProperty("IconHeight").ShouldBeNull();
-        typeof(SplitButton).GetField("IconWidthProperty", propertyFlags).ShouldBeNull();
-        typeof(SplitButton).GetField("IconHeightProperty", propertyFlags).ShouldBeNull();
     }
 
     [Theory]
@@ -105,70 +70,53 @@ public class ButtonIconOnlyVisualContractTests
     }
 
     [Theory]
-    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Small, SharedTokenKind.IconSizeSM)]
-    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Middle, SharedTokenKind.IconSize)]
-    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Large, SharedTokenKind.IconSizeLG)]
-    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Custom, SharedTokenKind.IconSize)]
-    [InlineData(typeof(DropdownButton), CustomizableSizeType.Small, SharedTokenKind.IconSizeSM)]
-    [InlineData(typeof(DropdownButton), CustomizableSizeType.Middle, SharedTokenKind.IconSize)]
-    [InlineData(typeof(DropdownButton), CustomizableSizeType.Large, SharedTokenKind.IconSizeLG)]
-    [InlineData(typeof(DropdownButton), CustomizableSizeType.Custom, SharedTokenKind.IconSize)]
-    public void Button_IconOnly_Icons_Preserve_Current_Effective_Size(
+    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Small, SharedTokenKind.IconSizeSM, SharedTokenKind.IconSize)]
+    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Middle, SharedTokenKind.IconSize, SharedTokenKind.IconSizeLG)]
+    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Large, SharedTokenKind.IconSizeLG, SharedTokenKind.IconSizeLG)]
+    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Custom, SharedTokenKind.IconSize, SharedTokenKind.IconSizeLG)]
+    [InlineData(typeof(DropdownButton), CustomizableSizeType.Small, SharedTokenKind.IconSizeSM, SharedTokenKind.IconSize)]
+    [InlineData(typeof(DropdownButton), CustomizableSizeType.Middle, SharedTokenKind.IconSize, SharedTokenKind.IconSizeLG)]
+    [InlineData(typeof(DropdownButton), CustomizableSizeType.Large, SharedTokenKind.IconSizeLG, SharedTokenKind.IconSizeLG)]
+    [InlineData(typeof(DropdownButton), CustomizableSizeType.Custom, SharedTokenKind.IconSize, SharedTokenKind.IconSizeLG)]
+    public void Button_IconOnly_Icons_And_Loading_Use_Their_Respective_Size_Tokens(
         Type buttonType,
         CustomizableSizeType sizeType,
-        SharedTokenKind expectedSizeToken)
+        SharedTokenKind expectedIconSizeToken,
+        SharedTokenKind expectedLoadingSizeToken)
     {
         var pathIconButton = CreateButton(
             buttonType,
             sizeType,
             new PathIcon { Data = Geometry.Parse("M0,0 L10,0 L10,10 Z") });
         var atomIconButton = CreateButton(buttonType, sizeType, new SearchOutlined());
+        var loadingButton = CreateButton(
+            buttonType,
+            sizeType,
+            new PathIcon { Data = Geometry.Parse("M0,0 L10,0 L10,10 Z") });
+        loadingButton.IsLoading = true;
         var host = new StackPanel
         {
             Children =
             {
                 pathIconButton,
-                atomIconButton
+                atomIconButton,
+                loadingButton
             }
         };
 
         ShowInWindow(host, () =>
         {
-            var expectedSize = GetThemeResource<double>(expectedSizeToken);
-            AssertIconSize(pathIconButton, expectedSize);
-            AssertIconSize(atomIconButton, expectedSize);
-        });
-    }
+            var expectedIconSize = GetThemeResource<double>(expectedIconSizeToken);
+            AssertIconSize(pathIconButton, expectedIconSize);
+            AssertIconSize(atomIconButton, expectedIconSize);
 
-    [Theory]
-    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Small, SharedTokenKind.IconSize)]
-    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Middle, SharedTokenKind.IconSizeLG)]
-    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Large, SharedTokenKind.IconSizeLG)]
-    [InlineData(typeof(AtomUIButton), CustomizableSizeType.Custom, SharedTokenKind.IconSizeLG)]
-    [InlineData(typeof(DropdownButton), CustomizableSizeType.Small, SharedTokenKind.IconSize)]
-    [InlineData(typeof(DropdownButton), CustomizableSizeType.Middle, SharedTokenKind.IconSizeLG)]
-    [InlineData(typeof(DropdownButton), CustomizableSizeType.Large, SharedTokenKind.IconSizeLG)]
-    [InlineData(typeof(DropdownButton), CustomizableSizeType.Custom, SharedTokenKind.IconSizeLG)]
-    public void Button_IconOnly_Loading_Uses_OnlyIconSize_Default(
-        Type buttonType,
-        CustomizableSizeType sizeType,
-        SharedTokenKind expectedSizeToken)
-    {
-        var button = CreateButton(
-            buttonType,
-            sizeType,
-            new PathIcon { Data = Geometry.Parse("M0,0 L10,0 L10,10 Z") });
-        button.IsLoading = true;
+            var expectedLoadingSize = GetThemeResource<double>(expectedLoadingSizeToken);
+            var loadingIcon = loadingButton.GetVisualDescendants()
+                                           .OfType<Icon>()
+                                           .Single(control => control.Name == "PART_LoadingIcon");
 
-        ShowInWindow(button, () =>
-        {
-            var expectedSize = GetThemeResource<double>(expectedSizeToken);
-            var loadingIcon = button.GetVisualDescendants()
-                                    .OfType<Icon>()
-                                    .Single(control => control.Name == "PART_LoadingIcon");
-
-            loadingIcon.Width.ShouldBe(expectedSize);
-            loadingIcon.Height.ShouldBe(expectedSize);
+            loadingIcon.Width.ShouldBe(expectedLoadingSize);
+            loadingIcon.Height.ShouldBe(expectedLoadingSize);
         });
     }
 

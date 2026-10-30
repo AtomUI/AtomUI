@@ -1,0 +1,72 @@
+name: Verify affected changes
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Base ref for change verification (required unless full is selected)
+        required: false
+        type: string
+      full:
+        description: Explicitly run every discovered test project
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: affected-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Selected tests and impact report
+    runs-on: macos-14
+    timeout-minutes: 90
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      CHANGE_BASE: ${{ github.event.pull_request.base.sha || inputs.base }}
+      FULL_BASELINE: ${{ inputs.full }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Build and verify selected scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$FULL_BASELINE" == "true" ]]; then
+            scope=(--scope full)
+          elif [[ -n "$CHANGE_BASE" ]]; then
+            scope=(--base "$CHANGE_BASE")
+          else
+            echo 'Provide a base ref or explicitly select the full baseline.' >&2
+            exit 2
+          fi
+          # run performs the inventory audit and runs tooling regressions when
+          # the selector/policy changes; avoid repeating either in separate steps.
+          python3 scripts/verification/test.py run "${scope[@]}" --fresh --tests-only
+      - name: Materialize real theme assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/verification
+          dotnet run --project tools/validation/AtomUI.ThemeAssetsValidation/AtomUI.ThemeAssetsValidation.csproj -c Release --no-launch-profile 2>&1 | tee .artifacts/verification/theme-assets.log
+      - name: Preserve compact evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: affected-verification
+          path: |
+            .artifacts/verification/latest.json
+            .artifacts/verification/history.json
+            .artifacts/verification/theme-assets.log
+          if-no-files-found: ignore
+          retention-days: 14

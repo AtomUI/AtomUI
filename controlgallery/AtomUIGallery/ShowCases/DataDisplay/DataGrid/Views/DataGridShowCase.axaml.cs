@@ -62,6 +62,13 @@ public partial class DataGridShowCase : GalleryReactiveUserControl<DataGridViewM
 
         switch (dataGrid.Name)
         {
+            case "SemanticCaseGrid":
+            case "SemanticStyleCaseGridA":
+            case "SemanticStyleCaseGridB":
+                DataGridShowCaseDataSources.EnsureSemanticDataSource(viewModel);
+                dataGrid.ItemsSource = viewModel.SemanticCaseDataSource?.Source;
+                break;
+
             case "BasicCaseGrid":
             case "SelectionDataGrid":
             case "DragResizeColumn":
@@ -425,7 +432,9 @@ internal static class DataGridShowCaseDataSources
         viewModel.EditableRowsDataSource?.Dispose();
         viewModel.PagingGridDataSource?.Dispose();
         viewModel.RemoteDataSource?.Dispose();
+        viewModel.SemanticCaseDataSource?.Dispose();
         viewModel.BasicCaseDataSource              = null;
+        viewModel.SemanticCaseDataSource           = null;
         viewModel.FilterAndSorterDataSource        = null;
         viewModel.MultiSorterDataSource            = null;
         viewModel.ExpandableRowDataSource          = null;
@@ -485,6 +494,42 @@ internal static class DataGridShowCaseDataSources
         viewModel.BasicCaseDataSource = new(
             items,
             DataGridShowCaseSourceDescriptors.Base);
+    }
+
+    public static void EnsureSemanticDataSource(DataGridViewModel viewModel)
+    {
+        if (viewModel.SemanticCaseDataSource is not null)
+        {
+            return;
+        }
+
+        // 对齐上游 style-class 演示数据:Name/Age/Address/Description,pageSize 3 时首屏 3 行。
+        List<ExpandableRowDataType> items =
+        [
+            new ExpandableRowDataType
+            {
+                Key = "1", Name = "John Brown", Age = 32, Address = "New York No. 1 Lake Park",
+                Description = "My name is John Brown, I am 32 years old, living in New York No. 1 Lake Park."
+            },
+            new ExpandableRowDataType
+            {
+                Key = "2", Name = "Jim Green", Age = 42, Address = "London No. 1 Lake Park",
+                Description = "My name is Jim Green, I am 42 years old, living in London No. 1 Lake Park."
+            },
+            new ExpandableRowDataType
+            {
+                Key = "3", Name = "Joe Black", Age = 32, Address = "Sydney No. 1 Lake Park",
+                Description = "My name is Joe Black, I am 32 years old, living in Sydney No. 1 Lake Park."
+            },
+            new ExpandableRowDataType
+            {
+                Key = "4", Name = "Disabled User", Age = 99, Address = "Sydney No. 2 Lake Park",
+                Description = "This user is disabled."
+            }
+        ];
+        viewModel.SemanticCaseDataSource = new(
+            items,
+            DataGridShowCaseSourceDescriptors.Semantic);
     }
 
     public static void EnsureFilterAndSorterDataSource(DataGridViewModel viewModel)

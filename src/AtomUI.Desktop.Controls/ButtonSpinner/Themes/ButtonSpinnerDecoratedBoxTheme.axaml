@@ -64,6 +64,8 @@
                                                             IsHover="{TemplateBinding IsSpinnerContentHover}">
                                 <atom:AddOnContentPresenter
                                     Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart}"
+                                    Classes.semantic-scope-prefix="True"
+                                    Classes.semantic-inner-left-content="True"
                                     DockPanel.Dock="Left"
                                     VerticalAlignment="Stretch"
                                     VerticalContentAlignment="Center"
@@ -80,6 +82,8 @@
                                 <atom:AddOnContentPresenter
                                     DockPanel.Dock="Right"
                                     Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart}"
+                                    Classes.semantic-scope-suffix="True"
+                                    Classes.semantic-inner-right-content="True"
                                     VerticalAlignment="Stretch"
                                     VerticalContentAlignment="Center"
                                     HorizontalAlignment="Right"
@@ -94,6 +98,7 @@
 
                                 <ContentPresenter
                                     Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentPresenterPart}"
+                                    Classes.semantic-content="True"
                                     Content="{TemplateBinding Content}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />
                             </atom:ButtonSpinnerContentPanel>

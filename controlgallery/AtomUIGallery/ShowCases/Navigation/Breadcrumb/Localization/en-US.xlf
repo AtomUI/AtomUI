@@ -91,6 +91,21 @@
         <source>Users</source>
       </segment>
     </unit>
+    <unit id="P2StyleItemAntDesign">
+      <segment>
+        <source>Ant Design</source>
+      </segment>
+    </unit>
+    <unit id="P2StyleItemBreadcrumb">
+      <segment>
+        <source>Breadcrumb</source>
+      </segment>
+    </unit>
+    <unit id="P2StyleItemComponent">
+      <segment>
+        <source>Component</source>
+      </segment>
+    </unit>
     <unit id="PageDescription">
       <segment>
         <source>Breadcrumb helps users understand where they are and move back through parent levels. It supports icons, custom separators, route context, URI navigation, and item templates.</source>
@@ -104,6 +119,31 @@
     <unit id="ScenarioExamples">
       <segment>
         <source>Examples</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartItemDescription">
+      <segment>
+        <source>Item element with text color, link color transitions, hover effects, padding, border-radius, height, and margin styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartRootDescription">
+      <segment>
+        <source>Root element with text color, font size, icon size and other basic styles, using flex layout with ordered list</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartSeparatorDescription">
+      <segment>
+        <source>Separator element with margin and color styles for the divider</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the Ant Design style-class demo: customize the root border, item color and separator color through generated Semantic Part styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
       </segment>
     </unit>
     <unit id="WithIconDescription">

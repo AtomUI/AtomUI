@@ -1,22 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="2.1" srcLang="en-US" trgLang="zh-TW" xmlns="urn:oasis:names:tc:xliff:document:2.0">
   <file id="AtomUIGallery.Localization.AutoCompleteShowCaseLangResourceKind">
-    <unit id="BasicUsageDescription">
+    <unit id="AllowClearDescription">
       <segment>
-        <source>Basic usage, set data source of autocomplete with options property.</source>
-        <target state="translated">基礎用法，通過 options 屬性設置自動完成的數據源。</target>
+        <source>Customize clear button.</source>
+        <target state="translated">自訂清除按鈕。</target>
       </segment>
     </unit>
-    <unit id="BasicUsageTitle">
+    <unit id="AllowClearTitle">
+      <segment>
+        <source>Customize clear button</source>
+        <target state="translated">自訂清除按鈕</target>
+      </segment>
+    </unit>
+    <unit id="BasicDescription">
+      <segment>
+        <source>Basic usage, set data source of autocomplete with options property.</source>
+        <target state="translated">基本使用，透過 options 設定自動完成的資料來源。</target>
+      </segment>
+    </unit>
+    <unit id="BasicTitle">
       <segment>
         <source>Basic Usage</source>
-        <target state="translated">基礎用法</target>
+        <target state="translated">基本使用</target>
+      </segment>
+    </unit>
+    <unit id="CertainCategoryDescription">
+      <segment>
+        <source>Demonstration of Lookup Patterns: Certain Category.</source>
+        <target state="translated">查詢模式：確定類目範例。</target>
+      </segment>
+    </unit>
+    <unit id="CertainCategoryTitle">
+      <segment>
+        <source>Lookup Patterns - Certain Category</source>
+        <target state="translated">查詢模式 - 確定類目</target>
       </segment>
     </unit>
     <unit id="ComponentCategory">
       <segment>
         <source>Data Entry</source>
-        <target state="translated">數據錄入</target>
+        <target state="translated">資料錄入</target>
       </segment>
     </unit>
     <unit id="ComponentStatusStable">
@@ -25,106 +49,94 @@
         <target state="translated">穩定</target>
       </segment>
     </unit>
-    <unit id="CustomOptionRenderingDescription">
+    <unit id="CustomInputDescription">
       <segment>
-        <source>Use OptionTemplate to render rich option content with multiple fields, badges, and multi-line layout.</source>
-        <target state="translated">使用 OptionTemplate 渲染包含多字段、徽標和多行佈局的豐富選項內容。</target>
+        <source>Customize the input component.</source>
+        <target state="translated">自訂輸入元件。</target>
       </segment>
     </unit>
-    <unit id="CustomOptionRenderingTitle">
+    <unit id="CustomInputTitle">
       <segment>
-        <source>Custom option rendering</source>
-        <target state="translated">自定義選項渲染</target>
+        <source>Customize Input Component</source>
+        <target state="translated">自訂輸入元件</target>
       </segment>
     </unit>
-    <unit id="CustomizeClearButtonDescription">
-      <segment>
-        <source>Customize clear button.</source>
-        <target state="translated">自定義清除按鈕。</target>
-      </segment>
-    </unit>
-    <unit id="CustomizeClearButtonTitle">
-      <segment>
-        <source>Customize clear button</source>
-        <target state="translated">自定義清除按鈕</target>
-      </segment>
-    </unit>
-    <unit id="CustomizedDescription">
+    <unit id="CustomOptionsDescription">
       <segment>
         <source>You could set custom Option label.</source>
-        <target state="translated">可以設置自定義的選項標籤。</target>
+        <target state="translated">可以回傳自訂的 Option label。</target>
       </segment>
     </unit>
-    <unit id="CustomizedTitle">
+    <unit id="CustomOptionsTitle">
       <segment>
-        <source>Customized</source>
-        <target state="translated">自定義</target>
-      </segment>
-    </unit>
-    <unit id="LookupPatternsUncertainCategoryDescription">
-      <segment>
-        <source>Demonstration of Lookup Patterns: Uncertain Category.</source>
-        <target state="translated">演示查詢模式中的不確定分類場景。</target>
-      </segment>
-    </unit>
-    <unit id="LookupPatternsUncertainCategoryTitle">
-      <segment>
-        <source>Lookup-Patterns - Uncertain Category</source>
-        <target state="translated">查詢模式 - 不確定分類</target>
+        <source>Customize Options</source>
+        <target state="translated">自訂選項</target>
       </segment>
     </unit>
     <unit id="NonCaseSensitiveDescription">
       <segment>
         <source>A non-case-sensitive AutoComplete.</source>
-        <target state="translated">大小寫不敏感的 AutoComplete。</target>
+        <target state="translated">不區分大小寫的 AutoComplete。</target>
       </segment>
     </unit>
     <unit id="NonCaseSensitiveTitle">
       <segment>
         <source>Non-case-sensitive AutoComplete</source>
-        <target state="translated">大小寫不敏感的自動完成</target>
+        <target state="translated">不區分大小寫</target>
       </segment>
     </unit>
-    <unit id="P2PlaceholderSizeTypeCustom">
+    <unit id="P2ItemAntDesign">
       <segment>
-        <source>SizeType: Custom</source>
-        <target state="translated">SizeType：Custom</target>
+        <source>AntDesign</source>
+        <target state="translated">AntDesign</target>
       </segment>
     </unit>
-    <unit id="P2PlaceholderSizeTypeLarge">
+    <unit id="P2ItemAntDesignFaq">
       <segment>
-        <source>SizeType: Large</source>
-        <target state="translated">SizeType：Large</target>
+        <source>AntDesign FAQ</source>
+        <target state="translated">AntDesign FAQ</target>
       </segment>
     </unit>
-    <unit id="P2PlaceholderSizeTypeMiddle">
+    <unit id="P2ItemAntDesignUi">
       <segment>
-        <source>SizeType: Middle</source>
-        <target state="translated">SizeType：Middle</target>
+        <source>AntDesign UI</source>
+        <target state="translated">AntDesign UI</target>
       </segment>
     </unit>
-    <unit id="P2PlaceholderSizeTypeSmall">
+    <unit id="P2ItemAntDesignUiFaq">
       <segment>
-        <source>SizeType: Small</source>
-        <target state="translated">SizeType：Small</target>
+        <source>AntDesign UI FAQ</source>
+        <target state="translated">AntDesign UI FAQ</target>
+      </segment>
+    </unit>
+    <unit id="P2ItemDesignLanguage">
+      <segment>
+        <source>AntDesign design language</source>
+        <target state="translated">AntDesign 設計語言</target>
       </segment>
     </unit>
     <unit id="P2PlaceholderTextBorderless">
       <segment>
         <source>Borderless</source>
-        <target state="translated">Borderless</target>
+        <target state="translated">無邊框</target>
+      </segment>
+    </unit>
+    <unit id="P2PlaceholderTextControlMode">
+      <segment>
+        <source>Control mode</source>
+        <target state="translated">受控模式</target>
       </segment>
     </unit>
     <unit id="P2PlaceholderTextCustomizedClearIcon">
       <segment>
         <source>Customized clear icon</source>
-        <target state="translated">Customized clear icon</target>
+        <target state="translated">自訂清除圖示</target>
       </segment>
     </unit>
     <unit id="P2PlaceholderTextFilled">
       <segment>
         <source>Filled</source>
-        <target state="translated">填充風格</target>
+        <target state="translated">填充</target>
       </segment>
     </unit>
     <unit id="P2PlaceholderTextInputHere">
@@ -135,104 +147,176 @@
     </unit>
     <unit id="P2PlaceholderTextOutline">
       <segment>
-        <source>Outline</source>
-        <target state="translated">Outline</target>
-      </segment>
-    </unit>
-    <unit id="P2PlaceholderTextTryAOrB">
-      <segment>
-        <source>try 'a' or 'b'</source>
-        <target state="translated">try 'a' or 'b'</target>
+        <source>Outlined</source>
+        <target state="translated">描邊</target>
       </segment>
     </unit>
     <unit id="P2PlaceholderTextTryToTypeB">
       <segment>
         <source>try to type `b`</source>
-        <target state="translated">try to type `b`</target>
+        <target state="translated">輸入 b 嘗試一下</target>
       </segment>
     </unit>
     <unit id="P2PlaceholderTextUnclearable">
       <segment>
         <source>UnClearable</source>
-        <target state="translated">UnClearable</target>
+        <target state="translated">不可清除</target>
       </segment>
     </unit>
     <unit id="P2PlaceholderTextUnderlined">
       <segment>
         <source>Underlined</source>
-        <target state="translated">Underlined</target>
+        <target state="translated">底線</target>
+      </segment>
+    </unit>
+    <unit id="P2TextArticles">
+      <segment>
+        <source>Articles</source>
+        <target state="translated">文章</target>
+      </segment>
+    </unit>
+    <unit id="P2TextLibraries">
+      <segment>
+        <source>Libraries</source>
+        <target state="translated">元件庫</target>
+      </segment>
+    </unit>
+    <unit id="P2TextMore">
+      <segment>
+        <source>more</source>
+        <target state="translated">更多</target>
       </segment>
     </unit>
     <unit id="P2TextResults">
       <segment>
         <source>results</source>
-        <target state="translated">results</target>
+        <target state="translated">條結果</target>
+      </segment>
+    </unit>
+    <unit id="P2TextSolutions">
+      <segment>
+        <source>Solutions</source>
+        <target state="translated">解決方案</target>
       </segment>
     </unit>
     <unit id="PageDescription">
       <segment>
         <source>AutoComplete combines text input with candidate filtering, async loading, custom option rendering, status feedback and specialized search or text area variants.</source>
-        <target state="translated">AutoComplete 將文本輸入與候選過濾、異步加載、自定義選項渲染、狀態反饋以及搜索框或文本域變體組合在一起。</target>
+        <target state="translated">AutoComplete 將文字輸入與候選過濾、非同步載入、自訂選項渲染、狀態回饋以及搜尋框或文字域變體組合在一起。</target>
       </segment>
     </unit>
     <unit id="PageSubtitle">
       <segment>
         <source>Type ahead and select suggested values from local or asynchronous options.</source>
-        <target state="translated">輸入時提前匹配，並從本地或異步選項中選擇建議值。</target>
+        <target state="translated">輸入時提前匹配，並從本地或非同步選項中選擇建議值。</target>
       </segment>
     </unit>
     <unit id="ScenarioExamples">
       <segment>
         <source>Examples</source>
-        <target state="translated">示例</target>
+        <target state="translated">範例</target>
       </segment>
     </unit>
-    <unit id="SizeTypeDescription">
+    <unit id="SemanticClearDescription">
       <segment>
-        <source>AutoComplete supports large, middle, small, and Custom sizes with local height overrides.</source>
-        <target state="translated">AutoComplete 支持大號、中號、小號，也支持通過 Custom 配合本地高度自定義。</target>
+        <source>Clear button in the suffix area, rendered when IsAllowClear is enabled.</source>
+        <target state="translated">後綴區域的清除按鈕，啟用 IsAllowClear 時渲染。</target>
       </segment>
     </unit>
-    <unit id="SizeTypeTitle">
+    <unit id="SemanticContentDescription">
       <segment>
-        <source>SizeType</source>
-        <target state="translated">SizeType</target>
+        <source>Input content panel hosting the text presenter and placeholder.</source>
+        <target state="translated">輸入內容面板，承載文字呈現器與佔位符。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Text presenter of the editable input surface.</source>
+        <target state="translated">可編輯輸入區域的文字呈現器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPlaceholderDescription">
+      <segment>
+        <source>Placeholder text shown while the input is empty.</source>
+        <target state="translated">輸入為空時顯示的佔位符文字。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListDescription">
+      <segment>
+        <source>Candidate list container inside the popup.</source>
+        <target state="translated">彈層內的候選清單容器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListItemDescription">
+      <segment>
+        <source>Individual candidate item, created at runtime for each option.</source>
+        <target state="translated">單個候選條目，按選項在執行時建立。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root border of the candidate popup layer.</source>
+        <target state="translated">候選彈層的根邊框節點。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix area of the input frame.</source>
+        <target state="translated">輸入框框架的前綴區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The AutoComplete owner itself.</source>
+        <target state="translated">AutoComplete 控制項本體。</target>
       </segment>
     </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to AutoComplete with status, which could be error or warning.</source>
-        <target state="translated">為 AutoComplete 添加狀態，可設置為錯誤或警告。</target>
+        <target state="translated">使用 status 為 AutoComplete 新增狀態，可選 error 或者 warning。</target>
       </segment>
     </unit>
     <unit id="StatusTitle">
       <segment>
-        <source>Status</source>
-        <target state="translated">狀態</target>
+        <source>Customize Status</source>
+        <target state="translated">自訂狀態</target>
       </segment>
     </unit>
-    <unit id="TextAreaAutoCompletionDescription">
+    <unit id="StyleClassDescription">
       <segment>
-        <source>You can use the TextArea type for autocomplete.</source>
-        <target state="translated">可以在 TextArea 類型中使用自動完成。</target>
+        <source>Customize the semantic structure style of AutoComplete with semantic part styles.</source>
+        <target state="translated">透過語義部件樣式自訂 AutoComplete 語義結構的樣式。</target>
       </segment>
     </unit>
-    <unit id="TextAreaAutoCompletionTitle">
+    <unit id="StyleClassTitle">
       <segment>
-        <source>TextArea type auto-completion</source>
-        <target state="translated">TextArea 類型自動完成</target>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
       </segment>
     </unit>
-    <unit id="VariantsDescription">
+    <unit id="UncertainCategoryDescription">
+      <segment>
+        <source>Demonstration of Lookup Patterns: Uncertain Category.</source>
+        <target state="translated">查詢模式：不確定類目範例。</target>
+      </segment>
+    </unit>
+    <unit id="UncertainCategoryTitle">
+      <segment>
+        <source>Lookup Patterns - Uncertain Category</source>
+        <target state="translated">查詢模式 - 不確定類目</target>
+      </segment>
+    </unit>
+    <unit id="VariantDescription">
       <segment>
         <source>There are outlined, filled, borderless, and underlined variants to choose from.</source>
-        <target state="translated">可選擇描邊、填充、無邊框和下划線等變體。</target>
+        <target state="translated">可選擇描邊、填充、無邊框和底線四種形態。</target>
       </segment>
     </unit>
-    <unit id="VariantsTitle">
+    <unit id="VariantTitle">
       <segment>
-        <source>Variants</source>
-        <target state="translated">變體</target>
+        <source>Customize Variants</source>
+        <target state="translated">多種形態</target>
       </segment>
     </unit>
   </file>

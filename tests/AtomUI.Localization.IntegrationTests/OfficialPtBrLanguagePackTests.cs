@@ -3,10 +3,11 @@ using System.Text;
 using System.Xml.Linq;
 using Shouldly;
 using Xunit;
+using static AtomUI.Localization.IntegrationTests.LanguagePackEndToEndTests;
 
 namespace AtomUI.Localization.IntegrationTests;
 
-public sealed partial class LanguagePackEndToEndTests
+public sealed class OfficialPtBrLanguagePackTests
 {
     private const string AggregatePackageId = "AtomUI.I18n.PtBR";
     private const string DataGridCatalogId =
@@ -28,6 +29,7 @@ public sealed partial class LanguagePackEndToEndTests
             [
                 "Calendar/pt-BR.xlf",
                 "DatePicker/pt-BR.xlf",
+                "DateViewer/pt-BR.xlf",
                 "Dialog/pt-BR.xlf",
                 "ImagePreviewer/pt-BR.xlf",
                 "Pagination/pt-BR.xlf",
@@ -53,57 +55,6 @@ public sealed partial class LanguagePackEndToEndTests
             ["pt-BR.xlf"])
     ];
 
-    [Fact]
-    public void Official_PtBr_Module_Projects_Use_Automatic_Verified_Contract_Discovery()
-    {
-        var repositoryRoot = FindRepositoryRoot();
-        foreach (var package in s_officialLanguagePackages)
-        {
-            var projectPath = Path.Combine(repositoryRoot, package.ProjectPath);
-            var project = XDocument.Load(projectPath);
-            project.Descendants("AtomUILanguage").ShouldBeEmpty();
-            project.Descendants("AtomUILanguageMinimumState").ShouldBeEmpty();
-
-            var expectedReference = Path.GetFullPath(
-                Path.Combine(repositoryRoot, package.SourceProjectPath));
-            project.Descendants("ProjectReference")
-                   .Any(reference =>
-                   {
-                       var include = (string?)reference.Attribute("Include");
-                       if (include is null ||
-                           (string?)reference.Attribute("OutputItemType") == "Analyzer")
-                       {
-                           return false;
-                       }
-
-                       var resolved = Path.GetFullPath(
-                           Path.Combine(Path.GetDirectoryName(projectPath)!, include));
-                       return resolved == expectedReference;
-                   })
-                   .ShouldBeTrue();
-        }
-    }
-
-    [Fact]
-    public void Official_PtBr_Aggregate_Package_Declares_Readme()
-    {
-        var repositoryRoot = FindRepositoryRoot();
-        var nuspec = XDocument.Load(Path.Combine(
-            repositoryRoot,
-            "src/LanguagePacks/pt-BR/AtomUI.I18n.PtBR/AtomUI.I18n.PtBR.nuspec"));
-
-        nuspec.Descendants()
-              .Where(static element => element.Name.LocalName == "readme")
-              .ShouldHaveSingleItem()
-              .Value.ShouldBe("README.nuget.md");
-        var readmeFile = nuspec.Descendants()
-                               .Where(static element => element.Name.LocalName == "file")
-                               .Where(static element =>
-                                   (string?)element.Attribute("src") == "README.nuget.md")
-                               .ShouldHaveSingleItem();
-        ((string?)readmeFile.Attribute("target")).ShouldBeEmpty();
-    }
-
     [Fact(Timeout = 600_000)]
     public async Task Official_PtBr_Package_Graph_Is_Consumable()
     {
@@ -114,8 +65,10 @@ public sealed partial class LanguagePackEndToEndTests
             Guid.NewGuid().ToString("N"));
         var feed = Path.Combine(temporaryRoot, "feed");
         var toolingFeed = Path.Combine(temporaryRoot, "tooling-feed");
-        var packageVersion = ReadAtomUiVersion(repositoryRoot);
-        var toolingPackageVersion = packageVersion + "-integration." + Guid.NewGuid().ToString("N");
+        // Published versions may already exist in the global NuGet fallback folder.
+        // Give this fixture a unique version so consumers must restore our local packages.
+        var packageVersion = ReadAtomUiVersion(repositoryRoot) + "-integration." + Guid.NewGuid().ToString("N");
+        var toolingPackageVersion = packageVersion + ".tooling";
         Directory.CreateDirectory(feed);
         Directory.CreateDirectory(toolingFeed);
 
@@ -126,6 +79,7 @@ public sealed partial class LanguagePackEndToEndTests
                 temporaryRoot,
                 feed,
                 toolingFeed,
+                packageVersion,
                 toolingPackageVersion);
             AssertOfficialPackageLayouts(feed, packageVersion);
 
@@ -224,6 +178,7 @@ public sealed partial class LanguagePackEndToEndTests
         string temporaryRoot,
         string feed,
         string toolingFeed,
+        string packageVersion,
         string toolingPackageVersion)
     {
         var globalPackages = GlobalPackagesPath();
@@ -258,6 +213,7 @@ public sealed partial class LanguagePackEndToEndTests
                 "-m:1",
                 "-nr:false",
                 "-p:Configuration=Release",
+                $"-p:AtomUIVersion={packageVersion}",
                 $"-p:PackageOutputPath={feed}",
                 $"-p:RestorePackagesPath={globalPackages}",
                 "-p:NoPackageAnalysis=true");
@@ -278,6 +234,7 @@ public sealed partial class LanguagePackEndToEndTests
             "-m:1",
             "-nr:false",
             "-p:Configuration=Release",
+            $"-p:AtomUIVersion={packageVersion}",
             $"-p:PackageOutputPath={feed}",
             $"-p:RestorePackagesPath={globalPackages}",
             "-p:NoPackageAnalysis=true");
@@ -480,6 +437,7 @@ public sealed partial class LanguagePackEndToEndTests
     {
         return new XElement(
             "ProjectReference",
+            new XAttribute("GlobalPropertiesToRemove", "OutputPath"),
             new XAttribute("Include", Path.Combine(repositoryRoot, relativePath)));
     }
 
@@ -561,12 +519,10 @@ public sealed partial class LanguagePackEndToEndTests
 
             public sealed partial class FixtureApplication : Application
             {
-                public override void Initialize()
-                {
-                    this.UseAtomUI(builder => builder.UseLanguages(
+                public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<FixtureApplication>()
+                    .UseAtomUI(builder => builder.UseLanguages(
                         LanguageTags.PtBR,
                         [LanguageTags.EnUS, LanguageTags.PtBR]));
-                }
             }
 
             public static class CatalogProbe

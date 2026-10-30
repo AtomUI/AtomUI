@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -22,6 +20,15 @@ public enum SeparatorShowCaseLangResourceKind
     VerticalDescription,
     VariantTitle,
     VariantDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticRailDescription,
+    SemanticContentDescription,
+    SemanticPartAllPartsTitle,
+    SemanticPartTitlePlacementTitle,
+    SemanticPartDashedRailTitle,
+    SemanticPartSmallSizeTitle,
     P2TitleText,
     P2TitleLeftText,
     P2TitleRightText,

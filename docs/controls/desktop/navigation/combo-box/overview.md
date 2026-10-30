@@ -2,7 +2,11 @@
 
 本文档定义 `ComboBox` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。输入表面共享状态见 [输入控件共享架构设计](../../data-entry/input-control-architecture-design.md)。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，候选列表统一交互见 [候选列表统一交互设计](../../data-entry/select/candidate-interaction-design.md)，内部实现原理见 [ComboBox 桌面版实现原理](implementation.md)，ComboBox Token 的专项设计见 [ComboBox Token 设计](token.md)，设计和契约变化记录见 [ComboBox Changelog](changelog.md)。
 
-该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `ComboBox`，其 internal `IsPopupPinnedOpen` 只供测试和内部诊断使用；设置为 true 时保持 ComboBox open state 并 relay 到 template Popup，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
+该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `ComboBox`，其 `IsPopupPinnedOpen` 为 public（与 `Select` / `AutoComplete` / `Mentions` 等同族控件一致），设置为 true 时在弹层打开前抑制 light-dismiss 并保持 open state（relay 到 template Popup），设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
+
+ComboBox 公开 12 个 Semantic Part：隐式 `root` 加 11 个非 root 部件（`prefix`、`frame`、`content`、`placeholder`、`input`、`suffix`、`indicator`、`popup.root`、`popup.list`、`popup.listItem`、`popup.empty`）。区域分组参考 Ant Design Select 已公开的 Semantic DOM 词汇，只发布 ComboBox 自身确实拥有的区域；完整 Part 表、Selector 用法与定制边界见 [ComboBox Semantic Part 契约](semantic-part.md)。
+
+> **准入定性：** ComboBox 的 Semantic Part 纳入**不是 §2.1 准入 Gate 通过**。上游 6.6.0 没有公开 `ComboBox` owner，原排除判定中「`Select` 的 internal combobox mode 不能作为公开 owner」继续有效；本次依据是用户指令加上 ComboBox 自身即职责完整的独立 public owner。范围记录见[全量改造设计 §2.4](../../../../superpowers/specs/2026-08-12-semantic-part-control-rollout-design.md) 的 2026-09-16 范围变更段。
 
 ## 1. 控件定位
 
@@ -43,7 +47,7 @@ ComboBox 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | --- | --- | --- |
 | 内容与数据 | `ContentLeftAddOn`、`ContentLeftAddOnTemplate`、`ContentRightAddOn`、`ContentRightAddOnTemplate`、`FilterValue`、`FilterValueSelector`、`LeftAddOnTemplate`、`OptionFontSize`、`RightAddOnTemplate` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
 | 选择与集合 | `SelectedItem`、`SelectedIndex`、`DropDownDisplayPageSize`、`Filter`、`IsFilterEnabled` | 维护选择、展开、过滤、分页、分组或集合状态。 |
-| 交互与状态 | `IsAllowClear`、`IsMotionEnabled`、`ShouldUseOverlayPopup`、`Status`、`IsShowOverflowTip`、`OverflowTipDelay`、`OverflowTipPlacement` | 表达用户可观察状态、可用性、清除、加载、反馈和非编辑态选中内容溢出提示语义。Form 校验扩展状态进入内部 `FormStatus`，不覆盖显式 `Status`。 |
+| 交互与状态 | `IsAllowClear`、`IsMotionEnabled`、`ShouldUseOverlayPopup`、`IsPopupPinnedOpen`、`Status`、`IsShowOverflowTip`、`OverflowTipDelay`、`OverflowTipPlacement` | 表达用户可观察状态、可用性、清除、加载、反馈和非编辑态选中内容溢出提示语义。Form 校验扩展状态进入内部 `FormStatus`，不覆盖显式 `Status`。 |
 | 视觉与布局 | `SizeType`、`StyleVariant` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
 | 其他稳定入口 | `LeftAddOn`、`RightAddOn` | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
 
@@ -51,7 +55,7 @@ ComboBox 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 
 主要公开类型与枚举：
 
-- 类型：`ComboBox`、`ComboBoxHandle`、`ComboBoxItem`。
+- 类型：`ComboBox`、`ComboBoxItem`。`ComboBoxHandle`、`ComboBoxTextBox`、`ComboBoxToken` 为 internal 协作类型，不是公共契约。
 - 枚举：无。
 
 稳定 template part：
@@ -69,6 +73,29 @@ ComboBox 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | `PART_TextPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
 
 当前未抽取到控件专属伪类；主题主要依赖 Avalonia 标准伪类、模板绑定和内部 StyledProperty。
+
+### 3.1 Semantic Parts
+
+ComboBox 的公共 Semantic Part 契约如下。契约字段（Selector、ContractType、Cardinality、CrossVisualRoot、RuntimeCreated、CrossNestedOwners）的完整定义与每个部件的数据以 [ComboBox Semantic Part 契约](semantic-part.md) 为唯一真源，本节只做摘要。
+
+| Part | 类型 | 职责 |
+| --- | --- | --- |
+| `root` | `ComboBox` | 数据源、选择、过滤、弹层与输入框状态的组织边界；不生成 Style。 |
+| `prefix` | `ContentPresenter` | 内容框内联前缀区，承载 `ContentLeftAddOn`。 |
+| `frame` | `PixelAlignedBorder` | 输入框边框盒，决定边框颜色、宽度、圆角与背景（最常用定制点）。 |
+| `content` | `Panel` | 输入内容面板，承载占位符、非编辑态选中内容与编辑态输入框。 |
+| `placeholder` | `Avalonia.Controls.TextBlock` | 未选择且非编辑态时的占位符文本。 |
+| `input` | `Avalonia.Controls.TextBox` | `IsEditable=true` 时的编辑 / 过滤输入框。 |
+| `suffix` | `StackPanel` | 右侧后缀区，承载用户后缀内容、Form 反馈与下拉指示器。 |
+| `indicator` | `IconButton` | 下拉展开指示器（箭头按钮），位于 `ComboBoxHandle` 自有模板内。 |
+| `popup.root` | `Border` | 弹层框体，承载候选列表与空态。 |
+| `popup.list` | `Avalonia.Controls.ScrollViewer` | 候选列表滚动区，与空态互斥。 |
+| `popup.listItem` | `ComboBoxItem` | 单个候选项容器，运行时容器创建时注入 marker。 |
+| `popup.empty` | `Border` | 生效过滤模式下无匹配项时的弹层空态区（未开启过滤时不显示）。 |
+
+**明确不发布的区域**：清除部件（`frame` 的 hover / focus / 校验态状态色由共享主题驱动，不作为独立部件发布）（`IsAllowClear` 为未实现 API）、非编辑态选中内容节点、Form 反馈节点、内置 AddOn 区、`ComboBoxItem` 作为独立 owner、`atom:Empty` 内部视觉、弹层宿主与定位。逐项理由见 [ComboBox Semantic Part 契约 §5](semantic-part.md)。
+
+**定制入口**：应用使用生成的语义专用 Style（`ComboBoxFrameStyle`、`ComboBoxPrefixStyle`、`ComboBoxIndicatorStyle`、`ComboBoxPopupRootStyle` 等，命名空间 `AtomUI.Theme.Styling`，AXAML 命名空间 `https://atomui.net`）在 AXAML 中声明式定制。禁止在 code-behind 中获取节点后直接设置 `Background` / `Foreground` / `Padding` / `CornerRadius` 等属性作为定制手段。
 
 ## 4. 行为与状态模型
 
@@ -171,34 +198,17 @@ ComboBox 的动效只表达状态变化反馈，不应改变 public API 语义�
 
 ComboBox 的视觉选项通过 public API 归一为 theme variables、伪类或模板绑定。Token 保存组件语义值，不能保存实例运行时状态或业务色值。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [ComboBox 桌面版实现原理](implementation.md)
+- [ComboBox Semantic Part 契约](semantic-part.md)
 - [ComboBox Token 设计](token.md)
 - [ComboBox Changelog](changelog.md)
 
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `ComboBox` | 导航控件根语义区域，承载 public API、状态归一和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载点击、键盘、打开关闭、跳转或提交入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `导航项区域` | 承载当前项、选中项、禁用项、层级项或分页项状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或内容区域` | 承载 flyout、dropdown、tab content、submenu 或候选内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效区域` | 表达打开关闭、选中指示、切换和过渡反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/combo-box/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/combo-box/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+改输入框边框颜色有**两个入口**，按场景选择：直接设置 `ComboBox.BorderBrush` / `Background` 是输入族标准做法（控件把这两个根表面画刷以 `LocalValue` 中继到共享输入帧，压过帧的 hover / focus / 校验状态机）；需要按语义节点精确控制边框宽度、圆角、背景或状态色时，用 `frame` 部件（`ComboBoxFrameStyle`）。两者落在同一帧节点上，`LocalValue` 优先级高于 `Style`，同时使用时根中继胜出。细节见
+[ComboBox Semantic Part 契约](semantic-part.md) §5 与 [ComboBox 实现](implementation.md) §5.2。
 
 验证策略：
 
@@ -208,5 +218,6 @@ LLMS 导出来源：
 | Public API | 覆盖属性默认值、事件触发、命令和继承语义。 |
 | 状态模型 | 覆盖 open/close、collection/filter、input/value、motion、visual option、disabled、hover、pressed、focus 以及控件特有状态。 |
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
+| Semantic Part | 检查 descriptor 声明与 `semantic-part.md` 一致、静态 marker 与运行时 marker 就位、生成专用 Style 恰好命中目标节点，并确认不存在 code-behind 属性回退。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |

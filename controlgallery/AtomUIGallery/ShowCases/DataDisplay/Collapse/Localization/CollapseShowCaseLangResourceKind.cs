@@ -1,11 +1,16 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
 public enum CollapseShowCaseLangResourceKind
 {
     ScenarioExamples,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticHeaderDescription,
+    SemanticIconDescription,
+    SemanticTitleDescription,
+    SemanticBodyDescription,
     ComponentCategory,
     ComponentStatusStable,
     PageSubtitle,

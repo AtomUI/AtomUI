@@ -120,7 +120,7 @@ public class TypedThemeSnapshotCacheTests
         var effectiveAlgorithms = algorithms ??
             [registry.Algorithms.Single(static algorithm => algorithm.Algorithm == ThemeAlgorithm.Default)];
         var location = new ThemeSourceLocation("test", 1, 1, "/Theme");
-        var definition = new BoundThemeDefinition(
+        var definition = new PreparedThemeDefinition(
             "TestTheme",
             "Test Theme",
             ThemeAppearance.Light,

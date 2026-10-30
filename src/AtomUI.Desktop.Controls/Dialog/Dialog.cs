@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using AtomUI.Controls;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -8,12 +9,14 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
 public partial class Dialog : TemplatedControl,
                               IMotionAwareControl,
-                              IDialog
+                              IDialog,
+                              ISemanticPartCrossRootProvider
 {
     #region 公共属性定义
     public static readonly StyledProperty<string?> TitleProperty =
@@ -60,6 +63,16 @@ public partial class Dialog : TemplatedControl,
     public static readonly StyledProperty<Control?> PlacementTargetProperty =
         AvaloniaProperty.Register<Dialog, Control?>(nameof(PlacementTarget));
 
+    /// <summary>
+    /// 可选：把 Overlay 宿主限定在指定作用域内。指定后 mask、Surface 尺寸与居中都以该作用域为边界
+    /// （对齐上游 antd Modal 的内联/setContainer 语义，例如 Gallery 语义预览的"舞台内模态"）。
+    /// 默认 <c>null</c> 保持既有行为：宿主解析到 owning TopLevel 的 OverlayLayer。
+    /// 仅 Overlay 宿主有效，Window 宿主忽略；作用域内没有可用的 scope layer 时回退到默认 TopLevel 宿主。
+    /// 作用域宿主没有 Window frame 契约，因此不参与 frame 内缩与 drawn chrome 抑制。
+    /// </summary>
+    public static readonly StyledProperty<Control?> OverlayScopeProperty =
+        AvaloniaProperty.Register<Dialog, Control?>(nameof(OverlayScope));
+
     public static readonly StyledProperty<DialogHorizontalAnchor> HorizontalStartupLocationProperty =
         AvaloniaProperty.Register<Dialog, DialogHorizontalAnchor>(nameof(HorizontalStartupLocation),
             DialogHorizontalAnchor.Center);
@@ -97,6 +110,9 @@ public partial class Dialog : TemplatedControl,
 
     public static readonly StyledProperty<DialogHostType> DialogHostTypeProperty =
         AvaloniaProperty.Register<Dialog, DialogHostType>(nameof(DialogHostType), DialogHostType.Overlay);
+
+    public static readonly StyledProperty<bool> IsPinnedOpenProperty =
+        AvaloniaProperty.Register<Dialog, bool>(nameof(IsPinnedOpen));
 
     public static readonly StyledProperty<bool> IsLoadingProperty =
         AvaloniaProperty.Register<Dialog, bool>(nameof(IsLoading));
@@ -207,6 +223,12 @@ public partial class Dialog : TemplatedControl,
         set => SetValue(PlacementTargetProperty, value);
     }
 
+    public Control? OverlayScope
+    {
+        get => GetValue(OverlayScopeProperty);
+        set => SetValue(OverlayScopeProperty, value);
+    }
+
     public DialogHorizontalAnchor HorizontalStartupLocation
     {
         get => GetValue(HorizontalStartupLocationProperty);
@@ -277,6 +299,17 @@ public partial class Dialog : TemplatedControl,
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
+    }
+
+    /// <summary>
+    /// 钉住常开（语义预览用）：为 true 时用户发起的关闭入口（标题栏关闭按钮、Overlay 遮罩外点、Escape、
+    /// Footer 按钮）不再发起关闭请求；外部代码直接设置 <see cref="IsOpen"/> 仍正常关闭。
+    /// 仅 Overlay 宿主有效；Window 宿主由原生窗口关闭流程负责，不受此开关控制。
+    /// </summary>
+    public bool IsPinnedOpen
+    {
+        get => GetValue(IsPinnedOpenProperty);
+        set => SetValue(IsPinnedOpenProperty, value);
     }
 
     public bool IsLoading
@@ -355,6 +388,36 @@ public partial class Dialog : TemplatedControl,
     public event EventHandler? Rejected;
     public event EventHandler<DialogFinishedEventArgs>? Finished;
     public event EventHandler<DialogButtonClickedEventArgs>? ButtonClicked;
+
+    #endregion
+
+    #region ISemanticPartCrossRootProvider 实现
+
+    public event EventHandler? CrossRootsChanged;
+
+    public IReadOnlyList<Visual> GetCrossRoots()
+    {
+        var presenter = _session?.Presenter;
+        if (presenter is Visual overlayRoot && overlayRoot.GetVisualParent() is not null)
+        {
+            return [overlayRoot];
+        }
+
+        // Window 宿主：跨根是原生 DialogWindow（独立 TopLevel）。语义预览据此在该窗口内解析并高亮部件
+        // （Adorner 落在宿主窗口自己的 AdornerLayer，先例：ImagePreviewer 的 native dialog）。
+        // 该上报只服务跨根解析；owner 作用域的样式级联仍不跨 TopLevel（见 semantic-part.md）。
+        if (presenter is WindowDialogPresenter { HostWindow.IsVisible: true } windowPresenter)
+        {
+            return [windowPresenter.HostWindow];
+        }
+
+        return Array.Empty<Visual>();
+    }
+
+    internal void NotifyCrossRootsChanged()
+    {
+        CrossRootsChanged?.Invoke(this, EventArgs.Empty);
+    }
 
     #endregion
 

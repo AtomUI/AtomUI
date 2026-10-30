@@ -5,7 +5,6 @@
 
 using System.Collections;
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -23,7 +22,6 @@ internal static class TypeHelper
     internal const char RightParenthesisToken = ')';
     private const string NoDefaultMemberName = "";
     private static readonly ConcurrentDictionary<Type, string> s_defaultMemberNames = new();
-    private static readonly ConcurrentDictionary<MemberInfo, bool> s_readOnlyValues = new();
 
     [RequiresUnreferencedCode("Dynamic data property paths reflect over generic interface metadata.")]
     private static Type? FindGenericType(Type definition, Type? type)
@@ -671,36 +669,6 @@ internal static class TypeHelper
         }
 
         return true;
-    }
-
-    /// <summary>
-    /// Checks a MemberInfo object (e.g. a Type or PropertyInfo) for the ReadOnly attribute
-    /// and returns the value of IsReadOnly if it exists.
-    /// </summary>
-    /// <param name="memberInfo">MemberInfo to check</param>
-    /// <returns>true if MemberInfo is read-only, false otherwise</returns>
-    internal static bool GetIsReadOnly(this MemberInfo? memberInfo)
-    {
-        if (memberInfo is null)
-        {
-            return false;
-        }
-
-        return s_readOnlyValues.GetOrAdd(memberInfo, static member =>
-        {
-            // Most members do not carry ReadOnlyAttribute; avoid allocating an empty attribute array.
-            if (member.IsDefined(typeof(ReadOnlyAttribute), true))
-            {
-                object[] attributes = member.GetCustomAttributes(typeof(ReadOnlyAttribute), true);
-                if (attributes.Length > 0)
-                {
-                    ReadOnlyAttribute readOnlyAttribute = (ReadOnlyAttribute)attributes[0];
-                    return readOnlyAttribute.IsReadOnly;
-                }
-            }
-
-            return false;
-        });
     }
 
     [RequiresUnreferencedCode("Dynamic collection item type inference reflects over generic interface metadata.")]

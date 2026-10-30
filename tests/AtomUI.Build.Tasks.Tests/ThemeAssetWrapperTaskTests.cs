@@ -1,5 +1,4 @@
 using System.Xml.Linq;
-using AtomUI.Build.Tasks;
 using Shouldly;
 using Xunit;
 

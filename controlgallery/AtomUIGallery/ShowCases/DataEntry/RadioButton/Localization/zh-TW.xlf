@@ -313,6 +313,48 @@
         <target state="translated">樣式</target>
       </segment>
     </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with border radius, transition animations, border styles, hover states, focus states and other interactive styles</source>
+        <target state="translated">單選圖示元素，包含圓角樣式、過渡動畫、邊框樣式、懸停狀態、焦點狀態等互動樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label element with padding, text color, disabled states, alignment and other text styles</source>
+        <target state="translated">標籤文字元素，包含內邊距、文字顏色、禁用狀態、對齊方式等文字樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartConditionalTitle">
+      <segment>
+        <source>Conditional styling</source>
+        <target state="translated">條件樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartFixedTitle">
+      <segment>
+        <source>Fixed styling</source>
+        <target state="translated">固定樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and RadioButton property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域選擇器和 RadioButton 屬性選擇器自訂已發佈的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with layout styles, cursor styles, disabled text color and other basic container styles</source>
+        <target state="translated">根元素，包含佈局樣式、游標樣式、禁用狀態文字顏色等基礎容器樣式</target>
+      </segment>
+    </unit>
     <unit id="SizeTypeDescription">
       <segment>
         <source>There are three sizes available: large, medium, and small. It can coordinate with input box.</source>

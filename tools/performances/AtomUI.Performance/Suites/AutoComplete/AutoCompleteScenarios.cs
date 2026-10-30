@@ -31,7 +31,7 @@ internal static partial class Program
             new PerfScenario("AutoComplete.SearchEdit.Closed", _ => new AutoCompleteSearchEdit
             {
                 Width             = 300,
-                SearchButtonStyle = SearchEditButtonStyle.Primary,
+                SearchButtonStyle = SearchButtonType.Primary,
                 OptionsSource     = CreateAutoCompleteOptions()
             }),
             new PerfScenario("AutoComplete.TextArea.Closed", _ => new AutoCompleteTextArea

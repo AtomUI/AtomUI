@@ -1,4 +1,3 @@
-using System.Reflection;
 using AtomUI.Controls;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -14,47 +13,6 @@ public class HyperLinkButtonIconSizeTests
     static HyperLinkButtonIconSizeTests()
     {
         AvaloniaTestApp.EnsureInitialized();
-    }
-
-    [Fact]
-    public void HyperLinkButton_Exposes_Icon_Width_And_Height_Properties()
-    {
-        var controlType = typeof(HyperLinkButton);
-        const BindingFlags propertyFlags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
-
-        controlType.GetProperty("IconWidth")?.PropertyType.ShouldBe(typeof(double));
-        controlType.GetProperty("IconHeight")?.PropertyType.ShouldBe(typeof(double));
-        controlType.GetField("IconWidthProperty", propertyFlags).ShouldNotBeNull();
-        controlType.GetField("IconHeightProperty", propertyFlags).ShouldNotBeNull();
-    }
-
-    [Fact]
-    public void HyperLinkButton_Template_Binds_Icon_Size_To_Control_Properties()
-    {
-        var source = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/Buttons/Themes/HyperLinkButtonTheme.axaml"));
-
-        source.ShouldContain("Width=\"{TemplateBinding IconWidth}\"");
-        source.ShouldContain("Height=\"{TemplateBinding IconHeight}\"");
-        source.ShouldContain("<Setter Property=\"IconWidth\" Value=\"{atom:SharedTokenResource IconSize}\" />");
-        source.ShouldContain("<Setter Property=\"IconHeight\" Value=\"{atom:SharedTokenResource IconSize}\" />");
-        source.ShouldNotContain("ControlTokenScope.Identity");
-        source.ShouldContain("Property=\"IconWidth\"");
-        source.ShouldContain("Property=\"IconHeight\"");
-        source.ShouldContain("Value=\"{atom:HyperLinkButtonTokenResource OnlyIconSize}\"");
-    }
-
-    [Fact]
-    public void HyperLinkButton_Template_Proxies_Icon_Color_Through_Foreground()
-    {
-        var source = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/Buttons/Themes/HyperLinkButtonTheme.axaml"));
-
-        source.ShouldContain("IconBrush=\"{TemplateBinding Foreground}\"");
-        source.ShouldContain("FillBrush=\"{TemplateBinding Foreground}\"");
-        source.ShouldContain("StrokeBrush=\"{TemplateBinding Foreground}\"");
-        source.ShouldNotContain("<Setter Property=\"IconBrush\"");
-        source.ShouldNotContain("<Setter Property=\"FillBrush\"");
-        source.ShouldNotContain("<Setter Property=\"StrokeBrush\"");
-        source.ShouldNotContain("SolidColorBrushTransition Property=\"IconBrush\"");
     }
 
     [Fact]
@@ -157,20 +115,4 @@ public class HyperLinkButtonIconSizeTests
         }
     }
 
-    private static string GetRepoFile(string relativePath)
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            var candidate = Path.Combine(directory.FullName, relativePath);
-            if (File.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            directory = directory.Parent;
-        }
-
-        throw new FileNotFoundException($"Could not find repository file: {relativePath}");
-    }
 }

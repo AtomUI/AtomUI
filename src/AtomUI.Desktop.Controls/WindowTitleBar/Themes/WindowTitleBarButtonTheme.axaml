@@ -10,6 +10,28 @@
         <themes:IconButtonTheme TargetType="{x:Type atom:WindowTitleBarButton}" />
     </ControlTheme.BasedOn>
 
+    <!-- 复用 managed caption 的共享几何外壳：背景层与内容层由 CaptionButtonFrame 拥有，
+         这里只声明 AddOn 自己的 presenter 契约，因此不复制 caption band 的几何结构。 -->
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:WindowTitleBarButton">
+            <atom:CaptionButtonFrame Background="{TemplateBinding Background}"
+                                     BorderBrush="{TemplateBinding BorderBrush}"
+                                     BorderThickness="{TemplateBinding BorderThickness}"
+                                     CornerRadius="{TemplateBinding CornerRadius}"
+                                     Padding="{TemplateBinding Padding}"
+                                     HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Stretch">
+                <atom:IconPresenter Name="IconPresenter"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Icon="{TemplateBinding Icon}"
+                                    IconBrush="{TemplateBinding IconBrush}"
+                                    Width="{TemplateBinding IconWidth}"
+                                    Height="{TemplateBinding IconHeight}" />
+            </atom:CaptionButtonFrame>
+        </ControlTemplate>
+    </Setter>
+
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -47,6 +69,17 @@
 
     <Style Selector="^[HostMotionEnabled=False]">
         <Setter Property="IsMotionEnabled" Value="False" />
+    </Style>
+
+    <Style Selector="^[HostOsType=macOS]">
+        <Setter Property="CornerRadius" Value="{atom:WindowTitleBarTokenResource CaptionButtonCornerRadius}" />
+    </Style>
+
+    <Style Selector="^[HostOsType=Linux]">
+        <Setter Property="CornerRadius" Value="{atom:WindowTitleBarTokenResource CaptionButtonCornerRadius}" />
+        <Style Selector="^ /template/ atom|CaptionButtonFrame">
+            <Setter Property="BackgroundInset" Value="{atom:WindowTitleBarTokenResource CaptionButtonBackgroundInset}" />
+        </Style>
     </Style>
 
     <Style Selector="^[HostOsType=Windows]">

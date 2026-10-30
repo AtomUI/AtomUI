@@ -1,5 +1,6 @@
-using AtomUI.Controls;
 using Avalonia;
+using System.Net;
+using System.Net.Http.Headers;
 using Shouldly;
 using Xunit;
 
@@ -7,6 +8,134 @@ namespace AtomUI.Controls.Shared.Tests.ImageLoading;
 
 public class ImageLoaderLifecycleTests
 {
+    [Fact]
+    public void Attached_Loader_Dispose_Without_Image_Use_Does_Not_Create_Http_Transport()
+    {
+        var application = new Application();
+        var creations = 0;
+        var loader = CreateLoader(() =>
+        {
+            creations++;
+            return CreateHttpTransport(new CountingHandler());
+        });
+        loader.Attach(application);
+
+        loader.Dispose();
+
+        creations.ShouldBe(0);
+        application.TryGetImageLoader().ShouldBeNull();
+    }
+
+    [Fact]
+    public void Unused_Injected_Http_Handler_Is_Disposed_With_Loader()
+    {
+        var handler = new CountingHandler();
+        var loader = new ImageLoader(
+            ImageLoadingTestSupport.CreateOptions(),
+            [new PassThroughCodec()],
+            handler);
+
+        loader.Dispose();
+
+        handler.DisposeCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task NonHttp_Use_Does_Not_Delay_Injected_Handler_Disposal()
+    {
+        var handler = new CountingHandler();
+        var loader = new ImageLoader(
+            ImageLoadingTestSupport.CreateOptions(),
+            [new PassThroughCodec()],
+            handler);
+        using var result = await loader.LoadAsync(
+            new ImageLoadRequest(new BytesImageSource(ImageLoadingTestSupport.CreatePngHeader())),
+            TestContext.Current.CancellationToken);
+
+        loader.Dispose();
+
+        result.IsSuccess.ShouldBeTrue();
+        handler.DisposeCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Http_Use_Transfers_Injected_Handler_Ownership_To_Transport()
+    {
+        var handler = new CountingHandler(CreatePngResponse);
+        var loader = new ImageLoader(
+            ImageLoadingTestSupport.CreateOptions(),
+            [new PassThroughCodec()],
+            handler);
+        using var result = await loader.LoadAsync(
+            new ImageLoadRequest(new HttpImageSource(new Uri("https://example.com/injected.png"))),
+            TestContext.Current.CancellationToken);
+
+        loader.Dispose();
+
+        result.IsSuccess.ShouldBeTrue();
+        handler.DisposeCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task First_Http_Use_Creates_Transport_And_Loader_Disposes_Its_Handler()
+    {
+        var application = new Application();
+        var creations = 0;
+        var handler = new CountingHandler(CreatePngResponse);
+        var loader = CreateLoader(() =>
+        {
+            creations++;
+            return CreateHttpTransport(handler);
+        });
+        loader.Attach(application);
+
+        using var result = await loader.LoadAsync(
+            new ImageLoadRequest(new HttpImageSource(new Uri("https://example.com/application.png"))),
+            TestContext.Current.CancellationToken);
+        loader.Dispose();
+
+        result.IsSuccess.ShouldBeTrue();
+        creations.ShouldBe(1);
+        handler.DisposeCount.ShouldBe(1);
+        application.TryGetImageLoader().ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Independent_Application_Loaders_Own_Separate_Http_Transports()
+    {
+        var firstApplication = new Application();
+        var secondApplication = new Application();
+        var firstCreations = 0;
+        var secondCreations = 0;
+        using var firstLoader = CreateLoader(() =>
+        {
+            firstCreations++;
+            return CreateHttpTransport(new CountingHandler(CreatePngResponse));
+        });
+        using var secondLoader = CreateLoader(() =>
+        {
+            secondCreations++;
+            return CreateHttpTransport(new CountingHandler(CreatePngResponse));
+        });
+        firstLoader.Attach(firstApplication);
+        secondLoader.Attach(secondApplication);
+
+        using var first = await firstLoader.LoadAsync(
+            new ImageLoadRequest(new HttpImageSource(new Uri("https://example.com/first.png"))),
+            TestContext.Current.CancellationToken);
+        secondCreations.ShouldBe(0);
+        using var second = await secondLoader.LoadAsync(
+            new ImageLoadRequest(new HttpImageSource(new Uri("https://example.com/second.png"))),
+            TestContext.Current.CancellationToken);
+
+        first.IsSuccess.ShouldBeTrue();
+        second.IsSuccess.ShouldBeTrue();
+        firstCreations.ShouldBe(1);
+        secondCreations.ShouldBe(1);
+        firstApplication.GetImageLoader().ShouldBeSameAs(firstLoader);
+        secondApplication.GetImageLoader().ShouldBeSameAs(secondLoader);
+    }
+
     [Fact]
     public void Attach_Publishes_One_Application_Loader_And_Detach_Removes_It()
     {
@@ -182,11 +311,25 @@ public class ImageLoaderLifecycleTests
         }
     }
 
-    private static ImageLoader CreateLoader()
+    private static ImageLoader CreateLoader(Func<HttpImageTransport>? httpTransportFactory = null)
     {
         return new ImageLoader(
             ImageLoadingTestSupport.CreateOptions(),
-            [new PassThroughCodec()]);
+            [new PassThroughCodec()],
+            httpTransportFactory: httpTransportFactory);
+    }
+
+    private static HttpImageTransport CreateHttpTransport(HttpMessageHandler handler) =>
+        new(ImageLoadingTestSupport.CreateOptions(), handler);
+
+    private static HttpResponseMessage CreatePngResponse(HttpRequestMessage request)
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(ImageLoadingTestSupport.CreatePngHeader())
+        };
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        return response;
     }
 
     private static TaskCompletionSource NewSignal() =>
@@ -195,6 +338,35 @@ public class ImageLoaderLifecycleTests
     private sealed class ThrowingProgress : IProgress<ImageLoadProgress>
     {
         public void Report(ImageLoadProgress value) => throw new InvalidOperationException("progress observer failed");
+    }
+
+    private sealed class CountingHandler : HttpMessageHandler
+    {
+        private readonly Func<HttpRequestMessage, HttpResponseMessage> _send;
+
+        internal CountingHandler(Func<HttpRequestMessage, HttpResponseMessage>? send = null)
+        {
+            _send = send ?? (_ => throw new NotSupportedException());
+        }
+
+        internal int DisposeCount { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(_send(request));
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DisposeCount++;
+            }
+            base.Dispose(disposing);
+        }
     }
 
     private sealed class PassThroughCodec : ImageCodec

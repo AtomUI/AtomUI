@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -89,5 +87,20 @@ public enum StepsShowCaseLangResourceKind
     P2ContentLastContent,
     P2ContentNext,
     P2ContentPrevious,
-    P2ContentDone
+    P2ContentDone,
+    P2ContentThisIsAContent,
+    SemanticRootDescription,
+    SemanticItemDescription,
+    SemanticItemWrapperDescription,
+    SemanticItemIconDescription,
+    SemanticItemTitleDescription,
+    SemanticItemSubtitleDescription,
+    SemanticItemSectionDescription,
+    SemanticItemContentDescription,
+    SemanticItemRailDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    P2SubHeaderTimeN1,
+    P2SubHeaderTimeN2,
+    P2SubHeaderTimeN3
 }

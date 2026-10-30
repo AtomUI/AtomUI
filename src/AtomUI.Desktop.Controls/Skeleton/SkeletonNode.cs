@@ -5,16 +5,16 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-public class SkeletonNode : SkeletonImage
+public partial class SkeletonNode : SkeletonImage
 {
     #region 公共属性定义
 
-    public static readonly StyledProperty<object?> ContentProperty = 
+    public static readonly StyledProperty<object?> ContentProperty =
         ContentControl.ContentProperty.AddOwner<SkeletonNode>();
-    
-    public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty = 
+
+    public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
         ContentControl.ContentTemplateProperty.AddOwner<SkeletonNode>();
-    
+
     [Content]
     [DependsOn(nameof(ContentTemplate))]
     public object? Content
@@ -22,7 +22,7 @@ public class SkeletonNode : SkeletonImage
         get => GetValue(ContentProperty);
         set => SetValue(ContentProperty, value);
     }
-    
+
     public IDataTemplate? ContentTemplate
     {
         get => GetValue(ContentTemplateProperty);

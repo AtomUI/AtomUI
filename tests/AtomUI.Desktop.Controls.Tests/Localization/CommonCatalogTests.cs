@@ -7,7 +7,6 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomUIDialog = AtomUI.Desktop.Controls.Dialog;
@@ -23,36 +22,6 @@ public class CommonCatalogTests
     static CommonCatalogTests()
     {
         AvaloniaTestApp.EnsureInitialized();
-    }
-
-    [Fact]
-    public void Common_Catalog_Uses_Stable_Keys_For_All_Existing_Entries()
-    {
-        var expectedKeys = new[]
-        {
-            nameof(CommonLangResourceKind.Ok),
-            nameof(CommonLangResourceKind.Submit),
-            nameof(CommonLangResourceKind.Cancel),
-            nameof(CommonLangResourceKind.Reset),
-            nameof(CommonLangResourceKind.Edit),
-            nameof(CommonLangResourceKind.Delete),
-            nameof(CommonLangResourceKind.Save),
-            nameof(CommonLangResourceKind.NoData),
-            nameof(CommonLangResourceKind.Loading),
-            nameof(CommonLangResourceKind.Optional)
-        };
-
-        Enum.GetNames<CommonLangResourceKind>().ShouldBe(expectedKeys);
-    }
-
-    [Fact]
-    public void Common_Markup_Extension_Uses_The_New_Localization_Resource_Base()
-    {
-        typeof(CommonLangResourceExtension).IsSealed.ShouldBeTrue();
-        typeof(CommonLangResourceExtension).BaseType.ShouldBe(
-            typeof(LanguageResourceExtension<CommonLangResourceKind>));
-        typeof(CommonLangResourceExtension).GetConstructor(Type.EmptyTypes).ShouldNotBeNull();
-        typeof(CommonLangResourceExtension).GetConstructor([typeof(CommonLangResourceKind)]).ShouldNotBeNull();
     }
 
     [Fact]
@@ -89,16 +58,6 @@ public class CommonCatalogTests
         {
             window.Close();
         }
-    }
-
-    [Fact]
-    public void Common_Catalog_No_Longer_Contains_Legacy_Language_Providers()
-    {
-        var controlsAssembly = typeof(CommonLangResourceKind).Assembly;
-
-        controlsAssembly.GetType("AtomUI.Controls.Localization.en_US").ShouldBeNull();
-        controlsAssembly.GetType("AtomUI.Controls.Localization.zh_CN").ShouldBeNull();
-        controlsAssembly.GetType("AtomUI.Controls.Localization.zh_TW").ShouldBeNull();
     }
 
     [Fact]

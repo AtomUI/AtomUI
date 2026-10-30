@@ -7,6 +7,7 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+[global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
 public class TreeViewFlyoutPresenter : FloatableTreeView, IShadowMaskInfoProvider
 {
     #region 公共属性定义

@@ -191,6 +191,46 @@
         <source>Selectable Calendar</source>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Body element with padding and layout control for the calendar table that contains the calendar grid</source>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with width, height and table styling control for the calendar table</source>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with layout and style control for year selector, month selector and mode switcher</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Item content element with height, overflow and other style control for custom content area inside calendar cells</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element with background, border, hover state, selected state and other interactive styles for calendar cells</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Calendar property selectors to customize the published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element containing background, border, border-radius and overall layout structure of the calendar component</source>
+      </segment>
+    </unit>
     <unit id="ShowWeekDescription">
       <segment>
         <source>Show week numbers in full-screen and card calendars by setting ShowWeek to True.</source>

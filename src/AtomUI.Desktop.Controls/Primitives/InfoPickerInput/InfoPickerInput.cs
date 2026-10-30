@@ -7,6 +7,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -240,10 +241,10 @@ public abstract class InfoPickerInput : TemplatedControl,
     internal static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         AvaloniaProperty.Register<InfoPickerInput, bool>(nameof(ShouldUseOverlayPopup), true);
 
-    internal static readonly StyledProperty<bool> IsPickerOpenProperty =
+    public static readonly StyledProperty<bool> IsPickerOpenProperty =
         AvaloniaProperty.Register<InfoPickerInput, bool>(nameof(IsPickerOpen), coerce: CoerceIsPickerOpen);
 
-    internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<InfoPickerInput>();
     
     internal static readonly DirectProperty<InfoPickerInput, bool> IsArrowVisibleEffectiveProperty =
@@ -328,13 +329,13 @@ public abstract class InfoPickerInput : TemplatedControl,
         set => SetValue(ShouldUseOverlayPopupProperty, value);
     }
 
-    internal bool IsPickerOpen
+    public bool IsPickerOpen
     {
         get => GetValue(IsPickerOpenProperty);
         set => SetValue(IsPickerOpenProperty, value);
     }
 
-    internal bool IsPopupPinnedOpen
+    public bool IsPopupPinnedOpen
     {
         get => GetValue(IsPopupPinnedOpenProperty);
         set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
@@ -418,7 +419,8 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     private void HandleIsPickerOpenChanged(AvaloniaPropertyChangedEventArgs args)
     {
-        if (args.NewValue is true)
+        var isOpen = args.NewValue is true;
+        if (isOpen)
         {
             EnsurePickerPresenter();
             CurrentValidSelected = false;
@@ -431,6 +433,7 @@ public abstract class InfoPickerInput : TemplatedControl,
             NotifyPickerClosed();
         }
         UpdatePseudoClasses();
+        ApplyPopupOpenState(isOpen);
     }
 
     private void HandleFlyoutAboutToShow(object? sender, EventArgs args)
@@ -480,6 +483,11 @@ public abstract class InfoPickerInput : TemplatedControl,
         _popupPinnedOpenBinding?.Dispose();
         _popupPinnedOpenBinding = null;
 
+        if (PickerPopup != null)
+        {
+            PickerPopup.Closed -= HandlePickerPopupClosed;
+        }
+
         if (DecoratedBox != null)
         {
             DecoratedBox.TemplateApplied -= HandleDecoratedBoxTemplateApplied;
@@ -500,6 +508,7 @@ public abstract class InfoPickerInput : TemplatedControl,
         PickerClearUpButton = e.NameScope.Find<PickerClearUpButton>("PART_ClearUpButton");
         if (PickerPopup != null && InfoInputBox != null)
         {
+            // 与 AutoComplete/Select 一致:始终指定穿透元素,保证遮罩存在时输入框仍可交互。
             PickerPopup.OverlayInputPassThroughElement = InfoInputBox;
         }
         if (PickerPopup != null)
@@ -509,6 +518,8 @@ public abstract class InfoPickerInput : TemplatedControl,
                 IsPopupPinnedOpenProperty,
                 PickerPopup,
                 Popup.IsPopupPinnedOpenProperty);
+            PickerPopup.Closed += HandlePickerPopupClosed;
+
         }
         if (DecoratedBox != null)
         {
@@ -524,6 +535,7 @@ public abstract class InfoPickerInput : TemplatedControl,
 
         _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
 
+        RelayFrameBorderBrush();
         SetupPopupProperties();
         SetupContentRightAddOnBindings(e);
         ConfigureArrowPosition();
@@ -531,6 +543,7 @@ public abstract class InfoPickerInput : TemplatedControl,
         if (IsPickerOpen)
         {
             EnsurePickerPresenter();
+            ApplyPopupOpenState(true);
         }
     }
     
@@ -874,6 +887,11 @@ public abstract class InfoPickerInput : TemplatedControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == BorderBrushProperty)
+        {
+            RelayFrameBorderBrush();
+        }
+
         if (change.Property == IsArrowVisibleProperty ||
             change.Property == PickerPlacementProperty)
         {
@@ -897,6 +915,7 @@ public abstract class InfoPickerInput : TemplatedControl,
 
         if (change.Property == IsPopupPinnedOpenProperty)
         {
+
             if (change.GetNewValue<bool>())
             {
                 SetPickerOpenIfChanged(true);
@@ -912,6 +931,54 @@ public abstract class InfoPickerInput : TemplatedControl,
                     ClosePickerForLifecycle();
                 }
             }
+        }
+    }
+
+
+    private void ApplyPopupOpenState(bool isOpen)
+    {
+        if (PickerPopup is null)
+        {
+            return;
+        }
+
+        if (PickerPopup.IsOpen != isOpen)
+        {
+            PickerPopup.IsOpen = isOpen;
+        }
+    }
+
+    private void HandlePickerPopupClosed(object? sender, EventArgs e)
+    {
+        // 弹层关闭(含 light-dismiss 路径)时回写宿主状态,保持 IsPickerOpen 与弹层同步。
+        if (IsPickerOpen)
+        {
+            SetCurrentValue(IsPickerOpenProperty, false);
+        }
+    }
+
+    /// <summary>
+    /// 将 owner 根的 BorderBrush 以 LocalValue 中继到 AddOnDecoratedBox,使 root 级
+    /// Semantic 定制(对齐 antd styles.root.border)能覆盖输入框状态机的默认描边;
+    /// owner 未设置时清除中继并恢复状态机。中继必须使用 LocalValue 优先级才能胜过
+    /// 框体主题的状态触发器,ControlTheme 的 TemplateBinding 无法达到该优先级,
+    /// 因此放在控件代码中。
+    /// </summary>
+    private void RelayFrameBorderBrush()
+    {
+        if (_addOnDecoratedBox is not { } decoratedBox)
+        {
+            return;
+        }
+
+        var value = GetValue(BorderBrushProperty);
+        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
+        {
+            decoratedBox.ClearValue(BorderBrushProperty);
+        }
+        else
+        {
+            decoratedBox.SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
         }
     }
 

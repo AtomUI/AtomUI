@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -35,5 +33,16 @@ public enum ImagePreviewerShowCaseLangResourceKind
     MultipleImagePreviewDescription,
     ApiEventDialogOpened,
     ApiEventDialogClosing,
-    ApiEventDialogClosed
+    ApiEventDialogClosed,
+    SemanticRootDescription,
+    SemanticImageDescription,
+    SemanticCoverDescription,
+    SemanticPopupRootDescription,
+    SemanticPopupMaskDescription,
+    SemanticPopupBodyDescription,
+    SemanticPopupFooterDescription,
+    SemanticPopupActionsDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    WheelZoomEnabled
 }

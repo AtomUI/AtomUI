@@ -40,6 +40,12 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
     public static readonly StyledProperty<double> DotSizeProperty =
         AvaloniaProperty.Register<AbstractSpinIndicator, double>(nameof(DotSize), double.NaN);
 
+    /// <summary>
+    /// 内置指示器圆点的填充画刷。
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> DotBgBrushProperty =
+        AvaloniaProperty.Register<AbstractSpinIndicator, IBrush?>(nameof(DotBgBrush));
+
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
@@ -83,24 +89,21 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         set => SetValue(DotSizeProperty, value);
     }
 
+    public IBrush? DotBgBrush
+    {
+        get => GetValue(DotBgBrushProperty);
+        set => SetValue(DotBgBrushProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
-
-    internal static readonly StyledProperty<IBrush?> DotBgBrushProperty =
-        AvaloniaProperty.Register<AbstractSpinIndicator, IBrush?>(nameof(DotBgBrush));
 
     internal static readonly DirectProperty<AbstractSpinIndicator, bool> IsCustomIndicatorProperty =
         AvaloniaProperty.RegisterDirect<AbstractSpinIndicator, bool>(
             nameof(IsCustomIndicator),
             o => o.IsCustomIndicator,
             (o, v) => o.IsCustomIndicator = v);
-
-    internal IBrush? DotBgBrush
-    {
-        get => GetValue(DotBgBrushProperty);
-        set => SetValue(DotBgBrushProperty, value);
-    }
 
     private bool _isCustomIndicator;
 
@@ -375,11 +378,11 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
 
         var easing = MotionEasingCurve ?? new LinearEasing();
         var index = 0;
-        foreach (var child in _builtInIndicatorLayout.Children)
+        foreach (var dot in _builtInIndicatorLayout.Children)
         {
-            if (child is not Control dot || index >= 4)
+            if (index >= 4)
             {
-                continue;
+                break;
             }
 
             var dotVisual = ElementComposition.GetElementVisual(dot);
@@ -412,12 +415,9 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
             return;
         }
 
-        foreach (var child in _builtInIndicatorLayout.Children)
+        foreach (var dot in _builtInIndicatorLayout.Children)
         {
-            if (child is Control dot)
-            {
-                ElementComposition.GetElementVisual(dot)?.StopAnimation(OPACITY_PROPERTY);
-            }
+            ElementComposition.GetElementVisual(dot)?.StopAnimation(OPACITY_PROPERTY);
         }
     }
 
@@ -429,13 +429,15 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         }
 
         var index = 0;
-        foreach (var child in _builtInIndicatorLayout.Children)
+        foreach (var dot in _builtInIndicatorLayout.Children)
         {
-            if (child is Control dot && index < 4)
+            if (index >= 4)
             {
-                dot.Opacity = DOT_START_OPACITY;
-                index++;
+                break;
             }
+
+            dot.Opacity = DOT_START_OPACITY;
+            index++;
         }
     }
 

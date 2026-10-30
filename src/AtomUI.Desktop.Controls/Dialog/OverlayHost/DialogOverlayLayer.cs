@@ -24,9 +24,9 @@ internal sealed class DialogOverlayLayer : Canvas
         SynchronizeBounds();
     }
 
-    internal static DialogOverlayLayer GetOrCreate(Visual anchor)
+    internal static DialogOverlayLayer GetOrCreate(Visual anchor, Control? overlayScope = null)
     {
-        var (hostLayer, topLevel) = ResolveHostLayer(anchor);
+        var (hostLayer, topLevel) = ResolveHostLayer(anchor, overlayScope);
         var dialogLayer = hostLayer.Children.OfType<DialogOverlayLayer>().FirstOrDefault();
         if (dialogLayer is not null)
         {
@@ -38,8 +38,16 @@ internal sealed class DialogOverlayLayer : Canvas
         return dialogLayer;
     }
 
-    private static (Panel HostLayer, TopLevel? TopLevel) ResolveHostLayer(Visual anchor)
+    private static (Panel HostLayer, TopLevel? TopLevel) ResolveHostLayer(Visual anchor, Control? overlayScope)
     {
+        // OverlayScope：显式请求把宿主限定在某个作用域内（对齐上游 antd Modal 的 stage/setContainer 语义）。
+        // 作用域优先于默认 TopLevel 宿主；作用域落在普通窗口内时解析结果与默认宿主等价，行为不变。
+        if (overlayScope is not null &&
+            ScopeAwareOverlayLayer.GetLayer(overlayScope) is { } scopedLayer)
+        {
+            return (scopedLayer, null);
+        }
+
         var topLevel = TopLevel.GetTopLevel(anchor);
         if (topLevel is not null &&
             OverlayLayer.GetOverlayLayer(anchor) is Panel topLevelLayer)

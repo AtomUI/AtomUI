@@ -83,7 +83,7 @@ Pinned 状态不改变上述会话分类：外点、Escape、失焦、window dea
 ```text
 Popup
   -> PopupRoot or OverlayPopupHost       transparent host
-     -> PopupMotionActor                 open/close motion
+     -> PopupSurface : Panel             open/close motion target
         -> VisualLayerManager
            -> ShadowsAwareContainer      frame surface + shadow
               -> Child                   direct content or specialized presenter
@@ -98,6 +98,20 @@ native 与 overlay 两条路径共享相同的 frame surface 实现：
 
 `PopupRoot.Background` 保持 `null`，`TransparencyLevelHint` 保持 `Transparent`。不透明表面只覆盖 Child bounds，不能填满
 native popup 的透明 shadow buffer。overlay host 使用同一原则，避免 host 背景改变圆角、箭头或 shadow 几何。
+
+两条路径的默认阴影相同（`BoxShadowsSecondary`）。native 路径的阴影画在 popup 窗口自身的 shadow buffer 中；
+Windows 上阴影区域不接收鼠标输入（见 [实现原理](implementation.md)“窗口型 Popup 阴影输入穿透”），行为与 overlay 一致：
+
+| 场景 | 行为 |
+| --- | --- |
+| 指针在内容形状（圆角矩形 + 箭头）内 | Popup 正常接收输入。 |
+| 指针在阴影上，阴影位于所属主窗口内 | 输入交给下方的主窗口或其他 Popup；`Trigger=Hover` 浮层按“移出”处理。 |
+| 指针在阴影上，阴影超出主窗口、盖在其他程序上 | 输入交给下方其他程序；指针回到内容形状内后 Popup 恢复可交互。 |
+| 点击阴影 | 与点击 Popup 外部完全相同：light dismiss 照常关闭；只有 `OverlayDismissEventPassThrough=True` 时下方控件同时收到这次点击。 |
+| 打开/关闭动效期间 | 整窗不接收输入，动效结束后恢复按内容形状命中。 |
+
+内容相对 anchor 的位置与阴影厚度无关：native 路径在朝向 anchor 的一侧扣除残余阴影后再留出 `MarginToAnchor`，
+与 overlay 路径落在同一屏幕位置。
 
 ## 6. 控件家族与集成关系
 
@@ -127,7 +141,7 @@ host-owned/content-owned 是 Popup 家族唯一的表面分类维度；native/ov
 不得引入“Dialog Popup”“Linux Popup”或“透明 Child 自动检测”等第三套 surface 状态。平台只能影响 native window
 能力和 host 选择，不能改写 `SurfaceBackground` 的语义。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
@@ -136,28 +150,6 @@ host-owned/content-owned 是 Popup 家族唯一的表面分类维度；native/ov
 - [Popup 钉住打开设计](popup-pinned-open-design.md)
 - [Popup Changelog](changelog.md)
 - [Modal 内容弹层叠放设计](../../feedback/modal/popup-layering-design.md)
-
-LLMS 导出以本目录四件套、Popup public source 和 Themes 为源。Popup 没有独立 Gallery ShowCase，也不从测试或临时
-人工验收代码导出示例。
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Popup` | 拥有 public placement、motion、shadow 和 surface 状态。 | `SurfaceBackground`、`RequestedPlacement`、`IsOpen` | `PopupToken` | stable |
-| `host` | `PopupRoot` / `OverlayPopupHost` | 提供透明 native/overlay host、输入和 layer 能力。 | `ShouldUseOverlayLayer` | `PopupRootShadow`、`OverlayHostShadow` | stable |
-| `surface` | `ShadowsAwareContainer` frame | 在 Child bounds 内绘制可选 surface 与 shadow。 | `SurfaceBackground` | 无默认颜色 Token；Brush 由调用方提供 | stable |
-| `content` | `Popup.Child` | 承载调用方内容或专用 Presenter。 | `Child` | 由内容 owner 决定 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 输出 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + public source | `controls/popup/index-cn.md` |
-| 单控件语义文档 | Theme、host composition、surface ownership 与源码结构 | `controls/popup/semantic-cn.md` |
-| API 表 | `Popup.cs` public surface 与 overview 语义摘要 | 不手工维护生成副本 |
-| Token 表 | `PopupToken.cs`、`PopupTheme.axaml` 与 `token.md` | 不手工维护生成副本 |
-| 示例 | 无独立 Gallery ShowCase | 不从测试或临时验收代码导出示例 |
 
 验证分层：
 

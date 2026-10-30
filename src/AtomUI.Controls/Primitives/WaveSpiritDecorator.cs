@@ -94,6 +94,42 @@ internal class WaveSpiritDecorator : Control
         get => GetValue(WaveTypeProperty);
         set => SetValue(WaveTypeProperty, value);
     }
+
+    public static IBrush? ResolveWaveSpiritBrush(IBrush? borderBrush, IBrush? background)
+    {
+        if (IsValidWaveSpiritBrush(borderBrush))
+        {
+            return borderBrush;
+        }
+
+        if (IsValidWaveSpiritBrush(background))
+        {
+            return background;
+        }
+
+        return null;
+    }
+
+    private static bool IsValidWaveSpiritBrush(IBrush? brush)
+    {
+        if (brush is null || !(brush.Opacity > 0))
+        {
+            return false;
+        }
+
+        if (brush is not ISolidColorBrush solidBrush)
+        {
+            return false;
+        }
+
+        var color = solidBrush.Color;
+        var effectiveAlpha = color.A / 255d * brush.Opacity;
+        return effectiveAlpha > 0 &&
+               (color.R != byte.MaxValue ||
+                color.G != byte.MaxValue ||
+                color.B != byte.MaxValue ||
+                effectiveAlpha < 1);
+    }
     #endregion
 
     #region 内部属性定义

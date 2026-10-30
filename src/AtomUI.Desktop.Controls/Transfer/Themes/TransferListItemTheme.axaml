@@ -18,6 +18,7 @@
                     <DockPanel LastChildFill="True" Name="ContentLayout">
                         <atom:CheckBox
                             Name="SelectedIndicator"
+                            Classes.semantic-item-icon="True"
                             DockPanel.Dock="Left"
                             VerticalAlignment="Center"
                             IsChecked="{TemplateBinding IsSelected}"
@@ -30,6 +31,7 @@
                             Icon="{antdicons:AntDesignIconProvider DeleteOutlined}"
                             IsVisible="{TemplateBinding IsCheckable, Converter={x:Static BoolConverters.Not}}"/>
                         <ContentPresenter Name="ContentPresenter"
+                                          Classes.semantic-item-content="True"
                                           Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}"
                                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"

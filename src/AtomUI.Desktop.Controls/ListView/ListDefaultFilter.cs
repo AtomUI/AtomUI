@@ -4,16 +4,16 @@ namespace AtomUI.Desktop.Controls;
 
 internal class ListDefaultFilter
 {
-    private readonly WeakReference<IListCollectionView> CollectionViewRef;
+    private readonly WeakReference<IListCollectionView> _collectionViewRef;
     
     public ListDefaultFilter(IListCollectionView collectionView)
     {
-        CollectionViewRef = new WeakReference<IListCollectionView>(collectionView);
+        _collectionViewRef = new WeakReference<IListCollectionView>(collectionView);
     }
     
     public bool Filter(object value)
     {
-        if (CollectionViewRef.TryGetTarget(out var collectionView))
+        if (_collectionViewRef.TryGetTarget(out var collectionView))
         {
             var filterDescriptions = collectionView.FilterDescriptions;
             if (filterDescriptions.Count == 0)

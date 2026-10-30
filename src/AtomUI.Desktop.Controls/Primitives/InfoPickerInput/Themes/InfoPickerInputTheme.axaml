@@ -9,6 +9,7 @@
                 <atom:AddOnDecoratedBox
                     Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
                     Focusable="True"
+                    Classes.semantic-scope-input="True"
                     MinWidth="{TemplateBinding MinWidth}"
                     StyleVariant="{TemplateBinding StyleVariant}"
                     SizeType="{TemplateBinding SizeType}"
@@ -21,21 +22,33 @@
                     LeftAddOnTemplate="{TemplateBinding LeftAddOnTemplate}"
                     RightAddOn="{TemplateBinding RightAddOn}"
                     RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
-                    ContentLeftAddOn="{TemplateBinding ContentLeftAddOn}"
                     HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                     VerticalAlignment="{TemplateBinding VerticalAlignment}"
                     ContentLeftAddOnTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
                     CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                     CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
                     IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
+                    <atom:AddOnDecoratedBox.ContentLeftAddOn>
+                        <atom:AddOnContentPresenter
+                            Classes.semantic-prefix="True"
+                            Content="{CompiledBinding $parent[atom:InfoPickerInput].ContentLeftAddOn}"
+                            VerticalAlignment="Stretch"
+                            VerticalContentAlignment="Center"
+                            HorizontalAlignment="Left"
+                            Focusable="False" />
+                    </atom:AddOnDecoratedBox.ContentLeftAddOn>
                     <atom:AddOnDecoratedBox.ContentRightAddOn>
-                        <StackPanel Orientation="Horizontal" Spacing="{atom:SharedTokenResource SpacingXS}">
+                        <StackPanel Orientation="Horizontal"
+                                    Classes.semantic-suffix="True"
+                                    Spacing="{atom:SharedTokenResource SpacingXS}">
                             <atom:PickerClearUpButton
-                                Name="PART_ClearUpButton" />
+                                Name="PART_ClearUpButton"
+                                Classes.semantic-scope-handle="True" />
                             <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter" />
                         </StackPanel>
                     </atom:AddOnDecoratedBox.ContentRightAddOn>
                     <atom:InfoPickerTextBox Name="PART_InfoInputBox"
+                                          Classes.semantic-input="True"
                                           HorizontalContentAlignment="Stretch"
                                           VerticalContentAlignment="Center"
                                           VerticalAlignment="Stretch"
@@ -60,11 +73,11 @@
                             ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}"
                             RequestedPlacement="{TemplateBinding PickerPlacement}"
                             IsPointAtCenter="{TemplateBinding IsPointAtCenter}"
-                            IsOpen="{TemplateBinding IsPickerOpen, Mode=TwoWay}"
                             IsHorizontalFlipped="{TemplateBinding IsPopupHorizontalFlipped, Mode=TwoWay}"
                             IsVerticalFlipped="{TemplateBinding IsPopupVerticalFlipped, Mode=TwoWay}"
                             MarginToAnchor="{TemplateBinding MarginToAnchor}">
-                    <atom:ArrowDecoratedBox Content="{TemplateBinding PickerPresenter}"
+                    <atom:ArrowDecoratedBox Classes.semantic-popup-root="True"
+                                            Content="{TemplateBinding PickerPresenter}"
                                             IsArrowVisible="{TemplateBinding IsArrowVisibleEffective}"
                                             ArrowPosition="{TemplateBinding ArrowPosition}"
                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
@@ -98,12 +111,23 @@
 
         <Style Selector="^[SizeType=Large]">
             <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
+            <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
+                <Setter Property="MaxHeight" Value="{atom:SharedTokenResource FontHeightLG}" />
+            </Style>
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
             <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
         </Style>
+        <Style Selector="^[SizeType=Middle]">
+            <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
+                <Setter Property="MaxHeight" Value="{atom:SharedTokenResource FontHeight}" />
+            </Style>
+        </Style>
         <Style Selector="^[SizeType=Small]">
             <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+            <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
+                <Setter Property="MaxHeight" Value="{atom:SharedTokenResource FontHeightSM}" />
+            </Style>
         </Style>
 
     </Style>

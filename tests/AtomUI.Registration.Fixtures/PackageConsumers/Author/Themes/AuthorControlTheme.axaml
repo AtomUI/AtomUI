@@ -1,0 +1,8 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:Fixture.NuGetAuthor">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="SharedResourceTheme.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+    <ControlTheme x:Key="{x:Type local:AuthorControl}" TargetType="local:AuthorControl">
+        <Setter Property="Tag" Value="{StaticResource SharedTheme}" />
+    </ControlTheme>
+</ResourceDictionary>

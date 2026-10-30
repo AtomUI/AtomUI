@@ -80,7 +80,7 @@ internal class DataGridFilterIndicator : IconButton
     #endregion
     
     private DataGridColumn? _owningColumn;
-    private static int _indicatorSeed = 0;
+    private static int s_indicatorSeed = 0;
     private string? _treeRadioCheckGroupName;
     private DataGrid? _subscribedGrid;
     private INotifyCollectionChanged? _subscribedFilters;
@@ -306,7 +306,7 @@ internal class DataGridFilterIndicator : IconButton
     }
 
     private string TreeRadioCheckGroupName =>
-        _treeRadioCheckGroupName ??= $"tree-{nameof(DataGridFilterIndicator)}-{_indicatorSeed++}";
+        _treeRadioCheckGroupName ??= $"tree-{nameof(DataGridFilterIndicator)}-{s_indicatorSeed++}";
 
     private void PopulateMenuItems(ItemCollection targetItems, IEnumerable<DataGridFilterItem> filterItems)
     {

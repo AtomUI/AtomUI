@@ -7,8 +7,8 @@
              xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Badge"
                     Category="{gallery:BadgeShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,104 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="CountBadge" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:BadgeViewModel">
+                    <StackPanel>
+                        <atom:TextBlock Margin="24,24,24,0"
+                                        FontSize="20"
+                                        FontWeight="SemiBold"
+                                        Text="CountBadge" />
+                        <gallery:SemanticPartPreview
+                            Name="CountBadgeSemanticPreview"
+                            SemanticOwnerType="{x:Type atom:CountBadge}"
+                            Loaded="HandleCrossRootSemanticPreviewLoaded"
+                            Unloaded="HandleCrossRootSemanticPreviewUnloaded">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:CountBadge Name="CountBadgeSemanticOwner"
+                                                 Count="5"
+                                                 IsMotionEnabled="False">
+                                    <Border Width="96"
+                                            Height="64"
+                                            Background="{atom:SharedTokenResource ColorFillSecondary}"
+                                            CornerRadius="6" />
+                                </atom:CountBadge>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:BadgeShowCaseLangResource SemanticCountRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="indicator"
+                                    Description="{gallery:BadgeShowCaseLangResource SemanticCountIndicatorDescription}"
+                                    CodeSnippet="{x:Static vm:BadgeShowCase.CountIndicatorCodeSnippet}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <atom:TextBlock Margin="24,0,24,0"
+                                        FontSize="20"
+                                        FontWeight="SemiBold"
+                                        Text="DotBadge" />
+                        <gallery:SemanticPartPreview
+                            Name="DotBadgeSemanticPreview"
+                            SemanticOwnerType="{x:Type atom:DotBadge}"
+                            Loaded="HandleCrossRootSemanticPreviewLoaded"
+                            Unloaded="HandleCrossRootSemanticPreviewUnloaded">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:DotBadge Name="DotBadgeSemanticOwner"
+                                               Status="Success"
+                                               IsMotionEnabled="False">
+                                    <Border Width="96"
+                                            Height="64"
+                                            Background="{atom:SharedTokenResource ColorFillSecondary}"
+                                            CornerRadius="6" />
+                                </atom:DotBadge>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:BadgeShowCaseLangResource SemanticDotRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="indicator"
+                                    Description="{gallery:BadgeShowCaseLangResource SemanticDotIndicatorDescription}"
+                                    CodeSnippet="{x:Static vm:BadgeShowCase.DotIndicatorCodeSnippet}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <atom:TextBlock Margin="24,0,24,0"
+                                        FontSize="20"
+                                        FontWeight="SemiBold"
+                                        Text="RibbonBadge" />
+                        <gallery:SemanticPartPreview
+                            Name="RibbonBadgeSemanticPreview"
+                            SemanticOwnerType="{x:Type atom:RibbonBadge}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:RibbonBadge Name="RibbonBadgeSemanticOwner"
+                                                  Text="Semantic Part">
+                                    <Border Width="180"
+                                            Height="96"
+                                            Background="{atom:SharedTokenResource ColorFillSecondary}"
+                                            CornerRadius="6" />
+                                </atom:RibbonBadge>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:BadgeShowCaseLangResource SemanticRibbonRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="indicator"
+                                    Description="{gallery:BadgeShowCaseLangResource SemanticRibbonIndicatorDescription}"
+                                    CodeSnippet="{x:Static vm:BadgeShowCase.RibbonIndicatorCodeSnippet}" />
+                                <gallery:SemanticPartDescription
+                                    Path="content"
+                                    Description="{gallery:BadgeShowCaseLangResource SemanticRibbonContentDescription}"
+                                    CodeSnippet="{x:Static vm:BadgeShowCase.RibbonContentCodeSnippet}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -39,7 +135,7 @@
                         Background="rgb(191,191,191)"
                         CornerRadius="8" />
             </atom:CountBadge>
-            <atom:CountBadge Count="0" IsZeroVisible="True">
+            <atom:CountBadge Count="0" IsZeroVisible="True" BadgeColor="#52c41a">
                 <Border Width="40"
                         Height="40"
                         Background="rgb(191,191,191)"
@@ -389,7 +485,98 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem Title="{gallery:BadgeShowCaseLangResource SemanticPartStyleTitle}"
+                          Description="{gallery:BadgeShowCaseLangResource SemanticPartStyleDescription}"
+                          SourceKey="badge-semantic-part"
+                          BadgeText="v6.1.3"
+                          Span="Full"
+                          IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:BadgeViewModel">
+                <StackPanel Spacing="24"
+                            HorizontalAlignment="Left">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|CountBadge.semantic-demo">
+                            <atom:CountBadgeIndicatorStyle x:SetterTargetType="Control">
+                                <Setter Property="TextElement.FontSize" Value="10" />
+                            </atom:CountBadgeIndicatorStyle>
+                        </Style>
+                        <Style Selector="atom|CountBadge.semantic-custom[Size=Default]">
+                            <Setter Property="BadgeColor" Value="#696FC7" />
+                            <atom:CountBadgeIndicatorStyle x:SetterTargetType="Control">
+                                <Setter Property="TextElement.FontSize" Value="14" />
+                            </atom:CountBadgeIndicatorStyle>
+                        </Style>
+                        <Style Selector="atom|RibbonBadge.semantic-demo">
+                            <Setter Property="Width" Value="400" />
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <atom:RibbonBadgeIndicatorStyle x:SetterTargetType="Control">
+                                <Setter Property="Effect">
+                                    <DropShadowEffect OffsetX="0"
+                                                      OffsetY="2"
+                                                      BlurRadius="4"
+                                                      Color="#1A000000" />
+                                </Setter>
+                            </atom:RibbonBadgeIndicatorStyle>
+                        </Style>
+                        <Style Selector="atom|RibbonBadge.semantic-custom">
+                            <Setter Property="RibbonColor" Value="#696FC7" />
+                            <atom:RibbonBadgeContentStyle x:SetterTargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </atom:RibbonBadgeContentStyle>
+                        </Style>
+                    </StackPanel.Styles>
+
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <atom:CountBadge Classes="semantic-demo"
+                                         Count="5"
+                                         Size="Small"
+                                         IsMotionEnabled="False">
+                            <Border Width="40"
+                                    Height="40"
+                                    Background="rgb(191,191,191)"
+                                    CornerRadius="8" />
+                        </atom:CountBadge>
+                        <atom:CountBadge Name="SemanticStyleCountBadge"
+                                         Classes="semantic-demo semantic-custom"
+                                         Count="5"
+                                         IsMotionEnabled="False">
+                            <Border Width="40"
+                                    Height="40"
+                                    Background="rgb(191,191,191)"
+                                    CornerRadius="8" />
+                        </atom:CountBadge>
+                    </StackPanel>
+
+                    <StackPanel Spacing="16">
+                        <atom:RibbonBadge Classes="semantic-demo"
+                                          Text="{gallery:BadgeShowCaseLangResource SemanticPartRibbonText}">
+                            <atom:Card SizeType="Middle"
+                                       BorderBrush="#d9d9d9"
+                                       CornerRadius="10"
+                                       Header="{gallery:BadgeShowCaseLangResource SemanticPartCardHeader}">
+                                <atom:TextBlock TextWrapping="Wrap"
+                                                Text="{gallery:BadgeShowCaseLangResource SemanticPartCardContent}" />
+                            </atom:Card>
+                        </atom:RibbonBadge>
+                        <atom:RibbonBadge Name="SemanticStyleRibbonBadge"
+                                          Classes="semantic-demo semantic-custom"
+                                          Text="{gallery:BadgeShowCaseLangResource SemanticPartRibbonText}">
+                            <atom:Card SizeType="Middle"
+                                       BorderBrush="#d9d9d9"
+                                       CornerRadius="10"
+                                       Header="{gallery:BadgeShowCaseLangResource SemanticPartCardHeader}">
+                                <atom:TextBlock TextWrapping="Wrap"
+                                                Text="{gallery:BadgeShowCaseLangResource SemanticPartCardContent}" />
+                            </atom:Card>
+                        </atom:RibbonBadge>
+                    </StackPanel>
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

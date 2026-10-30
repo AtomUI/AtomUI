@@ -1,290 +1,225 @@
 # AOT 与裁剪架构
 
-> 状态：截至 2026-08-20，本文定义 AtomUI Registration Unit、Sidecar Manifest、应用静态计划和安全 fallback 的正式架构。
+本文是 AtomUI 控件自动注册与裁剪的总体架构、实施状态和产品交付门槛的正式所有者。
 
-本文是 AtomUI AOT 与 trimming 整体架构的正式所有者，覆盖 `AtomUI.Core`、Control Packages、Generator、Build Tasks、
-应用项目和第三方包。专项契约分别由以下文档维护：
+## 1. 状态与事实边界
 
-- [AOT Linked Registration Pipeline](aot-linked-registration-pipeline.md)：Analyzer 激活、Sidecar、UnitEdge、静态计划和运行时边界。
-- [AOT Registration Unit 粒度](aot-registration-unit-granularity.md)：Package/Directory 粒度和资源归属。
-- [Linked Registration Sidecar](../../reference/aot/linked-registration-sidecar.md)：机器可读协议。
-- [AOT 编程规范](../../engineering/development/aot-programming-guidelines.md)：日常开发和 review 规则。
-- [第三方 Control Package 指南](../../guides/theming/third-party-control-packages.md)：包作者接入步骤。
+**状态：TypeMap 主体源码迁移与旧注册路径退役已完成；资源平台声明收敛已实现；正式交付验收尚未完成，未发布。**
 
-## 1. 问题定义
+当前源码采用逐 Control 注册片段与独立主题资产，由官方链接器计算保留闭包。NativeAOT/CoreCLR 使用官方 TypeMap；
+Browser/Mono 在官方 ILLink 标记之后将已选映射转换为静态映射。普通包入口、产品 buildTransitive 与独立冷 NuGet 消费
+已经接入该实现。旧 usage、Sidecar、Unit、应用 Plan 与 LinkedPublish analyzer 已移除，没有可切回的 legacy backend。
 
-AtomUI 的 Theme 和 Localization Registry 必须在首帧前完整构建并冻结。构造全包 descriptor、Theme Asset 或 AXAML factory
-后再运行时过滤，不能让 ILLink 删除未使用控件；反射扫描、linker XML、控件实例化后追加注册又不能同时满足 NativeAOT、
-冻结时序和作者体验。
+2026-09-28 源码已采用[类型与资源平台契约](aot-typemap-registration.md#7-平台分支)：控件的普通 .NET 平台声明
+自动约束其导出主题，主题自身的额外限制由正常资源 CLR 类型声明。项目主题路径排除列表、
+`AtomUISupportedOSPlatforms` / `AtomUIUnsupportedOSPlatforms` 自定义元数据及其读取/传输字段均已删除。
+无资源类时使用资产所属程序集域，显式非法资源类报告错误；其他合法 AXAML 根不按注册资源类校验。
+这是现有 TypeMap 管线的输入契约收敛，不恢复旧依赖分析，也不改变一行包入口、Browser 精细裁剪或运行时注册 ABI。
+本次资源平台声明收敛的生成器 449 项、独立目录受影响测试 6,392/6,392 项通过，构建产物指纹保持不变。
+Desktop 全部资产工厂生成文本与迁移前一致，包括有效平台域、身份、顺序与 fingerprint。真实 Complex 样例的
+普通桌面、NativeAOT 与 fulltrim CoreCLR 均启动并验证 AtomUI 窗口、标题栏和 OTP 模板；Browser interpreter/AOT
+在真实 IAB 各通过 20 项运行检查，17 个桌面主题资产的工厂在两个部署模式中均缺失。冷 NuGet 作者、直接/传递/二进制
+消费和浏览器运行通过；20 包完整性、相对 6.1.8 的布局以及打包任务隔离检查通过。
+统一 runner 的单元测试与产物稳定性校验通过；其状态仍为 pending，因为 NativeAOT/package-layout 专项不能自动回填，
+上述专项另有实际发布和打包命令证据，不手工伪造通过回执。本次是受影响范围验收，不等于全量或全部平台验收。源码责任见[控件注册生成器](../../modules/generator/control-registration.md#4-主题导出与资源)，
+迁移步骤见[6.2.2 迁移说明](../../releases/6.2.2-api-changes.zh-CN.md#资源平台声明收敛)。
 
-AtomUI 因此把静态可达性拆成 Registration Unit。普通包以整个 Package 为安全 Unit；只有大型多控件包才按稳定控件族拆分。
-应用 AOT/Trim 编译读取纯构建期 Sidecar，计算 Unit closure，并生成最终强类型静态调用。
+“源码已迁移”与“全部交付门槛通过”分别记录。2026-09-28 修复局部枚举键覆盖与注册契约后的真实桌面 Button/Window 样例在默认配置下为
+20.21 MiB，同配置 full 注册为 44.40 MiB；`OptimizationPreference=Size` 下分别为 19.77 MiB 与 43.57 MiB。
+两组均满足至少缩小 40% 的相对门槛，但均未达到 18 MiB 的绝对门槛，不能宣称体积验收完成。
+样例仅使用 AlibabaSans，没有中文字体包；不得以移除正常全球化、图片服务或诊断能力满足门槛。
 
-## 2. 架构不变量
+2026-09-29 在相同 SDK、RID、字体与配置下，固定反射保留收窄和短 TypeMap key 合并后的默认 selected/full 主程序为
+20,182,000 / 45,001,952 bytes，selected 缩小 55.15%；`OptimizationPreference=Size` 下为
+19,717,728 / 44,139,696 bytes，selected 缩小 55.33%。两组均通过运行检查和 40% 相对门槛；默认 selected 距
+18 MiB 门槛仍差 1,307,632 bytes（1.25 MiB），Size selected 仍差 843,360 bytes（0.80 MiB），因此绝对体积门槛仍未通过。
 
-1. 应用继续只调用真实入口，例如 `builder.UseDesktopControls()`。
-2. 普通 Debug 和未启用 AOT/Trim 的 Release 使用完整兼容注册，不加载 linked-publish Analyzer。
-3. `PublishTrimmed=true`、`PublishAot=true` 和 `RunAOTCompilation=true` 自动使用应用静态计划。
-4. 普通第三方包默认只有一个 Package Unit，不声明 Unit dependency、ownership 修补或 linker XML。
-5. 运行时不读取 Sidecar、不遍历 Unit 图、不扫描程序集、类型、AXAML、Attribute 或资源目录。
-6. Registry 仍在首帧前一次性构建并冻结，不引入 late registration。
-7. Unit fragment 是叶子，不调用其他 Unit，也不运行时去重。
-8. 无法证明精确 Unit 集合时，只扩大为对应 Package full registrar。
-9. Language、Provider、Global Token、Theme Algorithm 和初始化逻辑保持 Package 级语义与顺序。
-10. 分析必须增量且有确定性结构预算；超限触发 fallback，不能形成无界编译或巨大 linker 方法图。
-11. 每个程序集在一次 linked build 中只能有一个生效的 Sidecar。Package、ProjectReference companion 和 metadata 提取
-    是有优先级的候选来源；提取 fallback 只能补足缺失的正式 Sidecar，不能与已交付 Sidecar 并存。
+上述 MiB 门槛已由 [8.1 体积评判标准](#81-体积评判标准) 取代，以上数字作为历史记录保留。2026-09-29 Token 描述符改用共享
+codec/accessor 后，同口径（macOS 26.6.2、SDK 10.0.300、ILCompiler 10.0.8、Avalonia 12.1.3、osx-arm64、默认配置、仅
+AlibabaSans）实测：Minimal selected 19,715,664 bytes（较 20,182,000 减少 466,336），full 注册 43,304,544 bytes，
+selected 为 full 的 45.53%；FluentBaseline 16,573,248 bytes；框架增量 Δ = 3,142,416 bytes（AtomUI/Fluent 1.19，仅报告）。
+三者均运行通过。此 Δ 记为首个棘轮记录，但归因门槛尚未通过：已归因的大项为 AtomUI 程序集约 1.42 MB（其中语言核心的
+标准语言定义与 LanguageTags 约 250 KB）和默认图片服务网络栈约 1.0 MB（Net.Http/Security、Cryptography、Asn1、Sockets），
+Fluent 侧则多出主题与 Avalonia 模板约 2.44 MB；两个已知缺口是 Desktop 10 个未用控件语言目录（估算 30–40 KB，
+仍在 complete 阶段整包注册）以及 Regex、Immutable、Numerics 等较小 BCL 项尚未追到具体使用方。Size 档本轮未重测。
 
-对于任意动态程序集、反射、脚本或发布后插件，不可能同时保证理论最小体积、作者零声明和运行时零发现。本架构保证后两项和
-运行正确性；静态证据不足时牺牲体积。
+此前 Gallery Tab overflow shadow 渲染理论在原始基线及迁移分支均出现过失败，尚未确定成因；
+本次受影响渲染组 77/77 通过，但没有通过修改阴影实现来消除此历史问题。
+该失败不通过修改 Tab 几何或削弱像素断言绕过。完整 Browser Gallery、Windows/Linux/iOS 与较旧 macOS 的运行验证
+不在本次本地主机证据内。NativeAOT 本机链接记录了 Homebrew 系统库的部署版本警告。
 
-## 3. 构建模式
+本次本地验证范围如下；构建成功与 UI 走查分别记录：
 
-| 构建模式 | 注册模式 | Linked Analyzer |
-| --- | --- | --- |
-| 普通 `dotnet build` / `dotnet run` | full registrar | 不加载 |
-| 未裁剪 Release、self-contained、ReadyToRun | full registrar | 不加载 |
-| `PublishTrimmed=true` | application static plan | 加载 |
-| `PublishAot=true` | application static plan | 加载 |
-| `RunAOTCompilation=true` | application static plan | 加载 |
-| 显式 `UseAllDesktopControls()` | full registrar | 不改变构建模式 |
+| 范围 | 当前证据 |
+| --- | --- |
+| 真实桌面 Minimal/Complex | NativeAOT 与 trimmed CoreCLR 均启动、创建模板并通过冻结/资源契约检查 |
+| 独立 Browser Complex | trimmed interpreter 与真实 AOT 在 Codex IAB 执行 20 项模板、Token、Semantic、主题/scoped 更新、NumericUpDown 应用级主题替换及冻结检查；linked/deployed 未用工厂缺失；no-op 保持签名与回执 |
+| 冷消费 | 独立包作者、直接/传递/预编译 binary adapter、冷 Browser 消费通过；跨资产字符串缺失诊断、显式 include 与纯 type-key 的普通/真实 full-trim 运行及未用目标缺失均通过；20 个当前包的旧协议与工具分发审计通过 |
+| 同目录未使用控件 | 裁剪前有真实 TypeMap、代理与资产工厂；NativeAOT 增量 16,512 B，裁剪后代码/工厂缺失 |
+| Gallery Desktop | NativeAOT publish 与精确路径进程启动通过；UI 工具无法绑定该可执行路径，视觉走查未完成 |
 
-Build Targets 把真实 linker 条件规范化为内部 `AtomUILinkedPublish`，并配置 linker 可替换的
-`AtomUI.AotTrimRegistration.Enabled` feature switch。`AtomUIUseGeneratedRegistration=true` 不得隐式加载完整应用分析；仓库测试
-通过隔离 target 验证非裁剪 generated path。
+上一轮 TypeMap 主体注册修复的 Generator 418 项、Core 377 项及 NumericUpDown/标题栏定向 59 项验证通过。
+上一轮保留的广域受影响验证为 7,105/7,106；已知 shadow 渲染失败、Gallery 视觉限制和未运行平台未被这次定向验证消除。
+Chrome 自动化在本轮不可用，Browser 执行证据来自真实 IAB；此前 Chrome 记录属于原快照。
 
-普通构建必须同时满足：compiler command line 不含 linked Analyzer、AXAML/Sidecar targets skipped、`obj` 中没有 linked usage、
-Sidecar 或 Application Plan。
+第 8 节门槛继续有效；工具链升级、跨平台验收、体积门槛和已知渲染失败必须分别有证据，才能声明对应范围完成。
+本地包仍使用仓库现有版本号，此次迁移没有发布或改写历史版本事实。
 
-## 4. Registration Unit
+## 2. 文档所有权
 
-Registration Unit 是唯一细粒度裁剪单位，不等于单个 CLR 类型。一个 Unit 包含可以独立运行的控件族：
+| 文档 | 正式职责 |
+| --- | --- |
+| [TypeMap 注册架构](aot-typemap-registration.md) | 条件映射、代理、Package marker、应用引导、执行模式与平台可用域 |
+| [Control 注册契约](control-registration-contracts.md) | 类型、Token、Semantic Part、主题导出、资源作用域及优先级 |
+| [浏览器链接架构](aot-browser-linking.md) | 已选映射转换、链接阶段、构建与失败边界 |
+| [控件注册生成器](../../modules/generator/control-registration.md) | 普通生成器的职责与实现入口 |
+| [TypeMap 链接工具](../../modules/typemap-linker/overview.md) | 浏览器构建工具的模块边界 |
+| [TypeMap ABI 契约](../../reference/aot/typemap-contract.md) | 隐藏生成 ABI、标记与版本化协议 |
+| [.NET 8 条件后端](aot-net8-conditional-backends.md) | 真实 ILLink8/ILC8 接线、混合 ABI、工具分发与当前支持边界 |
+| [AOT 编程规范](../../engineering/development/aot-programming-guidelines.md) | 日常实现与审查规则 |
+| [第三方 Control Package 指南](../../guides/theming/third-party-control-packages.md) | 包作者正常接入步骤 |
+
+## 3. 目标与不变量
+
+1. 应用保持正常包入口，例如 `builder.UseDesktopControls()`，不列出裁剪控件。
+2. 第一方与第三方使用同一普通生成模型；作者不配置 TypeMap、裁剪 Unit、Sidecar、linker XML 或 AOT 控件名单。
+3. 控件契约与资源资产分别建模，包和源码目录不决定保留粒度。
+4. 依赖闭包由官方 ILLink/ILC 计算，不分析应用 C#/AXAML 使用，不另建跨 DLL 调用图或应用注册计划。
+5. 运行时只查询已确定映射、激活已知代理、收集记录并提交；不扫描程序集或执行依赖图遍历。
+6. 所有包收集完成后统一校验、排序、挂载和冻结；Token slots 与 Semantic registry 在首次控件实例化前固定。
+7. 主题切换、scoped Token、模板创建均不追加注册，也不在资源缺失时重试完整注册。
+8. Browser 裁剪解释执行与 Browser AOT 均精细选择；转换步骤不可用时发布失败。
+9. Language、Provider、图片服务、Global Token、算法与 initializer 保持各自明确的生命周期顺序。
+10. 构建工具不进入应用运行时部署；普通非裁剪执行和裁剪执行复用同一片段事实源。
+
+任意运行时类型名、动态代码和发布后插件遵守 .NET AOT 的静态可达性限制。不通过悄悄保留整包掩盖动态边界。
+
+## 4. 系统结构
+
+```mermaid
+flowchart TD
+    Source[Control / Token / Semantic Part / AXAML] --> Generator[普通 AtomUI.Generator]
+    Generator --> Facts[片段 / 资源工厂 / TypeMap / Package marker]
+    References[已解析程序集引用] --> Bootstrap[仅读 Package marker 的应用引导]
+    Bootstrap --> Targets[TypeMapAssemblyTarget]
+    Facts --> Linker[官方 ILLink / ILC 可达性闭包]
+    Targets --> Linker
+    Linker --> Native[官方 NativeAOT / CoreCLR TypeMap]
+    Linker --> Materializer[Browser 已选映射转换]
+    Native --> Collection[包入口收集片段和工厂]
+    Materializer --> Collection
+    Collection --> Freeze[跨包校验 / 资源排序挂载 / 冻结]
+```
+
+每个具有 Token、Semantic Part 或导出主题的 Control 可以拥有片段。internal presenter 可以只有资源，不能为了注册而
+伪造公开 Token identity。共享一个不可分割字典的多个 Control 通过真实工厂引用形成保留关系，资产按 AssetId 去重。
+
+Common、Desktop、DataGrid、ColorPicker、Extras、GalleryBase 均采用此模型。Common 的图片加载、codec 与语言仍属于
+Package Core，其控件主题也按实际契约选择；不能继续用 Common 整包注册绕过新模型。
+
+## 5. 构建与消费模式
+
+| 模式 | 注册执行 |
+| --- | --- |
+| 普通 Debug、非裁剪 Release，包括 Browser Debug | 直接收集全部片段，共用单项工厂与资源排序 |
+| trimmed CoreCLR、Desktop NativeAOT | 官方 TypeMap 选择片段 |
+| Browser trimmed interpreter、Browser AOT | 官方 ILLink 标记，再由浏览器后端转换已选映射 |
+
+非裁剪全量是正常执行模式，不能作为裁剪发布失败后的恢复路径。模式由构建资产与官方 linker feature switch 选择，
+不能由产品包的 Debug/Release 编译常量决定；同一个 NuGet 包必须能服务不同消费发布模式。
+
+产品库 Debug 只构建 `net10.0`，Release 同时构建 `net8.0` 和 `net10.0`；浏览器宿主仍为 `net10.0-browser`。
+上述官方 TypeMap 精细裁剪路径用于 .NET 10。.NET 8 从相同片段事实生成字符串候选 ABI，普通执行收集完整集合，
+裁剪发布则由受控 ILLink8 / ILC8 在真实依赖图内选择片段，不引用运行时不存在的 TypeMap API，也不回退到完整注册。
+后端按[目标框架规则](../../modules/toolchain/framework-routing.md)自动选择；工具组合、发布阶段和平台门禁见 [.NET 8 条件后端](aot-net8-conditional-backends.md)。
+普通 .NET 8 构建成功不能证明其裁剪/NativeAOT 发布通过。该实现尚未完成跨平台正式交付验收。
+
+源码、直接或传递 ProjectReference、普通预编译 adapter DLL、NuGet 消费均使用已解析包标记完成引导。
+不要求消费类库导出 usage 清单，不沿 ProjectReference 传播旧 linked context，也不恢复旧 DLL 的方法体使用分析。
+可选包的 marker 仅说明映射身份；只有真实 `UseXxxControls()` 才启用 Provider、语言和 initializer。
+
+## 6. 注册生命周期
+
+每次公共包入口执行以下顺序：
 
 ```text
-DatePicker Unit
-├── DatePicker / RangeDatePicker
-├── Presenter、Cell 和内部辅助控件
-├── Control descriptors
-├── Own Token schema
-└── 控件族专属 AXAML factories
+检查 builder 状态及同包重复/递归进入
+→ prepare（明确调用基础包或准备包服务）
+→ 创建 Provider，按平台选择可用片段
+→ 收集包 core 与片段的 descriptor、语义和资源 factory
+→ 检查包内身份/记录结构并暂存 ControlPackageRegistration
+→ 分配 PackageCommitOrdinal
+→ complete（语言注册与 initializer 配置）
 ```
 
-默认 `Package` 粒度把当前 Control Package 的所有 Control-owned 内容放入一个 Unit。显式 `Directory` 粒度才按稳定控件族拆分。
-Unit ownership、`AtomUIRegistrationUnit` 和 `AtomUIPackageSharedTheme` 的使用边界由
-[AOT Registration Unit 粒度](aot-registration-unit-granularity.md)定义。
+所有配置入口返回后，Build/InitializeApplication 统一验证跨包 RequiredTokenOwners、语义依赖和完整 schema，再按实际包提交
+顺序及包内资源顺序创建、挂载资源并冻结。包暂存时不要求后续包已经提供其依赖；资源工厂也不能在本包提交时提前执行。
 
-每个 Unit 生成一个跨程序集可调用的 leaf entry：
+Common 在 Desktop 前、扩展包在基础包后的顺序由真实入口调用决定，不改为包名字母序。资源优先级的精确定义由
+[Control 注册契约](control-registration-contracts.md#7-资源提交与优先级)拥有。
 
-```csharp
-public static void Add(AotTrimControlPackageRegistrationBuilder builder)
-```
+同一 builder 第二次调用相同公共包入口必须在 prepare 前失败；递归进入正在注册的同包也失败。内部基础包依赖需要 Ensure
+语义时使用明确的内部操作，不能悄悄改变公共重复 Use 的契约。多个 builder 的状态独立，禁止静态缓存持有 builder 或 Provider。
 
-入口只添加本 Unit descriptor、Theme Asset 和 resource factory。UnitEdge 写入 Sidecar；应用编译期计算 closure/SCC，并让每个
-fragment 最多出现一次。禁止生成 `AddDependencies`、调用其他 Unit 或调用 `TryEnterUnit`。
+注册失败使该 builder 无法继续 Build 成部分成功的应用。错误不能通过重试全量、late registration 或延迟 initializer 隐藏。
 
-## 5. Package Core
+直接调用 `IThemeManagerBuilder.AddControlPackage` 也在同一 builder 上记录校验/暂存失败。
+包、Token 或 Semantic descriptor/provider 冲突在写入集合前检查；捕获异常后继续 Build 或添加包仍失败。
+此边界不重复进入生成入口的 Enter 阶段，独立 builder 的状态互不影响。
 
-以下内容按 Package 整体保留，不参与 Unit 拆分：
+## 7. 静态边界与诊断
 
-- Language Catalog 和内置 Translation Bundles。
-- Dialog、Tooltip、Motion、Responsive 等初始化逻辑。
-- Global Token、Theme Algorithm 和 Package Provider。
-- 平台 Asset Selector。
-- 显式 `PackageShared` 主题资源。
+正常 Control、Token、生成的 Identity、Semantic Style、编译型 AXAML 与静态工厂都产生真实保留证据。
+字符串 identity 只查询已保留 schema；任意字符串动态创建不自动激活控件。
+确需动态选择时使用正常的类型化 root 或工厂契约，真实保存并校验 Type，不恢复 UnitRoot/PackageRoot 字符串协议。
 
-以 Desktop 为例，生成式入口顺序必须保持：
+普通包生成阶段检查主题导出、Token owner、资源依赖和可访问性。启动阶段检查跨包身份、选中资源及语义依赖。
+可选包未启用时给出明确缺包或主题错误，不自动启用它。不能为复刻旧的应用 usage 诊断重新引入跨 DLL 扫描。
 
-1. 注册依赖 Package；跨 Package 不计算 Unit closure。
-2. 执行当前 Package 提交前初始化。
-3. 创建平台 Provider，并应用静态 Unit plan 或 full fallback。
-4. 注册完整 Language Module。
-5. 按既有顺序添加 Theme initializer。
+诊断 ID 由项目统一注册表分配；旧协议 ID 废弃后不复用。未知后端 ABI、不可解释的编译型资源输入和未转换 accessor
+属于构建错误。宿主 DynamicResource 按开放主题输入处理，具体分类见 [资源契约](control-registration-contracts.md#6-资源作用域与动态输入)。
 
-`AtomUI.Controls` Common 由 Desktop 完整注册，不是独立 linked Package，不声明 registration entry，也不进入应用 Package plan。
+## 8. 验证与交付门槛
 
-## 6. 构建期 Pipeline
+正式迁移必须同时证明行为、裁剪与构建产物正确：
 
-Control Package 在 NuGet Pack 或 linked ProjectReference 构建时自动生成 Sidecar。Sidecar 记录 Package、Unit、ControlMap、
-UnitEdge、Usage 和 Fallback；它通过 `buildTransitive` 或已解析 `ReferencePath` 旁的 companion Sidecar 传递，只作为 linked
-build 的 AdditionalFile，不进入运行时程序集或 publish 目录。ProjectReference 的 Sidecar 必须在目标程序集复制到
-`TargetPath` 后生成，使首次冷构建和增量构建具有相同输入。
-
-### 6.1 Sidecar 来源与唯一性
-
-Sidecar 物理路径不能代表 Manifest 身份。消费项目必须先解析 Package 和 ProjectReference 正式 Sidecar，再只对没有正式
-Manifest 的引用生成 metadata extraction fallback；最终按 `assembly.name` 和 `contractHash` 解析每个程序集唯一的 canonical
-Sidecar。不同 hash 的同身份候选必须构建失败，不能依赖文件名、路径或 MSBuild item 顺序选择。
-
-来源优先级、两阶段解析算法、冲突诊断和构建回归矩阵由
-[AOT Linked Registration Pipeline](aot-linked-registration-pipeline.md#52-sidecar-candidate-resolution)统一定义。
-
-Application Plan Generator：
-
-1. 验证 Sidecar protocol、hash、ownership 和 fragment symbol。
-2. 汇总当前应用及传递类库的 entry、Control usage、Unit root 和 Package root。
-3. 检查被使用 Package 的真实 registration entry 已显式调用。
-4. 对 Exact Package 计算 Unit closure 和 SCC。
-5. 对不确定 Package 选择 full registrar。
-6. 按 dependency SCC 和 Package order key 生成确定性强类型调用。
-
-Package 分析只使用候选驱动的直接 C#/AXAML 证据。禁止全树 `DescendantNodes()`，禁止从 invocation 递归进入 callee body，
-禁止把 dependency 编码成 fragment 之间的调用。完整算法和性能预算见
-[AOT Linked Registration Pipeline](aot-linked-registration-pipeline.md)。
-
-Package Core 调用 Control 类型上的普通静态成员只表示运行时代码依赖，不自动 root 该 Control Unit。只有直接构造、`typeof`
-等 Type 证据，或方法声明直接返回具体 Control 时才生成 Package root；泛型返回值的调用点替换不作为工厂证据。Unit 内跨
-Unit 调用仍生成直接 UnitEdge，应用和普通类库的 Control 成员调用仍形成该 Control 的 usage。
-
-## 7. 静态使用和动态 Root
-
-自动发现至少覆盖：
-
-- C# 显式/隐式对象构造、`typeof(...)`、Control 基类和 registration entry 调用。
-- Directory 模式同程序集跨 Unit 的直接方法或构造调用。
-- AXAML 元素类型、TargetType、BasedOn、selector、DataTemplate、ControlTemplate 和 `x:Type`。
-
-Control 的普通 field/property/parameter/return type 引用不等于实例化，不单独形成 Unit usage。无法验证的 generated output、
-dynamic、reflection、Loose AXAML 和插件输入触发 Package fallback。
-
-消费应用处理真正动态输入时可以显式声明：
-
-```xml
-<ItemGroup>
-  <AtomUIRegistrationUnitRoot Include="AtomUI.Desktop.Controls/DatePicker" />
-  <AtomUIPackageRoot Include="MyCompany.DynamicControls" />
-</ItemGroup>
-```
-
-`AtomUIRegistrationUnitRoot` 保留指定 Unit；`AtomUIPackageRoot` 强制对应 Package full registrar。它们不是普通 Control Package 的
-接入步骤。
-
-## 8. 安全 Fallback
-
-分析结果只有 Exact 和 PackageFallback。安全策略是单调扩大：
-
-| 场景 | 结果 |
+| 维度 | 必须证据 |
 | --- | --- |
-| 静态 Control/AXAML 可确定 | 选择对应 Unit closure |
-| 默认 Package 粒度 | 选择完整 Package Unit |
-| Unit cycle | SCC 全选，每个 leaf fragment 调用一次 |
-| Loose AXAML / 动态主题 | 对应 Package full registrar |
-| 无法静态解析的 C# 动态创建（`Activator.CreateInstance(Type)` 等） | 不扩大保留范围，报告 `ATOMUILINK010` 警告，由显式 root 覆盖 |
-| Sidecar 缺失、陈旧或无法验证 | 对应 Package full registrar |
-| Package 或 ProjectReference 已提供同程序集正式 Sidecar | 禁止再次生成 `ExtractedManifest` |
-| 同程序集 Sidecar 身份相同且 `contractHash` 相同 | 合并为一个 canonical Sidecar |
-| 同程序集 Sidecar `contractHash` 不同 | 构建 Error，报告来源冲突 |
-| ProjectReference Sidecar 由 consumer 从普通构建的 assembly metadata 提取（`ExtractedManifest`） | 对应 Package full registrar，不产生诊断 |
-| 预编译消费 DLL 由 consumer 从 AssemblyRef/IL 恢复（`ExtractedConsumerAssembly`） | 对应 Package full registrar，不产生诊断；没有入口调用时构建失败 |
-| 分析预算超限 | 对应 Package full registrar |
-| 未知 protocol major | 构建 Error |
-| Fragment symbol 不存在 | 构建 Error |
-| 使用 Package 但未调用 entry | 构建 Error |
+| 执行模式 | 非裁剪、trimmed CoreCLR、Desktop NativeAOT、Browser trimmed、Browser AOT |
+| 消费方式 | 同程序集、直接/传递源码引用、预编译 adapter、干净 NuGet 缓存 |
+| 契约入口 | Control-only、Token-only、Identity-only、Style-only、internal presenter、泛型控件的非泛型 owner |
+| 资源 | 默认/命名/多目标主题、局部及 include 作用域、宿主 DynamicResource、resource-only、确定覆盖顺序 |
+| 生命周期 | 首次实例化前冻结、跨包依赖、原始 Package Core 顺序、重复/递归/失败、多个 builder 隔离 |
+| 稳态 | 模板、主题切换、scoped Token 与 Semantic Part 正常且 schema 不变化 |
+| Browser 后端 | 工具缺失/损坏/未知 ABI/残留 accessor 失败，正确增量失效，解释与 AOT 均细粒度 |
+| 裁剪 | unused Control/proxy/factory 缺失，新增同目录无关控件不扩大集合，全量 manifest 不意外 root |
+| 分发 | 构建工具自动注入且只注入一次，构建工具和旧协议产物不进入运行时部署 |
 
-Fallback 在编译期确定。运行时不捕获缺失资源后重试，不重新引用 full registrar，也不扫描 Package。
+fixture 必须实际初始化 ThemeManager、解析资源、创建模板并切换主题。只构造 builder 或输出排序后的注册快照不能证明
+冻结时序、资源优先级和 UI 行为。负向保留断言不能通过 `typeof(UnusedControl)` 将被检查类型自行保留。
 
-## 9. 公开入口与运行时 ABI
+### 8.1 体积评判标准
 
-Package 的公开注册方法是入口身份的唯一事实来源：
+体积不使用绝对 MiB 门槛。主程序中 BCL、运行时与 Avalonia 占大头，会随 SDK/Avalonia 升级变化且不受 AtomUI 控制；
+固定数值既区分不了“AtomUI 变大”和“工具链变了”，也说明不了剩余字节是否合理。标准只衡量 AtomUI 增加了什么、是否都有来由。
 
-```csharp
-[ControlPackageRegistrationEntry]
-public static IAtomUIBuilder UseAcmeControls(this IAtomUIBuilder builder)
-{
-    // 保持 Package Core 和 full/generated 分支顺序。
-    return builder;
-}
-```
+所有比较固定 SDK、RID、Avalonia 版本、配置、字体策略与原生库路径；记录 NativeAOT 主程序和排除调试符号后的 payload，
+只在同一口径的程序之间相减。
 
-Attribute 不接收 Package ID、类型名或方法名。Generator 从 `IMethodSymbol` 派生稳定 identity，并验证方法是 public、static、
-非泛型 `IAtomUIBuilder` 扩展方法。项目文件不得维护入口类型名或方法名字符串。
-
-`UseXxxControls()` 仍拥有 Package Core、Provider、Localization 和 initializer 顺序。应用静态发现不能绕过入口自动启用可选包。
-
-隐藏运行时 ABI 保持明确的 `AotTrim` 命名：
-
-| 类型 | 职责 |
-| --- | --- |
-| `AotTrimRegistration` | 读取发布 feature switch |
-| `AotTrimControlPackageRegistrationBuilder` | 收集已选 Unit 并提交完整 Package registration |
-| `AotTrimRegistrationPlan` | 应用静态计划的跨程序集调用协议 |
-| `AotTrimRegistrationPlanRegistry` | 安装唯一 plan 并按 Package 静态分派 |
-
-运行时 ABI、fragment 和 Sidecar protocol 都必须有快照和兼容性测试。
-
-## 10. 第三方 Package
-
-普通第三方包只需要：
-
-1. 引用 AtomUI 产品 Package，让它自动提供 Generator、Build Tasks 和 buildTransitive assets。
-2. 声明稳定 `AtomUIRegistrationPackageId`。
-3. 按 Control、可选 Own Token 和 `Themes/` 约定组织源码。
-4. 在真实 `UseXxxControls()` 上添加 `[ControlPackageRegistrationEntry]`。
-5. 保持 full/generated、Provider、Localization 和 initializer 顺序。
-6. 使用默认 Package 粒度并验证 ordinary/generated 行为。
-
-Pack 自动生成和交付 Sidecar。作者不写 Unit dependency、ownership 修补、Sidecar、linker XML 或运行时扫描。只有大型多控件包
-才启用 Directory 粒度并承担真实发布和体积验证。
-
-## 11. Trimmability 与打包边界
-
-runtime 项目只有在真实 trimmed JIT 和 NativeAOT 验证后才能声明 `IsTrimmable`、`IsAotCompatible`；warning suppression 不能
-代替兼容实现。
-
-ordinary Generator、linked-publish Generator、Build Tasks、Sidecar、PDB 和分析缓存都是纯构建资产：
-
-- 普通构建只注入 ordinary Generator。
-- AOT/Trim 才注入 linked-publish Generator。
-- Pack 自动交付 Sidecar 和唯一 consumer target。
-- 多个产品包必须幂等注入 Analyzer。
-- 构建工具不得进入 `lib/`、runtime dependency graph、应用输出或 publish 目录。
-
-具体 MSBuild 和 NuGet 规则见 [构建与打包](build-and-packaging.md)。
-
-## 12. 诊断契约
-
-| ID | 条件 | 默认严重度 |
+| 条目 | 类型 | 规则 |
 | --- | --- | --- |
-| `ATOMUILINK001` | 缺少或存在多个 Application Plan owner | Error |
-| `ATOMUILINK002` | 静态使用无法精确映射，Package full fallback | Warning |
-| `ATOMUILINK003` | Package 缺少可验证 Sidecar，full fallback | Warning |
-| `ATOMUILINK004` | 显式 Unit/Package root 无法解析 | Error |
-| `ATOMUILINK005` | Package 粒度、Unit/Shared 或 ownership 冲突 | Error |
-| `ATOMUILINK006` | Sidecar 或 Generator ABI major 不兼容 | Error |
-| `ATOMUILINK007` | Loose AXAML 或动态主题导致 Package fallback | Warning |
-| `ATOMUILINK008` | 检测到 Package 使用但缺少 registration entry | Error |
-| `ATOMUILINK009` | Registration entry Attribute 或签名无效 | Error |
-| `ATOMUILINK010` | C# 动态创建无法静态解析，不扩大保留范围，需显式 root 覆盖 | Warning |
+| 对照组 | 定义 | `tests/AtomUI.Registration.Fixtures/FluentBaseline`：官方 Avalonia 模板（FluentTheme + Inter），与 Minimal 相同的 600×500 窗口、StackPanel 与一个 Button，相同 fixture 构建设置，不含 AtomUI |
+| 框架增量 Δ | 指标 | Minimal selected 主程序 − FluentBaseline 主程序 |
+| 归因 | 硬门槛 | ILC map 中 Δ 必须归到已使用控件的契约或文档列明的 Package Core 能力（主题/Token 运行时、注册、语言核心、默认图片服务及其网络栈、默认字体）；未用控件的类型、代理、工厂与本地化目录由 Inspector `selected` 模式证明缺失；归不进去的字节是缺陷，修复而不是放宽 |
+| 棘轮 | 硬门槛 | 验收记录 Δ 与工具链身份（SDK、ILC、Avalonia）；同一工具链下 Δ 只能持平或下降，上升必须写明新增的具名能力并重新记录；升级工具链时两侧同时重测，比较 Δ 而不是绝对大小 |
+| 机制检测 | 硬门槛 | selected ≤ 同口径 full 注册的 60%；新增同目录未用控件后其代码与工厂缺失，主程序增量 ≤ 256 KiB。两者检测裁剪机制是否失效（正常约 45% 与数十 KiB，失效时接近 100% 与整控件体积），不是体积目标 |
+| 报告项 | 不设门槛 | AtomUI/Fluent 比值、`OptimizationPreference=Size` 数据 |
 
-诊断必须包含 Package/Unit identity、稳定 reason 和可定位输入，不能只写“可能不兼容 AOT”。Fallback Warning 只在 linked publish
-或显式 strict 验证中产生；strict 模式可以提升为 Error，但不改变保留范围。
+macOS arm64 的 Mach-O 段按 16 KiB 页对齐，主程序字节存在页量化；细粒度比较用 map 节点长度之和，主程序字节按页容差比较。
+改变规则需要同口径的新证据；本节取代此前的 18 MiB、16 MiB 与“同场景 Fluent 的 125%”门槛。
 
-## 13. 验证和体积门槛
+上线前还须审计源码、项目、脚本、正式文档、nupkg 和构建产物：旧应用 usage/Sidecar/UnitEdge/SCC/Plan、旧 analyzer、
+旧 linked MSBuild 传播均退出活动路径。不能只禁用 target 而继续编译分发旧工具。
 
-统一验证必须覆盖：
-
-- Package/Directory、entry、Unit ownership、direct UnitEdge、PackageShared、budget 和 fallback。
-- Sidecar codec、hash、确定性、ProjectReference/NuGet 传播、来源优先级、程序集身份去重和 fragment symbol。
-- NuGet 正式 Sidecar 与 metadata extraction 不得同时进入 `AdditionalFiles`；相同身份同 hash 只保留一份，异 hash 必须失败。
-- 普通 Debug/Release 不加载 linked Analyzer、不运行 linked targets、不产生 linked 中间文件。
-- ordinary/generated descriptor、Theme Asset、Language、Provider、initializer 和冻结时序一致。
-- trimmed JIT、NativeAOT、WebAssembly AOT 和真实 Gallery 启动 smoke。
-- Sidecar、Generator、Build Tasks、PDB 和缓存不进入 publish。
-
-仓库统一入口：
-
-```bash
-scripts/verification/verify-aot-trim-registration.sh --full
-```
-
-体积比较必须固定 SDK、RID、Configuration、SelfContained、TrimMode 和测量口径。门槛为：
-
-- 最小 Desktop Unit 的 NativeAOT 主程序相对 full registrar 主程序至少缩小 `40%`。
-- 固定 `osx-arm64` Button/Window 样例移除中文字体后，第一阶段主程序不超过 `18 MiB`；后续目标不超过 `16 MiB`
-  或同场景 Fluent 的 125%。
-- 新增一个未使用 Unit 后主程序增量不超过 `256 KiB`。
-- ILC map 不保留没有直接或传递证据的其他控件族 Unit。
-- full registrar 的非裁剪 Registry 快照无行为差异。
-
-目录总量只统计可交付 payload，排除 `.dSYM`、`.pdb` 和 `.dbg`；缩减率、绝对上限和未使用 Unit 增量统一以主程序
-文件为准，避免调试符号和所有场景共享的 native library 扭曲 linked registration 的收益。门槛只能根据删除缓存后的可复现
-多平台数据调整，并记录 SDK/RID、原始值和原因。
+退役范围仅限旧控件注册分析体系。资源 deferred wrapper、Localization 构建工具、Build Tasks 进程隔离、数据访问器生成、
+有效 trimming annotations、字体/图标和原生发布设施继续保留。类型化注册不负责裁剪任意原生文件。

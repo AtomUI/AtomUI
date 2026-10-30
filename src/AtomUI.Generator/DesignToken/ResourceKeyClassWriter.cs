@@ -6,12 +6,12 @@ namespace AtomUI.Generator;
 
 internal sealed class ResourceKeyClassWriter
 {
-    private readonly SourceProductionContext _context;
+    private readonly GenerationOutput _context;
     private readonly TokenInfo _tokenInfo;
     private readonly string _controlCatalog;
 
     internal ResourceKeyClassWriter(
-        SourceProductionContext context,
+        GenerationOutput context,
         TokenInfo tokenInfo,
         string controlCatalog)
     {
@@ -105,7 +105,7 @@ internal sealed class ResourceKeyClassWriter
 
         source.Append("    public static class ").Append(tokensType).AppendLine();
         source.AppendLine("    {");
-        source.Append("        public static readonly ControlTokenIdentity Identity = new ControlTokenIdentity(")
+        source.Append("        public static readonly ControlTokenIdentity Identity = ControlTokenIdentity.ForControl(typeof(").Append(control.ControlTypeName).Append("), ")
               .Append(SymbolDisplay.FormatLiteral(_controlCatalog, quote: true)).Append(", ")
               .Append(SymbolDisplay.FormatLiteral(control.ControlName, quote: true)).AppendLine(");");
         source.AppendLine("    }");
@@ -139,6 +139,8 @@ internal sealed class ResourceKeyClassWriter
         {
             source.Append("            if ((uint)ownSlot < ").Append(ownNames.Length).AppendLine("u)");
             source.AppendLine("            {");
+            // Own enums are public resource keys: wrapping them would bypass existing scoped overrides.
+            // Their enum types remain independent TypeMap triggers; typed Identity is retained separately.
             source.Append("                return (").Append(tokenKindType).Append(")ownSlot;").AppendLine();
             source.AppendLine("            }");
         }

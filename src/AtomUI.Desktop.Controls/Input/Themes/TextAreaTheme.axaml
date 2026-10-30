@@ -4,12 +4,16 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:TextArea}" TargetType="atom:TextArea">
+        <ControlTheme.Resources>
+            <atom:PlaceholderHorizontalAlignmentConverter x:Key="PlaceholderHorizontalAlignmentConverter" />
+        </ControlTheme.Resources>
 
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:TextArea">
                 <DockPanel LastChildFill="True"
                            Height="{TemplateBinding Height}">
                     <atom:TextBlock Name="TextCountIndicator"
+                                    Classes.semantic-count="True"
                                     DockPanel.Dock="Bottom"
                                     VerticalAlignment="Center"
                                     HorizontalAlignment="Right"
@@ -18,8 +22,7 @@
                     <Panel>
                         <atom:TextAreaDecoratedBox
                             Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
-                            ContentLeftAddOn="{TemplateBinding InnerLeftContent}"
-                            ContentLeftAddOnTemplate="{TemplateBinding InnerLeftContentTemplate}"
+                            Classes.semantic-scope-input-frame="True"
                             StyleVariant="{TemplateBinding StyleVariant}"
                             SizeType="{TemplateBinding SizeType}"
                             Status="{TemplateBinding Status}"
@@ -35,11 +38,23 @@
                             HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                             VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
                             IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}">
+                            <atom:TextAreaDecoratedBox.ContentLeftAddOn>
+                                <atom:AddOnContentPresenter
+                                    Classes.semantic-prefix="True"
+                                    Content="{Binding InnerLeftContent, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"
+                                    ContentTemplate="{Binding InnerLeftContentTemplate, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"
+                                    VerticalAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalAlignment="Left"
+                                    Focusable="False" />
+                            </atom:TextAreaDecoratedBox.ContentLeftAddOn>
                             <atom:TextAreaDecoratedBox.ContentRightAddOn>
                                 <StackPanel Orientation="Vertical"
+                                            Classes.semantic-suffix="True"
                                             Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
                                     <atom:InputClearIconButton
                                         Name="PART_ClearButton"
+                                        Classes.semantic-clear="True"
                                         VerticalAlignment="Center"
                                         Icon="{Binding $parent[atom:TextArea].ClearIcon}"
                                         IsVisible="{Binding $parent[atom:TextArea].IsEffectiveShowClearButton}"
@@ -62,10 +77,11 @@
                                 </StackPanel>
                             </atom:TextAreaDecoratedBox.ContentRightAddOn>
 
-                            <Panel Name="ContentLayout">
+                            <Panel Name="ContentLayout" Classes.semantic-content="True">
                                 <atom:TextBlock
                                     Name="Placeholder"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    Classes.semantic-placeholder="True"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment, Converter={StaticResource PlaceholderHorizontalAlignmentConverter}}"
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                     Text="{TemplateBinding PlaceholderText}"
                                     Foreground="{TemplateBinding PlaceholderForeground}"
@@ -75,6 +91,7 @@
                                     IsVisible="{TemplateBinding IsPlaceholderTextVisible}" />
                                 <atom:InputTextPresenter
                                     Name="PART_TextPresenter"
+                                    Classes.semantic-textarea="True"
                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                     CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
@@ -104,7 +121,6 @@
         </Setter>
 
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="Background" Value="Transparent" />
         <Setter Property="SelectionBrush" Value="{atom:SharedTokenResource SelectionBackground}" />
         <Setter Property="CaretBrush" Value="{atom:SharedTokenResource ColorText}" />
         <Setter Property="SelectionForegroundBrush"

@@ -2,10 +2,9 @@ using System.Reflection;
 using System.Globalization;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.Internal.Calendar;
-using Avalonia;
 using Shouldly;
 using Xunit;
-using CalendarViewControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarView;
+using AtomUI.Desktop.Controls.Internal.DateViewer;
 using LunarCalendarControl = AtomUI.Desktop.Controls.LunarCalendar;
 
 namespace AtomUI.Desktop.Controls.Tests.Calendar;
@@ -79,18 +78,10 @@ public class LunarCalendarBehaviorTests
             Value = new DateTime(2024, 2, 10),
             ValidRange = requested
         };
-        var view = new CalendarViewControl
-        {
-            Value = calendar.Value,
-            Today = calendar.Value,
-            Culture = System.Globalization.CultureInfo.InvariantCulture,
-            ValidRange = calendar.ValidRange,
-            PresentationAdapter = GetAdapter(calendar)
-        };
-        Rebuild(view);
+        var session = new DatePanelSession(calendar);
 
         calendar.ValidRange.ShouldBeSameAs(requested);
-        view.CellModels.Where(model => model.Kind != CalendarViewCellKind.Week)
+        session.Models.SelectMany(panel => panel.Cells).Where(model => model.Kind != DateViewerCellType.Week)
             .ShouldAllBe(model => model.IsDisabled);
     }
 
@@ -139,10 +130,6 @@ public class LunarCalendarBehaviorTests
         (LunarCalendarPresentationAdapter)typeof(AtomUI.Desktop.Controls.Calendar)
             .GetField("_presentationAdapter", BindingFlags.Instance | BindingFlags.NonPublic)!
             .GetValue(calendar)!;
-
-    private static void Rebuild(CalendarViewControl view) =>
-        typeof(CalendarViewControl).GetMethod("RebuildCells", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .Invoke(view, []);
 
     private static CalendarHeaderContext BuildHeaderContext(LunarCalendarControl calendar) =>
         (CalendarHeaderContext)typeof(AtomUI.Desktop.Controls.Calendar)

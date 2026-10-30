@@ -1,10 +1,10 @@
-using System.Collections.ObjectModel;
+using AtomUI.Localization.Data;
 
 namespace AtomUI.Localization;
 
 public sealed class TranslationBundleDescriptor
 {
-    private readonly ReadOnlyCollection<string?> _values;
+    private readonly IReadOnlyList<string?> _values;
 
     public TranslationBundleDescriptor(
         string catalogId,
@@ -51,6 +51,22 @@ public sealed class TranslationBundleDescriptor
         SourceIdentity = sourceIdentity;
         _values = Array.AsReadOnly(valueArray);
     }
+
+    internal TranslationBundleDescriptor(LanguageModuleBundle bundle)
+    {
+        LanguageCatalogIdentity.Validate(bundle.CatalogId);
+        CatalogId = bundle.CatalogId;
+        Language = LanguageTag.Parse(bundle.Language);
+        SourceKind = (TranslationSourceKind)bundle.SourceKind;
+        SourceIdentity = bundle.SourceIdentity;
+        _values = bundle.Values;
+    }
+
+    internal bool IsModuleData => _values is LanguageModuleValues;
+
+    internal bool HasValue(int unitSlot) => _values is LanguageModuleValues values
+        ? values.HasValue(unitSlot)
+        : _values[unitSlot] is not null;
 
     public string CatalogId { get; }
 

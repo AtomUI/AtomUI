@@ -22,7 +22,7 @@ Mobile 先依赖 Desktop 再通过构建过滤补偿。目标边界见 [Mobile G
 | [configuration.md](configuration.md) | 配置入口、产品模块注册、选项生命周期、配置校验 |
 | [navigation-routing.md](navigation-routing.md) | 导航树、路由注册、ViewLocator 适配、导航生命周期 |
 | [shell-and-platform.md](shell-and-platform.md) | Desktop Window、Browser View、共享 Shell、标题栏菜单、平台差异 |
-| [showcase-controls.md](showcase-controls.md) | ShowCase 控件、延迟创建、sticky host、场景 lazy controller |
+| [showcase-controls.md](showcase-controls.md) | ShowCase 控件、延迟创建、sticky host、场景 lazy controller 与 Semantic Part Preview 宿主 |
 | [source-code-display.md](source-code-display.md) | ShowCase 源码展示、Drawer 查看器、源码片段 Provider、生成器边界 |
 | [theming-localization.md](theming-localization.md) | XAML namespace、Control Token、主题注册、Shell 本地化边界 |
 
@@ -136,7 +136,7 @@ xmlns:gallery="https://atomui.net/toolkits/gallery-base"
 产品通过 `UseGalleryBase` 注册 Gallery：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.UseDesktopControls();
     builder.UseGalleryBase(options =>
@@ -161,7 +161,7 @@ this.UseAtomUI(builder =>
             screen => new ButtonViewModel(screen),
             () => new ButtonShowCase());
     });
-});
+})
 ```
 
 第一阶段的配置模型如下：
@@ -313,7 +313,7 @@ public static IAtomUIBuilder UseGalleryBase(
 该入口负责：
 
 - 一次注册 GalleryBase 生成的 Control descriptor、可选 Own Token schema 和强类型 Token 资源扩展。
-- 注册从 `Themes/**/*.axaml` 生成的 ControlTheme asset owner/reference manifest 和平台主题 Provider。
+- 按已采纳的 TypeMap 契约注册主题导出、RequiredTokenOwners、逐控件片段与平台 Provider；[迁移状态](../../architecture/foundations/aot-and-trimming.md#1-状态与事实边界)不代表当前源码已完成转换。
 - 注册 GalleryBase 生成的 Catalog、内置 XLIFF 和语言模块入口。
 - 保存或合并 `GalleryBaseOptions`，供 Shell 构造时读取。
 

@@ -21,7 +21,6 @@ public partial class ModalShowCase : GalleryReactiveUserControl<ModalViewModel>
     {
         InitializeComponent();
         AddHandler(AtomUIButton.ClickEvent, HandleDemoButtonClick);
-        AddHandler(Avalonia.Controls.Primitives.ToggleButton.IsCheckedChangedEvent, HandleDemoToggleSwitchCheckedChanged);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -73,6 +72,18 @@ public partial class ModalShowCase : GalleryReactiveUserControl<ModalViewModel>
             case "WarningMsgBoxBtn":
                 HandleWarningMsgBoxBtnClick(button, e);
                 break;
+            case "MessageBoxSemanticStyleOpenButton":
+                HandleMessageBoxSemanticStyleOpenButtonClick(button, e);
+                break;
+            case "WindowDialogSemanticOpenButton":
+                HandleWindowDialogSemanticOpenButtonClick(button, e);
+                break;
+            case "WindowDialogStyledOpenButton":
+                HandleWindowDialogStyledOpenButtonClick(button, e);
+                break;
+            case "SemanticStyleDialogOpenButton":
+                HandleSemanticStyleDialogOpenButtonClick(button, e);
+                break;
             case "LoadingDialogOpenModalButton":
                 HandleLoadingDialogOpenModalButtonClick(button, e);
                 break;
@@ -94,14 +105,6 @@ public partial class ModalShowCase : GalleryReactiveUserControl<ModalViewModel>
             case "ConfigureButtonsDialogOpenButton":
                 HandleConfigureButtonsDialogButtonClick(button, e);
                 break;
-        }
-    }
-
-    private void HandleDemoToggleSwitchCheckedChanged(object? sender, RoutedEventArgs e)
-    {
-        if (e.Source is AtomUIToggleSwitch { Name: "StyleCaseHostTypeSwitch" } toggleSwitch)
-        {
-            HandleStyleCaseHostTypeSwitchChanged(toggleSwitch, e);
         }
     }
 
@@ -204,14 +207,45 @@ public partial class ModalShowCase : GalleryReactiveUserControl<ModalViewModel>
         }
     }
 
-    private void HandleStyleCaseHostTypeSwitchChanged(object? sender, RoutedEventArgs e)
+    private void HandleMessageBoxHostTypeSwitchChanged(object? sender, RoutedEventArgs e)
     {
-        if (sender is AtomUIToggleSwitch toggleSwitch)
+        if (DataContext is ModalViewModel viewModel && sender is AtomUIToggleSwitch hostTypeSwitch)
         {
-            if (DataContext is ModalViewModel viewModel)
-            {
-                viewModel.MessageBoxStyleCaseHostType = toggleSwitch.IsChecked == true ? DialogHostType.Window : DialogHostType.Overlay;
-            }
+            viewModel.MessageBoxStyleCaseHostType = hostTypeSwitch.IsChecked == true
+                ? DialogHostType.Window
+                : DialogHostType.Overlay;
+        }
+    }
+
+    private void HandleMessageBoxSemanticStyleOpenButtonClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is ModalViewModel viewModel)
+        {
+            viewModel.IsMessageBoxSemanticStyleOpen = true;
+        }
+    }
+
+    private void HandleWindowDialogSemanticOpenButtonClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is ModalViewModel viewModel)
+        {
+            viewModel.IsWindowDialogSemanticOpen = true;
+        }
+    }
+
+    private void HandleWindowDialogStyledOpenButtonClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is ModalViewModel viewModel)
+        {
+            viewModel.IsWindowDialogStyledOpen = true;
+        }
+    }
+
+    private void HandleSemanticStyleDialogOpenButtonClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is ModalViewModel viewModel)
+        {
+            viewModel.IsSemanticStyleDialogOpen = true;
         }
     }
 

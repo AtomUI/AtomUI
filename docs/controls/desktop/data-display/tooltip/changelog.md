@@ -2,6 +2,49 @@
 
 本文档记录 Tooltip 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-03
+
+- Implementation
+  - Compare input-root identities in `ToolTipService`, allowing a window to close synchronously during routed pointer dispatch before the service receives the same raw event.
+  - Distinguish native Tooltip input roots from overlays sharing the owner root, preserving same-window host switching and same-timestamp native-root transitions.
+  - Release tracked hosts and pending show timers on visual-tree detach, reject stale hits, and preserve desired `IsOpen` state for reconciliation after reattachment.
+- Tests
+  - Replace three visual-root helper assertions with real synchronous-close, Overlay host-switching and detached pending-host lifetime coverage; keep the existing native-root timestamp regression without increasing the permanent test count.
+
+## 2026-09-17
+
+- Implementation
+  - Make `IArrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox()` nullable and degrade every ToolTip provider method to arrowless fallbacks when the template has not been applied or the theme does not provide `PART_ArrowDecorator`, removing the `Debug.Assert`-masked contract violation that crashed popup shadow configuration and custom placement with a `NullReferenceException` (issue #477).
+  - Keep `DeferSetupArrowDecoratedBox` subscribed while the applied template still lacks the arrow part, so arrow setup completes once a later template application provides the part.
+  - Mirror the same null tolerance in `MenuFlyoutPresenter`, matching its already null-safe `GetMask*` methods.
+- Tests
+  - Add `ToolTipArrowDecoratedBoxContractTests` covering unstyled-provider degradation, opening with a template missing `PART_ArrowDecorator`, arrow-binding recovery when a later template provides the part, and the default-theme arrow wiring.
+
+## 2026-09-16
+
+- Implementation
+  - Move `ToolTipService` back to `Tooltip/ToolTipService.cs` and declare its Package Core registration ownership with `[AotTrimUnit(AotTrimGeneralUnits.Core)]`, replacing the retired `PackageCore/` directory boundary; the service no longer depends on a dedicated shared directory for unit attribution. This records the historical registration implementation; the adopted replacement contract is [TypeMap registration](../../../../architecture/foundations/aot-typemap-registration.md).
+- Docs
+  - Update the implementation source index to the new `ToolTipService` location and record the annotation as a maintenance invariant.
+
+## 2026-09-07
+
+- API
+  - Expose `root` / `container` / `arrow` Semantic Parts on `ToolTip`, aligned with the upstream antd Tooltip semantic DOM.
+  - Declare `container` and `arrow` with `CrossNestedOwners=true`, routing through the `.semantic-scope-arrow-decorated-box` scope anchor into the shared `ArrowDecoratedBox` template; `arrow` is `Optional`.
+- Theme
+  - Add the `.semantic-scope-arrow-decorated-box` scope anchor to the `ArrowDecoratedBox#PART_ArrowDecorator` node in `ToolTipTheme.axaml`.
+  - Add `.semantic-container` / `.semantic-arrow` markers to `Border#PART_ContentDecorator` / `ArrowIndicator#PART_ArrowIndicator` in the shared `ArrowDecoratedBoxTheme.axaml`.
+- Docs
+  - Add `semantic-part.md` as the single source for the Tooltip Semantic Part contract.
+  - Re-scope overview's semantic region summary to `root` / `container` / `arrow` and link the new contract; document the descriptor↔marker mapping in implementation.
+- Gallery
+  - Add a Semantic Parts tab to the Tooltip showcase with a `SemanticPartPreview` and localized part descriptions.
+  - Center the Semantic Parts preview `ToolTip` (`HorizontalAlignment="Center"`) so the pill hugs its content instead of stretching to `ToolTipMaxWidth`.
+  - Add a `Custom Semantic Part styling` example (`SemanticPartStyleTitle` / `SemanticPartStyleDescription`) that customizes `container` via the generated `ToolTipContainerStyle` and hides `arrow` via `ToolTip.IsArrowVisible=False` on the trigger buttons, aligned with the antd `style-class` demo.
+- Fix
+  - The popup shadow now follows the visible container `Border` radius instead of the `ArrowDecoratedBox`'s own `CornerRadius`: overriding only `ToolTipContainerStyle`'s `CornerRadius` previously left the shadow mask at `ToolTipCornerRadius`, exposing white page corners behind the rounded pill.
+
 ## 2026-08-25
 
 - Docs

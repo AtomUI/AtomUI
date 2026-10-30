@@ -199,6 +199,90 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button rendered in clear mode.</source>
+        <target state="translated">Botão de limpar renderizado no modo de limpeza.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Start time text input box.</source>
+        <target state="translated">Caixa de entrada de texto do horário inicial.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Owner-scoped styles targeting public Semantic Parts of the TimePicker family via their real selectors.</source>
+        <target state="translated">Use owner-scoped selectors e seletores de propriedade do TimePicker para personalizar as Semantic Parts publicadas.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupColumnDescription">
+      <segment>
+        <source>Host of a single scrolling time column.</source>
+        <target state="translated">Hospedeiro de uma única coluna de horário rolável.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContainerDescription">
+      <segment>
+        <source>Content container organizing the time panel and footer.</source>
+        <target state="translated">Contêiner de conteúdo que organiza o painel de horário e a área de botões.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContentDescription">
+      <segment>
+        <source>Layout container of all time columns.</source>
+        <target state="translated">Contêiner de layout de todas as colunas de horário.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupFooterDescription">
+      <segment>
+        <source>Bottom action area with Now and Confirm buttons.</source>
+        <target state="translated">Área de ações inferior com botões Agora e Confirmar.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupItemDescription">
+      <segment>
+        <source>Selectable time cell inside a column.</source>
+        <target state="translated">Célula de horário selecionável dentro de uma coluna.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root surface of the time popup layer.</source>
+        <target state="translated">Superfície raiz da camada pop-up de horário.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix add-on area inside the input zone.</source>
+        <target state="translated">Área de prefixo de conteúdo dentro da zona de entrada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The TimePicker owner itself.</source>
+        <target state="translated">O próprio componente TimePicker.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSecondaryInputDescription">
+      <segment>
+        <source>End time text input box of the range selection.</source>
+        <target state="translated">Caixa de entrada de texto do horário final da seleção de intervalo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix add-on area of the input zone.</source>
+        <target state="translated">Área de sufixo da zona de entrada.</target>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to TimePicker with status, which could be error or warning.</source>
@@ -257,6 +341,18 @@
       <segment>
         <source>Variants</source>
         <target state="translated">Variantes</target>
+      </segment>
+    </unit>
+    <unit id="NeedConfirmTitle">
+      <segment>
+        <source>Confirm selection</source>
+        <target state="translated">Confirmar seleção</target>
+      </segment>
+    </unit>
+    <unit id="NeedConfirmDescription">
+      <segment>
+        <source>IsNeedConfirm is enabled by default. Selecting a time updates the input immediately; OK submits the value. With IsNeedConfirm=False, closing the panel submits the candidate. Hover and ordinary scrolling do not submit.</source>
+        <target state="translated">IsNeedConfirm está ativo por padrão. Selecionar atualiza o campo imediatamente; OK confirma o valor. Com IsNeedConfirm=False, fechar o painel confirma a seleção. Passar o cursor e rolar normalmente não confirmam valores.</target>
       </segment>
     </unit>
   </file>

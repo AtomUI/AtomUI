@@ -163,6 +163,30 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticCoverDescription">
+      <segment>
+        <source>Cover element, set absolute positioning, z-index, background color and loading state overlay styles</source>
+        <target state="translated">Elemento de cobertura que define posicionamento absoluto, camada, cor de fundo e estilos de sobreposição do estado de carregamento</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped style selectors to customize QRCode's published Semantic Parts.</source>
+        <target state="translated">Use seletores de estilo com escopo do proprietário para personalizar as Semantic Parts publicadas do QRCode.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, set flex layout, padding, background color, border, border radius and relative positioning styles</source>
+        <target state="translated">Elemento raiz que define layout flexível, preenchimento, cor de fundo, borda, raio da borda e estilos de posicionamento relativo</target>
+      </segment>
+    </unit>
     <unit id="WithIconDescription">
       <segment>
         <source>A QR code with an icon.</source>

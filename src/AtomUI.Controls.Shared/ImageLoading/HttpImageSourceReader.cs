@@ -2,11 +2,12 @@ namespace AtomUI.Controls;
 
 internal sealed class HttpImageSourceReader : ImageSourceReader
 {
-    private readonly HttpImageTransport _transport;
+    private readonly Func<HttpImageTransport> _getTransport;
 
-    internal HttpImageSourceReader(HttpImageTransport transport)
+    internal HttpImageSourceReader(Func<HttpImageTransport> getTransport)
     {
-        _transport = transport;
+        ArgumentNullException.ThrowIfNull(getTransport);
+        _getTransport = getTransport;
     }
 
     internal override ImageSourceKind Kind => ImageSourceKind.Http;
@@ -17,7 +18,8 @@ internal sealed class HttpImageSourceReader : ImageSourceReader
         IProgress<ImageLoadProgress>? progress,
         CancellationToken cancellationToken)
     {
-        var content = await _transport.FetchAsync(
+        cancellationToken.ThrowIfCancellationRequested();
+        var content = await _getTransport().FetchAsync(
             request,
             staleContent,
             progress,

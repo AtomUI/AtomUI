@@ -30,7 +30,10 @@ public abstract class AbstractGeneralCircleProgress : AbstractCircleProgress
 
     private void DrawGrooveNormal(DrawingContext context)
     {
-        PenUtils.TryModifyOrCreate(ref _groovePen, GrooveBrush, StrokeThickness);
+        PenUtils.TryModifyOrCreate(
+            ref _groovePen,
+            GrooveBrush,
+            StrokeThickness);
         context.DrawEllipse(null, _groovePen, _currentGrooveRect);
     }
 
@@ -128,5 +131,67 @@ public abstract class AbstractGeneralCircleProgress : AbstractCircleProgress
     private double CalculateAngle(double value)
     {
         return 360 * CalculateProgressRatio(value);
+    }
+
+    private protected override Geometry BuildRailGeometry(Rect grooveRect)
+    {
+        if (StepCount <= 0 || StepGap <= 0)
+        {
+            return new EllipseGeometry(grooveRect);
+        }
+
+        return BuildStepGeometry(grooveRect, StepCount, -90, GetStepSpanAngle(), StepCount);
+    }
+
+    private protected override Geometry BuildTrackGeometry(Rect grooveRect)
+    {
+        if (StepCount <= 0 || StepGap <= 0)
+        {
+            return CommonShapeBuilder.BuildArc(grooveRect, -90, IndicatorAngle);
+        }
+
+        var filledSteps = (int)Math.Round(StepCount * Percentage / 100);
+        return BuildStepGeometry(grooveRect, StepCount, -90, GetStepSpanAngle(), filledSteps);
+    }
+
+    private protected override Geometry BuildSuccessGeometry(Rect grooveRect)
+    {
+        var threshold = Math.Clamp(SuccessThreshold, Minimum, Maximum);
+        if (StepCount <= 0 || StepGap <= 0)
+        {
+            return CommonShapeBuilder.BuildArc(grooveRect, -90, CalculateAngle(threshold));
+        }
+
+        var filledSteps = (int)Math.Round(StepCount * Percentage / 100);
+        var successSteps = (int)Math.Round(StepCount * CalculateProgressRatio(threshold));
+        return BuildStepGeometry(
+            grooveRect,
+            StepCount,
+            -90,
+            GetStepSpanAngle(),
+            Math.Min(filledSteps, successSteps));
+    }
+
+    private double GetStepSpanAngle()
+    {
+        return (360 - StepGap * StepCount) / StepCount;
+    }
+
+    private Geometry BuildStepGeometry(
+        Rect grooveRect,
+        int stepCount,
+        double startAngle,
+        double spanAngle,
+        int visibleSteps)
+    {
+        var geometry = new GeometryGroup();
+        var count = Math.Clamp(visibleSteps, 0, stepCount);
+        for (var index = 0; index < count; index++)
+        {
+            geometry.Children.Add(CommonShapeBuilder.BuildArc(grooveRect, startAngle, spanAngle));
+            startAngle += StepGap + spanAngle;
+        }
+
+        return geometry;
     }
 }

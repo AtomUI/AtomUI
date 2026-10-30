@@ -13,11 +13,11 @@ internal static partial class Program
         return
         [
             new PerfScenario("Steps.Basic.Items3", _ => CreateSteps()),
-            new PerfScenario("Steps.Vertical.Items3", _ => CreateSteps(orientation: Orientation.Vertical, currentStep: 1)),
-            new PerfScenario("Steps.Dot.Items4", _ => CreateSteps(count: 4, indicatorType: StepsItemIndicatorType.Dot, currentStep: 1)),
-            new PerfScenario("Steps.Navigation.Items4", _ => CreateSteps(count: 4, style: StepsStyle.Navigation, isClickable: true)),
-            new PerfScenario("Steps.Inline.Items3", _ => CreateSteps(style: StepsStyle.Inline, currentStep: 1)),
-            new PerfScenario("Steps.Progress.Items3", _ => CreateSteps(currentStep: 1, progressValue: 60, isShowProgress: true)),
+            new PerfScenario("Steps.Vertical.Items3", _ => CreateSteps(orientation: Orientation.Vertical, current: 1)),
+            new PerfScenario("Steps.Dot.Items4", _ => CreateSteps(count: 4, type: StepsType.Dot, current: 1)),
+            new PerfScenario("Steps.Navigation.Items4", _ => CreateSteps(count: 4, type: StepsType.Navigation, isClickable: true)),
+            new PerfScenario("Steps.Inline.Items3", _ => CreateSteps(type: StepsType.Inline, current: 1)),
+            new PerfScenario("Steps.Progress.Items3", _ => CreateSteps(current: 1, percent: 60)),
             new PerfScenario("Steps.Icon.Items4", _ => CreateIconSteps()),
             new PerfScenario("Steps.GalleryShape", _ => CreateStepsGalleryShape())
         ];
@@ -25,32 +25,28 @@ internal static partial class Program
 
     private static Steps CreateSteps(int count = 3,
                                      Orientation orientation = Orientation.Horizontal,
-                                     StepsStyle style = StepsStyle.Default,
-                                     StepsItemIndicatorType indicatorType = StepsItemIndicatorType.Default,
-                                     int currentStep = 0,
+                                     StepsType type = StepsType.Default,
+                                     int current = 0,
                                      bool isClickable = false,
-                                     bool isShowProgress = false,
-                                     double progressValue = 0)
+                                     double? percent = null)
     {
         var steps = new Steps
         {
-            Width               = orientation == Orientation.Horizontal ? 760 : 360,
-            CurrentStep         = currentStep,
-            Orientation         = orientation,
-            Style               = style,
-            ItemIndicatorType   = indicatorType,
-            IsItemClickable     = isClickable,
-            IsShowItemProgress  = isShowProgress,
-            ProgressValue       = progressValue
+            Width           = orientation == Orientation.Horizontal ? 760 : 360,
+            Current         = current,
+            Orientation     = orientation,
+            Type            = type,
+            IsItemClickable = isClickable,
+            Percent         = percent
         };
 
         for (var i = 0; i < count; i++)
         {
             steps.Items.Add(new StepsItem
             {
-                Header      = $"Step {i + 1}",
-                SubHeader   = i == 1 ? "Left 00:00:08" : null,
-                Description = "This is a description."
+                Header    = $"Step {i + 1}",
+                SubHeader = i == 1 ? "Left 00:00:08" : null,
+                Content   = "This is a description."
             });
         }
 
@@ -60,10 +56,10 @@ internal static partial class Program
     private static Steps CreateIconSteps()
     {
         var steps = CreateSteps(count: 0);
-        steps.Items.Add(new StepsItem { Header = "Login", Status = StepsItemStatus.Finish, Icon = new UserOutlined() });
-        steps.Items.Add(new StepsItem { Header = "Verification", Status = StepsItemStatus.Finish, Icon = new SolutionOutlined() });
-        steps.Items.Add(new StepsItem { Header = "Pay", Status = StepsItemStatus.Process, Icon = new LoadingOutlined() });
-        steps.Items.Add(new StepsItem { Header = "Done", Status = StepsItemStatus.Wait, Icon = new SmileOutlined() });
+        steps.Items.Add(new StepsItem { Header = "Login", Status = StepsStatus.Finish, Icon = new UserOutlined() });
+        steps.Items.Add(new StepsItem { Header = "Verification", Status = StepsStatus.Finish, Icon = new SolutionOutlined() });
+        steps.Items.Add(new StepsItem { Header = "Pay", Status = StepsStatus.Process, Icon = new LoadingOutlined() });
+        steps.Items.Add(new StepsItem { Header = "Done", Status = StepsStatus.Wait, Icon = new SmileOutlined() });
         return steps;
     }
 
@@ -75,17 +71,17 @@ internal static partial class Program
         };
 
         root.Children.Add(CreateSteps());
-        root.Children.Add(CreateSteps(currentStep: 1, orientation: Orientation.Vertical));
+        root.Children.Add(CreateSteps(current: 1, orientation: Orientation.Vertical));
         root.Children.Add(CreateIconSteps());
-        root.Children.Add(CreateSteps(count: 4, indicatorType: StepsItemIndicatorType.Dot, currentStep: 1));
-        root.Children.Add(CreateSteps(count: 4, indicatorType: StepsItemIndicatorType.Dot, orientation: Orientation.Vertical, currentStep: 1));
-        root.Children.Add(CreateSteps(count: 4, style: StepsStyle.Navigation, isClickable: true));
-        root.Children.Add(CreateSteps(count: 4, style: StepsStyle.Navigation, orientation: Orientation.Vertical, isClickable: true));
-        root.Children.Add(CreateSteps(currentStep: 1, progressValue: 60, isShowProgress: true));
-        var verticalLabelSteps = CreateSteps(currentStep: 1, progressValue: 45, isShowProgress: true);
-        verticalLabelSteps.LabelPlacement = Orientation.Vertical;
-        root.Children.Add(verticalLabelSteps);
-        root.Children.Add(CreateSteps(style: StepsStyle.Inline, currentStep: 1));
+        root.Children.Add(CreateSteps(count: 4, type: StepsType.Dot, current: 1));
+        root.Children.Add(CreateSteps(count: 4, type: StepsType.Dot, orientation: Orientation.Vertical, current: 1));
+        root.Children.Add(CreateSteps(count: 4, type: StepsType.Navigation, isClickable: true));
+        root.Children.Add(CreateSteps(count: 4, type: StepsType.Navigation, orientation: Orientation.Vertical, isClickable: true));
+        root.Children.Add(CreateSteps(current: 1, percent: 60));
+        var verticalTitleSteps = CreateSteps(current: 1, percent: 45);
+        verticalTitleSteps.TitlePlacement = Orientation.Vertical;
+        root.Children.Add(verticalTitleSteps);
+        root.Children.Add(CreateSteps(type: StepsType.Inline, current: 1));
         root.Children.Add(new AtomTextBlock { Text = "Steps gallery shape sentinel" });
 
         return root;

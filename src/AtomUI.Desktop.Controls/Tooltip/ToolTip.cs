@@ -16,9 +16,9 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(":open")]
-public class ToolTip : ContentControl,
-                       IMotionAwareControl,
-                       IArrowAwareShadowMaskInfoProvider
+public partial class ToolTip : ContentControl,
+                               IMotionAwareControl,
+                               IArrowAwareShadowMaskInfoProvider
 {
     #region 附加属性定义
 
@@ -656,47 +656,51 @@ public class ToolTip : ContentControl,
 
     CornerRadius IShadowMaskInfoProvider.GetMaskCornerRadius()
     {
-        return EnsureArrowDecoratedBox().GetMaskCornerRadius();
+        return ResolveArrowDecoratedBox()?.GetMaskCornerRadius() ?? new CornerRadius(0);
     }
-    
+
     Rect IShadowMaskInfoProvider.GetMaskBounds()
     {
-        return EnsureArrowDecoratedBox().GetMaskBounds();
+        return ResolveArrowDecoratedBox()?.GetMaskBounds() ?? new Rect(Bounds.Size);
     }
 
     IBrush? IShadowMaskInfoProvider.GetMaskBackground()
     {
         return Background;
     }
-    
+
     ArrowPosition IArrowAwareShadowMaskInfoProvider.GetArrowPosition()
     {
-        return EnsureArrowDecoratedBox().ArrowPosition;
+        return ResolveArrowDecoratedBox()?.ArrowPosition ?? default;
     }
-    
+
     bool IArrowAwareShadowMaskInfoProvider.IsArrowVisible()
     {
-        return EnsureArrowDecoratedBox().IsArrowVisible;
+        // 箭头部件不可用时按无箭头报告，弹层据此降级阴影与定位
+        return ResolveArrowDecoratedBox()?.IsArrowVisible ?? false;
     }
 
     void IArrowAwareShadowMaskInfoProvider.SetArrowOpacity(double opacity)
     {
-        EnsureArrowDecoratedBox().ArrowOpacity = opacity;
+        if (ResolveArrowDecoratedBox() is { } arrowDecoratedBox)
+        {
+            arrowDecoratedBox.ArrowOpacity = opacity;
+        }
     }
 
     Rect IArrowAwareShadowMaskInfoProvider.GetArrowIndicatorBounds()
     {
-        return EnsureArrowDecoratedBox().ArrowIndicatorBounds;
+        return ResolveArrowDecoratedBox()?.ArrowIndicatorBounds ?? default;
     }
-    
+
     Rect IArrowAwareShadowMaskInfoProvider.GetArrowIndicatorLayoutBounds()
     {
-        return EnsureArrowDecoratedBox().ArrowIndicatorLayoutBounds;
+        return ResolveArrowDecoratedBox()?.ArrowIndicatorLayoutBounds ?? default;
     }
-    
-    AbstractArrowDecoratedBox IArrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox()
+
+    AbstractArrowDecoratedBox? IArrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox()
     {
-        return EnsureArrowDecoratedBox();
+        return ResolveArrowDecoratedBox();
     }
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -708,6 +712,11 @@ public class ToolTip : ContentControl,
     
     private void DeferSetupArrowDecoratedBox(object? sender, TemplateAppliedEventArgs args)
     {
+        if (_arrowDecoratedBox is null)
+        {
+            // 本次应用的模板仍未提供箭头部件：保持订阅，等待后续模板应用再完成箭头设置
+            return;
+        }
         TemplateApplied -= DeferSetupArrowDecoratedBox;
         Debug.Assert(_popup != null && _popup.PlacementTarget != null);
         SetupArrowDecoratedBox(_popup.PlacementTarget);
@@ -745,14 +754,15 @@ public class ToolTip : ContentControl,
         }
     }
 
-    private ArrowDecoratedBox EnsureArrowDecoratedBox()
+    private ArrowDecoratedBox? ResolveArrowDecoratedBox()
     {
         if (_arrowDecoratedBox is null)
         {
+            // 尽力在已挂树/已样式化时立即构建模板；模板未就绪或主题未提供
+            // PART_ArrowDecorator 部件时返回 null，由调用方按无箭头降级处理
             ApplyTemplate();
         }
 
-        Debug.Assert(_arrowDecoratedBox != null);
         return _arrowDecoratedBox;
     }
     

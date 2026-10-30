@@ -4,3 +4,94 @@ root = true
 end_of_line = lf
 insert_final_newline = true
 
+# Control-flow bodies must always use braces, including single-line bodies.
+csharp_prefer_braces = true:error
+
+# ============================================================
+# Naming conventions (mirror the existing repo style)
+#   - local variables / pattern designations: camelCase
+#   - parameters: camelCase
+#   - private instance fields: _camelCase
+#   - private static mutable fields: s_camelCase
+#   - private static readonly / const fields: PascalCase
+#   - public members and types: PascalCase, interfaces: I-prefixed
+# Rules are evaluated top-down; keep the more specific rule first.
+# ============================================================
+
+# --- naming styles ---
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_style.camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+dotnet_naming_style.s_underscore_camel_case.required_prefix = s_
+dotnet_naming_style.s_underscore_camel_case.capitalization = camel_case
+dotnet_naming_style.interface_pascal_case.required_prefix = I
+dotnet_naming_style.interface_pascal_case.capitalization = pascal_case
+
+# --- local variables and parameters use camelCase ---
+dotnet_naming_rule.locals_should_be_camel_case.severity = warning
+dotnet_naming_rule.locals_should_be_camel_case.symbols = local_variables
+dotnet_naming_rule.locals_should_be_camel_case.style = camel_case
+
+dotnet_naming_symbols.local_variables.applicable_kinds = local
+
+dotnet_naming_rule.parameters_should_be_camel_case.severity = suggestion
+dotnet_naming_rule.parameters_should_be_camel_case.symbols = parameters
+dotnet_naming_rule.parameters_should_be_camel_case.style = camel_case
+
+dotnet_naming_symbols.parameters.applicable_kinds = parameter
+
+# --- constant fields use PascalCase ---
+dotnet_naming_rule.const_fields_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.const_fields_should_be_pascal_case.symbols = const_fields
+dotnet_naming_rule.const_fields_should_be_pascal_case.style = pascal_case
+
+dotnet_naming_symbols.const_fields.applicable_kinds = field
+dotnet_naming_symbols.const_fields.required_modifiers = const
+
+# --- private static readonly fields use PascalCase ---
+dotnet_naming_rule.private_static_readonly_fields_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.private_static_readonly_fields_should_be_pascal_case.symbols = private_static_readonly_fields
+dotnet_naming_rule.private_static_readonly_fields_should_be_pascal_case.style = pascal_case
+
+dotnet_naming_symbols.private_static_readonly_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_readonly_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_readonly_fields.required_modifiers = static, readonly
+
+# --- private static mutable fields use the s_ prefix ---
+dotnet_naming_rule.private_static_fields_should_have_s_prefix.severity = warning
+dotnet_naming_rule.private_static_fields_should_have_s_prefix.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_should_have_s_prefix.style = s_underscore_camel_case
+
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+
+# --- remaining private fields use the _ prefix (instance fields) ---
+dotnet_naming_rule.private_fields_should_have_underscore_prefix.severity = warning
+dotnet_naming_rule.private_fields_should_have_underscore_prefix.symbols = private_fields
+dotnet_naming_rule.private_fields_should_have_underscore_prefix.style = underscore_camel_case
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+# --- non-private members use PascalCase ---
+dotnet_naming_rule.public_members_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.public_members_should_be_pascal_case.symbols = public_members
+dotnet_naming_rule.public_members_should_be_pascal_case.style = pascal_case
+
+dotnet_naming_symbols.public_members.applicable_kinds = method, property, event
+dotnet_naming_symbols.public_members.applicable_accessibilities = public, protected, protected_internal, internal
+
+# --- types use PascalCase, interfaces are I-prefixed ---
+dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.types_should_be_pascal_case.symbols = types
+dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
+
+dotnet_naming_symbols.types.applicable_kinds = class, struct, enum, delegate
+
+dotnet_naming_rule.interfaces_should_be_i_prefixed.severity = suggestion
+dotnet_naming_rule.interfaces_should_be_i_prefixed.symbols = interfaces
+dotnet_naming_rule.interfaces_should_be_i_prefixed.style = interface_pascal_case
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface

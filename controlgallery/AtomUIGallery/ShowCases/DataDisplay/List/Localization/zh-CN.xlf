@@ -445,6 +445,36 @@
         <target state="translated">选择</target>
       </segment>
     </unit>
+    <unit id="SemanticGroupHeaderDescription">
+      <segment>
+        <source>Group header element, with sticky positioning and background color</source>
+        <target state="translated">分组标题元素，设置吸顶定位与背景色</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, with padding, split line and hover background</source>
+        <target state="translated">条目元素，设置内间距、分割线与悬浮背景</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use generated style classes to customize the published Semantic Parts.</source>
+        <target state="translated">使用生成的样式类自定义已发布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, the scroll container, with font and relative positioning</source>
+        <target state="translated">根元素，即滚动容器，设置字体与相对定位</target>
+      </segment>
+    </unit>
     <unit id="SimpleListBoxDescription">
       <segment>
         <source>Basic usage example.</source>

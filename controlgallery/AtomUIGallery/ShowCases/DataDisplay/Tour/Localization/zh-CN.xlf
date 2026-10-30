@@ -157,6 +157,30 @@
         <target state="translated">保存你的更改。</target>
       </segment>
     </unit>
+    <unit id="P2SemanticStepDescription">
+      <segment>
+        <source>Hello World?!</source>
+        <target state="translated">Hello World?!</target>
+      </segment>
+    </unit>
+    <unit id="P2SemanticStepSaveDescription">
+      <segment>
+        <source>Save your changes.</source>
+        <target state="translated">保存你的更改。</target>
+      </segment>
+    </unit>
+    <unit id="P2SemanticStepSaveTitle">
+      <segment>
+        <source>Save</source>
+        <target state="translated">保存</target>
+      </segment>
+    </unit>
+    <unit id="P2SemanticStepTitle">
+      <segment>
+        <source>Hello World!</source>
+        <target state="translated">Hello World!</target>
+      </segment>
+    </unit>
     <unit id="P2TextHorizontalOffset">
       <segment>
         <source>Horizontal offset:</source>
@@ -245,6 +269,108 @@
       <segment>
         <source>Examples</source>
         <target state="translated">示例</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupActionsDescription">
+      <segment>
+        <source>Popup actions container</source>
+        <target state="translated">操作按钮组容器，控制上一步/下一步/完成按钮的布局。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupCloseDescription">
+      <segment>
+        <source>Popup close button</source>
+        <target state="translated">关闭按钮，用于结束引导流程。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupCoverDescription">
+      <segment>
+        <source>Popup cover area</source>
+        <target state="translated">卡片封面区域，承载步骤封面图片等内容展示样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupDescriptionDescription">
+      <segment>
+        <source>Popup description text</source>
+        <target state="translated">引导步骤描述文字样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupFooterDescription">
+      <segment>
+        <source>Popup footer area</source>
+        <target state="translated">卡片底部操作区域，组合指示器与操作按钮的底部容器样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupHeaderDescription">
+      <segment>
+        <source>Popup header area</source>
+        <target state="translated">卡片头部区域，组合标题与关闭按钮的头部容器样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupIndicatorDescription">
+      <segment>
+        <source>Popup single indicator</source>
+        <target state="translated">单个步骤指示器圆点，含激活态样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupIndicatorsDescription">
+      <segment>
+        <source>Popup indicators container</source>
+        <target state="translated">指示器组容器，承载全部步骤圆点。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupMaskDescription">
+      <segment>
+        <source>Popup mask layer</source>
+        <target state="translated">遮罩层，覆盖目标区域以外的整屏、镂空高亮当前目标并阻挡交互。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Popup root container</source>
+        <target state="translated">引导弹层根容器，承载卡片、箭头与弹层定位等容器样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupSectionDescription">
+      <segment>
+        <source>Popup card content area</source>
+        <target state="translated">卡片主要内容区域，设置圆角、背景、内边距等卡片容器样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupTitleDescription">
+      <segment>
+        <source>Popup title text</source>
+        <target state="translated">引导步骤标题文字样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Tour root container</source>
+        <target state="translated">Tour 根容器，承载步骤配置、开关状态与引导流程控制。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesDescription">
+      <segment>
+        <source>Use dedicated semantic part styles to customize popup sections.</source>
+        <target state="translated">使用语义部件专用样式定制弹层各区域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesFunctionButton">
+      <segment>
+        <source>Begin Tour Function</source>
+        <target state="translated">开始引导（函数样式）</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesObjectButton">
+      <segment>
+        <source>Begin Tour Object</source>
+        <target state="translated">开始引导（对象样式）</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
       </segment>
     </unit>
   </file>

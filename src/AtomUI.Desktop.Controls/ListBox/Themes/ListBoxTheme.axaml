@@ -13,7 +13,8 @@
                                      BorderThickness="{TemplateBinding EffectiveBorderThickness}"
                                      CornerRadius="{TemplateBinding CornerRadius}"
                                      Padding="{TemplateBinding Padding}"
-                                     Margin="{TemplateBinding Margin}">
+                                     Margin="{TemplateBinding Margin}"
+                                     ClipContentToCornerRadius="True">
                 <Panel>
                     <atom:ScrollViewer Name="PART_ScrollViewer"
                                        IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
@@ -57,7 +58,7 @@
         <Setter Property="ItemHoverBg" Value="{atom:ListBoxTokenResource ItemHoverBgColor}" />
         <Setter Property="ItemSelectedBg" Value="{atom:ListBoxTokenResource ItemSelectedBgColor}" />
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
         <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
         <Setter Property="Padding" Value="{atom:ListBoxTokenResource ContentPadding}" />
         <Setter Property="FilterHighlightForeground" Value="{atom:ListBoxTokenResource FilterHighlightColor}" />

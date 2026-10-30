@@ -289,5 +289,59 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticActionsDescription">
+      <segment>
+        <source>Actions element with layout and spacing styles for action buttons</source>
+        <target state="translated">操作元素，包含操作按鈕的配置與間距樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>Close button element with basic button styling</source>
+        <target state="translated">關閉按鈕元素，包含基礎按鈕樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>Description element with font-size and line-height styles for additional content</source>
+        <target state="translated">描述元素，包含附加內容的字型大小與行高樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with color, line-height, and margin styles, supporting different status icon types</source>
+        <target state="translated">圖示元素，包含顏色、行高與外距樣式，支援不同狀態圖示類型</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Alert's published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域樣式自訂 Alert 已發布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border, background, padding, border-radius, and positioning styles for the alert container</source>
+        <target state="translated">根元素，包含 Alert 容器的邊框、背景、內距、圓角與定位樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Content element with flex layout controlling content area typography and minimum width</source>
+        <target state="translated">內容元素，採用彈性配置控制內容區域的排版與最小寬度</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with text color and font styling for the alert title</source>
+        <target state="translated">標題元素，包含 Alert 標題的文字顏色與字型樣式</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

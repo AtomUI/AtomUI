@@ -191,6 +191,66 @@
         <source>Style</source>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear icon button inside the suffix area that resets the value</source>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Embedded numeric text input element with font, alignment and text styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and NumericUpDown property selectors to customize the published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Inner prefix content element rendered before the input text area</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border, background, size, hover and focus states and other basic input container styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerClearDescription">
+      <segment>
+        <source>Clear icon button inside the suffix area that resets the value in spinner mode</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerInputDescription">
+      <segment>
+        <source>Embedded numeric text input element with font, alignment and text styles in spinner mode</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerPrefixDescription">
+      <segment>
+        <source>Inner prefix content element rendered before the input text area in spinner mode</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerRootDescription">
+      <segment>
+        <source>Root element with border, background, size, hover and focus states and other basic input container styles in spinner mode</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerSuffixDescription">
+      <segment>
+        <source>Suffix container element rendered after the input text area in spinner mode</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix container element rendered after the input text area</source>
+      </segment>
+    </unit>
     <unit id="SizesDescription">
       <segment>
         <source>NumberUpDown supports large (40px), default (32px), small (24px) and custom size.</source>

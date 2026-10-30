@@ -283,6 +283,48 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Body element with padding, background color and text styles for the panel content area; it materializes on first expansion.</source>
+        <target state="translated">Body element com padding, background color e text styles para o panel content area; isso materializes em first expansion.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with padding, background color, font size, line height and cursor style for the panel header</source>
+        <target state="translated">Header element com padding, background color, font size, line-height e cursor style para o panel header</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with icon size, placement, margin and rotation transforms for the expand/collapse arrow</source>
+        <target state="translated">Icon element com icon size, placement, margin e rotation transforms para o expand/collapse arrow</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Expander property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">Use owner-scoped selectors e Expander property selectors para customize o published Semantic Parts.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border thickness, visual mode and expansion state that control the overall appearance of the panel</source>
+        <target state="translated">Root element com border thickness, visual mode e expansion state that control o overall appearance of o panel</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with layout, foreground color and typography styles for the header text</source>
+        <target state="translated">Title element com layout, foreground color e typography styles para o header text</target>
+      </segment>
+    </unit>
     <unit id="SizeDescription">
       <segment>
         <source>Ant Design supports a default Expander size as well as a large and small size. If a large or small Expander is desired, set the size property to either large or small respectively. Omit the size property for a Expander with the default size.</source>

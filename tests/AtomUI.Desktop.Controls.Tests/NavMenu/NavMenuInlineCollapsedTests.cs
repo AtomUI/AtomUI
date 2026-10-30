@@ -129,7 +129,7 @@ public class NavMenuInlineCollapsedTests
     }
 
     [Fact]
-    public void InlineCollapsed_Toggle_With_Motion_Animates_Width_Instead_Of_Jumping_To_Target()
+    public async Task InlineCollapsed_Toggle_With_Motion_Animates_Width_Instead_Of_Jumping_To_Target()
     {
         var menu = new AtomUI.Desktop.Controls.NavMenu
         {
@@ -158,17 +158,38 @@ public class NavMenuInlineCollapsedTests
 
             menu.Bounds.Width.ShouldBe(300, 0.5);
 
+            var reversalWidths = new List<double>();
+            void ObserveReversalWidth(object? sender, AvaloniaPropertyChangedEventArgs change)
+            {
+                if (change.Property == Layoutable.WidthProperty)
+                {
+                    reversalWidths.Add(menu.Width);
+                }
+            }
+            menu.PropertyChanged += ObserveReversalWidth;
+            try
+            {
+                // No frame is pumped between requests: cancellation must not publish a default fill width.
+                menu.IsInlineCollapsed = true;
+                menu.IsInlineCollapsed = false;
+            }
+            finally
+            {
+                menu.PropertyChanged -= ObserveReversalWidth;
+            }
+            reversalWidths.ShouldAllBe(width => width >= menu.InlineCollapsedWidth && width <= 300);
+            menu.Bounds.Width.ShouldBe(300, 0.5);
+
             menu.IsInlineCollapsed = true;
             Dispatcher.UIThread.RunJobs();
-            Thread.Sleep(20);
+            await Task.Delay(20);
             Dispatcher.UIThread.RunJobs();
 
             menu.Bounds.Width.ShouldBeGreaterThan(menu.InlineCollapsedWidth,
                 "motion enabled inline collapsed should expose an intermediate layout width instead of jumping from expanded width to the collapsed target in one frame.");
-            WaitForWidthBetween(menu, menu.InlineCollapsedWidth, 300);
+            await WaitForWidthBetween(menu, menu.InlineCollapsedWidth, 300);
 
-            WaitForWidth(menu, menu.InlineCollapsedWidth);
-            WaitForInlineCollapsedLayoutWidthCleared(menu);
+            await WaitForInlineCollapsedLayoutWidthCleared(menu);
 
             menu.Bounds.Width.ShouldBe(menu.InlineCollapsedWidth, 0.5);
             menu.GetBaseValue(Layoutable.WidthProperty).Value.ShouldBe(300);
@@ -177,14 +198,13 @@ public class NavMenuInlineCollapsedTests
 
             menu.IsInlineCollapsed = false;
             Dispatcher.UIThread.RunJobs();
-            Thread.Sleep(20);
+            await Task.Delay(20);
             Dispatcher.UIThread.RunJobs();
 
             menu.Bounds.Width.ShouldBeLessThan(300);
-            WaitForWidthBetween(menu, menu.InlineCollapsedWidth, 300);
+            await WaitForWidthBetween(menu, menu.InlineCollapsedWidth, 300);
 
-            WaitForWidth(menu, 300);
-            WaitForInlineCollapsedLayoutWidthCleared(menu);
+            await WaitForInlineCollapsedLayoutWidthCleared(menu);
 
             menu.Bounds.Width.ShouldBe(300, 0.5);
             menu.GetBaseValue(Layoutable.WidthProperty).Value.ShouldBe(300);
@@ -306,7 +326,7 @@ public class NavMenuInlineCollapsedTests
     }
 
     [Fact]
-    public void InlineCollapsed_Toggle_Preserves_SelectedItem_And_Restores_Open_Inline_Path()
+    public async Task InlineCollapsed_Toggle_Preserves_SelectedItem_And_Restores_Open_Inline_Path()
     {
         var child = new NavMenuNode
         {
@@ -400,6 +420,32 @@ public class NavMenuInlineCollapsedTests
                 rootContainer.IsInSelectedPath.ShouldBeTrue();
                 parentContainer.IsInSelectedPath.ShouldBeTrue();
                 childContainer.IsSelected.ShouldBeTrue();
+
+                var rootViewport = rootContainer.GetVisualDescendants().OfType<ContentViewport>()
+                    .First(viewport => viewport.Name == "PART_ChildItemsViewport" &&
+                                       ReferenceEquals(viewport.TemplatedParent, rootContainer));
+                var parentViewport = parentContainer.GetVisualDescendants().OfType<ContentViewport>()
+                    .First(viewport => viewport.Name == "PART_ChildItemsViewport" &&
+                                       ReferenceEquals(viewport.TemplatedParent, parentContainer));
+                var visibility = Task.WhenAll(
+                    AtomUI.Animations.Motion.GetVisibilityTask(rootViewport),
+                    AtomUI.Animations.Motion.GetVisibilityTask(parentViewport));
+                var settle = System.Diagnostics.Stopwatch.StartNew();
+                while (!visibility.IsCompleted && settle.Elapsed < TimeSpan.FromSeconds(2))
+                {
+                    AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                    Dispatcher.UIThread.RunJobs(DispatcherPriority.SystemIdle);
+                    await Task.Delay(10, TestContext.Current.CancellationToken);
+                }
+                visibility.IsCompletedSuccessfully.ShouldBeTrue();
+                (await visibility).ShouldAllBe(result => result.IsCompleted);
+                rootViewport.IsVisible.ShouldBeTrue("a restored open branch must actually be visible, without a close/reopen click.");
+                rootViewport.Opacity.ShouldBe(1);
+                rootViewport.Bounds.Height.ShouldBeGreaterThan(0);
+                rootContainer.Bounds.Height.ShouldBeGreaterThan(rootViewport.Bounds.Height);
+                parentViewport.IsVisible.ShouldBeTrue();
+                parentViewport.Opacity.ShouldBe(1);
+                parentViewport.Bounds.Height.ShouldBeGreaterThan(0);
             }
         }
         finally
@@ -1367,11 +1413,12 @@ public class NavMenuInlineCollapsedTests
         Dispatcher.UIThread.RunJobs(DispatcherPriority.SystemIdle);
     }
 
-    private static void WaitForWidthBetween(Control control, double lowerBound, double upperBound)
+    private static async Task WaitForWidthBetween(Control control, double lowerBound, double upperBound)
     {
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(1);
         while (DateTime.UtcNow < deadline)
         {
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs(DispatcherPriority.SystemIdle);
             if (control.Bounds.Width > lowerBound + 0.5 &&
                 control.Bounds.Width < upperBound - 0.5)
@@ -1379,25 +1426,26 @@ public class NavMenuInlineCollapsedTests
                 return;
             }
 
-            Thread.Sleep(10);
+            await Task.Delay(10);
         }
 
         control.Bounds.Width.ShouldBeGreaterThan(lowerBound);
         control.Bounds.Width.ShouldBeLessThan(upperBound);
     }
 
-    private static void WaitForInlineCollapsedLayoutWidthCleared(AtomUI.Desktop.Controls.NavMenu menu)
+    private static async Task WaitForInlineCollapsedLayoutWidthCleared(AtomUI.Desktop.Controls.NavMenu menu)
     {
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(1);
         while (DateTime.UtcNow < deadline)
         {
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs(DispatcherPriority.SystemIdle);
             if (double.IsNaN(menu.InlineCollapsedLayoutWidth))
             {
                 return;
             }
 
-            Thread.Sleep(10);
+            await Task.Delay(10);
         }
 
         double.IsNaN(menu.InlineCollapsedLayoutWidth).ShouldBeTrue();

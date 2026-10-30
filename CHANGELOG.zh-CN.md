@@ -6,6 +6,278 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 6.2.10
+
+`2026-10-30`
+
+- 破坏性变更
+  - 动效：公共动效类型由 `AtomUI.MotionScene` 移至 `AtomUI.Animations`；移除 `IMotion`、`MotionSpiritType`、动效 Actor（`BaseMotionActor`、`BaseLayoutAwareMotionActor`、`MotionActor`、`LayoutAwareMotionActor`、`IMotionActor`）以及基于 Actor 的 `Run`/`RunAsync`。`AbstractMotion` 改为抽象类，通过 `Build(MotionBuilder, in MotionContext)` 描述、`PlayAsync(Control)` 播放，`Duration`/`Easing` 默认值改为跟随主题 Token；详见 [6.2.10 迁移指南](docs/releases/6.2.10-api-changes.zh-CN.md)。
+  - 控件：Popup、Flyout、FlyoutHost、ContextMenu、TreeView 的 `OpenMotion`/`CloseMotion` 改用 `AtomUI.Animations.AbstractMotion`；Badge、Collapse、Expander、Dialog、Drawer、FloatButton、Message、Notification、NavMenu、TreeView、TreeSelect、Transfer 主题中的动效模板部件更名；详见 [6.2.10 迁移指南](docs/releases/6.2.10-api-changes.zh-CN.md)。
+  - Window：`WithAtomUIDefaultOptions()` 在 Windows 上改为优先 `RedirectionSurface`，需要 `AcrylicBlur`、`Mica` 的应用须自行把 `WinUIComposition` 排在前面；详见 [6.2.10 迁移指南](docs/releases/6.2.10-api-changes.zh-CN.md)。
+  - 注册：生成的 `ControlPackageGroup_*` 标识随 6.2.10 程序集版本变化。请同步升级 AtomUI 包与 Generator、重新构建预编译消费方，并重新发布裁剪/NativeAOT 应用；详见 [6.2.10 迁移指南](docs/releases/6.2.10-api-changes.zh-CN.md)。
+- 动效
+  - 动效直接作用于控件，由帧驱动并写入合成层变换通道，不再需要 Actor 包装；反向请求从当前呈现值连续接续，不再重新开始。
+  - 通过 `Motion.IsVisible`/`Enter`/`Leave` 与新增的 `ContentViewport` 声明显隐与展开收起动效，新增 `SequenceMotion` 与 `ParallelMotion`。
+  - 布局动效只失效动画中的视口，并只重新排列尺寸变化的祖先，消除子菜单、Expander、Collapse、TreeView 展开时的逐帧整窗重绘。
+  - 修复展开前内容短暂暴露自然高度，以及准备期间重入导致旧请求覆盖新布局的问题。
+- Popup
+  - 窗口型 Popup 改用与 Overlay Popup 相同的 `BoxShadowsSecondary` 阴影，内容与锚点的距离保持不变。
+  - 窗口型 Popup 的阴影区域在 Windows、X11、Wayland、macOS 上把指针输入交给下方内容，包括其他应用程序。
+- Window
+  - Windows 优先使用 `RedirectionSurface`，消除 live resize 时的对向边缘错帧与白屏。
+  - 恢复 Windows 10 在 `RedirectionSurface` 下激活态的左、右、下边框。
+  - Wayland 在首次布局前预测窗口缩放，消除启动约 250 ms 后的整窗重排。
+- Dialog 与 Drawer
+  - 模态遮罩与抽屉动画期间合成缓存的窗口内容，在实测 Wayland Gallery 上每帧渲染线程耗时降低约 70%。
+  - 无放置目标的对话框从面板中心缩放。
+- NavMenu
+  - Inline 折叠宽度动画改由原生时钟驱动，移除 16 ms 定时循环。
+- Wayland
+  - 默认按预计上屏时间提交已准备好的 EGL 帧；可通过 AppContext 开关 `AtomUI.Experimental.WaylandFramePacing` 关闭。
+- DataGrid
+  - 行未填满表格时，右键空白区域可打开上下文菜单。
+- 文档
+  - 增加中英文设计语言与主题定制规范。
+
+## 6.2.9
+
+`2026-10-25`
+
+- 破坏性变更
+  - 注册：生成的 `ControlPackageGroup_*` 标识随 6.2.9 程序集版本变化。请同步升级 AtomUI 包与 Generator、重新构建预编译消费方，并重新发布裁剪/NativeAOT 应用；详见 [6.2.9 迁移指南](docs/releases/6.2.9-api-changes.zh-CN.md)。
+- Splash
+  - 恢复完整卡片阴影，将静态阴影与动画内容分开缓存，同时保留卡片内容裁剪和外观定制入口。
+- 字体与打包
+  - 将 `AtomUI.Fonts.AlibabaPuHuiTi` 纳入正式 NuGet 发布，包含现有普惠体 3.0 Regular 字体。
+  - 显式标记的字体包首次发布时，仅在 NuGet 确认没有任何已发布版本后省略不存在的历史基线；已有包继续执行普通基线校验，网络错误仍中止发布。
+- 文档
+  - 增加 Headless 与 xUnit 测试接入指南。#512
+
+## 6.2.8
+
+`2026-10-21`
+
+- 破坏性变更
+  - 注册：生成的 `ControlPackageGroup_*` 标识随 6.2.8 程序集版本变化。请同步升级 AtomUI 包与 Generator、重新构建预编译消费方，并重新发布裁剪/NativeAOT 应用；详见 [6.2.8 迁移指南](docs/releases/6.2.8-api-changes.zh-CN.md)。
+  - Window Token：新增 Windows 10 边框 Token 后，部分既有 `WindowTokenKind` 与 `WindowTokenKey` 枚举数值改变。请重新编译自定义主题及资源消费方，将持久化或硬编码的 Token 数字改为具名成员；详见迁移指南。
+- DashedBorder
+  - 将子元素裁剪更新移到绘制前，修复显示缩放变化时的崩溃，同时保留圆角裁剪与分数缩放下的边框对齐。
+- Window
+  - 恢复 Windows 10 CSD 窗口缺失的顶边，匹配激活/非激活颜色，并在高 DPI 下保持一个物理像素；其他平台和窗口状态继续使用平台边框。
+- ImagePreviewer
+  - 修复快速连续点击旋转时角度倒转、来回摆动，保持旋转连续。
+- TypeMap 与构建
+  - TypeMap 发布默认支持 .NET 10 及后续稳定版本，取消 SDK/补丁白名单；Browser 使用 SDK 选择的 ILLink/WASM 工具链，保留映射转换、ABI 与消费产物校验。#510
+  - 构建工具允许向后续运行时主版本前滚，最低工具版本改为 TypeMap 引入的 10.0.0。
+
+## 6.2.7
+
+`2026-10-20`
+
+- 破坏性变更
+  - 启动：`UseAtomUI` 应用配置改为在平台服务就绪后、Application 构造前执行。回调副作用及异常发生在平台 setup 阶段，不再发生于登记调用期间；详见 [6.2.7 迁移指南](docs/releases/6.2.7-api-changes.zh-CN.md)。
+  - 注册：生成式注册组标识随 6.2.7 程序集版本更新。请同步升级 AtomUI 包和 Generator、重新编译消费方，并重新发布裁剪/NativeAOT 应用；详见迁移指南。
+  - 主题资源：AtomUI 默认资源现在优先于独立应用 Style 子项的资源。有意通过 `Style.Resources` 覆盖全局同键资源的应用，须将覆盖移到 `Application.Resources`；普通 Setter 与局部作用域优先级保留。详见迁移指南。
+- 主题与本地化
+  - 在 App.axaml 声明 FluentTheme 时保留 AtomUI 窗口装饰，显式声明 Application.Resources 根字典时保留语言资源。#506 #507
+  - 保留应用显式覆盖及原有合并字典次序；切换期间复用主题/语言 Provider，并完整清理部分挂载失败。
+  - 增加 AtomUI 与其他框架主题集成的正式开发者指南。
+- 启动与 Core
+  - 防止普通模块配置间接构造 AvaloniaObject 时，在平台初始化前创建 Dispatcher，造成持续的动画与定时器卡顿。
+  - 保留后台主题准备、每个 Application 实例的配置隔离及 Initialize 前的内核提交；增加按需独立原生进程验收入口，检查启动顺序与稳态定时器行为。
+- 控件与动效
+  - IconButton 与 ToggleIconButton 直接提交父模板驱动的初始外观，修复 Tag 关闭图标首帧前景色；重挂载和更换模板后仍恢复后续正常过渡。
+  - ToggleSwitch、Segmented、TabControl、TabStrip、RadioButton、ListBox、ListView、ComboBox、Carousel、Pagination、Breadcrumb 以及 IconButton/ToggleIconButton 的初始状态改为直接提交；首次显示、重新挂载和重新应用模板不再补播选中、尺寸或外观过渡，后续用户操作仍保留原有时长与缓动。
+  - ToggleSwitch 默认文本按实际字形轮廓垂直居中，兼容字体回退与 shaping offset。
+
+## 6.2.6
+
+`2026-10-19`
+
+- 破坏性变更
+  - 启动与主题：将 AtomUI 配置入口移到 `AppBuilder.UseAtomUI`，要求应用类接入生成式启动挂接，将旧 Extras Splash 替换为框架管理的 `AtomUI.Controls` Splash，引入分阶段包加载和生成式编译主题注册，并将启动包清单升级到版本 2。应用和生成式消费方请按 [6.2.6 API 迁移指南](docs/releases/6.2.6-api-changes.zh-CN.md) 完成迁移。
+  - 注册：六个控件包公开生成的 `ControlPackageGroup_*` 类型名随 6.2.6 程序集标识变化，字体包也开始参与注册管线。请同步升级 AtomUI 包与 Generator，重新编译已编译的消费方，并重新发布裁剪/NativeAOT 应用；详见迁移指南。
+  - 依赖：最低要求 Avalonia 12.1.4。固定使用 12.1.3 的应用须先升级 Avalonia，再安装 AtomUI 6.2.6；详见迁移指南。
+- 启动与 Core
+  - 通过分阶段注册、主题惰性编译和生成式注册，减少启动工作量、分配与主题/资源初始化成本。
+  - 修复主窗体首个渲染批次后的 Splash 交接，并共享 Wayland 调度时钟，避免动画定时卡顿。
+  - 针对 Avalonia 12.1.4 更新 Wayland 兼容路径，改为校验调度后端和时钟结构，不再硬编码程序集版本。
+  - 隔离 Avalonia Grid 测量临时缓存，避免仍存活的 Grid 保留已关闭 Dialog；检测到上游已清理测量缓存时自动跳过兼容处理。
+- Cascader
+  - 对齐 Ant Design 键盘导航并修复搜索焦点路由。#502
+- NumericUpDown、Skeleton 与 Window
+  - 修复 NumericUpDown 清除按钮命中及步进按钮方形布局。
+  - 改用样式驱动 Skeleton shimmer，并观察异步动画异常。
+  - 修复 `TitleBarFrameBackground` 更新问题。
+- Dialog、ImagePreviewer 与 SplitView
+  - 修复 Dialog 遮罩自然尺寸恢复、单轴状态隔离和缩放偏移。#499
+  - 统一 ImagePreviewer 缩放变换并修正成员布局检查。
+  - 修正 SplitView 动效属性与滚动条 owner 注册。
+- 控件与 Gallery
+  - 修正共享控件和桌面控件中样式属性与路由事件的 owner 注册类型。
+  - 修复 TreeView 的 `ItemsSource` 回放暴露临时选择、勾选与 Form 值变更，导致 TreeSelect 重复上报 Form 值的问题；保留回放完成前的连续修改与嵌套换源，并把值相等的旧节点重映射为新实例。
+  - 修复 TextMate 分词状态被并发访问导致 Gallery 代码高亮偶发缺失的问题。
+  - 复用 Gallery 路由配置并延迟创建命令和计时器，降低启动开销。
+- 构建与依赖
+  - 新增 `buildTransitive/AtomUI.CompiledThemes.targets`，并在 `tools/net10.0` 中携带编译主题构建任务加载的 Avalonia 程序集；字体包开始携带注册载荷。
+  - 将支持的 Avalonia 依赖和包消费方 fixture 升级到 12.1.4。
+
+## 6.2.5
+
+`2026-10-10`
+
+- 破坏性变更
+  - 注册：六个控件包公开生成的 `ControlPackageGroup_*` 类型名随版本变化。请同步升级 AtomUI 包、重新编译已编译的消费方，并重新发布裁剪/NativeAOT 应用；详见 [6.2.5 API 迁移指南](docs/releases/6.2.5-api-changes.zh-CN.md)。
+- Window
+  - 修复应用主题切换后窗口内容背景未更新的问题，同时保留透明窗口行为和显式设置的后备背景。#496
+
+## 6.2.4
+
+`2026-10-07`
+
+- Breaking Changes
+  - TimePicker 和 RangeTimePicker：`IsNeedConfirm` 默认启用、24 小时制，普通滚动默认只浏览。需要旧模式时显式设置，并复核提交/Now 时机；详见 [6.2.4 API 迁移指南](docs/releases/6.2.4-api-changes.zh-CN.md)。
+  - TimePicker 主题：调整列宽、单元格内边距与循环滚动模板；自定义主题及滚动假设需按迁移指南复核。
+  - 包与注册：Release 在 `net10.0` 之外恢复 `net8.0`，增加 .NET 8 裁剪/AOT 构建资产。请同步升级 AtomUI 包、重编译预编译消费方并重新发布裁剪/AOT 应用；构建前提及平台限制见迁移指南。
+- TimePicker
+  - 分离提交值、候选值和悬停预览；显式确认统一提交有效候选，关闭确认时在关闭或失焦提交。
+  - 新增 `IsChangeOnScroll`，时/分/秒循环选择保持居中，列内焦点滚动不再推动外围页面。
+  - 修复无效文本、外部值更新、范围端点切换和钉住弹层重复确认；Gallery 示例同步展示实际提交值。
+- ColorPicker
+  - 为 ColorPicker 和 GradientColorPicker 增加可选 `IsNeedConfirm`，提供本地化确认和取消操作。
+  - 草稿编辑与清除可取消，渐变草稿独立，有效输入仅提交一次；保留默认同步模式。
+- NativeAOT、构建与打包
+  - 仅 .NET 8 目标使用兼容依赖后端；现代目标使用匹配的官方 TypeMap 引擎，并自动转换受支持的预编译 .NET 8 包输入。
+  - 将构建工具统一到 AtomUI.Toolchain，校验包的框架与内容契约，工具运行文件不进入应用输出。
+  - 修复无 Generator 引用测试项目的冷构建/并行构建错误，避免重复导出导入的本地化 Catalog。
+- Gallery
+  - 修复分数缩放下 ShowCase 布局循环导致 Form 标签消失；DateViewer 延迟示例初次只物化一项。
+
+## 6.2.3
+
+`2026-10-05`
+
+- Breaking Changes
+  - Calendar：将 `CalendarCellType` 替换为 `DateViewerCellType`，`CalendarCellContext` 改为继承 `DateViewerCellContext`；自定义单元格上下文和模板需要重新编译。详见 [6.2.3 API 迁移指南](docs/releases/6.2.3-api-changes.zh-CN.md)。
+  - DatePicker：移除旧 `CalendarView` 公共类型，迁移并密封 `DateSelectedEventArgs`，密封 `ChoosingStatusEventArgs`；请按迁移指南使用共享面板契约。
+  - Theme 与 Token：替换旧日期面板模板和 Semantic Part 目标，移除过时的 DatePicker Token 键，将 `RangeCalendarSpacing` 更名为 `RangePanelSpacing`，并调整生成的 Calendar/DatePicker Token 枚举值。请重新编译自定义主题并使用具名 Token 成员，详见迁移指南。
+  - Registration：六个控件包中版本相关的生成 `ControlPackageGroup_*` 标识变化；请重新编译生成注册消费方并重新发布 trimming/NativeAOT 应用，详见迁移指南。
+- DateViewer、Calendar 与 DatePicker
+  - 新增独立 DateViewer 和 RangeDateViewer，支持日期、周、月、季度、年选择，Compact/Content 展示、强类型模板、原子范围和 Semantic Part 专用样式。
+  - Calendar、LunarCalendar 与 DatePicker 共享日期面板，保留 Calendar 业务 Header、农历内容和范围条。
+  - 改进日期面板几何、Today/焦点视觉、周格式与语言切换，统一范围高亮和端点圆角。
+  - 修复 RangeDatePicker 端点轮换、弹层锚点、反向 Hover 预览和关闭/重开后的部分确认；保持复用的确认按钮和时间控件可交互。
+- 输入与窗口生命周期
+  - 防止跨窗口指针输入改变 Rate、Slider、TimePicker、ButtonSpinner、ToolTip 和 TreeView 拖拽状态；禁用、卸载和窗口关闭时安全释放临时状态。
+  - 移除 CandidateList、Select 和 Cascader 下拉项继承的分隔线。
+- Watermark 与布局
+  - 修复 Watermark 本地化 Glyph 资源、owner 挂载及主题/语言更新；跳过无效和完全裁剪的平铺项，同时保持旋转、交错和镜像相位。
+  - 修正 Rate、ToggleSwitch、Segmented、Skeleton、ColorBlock 和 Popup 阴影/箭头布局的最终 Bounds 几何，覆盖 Margin 和缩放。
+- Gallery 与 Generator
+  - 新增本地化 DateViewer 示例和 Semantic Part 预览。
+  - 修复 ShowCase 延迟物化和占位视觉，改进放大内容边界、覆盖层与命中，同时保留滚动行为。
+  - 缓存生成的注册描述符，减少启动工作并保持注册契约。
+
+## 6.2.2
+
+`2026-09-30`
+
+- 破坏性变更
+  - Packaging：产品包现在只提供 `lib/net10.0`；面向 `net8.0` 的应用与类库必须改为 `net10.0` 并使用 .NET 10 SDK。详见 [6.2.2 API 迁移指南](docs/releases/6.2.2-api-changes.zh-CN.md)。
+  - 注册与主题：以生成的 TypeMap 替换 Unit/Plan/Sidecar AOT 注册 ABI，移除旧注册、单主题 provider 和资产 Schema 契约。第三方控件包必须使用 v6.2.2 生成器重建；迁移步骤见指南。
+  - 构建与平台元数据：退役 `AtomUI.LinkedRegistration*` 资产及自定义主题平台元数据，改用 `AtomUI.Registration.targets` 与标准平台 Attribute。自定义构建导入和主题作者需按指南迁移。
+  - 生成 Token 与桌面注册：移除未声明 Own Token 的控件所对应的生成 Token key 类型及 `UseAllDesktopControls()`；DataGrid 和 WindowTitleBar Token 枚举数字值发生变化。集成代码需重建，并改用 `UseDesktopControls()` 和 Token 成员名称；详见迁移指南。
+- DataGrid
+  - 增加顶部/底部分页区域的额外内容与模板，以及控制页大小选择器显示的 `IsShowPageSizeSelector`。
+- Button、WindowTitleBar 与 Steps
+  - 恢复 Button 键盘焦点环，并对齐 WindowTitleBar AddOn 与 caption 按钮的几何尺寸。
+  - 修复 Steps 自然尺寸测量，同时保留连接线。
+- Flyout、FloatButton 与 RibbonBadge
+  - 支持通过键盘触发 Flyout 和 FloatButton 组的展开与收起。
+  - 修复 RibbonBadge 折角绘制坐标。
+- Dialog、Motion 与 Gallery
+  - 将 Dialog 遮罩动效移至合成器并统一 Zoom 状态。
+  - 增加 Gallery 示例放大与 DataGrid 分页示例，更新 Badge 示例和 Gallery 品牌图形。
+- NativeAOT、构建与依赖
+  - 以 TypeMap 管线替换 linked registration 与裁剪流程，改进反射裁剪并缩小生成的 Token 描述符。
+  - 桌面裁剪与 NativeAOT 发布兼容后续 .NET 10 补丁工具链，Browser 继续使用固定工具链。
+  - 将 Avalonia 升级到 12.1.3。
+
+## 6.2.1
+
+`2026-09-22`
+
+- 破坏性变更
+  - Pagination：固定导航容器与 Semantic Part marker 池由 11 个缩减为 9 个，同时将可见页码窗口与快速跳页行为对齐 Ant Design。依赖旧数量的快照、自动化或主题工具需要同步更新；迁移说明见 [6.2.1 API 变更示例](docs/releases/6.2.1-api-changes.zh-CN.md)。
+- Pagination
+  - 新增可通过指针与 Enter 键触发的向前/向后快速跳页项、本地化自动化名称、默认 5 页跳转，以及 `IsShowLessItems=true` 时的 3 页跳转。
+  - 新增 `IsShowLessItems` 与 `IsShowPrevNextJumpers`；页码窗口变化时复用稳定导航容器，保持 hover/focus 过渡连续。
+  - 新增 `SizeChangerTemplate` 与 `PaginationSizeChangerContext`，允许应用替换默认 page-size ComboBox，同时继续由 Pagination 管理状态并保留 TwoWay binding。
+- Menu
+  - 防止键盘导航到叶子项时打开空子菜单，并在集合动态变化后正确协调钉住或延迟填充的子菜单状态。
+- Steps
+  - 修复垂直副标题叠印，并让 Inline hover 背景与 Panel 裁剪正确跟随 Steps 类型。
+- Message 与 Notification
+  - 管理器激活时重新激活窗口反馈层，使跨管理器反馈层叠顺序保持确定。
+- Gallery
+  - 修复登录 Form 的选项行布局。
+  - 保持 ColorPicker Semantic Part 触发器完整显示在钉住弹层上方，并新增 Pagination 自定义 size changer 示例。
+
+## 6.2.0
+
+`2026-09-18`
+
+- 破坏性变更
+  - SearchEdit：将公共 `SearchEditButtonStyle` 枚举重命名为 `SearchButtonType`。`SearchButtonStyle` 名称和枚举值保持不变，请更新 C# 与 XAML 中的枚举类型引用。详见[6.2.0 API 变更示例](docs/releases/6.2.0-api-changes.zh-CN.md)。
+  - OtpLineEdit：移除 `SeparatorInterval`。设置 `Separator` 后会在每个相邻 cell 之间显示分隔符；自定义内容使用 `SeparatorTemplate`，整体间距使用 `OtpLineEditToken.CellGap`。详见迁移指南。
+  - Button：移除 `CustomBackground`，改用标准 `Background` 和 `BorderBrush` 属性。详见迁移指南。
+  - ProgressBar：移除受保护的 `AbstractGeneralProgressBar.DrawIndicatorBar` 辅助方法；自定义派生控件需要自行实现绘制或使用模板/Semantic Part 样式。
+  - Separator：移除 `AbstractSeparator.DashStyle` 和 `DotStyle`；需要标准虚线定义时使用 `SeparatorRail.DashStyle` 和 `SeparatorRail.DotStyle`。
+  - Theme manager：增加 `IThemeManager.SemanticParts` 语义部件 registry 属性。自定义实现必须增加该属性，内置 `ThemeManager` 无需改动。详见迁移指南。
+  - Notification：移除旧的八参数构造函数以及 `CardExpiredPollingInterval` / `CleanupPollingInterval` 属性；生命周期调度器现在是唯一的过期协调器。
+  - Notification 管理器：新增 `IMessageManager.DestroyAll()` 和 `INotificationManager.DestroyAll()`；自定义实现需要增加这些方法。
+  - Transfer：将受保护的 `BuildSourcePanelSource` 和 `BuildTargetPanelSource` 返回类型改为 `IReadOnlyList<IItemKey>?`；自定义派生控件需要更新重写方法和调用方。
+  - Notification Token：移除 `NotificationMarginBottom`、`NotificationContentMargin` 和 `HeaderMargin`；生成的 Token 枚举值按当前源码声明生成。
+- Semantic Part 与 Gallery
+  - 为输入、导航、数据展示、反馈和布局控件族增加生成式 Semantic Part 契约和专用样式入口。
+  - 为 Popup、Dialog、Drawer、Tour 和 ImagePreviewer 增加跨视觉根高亮与 Gallery 预览，修复 owner 作用域样式和本地化目录一致性。
+  - 增加 ComboBox、Splash、GroupBox、Expander、DataGrid、Menu、TabControl、TabStrip、NumericUpDown 等控件的语义示例。
+  - 修复 sticky tab 提升更新与模板销毁竞态导致访问已释放视觉部件的问题。
+- Popup、Dialog 与 Theme
+  - 修复 Dialog、Drawer、PopupConfirm、Menu 和 Picker 控件的钉住遮罩所有权、跨窗口弹层路由、语义作用域跟踪和根表面定制。
+  - 修复主题源码命名空间漂移，将 Semantic Part 预览契约统一放在公共 `AtomUI.Theme` 命名空间。
+- 异步、动效与缓存
+  - 防止异步展开/搜索加载的并发重复生产，正确区分显式取消，并修复有界主题缓存的完成发布竞态。
+  - 改进反馈堆叠、Masonry 动效、Segmented 选中滑块过渡以及不可见控件的任务关停行为。
+- 本地化、构建与 AOT
+  - 让生成的设计 Token 枚举与当前源码声明保持一致；新增或重命名 Token 属性属于 v6.2.0 API 表面变更。
+  - 恢复 canonical XLIFF 单元排序并补齐 Gallery 葡萄牙语（巴西）目录覆盖。
+  - 增加以上一 NuGet 版本为基线的 API 与包布局发布门禁，并使用 content-addressed 仓库构建任务工具集避免过期 MSBuild 程序集。
+  - 保持 linked registration、trimming 和 NativeAOT Gallery 验证路径与扩展后的语义控件表面一致。
+
+## 6.1.9
+
+`2026-09-11`
+
+- 破坏性变更
+  - Build：AtomUI MSBuild 任务改为通过 SDK 编译器适配器在单次运行的 .NET 进程中执行，不再从影子副本进程内加载 `AtomUI.Build.Tasks`。构建工具以 `net10.0` 程序集交付，因此消费方项目需要使用 .NET 10 SDK 构建；原有的进程内加载入口和影子目录结构不再保留。产品库目标框架不变。迁移示例见 [6.1.9 API 变更示例](docs/releases/6.1.9-api-changes.zh-CN.md)。
+- DataGrid
+  - 修复单选行在行之间切换时需要点击两次的问题。#461
+  - 修复排序后回收单元格泄漏排序状态的问题。#462
+  - 修复动态设置右冻结列数量不生效的问题。
+- Motion、Collapse、Expander 与 NavMenu
+  - 以共享执行器统一内容展开与收起动效：同步驱动完整高度与透明度插值、稳定内容裁剪、反转连续性，并由单一执行所有者和单一时钟驱动。修复手风琴在展开收起与快速切换分支时的闪烁和抖动。
+- Window 与 ImagePreviewer
+  - 修复全屏标题栏 Logo 重复挂载导致的崩溃。
+  - 修复 ImagePreviewer 预览窗口标题栏按钮无法点击的问题；Windows 标题栏 AddOn 按钮与开关按钮几何对齐托管 caption button，同时保留 Linux/macOS 视觉。
+- Avatar 与图片加载
+  - 通过新增的 `SvgConformanceMode` 选项支持含重复 id 的安全本地 SVG 资源：`Compatible`（默认）容忍重复 id，`Strict` 将其判定为 `InvalidImageData`。
+  - 将文字测量、缩放与居中移入模板，修复 Avatar 在短文本、临界宽度和超长文本下的文字居中问题。
+- BorderBeam
+  - 新增 `Count` 属性，在单一动画时钟和 Presenter 内绘制多条等距光束。
+  - 修复未设置 `Outset` 时的默认边框几何，使流光贴合内容边界。
+  - 补充多光束、悬停触发光束与自定义容器 Gallery 示例。
+
 ## 6.1.8
 
 `2026-09-08`

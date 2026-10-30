@@ -49,42 +49,6 @@ public class TokenResourceKeyGeneratorTests
     }
 
     [Fact]
-    public void Uses_Configured_Control_Catalog_For_Third_Party_Package()
-    {
-        var compilation = CreateCompilation(
-            """
-            using Avalonia.Controls;
-
-            namespace Acme.Controls
-            {
-                public sealed class Rating : Control
-                {
-                }
-            }
-            """,
-            "Acme.Controls");
-        var outputCompilation = RunGenerator(
-            compilation,
-            out var diagnostics,
-            new TestAnalyzerConfigOptionsProvider(new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["build_property.AtomUIThemeControlCatalog"] = "Acme.Controls"
-            }),
-            new InMemoryAdditionalText(
-                "Themes/RatingTheme.axaml",
-                """
-                <ControlTheme xmlns="https://github.com/avaloniaui"
-                              TargetType="Acme.Controls.Rating" />
-                """));
-
-        diagnostics.ShouldBeEmpty();
-        GetGeneratedSource(outputCompilation, "TokenResourceConst.g.cs")
-            .ShouldContain("new ControlTokenIdentity(\"Acme.Controls\", \"Rating\")");
-        GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs")
-            .ShouldContain("new ControlTokenIdentity(\"Acme.Controls\", \"Rating\")");
-    }
-
-    [Fact]
     public void Generates_Control_Token_Extension_And_Descriptor_Without_Legacy_Shared_Extension()
     {
         var outputCompilation = RunGenerator(CreateCompilation("""
@@ -116,10 +80,9 @@ public class TokenResourceKeyGeneratorTests
         tokenResources.ShouldContain("ColorPrimary = (int)SharedTokenKind.ColorPrimary");
         tokenResources.ShouldContain("Height = -1");
         tokenResources.ShouldContain("public static class ButtonTokens");
-        tokenResources.ShouldContain("new ControlTokenIdentity(\"AtomUI\", \"Button\")");
+        tokenResources.ShouldContain("ControlTokenIdentity.ForControl(typeof(global::Demo.Button), \"AtomUI\", \"Button\")");
         tokenResources.ShouldContain("public class ButtonTokenResourceExtension : TokenResourceExtension<ButtonTokenKey>");
         tokenResources.ShouldContain("ControlTokenResourceKey.Global(ButtonTokens.Identity, (SharedTokenKind)slot)");
-        tokenResources.ShouldContain("return (ButtonTokenKind)ownSlot");
         tokenResources.ShouldContain("if ((uint)slot >= 2u)");
         tokenResources.ShouldContain("if ((uint)ownSlot < 1u)");
         tokenResources.ShouldNotContain("Enum.GetValues");
@@ -130,7 +93,7 @@ public class TokenResourceKeyGeneratorTests
 
         var descriptorPool = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
         descriptorPool.ShouldContain("typeof(global::Demo.Button)");
-        descriptorPool.ShouldContain("new ControlTokenIdentity(\"AtomUI\", \"Button\")");
+        descriptorPool.ShouldContain("ControlTokenIdentity.ForControl(typeof(global::Demo.Button), \"AtomUI\", \"Button\")");
         descriptorPool.ShouldContain("static () => new global::Demo.ButtonToken()");
         descriptorPool.ShouldNotContain("DynamicDependency");
         descriptorPool.ShouldNotContain("typeof(global::Demo.ButtonToken)");
@@ -159,108 +122,8 @@ public class TokenResourceKeyGeneratorTests
 
         diagnostics.ShouldBeEmpty();
         var descriptorPool = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
-        descriptorPool.ShouldContain("new ControlTokenIdentity(\"AtomUI\", \"Rating\")");
+        descriptorPool.ShouldContain("ControlTokenIdentity.ForControl(typeof(global::Demo.Rating), \"AtomUI\", \"Rating\")");
         descriptorPool.ShouldContain("static () => new global::Demo.RatingToken()");
-    }
-
-    [Fact]
-    public void Generates_Control_Identity_And_Resource_Extension_Without_Own_Token()
-    {
-        var compilation = CreateCompilation("""
-            using Avalonia.Controls;
-
-            namespace Demo
-            {
-                public sealed class Rating : Control
-                {
-                }
-            }
-            """);
-
-        var outputCompilation = RunGenerator(
-            compilation,
-            out var diagnostics,
-            new InMemoryAdditionalText(
-                "Rating/Themes/RatingTheme.axaml",
-                """
-                <ControlTheme xmlns="https://github.com/avaloniaui"
-                              xmlns:local="https://demo">
-                    <Setter Property="MinHeight"
-                            Value="{local:RatingTokenResource ControlHeight}" />
-                </ControlTheme>
-                """));
-
-        diagnostics.ShouldBeEmpty();
-        outputCompilation.GetDiagnostics(TestContext.Current.CancellationToken)
-                         .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-                         .ShouldBeEmpty();
-
-        var tokenResources = GetGeneratedSource(outputCompilation, "TokenResourceConst.g.cs");
-        tokenResources.ShouldContain("public enum RatingTokenKey");
-        tokenResources.ShouldContain("public static class RatingTokens");
-        tokenResources.ShouldContain("public class RatingTokenResourceExtension");
-        tokenResources.ShouldNotContain("RatingTokenKind");
-
-        var schema = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
-        schema.ShouldContain("typeof(global::Demo.Rating)");
-        schema.ShouldContain("new ControlTokenIdentity(\"AtomUI\", \"Rating\")");
-        schema.ShouldNotContain("new global::Demo.RatingToken()");
-    }
-
-    [Fact]
-    public void Generates_Control_Identity_From_A_Top_Level_Themes_Directory()
-    {
-        var compilation = CreateCompilation("""
-            using Avalonia.Controls;
-
-            namespace Demo
-            {
-                public sealed class Rating : Control
-                {
-                }
-            }
-            """);
-
-        var outputCompilation = RunGenerator(
-            compilation,
-            out var diagnostics,
-            new InMemoryAdditionalText(
-                "Themes/RatingTheme.axaml",
-                """
-                <ControlTheme xmlns="https://github.com/avaloniaui" />
-                """));
-
-        diagnostics.ShouldBeEmpty();
-        var schema = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
-        schema.ShouldContain("typeof(global::Demo.Rating)");
-        schema.ShouldContain("new ControlTokenIdentity(\"AtomUI\", \"Rating\")");
-    }
-
-    [Fact]
-    public void Prefers_Current_Assembly_Control_Over_Referenced_Avalonia_Control_With_The_Same_Name()
-    {
-        var outputCompilation = RunGenerator(
-            CreateCompilationWithReferencedAvaloniaControls("""
-                using Avalonia.Controls;
-
-                namespace Demo
-                {
-                    public sealed class Button : Control
-                    {
-                    }
-                }
-                """),
-            out var diagnostics,
-            new InMemoryAdditionalText(
-                "Button/Themes/ButtonTheme.axaml",
-                """
-                <ControlTheme xmlns="https://github.com/avaloniaui" />
-                """));
-
-        diagnostics.ShouldBeEmpty();
-
-        var schema = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
-        schema.ShouldContain("new ControlTokenIdentity(\"AtomUI\", \"Button\")");
     }
 
     [Fact]
@@ -324,8 +187,8 @@ public class TokenResourceKeyGeneratorTests
         var tokenResources = GetGeneratedSource(outputCompilation, "TokenResourceConst.g.cs");
         tokenResources.ShouldNotContain("CommonButtonTokenKind");
         tokenResources.ShouldNotContain("CommonButtonTokens");
-        var schema = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
-        schema.ShouldNotContain("CommonButtonToken");
+        outputCompilation.SyntaxTrees.ShouldNotContain(tree =>
+            tree.FilePath.EndsWith("GeneratedThemeSchema.g.cs", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -587,9 +450,9 @@ public class TokenResourceKeyGeneratorTests
         tokenResources.ShouldNotContain("CommonButtonTokenKind");
 
         var schema = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
-        schema.ShouldContain("static token => ((global::Demo.ButtonToken)token).ContentHeight");
-        schema.ShouldContain("static token => ((global::Demo.ButtonToken)token).CornerRadius");
-        schema.ShouldContain("static token => ((global::Demo.ButtonToken)token).Label");
+        schema.ShouldContain("return ((global::Demo.ButtonToken)token).ContentHeight;");
+        schema.ShouldContain("return ((global::Demo.ButtonToken)token).CornerRadius;");
+        schema.ShouldContain("return ((global::Demo.ButtonToken)token).Label;");
         schema.ShouldContain("static () => new global::Demo.ButtonToken()");
     }
 
@@ -634,8 +497,8 @@ public class TokenResourceKeyGeneratorTests
         var resources = GetGeneratedSource(outputCompilation, "TokenResourceConst.g.cs");
         resources.ShouldContain("public enum ButtonTokenKind");
         resources.ShouldContain("public enum LinkTokenKind");
-        resources.ShouldContain("new ControlTokenIdentity(\"AtomUI\", \"Button\")");
-        resources.ShouldContain("new ControlTokenIdentity(\"AtomUI\", \"Link\")");
+        resources.ShouldContain("ControlTokenIdentity.ForControl(typeof(global::Demo.Button), \"AtomUI\", \"Button\")");
+        resources.ShouldContain("ControlTokenIdentity.ForControl(typeof(global::Demo.Link), \"AtomUI\", \"Link\")");
         var schema = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
         schema.ShouldContain("((global::Demo.ButtonToken)token).FocusWidth");
         schema.ShouldContain("((global::Demo.LinkToken)token).FocusWidth");
@@ -1268,7 +1131,7 @@ public class TokenResourceKeyGeneratorTests
         resources.ShouldContain("ContentHeight = -1");
         resources.ShouldContain("CornerRadius = -2");
         var schema = GetGeneratedSource(platformOutput, "GeneratedThemeSchema.g.cs");
-        schema.ShouldContain("static token => ((global::PlatformControls.ButtonToken)token).ContentHeight");
+        schema.ShouldContain("return ((global::PlatformControls.ButtonToken)token).ContentHeight;");
     }
 
     [Fact]
@@ -1426,15 +1289,10 @@ public class TokenResourceKeyGeneratorTests
         emitResult.Success.ShouldBeTrue(
             string.Join(Environment.NewLine, emitResult.Diagnostics.Select(static diagnostic => diagnostic.ToString())));
         var assembly = System.Reflection.Assembly.Load(stream.ToArray());
-        var schemaType = assembly.GetType(
-            "AtomUI.Generated.RuntimeControlTokenInheritance.GeneratedThemeSchema",
-            throwOnError: true)!;
-        var getControls = schemaType.GetMethod(
-            "GetControls",
-            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
-        var descriptors = ((System.Collections.IEnumerable)getControls.Invoke(null, null)!)
-                          .Cast<object>()
-                          .ToArray();
+        var schemaType = assembly.GetType("AtomUI.Generated.RuntimeControlTokenInheritance.GeneratedThemeSchemaDescriptorFactory", true)!;
+        var descriptors = schemaType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)
+            .Where(method => method.Name.StartsWith("CreateControlDescriptor_", StringComparison.Ordinal))
+            .Select(method => method.Invoke(null, null)!).ToArray();
         descriptors.Length.ShouldBe(2);
 
         foreach (var descriptor in descriptors)
@@ -1726,7 +1584,7 @@ public class TokenResourceKeyGeneratorTests
             [new TokenResourceKeyGenerator().AsSourceGenerator()],
             additionalTexts.ToImmutableArray(),
             (CSharpParseOptions)compilation.SyntaxTrees[0].Options,
-            optionsProvider);
+            new BuiltinCatalogOptionsProvider(optionsProvider));
 
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out diagnostics, cancellationToken);
         return (CSharpCompilation)outputCompilation;
@@ -1876,37 +1734,6 @@ public class TokenResourceKeyGeneratorTests
     }
 
     private const string AtomUIStubs = """
-        namespace AtomUI.Theme
-        {
-            public interface IThemeManagerBuilder
-            {
-                void AddControlPackage(ControlPackageRegistration package);
-            }
-
-            public sealed class ControlPackageRegistration
-            {
-                public ControlPackageRegistration(
-                    string id,
-                    System.Collections.Generic.IEnumerable<AtomUI.Theme.Schema.ControlTokenDescriptor> controls,
-                    System.Collections.Generic.IEnumerable<AtomUI.Theme.Schema.ControlThemeAssetDescriptor> assets,
-                    AtomUI.Theme.Resources.IControlThemesProvider provider)
-                {
-                }
-            }
-
-            public readonly struct ControlTokenRegistration
-            {
-                public ControlTokenRegistration(System.Type tokenType)
-                {
-                }
-
-                public ControlTokenRegistration(System.Type tokenType, string tokenId, string? resourceCatalog)
-                {
-                }
-            }
-
-        }
-
         namespace AtomUI.Theme.Resources
         {
             public interface IControlThemesProvider
@@ -1930,21 +1757,10 @@ public class TokenResourceKeyGeneratorTests
 
             public static class ControlTokenResourceKey
             {
+                public static object Own(AtomUI.Theme.Schema.ControlTokenIdentity identity, object key) => key;
                 public static object Global(
                     AtomUI.Theme.Schema.ControlTokenIdentity identity,
                     SharedTokenKind kind) => kind;
-            }
-        }
-
-        namespace AtomUI.Registration
-        {
-            public sealed class AotTrimControlPackageRegistrationBuilder
-            {
-                public bool TryEnterUnit(string unitId) => true;
-
-                public void AddControl(AtomUI.Theme.Schema.ControlTokenDescriptor descriptor)
-                {
-                }
             }
         }
 
@@ -1976,10 +1792,33 @@ public class TokenResourceKeyGeneratorTests
                 Control
             }
 
-            public readonly record struct ControlTokenIdentity(string Catalog, string Id);
+            public readonly record struct ControlTokenIdentity(string Catalog, string Id)
+            {
+                public static ControlTokenIdentity ForControl(System.Type controlType, string catalog, string id) => new(catalog, id);
+            }
+
+            public abstract class TokenValueCodec
+            {
+            }
+
+            public sealed class TokenValueCodec<T> : TokenValueCodec
+            {
+                public static readonly TokenValueCodec<T> Instance = new();
+                public static T Copy(T value) => value;
+            }
+
+            public abstract class TokenValueAccessor
+            {
+                public abstract object? GetValue(AtomUI.Theme.DesignTokens.AbstractDesignToken token, int slot);
+                public abstract void SetValue(AtomUI.Theme.DesignTokens.AbstractDesignToken token, int slot, object? value);
+                public abstract object? ProjectResourceValue(AtomUI.Theme.DesignTokens.AbstractDesignToken token, int slot);
+            }
 
             public sealed class TokenDescriptor
             {
+                public static TokenDescriptor CreateGenerated(
+                    string name, int slot, TokenStage stage, TokenValueCodec codec, object resourceKey, TokenValueAccessor accessor) => null!;
+
                 public TokenDescriptor(
                     string name,
                     int slot,
@@ -2078,25 +1917,6 @@ public class TokenResourceKeyGeneratorTests
             }
         }
 
-        namespace AtomUI.Generated.TokenResourceKeyGeneratorTests
-        {
-            internal static class GeneratedControlThemeAssetManifest
-            {
-                internal static System.Collections.Generic.IReadOnlyList<AtomUI.Theme.Schema.ControlThemeAssetDescriptor> GetDescriptors()
-                {
-                    return System.Array.Empty<AtomUI.Theme.Schema.ControlThemeAssetDescriptor>();
-                }
-            }
-
-            internal static class GeneratedControlThemeAssetResources
-            {
-                internal static void AddResources(
-                    AtomUI.Theme.Resources.IControlThemesProvider provider,
-                    System.Collections.Generic.IReadOnlyList<AtomUI.Theme.Schema.ControlThemeAssetDescriptor> assets)
-                {
-                }
-            }
-        }
         """;
 
     private sealed class InMemoryAdditionalText : AdditionalText

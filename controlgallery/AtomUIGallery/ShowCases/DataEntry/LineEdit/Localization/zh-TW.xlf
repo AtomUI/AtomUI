@@ -505,6 +505,174 @@
         <target state="translated">SearchEdit 尺寸</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear action button that removes the current text.</source>
+        <target state="translated">清除目前文字的操作按鈕。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCountDescription">
+      <segment>
+        <source>Character count indicator for the current text and maximum length.</source>
+        <target state="translated">顯示目前文字長度與最大長度的字元計數指示器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Text presentation and editing area for value, placeholder, caret, and selection.</source>
+        <target state="translated">承載文字值、預留位置、游標和選取內容的顯示與編輯區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpCellDescription">
+      <segment>
+        <source>Single input cell that renders one character with placeholder, mask, active, focus, and error states.</source>
+        <target state="translated">展示單個字元的單格輸入元素，承載佔位符、遮罩、啟用、聚焦與錯誤狀態。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpCellListDescription">
+      <segment>
+        <source>Cell list container that arranges the input cells and separators by Length.</source>
+        <target state="translated">按 Length 排列輸入單格與分隔符的單格清單容器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpRootDescription">
+      <segment>
+        <source>Root element owning the inline flex layout, alignment, column gap, and wrapper styles.</source>
+        <target state="translated">承載行內彈性版面配置、對齊、列間距與包裝樣式的根元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpSeparatorDescription">
+      <segment>
+        <source>Separator element displayed between the OTP input cells.</source>
+        <target state="translated">顯示在輸入單格之間的分隔符元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>You can customize the semantic dom style of Input by passing objects/functions through `classNames` and `styles`.</source>
+        <target state="translated">透過 `classNames` 和 `styles` 傳入物件/函式，可以自訂 Input 的語義化結構樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordClearDescription">
+      <segment>
+        <source>Clear button element for resetting the entered password.</source>
+        <target state="translated">用於清空已輸入密碼的清除按鈕元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordCountDescription">
+      <segment>
+        <source>Character count indicator for the entered password and maximum length.</source>
+        <target state="translated">已輸入密碼長度與最大長度的字數統計元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordInputDescription">
+      <segment>
+        <source>Masked text presentation and editing area for the password value, placeholder, caret, and selection.</source>
+        <target state="translated">密碼值的遮罩文字展示與編輯區域，承載佔位符、游標和選取範圍。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordPrefixDescription">
+      <segment>
+        <source>Leading inner content shown before the masked password text, such as a user icon.</source>
+        <target state="translated">顯示在密碼遮罩文字前方的內部前綴內容，例如使用者圖示。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordRootDescription">
+      <segment>
+        <source>Root input surface for the password value, owning size, variant, border, background, focus, and validation state.</source>
+        <target state="translated">承載密碼值的根輸入表面，控制尺寸、變體、邊框、背景、焦點和驗證狀態。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordSuffixDescription">
+      <segment>
+        <source>Trailing action cluster containing the reveal-password toggle, clear button, and count content.</source>
+        <target state="translated">包含密碼顯示切換、清除按鈕和計數內容的尾部操作區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Leading inner content shown before the text editing area.</source>
+        <target state="translated">顯示在文字編輯區域前方的內部前綴內容。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root input surface that owns size, variant, border, background, focus, and validation state.</source>
+        <target state="translated">承載尺寸、變體、邊框、背景、焦點和驗證狀態的根輸入表面。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchButtonDescription">
+      <segment>
+        <source>Search button that triggers the search action and shows the loading state.</source>
+        <target state="translated">搜尋按鈕，觸發搜尋動作並展示載入狀態。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchClearDescription">
+      <segment>
+        <source>Clear button element for resetting the search value.</source>
+        <target state="translated">清除按鈕元素，用於重置搜尋值。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchInputDescription">
+      <segment>
+        <source>Text presentation and editing area for the search value.</source>
+        <target state="translated">搜尋值的文字呈現與編輯區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchPrefixDescription">
+      <segment>
+        <source>Leading inner content shown before the text editing area.</source>
+        <target state="translated">文字編輯區域之前展示的起始內容。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchRootDescription">
+      <segment>
+        <source>Root element combining the input area and the search button.</source>
+        <target state="translated">根元素，組合輸入區域與搜尋按鈕。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchSuffixDescription">
+      <segment>
+        <source>Trailing inner content shown before the search button.</source>
+        <target state="translated">搜尋按鈕之前展示的末尾內容。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Trailing content and action cluster for reveal, feedback, custom suffix, clear, and count content.</source>
+        <target state="translated">承載密碼顯示、表單回饋、自訂後綴、清除和計數內容的尾部內容與操作區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaClearDescription">
+      <segment>
+        <source>Clear button element with layout, visibility, and interaction styles for clearing content.</source>
+        <target state="translated">清除按鈕元素，包含清除內容按鈕的佈局、顯隱與互動樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaCountDescription">
+      <segment>
+        <source>Count element with character count display position, font, color and numeric statistics styles.</source>
+        <target state="translated">字元計數元素，設定計數顯示位置、字體、顏色與數值統計樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaDescription">
+      <segment>
+        <source>Textarea element with font, line height, padding, color, background, border, text input and multi-line text display styles.</source>
+        <target state="translated">文字域元素，包含字體、行高、內邊距、顏色、背景、邊框、文字輸入與多行文字展示樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaRootDescription">
+      <segment>
+        <source>Root element with textarea wrapper styles, border, border radius, transition animation and state control.</source>
+        <target state="translated">根元素，設定文字域包裝器樣式、邊框、圓角、過渡動畫與狀態控制。</target>
+      </segment>
+    </unit>
     <unit id="TextAreaDescription">
       <segment>
         <source>For multi-line input.</source>

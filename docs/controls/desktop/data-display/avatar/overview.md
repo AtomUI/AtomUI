@@ -78,17 +78,6 @@ Avatar 不公开 URL、Bitmap 或 loader 属性族，也不允许单个控件替
 
 `PART_TextPresenter` 是稳定 template part。其他命名视觉节点服务主题实现，不构成额外 public API。
 
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Avatar` | 归一图片来源、内容优先级、尺寸、形状和加载状态。 | `Source`、`FallbackSource`、`RequestOptions`、`Text`、`Icon`、`SizeType`、`Size`、`Shape` | `AvatarToken`、SharedToken | public |
-| `surface` | `Frame` | 绘制背景、边框和圆角。 | `Shape`、`SizeType`、`Size` | Avatar background、border、size Token | internal-observable |
-| `image` | `ImagePresenter` | 展示当前有效 `IImage`，不自行加载来源。 | `LoadState`、`IsLoaded` | Avatar size/radius Token | internal-observable |
-| `text` | `Viewbox` + `PART_TextPresenter` | 在 Gap 定义的内容区内展示 Text，只在空间不足时等比缩小并保持居中。 | `Text`、`Gap` | Font、size Token | template-stable |
-| `icon` | `IconPresenter` | 在无图片和 Text 时展示 Icon。 | `Icon` | Icon size Token | internal-observable |
-| `group` | `AvatarGroup` | 排列子 Avatar、折叠超出项并管理 Flyout。 | `Children`、`MaxDisplayCount`、`FoldAvatarFlyoutTriggerType` | AvatarGroup spacing/fold Token | public |
-
 ## 4. 行为与状态模型
 
 可见内容优先级固定为：
@@ -184,25 +173,13 @@ Avatar 只观察统一 loader 的最终结果：默认 `Compatible` 下含重复
 资源预算和 renderer 交接均属于 Shared 图片管线，不在 Avatar 中复制。完整契约见
 [网络 SVG 加载设计](../../../../architecture/systems/image-loading/network-svg.md#校验分层与一致性模式)。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 - [Avatar 实现原理](implementation.md)
 - [Avatar Token 设计](token.md)
 - [Avatar Changelog](changelog.md)
 - [统一图片加载系统](../../../../architecture/systems/image-loading/overview.md)
 
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | overview.md + implementation.md + token.md + Gallery ShowCase | 生成 `controls/avatar/index-cn.md` |
-| 单控件语义文档 | overview.md + implementation.md + Themes 文件夹 + theme/template 信息 | 生成 `controls/avatar/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 overview.md 中机械复制完整 API 表 |
-| Design Token 表 | token.md + `AvatarToken` | 不在 token.md 中手工复制生成表 |
-| 示例 | Gallery Avatar ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | implementation.md | 定位 `AtomUI.Controls/Avatar` 与 `AtomUI.Desktop.Controls/Avatar` |
-
 验证分为 public API 反射契约、加载状态与生命周期测试、Theme/Template 结构、Gallery 示例、Browser 实机加载和
 Desktop/Browser NativeAOT publish。SVG 回归同时覆盖默认 `Compatible` 加载含重复 id 的本地资源，以及 `Strict` 下的
-`InvalidImageData` 和既有 fallback 语义；两种模式都必须继续拒绝不安全或超预算内容。生成内容只由上述当前文档、源码、Token
-和 Gallery 输入产生，不手工编辑 `docs/AI/generated/llms/`。
+`InvalidImageData` 和既有 fallback 语义；两种模式都必须继续拒绝不安全或超预算内容。

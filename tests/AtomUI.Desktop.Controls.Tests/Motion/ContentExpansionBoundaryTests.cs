@@ -1,5 +1,7 @@
 using System.Reflection;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
+using AtomUI.Controls.Primitives;
+using MotionApi = AtomUI.Animations.Motion;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -26,7 +28,7 @@ public class ContentExpansionBoundaryTests
         using var scene = new Scene(direction);
         var full = scene.Extent;
         var rootSize = scene.Expander.Bounds.Size;
-        var contentSize = scene.Actor.MotionTransformRoot!.Bounds.Size;
+        var contentSize = scene.Actor.Presenter!.Bounds.Size;
         scene.Expander.IsExpanded = false;
         scene.Step(0);
         scene.Step(500);
@@ -34,7 +36,7 @@ public class ContentExpansionBoundaryTests
         scene.Extent.ShouldBeGreaterThan(0);
         scene.Extent.ShouldBeLessThan(full - 1);
         scene.Expander.Bounds.Size.ShouldBe(rootSize);
-        scene.Actor.MotionTransformRoot.Bounds.Size.ShouldBe(contentSize);
+        scene.Actor.Presenter.Bounds.Size.ShouldBe(contentSize);
         var header = scene.Expander.GetVisualDescendants().OfType<Control>().First(c => c.Name == "PART_HeaderLayoutTransform");
         var content = scene.Actor.TranslatePoint(default, scene.Expander)!.Value;
         var heading = header.TranslatePoint(default, scene.Expander)!.Value;
@@ -61,19 +63,28 @@ public class ContentExpansionBoundaryTests
     }
 
     [Fact]
-    public void Reentrant_PreStart_Disabling_Motion_Leaves_No_Active_Execution()
+    public async Task Reentrant_Visibility_Projection_Disabling_Motion_Leaves_No_Active_Execution()
     {
         using var scene = new Scene(ExpandDirection.Down);
-        var completed = 0;
-        scene.Actor.PreStart += (_, _) => scene.Expander.IsMotionEnabled = false;
-        scene.Actor.Completed += (_, _) => completed++;
+        Task<MotionResult>? superseded = null;
+        using var subscription = scene.Actor.GetObservable(MotionApi.IsVisibleProperty).Subscribe(visible =>
+        {
+            if (!visible)
+            {
+                superseded = MotionApi.GetVisibilityTask(scene.Actor);
+                scene.Expander.IsMotionEnabled = false;
+            }
+        });
         scene.Expander.IsExpanded = false;
         scene.Pump();
         scene.Actor.IsVisible.ShouldBeFalse();
-        scene.Actor.Animating.ShouldBeFalse();
+        MotionApi.GetVisibilityTask(scene.Actor).IsCompleted.ShouldBeTrue();
+        _ = superseded.ShouldNotBeNull();
+        superseded.IsCompleted.ShouldBeTrue();
+        (await superseded).Outcome.ShouldBe(MotionOutcome.Superseded);
         scene.Step(0);
         scene.Step(1100);
-        completed.ShouldBe(0);
+        (await superseded).Outcome.ShouldBe(MotionOutcome.Superseded);
     }
 
     [Fact]
@@ -81,10 +92,12 @@ public class ContentExpansionBoundaryTests
     {
         using var scene = new Scene(ExpandDirection.Down);
         scene.Expander.IsMotionEnabled = false;
-        using var subscription = scene.Actor.GetObservable(Visual.OpacityProperty).Subscribe(opacity =>
+        using var subscription = scene.Actor.GetObservable(Visual.IsVisibleProperty).Subscribe(visible =>
         {
-            if (opacity == 0)
+            if (!visible)
+            {
                 scene.Expander.IsExpanded = true;
+            }
         });
 
         scene.Expander.IsExpanded = false;
@@ -120,7 +133,7 @@ public class ContentExpansionBoundaryTests
         scene.Extent.ShouldBe(initialFull + 100, 1);
         scene.Pump();
         scene.Extent.ShouldBe(initialFull + 100, 1);
-        scene.Actor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+        MotionApi.GetVisibilityTask(scene.Actor).IsCompleted.ShouldBeTrue();
     }
 
     [Theory]
@@ -136,7 +149,7 @@ public class ContentExpansionBoundaryTests
         scene.Expander.ExpandDirection = direction;
         scene.Pump();
         scene.Actor.IsVisible.ShouldBeFalse();
-        scene.Actor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse();
+        MotionApi.GetVisibilityTask(scene.Actor).IsCompleted.ShouldBeTrue();
         scene.Expander.IsExpanded = true;
         scene.Step(400);
         scene.Step(1500);
@@ -169,7 +182,6 @@ public class ContentExpansionBoundaryTests
         child.IsExpanded = true;
         scene.Expander.IsExpanded = false;
         scene.Pump();
-        scene.BindClocks();
         scene.Expander.IsMotionEnabled = child.IsMotionEnabled = grandchild.IsMotionEnabled = true;
         scene.Expander.IsExpanded = true;
         scene.Step(0);
@@ -180,7 +192,7 @@ public class ContentExpansionBoundaryTests
             scene.Step(time);
 
         scene.Actor.IsVisible.ShouldBeTrue();
-        scene.Actor.IsAnimating(Visual.OpacityProperty).ShouldBeFalse(
+        MotionApi.GetVisibilityTask(scene.Actor).IsCompleted.ShouldBeTrue(
             "Repeated descendant layout changes must not restart the parent animation clock.");
         scene.Step(1300);
         scene.Extent.ShouldBe(finalExtent, 1);
@@ -191,12 +203,10 @@ public class ContentExpansionBoundaryTests
 
     private sealed class Scene : IDisposable
     {
-        private static readonly Type ClockType = typeof(Animation).Assembly.GetType("Avalonia.Animation.ClockBase", true)!;
-        private static readonly MethodInfo Pulse = ClockType.GetMethod("Pulse", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        private readonly object _clock = Activator.CreateInstance(ClockType, nonPublic: true)!;
+        private readonly ManualMotionClock _clock = new();
         private readonly Avalonia.Controls.Window _window;
         public AtomExpander Expander { get; }
-        public BaseMotionActor Actor { get; }
+        public ContentViewport Actor { get; }
         public double Extent => Expander.ExpandDirection is ExpandDirection.Left or ExpandDirection.Right ? Actor.Bounds.Width : Actor.Bounds.Height;
 
         public Scene(ExpandDirection direction)
@@ -211,19 +221,13 @@ public class ContentExpansionBoundaryTests
             _window = new Avalonia.Controls.Window { Width = 400, Height = 400, Content = new StackPanel { Children = { Expander } } };
             _window.Show();
             Pump();
-            Actor = Expander.GetVisualDescendants().OfType<BaseMotionActor>().First(c => c.Name == "PART_ContentMotionActor");
-            typeof(Animatable).GetProperty("Clock", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(Actor, _clock);
+            Actor = Expander.GetVisualDescendants().OfType<ContentViewport>().First(c => c.Name == "PART_ContentViewport");
             Expander.IsMotionEnabled = true;
         }
 
-        public void Step(int ms) { Pulse.Invoke(_clock, [TimeSpan.FromMilliseconds(ms)]); Pump(); }
-        public void BindClocks()
-        {
-            foreach (var actor in _window.GetVisualDescendants().OfType<BaseMotionActor>())
-                typeof(Animatable).GetProperty("Clock", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(actor, _clock);
-        }
-        public void StepBeforeContinuations(int ms) { Pulse.Invoke(_clock, [TimeSpan.FromMilliseconds(ms)]); _window.UpdateLayout(); }
+        public void Step(int ms) { _clock.Step(ms); Pump(); }
+        public void StepBeforeContinuations(int ms) { _clock.Step(ms); _window.UpdateLayout(); }
         public void Pump() { Dispatcher.UIThread.RunJobs(); _window.UpdateLayout(); }
-        public void Dispose() { _window.Close(); Pump(); }
+        public void Dispose() { _window.Close(); Pump(); _clock.Dispose(); }
     }
 }

@@ -3,9 +3,11 @@ using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
 using AtomUI.Controls.Utils;
+using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -13,6 +15,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -388,6 +391,7 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
     #endregion
     
     private bool _areHandlersSuspended;
+    private static readonly object GroupHeaderRecycleKey = new();
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new VirtualizingStackPanel());
 
@@ -401,10 +405,14 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
     {
         ItemsPanelProperty.OverrideDefaultValue<ListView>(DefaultPanel);
         IsSelectedChangedEvent.AddClassHandler<ListView>((list, e) => list.ContainerSelectionChanged(e));
-        ListViewItem.ClickedEvent.AddClassHandler<ListView>((list, args) => list.HandleListViewItemClicked(args));
         IsSelectableProperty.Changed.AddClassHandler<ListView>((list, args) => list.HandleIsSelectableChanged(args));
         TotalItemCountProperty.Changed.AddClassHandler<ListView>((list, args) => list.HandleItemCountChanged());
         ItemsSourceProperty.Changed.AddClassHandler<ListView>((list, e) => list.HandleItemsSourcePropertyChanged(e));
+    }
+
+    internal static void RegisterItemClickedEvent(RoutedEvent<RoutedEventArgs> clickedEvent)
+    {
+        clickedEvent.AddClassHandler<ListView>((list, args) => list.HandleListViewItemClicked(args));
     }
     
     public ListView()
@@ -412,7 +420,7 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
         // Selecting 相关设置，只能通过反射设置目前
         ((ItemCollection)ItemsView).AddSourceChangedEvent(OnItemsViewSourceChanged);
         _selection.Changed += (_, change) => HandleSelectionChange(change);
-        var items = this.GetItems();
+        var items = Items;
         items.CollectionChanged += HandleItemsViewCollectionChanged;
         Items.CollectionChanged += HandleItemCollectionChanged;
     }
@@ -556,6 +564,7 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
     {
         _virtualRestoreContext.Clear();
         ConfigureEmptyIndicator();
+        RefreshContainerSplitLines();
         foreach (var item in Items)
         {
             if (item is not IListItemData)
@@ -581,6 +590,11 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
                  change.Property == IsBorderlessProperty)
         {
             ConfigureEffectiveBorderThickness();
+            RefreshContainerSplitLines();
+        }
+        else if (change.Property == BottomPaginationProperty)
+        {
+            RefreshContainerSplitLines();
         }
         else if (change.Property == FilterValueProperty ||
                  change.Property == FilterProperty ||
@@ -628,9 +642,25 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        var listItem = new ListViewItem();
+        ListViewItem listItem;
+        if (IsGroupDataItem(item))
+        {
+            listItem = new GroupHeaderItem();
+            listItem.Classes.Add(ListViewSemanticParts.GroupHeaderClass);
+        }
+        else
+        {
+            listItem = new ListViewItem();
+            listItem.Classes.Add(ListViewSemanticParts.ItemClass);
+        }
+
         NotifyContainerForItemCreated(listItem, item);
         return listItem;
+    }
+
+    private static bool IsGroupDataItem(object? item)
+    {
+        return item is IGroupListItemData { IsGroupItem: true };
     }
     
     protected virtual void NotifyContainerForItemCreated(Control container, object? item)
@@ -646,6 +676,14 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
+        if (IsGroupDataItem(item))
+        {
+            // Group headers own a dedicated recycle key so they can never be
+            // recycled as regular item containers (and vice versa).
+            recycleKey = GroupHeaderRecycleKey;
+            return true;
+        }
+
         return NeedsContainer<ListViewItem>(item, out recycleKey);
     }
     
@@ -660,6 +698,7 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
         base.PrepareContainerForItemOverride(container, item, index);
         if (container is ListViewItem listItem)
         {
+            listItem.IsSplitLineVisible = ShouldShowSplitLine(index == ItemCount - 1);
             if (item is IGroupListItemData groupListItemData)
             {
                 listItem.IsGroupItem = groupListItemData.IsGroupItem;
@@ -750,6 +789,48 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
         else
         {
             EffectiveBorderThickness = BorderThickness;
+        }
+    }
+
+    private bool ShouldShowSplitLine(bool isLastItem)
+    {
+        if (IsBorderless)
+        {
+            return true;
+        }
+
+        if (!isLastItem)
+        {
+            return true;
+        }
+
+        return BottomPagination is not null;
+    }
+
+    private bool IsLastItem(Control container)
+    {
+        return IndexFromContainer(container) == ItemCount - 1;
+    }
+
+    private void RefreshContainerSplitLines()
+    {
+        var presenter = this.GetVisualDescendants().OfType<ItemsPresenter>().FirstOrDefault();
+        if (presenter?.Panel is null)
+        {
+            return;
+        }
+
+        // Realized containers only; unrealized ones receive the correct value when
+        // they are prepared. A container's item is its Content for generated
+        // containers and the container itself for directly supplied containers.
+        foreach (var child in presenter.Panel.Children)
+        {
+            if (child is not ListViewItem listItem)
+            {
+                continue;
+            }
+
+            listItem.IsSplitLineVisible = ShouldShowSplitLine(IsLastItem(listItem));
         }
     }
     

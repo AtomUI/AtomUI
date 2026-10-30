@@ -313,6 +313,48 @@
         <target state="translated">Styles</target>
       </segment>
     </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with border radius, transition animations, border styles, hover states, focus states and other interactive styles</source>
+        <target state="translated">Icon element com border radius, transition animations, border styles, hover states, focus states e outro interactive styles</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label element with padding, text color, disabled states, alignment and other text styles</source>
+        <target state="translated">Label element com padding, text color, disabled states, alignment e outro text styles</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartConditionalTitle">
+      <segment>
+        <source>Conditional styling</source>
+        <target state="translated">Estilo condicional</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartFixedTitle">
+      <segment>
+        <source>Fixed styling</source>
+        <target state="translated">Estilo fixo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and RadioButton property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">Use owner-scoped selectors e RadioButton property selectors para customize o published Semantic Parts.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with layout styles, cursor styles, disabled text color and other basic container styles</source>
+        <target state="translated">Root element com layout styles, cursor styles, disabled text color e outro basic container styles</target>
+      </segment>
+    </unit>
     <unit id="SizeTypeDescription">
       <segment>
         <source>There are three sizes available: large, medium, and small. It can coordinate with input box.</source>

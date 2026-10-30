@@ -7,21 +7,12 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="Frame"
+                        Classes.semantic-mask="True"
                         Background="{TemplateBinding Background}"
                         CornerRadius="{TemplateBinding CornerRadius}"/>
             </ControlTemplate>
         </Setter>
         <Setter Property="Opacity" Value="1"/>
         <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgMask}"/>
-
-        <Style Selector="^[IsMotionEnabled=True]">
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity"
-                                      Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"
-                                      Easing="CircularEaseOut" />
-                </Transitions>
-            </Setter>
-        </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -151,6 +151,60 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content region arranging the prefix, value, and suffix.</source>
+        <target state="translated">內容區域，用於排列前綴、數值和後綴。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header region with bottom spacing and title layout.</source>
+        <target state="translated">頭部區域，包含底部間距和標題佈局。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped style selectors to customize Statistic's published Semantic Parts.</source>
+        <target state="translated">使用控制項擁有者作用域樣式選擇器自訂 Statistic 發佈的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix content surface with inline placement and trailing spacing.</source>
+        <target state="translated">前綴內容表面，包含行內佈局和尾部間距。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with the overall Statistic container surface.</source>
+        <target state="translated">根元素，表示 Statistic 的整體容器表面。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix content surface with inline placement and leading spacing.</source>
+        <target state="translated">後綴內容表面，包含行內佈局和前部間距。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title content surface including typography and foreground.</source>
+        <target state="translated">標題內容表面，包含文字排版和前景色。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticValueDescription">
+      <segment>
+        <source>Numeric value surface including typography and number presentation.</source>
+        <target state="translated">數值內容表面，包含文字排版和數字呈現。</target>
+      </segment>
+    </unit>
     <unit id="TimerDescription">
       <segment>
         <source>Timer component.</source>

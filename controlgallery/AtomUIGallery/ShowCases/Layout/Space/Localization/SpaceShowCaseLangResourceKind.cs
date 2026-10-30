@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -110,5 +108,16 @@ public enum SpaceShowCaseLangResourceKind
     P2ToolTipTipHeart,
     P2ToolTipTipShare,
     P2ToolTipTipDownload,
-    P2ToolTipTipTooltip
+    P2ToolTipTipTooltip,
+    P2LargeSpaceButtonN1,
+    P2LargeSpaceButtonN2,
+    P2LargeSpaceButtonN3,
+    P2StyledButtonN1,
+    P2StyledButtonN2,
+    P2StyledButtonN3,
+    SemanticRootDescription,
+    SemanticItemDescription,
+    SemanticSeparatorDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription
 }

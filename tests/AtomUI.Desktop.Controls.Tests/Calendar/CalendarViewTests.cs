@@ -1,326 +1,106 @@
-using System.Globalization;
-using System.Reflection;
-using AtomUI.Desktop.Controls.Internal.Calendar;
-using Avalonia.Automation;
+using AtomUI.Desktop.Controls.Internal.DateViewer;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
-using CalendarViewControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarView;
+using CalendarControl = AtomUI.Desktop.Controls.Calendar;
 
 namespace AtomUI.Desktop.Controls.Tests.Calendar;
 
 public class CalendarViewTests
 {
-    static CalendarViewTests()
+    static CalendarViewTests() => AvaloniaTestApp.EnsureInitialized();
+
+    [Theory]
+    [InlineData(CalendarMode.Month, false, 42)]
+    [InlineData(CalendarMode.Month, true, 48)]
+    [InlineData(CalendarMode.Year, false, 12)]
+    [InlineData(CalendarMode.Year, true, 12)]
+    public void SharedPanel_UsesCalendarTopology(CalendarMode mode, bool showWeek, int count)
     {
-        AvaloniaTestApp.EnsureInitialized();
-    }
-
-    [Fact]
-    public void DateMode_Produces42CellModels()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Date, showWeek: false);
-        Rebuild(view);
-        CellModelCount(view).ShouldBe(42);
-    }
-
-    [Fact]
-    public void DateMode_ShowWeek_Produces48CellModels()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Date, showWeek: true);
-        Rebuild(view);
-        CellModelCount(view).ShouldBe(48); // 42 date + 6 week
-    }
-
-    [Fact]
-    public void DateMode_ShowWeek_UsesVisuallyEmptyAccessiblePrefixHeader()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Date, showWeek: true);
-        ApplyTemplateParts(view);
-
-        var weekHeader = GetWeekHeader(view);
-        var labels = weekHeader.Children.Cast<TextBlock>().ToArray();
-        labels.Length.ShouldBe(8);
-        labels[0].Text.ShouldBeEmpty();
-        AutomationProperties.GetName(labels[0]).ShouldNotBeNullOrWhiteSpace();
-        labels.Skip(1).ShouldAllBe(label => !string.IsNullOrWhiteSpace(label.Text));
-
-        SetProp(view, "ShowWeek", false);
-
-        labels = weekHeader.Children.Cast<TextBlock>().ToArray();
-        labels.Length.ShouldBe(7);
-        labels[0].Text.ShouldNotBeNullOrWhiteSpace();
-        AutomationProperties.GetName(labels[0]).ShouldBeNull();
-    }
-
-    [Fact]
-    public void MonthMode_Produces12CellModels()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Month, showWeek: false);
-        Rebuild(view);
-        CellModelCount(view).ShouldBe(12);
-    }
-
-    [Fact]
-    public void MonthMode_IgnoresShowWeek()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Month, showWeek: true);
-        Rebuild(view);
-        CellModelCount(view).ShouldBe(12);
-    }
-
-    [Fact]
-    public void RepeatedRebuild_KeepsCellModelCountBounded()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Date, showWeek: false);
-        for (var i = 0; i < 20; i++)
+        var owner = new CalendarControl { Value = new DateTime(2026, 7, 15), Mode = mode, ShowWeek = showWeek };
+        var session = new DatePanelSession(owner);
+        session.Models.Single().Cells.Count.ShouldBe(count);
+        for (var index = 0; index < 20; index++)
         {
-            SetProp(view, "Value", new DateTime(2026, 7, 15).AddMonths(i));
-            Rebuild(view);
-        }
-
-        CellModelCount(view).ShouldBe(42);
-    }
-
-    [Fact]
-    public void CultureChange_RebuildsCellModels()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Month, showWeek: false);
-        Rebuild(view);
-        var enJan = view.CellModels[0].DisplayText;
-
-        SetProp(view, "Culture", new System.Globalization.CultureInfo("zh-CN"));
-        // 属性变更会触发 RebuildCells
-        var zhJan = view.CellModels[0].DisplayText;
-
-        // 中文与英文的一月短名不同(Jan vs 1月),验证重建生效
-        zhJan.ShouldNotBe(enJan);
-    }
-
-    [Fact]
-    public void ComputeFocusTarget_DateMode_LeftRightMoveOneDay()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Date, showWeek: false);
-        Rebuild(view);
-        ComputeFocus(view, new DateTime(2026, 7, 15), "Right").ShouldBe(new DateTime(2026, 7, 16));
-        ComputeFocus(view, new DateTime(2026, 7, 15), "Left").ShouldBe(new DateTime(2026, 7, 14));
-    }
-
-    [Fact]
-    public void ComputeFocusTarget_DateMode_UpDownMoveOneWeek()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Date, showWeek: false);
-        Rebuild(view);
-        ComputeFocus(view, new DateTime(2026, 7, 15), "Down").ShouldBe(new DateTime(2026, 7, 22));
-        ComputeFocus(view, new DateTime(2026, 7, 15), "Up").ShouldBe(new DateTime(2026, 7, 8));
-    }
-
-    [Fact]
-    public void ComputeFocusTarget_MonthMode_LeftRightMoveOneMonth_UpDownThree()
-    {
-        var view = NewView(new DateTime(2026, 6, 15), CalendarViewMode.Month, showWeek: false);
-        Rebuild(view);
-        ComputeFocus(view, new DateTime(2026, 6, 15), "Right").Month.ShouldBe(7);
-        ComputeFocus(view, new DateTime(2026, 6, 15), "Left").Month.ShouldBe(5);
-        ComputeFocus(view, new DateTime(2026, 6, 15), "Down").Month.ShouldBe(9);
-        ComputeFocus(view, new DateTime(2026, 6, 15), "Up").Month.ShouldBe(3);
-    }
-
-    [Fact]
-    public void ComputeFocusTarget_DateMode_SkipsDisabledCells()
-    {
-        var view = NewView(
-            new DateTime(2026, 7, 15),
-            CalendarViewMode.Date,
-            showWeek: false,
-            disabledDate: d => d.Day is 16 or 17);
-        Rebuild(view);
-
-        ComputeFocus(view, new DateTime(2026, 7, 15), "Right").ShouldBe(new DateTime(2026, 7, 18));
-    }
-
-    [Fact]
-    public void ComputeFocusTarget_MonthMode_SkipsDisabledCells()
-    {
-        var view = NewView(
-            new DateTime(2026, 7, 15),
-            CalendarViewMode.Month,
-            showWeek: false,
-            disabledDate: d => d.Month is 8 or 9);
-        Rebuild(view);
-
-        ComputeFocus(view, new DateTime(2026, 7, 15), "Right").Month.ShouldBe(10);
-    }
-
-    [Fact]
-    public void ComputeFocusTarget_StopsOutsideRealizedGrid()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Date, showWeek: false);
-        Rebuild(view);
-        // 网格首日 2026-06-28,再往上一周越界 → 保持原值
-        var gridStart = new DateTime(2026, 6, 28);
-        ComputeFocus(view, gridStart, "Up").ShouldBe(gridStart);
-    }
-
-    [Fact]
-    public void ReportCellActivated_Week_SelectsRowStart()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Date, showWeek: true);
-        Rebuild(view);
-        CalendarCellSelectedEventArgs? selected = null;
-        view.CellSelected += (_, e) => selected = e;
-
-        var week = view.CellModels.First(model => model.Kind == CalendarViewCellKind.Week);
-        view.ReportCellActivated(week);
-
-        selected.ShouldNotBeNull();
-        selected!.Value.ShouldBe(new DateTime(2026, 6, 28));
-        selected.Kind.ShouldBe(CalendarViewCellKind.Week);
-    }
-
-    [Fact]
-    public void ReportCellActivated_DisabledWeek_DoesNotSelect()
-    {
-        var view = NewView(
-            new DateTime(2026, 7, 15),
-            CalendarViewMode.Date,
-            showWeek: true,
-            disabledDate: date => date == new DateTime(2026, 6, 28));
-        Rebuild(view);
-        var fired = false;
-        view.CellSelected += (_, _) => fired = true;
-
-        var week = view.CellModels.First(model => model.Kind == CalendarViewCellKind.Week);
-        week.IsDisabled.ShouldBeTrue();
-        view.ReportCellActivated(week);
-
-        fired.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void ComputeFocusTarget_DateTimeBoundary_DoesNotOverflow()
-    {
-        var minView = NewView(DateTime.MinValue, CalendarViewMode.Date, showWeek: false);
-        Rebuild(minView);
-        ComputeFocus(minView, DateTime.MinValue, "Left").ShouldBe(DateTime.MinValue);
-        ComputeFocus(minView, DateTime.MinValue, "Up").ShouldBe(DateTime.MinValue);
-
-        var maxView = NewView(DateTime.MaxValue, CalendarViewMode.Month, showWeek: false);
-        Rebuild(maxView);
-        ComputeFocus(maxView, DateTime.MaxValue, "Right").ShouldBe(DateTime.MaxValue.Date);
-        ComputeFocus(maxView, DateTime.MaxValue, "Down").ShouldBe(DateTime.MaxValue.Date);
-    }
-
-    [Fact]
-    public void ReapplyTemplate_ReleasesOldHostBeforeReusingCells()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Date, showWeek: false);
-        var firstHost = ApplyTemplateParts(view);
-        firstHost.Children.Count.ShouldBe(42);
-
-        var secondHost = ApplyTemplateParts(view);
-
-        firstHost.Children.ShouldBeEmpty();
-        secondHost.Children.Count.ShouldBe(42);
-    }
-
-    [Fact]
-    public void SwitchingToMonthMode_UnbindsInactivePooledCells()
-    {
-        var view = NewView(new DateTime(2026, 7, 15), CalendarViewMode.Date, showWeek: false);
-        SetProp(view, "CellTemplate", new FuncDataTemplate<object?>((_, _) => new Border()));
-        ApplyTemplateParts(view);
-
-        SetProp(view, "ViewMode", CalendarViewMode.Month);
-
-        var pool = GetCellPool(view);
-        pool.Count.ShouldBe(42);
-        foreach (var cell in pool.Take(12))
-        {
-            cell.Model.ShouldNotBeNull();
-            cell.CellTemplate.ShouldNotBeNull();
-        }
-
-        foreach (var cell in pool.Skip(12))
-        {
-            cell.Model.ShouldBeNull();
-            cell.Context.ShouldBeNull();
-            cell.CellTemplate.ShouldBeNull();
-            cell.FullCellTemplate.ShouldBeNull();
+            owner.Value = owner.Value.AddMonths(1);
+            session.UpdateInput();
+            session.Models.Single().Cells.Count.ShouldBe(count);
         }
     }
 
-    private static DateTime ComputeFocus(CalendarViewControl view, DateTime current, string dir)
+    [Theory]
+    [InlineData(CalendarMode.Month, "Right", 16, 7)]
+    [InlineData(CalendarMode.Month, "Left", 14, 7)]
+    [InlineData(CalendarMode.Month, "Down", 22, 7)]
+    [InlineData(CalendarMode.Month, "Up", 8, 7)]
+    [InlineData(CalendarMode.Year, "Right", 15, 8)]
+    [InlineData(CalendarMode.Year, "Left", 15, 6)]
+    [InlineData(CalendarMode.Year, "Down", 15, 10)]
+    [InlineData(CalendarMode.Year, "Up", 15, 4)]
+    public void FocusNavigation_DoesNotWriteCalendarValue(CalendarMode mode, string direction, int day, int month)
     {
-        var dirType = typeof(CalendarViewControl).GetNestedType("FocusDirection",
-            System.Reflection.BindingFlags.NonPublic)!;
-        var dirVal = Enum.Parse(dirType, dir);
-        var m = typeof(CalendarViewControl).GetMethod("ComputeFocusTarget",
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
-        return (DateTime)m.Invoke(view, new object[] { current, dirVal })!;
+        var owner = new CalendarControl { Value = new DateTime(2026, 7, 15), Mode = mode };
+        var session = new DatePanelSession(owner);
+        session.Apply(new DatePanelAction.MoveFocus(Enum.Parse<DateFocusDirection>(direction)));
+        session.FocusedValue.ShouldBe(new DateTime(2026, month, day));
+        owner.Value.ShouldBe(new DateTime(2026, 7, 15));
     }
 
-    private static CalendarViewControl NewView(DateTime value, CalendarViewMode mode, bool showWeek, Func<DateTime, bool>? disabledDate = null)
+    [Theory]
+    [InlineData(CalendarMode.Month, 7, 18)]
+    [InlineData(CalendarMode.Year, 10, 15)]
+    public void FocusNavigation_SkipsDisabledBusinessCells(CalendarMode mode, int month, int day)
     {
-        var view = new CalendarViewControl();
-        SetProp(view, "Value", value);
-        SetProp(view, "Today", new DateTime(2026, 7, 30));
-        SetProp(view, "ViewMode", mode);
-        SetProp(view, "ShowWeek", showWeek);
-        SetProp(view, "DisabledDate", disabledDate);
-        SetProp(view, "Culture", CultureInfo.InvariantCulture);
-        return view;
+        var owner = new CalendarControl
+        {
+            Value = new DateTime(2026, 7, 15), Mode = mode,
+            DisabledDate = date => mode == CalendarMode.Month ? date.Day is 16 or 17 : date.Month is 8 or 9
+        };
+        var session = new DatePanelSession(owner);
+        session.Apply(new DatePanelAction.MoveFocus(DateFocusDirection.Right));
+        session.FocusedValue.ShouldBe(new DateTime(2026, month, day));
     }
 
-    private static void SetProp(CalendarViewControl view, string name, object? value)
+    [Theory]
+    [InlineData(1, 1, 1, "Left")]
+    [InlineData(1, 1, 1, "Up")]
+    [InlineData(9999, 12, 31, "Right")]
+    [InlineData(9999, 12, 31, "Down")]
+    public void FocusNavigation_ExtremeDatesDoNotOverflow(int year, int month, int day, string direction)
     {
-        var p = typeof(CalendarViewControl).GetProperty(name,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!;
-        p.SetValue(view, value);
+        var owner = new CalendarControl { Value = new DateTime(year, month, day) };
+        var session = new DatePanelSession(owner);
+        session.Apply(new DatePanelAction.MoveFocus(Enum.Parse<DateFocusDirection>(direction)));
+        session.FocusedValue.ShouldBe(owner.Value);
     }
 
-    private static void Rebuild(CalendarViewControl view)
+    [Fact]
+    public void SwitchingToYearMode_ReleasesInactiveCellContextsAndTemplates()
     {
-        var m = typeof(CalendarViewControl).GetMethod("RebuildCells",
-            BindingFlags.Instance | BindingFlags.NonPublic)!;
-        m.Invoke(view, Array.Empty<object>());
-    }
-
-    private static int CellModelCount(CalendarViewControl view)
-    {
-        var f = typeof(CalendarViewControl).GetField("_cellModels",
-            BindingFlags.Instance | BindingFlags.NonPublic)!;
-        var list = (IReadOnlyList<CalendarViewCellModel>)f.GetValue(view)!;
-        return list.Count;
-    }
-
-    private static Avalonia.Controls.Grid ApplyTemplateParts(CalendarViewControl view)
-    {
-        var scope = new NameScope();
-        var weekHeader = new StackPanel { Name = "PART_WeekHeader" };
-        var host = new Avalonia.Controls.Grid { Name = "PART_CellHost" };
-        scope.Register("PART_WeekHeader", weekHeader);
-        scope.Register("PART_CellHost", host);
-
-        var method = typeof(CalendarViewControl).GetMethod(
-            "OnApplyTemplate", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        method.Invoke(view, new object[] { new TemplateAppliedEventArgs(scope) });
-        return host;
-    }
-
-    private static IReadOnlyList<CalendarViewCell> GetCellPool(CalendarViewControl view)
-    {
-        var field = typeof(CalendarViewControl).GetField(
-            "_cellPool", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        return (IReadOnlyList<CalendarViewCell>)field.GetValue(view)!;
-    }
-
-    private static Panel GetWeekHeader(CalendarViewControl view)
-    {
-        var field = typeof(CalendarViewControl).GetField(
-            "_weekHeader", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        return (Panel)field.GetValue(view)!;
+        var owner = new CalendarControl
+        {
+            Value = new DateTime(2026, 7, 15),
+            CellTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<object?>((_, _) => new Border())
+        };
+        var window = new Avalonia.Controls.Window { Width = 700, Height = 600, Content = owner };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        try
+        {
+            var previous = owner.GetVisualDescendants().OfType<DateViewerCell>().ToArray();
+            owner.Mode = CalendarMode.Year;
+            Dispatcher.UIThread.RunJobs();
+            owner.GetVisualDescendants().OfType<DateViewerCell>().Count().ShouldBe(12);
+            foreach (var cell in previous.Skip(12))
+            {
+                cell.Model.ShouldBeNull();
+                cell.Context.ShouldBeNull();
+                cell.CellTemplate.ShouldBeNull();
+                cell.Session.ShouldBeNull();
+            }
+        }
+        finally { window.Close(); }
     }
 }

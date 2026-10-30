@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reactive.Disposables;
 using AtomUI.Controls.Primitives;
 using AtomUI.Utils;
 using Avalonia;
@@ -48,6 +49,7 @@ public sealed class Watermark : Control
     private Size   _cachedGlyphSize;
     private Size   _cachedTargetSize;
     private bool   _matrixCacheValid;
+    private IDisposable? _glyphResourceAttachment;
 
     private void RebuildMatrixCache(Size glyphSize, Size targetSize)
     {
@@ -66,7 +68,12 @@ public sealed class Watermark : Control
         base.OnAttachedToVisualTree(e);
         if (Glyph != null)
         {
+            // 解析动态资源会同步发布 Glyph 属性变化，应用回调可能立即移除水印。
+            // 先保存可释放的生命周期槽，退出发生在获取 token 期间时也能释放返回的 token。
+            var attachment = new SingleAssignmentDisposable();
+            _glyphResourceAttachment = attachment;
             Glyph.PropertyChanged += HandleGlyphPropertyChanged;
+            attachment.Disposable = Glyph.AttachToResourceOwner(Target);
         }
     }
 
@@ -117,6 +124,8 @@ public sealed class Watermark : Control
         {
             Glyph.PropertyChanged -= HandleGlyphPropertyChanged;
         }
+        _glyphResourceAttachment?.Dispose();
+        _glyphResourceAttachment = null;
     }
 
     private static void InstallWatermark(Layoutable target)
@@ -179,7 +188,18 @@ public sealed class Watermark : Control
         }
 
         var size = Glyph.GetDesiredSize();
-        if (size.Width == 0 || size.Height == 0)
+        var columnStep = size.Width + Glyph.HorizontalSpace;
+        var rowStep = size.Height + Glyph.VerticalSpace;
+        var horizontalOffset = Glyph.HorizontalOffset;
+        var verticalOffset = Glyph.VerticalOffset;
+        // 负间距允许叠印，但实际步长必须有限且严格前进；非有限 Glyph 尺寸
+        // （例如尚未有有效尺寸的图片）也不能进入绘制或旋转矩阵计算。
+        if (!double.IsFinite(size.Width) || size.Width <= 0 ||
+            !double.IsFinite(size.Height) || size.Height <= 0 ||
+            !double.IsFinite(columnStep) || columnStep <= 0 ||
+            !double.IsFinite(rowStep) || rowStep <= 0 ||
+            !double.IsFinite(horizontalOffset) || !double.IsFinite(verticalOffset) ||
+            !double.IsFinite(Glyph.Rotate))
         {
             return;
         }
@@ -192,28 +212,47 @@ public sealed class Watermark : Control
             RebuildMatrixCache(size, targetSize);
         }
 
+        // 只为具有已知绘制边界的内置实现跳过不可见 tile。自定义 Glyph/子类
+        // 可能绘制到 DesiredSize 之外，保留其既有 Render 契约。
+        Rect? drawingBounds = Glyph.GetType() == typeof(TextGlyph)
+            ? ((TextGlyph)Glyph).GetDrawingBounds()
+            : Glyph.GetType() == typeof(ImageGlyph) ? new Rect(size) : null;
+        if (drawingBounds is null && (horizontalOffset + columnStep <= horizontalOffset ||
+                                     verticalOffset + rowStep <= verticalOffset))
+        {
+            return;
+        }
+
         using (context.PushClip(new Rect(targetSize)))
         using (context.PushOpacity(Glyph.Opacity))
         {
-            var t = Glyph.VerticalOffset;
-            var r = 0;
+            var tileBounds = drawingBounds?.TransformToAABB(_normalRotationMatrix);
+            if (drawingBounds is { } bounds && Glyph.IsMirrorUsed)
+            {
+                tileBounds = tileBounds!.Value.Union(bounds.TransformToAABB(_mirrorRotationMatrix));
+            }
+            var (t, isOddRow) = tileBounds is { } rowBounds
+                ? FirstVisibleTile(verticalOffset, rowStep, -rowBounds.Bottom)
+                : (verticalOffset, false);
             while (t < targetSize.Height)
             {
                 var pushState = new DrawingContext.PushedState();
-                if (r % 2 == 1 && Glyph.IsCrossUsed)
+                if (isOddRow && Glyph.IsCrossUsed)
                 {
                     pushState = context.PushTransform(
-                        Matrix.CreateTranslation((Glyph.HorizontalSpace - size.Width) / 2 + size.Width, 0));
+                        Matrix.CreateTranslation(columnStep / 2, 0));
                 }
 
                 using (pushState)
                 {
-                    var l = Glyph.HorizontalOffset;
-                    var c = 0;
+                    var crossOffset = isOddRow && Glyph.IsCrossUsed ? columnStep / 2 : 0;
+                    var (l, isOddColumn) = tileBounds is { } columnBounds
+                        ? FirstVisibleTile(horizontalOffset, columnStep, -columnBounds.Right - crossOffset)
+                        : (horizontalOffset, false);
                     while (l < targetSize.Width)
                     {
                         // Use pre-cached rotation matrix — no trig/allocation per tile
-                        var m = c % 2 == 1 && Glyph.IsMirrorUsed
+                        var m = isOddColumn && Glyph.IsMirrorUsed
                             ? _mirrorRotationMatrix
                             : _normalRotationMatrix;
 
@@ -223,14 +262,46 @@ public sealed class Watermark : Control
                             Glyph.Render(context);
                         }
 
-                        l += size.Width + Glyph.HorizontalSpace;
-                        c++;
+                        var nextColumn = l + columnStep;
+                        if (nextColumn <= l)
+                        {
+                            break;
+                        }
+                        l = nextColumn;
+                        isOddColumn = !isOddColumn;
                     }
 
-                    t += size.Height + Glyph.VerticalSpace;
-                    r++;
+                    var nextRow = t + rowStep;
+                    if (nextRow <= t)
+                    {
+                        break;
+                    }
+                    t = nextRow;
+                    isOddRow = !isOddRow;
                 }
             }
         }
+    }
+
+    private static (double Position, bool IsOdd) FirstVisibleTile(double offset, double step, double boundary)
+    {
+        var period = step * 2;
+        if (offset >= boundary || !double.IsFinite(period) || !double.IsFinite(boundary))
+        {
+            return (offset, false);
+        }
+
+        // 分别取余，避免巨大商乘回 step 与 offset 相消，并保持隔行/隔列相位。
+        var phase = (offset % period - boundary % period) % period;
+        if (phase < 0)
+        {
+            phase += period;
+        }
+        var isOdd = phase >= step;
+        if (isOdd)
+        {
+            phase -= step;
+        }
+        return (boundary + phase, isOdd);
     }
 }

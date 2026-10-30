@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><IsPackable>false</IsPackable></PropertyGroup>
+  <ItemGroup><Compile Remove="Fixtures/**/*.cs" /></ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.ILLink.Tasks" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="all" />
+    <Reference Include="illink" HintPath="$(PkgMicrosoft_NET_ILLink_Tasks)/tools/net/illink.dll" />
+    <Reference Include="Mono.Cecil" HintPath="$(PkgMicrosoft_NET_ILLink_Tasks)/tools/net/Mono.Cecil.dll" />
+    <ProjectReference Include="../../src/AtomUI.Toolchain/AtomUI.Toolchain.csproj" ReferenceOutputAssembly="false" />
+    <Reference Include="AtomUI.TypeMap.Linker" HintPath="$(AtomUITypeMapBackendOutputDirectory)/AtomUI.TypeMap.Linker.dll" />
+    <ProjectReference Include="Fixtures/Empty/Empty.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="Fixtures/PackageA/PackageA.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <!-- NuGet restores the single default project. Engine profiles have separate assets and
+       are prepared explicitly by its build API, rather than hidden ProjectReference metadata. -->
+  <Target Name="PrepareTypeMapTestBackend" BeforeTargets="ResolveAssemblyReferences">
+    <MSBuild Projects="$(AtomUIToolchainProject)" Targets="BuildManagedToolchain"
+             RemoveProperties="$(AtomUIToolchainGlobalPropertiesToRemove)"
+             Properties="Configuration=$(Configuration);AtomUIToolchainProfile=Tasks;AtomUIToolchainBackendProfiles=ILLink10" />
+  </Target>
+</Project>

@@ -167,35 +167,20 @@ RadioButton 的视觉选项通过 public API 归一为 theme variables、伪类�
 
 纵向模式默认铺满可用宽度；非 Stretch Alignment 使用最宽 Item 的自然宽度；显式 Width 由调用方接管。完整尺寸矩阵、圆角映射、Custom 边界和验证要求见 [OptionButtonGroup 方向布局设计](option-button-group-orientation-design.md)。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [RadioButton 桌面版实现原理](implementation.md)
+- [RadioButton Semantic Part 契约](semantic-part.md)
 - [OptionButtonGroup 方向布局设计](option-button-group-orientation-design.md)
 - [RadioButton Token 设计](token.md)
 - [RadioButton Changelog](changelog.md)
 
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `radio-root` | `RadioButton` | 承载普通单选内容、checked、disabled 和 Wave 状态。 | `Content`、`IsChecked` | RadioButtonToken | stable |
-| `radio-group` | `RadioButtonGroup` | 承载普通单选集合、CheckedItem 和排列方向。 | `CheckedItem`、`Orientation`、`ItemsSource` | SharedToken | stable |
-| `indicator` | `RadioIndicator` | 绘制普通单选圆环、圆点和状态动效。 | `IsChecked`、`IsEnabled` | RadioButtonToken | internal-observable |
-| `option-group` | `OptionButtonGroup` | 承载按钮式单选集合、Orientation、共享边框和选中边框。 | `Orientation`、`ButtonStyle`、`SelectedItem`、`SizeType` | OptionButtonToken + SharedToken | stable |
-| `option-item` | `OptionButton` | 承载按钮式选项内容、图标、checked 状态和有效圆角。 | `Content`、`Icon`、`IsChecked` | OptionButtonToken | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 专项设计的稳定摘要同步到主文档后生成 `controls/radio-button/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 专项设计的 owner、状态流和组合结构同步到主文档后生成 `controls/radio-button/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+`icon` 指示圆环语义与上游 Radio `icon` 语义对齐，由模板中的 `RadioIndicator` 节点承载并以 `Single` 基数公开；
+`label` 对应上游 `label` 语义，由 `ContentPresenter` 节点承载。`RadioButtonGroup`、`RadioIndicator`、
+`OptionButton` 与 `OptionButtonGroup` 不持有独立 Semantic descriptor。完整契约见
+[RadioButton Semantic Part 契约](semantic-part.md)。
 
 验证策略：
 

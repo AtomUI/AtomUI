@@ -7,5 +7,17 @@
         <target state="final">Transparente</target>
       </segment>
     </unit>
+    <unit id="Confirm">
+      <segment>
+        <source>Confirm</source>
+        <target state="final">Confirmar</target>
+      </segment>
+    </unit>
+    <unit id="Cancel">
+      <segment>
+        <source>Cancel</source>
+        <target state="final">Cancelar</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

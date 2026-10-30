@@ -23,7 +23,7 @@ public class ButtonThemeCrossPlatformAssetTests
     {
         var manifest = File.ReadAllText(Path.Combine(
             GetRepositoryRoot(),
-            "src/AtomUI.Desktop.Controls/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.ThemeAssetManifestGenerator/GeneratedControlThemeAssetManifest.g.cs"));
+            "src/AtomUI.Desktop.Controls/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedTypeMapRegistration.g.cs"));
 
         manifest.ShouldContain("Buttons/Themes/ButtonTheme.axaml");
         manifest.ShouldContain("Buttons/Themes/DropdownButtonTheme.axaml");

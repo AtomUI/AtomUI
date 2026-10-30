@@ -7,8 +7,8 @@
              x:Class="AtomUIGallery.ShowCases.Statistic.StatisticShowCase"
              x:DataType="vm:StatisticViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Statistic"
                     Category="{gallery:StatisticShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,60 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractStatistic" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:StatisticViewModel">
+                    <gallery:SemanticPartPreview Name="StatisticSemanticPreview"
+                                                 SemanticOwnerType="{x:Type atom:Statistic}">
+                        <gallery:SemanticPartPreview.Styles>
+                            <Style Selector="atom|Statistic.semantic-preview">
+                                <atom:StatisticContentStyle x:SetterTargetType="StackPanel">
+                                    <Setter Property="TextElement.Foreground" Value="#3F8600" />
+                                    <Setter Property="TextElement.FontSize" Value="24" />
+                                </atom:StatisticContentStyle>
+                                <atom:StatisticValueStyle x:SetterTargetType="ContentPresenter">
+                                    <Setter Property="Foreground" Value="#E11B1B" />
+                                    <Setter Property="FontSize" Value="32" />
+                                    <Setter Property="Padding" Value="8,0" />
+                                </atom:StatisticValueStyle>
+                            </Style>
+                        </gallery:SemanticPartPreview.Styles>
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Statistic Name="StatisticSemanticOwner"
+                                            Classes="semantic-preview"
+                                            Header="{gallery:StatisticShowCaseLangResource P2HeaderActive}"
+                                            Value="11.28"
+                                            Precision="2"
+                                            ValuePrefixAddOn="{antdicons:AntDesignIconProvider ArrowUpOutlined}"
+                                            ValueSuffixAddOn="%" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:StatisticShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="header"
+                                Description="{gallery:StatisticShowCaseLangResource SemanticHeaderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="title"
+                                Description="{gallery:StatisticShowCaseLangResource SemanticTitleDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:StatisticShowCaseLangResource SemanticContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="value"
+                                Description="{gallery:StatisticShowCaseLangResource SemanticValueDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="prefix"
+                                Description="{gallery:StatisticShowCaseLangResource SemanticPrefixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="suffix"
+                                Description="{gallery:StatisticShowCaseLangResource SemanticSuffixDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -122,7 +174,75 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem Title="{gallery:StatisticShowCaseLangResource SemanticPartStyleTitle}"
+                                      Description="{gallery:StatisticShowCaseLangResource SemanticPartStyleDescription}"
+                                      SourceKey="statistic-semantic-part"
+                                      BadgeText="v6.1.3"
+                                      Span="Full"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:StatisticViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="16">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Statistic.semantic-style-demo">
+                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                        <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Setter Property="Padding" Value="16" />
+                                        <Setter Property="CornerRadius" Value="8" />
+                                        <Setter Property="StrokeDashArray" Value="4,2" />
+                                    </Style>
+                                    <Style Selector="atom|Statistic.semantic-positive">
+                                        <atom:StatisticTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#1890FF" />
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                        </atom:StatisticTitleStyle>
+                                        <atom:StatisticContentStyle x:SetterTargetType="StackPanel">
+                                            <Setter Property="TextElement.FontSize" Value="24" />
+                                        </atom:StatisticContentStyle>
+                                        <atom:StatisticValueStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Background" Value="#E6F4FF" />
+                                            <Setter Property="CornerRadius" Value="4" />
+                                            <Setter Property="Foreground" Value="#0958D9" />
+                                            <Setter Property="Padding" Value="6,0" />
+                                        </atom:StatisticValueStyle>
+                                    </Style>
+                                    <Style Selector="atom|Statistic.semantic-negative">
+                                        <atom:StatisticTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#FF4D4F" />
+                                        </atom:StatisticTitleStyle>
+                                        <atom:StatisticContentStyle x:SetterTargetType="StackPanel">
+                                            <Setter Property="TextElement.Foreground" Value="#FF7875" />
+                                        </atom:StatisticContentStyle>
+                                        <atom:StatisticValueStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Background" Value="#FFF1F0" />
+                                            <Setter Property="CornerRadius" Value="4" />
+                                            <Setter Property="Padding" Value="6,0" />
+                                        </atom:StatisticValueStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:Statistic Name="StatisticPositiveSemanticDemo"
+                                                Classes="semantic-style-demo semantic-positive"
+                                                Header="Monthly Active Users"
+                                                Value="93241"
+                                                ValuePrefixAddOn="{antdicons:AntDesignIconProvider ArrowUpOutlined}"
+                                                ValueSuffixAddOn="users" />
+                                <atom:Statistic Name="StatisticNegativeSemanticDemo"
+                                                Classes="semantic-style-demo semantic-negative"
+                                                Header="Yearly Loss"
+                                                Value="-18.7"
+                                                Precision="1"
+                                                ValuePrefixAddOn="{antdicons:AntDesignIconProvider ArrowUpOutlined}"
+                                                ValueSuffixAddOn="%" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

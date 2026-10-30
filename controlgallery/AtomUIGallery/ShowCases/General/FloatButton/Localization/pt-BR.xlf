@@ -7,6 +7,18 @@
         <target state="translated">BackTop makes isso easy para go voltar para o superior de o página.</target>
       </segment>
     </unit>
+    <unit id="BackTopProgressDescription">
+      <segment>
+        <source>Show the current scroll progress around the BackTop button edge.</source>
+        <target state="translated">Mostra o progresso atual da rolagem na borda do botão BackTop.</target>
+      </segment>
+    </unit>
+    <unit id="BackTopProgressTitle">
+      <segment>
+        <source>BackTop with progress</source>
+        <target state="translated">BackTop com progresso</target>
+      </segment>
+    </unit>
     <unit id="BackTopTitle">
       <segment>
         <source>BackTop</source>
@@ -185,6 +197,60 @@
       <segment>
         <source>Examples</source>
         <target state="translated">Exemplos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBackTopRootDescription">
+      <segment>
+        <source>Root element of a BackTopFloatButton component.</source>
+        <target state="translated">Elemento raiz de um componente BackTopFloatButton.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with font size, foreground, line height and other description styles, available in the square shape.</source>
+        <target state="translated">Elemento de conteúdo com estilos de tamanho de fonte, cor de primeiro plano e altura de linha, disponível na forma quadrada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticGroupRootDescription">
+      <segment>
+        <source>Root element of a FloatButtonGroup component with placement, trigger and open state entry.</source>
+        <target state="translated">Elemento raiz de um componente FloatButtonGroup com entrada de posição, gatilho e estado aberto.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with brush, size and other icon styles.</source>
+        <target state="translated">Elemento de ícone com estilos de pincel, tamanho e outros estilos de ícone.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListDescription">
+      <segment>
+        <source>List element with background, corner radius, spacing and other menu item container styles.</source>
+        <target state="translated">Elemento de lista com estilos de fundo, raio de canto, espaçamento e outros estilos do contêiner de itens de menu.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize FloatButton's published Semantic Parts.</source>
+        <target state="translated">Use estilos com escopo de owner para personalizar os Semantic Parts publicados do FloatButton.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with the float button's shape, type, shadow and theme entry styles.</source>
+        <target state="translated">Elemento raiz com estilos de forma, tipo, sombra e entrada de tema do botão flutuante.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTriggerDescription">
+      <segment>
+        <source>Trigger element with the group's main button styles, shown in click or hover trigger mode.</source>
+        <target state="translated">Elemento gatilho com os estilos do botão principal do grupo, exibido no modo de gatilho por clique ou por passagem do mouse.</target>
       </segment>
     </unit>
     <unit id="ShapeDescription">

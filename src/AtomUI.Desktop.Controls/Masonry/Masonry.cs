@@ -1,7 +1,13 @@
 using AtomUI.Controls;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
+using Avalonia.Controls.Primitives;
+using Avalonia.Media;
+using Avalonia.Styling;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -23,7 +29,7 @@ namespace AtomUI.Desktop.Controls;
 /// the control theme; it is not exposed to developers.
 /// </para>
 /// </remarks>
-public class Masonry : ItemsControl
+public partial class Masonry : ItemsControl
 {
     #region 公共属性定义
 
@@ -203,6 +209,37 @@ public class Masonry : ItemsControl
 
     #endregion
 
+    #region 内部属性定义
+
+    /// <summary>
+    /// Defines the internal <see cref="MotionDuration"/> property. Item appear fade and position
+    /// glide duration, fed from the <c>MotionDurationSlow</c> token by the control theme.
+    /// Zero (global motion disabled) degrades all item motions to instantaneous.
+    /// </summary>
+    internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
+        MotionAwareControlProperty.MotionDurationProperty.AddOwner<Masonry>();
+
+    /// <summary>
+    /// Defines the internal <see cref="LeaveMotionDuration"/> property. Removed item fade-out
+    /// duration, fed from the <c>MotionDurationFast</c> token by the control theme.
+    /// </summary>
+    internal static readonly StyledProperty<TimeSpan> LeaveMotionDurationProperty =
+        AvaloniaProperty.Register<Masonry, TimeSpan>(nameof(LeaveMotionDuration), TimeSpan.FromMilliseconds(100));
+
+    internal TimeSpan MotionDuration
+    {
+        get => GetValue(MotionDurationProperty);
+        set => SetValue(MotionDurationProperty, value);
+    }
+
+    internal TimeSpan LeaveMotionDuration
+    {
+        get => GetValue(LeaveMotionDurationProperty);
+        set => SetValue(LeaveMotionDurationProperty, value);
+    }
+
+    #endregion
+
     static Masonry()
     {
         // Layout properties live on Masonry; the internal MasonryPanel reads them via
@@ -221,6 +258,123 @@ public class Masonry : ItemsControl
         SpanProperty.Changed.AddClassHandler<Control>(HandleItemLayoutPropertyChanged);
     }
 
+    #region 离场动效（ghost 层托管）
+
+    // antd motionEaseOut == CubicEaseOut（与 MasonryPanel.MotionEasing 一致）
+    private static readonly CubicEaseOut MotionEasing = new();
+    private Canvas? _motionGhostLayer;
+    private readonly List<Border> _motionGhostHosts = new();
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _motionGhostLayer = e.NameScope.Find<Canvas>("PART_MotionGhostLayer");
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        ClearMotionGhosts();
+    }
+
+    /// <summary>面板移除子项后调用：将被移除容器移入 ghost 层在原位置淡出。</summary>
+    internal void NotifyItemsRemoved(MasonryPanel source, IReadOnlyList<MasonryPanel.MasonryRemovedItem> removedItems)
+    {
+        if (_motionGhostLayer is null)
+        {
+            return;
+        }
+        foreach (var removed in removedItems)
+        {
+            HostMotionGhost(source, removed);
+        }
+    }
+
+    private void HostMotionGhost(MasonryPanel source, MasonryPanel.MasonryRemovedItem removed)
+    {
+        var duration = LeaveMotionDuration;
+        if (duration <= TimeSpan.Zero)
+        {
+            return; // 禁用动效：与上游一致直接消失
+        }
+        var layer = _motionGhostLayer!;
+        var origin = source.TranslatePoint(default, layer).GetValueOrDefault();
+        var isRtl  = FlowDirection == FlowDirection.RightToLeft;
+        var x      = isRtl ? layer.Bounds.Width - removed.Rect.Right : removed.Rect.X;
+        var host   = new Border
+        {
+            Width  = removed.Rect.Width,
+            Height = removed.Rect.Height,
+            IsHitTestVisible = false,
+            Child  = removed.Container
+        };
+        Canvas.SetLeft(host, origin.X + x);
+        Canvas.SetTop(host, origin.Y + removed.Rect.Y);
+        layer.Children.Add(host);
+        _motionGhostHosts.Add(host);
+        _ = FadeOutGhostAsync(host, duration);
+    }
+
+    private async Task FadeOutGhostAsync(Border host, TimeSpan duration)
+    {
+        try
+        {
+            var animation = new Animation
+            {
+                Duration = duration,
+                Easing   = MotionEasing,
+                FillMode = FillMode.Forward,
+                Children =
+                {
+                    new KeyFrame { Cue = new Cue(0d), Setters = { new Setter(Visual.OpacityProperty, 1d) } },
+                    new KeyFrame { Cue = new Cue(1d), Setters = { new Setter(Visual.OpacityProperty, 0d) } },
+                }
+            };
+            await animation.RunAsync(host);
+        }
+        catch (OperationCanceledException) { }
+        ReleaseMotionGhost(host);
+    }
+
+    /// <summary>容器重加入面板前由面板调用：立即归还容器归属，避免双视觉父级。</summary>
+    internal bool TryReleaseMotionGhost(Control container)
+    {
+        for (var i = 0; i < _motionGhostHosts.Count; i++)
+        {
+            if (ReferenceEquals(_motionGhostHosts[i].Child, container))
+            {
+                ReleaseMotionGhost(_motionGhostHosts[i]);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void ReleaseMotionGhost(Border host)
+    {
+        host.Child = null; // 归还容器归属（用户直接子元素场景容器归用户所有）
+        _motionGhostHosts.Remove(host);
+        if (host.Parent is Canvas layer)
+        {
+            layer.Children.Remove(host);
+        }
+    }
+
+    private void ClearMotionGhosts()
+    {
+        foreach (var host in _motionGhostHosts.ToArray())
+        {
+            host.Child = null;
+            if (host.Parent is Canvas layer)
+            {
+                layer.Children.Remove(host);
+            }
+        }
+        _motionGhostHosts.Clear();
+    }
+
+    #endregion
+
     /// <summary>
     /// Called by the internal layout engine after a layout pass produced a new effective column
     /// assignment. Dispatched outside the layout pass to avoid re-entrancy.
@@ -228,6 +382,15 @@ public class Masonry : ItemsControl
     internal void NotifyLayoutChanged(IReadOnlyList<MasonryItemLayout> items)
     {
         Dispatcher.Post(() => LayoutChanged?.Invoke(this, new MasonryLayoutChangedEventArgs(items)));
+    }
+
+    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
+    {
+        base.PrepareContainerForItemOverride(container, item, index);
+        if (!container.Classes.Contains(MasonrySemanticParts.ItemClass))
+        {
+            container.Classes.Add(MasonrySemanticParts.ItemClass);
+        }
     }
 
     private static void HandleItemLayoutPropertyChanged(Control control, AvaloniaPropertyChangedEventArgs args)

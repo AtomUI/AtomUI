@@ -270,7 +270,22 @@ public partial class DataGrid : TemplatedControl,
     
     public static readonly StyledProperty<int> PageSizeProperty =
         AvaloniaProperty.Register<DataGrid, int>(nameof(PageSize));
-    
+
+    public static readonly StyledProperty<bool> IsShowPageSizeSelectorProperty =
+        AvaloniaProperty.Register<DataGrid, bool>(nameof(IsShowPageSizeSelector), true);
+
+    public static readonly StyledProperty<object?> TopPaginationExtraContentProperty =
+        AvaloniaProperty.Register<DataGrid, object?>(nameof(TopPaginationExtraContent));
+
+    public static readonly StyledProperty<IDataTemplate?> TopPaginationExtraContentTemplateProperty =
+        AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(TopPaginationExtraContentTemplate));
+
+    public static readonly StyledProperty<object?> BottomPaginationExtraContentProperty =
+        AvaloniaProperty.Register<DataGrid, object?>(nameof(BottomPaginationExtraContent));
+
+    public static readonly StyledProperty<IDataTemplate?> BottomPaginationExtraContentTemplateProperty =
+        AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(BottomPaginationExtraContentTemplate));
+
     public static readonly StyledProperty<bool> IsHideOnSinglePageProperty =
         AbstractPagination.IsHideOnSinglePageProperty.AddOwner<DataGrid>();
 
@@ -739,6 +754,51 @@ public partial class DataGrid : TemplatedControl,
     {
         get => GetValue(BottomPaginationAlignProperty);
         set => SetValue(BottomPaginationAlignProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether the pagination area includes a page-size selector.
+    /// </summary>
+    public bool IsShowPageSizeSelector
+    {
+        get => GetValue(IsShowPageSizeSelectorProperty);
+        set => SetValue(IsShowPageSizeSelectorProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the extra content shown on the opposite side of the top pagination.
+    /// </summary>
+    public object? TopPaginationExtraContent
+    {
+        get => GetValue(TopPaginationExtraContentProperty);
+        set => SetValue(TopPaginationExtraContentProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the template used to render <see cref="TopPaginationExtraContent"/>.
+    /// </summary>
+    public IDataTemplate? TopPaginationExtraContentTemplate
+    {
+        get => GetValue(TopPaginationExtraContentTemplateProperty);
+        set => SetValue(TopPaginationExtraContentTemplateProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the extra content shown on the opposite side of the bottom pagination.
+    /// </summary>
+    public object? BottomPaginationExtraContent
+    {
+        get => GetValue(BottomPaginationExtraContentProperty);
+        set => SetValue(BottomPaginationExtraContentProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the template used to render <see cref="BottomPaginationExtraContent"/>.
+    /// </summary>
+    public IDataTemplate? BottomPaginationExtraContentTemplate
+    {
+        get => GetValue(BottomPaginationExtraContentTemplateProperty);
+        set => SetValue(BottomPaginationExtraContentTemplateProperty, value);
     }
 
     public bool IsHideOnSinglePage
@@ -1833,7 +1893,8 @@ public partial class DataGrid : TemplatedControl,
             ReConfigurePagination();
             refreshDisplayedRowsGridLines = true;
         }
-        else if (change.Property == PaginationVisibilityProperty)
+        else if (change.Property == PaginationVisibilityProperty ||
+                 change.Property == IsHideOnSinglePageProperty)
         {
             ConfigurePaginationVisibility();
             refreshDisplayedRowsGridLines = true;

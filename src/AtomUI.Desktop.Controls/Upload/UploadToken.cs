@@ -30,6 +30,16 @@ internal sealed class UploadToken : AbstractControlDesignToken
     public Thickness TextListNamePadding { get; set; }
 
     /// <summary>
+    /// 文本列表项的内间距（垂直方向）
+    /// </summary>
+    public Thickness TextListItemPadding { get; set; }
+
+    /// <summary>
+    /// 文本列表上传进度线的高度
+    /// </summary>
+    public double TextListProgressLineHeight { get; set; }
+
+    /// <summary>
     /// 文本列表上传进度的内间距
     /// </summary>
     public Thickness TextListProgressPadding { get; set; }
@@ -71,6 +81,8 @@ internal sealed class UploadToken : AbstractControlDesignToken
         PictureCardSize          = EffectiveGlobalToken.ControlHeightLG * 2.55;
         TextListItemMargin       = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
         TextListNamePadding      = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
+        TextListItemPadding      = new Thickness(0, EffectiveGlobalToken.UniformlyPaddingXXS, 0, EffectiveGlobalToken.UniformlyPaddingXXS);
+        TextListProgressLineHeight = 2;
         TextListProgressPadding  = new Thickness(EffectiveGlobalToken.FontSize + EffectiveGlobalToken.UniformlyPaddingXS, 0, 0, 0);
         UploadThumbnailSize      = EffectiveGlobalToken.FontSizeHeading2;
         DragIconSize             = EffectiveGlobalToken.FontSizeHeading3 * 2;

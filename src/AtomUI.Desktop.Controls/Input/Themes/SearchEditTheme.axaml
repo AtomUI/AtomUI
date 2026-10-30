@@ -5,15 +5,17 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SearchEdit}" TargetType="atom:SearchEdit">
+        <ControlTheme.Resources>
+            <atom:PlaceholderHorizontalAlignmentConverter x:Key="PlaceholderHorizontalAlignmentConverter" />
+        </ControlTheme.Resources>
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:SearchEditDecoratedBox
                     Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
+                    Classes.semantic-scope-input-frame="True"
                     LeftAddOn="{TemplateBinding LeftAddOn}"
                     LeftAddOnTemplate="{TemplateBinding LeftAddOnTemplate}"
                     RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
-                    ContentLeftAddOn="{TemplateBinding InnerLeftContent}"
-                    ContentLeftAddOnTemplate="{TemplateBinding InnerLeftContentTemplate}"
                     StyleVariant="{TemplateBinding StyleVariant}"
                     SizeType="{TemplateBinding SizeType}"
                     Status="{TemplateBinding Status}"
@@ -32,16 +34,30 @@
                     CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
                     IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
                     Focusable="True">
+                    <atom:SearchEditDecoratedBox.ContentLeftAddOn>
+                        <atom:AddOnContentPresenter
+                            Classes.semantic-prefix="True"
+                            Content="{Binding InnerLeftContent, RelativeSource={RelativeSource AncestorType=atom:SearchEdit}}"
+                            ContentTemplate="{Binding InnerLeftContentTemplate, RelativeSource={RelativeSource AncestorType=atom:SearchEdit}}"
+                            VerticalAlignment="Stretch"
+                            VerticalContentAlignment="Center"
+                            HorizontalAlignment="Left"
+                            Focusable="False" />
+                    </atom:SearchEditDecoratedBox.ContentLeftAddOn>
                     <atom:SearchEditDecoratedBox.ContentRightAddOn>
                         <StackPanel Orientation="Horizontal"
+                                    Classes.semantic-suffix="True"
                                     Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
                             <atom:InputClearIconButton
                                 Name="PART_ClearButton"
+                                Classes.semantic-clear="True"
+                                VerticalAlignment="Center"
                                 Icon="{Binding $parent[atom:SearchEdit].ClearIcon}"
                                 IsVisible="{Binding $parent[atom:SearchEdit].IsEffectiveShowClearButton}"
                                 IsMotionEnabled="{Binding $parent[atom:SearchEdit].IsMotionEnabled}" />
                             <atom:RevealButton
                                 Name="PART_RevealButton"
+                                VerticalAlignment="Center"
                                 IsChecked="{Binding $parent[atom:SearchEdit].RevealPassword, Mode=TwoWay}"
                                 IsVisible="{Binding $parent[atom:SearchEdit].IsEnableRevealButton}"
                                 IsMotionEnabled="{Binding $parent[atom:SearchEdit].IsMotionEnabled}" />
@@ -63,10 +79,11 @@
                         HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                         VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
                         IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}">
-                        <Panel>
+                        <Panel Classes.semantic-content="True">
                             <atom:TextBlock
                                 Name="Placeholder"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                Classes.semantic-placeholder="True"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment, Converter={StaticResource PlaceholderHorizontalAlignmentConverter}}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                 Foreground="{TemplateBinding PlaceholderForeground}"
                                 Text="{TemplateBinding PlaceholderText}"
@@ -76,6 +93,7 @@
                                 IsVisible="{TemplateBinding IsPlaceholderTextVisible}" />
                             <atom:InputTextPresenter
                                 Name="PART_TextPresenter"
+                                Classes.semantic-input="True"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                 CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
@@ -100,8 +118,6 @@
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
         <Setter Property="SelectionBrush" Value="{atom:SharedTokenResource SelectionBackground}" />
         <Setter Property="CaretBrush" Value="{atom:SharedTokenResource ColorText}" />
         <Setter Property="SelectionForegroundBrush"

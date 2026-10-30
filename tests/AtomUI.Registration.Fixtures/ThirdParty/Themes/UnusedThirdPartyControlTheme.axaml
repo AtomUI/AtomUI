@@ -1,0 +1,3 @@
+<ControlTheme xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:Fixture.ThirdParty" x:Class="Fixture.ThirdParty.UnusedThirdPartyControlTheme" TargetType="local:UnusedThirdPartyControl">
+    <Setter Property="Tag" Value="UNUSED_THIRD_PARTY_ASSET_SENTINEL" />
+</ControlTheme>

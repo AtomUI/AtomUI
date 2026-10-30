@@ -166,6 +166,76 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button rendered in clear mode.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Start time text input box.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Owner-scoped styles targeting public Semantic Parts of the TimePicker family via their real selectors.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupColumnDescription">
+      <segment>
+        <source>Host of a single scrolling time column.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContainerDescription">
+      <segment>
+        <source>Content container organizing the time panel and footer.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContentDescription">
+      <segment>
+        <source>Layout container of all time columns.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupFooterDescription">
+      <segment>
+        <source>Bottom action area with Now and Confirm buttons.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupItemDescription">
+      <segment>
+        <source>Selectable time cell inside a column.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root surface of the time popup layer.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix add-on area inside the input zone.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The TimePicker owner itself.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSecondaryInputDescription">
+      <segment>
+        <source>End time text input box of the range selection.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix add-on area of the input zone.</source>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to TimePicker with status, which could be error or warning.</source>
@@ -214,6 +284,16 @@
     <unit id="VariantsTitle">
       <segment>
         <source>Variants</source>
+      </segment>
+    </unit>
+    <unit id="NeedConfirmTitle">
+      <segment>
+        <source>Confirm selection</source>
+      </segment>
+    </unit>
+    <unit id="NeedConfirmDescription">
+      <segment>
+        <source>IsNeedConfirm is enabled by default. Selecting a time updates the input immediately; OK submits the value. With IsNeedConfirm=False, closing the panel submits the candidate. Hover and ordinary scrolling do not submit.</source>
       </segment>
     </unit>
   </file>

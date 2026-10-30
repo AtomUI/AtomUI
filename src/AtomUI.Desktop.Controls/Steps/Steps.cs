@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using AtomUI.Controls;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -10,9 +11,9 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Vertical, StdPseudoClass.Horizontal)]
-public class Steps : ItemsControl,
-                     ISizeTypeAware,
-                     IMotionAwareControl
+public partial class Steps : ItemsControl,
+                              ISizeTypeAware,
+                              IMotionAwareControl
 {
     #region 公共属性定义
 
@@ -65,6 +66,12 @@ public class Steps : ItemsControl,
 
     public static readonly StyledProperty<IBrush?> ItemRailBackgroundProperty =
         AvaloniaProperty.Register<Steps, IBrush?>(nameof(ItemRailBackground));
+
+    public static readonly StyledProperty<IReadOnlyList<double>?> BorderDashArrayProperty =
+        AvaloniaProperty.Register<Steps, IReadOnlyList<double>?>(nameof(BorderDashArray));
+
+    public static readonly StyledProperty<double> BorderDashOffsetProperty =
+        AvaloniaProperty.Register<Steps, double>(nameof(BorderDashOffset));
 
     public int Current
     {
@@ -162,6 +169,18 @@ public class Steps : ItemsControl,
         set => SetValue(ItemRailBackgroundProperty, value);
     }
 
+    public IReadOnlyList<double>? BorderDashArray
+    {
+        get => GetValue(BorderDashArrayProperty);
+        set => SetValue(BorderDashArrayProperty, value);
+    }
+
+    public double BorderDashOffset
+    {
+        get => GetValue(BorderDashOffsetProperty);
+        set => SetValue(BorderDashOffsetProperty, value);
+    }
+
     #endregion
 
     #region 公共事件定义
@@ -208,6 +227,8 @@ public class Steps : ItemsControl,
                 nameof(container),
                 "The container type is incorrect, it must be type StepsItem.");
         }
+
+        stepsItem.Classes.Add(StepsSemanticParts.ItemClass);
 
         var isGenerated = !ReferenceEquals(container, item);
         if (isGenerated)

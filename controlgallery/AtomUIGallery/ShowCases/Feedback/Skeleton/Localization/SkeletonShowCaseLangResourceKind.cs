@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -15,6 +13,16 @@ public enum SkeletonShowCaseLangResourceKind
     ButtonAvatarInputImageNodeDescription,
     ContainsSubComponentTitle,
     ContainsSubComponentDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticHeaderDescription,
+    SemanticSectionDescription,
+    SemanticAvatarDescription,
+    SemanticTitleDescription,
+    SemanticParagraphDescription,
+    SemanticElementRootDescription,
+    SemanticElementContentDescription,
     PageSubtitle,
     PageDescription,
     ComponentCategory,

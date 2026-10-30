@@ -7,7 +7,7 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-public class ColorPicker : AbstractColorPicker
+public partial class ColorPicker : AbstractColorPicker
 {
     #region 公共属性定义
     public static readonly StyledProperty<Color?> DefaultValueProperty =
@@ -111,10 +111,19 @@ public class ColorPicker : AbstractColorPicker
         base.OnPropertyChanged(change);
         if (change.Property == ValueProperty)
         {
+            if (IsNeedConfirm && _presenter is { IsEditing: true })
+            {
+                ResetConfirmationDraft();
+            }
             GenerateValueText();
             GenerateColorBlockBackground();
             NotifyValueChanged(new ColorChangedEventArgs(change.GetOldValue<Color?>(), change.GetNewValue<Color?>()));
             NotifyFormValueChanged();
+        }
+
+        if (change.Property == ValueSyncStrategyProperty && IsNeedConfirm && IsPickerOpen && !IsConfirmationOperationActive)
+        {
+            ResetConfirmationDraft();
         }
 
         if (change.Property == ColorTextFormatterProperty)
@@ -172,6 +181,8 @@ public class ColorPicker : AbstractColorPicker
 
     protected override Control CreatePresenter()
     {
+        // The runtime-created presenter is outside the owner's template selector chain.
+        // Its independent Content subtree cannot receive these bindings from ControlTheme.
         var presenter = new ColorPickerView();
         presenter[!ColorPickerView.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
         presenter[!ColorPickerView.IsClearEnabledProperty] = this[!IsClearEnabledProperty];
@@ -191,11 +202,11 @@ public class ColorPicker : AbstractColorPicker
 
     private void HandleColorPickerViewValueChanged(object? sender, ColorChangedEventArgs args)
     {
-        if (ValueSyncStrategy == ColorPickerValueSyncMode.Immediate)
+        if (!IsNeedConfirm && ValueSyncStrategy == ColorPickerValueSyncMode.Immediate)
         {
             SetCurrentValue(ValueProperty, args.NewColor);
         }
-        else
+        else if (!IsNeedConfirm)
         {
             _latestSyncValue = args.NewColor;
         }
@@ -206,8 +217,15 @@ public class ColorPicker : AbstractColorPicker
         base.NotifyPickerOpened();
         if (_presenter != null)
         {
+            if (IsNeedConfirm)
+            {
+                _presenter.ResetDraft(Value);
+            }
             var effectiveColor = Value ?? DefaultValue ?? Colors.White;
-            _presenter.SetCurrentValue(ColorPickerView.ValueProperty, effectiveColor);
+            if (!IsNeedConfirm)
+            {
+                _presenter.SetCurrentValue(ColorPickerView.ValueProperty, effectiveColor);
+            }
             _latestSyncValue = effectiveColor;
             _presenter.ValueChanged += HandleColorPickerViewValueChanged;
             _presenter.ColorValueCleared += HandleColorCleared;
@@ -218,12 +236,13 @@ public class ColorPicker : AbstractColorPicker
     {
         if (_presenter != null)
         {
-            if (ValueSyncStrategy == ColorPickerValueSyncMode.OnCompleted)
+            _presenter.EndEdit();
+            if (!IsNeedConfirm && !IsConfirmationOperationActive && ValueSyncStrategy == ColorPickerValueSyncMode.OnCompleted)
             {
                 SetCurrentValue(ValueProperty, _latestSyncValue);
             }
 
-            if (Value != null)
+            if (!IsNeedConfirm && !IsConfirmationOperationActive && Value != null)
             {
                 ValueSelected?.Invoke(this, new ColorSelectedEventArgs(Value.Value));
             }
@@ -233,6 +252,30 @@ public class ColorPicker : AbstractColorPicker
         base.NotifyPickerClosed();
     }
 
+    internal override void ResetConfirmationDraft()
+    {
+        if (_presenter == null)
+        {
+            return;
+        }
+        _presenter.ValueChanged -= HandleColorPickerViewValueChanged;
+        _presenter.ResetDraft(Value);
+        _latestSyncValue = Value;
+        if (IsPickerOpen)
+        {
+            _presenter.ValueChanged += HandleColorPickerViewValueChanged;
+        }
+    }
+
+    internal override void CommitConfirmationDraft()
+    {
+        SetCurrentValue(ValueProperty, _presenter?.DraftValue);
+        if (Value is { } value)
+        {
+            ValueSelected?.Invoke(this, new ColorSelectedEventArgs(value));
+        }
+    }
+
     internal void NotifyValueChanged(ColorChangedEventArgs e)
     {
         ValueChanged?.Invoke(this, e);
@@ -240,7 +283,10 @@ public class ColorPicker : AbstractColorPicker
 
     private void HandleColorCleared(object? sender, EventArgs args)
     {
-        ClearColor();
+        if (!IsNeedConfirm)
+        {
+            ClearColor();
+        }
     }
 
     private void ClearColor()

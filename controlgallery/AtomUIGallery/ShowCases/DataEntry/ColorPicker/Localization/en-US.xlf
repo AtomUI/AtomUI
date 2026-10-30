@@ -176,6 +176,41 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Color block container with background color, border styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Color block element with actual selected color styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>Description text content with font styles and color</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Popup panel root container with background color, shadow effects, color selection panel, slider controls and preset colors</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Trigger container with border styles, transition animations, size controls, displaying color block and text content</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of ColorPicker with semantic part styles.</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
     <unit id="TriggerSizeDescription">
       <segment>
         <source>Ant Design supports three trigger sizes: small, default and large.If a large or small trigger is desired, set the size property to either large or small.respectively. Omit the size property for a trigger with the default size.</source>
@@ -194,6 +229,16 @@
     <unit id="ValueBindingTitle">
       <segment>
         <source>Value binding</source>
+      </segment>
+    </unit>
+    <unit id="NeedConfirmTitle">
+      <segment>
+        <source>Need Confirm</source>
+      </segment>
+    </unit>
+    <unit id="NeedConfirmDescription">
+      <segment>
+        <source>Try a color or gradient in the panel, then choose Confirm to update the bound value. Cancel, Escape, or dismissing the panel discards the draft. Clearing a color also requires confirmation.</source>
       </segment>
     </unit>
   </file>

@@ -461,6 +461,46 @@
         <source>SelectedItems binding</source>
       </segment>
     </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Node container, carrying node state, line rendering and nested children.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIconDescription">
+      <segment>
+        <source>Icon region of each node, with icon size and margin.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIndicatorDescription">
+      <segment>
+        <source>Checkbox or radio toggle indicator of each node, driven by ToggleType and check state.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemSwitcherDescription">
+      <segment>
+        <source>Expand/collapse switcher of each node, with state icons.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemTitleDescription">
+      <segment>
+        <source>Title region of each node, with text color and alignment.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticNodeRootDescription">
+      <segment>
+        <source>Single node container root, the owner scope of nested items and node content.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and generated Semantic Part styles to customize the published node container, switcher, icon and title parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
     <unit id="TreeWithLineDescription">
       <segment>
         <source>Tree with connected line between nodes, turn on by showLine, customize the preset icon by switcherIcon.</source>

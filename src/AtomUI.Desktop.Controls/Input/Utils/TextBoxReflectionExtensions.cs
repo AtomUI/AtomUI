@@ -1,8 +1,6 @@
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AtomUI.Reflection;
-using Avalonia.Controls.Presenters;
 
 namespace AtomUI.Desktop.Controls.Utils;
 
@@ -11,52 +9,42 @@ using AvaloniaTextBox = Avalonia.Controls.TextBox;
 internal static class TextBoxReflectionExtensions
 {
     #region 反射信息定义
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(AvaloniaTextBox))]
-    private static readonly Lazy<FieldInfo> ScrollViewerFieldInfo = new Lazy<FieldInfo>(() => 
-        typeof(AvaloniaTextBox).GetFieldInfoOrThrow("_scrollViewer",
-            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
+    private static readonly Lazy<FieldInfo> ScrollViewerFieldInfo = new(() =>
+        FixedMemberReflection.RequireField(
+            typeof(AvaloniaTextBox).GetField(
+                "_scrollViewer",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy),
+            typeof(AvaloniaTextBox),
+            "_scrollViewer"));
     
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(AvaloniaTextBox))]
-    private static readonly Lazy<FieldInfo> TextPresenterFieldInfo = new Lazy<FieldInfo>(() => 
-        typeof(AvaloniaTextBox).GetFieldInfoOrThrow("_presenter",
-            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
+    internal static readonly Lazy<MethodInfo> GetVerticalSpaceBetweenScrollViewerAndPresenterMethodInfo = new(() =>
+        FixedMemberReflection.RequireMethod(
+            typeof(AvaloniaTextBox).GetMethod(
+                "GetVerticalSpaceBetweenScrollViewerAndPresenter",
+                BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(AvaloniaTextBox),
+            "GetVerticalSpaceBetweenScrollViewerAndPresenter"));
     
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(AvaloniaTextBox))]
-    internal static readonly Lazy<MethodInfo> GetVerticalSpaceBetweenScrollViewerAndPresenterMethodInfo = new Lazy<MethodInfo>(() =>
-        typeof(AvaloniaTextBox).GetMethodInfoOrThrow("GetVerticalSpaceBetweenScrollViewerAndPresenter",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+    internal static readonly Lazy<MethodInfo> SnapshotUndoRedoMethodInfo = new(() =>
+        FixedMemberReflection.RequireMethod(
+            typeof(AvaloniaTextBox).GetMethod("SnapshotUndoRedo", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(AvaloniaTextBox),
+            "SnapshotUndoRedo"));
     
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(AvaloniaTextBox))]
-    internal static readonly Lazy<MethodInfo> SnapshotUndoRedoMethodInfo = new Lazy<MethodInfo>(() =>
-        typeof(AvaloniaTextBox).GetMethodInfoOrThrow("SnapshotUndoRedo",
-            BindingFlags.Instance | BindingFlags.NonPublic));
-    
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(AvaloniaTextBox))]
-    internal static readonly Lazy<MethodInfo> HandleTextInputMethodInfo = new Lazy<MethodInfo>(() =>
-        typeof(AvaloniaTextBox).GetMethodInfoOrThrow("HandleTextInput",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+    internal static readonly Lazy<MethodInfo> HandleTextInputMethodInfo = new(() =>
+        FixedMemberReflection.RequireMethod(
+            typeof(AvaloniaTextBox).GetMethod("HandleTextInput", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(AvaloniaTextBox),
+            "HandleTextInput"));
     
     #endregion
 
-    public static ScrollViewer? GetScrollViewer(this AvaloniaTextBox textBox)
-    {
-        return ScrollViewerFieldInfo.Value.GetValue(textBox) as ScrollViewer;
-    }
-    
     public static AvaloniaTextBox SetScrollViewer(this AvaloniaTextBox textBox, ScrollViewer scrollViewer)
     {
         ScrollViewerFieldInfo.Value.SetValue(textBox, scrollViewer);
         return textBox;
     }
     
-    public static TextPresenter GetTextPresenter(this AvaloniaTextBox textBox)
-    {
-        var textPresenter = TextPresenterFieldInfo.Value.GetValue(textBox) as TextPresenter;
-        Debug.Assert(textPresenter != null);
-        return textPresenter;
-    }
-    
-
     public static double GetVerticalSpaceBetweenScrollViewerAndPresenter(this AvaloniaTextBox textBox)
     {
         var result = GetVerticalSpaceBetweenScrollViewerAndPresenterMethodInfo.Value.Invoke(textBox, []) as double?;

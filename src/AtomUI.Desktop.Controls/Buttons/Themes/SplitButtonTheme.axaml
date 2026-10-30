@@ -8,6 +8,7 @@
                 <DockPanel Name="PART_MainLayout"
                            LastChildFill="True">
                     <atom:Button Name="PART_SecondaryButton"
+                                 Classes.semantic-secondary="True"
                                  DockPanel.Dock="Right"
                                  Height="{TemplateBinding Height}"
                                  FontSize="{TemplateBinding FontSize}"
@@ -20,6 +21,7 @@
                                  IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                  IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"/>
                     <atom:Button Name="PART_PrimaryButton"
+                                 Classes.semantic-primary="True"
                                  Content="{TemplateBinding Content}"
                                  ContentTemplate="{TemplateBinding ContentTemplate}"
                                  HorizontalAlignment="Stretch"
@@ -47,6 +49,15 @@
         <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}"/>
         <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}"/>
         <Setter Property="SplitSeparatorBrush" Value="{atom:SharedTokenResource ColorBorder}"/>
+
+        <!-- 对齐上游 solid 组合规则：primary 形态接缝分隔线取次按钮 hover 背景
+             （colorPrimaryHover / colorErrorHover），default（outline）形态无接缝线保持 ColorBorder。 -->
+        <Style Selector="^[IsPrimaryButtonType=True][IsDanger=False]">
+            <Setter Property="SplitSeparatorBrush" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>
+        </Style>
+        <Style Selector="^[IsPrimaryButtonType=True][IsDanger=True]">
+            <Setter Property="SplitSeparatorBrush" Value="{atom:SharedTokenResource ColorErrorHover}"/>
+        </Style>
 
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}"/>

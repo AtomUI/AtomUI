@@ -37,6 +37,7 @@
 - [Steps Changelog](steps/changelog.md)
 - [TabControl 桌面版架构设计](tab-control/overview.md)
 - [TabControl 桌面版实现原理](tab-control/implementation.md)
+- [TabControl / TabStrip 溢出弹层设计](tab-control/overflow-popup-design.md)
 - [TabControl Token 设计](tab-control/token.md)
 - [TabControl Changelog](tab-control/changelog.md)
 - [TabStrip 桌面版架构设计](tab-strip/overview.md)

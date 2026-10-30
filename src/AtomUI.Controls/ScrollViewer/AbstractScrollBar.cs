@@ -14,7 +14,7 @@ public abstract class AbstractScrollBar : AvaloniaScrollBar, IMotionAwareControl
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractScrollViewer>();
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractScrollBar>();
 
     public bool IsMotionEnabled
     {

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUIGallery.Localization.DateViewerShowCaseLangResourceKind">
+    <unit id="PageSubtitle">
+      <segment>
+        <source>An embedded date panel for a value or an atomic range.</source>
+      </segment>
+    </unit>
+    <unit id="PageDescription">
+      <segment>
+        <source>Use DateViewer and RangeDateViewer directly without an input or popup. Browse and select dates, weeks, months, quarters, or years.</source>
+      </segment>
+    </unit>
+    <unit id="ComponentCategory">
+      <segment>
+        <source>Data Display</source>
+      </segment>
+    </unit>
+    <unit id="ComponentStatusStable">
+      <segment>
+        <source>Stable</source>
+      </segment>
+    </unit>
+    <unit id="BasicTitle">
+      <segment>
+        <source>Embedded value and range</source>
+      </segment>
+    </unit>
+    <unit id="BasicDescription">
+      <segment>
+        <source>Value binds TwoWay by default. RangeDateViewer writes one immutable DateViewerRange, including partial selection.</source>
+      </segment>
+    </unit>
+    <unit id="UnitsTitle">
+      <segment>
+        <source>Five selection units</source>
+      </segment>
+    </unit>
+    <unit id="UnitsDescription">
+      <segment>
+        <source>One unit controls both panels. Week selects the entire week; other units output the first date of the selected period.</source>
+      </segment>
+    </unit>
+    <unit id="BrowsingTitle">
+      <segment>
+        <source>Browse with an empty value</source>
+      </segment>
+    </unit>
+    <unit id="BrowsingDescription">
+      <segment>
+        <source>DisplayDate is independent of Value. Navigate through the header, then clear the selection while keeping the displayed period.</source>
+      </segment>
+    </unit>
+    <unit id="ContentTitle">
+      <segment>
+        <source>Compact and content presentation</source>
+      </segment>
+    </unit>
+    <unit id="ContentDescription">
+      <segment>
+        <source>Compact uses the natural panel width; Content expands its cells inside the assigned width. Selection and navigation use the same model.</source>
+      </segment>
+    </unit>
+    <unit id="CellTitle">
+      <segment>
+        <source>Cell content and date limits</source>
+      </segment>
+    </unit>
+    <unit id="CellDescription">
+      <segment>
+        <source>CellTemplate adds content below the default date. The typed context exposes cell state. MinDate and MaxDate are inclusive; weekends are disabled.</source>
+      </segment>
+    </unit>
+    <unit id="FullCellTitle">
+      <segment>
+        <source>Full cell content</source>
+      </segment>
+    </unit>
+    <unit id="FullCellDescription">
+      <segment>
+        <source>FullCellTemplate replaces the date content while the control retains selection, disabled state, focus, and automation.</source>
+      </segment>
+    </unit>
+    <unit id="HeaderTitle">
+      <segment>
+        <source>Typed header commands</source>
+      </segment>
+    </unit>
+    <unit id="HeaderDescription">
+      <segment>
+        <source>HeaderTemplate receives DateViewerHeaderContext. NavigateCommand takes an integer; ChangePanelCommand takes DateViewerPanelKind.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTitle">
+      <segment>
+        <source>Semantic cell styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticDescription">
+      <segment>
+        <source>Apply generated DateViewerCellStyle and RangeDateViewerCellStyle within owner-scoped styles to customize the public cell part.</source>
+      </segment>
+    </unit>
+    <unit id="UnitDate">
+      <segment>
+        <source>Date</source>
+      </segment>
+    </unit>
+    <unit id="UnitWeek">
+      <segment>
+        <source>Week</source>
+      </segment>
+    </unit>
+    <unit id="UnitMonth">
+      <segment>
+        <source>Month</source>
+      </segment>
+    </unit>
+    <unit id="UnitQuarter">
+      <segment>
+        <source>Quarter</source>
+      </segment>
+    </unit>
+    <unit id="UnitYear">
+      <segment>
+        <source>Year</source>
+      </segment>
+    </unit>
+    <unit id="Clear">
+      <segment>
+        <source>Clear selection</source>
+      </segment>
+    </unit>
+    <unit id="Previous">
+      <segment>
+        <source>Previous</source>
+      </segment>
+    </unit>
+    <unit id="Next">
+      <segment>
+        <source>Next</source>
+      </segment>
+    </unit>
+    <unit id="ChooseYear">
+      <segment>
+        <source>Choose year</source>
+      </segment>
+    </unit>
+    <unit id="Compact">
+      <segment>
+        <source>Compact</source>
+      </segment>
+    </unit>
+    <unit id="Content">
+      <segment>
+        <source>Content</source>
+      </segment>
+    </unit>
+    <unit id="CellNote">
+      <segment>
+        <source>Available</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The embedded panel surface and instance layout.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Navigation or custom header content; hidden when ShowHeader is false.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>The date body that contains the visible panels.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>The single panel for browsing and selecting dates.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCellDescription">
+      <segment>
+        <source>Interactive date, period, or week-number containers.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCellContentDescription">
+      <segment>
+        <source>Typed template content within the interactive cell.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>The Today action below the date panel; shown for standalone date selection.</source>
+      </segment>
+    </unit>
+  </file>
+</xliff>

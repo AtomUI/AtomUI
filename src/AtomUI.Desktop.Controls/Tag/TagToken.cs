@@ -39,7 +39,7 @@ internal sealed class TagToken : AbstractControlDesignToken
         TagCloseIconSize = EffectiveGlobalToken.IconSizeXS;
         TagIconSize      = EffectiveGlobalToken.FontSizeIcon;
         TagPadding       = new Thickness(EffectiveGlobalToken.SizeXS - 1, 0);
-        DefaultBg            = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillQuaternary, EffectiveGlobalToken.ColorBgContainer);
+        DefaultBg            = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillTertiary, EffectiveGlobalToken.ColorBgContainer);
         DefaultColor         = EffectiveGlobalToken.ColorText;
         TagTextPaddingInline = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, 0);
         SolidTextColor       = ColorUtils.IsBright(EffectiveGlobalToken.ColorBgSolid, Colors.White)

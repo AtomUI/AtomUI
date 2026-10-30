@@ -16,6 +16,7 @@
                     <atom:AddOnDecoratedBox
                         Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
                         Focusable="True"
+                        Classes.semantic-scope-input="True"
                         IsEnabled="{TemplateBinding IsEnabled}"
                         MinWidth="{TemplateBinding MinWidth}"
                         StyleVariant="{TemplateBinding StyleVariant}"
@@ -28,7 +29,6 @@
                         LeftAddOnTemplate="{TemplateBinding LeftAddOnTemplate}"
                         RightAddOn="{TemplateBinding RightAddOn}"
                         RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
-                        ContentLeftAddOn="{TemplateBinding ContentLeftAddOn}"
                         ContentLeftAddOnTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
@@ -37,16 +37,28 @@
                         CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                         CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
                         IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
+                        <atom:AddOnDecoratedBox.ContentLeftAddOn>
+                            <atom:AddOnContentPresenter
+                                Classes.semantic-prefix="True"
+                                Content="{CompiledBinding $parent[atom:RangeDatePicker].ContentLeftAddOn}"
+                                VerticalAlignment="Stretch"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Focusable="False" />
+                        </atom:AddOnDecoratedBox.ContentLeftAddOn>
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                             <StackPanel Orientation="Horizontal"
+                                        Classes.semantic-suffix="True"
                                         Spacing="{atom:SharedTokenResource SpacingXS}">
                                 <atom:PickerClearUpButton
-                                    Name="PART_ClearUpButton" />
+                                    Name="PART_ClearUpButton"
+                                    Classes.semantic-scope-handle="True" />
                                 <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter" />
                             </StackPanel>
                         </atom:AddOnDecoratedBox.ContentRightAddOn>
                         <Grid ColumnDefinitions="*, Auto, *">
                             <atom:InfoPickerTextBox Name="PART_InfoInputBox"
+                                                  Classes.semantic-input="True"
                                                   Grid.Column="0"
                                                   HorizontalContentAlignment="Stretch"
                                                   VerticalContentAlignment="Center"
@@ -67,6 +79,7 @@
                                 Grid.Column="1" />
                             <atom:InfoPickerTextBox
                                 Name="PART_SecondaryInfoInputBox"
+                                Classes.semantic-secondary-input="True"
                                 Grid.Column="2"
                                 HorizontalContentAlignment="Stretch"
                                 VerticalContentAlignment="Center"
@@ -96,11 +109,11 @@
                                 RequestedPlacement="{TemplateBinding PickerPlacement}"
                                 IsPointAtCenter="{TemplateBinding IsPointAtCenter}"
                                 OverlayDismissEventPassThrough="True"
-                                IsOpen="{TemplateBinding IsPickerOpen, Mode=TwoWay}"
                                 IsHorizontalFlipped="{TemplateBinding IsPopupHorizontalFlipped, Mode=TwoWay}"
                                 IsVerticalFlipped="{TemplateBinding IsPopupVerticalFlipped, Mode=TwoWay}"
                                 MarginToAnchor="{TemplateBinding MarginToAnchor}">
-                        <atom:DualMonthArrowDecoratedBox Content="{TemplateBinding PickerPresenter}"
+                        <atom:DualMonthArrowDecoratedBox Classes.semantic-popup-root="True"
+                                                         Content="{TemplateBinding PickerPresenter}"
                                                          IsArrowVisible="{TemplateBinding IsArrowVisibleEffective}"
                                                          ArrowPosition="{TemplateBinding ArrowPosition}"
                                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"

@@ -1,6 +1,6 @@
 # 本地化生成与构建架构
 
-本文定义 `AtomUI.Generator`、`AtomUI.Build.Tasks` 和 MSBuild targets 如何把 Catalog/XLIFF 转换为 AOT 友好的
+本文定义 `AtomUI.Generator`、Toolchain 的 Tasks worker（`AtomUI.Build.Tasks.dll`）和 MSBuild targets 如何把 Catalog/XLIFF 转换为 AOT 友好的
 运行时代码。运行时设计见 [runtime.md](runtime.md)，语言包协议见
 [language-packs.md](language-packs.md)。
 
@@ -79,6 +79,10 @@ Desktop、Browser、测试宿主的声明。
 产品级聚合语言包不追加 `AtomUILanguage` item。它只通过 NuGet 依赖传递模块语言包，因而同一模块包无论由聚合包
 还是应用显式引用，都只产生一组 `buildTransitive` 输入。
 
+普通模块打包只再导出 `SourceKind=ModuleBuiltIn`、`SourceIdentity` 属于当前 `AtomUILanguageModuleId` 的权威
+`en-US.xlf`。依赖包提供的 Catalog 仍参与编译和契约验证，但不能被当前包复制并重新声明为自己的来源，
+否则下游同时引用原包与当前包时会得到重复的内置 Bundle。
+
 ## Generator 输入
 
 Generator 使用 Incremental Generator API 组合以下输入：
@@ -155,35 +159,33 @@ ModuleBuiltIn、项目本地 XLIFF 和 ApplicationOverride 不允许 dormant。�
 对于每个 Catalog，Generator 生成：
 
 ```text
-XxxLangResourceExtension
-独立的 LanguageCatalog registration source
-LanguageCatalogDescriptor 与 catalog/unit slot mapping
-内置 TranslationBundleDescriptor
-编译后的 string 与 CompositeFormat 契约表
+XxxLangResourceExtension（直接引用 Catalog enum 的强类型 Markup Extension）
 ```
 
 对于每个 Language Module，Generator 生成：
 
 ```text
-GeneratedLanguageModuleRegistration
+GeneratedLanguageModuleRegistration（一个 Data 常量与一次 AddModuleData 调用）
+数据中的 Catalog/unit schema、enum 数值到 slot 映射及各语言译文
 程序集 AtomUILanguageModuleId metadata
+LanguageModuleManifestAttribute（版本、模块 id、同一 Data 常量）
 ```
 
 对于最终应用，Generator 另外生成：
 
 ```text
 GeneratedApplicationLanguageBootstrap
-I18n package TranslationBundle registration
-application Override registration
+GeneratedApplicationLanguageData（I18n package 与 application Override 的数据常量及登记入口）
+应用翻译数据对应的 LanguageModuleManifestAttribute
 ```
 
 `XxxLangResourceKind` 由开发者声明，不再根据三份 C# 翻译类推导。enum 成员名是 Catalog 的唯一 Key，成员不声明
-显式数字值；`XxxLangResourceExtension` 保留现有 XAML 形态，但底层改为生成式 descriptor 和 Snapshot 查询。
+显式数字值；`XxxLangResourceExtension` 保留现有 XAML 形态，但底层通过模块数据目录索引和按需 Snapshot 查询。
 
-每个 Catalog 的 descriptor 和内置 Bundle 必须输出到按 Catalog metadata identity 命名的独立 source；模块注册文件
-只按 Catalog ID 排序调用这些 registration。这样修改一个 XLIFF 只改变对应 Catalog source，其他 Catalog、模块聚合
-注册和不含该外部 Bundle 的应用 bootstrap 保持字节稳定。Generator 的增量测试必须同时验证输入 step 的
-`Modified`/`Cached` 状态和最终 source diff，不能只比较一次全量生成结果。
+目录 Markup Extension 仍按 Catalog metadata identity 独立输出。目录 schema、enum 数值到 slot 映射和内置译文
+合并为模块数据常量；修改一个 XLIFF 只改变模块数据 source，未变化的目录 Extension 和应用 bootstrap 保持稳定。
+改变 enum 成员声明顺序会改变编译期数值映射，数据必须同步变化；稳定 Key、译文槽排序和译文内容不受该顺序影响。
+Generator 的增量测试同时验证输入 step 的 `Modified`/`Cached` 状态、必要的模块 source diff 和翻译语义。
 
 ## 应用 bootstrap
 
@@ -217,10 +219,10 @@ active，并在同一次编译中完成校验和生成；不需要新增运行�
 
 生成代码必须直接包含：
 
-- Catalog enum CLR 类型和生成式 Catalog ID。
-- enum member 到 unit slot 的静态 switch，以及 slot 对应的规范 Key 表。
-- 每个语言的编译后字符串数组。
-- 格式化资源的预验证 `CompositeFormat` 数据或等价静态构造路径。
+- 强类型 Extension 对 Catalog enum 的直接引用，以及数据中的 Catalog ID、程序集简单名和 CLR 元数据名。
+- 编译期 enum 数值到 unit slot 的整数映射，以及 slot 对应的规范 Key 表。
+- 各语言译文编码在单份版本化数据常量中；运行时索引保存有界切片，目录值行在首次查询时建立。
+- 格式化标记和编译期验证过的格式文本；`CompositeFormat` 在目录首次物化时创建。
 - Language Module 和应用 bootstrap 的直接注册调用。
 
 正常路径禁止：
@@ -232,15 +234,16 @@ active，并在同一次编译中完成校验和生成；不需要新增运行�
 - 运行时 XML/XLIFF 解析、路径 glob 或 NuGet 包探测。
 - 依赖字符串类型名构造资源键。
 
-## AtomUI.Build.Tasks
+## Toolchain 的 Tasks profile
 
-物理项目位于：
+物理项目与任务源码位于：
 
 ```text
-src/AtomUI.Build.Tasks
+src/AtomUI.Toolchain/AtomUI.Toolchain.csproj  # AtomUIToolchainProfile=Tasks
+src/AtomUI.Toolchain/Tasks/
 ```
 
-它是内部编译型 MSBuild Task 程序集，不作为应用运行时引用，也不单独发布
+该 profile 继续产出内部 MSBuild worker `AtomUI.Build.Tasks.dll`，不作为应用运行时引用，也不单独发布
 `AtomUI.Build.Tasks.LocalizationBuild`。主要 Task 为：
 
 | Task | 职责 |
@@ -253,7 +256,7 @@ src/AtomUI.Build.Tasks
 Task 内部协作组件包括：
 
 ```text
-src/AtomUI.Build.Tasks/LocalizationBuild/
+src/AtomUI.Toolchain/Common/Localization/
 Xliff21Parser
 Xliff21Writer
 XliffMergeEngine
@@ -263,7 +266,7 @@ PackagePropsWriter
 ```
 
 Generator 与 Build Tasks 对 XLIFF 使用同一规范化模型、fingerprint 和文件级中立诊断。这些共享源码由
-`AtomUI.Build.Tasks` 物理拥有，使用 `AtomUI.Build.Tasks.LocalizationBuild` 命名空间，并以源码链接方式编译进
+`AtomUI.Toolchain/Common/Localization` 物理拥有，保留 `AtomUI.Build.Tasks.LocalizationBuild` 命名空间，并以源码链接方式编译进
 Generator；共享模型不依赖 Roslyn `Diagnostic` 或 MSBuild
 `BuildEngine`。Generator 通过 `LocalizationDiagnosticFactory` 映射源位置和诊断描述符，Build Tasks 映射为
 MSBuild error/warning。该目录不增加公开运行时包，也不让 MSBuild Task 依赖 Roslyn workspace。
@@ -280,7 +283,10 @@ MSBuild error/warning。该目录不增加公开运行时包，也不让 MSBuild
 ```text
 AtomUI.Generator.nupkg
 ├── analyzers/dotnet/cs/AtomUI.Generator.dll
-├── tools/netstandard2.0/AtomUI.Build.Tasks.dll
+├── tools/net10.0/AtomUI.Build.Tasks.dll
+├── tools/net10.0/AtomUI.Build.Tasks.deps.json
+├── tools/net10.0/AtomUI.Build.Tasks.runtimeconfig.json
+├── tools/net10.0/Microsoft.Build.Framework.dll
 ├── tools/netstandard2.0/System.Reflection.Metadata.dll
 ├── tools/netstandard2.0/System.Collections.Immutable.dll
 ├── tools/netstandard2.0/System.Memory.dll
@@ -295,7 +301,8 @@ AtomUI.Generator.nupkg
     └── AtomUI.ThemeAssets.targets
 ```
 
-`AtomUI.Build.Tasks` 的依赖必须随 tools 目录完整发布。Generator 项目继续隔离 `PublishAot`、trim、single-file 和
+该树仅列本地化相关资产；完整后端/工具白名单由[构建与打包](../../foundations/build-and-packaging.md)定义。
+`AtomUI.Build.Tasks.dll` 的依赖必须随 tools 目录完整发布。Generator 项目继续隔离 `PublishAot`、trim、single-file 和
 RuntimeIdentifier 等全局发布属性，不能被最终应用当作运行时项目参与 NativeAOT publish。
 
 `AtomUI.Localization.targets` 在 NuGet `_GetPackageFiles` 收集之前准备模块/语言包资产，保证动态加入的 XLIFF、
@@ -311,8 +318,8 @@ Build Tasks 校验和打包；它自身不运行 Localization Generator 生成 C
 传递 XLIFF、manifest、props、analyzer、AdditionalFiles、build targets、DLL、runtime asset 或组件包依赖。
 
 源码仓库构建中，`AtomUI.Build.Tasks.dll` 可能在消费项目完成 MSBuild 求值之后才由 Generator 的项目依赖生成。
-因此 targets 必须无条件登记 `UsingTask`，让 MSBuild 在任务首次执行时延迟加载程序集；不得在 `UsingTask` 上使用
-求值期 `Exists(...)` 条件。需要任务的 Target 仍在执行期检查程序集是否存在，这样冷构建、静态图构建和
+因此 targets 必须无条件登记 `UsingTask` 薄适配器，在实际执行时启动独立 worker；不得在 `UsingTask` 上使用
+求值期 `Exists(...)` 条件。需要任务的 Target 仍在执行期检查工具是否存在，这样冷构建、静态图构建和
 NativeAOT publish 都不会因“文件已经生成但任务未登记”而产生 `MSB4036`。
 
 ## 编译期与启动期校验边界
@@ -321,9 +328,34 @@ NativeAOT publish 都不会因“文件已经生成但任务未登记”而产�
 项目的相同文件规则和 pack 契约由 `PrepareLanguagePackageTask` 校验。manifest 由已校验的同一组 XLIFF 确定性生成，
 不是另一份编译输入。普通编译不得先运行 Build Task 再由 Generator 重复报告同一语义错误。
 
-`UseLanguages()` 是普通 C# 配置，不属于当前 Generator 的输入。完整支持语言集合、标准/显式
-`LanguageDefinition` 和最终 Catalog 覆盖在 Builder 冻结 Registry、预构建所有 Snapshot 时校验，并在首帧前失败。
-实现不得为了声称“全部构建期校验”而使用运行时反射或要求应用重复维护字符串语言列表。
+生成模块以 `LanguageModuleManifestAttribute(version, moduleId, data)` 暴露完整目录与译文元数据。
+应用链接器必须结合最终支持语言、所有模块 manifest、静态语言包和应用 override 验证每个 unit 的覆盖、来源冲突和
+最终 en-US 源文本。只有通过这层校验的生成数据才可以走运行时的按需快照路径；单个模块编译成功不表示应用所有语言
+已闭合。手工 descriptor 继续由运行时检查注册闭合、优先级冲突、en-US 源文本与支持语言覆盖。
+生成目录只要含手工 Bundle 贡献，其格式与支持语言覆盖也必须在 Build 时检查；仅目录和全部 Bundle 都来自生成数据时，才跳过运行时逐值校验。
+
+### 模块数据传输协议 v1
+
+`LanguageModuleManifestAttribute` 允许一个程序集含多个实例，只包含 `int Version`、`string ModuleId`、
+`string Data`。运行时 `AddModuleData(string moduleId, string data)` 只接受唯一模块 id；重复登记明确失败。
+解析器 `LanguageModuleDataCodec` 的同一份纯 BCL 源码用于 Generator、应用链接器和 Localization 运行时。
+
+数据以 ASCII `AUIL1;` 开始。非负整数以十进制数字加 `:` 终止；字符串是 UTF-16 code unit 长度、`:`、原文，
+可空译文以 `-1:` 表示，空译文以 `0:` 表示。字段不使用分隔符转义，冒号、换行、引号、反斜杠及 Unicode 均保真。
+模块总长上限 16 Mi UTF-16 code units，单个记录集合上限 65,536，所有长度/数量/枚举槽在访问前验证，尾随数据拒绝。
+
+字段顺序如下：
+
+1. 模块 id 字符串。
+2. 目录数；每个目录依次是 catalog id、程序集简单名、CLR 元数据名（嵌套类型用 `+`）、unit 数。
+3. 每个 unit 依次是稳定 Key、编译时 enum 数值、格式化标记（0 或 1）；unit 以 Key ordinal 排序，数值必须唯一且落在目录范围内。
+4. bundle 数；每个 bundle 依次是 catalog id、规范 BCP 47 language、source kind（0 内置、1 静态包、2 应用覆盖）、source identity、值数。
+5. 每个值是可空字符串，槽顺序与对应目录的 unit 顺序相同。bundle 值数必须等于被引用目录的 unit 数。
+
+模块拥有的目录及内置译文合并为单个 `const string Data`，`GeneratedLanguageModuleRegistration.Register` 仅调用一次
+`builder.AddModuleData(moduleId, Data)`。应用的外来 bundle 单独生成 `GeneratedApplicationLanguageData`，模块 id 为
+`<AssemblyName>:ApplicationTranslations`，目录数为零，由应用 bootstrap 登记；其 manifest 同样提供链接期覆盖信息。
+运行时解析只保留整数切片，不生成全部译文字符串数组；只在实际查询目录时提取匹配语言的文本。
 
 ## 导出与合并
 

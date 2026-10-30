@@ -163,6 +163,12 @@
         <target state="translated">Segundo-conteúdo</target>
       </segment>
     </unit>
+    <unit id="P2ContentThisIsAContent">
+      <segment>
+        <source>This is a content.</source>
+        <target state="translated">Este é um conteúdo.</target>
+      </segment>
+    </unit>
     <unit id="P2ContentThisIsStepN1">
       <segment>
         <source>This is Step 1</source>
@@ -325,6 +331,24 @@
         <target state="translated">Sub Título</target>
       </segment>
     </unit>
+    <unit id="P2SubHeaderTimeN1">
+      <segment>
+        <source>00:00</source>
+        <target state="translated">00:00</target>
+      </segment>
+    </unit>
+    <unit id="P2SubHeaderTimeN2">
+      <segment>
+        <source>00:01</source>
+        <target state="translated">00:01</target>
+      </segment>
+    </unit>
+    <unit id="P2SubHeaderTimeN3">
+      <segment>
+        <source>00:02</source>
+        <target state="translated">00:02</target>
+      </segment>
+    </unit>
     <unit id="P2SubHeaderWaitingForLongTime">
       <segment>
         <source>waiting for longlong time</source>
@@ -437,6 +461,72 @@
       <segment>
         <source>Vertical</source>
         <target state="translated">Vertical</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Content region of each item, with text styles and max width.</source>
+        <target state="translated">Região de conteúdo de cada item, com estilos de texto e largura máxima.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Step item container, carrying item state, title and connector styling.</source>
+        <target state="translated">Contêiner do item de etapa, carrega estado do item, título e estilos do conector.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIconDescription">
+      <segment>
+        <source>Icon region of each item, with icon size, margin and rounded frame.</source>
+        <target state="translated">Região de ícone de cada item, com tamanho do ícone, margem e moldura arredondada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemRailDescription">
+      <segment>
+        <source>Connector rail of each item, with width, color and state variants.</source>
+        <target state="translated">Trilho conector de cada item, com largura, cor e variantes de estado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemSectionDescription">
+      <segment>
+        <source>Section region of each item, grouping title, subtitle and content with layout and alignment.</source>
+        <target state="translated">Região de seção de cada item, agrupando título, subtítulo e conteúdo com layout e alinhamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemSubtitleDescription">
+      <segment>
+        <source>Subtitle region of each item, with text color and margin.</source>
+        <target state="translated">Região de subtítulo de cada item, com cor de texto e margem.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemTitleDescription">
+      <segment>
+        <source>Title region of each item, with text color and alignment.</source>
+        <target state="translated">Região de título de cada item, com cor de texto e alinhamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemWrapperDescription">
+      <segment>
+        <source>Wrapper region of each item, with size, padding and border styles.</source>
+        <target state="translated">Região de wrapper de cada item, com estilos de tamanho, preenchimento e borda.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Style the root and item parts through generated Semantic Part styles: a dashed outline around the root, rounded item icons, italic content, and a navigation-specific root border color.</source>
+        <target state="translated">Personalize o root e as partes do item por meio dos estilos de Semantic Part gerados: contorno tracejado no root, ícones arredondados, conteúdo em itálico e uma cor de borda do root específica para navegação.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Step bar root, defining flow direction, alignment and item composition.</source>
+        <target state="translated">Raiz da barra de etapas, define direção do fluxo, alinhamento e composição dos itens.</target>
       </segment>
     </unit>
     <unit id="StepsWithProgressDescription">

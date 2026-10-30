@@ -23,7 +23,7 @@ ListViewToken 当前按 ListView 语义分为六类。
 
 - `ContentPadding`
 
-`ContentPadding` 控制 ListView root 内容区 padding，作用于 `ListViewTheme` 的 root `Frame`。它来自 `SharedToken.UniformlyPaddingXXS / 2`，保持数据列表紧凑可扫描。
+`ContentPadding` 控制 ListView root 内容区 padding，作用于 `ListViewTheme` 的 root `Frame`。当前默认值为 `Thickness(0)`：条目表面直接贴合 root 外框内边缘，列表紧凑感由条目高度与分割线表达，不再在内容区与外框之间预留内边距。
 
 ### 2.2 条目文字 Token
 
@@ -67,10 +67,10 @@ ListViewToken 当前按 ListView 语义分为六类。
 
 这些 Token 控制 ListViewItem 的密度：
 
-- `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG` 分别对应 small、middle/custom、large 尺寸。
-- `ItemMargin` 控制条目之间的垂直间距。
+- `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG` 分别对应 small、middle/custom、large 尺寸，只表达水平 padding（垂直 padding 为 0），条目高度由 SizeType 分支的 `MinHeight` 控制。
+- `ItemMargin` 控制条目之间的垂直间距，当前默认值为 `Thickness(0)`：条目纵向密度由分割线表达，条目之间以及条目与外框之间不留间距。
 
-条目最小高度和圆角来自 SharedToken，由 SizeType selector 选择，不在 ListViewToken 中重复定义。
+条目最小高度来自 SharedToken，由 SizeType selector 选择。条目表面保持直角，主题不设置条目圆角。条目底部分割线使用 SharedToken `ColorSplit` 与 1 DIP 线宽（条目 `BorderThickness` 默认 `0,0,0,1`），不在 ListViewToken 中重复定义。
 
 ### 2.5 分页 Token
 
@@ -91,7 +91,7 @@ ListViewToken 当前按 ListView 语义分为六类。
 
 ListViewToken 主要参与以下专项模型：
 
-- SizeType：条目 padding 来自 `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG`，root 圆角、条目高度和条目圆角来自 SharedToken。
+- SizeType：条目 padding 来自 `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG`，root 圆角和条目最小高度来自 SharedToken；条目不设圆角。
 - data item state：`ItemColor`、`ItemHoverColor`、`ItemSelectedColor`、`ItemDisabledColor` 和背景 Token 表达普通条目的状态视觉。
 - group item：`GroupHeaderColor` 表达组标题弱化文字，不参与普通 selected 背景模型。
 - pagination：`PaginationMargin` 表达分页器与列表内容的外边距。
@@ -126,11 +126,11 @@ ListViewToken 不影响 ListBoxToken。ListView 和 ListBox 有相似的列表�
 ListViewToken 变更验证：
 
 - `ListViewTokenKind` 与 token.md 语义说明保持一致。
-- `ContentPadding` 影响 root 内容区，不造成 ScrollViewer、EmptyIndicator、Spin 和分页器重叠。
+- `ContentPadding` 保持 `Thickness(0)`，条目与外框内边缘贴合，不造成 ScrollViewer、EmptyIndicator、Spin 和分页器重叠。
 - `ItemColor`、`ItemHoverColor`、`ItemSelectedColor` 和 `ItemDisabledColor` 在 light / dark 主题下可读。
 - `ItemBgColor`、`ItemHoverBgColor` 和 `ItemSelectedBgColor` 能正确传递到普通 ListViewItem hover / selected 状态。
 - `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG` 与 SizeType selector 对齐。
-- `ItemMargin` 不破坏列表扫描密度。
+- `ItemMargin` 保持 `Thickness(0)`，列表扫描密度由分割线表达。
 - `PaginationMargin` 在 top、bottom 和 both 分页器场景下保持稳定间距。
 - `GroupHeaderColor` 在分组列表中可读且弱于普通条目。
 - `SelectedIndicatorMargin` 不造成内容和 selected indicator 重叠。

@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Windows.Input;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.MotionScene;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -91,8 +90,8 @@ public class FloatButtonHostOverlayTests
                                     .OfType<FloatButtonGroup>()
                                     .Single();
             var motionActor = group.GetVisualDescendants()
-                                   .OfType<BaseMotionActor>()
-                                   .Single();
+                                   .OfType<Border>()
+                                   .Single(control => control.Name == "PART_MenuSurface");
 
             group.IsOpen.ShouldBeFalse();
             motionActor.IsVisible.ShouldBeFalse();
@@ -409,6 +408,156 @@ public class FloatButtonHostOverlayTests
         finally
         {
             window.Close();
+        }
+    }
+
+    [Fact]
+    public void Controlled_Direct_Group_Keeps_Menu_Open_On_Trigger_Click()
+    {
+        var group = new FloatButtonGroup
+        {
+            Trigger         = FloatButtonGroupTrigger.Click,
+            IsOpen          = true,
+            IsMotionEnabled = false,
+            Children =
+            {
+                new AtomUI.Desktop.Controls.FloatButton(),
+                new AtomUI.Desktop.Controls.FloatButton()
+            }
+        };
+
+        var window = new Avalonia.Controls.Window
+        {
+            Width   = 320,
+            Height  = 240,
+            Content = group
+        };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        try
+        {
+            var trigger = group.GetVisualDescendants()
+                               .OfType<AtomUI.Desktop.Controls.FloatButton>()
+                               .Single(button => button.Classes.Contains("semantic-trigger"));
+
+            Click(trigger, window);
+            Dispatcher.UIThread.RunJobs();
+
+            group.IsOpen.ShouldBeTrue();
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void FloatButtonHost_Preserves_Position_After_Detach_And_Reattach()
+    {
+        var host = new AtomUI.Desktop.Controls.FloatButtonHost();
+        var content = new Panel
+        {
+            Height = 500
+        };
+        content.Children.Add(host);
+        var scrollViewer = new AtomUI.Desktop.Controls.ScrollViewer
+        {
+            Width  = 320,
+            Height = 240,
+            Content = content
+        };
+        var overlayPanel = new ScopeAwareOverlayLayerPanel
+        {
+            Width  = 320,
+            Height = 240
+        };
+        overlayPanel.Children.Add(scrollViewer);
+
+        var window = new Avalonia.Controls.Window
+        {
+            Width   = 320,
+            Height  = 240,
+            Content = overlayPanel
+        };
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            var overlayLayer = scrollViewer.GetVisualDescendants()
+                                           .OfType<ScopeAwareOverlayLayer>()
+                                           .Single(layer => layer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Any());
+            var button = overlayLayer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Single();
+            var beforeX = Canvas.GetLeft(button);
+            var beforeY = Canvas.GetTop(button);
+
+            overlayPanel.Children.Remove(scrollViewer);
+            Dispatcher.UIThread.RunJobs();
+
+            overlayPanel.Children.Add(scrollViewer);
+            Dispatcher.UIThread.RunJobs();
+
+            var reattachedLayer = scrollViewer.GetVisualDescendants()
+                                              .OfType<ScopeAwareOverlayLayer>()
+                                              .Single(layer => layer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Any());
+            var reattachedButton = reattachedLayer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Single();
+
+            Canvas.GetLeft(reattachedButton).ShouldBe(beforeX);
+            Canvas.GetTop(reattachedButton).ShouldBe(beforeY);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void Uncontrolled_Direct_Group_Toggles_Open_On_Trigger_Click()
+    {
+        var group = new FloatButtonGroup
+        {
+            Trigger         = FloatButtonGroupTrigger.Click,
+            IsMotionEnabled = false,
+            Children =
+            {
+                new AtomUI.Desktop.Controls.FloatButton(),
+                new AtomUI.Desktop.Controls.FloatButton()
+            }
+        };
+
+        var window = new Avalonia.Controls.Window
+        {
+            Width   = 320,
+            Height  = 240,
+            Content = group
+        };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        try
+        {
+            group.IsOpen.ShouldBeFalse();
+
+            var trigger = group.GetVisualDescendants()
+                               .OfType<AtomUI.Desktop.Controls.FloatButton>()
+                               .Single(button => button.Classes.Contains("semantic-trigger"));
+
+            Click(trigger, window);
+            Dispatcher.UIThread.RunJobs();
+            group.IsOpen.ShouldBeTrue();
+
+            Click(trigger, window);
+            Dispatcher.UIThread.RunJobs();
+            group.IsOpen.ShouldBeFalse();
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
         }
     }
 

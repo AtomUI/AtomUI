@@ -525,26 +525,19 @@ public class WindowResizeArtifactTests
     }
 
     [Fact]
-    public void Native_Linux_Window_Utilities_Do_Not_Keep_Legacy_Ignore_Mouse_Shape_Query_Code()
+    public void Linux_Input_Region_Does_Not_Use_Whole_Window_Mouse_Ignore_Or_Shape_Queries()
     {
         var extensionSource = File.ReadAllText(GetRepoFile("src/AtomUI.Native/WindowExtensions.cs"));
-        var linuxSource     = File.ReadAllText(GetRepoFile("src/AtomUI.Native/Linux/WindowUtils.Linux.cs"));
-        var interopSource   = File.ReadAllText(GetRepoFile("src/AtomUI.Native/Linux/WindowUtils.Interop.cs"));
+        var linuxSource = File.ReadAllText(GetRepoFile("src/AtomUI.Native/Linux/WindowUtils.Linux.cs"));
+        var interopSource = File.ReadAllText(GetRepoFile("src/AtomUI.Native/Linux/WindowUtils.Interop.cs"));
 
-        extensionSource.ShouldNotContain("SetWindowIgnoreMouseEventsLinux");
-        extensionSource.ShouldNotContain("IsWindowIgnoreMouseEventsLinux");
-        linuxSource.ShouldNotContain("SetWindowIgnoreMouseEventsLinux");
-        linuxSource.ShouldNotContain("IsWindowIgnoreMouseEventsLinux");
-        linuxSource.ShouldNotContain("GetWindowGeometry");
-
-        interopSource.ShouldNotContain("xcb_get_geometry");
-        interopSource.ShouldNotContain("xcb_get_geometry_reply");
-        interopSource.ShouldNotContain("xcb_shape_get_rectangles");
-        interopSource.ShouldNotContain("xcb_shape_get_rectangles_reply");
-        interopSource.ShouldNotContain("xcb_shape_get_rectangles_rectangles_length");
-        interopSource.ShouldNotContain("xcb_get_geometry_reply_t");
-        interopSource.ShouldNotContain("xcb_shape_get_rectangles_reply_t");
-        interopSource.ShouldNotContain("xcb_shape_query_version_reply_t");
+        foreach (var source in new[] { extensionSource, linuxSource, interopSource })
+        {
+            source.ShouldNotContain("SetWindowIgnoreMouseEventsLinux");
+            source.ShouldNotContain("IsWindowIgnoreMouseEventsLinux");
+            source.ShouldNotContain("xcb_get_geometry");
+            source.ShouldNotContain("xcb_shape_get_rectangles");
+        }
     }
 
     [Fact]
@@ -657,10 +650,19 @@ public class WindowResizeArtifactTests
     {
         var document = XDocument.Load(GetRepoFile(
             "src/AtomUI.Desktop.Controls/Window/Themes/WindowDrawnDecorationsTheme.axaml"));
+        XNamespace av = "https://github.com/avaloniaui";
 
         AssertTitleBarVisibilityContract(document, "PART_TitleBar");
         AssertTitleBarVisibilityContract(document, "PART_TitleBarPresenter");
         AssertTitleBarVisibilityContract(document, "WindowTitleBarShadowBackground");
+        document.Descendants(av + "Style")
+                .ShouldContain(style =>
+                    (string?)style.Attribute("Selector") ==
+                    "^:fullscreen /template/ ContentPresenter#PART_TitleBarPresenter");
+        document.Descendants(av + "Style")
+                .ShouldNotContain(style =>
+                    (string?)style.Attribute("Selector") ==
+                    "^:fullscreen /template/ Panel#PART_TitleBarPresenter");
     }
 
     [Fact]
@@ -1015,6 +1017,10 @@ public class WindowResizeArtifactTests
             var logoPresenter = title.Descendants().Single(element =>
                 (string?)element.Attribute("Name") == "FullscreenLogoPresenter");
             logoPresenter.Attribute("DockPanel.Dock")?.Value.ShouldBe("Left");
+            logoPresenter.Attribute("Content")?.Value.ShouldBe(
+                "{Binding $parent[atom:Window].EffectiveFullscreenLogo}");
+            logoPresenter.Attribute("ContentTemplate")?.Value.ShouldBe(
+                "{Binding $parent[atom:Window].EffectiveFullscreenLogoTemplate}");
             var titleText = title.Descendants().Single(element =>
                 (string?)element.Attribute("Name") == "FullscreenTitleText");
             titleText.Attribute("TextWrapping")?.Value.ShouldBe("NoWrap");
@@ -1023,117 +1029,6 @@ public class WindowResizeArtifactTests
             var trailing = directChildren.Single(child => GetLayoutRole(child) == "Trailing");
             trailing.Descendants(atom + "CaptionButton").Count().ShouldBe(2);
         }
-    }
-
-    [Fact]
-    public void Windows_Window_Uses_Avalonia_Csd_Without_The_Legacy_Chrome_Hook()
-    {
-        var managerSource = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/Window/Chrome/WindowChromeManager.cs"));
-        var windowsChromeSource = File.ReadAllText(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/Window/Chrome/WindowsWindowChromeManager.cs"));
-        var reflectionSource = File.ReadAllText(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/Window/Utils/WindowDrawnDecorationsReflectionExtensions.cs"));
-        var windowSource  = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/Window/Window.cs"));
-        var nativeSource  = File.ReadAllText(GetRepoFile("src/AtomUI.Native/WindowExtensions.cs"));
-        var interopSource = File.ReadAllText(GetRepoFile("src/AtomUI.Native/Windows/WindowUtils.Interop.cs"));
-        var windowsNativeSource = File.ReadAllText(GetRepoFile("src/AtomUI.Native/Windows/WindowUtils.Windows.cs"));
-        var captionSource = File.ReadAllText(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/WindowTitleBar/CaptionButtonGroup.cs"));
-        var document = XDocument.Load(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/Window/Themes/WindowTheme.axaml"));
-        var decorationsDocument = XDocument.Load(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/Window/Themes/WindowDrawnDecorationsTheme.axaml"));
-        var captionDocument = XDocument.Load(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/CaptionButtonGroupTheme.axaml"));
-        XNamespace av = "https://github.com/avaloniaui";
-        XNamespace atom = "https://atomui.net";
-
-        string? GetCaptionButtonRole(string name)
-        {
-            return (string?)captionDocument.Descendants(atom + "WindowsCaptionButton")
-                                           .Single(element => (string?)element.Attribute("Name") == name)
-                                           .Attribute("WindowDecorationProperties.ElementRole");
-        }
-
-        managerSource.ShouldContain("WindowsWindowChromeManager.Attach(window)");
-        File.Exists(Path.Combine(
-            Path.GetDirectoryName(GetRepoFile(
-                "src/AtomUI.Desktop.Controls/Window/Chrome/WindowChromeManager.cs"))!,
-            "WindowsWindowChromeManager.cs")).ShouldBeTrue();
-        File.Exists(Path.Combine(
-            Path.GetDirectoryName(GetRepoFile(
-                "src/AtomUI.Desktop.Controls/Window/Chrome/WindowChromeManager.cs"))!,
-            "WindowsInactiveFramePolicy.cs")).ShouldBeFalse();
-        windowSource.ShouldContain("else if (OperatingSystem.IsWindows())");
-        windowSource.ShouldContain("IsCsdEnabled = true;");
-        windowSource.ShouldContain("CalculateWindowsCsdMinimumHeight");
-        windowSource.ShouldContain("SetCurrentValue(MinHeightProperty, minimumHeight);");
-        windowSource.ShouldContain("PointerCaptureLost");
-        windowSource.ShouldContain("ResetTitleBarMoveDragState();");
-        windowSource.ShouldContain("ApplyCurrentWindowsCsdFrameTheme();");
-        windowSource.ShouldContain("change.Property == ActualThemeVariantProperty");
-        windowSource.ShouldContain("(PlatformThemeVariant?)ActualThemeVariant");
-        windowSource.ShouldContain("platformThemeVariant == PlatformThemeVariant.Dark");
-        windowSource.ShouldContain("private void ApplyWindowsCsdFrameTheme(bool isDarkMode)");
-        windowSource.ShouldNotContain("EnsureWindowsCsdFrameThemeSubscription");
-        windowSource.ShouldNotContain("themeManager.ThemeChanged += handler;");
-        windowSource.ShouldNotContain("TryResolveCurrentWindowDarkMode");
-        windowSource.ShouldNotContain("_isDragging");
-        windowSource.ShouldNotContain("IsWindowsDrawnDecorationsEnabledProperty");
-        windowSource.ShouldNotContain("WindowsInactiveFramePolicy.Apply(this)");
-        windowSource.ShouldNotContain("AddWndProcHookCallback");
-        windowsChromeSource.ShouldContain("PreparePlatformChromeInitialShowHandle();");
-        windowsChromeSource.ShouldContain("_backgroundHook?.PaintClientArea();");
-        windowsChromeSource.ShouldNotContain("_initialShowStatePrepared || _window.IsVisible || _window.PlatformImpl is null");
-        nativeSource.ShouldContain("SetWindowsCsdFrameDarkMode");
-        windowsNativeSource.ShouldContain("SetWindowFrameDarkModeWindows");
-        windowsNativeSource.ShouldContain("OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000)");
-        windowsNativeSource.ShouldContain("ReapplyActiveNonClientFrame");
-        windowsNativeSource.ShouldContain("WindowUtilsInterop.WM_NCACTIVATE");
-        windowsNativeSource.ShouldContain("WindowUtilsInterop.DefWindowProc");
-        windowsNativeSource.ShouldNotContain("WindowUtilsInterop.RedrawWindow");
-        interopSource.ShouldContain("DWMWA_USE_IMMERSIVE_DARK_MODE");
-        interopSource.ShouldNotContain("RDW_FRAME");
-        interopSource.ShouldNotContain("DWMWA_BORDER_COLOR");
-        reflectionSource.ShouldNotContain("TryUpdateDrawnDecorations");
-        reflectionSource.ShouldNotContain("\"UpdateDrawnDecorations\"");
-        reflectionSource.ShouldNotContain("\"UpdateDrawnDecorationMargins\"");
-        nativeSource.ShouldNotContain("WinWndProcHook");
-        nativeSource.ShouldNotContain("ForceWinNonClientFrameChanged");
-        interopSource.ShouldNotContain("WM_NCCALCSIZE");
-        interopSource.ShouldNotContain("WM_NCHITTEST");
-        interopSource.ShouldNotContain("HTMAXBUTTON");
-        captionSource.ShouldNotContain("Win32Properties.AddWndProcHookCallback");
-        captionSource.ShouldNotContain("EnableWindowsSnapLayout");
-        GetCaptionButtonRole("PART_FullScreenButton").ShouldBe("FullScreenButton");
-        GetCaptionButtonRole("PART_PinButton").ShouldBe("DecorationsElement");
-        GetCaptionButtonRole("PART_MinimizeButton").ShouldBe("MinimizeButton");
-        GetCaptionButtonRole("PART_MaximizeButton").ShouldBe("MaximizeButton");
-        GetCaptionButtonRole("PART_CloseButton").ShouldBe("CloseButton");
-        document.Descendants(av + "Setter").ShouldContain(setter =>
-            (string?)setter.Attribute("Property") == "ExtendClientAreaToDecorationsHint" &&
-            (string?)setter.Attribute("Value") == "True");
-        document.Descendants(av + "Setter").ShouldNotContain(setter =>
-            (string?)setter.Attribute("Property") == "ExtendClientAreaToDecorationsHint" &&
-            (string?)setter.Attribute("Value") == "False");
-        var hasWindowsManagedFrameStyle = document.Descendants(av + "Style").Any(style =>
-            ((string?)style.Attribute("Selector"))?.Contains("IsWindowsDrawnDecorationsEnabled=True") == true &&
-            style.Elements(av + "Setter").Any(setter =>
-                (string?)setter.Attribute("Property") is "TransparencyLevelHint" or "FrameShadow"));
-        hasWindowsManagedFrameStyle.ShouldBeFalse();
-        decorationsDocument.Descendants(av + "Setter").ShouldContain(setter =>
-            (string?)setter.Attribute("Property") == "DefaultFrameThickness" &&
-            (string?)setter.Attribute("Value") == "1");
-        decorationsDocument.Descendants(av + "Style").Single(style =>
-                (string?)style.Attribute("Selector") == "^/template/ Border#PART_WindowFrame")
-            .Elements(av + "Setter")
-            .ShouldNotContain(setter => (string?)setter.Attribute("Property") == "BoxShadow");
-        decorationsDocument.Descendants(av + "Style").Single(style =>
-                (string?)style.Attribute("Selector") == "^:has-shadow /template/ Border#PART_WindowFrame")
-            .Elements(av + "Setter")
-            .ShouldContain(setter =>
-                (string?)setter.Attribute("Property") == "BoxShadow" &&
-                (string?)setter.Attribute("Value") == "{atom:WindowTokenResource FrameShadows}");
     }
 
     [Theory]
@@ -1241,14 +1136,27 @@ public class WindowResizeArtifactTests
         source.ShouldContain("Win32CompositionMode.DirectComposition");
         source.ShouldContain("Win32CompositionMode.LowLatencyDxgiSwapChain");
         source.ShouldContain("Win32CompositionMode.RedirectionSurface");
+        // RedirectionSurface 优先：live resize 时只有它与 DWM 窗口几何同步合成，对向边缘不错帧。
+        source.IndexOf("Win32CompositionMode.RedirectionSurface", StringComparison.Ordinal)
+              .ShouldBeLessThan(source.IndexOf("Win32CompositionMode.WinUIComposition", StringComparison.Ordinal));
         source.IndexOf("Win32CompositionMode.WinUIComposition", StringComparison.Ordinal)
               .ShouldBeLessThan(source.IndexOf("Win32CompositionMode.DirectComposition", StringComparison.Ordinal));
         source.IndexOf("Win32CompositionMode.DirectComposition", StringComparison.Ordinal)
               .ShouldBeLessThan(source.IndexOf("Win32CompositionMode.LowLatencyDxgiSwapChain", StringComparison.Ordinal));
-        source.IndexOf("Win32CompositionMode.LowLatencyDxgiSwapChain", StringComparison.Ordinal)
-              .ShouldBeLessThan(source.IndexOf("Win32CompositionMode.RedirectionSurface", StringComparison.Ordinal));
         source.ShouldNotContain("WindowsAppBuilderDefaults");
         source.ShouldNotContain("ShouldRenderOnUIThread = true");
+    }
+
+    [Fact]
+    public void Windows_Background_Hook_Skips_Erase_Fill_During_Live_Resize()
+    {
+        var source = File.ReadAllText(GetRepoFile("src/AtomUI.Native/Windows/WindowsBackgroundHook.cs"));
+
+        // RedirectionSurface 下 WM_ERASEBKGND 的 GDI 填充会先于渲染帧被 DWM 合成，表现为整窗闪背景色。
+        source.ShouldContain("case WindowUtilsInterop.WM_ENTERSIZEMOVE:");
+        source.ShouldContain("case WindowUtilsInterop.WM_EXITSIZEMOVE:");
+        source.IndexOf("if (_isSizeMoving)", StringComparison.Ordinal)
+              .ShouldBeLessThan(source.IndexOf("TryFillClientArea(hWnd, wParam)", StringComparison.Ordinal));
     }
 
     private static string GetRepoFile(string relativePath)

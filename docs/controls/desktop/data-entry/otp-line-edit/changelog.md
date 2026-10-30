@@ -2,6 +2,11 @@
 
 本文档记录 OtpLineEdit 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-09-16
+
+- Behavior
+  - Relay the owner root `BorderBrush` onto every cell `InputControlFrame`, so an owner-scoped root setter reaches the cell outlines instead of being silently ignored. `CellBorderBrush` remains the cell-specific override and now takes precedence over the root `BorderBrush`, with the root value as its fallback when cleared. `Background` is deliberately not relayed: the owner's `Background` is a control-level transparent background and relaying it would overwrite the cell theme's fill.
+
 ## 2026-08-23
 
 - Architecture

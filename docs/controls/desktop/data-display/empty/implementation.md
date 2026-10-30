@@ -1,6 +1,8 @@
 # Empty 桌面版实现原理
 
-本文档描述 Empty 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Empty 桌面版架构设计](overview.md)，变化记录见 [Empty Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Empty Token 设计](token.md)。
+本文档描述 Empty 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见
+[Empty 桌面版架构设计](overview.md)，公开主题区域见 [Empty Semantic Part 契约](semantic-part.md)，变化记录见
+[Empty Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Empty Token 设计](token.md)。
 
 ## 1. 实现定位
 
@@ -14,6 +16,7 @@
 - `src/AtomUI.Controls/Empty/BuiltInImageBuilder.cs`
 - `src/AtomUI.Controls/Empty/PresetEmptyImage.cs`
 - `src/AtomUI.Desktop.Controls/Empty/Empty.cs`
+- `src/AtomUI.Desktop.Controls/Empty/Empty.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Empty/EmptyToken.cs`
 - `src/AtomUI.Desktop.Controls/Empty/Themes/EmptyTheme.axaml`
 
@@ -51,14 +54,14 @@ Public API / ItemsSource / Command / Event
 
 源码中的状态入口按以下语义维护：
 
-- 内容与数据：`Description`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage`。
-- 视觉与布局：`SizeType`。
+- 内容与数据：`Description`、`Footer`、`FooterTemplate`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage`。
+- 视觉与布局：`SizeType`、`StrokeDashArray` 以及继承的 root 表面属性。
 
 维护要求：
 
 - 外部设置的 Avalonia 属性必须在模板应用前后保持一致。
-- 集合、选择、展开、过滤、分页、上传任务或异步 loader 必须能处理 reset、replace 和 clear。
-- 伪类和 internal state 必须从单一 owner 推导，避免双向同步导致循环更新。
+- `Footer` 与 `FooterTemplate` 替换由 ContentPresenter 原生内容生命周期管理，不保留旧 Control 或 DataTemplate 产物。
+- 图片来源互斥检查和 `_svg` 更新仍由 `AbstractEmpty` 单一 owner 管理。
 - overview.md 的 API 契约说明应与源码实际状态流一致。
 
 ## 5. 生命周期与模板接入
@@ -75,6 +78,22 @@ Public API / ItemsSource / Command / Event
 
 - `PART_SvgImage`：稳定模板协作入口，重命名前必须同步主题和实现。
 
+Semantic marker 与真实节点映射：
+
+| Part | Marker 节点 | 创建方式 | 可见性/内容状态 |
+| --- | --- | --- | --- |
+| `root` | `Empty` owner | 控件实例 | 由 owner 属性控制，不使用 `.semantic-root`。 |
+| `image` | `PART_SvgImage` | ControlTemplate 静态创建 | 始终存在；图片来源变化只更新 renderer。 |
+| `description` | 描述 `TextBlock` | ControlTemplate 静态创建 | `IsDescriptionVisible` 通过 TemplateBinding 控制可见性。 |
+| `footer` | Footer `ContentPresenter` | ControlTemplate 静态创建 | `Footer=null` 时隐藏，非空时展示内容。 |
+
+三个非 root marker 均使用静态 `Classes.semantic-*="True"`。默认主题不能用这些 class 驱动自身样式；生成的
+`EmptyImageStyle`、`EmptyDescriptionStyle` 和 `EmptyFooterStyle` 只供应用侧定制。
+
+ControlTemplate 使用一个不带 Semantic marker 的表面 `DashedBorder` 投影 owner 的 `Background`、`BorderBrush`、
+`BorderThickness`、`CornerRadius`、`Padding` 和 `StrokeDashArray`，内部 `StackPanel` 只负责纵向排列三个非 root
+区域。两者都属于 Composition Model，不是额外 Semantic Part。
+
 ## 6. 交互与事件处理
 
 Empty 的交互事件应从输入源收敛到控件级语义事件：
@@ -90,11 +109,12 @@ Empty 的交互事件应从输入源收敛到控件级语义事件：
 
 维护者需要重点关注以下流程：
 
-- API 默认值到 effective state 的归一。
-- Template part 重新应用时的状态回放。
-- 主题资源、Token 和 SharedToken 计算后的视觉更新。
-- ItemsSource、selection、checked、expanded、filter、paging 或 upload task 的集合同步。
-- 状态变化时避免创建不必要的视觉对象、订阅或动画对象。
+1. `OnApplyTemplate` 获取新的 `PART_SvgImage`，执行图片来源互斥检查，并把当前来源与主题颜色应用到新 renderer。
+2. `PresetImage`、`ImagePath`、`ImageSource` 或图形颜色变化时，更新同一个 renderer，不更换 image Semantic target。
+3. `IsDescriptionVisible` 由 AXAML `TemplateBinding` 直接投影到 description 节点，避免 C# 可见性同步状态。
+4. `Footer` 与 `FooterTemplate` 由 AXAML ContentPresenter 直接消费，Footer 的显示状态由 `Footer != null` 决定。
+5. root 的标准背景、边框、圆角、Padding 和虚线节奏由模板表面 `DashedBorder` 直接投影，不需要 C# 状态同步。
+6. SizeType selector 只更新 image 高度和 description margin；Footer 使用独立稳定间距 Token。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
 
@@ -112,13 +132,13 @@ Empty 的交互事件应从输入源收敛到控件级语义事件：
 
 - 控件应优先复用 Avalonia 原生虚拟化、模板绑定和资源系统。
 - 避免为每次状态变化创建不必要的视觉对象、订阅或动画对象。
-- 大集合控件必须保证 container recycle 后不会泄漏旧 item 状态。
+- Footer 内容替换依赖 Avalonia ContentPresenter 的标准 logical/visual ownership，不额外缓存内容 Control。
 
 ## 9. 维护不变量
 
 维护 Empty 时不得破坏：
 
-- Public API、默认值、事件顺序和 Gallery 可观察行为。
+- Public API、默认值、事件顺序，以及新增 `Footer`/`FooterTemplate` 的内容语义。
 - Template part 名称、ControlTheme key、伪类和资源 key。
 - 旧 template part、事件订阅、Popup/Flyout/Window host 和 collection view 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
@@ -133,3 +153,7 @@ Empty 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+Empty 专项测试必须覆盖 descriptor 字段、静态 marker、三种图片来源、描述可见性、Footer 内容/模板替换、三档 SizeType、
+re-template 和应用级生成 Style 命中。Empty 不涉及 Popup、跨 VisualRoot、运行时 marker 或反射发现，单控件阶段不要求额外
+NativeAOT publish；批次收尾仍执行 Gallery NativeAOT 验证。

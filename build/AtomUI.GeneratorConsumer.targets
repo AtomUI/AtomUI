@@ -1,23 +1,11 @@
 <Project>
-    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Generator.props"
-            Condition="'$(AtomUIGeneratorPropsImported)' != 'true'" />
-
-    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Generator.targets"
-            Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
-
-    <Import Project="$(MSBuildThisFileDirectory)AtomUI.LinkedRegistration.SidecarConsumer.targets" />
-
-    <Target Name="AtomUIAddEmbeddedGeneratorAnalyzer"
-            BeforeTargets="CoreCompile"
-            DependsOnTargets="ResolveReferences">
-        <ItemGroup>
-            <_AtomUIExistingGeneratorAnalyzer Include="@(Analyzer)"
-                                              Condition="'%(Filename)' == 'AtomUI.Generator'" />
-            <Analyzer Include="$(MSBuildThisFileDirectory)../tools/netstandard2.0/AtomUI.Generator.dll"
-                      Condition="'@(_AtomUIExistingGeneratorAnalyzer)' == ''" />
-        </ItemGroup>
-        <PropertyGroup>
-            <AtomUIGeneratorAnalyzerImported>true</AtomUIGeneratorAnalyzerImported>
-        </PropertyGroup>
-    </Target>
+    <!-- Every imported package contributes candidates, even when setup was already imported. -->
+    <ItemGroup>
+        <AtomUIRegistrationToolCandidate Include="$(MSBuildThisFileDirectory)../tools/netstandard2.0/AtomUI.Generator.dll" Kind="Generator" />
+        <AtomUIRegistrationToolCandidate Include="$(MSBuildThisFileDirectory)../tools/net10.0/AtomUI.Build.Tasks.dll" Kind="Tasks" />
+        <AtomUIRegistrationToolCandidate Include="$(MSBuildThisFileDirectory)../tools/typemap/AtomUI.TypeMap.Linker.dll" Kind="Backend" />
+        <AtomUIRegistrationToolCandidate Include="$(MSBuildThisFileDirectory)../tools/registration/net8/illink/AtomUI.Registration.ILLink8.dll" Kind="Net8Backend" />
+    </ItemGroup>
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Generator.props" Condition="'$(AtomUIGeneratorPropsImported)' != 'true'" />
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Generator.targets" Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
 </Project>

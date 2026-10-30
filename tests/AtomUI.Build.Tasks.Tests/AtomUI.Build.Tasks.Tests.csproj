@@ -16,6 +16,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../../src/AtomUI.Build.Tasks/AtomUI.Build.Tasks.csproj" />
+        <ProjectReference Include="../../src/AtomUI.Toolchain/AtomUI.Toolchain.csproj" />
+        <ProjectReference Include="../../src/AtomUI.Generator/AtomUI.Generator.csproj"
+                          ReferenceOutputAssembly="false" Private="false" PrivateAssets="all" />
+        <AssemblyMetadata Include="FixtureGeneratorAssembly"
+                          Value="$([System.IO.Path]::GetFullPath('$(OutputPathWithoutFramework)/netstandard2.0/AtomUI.Generator.dll'))" />
     </ItemGroup>
 </Project>

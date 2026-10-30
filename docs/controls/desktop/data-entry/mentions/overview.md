@@ -2,7 +2,9 @@
 
 本文档定义 `AtomUI.Desktop.Controls.Mentions` 的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。共享输入分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，候选列表统一交互见 [候选列表统一交互设计](../select/candidate-interaction-design.md)，内部实现原理见 [Mentions 桌面版实现原理](implementation.md)，Token 专项设计见 [Mentions Token 设计](token.md)，设计和契约变化记录见 [Mentions Changelog](changelog.md)。
 
-该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `Mentions`，其 internal `IsPopupPinnedOpen` 只供测试和内部诊断使用；设置为 true 时保持 mention candidate open state 并 relay 到 internal Popup，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
+该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `Mentions`，其 `IsPopupPinnedOpen` 公开用于 Gallery 语义预览与诊断；设置为 true 时保持 mention candidate open state 并 relay 到 `PART_Popup`，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
+
+Mentions 公开 9 个 Semantic Part（`root`、`prefix`、`content`、`placeholder`、`input`、`clear`、`popup.root`、`popup.list`、`popup.listItem`），输入区部件复用 TextArea 的跨嵌套 owner 路由，弹层部件与 AutoComplete 同构；完整 Part 表、Selector 用法与定制边界见 [Mentions Semantic Part 契约](semantic-part.md)。
 
 ## 1. 控件定位
 
@@ -243,35 +245,17 @@ Mentions 将 `OptionsSource` 缓存为 `List<IMentionOption>`，再根据 `Filte
 
 `Placement=Bottom` 映射为 `PlacementMode.BottomEdgeAlignedLeft`，`Placement=Top` 映射为 `PlacementMode.TopEdgeAlignedLeft`。打开候选弹层时，控件根据触发字符 bounds 和 text presenter bounds 计算 popup 偏移，使候选弹层对齐当前触发位置。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Mentions 桌面版实现原理](implementation.md)
+- [Mentions Semantic Part 契约](semantic-part.md)
 - [Mentions Token 设计](token.md)
 - [Mentions Changelog](changelog.md)
 - [LineEdit Token 设计](../line-edit/token.md)
 
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Mentions` | 数据录入控件根语义区域，承载 public API、值状态、验证状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `input` | `输入或编辑区域` | 承载用户输入、当前值、占位、格式化或只读状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载清除、展开、提交、步进、上传或辅助操作。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或候选区域` | 承载下拉、候选项、日历、颜色面板或异步内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `validation` | `校验反馈区域` | 承载 Form、status、错误、警告、help 或 loading 状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/mentions/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/mentions/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+完整 Part 表、SelectorRoute 与定制边界见 [Mentions Semantic Part 契约](semantic-part.md)。
 
 验证策略：
 

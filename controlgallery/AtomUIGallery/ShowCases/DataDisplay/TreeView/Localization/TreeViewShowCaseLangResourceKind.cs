@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -41,6 +39,14 @@ public enum TreeViewShowCaseLangResourceKind
     ContextMenuDescription,
     EmptyIndicatorTitle,
     EmptyIndicatorDescription,
+    SemanticNodeRootDescription,
+    SemanticItemDescription,
+    SemanticItemSwitcherDescription,
+    SemanticItemIconDescription,
+    SemanticItemTitleDescription,
+    SemanticItemIndicatorDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
     P2HeaderParentN1,
     P2HeaderParentN1N0,
     P2HeaderLeaf,

@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Mentions"
              x:DataType="vm:MentionsViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Mentions"
                     Category="{gallery:MentionsShowCaseLangResource ComponentCategory}"
@@ -18,7 +18,57 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="TemplatedControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:MentionsViewModel">
+                    <gallery:SemanticPartPreview Name="MentionsSemanticPreview"
+                                                 Title="Mentions"
+                                                 SemanticOwner="{Binding #MentionsSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:Mentions}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Mentions Name="MentionsSemanticOwner"
+                                           Width="420"
+                                           IsAllowClear="True"
+                                           IsMotionEnabled="False"
+                                           IsDropDownOpen="True"
+                                           IsPopupPinnedOpen="True"
+                                           ContentLeftAddOn="prefix"
+                                           OptionsSource="{Binding SemanticPreviewOptions}"
+                                           PlaceholderText="{gallery:MentionsShowCaseLangResource P2PlaceholderTextInputToMentionPeopleToMentionTag}" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:MentionsShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="prefix"
+                                Description="{gallery:MentionsShowCaseLangResource SemanticPrefixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:MentionsShowCaseLangResource SemanticContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="placeholder"
+                                Description="{gallery:MentionsShowCaseLangResource SemanticPlaceholderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="input"
+                                Description="{gallery:MentionsShowCaseLangResource SemanticInputDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="clear"
+                                Description="{gallery:MentionsShowCaseLangResource SemanticClearDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.root"
+                                Description="{gallery:MentionsShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.list"
+                                Description="{gallery:MentionsShowCaseLangResource SemanticPopupListDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.listItem"
+                                Description="{gallery:MentionsShowCaseLangResource SemanticPopupListItemDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -240,7 +290,67 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:MentionsShowCaseLangResource StyleClassTitle}"
+        Description="{gallery:MentionsShowCaseLangResource StyleClassDescription}"
+        SourceKey="mentions-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:MentionsViewModel">
+        <StackPanel HorizontalAlignment="Left" Spacing="20">
+            <StackPanel.Styles>
+                <Style Selector="atom|Mentions.semantic-styles-demo">
+                    <atom:MentionsPrefixStyle x:SetterTargetType="ContentPresenter">
+                        <Style Selector="^ atom|Icon">
+                            <Setter Property="StrokeBrush" Value="#1890FF" />
+                        </Style>
+                    </atom:MentionsPrefixStyle>
+                    <atom:MentionsPopupRootStyle x:SetterTargetType="Border">
+                        <Setter Property="BorderBrush" Value="#1890FF" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </atom:MentionsPopupRootStyle>
+                </Style>
+                <Style Selector="atom|Mentions.semantic-styles-filled-demo">
+                    <atom:MentionsPrefixStyle x:SetterTargetType="ContentPresenter">
+                        <Style Selector="^ atom|Icon">
+                            <Setter Property="StrokeBrush" Value="#722ED1" />
+                        </Style>
+                    </atom:MentionsPrefixStyle>
+                    <atom:MentionsPopupRootStyle x:SetterTargetType="Border">
+                        <Setter Property="BorderBrush" Value="#722ED1" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </atom:MentionsPopupRootStyle>
+                </Style>
+            </StackPanel.Styles>
+            <atom:Mentions Classes="semantic-styles-demo"
+                           Name="ObjectStylesMentions"
+                           Width="300"
+                           IsAllowClear="True"
+                           ContentLeftAddOn="{antdicons:AntDesignIconProvider Kind=MehOutlined}"
+                           OptionsSource="{Binding StyleClassOptions}"
+                           PlaceholderText="Object" />
+            <atom:Mentions Classes="semantic-styles-demo semantic-styles-filled-demo"
+                           Name="FunctionStylesMentions"
+                           Width="300"
+                           IsAllowClear="True"
+                           StyleVariant="Filled"
+                           ContentLeftAddOn="{antdicons:AntDesignIconProvider Kind=MehOutlined}"
+                           OptionsSource="{Binding StyleClassOptions}"
+                           PlaceholderText="Function" />
+            <atom:Mentions Classes="semantic-styles-demo"
+                           Name="MultilineStylesMentions"
+                           Width="300"
+                           Lines="3"
+                           IsAllowClear="True"
+                           OptionsSource="{Binding StyleClassOptions}"
+                           PlaceholderText="Multiline" />
+        </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

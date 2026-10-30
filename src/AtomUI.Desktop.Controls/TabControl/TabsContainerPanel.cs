@@ -7,14 +7,14 @@ internal class TabsContainerPanel : Panel
 {
     #region 公共属性定义
 
-    public static readonly DirectProperty<TabsContainerPanel, BaseTabScrollViewer?> TabScrollViewerProperty =
-        AvaloniaProperty.RegisterDirect<TabsContainerPanel, BaseTabScrollViewer?>(nameof(TabScrollViewer),
+    public static readonly DirectProperty<TabsContainerPanel, TabScrollViewer?> TabScrollViewerProperty =
+        AvaloniaProperty.RegisterDirect<TabsContainerPanel, TabScrollViewer?>(nameof(TabScrollViewer),
             o => o.TabScrollViewer,
             (o, v) => o.TabScrollViewer = v);
 
-    private BaseTabScrollViewer? _tabScrollViewer;
+    private TabScrollViewer? _tabScrollViewer;
 
-    public BaseTabScrollViewer? TabScrollViewer
+    public TabScrollViewer? TabScrollViewer
     {
         get => _tabScrollViewer;
         set => SetAndRaise(TabScrollViewerProperty, ref _tabScrollViewer, value);
@@ -54,8 +54,27 @@ internal class TabsContainerPanel : Panel
 
     static TabsContainerPanel()
     {
-        AffectsMeasure<TabsContainerPanel>(TabScrollViewerProperty, AddTabButtonProperty);
-        AffectsArrange<TabsContainerPanel>(TabStripPlacementProperty);
+        AffectsMeasure<TabsContainerPanel>(TabScrollViewerProperty, AddTabButtonProperty, TabStripPlacementProperty);
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        _addTabButton?.Measure(availableSize);
+        var addTabButtonSize = _addTabButton?.DesiredSize ?? default;
+        if (TabStripPlacement is Dock.Top or Dock.Bottom)
+        {
+            _tabScrollViewer?.Measure(new Size(
+                Math.Max(0, availableSize.Width - addTabButtonSize.Width), availableSize.Height));
+            var scrollViewerSize = _tabScrollViewer?.DesiredSize ?? default;
+            return new Size(scrollViewerSize.Width + addTabButtonSize.Width,
+                Math.Max(scrollViewerSize.Height, addTabButtonSize.Height));
+        }
+
+        _tabScrollViewer?.Measure(new Size(availableSize.Width,
+            Math.Max(0, availableSize.Height - addTabButtonSize.Height)));
+        var verticalScrollViewerSize = _tabScrollViewer?.DesiredSize ?? default;
+        return new Size(Math.Max(verticalScrollViewerSize.Width, addTabButtonSize.Width),
+            verticalScrollViewerSize.Height + addTabButtonSize.Height);
     }
 
     protected override Size ArrangeOverride(Size arrangeSize)
@@ -73,14 +92,15 @@ internal class TabsContainerPanel : Panel
                 var btnOffsetY = 0d;
                 if (TabStripPlacement == Dock.Top)
                 {
-                    btnOffsetY = arrangeSize.Height - _addTabButton.DesiredSize.Height;
+                    btnOffsetY = Math.Max(0, arrangeSize.Height - _addTabButton.DesiredSize.Height);
                 }
 
                 if (totalDesiredWidth > arrangeSize.Width)
                 {
+                    var scrollViewerWidth = Math.Max(0, arrangeSize.Width - addTabButtonDesiredWidth);
                     _tabScrollViewer.Arrange(new Rect(new Point(0, 0),
-                        new Size(arrangeSize.Width - addTabButtonDesiredWidth, arrangeSize.Height)));
-                    _addTabButton.Arrange(new Rect(new Point(arrangeSize.Width - addTabButtonDesiredWidth, btnOffsetY),
+                        new Size(scrollViewerWidth, arrangeSize.Height)));
+                    _addTabButton.Arrange(new Rect(new Point(scrollViewerWidth, btnOffsetY),
                         _addTabButton.DesiredSize));
                 }
                 else
@@ -98,15 +118,16 @@ internal class TabsContainerPanel : Panel
                 var btnOffsetX                = 0d;
                 if (TabStripPlacement == Dock.Left)
                 {
-                    btnOffsetX = arrangeSize.Width - _addTabButton.DesiredSize.Width;
+                    btnOffsetX = Math.Max(0, arrangeSize.Width - _addTabButton.DesiredSize.Width);
                 }
 
                 if (totalDesiredHeight > arrangeSize.Height)
                 {
+                    var scrollViewerHeight = Math.Max(0, arrangeSize.Height - addTabButtonDesiredHeight);
                     _tabScrollViewer.Arrange(new Rect(new Point(0, 0),
-                        new Size(arrangeSize.Width, arrangeSize.Height - addTabButtonDesiredHeight)));
+                        new Size(arrangeSize.Width, scrollViewerHeight)));
                     _addTabButton.Arrange(new Rect(
-                        new Point(btnOffsetX, arrangeSize.Height - addTabButtonDesiredHeight),
+                        new Point(btnOffsetX, scrollViewerHeight),
                         _addTabButton.DesiredSize));
                 }
                 else
@@ -126,7 +147,7 @@ internal class TabsContainerPanel : Panel
         base.OnPropertyChanged(change);
         if (change.Property == TabScrollViewerProperty)
         {
-            var oldScrollViewer = change.GetOldValue<BaseTabScrollViewer?>();
+            var oldScrollViewer = change.GetOldValue<TabScrollViewer?>();
             if (oldScrollViewer is not null)
             {
                 Children.Remove(oldScrollViewer);

@@ -1,4 +1,5 @@
-﻿using AtomUI.Animations;
+using Avalonia.Controls.Primitives;
+using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -10,7 +11,7 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaComboBoxItem = Avalonia.Controls.ComboBoxItem;
 
-public class ComboBoxItem : AvaloniaComboBoxItem
+public class ComboBoxItem : AvaloniaComboBoxItem, ITransitionInitializationOwner
 {
     #region 内部属性定义
 
@@ -46,16 +47,35 @@ public class ComboBoxItem : AvaloniaComboBoxItem
     private static readonly Point s_invalidPoint = new Point(double.NaN, double.NaN);
     private Point _pointerDownPoint = s_invalidPoint;
 
-    protected override void OnInitialized()
+    private readonly TransitionInitializationSession _transitionInitialization;
+
+    public ComboBoxItem()
     {
-        base.OnInitialized();
-        this.DisableTransitions();
+        _transitionInitialization = new TransitionInitializationSession(this);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _transitionInitialization.CompleteInitialization();
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -117,4 +137,10 @@ public class ComboBoxItem : AvaloniaComboBoxItem
         }
         _pointerDownPoint = s_invalidPoint;
     }
+    #region 实现 ITransitionInitializationOwner 接口
+
+    TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
+
+    #endregion
+
 }

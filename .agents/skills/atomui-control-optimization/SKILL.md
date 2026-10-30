@@ -133,8 +133,9 @@ When an escalation signal appears, list it in the audit even if the current pass
 4. Classify API risk, file split need, and optimization mode.
 5. Present findings and phases when behavior, render, architecture, or broad cleanup risks exist.
 6. Make the smallest scoped change that matches existing control style.
-7. Run targeted tests first, then broaden based on risk.
-8. Always run `git diff --check` before reporting completion.
+7. Run the [member-layout audit](references/api-layout-and-splitting.md#executable-member-layout-gate) for every touched control file, including its complete declarations rather than only added lines. Correct structural findings before final verification.
+8. Run targeted tests first, then broaden only when failures or unresolved risks justify it.
+9. Always run `git diff --check` before reporting completion.
 
 ## Contract Inventory
 
@@ -157,6 +158,7 @@ For broad optimization, run focused searches before deciding the implementation 
 - data flow: `ItemsSource`, `Selected`, `Checked`, `Current`, `TargetKeys`, `SelectedKeys`, `Filter`, `Page`
 - dead/duplicate code: class references, copied methods, override methods matching the base implementation, new helpers/classes that duplicate existing primitives
 - patch artifacts: new boolean-switch parameters, marker fields, local marker variables, stale fallback branches, and cleanup-only helper classes
+- property partition: compare the declared accessibility of each Avalonia registration field and CLR wrapper with its contract region; check wrapper order and DirectProperty backing-field adjacency
 - member prelude: anything inside the control class before `#region 公共属性定义`, especially `internal const`, `internal static`, internal collaboration APIs, private helpers, runtime fields, and temporary state
 
 Do not treat these scans as proof by themselves. Use them to identify ownership and edge-case paths that must be reviewed.
@@ -184,6 +186,8 @@ Files split: No / Yes
 Audit performed: No / Yes
 Residual risks:
 New artifacts introduced and why:
+Member layout audit: explicit paths, file/control counts, unresolved findings
+Initialization-order review: unchanged / reviewed differences
 Tests:
 Diff hygiene:
 Commit created: No unless explicitly requested

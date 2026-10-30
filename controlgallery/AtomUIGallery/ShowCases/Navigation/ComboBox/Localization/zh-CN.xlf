@@ -199,6 +199,78 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Input content panel hosting the placeholder, the non-editable selection and the editable input.</source>
+        <target state="translated">输入内容面板，承载占位符、非编辑态选中内容与编辑态输入框。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFrameDescription">
+      <segment>
+        <source>Input frame border box; the innermost box of the outlined / filled / underlined frame, where the border color, width, corner radius and background of the input box can be customized.</source>
+        <target state="translated">输入框边框盒；outlined / filled / underlined 变体的最内层边框盒，可在此定制输入框的边框颜色、宽度、圆角与背景。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorDescription">
+      <segment>
+        <source>Drop-down arrow button inside the handle template, which also toggles the popup on click.</source>
+        <target state="translated">handle 模板内的下拉箭头按钮，同时是点击展开 / 收起的入口。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Editable filtering input rendered when IsEditable is enabled.</source>
+        <target state="translated">IsEditable 为 true 时渲染的编辑 / 过滤输入框。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPlaceholderDescription">
+      <segment>
+        <source>Placeholder text shown while nothing is selected.</source>
+        <target state="translated">未选择任何项时显示的占位符文本。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupEmptyDescription">
+      <segment>
+        <source>Empty state shown when an active filter matches nothing.</source>
+        <target state="translated">生效过滤模式下无匹配项时显示的空态。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListDescription">
+      <segment>
+        <source>Scrollable candidate list region inside the popup, mutually exclusive with the empty state.</source>
+        <target state="translated">弹层内的候选列表滚动区，与空态互斥。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListItemDescription">
+      <segment>
+        <source>Single candidate entry, marked on the container created at runtime.</source>
+        <target state="translated">单个候选项，标记在运行时创建的容器上。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root border of the drop-down popup layer.</source>
+        <target state="translated">弹层框体，承载候选列表与空态。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Inline prefix area of the input frame, hosting ContentLeftAddOn.</source>
+        <target state="translated">输入框内联前缀区域，承载 ContentLeftAddOn。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The ComboBox owner itself.</source>
+        <target state="translated">ComboBox 控件本身。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix area hosting user suffix content, form feedback and the drop-down handle.</source>
+        <target state="translated">后缀区域，承载用户后缀内容、表单反馈与下拉指示器。</target>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to Input with status, which could be error or warning.</source>
@@ -209,6 +281,18 @@
       <segment>
         <source>Status</source>
         <target state="translated">状态</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of ComboBox with semantic part styles, including the input frame border color.</source>
+        <target state="translated">使用语义部件样式定制 ComboBox 的语义结构样式，包括输入框边框颜色。</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
       </segment>
     </unit>
     <unit id="ThreeSizesDescription">

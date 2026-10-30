@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.ButtonSpinner"
              x:DataType="vm:ButtonSpinnerViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="ButtonSpinner"
                     Category="{gallery:ButtonSpinnerShowCaseLangResource ComponentCategory}"
@@ -18,7 +18,49 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="Spinner" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:ButtonSpinnerViewModel">
+                    <gallery:SemanticPartPreview Name="ButtonSpinnerSemanticPreview"
+                                                 SemanticOwner="{Binding #ButtonSpinnerSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:ButtonSpinner}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:ButtonSpinner Name="ButtonSpinnerSemanticOwner"
+                                                Width="320"
+                                                InnerLeftContent="￥"
+                                                InnerRightContent="RMB">
+                                <atom:TextBlock HorizontalAlignment="Left"
+                                                VerticalAlignment="Center"
+                                                Text="床前明月光" />
+                            </atom:ButtonSpinner>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:ButtonSpinnerShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:ButtonSpinnerShowCaseLangResource SemanticContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="innerLeftContent"
+                                Description="{gallery:ButtonSpinnerShowCaseLangResource SemanticInnerLeftContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="innerRightContent"
+                                Description="{gallery:ButtonSpinnerShowCaseLangResource SemanticInnerRightContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="actions"
+                                Description="{gallery:ButtonSpinnerShowCaseLangResource SemanticActionsDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="increaseButton"
+                                Description="{gallery:ButtonSpinnerShowCaseLangResource SemanticIncreaseButtonDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="decreaseButton"
+                                Description="{gallery:ButtonSpinnerShowCaseLangResource SemanticDecreaseButtonDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -355,7 +397,77 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
-            </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:ButtonSpinnerShowCaseLangResource SemanticPartStyleTitle}"
+        Description="{gallery:ButtonSpinnerShowCaseLangResource SemanticPartStyleDescription}"
+        SourceKey="buttonspinner-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        Span="Full"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:ButtonSpinnerViewModel">
+                <StackPanel Orientation="Vertical"
+                            HorizontalAlignment="Left"
+                            Spacing="12">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|ButtonSpinner.semantic-object">
+                            <Setter Property="BorderBrush" Value="#1677FF" />
+                            <atom:ButtonSpinnerActionsStyle x:SetterTargetType="TemplatedControl">
+                                <Setter Property="Background" Value="#F0F5FF" />
+                                <Setter Property="BorderBrush" Value="#1677FF" />
+                            </atom:ButtonSpinnerActionsStyle>
+                            <atom:ButtonSpinnerInnerLeftContentStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="Foreground" Value="#1677FF" />
+                            </atom:ButtonSpinnerInnerLeftContentStyle>
+                            <atom:ButtonSpinnerIncreaseButtonStyle x:SetterTargetType="atom:IconButton">
+                                <Setter Property="IconBrush" Value="#1677FF" />
+                            </atom:ButtonSpinnerIncreaseButtonStyle>
+                            <atom:ButtonSpinnerDecreaseButtonStyle x:SetterTargetType="atom:IconButton">
+                                <Setter Property="IconBrush" Value="#1677FF" />
+                            </atom:ButtonSpinnerDecreaseButtonStyle>
+                        </Style>
+                        <Style Selector="atom|ButtonSpinner.semantic-function">
+                            <Setter Property="BorderBrush" Value="#722ED1" />
+                            <atom:ButtonSpinnerActionsStyle x:SetterTargetType="TemplatedControl">
+                                <Setter Property="Background" Value="#F9F0FF" />
+                                <Setter Property="BorderBrush" Value="#722ED1" />
+                            </atom:ButtonSpinnerActionsStyle>
+                            <atom:ButtonSpinnerInnerLeftContentStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="Foreground" Value="#722ED1" />
+                            </atom:ButtonSpinnerInnerLeftContentStyle>
+                            <atom:ButtonSpinnerIncreaseButtonStyle x:SetterTargetType="atom:IconButton">
+                                <Setter Property="IconBrush" Value="#722ED1" />
+                            </atom:ButtonSpinnerIncreaseButtonStyle>
+                            <atom:ButtonSpinnerDecreaseButtonStyle x:SetterTargetType="atom:IconButton">
+                                <Setter Property="IconBrush" Value="#722ED1" />
+                            </atom:ButtonSpinnerDecreaseButtonStyle>
+                        </Style>
+                    </StackPanel.Styles>
+
+                    <atom:ButtonSpinner Classes="semantic-object"
+                                        Width="360"
+                                        HorizontalAlignment="Left"
+                                        IsButtonSpinnerFloatable="False"
+                                        InnerLeftContent="Object">
+                        <atom:TextBlock HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Text="床前明月光" />
+                    </atom:ButtonSpinner>
+                    <atom:ButtonSpinner Classes="semantic-function"
+                                        Width="360"
+                                        HorizontalAlignment="Left"
+                                        IsButtonSpinnerFloatable="False"
+                                        InnerLeftContent="Function">
+                        <atom:TextBlock HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Text="床前明月光" />
+                    </atom:ButtonSpinner>
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+        </gallery:ShowCasePanel>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

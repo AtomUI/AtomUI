@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace AtomUI.Generator;
 
@@ -81,44 +80,6 @@ internal class TokenInfo
         SchemaTokens      = new HashSet<SchemaTokenInfo>();
         ControlThemeInfos = new List<ControlThemeInfo>();
     }
-}
-
-internal sealed class ThemeCompilationInfo
-{
-    internal ThemeCompilationInfo(
-        Compilation compilation,
-        string assemblyName,
-        string packageId,
-        LinkedRegistration.Model.RegistrationUnitGranularity registrationGranularity,
-        string? invalidRegistrationGranularity,
-        string? projectDirectory,
-        string controlCatalog,
-        IReadOnlyList<string> globalTokenNames,
-        AnalyzerConfigOptionsProvider optionsProvider,
-        LinkedRegistration.ControlPackageRegistrationEntrySet entryMethods)
-    {
-        Compilation = compilation;
-        AssemblyName = assemblyName;
-        PackageId = packageId;
-        RegistrationGranularity = registrationGranularity;
-        InvalidRegistrationGranularity = invalidRegistrationGranularity;
-        ProjectDirectory = projectDirectory;
-        ControlCatalog = controlCatalog;
-        GlobalTokenNames = globalTokenNames;
-        OptionsProvider = optionsProvider;
-        EntryMethods = entryMethods;
-    }
-
-    internal Compilation Compilation { get; }
-    internal string AssemblyName { get; }
-    internal string PackageId { get; }
-    internal LinkedRegistration.Model.RegistrationUnitGranularity RegistrationGranularity { get; }
-    internal string? InvalidRegistrationGranularity { get; }
-    internal string? ProjectDirectory { get; }
-    internal string ControlCatalog { get; }
-    internal IReadOnlyList<string> GlobalTokenNames { get; }
-    internal AnalyzerConfigOptionsProvider OptionsProvider { get; }
-    internal LinkedRegistration.ControlPackageRegistrationEntrySet EntryMethods { get; }
 }
 
 internal enum SchemaTokenStage

@@ -1,6 +1,6 @@
 # ListBox 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.ListBox` 桌面版的最新设计定位、公共契约、行为状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [ListBox 桌面版实现原理](implementation.md)，ListBox Token 的专项设计见 [ListBox Token 设计](token.md)，设计和契约变化记录见 [ListBox Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.ListBox` 桌面版的最新设计定位、公共契约、行为状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，公共语义区域见 [ListBox Semantic Part 契约](semantic-part.md)，内部实现原理见 [ListBox 桌面版实现原理](implementation.md)，ListBox Token 的专项设计见 [ListBox Token 设计](token.md)，设计和契约变化记录见 [ListBox Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -82,11 +82,12 @@ ListBoxItem 容器 API：
 
 | Template Part | 所属控件 | 职责 |
 | --- | --- | --- |
-| `Frame` | `ListBox` | root 背景、边框、圆角和 padding 边界。 |
+| `Frame` | `ListBox` | root 背景、边框、圆角、padding 与外框闭合边界。 |
 | `PART_ScrollViewer` | `ListBox` | 列表滚动容器。 |
 | `ItemsPresenter` | `ListBox` | 条目容器承载入口。 |
 | `EmptyIndicator` | `ListBox` | 空状态内容展示。 |
-| `Frame` | `ListBoxItem` | 条目背景、圆角和 padding 边界。 |
+| `Frame` | `ListBoxItem` | 条目背景与 padding 边界。 |
+| `SplitLineFrame` | `ListBoxItem` | 条目底部分割线表面。 |
 | `SelectedIndicator` | `ListBoxItem` | 选中标记展示入口。 |
 | `ContentPresenter` | `ListBoxItem` | 普通内容展示入口。 |
 
@@ -138,7 +139,7 @@ ListBox 主题按 root 和 item 两层组织。
 
 ```text
 ListBoxTheme
-  Frame
+  Frame（ClipContentToCornerRadius=True）
   PART_ScrollViewer
   ItemsPresenter
   EmptyIndicator
@@ -148,13 +149,17 @@ ListBoxItemTheme
   SelectedIndicator
   ContentPresenter
   HighlightableTextBlock
+  SplitLineFrame
 ```
 
 视觉规则：
 
-- root 边框由 `BorderBrush`、`BorderThickness`、`CornerRadius` 和 `IsBorderless` 共同决定。
-- `SizeType` 控制 root 圆角、空状态 padding、条目最小高度和条目 padding。
-- 默认条目背景透明，hover 使用 `ItemHoverBg`，selected 使用 `ItemSelectedBg`。
+- root 外框由 `BorderBrush`、`BorderThickness`、`CornerRadius` 和 `IsBorderless` 共同决定。默认外框颜色是 `ColorSplit`，与条目分割线同色，表达“外框即列表闭合线”。
+- root `Frame` 开启 `ClipContentToCornerRadius`：内容被裁剪到外框圆角内边缘，条目 hover / selected 背景等溢出圆角内边缘的内容被裁剪，不在圆角口袋区溢出；外框环由 `Frame` 自身一次绘制（`ColorSplit`），无叠加节点。
+- `SizeType` 控制 root 圆角、空状态 padding、条目最小高度和条目 padding。条目表面保持直角，主题不设置条目圆角。
+- 条目直接贴合 root 外框内边缘：`ContentPadding` 与 `ItemMargin` 均为 `Thickness(0)`，条目之间不留垂直间距，列表紧凑感由条目高度与分割线表达。
+- 条目底部分割线默认是 1 DIP `ColorSplit` 底边线，由条目 `BorderThickness` / `BorderBrush` 驱动。最后一项的底部分割线被抑制，由 root 外框下边缘承担闭合线；`IsBorderless` 时保留（外框消失后由分割线承担闭合线）。
+- 默认条目背景透明，hover 使用 `ItemHoverBg`，selected 使用 `ItemSelectedBg`；hover / selected 背景延伸到外框内边缘，溢出圆角口袋区的部分由 `Frame` 的圆角内容裁剪约束。
 - disabled 内容使用 SharedToken disabled 文本色。
 - 选中指示器默认使用 默认 `CheckOutlined`，颜色使用 SharedToken 主色，尺寸使用 SharedToken icon size。
 - 空状态默认使用 `Empty` 的 simple preset image。
@@ -188,6 +193,13 @@ ListBox 不实现 ListView 的分组、排序、分页和 collection view 管理
 - 选中指示器、过滤高亮和空状态节点应留在 AXAML 静态模板中，通过 `IsVisible` 和状态属性控制，不作为普通性能优化迁移到 C# 动态创建。
 - 虚拟化容器回收时，容器本地值必须对称清理，避免旧 item 的 disabled、filter、indicator 或 content 状态泄漏到新 item。
 - 筛选命中数量和空状态契约不得只依赖当前已实现容器。
+- 语义区域边界：`ListBox` 只发布 `root` / `item` 两个 Part；`item` 的 marker 在容器创建与 prepare 路径一次性幂等
+  建立、不随状态切换，静态模板不增删 marker，默认主题不消费 `.semantic-*` selector；selection、filter 高亮与
+  empty 不属于 Part。
+- root 外框与条目分割线必须保持同一 `ColorSplit` 基线；root `Frame` 的 `ClipContentToCornerRadius` 圆角内容裁剪保证条目状态背景不溢出圆角内边缘。
+- 条目表面保持直角与贴边：不恢复条目圆角，不重新引入 `ContentPadding` / `ItemMargin` 垂直间距。
+- 最后一项分割线抑制规则由控件状态机决定：最后一项不显示底部分割线，由 root 外框下边缘闭合；`IsBorderless` 时
+  保留；集合追加与删除后必须重新同步所有已实现容器，Semantic Style 不能绕过该规则。
 - Token 只表达组件设计语义，不承载选择、过滤、空状态或虚拟化运行时状态。
 
 ## 8. 专项模型
@@ -208,34 +220,14 @@ ListBox 的过滤模型面向简单文本列表和候选项列表。`FilterValue
 
 CandidateList 继承 ListBox，并增加候选项键盘导航、候选高亮、commit / cancel 和最大选择数量控制。ListBox 的点击、选择、过滤、空状态和虚拟化上下文规则直接影响 CandidateList，因此 ListBox 变更必须走 CandidateList 验证。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 文档导航：
 
+- [ListBox Semantic Part 契约](semantic-part.md)
 - [ListBox 桌面版实现原理](implementation.md)
 - [ListBox Token 设计](token.md)
 - [ListBox Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `ListBox` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/list-box/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/list-box/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -243,7 +235,7 @@ LLMS 导出来源：
 | --- | --- |
 | Public API | 检查 ListBox / ListBoxItem 属性、事件、默认值和 Avalonia selection 语义不变。 |
 | 状态 | 覆盖 selectable、selected indicator、filter、empty、disabled、keyboard navigation 和 CandidateList commit。 |
-| AXAML | 检查 root、item、empty、indicator、filter highlighter 在 light / dark 和三种 SizeType 下显示稳定。 |
+| AXAML | 检查 root、item、empty、indicator、filter highlighter 在 light / dark 和三种 SizeType 下显示稳定，外框 / 分割线 / 圆角内容裁剪规则一致。 |
 | Token | 检查 ListBoxTokenKind、AXAML token resource 和 token.md 语义说明保持一致。 |
 | 虚拟化 | 覆盖 container prepare / clear、上下滚动后状态不串扰。 |
 | 文档 | 运行 `git diff --check`，确认链接存在且只记录最新设计状态。 |

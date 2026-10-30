@@ -6,8 +6,8 @@
              xmlns:atom="https://atomui.net"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Descriptions"
                     Category="{gallery:DescriptionsShowCaseLangResource ComponentCategory}"
@@ -17,8 +17,57 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="TemplatedControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:DescriptionsViewModel">
+                    <gallery:SemanticPartPreview Name="DescriptionsSemanticPreview"
+                                                 SemanticOwnerType="{x:Type atom:Descriptions}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Descriptions Name="DescriptionsSemanticOwner"
+                                               MaxWidth="760"
+                                               HorizontalAlignment="Stretch"
+                                               Header="{gallery:DescriptionsShowCaseLangResource P2HeaderUserInfo}"
+                                               IsBordered="True"
+                                               SizeType="Large"
+                                               ColumnInfo="2">
+                                <atom:Descriptions.Extra>
+                                    <atom:Button ButtonType="Link"
+                                                 Content="{gallery:DescriptionsShowCaseLangResource P2ContentEdit}" />
+                                </atom:Descriptions.Extra>
+                                <atom:DescriptionItem Label="{gallery:DescriptionsShowCaseLangResource P2LabelProduct}"
+                                                      Content="{gallery:DescriptionsShowCaseLangResource P2ContentCloudDatabase}" />
+                                <atom:DescriptionItem Label="{gallery:DescriptionsShowCaseLangResource P2LabelBillingMode}"
+                                                      Content="{gallery:DescriptionsShowCaseLangResource P2ContentPrepaid}" />
+                                <atom:DescriptionItem Label="{gallery:DescriptionsShowCaseLangResource P2LabelStatus}"
+                                                      Content="{gallery:DescriptionsShowCaseLangResource P2ContentRunning}" />
+                                <atom:DescriptionItem Label="{gallery:DescriptionsShowCaseLangResource P2LabelAddress}"
+                                                      Content="{gallery:DescriptionsShowCaseLangResource P2ContentAddress}" />
+                            </atom:Descriptions>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:DescriptionsShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="header"
+                                Description="{gallery:DescriptionsShowCaseLangResource SemanticHeaderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="title"
+                                Description="{gallery:DescriptionsShowCaseLangResource SemanticTitleDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="extra"
+                                Description="{gallery:DescriptionsShowCaseLangResource SemanticExtraDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="label"
+                                Description="{gallery:DescriptionsShowCaseLangResource SemanticLabelDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:DescriptionsShowCaseLangResource SemanticContentDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -244,7 +293,69 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
+                <gallery:ShowCaseItem Title="{gallery:DescriptionsShowCaseLangResource SemanticPartStyleTitle}"
+                                      Description="{gallery:DescriptionsShowCaseLangResource SemanticPartStyleDescription}"
+                                      SourceKey="descriptions-semantic-part"
+                                      BadgeText="v6.1.3"
+                                      Span="Full"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DescriptionsViewModel">
+                            <StackPanel Spacing="16"
+                                        HorizontalAlignment="Stretch">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Descriptions.semantic-demo">
+                                        <Setter Property="Padding" Value="10" />
+                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                    </Style>
+                                    <Style Selector="atom|Descriptions.semantic-demo-default">
+                                        <Setter Property="BorderBrush" Value="#CDC1FF" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="CornerRadius" Value="8" />
+                                    </Style>
+                                    <Style Selector="atom|Descriptions.semantic-demo-small">
+                                        <atom:DescriptionsLabelStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="Black" />
+                                        </atom:DescriptionsLabelStyle>
+                                    </Style>
+                                    <Style Selector="atom|Descriptions.semantic-demo-default">
+                                        <atom:DescriptionsLabelStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#A294F9" />
+                                        </atom:DescriptionsLabelStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:Descriptions Classes="semantic-demo semantic-demo-small"
+                                                   Header="{gallery:DescriptionsShowCaseLangResource P2HeaderUserInfo}"
+                                                   IsBordered="True"
+                                                   SizeType="Small"
+                                                   ColumnInfo="3">
+                                    <atom:DescriptionItem Label="{gallery:DescriptionsShowCaseLangResource P2LabelProduct}"
+                                                          Content="{gallery:DescriptionsShowCaseLangResource P2ContentCloudDatabase}" />
+                                    <atom:DescriptionItem Label="{gallery:DescriptionsShowCaseLangResource P2LabelBillingMode}"
+                                                          Content="{gallery:DescriptionsShowCaseLangResource P2ContentPrepaid}" />
+                                    <atom:DescriptionItem Label="{gallery:DescriptionsShowCaseLangResource P2LabelAutomaticRenewal}"
+                                                          Content="{gallery:DescriptionsShowCaseLangResource P2ContentYes}" />
+                                </atom:Descriptions>
+
+                                <atom:Descriptions Classes="semantic-demo semantic-demo-default"
+                                                   Header="{gallery:DescriptionsShowCaseLangResource P2HeaderUserInfo}"
+                                                   IsBordered="True"
+                                                   SizeType="Large"
+                                                   ColumnInfo="3">
+                                    <atom:DescriptionItem Label="{gallery:DescriptionsShowCaseLangResource P2LabelProduct}"
+                                                          Content="{gallery:DescriptionsShowCaseLangResource P2ContentCloudDatabase}" />
+                                    <atom:DescriptionItem Label="{gallery:DescriptionsShowCaseLangResource P2LabelBillingMode}"
+                                                          Content="{gallery:DescriptionsShowCaseLangResource P2ContentPrepaid}" />
+                                    <atom:DescriptionItem Label="{gallery:DescriptionsShowCaseLangResource P2LabelAutomaticRenewal}"
+                                                          Content="{gallery:DescriptionsShowCaseLangResource P2ContentYes}" />
+                                </atom:Descriptions>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

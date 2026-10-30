@@ -1,14 +1,13 @@
 <Project>
     <PropertyGroup>
-        <AtomUIBuildTasksAssembly Condition="'$(AtomUIBuildTasksAssembly)' == ''">$(MSBuildThisFileDirectory)../tools/netstandard2.0/AtomUI.Build.Tasks.dll</AtomUIBuildTasksAssembly>
-        <AtomUILinkedPublishGeneratorAssembly Condition="'$(AtomUILinkedPublishGeneratorAssembly)' == ''">$(MSBuildThisFileDirectory)../tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll</AtomUILinkedPublishGeneratorAssembly>
+        <AtomUIBuildTasksAssembly Condition="'$(AtomUIBuildTasksAssembly)' == ''">$(MSBuildThisFileDirectory)../tools/net10.0/AtomUI.Build.Tasks.dll</AtomUIBuildTasksAssembly>
     </PropertyGroup>
-
-    <Import Project="$(MSBuildThisFileDirectory)AtomUI.LinkedRegistration.props"
-            Condition="'$(AtomUIGeneratorPropsImported)' != 'true'" />
-    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Localization.props"
-            Condition="'$(AtomUIGeneratorPropsImported)' != 'true'" />
-    <PropertyGroup Condition="'$(AtomUIGeneratorPropsImported)' != 'true'">
-        <AtomUIGeneratorPropsImported>true</AtomUIGeneratorPropsImported>
-    </PropertyGroup>
+    <ItemGroup Condition="'$(AtomUIRepositoryBuild)' != 'true'">
+        <AtomUIRegistrationToolCandidate Include="$(MSBuildThisFileDirectory)../tools/netstandard2.0/AtomUI.Generator.dll" Kind="Generator" />
+        <AtomUIRegistrationToolCandidate Include="$(MSBuildThisFileDirectory)../tools/net10.0/AtomUI.Build.Tasks.dll" Kind="Tasks" />
+        <AtomUIRegistrationToolCandidate Include="$(MSBuildThisFileDirectory)../tools/typemap/AtomUI.TypeMap.Linker.dll" Kind="Backend" />
+        <AtomUIRegistrationToolCandidate Include="$(MSBuildThisFileDirectory)../tools/registration/net8/illink/AtomUI.Registration.ILLink8.dll" Kind="Net8Backend" />
+    </ItemGroup>
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Localization.props" Condition="'$(AtomUIGeneratorPropsImported)' != 'true'" />
+    <PropertyGroup><AtomUIGeneratorPropsImported>true</AtomUIGeneratorPropsImported></PropertyGroup>
 </Project>

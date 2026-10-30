@@ -6,14 +6,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
 using FlyoutControl = Flyout;
 
-public class DropdownButton : Button
+public partial class DropdownButton : Button
 {
     #region 公共属性定义
 
@@ -55,6 +54,16 @@ public class DropdownButton : Button
 
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         AvaloniaProperty.Register<DropdownButton, bool>(nameof(ShouldUseOverlayPopup), true);
+
+    /// <summary>
+    /// 弹层最小宽度是否匹配 DropdownButton 宽度，默认 false；命名与其余弹层类控件
+    /// （AbstractSelect 等）的 IsPopupMatchSelectWidth 保持一致。
+    /// </summary>
+    public static readonly StyledProperty<bool> IsPopupMatchSelectWidthProperty =
+        AvaloniaProperty.Register<DropdownButton, bool>(nameof(IsPopupMatchSelectWidth));
+
+    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+        FlyoutControl.IsPopupPinnedOpenProperty.AddOwner<DropdownButton>();
 
     public MenuFlyout? DropdownFlyout
     {
@@ -134,6 +143,22 @@ public class DropdownButton : Button
         set => SetValue(ShouldUseOverlayPopupProperty, value);
     }
 
+    public bool IsPopupMatchSelectWidth
+    {
+        get => GetValue(IsPopupMatchSelectWidthProperty);
+        set => SetValue(IsPopupMatchSelectWidthProperty, value);
+    }
+
+    /// <summary>
+    /// 钉住弹层：开启后弹层忽略 light-dismiss 关闭请求，保持强制打开。
+    /// 典型场景是 Gallery 语义部件预览需要持续高亮 popup.* 部件。
+    /// </summary>
+    public bool IsPopupPinnedOpen
+    {
+        get => GetValue(IsPopupPinnedOpenProperty);
+        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
+    }
+
     #endregion
 
     #region 公共事件定义
@@ -157,21 +182,12 @@ public class DropdownButton : Button
             o => o.IsContentVisible,
             (o, v) => o.IsContentVisible = v);
 
-    internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
-        FlyoutControl.IsPopupPinnedOpenProperty.AddOwner<DropdownButton>();
-        
     private bool _isContentVisible;
 
     internal bool IsContentVisible
     {
         get => _isContentVisible;
         set => SetAndRaise(IsContentVisibleProperty, ref _isContentVisible, value);
-    }
-
-    internal bool IsPopupPinnedOpen
-    {
-        get => GetValue(IsPopupPinnedOpenProperty);
-        set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
     }
 
     #endregion
@@ -232,6 +248,7 @@ public class DropdownButton : Button
 
         _registeredDropdownFlyout = menuFlyout;
         menuFlyout.MenuItemClicked += HandleMenuItemClicked;
+        menuFlyout.Opening += HandleMenuFlyoutOpening;
 
         _flyoutBindingDisposables?.Dispose();
         _flyoutBindingDisposables = new CompositeDisposable(9);
@@ -259,6 +276,7 @@ public class DropdownButton : Button
         }
 
         menuFlyout.MenuItemClicked -= HandleMenuItemClicked;
+        menuFlyout.Opening -= HandleMenuFlyoutOpening;
         ++_pinnedOpenGeneration;
         menuFlyout.CloseForLifecycle();
         _registeredDropdownFlyout = null;
@@ -270,6 +288,19 @@ public class DropdownButton : Button
     {
         var eventArgs = new FlyoutMenuItemClickedEventArgs(MenuItemClickedEvent, args.Item);
         RaiseEvent(eventArgs);
+    }
+
+    private void HandleMenuFlyoutOpening(object? sender, EventArgs e)
+    {
+        if (!IsPopupMatchSelectWidth ||
+            sender is not MenuFlyout menuFlyout ||
+            menuFlyout.Popup?.Child is not Control popupChild ||
+            !(Bounds.Width > 0))
+        {
+            return;
+        }
+
+        popupChild.MinWidth = Bounds.Width;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

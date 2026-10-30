@@ -1,0 +1,755 @@
+{
+  "version": 1,
+  "areas": [
+    {
+      "id": "control",
+      "roots": [
+        "src/AtomUI.Controls",
+        "src/AtomUI.Desktop.Controls"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUI.Controls.Tests/**/*.cs",
+        "tests/AtomUI.Desktop.Controls.Tests/**/*.cs",
+        "tests/AtomUI.Desktop.Controls.Rendering.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "core",
+      "roots": [
+        "src/AtomUI.Core"
+      ],
+      "depth": 2,
+      "tests": [
+        "tests/AtomUI.Core.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "shared",
+      "roots": [
+        "src/AtomUI.Controls.Shared"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUI.Controls.Shared.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "datagrid",
+      "roots": [
+        "src/AtomUI.Desktop.Controls.DataGrid"
+      ],
+      "depth": 0,
+      "tests": [
+        "tests/AtomUI.Desktop.Controls.DataGrid.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "colorpicker",
+      "roots": [
+        "src/AtomUI.Desktop.Controls.ColorPicker"
+      ],
+      "depth": 0,
+      "tests": [
+        "tests/AtomUI.Desktop.Controls.Tests/ColorPicker/**/*.cs"
+      ]
+    },
+    {
+      "id": "extras",
+      "roots": [
+        "src/AtomUI.Desktop.Controls.Extras"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUI.Desktop.Controls.Tests/Theme/TypedPackageEntryTests.cs"
+      ]
+    },
+    {
+      "id": "generator",
+      "roots": [
+        "src/AtomUI.Generator"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUI.Generator.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "build-tasks",
+      "roots": [
+        "src/AtomUI.Toolchain/Tasks"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUI.Build.Tasks.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "localization",
+      "roots": [
+        "src/AtomUI.Localization"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUI.Localization.Tests/**/*.cs"
+      ],
+      "conservative": true
+    },
+    {
+      "id": "native",
+      "roots": [
+        "src/AtomUI.Native"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUI.Desktop.Controls.Tests/Window/**/*.cs",
+        "tests/AtomUI.Desktop.Controls.Tests/Dialog/**/*.cs"
+      ]
+    },
+    {
+      "id": "gallery-base",
+      "roots": [
+        "src/AtomUI.Toolkits.GalleryBase"
+      ],
+      "depth": 2,
+      "tests": [
+        "tests/AtomUI.Toolkits.GalleryBase.Tests/**/*.cs",
+        "tests/AtomUIGallery.Tests/Toolkits/**/*.cs"
+      ]
+    },
+    {
+      "id": "gallery-generator",
+      "roots": [
+        "src/AtomUI.Toolkits.GalleryBase.Generator"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUI.Toolkits.GalleryBase.Generator.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "gallery",
+      "roots": [
+        "controlgallery/AtomUIGallery",
+        "tools/validation/AtomUI.ThemeAssetsValidation"
+      ],
+      "depth": 3,
+      "tests": [
+        "tests/AtomUIGallery.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "gallery-desktop",
+      "roots": [
+        "controlgallery/AtomUIGallery.Desktop"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUIGallery.Tests/Workspace/**/*.cs"
+      ]
+    },
+    {
+      "id": "gallery-browser",
+      "roots": [
+        "controlgallery/AtomUIGallery.Browser"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUIGallery.Tests/Workspace/**/*.cs"
+      ]
+    },
+    {
+      "id": "icons-shared",
+      "roots": [
+        "src/AtomUI.Icons.Shared"
+      ],
+      "depth": 0,
+      "tests": [
+        "tests/AtomUI.Icons.Shared.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "icons",
+      "roots": [
+        "src/AtomUI.Icons.AntDesign",
+        "src/AtomUI.Icons.AntDesign.Generator"
+      ],
+      "depth": 0,
+      "tests": [
+        "tests/AtomUI.Icons.Shared.Tests/**/*.cs",
+        "tests/AtomUI.Desktop.Controls.Tests/Icon/**/*.cs",
+        "tests/AtomUIGallery.Tests/ShowCases/IconShowCasePageTests.cs"
+      ]
+    },
+    {
+      "id": "fonts",
+      "roots": [
+        "src/AtomUI.Fonts.AlibabaSans",
+        "src/AtomUI.Fonts.AlibabaPuHuiTi"
+      ],
+      "depth": 0,
+      "tests": [
+        "tests/AtomUI.Core.Tests/Theme/**/*.cs",
+        "tests/AtomUIGallery.Tests/Workspace/**/*.cs"
+      ]
+    },
+    {
+      "id": "language-template",
+      "roots": [
+        "src/AtomUI.LanguagePack.Template"
+      ],
+      "depth": 0,
+      "tests": [
+        "tests/AtomUI.Build.Tasks.Tests/LanguagePackTemplateTests.cs",
+        "tests/AtomUI.Localization.IntegrationTests/LanguageTemplateExportAcceptanceTests.cs"
+      ],
+      "conservative": true
+    },
+    {
+      "id": "language-packs",
+      "roots": [
+        "src/LanguagePacks"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUI.Localization.IntegrationTests/OfficialPtBrLanguagePackTests.cs"
+      ],
+      "conservative": true
+    },
+    {
+      "id": "typemap-linker",
+      "roots": [
+        "src/AtomUI.Toolchain/Backends/ILLink10"
+      ],
+      "depth": 0,
+      "tests": [
+        "tests/AtomUI.TypeMap.Linker.Tests/**/*.cs"
+      ],
+      "conservative": true
+    },
+    {
+      "id": "registration-managed8",
+      "roots": [
+        "src/AtomUI.Toolchain/Backends/ILLink8"
+      ],
+      "depth": 0,
+      "tests": []
+    },
+    {
+      "id": "registration-native8",
+      "roots": [
+        "src/AtomUI.Toolchain/Backends/ILC8"
+      ],
+      "depth": 0,
+      "tests": []
+    },
+    {
+      "id": "registration-shared",
+      "roots": [
+        "src/AtomUI.Toolchain/Common/Registration"
+      ],
+      "depth": 0,
+      "tests": []
+    },
+    {
+      "id": "registration-maintainer-tools",
+      "roots": [
+        "scripts/registration"
+      ],
+      "depth": 0,
+      "tests": []
+    },
+    {
+      "id": "startup-performance",
+      "roots": [
+        "tools/performances/AtomUI.StartupPerformance"
+      ],
+      "depth": 0,
+      "tests": []
+    },
+    {
+      "id": "toolchain-project",
+      "roots": [
+        "src/AtomUI.Toolchain"
+      ],
+      "depth": 1,
+      "tests": [
+        "tests/AtomUI.Build.Tasks.Tests/RegistrationSourceConsumerTests.cs",
+        "tests/AtomUI.Build.Tasks.Tests/TaskProcessHostTests.cs",
+        "tests/AtomUI.TypeMap.Linker.Tests/**/*.cs"
+      ],
+      "conservative": true
+    },
+    {
+      "id": "toolchain-localization-model",
+      "roots": [
+        "src/AtomUI.Toolchain/Common/Localization"
+      ],
+      "depth": 0,
+      "tests": [
+        "tests/AtomUI.Build.Tasks.Tests/LanguageFileValidationTests.cs",
+        "tests/AtomUI.Build.Tasks.Tests/LanguageSourceFingerprintTests.cs",
+        "tests/AtomUI.Build.Tasks.Tests/LanguagePackageTasksTests.cs",
+        "tests/AtomUI.Build.Tasks.Tests/Xliff21WriterTests.cs",
+        "tests/AtomUI.Build.Tasks.Tests/XliffMergeEngineTests.cs"
+      ],
+      "conservative": true
+    },
+    {
+      "id": "toolchain-source-generation-model",
+      "roots": [
+        "src/AtomUI.Toolchain/Common/SourceGeneration"
+      ],
+      "depth": 0,
+      "tests": [
+        "tests/AtomUI.Generator.Tests/BuildInfrastructure/BuildLayoutTests.cs",
+        "tests/AtomUI.Build.Tasks.Tests/ThemeAssetWrapperTaskTests.cs"
+      ],
+      "conservative": true
+    }
+  ],
+  "rules": [
+    {
+      "id": "theme-boundaries",
+      "changes": [
+        "src/**/*.axaml"
+      ],
+      "tests": [
+        "tests/AtomUI.Desktop.Controls.Tests/Theme/ThemeSelectorBoundaryTests.cs"
+      ]
+    },
+    {
+      "id": "popup-inventory",
+      "changes": [
+        "src/AtomUI.Desktop.Controls*/**/*.cs",
+        "src/AtomUI.Desktop.Controls*/**/*.axaml"
+      ],
+      "tests": [
+        "tests/AtomUI.Desktop.Controls.Tests/Dialog/PopupEntryInventoryTests.cs"
+      ]
+    },
+    {
+      "id": "gallery-showcase-contracts",
+      "changes": [
+        "controlgallery/AtomUIGallery/ShowCases/**"
+      ],
+      "tests": [
+        "tests/AtomUIGallery.Tests/**/GalleryShowCaseStyleBoundaryTests.cs",
+        "tests/AtomUIGallery.Tests/**/ShowCaseScenarioControllerConventionsTests.cs",
+        "tests/AtomUIGallery.Tests/**/MigratedShowCaseDeferredCreationTests.cs",
+        "tests/AtomUIGallery.Tests/**/ShowCasePanelStructureTests.cs"
+      ]
+    },
+    {
+      "id": "catalog-inventory",
+      "changes": [
+        "src/**/*.xlf",
+        "controlgallery/**/*.xlf"
+      ],
+      "tests": [
+        "tests/AtomUIGallery.Tests/Localization/GalleryCatalogCoverageTests.cs"
+      ]
+    },
+    {
+      "id": "official-language-pack-source-catalogs",
+      "changes": [
+        "src/AtomUI.Controls/**/en-US.xlf",
+        "src/AtomUI.Desktop.Controls/**/en-US.xlf",
+        "src/AtomUI.Desktop.Controls.DataGrid/**/en-US.xlf",
+        "src/AtomUI.Desktop.Controls.ColorPicker/**/en-US.xlf"
+      ],
+      "tests": [
+        "tests/AtomUI.Localization.IntegrationTests/OfficialPtBrLanguagePackTests.cs"
+      ]
+    },
+    {
+      "id": "test-xliff-inputs",
+      "changes": [
+        "tests/fixtures/LanguagePackEndToEnd/**/*.xlf"
+      ],
+      "tests": [
+        "tests/AtomUI.Localization.IntegrationTests/LanguagePackEndToEndTests.cs"
+      ]
+    },
+    {
+      "id": "language-pack-module-fixtures",
+      "changes": [
+        "tests/fixtures/LanguagePackEndToEnd/Module/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Localization.IntegrationTests/LanguagePackEndToEndTests.cs",
+        "tests/AtomUI.Localization.IntegrationTests/LanguageTemplateExportAcceptanceTests.cs"
+      ]
+    },
+    {
+      "id": "language-pack-end-to-end-fixtures",
+      "changes": [
+        "tests/fixtures/LanguagePackEndToEnd/AggregateLanguagePack/**",
+        "tests/fixtures/LanguagePackEndToEnd/Consumer/**",
+        "tests/fixtures/LanguagePackEndToEnd/LanguagePack/**",
+        "tests/fixtures/LanguagePackEndToEnd/OptionalLanguagePack/**",
+        "tests/fixtures/LanguagePackEndToEnd/OptionalModule/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Localization.IntegrationTests/LanguagePackEndToEndTests.cs"
+      ]
+    },
+    {
+      "id": "language-template-export-fixture",
+      "changes": [
+        "tests/fixtures/LanguagePackEndToEnd/TemplateExport/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Localization.IntegrationTests/LanguageTemplateExportAcceptanceTests.cs"
+      ]
+    },
+    {
+      "id": "core-test-xliff-inputs",
+      "changes": [
+        "tests/AtomUI.Core.Tests/Localization/Generated/*.xlf"
+      ],
+      "tests": [
+        "tests/AtomUI.Core.Tests/Localization/ApplicationLocalizationStartupTests.cs"
+      ]
+    },
+    {
+      "id": "gallery-base-product-boundary",
+      "changes": [
+        "src/AtomUI.Toolkits.GalleryBase/**/*.cs"
+      ],
+      "tests": [
+        "tests/AtomUIGallery.Tests/**/AtomUIGalleryModuleTests.cs"
+      ]
+    },
+    {
+      "id": "build-layout",
+      "changes": [
+        "**/*.csproj",
+        "**/*.slnx",
+        "**/*.sln",
+        "**/*.slnf",
+        "build/**",
+        "Directory.*.props",
+        "Directory.*.targets",
+        "global.json",
+        "NuGet.Config",
+        "nuget.config"
+      ],
+      "tests": [
+        "tests/AtomUI.Generator.Tests/BuildInfrastructure/**/*.cs"
+      ]
+    },
+    {
+      "id": "build-infrastructure",
+      "changes": [
+        "build/**",
+        "Directory.*.props",
+        "Directory.*.targets",
+        "global.json",
+        "NuGet.Config",
+        "nuget.config",
+        "scripts/BuildNuGetPackages.ps1",
+        "scripts/NuGetPackageProjects.ps1",
+        "scripts/PublishToLocalSources.ps1"
+      ],
+      "tests": [
+        "tests/AtomUI.Generator.Tests/**/*.cs",
+        "tests/AtomUI.Build.Tasks.Tests/**/*.cs",
+        "tests/AtomUI.Localization.IntegrationTests/**/*.cs"
+      ]
+    },
+    {
+      "id": "shared-tool-compilation",
+      "changes": [
+        "build/AtomUI.Build.Tasks.Process.cs",
+        "src/AtomUI.Generator/Diagnostics/**",
+        "src/AtomUI.Generator/GeneratedSourceText.cs",
+        "src/AtomUI.Generator/TargetMarkConstants.cs",
+        "src/AtomUI.Toolchain/Common/Localization/**",
+        "src/AtomUI.Toolchain/Common/SourceGeneration/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Build.Tasks.Tests/**/*.cs",
+        "tests/AtomUI.Generator.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "localization-integration",
+      "changes": [
+        "src/AtomUI.Generator/Localization/**",
+        "src/AtomUI.Toolchain/Common/Localization/**",
+        "build/*Localization*"
+      ],
+      "tests": [
+        "tests/AtomUI.Localization.IntegrationTests/**/*.cs"
+      ]
+    },
+    {
+      "id": "image-loading-consumers",
+      "changes": [
+        "src/AtomUI.Controls.Shared/ImageLoading/**",
+        "src/AtomUI.Controls/ImageLoading/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Controls.Shared.Tests/ImageLoading/**/*.cs",
+        "tests/AtomUI.Controls.Tests/ImageLoading/**/*.cs",
+        "tests/AtomUI.Controls.Tests/Avatar/**/*.cs",
+        "tests/AtomUI.Desktop.Controls.Tests/ImagePreviewer/**/*.cs",
+        "tests/AtomUI.Desktop.Controls.Tests/Upload/**/*.cs",
+        "tests/AtomUI.Desktop.Controls.Tests/ImageLoading/**/*.cs"
+      ]
+    },
+    {
+      "id": "popup-datagrid-consumer",
+      "changes": [
+        "src/AtomUI.Desktop.Controls/Popup/**",
+        "src/AtomUI.Desktop.Controls/Flyouts/**",
+        "src/AtomUI.Desktop.Controls/Dialog/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Desktop.Controls.DataGrid.Tests/Filtering/DataGridFilterDialogPopupTests.cs"
+      ]
+    },
+    {
+      "id": "theme-resource-lifecycle",
+      "changes": [
+        "src/AtomUI.Core/Theme/**",
+        "src/AtomUI.Core/Data/**",
+        "src/AtomUI.Generator/ResourceHost/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Core.Tests/Theme/**/*.cs",
+        "tests/AtomUI.Desktop.Controls.Tests/Theme/**/*.cs",
+        "tests/AtomUI.Desktop.Controls.Tests/**/*LifetimeTests.cs",
+        "tests/AtomUI.Desktop.Controls.DataGrid.Tests/Lifecycle/**/*.cs"
+      ]
+    },
+    {
+      "id": "gallery-release",
+      "changes": [
+        ".github/workflows/release-gallery.yml",
+        "controlgallery/AtomUIGallery.Desktop/scripts/**",
+        "controlgallery/AtomUIGallery.Desktop/Assets/**"
+      ],
+      "tests": [
+        "tests/AtomUIGallery.Tests/**/GalleryReleaseWorkflowTests.cs",
+        "tests/AtomUIGallery.Tests/**/GalleryInstallerAssetTests.cs"
+      ]
+    },
+    {
+      "id": "nuget-release",
+      "changes": [
+        ".github/workflows/release-nuget-packages.yml",
+        "scripts/verification/PackageBaseline.ps1",
+        "scripts/verification/verify-package-layout*",
+        "scripts/verification/package-layout-allowlist.json",
+        "scripts/verification/verify-build-task-isolation.ps1"
+      ],
+      "tests": [
+        "tests/AtomUI.Generator.Tests/BuildInfrastructure/**/*.cs",
+        "tests/AtomUI.Build.Tasks.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "aot-verification-scripts",
+      "changes": [
+        "scripts/verification/verify-aot-*.sh"
+      ],
+      "tests": [
+        "tests/AtomUI.Generator.Tests/Registration/**/*.cs"
+      ]
+    },
+    {
+      "id": "performance-tools",
+      "changes": [
+        "tools/performances/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Desktop.Controls.Tests/Performance/**/*.cs"
+      ]
+    },
+    {
+      "id": "typemap-linker-fixtures",
+      "changes": [
+        "tests/AtomUI.TypeMap.Linker.Tests/Fixtures/**"
+      ],
+      "tests": [
+        "tests/AtomUI.TypeMap.Linker.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "typed-registration-product-fixtures",
+      "changes": [
+        "tests/AtomUI.Registration.Fixtures/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Build.Tasks.Tests/RegistrationBuildTasksTests.cs",
+        "tests/AtomUI.Build.Tasks.Tests/TypeMapPublishGateTests.cs",
+        "tests/AtomUI.Toolkits.GalleryBase.Tests/Configuration/GalleryBaseRegistrationTests.cs",
+        "tests/AtomUI.Build.Tasks.Tests/RegistrationSourceConsumerTests.cs"
+      ]
+    },
+    {
+      "id": "retired-registration-inputs",
+      "changes": [
+        "src/AtomUI.Generator.LinkedPublish/**",
+        "tests/AtomUI.LinkedRegistration*/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Generator.Tests/Registration/**/*.cs",
+        "tests/AtomUI.Build.Tasks.Tests/Registration*Tests.cs"
+      ]
+    },
+    {
+      "id": "toolchain-consolidated-source-deletions",
+      "changes": [
+        "src/AtomUI.Build.Tasks/**",
+        "src/AtomUI.TypeMap.Linker/**"
+      ],
+      "tests": [
+        "tests/AtomUI.Build.Tasks.Tests/**/*.cs",
+        "tests/AtomUI.TypeMap.Linker.Tests/**/*.cs"
+      ]
+    }
+  ],
+  "ignore": [
+    "docs/**",
+    "AGENTS.md",
+    ".agents/**",
+    ".github/copilot-instructions.md",
+    ".github/ISSUE_TEMPLATE/**",
+    ".github/PULL_REQUEST_TEMPLATE*",
+    "README*",
+    "CHANGELOG*",
+    "LICENSE*",
+    ".gitignore",
+    ".gitattributes",
+    ".editorconfig",
+    "resources/**"
+  ],
+  "tooling": [
+    "scripts/run-full-regression.sh",
+    "scripts/verification/affected/**",
+    "scripts/verification/tests/**",
+    "scripts/verification/test.py",
+    "scripts/verification/test-policy.json",
+    ".github/workflows/verify-affected.yml"
+  ],
+  "obligations": [
+    {
+      "id": "native-aot",
+      "changes": [
+        "src/AtomUI.Generator/**",
+        "src/AtomUI.Core/Registration/**",
+        "src/AtomUI.Native/**",
+        "build/**",
+        "Directory.*",
+        "global.json",
+        "controlgallery/AtomUIGallery.Desktop/*.csproj",
+        "controlgallery/AtomUIGallery.Desktop/scripts/**",
+        "scripts/verification/verify-aot-*.sh",
+        "src/AtomUI.Core/Theme/*Registration*",
+        "src/AtomUI.Core/Theme/*Builder*",
+        "src/**/*.csproj",
+        "src/AtomUI.Toolchain/Common/SourceGeneration/**",
+        "src/AtomUI.Toolchain/Common/Localization/**",
+        "src/AtomUI.Controls/Theme*",
+        "src/AtomUI.Desktop.Controls*/Theme*",
+        "src/AtomUI.Toolchain/Backends/ILLink10/**",
+        "tests/AtomUI.TypeMap.Linker.Tests/Fixtures/**",
+        "tests/AtomUI.Registration.Fixtures/**",
+        "src/AtomUI.Toolchain/Backends/ILLink8/**",
+        "src/AtomUI.Toolchain/Backends/ILC8/**",
+        "src/AtomUI.Toolchain/Tasks/Registration/**",
+        "scripts/registration/**",
+        "src/AtomUI.Toolchain/AtomUI.Toolchain.csproj",
+        "src/AtomUI.Toolchain/Directory.Build.*",
+        "src/AtomUI.Toolchain/Common/Registration/**",
+        "src/AtomUI.Toolchain/Tasks/Native8*.cs",
+        "src/AtomUI.Toolchain/Tasks/Net8*.cs",
+        "src/AtomUI.Toolchain/Tasks/ResolveRegistrationToolsTask.cs",
+        "src/AtomUI.Toolchain/Tasks/TaskProcessHost.cs",
+        "src/AtomUI.Toolchain/Tasks/TypeMap*.cs"
+      ],
+      "description": "Validate the affected real NativeAOT/trim publish and startup paths according to docs/engineering/development/aot-programming-guidelines.md. Unit test success alone does not satisfy this obligation."
+    },
+    {
+      "id": "package-layout",
+      "changes": [
+        "build/**",
+        "scripts/BuildNuGetPackages.ps1",
+        "scripts/NuGetPackageProjects.ps1",
+        "scripts/verification/PackageBaseline.ps1",
+        "scripts/verification/verify-package-layout*",
+        "scripts/verification/package-layout-allowlist.json",
+        "scripts/verification/verify-build-task-isolation.ps1",
+        ".github/workflows/release-nuget-packages.yml",
+        "src/**/*.csproj",
+        "src/**/*.nuspec",
+        "src/AtomUI.Toolchain/Backends/ILLink10/**",
+        "tests/AtomUI.Registration.Fixtures/PackageConsumers/**",
+        "tests/AtomUI.Registration.Fixtures/run_package_consumers.py",
+        "src/AtomUI.Toolchain/Backends/ILLink8/**",
+        "src/AtomUI.Toolchain/Backends/ILC8/**",
+        "src/AtomUI.Toolchain/Tasks/Registration/**",
+        "scripts/registration/**",
+        "src/AtomUI.Toolchain/AtomUI.Toolchain.csproj",
+        "src/AtomUI.Toolchain/Directory.Build.*",
+        "src/AtomUI.Toolchain/Common/Registration/**",
+        "src/AtomUI.Toolchain/Tasks/Native8*.cs",
+        "src/AtomUI.Toolchain/Tasks/Net8*.cs",
+        "src/AtomUI.Toolchain/Tasks/ResolveRegistrationToolsTask.cs",
+        "src/AtomUI.Toolchain/Tasks/TaskProcessHost.cs",
+        "src/AtomUI.Toolchain/Tasks/TypeMap*.cs"
+      ],
+      "description": "Validate actual package assets with scripts/verification/verify-package-layout.ps1 and verify-build-task-isolation.ps1 for the affected package configuration."
+    },
+    {
+      "id": "platform-interaction",
+      "changes": [
+        "src/AtomUI.Native/**",
+        "controlgallery/AtomUIGallery.Browser/**",
+        ".github/workflows/release-gallery.yml"
+      ],
+      "description": "Run the affected platform host and validate its original interaction/startup contract; record platform and concrete evidence."
+    },
+    {
+      "id": "performance",
+      "changes": [
+        "tools/performances/**"
+      ],
+      "description": "Run the changed performance scenario with a comparable baseline; unit tests do not establish performance."
+    },
+    {
+      "id": "dependency-compatibility",
+      "changes": [
+        "build/Versions.props",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "description": "Shared dependency or SDK changes require explicit full test scope plus affected target-framework/platform validation; ordinary module tests cannot establish compatibility."
+    },
+    {
+      "id": "conditional-registration-engines",
+      "changes": [
+        "src/AtomUI.Toolchain/Backends/ILLink8/**",
+        "src/AtomUI.Toolchain/Backends/ILC8/**",
+        "src/AtomUI.Toolchain/Backends/ILLink10/ConditionalBridge/**",
+        "src/AtomUI.Toolchain/Tasks/Registration/**",
+        "build/AtomUI.Registration.Net8*",
+        "build/AtomUI.Registration.Native8*",
+        "build/AtomUI.Registration.Bridge*",
+        "scripts/registration/**",
+        "src/AtomUI.Toolchain/AtomUI.Toolchain.csproj",
+        "src/AtomUI.Toolchain/Directory.Build.*",
+        "src/AtomUI.Toolchain/Common/Registration/**",
+        "src/AtomUI.Toolchain/Tasks/Native8*.cs",
+        "src/AtomUI.Toolchain/Tasks/Net8*.cs",
+        "src/AtomUI.Toolchain/Tasks/ResolveRegistrationToolsTask.cs",
+        "src/AtomUI.Toolchain/Tasks/TaskProcessHost.cs",
+        "src/AtomUI.Toolchain/Tasks/TypeMap*.cs"
+      ],
+      "description": "Run the affected actual conditional engine and SDK/cold-package route described in docs/reference/aot/conditional-registration-contract.md and docs/engineering/workflows/affected-verification.md#conditional-registration-backends. Existing net10 materializer/build-task tests cover their own contracts only; they do not prove ILLink8 or ILC8 closure, runtime resources, malformed-ABI rejection, or final-output consumption. Record exact compiler/runtime/RID and fail-before/pass-after evidence; no mock-marking or stale receipt substitutes for the required route."
+    }
+  ]
+}

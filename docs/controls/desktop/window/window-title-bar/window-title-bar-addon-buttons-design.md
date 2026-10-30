@@ -17,7 +17,7 @@
 - **复用公共按钮基类**：普通 AddOn 按钮基于 `IconButton`，可切换 AddOn 按钮基于 `ToggleIconButton`；不复制命令、指针、禁用和 ToggleButton 基础行为。
 - **宿主状态单向投影**：窗口激活状态从 `Window` 经 `WindowTitleBar` 单向流向 AddOn 控件；标题栏 motion 状态沿 `WindowTitleBar.IsMotionEnabled` 及其主题默认值投影。控件不反向修改 Window 或标题栏状态。
 - **应用状态归应用所有**：`Command`、`CommandParameter`、`IsEnabled`、`IsChecked` 和 checked/unchecked 图标均由应用或 ViewModel 管理。
-- **平台视觉适配、native 语义隔离**：Windows AddOn 与 managed caption button 共享方形交互几何和状态反馈；Linux/macOS 保留圆角 managed visual。Windows 原生 caption glyph、element role 和 snap 语义不外溢到 AddOn。
+- **平台视觉适配、native 语义隔离**：Windows AddOn 与 managed caption button 共享方形交互几何和状态反馈；Linux/macOS AddOn 与相邻 managed caption band 共享圆形背景、背景 inset 和语义间距。Windows 原生 caption glyph、element role 和 snap 语义不外溢到 AddOn。
 - **输入边界明确**：AddOn 按钮消费自己的 pointer input，不触发标题栏空白区域拖动或主按钮双击最大化。
 - **Token 单一来源**：AddOn 按钮使用已有 `WindowTitleBarToken` 语义，不新增与 `CaptionButtonPadding`、`CaptionButtonIconSize`、active/inactive 颜色重复的 Token。
 - **模板可替换**：内置主题提供稳定的 AddOn 语义样式；应用可以替换控件主题，但必须保留 host state、命令和可交互区域语义。
@@ -66,7 +66,7 @@ AddOn 控件接收以下 host context：
 
 `LeftAddOn` 和 `RightAddOn` 仍接受任意对象、容器或模板。多个 AddOn 按钮的分组和顺序由应用内容容器所有，例如 `StackPanel` 或自定义布局；标题栏不会把 AddOn 内容转换为系统 caption item collection。
 
-按钮容器的 spacing 由应用内容所有，标题栏不重写显式容器值。Windows 中需要与相邻 managed caption buttons 构成连续按钮带时使用零 spacing；Linux/macOS 可按产品布局使用 `WindowTitleBarTokenResource CaptionGroupSpacing`。按钮自身的尺寸、padding 和背景不通过应用手写 margin 复制。
+按钮容器的 spacing 由应用内容所有，标题栏不重写显式容器值。Windows 中需要与相邻 managed caption buttons 构成连续按钮带时使用零 spacing；Linux/macOS 中标题栏在 AddOn 操作区与 `PART_CaptionButtonGroup` 之间应用 `WindowTitleBarTokenResource CaptionGroupSpacing`，让圆形 AddOn 按钮与相邻 caption button 保持同一可见间距，AddOn 容器内部间距仍由应用所有并可选同一 Token。按钮自身的尺寸、padding 和背景不通过应用手写 margin 复制。
 
 ## 4. 变体、平台与状态策略
 
@@ -75,11 +75,13 @@ AddOn 控件接收以下 host context：
 | 平台或模式 | AddOn 控件主题 | 系统 caption buttons | AddOn 约束 |
 | --- | --- | --- | --- |
 | Windows managed title bar | 使用 `CaptionButtonIconSize` 保留业务图标尺寸；默认背景透明，占满标题栏可用高度形成方形交互面，使用直角背景和 Arrow 光标，并复用 active/inactive hover 与 pressed Token。 | `WindowsCaptionButton` 保留 Windows glyph、element role、方形尺寸和 snap hover。 | AddOn 不设置 `WindowDecorationProperties.ElementRole`，不参与 native caption button 顺序；容器 spacing 仍由应用负责。 |
-| Linux managed title bar | 使用圆角背景、内容驱动方形尺寸、Hand 光标及 active/inactive、hover、pressed 和 motion。 | `CaptionButton` 使用同一 managed visual，但由 `CaptionButtonGroup` 管理固定系统操作。 | AddOn 命令完全由应用负责；不根据 Linux backend capability 隐藏。 |
-| macOS managed AddOn | 使用圆角 managed visual、内容驱动方形尺寸和 Hand 光标；不模拟 AppKit 红黄绿按钮。 | native standard buttons 或 AtomUI 提供的辅助 managed buttons。 | AddOn 不承诺独立控制 native standard buttons 的显示和能力。 |
+| Linux managed title bar | 使用圆形背景、内容驱动方形尺寸、Hand 光标及 active/inactive、hover、pressed 和 motion；圆角使用 `CaptionButtonCornerRadius`，背景 inset 使用 `CaptionButtonBackgroundInset`，并以 `CaptionGroupSpacing` 与 caption group 分隔。 | `CaptionButton` 使用同一 managed visual，但由 `CaptionButtonGroup` 管理固定系统操作。 | AddOn 命令完全由应用负责；不根据 Linux backend capability 隐藏。 |
+| macOS managed AddOn | 使用 managed visual、内容驱动方形尺寸和 Hand 光标；圆角使用 `CaptionButtonCornerRadius`，与相邻 managed caption button 的正圆一致，并以 `CaptionGroupSpacing` 与 caption group 分隔；不模拟 AppKit 红黄绿按钮。 | native standard buttons 或 AtomUI 提供的辅助 managed buttons。 | AddOn 不承诺独立控制 native standard buttons 的显示和能力。 |
 | Native decorations | AddOn 仍是标题栏内容树中的 managed content。 | 操作系统拥有 native window chrome。 | AddOn 视觉不改变 native chrome inset、CSD 或窗口状态 owner。 |
 
 Windows AddOn 只对齐 AtomUI `WindowsCaptionButton` 的 managed 几何与交互视觉，不模拟 native window operation。系统 glyph、native role、snap hover 和窗口命令仍只属于系统 caption contract。
+
+Linux/macOS 的几何一致性由 `CaptionButtonCornerRadius`、`CaptionButtonBackgroundInset` 和 `CaptionGroupSpacing` 提供：圆角 Token 与 `CaptionButton` 的实测正圆同源，背景 inset Token 与 Linux `CaptionButton` 的背景内缩同源。Windows 维持直角铺满标题栏的方形交互面，不消费这些 Token。
 
 ### 4.2 状态矩阵
 
@@ -148,15 +150,17 @@ WindowTitleBar
 
 - `IconWidth`、`IconHeight` 使用 `CaptionButtonIconSize`。
 - `Padding` 使用 `CaptionButtonPadding`。
-- `CornerRadius` 使用标题栏 managed button 的圆角策略。
+- `CornerRadius` 使用标题栏 managed button 的圆角策略；Linux/macOS host 下取 `CaptionButtonCornerRadius`。
 - `Background`、`IconBrush` 和 active/inactive、hover、pressed、disabled selectors 使用 `WindowTitleBarTokenResource`。
 - `IsMotionEnabled` 使用标题栏 motion context 或主题默认值。
 
 `WindowTitleBarToggleButtonTheme` 基于 public `ToggleIconButtonTheme`，复用相同尺寸、背景、颜色和 motion 语义；checked/unchecked presenter 仍由 `ToggleIconButton` 的标准模板负责。
 
-Windows host 下两个 AddOn theme 进一步设置 `VerticalAlignment=Stretch`、`CornerRadius=0`、透明常态背景和 Arrow 光标；`WindowsCaptionButtonLayout` 同时被系统 `WindowsCaptionButton` 与两个 AddOn 控件复用。默认 40 逻辑像素标题栏下的交互面为 40×40；标题栏高度定制后随实际可用高度调整。业务图标仍由 `CaptionButtonIconSize` 控制，不消费系统 glyph 专用的 `WindowsCaptionIconSize`。Linux/macOS 仍保持内容驱动的圆角方形测量与 Hand 光标。
+managed caption 的几何由 internal `CaptionButtonFrame` 提供。它自带 ControlTheme，模板内固定两层：内缩的圆角背景层（`Margin={TemplateBinding BackgroundInset}`、`CornerRadius`）与决定布局盒的内容层（`Padding`）。`CaptionButtonTheme` 与两个 AddOn theme 都只组合该外壳并各自提供 presenter，所以背景 inset 只收视觉、不改变 30 逻辑像素命中面，两层结构也只在 `CaptionButtonFrameTheme.axaml` 里定义一次。改动 AddOn 模板时只需保持 presenter 契约与 `IconButtonTheme` / `ToggleIconButtonTheme` 一致。
 
-两个 AddOn theme 不定义系统 `ElementRole`、native glyph、窗口状态伪类或 `CaptionButtonAction` command parameter。应用替换 AddOn theme 时必须保留可交互的 root、图标 presenter、禁用状态和 host active state 选择能力。
+Windows host 下两个 AddOn theme 进一步设置 `VerticalAlignment=Stretch`、`CornerRadius=0`、透明常态背景和 Arrow 光标；`WindowsCaptionButtonLayout` 同时被系统 `WindowsCaptionButton` 与两个 AddOn 控件复用。默认 40 逻辑像素标题栏下的交互面为 40×40；标题栏高度定制后随实际可用高度调整。业务图标仍由 `CaptionButtonIconSize` 控制，不消费系统 glyph 专用的 `WindowsCaptionIconSize`。Linux/macOS host 保持内容驱动的 30 逻辑像素方形命中面，把圆角换成 `CaptionButtonCornerRadius`，并由标题栏模板在 Trailing 容器上以 `CaptionGroupSpacing` 分隔 AddOn 操作区和 caption group；Linux 额外把 `CaptionButtonBackgroundInset` 传给共享外壳，把背景收成与相邻 caption button 相同的 26 逻辑像素圆形，因此圆角、可见尺寸和间距都来自与相邻 managed caption button 相同的语义。
+
+两个 AddOn theme 不定义系统 `ElementRole`、native glyph、窗口状态伪类或 `CaptionButtonAction` command parameter。应用替换 AddOn theme 时必须保留可交互的 root、图标 presenter、禁用状态和 host active state 选择能力，并继续复用 `CaptionButtonFrame`，否则会失去与 managed caption band 一致的几何。
 
 ### 6.3 与窗口交互集成
 
@@ -186,7 +190,7 @@ AddOn 按钮沿用 `IconButton`、`ToggleIconButton` 及其 Avalonia 基类的 p
 ```
 
 `WindowTitleBarButton` 使用 `Icon`；`WindowTitleBarToggleButton` 使用 `CheckedIcon`、`UnCheckedIcon` 和业务
-`IsChecked`。示例使用零 spacing，使 Windows 中的方形 hover 背景与相邻 caption buttons 形成连续按钮带；容器间距始终由应用所有，Linux/macOS 可根据产品需要改用 `CaptionGroupSpacing`。示例中的命令和 checked state 不会自动映射到窗口最小化、最大化、全屏、置顶或关闭操作。
+`IsChecked`。示例使用零 spacing，使 Windows 中的方形 hover 背景与相邻 caption buttons 形成连续按钮带；容器间距始终由应用所有，Linux/macOS 可根据产品需要改用 `CaptionGroupSpacing`。Linux/macOS 中操作区与 caption group 之间的 `CaptionGroupSpacing` 由标题栏提供，示例无需手写 margin。示例中的命令和 checked state 不会自动映射到窗口最小化、最大化、全屏、置顶或关闭操作。
 
 ## 7. 核心数据流与生命周期
 
@@ -237,7 +241,7 @@ WindowTitleBar.OsType
 
 - 新增 `WindowTitleBarButton` 和 `WindowTitleBarToggleButton` 是 additive public API，不改变现有 `Window`、`WindowTitleBar`、`CaptionButtonGroup` 或系统 caption button API。
 - `PART_CaptionButtonGroup`、系统 caption button 顺序、Windows `ElementRole` 和 native chrome metrics 保持稳定。
-- Windows AddOn 的 managed 交互几何与 AtomUI Windows caption buttons 对齐；Linux/macOS 原有圆角 managed visual 保持不变。该承诺不包含 Windows/macOS native 窗口按钮的系统语义。
+- Windows AddOn 的 managed 交互几何与 AtomUI Windows caption buttons 对齐；Linux/macOS AddOn 的圆角、可见背景尺寸和操作区间距与相邻 managed caption button 对齐。该承诺不包含 Windows/macOS native 窗口按钮的系统语义。
 - `WindowTitleBarButton` 的命令不会自动绑定 `Window` 操作；应用必须显式提供 `Command` 或 `Click` 处理。
 - `WindowTitleBarToggleButton` 的 checked state 不代表 `WindowState`、`Topmost` 或任何系统能力；应用必须显式绑定业务状态。
 - 应用替换 `WindowTitleBarTheme` 时，如果移除 `PART_LeftAddOn`、`PART_RightAddOn` 或等价的 host context 传播，AddOn 控件将退化为 standalone 视觉；应用负责提供等价的宿主状态投影。
@@ -257,7 +261,7 @@ WindowTitleBar.OsType
 
 - Light/Dark 主题覆盖 active、inactive、hover、pressed、disabled 和 motion disabled 状态。
 - Windows 中默认 40 高度得到 40×40 AddOn 交互面，自定义标题栏高度后仍为方形；真实 pointer hover/pressed/exit 分别切换完整背景面。
-- Linux/macOS 仍使用内容驱动的圆角方形尺寸，不被 Windows 宿主样式污染。
+- Linux 与 macOS 都使用内容驱动的 30 逻辑像素方形命中面、与相邻 managed caption button 一致的圆角，以及同一语义的 `CaptionGroupSpacing` 操作区间距；Linux 背景额外消费 `CaptionButtonBackgroundInset`，可见圆形与 caption band 同为 26 逻辑像素，不被 Windows 宿主样式污染。
 - `CaptionButtonIconSize`、`CaptionButtonPadding` 和应用所有的容器 spacing 不产生重复 margin 或错误安全空间。
 - AddOn 内容动态替换、隐藏、零尺寸和多个按钮分组后，Leading/Trailing 实测宽度和标题对齐保持正确。
 - 默认 `WindowTitleBar`、内容区 `WindowTitleBar`、ImagePreviewer 派生标题栏和全屏标题宿主不丢失既有 `PART_CaptionButtonGroup` 契约。
@@ -266,7 +270,7 @@ WindowTitleBar.OsType
 
 - AddOn 按钮点击、Toggle 切换、键盘输入和禁用状态不触发标题栏拖动或双击最大化。
 - Window active state 切换后 AddOn 按钮同步 active/inactive 视觉；标题栏 detach、宿主切换和 Window close 后不保留旧状态或引用。
-- Windows 验证 AddOn 不获得 native `ElementRole`、snap hover 或系统 caption 顺序；Linux/macOS 验证旧尺寸、圆角、光标与平台 native chrome 边界。
+- Windows 验证 AddOn 不获得 native `ElementRole`、snap hover 或系统 caption 顺序；Linux/macOS 验证 AddOn 按钮和 toggle 按钮的圆角、可见背景尺寸、背景 inset 与操作区间距等于相邻 managed caption button，AddOn 缺席时不产生幽灵间距，命中面仍为 30 逻辑像素；Linux 额外验证平台 native chrome 边界不受影响。
 - 主题重新应用不会重复建立宿主投影、事件处理器或资源订阅。
 
 ### AOT 与 Gallery

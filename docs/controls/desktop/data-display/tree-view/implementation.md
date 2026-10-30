@@ -1,6 +1,6 @@
 # TreeView 桌面版实现原理
 
-本文档描述 TreeView 桌面版的内部源码结构、状态流转、容器生命周期、默认状态回放、过滤、勾选、异步加载和拖拽实现。公共设计与 API 契约见 [TreeView 桌面版架构设计](overview.md)，Token 语义见 [TreeView Token 设计](token.md)，变化记录见 [TreeView Changelog](changelog.md)。
+本文档描述 TreeView 桌面版的内部源码结构、状态流转、容器生命周期、默认状态回放、过滤、勾选、异步加载和拖拽实现。公共设计与 API 契约见 [TreeView 桌面版架构设计](overview.md)，Semantic Part 契约见 [TreeView Semantic Part 契约](semantic-part.md)，Token 语义见 [TreeView Token 设计](token.md)，变化记录见 [TreeView Changelog](changelog.md)。
 
 Popup 接入边界：`TreeView` 负责业务状态和内容准备，`TreeViewFlyout` 仅作为 relay 适配层，tree Flyout Popup 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
 
@@ -15,6 +15,10 @@ TreeView 内部实现较多，按功能拆分 partial 文件。拆分边界服�
 主要源码：
 
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.cs`：public API、事件、容器生成、生命周期、选择、空状态、Form 集成和公共方法。
+- `src/AtomUI.Desktop.Controls/TreeView/TreeView.SemanticParts.cs`：TreeView Semantic Part descriptor 声明（`[SemanticPart]`），
+  不承载模板节点、Setter、Style 实例或运行时 VisualTree 查找逻辑。
+- `src/AtomUI.Desktop.Controls/TreeView/TreeViewItem.SemanticParts.cs`：TreeViewItem 递归 owner 的 Semantic Part descriptor
+  声明（`[SemanticPart]`），覆盖子节点容器与 switcher / indicator / icon / title 内容区域。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.StateReplay.cs`：loaded 回放、ItemsSource 变化后的选择 / 勾选 / 展开状态恢复。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.PathTraversal.cs`：`TreeNodePath` 遍历、展开路径、容器确保和展开状态恢复。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.CheckedState.cs`：checkbox 严格 / 级联状态、`CheckedItems` 同步和半选父级计算。
@@ -92,6 +96,8 @@ restore runtime checked paths if possible
 fallback to DefaultCheckedPaths
 restore expanded state or expand all
 ```
+
+回放事务以最新 `ItemsSource` 修订为准。若属性观察者在恢复选择时同步再次换源，后一次回放接管节点路径与事务；最初的快照继续用于计算最终对外差异，旧回放不发布中间事件。
 
 Form 值流：
 
@@ -181,13 +187,78 @@ NodeDropped / ItemDropped event projection
 
 `TreeView` 实例构造注册 TreeViewToken scope，并监听 root `Items.CollectionChanged`。`OnInitialized` 设置默认 filter、默认 filter value selector 和空状态。`OnAttachedToVisualTree` 挂接 interaction handler，`OnDetachedFromVisualTree` 解除 handler 并取消所有异步加载。`OnLoaded` 回放默认状态。
 
-`TreeViewItem.OnApplyTemplate` 获取 `Header` 和 `PART_ItemsPresenterMotionActor`，配置叶子状态，并按当前 `IsExpanded` 同步子项实际可见状态。
+`TreeViewItem.OnApplyTemplate` 获取 `Header` 和 `PART_ChildrenViewport`，配置叶子状态，并按当前 `IsExpanded` 同步子项实际可见状态。
 
 `TreeViewItemHeader.OnApplyTemplate` 获取 `PART_HeaderContentFrame`、`PART_IconPresenter` 和 `PART_NodeSwitcherButton`。设置新 `PART_HeaderContentFrame` 前必须解除旧 frame 的 pointer 事件订阅，避免旧模板节点继续影响 hover 状态。
 
 `NodeSwitcherButton.OnAttachedToVisualTree` 设置默认图标。`OnLoaded` 后再启用 transitions，避免初始化阶段产生非预期动画。
 
+### 5.1 Semantic Part marker 放置与路由
+
+TreeView 家族使用两个递归 Semantic owner（`TreeView` 与 `TreeViewItem`），节点结构（marker 与 descriptor 声明、
+生成常量的对应关系）：
+
+```text
+TreeView (root)                                            ← TreeView owner
+  └─ TreeViewItem (item, .semantic-item)                   ← TreeView.item 覆盖顶层容器
+       └─ [TreeViewItemTheme 模板]                          ← TreeViewItem owner 从这里开始
+            └─ StackPanel
+                 ├─ TreeViewItemHeader#Header (.semantic-scope-header)   ← internal 跳点，非 Part
+                 │    └─ [TreeViewItemHeaderTheme 模板]
+                 │         └─ PixelAlignedBorder#Frame
+                 │              └─ Grid#ItemsLayout
+                 │                   ├─ NodeSwitcherButton#PART_NodeSwitcherButton  ← .semantic-item-switcher
+                 │                   ├─ CheckBox#ToggleCheckbox / RadioButton#ToggleRadio ← .semantic-item-indicator
+                 │                   ├─ IconPresenter#PART_IconPresenter             ← .semantic-item-icon
+                 │                   └─ Border#PART_HeaderContentFrame
+                 │                        └─ Panel
+                 │                             ├─ ContentPresenter#HeaderPresenter   ← .semantic-item-title
+                 │                             └─ TextBlock#FilterHighlighter（非 Part，过滤高亮）
+                 └─ ContentViewport#PART_ChildrenViewport（非 Part）
+                          └─ ItemsPresenter
+                               └─ TreeViewItem (item, .semantic-item)    ← TreeViewItem.item 递归覆盖子容器
+```
+
+marker 放置：
+
+| marker | 放置方式 | 位置 |
+| --- | --- | --- |
+| `.semantic-item` | 运行时幂等 `Classes.Add` | `TreeView` 与 `TreeViewItem` 的 `CreateContainerForItemOverride` / `PrepareContainerForItemOverride`；`TreeView` 覆盖顶层容器，`TreeViewItem` 递归覆盖子容器 |
+| `.semantic-scope-header` | 静态 `Classes.semantic-scope-header="True"` | `TreeViewItemTheme.axaml` 的 `TreeViewItemHeader#Header`；internal 协作类型上的跳点，不发布为 Part |
+| `.semantic-item-switcher` | 静态 `Classes.semantic-item-switcher="True"` | `TreeViewItemHeaderTheme.axaml` 的 `NodeSwitcherButton#PART_NodeSwitcherButton` |
+| `.semantic-item-indicator` | 静态 `Classes.semantic-item-indicator="True"` | `TreeViewItemHeaderTheme.axaml` 的 `CheckBox#ToggleCheckbox` 与 `RadioButton#ToggleRadio` |
+| `.semantic-item-icon` | 静态 `Classes.semantic-item-icon="True"` | `TreeViewItemHeaderTheme.axaml` 的 `IconPresenter#PART_IconPresenter` |
+| `.semantic-item-title` | 静态 `Classes.semantic-item-title="True"` | `TreeViewItemHeaderTheme.axaml` 的 `ContentPresenter#HeaderPresenter` |
+
+`item` 在两个 owner 上各自声明一次，均为 `RuntimeCreated` Part：`.semantic-item` marker 在容器创建与 prepare 路径
+幂等添加，覆盖用户显式 `TreeViewItem`、`ItemsSource` 数据驱动容器与递归子节点容器三条来源。
+
+- `TreeView.item`：顶层容器是 `TreeView` 的直接逻辑子级，`>` 一步即可到达（与 `ListView` / `ListBox` 的
+  `> .semantic-item` 同一模式）。
+- `TreeViewItem.item`：子容器是当前 `TreeViewItem` 的直接逻辑子级，同样用 `>` 一步到达。递归 owner 模型保证任意
+  深度的节点都命中同一个 `.semantic-item` 身份，而不是要求 `TreeView` 用宽泛 logical descendant 穿透多个容器层级。
+
+`itemSwitcher`、`itemIndicator`、`itemIcon`、`itemTitle` 声明在 `TreeViewItem` owner 上，route 需要两次 `/template/`
+跳点：先进入 `TreeViewItem` 模板命中 `TreeViewItemHeader#Header` 节点上的 `.semantic-scope-header` 跳点，再进入
+`TreeViewItemHeader` 模板命中对应 marker。因为 owner 是 `TreeViewItem` 而不是 `TreeView`，这四个 route 对每个节点
+（无论层级）都可达。`TreeViewItemHeader`、`NodeSwitcherButton` 与 `CheckBoxIndicator` 是 internal 类型，因此
+`itemSwitcher` 与 `itemIndicator` 的 `ContractType` 使用其公开基类 `ToggleButton`（checkbox / radio 都继承自
+`ToggleButton`）；`itemIcon` / `itemTitle` 分别使用公开的 `IconPresenter` / `ContentPresenter`。`.semantic-scope-header`
+只用于路由与测试/工具定位，不单独发布为 Part。
+
+`itemIndicator` 是 checkbox / radio 两个备选节点共用的单一 Part：`ToggleType=CheckBox` 时只显示
+`CheckBox#ToggleCheckbox`，`ToggleType=Radio` 时只显示 `RadioButton#ToggleRadio`，`ToggleType=None` 时两者都隐藏。
+两个节点都携带同一个 `.semantic-item-indicator` marker，因此每个容器恒有两个 marker 实例（对应两个备选节点），但
+同一时刻最多一个可见。marker 身份不随 ToggleType、勾选状态或可见性切换增删。
+
+marker 身份不随任何运行时状态切换增删：展开/收起、勾选、禁用、拖拽、过滤、leaf/loading 形态、容器复用/回收与
+items 集合变化都不增删 marker；`IconEffectiveVisible`、`IsFilterMatch` 只切换目标节点可见性，节点与 marker 恒在。
+过滤高亮模式下 `HeaderPresenter`（`itemTitle`）隐藏、`TextBlock#FilterHighlighter` 显示，但 `itemTitle` marker 仍保留
+在 `HeaderPresenter` 上，`FilterHighlighter` 是过滤功能节点、不承载 Semantic Part marker。
+
 ## 6. 交互与事件处理
+
+拖拽状态在发起流程中同步建立，外部拖拽事件回调返回后继续处理前确认拖拽仍有效。完成、失去捕获或控件卸载时统一释放节点状态、预览和指示器；卸载取消拖拽而不提交待定 drop。预览通过自身实际视觉父容器释放，不依赖已消失的 TreeView 根；完成通知在清理后发布，回调可以关闭窗口而不会重复清理或访问旧状态。
 
 TreeView pointer 流程：
 
@@ -198,8 +269,10 @@ TreeView pointer 流程：
 展开收起：
 
 - SwitcherButton 通过 `IsChecked` 双向绑定到 `TreeViewItem.IsExpanded`。
-- `TreeViewItem.HandleExpandedChanged` 进入 `ExpandChildren` 或 `CollapseChildren`。
-- 展开收起通过 `LayoutAwareMotionActor` 承载；全量展开、路径回放和内部状态同步可临时关闭 motion。
+- `TreeViewItem.HandleExpandedChanged` 捕获当前 owner、视口和请求版本，从 `OpenMotion` / `CloseMotion` 选择定义，通过可见性入口提交目标。
+- `ContentViewport#PART_ChildrenViewport` 实现公开布局能力，内容保持自然尺寸排版。全量展开、路径回放和初始化可按该次请求关闭动效。
+- 新展开意图连续替代当前动画；switcher 不因动画而忽略点击。完成后只有当前 owner、模板和目标均一致时才能执行自动展开祖先。
+- 动效定义的 Duration 不被控件修改，实际时长通过目标的请求覆盖传入。模板替换和 detach 使旧完成失效；重新挂载按最新 `IsExpanded` 初始化。
 
 上下文菜单：
 
@@ -229,7 +302,7 @@ TreeView pointer 流程：
 
 默认状态回放按 selected、checked、filter、expanded 的顺序执行。这样选中和勾选可以在过滤和展开之前完成基础状态同步，最后由 `IsDefaultExpandAll` 或 `DefaultExpandedPaths` 决定可见展开结构。
 
-ItemsSource 变化时，TreeView 先捕获运行期状态的节点身份路径，再清空当前 selection / checked 集合，随后按新数据源尝试恢复运行期状态，最后回退默认路径。多选模式下 `SelectedItems` 是选择恢复的权威来源，即使 Avalonia 同时维护了 `SelectedItem`，也必须先恢复 `SelectedItems` 路径，避免多选状态在首次容器回放或数据源替换时折叠成单选。
+ItemsSource 变化时，TreeView 在 Avalonia 清理旧容器之前捕获选中、勾选对象及运行期节点路径。Avalonia 的源重置可能逐项发出临时变化；TreeView 在回放事务中将中间 `SelectionChanged` 标记为已处理，暂缓 `CheckedItemsChanged` 与 Form 值通知。连续换源只回放最后一次源；调用方在换源后显式设置的选择或勾选优先于旧快照。同一事务内，可观察集合的连续增删更新最终路径，内部勾选级联不记录部分状态；显式赋值为普通 `IList` 后的同步修改在回放前重新读取。完成后按对象身份比较原状态与最终状态：未变则不通知，真实变化则分别发布一次包含移除与新增节点的选择或勾选事件；选择变化对应的 Form 值变更只通知一次。多选模式以 `SelectedItems` 路径为恢复权威，避免 `SelectedItem` 非空时折叠成单选；属性处理或回放抛错、控件脱离视觉树时清理事务状态。
 
 ### 7.3 勾选级联
 
@@ -337,6 +410,12 @@ Filter highlight runs 是 header 状态，不应写入 Token 或节点数据模�
 - `TreeItemNode` 保持轻量数据节点定位，不承载 Avalonia 属性系统。
 - `BindableTreeItemNode` 的 resource host attach、属性订阅和容器同步必须与容器生命周期成对释放。
 - 绑定型节点不能永久保存当前 `TreeViewItem`、header、template part 或 visual container。
+- Semantic Part 的 marker 放置（`TreeViewItemTheme.axaml` 的 `semantic-scope-header` 静态跳点、
+  `TreeViewItemHeaderTheme.axaml` 的四个静态 Part marker、容器创建/prepare 路径的 `.semantic-item`）属于维护不变量：
+  状态切换、容器复用/回收、items 集合变化与模板重应用不得增删 marker，默认主题不得消费 `.semantic-*` selector。
+- `TreeViewItemHeader` / `NodeSwitcherButton` 不得改为 public owner 或承载独立 Semantic descriptor；`itemSwitcher` 与
+  `itemIndicator` 的 `ContractType` 保持公开基类 `ToggleButton`，不把 internal `NodeSwitcherButton` /
+  `CheckBoxIndicator` 泄漏进公共契约。
 
 ## 10. 测试与验证
 
@@ -351,4 +430,8 @@ Filter highlight runs 是 header 状态，不应写入 Token 或节点数据模�
 - 拖拽：drag preview、drop indicator、数据源 root 插入、子节点插入、同集合索引修正、跨父级 parent node 同步、不可变集合取消、自身后代保护、状态保留和事件顺序。
 - Theme：template part、hover mode、selected / disabled、line rendering、switcher icons、drag indicator 和 filter highlighter。
 - 绑定型节点：节点属性变化同步当前容器、容器交互回写节点、DynamicResource 不 root 已移除节点、owner resource 优先于 Application resource。
+- Semantic Part：覆盖两个 descriptor 的 Part 数量、顺序与字段（`TreeView` 为 `root`/`item`，`TreeViewItem` 为
+  `root`/`item`/`itemSwitcher`/`itemIndicator`/`itemIcon`/`itemTitle`，非 root Part 为 `Multiple`、`RuntimeCreated=true`
+  且携带显式 SelectorRoute）、`TreeView` 顶层 route 与 `TreeViewItem` 递归 route 命中、marker 数量与类型、容器回收后的
+  marker 身份，见 [semantic-part.md §8](semantic-part.md#8-兼容性与验证)。
 - 文档改动运行 `git diff --check`。

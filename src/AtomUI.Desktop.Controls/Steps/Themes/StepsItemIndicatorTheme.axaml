@@ -6,6 +6,7 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:StepsItemIndicator}" TargetType="atom:StepsItemIndicator">
         <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="CornerRadius" Value="{atom:StepsTokenResource IconContainerCornerRadius}" />
         <Setter Property="FontSize" Value="{atom:StepsTokenResource IconFontSize}" />
         <Setter Property="ProgressGrooveColor" Value="{atom:StepsTokenResource ProgressGrooveColor}" />
         <Setter Property="ProgressColor" Value="{atom:StepsTokenResource ProgressColor}" />

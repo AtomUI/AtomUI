@@ -80,6 +80,22 @@ public class MenuViewModel : ReactiveObject, IRoutableViewModel, IActivatableVie
         set => this.RaiseAndSetIfChanged(ref _defaultSelectedPath, value);
     }
 
+    private IList<TreeNodePath>? _semanticPreviewOpenPaths;
+
+    public IList<TreeNodePath>? SemanticPreviewOpenPaths
+    {
+        get => _semanticPreviewOpenPaths;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewOpenPaths, value);
+    }
+
+    private TreeNodePath? _semanticPreviewSelectedPath;
+
+    public TreeNodePath? SemanticPreviewSelectedPath
+    {
+        get => _semanticPreviewSelectedPath;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewSelectedPath, value);
+    }
+
     private bool _isInlineCollapsed;
 
     public bool IsInlineCollapsed

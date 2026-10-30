@@ -1,5 +1,7 @@
+using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
+using Avalonia.Interactivity;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -165,6 +167,8 @@ internal class InputControlFrame : ContentControl,
 
     #endregion
 
+    private readonly TransitionInitializationSession _transitionInitialization;
+
     static InputControlFrame()
     {
         AffectsRender<InputControlFrame>(BorderBrushProperty, BackgroundProperty);
@@ -172,6 +176,25 @@ internal class InputControlFrame : ContentControl,
 
     public InputControlFrame()
     {
+        _transitionInitialization = new TransitionInitializationSession(this);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _transitionInitialization.CompleteInitialization();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -210,6 +233,7 @@ internal class InputControlFrame : ContentControl,
         UpdateFocusWithinPseudoClass();
         PseudoClasses.Set(StdPseudoClass.Pressed, IsInnerBoxPressed);
         UpdateEffectiveStatus();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnPointerEntered(PointerEventArgs e)

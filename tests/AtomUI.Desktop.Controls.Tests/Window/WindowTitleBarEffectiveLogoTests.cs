@@ -5,7 +5,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Headless;
-using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -274,7 +273,7 @@ public class WindowTitleBarEffectiveLogoTests
     }
 
     [Fact]
-    public void Runtime_Icon_Changes_Update_Fullscreen_Logo_Visibility()
+    public void Fullscreen_Logo_Visibility_Is_Inactive_Until_Window_Enters_Fullscreen()
     {
         var window = new AtomUI.Desktop.Controls.Window
         {
@@ -283,12 +282,55 @@ public class WindowTitleBarEffectiveLogoTests
         };
 
         GetIsEffectiveFullscreenLogoVisible(window).ShouldBeFalse();
+        GetEffectiveFullscreenLogo(window).ShouldBeNull();
+        GetEffectiveFullscreenLogoTemplate(window).ShouldBeNull();
 
         window.Icon = CreateIcon();
+        GetIsEffectiveFullscreenLogoVisible(window).ShouldBeFalse();
+        GetEffectiveFullscreenLogo(window).ShouldBeNull();
+        GetEffectiveFullscreenLogoTemplate(window).ShouldBeNull();
+
+        window.WindowState = WindowState.FullScreen;
         GetIsEffectiveFullscreenLogoVisible(window).ShouldBeTrue();
+        GetEffectiveFullscreenLogo(window).ShouldBe(window.Icon);
+        GetEffectiveFullscreenLogoTemplate(window).ShouldNotBeNull();
+
+        window.WindowState = WindowState.Normal;
+        GetIsEffectiveFullscreenLogoVisible(window).ShouldBeFalse();
+        GetEffectiveFullscreenLogo(window).ShouldBeNull();
+        GetEffectiveFullscreenLogoTemplate(window).ShouldBeNull();
 
         window.Icon = null;
         GetIsEffectiveFullscreenLogoVisible(window).ShouldBeFalse();
+        GetEffectiveFullscreenLogo(window).ShouldBeNull();
+        GetEffectiveFullscreenLogoTemplate(window).ShouldBeNull();
+    }
+
+    [Fact]
+    public void Hosted_Title_Bar_Releases_Logo_Visibility_When_Host_Enters_Fullscreen()
+    {
+        var logo = new Border();
+        var titleBar = new WindowTitleBar
+        {
+            Title          = "AtomUI",
+            Logo           = logo,
+            LogoVisibility = WindowTitleBarLogoVisibility.Always
+        };
+        titleBar.SetValue(WindowTitleBar.OsTypeProperty, OsType.Windows);
+
+        GetIsEffectiveLogoVisible(titleBar).ShouldBeTrue();
+        GetEffectiveLogoPresenterContent(titleBar).ShouldBe(logo);
+        GetEffectiveLogoPresenterContentTemplate(titleBar).ShouldBeNull();
+
+        titleBar.HostWindowState = WindowState.FullScreen;
+        GetIsEffectiveLogoVisible(titleBar).ShouldBeFalse();
+        GetEffectiveLogoPresenterContent(titleBar).ShouldBeNull();
+        GetEffectiveLogoPresenterContentTemplate(titleBar).ShouldBeNull();
+
+        titleBar.HostWindowState = WindowState.Normal;
+        GetIsEffectiveLogoVisible(titleBar).ShouldBeTrue();
+        GetEffectiveLogoPresenterContent(titleBar).ShouldBe(logo);
+        GetEffectiveLogoPresenterContentTemplate(titleBar).ShouldBeNull();
     }
 
     [Fact]
@@ -432,6 +474,20 @@ public class WindowTitleBarEffectiveLogoTests
                .GetValue(window);
     }
 
+    private static object? GetEffectiveFullscreenLogo(AtomUI.Desktop.Controls.Window window)
+    {
+        return typeof(AtomUI.Desktop.Controls.Window)
+               .GetProperty("EffectiveFullscreenLogo", BindingFlags.Instance | BindingFlags.NonPublic)!
+               .GetValue(window);
+    }
+
+    private static object? GetEffectiveFullscreenLogoTemplate(AtomUI.Desktop.Controls.Window window)
+    {
+        return typeof(AtomUI.Desktop.Controls.Window)
+               .GetProperty("EffectiveFullscreenLogoTemplate", BindingFlags.Instance | BindingFlags.NonPublic)!
+               .GetValue(window);
+    }
+
     private static WindowTitleBar? GetTitleBar(AtomUI.Desktop.Controls.Window window)
     {
         return typeof(AtomUI.Desktop.Controls.Window)
@@ -444,6 +500,20 @@ public class WindowTitleBarEffectiveLogoTests
         return (bool)typeof(WindowTitleBar)
                .GetProperty("IsEffectiveLogoVisible", BindingFlags.Instance | BindingFlags.NonPublic)!
                .GetValue(titleBar)!;
+    }
+
+    private static object? GetEffectiveLogoPresenterContent(WindowTitleBar titleBar)
+    {
+        return typeof(WindowTitleBar)
+               .GetProperty("EffectiveLogoPresenterContent", BindingFlags.Instance | BindingFlags.NonPublic)!
+               .GetValue(titleBar);
+    }
+
+    private static object? GetEffectiveLogoPresenterContentTemplate(WindowTitleBar titleBar)
+    {
+        return typeof(WindowTitleBar)
+               .GetProperty("EffectiveLogoPresenterContentTemplate", BindingFlags.Instance | BindingFlags.NonPublic)!
+               .GetValue(titleBar);
     }
 
     private static bool GetIsEffectiveFullscreenLogoVisible(AtomUI.Desktop.Controls.Window window)

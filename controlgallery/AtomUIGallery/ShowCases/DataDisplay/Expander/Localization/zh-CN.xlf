@@ -283,6 +283,48 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Body element with padding, background color and text styles for the panel content area; it materializes on first expansion.</source>
+        <target state="translated">内容元素，包含内边距、背景色、文字样式等面板内容区域的展示样式；首次展开时才会物化。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with padding, background color, font size, line height and cursor style for the panel header</source>
+        <target state="translated">头部元素，包含内边距、背景色、字号、行高、光标样式等面板头部的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with icon size, placement, margin and rotation transforms for the expand/collapse arrow</source>
+        <target state="translated">图标元素，包含图标尺寸、位置、边距、旋转变换等展开收起箭头的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Expander property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域选择器和 Expander 属性选择器定制已发布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border thickness, visual mode and expansion state that control the overall appearance of the panel</source>
+        <target state="translated">根元素，包含边框厚度、视觉模式、展开状态等控制面板整体外观的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with layout, foreground color and typography styles for the header text</source>
+        <target state="translated">标题元素，包含布局、前景色、排版等标题文字的样式</target>
+      </segment>
+    </unit>
     <unit id="SizeDescription">
       <segment>
         <source>Ant Design supports a default Expander size as well as a large and small size. If a large or small Expander is desired, set the size property to either large or small respectively. Omit the size property for a Expander with the default size.</source>

@@ -34,7 +34,7 @@ Timeline 的控件专项模型通过 Theme 消费 Token：
 
 方向布局中的资源边界：
 
-- `ItemPaddingBottom` 和 `ItemPaddingBottomLG` 只应用于 Vertical，不能增加 Horizontal Item 的 block-end 空间。
+- `ItemPaddingBottom` 和 `ItemPaddingBottomLG` 只应用于 Vertical（作为 item 的下内边距，对齐上游 `li` 的 `paddingBottom`），不能增加 Horizontal Item 的 block-end 空间。
 - `IndicatorStartModeMargin`、`IndicatorEndModeMargin` 只表达 Vertical 逻辑位置；RTL 下由布局和 FlowDirection 映射物理方向。
 - `IndicatorMiddleModeMargin` 用于 Vertical 双侧布局，不承载 Alternate 奇偶状态。
 - Horizontal 内容与轴线之间的 gap 直接使用 `SharedToken.UniformlyPaddingXS`，不为同一全局间距复制 Timeline 专属 Token。

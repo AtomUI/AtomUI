@@ -15,6 +15,7 @@ public class MasonryViewModel : ReactiveObject, IRoutableViewModel
     public string? UrlPathSegment => ID.ToString();
 
     private ObservableCollection<MasonryBasicItem>? _basicItems;
+    private ObservableCollection<MasonryBasicItem>? _semanticItems;
     private ObservableCollection<MasonryBasicItem>? _responsiveItems;
     private ObservableCollection<MasonryImageItem>? _imageItems;
     private ObservableCollection<MasonryDynamicItem>? _dynamicItems;
@@ -29,6 +30,12 @@ public class MasonryViewModel : ReactiveObject, IRoutableViewModel
     {
         get => _basicItems;
         private set => this.RaiseAndSetIfChanged(ref _basicItems, value);
+    }
+
+    public ObservableCollection<MasonryBasicItem>? SemanticItems
+    {
+        get => _semanticItems;
+        private set => this.RaiseAndSetIfChanged(ref _semanticItems, value);
     }
 
     public ObservableCollection<MasonryBasicItem>? ResponsiveItems
@@ -57,6 +64,7 @@ public class MasonryViewModel : ReactiveObject, IRoutableViewModel
     {
         HostScreen = screen;
         EnsureBasicItems();
+        EnsureSemanticItems();
         EnsureResponsiveItems();
         EnsureImageItems();
         EnsureDynamicItems();
@@ -97,6 +105,25 @@ public class MasonryViewModel : ReactiveObject, IRoutableViewModel
         }
 
         BasicItems = items;
+    }
+
+    private void EnsureSemanticItems()
+    {
+        if (SemanticItems is not null)
+        {
+            return;
+        }
+
+        // Mirrors the Ant Design Masonry semantic DOM demo: 7 cards with the same
+        // shortest-column rhythm as the upstream object/function style examples.
+        var heights = new double[] { 75, 50, 70, 60, 85, 75, 50 };
+        var items = new ObservableCollection<MasonryBasicItem>();
+        for (var i = 0; i < heights.Length; i++)
+        {
+            items.Add(new MasonryBasicItem(index: i + 1, height: heights[i]));
+        }
+
+        SemanticItems = items;
     }
 
     private void EnsureResponsiveItems()

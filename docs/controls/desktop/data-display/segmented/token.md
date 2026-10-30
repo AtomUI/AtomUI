@@ -38,7 +38,8 @@ SegmentedToken 不承载以下状态：
 - `ItemActiveBg`
 - `ItemSelectedBg`
 
-这些 Token 控制 item hover、pressed 和 selected 背景。`ItemSelectedBg` 同时用于根控件 render 层的选中滑块背景。
+`ItemHoverBg`、`ItemActiveBg` 控制未选中 item 的 hover 和 pressed 背景遮罩。`ItemSelectedBg` 只用于根控件
+render 层的选中滑块背景：选中背景在任何时刻都由滑块独占承载，item 自身不绘制选中背景（含滑块飞行途中）。
 
 ### 2.4 item 尺寸 Token
 
@@ -86,7 +87,7 @@ track + selected thumb + item states + item size
 | `ItemHoverColor` | 未选中 item hover foreground 和 icon brush。 |
 | `ItemHoverBg` | 未选中 item hover 背景。 |
 | `ItemActiveBg` | 未选中 item pressed 背景。 |
-| `ItemSelectedBg` | 选中 item 背景和根选中滑块背景。 |
+| `ItemSelectedBg` | 根控件 render 层选中滑块背景；item 自身不绘制选中背景。 |
 | `ItemSelectedColor` | 选中 item foreground、icon brush，以及 pressed icon brush。 |
 | `ItemMinHeightLG` | Large item 最小高度。 |
 | `ItemMinHeight` | Middle 和 Custom item 最小高度。 |
@@ -146,7 +147,7 @@ Token 变更要求：
 | --- | --- |
 | 修改轨道 Token | 验证根轨道背景、padding、圆角裁剪和选中滑块边界。 |
 | 修改文本状态 Token | 验证默认、hover、selected、disabled 下文字和图标颜色。 |
-| 修改背景状态 Token | 验证 hover、pressed、selected item 背景和根选中滑块背景。 |
+| 修改背景状态 Token | 验证 hover、pressed item 背景遮罩和根 render 层选中滑块背景。 |
 | 修改 item 高度 Token | 验证 Large / Middle / Small / Custom 下高度、文字居中、图标居中和滑块尺寸。 |
 | 修改共享圆角映射 | 验证 `Shape=Default` 的各 SizeType 圆角，并确认 `Shape=Round` 仍最终覆盖根、item 和滑块为胶囊。 |
 | 修改内部间距 Token | 验证纯文本、纯图标、图标加文本示例的内容间距。 |

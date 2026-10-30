@@ -289,5 +289,59 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticActionsDescription">
+      <segment>
+        <source>Actions element with layout and spacing styles for action buttons</source>
+        <target state="translated">Elemento de ações com estilos de layout e espaçamento para os botões de ação</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>Close button element with basic button styling</source>
+        <target state="translated">Elemento do botão de fechar com o estilo básico de botão</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>Description element with font-size and line-height styles for additional content</source>
+        <target state="translated">Elemento de descrição com estilos de tamanho de fonte e altura de linha para conteúdo adicional</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with color, line-height, and margin styles, supporting different status icon types</source>
+        <target state="translated">Elemento de ícone com estilos de cor, altura de linha e margem, compatível com diferentes tipos de ícone de status</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Alert's published Semantic Parts.</source>
+        <target state="translated">Use estilos com escopo de owner para personalizar as Semantic Parts publicadas do Alert.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border, background, padding, border-radius, and positioning styles for the alert container</source>
+        <target state="translated">Elemento raiz com estilos de borda, fundo, preenchimento, raio da borda e posicionamento do contêiner de alerta</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Content element with flex layout controlling content area typography and minimum width</source>
+        <target state="translated">Elemento de conteúdo com layout flexível que controla a tipografia e a largura mínima da área de conteúdo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with text color and font styling for the alert title</source>
+        <target state="translated">Elemento de título com estilos de cor do texto e fonte para o título do alerta</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

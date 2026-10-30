@@ -17,7 +17,8 @@ Mobile 依赖闭包。
 ## 职责
 
 - 提供可配置的 Gallery Shell 基础，包括共享 Workspace ViewModel、内容路由状态、导航 ViewModel、主题切换和语言切换命令。
-- 提供 Demo 展示基础控件，包括 `ShowCasePanel`、`ShowCaseItem`、瀑布流布局、Sticky 场景导航和延迟创建机制。
+- 提供 Demo 展示基础控件，包括 `ShowCasePanel`、`ShowCaseItem`、瀑布流布局、Sticky 场景导航和延迟创建机制；
+  Semantic Part Preview 由 GalleryBase 承担独立 Tab、真延迟创建和临时 Adorner 检查基础设施。
 - 提供产品侧注册模型，让产品通过配置注册品牌、导航树、路由、页面工厂、链接和版本信息。
 - 提供 Desktop 与 Browser Gallery 宿主可共用的配置、导航和路由结构，减少每个产品重复维护当前 Gallery 底层。
 - 提供 GalleryBase 自身的主题 Token、ControlTheme 和 Shell 文案本地化。
@@ -38,12 +39,14 @@ Mobile 依赖闭包。
 - `GalleryNavigationBuilder`
 - `GalleryNavigationViewModel`
 - `GalleryWorkspaceViewModel`
+- `GalleryShowCaseHost`
+- `SemanticPartPreview`
 
 ## 关键目录
 
 | 目录 | 说明 |
 |---|---|
-| `Controls/` | Gallery 展示控件、瀑布流布局、Sticky Tabs、场景 lazy controller |
+| `Controls/` | Gallery 展示控件、瀑布流布局、Sticky Tabs、场景 lazy controller 和 Semantic Part Preview 基础设施 |
 | `Shell/` | Gallery 共享 Workspace ViewModel、Shell 布局、Browser 宿主、OverlayLayer 和媒体断点 |
 | `Navigation/` | 导航节点模型、导航构建器、NavMenu 适配 |
 | `Routing/` | 路由注册、ViewModel 工厂、ReactiveUI ViewLocator 适配 |
@@ -70,6 +73,7 @@ Mobile 依赖闭包。
 - [navigation-routing.md](navigation-routing.md)
 - [shell-and-platform.md](shell-and-platform.md)
 - [showcase-controls.md](showcase-controls.md)
+- [Semantic Part Gallery Preview](../../gallery/authoring/semantic-part-preview.md)
 - [source-code-display.md](source-code-display.md)
 - [theming-localization.md](theming-localization.md)
 - [Gallery ShowCase 页面设计](../../gallery/authoring/gallery-showcase-design-pattern.md)

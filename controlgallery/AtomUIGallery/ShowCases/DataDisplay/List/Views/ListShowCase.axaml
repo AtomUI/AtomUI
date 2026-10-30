@@ -7,8 +7,8 @@
              xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="List"
                     Category="{gallery:ListShowCaseLangResource ComponentCategory}"
@@ -18,7 +18,53 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="ItemsControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:ListViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview
+                            Name="ListViewSemanticPreview"
+                            SemanticOwner="{Binding #ListViewSemanticOwner}"
+                            SemanticOwnerType="{x:Type atom:ListView}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:ListView Name="ListViewSemanticOwner"
+                                               ItemsSource="{Binding SemanticListItems}"
+                                               IsGroupEnabled="True" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:ListShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:ListShowCaseLangResource SemanticItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="groupHeader"
+                                    Description="{gallery:ListShowCaseLangResource SemanticGroupHeaderDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview
+                            Name="ListBoxSemanticPreview"
+                            SemanticOwner="{Binding #ListBoxSemanticOwner}"
+                            SemanticOwnerType="{x:Type atom:ListBox}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:ListBox Name="ListBoxSemanticOwner"
+                                              ItemsSource="{Binding SemanticListBoxItems}" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:ListShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:ListShowCaseLangResource SemanticItemDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -290,7 +336,50 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:ListShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:ListShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="list-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ListViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="12">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|ListView.semantic-object">
+                                        <Setter Property="BorderBrush" Value="#91caff" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="CornerRadius" Value="8" />
+                                        <atom:ListViewItemStyle x:SetterTargetType="atom:ListViewItem">
+                                            <Setter Property="FontStyle" Value="Italic" />
+                                        </atom:ListViewItemStyle>
+                                        <atom:ListViewGroupHeaderStyle x:SetterTargetType="atom:ListViewItem">
+                                            <Setter Property="Foreground" Value="#1677ff" />
+                                            <Setter Property="Background" Value="#e6f4ff" />
+                                        </atom:ListViewGroupHeaderStyle>
+                                    </Style>
+                                    <Style Selector="atom|ListBox.semantic-listbox">
+                                        <Setter Property="BorderBrush" Value="#91caff" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="CornerRadius" Value="8" />
+                                        <atom:ListBoxItemStyle x:SetterTargetType="atom:ListBoxItem">
+                                            <Setter Property="FontStyle" Value="Italic" />
+                                        </atom:ListBoxItemStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+                                <atom:ListView Classes="semantic-object"
+                                               ItemsSource="{Binding SemanticListItems}"
+                                               IsGroupEnabled="True" />
+                                <atom:ListBox Classes="semantic-listbox"
+                                              ItemsSource="{Binding SemanticListBoxItems}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

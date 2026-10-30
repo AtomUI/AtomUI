@@ -9,6 +9,17 @@
 - Docs
   - Document ancestor visibility tracking and Compositor cleanup ownership.
 
+## 2026-08-16
+
+- Semantic Parts
+  - Add Ant Design-aligned Semantic Part descriptors for `Spin` and the public `SpinIndicator` owner.
+  - Add static template markers and generated owner-scoped style contracts without runtime discovery.
+  - Document the dual static content targets used by built-in and custom SpinIndicator implementations.
+- API
+  - Promote `AbstractSpinIndicator.DotBgBrush` to public so the built-in indicator color is customizable through the `indicator` Semantic Part.
+- Gallery
+  - Add the Semantic Parts Preview and Ant Design-aligned custom styling example using AtomUI `v6.1.3` version metadata.
+
 ## 2026-06-26
 
 - Docs

@@ -12,22 +12,32 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:SkeletonNode">
                 <Panel Name="PART_RootLayout">
-                    <Border Name="PART_ContentLayer"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}" />
-                    <Border Name="PART_ActiveAnimationLayer"
-                            Background="{TemplateBinding AnimationLayerFill}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            IsVisible="{TemplateBinding IsActive}" />
-                    <ContentPresenter Name="ContentPresenter"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"
-                                      Content="{TemplateBinding Content}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    <Panel Name="PART_ContentLayout"
+                           Width="{TemplateBinding Height}"
+                           Height="{TemplateBinding Height}"
+                           HorizontalAlignment="Left">
+                        <Border Name="PART_ContentLayer"
+                                Classes.semantic-content="True"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}" />
+                        <Border Name="PART_ActiveAnimationLayer"
+                                Classes.semantic-content="True"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                IsVisible="{TemplateBinding IsActive}" />
+                        <ContentPresenter Name="ContentPresenter"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </Panel>
                 </Panel>
             </ControlTemplate>
         </Setter>
-        
+
     </ControlTheme>
 </ResourceDictionary>

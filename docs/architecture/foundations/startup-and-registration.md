@@ -1,6 +1,10 @@
 # 启动与注册链路
 
-AtomUI 的启动链路分为平台默认配置和主题控件注册两部分。
+> 控件注册与裁剪采用已实现的 TypeMap 体系；本地验证、未完成门槛与发布状态统一见
+> [AOT 与裁剪架构](aot-and-trimming.md#1-状态与事实边界)。
+
+AtomUI 的启动链路分为平台默认配置和主题控件注册两部分。启动编排（平台就绪后执行配置、后台 Prepare、Splash、一次性提交、
+主窗体交接）由[启动系统](../systems/startup/overview.md)拥有，本文只描述配置内容与注册顺序。
 
 ## AppBuilder 默认配置
 
@@ -22,9 +26,10 @@ AtomUI Window 从首帧开始使用 CSD，不能先显示 compositor 标题栏�
 
 `WithAtomUIDefaultOptions()` 当前设置：
 
-- Windows 10：`AngleEgl/Software` 渲染回退与 `WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain`、`RedirectionSurface` 顺序的合成回退策略。
-- Windows 11+：`AngleEgl/Software` 渲染回退与 `WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain`、`RedirectionSurface` 顺序的合成回退策略。
-- macOS Avalonia Native 渲染优先级：OpenGL、Metal、Software。
+- Windows 10：`AngleEgl/Software` 渲染回退与 `RedirectionSurface`、`WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain` 顺序的合成回退策略。
+- Windows 11+：`AngleEgl/Software` 渲染回退与 `RedirectionSurface`、`WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain` 顺序的合成回退策略。
+- macOS Avalonia Native 渲染优先级：Metal、OpenGL、Software。Metal 在渲染线程直接呈现，启动提交占用 UI 线程时 Splash
+  动画仍能上屏；早先 Metal live resize 抖动已由 Avalonia 12.1.0（#21588）修复。
 - X11 平台选项：`EnableDrawnDecorations = true`。
 - 字体 fallback：`Microsoft YaHei`。
 
@@ -33,31 +38,31 @@ Windows 选项通过公开 `Win32PlatformOptions` 强类型配置，不使用运
 
 这一步只配置 Avalonia 平台选项，不注册 AtomUI 控件主题。
 
-## Application 注册 AtomUI
+## 注册 AtomUI
 
-入口位于 `src/AtomUI.Core/ApplicationExtensions.cs`：
+入口位于 `src/AtomUI.Core/AppBuilderExtensions.cs`，在 `AppBuilder` 链上声明；应用类声明为 `partial`，由生成器挂接
+（见[挂接生成器与守卫](../systems/startup/lifecycle.md#8-挂接生成器与守卫)）：
 
 ```csharp
-public override void Initialize()
-{
-    AvaloniaXamlLoader.Load(this);
-
-    this.UseAtomUI(builder =>
-    {
-        builder.UseLanguages(
-            LanguageTags.EnUS,
-            [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
-        builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
-        builder.UseAlibabaSansFont();
-        builder.UseDesktopControls();
-        builder.UseDesktopColorPicker();
-        builder.UseDesktopDataGrid();
-    });
-}
+AppBuilder.Configure<App>()
+          .UseAtomUIPlatformDetect()
+          .WithAtomUIDefaultOptions()
+          .UseAtomUI(builder =>
+          {
+              builder.UseLanguages(
+                  LanguageTags.EnUS,
+                  [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
+              builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+              builder.UseAlibabaSansFont();
+              builder.UseDesktopControls();
+              builder.UseDesktopColorPicker();
+              builder.UseDesktopDataGrid();
+          })
+          .StartWithClassicDesktopLifetime(args);
 ```
 
-`UseAtomUI()` 会创建根 `IAtomUIBuilder` 及相互独立的 `LocalizationBuilder`、`ThemeManagerBuilder`。应用生成的
-本地化 bootstrap 先注册应用 Catalog 和外部语言包 Bundle，随后执行用户注册动作；最后分别构建全部支持语言
+`UseAtomUI()` 为每个应用实例创建根 `IAtomUIBuilder` 及相互独立的 `LocalizationBuilder`、`ThemeManagerBuilder`，执行配置
+回调收集声明。提交时，应用生成的本地化 bootstrap 先注册应用 Catalog 和外部语言包 Bundle；随后分别构建全部支持语言
 Snapshot 与主题 schema、ControlTheme asset manifest、首个 ThemeSnapshot、Root ThemeContext 和唯一 ThemeManager。
 
 构建后的主题运行流见 [AtomUI 主题系统](../systems/theming/runtime.md)。简化顺序是：
@@ -67,8 +72,8 @@ Snapshot 与主题 schema、ControlTheme asset manifest、首个 ThemeSnapshot�
 2. 主题 Builder 解析 Application Id，收集生成式 Control descriptor、ControlTheme asset manifest、
    `IThemeDefinitionResolver`、算法 descriptor 和不可变初始 `ThemeRequest` 模板。
 3. `ThemeSchemaRegistry` 构建并冻结 exact CLR type/identity、完整 Global Token schema、Control Own Token schema、
-   资产 owner/引用 identity 和 Semantic Part 契约。无效 descriptor、重复 type/identity、未知 Token、资产
-   URI/identity 或 Semantic Part Theme 冲突在此失败。
+   资产导出主题、RequiredTokenOwners 和 Semantic Part 契约。跨包校验在全部包收集后执行；无效 descriptor、
+   重复 type/identity、错误 Token owner、资源 URI 或 Semantic Part Theme 冲突在此失败。
 4. `ThemeCatalog` 执行内置、应用资源及可选用户目录 Resolver，并通过统一 Reader 和 Binder 生成 typed theme
    definition。静态来源失败终止启动；用户来源失败时使用静态 Catalog 启动并保留 diagnostics。
 5. FollowSystem 在编译前解析初始系统 appearance，并选择完整的 Light/Dark request 模板。
@@ -80,10 +85,10 @@ Snapshot 与主题 schema、ControlTheme asset manifest、首个 ThemeSnapshot�
 9. 后续主题更新由 ThemeManager 的五阶段 `ThemeTransaction` 提交；语言更新由 `LanguageManager` 独立交换预构建 Snapshot。
 
 如果应用需要首帧就是暗色或紧凑主题，应在 builder 阶段通过 `ThemeConfig` 配置初始主题算法，而不是在
-`UseAtomUI()` 之后调用运行期切换 API：
+启动后调用运行期切换 API：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.WithInitialTheme(
         IThemeManager.DEFAULT_THEME_ID,
@@ -91,7 +96,7 @@ this.UseAtomUI(builder =>
             .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
             .Build());
     builder.UseDesktopControls();
-});
+})
 ```
 
 `ThemeConfigBuilder` 只用于一次性构造并在 `Build()` 时防御性复制；传入 Manager 或
@@ -104,11 +109,11 @@ this.UseAtomUI(builder =>
 应用可以显式启用用户主题目录：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.WithApplicationId("AtomUIGallery");
     builder.UseUserThemeDirectory();
-});
+})
 ```
 
 未显式设置 Application Id 时，默认使用具体 Application 类型所在程序集的简单名称；`Application.Name` 不作为
@@ -120,14 +125,24 @@ this.UseAtomUI(builder =>
 Popup/Flyout 通过逻辑树自然继承，独立 Window/Dialog/Notification TopLevel 必须从显式 owner 获得
 `ThemeContextLease` 和宿主私有 ResourceBridge；无 owner 静态 API 使用根主题。
 
+## 启动生命周期
+
+`AppBuilder` 阶段只登记回调；平台服务就绪后在 UI 线程执行配置，再在后台准备全局 Token，与 Application 创建并行。
+内核在 `RegisterServices` 中一次性提交，早于
+`Application.Initialize()`；可选的 Splash 覆盖提交与主窗体构建。状态、出错与取消、宿主差异见
+[启动生命周期](../systems/startup/lifecycle.md)，Splash 见 [Splash](../systems/startup/splash.md)。
+
+`Application.GetStartup()` 返回该应用唯一的 `IStartup`（`Preparing → Committed → Presenting → Ready`，另有
+`Failed`、`Canceled`）；`Completion` 在 `Ready` 时成功完成，失败保留原始异常，取消为已取消。
+
 ## ThemeManagerBuilder 收集内容
 
 `ThemeManagerBuilder` 在构建前收集以下内容：
 
 - `ControlTokenDescriptors`：每个对外可主题化 Control 的 exact CLR type、生成式 identity、可选 Own Token schema、
   强类型构造和资源投影；没有 Own Token 的 Control 也必须注册 descriptor。
-- `ControlThemeAssetManifests`：生成式资产 URI、owner identity、引用的 Control identities、Semantic Part Theme
-  契约和构建期校验结果。
+- `ControlThemeAssetManifests`：生成式 AssetId/URI、导出的命名或默认主题、RequiredTokenOwners、Semantic Theme
+  关联、资源优先级与构建期校验结果。internal 主题目标不被迫拥有 Token descriptor。
 - `ControlThemesProviders`：AXAML 主题 Provider。
 - `ThemeDefinitionResolvers`：内置资源、应用 `avares://` 资源和可选用户配置目录的统一主题来源解析器。
 - `ThemeAlgorithmDescriptors`：`ThemeAlgorithm.Default`、`Dark`、`Compact` 的生成式 descriptor。
@@ -138,35 +153,29 @@ Popup/Flyout 通过逻辑树自然继承，独立 Window/Dialog/Notification Top
 
 ## 控件包注册顺序
 
-当前实现中，`UseDesktopControls()` 使用全量兼容注册，顺序很关键：
+应用仍通过 `UseDesktopControls()`、`UseDesktopDataGrid()`、`UseDesktopColorPicker()` 等正常包入口启用能力。
+入口调用生成的 `GeneratedControlPackageRegistration.Definition`，不声明方法名身份或 AOT 专用分支。统一顺序是：
 
-1. 先调用 `UseCommonControls()`，分别向 Theme Builder 注册公共 Token/主题，向 Localization Builder 注册公共 Catalog 和内置 Bundle。
-2. 再注册 `AtomUI.Desktop.Controls` 的 Token。
-3. 根据是否支持 Native Window 选择 `DesktopControlThemesProvider` 或 `BrowserDesktopControlThemesProvider`。
-4. 调用生成的 `GeneratedLanguageModuleRegistration` 注册桌面控件包 Catalog 和内置 Bundle。
-5. 注册初始化回调，包括自定义动画器、桌面 Tooltip 服务、媒体断点主题引导。
+1. 拒绝直接重复和循环声明；按 `DependsOn` 幂等启用依赖。
+2. 记录包元数据、语言数据、`OnCommit` 和 `OnFirstUse`，配置期不创建 Provider 或控件。
+3. 初始提交将启用包与应用镜像相交，并保持真实 TypeMap 选择；手工 descriptor 走直接 schema 校验。
+4. 校验 Control 定义类型、Token owner、语义属性/目标、全局资源键 schema 与语言覆盖；固定稳定 slot 和单一资源层。
+5. 挂载应用服务并运行 `OnCommit`，随后冻结并释放初始 builder。Token、语义描述和资产继续按真实首次使用物化。
 
-DataGrid 和 ColorPicker 独立包通过 `UseDesktopDataGrid()`、`UseDesktopColorPicker()` 追加自己的 Token、主题 Provider 和语言资源。
+初始提交后，显式调用 `application.GetAtomUI().LoadPackages(...)` 可原子追加插件包。只追加新 slot 和资源/语言目录，
+保留已物化 cell 与全局值；失败恢复旧表并释放新贡献，成功只发布一次根资源变更。它不扫描程序集或自动发现包。
+依赖、资源工厂重试、服务生命周期和清单版本边界见[控件包启动接入](../../guides/startup/package-authoring.md)。
 
-linked publish 中，应用仍调用 `UseDesktopControls()`，但 `PublishTrimmed=true`、`PublishAot=true` 或 WebAssembly
-`RunAOTCompilation=true` 会读取纯编译期 Sidecar，在编译期计算 Registration Unit closure 并切换到静态计划。Desktop 仍完整注册 Common，并保持
-Dialog input capture、Provider、完整 Language Module 和 Theme initializer 的既有顺序。主 Desktop 包显式使用
-`Directory` 粒度，Control descriptor、Own Token schema 和控件族专属 AXAML Theme 按控件族 Unit 保留；DataGrid、
-ColorPicker、Extras、GalleryBase 和普通第三方包默认使用单一 Package Unit。无法可靠确定 Unit 时，仅把对应 Package
-扩大为 full fallback。普通非裁剪构建继续执行上述全量顺序。完整契约见
-[AOT 与裁剪架构](aot-and-trimming.md)和
-[AOT Linked Registration Pipeline](aot-linked-registration-pipeline.md)。
-
-当前可独立启用的 Package 在真实 `UseXxxControls()` 方法上使用
-`[ControlPackageRegistrationEntry]`。Generator 从方法符号生成 entry manifest，不再要求项目文件维护完整类型名和方法名。
-Common 不是独立 linked Package，不声明该 Attribute，也不进入应用 Package plan；其完整注册仍由 Desktop 入口按上述顺序触发。
+NativeAOT/CoreCLR 使用官方 TypeMap；Browser 裁剪与 AOT 使用官方 ILLink 标记结果的编译期转换后端。
+生成的资产可用性谓词保留资源自身的 OS/最低版本 guard，不能用控件可用性代替资产可用性。
+完整契约见[TypeMap 注册管线](aot-typemap-registration.md)和[控件与资源注册契约](control-registration-contracts.md)。
 
 ## 图片加载注册
 
-图片系统复用 `UseAtomUI()` 构建窗口，不引入进程静态初始化或 Control 首次加载时的延迟注册：
+图片系统复用 `UseAtomUI()` 的配置与提交，不引入进程静态初始化或 Control 首次加载时的延迟注册：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.UseImageLoading(options =>
     {
@@ -174,7 +183,7 @@ this.UseAtomUI(builder =>
         options.MaxConcurrentDecodes = 4;
     });
     builder.UseDesktopControls();
-});
+})
 ```
 
 顺序与幂等规则固定为：
@@ -183,7 +192,7 @@ this.UseAtomUI(builder =>
 2. `UseCommonControls()` 调用同一 `UseImageLoading()` 默认入口，再显式注册 Controls 拥有的 trusted
    `avares` SVG codec；默认值不得覆盖用户显式值。
 3. `UseDesktopControls()` 仍先调用 `UseCommonControls()`，不另建 Desktop loader；DataGrid、ColorPicker 和 Extras 也不重复注册。
-4. configure callback 返回后，Core 冻结图片 options 与 codec registration；Shared pipeline 静态构造每个 source kind 的 reader，
+4. 提交时 Core 冻结图片 options 与 codec registration；Shared pipeline 静态构造每个 source kind 的 reader，
    然后构建 Localization、Theme 和 owned services。
 5. `ApplicationScope` 按注册顺序 attach owned services；`ImageLoader` attach 后才由
    `Application.GetImageLoader()` 可见。
@@ -191,40 +200,29 @@ this.UseAtomUI(builder =>
    Localization 销毁。
 
 重复调用 `UseImageLoading()` 只合并同一个应用注册，不能产生多个 loader。source reader 按 kind 唯一，codec 按稳定 Id 和
-Version 去重；冲突在启动阶段失败。linked publish 的静态 registration closure 必须保留由 `UseCommonControls()` 引入的
-service factory、raster reader/codec 和 Asset SVG codec，不依赖反射或程序集扫描。
+Version 去重；冲突在启动阶段失败。`UseCommonControls()` 的 Package Core 通过真实静态调用保留
+service factory、raster reader/codec 和 Asset SVG codec；其存在由明确服务契约决定，不依赖应用使用分析或程序集扫描。
 
 Core 的 owned-service 机制是通用生命周期能力，不包含图片类型；完整设计见
 [管线、并发与生命周期](../systems/image-loading/pipeline-and-lifecycle.md)。图片公共配置、控件 API 与平台限制见
 [公共契约](../systems/image-loading/public-contracts.md)和
 [平台、性能与 AOT](../systems/image-loading/platforms-and-aot.md)。
 
-## 源生成池
+## 源生成事实
 
-当前 Control 包不手工维护完整 Token、主题资产或 Language 列表，而是依赖 `AtomUI.Generator` 生成：
+控件包通过普通 Generator 生成单项事实，而不是发布时重新分析应用：
 
-- `ControlTokenDescriptorPool.GetDescriptors()`：返回当前项目内全部对外可主题化 Control 的 descriptor，包括零
-  Own Token 的 Control。
-- `ControlThemeAssetManifest.GetDescriptors()`：返回通过构建校验的 ControlTheme asset、owner 和引用 identity descriptor。
-- `GeneratedLanguageModuleRegistration.Register()`：显式注册当前项目的 Catalog descriptor 和内置 Translation Bundle。
-- `XxxTokens.Identity`、强类型 `XxxTokenKey` 和 `XxxTokenResourceExtension`：供 AXAML 和 C# 使用。
-- linked Package Sidecar：从带 `[ControlPackageRegistrationEntry]` 的真实 `UseXxxControls()` 方法、Control/Theme 约定和
-  统一 Package 粒度策略生成 Package、Unit、ControlMap、UnitEdge 与 fragment 记录；PackageShared 只表达真正的包级共享资源。
+- Control/Token descriptor 工厂、带真实 owner 的 `XxxTokens.Identity` 和强类型资源键。
+- 单 Control 的 Semantic descriptor 工厂、专用 Semantic Style 与保留条件。
+- 独立 ThemeAsset 描述和 deferred resource factory，包含导出主题、必要 Token owner 与稳定资源顺序。
+- 逐控件片段、唯一条件 key 的 TypeMap、纯字符串候选表和 Package marker。
+- `GeneratedLanguageModuleRegistration`：沿用本地化系统的静态 Catalog/Bundle 注册。
 
-Builder 必须原样注册包含 exact CLR type 与 identity 的 descriptor 和 manifest，不能退化成只传递其中一项或
-运行时扫描 AXAML。因此新增控件
-时只需遵循 Control、无参数 `[ControlDesignToken]` 标记的可选 Own Token 类型和 `Themes/**/*.axaml` 约定；不编写
-泛型 Token Attribute、Theme Asset glob、
-手工 manifest 或逐 Theme 注册代码。生成器负责检查 descriptor、Own/Global 名称冲突、强类型资源键、owner
-identity 和注册池是否一致；Global Token 消费关系不进入注册数据。
+应用普通生成器只读取解析后的 Package marker，输出 TypeMapAssemblyTarget；不读取控件使用列表或方法体。
+全量与选中路径调用同一单项工厂，普通模式的聚合集合不得意外进入裁剪分支。
 
-linked registration 默认把整个 Control Package 的 Control descriptor、Own Token schema、内部控件和专属 Theme Asset
-factory 聚合成一个安全 Registration Unit。只有显式 `Directory` 的大型包才按控件族拆分；Language Catalog、内置
-Bundle、Package 初始化逻辑和显式共享资源不拆分。全量池只由普通兼容路径或该 Package 的 full fallback 调用。Theme
-Builder 最终仍按包接收一个完整且自洽的 `ControlPackageRegistration`，不会改成控件实例化时追加注册。
+带 owner 的 identity 在字符串相等去重前规范化：raw/typed 合并保留更强 owner，冲突 owner 立即报错，不能让 Dictionary
+丢掉后输入的类型信息。资产、配置和注册表遵守同一规则。
 
-每个 Unit fragment 是叶子，不调用其他 Unit。应用静态计划根据 Sidecar UnitEdge 在编译期完成 closure、SCC 和去重；
-运行时不读取 Sidecar、不遍历图，也不通过 `TryEnterUnit` 去重。普通 Debug/Release 不加载 linked-publish Analyzer。
-
-包作者手写并维护 `UseXxxControls()` 方法体，因为它拥有 Provider、Localization 和 initializer 的执行顺序；Generator 只从
-Attribute 读取入口身份，不生成或解析该方法体。项目文件不得维护入口类型名或方法名字符串。
+包作者维护正常的 provider 和 prepare/complete 语义，生成器负责注册实现与后端选择。正常新增控件无需维护依赖图、控件名单
+或额外 AOT 配置；内部主题、命名主题和显式资源 include 遵守[控件与资源注册契约](control-registration-contracts.md)。

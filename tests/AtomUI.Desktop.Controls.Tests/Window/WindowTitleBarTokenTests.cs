@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
@@ -153,14 +154,36 @@ public class WindowTitleBarTokenTests
     [Fact]
     public void Linux_Caption_Button_Background_Is_Inset_Without_Changing_Button_Layout_Size()
     {
+        var frameTheme = XDocument.Load(GetRepoFile(
+            "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/CaptionButtonFrameTheme.axaml"));
         var buttonTheme = XDocument.Load(GetRepoFile(
             "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/CaptionButtonTheme.axaml"));
         var groupTheme = XDocument.Load(GetRepoFile(
             "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/CaptionButtonGroupTheme.axaml"));
 
-        var frame = buttonTheme.Descendants()
+        // 共享几何外壳自己拥有两层：内缩的背景层 + 决定布局盒的内容层。
+        var frame = frameTheme.Descendants()
                                .Single(element => (string?)element.Attribute("Name") == "PART_Frame");
         var contentFrame = frame.ElementsAfterSelf().Single();
+        frame.Name.LocalName.ShouldBe("PixelAlignedBorder");
+        frame.Parent.ShouldNotBeNull();
+        frame.Parent.Name.LocalName.ShouldBe("Panel");
+        frame.Attribute("Margin")?.Value.ShouldBe("{TemplateBinding BackgroundInset}");
+        frame.Attribute("CornerRadius")?.Value.ShouldBe("{TemplateBinding CornerRadius}");
+        frame.Attribute("Padding").ShouldBeNull();
+        contentFrame.Name.LocalName.ShouldBe("Border");
+        contentFrame.Attribute("Padding")?.Value.ShouldBe("{TemplateBinding Padding}");
+
+        // caption button 只组合该外壳，不再自己声明背景层。
+        var captionFrame = buttonTheme.Descendants()
+                                      .Single(element => element.Name.LocalName == "CaptionButtonFrame");
+        captionFrame.Attribute("BackgroundInset")?.Value.ShouldBe("{TemplateBinding BackgroundInset}");
+        captionFrame.Attribute("CornerRadius")?.Value.ShouldBe("{TemplateBinding EffectiveCornerRadius}");
+        captionFrame.Descendants()
+                    .ShouldContain(element => (string?)element.Attribute("Name") == "PART_IconPresenter");
+        buttonTheme.Descendants()
+                   .ShouldNotContain(element => (string?)element.Attribute("Name") == "PART_Frame");
+
         var linuxStyle = groupTheme.Descendants()
                                    .Single(element =>
                                        element.Name.LocalName == "Style" &&
@@ -172,13 +195,9 @@ public class WindowTitleBarTokenTests
         var insetSetter = linuxStyle.Elements()
                                     .Single(element => element.Name.LocalName == "Setter");
 
-        frame.Parent.ShouldNotBeNull();
-        frame.Parent.Name.LocalName.ShouldBe("Panel");
-        frame.Attribute("Padding").ShouldBeNull();
-        contentFrame.Name.LocalName.ShouldBe("Border");
-        contentFrame.Attribute("Padding")?.Value.ShouldBe("{TemplateBinding Padding}");
         insetSetter.Attribute("Property")?.Value.ShouldBe("BackgroundInset");
-        insetSetter.Attribute("Value")?.Value.ShouldBe("2");
+        insetSetter.Attribute("Value")?.Value.ShouldBe(
+            "{atom:WindowTitleBarTokenResource CaptionButtonBackgroundInset}");
         linuxStyle.Ancestors()
                   .ShouldContain(element =>
                       element.Name.LocalName == "Style" &&
@@ -212,8 +231,16 @@ public class WindowTitleBarTokenTests
             foreach (var button in buttons)
             {
                 button.ApplyTemplate();
+                // headless harness 不保证实例化嵌套模板；只补齐尚未实例化的 CaptionButtonFrame。
+                foreach (var captionFrame in button.GetVisualDescendants()
+                                                   .OfType<CaptionButtonFrame>()
+                                                   .Where(candidate => !candidate.GetVisualChildren().Any())
+                                                   .ToList())
+                {
+                    captionFrame.ApplyTemplate();
+                }
                 var frame = button.GetVisualDescendants()
-                                  .OfType<Border>()
+                                  .OfType<PixelAlignedBorder>()
                                   .Single(border => border.Name == "PART_Frame");
 
                 button.BackgroundInset.ShouldBe(new Thickness(2));
@@ -236,7 +263,7 @@ public class WindowTitleBarTokenTests
         var buttonTheme = XDocument.Load(GetRepoFile(
             "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/CaptionButtonTheme.axaml"));
         var assetManifest = File.ReadAllText(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.ThemeAssetManifestGenerator/GeneratedControlThemeAssetManifest.g.cs"));
+            "src/AtomUI.Desktop.Controls/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedTypeMapRegistration.g.cs"));
 
         var expectedResources = new[]
         {
@@ -296,7 +323,10 @@ public class WindowTitleBarTokenTests
         buttonTheme.ToString().ShouldContain("WindowTitleBarTokenResource ActiveColor");
         buttonTheme.ToString().ShouldContain("WindowTitleBarTokenResource InactiveColor");
 
-        assetManifest.ShouldContain("WindowTitleBar/Themes/WindowsCaptionIconGeometries.axaml");
+        groupTheme.Root!.Elements().Single(element => element.Name.LocalName == "ResourceDictionary.MergedDictionaries")
+            .Elements().ShouldContain(element => element.Name.LocalName == "ResourceInclude" &&
+                (string?)element.Attribute("Source") == "avares://AtomUI.Desktop.Controls/WindowTitleBar/Themes/WindowsCaptionIconGeometries.axaml");
+        assetManifest.ShouldNotContain("WindowTitleBar/Themes/WindowsCaptionIconGeometries.axaml");
         assetManifest.ShouldContain("WindowTitleBar/Themes/CaptionButtonGroupTheme.axaml");
     }
 

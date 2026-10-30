@@ -120,10 +120,9 @@ loading/error template。Masonry 的 `AsyncImage` 在 raster/SVG 请求完成前
    UI thread measure/draw/release。
 2. Browser WASM 运行验证 HTTP+CORS SVG、Asset、Storage/Bytes、无 renderer 二次 Fetch、无 file cache 和内存默认值。
 3. Gallery Desktop NativeAOT publish/启动，验证 `AsyncImage`、Avatar、Previewer、SVG codec/validator/dependency 未被裁剪。
-4. Browser AOT publish，验证 converter、registry、AXAML property 和 codec 静态保留；当前工具链下的 AOT 启动失败发生在
-   managed `Main` 之前，不作为图片模块完成门禁，边界以
-   [AOT 编程规范的当前 Browser AOT 结论](../../../engineering/development/aot-programming-guidelines.md#当前-browser-aot-结论)
-   为准。
+4. Browser AOT 发布并实际启动，验证 converter、registry、AXAML property、codec 与控件主题静态保留，同时证明未使用类型缺失。
+   既往 runtime 初始化失败必须记录为未完成验证，不能作为永久启动豁免；小型后端原型也不能替代完整图片系统场景。
+   状态与要求以 [AOT 架构](../../foundations/aot-and-trimming.md#1-状态与事实边界)为准。
 5. 10,000 次虚拟化/瀑布流 Source 复用压力测试，峰值 active download/decode、cache bytes 和最终基线受限。
 6. `WeakReference` 验证卸载的 AsyncImage、Avatar、Previewer entry/window、已解除的 diagnostics/progress subscriber 和
    Application 可回收。
@@ -143,9 +142,9 @@ loading/error template。Masonry 的 `AsyncImage` 在 raster/SVG 请求完成前
 4. 已删除的旧 public API 在 source、AXAML、Gallery 和 tests 中为零；只允许 release breaking-change 文档和历史
    changelog 提到旧名称。
 5. 不存在控件私有 HttpClient、loader、encoded/decoded cache、preview scheduler 或 10 ms 图片加载延迟。
-6. 本目录内部相对链接、模块导航和启动/依赖文档一致；生成 LLMS 只能以当前源码和 Control 文档为输入重新生成。
+6. 本目录内部相对链接、模块导航和启动/依赖文档一致。
 7. Shared、Controls、Desktop、Gallery 图片相关测试、普通 Browser publish/运行验证、Desktop NativeAOT publish/启动和
-   Browser AOT publish 全部通过；Browser AOT 启动仅在工具链边界解除后恢复为门禁。
+   Browser AOT publish/start 全部通过；未运行或仍失败的场景不得报告完成。
 8. `git diff --check`、文档 link check 和 public API baseline 检查通过。
 9. `Svg.Controls.Avalonia`、`Svg.Model` 和 `Svg.Custom` 使用网络 SVG 设计规定的依赖基线；源码直接使用的 package 保持显式引用。
 

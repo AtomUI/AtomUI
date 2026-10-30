@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="../AtomUI.Toolchain/Common/Startup/**/*.cs" Link="Startup/Data/%(Filename)%(Extension)" />
         <ProjectReference Include="../AtomUI.Localization/AtomUI.Localization.csproj" />
         <ProjectReference Include="../AtomUI.Generator/AtomUI.Generator.csproj"
                           OutputItemType="Analyzer"
@@ -17,6 +18,7 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets/**/*.*"/>
+        <AtomUIThemeDefinition Include="Assets/Themes/DaybreakBlue.theme.xml" />
         <EmbeddedResource Include="../../docs/reference/theming/schemas/atomui-theme-v1.xsd"
                           LogicalName="AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd" />
     </ItemGroup>
@@ -31,17 +33,21 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="AtomUI.Controls"/>
+        <InternalsVisibleTo Include="AtomUI.Fonts.AlibabaSans"/>
+        <InternalsVisibleTo Include="AtomUI.Fonts.AlibabaPuHuiTi"/>
         <InternalsVisibleTo Include="AtomUI.Controls.Shared"/>
+        <InternalsVisibleTo Include="AtomUI.Controls.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.ColorPicker"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Extras"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests"/>
+        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Core.Tests"/>
-        <InternalsVisibleTo Include="AtomUI.LinkedRegistration.Fixtures.Minimal"/>
-        <InternalsVisibleTo Include="AtomUI.LinkedRegistration.Fixtures.TwoUnits"/>
-        <InternalsVisibleTo Include="AtomUI.LinkedRegistration.Fixtures.DynamicFallback"/>
-        <InternalsVisibleTo Include="AtomUI.LinkedRegistration.Fixtures.Full"/>
+        <InternalsVisibleTo Include="AtomUI.ThemeAssetsValidation"/>
+        <InternalsVisibleTo Include="AtomUI.Registration.Fixtures"/>
+        <InternalsVisibleTo Include="AtomUI.Toolkits.GalleryBase.Tests"/>
+        <InternalsVisibleTo Include="AtomUI.Localization.IntegrationTests"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -52,5 +58,6 @@
     <ItemGroup>
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="AvaloniaUI.DiagnosticsSupport"/>
     </ItemGroup>
+
 
 </Project>

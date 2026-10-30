@@ -19,9 +19,11 @@
                                    Height="{TemplateBinding SpacerWidth}"
                                    IsVisible="{TemplateBinding IsShowHeader}" />
                         <Grid Name="PART_PickerContainer"
+                              Classes.semantic-time-content="True"
                               Grid.Row="2"
                               ColumnDefinitions="*, Auto, *, Auto, *, Auto, *">
                             <Panel Name="PART_HourHost"
+                                   Classes.semantic-time-column="True"
                                    Grid.Column="0">
                                 <atom:ScrollViewer
                                     IsScrollChainingEnabled="False"
@@ -30,6 +32,7 @@
                                     <atom:DateTimePickerPanel Name="PART_HourSelector"
                                                               PanelType="Hour"
                                                               ShouldLoop="True"
+                                                              IsChangeOnScroll="{TemplateBinding IsChangeOnScroll}"
                                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
                                 </atom:ScrollViewer>
                             </Panel>
@@ -38,6 +41,7 @@
                                        HorizontalAlignment="Center"
                                        Width="{TemplateBinding SpacerWidth}" />
                             <Panel Name="PART_MinuteHost"
+                                   Classes.semantic-time-column="True"
                                    Grid.Column="2">
                                 <atom:ScrollViewer
                                     IsScrollChainingEnabled="False"
@@ -46,6 +50,7 @@
                                     <atom:DateTimePickerPanel Name="PART_MinuteSelector"
                                                               PanelType="Minute"
                                                               ShouldLoop="True"
+                                                              IsChangeOnScroll="{TemplateBinding IsChangeOnScroll}"
                                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
                                 </atom:ScrollViewer>
                             </Panel>
@@ -54,6 +59,7 @@
                                        HorizontalAlignment="Center"
                                        Width="{TemplateBinding SpacerWidth}" />
                             <Panel Name="PART_SecondHost"
+                                   Classes.semantic-time-column="True"
                                    Grid.Column="4">
                                 <atom:ScrollViewer
                                     IsScrollChainingEnabled="False"
@@ -62,6 +68,7 @@
                                     <atom:DateTimePickerPanel Name="PART_SecondSelector"
                                                               PanelType="Second"
                                                               ShouldLoop="True"
+                                                              IsChangeOnScroll="{TemplateBinding IsChangeOnScroll}"
                                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
                                 </atom:ScrollViewer>
                             </Panel>
@@ -70,14 +77,15 @@
                                        HorizontalAlignment="Center"
                                        Width="{TemplateBinding SpacerWidth}" />
                             <Panel Name="PART_PeriodHost"
+                                   Classes.semantic-time-column="True"
                                    Grid.Column="6">
                                 <atom:ScrollViewer
                                     IsScrollChainingEnabled="False"
                                     HorizontalScrollBarVisibility="Disabled"
-                                    VerticalScrollBarVisibility="Hidden">
+                                    VerticalScrollBarVisibility="Auto">
                                     <atom:DateTimePickerPanel Name="PART_PeriodSelector"
                                                               PanelType="TimePeriod"
-                                                              ShouldLoop="False"
+                                                              IsChangeOnScroll="{TemplateBinding IsChangeOnScroll}"
                                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
                                 </atom:ScrollViewer>
                             </Panel>

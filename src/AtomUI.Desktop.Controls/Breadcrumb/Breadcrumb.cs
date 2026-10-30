@@ -1,13 +1,17 @@
-﻿using AtomUI.Controls;
+using AtomUI.Controls;
+using AtomUI.Controls.Utils;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Media;
 using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Breadcrumb : ItemsControl, IMotionAwareControl
+public partial class Breadcrumb : ItemsControl, IMotionAwareControl
 {
     #region 公共属性定义
 
@@ -59,11 +63,40 @@ public class Breadcrumb : ItemsControl, IMotionAwareControl
         NavigateRequest?.Invoke(this, new BreadcrumbNavigateEventArgs(breadcrumbItem));
     }
 
+    internal void AttachSeparatorLogicalChild(Control presenter)
+    {
+        LogicalChildren.Add(presenter);
+    }
+
+    internal void DetachSeparatorLogicalChild(Control presenter)
+    {
+        LogicalChildren.Remove(presenter);
+    }
+
     #endregion
+
+    private readonly BreadcrumbSeparatorManager _separatorManager;
+    private BorderRenderHelper? _borderRenderHelper;
+
+    static Breadcrumb()
+    {
+        AffectsMeasure<Breadcrumb>(BorderThicknessProperty, PaddingProperty);
+        AffectsRender<Breadcrumb>(BackgroundProperty,
+            BorderBrushProperty,
+            BorderThicknessProperty,
+            CornerRadiusProperty);
+    }
+
+    public Breadcrumb()
+    {
+        _separatorManager = new BreadcrumbSeparatorManager(this);
+    }
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new BreadcrumbItem();
+        var breadcrumbItem = new BreadcrumbItem();
+        breadcrumbItem.Classes.Add(BreadcrumbSemanticParts.ItemClass);
+        return breadcrumbItem;
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -76,6 +109,8 @@ public class Breadcrumb : ItemsControl, IMotionAwareControl
         base.PrepareContainerForItemOverride(container, item, index);
         if (container is BreadcrumbItem breadcrumbItem)
         {
+            breadcrumbItem.Classes.Add(BreadcrumbSemanticParts.ItemClass);
+
             if (item != null && item is not Visual)
             {
                 if (item is IBreadcrumbItemData breadcrumbItemData)
@@ -138,12 +173,6 @@ public class Breadcrumb : ItemsControl, IMotionAwareControl
         UpdateItemStates();
     }
 
-    private void ConfigureItemSeparator(BreadcrumbItem breadcrumbItem)
-    {
-        breadcrumbItem.SetValue(BreadcrumbItem.SeparatorProperty, Separator, BindingPriority.Style);
-        breadcrumbItem.SetValue(BreadcrumbItem.SeparatorTemplateProperty, SeparatorTemplate, BindingPriority.Style);
-    }
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -158,6 +187,30 @@ public class Breadcrumb : ItemsControl, IMotionAwareControl
                 }
             }
         }
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _separatorManager.OnTemplateApplied();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _separatorManager.Attach();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _separatorManager.Dispose();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void ConfigureItemSeparator(BreadcrumbItem breadcrumbItem)
+    {
+        breadcrumbItem.SetValue(BreadcrumbItem.SeparatorProperty, Separator, BindingPriority.Style);
+        breadcrumbItem.SetValue(BreadcrumbItem.SeparatorTemplateProperty, SeparatorTemplate, BindingPriority.Style);
     }
 
     private void ApplyItemDataContent(BreadcrumbItem breadcrumbItem, IBreadcrumbItemData breadcrumbItemData)
@@ -213,6 +266,8 @@ public class Breadcrumb : ItemsControl, IMotionAwareControl
                 breadcrumbItem.IsLast = i == ItemCount - 1;
             }
         }
+
+        _separatorManager.QueueUpdate();
     }
 
     private static void ClearGeneratedItemValues(BreadcrumbItem breadcrumbItem)
@@ -224,5 +279,60 @@ public class Breadcrumb : ItemsControl, IMotionAwareControl
         breadcrumbItem.ClearValue(BreadcrumbItem.NavigateUriProperty);
         breadcrumbItem.ClearValue(BreadcrumbItem.SeparatorProperty);
         breadcrumbItem.ClearValue(BreadcrumbItem.SeparatorTemplateProperty);
+    }
+
+    protected override Size MeasureOverride(Size constraint)
+    {
+        var frameInset       = Padding + BorderThickness;
+        var layoutConstraint = new Size(
+            Math.Max(0, constraint.Width - frameInset.Left - frameInset.Right),
+            Math.Max(0, constraint.Height - frameInset.Top - frameInset.Bottom));
+
+        var childSize = new Size();
+        foreach (var visual in VisualChildren)
+        {
+            if (visual is not Control child)
+            {
+                continue;
+            }
+
+            child.Measure(layoutConstraint);
+            childSize = new Size(
+                Math.Max(childSize.Width, child.DesiredSize.Width),
+                Math.Max(childSize.Height, child.DesiredSize.Height));
+        }
+
+        return childSize.Inflate(frameInset);
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        var frameInset = Padding + BorderThickness;
+        var layoutSize = finalSize.Deflate(frameInset);
+
+        foreach (var visual in VisualChildren)
+        {
+            if (visual is Control child)
+            {
+                child.Arrange(new Rect(frameInset.Left, frameInset.Top, layoutSize.Width, layoutSize.Height));
+            }
+        }
+
+        return finalSize;
+    }
+
+    public sealed override void Render(DrawingContext context)
+    {
+        var borderRenderHelper = _borderRenderHelper ??= new BorderRenderHelper();
+        borderRenderHelper.Render(
+            context,
+            Bounds.Size,
+            BorderThickness,
+            CornerRadius,
+            BackgroundSizing.InnerBorderEdge,
+            Background,
+            BorderBrush,
+            null,
+            0);
     }
 }

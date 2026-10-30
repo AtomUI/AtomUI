@@ -1,7 +1,5 @@
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using AtomUI.Controls;
-using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Interactivity;
 using AtomUISteps = AtomUI.Desktop.Controls.Steps;

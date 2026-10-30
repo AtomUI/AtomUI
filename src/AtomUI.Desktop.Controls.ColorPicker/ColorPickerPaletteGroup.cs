@@ -9,7 +9,7 @@ namespace AtomUI.Desktop.Controls;
 internal class ColorPickerPaletteGroup : TemplatedControl
 {
     public static readonly StyledProperty<List<ColorPickerPalette>?> PaletteGroupProperty =
-        AvaloniaProperty.Register<AbstractColorPickerView, List<ColorPickerPalette>?>(
+        AvaloniaProperty.Register<ColorPickerPaletteGroup, List<ColorPickerPalette>?>(
             nameof(PaletteGroup));
 
     public List<ColorPickerPalette>? PaletteGroup

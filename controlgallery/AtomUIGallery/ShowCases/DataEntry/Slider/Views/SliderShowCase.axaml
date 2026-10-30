@@ -6,8 +6,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Slider"
              x:DataType="vm:SliderViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Slider"
                     Category="{gallery:SliderShowCaseLangResource ComponentCategory}"
@@ -17,7 +17,43 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="RangeBase" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:SliderViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview
+                            Name="SliderSemanticPreview"
+                            SemanticOwner="{Binding #SliderSemanticOwner}"
+                            SemanticOwnerType="{x:Type atom:Slider}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:Slider Name="SliderSemanticOwner"
+                                             Maximum="100"
+                                             Minimum="0"
+                                             IsRangeMode="True"
+                                             RangeValues="{Binding SemanticPartPreviewRangeValues, Mode=OneWay}" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:SliderShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="track"
+                                    Description="{gallery:SliderShowCaseLangResource SemanticTrackDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="tracks"
+                                    Description="{gallery:SliderShowCaseLangResource SemanticTracksDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="rail"
+                                    Description="{gallery:SliderShowCaseLangResource SemanticRailDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="handle"
+                                    Description="{gallery:SliderShowCaseLangResource SemanticHandleDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -273,7 +309,68 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:SliderShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:SliderShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="slider-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:SliderViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Left"
+                                        Spacing="16">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Slider.semantic-style-demo-h">
+                                        <Setter Property="Width" Value="300" />
+                                        <atom:SliderTrackStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background">
+                                                <Setter.Value>
+                                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                                        <GradientStop Color="#91CAFF" Offset="0" />
+                                                        <GradientStop Color="#1677FF" Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </atom:SliderTrackStyle>
+                                        <atom:SliderHandleStyle x:SetterTargetType="atom:SliderThumb">
+                                            <Setter Property="BorderBrush" Value="#1677FF" />
+                                            <Setter Property="OutlineBrush" Value="#401677FF" />
+                                            <Setter Property="OutlineThickness" Value="3" />
+                                        </atom:SliderHandleStyle>
+                                    </Style>
+                                    <Style Selector="atom|Slider.semantic-style-demo-v">
+                                        <Setter Property="Width" Value="100" />
+                                        <Setter Property="Height" Value="300" />
+                                        <atom:SliderTrackStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background">
+                                                <Setter.Value>
+                                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                                        <GradientStop Color="#722CC0" Offset="0" />
+                                                        <GradientStop Color="#722ED1" Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </atom:SliderTrackStyle>
+                                        <atom:SliderHandleStyle x:SetterTargetType="atom:SliderThumb">
+                                            <Setter Property="BorderBrush" Value="#722ED1" />
+                                            <Setter Property="OutlineBrush" Value="#722ED1" />
+                                            <Setter Property="OutlineThickness" Value="2" />
+                                        </atom:SliderHandleStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:Slider Classes="semantic-style-demo-h" Value="30" />
+                                <atom:Slider Classes="semantic-style-demo-v"
+                                             Orientation="Vertical"
+                                             IsDirectionReversed="True"
+                                             Value="30" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

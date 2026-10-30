@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -22,6 +20,8 @@ public enum SplitterShowCaseLangResourceKind
     ShowCollapsibleIconDescription,
     MultiPanelsTitle,
     MultiPanelsDescription,
+    DoubleClickResetTitle,
+    DoubleClickResetDescription,
     LazyTitle,
     LazyDescription,
     LineStyleTitle,
@@ -33,6 +33,9 @@ public enum SplitterShowCaseLangResourceKind
     P2TextLeft,
     P2TextResizable,
     P2TextNotResizable,
+    P2TextPanel1,
+    P2TextPanel2,
+    P2TextPanel3,
     P2TextShowcollapsibleicon,
     P2ContentHover,
     P2ContentTrue,
@@ -41,5 +44,10 @@ public enum SplitterShowCaseLangResourceKind
     P2TextA,
     P2TextB,
     P2TextC,
-    P2TextD
+    P2TextD,
+    SemanticRootDescription,
+    SemanticPanelDescription,
+    SemanticDraggerDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription
 }

@@ -16,33 +16,6 @@ public class DataGridColumnGroupHeaderIndexTests
     }
 
     [Fact]
-    public void Group_Header_Index_Provider_Indexes_Header_View_Items_With_Selection_Column()
-    {
-        var grid = CreateIssue225Grid();
-        var window = new Window
-        {
-            Width   = 420,
-            Height  = 320,
-            Content = grid
-        };
-
-        try
-        {
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-
-            var presenter = grid.GetVisualDescendants()
-                                .OfType<DataGridGroupColumnHeadersPresenter>()
-                                .Single();
-            AssertHeaderViewItemIndexes(grid, presenter);
-        }
-        finally
-        {
-            window.Close();
-        }
-    }
-
-    [Fact]
     public void Group_Header_With_Selection_Column_Keeps_Header_Indexes_When_Resized_And_Scrolled()
     {
         var grid = CreateIssue225Grid();

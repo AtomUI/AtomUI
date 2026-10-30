@@ -7,6 +7,51 @@
         <ControlTheme.BasedOn>
             <atom:AbstractStatisticTheme TargetType="atom:Statistic"/>
         </ControlTheme.BasedOn>
+
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:Statistic">
+                <atom:DashedBorder Name="Frame"
+                                   Background="{TemplateBinding Background}"
+                                   BorderBrush="{TemplateBinding BorderBrush}"
+                                   BorderThickness="{TemplateBinding BorderThickness}"
+                                   CornerRadius="{TemplateBinding CornerRadius}"
+                                   Padding="{TemplateBinding Padding}"
+                                   StrokeDashArray="{TemplateBinding StrokeDashArray}">
+                    <StackPanel Name="RootLayout">
+                        <Border Name="HeaderLayout"
+                                Classes.semantic-header="True"
+                                IsVisible="{TemplateBinding Header, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <ContentPresenter Name="HeaderPresenter"
+                                              Classes.semantic-title="True"
+                                              Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                        </Border>
+                        <atom:Skeleton IsLoading="{TemplateBinding IsLoading}"
+                                       IsActive="True"
+                                       IsShowParagraph="False">
+                            <StackPanel Orientation="Horizontal"
+                                        Name="ContentLayout"
+                                        Classes.semantic-content="True">
+                                <ContentPresenter Name="ValuePrefixAddOn"
+                                                  Classes.semantic-prefix="True"
+                                                  Content="{TemplateBinding ValuePrefixAddOn}"
+                                                  ContentTemplate="{TemplateBinding ValuePrefixAddOnTemplate}"
+                                                  IsVisible="{TemplateBinding ValuePrefixAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                <ContentPresenter Name="ContentPresenter"
+                                                  Classes.semantic-value="True"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                <ContentPresenter Name="ValueSuffixAddOn"
+                                                  Classes.semantic-suffix="True"
+                                                  Content="{TemplateBinding ValueSuffixAddOn}"
+                                                  ContentTemplate="{TemplateBinding ValueSuffixAddOnTemplate}"
+                                                  IsVisible="{TemplateBinding ValueSuffixAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            </StackPanel>
+                        </atom:Skeleton>
+                    </StackPanel>
+                </atom:DashedBorder>
+            </ControlTemplate>
+        </Setter>
         
         <Style Selector="^ /template/ StackPanel#RootLayout">
             <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}"/>

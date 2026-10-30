@@ -56,6 +56,11 @@
         <source>Other types of message</source>
       </segment>
     </unit>
+    <unit id="P2ContentDestroyAll">
+      <segment>
+        <source>Destroy all</source>
+      </segment>
+    </unit>
     <unit id="P2ContentDisplayALoadingIndicator">
       <segment>
         <source>Display a loading indicator</source>
@@ -71,9 +76,24 @@
         <source>Error</source>
       </segment>
     </unit>
+    <unit id="P2ContentFunctionStyle">
+      <segment>
+        <source>Function style</source>
+      </segment>
+    </unit>
     <unit id="P2ContentInfo">
       <segment>
         <source>Info</source>
+      </segment>
+    </unit>
+    <unit id="P2ContentObjectStyle">
+      <segment>
+        <source>Object style</source>
+      </segment>
+    </unit>
+    <unit id="P2ContentOpenMessageBox">
+      <segment>
+        <source>Open the message box</source>
       </segment>
     </unit>
     <unit id="P2ContentSuccess">
@@ -96,6 +116,11 @@
         <source>This is an error message.</source>
       </segment>
     </unit>
+    <unit id="P2MessageFunctionStyles">
+      <segment>
+        <source>This is a message with function styles</source>
+      </segment>
+    </unit>
     <unit id="P2MessageHelloAtomUIAvalonia">
       <segment>
         <source>Hello, AtomUI/Avalonia!</source>
@@ -109,6 +134,21 @@
     <unit id="P2MessageLoadingFinished">
       <segment>
         <source>Loading finished</source>
+      </segment>
+    </unit>
+    <unit id="P2MessageLongStackedFormat">
+      <segment>
+        <source>Message {0}: This is a slightly longer stacked message.</source>
+      </segment>
+    </unit>
+    <unit id="P2MessageObjectStyles">
+      <segment>
+        <source>This is a message with object styles</source>
+      </segment>
+    </unit>
+    <unit id="P2MessageStackedFormat">
+      <segment>
+        <source>Message {0}: This is a stacked message.</source>
       </segment>
     </unit>
     <unit id="P2MessageSuccess">
@@ -134,6 +174,66 @@
     <unit id="ScenarioExamples">
       <segment>
         <source>Examples</source>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>The status icon of the message card. Customize its size, brush and line height.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticListContentDescription">
+      <segment>
+        <source>The notice arrangement container of the message list. Customize its direction, order and alignment.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticListRootDescription">
+      <segment>
+        <source>The message list root. It hosts the cards, queue, timeout and host layer lifecycle.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the upstream style-class demo: object styles and type-branched function styles shape the card root, icon and title through owner-scoped Semantic Part styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The message card root. It hosts the content, type, close state and enter/leave motion.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>The message text element. Customize its color, font size, line height and wrapping.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticWrapperDescription">
+      <segment>
+        <source>The wrapping element for the icon and title. Customize the layout, alignment and gap.</source>
+      </segment>
+    </unit>
+    <unit id="StackDescription">
+      <segment>
+        <source>Stack configuration, disabled by default. Messages will be stacked when the amount is over threshold. Only the latest message is shown in the collapsed stack.</source>
+      </segment>
+    </unit>
+    <unit id="StackEnabledLabel">
+      <segment>
+        <source>Enabled:</source>
+      </segment>
+    </unit>
+    <unit id="StackThresholdLabel">
+      <segment>
+        <source>Threshold:</source>
+      </segment>
+    </unit>
+    <unit id="StackTitle">
+      <segment>
+        <source>Stack</source>
       </segment>
     </unit>
   </file>

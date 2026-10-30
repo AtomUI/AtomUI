@@ -58,8 +58,9 @@
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
                 <Transitions>
-                    <PointTransition Property="SelectedThumbPos" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <SizeTransition Property="SelectedThumbSize" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+                    <!-- 对齐 antd 滑块动效：位移与尺寸同时插值，motionDurationSlow(300ms)，motionEaseInOut cubic-bezier(0.645, 0.045, 0.355, 1) -->
+                    <PointTransition Property="SelectedThumbPos" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" Easing="0.645,0.045,0.355,1" />
+                    <SizeTransition Property="SelectedThumbSize" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" Easing="0.645,0.045,0.355,1" />
                 </Transitions>
             </Setter>
         </Style>

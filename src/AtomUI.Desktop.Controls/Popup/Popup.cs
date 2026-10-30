@@ -1,15 +1,19 @@
 using System.ComponentModel;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Media;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
+using AtomUI.Native;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
@@ -184,13 +188,21 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     #region 动画相关字段
 
-    private MotionExecutionState _closeMotionState;
+    private PopupCloseState _closeMotionState;
+    private bool _isOpenMotionActive;
+    private bool _hasRaisedOpened;
     private bool _isLogicallyAttachedAtOpen;
-    private CancellationTokenSource? _motionCts;
-    private PopupMotionActor? _motionActor;
+    private long _motionVersion;
+    private bool _closeRequested;
+    private IDisposable? _entryPreparation;
+    private Control? _motionTarget;
     private TopLevel? _openTopLevel;
+    private PopupLightDismissRegistration? _lightDismissRegistration;
 
     #endregion
+
+    // 窗口型 Popup 阴影区域的输入穿透，随一次打开会话挂接与释放
+    private IPopupShadowHitTest? _shadowHitTest;
 
     // 避免 popup 内的 wheel 事件冒泡出去触发 PlacementTarget 所在祖先 ScrollViewer 的意外滚动。
     // 订阅对象要记录下来,保证 open/close 成对摘挂。
@@ -199,6 +211,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     private int _lifecycleCloseDepth;
     private int _pinnedOpenGeneration;
     private bool _isPinnedOpenSuspended;
+    private bool _isPinnedOpenReconcileRetried;
     private readonly List<Visual> _pinnedOpenTargetStateSubscriptions = [];
     private Control? _pinnedOpenTrackingTarget;
     private Control? _placementTransformTrackingTarget;
@@ -208,6 +221,8 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     {
         IsOpenProperty.OverrideMetadata<Popup>(
             new StyledPropertyMetadata<bool>(coerce: CoerceIsOpen));
+        IsLightDismissEnabledProperty.OverrideMetadata<Popup>(
+            new StyledPropertyMetadata<bool>(coerce: (sender, value) => value && !((Popup)sender).IsPopupPinnedOpen));
     }
 
     public Popup()
@@ -221,53 +236,171 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     private void HandlePopupOpened(object? sender, EventArgs e)
     {
+        _hasRaisedOpened = true;
         _isPinnedOpenSuspended = false;
         _isLogicallyAttachedAtOpen = ((ILogical)this).IsAttachedToLogicalTree;
         _openTopLevel = ResolvePlacementTarget() is { } target
             ? TopLevel.GetTopLevel(target)
             : null;
-        _closeMotionState = MotionExecutionState.Idle;
+        _lightDismissRegistration?.Dispose();
+        _lightDismissRegistration = ResolvePlacementTarget() is { } placementTarget
+            ? PopupLightDismissRegistration.Acquire(this, placementTarget)
+            : null;
+        _lightDismissRegistration?.Update(this);
+        _closeMotionState = PopupCloseState.Idle;
+        _closeRequested = false;
         AttachWheelGuard();
         UpdatePlacementTransformTracker();
-        CancelMotion();
-        if (_motionActor is null)
+        StartOpenMotion();
+        AttachShadowHitTest();
+    }
+
+    private void StartOpenMotion()
+    {
+        var version = ++_motionVersion;
+        _isOpenMotionActive = false;
+        if (_motionTarget is not { } target)
         {
             return;
         }
-
-        _motionActor.MotionTransform           = null;
-        _motionActor.MotionTransformOperations = null;
-        if (!IsMotionEnabled || OpenMotion is null)
+        if (!IsMotionEnabled || OpenMotion is not { } motion)
         {
-            _motionActor.Opacity = 1.0d;
+            MotionPlayback.CancelAndReset(target);
+            ClearEntryPreparation();
             return;
         }
 
-        _motionCts = new CancellationTokenSource();
+        // A single layout boundary prepares the physical host. Playback itself
+        // always follows Avalonia's clock, with no periodic Dispatcher work.
+        _isOpenMotionActive = true;
+        _shadowHitTest?.Invalidate();
+        Dispatcher.Post(() => _ = PlayOpenMotionAsync(version, target, motion), DispatcherPriority.Loaded);
+    }
 
-        var motion = OpenMotion;
-        motion.Duration      = MotionDuration;
-        _motionActor.Opacity = 0.0d;
-        Dispatcher.InvokeAsync(() => PlayMotionAsync(motion, _motionActor, _motionCts.Token));
+    private async Task PlayOpenMotionAsync(long version, Control target, AbstractMotion motion)
+    {
+        try
+        {
+            await PlayOpenMotionCoreAsync(version, target, motion);
+        }
+        finally
+        {
+            if (version == _motionVersion)
+            {
+                _isOpenMotionActive = false;
+                _shadowHitTest?.Invalidate();
+            }
+        }
+    }
+
+    private async Task PlayOpenMotionCoreAsync(long version, Control target, AbstractMotion motion)
+    {
+        if (!IsCurrentMotion(version, target) || !IsOpen || _closeMotionState != PopupCloseState.Idle)
+        {
+            return;
+        }
+        var preparation = _entryPreparation;
+        _entryPreparation = null;
+        try
+        {
+            target.UpdateLayout();
+            Task<MotionResult> playback;
+            try
+            {
+                playback = motion.PlayAsync(target, MotionDuration, CancellationToken.None);
+            }
+            finally
+            {
+                preparation?.Dispose();
+            }
+            var result = await playback;
+            if (IsCurrentMotion(version, target) && result.Outcome == MotionOutcome.NotReady)
+            {
+                MotionPlayback.CancelAndReset(target);
+            }
+        }
+        catch (Exception exception)
+        {
+            Avalonia.Logging.Logger.TryGet(Avalonia.Logging.LogEventLevel.Error, AtomUILogArea.Control)?.Log(
+                this, "Popup entry motion failed: {Exception}", exception);
+            if (IsCurrentMotion(version, target))
+            {
+                MotionPlayback.CancelAndReset(target);
+            }
+        }
     }
 
     private void HandlePopupClosed(object? sender, EventArgs e)
     {
-        CancelMotion();
-        _closeMotionState             = MotionExecutionState.Idle;
+        DetachShadowHitTest();
+        _hasRaisedOpened = false;
+        _isOpenMotionActive = false;
+        var lightDismiss = _lightDismissRegistration;
+        _lightDismissRegistration = null;
+        var previousVersion = _motionVersion;
+        lightDismiss?.Dispose();
+        if (previousVersion != _motionVersion)
+        {
+            return;
+        }
+        var version = CancelMotion();
+        if (version != _motionVersion)
+        {
+            return;
+        }
+        _closeMotionState             = PopupCloseState.Idle;
+        _closeRequested              = false;
         _isLogicallyAttachedAtOpen    = false;
-        _motionActor                  = null;
+        _motionTarget                  = null;
         _openTopLevel                 = null;
         ClearPlacementTransformTracker();
         DetachWheelGuard();
     }
 
-    private void CancelMotion()
+    private long CancelMotion()
     {
-        _motionCts?.Cancel();
-        _motionCts?.Dispose();
-        _motionCts = null;
+        var version = ++_motionVersion;
+        var target = _motionTarget;
+        var preparation = _entryPreparation;
+        _motionTarget = null;
+        _entryPreparation = null;
+        _isOpenMotionActive = false;
+        Exception? failure = null;
+        try
+        {
+            if (target is not null)
+            {
+                MotionPlayback.CancelAndReset(target);
+            }
+        }
+        catch (Exception exception)
+        {
+            failure = exception;
+        }
+        try
+        {
+            preparation?.Dispose();
+        }
+        catch (Exception cleanup) when (failure is not null)
+        {
+            throw new AggregateException("Popup motion cleanup failed.", failure, cleanup);
+        }
+        if (failure is not null)
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        }
+        return version;
     }
+
+    private void ClearEntryPreparation()
+    {
+        var preparation = _entryPreparation;
+        _entryPreparation = null;
+        preparation?.Dispose();
+    }
+
+    private bool IsCurrentMotion(long version, Control target) =>
+        version == _motionVersion && ReferenceEquals(target, _motionTarget);
 
     private void HandlePopupClosing(object? sender, CancelEventArgs e)
     {
@@ -284,96 +417,78 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             return;
         }
 
-        if (_closeMotionState == MotionExecutionState.Completing)
+        if (_closeMotionState == PopupCloseState.Completing)
         {
-            _closeMotionState = MotionExecutionState.Idle;
+            _closeMotionState = PopupCloseState.Idle;
             return;
         }
 
         if (!IsMotionEnabled ||
             CloseMotion is not { } closeMotion ||
-            _motionActor is not { } motionActor)
+            _motionTarget is not { } motionActor)
         {
             return;
         }
 
         e.Cancel = true;
-        if (_closeMotionState != MotionExecutionState.Idle)
+        if (_closeMotionState != PopupCloseState.Idle)
         {
             return;
         }
 
-        _closeMotionState = MotionExecutionState.Pending;
-        Dispatcher.InvokeAsync(() => PlayCloseMotionAndCloseAsync(motionActor, closeMotion));
+        _closeMotionState = PopupCloseState.Pending;
+        _isOpenMotionActive = false;
+        _closeRequested = true;
+        var version = ++_motionVersion;
+        ClearEntryPreparation();
+        _shadowHitTest?.Invalidate();
+        Dispatcher.Post(() => _ = PlayCloseMotionAndCloseAsync(version, motionActor, closeMotion), DispatcherPriority.Loaded);
     }
 
-    private async Task PlayMotionAsync(AbstractMotion motion, BaseMotionActor actor, CancellationToken cancellationToken)
+    private async Task PlayCloseMotionAndCloseAsync(long version, Control target, AbstractMotion motion)
     {
+        if (!IsCurrentMotion(version, target) || _closeMotionState != PopupCloseState.Pending)
+        {
+            return;
+        }
+        _closeMotionState = PopupCloseState.Playing;
         try
         {
-            await motion.RunAsync(actor, cancellationToken: cancellationToken);
+            target.UpdateLayout();
+            var result = await motion.PlayAsync(target, MotionDuration, CancellationToken.None);
+            if (!IsCurrentMotion(version, target) || _closeMotionState != PopupCloseState.Playing)
+            {
+                return;
+            }
+            if (result.Outcome != MotionOutcome.NotReady && (!result.IsCompleted || !Motion.IsCurrent(target, result)))
+            {
+                _closeMotionState = PopupCloseState.Idle;
+                _shadowHitTest?.Invalidate();
+                return;
+            }
         }
-        catch (OperationCanceledException)
+        catch (Exception exception)
         {
-            // 动画被取消（快速开关场景），忽略
+            Avalonia.Logging.Logger.TryGet(Avalonia.Logging.LogEventLevel.Error, AtomUILogArea.Control)?.Log(
+                this, "Popup exit motion failed: {Exception}", exception);
         }
+        if (!IsCurrentMotion(version, target) || _closeMotionState != PopupCloseState.Playing)
+        {
+            return;
+        }
+        QueueFinalClose(version, target);
     }
 
-    private async Task PlayCloseMotionAndCloseAsync(BaseMotionActor actor, AbstractMotion motion)
+    private void QueueFinalClose(long version, Control target)
     {
-        if (_closeMotionState != MotionExecutionState.Pending)
+        _closeMotionState = PopupCloseState.Completing;
+        Dispatcher.Post(() =>
         {
-            return;
-        }
-
-        if (_motionCts is { } previousMotionCts)
-        {
-            await previousMotionCts.CancelAsync();
-            previousMotionCts.Dispose();
-            if (ReferenceEquals(_motionCts, previousMotionCts))
+            if (IsCurrentMotion(version, target) && _closeMotionState == PopupCloseState.Completing && _closeRequested)
             {
-                _motionCts = null;
+                Close();
             }
-        }
-
-        if (_closeMotionState != MotionExecutionState.Pending)
-        {
-            return;
-        }
-
-        var closeMotionCts = new CancellationTokenSource();
-        _motionCts         = closeMotionCts;
-        _closeMotionState  = MotionExecutionState.Playing;
-        motion.Duration = MotionDuration;
-
-        try
-        {
-            await motion.RunAsync(actor, cancellationToken: closeMotionCts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            if (_closeMotionState == MotionExecutionState.Playing)
-            {
-                _closeMotionState = MotionExecutionState.Idle;
-            }
-            return;
-        }
-        finally
-        {
-            if (ReferenceEquals(_motionCts, closeMotionCts))
-            {
-                _motionCts = null;
-                closeMotionCts.Dispose();
-            }
-        }
-
-        if (_closeMotionState != MotionExecutionState.Playing)
-        {
-            return;
-        }
-
-        _closeMotionState = MotionExecutionState.Completing;
-        Dispatcher.Post(Close);
+        });
     }
 
     private bool CanDelayCloseForMotion()
@@ -399,7 +514,50 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     #endregion
 
     internal bool IsPlayingCloseMotion =>
-        _closeMotionState is MotionExecutionState.Pending or MotionExecutionState.Playing;
+        _closeMotionState is PopupCloseState.Pending or PopupCloseState.Playing or PopupCloseState.Completing;
+
+    /// <summary>
+    /// 打开（含等待首帧准备）或关闭动效进行中。
+    /// </summary>
+    internal bool IsPlayingMotion => _isOpenMotionActive || IsPlayingCloseMotion;
+
+    private void AttachShadowHitTest()
+    {
+        DetachShadowHitTest();
+        // 打开后 Child 挂在宿主下：窗口型 Popup 的 TopLevel 即 PopupRoot，Overlay Popup 则是所属窗口
+        if (Child is null || TopLevel.GetTopLevel(Child) is not PopupRoot popupRoot)
+        {
+            return;
+        }
+
+        // 逐点命中（Windows）直接使用 Avalonia 的命中测试：frame renderer 的圆角矩形与箭头几何可命中，
+        // 绘制列表命中不包含 BoxShadow，阴影区域因此不命中。禁用的内容仍属于内容形状。
+        // 预先提交输入区域的平台（X11、Wayland）无法逐点查询，提供同一圆角矩形与箭头几何，由 AtomUI.Native 光栅化。
+        _shadowHitTest = NativePopupShadowHitTest.TryAttach(
+            popupRoot,
+            () => IsPlayingMotion,
+            point => popupRoot.InputHitTest(point, enabledElementsOnly: false) is not null,
+            () => popupRoot.GetVisualDescendants().OfType<ShadowsAwareContainer>().FirstOrDefault()
+                           ?.GetContentShape(popupRoot));
+    }
+
+    // 窗口型 Popup 的 Child 在 PopupRoot 首次布局时挂入视觉树，早于原生窗口映射（WindowBase.Show 先布局再 PlatformImpl.Show）。
+    // 这是 Opened 之前唯一能拿到尚未映射的 PopupRoot 的时机，Avalonia 未提供其他公开回调。
+    private void HandleChildAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        // Avalonia 12 的视觉根是包裹 TopLevel 的 TopLevelHost，按所属 TopLevel 判定
+        if (_shadowHitTest is null && sender is Visual child && TopLevel.GetTopLevel(child) is PopupRoot popupRoot)
+        {
+            NativePopupShadowHitTest.SuspendInputBeforeShow(popupRoot);
+        }
+    }
+
+    private void DetachShadowHitTest()
+    {
+        var shadowHitTest = _shadowHitTest;
+        _shadowHitTest = null;
+        shadowHitTest?.Dispose();
+    }
 
     internal void CancelCloseAnimation()
     {
@@ -408,27 +566,20 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             return;
         }
 
-        _closeMotionState = MotionExecutionState.Idle;
-        _motionCts?.Cancel();
-        if (_motionActor is not null)
-        {
-            _motionActor.Opacity = 1.0d;
-        }
-
-        IsOpen = true;
+        _closeMotionState = PopupCloseState.Idle;
+        _closeRequested = false;
+        SetCurrentValue(IsOpenProperty, true);
+        StartOpenMotion();
+        _shadowHitTest?.Invalidate();
     }
 
     internal void CloseForLifecycle()
     {
         ++_pinnedOpenGeneration;
         _isPinnedOpenSuspended = true;
-        _closeMotionState      = MotionExecutionState.Idle;
+        _closeMotionState      = PopupCloseState.Idle;
+        _closeRequested       = false;
         CancelMotion();
-        if (_motionActor is not null)
-        {
-            _motionActor.Opacity = 1.0d;
-        }
-
         try
         {
             ++_lifecycleCloseDepth;
@@ -447,9 +598,60 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         PositionFlipped?.Invoke(this, new PopupFlippedEventArgs(horizontalFlipped, verticalFlipped));
     }
 
-    internal void NotifyMotionActorReady(PopupMotionActor actor)
+    internal void NotifySurfaceReady(Control target)
     {
-        _motionActor = actor;
+        var changed = !ReferenceEquals(_motionTarget, target);
+        var closing = _closeRequested && IsPlayingCloseMotion;
+        var version = _motionVersion;
+        if (changed)
+        {
+            version = CancelMotion();
+            if (version != _motionVersion)
+            {
+                return;
+            }
+            _motionTarget = target;
+        }
+        if (changed && closing)
+        {
+            // The old template is gone. Keep the replacement hidden and finish
+            // the current close intent; a re-open invalidates this queued close.
+            PrepareSurface(target);
+            if (IsCurrentMotion(version, target) && _closeRequested)
+            {
+                QueueFinalClose(version, target);
+            }
+            return;
+        }
+        if (IsMotionEnabled && OpenMotion is not null && _entryPreparation is null && (changed || !_hasRaisedOpened))
+        {
+            // The host calls this during logical attach, before its first Show.
+            // A scoped override preserves the application's underlying opacity.
+            PrepareSurface(target);
+        }
+        if (!IsCurrentMotion(version, target))
+        {
+            return;
+        }
+        if (_hasRaisedOpened && IsOpen && _closeMotionState == PopupCloseState.Idle)
+        {
+            StartOpenMotion();
+        }
+    }
+
+    private void PrepareSurface(Control target)
+    {
+        var preparation = new CompositeDisposable();
+        _entryPreparation = preparation;
+        preparation.Add(target.SetValue(OpacityProperty, 0, Avalonia.Data.BindingPriority.Animation) ?? Disposable.Empty);
+    }
+
+    private enum PopupCloseState
+    {
+        Idle,
+        Pending,
+        Playing,
+        Completing
     }
 
     #region 自定义定位逻辑
@@ -458,6 +660,22 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     {
         base.OnPropertyChanged(change);
 
+        if (change.Property == ChildProperty)
+        {
+            if (change.OldValue is Control oldChild)
+            {
+                oldChild.AttachedToVisualTree -= HandleChildAttachedToVisualTree;
+            }
+            if (change.NewValue is Control newChild)
+            {
+                newChild.AttachedToVisualTree += HandleChildAttachedToVisualTree;
+            }
+        }
+
+        if (change.Property == IsOpenProperty && change.GetNewValue<bool>() && _closeRequested)
+        {
+            CancelCloseAnimation();
+        }
         if (change.Property == RequestedPlacementProperty)
         {
             var requestedPlacement = change.GetNewValue<PlacementMode?>();
@@ -508,8 +726,14 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         {
             ConfigureFrameShadow();
         }
+        else if (change.Property == IsLightDismissEnabledProperty ||
+                 change.Property == OverlayInputPassThroughElementProperty)
+        {
+            _lightDismissRegistration?.Update(this);
+        }
         else if (change.Property == IsPopupPinnedOpenProperty)
         {
+            CoerceValue(IsLightDismissEnabledProperty);
             if (change.GetNewValue<bool>())
             {
                 _isPinnedOpenSuspended = false;
@@ -616,8 +840,9 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 (anchor, gravity) = PopupUtils.GetAnchorAndGravity(requestedPlacement);
             }
 
+            // 箭头隐藏或部件不可用时保持空 bounds：窗口型 Popup 在朝向 anchor 一侧保留完整阴影，
+            // ApplyCustomPlacement 按完整阴影厚度回退（见 PopupUtils.GetAnchorSideResidualShadow）
             var arrowIndicatorLayoutBounds = default(Rect);
-            var arrowHiddenButCapable      = false;
             if (Child is IArrowAwareShadowMaskInfoProvider provider)
             {
                 // If ArrowIndicatorLayoutBounds is not initialized yet, force a layout pass
@@ -625,23 +850,19 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 {
                     Child.Measure(Size.Infinity);
                     Child.Arrange(new Rect(Child.DesiredSize));
-                    arrowIndicatorLayoutBounds = provider.GetArrowDecoratedBox().ArrowIndicatorLayoutBounds;
-
-                    if (IsPointAtCenter)
+                    var arrowDecoratedBox = provider.GetArrowDecoratedBox();
+                    if (arrowDecoratedBox is not null)
                     {
-                        var delta = PopupUtils.CalculatePointAtCenterDelta(
-                            target, provider.GetArrowDecoratedBox(), requestedPlacement, anchor, gravity);
-                        hOffset += delta.X;
-                        vOffset += delta.Y;
+                        arrowIndicatorLayoutBounds = arrowDecoratedBox.ArrowIndicatorLayoutBounds;
+
+                        if (IsPointAtCenter)
+                        {
+                            var delta = PopupUtils.CalculatePointAtCenterDelta(
+                                target, arrowDecoratedBox, requestedPlacement, anchor, gravity);
+                            hOffset += delta.X;
+                            vOffset += delta.Y;
+                        }
                     }
-                }
-                else if (PopupUtils.CanEnabledArrow(requestedPlacement))
-                {
-                    // 箭头被隐藏但该 Placement 本来支持箭头：popup root 在箭头侧仍然预留了完整阴影厚度
-                    // （ShadowsAwareContainer.GetEffectiveShadowThickness 在 IsArrowVisible=false 时返回完整阴影），
-                    // 而位置公式默认阴影会被箭头抵消，因此此时内容离 target 会多出一个阴影厚度的空隙。
-                    // 在 ApplyCustomPlacement 之后再对 placement.Offset 做一次朝 target 方向的补偿。
-                    arrowHiddenButCapable = true;
                 }
             }
             var (flipX, flipY) = PopupUtils.ApplyCustomPlacement(
@@ -655,29 +876,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 anchor,
                 gravity,
                 arrowIndicatorLayoutBounds);
-            if (arrowHiddenButCapable && !isUseOverlayHost)
-            {
-                var arrowDirection = PopupUtils.FlipDirection(
-                    PopupUtils.GetDirection(requestedPlacement), flipX, flipY);
-                var dx = 0.0d;
-                var dy = 0.0d;
-                switch (arrowDirection)
-                {
-                    case Direction.Top:
-                        dy = shadowThickness.Bottom;
-                        break;
-                    case Direction.Bottom:
-                        dy = -shadowThickness.Top;
-                        break;
-                    case Direction.Left:
-                        dx = shadowThickness.Right;
-                        break;
-                    case Direction.Right:
-                        dx = -shadowThickness.Left;
-                        break;
-                }
-                placement.Offset = new Point(placement.Offset.X + dx, placement.Offset.Y + dy);
-            }
 
             NotifyFlipped(flipX, flipY);
             CustomPlacementCallback?.Invoke(placement, shadowThickness, marginToAnchor, isUseOverlayHost, flipX, flipY);
@@ -837,13 +1035,31 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
         if (HasValidPinnedOpenTarget())
         {
+            _isPinnedOpenReconcileRetried = false;
             _isPinnedOpenSuspended = false;
             QueuePinnedOpen();
+            return;
         }
-        else
+
+        // IsVisible 恢复的同帧里放置目标尚未重新布局（TransformToVisual 未就绪 / 尺寸为零），
+        // 立即判无效会错过这次恢复信号——之后不再有属性变化触发 reconcile，弹层就再也打不开。
+        // 无法呈现时延后一帧重试一次，重试仍无效才按目标失效关闭。
+        if (!_isPinnedOpenReconcileRetried)
         {
-            CloseForLifecycle();
+            _isPinnedOpenReconcileRetried = true;
+            var generation = _pinnedOpenGeneration;
+            Dispatcher.Post(() =>
+            {
+                if (generation == _pinnedOpenGeneration)
+                {
+                    ReconcilePinnedOpenTargetState();
+                }
+            }, DispatcherPriority.Loaded);
+            return;
         }
+
+        _isPinnedOpenReconcileRetried = false;
+        CloseForLifecycle();
     }
 
     private bool HasValidPinnedOpenTarget()

@@ -7,27 +7,51 @@
     <ControlTheme x:Key="{x:Type atomc:TimelineIndicator}" TargetType="atomc:TimelineIndicator">
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:IconPresenter
-                    Name="PART_IconPresenter"
-                    Icon="{TemplateBinding IndicatorIcon}"/> 
+                <Panel>
+                    <Border Name="PART_Rail"
+                            Classes.semantic-item-rail="True"
+                            IsHitTestVisible="False"
+                            Background="{TemplateBinding IndicatorTailColor}" />
+                    <Border Name="PART_Dot"
+                            Classes.semantic-item-icon="True"
+                            IsHitTestVisible="False"
+                            Background="{atom:SharedTokenResource ColorBgContainer}"
+                            BorderBrush="{TemplateBinding IndicatorColor}" />
+                    <Border Name="PART_IconHost"
+                            Classes.semantic-item-icon="True"
+                            IsVisible="False">
+                        <atom:IconPresenter
+                            Name="PART_IconPresenter"
+                            Icon="{TemplateBinding IndicatorIcon}" />
+                    </Border>
+                </Panel>
             </ControlTemplate>
         </Setter>
-        
+
         <Setter Property="RelativeLineHeight" Value="{atom:SharedTokenResource RelativeLineHeight}"/>
         <Setter Property="IndicatorDotBorderWidth" Value="{atom:TimelineTokenResource IndicatorDotBorderWidth}"/>
         <Setter Property="IndicatorDotSize" Value="{atom:TimelineTokenResource IndicatorDotSize}"/>
         <Setter Property="DefaultIndicatorColor" Value="{atom:SharedTokenResource ColorPrimary}"/>
         <Setter Property="IndicatorTailWidth" Value="{atom:TimelineTokenResource IndicatorTailWidth}"/>
         <Setter Property="IndicatorTailColor" Value="{atom:TimelineTokenResource IndicatorTailColor}"/>
-        
+
         <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
             <Setter Property="Width" Value="{atom:TimelineTokenResource IndicatorSize}"/>
             <Setter Property="Height" Value="{atom:TimelineTokenResource IndicatorSize}"/>
         </Style>
-        
+
         <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
             <Setter Property="IconBrush" Value="{TemplateBinding IndicatorColor}"/>
         </Style>
-        
+
+        <Style Selector="^:icon-present /template/ Border#PART_Dot">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+
+        <Style Selector="^:icon-present /template/ Border#PART_IconHost">
+            <Setter Property="IsVisible" Value="True"/>
+            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}"/>
+        </Style>
+
     </ControlTheme>
 </ResourceDictionary>

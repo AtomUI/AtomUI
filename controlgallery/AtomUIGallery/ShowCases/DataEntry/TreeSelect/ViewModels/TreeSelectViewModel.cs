@@ -48,6 +48,30 @@ public class TreeSelectViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _bindingSingleTreeNodes, value);
     }
 
+    private List<ITreeItemNode>? _semanticPreviewTreeNodes;
+
+    public List<ITreeItemNode>? SemanticPreviewTreeNodes
+    {
+        get => _semanticPreviewTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewTreeNodes, value);
+    }
+
+    private IList<ITreeItemNode>? _semanticPreviewSelectedItems;
+
+    public IList<ITreeItemNode>? SemanticPreviewSelectedItems
+    {
+        get => _semanticPreviewSelectedItems;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewSelectedItems, value);
+    }
+
+    private List<ITreeItemNode>? _styleClassTreeNodes;
+
+    public List<ITreeItemNode>? StyleClassTreeNodes
+    {
+        get => _styleClassTreeNodes;
+        set => this.RaiseAndSetIfChanged(ref _styleClassTreeNodes, value);
+    }
+
     private List<ITreeItemNode>? _bindingMultipleTreeNodes = [];
 
     public List<ITreeItemNode>? BindingMultipleTreeNodes

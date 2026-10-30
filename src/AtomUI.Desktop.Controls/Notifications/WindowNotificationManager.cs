@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections.ObjectModel;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -10,42 +10,48 @@ using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
-[TemplatePart("PART_Items", typeof(Panel))]
-[PseudoClasses(NotificationPseudoClass.TopLeft, 
+[TemplatePart("PART_Items", typeof(FeedbackStackPresenter))]
+[PseudoClasses(NotificationPseudoClass.TopLeft,
     NotificationPseudoClass.TopRight,
     NotificationPseudoClass.BottomLeft,
-    NotificationPseudoClass.BottomRight, 
+    NotificationPseudoClass.BottomRight,
     NotificationPseudoClass.TopCenter,
     NotificationPseudoClass.BottomCenter)]
-public class WindowNotificationManager : TemplatedControl, INotificationManager, IMotionAwareControl, IDisposable
+public partial class WindowNotificationManager : TemplatedControl, INotificationManager, IMotionAwareControl, IDisposable
 {
-    #region 公共属性定义
     public static readonly StyledProperty<NotificationPosition> PositionProperty =
         AvaloniaProperty.Register<WindowNotificationManager, NotificationPosition>(
             nameof(Position), NotificationPosition.TopRight);
-    
-    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<WindowNotificationManager>();
 
     public static readonly StyledProperty<int> MaxItemsProperty =
-        AvaloniaProperty.Register<WindowNotificationManager, int>(nameof(MaxItems), 5);
+        AvaloniaProperty.Register<WindowNotificationManager, int>(nameof(MaxItems));
+
+    public static readonly StyledProperty<bool> IsStackEnabledProperty =
+        AvaloniaProperty.Register<WindowNotificationManager, bool>(nameof(IsStackEnabled));
+
+    public static readonly StyledProperty<int> StackThresholdProperty =
+        AvaloniaProperty.Register<WindowNotificationManager, int>(nameof(StackThreshold), 3);
 
     public static readonly StyledProperty<bool> IsPauseOnHoverProperty =
         AvaloniaProperty.Register<WindowNotificationManager, bool>(nameof(IsPauseOnHover), true);
 
-    /// <summary>
-    /// 通知卡片过期检测的轮询间隔，默认 200ms。
-    /// </summary>
-    public static readonly StyledProperty<TimeSpan> CardExpiredPollingIntervalProperty =
-        AvaloniaProperty.Register<WindowNotificationManager, TimeSpan>(
-            nameof(CardExpiredPollingInterval), TimeSpan.FromMilliseconds(80));
+    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<WindowNotificationManager>();
 
-    /// <summary>
-    /// 通知卡片关闭清理的轮询间隔，默认 200ms。
-    /// </summary>
-    public static readonly StyledProperty<TimeSpan> CleanupPollingIntervalProperty =
-        AvaloniaProperty.Register<WindowNotificationManager, TimeSpan>(
-            nameof(CleanupPollingInterval), TimeSpan.FromMilliseconds(150));
+    private readonly ObservableCollection<NotificationCard> _cards = new();
+    private TopLevel? _topLevel;
+    private bool _isDisposed;
+    private Panel? _hostLayer;
+    private bool _hostLayerUsesNativeAdorner;
+    private IDisposable? _safeAreaMarginSubscription;
+    private FeedbackStackPresenter? _presenter;
+    private FeedbackLifetimeScheduler? _lifetimeScheduler;
+    private bool _isLifecyclePaused = true;
+    private bool _hasBeenAttached;
+    private bool _isStackPaused;
+    private const int MaxHostLayerRetryCount = 30;
+    private bool _hostLayerRetryScheduled;
+    private int _hostLayerRetryCount;
 
     public NotificationPosition Position
     {
@@ -57,6 +63,18 @@ public class WindowNotificationManager : TemplatedControl, INotificationManager,
     {
         get => GetValue(MaxItemsProperty);
         set => SetValue(MaxItemsProperty, value);
+    }
+
+    public bool IsStackEnabled
+    {
+        get => GetValue(IsStackEnabledProperty);
+        set => SetValue(IsStackEnabledProperty, value);
+    }
+
+    public int StackThreshold
+    {
+        get => GetValue(StackThresholdProperty);
+        set => SetValue(StackThresholdProperty, value);
     }
 
     public bool IsPauseOnHover
@@ -71,40 +89,23 @@ public class WindowNotificationManager : TemplatedControl, INotificationManager,
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
-    /// <summary>
-    /// 获取或设置通知卡片过期检测的轮询间隔。
-    /// </summary>
-    public TimeSpan CardExpiredPollingInterval
+    // Position selectors update the theme default, leaving public Padding at normal style priority.
+    internal static readonly StyledProperty<Thickness> ThemePaddingProperty =
+        AvaloniaProperty.Register<WindowNotificationManager, Thickness>(nameof(ThemePadding));
+
+    internal Thickness ThemePadding
     {
-        get => GetValue(CardExpiredPollingIntervalProperty);
-        set => SetValue(CardExpiredPollingIntervalProperty, value);
+        get => GetValue(ThemePaddingProperty);
+        set => SetValue(ThemePaddingProperty, value);
     }
 
-    /// <summary>
-    /// 获取或设置通知卡片关闭清理的轮询间隔。
-    /// </summary>
-    public TimeSpan CleanupPollingInterval
-    {
-        get => GetValue(CleanupPollingIntervalProperty);
-        set => SetValue(CleanupPollingIntervalProperty, value);
-    }
-    
-    #endregion
-    
-    private TopLevel? _topLevel;
-    private bool _isDisposed;
-    private Panel? _hostLayer;
-    private bool _hostLayerUsesNativeAdorner;
-    private IDisposable? _safeAreaMarginSubscription;
-    private IList? _items;
-    private readonly Queue<NotificationCard> _cleanupQueue;
-    private readonly HashSet<NotificationCard> _cleanupSet;
-    private DispatcherTimer? _cardExpiredTimer;
-    private DispatcherTimer? _cleanupTimer;
-    private readonly Queue<PendingNotification> _pendingNotifications = new();
-    private const int MaxHostLayerRetryCount = 30;
-    private bool _hostLayerRetryScheduled;
-    private int _hostLayerRetryCount;
+    internal IReadOnlyList<NotificationCard> Cards => _cards;
+
+    internal bool HasLifetimeScheduler => _lifetimeScheduler is not null;
+
+    internal int LifetimeEntryCount => _lifetimeScheduler?.Count ?? 0;
+
+    internal bool IsLifetimePaused => _lifetimeScheduler?.IsAllPaused ?? _isLifecyclePaused;
 
     public WindowNotificationManager(TopLevel? host) : this()
     {
@@ -117,185 +118,177 @@ public class WindowNotificationManager : TemplatedControl, INotificationManager,
 
     public WindowNotificationManager()
     {
-        _cardExpiredTimer      =  new DispatcherTimer { Interval = CardExpiredPollingIntervalProperty.GetDefaultValue(typeof(WindowNotificationManager)), Tag = this };
-        _cardExpiredTimer.Tick += HandleCardExpiredTimer;
-        _cleanupTimer          =  new DispatcherTimer { Interval = CleanupPollingIntervalProperty.GetDefaultValue(typeof(WindowNotificationManager)), Tag = this };
-        _cleanupTimer.Tick     += HandleCleanupTimerTick;
-        var maxItems = MaxItemsProperty.GetDefaultValue(typeof(WindowNotificationManager));
-        _cleanupQueue          =  new Queue<NotificationCard>(maxItems);
-        _cleanupSet            =  new HashSet<NotificationCard>(maxItems);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        base.OnApplyTemplate(e);
-        var itemsControl = e.NameScope.Find<Panel>("PART_Items");
-        _items = itemsControl?.Children;
-        UpdatePseudoClasses(Position);
-        FlushPendingNotifications();
-    }
-
-    private void HandleCardExpiredTimer(object? sender, EventArgs eventArgs)
-    {
-        var cardExpiredTimer = _cardExpiredTimer;
-        if (_items != null && cardExpiredTimer != null)
+        if (_presenter is not null)
         {
-            foreach (var item in _items)
-            {
-                if (item is NotificationCard card)
-                {
-                    if (card.NotifyCloseTick(cardExpiredTimer.Interval))
-                    {
-                        if (_cleanupSet.Add(card))
-                        {
-                            _cleanupQueue.Enqueue(card);
-                            if (_cleanupTimer is { IsEnabled: false } cleanupTimer)
-                            {
-                                cleanupTimer.Start();
-                            }
-                        }
-                    }
-                }
-            }
+            _presenter.StackHoverChanged -= OnStackHoverChanged;
+            _presenter.ItemsSource = null;
         }
+
+        base.OnApplyTemplate(e);
+        _presenter = e.NameScope.Find<FeedbackStackPresenter>("PART_Items");
+        if (_presenter is not null)
+        {
+            _presenter[!FeedbackStackPresenter.PositionProperty] = this[!PositionProperty];
+            _presenter[!FeedbackStackPresenter.IsStackEnabledProperty] = this[!IsStackEnabledProperty];
+            _presenter[!FeedbackStackPresenter.StackThresholdProperty] = this[!StackThresholdProperty];
+            _presenter[!FeedbackStackPresenter.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+            _presenter.StackMode = FeedbackStackMode.Notification;
+            _presenter.ItemsSource = _cards;
+            _presenter.StackHoverChanged += OnStackHoverChanged;
+        }
+        UpdatePseudoClasses(Position);
     }
 
-    private void HandleCleanupTimerTick(object? sender, EventArgs eventArgs)
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        var cleanupTimer = _cleanupTimer;
-        if (cleanupTimer is null)
+        base.OnAttachedToVisualTree(e);
+        _isLifecyclePaused = false;
+        _hasBeenAttached = true;
+        UpdateSchedulerPauseState();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _isLifecyclePaused = true;
+        UpdateSchedulerPauseState();
+        base.OnDetachedFromVisualTree(e);
+        ScheduleReleaseCardsOnHostDetach();
+    }
+
+    // 宿主层释放契约：manager 运行途中离开视觉树即释放其上的全部卡片（对齐上游 notification-list 卸载行为）。
+    // 必须推迟到 detach 级联完成之后：在 detach 过程中同步关闭卡片会让 presenter 重建容器树，
+    // 触发 Avalonia 视觉树内部集合越界。从未 attach 过的 manager 不适用——release/6.0 允许 attach 前 Show。
+    private void ScheduleReleaseCardsOnHostDetach()
+    {
+        if (!_hasBeenAttached || _isDisposed)
         {
             return;
         }
 
-        if (_cleanupQueue.Count > 0)
+        Dispatcher.UIThread.Post(() =>
         {
-            var card = _cleanupQueue.Peek();
-            if (!card.IsClosing)
+            // 执行时已重新入树（反馈层迁移等瞬时 detach）则不释放。
+            if (_isDisposed || !_isLifecyclePaused)
             {
+                return;
+            }
+
+            // 关闭回调可能同步修改 _cards，先拷贝快照。
+            var cards = _cards.ToArray();
+            for (var i = 0; i < cards.Length; i++)
+            {
+                var card = cards[i];
+                _lifetimeScheduler?.Remove(card);
                 card.Close();
             }
-            else if (card.IsClosed)
-            {
-                _cleanupQueue.Dequeue();
-                _cleanupSet.Remove(card);
-                if (_cleanupQueue.Count == 0)
-                {
-                    cleanupTimer.Stop();
-                }
-            }
-        }
-    }
-
-    private void ConfigureExpiredTimer()
-    {
-        var cardExpiredTimer = _cardExpiredTimer;
-        if (cardExpiredTimer is null)
-        {
-            return;
-        }
-
-        var hasExpiringCard = false;
-        if (_items is not null)
-        {
-            foreach (var item in _items)
-            {
-                if (item is NotificationCard { Expiration: not null, IsClosing: false, IsClosed: false })
-                {
-                    hasExpiringCard = true;
-                    break;
-                }
-            }
-        }
-
-        if (hasExpiringCard)
-        {
-            cardExpiredTimer.Start();
-        }
-        else
-        {
-            cardExpiredTimer.Stop();
-        }
+        });
     }
 
     public void Show(INotification notification, string[]? classes = null)
     {
         Dispatcher.VerifyAccess();
-
         if (_isDisposed)
         {
             return;
         }
 
-        if (_items is null)
-        {
-            _pendingNotifications.Enqueue(new PendingNotification(notification, classes));
-            ApplyTemplate();
-            return;
-        }
-
-        ShowCore(notification, classes);
-    }
-
-    private void ShowCore(INotification notification, string[]? classes)
-    {
         var expiration = notification.Expiration;
-        var onClick    = notification.OnClick;
-        var onClose    = notification.OnClose;
-
-        var notificationControl = new NotificationCard(this)
+        var card = new NotificationCard(this)
         {
-            Title            = notification.Title,
-            Content          = notification.Content,
-            Icon             = notification.Icon,
+            Title = notification.Title,
+            Content = notification.Content,
+            Icon = notification.Icon,
             NotificationType = notification.Type,
-            Expiration       = expiration == TimeSpan.Zero ? null : expiration,
-            IsShowProgress   = notification.ShowProgress
+            Expiration = expiration == TimeSpan.Zero ? null : expiration,
+            IsShowProgress = notification.ShowProgress,
+            OnClick = notification.OnClick,
+            OnClose = notification.OnClose,
+            Actions = notification.Actions,
+            ActionsTemplate = notification.ActionsTemplate
         };
-        notificationControl[!NotificationCard.PositionProperty] = this[!PositionProperty];
-        notificationControl[!NotificationCard.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
-
-        // Add style classes if any
-        if (classes?.Length > 0)
+        card[!NotificationCard.PositionProperty] = this[!PositionProperty];
+        card[!NotificationCard.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+        if (classes is not null)
         {
-            foreach (var cls in classes)
+            for (var i = 0; i < classes.Length; i++)
             {
-                notificationControl.Classes.Add(cls);
+                card.Classes.Add(classes[i]);
             }
         }
 
-        notificationControl.OnClick = onClick;
-        notificationControl.OnClose = onClose;
-        notificationControl.PointerPressed     += OnNotificationPointerPressed;
-        notificationControl.NotificationClosed += OnNotificationClosed;
-
-        Dispatcher.Post(() =>
+        card.PointerPressed += OnNotificationPointerPressed;
+        card.NotificationClosed += OnNotificationClosed;
+        _cards.Add(card);
+        WindowFeedbackLayer.Activate(_hostLayer, this);
+        if (expiration > TimeSpan.Zero)
         {
-            if (_items is null || _isDisposed)
-            {
-                return;
-            }
-
-            _items?.Add(notificationControl);
-            ConfigureExpiredTimer();
-            RemoveExcessNotifications();
-        });
+            var scheduler = _lifetimeScheduler ??= new FeedbackLifetimeScheduler();
+            scheduler.Register(card, expiration);
+            UpdateSchedulerPauseState();
+        }
+        RemoveExcessNotifications();
     }
 
-    private void FlushPendingNotifications()
+    public void DestroyAll()
     {
-        if (_items is null || _isDisposed)
+        Dispatcher.VerifyAccess();
+        // Close callbacks can synchronously change the queue or dispose its owner.
+        var cards = _cards.ToArray();
+        for (var i = cards.Length - 1; i >= 0 && !_isDisposed; i--)
         {
-            return;
-        }
-
-        while (_pendingNotifications.Count > 0)
-        {
-            var pendingNotification = _pendingNotifications.Dequeue();
-            ShowCore(pendingNotification.Notification, pendingNotification.Classes);
+            var card = cards[i];
+            _lifetimeScheduler?.Remove(card);
+            card.Close();
         }
     }
-    
+
+    internal void SetItemPaused(IFeedbackStackItem item, bool isPaused)
+    {
+        if (IsPauseOnHover)
+        {
+            _lifetimeScheduler?.SetPaused(item, isPaused);
+        }
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == PositionProperty)
+        {
+            UpdatePseudoClasses(change.GetNewValue<NotificationPosition>());
+        }
+        else if (change.Property == IsPauseOnHoverProperty && !change.GetNewValue<bool>())
+        {
+            _isStackPaused = false;
+            UpdateSchedulerPauseState();
+            for (var i = 0; i < _cards.Count; i++)
+            {
+                _lifetimeScheduler?.SetPaused(_cards[i], false);
+            }
+        }
+        else if (change.Property == IsStackEnabledProperty && !change.GetNewValue<bool>())
+        {
+            _isStackPaused = false;
+            UpdateSchedulerPauseState();
+        }
+    }
+
+    private void OnStackHoverChanged(object? sender, FeedbackStackHoverChangedEventArgs e)
+    {
+        _isStackPaused = e.IsStackInteraction && e.IsPointerOver && IsPauseOnHover;
+        UpdateSchedulerPauseState();
+        _lifetimeScheduler?.Refresh();
+    }
+
+    private void UpdateSchedulerPauseState()
+    {
+        _lifetimeScheduler?.SetAllPaused(_isLifecyclePaused || _isStackPaused);
+    }
+
     private static void OnNotificationPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (sender is NotificationCard card)
@@ -306,126 +299,105 @@ public class WindowNotificationManager : TemplatedControl, INotificationManager,
 
     private void OnNotificationClosed(object? sender, RoutedEventArgs e)
     {
-        if (sender is NotificationCard card)
-        {
-            card.OnClose?.Invoke();
-            _items?.Remove(card);
-            ConfigureExpiredTimer();
-        }
-    }
-
-    /// <summary>
-    /// Removes excess notifications when the count exceeds MaxItems.
-    /// </summary>
-    private void RemoveExcessNotifications()
-    {
-        int visibleCount = 0;
-        foreach (var item in _items!)
-        {
-            if (item is NotificationCard { IsClosing: false })
-            {
-                visibleCount++;
-            }
-        }
-
-        var closeNeed = visibleCount - MaxItems;
-        if (closeNeed <= 0)
+        if (sender is not NotificationCard card)
         {
             return;
         }
 
-        foreach (var item in _items!)
+        _lifetimeScheduler?.Remove(card);
+        card.PointerPressed -= OnNotificationPointerPressed;
+        card.NotificationClosed -= OnNotificationClosed;
+        _cards.Remove(card);
+        var callback = card.OnClose;
+        card.ReleaseOwner();
+        try
         {
-            if (item is NotificationCard { IsClosing: false } card)
-            {
-                card.Close();
-                if (--closeNeed == 0)
-                {
-                    break;
-                }
-            }
+            callback?.Invoke();
+        }
+        catch (Exception exception)
+        {
+            System.Diagnostics.Debug.WriteLine($"Notification close callback failed: {exception.Message}");
         }
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    private void RemoveExcessNotifications()
     {
-        base.OnPropertyChanged(change);
+        if (MaxItems <= 0)
+        {
+            return;
+        }
 
-        if (change.Property == PositionProperty)
+        var activeCount = 0;
+        for (var i = 0; i < _cards.Count; i++)
         {
-            UpdatePseudoClasses(change.GetNewValue<NotificationPosition>());
-        }
-        else if (change.Property == CardExpiredPollingIntervalProperty)
-        {
-            if (_cardExpiredTimer is not null)
+            if (!_cards[i].IsClosing)
             {
-                _cardExpiredTimer.Interval = change.GetNewValue<TimeSpan>();
+                activeCount++;
             }
         }
-        else if (change.Property == CleanupPollingIntervalProperty)
+
+        var excessCount = activeCount - MaxItems;
+        if (excessCount <= 0)
         {
-            if (_cleanupTimer is not null)
+            return;
+        }
+
+        // Select the oldest active batch before synchronous close callbacks mutate the queue.
+        var cards = new NotificationCard[excessCount];
+        var count = 0;
+        for (var i = 0; i < _cards.Count && count < excessCount; i++)
+        {
+            if (!_cards[i].IsClosing)
             {
-                _cleanupTimer.Interval = change.GetNewValue<TimeSpan>();
+                cards[count++] = _cards[i];
             }
+        }
+        for (var i = 0; i < count && !_isDisposed; i++)
+        {
+            _lifetimeScheduler?.Remove(cards[i]);
+            cards[i].Close();
         }
     }
-    
+
     private void InstallFromTopLevel(TopLevel topLevel)
     {
         topLevel.TemplateApplied -= TopLevelOnTemplateApplied;
         topLevel.TemplateApplied += TopLevelOnTemplateApplied;
         TryInstallHostLayer(topLevel);
-
-        // 反馈宿主层实测覆盖整个 TopLevel（含 CSD 装饰阴影 / 非 CSD 自绘阴影那一圈），
-        // 不会跟着 VisualLayerManager.Margin 内缩。这里给 manager 自己加 Margin 把内容收到可见客户区，
-        // 不然 Top/Right/Bottom/Left 的对齐都会贴到宿主层边沿（即装饰外沿），卡片就漏到窗外了。
         _safeAreaMarginSubscription?.Dispose();
         _safeAreaMarginSubscription = TopLevelMarginBinder.BindHostMargin(topLevel, margin => Margin = margin);
     }
 
     private void TryInstallHostLayer(TopLevel topLevel)
     {
-        _hostLayer                  = WindowFeedbackLayer.GetLayer(topLevel);
+        _hostLayer = WindowFeedbackLayer.GetLayer(topLevel);
         _hostLayerUsesNativeAdorner = false;
-
         if (_hostLayer is null)
         {
-            _hostLayer                  = AdornerLayer.GetAdornerLayer(topLevel);
+            _hostLayer = AdornerLayer.GetAdornerLayer(topLevel);
             _hostLayerUsesNativeAdorner = _hostLayer is not null;
         }
-
         if (_hostLayer is null)
         {
             ScheduleHostLayerRetry(topLevel);
             return;
         }
 
-        _hostLayerRetryCount     = 0;
+        _hostLayerRetryCount = 0;
         _hostLayerRetryScheduled = false;
         if (!_hostLayer.Children.Contains(this))
         {
             _hostLayer.Children.Add(this);
         }
-        if (_hostLayerUsesNativeAdorner)
-        {
-            AdornerLayer.SetAdornedElement(this, _hostLayer);
-        }
-        else
-        {
-            AdornerLayer.SetAdornedElement(this, null);
-        }
+        AdornerLayer.SetAdornedElement(this, _hostLayerUsesNativeAdorner ? _hostLayer : null);
     }
 
     private void ScheduleHostLayerRetry(TopLevel topLevel)
     {
-        if (_hostLayerRetryScheduled ||
-            _isDisposed ||
-            _hostLayerRetryCount >= MaxHostLayerRetryCount)
+        if (_hostLayerRetryScheduled || _isDisposed || _hostLayerRetryCount >= MaxHostLayerRetryCount)
         {
             return;
         }
-
         _hostLayerRetryScheduled = true;
         if (_hostLayerRetryCount == 0)
         {
@@ -443,15 +415,11 @@ public class WindowNotificationManager : TemplatedControl, INotificationManager,
         {
             return;
         }
-
         _hostLayerRetryScheduled = false;
-        if (_isDisposed ||
-            _hostLayer is not null ||
-            !ReferenceEquals(_topLevel, topLevel))
+        if (_isDisposed || _hostLayer is not null || !ReferenceEquals(_topLevel, topLevel))
         {
             return;
         }
-
         _hostLayerRetryCount++;
         TryInstallHostLayer(topLevel);
     }
@@ -460,89 +428,63 @@ public class WindowNotificationManager : TemplatedControl, INotificationManager,
     {
         RemoveFromHostLayer();
         _hostLayerRetryScheduled = false;
-        _hostLayerRetryCount     = 0;
-
-        // Reinstall notification manager on template reapplied.
+        _hostLayerRetryCount = 0;
         var topLevel = (TopLevel)sender!;
         topLevel.TemplateApplied -= TopLevelOnTemplateApplied;
         InstallFromTopLevel(topLevel);
     }
-    
+
     private void RemoveFromHostLayer()
     {
         _safeAreaMarginSubscription?.Dispose();
         _safeAreaMarginSubscription = null;
-        if (_hostLayer is not null)
+        if (_hostLayer is null)
         {
-            _hostLayer.Children.Remove(this);
-            if (_hostLayerUsesNativeAdorner)
-            {
-                AdornerLayer.SetAdornedElement(this, null);
-            }
-            _hostLayer                  = null;
-            _hostLayerUsesNativeAdorner = false;
+            return;
         }
+        _hostLayer.Children.Remove(this);
+        if (_hostLayerUsesNativeAdorner)
+        {
+            AdornerLayer.SetAdornedElement(this, null);
+        }
+        _hostLayer = null;
+        _hostLayerUsesNativeAdorner = false;
     }
-    
+
     public void Dispose()
     {
         if (_isDisposed)
         {
             return;
         }
+        _isDisposed = true;
 
-        try
+        if (_topLevel is not null)
         {
-            // 停止定时器并取消 Tick 事件订阅
-            if (_cleanupTimer is not null)
-            {
-                _cleanupTimer.Stop();
-                _cleanupTimer.Tick -= HandleCleanupTimerTick;
-                _cleanupTimer = null;
-            }
-            if (_cardExpiredTimer is not null)
-            {
-                _cardExpiredTimer.Stop();
-                _cardExpiredTimer.Tick -= HandleCardExpiredTimer;
-                _cardExpiredTimer = null;
-            }
-
-            _items?.Clear();
-            _cleanupQueue.Clear();
-            _cleanupSet.Clear();
-            _pendingNotifications.Clear();
-            _hostLayerRetryScheduled = false;
-            _hostLayerRetryCount = 0;
-            // 卸载事件订阅
-            if (_topLevel is not null)
-            {
-                _topLevel.TemplateApplied -= TopLevelOnTemplateApplied;
-            }
-
-            _safeAreaMarginSubscription?.Dispose();
-            _safeAreaMarginSubscription = null;
-
-            // 从宿主层中移除
-            if (_hostLayer is not null)
-            {
-                _hostLayer.Children.Remove(this);
-                if (_hostLayerUsesNativeAdorner)
-                {
-                    AdornerLayer.SetAdornedElement(this, null);
-                }
-                _hostLayer                  = null;
-                _hostLayerUsesNativeAdorner = false;
-            }
-            
-            _topLevel     = null;
-            _items        = null;
-            _isDisposed   = true;
-          
+            _topLevel.TemplateApplied -= TopLevelOnTemplateApplied;
         }
-        catch (Exception ex)
+        if (_presenter is not null)
         {
-            System.Diagnostics.Debug.WriteLine($"Error uninstalling from TopLevel: {ex.Message}");
+            _presenter.StackHoverChanged -= OnStackHoverChanged;
+            _presenter.ItemsSource = null;
+            _presenter = null;
         }
+        _lifetimeScheduler?.Dispose();
+        _lifetimeScheduler = null;
+        for (var i = 0; i < _cards.Count; i++)
+        {
+            var card = _cards[i];
+            card.PointerPressed -= OnNotificationPointerPressed;
+            card.NotificationClosed -= OnNotificationClosed;
+            card.ReleaseOwner();
+        }
+        _cards.Clear();
+        _isLifecyclePaused = true;
+        _isStackPaused = false;
+        _hostLayerRetryScheduled = false;
+        _hostLayerRetryCount = 0;
+        RemoveFromHostLayer();
+        _topLevel = null;
     }
 
     private void UpdatePseudoClasses(NotificationPosition position)
@@ -554,16 +496,4 @@ public class WindowNotificationManager : TemplatedControl, INotificationManager,
         PseudoClasses.Set(NotificationPseudoClass.TopCenter, position == NotificationPosition.TopCenter);
         PseudoClasses.Set(NotificationPseudoClass.BottomCenter, position == NotificationPosition.BottomCenter);
     }
-
-    internal void StopExpiredTimer()
-    {
-        _cardExpiredTimer?.Stop();
-    }
-
-    internal void StartExpiredTimer()
-    {
-        ConfigureExpiredTimer();
-    }
-
-    private readonly record struct PendingNotification(INotification Notification, string[]? Classes);
 }

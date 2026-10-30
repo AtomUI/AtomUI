@@ -20,6 +20,9 @@ public abstract class AbstractBackTopFloatButtonHost : AbstractFloatButtonHost
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<AbstractBackTopFloatButtonHost>();
 
+    public static readonly StyledProperty<bool> IsShowProgressProperty =
+        AbstractBackTopFloatButton.IsShowProgressProperty.AddOwner<AbstractBackTopFloatButtonHost>();
+
     public TimeSpan ToTopDuration
     {
         get => GetValue(ToTopDurationProperty);
@@ -43,6 +46,13 @@ public abstract class AbstractBackTopFloatButtonHost : AbstractFloatButtonHost
         get => GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
     }
+
+    public bool IsShowProgress
+    {
+        get => GetValue(IsShowProgressProperty);
+        set => SetValue(IsShowProgressProperty, value);
+    }
+
     #endregion
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

@@ -10,6 +10,8 @@
 
 主要源码文件：
 
+- `src/AtomUI.Core/Controls/Icon/Icon.cs`（图标基类、画刷槽和绘制状态）
+
 - `src/AtomUI.Controls/Icon/IconFuncTemplate.cs`
 - `src/AtomUI.Controls/Icon/IconPresenter.cs`
 - `src/AtomUI.Controls/Icon/IconTemplate.cs`
@@ -92,6 +94,10 @@ Icon 的交互事件应从输入源收敛到控件级语义事件：
 当前没有抽取到控件专属 public 事件；交互语义主要通过继承事件、命令、属性变化和 Gallery 可观察行为体现。
 
 ## 7. 内部算法与关键流程
+
+基类初始化和属性变更按相同的 `IconBrushType` 槽位投影画刷与 Pen；主描边与 fallback 是独立槽位。
+派生类通过元数据提供的默认画刷也必须在首次初始化生效，不能依赖后续属性变更补齐。
+`DrawPens` 是 protected 派生契约，修改其创建时机或集合形态须独立评审兼容性。
 
 维护者需要重点关注以下流程：
 

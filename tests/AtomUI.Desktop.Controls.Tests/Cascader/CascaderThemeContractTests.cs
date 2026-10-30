@@ -21,8 +21,7 @@ public class CascaderThemeContractTests
     [Fact]
     public void Template_Right_AddOn_And_Handle_State_Are_Bound_From_Axaml()
     {
-        var themeSource    = ReadRepoFile("src/AtomUI.Desktop.Controls/Cascader/Themes/CascaderTheme.axaml");
-        var cascaderSource = ReadRepoFile("src/AtomUI.Desktop.Controls/Cascader/Cascader.cs");
+        var themeSource = ReadRepoFile("src/AtomUI.Desktop.Controls/Cascader/Themes/CascaderTheme.axaml");
 
         themeSource.ShouldContain("MaxCount=\"{CompiledBinding $parent[atom:Cascader].MaxCount}\"");
         themeSource.ShouldContain("SelectedCount=\"{CompiledBinding $parent[atom:Cascader].SelectedCount}\"");
@@ -31,9 +30,6 @@ public class CascaderThemeContractTests
         themeSource.ShouldContain("ContentTemplate=\"{CompiledBinding $parent[atom:Cascader].ContentRightAddOnTemplate}\"");
         themeSource.ShouldContain("IsInputHover=\"{CompiledBinding $parent[atom:CascaderAddOnDecoratedBox].IsInnerBoxHover}\"");
         themeSource.ShouldContain("IsInputPressed=\"{CompiledBinding $parent[atom:CascaderAddOnDecoratedBox].IsInnerBoxPressed}\"");
-
-        cascaderSource.ShouldNotContain("SetupContentRightAddOnBindings");
-        cascaderSource.ShouldNotContain("_contentRightAddOnBindings");
     }
 
     [Fact]

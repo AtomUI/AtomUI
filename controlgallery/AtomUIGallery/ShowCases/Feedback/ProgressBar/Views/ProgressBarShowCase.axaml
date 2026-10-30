@@ -5,9 +5,30 @@
              xmlns:atom="https://atomui.net"
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              x:DataType="vm:ProgressBarViewModel">
+    <UserControl.Resources>
+        <DataTemplate x:Key="SemanticProgressToolbarTemplate"
+                      x:DataType="vm:ProgressBarViewModel">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="{atom:SharedTokenResource Spacing}">
+                <atom:Segmented SelectedIndex="{Binding SemanticPreviewIndex, Mode=TwoWay}"
+                                VerticalAlignment="Center">
+                    <atom:SegmentedItem Content="line" />
+                    <atom:SegmentedItem Content="steps" />
+                    <atom:SegmentedItem Content="circle" />
+                    <atom:SegmentedItem Content="dashboard" />
+                </atom:Segmented>
+                <atom:ToggleSwitch IsChecked="{Binding IsSemanticGradientEnabled, Mode=TwoWay}"
+                                   VerticalAlignment="Center"
+                                   OnContent="Gradient"
+                                   OffContent="Gradient" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="ProgressBar"
                     Category="{gallery:ProgressBarShowCaseLangResource ComponentCategory}"
@@ -17,7 +38,150 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractProgressBar" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:ProgressBarViewModel">
+                    <StackPanel HorizontalAlignment="Stretch"
+                                Spacing="{atom:SharedTokenResource Spacing}">
+                        <StackPanel.Styles>
+                            <Style Selector="atom|ProgressBar.gradient-preview, atom|StepsProgressBar.gradient-preview, atom|CircleProgress.gradient-preview, atom|DashboardProgress.gradient-preview">
+                                <Setter Property="StrokeBrush" Value="{Binding SemanticPreviewGradientBrush}" />
+                            </Style>
+                        </StackPanel.Styles>
+                        <gallery:SemanticPartPreview Name="ProgressBarSemanticPreview"
+                                                     IsVisible="{Binding IsLineSemanticPreviewVisible}"
+                                                     SemanticOwner="{Binding #ProgressBarSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:ProgressBar}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <StackPanel HorizontalAlignment="Stretch"
+                                            Spacing="{atom:SharedTokenResource Spacing}">
+                                    <ContentControl Content="{Binding}"
+                                                    HorizontalAlignment="Center"
+                                                    ContentTemplate="{StaticResource SemanticProgressToolbarTemplate}" />
+                                    <Grid Height="200" HorizontalAlignment="Stretch">
+                                        <atom:ProgressBar Name="ProgressBarSemanticOwner"
+                                                          Classes.gradient-preview="{Binding IsSemanticGradientEnabled}"
+                                                          HorizontalAlignment="Stretch"
+                                                          VerticalAlignment="Top"
+                                                          Value="80" />
+                                    </Grid>
+                                </StackPanel>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription Path="root"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription Path="body"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticBodyDescription}" />
+                                <gallery:SemanticPartDescription Path="rail"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticRailDescription}" />
+                                <gallery:SemanticPartDescription Path="track"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticTrackDescription}" />
+                                <gallery:SemanticPartDescription Path="indicator"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticIndicatorDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="StepsProgressBarSemanticPreview"
+                                                     IsVisible="{Binding IsStepsSemanticPreviewVisible}"
+                                                     SemanticOwner="{Binding #StepsProgressBarSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:StepsProgressBar}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <StackPanel HorizontalAlignment="Stretch"
+                                            Spacing="{atom:SharedTokenResource Spacing}">
+                                    <ContentControl Content="{Binding}"
+                                                    HorizontalAlignment="Center"
+                                                    ContentTemplate="{StaticResource SemanticProgressToolbarTemplate}" />
+                                    <Grid Height="200" HorizontalAlignment="Stretch">
+                                        <atom:StepsProgressBar Name="StepsProgressBarSemanticOwner"
+                                                               Classes.gradient-preview="{Binding IsSemanticGradientEnabled}"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Top"
+                                                               Value="80"
+                                                               Steps="5" />
+                                    </Grid>
+                                </StackPanel>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription Path="root"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription Path="body"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticBodyDescription}" />
+                                <gallery:SemanticPartDescription Path="track"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticTrackDescription}" />
+                                <gallery:SemanticPartDescription Path="indicator"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticIndicatorDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="CircleProgressSemanticPreview"
+                                                     IsVisible="{Binding IsCircleSemanticPreviewVisible}"
+                                                     SemanticOwner="{Binding #CircleProgressSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:CircleProgress}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <StackPanel HorizontalAlignment="Stretch"
+                                            Spacing="{atom:SharedTokenResource Spacing}">
+                                    <ContentControl Content="{Binding}"
+                                                    HorizontalAlignment="Center"
+                                                    ContentTemplate="{StaticResource SemanticProgressToolbarTemplate}" />
+                                    <Grid Height="200" HorizontalAlignment="Stretch">
+                                        <atom:CircleProgress Name="CircleProgressSemanticOwner"
+                                                             Classes.gradient-preview="{Binding IsSemanticGradientEnabled}"
+                                                             HorizontalAlignment="Center"
+                                                             VerticalAlignment="Top"
+                                                             Value="80" />
+                                    </Grid>
+                                </StackPanel>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription Path="root"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription Path="body"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticBodyDescription}" />
+                                <gallery:SemanticPartDescription Path="rail"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticRailDescription}" />
+                                <gallery:SemanticPartDescription Path="track"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticTrackDescription}" />
+                                <gallery:SemanticPartDescription Path="indicator"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticIndicatorDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="DashboardProgressSemanticPreview"
+                                                     IsVisible="{Binding IsDashboardSemanticPreviewVisible}"
+                                                     SemanticOwner="{Binding #DashboardProgressSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:DashboardProgress}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <StackPanel HorizontalAlignment="Stretch"
+                                            Spacing="{atom:SharedTokenResource Spacing}">
+                                    <ContentControl Content="{Binding}"
+                                                    HorizontalAlignment="Center"
+                                                    ContentTemplate="{StaticResource SemanticProgressToolbarTemplate}" />
+                                    <Grid Height="200" HorizontalAlignment="Stretch">
+                                        <atom:DashboardProgress Name="DashboardProgressSemanticOwner"
+                                                                Classes.gradient-preview="{Binding IsSemanticGradientEnabled}"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Top"
+                                                                Value="80" />
+                                    </Grid>
+                                </StackPanel>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription Path="root"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription Path="body"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticBodyDescription}" />
+                                <gallery:SemanticPartDescription Path="rail"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticRailDescription}" />
+                                <gallery:SemanticPartDescription Path="track"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticTrackDescription}" />
+                                <gallery:SemanticPartDescription Path="indicator"
+                                                                 Description="{gallery:ProgressBarShowCaseLangResource SemanticIndicatorDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -507,7 +671,88 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:ProgressBarShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:ProgressBarShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="progress-bar-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ProgressBarViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="0">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|ProgressBar.semantic-style-demo">
+                                        <Setter Property="Padding" Value="2" />
+                                        <Setter Property="CornerRadius" Value="8" />
+                                        <atom:ProgressBarRailStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="#1A000000" />
+                                            <Setter Property="CornerRadius" Value="8" />
+                                        </atom:ProgressBarRailStyle>
+                                        <atom:ProgressBarTrackStyle x:SetterTargetType="Border">
+                                            <Setter Property="CornerRadius" Value="8" />
+                                            <Setter Property="Transitions">
+                                                <Transitions>
+                                                    <BrushTransition Property="Background" Duration="0:0:0.3">
+                                                        <BrushTransition.Easing>
+                                                            <SplineEasing X1="0.25" Y1="0.1" X2="0.25" Y2="1" />
+                                                        </BrushTransition.Easing>
+                                                    </BrushTransition>
+                                                    <DoubleTransition Property="Width" Duration="0:0:0.3">
+                                                        <DoubleTransition.Easing>
+                                                            <SplineEasing X1="0.25" Y1="0.1" X2="0.25" Y2="1" />
+                                                        </DoubleTransition.Easing>
+                                                    </DoubleTransition>
+                                                </Transitions>
+                                            </Setter>
+                                        </atom:ProgressBarTrackStyle>
+                                    </Style>
+                                    <Style Selector="atom|ProgressBar.semantic-style-demo[Value=10]">
+                                        <atom:ProgressBarTrackStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="{Binding SemanticTrackBrush10}" />
+                                        </atom:ProgressBarTrackStyle>
+                                    </Style>
+                                    <Style Selector="atom|ProgressBar.semantic-style-demo[Value=20]">
+                                        <atom:ProgressBarTrackStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="{Binding SemanticTrackBrush20}" />
+                                        </atom:ProgressBarTrackStyle>
+                                    </Style>
+                                    <Style Selector="atom|ProgressBar.semantic-style-demo[Value=40]">
+                                        <atom:ProgressBarTrackStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="{Binding SemanticTrackBrush40}" />
+                                        </atom:ProgressBarTrackStyle>
+                                    </Style>
+                                    <Style Selector="atom|ProgressBar.semantic-style-demo[Value=60]">
+                                        <atom:ProgressBarTrackStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="{Binding SemanticTrackBrush60}" />
+                                        </atom:ProgressBarTrackStyle>
+                                    </Style>
+                                    <Style Selector="atom|ProgressBar.semantic-style-demo[Value=80]">
+                                        <atom:ProgressBarTrackStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="{Binding SemanticTrackBrush80}" />
+                                        </atom:ProgressBarTrackStyle>
+                                    </Style>
+                                    <Style Selector="atom|ProgressBar.semantic-style-demo[Value=99]">
+                                        <atom:ProgressBarTrackStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="{Binding SemanticTrackBrush99}" />
+                                        </atom:ProgressBarTrackStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:ProgressBar Classes="semantic-style-demo" Value="10" />
+                                <atom:ProgressBar Classes="semantic-style-demo" Value="20" />
+                                <atom:ProgressBar Classes="semantic-style-demo" Value="40" />
+                                <atom:ProgressBar Classes="semantic-style-demo" Value="60" />
+                                <atom:ProgressBar Classes="semantic-style-demo" Value="80" />
+                                <atom:ProgressBar Classes="semantic-style-demo" Value="99" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

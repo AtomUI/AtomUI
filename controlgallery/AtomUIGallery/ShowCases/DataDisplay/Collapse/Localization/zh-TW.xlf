@@ -253,6 +253,48 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Body element with padding, color, background color and other styles for panel content area display</source>
+        <target state="translated">內容元素，包含內邊距、顏色、背景色等面板內容區域的展示樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with flex layout, padding, color, line-height, cursor style, transition animations and other interactive styles for panel headers</source>
+        <target state="translated">頭部元素，包含flex佈局、內邊距、顏色、行高、游標樣式、過渡動畫等面板頭部的互動和樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with font size, transition animations, rotation transforms and other styles and animations for expand/collapse arrows</source>
+        <target state="translated">圖示元素，包含字型大小、過渡動畫、旋轉變換等展開收起箭頭的樣式和動效</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Collapse property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域選擇器和 Collapse 屬性選擇器自訂已發佈的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border, border-radius, background color and container styles that control the overall layout and appearance of collapse panels</source>
+        <target state="translated">根元素，包含摺疊面板的邊框、圓角、背景色等容器樣式，控制面板的整體佈局和外觀</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with flex auto layout and margin styles for title text layout and typography</source>
+        <target state="translated">標題元素，包含flex自適應佈局、右邊距等標題文字的佈局和排版樣式</target>
+      </segment>
+    </unit>
     <unit id="SizeDescription">
       <segment>
         <source>Ant Design supports a default collapse size as well as a large and small size. If a large or small collapse is desired, set the size property to either large or small respectively. Omit the size property for a collapse with the default size.</source>

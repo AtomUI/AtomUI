@@ -1,3 +1,6 @@
+using Avalonia.Input;
+using Avalonia.Headless;
+using Avalonia;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using AtomUI.Controls;
@@ -95,10 +98,38 @@ public class TreeViewDragDropTests
             childA.ParentNode.ShouldBeSameAs(parentB);
             droppedCount.ShouldBe(1);
         });
+        var draggedContainer = new AtomTreeViewItem { Header = "dragged" };
+        var targetContainer = new AtomTreeViewItem { Header = "target", IsExpanded = true };
+        var containerTree = new AtomTreeView { Width = 300, Height = 250 };
+        containerTree.Items.Add(draggedContainer);
+        containerTree.Items.Add(targetContainer);
+        var window = new Avalonia.Controls.Window { Width = 420, Height = 320, Content = containerTree };
+        var callbackCount = 0;
+        containerTree.ItemDropped += (_, _) =>
+        {
+            targetContainer.Items.ShouldContain(draggedContainer,
+                "ItemDropped must expose an already committed insertion");
+            ++callbackCount;
+            window.Close();
+        };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            Should.NotThrow(() => PerformDrop(containerTree, draggedContainer,
+                new DropTargetInfo { TargetTreeItem = targetContainer, Index = 0 }));
+            callbackCount.ShouldBe(1);
+            targetContainer.Items.ShouldContain(draggedContainer);
+            containerTree.Items.ShouldNotContain(draggedContainer);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [Fact]
-    public void Same_Collection_Root_Drop_Does_Not_Adjust_Index_When_Source_Is_After_Target()
+    public void Root_Drop_Order_And_Synchronous_Drag_Callback_Closure_Are_Safe()
     {
         var first  = new TreeItemNode { Header = "first" };
         var second = new TreeItemNode { Header = "second" };
@@ -123,6 +154,76 @@ public class TreeViewDragDropTests
 
             source.ShouldBe([first, third, second, fourth]);
         });
+        var liveTree = new AtomTreeView
+        {
+            Width = 300, Height = 250, IsDraggable = true, IsShowEmptyIndicator = false,
+            ItemsSource = new ITreeItemNode[] { new TreeItemNode { Header = "first" }, new TreeItemNode { Header = "second" } }
+        };
+        var window = new Avalonia.Controls.Window { Width = 420, Height = 320, Content = liveTree };
+        var started = 0;
+        var completed = 0;
+        liveTree.ItemDragStarted += (_, _) => { ++started; window.Close(); };
+        liveTree.ItemDragCompleted += (_, _) => ++completed;
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var item = liveTree.ContainerFromIndex(0).ShouldBeOfType<AtomTreeViewItem>();
+            var header = item.GetVisualDescendants().OfType<TreeViewItemHeader>().First();
+            var point = header.TranslatePoint(new Point(30, header.Bounds.Height / 2), window).ShouldNotBeNull();
+            window.MouseMove(point);
+            window.MouseDown(point, MouseButton.Left);
+            Should.NotThrow(() => window.MouseMove(point + new Vector(40, 0), RawInputModifiers.LeftMouseButton));
+            Dispatcher.UIThread.RunJobs();
+            started.ShouldBe(1);
+            completed.ShouldBe(1);
+            liveTree.IsDragging.ShouldBeFalse();
+            item.IsDragging.ShouldBeFalse();
+        }
+        finally
+        {
+            window.Close();
+        }
+        var leaveTree = new AtomTreeView
+        {
+            Width = 300, Height = 250, IsDraggable = true, IsShowEmptyIndicator = false,
+            ItemsSource = new ITreeItemNode[] { new TreeItemNode { Header = "first" }, new TreeItemNode { Header = "second" } }
+        };
+        var leaveWindow = new Avalonia.Controls.Window { Width = 420, Height = 320, Content = leaveTree };
+        var leaveCount = 0;
+        leaveTree.ItemDragLeave += (_, _) => { ++leaveCount; leaveWindow.Close(); };
+        leaveTree.ItemDragEnter += (_, args) => args.DraggedViewItem.ShouldNotBeNull();
+        try
+        {
+            leaveWindow.Show();
+            Dispatcher.UIThread.RunJobs();
+            var sourceContainer = leaveTree.ContainerFromIndex(0).ShouldBeOfType<AtomTreeViewItem>();
+            var destination = leaveTree.ContainerFromIndex(1).ShouldBeOfType<AtomTreeViewItem>();
+            var header = destination.GetVisualDescendants().OfType<TreeViewItemHeader>().First();
+            var point = header.TranslatePoint(new Point(30, header.Bounds.Height / 2), leaveTree).ShouldNotBeNull();
+            leaveTree.GetNodeByPosition(point).ShouldBeSameAs(destination);
+            SetPrivateField(leaveTree, "_beingDraggedTreeItem", sourceContainer);
+            SetPrivateField(leaveTree, "_currentDragOver", sourceContainer);
+            leaveTree.IsDragging = true;
+            sourceContainer.IsDragOver = true;
+            try
+            {
+                typeof(AtomTreeView).GetMethod("SetupDragOver", BindingFlags.Instance | BindingFlags.NonPublic)!
+                    .Invoke(leaveTree, new object[] { point });
+            }
+            catch (TargetInvocationException ex) when (ex.InnerException is not null)
+            {
+                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+            }
+            leaveCount.ShouldBe(1);
+            leaveTree.IsDragging.ShouldBeFalse();
+            sourceContainer.IsDragOver.ShouldBeFalse();
+            destination.IsDragOver.ShouldBeFalse();
+        }
+        finally
+        {
+            leaveWindow.Close();
+        }
     }
 
     [Fact]

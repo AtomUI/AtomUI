@@ -211,6 +211,18 @@
         <target state="translated">頂部</target>
       </segment>
     </unit>
+    <unit id="P2PlaceholderSearchTabs">
+      <segment>
+        <source>Search tabs...</source>
+        <target state="translated">搜尋標籤頁...</target>
+      </segment>
+    </unit>
+    <unit id="P2TextNoMatchingTabs">
+      <segment>
+        <source>No matching tabs</source>
+        <target state="translated">沒有符合的標籤頁</target>
+      </segment>
+    </unit>
     <unit id="P2TextTabContent">
       <segment>
         <source>Tab Content</source>
@@ -239,6 +251,54 @@
       <segment>
         <source>Examples</source>
         <target state="translated">範例</target>
+      </segment>
+    </unit>
+    <unit id="SemanticAddDescription">
+      <segment>
+        <source>Add element, set size, color and corner radius styles for the plus button</source>
+        <target state="translated">新增元素，設定加號按鈕的尺寸、顏色與圓角樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>Close element, set size and color styles for the close button</source>
+        <target state="translated">關閉元素，設定關閉按鈕的尺寸與顏色樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element, set size and margin styles for the tab icon</source>
+        <target state="translated">圖示元素，設定頁籤圖示的尺寸與間距樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, set size, padding, hover state and selected state styles for each tab</source>
+        <target state="translated">頁籤元素，設定頁籤的尺寸、內邊距、懸停態與選中態樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label element, set font and color styles for the tab title</source>
+        <target state="translated">標題元素，設定頁籤標題的字型與顏色樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Style tabs through generated Semantic Part styles: tab spacing and selected background, icon and title margins, and plus button corner radius.</source>
+        <target state="translated">透過生成的 Semantic Part 樣式自訂頁籤：頁籤間距與選中背景、圖示與標題間距，以及加號按鈕圓角。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, set overall size, padding, border and background styles</source>
+        <target state="translated">根元素，設定整體尺寸、內邊距、邊框與背景樣式</target>
       </segment>
     </unit>
     <unit id="TabStripAddCloseDescription">
@@ -347,6 +407,18 @@
       <segment>
         <source>Items from ItemSource datasource</source>
         <target state="translated">通過 ItemSource 生成 TabStripItem</target>
+      </segment>
+    </unit>
+    <unit id="TabStripOverflowPopupSearchDescription">
+      <segment>
+        <source>Customize the overflow popup with search and keyboard navigation.</source>
+        <target state="translated">為溢出彈層加入搜尋與鍵盤導覽。</target>
+      </segment>
+    </unit>
+    <unit id="TabStripOverflowPopupSearchTitle">
+      <segment>
+        <source>Custom Popup Search</source>
+        <target state="translated">自訂彈層搜尋</target>
       </segment>
     </unit>
     <unit id="TabStripPositionDescription">

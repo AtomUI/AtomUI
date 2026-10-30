@@ -4,12 +4,14 @@ namespace AtomUI.Desktop.Controls;
 
 internal class ImagePreviewFloatToolbar : ImagePreviewBaseToolbar
 {
+    #region 公共属性定义
+
     public static readonly DirectProperty<ImagePreviewFloatToolbar, string?> IndicatorTextProperty =
         AvaloniaProperty.RegisterDirect<ImagePreviewFloatToolbar, string?>(
             nameof(IndicatorText),
             o => o.IndicatorText,
             (o, v) => o.IndicatorText = v);
-    
+
     private string? _indicatorText;
 
     public string? IndicatorText
@@ -18,11 +20,13 @@ internal class ImagePreviewFloatToolbar : ImagePreviewBaseToolbar
         internal set => SetAndRaise(IndicatorTextProperty, ref _indicatorText, value);
     }
 
+    #endregion
+
     static ImagePreviewFloatToolbar()
     {
         AffectsMeasure<ImagePreviewFloatToolbar>(IndicatorTextProperty);
     }
-    
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

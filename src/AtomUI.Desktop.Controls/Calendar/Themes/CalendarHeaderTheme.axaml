@@ -33,7 +33,9 @@
                         <atom:ComboBox Name="PART_MonthSelect"
                                        MinWidth="{atom:CalendarTokenResource MonthControlWidth}"
                                        DropDownDisplayPageSize="8" />
-                        <atom:OptionButtonGroup Name="PART_ModeSwitch" ButtonStyle="Outline">
+                        <atom:OptionButtonGroup Name="PART_ModeSwitch"
+                                                ButtonStyle="Outline"
+                                                Background="{atom:SharedTokenResource ColorBgContainer}">
                             <atom:OptionButton Content="Month" />
                             <atom:OptionButton Content="Year" />
                         </atom:OptionButtonGroup>

@@ -156,7 +156,12 @@ public class LocalizationBuildAssetsTests
             ["PackageId", "AssemblyName", "AtomUILanguageModuleId", "AtomUIBuildLanguagePackage"],
             ignoreOrder: true);
 
-        var usingTasks = targets.Descendants("UsingTask")
+        targets.Descendants("Import").ShouldContain(element =>
+            (string?)element.Attribute("Project") == "$(MSBuildThisFileDirectory)AtomUI.Toolchain.Tasks.targets");
+        var invokedTasks = targets.Descendants().Select(element => element.Name.LocalName).ToHashSet();
+        var usingTasks = XDocument.Load(GetRepoFile("build/AtomUI.Toolchain.Tasks.targets"))
+                                .Descendants("UsingTask")
+                                .Where(element => invokedTasks.Contains((string?)element.Attribute("TaskName") ?? string.Empty))
                                 .Select(element => (string?)element.Attribute("TaskName"))
                                 .ToArray();
         usingTasks.ShouldBe(
@@ -354,14 +359,13 @@ public class LocalizationBuildAssetsTests
     public async Task Project_Referenced_Language_Pack_Contributes_A_Generated_Bundle()
     {
         var repoRoot = Path.GetDirectoryName(GetRepoFile("AtomUI.slnx"))!;
-        var configuration = new DirectoryInfo(AppContext.BaseDirectory).Parent?.Name ?? "Debug";
-        var buildTasksAssembly = Path.Combine(
-            repoRoot,
-            ".artifacts",
-            "bin",
-            configuration,
-            "netstandard2.0",
-            "AtomUI.Build.Tasks.dll");
+        var configuration = typeof(LocalizationBuildAssetsTests).Assembly
+            .GetCustomAttributes(typeof(System.Reflection.AssemblyConfigurationAttribute), false)
+            .Cast<System.Reflection.AssemblyConfigurationAttribute>().Single().Configuration;
+        var buildTasksAssembly = typeof(LocalizationBuildAssetsTests).Assembly
+            .GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), false)
+            .Cast<System.Reflection.AssemblyMetadataAttribute>()
+            .Single(attribute => attribute.Key == "FixtureBuildTasksAssembly").Value!;
         var generatorAssembly = Path.Combine(AppContext.BaseDirectory, "AtomUI.Generator.dll");
         File.Exists(buildTasksAssembly).ShouldBeTrue();
         File.Exists(generatorAssembly).ShouldBeTrue();
@@ -423,13 +427,13 @@ public class LocalizationBuildAssetsTests
             result.ExitCode.ShouldBe(0, result.Output);
             var generatedBootstrap = Directory.EnumerateFiles(
                                                   Path.Combine(consumerDirectory, "obj", "Generated"),
-                                                  "GeneratedApplicationLanguageBootstrap.g.cs",
+                                                  "GeneratedApplicationLanguageData.g.cs",
                                                   SearchOption.AllDirectories)
                                               .ShouldHaveSingleItem();
             var generatedSource = await File.ReadAllTextAsync(
                 generatedBootstrap,
                 TestContext.Current.CancellationToken);
-            generatedSource.ShouldContain("TranslationSourceKind.StaticLanguagePack");
+            generatedSource.ShouldContain("builder.AddModuleData(");
             generatedSource.ShouldContain("Fixture.Module.I18n.PtBR");
             generatedSource.ShouldContain("Cancelar");
         }
@@ -443,7 +447,10 @@ public class LocalizationBuildAssetsTests
     public void Localization_Targets_Registers_Build_Tasks_Before_Source_Outputs_Exist()
     {
         var targets = XDocument.Load(GetRepoFile("build/AtomUI.Localization.targets"));
-        var usingTasks = targets.Descendants("UsingTask")
+        targets.Descendants("Import").ShouldContain(element =>
+            (string?)element.Attribute("Project") == "$(MSBuildThisFileDirectory)AtomUI.Toolchain.Tasks.targets");
+        var usingTasks = XDocument.Load(GetRepoFile("build/AtomUI.Toolchain.Tasks.targets"))
+                                .Descendants("UsingTask")
                                 .Where(element =>
                                     ((string?)element.Attribute("TaskName"))?.StartsWith(
                                         "AtomUI.Build.Tasks.",
@@ -454,7 +461,7 @@ public class LocalizationBuildAssetsTests
         foreach (var usingTask in usingTasks)
         {
             ((string?)usingTask.Attribute("AssemblyFile"))
-                .ShouldBe("$(AtomUIBuildTasksAssembly)");
+                .ShouldBe("$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll");
             usingTask.Attribute("Condition").ShouldBeNull();
         }
     }
@@ -471,6 +478,7 @@ public class LocalizationBuildAssetsTests
         var condition = (string?)moduleLanguageFiles.Attribute("Condition");
         condition.ShouldNotBeNull();
         condition.ShouldContain("'%(AtomUILanguageSourceKind)' == 'ModuleBuiltIn'");
+        condition.ShouldContain("'%(AtomUILanguageSourceIdentity)' == '$(AtomUILanguageModuleId)'");
         condition.ShouldContain("'%(Filename)%(Extension)' == 'en-US.xlf'");
     }
 
@@ -498,9 +506,9 @@ public class LocalizationBuildAssetsTests
                    .ShouldHaveSingleItem()
                    .Value.ShouldBe("buildTransitive/%(Filename)%(Extension)");
 
-        var toolAssets = repositoryProps.Descendants("AtomUIGeneratorToolAsset").ShouldHaveSingleItem();
+        var toolAssets = repositoryProps.Descendants("AtomUIGeneratorToolAsset").First();
         var toolIncludes = ((string?)toolAssets.Attribute("Include")).ShouldNotBeNull();
-        toolIncludes.ShouldContain("AtomUI.Build.Tasks.dll");
+        repositoryProps.Descendants("AtomUIGeneratorToolAsset").Single(element => element.Attribute("Include")!.Value.Contains("AtomUI.Build.Tasks.dll", StringComparison.Ordinal)).Attribute("Include")!.Value.ShouldContain("AtomUI.Build.Tasks.runtimeconfig.json");
         foreach (var dependency in new[]
                  {
                      "System.Reflection.Metadata.dll",
@@ -518,7 +526,7 @@ public class LocalizationBuildAssetsTests
                   .Value.ShouldBe("tools/netstandard2.0/%(Filename)%(Extension)");
 
         var buildTasksProject = XDocument.Load(GetRepoFile(
-            "src/AtomUI.Build.Tasks/AtomUI.Build.Tasks.csproj"));
+            "src/AtomUI.Toolchain/AtomUI.Toolchain.csproj"));
         buildTasksProject.Descendants("CopyLocalLockFileAssemblies")
                          .Single()
                          .Value.Trim()
@@ -527,7 +535,7 @@ public class LocalizationBuildAssetsTests
         project.Descendants("ProjectReference")
                .Single(element =>
                    ((string?)element.Attribute("Include"))?.EndsWith(
-                       "AtomUI.Build.Tasks/AtomUI.Build.Tasks.csproj",
+                       "AtomUI.Toolchain/AtomUI.Toolchain.csproj",
                        StringComparison.Ordinal) == true &&
                    (string?)element.Attribute("ReferenceOutputAssembly") == "false")
                .ShouldNotBeNull();
@@ -572,7 +580,7 @@ public class LocalizationBuildAssetsTests
         properties["PublishTrimmed"].ShouldBe("false");
         properties["PublishSingleFile"].ShouldBe("false");
         properties["SelfContained"].ShouldBe("false");
-        properties.ShouldNotContainKey("RuntimeIdentifier");
+        properties["RuntimeIdentifier"].ShouldBeEmpty();
     }
 
     [Fact]
@@ -963,8 +971,15 @@ public class LocalizationBuildAssetsTests
                 void RegisterApplicationLanguages(ILocalizationBuilder builder);
             }
 
+            [System.AttributeUsage(System.AttributeTargets.Assembly, AllowMultiple = true)]
+            public sealed class LanguageModuleManifestAttribute : System.Attribute
+            {
+                public LanguageModuleManifestAttribute(int version, string moduleId, string data) { }
+            }
+
             public interface ILocalizationBuilder
             {
+                void AddModuleData(string moduleId, string data);
                 void AddCatalog(LanguageCatalogDescriptor descriptor);
                 void AddTranslationBundle(TranslationBundleDescriptor descriptor);
             }

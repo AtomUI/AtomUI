@@ -2,13 +2,11 @@ using System.Globalization;
 using System.Reflection;
 using AtomUI.Desktop.Controls.Internal.Calendar;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
-using CalendarViewControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarView;
-using GridControl = Avalonia.Controls.Grid;
+using AtomUI.Desktop.Controls.Internal.DateViewer;
 using LunarCalendarControl = AtomUI.Desktop.Controls.LunarCalendar;
 
 namespace AtomUI.Desktop.Controls.Tests.Calendar;
@@ -38,13 +36,15 @@ public class LunarCalendarProviderTests
         provider.LastRange!.Start.ShouldBe(new DateTime(2026, 6, 28));
         provider.LastRange.End.ShouldBe(new DateTime(2026, 8, 8));
 
-        view.Value = new DateTime(2026, 7, 16);
+        calendar.Value = new DateTime(2026, 7, 16);
+        ApplyTemplateParts(view);
         provider.CallCount.ShouldBe(1);
 
-        view.Fullscreen = false;
+        calendar.Fullscreen = false;
         provider.CallCount.ShouldBe(1);
 
-        view.Value = new DateTime(2026, 8, 16);
+        calendar.Value = new DateTime(2026, 8, 16);
+        ApplyTemplateParts(view);
         provider.CallCount.ShouldBe(2);
     }
 
@@ -63,7 +63,8 @@ public class LunarCalendarProviderTests
         provider.CallCount.ShouldBe(0);
 
         calendar.ShowHolidays = true;
-        view.ViewMode = CalendarViewMode.Month;
+        calendar.Mode = CalendarMode.Year;
+        view.UpdateInput();
         provider.CallCount.ShouldBe(0);
     }
 
@@ -87,9 +88,9 @@ public class LunarCalendarProviderTests
         source.Clear();
 
         var cell = GetLunarCells(view).Single(item => item.Model?.Value == new DateTime(2026, 7, 15));
-        cell.LunarContext!.Holiday!.Name.ShouldBe("Work");
-        cell.LunarContext.IsAdjustedWorkday.ShouldBeTrue();
-        cell.LunarContext.IsWeekend.ShouldBeFalse();
+        ((LunarCalendarCellContext)cell.Context!).Holiday!.Name.ShouldBe("Work");
+        ((LunarCalendarCellContext)cell.Context!).IsAdjustedWorkday.ShouldBeTrue();
+        ((LunarCalendarCellContext)cell.Context!).IsWeekend.ShouldBeFalse();
     }
 
     [Theory]
@@ -108,9 +109,9 @@ public class LunarCalendarProviderTests
         ApplyTemplateParts(view);
 
         provider.CallCount.ShouldBe(1);
-        foreach (var cell in GetLunarCells(view).Where(cell => cell.Model?.Kind == CalendarViewCellKind.Date))
+        foreach (var cell in GetLunarCells(view).Where(cell => cell.Model?.Kind == DateViewerCellType.Date))
         {
-            cell.LunarContext!.Holiday.ShouldBeNull();
+            ((LunarCalendarCellContext)cell.Context!).Holiday.ShouldBeNull();
         }
     }
 
@@ -123,8 +124,7 @@ public class LunarCalendarProviderTests
             HolidayProvider = new ConfigurableProvider(true, null)
         };
 
-        Should.Throw<TargetInvocationException>(() => ApplyTemplateParts(CreateView(calendar)))
-            .InnerException.ShouldBeOfType<InvalidOperationException>();
+        Should.Throw<InvalidOperationException>(() => ApplyTemplateParts(CreateView(calendar)));
     }
 
     [Fact]
@@ -142,10 +142,10 @@ public class LunarCalendarProviderTests
         ApplyTemplateParts(view);
 
         var cell = GetLunarCells(view).Single(item => item.Model?.Value == new DateTime(2024, 2, 10));
-        cell.LunarContext!.IsHoliday.ShouldBeTrue();
-        cell.LunarContext.Holiday.ShouldNotBeNull();
-        cell.LunarContext.SecondaryContentKind.ShouldBe(LunarCalendarSecondaryContentKind.TraditionalFestival);
-        cell.LunarContext.SecondaryText.ShouldNotBeEmpty();
+        ((LunarCalendarCellContext)cell.Context!).IsHoliday.ShouldBeTrue();
+        ((LunarCalendarCellContext)cell.Context!).Holiday.ShouldNotBeNull();
+        ((LunarCalendarCellContext)cell.Context!).SecondaryContentKind.ShouldBe(LunarCalendarSecondaryContentKind.TraditionalFestival);
+        ((LunarCalendarCellContext)cell.Context!).SecondaryText.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public class LunarCalendarProviderTests
         provider.CallCount.ShouldBe(1);
 
         calendar.RefreshHolidayData();
-        view.RefreshPresentation();
+        ApplyTemplateParts(view);
 
         provider.CallCount.ShouldBe(2);
     }
@@ -180,9 +180,9 @@ public class LunarCalendarProviderTests
         try
         {
             var cell = calendar.GetVisualDescendants()
-                .OfType<LunarCalendarViewCell>()
+                .OfType<DateViewerCell>()
                 .Single(item => item.Model?.Value == calendar.Value);
-            cell.LunarContext!.Holiday.ShouldBeNull();
+            ((LunarCalendarCellContext)cell.Context!).Holiday.ShouldBeNull();
 
             provider.Holidays = [
                 new LunarCalendarHoliday(calendar.Value, "春节假期", LunarCalendarHolidayKind.Holiday)
@@ -190,7 +190,7 @@ public class LunarCalendarProviderTests
             calendar.RefreshHolidayData();
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
 
-            cell.LunarContext!.Holiday!.Name.ShouldBe("春节假期");
+            ((LunarCalendarCellContext)cell.Context!).Holiday!.Name.ShouldBe("春节假期");
             provider.CallCount.ShouldBe(2);
         }
         finally
@@ -209,41 +209,40 @@ public class LunarCalendarProviderTests
                 new LunarCalendarHoliday(new DateTime(2026, 7, 15), "Bad", (LunarCalendarHolidayKind)99)
             ])
         };
-        Should.Throw<TargetInvocationException>(() => ApplyTemplateParts(CreateView(invalid)))
-            .InnerException.ShouldBeOfType<ArgumentOutOfRangeException>();
+        Should.Throw<ArgumentOutOfRangeException>(() => ApplyTemplateParts(CreateView(invalid)));
 
         var throwing = new LunarCalendarControl
         {
             Value = new DateTime(2026, 7, 15),
             HolidayProvider = new ThrowingProvider()
         };
-        Should.Throw<TargetInvocationException>(() => ApplyTemplateParts(CreateView(throwing)))
-            .InnerException.ShouldBeOfType<InvalidOperationException>();
+        Should.Throw<InvalidOperationException>(() => ApplyTemplateParts(CreateView(throwing)));
     }
 
-    private static CalendarViewControl CreateView(LunarCalendarControl calendar) => new()
+    private static DatePanelSession CreateView(LunarCalendarControl calendar)
     {
-        Value = calendar.Value,
-        Today = calendar.Value,
-        Culture = CultureInfo.GetCultureInfo("en-US"),
-        PresentationAdapter = (LunarCalendarPresentationAdapter)typeof(AtomUI.Desktop.Controls.Calendar)
-            .GetField("_presentationAdapter", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .GetValue(calendar)!
-    };
-
-    private static void ApplyTemplateParts(CalendarViewControl view)
-    {
-        var scope = new NameScope();
-        scope.Register("PART_WeekHeader", new GridControl { Name = "PART_WeekHeader" });
-        scope.Register("PART_CellHost", new GridControl { Name = "PART_CellHost" });
-        typeof(CalendarViewControl).GetMethod("OnApplyTemplate", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .Invoke(view, [new TemplateAppliedEventArgs(scope)]);
+        var session = new DatePanelSession(calendar);
+        var adapter = (LunarCalendarPresentationAdapter)typeof(AtomUI.Desktop.Controls.Calendar)
+            .GetField("_presentationAdapter", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(calendar)!;
+        session.SetContentFactory(adapter.CreateCellContext);
+        return session;
     }
 
-    private static IReadOnlyList<LunarCalendarViewCell> GetLunarCells(CalendarViewControl view) =>
-        ((IReadOnlyList<CalendarViewCell>)typeof(CalendarViewControl)
-            .GetField("_cellPool", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .GetValue(view)!).Cast<LunarCalendarViewCell>().ToArray();
+    private static void ApplyTemplateParts(DatePanelSession session)
+    {
+        session.UpdateInput();
+        foreach (var model in session.Models.SelectMany(panel => panel.Cells))
+            session.CreateContext(model);
+    }
+
+    private static IReadOnlyList<DateViewerCell> GetLunarCells(DatePanelSession session) =>
+        session.Models.SelectMany(panel => panel.Cells).Where(model => model.Kind != DateViewerCellType.Week)
+            .Select(model =>
+            {
+                var cell = new DateViewerCell { CellTemplate = new FuncDataTemplate<object?>((_, _) => new Border()) };
+                cell.Bind(session, model);
+                return cell;
+            }).ToArray();
 
     private sealed class RecordingProvider(IReadOnlyList<LunarCalendarHoliday> holidays)
         : ILunarCalendarHolidayProvider

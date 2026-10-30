@@ -4,7 +4,7 @@
   <Project Path="controlgallery/AtomUIGallery/AtomUIGallery.csproj" />
   <Project Path="src/AtomUI.Controls.Shared/AtomUI.Controls.Shared.csproj" />
   <Project Path="src/AtomUI.Controls/AtomUI.Controls.csproj" />
-  <Project Path="src/AtomUI.Build.Tasks/AtomUI.Build.Tasks.csproj" />
+  <Project Path="src/AtomUI.Toolchain/AtomUI.Toolchain.csproj" />
   <Project Path="src/AtomUI.Core/AtomUI.Core.csproj" />
   <Project Path="src/AtomUI.Desktop.Controls.ColorPicker/AtomUI.Desktop.Controls.ColorPicker.csproj" />
   <Project Path="src/AtomUI.Desktop.Controls.DataGrid/AtomUI.Desktop.Controls.DataGrid.csproj" />
@@ -13,7 +13,6 @@
   <Project Path="src/AtomUI.Fonts.AlibabaPuHuiTi/AtomUI.Fonts.AlibabaPuHuiTi.csproj" />
   <Project Path="src/AtomUI.Fonts.AlibabaSans/AtomUI.Fonts.AlibabaSans.csproj" />
   <Project Path="src/AtomUI.Generator/AtomUI.Generator.csproj" />
-  <Project Path="src/AtomUI.Generator.LinkedPublish/AtomUI.Generator.LinkedPublish.csproj" />
   <Project Path="src/AtomUI.Icons.AntDesign.Generator/AtomUI.Icons.AntDesign.Generator.csproj" />
   <Project Path="src/AtomUI.Icons.AntDesign/AtomUI.Icons.AntDesign.csproj" />
   <Project Path="src/AtomUI.Icons.Shared/AtomUI.Icons.Shared.csproj" />
@@ -27,11 +26,9 @@
   <Project Path="src/AtomUI.Native/AtomUI.Native.csproj" />
   <Project Path="src/AtomUI.Toolkits.GalleryBase/AtomUI.Toolkits.GalleryBase.csproj" />
   <Project Path="src/AtomUI.Toolkits.GalleryBase.Generator/AtomUI.Toolkits.GalleryBase.Generator.csproj" />
-  <Project Path="tools/AtomUI.Docs.LLMsGenerator/AtomUI.Docs.LLMsGenerator.csproj" />
   <Project Path="tests/AtomUI.Core.Tests/AtomUI.Core.Tests.csproj" />
   <Project Path="tests/AtomUI.Controls.Tests/AtomUI.Controls.Tests.csproj" />
   <Project Path="tests/AtomUI.Build.Tasks.Tests/AtomUI.Build.Tasks.Tests.csproj" />
-  <Project Path="tests/AtomUI.Docs.LLMsGenerator.Tests/AtomUI.Docs.LLMsGenerator.Tests.csproj" />
   <Project Path="tests/AtomUI.Localization.Tests/AtomUI.Localization.Tests.csproj" />
   <Project Path="tests/AtomUI.Localization.IntegrationTests/AtomUI.Localization.IntegrationTests.csproj" />
   <Project Path="tests/AtomUI.Toolkits.GalleryBase.Generator.Tests/AtomUI.Toolkits.GalleryBase.Generator.Tests.csproj" />

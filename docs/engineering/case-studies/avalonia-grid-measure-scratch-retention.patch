@@ -1,0 +1,18 @@
+--- a/src/Avalonia.Controls/Grid.cs
++++ b/src/Avalonia.Controls/Grid.cs
+@@ -532,5 +532,6 @@
+             }
+             finally
+             {
++                SetValid();
+                 MeasureOverrideInProgress = false;
+             }
+@@ -2328,7 +2329,7 @@
+                 if (extData.TempDefinitions != null)
+                 {
+                     //  TempDefinitions has to be cleared to avoid "memory leaks"
+-                    Array.Clear(extData.TempDefinitions, 0, Math.Max(DefinitionsU.Count, DefinitionsV.Count));
++                    Array.Clear(extData.TempDefinitions, 0, extData.TempDefinitions.Length);
+                     extData.TempDefinitions = null;
+                 }
+             }

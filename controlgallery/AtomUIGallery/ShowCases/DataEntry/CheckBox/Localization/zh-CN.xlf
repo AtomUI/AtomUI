@@ -241,6 +241,48 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Checkbox icon element with size, direction, background, border, border-radius, transitions, and checked state checkmark styles</source>
+        <target state="translated">复选框图标元素，包含尺寸、方向、背景色、边框、圆角、过渡动画，以及选中状态的勾选标记样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label text element with padding and spacing styles relative to the checkbox</source>
+        <target state="translated">标签文本元素，包含文本的内边距和与复选框的间距样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartConditionalTitle">
+      <segment>
+        <source>Conditional styling</source>
+        <target state="translated">条件样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartFixedTitle">
+      <segment>
+        <source>Fixed styling</source>
+        <target state="translated">固定样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and CheckBox property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域选择器和 CheckBox 属性选择器定制已发布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with inline-flex layout, baseline alignment, cursor style, reset styles and other basic checkbox container styles</source>
+        <target state="translated">根元素，包含行内 flex 布局、基线对齐、光标样式、重置样式等复选框容器的基础样式</target>
+      </segment>
+    </unit>
     <unit id="UseWithGridDescription">
       <segment>
         <source>We can use Checkbox and Grid in Checkbox.Group, to implement complex layout.</source>

@@ -1,6 +1,5 @@
-﻿using AtomUI.MotionScene;
+using AtomUI.Animations;
 using Avalonia;
-using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Media.Transformation;
@@ -9,69 +8,39 @@ namespace AtomUI.Controls.Commons;
 
 internal static class BadgeMotionTransforms
 {
-    internal static readonly ITransform ScaleNearZero = BuildScaleTransform(0.01);
-    internal static readonly ITransform ScaleFull     = BuildScaleTransform(1.0);
+    internal static readonly ITransform ScaleNearZero = CreateScale();
+    internal static readonly RelativePoint Origin = new(0.5, 0.5, RelativeUnit.Relative);
 
-    private static ITransform BuildScaleTransform(double scale)
+    private static ITransform CreateScale()
     {
         var builder = TransformOperations.CreateBuilder(1);
-        builder.AppendScale(scale, scale);
+        builder.AppendScale(0.01, 0.01);
         return builder.Build();
     }
 }
 
-internal class BadgeZoomBadgeInMotion : AbstractMotion
+internal sealed class BadgeInMotion(TimeSpan duration) : AbstractMotion(duration)
 {
-    public BadgeZoomBadgeInMotion(TimeSpan duration,
-                                  Easing? easing = null,
-                                  FillMode fillMode = FillMode.Forward)
-        : base(duration, easing ?? new ExponentialEaseOut(), fillMode)
-    {
-    }
-    
-    protected override void ConfigureTransitions()
-    {
-        base.ConfigureTransitions();
-        RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
-    }
+    private static readonly Easing Curve = new ExponentialEaseOut();
+    protected override Easing DefaultEasing => Curve;
 
-    protected override void ConfigureMotionStartValue(BaseMotionActor actor)
+    protected override void Build(MotionBuilder builder, in MotionContext context)
     {
-        actor.Opacity         = 0.0;
-        actor.MotionTransform = BadgeMotionTransforms.ScaleNearZero;
-    }
-
-    protected override void ConfigureMotionEndValue(BaseMotionActor actor)
-    {
-        actor.Opacity         = 1.0;
-        actor.MotionTransform = BadgeMotionTransforms.ScaleFull;
+        builder.Origin = BadgeMotionTransforms.Origin;
+        builder.Scale.From(0.01).To(1);
+        builder.Opacity.From(0).To(context.BaseOpacity);
     }
 }
 
-internal class BadgeZoomBadgeOutMotion : AbstractMotion
+internal sealed class BadgeOutMotion(TimeSpan duration) : AbstractMotion(duration)
 {
-    public BadgeZoomBadgeOutMotion(TimeSpan duration,
-                                   Easing? easing = null,
-                                   FillMode fillMode = FillMode.Forward)
-        : base(duration, easing ?? new ExponentialEaseIn(), fillMode)
-    {
-    }
-    
-    protected override void ConfigureTransitions()
-    {
-        base.ConfigureTransitions();
-        RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
-    }
+    private static readonly Easing Curve = new ExponentialEaseIn();
+    protected override Easing DefaultEasing => Curve;
 
-    protected override void ConfigureMotionStartValue(BaseMotionActor actor)
+    protected override void Build(MotionBuilder builder, in MotionContext context)
     {
-        actor.Opacity         = 1.0;
-        actor.MotionTransform = BadgeMotionTransforms.ScaleFull;
-    }
-
-    protected override void ConfigureMotionEndValue(BaseMotionActor actor)
-    {
-        actor.Opacity         = 0.0;
-        actor.MotionTransform = BadgeMotionTransforms.ScaleNearZero;
+        builder.Origin = BadgeMotionTransforms.Origin;
+        builder.Scale.FromCurrent().To(0.01);
+        builder.Opacity.FromCurrent().To(0);
     }
 }

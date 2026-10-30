@@ -10,7 +10,32 @@
         <Setter Property="IndicatorColor" Value="{atom:SharedTokenResource ColorFill}" />
         <Setter Property="IndicatorActiveColor"
                 Value="{atom:SharedTokenResource ColorPrimary}" />
-        
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <!-- 圆点由控件代码按 StepCount 物化（无 TemplatedParent，
+                     /template/ 选择器链无法命中），因此圆点样式声明在
+                     DotsLayout 自身、沿逻辑树流到物化圆点；尺寸/颜色经
+                     逻辑祖先绑定到指示器实例，语义专用 Style 经 popup.root
+                     锚点沿逻辑树命中。布局保持与旧自绘一致：N*size+(N+1)*spacing。 -->
+                <StackPanel Name="DotsLayout"
+                            Orientation="Horizontal"
+                            Margin="{TemplateBinding ItemSpacing}"
+                            Spacing="{TemplateBinding ItemSpacing}">
+                    <StackPanel.Styles>
+                        <Style Selector="Ellipse.semantic-popup-indicator">
+                            <Setter Property="Width" Value="{Binding IndicatorSize, RelativeSource={RelativeSource AncestorType=atom:DefaultTourIndicator}}" />
+                            <Setter Property="Height" Value="{Binding IndicatorSize, RelativeSource={RelativeSource AncestorType=atom:DefaultTourIndicator}}" />
+                            <Setter Property="Fill" Value="{Binding IndicatorColor, RelativeSource={RelativeSource AncestorType=atom:DefaultTourIndicator}}" />
+                        </Style>
+                        <Style Selector="Ellipse.semantic-popup-indicator.active">
+                            <Setter Property="Fill" Value="{Binding IndicatorActiveColor, RelativeSource={RelativeSource AncestorType=atom:DefaultTourIndicator}}" />
+                        </Style>
+                    </StackPanel.Styles>
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+
         <Style Selector="^[StyleType=Primary]">
             <Setter Property="IndicatorColor"
                     Value="{atom:TourTokenResource PrimaryPrevBtnBg}" />

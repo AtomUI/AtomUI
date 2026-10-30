@@ -1,6 +1,9 @@
 # Empty 桌面版架构设计
 
-本文档定义 `Empty` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Empty 桌面版实现原理](implementation.md)，Empty Token 的专项设计见 [Empty Token 设计](token.md)，设计和契约变化记录见 [Empty Changelog](changelog.md)。
+本文档定义 `Empty` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见
+[控件研发标准](../../../../engineering/development/control-development-guidelines.md)，公开主题区域见
+[Empty Semantic Part 契约](semantic-part.md)，内部实现原理见 [Empty 桌面版实现原理](implementation.md)，Empty Token 的专项设计见
+[Empty Token 设计](token.md)，设计和契约变化记录见 [Empty Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -28,8 +31,8 @@ Empty 的设计语言围绕控件职责、可观察状态和主题契约组织�
 | 维度 | 含义 | Empty 中的表达 |
 | --- | --- | --- |
 | 产品语义 | 控件在界面中承担的稳定职责。 | Empty 是 AtomUI 桌面控件体系中的空状态控件，用于表达无数据、无结果或占位状态。 |
-| 内容承载 | 用户数据、展示内容、集合项或操作入口如何进入控件。 | `Description`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage`。 |
-| 状态反馈 | public API、内部状态和伪类如何形成用户可感知反馈。 | collection/filter、visual option。 |
+| 内容承载 | 用户数据、展示内容或操作入口如何进入控件。 | `Description`、`Footer`、`FooterTemplate`、`ImagePath`、`ImageSource`、`PresetImage`。 |
+| 状态反馈 | public API 和模板绑定如何形成用户可感知反馈。 | 描述与 Footer 可见性、图片来源、三档 SizeType。 |
 | 主题语义 | ControlTheme、SharedToken、控件 Token 和模板绑定如何表达视觉。 | Empty Token + ControlTheme。 |
 
 ## 3. API 与契约模型
@@ -40,8 +43,8 @@ Empty 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
-| 内容与数据 | `Description`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
-| 视觉与布局 | `SizeType` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
+| 内容与数据 | `Description`、`Footer`、`FooterTemplate`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage` | 定义空状态图片、描述和后续操作内容。 |
+| 视觉与布局 | `SizeType`、`StrokeDashArray` | `SizeType` 选择预设尺寸基线；`StrokeDashArray` 配置 root 边框的虚线节奏。 |
 
 当前没有抽取到控件专属 public 事件；交互通知主要来自继承事件、命令或 Gallery 可观察状态。
 
@@ -58,6 +61,11 @@ Empty 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 
 当前未抽取到控件专属伪类；主题主要依赖 Avalonia 标准伪类、模板绑定和内部 StyledProperty。
 
+Empty 公开 `root`、`image`、`description`、`footer` 四个 Semantic Part。完整 Selector、ContractType、cardinality 和定制边界见
+[Empty Semantic Part 契约](semantic-part.md)。`Footer` 与 `FooterTemplate` 是 6.0 新增的公共内容入口，用于承载创建、刷新、
+返回等空状态后续操作；`StrokeDashArray` 为 root 表面提供可绑定的虚线边框入口。Empty 保持
+`TemplatedControl` 基类不变。
+
 ## 4. 行为与状态模型
 
 Empty 的状态流按以下路径收敛：
@@ -72,10 +80,11 @@ Public API / inherited command / item source / user input
 
 状态维护规则：
 
-- Disabled 或不可交互状态优先屏蔽 pointer、keyboard、motion 和提交类反馈。
-- collection/filter、visual option 状态由控件实例或明确的数据 owner 推导，不能在 template part 之间双向竞争。
-- 模板重套用时必须把 public API 对应状态回放到新的 part、伪类和主题变量。
-- 集合、弹层、异步、动效或窗口相关状态必须能处理 reset、close、cancel、detach 和 owner 释放。
+- `PresetImage`、`ImagePath`、`ImageSource` 三者互斥，并始终更新同一个 image 模板节点。
+- `IsDescriptionVisible` 直接控制 description 模板节点的可见性，不通过 C# 动态创建或删除 Visual。
+- `Footer=null` 时 footer Presenter 隐藏；非空时由 `FooterTemplate` 或 Avalonia DataTemplate 机制生成内容。
+- Large、Middle、Small 只改变 image 高度和描述间距，不改变 Semantic marker 数量。
+- 模板重套用时必须把 public API 对应状态回放到新的 part 和主题变量。
 
 ## 5. 视觉与主题模型
 
@@ -85,7 +94,8 @@ Empty 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的�
 | --- | --- |
 | `EmptyTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 
-Empty 使用 `EmptyToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 collection/filter、visual option 运行时状态。
+Empty 使用 `EmptyToken` 作为控件 Token scope。Token 只表达图片高度、描述间距、Footer 间距和图形颜色等视觉语义，不承载
+实例内容或可见性状态。
 
 主题维护规则：
 
@@ -114,7 +124,7 @@ Empty 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证�
 
 维护 Empty 时必须保持以下不变量：
 
-- 不擅自新增、删除、重命名或改变 public/protected API、Avalonia 属性、事件和默认值。
+- 除已经批准的 `Footer`、`FooterTemplate` 外，不擅自新增、删除、重命名或改变 public/protected API、Avalonia 属性、事件和默认值。
 - 不破坏 template part、伪类、ControlTheme key、Token 名称和资源 key。
 - 不改变 Gallery 已展示的 XAML 用法、默认外观、交互顺序和状态优先级。
 - Template part 重新应用、集合替换、弹层关闭、窗口失活和控件 detach 时必须释放旧订阅和资源宿主。
@@ -124,42 +134,24 @@ Empty 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证�
 
 ## 8. 专项模型
 
-### 8.1 集合与数据同步模型
+### 8.1 图片来源模型
 
-Empty 的集合状态必须能处理 source replace、reset、clear 和 container recycle。业务数据对象不应反向持有视觉对象，虚拟化或懒创建路径必须在容器回收时清理旧状态。
+`PresetImage`、`ImagePath` 和 `ImageSource` 是同一 image 职责的三个互斥输入。它们只更新 `PART_SvgImage` 的绘制来源，不替换
+Semantic target。内置 Default/Simple 图形的颜色由 EmptyToken 与 SharedToken 计算，调用方不能同时设置多个图片来源。
 
-### 8.2 视觉选项模型
+### 8.2 描述与 Footer 模型
 
-Empty 的视觉选项通过 public API 归一为 theme variables、伪类或模板绑定。Token 保存组件语义值，不能保存实例运行时状态或业务色值。
+`Description` 负责本地化默认描述或调用方文本；`IsDescriptionVisible` 负责显示状态。`Footer` 与 `FooterTemplate` 负责 Empty
+内部的后续操作区域，避免 Gallery 或业务页面通过外部 StackPanel 模拟一个不属于 Empty owner 的 footer。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Empty 桌面版实现原理](implementation.md)
+- [Empty Semantic Part 契约](semantic-part.md)
 - [Empty Token 设计](token.md)
 - [Empty Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Empty` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/empty/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/empty/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -167,7 +159,7 @@ LLMS 导出来源：
 | --- | --- |
 | 文档改动 | 运行 `git diff --check`，检查相对链接存在。 |
 | Public API | 覆盖属性默认值、事件触发、命令和继承语义。 |
-| 状态模型 | 覆盖 collection/filter、visual option、disabled、hover、pressed、focus 以及控件特有状态。 |
+| 状态模型 | 覆盖三种图片来源、描述可见性、Footer 内容替换和三档 SizeType。 |
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |

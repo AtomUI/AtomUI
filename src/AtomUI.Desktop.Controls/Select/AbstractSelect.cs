@@ -8,6 +8,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -479,7 +480,11 @@ public abstract class AbstractSelect : TemplatedControl,
     internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
         AvaloniaProperty.Register<AbstractSelect, FormValidateFeedback?>(nameof(FormFeedback));
 
-    internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+    /// <summary>
+    /// 钉住候选弹层：开启后弹层忽略 light-dismiss 关闭请求，保持强制打开。
+    /// 典型场景是 Gallery 语义部件预览需要持续高亮 popup.* 部件。
+    /// </summary>
+    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<AbstractSelect>();
 
     private double _itemHeight;
@@ -592,7 +597,11 @@ public abstract class AbstractSelect : TemplatedControl,
         set => SetValue(FormFeedbackProperty, value);
     }
 
-    internal bool IsPopupPinnedOpen
+    /// <summary>
+    /// 钉住候选弹层：开启后弹层忽略 light-dismiss 关闭请求，保持强制打开。
+    /// 典型场景是 Gallery 语义部件预览需要持续高亮 popup.* 部件。
+    /// </summary>
+    public bool IsPopupPinnedOpen
     {
         get => GetValue(IsPopupPinnedOpenProperty);
         set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
@@ -604,6 +613,8 @@ public abstract class AbstractSelect : TemplatedControl,
     private protected bool PopupHasOpened;
     private protected bool IgnorePropertyChange;
     private AddOnDecoratedBox? _addOnDecoratedBox;
+    private bool _isFrameBorderBrushRelayed;
+    private bool _isFrameBackgroundRelayed;
 
     private IDisposable? _deactivationSubscription;
     private IDisposable? _popupPinnedOpenBinding;
@@ -667,6 +678,10 @@ public abstract class AbstractSelect : TemplatedControl,
 
         Popup = e.NameScope.Find<Popup>("PART_Popup");
         _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
+        _isFrameBorderBrushRelayed = false;
+        _isFrameBackgroundRelayed  = false;
+        RelayRootSurfaceBrush(BorderBrushProperty);
+        RelayRootSurfaceBrush(BackgroundProperty);
 
         if (Popup != null)
         {
@@ -678,12 +693,76 @@ public abstract class AbstractSelect : TemplatedControl,
             Popup.Opened += PopupOpened;
             Popup.Closed += PopupClosed;
         }
+
+        // If the drop down property indicates that the popup is open,
+        // flip its value to invoke the changed handler.
+        if (IsDropDownOpen && Popup != null && !Popup.IsOpen)
+        {
+            OpeningDropDown(false);
+        }
+    }
+
+    /// <summary>
+    /// Relays the owner's root surface brushes onto the input frame as local values so
+    /// application-level customization wins over the frame state machine, mirroring the input
+    /// family (<c>AbstractTextInput.RelayRootSurfaceBrush</c>) and the upstream root
+    /// border/background semantics. An unset owner value restores the state machine.
+    /// </summary>
+    private void RelayRootSurfaceBrush(AvaloniaProperty property)
+    {
+        var decoratedBox = _addOnDecoratedBox;
+        if (decoratedBox is null)
+        {
+            return;
+        }
+
+        var value = GetValue(property);
+        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
+        {
+            // Only hand the property back when this control is the one that took it over: a
+            // nested owner may hold its own relay on the same frame node.
+            if (IsRelayed(property))
+            {
+                decoratedBox.ClearValue(property);
+                SetRelayed(property, false);
+            }
+
+            return;
+        }
+
+        decoratedBox.SetValue(property, value, BindingPriority.LocalValue);
+        SetRelayed(property, true);
+    }
+
+    private bool IsRelayed(AvaloniaProperty property)
+    {
+        return ReferenceEquals(property, BorderBrushProperty)
+            ? _isFrameBorderBrushRelayed
+            : _isFrameBackgroundRelayed;
+    }
+
+    private void SetRelayed(AvaloniaProperty property, bool value)
+    {
+        if (ReferenceEquals(property, BorderBrushProperty))
+        {
+            _isFrameBorderBrushRelayed = value;
+        }
+        else
+        {
+            _isFrameBackgroundRelayed = value;
+        }
     }
 
     protected virtual void PopupClosed(object? sender, EventArgs e)
     {
         SubscriptionsOnOpen.Clear();
         PopupHasOpened = false;
+        // 弹层关闭（含 light-dismiss 路径）时强制回写宿主状态，
+        // 保持 IsDropDownOpen 与弹层实际状态同步（与 AbstractAutoComplete 一致）。
+        if (IsDropDownOpen)
+        {
+            SetCurrentValue(IsDropDownOpenProperty, false);
+        }
         NotifyPopupClosed();
     }
 
@@ -700,7 +779,11 @@ public abstract class AbstractSelect : TemplatedControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == StatusProperty ||
+        if (change.Property == BorderBrushProperty || change.Property == BackgroundProperty)
+        {
+            RelayRootSurfaceBrush(change.Property);
+        }
+        else if (change.Property == StatusProperty ||
             change.Property == FormStatusProperty ||
             change.Property == DataValidationErrors.HasErrorsProperty ||
             change.Property == DataValidationErrors.ErrorsProperty)
@@ -716,11 +799,12 @@ public abstract class AbstractSelect : TemplatedControl,
         {
             ConfigureMaxDropdownHeight();
         }
-        else if (change.Property == IsPopupPinnedOpenProperty &&
-                 change.GetNewValue<bool>() &&
-                 !IsDropDownOpen)
+        else if (change.Property == IsPopupPinnedOpenProperty)
         {
-            SetCurrentValue(IsDropDownOpenProperty, true);
+            if (change.GetNewValue<bool>() && !IsDropDownOpen)
+            {
+                SetCurrentValue(IsDropDownOpenProperty, true);
+            }
         }
     }
 

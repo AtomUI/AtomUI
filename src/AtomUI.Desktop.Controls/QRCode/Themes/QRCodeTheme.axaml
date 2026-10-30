@@ -14,68 +14,77 @@
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
                                          CornerRadius="{TemplateBinding CornerRadius}">
-                    <Panel>
-                        <Panel>
-                            <Image Source="{TemplateBinding Bitmap}" />
-                            <Border Name="ImageFrame"
-                                    Width="{TemplateBinding IconSize}"
-                                    Height="{TemplateBinding IconSize}"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Background="{TemplateBinding IconBgColor}"
-                                    IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}">
-                                <Image
-                                    Source="{TemplateBinding Icon}"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center" />
-                            </Border>
-                        </Panel>
-                        <Border Name="Mask" IsVisible="False" />
-
-                        <Panel Name="LoadingLayout" IsVisible="False">
-                            <atom:Spin IsSpinning="True"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       IsVisible="{TemplateBinding LoadingContent, Converter={x:Static ObjectConverters.IsNull}}" />
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              Content="{TemplateBinding LoadingContent}"
-                                              ContentTemplate="{TemplateBinding LoadingContentTemplate}"
-                                              IsVisible="{TemplateBinding LoadingContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        </Panel>
-
-                        <Panel Name="ExpiredLayout" IsVisible="False">
-                            <StackPanel Orientation="Vertical"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        IsVisible="{TemplateBinding ExpiredContent, Converter={x:Static ObjectConverters.IsNull}}">
-                                <atom:TextBlock HorizontalAlignment="Center"
-                                                Text="{atom:QRCodeLangResource Expired}" />
-                                <atom:Button Name="PART_RefreshButton"
-                                             HorizontalAlignment="Center"
-                                             Icon="{antdicons:AntDesignIconProvider Kind=ReloadOutlined}"
-                                             ButtonType="Link"
-                                             Content="{atom:QRCodeLangResource Refresh}" />
-                            </StackPanel>
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              Content="{TemplateBinding ExpiredContent}"
-                                              ContentTemplate="{TemplateBinding ExpiredContentTemplate}"
-                                              IsVisible="{TemplateBinding ExpiredContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        </Panel>
-
-                        <Panel Name="ScannedLayout" IsVisible="False">
-                            <atom:TextBlock HorizontalAlignment="Center"
+                    <Grid>
+                        <Border Name="ContentFrame" Padding="{TemplateBinding Padding}">
+                            <Viewbox Name="QRCodeSurfaceScaler" Stretch="Uniform">
+                                <Grid Width="{TemplateBinding Size}"
+                                      Height="{TemplateBinding Size}">
+                                    <Image Source="{TemplateBinding Bitmap}"
+                                           Stretch="Fill" />
+                                    <Border Name="ImageFrame"
+                                            Width="{TemplateBinding IconSize}"
+                                            Height="{TemplateBinding IconSize}"
+                                            HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
-                                            IsVisible="{TemplateBinding ScannedContent, Converter={x:Static ObjectConverters.IsNull}}"
-                                            Text="{atom:QRCodeLangResource Scanned}" />
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              Content="{TemplateBinding ScannedContent}"
-                                              ContentTemplate="{TemplateBinding ScannedContentTemplate}"
-                                              IsVisible="{TemplateBinding ScannedContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        </Panel>
-                    </Panel>
+                                            Background="{TemplateBinding IconBgColor}"
+                                            IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                        <Image Source="{TemplateBinding Icon}"
+                                               Stretch="Fill" />
+                                    </Border>
+                                </Grid>
+                            </Viewbox>
+                        </Border>
+
+                        <Border Name="Cover"
+                                Classes.semantic-cover="True"
+                                IsVisible="False">
+                            <Panel>
+                                <Panel Name="LoadingLayout" IsVisible="False">
+                                    <atom:Spin IsSpinning="True"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{TemplateBinding LoadingContent, Converter={x:Static ObjectConverters.IsNull}}" />
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Content="{TemplateBinding LoadingContent}"
+                                                      ContentTemplate="{TemplateBinding LoadingContentTemplate}"
+                                                      IsVisible="{TemplateBinding LoadingContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                </Panel>
+
+                                <Panel Name="ExpiredLayout" IsVisible="False">
+                                    <StackPanel Orientation="Vertical"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                IsVisible="{TemplateBinding ExpiredContent, Converter={x:Static ObjectConverters.IsNull}}">
+                                        <atom:TextBlock HorizontalAlignment="Center"
+                                                        Text="{atom:QRCodeLangResource Expired}" />
+                                        <atom:Button Name="PART_RefreshButton"
+                                                     HorizontalAlignment="Center"
+                                                     Icon="{antdicons:AntDesignIconProvider Kind=ReloadOutlined}"
+                                                     ButtonType="Link"
+                                                     Content="{atom:QRCodeLangResource Refresh}" />
+                                    </StackPanel>
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Content="{TemplateBinding ExpiredContent}"
+                                                      ContentTemplate="{TemplateBinding ExpiredContentTemplate}"
+                                                      IsVisible="{TemplateBinding ExpiredContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                </Panel>
+
+                                <Panel Name="ScannedLayout" IsVisible="False">
+                                    <atom:TextBlock HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    IsVisible="{TemplateBinding ScannedContent, Converter={x:Static ObjectConverters.IsNull}}"
+                                                    Text="{atom:QRCodeLangResource Scanned}" />
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Content="{TemplateBinding ScannedContent}"
+                                                      ContentTemplate="{TemplateBinding ScannedContentTemplate}"
+                                                      IsVisible="{TemplateBinding ScannedContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                </Panel>
+                            </Panel>
+                        </Border>
+                    </Grid>
                 </atom:PixelAlignedBorder>
             </ControlTemplate>
         </Setter>
@@ -86,41 +95,31 @@
         <Setter Property="Foreground" Value="{atom:QRCodeTokenResource QRCodeTextColor}" />
         <Setter Property="Background" Value="Transparent" />
         
-        <Setter Property="IconBgColor" Value="{atom:SharedTokenResource ColorBgContainer}" />
+        <Setter Property="IconBgColor" Value="Transparent" />
         <Setter Property="BorderThickness"
                 Value="{atom:SharedTokenResource BorderThickness}" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+        <Setter Property="Padding" Value="0" />
 
         <Style Selector="^[IsBordered=True]">
             <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
-            <Style Selector="^ /template/ atom|PixelAlignedBorder#Frame">
-                <Setter Property="Padding"
-                        Value="{atom:SharedTokenResource PaddingSM}" />
-            </Style>
+            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingSM}" />
         </Style>
 
-        <Style Selector="^ /template/ Border#Mask">
+        <Style Selector="^ /template/ Border#Cover">
             <Setter Property="Background"
                     Value="{atom:QRCodeTokenResource QRCodeMaskBackgroundColor}" />
         </Style>
 
-        <Style Selector="^ /template/ Border#ImageFrame">
-            <Setter Property="Padding"
-                    Value="{atom:SharedTokenResource PaddingXXS}" />
-        </Style>
-
         <Style Selector="^[Status=Active]">
-            <Style Selector="^ /template/ Border#Mask">
-                <Setter Property="IsVisible" Value="False" />
-            </Style>
-            <Style Selector="^ /template/ ContentPresenter#Status">
+            <Style Selector="^ /template/ Border#Cover">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
         </Style>
 
         <Style Selector="^:not(^[Status=Active])">
-            <Style Selector="^ /template/ Border#Mask">
+            <Style Selector="^ /template/ Border#Cover">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>

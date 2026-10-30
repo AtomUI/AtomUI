@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup><AssemblyName>Fixture.SourceAdapter</AssemblyName></PropertyGroup>
+    <ItemGroup>
+        <Compile Include="../../BinaryAdapter/Adapter.cs" Link="Adapter.cs" />
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="$(AtomUIFixtureVersion)" />
+    </ItemGroup>
+</Project>

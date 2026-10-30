@@ -5,57 +5,6 @@
               xmlns:atom="https://atomui.net"
               xmlns:atomc="https://atomui.net/common-controls">
     <Style Selector="^:is(atomc|AbstractFloatButton)">
-        <Style Selector="^[Shape=Square]">
-            <Setter Property="Template">
-                <ControlTemplate TargetType="atomc:AbstractFloatButton">
-                    <Panel>
-                        <Border Name="BackgroundFrame"
-                                BoxShadow="{TemplateBinding BoxShadow}"
-                                CornerRadius="{TemplateBinding CornerRadius}" />
-                        <Border Name="Frame"
-                                Padding="{TemplateBinding Padding}"
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="{TemplateBinding CornerRadius}"
-                                Cursor="{TemplateBinding Cursor}">
-                            <StackPanel Name="RootLayout">
-                                <atom:IconPresenter Name="IconPresenter" Icon="{TemplateBinding Icon}"
-                                                    IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                                <ContentPresenter Content="{TemplateBinding Content}"
-                                                  TextWrapping="Wrap"
-                                                  HorizontalContentAlignment="Center"
-                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                  IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                            </StackPanel>
-                        </Border>
-                        <Canvas Name="PART_BadgeLayout" />
-                    </Panel>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-
-        <Style Selector="^[Shape=Circle]">
-            <Setter Property="Template">
-                <ControlTemplate TargetType="atomc:AbstractFloatButton">
-                    <Panel>
-                        <Border Name="BackgroundFrame"
-                                BoxShadow="{TemplateBinding BoxShadow}"
-                                CornerRadius="{TemplateBinding CornerRadius}" />
-                        <Border Name="Frame"
-                                Padding="{TemplateBinding Padding}"
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="{TemplateBinding CornerRadius}"
-                                Cursor="{TemplateBinding Cursor}">
-                            <atom:IconPresenter Name="IconPresenter"
-                                                Icon="{TemplateBinding Icon}"
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center" />
-                        </Border>
-                        <Canvas Name="PART_BadgeLayout" />
-                    </Panel>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="BadgeEffectiveColor" Value="{atom:FloatButtonTokenResource ColorError}" />

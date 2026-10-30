@@ -1,0 +1,89 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             xmlns:antdicons="https://atomui.net/icons/antdesign"
+             xmlns:showcases="using:AtomUIGallery.ShowCases"
+             x:Class="AtomUIGallery.ShowCases.SearchableTabOverflowPopup"
+             x:Name="Root"
+             x:DataType="showcases:SearchableTabOverflowPopup"
+             x:CompileBindings="True"
+             CornerRadius="{atom:SharedTokenResource BorderRadiusLG}"
+             Width="200">
+    <UserControl.Styles>
+        <Style Selector="atom|Button.overflow-item">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Height" Value="{atom:MenuTokenResource ItemHeight}" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="{atom:MenuTokenResource ItemPaddingInline}" />
+            <Setter Property="CornerRadius" Value="{atom:MenuTokenResource ItemBorderRadius}" />
+            <Setter Property="Foreground" Value="{atom:MenuTokenResource ItemColor}" />
+            <Setter Property="Background" Value="{atom:MenuTokenResource ItemBg}" />
+        </Style>
+        <Style Selector="atom|Button.overflow-item:pointerover">
+            <Setter Property="Foreground" Value="{atom:MenuTokenResource ItemHoverColor}" />
+            <Setter Property="Background" Value="{atom:MenuTokenResource ItemHoverBg}" />
+        </Style>
+        <Style Selector="atom|Button.overflow-item.selected">
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="Background" Value="{atom:MenuTokenResource ItemHoverBg}" />
+        </Style>
+        <Style Selector="atom|Button.overflow-item:disabled">
+            <Setter Property="Foreground" Value="{atom:MenuTokenResource ItemDisabledColor}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Border Background="{atom:SharedTokenResource ColorBgContainer}"
+            BoxShadow="{atom:SharedTokenResource BoxShadows}"
+            CornerRadius="{atom:SharedTokenResource BorderRadiusLG}"
+            ClipToBounds="True">
+        <Grid RowDefinitions="Auto,*">
+            <Border Grid.Row="0"
+                    Padding="12,8"
+                    BorderBrush="{atom:SharedTokenResource ColorBorder}"
+                    BorderThickness="0,0,0,1">
+                <atom:LineEdit x:Name="PART_SearchInput"
+                               Text="{Binding Query, ElementName=Root, Mode=TwoWay}"
+                               PlaceholderText="{Binding SearchPlaceholder, ElementName=Root}"
+                               IsAllowClear="True">
+                    <atom:LineEdit.InnerLeftContent>
+                        <antdicons:SearchOutlined />
+                    </atom:LineEdit.InnerLeftContent>
+                </atom:LineEdit>
+            </Border>
+
+            <Grid Grid.Row="1">
+                <atom:ScrollViewer MaxHeight="300"
+                                   HorizontalScrollBarVisibility="Disabled"
+                                   VerticalScrollBarVisibility="Hidden">
+                    <Border Padding="{atom:MenuTokenResource MenuPopupContentPadding}"
+                            Grid.IsSharedSizeScope="True">
+                        <ItemsControl x:Name="PART_Items"
+                                      ItemsSource="{Binding FilteredItems, ElementName=Root}"
+                                      IsVisible="{Binding HasMatches, ElementName=Root}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="atom:TabOverflowItem">
+                                    <atom:Button Classes="overflow-item"
+                                                 Classes.selected="{Binding IsSelected}"
+                                                 ButtonType="Text"
+                                                 IsEnabled="{Binding IsEnabled}"
+                                                 Tag="{Binding}"
+                                                 Content="{Binding Header}"
+                                                 ContentTemplate="{Binding HeaderTemplate}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </atom:ScrollViewer>
+
+                <atom:TextBlock x:Name="PART_EmptyText"
+                                Padding="12"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{atom:SharedTokenResource ColorTextDisabled}"
+                                Text="{Binding EmptyText, ElementName=Root}"
+                                IsVisible="{Binding !HasMatches, ElementName=Root}" />
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

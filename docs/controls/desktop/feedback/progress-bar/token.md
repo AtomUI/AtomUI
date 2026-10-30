@@ -14,7 +14,7 @@ ProgressBarToken 不承载以下状态：
 - `StrokeBrush`、`SuccessStrokeBrush`、`TrailColor` 等实例画刷覆盖。
 - `IndicatorThickness`、`ChunkWidth`、`ChunkHeight`、显式 `Width` / `Height` 等实例尺寸覆盖。
 
-这些状态分别由 public API、internal effective state、主题 selector 和直接绘制逻辑处理。
+这些状态分别由 public API、internal effective state、主题 selector 和模板几何布局逻辑处理。
 
 ## 2. Token 分类
 
@@ -38,7 +38,7 @@ ProgressBarToken 不承载以下状态：
 - `LineExtraInfoMargin`
 - `LineProgressPadding`
 
-`LineBorderRadius` 表示线形进度胶囊形圆角语义。当前直接绘制路径主要由 `StrokeLineCap` 决定圆角效果，Token 仍属于线形主题契约。
+`LineBorderRadius` 表示线形进度胶囊形圆角语义。默认模板的 rail/track/success `Border` 根据 `StrokeLineCap` 选择胶囊或直角视觉，Token 仍属于线形主题契约。
 
 `LineExtraInfoMargin` 表示线形进度条和百分比文本或状态图标之间的距离。`LineProgressPadding` 表示内嵌百分比文本和进度条边缘之间的内部 padding。
 

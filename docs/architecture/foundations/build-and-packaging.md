@@ -1,20 +1,27 @@
 # 构建与打包
 
-AtomUI 使用集中化 MSBuild 配置。顶层 `Directory.Build.props` 和 `Directory.Build.targets` 只导入
-`build/AtomUI.Repository.props` 与 `build/AtomUI.Repository.targets`；具体配置、NuGet 构建资产和功能入口由这两个
-Repository 聚合文件按确定顺序管理。
+> 本文对应本地已实现的构建资产与打包布局；本地验证、未完成门槛与发布状态由
+> [AOT 与裁剪架构](aot-and-trimming.md#1-状态与事实边界)统一维护。
 
-## 基础设施目录边界
+AtomUI 使用集中化 MSBuild 配置。顶层 Directory.Build.props/targets 导入 Repository 聚合入口；构建资产显式列入白名单，
+按普通生成、资源编译、本地化、注册后端和发布验证划分职责。
 
-`build/` 是扁平、显式的 MSBuild 资产面：
+## 基础设施边界
 
 ```text
 build/
+├── AtomUI.Build.Tasks.Process.cs
+├── AtomUI.Toolchain.Tasks.targets
+├── AtomUI.Net8.ILLink.Task.cs
 ├── AtomUI.Generator.props
 ├── AtomUI.Generator.targets
 ├── AtomUI.GeneratorConsumer.targets
-├── AtomUI.LinkedRegistration.props
-├── AtomUI.LinkedRegistration.targets
+├── AtomUI.Registration.targets
+├── AtomUI.Registration.Net8.targets
+├── AtomUI.Registration.Net8.Host.targets
+├── AtomUI.Registration.Net8.Transforms.targets
+├── AtomUI.Registration.Native8.targets
+├── AtomUI.Registration.Bridge.targets
 ├── AtomUI.Localization.props
 ├── AtomUI.Localization.targets
 ├── AtomUI.Repository.props
@@ -27,79 +34,95 @@ build/
 └── Versions.props
 ```
 
-文件名直接表达职责，不再用 `repository/`、`nuget/`、`platforms/` 或细粒度功能目录重复编码交付边界。进入 NuGet 的
-资产由显式 item 白名单决定，而不是通过目录通配符推断。`MacOSHomebrewNativeAot.targets` 只服务仓库内 macOS
-NativeAOT 应用和测试，补充 Homebrew OpenSSL/Brotli linker 搜索路径；它不进入 NuGet，也不是 AtomUI 的通用 AOT
-配置。Windows 和 Linux 使用共享 AOT 配置及各自平台工具链，不需要空的对称文件。可执行验证脚本位于
-`scripts/verification/`，不属于 MSBuild 交付资产。
+该树为当前资产面。Registration target 只选择后端、设置 linker feature switch、配置 Browser 扩展及检查产物；
+不收集应用 C#/AXAML usage、不传播 ProjectReference 发布上下文，也不生成应用注册计划。
 
-新增基础设施文件时必须先确定职责和打包边界；需要随包交付时显式加入 `@(AtomUINuGetBuildAsset)`，不得扩大成目录通配符。
+## Repository 与 NuGet 入口
 
-## Repository 入口
+Repository.props 管理版本、项目默认值、输出路径和唯一的 NuGet build/tool asset 白名单；Repository.targets 执行一致的
+注入与打包规则。包项目不复制另一套工具清单。
 
-`AtomUI.Repository.props` 依次导入版本、项目默认值、包元信息和输出路径，定义源码构建使用的
-`$(AtomUIBuildTasksAssembly)`、第一方语言 Catalog 的仓库级默认契约版本、显式 NuGet build asset 清单和 Generator
-tool asset 清单，然后导入 `AtomUI.Generator.props`。项目文件不重复声明当前仓库统一使用的语言契约版本；NuGet
-consumer 的 Localization props 不再伪造默认契约版本。
+`AtomUIPrepareRepositoryPackageTools` 在产品包或 Generator 收集包资产前调用统一项目的 `BuildToolchain`。
+Generator 项目自身不再实现另一套 pack 准备目标，只保留默认 Tasks profile 的 build-only 项目引用和中立共享源码。
+源码 publish 在相应注册后端准备阶段之前准备 `BuildManagedToolchain`；只有 net8 NativeAOT 路径需要
+`PrepareNativeCompiler`。普通 Build 仍只构建 Tasks profile，不因此构建所有后端或 runtime 编译器。
 
-`AtomUI.Repository.targets` 定义第一方库的 AOT/Trim 默认值，集中排除 `.DotSettings` 和项目目录中的 compiler-generated
-源码快照，导入 `AtomUI.Generator.targets`，并为声明 `AtomUIRegistrationPackageId` 的产品包注入 consumer target、
-共享构建资产和工具程序集。注册型产品包必须包含 NuGet 自动导入约定对应的
-`buildTransitive/<PackageId>.props`：有内置语言资源时由 Localization target 生成语言条目，没有语言资源时复用
-`AtomUI.Generator.props` 作为 package-specific props；不得用空 props 文件规避 NuGet 包分析。
+普通 AtomUI.Generator 仍以 netstandard2.0 Analyzer 交付。构建工具统一由
+`src/AtomUI.Toolchain/AtomUI.Toolchain.csproj` 维护；Tasks、ILLink8 与 ILLink10 通过
+`AtomUIToolchainProfile` 隔离源码、依赖及产物，ILC8 适配器与生成上游缓存工程的配方也在同一目录。
+源码职责及稳定内部 DLL 名称见 [Toolchain 模块](../../modules/toolchain/overview.md)。
 
-`AtomUI.Repository.props` 是 Generator build assets 的唯一清单：
+产品包提供 package-specific `buildTransitive/<PackageId>.props/.targets` 并幂等注入工具。多个产品包同时引用时只允许一份
+兼容的普通生成器与一份 Browser 转换器；编译工具不得进入 lib/、runtime 依赖图或应用 publish 输出。
+本地化 props 继续按已验证的 Catalog/Bundle 资产生成；不能把语言包 metadata 与已移除的注册协议混淆。
 
-- `@(AtomUINuGetBuildAsset)` 明确列出 Generator、Linked Registration、Localization 和 Theme Assets 的七个
-  `.props`/`.targets` 文件，并映射到 `buildTransitive/` 根目录。
-- `@(AtomUIGeneratorToolAsset)` 一次定义 Generator、Build Tasks 和任务运行所需依赖，统一进入
-  `tools/netstandard2.0/`。
-- `AtomUI.Generator.csproj` 与注册型产品包只能消费这两个 item，不得各自维护第二份文件清单。
+第三方包在普通编译中生成 TypeMap、Package marker、单项 factory 与资源契约。应用只读解析后的引用 metadata 输出
+TypeMapAssemblyTarget。包引用本身不执行 provider 或 initializer，普通预编译 consumer DLL 不需要附带使用清单。
 
-`OutputPaths.props` 对仓库内所有项目统一设置 `PackageOutputPath`、`OutputPath` 和 `BaseIntermediateOutputPath`。这同样
-适用于 `tools/` 下的项目；工具源码的 `.gitignore` 反向规则之后必须重新排除 `tools/**/bin/` 和 `tools/**/obj/`，
-避免配置迁移或 IDE 中间态产生的本地二进制进入待提交列表。
+## 构建任务与文件生命周期
 
-## NuGet 入口
+所有需要任务 worker 的 feature target 使用唯一的 AtomUIBuildTasksAssembly；该产物由 Toolchain 的 Tasks profile 编译，
+内部文件名仍为 `AtomUI.Build.Tasks.dll`。
+生成器解析仅在项目实际包含 Generator 候选时启动 worker。仓库声明的 Tasks/Backend 路径不代表项目消费生成器；
+没有生成器引用的普通测试项目不得因此依赖 Toolchain 构建或已有工具缓存。
+任务通过 RoslynCodeTaskFactory 的薄适配器启动独立 `dotnet AtomUI.Build.Tasks.dll` 进程，等待退出后返回结果；不加载到常驻
+MSBuild 节点。取消时终止本次 worker，清理请求目录，不留下后台 worker。
 
-`build/AtomUI.Generator.props` 和 `build/AtomUI.Generator.targets` 是包根自动导入入口。它们分别导入 Linked
-Registration、Localization 和 Theme Asset 的扁平 feature 文件。`AtomUI.Localization.targets` 集中拥有输入发现、
-项目引用桥接、模板导出和打包流程，不再为每段几十行逻辑增加独立 fragment。
+worker 的 DLL、deps.json、runtimeconfig、必要依赖和适配器源码一起交付；协议只传值，不跨进程传自定义任务对象。
+它不发起嵌套项目构建。新任务或参数同时更新适配器、分发与隔离测试，语言/资源功能继续使用该宿主。
 
-`build/AtomUI.GeneratorConsumer.targets` 是产品包模板，打包时单独重命名为
-`buildTransitive/<PackageId>.targets`。它继续从包根导入 Generator 入口，并只在最终 `@(Analyzer)` 中没有
-`AtomUI.Generator` 时注入同包工具程序集。
+通用任务的 `UsingTask` 定义集中在 `build/AtomUI.Toolchain.Tasks.targets`。各 feature target 通过单次导入 guard
+复用这一入口，不复制独立任务声明或另一份 worker 加载策略。
 
-所有需要 `AtomUI.Build.Tasks` 的 feature target 都使用唯一属性 `$(AtomUIBuildTasksAssembly)`。Repository 构建将它
-指向每个项目自己的影子副本 `.artifacts/<ProjectName>/obj/<Configuration>/AtomUIBuildTasksShadow/<TargetFramework>/<ShadowKey>/AtomUI.Build.Tasks.dll`；
-影子目录的 `<ShadowKey>` 来自 `AtomUI.Build.Tasks` 构建后盖章的
-`.artifacts/bin/<Configuration>/netstandard2.0/AtomUI.BuildTasks.ShadowKey.props`（键为编译产物的 SHA256，确定性编译保证
-无变化时键稳定），`_AtomUIStageBuildTasksToolset`（`AtomUI.Repository.targets`）在任务执行前把工具集复制到该目录，
-正常 consumer 构建只追加或复用影子副本，不删除其他键的目录。另一个已完成求值的并发构建可能仍引用旧键；若 staging
-期间清理非当前目录，会在任务延迟加载前删除其 DLL 并随机触发 `MSB4062`。旧影子副本随显式 clean 或整个输出目录清理，
-不得在普通 Build target 中回收。
-NuGet consumer 由 `AtomUI.Generator.props` 回退解析相邻 `tools/netstandard2.0/AtomUI.Build.Tasks.dll`。不得新增功能专用的 Build Tasks
-路径属性或只为该属性增加单独文件。调用 Build Tasks 的 target 必须同时按真实输入 item 门控；没有 AXAML、语言文件或
-linked registration 输入的项目不得仅因导入共享 targets 就要求任务程序集已经存在。这样可以保证直接、干净的项目构建
-不依赖解决方案项目顺序，也不会给无输入的 Debug 编译增加任务成本。
+Browser linker 扩展必须加载到其对应 ILLink 阶段，不能混入上述 worker 的常驻加载策略，也不进入应用 Runtime。
+其专用 ABI、增量输入和清理边界由[Browser TypeMap 链接](aot-browser-linking.md)定义。
 
-所有引用 `$(AtomUIBuildTasksAssembly)` 的 `UsingTask` 只声明 `AssemblyFile`，使用默认的进程内
-`AssemblyTaskFactory` 从影子副本加载。不得重新引入 `Runtime="NET"` 或 `TaskFactory="TaskHostFactory"`：
-.NET 10 SDK 的嵌套 publish 图里，TaskHost 可能在 `MetadataLoadContext` 生命周期结束后仍尝试跨进程回传
-MSBuild item，随机触发 `MSB4216` / `MSB4027`。文件锁隔离由上述按 ShadowKey 版本化的影子副本承担：
-重编译后的工具集落在全新目录，永不覆盖仍被活动 build node 锁定的旧副本。该约束同时适用于仓库构建和随
-NuGet 交付的 buildTransitive targets，并由 build-assets 架构测试全局守卫。
+MacOSHomebrewNativeAot.targets 只服务本仓库 macOS NativeAOT 链接，不随 NuGet 分发；其他平台使用自身工具链。
 
-## Target Framework
+## 主题资产的平台输入
 
-`build/ProjectDefaults.props` 定义：
+边界由[类型与资源平台契约](aot-typemap-registration.md#7-平台分支)定义：MSBuild 只提供普通 AXAML 输入和资源编译接线，
+生成器通过 Compilation 读取控件/资源类型的标准平台声明。项目、props 和 targets 均不维护主题平台路径清单。
 
-- 开发目标框架：`net10.0`
-- 生产目标框架：`net8.0`
-- Debug：只构建开发目标框架。
-- Release：同时构建开发目标框架和生产目标框架。
+`AtomUI.Desktop.Controls.csproj` 的平台排除列表及 `AtomUI.ThemeAssets.targets` 的自定义平台 metadata 暴露已删除。
+普通资源输入不再承载第二份平台清单，也不保留旧 metadata 的兼容读取路径。第三方包须使用配套生成器完成普通重建，具体见[迁移说明](../../releases/6.2.2-api-changes.zh-CN.md#资源平台声明收敛)。
 
-`AtomUIGallery.Browser` 单独使用 `net10.0-browser`。
+`AvaloniaXaml`、`AdditionalFiles`、`Link`、项目目录、package/catalog 身份和普通资源编译继续使用。
+`GenerateThemeAssetWrappersTask` 及其 `BeforeTargets="GenerateAvaloniaResources"` 接线保留；资源字典和默认 typed
+ControlTheme 的 deferred wrapper、URI、顺序与构造时机保持原契约。新 `x:Class` 资源仍走 Avalonia 正常编译和加载。
+
+不新增平台扫描任务、第二次项目编译或运行时反射发现。平台声明属于现有 C# 编译输入，AXAML 身份属于已有资源输入；
+对两者的增量失效在普通 Generator 测试中验证。源码/冷 NuGet 消费需共同证明项目无需平台路径配置，工具仍只注入一次，
+Browser 后端继续消费同一份已生成 TypeMap 和官方标记结果，无须新增转换协议。
+
+## Target Framework 与工具链
+
+产品库在 Debug 下只构建 `net10.0`，Release 下同时构建 `net8.0` 和 `net10.0`；配置由
+`ProjectDefaults.props` 统一管理。Browser 宿主仍使用 `net10.0-browser`，Generator 与语言包保留
+`netstandard2.0` 工具/资源目标，构建 worker 和 TypeMap 后端仍使用 .NET 10。
+
+.NET 10 保留现有 TypeMap 注册与裁剪路径。.NET 8 不具备官方 TypeMap API，生成器从同一套单项 factory
+与注册片段生成条件候选 ABI；普通执行完整收集，裁剪发布由受控 ILLink8 / ILC8 选择片段。
+后端按[框架规则](../../modules/toolchain/framework-routing.md)自动分流，工具版本和平台范围见 [.NET 8 条件后端](aot-net8-conditional-backends.md)。历史发布版本的
+实际 TFM 记录仍按对应版本保留。
+
+TFM 不能代表全部工具兼容性。实际 SDK、ILLink、NativeAOT 与 WebAssembly workload 组合必须经过发布验证；普通构建资产
+自动检查支持范围。不支持的 Browser linker ABI、缺工具或未转换 accessor 应阻止发布，不能改成保留全包。
+
+## 注册后端与构建模式
+
+| 模式 | 注册与构建 |
+| --- | --- |
+| Debug / 非裁剪 Release | 同一工厂事实源的完整片段集合，不调用 Mono 未实现的 TypeMapping |
+| trimmed CoreCLR | 官方 TypeMap 保留结果 |
+| Desktop NativeAOT | ILC 原生条件映射 |
+| Browser trimmed / Browser AOT | ILLink 完成标记后转换自有 accessor；AOT 和 bundling 消费转换后的 IL |
+
+一个 linker feature switch 区分完整与选中路径；不能用包自身 DEBUG 条件替代消费应用的发布模式。
+裁剪路径不得通过共享静态字段或 full manifest getter 保留所有工厂。
+
+Browser 扩展 DLL、依赖、配置和 ABI 都是增量链接输入。扩展变化必须使链接失效；内容不变应正常复用。
+完整契约见[TypeMap 注册管线](aot-typemap-registration.md)和[注册 ABI](../../reference/aot/typemap-contract.md)。
 
 ## 包版本管理
 
@@ -115,18 +138,60 @@ AtomUI 自身版本由 `build/Versions.props` 中的 `AtomUIVersion` 管理。
 
 ## 正确性验证
 
-构建基础设施变更至少执行与影响面匹配的验证：
+先使用统一 affected verification 计划检查变更与专项义务：
 
 ```bash
-dotnet test tests/AtomUI.Build.Tasks.Tests/AtomUI.Build.Tasks.Tests.csproj --framework net10.0 --no-restore
-dotnet test tests/AtomUI.Generator.Tests/AtomUI.Generator.Tests.csproj --framework net10.0 --no-restore
-dotnet pack src/AtomUI.Generator/AtomUI.Generator.csproj -c Release --no-restore
-scripts/verification/verify-aot-trim-registration.sh --quick
+python3 scripts/verification/test.py plan
+python3 scripts/verification/test.py run --scope iterate --path <affected-module-path>
+# 仅在用户明确要求或发版时：
+scripts/run-full-regression.sh
 ```
 
-涉及 linked publish、平台 target 或发布脚本时，还必须运行 `--full` 和真实 Gallery NativeAOT publish。打包验证不能只看
-命令退出码：必须检查 `.nupkg` ZIP 条目，确认根自动导入入口、显式 build assets、Analyzer/Tools 位置正确，且不包含
-Repository 配置、`MacOSHomebrewNativeAot.targets` 或 `scripts/` 资产。
+注册迁移要求同时验证 source、传递 ProjectReference、预编译 consumer DLL、干净 NuGet cache 和第三方包。
+构建任务隔离测试继续验证同一 MSBuild 会话中重复执行、覆盖/删除工具输出；不以单次新进程构建代替文件生命周期证据。
+
+必须实际启动 Desktop NativeAOT、trimmed CoreCLR、Browser trimmed 和 Browser AOT 产物，检查模板、Token、Semantic Part、
+主题切换和未使用类型缺失。仅 publish 成功或旧注册脚本通过不能证明新架构完成；迁移同时更新脚本、断言和验证策略。
+包检查读取 nupkg 条目，确认仅包含目标构建资产且无旧注册工具和协议残留。
+
+## 破坏性变更门禁
+
+当前源码的 net10 与注册工具布局迁移见 [6.2.2 TypeMap 迁移说明](../../releases/6.2.2-api-changes.zh-CN.md)。
+
+发布准备对上一版做两道机械化比对，避免只靠人工审计漏掉破坏性变更。两道门禁观测产物事实，不依赖提交的 `!` 标记。
+
+- **包 API 校验**：`build/PackageValidation.props` 在传入 `AtomUIPackageValidationBaselineVersion` 时启用
+  `EnablePackageValidation` 与 `PackageValidationBaselineVersion`，以 ApiCompat 做 `lib/` 公共 API 的 IL 级比对，
+  并覆盖跨 TFM 一致性。普通开发构建不传该属性，因此不拉取基线包、也不变慢。AtomUI 开启 Avalonia private API
+  后，Avalonia 只在 `CoreCompile` 前加入真实拆分程序集；ApiCompat 不执行到该阶段，因此校验 target 会在 SDK 收集完
+  每个 TFM 的引用后，把同一组 Avalonia implementation DLL 追加到现有 `PackageValidationReferencePath`。发布日志中若
+  出现 `Could not resolve reference`，表示 API 校验引用图不完整，不能按普通 warning 忽略。
+- **产品框架验收**：`BuildNuGetPackages.ps1` 独立读取实际 nupkg 的 `lib/` DLL 路径。Release 产品库必须同时包含
+  `net8.0` 和 `net10.0`，Debug 必须只包含 `net10.0`；生成器、语言包和模板包保留自己的目标，不套用产品库规则。
+  包角色来自唯一发布清单；检查 DLL 的真实 TargetFrameworkAttribute、程序集身份/版本及 nuspec 依赖组，不能只看目录名。
+  此检查不依赖上一版基线，避免上一版已经错误时继续漏检。
+- **构建资产验收**：`PackageBuildContract.ps1` 核对 SDK 生成的依赖、文件清单与内容 hash，并检查包内本地 Import
+  闭包。漏装后端或被导入 targets、丢失依赖组和额外未知工具资产均阻止发布。自定义 nuspec 使用实际评估的来源与 base path。
+- **包布局校验**：`scripts/verification/verify-package-layout.ps1` 比对 `lib/` 的 TFM 集合、`tools/`、`build/`、
+  `buildTransitive/`。ApiCompat 看不到这些路径，而 6.1.9 的 `tools/netstandard2.0 → tools/net10.0` 正属于此类。
+
+`scripts/BuildNuGetPackages.ps1` 的 `-PackageValidationBaselineVersion` 同时驱动两者：它先对发布包项目 restore 以拉取
+基线包（pack 使用 `--no-build`，不会自行 restore），随后 pack，最后运行布局校验。前置工具项目不是发布包，不施加校验
+属性。包 API 校验不加载 ApiCompat suppression；对所选基线存在公开 API 删除、成员删除或枚举值变化时，
+发布门禁必须失败。若这些变化是产品要求，发布策略必须改为不声明与该基线兼容（例如调整版本/基线策略），
+而不是在包验证中隐藏诊断。包布局有意变更仍由 `scripts/verification/package-layout-allowlist.json`
+按基线版本与包 ID 记录，未命中的条目会导致失败。
+
+本地验证：
+
+```bash
+pwsh -NoProfile -File scripts/verification/verify-package-layout.Tests.ps1
+pwsh -NoProfile -File scripts/verification/verify-package-layout.ps1 \
+    -PackageDirectory <release-dir> -BaselineVersion <previous-version>
+dotnet test tests/AtomUI.Generator.Tests/AtomUI.Generator.Tests.csproj --framework net10.0 --no-restore
+```
+
+判定口径与发布流程见 [版本发布准备规范](../../engineering/workflows/release-preparation.md)。
 
 ## 源生成输出
 
@@ -142,61 +207,6 @@ Repository 配置、`MacOSHomebrewNativeAot.targets` 或 `scripts/` 资产。
 `AtomUI.Repository.targets` 根据 `CompilerGeneratedFilesOutputPath` 统一从 `Compile` 移除这些快照，避免第二次构建把上次
 生成结果作为普通源码再次编译。项目文件不得重复声明同一条 `Compile Remove`。源生成器通过 Analyzer 方式参与当前编译。
 
-## Analyzer 引用方式
-
-ordinary `AtomUI.Generator` 在多个项目中以 Analyzer 形式引用：
-
-```xml
-<ProjectReference Include="../AtomUI.Generator/AtomUI.Generator.csproj"
-                  OutputItemType="Analyzer"
-                  ReferenceOutputAssembly="false"
-                  PrivateAssets="all" />
-```
-
-这意味着生成器不是运行时依赖。它在编译期生成 Token、Theme、语言和 leaf Registration Unit 代码，运行时依赖的是生成后的
-类型和资源键。
-
-linked registration 的应用 usage、Sidecar 和 Application Plan 位于独立的 `AtomUI.Generator.LinkedPublish` Analyzer 中。
-它只在 `PublishTrimmed=true`、`PublishAot=true`、`RunAOTCompilation=true`、Package Manifest Pack 或显式 strict 验证时注入。
-普通 Debug 和未启用 AOT/Trim 的 Release compiler command line 中不得出现该 Analyzer。
-
-## Linked publish 注册
-
-AtomUI 把 `PublishTrimmed=true`、`PublishAot=true` 和 WebAssembly `RunAOTCompilation=true` 统一视为 linked publish。
-普通非裁剪构建继续使用包级全量注册；linked publish 由 Generator 聚合应用、类库和第三方包的 Sidecar Manifest，计算
-UnitEdge closure 后按 Package 生成静态 Registration Unit 调用计划。默认一个 Package 生成一个完整 Unit；只有显式设置
-`AtomUIRegistrationGranularity=Directory` 的大型多控件包才按稳定控件族拆分。Control descriptor、Own Token schema 和
-Control-owned AXAML Theme 跟随对应 Unit；Language、包级初始化逻辑、Global Token、Theme Algorithm、Provider、平台
-selector 和显式 `PackageShared` 资源作为 Package Core 整体保留。
-完整模式矩阵和注册协议见 [AOT Linked Registration Pipeline](aot-linked-registration-pipeline.md)。
-
-每个可直接安装、且声明 `AtomUIRegistrationPackageId` 的第一方产品 NuGet 都内嵌 ordinary/linked Generator、Build Tasks、
-Sidecar 和 `buildTransitive` assets。应用只引用 `AtomUI.Controls`、`AtomUI.Desktop.Controls`、DataGrid、ColorPicker、Extras 或
-GalleryBase 中的实际产品包，即可获得编译期使用分析和 linked registration；不要求额外添加
-`AtomUI.Generator` PackageReference。显式 Generator 引用继续作为兼容路径支持。
-
-产品包入口在 `ResolveReferences` 后检查最终 `@(Analyzer)`，只在尚未存在对应 Analyzer 时注入同包工具程序集。
-多个产品包同时引用时，编译器仍只能收到一份 ordinary Generator 和至多一份 linked Generator。共享 props/targets 使用幂等
-property 防止重复导入。Generator、Sidecar 和 Build Tasks 只允许位于包的 `tools/` 与 `buildTransitive/` 目录，不得进入 `lib/`
-或应用输出、发布目录。
-
-这些 `buildTransitive` assets 负责在 linked build 中导入 Sidecar、生成结构化 `@(AvaloniaXaml)` usage、配置 linker 可替换的
-`AtomUI.AotTrimRegistration.Enabled` 注册标记，并在 ILLink/ILCompiler 前验证计划标记。普通构建中这些 linked targets 必须
-skip，连空 usage 文件都不能创建。该标记只属于 AOT/Trim 注册基础设施，不得作为通用运行时 feature 使用。
-
-linked build 必须在 `ResolveReferences` 后以最终 `ReferencePath` 为程序集全集，建立带来源的 Sidecar candidate catalog，再按
-Sidecar 声明的 `assembly.name` 和 `contractHash`
-解析唯一 canonical 输入。ProjectReference companion、NuGet package 和 metadata extraction 的来源优先级只用于选择同 hash
-候选；不同 hash 必须构建失败，不能按路径、文件名或 item 顺序静默覆盖。NuGet package 已交付正式 Sidecar 时，不得因为
-程序集 `ReferencePath` 旁没有 companion 文件而再次执行 metadata extraction。只有解析后的 canonical Sidecar 可以进入
-`AdditionalFiles`。
-
-类库只在被 linked 应用作为 ProjectReference 构建或执行 NuGet Pack 时生成 Usage Sidecar。Pack 自动把 Sidecar 和唯一的
-`<PackageId>.targets` 放入 `buildTransitive`；普通 Debug/Release 不扫描 usage，不生成 Sidecar，也不安装 Application Plan。
-
-Application Plan 只对 Sidecar 中紧凑的 UnitEdge 图计算 closure/SCC，不计算 Theme Asset、Catalog、Feature 或 Initializer 图。
-Unit fragment 是叶子，不调用其他 Unit。无法可靠确定 Unit 时，只对对应 Package 使用 full fallback。
-
 ## 打包边界
 
 当前源码打包边界为：
@@ -204,6 +214,7 @@ Unit fragment 是叶子，不调用其他 Unit。无法可靠确定 Unit 时，�
 - `AtomUI.Native`
 - `AtomUI.Core`
 - `AtomUI.Fonts.AlibabaSans`
+- `AtomUI.Fonts.AlibabaPuHuiTi`
 - `AtomUI.Icons.Shared`
 - `AtomUI.Icons.AntDesign`
 - `AtomUI.Controls.Shared`
@@ -222,10 +233,14 @@ GalleryBase 是产品中立的 Gallery 应用底座包，跟随主库版本发�
 本地 NuGet 发布脚本和产物完整性校验必须共同消费该清单，不得分别维护项目列表。新增、拆分或移除正式包时，先更新该清单，
 并让缺包或多包校验在上传与推送前失败。
 
-`scripts/BuildNuGetPackages.ps1` 是正式包的唯一构建编排入口。它先构建清单中的 Build Tasks 和 linked-publish Generator
+首次发布且没有历史包的项目，可在清单中显式声明 `AllowUnpublishedBaseline`。只有 NuGet 公共包索引返回 HTTP 404 时，
+才不执行该包的历史 API 和布局比较；框架、包身份与构建资产校验仍照常执行。包索引存在后恢复普通基线比较，
+缺少指定历史版本、网络错误或服务错误均不得当作首次发布跳过。
+
+`scripts/BuildNuGetPackages.ps1` 是正式包的唯一构建编排入口。它先构建清单中的 Build Tasks、普通 Generator 和 Browser TypeMap linker 工具
 等非包前置项目，再完成全部包项目的 build，之后才允许执行任何 pack。发布构建必须关闭 MSBuild 节点复用、串行访问共享
 工具输出，并在完整包集合校验通过后才进入本地 feed、artifact upload 或 nuget.org push；任一 `dotnet` 命令失败都必须立即
-终止流程。pack 为生成 linked-registration Sidecar 发起的内部 build 只构建当前包，复用外层阶段已经生成的项目引用产物。
+终止流程。pack 不为注册信息发起第二套应用分析或嵌套构建；它封装同一次普通编译生成的 metadata 和工具。
 
 注册型产品包必须从同一次、同版本 Release 构建中封装 Generator 和 Build Tasks。不得在修改 `AtomUIVersion` 后使用
 `dotnet pack --no-build` 复用另一个版本留下的工具输出；多个同版本产品包中的编译资产必须具有一致内容。

@@ -11,6 +11,12 @@ public readonly record struct LanguageTag
         _value = canonicalValue;
     }
 
+    // Only generated LanguageTags data validated by LanguageDataFileParser may bypass parsing.
+    internal static LanguageTag FromCanonical(string canonicalValue)
+    {
+        return new LanguageTag(canonicalValue);
+    }
+
     public string Value => _value ?? throw new InvalidOperationException(
         "The default LanguageTag value is invalid.");
 

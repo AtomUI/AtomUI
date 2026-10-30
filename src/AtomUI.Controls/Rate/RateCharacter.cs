@@ -12,7 +12,7 @@ internal class RateCharacter : Control
     #region 公共属性定义
 
     public static readonly StyledProperty<IBrush?> BackgroundProperty =
-        Border.BackgroundProperty.AddOwner<TextBlock>();
+        Border.BackgroundProperty.AddOwner<RateCharacter>();
     
     public static readonly StyledProperty<IBrush?> ForegroundProperty =
         TextElement.ForegroundProperty.AddOwner<RateCharacter>();
@@ -110,9 +110,9 @@ internal class RateCharacter : Control
         if (_formattedText != null)
         {
             using var state = context.PushTextOptions(new TextOptions { TextRenderingMode = TextRenderingMode.Antialias });
-            context.DrawRectangle(Background, null, new Rect(DesiredSize));
-            var offsetX = (DesiredSize.Width - _textSize.Width) / 2;
-            var offsetY = (DesiredSize.Height - _textSize.Height) / 2 + 1;
+            context.DrawRectangle(Background, null, new Rect(Bounds.Size));
+            var offsetX = (Bounds.Width - _textSize.Width) / 2;
+            var offsetY = (Bounds.Height - _textSize.Height) / 2 + 1;
             context.DrawText(_formattedText,  new Point(offsetX, offsetY));
         }
     }

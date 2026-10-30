@@ -1,5 +1,4 @@
 using System.Windows.Input;
-using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -7,7 +6,6 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -16,6 +14,7 @@ namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Active)]
 [PseudoClasses(StdPseudoClass.Normal, StdPseudoClass.Minimized, StdPseudoClass.Maximized, StdPseudoClass.Fullscreen)]
+[global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
 public class WindowTitleBar : TemplatedControl, 
                               IMotionAwareControl, 
                               IOperationSystemAware
@@ -169,6 +168,16 @@ public class WindowTitleBar : TemplatedControl,
             nameof(EffectiveLogoTemplate),
             o => o.EffectiveLogoTemplate);
 
+    internal static readonly DirectProperty<WindowTitleBar, object?> EffectiveLogoPresenterContentProperty =
+        AvaloniaProperty.RegisterDirect<WindowTitleBar, object?>(
+            nameof(EffectiveLogoPresenterContent),
+            o => o.EffectiveLogoPresenterContent);
+
+    internal static readonly DirectProperty<WindowTitleBar, IDataTemplate?> EffectiveLogoPresenterContentTemplateProperty =
+        AvaloniaProperty.RegisterDirect<WindowTitleBar, IDataTemplate?>(
+            nameof(EffectiveLogoPresenterContentTemplate),
+            o => o.EffectiveLogoPresenterContentTemplate);
+
     internal static readonly DirectProperty<WindowTitleBar, bool> IsEffectiveLogoVisibleProperty =
         AvaloniaProperty.RegisterDirect<WindowTitleBar, bool>(
             nameof(IsEffectiveLogoVisible),
@@ -232,6 +241,28 @@ public class WindowTitleBar : TemplatedControl,
     {
         get => _effectiveLogoTemplate;
         private set => SetAndRaise(EffectiveLogoTemplateProperty, ref _effectiveLogoTemplate, value);
+    }
+
+    private object? _effectiveLogoPresenterContent;
+
+    internal object? EffectiveLogoPresenterContent
+    {
+        get => _effectiveLogoPresenterContent;
+        private set => SetAndRaise(
+            EffectiveLogoPresenterContentProperty,
+            ref _effectiveLogoPresenterContent,
+            value);
+    }
+
+    private IDataTemplate? _effectiveLogoPresenterContentTemplate;
+
+    internal IDataTemplate? EffectiveLogoPresenterContentTemplate
+    {
+        get => _effectiveLogoPresenterContentTemplate;
+        private set => SetAndRaise(
+            EffectiveLogoPresenterContentTemplateProperty,
+            ref _effectiveLogoPresenterContentTemplate,
+            value);
     }
 
     private bool _isEffectiveLogoVisible;
@@ -486,12 +517,28 @@ public class WindowTitleBar : TemplatedControl,
     private void UpdateEffectiveLogoVisible()
     {
         var hasLogo = EffectiveLogo is not null || EffectiveLogoTemplate is not null;
-        IsEffectiveLogoVisible = LogoVisibility switch
+        var isLogoVisibleByMode = LogoVisibility switch
         {
             WindowTitleBarLogoVisibility.Always => hasLogo,
             WindowTitleBarLogoVisibility.Never => false,
             _ => hasLogo && ShouldShowLogoInAutoMode()
         };
+        IsEffectiveLogoVisible = HostWindowState != WindowState.FullScreen && isLogoVisibleByMode;
+        UpdateEffectiveLogoPresenterContent();
+    }
+
+    private void UpdateEffectiveLogoPresenterContent()
+    {
+        if (IsEffectiveLogoVisible)
+        {
+            EffectiveLogoPresenterContent         = EffectiveLogo;
+            EffectiveLogoPresenterContentTemplate = EffectiveLogoTemplate;
+        }
+        else
+        {
+            EffectiveLogoPresenterContent         = null;
+            EffectiveLogoPresenterContentTemplate = null;
+        }
     }
 
     private void UpdateEffectiveTitleVisible()
@@ -571,15 +618,4 @@ public class WindowTitleBar : TemplatedControl,
         SetValue(OsVersionProperty, version);
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 }

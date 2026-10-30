@@ -6,6 +6,7 @@ using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
+[global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
 internal class FullscreenPopoverLayer : TemplatedControl
 {
     private const double PopoverTriggerZoneHeight = 1;

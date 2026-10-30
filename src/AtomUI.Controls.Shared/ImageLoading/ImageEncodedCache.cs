@@ -18,12 +18,20 @@ internal sealed class ImageEncodedCache : IDisposable
 
     internal int Count
     {
-        get { lock (_gate) return _items.Count; }
+        get { lock (_gate)
+            {
+                return _items.Count;
+            }
+        }
     }
 
     internal long Bytes
     {
-        get { lock (_gate) return _bytes; }
+        get { lock (_gate)
+            {
+                return _bytes;
+            }
+        }
     }
 
     internal bool TryGet(ImageEncodedContentKey key, out ImageEncodedContent? content)

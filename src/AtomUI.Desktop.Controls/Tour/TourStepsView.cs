@@ -57,7 +57,7 @@ internal class TourStepsView : SelectingItemsControl
         Tour.IndicatorProperty.AddOwner<TourStepsView>();
     
     public static readonly StyledProperty<IList<Control>?> CustomActionsProperty =
-        AvaloniaProperty.Register<Tour, IList<Control>?>(nameof(CustomActions));
+        AvaloniaProperty.Register<TourStepsView, IList<Control>?>(nameof(CustomActions));
 
     public bool IsMotionEnabled
     {

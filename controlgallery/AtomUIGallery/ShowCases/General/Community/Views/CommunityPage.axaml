@@ -6,15 +6,15 @@
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              xmlns:views="clr-namespace:AtomUIGallery.ShowCases.Community">
     <UserControl.Styles>
-        <Style Selector="Image#QinwareLogo">
-            <Setter Property="Source" Value="/Assets/qinware-logo.png" />
+        <Style Selector="Svg#AtomInnovationLogo">
+            <Setter Property="Path" Value="/Assets/atom-innovation-logo.svg" />
         </Style>
         <Style Selector="Svg#TLAICIncubationLogo">
             <Setter Property="Path" Value="/Assets/TLAIC.svg" />
         </Style>
         <Style Selector="views|CommunityPage[IsDarkThemeMode=True]">
-            <Style Selector="^ Image#QinwareLogo">
-                <Setter Property="Source" Value="/Assets/qinware-logo-white.png" />
+            <Style Selector="^ Svg#AtomInnovationLogo">
+                <Setter Property="Path" Value="/Assets/atom-innovation-logo-white.svg" />
             </Style>
             <Style Selector="^ Svg#TLAICIncubationLogo">
                 <Setter Property="Path" Value="/Assets/TLAIC-white.svg" />
@@ -38,9 +38,9 @@
                       ColumnSpacing="24">
                     <StackPanel Width="230"
                                 VerticalAlignment="Center">
-                        <Image Name="QinwareLogo"
-                               Width="220"
-                               HorizontalAlignment="Left" />
+                        <Svg Name="AtomInnovationLogo"
+                             Width="220"
+                             HorizontalAlignment="Left" />
                     </StackPanel>
 
                     <StackPanel Grid.Column="1"

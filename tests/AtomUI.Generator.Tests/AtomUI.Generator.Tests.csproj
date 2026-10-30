@@ -16,7 +16,8 @@
 
     <ItemGroup>
         <ProjectReference Include="../../src/AtomUI.Generator/AtomUI.Generator.csproj" />
-        <ProjectReference Include="../../src/AtomUI.Generator.LinkedPublish/AtomUI.Generator.LinkedPublish.csproj"
-                          Aliases="LinkedPublish" />
+        <ProjectReference Include="../../src/AtomUI.Core/AtomUI.Core.csproj" ReferenceOutputAssembly="false" />
+        <AssemblyMetadata Include="FixtureBuildTasksAssembly"
+                          Value="$([System.IO.Path]::GetFullPath('$(AtomUIBuildTasksAssembly)'))" />
     </ItemGroup>
 </Project>

@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using AtomUI.Desktop.Controls;
 using Shouldly;
 using Xunit;
 using static AtomUI.Desktop.Controls.Tests.DataGrid.Virtualization.PresentationTestFixtures;

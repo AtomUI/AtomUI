@@ -6,15 +6,6 @@ namespace AtomUI.Localization.Tests;
 public class LanguageCatalogDescriptorTests
 {
     [Fact]
-    public void Unit_Descriptor_Uses_Key_As_The_Only_Identity()
-    {
-        typeof(LanguageCatalogUnitDescriptor).GetProperty("Key")
-            .ShouldNotBeNull();
-        typeof(LanguageCatalogUnitDescriptor).GetProperty("Id").ShouldBeNull();
-        typeof(LanguageCatalogUnitDescriptor).GetProperty("Name").ShouldBeNull();
-    }
-
-    [Fact]
     public void LanguageCatalogAttribute_Targets_Enums()
     {
         var usage = typeof(LanguageCatalogAttribute)

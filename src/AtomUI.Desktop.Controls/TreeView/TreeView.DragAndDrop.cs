@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Utils;
 using Avalonia;
@@ -6,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -255,9 +255,18 @@ public partial class TreeView
                 if (!IsDragging)
                 {
                     HandlePrepareDrag();
+                    if (_beingDraggedTreeItem is not { } draggedItem)
+                    {
+                        return;
+                    }
                     IsDragging = true;
-                    Debug.Assert(_beingDraggedTreeItem != null);
-                    ItemDragStarted?.Invoke(this, new TreeViewDragStartedEventArgs(_beingDraggedTreeItem));
+                    draggedItem.IsDragging = true;
+                    ItemDragStarted?.Invoke(this, new TreeViewDragStartedEventArgs(draggedItem));
+                    // User callbacks may close or detach this tree and end the drag synchronously.
+                    if (!IsActiveDrag(draggedItem))
+                    {
+                        return;
+                    }
                 }
 
                 HandleDragging(e.GetPosition(this), delta);
@@ -269,9 +278,14 @@ public partial class TreeView
     {
         if (_lastPoint.HasValue)
         {
-            HandleDragCompleted(_lastPoint.Value);
-            _lastPoint = null;
-            IsDragging = false;
+            if (this.IsAttachedToVisualTree())
+            {
+                HandleDragCompleted(_lastPoint.Value);
+            }
+            else
+            {
+                FinishDrag();
+            }
         }
 
         base.OnPointerCaptureLost(e);
@@ -293,11 +307,6 @@ public partial class TreeView
     private void HandlePrepareDrag()
     {
         _beingDraggedTreeItem = GetNodeByPositionSelfFirst(_lastPoint!.Value);
-        if (_beingDraggedTreeItem is not null)
-        {
-            Dispatcher.Post(() => { _beingDraggedTreeItem.IsDragging = true; });
-        }
-
         var adornerLayer = AdornerLayer.GetAdornerLayer(this);
         if (adornerLayer == null || _beingDraggedTreeItem is null)
         {
@@ -312,13 +321,17 @@ public partial class TreeView
 
     private void HandleDragging(Point position, Point delta)
     {
-        if (_dragPreview is not null && _beingDraggedTreeItem is not null)
+        if (_dragPreview is not null && _beingDraggedTreeItem is { } draggedItem)
         {
             var basePosition = _beingDraggedTreeItem.TranslatePoint(new Point(0, 0), TopLevel.GetTopLevel(this)!) ??
                                default;
             _dragPreview.OffsetX = basePosition.X + delta.X;
             _dragPreview.OffsetY = basePosition.Y + delta.Y;
             SetupDragOver(position);
+            if (!IsActiveDrag(draggedItem))
+            {
+                return;
+            }
             if (_currentDragOver is not null)
             {
                 _dropTargetNode = GetNodeByOffsetY(position);
@@ -423,72 +436,92 @@ public partial class TreeView
         };
     }
 
+    private bool IsActiveDrag(TreeViewItem item) =>
+        IsDragging && _beingDraggedTreeItem == item && this.IsAttachedToVisualTree();
+
     private void SetupDragOver(Point position)
     {
-        var treeViewItem = GetNodeByPosition(position);
-        if (_currentDragOver is not null)
+        if (_beingDraggedTreeItem is not { } draggedItem || !IsActiveDrag(draggedItem))
         {
-            if (_currentDragOver != treeViewItem)
+            return;
+        }
+
+        var nextItem = GetNodeByPosition(position);
+        if (_currentDragOver == nextItem)
+        {
+            if (nextItem is not null)
             {
-                _currentDragOver.IsDragOver = false;
-                Debug.Assert(_beingDraggedTreeItem != null);
-                ItemDragLeave?.Invoke(this, new TreeViewDragLeaveEventArgs(_beingDraggedTreeItem, _currentDragOver));
+                nextItem.IsDragOver = true;
+                if (IsActiveDrag(draggedItem))
+                {
+                    ItemDragOver?.Invoke(this, new TreeViewDragOverEventArgs(draggedItem, nextItem));
+                }
             }
-            else
+            return;
+        }
+
+        var previousItem = _currentDragOver;
+        _currentDragOver = null;
+        if (previousItem is not null)
+        {
+            previousItem.IsDragOver = false;
+            if (!IsActiveDrag(draggedItem))
             {
-                _currentDragOver.IsDragOver = true;
-                Debug.Assert(_beingDraggedTreeItem != null);
-                ItemDragOver?.Invoke(this, new TreeViewDragOverEventArgs(_beingDraggedTreeItem, _currentDragOver));
+                return;
+            }
+            ItemDragLeave?.Invoke(this, new TreeViewDragLeaveEventArgs(draggedItem, previousItem));
+            if (!IsActiveDrag(draggedItem))
+            {
                 return;
             }
         }
 
-        if (treeViewItem is not null)
+        if (nextItem is not null && nextItem.IsAttachedToVisualTree() && nextItem.OwnerTreeView == this)
         {
-            _currentDragOver = treeViewItem;
-            if (!_currentDragOver.IsDragOver)
+            _currentDragOver = nextItem;
+            nextItem.IsDragOver = true;
+            if (IsActiveDrag(draggedItem))
             {
-                _currentDragOver.IsDragOver = true;
-                Debug.Assert(_beingDraggedTreeItem != null);
-                ItemDragEnter?.Invoke(this, new TreeViewDragEnterEventArgs(_beingDraggedTreeItem, _currentDragOver));
+                ItemDragEnter?.Invoke(this, new TreeViewDragEnterEventArgs(draggedItem, nextItem));
             }
-        }
-        else
-        {
-            if (_currentDragOver != null)
-            {
-                Debug.Assert(_beingDraggedTreeItem != null);
-                ItemDragLeave?.Invoke(this, new TreeViewDragLeaveEventArgs(_beingDraggedTreeItem, _currentDragOver));
-            }
-            _currentDragOver = null;
         }
     }
 
     private void HandleDragCompleted(Point point)
     {
         PerformDropOperation();
-        if (_dragPreview is not null)
-        {
-            var layer = AdornerLayer.GetAdornerLayer(this)!;
-            layer.Children.Remove(_dragPreview);
-            if (_currentDragOver is not null)
-            {
-                _currentDragOver.IsDragOver = false;
-                _currentDragOver            = null;
-            }
+        FinishDrag();
+    }
 
-            _dropTargetNode = null;
-        }
-        
-        if (_beingDraggedTreeItem is not null)
-        {
-            ItemDragCompleted?.Invoke(this, new TreeViewDragCompletedEventArgs(_beingDraggedTreeItem));
-            _beingDraggedTreeItem.IsDragging = false;
-            _beingDraggedTreeItem            = null;
-        }
-
+    private void FinishDrag()
+    {
+        var preview = _dragPreview;
+        var draggedItem = _beingDraggedTreeItem;
+        var dragOverItem = _currentDragOver;
+        _lastPoint = null;
+        IsDragging = false;
+        _dragPreview = null;
+        _beingDraggedTreeItem = null;
+        _currentDragOver = null;
+        _dropTargetNode = null;
+        _dropTargetInfo = null;
         DragIndicatorRenderInfo = null;
-        _dropTargetInfo         = null;
+
+        // The tree may already be detached. Release the preview through its actual owner,
+        // rather than rediscovering an adorner layer through the tree's former visual root.
+        if (preview?.GetVisualParent() is Panel layer)
+        {
+            layer.Children.Remove(preview);
+        }
+        if (dragOverItem is not null)
+        {
+            dragOverItem.IsDragOver = false;
+        }
+        if (draggedItem is not null)
+        {
+            draggedItem.IsDragging = false;
+            ItemDragCompleted?.Invoke(this, new TreeViewDragCompletedEventArgs(draggedItem));
+        }
     }
 
     private void PerformDropOperation()
@@ -517,25 +550,27 @@ public partial class TreeView
 
     private void PerformContainerDropOperation()
     {
-        Debug.Assert(_dropTargetInfo is not null);
-        Debug.Assert(_beingDraggedTreeItem is not null);
-        
-        object? sourceItem                 = default;
-        var     beingDraggedTreeItemParent = _beingDraggedTreeItem.Parent;
-        var     sourceIsRoot               = false;
-        
-        
-        if (_beingDraggedTreeItem.Parent is TreeViewItem parentItem)
+        if (_beingDraggedTreeItem is not { } draggedItem || _dropTargetInfo is not { } targetInfo)
         {
-            sourceItem = parentItem.ItemFromContainer(_beingDraggedTreeItem);
+            return;
+        }
+
+        // Removing the source can detach its container and end the drag. Keep the committed
+        // move independent of UI tracking, and publish ItemDropped only after insertion.
+        object? sourceItem = null;
+        var sourceParent = draggedItem.Parent;
+        var sourceIsRoot = false;
+        if (sourceParent is TreeViewItem parentItem)
+        {
+            sourceItem = parentItem.ItemFromContainer(draggedItem);
             if (sourceItem is not null)
             {
                 parentItem.Items.Remove(sourceItem);
             }
         }
-        else if (_beingDraggedTreeItem.Level == 0)
+        else if (draggedItem.Level == 0)
         {
-            sourceItem   = ItemFromContainer(_beingDraggedTreeItem);
+            sourceItem = ItemFromContainer(draggedItem);
             sourceIsRoot = true;
             if (sourceItem is not null)
             {
@@ -543,26 +578,22 @@ public partial class TreeView
             }
         }
 
-        if (_dropTargetInfo.IsRoot)
+        if (sourceItem is null)
         {
-            var indexDelta = 0;
-            if (sourceIsRoot)
-            {
-                indexDelta = 1;
-            }
-
-            Items.Insert(Math.Max(_dropTargetInfo.Index - indexDelta, 0), sourceItem);
-            ItemDropped?.Invoke(this, new TreeViewDroppedEventArgs(_beingDraggedTreeItem, null, _dropTargetInfo.Index));
+            return;
         }
-        else if (_dropTargetInfo.TargetTreeItem is not null)
+
+        if (targetInfo.IsRoot)
         {
-            var indexDelta = 0;
-            if (_dropTargetInfo.TargetTreeItem == beingDraggedTreeItemParent)
-            {
-                indexDelta = 1;
-            }
-            ItemDropped?.Invoke(this, new TreeViewDroppedEventArgs(_beingDraggedTreeItem, _dropTargetInfo.TargetTreeItem, _dropTargetInfo.Index));
-            _dropTargetInfo.TargetTreeItem.Items.Insert(Math.Max(_dropTargetInfo.Index - indexDelta, 0), sourceItem);
+            var indexDelta = sourceIsRoot ? 1 : 0;
+            Items.Insert(Math.Max(targetInfo.Index - indexDelta, 0), sourceItem);
+            ItemDropped?.Invoke(this, new TreeViewDroppedEventArgs(draggedItem, null, targetInfo.Index));
+        }
+        else if (targetInfo.TargetTreeItem is { } targetItem)
+        {
+            var indexDelta = targetItem == sourceParent ? 1 : 0;
+            targetItem.Items.Insert(Math.Max(targetInfo.Index - indexDelta, 0), sourceItem);
+            ItemDropped?.Invoke(this, new TreeViewDroppedEventArgs(draggedItem, targetItem, targetInfo.Index));
         }
     }
 

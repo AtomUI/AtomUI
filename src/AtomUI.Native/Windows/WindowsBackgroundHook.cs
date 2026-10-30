@@ -10,6 +10,7 @@ internal sealed class WindowsBackgroundHook : INativeWindowBackgroundHook
     private readonly Window _window;
     private Color? _backgroundColor;
     private IntPtr _backgroundBrush;
+    private bool _isSizeMoving;
     private bool _isDisposed;
 
     public WindowsBackgroundHook(Window window)
@@ -80,7 +81,19 @@ internal sealed class WindowsBackgroundHook : INativeWindowBackgroundHook
 
         switch (msg)
         {
+            case WindowUtilsInterop.WM_ENTERSIZEMOVE:
+                _isSizeMoving = true;
+                break;
+            case WindowUtilsInterop.WM_EXITSIZEMOVE:
+                _isSizeMoving = false;
+                break;
             case WindowUtilsInterop.WM_ERASEBKGND:
+                // live resize 期间不填充：RedirectionSurface 下 GDI 填充会先于渲染帧被 DWM 合成，
+                // 表现为整窗闪背景色。此时交还 Avalonia 默认行为（窗口类无背景画刷，不擦除）。
+                if (_isSizeMoving)
+                {
+                    break;
+                }
                 if (wParam != IntPtr.Zero && TryFillClientArea(hWnd, wParam))
                 {
                     handled = true;

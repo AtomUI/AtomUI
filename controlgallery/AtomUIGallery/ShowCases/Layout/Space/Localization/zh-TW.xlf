@@ -361,6 +361,24 @@
         <target state="translated">中華門</target>
       </segment>
     </unit>
+    <unit id="P2LargeSpaceButtonN1">
+      <segment>
+        <source>Large Space Button 1</source>
+        <target state="translated">大間距按鈕 1</target>
+      </segment>
+    </unit>
+    <unit id="P2LargeSpaceButtonN2">
+      <segment>
+        <source>Large Space Button 2</source>
+        <target state="translated">大間距按鈕 2</target>
+      </segment>
+    </unit>
+    <unit id="P2LargeSpaceButtonN3">
+      <segment>
+        <source>Large Space Button 3</source>
+        <target state="translated">大間距按鈕 3</target>
+      </segment>
+    </unit>
     <unit id="P2OkTextOk">
       <segment>
         <source>Ok</source>
@@ -431,6 +449,24 @@
       <segment>
         <source>End time</source>
         <target state="translated">結束時間</target>
+      </segment>
+    </unit>
+    <unit id="P2StyledButtonN1">
+      <segment>
+        <source>Styled Button 1</source>
+        <target state="translated">樣式化按鈕 1</target>
+      </segment>
+    </unit>
+    <unit id="P2StyledButtonN2">
+      <segment>
+        <source>Styled Button 2</source>
+        <target state="translated">樣式化按鈕 2</target>
+      </segment>
+    </unit>
+    <unit id="P2StyledButtonN3">
+      <segment>
+        <source>Styled Button 3</source>
+        <target state="translated">樣式化按鈕 3</target>
       </segment>
     </unit>
     <unit id="P2TextBlock">
@@ -575,6 +611,36 @@
       <segment>
         <source>Size</source>
         <target state="translated">尺寸</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Wrapped item element with spacing item layout and styles, providing wrapper for each child element for inline alignment</source>
+        <target state="translated">包裹的子元件，包含間距項的佈局和樣式，為每個子元素提供包裝用於內聯對齊</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the Ant Design style-class demo: customize the root frame, item background and separator color through generated Semantic Part styles, and outline the root with a dashed border.</source>
+        <target state="translated">對齊 Ant Design style-class 範例：透過生成的 Semantic Part 樣式自訂 root 邊框、item 背景與 separator 顏色，並為 root 加上虛線邊框。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with flex layout, gap settings, alignment, wrap and other spacing container basic styles</source>
+        <target state="translated">根元素，包含 flex 佈局、間隙設定、對齊方式、換行等間距容器的基礎樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSeparatorDescription">
+      <segment>
+        <source>Separator element with divider styling</source>
+        <target state="translated">分隔符，包含分隔元素的樣式</target>
       </segment>
     </unit>
     <unit id="SizeDescription">

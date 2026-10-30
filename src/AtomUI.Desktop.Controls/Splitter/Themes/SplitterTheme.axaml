@@ -10,8 +10,11 @@
                                          Background="{TemplateBinding Background}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
-                                         CornerRadius="{TemplateBinding CornerRadius}">
+                                         CornerRadius="{TemplateBinding CornerRadius}"
+                                         StrokeDashArray="{TemplateBinding BorderDashArray}"
+                                         StrokeDaskOffset="{TemplateBinding BorderDashOffset}">
                     <atom:SplitterPanel Name="PART_SplitterPanel"
+                                        Classes.semantic-scope-panel="True"
                                         HandleSize="{TemplateBinding HandleSize}" 
                                         LineThickness="{TemplateBinding LineThickness}"
                                         LineCornerRadius="{TemplateBinding LineCornerRadius}"

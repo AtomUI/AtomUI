@@ -14,14 +14,16 @@
             <ControlTemplate TargetType="atom:DialogSurface">
                 <Panel>
                     <atom:ShadowsAwareContainer Name="PART_ShadowHost"
+                                                Classes.semantic-scope-frame-host="True"
                                                 IsOverlayMode="True">
                         <Border Name="Frame"
-                                Background="{atom:DialogTokenResource ContentBg}"
-                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Classes.semantic-container="True"
                                 ClipToBounds="True">
                             <DockPanel Name="PART_SurfaceContentLayer"
+                                       Classes.semantic-scope-content-layer="True"
                                        LastChildFill="True">
                                 <atom:OverlayDialogHeader Name="PART_Header"
+                                                          Classes.semantic-scope-header="True"
                                                           DockPanel.Dock="Top"
                                                           IsVisible="{TemplateBinding IsHeaderVisible}"
                                                           Title="{TemplateBinding Title}"
@@ -31,6 +33,7 @@
                                                           IsDialogMaximized="{TemplateBinding IsDialogMaximized}"
                                                           IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
                                 <Border Name="FooterFrame"
+                                        Classes.semantic-footer="True"
                                         DockPanel.Dock="Bottom"
                                         IsVisible="{TemplateBinding IsEffectiveFooterVisible}">
                                     <atom:DialogButtonBox Name="PART_ButtonBox"
@@ -39,7 +42,9 @@
                                                           DefaultStandardButton="{TemplateBinding DefaultStandardButton}"
                                                           EscapeStandardButton="{TemplateBinding EscapeStandardButton}" />
                                 </Border>
-                                <Border Name="ContentFrame" ClipToBounds="True">
+                                <Border Name="ContentFrame"
+                                        Classes.semantic-body="True"
+                                        ClipToBounds="True">
                                     <atom:Skeleton IsLoading="{TemplateBinding IsLoading}"
                                                    IsActive="True"
                                                    ParagraphRows="4"
@@ -56,6 +61,15 @@
                 </Panel>
             </ControlTemplate>
         </Setter>
+
+        <!-- container 的背景/圆角必须走 ControlTheme 样式而不是模板局部值：局部值优先级压过
+             任何 Style setter，DialogContainerStyle（owner 实例级语义样式）将永远无法覆盖。
+             CornerRadius 经 TemplatedParent 绑定保持对 Surface 运行时变更（如最大化归零）的跟随。 -->
+        <Style Selector="^ /template/ Border#Frame">
+            <Setter Property="Background" Value="{atom:DialogTokenResource ContentBg}" />
+            <Setter Property="CornerRadius"
+                    Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
 
         <Style Selector="^ /template/ atom|OverlayDialogHeader#PART_Header">
             <Setter Property="TitleFontSize" Value="{atom:DialogTokenResource HeaderFontSize}" />
@@ -74,6 +88,13 @@
 
         <Style Selector="^ /template/ Border#ContentFrame">
             <Setter Property="Padding" Value="{atom:DialogTokenResource ContentPadding}" />
+        </Style>
+
+        <!-- Window host hides the Overlay header because the native window owns the title bar.
+             Keep the body vertically separated from that title bar and preserve the same
+             horizontal content inset used by the Overlay host. -->
+        <Style Selector="^.window-hosted /template/ Border#ContentFrame">
+            <Setter Property="Padding" Value="{atom:DialogTokenResource WindowContentPadding}" />
         </Style>
 
         <Style Selector="^ /template/ atom|Skeleton">

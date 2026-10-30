@@ -307,6 +307,95 @@ public class NavMenuNodeCommandTests
         });
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Reopening_Inline_Submenu_Refreshes_Command_State_Through_Groups(bool grouped)
+    {
+        var command = new TrackingCommand();
+        var child = new NavMenuNode { Header = "Child", Command = command };
+        var parent = new NavMenuNode { Header = "Parent" };
+        var group = new NavMenuGroup { Header = "Group" };
+        group.Entries.Add(child);
+        if (grouped)
+        {
+            parent.Entries.Add(group);
+        }
+        else
+        {
+            group.Entries.Remove(child);
+            parent.Entries.Add(child);
+        }
+
+        ShowInWindow(parent, (window, parentItem) =>
+        {
+            parentItem.IsSubMenuOpen = true;
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            var childOwner = grouped
+                ? parentItem.ContainerFromItem(group).ShouldBeOfType<NavMenuGroupItem>()
+                : (ItemsControl)parentItem;
+            var childItem = childOwner.ContainerFromItem(child).ShouldBeOfType<NavMenuItem>();
+            childItem.IsEffectivelyEnabled.ShouldBeTrue();
+
+            foreach (var enabled in new[] { false, true })
+            {
+                parentItem.IsSubMenuOpen = false;
+                Dispatcher.UIThread.RunJobs();
+                command.CanExecuteValue = enabled;
+                command.RaiseCanExecuteChanged();
+                Dispatcher.UIThread.RunJobs();
+                parentItem.IsSubMenuOpen = true;
+                Dispatcher.UIThread.RunJobs();
+                window.UpdateLayout();
+                childItem.IsEffectivelyEnabled.ShouldBe(enabled);
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Commandless_Child_Activation_Does_Not_Execute_Ancestor_Command(bool keyboard)
+    {
+        var command = new TrackingCommand();
+        var child = new NavMenuNode { Header = "Child" };
+        var parent = new NavMenuNode { Header = "Parent", Command = command };
+        parent.Entries.Add(child);
+        ShowInWindow(parent, (window, parentItem) =>
+        {
+            parentItem.IsSubMenuOpen = true;
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            var childItem = parentItem.ContainerFromItem(child).ShouldBeOfType<NavMenuItem>();
+            var header = childItem.ItemHeader.ShouldNotBeNull();
+            if (keyboard)
+            {
+                var menu = window.Content.ShouldBeOfType<AtomUI.Desktop.Controls.NavMenu>();
+                menu.Focus(NavigationMethod.Tab).ShouldBeTrue();
+                window.KeyPress(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
+                parentItem.IsKeyboardActive.ShouldBeTrue();
+                window.KeyPress(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
+                childItem.IsKeyboardActive.ShouldBeTrue();
+                menu.SelectedItem.ShouldBeNull();
+                command.ExecuteCount.ShouldBe(0);
+                window.KeyPress(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
+            }
+            else
+            {
+                var point = header.TranslatePoint(new Point(header.Bounds.Width / 2, header.Bounds.Height / 2), window)
+                                  .ShouldNotBeNull();
+                window.MouseMove(point);
+                window.MouseDown(point, MouseButton.Left);
+                window.MouseUp(point, MouseButton.Left);
+            }
+
+            Dispatcher.UIThread.RunJobs();
+            window.Content.ShouldBeOfType<AtomUI.Desktop.Controls.NavMenu>().SelectedItem.ShouldBeSameAs(child);
+            command.ExecuteCount.ShouldBe(0);
+        });
+    }
+
     [Fact]
     public void Replacing_Node_Command_Unsubscribes_Old_Command_And_Subscribes_New_Command()
     {
@@ -489,16 +578,15 @@ public class NavMenuNodeCommandTests
             Header  = "New item",
             Command = newCommand
         };
-        var menu = new AtomUI.Desktop.Controls.NavMenu();
         var item = new NavMenuItem();
 
         var oldBindings = item.ResetNodeBindingDisposables();
-        NavMenuItemContainerBinder.BindNode(item, oldNode, menu, oldBindings);
+        NavMenuItemContainerBinder.BindNode(item, oldNode, oldBindings);
         item.Command.ShouldBeSameAs(oldCommand);
 
         var newBindings = item.ResetNodeBindingDisposables();
         item.Command.ShouldBeNull();
-        NavMenuItemContainerBinder.BindNode(item, newNode, menu, newBindings);
+        NavMenuItemContainerBinder.BindNode(item, newNode, newBindings);
         item.Command.ShouldBeSameAs(newCommand);
 
         item.ClearNodeBindingDisposables();

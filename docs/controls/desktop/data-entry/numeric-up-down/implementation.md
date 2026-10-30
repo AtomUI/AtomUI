@@ -1,6 +1,6 @@
 # NumericUpDown 桌面版实现原理
 
-本文档描述 NumericUpDown 桌面版的内部数值同步、string mode、模板切换、ButtonSpinner 接入和 Form / CompactSpace 集成。共享输入分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，公共设计与 API 契约见 [NumericUpDown 桌面版架构设计](overview.md)，Token 语义见 [NumericUpDown Token 设计](token.md)，变化记录见 [NumericUpDown Changelog](changelog.md)。
+本文档描述 NumericUpDown 桌面版的内部数值同步、string mode、模板切换、ButtonSpinner 接入和 Form / CompactSpace 集成。共享输入分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，公共设计与 API 契约见 [NumericUpDown 桌面版架构设计](overview.md)，Token 语义见 [NumericUpDown Token 设计](token.md)，变化记录见 [NumericUpDown Changelog](changelog.md)，Semantic Part 契约见 [NumericUpDown Semantic Part 契约](semantic-part.md)。
 
 ## 1. 实现定位
 
@@ -11,6 +11,8 @@ NumericUpDown 的实现基于 Avalonia `NumericUpDown`，AtomUI 通过 `InputCon
 主要源码：
 
 - `src/AtomUI.Desktop.Controls/NumericUpDown/NumericUpDown.cs`：public API、数值同步、custom size、string mode、清除按钮、键盘处理、Form / CompactSpace / Motion 接口。
+- `src/AtomUI.Desktop.Controls/NumericUpDown/NumericUpDown.SemanticParts.cs`：Semantic Part 声明（`root`、`prefix`、`input`、`suffix`、`clear`）。
+- `src/AtomUI.Desktop.Controls/NumericUpDown/NumericUpDownInputPanel.cs`：同一次排列中分配编辑器、后缀与浮动操作区的空间。
 - `src/AtomUI.Desktop.Controls/NumericUpDown/NumericUpDownSpinner.cs`：internal Spinner 子控件，复用 ButtonSpinner 的数值步进语义并承载 NumericUpDown 专用 inline 模板。
 - `src/AtomUI.Desktop.Controls/NumericUpDown/NumericUpDownToken.cs`：NumericUpDown Token scope。
 - `src/AtomUI.Desktop.Controls/NumericUpDown/Themes/NumericUpDownTheme.axaml`：输入模式和 spinner 模式外层模板、状态传递。
@@ -71,9 +73,17 @@ IsStringMode=true
 
 模板替换时必须解除旧 `TextBox.KeyDown`、清除按钮 `Click` 和内容区 relay binding。运行时切换 `Mode` 会触发模板重建，控件本体上的 `Value`、`Text`、`StringValue`、`Status`、`SizeType` 和 `IsCustomFontSize` 等状态通过绑定保留；旧 TextBox 的焦点、光标位置和选区属于旧模板实例，不作为跨模板强契约。
 
-`SetupTemplatePartBindings` 统一接入清除按钮图标、清除按钮动效、清除按钮可见性、内部右侧内容、内部右侧模板和内部 `TextBox.IsCustomFontSize`。这些绑定在下一次模板接入前必须通过 `CompositeDisposable` 释放。清除按钮和内部 `TextBox` 的事件订阅由成对 part setter 负责，避免在 `OnApplyTemplate` 中散落重复解绑逻辑。
+`SetupTemplatePartBindings` 负责无法直接模板绑定的内部状态：清除按钮有效可见性、属性元素子树中的左侧内容，以及输入布局面板的当前右侧避让量。图标、动效、右侧内容和文本框字号状态直接在 ControlTheme 中绑定。代码绑定由当前模板的 `CompositeDisposable` 持有，并在下一次模板接入前释放。清除按钮和内部 `TextBox` 的事件订阅由成对 part setter 负责。
 
 `Mode=Input` 默认模板不能创建 spinner 模式左右按钮。`Mode=Spinner` 的按钮、分隔线和专用布局节点只在启用 spinner 模式时实例化。两个模板分支都必须消费继承的 `ShowButtonSpinner`，不能用写死的模板值覆盖用户设置。
+
+两个模板变体还承载 Semantic Part marker：`PART_Spinner` 携带 `.semantic-scope-spinner`，`PART_TextBox` 携带
+`.semantic-input`，`InnerLeftContent` 包装 presenter 携带 `.semantic-prefix`，后缀 `StackPanel` 携带
+`.semantic-suffix`，`PART_ClearButton` 携带 `.semantic-clear`。所有 marker 使用静态
+`Classes.semantic-*="True"` 声明，不使用 Binding 或运行时赋值。`prefix` / `suffix` / `clear` 的 route 依次穿越
+spinner 的前缀内容子树；`suffix` 和 `clear` 保留在 NumericUpDown 自己的模板内容中，分别通过
+`/template/ .semantic-suffix` 和 `/template/ .semantic-clear` 选择。替换内层布局面板不会改变这些节点的
+TemplatedParent、类型或 marker，两种模式仍提供相同的 Semantic Part 集合。完整契约见 [NumericUpDown Semantic Part 契约](semantic-part.md)。
 
 ## 6. 交互与事件处理
 
@@ -100,12 +110,21 @@ String mode 保存 raw text，同时尝试同步可计算 `Value`。内部同步
 - normal 状态默认隐藏。
 - pointer hover 输入壳体时显示。
 - 显示时通过 `HandleOpacity` 和 `HandleOffset` 动画进入，不改变控件整体布局尺寸。
-- 内部右侧内容可产生位移，避免与 Handle 重叠。
+- 仅在有效启用、显示 Handle、允许浮动且 hover 时产生侧内容偏移；关闭 Handle 或离开该状态时，目标偏移归零。
+- 偏移按 Handle 宽度扣除已有内容 padding，并保留半个侧 padding 作为间距；不能仅按 padding 倍数推导，以免小尺寸或自定义 Handle 宽度时重叠。
 - disabled 清除 hover 状态，并保持 `HandleOpacity=0`。
+
+两个模式的编辑器与后缀由内部 `NumericUpDownInputPanel` 共同排列。它消费装饰框 `ContentRightShift` 的当前有效动画值，先在排列宽度中扣除右侧避让量，再使用 DockPanel 分配后缀和编辑器；外层尺寸与自然期望尺寸不随动画追加宽度。编辑器右边界不得跨入后缀交互区域，后缀也不得进入浮动 Handle 的操作区域。
+
+后缀不再单独声明 RenderTransform 或过渡，输入布局也不启动第二条动画。避让属性直接使 Arrange 失效；控件保留布局舍入，几何验证应考虑设备像素舍入。长文本由内部文本编辑器按真实 viewport 处理滚动和光标位置。
 
 ### 7.3 Spinner Mode 按需模板
 
-Spinner mode 使用独立模板创建三段式结构。左右 action 段按输入横向 padding、标准图标尺寸和分隔线自适应宽度，不使用浮动 Handle 的固定宽度和小号箭头规则。
+`NumericUpDownSpinnerTheme.BasedOn` 使用真实 `{x:Type ButtonSpinner}` key，生成器按相同 key/TargetType 的
+默认导出与类型条件证明基础主题保留。查找保持环境作用域：Application.Resources 中对 ButtonSpinner 主题的替换
+仍被派生主题继承；不得为声明依赖而加入会遮蔽该替换的局部 include。content padding、派生模板和控件局部属性优先级保持不变。
+
+Spinner mode 使用独立模板创建三段式结构。左右 action 按钮的宽度通过编译绑定跟随自身实际高度，保持正方形；按钮内 padding 为零，标准尺寸图标在其中居中。分隔线由外层段边框另行占位，不计入按钮本体的正方形尺寸。Small、Middle、Large 和自定义高度均使用同一几何规则，不使用浮动 Handle 的固定宽度或输入横向 padding 决定按钮宽度。
 
 spinner 模式的外层 content frame 必须保持零 padding，避免与左右 action 段和中间输入段自身 padding 叠加，导致控件高度超过输入控件标准高度。
 

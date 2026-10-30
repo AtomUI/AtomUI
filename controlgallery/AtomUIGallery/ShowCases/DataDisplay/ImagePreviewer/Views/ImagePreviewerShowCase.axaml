@@ -6,8 +6,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.ImagePreviewer"
              x:DataType="vm:ImagePreviewerViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="ImagePreviewer"
                     Category="{gallery:ImagePreviewerShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,100 @@
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractImagePreviewer"
                     MetadataValueWidth="220" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:ImagePreviewerViewModel">
+                    <StackPanel>
+                        <atom:TextBlock Margin="24,24,24,0"
+                                        FontSize="20"
+                                        FontWeight="SemiBold"
+                                        Text="ImagePreviewer" />
+                        <gallery:SemanticPartPreview
+                            Name="ImagePreviewerSemanticPreview"
+                            SemanticOwnerType="{x:Type atom:ImagePreviewer}"
+                            PreviewStageMinHeight="420"
+                            PreviewContentAlignment="Top">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:ImagePreviewer Name="ImagePreviewerSemanticOwner"
+                                                     Width="240"
+                                                     IsMotionEnabled="False"
+                                                     ItemsSource="{Binding DefaultImages}" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="image"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticImageDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="cover"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticCoverDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="popup.root"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticPopupRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="popup.mask"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticPopupMaskDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="popup.body"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticPopupBodyDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="popup.footer"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticPopupFooterDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="popup.actions"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticPopupActionsDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <atom:TextBlock Margin="24,0,24,0"
+                                        FontSize="20"
+                                        FontWeight="SemiBold"
+                                        Text="ImageGroupPreviewer" />
+                        <gallery:SemanticPartPreview
+                            Name="ImageGroupPreviewerSemanticPreview"
+                            SemanticOwnerType="{x:Type atom:ImageGroupPreviewer}"
+                            PreviewStageMinHeight="420"
+                            PreviewContentAlignment="Top">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:ImageGroupPreviewer Name="ImageGroupPreviewerSemanticOwner"
+                                                          CoverWidth="160"
+                                                          CoverHeight="120"
+                                                          IsMotionEnabled="False"
+                                                          ItemsSource="{Binding TwoImages}" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="image"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticImageDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="cover"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticCoverDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="popup.root"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticPopupRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="popup.mask"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticPopupMaskDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="popup.body"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticPopupBodyDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="popup.footer"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticPopupFooterDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="popup.actions"
+                                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticPopupActionsDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -33,8 +125,17 @@
                     IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:ImagePreviewerViewModel">
-                            <atom:ImagePreviewer Width="200"
-                                                 ItemsSource="{Binding DefaultImages}" />
+                            <StackPanel Spacing="12">
+                                <atom:CheckBox Name="WheelZoomCheckBox"
+                                               IsChecked="True"
+                                               Content="{gallery:ImagePreviewerShowCaseLangResource WheelZoomEnabled}" />
+                                <atom:ImagePreviewer Width="200"
+                                                     ImageMinScale="0.1"
+                                                     ImageMaxScale="8"
+                                                     ImageScaleStep="0.5"
+                                                     IsWheelZoomEnabled="{Binding #WheelZoomCheckBox.IsChecked}"
+                                                     ItemsSource="{Binding DefaultImages}" />
+                            </StackPanel>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
@@ -163,7 +264,59 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:ImagePreviewerShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:ImagePreviewerShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="imagepreviewer-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    IsOccupyEntireRow="True"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ImagePreviewerViewModel">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="{atom:SharedTokenResource Spacing}"
+                                        HorizontalAlignment="Left">
+                                <StackPanel.Styles>
+                                    <!-- 严格对齐 ant style-class.tsx：左侧 object 形式（root: padding 4 + borderRadius 8 +
+                                         overflow hidden；image: borderRadius 4），右侧 function 形式（root: 额外常驻 2px
+                                         #A594F9 边框；image: borderRadius 4 + filter grayscale(50%)）。上游 image 的
+                                         borderRadius 经 image 部件的 Semantic Style 落到 ImagePreviewRenderer.CornerRadius
+                                         （Border.CornerRadiusProperty 的 AddOwner，须写限定名 Border.CornerRadius——
+                                         renderer 类型为 internal，非限定名会解析到 internal 类型字段并在运行时抛
+                                         FieldAccessException）；filter 无等价属性，grayscale 仍通过 ViewModel 提供去饱和后的图像源复现。 -->
+                                    <Style Selector="atom|ImagePreviewer.semantic-styles-demo">
+                                        <atom:ImagePreviewerImageStyle x:SetterTargetType="atom:ImagePreviewRenderer">
+                                            <Setter Property="Border.CornerRadius" Value="4" />
+                                        </atom:ImagePreviewerImageStyle>
+                                    </Style>
+                                    <Style Selector="atom|ImagePreviewer.semantic-styles-filled-demo">
+                                        <atom:ImagePreviewerImageStyle x:SetterTargetType="atom:ImagePreviewRenderer">
+                                            <Setter Property="Border.CornerRadius" Value="4" />
+                                        </atom:ImagePreviewerImageStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+                                <!-- 经对上游三张截图逐像素核对：边框在常态与 hover 态均常驻显示，
+                                     hover 变化的是 cover 遮罩（rgba(0,0,0,0.3) 淡入 + 眼睛/预览指示）。 -->
+                                <atom:ImagePreviewer Classes="semantic-styles-demo"
+                                                     Width="160"
+                                                     Padding="4"
+                                                     CornerRadius="8"
+                                                     ClipToBounds="True"
+                                                     ItemsSource="{Binding DefaultImages}" />
+                                <atom:ImagePreviewer Classes="semantic-styles-filled-demo"
+                                                     Width="160"
+                                                     Padding="4"
+                                                     CornerRadius="8"
+                                                     BorderThickness="2"
+                                                     BorderBrush="#A594F9"
+                                                     ClipToBounds="True"
+                                                     ItemsSource="{Binding GrayscaleImages}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

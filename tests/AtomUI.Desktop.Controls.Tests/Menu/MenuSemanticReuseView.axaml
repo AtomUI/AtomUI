@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             x:Class="AtomUI.Desktop.Controls.Tests.Menu.MenuSemanticReuseView">
+    <UserControl.Styles>
+        <Style Selector="atom|DropdownButton">
+            <atom:DropdownButtonItemStyle x:SetterTargetType="atom:MenuItem">
+                <Setter Property="Tag" Value="dropdown-item" />
+                <Setter Property="Foreground" Value="Red" />
+            </atom:DropdownButtonItemStyle>
+        </Style>
+    </UserControl.Styles>
+    <atom:DropdownButton Name="Button" Content="Menu" IsMotionEnabled="False" />
+</UserControl>

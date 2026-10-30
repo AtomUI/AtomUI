@@ -57,6 +57,7 @@
                                            IsVisible="False"
                                            VerticalAlignment="Center" />
                                 <TextBlock Name="PART_Label"
+                                           Classes.semantic-label="True"
                                            DockPanel.Dock="Left"
                                            Text="{TemplateBinding LabelText}"
                                            VerticalAlignment="Center"
@@ -69,23 +70,25 @@
                                     Orientation="Vertical">
                             <Border MinHeight="{Binding #PART_LabelLayout.Bounds.Height}"
                                     Name="ContentFrame">
-                                <DockPanel LastChildFill="True">
-                                    <ContentPresenter Name="ExtraPresenter" DockPanel.Dock="Right"
-                                                      Content="{TemplateBinding Extra}"
-                                                      ContentTemplate="{TemplateBinding ExtraTemplate}" />
-                                    <ContentPresenter Name="ContentPresenter"
-                                                      Content="{TemplateBinding Content}"
-                                                      VerticalAlignment="Center"
-                                                      MaxWidth="{TemplateBinding ContentPresenterMaxWidth}" />
-                                </DockPanel>
+                                <ContentPresenter Name="ContentPresenter"
+                                                  Classes.semantic-content="True"
+                                                  Content="{TemplateBinding Content}"
+                                                  VerticalAlignment="Center"
+                                                  MaxWidth="{TemplateBinding ContentPresenterMaxWidth}" />
                             </Border>
-                            <StackPanel Name="ExtraInfoLayout" Orientation="Vertical">
-                                <TextBlock Name="PART_ErrorMsg"
-                                           Inlines="{TemplateBinding ErrorMessageInlines}"
-                                           IsVisible="{TemplateBinding ErrorMessageInlines, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                                <TextBlock Name="HelpText" Text="{TemplateBinding Help}"
+                            <StackPanel Name="ExtraInfoLayout"
+                                        Classes.semantic-help="True"
+                                        Orientation="Vertical">
+                                <TextBlock Name="HelpText"
+                                           Classes.semantic-help-item="True"
+                                           Text="{TemplateBinding Help}"
                                            IsVisible="{TemplateBinding Help, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             </StackPanel>
+                            <ContentPresenter Name="ExtraPresenter"
+                                              Classes.semantic-extra="True"
+                                              Content="{TemplateBinding Extra}"
+                                              ContentTemplate="{TemplateBinding ExtraTemplate}"
+                                              IsVisible="{TemplateBinding Extra, Converter={x:Static ObjectConverters.IsNotNull}}" />
                         </StackPanel>
                     </Grid>
                 </DockPanel>
@@ -93,18 +96,6 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
-
-        <Style Selector="^[ValidateStatus=Error]">
-            <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorErrorText}" />
-            </Style>
-        </Style>
-
-        <Style Selector="^[ValidateStatus=Warning]">
-            <Style Selector="^ /template/ TextBlock#PART_ErrorMsg">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorWarningText}" />
-            </Style>
-        </Style>
 
         <Style Selector="^ /template/ TextBlock#PART_Colon">
             <Setter Property="Margin" Value="{atom:FormTokenResource LabelColonMargin}" />
@@ -273,6 +264,11 @@
             <Style Selector="^ /template/ TextBlock#HelpText">
                 <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorErrorText}" />
             </Style>
+        </Style>
+
+        <Style Selector="^ /template/ ContentPresenter#ExtraPresenter">
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}" />
+            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
         </Style>
 
     </ControlTheme>

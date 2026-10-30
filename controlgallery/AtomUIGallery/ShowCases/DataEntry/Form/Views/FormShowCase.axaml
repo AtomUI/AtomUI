@@ -15,8 +15,8 @@
     </UserControl.Resources>
 
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Form"
                     Category="{gallery:FormShowCaseLangResource ComponentCategory}"
@@ -27,7 +27,67 @@
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="Form"
                     MetadataValueWidth="220" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="viewModels:FormViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview Name="FormItemSemanticPreview"
+                                                     Title="FormItem"
+                                                     SemanticOwner="{Binding #PasswordSemanticItem}"
+                                                     SemanticOwnerType="{x:Type atom:FormItem}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:Form Name="SemanticDemoForm"
+                                           LabelColInfo="8*"
+                                           WrapperColInfo="16*"
+                                           MinWidth="480"
+                                                       AttachedToVisualTree="HandleSemanticDemoFormAttached">
+                                    <atom:FormItem LabelText="{gallery:FormShowCaseLangResource P2LabelTextUsername}"
+                                                   FieldName="username"
+                                                   IsRequired="True"
+                                                   Help="{gallery:FormShowCaseLangResource SemanticHelpUse4To16Characters}">
+                                        <atom:LineEdit />
+                                    </atom:FormItem>
+                                    <atom:FormItem Name="PasswordSemanticItem"
+                                                   LabelText="{gallery:FormShowCaseLangResource P2LabelTextPassword}"
+                                                   FieldName="password"
+                                                   IsRequired="True"
+                                                   ValidateStrategy="Sequential"
+                                                   Extra="{gallery:FormShowCaseLangResource SemanticExtraPasswordMustContainLettersAndNumbers}">
+                                        <atom:FormItem.Validators>
+                                            <atom:FormValidatorProvider>
+                                                <atom:FormStringNotEmptyValidator Message="{gallery:FormShowCaseLangResource P2MessagePleaseInputYourPassword}" />
+                                                <atom:FormStringNotEmptyValidator Message="{gallery:FormShowCaseLangResource SemanticMessageUseAtLeast8Characters}" />
+                                            </atom:FormValidatorProvider>
+                                        </atom:FormItem.Validators>
+                                        <atom:LineEdit PasswordChar="*" />
+                                    </atom:FormItem>
+                                </atom:Form>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:FormShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="label"
+                                    Description="{gallery:FormShowCaseLangResource SemanticLabelDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="content"
+                                    Description="{gallery:FormShowCaseLangResource SemanticContentDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="help"
+                                    Description="{gallery:FormShowCaseLangResource SemanticHelpDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="helpItem"
+                                    Description="{gallery:FormShowCaseLangResource SemanticHelpItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="extra"
+                                    Description="{gallery:FormShowCaseLangResource SemanticExtraDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -1324,10 +1384,16 @@
                                PlaceholderText="{gallery:FormShowCaseLangResource P2PlaceholderTextPassword}"/>
             </atom:FormItem>
             <atom:FormItem FieldName="remember">
-                <atom:CheckBox IsChecked="True" Content="{gallery:FormShowCaseLangResource P2ContentRememberMe}" />
-                <atom:FormItem.Extra>
-                    <atom:HyperLinkButton Content="{gallery:FormShowCaseLangResource P2ContentForgotPassword}" />
-                </atom:FormItem.Extra>
+                <atom:FormItemDecorator HorizontalAlignment="Stretch"
+                                        Theme="{StaticResource LoginOptionsDecoratorTheme}">
+                    <atom:CheckBox IsChecked="True"
+                                   Content="{gallery:FormShowCaseLangResource P2ContentRememberMe}" />
+                    <atom:FormItemDecorator.Extra>
+                        <atom:HyperLinkTextBlock HorizontalAlignment="Right"
+                                                 Focusable="True"
+                                                 Text="{gallery:FormShowCaseLangResource P2ContentForgotPassword}" />
+                    </atom:FormItemDecorator.Extra>
+                </atom:FormItemDecorator>
             </atom:FormItem>
             <atom:FormActionsItem>
                 <StackPanel>
@@ -1662,7 +1728,119 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:FormShowCaseLangResource SemanticStylingTitle}"
+        Description="{gallery:FormShowCaseLangResource SemanticStylingDescription}"
+        SourceKey="form-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        Span="Full"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="viewModels:FormViewModel">
+                <StackPanel Orientation="Vertical"
+                            Spacing="32">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|Form.semantic-card">
+                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+                            <Setter Property="Padding" Value="{atom:SharedTokenResource Padding}" />
+                            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+                            <Setter Property="BoxShadow" Value="0 2 8 0 #1A000000" />
+                        </Style>
+                        <Style Selector="atom|Form.semantic-function">
+                            <Setter Property="BorderBrush" Value="#1677FF" />
+                            <Setter Property="BorderThickness" Value="1" />
+                        </Style>
+                        <Style Selector="atom|Form.semantic-object atom|FormItem">
+                            <atom:FormItemLabelStyle x:SetterTargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#333333" />
+                                <Setter Property="FontWeight" Value="Medium" />
+                                <Setter Property="TextAlignment" Value="Right" />
+                            </atom:FormItemLabelStyle>
+                        </Style>
+                        <Style Selector="atom|Form.semantic-function atom|FormItem">
+                            <atom:FormItemLabelStyle x:SetterTargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#1677FF" />
+                                <Setter Property="TextAlignment" Value="Right" />
+                            </atom:FormItemLabelStyle>
+                        </Style>
+                        <Style Selector="atom|Form.semantic-card atom|FormItem">
+                            <atom:FormItemContentStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="Padding" Value="12,0,0,0" />
+                            </atom:FormItemContentStyle>
+                        </Style>
+                    </StackPanel.Styles>
+
+                    <atom:Form Classes="semantic-card semantic-object"
+                               MaxWidth="800"
+                               LabelColInfo="4*"
+                               WrapperColInfo="20*">
+                        <atom:FormItem LabelText="{gallery:FormShowCaseLangResource P2LabelTextUsername}"
+                                       FieldName="username"
+                                       IsRequired="True">
+                            <atom:FormItem.Validators>
+                                <atom:FormValidatorProvider>
+                                    <atom:FormStringNotEmptyValidator Message="{gallery:FormShowCaseLangResource SemanticStyleMessagePleaseEnterUsername}" />
+                                </atom:FormValidatorProvider>
+                            </atom:FormItem.Validators>
+                            <atom:LineEdit PlaceholderText="{gallery:FormShowCaseLangResource SemanticStyleUsernamePlaceholder}" />
+                        </atom:FormItem>
+                        <atom:FormItem LabelText="{gallery:FormShowCaseLangResource P2LabelTextEmail}"
+                                       FieldName="email"
+                                       IsRequired="True">
+                            <atom:FormItem.Validators>
+                                <atom:FormValidatorProvider>
+                                    <atom:FormStringNotEmptyValidator Message="{gallery:FormShowCaseLangResource SemanticStyleMessagePleaseEnterEmail}" />
+                                </atom:FormValidatorProvider>
+                            </atom:FormItem.Validators>
+                            <atom:LineEdit PlaceholderText="{gallery:FormShowCaseLangResource SemanticStyleEmailPlaceholder}" />
+                        </atom:FormItem>
+                        <atom:FormActionsItem>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <atom:SubmitButton Content="{gallery:FormShowCaseLangResource SemanticStyleSubmitButtonText}" />
+                                <atom:ResetButton Content="{gallery:FormShowCaseLangResource SemanticStyleResetButtonText}" />
+                            </StackPanel>
+                        </atom:FormActionsItem>
+                    </atom:Form>
+
+                    <atom:Form Classes="semantic-card semantic-function"
+                               MaxWidth="800"
+                               StyleVariant="Filled"
+                               LabelColInfo="4*"
+                               WrapperColInfo="20*">
+                        <atom:FormItem LabelText="{gallery:FormShowCaseLangResource P2LabelTextUsername}"
+                                       FieldName="username"
+                                       IsRequired="True">
+                            <atom:FormItem.Validators>
+                                <atom:FormValidatorProvider>
+                                    <atom:FormStringNotEmptyValidator Message="{gallery:FormShowCaseLangResource SemanticStyleMessagePleaseEnterUsername}" />
+                                </atom:FormValidatorProvider>
+                            </atom:FormItem.Validators>
+                            <atom:LineEdit PlaceholderText="{gallery:FormShowCaseLangResource SemanticStyleUsernamePlaceholder}" />
+                        </atom:FormItem>
+                        <atom:FormItem LabelText="{gallery:FormShowCaseLangResource P2LabelTextEmail}"
+                                       FieldName="email"
+                                       IsRequired="True">
+                            <atom:FormItem.Validators>
+                                <atom:FormValidatorProvider>
+                                    <atom:FormStringNotEmptyValidator Message="{gallery:FormShowCaseLangResource SemanticStyleMessagePleaseEnterEmail}" />
+                                </atom:FormValidatorProvider>
+                            </atom:FormItem.Validators>
+                            <atom:LineEdit PlaceholderText="{gallery:FormShowCaseLangResource SemanticStyleEmailPlaceholder}" />
+                        </atom:FormItem>
+                        <atom:FormActionsItem>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <atom:SubmitButton Content="{gallery:FormShowCaseLangResource SemanticStyleSubmitButtonText}" />
+                                <atom:ResetButton Content="{gallery:FormShowCaseLangResource SemanticStyleResetButtonText}" />
+                            </StackPanel>
+                        </atom:FormActionsItem>
+                    </atom:Form>
+                </StackPanel>
+
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

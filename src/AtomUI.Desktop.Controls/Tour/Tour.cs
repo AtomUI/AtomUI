@@ -4,6 +4,8 @@ using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Generated.AtomUIDesktopControls;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -25,7 +27,7 @@ public enum TourStyleType
     Primary,
 }
 
-public class Tour : TemplatedControl, IMotionAwareControl
+public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPartCrossRootProvider
 {
     #region 公共属性定义
     public static readonly StyledProperty<IEnumerable<ITourStepOption>?> StepsSourceProperty =
@@ -249,7 +251,12 @@ public class Tour : TemplatedControl, IMotionAwareControl
             o => o.CurrentMaskColor,
             (o, v) => o.CurrentMaskColor = v);
 
-    internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+    /// <summary>
+    /// Gets or sets a value indicating whether the tour popup remains open without requiring
+    /// user interaction. Gallery semantic previews pin the popup open this way so the popup
+    /// parts can be inspected and highlighted.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<Tour>();
     
     private Rect _targetClipBounds;
@@ -306,10 +313,34 @@ public class Tour : TemplatedControl, IMotionAwareControl
         private set => SetAndRaise(CurrentMaskColorProperty, ref _currentMaskColor, value);
     }
 
-    internal bool IsPopupPinnedOpen
+    public bool IsPopupPinnedOpen
     {
         get => GetValue(IsPopupPinnedOpenProperty);
         set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
+    }
+
+    #endregion
+
+    #region ISemanticPartCrossRootProvider 实现
+
+    /// <summary>
+    /// 遮罩承载在 TopLevel VisualLayerManager 的共享 TourLayer 中，属 owner 视觉树之外的
+    /// 跨根宿主；Tour 打开时把该层逻辑挂载到自身（语义样式经逻辑树级联命中），语义预览
+    /// 经此契约在打开/关闭时跟随刷新。
+    /// </summary>
+    public IReadOnlyList<Visual> GetCrossRoots()
+    {
+        return _layer is { } layer && layer.IsVisible
+            ? new Visual[] { layer }
+            : Array.Empty<Visual>();
+    }
+
+    /// <inheritdoc />
+    public event EventHandler? CrossRootsChanged;
+
+    private void RaiseCrossRootsChanged()
+    {
+        CrossRootsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     #endregion
@@ -600,7 +631,45 @@ public class Tour : TemplatedControl, IMotionAwareControl
             _layer[!TourLayer.BackgroundProperty]               = this[!CurrentMaskColorProperty];
             _layer[!TourLayer.TargetRegionCornerRadiusProperty] = this[!GapRadiusProperty];
             _layer[!TourLayer.TargetRegionProperty]             = this[!TargetClipBoundsProperty];
+            AttachMaskLayer(_layer);
         }
+    }
+
+    private void AttachMaskLayer(TourLayer layer)
+    {
+        if (!layer.Classes.Contains(TourSemanticParts.PopupMaskClass))
+        {
+            layer.Classes.Add(TourSemanticParts.PopupMaskClass);
+        }
+
+        if (ReferenceEquals(layer.Parent, this))
+        {
+            return;
+        }
+
+        // VisualLayerManager.AddLayer 内部把共享层逻辑挂到自身；非 null → 非 null 的
+        // 逻辑父切换会抛异常，必须先解除再挂到当前 Tour，owner 作用域的语义样式
+        //（">>" Descendant 选择器沿逻辑树匹配）才能跨视觉根命中遮罩。
+        if (layer.Parent != null)
+        {
+            ((ISetLogicalParent)layer).SetParent(null);
+        }
+
+        ((ISetLogicalParent)layer).SetParent(this);
+        RaiseCrossRootsChanged();
+    }
+
+    private void DetachMaskLayer(TourLayer layer)
+    {
+        if (layer.Parent == null)
+        {
+            return;
+        }
+
+        // 共享层"谁打开谁拥有，关闭即释放"：脱离当前 Tour 的逻辑父，
+        // 下一个打开的 Tour 可以重新挂载归属。
+        ((ISetLogicalParent)layer).SetParent(null);
+        RaiseCrossRootsChanged();
     }
     
     public void HideTour()
@@ -619,6 +688,7 @@ public class Tour : TemplatedControl, IMotionAwareControl
         {
             _layer.SetCurrentValue(TourLayer.IsMotionEnabledProperty, false);
             _layer.IsVisible = false;
+            DetachMaskLayer(_layer);
         }
         _popup.IsOpen = false;
         using (BeginIgnoringPropertyChanged())
@@ -655,6 +725,7 @@ public class Tour : TemplatedControl, IMotionAwareControl
         {
             _layer.SetCurrentValue(TourLayer.IsMotionEnabledProperty, false);
             _layer.IsVisible = false;
+            DetachMaskLayer(_layer);
         }
 
         _popup?.CloseForLifecycle();
@@ -745,6 +816,18 @@ public class Tour : TemplatedControl, IMotionAwareControl
         if (target == null)
         {
             TargetClipBounds = default;
+            return;
+        }
+        // TourLayer 绘制在自身坐标系中，且遮罩挖孔（TargetRegion）与其遮罩几何必须同坐标
+        // 空间。层可能宿主在 TopLevel 模板的共享 VisualLayerManager（整窗遮罩），也可能
+        // 宿主在舞台内嵌的 VisualLayerManager（对齐上游 getPopupContainer=false 的就地遮罩，
+        // 只覆盖舞台区域）。因此挖孔统一优先相对层本身换算；层尚未接入视觉树时退回
+        // TopLevel 坐标（层接入后会随 TargetRegion 绑定重新计算）。
+        if (_layer is { } layer &&
+            target.TranslatePoint(new Point(0, 0), layer) is { } layerOffset)
+        {
+            TargetClipBounds = new Rect(layerOffset, target.Bounds.Size)
+                .Inflate(new Thickness(GapOffsetX, GapOffsetY));
             return;
         }
         var topLevel = TopLevel.GetTopLevel(target);

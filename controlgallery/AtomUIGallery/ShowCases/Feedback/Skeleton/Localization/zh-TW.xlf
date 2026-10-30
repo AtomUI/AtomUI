@@ -175,5 +175,65 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticAvatarDescription">
+      <segment>
+        <source>Avatar element with inline-block display, vertical alignment, background color, size, border radius and other avatar placeholder styles.</source>
+        <target state="translated">Avatar 元素，包含 inline-block 顯示、垂直對齊、背景色、尺寸、圓角以及其他頭像佔位樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticElementContentDescription">
+      <segment>
+        <source>Content element with placeholder background, border, radius and size styles.</source>
+        <target state="translated">內容元素，包含佔位背景、邊框、圓角和尺寸樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticElementRootDescription">
+      <segment>
+        <source>Root element of a Skeleton element component.</source>
+        <target state="translated">Skeleton 元素元件的根元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with table cell, padding, vertical alignment and other avatar placeholder area layout styles.</source>
+        <target state="translated">Header 元素，包含 table-cell、內邊距、垂直對齊以及其他頭像佔位區域佈局樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticParagraphDescription">
+      <segment>
+        <source>Paragraph element with padding, list item styles, background color, border radius and other paragraph placeholder styles.</source>
+        <target state="translated">Paragraph 元素，包含內邊距、列表項樣式、背景色、圓角以及其他段落佔位樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Skeleton's published Semantic Parts.</source>
+        <target state="translated">使用 owner 範圍樣式自訂 Skeleton 已發布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with table display, width, animation effects, border radius and other skeleton container basic styles.</source>
+        <target state="translated">根元素，包含 table 顯示、寬度、動畫效果、圓角以及其他骨架容器基礎樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Section element with skeleton content area layout styles.</source>
+        <target state="translated">Section 元素，包含骨架內容區域佈局樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with width, height, background color, border radius and other title placeholder styles.</source>
+        <target state="translated">Title 元素，包含寬度、高度、背景色、圓角以及其他標題佔位樣式。</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

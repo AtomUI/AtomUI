@@ -3,27 +3,30 @@ using Avalonia.Threading;
 
 namespace AtomUI.Localization;
 
-internal sealed class LanguageManager : ILanguageManager, IDisposable
+internal sealed partial class LanguageManager : ILanguageManager, IDisposable
 {
     private readonly LanguageContext _context;
-    private readonly IReadOnlyDictionary<LanguageTag, LanguageSnapshot> _snapshots;
-    private readonly IReadOnlyDictionary<LanguageTag, LanguageDefinition> _definitions;
-    private readonly ReadOnlyCollection<LanguageDefinition> _supportedLanguages;
+    private IReadOnlyDictionary<LanguageTag, LanguageSnapshot> _snapshots;
+    private IReadOnlyDictionary<LanguageTag, LanguageDefinition> _definitions;
+    private ReadOnlyCollection<LanguageDefinition> _supportedLanguages;
     private readonly LanguageResourceProvider _resourceProvider;
     private readonly Func<bool> _checkAccess;
     private int _disposed;
+    private bool _loadingPackages;
+    private IReadOnlyDictionary<string, string> _moduleData;
 
     internal LanguageManager(
         LanguageContext context,
         IReadOnlyDictionary<LanguageTag, LanguageSnapshot> snapshots,
         IReadOnlyList<LanguageDefinition> supportedLanguages,
         LanguageResourceProvider resourceProvider,
-        Func<bool>? checkAccess = null)
+        Func<bool>? checkAccess = null, IReadOnlyDictionary<string, string>? moduleData = null)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         ArgumentNullException.ThrowIfNull(snapshots);
         ArgumentNullException.ThrowIfNull(supportedLanguages);
         _resourceProvider = resourceProvider ?? throw new ArgumentNullException(nameof(resourceProvider));
+        _moduleData = new Dictionary<string, string>(moduleData ?? new Dictionary<string, string>(), StringComparer.Ordinal);
         _checkAccess = checkAccess ?? (static () => Dispatcher.UIThread.CheckAccess());
 
         if (supportedLanguages.Count == 0)
@@ -43,20 +46,16 @@ internal sealed class LanguageManager : ILanguageManager, IDisposable
                 throw new LanguageConfigurationException(
                     $"Language definition '{definition.Tag.Value}' is registered more than once.");
             }
-            if (!snapshots.TryGetValue(definition.Tag, out var snapshot))
+            if (snapshots.TryGetValue(definition.Tag, out var snapshot))
             {
-                throw new LanguageConfigurationException(
-                    $"Supported language '{definition.Tag.Value}' has no prebuilt Snapshot.");
+                if (snapshot.RequestedLanguage != definition.Tag)
+                {
+                    throw new LanguageConfigurationException(
+                        $"Snapshot '{snapshot.RequestedLanguage.Value}' cannot be registered for language '{definition.Tag.Value}'.");
+                }
+                snapshotCopies.Add(definition.Tag, snapshot);
             }
-            if (snapshot.RequestedLanguage != definition.Tag)
-            {
-                throw new LanguageConfigurationException(
-                    $"Snapshot '{snapshot.RequestedLanguage.Value}' cannot be registered for language " +
-                    $"'{definition.Tag.Value}'.");
-            }
-
             definitionArray[index] = definition;
-            snapshotCopies.Add(definition.Tag, snapshot);
         }
 
         var currentLanguage = context.Current.State.CurrentLanguage;
@@ -72,8 +71,10 @@ internal sealed class LanguageManager : ILanguageManager, IDisposable
     }
 
     public LanguageState Current => _context.Current.State;
+    internal LanguageCatalogRegistry Registry => _context.Registry;
+    internal IReadOnlyDictionary<LanguageTag, LanguageSnapshot> Snapshots => Volatile.Read(ref _snapshots);
 
-    public IReadOnlyList<LanguageDefinition> SupportedLanguages => _supportedLanguages;
+    public IReadOnlyList<LanguageDefinition> SupportedLanguages => Volatile.Read(ref _supportedLanguages);
 
     public event EventHandler<LanguageChangedEventArgs>? LanguageChanged;
 
@@ -81,11 +82,16 @@ internal sealed class LanguageManager : ILanguageManager, IDisposable
     {
         VerifyAccess();
         ThrowIfDisposed();
+        if (_loadingPackages)
+        {
+            throw new InvalidOperationException("Language changes cannot run during package loading.");
+        }
         if (language == default)
         {
             throw new ArgumentException("A valid language tag is required.", nameof(language));
         }
-        if (!_definitions.TryGetValue(language, out var definition))
+        var definitions = Volatile.Read(ref _definitions);
+        if (!definitions.TryGetValue(language, out var definition))
         {
             throw new LanguageNotSupportedException(language);
         }
@@ -101,7 +107,17 @@ internal sealed class LanguageManager : ILanguageManager, IDisposable
             definition.FormattingCulture,
             definition.TextDirection,
             checked(oldRevision.State.Revision + 1));
-        var newRevision = new LanguageRevision(_snapshots[language], newState);
+        var snapshots = Volatile.Read(ref _snapshots);
+        if (!snapshots.TryGetValue(language, out var snapshot))
+        {
+            snapshot = LanguageSnapshotBuilder.Build(_context.Registry, language, definition, deferCatalogs: true);
+            var updated = new Dictionary<LanguageTag, LanguageSnapshot>(snapshots)
+            {
+                [language] = snapshot
+            };
+            Volatile.Write(ref _snapshots, new ReadOnlyDictionary<LanguageTag, LanguageSnapshot>(updated));
+        }
+        var newRevision = new LanguageRevision(snapshot, newState);
         var result = LanguageChangeResult.Committed(oldRevision.State, newState);
 
         _context.Publish(newRevision);
@@ -112,9 +128,15 @@ internal sealed class LanguageManager : ILanguageManager, IDisposable
 
     public void Dispose()
     {
+        if (_loadingPackages)
+        {
+            throw new InvalidOperationException("LanguageManager cannot be disposed during package loading.");
+        }
         if (Interlocked.Exchange(ref _disposed, 1) == 0)
         {
             LanguageChanged = null;
+            Volatile.Write(ref _snapshots, new ReadOnlyDictionary<LanguageTag, LanguageSnapshot>(
+                new Dictionary<LanguageTag, LanguageSnapshot>()));
         }
     }
 

@@ -2,6 +2,106 @@
 
 本文档记录 NavMenu 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-29
+
+- 内联子菜单展开、收起时共享内容视口只失效自身测量，不再逐帧失效全部祖先排列（原实现使窗口外框等绘制型祖先每帧整窗重绘）；侧栏往返后的分配缺口改为仅重新排列 DesiredSize 变化的祖先来修复。
+- Wayland 启动时窗口先按缩放 1 布局再切到真实缩放导致的菜单文字尺寸变化，随 Window 初始缩放预测消除。
+
+## 2026-10-28
+
+- 修复透明度/可见性通知重入、准备期间关闭后重开时的占位交接，旧请求不再覆盖新租约；沿用尚未完成布局的零/当前起点，避免读取隐藏前旧 Bounds。
+- 准备绑定在发布前登记句柄，发布或清理失败仍释放所有覆盖，并按最新意图恢复稳定状态；无动画投影的完成晚于清理。
+
+- 共享显示隐藏入口在展开可见前准备零占位，避免首个 Loaded 边界前临时发布自然高度；准备失败时释放临时覆盖。
+
+- 修复选择页面后收起、展开侧栏时，展开路径已恢复但子菜单仍被零高度视口裁剪，导致需要先关闭再打开的问题。共享内容视口同步失效祖先排列，保留宽度动效、选中路径和单次点击语义。
+
+## 2026-10-27
+
+- Inline 子菜单改用 `ContentViewport` 和主题声明的 `atom:Motion`，移除 item 持有的旧展开执行器，保留版本、互斥与业务事件核对。
+
+- Inline Collapsed 根宽度改由原生 Animation 驱动内部布局值，移除16ms延时循环与逐帧Dispatcher投递；保留CubicEaseOut、主题时长、尺寸coercion和选中/展开路径语义。
+- 反转在取消前捕获当前呈现宽度；Mode切换取消旧宽度执行，避免临时宽度继续影响新的布局模式。动画绑定释放后由当前请求完成一次收尾，保留base Width/MinWidth及绑定。
+
+## 2026-09-14
+
+- 修复根菜单卸载后，外部持有的节点/分组经资源宿主和属性订阅保留整个菜单的问题。挂载作用域统一管理资源 attachment 与数据绑定，重新挂载恢复最新资源、数据和原选择；资源回调删除节点后不再恢复旧绑定。
+- 修复 Entries Replace 同步重入导致成员和结构 owner 不一致的问题。替换先提交 ownership，再完成父关系及通知；回调异常继续完成其他投影，嵌套分组同样处理，同集合的未完成 Replace 拒绝重入写入。
+- 修复默认选中路径的排队请求覆盖后续显式选择，以及移除选中节点后旧祖先路径残留。已应用路径按容器生命周期维护，并允许清理期间同步回收或改选。
+- 修复 Inline 父项按下后在子 Header 释放仍触发父项，以及 capture-lost 清理误取消新控件捕获的问题。命中检查限定到原 Header，并保留正常整行交互。
+- 修复子菜单重新打开后未刷新语义子项 CanExecute，以及无命令子项的 Click 冒泡执行祖先命令的问题。
+- 补齐节点 HeaderTemplate 与 ItemKey 的运行期投影；模板清空时恢复当前 owner ItemTemplate。
+- 增加竞态、回调异常、指针几何、键盘激活、DynamicResource 弱引用回收与反复重新挂载回归；公共 API、Token 和默认主题布局保持既有契约。
+
+## 2026-09-11
+
+- Semantic Part
+  - 为 `NavMenu` 公开 12 个上游 Semantic 键路径：一级 `root`、`item`、`itemIcon`、`itemContent`、`itemTitle`、`list`，
+    子菜单 `subMenu.item`、`subMenu.itemIcon`、`subMenu.itemContent`、`subMenu.itemTitle`、`subMenu.list`，以及
+    `popup.root`；新增 `NavMenu.SemanticParts.cs` descriptor，`NavMenu` 改为 partial，生成 `NavMenuItemStyle`、
+    `NavMenuItemIconStyle`、`NavMenuSubMenuItemStyle`、`NavMenuPopupRootStyle` 等 11 个 `AtomUI.Theme.Styling` 类型
+    （since 6.2.0）。
+  - `NavMenuItem`、`NavMenuGroupItem`、`NavMenuDividerItem` 是 internal 容器，不能持有 descriptor，也不能作为
+    `ContractType`，因此 Part 全部声明在唯一的 public owner `NavMenu` 上；菜单项容器的 `ContractType` 取最近 public
+    基类 `HeaderedSelectingItemsControl`，弹层框体取 `Border`。
+  - 层级区分靠互斥运行时 marker：一级容器 `.semantic-item` / `.semantic-scope-group`，子菜单容器
+    `.semantic-sub-menu-item` / `.semantic-sub-menu-group`。`NavMenuEntryContainerCoordinator` 在 prepare 时先移除另一
+    层级再幂等补齐当前层级，保证容器在 owner 之间转移与回收复用时既不残留也不重复。
+  - 全部非 root Part 的 route 以 `>>` 开头并声明 `CrossNestedOwners`：容器是运行时生成物、不在 `NavMenu` 模板内，
+    无法用 `/template/` 到达；`popup.root` 的节点还位于 `Popup.Child` 属性值子树，因此同时声明 `CrossVisualRoot`。
+    `>>` 只沿逻辑祖先链定位锚点，不在最近语义 owner 处停止，因此层级隔离由 marker class 承担而非 route。
+  - 静态 marker 落在 `NavMenuItemTheme.axaml`（`.semantic-scope-header` 路由跳点、`.semantic-popup-root`）、三个 header
+    主题（icon / content 的两个层级 marker 在同一节点共存）与 `NavMenuGroupItemTheme.axaml`（标题 / 列表的两个层级
+    marker 同理）。默认主题不消费 `.semantic-*`。
+- Docs
+  - 新增 `semantic-part.md`，定义唯一 owner 边界、12 个 Part、marker 放置与路由、route 组合符与 `>>` 契约、Selector
+    用法、状态与数量语义、尺寸基线、定制边界和验证矩阵。
+  - 更新 `overview.md` §3.1 Semantic Part 摘要与 §9 验证策略，更新 `implementation.md` §10 Semantic Part 实现与 §11
+    验证范围。
+- Gallery
+  - `MenuShowCase` 从 `GalleryStickyTabsHost` 切换到 `GalleryShowCaseHost`，新增 Semantic Parts Tab，并补齐 en-US / zh-CN /
+    zh-TW / pt-BR 文案。
+  - Semantic Parts Tab 提供两个预览，夹具逐项对齐上游语义示例：`Navigation One`（Mail 图标）、`Navigation Two`
+    子菜单（Appstore 图标）内含 `Item 1` 分组与 `Option 1`（Mail 图标）/ `Option 2`，以及一级分组 `Navigation Three`
+    与 `Option 3` / `Option 4`；两者都用 `DefaultOpenPaths` / `DefaultSelectedPath` 复刻上游语义示例的
+    `openKeys` / `selectedKeys`，使子菜单默认展开、首项默认选中。
+  - Inline 预览覆盖不依赖弹层的全部 Part：两级容器都在视觉树内展开，`item`、`itemTitle`、`list`、`subMenu.*`
+    都有实例；`popup.root` 在 Inline 模板里没有弹层节点，实例数为 0，与上游 inline 模式 popup 不生效一致。
+  - Vertical 预览补齐弹层侧覆盖：code-behind 通过公开的 `INavMenuItem` 契约打开第一个可展开项，并把该弹层的
+    `Popup.Child` 注册进 `SemanticPartPreview.AdditionalRoots`（同 DropdownButton / InfoFlyout 的既定模式），
+    让 `popup.root` 与垂直模式 `subMenu.*` 成为可定位目标。这里不使用 `NavMenu.IsPopupPinnedOpen`（internal，
+    只供测试/内部诊断），弹层打开完全走公开业务契约；`GetTemplateDescendants` 在运行时生成的菜单项容器处中断，
+    无法自动发现该 Popup，因此必须显式注册根。
+  - Vertical 预览改为在 AXAML 里声明 `IsPopupPinnedOpen="True"`，由 NavMenu 自身负责打开与保持，不再由 Gallery
+    代码手动开关子菜单：`NavMenu.IsPopupPinnedOpen` 提升为公开属性（与 `Tour`、`DropdownButton`、`AbstractSelect`
+    同一家族约定），`NavMenuItem` 上的同名属性保持 internal。Gallery 代码只负责把已打开弹层的 `Popup.Child` 注册进
+    `SemanticPartPreview.AdditionalRoots`。
+  - 修复声明式钉住在容器生成前写入时不生效的问题：钉住请求此前只落在"当下已实现的容器"上，属性变更、attach、
+    Mode 切换都发生在容器生成之前或容器重建之际，声明式钉住（预览在 AXAML 中声明）当场丢失。现在把请求以
+    `INavMenuNode` 为键保存在 `NavMenuPinnedOpenCoordinator` 中，独立于容器生命周期；条目集合变化走合并调度，
+    在 `ItemsPresenter` 收敛后求值。迟到或重建的容器都能重新带上钉住。
+  - `subMenu.item`、`subMenu.itemIcon`、`subMenu.itemContent`、`subMenu.itemTitle`、`subMenu.list` 补声明
+    `CrossVisualRoot=true`：Vertical / Horizontal 下它们位于菜单项模板的 `Popup.Child` 子树，属于跨视觉根内容，
+    只扫描主视觉树无法解析到这些容器；Inline 模式下节点在主视觉树内，声明不影响可达性。
+- Tests
+  - 新增 `NavMenuSemanticPartTests`，覆盖 descriptor 的 Part 名称/顺序/字段、模板静态 marker、三种 mode 与 inline
+    collapsed 的层级 marker 数量、`subMenu.*` route 不命中一级容器，以及展开与选择不改变 marker 数量。
+  - `MenuShowCasePageTests` 新增两条：一条实例化 Semantic Parts Tab，锁定两个预览的挂载与 owner 解析、各自 12 个
+    Part 描述、Inline 预览两级部件的真实高亮与 `popup.root` 目标数为 0、Vertical 预览弹层被钉住打开（并忽略普通
+    关闭请求）、`popup.root` 与 `subMenu.*` 的真实高亮，以及跨预览的悬停互斥；另一条锁定示例项使用生成
+    Semantic Part Style（含 `x:SetterTargetType`）且不依赖 `PART_*`。
+  - 新增 `Pinned_Open_Declared_Before_Containers_Exist_Still_Opens_Submenu`，覆盖"容器生成前声明钉住"；
+    禁用条目集合变化的钉住收敛后该用例失败，证明它锁住了本次修复的缺陷。另新增
+    `Pinned_Open_Request_Survives_Container_Rebuild_And_Late_Items`，覆盖 Mode 切换重建容器后请求仍在、
+    以及请求写入后追加条目不影响已解析目标；`IsPopupPinnedOpen_Is_Public_Api_For_Cross_Assembly_Previews`
+    锁定跨程序集预览的公开入口。
+  - 新增 `SourceKey="menu-semantic-part"` 示例，按项目规范使用 owner-scoped Control Selector + 生成的 Semantic Part
+    Style 演示定制：root 视觉属性、`NavMenuItemStyle`、`NavMenuItemIconStyle`、`NavMenuItemContentStyle`、
+    `NavMenuItemTitleStyle`、`NavMenuListStyle`、`NavMenuSubMenuItemStyle`、`NavMenuSubMenuItemTitleStyle`、
+    `NavMenuSubMenuItemContentStyle`、`NavMenuSubMenuListStyle` 与 `NavMenuPopupRootStyle`，并以 Vertical / Inline
+    两个 NavMenu 对照展开态与弹层态。
+
+
 ## 2026-09-10
 
 - Design

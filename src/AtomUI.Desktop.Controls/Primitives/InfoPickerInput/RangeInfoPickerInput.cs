@@ -1,4 +1,4 @@
-﻿using AtomUI.Animations;
+using AtomUI.Animations;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -14,7 +14,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
     #region 公共属性定义
 
     public static readonly StyledProperty<string?> SecondaryPlaceholderTextProperty =
-        AvaloniaProperty.Register<InfoPickerInput, string?>(nameof(SecondaryPlaceholderText));
+        AvaloniaProperty.Register<RangeInfoPickerInput, string?>(nameof(SecondaryPlaceholderText));
     
     public string? SecondaryPlaceholderText
     {
@@ -31,7 +31,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
             o => o.RangeActivatedPart);
     
     internal static readonly StyledProperty<double> RangePickerIndicatorOpacityProperty =
-        AvaloniaProperty.Register<InfoPickerInput, double>(nameof(RangePickerIndicatorOpacity), 0d);
+        AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(RangePickerIndicatorOpacity), 0d);
     
     internal double RangePickerIndicatorOpacity
     {
@@ -46,7 +46,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(PickerIndicatorOffsetY));
     
     internal static readonly StyledProperty<string?> SecondaryTextProperty =
-        AvaloniaProperty.Register<TextBlock, string?>(nameof(SecondaryText));
+        AvaloniaProperty.Register<RangeInfoPickerInput, string?>(nameof(SecondaryText));
     
     private RangeActivatedPart _rangeActivatedPart;
 
@@ -77,6 +77,8 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
 
     #endregion
         
+    private readonly TransitionInitializationSession _transitionInitialization;
+
     static RangeInfoPickerInput()
     {
         AffectsArrange<RangeInfoPickerInput>(PickerIndicatorOffsetXProperty, PickerIndicatorOffsetYProperty);
@@ -92,6 +94,30 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         SecondaryInfoInputBox?.Clear();
     }
     
+
+    protected RangeInfoPickerInput()
+    {
+        _transitionInitialization = new TransitionInitializationSession(this);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _transitionInitialization.CompleteInitialization();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -102,6 +128,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         {
             PickerPopup.OverlayInputPassThroughElement = DecoratedBox;
         }
+        _transitionInitialization.CompleteInitialization();
     }
 
     private bool IsPointerInTextBox(TextBox? textBox, Point position, double? contentStartOffsetX)
@@ -345,17 +372,6 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         }
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        this.EnableTransitions();
-    }
 }
 
 internal enum RangeActivatedPart

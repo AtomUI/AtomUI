@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Segmented"
              x:DataType="vm:SegmentedViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Segmented"
                     Category="{gallery:SegmentedShowCaseLangResource ComponentCategory}"
@@ -18,7 +18,54 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractSegmented" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:SegmentedViewModel">
+                    <gallery:SemanticPartPreview
+                        Name="SegmentedSemanticPreview"
+                        SemanticOwner="{Binding #SegmentedSemanticOwner}"
+                        SemanticOwnerType="{x:Type atom:Segmented}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Left"
+                                        Spacing="16">
+                                <atom:Segmented Name="SegmentedSemanticOwner">
+                                    <atom:SegmentedItem Icon="{antdicons:AntDesignIconProvider Kind=BarsOutlined}"
+                                                        Content="{gallery:SegmentedShowCaseLangResource P2ContentList}" />
+                                    <atom:SegmentedItem Content="{gallery:SegmentedShowCaseLangResource P2ContentKanban}"
+                                                        Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}" />
+                                    <atom:SegmentedItem Icon="{antdicons:AntDesignIconProvider Kind=SunOutlined}" />
+                                </atom:Segmented>
+                                <atom:Segmented Name="VerticalSegmentedSemanticOwner"
+                                                Orientation="Vertical"
+                                                HorizontalAlignment="Left">
+                                    <atom:SegmentedItem Icon="{antdicons:AntDesignIconProvider Kind=BarsOutlined}"
+                                                        Content="{gallery:SegmentedShowCaseLangResource P2ContentList}" />
+                                    <atom:SegmentedItem Content="{gallery:SegmentedShowCaseLangResource P2ContentKanban}"
+                                                        Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}" />
+                                    <atom:SegmentedItem Content="{gallery:SegmentedShowCaseLangResource P2ContentAtomUI}"
+                                                        Icon="{antdicons:AntDesignIconProvider Kind=WindowsOutlined}" />
+                                </atom:Segmented>
+                            </StackPanel>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:SegmentedShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="item"
+                                Description="{gallery:SegmentedShowCaseLangResource SemanticItemDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="icon"
+                                Description="{gallery:SegmentedShowCaseLangResource SemanticIconDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="label"
+                                Description="{gallery:SegmentedShowCaseLangResource SemanticLabelDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -262,7 +309,58 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    SourceKey="segmented-semantic-part"
+                    Title="{gallery:SegmentedShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:SegmentedShowCaseLangResource SemanticPartStyleDescription}"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:SegmentedViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="12">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Segmented.semantic-object">
+                                        <Setter Property="Background" Value="#e6f4ff" />
+                                        <atom:SegmentedItemStyle x:SetterTargetType="atom:SegmentedItem">
+                                            <Setter Property="FontStyle" Value="Italic" />
+                                            <Setter Property="CornerRadius" Value="6" />
+                                        </atom:SegmentedItemStyle>
+                                        <atom:SegmentedIconStyle x:SetterTargetType="atom:IconPresenter">
+                                            <Setter Property="IconBrush" Value="#1677ff" />
+                                        </atom:SegmentedIconStyle>
+                                        <atom:SegmentedLabelStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Margin" Value="8,0,0,0" />
+                                        </atom:SegmentedLabelStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+                                <atom:Segmented Classes="semantic-object"
+                                                Margin="0,4,0,0">
+                                    <atom:SegmentedItem Icon="{antdicons:AntDesignIconProvider Kind=BarsOutlined}"
+                                                        Content="{gallery:SegmentedShowCaseLangResource P2ContentList}" />
+                                    <atom:SegmentedItem Content="{gallery:SegmentedShowCaseLangResource P2ContentKanban}"
+                                                        Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}" />
+                                    <atom:SegmentedItem Icon="{antdicons:AntDesignIconProvider Kind=SunOutlined}" />
+                                </atom:Segmented>
+
+                                <atom:Segmented Classes="semantic-object"
+                                                Orientation="Vertical"
+                                                HorizontalAlignment="Left"
+                                                Margin="0,4,0,0">
+                                    <atom:SegmentedItem Icon="{antdicons:AntDesignIconProvider Kind=BarsOutlined}"
+                                                        Content="{gallery:SegmentedShowCaseLangResource P2ContentList}" />
+                                    <atom:SegmentedItem Content="{gallery:SegmentedShowCaseLangResource P2ContentKanban}"
+                                                        Icon="{antdicons:AntDesignIconProvider Kind=AppstoreOutlined}" />
+                                    <atom:SegmentedItem Content="{gallery:SegmentedShowCaseLangResource P2ContentAtomUI}"
+                                                        Icon="{antdicons:AntDesignIconProvider Kind=WindowsOutlined}" />
+                                </atom:Segmented>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

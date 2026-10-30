@@ -12,9 +12,11 @@
                         Padding="{TemplateBinding Padding}">
                     <DockPanel LastChildFill="True">
                         <atom:IconPresenter Name="IconPresenter"
+                                            Classes.semantic-icon="True"
                                             Icon="{TemplateBinding Icon}"
                                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
                         <ContentPresenter Name="Content"
+                                          Classes.semantic-label="True"
                                           HorizontalContentAlignment="Center"
                                           VerticalContentAlignment="Center"
                                           Content="{TemplateBinding Content}"
@@ -33,10 +35,10 @@
         </Style>
 
         <Style Selector="^:selected">
+            <!-- 选中背景始终由轨道层滑块承载（含滑块飞行途中），item 自身不绘制选中背景，避免目标项提前点亮 -->
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground"
                     Value="{atom:SegmentedTokenResource ItemSelectedColor}" />
-            <Setter Property="Background"
-                    Value="{atom:SegmentedTokenResource ItemSelectedBg}" />
 
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
@@ -69,13 +71,29 @@
             </Style>
         </Style>
 
+        <!-- 滑块飞行期间屏蔽非选中项的 hover/pressed 遮罩，对齐 antd thumb ~ item::after transparent 规则 -->
+        <Style Selector="^[IsThumbMotionActive=True]:not(^:selected)">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
                 <Transitions>
                     <atom:SolidColorBrushTransition Property="Background"
                                                     Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+                    <!-- 文字颜色即时跟随选中值并柔化切换（antd item color transition） -->
+                    <atom:SolidColorBrushTransition Property="Foreground"
+                                                    Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                 </Transitions>
             </Setter>
+            <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+                <Setter Property="Transitions">
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="IconBrush"
+                                                        Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+                    </Transitions>
+                </Setter>
+            </Style>
         </Style>
 
         <Style Selector="^[SizeType=Large]">

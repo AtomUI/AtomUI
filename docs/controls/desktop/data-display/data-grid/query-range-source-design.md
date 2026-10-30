@@ -1040,7 +1040,7 @@ Desktop 与 Browser host 使用相同 Query、Source、snapshot 和虚拟化不�
 - Browser/Desktop 各验证 local Source 与可控 fake-remote Source，Ready 状态的非预期 pixel diff 直接判定失败。
 - 100 万本地行与逻辑远端行覆盖 sort、首屏、连续滚动、快速跳转、offset-to-slot、cache、并发和 allocation。
 - 性能基线使用同一提交至少 10 次重复测量并预先冻结噪声区间与 non-inferiority 门槛。
-- DataGrid 专用测试、完整 solution tests、DataGrid performance state verifier、LLMS verification、AOT/trim verification、Gallery
+- DataGrid 专用测试、完整 solution tests、DataGrid performance state verifier、AOT/trim verification、Gallery
   NativeAOT publish/startup smoke 和 `git diff --check` 全部通过。
 
 完整验证命令至少包括：
@@ -1049,9 +1049,7 @@ Desktop 与 Browser host 使用相同 Query、Source、snapshot 和虚拟化不�
 dotnet test AtomUI.slnx -c Release --no-restore /m:1 /nr:false --nologo -v:minimal
 dotnet run --project tools/performances/AtomUI.DataGridPerformance/AtomUI.DataGridPerformance.csproj \
   -c Release --framework net10.0 --no-build -- --verify-states
-dotnet run --project tools/AtomUI.Docs.LLMsGenerator/AtomUI.Docs.LLMsGenerator.csproj \
-  -- verify --config docs/AI/generated/llms.config.json
-scripts/verification/verify-aot-trim-registration.sh --full
+python3 tests/AtomUI.Registration.Fixtures/run_package_consumers.py --output /tmp/atomui-datagrid-registration --rid osx-arm64 --serve
 pwsh -NoLogo -NoProfile -File controlgallery/AtomUIGallery.Desktop/scripts/PublishToLocal.ps1 \
   -publishRootPath /tmp/atomui-datagrid-query-aot \
   -runtime osx-arm64 -buildType Release -publishAot true

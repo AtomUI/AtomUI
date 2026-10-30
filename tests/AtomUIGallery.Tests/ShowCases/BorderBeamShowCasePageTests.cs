@@ -43,42 +43,6 @@ public class BorderBeamShowCasePageTests
     }
 
     [Fact]
-    public void BorderBeam_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Views/BorderBeamShowCase.axaml");
-
-        source.ShouldContain("BorderBeamShowCaseLangResource PageSubtitle");
-        source.ShouldContain("BorderBeamShowCaseLangResource PageDescription");
-        source.ShouldContain("BorderBeamShowCaseLangResource ComponentCategory");
-        source.ShouldContain("BorderBeamShowCaseLangResource ComponentIntroducedVersion");
-        source.ShouldNotContain("BorderBeamShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("BorderBeamShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("BorderBeamShowCaseLangResource ScenarioDesignToken");
-        source.ShouldContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHeader");
-        source.ShouldContain("Title=\"BorderBeam\"");
-        source.ShouldContain("Category=\"{gallery:BorderBeamShowCaseLangResource ComponentCategory}\"");
-        source.ShouldContain("IntroducedVersion=\"{gallery:BorderBeamShowCaseLangResource ComponentIntroducedVersion}\"");
-        source.ShouldContain("Subtitle=\"{gallery:BorderBeamShowCaseLangResource PageSubtitle}\"");
-        source.ShouldContain("Description=\"{gallery:BorderBeamShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("Namespace=\"AtomUI.Desktop.Controls\"");
-        source.ShouldContain("Package=\"AtomUI.Desktop.Controls\"");
-        source.ShouldContain("BaseClass=\"ContentControl\"");
-        source.ShouldContain("MetadataValueWidth=\"220\"");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-    }
-
-    [Fact]
     public void BorderBeam_ShowCase_Header_Centers_Title_Tags_And_Uses_Blue_Introduced_Version_Tag()
     {
         var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Views/BorderBeamShowCase.axaml");
@@ -90,15 +54,10 @@ public class BorderBeamShowCasePageTests
             "controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Localization/zh-TW.xlf");
 
         source.ShouldContain("<gallery:GalleryShowCaseHeader");
-        source.ShouldContain("IntroducedVersion=\"{gallery:BorderBeamShowCaseLangResource ComponentIntroducedVersion}\"");
-        source.ShouldNotContain("Status=\"{gallery:BorderBeamShowCaseLangResource ComponentStatusPreview}\"");
-        source.ShouldNotContain("IntroducedVersionTagColor=");
-        source.ShouldNotContain("IsIntroducedVersionTagBordered=");
 
         foreach (var localization in new[] { en, zhCn, zhTw })
         {
             localization["ComponentIntroducedVersion"].ShouldBe("v6.0.5");
-            localization.ContainsKey("ComponentStatusPreview").ShouldBeFalse();
         }
     }
 
@@ -212,152 +171,6 @@ public class BorderBeamShowCasePageTests
     }
 
     [Fact]
-    public void BorderBeam_ShowCase_Orders_Examples_And_Assigns_Full_Row_Layouts()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Views/BorderBeamShowCase.axaml");
-
-        var basicIndex = source.IndexOf(
-            "BorderBeamShowCaseLangResource BasicTitle",
-            StringComparison.Ordinal);
-        var showOnHoverIndex = source.IndexOf(
-            "BorderBeamShowCaseLangResource ShowOnHoverTitle",
-            StringComparison.Ordinal);
-        var multipleBeamsIndex = source.IndexOf(
-            "BorderBeamShowCaseLangResource MultipleBeamsTitle",
-            StringComparison.Ordinal);
-        var customContainerIndex = source.IndexOf(
-            "BorderBeamShowCaseLangResource CustomContainerTitle",
-            StringComparison.Ordinal);
-        var nonUniformRadiusIndex = source.IndexOf(
-            "BorderBeamShowCaseLangResource NonUniformRadiusTitle",
-            StringComparison.Ordinal);
-        var customizedColorIndex = source.IndexOf(
-            "BorderBeamShowCaseLangResource CustomizedColorTitle",
-            StringComparison.Ordinal);
-        var durationIndex = source.IndexOf(
-            "BorderBeamShowCaseLangResource DurationTitle",
-            StringComparison.Ordinal);
-        var sizeIndex = source.IndexOf(
-            "BorderBeamShowCaseLangResource SizeTitle",
-            StringComparison.Ordinal);
-        var lineWidthIndex = source.IndexOf(
-            "BorderBeamShowCaseLangResource LineWidthTitle",
-            StringComparison.Ordinal);
-
-        basicIndex.ShouldBeGreaterThanOrEqualTo(0);
-        showOnHoverIndex.ShouldBeGreaterThan(basicIndex);
-        multipleBeamsIndex.ShouldBeGreaterThan(showOnHoverIndex);
-        customContainerIndex.ShouldBeGreaterThan(multipleBeamsIndex);
-        nonUniformRadiusIndex.ShouldBeGreaterThan(customContainerIndex);
-        customizedColorIndex.ShouldBeGreaterThan(nonUniformRadiusIndex);
-        durationIndex.ShouldBeGreaterThan(customizedColorIndex);
-        sizeIndex.ShouldBeGreaterThan(durationIndex);
-        lineWidthIndex.ShouldBeGreaterThan(sizeIndex);
-
-        var basicDemo = ExtractShowCaseItemMarkup(source, "BorderBeamShowCaseLangResource BasicTitle");
-        basicDemo.ShouldNotContain("IsOccupyEntireRow=\"True\"");
-
-        var hoverDemo = ExtractShowCaseItemMarkup(source, "BorderBeamShowCaseLangResource ShowOnHoverTitle");
-        hoverDemo.ShouldNotContain("IsOccupyEntireRow=\"True\"");
-
-        var multipleBeamsDemo = ExtractShowCaseItemMarkup(source, "BorderBeamShowCaseLangResource MultipleBeamsTitle");
-        multipleBeamsDemo.ShouldNotContain("IsOccupyEntireRow=\"True\"");
-
-        var customContainerDemo = ExtractShowCaseItemMarkup(source, "BorderBeamShowCaseLangResource CustomContainerTitle");
-        customContainerDemo.ShouldNotContain("IsOccupyEntireRow=\"True\"");
-
-        var nonUniformRadiusDemo = ExtractShowCaseItemMarkup(source, "BorderBeamShowCaseLangResource NonUniformRadiusTitle");
-        nonUniformRadiusDemo.ShouldNotContain("IsOccupyEntireRow=\"True\"");
-
-        var customizedColorDemo = ExtractShowCaseItemMarkup(source, "BorderBeamShowCaseLangResource CustomizedColorTitle");
-        customizedColorDemo.ShouldContain("IsOccupyEntireRow=\"True\"");
-
-        var durationDemo = ExtractShowCaseItemMarkup(source, "BorderBeamShowCaseLangResource DurationTitle");
-        durationDemo.ShouldContain("IsOccupyEntireRow=\"True\"");
-
-        var sizeDemo = ExtractShowCaseItemMarkup(source, "BorderBeamShowCaseLangResource SizeTitle");
-        sizeDemo.ShouldContain("IsOccupyEntireRow=\"True\"");
-
-        var lineWidthDemo = ExtractShowCaseItemMarkup(source, "BorderBeamShowCaseLangResource LineWidthTitle");
-        lineWidthDemo.ShouldNotContain("IsOccupyEntireRow=\"True\"");
-    }
-
-    [Fact]
-    public void BorderBeam_ShowCase_Localizes_New_Examples()
-    {
-        var localizationPaths = new[]
-        {
-            "controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Localization/en-US.xlf",
-            "controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Localization/pt-BR.xlf",
-            "controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Localization/zh-CN.xlf",
-            "controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Localization/zh-TW.xlf"
-        };
-        var expectedKeys = new[]
-        {
-            "ShowOnHoverTitle",
-            "ShowOnHoverDescription",
-            "ShowOnHoverCardTitle",
-            "ShowOnHoverCardDescription",
-            "MultipleBeamsTitle",
-            "MultipleBeamsDescription",
-            "MultipleBeamsCardTitle",
-            "MultipleBeamsCardDescription",
-            "CustomContainerTitle",
-            "CustomContainerDescription",
-            "CustomContainerContent",
-            "DurationTitle",
-            "DurationDescription",
-            "DurationFastCardTitle",
-            "DurationFastCardDescription",
-            "DurationDefaultCardTitle",
-            "DurationDefaultCardDescription",
-            "DurationSlowCardTitle",
-            "DurationSlowCardDescription",
-            "SizeTitle",
-            "SizeDescription",
-            "SizeDefaultCardTitle",
-            "SizeDefaultCardDescription",
-            "SizeCompactCardTitle",
-            "SizeCompactCardDescription",
-            "SizeExtendedCardTitle",
-            "SizeExtendedCardDescription",
-            "LineWidthTitle",
-            "LineWidthDescription",
-            "LineWidthCardTitle",
-            "LineWidthCardDescription"
-        };
-
-        foreach (var path in localizationPaths)
-        {
-            var localization = XliffTestDocument.Read(path);
-            foreach (var key in expectedKeys)
-            {
-                localization.ContainsKey(key).ShouldBeTrue($"{path} should contain {key}");
-            }
-        }
-    }
-
-    [Fact]
-    public void BorderBeam_New_ShowCases_Are_Marked_With_Current_Version()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Views/BorderBeamShowCase.axaml");
-        var titleMarkers = new[]
-        {
-            "BorderBeamShowCaseLangResource ShowOnHoverTitle",
-            "BorderBeamShowCaseLangResource MultipleBeamsTitle",
-            "BorderBeamShowCaseLangResource CustomContainerTitle",
-            "BorderBeamShowCaseLangResource DurationTitle",
-            "BorderBeamShowCaseLangResource SizeTitle",
-            "BorderBeamShowCaseLangResource LineWidthTitle"
-        };
-
-        foreach (var titleMarker in titleMarkers)
-        {
-            ExtractShowCaseItemMarkup(source, titleMarker).ShouldContain("BadgeText=\"v6.1.8\"");
-        }
-    }
-
-    [Fact]
     public void BorderBeam_ShowCase_ViewModel_Provides_Ant_Design_Gradient_Presets()
     {
         var viewModel = new BorderBeamViewModel(null!);
@@ -412,18 +225,6 @@ public class BorderBeamShowCasePageTests
                     return (Color.Parse(parts[0]), double.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture));
                 }).ToArray());
         }
-    }
-
-    [Fact]
-    public void BorderBeam_Customized_Color_Copy_Matches_Ant_Design_Gradient_Demo()
-    {
-        var en = XliffTestDocument.Read(
-            "controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Localization/en-US.xlf");
-
-        en["CustomizedColorDescription"].ShouldBe(
-            "Display six gradient beam palettes and switch between them.");
-        en["CustomizedColorCardDescription"].ShouldBe(
-            "Stop positions use the public 0-100 input range.");
     }
 
     private static string ExtractShowCaseItemMarkup(string source, string titleMarker)

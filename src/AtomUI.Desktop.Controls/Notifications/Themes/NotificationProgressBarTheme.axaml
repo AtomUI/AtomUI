@@ -6,5 +6,6 @@
     <ControlTheme x:Key="{x:Type atom:NotificationProgressBar}" TargetType="atom:NotificationProgressBar">
         <Setter Property="ProgressIndicatorThickness" Value="{atom:NotificationCardTokenResource NotificationProgressHeight}"/>
         <Setter Property="ProgressIndicatorBrush" Value="{atom:NotificationCardTokenResource NotificationProgressBg}"/>
+        <Setter Property="ProgressTrackBrush" Value="{atom:NotificationCardTokenResource NotificationProgressTrackBg}"/>
     </ControlTheme>
 </ResourceDictionary>

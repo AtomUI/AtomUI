@@ -109,6 +109,36 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with block display, overflow hidden, border radius, height, padding, transition animations and other switch content area layout and styles</source>
+        <target state="translated">內容元素，包含區塊顯示、溢出隱藏、圓角、高度、內邊距、過渡動畫等開關內容區域的佈局和樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorDescription">
+      <segment>
+        <source>Indicator element with absolute positioning, width, height, background color, border radius, shadow, transition animations and other switch handle styles and interactive effects</source>
+        <target state="translated">指示器元素，包含絕對定位、寬度、高度、背景色、圓角、陰影、過渡動畫等開關把手的樣式和互動效果</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and ToggleSwitch property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域選擇器和 ToggleSwitch 屬性選擇器定制已發布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with min-width, height, line-height, vertical alignment, background color, border, border radius, cursor style, transition animations, user selection and other basic switch container styles</source>
+        <target state="translated">根元素，包含最小寬度、高度、行高、垂直對齊、背景色、邊框、圓角、光標樣式、過渡動畫、用戶選擇等開關容器的基礎樣式</target>
+      </segment>
+    </unit>
     <unit id="TextAndIconDescription">
       <segment>
         <source>With text and icon.</source>

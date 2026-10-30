@@ -1,0 +1,215 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery"
+             xmlns:vm="using:AtomUIGallery.ShowCases.DateViewer"
+             x:Class="AtomUIGallery.ShowCases.DateViewer.DateViewerShowCase"
+             x:DataType="vm:DateViewerViewModel">
+    <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
+                <gallery:GalleryShowCaseHeader Title="DateViewer"
+                    Category="{gallery:DateViewerShowCaseLangResource ComponentCategory}"
+                    Status="{gallery:DateViewerShowCaseLangResource ComponentStatusStable}"
+                    Subtitle="{gallery:DateViewerShowCaseLangResource PageSubtitle}"
+                    Description="{gallery:DateViewerShowCaseLangResource PageDescription}"
+                    Namespace="AtomUI.Desktop.Controls" Package="AtomUI.Desktop.Controls" BaseClass="TemplatedControl" />
+            </gallery:GalleryShowCaseHost.Header>
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:DateViewerViewModel">
+                    <gallery:SemanticPartPreview Title="DateViewer"
+                        SemanticOwner="{Binding #DateViewerSemanticOwner}"
+                        SemanticOwnerType="{x:Type atom:DateViewer}"
+                        PreviewStageMinHeight="380">
+                        <gallery:SemanticPartPreview.Styles>
+                            <Style Selector="atom|DateViewer.semantic-footer-demo">
+                                <atom:DateViewerFooterStyle x:SetterTargetType="atom:DashedBorder">
+                                    <Setter Property="Tag" Value="dateviewer-footer-style-hit" />
+                                </atom:DateViewerFooterStyle>
+                            </Style>
+                        </gallery:SemanticPartPreview.Styles>
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:DateViewer Name="DateViewerSemanticOwner" Classes="semantic-footer-demo" HorizontalAlignment="Center"
+                                             DisplayDate="{Binding SampleDate, Mode=OneWay}" ShowWeek="True" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription Path="root" Description="{gallery:DateViewerShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription Path="header" Description="{gallery:DateViewerShowCaseLangResource SemanticHeaderDescription}" />
+                            <gallery:SemanticPartDescription Path="body" Description="{gallery:DateViewerShowCaseLangResource SemanticBodyDescription}" />
+                            <gallery:SemanticPartDescription Path="content" Description="{gallery:DateViewerShowCaseLangResource SemanticContentDescription}" />
+                            <gallery:SemanticPartDescription Path="cell" Description="{gallery:DateViewerShowCaseLangResource SemanticCellDescription}" />
+                            <gallery:SemanticPartDescription Path="cellContent" Description="{gallery:DateViewerShowCaseLangResource SemanticCellContentDescription}" />
+                            <gallery:SemanticPartDescription Path="footer" Description="{gallery:DateViewerShowCaseLangResource SemanticFooterDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+            <gallery:ShowCasePanel Name="ExamplesContent"
+                                   IsScrollEnabled="False"
+                                   IsDeferredLoadingEnabled="True"
+                                   InitialDeferredLoadItemCount="1"
+                                   DeferredLoadBatchSize="2"
+                                   MaxColumns="1"
+                                   ContentMargin="28,10,28,28">
+                <gallery:ShowCaseItem Title="{gallery:DateViewerShowCaseLangResource BasicTitle}"
+                                     Description="{gallery:DateViewerShowCaseLangResource BasicDescription}"
+                                     SourceKey="dateviewer-basic"
+                                     IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DateViewerViewModel">
+                            <StackPanel HorizontalAlignment="Left" Spacing="12">
+                                <atom:DateViewer Name="BoundDateViewer" DisplayDate="{Binding SampleDate, Mode=OneWay}" Value="{Binding Value}" />
+                                <atom:RangeDateViewer Name="BoundRangeDateViewer" DisplayDate="{Binding SampleDate, Mode=OneWay}" Value="{Binding RangeValue}" />
+                                <TextBlock Text="{Binding RangeValueText}" />
+                                <atom:Button HorizontalAlignment="Left" Click="ClearSelection" Content="{gallery:DateViewerShowCaseLangResource Clear}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem Title="{gallery:DateViewerShowCaseLangResource UnitsTitle}"
+                                     Description="{gallery:DateViewerShowCaseLangResource UnitsDescription}"
+                                     SourceKey="dateviewer-units"
+                                     IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DateViewerViewModel">
+                            <StackPanel HorizontalAlignment="Left" Spacing="12">
+                                <atom:OptionButtonGroup ButtonStyle="Outline" OptionCheckedChanged="HandleSelectionUnitChanged">
+                                    <atom:OptionButton Content="{gallery:DateViewerShowCaseLangResource UnitDate}" IsChecked="True" />
+                                    <atom:OptionButton Content="{gallery:DateViewerShowCaseLangResource UnitWeek}" />
+                                    <atom:OptionButton Content="{gallery:DateViewerShowCaseLangResource UnitMonth}" />
+                                    <atom:OptionButton Content="{gallery:DateViewerShowCaseLangResource UnitQuarter}" />
+                                    <atom:OptionButton Content="{gallery:DateViewerShowCaseLangResource UnitYear}" />
+                                </atom:OptionButtonGroup>
+                                <atom:DateViewer DisplayDate="{Binding SampleDate, Mode=OneWay}" SelectionUnit="{Binding SelectionUnit}" ShowWeek="True" />
+                                <atom:RangeDateViewer DisplayDate="{Binding SampleDate, Mode=OneWay}" SelectionUnit="{Binding SelectionUnit}" ShowWeek="True" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem Title="{gallery:DateViewerShowCaseLangResource BrowsingTitle}"
+                                     Description="{gallery:DateViewerShowCaseLangResource BrowsingDescription}"
+                                     SourceKey="dateviewer-browsing"
+                                     IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DateViewerViewModel">
+                            <StackPanel HorizontalAlignment="Left" Spacing="12">
+                                <atom:DateViewer Name="EmptyBrowsingDateViewer" DisplayDate="{Binding BrowseDate}" Value="{Binding EmptyValue}" />
+                                <atom:Button HorizontalAlignment="Left" Click="ClearBrowsingSelection" Content="{gallery:DateViewerShowCaseLangResource Clear}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem Title="{gallery:DateViewerShowCaseLangResource ContentTitle}"
+                                     Description="{gallery:DateViewerShowCaseLangResource ContentDescription}"
+                                     SourceKey="dateviewer-content"
+                                     IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DateViewerViewModel">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="{gallery:DateViewerShowCaseLangResource Compact}" />
+                                <atom:DateViewer HorizontalAlignment="Left" DisplayDate="{Binding SampleDate, Mode=OneWay}" Presentation="Compact" />
+                                <TextBlock Text="{gallery:DateViewerShowCaseLangResource Content}" />
+                                <atom:DateViewer DisplayDate="{Binding SampleDate, Mode=OneWay}" Presentation="Content" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem Title="{gallery:DateViewerShowCaseLangResource CellTitle}"
+                                     Description="{gallery:DateViewerShowCaseLangResource CellDescription}"
+                                     SourceKey="dateviewer-cell"
+                                     IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DateViewerViewModel">
+                            <atom:DateViewer DisplayDate="{Binding SampleDate, Mode=OneWay}"
+                                             Presentation="Content" ShowWeek="True" FirstDayOfWeek="Monday"
+                                             MinDate="{Binding MinDate}" MaxDate="{Binding MaxDate}" DisabledDate="{Binding DisableWeekends}">
+                                <atom:DateViewer.CellTemplate>
+                                    <DataTemplate x:DataType="atom:DateViewerCellContext">
+                                        <TextBlock Margin="4" FontSize="10" Text="{gallery:DateViewerShowCaseLangResource CellNote}"
+                                                   IsVisible="{Binding !IsDisabled}" TextTrimming="CharacterEllipsis" />
+                                    </DataTemplate>
+                                </atom:DateViewer.CellTemplate>
+                            </atom:DateViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem Title="{gallery:DateViewerShowCaseLangResource FullCellTitle}"
+                                     Description="{gallery:DateViewerShowCaseLangResource FullCellDescription}"
+                                     SourceKey="dateviewer-fullcell"
+                                     IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DateViewerViewModel">
+                            <atom:DateViewer DisplayDate="{Binding SampleDate, Mode=OneWay}" Presentation="Content"
+                                             MinDate="{Binding MinDate}" MaxDate="{Binding MaxDate}" DisabledDate="{Binding DisableWeekends}">
+                                <atom:DateViewer.FullCellTemplate>
+                                    <DataTemplate x:DataType="atom:DateViewerCellContext">
+                                        <StackPanel Margin="4" Spacing="3" IsHitTestVisible="False">
+                                            <TextBlock Text="{Binding DisplayValue}" HorizontalAlignment="Right" />
+                                            <Border Height="3" Background="{atom:SharedTokenResource ColorPrimary}" IsVisible="{Binding IsToday}" />
+                                            <TextBlock FontSize="10" Text="{gallery:DateViewerShowCaseLangResource CellNote}" IsVisible="{Binding !IsDisabled}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </atom:DateViewer.FullCellTemplate>
+                            </atom:DateViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem Title="{gallery:DateViewerShowCaseLangResource HeaderTitle}"
+                                     Description="{gallery:DateViewerShowCaseLangResource HeaderDescription}"
+                                     SourceKey="dateviewer-header"
+                                     IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DateViewerViewModel">
+                            <atom:DateViewer HorizontalAlignment="Left" DisplayDate="{Binding SampleDate, Mode=OneWay}">
+                                <atom:DateViewer.HeaderTemplate>
+                                    <DataTemplate x:DataType="atom:DateViewerHeaderContext">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock HorizontalAlignment="Center" Text="{Binding DisplayText}" />
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <atom:Button ButtonType="Text" Content="{gallery:DateViewerShowCaseLangResource Previous}" Command="{Binding NavigateCommand}">
+                                                    <atom:Button.CommandParameter><x:Int32>-1</x:Int32></atom:Button.CommandParameter>
+                                                </atom:Button>
+                                                <atom:Button ButtonType="Text" Content="{gallery:DateViewerShowCaseLangResource ChooseYear}"
+                                                 Command="{Binding ChangePanelCommand}" CommandParameter="{x:Static atom:DateViewerPanelKind.Year}" />
+                                                <atom:Button ButtonType="Text" Content="{gallery:DateViewerShowCaseLangResource Next}" Command="{Binding NavigateCommand}">
+                                                    <atom:Button.CommandParameter><x:Int32>1</x:Int32></atom:Button.CommandParameter>
+                                                </atom:Button>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </atom:DateViewer.HeaderTemplate>
+                            </atom:DateViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem Title="{gallery:DateViewerShowCaseLangResource SemanticTitle}"
+                                     Description="{gallery:DateViewerShowCaseLangResource SemanticDescription}"
+                                     SourceKey="dateviewer-semantic"
+                                     IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DateViewerViewModel">
+                            <StackPanel HorizontalAlignment="Left" Spacing="12">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|DateViewer.semantic-single-demo">
+                                        <atom:DateViewerCellStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="Tag" Value="dateviewer-cell-style-hit" />
+                                        </atom:DateViewerCellStyle>
+                                    </Style>
+                                    <Style Selector="atom|RangeDateViewer.semantic-range-demo">
+                                        <atom:RangeDateViewerCellStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="Tag" Value="dateviewer-cell-style-hit" />
+                                        </atom:RangeDateViewerCellStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+                                <atom:DateViewer Classes="semantic-single-demo" DisplayDate="{Binding SampleDate, Mode=OneWay}" />
+                                <atom:RangeDateViewer Classes="semantic-range-demo" DisplayDate="{Binding SampleDate, Mode=OneWay}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+            </gallery:ShowCasePanel>
+        </gallery:GalleryShowCaseHost>
+    </Grid>
+</UserControl>

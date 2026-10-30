@@ -1,6 +1,6 @@
 # Collapse 桌面版架构设计
 
-本文档定义 `Collapse` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Collapse 桌面版实现原理](implementation.md)，Collapse Token 的专项设计见 [Collapse Token 设计](token.md)，设计和契约变化记录见 [Collapse Changelog](changelog.md)。
+本文档定义 `Collapse` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Collapse 桌面版实现原理](implementation.md)，Semantic Part 契约见 [Collapse Semantic Part 契约](semantic-part.md)，Collapse Token 的专项设计见 [Collapse Token 设计](token.md)，设计和契约变化记录见 [Collapse Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -57,7 +57,7 @@ Collapse 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
 | `PART_AddOnContentPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
-| `PART_ContentMotionActor` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
+| `PART_ContentViewport` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 | `PART_ContentPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
 | `PART_ExpandButton` | `?` | 承载用户触发入口、导航或关闭动作。 |
 | `PART_Frame` | `?` | 承载根视觉、边框、背景或尺寸基线。 |
@@ -67,6 +67,32 @@ Collapse 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | `PART_MainLayout` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 
 当前未抽取到控件专属伪类；主题主要依赖 Avalonia 标准伪类、模板绑定和内部 StyledProperty。
+
+### 3.5 Semantic Part 契约
+
+`Collapse` 公开与上游 Collapse 稳定 Semantic DOM 对齐的五个 Semantic Part，完整契约见 [Collapse Semantic Part 契约](semantic-part.md)：
+
+| Part | Selector | AtomUI 节点 | Cardinality | 定制方式 |
+| --- | --- | --- | --- | --- |
+| `root` | 控件本身 | `Collapse` owner（表面投影到 `PART_Frame`） | `Single` | owner 选择器 + 公开属性 |
+| `header` | `.semantic-header` | 每个面板的 `PART_HeaderDecorator` | `Multiple` | `CollapseHeaderStyle` |
+| `icon` | `.semantic-icon` | 每个面板的 `PART_ExpandButton` | `Multiple` | `CollapseIconStyle` |
+| `title` | `.semantic-title` | 每个面板的 `PART_HeaderPresenter` | `Multiple` | `CollapseTitleStyle` |
+| `body` | `.semantic-body` | 每个面板的 `PART_ContentFrame` | `Multiple` | `CollapseBodyStyle` |
+
+`header`、`icon`、`title`、`body` 是运行时生成 Part：节点位于运行时 `CollapseItem` 容器的模板内，marker 静态声明于
+`CollapseItemTheme.axaml`，路由从 owner 出发经一步 `>`（逻辑树）直达 `.semantic-scope-item` 容器，再以 `/template/` 进入
+容器模板；`semantic-scope-items` / `semantic-scope-panel` 标识 items host 链。marker 不随展开、禁用、尺寸档、
+视觉模式切换与容器回收增删。定制摘要：
+
+- 状态型定制（展开/收起、禁用、ghost、borderless、TriggerType、ExpandIconPosition、SizeType）通过 owner 公开属性完成，
+  不改变 marker 数量。
+- 局部视觉定制通过生成的 Semantic Style 完成，`ContractType` 收缩到公开类型（`PixelAlignedBorder` / `IconButton` /
+  `ContentPresenter`），internal 节点不作为公共依赖类型。
+- 布局型 Setter（固定 `Height` / `Width` / Min/Max 等）不作为公共定制路径：面板高度由 content motion 的动效（layout
+  transform 缩放 + 稳定态显式高度）与尺寸档 Padding/字体链驱动，见 [semantic-part.md §5](semantic-part.md#5-尺寸基线)。
+- `CollapseItem` 容器、item shell 分隔线、`AddOnContent` 附加内容与动效 actor 不属于 Semantic Part，见
+  [semantic-part.md §6](semantic-part.md#6-定制边界)。
 
 ## 4. 行为与状态模型
 
@@ -152,6 +178,14 @@ Collapse 与同分类控件共享尺寸、状态、Token、Gallery 展示和验�
 - 不通过隐藏延迟、强制刷新或吞异常掩盖状态同步问题。
 - 不引入运行时反射扫描作为 API、Token 或数据路径发现机制。
 - 文档只描述当前稳定设计；历史变化记录在 `changelog.md`。
+- Semantic Part 的五个区域（`root`、`header`、`icon`、`title`、`body`）、selector class、ContractType、cardinality 与
+  marker 放置属于主题兼容契约；删除、重命名、收窄类型或让内置模板缺少 marker 都是破坏性变更。
+- `header`/`icon`/`title`/`body` 的 marker 静态声明于 `CollapseItemTheme.axaml`，scope marker 在默认 ItemsPanel 与容器
+  创建路径一次性建立；任何状态切换、容器回收、items 集合变化与模板重应用都不得增删 marker；默认主题不得消费
+  `.semantic-*` selector。
+- root 表面投影（`Background`/`BorderBrush`/`BorderThickness`/`CornerRadius`/`Padding` → `PART_Frame`）属于公共契约；
+  运行时 marker 通过静态 AXAML class 与既有创建路径添加，不引入 VisualTree 搜索、反射或运行时 AXAML 解析，保持
+  NativeAOT 友好。
 
 ## 8. 专项模型
 
@@ -177,35 +211,15 @@ Collapse 的动效只处理 content 的布局展开、裁剪、透明度和最�
 
 Collapse 的视觉选项通过 public API 归一为 theme variables、伪类或模板绑定。Token 保存组件语义值，不能保存实例运行时状态或业务色值。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Collapse 桌面版实现原理](implementation.md)
 - [内容展开与收起动效设计](../../../../architecture/systems/control-infrastructure/content-expansion.md)
+- [Collapse Semantic Part 契约](semantic-part.md)
 - [Collapse Token 设计](token.md)
 - [Collapse Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Collapse` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/collapse/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/collapse/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -217,4 +231,5 @@ LLMS 导出来源：
 | 内容动效设计 | 逐帧验证等高/不等高手风琴、首尾时钟边界、快速反转、嵌套尺寸变化、固定分隔线和原有滚动/命中约束。 |
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
+| Semantic Part | 检查 descriptor 数量/顺序/字段、marker 数量与类型、容器回收后的 marker 身份，见 [semantic-part.md §7](semantic-part.md#7-兼容性与验证)。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |

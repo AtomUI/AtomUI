@@ -97,6 +97,12 @@
         <target state="translated">AtomUI Officially Initiated</target>
       </segment>
     </unit>
+    <unit id="P2ContentCreateAServices">
+      <segment>
+        <source>Create a services</source>
+        <target state="translated">Criar a services</target>
+      </segment>
+    </unit>
     <unit id="P2ContentCreateAServicesSite">
       <segment>
         <source>Create a services site</source>
@@ -163,10 +169,22 @@
         <target state="translated">Recording...</target>
       </segment>
     </unit>
+    <unit id="P2ContentSolveInitialNetworkProblems">
+      <segment>
+        <source>Solve initial network problems</source>
+        <target state="translated">Resolver problemas iniciais de rede</target>
+      </segment>
+    </unit>
     <unit id="P2ContentStart">
       <segment>
         <source>Start</source>
         <target state="translated">Início</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentTechnicalTesting">
+      <segment>
+        <source>Technical testing</source>
+        <target state="translated">Testes técnicos</target>
       </segment>
     </unit>
     <unit id="P2ContentToggleReverse">
@@ -191,6 +209,126 @@
       <segment>
         <source>Examples</source>
         <target state="translated">Exemplos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Timeline's published Semantic Parts.</source>
+        <target state="translated">Use estilos com escopo de owner para personalizar as Semantic Parts publicadas do Timeline.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemContentDescription">
+      <segment>
+        <source>Content area of the node presented beside the axis</source>
+        <target state="translated">Área de conteúdo do nó apresentada ao lado do eixo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemDescription">
+      <segment>
+        <source>Each timeline node container projected from the items collection</source>
+        <target state="translated">Cada contêiner de nó da linha do tempo projetado a partir da coleção de itens</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemHeaderDescription">
+      <segment>
+        <source>Header column grouping the title text of the node</source>
+        <target state="translated">Coluna do cabeçalho que agrupa o texto do título do nó</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemIconDescription">
+      <segment>
+        <source>Icon area of the node masking the rail and replacing the built-in dot</source>
+        <target state="translated">Área do ícone do nó que mascara a linha e substitui o ponto embutido</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemRailDescription">
+      <segment>
+        <source>Rail line running along the axis, clipped at the node center</source>
+        <target state="translated">Linha do trilho recortada no centro do nó e mascarada pelo ponto ou ícone</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemSectionDescription">
+      <segment>
+        <source>Section pairing the header with the content around the axis</source>
+        <target state="translated">Seção que emparelha o cabeçalho com o conteúdo ao redor do eixo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemTitleDescription">
+      <segment>
+        <source>Title text of the node rendered inside the header</source>
+        <target state="translated">Texto do título do nó renderizado dentro do cabeçalho</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemWrapperDescription">
+      <segment>
+        <source>Item wrapper filling the item template and hosting the section</source>
+        <target state="translated">Invólucro do item que preenche o modelo do item e hospeda a seção</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsContentDescription">
+      <segment>
+        <source>Item content element</source>
+        <target state="translated">Elemento de conteúdo do item</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsHeaderDescription">
+      <segment>
+        <source>Item header element</source>
+        <target state="translated">Elemento de cabeçalho do item</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsIconDescription">
+      <segment>
+        <source>Item icon element</source>
+        <target state="translated">Elemento de ícone do item</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsItemDescription">
+      <segment>
+        <source>Item element</source>
+        <target state="translated">Elemento do item</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsRailDescription">
+      <segment>
+        <source>Item rail element</source>
+        <target state="translated">Elemento de trilha do item</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsRootDescription">
+      <segment>
+        <source>Root element</source>
+        <target state="translated">Elemento raiz</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsSectionDescription">
+      <segment>
+        <source>Item section element</source>
+        <target state="translated">Elemento de seção do item</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsTitleDescription">
+      <segment>
+        <source>Item title element</source>
+        <target state="translated">Elemento de título do item</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineItemsWrapperDescription">
+      <segment>
+        <source>Item wrapper element</source>
+        <target state="translated">Elemento wrapper do item</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTimelineRootDescription">
+      <segment>
+        <source>Root element of the timeline owning the item collection, orientation, mode, pending and reverse state</source>
+        <target state="translated">Elemento raiz da linha do tempo que controla a coleção de itens, orientação, modo, estado pendente e reverso</target>
       </segment>
     </unit>
   </file>

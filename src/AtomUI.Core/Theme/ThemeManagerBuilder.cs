@@ -1,54 +1,72 @@
+using AtomUI.Registration;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
+using AtomUI.Theme.Definitions.Compiled;
 using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
-using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Theme;
 
 internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
 {
-    private readonly List<ControlTokenDescriptor> _controlTokenDescriptors = new();
-    private readonly List<ControlThemeAssetDescriptor> _controlThemeAssetDescriptors = new();
-    private readonly List<IControlThemesProvider> _controlThemesProviders = new();
-    private readonly List<IThemeDefinitionResolver> _themeDefinitionResolvers = new();
+    private readonly List<ThemeDefinitionRegistration> _themeDefinitionResolvers = new();
     private readonly List<Action<IThemeManager>> _initializers = new();
+    private readonly List<EnabledControlPackage> _packageDeclarations = [];
+    private StartupImage? _startupImage;
     private readonly HashSet<ControlTokenIdentity> _registeredControlTokenIdentities = new();
+    private readonly HashSet<ControlTokenIdentity> _registeredSemanticControlIdentities = new();
+    private readonly HashSet<Type> _registeredSemanticControlTypes = new();
     private readonly HashSet<string> _registeredControlPackageIds = new(StringComparer.Ordinal);
     private readonly HashSet<string> _registeredControlThemeProviders = new(StringComparer.Ordinal);
     private readonly HashSet<string> _registeredThemeDefinitionResolvers = new(StringComparer.Ordinal);
     private bool _useUserThemeDirectory;
     private string? _userThemeDirectory;
+    private bool _hasExplicitApplicationId;
+    private readonly bool _hasApplicationType;
 
-    internal ThemeManagerBuilder(Application? application = null)
+    internal ThemeManagerBuilder(Type? applicationType = null)
     {
-        ApplicationId = ThemeApplicationIdentity.ResolveDefault(application?.GetType()) ??
+        _hasApplicationType = applicationType is not null;
+        ApplicationId = ThemeApplicationIdentity.ResolveDefault(applicationType) ??
                         typeof(ThemeManagerBuilder).Assembly.GetName().Name!;
         InitialRequest = new ThemeRequest(
             IThemeManager.DEFAULT_THEME_ID,
             null,
             ThemeTransitionReason.Startup);
-        AddThemeDefinitionResolver(CoreThemeDefinitionResolver.Create());
+        Generated.AtomUICore.GeneratedThemePackageRegistration.Register(this);
     }
 
+    internal ControlRegistrationState ControlRegistrationState { get; } = new();
     internal FontFamily? FontFamily { get; private set; }
     internal ThemeRequest InitialRequest { get; private set; }
     internal ThemeRequest? FollowSystemLightRequest { get; private set; }
     internal ThemeRequest? FollowSystemDarkRequest { get; private set; }
     internal IReadOnlyList<Action<IThemeManager>> Initializers => _initializers;
-    internal int InitializerCount => _initializers.Count;
     internal IReadOnlyList<ControlPackageRegistration> ControlPackages => _controlPackages;
-    internal IReadOnlyList<IThemeDefinitionResolver> ThemeDefinitionResolvers => _themeDefinitionResolvers;
+    internal IReadOnlyList<EnabledControlPackage> PackageDeclarations => _packageDeclarations;
+    internal StartupImage? StartupImage => _startupImage;
+    internal void AddPackageDeclaration(EnabledControlPackage declaration)
+    {
+        if (_registeredControlPackageIds.Contains(declaration.Definition.Id))
+        {
+            throw new ThemeResourceRegisterException("Control package is already registered: " + declaration.Definition.Id);
+        }
+        _packageDeclarations.Add(declaration);
+    }
+    internal void UseStartupImage(StartupImage image)
+    {
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
+        _startupImage = image;
+    }
     internal string? ApplicationId { get; private set; }
-    internal bool UsesUserThemeDirectory => _useUserThemeDirectory;
-    internal string? UserThemeDirectory => _userThemeDirectory;
 
     private readonly List<ControlPackageRegistration> _controlPackages = new();
 
     public void AddThemeDefinitionResolver(IThemeDefinitionResolver resolver)
     {
         ArgumentNullException.ThrowIfNull(resolver);
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         if (string.IsNullOrWhiteSpace(resolver.Id))
         {
             throw new ArgumentException("Theme definition resolver id cannot be empty.", nameof(resolver));
@@ -59,50 +77,122 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
                 $"Theme definition resolver '{resolver.Id}' is already registered.");
         }
 
-        _themeDefinitionResolvers.Add(resolver);
+        _themeDefinitionResolvers.Add(new ThemeDefinitionRegistration(resolver));
+    }
+
+    public void AddCompiledThemePackage(CompiledThemePackage package)
+    {
+        ArgumentNullException.ThrowIfNull(package);
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
+        if (!_registeredThemeDefinitionResolvers.Add(package.Id))
+        {
+            throw new ThemeResourceRegisterException($"Theme definition registration '{package.Id}' is already registered.");
+        }
+        _themeDefinitionResolvers.Add(new ThemeDefinitionRegistration(package));
     }
 
     public void AddControlPackage(ControlPackageRegistration package)
     {
-        ArgumentNullException.ThrowIfNull(package);
-        if (_registeredControlPackageIds.Contains(package.Id))
+        try
         {
-            throw new ThemeResourceRegisterException(
-                $"Control package '{package.Id}' is already registered.");
+            ArgumentNullException.ThrowIfNull(package);
+            ControlRegistrationState.ThrowIfUnavailable();
+            if (ControlRegistrationState.IsStaged(package.Id) || _registeredControlPackageIds.Contains(package.Id) || _packageDeclarations.Any(declaration => declaration.Definition.Id == package.Id))
+            {
+                throw new ThemeResourceRegisterException(
+                    $"Control package '{package.Id}' is already registered.");
+            }
+            ValidateNewDescriptors(package, null);
+            if (_registeredControlThemeProviders.Contains(package.ControlThemesProvider.Id))
+            {
+                throw new ThemeResourceRegisterException(
+                    $"Control theme provider '{package.ControlThemesProvider.Id}' is already registered.");
+            }
+            _registeredControlPackageIds.Add(package.Id);
+            package.PackageCommitOrdinal = _controlPackages.Count;
+            _controlPackages.Add(package);
+            TrackDescriptors(package);
+            _registeredControlThemeProviders.Add(package.ControlThemesProvider.Id);
         }
-        foreach (var descriptor in package.Controls)
+        catch (Exception exception)
+        {
+            ControlRegistrationState.Fail(exception);
+            DiscardPendingRegistrations();
+            throw;
+        }
+    }
+
+    private void ValidateNewDescriptors(ControlPackageRegistration package, ControlPackageRegistration? previous)
+    {
+        foreach (var descriptor in package.Controls.Except(previous?.Controls ?? []))
         {
             if (_registeredControlTokenIdentities.Contains(descriptor.Identity))
             {
-                throw new ThemeResourceRegisterException(
-                    $"Control Token descriptor '{descriptor.Identity}' is already registered.");
+                throw new ThemeResourceRegisterException($"Control Token descriptor '{descriptor.Identity}' is already registered.");
             }
         }
-        if (_registeredControlThemeProviders.Contains(package.ControlThemesProvider.Id))
+        foreach (var descriptor in package.SemanticControls.Except(previous?.SemanticControls ?? []))
         {
-            throw new ThemeResourceRegisterException(
-                $"Control theme provider '{package.ControlThemesProvider.Id}' is already registered.");
+            if (_registeredSemanticControlIdentities.Contains(descriptor.Identity) ||
+                _registeredSemanticControlTypes.Contains(descriptor.ControlType))
+            {
+                throw new ThemeResourceRegisterException($"Semantic Control descriptor '{descriptor.Identity}' is already registered.");
+            }
         }
-        _registeredControlPackageIds.Add(package.Id);
-        _controlPackages.Add(package);
+    }
+
+    private void TrackDescriptors(ControlPackageRegistration package)
+    {
         foreach (var descriptor in package.Controls)
         {
             _registeredControlTokenIdentities.Add(descriptor.Identity);
-            _controlTokenDescriptors.Add(descriptor);
         }
-        _controlThemeAssetDescriptors.AddRange(package.ThemeAssets);
-        _registeredControlThemeProviders.Add(package.ControlThemesProvider.Id);
-        _controlThemesProviders.Add(package.ControlThemesProvider);
+        foreach (var descriptor in package.SemanticControls)
+        {
+            _registeredSemanticControlIdentities.Add(descriptor.Identity);
+            _registeredSemanticControlTypes.Add(descriptor.ControlType);
+        }
+    }
+
+    internal void CompletePendingRegistrations()
+    {
+        try
+        {
+            ControlRegistrationState.ThrowIfUnavailable();
+            for (var index = 0; index < _controlPackages.Count; index++)
+            {
+                var previous = _controlPackages[index];
+                if (previous.CompleteRegistration is not { } complete)
+                {
+                    continue;
+                }
+                previous.CompleteRegistration = null;
+                var package = complete();
+                ControlRegistrationState.ThrowIfUnavailable();
+                ValidateNewDescriptors(package, previous);
+                TrackDescriptors(package);
+                package.PackageCommitOrdinal = previous.PackageCommitOrdinal;
+                _controlPackages[index] = package;
+            }
+        }
+        catch (Exception exception)
+        {
+            ControlRegistrationState.Fail(exception);
+            DiscardPendingRegistrations();
+            throw;
+        }
     }
 
     public void AddInitializer(Action<IThemeManager> initializer)
     {
         ArgumentNullException.ThrowIfNull(initializer);
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         _initializers.Add(initializer);
     }
 
     public void WithInitialTheme(string themeId, ThemeConfig? config = null)
     {
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         ArgumentException.ThrowIfNullOrWhiteSpace(themeId);
         InitialRequest = new ThemeRequest(themeId, config, ThemeTransitionReason.Startup);
         FollowSystemLightRequest = null;
@@ -111,6 +201,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
 
     public void WithFollowSystemThemes(ThemeRequest light, ThemeRequest dark)
     {
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         ArgumentNullException.ThrowIfNull(light);
         ArgumentNullException.ThrowIfNull(dark);
         FollowSystemLightRequest = light with { Reason = ThemeTransitionReason.FollowSystem };
@@ -120,18 +211,40 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
 
     public void WithApplicationId(string applicationId)
     {
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         ThemeApplicationIdentity.Validate(applicationId, nameof(applicationId));
         ApplicationId = applicationId;
+        _hasExplicitApplicationId = true;
     }
+
+    /// <summary>提前准备必须有可确定的应用标识；已有 Application 时也用于同步 Splash 准备。</summary>
+    internal bool CanPrepareBeforeApplication => _hasApplicationType || _hasExplicitApplicationId;
+
+    /// <summary>后台只运行已声明安全的主题来源和生成式纯数据程序。</summary>
+    internal bool CanPrepareInBackground => CanPrepareBeforeApplication &&
+        _themeDefinitionResolvers.All(static registration =>
+            registration.Resolver is IBackgroundThemeDefinitionResolver ||
+            registration.Package is { } package && package.Programs.All(static program => program.SupportsBackgroundPrepare));
+
+    internal ThemeStartupInputs CaptureStartupInputs() =>
+        new(InitialRequest,
+            FollowSystemLightRequest,
+            FollowSystemDarkRequest,
+            CreateThemeDefinitionRegistrations(),
+            ApplicationId!,
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            FontFamily);
 
     public void UseUserThemeDirectory()
     {
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         _useUserThemeDirectory = true;
         _userThemeDirectory = null;
     }
 
     public void UseUserThemeDirectory(string directory)
     {
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         _useUserThemeDirectory = true;
         _userThemeDirectory = Path.GetFullPath(directory);
@@ -139,17 +252,129 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
 
     public void WithDefaultFontFamily(FontFamily fontFamily)
     {
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         FontFamily = fontFamily;
     }
 
     public void WithDefaultFontFamily(string fontFamily)
     {
+        ControlRegistrationState.ThrowIfInitialConfigurationUnavailable();
         FontFamily = FontFamily.Parse(fontFamily);
     }
 
     internal ThemeManager Build()
     {
-        var themeDefinitionResolvers = new List<IThemeDefinitionResolver>(_themeDefinitionResolvers);
+        try
+        {
+            CompletePendingRegistrations();
+            ControlRegistrationState.Freeze();
+            return BuildCore();
+        }
+        catch (Exception exception)
+        {
+            ControlRegistrationState.Fail(exception);
+            DiscardPendingRegistrations();
+            throw;
+        }
+    }
+
+    private readonly List<ControlPackageRegistration> _mergedPackages = [];
+    private readonly Dictionary<string, ControlThemeAssetDescriptor> _mergedThemeAssets =
+        new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ControlThemeResourceRegistration> _mergedThemeResources =
+        new(StringComparer.Ordinal);
+
+    internal void DiscardPendingRegistrations()
+    {
+        foreach (var package in _controlPackages)
+        {
+            package.CompleteRegistration = null;
+        }
+    }
+
+    private void MergeContributionsInto(ThemeManager themeManager)
+    {
+        ArgumentNullException.ThrowIfNull(themeManager);
+        var resourcesByProvider = new Dictionary<
+            IControlThemesProvider,
+            List<ControlThemeResourceRegistration>>(ReferenceEqualityComparer.Instance);
+        // Packages are appended only after nested preparation commits, so list order is commit order.
+        for (var index = 0; index < _controlPackages.Count; index++)
+        {
+            var contribution = _controlPackages[index];
+            var previous = index < _mergedPackages.Count ? _mergedPackages[index] : null;
+            if (ReferenceEquals(previous, contribution))
+            {
+                continue;
+            }
+            if (previous is null)
+            {
+                themeManager.RegisterControlThemesProvider(contribution.ControlThemesProvider);
+            }
+            MergeContributionMetadata(themeManager, contribution, previous);
+            foreach (var resource in contribution.Resources)
+            {
+                if (_mergedThemeResources.TryGetValue(resource.AssetId, out var existing))
+                {
+                    if (!existing.HasSameMetadata(resource))
+                    {
+                        throw new ThemeSchemaException(
+                            $"Theme resource '{resource.AssetId}' has conflicting package definitions.");
+                    }
+                    continue;
+                }
+                _mergedThemeResources.Add(resource.AssetId, resource);
+                if (!resourcesByProvider.TryGetValue(contribution.ControlThemesProvider, out var providerResources))
+                {
+                    providerResources = [];
+                    resourcesByProvider.Add(contribution.ControlThemesProvider, providerResources);
+                }
+                providerResources.Add(resource);
+            }
+        }
+        foreach (var (provider, resources) in resourcesByProvider)
+        {
+            resources.Sort(ControlThemeResourceRegistration.CompareOrder);
+            themeManager.StageControlThemeResources(
+                provider,
+                resources.ToArray());
+        }
+
+        _mergedPackages.Clear();
+        _mergedPackages.AddRange(_controlPackages);
+        UpdatePackageSchemaFingerprints(themeManager);
+    }
+
+    private void MergeContributionMetadata(
+        ThemeManager themeManager,
+        ControlPackageRegistration contribution,
+        ControlPackageRegistration? previous)
+    {
+        foreach (var descriptor in contribution.Controls.Except(previous?.Controls ?? []))
+        {
+            themeManager.RegisterControlTokenDescriptor(descriptor);
+        }
+        themeManager.StageSemanticControlDescriptors(contribution.SemanticControls.Except(previous?.SemanticControls ?? []).ToArray());
+        foreach (var asset in contribution.ThemeAssets)
+        {
+            if (_mergedThemeAssets.TryGetValue(asset.AssetId, out var existing))
+            {
+                if (!existing.HasSameMetadata(asset))
+                {
+                    throw new ThemeSchemaException(
+                        $"Theme asset '{asset.AssetId}' has conflicting package definitions.");
+                }
+                continue;
+            }
+            _mergedThemeAssets.Add(asset.AssetId, asset);
+            themeManager.RegisterControlThemeAssetDescriptor(asset);
+        }
+    }
+
+    // 有效来源包括 UseUserThemeDirectory 配置生成的 resolver。
+    internal IReadOnlyList<ThemeDefinitionRegistration> CreateThemeDefinitionRegistrations()
+    {
+        var themeDefinitionResolvers = new List<ThemeDefinitionRegistration>(_themeDefinitionResolvers);
         if (_useUserThemeDirectory)
         {
             if (themeDefinitionResolvers.Any(static resolver =>
@@ -161,38 +386,48 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
                 throw new ThemeResourceRegisterException(
                     $"Theme definition resolver '{UserDirectoryThemeDefinitionResolver.ResolverId}' is already registered.");
             }
-            themeDefinitionResolvers.Add(new UserDirectoryThemeDefinitionResolver(_userThemeDirectory));
+            themeDefinitionResolvers.Add(new ThemeDefinitionRegistration(new UserDirectoryThemeDefinitionResolver(_userThemeDirectory)));
         }
+        return themeDefinitionResolvers.AsReadOnly();
+    }
 
-        var themeManager = new ThemeManager
-        {
-            FontFamily = FontFamily
-        };
-        themeManager.ConfigureStartup(
-            InitialRequest,
-            FollowSystemLightRequest,
-            FollowSystemDarkRequest);
-        themeManager.ConfigureThemeDefinitions(
-            themeDefinitionResolvers,
-            ApplicationId!,
+    private ThemeManager BuildCore()
+    {
+        var themeDefinitionResolvers = CreateThemeDefinitionRegistrations();
+        var themeManager = new ThemeManager { FontFamily = FontFamily };
+        themeManager.ConfigureStartup(InitialRequest, FollowSystemLightRequest, FollowSystemDarkRequest);
+        themeManager.ConfigureThemeDefinitions(themeDefinitionResolvers, ApplicationId!,
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-        themeManager.EnsureRegistrationCapacity(
-            _controlTokenDescriptors.Count,
-            _controlThemeAssetDescriptors.Count,
-            _controlThemesProviders.Count);
-
-        foreach (var provider in _controlThemesProviders)
+        themeManager.EnsureRegistrationCapacity(_registeredControlTokenIdentities.Count,
+            _controlPackages.Sum(static contribution => contribution.ThemeAssets.Count),
+            _registeredControlThemeProviders.Count);
+        MergeContributionsInto(themeManager);
+        if (_packageDeclarations.Count != 0 || _startupImage is not null)
         {
-            themeManager.RegisterControlThemesProvider(provider);
+            themeManager.ConfigureStartupPackages(_packageDeclarations, _startupImage);
         }
-        foreach (var descriptor in _controlTokenDescriptors)
-        {
-            themeManager.RegisterControlTokenDescriptor(descriptor);
-        }
-        foreach (var descriptor in _controlThemeAssetDescriptors)
-        {
-            themeManager.RegisterControlThemeAssetDescriptor(descriptor);
-        }
+        themeManager.SetEnabledPackageIds(_controlPackages.Select(package => package.Id)
+            .Concat(_packageDeclarations.Select(package => package.Definition.Id)));
+        themeManager.PrepareRegistrationSchema();
         return themeManager;
+    }
+
+    private void UpdatePackageSchemaFingerprints(ThemeManager themeManager)
+    {
+        // All-fingerprinted package sets let the startup registry compose its Revision from the
+        // compile-time constants; any hand-registered package falls the whole set back to the
+        // full-walk algorithm.
+        var packageFingerprints = new List<PackageSchemaFingerprint>(_controlPackages.Count);
+        var allFingerprinted = true;
+        foreach (var package in _controlPackages)
+        {
+            if (package.SchemaFingerprint is not { } schemaFingerprint)
+            {
+                allFingerprinted = false;
+                break;
+            }
+            packageFingerprints.Add(new PackageSchemaFingerprint(package.Id, schemaFingerprint));
+        }
+        themeManager.SetPackageSchemaFingerprints(allFingerprinted ? packageFingerprints : null);
     }
 }

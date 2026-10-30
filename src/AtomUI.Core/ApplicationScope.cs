@@ -1,5 +1,6 @@
 using AtomUI.Localization;
 using AtomUI.Theme;
+using AtomUI.Theme.Compilation;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.MarkupExtensions;
@@ -8,10 +9,15 @@ using System.Runtime.ExceptionServices;
 
 namespace AtomUI;
 
-internal sealed class ApplicationScope : IDisposable
+internal sealed partial class ApplicationScope : IAtomUI, IDisposable
 {
     private Application? _application;
-    private readonly IReadOnlyList<IAtomUIOwnedService> _ownedServices;
+    private IResourceDictionary? _applicationResources;
+    private readonly List<IAtomUIOwnedService> _ownedServices;
+    private readonly HashSet<string> _ownedServiceIds;
+    private readonly List<PackageOwnership> _additionalOwnership = [];
+    private bool _loadingPackages;
+    private bool _registrationCompleted;
     private int _attachedOwnedServiceCount;
     private int _initialized;
     private int _disposed;
@@ -20,12 +26,17 @@ internal sealed class ApplicationScope : IDisposable
         Application application,
         ThemeManager themeManager,
         LocalizationHost localizationHost,
-        IReadOnlyList<IAtomUIOwnedService> ownedServices)
+        IReadOnlyList<IAtomUIOwnedService> ownedServices,
+        StartupProcess startup,
+        IEnumerable<string>? ownedServiceIds = null)
     {
         _application = application ?? throw new ArgumentNullException(nameof(application));
         ThemeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
         LocalizationHost = localizationHost ?? throw new ArgumentNullException(nameof(localizationHost));
-        _ownedServices = ownedServices ?? throw new ArgumentNullException(nameof(ownedServices));
+        ArgumentNullException.ThrowIfNull(ownedServices);
+        _ownedServices = ownedServices.ToList();
+        _ownedServiceIds = (ownedServiceIds ?? []).ToHashSet(StringComparer.Ordinal);
+        Startup = startup ?? throw new ArgumentNullException(nameof(startup));
         FlowDirectionStyle = new Style(selector => selector.Is<TopLevel>());
         FlowDirectionStyle.Setters.Add(new Setter(
             Visual.FlowDirectionProperty,
@@ -44,7 +55,18 @@ internal sealed class ApplicationScope : IDisposable
 
     internal Style FlowDirectionStyle { get; }
 
-    internal void InitializeApplication()
+    // 启动状态和可等待结果由同一个对象拥有；状态由启动编排推进。
+    internal StartupProcess Startup { get; }
+
+    internal void ReleaseStartupInputs()
+    {
+        ThemeManager.CompleteStartupRegistration();
+        _registrationCompleted = true;
+    }
+
+    internal void InitializeApplication(
+        ThemeAppearance? initialSystemAppearance = null,
+        ThemeSnapshot? startupGlobalParent = null)
     {
         ThrowIfDisposed();
         if (Volatile.Read(ref _initialized) != 0)
@@ -59,11 +81,14 @@ internal sealed class ApplicationScope : IDisposable
                 $"AtomUI is already initialized for Application '{application.GetType().FullName}'.");
         }
 
-        application.Resources.MergedDictionaries.Add(ResourceProvider);
-        application.Styles.Add(FlowDirectionStyle);
         try
         {
-            ThemeManager.InitializeApplication(application);
+            // Application AXAML may replace Resources. The root Styles resource dictionary
+            // survives that assignment; its existing application dictionaries retain priority.
+            _applicationResources = application.Styles.Resources;
+            _applicationResources.MergedDictionaries.Insert(0, ResourceProvider);
+            application.Styles.Add(FlowDirectionStyle);
+            ThemeManager.InitializeApplication(application, initialSystemAppearance, startupGlobalParent);
             ApplicationScopeRegistry.Register(application, this);
             for (var index = 0; index < _ownedServices.Count; index++)
             {
@@ -78,13 +103,17 @@ internal sealed class ApplicationScope : IDisposable
             DetachOwnedServices(application, failures);
             TryCleanup(() => ApplicationScopeRegistry.Unregister(application, this), failures);
             TryCleanup(() => application.Styles.Remove(FlowDirectionStyle), failures);
-            TryCleanup(() => application.Resources.MergedDictionaries.Remove(ResourceProvider), failures);
+            DetachApplicationResources(application, failures);
             ThrowFailures("AtomUI application initialization and rollback failed.", failures);
         }
     }
 
     public void Dispose()
     {
+        if (_loadingPackages)
+        {
+            throw new InvalidOperationException("The application scope cannot be disposed during package loading.");
+        }
         if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
             return;
@@ -95,9 +124,10 @@ internal sealed class ApplicationScope : IDisposable
         if (application is not null)
         {
             TryCleanup(() => ApplicationScopeRegistry.Unregister(application, this), failures);
+            ReleaseAdditionalOwnership(application, failures);
             DetachOwnedServices(application, failures);
             TryCleanup(() => application.Styles.Remove(FlowDirectionStyle), failures);
-            TryCleanup(() => application.Resources.MergedDictionaries.Remove(ResourceProvider), failures);
+            DetachApplicationResources(application, failures);
         }
 
         for (var index = _ownedServices.Count - 1; index >= 0; index--)
@@ -116,6 +146,19 @@ internal sealed class ApplicationScope : IDisposable
         if (Volatile.Read(ref _disposed) != 0)
         {
             throw new ObjectDisposedException(nameof(ApplicationScope));
+        }
+    }
+
+    private void DetachApplicationResources(Application application, ICollection<Exception> failures)
+    {
+        var resources = _applicationResources;
+        _applicationResources = null;
+        if (resources is not null)
+        {
+            TryCleanup(() => resources.MergedDictionaries.Remove(ResourceProvider), failures);
+            // Collection/owner notifications can throw after insertion or removal. Release
+            // our provider independently even if the collection callback did not finish.
+            TryCleanup(() => ((IResourceProvider)ResourceProvider).RemoveOwner(application), failures);
         }
     }
 

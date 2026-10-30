@@ -1,0 +1,9 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:Fixture.ThirdParty">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://AtomUI.Registration.Fixtures.Resources/ExternalStyles.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+    <ControlTheme x:Key="{x:Type local:IncludeControl}" TargetType="local:IncludeControl">
+        <Setter Property="Background" Value="{StaticResource FixtureExternalBrush}" />
+        <Setter Property="Template"><ControlTemplate><Border Background="{TemplateBinding Background}" /></ControlTemplate></Setter>
+    </ControlTheme>
+</ResourceDictionary>

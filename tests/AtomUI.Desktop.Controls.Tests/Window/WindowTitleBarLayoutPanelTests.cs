@@ -307,9 +307,11 @@ public class WindowTitleBarLayoutPanelTests
                                           .Single(child =>
                                               Desktop.Controls.WindowTitleBarLayoutPanel.GetRole(child) ==
                                               Desktop.Controls.WindowTitleBarLayoutRole.Title);
-            var titlePresenter = titleBar.GetVisualDescendants()
-                                         .OfType<ContentPresenter>()
-                                         .Single(presenter => presenter.Name == "PART_ContentPresenter");
+            // CaptionButtonFrame 等内嵌部件模板同样定义 PART_ContentPresenter，
+            // 标题部件必须在 Title 角色子树内查找，不能假设整棵树名字唯一。
+            var titlePresenter = titleLayout.GetVisualDescendants()
+                                            .OfType<ContentPresenter>()
+                                            .Single(presenter => presenter.Name == "PART_ContentPresenter");
 
             titlePresenter.Bounds.Width.ShouldBeLessThanOrEqualTo(titleLayout.Bounds.Width);
             titlePresenter.TextTrimming.ShouldBe(TextTrimming.CharacterEllipsis);

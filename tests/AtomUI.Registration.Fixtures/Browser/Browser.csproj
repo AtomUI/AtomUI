@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+    <PropertyGroup>
+        <TargetFramework>net10.0-browser</TargetFramework><OutputType>Exe</OutputType><AssemblyName>AtomUI.Registration.Fixtures</AssemblyName>
+        <DefineConstants>$(DefineConstants);COMPLEX;BROWSER</DefineConstants><WasmEnableWebcil>false</WasmEnableWebcil><InvariantGlobalization>false</InvariantGlobalization>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="../Shared/ProductApp.cs" Link="ProductApp.cs" />
+        <ProjectReference Include="../../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
+        <ProjectReference Include="../ThirdParty/ThirdParty.csproj" />
+        <PackageReference Include="Avalonia.Browser" />
+    </ItemGroup>
+</Project>

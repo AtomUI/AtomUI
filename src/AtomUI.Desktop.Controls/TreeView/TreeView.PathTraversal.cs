@@ -133,7 +133,7 @@ public partial class TreeView
         }
 
         var topLevel = TopLevel.GetTopLevel(this);
-        topLevel?.GetLayoutManager()?.ExecuteLayoutPass();
+        topLevel?.UpdateLayout();
     }
 
     private static void RestorePathExpandedStates(

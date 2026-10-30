@@ -316,6 +316,71 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button in the suffix area, rendered in clear mode.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Start date text input of the picker.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupBodyDescription">
+      <segment>
+        <source>Date panel table container; in dual-month layout it hosts both month tables.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupCellDescription">
+      <segment>
+        <source>Date cell button carrying selected, range, today and disabled states.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContainerDescription">
+      <segment>
+        <source>Panel content container organizing the calendar body and the footer buttons.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContentDescription">
+      <segment>
+        <source>One month date table with the day cells and the week number column variant.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupFooterDescription">
+      <segment>
+        <source>Footer area with the Now, Today and OK buttons.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupHeaderDescription">
+      <segment>
+        <source>Calendar header with the year/month title and the navigation buttons.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root visual box of the popup layer with the floating arrow.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix area hosting the ContentLeftAddOn content inside the input.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The RangeDatePicker owner itself.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSecondaryInputDescription">
+      <segment>
+        <source>End date text input of the range picker.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix area hosting the clear button, the form feedback and the user suffix content.</source>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to DatePicker with status, which could be error or warning.</source>
@@ -324,6 +389,16 @@
     <unit id="StatusTitle">
       <segment>
         <source>Status</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Apply owner-scoped styles with the public Semantic Parts of the picker to customize the prefix, both inputs, the date cells and the popup layer.</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
       </segment>
     </unit>
     <unit id="SwitchableDescription">

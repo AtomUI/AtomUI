@@ -144,6 +144,8 @@ NumericUpDown 采用按需模板模型。`Mode=Input` 使用默认输入框模�
 - `PART_TextBox` 的 `BorderThickness=0` 是为了避免内层 TextBox 与外层输入壳体重复绘制边框。
 - `PART_ClearButton` 与 `PART_InnerRightContentPresenter` 共用内部右侧 stack，必须保留顺序：清除按钮在用户内部右侧内容之前。
 - 浮动 Handle 由 `ButtonSpinnerDecoratedBox` 控制透明度和偏移，不应在 NumericUpDown 模板中动态创建或移除。
+- 编辑器和后缀由同一个输入布局面板协调：后缀避让浮动 Handle 时，编辑器的实际可交互宽度同步收窄，不能依靠层级覆盖保持点击。
+- Spinner 模式左右 action 按钮按实际高度维持正方形，分隔线在按钮之外占位，图标保持居中。
 
 状态视觉由共享主题分层承担：
 
@@ -217,34 +219,28 @@ Spinner mode 对齐 参考 InputNumber 的 `mode="spinner"` 设计：同一个�
 
 NumericUpDown 通过 `IFormItemAware` 暴露表单值能力。Form 集成只以 `Value` 作为表单值，不直接使用 `StringValue`。
 
-## 9. 文档导航、LLMS 导出与验证策略
+### 8.6 Semantic Part
+
+`NumericUpDown` 公开 `root`、`prefix`、`input`、`suffix`、`clear` 五个职责区域。所有 Part 均为 `Single`，且在
+`Mode=Input` 与 `Mode=Spinner` 两个模板变体中提供相同的 marker 与 route；`Mode` 切换重建模板子树后仍提供相同
+Part 集合。完整 selector route、`ContractType`、模板变体矩阵和定制边界见
+[NumericUpDown Semantic Part 契约](semantic-part.md)。
+
+增减按钮区域（Spinner 模式的 +/− 按钮与 Input 模式的浮动 handle）尚未开放为 Semantic Part，其内部节点不属于
+公共契约。
+
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [NumericUpDown 桌面版实现原理](implementation.md)
+- [NumericUpDown Semantic Part 契约](semantic-part.md)
 - [NumericUpDown Token 设计](token.md)
 - [NumericUpDown Changelog](changelog.md)
 
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `NumericUpDown` | 数据录入控件根语义区域，承载 public API、值状态、验证状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `input` | `输入或编辑区域` | 承载用户输入、当前值、占位、格式化或只读状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载清除、展开、提交、步进、上传或辅助操作。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或候选区域` | 承载下拉、候选项、日历、颜色面板或异步内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `validation` | `校验反馈区域` | 承载 Form、status、错误、警告、help 或 loading 状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/numeric-up-down/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/numeric-up-down/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+`prefix`、`suffix` 与共享 frame 结构的 content 前缀 / 后缀槽对齐；`input` 由内嵌 `TextBox` 承担并在两个模板变体中
+使用同一条默认 route。增减按钮、外部 AddOn、placeholder 与用户内容模板子树不属于 Semantic Part。完整契约见
+[NumericUpDown Semantic Part 契约](semantic-part.md)。
 
 验证策略：
 

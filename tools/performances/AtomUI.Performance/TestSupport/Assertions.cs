@@ -23,6 +23,21 @@ internal static partial class Program
                    .FirstOrDefault(control => control.Name == name);
     }
 
+    private static bool WaitUntil(Func<bool> condition, string description, int timeoutMs = 5000)
+    {
+        var deadline = Environment.TickCount64 + timeoutMs;
+        while (Environment.TickCount64 < deadline)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            if (condition())
+            {
+                return true;
+            }
+            Thread.Sleep(10);
+        }
+        return condition();
+    }
+
     private static bool IsZeroCornerRadius(CornerRadius cornerRadius)
     {
         return cornerRadius.TopLeft == 0 &&

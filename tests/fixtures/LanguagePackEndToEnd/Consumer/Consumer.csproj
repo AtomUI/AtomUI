@@ -26,8 +26,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../../../../src/AtomUI.Core/AtomUI.Core.csproj" />
+        <ProjectReference Include="../../../../src/AtomUI.Core/AtomUI.Core.csproj"
+                          GlobalPropertiesToRemove="OutputPath" />
         <ProjectReference Include="../../../../src/AtomUI.Generator/AtomUI.Generator.csproj"
+                          GlobalPropertiesToRemove="OutputPath"
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"
                           PrivateAssets="all" />

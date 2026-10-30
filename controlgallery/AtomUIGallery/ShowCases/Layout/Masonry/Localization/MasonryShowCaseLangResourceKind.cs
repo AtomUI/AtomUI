@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -19,5 +17,11 @@ public enum MasonryShowCaseLangResourceKind
     ImageDescription,
     DynamicTitle,
     DynamicDescription,
-    DynamicAddItemLabel
+    DynamicAddItemLabel,
+    SemanticRootDescription,
+    SemanticItemDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticObjectStylesTitle,
+    SemanticFunctionStylesTitle
 }

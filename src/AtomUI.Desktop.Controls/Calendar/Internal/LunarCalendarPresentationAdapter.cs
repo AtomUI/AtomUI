@@ -35,48 +35,34 @@ internal sealed class LunarCalendarPresentationAdapter : ICalendarPresentationAd
             : new CalendarEffectiveRange(start, end, false);
     }
 
-    public CalendarViewCell CreateCell() => new LunarCalendarViewCell();
-
-    public CalendarCellContext CreateCellContext(CalendarView owner, CalendarViewCellModel model) =>
-        CreateLunarContext(owner, model);
-
-    public void ApplyCellPresentation(CalendarViewCell cell, CalendarView owner, CalendarViewCellModel model)
+    public DateViewerCellContext? CreateCellContext(Internal.DateViewer.DatePanelSession session, Internal.DateViewer.DateViewerCellModel model)
     {
-        if (cell is LunarCalendarViewCell lunarCell)
+        if (model.Value is null || model.Kind == DateViewerCellType.Week)
         {
-            lunarCell.ApplyLunarContext(
-                cell.Context as LunarCalendarCellContext ?? CreateLunarContext(owner, model),
-                _owner.HighlightWeekends);
+            return null;
         }
+
+        var visibleDates = session.Models.SelectMany(panel => panel.Cells)
+            .Where(cell => cell.Kind == DateViewerCellType.Date && cell.Value.HasValue)
+            .Select(cell => cell.Value!.Value).ToArray();
+        var panelData = GetPanelData(session.Input.PanelKind, session.Input.DisplayDate, session.Input.Culture, visibleDates);
+        return CreateLunarContext(panelData, session.Input.Today, model);
     }
 
-    public void ClearCellPresentation(CalendarViewCell cell)
+    public string GetAutomationName(Internal.DateViewer.DatePanelSession session, Internal.DateViewer.DateViewerCellModel model)
     {
-        if (cell is LunarCalendarViewCell lunarCell)
-        {
-            lunarCell.ClearLunarContext();
-        }
-    }
-
-    public string GetAutomationName(CalendarView owner, CalendarViewCellModel model)
-    {
-        var baseName = DefaultCalendarPresentationAdapter.Instance.GetAutomationName(owner, model);
-        if (model.Kind == CalendarViewCellKind.Week)
+        var baseName = DefaultCalendarPresentationAdapter.Instance.GetAutomationName(session, model);
+        if (CreateCellContext(session, model) is not LunarCalendarCellContext context)
         {
             return baseName;
         }
 
-        var context = CreateLunarContext(owner, model);
-        if (model.Kind == CalendarViewCellKind.Month)
+        if (model.Kind == DateViewerCellType.Month)
         {
-            var fullRange = string.Join(", ", context.LunarMonths.Select(month =>
-                LunarCalendarFormatter.FormatLunarMonth(month)));
+            var fullRange = string.Join(", ", context.LunarMonths.Select(LunarCalendarFormatter.FormatLunarMonth));
             return string.IsNullOrEmpty(fullRange) ? baseName : $"{baseName}, {fullRange}";
         }
-
-        return string.IsNullOrEmpty(context.SecondaryText)
-            ? baseName
-            : $"{baseName}, {context.SecondaryText}";
+        return string.IsNullOrEmpty(context.SecondaryText) ? baseName : $"{baseName}, {context.SecondaryText}";
     }
 
     public string FormatYearOption(int year, CultureInfo culture)
@@ -128,45 +114,28 @@ internal sealed class LunarCalendarPresentationAdapter : ICalendarPresentationAd
         InvalidatePanelData();
     }
 
-    private LunarCalendarCellContext CreateLunarContext(CalendarView owner, CalendarViewCellModel model)
+    private LunarCalendarCellContext CreateLunarContext(LunarCalendarPanelData panelData,
+        DateTime today, Internal.DateViewer.DateViewerCellModel model)
     {
-        var panelData = GetPanelData(owner);
-        var culture = owner.Culture ?? CultureInfo.CurrentCulture;
-        panelData.Dates.TryGetValue(model.Value.Date, out var dateInfo);
-        panelData.Holidays.TryGetValue(model.Value.Date, out var holiday);
-        var months = model.Kind == CalendarViewCellKind.Month && panelData.Months.TryGetValue(model.Value.Month, out var value)
-            ? value
-            : Array.Empty<LunarCalendarMonthInfo>();
-        var (secondaryText, secondaryKind) = ResolveSecondaryText(dateInfo, months, holiday, culture);
+        var date = model.Value!.Value.Date;
+        panelData.Dates.TryGetValue(date, out var dateInfo);
+        panelData.Holidays.TryGetValue(date, out var holiday);
+        var months = model.Kind == DateViewerCellType.Month && panelData.Months.TryGetValue(date.Month, out var value)
+            ? value : Array.Empty<LunarCalendarMonthInfo>();
+        var (secondaryText, secondaryKind) = ResolveSecondaryText(dateInfo, months, holiday);
         var isAdjustedWorkday = holiday?.Kind == LunarCalendarHolidayKind.Workday;
-        var isWeekend = model.Kind == CalendarViewCellKind.Date &&
-                        model.Value.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday &&
-                        !isAdjustedWorkday;
-
-        return new LunarCalendarCellContext(
-            model.Value,
-            owner.Today == default ? DateTime.Today : owner.Today.Date,
-            model.Kind == CalendarViewCellKind.Month ? CalendarCellType.Month : CalendarCellType.Date,
-            model.DisplayText,
-            model.IsToday,
-            model.IsInView,
-            model.IsSelected,
-            model.IsDisabled,
-            dateInfo,
-            months,
-            holiday,
-            secondaryText,
-            secondaryKind,
-            isWeekend,
-            holiday?.Kind == LunarCalendarHolidayKind.Holiday,
-            isAdjustedWorkday);
+        var isWeekend = model.Kind == DateViewerCellType.Date &&
+                        date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday && !isAdjustedWorkday;
+        return new LunarCalendarCellContext(date, today, model.Kind, model.DisplayText, model.IsToday,
+            model.IsInView, model.IsSelected, model.IsDisabled, dateInfo, months, holiday, secondaryText,
+            secondaryKind, isWeekend, holiday?.Kind == LunarCalendarHolidayKind.Holiday, isAdjustedWorkday)
+        { IsFocused = model.IsFocused };
     }
 
     private (string Text, LunarCalendarSecondaryContentKind Kind) ResolveSecondaryText(
         LunarCalendarDateInfo? dateInfo,
         IReadOnlyList<LunarCalendarMonthInfo> months,
-        LunarCalendarHoliday? holiday,
-        CultureInfo culture)
+        LunarCalendarHoliday? holiday)
     {
         if (months.Count > 0)
         {
@@ -201,40 +170,32 @@ internal sealed class LunarCalendarPresentationAdapter : ICalendarPresentationAd
             LunarCalendarSecondaryContentKind.LunarDay);
     }
 
-    private LunarCalendarPanelData GetPanelData(CalendarView view)
+    private LunarCalendarPanelData GetPanelData(DateViewerPanelKind panelKind, DateTime displayDate,
+        CultureInfo culture, IReadOnlyList<DateTime> visibleDates)
     {
-        var culture = view.Culture ?? CultureInfo.CurrentCulture;
-        var key = new LunarCalendarPanelDataKey(
-            view.ViewMode,
-            view.Value.Year,
-            view.ViewMode == CalendarViewMode.Date ? view.Value.Month : 0,
-            culture.Name,
-            _owner.ShowSolarTerms,
-            _owner.ShowTraditionalFestivals,
-            _owner.ShowHolidays,
-            _owner.HighlightWeekends,
-            _owner.HolidayProvider,
-            _providerRevision);
+        var key = new LunarCalendarPanelDataKey(panelKind, displayDate.Year,
+            panelKind == DateViewerPanelKind.Date ? displayDate.Month : 0,
+            visibleDates.Count > 0 ? visibleDates[0] : null,
+            visibleDates.Count > 0 ? visibleDates[^1] : null,
+            culture.Name, _owner.ShowSolarTerms, _owner.ShowTraditionalFestivals, _owner.ShowHolidays,
+            _owner.HighlightWeekends, _owner.HolidayProvider, _providerRevision);
         if (_panelData is not null && _panelDataKey?.Matches(key) == true)
         {
             return _panelData;
         }
 
-        _panelData = view.ViewMode == CalendarViewMode.Date
-            ? BuildMonthPanelData(view, culture)
-            : BuildYearPanelData(view.Value.Year);
+        _panelData = panelKind == DateViewerPanelKind.Date
+            ? BuildMonthPanelData(visibleDates, culture) : BuildYearPanelData(displayDate.Year);
         _panelDataKey = key;
         return _panelData;
     }
 
-    private LunarCalendarPanelData BuildMonthPanelData(CalendarView view, CultureInfo culture)
+    private LunarCalendarPanelData BuildMonthPanelData(IEnumerable<DateTime> visibleDates, CultureInfo culture)
     {
         var dates = new Dictionary<DateTime, LunarCalendarDateInfo>();
-        var supportedDates = view.CellModels
-            .Where(model => model.Kind == CalendarViewCellKind.Date &&
-                            model.Value >= LunarCalendar.SupportedRange.Start &&
-                            model.Value <= LunarCalendar.SupportedRange.End)
-            .Select(model => model.Value.Date)
+        var supportedDates = visibleDates
+            .Where(date => date >= LunarCalendar.SupportedRange.Start && date <= LunarCalendar.SupportedRange.End)
+            .Select(date => date.Date)
             .Distinct()
             .Order()
             .ToArray();

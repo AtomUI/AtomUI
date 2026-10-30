@@ -86,6 +86,7 @@
         <!-- Outline -->
         <Style Selector="^:outline">
             <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
         </Style>
         <Style Selector="^:outline[IsInnerBoxHover=True]">
             <Setter Property="BorderBrush"

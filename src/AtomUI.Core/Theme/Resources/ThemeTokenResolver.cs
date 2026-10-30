@@ -51,6 +51,11 @@ internal sealed class ThemeTokenResolver
         {
             throw new ArgumentOutOfRangeException(nameof(controlSlot));
         }
+        if ((uint)tokenSlot >= (uint)snapshot.Registry.Controls[controlSlot].OwnTokens.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(tokenSlot));
+        }
+        snapshot.Registry.NotifyControlFirstUse(controlSlot);
         return snapshot.Controls[controlSlot].ControlTokenValues.Get<T>(tokenSlot);
     }
 
@@ -77,6 +82,7 @@ internal sealed class ThemeTokenResolver
         {
             if (Equals(token.ResourceKey, resourceKey))
             {
+                snapshot.Registry.NotifyControlFirstUse(controlSlot);
                 return snapshot.Controls[controlSlot].ControlTokenValues.Get<T>(token.Slot);
             }
         }
@@ -109,6 +115,11 @@ internal sealed class ThemeTokenResolver
             throw new ArgumentOutOfRangeException(nameof(controlSlot));
         }
 
+        if ((uint)tokenSlot >= (uint)snapshot.Registry.GlobalTokens.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(tokenSlot));
+        }
+        snapshot.Registry.NotifyControlFirstUse(controlSlot);
         return snapshot.Controls[controlSlot]
                        .GetEffectiveGlobalValue<T>(snapshot.GlobalTokenValues, tokenSlot);
     }

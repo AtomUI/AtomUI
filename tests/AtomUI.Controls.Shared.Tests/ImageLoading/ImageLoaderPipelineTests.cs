@@ -1,4 +1,3 @@
-using AtomUI.Controls;
 using Shouldly;
 using Xunit;
 using System.Reflection;
@@ -9,6 +8,92 @@ namespace AtomUI.Controls.Shared.Tests.ImageLoading;
 
 public class ImageLoaderPipelineTests
 {
+    [Fact]
+    public async Task Construction_And_NonHttp_Load_Do_Not_Create_Http_Transport()
+    {
+        var creations = 0;
+        var codec = new TestCodec();
+        using var loader = new ImageLoader(
+            ImageLoadingTestSupport.CreateOptions(),
+            [codec],
+            httpTransportFactory: () =>
+            {
+                creations++;
+                return new HttpImageTransport(
+                    ImageLoadingTestSupport.CreateOptions(),
+                    new DelegateHttpMessageHandler(_ => throw new InvalidOperationException("HTTP must not be used.")));
+            });
+
+        creations.ShouldBe(0);
+        using var result = await loader.LoadAsync(
+            new ImageLoadRequest(new BytesImageSource(ImageLoadingTestSupport.CreatePngHeader(), "local")),
+            TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeTrue();
+        creations.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task First_Http_Load_Creates_One_Transport()
+    {
+        var creations = 0;
+        var options = ImageLoadingTestSupport.CreateOptions();
+        using var loader = new ImageLoader(
+            options,
+            [new TestCodec()],
+            httpTransportFactory: () =>
+            {
+                creations++;
+                return new HttpImageTransport(
+                    options,
+                    new DelegateHttpMessageHandler(_ =>
+                    {
+                        var response = new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new ByteArrayContent(ImageLoadingTestSupport.CreatePngHeader())
+                        };
+                        response.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+                        return response;
+                    }));
+            });
+        var request = new ImageLoadRequest(
+            new HttpImageSource(new Uri("https://example.com/lazy-transport.png")));
+
+        using var first = await loader.LoadAsync(request, TestContext.Current.CancellationToken);
+        using var second = await loader.LoadAsync(request, TestContext.Current.CancellationToken);
+
+        first.IsSuccess.ShouldBeTrue();
+        second.IsSuccess.ShouldBeTrue();
+        creations.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Canceled_Http_Read_Does_Not_Acquire_Transport()
+    {
+        var creations = 0;
+        using var owner = new DeferredHttpImageTransport(() =>
+        {
+            creations++;
+            return new HttpImageTransport(
+                ImageLoadingTestSupport.CreateOptions(),
+                new DelegateHttpMessageHandler(_ => throw new InvalidOperationException("HTTP must not start.")));
+        });
+        var reader = new HttpImageSourceReader(owner.Get);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var options = ImageLoadingTestSupport.CreateOptions();
+        var request = ImageCacheKey.Normalize(
+            new ImageLoadRequest(new HttpImageSource(new Uri("https://example.com/canceled.png"))),
+            options,
+            forceReload: false);
+
+        await Should.ThrowAsync<OperationCanceledException>(() =>
+            reader.ReadAsync(request, null, null, cancellation.Token));
+
+        creations.ShouldBe(0);
+        owner.IsValueCreated.ShouldBeFalse();
+    }
+
     [Fact]
     public async Task Same_Decoded_Request_Shares_Read_And_Decode_And_Returns_Independent_Leases()
     {

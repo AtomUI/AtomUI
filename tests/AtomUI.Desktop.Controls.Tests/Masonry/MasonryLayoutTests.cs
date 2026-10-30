@@ -14,6 +14,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
+using AtomUI.Controls.Primitives;
 using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls.Tests.Masonry;
@@ -228,6 +229,59 @@ public class MasonryLayoutTests
         panel.ArrangeForTest(new Size(300, 400));
 
         panel.Children.Select(child => child.Bounds.X).ShouldBe(new[] { 0d, 100d, 200d, 0d });
+    }
+
+    [Fact]
+    public void Root_Chrome_Properties_Are_Projected_Through_The_Default_Theme()
+    {
+        var masonry = new AtomUI.Desktop.Controls.Masonry
+        {
+            Background = Brushes.WhiteSmoke,
+            BorderBrush = Brushes.DodgerBlue,
+            BorderThickness = new Thickness(2),
+            CornerRadius = new CornerRadius(12),
+            Padding = new Thickness(16, 12),
+            ColumnCount = 2,
+            HorizontalAlignment = HorizontalAlignment.Stretch
+        };
+
+        masonry.Items.Add(new Border
+        {
+            Height = 40,
+            Background = Brushes.White
+        });
+        masonry.Items.Add(new Border
+        {
+            Height = 50,
+            Background = Brushes.White
+        });
+
+        var window = new AvaloniaWindow
+        {
+            Width   = 420,
+            Height  = 260,
+            Content = masonry
+        };
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            var rootBorder = masonry.GetVisualDescendants()
+                                    .OfType<PixelAlignedBorder>()
+                                    .Single(border => border.Name == "PART_RootBorder");
+            rootBorder.Background.ShouldBe(Brushes.WhiteSmoke);
+            rootBorder.BorderBrush.ShouldBe(Brushes.DodgerBlue);
+            rootBorder.BorderThickness.ShouldBe(new Thickness(2));
+            rootBorder.CornerRadius.ShouldBe(new CornerRadius(12));
+            rootBorder.Padding.ShouldBe(new Thickness(16, 12));
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
     }
 
     /// <summary>

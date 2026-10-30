@@ -75,6 +75,12 @@ Public API / ItemsSource / Command / Event
 - 模板应用时获取 part、建立事件订阅和绑定，并先释放旧 part 订阅。
 - 控件卸载、弹层关闭、窗口关闭、集合替换或 container recycle 时释放事件订阅和资源宿主。
 - DynamicResource、TokenResourceBinder 或 C# binding 必须有明确 owner 和释放点。
+- `WatermarkGlyph` 通过 `[GenerateScopedResourceHost]` 获得资源与主题宿主实现。Watermark 挂入视觉树时挂载目标
+  资源作用域并订阅 Glyph 变化；脱离、清除 Glyph 或目标迁移时释放对应 attachment 与订阅。
+- 共享 Glyph 只有一套属性值，使用最后挂载且仍活动的目标资源。移除当前 owner 后恢复最后一个存活 owner；
+  移除非当前 owner 不改变当前作用域。生成器仍是宿主事件订阅与解绑的唯一实现，不复制资源转发逻辑。
+- 资源解析会同步发布属性变化，owner 在调用 Attach 前保存单次赋值释放槽；同步清除或再次挂载时，外层返回的
+  token 仍归对应代次释放，不能覆盖内层接管的宿主。装饰层在挂载视觉子级前记录退出所需的层。
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
 
 稳定 template part 接入点：
@@ -113,8 +119,15 @@ Watermark 的交互事件应从输入源收敛到控件级语义事件：
 - 异步加载、上传、弹层和窗口生命周期必须能取消或释放。
 - 缓存对象必须与控件、窗口、弹层或数据 owner 生命周期一致。
 - Source generator 生成文件不手工编辑；需要修改时改输入源或 generator。
+- 非 Visual Glyph 的语言资源、DynamicResource 和 Token 绑定以 Glyph 自身的作用域资源宿主为目标；目标资源优先，
+  Application 仅作为回退。资源或语言变化重新生成 TextGlyph 的格式化文本并使水印失效，不使用静态文本代替动态资源。
 
 性能边界：
+
+- 平铺仅接受有限、正尺寸及正的实际行列步长；负间距仍可叠印，但步长必须能在浮点运算中前进。
+- 仅对确切内置 TextGlyph/ImageGlyph，根据字形真实墨迹边界或图片目标矩形的正反旋转并集定位首个可能可见的
+  行列；用周期余数与布尔相位保持交错/镜像，避免巨大索引的浮点精度损失。自定义 Glyph/子类可在布局尺寸外绘制，
+  不推断其绘制边界。极密的合法负间距叠印仍按真实图案绘制，不悄悄截断或钳制密度。
 
 - 控件应优先复用 Avalonia 原生虚拟化、模板绑定和资源系统。
 - 避免为每次状态变化创建不必要的视觉对象、订阅或动画对象。

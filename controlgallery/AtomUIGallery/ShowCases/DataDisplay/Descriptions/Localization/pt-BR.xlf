@@ -343,6 +343,54 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Each materialized description value presenter.</source>
+        <target state="translated">A área de apresentação do valor de cada descrição materializada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraDescription">
+      <segment>
+        <source>The presenter for the header extra content.</source>
+        <target state="translated">A área de apresentação do conteúdo adicional do cabeçalho.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>The header layout containing title and extra content.</source>
+        <target state="translated">A área de cabeçalho que contém o título e o conteúdo adicional.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Each materialized description label presenter.</source>
+        <target state="translated">A área de apresentação do rótulo de cada descrição materializada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize the root and label styles of Descriptions through Semantic Parts.</source>
+        <target state="translated">Personalize os estilos de root e label de Descriptions por meio de Semantic Parts.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Descriptions owner and state boundary.</source>
+        <target state="translated">O owner de Descriptions e seu limite de estado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>The presenter for the header title.</source>
+        <target state="translated">A área de apresentação do título do cabeçalho.</target>
+      </segment>
+    </unit>
     <unit id="VerticalBorderDescription">
       <segment>
         <source>Descriptions with border and background color.</source>

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using AtomUI.Controls;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -9,7 +10,7 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TransferTreeView : TreeView, ITransferTreeView, ITransferDecoratorProvider
+public partial class TransferTreeView : TreeView, ITransferTreeView, ITransferDecoratorProvider
 {
     #region 公共属性定义
     public static readonly DirectProperty<TransferTreeView, IList<EntityKey>?> SelectedKeysProperty =
@@ -121,7 +122,9 @@ public class TransferTreeView : TreeView, ITransferTreeView, ITransferDecoratorP
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new TransferTreeViewItem();
+        var treeViewItem = new TransferTreeViewItem();
+        treeViewItem.Classes.Add(TreeViewSemanticParts.ItemClass);
+        return treeViewItem;
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -134,8 +137,16 @@ public class TransferTreeView : TreeView, ITransferTreeView, ITransferDecoratorP
         base.PrepareTreeViewItem(treeViewItem, item, index);
         if (treeViewItem is TransferTreeViewItem transferTreeViewItem)
         {
+            transferTreeViewItem.Classes.Add(GetDirectionItemClass());
             PrepareTransferTreeViewItem(transferTreeViewItem, item);
         }
+    }
+
+    private string GetDirectionItemClass()
+    {
+        return ViewType == TransferViewType.Source
+            ? TreeTransferSemanticParts.SourceItemClass
+            : TreeTransferSemanticParts.TargetItemClass;
     }
 
     protected override bool RecursiveCheckNodePredicate(TreeViewItem treeViewItem)

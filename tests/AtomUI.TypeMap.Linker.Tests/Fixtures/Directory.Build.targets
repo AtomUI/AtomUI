@@ -1,0 +1,18 @@
+<Project>
+  <!-- Fixture-only injection. Product source/NuGet wiring belongs to Task 4. -->
+  <PropertyGroup Condition="'$(OutputType)' == 'Exe'">
+    <TypeMapToolPath Condition="'$(TypeMapToolPath)' == ''">$(MSBuildThisFileDirectory)../../../.artifacts/bin/Release/toolchain/illink10/net10.0/AtomUI.TypeMap.Linker.dll</TypeMapToolPath>
+    <TypeMapCapability Condition="'$(TypeMapCapability)' == ''">atomui-typemap-v1-illink-10.0.8</TypeMapCapability>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(OutputType)' == 'Exe' and '$(EnableTypeMapBackend)' != 'false'">
+    <_TrimmerCustomSteps Include="$(TypeMapToolPath)" Type="AtomUI.TypeMap.Linker.MaterializeTypeMapsStep" AfterStep="MarkStep" />
+
+  </ItemGroup>
+  <PropertyGroup Condition="'$(OutputType)' == 'Exe' and '$(EnableTypeMapBackend)' != 'false'">
+    <_ExtraTrimmerArgs>$(_ExtraTrimmerArgs) --custom-data AtomUITypeMapBackend=$(TypeMapCapability)</_ExtraTrimmerArgs>
+    <_ExtraTrimmerArgs Condition="'$(TypeMapReceipt)' != ''">$(_ExtraTrimmerArgs) --custom-data AtomUITypeMapReceipt=&quot;$(TypeMapReceipt)&quot;</_ExtraTrimmerArgs>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OutputType)' == 'Exe'">
+    <_ExtraTrimmerArgs>$(_ExtraTrimmerArgs) $(FixtureExtraTrimmerArgs)</_ExtraTrimmerArgs>
+  </PropertyGroup>
+</Project>

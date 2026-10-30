@@ -1,11 +1,9 @@
-using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Interactivity;
 using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
@@ -80,15 +78,4 @@ public class UploadDefaultDropArea : TemplatedControl, IMotionAwareControl
         }
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 }

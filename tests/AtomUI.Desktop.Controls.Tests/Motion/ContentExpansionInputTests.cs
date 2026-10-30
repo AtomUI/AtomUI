@@ -1,5 +1,6 @@
+using AtomUI.Controls.Primitives;
 using System.Reflection;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -97,12 +98,12 @@ public class ContentExpansionInputTests
 
     private sealed class InputScene : IDisposable
     {
-        private readonly ManualClock _clock = new();
+        private readonly ManualMotionClock _clock = new();
         private readonly AtomExpander _expander;
         public AvaloniaWindow Window { get; }
         public AvaloniaScrollViewer Inner { get; }
         public AvaloniaScrollViewer Outer { get; }
-        public BaseMotionActor Actor { get; }
+        public ContentViewport Actor { get; }
         public AtomButton VisibleButton { get; } = new() { Content = "Visible action", Height = 32 };
         public AtomButton ClippedButton { get; } = new() { Content = "Clipped action", Height = 32 };
 
@@ -153,8 +154,8 @@ public class ContentExpansionInputTests
             Window.Show();
             Window.SetRenderScaling(scaling);
             Pump();
-            Actor = _expander.GetVisualDescendants().OfType<BaseMotionActor>()
-                .First(control => control.Name == "PART_ContentMotionActor");
+            Actor = _expander.GetVisualDescendants().OfType<ContentViewport>()
+                .First(control => control.Name == "PART_ContentViewport");
             typeof(Animatable).GetProperty("Clock", BindingFlags.Instance | BindingFlags.NonPublic)!
                 .SetValue(Actor, _clock.Instance);
         }
@@ -213,14 +214,7 @@ public class ContentExpansionInputTests
             Pump();
         }
         public void Pump() { Dispatcher.UIThread.RunJobs(); Window.UpdateLayout(); }
-        public void Dispose() { Window.Close(); Pump(); }
+        public void Dispose() { Window.Close(); Pump(); _clock.Dispose(); }
     }
 
-    private sealed class ManualClock
-    {
-        private static readonly Type ClockType = typeof(Animation).Assembly.GetType("Avalonia.Animation.ClockBase", true)!;
-        private static readonly MethodInfo Pulse = ClockType.GetMethod("Pulse", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        public object Instance { get; } = Activator.CreateInstance(ClockType, nonPublic: true)!;
-        public void Step(int milliseconds) => Pulse.Invoke(Instance, [TimeSpan.FromMilliseconds(milliseconds)]);
-    }
 }

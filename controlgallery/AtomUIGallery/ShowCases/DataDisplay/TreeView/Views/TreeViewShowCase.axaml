@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.TreeView"
              x:DataType="vm:TreeViewViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="TreeView"
                     Category="{gallery:TreeViewShowCaseLangResource ComponentCategory}"
@@ -19,7 +19,64 @@
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="TreeView"
                     MetadataValueWidth="220" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:TreeViewViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview
+                            Name="TreeViewItemSemanticPreview"
+                            SemanticOwner="{Binding #TreeViewItemSemanticOwner}"
+                            SemanticOwnerType="{x:Type atom:TreeViewItem}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:TreeView IsShowEmptyIndicator="False"
+                                               IsShowIcon="True"
+                                               IsDefaultExpandAll="True"
+                                               IsSwitcherRotation="True"
+                                               ToggleType="CheckBox"
+                                               DefaultSelectedPaths="{Binding SemanticPartPreviewDefaultSelectedPaths}">
+                                    <atom:TreeView.SwitcherRotationIcon>
+                                        <atom:IconTemplate>
+                                            <antdicons:DownOutlined RenderTransform="rotate(-90deg)" />
+                                        </atom:IconTemplate>
+                                    </atom:TreeView.SwitcherRotationIcon>
+                                    <atom:TreeViewItem Name="TreeViewItemSemanticOwner"
+                                                       Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1}"
+                                                       ItemKey="0-0"
+                                                       Icon="{antdicons:AntDesignIconProvider Kind=SmileOutlined}">
+                                        <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                           ItemKey="0-0-0"
+                                                           Icon="{antdicons:AntDesignIconProvider Kind=MehOutlined}" />
+                                        <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                           ItemKey="0-0-1"
+                                                           Icon="{antdicons:AntDesignIconProvider Kind=FrownOutlined}" />
+                                    </atom:TreeViewItem>
+                                </atom:TreeView>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TreeViewShowCaseLangResource SemanticNodeRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:TreeViewShowCaseLangResource SemanticItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemSwitcher"
+                                    Description="{gallery:TreeViewShowCaseLangResource SemanticItemSwitcherDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemIcon"
+                                    Description="{gallery:TreeViewShowCaseLangResource SemanticItemIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemTitle"
+                                    Description="{gallery:TreeViewShowCaseLangResource SemanticItemTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemIndicator"
+                                    Description="{gallery:TreeViewShowCaseLangResource SemanticItemIndicatorDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -514,7 +571,105 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:TreeViewShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:TreeViewShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="tree-view-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:TreeViewViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Left"
+                                        Spacing="16">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|TreeView.semantic-object">
+                                        <atom:TreeViewItemStyle x:SetterTargetType="atom:TreeViewItem">
+                                            <Setter Property="Margin" Value="0,2" />
+                                        </atom:TreeViewItemStyle>
+                                    </Style>
+                                    <Style Selector="atom|TreeView.semantic-object atom|TreeViewItem">
+                                        <atom:TreeViewItemItemStyle x:SetterTargetType="atom:TreeViewItem">
+                                            <Setter Property="Margin" Value="0,2" />
+                                        </atom:TreeViewItemItemStyle>
+                                        <atom:TreeViewItemItemTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="FontSize" Value="14" />
+                                        </atom:TreeViewItemItemTitleStyle>
+                                    </Style>
+                                    <Style Selector="atom|TreeView.semantic-function">
+                                        <atom:TreeViewItemStyle x:SetterTargetType="atom:TreeViewItem">
+                                            <Setter Property="Margin" Value="0,2" />
+                                        </atom:TreeViewItemStyle>
+                                    </Style>
+                                    <Style Selector="atom|TreeView.semantic-function atom|TreeViewItem">
+                                        <atom:TreeViewItemItemStyle x:SetterTargetType="atom:TreeViewItem">
+                                            <Setter Property="Margin" Value="0,2" />
+                                        </atom:TreeViewItemItemStyle>
+                                        <atom:TreeViewItemItemTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#1677FF" />
+                                        </atom:TreeViewItemItemTitleStyle>
+                                        <atom:TreeViewItemItemSwitcherStyle x:SetterTargetType="ToggleButton">
+                                            <Setter Property="Background" Value="#E6F4FF" />
+                                            <Setter Property="CornerRadius" Value="4" />
+                                        </atom:TreeViewItemItemSwitcherStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <Border BorderThickness="2"
+                                        BorderBrush="#D9D9D9"
+                                        CornerRadius="4"
+                                        Padding="8">
+                                    <atom:TreeView Classes="semantic-object"
+                                                   ToggleType="CheckBox">
+                                        <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1}"
+                                                           ItemKey="0-0">
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1N0}"
+                                                               ItemKey="0-0-0">
+                                                <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                                   ItemKey="0-0-0-0" />
+                                                <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                                   ItemKey="0-0-0-1" />
+                                            </atom:TreeViewItem>
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1N1}"
+                                                               ItemKey="0-0-1">
+                                                <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                                   ItemKey="0-0-1-0" />
+                                            </atom:TreeViewItem>
+                                        </atom:TreeViewItem>
+                                    </atom:TreeView>
+                                </Border>
+
+                                <Border BorderThickness="2"
+                                        BorderBrush="#E5D9F2"
+                                        CornerRadius="4"
+                                        Padding="8">
+                                    <atom:TreeView Classes="semantic-function"
+                                                   IsDefaultExpandAll="True"
+                                                   DefaultSelectedPaths="{Binding SemanticPartTreeDefaultSelectedPaths}">
+                                        <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1}"
+                                                           ItemKey="0-0">
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1N0}"
+                                                               ItemKey="0-0-0">
+                                                <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                                   ItemKey="0-0-0-0" />
+                                                <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                                   ItemKey="0-0-0-1" />
+                                            </atom:TreeViewItem>
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1N1}"
+                                                               ItemKey="0-0-1">
+                                                <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                                   ItemKey="0-0-1-0" />
+                                            </atom:TreeViewItem>
+                                        </atom:TreeViewItem>
+                                    </atom:TreeView>
+                                </Border>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

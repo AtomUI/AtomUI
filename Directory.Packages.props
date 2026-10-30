@@ -13,6 +13,9 @@
         <PackageVersion Include="Avalonia.X11" Version="$(AvaloniaVersion)"/>
         <PackageVersion Include="Avalonia.Wayland" Version="$(AvaloniaVersion)"/>
         <PackageVersion Include="Avalonia.Native" Version="$(AvaloniaVersion)"/>
+        <!-- Official-template size baseline only (tests/AtomUI.Registration.Fixtures/FluentBaseline). -->
+        <PackageVersion Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)"/>
+        <PackageVersion Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)"/>
         <PackageVersion Include="NWayland" Version="0.11.0"/>
         <PackageVersion Include="Avalonia.AvaloniaEdit" Version="12.0.0"/>
         <PackageVersion Include="AvaloniaEdit.TextMate" Version="12.0.0"/>
@@ -35,6 +38,8 @@
         <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2"/>
         <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5"/>
         <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2"/>
+        <PackageVersion Include="Microsoft.NET.ILLink.Tasks" Version="10.0.8"
+                        Condition="'$(MSBuildProjectName)' == 'AtomUI.Toolchain' or '$(MSBuildProjectName)' == 'AtomUI.TypeMap.Linker.Tests'" />
         <!-- 源码生成 -->
         <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0"/>
         <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0"/>

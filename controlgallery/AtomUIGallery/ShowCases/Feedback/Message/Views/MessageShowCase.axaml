@@ -5,9 +5,56 @@
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              xmlns:vm="using:AtomUIGallery.ShowCases.Message"
              x:DataType="vm:MessageViewModel">
+    <UserControl.Resources>
+        <!-- 严格对齐上游 components/message/demo/style-class.tsx：object styles 为浅绿卡片 + 2px 绿边
+             + 圆角 16 + 硬阴影，icon / title 绿字；function styles 按 type 分支，error 时整卡转红。 -->
+        <Styles x:Key="MessageSemanticStyleStyles">
+            <Style Selector="atom|MessageCard.semantic-object-style-demo">
+                <Setter Property="Background" Value="#F6FFED" />
+                <Setter Property="BorderBrush" Value="#95DE64" />
+                <Setter Property="BorderThickness" Value="2" />
+                <Setter Property="CornerRadius" Value="16" />
+                <Setter Property="BoxShadow" Value="4 4 0 #D9F7BE" />
+                <atom:MessageCardIconStyle x:SetterTargetType="atom:IconPresenter">
+                    <Setter Property="IconBrush" Value="#237804" />
+                </atom:MessageCardIconStyle>
+                <atom:MessageCardTitleStyle x:SetterTargetType="SelectableTextBlock">
+                    <Setter Property="Foreground" Value="#237804" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                </atom:MessageCardTitleStyle>
+            </Style>
+            <!-- function styles 的默认分支：非 error 时返回 object styles 同款绿色。 -->
+            <Style Selector="atom|MessageCard.semantic-function-style-demo">
+                <Setter Property="Background" Value="#F6FFED" />
+                <Setter Property="BorderBrush" Value="#95DE64" />
+                <Setter Property="BorderThickness" Value="2" />
+                <Setter Property="CornerRadius" Value="16" />
+                <Setter Property="BoxShadow" Value="4 4 0 #D9F7BE" />
+                <atom:MessageCardIconStyle x:SetterTargetType="atom:IconPresenter">
+                    <Setter Property="IconBrush" Value="#237804" />
+                </atom:MessageCardIconStyle>
+                <atom:MessageCardTitleStyle x:SetterTargetType="SelectableTextBlock">
+                    <Setter Property="Foreground" Value="#237804" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                </atom:MessageCardTitleStyle>
+            </Style>
+            <!-- function styles 的 error 分支：type 为 error 时整卡转红，保留 2px 红色硬阴影。 -->
+            <Style Selector="atom|MessageCard.semantic-function-style-demo:error">
+                <Setter Property="Background" Value="#FFF2F0" />
+                <Setter Property="BorderBrush" Value="#FFCCC7" />
+                <Setter Property="BoxShadow" Value="4 4 0 #FFCCC7" />
+                <atom:MessageCardIconStyle x:SetterTargetType="atom:IconPresenter">
+                    <Setter Property="IconBrush" Value="#CF1322" />
+                </atom:MessageCardIconStyle>
+                <atom:MessageCardTitleStyle x:SetterTargetType="SelectableTextBlock">
+                    <Setter Property="Foreground" Value="#CF1322" />
+                </atom:MessageCardTitleStyle>
+            </Style>
+        </Styles>
+    </UserControl.Resources>
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Message"
                     Category="{gallery:MessageShowCaseLangResource ComponentCategory}"
@@ -17,8 +64,71 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="WindowMessageManager" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:MessageViewModel">
+                    <!-- 对齐上游 message#semantic-dom：单个预览舞台同时承载「消息列表宿主」与「消息卡片」
+                         两个公开 owner 的 Part，右侧一个面板按 owner 顺序列出全部 6 个 Part（root /
+                         wrapper / icon / title 属于 MessageCard，list / listContent 对应 manager 的
+                         root / listContent，行内的 owner 标签用于消歧）。
+                         manager 以无宿主实例渲染在共享舞台内，示例数据由 Loaded 时 Show() 播种。 -->
+                    <gallery:SemanticPartPreview Name="MessageSemanticPreview"
+                                                 Title="Message"
+                                                 SemanticOwner="{Binding #MessageSemanticAnchor}">
+                        <gallery:SemanticPartPreview.SemanticOwners>
+                            <gallery:SemanticPartPreviewOwner Owner="{Binding #MessageManagerSemanticOwner}"
+                                                             OwnerType="{x:Type atom:WindowMessageManager}" />
+                            <gallery:SemanticPartPreviewOwner Owner="{Binding #MessageCardSemanticOwner}"
+                                                             OwnerType="{x:Type atom:MessageCard}" />
+                        </gallery:SemanticPartPreview.SemanticOwners>
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <Panel MinHeight="320"
+                                   Background="{atom:SharedTokenResource ColorFillAlter}">
+                                <!-- manager 无宿主实例拉伸铺满舞台；root 高亮 = 列表宿主本身。 -->
+                                <atom:WindowMessageManager Name="MessageManagerSemanticOwner"
+                                                           MaxItems="3"
+                                                           IsMotionEnabled="False"
+                                                           Loaded="HandleSemanticPreviewOwnerLoaded" />
+                                <!-- 卡片锚点：同一舞台内两条常驻卡片，离屏居中排布。 -->
+                                <StackPanel Name="MessageSemanticAnchor"
+                                            Orientation="Vertical"
+                                            Spacing="16"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                    <atom:MessageCard Name="MessageCardSemanticOwner"
+                                                      MessageType="Success"
+                                                      Message="Hello, Ant Design!"
+                                                      IsMotionEnabled="False" />
+                                    <atom:MessageCard MessageType="Information"
+                                                      Message="Welcome back!"
+                                                      IsMotionEnabled="False" />
+                                </StackPanel>
+                            </Panel>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription Path="root"
+                                                             OwnerType="{x:Type atom:MessageCard}"
+                                                             Description="{gallery:MessageShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription Path="wrapper"
+                                                             OwnerType="{x:Type atom:MessageCard}"
+                                                             Description="{gallery:MessageShowCaseLangResource SemanticWrapperDescription}" />
+                            <gallery:SemanticPartDescription Path="icon"
+                                                             OwnerType="{x:Type atom:MessageCard}"
+                                                             Description="{gallery:MessageShowCaseLangResource SemanticIconDescription}" />
+                            <gallery:SemanticPartDescription Path="title"
+                                                             OwnerType="{x:Type atom:MessageCard}"
+                                                             Description="{gallery:MessageShowCaseLangResource SemanticTitleDescription}" />
+                            <gallery:SemanticPartDescription Path="root"
+                                                             OwnerType="{x:Type atom:WindowMessageManager}"
+                                                             Description="{gallery:MessageShowCaseLangResource SemanticListRootDescription}" />
+                            <gallery:SemanticPartDescription Path="listContent"
+                                                             OwnerType="{x:Type atom:WindowMessageManager}"
+                                                             Description="{gallery:MessageShowCaseLangResource SemanticListContentDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -73,7 +183,85 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:MessageShowCaseLangResource StackTitle}"
+                    Description="{gallery:MessageShowCaseLangResource StackDescription}"
+                    BadgeText="v6.1.9"
+                    SourceKey="message-stack"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:MessageViewModel">
+                            <StackPanel Spacing="24">
+                                <StackPanel Orientation="Horizontal" Spacing="32">
+                                    <StackPanel Orientation="Horizontal"
+                                                VerticalAlignment="Center"
+                                                Spacing="12">
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="{gallery:MessageShowCaseLangResource StackEnabledLabel}" />
+                                        <atom:ToggleSwitch Name="StackEnabledSwitch"
+                                                           IsChecked="True"
+                                                           IsCheckedChanged="HandleStackEnabledChanged" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="{gallery:MessageShowCaseLangResource StackThresholdLabel}" />
+                                        <atom:NumericUpDown Name="StackThresholdInput"
+                                                            Width="100"
+                                                            Minimum="1"
+                                                            Maximum="10"
+                                                            Increment="1"
+                                                            FormatString="0"
+                                                            Value="3"
+                                                            IsEnabled="{Binding #StackEnabledSwitch.IsChecked}"
+                                                            ValueChanged="HandleStackThresholdChanged" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <atom:Separator />
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <atom:Button Name="OpenStackMessageButton"
+                                                 ButtonType="Primary"
+                                                 Click="ShowStackMessage"
+                                                 Content="{gallery:MessageShowCaseLangResource P2ContentOpenMessageBox}" />
+                                    <atom:Button Name="DestroyStackMessagesButton"
+                                                 ButtonType="Default"
+                                                 Click="DestroyStackMessages"
+                                                 Content="{gallery:MessageShowCaseLangResource P2ContentDestroyAll}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:MessageShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:MessageShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="message-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:MessageViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="16">
+                                <!-- 消息经宿主到窗口反馈层（WindowFeedbackLayer）的 manager 在视口顶部弹出，
+                                     对齐上游默认 getContainer 的浮层行为。反馈层在页面视觉树之外，页面内
+                                     声明的 Style 命中不到它弹出的卡片，因此样式以 Styles 资源声明（仍是
+                                     生成的专用 Style 类），由 code-behind 挂到 manager 自身。 -->
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <atom:Button ButtonType="Default"
+                                                 Click="HandleShowObjectStyleMessage"
+                                                 Content="{gallery:MessageShowCaseLangResource P2ContentObjectStyle}" />
+                                    <atom:Button ButtonType="Primary"
+                                                 Click="HandleShowFunctionStyleMessage"
+                                                 Content="{gallery:MessageShowCaseLangResource P2ContentFunctionStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

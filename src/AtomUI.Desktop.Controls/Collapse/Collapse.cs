@@ -25,7 +25,7 @@ public enum CollapseExpandIconPosition
 }
 
 [TemplatePart("PART_ItemsPresenter", typeof(ItemsPresenter))]
-public class Collapse : SelectingItemsControl, IMotionAwareControl
+public partial class Collapse : SelectingItemsControl, IMotionAwareControl
 {
     #region 公共属性定义
 
@@ -129,10 +129,18 @@ public class Collapse : SelectingItemsControl, IMotionAwareControl
 
     #endregion
 
+    private const string ScopePanelClass = "semantic-scope-panel";
+    private const string ScopeItemClass = "semantic-scope-item";
+
     private static readonly FuncTemplate<Panel?> DefaultPanel =
-        new(() => new StackPanel
+        new(() =>
         {
-            Orientation = Orientation.Vertical
+            var panel = new StackPanel
+            {
+                Orientation = Orientation.Vertical
+            };
+            panel.Classes.Add(ScopePanelClass);
+            return panel;
         });
 
     static Collapse()
@@ -151,7 +159,9 @@ public class Collapse : SelectingItemsControl, IMotionAwareControl
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new CollapseItem();
+        var collapseItem = new CollapseItem();
+        collapseItem.Classes.Add(ScopeItemClass);
+        return collapseItem;
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -163,6 +173,7 @@ public class Collapse : SelectingItemsControl, IMotionAwareControl
     {
         if (container is CollapseItem collapseItem)
         {
+            collapseItem.Classes.Add(ScopeItemClass);
             if (item != null && item is not Visual)
             {
                 if (!collapseItem.IsSet(CollapseItem.ContentProperty))
@@ -202,6 +213,7 @@ public class Collapse : SelectingItemsControl, IMotionAwareControl
             PrepareCollapseItem(collapseItem, item, index);
             ConfigureItemPaddings(collapseItem);
             ConfigureItemBorders(collapseItem, index);
+            ConfigureItemCorners(collapseItem, index);
         }
         else
         {
@@ -237,6 +249,7 @@ public class Collapse : SelectingItemsControl, IMotionAwareControl
         if (container is CollapseItem collapseItem)
         {
             ConfigureItemBorders(collapseItem, newIndex);
+            ConfigureItemCorners(collapseItem, newIndex);
         }
     }
 
@@ -307,6 +320,11 @@ public class Collapse : SelectingItemsControl, IMotionAwareControl
             ConfigureItemsBorders();
         }
 
+        if (change.Property == CornerRadiusProperty)
+        {
+            ConfigureItemsCorners();
+        }
+
         if (change.Property == ItemHeaderPaddingProperty ||
             change.Property == ItemContentPaddingProperty)
         {
@@ -358,9 +376,21 @@ public class Collapse : SelectingItemsControl, IMotionAwareControl
         }
     }
 
+    private void ConfigureItemsCorners()
+    {
+        for (var i = 0; i < ItemCount; ++i)
+        {
+            if (GetCollapseItemAt(i) is { } collapseItem)
+            {
+                ConfigureItemCorners(collapseItem, i);
+            }
+        }
+    }
+
     private void HandleItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         ConfigureItemsBorders();
+        ConfigureItemsCorners();
     }
 
     private void ConfigureItemBorders(CollapseItem collapseItem, int index)
@@ -375,6 +405,25 @@ public class Collapse : SelectingItemsControl, IMotionAwareControl
             : default;
         collapseItem.ContentBorderThickness = hasContentSeparator
             ? new Thickness(0, line, 0, 0)
+            : default;
+    }
+
+    // Mirrors antd's collapse style rules: the first item's header carries the top
+    // corners, the last item's header and content carry the bottom corners, so their
+    // backgrounds follow the container's rounded border instead of covering it.
+    private void ConfigureItemCorners(CollapseItem collapseItem, int index)
+    {
+        var radius  = CornerRadius;
+        var isFirst = index == 0;
+        var isLast  = index == ItemCount - 1;
+
+        collapseItem.HeaderCornerRadius = new CornerRadius(
+            isFirst ? radius.TopLeft : 0,
+            isFirst ? radius.TopRight : 0,
+            isLast ? radius.BottomLeft : 0,
+            isLast ? radius.BottomRight : 0);
+        collapseItem.ContentCornerRadius = isLast
+            ? new CornerRadius(0, 0, radius.BottomLeft, radius.BottomRight)
             : default;
     }
 

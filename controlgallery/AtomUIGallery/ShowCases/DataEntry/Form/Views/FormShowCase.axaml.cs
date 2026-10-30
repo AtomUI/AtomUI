@@ -1,11 +1,7 @@
-using AtomUIGallery.Localization;
-using System.Globalization;
 using System.Reactive.Disposables;
 using AtomUI;
 using AtomUI.Controls;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -17,8 +13,6 @@ namespace AtomUIGallery.ShowCases.Form;
 
 public partial class FormShowCase : GalleryReactiveUserControl<FormViewModel>
 {
-    public const string LanguageId = nameof(FormShowCase);
-
     private static int s_formGid = 3;
 
     private WindowMessageManager? _messageManager;
@@ -54,9 +48,19 @@ public partial class FormShowCase : GalleryReactiveUserControl<FormViewModel>
 
     private void HandleBasicFormAttached(object? sender, VisualTreeAttachmentEventArgs args)
     {
-        if (sender is AtomUIForm BasicForm)
+        if (sender is AtomUIForm basicForm)
         {
-            BasicForm.InitialValues = CreateBasicFormInitialValues();
+            basicForm.InitialValues = CreateBasicFormInitialValues();
+        }
+    }
+
+    private void HandleSemanticDemoFormAttached(object? sender, VisualTreeAttachmentEventArgs args)
+    {
+        // 对齐上游 Semantic DOM 示例:进入语义示例时让 password 项进入
+        // 两条 error 消息的校验失败状态,username 项保持仅有 help 文案。
+        if (sender is AtomUIForm semanticDemoForm)
+        {
+            semanticDemoForm.Validate();
         }
     }
 
@@ -69,43 +73,43 @@ public partial class FormShowCase : GalleryReactiveUserControl<FormViewModel>
 
     private void HandleLayoutCaseFormAttached(object? sender, VisualTreeAttachmentEventArgs args)
     {
-        if (sender is AtomUIForm LayoutCaseForm)
+        if (sender is AtomUIForm layoutCaseForm)
         {
-            LayoutCaseForm.PropertyChanged -= HandleLayoutCaseFormPropertyChanged;
-            LayoutCaseForm.PropertyChanged += HandleLayoutCaseFormPropertyChanged;
-            UpdateLayoutCaseFormBounds(LayoutCaseForm, LayoutCaseForm.FormLayout);
+            layoutCaseForm.PropertyChanged -= HandleLayoutCaseFormPropertyChanged;
+            layoutCaseForm.PropertyChanged += HandleLayoutCaseFormPropertyChanged;
+            UpdateLayoutCaseFormBounds(layoutCaseForm, layoutCaseForm.FormLayout);
         }
     }
 
     private void HandleLayoutCaseFormDetached(object? sender, VisualTreeAttachmentEventArgs args)
     {
-        if (sender is AtomUIForm LayoutCaseForm)
+        if (sender is AtomUIForm layoutCaseForm)
         {
-            LayoutCaseForm.PropertyChanged -= HandleLayoutCaseFormPropertyChanged;
+            layoutCaseForm.PropertyChanged -= HandleLayoutCaseFormPropertyChanged;
         }
     }
 
     private void HandleLayoutCaseFormPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
     {
-        if (sender is AtomUIForm LayoutCaseForm &&
+        if (sender is AtomUIForm layoutCaseForm &&
             args.Property == AtomUIForm.FormLayoutProperty &&
             args.NewValue is FormLayout layout)
         {
-            UpdateLayoutCaseFormBounds(LayoutCaseForm, layout);
+            UpdateLayoutCaseFormBounds(layoutCaseForm, layout);
         }
     }
 
-    private static void UpdateLayoutCaseFormBounds(AtomUIForm LayoutCaseForm, FormLayout layout)
+    private static void UpdateLayoutCaseFormBounds(AtomUIForm layoutCaseForm, FormLayout layout)
     {
         if (layout == FormLayout.Inline)
         {
-            LayoutCaseForm.MinWidth            = 0;
-            LayoutCaseForm.HorizontalAlignment = HorizontalAlignment.Stretch;
+            layoutCaseForm.MinWidth            = 0;
+            layoutCaseForm.HorizontalAlignment = HorizontalAlignment.Stretch;
         }
         else
         {
-            LayoutCaseForm.MinWidth            = 600;
-            LayoutCaseForm.HorizontalAlignment = HorizontalAlignment.Left;
+            layoutCaseForm.MinWidth            = 600;
+            layoutCaseForm.HorizontalAlignment = HorizontalAlignment.Left;
         }
     }
 
@@ -150,14 +154,14 @@ public partial class FormShowCase : GalleryReactiveUserControl<FormViewModel>
     private void HandleFillClicked(object? sender, RoutedEventArgs args)
     {
         if (sender is not Control source ||
-            !TryFindTemplateControl<AtomUIForm>(source, "NoBlockRuleForm", out var NoBlockRuleForm))
+            !TryFindTemplateControl<AtomUIForm>(source, "NoBlockRuleForm", out var noBlockRuleForm))
         {
             return;
         }
 
         var formValues = new FormValues();
         formValues.Add("url", "https://taobao.com/");
-        NoBlockRuleForm.SetFormValues(formValues);
+        noBlockRuleForm.SetFormValues(formValues);
     }
 
     private void HandleNoBlockFormSubmitted(object? sender, FormSubmittedEventArgs args)
@@ -204,16 +208,16 @@ public partial class FormShowCase : GalleryReactiveUserControl<FormViewModel>
     private void HandleAddFormItem(object? sender, RoutedEventArgs args)
     {
         if (sender is not Control source ||
-            !TryFindTemplateControl<AtomUIForm>(source, "DynamicForm", out var DynamicForm))
+            !TryFindTemplateControl<AtomUIForm>(source, "DynamicForm", out var dynamicForm))
         {
             return;
         }
 
         var formItem    = CreatePassengerFormItem();
         var insertIndex = 0;
-        for (var i = 0; i < DynamicForm.Items.Count; ++i)
+        for (var i = 0; i < dynamicForm.Items.Count; ++i)
         {
-            var item = DynamicForm.Items[i];
+            var item = dynamicForm.Items[i];
             if (item is FormActionsItem)
             {
                 insertIndex = i;
@@ -222,15 +226,15 @@ public partial class FormShowCase : GalleryReactiveUserControl<FormViewModel>
         }
 
         insertIndex = Math.Max(0, insertIndex);
-        DynamicForm.Items.Insert(insertIndex, formItem);
+        dynamicForm.Items.Insert(insertIndex, formItem);
     }
 
     private void HandleAddFormItemAtHead(object? sender, RoutedEventArgs args)
     {
         if (sender is Control source &&
-            TryFindTemplateControl<AtomUIForm>(source, "DynamicForm", out var DynamicForm))
+            TryFindTemplateControl<AtomUIForm>(source, "DynamicForm", out var dynamicForm))
         {
-            DynamicForm.Items.Insert(0, CreatePassengerFormItem());
+            dynamicForm.Items.Insert(0, CreatePassengerFormItem());
         }
     }
 
@@ -250,9 +254,9 @@ public partial class FormShowCase : GalleryReactiveUserControl<FormViewModel>
 
     private void HandleFormSliderItemAttached(object? sender, VisualTreeAttachmentEventArgs args)
     {
-        if (sender is AtomUI.Desktop.Controls.Slider FormSliderItem)
+        if (sender is AtomUI.Desktop.Controls.Slider formSliderItem)
         {
-            FormSliderItem.Marks = CreateSliderMarks();
+            formSliderItem.Marks = CreateSliderMarks();
         }
     }
 

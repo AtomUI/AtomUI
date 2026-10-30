@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Cascader"
              x:DataType="vm:CascaderViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Cascader"
                     Category="{gallery:CascaderShowCaseLangResource ComponentCategory}"
@@ -19,7 +19,77 @@
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractSelect"
                     MetadataValueWidth="220" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:CascaderViewModel">
+                    <gallery:SemanticPartPreview Name="CascaderSemanticPreview"
+                                                 Title="Cascader"
+                                                 SemanticOwner="{Binding #CascaderSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:Cascader}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Cascader Name="CascaderSemanticOwner"
+                                           Width="420"
+                                           IsAllowClear="True"
+                                           IsMotionEnabled="False"
+                                           IsDropDownOpen="True"
+                                           IsPopupPinnedOpen="True"
+                                           IsMultiple="True"
+                                           SelectedOptions="{Binding SemanticPreviewSelectedOptions}"
+                                           OptionsSource="{Binding SemanticPreviewOptions}"
+                                           PlaceholderText="{gallery:CascaderShowCaseLangResource P2PlaceholderTextPleaseSelect}">
+                                <atom:Cascader.OptionTemplate>
+                                    <TreeDataTemplate ItemsSource="{Binding Children}"
+                                                      x:DataType="atom:ICascaderOption">
+                                        <atom:TextBlock Text="{Binding Header}" />
+                                    </TreeDataTemplate>
+                                </atom:Cascader.OptionTemplate>
+                            </atom:Cascader>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="prefix"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticPrefixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="placeholder"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticPlaceholderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="input"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticInputDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="suffix"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticSuffixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="item"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticItemDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="itemContent"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticItemContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="itemRemove"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticItemRemoveDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="clear"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticClearDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.root"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.list"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticPopupListDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.listItem"
+                                Description="{gallery:CascaderShowCaseLangResource SemanticPopupListItemDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -698,6 +768,7 @@
                         <DataTemplate x:DataType="vm:CascaderViewModel">
         <StackPanel Orientation="Vertical" Spacing="10">
             <atom:SearchEdit PlaceholderText="{gallery:CascaderShowCaseLangResource P2PlaceholderTextSearch}"
+                             IsSearchOnEnterEnabled="False"
                              SearchRequested="HandleFilterCascaderViewSearchRequested" />
             <atom:CascaderView Name="SearchCascaderView"
                                OptionSelected="HandleSearchCascaderViewOptionSelected"
@@ -715,6 +786,7 @@
                         <DataTemplate x:DataType="vm:CascaderViewModel">
         <StackPanel Orientation="Vertical" Spacing="10">
             <atom:SearchEdit PlaceholderText="{gallery:CascaderShowCaseLangResource P2PlaceholderTextSearch}"
+                             IsSearchOnEnterEnabled="False"
                              SearchRequested="HandleFilterCascaderViewItemsSourceSearchRequested" />
             <atom:CascaderView
                 Name="SearchCascaderViewItemsSource"
@@ -782,7 +854,64 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+                <!-- 自定义语义结构的样式（对齐 antd 的 semantic structure styling 示例） -->
+                <gallery:ShowCaseItem Title="{gallery:CascaderShowCaseLangResource StyleClassTitle}"
+                                      Description="{gallery:CascaderShowCaseLangResource StyleClassDescription}"
+                                      SourceKey="cascader-semantic-part"
+                                      BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:CascaderViewModel">
+                            <StackPanel HorizontalAlignment="Left" Spacing="20">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Cascader.semantic-styles-demo">
+                                        <atom:CascaderPrefixStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="TextElement.Foreground" Value="#BFBFBF" />
+                                        </atom:CascaderPrefixStyle>
+                                        <atom:CascaderPlaceholderStyle x:SetterTargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#1890FF" />
+                                        </atom:CascaderPlaceholderStyle>
+                                        <atom:CascaderPopupRootStyle x:SetterTargetType="Border">
+                                            <Setter Property="BorderBrush" Value="#1890FF" />
+                                            <Setter Property="BorderThickness" Value="1" />
+                                        </atom:CascaderPopupRootStyle>
+                                        <atom:CascaderPopupListItemStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="TextElement.Foreground" Value="#272727" />
+                                        </atom:CascaderPopupListItemStyle>
+                                    </Style>
+                                    <Style Selector="atom|Cascader.semantic-styles-filled-demo">
+                                        <atom:CascaderSuffixStyle x:SetterTargetType="StackPanel">
+                                            <Setter Property="TextElement.Foreground" Value="#1890FF" />
+                                        </atom:CascaderSuffixStyle>
+                                        <atom:CascaderPopupRootStyle x:SetterTargetType="Border">
+                                            <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                            <Setter Property="BorderThickness" Value="1" />
+                                        </atom:CascaderPopupRootStyle>
+                                        <atom:CascaderPopupListItemStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="TextElement.Foreground" Value="#1890FF" />
+                                        </atom:CascaderPopupListItemStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+                                <atom:Cascader Classes="semantic-styles-demo"
+                                               Name="ObjectStylesCascader"
+                                               Width="260"
+                                               IsAllowClear="True"
+                                               ContentLeftAddOn="prefix"
+                                               OptionsSource="{Binding StyleClassOptions}"
+                                               PlaceholderText="object styles" />
+                                <atom:Cascader Classes="semantic-styles-demo semantic-styles-filled-demo"
+                                               Name="FunctionStylesCascader"
+                                               Width="260"
+                                               IsAllowClear="True"
+                                               StyleVariant="Filled"
+                                               ContentLeftAddOn="prefix"
+                                               OptionsSource="{Binding StyleClassOptions}"
+                                               PlaceholderText="function styles" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

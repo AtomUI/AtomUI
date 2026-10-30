@@ -3,21 +3,33 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
+    <atom:StringToTextBlockConverter x:Key="StringToTextBlockConverter"
+                                     VerticalAlignment="Center"
+                                     TextWrapping="Wrap" />
     <ControlTheme x:Key="{x:Type atom:Expander}" TargetType="atom:Expander">
         <Setter Property="Template">
             <ControlTemplate>
+                <!-- ClipContentToCornerRadius 是必需的，不是可选优化：PART_Frame 自己画圆角，
+                     但 header/body 是它的子节点且各自带背景。ClipToBounds 只做矩形裁剪，不做圆角裁剪，
+                     所以不开启时子节点的不透明背景会平铺到方形边界、覆盖掉圆角，视觉上圆角失效。
+                     默认主题的 HeaderBg 是 alpha≈2% 的 ColorFillAlter，缺陷几乎不可见；一旦用户通过
+                     Semantic Part 或 IsGhostStyle 设置不透明背景就会显形。开启后由本节点统一把
+                     整棵子树裁到圆角内框，与展开状态、ExpandDirection 无关。 -->
                 <atom:PixelAlignedBorder Name="PART_Frame"
                                          ClipToBounds="True"
+                                         ClipContentToCornerRadius="True"
                                          BorderThickness="{TemplateBinding EffectiveBorderThickness}">
                     <DockPanel Name="PART_MainLayout"
                                LastChildFill="True">
                         <LayoutTransformControl Name="PART_HeaderLayoutTransform">
                             <atom:PixelAlignedBorder Name="PART_HeaderDecorator"
+                                                     Classes.semantic-header="True"
                                                      Padding="{TemplateBinding HeaderPadding}">
                                 <Grid Name="PART_HeaderLayout"
                                       ColumnDefinitions="Auto, *, Auto, Auto">
                                     <atom:IconButton
                                         Name="PART_ExpandButton"
+                                        Classes.semantic-icon="True"
                                         Grid.Column="0"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
@@ -26,6 +38,7 @@
                                         IsVisible="{TemplateBinding IsShowExpandIcon}"
                                         IsEnabled="{TemplateBinding IsEnabled}" />
                                     <ContentPresenter Name="PART_HeaderPresenter"
+                                                      Classes.semantic-title="True"
                                                       HorizontalAlignment="Stretch"
                                                       VerticalAlignment="Center"
                                                       HorizontalContentAlignment="Left"
@@ -46,19 +59,28 @@
                             </atom:PixelAlignedBorder>
                         </LayoutTransformControl>
 
-                        <atom:LayoutAwareMotionActor
-                            Name="PART_ContentMotionActor"
+                        <atom:ContentViewport
+                            Name="PART_ContentViewport"
                             ClipToBounds="True"
-                            IsVisible="False">
+                            atom:Motion.IsVisible="{TemplateBinding IsExpanded}"
+                            atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}"
+                            atom:Motion.DurationOverride="{TemplateBinding MotionDuration}">
+                            <atom:Motion.Enter>
+                                <atom:ExpandMotion />
+                            </atom:Motion.Enter>
+                            <atom:Motion.Leave>
+                                <atom:CollapseMotion />
+                            </atom:Motion.Leave>
                             <atom:PixelAlignedBorder
                                 BorderBrush="{atom:SharedTokenResource ColorBorder}"
                                 BorderThickness="{TemplateBinding ContentBorderThickness}">
                                 <ContentPresenter Name="PART_ContentPresenter"
+                                                  Classes.semantic-body="True"
                                                   Content="{TemplateBinding Content, Converter={StaticResource StringToTextBlockConverter}}"
                                                   ContentTemplate="{TemplateBinding ContentTemplate}"
                                                   Padding="{TemplateBinding ContentPadding}" />
                             </atom:PixelAlignedBorder>
-                        </atom:LayoutAwareMotionActor>
+                        </atom:ContentViewport>
                     </DockPanel>
                 </atom:PixelAlignedBorder>
             </ControlTemplate>
@@ -117,6 +139,9 @@
         <Style Selector="^:up">
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Style Selector="^ /template/ atom|ContentViewport#PART_ContentViewport">
+                <Setter Property="atom:Motion.LayoutDirection" Value="Top" />
+            </Style>
             <Style Selector="^ /template/ LayoutTransformControl#PART_HeaderLayoutTransform">
                 <Setter Property="DockPanel.Dock" Value="Bottom" />
             </Style>
@@ -133,6 +158,9 @@
         <Style Selector="^:left">
             <Setter Property="HorizontalAlignment" Value="Right" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Style Selector="^ /template/ atom|ContentViewport#PART_ContentViewport">
+                <Setter Property="atom:Motion.LayoutDirection" Value="Left" />
+            </Style>
             <Style Selector="^ /template/ LayoutTransformControl#PART_HeaderLayoutTransform">
                 <Setter Property="DockPanel.Dock" Value="Right" />
                 <Setter Property="LayoutTransform" Value="rotate(90deg)" />
@@ -142,6 +170,9 @@
         <Style Selector="^:right">
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Style Selector="^ /template/ atom|ContentViewport#PART_ContentViewport">
+                <Setter Property="atom:Motion.LayoutDirection" Value="Right" />
+            </Style>
             <Style Selector="^ /template/ LayoutTransformControl#PART_HeaderLayoutTransform">
                 <Setter Property="DockPanel.Dock" Value="Left" />
                 <Setter Property="LayoutTransform" Value="rotate(90deg)" />

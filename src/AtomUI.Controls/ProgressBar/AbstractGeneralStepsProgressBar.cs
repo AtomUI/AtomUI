@@ -68,6 +68,77 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
 
     #endregion
 
+    #region 内部协作 API
+
+    internal static double ChunkSpace => DEFAULT_CHUNK_SPACE;
+
+    internal double GetChunkWidth()
+    {
+        var chunkWidth = 0d;
+        if (!double.IsNaN(ChunkWidth))
+        {
+            chunkWidth = ChunkWidth;
+        }
+        else
+        {
+            if (EffectiveSizeType == SizeType.Large)
+            {
+                chunkWidth = LARGE_CHUNK_WIDTH;
+            }
+            else if (EffectiveSizeType == SizeType.Middle)
+            {
+                chunkWidth = MIDDLE_CHUNK_WIDTH;
+            }
+            else
+            {
+                chunkWidth = SMALL_CHUNK_WIDTH;
+            }
+        }
+
+        return chunkWidth;
+    }
+
+    internal double GetChunkHeight()
+    {
+        var chunkHeight = 0d;
+        if (!double.IsNaN(ChunkHeight))
+        {
+            chunkHeight = ChunkHeight;
+        }
+        else
+        {
+            chunkHeight = StrokeThickness;
+        }
+
+        return chunkHeight;
+    }
+
+    internal Rect GetStepsProgressBarRect(Size size)
+    {
+        return GetProgressBarRect(new Rect(default, size));
+    }
+
+    internal Rect GetStepsProgressIndicatorRect(Size size)
+    {
+        return GetExtraInfoRect(new Rect(default, size));
+    }
+
+    internal IBrush? GetStepBrush(int index)
+    {
+        if (StepsStrokeBrush is not null && index >= 0 && index < StepsStrokeBrush.Count)
+        {
+            return StepsStrokeBrush[index];
+        }
+
+        return StrokeBrush;
+    }
+
+    #endregion
+
+    private StepsProgressPanel? _progressBody;
+
+    private protected override bool HasTemplateProgressVisuals => _progressBody is not null;
+
     static AbstractGeneralStepsProgressBar()
     {
         AffectsMeasure<AbstractGeneralStepsProgressBar>(StepsProperty, ChunkWidthProperty, ChunkHeightProperty);
@@ -166,9 +237,12 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        _progressBody = null;
         CalculateSizeTypeThresholdValue();
         CalculateMinBarThickness();
         base.OnApplyTemplate(e);
+        _progressBody = e.NameScope.Find<StepsProgressPanel>(ProgressBodyPart);
+        _progressBody?.SynchronizeTracks();
     }
 
     // 需要评估是否需要
@@ -259,23 +333,8 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
     {
         base.NotifyEffectSizeTypeChanged();
         CalculateMinBarThickness();
-
-        // 计算 chunk width
-        if (double.IsNaN(ChunkWidth))
-        {
-            if (EffectiveSizeType == SizeType.Large)
-            {
-                ChunkWidth = LARGE_CHUNK_WIDTH;
-            }
-            else if (EffectiveSizeType == SizeType.Middle)
-            {
-                ChunkWidth = MIDDLE_CHUNK_WIDTH;
-            }
-            else
-            {
-                ChunkWidth = SMALL_CHUNK_WIDTH;
-            }
-        }
+        _progressBody?.InvalidateMeasure();
+        _progressBody?.InvalidateArrange();
     }
 
     protected override void NotifyOrientationChanged()
@@ -343,74 +402,6 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
         }
 
         return new Size(targetWidth, targetHeight);
-    }
-
-    protected override Size ArrangeOverride(Size finalSize)
-    {
-        if (IsProgressInfoVisible)
-        {
-            var extraInfoRect = GetExtraInfoRect(new Rect(new Point(0, 0), finalSize));
-            if (LayoutTransformLabel is not null)
-            {
-                Canvas.SetTop(LayoutTransformLabel, extraInfoRect.Top);
-                Canvas.SetLeft(LayoutTransformLabel, extraInfoRect.Left);
-            }
-
-            if (SuccessCompletedIconPresenter is not null)
-            {
-                Canvas.SetLeft(SuccessCompletedIconPresenter, extraInfoRect.Left);
-                Canvas.SetTop(SuccessCompletedIconPresenter, extraInfoRect.Top);
-            }
-
-            if (ExceptionCompletedIconPresenter is not null)
-            {
-                Canvas.SetLeft(ExceptionCompletedIconPresenter, extraInfoRect.Left);
-                Canvas.SetTop(ExceptionCompletedIconPresenter, extraInfoRect.Top);
-            }
-        }
-
-        return base.ArrangeOverride(finalSize);
-    }
-
-    private double GetChunkWidth()
-    {
-        var chunkWidth = 0d;
-        if (!double.IsNaN(ChunkWidth))
-        {
-            chunkWidth = ChunkWidth;
-        }
-        else
-        {
-            if (EffectiveSizeType == SizeType.Large)
-            {
-                chunkWidth = LARGE_CHUNK_WIDTH;
-            }
-            else if (EffectiveSizeType == SizeType.Middle)
-            {
-                chunkWidth = MIDDLE_CHUNK_WIDTH;
-            }
-            else
-            {
-                chunkWidth = SMALL_CHUNK_WIDTH;
-            }
-        }
-
-        return chunkWidth;
-    }
-
-    private double GetChunkHeight()
-    {
-        var chunkHeight = 0d;
-        if (!double.IsNaN(ChunkHeight))
-        {
-            chunkHeight = ChunkHeight;
-        }
-        else
-        {
-            chunkHeight = StrokeThickness;
-        }
-
-        return chunkHeight;
     }
 
     protected override Rect GetProgressBarRect(Rect controlRect)

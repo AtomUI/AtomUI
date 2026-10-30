@@ -1,0 +1,34 @@
+using System.Runtime.CompilerServices;
+namespace AtomUI.Registration;
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+public sealed class ConditionalRegistrationRecordAttribute : Attribute
+{
+    public ConditionalRegistrationRecordAttribute(int format, string kind, string identity, string payload) { }
+}
+[AttributeUsage(AttributeTargets.Assembly)]
+public sealed class ControlPackageMarkerAttribute : Attribute
+{
+    public ControlPackageMarkerAttribute(string packageId, Type group, int format) { }
+}
+public abstract class ControlRegistrationFragmentAttribute : Attribute
+{
+    public abstract string FragmentId { get; }
+    public abstract void Add(ControlPackageRegistrationBuilder builder);
+}
+public sealed class ControlPackageRegistrationBuilder
+{
+    public readonly List<string> Items = new();
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void AddFragment(ControlRegistrationFragmentAttribute fragment)
+    {
+        // Record every dispatch so fixture output exposes duplicate thunk calls.
+        // Product builder lifecycle/deduplication has its own acceptance coverage.
+        fragment.Add(this);
+    }
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void Add(string value) { GC.Collect(); Items.Add(value); }
+}
+public static class ControlRegistrationRuntime
+{
+    public static bool IsTrimmed => AppContext.TryGetSwitch("AtomUI.Registration.Trimmed", out bool value) && value;
+}

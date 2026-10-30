@@ -1,3 +1,5 @@
+using AtomUI.Localization.Data;
+
 namespace AtomUI.Localization;
 
 internal sealed class LocalizationBuilder : ILocalizationBuilder
@@ -5,15 +7,57 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
     private readonly List<LanguageCatalogDescriptor> _catalogs = [];
     private readonly List<TranslationBundleDescriptor> _bundles = [];
     private readonly List<LanguageDefinition> _definitions = [];
+    private readonly HashSet<string> _moduleIds = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _moduleData = new(StringComparer.Ordinal);
+    private IReadOnlySet<string>? _verifiedLanguages;
+    private IReadOnlyDictionary<string, string>? _verifiedModules;
     private LanguageCatalogRegistry? _registry;
     private LocalizationHost? _host;
     private LanguageTag _defaultLanguage;
     private LanguageTag[]? _supportedLanguages;
     private bool _isFrozen;
+    private readonly bool _appendOnly;
+
+    internal LocalizationBuilder(bool appendOnly = false) => _appendOnly = appendOnly;
+    internal IReadOnlyDictionary<string, string> ModuleData => _moduleData;
+    internal void Close() => _isFrozen = true;
+
+    private void EnsureInitialConfiguration()
+    {
+        EnsureMutable();
+        if (_appendOnly)
+        {
+            throw new InvalidOperationException("Supported languages and language definitions cannot change during package loading.");
+        }
+    }
 
     internal IReadOnlyList<LanguageCatalogDescriptor> Catalogs => _catalogs;
 
     internal IReadOnlyList<TranslationBundleDescriptor> TranslationBundles => _bundles;
+
+    public void AddModuleData(string moduleId, string data)
+    {
+        EnsureMutable();
+        if (_moduleIds.Contains(moduleId))
+        {
+            throw new LanguageCatalogException($"Language module '{moduleId}' is registered more than once.");
+        }
+        LanguageModuleData module;
+        try
+        {
+            module = LanguageModuleDataCodec.Read(moduleId, data);
+        }
+        catch (FormatException exception)
+        {
+            throw new LanguageCatalogException($"Invalid language module '{moduleId}'.", exception);
+        }
+        var catalogs = module.Catalogs.Select(static catalog => new LanguageDataCatalogDescriptor(catalog)).ToArray();
+        var bundles = module.Bundles.Select(static bundle => new TranslationBundleDescriptor(bundle)).ToArray();
+        _moduleIds.Add(moduleId);
+        _moduleData.Add(moduleId, data);
+        _catalogs.AddRange(catalogs);
+        _bundles.AddRange(bundles);
+    }
 
     public void AddCatalog(LanguageCatalogDescriptor descriptor)
     {
@@ -31,7 +75,7 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
 
     public void AddLanguageDefinition(LanguageDefinition definition)
     {
-        EnsureMutable();
+        EnsureInitialConfiguration();
         ArgumentNullException.ThrowIfNull(definition);
         _definitions.Add(definition);
     }
@@ -40,7 +84,7 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
         LanguageTag defaultLanguage,
         IEnumerable<LanguageTag> supportedLanguages)
     {
-        EnsureMutable();
+        EnsureInitialConfiguration();
         if (defaultLanguage == default)
         {
             throw new ArgumentException("A valid default language is required.", nameof(defaultLanguage));
@@ -51,7 +95,19 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
         _supportedLanguages = supportedLanguages.ToArray();
     }
 
-    internal LanguageCatalogRegistry FreezeRegistry()
+    internal void ApplyBuildProof(IReadOnlySet<string> languages, IReadOnlyDictionary<string, string> modules)
+    {
+        EnsureMutable();
+        _verifiedLanguages = languages;
+        _verifiedModules = modules;
+    }
+
+    private bool HasBuildProof(IReadOnlyList<LanguageTag> languages) =>
+        _verifiedLanguages is { } verified && _verifiedModules is { } modules &&
+        languages.All(language => verified.Contains(language.Value)) && _moduleData.Count == modules.Count &&
+        _moduleData.All(pair => modules.TryGetValue(pair.Key, out var data) && string.Equals(pair.Value, data, StringComparison.Ordinal));
+
+    internal LanguageCatalogRegistry FreezeRegistry(bool generatedDataVerified = false)
     {
         if (_registry is not null)
         {
@@ -59,10 +115,11 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
         }
 
         _isFrozen = true;
-        _registry = LanguageCatalogRegistry.Create(_catalogs, _bundles);
+        _registry = LanguageCatalogRegistry.Create(_catalogs, _bundles, generatedDataVerified: generatedDataVerified);
         return _registry;
     }
 
+    /// <summary>构建本地化宿主；跨包的 bundle 引用必须闭合，否则抛出。</summary>
     internal LocalizationHost Build(Func<bool>? checkAccess = null)
     {
         if (_host is not null)
@@ -75,16 +132,17 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
         var supportedDefinitions = ResolveSupportedDefinitions(
             supportedLanguages,
             definitionsByTag);
-        var registry = FreezeRegistry();
-        var snapshots = new Dictionary<LanguageTag, LanguageSnapshot>(supportedDefinitions.Count);
+        var generatedDataVerified = HasBuildProof(supportedLanguages);
+        var registry = FreezeRegistry(generatedDataVerified);
+        var defaultDefinition = supportedDefinitions.First(definition => definition.Tag == defaultLanguage);
         foreach (var definition in supportedDefinitions)
         {
-            snapshots.Add(
-                definition.Tag,
-                LanguageSnapshotBuilder.Build(registry, definition.Tag, definition));
+            LanguageSnapshotBuilder.ValidateManualCoverage(registry, definition, generatedDataVerified);
         }
-
-        var defaultDefinition = supportedDefinitions.First(definition => definition.Tag == defaultLanguage);
+        var snapshots = new Dictionary<LanguageTag, LanguageSnapshot>
+        {
+            [defaultLanguage] = LanguageSnapshotBuilder.Build(registry, defaultLanguage, defaultDefinition, deferCatalogs: true)
+        };
         var initialState = new LanguageState(
             defaultLanguage,
             defaultDefinition.FormattingCulture,
@@ -99,7 +157,8 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
             snapshots,
             supportedDefinitions,
             provider,
-            checkAccess);
+            checkAccess,
+            _moduleData);
         var localizer = new Localizer(context);
         _host = new LocalizationHost(
             registry,

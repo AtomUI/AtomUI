@@ -23,6 +23,9 @@ internal class StepsPanel : Panel
             nameof(HorizontalContentAlignment),
             HorizontalAlignment.Center);
 
+    public static readonly StyledProperty<double> MinItemWidthProperty =
+        AvaloniaProperty.Register<StepsPanel, double>(nameof(MinItemWidth));
+
     public StepsType Type
     {
         get => GetValue(TypeProperty);
@@ -53,23 +56,44 @@ internal class StepsPanel : Panel
         set => SetValue(HorizontalContentAlignmentProperty, value);
     }
 
+    public double MinItemWidth
+    {
+        get => GetValue(MinItemWidthProperty);
+        set => SetValue(MinItemWidthProperty, value);
+    }
+
+    private double[] _itemBases      = [];
+    private double[] _computedWidths = [];
+    private double   _measureWidth   = double.NaN;
+
     static StepsPanel()
     {
-        AffectsMeasure<StepsPanel>(TypeProperty, OrientationProperty, TitlePlacementProperty, OffsetProperty);
+        AffectsMeasure<StepsPanel>(
+            TypeProperty,
+            OrientationProperty,
+            TitlePlacementProperty,
+            OffsetProperty,
+            MinItemWidthProperty);
         AffectsArrange<StepsPanel>(
             TypeProperty,
             OrientationProperty,
             TitlePlacementProperty,
             OffsetProperty,
-            HorizontalContentAlignmentProperty);
+            HorizontalContentAlignmentProperty,
+            MinItemWidthProperty);
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var width = 0d;
-        var height = 0d;
-        var orientation = EffectiveOrientation;
+        return EffectiveOrientation == Orientation.Vertical
+            ? MeasureVertically(availableSize)
+            : MeasureHorizontally(availableSize);
+    }
 
+    private Size MeasureVertically(Size availableSize)
+    {
+        var width  = 0d;
+        var height = 0d;
         foreach (var child in Children)
         {
             child.Measure(availableSize);
@@ -78,19 +102,219 @@ internal class StepsPanel : Panel
                 continue;
             }
 
-            if (orientation == Orientation.Vertical)
-            {
-                width = Math.Max(width, child.DesiredSize.Width);
-                height += child.DesiredSize.Height;
-            }
-            else
-            {
-                width += child.DesiredSize.Width;
-                height = Math.Max(height, child.DesiredSize.Height);
-            }
+            width = Math.Max(width, child.DesiredSize.Width);
+            height += child.DesiredSize.Height;
         }
 
         return new Size(width, height);
+    }
+
+    private Size MeasureHorizontally(Size availableSize)
+    {
+        var visible = Children.Where(static child => child.IsVisible).ToArray();
+
+        // Pass 1: measure the natural (unconstrained) width of every visible item so
+        // the flex share algorithm can distribute the available width over them.
+        var bases = new double[visible.Length];
+        for (var index = 0; index < visible.Length; ++index)
+        {
+            visible[index].Measure(new Size(double.PositiveInfinity, availableSize.Height));
+            bases[index] = visible[index].DesiredSize.Width;
+        }
+
+        foreach (var child in Children)
+        {
+            if (!child.IsVisible)
+            {
+                child.Measure(availableSize);
+            }
+        }
+
+        // DesiredSize describes the space needed by the content, not the spare space
+        // offered by a parent (for example an auto-sized Dialog). Stretch belongs to
+        // Arrange. Keep constrained re-measurement so narrow rows report wrapped height.
+        var measureWidth = Math.Min(availableSize.Width, CalculateNaturalHorizontalWidth(bases));
+        var widths = ComputeHorizontalItemWidths(bases, measureWidth);
+        var width = Type == StepsType.Inline && widths.Length > 0
+            ? widths[0] * Math.Max(0, Offset)
+            : 0d;
+        var height = 0d;
+        for (var index = 0; index < visible.Length; ++index)
+        {
+            visible[index].Measure(new Size(widths[index], availableSize.Height));
+            width  += widths[index];
+            height =  Math.Max(height, visible[index].DesiredSize.Height);
+        }
+
+        _itemBases      = bases;
+        _computedWidths = widths;
+        _measureWidth   = measureWidth;
+
+        return new Size(width, height);
+    }
+
+    private double CalculateNaturalHorizontalWidth(double[] bases)
+    {
+        if (bases.Length == 0)
+        {
+            return 0;
+        }
+
+        var minWidth = Type == StepsType.Panel ? 0 : Math.Max(0, MinItemWidth);
+        if (Type is StepsType.Navigation or StepsType.Panel || ShouldArrangeTitleVerticalItemsEqually())
+        {
+            var offset = Type == StepsType.Inline ? Math.Max(0, Offset) : 0;
+            return Math.Max(minWidth, bases.Max()) * (bases.Length + (double)offset);
+        }
+
+        // Non-last items share equal cells; the last item keeps its content width.
+        // Reserve the widest non-last basis so an intrinsic arrangement cannot wrap
+        // an item that was measured unconstrained or overflow the requested row width.
+        var cellWidth = minWidth;
+        for (var index = 0; index < bases.Length - 1; index++)
+        {
+            cellWidth = Math.Max(cellWidth, bases[index]);
+        }
+
+        return cellWidth * (bases.Length - 1) + Math.Max(minWidth, bases[^1]);
+    }
+
+    private double[] ComputeHorizontalItemWidths(double[] bases, double availableWidth)
+    {
+        var count  = bases.Length;
+        var widths = new double[count];
+        if (count == 0)
+        {
+            return widths;
+        }
+
+        if (!double.IsFinite(availableWidth))
+        {
+            Array.Copy(bases, widths, count);
+            return widths;
+        }
+
+        var minWidth = Math.Max(0, MinItemWidth);
+
+        if (Type == StepsType.Navigation)
+        {
+            var share = Math.Max(availableWidth / count, minWidth);
+            Array.Fill(widths, share);
+            return widths;
+        }
+
+        if (Type == StepsType.Panel)
+        {
+            var share = availableWidth / count;
+            Array.Fill(widths, share);
+            return widths;
+        }
+
+        if (StepsItemLayoutPanel.ResolveTitlePlacement(Type, Orientation, TitlePlacement) == Orientation.Vertical)
+        {
+            var offset = Type == StepsType.Inline ? Math.Max(0, Offset) : 0;
+            var share = Math.Max(availableWidth / (count + (double)offset), minWidth);
+            Array.Fill(widths, share);
+            return widths;
+        }
+
+        if (count == 1)
+        {
+            widths[0] = Math.Max(minWidth, Math.Min(bases[0], availableWidth));
+            return widths;
+        }
+
+        var totalBasis = 0d;
+        foreach (var basis in bases)
+        {
+            totalBasis += basis;
+        }
+
+        if (totalBasis <= availableWidth)
+        {
+            // Wide: preserve the existing stretch semantics — the non-last items
+            // split the space left after the last item keeps its content width.
+            var lastWidth = Math.Max(minWidth, bases[^1]);
+            var share     = Math.Max(0, (availableWidth - lastWidth) / (count - 1));
+            for (var index = 0; index < count - 1; ++index)
+            {
+                widths[index] = Math.Max(share, Math.Max(minWidth, bases[index]));
+            }
+
+            widths[^1] = lastWidth;
+            return widths;
+        }
+
+        return ShrinkItemsToFit(bases, availableWidth, minWidth);
+    }
+
+    private static double[] ShrinkItemsToFit(double[] bases, double availableWidth, double minWidth)
+    {
+        var count  = bases.Length;
+        var widths = new double[count];
+        Array.Copy(bases, widths, count);
+
+        // Flex-shrink: the negative space is distributed proportionally to each
+        // item's basis; items frozen at the MinItemWidth floor stop participating.
+        var frozen = new bool[count];
+        while (true)
+        {
+            var frozenWidth = 0d;
+            var activeBasis = 0d;
+            for (var index = 0; index < count; ++index)
+            {
+                if (frozen[index])
+                {
+                    frozenWidth += widths[index];
+                    continue;
+                }
+
+                if (widths[index] <= minWidth)
+                {
+                    widths[index] = minWidth;
+                    frozen[index] = true;
+                    frozenWidth += minWidth;
+                    continue;
+                }
+
+                activeBasis += bases[index];
+            }
+
+            var remaining = availableWidth - frozenWidth;
+            if (activeBasis <= 0 || remaining <= 0)
+            {
+                break;
+            }
+
+            var ratio   = remaining / activeBasis;
+            var changed = false;
+            for (var index = 0; index < count; ++index)
+            {
+                if (frozen[index])
+                {
+                    continue;
+                }
+
+                var width = bases[index] * ratio;
+                if (width <= minWidth)
+                {
+                    widths[index] = minWidth;
+                    frozen[index] = true;
+                    changed      = true;
+                }
+                else
+                {
+                    widths[index] = width;
+                }
+            }
+
+            if (!changed)
+            {
+                break;
+            }
+        }
+
+        return widths;
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -116,25 +340,43 @@ internal class StepsPanel : Panel
             return finalSize;
         }
 
+        var widths = GetHorizontalArrangeWidths(children, finalSize.Width);
+
         if (ShouldArrangeTitleVerticalItemsEqually())
         {
-            ArrangeTitleVertical(children, finalSize);
+            ArrangeTitleVertical(children, finalSize, widths);
             return finalSize;
         }
 
         switch (Type)
         {
             case StepsType.Navigation:
+                ArrangeNavigation(children, finalSize, widths);
+                break;
+
             case StepsType.Panel:
-                ArrangeNavigation(children, finalSize, Type == StepsType.Panel);
+                ArrangeNavigation(children, finalSize, panel: true);
                 break;
 
             default:
-                ArrangeDefault(children, finalSize);
+                ArrangeDefault(children, finalSize, widths);
                 break;
         }
 
         return finalSize;
+    }
+
+    private double[] GetHorizontalArrangeWidths(IReadOnlyList<Control> children, double finalWidth)
+    {
+        if (_computedWidths.Length == children.Count && Math.Abs(finalWidth - _measureWidth) < 0.01)
+        {
+            return _computedWidths;
+        }
+
+        var bases = _itemBases.Length == children.Count
+            ? _itemBases
+            : children.Select(static child => child.DesiredSize.Width).ToArray();
+        return ComputeHorizontalItemWidths(bases, finalWidth);
     }
 
     private static void ArrangeVertically(IReadOnlyList<Control> children, Size finalSize)
@@ -183,58 +425,46 @@ internal class StepsPanel : Panel
     private static void ArrangeNavigation(
         IReadOnlyList<Control> children,
         Size finalSize,
+        double[]? widths = null,
         bool panel = false)
     {
-        var width = finalSize.Width / children.Count;
+        var equalWidth = finalSize.Width / children.Count;
         var x = 0d;
         for (var index = 0; index < children.Count; index++)
         {
             var child = children[index];
             child.ZIndex = panel ? children.Count - index : 0;
+            var width = widths is not null ? widths[index] : equalWidth;
             child.Arrange(new Rect(x, 0, width, finalSize.Height));
             x += width;
         }
     }
 
-    private void ArrangeTitleVertical(IReadOnlyList<Control> children, Size finalSize)
+    private void ArrangeTitleVertical(IReadOnlyList<Control> children, Size finalSize, double[] widths)
     {
         var offset    = Type == StepsType.Inline ? Math.Max(0, Offset) : 0;
-        var width     = finalSize.Width / (children.Count + offset);
+        var share     = finalSize.Width / (children.Count + offset);
         var rowHeight = Math.Min(finalSize.Height, children.Max(static child => child.DesiredSize.Height));
         var rowY      = Math.Max(0, (finalSize.Height - rowHeight) / 2);
-        var x         = width * offset;
+        var x         = share * offset;
 
-        foreach (var child in children)
+        for (var index = 0; index < children.Count; ++index)
         {
-            child.Arrange(new Rect(x, rowY, width, rowHeight));
-            x += width;
+            children[index].Arrange(new Rect(x, rowY, widths[index], rowHeight));
+            x += widths[index];
         }
     }
 
-    private static void ArrangeDefault(IReadOnlyList<Control> children, Size finalSize)
+    private static void ArrangeDefault(IReadOnlyList<Control> children, Size finalSize, double[] widths)
     {
         var rowHeight = Math.Min(finalSize.Height, children.Max(static child => child.DesiredSize.Height));
         var rowY      = Math.Max(0, (finalSize.Height - rowHeight) / 2);
 
-        if (children.Count == 1)
-        {
-            var child = children[0];
-            child.Arrange(new Rect(0, rowY, child.DesiredSize.Width, rowHeight));
-            return;
-        }
-
-        var lastChild = children[^1];
-        var itemWidth = (finalSize.Width - lastChild.DesiredSize.Width) / (children.Count - 1);
         var x = 0d;
-
-        for (var index = 0; index < children.Count - 1; ++index)
+        for (var index = 0; index < children.Count; ++index)
         {
-            var child = children[index];
-            var width = Math.Max(itemWidth, child.DesiredSize.Width);
-            child.Arrange(new Rect(x, rowY, width, rowHeight));
-            x += width;
+            children[index].Arrange(new Rect(x, rowY, widths[index], rowHeight));
+            x += widths[index];
         }
-
-        lastChild.Arrange(new Rect(x, rowY, lastChild.DesiredSize.Width, rowHeight));
     }
 }

@@ -31,6 +31,16 @@
         <source>Composite</source>
       </segment>
     </unit>
+    <unit id="DoubleClickResetDescription">
+      <segment>
+        <source>Double-click a dragger to reset all panels to their default sizes.</source>
+      </segment>
+    </unit>
+    <unit id="DoubleClickResetTitle">
+      <segment>
+        <source>Double-clicked reset</source>
+      </segment>
+    </unit>
     <unit id="HorizontalDescription">
       <segment>
         <source>Top-bottom splitter with collapsible icons.</source>
@@ -126,6 +136,21 @@
         <source>Not Resizable</source>
       </segment>
     </unit>
+    <unit id="P2TextPanel1">
+      <segment>
+        <source>Panel 1</source>
+      </segment>
+    </unit>
+    <unit id="P2TextPanel2">
+      <segment>
+        <source>Panel 2</source>
+      </segment>
+    </unit>
+    <unit id="P2TextPanel3">
+      <segment>
+        <source>Panel 3</source>
+      </segment>
+    </unit>
     <unit id="P2TextResizable">
       <segment>
         <source>Resizable</source>
@@ -174,6 +199,31 @@
     <unit id="ScenarioExamples">
       <segment>
         <source>Examples</source>
+      </segment>
+    </unit>
+    <unit id="SemanticDraggerDescription">
+      <segment>
+        <source>Drag bar element carrying the semantic-dragger class that resizes adjacent panels.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPanelDescription">
+      <segment>
+        <source>Panel container element carrying the semantic-panel class with adjustable size and clipped content.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the Ant Design style-class demo: customize the root background and the dragger through generated Semantic Part styles, and outline the root with a dashed border.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root container element that arranges panels and drag bars along the split direction.</source>
       </segment>
     </unit>
     <unit id="ShowCollapsibleIconDescription">

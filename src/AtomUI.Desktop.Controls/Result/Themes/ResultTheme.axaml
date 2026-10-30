@@ -6,16 +6,25 @@
     <ControlTheme x:Key="{x:Type atom:Result}" TargetType="atom:Result">
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Name="Frame" Padding="{TemplateBinding Padding}">
+                <atom:DashedBorder Name="Frame"
+                                   Background="{TemplateBinding Background}"
+                                   BorderBrush="{TemplateBinding BorderBrush}"
+                                   BorderThickness="{TemplateBinding BorderThickness}"
+                                   CornerRadius="{TemplateBinding CornerRadius}"
+                                   StrokeDashArray="{TemplateBinding StrokeDashArray}"
+                                   Padding="{TemplateBinding Padding}">
                     <StackPanel Name="RootLayout">
                         <ContentPresenter Name="PART_StatusIconPresenter"
+                                          Classes.semantic-icon="True"
                                           HorizontalAlignment="Center"
                                           IsVisible="False"
                                           Content="{TemplateBinding StatusIcon}" />
                         <Svg Name="PART_ErrorCodeImage"
+                             Classes.semantic-icon="True"
                              HorizontalAlignment="Center"
                              IsVisible="False" />
                         <ContentPresenter Name="Header"
+                                          Classes.semantic-title="True"
                                           HorizontalAlignment="Center"
                                           HorizontalContentAlignment="Center"
                                           VerticalContentAlignment="Center"
@@ -26,6 +35,7 @@
                                           LineHeight="{TemplateBinding HeaderLineHeight}"
                                           IsVisible="{TemplateBinding Header, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                         <ContentPresenter Name="SubHeader"
+                                          Classes.semantic-sub-title="True"
                                           HorizontalAlignment="Center"
                                           HorizontalContentAlignment="Center"
                                           VerticalContentAlignment="Center"
@@ -36,17 +46,20 @@
                                           ContentTemplate="{TemplateBinding SubHeaderTemplate}"
                                           IsVisible="{TemplateBinding SubHeader, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                         <ContentPresenter Name="ExtraContent"
-                                          HorizontalAlignment="Center"
+                                          Classes.semantic-extra="True"
+                                          HorizontalAlignment="Stretch"
+                                          HorizontalContentAlignment="Center"
                                           Content="{TemplateBinding Extra}"
                                           ContentTemplate="{TemplateBinding ExtraTemplate}"
                                           TextAlignment="Center" />
                         <ContentPresenter Name="Content"
+                                          Classes.semantic-body="True"
                                           Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}"
                                           IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"
                                           ClipToBounds="False" />
                     </StackPanel>
-                </Border>
+                </atom:DashedBorder>
             </ControlTemplate>
         </Setter>
 
@@ -58,11 +71,11 @@
         <Style Selector="^/template/ ContentPresenter#PART_StatusIconPresenter">
             <Setter Property="Margin" Value="{atom:ResultTokenResource StatusImageMargin}" />
         </Style>
-        
+
         <Style Selector="^/template/ Svg#PART_ErrorCodeImage">
             <Setter Property="Margin" Value="{atom:ResultTokenResource StatusImageMargin}" />
         </Style>
-        
+
         <Style Selector="^/template/ Svg#PART_ErrorCodeImage">
             <Setter Property="Width" Value="{atom:ResultTokenResource ImageWidth}" />
             <Setter Property="Height" Value="{atom:ResultTokenResource ImageHeight}" />

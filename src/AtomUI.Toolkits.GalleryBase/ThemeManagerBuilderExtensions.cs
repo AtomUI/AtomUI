@@ -1,7 +1,5 @@
 using AtomUI.Generated.AtomUIToolkitsGalleryBase;
-using AtomUI.Registration;
 using AtomUI.Toolkits.GalleryBase.Configuration;
-using AtomUI.Toolkits.GalleryBase.Controls;
 
 namespace AtomUI.Toolkits.GalleryBase;
 
@@ -9,32 +7,21 @@ public static class ThemeManagerBuilderExtensions
 {
     internal const string PackageId = "AtomUI.Toolkits.GalleryBase";
 
-    [ControlPackageRegistrationEntry]
     public static IAtomUIBuilder UseGalleryBase(this IAtomUIBuilder builder,
                                                 Action<GalleryBaseOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        if (configure is not null)
+        return GeneratedControlPackageRegistration.Definition.Register(builder, package =>
         {
-            var options = new GalleryBaseOptions();
-            configure(options);
-            GalleryBaseConfigurationProvider.SetCurrent(options.BuildConfiguration());
-        }
-
-        var provider = new GalleryControlThemesProvider();
-        if (AotTrimRegistration.IsEnabled)
-        {
-            AotTrimRegistrationPlanRegistry.ApplyPackage(
-                builder,
-                PackageId,
-                provider);
-        }
-        else
-        {
-            GeneratedControlPackageRegistration.Register(builder.Theme, provider);
-        }
-        GeneratedLanguageModuleRegistration.Register(builder.Localization);
-
-        return builder;
+            package.DependsOn(static root => Desktop.Controls.ThemeManagerBuilderExtensions.UseDesktopControls(root));
+            if (configure is not null)
+            {
+                var options = new GalleryBaseOptions();
+                configure(options);
+                var configuration = options.BuildConfiguration();
+                package.OnCommit(context => context.Own(
+                    GalleryBaseConfigurationProvider.Register(context.Application, configuration)));
+            }
+        });
     }
 }

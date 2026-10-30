@@ -199,6 +199,78 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Input content panel hosting the placeholder, the non-editable selection and the editable input.</source>
+        <target state="translated">Painel de conteúdo de entrada com o placeholder, a seleção não editável e a entrada editável.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFrameDescription">
+      <segment>
+        <source>Input frame border box; the innermost box of the outlined / filled / underlined frame, where the border color, width, corner radius and background of the input box can be customized.</source>
+        <target state="translated">Caixa da borda do quadro de entrada; a caixa mais interna do quadro outlined / filled / underlined, onde a cor, a espessura, o raio de canto e o fundo da borda da entrada podem ser personalizados.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorDescription">
+      <segment>
+        <source>Drop-down arrow button inside the handle template, which also toggles the popup on click.</source>
+        <target state="translated">Botão de seta do menu suspenso dentro do modelo do handle, que também abre o popup ao clicar.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Editable filtering input rendered when IsEditable is enabled.</source>
+        <target state="translated">Entrada de filtragem editável exibida quando IsEditable está habilitado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPlaceholderDescription">
+      <segment>
+        <source>Placeholder text shown while nothing is selected.</source>
+        <target state="translated">Texto de placeholder exibido enquanto nada está selecionado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupEmptyDescription">
+      <segment>
+        <source>Empty state shown when an active filter matches nothing.</source>
+        <target state="translated">Estado vazio exibido quando um filtro ativo não corresponde a nada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListDescription">
+      <segment>
+        <source>Scrollable candidate list region inside the popup, mutually exclusive with the empty state.</source>
+        <target state="translated">Região rolável da lista de candidatos dentro do popup, mutuamente exclusiva com o estado vazio.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListItemDescription">
+      <segment>
+        <source>Single candidate entry, marked on the container created at runtime.</source>
+        <target state="translated">Entrada de candidato individual, marcada no contêiner criado em tempo de execução.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root border of the drop-down popup layer.</source>
+        <target state="translated">Borda raiz da camada de popup suspensa.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Inline prefix area of the input frame, hosting ContentLeftAddOn.</source>
+        <target state="translated">Área de prefixo embutida no quadro de entrada, exibindo ContentLeftAddOn.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The ComboBox owner itself.</source>
+        <target state="translated">O próprio ComboBox.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix area hosting user suffix content, form feedback and the drop-down handle.</source>
+        <target state="translated">Área de sufixo com o conteúdo de sufixo do usuário, o feedback do formulário e o handle de abertura.</target>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to Input with status, which could be error or warning.</source>
@@ -209,6 +281,18 @@
       <segment>
         <source>Status</source>
         <target state="translated">Status</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of ComboBox with semantic part styles, including the input frame border color.</source>
+        <target state="translated">Personalize o estilo da estrutura semântica do ComboBox com estilos de semantic part, incluindo a cor da borda do quadro de entrada.</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
       </segment>
     </unit>
     <unit id="ThreeSizesDescription">

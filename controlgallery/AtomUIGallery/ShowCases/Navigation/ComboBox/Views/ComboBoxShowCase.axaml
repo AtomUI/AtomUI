@@ -8,8 +8,8 @@
              x:DataType="vm:ComboBoxViewModel"
              x:CompileBindings="True">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="ComboBox"
                     Category="{gallery:ComboBoxShowCaseLangResource ComponentCategory}"
@@ -19,7 +19,79 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="ComboBox" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:ComboBoxViewModel">
+                    <gallery:SemanticPartPreview Name="ComboBoxSemanticPreview"
+                                                 Title="ComboBox"
+                                                 SemanticOwner="{Binding #ComboBoxSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:ComboBox}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <!--
+                                按 AtomUI 标准方式钉住模板内 Popup：IsPopupPinnedOpen 与 Select / AutoComplete 等
+                                控件一致为 public。控件在弹层打开前先抑制 light-dismiss（ApplyPopupPinnedOpenSettings），
+                                因此钉住的弹层不会创建遮罩，也不会阻断卡片悬停。
+                                过滤模式开启以便 input 部件可见（与 placeholder 互斥）。
+                            -->
+                            <atom:ComboBox Name="ComboBoxSemanticOwner"
+                                           Width="320"
+                                           IsMotionEnabled="False"
+                                           IsEditable="True"
+                                           IsFilterEnabled="True"
+                                           IsPopupPinnedOpen="True"
+                                           IsDropDownOpen="True"
+                                           ContentLeftAddOn="prefix"
+                                           ItemsSource="{Binding SemanticPreviewItems}"
+                                           PlaceholderText="{gallery:ComboBoxShowCaseLangResource P2PlaceholderTextPleaseSelect}">
+                                <atom:ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <atom:TextBlock Text="{Binding Text}" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </atom:ComboBox.ItemTemplate>
+                            </atom:ComboBox>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="prefix"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticPrefixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="frame"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticFrameDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="placeholder"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticPlaceholderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="input"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticInputDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="suffix"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticSuffixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="indicator"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticIndicatorDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.root"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.list"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticPopupListDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.listItem"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticPopupListItemDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.empty"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticPopupEmptyDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -406,7 +478,87 @@
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
 
+                <gallery:ShowCaseItem
+        Title="{gallery:ComboBoxShowCaseLangResource StyleClassTitle}"
+        Description="{gallery:ComboBoxShowCaseLangResource StyleClassDescription}"
+        SourceKey="combo-box-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:ComboBoxViewModel">
+        <StackPanel HorizontalAlignment="Left" Spacing="20">
+            <!--
+                边框定制示例刻意选用非 primary 色：outlined 默认边框是灰、聚焦后是 ColorPrimary(蓝)，
+                若仍用蓝色会与聚焦态无法区分，看不出定制是否生效。
+            -->
+            <StackPanel.Styles>
+                <Style Selector="atom|ComboBox.semantic-styles-demo">
+                    <atom:ComboBoxFrameStyle x:SetterTargetType="atom:PixelAlignedBorder">
+                        <Setter Property="BorderBrush" Value="#52C41A" />
+                    </atom:ComboBoxFrameStyle>
+                    <atom:ComboBoxPrefixStyle x:SetterTargetType="ContentPresenter">
+                        <Style Selector="^ atom|Icon">
+                            <Setter Property="StrokeBrush" Value="#52C41A" />
+                        </Style>
+                    </atom:ComboBoxPrefixStyle>
+                    <atom:ComboBoxSuffixStyle x:SetterTargetType="StackPanel">
+                        <Setter Property="TextElement.Foreground" Value="#52C41A" />
+                    </atom:ComboBoxSuffixStyle>
+                    <atom:ComboBoxIndicatorStyle x:SetterTargetType="atom:IconButton">
+                        <Setter Property="IconBrush" Value="#52C41A" />
+                    </atom:ComboBoxIndicatorStyle>
+                </Style>
+                <Style Selector="atom|ComboBox.semantic-styles-filled-demo">
+                    <atom:ComboBoxFrameStyle x:SetterTargetType="atom:PixelAlignedBorder">
+                        <Setter Property="BorderBrush" Value="#722ED1" />
+                    </atom:ComboBoxFrameStyle>
+                    <atom:ComboBoxPrefixStyle x:SetterTargetType="ContentPresenter">
+                        <Style Selector="^ atom|Icon">
+                            <Setter Property="StrokeBrush" Value="#722ED1" />
+                        </Style>
+                    </atom:ComboBoxPrefixStyle>
+                    <atom:ComboBoxSuffixStyle x:SetterTargetType="StackPanel">
+                        <Setter Property="TextElement.Foreground" Value="#722ED1" />
+                    </atom:ComboBoxSuffixStyle>
+                    <atom:ComboBoxIndicatorStyle x:SetterTargetType="atom:IconButton">
+                        <Setter Property="IconBrush" Value="#722ED1" />
+                    </atom:ComboBoxIndicatorStyle>
+                    <atom:ComboBoxPopupRootStyle x:SetterTargetType="Border">
+                        <Setter Property="BorderBrush" Value="#722ED1" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </atom:ComboBoxPopupRootStyle>
+                </Style>
+            </StackPanel.Styles>
+            <atom:ComboBox Classes="semantic-styles-demo"
+                           Name="ObjectStylesComboBox"
+                           Width="300"
+                           ContentLeftAddOn="{antdicons:AntDesignIconProvider Kind=MehOutlined}"
+                           ItemsSource="{Binding StyleClassItems}"
+                           PlaceholderText="Object">
+                <atom:ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <atom:TextBlock Text="{Binding Text}" VerticalAlignment="Center" />
+                    </DataTemplate>
+                </atom:ComboBox.ItemTemplate>
+            </atom:ComboBox>
+            <atom:ComboBox Classes="semantic-styles-demo semantic-styles-filled-demo"
+                           Name="FunctionStylesComboBox"
+                           Width="300"
+                           StyleVariant="Filled"
+                           ContentLeftAddOn="{antdicons:AntDesignIconProvider Kind=MehOutlined}"
+                           ItemsSource="{Binding StyleClassItems}"
+                           PlaceholderText="Function">
+                <atom:ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <atom:TextBlock Text="{Binding Text}" VerticalAlignment="Center" />
+                    </DataTemplate>
+                </atom:ComboBox.ItemTemplate>
+            </atom:ComboBox>
+        </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

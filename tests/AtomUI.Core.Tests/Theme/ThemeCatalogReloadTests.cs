@@ -16,34 +16,37 @@ namespace AtomUI.Core.Tests.Theme;
 public class ThemeCatalogReloadTests
 {
     [Fact]
-    public async Task Reload_Commits_A_New_User_Theme_And_Publishes_An_Atomic_Catalog_Event()
+    public async Task Catalog_Changes_Publish_An_Atomic_Catalog_Event()
     {
         await HeadlessTestApp.RunAsync(async () =>
         {
             using var directory = new TemporaryDirectory();
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
             ThemeCatalogChangedEventArgs? observed = null;
+            var observedAtomicState = false;
             manager.ThemeCatalogChanged += (_, args) =>
             {
                 observed = args;
-                manager.AvailableThemes.ShouldBe(args.AvailableThemes);
-                manager.CurrentTheme.ShouldBeSameAs(args.CurrentTheme);
-                manager.RootContext.Snapshot.ShouldBeSameAs(manager.CurrentSnapshot);
+                observedAtomicState = manager.AvailableThemes.SequenceEqual(args.AvailableThemes) &&
+                                      ReferenceEquals(manager.CurrentTheme, args.CurrentTheme) &&
+                                      ReferenceEquals(manager.RootContext.Snapshot, manager.CurrentSnapshot);
             };
             WriteTheme(directory.Path, "green.theme.xml", "PolarGreen", "#52C41A");
 
             var result = await manager.ReloadThemesAsync();
-
             result.Status.ShouldBe(ThemeCatalogReloadStatus.Committed);
-            result.AvailableThemes.Select(static theme => theme.Id).ShouldBe([
+            result.AvailableThemes.ShouldBe(manager.AvailableThemes);
+            manager.AvailableThemes.Select(static theme => theme.Id).ShouldBe([
                 IThemeManager.DEFAULT_THEME_ID,
                 "PolarGreen"
             ]);
             observed.ShouldNotBeNull();
-            observed!.Generation.ShouldBe(result.Generation);
+            observedAtomicState.ShouldBeTrue();
+            observed!.Generation.ShouldBeGreaterThan(0);
+            observed.Generation.ShouldBe(result.Generation);
         });
     }
 
@@ -54,7 +57,7 @@ public class ThemeCatalogReloadTests
         {
             using var directory = new TemporaryDirectory();
             WriteTheme(directory.Path, "green.theme.xml", "PolarGreen", "#52C41A");
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -75,7 +78,7 @@ public class ThemeCatalogReloadTests
         {
             using var directory = new TemporaryDirectory();
             WriteTheme(directory.Path, "green.theme.xml", "PolarGreen", "#52C41A");
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -107,7 +110,7 @@ public class ThemeCatalogReloadTests
         {
             using var directory = new TemporaryDirectory();
             WriteTheme(directory.Path, "custom.theme.xml", "Custom", "#52C41A");
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -133,7 +136,7 @@ public class ThemeCatalogReloadTests
         {
             using var directory = new TemporaryDirectory();
             var path = WriteTheme(directory.Path, "custom.theme.xml", "Custom", "#52C41A");
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -170,7 +173,7 @@ public class ThemeCatalogReloadTests
         await HeadlessTestApp.RunAsync(async () =>
         {
             var resolver = new BlockingReloadResolver();
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.AddThemeDefinitionResolver(resolver);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -200,7 +203,7 @@ public class ThemeCatalogReloadTests
         await HeadlessTestApp.RunAsync(async () =>
         {
             using var directory = new TemporaryDirectory();
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -227,7 +230,7 @@ public class ThemeCatalogReloadTests
         {
             using var directory = new TemporaryDirectory();
             WriteTheme(directory.Path, "custom.theme.xml", "Custom", "#52C41A");
-            var builder = new ThemeManagerBuilder(Application.Current!);
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);

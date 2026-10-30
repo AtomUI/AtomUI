@@ -3,11 +3,12 @@
              x:Class="AtomUIGallery.ShowCases.DatePicker.DatePickerShowCase"
              xmlns:atom="https://atomui.net"
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
+             xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:vm="using:AtomUIGallery.ShowCases.DatePicker"
              x:DataType="vm:DatePickerViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="DatePicker"
                     Category="{gallery:DatePickerShowCaseLangResource ComponentCategory}"
@@ -17,7 +18,76 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="InfoPickerInput" />
-            </gallery:GalleryStickyTabsHost.Header>
+                        </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:DatePickerViewModel">
+                    <gallery:SemanticPartPreview Name="DatePickerSemanticPreview"
+                                                 Title="DatePicker"
+                                                 SemanticOwner="{Binding #DatePickerSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:RangeDatePicker}"
+                                                 PreviewStageMinHeight="560"
+                                                 PreviewContentAlignment="Top">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <!-- 双月日历弹层约 470px 高:舞台最小高度 560 且锚点置顶,
+                                 让弹层向下展开,避免翻转向上遮挡页面 Tabs;
+                                 舞台随宿主钳制高度收缩,不产生可视区之外的布局。 -->
+                            <atom:RangeDatePicker Name="DatePickerSemanticOwner"
+                                                      VerticalAlignment="Top"
+                                                      Width="420"
+                                                      IsMotionEnabled="False"
+                                                      IsPopupPinnedOpen="True"
+                                                      IsPickerOpen="True"
+                                                      ContentLeftAddOn="prefix"
+                                                      RangeStartSelectedDate="{Binding SemanticPreviewRangeStart}"
+                                                      RangeEndSelectedDate="{Binding SemanticPreviewRangeEnd}"
+                                                      PlaceholderText="{gallery:DatePickerShowCaseLangResource P2PlaceholderTextStartDate}"
+                                                      SecondaryPlaceholderText="{gallery:DatePickerShowCaseLangResource P2SecondaryPlaceholderTextEndDate}" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="prefix"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticPrefixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="input"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticInputDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="secondaryInput"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticSecondaryInputDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="suffix"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticSuffixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="clear"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticClearDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.root"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.container"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticPopupContainerDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.header"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticPopupHeaderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.body"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticPopupBodyDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.content"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticPopupContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.cell"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticPopupCellDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.footer"
+                                Description="{gallery:DatePickerShowCaseLangResource SemanticPopupFooterDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -76,7 +146,7 @@
     <gallery:ShowCaseItem
         Title="{gallery:DatePickerShowCaseLangResource BindingTitle}"
         Description="{gallery:DatePickerShowCaseLangResource BindingDescription}"
-        BadgeText="v6.0.8"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
         IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:DatePickerViewModel">
@@ -130,7 +200,7 @@
     <gallery:ShowCaseItem
         Title="{gallery:DatePickerShowCaseLangResource PickerDisplayDateTitle}"
         Description="{gallery:DatePickerShowCaseLangResource PickerDisplayDateDescription}"
-        BadgeText="v6.0.8"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
         IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:DatePickerViewModel">
@@ -157,7 +227,7 @@
     <gallery:ShowCaseItem
         Title="{gallery:DatePickerShowCaseLangResource RangePickerTitle}"
         Description="{gallery:DatePickerShowCaseLangResource RangePickerDescription}"
-        BadgeText="v6.0.7"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
         IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:DatePickerViewModel">
@@ -423,7 +493,71 @@
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
 
+    <gallery:ShowCaseItem
+        Title="{gallery:DatePickerShowCaseLangResource StyleClassTitle}"
+        Description="{gallery:DatePickerShowCaseLangResource StyleClassDescription}"
+        SourceKey="datepicker-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:DatePickerViewModel">
+        <StackPanel HorizontalAlignment="Left" Spacing="20">
+            <StackPanel.Styles>
+                <Style Selector="atom|DatePicker.semantic-styles-demo">
+                    <atom:DatePickerInputStyle x:SetterTargetType="TextBox">
+                        <Setter Property="FontStyle" Value="Italic" />
+                    </atom:DatePickerInputStyle>
+                    <atom:DatePickerPrefixStyle x:SetterTargetType="ContentPresenter">
+                        <Style Selector="^ atom|Icon">
+                            <Setter Property="StrokeBrush" Value="#1890FF" />
+                        </Style>
+                    </atom:DatePickerPrefixStyle>
+                    <atom:DatePickerSuffixStyle x:SetterTargetType="StackPanel">
+                        <Setter Property="TextElement.Foreground" Value="#1890FF" />
+                    </atom:DatePickerSuffixStyle>
+                    <atom:DatePickerPopupRootStyle x:SetterTargetType="atom:ArrowDecoratedBox">
+                        <Setter Property="BorderBrush" Value="#1890FF" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </atom:DatePickerPopupRootStyle>
+                </Style>
+                <Style Selector="atom|RangeDatePicker.semantic-styles-filled-demo">
+                    <Setter Property="BorderBrush" Value="#722ED1" />
+                    <atom:RangeDatePickerInputStyle x:SetterTargetType="TextBox">
+                        <Setter Property="FontStyle" Value="Italic" />
+                    </atom:RangeDatePickerInputStyle>
+                    <atom:RangeDatePickerSecondaryInputStyle x:SetterTargetType="TextBox">
+                        <Setter Property="FontStyle" Value="Italic" />
+                    </atom:RangeDatePickerSecondaryInputStyle>
+                    <atom:RangeDatePickerPopupCellStyle x:SetterTargetType="Button">
+                        <Setter Property="Foreground" Value="#722ED1" />
+                    </atom:RangeDatePickerPopupCellStyle>
+                    <atom:RangeDatePickerPopupFooterStyle x:SetterTargetType="Border">
+                        <Setter Property="BorderBrush" Value="#722ED1" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </atom:RangeDatePickerPopupFooterStyle>
+                    <atom:RangeDatePickerPopupRootStyle x:SetterTargetType="atom:ArrowDecoratedBox">
+                        <Setter Property="BorderBrush" Value="#722ED1" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </atom:RangeDatePickerPopupRootStyle>
+                </Style>
+            </StackPanel.Styles>
+            <atom:DatePicker Classes="semantic-styles-demo"
+                             Name="ObjectStylesDatePicker"
+                             Width="300"
+                             ContentLeftAddOn="{antdicons:AntDesignIconProvider Kind=MehOutlined}"
+                             PlaceholderText="{gallery:DatePickerShowCaseLangResource P2PlaceholderTextSelectDate}" />
+            <atom:RangeDatePicker Classes="semantic-styles-filled-demo"
+                                  Name="FunctionStylesRangeDatePicker"
+                                  Width="420"
+                                  StyleVariant="Filled"
+                                  PlaceholderText="{gallery:DatePickerShowCaseLangResource P2PlaceholderTextStartDate}"
+                                  SecondaryPlaceholderText="{gallery:DatePickerShowCaseLangResource P2SecondaryPlaceholderTextEndDate}" />
+        </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

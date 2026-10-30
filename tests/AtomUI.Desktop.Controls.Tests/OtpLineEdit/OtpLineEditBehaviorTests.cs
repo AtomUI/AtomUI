@@ -1,10 +1,10 @@
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -164,16 +164,10 @@ public class OtpLineEditBehaviorTests
                                    .OfType<OtpLineEditCell>()
                                    .ToList();
             cells.Count(cell => cell.IsActive).ShouldBe(1);
-            cells[4].IsActive.ShouldBeTrue("deleting the last filled cell should move the caret to the previous filled cell immediately.");
-            cells[5].IsActive.ShouldBeFalse();
-
-            var activeTextBox = cells[4].GetVisualDescendants()
-                                        .OfType<AvaloniaTextBox>()
-                                        .Single(item => item.Name == "PART_TextBox");
-            activeTextBox.Text.ShouldBe("2");
-            activeTextBox.CaretIndex.ShouldBe(1, "the active cell caret should sit after the displayed digit.");
-            activeTextBox.SelectionStart.ShouldBe(1);
-            activeTextBox.SelectionEnd.ShouldBe(1);
+            cells[5].IsActive.ShouldBeTrue("deleting the last filled cell keeps the caret on the cleared cell.");
+            cells[4].IsActive.ShouldBeFalse();
+            CaretOf(cells[5]).IsVisible.ShouldBeTrue();
+            CaretOf(cells[4]).IsVisible.ShouldBeFalse();
         });
     }
 
@@ -565,40 +559,6 @@ public class OtpLineEditBehaviorTests
     }
 
     [Fact]
-    public void Cell_TextPresenter_Uses_Left_TextAlignment_To_Keep_Caret_After_Display_Text()
-    {
-        var otpLineEdit = new AtomUI.Desktop.Controls.OtpLineEdit
-        {
-            Text = "654321"
-        };
-
-        ShowInWindow(otpLineEdit, () =>
-        {
-            otpLineEdit.Focus();
-            Dispatcher.UIThread.RunJobs();
-
-            RaiseKeyDown(otpLineEdit, Key.Back);
-            Dispatcher.UIThread.RunJobs();
-
-            var textPresenter = GetActiveCellTextBox(otpLineEdit)
-                .GetVisualDescendants()
-                .OfType<TextPresenter>()
-                .Single(item => item.Name == "PART_TextPresenter");
-
-            textPresenter.CaretIndex.ShouldBe(1);
-            textPresenter.SelectionStart.ShouldBe(1);
-            textPresenter.SelectionEnd.ShouldBe(1);
-            var caretBounds = textPresenter.TextLayout.HitTestTextPosition(1);
-            caretBounds.Position.X.ShouldBeGreaterThan(
-                0,
-                "caret position for the end of a one-character OTP cell must be after the rendered glyph origin.");
-            textPresenter.TextAlignment.ShouldBe(
-                TextAlignment.Left,
-                "the presenter is horizontally centered by layout; centering text inside the presenter offsets the glyph without moving the caret.");
-        });
-    }
-
-    [Fact]
     public void Active_Cell_Caret_Host_Shows_Ibeam_Mouse_Cursor()
     {
         var otpLineEdit = new AtomUI.Desktop.Controls.OtpLineEdit
@@ -864,12 +824,101 @@ public class OtpLineEditBehaviorTests
     }
 
     [Fact]
+    public void Focused_Active_Cell_Shows_Caret_And_Others_Hide()
+    {
+        var otpLineEdit = new AtomUI.Desktop.Controls.OtpLineEdit
+        {
+            Length = 3
+        };
+
+        ShowInWindow(otpLineEdit, () =>
+        {
+            otpLineEdit.Focus();
+            Dispatcher.UIThread.RunJobs();
+
+            var cells = otpLineEdit.GetVisualDescendants()
+                                   .OfType<OtpLineEditCell>()
+                                   .ToArray();
+            cells.Length.ShouldBe(3);
+            CaretOf(cells[0]).IsVisible.ShouldBeTrue();
+            CaretOf(cells[1]).IsVisible.ShouldBeFalse();
+            CaretOf(cells[2]).IsVisible.ShouldBeFalse();
+
+            otpLineEdit.IsEnabled = false;
+            Dispatcher.UIThread.RunJobs();
+            foreach (var cell in cells)
+            {
+                CaretOf(cell).IsVisible.ShouldBeFalse();
+            }
+        });
+    }
+
+    [Fact]
+    public void Backspace_Keeps_Caret_On_The_Cleared_Cell()
+    {
+        var otpLineEdit = new AtomUI.Desktop.Controls.OtpLineEdit
+        {
+            Length = 3
+        };
+
+        ShowInWindow(otpLineEdit, () =>
+        {
+            otpLineEdit.Focus();
+            otpLineEdit.Text = "123";
+            Dispatcher.UIThread.RunJobs();
+
+            otpLineEdit.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = Key.Back
+            });
+            Dispatcher.UIThread.RunJobs();
+
+            otpLineEdit.Text.ShouldBe("23");
+            var cells = otpLineEdit.GetVisualDescendants()
+                                   .OfType<OtpLineEditCell>()
+                                   .ToArray();
+            CaretOf(cells[0]).IsVisible.ShouldBeTrue("caret must stay on the cell that was just cleared");
+            CaretOf(cells[1]).IsVisible.ShouldBeFalse();
+            CaretOf(cells[2]).IsVisible.ShouldBeFalse();
+        });
+    }
+
+    [Fact]
+    public void Occupied_Active_Cell_Shows_Caret_After_The_Character()
+    {
+        var cell = new OtpLineEditCell
+        {
+            IsActive = true,
+            DisplayText = "7"
+        };
+
+        ShowInWindow(cell, () =>
+        {
+            var caret = CaretOf(cell);
+            caret.IsVisible.ShouldBeTrue();
+            var translate = caret.RenderTransform.ShouldBeOfType<TranslateTransform>();
+            translate.X.ShouldBe(cell.FontSize * 0.30, 0.001);
+
+            cell.DisplayText = null;
+            Dispatcher.UIThread.RunJobs();
+            CaretOf(cell).IsVisible.ShouldBeTrue();
+        });
+    }
+
+    private static Rectangle CaretOf(OtpLineEditCell cell)
+    {
+        return cell.GetVisualDescendants()
+                   .OfType<Rectangle>()
+                   .Single(rectangle => rectangle.Name == "PART_Caret");
+    }
+
+    [Fact]
     public void Separators_Render_Between_Cells_With_Visible_Content()
     {
         var otpLineEdit = new AtomUI.Desktop.Controls.OtpLineEdit
         {
-            Separator         = "/",
-            SeparatorInterval = 1
+            Separator = "/"
         };
 
         ShowInWindow(otpLineEdit, () =>
@@ -893,7 +942,6 @@ public class OtpLineEditBehaviorTests
         var otpLineEdit = new AtomUI.Desktop.Controls.OtpLineEdit
         {
             Separator         = "—",
-            SeparatorInterval = 1,
             SeparatorTemplate = new FuncDataTemplate<OtpLineEditSeparatorContext>(
                 (context, _) => new TextBlock
                 {

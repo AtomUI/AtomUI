@@ -2,7 +2,9 @@
 
 ## 概述
 
-Windows 平台通过 `user32.dll` 的窗口扩展样式（Extended Window Styles）机制实现窗口级鼠标事件穿透。所有 API 均标注 `[SupportedOSPlatform("windows")]`。
+Windows 平台通过 `user32.dll` 的窗口扩展样式（Extended Window Styles）机制实现窗口级鼠标事件穿透，通过
+`WindowsBackgroundHook` 提供首次显示前的原生背景填充（见第 5 节），并通过 `WindowsPopupShadowHitTestHook` 实现窗口型
+Popup 阴影区域的按形状输入穿透（见第 6 节）。所有 API 均标注 `[SupportedOSPlatform("windows")]`。
 
 ---
 
@@ -124,6 +126,19 @@ public static extern long SetWindowLongPtr(IntPtr hWnd, int nIndex, long dwNewLo
 | `GWL_EXSTYLE` | `-20` | `int` | 扩展窗口样式索引 |
 | `WS_EX_TRANSPARENT` | `0x20L` | `long` | 鼠标事件穿透标志位 |
 | `WS_EX_LAYERED` | `0x80000L` | `long` | 分层窗口标志位（穿透的前提条件） |
+| `WM_ERASEBKGND` | `0x0014` | `int` | 擦除背景消息，`WindowsBackgroundHook` 在此填充客户区 |
+| `WM_SHOWWINDOW` | `0x0018` | `int` | 显示/隐藏消息，`WindowsBackgroundHook` 在显示时主动填充一次 |
+| `WM_ENTERSIZEMOVE` | `0x0231` | `int` | 进入模态移动/调整大小循环 |
+| `WM_EXITSIZEMOVE` | `0x0232` | `int` | 退出模态移动/调整大小循环 |
+| `WM_DESTROY` | `0x0002` | `int` | 窗口销毁，`WindowsPopupShadowHitTestHook` 停止轮询 |
+| `WM_NCHITTEST` | `0x0084` | `int` | 命中测试，`WindowsPopupShadowHitTestHook` 按内容形状返回 |
+| `HTTRANSPARENT` | `-1` | `int` | 命中测试结果：交给同线程下方窗口 |
+| `LWA_ALPHA` | `0x2` | `uint` | `SetLayeredWindowAttributes` 使用整窗 alpha |
+| `GA_ROOTOWNER` | `3` | `uint` | `GetAncestor` 取根 owner（Popup 所属主窗口） |
+| `DWMWA_EXTENDED_FRAME_BOUNDS` | `9` | `int` | 可见窗口边界（不含不可见 resize 边框） |
+
+第 6 节另用到 `SetLayeredWindowAttributes`、`GetWindowRect`、`GetAncestor`、`GetCursorPos` 与
+`DwmGetWindowRectAttribute`（`DwmGetWindowAttribute` 的 `RECT` 输出重载，独立命名以避免与 `out uint` 重载在 `out var` 调用处二义）。
 
 ---
 
@@ -149,3 +164,136 @@ window.SetWindowIgnoreMouseEvents(false);
 3. **线程安全** — Win32 窗口操作应在 UI 线程执行
 4. **副作用** — 设置 `WS_EX_LAYERED` 可能影响窗口的渲染行为，对于已经是分层窗口的场景无额外影响
 
+---
+
+## 5. WindowsBackgroundHook（原生背景填充）
+
+> - 命名空间：`AtomUI.Native.Windows`
+> - 类：`internal sealed class WindowsBackgroundHook : INativeWindowBackgroundHook`
+> - 入口：`NativeWindowBackground.TryAttachWindowsBackgroundHook(Window)`
+> - 调用方：`WindowsWindowChromeManager.PrepareInitialShowState()`，窗口关闭时释放
+
+### 5.1 职责
+
+在 Avalonia 首帧渲染上屏之前，用 GDI 以窗口背景色填充客户区，避免首次显示时出现原生空白（白色或黑色）帧。
+颜色来自 `Window.Background`，其次 `TransparencyBackgroundFallback`，只接受不透明分量；颜色为空时不填充。
+
+通过公开 API `Win32Properties.AddWndProcHookCallback` 挂接，不使用反射：
+
+| 消息 | 行为 |
+|------|------|
+| `WM_SHOWWINDOW`（显示） | 主动 `GetDC` 填充一次客户区 |
+| `WM_ERASEBKGND` | 在 live resize 之外填充客户区并返回已处理 |
+| `WM_ENTERSIZEMOVE` / `WM_EXITSIZEMOVE` | 维护 live resize 状态 |
+
+### 5.2 live resize 期间不填充
+
+`WM_ENTERSIZEMOVE` 与 `WM_EXITSIZEMOVE` 之间，`WM_ERASEBKGND` 不做填充，交还 Avalonia 默认行为
+（Avalonia 窗口类的 `hbrBackground` 为空，不擦除）。
+
+原因：AtomUI 默认合成模式为 `RedirectionSurface`。该模式下 GDI 填充写入 redirection surface，会先于
+Avalonia 的渲染帧被 DWM 合成；拖动调整大小时每次 `WM_ERASEBKGND` 填充都会表现为整窗闪背景色。
+脚本化验证（510 帧）中，关闭该填充后整窗白屏帧由 2～3 帧降为 0，且对向边缘无错帧。
+
+维护约束：
+
+- 不得在 live resize 期间恢复 GDI 背景填充，也不得改为在 `WM_SIZE`/`WM_PAINT` 中填充。
+- 首次显示前的填充（`WM_SHOWWINDOW` 和非 live resize 的 `WM_ERASEBKGND`）保持不变。
+- 完整根因、验证方法与数据见
+  [Windows Live Resize 与窗口装饰架构](../../architecture/systems/windowing/windows-live-resize.md)。
+
+## 6. WindowsPopupShadowHitTestHook（窗口型 Popup 阴影输入穿透）
+
+> - 命名空间：`AtomUI.Native.Windows`
+> - 类：`internal sealed class WindowsPopupShadowHitTestHook : IDisposable`
+> - 入口：`NativePopupShadowHitTest.TryAttach(TopLevel popupRoot, Func<bool> isInputSuspended, Func<Point, bool> isInContentShape)`，
+>   非 Windows 返回 `null`
+> - 调用方：`AtomUI.Desktop.Controls.Popup` 在 `Opened` 时对 `PopupRoot` 挂接，`Closed` 时释放
+
+### 6.1 职责
+
+窗口型 Popup 的阴影与内容画在同一窗口 surface（动效同帧），窗口矩形包含阴影 buffer。本 hook 只把输入区域收缩到
+内容形状，阴影部分对输入透明。内容形状与“是否处于动效”由调用方以委托提供，hook 只负责 Win32 输入路由：
+
+| 输入 | 来源 |
+|------|------|
+| `isInContentShape(Point)` | 客户区 DIP 坐标是否在内容形状内（Popup 用 Avalonia `InputHitTest` 实现） |
+| `isInputSuspended()` | 为 true 时整窗穿透（打开/关闭动效期间） |
+
+### 6.2 两层判定
+
+| 层 | 条件 | 行为 |
+|----|------|------|
+| 第一层（同进程） | `WM_NCHITTEST` 的点在内容形状外，或动效期间 | `handled = true`，返回 `HTTRANSPARENT`，系统交给同线程下方窗口 |
+| 第二层（跨进程） | 第一层条件成立，且该点位于所属主窗口（`GA_ROOTOWNER` 的 `DWMWA_EXTENDED_FRAME_BOUNDS`）之外 | 加 `WS_EX_TRANSPARENT`，启动 16ms `DispatcherTimer` 轮询 `GetCursorPos` |
+| 恢复 | 轮询发现光标回到内容形状、回到主窗口内或移出 Popup 窗口 | 移除 `WS_EX_TRANSPARENT`，停止轮询，交还第一层 |
+
+内容形状内的 `WM_NCHITTEST` 不处理，交还 Avalonia `PopupImpl.WndProc`（其整窗 `SetHitTestVisible(false)` 仍然生效）。
+Popup 完全位于主窗口内时不会进入第二层。
+
+### 6.3 分层窗口样式
+
+`WS_EX_TRANSPARENT` 只在 `WS_EX_LAYERED` 窗口上跨进程穿透。hook 创建时：
+
+1. 记录原扩展样式，补上 `WS_EX_LAYERED`；
+2. `SetLayeredWindowAttributes(hwnd, 0, 255, LWA_ALPHA)`。整窗 alpha 255 不改变逐像素透明。
+
+运行时只切换 `WS_EX_TRANSPARENT`：仅 `SetWindowLongPtr(GWL_EXSTYLE)`，不调用 `SetWindowPos(SWP_FRAMECHANGED)`，
+不触发重绘或影响动效。
+
+兼容性（Windows 11，默认 `RedirectionSurface`，Avalonia 旧式透明 `DwmEnableBlurBehindWindow`）已用 `ddagrab`
+逐帧验证：透明圆角与阴影无黑框、不丢逐像素 alpha，打开/关闭动效每帧阴影与内容同帧；两次样式切换期间
+内容区录像无任何变化帧。Windows 10 build 19045（默认 `RedirectionSurface`）上也得到相同结论：
+浮层 `ex=0x80080`，动效 261 帧中浮层矩形内没有纯黑像素，不需要关闭 Win10 的分层样式。
+WinUI/DirectComposition 合成模式（`WS_EX_NOREDIRECTIONBITMAP`）下未验证。
+
+### 6.4 生命周期
+
+- `WM_DESTROY`：标记窗口已销毁并停止轮询。
+- `Dispose`：停止轮询、移除 WndProc hook；窗口仍存在时恢复原扩展样式（含移除 `WS_EX_LAYERED`）。
+- Avalonia 关闭 Popup 时先销毁 `PopupRoot`，再触发 `Closed`，因此通常由 `WM_DESTROY` 先完成清理，`Dispose` 不再写样式。
+
+### 6.5 维护约束
+
+- 不得改为独立阴影窗口：两个窗口各自 Present，动效无法同帧。
+- 不得在运行时增删 `WS_EX_LAYERED`（会重建 redirection surface 并重绘）；只切换 `WS_EX_TRANSPARENT`。
+- `HTTRANSPARENT` 只在同线程窗口间转发，主窗口外的阴影必须由第二层处理。
+- 命中只决定事件交给哪个窗口；主窗口的 light dismiss 遮罩语义不变（点击阴影 = 点击 Popup 外部）。
+
+
+## 7. WindowsLegacyFrameMarginHook（Windows 10 激活态边框）
+
+`src/AtomUI.Native/Windows/WindowsLegacyFrameMarginHook.cs`，入口 `NativeWindowFrame.TryAttachLegacyFrameMarginHook(Window)`，
+由 `WindowsWindowChromeManager` 在首次显示前挂接、`Closed` 时释放。只在 Windows 10（build 10240 ~ 21999）创建；
+Windows 11、Linux、macOS 返回 `null`，行为不变。
+
+### 7.1 问题
+
+Avalonia 12.1.4 使用 redirection bitmap 时把 DWM 框架向客户区四边各扩展 1px
+（`WindowImpl.UpdateExtendMargins`：`defaultMargin = UseRedirectionBitmap ? 1 : 0`）。Win10 DWM 把激活态的 1px 可见边框
+画在这层扩展玻璃下方，被不透明客户区覆盖；非激活态边框画在客户区之上，不受影响。默认合成顺序改为
+`RedirectionSurface` 优先后，激活窗口的左、右、下三边边框消失，只剩 Window 自绘的顶边，看起来是一条孤立的深色线。
+`WinUIComposition` 下边距为 0，不受影响。
+
+### 7.2 做法
+
+扩展客户区、且没有 `WS_EX_NOREDIRECTIONBITMAP` 时，调用 `DwmExtendFrameIntoClientArea` 把边距归零。
+DWM 随即按系统原生方式绘制半透明边框。Avalonia 在显示、窗口状态切换、全屏进出和扩展提示变化时会重新写入 1px，
+这些操作都会产生 `WM_SHOWWINDOW`、`WM_ACTIVATE`、`WM_WINDOWPOSCHANGED` 或 `WM_DPICHANGED`。hook 收到这些消息后
+`Post` 一次合并的归零，在 Avalonia 的同步调用链结束后执行。live resize 期间（`WM_ENTERSIZEMOVE` ~ `WM_EXITSIZEMOVE`）
+Avalonia 不会重写边距，因此跳过 `WM_WINDOWPOSCHANGED`，不在每帧调用 DWM。
+
+顶边仍由 Window 自绘（`IsLegacyWindowsFrameBorderVisible`）：边距归零后 DWM 也不画顶边，客户区覆盖了标题栏区域。
+
+### 7.3 验证（Windows 10 19045，2560x1600 @150%，`RedirectionSurface`）
+
+本地脚本 `tmp/visual-verification/windows/vv`（`edges`、`states`）在白、灰、黑纯色背景下逐像素采样四边，并与同位置的
+原生 Notepad 对比：
+
+| 状态 | 修复前 左/右/下 | 修复后 左/右/下 | Notepad |
+|---|---|---|---|
+| 激活，白 / 灰 / 黑背景 | `FFFFFF`（无边框） | `707070` / `454545` / `191919` | 相同 |
+| 非激活，白 / 灰 / 黑背景 | `AAAAAA` / `6B6B6B` / `2B2B2B` | 不变 | 相同 |
+
+最大化→还原、全屏→退出、拖动 resize、失焦→重新激活之后，四边结果都保持一致。live resize 同一时段 A/B 对比
+（每组约 660 帧、4 组）：修复前与修复后缺口帧都是 13，黑条帧都是 4，没有回归。

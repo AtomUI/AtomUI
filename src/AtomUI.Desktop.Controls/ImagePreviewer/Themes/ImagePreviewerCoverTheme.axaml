@@ -11,9 +11,10 @@
                                          Padding="{TemplateBinding Padding}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
-                                         CornerRadius="{TemplateBinding CornerRadius}">
+                                         CornerRadius="{TemplateBinding OwnerCornerRadius}">
                     <Panel>
                         <atom:ImagePreviewRenderer Source="{TemplateBinding ImageSource}"
+                                                   Classes.semantic-image="True"
                                                    Stretch="Uniform"
                                                    IsVisible="{TemplateBinding ImageSource, Converter={x:Static ObjectConverters.IsNotNull}}" />
                         <Border Name="PART_LoadingPresenter"
@@ -22,6 +23,7 @@
                                 MinWidth="{atom:ImagePreviewerTokenResource CoverImageWidth}"
                                 MinHeight="{atom:ImagePreviewerTokenResource CoverImageWidth}"
                                 Background="{atom:SharedTokenResource ColorFillTertiary}"
+                                CornerRadius="{TemplateBinding OwnerCornerRadius}"
                                 IsVisible="False">
                             <Panel HorizontalAlignment="Center"
                                    VerticalAlignment="Center">
@@ -41,6 +43,7 @@
                                 MinWidth="{atom:ImagePreviewerTokenResource CoverImageWidth}"
                                 MinHeight="{atom:ImagePreviewerTokenResource CoverImageWidth}"
                                 Background="{atom:SharedTokenResource ColorFillTertiary}"
+                                CornerRadius="{TemplateBinding OwnerCornerRadius}"
                                 IsVisible="{TemplateBinding HasError}">
                             <Panel HorizontalAlignment="Center"
                                    VerticalAlignment="Center">
@@ -63,9 +66,14 @@
                                                   IsVisible="{TemplateBinding ErrorContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             </Panel>
                         </Border>
-                        <Border Name="Mask" 
+                        <Border Name="Mask"
+                                Classes.semantic-cover="True"
                                 Opacity="{TemplateBinding MaskOpacity}"
-                                IsVisible="{TemplateBinding IsCoverMaskVisible}">
+                                IsVisible="{TemplateBinding IsCoverMaskVisible}"
+                                Background="{atom:ImagePreviewerTokenResource MaskBgColor}"
+                                TextBlock.Foreground="{atom:SharedTokenResource ColorTextLightSolid}"
+                                CornerRadius="{TemplateBinding OwnerCornerRadius}"
+                                Margin="{Binding OwnerMaskMargin, RelativeSource={RelativeSource TemplatedParent}}">
                             <ContentPresenter Name="MaskContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               ContentTemplate="{TemplateBinding ContentTemplate}" />
@@ -79,13 +87,7 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
       
-        <Setter Property="ClipToBounds" Value="True" />
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Style Selector="^ /template/ Border#Mask">
-            <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource MaskBgColor}" />
-            <Setter Property="TemplatedControl.Foreground"
-                    Value="{atom:SharedTokenResource ColorTextLightSolid}" />
-        </Style>
         <Style Selector="^ /template/ TextBlock#DefaultErrorText">
             <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextTertiary}" />
         </Style>
@@ -104,6 +106,14 @@
 
         <Style Selector="^[IsCoverMaskVisible=True]:pointerover">
             <Setter Property="MaskOpacity" Value="1" />
+        </Style>
+
+        <!-- 语义部件预览显现契约：Gallery 高亮会话对 RestHidden 部件目标设置
+             SemanticPartPreviewState.IsPreviewTarget（静止态透明的悬停遮罩在预览时显形），
+             各控件 ControlTheme 自行决定显现方式；Style 优先级高于 TemplateBinding，
+             状态移除后自动回落到 MaskOpacity 绑定。 -->
+        <Style Selector="^ /template/ Border#Mask[(atom|SemanticPartPreviewState.IsPreviewTarget)=True]">
+            <Setter Property="Opacity" Value="1" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">

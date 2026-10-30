@@ -21,6 +21,8 @@
                 <Grid Name="RootLayout"
                       RowDefinitions="Auto">
                     <atom:TransferItemDecorator x:Name="SourceDecoratorView"
+                                                Classes.semantic-source="True"
+                                                Classes.semantic-scope-section="True"
                                                 HeaderHeight="{atom:TreeTransferTokenResource HeaderHeight}"
                                                 HeaderPadding="{atom:TreeTransferTokenResource HeaderPadding}"
                                                 Content="{TemplateBinding SourceView}"
@@ -45,6 +47,8 @@
                                                 FooterTemplate="{TemplateBinding SourceViewFooterTemplate}"
                                                 ItemTemplate="{TemplateBinding ItemTemplate}" />
                     <atom:TransferItemDecorator x:Name="TargetDecoratorView"
+                                                Classes.semantic-target="True"
+                                                Classes.semantic-scope-section="True"
                                                 HeaderHeight="{atom:TreeTransferTokenResource HeaderHeight}"
                                                 HeaderPadding="{atom:TreeTransferTokenResource HeaderPadding}"
                                                 HorizontalAlignment="Left"
@@ -70,6 +74,7 @@
                         <atom:TransferListView/>
                     </atom:TransferItemDecorator>
                     <StackPanel Name="ActionsLayout"
+                                Classes.semantic-actions="True"
                                 Orientation="Vertical"
                                 VerticalAlignment="Center"
                                 Grid.Row="0"

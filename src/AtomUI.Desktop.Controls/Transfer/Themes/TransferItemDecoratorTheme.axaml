@@ -24,12 +24,14 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder Name="Frame"
+                                         Background="{TemplateBinding Background}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
                                          CornerRadius="{TemplateBinding CornerRadius}"
                                          ClipToBounds="True">
                     <DockPanel LastChildFill="True" Name="RootLayout">
                         <atom:PixelAlignedBorder Name="HeaderFrame"
+                                                 Classes.semantic-header="True"
                                                  DockPanel.Dock="Top"
                                                  Height="{TemplateBinding HeaderHeight}"
                                                  Padding="{TemplateBinding HeaderPadding}"
@@ -55,6 +57,7 @@
                                                   Content="{TemplateBinding SelectedMessage}"
                                                   VerticalAlignment="Center" />
                                 <ContentPresenter Name="TitleContentPresenter"
+                                                  Classes.semantic-title="True"
                                                   Content="{TemplateBinding Title}"
                                                   ContentTemplate="{TemplateBinding TitleTemplate}"
                                                   HorizontalContentAlignment="Right"
@@ -62,19 +65,8 @@
                                                   TextTrimming="CharacterEllipsis" />
                             </DockPanel>
                         </atom:PixelAlignedBorder>
-                        <atom:LineEdit HorizontalAlignment="Stretch"
-                                       DockPanel.Dock="Top"
-                                       Name="FilterInput"
-                                       IsVisible="{TemplateBinding IsFilterEnabled}"
-                                       PlaceholderText="{TemplateBinding FilterPlaceholderText}"
-                                       Tag="{TemplateBinding ViewType}"
-                                       IsAllowClear="True">
-                            <atom:LineEdit.InnerLeftContent>
-                                <antdicons:SearchOutlined
-                                    StrokeBrush="{atom:SharedTokenResource ColorTextDescription}" />
-                            </atom:LineEdit.InnerLeftContent>
-                        </atom:LineEdit>
                         <atom:PixelAlignedBorder Name="FooterFrame"
+                                                 Classes.semantic-footer="True"
                                                  DockPanel.Dock="Bottom"
                                                  Padding="{TemplateBinding HeaderPadding}"
                                                  IsVisible="{TemplateBinding Footer, Converter={x:Static ObjectConverters.IsNotNull}}"
@@ -84,14 +76,31 @@
                                               Content="{TemplateBinding Footer}"
                                               ContentTemplate="{TemplateBinding FooterTemplate}" />
                         </atom:PixelAlignedBorder>
-                        <ContentPresenter Name="ContentPresenter"
-                                          Content="{TemplateBinding Content}"
-                                          ClipToBounds="True"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          CornerRadius="{TemplateBinding BodyCornerRadius}"
-                                          Height="{TemplateBinding ListHeight}"
-                                          HorizontalAlignment="Stretch"
-                                          HorizontalContentAlignment="Stretch" />
+                        <DockPanel Name="BodyLayout"
+                                   Classes.semantic-body="True"
+                                   LastChildFill="True">
+                            <atom:LineEdit HorizontalAlignment="Stretch"
+                                           DockPanel.Dock="Top"
+                                           Name="FilterInput"
+                                           IsVisible="{TemplateBinding IsFilterEnabled}"
+                                           PlaceholderText="{TemplateBinding FilterPlaceholderText}"
+                                           Tag="{TemplateBinding ViewType}"
+                                           IsAllowClear="True">
+                                <atom:LineEdit.InnerLeftContent>
+                                    <antdicons:SearchOutlined
+                                        StrokeBrush="{atom:SharedTokenResource ColorTextDescription}" />
+                                </atom:LineEdit.InnerLeftContent>
+                            </atom:LineEdit>
+                            <ContentPresenter Name="ContentPresenter"
+                                              Classes.semantic-list="True"
+                                              Content="{TemplateBinding Content}"
+                                              ClipToBounds="True"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              CornerRadius="{TemplateBinding BodyCornerRadius}"
+                                              Height="{TemplateBinding ListHeight}"
+                                              HorizontalAlignment="Stretch"
+                                              HorizontalContentAlignment="Stretch" />
+                        </DockPanel>
                     </DockPanel>
                 </atom:PixelAlignedBorder>
             </ControlTemplate>

@@ -13,7 +13,9 @@
 - `src/AtomUI.Controls/Separator/AbstractSeparator.cs`
 - `src/AtomUI.Controls/Separator/SeparatorEnums.cs`
 - `src/AtomUI.Controls/Separator/SeparatorPseudoClass.cs`
+- `src/AtomUI.Controls/Separator/SeparatorRail.cs`
 - `src/AtomUI.Desktop.Controls/Separator/Separator.cs`
+- `src/AtomUI.Desktop.Controls/Separator/Separator.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Separator/SeparatorToken.cs`
 - `src/AtomUI.Desktop.Controls/Separator/Themes/SeparatorTheme.axaml`
 
@@ -23,11 +25,13 @@
 - Theme 文件负责静态视觉结构、template part、selector 和资源绑定。
 - Token 文件只提供组件视觉变量，不保存实例状态。
 - Gallery 文件只展示用法和示例，不作为运行时逻辑 owner。
+- Semantic descriptor 由 `Separator` 的 `[SemanticPart]` 声明生成；模板只使用静态 `Classes.semantic-*="True"` marker。
 
 ## 3. 核心类职责
 
 - `AbstractSeparator`：跨平台或共享基类，承载公共 API、状态归一和模板生命周期。
 - `Separator`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
+- `SeparatorRail`：连接线渲染控件，按 `Variant` 生成 dash style 并绘制单段水平或垂直线。
 - `SeparatorToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
 - `VerticalSeparator`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 
@@ -83,7 +87,21 @@ Separator 自身主题 setter。
 
 稳定 template part 接入点：
 
-- `PART_Title`：稳定模板协作入口，重命名前必须同步主题和实现。
+- `PART_Title`：稳定模板协作入口，承载标题文本，重命名前必须同步主题和实现。
+- `PART_RailStart`：连接线起始段节点，承载标题左侧（或无标题/垂直时的整段）连接线，重命名前必须同步主题和实现。
+- `PART_RailEnd`：连接线结束段节点，承载标题右侧连接线，无标题或垂直时归零，重命名前必须同步主题和实现。
+
+`SeparatorTheme` 的模板根节点是一个 `Panel`，内含 `PART_RailStart`、`PART_Title`、`PART_RailEnd` 三个子节点。
+`PART_RailStart` / `PART_RailEnd` 使用静态 `Classes.semantic-rail="True"` marker，`PART_Title` 使用静态
+`Classes.semantic-content="True"` marker。连接线由 `SeparatorRail.Render` 在各自 rail 节点内绘制，布局由
+`AbstractSeparator.ArrangeOverride` 归位：带标题水平时两段分别占标题两侧，无标题水平时 `PART_RailStart` 占满宽度、
+`PART_RailEnd` 归零，垂直时 `PART_RailStart` 占满高度（上下各留 20% 内缩）、`PART_RailEnd` 归零。`Variant` 只切换
+rail 绘制 `Pen` 的 dash style。因此 `root` 之外公开 `rail`（`Multiple`）与 `content`（`Single`）两个 Semantic
+Part，与上游 Ant Design Divider 的 `rail` / `content` 语义对齐；连接线既可通过 `SeparatorRailStyle` 定制，也可
+走 `LineColor` / `LineWidth` / `Variant` 公共 API。
+
+`PART_Title` 始终存在于模板中，`Title` 为空或 `Orientation=Vertical` 时仅切换 `IsVisible`，不改变 Semantic
+Part marker 身份或数量；rail 节点始终存在，归零尺寸不改变 Part 数量。
 
 ## 6. 交互与事件处理
 

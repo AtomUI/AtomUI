@@ -20,9 +20,11 @@ internal sealed class LunarCalendarPanelData
 internal sealed class LunarCalendarPanelDataKey
 {
     internal LunarCalendarPanelDataKey(
-        CalendarViewMode viewMode,
+        DateViewerPanelKind panelKind,
         int year,
         int month,
+        DateTime? visibleStart,
+        DateTime? visibleEnd,
         string cultureName,
         bool showSolarTerms,
         bool showTraditionalFestivals,
@@ -31,7 +33,9 @@ internal sealed class LunarCalendarPanelDataKey
         ILunarCalendarHolidayProvider? provider,
         long providerRevision)
     {
-        ViewMode = viewMode;
+        PanelKind = panelKind;
+        VisibleStart = visibleStart;
+        VisibleEnd = visibleEnd;
         Year = year;
         Month = month;
         CultureName = cultureName;
@@ -43,7 +47,9 @@ internal sealed class LunarCalendarPanelDataKey
         ProviderRevision = providerRevision;
     }
 
-    private CalendarViewMode ViewMode { get; }
+    private DateViewerPanelKind PanelKind { get; }
+    private DateTime? VisibleStart { get; }
+    private DateTime? VisibleEnd { get; }
     private int Year { get; }
     private int Month { get; }
     private string CultureName { get; }
@@ -56,16 +62,18 @@ internal sealed class LunarCalendarPanelDataKey
 
     internal bool Matches(LunarCalendarPanelDataKey other)
     {
-        if (ViewMode == CalendarViewMode.Month || other.ViewMode == CalendarViewMode.Month)
+        if (PanelKind == DateViewerPanelKind.Month || other.PanelKind == DateViewerPanelKind.Month)
         {
-            return ViewMode == other.ViewMode &&
+            return PanelKind == other.PanelKind &&
                    Year == other.Year &&
                    CultureName == other.CultureName;
         }
 
-        return ViewMode == other.ViewMode &&
+        return PanelKind == other.PanelKind &&
                Year == other.Year &&
                Month == other.Month &&
+               VisibleStart == other.VisibleStart &&
+               VisibleEnd == other.VisibleEnd &&
                CultureName == other.CultureName &&
                ShowSolarTerms == other.ShowSolarTerms &&
                ShowTraditionalFestivals == other.ShowTraditionalFestivals &&

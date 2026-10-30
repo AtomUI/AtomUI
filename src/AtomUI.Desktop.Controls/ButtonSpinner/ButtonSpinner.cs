@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -20,12 +21,12 @@ public enum ButtonSpinnerLocation
 }
 
 [PseudoClasses(ButtonSpinnerPseudoClass.Left, ButtonSpinnerPseudoClass.Right)]
-public class ButtonSpinner : Spinner,
-                             IMotionAwareControl,
-                             ICompactSpaceAware,
-                             ICustomizableSizeTypeAware,
-                             IInputControlStatusAware,
-                             IInputControlStyleVariantAware
+public partial class ButtonSpinner : Spinner,
+                                     IMotionAwareControl,
+                                     ICompactSpaceAware,
+                                     ICustomizableSizeTypeAware,
+                                     IInputControlStatusAware,
+                                     IInputControlStyleVariantAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsSpinEnabledProperty =
@@ -229,6 +230,7 @@ public class ButtonSpinner : Spinner,
     
     internal ButtonSpinnerDecoratedBox? DecoratedBox;
     private ButtonSpinnerHandle? _spinnerHandle;
+    private bool _isFrameBorderBrushRelayed;
 
     static ButtonSpinner()
     {
@@ -299,7 +301,11 @@ public class ButtonSpinner : Spinner,
         {
             UpdatePseudoClasses();
         }
-        
+
+        if (change.Property == BorderBrushProperty)
+        {
+            RelayFrameBorderBrush();
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -310,6 +316,7 @@ public class ButtonSpinner : Spinner,
         }
         _spinnerHandle = null;
         DecoratedBox = e.NameScope.Find<ButtonSpinnerDecoratedBox>("PART_DecoratedBox");
+        _isFrameBorderBrushRelayed = false;
         base.OnApplyTemplate(e);
         var increaseButton = e.NameScope.Find<IconButton>("PART_IncreaseButton");
         var decreaseButton = e.NameScope.Find<IconButton>("PART_DecreaseButton");
@@ -332,6 +339,39 @@ public class ButtonSpinner : Spinner,
         }
         SetButtonUsage();
         ConfigureAddOns();
+        RelayFrameBorderBrush();
+    }
+
+    /// <summary>
+    /// Relays the owner's root border brush onto the input frame as a local value so
+    /// application-level customization wins over the frame state machine, mirroring antd
+    /// inline styles.root semantics and the shared AbstractTextInput behavior. An unset
+    /// owner value restores the state machine.
+    /// </summary>
+    private void RelayFrameBorderBrush()
+    {
+        var decoratedBox = DecoratedBox;
+        if (decoratedBox is null)
+        {
+            return;
+        }
+
+        var value = GetValue(BorderBrushProperty);
+        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
+        {
+            // Only hand the property back when this control is the one that took it over:
+            // a nested owner (for example NumericUpDown, whose spinner is a ButtonSpinner)
+            // may hold its own relay on the same frame node.
+            if (_isFrameBorderBrushRelayed)
+            {
+                decoratedBox.ClearValue(BorderBrushProperty);
+                _isFrameBorderBrushRelayed = false;
+            }
+            return;
+        }
+
+        decoratedBox.SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
+        _isFrameBorderBrushRelayed = true;
     }
 
     private void HandleButtonCreated(object? sender, EventArgs e)

@@ -7,19 +7,21 @@ using Avalonia.Controls.Templates;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class OtpLineEdit : TemplatedControl,
-                           IMotionAwareControl,
-                           ICustomizableSizeTypeAware,
-                           IInputControlStyleVariantAware,
-                           IInputControlStatusAware,
-                           IFormItemAware,
-                           IFormItemFeedbackAware
+[global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
+public partial class OtpLineEdit : TemplatedControl,
+                                   IMotionAwareControl,
+                                   ICustomizableSizeTypeAware,
+                                   IInputControlStyleVariantAware,
+                                   IInputControlStatusAware,
+                                   IFormItemAware,
+                                   IFormItemFeedbackAware
 {
     #region 公共属性定义
 
@@ -62,13 +64,14 @@ public class OtpLineEdit : TemplatedControl,
     public static readonly StyledProperty<object?> SeparatorProperty =
         AvaloniaProperty.Register<OtpLineEdit, object?>(nameof(Separator));
 
-    public static readonly StyledProperty<int> SeparatorIntervalProperty =
-        AvaloniaProperty.Register<OtpLineEdit, int>(
-            nameof(SeparatorInterval),
-            coerce: (_, value) => Math.Max(0, value));
-
     public static readonly StyledProperty<IDataTemplate?> SeparatorTemplateProperty =
         AvaloniaProperty.Register<OtpLineEdit, IDataTemplate?>(nameof(SeparatorTemplate));
+
+    public static readonly StyledProperty<double?> CellWidthProperty =
+        AvaloniaProperty.Register<OtpLineEdit, double?>(nameof(CellWidth));
+
+    public static readonly StyledProperty<IBrush?> CellBorderBrushProperty =
+        AvaloniaProperty.Register<OtpLineEdit, IBrush?>(nameof(CellBorderBrush));
 
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<OtpLineEdit>();
@@ -148,16 +151,22 @@ public class OtpLineEdit : TemplatedControl,
         set => SetValue(SeparatorProperty, value);
     }
 
-    public int SeparatorInterval
-    {
-        get => GetValue(SeparatorIntervalProperty);
-        set => SetValue(SeparatorIntervalProperty, value);
-    }
-
     public IDataTemplate? SeparatorTemplate
     {
         get => GetValue(SeparatorTemplateProperty);
         set => SetValue(SeparatorTemplateProperty, value);
+    }
+
+    public double? CellWidth
+    {
+        get => GetValue(CellWidthProperty);
+        set => SetValue(CellWidthProperty, value);
+    }
+
+    public IBrush? CellBorderBrush
+    {
+        get => GetValue(CellBorderBrushProperty);
+        set => SetValue(CellBorderBrushProperty, value);
     }
 
     public CustomizableSizeType SizeType
@@ -354,7 +363,6 @@ public class OtpLineEdit : TemplatedControl,
             change.Property == MaskCharProperty ||
             change.Property == PlaceholderTextProperty ||
             change.Property == SeparatorProperty ||
-            change.Property == SeparatorIntervalProperty ||
             change.Property == SeparatorTemplateProperty ||
             change.Property == SizeTypeProperty ||
             change.Property == StyleVariantProperty ||
@@ -375,6 +383,16 @@ public class OtpLineEdit : TemplatedControl,
         {
             ConfigureFormFeedbackSubscription();
         }
+    }
+
+    protected override void OnGotFocus(FocusChangedEventArgs e)
+    {
+        base.OnGotFocus(e);
+
+        // 聚焦时活动格定位到第一空格（全满则为最后一格），
+        // 保证聚焦即见光标，而不是停留在陈旧位置
+        SetActiveIndexToFirstEmptyCell();
+        UpdateCellItems();
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -592,14 +610,12 @@ public class OtpLineEdit : TemplatedControl,
             return;
         }
 
+        // 删除后光标留在被删格（该格已空），继续退格时前移删除
+        // 前一个字符
         var activeIndex      = Math.Clamp(_activeIndex, 0, Length - 1);
         var removeIndex      = Math.Min(activeIndex, current.Length - 1);
-        var removesEmptyCell = activeIndex >= current.Length;
-        var nextActiveIndex  = removesEmptyCell
-            ? removeIndex
-            : Math.Max(0, removeIndex - 1);
 
-        _activeIndex = Math.Clamp(nextActiveIndex, 0, Length - 1);
+        _activeIndex = Math.Clamp(removeIndex, 0, Length - 1);
         SetCurrentValue(TextProperty, RemoveAt(current, removeIndex));
     }
 
@@ -751,15 +767,12 @@ public class OtpLineEdit : TemplatedControl,
 
         return SeparatorTemplate is null
             ? Separator
-            : new OtpLineEditSeparatorContext(index, (index + 1) / SeparatorInterval, Separator, SeparatorTemplate);
+            : new OtpLineEditSeparatorContext(index, index + 1, Separator, SeparatorTemplate);
     }
 
     private bool ShouldShowSeparatorAfter(int index)
     {
-        return Separator is not null &&
-               SeparatorInterval > 0 &&
-               index < Length - 1 &&
-               (index + 1) % SeparatorInterval == 0;
+        return Separator is not null && index < Length - 1;
     }
 
     private void ConfigureFormFeedbackSubscription()

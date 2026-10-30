@@ -1,0 +1,56 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net"
+                    xmlns:antdicons="https://atomui.net/icons/antdesign"
+                    x:ClassModifier="internal">
+    <DataTemplate x:Key="DatePickerViewerHeader" x:DataType="atom:DateViewerHeaderContext">
+        <atom:PixelAlignedBorder Height="33"
+                                 BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
+                                 BorderThickness="0,0,0,1">
+            <Grid MinHeight="{atom:SharedTokenResource ControlHeight}">
+                <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="Bold"
+                             Content="{Binding DisplayText}" Command="{Binding ChangePanelCommand}"
+                             CommandParameter="{Binding ParentPanelKind}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center"
+                            IsVisible="{Binding ShowPreviousNavigation}">
+                    <atom:IconButton Icon="{antdicons:AntDesignIconProvider DoubleLeftOutlined}"
+                                     Command="{Binding NavigateCommand}" CommandParameter="{Binding PreviousPage}" />
+                    <atom:IconButton Icon="{antdicons:AntDesignIconProvider LeftOutlined}"
+                                     IsVisible="{Binding ShowPeriodNavigation}"
+                                     Command="{Binding NavigateCommand}" CommandParameter="{Binding PreviousPeriod}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
+                            IsVisible="{Binding ShowNextNavigation}">
+                    <atom:IconButton Icon="{antdicons:AntDesignIconProvider RightOutlined}"
+                                     IsVisible="{Binding ShowPeriodNavigation}"
+                                     Command="{Binding NavigateCommand}" CommandParameter="{Binding NextPeriod}" />
+                    <atom:IconButton Icon="{antdicons:AntDesignIconProvider DoubleRightOutlined}"
+                                     Command="{Binding NavigateCommand}" CommandParameter="{Binding NextPage}" />
+                </StackPanel>
+            </Grid>
+        </atom:PixelAlignedBorder>
+    </DataTemplate>
+    <DataTemplate x:Key="RangeDatePickerViewerHeader" x:DataType="atom:DateViewerHeaderContext">
+        <Grid MinHeight="{atom:SharedTokenResource ControlHeight}">
+            <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="Bold"
+                         Content="{Binding DisplayText}" Command="{Binding ChangePanelCommand}"
+                         CommandParameter="{Binding ParentPanelKind}" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center"
+                        IsVisible="{Binding ShowPreviousNavigation}">
+                <atom:IconButton Icon="{antdicons:AntDesignIconProvider DoubleLeftOutlined}"
+                                 Command="{Binding NavigateCommand}" CommandParameter="{Binding PreviousPage}" />
+                <atom:IconButton Icon="{antdicons:AntDesignIconProvider LeftOutlined}"
+                                 IsVisible="{Binding ShowPeriodNavigation}"
+                                 Command="{Binding NavigateCommand}" CommandParameter="{Binding PreviousPeriod}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
+                        IsVisible="{Binding ShowNextNavigation}">
+                <atom:IconButton Icon="{antdicons:AntDesignIconProvider RightOutlined}"
+                                 IsVisible="{Binding ShowPeriodNavigation}"
+                                 Command="{Binding NavigateCommand}" CommandParameter="{Binding NextPeriod}" />
+                <atom:IconButton Icon="{antdicons:AntDesignIconProvider DoubleRightOutlined}"
+                                 Command="{Binding NavigateCommand}" CommandParameter="{Binding NextPage}" />
+            </StackPanel>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

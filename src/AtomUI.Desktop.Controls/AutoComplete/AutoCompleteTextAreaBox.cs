@@ -1,4 +1,3 @@
-using AtomUI.Desktop.Controls.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -52,7 +51,8 @@ internal class AutoCompleteTextAreaBox : TextArea
 
     internal Rect GetCaretBounds(Control? relativeControl = null)
     {
-        var presenter   = this.GetTextPresenter();
+        var presenter = _textPresenter ??
+            throw new InvalidOperationException("PART_TextPresenter is not available for caret geometry.");
         var textLayout  = presenter.TextLayout;
         var bounds = textLayout.HitTestTextPosition(CaretIndex);
         if (relativeControl != null)

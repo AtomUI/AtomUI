@@ -2,6 +2,31 @@
 
 本文档记录 Drawer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-29
+
+- Performance
+  - Hold the Window content cache lease for the whole open and close motion (with or without mask), so the sliding panel and mask composite cached window content instead of re-rendering the page beneath; render-thread median drops from about 8.5 ms to 2.5 ms per frame on the measured Wayland Gallery. Drawers whose layer lies inside the cached content (local scroll or content-control hosts) keep direct rendering.
+
+## 2026-09-10
+
+- API
+  - Add the public `IsPinnedOpen` styled property: a pinned drawer ignores mask clicks and the close button so `IsOpen` stays true (semantic preview parity with the upstream controlled-open demo); external `IsOpen` assignments keep closing normally.
+- Semantic Parts
+  - Publish eight antd-aligned semantic parts (`mask`, `section`, `header`, `title`, `extra`, `body`, `footer`, `close`) plus the implicit `root`; markers are declared statically on the two internal container themes with `CrossVisualRoot` + `RuntimeCreated`.
+  - Implement `ISemanticPartCrossRootProvider` on `Drawer`: the live `DrawerContainer` is reported as the cross root and `CrossRootsChanged` fires on container attach, detach and release.
+- Infrastructure
+  - Parent the `DrawerContainer` logically to the owning `Drawer` while attached to its scope layer (`ISetLogicalParent`, cleared on detach) so owner-scoped generated semantic styles reach container targets; relay `ThemeVariantScope.ActualThemeVariant` from the owner.
+- Gallery
+  - Replace the sticky host with `GalleryShowCaseHost` and add the Semantic Parts tab: an inline always-open stage (local `ScrollContentPresenter` layer host, the `getContainer={false}` equivalent) with `IsOpen`/`IsPinnedOpen` set declaratively, plus a Semantic Part styling example exercising all eight generated part styles.
+- Bugfix
+  - Fix semantic-stage clipping under the height-bounded preview mode: the stage used a fixed `Height` while the declared `PreviewStageMinHeight` floor (360) did not cover the stage content's real desired height (320 + 48 margins), so the stage — and the mask/panel inside its scope layer — were cut by the stage viewport while the highlight adorner kept drawing at the unclipped bounds. The stage now uses `MinHeight` + stretch (grows with room, never fights the viewport) and the floor is raised to 434 (viewport = floor − 62 panel overhead must cover 368).
+  - Fix a pre-existing tracking-size defect: the adorned-element snapshot took `Math.Max(Bounds, DesiredSize)` while `DesiredSize` includes margin, inflating the container to the host's margin box so the mask and panel bled past the visible host bounds (the semantic preview stage footer was clipped below the stage border). The snapshot now takes the arranged `Bounds` and only falls back to `DesiredSize - Margin` before the first arrange.
+  - Fix a pre-existing first-open defect surfaced by scrolled local hosts: `ScopeAwareAdornerLayer` captured the adorned-element tracking snapshot during the layer-injection transient (host `ScrollContentPresenter` content rewrap, extent collapse, offset coerced to zero before recovery), leaving the container translated without scroll compensation until the next open/close cycle. The snapshot now translates directly into layer space (scroll-invariant on the shared content subtree) and re-syncs when the layer itself gets arranged after injection.
+- Validation
+  - Add `DrawerSemanticPartTests` (descriptor contract, static markers, materialization, logical-parent invariant, generated style hits, pinning, cross-root reporting) and `DrawerSemanticPartHighlightTests` (page-level end-to-end highlighting for all nine cards).
+  - Add `DrawerScopeLayerTrackingTests`: first open must track the scrolled host bounds immediately and keep tracking across subsequent scrolling.
+  - Add `DrawerSemanticPreviewStageGeometryTests` (theory across window heights): the container, mask and panel must stay inside the visible stage box (margin must not inflate the container; the stage content must not overflow its viewport under the height-bounded mode).
+
 ## 2026-08-20
 
 - Architecture

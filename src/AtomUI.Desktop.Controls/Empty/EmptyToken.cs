@@ -17,6 +17,7 @@ internal sealed class EmptyToken : AbstractControlDesignToken
     
     public Thickness DescriptionMargin { get; set; }
     public Thickness DescriptionMarginSM { get; set; }
+    public Thickness FooterMargin { get; set; }
 
     public EmptyToken()
 
@@ -32,6 +33,7 @@ internal sealed class EmptyToken : AbstractControlDesignToken
         EmptyImgHeightSM    = controlHeightLG * 0.875;
         DescriptionMargin   = new Thickness(0, EffectiveGlobalToken.UniformlyMarginSM, 0, 0);
         DescriptionMarginSM = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
+        FooterMargin        = new Thickness(0, EffectiveGlobalToken.UniformlyMargin, 0, 0);
     }
     
 }

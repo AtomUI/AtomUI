@@ -1,6 +1,6 @@
 # Breadcrumb 桌面版架构设计
 
-本文档定义 `Breadcrumb` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Breadcrumb 桌面版实现原理](implementation.md)，Breadcrumb Token 的专项设计见 [Breadcrumb Token 设计](token.md)，设计和契约变化记录见 [Breadcrumb Changelog](changelog.md)。
+本文档定义 `Breadcrumb` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，Semantic Part 契约见 [Breadcrumb Semantic Part 契约](semantic-part.md)，内部实现原理见 [Breadcrumb 桌面版实现原理](implementation.md)，Breadcrumb Token 的专项设计见 [Breadcrumb Token 设计](token.md)，设计和契约变化记录见 [Breadcrumb Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -15,6 +15,8 @@
 Breadcrumb 是 AtomUI 桌面控件体系中的面包屑导航控件，用于展示当前位置路径并提供上级跳转入口。
 
 Breadcrumb 不负责树控件、主导航菜单或完整路由系统。这些职责应由业务层、组合控件或更专用的 AtomUI 控件承担。
+
+Breadcrumb 的公开语义区域使用 `root`、`item` 和 `separator` 三个 Semantic Part；完整契约见 [Breadcrumb Semantic Part 契约](semantic-part.md)。
 
 主要源码入口：
 
@@ -41,6 +43,7 @@ Breadcrumb 的公共契约由 public/protected 类型成员、Avalonia 属性、
 | --- | --- | --- |
 | 内容与数据 | `Icon`、`SeparatorTemplate` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
 | 交互与状态 | `IsMotionEnabled` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
+| 视觉与布局 | `Background`、`BorderBrush`、`BorderThickness`、`CornerRadius`、`Padding` | 表达 root frame 的边框、背景、圆角与内边距（继承自 `TemplatedControl`），配合 Semantic Part 根定制边界使用。 |
 | 其他稳定入口 | `NavigateContext`、`NavigateUri`、`Separator` | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
 
 当前没有抽取到控件专属 public 事件；交互通知主要来自继承事件、命令或 Gallery 可观察状态。
@@ -86,6 +89,15 @@ Breadcrumb 的视觉模型由控件模板、ControlTheme、SharedToken 和必要
 
 Breadcrumb 使用 `BreadcrumbToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 motion 运行时状态。
 
+root frame 由 `Breadcrumb` 自身在 `Render` 中绘制（复用 `BorderRenderHelper`），边框、背景、圆角与内边距由继承自
+`TemplatedControl` 的 root frame 样式属性表达，定制边界见 [Breadcrumb Semantic Part 契约](semantic-part.md)第 3 节。
+分隔符是条目容器之间的兄弟元素（N-1 个、尾随其前一条目），由 `Breadcrumb` 运行时创建并交给 `BreadcrumbItemsPanel`
+交错布局；其默认前景色与间距经 `TokenResourceBinder` 绑定 `SeparatorColor` / `SeparatorMargin`，保持 Template 绑定
+优先级以便 Semantic Part 样式覆盖。带导航能力的条目（`IsNavigateResponsive=True`）的链接前景色绑定 `LinkColor`，
+作用在条目内容呈现器（`^ /template/ ContentPresenter#Content`）上，对齐参考实现的链接锚点着色规则
+（`.ant-breadcrumb-item a`），item 级 Semantic Part 样式不改变链接文字颜色。主题默认 `HorizontalAlignment=Stretch`，
+root 作为块级元素铺满可用宽度。
+
 主题维护规则：
 
 - 不删除或重命名已经稳定的 ControlTheme key、template part、伪类和资源 key。
@@ -128,34 +140,13 @@ Breadcrumb 与同分类控件共享尺寸、状态、Token、Gallery 展示和�
 
 Breadcrumb 的动效只表达状态变化反馈，不应改变 public API 语义。初始加载、禁用态和卸载路径应能抑制或取消动效，避免保留旧控件实例。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Breadcrumb 桌面版实现原理](implementation.md)
 - [Breadcrumb Token 设计](token.md)
 - [Breadcrumb Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Breadcrumb` | 导航控件根语义区域，承载 public API、状态归一和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载点击、键盘、打开关闭、跳转或提交入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `导航项区域` | 承载当前项、选中项、禁用项、层级项或分页项状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或内容区域` | 承载 flyout、dropdown、tab content、submenu 或候选内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效区域` | 表达打开关闭、选中指示、切换和过渡反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/breadcrumb/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/breadcrumb/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 

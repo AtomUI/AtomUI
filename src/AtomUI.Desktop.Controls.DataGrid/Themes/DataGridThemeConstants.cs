@@ -67,6 +67,10 @@ internal static class DataGridThemeConstants
     public const string DraggingOverIndicatorPart = "PART_DraggingOverIndicator";
     public const string TopPaginationPart = "PART_TopPagination";
     public const string BottomPaginationPart = "PART_BottomPagination";
+    public const string TopPaginationPanelPart = "PART_TopPaginationPanel";
+    public const string BottomPaginationPanelPart = "PART_BottomPaginationPanel";
+    public const string TopPaginationExtraContentPart = "PART_TopPaginationExtraContentPresenter";
+    public const string BottomPaginationExtraContentPart = "PART_BottomPaginationExtraContentPresenter";
 }
 
 internal static class DataGridFilterFlyoutPresenterThemeConstants

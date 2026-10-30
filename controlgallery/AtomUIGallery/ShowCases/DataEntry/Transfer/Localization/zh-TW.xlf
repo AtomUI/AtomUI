@@ -271,6 +271,192 @@
         <target state="translated">搜索</target>
       </segment>
     </unit>
+    <unit id="SemanticActionsDescription">
+      <segment>
+        <source>Middle actions area that hosts the move-to-target and move-to-source buttons</source>
+        <target state="translated">中部操作區，承載移至目標與移至源的方向按鈕</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Panel body region that hosts the filter input and the list content host</source>
+        <target state="translated">面板主體區域，承載過濾輸入與列表內容宿主</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>Panel bottom region that renders the direction footer and its template</source>
+        <target state="translated">面板底部區域，渲染對應方向的頁腳及其模板</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Panel header region that hosts the select-all checkbox, selection count and title</source>
+        <target state="translated">面板頭部區域，承載全選複選框、選擇計數與標題</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Item content element, only applies to text content styles</source>
+        <target state="translated">列表項內容元素，僅作用於文本內容樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, only applies to list item styles</source>
+        <target state="translated">列表項元素，僅作用於列表項樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIconDescription">
+      <segment>
+        <source>Item icon element, only applies to icon styles</source>
+        <target state="translated">列表項圖標元素，僅作用於圖標樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListDescription">
+      <segment>
+        <source>List content host that carries the source or target view control</source>
+        <target state="translated">列表內容宿主，承載源或目標方向的視圖控件</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartFooterText">
+      <segment>
+        <source>Custom Footer</source>
+        <target state="translated">Custom Footer</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Transfer property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">通過屬主作用域選擇器與 Transfer 屬性選擇器定制已發布的語義部件。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element that lays out the source panel, the actions area and the target panel</source>
+        <target state="translated">根元素，組織源面板、操作區與目標面板的佈局</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceBodyDescription">
+      <segment>
+        <source>Source body element, only applies to left list body styles</source>
+        <target state="translated">來源內容元素，僅作用於左側列表主體區域樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceDescription">
+      <segment>
+        <source>Source panel container that wraps the whole source section decorator</source>
+        <target state="translated">源面板容器，包裹整個源方向分區裝飾器</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceFooterDescription">
+      <segment>
+        <source>Source footer element, only applies to left footer area styles</source>
+        <target state="translated">來源頁腳元素，僅作用於左側頁腳區域樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceHeaderDescription">
+      <segment>
+        <source>Source header element, only applies to left header area styles</source>
+        <target state="translated">來源頭部元素，僅作用於左側頭部區域樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceItemContentDescription">
+      <segment>
+        <source>Source item content element, only applies to left text content styles</source>
+        <target state="translated">源列表項內容元素，僅作用於左側文本內容樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceItemDescription">
+      <segment>
+        <source>Source item element, only applies to left list item styles</source>
+        <target state="translated">源列表項元素，僅作用於左側列表項樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceItemIconDescription">
+      <segment>
+        <source>Source item icon element, only applies to left icon styles</source>
+        <target state="translated">源列表項圖標元素，僅作用於左側圖標樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceListDescription">
+      <segment>
+        <source>Source list element, only applies to left list content styles</source>
+        <target state="translated">來源列表元素，僅作用於左側列表內容區域樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceTitleDescription">
+      <segment>
+        <source>Source title element, only applies to left title text styles</source>
+        <target state="translated">來源標題元素，僅作用於左側標題文本樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetBodyDescription">
+      <segment>
+        <source>Target body element, only applies to right list body styles</source>
+        <target state="translated">目標內容元素，僅作用於右側列表主體區域樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetDescription">
+      <segment>
+        <source>Target panel container that wraps the whole target section decorator</source>
+        <target state="translated">目標面板容器，包裹整個目標方向分區裝飾器</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetFooterDescription">
+      <segment>
+        <source>Target footer element, only applies to right footer area styles</source>
+        <target state="translated">目標頁腳元素，僅作用於右側頁腳區域樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetHeaderDescription">
+      <segment>
+        <source>Target header element, only applies to right header area styles</source>
+        <target state="translated">目標頭部元素，僅作用於右側頭部區域樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetItemContentDescription">
+      <segment>
+        <source>Target item content element, only applies to right text content styles</source>
+        <target state="translated">目標列表項內容元素，僅作用於右側文本內容樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetItemDescription">
+      <segment>
+        <source>Target item element, only applies to right list item styles</source>
+        <target state="translated">目標列表項元素，僅作用於右側列表項樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetItemIconDescription">
+      <segment>
+        <source>Target item icon element, only applies to right icon styles</source>
+        <target state="translated">目標列表項圖標元素，僅作用於右側圖標樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetListDescription">
+      <segment>
+        <source>Target list element, only applies to right list content styles</source>
+        <target state="translated">目標列表元素，僅作用於右側列表內容區域樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetTitleDescription">
+      <segment>
+        <source>Target title element, only applies to right title text styles</source>
+        <target state="translated">目標標題元素，僅作用於右側標題文本樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title presenter that renders the source or target panel title</source>
+        <target state="translated">標題呈現器，渲染源或目標面板的標題</target>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to Transfer with status, which could be error or warning.</source>

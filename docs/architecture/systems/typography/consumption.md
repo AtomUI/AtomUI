@@ -109,5 +109,5 @@ public static Size CalculateTextSize(string text,
 
 `ConvertEmToPixel` 是纯乘法，无分配，任意路径都可以用。
 
-`AtomUI.Core/Media/TextFormatting` 下的 `FormattedTextSource`、`InlinesTextSource` 和
-`TextParagraphPropertiesReflectionExtensions` 服务富文本与内联元素排版，属渲染适配层，不在字体子系统的契约范围内。
+`AtomUI.Core/Media/TextFormatting` 下的 `FormattedTextSource` 和 `InlinesTextSource`
+服务富文本与内联元素排版，属渲染适配层，不在字体子系统的契约范围内。

@@ -10,13 +10,13 @@ public class TimerStatistic : AbstractStatistic
     #region 公共属性定义
 
     public static readonly StyledProperty<DateTime> ValueProperty =
-        AvaloniaProperty.Register<AbstractStatistic, DateTime>(nameof(Value));
+        AvaloniaProperty.Register<TimerStatistic, DateTime>(nameof(Value));
     
     public static readonly StyledProperty<string?> FormatProperty =
-        AvaloniaProperty.Register<AbstractStatistic, string?>(nameof(Format));
+        AvaloniaProperty.Register<TimerStatistic, string?>(nameof(Format));
     
     public static readonly StyledProperty<TimeSpan> RefreshDurationProperty =
-        AvaloniaProperty.Register<AbstractStatistic, TimeSpan>(nameof(RefreshDuration), TimeSpan.FromMilliseconds(10));
+        AvaloniaProperty.Register<TimerStatistic, TimeSpan>(nameof(RefreshDuration), TimeSpan.FromMilliseconds(10));
     
     public DateTime Value
     {

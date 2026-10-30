@@ -49,10 +49,18 @@ internal static class XcbConnectionHolder
 
     private static void EnsureInit()
     {
-        if (s_init) return;
+        if (s_init)
+        {
+            return;
+        }
+
         lock (s_lock)
         {
-            if (s_init) return;
+            if (s_init)
+            {
+                return;
+            }
+
             try
             {
                 // 自己开独立连接，不复用 Avalonia 主连接 ——

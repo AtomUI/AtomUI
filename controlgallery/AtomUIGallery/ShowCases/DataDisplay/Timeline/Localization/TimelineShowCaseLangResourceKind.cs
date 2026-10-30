@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -32,9 +30,32 @@ public enum TimelineShowCaseLangResourceKind
     P2ContentCreateAServicesSite,
     P2ContentQinwareWebsiteOnline,
     P2ContentNetworkProblemsBeingSolved,
+    P2ContentSolveInitialNetworkProblems,
+    P2ContentTechnicalTesting,
     ScenarioExamples,
     PageSubtitle,
     PageDescription,
     ComponentCategory,
-    ComponentStatusStable
+    ComponentStatusStable,
+    SemanticTimelineRootDescription,
+    SemanticTimelineItemDescription,
+    SemanticTimelineItemWrapperDescription,
+    SemanticTimelineItemIconDescription,
+    SemanticTimelineItemSectionDescription,
+    SemanticTimelineItemHeaderDescription,
+    SemanticTimelineItemTitleDescription,
+    SemanticTimelineItemContentDescription,
+    SemanticTimelineItemRailDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    P2ContentCreateAServices,
+    SemanticTimelineItemsRootDescription,
+    SemanticTimelineItemsItemDescription,
+    SemanticTimelineItemsWrapperDescription,
+    SemanticTimelineItemsIconDescription,
+    SemanticTimelineItemsSectionDescription,
+    SemanticTimelineItemsHeaderDescription,
+    SemanticTimelineItemsTitleDescription,
+    SemanticTimelineItemsContentDescription,
+    SemanticTimelineItemsRailDescription
 }

@@ -7,8 +7,8 @@
              x:DataType="vm:TooltipViewModel">
 
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Tooltip"
                     Category="{gallery:TooltipShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,35 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="ContentControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:TooltipViewModel">
+                    <gallery:SemanticPartPreview Name="TooltipSemanticPreview"
+                                                 Title="Tooltip"
+                                                 SemanticOwner="{Binding #TooltipSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:ToolTip}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <!--  预览舞台按 Stretch 测量内容，此处居中让 ToolTip 收缩到内容宽度,
+                                  否则胶囊会被撑到 ToolTipMaxWidth(250) 满宽  -->
+                            <atom:ToolTip Name="TooltipSemanticOwner"
+                                          HorizontalAlignment="Center"
+                                          Content="{gallery:TooltipShowCaseLangResource P2ToolTipTipPromptText}" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:TooltipShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="container"
+                                Description="{gallery:TooltipShowCaseLangResource SemanticContainerDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="arrow"
+                                Description="{gallery:TooltipShowCaseLangResource SemanticArrowDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -45,7 +72,8 @@
     <gallery:ShowCaseItem
         Title="{gallery:TooltipShowCaseLangResource PlacementTitle}"
         Description="{gallery:TooltipShowCaseLangResource PlacementDescription}"
-        IsDeferredContentEnabled="True">
+        IsDeferredContentEnabled="True"
+        IsOccupyEntireRow="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:TooltipViewModel">
         <Grid>
@@ -119,7 +147,8 @@
     <gallery:ShowCaseItem
         Title="{gallery:TooltipShowCaseLangResource ArrowTitle}"
         Description="{gallery:TooltipShowCaseLangResource ArrowDescription}"
-        IsDeferredContentEnabled="True">
+        IsDeferredContentEnabled="True"
+        IsOccupyEntireRow="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:TooltipViewModel">
         <StackPanel Orientation="Vertical" Spacing="10">
@@ -319,7 +348,48 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:TooltipShowCaseLangResource SemanticPartStyleTitle}"
+        Description="{gallery:TooltipShowCaseLangResource SemanticPartStyleDescription}"
+        SourceKey="tooltip-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:TooltipViewModel">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="20">
+            <StackPanel.Styles>
+                <Style Selector="atom|ToolTip.semantic-styles-demo">
+                    <atom:ToolTipContainerStyle x:SetterTargetType="Border">
+                        <Setter Property="Padding" Value="10" />
+                        <Setter Property="CornerRadius" Value="12" />
+                        <Setter Property="BoxShadow" Value="inset 0 0 8 #cccccc" />
+                    </atom:ToolTipContainerStyle>
+                </Style>
+                <Style Selector="atom|ToolTip.semantic-styles-filled-demo">
+                    <atom:ToolTipContainerStyle x:SetterTargetType="Border">
+                        <Setter Property="Background" Value="#CC35477D" />
+                        <Setter Property="TextElement.Foreground" Value="#FFFFFF" />
+                        <Setter Property="Padding" Value="12" />
+                        <Setter Property="CornerRadius" Value="4" />
+                    </atom:ToolTipContainerStyle>
+                </Style>
+            </StackPanel.Styles>
+            <atom:Button Content="Object Style" atom:ToolTip.IsArrowVisible="False">
+                <atom:ToolTip.Tip>
+                    <atom:ToolTip Classes="semantic-styles-demo" Content="Object text" />
+                </atom:ToolTip.Tip>
+            </atom:Button>
+            <atom:Button ButtonType="Primary" Content="Function Style" atom:ToolTip.IsArrowVisible="False">
+                <atom:ToolTip.Tip>
+                    <atom:ToolTip Classes="semantic-styles-filled-demo" Content="Function text" />
+                </atom:ToolTip.Tip>
+            </atom:Button>
+        </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

@@ -445,6 +445,84 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button in the suffix handle, rendered when IsAllowClear is enabled.</source>
+        <target state="translated">Botão de limpeza dentro do handle de sufixo, renderizado quando IsAllowClear está habilitado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Selection content panel hosting the placeholder, selection result, search input and tags.</source>
+        <target state="translated">Painel de conteúdo da seleção que acomoda o placeholder, o resultado selecionado, a entrada de busca e as tags.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Search input rendered in filter mode.</source>
+        <target state="translated">Entrada de busca renderizada no modo de filtro.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Text content inside a selected tag.</source>
+        <target state="translated">Conteúdo de texto dentro de uma tag selecionada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Selected tag element shown in the selector for multiple mode.</source>
+        <target state="translated">Tag de seleção exibida no seletor no modo múltiplo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemRemoveDescription">
+      <segment>
+        <source>Remove button inside a selected tag.</source>
+        <target state="translated">Botão de remoção dentro de uma tag selecionada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPlaceholderDescription">
+      <segment>
+        <source>Placeholder text shown while nothing is selected.</source>
+        <target state="translated">Texto de placeholder exibido quando nada está selecionado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListDescription">
+      <segment>
+        <source>Candidate tree container inside the popup.</source>
+        <target state="translated">Contêiner da árvore de candidatos dentro do popup.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListItemDescription">
+      <segment>
+        <source>Single tree node entry inside the candidate tree, created at runtime.</source>
+        <target state="translated">Item individual dentro da árvore de candidatos, criado em tempo de execução.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root border of the candidate popup layer.</source>
+        <target state="translated">Nó de borda raiz da camada popup de candidatos.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix area of the selector.</source>
+        <target state="translated">Área de prefixo do seletor.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The TreeSelect owner itself.</source>
+        <target state="translated">O próprio componente TreeSelect.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix area hosting the max-count indicator, user suffix content and the selection handle.</source>
+        <target state="translated">Área de sufixo que acomoda o indicador de contagem máxima, o conteúdo de sufixo do usuário e o handle de seleção.</target>
+      </segment>
+    </unit>
     <unit id="ShowTreeLineDescription">
       <segment>
         <source>Use treeLine to show the line style.</source>
@@ -479,6 +557,18 @@
       <segment>
         <source>Status</source>
         <target state="translated">Status</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of TreeSelect with semantic part styles.</source>
+        <target state="translated">Personalize o estilo da estrutura semântica do TreeSelect com estilos de partes semânticas.</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
       </segment>
     </unit>
     <unit id="VariantsDescription">

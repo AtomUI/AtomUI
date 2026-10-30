@@ -1,6 +1,10 @@
+using System.ComponentModel;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using AtomUI.Data;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -9,7 +13,6 @@ internal static class NavMenuItemContainerBinder
     public static void BindNode(
         NavMenuItem menuItem,
         object? item,
-        IResourceHost resourceHost,
         CompositeDisposable disposables)
     {
         if (item is not INavMenuNode menuNode)
@@ -19,87 +22,79 @@ internal static class NavMenuItemContainerBinder
 
         if (menuNode is NavMenuNode navMenuNode)
         {
-            disposables.Add(navMenuNode.AttachResourceHost(resourceHost));
-            disposables.Add(BindUtils.RelayBind(
-                navMenuNode,
-                NavMenuNode.CommandProperty,
-                menuItem,
-                NavMenuItem.CommandProperty));
-            disposables.Add(BindUtils.RelayBind(
-                navMenuNode,
-                NavMenuNode.CommandParameterProperty,
-                menuItem,
-                NavMenuItem.CommandParameterProperty));
-            disposables.Add(BindUtils.RelayBind(
-                navMenuNode,
-                NavMenuNode.HeaderProperty,
-                menuItem,
-                NavMenuItem.NodeHeaderProperty));
-            disposables.Add(BindUtils.RelayBind(
-                navMenuNode,
-                NavMenuNode.TooltipProperty,
-                menuItem,
-                NavMenuItem.TooltipProperty));
-            disposables.Add(BindUtils.RelayBind(
-                navMenuNode,
-                NavMenuNode.IsTooltipEnabledProperty,
-                menuItem,
-                NavMenuItem.IsTooltipEnabledProperty));
+            BindProperty(navMenuNode, NavMenuNode.CommandProperty, NavMenuItem.CommandProperty);
+            BindProperty(navMenuNode, NavMenuNode.CommandParameterProperty, NavMenuItem.CommandParameterProperty);
+            BindProperty(navMenuNode, NavMenuNode.HeaderProperty, NavMenuItem.NodeHeaderProperty);
+            BindProperty(navMenuNode, NavMenuNode.TooltipProperty, NavMenuItem.TooltipProperty);
+            BindProperty(navMenuNode, NavMenuNode.IsTooltipEnabledProperty, NavMenuItem.IsTooltipEnabledProperty);
         }
         else
         {
-            disposables.Add(BindUtils.RelayBind(
-                menuNode,
-                nameof(INavMenuNode.Command),
-                node => node.Command,
-                menuItem,
-                NavMenuItem.CommandProperty));
-            disposables.Add(BindUtils.RelayBind(
-                menuNode,
-                nameof(INavMenuNode.CommandParameter),
-                node => node.CommandParameter,
-                menuItem,
-                NavMenuItem.CommandParameterProperty));
-            disposables.Add(BindUtils.RelayBind(
-                menuNode,
-                nameof(INavMenuNode.Header),
-                node => node.Header,
-                menuItem,
-                NavMenuItem.NodeHeaderProperty));
-            disposables.Add(BindUtils.RelayBind(
-                menuNode,
-                nameof(INavMenuNode.Tooltip),
-                node => node.Tooltip,
-                menuItem,
-                NavMenuItem.TooltipProperty));
-            disposables.Add(BindUtils.RelayBind(
-                menuNode,
-                nameof(INavMenuNode.IsTooltipEnabled),
-                node => node.IsTooltipEnabled,
-                menuItem,
-                NavMenuItem.IsTooltipEnabledProperty));
+            BindValue(nameof(INavMenuNode.Command), node => node.Command, NavMenuItem.CommandProperty);
+            BindValue(nameof(INavMenuNode.CommandParameter), node => node.CommandParameter, NavMenuItem.CommandParameterProperty);
+            BindValue(nameof(INavMenuNode.Header), node => node.Header, NavMenuItem.NodeHeaderProperty);
+            BindValue(nameof(INavMenuNode.Tooltip), node => node.Tooltip, NavMenuItem.TooltipProperty);
+            BindValue(nameof(INavMenuNode.IsTooltipEnabled), node => node.IsTooltipEnabled, NavMenuItem.IsTooltipEnabledProperty);
         }
 
-        menuItem.SetCurrentValue(NavMenuItem.HeaderProperty, menuNode);
-        disposables.Add(BindUtils.RelayBind(menuNode, nameof(INavMenuNode.Icon),
-            node => node.Icon, menuItem, NavMenuItem.IconProperty));
-        disposables.Add(BindUtils.RelayBind(menuNode, nameof(INavMenuNode.IsEnabled),
-            node => node.IsEnabled, menuItem, NavMenuItem.IsEnabledProperty));
-        menuItem.ItemKey = menuNode.ItemKey;
+        BindValue(nameof(INavMenuNode.Icon), node => node.Icon, NavMenuItem.IconProperty);
+        BindValue(nameof(INavMenuNode.IsEnabled), node => node.IsEnabled, NavMenuItem.IsEnabledProperty);
+        BindValue(nameof(INavMenuNode.ItemKey), node => node.ItemKey, NavMenuItem.ItemKeyProperty);
+
+        // Initial publication (including CanExecute) can synchronously recycle the container.
+        // Never start another binding after that scope has been released.
+        void BindProperty(AvaloniaObject source, AvaloniaProperty sourceProperty, AvaloniaProperty targetProperty)
+        {
+            if (!disposables.IsDisposed)
+            {
+                disposables.Add(BindUtils.RelayBind(source, sourceProperty, menuItem, targetProperty));
+            }
+        }
+
+        void BindValue<T>(string propertyName, Func<INavMenuNode, T> getter, AvaloniaProperty<T> targetProperty)
+        {
+            if (!disposables.IsDisposed)
+            {
+                disposables.Add(BindUtils.RelayBind(menuNode, propertyName, getter, menuItem, targetProperty));
+            }
+        }
     }
 
-    public static bool TryBindNodeHeaderTemplate(
+    public static void BindNodeHeaderTemplate(
         NavMenuItem menuItem,
-        object? item,
+        INavMenuNode menuNode,
+        ItemsControl owner,
         CompositeDisposable disposables)
     {
-        if (item is not INavMenuNode { HeaderTemplate: not null } menuNode)
+        if (disposables.IsDisposed)
         {
-            return false;
+            return;
         }
 
-        disposables.Add(BindUtils.RelayBind(menuNode, nameof(INavMenuNode.HeaderTemplate),
-            node => node.HeaderTemplate, menuItem, NavMenuItem.HeaderTemplateProperty));
-        return true;
+        IObservable<IDataTemplate?> templates;
+        if (menuNode is NavMenuNode node)
+        {
+            templates = node.GetObservable(NavMenuNode.HeaderTemplateProperty);
+        }
+        else if (menuNode is INotifyPropertyChanged observableNode)
+        {
+            templates = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
+                                      handler => observableNode.PropertyChanged += handler,
+                                      handler => observableNode.PropertyChanged -= handler)
+                                  .Where(change => string.IsNullOrEmpty(change.EventArgs.PropertyName) ||
+                                                   change.EventArgs.PropertyName == nameof(INavMenuNode.HeaderTemplate))
+                                  .Select(_ => menuNode.HeaderTemplate)
+                                  .StartWith(menuNode.HeaderTemplate);
+        }
+        else
+        {
+            templates = Observable.Return(menuNode.HeaderTemplate);
+        }
+
+        // Both sources are chosen during container preparation. Keeping their projection in
+        // one binding preserves local-value priority and restores the current owner fallback.
+        disposables.Add(menuItem.Bind(NavMenuItem.HeaderTemplateProperty,
+            templates.CombineLatest(owner.GetObservable(ItemsControl.ItemTemplateProperty),
+                (template, fallback) => template ?? fallback)));
     }
 }

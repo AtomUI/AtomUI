@@ -52,6 +52,31 @@ public class LanguageResourceProviderTests
     }
 
     [Fact]
+    public void Provider_Misses_Non_Language_Keys_Without_Allocating_After_First_Lookup()
+    {
+        var runtime = LanguageManagerTestRuntime.Create();
+        // 未命中控件树的 ControlTheme（Type 键）、字符串键和 token enum 键都会查到 Application 层的本 provider。
+        object[] keys = [typeof(Border), "SomeBrushKey", OtherResourceKind.Value];
+        foreach (var key in keys)
+        {
+            runtime.Provider.TryGetResource(key, null, out _).ShouldBeFalse();
+        }
+
+        var allocated = GC.GetAllocatedBytesForCurrentThread();
+        var found = false;
+        for (var index = 0; index < 100; index++)
+        {
+            foreach (var key in keys)
+            {
+                found |= runtime.Provider.TryGetResource(key, null, out _);
+            }
+        }
+
+        found.ShouldBeFalse();
+        (GC.GetAllocatedBytesForCurrentThread() - allocated).ShouldBe(0);
+    }
+
+    [Fact]
     public void Provider_Raises_Exactly_One_Host_Notification_Per_Committed_Change()
     {
         var runtime = LanguageManagerTestRuntime.Create();

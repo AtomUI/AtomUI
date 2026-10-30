@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Result"
              x:DataType="vm:ResultViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Result"
                     Category="{gallery:ResultShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,47 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractResult" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:ResultViewModel">
+                    <gallery:SemanticPartPreview Name="ResultSemanticPreview"
+                                                 SemanticOwnerType="{x:Type atom:Result}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Result Name="ResultSemanticOwner"
+                                         Header="title"
+                                         SubHeader="subTitle">
+                                <atom:Result.Extra>
+                                    <atom:Button ButtonType="Primary"
+                                                 Content="extra" />
+                                </atom:Result.Extra>
+                                <TextBlock TextAlignment="Center"
+                                           Text="The Content of Result" />
+                            </atom:Result>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:ResultShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="icon"
+                                Description="{gallery:ResultShowCaseLangResource SemanticIconDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="title"
+                                Description="{gallery:ResultShowCaseLangResource SemanticTitleDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="subTitle"
+                                Description="{gallery:ResultShowCaseLangResource SemanticSubTitleDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="extra"
+                                Description="{gallery:ResultShowCaseLangResource SemanticExtraDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="body"
+                                Description="{gallery:ResultShowCaseLangResource SemanticBodyDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -27,169 +66,248 @@
                                    InitialDeferredLoadItemCount="4"
                                    DeferredLoadBatchSize="2"
                                    ContentMargin="28,10,28,28">
-    <gallery:ShowCaseItem
-        Title="{gallery:ResultShowCaseLangResource SuccessTitle}"
-        Description="{gallery:ResultShowCaseLangResource SuccessDescription}"
-        IsOccupyEntireRow="True"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:ResultViewModel">
-        <atom:Result Status="Success"
-                     Header="{gallery:ResultShowCaseLangResource P2HeaderSuccessfullyPurchasedCloudServerEcs}"
-                     SubHeader="{gallery:ResultShowCaseLangResource P2SubHeaderOrderNumberCloudServerConfiguration}">
-            <atom:Result.Extra>
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentGoConsole}" />
-                    <atom:Button Content="{gallery:ResultShowCaseLangResource P2ContentBuyAgain}" />
-                </StackPanel>
-            </atom:Result.Extra>
-        </atom:Result>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:ResultShowCaseLangResource SuccessTitle}"
+                    Description="{gallery:ResultShowCaseLangResource SuccessDescription}"
+                    IsOccupyEntireRow="True"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ResultViewModel">
+                            <atom:Result Status="Success"
+                                         Header="{gallery:ResultShowCaseLangResource P2HeaderSuccessfullyPurchasedCloudServerEcs}"
+                                         SubHeader="{gallery:ResultShowCaseLangResource P2SubHeaderOrderNumberCloudServerConfiguration}">
+                                <atom:Result.Extra>
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentGoConsole}" />
+                                        <atom:Button Content="{gallery:ResultShowCaseLangResource P2ContentBuyAgain}" />
+                                    </StackPanel>
+                                </atom:Result.Extra>
+                            </atom:Result>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:ResultShowCaseLangResource InfoTitle}"
-        Description="{gallery:ResultShowCaseLangResource InfoDescription}"
-        IsOccupyEntireRow="True"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:ResultViewModel">
-        <atom:Result Status="Info"
-                     Header="{gallery:ResultShowCaseLangResource P2HeaderYourOperationHasBeenExecuted}">
-            <atom:Result.Extra>
-                <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentGoConsole}" />
-            </atom:Result.Extra>
-        </atom:Result>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:ResultShowCaseLangResource InfoTitle}"
+                    Description="{gallery:ResultShowCaseLangResource InfoDescription}"
+                    IsOccupyEntireRow="True"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ResultViewModel">
+                            <atom:Result Status="Info"
+                                         Header="{gallery:ResultShowCaseLangResource P2HeaderYourOperationHasBeenExecuted}">
+                                <atom:Result.Extra>
+                                    <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentGoConsole}" />
+                                </atom:Result.Extra>
+                            </atom:Result>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:ResultShowCaseLangResource WarningTitle}"
-        Description="{gallery:ResultShowCaseLangResource WarningDescription}"
-        IsOccupyEntireRow="True"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:ResultViewModel">
-        <atom:Result Status="Warning"
-                     Header="{gallery:ResultShowCaseLangResource P2HeaderThereAreSomeProblemsWithYourOperation}">
-            <atom:Result.Extra>
-                <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentGoConsole}" />
-            </atom:Result.Extra>
-        </atom:Result>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:ResultShowCaseLangResource WarningTitle}"
+                    Description="{gallery:ResultShowCaseLangResource WarningDescription}"
+                    IsOccupyEntireRow="True"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ResultViewModel">
+                            <atom:Result Status="Warning"
+                                         Header="{gallery:ResultShowCaseLangResource P2HeaderThereAreSomeProblemsWithYourOperation}">
+                                <atom:Result.Extra>
+                                    <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentGoConsole}" />
+                                </atom:Result.Extra>
+                            </atom:Result>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:ResultShowCaseLangResource ForbiddenTitle}"
-        Description="{gallery:ResultShowCaseLangResource ForbiddenDescription}"
-        IsOccupyEntireRow="True"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:ResultViewModel">
-        <atom:Result Status="ErrorCode403"
-                     Header="403"
-                     SubHeader="{gallery:ResultShowCaseLangResource P2SubHeaderForbidden}">
-            <atom:Result.Extra>
-                <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentBackHome}" />
-            </atom:Result.Extra>
-        </atom:Result>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:ResultShowCaseLangResource ForbiddenTitle}"
+                    Description="{gallery:ResultShowCaseLangResource ForbiddenDescription}"
+                    IsOccupyEntireRow="True"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ResultViewModel">
+                            <atom:Result Status="ErrorCode403"
+                                         Header="403"
+                                         SubHeader="{gallery:ResultShowCaseLangResource P2SubHeaderForbidden}">
+                                <atom:Result.Extra>
+                                    <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentBackHome}" />
+                                </atom:Result.Extra>
+                            </atom:Result>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:ResultShowCaseLangResource NotFoundTitle}"
-        Description="{gallery:ResultShowCaseLangResource NotFoundDescription}"
-        IsOccupyEntireRow="True"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:ResultViewModel">
-        <atom:Result Status="ErrorCode404"
-                     Header="404"
-                     SubHeader="{gallery:ResultShowCaseLangResource P2SubHeaderNotFound}">
-            <atom:Result.Extra>
-                <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentBackHome}" />
-            </atom:Result.Extra>
-        </atom:Result>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:ResultShowCaseLangResource NotFoundTitle}"
+                    Description="{gallery:ResultShowCaseLangResource NotFoundDescription}"
+                    IsOccupyEntireRow="True"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ResultViewModel">
+                            <atom:Result Status="ErrorCode404"
+                                         Header="404"
+                                         SubHeader="{gallery:ResultShowCaseLangResource P2SubHeaderNotFound}">
+                                <atom:Result.Extra>
+                                    <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentBackHome}" />
+                                </atom:Result.Extra>
+                            </atom:Result>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:ResultShowCaseLangResource ServerErrorTitle}"
-        Description="{gallery:ResultShowCaseLangResource ServerErrorDescription}"
-        IsOccupyEntireRow="True"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:ResultViewModel">
-        <atom:Result Status="ErrorCode500"
-                     Header="500"
-                     SubHeader="{gallery:ResultShowCaseLangResource P2SubHeaderServerError}">
-            <atom:Result.Extra>
-                <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentBackHome}" />
-            </atom:Result.Extra>
-        </atom:Result>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:ResultShowCaseLangResource ServerErrorTitle}"
+                    Description="{gallery:ResultShowCaseLangResource ServerErrorDescription}"
+                    IsOccupyEntireRow="True"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ResultViewModel">
+                            <atom:Result Status="ErrorCode500"
+                                         Header="500"
+                                         SubHeader="{gallery:ResultShowCaseLangResource P2SubHeaderServerError}">
+                                <atom:Result.Extra>
+                                    <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentBackHome}" />
+                                </atom:Result.Extra>
+                            </atom:Result>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:ResultShowCaseLangResource ErrorTitle}"
-        Description="{gallery:ResultShowCaseLangResource ErrorDescription}"
-        IsOccupyEntireRow="True"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:ResultViewModel">
-        <atom:Result Status="Error"
-                     Header="{gallery:ResultShowCaseLangResource P2HeaderSubmissionFailed}"
-                     SubHeader="{gallery:ResultShowCaseLangResource P2SubHeaderSubmissionFailed}">
-            <atom:Result.Extra>
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentGoConsole}" />
-                    <atom:Button Content="{gallery:ResultShowCaseLangResource P2ContentBuyAgain}" />
-                </StackPanel>
-            </atom:Result.Extra>
-            <StackPanel Spacing="8">
-                <TextBlock FontWeight="Bold" FontSize="16" Text="{gallery:ResultShowCaseLangResource P2TextTheContentYouSubmittedHasTheFollowingError}" />
+                <gallery:ShowCaseItem
+                    Title="{gallery:ResultShowCaseLangResource ErrorTitle}"
+                    Description="{gallery:ResultShowCaseLangResource ErrorDescription}"
+                    IsOccupyEntireRow="True"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ResultViewModel">
+                            <atom:Result Status="Error"
+                                         Header="{gallery:ResultShowCaseLangResource P2HeaderSubmissionFailed}"
+                                         SubHeader="{gallery:ResultShowCaseLangResource P2SubHeaderSubmissionFailed}">
+                                <atom:Result.Extra>
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentGoConsole}" />
+                                        <atom:Button Content="{gallery:ResultShowCaseLangResource P2ContentBuyAgain}" />
+                                    </StackPanel>
+                                </atom:Result.Extra>
+                                <StackPanel Spacing="8">
+                                    <TextBlock FontWeight="Bold" FontSize="16" Text="{gallery:ResultShowCaseLangResource P2TextTheContentYouSubmittedHasTheFollowingError}" />
 
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <antdicons:CloseCircleOutlined Foreground="{atom:SharedTokenResource ColorError}"/>
-                    <TextBlock Text="{gallery:ResultShowCaseLangResource P2TextYourAccountHasBeenFrozen}" />
-                    <TextBlock Foreground="{atom:SharedTokenResource ColorPrimary}" Text="{gallery:ResultShowCaseLangResource P2TextThawImmediately}" />
-                </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <antdicons:CloseCircleOutlined Foreground="{atom:SharedTokenResource ColorError}"/>
+                                        <TextBlock Text="{gallery:ResultShowCaseLangResource P2TextYourAccountHasBeenFrozen}" />
+                                        <TextBlock Foreground="{atom:SharedTokenResource ColorPrimary}" Text="{gallery:ResultShowCaseLangResource P2TextThawImmediately}" />
+                                    </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <antdicons:CloseCircleOutlined Foreground="{atom:SharedTokenResource ColorError}"/>
-                    <TextBlock Text="{gallery:ResultShowCaseLangResource P2TextYourAccountIsNotYetEligibleToApply}" />
-                    <TextBlock Foreground="{atom:SharedTokenResource ColorPrimary}" Text="{gallery:ResultShowCaseLangResource P2TextApplyUnlock}" />
-                </StackPanel>
-            </StackPanel>
-        </atom:Result>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <antdicons:CloseCircleOutlined Foreground="{atom:SharedTokenResource ColorError}"/>
+                                        <TextBlock Text="{gallery:ResultShowCaseLangResource P2TextYourAccountIsNotYetEligibleToApply}" />
+                                        <TextBlock Foreground="{atom:SharedTokenResource ColorPrimary}" Text="{gallery:ResultShowCaseLangResource P2TextApplyUnlock}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </atom:Result>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:ResultShowCaseLangResource CustomIconTitle}"
-        Description="{gallery:ResultShowCaseLangResource CustomIconDescription}"
-        IsOccupyEntireRow="True"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:ResultViewModel">
-        <atom:Result Status="Info"
-                     Icon="{antdicons:AntDesignIconProvider SmileOutlined}"
-                     Header="{gallery:ResultShowCaseLangResource P2HeaderGreatWeHaveDoneAllTheOperations}">
-            <atom:Result.Extra>
-                <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentNext}" />
-            </atom:Result.Extra>
-        </atom:Result>
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:ResultShowCaseLangResource CustomIconTitle}"
+                    Description="{gallery:ResultShowCaseLangResource CustomIconDescription}"
+                    IsOccupyEntireRow="True"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ResultViewModel">
+                            <atom:Result Status="Info"
+                                         Icon="{antdicons:AntDesignIconProvider SmileOutlined}"
+                                         Header="{gallery:ResultShowCaseLangResource P2HeaderGreatWeHaveDoneAllTheOperations}">
+                                <atom:Result.Extra>
+                                    <atom:Button ButtonType="Primary" Content="{gallery:ResultShowCaseLangResource P2ContentNext}" />
+                                </atom:Result.Extra>
+                            </atom:Result>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:ResultShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:ResultShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="result-semantic-part"
+                    BadgeText="v6.1.3"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ResultViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="16">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Result.semantic-object-demo">
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorText}" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Setter Property="StrokeDashArray" Value="4,2" />
+                                        <Setter Property="Padding" Value="16" />
+                                        <atom:ResultTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="FontStyle" Value="Italic" />
+                                            <Setter Property="Foreground" Value="#1890ff" />
+                                        </atom:ResultTitleStyle>
+                                        <atom:ResultSubTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                        </atom:ResultSubTitleStyle>
+                                        <atom:ResultIconStyle x:SetterTargetType="Control">
+                                            <Setter Property="Opacity" Value="0.8" />
+                                        </atom:ResultIconStyle>
+                                        <atom:ResultExtraStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Background" Value="#f0f0f0" />
+                                            <Setter Property="Padding" Value="8" />
+                                        </atom:ResultExtraStyle>
+                                        <atom:ResultBodyStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Background" Value="#fafafa" />
+                                            <Setter Property="Padding" Value="12" />
+                                        </atom:ResultBodyStyle>
+                                    </Style>
+                                    <Style Selector="atom|Result.semantic-function-demo">
+                                        <Setter Property="Background" Value="#f6ffed" />
+                                        <Setter Property="BorderBrush" Value="#52c41a" />
+                                        <atom:ResultTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#52c41a" />
+                                        </atom:ResultTitleStyle>
+                                    </Style>
+                                    <Style Selector="atom|Result.semantic-function-demo[Status=Error]">
+                                        <Setter Property="Background" Value="#fff2f0" />
+                                        <Setter Property="BorderBrush" Value="#ff4d4f" />
+                                        <atom:ResultTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#ff4d4f" />
+                                        </atom:ResultTitleStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:Result Name="ResultObjectSemanticDemo"
+                                             Classes="semantic-object-demo"
+                                             Status="Info"
+                                             Header="classNames Object"
+                                             SubHeader="This is a subtitle">
+                                    <atom:Result.Extra>
+                                        <atom:Button ButtonType="Primary"
+                                                     Content="Action" />
+                                    </atom:Result.Extra>
+                                    <TextBlock Text="Content area" />
+                                </atom:Result>
+
+                                <atom:Result Name="ResultFunctionSemanticDemo"
+                                             Classes="semantic-function-demo"
+                                             Status="Success"
+                                             Header="classNames Function"
+                                             SubHeader="Dynamic class names">
+                                    <atom:Result.Extra>
+                                        <atom:Button Content="Action" />
+                                    </atom:Result.Extra>
+                                </atom:Result>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

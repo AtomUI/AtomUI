@@ -87,4 +87,20 @@ public class TextGlyph : WatermarkGlyph
     {
         return FormattedText == null ? new Size() : new Size(FormattedText.Width, FormattedText.Height);
     }
+
+    // FormattedText 的布局尺寸不包含字形越界。此方法只用于确切的内置 TextGlyph，
+    // 自定义子类的 Render 不受该边界约束。
+    internal Rect GetDrawingBounds()
+    {
+        var bounds = new Rect(GetDesiredSize());
+        if (FormattedText is not { } text || !double.IsFinite(text.Extent) || text.Extent <= 0)
+        {
+            return bounds;
+        }
+
+        var inkBounds = new Rect(text.OverhangLeading,
+            text.Height + text.OverhangAfter - text.Extent,
+            Math.Max(0, text.Width - text.OverhangTrailing - text.OverhangLeading), text.Extent);
+        return bounds.Union(inkBounds);
+    }
 }

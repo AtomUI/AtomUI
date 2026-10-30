@@ -1,6 +1,5 @@
 using AtomUI.Controls.Data;
 using AtomUI.Desktop.Controls;
-using Avalonia.Interactivity;
 
 namespace AtomUIGallery.ShowCases.List;
 

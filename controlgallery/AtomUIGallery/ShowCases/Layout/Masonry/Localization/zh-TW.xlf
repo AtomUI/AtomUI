@@ -91,5 +91,41 @@
         <target state="translated">範例</target>
       </segment>
     </unit>
+    <unit id="SemanticFunctionStylesTitle">
+      <segment>
+        <source>Style matched by property state</source>
+        <target state="translated">按屬性狀態命中的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item container measured, column-assigned and arranged by the masonry layout, carrying the Masonry.Column and Masonry.Span metadata.</source>
+        <target state="translated">條目容器，由瀑布流版面測量、分配欄並排列，承載 Masonry.Column 與 Masonry.Span 中繼資料。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticObjectStylesTitle">
+      <segment>
+        <source>Style matched by class</source>
+        <target state="translated">按 class 命中的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles and the MasonryItemStyle semantic part style to customize Masonry's published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域樣式和 MasonryItemStyle 語義部件專用樣式，定制 Masonry 已發布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, provides the root chrome, column and gutter layout inputs, and the ItemsControl entry.</source>
+        <target state="translated">根元素，提供根 chrome、欄數與間距版面輸入，以及 ItemsControl 輸入入口。</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

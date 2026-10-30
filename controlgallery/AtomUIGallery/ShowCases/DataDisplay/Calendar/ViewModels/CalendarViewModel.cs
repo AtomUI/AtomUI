@@ -1,7 +1,5 @@
 using System.Globalization;
-using AtomUIGallery.Localization;
 using AtomUI.Controls;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
 using Avalonia;
 using Avalonia.Data.Converters;
@@ -125,7 +123,7 @@ public sealed class NoticeCalendarDateEventVisibilityConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is not CalendarCellContext { CellType: CalendarCellType.Date } context ||
+        if (value is not CalendarCellContext { CellType: DateViewerCellType.Date } context ||
             parameter is not string days)
         {
             return false;
@@ -155,7 +153,7 @@ public sealed class NoticeCalendarDateCellVisibilityConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is CalendarCellContext { CellType: CalendarCellType.Date };
+        return value is CalendarCellContext { CellType: DateViewerCellType.Date };
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -168,7 +166,7 @@ public sealed class NoticeCalendarMonthBacklogVisibilityConverter : IValueConver
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is CalendarCellContext { CellType: CalendarCellType.Month, Value.Month: 9 };
+        return value is CalendarCellContext { CellType: DateViewerCellType.Month, Value.Month: 9 };
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

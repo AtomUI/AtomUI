@@ -14,6 +14,7 @@ Popup 接入边界：`FlyoutHost` / `Flyout` 负责业务状态和内容准备�
 
 - `src/AtomUI.Desktop.Controls/Flyouts/Flyout.cs`
 - `src/AtomUI.Desktop.Controls/Flyouts/FlyoutHost.cs`
+- `src/AtomUI.Desktop.Controls/Flyouts/FlyoutHost.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Flyouts/FlyoutHostToken.cs`
 - `src/AtomUI.Desktop.Controls/Flyouts/FlyoutPresenter.cs`
 - `src/AtomUI.Desktop.Controls/Flyouts/FlyoutStateHelper.cs`
@@ -41,7 +42,11 @@ Popup 接入边界：`FlyoutHost` / `Flyout` 负责业务状态和内容准备�
 - `Flyout`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `FlyoutHost`：模板协作类型，承载内容展示、宿主或视觉边界。
 - `FlyoutHostToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
-- `FlyoutPresenter`：模板协作类型，承载内容展示、宿主或视觉边界。
+- `FlyoutPresenter`：模板协作类型，承载内容展示、宿主或视觉边界。其 `OnApplyTemplate` 在模板应用时向共享
+  `ArrowDecoratedBoxTheme` 的 `Border#PART_ContentDecorator` / `ContentPresenter#ContentPresenter` /
+  `ArrowIndicator#PART_ArrowIndicator` 注入 `popup.container` / `popup.content` / `popup.arrow` 语义标记类；
+  `popup.root` 标记由 `Flyout.CreatePresenter()` 创建 presenter 时注入。Part 契约与存在条件见
+  [InfoFlyout Semantic Part 契约](semantic-part.md)。
 - `FlyoutStateHelper`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `MenuFlyout`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `MenuFlyoutPresenter`：模板协作类型，承载内容展示、宿主或视觉边界。

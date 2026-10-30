@@ -128,6 +128,7 @@ public class WindowTitleBarLogoVisibilityTests
         source.ShouldContain("WindowTitleBarLogoVisibility.Always => hasLogo");
         source.ShouldContain("WindowTitleBarLogoVisibility.Never => false");
         source.ShouldContain("_ => hasLogo && ShouldShowLogoInAutoMode()");
+        source.ShouldContain("HostWindowState != WindowState.FullScreen && isLogoVisibleByMode");
         source.ShouldContain("HostWindowState != WindowState.FullScreen");
         source.ShouldContain("OsType == OsType.macOS");
         source.ShouldContain("string text => !string.IsNullOrWhiteSpace(text)");
@@ -198,8 +199,10 @@ public class WindowTitleBarLogoVisibilityTests
         source.ShouldContain(
             "titleBar.Bind(WindowTitleBar.LogoVisibilityProperty, this.GetObservable(LogoVisibilityProperty))");
         source.ShouldContain("IsEffectiveFullscreenLogoVisibleProperty");
+        source.ShouldContain("EffectiveFullscreenLogoProperty");
+        source.ShouldContain("EffectiveFullscreenLogoTemplateProperty");
         source.ShouldContain("UpdateEffectiveFullscreenLogoVisible()");
-        source.ShouldContain("_ => hasLogo && HasTitleContent(Title) && IsEffectiveFullscreenTitleVisible");
+        source.ShouldContain("WindowState == WindowState.FullScreen && isLogoVisibleByMode");
         // Effective Logo 模式：回退解析只进 EffectiveLogo/EffectiveLogoTemplate 渲染层，
         // 框架不再向 Logo/LogoTemplate/Icon 写入任何默认值
         source.ShouldContain("UpdateEffectiveLogo()");
@@ -219,6 +222,12 @@ public class WindowTitleBarLogoVisibilityTests
         Regex.Matches(source, "IsVisible=\"\\{TemplateBinding IsEffectiveLogoVisible\\}\"")
              .Count
              .ShouldBe(3);
+        Regex.Matches(source, "Content=\"\\{TemplateBinding EffectiveLogoPresenterContent\\}\"")
+             .Count
+             .ShouldBe(3);
+        Regex.Matches(source, "ContentTemplate=\"\\{TemplateBinding EffectiveLogoPresenterContentTemplate\\}\"")
+             .Count
+             .ShouldBe(3);
     }
 
     [Fact]
@@ -236,8 +245,11 @@ public class WindowTitleBarLogoVisibilityTests
 
         foreach (var source in new[] { fullscreenPopoverSource, drawnDecorationsSource })
         {
-            source.ShouldContain("Content=\"{Binding $parent[atom:Window].EffectiveLogo}\"");
+            source.ShouldContain("Content=\"{Binding $parent[atom:Window].EffectiveFullscreenLogo}\"");
             source.ShouldContain(
+                "ContentTemplate=\"{Binding $parent[atom:Window].EffectiveFullscreenLogoTemplate}\"");
+            source.ShouldNotContain("Content=\"{Binding $parent[atom:Window].EffectiveLogo}\"");
+            source.ShouldNotContain(
                 "ContentTemplate=\"{Binding $parent[atom:Window].EffectiveLogoTemplate}\"");
         }
     }

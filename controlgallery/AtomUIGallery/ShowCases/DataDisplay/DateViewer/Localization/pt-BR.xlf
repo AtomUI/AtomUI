@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" trgLang="pt-BR" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUIGallery.Localization.DateViewerShowCaseLangResourceKind">
+    <unit id="PageSubtitle">
+      <segment>
+        <source>An embedded date panel for a value or an atomic range.</source>
+        <target state="translated">Um painel de datas integrado para um valor ou intervalo atômico.</target>
+      </segment>
+    </unit>
+    <unit id="PageDescription">
+      <segment>
+        <source>Use DateViewer and RangeDateViewer directly without an input or popup. Browse and select dates, weeks, months, quarters, or years.</source>
+        <target state="translated">Use DateViewer e RangeDateViewer diretamente, sem campo de entrada ou popup. Navegue e selecione datas, semanas, meses, trimestres ou anos.</target>
+      </segment>
+    </unit>
+    <unit id="ComponentCategory">
+      <segment>
+        <source>Data Display</source>
+        <target state="translated">Exibição de dados</target>
+      </segment>
+    </unit>
+    <unit id="ComponentStatusStable">
+      <segment>
+        <source>Stable</source>
+        <target state="translated">Estável</target>
+      </segment>
+    </unit>
+    <unit id="BasicTitle">
+      <segment>
+        <source>Embedded value and range</source>
+        <target state="translated">Valor e intervalo integrados</target>
+      </segment>
+    </unit>
+    <unit id="BasicDescription">
+      <segment>
+        <source>Value binds TwoWay by default. RangeDateViewer writes one immutable DateViewerRange, including partial selection.</source>
+        <target state="translated">Value usa vinculação bidirecional por padrão. RangeDateViewer grava um DateViewerRange imutável, incluindo a seleção parcial.</target>
+      </segment>
+    </unit>
+    <unit id="UnitsTitle">
+      <segment>
+        <source>Five selection units</source>
+        <target state="translated">Cinco unidades de seleção</target>
+      </segment>
+    </unit>
+    <unit id="UnitsDescription">
+      <segment>
+        <source>One unit controls both panels. Week selects the entire week; other units output the first date of the selected period.</source>
+        <target state="translated">Uma unidade controla ambos os painéis. Semana seleciona a semana inteira; as demais unidades retornam a primeira data do período.</target>
+      </segment>
+    </unit>
+    <unit id="BrowsingTitle">
+      <segment>
+        <source>Browse with an empty value</source>
+        <target state="translated">Navegação com valor vazio</target>
+      </segment>
+    </unit>
+    <unit id="BrowsingDescription">
+      <segment>
+        <source>DisplayDate is independent of Value. Navigate through the header, then clear the selection while keeping the displayed period.</source>
+        <target state="translated">DisplayDate é independente de Value. Navegue pelo cabeçalho e limpe a seleção mantendo o período exibido.</target>
+      </segment>
+    </unit>
+    <unit id="ContentTitle">
+      <segment>
+        <source>Compact and content presentation</source>
+        <target state="translated">Apresentação compacta e de conteúdo</target>
+      </segment>
+    </unit>
+    <unit id="ContentDescription">
+      <segment>
+        <source>Compact uses the natural panel width; Content expands its cells inside the assigned width. Selection and navigation use the same model.</source>
+        <target state="translated">Compact usa a largura natural do painel; Content expande as células na largura definida. Seleção e navegação compartilham o mesmo modelo.</target>
+      </segment>
+    </unit>
+    <unit id="CellTitle">
+      <segment>
+        <source>Cell content and date limits</source>
+        <target state="translated">Conteúdo da célula e limites de data</target>
+      </segment>
+    </unit>
+    <unit id="CellDescription">
+      <segment>
+        <source>CellTemplate adds content below the default date. The typed context exposes cell state. MinDate and MaxDate are inclusive; weekends are disabled.</source>
+        <target state="translated">CellTemplate adiciona conteúdo abaixo da data padrão. O contexto tipado expõe o estado. MinDate e MaxDate incluem os limites; fins de semana são desabilitados.</target>
+      </segment>
+    </unit>
+    <unit id="FullCellTitle">
+      <segment>
+        <source>Full cell content</source>
+        <target state="translated">Conteúdo completo da célula</target>
+      </segment>
+    </unit>
+    <unit id="FullCellDescription">
+      <segment>
+        <source>FullCellTemplate replaces the date content while the control retains selection, disabled state, focus, and automation.</source>
+        <target state="translated">FullCellTemplate substitui o conteúdo da data, mantendo seleção, estado desabilitado, foco e automação.</target>
+      </segment>
+    </unit>
+    <unit id="HeaderTitle">
+      <segment>
+        <source>Typed header commands</source>
+        <target state="translated">Comandos tipados do cabeçalho</target>
+      </segment>
+    </unit>
+    <unit id="HeaderDescription">
+      <segment>
+        <source>HeaderTemplate receives DateViewerHeaderContext. NavigateCommand takes an integer; ChangePanelCommand takes DateViewerPanelKind.</source>
+        <target state="translated">HeaderTemplate recebe DateViewerHeaderContext. NavigateCommand usa um inteiro; ChangePanelCommand usa DateViewerPanelKind.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitle">
+      <segment>
+        <source>Semantic cell styles</source>
+        <target state="translated">Estilos semânticos das células</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescription">
+      <segment>
+        <source>Apply generated DateViewerCellStyle and RangeDateViewerCellStyle within owner-scoped styles to customize the public cell part.</source>
+        <target state="translated">Aplique DateViewerCellStyle e RangeDateViewerCellStyle gerados dentro do escopo do controle para personalizar a parte pública cell.</target>
+      </segment>
+    </unit>
+    <unit id="UnitDate">
+      <segment>
+        <source>Date</source>
+        <target state="translated">Data</target>
+      </segment>
+    </unit>
+    <unit id="UnitWeek">
+      <segment>
+        <source>Week</source>
+        <target state="translated">Semana</target>
+      </segment>
+    </unit>
+    <unit id="UnitMonth">
+      <segment>
+        <source>Month</source>
+        <target state="translated">Mês</target>
+      </segment>
+    </unit>
+    <unit id="UnitQuarter">
+      <segment>
+        <source>Quarter</source>
+        <target state="translated">Trimestre</target>
+      </segment>
+    </unit>
+    <unit id="UnitYear">
+      <segment>
+        <source>Year</source>
+        <target state="translated">Ano</target>
+      </segment>
+    </unit>
+    <unit id="Clear">
+      <segment>
+        <source>Clear selection</source>
+        <target state="translated">Limpar seleção</target>
+      </segment>
+    </unit>
+    <unit id="Previous">
+      <segment>
+        <source>Previous</source>
+        <target state="translated">Anterior</target>
+      </segment>
+    </unit>
+    <unit id="Next">
+      <segment>
+        <source>Next</source>
+        <target state="translated">Próximo</target>
+      </segment>
+    </unit>
+    <unit id="ChooseYear">
+      <segment>
+        <source>Choose year</source>
+        <target state="translated">Escolher ano</target>
+      </segment>
+    </unit>
+    <unit id="Compact">
+      <segment>
+        <source>Compact</source>
+        <target state="translated">Compacto</target>
+      </segment>
+    </unit>
+    <unit id="Content">
+      <segment>
+        <source>Content</source>
+        <target state="translated">Conteúdo</target>
+      </segment>
+    </unit>
+    <unit id="CellNote">
+      <segment>
+        <source>Available</source>
+        <target state="translated">Disponível</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The embedded panel surface and instance layout.</source>
+        <target state="translated">Superfície do painel integrado e layout da instância.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Navigation or custom header content; hidden when ShowHeader is false.</source>
+        <target state="translated">Navegação ou cabeçalho personalizado; oculto quando ShowHeader é false.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>The date body that contains the visible panels.</source>
+        <target state="translated">Corpo de datas que contém os painéis visíveis.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>The single panel for browsing and selecting dates.</source>
+        <target state="translated">O painel único para navegar e selecionar datas.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCellDescription">
+      <segment>
+        <source>Interactive date, period, or week-number containers.</source>
+        <target state="translated">Contêineres interativos de datas, períodos ou números da semana.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCellContentDescription">
+      <segment>
+        <source>Typed template content within the interactive cell.</source>
+        <target state="translated">Conteúdo de modelo tipado dentro da célula interativa.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>The Today action below the date panel; shown for standalone date selection.</source>
+        <target state="translated">A ação Hoje abaixo do painel de datas, exibida na seleção de data independente.</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

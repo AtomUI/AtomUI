@@ -8,99 +8,46 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class DrawerShowCasePageTests
 {
+
     [Fact]
-    public void Drawer_ShowCase_Uses_Document_Layout_With_Examples()
+    public void Drawer_ShowCase_Semantic_Preview_Follows_The_Inline_Pinned_Pattern()
     {
         var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Drawer/Views/DrawerShowCase.axaml");
 
-        source.ShouldContain("DrawerShowCaseLangResource PageSubtitle");
-        source.ShouldContain("DrawerShowCaseLangResource PageDescription");
-        source.ShouldNotContain("DrawerShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("DrawerShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("DrawerShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("DrawerShowCaseLangResource ComponentCategory");
-        source.ShouldContain("DrawerShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("DrawerShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("DrawerShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("DrawerShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldContain("InitialDeferredLoadItemCount=\"4\"");
-        source.ShouldContain("DeferredLoadBatchSize=\"2\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:DrawerShowCaseLangResource PageDescription}\"");
-        CountShowCaseItemElements(source).ShouldBe(8);
-        CountOccurrences(source, "IsDeferredContentEnabled=\"True\"").ShouldBe(8);
-        CountOccurrences(source, "<gallery:ShowCaseItem.DeferredContentTemplate>").ShouldBe(8);
-        CountOccurrences(source, "DataTemplate x:DataType=\"vm:DrawerViewModel\"").ShouldBe(8);
-        source.ShouldContain("DrawerShowCaseLangResource BasicTitle");
-        source.ShouldContain("DrawerShowCaseLangResource MultiLevelTitle");
-        source.ShouldContain("DrawerShowCaseLangResource FormInDrawerTitle");
-        source.ShouldContain("DrawerShowCaseLangResource PresetSizeTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:TabItem");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
-    }
+        source.ShouldContain("GalleryShowCaseHost.SemanticPartsContentTemplate");
+        source.ShouldContain("<gallery:SemanticPartPreview Name=\"DrawerSemanticPreview\"");
+        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:Drawer}\"");
+        source.ShouldContain("SemanticOwner=\"{Binding #DrawerSemanticOwner}\"");
+        source.ShouldContain("Name=\"DrawerSemanticStage\"");
+        source.ShouldContain("Name=\"DrawerSemanticOwner\"");
+        source.ShouldContain("IsOpen=\"True\"");
+        source.ShouldContain("IsPinnedOpen=\"True\"");
+        source.ShouldContain("IsMotionEnabled=\"False\"");
+        source.ShouldContain("DialogSize=\"300\"");
+        source.ShouldContain("OpenOn=\"{Binding #DrawerSemanticStage}\"");
 
-    [Fact]
-    public void Drawer_ShowCase_Form_In_Drawer_Maps_AntDesign_Form_Demo()
-    {
-        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Drawer/Views/DrawerShowCase.axaml");
-        var formInDrawerItem = ExtractShowCaseItem(source, "FormInDrawerTitle");
+        // PartDescriptions 顺序对齐 antd _semantic.tsx（去掉 dragger）。
+        var paths = Regex.Matches(source, "SemanticPartDescription Path=\"([^\"]+)\"")
+                         .Select(static m => m.Groups[1].Value).ToArray();
+        paths.ShouldBe(["root", "mask", "section", "header", "title", "extra", "body", "footer", "close"]);
 
-        source.ShouldContain("DrawerShowCaseLangResource FormInDrawerTitle");
-        source.ShouldContain("DrawerShowCaseLangResource FormInDrawerDescription");
-        formInDrawerItem.ShouldNotContain("IsOccupyEntireRow=\"True\"");
-        source.ShouldContain("Kind=PlusOutlined");
-        source.ShouldContain("DrawerShowCaseLangResource P2ContentNewAccount");
-        source.ShouldContain("Name=\"FormDrawer\"");
-        source.ShouldContain("DrawerShowCaseLangResource P2TitleCreateNewAccount");
-        source.ShouldContain("DialogSize=\"720\"");
-        source.ShouldContain("ContentPadding=\"24,24,24,80\"");
-        source.ShouldContain("<atom:Drawer.Extra>");
-        source.ShouldContain("DrawerShowCaseLangResource P2ContentSubmit");
-        source.ShouldContain("<atom:Form");
-        source.ShouldContain("FormLayout=\"Vertical\"");
-        source.ShouldContain("RequiredMark=\"Hidden\"");
-        source.ShouldContain("ColumnDefinitions=\"*,*\"");
-        source.ShouldContain("ColumnSpacing=\"16\"");
-        source.ShouldContain("Grid.Column=\"1\"");
-        source.ShouldContain("Grid.Row=\"1\"");
-        source.ShouldNotContain("<atom:Form.ItemsPanel>");
-        source.ShouldContain("DrawerShowCaseLangResource P2LabelTextName");
-        source.ShouldContain("DrawerShowCaseLangResource P2LabelTextUrl");
-        source.ShouldContain("LeftAddOn=\"http://\"");
-        source.ShouldContain("RightAddOn=\".com\"");
-        source.ShouldContain("OptionsSource=\"{Binding AccountOwnerOptions}\"");
-        source.ShouldContain("OptionsSource=\"{Binding AccountTypeOptions}\"");
-        source.ShouldContain("OptionsSource=\"{Binding AccountApproverOptions}\"");
-        source.ShouldContain("<atom:RangeDatePicker");
-        source.ShouldContain("<atom:TextArea Lines=\"4\"");
-    }
+        // 跨根经 ISemanticPartCrossRootProvider 上报，不允许出现 DropdownButton 式的 code-behind 根注册。
+        source.ShouldNotContain("HandleSemanticPreviewLoaded");
+        source.ShouldNotContain("HandleSemanticPreviewUnloaded");
 
-    [Fact]
-    public void Drawer_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Feedback/Drawer/Views/DrawerShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/DrawerShowCaseExamples.snapshot");
-
-        var normalized = NormalizeMarkup(ExtractDrawerExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
+        // SemanticStyles 示例必须用生成 Style 类定制（专用 Style 唯一定制入口）。
+        var semanticStylesItem = ExtractShowCaseItem(source, "SemanticStylesTitle");
+        semanticStylesItem.ShouldContain("atom:DrawerMaskStyle");
+        semanticStylesItem.ShouldContain("atom:DrawerSectionStyle");
+        semanticStylesItem.ShouldContain("atom:DrawerHeaderStyle");
+        semanticStylesItem.ShouldContain("atom:DrawerTitleStyle");
+        semanticStylesItem.ShouldContain("atom:DrawerExtraStyle");
+        semanticStylesItem.ShouldContain("atom:DrawerBodyStyle");
+        semanticStylesItem.ShouldContain("atom:DrawerFooterStyle");
+        semanticStylesItem.ShouldContain("atom:DrawerCloseStyle");
+        // 禁止以事件处理器为特征的代码回退。
+        semanticStylesItem.ShouldNotContain(".Loaded=");
+        semanticStylesItem.ShouldNotContain(".Unloaded=");
     }
 
     private static string ExtractDrawerExampleItems(string source)

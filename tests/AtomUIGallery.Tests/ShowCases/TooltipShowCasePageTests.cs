@@ -5,55 +5,49 @@ namespace AtomUIGallery.Tests.ShowCases;
 
 public class TooltipShowCasePageTests
 {
+
     [Fact]
-    public void Tooltip_ShowCase_Uses_Document_Layout_With_Examples()
+    public void Tooltip_ShowCase_Exposes_Semantic_Parts_Tab()
     {
         var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tooltip/Views/TooltipShowCase.axaml");
 
-        source.ShouldContain("TooltipShowCaseLangResource PageSubtitle");
-        source.ShouldContain("TooltipShowCaseLangResource PageDescription");
-        source.ShouldNotContain("TooltipShowCaseLangResource InfoNamespaceLabel");
-        source.ShouldNotContain("TooltipShowCaseLangResource InfoPackageLabel");
-        source.ShouldNotContain("TooltipShowCaseLangResource InfoBaseClassLabel");
-        source.ShouldContain("TooltipShowCaseLangResource ComponentCategory");
-        source.ShouldContain("TooltipShowCaseLangResource ComponentStatusStable");
-        source.ShouldNotContain("TooltipShowCaseLangResource ScenarioExamples");
-        source.ShouldNotContain("TooltipShowCaseLangResource ScenarioApi");
-        source.ShouldNotContain("TooltipShowCaseLangResource ScenarioDesignToken");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("ContentMargin=\"28,10,28,28\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-label\"");
-        source.ShouldNotContain("Selector=\"atom|TextBlock.info-value\"");
-        CountOccurrences(source, "Classes=\"info-label\"").ShouldBe(0);
-        CountOccurrences(source, "Classes=\"info-value\"").ShouldBe(0);
-        source.ShouldNotContain("LineHeight=\"22\"");
-        source.ShouldContain("Description=\"{gallery:TooltipShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("<gallery:ShowCaseItem");
-        source.ShouldContain("TooltipShowCaseLangResource BasicTitle");
-        source.ShouldContain("TooltipShowCaseLangResource PlacementTitle");
-        source.ShouldContain("TooltipShowCaseLangResource ArrowTitle");
-        source.ShouldContain("TooltipShowCaseLangResource ColorfulTooltipTitle");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-        source.ShouldNotContain(">Gallery<");
+        source.ShouldContain("SemanticOwnerType=\"{x:Type atom:ToolTip}\"");
+        source.ShouldContain("SemanticOwner=\"{Binding #TooltipSemanticOwner}\"");
+        foreach (var partPath in new[]
+                 {
+                     "root", "container", "arrow"
+                 })
+        {
+            source.ShouldContain($"Path=\"{partPath}\"");
+        }
+
+        source.ShouldContain("SemanticRootDescription");
+        source.ShouldContain("SemanticContainerDescription");
+        source.ShouldContain("SemanticArrowDescription");
+        source.ShouldContain("SemanticPartStyleTitle");
+        source.ShouldContain("SemanticPartStyleDescription");
+
+        var lowered = source.ToLowerInvariant();
+        lowered.ShouldNotContain("semantic dom");
+        lowered.ShouldNotContain("classnames");
     }
 
     [Fact]
-    public void Tooltip_ShowCase_Examples_Match_Approved_Control_Demo_Content()
+    public void Tooltip_ShowCase_Semantic_Preview_Content_Hugs_Its_Content_Width()
     {
-        var source   = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tooltip/Views/TooltipShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/TooltipShowCaseExamples.snapshot");
+        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tooltip/Views/TooltipShowCase.axaml");
 
-        NormalizeMarkup(ExtractTooltipExampleItems(source))
-            .ShouldBe(NormalizeMarkup(approved));
+        // 预览舞台以 Stretch 测量内容，ToolTip 若不声明非 Stretch 的对齐会被
+        // 撑到 ToolTipMaxWidth(250) 满宽，胶囊宽度远超 "prompt text" 所需。
+        const string ownerStart = "<atom:ToolTip Name=\"TooltipSemanticOwner\"";
+        var ownerStartIndex = source.IndexOf(ownerStart, StringComparison.Ordinal);
+        ownerStartIndex.ShouldBeGreaterThanOrEqualTo(0);
+
+        var ownerEndIndex = source.IndexOf("/>", ownerStartIndex, StringComparison.Ordinal);
+        ownerEndIndex.ShouldBeGreaterThan(ownerStartIndex);
+
+        var ownerElement = source[ownerStartIndex..ownerEndIndex];
+        ownerElement.ShouldContain("HorizontalAlignment=\"Center\"");
     }
 
     private static string ExtractTooltipExampleItems(string source)

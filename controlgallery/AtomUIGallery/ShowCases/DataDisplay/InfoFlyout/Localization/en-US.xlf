@@ -151,6 +151,71 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticPopupArrowDescription">
+      <segment>
+        <source>Arrow indicator pointing to the anchor.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContainerDescription">
+      <segment>
+        <source>Inner container that carries the popup background, padding and border.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContentDescription">
+      <segment>
+        <source>Content region of the popup.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root container of the popup layer.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewContentText">
+      <segment>
+        <source>Semantic structure of the InfoFlyout popup.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewTriggerContent">
+      <segment>
+        <source>Semantic Part</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The InfoFlyout host itself.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleFunctionContent">
+      <segment>
+        <source>Function text</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleFunctionTrigger">
+      <segment>
+        <source>Function Style</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleObjectContent">
+      <segment>
+        <source>Object text</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleObjectTrigger">
+      <segment>
+        <source>Object Style</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of the InfoFlyout popup with semantic part styles.</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
     <unit id="TriggerWaysDescription">
       <segment>
         <source>Mouse to click, focus and move in.</source>

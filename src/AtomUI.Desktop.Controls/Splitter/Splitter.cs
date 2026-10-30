@@ -11,7 +11,7 @@ namespace AtomUI.Desktop.Controls;
 
 using ControlList = Avalonia.Controls.Controls;
 
-public class Splitter : TemplatedControl
+public partial class Splitter : TemplatedControl
 {
     #region 公共属性定义
     public static readonly StyledProperty<Orientation> OrientationProperty =
@@ -28,6 +28,12 @@ public class Splitter : TemplatedControl
 
     public static readonly StyledProperty<CornerRadius> LineCornerRadiusProperty =
         AvaloniaProperty.Register<Splitter, CornerRadius>(nameof(LineCornerRadius));
+
+    public static readonly StyledProperty<IReadOnlyList<double>?> BorderDashArrayProperty =
+        AvaloniaProperty.Register<Splitter, IReadOnlyList<double>?>(nameof(BorderDashArray));
+
+    public static readonly StyledProperty<double> BorderDashOffsetProperty =
+        AvaloniaProperty.Register<Splitter, double>(nameof(BorderDashOffset));
 
     public static readonly StyledProperty<IconTemplate?> CollapsePreviousIconProperty =
         AvaloniaProperty.Register<Splitter, IconTemplate?>(nameof(CollapsePreviousIcon));
@@ -63,6 +69,18 @@ public class Splitter : TemplatedControl
     {
         get => GetValue(LineCornerRadiusProperty);
         set => SetValue(LineCornerRadiusProperty, value);
+    }
+
+    public IReadOnlyList<double>? BorderDashArray
+    {
+        get => GetValue(BorderDashArrayProperty);
+        set => SetValue(BorderDashArrayProperty, value);
+    }
+
+    public double BorderDashOffset
+    {
+        get => GetValue(BorderDashOffsetProperty);
+        set => SetValue(BorderDashOffsetProperty, value);
     }
 
     public IconTemplate? CollapsePreviousIcon
@@ -113,6 +131,7 @@ public class Splitter : TemplatedControl
     public event EventHandler<SplitterResizeEventArgs>? ResizeStarted;
     public event EventHandler<SplitterResizeEventArgs>? ResizeDelta;
     public event EventHandler<SplitterResizeEventArgs>? ResizeCompleted;
+    public event EventHandler<SplitterDraggerDoubleClickedEventArgs>? DraggerDoubleClicked;
 
     #endregion
     
@@ -261,5 +280,10 @@ public class Splitter : TemplatedControl
     internal void RaiseResizeCompleted(int handleIndex, IReadOnlyList<double> sizes)
     {
         ResizeCompleted?.Invoke(this, new SplitterResizeEventArgs(handleIndex, sizes));
+    }
+
+    internal void RaiseDraggerDoubleClicked(int handleIndex)
+    {
+        DraggerDoubleClicked?.Invoke(this, new SplitterDraggerDoubleClickedEventArgs(handleIndex));
     }
 }

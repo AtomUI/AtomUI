@@ -6,22 +6,19 @@
     <ControlTheme x:Key="{x:Type atom:CaptionButton}" TargetType="atom:CaptionButton">
         <Setter Property="Template">
             <ControlTemplate>
-                <Panel HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                       VerticalAlignment="{TemplateBinding VerticalAlignment}">
-                    <Border Name="PART_Frame"
-                            Background="{TemplateBinding Background}"
-                            Margin="{TemplateBinding BackgroundInset}"
-                            CornerRadius="{TemplateBinding EffectiveCornerRadius}" />
-                    <Border Padding="{TemplateBinding Padding}">
-                        <atom:IconPresenter
-                            Name="PART_IconPresenter"
-                            Icon="{TemplateBinding EffectiveIcon}"
-                            Width="{TemplateBinding IconWidth}"
-                            Height="{TemplateBinding IconHeight}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
-                    </Border>
-                </Panel>
+                <atom:CaptionButtonFrame Background="{TemplateBinding Background}"
+                                         BackgroundInset="{TemplateBinding BackgroundInset}"
+                                         CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                                         Padding="{TemplateBinding Padding}"
+                                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                         VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                    <atom:IconPresenter Name="PART_IconPresenter"
+                                        Icon="{TemplateBinding EffectiveIcon}"
+                                        Width="{TemplateBinding IconWidth}"
+                                        Height="{TemplateBinding IconHeight}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                </atom:CaptionButtonFrame>
             </ControlTemplate>
         </Setter>
 

@@ -19,6 +19,9 @@
     <UserControl.Styles>
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Simple/AvaloniaEdit.xaml" />
         <StyleInclude Source="avares://AtomUI.Toolkits.GalleryBase/Controls/GalleryCodeViewerSearchPanelTheme.axaml" />
+        <Style Selector="avaloniaEdit|TextEditor /template/ ScrollViewer#PART_ScrollViewer">
+            <Setter Property="IsScrollChainingEnabled" Value="False" />
+        </Style>
     </UserControl.Styles>
     <avaloniaEdit:TextEditor
         Name="PART_Editor"

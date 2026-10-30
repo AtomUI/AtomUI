@@ -55,21 +55,21 @@ public static class ThemeManagerBuilderExtensions
 推荐启动顺序：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.UseDesktopControls();
     builder.UseDesktopColorPicker();
     builder.UseDesktopDataGrid();
     builder.UseGalleryBase(...);
-});
+})
 ```
 
 GalleryBase 依赖 AtomUI Desktop 控件作为 Shell 默认 UI，因此产品应先注册 Desktop 控件主题。
 
-GalleryBase 本身不注册产品主题定义。具体产品通过 `IThemeDefinitionResolver` 显式追加自己的 XML 资源；例如
+GalleryBase 本身不注册产品主题定义。具体产品通过生成的编译主题包或 `IThemeDefinitionResolver` 显式追加定义；例如
 AtomUIGallery 在 `UseGalleryControls()` 中注册四个产品主题，而单独使用 `UseGalleryBase()` 的应用不会看到这些主题。
 
-AtomUIGallery 当前产品主题目录由 XML definition 唯一描述，显示顺序与 Resolver source 顺序一致：
+AtomUIGallery 当前产品主题目录由 XML definition 唯一描述，显示顺序与项目的显式 `AtomUIThemeDefinition` 顺序一致：
 
 | Theme Id | 显示名 | `ColorPrimary` / `ColorLink` | 来源 |
 |---|---|---|---|
@@ -79,9 +79,11 @@ AtomUIGallery 当前产品主题目录由 XML definition 唯一描述，显示�
 | `GoldenPurple` | Golden Purple | `#722ED1` | AtomUIGallery asset |
 | `Magenta` | Magenta | `#EB2F96` | AtomUIGallery asset |
 
-四个产品 asset 由 `UseGalleryControls()` 通过 `AvaloniaAssetThemeDefinitionResolver` 显式列出 `avares://` URI，
+四个产品 XML 在构建期生成类型化主题包，`UseGalleryControls()` 调用 `GeneratedThemePackageRegistration.Register(builder.Theme)`。
+Core 默认主题使用同一生成机制；生成内容只有强类型注册与默认赋值，主题派生仍由运行时算法计算。
+原 XML 仍是可显式读取的 avares 资源，不作为隐式运行时回退。
 不扫描程序集或资源目录。Desktop Gallery 另外使用 `WithApplicationId("AtomUIGallery")` 和
-`UseUserThemeDirectory()` 追加用户目录；Browser Gallery 只使用随应用发布的显式 Resolver。Gallery 不提供独立的
+`UseUserThemeDirectory()` 追加用户目录；Browser Gallery 使用随应用发布的编译包。Gallery 不提供独立的
 reload command 或菜单，宿主需要刷新用户主题时直接调用 `IThemeManager.ReloadThemesAsync()`。Catalog 的冲突、
 首次用户来源降级、整批原子刷新和删除当前用户主题后的默认回退语义以
 [主题系统架构](../../architecture/systems/theming/runtime.md)为准。
@@ -119,7 +121,7 @@ Appearance 子菜单，Compact、Motion 和 Wave Spirit 保留为外层 Theme �
 
 ```text
 <ControlFolder>/Themes/**/*.axaml
-    -> ControlTheme asset owner/reference manifest
+    -> 导出主题、RequiredTokenOwners 与逐控件注册片段
     -> package-level UseGalleryBase() registration
 ```
 

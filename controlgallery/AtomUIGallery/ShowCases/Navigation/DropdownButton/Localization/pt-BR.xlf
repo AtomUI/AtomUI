@@ -181,6 +181,120 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Main content area of dropdown option, sets content layout and link styles</source>
+        <target state="translated">Área de conteúdo principal da opção do dropdown, define layout de conteúdo e estilos de link</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Individual dropdown option element, sets interaction states and background styles</source>
+        <target state="translated">Elemento individual da opção do dropdown, define estados de interação e estilos de fundo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIconDescription">
+      <segment>
+        <source>Icon area of dropdown option, sets icon size and spacing styles</source>
+        <target state="translated">Área de ícone da opção do dropdown, define tamanho do ícone e estilos de espaçamento</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemTitleDescription">
+      <segment>
+        <source>Title content area of dropdown option, sets layout and text styles</source>
+        <target state="translated">Área de conteúdo do título da opção do dropdown, define layout e estilos de texto</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root element of dropdown, sets positioning, z-index and container styles</source>
+        <target state="translated">Elemento raiz do dropdown, define posicionamento, z-index e estilos de contêiner</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewFirstMenuItem">
+      <segment>
+        <source>1st menu item</source>
+        <target state="translated">1º item do menu</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewGroupTitle">
+      <segment>
+        <source>Group title</source>
+        <target state="translated">Título do grupo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewItem1">
+      <segment>
+        <source>Item 1</source>
+        <target state="translated">Item 1</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewOption1">
+      <segment>
+        <source>Option 1</source>
+        <target state="translated">Opção 1</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewOption2">
+      <segment>
+        <source>Option 2</source>
+        <target state="translated">Opção 2</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewSecondMenuItem">
+      <segment>
+        <source>2nd menu item</source>
+        <target state="translated">2º item do menu</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewSubMenu">
+      <segment>
+        <source>SubMenu</source>
+        <target state="translated">Submenu</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesDescription">
+      <segment>
+        <source>Owner-scoped styles targeting the DropdownButton popup Semantic Parts via the generated semantic style classes.</source>
+        <target state="translated">Use as classes de estilo semânticas geradas para personalizar as Semantic Parts do pop-up do DropdownButton.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesFunctionButton">
+      <segment>
+        <source>Function Style</source>
+        <target state="translated">Estilo de função</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesItemLogout">
+      <segment>
+        <source>Logout</source>
+        <target state="translated">Sair</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesItemProfile">
+      <segment>
+        <source>Profile</source>
+        <target state="translated">Perfil</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesItemSettings">
+      <segment>
+        <source>Settings</source>
+        <target state="translated">Configurações</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesObjectButton">
+      <segment>
+        <source>Object Style</source>
+        <target state="translated">Estilo de objeto</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
     <unit id="SizeTypeDescription">
       <segment>
         <source>DropdownButton supports large, middle, small, and Custom sizes with local size properties.</source>

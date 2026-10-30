@@ -12,7 +12,10 @@ public class GalleryNavigationViewModel : ReactiveObject, IActivatableViewModel,
 {
     private readonly GalleryBaseConfiguration _configuration;
     private readonly HashSet<EntityKey>       _routeNodeKeys;
-    private readonly DispatcherTimer          _dispatcherTimer;
+    private readonly Lazy<ReactiveCommand<EntityKey, Unit>> _navigateToCommand;
+    private readonly Lazy<ReactiveCommand<TimeSpan, Unit>> _testNavigatePagesCommand;
+    private readonly Lazy<ReactiveCommand<Unit, Unit>> _stopTestNavigatePagesCommand;
+    private DispatcherTimer? _dispatcherTimer;
     private readonly IDisposable              _activationSubscription;
     private bool _isDisposed;
     private bool _isDiagnosticNavigationRunning;
@@ -32,11 +35,11 @@ public class GalleryNavigationViewModel : ReactiveObject, IActivatableViewModel,
 
     public ViewModelActivator Activator { get; } = new();
 
-    public ReactiveCommand<EntityKey, Unit> NavigateToCommand { get; }
+    public ReactiveCommand<EntityKey, Unit> NavigateToCommand => _navigateToCommand.Value;
 
-    public ReactiveCommand<TimeSpan, Unit> TestNavigatePagesCommand { get; }
+    public ReactiveCommand<TimeSpan, Unit> TestNavigatePagesCommand => _testNavigatePagesCommand.Value;
 
-    public ReactiveCommand<Unit, Unit> StopTestNavigatePagesCommand { get; }
+    public ReactiveCommand<Unit, Unit> StopTestNavigatePagesCommand => _stopTestNavigatePagesCommand.Value;
 
     public GalleryNavigationViewModel(IScreen hostScreen, GalleryBaseConfiguration configuration)
     {
@@ -47,12 +50,9 @@ public class GalleryNavigationViewModel : ReactiveObject, IActivatableViewModel,
             .Select(node => node.Key)
             .ToHashSet();
 
-        _dispatcherTimer      = new DispatcherTimer();
-        _dispatcherTimer.Tick += HandleDiagnosticTimerTick;
-
-        NavigateToCommand           = ReactiveCommand.Create<EntityKey>(DoNavigateTo);
-        TestNavigatePagesCommand    = ReactiveCommand.Create<TimeSpan>(DoTestNavigatePages);
-        StopTestNavigatePagesCommand = ReactiveCommand.Create(DoStopTestNavigatePages);
+        _navigateToCommand = new(() => ReactiveCommand.Create<EntityKey>(DoNavigateTo));
+        _testNavigatePagesCommand = new(() => ReactiveCommand.Create<TimeSpan>(DoTestNavigatePages));
+        _stopTestNavigatePagesCommand = new(() => ReactiveCommand.Create(DoStopTestNavigatePages));
 
         _activationSubscription = Activator.Activated.Subscribe(_ => DoNavigateTo(_configuration.DefaultRoute));
     }
@@ -71,7 +71,11 @@ public class GalleryNavigationViewModel : ReactiveObject, IActivatableViewModel,
 
         _isDisposed = true;
         StopDiagnosticNavigation();
-        _dispatcherTimer.Tick -= HandleDiagnosticTimerTick;
+        if (_dispatcherTimer is { } timer)
+        {
+            timer.Tick -= HandleDiagnosticTimerTick;
+            _dispatcherTimer = null;
+        }
         _activationSubscription.Dispose();
     }
 
@@ -120,6 +124,11 @@ public class GalleryNavigationViewModel : ReactiveObject, IActivatableViewModel,
             return;
         }
 
+        if (_dispatcherTimer is null)
+        {
+            _dispatcherTimer = new DispatcherTimer();
+            _dispatcherTimer.Tick += HandleDiagnosticTimerTick;
+        }
         _dispatcherTimer.Stop();
         if (!_isDiagnosticNavigationRunning)
         {
@@ -129,6 +138,11 @@ public class GalleryNavigationViewModel : ReactiveObject, IActivatableViewModel,
 
         _isDiagnosticNavigationRunning = true;
         GalleryShowCaseRuntimeOptions.IsDeferredLoadingDisabled = true;
+        if (_isDisposed)
+        {
+            return;
+        }
+
         _dispatcherTimer.Interval = interval;
         _dispatcherTimer.Start();
     }
@@ -145,7 +159,7 @@ public class GalleryNavigationViewModel : ReactiveObject, IActivatableViewModel,
 
     private void StopDiagnosticNavigation()
     {
-        _dispatcherTimer.Stop();
+        _dispatcherTimer?.Stop();
         if (_isDiagnosticNavigationRunning && _shouldResetDeferredLoadingDisabledOnDiagnosticStop)
         {
             GalleryShowCaseRuntimeOptions.IsDeferredLoadingDisabled = false;

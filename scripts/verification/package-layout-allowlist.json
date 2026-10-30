@@ -1,0 +1,775 @@
+{
+  "6.1.8": {
+    "AtomUI.Desktop.Controls": {
+      "allowed": [
+        "buildTransitive/AtomUI.Build.Tasks.Process.cs",
+        "tools/net10.0/*",
+        "tools/netstandard2.0/AtomUI.Build.Tasks.dll",
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.dll",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.dll.atomui-link.json",
+        "lib/net8.0/AtomUI.Desktop.Controls.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.pdb",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "6.1.9 moved the MSBuild task toolset from tools/netstandard2.0 to tools/net10.0 and added the SDK-compiled process adapter. Documented in docs/releases/6.1.9-api-changes.md. v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.DataGrid": {
+      "allowed": [
+        "buildTransitive/AtomUI.Build.Tasks.Process.cs",
+        "tools/net10.0/*",
+        "tools/netstandard2.0/AtomUI.Build.Tasks.dll",
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.DataGrid.dll",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.DataGrid.dll.atomui-link.json",
+        "lib/net8.0/AtomUI.Desktop.Controls.DataGrid.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.DataGrid.pdb",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "Same 6.1.9 build-tooling relocation as AtomUI.Desktop.Controls; documented in docs/releases/6.1.9-api-changes.md. v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.ColorPicker": {
+      "allowed": [
+        "buildTransitive/AtomUI.Build.Tasks.Process.cs",
+        "tools/net10.0/*",
+        "tools/netstandard2.0/AtomUI.Build.Tasks.dll",
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.ColorPicker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.ColorPicker.dll.atomui-link.json",
+        "lib/net8.0/AtomUI.Desktop.Controls.ColorPicker.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.ColorPicker.pdb",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "Same 6.1.9 build-tooling relocation as AtomUI.Desktop.Controls; documented in docs/releases/6.1.9-api-changes.md. v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.Extras": {
+      "allowed": [
+        "buildTransitive/AtomUI.Build.Tasks.Process.cs",
+        "tools/net10.0/*",
+        "tools/netstandard2.0/AtomUI.Build.Tasks.dll",
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.Extras.dll",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.Extras.dll.atomui-link.json",
+        "lib/net8.0/AtomUI.Desktop.Controls.Extras.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.Extras.pdb",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "Same 6.1.9 build-tooling relocation as AtomUI.Desktop.Controls; documented in docs/releases/6.1.9-api-changes.md. v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Generator": {
+      "allowed": [
+        "buildTransitive/AtomUI.Build.Tasks.Process.cs",
+        "tools/net10.0/*",
+        "tools/netstandard2.0/AtomUI.Build.Tasks.dll",
+        "analyzers/dotnet/cs/System.Buffers.dll",
+        "analyzers/dotnet/cs/System.Collections.Immutable.dll",
+        "analyzers/dotnet/cs/System.Memory.dll",
+        "analyzers/dotnet/cs/System.Numerics.Vectors.dll",
+        "analyzers/dotnet/cs/System.Reflection.Metadata.dll",
+        "analyzers/dotnet/cs/System.Runtime.CompilerServices.Unsafe.dll",
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "Same 6.1.9 build-tooling relocation as AtomUI.Desktop.Controls; documented in docs/releases/6.1.9-api-changes.md. v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Toolkits.GalleryBase": {
+      "allowed": [
+        "buildTransitive/AtomUI.Build.Tasks.Process.cs",
+        "tools/net10.0/*",
+        "tools/netstandard2.0/AtomUI.Build.Tasks.dll",
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Toolkits.GalleryBase.dll",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Toolkits.GalleryBase.dll.atomui-link.json",
+        "lib/net8.0/AtomUI.Toolkits.GalleryBase.dll",
+        "lib/net8.0/AtomUI.Toolkits.GalleryBase.pdb",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "Same 6.1.9 build-tooling relocation as AtomUI.Desktop.Controls; documented in docs/releases/6.1.9-api-changes.md. v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Controls": {
+      "allowed": [
+        "buildTransitive/AtomUI.Build.Tasks.Process.cs",
+        "buildTransitive/AtomUI.Controls.targets",
+        "buildTransitive/AtomUI.Generator.props",
+        "buildTransitive/AtomUI.Generator.targets",
+        "buildTransitive/AtomUI.Localization.props",
+        "buildTransitive/AtomUI.Localization.targets",
+        "buildTransitive/AtomUI.Registration.targets",
+        "buildTransitive/AtomUI.ThemeAssets.targets",
+        "tools/net10.0/AtomUI.Build.Tasks.deps.json",
+        "tools/net10.0/AtomUI.Build.Tasks.dll",
+        "tools/net10.0/AtomUI.Build.Tasks.runtimeconfig.json",
+        "tools/net10.0/Microsoft.Build.Framework.dll",
+        "tools/netstandard2.0/AtomUI.Generator.dll",
+        "tools/netstandard2.0/System.Buffers.dll",
+        "tools/netstandard2.0/System.Collections.Immutable.dll",
+        "tools/netstandard2.0/System.Memory.dll",
+        "tools/netstandard2.0/System.Numerics.Vectors.dll",
+        "tools/netstandard2.0/System.Reflection.Metadata.dll",
+        "tools/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "lib/net8.0/AtomUI.Controls.dll",
+        "lib/net8.0/AtomUI.Controls.pdb"
+      ],
+      "reason": "v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Controls.Shared": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Controls.Shared.dll",
+        "lib/net8.0/AtomUI.Controls.Shared.pdb"
+      ],
+      "reason": "v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Core": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Core.dll",
+        "lib/net8.0/AtomUI.Core.pdb"
+      ],
+      "reason": "v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Fonts.AlibabaSans": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Fonts.AlibabaSans.dll",
+        "lib/net8.0/AtomUI.Fonts.AlibabaSans.pdb"
+      ],
+      "reason": "v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Icons.AntDesign": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Icons.AntDesign.dll",
+        "lib/net8.0/AtomUI.Icons.AntDesign.pdb"
+      ],
+      "reason": "v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Icons.Shared": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Icons.Shared.dll",
+        "lib/net8.0/AtomUI.Icons.Shared.pdb"
+      ],
+      "reason": "v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Localization": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Localization.dll",
+        "lib/net8.0/AtomUI.Localization.pdb"
+      ],
+      "reason": "v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Native": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Native.dll",
+        "lib/net8.0/AtomUI.Native.pdb"
+      ],
+      "reason": "v6.2.2 net10/TypeMap transition: exact retired TFM/registration paths and automatic registration tool assets are documented in docs/releases/6.2.2-api-changes.md."
+    }
+  },
+  "6.2.1": {
+    "AtomUI.Controls": {
+      "allowed": [
+        "buildTransitive/AtomUI.Build.Tasks.Process.cs",
+        "buildTransitive/AtomUI.Controls.targets",
+        "buildTransitive/AtomUI.Generator.props",
+        "buildTransitive/AtomUI.Generator.targets",
+        "buildTransitive/AtomUI.Localization.props",
+        "buildTransitive/AtomUI.Localization.targets",
+        "buildTransitive/AtomUI.Registration.targets",
+        "buildTransitive/AtomUI.ThemeAssets.targets",
+        "tools/net10.0/AtomUI.Build.Tasks.deps.json",
+        "tools/net10.0/AtomUI.Build.Tasks.dll",
+        "tools/net10.0/AtomUI.Build.Tasks.runtimeconfig.json",
+        "tools/net10.0/Microsoft.Build.Framework.dll",
+        "tools/netstandard2.0/AtomUI.Generator.dll",
+        "tools/netstandard2.0/System.Buffers.dll",
+        "tools/netstandard2.0/System.Collections.Immutable.dll",
+        "tools/netstandard2.0/System.Memory.dll",
+        "tools/netstandard2.0/System.Numerics.Vectors.dll",
+        "tools/netstandard2.0/System.Reflection.Metadata.dll",
+        "tools/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "lib/net8.0/AtomUI.Controls.dll",
+        "lib/net8.0/AtomUI.Controls.pdb"
+      ],
+      "reason": "v6.2.2 removes the net8.0 product assets and adds the TypeMap registration toolchain and buildTransitive assets to this package; see docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Controls.Shared": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Controls.Shared.dll",
+        "lib/net8.0/AtomUI.Controls.Shared.pdb"
+      ],
+      "reason": "v6.2.2 removes the net8.0 product assets; consumers must target net10.0. See docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Core": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Core.dll",
+        "lib/net8.0/AtomUI.Core.pdb"
+      ],
+      "reason": "v6.2.2 removes the net8.0 product assets; consumers must target net10.0. See docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls": {
+      "allowed": [
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.dll",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.dll.atomui-link.json",
+        "lib/net8.0/AtomUI.Desktop.Controls.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.pdb",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "v6.2.2 removes net8.0 and retires LinkedRegistration/LinkedPublish package assets in favor of TypeMap registration targets and backend; see docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.ColorPicker": {
+      "allowed": [
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.ColorPicker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.ColorPicker.dll.atomui-link.json",
+        "lib/net8.0/AtomUI.Desktop.Controls.ColorPicker.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.ColorPicker.pdb",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "v6.2.2 removes net8.0 and retires LinkedRegistration/LinkedPublish package assets in favor of TypeMap registration targets and backend; see docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.DataGrid": {
+      "allowed": [
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.DataGrid.dll",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.DataGrid.dll.atomui-link.json",
+        "lib/net8.0/AtomUI.Desktop.Controls.DataGrid.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.DataGrid.pdb",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "v6.2.2 removes net8.0 and retires LinkedRegistration/LinkedPublish package assets in favor of TypeMap registration targets and backend; see docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.Extras": {
+      "allowed": [
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.Extras.dll",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Desktop.Controls.Extras.dll.atomui-link.json",
+        "lib/net8.0/AtomUI.Desktop.Controls.Extras.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.Extras.pdb",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "v6.2.2 removes net8.0 and retires LinkedRegistration/LinkedPublish package assets in favor of TypeMap registration targets and backend; see docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Fonts.AlibabaSans": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Fonts.AlibabaSans.dll",
+        "lib/net8.0/AtomUI.Fonts.AlibabaSans.pdb"
+      ],
+      "reason": "v6.2.2 removes the net8.0 product assets; consumers must target net10.0. See docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Generator": {
+      "allowed": [
+        "analyzers/dotnet/cs/System.Buffers.dll",
+        "analyzers/dotnet/cs/System.Collections.Immutable.dll",
+        "analyzers/dotnet/cs/System.Memory.dll",
+        "analyzers/dotnet/cs/System.Numerics.Vectors.dll",
+        "analyzers/dotnet/cs/System.Reflection.Metadata.dll",
+        "analyzers/dotnet/cs/System.Runtime.CompilerServices.Unsafe.dll",
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "v6.2.2 replaces LinkedPublish assets with the TypeMap registration targets/backend and ships the generator dependencies; see docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Icons.AntDesign": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Icons.AntDesign.dll",
+        "lib/net8.0/AtomUI.Icons.AntDesign.pdb"
+      ],
+      "reason": "v6.2.2 removes the net8.0 product assets; consumers must target net10.0. See docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Icons.Shared": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Icons.Shared.dll",
+        "lib/net8.0/AtomUI.Icons.Shared.pdb"
+      ],
+      "reason": "v6.2.2 removes the net8.0 product assets; consumers must target net10.0. See docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Localization": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Localization.dll",
+        "lib/net8.0/AtomUI.Localization.pdb"
+      ],
+      "reason": "v6.2.2 removes the net8.0 product assets; consumers must target net10.0. See docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Native": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Native.dll",
+        "lib/net8.0/AtomUI.Native.pdb"
+      ],
+      "reason": "v6.2.2 removes the net8.0 product assets; consumers must target net10.0. See docs/releases/6.2.2-api-changes.md."
+    },
+    "AtomUI.Toolkits.GalleryBase": {
+      "allowed": [
+        "buildTransitive/AtomUI.Registration.targets",
+        "tools/typemap/AtomUI.TypeMap.Linker.deps.json",
+        "tools/typemap/AtomUI.TypeMap.Linker.dll",
+        "buildTransitive/AtomUI.LinkedRegistration.props",
+        "buildTransitive/AtomUI.LinkedRegistration.SidecarConsumer.targets",
+        "buildTransitive/AtomUI.LinkedRegistration.targets",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Toolkits.GalleryBase.dll",
+        "buildTransitive/AtomUI.LinkedRegistration/AtomUI.Toolkits.GalleryBase.dll.atomui-link.json",
+        "lib/net8.0/AtomUI.Toolkits.GalleryBase.dll",
+        "lib/net8.0/AtomUI.Toolkits.GalleryBase.pdb",
+        "tools/netstandard2.0/AtomUI.Generator.LinkedPublish.dll"
+      ],
+      "reason": "v6.2.2 removes net8.0 and retires LinkedRegistration/LinkedPublish package assets in favor of TypeMap registration targets and backend; see docs/releases/6.2.2-api-changes.md."
+    }
+  },
+  "6.2.3": {
+    "AtomUI.Controls": {
+      "allowed": [
+        "buildTransitive/AtomUI.Net8.ILLink.Task.cs",
+        "buildTransitive/AtomUI.Registration.Bridge.targets",
+        "buildTransitive/AtomUI.Registration.Framework.targets",
+        "buildTransitive/AtomUI.Registration.Native8.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Host.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Transforms.targets",
+        "buildTransitive/AtomUI.Registration.Net8.targets",
+        "buildTransitive/AtomUI.Toolchain.Tasks.targets",
+        "lib/net8.0/AtomUI.Controls.dll",
+        "lib/net8.0/AtomUI.Controls.pdb",
+        "tools/registration/net8/ilc/LICENSE.runtime.txt",
+        "tools/registration/net8/ilc/THIRD-PARTY-NOTICES.runtime.txt",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.Compiler.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.DependencyAnalysisFramework.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.MetadataTransform.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.RyuJit.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.TypeSystem.dll",
+        "tools/registration/net8/ilc/managed-bundle/System.CommandLine.dll",
+        "tools/registration/net8/ilc/managed-bundle/atomui-ilc8-capability.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.deps.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.dll",
+        "tools/registration/net8/ilc/managed-bundle/ilc.runtimeconfig.json",
+        "tools/registration/net8/illink/AtomUI.Registration.ILLink8.dll",
+        "tools/typemap/AtomUI.TypeMap.Linker.runtimeconfig.json",
+        "tools/typemap/Mono.Cecil.dll"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Controls.Shared": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Controls.Shared.dll",
+        "lib/net8.0/AtomUI.Controls.Shared.pdb"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Core": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Core.dll",
+        "lib/net8.0/AtomUI.Core.pdb"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Desktop.Controls": {
+      "allowed": [
+        "buildTransitive/AtomUI.Net8.ILLink.Task.cs",
+        "buildTransitive/AtomUI.Registration.Bridge.targets",
+        "buildTransitive/AtomUI.Registration.Framework.targets",
+        "buildTransitive/AtomUI.Registration.Native8.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Host.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Transforms.targets",
+        "buildTransitive/AtomUI.Registration.Net8.targets",
+        "buildTransitive/AtomUI.Toolchain.Tasks.targets",
+        "lib/net8.0/AtomUI.Desktop.Controls.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.pdb",
+        "tools/registration/net8/ilc/LICENSE.runtime.txt",
+        "tools/registration/net8/ilc/THIRD-PARTY-NOTICES.runtime.txt",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.Compiler.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.DependencyAnalysisFramework.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.MetadataTransform.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.RyuJit.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.TypeSystem.dll",
+        "tools/registration/net8/ilc/managed-bundle/System.CommandLine.dll",
+        "tools/registration/net8/ilc/managed-bundle/atomui-ilc8-capability.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.deps.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.dll",
+        "tools/registration/net8/ilc/managed-bundle/ilc.runtimeconfig.json",
+        "tools/registration/net8/illink/AtomUI.Registration.ILLink8.dll",
+        "tools/typemap/AtomUI.TypeMap.Linker.runtimeconfig.json",
+        "tools/typemap/Mono.Cecil.dll"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Desktop.Controls.ColorPicker": {
+      "allowed": [
+        "buildTransitive/AtomUI.Net8.ILLink.Task.cs",
+        "buildTransitive/AtomUI.Registration.Bridge.targets",
+        "buildTransitive/AtomUI.Registration.Framework.targets",
+        "buildTransitive/AtomUI.Registration.Native8.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Host.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Transforms.targets",
+        "buildTransitive/AtomUI.Registration.Net8.targets",
+        "buildTransitive/AtomUI.Toolchain.Tasks.targets",
+        "lib/net8.0/AtomUI.Desktop.Controls.ColorPicker.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.ColorPicker.pdb",
+        "tools/registration/net8/ilc/LICENSE.runtime.txt",
+        "tools/registration/net8/ilc/THIRD-PARTY-NOTICES.runtime.txt",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.Compiler.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.DependencyAnalysisFramework.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.MetadataTransform.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.RyuJit.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.TypeSystem.dll",
+        "tools/registration/net8/ilc/managed-bundle/System.CommandLine.dll",
+        "tools/registration/net8/ilc/managed-bundle/atomui-ilc8-capability.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.deps.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.dll",
+        "tools/registration/net8/ilc/managed-bundle/ilc.runtimeconfig.json",
+        "tools/registration/net8/illink/AtomUI.Registration.ILLink8.dll",
+        "tools/typemap/AtomUI.TypeMap.Linker.runtimeconfig.json",
+        "tools/typemap/Mono.Cecil.dll"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Desktop.Controls.DataGrid": {
+      "allowed": [
+        "buildTransitive/AtomUI.Net8.ILLink.Task.cs",
+        "buildTransitive/AtomUI.Registration.Bridge.targets",
+        "buildTransitive/AtomUI.Registration.Framework.targets",
+        "buildTransitive/AtomUI.Registration.Native8.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Host.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Transforms.targets",
+        "buildTransitive/AtomUI.Registration.Net8.targets",
+        "buildTransitive/AtomUI.Toolchain.Tasks.targets",
+        "lib/net8.0/AtomUI.Desktop.Controls.DataGrid.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.DataGrid.pdb",
+        "tools/registration/net8/ilc/LICENSE.runtime.txt",
+        "tools/registration/net8/ilc/THIRD-PARTY-NOTICES.runtime.txt",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.Compiler.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.DependencyAnalysisFramework.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.MetadataTransform.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.RyuJit.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.TypeSystem.dll",
+        "tools/registration/net8/ilc/managed-bundle/System.CommandLine.dll",
+        "tools/registration/net8/ilc/managed-bundle/atomui-ilc8-capability.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.deps.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.dll",
+        "tools/registration/net8/ilc/managed-bundle/ilc.runtimeconfig.json",
+        "tools/registration/net8/illink/AtomUI.Registration.ILLink8.dll",
+        "tools/typemap/AtomUI.TypeMap.Linker.runtimeconfig.json",
+        "tools/typemap/Mono.Cecil.dll"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Desktop.Controls.Extras": {
+      "allowed": [
+        "buildTransitive/AtomUI.Net8.ILLink.Task.cs",
+        "buildTransitive/AtomUI.Registration.Bridge.targets",
+        "buildTransitive/AtomUI.Registration.Framework.targets",
+        "buildTransitive/AtomUI.Registration.Native8.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Host.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Transforms.targets",
+        "buildTransitive/AtomUI.Registration.Net8.targets",
+        "buildTransitive/AtomUI.Toolchain.Tasks.targets",
+        "lib/net8.0/AtomUI.Desktop.Controls.Extras.dll",
+        "lib/net8.0/AtomUI.Desktop.Controls.Extras.pdb",
+        "tools/registration/net8/ilc/LICENSE.runtime.txt",
+        "tools/registration/net8/ilc/THIRD-PARTY-NOTICES.runtime.txt",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.Compiler.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.DependencyAnalysisFramework.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.MetadataTransform.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.RyuJit.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.TypeSystem.dll",
+        "tools/registration/net8/ilc/managed-bundle/System.CommandLine.dll",
+        "tools/registration/net8/ilc/managed-bundle/atomui-ilc8-capability.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.deps.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.dll",
+        "tools/registration/net8/ilc/managed-bundle/ilc.runtimeconfig.json",
+        "tools/registration/net8/illink/AtomUI.Registration.ILLink8.dll",
+        "tools/typemap/AtomUI.TypeMap.Linker.runtimeconfig.json",
+        "tools/typemap/Mono.Cecil.dll"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Fonts.AlibabaSans": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Fonts.AlibabaSans.dll",
+        "lib/net8.0/AtomUI.Fonts.AlibabaSans.pdb"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Generator": {
+      "allowed": [
+        "buildTransitive/AtomUI.Net8.ILLink.Task.cs",
+        "buildTransitive/AtomUI.Registration.Bridge.targets",
+        "buildTransitive/AtomUI.Registration.Framework.targets",
+        "buildTransitive/AtomUI.Registration.Native8.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Host.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Transforms.targets",
+        "buildTransitive/AtomUI.Registration.Net8.targets",
+        "buildTransitive/AtomUI.Toolchain.Tasks.targets",
+        "tools/registration/net8/ilc/LICENSE.runtime.txt",
+        "tools/registration/net8/ilc/THIRD-PARTY-NOTICES.runtime.txt",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.Compiler.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.DependencyAnalysisFramework.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.MetadataTransform.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.RyuJit.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.TypeSystem.dll",
+        "tools/registration/net8/ilc/managed-bundle/System.CommandLine.dll",
+        "tools/registration/net8/ilc/managed-bundle/atomui-ilc8-capability.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.deps.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.dll",
+        "tools/registration/net8/ilc/managed-bundle/ilc.runtimeconfig.json",
+        "tools/registration/net8/illink/AtomUI.Registration.ILLink8.dll",
+        "tools/typemap/AtomUI.TypeMap.Linker.runtimeconfig.json",
+        "tools/typemap/Mono.Cecil.dll"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Icons.AntDesign": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Icons.AntDesign.dll",
+        "lib/net8.0/AtomUI.Icons.AntDesign.pdb"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Icons.Shared": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Icons.Shared.dll",
+        "lib/net8.0/AtomUI.Icons.Shared.pdb"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Localization": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Localization.dll",
+        "lib/net8.0/AtomUI.Localization.pdb"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Native": {
+      "allowed": [
+        "lib/net8.0/AtomUI.Native.dll",
+        "lib/net8.0/AtomUI.Native.pdb"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    },
+    "AtomUI.Toolkits.GalleryBase": {
+      "allowed": [
+        "buildTransitive/AtomUI.Net8.ILLink.Task.cs",
+        "buildTransitive/AtomUI.Registration.Bridge.targets",
+        "buildTransitive/AtomUI.Registration.Framework.targets",
+        "buildTransitive/AtomUI.Registration.Native8.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Host.targets",
+        "buildTransitive/AtomUI.Registration.Net8.Transforms.targets",
+        "buildTransitive/AtomUI.Registration.Net8.targets",
+        "buildTransitive/AtomUI.Toolchain.Tasks.targets",
+        "lib/net8.0/AtomUI.Toolkits.GalleryBase.dll",
+        "lib/net8.0/AtomUI.Toolkits.GalleryBase.pdb",
+        "tools/registration/net8/ilc/LICENSE.runtime.txt",
+        "tools/registration/net8/ilc/THIRD-PARTY-NOTICES.runtime.txt",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.Compiler.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.DependencyAnalysisFramework.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.MetadataTransform.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.RyuJit.dll",
+        "tools/registration/net8/ilc/managed-bundle/ILCompiler.TypeSystem.dll",
+        "tools/registration/net8/ilc/managed-bundle/System.CommandLine.dll",
+        "tools/registration/net8/ilc/managed-bundle/atomui-ilc8-capability.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.deps.json",
+        "tools/registration/net8/ilc/managed-bundle/ilc.dll",
+        "tools/registration/net8/ilc/managed-bundle/ilc.runtimeconfig.json",
+        "tools/registration/net8/illink/AtomUI.Registration.ILLink8.dll",
+        "tools/typemap/AtomUI.TypeMap.Linker.runtimeconfig.json",
+        "tools/typemap/Mono.Cecil.dll"
+      ],
+      "reason": "6.2.4 restores net8.0 Release libraries and adds the target-selected compatibility toolchain assets while preserving existing net10.0 payload paths; see docs/releases/6.2.4-api-changes.md sections 3-4."
+    }
+  },
+  "6.2.5": {
+    "AtomUI.Controls": {
+      "allowed": [
+        "buildTransitive/AtomUI.CompiledThemes.targets",
+        "tools/net10.0/Avalonia.Base.dll",
+        "tools/net10.0/Avalonia.Controls.dll",
+        "tools/net10.0/Avalonia.DesignerSupport.dll",
+        "tools/net10.0/Avalonia.Dialogs.dll",
+        "tools/net10.0/Avalonia.dll",
+        "tools/net10.0/Avalonia.Markup.dll",
+        "tools/net10.0/Avalonia.Markup.Xaml.dll",
+        "tools/net10.0/Avalonia.Metal.dll",
+        "tools/net10.0/Avalonia.MicroCom.dll",
+        "tools/net10.0/Avalonia.OpenGL.dll",
+        "tools/net10.0/Avalonia.Remote.Protocol.dll",
+        "tools/net10.0/Avalonia.Vulkan.dll",
+        "tools/net10.0/MicroCom.Runtime.dll"
+      ],
+      "reason": "6.2.6 compiled-theme pipeline: adds buildTransitive/AtomUI.CompiledThemes.targets and the Avalonia implementation assemblies that the isolated compiled-theme build task loads from tools/net10.0. Additive only; documented in docs/releases/6.2.6-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls": {
+      "allowed": [
+        "buildTransitive/AtomUI.CompiledThemes.targets",
+        "tools/net10.0/Avalonia.Base.dll",
+        "tools/net10.0/Avalonia.Controls.dll",
+        "tools/net10.0/Avalonia.DesignerSupport.dll",
+        "tools/net10.0/Avalonia.Dialogs.dll",
+        "tools/net10.0/Avalonia.dll",
+        "tools/net10.0/Avalonia.Markup.dll",
+        "tools/net10.0/Avalonia.Markup.Xaml.dll",
+        "tools/net10.0/Avalonia.Metal.dll",
+        "tools/net10.0/Avalonia.MicroCom.dll",
+        "tools/net10.0/Avalonia.OpenGL.dll",
+        "tools/net10.0/Avalonia.Remote.Protocol.dll",
+        "tools/net10.0/Avalonia.Vulkan.dll",
+        "tools/net10.0/MicroCom.Runtime.dll"
+      ],
+      "reason": "6.2.6 compiled-theme pipeline: adds buildTransitive/AtomUI.CompiledThemes.targets and the Avalonia implementation assemblies that the isolated compiled-theme build task loads from tools/net10.0. Additive only; documented in docs/releases/6.2.6-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.ColorPicker": {
+      "allowed": [
+        "buildTransitive/AtomUI.CompiledThemes.targets",
+        "tools/net10.0/Avalonia.Base.dll",
+        "tools/net10.0/Avalonia.Controls.dll",
+        "tools/net10.0/Avalonia.DesignerSupport.dll",
+        "tools/net10.0/Avalonia.Dialogs.dll",
+        "tools/net10.0/Avalonia.dll",
+        "tools/net10.0/Avalonia.Markup.dll",
+        "tools/net10.0/Avalonia.Markup.Xaml.dll",
+        "tools/net10.0/Avalonia.Metal.dll",
+        "tools/net10.0/Avalonia.MicroCom.dll",
+        "tools/net10.0/Avalonia.OpenGL.dll",
+        "tools/net10.0/Avalonia.Remote.Protocol.dll",
+        "tools/net10.0/Avalonia.Vulkan.dll",
+        "tools/net10.0/MicroCom.Runtime.dll"
+      ],
+      "reason": "6.2.6 compiled-theme pipeline: adds buildTransitive/AtomUI.CompiledThemes.targets and the Avalonia implementation assemblies that the isolated compiled-theme build task loads from tools/net10.0. Additive only; documented in docs/releases/6.2.6-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.DataGrid": {
+      "allowed": [
+        "buildTransitive/AtomUI.CompiledThemes.targets",
+        "tools/net10.0/Avalonia.Base.dll",
+        "tools/net10.0/Avalonia.Controls.dll",
+        "tools/net10.0/Avalonia.DesignerSupport.dll",
+        "tools/net10.0/Avalonia.Dialogs.dll",
+        "tools/net10.0/Avalonia.dll",
+        "tools/net10.0/Avalonia.Markup.dll",
+        "tools/net10.0/Avalonia.Markup.Xaml.dll",
+        "tools/net10.0/Avalonia.Metal.dll",
+        "tools/net10.0/Avalonia.MicroCom.dll",
+        "tools/net10.0/Avalonia.OpenGL.dll",
+        "tools/net10.0/Avalonia.Remote.Protocol.dll",
+        "tools/net10.0/Avalonia.Vulkan.dll",
+        "tools/net10.0/MicroCom.Runtime.dll"
+      ],
+      "reason": "6.2.6 compiled-theme pipeline: adds buildTransitive/AtomUI.CompiledThemes.targets and the Avalonia implementation assemblies that the isolated compiled-theme build task loads from tools/net10.0. Additive only; documented in docs/releases/6.2.6-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.Extras": {
+      "allowed": [
+        "buildTransitive/AtomUI.CompiledThemes.targets",
+        "tools/net10.0/Avalonia.Base.dll",
+        "tools/net10.0/Avalonia.Controls.dll",
+        "tools/net10.0/Avalonia.DesignerSupport.dll",
+        "tools/net10.0/Avalonia.Dialogs.dll",
+        "tools/net10.0/Avalonia.dll",
+        "tools/net10.0/Avalonia.Markup.dll",
+        "tools/net10.0/Avalonia.Markup.Xaml.dll",
+        "tools/net10.0/Avalonia.Metal.dll",
+        "tools/net10.0/Avalonia.MicroCom.dll",
+        "tools/net10.0/Avalonia.OpenGL.dll",
+        "tools/net10.0/Avalonia.Remote.Protocol.dll",
+        "tools/net10.0/Avalonia.Vulkan.dll",
+        "tools/net10.0/MicroCom.Runtime.dll"
+      ],
+      "reason": "6.2.6 compiled-theme pipeline: adds buildTransitive/AtomUI.CompiledThemes.targets and the Avalonia implementation assemblies that the isolated compiled-theme build task loads from tools/net10.0. Additive only; documented in docs/releases/6.2.6-api-changes.md."
+    },
+    "AtomUI.Generator": {
+      "allowed": [
+        "buildTransitive/AtomUI.CompiledThemes.targets",
+        "tools/net10.0/Avalonia.Base.dll",
+        "tools/net10.0/Avalonia.Controls.dll",
+        "tools/net10.0/Avalonia.DesignerSupport.dll",
+        "tools/net10.0/Avalonia.Dialogs.dll",
+        "tools/net10.0/Avalonia.dll",
+        "tools/net10.0/Avalonia.Markup.dll",
+        "tools/net10.0/Avalonia.Markup.Xaml.dll",
+        "tools/net10.0/Avalonia.Metal.dll",
+        "tools/net10.0/Avalonia.MicroCom.dll",
+        "tools/net10.0/Avalonia.OpenGL.dll",
+        "tools/net10.0/Avalonia.Remote.Protocol.dll",
+        "tools/net10.0/Avalonia.Vulkan.dll",
+        "tools/net10.0/MicroCom.Runtime.dll"
+      ],
+      "reason": "6.2.6 compiled-theme pipeline: adds buildTransitive/AtomUI.CompiledThemes.targets and the Avalonia implementation assemblies that the isolated compiled-theme build task loads from tools/net10.0. Additive only; documented in docs/releases/6.2.6-api-changes.md."
+    },
+    "AtomUI.Toolkits.GalleryBase": {
+      "allowed": [
+        "buildTransitive/AtomUI.CompiledThemes.targets",
+        "tools/net10.0/Avalonia.Base.dll",
+        "tools/net10.0/Avalonia.Controls.dll",
+        "tools/net10.0/Avalonia.DesignerSupport.dll",
+        "tools/net10.0/Avalonia.Dialogs.dll",
+        "tools/net10.0/Avalonia.dll",
+        "tools/net10.0/Avalonia.Markup.dll",
+        "tools/net10.0/Avalonia.Markup.Xaml.dll",
+        "tools/net10.0/Avalonia.Metal.dll",
+        "tools/net10.0/Avalonia.MicroCom.dll",
+        "tools/net10.0/Avalonia.OpenGL.dll",
+        "tools/net10.0/Avalonia.Remote.Protocol.dll",
+        "tools/net10.0/Avalonia.Vulkan.dll",
+        "tools/net10.0/MicroCom.Runtime.dll"
+      ],
+      "reason": "6.2.6 compiled-theme pipeline: adds buildTransitive/AtomUI.CompiledThemes.targets and the Avalonia implementation assemblies that the isolated compiled-theme build task loads from tools/net10.0. Additive only; documented in docs/releases/6.2.6-api-changes.md."
+    },
+    "AtomUI.Fonts.AlibabaSans": {
+      "allowed": [
+        "buildTransitive/*",
+        "tools/*"
+      ],
+      "reason": "6.2.6: AtomUI.Fonts.AlibabaSans now participates in the startup package registration pipeline and ships the standard buildTransitive and tools payload (it previously had neither), including buildTransitive/AtomUI.CompiledThemes.targets and the Avalonia assemblies the compiled-theme build task loads. Additive only; documented in docs/releases/6.2.6-api-changes.md."
+    }
+  }
+}

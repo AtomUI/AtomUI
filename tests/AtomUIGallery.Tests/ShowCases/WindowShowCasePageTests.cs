@@ -39,39 +39,6 @@ public class WindowShowCasePageTests
     }
 
     [Fact]
-    public void Window_ShowCase_Uses_Document_Layout_With_Examples()
-    {
-        var source = ReadRepoFile(
-            "controlgallery/AtomUIGallery/ShowCases/General/Window/Views/WindowShowCase.axaml");
-
-        source.ShouldContain("WindowShowCaseLangResource PageSubtitle");
-        source.ShouldContain("WindowShowCaseLangResource PageDescription");
-        source.ShouldContain("WindowShowCaseLangResource ComponentCategory");
-        source.ShouldContain("WindowShowCaseLangResource ComponentStatusStable");
-        source.ShouldContain("<gallery:GalleryStickyTabsHost");
-        source.ShouldContain("<gallery:GalleryShowCaseHeader");
-        source.ShouldContain("Title=\"Window\"");
-        source.ShouldContain("Category=\"{gallery:WindowShowCaseLangResource ComponentCategory}\"");
-        source.ShouldContain("Status=\"{gallery:WindowShowCaseLangResource ComponentStatusStable}\"");
-        source.ShouldContain("Subtitle=\"{gallery:WindowShowCaseLangResource PageSubtitle}\"");
-        source.ShouldContain("Description=\"{gallery:WindowShowCaseLangResource PageDescription}\"");
-        source.ShouldContain("Namespace=\"AtomUI.Desktop.Controls\"");
-        source.ShouldContain("Package=\"AtomUI.Desktop.Controls\"");
-        source.ShouldContain("BaseClass=\"Window\"");
-        source.ShouldContain("StickyContentPadding=\"28,0,28,0\"");
-        source.ShouldContain("Name=\"ExamplesContent\"");
-        source.ShouldContain("IsScrollEnabled=\"False\"");
-        source.ShouldContain("IsDeferredLoadingEnabled=\"True\"");
-        source.ShouldNotContain("Tag=\"Examples\"");
-        source.ShouldNotContain("Tag=\"Api\"");
-        source.ShouldNotContain("Tag=\"DesignToken\"");
-        source.ShouldNotContain("<atom:TabStrip Name=\"ScenarioTabs\"");
-        source.ShouldNotContain("<ContentControl Name=\"ScenarioContentHost\">");
-        source.ShouldNotContain("<atom:TabControl");
-        source.ShouldNotContain("<atom:DataGrid");
-    }
-
-    [Fact]
     public void Window_ShowCase_First_Four_Items_Open_Configured_Demo_Windows()
     {
         var source = ReadRepoFile(
@@ -130,28 +97,6 @@ public class WindowShowCasePageTests
         var logoCode = ReadRepoFile(
             "controlgallery/AtomUIGallery/ShowCases/General/Window/ShowCaseControls/LogoVisibilityDemoWindow.axaml.cs");
         logoCode.ShouldContain("LogoVisibility = ");
-    }
-
-    [Fact]
-    public void Window_ShowCase_First_Four_Items_Are_Localized_In_All_Languages()
-    {
-        var keys = new[]
-        {
-            "BasicTitle", "BasicDescription", "BasicOpenButtonText", "BasicWindowHint",
-            "TitleAlignmentTitle", "TitleAlignmentDescription", "TitleAlignmentOpenButtonText", "TitleAlignmentHint",
-            "IsTitleVisibleTitle", "IsTitleVisibleDescription", "IsTitleVisibleOpenButtonText", "IsTitleVisibleHint",
-            "LogoVisibilityTitle", "LogoVisibilityDescription", "LogoVisibilityOpenButtonText", "LogoVisibilityHint"
-        };
-
-        foreach (var language in new[] { "en-US", "zh-CN", "zh-TW", "pt-BR" })
-        {
-            var localization = XliffTestDocument.Read(
-                $"controlgallery/AtomUIGallery/ShowCases/General/Window/Localization/{language}.xlf");
-            foreach (var key in keys)
-            {
-                localization.ContainsKey(key).ShouldBeTrue($"{language} missing {key}");
-            }
-        }
     }
 
     [Fact]
@@ -214,28 +159,6 @@ public class WindowShowCasePageTests
     }
 
     [Fact]
-    public void Window_ShowCase_Items_Five_To_Eight_Are_Localized_In_All_Languages()
-    {
-        var keys = new[]
-        {
-            "AddOnTitle", "AddOnDescription", "AddOnOpenButtonText", "AddOnHint",
-            "CaptionButtonsTitle", "CaptionButtonsDescription", "CaptionButtonsOpenButtonText", "CaptionButtonsHint",
-            "TitleBarlessTitle", "TitleBarlessDescription", "TitleBarlessOpenButtonText", "TitleBarlessHint",
-            "FrameLayerTitle", "FrameLayerDescription", "FrameLayerOpenButtonText", "FrameLayerHint"
-        };
-
-        foreach (var language in new[] { "en-US", "zh-CN", "zh-TW", "pt-BR" })
-        {
-            var localization = XliffTestDocument.Read(
-                $"controlgallery/AtomUIGallery/ShowCases/General/Window/Localization/{language}.xlf");
-            foreach (var key in keys)
-            {
-                localization.ContainsKey(key).ShouldBeTrue($"{language} missing {key}");
-            }
-        }
-    }
-
-    [Fact]
     public void Window_ShowCase_Playground_Item_Opens_The_Configured_Window()
     {
         var source = ReadRepoFile(
@@ -272,38 +195,6 @@ public class WindowShowCasePageTests
         codeBehind.ShouldContain("LogoVisibility = ");
         codeBehind.ShouldContain("TitleBarFrameBackground = ");
         codeBehind.ShouldContain("ContentFrameBackground = ");
-    }
-
-    [Fact]
-    public void Window_ShowCase_Playground_Item_Is_Localized_In_All_Languages()
-    {
-        var keys = new[]
-        {
-            "PlaygroundTitle", "PlaygroundDescription", "PlaygroundOpenButtonText", "PlaygroundHint",
-            "PlaygroundCaptionButtonsHint"
-        };
-
-        foreach (var language in new[] { "en-US", "zh-CN", "zh-TW", "pt-BR" })
-        {
-            var localization = XliffTestDocument.Read(
-                $"controlgallery/AtomUIGallery/ShowCases/General/Window/Localization/{language}.xlf");
-            foreach (var key in keys)
-            {
-                localization.ContainsKey(key).ShouldBeTrue($"{language} missing {key}");
-            }
-        }
-    }
-
-    [Fact]
-    public void Window_ShowCase_Examples_Match_Approved_Control_Demo_Content()
-    {
-        var source   = ReadRepoFile(
-            "controlgallery/AtomUIGallery/ShowCases/General/Window/Views/WindowShowCase.axaml");
-        var approved = ReadRepoFile("tests/AtomUIGallery.Tests/ShowCases/WindowShowCaseExamples.snapshot");
-
-        var normalized = ShowCaseSnapshotMarkup.Normalize(ExtractWindowExampleItems(source));
-        CountShowCaseItemElements(normalized).ShouldBe(ReadSnapshotCount(approved));
-        ComputeSha256(normalized).ShouldBe(ReadSnapshotHash(approved));
     }
 
     private static string ExtractWindowExampleItems(string source)

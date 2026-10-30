@@ -241,6 +241,48 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Checkbox icon element with size, direction, background, border, border-radius, transitions, and checked state checkmark styles</source>
+        <target state="translated">Checkbox ícone element com size, direction, background, border, border-radius, transitions, e checked state checkmark styles</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label text element with padding and spacing styles relative to the checkbox</source>
+        <target state="translated">Label texto element com padding e spacing styles relative para o checkbox</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartConditionalTitle">
+      <segment>
+        <source>Conditional styling</source>
+        <target state="translated">Estilo condicional</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartFixedTitle">
+      <segment>
+        <source>Fixed styling</source>
+        <target state="translated">Estilo fixo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and CheckBox property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">Use owner-scoped selectors e CheckBox property selectors para customize o published Semantic Parts.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with inline-flex layout, baseline alignment, cursor style, reset styles and other basic checkbox container styles</source>
+        <target state="translated">Root element com inline-flex layout, baseline alignment, cursor style, reset styles e outro basic checkbox container styles</target>
+      </segment>
+    </unit>
     <unit id="UseWithGridDescription">
       <segment>
         <source>We can use Checkbox and Grid in Checkbox.Group, to implement complex layout.</source>

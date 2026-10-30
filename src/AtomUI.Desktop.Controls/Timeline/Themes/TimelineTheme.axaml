@@ -10,6 +10,7 @@
                 <Border Name="Frame"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
                         Background="{TemplateBinding Background}"
                         Padding="{TemplateBinding Padding}">
                     <atom:ScrollViewer Name="ScrollViewer"

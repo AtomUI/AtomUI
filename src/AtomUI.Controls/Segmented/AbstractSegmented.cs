@@ -1,11 +1,14 @@
-﻿using AtomUI.Animations;
+using AtomUI.Animations;
+using AtomUI.Utils;
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
@@ -13,7 +16,8 @@ namespace AtomUI.Controls.Commons;
 public abstract class AbstractSegmented : SelectingItemsControl,
                                           IMotionAwareControl,
                                           ICustomizableSizeTypeAware,
-                                          IFormItemAware
+                                          IFormItemAware,
+                                          ITransitionInitializationOwner
 {
     #region 公共属性定义
 
@@ -31,6 +35,9 @@ public abstract class AbstractSegmented : SelectingItemsControl,
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractSegmented>();
+
+    public static readonly StyledProperty<CornerRadius> SelectedThumbCornerRadiusProperty =
+        AvaloniaProperty.Register<AbstractSegmented, CornerRadius>(nameof(SelectedThumbCornerRadius));
 
     public CustomizableSizeType SizeType
     {
@@ -66,9 +73,6 @@ public abstract class AbstractSegmented : SelectingItemsControl,
 
     #region 内部属性定义
 
-    public static readonly StyledProperty<CornerRadius> SelectedThumbCornerRadiusProperty =
-        AvaloniaProperty.Register<AbstractSegmented, CornerRadius>(nameof(SelectedThumbCornerRadius));
-
     internal static readonly StyledProperty<IBrush?> SelectedThumbBgProperty =
         AvaloniaProperty.Register<AbstractSegmented, IBrush?>(
             nameof(SelectedThumbBg));
@@ -76,6 +80,12 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     internal static readonly StyledProperty<BoxShadows> SelectedThumbBoxShadowsProperty =
         AvaloniaProperty.Register<AbstractSegmented, BoxShadows>(
             nameof(SelectedThumbBoxShadows));
+
+    internal static readonly StyledProperty<Size> SelectedThumbSizeProperty =
+        AvaloniaProperty.Register<AbstractSegmented, Size>(nameof(SelectedThumbSize));
+
+    internal static readonly StyledProperty<Point> SelectedThumbPosProperty =
+        AvaloniaProperty.Register<AbstractSegmented, Point>(nameof(SelectedThumbPos));
 
     internal CornerRadius SelectedThumbCornerRadius
     {
@@ -96,17 +106,11 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     }
 
     // 内部动画属性
-    internal static readonly StyledProperty<Size> SelectedThumbSizeProperty =
-        AvaloniaProperty.Register<AbstractSegmented, Size>(nameof(SelectedThumbSize));
-
     internal Size SelectedThumbSize
     {
         get => GetValue(SelectedThumbSizeProperty);
         set => SetValue(SelectedThumbSizeProperty, value);
     }
-
-    internal static readonly StyledProperty<Point> SelectedThumbPosProperty =
-        AvaloniaProperty.Register<AbstractSegmented, Point>(nameof(SelectedThumbPos));
 
     internal Point SelectedThumbPos
     {
@@ -116,7 +120,24 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     
     #endregion
 
+    #region 内部协作 API
+
+    internal bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
+    {
+        return UpdateSelectionFromEvent(source, e);
+    }
+
+    #endregion
+
     private EventHandler? _formValueChanged;
+    private bool _isThumbVisible;
+    private bool _isThumbMotionActive;
+    private DispatcherTimer? _thumbMotionTimer;
+
+    // 滑块过渡在属性提交后的下一渲染帧才真正启动，计时补偿一帧，保证抑制态晚于视觉落地结束。
+    private static readonly TimeSpan ThumbMotionCompletionMargin = TimeSpan.FromMilliseconds(32);
+
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static AbstractSegmented()
     {
@@ -135,23 +156,25 @@ public abstract class AbstractSegmented : SelectingItemsControl,
 
     public AbstractSegmented()
     {
+        _transitionInitialization = new TransitionInitializationSession(this);
         SelectionMode = SelectionMode.Single;
     }
     
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        SetupSelectedThumbRect();
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        _transitionInitialization.Reset();
         base.OnApplyTemplate(e);
         var hasDefaultSelected = false;
         foreach (var item in Items)
@@ -186,14 +209,17 @@ public abstract class AbstractSegmented : SelectingItemsControl,
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _transitionInitialization.Reset();
         base.OnAttachedToVisualTree(e);
         SelectionChanged += HandleSelectionChanged;
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        base.OnDetachedFromVisualTree(e);
+        _transitionInitialization.Reset();
         SelectionChanged -= HandleSelectionChanged;
+        StopThumbMotion();
+        base.OnDetachedFromVisualTree(e);
     }
     
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -218,6 +244,7 @@ public abstract class AbstractSegmented : SelectingItemsControl,
             segmentedItem[!SizeTypeProperty] = this[!SizeTypeProperty];
             segmentedItem[!AbstractSegmentedItem.ShapeProperty] = this[!ShapeProperty];
             segmentedItem[!IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+            segmentedItem.SetCurrentValue(AbstractSegmentedItem.IsThumbMotionActiveProperty, _isThumbMotionActive);
 
             if (segmentedItem.IsSelected)
             {
@@ -235,11 +262,6 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     
     protected virtual void PrepareSegmentedItem(AbstractSegmentedItem segmentedItem, object? item, int index)
     {
-    }
-
-    internal bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
-    {
-        return UpdateSelectionFromEvent(source, e);
     }
 
     protected override bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs)
@@ -273,10 +295,13 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     
     public sealed override void Render(DrawingContext context)
     {
-        context.DrawRectangle(Background, null, new RoundedRect(new Rect(DesiredSize.Deflate(Margin)), CornerRadius));
-        context.DrawRectangle(SelectedThumbBg, null,
-            new RoundedRect(new Rect(SelectedThumbPos, SelectedThumbSize), SelectedThumbCornerRadius),
-            SelectedThumbBoxShadows);
+        context.DrawRectangle(Background, null, new RoundedRect(new Rect(Bounds.Size), CornerRadius));
+        if (_isThumbVisible)
+        {
+            context.DrawRectangle(SelectedThumbBg, null,
+                new RoundedRect(new Rect(SelectedThumbPos, SelectedThumbSize), SelectedThumbCornerRadius),
+                SelectedThumbBoxShadows);
+        }
     }
 
     #region 实现 FormItem 接口
@@ -318,27 +343,157 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     }
     #endregion
 
+    #region 实现 ITransitionInitializationOwner 接口
+
+    TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
+
+    #endregion
+
     private void HandleSelectionChanged(object? sender, SelectionChangedEventArgs args)
     {
         if (this.IsAttachedToVisualTree())
         {
-            SetupSelectedThumbRect();
+            SetupSelectedThumbRect(animate: true);
         }
     }
 
-    private void SetupSelectedThumbRect()
+    private void SetupSelectedThumbRect(bool animate = false)
     {
-        if (SelectedItem is not null)
+        if (SelectedItem is null)
         {
-            var segmentedItem = ContainerFromItem(SelectedItem);
-            if (segmentedItem is not null)
+            // 与 antd 一致：不存在可飞行的来源几何时滑块立即消失，不做出现动画。
+            StopThumbMotion();
+            SetThumbVisible(false);
+            _transitionInitialization.CompleteInitialization();
+            return;
+        }
+
+        var segmentedItem = ContainerFromItem(SelectedItem);
+        if (segmentedItem is not { IsArrangeValid: true } || !segmentedItem.IsAttachedToVisualTree())
+        {
+            // 容器尚未实现，等待下一次排列同步。
+            return;
+        }
+
+        var translated = segmentedItem.TranslatePoint(default, this);
+        if (translated is not { } offset || !double.IsFinite(offset.X) || !double.IsFinite(offset.Y) ||
+            !double.IsFinite(segmentedItem.Bounds.Width) || !double.IsFinite(segmentedItem.Bounds.Height) ||
+            !MathUtils.GreaterThan(segmentedItem.Bounds.Width, 0) || !MathUtils.GreaterThan(segmentedItem.Bounds.Height, 0))
+        {
+            return;
+        }
+
+        var targetPos  = new Point(offset.X, offset.Y);
+        var targetSize = segmentedItem.Bounds.Size;
+
+        // 当前插值值不是目标值；重复排列同一目标不能撤销正在运行的过渡。
+        var basePos = GetBaseValue(SelectedThumbPosProperty);
+        var baseSize = GetBaseValue(SelectedThumbSizeProperty);
+        if (_isThumbVisible && basePos.HasValue && baseSize.HasValue &&
+            targetPos == basePos.Value && targetSize == baseSize.Value)
+        {
+            _transitionInitialization.CompleteInitialization();
+            return;
+        }
+
+        // 只有选中项主动切换且滑块已可见时才允许飞行；首次出现与布局跟随一律瞬移。
+        var canAnimate = animate &&
+                         _transitionInitialization.IsReady &&
+                         _isThumbVisible &&
+                         (targetPos != SelectedThumbPos || targetSize != SelectedThumbSize);
+
+        using var snap = !canAnimate && _transitionInitialization.IsReady
+            ? new TransitionSuppressionScope(this)
+            : null;
+
+        SelectedThumbPos  = targetPos;
+        SelectedThumbSize = targetSize;
+
+        SetThumbVisible(true);
+        _transitionInitialization.CompleteInitialization();
+
+        if (canAnimate)
+        {
+            BeginThumbMotion();
+        }
+    }
+
+    private void SetThumbVisible(bool visible)
+    {
+        if (_isThumbVisible == visible)
+        {
+            return;
+        }
+
+        _isThumbVisible = visible;
+        InvalidateVisual();
+    }
+
+    private void BeginThumbMotion()
+    {
+        var duration = GetThumbMotionDuration();
+        if (duration <= TimeSpan.Zero)
+        {
+            return;
+        }
+
+        SetThumbMotionActive(true);
+
+        if (_thumbMotionTimer is null)
+        {
+            _thumbMotionTimer = new DispatcherTimer();
+            _thumbMotionTimer.Tick += HandleThumbMotionTimerTick;
+        }
+
+        _thumbMotionTimer.Stop();
+        _thumbMotionTimer.Interval = duration + ThumbMotionCompletionMargin;
+        _thumbMotionTimer.Start();
+    }
+
+    private void HandleThumbMotionTimerTick(object? sender, EventArgs e)
+    {
+        _thumbMotionTimer?.Stop();
+        SetThumbMotionActive(false);
+    }
+
+    private void StopThumbMotion()
+    {
+        _thumbMotionTimer?.Stop();
+        SetThumbMotionActive(false);
+    }
+
+    private void SetThumbMotionActive(bool active)
+    {
+        if (_isThumbMotionActive == active)
+        {
+            return;
+        }
+
+        _isThumbMotionActive = active;
+        foreach (var item in Items)
+        {
+            if (item is not null && ContainerFromItem(item) is AbstractSegmentedItem container)
             {
-                var offset    = segmentedItem.TranslatePoint(new Point(0, 0), this) ?? default;
-                var offsetX   = offset.X;
-                var targetPos = new Point(offsetX, offset.Y);
-                SelectedThumbPos  = targetPos;
-                SelectedThumbSize = segmentedItem.Bounds.Size;
+                container.SetCurrentValue(AbstractSegmentedItem.IsThumbMotionActiveProperty, active);
             }
         }
     }
+
+    private TimeSpan GetThumbMotionDuration()
+    {
+        if (Transitions is not null)
+        {
+            foreach (var transition in Transitions)
+            {
+                if (transition is TransitionBase transitionBase &&
+                    Equals(transitionBase.Property, SelectedThumbPosProperty))
+                {
+                    return transitionBase.Duration;
+                }
+            }
+        }
+
+        return TimeSpan.Zero;
+    }
+
 }

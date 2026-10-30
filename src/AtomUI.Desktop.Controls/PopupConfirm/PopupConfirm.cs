@@ -13,7 +13,7 @@ public enum PopupConfirmStatus
     Error
 }
 
-public class PopupConfirm : FlyoutHost
+public partial class PopupConfirm : FlyoutHost
 {
     #region 公共属性属性
 

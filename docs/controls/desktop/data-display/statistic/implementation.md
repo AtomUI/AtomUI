@@ -1,6 +1,6 @@
 # Statistic 桌面版实现原理
 
-本文档描述 Statistic 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Statistic 桌面版架构设计](overview.md)，变化记录见 [Statistic Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Statistic Token 设计](token.md)。
+本文档描述 Statistic 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Statistic 桌面版架构设计](overview.md)，公开主题区域见 [Statistic Semantic Part 契约](semantic-part.md)，变化记录见 [Statistic Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Statistic Token 设计](token.md)。
 
 ## 1. 实现定位
 
@@ -12,6 +12,7 @@
 
 - `src/AtomUI.Desktop.Controls/Statistic/AbstractStatistic.cs`
 - `src/AtomUI.Desktop.Controls/Statistic/Statistic.cs`
+- `src/AtomUI.Desktop.Controls/Statistic/Statistic.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Statistic/StatisticCountUp.cs`
 - `src/AtomUI.Desktop.Controls/Statistic/StatisticToken.cs`
 - `src/AtomUI.Desktop.Controls/Statistic/StatisticUtils.cs`
@@ -25,7 +26,7 @@
 职责边界：
 
 - 控件主文件保留 public/protected API、Avalonia 属性注册、事件和主要生命周期入口。
-- Theme 文件负责静态视觉结构、template part、selector 和资源绑定。
+- `StatisticTheme.axaml` 负责 `Statistic` 的叶子模板、静态 Semantic marker、root 表面投影和间距；`AbstractStatisticTheme.axaml` 只提供家族共享 selector。
 - Token 文件只提供组件视觉变量，不保存实例状态。
 - Gallery 文件只展示用法和示例，不作为运行时逻辑 owner。
 
@@ -63,7 +64,7 @@ Public API / ItemsSource / Command / Event
 - 选择与集合：`GroupSeparator`。
 - 交互与状态：`IsLoading`。
 - 动效与异步：`RefreshDuration`。
-- 其他稳定入口：`DecimalSeparator`、`Format`、`Precision`。
+- 视觉与格式：`DecimalSeparator`、`Format`、`GroupSeparator`、`Precision`、`StrokeDashArray`。
 
 维护要求：
 
@@ -84,7 +85,21 @@ Public API / ItemsSource / Command / Event
 
 稳定 template part 接入点：
 
-- 当前没有显式 template part；维护时仍需检查 ControlTheme key、资源 key 和继承模板契约。
+- 当前没有显式 `[TemplatePart]` 字段；`Statistic` 的公开主题边界由静态 Semantic marker 表达。
+
+Semantic marker 与真实节点映射：
+
+| Part | Marker 节点 | 创建方式 | 状态 |
+| --- | --- | --- | --- |
+| `root` | `Statistic` owner | 控件实例 | 始终存在，不使用 `.semantic-root`。 |
+| `header` | `Border#HeaderLayout` | ControlTemplate 静态创建 | Header 为 null 时隐藏，节点身份不变。 |
+| `title` | `ContentPresenter#HeaderPresenter` | ControlTemplate 静态创建 | 跟随 header 可见性。 |
+| `content` | `StackPanel#ContentLayout` | ControlTemplate 静态创建 | 始终存在；由 Skeleton 包装。 |
+| `value` | `ContentPresenter#ContentPresenter` | ControlTemplate 静态创建 | 始终存在，内容可替换。 |
+| `prefix` | `ContentPresenter#ValuePrefixAddOn` | ControlTemplate 静态创建 | AddOn 为 null 时隐藏，节点身份不变。 |
+| `suffix` | `ContentPresenter#ValueSuffixAddOn` | ControlTemplate 静态创建 | AddOn 为 null 时隐藏，节点身份不变。 |
+
+六个 selector Part 使用静态 `Classes.semantic-*="True"`。默认主题只按类型和 Name selector 提供基线，不能消费 `.semantic-*` 驱动自身视觉。
 
 ## 6. 交互与事件处理
 
@@ -101,11 +116,12 @@ Statistic 的交互事件应从输入源收敛到控件级语义事件：
 
 维护者需要重点关注以下流程：
 
-- API 默认值到 effective state 的归一。
-- Template part 重新应用时的状态回放。
-- 主题资源、Token 和 SharedToken 计算后的视觉更新。
-- ItemsSource、selection、checked、expanded、filter、paging 或 upload task 的集合同步。
-- 动效启停、初始加载阶段 transition 抑制和卸载取消。
+1. `Statistic` 把 `Value`、分隔符和 `Precision` 归一为 `EffectiveValue`，在未提供自定义 `Content` 时同步生成内容。
+2. `StatisticTheme.axaml` 的叶子模板把 Header、Content、前后缀和 root 表面属性投影到固定节点；`TimerStatistic` 保持自己的独立模板和契约。
+3. `content` 节点通过 `TextElement.Foreground` 与 `TextElement.FontSize` 向 value、prefix、suffix 继承默认或 Semantic Style 值。
+4. prefix 内的 AtomUI Icon 从 `content` 的继承文本属性同步 FillBrush、StrokeBrush 和尺寸，使 content 级颜色、字号定制保持一致。
+5. root 使用 `DashedBorder` 投影 Background、BorderBrush、BorderThickness、CornerRadius、Padding 与 `StrokeDashArray`；内部 frame 不是额外 Semantic Part。
+6. `IsLoading` 只切换 Skeleton 状态和 root spacing，不创建、删除或重新标记 Semantic target。
 
 `TimerStatistic` 以绝对 `DateTime` 作为值 owner，`DispatcherTimer` 只负责刷新显示，不累计相对 tick。控件 attach 后跟踪自身及 Visual 祖先链；有效不可见时停止 timer，重新可见时先使用 `DateTime.Now` 重算 `RemainingTime`，再恢复周期刷新。该规则保证隐藏期间不产生 UI 线程 tick，同时倒计时和正计时不会因暂停刷新而产生时间漂移。
 
@@ -127,12 +143,15 @@ Statistic 的交互事件应从输入源收敛到控件级语义事件：
 - 避免为每次状态变化创建不必要的视觉对象、订阅或动画对象。
 - 隐藏祖先下的 TimerStatistic 不运行刷新 timer；恢复时必须从绝对时间重算，不补发隐藏期间的 tick。
 - 大集合控件必须保证 container recycle 后不会泄漏旧 item 状态。
+- Semantic Part 使用生成期 descriptor 和静态 marker，不增加运行时 VisualTree 搜索、反射或 selector 字符串组装。
 
 ## 9. 维护不变量
 
 维护 Statistic 时不得破坏：
 
 - Public API、默认值、事件顺序和 Gallery 可观察行为。
+- `root`、`header`、`title`、`content`、`value`、`prefix`、`suffix` 的名称、selector、ContractType、cardinality 和静态 marker 身份。
+- `Statistic` 叶子模板与 `TimerStatistic` 独立模板的边界；不得把 Statistic 契约无意发布到 TimerStatistic 或 StatisticCountUp。
 - Template part 名称、ControlTheme key、伪类和资源 key。
 - 旧 template part、事件订阅、Popup/Flyout/Window host 和 collection view 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
@@ -147,3 +166,5 @@ Statistic 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+Statistic 专项测试必须覆盖 descriptor、静态 marker、六个生成 Style 的真实投影、root 虚线表面、Header/Prefix/Suffix 可见性、格式化 Content、loading 和 re-template。Gallery 测试必须覆盖 Semantic Preview 延迟实例化、七项描述和对应公开上游 6.6.0 双 Statistic 样式示例。

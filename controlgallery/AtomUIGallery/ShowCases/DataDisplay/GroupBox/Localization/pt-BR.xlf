@@ -121,5 +121,53 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticBorderDescription">
+      <segment>
+        <source>The group border, background and corner radius belong to the root part; customize them with an owner-scoped style instead of a part style.</source>
+        <target state="translated">O group border, background e corner radius pertencem ao root part; customize isso com um owner-scoped style em vez de um part style.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with padding and background color for the grouped content area</source>
+        <target state="translated">Content element com padding e background color para o grouped content area</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with padding, background color and alignment for the header content area</source>
+        <target state="translated">Header element com padding, background color e alignment para o header content area</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with icon size, margin and icon color for the header icon</source>
+        <target state="translated">Icon element com icon size, margin e icon color para o header icon</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and GroupBox property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">Use owner-scoped selectors e GroupBox property selectors para customize o published Semantic Parts.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border, background, corner radius and header position that control the overall appearance of the group</source>
+        <target state="translated">Root element com border, background, corner radius e header position that control o overall appearance of o group</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with layout, foreground color and typography styles for the header text</source>
+        <target state="translated">Title element com layout, foreground color e typography styles para o header text</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

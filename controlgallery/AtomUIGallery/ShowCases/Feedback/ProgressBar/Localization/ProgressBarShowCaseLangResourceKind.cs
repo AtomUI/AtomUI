@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -42,6 +40,13 @@ public enum ProgressBarShowCaseLangResourceKind
     VerticalStepsDescription,
     ToggleDisabledStatusTitle,
     ToggleDisabledStatusDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticBodyDescription,
+    SemanticRailDescription,
+    SemanticTrackDescription,
+    SemanticIndicatorDescription,
     P2ContentSub,
     P2ContentAdd,
     PageSubtitle,

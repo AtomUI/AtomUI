@@ -13,12 +13,14 @@
                     RowSpacing="1">
                     <atom:IconButton
                         Name="PART_IncreaseButton"
+                        Classes.semantic-increase-button="True"
                         Icon="{antdicons:AntDesignIconProvider UpOutlined}"
                         VerticalAlignment="Stretch"
                         HorizontalAlignment="Stretch"
                         BackgroundSizing="InnerBorderEdge"/>
                     <atom:IconButton
                         Name="PART_DecreaseButton"
+                        Classes.semantic-decrease-button="True"
                         Icon="{antdicons:AntDesignIconProvider DownOutlined}"
                         VerticalAlignment="Stretch"
                         HorizontalAlignment="Stretch"

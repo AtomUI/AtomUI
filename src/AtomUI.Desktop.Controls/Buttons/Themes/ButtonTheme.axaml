@@ -24,10 +24,6 @@
                                            BackgroundSizing="{TemplateBinding BackgroundSizing}"
                                            CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                            Background="{TemplateBinding Background}" />
-                        <Border Name="CustomBackgroundLayer"
-                                IsHitTestVisible="False"
-                                Background="{TemplateBinding CustomBackground}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}" />
                         <Border Padding="{TemplateBinding Padding}">
                             <DockPanel Name="PART_RootLayout"
                                        LastChildFill="True"
@@ -35,6 +31,7 @@
                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                                 <antdicons:LoadingOutlined
                                     Name="PART_LoadingIcon"
+                                    Classes.semantic-icon="True"
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     LoadingAnimation="Spin"
@@ -44,6 +41,7 @@
 
                                 <atom:IconPresenter
                                     Name="PART_ButtonIcon"
+                                    Classes.semantic-icon="True"
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     Icon="{TemplateBinding Icon}"
@@ -60,11 +58,19 @@
                                 </atom:IconPresenter>
                                 <ContentPresenter
                                     Name="PART_ContentPresenter"
+                                    Classes.semantic-content="True"
                                     Content="{TemplateBinding Content}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}"
                                     IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             </DockPanel>
                         </Border>
+                        <Border Name="FocusVisual"
+                                IsVisible="False"
+                                IsHitTestVisible="False"
+                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
+                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
+                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -82,10 +88,6 @@
                         <Border Name="ShadowsFrame"
                                 CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                 Background="{TemplateBinding Background}" />
-                        <Border Name="CustomBackgroundLayer"
-                                IsHitTestVisible="False"
-                                Background="{TemplateBinding CustomBackground}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}" />
                         <atom:DashedBorder Name="Frame"
                                            Height="{TemplateBinding Height}"
                                            Padding="{TemplateBinding Padding}"
@@ -101,6 +103,7 @@
                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                                 <antdicons:LoadingOutlined
                                     Name="PART_LoadingIcon"
+                                    Classes.semantic-icon="True"
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     LoadingAnimation="Spin"
@@ -110,6 +113,7 @@
 
                                 <atom:IconPresenter
                                     Name="PART_ButtonIcon"
+                                    Classes.semantic-icon="True"
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     Icon="{TemplateBinding Icon}"
@@ -126,10 +130,18 @@
                                 </atom:IconPresenter>
                                 <ContentPresenter
                                     Name="PART_ContentPresenter"
+                                    Classes.semantic-content="True"
                                     Content="{TemplateBinding Content}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />
                             </DockPanel>
                         </atom:DashedBorder>
+                        <Border Name="FocusVisual"
+                                IsVisible="False"
+                                IsHitTestVisible="False"
+                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
+                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
+                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -147,10 +159,6 @@
                         <Border Name="ShadowsFrame"
                                 CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                 Background="{TemplateBinding Background}" />
-                        <Border Name="CustomBackgroundLayer"
-                                IsHitTestVisible="False"
-                                Background="{TemplateBinding CustomBackground}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}" />
                         <atom:DashedBorder Name="Frame"
                                            Height="{TemplateBinding Height}"
                                            Padding="{TemplateBinding Padding}"
@@ -166,6 +174,7 @@
                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                                 <antdicons:LoadingOutlined
                                     Name="PART_LoadingIcon"
+                                    Classes.semantic-icon="True"
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     LoadingAnimation="Spin"
@@ -175,6 +184,7 @@
 
                                 <atom:IconPresenter
                                     Name="PART_ButtonIcon"
+                                    Classes.semantic-icon="True"
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     Icon="{TemplateBinding Icon}"
@@ -191,10 +201,18 @@
                                 </atom:IconPresenter>
                                 <ContentPresenter
                                     Name="PART_ContentPresenter"
+                                    Classes.semantic-content="True"
                                     Content="{TemplateBinding Content}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />
                             </DockPanel>
                         </atom:DashedBorder>
+                        <Border Name="FocusVisual"
+                                IsVisible="False"
+                                IsHitTestVisible="False"
+                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
+                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
+                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -228,7 +246,7 @@
         <Setter Property="FocusAdorner" Value="{x:Null}" />
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightLG}" />
+            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
             <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSizeLG}" />
             <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
             <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeLG}" />
@@ -242,7 +260,7 @@
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
             <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
             <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
             <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
@@ -256,7 +274,7 @@
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
             <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSizeSM}" />
             <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
             <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
@@ -270,7 +288,6 @@
         </Style>
 
         <Style Selector="^[SizeType=Custom]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
             <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
             <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
             <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
@@ -355,27 +372,9 @@
             <Setter Property="IsVisible" Value="True" />
         </Style>
 
-        <Style Selector="^ /template/ Border#CustomBackgroundLayer">
-            <Setter Property="IsVisible" Value="False" />
-            <Setter Property="Opacity" Value="0" />
-        </Style>
 
-        <Style Selector="^[IsMotionEnabled=True] /template/ Border#CustomBackgroundLayer">
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity"
-                                      Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
-            </Setter>
-        </Style>
 
-        <Style Selector="^[HasCustomBackground=True] /template/ Border#CustomBackgroundLayer">
-            <Setter Property="IsVisible" Value="True" />
-        </Style>
 
-        <Style Selector="^[HasCustomBackground=True]:not(:pointerover):not(:pressed) /template/ Border#CustomBackgroundLayer">
-            <Setter Property="Opacity" Value="1" />
-        </Style>
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"

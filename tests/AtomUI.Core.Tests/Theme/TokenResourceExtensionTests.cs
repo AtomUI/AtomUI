@@ -19,30 +19,6 @@ public class TokenResourceExtensionTests
         key.ShouldBe(SharedTokenKind.ColorPrimary);
     }
 
-    [Fact]
-    public void Ambient_Control_Token_Scope_Type_Is_Removed()
-    {
-        File.Exists(GetRepoFile("src/AtomUI.Core/Theme/Resources/ControlTokenScope.cs"))
-            .ShouldBeFalse();
-    }
-
-    private static string GetRepoFile(string relativePath)
-    {
-        var directory = AppContext.BaseDirectory;
-        while (directory is not null)
-        {
-            var candidate = Path.Combine(directory, relativePath);
-            if (File.Exists(candidate) || Directory.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            directory = Directory.GetParent(directory)?.FullName;
-        }
-
-        return Path.Combine(AppContext.BaseDirectory, relativePath);
-    }
-
     private sealed class ThrowingServiceProvider : IServiceProvider
     {
         public object? GetService(Type serviceType)

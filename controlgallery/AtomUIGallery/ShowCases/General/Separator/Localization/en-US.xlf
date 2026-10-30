@@ -126,6 +126,51 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with inline-block display, padding and other divider text content styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartAllPartsTitle">
+      <segment>
+        <source>All parts</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartDashedRailTitle">
+      <segment>
+        <source>Dashed rail</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartSmallSizeTitle">
+      <segment>
+        <source>Small size</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Separator property selectors to customize the published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartTitlePlacementTitle">
+      <segment>
+        <source>Title placement</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRailDescription">
+      <segment>
+        <source>Background rail element with border-top style and other divider connection line styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border-top style, divider styling and other basic divider container styles</source>
+      </segment>
+    </unit>
     <unit id="SpacingSizeDescription">
       <segment>
         <source>The size of the spacing.</source>

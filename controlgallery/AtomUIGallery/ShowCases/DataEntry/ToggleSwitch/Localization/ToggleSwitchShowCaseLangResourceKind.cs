@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -20,6 +18,11 @@ public enum ToggleSwitchShowCaseLangResourceKind
     TwoSizesDescription,
     LoadingTitle,
     LoadingDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticContentDescription,
+    SemanticIndicatorDescription,
     P2ContentToggleDisabled,
     P2ContentToggleLoading,
     P2ContentCustom,

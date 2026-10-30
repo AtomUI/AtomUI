@@ -2,6 +2,15 @@
 
 本文档记录 Separator 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-08-16
+
+- Semantic Parts
+  - Add Ant Design-aligned Semantic Part descriptors for `Separator`：`root`（owner）、`rail`（`SeparatorRail`，`.semantic-rail`，`Multiple`）与 `content`（`TextBlock#PART_Title`，`.semantic-content`）。
+  - Introduce `SeparatorRail` line-render control and move connection-line drawing from `AbstractSeparator.Render` into two template rail nodes (`PART_RailStart` / `PART_RailEnd`) so `rail` is a resolvable template target aligned with Ant Design's `rail` semantic.
+  - Add static template markers and generated owner-scoped `SeparatorRailStyle` / `SeparatorContentStyle` without runtime discovery.
+- Gallery
+  - Add the Semantic Parts Preview reproducing Ant Design's `_semantic.tsx` demo (lorem ipsum, plain/`Solid`/`Dotted`/`Dashed`, vertical dividers) and the custom Semantic Part styling example.
+
 ## 2026-07-29
 
 - Breaking

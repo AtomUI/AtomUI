@@ -5,7 +5,7 @@ namespace AtomUI.Desktop.Controls;
 
 using ToolTipControl = AtomUI.Desktop.Controls.ToolTip;
 
-public class BackTopFloatButton : AbstractBackTopFloatButton
+public partial class BackTopFloatButton : AbstractBackTopFloatButton
 {
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

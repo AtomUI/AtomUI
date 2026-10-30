@@ -7,13 +7,12 @@
         <AtomUIDevelopTargetFramework>net10.0</AtomUIDevelopTargetFramework>
         <AtomUIProductionTargetFramework>net8.0</AtomUIProductionTargetFramework>
         <OutputType>Library</OutputType>
-        <TrimMode>copyused</TrimMode>
         <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
         <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
 
-        <AtomUITargetFrameworks Condition=" '$(Configuration)' == 'Debug' ">$(AtomUIDevelopTargetFramework)</AtomUITargetFrameworks>
-        <AtomUITargetFrameworks Condition=" '$(Configuration)' == 'Release' ">$(AtomUIDevelopTargetFramework);$(AtomUIProductionTargetFramework)</AtomUITargetFrameworks>
-        
+        <AtomUITargetFrameworks>$(AtomUIDevelopTargetFramework)</AtomUITargetFrameworks>
+        <AtomUITargetFrameworks Condition="'$(Configuration)' == 'Release'">$(AtomUIDevelopTargetFramework);$(AtomUIProductionTargetFramework)</AtomUITargetFrameworks>
+
         <IsTestProject Condition="$(MSBuildProjectFullPath.Contains('test')) and ($(MSBuildProjectName.EndsWith('.Tests')) or $(MSBuildProjectName.EndsWith('.TestBase')))">true</IsTestProject>
         <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/GeneratedFiles/**</DefaultItemExcludes>
         <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>

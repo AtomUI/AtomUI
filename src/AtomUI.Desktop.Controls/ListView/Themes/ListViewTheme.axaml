@@ -13,7 +13,8 @@
                                      BorderThickness="{TemplateBinding EffectiveBorderThickness}"
                                      CornerRadius="{TemplateBinding CornerRadius}"
                                      Padding="{TemplateBinding Padding}"
-                                     Margin="{TemplateBinding Margin}">
+                                     Margin="{TemplateBinding Margin}"
+                                     ClipContentToCornerRadius="True">
                 <DockPanel LastChildFill="True">
                     <ContentPresenter Name="TopPaginationPresenter" DockPanel.Dock="Top" 
                                       IsVisible="{TemplateBinding TopPagination, Converter={x:Static ObjectConverters.IsNotNull}}" 
@@ -73,7 +74,7 @@
         <Setter Property="ItemHoverBg" Value="{atom:ListViewTokenResource ItemHoverBgColor}" />
         <Setter Property="ItemSelectedBg" Value="{atom:ListViewTokenResource ItemSelectedBgColor}" />
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
         <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
         <Setter Property="Padding" Value="{atom:ListViewTokenResource ContentPadding}" />
 

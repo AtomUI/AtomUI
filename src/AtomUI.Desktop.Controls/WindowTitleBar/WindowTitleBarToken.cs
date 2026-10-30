@@ -128,6 +128,18 @@ internal sealed class WindowTitleBarToken : AbstractControlDesignToken
     /// 标题按钮的内间距
     /// </summary>
     public Thickness CaptionButtonPadding { get; set; }
+
+    /// <summary>
+    /// managed caption button 的正圆圆角；由 caption button 的实际内容尺寸推导，
+    /// 供 macOS AddOn 按钮复用同一几何，避免与相邻系统 caption 按钮的圆角不一致。
+    /// </summary>
+    public CornerRadius CaptionButtonCornerRadius { get; set; }
+
+    /// <summary>
+    /// managed caption button 背景相对布局盒的内缩；Linux managed caption band 用它把
+    /// 背景从 30 逻辑像素的命中面收成 26 逻辑像素的圆形视觉。
+    /// </summary>
+    public Thickness CaptionButtonBackgroundInset { get; set; }
     
     /// <summary>
     /// 标题按钮间距
@@ -181,6 +193,14 @@ internal sealed class WindowTitleBarToken : AbstractControlDesignToken
         
         CaptionButtonPadding = new Thickness(EffectiveGlobalToken.SizeUnit * 2);
         CaptionGroupSpacing  = EffectiveGlobalToken.SizeUnit * 2;
+
+        // managed caption button 按自身实测尺寸取 max(w, h) / 2 得到正圆圆角；
+        // 内容尺寸固定为 icon + padding，这里用同一公式把该几何暴露给主题，
+        // 使 macOS AddOn 按钮与相邻 caption 按钮共用同一圆角来源。
+        CaptionButtonCornerRadius = new CornerRadius((CaptionButtonIconSize
+                                                      + CaptionButtonPadding.Top
+                                                      + CaptionButtonPadding.Bottom) / 2);
+        CaptionButtonBackgroundInset = new Thickness(EffectiveGlobalToken.SizeUnit / 2);
 
         // 窗口装饰语义不走密度算法：紧凑模式下 ControlHeightLG / SizeLG / SpacingXS 都会被拉小，
         // 标题栏 / 全屏按钮 / DockPanel 间距不应跟着缩，因此使用跨平台稳定值。

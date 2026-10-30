@@ -421,6 +421,146 @@
         <source>SearchEdit size</source>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear action button that removes the current text.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCountDescription">
+      <segment>
+        <source>Character count indicator for the current text and maximum length.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Text presentation and editing area for value, placeholder, caret, and selection.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpCellDescription">
+      <segment>
+        <source>Single input cell that renders one character with placeholder, mask, active, focus, and error states.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpCellListDescription">
+      <segment>
+        <source>Cell list container that arranges the input cells and separators by Length.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpRootDescription">
+      <segment>
+        <source>Root element owning the inline flex layout, alignment, column gap, and wrapper styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticOtpSeparatorDescription">
+      <segment>
+        <source>Separator element displayed between the OTP input cells.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>You can customize the semantic dom style of Input by passing objects/functions through `classNames` and `styles`.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordClearDescription">
+      <segment>
+        <source>Clear button element for resetting the entered password.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordCountDescription">
+      <segment>
+        <source>Character count indicator for the entered password and maximum length.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordInputDescription">
+      <segment>
+        <source>Masked text presentation and editing area for the password value, placeholder, caret, and selection.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordPrefixDescription">
+      <segment>
+        <source>Leading inner content shown before the masked password text, such as a user icon.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordRootDescription">
+      <segment>
+        <source>Root input surface for the password value, owning size, variant, border, background, focus, and validation state.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPasswordSuffixDescription">
+      <segment>
+        <source>Trailing action cluster containing the reveal-password toggle, clear button, and count content.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Leading inner content shown before the text editing area.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root input surface that owns size, variant, border, background, focus, and validation state.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchButtonDescription">
+      <segment>
+        <source>Search button that triggers the search action and shows the loading state.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchClearDescription">
+      <segment>
+        <source>Clear button element for resetting the search value.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchInputDescription">
+      <segment>
+        <source>Text presentation and editing area for the search value.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchPrefixDescription">
+      <segment>
+        <source>Leading inner content shown before the text editing area.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchRootDescription">
+      <segment>
+        <source>Root element combining the input area and the search button.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSearchSuffixDescription">
+      <segment>
+        <source>Trailing inner content shown before the search button.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Trailing content and action cluster for reveal, feedback, custom suffix, clear, and count content.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaClearDescription">
+      <segment>
+        <source>Clear button element with layout, visibility, and interaction styles for clearing content.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaCountDescription">
+      <segment>
+        <source>Count element with character count display position, font, color and numeric statistics styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaDescription">
+      <segment>
+        <source>Textarea element with font, line height, padding, color, background, border, text input and multi-line text display styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTextAreaRootDescription">
+      <segment>
+        <source>Root element with textarea wrapper styles, border, border radius, transition animation and state control.</source>
+      </segment>
+    </unit>
     <unit id="TextAreaDescription">
       <segment>
         <source>For multi-line input.</source>

@@ -332,7 +332,7 @@ public class ShowCasePanel : TemplatedControl
                 return;
             }
 
-            if (child is ShowCaseItem item)
+            if (child is ShowCaseItem { IsDeferredContentEnabled: true, DeferredContentTemplate: not null } item)
             {
                 item.MaterializeDeferredContent();
                 remainingCount--;
@@ -374,6 +374,8 @@ public class ShowCasePanel : TemplatedControl
         {
             if (child is not ShowCaseItem item ||
                 item.IsDeferredContentMaterialized ||
+                !item.IsDeferredContentEnabled ||
+                item.DeferredContentTemplate is null ||
                 !IsItemInViewport(item, expandedViewport))
             {
                 continue;

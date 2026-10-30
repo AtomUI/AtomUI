@@ -229,6 +229,78 @@
         <target state="translated">Estilo</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear icon button inside the suffix area that resets the value</source>
+        <target state="translated">Botão de ícone de limpeza dentro da área de sufixo que redefine o valor</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Embedded numeric text input element with font, alignment and text styles</source>
+        <target state="translated">Elemento de entrada de texto numérico incorporado com estilos de fonte, alinhamento e texto</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and NumericUpDown property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">Use seletores com escopo do proprietário e seletores de propriedade do NumericUpDown para personalizar as Partes Semânticas publicadas.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Inner prefix content element rendered before the input text area</source>
+        <target state="translated">Elemento de conteúdo de prefixo interno renderizado antes da área de texto de entrada</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border, background, size, hover and focus states and other basic input container styles</source>
+        <target state="translated">Elemento raiz com borda, plano de fundo, tamanho, estados de hover e foco e outros estilos básicos do contêiner de entrada</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerClearDescription">
+      <segment>
+        <source>Clear icon button inside the suffix area that resets the value in spinner mode</source>
+        <target state="translated">Botão de ícone de limpeza dentro da área de sufixo que redefine o valor no modo spinner</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerInputDescription">
+      <segment>
+        <source>Embedded numeric text input element with font, alignment and text styles in spinner mode</source>
+        <target state="translated">Elemento de entrada de texto numérico incorporado com estilos de fonte, alinhamento e texto no modo spinner</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerPrefixDescription">
+      <segment>
+        <source>Inner prefix content element rendered before the input text area in spinner mode</source>
+        <target state="translated">Elemento de conteúdo de prefixo interno renderizado antes da área de texto de entrada no modo spinner</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerRootDescription">
+      <segment>
+        <source>Root element with border, background, size, hover and focus states and other basic input container styles in spinner mode</source>
+        <target state="translated">Elemento raiz com borda, plano de fundo, tamanho, estados de hover e foco e outros estilos básicos do contêiner de entrada no modo spinner</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSpinnerSuffixDescription">
+      <segment>
+        <source>Suffix container element rendered after the input text area in spinner mode</source>
+        <target state="translated">Elemento contêiner de sufixo renderizado após a área de texto de entrada no modo spinner</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix container element rendered after the input text area</source>
+        <target state="translated">Elemento contêiner de sufixo renderizado após a área de texto de entrada</target>
+      </segment>
+    </unit>
     <unit id="SizesDescription">
       <segment>
         <source>NumberUpDown supports large (40px), default (32px), small (24px) and custom size.</source>

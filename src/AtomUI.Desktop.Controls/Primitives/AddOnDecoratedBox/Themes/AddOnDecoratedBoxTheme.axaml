@@ -48,6 +48,7 @@
 
                 <atom:AddOnDecoratedBoxContentFrame
                         Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentFramePart}"
+                        Classes.semantic-frame="True"
                         BorderThickness="{TemplateBinding InnerBoxBorderThickness}"
                         CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
                         BorderBrush="{TemplateBinding BorderBrush}"
@@ -57,6 +58,7 @@
                     <atom:AdaptiveSpacingDockPanel Name="ContentLayout" LastChildFill="True">
                         <atom:AddOnContentPresenter
                             Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart}"
+                            Classes.semantic-scope-prefix="True"
                             DockPanel.Dock="Left"
                             VerticalAlignment="Stretch"
                             VerticalContentAlignment="Center"
@@ -68,6 +70,7 @@
                         <atom:AddOnContentPresenter
                             DockPanel.Dock="Right"
                             Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentRightAddOnPart}"
+                            Classes.semantic-scope-suffix="True"
                             VerticalAlignment="Stretch"
                             VerticalContentAlignment="Center"
                             HorizontalAlignment="Right"
@@ -103,6 +106,21 @@
 
         <Style Selector="^ /template/ atom|AdaptiveSpacingDockPanel#ContentLayout">
             <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+        </Style>
+
+        <!-- 右侧后缀区默认前景色：作为下拉箭头（SelectHandle 继承链）与后缀内容的默认颜色，
+             用户 suffix Part Style 在 suffix 容器上以更高优先级覆写 -->
+        <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentRightAddOn">
+            <Setter Property="TextElement.Foreground"
+                    Value="{atom:SharedTokenResource ColorTextQuaternary}" />
+        </Style>
+
+        <!--
+            Filled 变体保留 1px 透明边框与 Outlined 等高占位，背景必须铺满 border-box，
+            否则可见填充比 Outlined 矮上下各 1px。
+        -->
+        <Style Selector="^[StyleVariant=Filled] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
+            <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">

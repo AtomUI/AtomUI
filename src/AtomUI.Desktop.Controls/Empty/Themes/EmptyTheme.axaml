@@ -6,15 +6,30 @@
     <ControlTheme x:Key="{x:Type atom:Empty}" TargetType="atom:Empty">
         <Setter Property="Template">
             <ControlTemplate>
-                <StackPanel Orientation="Vertical">
-                    <Svg Name="PART_SvgImage"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center"/>
-                    <atom:TextBlock Name="Description"
-                                    HorizontalAlignment="Center"
-                                    TextWrapping="Wrap"
-                                    Text="{TemplateBinding Description}"/>
-                </StackPanel>
+                <atom:DashedBorder Background="{TemplateBinding Background}"
+                                   BorderBrush="{TemplateBinding BorderBrush}"
+                                   BorderThickness="{TemplateBinding BorderThickness}"
+                                   CornerRadius="{TemplateBinding CornerRadius}"
+                                   Padding="{TemplateBinding Padding}"
+                                   StrokeDashArray="{TemplateBinding StrokeDashArray}">
+                    <StackPanel Orientation="Vertical">
+                        <Svg Name="PART_SvgImage"
+                             Classes.semantic-image="True"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"/>
+                        <atom:TextBlock Name="Description"
+                                        Classes.semantic-description="True"
+                                        HorizontalAlignment="Center"
+                                        TextWrapping="Wrap"
+                                        Text="{TemplateBinding Description}"
+                                        IsVisible="{TemplateBinding IsDescriptionVisible}"/>
+                        <ContentPresenter Classes.semantic-footer="True"
+                                          HorizontalAlignment="Center"
+                                          Content="{TemplateBinding Footer}"
+                                          ContentTemplate="{TemplateBinding FooterTemplate}"
+                                          IsVisible="{TemplateBinding Footer, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                    </StackPanel>
+                </atom:DashedBorder>
             </ControlTemplate>
         </Setter>
         
@@ -66,6 +81,10 @@
         
         <Style Selector="^ /template/ atom|TextBlock#Description">
             <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}"/>
+        </Style>
+
+        <Style Selector="^ /template/ ContentPresenter">
+            <Setter Property="Margin" Value="{atom:EmptyTokenResource FooterMargin}"/>
         </Style>
         
     </ControlTheme>

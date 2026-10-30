@@ -67,6 +67,12 @@
         <target state="translated">DataGrid 數據表格</target>
       </segment>
     </unit>
+    <unit id="DataDisplay_DateViewer">
+      <segment>
+        <source>DateViewer</source>
+        <target state="translated">日期面板</target>
+      </segment>
+    </unit>
     <unit id="DataDisplay_Descriptions">
       <segment>
         <source>Descriptions</source>

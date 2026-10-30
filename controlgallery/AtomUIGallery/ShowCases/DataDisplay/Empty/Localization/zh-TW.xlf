@@ -61,6 +61,18 @@
         <target state="translated">Customize Description</target>
       </segment>
     </unit>
+    <unit id="P2DescriptionFunctionStyles">
+      <segment>
+        <source>Function styles</source>
+        <target state="translated">功能樣式</target>
+      </segment>
+    </unit>
+    <unit id="P2DescriptionObjectStyles">
+      <segment>
+        <source>Object styles</source>
+        <target state="translated">物件樣式</target>
+      </segment>
+    </unit>
     <unit id="PageDescription">
       <segment>
         <source>Use Empty to communicate that a container has no result, no configured content, or an optional recovery action.</source>
@@ -77,6 +89,42 @@
       <segment>
         <source>Examples</source>
         <target state="translated">範例</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>The description text region controlled by Description and IsDescriptionVisible.</source>
+        <target state="translated">由 Description 與 IsDescriptionVisible 控制的描述文字區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>The optional action region provided by Footer and FooterTemplate.</source>
+        <target state="translated">由 Footer 與 FooterTemplate 提供的可選操作區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticImageDescription">
+      <segment>
+        <source>The stable image region for preset and custom SVG content.</source>
+        <target state="translated">承載預設與自訂 SVG 內容的穩定圖片區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Empty's published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域樣式自訂 Empty 已發布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Empty owner controls overall layout, alignment, visibility, and root styling.</source>
+        <target state="translated">Empty owner 控制整體版面配置、對齊、可見性與根視覺樣式。</target>
       </segment>
     </unit>
     <unit id="SizeDescription">

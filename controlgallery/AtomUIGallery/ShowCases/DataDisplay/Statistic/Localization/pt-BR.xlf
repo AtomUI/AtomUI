@@ -151,6 +151,60 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content region arranging the prefix, value, and suffix.</source>
+        <target state="translated">Região de conteúdo que organiza o prefixo, o valor e o sufixo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header region with bottom spacing and title layout.</source>
+        <target state="translated">Região de cabeçalho com espaçamento inferior e layout do título.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped style selectors to customize Statistic's published Semantic Parts.</source>
+        <target state="translated">Use seletores de estilo no escopo do controle para personalizar as Semantic Parts publicadas por Statistic.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix content surface with inline placement and trailing spacing.</source>
+        <target state="translated">Superfície do prefixo com posicionamento em linha e espaçamento posterior.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with the overall Statistic container surface.</source>
+        <target state="translated">Elemento raiz com a superfície geral do contêiner Statistic.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix content surface with inline placement and leading spacing.</source>
+        <target state="translated">Superfície do sufixo com posicionamento em linha e espaçamento anterior.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title content surface including typography and foreground.</source>
+        <target state="translated">Superfície do título, incluindo tipografia e cor de primeiro plano.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticValueDescription">
+      <segment>
+        <source>Numeric value surface including typography and number presentation.</source>
+        <target state="translated">Superfície do valor numérico, incluindo tipografia e apresentação do número.</target>
+      </segment>
+    </unit>
     <unit id="TimerDescription">
       <segment>
         <source>Timer component.</source>

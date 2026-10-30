@@ -76,5 +76,35 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticFunctionStylesTitle">
+      <segment>
+        <source>Style matched by property state</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item container measured, column-assigned and arranged by the masonry layout, carrying the Masonry.Column and Masonry.Span metadata.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticObjectStylesTitle">
+      <segment>
+        <source>Style matched by class</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles and the MasonryItemStyle semantic part style to customize Masonry's published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, provides the root chrome, column and gutter layout inputs, and the ItemsControl entry.</source>
+      </segment>
+    </unit>
   </file>
 </xliff>

@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="2.1" srcLang="en-US" xmlns="urn:oasis:names:tc:xliff:document:2.0">
   <file id="AtomUIGallery.Localization.NotificationShowCaseLangResourceKind">
+    <unit id="ActionsDescription">
+      <segment>
+        <source>Add action buttons to the bottom-right of the notification through the Actions API.</source>
+      </segment>
+    </unit>
+    <unit id="ActionsTitle">
+      <segment>
+        <source>Notification with actions</source>
+      </segment>
+    </unit>
     <unit id="ApiMethodManagerShow">
       <segment>
         <source>Shows an INotification instance and applies optional style classes.</source>
@@ -61,6 +71,21 @@
         <source>BottomRight</source>
       </segment>
     </unit>
+    <unit id="P2ContentConfirm">
+      <segment>
+        <source>Confirm</source>
+      </segment>
+    </unit>
+    <unit id="P2ContentDefaultNotification">
+      <segment>
+        <source>Default Notification</source>
+      </segment>
+    </unit>
+    <unit id="P2ContentDestroyAll">
+      <segment>
+        <source>Destroy all</source>
+      </segment>
+    </unit>
     <unit id="P2ContentDonTPauseOnHover">
       <segment>
         <source>Don't pause on hover</source>
@@ -69,6 +94,11 @@
     <unit id="P2ContentError">
       <segment>
         <source>Error</source>
+      </segment>
+    </unit>
+    <unit id="P2ContentErrorNotification">
+      <segment>
+        <source>Error Notification</source>
       </segment>
     </unit>
     <unit id="P2ContentInfo">
@@ -116,6 +146,11 @@
         <source>Warning</source>
       </segment>
     </unit>
+    <unit id="P2NotificationActionsContent">
+      <segment>
+        <source>A function will be called after the notification is closed (automatically after the "duration" time or manually).</source>
+      </segment>
+    </unit>
     <unit id="P2NotificationBottomLeftTitle">
       <segment>
         <source>Notification BottomLeft</source>
@@ -136,14 +171,34 @@
         <source>This is the content of the notification. This is the content of the notification. This is the content of the notification.</source>
       </segment>
     </unit>
+    <unit id="P2NotificationDescription">
+      <segment>
+        <source>This is a notification description.</source>
+      </segment>
+    </unit>
     <unit id="P2NotificationHello">
       <segment>
         <source>Hello, AtomUI/Avalonia!</source>
       </segment>
     </unit>
+    <unit id="P2NotificationLongStackedFormat">
+      <segment>
+        <source>Notification {0}: This is a deliberately longer stacked notification used to verify variable-height cards.</source>
+      </segment>
+    </unit>
     <unit id="P2NotificationNeverCloseContent">
       <segment>
         <source>I will never close automatically. This is a purposely very very long description that has many many characters and words.</source>
+      </segment>
+    </unit>
+    <unit id="P2NotificationStackedFormat">
+      <segment>
+        <source>Notification {0}: This is a stacked notification.</source>
+      </segment>
+    </unit>
+    <unit id="P2NotificationStackedTitleFormat">
+      <segment>
+        <source>Notification {0}</source>
       </segment>
     </unit>
     <unit id="P2NotificationTitle">
@@ -199,6 +254,91 @@
     <unit id="ScenarioExamples">
       <segment>
         <source>Examples</source>
+      </segment>
+    </unit>
+    <unit id="SemanticActionsDescription">
+      <segment>
+        <source>The action group element at the bottom-right of the notice. It hosts the caller actions.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>The close button overlay at the top-right corner. Customize its position, size and interaction.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>The description element below the title. Customize its font size, color and padding.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>The status icon element. Customize its size, brush and line height.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticListContentDescription">
+      <segment>
+        <source>The notice arrangement container of the notification list. Customize its direction, order and alignment.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticListRootDescription">
+      <segment>
+        <source>The notification list root. It hosts the cards, queue, timeout and host layer lifecycle.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the upstream style-class demo: default and error-branched styles shape the notice root, icon, title and description through owner-scoped Semantic Part styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticProgressDescription">
+      <segment>
+        <source>The progress overlay at the bottom of the notice. It shows the remaining auto-close time.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The notice root. It hosts the content, type, close state and enter/leave motion.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>The content section that wraps the title and description. Customize the vertical gap and alignment.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>The title element. Customize its color, font size, line height and right padding.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticWrapperDescription">
+      <segment>
+        <source>The wrapping element for the icon and section. Customize the layout, alignment and icon gap.</source>
+      </segment>
+    </unit>
+    <unit id="StackDescription">
+      <segment>
+        <source>Stack is disabled by default. This example enables it; notifications stack when their amount is over threshold, and hover expands all notifications.</source>
+      </segment>
+    </unit>
+    <unit id="StackEnabledLabel">
+      <segment>
+        <source>Enabled:</source>
+      </segment>
+    </unit>
+    <unit id="StackThresholdLabel">
+      <segment>
+        <source>Threshold:</source>
+      </segment>
+    </unit>
+    <unit id="StackTitle">
+      <segment>
+        <source>Stack</source>
       </segment>
     </unit>
     <unit id="WithIconDescription">

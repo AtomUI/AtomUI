@@ -64,6 +64,42 @@ public class StepsConnectorTests
         });
     }
 
+    [Theory]
+    [InlineData(StepsType.Default, Orientation.Horizontal)]
+    [InlineData(StepsType.Default, Orientation.Vertical)]
+    [InlineData(StepsType.Dot, Orientation.Horizontal)]
+    [InlineData(StepsType.OutlineDot, Orientation.Horizontal)]
+    [InlineData(StepsType.Inline, Orientation.Horizontal)]
+    public void Natural_Size_Reserves_Visible_Connectors_For_Short_Headings(
+        StepsType type, Orientation titlePlacement)
+    {
+        var steps = new Desktop.Controls.Steps
+        {
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Type = type,
+            TitlePlacement = titlePlacement,
+            SizeType = AtomUI.SizeType.Small
+        };
+        for (var index = 1; index <= 4; index++)
+        {
+            steps.Items.Add(new StepsItem { Header = index.ToString() });
+        }
+
+        ShowInWindow(steps, () =>
+        {
+            steps.Bounds.Width.ShouldBeLessThan(800);
+            var items = steps.Items.Cast<StepsItem>().ToArray();
+            foreach (var item in items.Take(3))
+            {
+                var connector = FindConnector(item);
+                connector.IsVisible.ShouldBeTrue();
+                connector.Bounds.Width.ShouldBeGreaterThan(connector.Bounds.Height);
+                connector.Background.ShouldNotBeNull();
+            }
+            FindConnector(items[^1]).IsVisible.ShouldBeFalse();
+        });
+    }
+
     [Fact]
     public void Every_Remaining_Steps_Token_Has_A_Theme_Consumer()
     {

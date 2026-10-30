@@ -82,12 +82,24 @@ public enum ArrowPosition
 [TemplatePart("PART_ContentDecorator", typeof(Border))]
 [TemplatePart("PART_ArrowIndicatorLayout", typeof(Control))]
 [TemplatePart("PART_ArrowIndicator", typeof(ArrowIndicator))]
-public abstract class AbstractArrowDecoratedBox : ContentControl, 
-                                                  IArrowAwareShadowMaskInfoProvider, 
+[PseudoClasses(BorderedPseudoClass)]
+public abstract class AbstractArrowDecoratedBox : ContentControl,
+                                                  IArrowAwareShadowMaskInfoProvider,
                                                   IMotionAwareControl
 {
     public const string ArrowDecoratorPart = "PART_ArrowDecorator";
-    
+
+    /// <summary>
+    /// BorderThickness 非默认值时置位;内置主题按该状态隐藏浮动箭头,
+    /// 因为当前内置视觉不支持箭头与边框的融合呈现。
+    /// </summary>
+    public const string BorderedPseudoClass = ":bordered";
+
+    protected AbstractArrowDecoratedBox()
+    {
+        PseudoClasses.Set(BorderedPseudoClass, BorderThickness != default);
+    }
+
     #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsArrowVisibleProperty =
@@ -189,7 +201,11 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
     // 相对坐标
     internal (double, double) ArrowVertexPoint => GetArrowVertexPoint();
     private Border? _contentDecorator;
+
+    internal Border? ContentDecorator => _contentDecorator;
     private protected Control? ArrowIndicatorLayout;
+    // ArrowIndicatorLayoutBounds 相对模板内的箭头定位面板，不是本控件；需要真实位置时按此部件自身做坐标变换
+    internal Control? ArrowIndicatorLayoutPart => ArrowIndicatorLayout;
     private protected ArrowIndicator? ArrowIndicator;
     private protected bool ArrowPlacementFlipped;
 
@@ -227,6 +243,11 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == BorderThicknessProperty)
+        {
+            PseudoClasses.Set(BorderedPseudoClass, BorderThickness != default);
+        }
+
         if (change.Property == ArrowPositionProperty)
         {
             SetArrowDirectionIfChanged(GetDirection(ArrowPosition));
@@ -248,7 +269,10 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
 
     public CornerRadius GetMaskCornerRadius()
     {
-        return CornerRadius;
+        // 阴影蒙版圆角必须跟随真正可见的内容装饰器（容器 Border）：语义部件样式可以单独
+        // 覆盖容器 Border 的圆角，此时 ArrowDecoratedBox 自身的 CornerRadius 与可见形状
+        // 不一致，按可见形状取圆角才能避免弹层角落出现白底空隙。
+        return _contentDecorator?.CornerRadius ?? CornerRadius;
     }
 
     public IBrush? GetMaskBackground()
@@ -516,7 +540,7 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
         return ArrowIndicatorLayoutBounds;
     }
 
-    AbstractArrowDecoratedBox IArrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox()
+    AbstractArrowDecoratedBox? IArrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox()
     {
         return this;
     }

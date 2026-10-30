@@ -49,6 +49,24 @@
         <target state="translated">.NET 10</target>
       </segment>
     </unit>
+    <unit id="CustomComponentAutomationName">
+      <segment>
+        <source>Page size</source>
+        <target state="translated">每頁筆數</target>
+      </segment>
+    </unit>
+    <unit id="CustomComponentDescription">
+      <segment>
+        <source>Replace the page size changer with a custom NumericUpDown.</source>
+        <target state="translated">使用自訂 NumericUpDown 取代每頁筆數切換器。</target>
+      </segment>
+    </unit>
+    <unit id="CustomComponentTitle">
+      <segment>
+        <source>Custom component</source>
+        <target state="translated">自訂元件</target>
+      </segment>
+    </unit>
     <unit id="MiniSizeDescription">
       <segment>
         <source>Mini size pagination.</source>
@@ -63,8 +81,8 @@
     </unit>
     <unit id="MoreDescription">
       <segment>
-        <source>More pages.</source>
-        <target state="translated">更多頁碼。</target>
+        <source>Hover or focus an ellipsis to reveal a five-page jump action.</source>
+        <target state="translated">懸停或聚焦省略號可顯示跨 5 頁跳轉操作。</target>
       </segment>
     </unit>
     <unit id="MoreTitle">
@@ -113,6 +131,36 @@
       <segment>
         <source>Examples</source>
         <target state="translated">示例</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInfoDescription">
+      <segment>
+        <source>Info element, set font, color and alignment styles for the page info text</source>
+        <target state="translated">資訊元素，設定頁碼資訊文字的字型、顏色與對齊樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, set size, padding, border, background color, hover state and active state styles</source>
+        <target state="translated">頁碼元素，設定尺寸、內邊距、邊框、背景色、懸停態和啟動態樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Style the root and items through generated Semantic Part styles: a dashed outline around the root, rounded item corners, and item backgrounds that apply only at small size.</source>
+        <target state="translated">透過生成的 Semantic Part 樣式自訂 root 與 item：root 使用虛線描邊、item 使用圓角，item 背景僅在小尺寸下生效。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, set flex layout, alignment, flex wrap and list styles</source>
+        <target state="translated">根元素，設定 flex 佈局、對齊方式、換行和列表樣式</target>
       </segment>
     </unit>
     <unit id="SimpleModeDescription">

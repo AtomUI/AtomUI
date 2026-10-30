@@ -166,5 +166,90 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticPopupActionsDescription">
+      <segment>
+        <source>Confirm and cancel action row.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupArrowDescription">
+      <segment>
+        <source>Arrow indicator pointing to the anchor.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContainerDescription">
+      <segment>
+        <source>Inner container carrying the popup background, border and padding.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupContentDescription">
+      <segment>
+        <source>Content surface of the popup frame that hosts the confirmation body.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupDescriptionDescription">
+      <segment>
+        <source>Confirmation description text.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupIconDescription">
+      <segment>
+        <source>Confirmation status icon, colored by ConfirmStatus.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root surface of the confirmation popup.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupTitleDescription">
+      <segment>
+        <source>Confirmation title.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewContentText">
+      <segment>
+        <source>Semantic structure of the PopupConfirm popup.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewTriggerContent">
+      <segment>
+        <source>Semantic Part</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The PopupConfirm host itself.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleFunctionContent">
+      <segment>
+        <source>Function text</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleFunctionTrigger">
+      <segment>
+        <source>Function Style</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleObjectContent">
+      <segment>
+        <source>Object text</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleObjectTrigger">
+      <segment>
+        <source>Object Style</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of the PopupConfirm popup with semantic part styles.</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
   </file>
 </xliff>

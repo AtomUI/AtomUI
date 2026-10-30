@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -44,5 +42,13 @@ public enum CalendarShowCaseLangResourceKind
     CrossDateEventsReleaseText,
     CrossDateEventsDesignReviewText,
     CrossDateEventsMaintenanceText,
-    CrossDateEventsBugFixText
+    CrossDateEventsBugFixText,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticHeaderDescription,
+    SemanticBodyDescription,
+    SemanticContentDescription,
+    SemanticItemDescription,
+    SemanticItemContentDescription
 }

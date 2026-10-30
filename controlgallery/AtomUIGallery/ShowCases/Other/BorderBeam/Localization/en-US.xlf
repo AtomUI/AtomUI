@@ -161,6 +161,26 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="ShowOnHoverCardDescription">
+      <segment>
+        <source>The border beam appears when the pointer moves over this card.</source>
+      </segment>
+    </unit>
+    <unit id="ShowOnHoverCardTitle">
+      <segment>
+        <source>Hover over the card</source>
+      </segment>
+    </unit>
+    <unit id="ShowOnHoverDescription">
+      <segment>
+        <source>Hide the border beam by default, and reveal it when hovering over the container.</source>
+      </segment>
+    </unit>
+    <unit id="ShowOnHoverTitle">
+      <segment>
+        <source>Show on hover</source>
+      </segment>
+    </unit>
     <unit id="SizeCompactCardDescription">
       <segment>
         <source>Keeps the highlight shorter for dense card groups.</source>
@@ -199,26 +219,6 @@
     <unit id="SizeTitle">
       <segment>
         <source>Size</source>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverCardDescription">
-      <segment>
-        <source>The border beam appears when the pointer moves over this card.</source>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverCardTitle">
-      <segment>
-        <source>Hover over the card</source>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverDescription">
-      <segment>
-        <source>Hide the border beam by default, and reveal it when hovering over the container.</source>
-      </segment>
-    </unit>
-    <unit id="ShowOnHoverTitle">
-      <segment>
-        <source>Show on hover</source>
       </segment>
     </unit>
   </file>

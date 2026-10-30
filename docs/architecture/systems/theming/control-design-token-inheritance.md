@@ -61,7 +61,7 @@ public abstract class CommonButtonToken : AbstractControlDesignToken
 
 - 可以形成多层单继承链，也可以在自身程序集没有终端派生类时独立编译；
 - 不按类型名称匹配 Control，名称只需以 `Token` 结尾；
-- 不拥有 Catalog、Control ID、factory、evaluator、descriptor、slot、资源键或 Registration Unit；
+- 不拥有 Catalog、Control ID、factory、evaluator、descriptor、slot、资源键或注册片段；
 - 必须是非泛型顶级类；
 - 对第三方开放时使用 `public abstract`，仅供已知第一方下游包复用时可以使用 `internal abstract` 与正常的
   `InternalsVisibleTo`；
@@ -212,9 +212,9 @@ Generator 将标记类型分为两类：
 只有至少两个真实终端使用、名称和含义一致、默认计算依赖一致、平台差异能由终端继续表达时才提取共享抽象层。
 
 第三方包可以公开 `public abstract` Token 作为扩展契约。其属性名称、值类型、可访问性和默认计算语义都是公共兼容性
-边界；普通 Package 仍按现有包级入口、Registration Unit 和静态 descriptor 规则注册终端 Control。
+边界；普通 Package 仍按现有包级入口、逐控件片段和静态 descriptor 规则注册终端 Control。
 
-抽象 Token 不拥有 Registration Unit、linked registration fragment、factory 或动态 root。终端 factory 对具体类型的静态引用
+抽象 Token 不拥有 注册片段、factory 或动态 root。终端 factory 对具体类型的静态引用
 自然保留完整 CLR 基类链；独立抽象 Token 程序集是普通编译依赖，不通过 runtime scanning 加载。
 
 ## 兼容性、性能与 AOT

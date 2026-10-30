@@ -1,0 +1,71 @@
+using System.Runtime.CompilerServices;
+using Builder = AtomUI.Registration.ControlPackageRegistrationBuilder;
+namespace P1;
+public sealed class DirectControl { }
+public sealed class TokenOnly { }
+public sealed class StyleOnly { }
+public sealed class A { }
+public sealed class B { }
+public sealed class Root1 { }
+public sealed class Root2 { }
+public sealed class Unused1 { }
+public sealed class Unused2 { }
+public sealed class Unused { }
+public sealed class Payload { }
+public sealed class GenericControl<T> { }
+public sealed class StaticOnly
+{
+    [MethodImpl(MethodImplOptions.NoInlining)] public static int Calculate() { return Environment.ProcessId; }
+}
+public static class Usage
+{
+    [MethodImpl(MethodImplOptions.NoInlining)] public static object Direct() { return new DirectControl(); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static object Token() { return new TokenOnly(); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static object Style() { return new StyleOnly(); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static object Transitive() { return new A(); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static object Cycle() { return new Root1(); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static object Generic() { return new GenericControl<Payload>(); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Touch(object value) { GC.KeepAlive(value); }
+}
+public static class Fragments
+{
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Direct(Builder builder) { builder.Add("direct"); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Token(Builder builder) { builder.Add("token"); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Style(Builder builder) { builder.Add("style"); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void A(Builder builder) { builder.Add("a"); Usage.Touch(new B()); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void B(Builder builder) { builder.Add("b"); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Root1(Builder builder) { builder.Add("root1"); Usage.Touch(new Root2()); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Root2(Builder builder) { builder.Add("root2"); Usage.Touch(new Root1()); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Unused1(Builder builder) { builder.Add("unused1"); Usage.Touch(new Unused2()); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Unused2(Builder builder) { builder.Add("unused2"); Usage.Touch(new Unused1()); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Unused(Builder builder) { builder.Add("UNUSED_FACTORY_SENTINEL_9DBC2310"); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Static(Builder builder) { builder.Add("static"); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Generic(Builder builder) { builder.Add("generic"); }
+}
+public static class CctorEntry<T>
+{
+    public static readonly Builder Result;
+    static CctorEntry() { Result = new Builder(); Helper<T>.Call(Result); }
+}
+public static class Helper<T>
+{
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Call(Builder builder) { Package.Collect(builder); }
+}
+
+public sealed class DirectAlias { }
+public sealed class ThrowControl { }
+public static class AdditionalUsage
+{
+    [MethodImpl(MethodImplOptions.NoInlining)] public static object Alias() { return new DirectAlias(); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static object Array() { return new DirectControl[2]; }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static Type TypeOf() { return typeof(DirectControl); }
+    [MethodImpl(MethodImplOptions.NoInlining)] public static object Throwing() { return new ThrowControl(); }
+}
+public static class AdditionalFragments
+{
+    [MethodImpl(MethodImplOptions.NoInlining)] public static void Throw(Builder builder)
+    {
+        builder.Add("throw");
+        throw new InvalidOperationException("EXPECTED_MANAGED_CALLI_EXCEPTION");
+    }
+}

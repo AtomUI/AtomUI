@@ -37,6 +37,18 @@
         <target state="translated">組合佈局</target>
       </segment>
     </unit>
+    <unit id="DoubleClickResetDescription">
+      <segment>
+        <source>Double-click a dragger to reset all panels to their default sizes.</source>
+        <target state="translated">雙擊分隔條，將所有面板還原為預設尺寸。</target>
+      </segment>
+    </unit>
+    <unit id="DoubleClickResetTitle">
+      <segment>
+        <source>Double-clicked reset</source>
+        <target state="translated">雙擊重設</target>
+      </segment>
+    </unit>
     <unit id="HorizontalDescription">
       <segment>
         <source>Top-bottom splitter with collapsible icons.</source>
@@ -151,6 +163,24 @@
         <target state="translated">Not Resizable</target>
       </segment>
     </unit>
+    <unit id="P2TextPanel1">
+      <segment>
+        <source>Panel 1</source>
+        <target state="translated">面板 1</target>
+      </segment>
+    </unit>
+    <unit id="P2TextPanel2">
+      <segment>
+        <source>Panel 2</source>
+        <target state="translated">面板 2</target>
+      </segment>
+    </unit>
+    <unit id="P2TextPanel3">
+      <segment>
+        <source>Panel 3</source>
+        <target state="translated">面板 3</target>
+      </segment>
+    </unit>
     <unit id="P2TextResizable">
       <segment>
         <source>Resizable</source>
@@ -209,6 +239,36 @@
       <segment>
         <source>Examples</source>
         <target state="translated">示例</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDraggerDescription">
+      <segment>
+        <source>Drag bar element carrying the semantic-dragger class that resizes adjacent panels.</source>
+        <target state="translated">攜帶 semantic-dragger 類的拖動條元素，用於調整相鄰面板的尺寸。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPanelDescription">
+      <segment>
+        <source>Panel container element carrying the semantic-panel class with adjustable size and clipped content.</source>
+        <target state="translated">攜帶 semantic-panel 類的面板容器元素，具有可調整的尺寸與裁剪的內容。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the Ant Design style-class demo: customize the root background and the dragger through generated Semantic Part styles, and outline the root with a dashed border.</source>
+        <target state="translated">對齊 Ant Design style-class 範例：透過生成的 Semantic Part 樣式自訂 root 背景與拖動條，並為 root 加上虛線邊框。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root container element that arranges panels and drag bars along the split direction.</source>
+        <target state="translated">根容器元素，沿分割方向排列面板與拖動條。</target>
       </segment>
     </unit>
     <unit id="ShowCollapsibleIconDescription">

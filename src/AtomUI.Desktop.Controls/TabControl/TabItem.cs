@@ -19,7 +19,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Selected)]
-public class TabItem : HeaderedContentControl, ISelectable
+public partial class TabItem : HeaderedContentControl, ISelectable
 {
     #region 公共属性定义
 
@@ -164,6 +164,8 @@ public class TabItem : HeaderedContentControl, ISelectable
     private Dock? _tabStripPlacement;
     private IconButton? _closeButton;
 
+    private readonly TransitionInitializationSession _transitionInitialization;
+
     static TabItem()
     {
         SelectableMixin.Attach<TabItem>(IsSelectedProperty);
@@ -217,12 +219,45 @@ public class TabItem : HeaderedContentControl, ISelectable
         _closeButton = null;
     }
 
+
+    public TabItem()
+    {
+        _transitionInitialization = new TransitionInitializationSession(this);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
         SetupShapeThemeBindings(false);
         ConfigureHasIcon();
         NotifyIconSlotOwner();
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromLogicalTree(e);
+        // A direct detach (e.Source == this) means the tab control dropped this item from
+        // its logical children. Items that are their own container never receive
+        // ClearContainerForItemOverride, so the owner-created indexer bindings must be
+        // released here or the owner keeps the removed item alive for its lifetime.
+        // Cascaded detach (whole tree teardown) carries an ancestor's args and must keep
+        // the bindings so re-attaching the tree restores the property sync.
+        if (ReferenceEquals(e.Source, this) && e.Parent is BaseTabControl tabControl)
+        {
+            tabControl.ReleaseTabItemOwnerBindings(this);
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -238,6 +273,7 @@ public class TabItem : HeaderedContentControl, ISelectable
         }
 
         SetupDefaultCloseIcon();
+        _transitionInitialization.CompleteInitialization();
     }
 
     private void HandleCloseRequest(object? sender, RoutedEventArgs args)
@@ -402,15 +438,9 @@ public class TabItem : HeaderedContentControl, ISelectable
         }
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        _transitionInitialization.CompleteInitialization();
     }
 }

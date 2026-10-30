@@ -283,6 +283,233 @@ public class NavMenuEntryModelTests
     }
 
     [Fact]
+    public void Replace_Commits_Ownership_Before_Custom_Detach_Callbacks()
+    {
+        var owner = new NavMenuNode();
+        var competingOwner = new NavMenuGroup();
+        var replacement = new NavMenuNode();
+        InvalidOperationException? competingAttachException = null;
+        var old = new ReentrantLegacyNavMenuNode(parent =>
+        {
+            if (parent is null)
+            {
+                competingAttachException = Should.Throw<InvalidOperationException>(() =>
+                    competingOwner.Entries.Add(replacement));
+            }
+        });
+        owner.Entries.Add(old);
+        var changes = new List<NotifyCollectionChangedEventArgs>();
+        ((INotifyCollectionChanged)owner.Entries).CollectionChanged += (_, e) => changes.Add(e);
+
+        owner.Entries[0] = replacement;
+
+        competingAttachException.ShouldNotBeNull();
+        competingOwner.Entries.ShouldBeEmpty();
+        owner.Entries.ShouldBe([replacement]);
+        old.ParentNode.ShouldBeNull();
+        replacement.ParentNode.ShouldBeSameAs(owner);
+        replacement.IsStructurallyOwnedBy(owner).ShouldBeTrue();
+        var change = changes.ShouldHaveSingleItem();
+        change.Action.ShouldBe(NotifyCollectionChangedAction.Replace);
+        change.OldItems!.Cast<INavMenuEntry>().ShouldBe([old]);
+        change.NewItems!.Cast<INavMenuEntry>().ShouldBe([replacement]);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Replace_Parent_Callback_Exception_Still_Publishes_The_Committed_State(bool failOnAttach)
+    {
+        var owner = new NavMenuNode();
+        var callbackException = new InvalidOperationException("Parent callback failed.");
+        var old = new ReentrantLegacyNavMenuNode(parent =>
+        {
+            if (!failOnAttach && parent is null)
+            {
+                throw callbackException;
+            }
+        });
+        var replacement = new ReentrantLegacyNavMenuNode(parent =>
+        {
+            if (failOnAttach && parent is not null)
+            {
+                throw callbackException;
+            }
+        });
+        var ownedDescendant = new NavMenuNode();
+        replacement.MutableChildren.Add(ownedDescendant);
+        owner.Entries.Add(old);
+        var changes = new List<NotifyCollectionChangedEventArgs>();
+        ((INotifyCollectionChanged)owner.Entries).CollectionChanged += (_, e) =>
+        {
+            if (e.Action != NotifyCollectionChangedAction.Replace)
+            {
+                return;
+            }
+
+            owner.Entries.ShouldBe([replacement]);
+            old.ParentNode.ShouldBeNull();
+            replacement.ParentNode.ShouldBeSameAs(owner);
+            ownedDescendant.IsStructurallyOwnedBy(owner).ShouldBeTrue();
+            changes.Add(e);
+        };
+
+        Should.Throw<InvalidOperationException>(() => owner.Entries[0] = replacement)
+              .ShouldBeSameAs(callbackException);
+
+        changes.ShouldHaveSingleItem().Action.ShouldBe(NotifyCollectionChangedAction.Replace);
+        // A throwing callback must release the transaction so later ordinary writes remain valid.
+        owner.Entries[0] = replacement;
+        owner.Entries.Remove(replacement).ShouldBeTrue();
+        ownedDescendant.TryGetStructuralOwner(out _).ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Replace_Group_Parent_Callback_Exception_Completes_All_Descendant_Projections(bool failOnAttach)
+    {
+        var owner = new NavMenuNode();
+        var callbackException = new InvalidOperationException("Nested parent callback failed.");
+        var failCallbacks = false;
+        var throwingChild = new ReentrantLegacyNavMenuNode(parent =>
+        {
+            if (failCallbacks && (parent is not null) == failOnAttach)
+            {
+                throw callbackException;
+            }
+        });
+        var nestedLeaf = new NavMenuNode();
+        var nestedGroup = new NavMenuGroup();
+        nestedGroup.Entries.Add(throwingChild);
+        nestedGroup.Entries.Add(nestedLeaf);
+        var followingLeaf = new NavMenuNode();
+        var group = new NavMenuGroup();
+        group.Entries.Add(nestedGroup);
+        group.Entries.Add(followingLeaf);
+        var ordinaryNode = new NavMenuNode();
+        INavMenuEntry oldEntry = failOnAttach ? ordinaryNode : group;
+        INavMenuEntry replacement = failOnAttach ? group : ordinaryNode;
+        owner.Entries.Add(oldEntry);
+        var notificationCount = 0;
+        ((INotifyCollectionChanged)owner.Entries).CollectionChanged += (_, e) =>
+        {
+            if (e.Action != NotifyCollectionChangedAction.Replace)
+            {
+                return;
+            }
+
+            owner.Entries.ShouldBe([replacement]);
+            var expectedParent = failOnAttach ? owner : null;
+            group.SemanticParentNode.ShouldBeSameAs(expectedParent);
+            nestedGroup.SemanticParentNode.ShouldBeSameAs(expectedParent);
+            throwingChild.ParentNode.ShouldBeSameAs(expectedParent);
+            nestedLeaf.ParentNode.ShouldBeSameAs(expectedParent);
+            followingLeaf.ParentNode.ShouldBeSameAs(expectedParent);
+            group.IsStructurallyOwnedBy(owner).ShouldBe(failOnAttach);
+            nestedLeaf.IsStructurallyOwnedBy(nestedGroup).ShouldBeTrue();
+            followingLeaf.IsStructurallyOwnedBy(group).ShouldBeTrue();
+            ordinaryNode.ParentNode.ShouldBeSameAs(failOnAttach ? null : owner);
+            notificationCount++;
+        };
+
+        failCallbacks = true;
+        Should.Throw<InvalidOperationException>(() => owner.Entries[0] = replacement)
+              .ShouldBeSameAs(callbackException);
+
+        notificationCount.ShouldBe(1);
+        failCallbacks = false;
+        owner.Entries.Remove(replacement).ShouldBeTrue();
+        owner.Entries.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("add")]
+    [InlineData("addRange")]
+    [InlineData("insert")]
+    [InlineData("replace")]
+    [InlineData("remove")]
+    [InlineData("clear")]
+    public void Replace_Rejects_Reentrant_Writes_To_Its_Collection_Before_They_Mutate(string operation)
+    {
+        var owner = new NavMenuNode();
+        var replacement = new NavMenuNode();
+        var additional = new NavMenuNode();
+        InvalidOperationException? reentrantException = null;
+        var old = new ReentrantLegacyNavMenuNode(parent =>
+        {
+            if (parent is not null)
+            {
+                return;
+            }
+
+            reentrantException = Should.Throw<InvalidOperationException>(() =>
+            {
+                switch (operation)
+                {
+                    case "add": owner.Entries.Add(additional); break;
+                    case "addRange": ((NavMenuEntryCollection)owner.Entries).AddRange([additional]); break;
+                    case "insert": owner.Entries.Insert(0, additional); break;
+                    case "replace": owner.Entries[0] = additional; break;
+                    case "remove": owner.Entries.RemoveAt(0); break;
+                    case "clear": owner.Entries.Clear(); break;
+                }
+            });
+        });
+        owner.Entries.Add(old);
+        var changes = new List<NotifyCollectionChangedEventArgs>();
+        ((INotifyCollectionChanged)owner.Entries).CollectionChanged += (_, e) => changes.Add(e);
+
+        owner.Entries[0] = replacement;
+
+        reentrantException.ShouldNotBeNull();
+        owner.Entries.ShouldBe([replacement]);
+        old.ParentNode.ShouldBeNull();
+        replacement.ParentNode.ShouldBeSameAs(owner);
+        additional.ParentNode.ShouldBeNull();
+        additional.TryGetStructuralOwner(out _).ShouldBeFalse();
+        changes.ShouldHaveSingleItem().Action.ShouldBe(NotifyCollectionChangedAction.Replace);
+        owner.Entries.Add(additional);
+        owner.Entries.ShouldBe([replacement, additional]);
+    }
+
+    [Fact]
+    public void Replace_Notifies_All_Observers_Before_Allowing_Another_Write()
+    {
+        var owner = new NavMenuNode();
+        var old = new NavMenuNode();
+        var replacement = new NavMenuNode();
+        owner.Entries.Add(old);
+        var notifier = (INotifyCollectionChanged)owner.Entries;
+        notifier.CollectionChanged += (_, e) =>
+        {
+            if (e.Action == NotifyCollectionChangedAction.Replace)
+            {
+                Should.Throw<InvalidOperationException>(() => owner.Entries.Clear());
+            }
+        };
+        var observedReplacement = false;
+        notifier.CollectionChanged += (_, e) =>
+        {
+            if (e.Action == NotifyCollectionChangedAction.Replace)
+            {
+                owner.Entries.ShouldBe([replacement]);
+                replacement.ParentNode.ShouldBeSameAs(owner);
+                replacement.IsStructurallyOwnedBy(owner).ShouldBeTrue();
+                old.ParentNode.ShouldBeNull();
+                old.TryGetStructuralOwner(out _).ShouldBeFalse();
+                observedReplacement = true;
+            }
+        };
+
+        owner.Entries[0] = replacement;
+
+        observedReplacement.ShouldBeTrue();
+        owner.Entries.Clear();
+        owner.Entries.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void BuiltIn_Owners_Do_Not_Subscribe_To_Descendant_BuiltIn_Entry_Collections()
     {
         const int depth = 20;

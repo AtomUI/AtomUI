@@ -42,6 +42,8 @@ internal sealed class DialogSession : IAsyncDisposable
 
     internal Task<object?> Completion => _completionSource.Task;
 
+    internal IDialogPresenter Presenter => _presenter;
+
     internal DialogSession(
         Dialog dialog,
         IDialogPresenter presenter,

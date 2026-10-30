@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -263,5 +261,22 @@ public enum FormShowCaseLangResourceKind
     P3GenderNoteFormat,
     P3GetCaptchaButtonText,
     P3CurrencyRmbHeader,
-    P3CurrencyDollarHeader
+    P3CurrencyDollarHeader,
+    SemanticRootDescription,
+    SemanticLabelDescription,
+    SemanticContentDescription,
+    SemanticHelpDescription,
+    SemanticHelpItemDescription,
+    SemanticExtraDescription,
+    SemanticHelpUse4To16Characters,
+    SemanticMessageUseAtLeast8Characters,
+    SemanticExtraPasswordMustContainLettersAndNumbers,
+    SemanticStylingTitle,
+    SemanticStylingDescription,
+    SemanticStyleMessagePleaseEnterUsername,
+    SemanticStyleMessagePleaseEnterEmail,
+    SemanticStyleUsernamePlaceholder,
+    SemanticStyleEmailPlaceholder,
+    SemanticStyleSubmitButtonText,
+    SemanticStyleResetButtonText
 }

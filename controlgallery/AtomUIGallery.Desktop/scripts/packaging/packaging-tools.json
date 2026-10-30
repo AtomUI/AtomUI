@@ -1,0 +1,72 @@
+{
+    "tools": {
+        "appimagetool": {
+            "version": "1.9.1",
+            "assets": {
+                "x86_64": {
+                    "url": "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage",
+                    "sha256": "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0"
+                },
+                "aarch64": {
+                    "url": "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-aarch64.AppImage",
+                    "sha256": "f0837e7448a0c1e4e650a93bb3e85802546e60654ef287576f46c71c126a9158"
+                }
+            }
+        },
+        "linuxdeploy": {
+            "version": "1-alpha-20250213-2",
+            "assets": {
+                "x86_64": {
+                    "url": "https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20250213-2/linuxdeploy-x86_64.AppImage",
+                    "sha256": "4648f278ab3ef31f819e67c30d50f462640e5365a77637d7e6f2ad9fd0b4522a"
+                },
+                "aarch64": {
+                    "url": "https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20250213-2/linuxdeploy-aarch64.AppImage",
+                    "sha256": "06706ac8189797dccd36bd384105892cb5e6e71f784f4df526cc958adc223cd6"
+                }
+            }
+        },
+        "create-dmg": {
+            "version": "v1.3.0",
+            "assets": {
+                "any": {
+                    "files": [
+                        {
+                            "path": "create-dmg",
+                            "url": "https://raw.githubusercontent.com/create-dmg/create-dmg/v1.3.0/create-dmg",
+                            "sha256": "bb9ea3194e55f2f76a821e87541513748d0fedc69f45cf4f0951cad15ae0cae5"
+                        },
+                        {
+                            "path": "support/template.applescript",
+                            "url": "https://raw.githubusercontent.com/create-dmg/create-dmg/v1.3.0/support/template.applescript",
+                            "sha256": "b5dd7c55ddaa5db1884ac5cf523c4413d452a75df967daf55b8d45ba501fe457"
+                        },
+                        {
+                            "path": "support/eula-resources-template.xml",
+                            "url": "https://raw.githubusercontent.com/create-dmg/create-dmg/v1.3.0/support/eula-resources-template.xml",
+                            "sha256": "a804e533e9c99491a74cb4502c435b00d902dc7a45d3693057a29674e584a70b"
+                        },
+                        {
+                            "path": ".this-is-the-create-dmg-repo",
+                            "url": "https://raw.githubusercontent.com/create-dmg/create-dmg/v1.3.0/.this-is-the-create-dmg-repo",
+                            "sha256": "fb2494eb10146a84bbb20ebb198c2a09fb72aed119706dc55b6ec3644018383f"
+                        }
+                    ]
+                }
+            }
+        },
+        "type2-runtime": {
+            "version": "20251108",
+            "assets": {
+                "x86_64": {
+                    "url": "https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-x86_64",
+                    "sha256": "2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d"
+                },
+                "aarch64": {
+                    "url": "https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-aarch64",
+                    "sha256": "00cbdfcf917cc6c0ff6d3347d59e0ca1f7f45a6df1a428a0d6d8a78664d87444"
+                }
+            }
+        }
+    }
+}

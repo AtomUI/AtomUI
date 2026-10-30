@@ -7,5 +7,63 @@
         <ControlTheme.BasedOn>
             <atom:AbstractFloatButtonTheme TargetType="atom:FloatButton"/>
         </ControlTheme.BasedOn>
+
+        <Style Selector="^[Shape=Square]">
+            <Setter Property="Template">
+                <ControlTemplate TargetType="atom:FloatButton">
+                    <Panel>
+                        <Border Name="BackgroundFrame"
+                                BoxShadow="{TemplateBinding BoxShadow}"
+                                CornerRadius="{TemplateBinding CornerRadius}" />
+                        <Border Name="Frame"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Cursor="{TemplateBinding Cursor}">
+                            <StackPanel Name="RootLayout">
+                                <atom:IconPresenter Name="IconPresenter" Icon="{TemplateBinding Icon}"
+                                                    Classes.semantic-icon="True"
+                                                    IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                                  Classes.semantic-content="True"
+                                                  TextWrapping="Wrap"
+                                                  HorizontalContentAlignment="Center"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            </StackPanel>
+                        </Border>
+                        <Canvas Name="PART_BadgeLayout" />
+                    </Panel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="^[Shape=Circle]">
+            <Setter Property="Template">
+                <ControlTemplate TargetType="atom:FloatButton">
+                    <Panel>
+                        <Border Name="BackgroundFrame"
+                                BoxShadow="{TemplateBinding BoxShadow}"
+                                CornerRadius="{TemplateBinding CornerRadius}" />
+                        <Border Name="Frame"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Cursor="{TemplateBinding Cursor}">
+                            <atom:IconPresenter Name="IconPresenter"
+                                                Classes.semantic-icon="True"
+                                                Icon="{TemplateBinding Icon}"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center" />
+                        </Border>
+                        <Canvas Name="PART_BadgeLayout" />
+                    </Panel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

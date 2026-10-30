@@ -1,5 +1,7 @@
 using AtomUI.Controls;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 
@@ -117,6 +119,19 @@ internal class DescriptionDefaultItem : HeaderedContentControl
         set => SetAndRaise(EffectiveBorderThicknessProperty, ref _effectiveBorderThickness, value);
     }
     #endregion
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        if (e.NameScope.Find("Label") is ContentPresenter label)
+        {
+            label.Classes.Add(DescriptionsSemanticParts.LabelClass);
+        }
+        if (e.NameScope.Find("Content") is ContentPresenter content)
+        {
+            content.Classes.Add(DescriptionsSemanticParts.ContentClass);
+        }
+    }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

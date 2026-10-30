@@ -164,7 +164,12 @@ Avalonia 原生 `AdornerLayer` 用于紧贴控件或 TopLevel 的局部装饰。
 使用规则：
 
 - Message、Notification 等窗口级反馈必须优先使用该层。
+- 该层是跨 manager 叠放顺序的唯一 owner。manager 成功提交新 card 后将自身作为原子反馈组激活到直接子项末尾；同一
+  manager 内部的卡片顺序仍由 `FeedbackStackPanel` 管理，不在宿主层交错多个 manager 的 card。
+- 激活必须使用直接子项 collection `Move`；当前 manager 已位于末尾时不发布集合变化。禁止使用 `Remove` + `Add` 造成
+  detach/attach，禁止使用递增 `ZIndex`、静态序号、全局注册表、timer 或 Dispatcher 延迟保存激活状态。
 - 如果宿主没有 `VisualLayerManager`，可以 fallback 到 Avalonia 原生 `AdornerLayer`，但这是兼容路径，不是主路径。
+- 原生 `AdornerLayer` fallback 使用相同的直接子项移动语义；无宿主的 inline manager 不参与窗口反馈层激活。
 - 不要把 Badge、水印、Drawer、Tour、Popup、Dialog、ImagePreviewer 等迁入该层。
 - 变更该层时，必须验证全局反馈层级和 Badge 局部装饰行为。
 
@@ -229,6 +234,8 @@ Avalonia 原生 `AdornerLayer` 用于紧贴控件或 TopLevel 的局部装饰。
 - modal Dialog 与 Window Drawer 获取的 drawn chrome suppression 租约必须在 close、dispose、owner 变更和失败 teardown 中对称释放。
 - 如果 layer child 设置了 adorned element、logical parent、事件订阅、timer、binding 或 resource host，释放路径必须和获取路径成对出现。
 - 对 `WindowMessageManager`、`WindowNotificationManager` 这类 manager，宿主模板重套用时必须先从旧 host layer 移除，再重新安装。
+- manager 激活不取得订阅、timer、cache 或额外强引用；`Move` 不得触发 manager 的 visual/logical detach。rehost 与
+  `Dispose()` 继续通过既有 host collection 移除路径释放 manager。
 - 对 `ScopeAwareAdornerLayer` / `ScopeAwareOverlayLayer` 注入式层，缓存 layer 时必须确认 visual parent 仍然有效。
 
 ## 测试要求
@@ -236,6 +243,8 @@ Avalonia 原生 `AdornerLayer` 用于紧贴控件或 TopLevel 的局部装饰。
 - 新增或改变 layer 归属时，应写层级回归测试，断言父层级而不是只断言 child `ZIndex`。
 - 涉及 `WindowDrawnDecorations` 时，测试必须用与 Window `TopLevel` 同级的真实 `TopLevelHost` 拓扑，不能把模拟 decorations 子树挂回 Window 内容树制造错误的 `TopLevel` 祖先。
 - 修窗口级反馈遮挡时，必须覆盖 Message 和 Notification。
+- manager 激活测试必须覆盖 `A.Show -> B.Show -> A.Show`、Message / Notification 混合 manager、已在栈顶的无操作快路径、
+  单次 collection `Move`、无 attach/detach，以及 dispose 后 manager / presenter / card / callback owner 的可回收性。
 - 涉及 Badge、Watermark、Drawer、sticky mirror、TreeView drag preview 时，应分别验证其既有层归属没有被误改。
 - Gallery sticky mirror、Message / Notification 和 Badge 的组合是当前层级体系的关键回归场景。
 - Dialog 内容 popup 由 `DialogPopupPrimitiveLayeringTests`、`DialogPopupControlFamilyTests` 与 DataGrid 专项测试覆盖；直接 Popup、Flyout/MenuFlyout、ToolTip/ContextMenu 与控件家族矩阵见 [Modal 内容弹层叠放设计](../../../controls/desktop/feedback/modal/popup-layering-design.md)。

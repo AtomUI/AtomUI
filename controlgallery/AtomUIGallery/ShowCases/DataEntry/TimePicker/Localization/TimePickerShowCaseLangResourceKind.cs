@@ -1,11 +1,11 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
 public enum TimePickerShowCaseLangResourceKind
 {
     BasicTitle,
+    NeedConfirmTitle,
+    NeedConfirmDescription,
     BasicDescription,
     BindingTitle,
     BindingDescription,
@@ -47,5 +47,19 @@ public enum TimePickerShowCaseLangResourceKind
     PageDescription,
     ComponentCategory,
     ComponentStatusStable,
-    ScenarioExamples
+    ScenarioExamples,
+    SemanticRootDescription,
+    SemanticPrefixDescription,
+    SemanticInputDescription,
+    SemanticSecondaryInputDescription,
+    SemanticSuffixDescription,
+    SemanticClearDescription,
+    SemanticPopupRootDescription,
+    SemanticPopupContainerDescription,
+    SemanticPopupContentDescription,
+    SemanticPopupColumnDescription,
+    SemanticPopupItemDescription,
+    SemanticPopupFooterDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
 }

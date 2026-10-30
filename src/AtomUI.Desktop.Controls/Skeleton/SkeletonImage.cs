@@ -1,6 +1,6 @@
 namespace AtomUI.Desktop.Controls;
 
-public class SkeletonImage : AbstractSkeleton
+public partial class SkeletonImage : AbstractSkeleton
 {
-    
+
 }

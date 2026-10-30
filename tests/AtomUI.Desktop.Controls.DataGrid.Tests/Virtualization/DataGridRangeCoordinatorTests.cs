@@ -1,4 +1,3 @@
-using AtomUI.Desktop.Controls;
 using AtomUI.Desktop.Controls.Tests.DataGrid.Data.Source;
 using Shouldly;
 using Xunit;

@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -21,6 +19,10 @@ public enum QRCodeShowCaseLangResourceKind
     ErrorLevelDescription,
     AdvancedUsageTitle,
     AdvancedUsageDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticCoverDescription,
     P2TextLoading,
     P2TextQRCodeExpired,
     P2ContentClickToRefresh,

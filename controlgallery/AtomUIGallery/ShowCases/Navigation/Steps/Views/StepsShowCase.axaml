@@ -9,8 +9,8 @@
              x:CompileBindings="True"
              x:Name="StepsInteractiveShowCaseName">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Steps"
                     Category="{gallery:StepsShowCaseLangResource ComponentCategory}"
@@ -20,8 +20,65 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="ItemsControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:StepsViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview Name="StepsSemanticPreview"
+                                                     SemanticOwner="{Binding #StepsSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:Steps}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <StackPanel Spacing="24">
+                                    <atom:Steps Name="StepsSemanticOwner"
+                                                Current="1"
+                                                TitlePlacement="Vertical"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                        <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderStepN1}" SubHeader="{gallery:StepsShowCaseLangResource P2SubHeaderTimeN1}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                        <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderStepN2}" SubHeader="{gallery:StepsShowCaseLangResource P2SubHeaderTimeN2}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                        <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderStepN3}" SubHeader="{gallery:StepsShowCaseLangResource P2SubHeaderTimeN3}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                    </atom:Steps>
+                                    <atom:Steps Current="1" Type="Panel">
+                                        <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderStepN1}" SubHeader="{gallery:StepsShowCaseLangResource P2SubHeaderTimeN1}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                        <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderStepN2}" SubHeader="{gallery:StepsShowCaseLangResource P2SubHeaderTimeN2}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                        <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderStepN3}" SubHeader="{gallery:StepsShowCaseLangResource P2SubHeaderTimeN3}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                    </atom:Steps>
+                                </StackPanel>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:StepsShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:StepsShowCaseLangResource SemanticItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemWrapper"
+                                    Description="{gallery:StepsShowCaseLangResource SemanticItemWrapperDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemIcon"
+                                    Description="{gallery:StepsShowCaseLangResource SemanticItemIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemTitle"
+                                    Description="{gallery:StepsShowCaseLangResource SemanticItemTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemSubtitle"
+                                    Description="{gallery:StepsShowCaseLangResource SemanticItemSubtitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemSection"
+                                    Description="{gallery:StepsShowCaseLangResource SemanticItemSectionDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemContent"
+                                    Description="{gallery:StepsShowCaseLangResource SemanticItemContentDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemRail"
+                                    Description="{gallery:StepsShowCaseLangResource SemanticItemRailDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -520,7 +577,52 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    SourceKey="steps-semantic-part"
+                    Title="{gallery:StepsShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:StepsShowCaseLangResource SemanticPartStyleDescription}"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    IsOccupyEntireRow="True"
+                    MinHeight="300"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:StepsViewModel">
+                            <StackPanel Orientation="Vertical" Spacing="16">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Steps.semantic-style-demo-root">
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Setter Property="BorderDashArray" Value="4,2" />
+                                        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+                                        <Setter Property="Padding" Value="{atom:SharedTokenResource Padding}" />
+                                    </Style>
+                                    <Style Selector="atom|Steps.semantic-style-demo-object">
+                                        <atom:StepsItemIconStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="CornerRadius" Value="10" />
+                                        </atom:StepsItemIconStyle>
+                                        <atom:StepsItemContentStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="FontStyle" Value="Italic" />
+                                        </atom:StepsItemContentStyle>
+                                    </Style>
+                                    <Style Selector="atom|Steps[Type=Navigation].semantic-style-demo-root">
+                                        <Setter Property="BorderBrush" Value="#1890FF" />
+                                    </Style>
+                                </StackPanel.Styles>
+                                <atom:Steps Current="1" Classes="semantic-style-demo-root semantic-style-demo-object">
+                                    <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderFinished}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                    <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderInProgress}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                    <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderWaiting}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                </atom:Steps>
+                                <atom:Steps Current="1" Type="Navigation" Classes="semantic-style-demo-root">
+                                    <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderFinished}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                    <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderInProgress}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                    <atom:StepsItem Header="{gallery:StepsShowCaseLangResource P2HeaderWaiting}" Content="{gallery:StepsShowCaseLangResource P2ContentThisIsAContent}" />
+                                </atom:Steps>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

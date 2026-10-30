@@ -7,8 +7,8 @@
              xmlns:antdicons="https://atomui.net/icons/antdesign"
              x:DataType="vm:MasonryViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Masonry"
                     Category="{gallery:MasonryShowCaseLangResource ComponentCategory}"
@@ -19,8 +19,43 @@
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="ItemsControl"
                     MetadataValueWidth="220" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:MasonryViewModel">
+                    <gallery:SemanticPartPreview
+                        Name="MasonrySemanticPreview"
+                        SemanticOwner="{Binding #MasonrySemanticOwner}"
+                        SemanticOwnerType="{x:Type atom:Masonry}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Masonry Name="MasonrySemanticOwner"
+                                          ItemsSource="{Binding SemanticItems}"
+                                          ColumnCount="3"
+                                          ColumnGap="16"
+                                          RowGap="16"
+                                          HorizontalAlignment="Stretch">
+                                <atom:Masonry.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:MasonryBasicItem">
+                                        <atom:Card SizeType="Small"
+                                                   Height="{Binding Height}"
+                                                   HorizontalAlignment="Stretch">
+                                            <atom:TextBlock Text="{Binding Index}" />
+                                        </atom:Card>
+                                    </DataTemplate>
+                                </atom:Masonry.ItemTemplate>
+                            </atom:Masonry>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:MasonryShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="item"
+                                Description="{gallery:MasonryShowCaseLangResource SemanticItemDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -197,7 +232,125 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:MasonryShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:MasonryShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="masonry-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:MasonryViewModel">
+                            <StackPanel Spacing="24"
+                                        HorizontalAlignment="Stretch">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Masonry.semantic-style-demo.semantic-object-styles">
+                                        <Setter Property="Background" Value="#FAFAFA" />
+                                        <Setter Property="BorderBrush" Value="#D9D9D9" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="CornerRadius" Value="12" />
+                                        <Setter Property="Padding" Value="16" />
+                                        <Setter Property="Height" Value="260" />
+                                        <atom:MasonryItemStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="#FFFFFF" />
+                                            <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                            <Setter Property="BorderThickness" Value="1" />
+                                            <Setter Property="CornerRadius" Value="12" />
+                                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                            <Setter Property="Padding" Value="16,12" />
+                                        </atom:MasonryItemStyle>
+                                    </Style>
+                                    <Style Selector="atom|Masonry.semantic-style-demo.semantic-function-styles[ColumnCount=3]">
+                                        <Setter Property="Background" Value="#F0F8FF" />
+                                        <Setter Property="BorderBrush" Value="#1890FF" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Setter Property="CornerRadius" Value="12" />
+                                        <Setter Property="Padding" Value="16" />
+                                        <Setter Property="Height" Value="280" />
+                                        <atom:MasonryItemStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="#FFFFFF" />
+                                            <Setter Property="BorderBrush" Value="#1890FF" />
+                                            <Setter Property="BorderThickness" Value="1" />
+                                            <Setter Property="CornerRadius" Value="12" />
+                                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                            <Setter Property="Padding" Value="16,12" />
+                                        </atom:MasonryItemStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <StackPanel Spacing="12">
+                                    <atom:TextBlock Text="{gallery:MasonryShowCaseLangResource SemanticObjectStylesTitle}"
+                                                    FontSize="16"
+                                                    FontWeight="SemiBold" />
+                                    <atom:Masonry Name="MasonrySemanticObject"
+                                                  Classes="semantic-style-demo semantic-object-styles"
+                                                  ColumnCount="4"
+                                                  ColumnGap="16"
+                                                  RowGap="16"
+                                                  HorizontalAlignment="Stretch">
+                                        <Border Height="120">
+                                            <atom:TextBlock Text="1" />
+                                        </Border>
+                                        <Border Height="80">
+                                            <atom:TextBlock Text="2" />
+                                        </Border>
+                                        <Border Height="100">
+                                            <atom:TextBlock Text="3" />
+                                        </Border>
+                                        <Border Height="60">
+                                            <atom:TextBlock Text="4" />
+                                        </Border>
+                                        <Border Height="140">
+                                            <atom:TextBlock Text="5" />
+                                        </Border>
+                                        <Border Height="90">
+                                            <atom:TextBlock Text="6" />
+                                        </Border>
+                                        <Border Height="110">
+                                            <atom:TextBlock Text="7" />
+                                        </Border>
+                                        <Border Height="70">
+                                            <atom:TextBlock Text="8" />
+                                        </Border>
+                                    </atom:Masonry>
+                                </StackPanel>
+
+                                <StackPanel Spacing="12">
+                                    <atom:TextBlock Text="{gallery:MasonryShowCaseLangResource SemanticFunctionStylesTitle}"
+                                                    FontSize="16"
+                                                    FontWeight="SemiBold" />
+                                    <atom:Masonry Name="MasonrySemanticFunction"
+                                                  Classes="semantic-style-demo semantic-function-styles"
+                                                  ColumnCount="3"
+                                                  ColumnGap="16"
+                                                  RowGap="16"
+                                                  HorizontalAlignment="Stretch">
+                                        <Border Height="120">
+                                            <atom:TextBlock Text="1" />
+                                        </Border>
+                                        <Border Height="80">
+                                            <atom:TextBlock Text="2" />
+                                        </Border>
+                                        <Border Height="100">
+                                            <atom:TextBlock Text="3" />
+                                        </Border>
+                                        <Border Height="60">
+                                            <atom:TextBlock Text="4" />
+                                        </Border>
+                                        <Border Height="140">
+                                            <atom:TextBlock Text="5" />
+                                        </Border>
+                                        <Border Height="90">
+                                            <atom:TextBlock Text="6" />
+                                        </Border>
+                                    </atom:Masonry>
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

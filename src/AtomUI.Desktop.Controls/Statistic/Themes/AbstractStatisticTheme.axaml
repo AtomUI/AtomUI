@@ -4,42 +4,6 @@
               xmlns:atom="https://atomui.net"
               x:Class="AtomUI.Desktop.Controls.Themes.AbstractStatisticTheme"
               x:ClassModifier="internal">
-    <Setter Property="Template">
-        <ControlTemplate TargetType="atom:AbstractStatistic">
-            <Border Name="Frame"
-                    Background="{TemplateBinding Background}"
-                    CornerRadius="{TemplateBinding CornerRadius}">
-                <StackPanel Name="RootLayout">
-                    <ContentPresenter Name="HeaderPresenter"
-                                      Content="{TemplateBinding Header}"
-                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                      IsVisible="{TemplateBinding Header, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                    <atom:Skeleton IsLoading="{TemplateBinding IsLoading}" IsActive="True" IsShowParagraph="False">
-                        <StackPanel Orientation="Horizontal" Name="ContentLayout">
-                            <ContentPresenter Name="ValuePrefixAddOn"
-                                              Foreground="{TemplateBinding ContentForeground}"
-                                              FontSize="{TemplateBinding ContentFontSize}"
-                                              Content="{TemplateBinding ValuePrefixAddOn}"
-                                              ContentTemplate="{TemplateBinding ValuePrefixAddOnTemplate}"
-                                              IsVisible="{TemplateBinding ValuePrefixAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                            <ContentPresenter Name="ContentPresenter"
-                                              Foreground="{TemplateBinding ContentForeground}"
-                                              FontSize="{TemplateBinding ContentFontSize}"
-                                              Content="{TemplateBinding Content}"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}" />
-                            <ContentPresenter Name="ValueSuffixAddOn"
-                                              Foreground="{TemplateBinding ContentForeground}"
-                                              FontSize="{TemplateBinding ContentFontSize}"
-                                              Content="{TemplateBinding ValueSuffixAddOn}"
-                                              ContentTemplate="{TemplateBinding ValueSuffixAddOnTemplate}"
-                                              IsVisible="{TemplateBinding ValueSuffixAddOn, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        </StackPanel>
-                    </atom:Skeleton>
-                </StackPanel>
-            </Border>
-        </ControlTemplate>
-    </Setter>
-
     <Style Selector="^:is(atom|AbstractStatistic)">
         <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
             <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}" />
@@ -49,11 +13,20 @@
         <Setter Property="ContentForeground" Value="{atom:SharedTokenResource ColorTextHeading}" />
         <Setter Property="ContentFontSize" Value="{atom:StatisticTokenResource ContentFontSize}" />
 
-        <Style Selector="^ /template/ atom|Icon">
-            <Setter Property="FillBrush" Value="{TemplateBinding ContentForeground}" />
-            <Setter Property="StrokeBrush" Value="{TemplateBinding ContentForeground}" />
-            <Setter Property="Width" Value="{atom:StatisticTokenResource ContentFontSize}" />
-            <Setter Property="Height" Value="{atom:StatisticTokenResource ContentFontSize}" />
+        <Style Selector="^ /template/ StackPanel#ContentLayout">
+            <Setter Property="TextElement.Foreground" Value="{TemplateBinding ContentForeground}" />
+            <Setter Property="TextElement.FontSize" Value="{TemplateBinding ContentFontSize}" />
+        </Style>
+
+        <Style Selector="^ /template/ ContentPresenter#ValuePrefixAddOn atom|Icon">
+            <Setter Property="FillBrush"
+                    Value="{Binding (TextElement.Foreground), RelativeSource={RelativeSource AncestorType=StackPanel}}" />
+            <Setter Property="StrokeBrush"
+                    Value="{Binding (TextElement.Foreground), RelativeSource={RelativeSource AncestorType=StackPanel}}" />
+            <Setter Property="Width"
+                    Value="{Binding (TextElement.FontSize), RelativeSource={RelativeSource AncestorType=StackPanel}}" />
+            <Setter Property="Height"
+                    Value="{Binding (TextElement.FontSize), RelativeSource={RelativeSource AncestorType=StackPanel}}" />
         </Style>
     </Style>
 </ControlTheme>

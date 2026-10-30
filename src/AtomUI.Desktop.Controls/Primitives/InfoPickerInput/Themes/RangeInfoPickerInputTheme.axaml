@@ -94,7 +94,6 @@
                             RequestedPlacement="{TemplateBinding PickerPlacement}"
                             IsPointAtCenter="{TemplateBinding IsPointAtCenter}"
                             OverlayDismissEventPassThrough="True"
-                            IsOpen="{TemplateBinding IsPickerOpen, Mode=TwoWay}"
                             IsHorizontalFlipped="{TemplateBinding IsPopupHorizontalFlipped, Mode=TwoWay}"
                             IsVerticalFlipped="{TemplateBinding IsPopupVerticalFlipped, Mode=TwoWay}"
                             MarginToAnchor="{TemplateBinding MarginToAnchor}">

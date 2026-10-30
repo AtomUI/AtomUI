@@ -1,5 +1,4 @@
 using System.Reflection;
-using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia.Controls;

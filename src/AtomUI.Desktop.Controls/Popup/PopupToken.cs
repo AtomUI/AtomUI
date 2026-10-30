@@ -1,4 +1,3 @@
-using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -21,21 +20,8 @@ internal sealed class PopupToken : AbstractControlDesignToken
         base.CalculateTokenValues(isDarkMode);
 
         OverlayHostShadow = EffectiveGlobalToken.BoxShadowsSecondary;
-        PopupRootShadow = new BoxShadows(new BoxShadow
-        {
-            OffsetX = 0,
-            OffsetY = 1,
-            Blur    = 6,
-            Spread  = 0,
-            Color   = ColorUtils.FromRgbF(0.14, 0, 0, 0)
-        }, [new BoxShadow
-        {
-            OffsetX = 0,
-            OffsetY = 0,
-            Blur    = 4,
-            Spread  = 0,
-            Color   = ColorUtils.FromRgbF(0.10, 0, 0, 0)
-        }]);
+        // 窗口型与 Overlay Popup 使用同一阴影；定位按残余阴影补偿，内容相对 anchor 的位置与阴影厚度无关
+        PopupRootShadow = EffectiveGlobalToken.BoxShadowsSecondary;
         PopupCornerRadius = EffectiveGlobalToken.BorderRadiusLG;
         MarginToAnchor = EffectiveGlobalToken.UniformlyMarginXXS;
     }

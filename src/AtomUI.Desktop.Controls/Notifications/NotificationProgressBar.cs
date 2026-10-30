@@ -15,6 +15,13 @@ internal class NotificationProgressBar : TemplatedControl
     public static readonly StyledProperty<IBrush?> ProgressIndicatorBrushProperty =
         AvaloniaProperty.Register<NotificationProgressBar, IBrush?>(nameof(ProgressIndicatorBrush));
 
+    /// <summary>
+    /// 进度条底槽画刷。进度条先以该画刷铺满整条作为底槽，再在上面叠加彩色进度值，
+    /// 因此剩余时间在卡片背景上依然可见；为空时底槽不绘制。
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> ProgressTrackBrushProperty =
+        AvaloniaProperty.Register<NotificationProgressBar, IBrush?>(nameof(ProgressTrackBrush));
+
     public static readonly StyledProperty<TimeSpan> ExpirationProperty =
         AvaloniaProperty.Register<NotificationProgressBar, TimeSpan>(nameof(Expiration));
 
@@ -31,6 +38,12 @@ internal class NotificationProgressBar : TemplatedControl
     {
         get => GetValue(ProgressIndicatorBrushProperty);
         set => SetValue(ProgressIndicatorBrushProperty, value);
+    }
+
+    public IBrush? ProgressTrackBrush
+    {
+        get => GetValue(ProgressTrackBrushProperty);
+        set => SetValue(ProgressTrackBrushProperty, value);
     }
 
     public TimeSpan Expiration
@@ -51,6 +64,7 @@ internal class NotificationProgressBar : TemplatedControl
     {
         AffectsMeasure<NotificationProgressBar>(ProgressIndicatorThicknessProperty);
         AffectsRender<NotificationProgressBar>(ProgressIndicatorBrushProperty,
+            ProgressTrackBrushProperty,
             ExpirationProperty,
             CurrentExpirationProperty);
     }
@@ -62,6 +76,11 @@ internal class NotificationProgressBar : TemplatedControl
 
     public override void Render(DrawingContext context)
     {
+        var offsetY = Bounds.Height - ProgressIndicatorThickness;
+        var trackRect = new Rect(new Point(0, offsetY), new Size(Bounds.Width, ProgressIndicatorThickness));
+        // 先铺满底槽，再叠加彩色进度值。
+        context.FillRectangle(ProgressTrackBrush!, trackRect);
+
         var indicatorWidth = 0d;
         var total          = Expiration.TotalMilliseconds;
         if (MathUtils.GreaterThan(total, 0))
@@ -69,7 +88,6 @@ internal class NotificationProgressBar : TemplatedControl
             indicatorWidth = CurrentExpiration.TotalMilliseconds / total * Bounds.Width;
         }
 
-        var offsetY       = Bounds.Height - ProgressIndicatorThickness;
         var indicatorRect = new Rect(new Point(0, offsetY), new Size(indicatorWidth, ProgressIndicatorThickness));
         context.FillRectangle(ProgressIndicatorBrush!, indicatorRect);
     }

@@ -71,7 +71,7 @@ internal static class LanguageCatalogSymbolParser
                 continue;
             }
 
-            units.Add(new LanguageCatalogUnitInfo(field.Name, field.Locations[0]));
+            units.Add(new LanguageCatalogUnitInfo(field.Name, field.Locations[0], Convert.ToInt32(field.ConstantValue, System.Globalization.CultureInfo.InvariantCulture)));
         }
 
         if (diagnostics.Count > 0)

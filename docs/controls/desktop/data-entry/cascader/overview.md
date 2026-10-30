@@ -2,7 +2,9 @@
 
 本文档定义 `AtomUI.Desktop.Controls.Cascader` 的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。共享输入分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，候选列表统一交互见 [候选列表统一交互设计](../select/candidate-interaction-design.md)，内部实现原理见 [Cascader 桌面版实现原理](implementation.md)，Cascader Token 的专项设计见 [Cascader Token 设计](token.md)，设计和契约变化记录见 [Cascader Changelog](changelog.md)。
 
-该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `AbstractSelect`，其 internal `IsPopupPinnedOpen` 只供测试和内部诊断使用；设置为 true 时保持 `IsDropDownOpen` 并 relay 到 `PART_Popup`，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
+该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。`AbstractSelect` 提供 public `IsPopupPinnedOpen`：设置为 true 时保持 `IsDropDownOpen` 并 relay 到 `PART_Popup`；Cascader 在弹层打开前依据钉住状态抑制 light-dismiss 遮罩，取消钉住后恢复模板默认值，使 Gallery 语义预览等场景可以持续展示 `popup.*` 部件。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
+
+Cascader 公开 13 个 Semantic Part（`root`、`prefix`、`content`、`placeholder`、`input`、`suffix`、`clear`、`item`、`itemContent`、`itemRemove`、`popup.root`、`popup.list`、`popup.listItem`），与上游 Cascader 的 Semantic Part 语义对齐；完整 Part 表、Selector 用法与定制边界见 [Cascader Semantic Part 契约](semantic-part.md)。
 
 ## 1. 控件定位
 
@@ -180,19 +182,20 @@ input display + Form value
 
 过滤：
 
-- `FilterValue` 非空且控件 loaded 时，CascaderView 收集所有叶子路径并按 `Filter` 过滤。
-- 过滤结果显示完整路径文本，选中过滤结果后回写目标 option。
-- 过滤模式下，`Up` / `Down` 在可用结果间循环移动内部候选高亮，不修改 `SelectedOption`；`Enter` 提交当前候选，尚无候选时提交第一个可用结果，没有可用结果时保持选择和 popup 状态不变。路径中任一祖先 disabled 时，该过滤结果也不可作为候选或提交。
-- 过滤列表拥有独立于树列的 active candidate owner；过滤结果重建、过滤清空、popup 关闭和容器回收时清除旧候选。树列与过滤列不会同时保留两个候选视觉。
-- 清空过滤值或关闭 popup 后，过滤列表、过滤计数和缓存路径会被清理。
+- `FilterValue` 非空且控件 loaded 时，CascaderView 收集路径并按 `Filter` 过滤；普通单选只收集末端路径，允许选择父节点或多选时也收集父路径。
+- 过滤结果显示完整路径文本。`Up` / `Down` 在可用结果间循环移动候选，不提前修改选择；`Enter` 只提交当前有效候选，没有候选或没有可用结果时保持选择和 popup 状态不变。
+- 路径中任一祖先 disabled 时，该结果不能成为可提交候选。查询更新后，完整原始路径仍在新结果中时保留候选，否则清除。
+- 过滤列表拥有独立于树列的 active candidate owner。进入过滤模式、过滤清空、popup 关闭与模板替换时清除不再适用的候选；树列与过滤列不会同时保留候选视觉。
+- 单选确认后清空过滤并关闭 popup；多选确认切换子树勾选，清空过滤并保持 popup 打开。搜索中的左右键保留文本编辑语义，非空搜索的 Backspace 不导航到父列。
 
 树形键盘导航：
 
-- popup 打开且未过滤时，`Up` / `Down` 在当前已展开列的可见 enabled item 间循环移动内部候选；候选高亮与真实选择相互独立。
-- 普通树列的 active candidate 由 `CascaderView` 单一持有；鼠标移动到 enabled item 时迁移该候选并继续执行 `ExpandTrigger=Hover` 的展开逻辑，但不提前提交选择、不滚动列表。`Enter` 使用同一 active candidate 作为选择或展开目标。
-- `Right` 从当前候选或第一个可见 enabled item 开始，展开可展开节点并把候选移到下一列的第一个 enabled child。
-- `Left` 优先把子级候选移回父级；候选已位于展开的根级非叶节点时折叠该节点。
-- `Enter` 提交 enabled、非 loading 的叶子候选；`IsAllowSelectParent=true` 时也可提交父节点，否则沿用 `Right` 的展开并进入子级行为。
+- 关闭时，`Down`、`Enter` 或 `Space` 打开 popup；同一次打开按键不同时激活或提交首项。已有单选值时恢复其活动路径；`F4` 保留为桌面切换快捷键。
+- popup 打开且未过滤时，`Up` / `Down` 只在当前活动节点所属列的同级 enabled option 中循环；尚无候选时在根列开始。键盘导航基于数据节点，不依赖当前已物化的容器，并将目标滚入视口。
+- 活动非叶节点显示子列，但候选仍停在该节点；LTR 的 `Right` 从当前候选进入首个 enabled child，`Left` 返回父节点，在根层请求关闭 popup。空搜索的 Backspace 同样返回父层；RTL 的左右方向反转。
+- `Enter` 只提交 enabled、非 loading 的当前候选；普通单选父节点不提交也不自动进入子级。`IsAllowSelectParent=true` 时可以提交父节点并关闭 popup；多选则切换子树勾选并保持打开。
+- 普通树列的 active candidate 由 `CascaderView` 单一持有；鼠标迁移候选和 hover 展开继续复用该状态，不提前提交选择，也不因鼠标移动滚动列表。
+- 一次 Enter 按下/释放周期最多确认一次；组合输入期间不处理候选导航与提交，修饰键组合留给文本输入。`Escape` 关闭 popup，Tab 不提交候选。
 
 Form：
 
@@ -288,9 +291,10 @@ Cascader 使用 `ItemKey` 或 `Value` 组成 `TreeNodePath`，用于默认选择
 
 该策略只影响多选 tag 展示集合，不改变 Form value 和 `SelectedOptions`。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 - [Cascader 桌面版实现原理](implementation.md)
+- [Cascader Semantic Part 契约](semantic-part.md)
 - [Cascader Token 设计](token.md)
 - [Cascader Changelog](changelog.md)
 
@@ -305,24 +309,3 @@ Cascader 使用 `ItemKey` 或 `Value` 组成 `TreeNodePath`，用于默认选择
 | AXAML 或 template part | 验证 AddOnDecoratedBox、右侧 count/content/handle binding、popup、CascaderView、level list 和 option template。 |
 | Token 或尺寸 | 验证 Large / Middle / Small / Custom、列宽、选项高度、padding、图标间距和空状态宽度。 |
 | 文档改动 | 运行 `git diff --check`，检查文档链接存在。 |
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Cascader` | 数据录入控件根语义区域，承载 public API、值状态、验证状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `input` | `输入或编辑区域` | 承载用户输入、当前值、占位、格式化或只读状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载清除、展开、提交、步进、上传或辅助操作。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或候选区域` | 承载下拉、候选项、日历、颜色面板或异步内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `validation` | `校验反馈区域` | 承载 Form、status、错误、警告、help 或 loading 状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/cascader/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/cascader/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |

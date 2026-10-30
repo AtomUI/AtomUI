@@ -8,6 +8,7 @@
             <ControlTemplate>
                 <Panel>
                     <atom:MentionTextArea Name="PART_TextArea"
+                                          Classes.semantic-scope-input="True"
                                           IsAutoSize="{TemplateBinding IsAutoSize}"
                                           IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                           IsAllowClear="{TemplateBinding IsAllowClear}"
@@ -40,6 +41,7 @@
                                 ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}"
                                 RequestedPlacement="{TemplateBinding PopupPlacement}">
                         <Border Name="PopupFrame"
+                                Classes.semantic-popup-root="True"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
                                 MinWidth="{TemplateBinding MinPopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
@@ -52,6 +54,7 @@
                                            IsVisible="{TemplateBinding IsLoading}"/>
                                 <atom:CandidateList
                                     Name="PART_CandidateList"
+                                    Classes.semantic-popup-list="True"
                                     SelectionMode="Single"
                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                     AutoScrollToSelectedItem="True"

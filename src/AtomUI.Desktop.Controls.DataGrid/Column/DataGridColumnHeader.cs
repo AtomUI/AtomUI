@@ -6,9 +6,9 @@
 using System.ComponentModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Utils;
+using AtomUI.Generated.AtomUIDesktopControlsDataGrid;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Automation;
@@ -20,9 +20,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -286,22 +284,22 @@ internal partial class DataGridColumnHeader : ContentControl
 
     private const int ResizeRegionWidth = 5;
     
-    private static Point? _lastMousePositionHeaders;
-    private static Cursor? _originalCursor;
-    private static double _originalHorizontalOffset;
-    private static double _originalWidth;
-    private static Point? _dragStart;
-    private static DataGridColumn? _dragColumn;
-    private static DataGridColumn? _currentDraggingOverColumn;
-    private static DataGridColumnHeader? _dragOwner;
-    private static double _leftFrozenColumnsWidth;
-    private static double _rightFrozenColumnsWidth;
+    private static Point? s_lastMousePositionHeaders;
+    private static Cursor? s_originalCursor;
+    private static double s_originalHorizontalOffset;
+    private static double s_originalWidth;
+    private static Point? s_dragStart;
+    private static DataGridColumn? s_dragColumn;
+    private static DataGridColumn? s_currentDraggingOverColumn;
+    private static DataGridColumnHeader? s_dragOwner;
+    private static double s_leftFrozenColumnsWidth;
+    private static double s_rightFrozenColumnsWidth;
     private bool _areHandlersSuspended;
     private bool _desiredSeparatorVisibility = true;
     private IDisposable? _popupPinnedOpenRelay;
     private INotifyCollectionChanged? _subscribedFilterItems;
     private RectangleGeometry? _clipGeometry;
-    private static Lazy<Cursor> ResizeCursor = new (() => new Cursor(StandardCursorType.SizeWestEast));
+    private static Lazy<Cursor> s_resizeCursor = new (() => new Cursor(StandardCursorType.SizeWestEast));
     
     static DataGridColumnHeader()
     {
@@ -315,6 +313,11 @@ internal partial class DataGridColumnHeader : ContentControl
         PointerMovedEvent.AddClassHandler<DataGridColumnHeader>((x, e) => x.HandlePointerMoved(e));
         IsTabStopProperty.OverrideDefaultValue<DataGridColumnHeader>(false);
         AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<DataGridColumnHeader>(IsOffscreenBehavior.FromClip);
+    }
+
+    public DataGridColumnHeader()
+    {
+        Classes.Add(DataGridSemanticParts.HeaderCellClass);
     }
 
     // protected override AutomationPeer OnCreateAutomationPeer()
@@ -408,10 +411,10 @@ internal partial class DataGridColumnHeader : ContentControl
         if (OwningGrid != null && OwningGrid.ColumnHeaders != null)
         {
             HeaderDragMode            = DragMode.MouseDown;
-            _dragOwner                = this;
-            _leftFrozenColumnsWidth   = OwningGrid.ColumnsInternal.GetVisibleLeftFrozenEdgedColumnsWidth();
-            _rightFrozenColumnsWidth   = OwningGrid.ColumnsInternal.GetVisibleRightFrozenEdgedColumnsWidth();
-            _lastMousePositionHeaders = this.Translate(OwningGrid.ColumnHeaders, mousePosition);
+            s_dragOwner                = this;
+            s_leftFrozenColumnsWidth   = OwningGrid.ColumnsInternal.GetVisibleLeftFrozenEdgedColumnsWidth();
+            s_rightFrozenColumnsWidth   = OwningGrid.ColumnsInternal.GetVisibleRightFrozenEdgedColumnsWidth();
+            s_lastMousePositionHeaders = this.Translate(OwningGrid.ColumnHeaders, mousePosition);
 
             double          distanceFromLeft  = mousePosition.X;
             double          distanceFromRight = Bounds.Width - distanceFromLeft;
@@ -423,21 +426,21 @@ internal partial class DataGridColumnHeader : ContentControl
                 previousColumn = OwningGrid.ColumnsInternal.GetPreviousVisibleNonFillerColumn(currentColumn);
             }
 
-            if (HeaderDragMode == DragMode.MouseDown && _dragColumn == null && (distanceFromRight <= ResizeRegionWidth))
+            if (HeaderDragMode == DragMode.MouseDown && s_dragColumn == null && (distanceFromRight <= ResizeRegionWidth))
             {
                 Debug.Assert(currentColumn != null);
                 handled = TrySetResizeColumn(currentColumn);
             }
-            else if (HeaderDragMode == DragMode.MouseDown && _dragColumn == null && distanceFromLeft <= ResizeRegionWidth && previousColumn != null)
+            else if (HeaderDragMode == DragMode.MouseDown && s_dragColumn == null && distanceFromLeft <= ResizeRegionWidth && previousColumn != null)
             {
                 handled = TrySetResizeColumn(previousColumn);
             }
 
-            if (HeaderDragMode == DragMode.Resize && _dragColumn != null)
+            if (HeaderDragMode == DragMode.Resize && s_dragColumn != null)
             {
-                _dragStart                = _lastMousePositionHeaders;
-                _originalWidth            = _dragColumn.ActualWidth;
-                _originalHorizontalOffset = OwningGrid.HorizontalOffset;
+                s_dragStart                = s_lastMousePositionHeaders;
+                s_originalWidth            = s_dragColumn.ActualWidth;
+                s_originalHorizontalOffset = OwningGrid.HorizontalOffset;
 
                 handled = true;
             }
@@ -560,8 +563,8 @@ internal partial class DataGridColumnHeader : ContentControl
         // If datagrid.CanUserResizeColumns == false, then the column can still override it
         if (CanResizeColumn(column))
         {
-            _dragColumn = column;
-            _dragOwner  = this;
+            s_dragColumn = column;
+            s_dragOwner  = this;
 
             HeaderDragMode = DragMode.Resize;
 
@@ -665,12 +668,12 @@ internal partial class DataGridColumnHeader : ContentControl
 
         if (OwningGrid.LeftFrozenColumnCount > 0)
         {
-            leftEdge = _leftFrozenColumnsWidth;
+            leftEdge = s_leftFrozenColumnsWidth;
         }
 
         if (OwningGrid.RightFrozenColumnCount > 0)
         {
-            rightEdge -=  _rightFrozenColumnsWidth;
+            rightEdge -=  s_rightFrozenColumnsWidth;
         }
 
         if (mousePositionHeaders.X < leftEdge)
@@ -764,13 +767,13 @@ internal partial class DataGridColumnHeader : ContentControl
         // When we stop interacting with the column headers, we need to reset the drag mode
         // and close any popups if they are open.
         ReleaseDragState(
-            notifyDraggingOverCleared: HeaderDragMode == DragMode.Reorder || _currentDraggingOverColumn != null,
+            notifyDraggingOverCleared: HeaderDragMode == DragMode.Reorder || s_currentDraggingOverColumn != null,
             removeDragIndicator: true);
     }
 
     private void ReleaseDragStateIfOwned(bool notifyDraggingOverCleared, bool removeDragIndicator)
     {
-        if (ReferenceEquals(_dragOwner, this))
+        if (ReferenceEquals(s_dragOwner, this))
         {
             ReleaseDragState(notifyDraggingOverCleared, removeDragIndicator);
         }
@@ -778,21 +781,21 @@ internal partial class DataGridColumnHeader : ContentControl
 
     private void ReleaseDragState(bool notifyDraggingOverCleared, bool removeDragIndicator)
     {
-        if (_dragColumn != null)
+        if (s_dragColumn != null)
         {
-            _dragColumn.HeaderCell.Cursor = _originalCursor;
+            s_dragColumn.HeaderCell.Cursor = s_originalCursor;
         }
         HeaderDragMode            = DragMode.None;
-        _dragColumn               = null;
-        _dragStart                = null;
-        _dragOwner                = null;
-        _lastMousePositionHeaders = null;
-        _originalCursor           = null;
-        _originalHorizontalOffset = 0;
-        _originalWidth            = 0;
-        _leftFrozenColumnsWidth   = 0;
-        _rightFrozenColumnsWidth  = 0;
-        _currentDraggingOverColumn = null;
+        s_dragColumn               = null;
+        s_dragStart                = null;
+        s_dragOwner                = null;
+        s_lastMousePositionHeaders = null;
+        s_originalCursor           = null;
+        s_originalHorizontalOffset = 0;
+        s_originalWidth            = 0;
+        s_leftFrozenColumnsWidth   = 0;
+        s_rightFrozenColumnsWidth  = 0;
+        s_currentDraggingOverColumn = null;
         if (notifyDraggingOverCleared)
         {
             DataGridColumnDraggingOverEventArgs draggingOverEventArgs =
@@ -841,6 +844,8 @@ internal partial class DataGridColumnHeader : ContentControl
             IsVisible = false
         };
         dragIndicator.PseudoClasses.Add(StdPseudoClass.DragIndicator);
+        // 拖拽 ghost 只是列头预览，不属于表头单元格语义部件。
+        dragIndicator.Classes.Remove(DataGridSemanticParts.HeaderCellClass);
         
         // pass the caret's data template to the user for modification
         DataGridColumnReorderingEventArgs columnReorderingEventArgs = new DataGridColumnReorderingEventArgs(OwningColumn)
@@ -855,10 +860,10 @@ internal partial class DataGridColumnHeader : ContentControl
         }
 
         // The user didn't cancel, so prepare for the reorder
-        _dragColumn    = OwningColumn;
+        s_dragColumn    = OwningColumn;
         HeaderDragMode = DragMode.Reorder;
-        _dragStart     = mousePosition;
-        _dragOwner     = this;
+        s_dragStart     = mousePosition;
+        s_dragOwner     = this;
 
         Debug.Assert(OwningGrid.ColumnHeaders != null);
         // Display the reordering thumb
@@ -922,9 +927,9 @@ internal partial class DataGridColumnHeader : ContentControl
         Debug.Assert(OwningColumn != null);
         Debug.Assert(OwningGrid.ColumnHeaders != null);
         //handle entry into reorder mode
-        if (HeaderDragMode == DragMode.MouseDown && _dragColumn == null && _lastMousePositionHeaders != null)
+        if (HeaderDragMode == DragMode.MouseDown && s_dragColumn == null && s_lastMousePositionHeaders != null)
         {
-            var distanceFromInitial = (Vector)(mousePositionHeaders - _lastMousePositionHeaders);
+            var distanceFromInitial = (Vector)(mousePositionHeaders - s_lastMousePositionHeaders);
             if (distanceFromInitial.Length > Constants.DragThreshold)
             {
                 handled = CanReorderColumn(OwningColumn);
@@ -939,21 +944,21 @@ internal partial class DataGridColumnHeader : ContentControl
         //handle reorder mode (eg, positioning of the popup)
         if (HeaderDragMode == DragMode.Reorder && OwningGrid.ColumnHeaders.DragIndicator != null)
         {
-            Debug.Assert(_dragStart != null);
+            Debug.Assert(s_dragStart != null);
             // Find header we're hovering over
             
             DataGridColumn? targetColumn = GetReorderingTargetColumn(mousePositionHeaders, !OwningColumn.IsFrozen /*scroll*/, out double scrollAmount);
 
-            if (_currentDraggingOverColumn != targetColumn &&
+            if (s_currentDraggingOverColumn != targetColumn &&
                 (targetColumn == null || !targetColumn.IsFrozen))
             {
                 DataGridColumnDraggingOverEventArgs draggingOverEventArgs =
-                    new DataGridColumnDraggingOverEventArgs(_dragColumn, targetColumn);
+                    new DataGridColumnDraggingOverEventArgs(s_dragColumn, targetColumn);
                 OwningGrid.NotifyColumnDraggingOver(draggingOverEventArgs);
-                _currentDraggingOverColumn =  targetColumn;
+                s_currentDraggingOverColumn =  targetColumn;
             }
             
-            OwningGrid.ColumnHeaders.DragIndicatorOffset = mousePosition.X - _dragStart.Value.X + scrollAmount;
+            OwningGrid.ColumnHeaders.DragIndicatorOffset = mousePosition.X - s_dragStart.Value.X + scrollAmount;
             OwningGrid.ColumnHeaders.InvalidateArrange();
             
             handled = true;
@@ -967,18 +972,18 @@ internal partial class DataGridColumnHeader : ContentControl
             return;
         }
         Debug.Assert(OwningGrid != null);
-        if (HeaderDragMode == DragMode.Resize && _dragColumn != null && _dragStart.HasValue)
+        if (HeaderDragMode == DragMode.Resize && s_dragColumn != null && s_dragStart.HasValue)
         {
             // resize column
-            double mouseDelta   = Math.Round(mousePositionHeaders.X - _dragStart.Value.X);
-            double desiredWidth = _originalWidth + mouseDelta;
+            double mouseDelta   = Math.Round(mousePositionHeaders.X - s_dragStart.Value.X);
+            double desiredWidth = s_originalWidth + mouseDelta;
 
-            desiredWidth = Math.Max(_dragColumn.ActualMinWidth, Math.Min(_dragColumn.ActualMaxWidth, desiredWidth));
-            _dragColumn.Resize(_dragColumn.Width,
-                new(_dragColumn.Width.Value, _dragColumn.Width.UnitType, _dragColumn.Width.DesiredValue, desiredWidth),
+            desiredWidth = Math.Max(s_dragColumn.ActualMinWidth, Math.Min(s_dragColumn.ActualMaxWidth, desiredWidth));
+            s_dragColumn.Resize(s_dragColumn.Width,
+                new(s_dragColumn.Width.Value, s_dragColumn.Width.UnitType, s_dragColumn.Width.DesiredValue, desiredWidth),
                 true);
 
-            OwningGrid.UpdateHorizontalOffset(_originalHorizontalOffset);
+            OwningGrid.UpdateHorizontalOffset(s_originalHorizontalOffset);
 
             handled = true;
         }
@@ -1005,18 +1010,18 @@ internal partial class DataGridColumnHeader : ContentControl
         if ((distanceFromRight <= ResizeRegionWidth && currentColumn != null && CanResizeColumn(currentColumn)) ||
             (distanceFromLeft <= ResizeRegionWidth && previousColumn != null && CanResizeColumn(previousColumn)))
         {
-            var resizeCursor = ResizeCursor.Value;
+            var resizeCursor = s_resizeCursor.Value;
             if (Cursor != resizeCursor)
             {
-                _originalCursor = Cursor;
+                s_originalCursor = Cursor;
                 Cursor          = resizeCursor;
             }
         }
         else
         {
-            if (_originalCursor != null)
+            if (s_originalCursor != null)
             {
-                Cursor = _originalCursor;
+                Cursor = s_originalCursor;
             }
         }
     }
@@ -1140,15 +1145,4 @@ internal partial class DataGridColumnHeader : ContentControl
         UnregisterFilterItems();
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(() => this.EnableTransitions());
-    }
 }

@@ -14,8 +14,10 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 
 namespace AtomUI.Controls;
 
@@ -24,7 +26,8 @@ public abstract class AbstractToggleSwitch : ToggleButton,
                                              ICustomizableSizeTypeAware,
                                              ICustomHitTest,
                                              IWaveSpiritAwareControl,
-                                             IFormItemAware
+                                             IFormItemAware,
+                                             ITransitionInitializationOwner
 {
     #region 公共属性定义
     
@@ -55,7 +58,37 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<AbstractToggleSwitch>();
+
+    /// <summary>
+    /// 开关轨道高度
+    /// </summary>
+    public static readonly StyledProperty<double> TrackHeightProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(TrackHeight));
+
+    /// <summary>
+    /// 开关轨道最小宽度
+    /// </summary>
+    public static readonly StyledProperty<double> TrackMinWidthProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(TrackMinWidth));
+
+    /// <summary>
+    /// 开关轨道内边距，把手位置由该值决定，允许为负以实现把手溢出轨道
+    /// </summary>
+    public static readonly StyledProperty<double> TrackPaddingProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(TrackPadding));
+
+    /// <summary>
+    /// 开关把手大小
+    /// </summary>
+    public static readonly StyledProperty<Size> KnobSizeProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, Size>(nameof(KnobSize));
     
+    public IBrush? GrooveBackground
+    {
+        get => GetValue(GrooveBackgroundProperty);
+        set => SetValue(GrooveBackgroundProperty, value);
+    }
+
     [DependsOn(nameof(OnContentTemplate))]
     public object? OnContent
     {
@@ -94,12 +127,6 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         set => SetValue(IsLoadingProperty, value);
     }
 
-    public IBrush? GrooveBackground
-    {
-        get => GetValue(GrooveBackgroundProperty);
-        set => SetValue(GrooveBackgroundProperty, value);
-    }
-
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -112,6 +139,30 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         set => SetValue(IsWaveSpiritEnabledProperty, value);
     }
 
+    public double TrackHeight
+    {
+        get => GetValue(TrackHeightProperty);
+        set => SetValue(TrackHeightProperty, value);
+    }
+
+    public double TrackMinWidth
+    {
+        get => GetValue(TrackMinWidthProperty);
+        set => SetValue(TrackMinWidthProperty, value);
+    }
+
+    public double TrackPadding
+    {
+        get => GetValue(TrackPaddingProperty);
+        set => SetValue(TrackPaddingProperty, value);
+    }
+
+    public Size KnobSize
+    {
+        get => GetValue(KnobSizeProperty);
+        set => SetValue(KnobSizeProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -122,24 +173,12 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     internal static readonly StyledProperty<double> InnerMinMarginProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(InnerMinMargin));
 
-    internal static readonly StyledProperty<double> TrackHeightProperty =
-        AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(TrackHeight));
-
     internal static readonly StyledProperty<double> IconSizeProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(IconSize));
-
-    internal static readonly StyledProperty<double> TrackMinWidthProperty =
-        AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(TrackMinWidth));
-
-    internal static readonly StyledProperty<double> TrackPaddingProperty =
-        AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(TrackPadding));
 
     // 这几个属性跟动画相关
     internal static readonly StyledProperty<Rect> KnobRectProperty = 
         AvaloniaProperty.Register<AbstractToggleSwitch, Rect>(nameof(KnobRect));
-
-    internal static readonly StyledProperty<Size> KnobSizeProperty =
-        AvaloniaProperty.Register<AbstractToggleSwitch, Size>(nameof(KnobSize));
 
     internal static readonly StyledProperty<Rect> KnobMovingRectProperty = 
         AvaloniaProperty.Register<AbstractToggleSwitch, Rect>(nameof(KnobMovingRect));
@@ -165,40 +204,16 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         set => SetValue(InnerMinMarginProperty, value);
     }
 
-    internal double TrackHeight
-    {
-        get => GetValue(TrackHeightProperty);
-        set => SetValue(TrackHeightProperty, value);
-    }
-
     internal double IconSize
     {
         get => GetValue(IconSizeProperty);
         set => SetValue(IconSizeProperty, value);
     }
 
-    internal double TrackMinWidth
-    {
-        get => GetValue(TrackMinWidthProperty);
-        set => SetValue(TrackMinWidthProperty, value);
-    }
-
-    internal double TrackPadding
-    {
-        get => GetValue(TrackPaddingProperty);
-        set => SetValue(TrackPaddingProperty, value);
-    }
-
     internal Rect KnobRect
     {
         get => GetValue(KnobRectProperty);
         set => SetValue(KnobRectProperty, value);
-    }
-
-    internal Size KnobSize
-    {
-        get => GetValue(KnobSizeProperty);
-        set => SetValue(KnobSizeProperty, value);
     }
 
     internal Rect KnobMovingRect
@@ -238,8 +253,13 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     private WaveSpiritDecorator? _waveSpiritDecorator;
     private Canvas? _mainLayout;
     private IDisposable? _loadingCursorValue;
+    private double _onContentInkOffsetY;
+    private double _offContentInkOffsetY;
+    private DispatcherOperation? _pendingWave;
     private EventHandler? _formValueChanged;
     
+    private readonly TransitionInitializationSession _transitionInitialization;
+
     static AbstractToggleSwitch()
     {
         AffectsMeasure<AbstractToggleSwitch>(
@@ -247,7 +267,11 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             OnContentProperty,
             OnContentTemplateProperty,
             OffContentProperty,
-            OffContentTemplateProperty);
+            OffContentTemplateProperty,
+            TrackHeightProperty,
+            TrackMinWidthProperty,
+            TrackPaddingProperty,
+            KnobSizeProperty);
         AffectsArrange<AbstractToggleSwitch>(
             IsPressedProperty,
             KnobRectProperty,
@@ -258,20 +282,45 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         IsCheckedProperty.Changed.AddClassHandler<AbstractToggleSwitch>((toggleSwitch, args) => toggleSwitch.NotifyFormValueChanged(args.NewValue as bool?));
     }
 
-    protected override void OnInitialized()
+    protected AbstractToggleSwitch()
     {
-        base.OnInitialized();
-        this.DisableTransitions();
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        this.Dispatcher.Post(this.EnableTransitions);
+        if (IsArrangeValid)
+        {
+            CompleteTransitionInitializationMode(Bounds.Size);
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnAttachedToVisualTree(e);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        _pendingWave?.Abort();
+        _pendingWave = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        _transitionInitialization.Reset();
+        _pendingWave?.Abort();
+        _pendingWave = null;
         base.OnApplyTemplate(e);
         var scope = e.NameScope;
         _switchKnob  = scope.Find<SwitchKnob>("PART_SwitchKnob");
@@ -301,9 +350,20 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             if (change.Property == IsCheckedProperty)
             {
                 CalculateElementsOffset(GrooveRect().Size);
-                if (IsMotionEnabled && IsWaveSpiritEnabled)
+                if (_transitionInitialization.IsReady && IsMotionEnabled && IsWaveSpiritEnabled)
                 {
-                    _waveSpiritDecorator?.Play();
+                    var waveSpirit = _waveSpiritDecorator;
+                    _pendingWave?.Abort();
+                    _pendingWave = Dispatcher.InvokeAsync(() =>
+                    {
+                        _pendingWave = null;
+                        if (_transitionInitialization.IsReady && IsMotionEnabled && IsWaveSpiritEnabled &&
+                            ReferenceEquals(waveSpirit, _waveSpiritDecorator))
+                        {
+                            ConfigureWaveSpiritBrush();
+                            waveSpirit?.Play();
+                        }
+                    });
                 }
             }
         }
@@ -344,16 +404,22 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             extraInfoWidth = Math.Max(extraInfoWidth, _onContentPresenter.DesiredSize.Width);
         }
 
+        _onContentInkOffsetY = CalculateContentInkOffsetY(_onContentPresenter);
+        _offContentInkOffsetY = CalculateContentInkOffsetY(_offContentPresenter);
+
         var switchHeight  = TrackHeight;
-        var switchWidth   = extraInfoWidth;
-        var trackMinWidth = TrackMinWidth;
-        switchWidth += InnerMinMargin + InnerMaxMargin;
-        switchWidth =  Math.Max(switchWidth, trackMinWidth);
+        // 无内容时内边距不参与宽度计算，宽度收敛到 TrackMinWidth
+        var switchWidth   = extraInfoWidth > 0
+            ? extraInfoWidth + InnerMinMargin + InnerMaxMargin
+            : extraInfoWidth;
+        // 显式宽度优先于内容测量宽度，保证把手与轨道几何跟随最终的排列宽度
+        switchWidth = !double.IsNaN(Width)
+            ? Math.Max(Width, TrackMinWidth)
+            : Math.Max(switchWidth, TrackMinWidth);
         var targetSize = new Size(switchWidth, switchHeight);
-        CalculateElementsOffset(targetSize);
         if (_switchKnob is not null)
         {
-            _switchKnob.Measure(KnobRect.Size);
+            _switchKnob.Measure(HandleRect(IsChecked == true, targetSize).Size);
         }
         
         return targetSize;
@@ -361,7 +427,17 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        _mainLayout?.Arrange(new Rect(DesiredSize));
+        // Arrange 的内容盒已应用 Width/Min/Max，且不包含外部 Margin；把手与轨道
+        // 必须使用这一最终几何，而不是测量阶段尚未应用约束的目标尺寸。
+        CalculateElementsOffset(finalSize);
+        _mainLayout?.Arrange(new Rect(finalSize));
+        // 应用提供的既有模板仍可使用标准 Canvas；其布局不能由库的 ControlTheme
+        // 声明式接管。只在这条兼容路径由 owner 排列，默认专用画布保持唯一排列 owner。
+        if (_mainLayout is not ToggleSwitchContentPanel)
+        {
+            _offContentPresenter?.Arrange(new Rect(OffContentOffset, _offContentPresenter.DesiredSize));
+            _onContentPresenter?.Arrange(new Rect(OnContentOffset, _onContentPresenter.DesiredSize));
+        }
         if (!_isCheckedChanged)
         {
             _switchKnob?.Arrange(KnobRect);
@@ -371,9 +447,8 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             _switchKnob?.Arrange(KnobMovingRect);
         }
         
-        _offContentPresenter?.Arrange(new Rect(new Point(OffContentOffset.X, OffContentOffset.Y), _offContentPresenter.DesiredSize));
-        _onContentPresenter?.Arrange(new Rect(new Point(OnContentOffset.X, OnContentOffset.Y), _onContentPresenter.DesiredSize));
-        _waveSpiritDecorator?.Arrange(new Rect(new Point(0, 0), DesiredSize.Deflate(Margin)));
+        _waveSpiritDecorator?.Arrange(new Rect(finalSize));
+        CompleteTransitionInitializationMode(finalSize);
         
         return finalSize;
     }
@@ -381,7 +456,7 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     public sealed override void Render(DrawingContext context)
     {
         using var state = context.PushOpacity(SwitchOpacity);
-        var       size  = DesiredSize.Deflate(Margin);
+        var       size  = Bounds.Size;
         context.DrawPilledRect(GrooveBackground, null, new Rect(new Point(0, 0), size));
     }
 
@@ -461,6 +536,22 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     #endregion
 
+    #region 实现 ITransitionInitializationOwner 接口
+
+    TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
+
+    #endregion
+
+    private void CompleteTransitionInitializationMode(Size size)
+    {
+        if (_switchKnob is { IsArrangeValid: true } &&
+            double.IsFinite(size.Width) && double.IsFinite(size.Height) &&
+            MathUtils.GreaterThan(size.Width, 0) && MathUtils.GreaterThan(size.Height, 0))
+        {
+            _transitionInitialization.CompleteInitialization();
+        }
+    }
+
     private void SetupContent(object? oldContent, object? newContent, bool isOnContent)
     {
         if (oldContent != null)
@@ -508,13 +599,33 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         var offExtraInfoRect = ExtraInfoRect(false, controlSize);
         if (isChecked)
         {
-            OnContentOffset  = onExtraInfoRect.TopLeft;
+            var pressedOffset = IsPressed ? KnobRect.Width * (STRETCH_FACTOR - 1) : 0;
+            OnContentOffset  = new Point(onExtraInfoRect.X - pressedOffset, onExtraInfoRect.Y);
             OffContentOffset = new Point(controlSize.Width + 1, onExtraInfoRect.Top);
         }
         else
         {
-            OffContentOffset = offExtraInfoRect.TopLeft;
+            var pressedOffset = IsPressed ? KnobRect.Width * (STRETCH_FACTOR - 1) : 0;
+            OffContentOffset = new Point(offExtraInfoRect.X + pressedOffset, offExtraInfoRect.Y);
             OnContentOffset  = new Point(-offExtraInfoRect.Width, offExtraInfoRect.Top);
+        }
+    }
+
+    private void ConfigureWaveSpiritBrush()
+    {
+        if (_waveSpiritDecorator is null)
+        {
+            return;
+        }
+
+        var waveBrush = WaveSpiritDecorator.ResolveWaveSpiritBrush(null, GrooveBackground);
+        if (waveBrush is not null)
+        {
+            _waveSpiritDecorator.WaveBrush = waveBrush;
+        }
+        else
+        {
+            _waveSpiritDecorator.ClearValue(WaveSpiritDecorator.WaveBrushProperty);
         }
     }
 
@@ -535,12 +646,7 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     private Rect GrooveRect()
     {
-        return new Rect(new Point(0, 0), DesiredSize.Deflate(Margin));
-    }
-
-    private Rect HandleRect()
-    {
-        return HandleRect(IsChecked.HasValue && IsChecked.Value, GrooveRect().Size);
+        return new Rect(Bounds.Size);
     }
 
     private Rect HandleRect(bool isChecked, Size controlSize)
@@ -577,18 +683,18 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         var    targetRect     = new Rect(new Point(0, 0), controlSize);
         if (isChecked)
         {
-            if (_offContentPresenter != null)
+            if (_onContentPresenter != null)
             {
-                yAdjustValue = (controlSize.Height - _offContentPresenter.DesiredSize.Height) / 2;
+                yAdjustValue = (controlSize.Height - _onContentPresenter.DesiredSize.Height) / 2 + _onContentInkOffsetY;
             }
 
             targetRect = targetRect.Inflate(new Thickness(-innerMinMargin, -yAdjustValue, innerMaxMargin, 0));
         }
         else
         {
-            if (_onContentPresenter != null)
+            if (_offContentPresenter != null)
             {
-                yAdjustValue = (controlSize.Height - _onContentPresenter.DesiredSize.Height) / 2;
+                yAdjustValue = (controlSize.Height - _offContentPresenter.DesiredSize.Height) / 2 + _offContentInkOffsetY;
             }
 
             targetRect = targetRect.Inflate(new Thickness(-innerMaxMargin, -yAdjustValue, innerMinMargin, 0));
@@ -597,30 +703,85 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         return targetRect;
     }
 
+    private static double CalculateContentInkOffsetY(ContentPresenter? presenter)
+    {
+        if (presenter is not { Content: string, ContentTemplate: null, Child: TextBlock textBlock } ||
+            presenter.FindDataTemplate(presenter.Content) is not null)
+        {
+            return 0;
+        }
+
+        // 默认字符串标签按可见字形居中；字体行盒包含给下伸字形预留的空间，
+        // 直接居中行盒会让 On / Off 等标签偏上。自定义模板继续拥有自己的布局。
+        // 真实字形、fallback 和 shaping offset 是运行时排版结果，ControlTheme 无法表达。
+        // 复用已有排版，仅在 Measure 提取轮廓边界并缓存数值，动画的每帧 Arrange 不生成 Geometry。
+        // GlyphRun.InkBounds 是保守包围盒，GlyphMetrics 可能只有 advance；均不能替代可见轮廓。
+        var layout = textBlock.TextLayout;
+        var inkTop = double.PositiveInfinity;
+        var inkBottom = double.NegativeInfinity;
+        var lineTop = 0d;
+        foreach (var line in layout.TextLines)
+        {
+            foreach (var textRun in line.TextRuns)
+            {
+                if (textRun is not ShapedTextRun run)
+                {
+                    continue;
+                }
+
+                var inkBounds = CalculateGlyphRunInkBounds(run.GlyphRun);
+                if (MathUtils.GreaterThan(inkBounds.Height, 0))
+                {
+                    var baselineOffset = lineTop + line.Baseline - run.Baseline;
+                    inkTop = Math.Min(inkTop, baselineOffset + inkBounds.Top);
+                    inkBottom = Math.Max(inkBottom, baselineOffset + inkBounds.Bottom);
+                }
+            }
+
+            lineTop += line.Height;
+        }
+
+        if (double.IsFinite(inkTop) && double.IsFinite(inkBottom))
+        {
+            return (layout.Height - inkTop - inkBottom) / 2;
+        }
+
+        return 0;
+    }
+
+    private static Rect CalculateGlyphRunInkBounds(GlyphRun glyphRun)
+    {
+        if (glyphRun.GlyphInfos.All(glyph => MathUtils.IsZero(glyph.GlyphOffset.Y)))
+        {
+            return glyphRun.BuildGeometry().Bounds;
+        }
+
+        // Avalonia 12 的 Skia 轮廓构建未应用 GlyphOffset，实际绘制却会应用。
+        // 有垂直 shaping offset 时逐字形设置基线，使轮廓边界与绘制位置一致。
+        var bounds = default(Rect);
+        foreach (var glyph in glyphRun.GlyphInfos)
+        {
+            using var single = new GlyphRun(glyphRun.GlyphTypeface, glyphRun.FontRenderingEmSize,
+                glyphRun.Characters, [new GlyphInfo(glyph.GlyphIndex, 0, glyph.GlyphAdvance)],
+                new Point(0, glyphRun.BaselineOrigin.Y + glyph.GlyphOffset.Y));
+            var glyphBounds = single.BuildGeometry().Bounds;
+            if (MathUtils.GreaterThan(glyphBounds.Height, 0))
+            {
+                bounds = bounds.Union(glyphBounds);
+            }
+        }
+
+        return bounds;
+    }
+
     private void AdjustOffsetOnPressed()
     {
-        var handleRect = HandleRect();
-        var handleSize = handleRect.Width;
-
-        var contentOffsetDelta = handleSize * (STRETCH_FACTOR - 1);
-
-        if (IsChecked.HasValue && IsChecked.Value)
-        {
-            // 点击的时候如果是选中，需要调整坐标
-            OnContentOffset = new Point(OnContentOffset.X - contentOffsetDelta, OffContentOffset.Y);
-        }
-        else
-        {
-            OffContentOffset = new Point(OffContentOffset.X + contentOffsetDelta, OffContentOffset.Y);
-        }
+        CalculateElementsOffset(GrooveRect().Size);
 
         if (_switchKnob is not null)
         {
-            _switchKnob.KnobSize = new Size(handleSize, KnobSize.Height);
+            _switchKnob.KnobSize = KnobRect.Size;
         }
-
-        KnobRect       = handleRect;
-        KnobMovingRect = KnobRect;
     }
 
     private void AdjustOffsetOnReleased()
@@ -639,4 +800,5 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             });
         }
     }
+
 }

@@ -49,7 +49,7 @@ internal class DragPreview : Decorator
 {
     private readonly TreeViewItemHeader _previewControl;
     public static readonly StyledProperty<IBrush?> BackgroundProperty =
-        Border.BackgroundProperty.AddOwner<DragPreviewAdorner>();
+        Border.BackgroundProperty.AddOwner<DragPreview>();
 
     public IBrush? Background
     {

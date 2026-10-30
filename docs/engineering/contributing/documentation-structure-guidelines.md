@@ -23,16 +23,16 @@
 | 单 Control 目录 | `docs/controls/desktop/general/button/overview.md` |
 | Guide、Reference 子目录 | `docs/guides/theming/overview.md`、`docs/reference/localization/overview.md` |
 
-不使用 `index.md` 作为文档入口。该名称只保留给工具生成物的既有输出契约，当前仅
-`docs/AI/generated/llms/**/index-cn.md` 属于这一类，由 LLMs Generator 拥有，不得手工改名。
+不使用 `index.md` 作为文档入口。
 
 ## 2. 单 Control 目录文件契约
 
-单 Control 目录的文件名由 LLMs Generator 读取，属工具契约，不可改动：
+单 Control 目录的文件名属文档结构契约，不可改动：
 
 ```text
 overview.md          必需
 implementation.md    必需
+semantic-part.md     条件必需，控件公开 Semantic Part 时提供
 token.md             可选，控件拥有专属 Token 时提供
 changelog.md         必需
 <topic>-design.md    可选，单个专题设计
@@ -90,17 +90,12 @@ docs/architecture/systems/typography/
 
 - 目录之间使用相对路径，指向具体文件，不指向目录。
 - 指向某目录的入口时写完整文件名 `overview.md`，不依赖目录默认文件解析。
-- 生成物 `docs/AI/generated/` 下的文件不手工编辑，其内部链接由 Generator 产生。
 
 ## 6. 变更检查
 
 调整文档结构后必须确认：
 
 1. 所有相对链接可解析，包括 `AGENTS.md` 与仓库根 README。
-2. 单 Control 目录的四件套文件名未被破坏，LLMs Generator 的 `verify` 通过。
+2. 单 Control 目录的四件套文件名未被破坏。
 3. 目录树示意图与实际布局一致。
 4. `git diff --check` 通过。
-
-```bash
-dotnet run --project tools/AtomUI.Docs.LLMsGenerator/AtomUI.Docs.LLMsGenerator.csproj -- verify --config docs/AI/generated/llms.config.json
-```

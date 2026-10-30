@@ -181,35 +181,15 @@ Tag 的视觉选项通过 `TagColor` 和 `Variant` 归一为颜色类别、Brush
 
 CheckableTag 使用 ToggleButton 的二态状态；CheckableTagGroup 将 `Options`、`IsMultiple` 和 `CheckedItem(s)` 归一为内部 SelectionModel，并把选择状态单向投影到子项。完整 Public API、模式矩阵、Template、同步算法、Form、生命周期与 AOT 边界见 [CheckableTag 与 CheckableTagGroup 选择模型设计](checkable-tag-design.md)。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
+- [Tag Semantic Part 契约](semantic-part.md)
 - [Tag 桌面版实现原理](implementation.md)
 - [CheckableTag 与 CheckableTagGroup 选择模型设计](checkable-tag-design.md)
 - [Tag Token 设计](token.md)
 - [Tag Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Tag` | 展示标签根区域，承载颜色、Variant、内容和关闭入口。 | `TagColor`、`Variant`、`Text`、`IsClosable` | TagToken | stable |
-| `checkable` | `CheckableTag` | 二态选择标签根区域，承载输入、内容、Icon 和选择视觉。 | `IsChecked`、`Content`、`Icon`、`IsEnabled` | TagToken + SharedToken | stable |
-| `group` | `CheckableTagGroup` | 选择组根区域，拥有 Options、模式、公开值和 Form 语义。 | `Options`、`IsMultiple`、`CheckedItem(s)` | SharedToken spacing | stable |
-| `item` | `CheckableTag container` | Group 内单个可交互选项，只消费 owner 投影的状态。 | `IsChecked`、`ContentTemplate` | TagToken + SharedToken | stable |
-| `content` | `ContentPresenter` | 承载 Tag 文本或 CheckableTag 的任意内容。 | `Text` 或 `Content` | typography/spacing | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `checkable-tag-design.md` + `token.md` + Gallery ShowCase | 生成 `controls/tag/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + `checkable-tag-design.md` + theme/template 信息 | 生成 `controls/tag/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -219,5 +199,6 @@ LLMS 导出来源：
 | Public API | 覆盖属性默认值、事件触发、命令和继承语义。 |
 | 状态模型 | 覆盖 `TagColor × Variant`、CheckableTag 二态、Group 单选/多选、Default、集合变化和主题切换。 |
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
+| Semantic Part | `Tag` descriptor 只含 `root`/`icon`/`content`/`close`，`CheckableTagGroup` descriptor 只含 `root`/`item`；Tag 三节点 marker 静态常驻、折叠节点 marker 保留；Group item marker 随容器创建/prepare 幂等就位，选择变化与模式转换不增删 marker；owner-scoped Semantic Style 命中最低 public 类型。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |

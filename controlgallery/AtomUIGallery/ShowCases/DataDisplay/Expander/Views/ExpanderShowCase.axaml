@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Expander"
              x:DataType="vm:ExpanderViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Expander"
                     Category="{gallery:ExpanderShowCaseLangResource ComponentCategory}"
@@ -18,7 +18,40 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="Avalonia.Controls.Expander" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:ExpanderViewModel">
+                    <gallery:SemanticPartPreview Name="ExpanderSemanticPreview"
+                                                 SemanticOwner="{Binding #ExpanderSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:Expander}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Expander Name="ExpanderSemanticOwner"
+                                           IsExpanded="True"
+                                           Header="This is panel header">
+                                <atom:TextBlock TextWrapping="Wrap" Text="This is panel body" />
+                            </atom:Expander>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:ExpanderShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="header"
+                                Description="{gallery:ExpanderShowCaseLangResource SemanticHeaderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="icon"
+                                Description="{gallery:ExpanderShowCaseLangResource SemanticIconDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="title"
+                                Description="{gallery:ExpanderShowCaseLangResource SemanticTitleDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="body"
+                                Description="{gallery:ExpanderShowCaseLangResource SemanticBodyDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -218,7 +251,66 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:ExpanderShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:ExpanderShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="expander-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ExpanderViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="12">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Expander.semantic-object">
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <atom:ExpanderHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
+                                            <Setter Property="Background" Value="#f0f0f0" />
+                                            <Setter Property="Padding" Value="16,12" />
+                                        </atom:ExpanderHeaderStyle>
+                                        <atom:ExpanderTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#141414" />
+                                        </atom:ExpanderTitleStyle>
+                                        <atom:ExpanderBodyStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Padding" Value="16,12" />
+                                        </atom:ExpanderBodyStyle>
+                                    </Style>
+                                    <Style Selector="atom|Expander.semantic-function">
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <atom:ExpanderHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
+                                            <Setter Property="Background" Value="#f5efff" />
+                                            <Setter Property="Padding" Value="16,12" />
+                                        </atom:ExpanderHeaderStyle>
+                                        <atom:ExpanderTitleStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#141414" />
+                                        </atom:ExpanderTitleStyle>
+                                        <atom:ExpanderIconStyle x:SetterTargetType="atom:IconButton">
+                                            <Setter Property="IconWidth" Value="20" />
+                                            <Setter Property="IconHeight" Value="20" />
+                                        </atom:ExpanderIconStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:Expander Classes="semantic-object"
+                                               Header="{gallery:ExpanderShowCaseLangResource P2HeaderThisIsPanelHeaderN1}"
+                                               IsExpanded="True">
+                                    <atom:TextBlock TextWrapping="Wrap" Text="{gallery:ExpanderShowCaseLangResource P2TextADogIsATypeOfDomesticatedAnimal}" />
+                                </atom:Expander>
+
+                                <atom:Expander Classes="semantic-function"
+                                               SizeType="Large"
+                                               Header="{gallery:ExpanderShowCaseLangResource P2HeaderThisIsPanelHeaderN1}"
+                                               IsExpanded="True">
+                                    <atom:TextBlock TextWrapping="Wrap" Text="{gallery:ExpanderShowCaseLangResource P2TextADogIsATypeOfDomesticatedAnimal}" />
+                                </atom:Expander>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

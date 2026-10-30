@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview-cn)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.1.8-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.10-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-license-shield]][github-license-link]
 
@@ -63,17 +63,20 @@ Token 和本地化开发的源代码生成器。欢迎提交 Issue、PR 和改�
 
 #### 运行环境
 
-.NET 8 及其以上（开发期支持 .NET 10）<br>
-Avalonia 12.1.2<br>
+.NET 10（构建 AtomUI MSBuild 集成需要 .NET 10 SDK）<br>
+Avalonia 12.1.4<br>
 支持 Windows、macOS、Linux 跨平台<br>
+
+TypeMap 发布默认支持 .NET 10 及后续稳定版本。Browser 裁剪与 AOT 发布使用 SDK 选择的 ILLink 和 WASM 工具链，
+不设置 SDK 或补丁版本白名单；发布时验证映射转换结果和实际消费产物。独立的 net8-only 包兼容桥接仍遵循其文档中的工具链要求。
 
 #### 最新版本说明
 
-AtomUI 6.1.8 重构 DataGrid 为基于 Range 的 `IDataGridSource`，引入不可变查询与选择状态；图片加载改用封闭的
-`ImageSource` 类型层次与独立的缓存读写策略；具体 `[ControlDesignToken]` 类型现在必须为 `sealed`。本版本还新增
-`Window.IsTitleVisible`，统一 NavMenu 激活顺序，修复 Select 家族多选模式的 Prefix 间距，并完善 trimmed 应用的
-NativeAOT linked-registration 闭包。本版本包含 DataGrid、图片加载和主题 Token 的破坏性变更；升级前请查看
-[更新日志](./CHANGELOG.zh-CN.md)。
+AtomUI 6.2.10 用直接作用于控件的帧驱动动效替换基于 Actor 的动效库，让窗口型 Popup 的阴影在 Windows、Linux、
+macOS 上对输入穿透，并通过优先使用 RedirectionSurface 消除 Windows live resize 错帧。本版本包含破坏性变更：动效类型移至
+`AtomUI.Animations`，动效 Actor 与模板部件调整，Acrylic/Mica 需要显式配置合成顺序。请同步升级 AtomUI 包与 Generator
+并重新构建预编译消费方；详见 [6.2.10 迁移指南](docs/releases/6.2.10-api-changes.zh-CN.md) 和
+[Changelog](./CHANGELOG.zh-CN.md)。
 
 #### 感谢通明湖中心孵化 AtomUI OSS
 
@@ -130,10 +133,10 @@ AtomUI 推荐通过 NuGet 安装。先安装主桌面控件包，再根据应用
 | AtomUI.Generator                    | 面向自定义控件、Token 与本地化开发的源代码生成器   |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.1.8
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.1.8
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.1.8
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.1.8
+dotnet add package AtomUI.Desktop.Controls --version 6.2.10
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.10
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.10
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.10
 ```
 
 您也可以在 IDE 的 NuGet 包管理器中安装。以 Rider 为例，可以依次点击：
@@ -152,7 +155,7 @@ NuGet -> 软件包
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
@@ -160,10 +163,10 @@ NuGet -> 软件包
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.1.8"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.1.8"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.1.8"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.1.8"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.10"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.10"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.10"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.10"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>
@@ -171,10 +174,15 @@ NuGet -> 软件包
 
 ###### 配置程序入口文件
 
+在 `AppBuilder` 链上启用 AtomUI：
+
 ```csharp
 using Avalonia;
 using System;
 using AtomUI;
+using AtomUI.Desktop.Controls;
+using AtomUI.Localization;
+using AtomUI.Theme;
 using ReactiveUI.Avalonia;
 
 namespace AtomUIProgressApp;
@@ -191,43 +199,38 @@ internal class Program
                          .UseReactiveUI()
                          .UseAtomUIPlatformDetect()
                          .WithAtomUIDefaultOptions()
+                         .UseAtomUI(builder =>
+                         {
+                             builder.UseLanguages(
+                                 LanguageTags.ZhCN,
+                                 [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
+                             builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+                             builder.UseAlibabaSansFont();
+                             builder.UseDesktopControls();
+                             builder.UseDesktopColorPicker();   // 可选
+                             builder.UseDesktopDataGrid();      // 可选
+                         })
                          .WithDeveloperTools()
                          .LogToTrace();
     }
 }
 ```
 
-###### 在 `Application` 类中启用 `AtomUI`
+###### 把 `Application` 类声明为 `partial`
+
+AtomUI 生成器会把 `partial` 应用类挂接到启动流程，`Initialize()` 执行时 AtomUI 已经就绪：
 
 ```csharp
-using AtomUI;
-using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
-using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 
 public partial class App : Application
 {
-    public override void Initialize()
-    {
-        AvaloniaXamlLoader.Load(this);
-
-        this.UseAtomUI(builder =>
-        {
-            builder.UseLanguages(
-                LanguageTags.ZhCN,
-                [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
-            builder.WithDefaultTheme(IThemeManager.DEFAULT_THEME_ID);
-            builder.UseAlibabaSansFont();
-            builder.UseDesktopControls();
-            builder.UseDesktopColorPicker();   // 可选
-            builder.UseDesktopDataGrid();      // 可选
-            builder.UseDesktopExtras();        // 可选
-        });
-    }
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
 }
 ```
+
+需要启动 Splash 时见[启动指南](docs/guides/startup/overview.md)。
 
 ###### 开始使用 AtomUI
 

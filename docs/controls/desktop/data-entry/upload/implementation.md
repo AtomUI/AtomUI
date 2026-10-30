@@ -1,6 +1,6 @@
 # Upload 桌面版实现原理
 
-本文档定义 Upload 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Upload 桌面版架构设计](overview.md)，拖动输入的专项状态与平台边界见 [Upload 拖动上传设计](drag-drop-design.md)，变化记录见 [Upload Changelog](changelog.md)，控件视觉变量见 [Upload Token 设计](token.md)。
+本文档定义 Upload 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Upload 桌面版架构设计](overview.md)，公开主题区域见 [Upload Semantic Part 契约](semantic-part.md)，拖动输入的专项状态与平台边界见 [Upload 拖动上传设计](drag-drop-design.md)，变化记录见 [Upload Changelog](changelog.md)，控件视觉变量见 [Upload Token 设计](token.md)。
 
 ## 1. 实现定位
 
@@ -15,6 +15,7 @@ Upload 的实现定位是上传状态协调器，而不是固定上传按钮、�
 | 路径 | 职责 |
 | --- | --- |
 | `src/AtomUI.Desktop.Controls/Upload/Upload.cs` | 保留 public/protected API、Avalonia 属性注册、构造、display source 桥接、`IFormItemAware` 和顶层上传协调。 |
+| `src/AtomUI.Desktop.Controls/Upload/Upload.SemanticParts.cs` | 声明 `list` / `item` 公共 Semantic Part，并驱动 descriptor、生成 Style、class 常量和静态注册。 |
 | `src/AtomUI.Desktop.Controls/Upload/UploadAppendContentItem.cs` | internal picture append visual slot，用于把 `TriggerContent` 放入 PictureCard/PictureCircle 的同一 wrap flow；不进入 `Files`。 |
 | `src/AtomUI.Desktop.Controls/Upload/Upload.FileSelection.cs` | 封装文件选择和目录选择动作，并把同一个 `IsMultipleEnabled` 值投射到两种 picker 的 `AllowMultiple`。 |
 | `src/AtomUI.Desktop.Controls/Upload/IUploadStorageProviderAdapter.cs` | 隔离 Avalonia storage picker 调用，向文件选择和目录选择提供可测试的 typed StorageItem 边界。 |
@@ -44,7 +45,7 @@ Upload 的实现定位是上传状态协调器，而不是固定上传按钮、�
 
 | 路径 | 职责 |
 | --- | --- |
-| `src/AtomUI.Desktop.Controls/Upload/Themes/UploadTheme.axaml` | 根模板，连接 `TriggerContent`、list 和 picture display source，并保持触发区与列表的稳定间距。 |
+| `src/AtomUI.Desktop.Controls/Upload/Themes/UploadTheme.axaml` | 根模板，连接 `TriggerContent`、list 和 picture display source，保持触发区与列表的稳定间距，并在两套模板变体上声明 `semantic-list`。 |
 | `src/AtomUI.Desktop.Controls/Upload/Themes/UploadTriggerTheme.axaml` | 触发器 shell，只承载用户内容和点击表面。 |
 | `src/AtomUI.Desktop.Controls/Upload/Themes/UploadDropZoneTheme.axaml` | 拖拽行为 shell，只承载用户内容和内容对齐。 |
 | `src/AtomUI.Desktop.Controls/Upload/Themes/UploadDefaultDropAreaTheme.axaml` | 默认拖动视觉，保持 Frame、内容 presenter、Token 和动效结构。 |
@@ -137,6 +138,17 @@ Upload (public coordinator)
 | `UploadAppendContentItem` | internal visual slot | `UploadAppendContentItem.cs` | `Upload` display source | `TriggerContent` | internal | 只能承载 picture append 入口，不能写入 `Files` 或持有任务状态。 |
 | `UploadQueue` | internal service | `UploadQueue.cs` | `Upload` | 上传状态和取消 | private | 不暴露给用户，不引用视觉控件。 |
 
+### Semantic Part 映射
+
+| Part | 实现节点 | Marker ownership | 稳定路由 |
+| --- | --- | --- | --- |
+| `root` | `Upload` owner | 隐式，不添加 class | owner |
+| `list` | `UploadList` / `UploadPictureShapeList` | `UploadTheme.axaml` 静态 marker | `/template/ .semantic-list` |
+| `item` | `UploadTextListItem` / `UploadPictureListItem` / `UploadPictureShapeListItem` | `UploadList.CreateContainerForItemOverride` 使用生成常量添加 | `/template/ .semantic-list > .semantic-item` |
+
+`UploadAppendContentItem` 是 picture display source 的 append trigger，不获得 `semantic-item`。文件状态只替换 item
+内部 ControlTemplate，marker 保留在容器 owner 上。完整公共契约见 [Upload Semantic Part 契约](semantic-part.md)。
+
 ## 6. 生命周期与模板接入
 
 Upload 的生命周期释放必须成对设计，不能依赖 GC 或视觉树自然释放。
@@ -156,6 +168,7 @@ Upload 的生命周期释放必须成对设计，不能依赖 GC 或视觉树自
 - `OnApplyTemplate` 重新应用时先释放旧 template part 订阅，再接入新 part。
 - `Files` 集合替换时解绑旧集合 change 订阅，接入新集合，保留新旧集合共有 id 的 source ownership，并把仅存在于旧集合的 source 移交给取消清理任务。
 - item container 准备时只绑定当前 `UploadFileItem`；container recycle 时必须释放旧 item 的订阅和 action handler。
+- item container 创建时必须保留生成的 `UploadSemanticParts.ItemClass`；prepare、clear、状态变化和 recycle 不得把 marker 转移到内容节点或 append trigger。
 - `UploadTrigger` 和 `UploadDropZone` 查找 owner 时只依赖当前 visual ancestor；脱离 visual tree 后不缓存旧 owner。
 - detach 时取消全部输入批次、上传任务、pending auto-remove delay、drag/drop 会话和 C# binding。
 - collection/Form 通知、批次完成事件或上传取消事件抛出异常时，清理路径必须继续完成 task cancellation、accepted-source map 移交和 lease 释放，再向等待方传播单个异常或聚合异常。
@@ -226,7 +239,8 @@ AOT 边界：
 - 不通过运行时反射扫描 public API、Token、API 契约摘要或上传模型。
 - 拖动输入使用 typed DataTransfer、StorageItem 和显式策略，不依赖平台私有反射或动态发现。
 - 新增 public 类型应显式引用并由源码、Gallery 和测试覆盖。
-- Source generator 生成文件不手工编辑；LLMS 产物也不在本次运行时代码任务中手工修改。
+- Semantic descriptor、`UploadListStyle`、`UploadItemStyle` 与 class 常量由生成器静态产生，不使用运行时类型发现。
+- Source generator 生成文件不手工编辑。
 
 ## 10. 维护不变量
 
@@ -242,6 +256,7 @@ AOT 边界：
 - ownership transfer 必须由 typed batch operation 验证；不得重新引入 `ownsFileSources`、`queueAlreadyCancelled` 或通用 transfer callback。
 - 默认 DropZone/DropArea ControlTheme、模板视觉树、Token、布局和渲染结果不得因输入管线重构改变。
 - PictureCard/PictureCircle 的上传入口只能通过 `EffectivePictureItems` 中的 display append slot 呈现，确保与图片项处于同一 wrap flow。
+- `semantic-list` 必须存在于两套 Upload 根模板，`semantic-item` 只存在于真实文件容器；append slot 不属于 item cardinality。
 - `RemoveFileAsync`、外部集合变更、`Files` 替换、Form Set/Clear、`ResetAsync` 和 detach 必须以各自时序释放上传任务、source lease、auto-remove delay、集合订阅和 container 绑定。
 - `DataValidationErrors` 是 error 状态来源，Upload 不维护独立 error 机制。
 - AXAML-first binding 是默认选择；C# binding 必须说明 AXAML 不能表达的原因和释放 owner。
@@ -263,6 +278,7 @@ AOT 边界：
 | 成功自动移除 | `UploadAutoRemoveTests` 覆盖 delay 到期、remove、reset、detach 和状态变更取消。 |
 | Form 与验证 | `UploadFormValueTests` 覆盖 `FileValueMode`、set/clear 和 `DataValidationErrors`。 |
 | Gallery 示例 | `UploadShowCasePageTests` 和 snapshot 覆盖示例、本地化和源码片段。 |
+| Semantic Part | `UploadSemanticPartTests` 覆盖 descriptor、四种 `ListType`、生成 Style route 和 append trigger 排除；`UploadSemanticPartHighlightTests` 覆盖 Gallery 高亮。 |
 | 文档卫生 | `git diff --check` 和关键术语扫描。 |
 
 文档验证命令：

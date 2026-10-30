@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -78,6 +76,7 @@ public enum MenuShowCaseLangResourceKind
     P2TitleGeneratedByTemplate,
     P2HeaderNavigationOne,
     P2HeaderNavigationTwo,
+    P2HeaderNavigationThree,
     P2HeaderNavigationThreeSubmenu,
     P2HeaderItemN1,
     P2HeaderOptionN1,
@@ -109,5 +108,19 @@ public enum MenuShowCaseLangResourceKind
     P2HeaderSecurity,
     P2TextCurrentWorkspace,
     AccordionMenuTitle,
-    AccordionMenuDescription
+    AccordionMenuDescription,
+    SemanticRootDescription,
+    SemanticItemDescription,
+    SemanticItemIconDescription,
+    SemanticItemContentDescription,
+    SemanticItemTitleDescription,
+    SemanticListDescription,
+    SemanticSubMenuItemDescription,
+    SemanticSubMenuItemIconDescription,
+    SemanticSubMenuItemContentDescription,
+    SemanticSubMenuItemTitleDescription,
+    SemanticSubMenuListDescription,
+    SemanticPopupRootDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription
 }

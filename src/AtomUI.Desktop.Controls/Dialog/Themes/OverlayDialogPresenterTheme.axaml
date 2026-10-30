@@ -6,19 +6,24 @@
     <ControlTheme x:Key="{x:Type atom:OverlayDialogPresenter}" TargetType="atom:OverlayDialogPresenter">
         <Setter Property="Focusable" Value="True" />
         <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
+        <Setter Property="OpeningMotionDuration" Value="{atom:SharedTokenResource MotionDurationSlow}" />
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:OverlayDialogPresenter">
                 <Panel>
-                    <atom:MotionActor Name="PART_MaskMotionActor"
-                                      IsVisible="{TemplateBinding IsModal}"
-                                      ClipToBounds="False">
+                    <ContentControl Name="PART_MaskHost"
+                                    IsVisible="{TemplateBinding IsModal}"
+                                    ClipToBounds="False">
                         <atom:OverlayDialogMask Name="PART_DialogMask"
-                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
-                    </atom:MotionActor>
-                    <atom:MotionActor Name="PART_SurfaceMotionActor" ClipToBounds="False">
-                        <ContentPresenter Content="{TemplateBinding Content}"
+                                                Classes.semantic-scope-mask="True"
+                                                ClipToBounds="False" />
+                    </ContentControl>
+                    <Border Name="PART_SurfaceMotionRoot"
+                            Classes.semantic-scope-presenter="True"
+                            ClipToBounds="False">
+                        <ContentPresenter Classes.semantic-wrapper="True"
+                                          Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}" />
-                    </atom:MotionActor>
+                    </Border>
                 </Panel>
             </ControlTemplate>
         </Setter>

@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -67,5 +65,13 @@ public enum TagShowCaseLangResourceKind
     PageDescription,
     ComponentCategory,
     ComponentStatusStable,
-    ApiEventClosed
+    ApiEventClosed,
+    SemanticTagRootDescription,
+    SemanticTagIconDescription,
+    SemanticTagContentDescription,
+    SemanticTagCloseDescription,
+    SemanticGroupRootDescription,
+    SemanticGroupItemDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription
 }

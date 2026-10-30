@@ -11,12 +11,14 @@
                         Padding="0, 1, 0, 1">
                     <DockPanel LastChildFill="True">
                         <atom:CheckBoxIndicator Name="Indicator"
+                                                Classes.semantic-icon="True"
                                                 DockPanel.Dock="Left"
                                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                                 IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"
                                                 IsEnabled="{TemplateBinding IsEnabled}"
                                                 State="{TemplateBinding IsChecked, Converter={StaticResource CheckBoxIndicatorStateConverter}}" />
                         <ContentPresenter Name="ContentPresenter"
+                                          Classes.semantic-label="True"
                                           VerticalAlignment="Center"
                                           Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}"

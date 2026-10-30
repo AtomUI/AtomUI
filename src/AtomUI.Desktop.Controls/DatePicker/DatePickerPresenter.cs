@@ -1,699 +1,510 @@
-﻿using System.Reactive.Disposables;
+using System.Globalization;
 using AtomUI.Controls;
-using AtomUI.Desktop.Controls.CalendarView;
+using AtomUI.Desktop.Controls.Internal.DateViewer;
+using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.VisualTree;
-using PickerCalendar = AtomUI.Desktop.Controls.CalendarView.Calendar;
 
 namespace AtomUI.Desktop.Controls;
 
-public class ChoosingStatusEventArgs : EventArgs
+public sealed class ChoosingStatusEventArgs(bool isChoosing) : EventArgs
 {
-    public bool IsChoosing { get; }
-
-    public ChoosingStatusEventArgs(bool isChoosing)
-    {
-        IsChoosing = isChoosing;
-    }
+    public bool IsChoosing { get; } = isChoosing;
 }
 
-internal class DatePickerPresenter : PickerPresenterBase
+public sealed class DateSelectedEventArgs(DateTime? value) : EventArgs
 {
-    #region 公共属性定义
+    public DateTime? Date { get; } = value;
+}
 
-    public static readonly StyledProperty<bool> IsNeedConfirmProperty =
-        DatePicker.IsNeedConfirmProperty.AddOwner<DatePickerPresenter>();
-
-    public static readonly StyledProperty<bool> IsShowNowProperty =
-        DatePicker.IsShowNowProperty.AddOwner<DatePickerPresenter>();
-
-    public static readonly StyledProperty<bool> IsShowTimeProperty =
-        DatePicker.IsShowTimeProperty.AddOwner<DatePickerPresenter>();
-
-    public static readonly StyledProperty<DatePickerMode> PickerModeProperty =
-        DatePicker.PickerModeProperty.AddOwner<DatePickerPresenter>();
-
-    public static readonly StyledProperty<DateTime?> SelectedDateTimeProperty =
-        DatePicker.SelectedDateTimeProperty.AddOwner<DatePickerPresenter>();
-
-    public static readonly StyledProperty<DateTime?> PickerDisplayDateProperty =
-        DatePicker.PickerDisplayDateProperty.AddOwner<DatePickerPresenter>();
-
-    public static readonly StyledProperty<DateTime?> MinDateProperty =
-        DatePicker.MinDateProperty.AddOwner<DatePickerPresenter>();
-
-    public static readonly StyledProperty<DateTime?> MaxDateProperty =
-        DatePicker.MaxDateProperty.AddOwner<DatePickerPresenter>();
-
-    public static readonly StyledProperty<ClockIdentifierType> ClockIdentifierProperty =
-        TimePicker.ClockIdentifierProperty.AddOwner<DatePickerPresenter>();
-
-    public bool IsNeedConfirm
-    {
-        get => GetValue(IsNeedConfirmProperty);
-        set => SetValue(IsNeedConfirmProperty, value);
-    }
-
-    public bool IsShowNow
-    {
-        get => GetValue(IsShowNowProperty);
-        set => SetValue(IsShowNowProperty, value);
-    }
-
-    public bool IsShowTime
-    {
-        get => GetValue(IsShowTimeProperty);
-        set => SetValue(IsShowTimeProperty, value);
-    }
-
-    public DatePickerMode PickerMode
-    {
-        get => GetValue(PickerModeProperty);
-        set => SetValue(PickerModeProperty, value);
-    }
-
-    public DateTime? SelectedDateTime
-    {
-        get => GetValue(SelectedDateTimeProperty);
-        set => SetValue(SelectedDateTimeProperty, value);
-    }
-
-    public DateTime? PickerDisplayDate
-    {
-        get => GetValue(PickerDisplayDateProperty);
-        set => SetValue(PickerDisplayDateProperty, value);
-    }
-
-    public DateTime? MinDate
-    {
-        get => GetValue(MinDateProperty);
-        set => SetValue(MinDateProperty, value);
-    }
-
-    public DateTime? MaxDate
-    {
-        get => GetValue(MaxDateProperty);
-        set => SetValue(MaxDateProperty, value);
-    }
-
-    public ClockIdentifierType ClockIdentifier
-    {
-        get => GetValue(ClockIdentifierProperty);
-        set => SetValue(ClockIdentifierProperty, value);
-    }
-
-    #endregion
-
-    #region 内部属性定义
-
-    internal static readonly DirectProperty<DatePickerPresenter, bool> IsButtonsPanelVisibleProperty =
-        AvaloniaProperty.RegisterDirect<DatePickerPresenter, bool>(nameof(IsButtonsPanelVisible),
-            o => o.IsButtonsPanelVisible,
-            (o, v) => o.IsButtonsPanelVisible = v);
-
-    internal static readonly DirectProperty<DatePickerPresenter, bool> IsTimeSelectionVisibleProperty =
-        AvaloniaProperty.RegisterDirect<DatePickerPresenter, bool>(nameof(IsTimeSelectionVisible),
-            o => o.IsTimeSelectionVisible,
-            (o, v) => o.IsTimeSelectionVisible = v);
-
+internal class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
+{
+    public static readonly StyledProperty<bool> IsNeedConfirmProperty = DatePicker.IsNeedConfirmProperty.AddOwner<DatePickerPresenter>();
+    public static readonly StyledProperty<bool> IsShowNowProperty = DatePicker.IsShowNowProperty.AddOwner<DatePickerPresenter>();
+    public static readonly StyledProperty<bool> IsShowTimeProperty = DatePicker.IsShowTimeProperty.AddOwner<DatePickerPresenter>();
+    public static readonly StyledProperty<DatePickerMode> PickerModeProperty = DatePicker.PickerModeProperty.AddOwner<DatePickerPresenter>();
+    public static readonly StyledProperty<DateTime?> SelectedDateTimeProperty = DatePicker.SelectedDateTimeProperty.AddOwner<DatePickerPresenter>();
+    public static readonly StyledProperty<DateTime?> PickerDisplayDateProperty = DatePicker.PickerDisplayDateProperty.AddOwner<DatePickerPresenter>();
+    public static readonly StyledProperty<DateTime?> MinDateProperty = DatePicker.MinDateProperty.AddOwner<DatePickerPresenter>();
+    public static readonly StyledProperty<DateTime?> MaxDateProperty = DatePicker.MaxDateProperty.AddOwner<DatePickerPresenter>();
+    public static readonly StyledProperty<ClockIdentifierType> ClockIdentifierProperty = TimePicker.ClockIdentifierProperty.AddOwner<DatePickerPresenter>();
     public static readonly StyledProperty<TimeSpan?> TempSelectedTimeProperty =
         AvaloniaProperty.Register<DatePickerPresenter, TimeSpan?>(nameof(TempSelectedTime));
-
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<DatePickerPresenter>();
+    internal static readonly DirectProperty<DatePickerPresenter, bool> IsButtonsPanelVisibleProperty =
+        AvaloniaProperty.RegisterDirect<DatePickerPresenter, bool>(nameof(IsButtonsPanelVisible), o => o.IsButtonsPanelVisible);
+    internal static readonly DirectProperty<DatePickerPresenter, bool> IsTimeSelectionVisibleProperty =
+        AvaloniaProperty.RegisterDirect<DatePickerPresenter, bool>(nameof(IsTimeSelectionVisible), o => o.IsTimeSelectionVisible);
+    internal static readonly DirectProperty<DatePickerPresenter, double> PanelHeightProperty =
+        AvaloniaProperty.RegisterDirect<DatePickerPresenter, double>(nameof(PanelHeight), o => o.PanelHeight);
 
-    internal bool IsMotionEnabled
-    {
-        get => GetValue(IsMotionEnabledProperty);
-        set => SetValue(IsMotionEnabledProperty, value);
-    }
+    public bool IsNeedConfirm { get => GetValue(IsNeedConfirmProperty); set => SetValue(IsNeedConfirmProperty, value); }
+    public bool IsShowNow { get => GetValue(IsShowNowProperty); set => SetValue(IsShowNowProperty, value); }
+    public bool IsShowTime { get => GetValue(IsShowTimeProperty); set => SetValue(IsShowTimeProperty, value); }
+    public DatePickerMode PickerMode { get => GetValue(PickerModeProperty); set => SetValue(PickerModeProperty, value); }
+    public DateTime? SelectedDateTime { get => GetValue(SelectedDateTimeProperty); set => SetValue(SelectedDateTimeProperty, value); }
+    public DateTime? PickerDisplayDate { get => GetValue(PickerDisplayDateProperty); set => SetValue(PickerDisplayDateProperty, value); }
+    public DateTime? MinDate { get => GetValue(MinDateProperty); set => SetValue(MinDateProperty, value); }
+    public DateTime? MaxDate { get => GetValue(MaxDateProperty); set => SetValue(MaxDateProperty, value); }
+    public ClockIdentifierType ClockIdentifier { get => GetValue(ClockIdentifierProperty); set => SetValue(ClockIdentifierProperty, value); }
+    public TimeSpan? TempSelectedTime { get => GetValue(TempSelectedTimeProperty); set => SetValue(TempSelectedTimeProperty, value); }
+    internal bool IsMotionEnabled { get => GetValue(IsMotionEnabledProperty); set => SetValue(IsMotionEnabledProperty, value); }
 
-    private bool _buttonsPanelVisible = true;
+    private bool _buttonsPanelVisible;
     private bool _isTimeSelectionVisible;
-
     internal bool IsButtonsPanelVisible
     {
         get => _buttonsPanelVisible;
-        set => SetAndRaise(IsButtonsPanelVisibleProperty, ref _buttonsPanelVisible, value);
+        private set => SetAndRaise(IsButtonsPanelVisibleProperty, ref _buttonsPanelVisible, value);
     }
-
     internal bool IsTimeSelectionVisible
     {
         get => _isTimeSelectionVisible;
-        set => SetAndRaise(IsTimeSelectionVisibleProperty, ref _isTimeSelectionVisible, value);
+        private set => SetAndRaise(IsTimeSelectionVisibleProperty, ref _isTimeSelectionVisible, value);
     }
+    internal double PanelHeight => PickerMode == DatePickerMode.Quarter ? 86 : 301;
 
-    public TimeSpan? TempSelectedTime
-    {
-        get => GetValue(TempSelectedTimeProperty);
-        set => SetValue(TempSelectedTimeProperty, value);
-    }
-
-    #endregion
-
-    #region 公共事件定义
-
-    /// <summary>
-    /// 当前 Pointer 选中的日期和时间的变化事件
-    /// </summary>
     public event EventHandler<DateSelectedEventArgs>? HoverDateTimeChanged;
-
-    /// <summary>
-    /// 当前是否处于选择中状态
-    /// </summary>
     public event EventHandler<ChoosingStatusEventArgs>? ChoosingStatusChanged;
-
-    #endregion
 
     protected Button? NowButton;
     protected Button? TodayButton;
     protected Button? ConfirmButton;
-    protected PickerCalendar? CalendarView;
     protected TimeView? TimeView;
-    private CompositeDisposable? _pointerDisposables;
-    private DateTime? _pendingOpenDisplayAnchor;
-    private DatePickerDateRangeConstraint _effectiveDateRange;
+    protected DateViewer? SingleViewer;
+    protected RangeDateViewer? RangeViewer;
+    protected readonly DatePickerEditSession EditSession = new();
 
-    protected DatePickerDateRangeConstraint EffectiveDateRange => _effectiveDateRange;
+    private DateTime _displayDate = DateTime.Today;
+    private DateViewerPanelKind _panelKind;
+    private bool _sessionOpened;
+    protected bool UpdatingCandidate;
+    private CultureInfo _culture = CultureInfo.CurrentCulture;
+    private ILanguageManager? _languageManager;
+
+    protected virtual bool IsRangeEditor => false;
+    protected virtual DateTime? SecondarySelectedDateTimeCore => null;
+    protected virtual DateRangeActivePart ActiveRangePart => DateRangeActivePart.Start;
+    protected DateRangeActivePart EffectiveActiveRangePart => EditSession.IsOpen ? EditSession.ActivePart : ActiveRangePart;
+    protected virtual int PanelCount => IsRangeEditor && !IsTimeSelectionVisible ? 2 : 1;
+    protected DatePickerDateRangeConstraint EffectiveDateRange =>
+        DatePickerDateRangeConstraint.Create(MinDate, MaxDate, PickerMode);
 
     internal void ResetOpenPanelState()
     {
-        _pendingOpenDisplayAnchor = ResolveOpenDisplayAnchor();
-        ApplyPendingOpenPanelState();
+        OpenSession();
+        _displayDate = ResolveOpenDisplayAnchor() ?? DateTime.Today;
+        _panelKind = DateViewer.TargetPanel(ToSelectionUnit(PickerMode));
+        RefreshViewer();
+        SyncTimeViewTimeValue();
+        SetupButtonStatus();
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        DetachTemplate();
+        SingleViewer?.SetHost(null);
+        RangeViewer?.SetHost(null);
+        base.OnApplyTemplate(e);
+        NowButton = e.NameScope.Find<Button>("PART_NowButton");
+        TodayButton = e.NameScope.Find<Button>("PART_TodayButton");
+        ConfirmButton = e.NameScope.Find<Button>("PART_ConfirmButton");
+        TimeView = e.NameScope.Find<TimeView>("PART_TimeView");
+        SingleViewer = e.NameScope.Find<DateViewer>("PART_DateViewer");
+        RangeViewer = e.NameScope.Find<RangeDateViewer>("PART_RangeDateViewer");
+        SingleViewer?.SetHost(this);
+        RangeViewer?.SetHost(this);
+        AttachTemplate();
+        if (_sessionOpened)
+        {
+            RefreshViewer();
+        }
+
+        SetupButtonStatus();
+        SetupConfirmButtonEnableStatus();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        RefreshPointerSubscriptions();
-    }
-
-    private void RefreshPointerSubscriptions()
-    {
-        _pointerDisposables?.Dispose();
-        _pointerDisposables = null;
-        if (CalendarView is not null)
+        SingleViewer?.SetHost(this);
+        RangeViewer?.SetHost(this);
+        _languageManager = Application.Current is { } app ? global::AtomUI.ApplicationExtensions.GetLanguageManager(app) : null;
+        if (_languageManager is not null)
         {
-            _pointerDisposables ??= new CompositeDisposable(2);
-            _pointerDisposables.Add(CalendarView.GetObservable(PickerCalendar.IsPointerInMonthViewProperty)
-                .Subscribe(EmitChoosingStatusChanged));
-        }
-        if (TimeView is not null)
-        {
-            _pointerDisposables ??= new CompositeDisposable(2);
-            _pointerDisposables.Add(TimeView.GetObservable(TimeView.IsPointerInSelectorProperty)
-                .Subscribe(EmitChoosingStatusChanged));
+            _languageManager.LanguageChanged += OnLanguageChanged;
+            _culture = _languageManager.Current.FormattingCulture;
         }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        SingleViewer?.SetHost(null);
+        RangeViewer?.SetHost(null);
+        if (_languageManager is not null)
+        {
+            _languageManager.LanguageChanged -= OnLanguageChanged;
+        }
+
+        _languageManager = null;
         base.OnDetachedFromVisualTree(e);
-        _pointerDisposables?.Dispose();
-        _pointerDisposables = null;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == IsNeedConfirmProperty ||
-            change.Property == IsShowNowProperty ||
-            change.Property == IsShowTimeProperty ||
-            change.Property == PickerModeProperty ||
-            change.Property == MinDateProperty ||
-            change.Property == MaxDateProperty)
+        if (UpdatingCandidate)
         {
-            SynchronizeCalendarState();
-            SetupButtonStatus();
+            return;
         }
-        else if (change.Property == SelectedDateTimeProperty)
+
+        if (change.Property == IsShowTimeProperty || change.Property == PickerModeProperty)
         {
-            SynchronizeCalendarState();
+            UpdateTimeVisibility();
+            RaisePropertyChanged(PanelHeightProperty, default, PanelHeight);
+        }
+        if (change.Property == SelectedDateTimeProperty || change.Property == PickerDisplayDateProperty ||
+            change.Property == MinDateProperty || change.Property == MaxDateProperty ||
+            change.Property == IsNeedConfirmProperty || change.Property == IsShowTimeProperty ||
+            change.Property == PickerModeProperty || IsRangeProperty(change.Property))
+        {
+            if (_sessionOpened)
+            {
+                var input = CreateInput();
+                if (IsRangeEditor)
+                {
+                    var committed = EditSession.Input.Committed;
+                    if (change.Property == SelectedDateTimeProperty)
+                    {
+                        committed = committed with { Start = SelectedDateTime };
+                    }
+                    else if (IsRangeProperty(change.Property))
+                    {
+                        committed = committed with { End = SecondarySelectedDateTimeCore };
+                    }
+
+                    input = input with { Committed = committed };
+                }
+                EditSession.Apply(new DatePickerEditAction.Reconfigure(input));
+                RefreshViewer();
+            }
+            SetupButtonStatus();
+            SetupConfirmButtonEnableStatus();
         }
     }
+
+    protected virtual bool IsRangeProperty(AvaloniaProperty property) => false;
+    protected virtual DatePickerEditInput CreateInput() => new()
+    {
+        Mode = PickerMode,
+        IsRange = IsRangeEditor,
+        RequestedConfirmation = IsNeedConfirm,
+        ShowTime = IsShowTime,
+        Committed = new DateViewerRange(SelectedDateTime, SecondarySelectedDateTimeCore),
+        ActivePart = ActiveRangePart,
+        DisplayDate = PickerDisplayDate,
+        MinDate = MinDate,
+        MaxDate = MaxDate
+    };
+
+    protected virtual DateTime? ResolveOpenDisplayAnchor() => EditSession.OpenAnchor;
+
+    protected void OpenSession()
+    {
+        EditSession.Open(CreateInput());
+        _sessionOpened = true;
+        ApplyDraft(EditSession.Draft);
+    }
+
+    protected void ApplyResult(DatePickerEditResult result)
+    {
+        if (result.HasPreview && result.CommitKind == DatePickerCommitKind.None)
+        {
+            EmitHoverDateTimeChanged(result.PreviewValue);
+            return;
+        }
+        ApplyDraft(result.Draft);
+        SetupConfirmButtonEnableStatus();
+        RefreshViewer();
+        if (result.HasPreview)
+        {
+            EmitHoverDateTimeChanged(result.PreviewValue);
+        }
+
+        switch (result.CommitKind)
+        {
+            case DatePickerCommitKind.Partial:
+                OnPartialConfirmed(result);
+                break;
+            case DatePickerCommitKind.Final:
+                ApplyCommitValue(result.CommitValue ?? result.Draft);
+                EmitChoosingStatusChanged(false);
+                base.OnConfirmed();
+                break;
+        }
+    }
+
+    protected virtual void ApplyDraft(DateViewerRange draft)
+    {
+        UpdatingCandidate = true;
+        SetCurrentValue(SelectedDateTimeProperty, draft.Start);
+        UpdatingCandidate = false;
+    }
+
+    protected virtual void ApplyCommitValue(DateViewerRange value) => ApplyDraft(value);
+    protected virtual void OnPartialConfirmed(DatePickerEditResult result) { }
 
     protected virtual void SetupConfirmButtonEnableStatus()
     {
         if (ConfirmButton is not null)
         {
-            ConfirmButton.IsEnabled = EffectiveDateRange.Contains(SelectedDateTime);
+            ConfirmButton.IsEnabled = EditSession.CanConfirm;
         }
     }
 
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        DetachTemplateEventHandlers();
-        base.OnApplyTemplate(e);
-        ResolveTemplateParts(e);
-        SynchronizeCalendarState();
-        SetupButtonStatus();
-        AttachTemplateEventHandlers();
-        SetupConfirmButtonEnableStatus();
-        RefreshPointerSubscriptionsIfAttached();
-        ApplyPendingOpenPanelState();
-    }
-
-    private void ResolveTemplateParts(TemplateAppliedEventArgs e)
-    {
-        NowButton     = e.NameScope.Get<Button>("PART_NowButton");
-        TodayButton   = e.NameScope.Get<Button>("PART_TodayButton");
-        ConfirmButton = e.NameScope.Get<Button>("PART_ConfirmButton");
-        CalendarView  = e.NameScope.Get<PickerCalendar>("PART_CalendarView");
-        TimeView      = e.NameScope.Find<TimeView>("PART_TimeView");
-    }
-
-    private void AttachTemplateEventHandlers()
-    {
-        if (CalendarView is not null)
-        {
-            CalendarView.HoverDateChanged += HandleCalendarViewDateHoverChanged;
-            CalendarView.DateSelected     += HandleCalendarViewDateSelected;
-        }
-
-        if (TimeView is not null)
-        {
-            if (IsTimeSelectionVisible)
-            {
-                SyncTimeViewTimeValue();
-            }
-
-            TimeView.HoverTimeChanged += HandleTimeViewHoverChanged;
-            TimeView.TimeSelected     += HandleTimeViewTimeSelected;
-            TimeView.TempTimeSelected += HandleTimeViewTempTimeSelected;
-        }
-
-        if (TodayButton is not null)
-        {
-            TodayButton.Click          += HandleTodayButtonClicked;
-            TodayButton.PointerEntered += HandleTodayButtonPointerEntered;
-            TodayButton.PointerExited  += HandleTodayButtonPointerExited;
-        }
-
-        if (NowButton is not null)
-        {
-            NowButton.Click          += HandleNowButtonClicked;
-            NowButton.PointerEntered += HandleNowButtonPointerEntered;
-            NowButton.PointerExited  += HandleNowButtonPointerExited;
-        }
-
-        if (ConfirmButton is not null)
-        {
-            ConfirmButton.Click          += HandleConfirmButtonClicked;
-            ConfirmButton.IsEnabled      =  SelectedDateTime is not null;
-            ConfirmButton.PointerEntered += HandleConfirmButtonPointerEntered;
-            ConfirmButton.PointerExited  += HandleConfirmButtonPointerExited;
-        }
-    }
-
-    private void RefreshPointerSubscriptionsIfAttached()
-    {
-        if (this.IsAttachedToVisualTree())
-        {
-            RefreshPointerSubscriptions();
-        }
-    }
-
-    private void DetachTemplateEventHandlers()
-    {
-        if (CalendarView is not null)
-        {
-            CalendarView.HoverDateChanged -= HandleCalendarViewDateHoverChanged;
-            CalendarView.DateSelected     -= HandleCalendarViewDateSelected;
-        }
-
-        if (TimeView is not null)
-        {
-            TimeView.HoverTimeChanged -= HandleTimeViewHoverChanged;
-            TimeView.TimeSelected     -= HandleTimeViewTimeSelected;
-            TimeView.TempTimeSelected -= HandleTimeViewTempTimeSelected;
-        }
-
-        if (TodayButton is not null)
-        {
-            TodayButton.Click          -= HandleTodayButtonClicked;
-            TodayButton.PointerEntered -= HandleTodayButtonPointerEntered;
-            TodayButton.PointerExited  -= HandleTodayButtonPointerExited;
-        }
-
-        if (NowButton is not null)
-        {
-            NowButton.Click          -= HandleNowButtonClicked;
-            NowButton.PointerEntered -= HandleNowButtonPointerEntered;
-            NowButton.PointerExited  -= HandleNowButtonPointerExited;
-        }
-
-        if (ConfirmButton is not null)
-        {
-            ConfirmButton.Click          -= HandleConfirmButtonClicked;
-            ConfirmButton.PointerEntered -= HandleConfirmButtonPointerEntered;
-            ConfirmButton.PointerExited  -= HandleConfirmButtonPointerExited;
-        }
-    }
-
-    protected virtual void NotifyPointerEnterConfirmButton()
-    {
-        if (CalendarView?.SelectedDate is not null)
-        {
-            var hoverDateTime =
-                CollectDateTime(CalendarView?.SelectedDate, TempSelectedTime ?? TimeView?.SelectedTime);
-            EmitHoverDateTimeChanged(hoverDateTime);
-        }
-    }
-
-    protected virtual void NotifyPointerExitConfirmButton()
-    {
-        EmitChoosingStatusChanged(false);
-    }
-    
-    protected virtual void NotifyPointerEnterTodayButton()
-    {
-        var hoverDateTime =
-            CollectDateTime(DateTime.Now, TimeSpan.Zero);
-        EmitHoverDateTimeChanged(hoverDateTime);
-    }
-
-    protected virtual void NotifyPointerExitTodayButton()
-    {
-        EmitChoosingStatusChanged(false);
-    }
-    
-    protected virtual void NotifyPointerEnterNowButton()
-    {
-        var hoverDateTime =
-            CollectDateTime(DateTime.Now, DateTime.Now.TimeOfDay);
-        EmitHoverDateTimeChanged(hoverDateTime);
-    }
-
-    protected virtual void NotifyPointerExitNowButton()
-    {
-        EmitChoosingStatusChanged(false);
-    }
-
-    protected virtual DateTime? ResolveOpenDisplayAnchor()
-    {
-        var anchor = SelectedDateTime ?? PickerDisplayDate;
-        return anchor.HasValue
-            ? DatePickerFormattingHelper.NormalizeDateTime(anchor.Value, PickerMode)
-            : null;
-    }
-
-    protected void ApplyCalendarDisplayAnchor(PickerCalendar calendar, DateTime anchor)
-    {
-        anchor = EffectiveDateRange.Clamp(anchor);
-        calendar.SetCurrentValue(PickerCalendar.DisplayDateProperty, anchor);
-        calendar.SelectedMonth    = anchor;
-        calendar.SelectedYear     = anchor;
-        calendar.LastSelectedDate = anchor;
-        calendar.UpdateHighlightDays();
-    }
-
-    private void ApplyPendingOpenPanelState()
-    {
-        if (_pendingOpenDisplayAnchor is null || CalendarView is null)
-        {
-            return;
-        }
-
-        ApplyCalendarDisplayAnchor(CalendarView, _pendingOpenDisplayAnchor.Value);
-        _pendingOpenDisplayAnchor = null;
-    }
-
-    protected virtual void SynchronizeCalendarState()
-    {
-        _effectiveDateRange = DatePickerDateRangeConstraint.Create(MinDate, MaxDate, PickerMode);
-        if (CalendarView is null)
-        {
-            SetupConfirmButtonEnableStatus();
-            return;
-        }
-
-        CalendarView.SetCurrentValue(PickerCalendar.PickerModeProperty, PickerMode);
-        CalendarView.SetCurrentValue(PickerCalendar.DisplayDateStartProperty, _effectiveDateRange.Start);
-        CalendarView.SetCurrentValue(PickerCalendar.DisplayDateEndProperty, _effectiveDateRange.End);
-        CalendarView.SetCurrentValue(
-            PickerCalendar.SelectedDateProperty,
-            GetValidCalendarDate(SelectedDateTime));
-        SetupConfirmButtonEnableStatus();
-    }
-
-    protected DateTime? GetValidCalendarDate(DateTime? dateTime)
-    {
-        return dateTime.HasValue && EffectiveDateRange.Contains(dateTime)
-            ? EffectiveDateRange.Normalize(dateTime.Value)
-            : null;
-    }
-
-    private void HandleTodayButtonClicked(object? sender, RoutedEventArgs args)
-    {
-        NotifyTodayButtonClicked();
-    }
-
-    private void HandleTodayButtonPointerEntered(object? sender, PointerEventArgs args)
-    {
-        NotifyPointerEnterTodayButton();
-    }
-
-    private void HandleTodayButtonPointerExited(object? sender, PointerEventArgs args)
-    {
-        NotifyPointerExitTodayButton();
-    }
-
+    protected virtual void NotifyConfirmButtonClicked() =>
+        ApplyResult(EditSession.Apply(new DatePickerEditAction.Confirm()));
     protected virtual void NotifyTodayButtonClicked()
     {
-        if (!EffectiveDateRange.Contains(DateTime.Today))
-        {
-            return;
-        }
-
-        SetCurrentValue(SelectedDateTimeProperty, DateTime.Today);
-        
-        CalendarView?.SetCurrentValue(PickerCalendar.DisplayDateProperty, DateTime.Today);
-
-        if (!IsNeedConfirm)
-        {
-            OnConfirmed();
-        }
+        _displayDate = DateTime.Today;
+        ApplyResult(EditSession.Apply(new DatePickerEditAction.Today(DateTime.Today)));
     }
-
-    private void HandleNowButtonClicked(object? sender, RoutedEventArgs args)
-    {
-        NotifyNowButtonClicked();
-    }
-
-    private void HandleNowButtonPointerEntered(object? sender, PointerEventArgs args)
-    {
-        NotifyPointerEnterNowButton();
-    }
-
-    private void HandleNowButtonPointerExited(object? sender, PointerEventArgs args)
-    {
-        NotifyPointerExitNowButton();
-    }
-
     protected virtual void NotifyNowButtonClicked()
     {
-        if (!EffectiveDateRange.Contains(DateTime.Now))
-        {
-            return;
-        }
-
-        if (CalendarView is not null)
-        {
-            CalendarView?.SetCurrentValue(PickerCalendar.SelectedDateProperty, DateTime.Now);
-        }
-
-        if (IsShowTime && TimeView is not null)
-        {
-            TimeView.SelectedTime = DateTime.Now.TimeOfDay;
-        }
-
-        if (!IsNeedConfirm)
-        {
-            OnConfirmed();
-        }
+        var now = DateTime.Now;
+        _displayDate = now;
+        var result = EditSession.Apply(new DatePickerEditAction.Now(now));
+        SyncTimeViewTimeValue();
+        ApplyResult(result);
     }
+    protected virtual void NotifyCalendarViewDateHoverChanged(DateTime? value) =>
+        ApplyResult(EditSession.Apply(new DatePickerEditAction.PreviewDate(value)));
+    protected virtual void NotifyCalendarViewDateSelected() { }
+    protected virtual void NotifyTimeViewHoverChanged(TimeSpan? value) =>
+        ApplyResult(EditSession.Apply(new DatePickerEditAction.PreviewTime(value)));
 
-    private void HandleConfirmButtonClicked(object? sender, RoutedEventArgs args)
+    protected virtual void TimeViewTempTimeSelected(TimeSpan? value)
     {
-        NotifyConfirmButtonClicked();
-    }
-
-    private void HandleConfirmButtonPointerEntered(object? sender, PointerEventArgs args)
-    {
-        NotifyPointerEnterConfirmButton();
-    }
-
-    private void HandleConfirmButtonPointerExited(object? sender, PointerEventArgs args)
-    {
-        NotifyPointerExitConfirmButton();
-    }
-
-    protected virtual void NotifyConfirmButtonClicked()
-    {
-        if (EffectiveDateRange.Contains(SelectedDateTime))
-        {
-            OnConfirmed();
-        }
-    }
-
-    private void HandleCalendarViewDateHoverChanged(object? sender, DateSelectedEventArgs args)
-    {
-        NotifyCalendarViewDateHoverChanged(args.Date);
-    }
-
-    protected virtual void NotifyCalendarViewDateHoverChanged(DateTime? newDate)
-    {
-        // 需要组合日期和时间
-        // 暂时没实现
-        var hoverDateTime = CollectDateTime(newDate, TempSelectedTime);
-        EmitHoverDateTimeChanged(hoverDateTime);
-    }
-
-    protected void EmitHoverDateTimeChanged(DateTime? newDate)
-    {
-        HoverDateTimeChanged?.Invoke(this, new DateSelectedEventArgs(newDate));
-    }
-
-    private void HandleCalendarViewDateSelected(object? sender, DateSelectedEventArgs args)
-    {
-        NotifyCalendarViewDateSelected();
-    }
-
-    protected virtual void NotifyCalendarViewDateSelected()
-    {
-        SetCurrentValue(SelectedDateTimeProperty, CollectDateTime(CalendarView?.SelectedDate, TempSelectedTime ?? TimeView?.SelectedTime));
-        if (!IsNeedConfirm)
-        {
-            OnConfirmed();
-        }
-    }
-
-    protected DateTime? CollectDateTime(DateTime? date, TimeSpan? timeSpan = null)
-    {
-        if (date is null)
-        {
-            return null;
-        }
-
-        date = date.Value.Date;
-        if (IsTimeSelectionVisible && timeSpan is not null)
-        {
-            date = date.Value.Add(timeSpan.Value);
-        }
-
-        return date;
-    }
-
-    private void SetupButtonStatus()
-    {
-        IsTimeSelectionVisible = IsShowTime && PickerMode == DatePickerMode.Date;
-
-        if (NowButton is null ||
-            TodayButton is null ||
-            ConfirmButton is null)
-        {
-            return;
-        }
-
-        ConfirmButton.IsVisible = IsNeedConfirm;
-        TodayButton.IsEnabled   = EffectiveDateRange.Contains(DateTime.Today);
-        NowButton.IsEnabled     = EffectiveDateRange.Contains(DateTime.Now);
-
-        NowButton.IsVisible             = false;
-        TodayButton.IsVisible           = false;
-        NowButton.HorizontalAlignment   = HorizontalAlignment.Left;
-        TodayButton.HorizontalAlignment = HorizontalAlignment.Left;
-
-        if (IsShowNow && PickerMode == DatePickerMode.Date)
-        {
-            NowButton.IsVisible   = false;
-            TodayButton.IsVisible = false;
-            if (IsTimeSelectionVisible)
-            {
-                NowButton.IsVisible = true;
-            }
-            else
-            {
-                TodayButton.IsVisible = true;
-            }
-
-            if (!IsNeedConfirm)
-            {
-                NowButton.HorizontalAlignment   = HorizontalAlignment.Center;
-                TodayButton.HorizontalAlignment = HorizontalAlignment.Center;
-            }
-            else
-            {
-                NowButton.HorizontalAlignment   = HorizontalAlignment.Left;
-                TodayButton.HorizontalAlignment = HorizontalAlignment.Left;
-            }
-        }
-
-        IsButtonsPanelVisible = NowButton.IsVisible || TodayButton.IsVisible || ConfirmButton.IsVisible;
-    }
-
-    protected override void OnConfirmed()
-    {
-        CalendarView?.SetCurrentValue(PickerCalendar.SelectedDateProperty, SelectedDateTime);
-        EmitChoosingStatusChanged(false);
-        base.OnConfirmed();
-    }
-
-    internal void EmitConfirmed()
-    {
-        base.OnConfirmed();
-    }
-
-    protected void EmitChoosingStatusChanged(bool isChoosing)
-    {
-        ChoosingStatusChanged?.Invoke(this, new ChoosingStatusEventArgs(isChoosing));
-    }
-
-    protected override void OnDismiss()
-    {
-        base.OnDismiss();
-        SetCurrentValue(SelectedDateTimeProperty, null);
+        SetCurrentValue(TempSelectedTimeProperty, value);
+        ApplyResult(EditSession.Apply(new DatePickerEditAction.ChooseTime(value)));
     }
 
     protected virtual void SyncTimeViewTimeValue()
     {
         if (TimeView is not null)
         {
-            TimeView.SelectedTime = SelectedDateTime?.TimeOfDay ?? TimeSpan.Zero;
+            TimeView.SelectedTime = EditSession.TimeDisplayValue;
         }
     }
 
-    private void HandleTimeViewHoverChanged(object? sender, TimeSelectedEventArgs args)
+    internal void EmitConfirmed() => base.OnConfirmed();
+    protected void EmitChoosingStatusChanged(bool choosing) =>
+        ChoosingStatusChanged?.Invoke(this, new ChoosingStatusEventArgs(choosing));
+    protected void EmitHoverDateTimeChanged(DateTime? value) =>
+        HoverDateTimeChanged?.Invoke(this, new DateSelectedEventArgs(value));
+
+    protected override void OnDismiss()
     {
-        NotifyTimeViewHoverChanged(args.Time);
+        ApplyResult(EditSession.Close(DatePickerCloseReason.Dismissed));
+        base.OnDismiss();
     }
 
-    protected virtual void NotifyTimeViewHoverChanged(TimeSpan? newTime)
+    DatePanelInput IDatePanelHost.ReadInput()
     {
-        var hoverDateTime = CollectDateTime(SelectedDateTime, newTime);
-        HoverDateTimeChanged?.Invoke(this, new DateSelectedEventArgs(hoverDateTime));
-    }
-
-    private void HandleTimeViewTimeSelected(object? sender, TimeSelectedEventArgs args)
-    {
-        if (!IsNeedConfirm)
+        var unit = ToSelectionUnit(PickerMode);
+        var firstDay = DatePanelAlgorithms.GetWeekFirstDay(_culture);
+        return new DatePanelInput
         {
-            OnConfirmed();
+            DisplayDate = _displayDate,
+            PanelKind = _panelKind,
+            SelectionUnit = unit,
+            Today = DateTime.Today,
+            Culture = _culture,
+            FirstDayOfWeek = firstDay,
+            ShowWeek = unit == DateViewerSelectionUnit.Week,
+            PanelCount = PanelCount,
+            IsRangeSelection = IsRangeEditor,
+            SelectedDate = IsRangeEditor ? null : EditSession.SelectedDateForDisplay,
+            Range = IsRangeEditor ? EditSession.Draft : null,
+            ActiveRangePart = EffectiveActiveRangePart,
+            WeekNumbering = DateWeekNumbering.Culture,
+            ConstraintMode = DatePanelConstraintMode.Picker,
+            MinDate = EffectiveDateRange.Start,
+            MaxDate = EffectiveDateRange.End
+        };
+    }
+
+    void IDatePanelHost.NavigateTo(DateTime displayDate, DateViewerPanelKind panelKind)
+    {
+        _displayDate = displayDate;
+        _panelKind = panelKind;
+        RefreshViewer();
+    }
+
+    void IDatePanelHost.Activate(DateCellSelection selection)
+    {
+        var target = DateViewer.TargetPanel(ToSelectionUnit(PickerMode));
+        var current = selection.Kind switch
+        {
+            DateViewerCellType.Month => DateViewerPanelKind.Month,
+            DateViewerCellType.Quarter => DateViewerPanelKind.Quarter,
+            DateViewerCellType.Year => DateViewerPanelKind.Year,
+            _ => DateViewerPanelKind.Date
+        };
+        if (current != target)
+        {
+            _displayDate = selection.Value;
+            _panelKind = current == DateViewerPanelKind.Year && target == DateViewerPanelKind.Date
+                ? DateViewerPanelKind.Month : target;
+            RefreshViewer();
+            return;
+        }
+        ApplyResult(EditSession.Apply(new DatePickerEditAction.ChooseDate(selection.Value)));
+    }
+
+    void IDatePanelHost.Preview(DateTime? value) => NotifyCalendarViewDateHoverChanged(value);
+
+    private void RefreshViewer()
+    {
+        SingleViewer?.RefreshHost();
+        RangeViewer?.RefreshHost();
+    }
+
+    private void AttachTemplate()
+    {
+        if (SingleViewer is not null)
+        {
+            SingleViewer.PointerEntered += OnViewerPointerEntered;
+            SingleViewer.PointerExited += OnViewerPointerExited;
+        }
+        if (RangeViewer is not null)
+        {
+            RangeViewer.PointerEntered += OnViewerPointerEntered;
+            RangeViewer.PointerExited += OnViewerPointerExited;
+        }
+        if (TimeView is not null)
+        {
+            TimeView.HoverTimeChanged += OnTimeHover;
+            TimeView.TimeSelected += OnTimeSelected;
+            TimeView.TempTimeSelected += OnTempTimeSelected;
+            SyncTimeViewTimeValue();
+        }
+        if (TodayButton is not null)
+        {
+            TodayButton.Click += OnTodayClick;
+            TodayButton.PointerEntered += OnTodayEnter;
+            TodayButton.PointerExited += OnActionExit;
+        }
+        if (NowButton is not null)
+        {
+            NowButton.Click += OnNowClick;
+            NowButton.PointerEntered += OnNowEnter;
+            NowButton.PointerExited += OnActionExit;
+        }
+        if (ConfirmButton is not null)
+        {
+            ConfirmButton.Click += OnConfirmClick;
+            ConfirmButton.PointerEntered += OnConfirmEnter;
+            ConfirmButton.PointerExited += OnActionExit;
         }
     }
 
-    private void HandleTimeViewTempTimeSelected(object? sender, TimeSelectedEventArgs args)
+    private void DetachTemplate()
     {
-        TimeViewTempTimeSelected(args.Time);
+        if (SingleViewer is not null)
+        {
+            SingleViewer.PointerEntered -= OnViewerPointerEntered;
+            SingleViewer.PointerExited -= OnViewerPointerExited;
+        }
+        if (RangeViewer is not null)
+        {
+            RangeViewer.PointerEntered -= OnViewerPointerEntered;
+            RangeViewer.PointerExited -= OnViewerPointerExited;
+        }
+        if (TimeView is not null)
+        {
+            TimeView.HoverTimeChanged -= OnTimeHover;
+            TimeView.TimeSelected -= OnTimeSelected;
+            TimeView.TempTimeSelected -= OnTempTimeSelected;
+        }
+        if (TodayButton is not null)
+        {
+            TodayButton.Click -= OnTodayClick;
+            TodayButton.PointerEntered -= OnTodayEnter;
+            TodayButton.PointerExited -= OnActionExit;
+        }
+        if (NowButton is not null)
+        {
+            NowButton.Click -= OnNowClick;
+            NowButton.PointerEntered -= OnNowEnter;
+            NowButton.PointerExited -= OnActionExit;
+        }
+        if (ConfirmButton is not null)
+        {
+            ConfirmButton.Click -= OnConfirmClick;
+            ConfirmButton.PointerEntered -= OnConfirmEnter;
+            ConfirmButton.PointerExited -= OnActionExit;
+        }
     }
 
-    protected virtual void TimeViewTempTimeSelected(TimeSpan? time)
+    private void SetupButtonStatus()
     {
-        TempSelectedTime = time;
+        UpdateTimeVisibility();
+        if (NowButton is null || TodayButton is null || ConfirmButton is null)
+        {
+            return;
+        }
+
+        var input = CreateInput();
+        ConfirmButton.IsVisible = input.RequiresConfirmation;
+        TodayButton.IsEnabled = EffectiveDateRange.Contains(DateTime.Today);
+        NowButton.IsEnabled = EffectiveDateRange.Contains(DateTime.Now);
+        NowButton.IsVisible = IsShowNow && PickerMode == DatePickerMode.Date && IsTimeSelectionVisible;
+        TodayButton.IsVisible = IsShowNow && PickerMode == DatePickerMode.Date && !IsTimeSelectionVisible;
+        var centered = !input.RequiresConfirmation ? HorizontalAlignment.Center : HorizontalAlignment.Left;
+        NowButton.HorizontalAlignment = centered;
+        TodayButton.HorizontalAlignment = centered;
+        IsButtonsPanelVisible = NowButton.IsVisible || TodayButton.IsVisible || ConfirmButton.IsVisible;
     }
+
+    private void UpdateTimeVisibility() => IsTimeSelectionVisible = IsShowTime && PickerMode == DatePickerMode.Date;
+    private void OnLanguageChanged(object? sender, LanguageChangedEventArgs e)
+    {
+        _culture = _languageManager?.Current.FormattingCulture ?? CultureInfo.CurrentCulture;
+        RefreshViewer();
+    }
+    private void OnViewerPointerEntered(object? sender, PointerEventArgs e) => EmitChoosingStatusChanged(true);
+    private void OnViewerPointerExited(object? sender, PointerEventArgs e) => EmitChoosingStatusChanged(false);
+    private void OnTimeHover(object? sender, TimeSelectedEventArgs e) => NotifyTimeViewHoverChanged(e.Time);
+    private void OnTempTimeSelected(object? sender, TimeSelectedEventArgs e) => TimeViewTempTimeSelected(e.Time);
+    private void OnTimeSelected(object? sender, TimeSelectedEventArgs e)
+    {
+        if (!CreateInput().RequiresConfirmation)
+        {
+            ApplyResult(EditSession.Apply(new DatePickerEditAction.SubmitTime(e.Time ?? TimeSpan.Zero)));
+        }
+    }
+    private void OnTodayClick(object? sender, RoutedEventArgs e) => NotifyTodayButtonClicked();
+    private void OnNowClick(object? sender, RoutedEventArgs e) => NotifyNowButtonClicked();
+    private void OnConfirmClick(object? sender, RoutedEventArgs e) => NotifyConfirmButtonClicked();
+    private void OnTodayEnter(object? sender, PointerEventArgs e) => EmitHoverDateTimeChanged(DateTime.Today);
+    private void OnNowEnter(object? sender, PointerEventArgs e) => EmitHoverDateTimeChanged(DateTime.Now);
+    private void OnConfirmEnter(object? sender, PointerEventArgs e) =>
+        ApplyResult(EditSession.Apply(new DatePickerEditAction.PreviewCandidate()));
+    private void OnActionExit(object? sender, PointerEventArgs e) => EmitChoosingStatusChanged(false);
+
+    internal static DateViewerSelectionUnit ToSelectionUnit(DatePickerMode mode) => mode switch
+    {
+        DatePickerMode.Date => DateViewerSelectionUnit.Date,
+        DatePickerMode.Week => DateViewerSelectionUnit.Week,
+        DatePickerMode.Month => DateViewerSelectionUnit.Month,
+        DatePickerMode.Quarter => DateViewerSelectionUnit.Quarter,
+        DatePickerMode.Year => DateViewerSelectionUnit.Year,
+        _ => throw new ArgumentOutOfRangeException(nameof(mode))
+    };
 }

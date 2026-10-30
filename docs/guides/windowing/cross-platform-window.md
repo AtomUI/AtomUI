@@ -34,8 +34,8 @@ Windows 10         ✅ 开启     Avalonia CSD         DWM redirection      Aval
 
 ```
 OperatingSystem.IsWindows()?
-  ├─ Win10 → IsCsdEnabled=true + WinUIComposition → DirectComposition → LowLatencyDxgiSwapChain → RedirectionSurface
-  └─ Win11+ → IsCsdEnabled=true + WinUIComposition → DirectComposition → LowLatencyDxgiSwapChain → RedirectionSurface
+  ├─ Win10 → IsCsdEnabled=true + RedirectionSurface → WinUIComposition → DirectComposition → LowLatencyDxgiSwapChain
+  └─ Win11+ → IsCsdEnabled=true + RedirectionSurface → WinUIComposition → DirectComposition → LowLatencyDxgiSwapChain
 OperatingSystem.IsMacOS()?
   └─ 永远 → IsCsdEnabled=false → 非 CSD 模板 + NSWindow 原生标题栏布局
 OperatingSystem.IsLinux()?
@@ -218,7 +218,7 @@ Wayland input region 当前没有公开框架 API；AtomUI 当前越过 proxy �
 | --- | --- | --- |
 | IsCsdEnabled | `true` | `true` |
 | WindowDrawnDecorations | 创建 | 创建 |
-| 合成模式 | WinUIComposition → DirectComposition → LowLatencyDxgiSwapChain → RedirectionSurface | WinUIComposition → DirectComposition → LowLatencyDxgiSwapChain → RedirectionSurface |
+| 合成模式 | RedirectionSurface → WinUIComposition → DirectComposition → LowLatencyDxgiSwapChain | RedirectionSurface → WinUIComposition → DirectComposition → LowLatencyDxgiSwapChain |
 | 非客户区与 resize | Avalonia Win32 | Avalonia Win32 |
 | AtomUI WndProc | 普通 Window chrome 无；Native 可提供受限 sizing helper | 普通 Window chrome 无；Native 可提供受限 sizing helper |
 
@@ -229,9 +229,11 @@ DXGI swap chain 可以减少 live resize 期间的整窗空帧，但尺寸提交
 scene 与窗口尺寸错帧，
 表现为拖动左边缘或上边缘时，右边缘或下边缘剧烈抖动。
 
-`WinUIComposition` 是 Avalonia 的通用首选路径；`LowLatencyDxgiSwapChain` 作为后续路径可以避免已验证的整页空帧。在 Feature Level 或系统能力不满足时，
-由后续合成模式提供兼容性回退。各种路径都不能保证完全消除 `WM_SIZE`、ResizeBuffers、Present 与 DWM
-之间的边缘时序差，因此右侧边缘仍可能出现短暂闪烁。
+AtomUI 默认 `RedirectionSurface` 优先：只有 redirection surface 的内容由 DWM 与窗口几何变化同步合成，
+拖动左/上边缘时右/下边缘不会错帧。`WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain`
+的 Present 与 DWM 窗口外框是独立时间线，作为后续兼容回退保留，在这些路径上对向边缘仍会错帧。
+`RedirectionSurface` 下不支持 `AcrylicBlur`/`Mica`；需要材质效果的应用可在自己的 `Win32PlatformOptions`
+中把 `WinUIComposition` 排到前面，并接受 live resize 错帧。
 
 ### 为什么必须使用 Avalonia CSD
 
@@ -255,10 +257,10 @@ sizing helper 修正 `WM_GETMINMAXINFO` 边界，但 helper 必须由 host 显�
 ```csharp
 CompositionMode =
 [
+    RedirectionSurface,
     WinUIComposition,
     DirectComposition,
-    LowLatencyDxgiSwapChain,
-    RedirectionSurface
+    LowLatencyDxgiSwapChain
 ];
 ```
 
@@ -273,8 +275,9 @@ Windows 标题栏按钮在 AXAML 中声明 `WindowDecorationProperties.ElementRo
 - 不要手动返回 `HTLEFT/HTTOP/...`。
 - 不要用 `DwmExtendFrameIntoClientArea` 或 `SWP_FRAMECHANGED` 修补 CSD。
 - 不要把 Native sizing helper 扩展成第二套 Window chrome 或 caption hit-test。
-- Avalonia 12 的 WinUIComposition / DirectComposition live resize 同步发生变化后，必须重新做
-  Windows 10 和 Windows 11 快速拖动左/上边缘的实机验证，才能恢复。
+- 调整合成模式顺序（例如 Avalonia 改进 WinUIComposition / DirectComposition 的 live resize 同步后）
+  前，必须重新做 Windows 10 和 Windows 11 快速拖动左/上边缘的实机验证。
+- 不要在 live resize 期间用 GDI 填充客户区（`WM_ERASEBKGND`），`RedirectionSurface` 下会整窗闪背景色。
 
 完整根因和验证矩阵见
 [Windows live resize 与窗口装饰架构](../../architecture/systems/windowing/windows-live-resize.md)。

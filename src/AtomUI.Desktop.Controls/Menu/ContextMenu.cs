@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using AtomUI.Controls;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -42,10 +42,10 @@ public class ContextMenu : AvaloniaContextMenu,
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<ContextMenu>();
     
-    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty = 
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
         Popup.OpenMotionProperty.AddOwner<ContextMenu>();
         
-    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty = 
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
         Popup.CloseMotionProperty.AddOwner<ContextMenu>();
     
     public BoxShadows PopupRootShadow
@@ -247,6 +247,7 @@ public class ContextMenu : AvaloniaContextMenu,
         base.PrepareContainerForItemOverride(container, item, index);
         if (container is MenuItem menuItem)
         {
+            menuItem.SemanticLevel = MenuSemanticLevel.None;
             if (item != null && item is not Visual)
             {
                 if (!menuItem.IsSet(MenuItem.HeaderProperty))

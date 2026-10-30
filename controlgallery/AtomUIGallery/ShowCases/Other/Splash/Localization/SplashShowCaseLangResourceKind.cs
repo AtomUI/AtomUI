@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -15,41 +13,8 @@ public enum SplashShowCaseLangResourceKind
     BasicDescription,
     DeterminateTitle,
     DeterminateDescription,
-    StatusTitle,
-    StatusDescription,
-    ComposedTitle,
-    ComposedDescription,
-    WindowServiceTitle,
-    WindowServiceDescription,
-    P2SubtitleDesktopBoot,
-    P2MessagePreparingShell,
-    P2DetailLoadingThemeAndResources,
-    P2MessageLoadingModules,
-    P2DetailProgress,
-    P2MessageReady,
-    P2DetailReady,
-    P2MessageError,
-    P2DetailError,
-    P2FooterStaticPreview,
-    P2ContentModuleCore,
-    P2ContentModuleTheme,
-    P2ContentModuleGallery,
-    P2FooterDesktopOnly,
-    P2ContentShowWindowSplash,
-    P2WindowSplashSubtitle,
-    P2WindowSplashMessageStarting,
-    P2WindowSplashDetailStarting,
-    P2WindowSplashMessageLoadingTheme,
-    P2WindowSplashMessageLoadingControls,
-    P2WindowSplashMessageLoadingRoutes,
-    P2WindowSplashMessageWarmingCache,
-    P2WindowSplashMessageFinalizing,
-    P2WindowSplashDetailProgress,
-    P2WindowSplashMessageComplete,
-    P2WindowSplashDetailComplete,
-    P2WindowSplashFooter,
-    ApiStaticShowAsync,
-    ApiServiceShowAsync,
-    ApiMethodSetProgress,
-    ApiOptionMinimumShowDuration
+    ErrorTitle,
+    ErrorDescription,
+    ErrorMessage,
+    P2MessagePreparingShell
 }

@@ -4,6 +4,7 @@ using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -14,9 +15,10 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Drawer : Control,
-                      IMotionAwareControl,
-                      ICustomizableSizeTypeAware
+public partial class Drawer : Control,
+                             IMotionAwareControl,
+                             ICustomizableSizeTypeAware,
+                             ISemanticPartCrossRootProvider
 {
     #region 公共属性定义
 
@@ -44,8 +46,11 @@ public class Drawer : Control,
     public static readonly StyledProperty<bool> IsShowCloseButtonProperty = 
         AvaloniaProperty.Register<Drawer, bool>(nameof(IsShowCloseButton), true);
 
-    public static readonly StyledProperty<bool> IsCloseOnMaskClickProperty = 
+    public static readonly StyledProperty<bool> IsCloseOnMaskClickProperty =
         AvaloniaProperty.Register<Drawer, bool>(nameof(IsCloseOnMaskClick), true);
+
+    public static readonly StyledProperty<bool> IsPinnedOpenProperty =
+        AvaloniaProperty.Register<Drawer, bool>(nameof(IsPinnedOpen));
 
     public static readonly StyledProperty<string> TitleProperty = 
         AvaloniaProperty.Register<Drawer, string>(nameof(Title));
@@ -130,6 +135,16 @@ public class Drawer : Control,
         set => SetValue(IsCloseOnMaskClickProperty, value);
     }
 
+    /// <summary>
+    /// 钉住常开（语义预览用）：为 true 时遮罩点击与关闭按钮不再将 <see cref="IsOpen"/> 置 false；
+    /// 外部代码直接设置 <see cref="IsOpen"/> 仍正常关闭。对齐上游 antd 语义演示的受控常开行为。
+    /// </summary>
+    public bool IsPinnedOpen
+    {
+        get => GetValue(IsPinnedOpenProperty);
+        set => SetValue(IsPinnedOpenProperty, value);
+    }
+
     public string Title
     {
         get => GetValue(TitleProperty);
@@ -192,6 +207,27 @@ public class Drawer : Control,
 
     public event EventHandler? Opened;
     public event EventHandler? Closed;
+
+    #endregion
+
+    #region ISemanticPartCrossRootProvider 实现
+
+    public event EventHandler? CrossRootsChanged;
+
+    public IReadOnlyList<Visual> GetCrossRoots()
+    {
+        if (_container is not null && _container.GetVisualParent() is not null)
+        {
+            return [_container];
+        }
+
+        return Array.Empty<Visual>();
+    }
+
+    private void RaiseCrossRootsChanged()
+    {
+        CrossRootsChanged?.Invoke(this, EventArgs.Empty);
+    }
 
     #endregion
 
@@ -390,6 +426,7 @@ public class Drawer : Control,
         CreateDrawerContainer();
         Debug.Assert(_container != null);
         _container.Open(layer);
+        RaiseCrossRootsChanged();
     }
 
     private void Close()
@@ -417,8 +454,29 @@ public class Drawer : Control,
 
     private void ReleaseDrawerContainer()
     {
-        _container?.Release();
+        var container = _container;
         _container = null;
+        Exception? notificationFailure = null;
+        try
+        {
+            RaiseCrossRootsChanged();
+        }
+        catch (Exception exception)
+        {
+            notificationFailure = exception;
+        }
+        try
+        {
+            container?.Release();
+        }
+        catch (Exception releaseFailure) when (notificationFailure is not null)
+        {
+            throw new AggregateException(notificationFailure, releaseFailure);
+        }
+        if (notificationFailure is not null)
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(notificationFailure).Throw();
+        }
     }
 
     private void ConfigureOpenOnSizeChangedSubscription()
@@ -530,6 +588,7 @@ public class Drawer : Control,
     protected internal virtual void NotifyClosed()
     {
         Closed?.Invoke(this, EventArgs.Empty);
+        RaiseCrossRootsChanged();
     }
     
     private void ApplyDialogSizeTokenBinding()

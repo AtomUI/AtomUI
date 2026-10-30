@@ -12,6 +12,7 @@
             <ControlTemplate>
                 <Panel>
                     <atom:AutoCompleteSearchEditBox Name="{x:Static atom:AutoCompleteThemeConstants.TextBoxPart}"
+                                                    Classes.semantic-scope-input="True"
                                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                                     IsAllowClear="{TemplateBinding IsAllowClear}"
                                                     StyleVariant="{TemplateBinding StyleVariant}"
@@ -45,10 +46,12 @@
                                 Placement="{TemplateBinding PopupPlacement}"
                                 RequestedPlacement="{TemplateBinding PopupPlacement}">
                         <Border Name="PopupFrame"
+                                Classes.semantic-popup-root="True"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
                                 MinWidth="{TemplateBinding MinPopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
                             <atom:CandidateList Name="{x:Static atom:AutoCompleteThemeConstants.CandidateListPart}"
+                                                Classes.semantic-popup-list="True"
                                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                                 SelectionMode="Single"
                                                 ItemTemplate="{TemplateBinding OptionTemplate}" />

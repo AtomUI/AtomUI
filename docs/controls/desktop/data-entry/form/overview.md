@@ -87,7 +87,7 @@ Form 的公共契约由 Form、FormItem、FormItemDecorator、FormValidateFeedba
 | --- | --- | --- |
 | `PART_BodyLayout` | `Grid` | FormItem 标签列和内容列布局。 |
 | `PART_LabelLayout` | `Panel` | 标签、必填标记、tooltip、可选标记和冒号承载。 |
-| `PART_ContentLayout` | `Panel` | 输入内容、Extra、错误消息和帮助文本承载。 |
+| `PART_ContentLayout` | `Panel` | 输入内容、错误消息/帮助文本与 Extra 承载。 |
 
 ### 3.3 子控件接入契约
 
@@ -261,34 +261,28 @@ target implements ISizeTypeAware only
 
 该模型保证新控件可以获得 `Custom` 尺寸，旧控件在 `Custom` 下保持 `Middle` 尺寸基线。
 
-## 9. 文档导航、LLMS 导出与验证策略
+### 8.5 Semantic Part
+
+Form 家族的 Semantic Part 契约由 `FormItem` 声明：`root`、`label`、`content`、`extra`、`help`、`helpItem`
+六个职责区域。五个静态 Part 均为 `Single`，来自 `FormItemTheme.axaml` 的唯一内置模板；`helpItem` 是运行时
+逐条创建的消息节点（`Multiple`），验证错误与警告消息以逐条 `TextBlock` 呈现，静态 `HelpText` 是 `Help` 文案
+的固定实例。`Form` 容器不注册 descriptor，form 级整体定制走 Avalonia 原生 owner 样式；`FormItemDecorator`、
+`FormValidateFeedback`、`SubmitButton`、`ResetButton` 和 internal `ItemDeleteButton` 不属于 Form 语义契约。
+完整 selector route、`ContractType`、状态矩阵和定制边界见
+[Form Semantic Part 契约](semantic-part.md)。
+
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Form 桌面版实现原理](implementation.md)
+- [Form Semantic Part 契约](semantic-part.md)
 - [Form Token 设计](token.md)
 - [Form Changelog](changelog.md)
 
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Form` | 数据录入控件根语义区域，承载 public API、值状态、验证状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `input` | `输入或编辑区域` | 承载用户输入、当前值、占位、格式化或只读状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载清除、展开、提交、步进、上传或辅助操作。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或候选区域` | 承载下拉、候选项、日历、颜色面板或异步内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `validation` | `校验反馈区域` | 承载 Form、status、错误、警告、help 或 loading 状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/form/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/form/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+标签附属标记（冒号、必填星号、可选文案、tooltip、自定义 mark）、布局容器、消息文本着色、删除按钮区、
+反馈控件和用户内容子树不属于 Semantic Part。完整契约见
+[Form Semantic Part 契约](semantic-part.md)。
 
 验证策略：
 
@@ -297,6 +291,7 @@ LLMS 导出来源：
 | Public API | Form 布局、验证触发、提交、重置、初始值、动态表单项和按钮事件。 |
 | 状态行为 | `OnSubmit/OnChanged/OnBlur`、debounce、并发验证取消、warning/error 聚合和 reset 状态。 |
 | AXAML / Template | 稳定 template part、required mark、feedback 图标、删除按钮和 inline spacing。 |
+| Semantic Part | descriptor 字段、模板 marker、三个作用域的 Selector 命中、状态与布局矩阵下的 `Single` 数量和动态增删项的 marker 生命周期。 |
 | Token | 标签颜色、必填标记颜色、标签字体、冒号 margin 和表单项 spacing。 |
 | Gallery | Form 示例、源码片段和自定义表单控件示例。 |
 | 文档 | 运行 `git diff --check`，检查相对链接存在。 |

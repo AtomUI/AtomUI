@@ -140,6 +140,7 @@ Form 不维护与 native validation 并行的 error 真源。Form reset、重新
 - `TextBox`、`LineEdit`、`TextArea` 及其派生控件继续保留各自的文本编辑、单行、多行和业务布局语义；共有输入状态只能通过 `AbstractTextInput` 与 `InputControlFrame` 的分层契约表达。
 - `InputControlFrame`、`AddOnDecoratedBox` 及其专用派生类型属于内部组合实现。它们可以作为稳定 template part 存在，但不作为用户直接依赖的公共 Semantic Part，也不向外暴露内部 `TextPresenter`、`ScrollViewer` 或 NameScope。
 - 主题定制通过 `InputControlFrameTheme`、控件主题和 Token resource 完成。专用 decorated box 可以增加布局和业务内容 selector，但不能替换 frame 的 variant、effective status、error、warning、disabled 或 motion owner。
+- 输入表面的 root 定制通道是 owner 上的标准 `Background` / `BorderBrush`：`AbstractTextInput` 把 owner 有效值以 LocalValue 中继到 frame 同名属性（共享 `TemplatedControl` 属性实例），定制期间该属性槽的交互态变色冻结，置空后 `ClearValue` 恢复状态机；focus 的 `BoxShadow` 反馈作用在独立属性槽。四个输入主题不在 owner 层携带这两个属性的默认值，`TextBox` 模板不以 `TemplateBinding` 绑定它们——owner 值同时是“是否定制”的判定输入，不引入平行定制属性。
 - `StyleVariant` 的四种值、`DataValidationErrors` 的 native error 语义、Form-owned error 的清理边界和 `EffectiveStatus` 优先级属于所有输入表面的共同契约；内部模板重组不得引入第二套状态源。
 - `InputControlFrame` 的公共协作只依赖稳定属性、绑定和 template part。消费方不得通过运行时反射、程序集扫描或 VisualTree 遍历推断内部输入结构。
 

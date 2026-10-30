@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup><AssemblyName>Fixture.NuGetAuthor</AssemblyName><AtomUIRegistrationPackageId>Fixture.NuGetAuthor</AtomUIRegistrationPackageId></PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="AtomUI.Core" Version="$(AtomUIFixtureVersion)" />
+        <PackageReference Include="AtomUI.Generator" Version="$(AtomUIFixtureVersion)" PrivateAssets="all" />
+    </ItemGroup>
+</Project>

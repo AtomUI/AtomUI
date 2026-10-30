@@ -27,7 +27,10 @@ internal class TransformTrackingHelper : IDisposable
             visual.AttachedToVisualTree += OnAttachedToVisualTree;
             visual.DetachedFromVisualTree += OnDetachedFromVisualTree;
             if (visual.IsAttachedToVisualTree())
+            {
                 SubscribeToParents();
+            }
+
             UpdateMatrix();
         }
     }
@@ -38,7 +41,10 @@ internal class TransformTrackingHelper : IDisposable
     public void Dispose()
     {
         if(_visual == null)
+        {
             return;
+        }
+
         UnsubscribeFromParents();
         _visual.AttachedToVisualTree -= OnAttachedToVisualTree;
         _visual.DetachedFromVisualTree -= OnDetachedFromVisualTree;
@@ -65,7 +71,10 @@ internal class TransformTrackingHelper : IDisposable
     private void UnsubscribeFromParents()
     {
         foreach (var v in _propertyChangedSubscriptions)
+        {
             v.PropertyChanged -= _propertyChangedHandler;
+        }
+
         _propertyChangedSubscriptions.Clear();
     }
 
@@ -75,7 +84,10 @@ internal class TransformTrackingHelper : IDisposable
         Matrix? matrix = null;
         var root = _visual?.FindAncestorOfType<TopLevel>();
         if (_visual != null && root != null)
+        {
             matrix = _visual.TransformToVisual(root);
+        }
+
         if (Matrix != matrix)
         {
             Matrix = matrix;
@@ -92,18 +104,27 @@ internal class TransformTrackingHelper : IDisposable
     private void EnqueueForUpdate()
     {
         if(_queuedForUpdate)
+        {
             return;
+        }
+
         _queuedForUpdate = true;
         if (_deferAfterRenderPass)
+        {
             Dispatcher.CurrentDispatcher.Post(UpdateMatrix, DispatcherPriority.Render);
+        }
         else
+        {
             Dispatcher.CurrentDispatcher.InvokeAsync(UpdateMatrix, DispatcherPriority.Render);
+        }
     }
 
     private void PropertyChangedHandler(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property == Visual.BoundsProperty)
+        {
             EnqueueForUpdate();
+        }
     }
 
     private void OnDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs visualTreeAttachmentEventArgs)

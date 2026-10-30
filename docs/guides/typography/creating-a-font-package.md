@@ -62,7 +62,7 @@ FontFamily = FontFamily.Parse(
 三处值得解释。
 
 `$(AtomUITargetFrameworks)` 来自 `build/ProjectDefaults.props`，Debug 下是 `net10.0`，Release 下是
-`net10.0;net8.0`。直接用这个变量，不要写死 TFM，否则 Release 打包时会缺少 net8.0 目标。
+`net10.0`。直接使用这个变量，与产品统一的 .NET 10 目标保持一致。
 
 `AvaloniaResource` 而不是 `EmbeddedResource`。这是 `avares://` 协议能找到文件的前提，用错了编译能过，运行时
 解析资源 URI 会失败。
@@ -237,14 +237,14 @@ using Avalonia.Metadata;
 回到第 1 节的结论：注册完还得改 Token。在 `UseAtomUI` 里调用 `WithDefaultFontFamily`：
 
 ```csharp
-this.UseAtomUI(builder =>
+.UseAtomUI(builder =>
 {
     builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
     builder.UseMyFontFont();
     builder.WithDefaultFontFamily(FontFamily.Parse(
         $"{MyFontFontConstants.FontFamily}, Segoe UI, PingFang SC, $Default"));
     builder.UseDesktopControls();
-});
+})
 ```
 
 Browser Gallery 是完整的现成例子，它注册两个包再拼一条链，中西文分工：

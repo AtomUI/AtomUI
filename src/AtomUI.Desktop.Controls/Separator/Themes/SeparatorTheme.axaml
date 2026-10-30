@@ -2,18 +2,34 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:atomc="https://atomui.net/common-controls"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Separator}" TargetType="atom:Separator">
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:TextBlock Name="PART_Title"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Center"
-                       Padding="0"
-                       Text="{TemplateBinding Title}"
-                       FontSize="{TemplateBinding FontSize}"
-                       Foreground="{TemplateBinding TitleColor}"
-                       IsVisible="{TemplateBinding Title, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                <Panel>
+                    <atomc:SeparatorRail Name="PART_RailStart"
+                                         Classes.semantic-rail="True"
+                                         LineColor="{TemplateBinding LineColor}"
+                                         LineWidth="{TemplateBinding LineWidth}"
+                                         Variant="{TemplateBinding Variant}"
+                                         Orientation="{TemplateBinding Orientation}" />
+                    <atom:TextBlock Name="PART_Title"
+                           Classes.semantic-content="True"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           Padding="0"
+                           Text="{TemplateBinding Title}"
+                           FontSize="{TemplateBinding FontSize}"
+                           Foreground="{TemplateBinding TitleColor}"
+                           IsVisible="{TemplateBinding Title, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                    <atomc:SeparatorRail Name="PART_RailEnd"
+                                         Classes.semantic-rail="True"
+                                         LineColor="{TemplateBinding LineColor}"
+                                         LineWidth="{TemplateBinding LineWidth}"
+                                         Variant="{TemplateBinding Variant}"
+                                         Orientation="{TemplateBinding Orientation}" />
+                </Panel>
             </ControlTemplate>
         </Setter>
         

@@ -181,6 +181,120 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Main content area of dropdown option, sets content layout and link styles</source>
+        <target state="translated">dropdown 選項的主要內容區域，設定內容佈局和連結樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Individual dropdown option element, sets interaction states and background styles</source>
+        <target state="translated">dropdown 的單一選項元素，設定選項的互動狀態和背景樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIconDescription">
+      <segment>
+        <source>Icon area of dropdown option, sets icon size and spacing styles</source>
+        <target state="translated">dropdown 選項的圖示區域，設定圖示的尺寸和間距樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemTitleDescription">
+      <segment>
+        <source>Title content area of dropdown option, sets layout and text styles</source>
+        <target state="translated">dropdown 選項的標題內容區域，設定佈局和文字樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root element of dropdown, sets positioning, z-index and container styles</source>
+        <target state="translated">dropdown 的根元素，設定定位、層級和容器樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewFirstMenuItem">
+      <segment>
+        <source>1st menu item</source>
+        <target state="translated">第一個選單項目</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewGroupTitle">
+      <segment>
+        <source>Group title</source>
+        <target state="translated">分組標題</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewItem1">
+      <segment>
+        <source>Item 1</source>
+        <target state="translated">項目 1</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewOption1">
+      <segment>
+        <source>Option 1</source>
+        <target state="translated">選項 1</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewOption2">
+      <segment>
+        <source>Option 2</source>
+        <target state="translated">選項 2</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewSecondMenuItem">
+      <segment>
+        <source>2nd menu item</source>
+        <target state="translated">第二個選單項目</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewSubMenu">
+      <segment>
+        <source>SubMenu</source>
+        <target state="translated">子選單</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesDescription">
+      <segment>
+        <source>Owner-scoped styles targeting the DropdownButton popup Semantic Parts via the generated semantic style classes.</source>
+        <target state="translated">使用產生的語義樣式類別自訂 DropdownButton 彈層的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesFunctionButton">
+      <segment>
+        <source>Function Style</source>
+        <target state="translated">函式樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesItemLogout">
+      <segment>
+        <source>Logout</source>
+        <target state="translated">登出</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesItemProfile">
+      <segment>
+        <source>Profile</source>
+        <target state="translated">個人資料</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesItemSettings">
+      <segment>
+        <source>Settings</source>
+        <target state="translated">設定</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesObjectButton">
+      <segment>
+        <source>Object Style</source>
+        <target state="translated">物件樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
     <unit id="SizeTypeDescription">
       <segment>
         <source>DropdownButton supports large, middle, small, and Custom sizes with local size properties.</source>

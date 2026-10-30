@@ -7,8 +7,8 @@
              xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:gallery="https://atomui.net/oss-controls/gallery">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="RadioButton"
                     Category="{gallery:RadioButtonShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,31 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="Avalonia.Controls.RadioButton" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:RadioButtonViewModel">
+                    <gallery:SemanticPartPreview Name="RadioButtonSemanticPreview"
+                                                 SemanticOwner="{Binding #RadioButtonSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:RadioButton}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:RadioButton Name="RadioButtonSemanticOwner"
+                                              Content="{gallery:RadioButtonShowCaseLangResource P2ContentRadio}" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:RadioButtonShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="icon"
+                                Description="{gallery:RadioButtonShowCaseLangResource SemanticIconDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="label"
+                                Description="{gallery:RadioButtonShowCaseLangResource SemanticLabelDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -361,7 +384,63 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+    <gallery:ShowCaseItem
+        Title="{gallery:RadioButtonShowCaseLangResource SemanticPartStyleTitle}"
+        Description="{gallery:RadioButtonShowCaseLangResource SemanticPartStyleDescription}"
+        SourceKey="radio-button-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        Span="Full"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:RadioButtonViewModel">
+                <StackPanel Orientation="Vertical"
+                            HorizontalAlignment="Left"
+                            Spacing="12">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|RadioButton.semantic-fixed">
+                            <atom:RadioButtonIconStyle x:SetterTargetType="TemplatedControl">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </atom:RadioButtonIconStyle>
+                            <atom:RadioButtonLabelStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="Foreground" Value="#1677ff" />
+                            </atom:RadioButtonLabelStyle>
+                        </Style>
+                        <Style Selector="atom|RadioButton.semantic-conditional">
+                            <atom:RadioButtonIconStyle x:SetterTargetType="TemplatedControl">
+                                <Setter Property="BorderBrush" Value="#faad14" />
+                            </atom:RadioButtonIconStyle>
+                            <atom:RadioButtonLabelStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </atom:RadioButtonLabelStyle>
+                        </Style>
+                        <Style Selector="atom|RadioButton.semantic-conditional:pointerover">
+                            <atom:RadioButtonIconStyle x:SetterTargetType="TemplatedControl">
+                                <Setter Property="BorderBrush" Value="#faad14" />
+                            </atom:RadioButtonIconStyle>
+                        </Style>
+                        <Style Selector="atom|RadioButton.semantic-conditional:checked">
+                            <atom:RadioButtonIconStyle x:SetterTargetType="TemplatedControl">
+                                <Setter Property="Background" Value="#faad14" />
+                            </atom:RadioButtonIconStyle>
+                            <atom:RadioButtonLabelStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="Foreground" Value="#faad14" />
+                            </atom:RadioButtonLabelStyle>
+                        </Style>
+                    </StackPanel.Styles>
+
+                    <atom:RadioButtonGroup Orientation="Vertical">
+                        <atom:RadioButton Classes="semantic-fixed"
+                                          IsChecked="True"
+                                          Content="{gallery:RadioButtonShowCaseLangResource SemanticPartFixedTitle}" />
+                        <atom:RadioButton Classes="semantic-conditional"
+                                          Content="{gallery:RadioButtonShowCaseLangResource SemanticPartConditionalTitle}" />
+                    </atom:RadioButtonGroup>
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

@@ -1,7 +1,4 @@
-using AtomUI.Animations;
-using AtomUI.Controls.Primitives;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
@@ -45,13 +42,6 @@ public class TextBox : AbstractTextInput
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-
-        var innerBoxDecorator = e.NameScope.Find<PixelAlignedBorder>("InnerBoxDecorator");
-        if (innerBoxDecorator is not null)
-        {
-            innerBoxDecorator.DisableTransitions();
-            innerBoxDecorator.Dispatcher.Post(innerBoxDecorator.EnableTransitions);
-        }
 
         ConfigureCornerRadius();
     }

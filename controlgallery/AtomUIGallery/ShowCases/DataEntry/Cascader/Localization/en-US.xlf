@@ -496,6 +496,71 @@
         <source>Bound value</source>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button in the suffix area, rendered when IsAllowClear is enabled.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Selection content panel hosting the placeholder, selection result, search input and tags.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Search input rendered in filter mode.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Text content inside a selected tag.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Selected tag element shown in the selector for multiple mode.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticItemRemoveDescription">
+      <segment>
+        <source>Remove button inside a selected tag.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPlaceholderDescription">
+      <segment>
+        <source>Placeholder text shown while nothing is selected.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListDescription">
+      <segment>
+        <source>One cascading menu column inside the popup; the filter result list shares the same part.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListItemDescription">
+      <segment>
+        <source>Single option entry inside a menu column, created at runtime.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root border of the cascading menu popup layer.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix area of the selector.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Cascader owner itself.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix area hosting the expand/clear state and loading indicator.</source>
+      </segment>
+    </unit>
     <unit id="ShowCheckedStrategyDescription">
       <segment>
         <source>Shows a selected item in a box using showCheckedStrategy.</source>
@@ -524,6 +589,16 @@
     <unit id="StatusTitle">
       <segment>
         <source>Status</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of Cascader with semantic part styles.</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
       </segment>
     </unit>
     <unit id="VariantsDescription">

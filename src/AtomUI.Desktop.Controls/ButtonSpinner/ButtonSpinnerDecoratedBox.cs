@@ -1,11 +1,8 @@
-using AtomUI.Animations;
+using AtomUI.Controls;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Interactivity;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -25,6 +22,21 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
 
     public static readonly StyledProperty<ButtonSpinnerLocation> ButtonSpinnerLocationProperty =
         ButtonSpinner.ButtonSpinnerLocationProperty.AddOwner<ButtonSpinnerDecoratedBox>();
+
+    public static readonly StyledProperty<double> HandleOpacityProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(HandleOpacity));
+
+    public static readonly StyledProperty<double> HandleOffsetProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(HandleOffset));
+
+    public static readonly StyledProperty<double> ContentLeftShiftProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(ContentLeftShift));
+
+    public static readonly StyledProperty<double> ContentRightShiftProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(ContentRightShift));
+
+    public static readonly StyledProperty<Thickness> ContentPaddingProperty =
+        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, Thickness>(nameof(ContentPadding));
 
     public object? SpinnerContent
     {
@@ -64,25 +76,15 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
             o => o.SpinnerBorderThickness,
             (o, v) => o.SpinnerBorderThickness = v);
     
-    public static readonly StyledProperty<double> HandleOpacityProperty =
-        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(HandleOpacity));
 
-    public static readonly StyledProperty<double> HandleOffsetProperty =
-        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(HandleOffset));
 
-    public static readonly StyledProperty<double> ContentLeftShiftProperty =
-        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(ContentLeftShift));
 
-    public static readonly StyledProperty<double> ContentRightShiftProperty =
-        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, double>(nameof(ContentRightShift));
 
     internal static readonly DirectProperty<ButtonSpinnerDecoratedBox, double> SpinnerHandleWidthProperty =
         AvaloniaProperty.RegisterDirect<ButtonSpinnerDecoratedBox, double>(nameof(SpinnerHandleWidth),
             o => o.SpinnerHandleWidth,
             (o, v) => o.SpinnerHandleWidth = v);
     
-    public static readonly StyledProperty<Thickness> ContentPaddingProperty =
-        AvaloniaProperty.Register<ButtonSpinnerDecoratedBox, Thickness>(nameof(ContentPadding));
     
     internal static readonly DirectProperty<ButtonSpinnerDecoratedBox, Thickness> EffectiveContentPaddingProperty =
         AvaloniaProperty.RegisterDirect<ButtonSpinnerDecoratedBox, Thickness>(nameof(EffectiveContentPadding),
@@ -207,6 +209,8 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
         base.OnDetachedFromVisualTree(e);
         _mouseMoveDisposable?.Dispose();
         _mouseMoveDisposable = null;
+        IsSpinnerContentHover = false;
+        UpdateHandleVisualState();
     }
 
     private void ConfigureMoveProcessor()
@@ -226,20 +230,21 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
             return;
         }
 
-        if (args is RawPointerEventArgs pointerEventArgs)
+        if (args is RawPointerEventArgs pointerEventArgs &&
+            this.TryGetInputPosition(pointerEventArgs, out var position))
         {
+            if (pointerEventArgs.Type is RawPointerEventType.LeaveWindow or RawPointerEventType.TouchCancel)
+            {
+                IsSpinnerContentHover = false;
+                UpdateHandleVisualState();
+                return;
+            }
             if (pointerEventArgs.Type == RawPointerEventType.Move ||
                 pointerEventArgs.Type == RawPointerEventType.LeftButtonUp || 
                 pointerEventArgs.Type == RawPointerEventType.RightButtonDown)
             {
-                var pos = this.TranslatePoint(new Point(0, 0), TopLevel.GetTopLevel(this)!);
-                if (!pos.HasValue)
-                {
-                    return;
-                }
-
-                var bounds = new Rect(pos.Value, Bounds.Size);
-                if (bounds.Contains(pointerEventArgs.Position))
+                var bounds = new Rect(Bounds.Size);
+                if (bounds.Contains(position))
                 {
                     if (IsShowHandle && IsHandleFloatable)
                     {
@@ -353,16 +358,18 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
             IsSpinnerContentHover = false;
         }
 
-        if (IsHandleFloatable && IsSpinnerContentHover)
+        if (IsShowHandle && IsHandleFloatable && IsSpinnerContentHover)
         {
             if (ButtonSpinnerLocation == ButtonSpinnerLocation.Right)
             {
-                ContentRightShift = -EffectiveContentPadding.Right * 1.5;
+                // The content padding already reserves part of the handle width. Keep half
+                // that padding as the gap, including at Small size and custom handle widths.
+                ContentRightShift = -Math.Max(0d, SpinnerHandleWidth - EffectiveContentPadding.Right / 2);
                 ContentLeftShift = 0.0;
             }
             else
             {
-                ContentLeftShift = EffectiveContentPadding.Left * 1.5;
+                ContentLeftShift = Math.Max(0d, SpinnerHandleWidth - EffectiveContentPadding.Left / 2);
                 ContentRightShift = 0.0;
             }
         }
@@ -373,15 +380,4 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
         }
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 }

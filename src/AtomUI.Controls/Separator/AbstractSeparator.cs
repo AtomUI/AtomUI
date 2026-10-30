@@ -6,7 +6,6 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 
 namespace AtomUI.Controls.Commons;
@@ -181,24 +180,17 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     #endregion
     
     private TextBlock? _titleLabel;
+    private SeparatorRail? _railStart;
+    private SeparatorRail? _railEnd;
     private double _currentEdgeDistance;
-    private static ImmutableDashStyle? s_dash;
-    private static ImmutableDashStyle? s_dot;
-    private Pen? _cachedLinePen;
-    private SeparatorVariant _cachedVariant;
-    private IBrush? _cachedLineColor;
-    private double _cachedLineWidth;
 
     static AbstractSeparator()
     {
         AffectsMeasure<AbstractSeparator>(OrientationProperty,
             LineWidthProperty,
             TitleProperty);
-        AffectsArrange<AbstractSeparator>(TitlePositionProperty);
-        AffectsRender<AbstractSeparator>(TitleColorProperty,
-            LineColorProperty,
-            IsPlainProperty,
-            UseLayoutRoundingProperty);
+        AffectsArrange<AbstractSeparator>(TitlePositionProperty,
+            OrientationMarginProperty);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -208,18 +200,14 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         {
             UpdatePseudoClasses();
         }
-        else if (change.Property == LineColorProperty ||
-                 change.Property == LineWidthProperty ||
-                 change.Property == VariantProperty)
-        {
-            _cachedLinePen = null;
-        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         _titleLabel = e.NameScope.Find<TextBlock>("PART_Title");
+        _railStart  = e.NameScope.Find<SeparatorRail>("PART_RailStart");
+        _railEnd    = e.NameScope.Find<SeparatorRail>("PART_RailEnd");
         UpdatePseudoClasses();
     }
     
@@ -258,13 +246,57 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);
+        ArrangeRails(finalSize);
         if (Orientation == Orientation.Horizontal && _titleLabel?.IsVisible == true)
         {
-            var titleRect = GetTitleRect(DesiredSize.Deflate(Margin));
-            _titleLabel.Arrange(titleRect);
+            _titleLabel.Arrange(GetTitleRect(finalSize));
         }
 
         return size;
+    }
+
+    private void ArrangeRails(Size finalSize)
+    {
+        if (_railStart is null || _railEnd is null)
+        {
+            return;
+        }
+
+        if (Orientation == Orientation.Horizontal)
+        {
+            if (Title?.Length > 0)
+            {
+                var titleRect  = GetTitleRect(finalSize);
+                var textPadding = GetTextPaddingInline();
+                var drawStart  = TitlePosition != SeparatorTitlePosition.Left ||
+                                 double.IsNaN(OrientationMargin);
+                var drawEnd    = TitlePosition != SeparatorTitlePosition.Right ||
+                                 double.IsNaN(OrientationMargin);
+
+                var startWidth = drawStart
+                    ? Math.Max(0, titleRect.Left - textPadding)
+                    : 0;
+                var endLeft   = titleRect.Right + textPadding;
+                var endWidth  = drawEnd
+                    ? Math.Max(0, finalSize.Width - endLeft)
+                    : 0;
+
+                _railStart.Arrange(new Rect(0, 0, startWidth, finalSize.Height));
+                _railEnd.Arrange(new Rect(endLeft, 0, endWidth, finalSize.Height));
+            }
+            else
+            {
+                _railStart.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+                _railEnd.Arrange(new Rect(0, 0, 0, 0));
+            }
+        }
+        else
+        {
+            var inset      = finalSize.Height * 0.2;
+            var railHeight = Math.Max(0, finalSize.Height - inset * 2);
+            _railStart.Arrange(new Rect(0, inset, finalSize.Width, railHeight));
+            _railEnd.Arrange(new Rect(0, 0, 0, 0));
+        }
     }
 
     private double GetTextPaddingInline()
@@ -339,94 +371,6 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         return titleRect;
     }
 
-    public override void Render(DrawingContext context)
-    {
-        using var state = context.PushRenderOptions(new RenderOptions
-        {
-            EdgeMode = EdgeMode.Aliased
-        });
-
-        var linePen     = GetOrCreateLinePen();
-        var controlRect = new Rect(DesiredSize.Deflate(Margin));
-
-        if (Orientation == Orientation.Horizontal)
-        {
-            var offsetY = controlRect.Height / 2.0;
-            if (Title?.Length > 0)
-            {
-                // 画两个线段
-                var titleRect = GetTitleRect(controlRect.Size);
-                if (TitlePosition == SeparatorTitlePosition.Left)
-                {
-                    if (double.IsNaN(OrientationMargin))
-                    {
-                        context.DrawLine(linePen, new Point(0, offsetY),
-                            new Point(titleRect.Left - GetTextPaddingInline(), offsetY));
-                    }
-
-                    context.DrawLine(linePen, new Point(titleRect.Right + GetTextPaddingInline(), offsetY),
-                        new Point(controlRect.Right, offsetY));
-                }
-                else if (TitlePosition == SeparatorTitlePosition.Right)
-                {
-                    context.DrawLine(linePen, new Point(0, offsetY),
-                        new Point(titleRect.Left - GetTextPaddingInline(), offsetY));
-                    if (double.IsNaN(OrientationMargin))
-                    {
-                        context.DrawLine(linePen, new Point(titleRect.Right + GetTextPaddingInline(), offsetY),
-                            new Point(controlRect.Right, offsetY));
-                    }
-                }
-                else
-                {
-                    context.DrawLine(linePen, new Point(0, offsetY),
-                        new Point(titleRect.Left - GetTextPaddingInline(), offsetY));
-                    context.DrawLine(linePen, new Point(titleRect.Right + GetTextPaddingInline(), offsetY),
-                        new Point(controlRect.Right, offsetY));
-                }
-            }
-            else
-            {
-                context.DrawLine(linePen, new Point(0, offsetY), new Point(controlRect.Right, offsetY));
-            }
-        }
-        else
-        {
-            var offsetX = controlRect.Width / 2.0;
-            var offsetY = controlRect.Height * 0.2;
-            context.DrawLine(linePen, new Point(offsetX, offsetY), new Point(offsetX, controlRect.Bottom - offsetY));
-        }
-    }
-    
-    public static IDashStyle DashStyle => s_dash ??= new ImmutableDashStyle([4, 2], 0);
-    public static IDashStyle DotStyle => s_dot ??= new ImmutableDashStyle([1, 1], 0);
-
-    private Pen GetOrCreateLinePen()
-    {
-        var variant = Variant;
-        var lineColor = LineColor;
-        var lineWidth = BorderUtils.BuildRenderScaleAwareThickness(this, LineWidth);
-        if (_cachedLinePen is not null &&
-            _cachedVariant == variant &&
-            ReferenceEquals(_cachedLineColor, lineColor) &&
-            MathUtils.AreClose(_cachedLineWidth, lineWidth))
-        {
-            return _cachedLinePen;
-        }
-
-        IDashStyle? lineStyle = variant switch
-        {
-            SeparatorVariant.Dashed => DashStyle,
-            SeparatorVariant.Dotted => DotStyle,
-            _                       => null
-        };
-        _cachedLinePen   = new Pen(lineColor, lineWidth, lineStyle);
-        _cachedVariant   = variant;
-        _cachedLineColor = lineColor;
-        _cachedLineWidth = lineWidth;
-        return _cachedLinePen;
-    }
-    
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(SeparatorPseudoClass.HasTitleText, !string.IsNullOrEmpty(Title));

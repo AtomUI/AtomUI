@@ -8,13 +8,13 @@ public class CompactSpaceAwareAutoComplete : AbstractAutoComplete, ICompactSpace
     #region 内部属性定义
 
     internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
-        CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<AbstractAutoComplete>();
+        CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<CompactSpaceAwareAutoComplete>();
     
     internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
-        CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<AbstractAutoComplete>();
+        CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<CompactSpaceAwareAutoComplete>();
     
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
-        CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<AbstractAutoComplete>();
+        CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<CompactSpaceAwareAutoComplete>();
 
     internal SpaceItemPosition? CompactSpaceItemPosition
     {

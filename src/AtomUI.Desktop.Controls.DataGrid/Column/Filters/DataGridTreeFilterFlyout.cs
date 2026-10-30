@@ -1,5 +1,5 @@
 using AtomUI.Controls;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;

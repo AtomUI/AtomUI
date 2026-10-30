@@ -4,10 +4,9 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Styling;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Controls;
@@ -19,18 +18,9 @@ internal class SwitchKnob : TemplatedControl
     public static readonly StyledProperty<bool> IsCheckedStateProperty = 
         AvaloniaProperty.Register<SwitchKnob, bool>(nameof(IsCheckedState));
     
-    public static readonly StyledProperty<IBrush?> KnobBackgroundColorProperty =
-        AvaloniaProperty.Register<SwitchKnob, IBrush?>(nameof(KnobBackgroundColor));
-        
     public static readonly StyledProperty<BoxShadow?> KnobBoxShadowProperty = 
         AvaloniaProperty.Register<SwitchKnob, BoxShadow?>(nameof(KnobBoxShadow));
     
-    public IBrush? KnobBackgroundColor
-    {
-        get => GetValue(KnobBackgroundColorProperty);
-        set => SetValue(KnobBackgroundColorProperty, value);
-    }
-
     public bool IsCheckedState
     {
         get => GetValue(IsCheckedStateProperty);
@@ -116,14 +106,14 @@ internal class SwitchKnob : TemplatedControl
     #endregion
     
     private bool _isLoading;
-    private CancellationTokenSource? _cancellationTokenSource;
+    private IDisposable? _loadingAnimation;
     private IBrush? _loadIndicatorPenBrush;
     private Pen? _loadIndicatorPen;
     
     static SwitchKnob()
     {
         AffectsRender<SwitchKnob>(
-            RotationProperty, KnobRenderWidthProperty, LoadIndicatorBrushProperty);
+            BackgroundProperty, RotationProperty, KnobRenderWidthProperty, LoadIndicatorBrushProperty);
         AffectsMeasure<SwitchKnob>(KnobSizeProperty);
     }
     
@@ -154,23 +144,11 @@ internal class SwitchKnob : TemplatedControl
             return;
         }
 
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = null;
-        _isLoading               = false;
-        IsEnabled                = true;
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.UIThread.Post(this.EnableTransitions);
+        var animation = _loadingAnimation;
+        _loadingAnimation = null;
+        _isLoading = false;
+        IsEnabled = true;
+        animation?.Dispose();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -187,9 +165,9 @@ internal class SwitchKnob : TemplatedControl
         base.OnDetachedFromVisualTree(e);
         if (_isLoading)
         {
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = null;
+            var animation = _loadingAnimation;
+            _loadingAnimation = null;
+            animation?.Dispose();
         }
     }
 
@@ -200,21 +178,27 @@ internal class SwitchKnob : TemplatedControl
         {
             KnobRenderWidth = KnobSize.Width;
         }
+        else if (change.Property == LoadingAnimationDurationProperty && _isLoading && this.IsAttachedToVisualTree())
+        {
+            StartLoadingAnimation();
+        }
         else if (change.Property == KnobBoxShadowProperty)
         {
             if (KnobBoxShadow != null)
             {
-                Effect = new DropShadowEffect
+                // 派生效值以 Style 优先级写入即时帧；同优先级下用户样式帧后添加、后求值，
+                // 因此语义样式可以覆盖主题派生的把手阴影
+                SetValue(EffectProperty, (IEffect?)new DropShadowEffect
                 {
                     OffsetX    = KnobBoxShadow.Value.OffsetX,
                     OffsetY    = KnobBoxShadow.Value.OffsetY,
                     Color      = KnobBoxShadow.Value.Color,
                     BlurRadius = KnobBoxShadow.Value.Blur
-                };
+                }, BindingPriority.Style);
             }
             else
             {
-                Effect = null;
+                SetValue(EffectProperty, (IEffect?)null, BindingPriority.Style);
             }
         }
     }
@@ -236,11 +220,11 @@ internal class SwitchKnob : TemplatedControl
         var targetRect = new Rect(offsetX, offsetY, KnobRenderWidth, Bounds.Height);
         if (MathUtils.AreClose(KnobRenderWidth, DesiredSize.Height))
         {
-            context.DrawEllipse(KnobBackgroundColor, null, targetRect);
+            context.DrawEllipse(Background, null, targetRect);
         }
         else
         {
-            context.DrawPilledRect(KnobBackgroundColor, null, targetRect);
+            context.DrawPilledRect(Background, null, targetRect);
         }
 
         if (_isLoading)
@@ -262,8 +246,13 @@ internal class SwitchKnob : TemplatedControl
 
     private void StartLoadingAnimation()
     {
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
+        var previous = _loadingAnimation;
+        _loadingAnimation = null;
+        previous?.Dispose();
+        if (!_isLoading || !this.IsAttachedToVisualTree())
+        {
+            return;
+        }
         var loadingAnimationDuration = LoadingAnimationDuration;
         var loadingAnimation = new Animation();
         loadingAnimation.Duration                     = loadingAnimationDuration;
@@ -291,9 +280,17 @@ internal class SwitchKnob : TemplatedControl
             },
             KeyTime = loadingAnimationDuration
         });
-        _cancellationTokenSource = new CancellationTokenSource();
-        var token = _cancellationTokenSource.Token;
-        Dispatcher.UIThread.InvokeAsync(async () => await loadingAnimation.RunInfiniteAsync(this, token));
+        // Duration is a runtime snapshot and loading has explicit start/stop
+        // ownership; putting this in ControlTheme would require duplicate state.
+        var subscription = loadingAnimation.PlayLoop(this, RotationProperty);
+        if (_isLoading && this.IsAttachedToVisualTree() && _loadingAnimation is null)
+        {
+            _loadingAnimation = subscription;
+        }
+        else
+        {
+            subscription.Dispose();
+        }
     }
 
     private Pen GetLoadIndicatorPen()

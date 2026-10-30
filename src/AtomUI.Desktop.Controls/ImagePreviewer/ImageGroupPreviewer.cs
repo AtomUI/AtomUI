@@ -7,26 +7,26 @@ using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
-public class ImageGroupPreviewer : AbstractImagePreviewer
+public partial class ImageGroupPreviewer : AbstractImagePreviewer
 {
     #region 公共属性定义
-    
-    private static readonly FuncTemplate<Panel?> DefaultPanel =
-        new(() => new StackPanel
-        {
-            Orientation = Orientation.Horizontal
-        });
 
     public static readonly StyledProperty<ITemplate<Panel?>> ItemsPanelProperty =
-        AvaloniaProperty.Register<ImageGroupPreviewer, ITemplate<Panel?>>(nameof(ItemsPanel), DefaultPanel);
+        AvaloniaProperty.Register<ImageGroupPreviewer, ITemplate<Panel?>>(
+            nameof(ItemsPanel),
+            new FuncTemplate<Panel?>(() => new StackPanel
+            {
+                Orientation = Orientation.Horizontal
+            }));
 
     public ITemplate<Panel?> ItemsPanel
     {
         get => GetValue(ItemsPanelProperty);
         set => SetValue(ItemsPanelProperty, value);
     }
+
     #endregion
-    
+
     private ItemsControl? _itemsControl;
 
     public ImageGroupPreviewer()

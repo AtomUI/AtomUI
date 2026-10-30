@@ -385,6 +385,114 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Body element: content area padding and content host.</source>
+        <target state="translated">內容元素：正文區內距與內容乘載。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCloseDescription">
+      <segment>
+        <source>Close element: the title bar close button.</source>
+        <target state="translated">關閉元素：標題列關閉按鈕。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContainerDescription">
+      <segment>
+        <source>Container element: dialog body frame with background, corner radius and clipping.</source>
+        <target state="translated">容器元素：對話主體框體，乘載背景、圓角與裁剪。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>Footer element: action area frame with background and padding.</source>
+        <target state="translated">底部元素：操作區框體，乘載背景與內距。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element: title bar frame with background and padding.</source>
+        <target state="translated">頭部元素：標題列框體，乘載背景與內距。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMaskDescription">
+      <segment>
+        <source>Mask element: the modal mask background and pointer hit-testing.</source>
+        <target state="translated">遮罩層元素：模態遮罩背景與指標命中。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewFooterLink">
+      <segment>
+        <source>More</source>
+        <target state="translated">更多</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element: the Dialog owner itself, carrying the opening intent, content, result and events.</source>
+        <target state="translated">根元素：Dialog 自身，乘載開啟意圖、內容、結果與事件。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStageHint">
+      <segment>
+        <source>The overlay host is scoped to this stage, so the mask and the dialog stay inside it while each part is inspected.</source>
+        <target state="translated">Overlay 宿主被限定在這個舞台內，遮罩與對話框都停留在舞台中，便於逐個檢視部件。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesDescription">
+      <segment>
+        <source>Style Dialog and MessageBox Semantic Parts through the generated Semantic Style classes.</source>
+        <target state="translated">透過生成的 Semantic Style 類別自訂 Dialog 與 MessageBox 的語意部件。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesHint">
+      <segment>
+        <source>Open the semantically styled Dialog, MessageBox and window-hosted Dialog:</source>
+        <target state="translated">分別開啟語意樣式定制後的 Dialog、MessageBox 與視窗宿主 Dialog：</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesOpenStyledDialog">
+      <segment>
+        <source>Open styled Dialog</source>
+        <target state="translated">開啟樣式化 Dialog</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesOpenStyledMessageBox">
+      <segment>
+        <source>Open styled MessageBox</source>
+        <target state="translated">開啟樣式化 MessageBox</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesOpenStyledWindowDialog">
+      <segment>
+        <source>Open styled window Dialog</source>
+        <target state="translated">開啟樣式化視窗 Dialog</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element: title text typography and foreground color.</source>
+        <target state="translated">標題元素：標題文字的字型與前景色。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticWindowStageHint">
+      <segment>
+        <source>Open the native Window host with the stage button: parts highlight inside that window; the styled window opens from the styling example.</source>
+        <target state="translated">用舞台內按鈕開啟原生 Window 宿主：部件高亮發生在該視窗內；樣式化視窗由樣式範例的按鈕開啟。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticWrapperDescription">
+      <segment>
+        <source>Wrapper element: the surface motion and transition container.</source>
+        <target state="translated">包裹層元素：對話表面的動效與過場容器。</target>
+      </segment>
+    </unit>
     <unit id="StaticDialogApiDescription">
       <segment>
         <source>Creating a Dialog using the static method of Dialog.</source>

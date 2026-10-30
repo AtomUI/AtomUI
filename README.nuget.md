@@ -22,7 +22,7 @@ Windows, macOS and Linux.
 
 ### Requirements
 
-- .NET 8 or later.
+- .NET 10.
 - Avalonia 12.1.x runtime.
 - Windows, macOS or Linux desktop applications.
 

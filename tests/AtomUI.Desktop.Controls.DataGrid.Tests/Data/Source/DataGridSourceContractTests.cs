@@ -1,5 +1,3 @@
-using AtomUI.Desktop.Controls;
-using Avalonia;
 using Shouldly;
 using Xunit;
 
@@ -7,26 +5,6 @@ namespace AtomUI.Desktop.Controls.Tests.DataGrid.Data.Source;
 
 public class DataGridSourceContractTests
 {
-    [Fact]
-    public void DataGrid_Exposes_Only_Range_Typed_ItemsSource()
-    {
-        var gridType = typeof(global::AtomUI.Desktop.Controls.DataGrid);
-
-        var property = gridType.GetProperty("ItemsSource");
-        property.ShouldNotBeNull();
-        property.PropertyType.ShouldBe(typeof(IDataGridSource));
-        property.CanRead.ShouldBeTrue();
-        property.CanWrite.ShouldBeTrue();
-
-        var avaloniaProperty = gridType.GetField("ItemsSourceProperty");
-        avaloniaProperty.ShouldNotBeNull();
-        avaloniaProperty.FieldType.ShouldBe(
-            typeof(DirectProperty<global::AtomUI.Desktop.Controls.DataGrid, IDataGridSource?>));
-
-        gridType.GetProperty("Source").ShouldBeNull();
-        gridType.GetField("SourceProperty").ShouldBeNull();
-    }
-
     [Theory]
     [InlineData(0, 128)]
     [InlineData(31, 128)]

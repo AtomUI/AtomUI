@@ -1,13 +1,10 @@
-using AtomUIGallery.Localization;
 using System.Collections.ObjectModel;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI;
 using AtomUI.Controls;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Localization;
 using Avalonia;
 
 namespace AtomUIGallery.ShowCases.TreeSelect;
@@ -25,6 +22,8 @@ public partial class TreeSelectShowCase : GalleryReactiveUserControl<TreeSelectV
                 RefreshLocalizedTreeNodes(viewModel);
                 viewModel.AsyncLoadTreeNodeLoader = new LocalizedTreeSelectItemDataLoader();
                 viewModel.Placement = SelectPopupPlacement.TopEdgeAlignedLeft;
+                InitializeSemanticPreviewTreeNodes(viewModel);
+                InitializeStyleClassTreeNodes(viewModel);
 
                 var languageManager = Application.Current is { } application
                     ? global::AtomUI.ApplicationExtensions.GetLanguageManager(application)
@@ -55,6 +54,9 @@ public partial class TreeSelectShowCase : GalleryReactiveUserControl<TreeSelectV
                     viewModel.MaxSelectedTreeNodes    = null;
                     viewModel.MaxCheckedTreeNodes     = null;
                     viewModel.SizeTypeTreeNodes       = null;
+                    viewModel.SemanticPreviewTreeNodes     = null;
+                    viewModel.SemanticPreviewSelectedItems = null;
+                    viewModel.StyleClassTreeNodes          = null;
                 }).DisposeWith(disposables);
             }
         });
@@ -259,6 +261,40 @@ public partial class TreeSelectShowCase : GalleryReactiveUserControl<TreeSelectV
     private void InitSizeTypeTreeNodes(TreeSelectViewModel viewModel)
     {
         viewModel.SizeTypeTreeNodes = CreatePersonalLeafTreeNodes();
+    }
+
+    private void InitializeSemanticPreviewTreeNodes(TreeSelectViewModel viewModel)
+    {
+        var leaf1 = new TreeItemNode()
+        {
+            Header = Lang(TreeSelectShowCaseLangResourceKind.P2HeaderLeaf1, "Leaf 1"),
+            Value  = "leaf1",
+        };
+        var leaf2 = new TreeItemNode()
+        {
+            Header = Lang(TreeSelectShowCaseLangResourceKind.P2HeaderLeaf2, "Leaf 2"),
+            Value  = "leaf2",
+        };
+        viewModel.SemanticPreviewTreeNodes =
+        [
+            new TreeItemNode()
+            {
+                Header = Lang(TreeSelectShowCaseLangResourceKind.P2HeaderParent10, "Parent 1-0"),
+                Value  = "parent 1-0",
+                Children = [leaf1, leaf2],
+            },
+            new TreeItemNode()
+            {
+                Header = Lang(TreeSelectShowCaseLangResourceKind.P2HeaderNode2, "Node 2"),
+                Value  = "node-2",
+            }
+        ];
+        viewModel.SemanticPreviewSelectedItems = [leaf1];
+    }
+
+    private void InitializeStyleClassTreeNodes(TreeSelectViewModel viewModel)
+    {
+        viewModel.StyleClassTreeNodes = CreatePersonalLeafTreeNodes();
     }
 
     private static List<ITreeItemNode> CreateBasicTreeNodes()

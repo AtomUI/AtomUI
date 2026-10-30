@@ -1,0 +1,118 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    xmlns:gallery="https://atomui.net/toolkits/gallery-base">
+    <ControlTheme x:Key="{x:Type gallery:SemanticPartPreview}"
+                  TargetType="{x:Type gallery:SemanticPartPreview}">
+        <Setter Property="MaxHeight"
+                Value="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=MaxHeight}" />
+        <Setter Property="Template">
+            <ControlTemplate TargetType="{x:Type gallery:SemanticPartPreview}">
+                <Grid>
+                    <Border Name="PART_InspectionPanel"
+                            MinHeight="360"
+                            Margin="24,20,24,32"
+                            VerticalAlignment="Top"
+                            Background="{atom:SharedTokenResource ColorBgContainer}"
+                            BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
+                            BorderThickness="1">
+                        <!--  内容行用星号:Auto 行会以无穷高度测量布局面板,
+                              宿主 MaxHeight 钳制无法传导,固定高度内容会溢出视口  -->
+                        <Grid RowDefinitions="*,Auto">
+                            <gallery:SemanticPartPreviewLayoutPanel Name="PART_Layout"
+                                                                    Grid.Row="0"
+                                                                    CompactBreakpoint="820"
+                                                                    Spacing="0"
+                                                                    PreviewStageMinHeight="{TemplateBinding PreviewStageMinHeight}"
+                                                                    PaneMaxHeight="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=MaxHeight, Converter={x:Static gallery:SemanticPartPreview.PaneMaxHeightConverter}}">
+                                <Border Name="PART_PreviewStage"
+                                        Background="{atom:SharedTokenResource ColorBgLayout}"
+                                        Padding="16">
+                                    <Grid RowDefinitions="Auto,*">
+                                        <TextBlock Name="PART_Title"
+                                                   Margin="0,0,0,12"
+                                                   Text="{TemplateBinding Title}"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{atom:SharedTokenResource ColorText}"
+                                                   IsVisible="{TemplateBinding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                        <ContentPresenter Name="PART_PreviewContentHost"
+                                                          Grid.Row="1"
+                                                          Content="{TemplateBinding PreviewContent}"
+                                                          HorizontalAlignment="Stretch"
+                                                          VerticalAlignment="Stretch"
+                                                          HorizontalContentAlignment="Stretch"
+                                                          VerticalContentAlignment="{TemplateBinding PreviewContentAlignment}" />
+                                    </Grid>
+                                </Border>
+
+                                <Border Name="PART_PartsPane"
+                                        ClipToBounds="True"
+                                        BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
+                                        BorderThickness="1,0,0,0">
+                                    <atom:ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                       AllowAutoHide="False"
+                                                       BringIntoViewOnFocusChange="False">
+                                        <ItemsControl ItemsSource="{TemplateBinding Items}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Spacing="0" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="gallery:SemanticPartPreviewItem">
+                                                    <gallery:SemanticPartPreviewItemControl Item="{Binding}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </atom:ScrollViewer>
+                                </Border>
+                            </gallery:SemanticPartPreviewLayoutPanel>
+
+                            <Border Name="PART_DetailsPane"
+                                    Grid.Row="1"
+                                    Background="{atom:SharedTokenResource ColorFillAlter}"
+                                    BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
+                                    BorderThickness="0,1,0,0"
+                                    IsVisible="{TemplateBinding CodeContent, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <DockPanel LastChildFill="True">
+                                    <Border Name="PART_InfoPane"
+                                            BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}">
+                                        <ContentPresenter Name="PART_InfoContent"
+                                                          Content="{TemplateBinding InfoContent}" />
+                                    </Border>
+                                    <ContentPresenter Name="PART_CodeContent"
+                                                      Content="{TemplateBinding CodeContent}" />
+                                </DockPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:compact /template/ Border#PART_InspectionPanel">
+            <Setter Property="Margin" Value="16,16,16,24" />
+        </Style>
+        <Style Selector="^:compact /template/ TextBlock#PART_Title">
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style Selector="^:compact /template/ Border#PART_PreviewStage">
+            <Setter Property="Padding" Value="20" />
+        </Style>
+        <Style Selector="^:compact /template/ Border#PART_PartsPane">
+            <Setter Property="BorderThickness" Value="0,1,0,0" />
+        </Style>
+        <Style Selector="^ /template/ Border#PART_InfoPane">
+            <Setter Property="Width" Value="340" />
+            <Setter Property="DockPanel.Dock" Value="Left" />
+            <Setter Property="BorderThickness" Value="0,0,1,0" />
+        </Style>
+        <Style Selector="^:compact /template/ Border#PART_InfoPane">
+            <Setter Property="Width" Value="NaN" />
+            <Setter Property="DockPanel.Dock" Value="Top" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

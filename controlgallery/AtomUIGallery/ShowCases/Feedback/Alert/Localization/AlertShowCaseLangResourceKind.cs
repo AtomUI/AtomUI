@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -19,6 +17,15 @@ public enum AlertShowCaseLangResourceKind
     CustomActionDescription,
     LoopBannerTitle,
     LoopBannerDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticIconDescription,
+    SemanticSectionDescription,
+    SemanticTitleDescription,
+    SemanticDescriptionDescription,
+    SemanticActionsDescription,
+    SemanticCloseDescription,
     PageSubtitle,
     PageDescription,
     ComponentCategory,

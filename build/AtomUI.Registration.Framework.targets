@@ -1,0 +1,39 @@
+<Project>
+    <!-- Framework selects the engine family. SDK/backend capability checks decide whether
+         that family can publish this exact tool/runtime/platform combination. -->
+    <PropertyGroup>
+        <AtomUIRegistrationFrameworkImported>true</AtomUIRegistrationFrameworkImported>
+        <_AtomUIRegistrationFrameworkFamily>Unsupported</_AtomUIRegistrationFrameworkFamily>
+        <_AtomUIRegistrationBackend>None</_AtomUIRegistrationBackend>
+        <_AtomUINet8ManagedRegistration>false</_AtomUINet8ManagedRegistration>
+        <_AtomUINative8Registration>false</_AtomUINative8Registration>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(TargetFramework)' != ''">
+        <_AtomUIRegistrationFrameworkIdentifier>$([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)'))</_AtomUIRegistrationFrameworkIdentifier>
+        <_AtomUIRegistrationFrameworkVersion>$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)'))</_AtomUIRegistrationFrameworkVersion>
+        <_AtomUIRegistrationTargetPlatform>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_AtomUIRegistrationTargetPlatform>
+        <_AtomUIRegistrationFrameworkFamily Condition="'$(_AtomUIRegistrationFrameworkIdentifier)' == '.NETCoreApp' and '$(_AtomUIRegistrationFrameworkVersion)' == '8.0'">Net8Compatibility</_AtomUIRegistrationFrameworkFamily>
+        <_AtomUIRegistrationFrameworkFamily Condition="'$(_AtomUIRegistrationFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(_AtomUIRegistrationFrameworkVersion)', '10.0'))">OfficialTypeMap</_AtomUIRegistrationFrameworkFamily>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and ('$(PublishTrimmed)' == 'true' or '$(PublishAot)' == 'true' or '$(RunAOTCompilation)' == 'true')">
+        <_AtomUIRegistrationBackend>Unsupported</_AtomUIRegistrationBackend>
+        <_AtomUIRegistrationBackend Condition="'$(_AtomUIRegistrationFrameworkFamily)' == 'OfficialTypeMap'">OfficialTypeMap</_AtomUIRegistrationBackend>
+        <_AtomUIRegistrationBackend Condition="'$(_AtomUIRegistrationFrameworkFamily)' == 'Net8Compatibility' and '$(PublishTrimmed)' == 'true' and '$(PublishAot)' != 'true' and '$(RunAOTCompilation)' != 'true' and '$(RuntimeIdentifier)' != 'browser-wasm' and '$(_AtomUIRegistrationTargetPlatform)' != 'browser'">Net8Managed</_AtomUIRegistrationBackend>
+        <_AtomUIRegistrationBackend Condition="'$(_AtomUIRegistrationFrameworkFamily)' == 'Net8Compatibility' and '$(PublishAot)' == 'true'">Net8Native</_AtomUIRegistrationBackend>
+        <_AtomUINet8ManagedRegistration Condition="'$(_AtomUIRegistrationBackend)' == 'Net8Managed'">true</_AtomUINet8ManagedRegistration>
+        <_AtomUINative8Registration Condition="'$(_AtomUIRegistrationBackend)' == 'Net8Native'">true</_AtomUINative8Registration>
+    </PropertyGroup>
+    <ItemGroup>
+        <CompilerVisibleProperty Include="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion" />
+    </ItemGroup>
+    <Target Name="AtomUIValidateRegistrationFramework"
+            BeforeTargets="PrepareForILLink;AtomUIPrepareTypeMapBackend;AtomUIPrepareNet8ManagedRegistration;AtomUIPrepareNative8Registration;AtomUIPrepareConditionalBridgeManaged;AtomUIPrepareConditionalBridgeNative;IlcCompile"
+            Condition="'$(TargetFramework)' != '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and ('$(PublishTrimmed)' == 'true' or '$(PublishAot)' == 'true' or '$(RunAOTCompilation)' == 'true')">
+        <Error Condition="'$(_AtomUIRegistrationFrameworkFamily)' == 'Unsupported'" Code="ATOMUIREG006"
+               Text="AtomUI registration does not support target framework '$(TargetFramework)'. Expected .NET 8 or .NET 10 and later; no compatibility fallback is permitted." />
+        <Error Condition="'$(_AtomUIRegistrationFrameworkFamily)' == 'OfficialTypeMap' and ('$(_AtomUINet8ManagedRegistration)' == 'true' or '$(_AtomUINative8Registration)' == 'true')" Code="ATOMUIREG006"
+               Text="Target framework '$(TargetFramework)' requires the matching official TypeMap engine; a .NET 8 backend cannot be selected." />
+        <Error Condition="'$(_AtomUIRegistrationFrameworkFamily)' == 'Net8Compatibility' and ('$(_AtomUIRegistrationBackend)' == 'Unsupported' or ('$(_AtomUIRegistrationBackend)' == 'Net8Managed' and ('$(RuntimeIdentifier)' == 'browser-wasm' or '$(RunAOTCompilation)' == 'true')))" Code="ATOMUIREG006"
+               Text="This .NET 8 publish mode has no admitted AtomUI compatibility backend. Unsupported modes cannot fall back to official TypeMap or full registration." />
+    </Target>
+</Project>

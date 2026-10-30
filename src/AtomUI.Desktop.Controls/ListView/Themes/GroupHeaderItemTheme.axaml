@@ -1,0 +1,17 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:GroupHeaderItem}" TargetType="atom:GroupHeaderItem">
+        <ControlTheme.BasedOn>
+            <atom:ListViewItemTheme TargetType="atom:GroupHeaderItem" />
+        </ControlTheme.BasedOn>
+
+        <Style Selector="^[IsGroupItem=True]">
+            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
+            <Setter Property="FontWeight" Value="{atom:SharedTokenResource FontWeightStrong}" />
+            <Setter Property="Padding" Value="{atom:ListViewTokenResource GroupHeaderPadding}" />
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

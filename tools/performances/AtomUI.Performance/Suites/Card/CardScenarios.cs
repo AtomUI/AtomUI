@@ -1,3 +1,4 @@
+using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using AtomUI.Icons.AntDesign;
 using Avalonia.Controls;
@@ -272,7 +273,7 @@ internal static partial class Program
     {
         return new Avatar
         {
-            BitmapSrc = CardCoverBitmap.Value
+            Icon = new UserOutlined()
         };
     }
 

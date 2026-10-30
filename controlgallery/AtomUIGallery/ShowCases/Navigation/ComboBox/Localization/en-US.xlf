@@ -166,6 +166,66 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Input content panel hosting the placeholder, the non-editable selection and the editable input.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticFrameDescription">
+      <segment>
+        <source>Input frame border box; the innermost box of the outlined / filled / underlined frame, where the border color, width, corner radius and background of the input box can be customized.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorDescription">
+      <segment>
+        <source>Drop-down arrow button inside the handle template, which also toggles the popup on click.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Editable filtering input rendered when IsEditable is enabled.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPlaceholderDescription">
+      <segment>
+        <source>Placeholder text shown while nothing is selected.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupEmptyDescription">
+      <segment>
+        <source>Empty state shown when an active filter matches nothing.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListDescription">
+      <segment>
+        <source>Scrollable candidate list region inside the popup, mutually exclusive with the empty state.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListItemDescription">
+      <segment>
+        <source>Single candidate entry, marked on the container created at runtime.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root border of the drop-down popup layer.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Inline prefix area of the input frame, hosting ContentLeftAddOn.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The ComboBox owner itself.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix area hosting user suffix content, form feedback and the drop-down handle.</source>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to Input with status, which could be error or warning.</source>
@@ -174,6 +234,16 @@
     <unit id="StatusTitle">
       <segment>
         <source>Status</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of ComboBox with semantic part styles, including the input frame border color.</source>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
       </segment>
     </unit>
     <unit id="ThreeSizesDescription">

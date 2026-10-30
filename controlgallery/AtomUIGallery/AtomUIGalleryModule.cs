@@ -2,7 +2,6 @@ using AtomUI.Icons.AntDesign;
 using AtomUI.Toolkits.GalleryBase.Configuration;
 using AtomUI.Toolkits.GalleryBase.Localization;
 using AtomUI.Toolkits.GalleryBase.Routing;
-using AtomUIGallery.Localization;
 using AtomUIGallery.SourceCode;
 using AtomUIGallery.ShowCases.Alert;
 using AtomUIGallery.ShowCases.AutoComplete;
@@ -24,6 +23,7 @@ using AtomUIGallery.ShowCases.ComboBox;
 using AtomUIGallery.ShowCases.CustomizeTheme;
 using AtomUIGallery.ShowCases.DataGrid;
 using AtomUIGallery.ShowCases.DatePicker;
+using AtomUIGallery.ShowCases.DateViewer;
 using AtomUIGallery.ShowCases.Descriptions;
 using AtomUIGallery.ShowCases.Drawer;
 using AtomUIGallery.ShowCases.DropdownButton;
@@ -88,6 +88,9 @@ namespace AtomUIGallery;
 
 public static class AtomUIGalleryModule
 {
+    // Only fixed types and deferred factories are shared; application configuration stays application-owned.
+    private static readonly Lazy<IReadOnlyList<GalleryRouteDescriptor>> RouteDescriptors = new(CreateRouteDescriptors);
+
     public static GalleryBaseConfiguration CreateConfiguration()
     {
         var options = new GalleryBaseOptions();
@@ -104,13 +107,26 @@ public static class AtomUIGalleryModule
     {
         ConfigureBranding(options.Branding);
         ConfigureNavigation(options.Navigation);
-        ConfigureRoutes(options.Routes);
+        foreach (var route in RouteDescriptors.Value)
+        {
+            options.Routes.Map(route);
+        }
         ConfigureSourceCodeDisplay(options.SourceCodeDisplay);
     }
 
     public static void RegisterViews(DefaultViewLocator locator)
     {
-        CreateConfiguration().Routes.RegisterViews(locator);
+        foreach (var route in RouteDescriptors.Value)
+        {
+            route.RegisterView(locator);
+        }
+    }
+
+    private static IReadOnlyList<GalleryRouteDescriptor> CreateRouteDescriptors()
+    {
+        var routes = new GalleryRouteRegistry();
+        ConfigureRoutes(routes);
+        return routes.Routes;
     }
 
     private static void ConfigureBranding(GalleryBrandingOptions branding)
@@ -196,6 +212,7 @@ public static class AtomUIGalleryModule
                   .AddPage(CollapseViewModel.ID, Nav(CaseNavigationLangResourceKind.DataDisplay_Collapse, "Collapse"))
                   .AddPage(DescriptionsViewModel.ID, Nav(CaseNavigationLangResourceKind.DataDisplay_Descriptions, "Descriptions"))
                   .AddPage(DataGridViewModel.ID, Nav(CaseNavigationLangResourceKind.DataDisplay_DataGrid, "DataGrid"))
+                  .AddPage(DateViewerViewModel.ID, Nav(CaseNavigationLangResourceKind.DataDisplay_DateViewer, "DateViewer"))
                   .AddPage(ExpanderViewModel.ID, Nav(CaseNavigationLangResourceKind.DataDisplay_Expander, "Expander"))
                   .AddPage(EmptyViewModel.ID, Nav(CaseNavigationLangResourceKind.DataDisplay_Empty, "Empty"))
                   .AddPage(ImagePreviewerViewModel.ID, Nav(CaseNavigationLangResourceKind.DataDisplay_ImagePreviewer, "ImagePreviewer"))
@@ -308,6 +325,7 @@ public static class AtomUIGalleryModule
         routes.Map(MenuViewModel.ID, screen => new MenuViewModel(screen), () => new MenuShowCase());
         routes.Map(TimePickerViewModel.ID, screen => new TimePickerViewModel(screen), () => new TimePickerShowCase());
         routes.Map(DatePickerViewModel.ID, screen => new DatePickerViewModel(screen), () => new DatePickerShowCase());
+        routes.Map(DateViewerViewModel.ID, screen => new DateViewerViewModel(screen), () => new DateViewerShowCase());
         routes.Map(UploadViewModel.ID, screen => new UploadViewModel(screen), () => new UploadShowCase());
         routes.Map(TransferViewModel.ID, screen => new TransferViewModel(screen), () => new TransferShowCase());
         routes.Map(FormViewModel.ID, screen => new FormViewModel(screen), () => new FormShowCase());

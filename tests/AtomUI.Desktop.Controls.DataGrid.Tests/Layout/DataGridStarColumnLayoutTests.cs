@@ -82,6 +82,83 @@ public class DataGridStarColumnLayoutTests
         }
     }
 
+    [Fact]
+    public void User_Resize_Of_Star_Column_Preserves_Resolved_Display_Width()
+    {
+        var addressColumn = CreateStarColumn("Address", 2);
+        var roleColumn = CreateStarColumn("Role");
+        var statusColumn = new DataGridTextColumn
+        {
+            Header        = "Status",
+            Width         = new DataGridLength(90),
+            CanUserResize = false
+        };
+        var operationColumn = new DataGridTextColumn
+        {
+            Header        = "Operation",
+            Width         = new DataGridLength(240),
+            CanUserResize = false
+        };
+        var grid = new global::AtomUI.Desktop.Controls.DataGrid
+        {
+            AutoGenerateColumns  = false,
+            CanUserResizeColumns = true,
+            HeadersVisibility    = DataGridHeadersVisibility.Column,
+            ItemsSource = new TestDataGridSource<GridRow>(new[]
+            {
+                new GridRow("1", "Shanghai", "Administrator", "Active")
+            }),
+            Width  = 1000,
+            Height = 260
+        };
+
+        grid.Columns.Add(new DataGridTextColumn
+        {
+            Header  = "ID",
+            Binding = new Binding(nameof(GridRow.Property)),
+            Width   = DataGridLength.Auto
+        });
+        grid.Columns.Add(addressColumn);
+        grid.Columns.Add(roleColumn);
+        grid.Columns.Add(statusColumn);
+        grid.Columns.Add(operationColumn);
+
+        var window = ShowGrid(grid);
+
+        try
+        {
+            var originalAddressWidth = addressColumn.ActualWidth;
+            var originalRoleWidth = roleColumn.ActualWidth;
+            var originalVisibleColumnsWidth = grid.ColumnsInternal.VisibleEdgedColumnsWidth;
+            var requestedAddressWidth = originalAddressWidth + 40;
+            var expectedStarValue = addressColumn.Width.Value * requestedAddressWidth / originalAddressWidth;
+            var oldWidth = addressColumn.Width;
+
+            addressColumn.Resize(
+                oldWidth,
+                new DataGridLength(
+                    oldWidth.Value,
+                    oldWidth.UnitType,
+                    oldWidth.DesiredValue,
+                    requestedAddressWidth),
+                userInitiated: true);
+
+            addressColumn.Width.IsStar.ShouldBeTrue();
+            addressColumn.Width.Value.ShouldBe(expectedStarValue, 0.001);
+            addressColumn.Width.DesiredValue.ShouldBe(requestedAddressWidth, 1);
+            addressColumn.Width.DisplayValue.ShouldBe(requestedAddressWidth, 1);
+            addressColumn.ActualWidth.ShouldBe(requestedAddressWidth, 1);
+            roleColumn.ActualWidth.ShouldBe(originalRoleWidth - 40, 1);
+            statusColumn.ActualWidth.ShouldBe(90, 1);
+            operationColumn.ActualWidth.ShouldBe(240, 1);
+            grid.ColumnsInternal.VisibleEdgedColumnsWidth.ShouldBe(originalVisibleColumnsWidth, 1);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [Theory]
     [InlineData(DataGridLengthUnitType.Auto)]
     [InlineData(DataGridLengthUnitType.Pixel)]

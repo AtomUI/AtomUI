@@ -12,61 +12,67 @@ internal sealed class StepsToken : AbstractControlDesignToken
 
     {
     }
-    
+
     /// <summary>
     /// 描述区域最大宽度
     /// Max width of description area
     /// </summary>
     public double DescriptionMaxWidth { get; set; }
-    
+
     /// <summary>
     /// 自定义图标容器尺寸
     /// Size of custom icon container
     /// </summary>
     public double CustomIconSize { get; set; }
-    
+
     /// <summary>
     /// 自定义图标大小
     /// Font size of custom icon
     /// </summary>
     public double CustomIconFontSize { get; set; }
-    
+
     /// <summary>
     /// 图标容器尺寸
     /// Size of icon container
     /// </summary>
     public double IconContainerSize { get; set; }
-    
+
+    /// <summary>
+    /// 图标容器圆角（默认全圆）
+    /// Corner radius of icon container (full circle by default)
+    /// </summary>
+    public CornerRadius IconContainerCornerRadius { get; set; }
+
     /// <summary>
     /// 图标大小
     /// Size of icon
     /// </summary>
     public double IconFontSize { get; set; }
-    
+
     /// <summary>
     /// 点状步骤点大小
     /// Size of dot
     /// </summary>
     public double DotSize { get; set; }
-    
+
     /// <summary>
     /// 点状步骤点当前大小
     /// Current size of dot
     /// </summary>
     public double DotCurrentSize { get; set; }
-    
+
     /// <summary>
     /// 可跳转步骤条箭头颜色
     /// Color of arrow in nav
     /// </summary>
     public Color NavArrowColor { get; set; }
-    
+
     /// <summary>
     /// 小号步骤条图标大小
     /// Size of small steps icon
     /// </summary>
     public double IconContainerSizeSM { get; set; }
-    
+
     /// <summary>
     /// Label 水平排列的时候的外间距
     /// External spacing when Label is arranged horizontally
@@ -78,27 +84,27 @@ internal sealed class StepsToken : AbstractControlDesignToken
     /// External spacing of subtitle
     /// </summary>
     public Thickness SubHeaderMargin { get; set; }
-    
+
     /// <summary>
     /// 垂直排列的时候 item 的间距
     /// </summary>
     public double VerticalItemSpacing { get; set; }
-    
+
     /// <summary>
     /// 垂直排列描述的内间距
     /// </summary>
     public Thickness VerticalDescriptionPadding { get; set; }
-    
+
     /// <summary>
     /// 垂直标签排列时候内容跟图标之间的外间距
     /// </summary>
     public Thickness VerticalLabelContentMargin { get; set; }
-    
+
     /// <summary>
     /// 垂直导航类型箭头的外间距
     /// </summary>
     public Thickness VerticalNavArrowMargin { get; set; }
-    
+
     /// <summary>
     /// 垂直导航类型箭头的外间距，小尺寸
     /// </summary>
@@ -108,7 +114,7 @@ internal sealed class StepsToken : AbstractControlDesignToken
     /// 垂直导航类型 item 内边距
     /// </summary>
     public Thickness VerticalNavItemPadding { get; set; }
-    
+
     /// <summary>
     /// 垂直导航类型内容和指示线的间距
     /// </summary>
@@ -121,7 +127,7 @@ internal sealed class StepsToken : AbstractControlDesignToken
     public Color WaitIconBorderColor { get; set; }
     public Color FinishIconBgColor { get; set; }
     public Color FinishIconBorderColor { get; set; }
-    
+
     public Color ProcessTailColor { get; set; }
     public Color ProcessIconColor { get; set; }
     public Color ProcessTitleColor { get; set; }
@@ -181,16 +187,17 @@ internal sealed class StepsToken : AbstractControlDesignToken
     public CornerRadius PanelLastCornerRadius { get; set; }
     public CornerRadius PanelFirstCornerRadiusSM { get; set; }
     public CornerRadius PanelLastCornerRadiusSM { get; set; }
-    
+
     #endregion
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        
+
         CustomIconSize      = EffectiveGlobalToken.ControlHeight;
         CustomIconFontSize  = EffectiveGlobalToken.ControlHeightSM;
         IconContainerSize   = EffectiveGlobalToken.ControlHeight;
+        IconContainerCornerRadius = new CornerRadius(IconContainerSize);
         IconFontSize        = EffectiveGlobalToken.FontSize;
         IconContainerSizeSM = EffectiveGlobalToken.FontSizeHeading3;
         DotSize             = EffectiveGlobalToken.ControlHeight / 4;
@@ -205,7 +212,7 @@ internal sealed class StepsToken : AbstractControlDesignToken
         WaitDescriptionColor  = EffectiveGlobalToken.ColorTextDescription;
         WaitTailColor         = EffectiveGlobalToken.ColorTextDisabled;
         WaitDotColor          = EffectiveGlobalToken.ColorTextDisabled;
-        
+
         ProcessIconColor        = EffectiveGlobalToken.ColorTextLightSolid;
         ProcessTitleColor       = EffectiveGlobalToken.ColorText;
         ProcessDescriptionColor = EffectiveGlobalToken.ColorText;
@@ -216,7 +223,7 @@ internal sealed class StepsToken : AbstractControlDesignToken
 
         ProgressGrooveColor = EffectiveGlobalToken.ColorSplit;
         ProgressColor       = EffectiveGlobalToken.ColorPrimary;
-        
+
         FinishIconBgColor       = EffectiveGlobalToken.ControlItemBgActive;
         FinishIconBorderColor   = EffectiveGlobalToken.ControlItemBgActive;
         FinishIconColor         = EffectiveGlobalToken.ColorPrimary;
@@ -224,7 +231,7 @@ internal sealed class StepsToken : AbstractControlDesignToken
         FinishDescriptionColor  = EffectiveGlobalToken.ColorTextDescription;
         FinishTailColor         = EffectiveGlobalToken.ColorPrimary;
         FinishDotColor          = EffectiveGlobalToken.ColorPrimary;
-        
+
         ErrorIconColor          = EffectiveGlobalToken.ColorTextLightSolid;
         ErrorTitleColor         = EffectiveGlobalToken.ColorError;
         ErrorDescriptionColor   = EffectiveGlobalToken.ColorError;
@@ -245,7 +252,7 @@ internal sealed class StepsToken : AbstractControlDesignToken
             EffectiveGlobalToken.UniformlyPaddingXS + EffectiveGlobalToken.LineWidth,
             inlineItemHorizontalPadding,
             0);
-        
+
         HorizontalHeaderMargin     = new Thickness(EffectiveGlobalToken.UniformlyMargin, 0);
         SubHeaderMargin            = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, 0, 0);
         VerticalItemSpacing        = EffectiveGlobalToken.UniformlyMarginXXS;
@@ -293,5 +300,5 @@ internal sealed class StepsToken : AbstractControlDesignToken
         PanelFirstCornerRadiusSM = new CornerRadius(panelRadiusSM, 0, 0, panelRadiusSM);
         PanelLastCornerRadiusSM  = new CornerRadius(0, panelRadiusSM, panelRadiusSM, 0);
     }
-    
+
 }

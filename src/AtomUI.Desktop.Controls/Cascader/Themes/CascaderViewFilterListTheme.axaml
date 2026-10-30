@@ -13,6 +13,7 @@
         <ControlTheme.BasedOn>
             <atom:ListBoxItemTheme TargetType="atom:CascaderViewFilterListItem" />
         </ControlTheme.BasedOn>
+        <Setter Property="BorderThickness" Value="0" />
 
         <Style Selector="^:is(atom|CascaderViewFilterListItem)">
             <Style Selector="^:pointerover:not(:disabled)">

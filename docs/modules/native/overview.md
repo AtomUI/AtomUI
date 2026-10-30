@@ -10,6 +10,7 @@
 - 提供 Linux/X11 输入区域、窗口几何等底层辅助能力。
 - 承载 Wayland input-region 的协议对象解析与 NWayland 调用；调用时机、输入矩形计算和 Window 状态策略仍属于
   `AtomUI.Desktop.Controls`。
+- 承载实验性 Wayland EGL 帧准备与延迟提交；Desktop 负责兼容性探测，已验证的 Wayland EGL 后端默认启用，可显式关闭。
 - 为 `AtomUI.Core` 和 `AtomUI.Desktop.Controls` 提供内部基础设施。
 - 为目标 `AtomUI.Mobile.Controls` 保留 internal 能力边界；当前没有 Mobile 实现消费者。
 
@@ -27,7 +28,8 @@ src/AtomUI.Native/
 └── Linux/
     ├── X11/XCB/Xlib helpers
     ├── WaylandWindowReflectionExtensions.cs
-    └── WaylandWindowUtils.cs
+    ├── WaylandWindowUtils.cs
+    └── Rendering/                # Wayland EGL prepared frame、callback relay 与错误处理
 ```
 
 每个平台目录中通常拆分为：

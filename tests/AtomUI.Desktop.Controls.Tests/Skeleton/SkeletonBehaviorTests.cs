@@ -43,18 +43,14 @@ public class SkeletonBehaviorTests
     }
 
     [Fact]
-    public void Element_SizeType_Property_Is_Owned_By_Abstract_Element()
+    public void SkeletonInput_Accepts_Custom_SizeType()
     {
-        var source = ReadRepoFile("src/AtomUI.Desktop.Controls/Skeleton/SkeletonElement.cs");
-
         var input = new SkeletonInput
         {
             SizeType = CustomizableSizeType.Small
         };
 
         input.SizeType.ShouldBe(CustomizableSizeType.Small);
-        source.ShouldContain("SizeTypeProperty.AddOwner<SkeletonElement>()");
-        source.ShouldNotContain("SizeTypeProperty.AddOwner<SkeletonButton>()");
     }
 
     [Fact]
@@ -115,13 +111,26 @@ public class SkeletonBehaviorTests
     }
     
     [Fact]
-    public void Active_Animation_Uses_Single_Infinite_Run_To_Avoid_Loop_Reset()
+    public void Active_Animation_Is_Applied_To_Template_Layer_And_Released_When_Inactive()
     {
-        var source = ReadRepoFile("src/AtomUI.Desktop.Controls/Skeleton/AbstractSkeleton.cs");
+        var skeleton = new SkeletonLine();
 
-        source.ShouldContain("IterationCount = IterationCount.Infinite");
-        source.ShouldContain("await animation.RunAsync(this, cancellationTokenSource.Token)");
-        source.ShouldNotContain("RunInfiniteAsync");
+        ShowInWindow(skeleton, () =>
+        {
+            var activeLayer = skeleton.GetVisualDescendants()
+                                      .OfType<Border>()
+                                      .Single(border => border.Name == "PART_ActiveAnimationLayer");
+
+            activeLayer.GetValue(Border.BackgroundProperty).ShouldBeNull();
+
+            skeleton.IsActive = true;
+            Dispatcher.UIThread.RunJobs();
+            activeLayer.GetValue(Border.BackgroundProperty).ShouldNotBeNull();
+
+            skeleton.IsActive = false;
+            Dispatcher.UIThread.RunJobs();
+            activeLayer.GetValue(Border.BackgroundProperty).ShouldBeNull();
+        });
     }
 
     [Fact]

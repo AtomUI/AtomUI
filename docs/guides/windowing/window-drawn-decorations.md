@@ -155,12 +155,14 @@ public static AppBuilder BuildAvaloniaApp() =>
 
 3. **Windows（Win32）：仅标题栏可定制**
    - 客户区扩展时 `NeedsManagedDecorations=true`，`RequestedDrawnDecorations` 只请求 TitleBar。
-   - 边框、阴影、resize 抓手始终由 **DWM** 提供。
+   - 左右下边框、阴影、resize 抓手由 **DWM** 提供。
+   - **例外：Windows 10 的顶边边框**。Avalonia 12 在扩展客户区时把客户区顶到窗口最上沿，Win10 的 DWM 不会在客户区内补画顶边，表现为顶边没有可见边框；Win11 的 DWM 有可见边框绘制，不受影响。AtomUI 在 `WindowDrawnDecorationsTheme.axaml` 的 Overlay 中按 `IsLegacyWindowsFrameBorderVisible`（Win10 + CSD + Full + Normal）补画 1 个物理像素的顶边，颜色由 `FrameBorderActive/Inactive` Token 复现 DWM 阴影纹理。该补偿不改变 NC 几何、resize hit-test 或窗口动画；详见 [Window 实现原理](../../controls/desktop/window/window/implementation.md#62-windows-10-顶边-frame-补偿)。
    - **后果**：
       - `:has-shadow` / `:has-border` / `:has-resize-grips` 伪类**永远为 false** —— 任何依赖这三个伪类的样式（margin / boxshadow / 圆角）在 Win32 都不会触发，**必须用无伪类选择器写一份兜底**。
       - 在 `WindowDrawnDecorations` 里画 `BoxShadow` 也是浪费 —— DWM 已经画了一层，你画的会被它的客户区裁切。
       - X11 SHAPE 那套点击穿透**完全不需要** —— Win32 根本没有阴影 buffer。
       - `ShadowThickness` 在 Win32 上保持 `0` 即可（也是默认值）。
+      - Win10 顶边补偿只存在于 Overlay 的 1px `Border`；不要把它扩展到 Win11，也不要用清除 `WS_CAPTION` 的方式换边框（会关闭窗口动画）。
 
 ### 4.2 一图速记
 
@@ -168,7 +170,7 @@ public static AppBuilder BuildAvaloniaApp() =>
                             macOS              Linux/X11           Windows
 WindowDrawnDecorations 实例化  ❌ 永远 null      ✅ (双门激活)        ✅
 PART_TitleBar 渲染           —                ✅                 ✅
-PART_WindowBorder 渲染       —                ✅                 ❌ (DWM 画)
+PART_WindowBorder 渲染       —                ✅                 ❌ (DWM 画；Win10 顶边由 AtomUI Overlay 补 1px)
 BoxShadow / ShadowThickness  —                ✅                 ❌ (DWM 画)
 ResizeGrips                  —                ✅                 ❌ (DWM 提供)
 :has-shadow / :has-border    —                ✅                 ❌ 永 false

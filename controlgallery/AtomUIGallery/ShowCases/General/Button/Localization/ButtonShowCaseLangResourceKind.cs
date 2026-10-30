@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -10,6 +8,14 @@ public enum ButtonShowCaseLangResourceKind
     ComponentStatusStable,
     PageSubtitle,
     PageDescription,
+    SemanticPartDemoContent,
+    SemanticPartRootDescription,
+    SemanticPartIconDescription,
+    SemanticPartContentDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    P2ContentSemanticObject,
+    P2ContentSemanticFunction,
     ExampleGroupBasicTitle,
     ExampleGroupBasicDescription,
     ExampleGroupShapeTitle,

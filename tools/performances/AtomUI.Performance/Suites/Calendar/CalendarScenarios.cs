@@ -2,74 +2,70 @@ using Avalonia.Controls;
 using AtomCalendar = AtomUI.Desktop.Controls.Calendar;
 using AtomCalendarDateRange = AtomUI.Desktop.Controls.CalendarDateRange;
 using AtomCalendarMode = AtomUI.Desktop.Controls.CalendarMode;
-using AtomCalendarSelectionMode = AtomUI.Desktop.Controls.CalendarSelectionMode;
 
 namespace AtomUI.Performance;
 
 internal static partial class Program
 {
+    // Calendar API 演进：DisplayDate/DisplayMode/SelectionMode/SelectedDates/BlackoutDates 已移除，
+    // 由 Value/Mode/ValidRange/DisabledDate/RangeBars 取代；CalendarMode 仅剩 Month/Year。
     private static IReadOnlyList<PerfScenario> CreateCalendarScenarios()
     {
         return
         [
             new PerfScenario("Calendar.Default", _ => CreateCalendar()),
             new PerfScenario("Calendar.SingleDate.Selected", _ => CreateCalendar(
-                selectionMode: AtomCalendarSelectionMode.SingleDate,
                 selectedDate: new DateTime(2024, 1, 20))),
-            new PerfScenario("Calendar.SingleRange.Selected", _ => CreateCalendar(
-                selectionMode: AtomCalendarSelectionMode.SingleRange,
-                rangeStart: new DateTime(2024, 1, 12),
-                rangeEnd: new DateTime(2024, 1, 20))),
-            new PerfScenario("Calendar.MultipleRange.Blackout", _ => CreateCalendarWithBlackout()),
-            new PerfScenario("Calendar.YearMode", _ => CreateCalendar(displayMode: AtomCalendarMode.Year)),
-            new PerfScenario("Calendar.DecadeMode", _ => CreateCalendar(displayMode: AtomCalendarMode.Decade)),
+            new PerfScenario("Calendar.ShowWeek", _ => CreateCalendar(showWeek: true)),
+            new PerfScenario("Calendar.YearMode", _ => CreateCalendar(mode: AtomCalendarMode.Year)),
+            new PerfScenario("Calendar.DisabledDate", _ => CreateCalendarWithDisabledDates()),
             new PerfScenario("Calendar.RangeRestricted", _ => CreateCalendar(
-                displayDateStart: new DateTime(2024, 1, 10),
-                displayDateEnd: new DateTime(2024, 3, 20))),
-            new PerfScenario("Calendar.MotionDisabled", _ => CreateCalendar(isMotionEnabled: false)),
+                validRange: new AtomCalendarDateRange(new DateTime(2024, 1, 10), new DateTime(2024, 3, 20)))),
+            new PerfScenario("Calendar.RangeBars", _ => CreateCalendarWithRangeBars()),
+            new PerfScenario("Calendar.Mini", _ => CreateCalendar(fullscreen: false)),
             new PerfScenario("Calendar.Batch4", _ => CreateCalendarBatch())
         ];
     }
 
     private static AtomCalendar CreateCalendar(
-        AtomCalendarMode displayMode = AtomCalendarMode.Month,
-        AtomCalendarSelectionMode selectionMode = AtomCalendarSelectionMode.SingleRange,
+        AtomCalendarMode mode = AtomCalendarMode.Month,
         DateTime? selectedDate = null,
-        DateTime? rangeStart = null,
-        DateTime? rangeEnd = null,
-        DateTime? displayDateStart = null,
-        DateTime? displayDateEnd = null,
-        bool isMotionEnabled = true)
+        bool showWeek = false,
+        bool fullscreen = true,
+        AtomCalendarDateRange? validRange = null)
     {
         var calendar = new AtomCalendar
         {
-            DisplayDate      = new DateTime(2024, 1, 1),
-            DisplayDateStart = displayDateStart,
-            DisplayDateEnd   = displayDateEnd,
-            DisplayMode      = displayMode,
-            SelectionMode    = selectionMode,
-            IsMotionEnabled  = isMotionEnabled
+            Mode        = mode,
+            ShowWeek    = showWeek,
+            Fullscreen  = fullscreen,
+            ValidRange  = validRange
         };
 
         if (selectedDate.HasValue)
         {
-            calendar.SelectedDate = selectedDate.Value;
-        }
-
-        if (rangeStart.HasValue && rangeEnd.HasValue)
-        {
-            calendar.SelectedDates.AddRange(rangeStart.Value, rangeEnd.Value);
+            calendar.Value = selectedDate.Value;
         }
 
         return calendar;
     }
 
-    private static AtomCalendar CreateCalendarWithBlackout()
+    private static AtomCalendar CreateCalendarWithDisabledDates()
     {
-        var calendar = CreateCalendar(selectionMode: AtomCalendarSelectionMode.MultipleRange);
-        calendar.BlackoutDates.Add(new AtomCalendarDateRange(new DateTime(2024, 1, 5), new DateTime(2024, 1, 7)));
-        calendar.BlackoutDates.Add(new AtomCalendarDateRange(new DateTime(2024, 1, 21), new DateTime(2024, 1, 25)));
-        calendar.SelectedDates.AddRange(new DateTime(2024, 1, 12), new DateTime(2024, 1, 16));
+        var calendar = CreateCalendar();
+        calendar.DisabledDate = date => date.Day is 5 or 6 or 7;
+        return calendar;
+    }
+
+    private static AtomCalendar CreateCalendarWithRangeBars()
+    {
+        var calendar = CreateCalendar();
+        calendar.RangeBars.Add(new AtomUI.Desktop.Controls.CalendarRangeBar
+        {
+            StartDate = new DateTime(2024, 1, 12),
+            EndDate   = new DateTime(2024, 1, 20),
+            Label     = "Range"
+        });
         return calendar;
     }
 
@@ -81,11 +77,9 @@ internal static partial class Program
             Children =
             {
                 CreateCalendar(),
-                CreateCalendar(
-                    selectionMode: AtomCalendarSelectionMode.SingleDate,
-                    selectedDate: new DateTime(2024, 1, 20)),
-                CreateCalendar(displayMode: AtomCalendarMode.Year),
-                CreateCalendar(displayMode: AtomCalendarMode.Decade, isMotionEnabled: false)
+                CreateCalendar(selectedDate: new DateTime(2024, 1, 20)),
+                CreateCalendar(mode: AtomCalendarMode.Year),
+                CreateCalendar(showWeek: true)
             }
         };
     }

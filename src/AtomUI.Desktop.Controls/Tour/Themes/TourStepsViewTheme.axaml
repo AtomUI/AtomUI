@@ -11,14 +11,19 @@
                         Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}">
                     <DockPanel Name="RootLayout" LastChildFill="True">
-                        <Border Name="FooterFrame" DockPanel.Dock="Bottom">
+                        <Border Name="FooterFrame"
+                                Classes.semantic-popup-footer="True"
+                                DockPanel.Dock="Bottom">
                             <DockPanel LastChildFill="True" HorizontalSpacing="{atom:SharedTokenResource SpacingXS}">
                                 <ContentPresenter Name="IndicatorPresenter"
+                                                  Classes.semantic-popup-indicators="True"
                                                   DockPanel.Dock="Left"
                                                   VerticalAlignment="Center"
                                                   Content="{TemplateBinding Indicator}"/>
                                 <Panel>
-                                    <StackPanel Orientation="Horizontal" Name="ActionsLayout" HorizontalAlignment="Right">
+                                    <StackPanel Orientation="Horizontal" Name="ActionsLayout"
+                                                Classes.semantic-popup-actions="True"
+                                                HorizontalAlignment="Right">
                                         <atom:Button SizeType="Small"
                                                      Name="PreviousButton"
                                                      IsVisible="False"

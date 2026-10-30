@@ -1,4 +1,3 @@
-using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.Primitives.Themes;
@@ -8,7 +7,6 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -651,7 +649,11 @@ internal class AddOnDecoratedBox : InputControlFrame
 
     private static void ApplyAddOnForeground(ContentPresenter? presenter, IBrush? brush)
     {
-        if (presenter == null) return;
+        if (presenter == null)
+        {
+            return;
+        }
+
         if (brush != null)
         {
             if (!ReferenceEquals(presenter.Foreground, brush))
@@ -681,7 +683,11 @@ internal class AddOnDecoratedBox : InputControlFrame
                 continue;
             }
 
-            if (icon.Classes.Contains("skip-status")) continue;
+            if (icon.Classes.Contains("skip-status"))
+            {
+                continue;
+            }
+
             if (brush != null)
             {
                 if (!ReferenceEquals(icon.FillBrush, brush))
@@ -820,17 +826,6 @@ internal class AddOnDecoratedBox : InputControlFrame
     }
     
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 }
 
 internal class AddOnDecoratedBoxContentFrame : PixelAlignedBorder

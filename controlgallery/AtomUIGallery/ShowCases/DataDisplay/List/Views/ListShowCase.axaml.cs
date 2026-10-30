@@ -1,11 +1,8 @@
-using AtomUIGallery.Localization;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -48,6 +45,8 @@ public partial class ListShowCase : GalleryReactiveUserControl<ListViewModel>
                     viewModel.OrderedGroupListItems  = null;
                     viewModel.BasicListBoxItems      = null;
                     viewModel.PaginationListItems    = null;
+                    viewModel.SemanticListItems      = null;
+                    viewModel.SemanticListBoxItems   = null;
                     viewModel.OrderedSortDescriptions = null;
                     viewModel.SearchFilterValue       = null;
                     viewModel.ClearBoundSelectedItems();
@@ -120,6 +119,8 @@ public partial class ListShowCase : GalleryReactiveUserControl<ListViewModel>
         InitializeEmptyDemoItems(viewModel, emptyDemoItemCount);
         InitializeBasicListBoxItems(viewModel);
         InitializePaginationListBoxItems(viewModel);
+        InitializeSemanticListItems(viewModel);
+        InitializeSemanticListBoxItems(viewModel);
     }
 
     internal static string Lang(ListShowCaseLangResourceKind resourceKind, string fallback)
@@ -382,6 +383,32 @@ public partial class ListShowCase : GalleryReactiveUserControl<ListViewModel>
         }
 
         viewModel.PaginationListItems = list;
+    }
+
+    private void InitializeSemanticListItems(ListViewModel viewModel)
+    {
+        viewModel.SemanticListItems =
+        [
+            new ListItemData { Content = "Olivia", Group = "Design" },
+            new ListItemData { Content = "Liam", Group = "Design" },
+            new ListItemData { Content = "Emma", Group = "Design" },
+            new ListItemData { Content = "Noah", Group = "Engineering" },
+            new ListItemData { Content = "Ava", Group = "Engineering" },
+            new ListItemData { Content = "Ethan", Group = "Engineering" }
+        ];
+    }
+
+    private void InitializeSemanticListBoxItems(ListViewModel viewModel)
+    {
+        viewModel.SemanticListBoxItems =
+        [
+            new ListItemData { Content = "Olivia" },
+            new ListItemData { Content = "Liam" },
+            new ListItemData { Content = "Emma" },
+            new ListItemData { Content = "Noah" },
+            new ListItemData { Content = "Ava" },
+            new ListItemData { Content = "Ethan" }
+        ];
     }
 }
 

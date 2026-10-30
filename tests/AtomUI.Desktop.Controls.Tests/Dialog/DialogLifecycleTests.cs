@@ -1053,12 +1053,13 @@ public class DialogLifecycleTests
 
     private static void WaitWithDispatcherPump(Task task)
     {
-        var timeoutAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
-        while (!task.IsCompleted && DateTimeOffset.UtcNow < timeoutAt)
-        {
-            Dispatcher.UIThread.RunJobs();
-            Thread.Sleep(1);
-        }
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        _ = task.ContinueWith(
+            _ => cancellation.Cancel(),
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+        Dispatcher.UIThread.MainLoop(cancellation.Token);
 
         task.IsCompleted.ShouldBeTrue();
         task.GetAwaiter().GetResult();
@@ -1069,8 +1070,8 @@ public class DialogLifecycleTests
         var timeoutAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
         while (!condition() && DateTimeOffset.UtcNow < timeoutAt)
         {
-            Dispatcher.UIThread.RunJobs();
-            Thread.Sleep(1);
+            using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(20));
+            Dispatcher.UIThread.MainLoop(cancellation.Token);
         }
 
         condition().ShouldBeTrue();

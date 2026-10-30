@@ -1,7 +1,13 @@
-using AtomUI.MotionScene;
+using Avalonia.Headless;
+using AtomUI.Desktop.Controls.Tests.Motion;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
+using Avalonia;
+using Avalonia.Input;
+using AtomUI.Animations;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -36,6 +42,168 @@ public class PopupLifecycleTests
         }
         finally
         {
+            popup.IsPopupPinnedOpen = false;
+            CloseWindow(window, popup);
+        }
+    }
+
+    [Fact]
+    public async Task Open_Popup_Starts_Open_Motion_When_Surface_Becomes_Ready_After_Opened()
+    {
+        var (window, panel, _, popup) = CreatePopupWindow();
+        popup.OpenMotion     = new FadeInMotion();
+        popup.MotionDuration = TimeSpan.Zero;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            OpenPopup(popup);
+
+            // The host can finish creating its real surface after Opened.
+            // Fade owns its endpoint; Reset restores the underlying opacity.
+            var lateSurface = new Panel { Width = 20, Height = 20, Opacity = 0.6d };
+            panel.Children.Add(lateSurface);
+            popup.NotifySurfaceReady(lateSurface);
+            Dispatcher.UIThread.RunJobs();
+
+            lateSurface.Opacity.ShouldBe(1.0d);
+            AtomUI.Animations.Motion.Reset(lateSurface);
+            lateSurface.Opacity.ShouldBe(0.6d);
+
+            popup.CloseForLifecycle();
+            var stale = new Panel { Width = 20, Height = 20, Opacity = .5 };
+            var latest = new Panel { Width = 20, Height = 20, Opacity = .7 };
+            panel.Children.Add(stale);
+            panel.Children.Add(latest);
+            window.UpdateLayout();
+            popup.NotifySurfaceReady(lateSurface);
+            (await new FadeInMotion(TimeSpan.Zero).PlayAsync(lateSurface, TestContext.Current.CancellationToken)).IsCompleted.ShouldBeTrue();
+            void ReplaceDuringCleanup(object? sender, AvaloniaPropertyChangedEventArgs change)
+            {
+                if (change.Property == Visual.OpacityProperty && lateSurface.Opacity != 1)
+                {
+                    lateSurface.PropertyChanged -= ReplaceDuringCleanup;
+                    popup.NotifySurfaceReady(latest);
+                }
+            }
+            lateSurface.PropertyChanged += ReplaceDuringCleanup;
+            popup.NotifySurfaceReady(stale);
+            latest.Opacity.ShouldBe(0);
+            stale.Opacity.ShouldBe(.5);
+            var opacityChanges = 0;
+            latest.PropertyChanged += (_, change) =>
+            {
+                if (change.Property == Visual.OpacityProperty)
+                {
+                    opacityChanges++;
+                }
+            };
+            popup.NotifySurfaceReady(latest);
+            opacityChanges.ShouldBe(0, "A duplicate notification for the newest surface must retain its preparation.");
+        }
+        finally
+        {
+            CloseWindow(window, popup);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Pinning_An_Open_Popup_Updates_Only_Its_Mask_Without_Reopening(bool initiallyPinned)
+    {
+        var (window, _, popup) = CreateDismissPopupWindow();
+        popup.IsMotionEnabled = false;
+        popup.IsLightDismissEnabled = true;
+        popup.IsPopupPinnedOpen = initiallyPinned;
+        var opened = 0;
+        var closed = 0;
+        popup.Opened += (_, _) => opened++;
+        popup.Closed += (_, _) => closed++;
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            OpenPopup(popup);
+            var host = window.GetVisualDescendants().OfType<OverlayPopupHost>().Single();
+            var child = popup.Child;
+            for (var i = 0; i < 3; i++)
+            {
+                popup.IsPopupPinnedOpen = true;
+                window.UpdateLayout();
+                Dispatcher.UIThread.RunJobs();
+                Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                popup.IsLightDismissEnabled.ShouldBeFalse();
+                window.InputHitTest(new Point(340, 290))?.GetType().Name.ShouldNotBe("LightDismissOverlayLayer");
+
+                popup.IsPopupPinnedOpen = false;
+                window.UpdateLayout();
+                Dispatcher.UIThread.RunJobs();
+                Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                popup.IsLightDismissEnabled.ShouldBeTrue();
+                window.InputHitTest(new Point(340, 290))?.GetType().Name.ShouldBe("LightDismissOverlayLayer");
+                window.GetVisualDescendants().OfType<OverlayPopupHost>().Single().ShouldBeSameAs(host);
+                popup.Child.ShouldBeSameAs(child);
+                popup.IsOpen.ShouldBeTrue();
+                opened.ShouldBe(1);
+                closed.ShouldBe(0);
+            }
+            // The restored registration must route real outside input to light-dismiss.
+            window.MouseDown(new Point(340, 290), MouseButton.Left);
+            window.MouseUp(new Point(340, 290), MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+            popup.IsOpen.ShouldBeFalse();
+            closed.ShouldBe(1);
+        }
+        finally
+        {
+            popup.IsPopupPinnedOpen = false;
+            CloseWindow(window, popup);
+        }
+    }
+
+    [Fact]
+    public void Pinning_One_Popup_Does_Not_Remove_Another_Popups_Mask_And_Restores_Latest_Config()
+    {
+        var (window, target, popup) = CreateDismissPopupWindow();
+        var other = CreatePopup(target);
+        popup.IsMotionEnabled = other.IsMotionEnabled = false;
+        popup.IsLightDismissEnabled = other.IsLightDismissEnabled = true;
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            OpenPopup(popup);
+            OpenPopup(other);
+            window.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+
+            popup.IsPopupPinnedOpen = true;
+            Dispatcher.UIThread.RunJobs();
+
+            var dismissLayer = window.GetVisualDescendants()
+                                     .Single(layer => layer.GetType().Name == "LightDismissOverlayLayer");
+            popup.IsLightDismissEnabled.ShouldBeFalse();
+            other.IsLightDismissEnabled.ShouldBeTrue();
+            dismissLayer.IsVisible.ShouldBeTrue();
+
+            window.MouseDown(new Point(340, 290), MouseButton.Left);
+            window.MouseUp(new Point(340, 290), MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            popup.IsOpen.ShouldBeTrue();
+            other.IsOpen.ShouldBeFalse();
+            dismissLayer.IsVisible.ShouldBeFalse();
+
+            popup.IsLightDismissEnabled = false;
+            popup.IsPopupPinnedOpen = false;
+            popup.IsLightDismissEnabled.ShouldBeFalse();
+            dismissLayer.IsVisible.ShouldBeFalse();
+        }
+        finally
+        {
+            other.CloseForLifecycle();
             popup.IsPopupPinnedOpen = false;
             CloseWindow(window, popup);
         }
@@ -431,27 +599,57 @@ public class PopupLifecycleTests
     [Fact]
     public void Normal_Close_Still_Uses_Close_Motion()
     {
+        using var clock = new ManualMotionClock();
         var (window, _, _, popup) = CreateAnimatedPopupWindow();
-        var closedCount = 0;
-        popup.Closed += (_, _) => closedCount++;
-
+        popup.MotionDuration = TimeSpan.FromSeconds(1);
         try
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
             OpenPopup(popup);
-
             popup.Close();
-            Dispatcher.UIThread.RunJobs();
-
-            popup.IsOpen.ShouldBeTrue();
+            Pump();
             popup.IsPlayingCloseMotion.ShouldBeTrue();
-            closedCount.ShouldBe(0);
-            window.GetVisualDescendants().OfType<OverlayPopupHost>().ShouldHaveSingleItem();
+            Step(0);
+            Step(1100);
+            Hosts().ShouldBeEmpty();
+
+            popup.IsOpen = true;
+            Pump();
+            popup.IsOpen = false;
+            Pump();
+            Hosts().ShouldHaveSingleItem();
+            Step(1100);
+            Step(2200);
+            popup.IsOpen.ShouldBeFalse();
+            Hosts().ShouldBeEmpty();
+
+            popup.IsOpen = true;
+            Pump();
+            popup.IsOpen = false;
+            Pump();
+            Step(2200);
+            Step(2500);
+            popup.IsOpen = true;
+            Pump();
+            Step(3600);
+            popup.IsOpen.ShouldBeTrue();
+            Hosts().ShouldHaveSingleItem();
         }
         finally
         {
             CloseWindow(window, popup);
+        }
+        OverlayPopupHost[] Hosts() => window.GetVisualDescendants().OfType<OverlayPopupHost>().ToArray();
+        void Pump()
+        {
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+        }
+        void Step(int milliseconds)
+        {
+            clock.Step(milliseconds);
+            Pump();
         }
     }
 
@@ -470,12 +668,15 @@ public class PopupLifecycleTests
             Height  = 320,
             Content = target
         };
+        popup.Resources.MergedDictionaries.Add(new AtomUI.Desktop.Controls.Themes.OverlayPopupHostTheme());
 
         try
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
             OpenPopup(popup);
+            window.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
 
             popup.Close();
             Dispatcher.UIThread.RunJobs();
@@ -509,22 +710,72 @@ public class PopupLifecycleTests
 
             popup.IsPlayingCloseMotion.ShouldBeTrue();
             closeMotion.ConfigurationCount.ShouldBe(1);
+            var closed = 0;
+            popup.Closed += (_, _) => closed++;
+            ReplaceSurface();
+            Dispatcher.UIThread.RunJobs();
+            window.GetVisualDescendants().OfType<OverlayPopupHost>().ShouldBeEmpty();
+            closed.ShouldBe(1);
+
+            popup.IsOpen = true;
+            Dispatcher.UIThread.RunJobs();
+            popup.Close();
+            popup.Close();
+            ReplaceSurface();
+            Dispatcher.UIThread.RunJobs();
+            window.GetVisualDescendants().OfType<OverlayPopupHost>().ShouldBeEmpty();
+            closed.ShouldBe(2);
         }
         finally
         {
             CloseWindow(window, popup);
         }
+        void ReplaceSurface()
+        {
+            var host = window.GetVisualDescendants().OfType<OverlayPopupHost>().Single();
+            host.Template = new FuncControlTemplate<OverlayPopupHost>((_, _) =>
+            {
+                var content = new ContentPresenter();
+                content.Bind(ContentPresenter.ContentProperty, new TemplateBinding(ContentControl.ContentProperty));
+                content.Bind(ContentPresenter.ContentTemplateProperty, new TemplateBinding(ContentControl.ContentTemplateProperty));
+                return new PopupSurface { Children = { content } };
+            });
+            host.ApplyTemplate();
+        }
+    }
+
+    private static (Avalonia.Controls.Window Window, Control Target, AtomUIPopup Popup) CreateDismissPopupWindow()
+    {
+        var target = new Border { Width = 100, Height = 30 };
+        var popup = CreatePopup(target);
+        var canvas = new Canvas { Children = { target, popup } };
+        var panel = new AtomUI.Controls.Primitives.ScopeAwareOverlayLayerPanel
+        {
+            Width = 360, Height = 320, Children = { canvas }
+        };
+        var layers = new VisualLayerManager { Child = panel };
+        typeof(VisualLayerManager).GetProperty("EnablePopupOverlayLayer",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(layers, true);
+        return (new Avalonia.Controls.Window { Width = 360, Height = 320, Content = layers }, target, popup);
     }
 
     private static (AtomUIWindow Window, Panel Panel, Control Target, AtomUIPopup Popup)
         CreateAnimatedPopupWindow()
+    {
+        var result = CreatePopupWindow();
+        return result;
+    }
+
+    private static (AtomUIWindow Window, Panel Panel, Control Target, AtomUIPopup Popup)
+        CreatePopupWindow()
     {
         var target = new Border
         {
             Width  = 100,
             Height = 30
         };
-        var popup = CreateAnimatedPopup(target);
+        var popup = CreatePopup(target);
 
         var panel = new Canvas();
         panel.Children.Add(target);
@@ -541,6 +792,12 @@ public class PopupLifecycleTests
 
     private static AtomUIPopup CreateAnimatedPopup(Control target)
     {
+        var popup = CreatePopup(target);
+        return popup;
+    }
+
+    private static AtomUIPopup CreatePopup(Control target)
+    {
         var popup = new AtomUIPopup
         {
             PlacementTarget       = target,
@@ -555,7 +812,6 @@ public class PopupLifecycleTests
                 Height = 40
             }
         };
-        popup.NotifyMotionActorReady(new PopupMotionActor());
         return popup;
     }
 
@@ -566,7 +822,7 @@ public class PopupLifecycleTests
         popup.IsOpen.ShouldBeTrue();
     }
 
-    private static void CloseWindow(AtomUIWindow window, AtomUIPopup popup)
+    private static void CloseWindow(Avalonia.Controls.Window window, AtomUIPopup popup)
     {
         popup.CancelCloseAnimation();
         popup.IsMotionEnabled = false;
@@ -579,10 +835,10 @@ public class PopupLifecycleTests
     {
         public int ConfigurationCount { get; private set; }
 
-        protected override void ConfigureTransitions()
+        protected override void Build(MotionBuilder builder, in MotionContext context)
         {
             ConfigurationCount++;
-            base.ConfigureTransitions();
+            base.Build(builder, context);
         }
     }
 }

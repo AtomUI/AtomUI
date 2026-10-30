@@ -1,15 +1,28 @@
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
-              xmlns:calendarview="using:AtomUI.Desktop.Controls.CalendarView"
+              xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
+              xmlns:themes="clr-namespace:AtomUI.Desktop.Controls.Themes"
               x:Class="AtomUI.Desktop.Controls.Themes.DatePickerPresenterTheme"
               TargetType="atom:DatePickerPresenter"
               x:ClassModifier="internal">
+    <ControlTheme.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceInclude Source="/DatePicker/Themes/DatePickerPresenterResources.axaml" />
+        </ResourceDictionary.MergedDictionaries>
+        <ControlTheme x:Key="DatePickerDatePanelTheme" TargetType="viewer:DatePanel">
+            <ControlTheme.BasedOn><themes:DatePanelTheme TargetType="viewer:DatePanel" /></ControlTheme.BasedOn>
+        </ControlTheme>
+        </ResourceDictionary>
+    </ControlTheme.Resources>
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:DatePickerPresenter">
             <DockPanel Name="RootLayout"
+                       Classes.semantic-popup-container="True"
                        LastChildFill="True">
                 <atom:PixelAlignedBorder Name="ButtonsFrame"
+                                         Classes.semantic-popup-footer="True"
                                          BorderThickness="{TemplateBinding BorderThickness, Converter={x:Static atom:DatePickerPresenterTheme.BorderThicknessFilterConverter}}"
                                          IsVisible="{TemplateBinding IsButtonsPanelVisible}"
                                          DockPanel.Dock="Bottom">
@@ -35,10 +48,12 @@
                     </Panel>
                 </atom:PixelAlignedBorder>
                 <StackPanel Orientation="Horizontal">
-                    <calendarview:Calendar
-                        Name="PART_CalendarView"
-                        PickerMode="{TemplateBinding PickerMode}"
-                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                    <atom:DateViewer Name="PART_DateViewer"
+                                     Padding="0"
+                                     Height="{TemplateBinding PanelHeight}"
+                                     PanelTheme="{StaticResource DatePickerDatePanelTheme}"
+                                     HeaderTemplate="{StaticResource DatePickerViewerHeader}"
+                                     Presentation="Compact" />
                     <atom:TimeView Name="PART_TimeView"
                                    VerticalAlignment="Top"
                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"

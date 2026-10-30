@@ -1,4 +1,4 @@
-﻿using AtomUI.Animations;
+using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -44,7 +44,13 @@ public abstract class AbstractSegmentedItem : ContentControl, ISelectable
     
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractSegmentedItem>();
-    
+
+    /// <summary>
+    /// 选中滑块飞行期间由 owner 置位，用于屏蔽 item 的 hover/pressed 遮罩。
+    /// </summary>
+    internal static readonly StyledProperty<bool> IsThumbMotionActiveProperty =
+        AvaloniaProperty.Register<AbstractSegmentedItem, bool>(nameof(IsThumbMotionActive));
+
     internal CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
@@ -62,9 +68,17 @@ public abstract class AbstractSegmentedItem : ContentControl, ISelectable
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
+    internal bool IsThumbMotionActive
+    {
+        get => GetValue(IsThumbMotionActiveProperty);
+        set => SetValue(IsThumbMotionActiveProperty, value);
+    }
+
     #endregion
     
+    private readonly TransitionInitializationSession _transitionInitialization;
+
     static AbstractSegmentedItem()
     {
         SelectableMixin.Attach<AbstractSegmentedItem>(IsSelectedProperty);
@@ -73,22 +87,34 @@ public abstract class AbstractSegmentedItem : ContentControl, ISelectable
         AffectsRender<AbstractSegmentedItem>(BackgroundProperty);
     }
 
-    protected override void OnInitialized()
+    protected AbstractSegmentedItem()
     {
-        base.OnInitialized();
-        this.DisableTransitions();
+        _transitionInitialization = new TransitionInitializationSession(this);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        _transitionInitialization.CompleteInitialization();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         UpdatePseudoClasses();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

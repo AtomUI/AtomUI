@@ -5,7 +5,7 @@ namespace AtomUI.Desktop.Controls;
 
 using ToolTipControl = AtomUI.Desktop.Controls.ToolTip;
 
-public class FloatButton : AbstractFloatButton
+public partial class FloatButton : AbstractFloatButton
 {
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

@@ -56,4 +56,6 @@ internal readonly record struct DatePickerDateRangeConstraint(
     {
         return DatePickerFormattingHelper.NormalizeDateTime(value, PickerMode);
     }
+
+    internal DateTime? NormalizeNullable(DateTime? value) => value is { } date ? Normalize(date) : null;
 }

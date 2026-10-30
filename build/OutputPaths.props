@@ -4,6 +4,8 @@
         <OutputPathWithoutFramework>$(MSBuildThisFileDirectory)../.artifacts/bin/$(Configuration)</OutputPathWithoutFramework>
         <OutputPath>$(OutputPathWithoutFramework)</OutputPath>
         <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)../.artifacts/$(MSBuildProjectName)/obj</BaseIntermediateOutputPath>
+        <AtomUIToolchainProfile Condition="'$(MSBuildProjectName)' == 'AtomUI.Toolchain' and '$(AtomUIToolchainProfile)' == ''">Tasks</AtomUIToolchainProfile>
+        <BaseIntermediateOutputPath Condition="'$(MSBuildProjectName)' == 'AtomUI.Toolchain'">$(BaseIntermediateOutputPath)/$(AtomUIToolchainProfile)</BaseIntermediateOutputPath>
         <IntermediateOutputPathWithoutFramework>$(BaseIntermediateOutputPath)</IntermediateOutputPathWithoutFramework>
         <IntermediateOutputPath>$(BaseIntermediateOutputPath)/$(Configuration)</IntermediateOutputPath>
 
@@ -12,5 +14,9 @@
         <VSTestResultsDirectory Condition="'$(IsTestProject)' == 'true' and '$(VSTestResultsDirectory)' == ''">$(AtomUITestResultsDirectory)</VSTestResultsDirectory>
         <VSTestBlameHangDumpType Condition="'$(IsTestProject)' == 'true' and '$(VSTestBlameHang)' == 'true' and '$(VSTestBlameHangDumpType)' == ''">none</VSTestBlameHangDumpType>
         <VSTestBlameCrashDumpType Condition="'$(IsTestProject)' == 'true' and '$(VSTestBlameCrash)' == 'true' and '$(VSTestBlameCrashDumpType)' == ''">none</VSTestBlameCrashDumpType>
+        <!-- Content-addressed toolset cache lives outside every project's bin/obj so clean and
+             rebuild of any project can never invalidate a task-assembly path an evaluation
+             already resolved. See AtomUIBuildTasksToolsetDirectory in AtomUI.Repository.props. -->
+        <AtomUIToolsetCacheRoot>$(MSBuildThisFileDirectory)../.artifacts/tools</AtomUIToolsetCacheRoot>
     </PropertyGroup>
 </Project>

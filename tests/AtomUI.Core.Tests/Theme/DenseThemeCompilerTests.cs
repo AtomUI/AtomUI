@@ -42,7 +42,7 @@ public class DenseThemeCompilerTests
         registry.TryGetControl(input.Identity, out input).ShouldBeTrue();
         var algorithm = registry.Algorithms.Single(static item => item.Algorithm == ThemeAlgorithm.Default);
         var location = new ThemeSourceLocation("test", 1, 1, "/Theme");
-        var definition = new BoundThemeDefinition(
+        var definition = new PreparedThemeDefinition(
             "TestTheme",
             "Test Theme",
             ThemeAppearance.Light,
@@ -233,7 +233,10 @@ public class DenseThemeCompilerTests
 
         result.Success.ShouldBeTrue();
         resourceProjections.ShouldBe(1);
-        var controlSnapshot = result.Snapshot!.Controls.ShouldHaveSingleItem();
+        // Controls 为按槽位惰性容器（不实现枚举），单槽位语义用 Count + 索引表达。
+        var controls = result.Snapshot!.Controls;
+        controls.Count.ShouldBe(1);
+        var controlSnapshot = controls[0];
         controlSnapshot.EffectiveGlobalTokenDelta.ShouldBeEmpty();
         controlSnapshot.EffectiveGlobalResourceDelta.ShouldBeEmpty();
         controlSnapshot.ControlTokenValues.ShouldBeSameAs(TokenValueTable.Empty);
@@ -253,7 +256,9 @@ public class DenseThemeCompilerTests
 
         result.Success.ShouldBeTrue();
         resourceProjections.ShouldBe(1);
-        var controlSnapshot = result.Snapshot!.Controls.ShouldHaveSingleItem();
+        var controls = result.Snapshot!.Controls;
+        controls.Count.ShouldBe(1);
+        var controlSnapshot = controls[0];
         controlSnapshot.EffectiveGlobalTokenDelta.ShouldBeEmpty();
         controlSnapshot.EffectiveGlobalResourceDelta.ShouldBeEmpty();
         controlSnapshot.ControlTokenValues.Count.ShouldBe(1);
@@ -348,10 +353,14 @@ public class DenseThemeCompilerTests
             reusableParent: parent,
             changeSet: changeSet)).Snapshot!;
 
-        buttonEvaluations.ShouldBe(2);
-        inputEvaluations.ShouldBe(1);
         child.Controls[button.Slot].ShouldNotBeSameAs(parent.Controls[button.Slot]);
         child.Controls[input.Slot].ShouldBeSameAs(parent.Controls[input.Slot]);
+
+        // 惰性契约（runtime.md §7 控件槽位编译契约）：评估发生在首访而非编译期。
+        // 首访后 button 被父子两次独立求值（2），input 复用父对象只求值一次（1）——
+        // "changeSet 只重算变更控件"的不变量保持不变。
+        buttonEvaluations.ShouldBe(2);
+        inputEvaluations.ShouldBe(1);
     }
 
     [Fact]
@@ -404,10 +413,13 @@ public class DenseThemeCompilerTests
               .ShouldBeSameAs(transform);
     }
 
-    [Fact]
-    public void Compile_Clones_Mutable_Spline_Easing_Control_Token_Values()
+    [Theory]
+    [InlineData("token")]
+    [InlineData("resource")]
+    [InlineData("consumer")]
+    public void Compile_Clones_Mutable_Spline_Easing_Control_Token_Values(string path)
     {
-        var easing = new SplineEasing(0.1, 0.9, 0.2, 1.0);
+        var easing = new SplineEasing { X1 = 0.1, Y1 = 0.3, X2 = 0.6, Y2 = 0.8 };
         var control = EasingControl("SplitView", easing);
         var registry = CreateRegistry([control]);
         registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
@@ -415,14 +427,20 @@ public class DenseThemeCompilerTests
         var result = new ThemeCompiler().Compile(CreateInput(registry));
 
         result.Success.ShouldBeTrue();
-        var frozen = result.Snapshot!.Controls[control.Slot]
-                           .ControlTokenValues.Get<Easing>(0)
-                           .ShouldBeOfType<SplineEasing>();
+        var snapshot = result.Snapshot!.Controls[control.Slot];
+        var frozen = (path switch
+        {
+            "token" => snapshot.ControlTokenValues.GetValue(0),
+            "resource" => snapshot.ControlResources[control.OwnTokens[0].ResourceKey],
+            "consumer" => snapshot.ControlTokenValues.Get<Easing>(0),
+            _ => throw new ArgumentOutOfRangeException(nameof(path))
+        }).ShouldBeOfType<SplineEasing>();
         frozen.ShouldNotBeSameAs(easing);
-        frozen.X1.ShouldBe(easing.X1);
-        frozen.Y1.ShouldBe(easing.Y1);
-        frozen.X2.ShouldBe(easing.X2);
-        frozen.Y2.ShouldBe(easing.Y2);
+        easing.Y1 = 0.9;
+        frozen.X1.ShouldBe(0.1);
+        frozen.Y1.ShouldBe(0.3);
+        frozen.X2.ShouldBe(0.6);
+        frozen.Y2.ShouldBe(0.8);
     }
 
     [Fact]
@@ -470,7 +488,7 @@ public class DenseThemeCompilerTests
         var effectiveAlgorithms = algorithms ??
             [registry.Algorithms.Single(static algorithm => algorithm.Algorithm == ThemeAlgorithm.Default)];
         var location = new ThemeSourceLocation("test", 1, 1, "/Theme");
-        var definition = new BoundThemeDefinition(
+        var definition = new PreparedThemeDefinition(
             "TestTheme",
             "Test Theme",
             ThemeAppearance.Light,

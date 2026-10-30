@@ -1,6 +1,6 @@
 # AtomUI Mobile 文档规范
 
-本文档定义 AtomUI Mobile 架构、模块、Control、平台工程、Gallery 和 LLMS 文档的责任边界、证据状态和同步要求。
+本文档定义 AtomUI Mobile 架构、模块、Control、平台工程和 Gallery 文档的责任边界、证据状态和同步要求。
 通用目录与命名规则见 [文档结构与命名规范](documentation-structure-guidelines.md)，单 Control 文件契约见
 [AtomUI Control 文档规范](control-documentation-guidelines.md)。本文只补充 Mobile 专项规则。
 
@@ -16,7 +16,7 @@ Mobile 文档遵守以下不变量：
 - Mobile 复用 AtomUI Global Token、Theme Algorithm、`ThemeConfigProvider` 和 Localization 运行时。
 - Safe Area、键盘遮挡、方向、打开状态、选择状态和 gesture progress 是运行时状态，不是 Token。
 - 当前 `AtomUI.Toolkits.GalleryBase` 直接依赖 Desktop Controls，不作为 Mobile Gallery Foundation 的依赖。
-- Desktop 与 Mobile Control 文档、Gallery 证据和 LLMS 输出分别拥有独立路径。
+- Desktop 与 Mobile Control 文档和 Gallery 证据分别拥有独立路径。
 
 ## 文档路由
 
@@ -27,7 +27,6 @@ Mobile 文档遵守以下不变量：
 | Mobile 平台导航、分类兼容清单和具体 Control 契约 | `docs/controls/mobile/` | 签名流程、包注册、跨控件状态机 |
 | iOS/Android 工具链、签名、构建、模拟器和真机 | `docs/engineering/platforms/` | Control API、Token 和 Gallery 内容模型 |
 | Mobile Gallery 内容主体及 iOS/Android Host 责任 | `docs/gallery/platforms/mobile-gallery.md` | 完整平台工具链和 Control 契约 |
-| LLMS 配置、输入输出和隔离规则 | `docs/engineering/tooling/llms-generator-design.md` | 手工生成产物和 Control 专属知识 |
 | 方案、实施计划和日期化验证证据 | `docs/superpowers/` | 正式架构和当前能力的唯一来源 |
 
 稳定事实只由一个正式 owner 维护。其他入口保留摘要和链接，不复制完整状态机、平台矩阵、Token 规则或验证清单。
@@ -134,7 +133,7 @@ iOS 与 Android 使用平行的责任模型，但验证状态允许不同：
 - Simulator/Emulator、真机、屏幕阅读器、IME、旋转、前后台和 Host 重建分别记录证据。
 - iOS-first 不允许删除 Android 列、Android adapter 边界或 Android 验证要求。
 
-## Gallery 与 LLMS 隔离
+## Gallery 隔离
 
 Mobile Gallery 文档必须反映真实依赖：
 
@@ -143,22 +142,6 @@ Mobile Gallery 文档必须反映真实依赖：
 - 当前 Desktop-bound `AtomUI.Toolkits.GalleryBase` 不能作为 Mobile Foundation 依赖。
 - 共享 Gallery contracts 只有在出现真实、稳定、无 Desktop 语义的重复后才能另行设计。
 
-Desktop 与 Mobile LLMS 使用独立配置和输出 owner。当前 Desktop 继续使用：
-
-```text
-docs/AI/generated/llms.config.json
-docs/AI/generated/llms/
-```
-
-Mobile Foundation 的目标路径是：
-
-```text
-docs/AI/generated/mobile-llms.config.json
-docs/AI/generated/mobile-llms/
-```
-
-在 Mobile 配置和 Generator 支持实际落地前，不创建上述文件或目录。任何生成内容都从正式 Control 文档、源码、Theme、
-Token 和 Gallery 结构化输入生成，禁止手工编辑。
 
 ## 同步矩阵
 
@@ -167,13 +150,11 @@ Token 和 Gallery 结构化输入生成，禁止手工编辑。
 | Mobile Runtime contract | Mobile Architecture、Module 摘要、受影响 Control 摘要、验证文档 |
 | 包依赖、注册或 adapter | Module、dependency graph、runtime platforms、Native 边界、AOT/打包说明 |
 | Public API 或行为 | Control overview/implementation/changelog、Gallery API/ShowCase、Contract tests、兼容状态 |
-| Theme、Token 或 Semantic Part | Control overview/token/implementation、Theme tests、Gallery Token 表、LLMS source |
+| Theme、Token 或 Semantic Part | Control overview/token/implementation、Theme tests、Gallery Token 表 |
 | iOS/Android 证据 | 分类兼容清单、平台文档或日期化证据、Release 状态 |
 | Gallery Host 结构 | Mobile Gallery 文档、平台入口、受影响 ShowCase ownership |
-| LLMS 接入 | Generator 设计、独立配置、输出验证、Control 文档输入覆盖 |
 
-Foundation 和每个控件波次结束时，逐项检查 Architecture、Module、Controls、Engineering Platforms、Gallery 和 LLMS
-影响。没有影响的领域应明确为无变更，不能默认遗漏。
+Foundation 和每个控件波次结束时，逐项检查 Architecture、Module、Controls、Engineering Platforms 和 Gallery 影响。没有影响的领域应明确为无变更，不能默认遗漏。
 
 ## 验证清单
 
@@ -184,6 +165,5 @@ Foundation 和每个控件波次结束时，逐项检查 Architecture、Module�
 - iOS、Android、Release 和 Publication 是否分别表达。
 - Theme 文档是否复用现有全局系统，运行时状态是否保持在 Token 之外。
 - Gallery 文档是否反映当前 Desktop-bound GalleryBase 依赖。
-- Desktop/Mobile LLMS 路径是否隔离，生成产物是否未被手工修改。
 - 所有人工维护目录是否使用 `overview.md`。
-- 相对链接、旧路径扫描、LLMS verify 和 `git diff --check` 是否通过。
+- 相对链接、旧路径扫描和 `git diff --check` 是否通过。

@@ -1,12 +1,9 @@
-using AtomUIGallery.Localization;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
-using AtomUI.Localization;
 using Avalonia;
 
 namespace AtomUIGallery.ShowCases.Select;
@@ -53,6 +50,9 @@ public partial class SelectShowCase : GalleryReactiveUserControl<SelectViewModel
                     viewModel.DefaultSelectedOptions   = null;
                     viewModel.BoundSelectedOption      = null;
                     viewModel.BoundSelectedOptions     = null;
+                    viewModel.SemanticPreviewOptions   = null;
+                    viewModel.SemanticPreviewSelectedOptions = null;
+                    viewModel.StyleClassOptions        = null;
                 }).DisposeWith(disposables);
             }
         });
@@ -62,9 +62,9 @@ public partial class SelectShowCase : GalleryReactiveUserControl<SelectViewModel
 
     private void HandleCustomSearchSelectAttached(object? sender, VisualTreeAttachmentEventArgs args)
     {
-        if (sender is AtomUISelect CustomSearchSelect)
+        if (sender is AtomUISelect customSearchSelect)
         {
-            CustomSearchSelect.Filter = new CustomFilter();
+            customSearchSelect.Filter = new CustomFilter();
         }
     }
 
@@ -88,6 +88,8 @@ public partial class SelectShowCase : GalleryReactiveUserControl<SelectViewModel
         InitializeMaxCountLimitedOptions(viewModel);
         InitializeMaxTagCountOptions(viewModel);
         InitializePrefixSuffixOptions(viewModel);
+        InitializeSemanticPreviewOptions(viewModel);
+        InitializeStyleClassOptions(viewModel);
         viewModel.SelectOptionsAsyncLoader = new SelectOptionsAsyncLoader();
     }
 
@@ -214,6 +216,27 @@ public partial class SelectShowCase : GalleryReactiveUserControl<SelectViewModel
             Option(SelectShowCaseLangResourceKind.P2HeaderJack, "Jack", "jack"),
             Option(SelectShowCaseLangResourceKind.P2HeaderLucy, "Lucy", "lucy"),
             Option(SelectShowCaseLangResourceKind.P2HeaderYiminghe2, "yiminghe", "Yiminghe")
+        ];
+    }
+
+    private void InitializeSemanticPreviewOptions(SelectViewModel viewModel)
+    {
+        var options = new List<ISelectOption>
+        {
+            Option(SelectShowCaseLangResourceKind.P2HeaderJack, "Jack", "jack"),
+            Option(SelectShowCaseLangResourceKind.P2HeaderLucy, "Lucy", "lucy"),
+            Option(SelectShowCaseLangResourceKind.P2HeaderYiminghe, "Yiminghe", "yiminghe")
+        };
+        viewModel.SemanticPreviewOptions         = options;
+        viewModel.SemanticPreviewSelectedOptions = [options[0], options[1]];
+    }
+
+    private static void InitializeStyleClassOptions(SelectViewModel viewModel)
+    {
+        viewModel.StyleClassOptions =
+        [
+            new SelectOption { Header = "GuangZhou", Content = "GuangZhou" },
+            new SelectOption { Header = "ShenZhen", Content = "ShenZhen" }
         ];
     }
 

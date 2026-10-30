@@ -17,17 +17,40 @@ public partial class MentionsShowCase : GalleryReactiveUserControl<MentionsViewM
             if (DataContext is MentionsViewModel viewModel)
             {
                 InitBasicMentionOptions(viewModel);
+                InitSemanticPreviewOptions(viewModel);
+                InitStyleClassOptions(viewModel);
                 viewModel.MentionTriggers          = ["@", "#"];
                 viewModel.MentionOptionAsyncLoader = new MentionOptionsAsyncLoader();
 
                 Disposable.Create(() =>
                 {
                     viewModel.BasicMentionOptions      = null;
+                    viewModel.SemanticPreviewOptions   = null;
+                    viewModel.StyleClassOptions        = null;
                     viewModel.MentionTriggers          = null;
                     viewModel.MentionOptionAsyncLoader = null;
                 }).DisposeWith(disposables);
             }
         });
+    }
+
+    private void InitSemanticPreviewOptions(MentionsViewModel viewModel)
+    {
+        viewModel.SemanticPreviewOptions =
+        [
+            new MentionOption { Header = "afc163", Value = "afc163" },
+            new MentionOption { Header = "zombieJ", Value = "zombieJ" },
+            new MentionOption { Header = "yesmeck", Value = "yesmeck" }
+        ];
+    }
+
+    private static void InitStyleClassOptions(MentionsViewModel viewModel)
+    {
+        viewModel.StyleClassOptions =
+        [
+            new MentionOption { Header = "afc163", Value = "afc163" },
+            new MentionOption { Header = "zombieJ", Value = "zombieJ" }
+        ];
     }
 
     private void InitBasicMentionOptions(MentionsViewModel viewModel)

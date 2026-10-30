@@ -33,8 +33,8 @@
                                               HorizontalContentAlignment="Center"
                                               VerticalContentAlignment="Center"
                                               IsHitTestVisible="False"
-                                              Content="{TemplateBinding EffectiveLogo}"
-                                              ContentTemplate="{TemplateBinding EffectiveLogoTemplate}"
+                                              Content="{TemplateBinding EffectiveLogoPresenterContent}"
+                                              ContentTemplate="{TemplateBinding EffectiveLogoPresenterContentTemplate}"
                                               IsVisible="{TemplateBinding IsEffectiveLogoVisible}" />
                             <ContentPresenter Name="PART_LeftAddOn"
                                               DockPanel.Dock="Left"
@@ -65,7 +65,8 @@
                                               IsVisible="{TemplateBinding IsEffectiveTitleVisible}" />
                         </DockPanel>
                         <StackPanel atom:WindowTitleBarLayoutPanel.Role="Trailing"
-                                    Orientation="Horizontal">
+                                    Orientation="Horizontal"
+                                    Spacing="{atom:WindowTitleBarTokenResource CaptionGroupSpacing}">
                             <ContentPresenter Name="PART_RightAddOn"
                                               VerticalAlignment="Center"
                                               VerticalContentAlignment="Center"
@@ -120,8 +121,8 @@
                                               HorizontalContentAlignment="Center"
                                               VerticalContentAlignment="Center"
                                               IsHitTestVisible="False"
-                                              Content="{TemplateBinding EffectiveLogo}"
-                                              ContentTemplate="{TemplateBinding EffectiveLogoTemplate}"
+                                              Content="{TemplateBinding EffectiveLogoPresenterContent}"
+                                              ContentTemplate="{TemplateBinding EffectiveLogoPresenterContentTemplate}"
                                               IsVisible="{TemplateBinding IsEffectiveLogoVisible}" />
                             <ContentPresenter Name="PART_LeftAddOn"
                                               DockPanel.Dock="Left"
@@ -219,8 +220,8 @@
                                               VerticalAlignment="Center"
                                               HorizontalContentAlignment="Center"
                                               VerticalContentAlignment="Center"
-                                              Content="{TemplateBinding EffectiveLogo}"
-                                              ContentTemplate="{TemplateBinding EffectiveLogoTemplate}"
+                                              Content="{TemplateBinding EffectiveLogoPresenterContent}"
+                                              ContentTemplate="{TemplateBinding EffectiveLogoPresenterContentTemplate}"
                                               IsVisible="{TemplateBinding IsEffectiveLogoVisible}" />
                             <ContentPresenter Name="PART_ContentPresenter"
                                               HorizontalAlignment="Left"
@@ -234,7 +235,8 @@
                                               IsVisible="{TemplateBinding IsEffectiveTitleVisible}" />
                         </DockPanel>
                         <StackPanel atom:WindowTitleBarLayoutPanel.Role="Trailing"
-                                    Orientation="Horizontal">
+                                    Orientation="Horizontal"
+                                    Spacing="{atom:WindowTitleBarTokenResource CaptionGroupSpacing}">
                             <ContentPresenter Name="PART_RightAddOn"
                                               VerticalAlignment="Center"
                                               VerticalContentAlignment="Center"

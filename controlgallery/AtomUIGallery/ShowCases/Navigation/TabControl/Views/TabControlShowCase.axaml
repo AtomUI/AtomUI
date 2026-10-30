@@ -9,8 +9,8 @@
              x:DataType="vm:TabControlViewModel"
              x:CompileBindings="True">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="TabControl"
                     Category="{gallery:TabControlShowCaseLangResource ComponentCategory}"
@@ -20,8 +20,105 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="BaseTabControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:TabControlViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview Name="TabControlSemanticPreview"
+                                                     SemanticOwner="{Binding #TabControlSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:TabControl}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:TabControl Name="TabControlSemanticOwner"
+                                                 Width="420"
+                                                 IsTabClosable="True"
+                                                 HorizontalAlignment="Center"
+                                                 VerticalAlignment="Center">
+                                    <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN1}" Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}" IsAutoHideCloseButton="False" Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN1}" />
+                                    <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN2}" Icon="{antdicons:AntDesignIconProvider Kind=AndroidOutlined}" IsClosable="False" Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN2}" />
+                                    <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN3}" IsClosable="False" Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN3}" />
+                                </atom:TabControl>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="header"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticHeaderDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="content"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticContentDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="indicator"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticIndicatorDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                        <gallery:SemanticPartPreview Name="CardTabControlSemanticPreview"
+                                                     SemanticOwner="{Binding #CardTabControlSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:CardTabControl}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:CardTabControl Name="CardTabControlSemanticOwner"
+                                                     Width="420"
+                                                     IsShowAddTabButton="True"
+                                                     HorizontalAlignment="Center"
+                                                     VerticalAlignment="Center">
+                                    <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN1}" Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}" Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN1}" />
+                                    <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN2}" Icon="{antdicons:AntDesignIconProvider Kind=AndroidOutlined}" Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN2}" />
+                                    <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN3}" Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN3}" />
+                                </atom:CardTabControl>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="header"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticHeaderDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="add"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticAddDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="content"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticContentDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticItemDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                        <gallery:SemanticPartPreview Name="TabItemSemanticPreview"
+                                                     Title="TabItem"
+                                                     SemanticOwner="{Binding #TabItemSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:TabItem}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:TabControl Width="420"
+                                                 IsTabClosable="True"
+                                                 HorizontalAlignment="Center"
+                                                 VerticalAlignment="Center">
+                                    <atom:TabItem Name="TabItemSemanticOwner"
+                                                  Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN1}"
+                                                  Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}"
+                                                  IsAutoHideCloseButton="False"
+                                                  Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN1}" />
+                                    <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN2}" IsClosable="False" Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN2}" />
+                                    <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN3}" IsClosable="False" Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN3}" />
+                                </atom:TabControl>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="icon"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="close"
+                                    Description="{gallery:TabControlShowCaseLangResource SemanticCloseDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -261,6 +358,56 @@
             </gallery:ShowCaseItem>
 
             <gallery:ShowCaseItem
+                SourceKey="tab-control-overflow-popup-search"
+                Title="{gallery:TabControlShowCaseLangResource TabControlOverflowPopupSearchTitle}"
+                Description="{gallery:TabControlShowCaseLangResource TabControlOverflowPopupSearchDescription}"
+                IsDeferredContentEnabled="True">
+                <gallery:ShowCaseItem.DeferredContentTemplate>
+                    <DataTemplate x:DataType="vm:TabControlViewModel">
+                        <StackPanel Orientation="Vertical" Spacing="20">
+                            <atom:TabControl MaxWidth="720"
+                                             HorizontalAlignment="Stretch"
+                                             ItemsSource="{Binding OverflowTabItems}"
+                                             SelectedIndex="1">
+                                <atom:TabControl.OverflowPopupTemplate>
+                                    <DataTemplate x:DataType="atom:TabOverflowPopupContext">
+                                        <gallery:SearchableTabOverflowPopup
+                                            Context="{Binding}"
+                                            SearchPlaceholder="{gallery:TabControlShowCaseLangResource P2PlaceholderSearchTabs}"
+                                            EmptyText="{gallery:TabControlShowCaseLangResource P2TextNoMatchingTabs}" />
+                                    </DataTemplate>
+                                </atom:TabControl.OverflowPopupTemplate>
+                                <atom:TabControl.ItemTemplate>
+                                    <DataTemplate x:DataType="views:MyTabItemData">
+                                        <atom:TextBlock Text="{Binding Content}" />
+                                    </DataTemplate>
+                                </atom:TabControl.ItemTemplate>
+                            </atom:TabControl>
+
+                            <atom:CardTabControl MaxWidth="720"
+                                                 HorizontalAlignment="Stretch"
+                                                 ItemsSource="{Binding OverflowTabItems}"
+                                                 SelectedIndex="1">
+                                <atom:CardTabControl.OverflowPopupTemplate>
+                                    <DataTemplate x:DataType="atom:TabOverflowPopupContext">
+                                        <gallery:SearchableTabOverflowPopup
+                                            Context="{Binding}"
+                                            SearchPlaceholder="{gallery:TabControlShowCaseLangResource P2PlaceholderSearchTabs}"
+                                            EmptyText="{gallery:TabControlShowCaseLangResource P2TextNoMatchingTabs}" />
+                                    </DataTemplate>
+                                </atom:CardTabControl.OverflowPopupTemplate>
+                                <atom:CardTabControl.ItemTemplate>
+                                    <DataTemplate x:DataType="views:MyTabItemData">
+                                        <atom:TextBlock Text="{Binding Content}" />
+                                    </DataTemplate>
+                                </atom:CardTabControl.ItemTemplate>
+                            </atom:CardTabControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </gallery:ShowCaseItem.DeferredContentTemplate>
+            </gallery:ShowCaseItem>
+
+            <gallery:ShowCaseItem
                 Title="{gallery:TabControlShowCaseLangResource TabControlCardTypeTitle}"
                 Description="{gallery:TabControlShowCaseLangResource TabControlCardTypeDescription}"
                 IsDeferredContentEnabled="True">
@@ -347,7 +494,6 @@
             <gallery:ShowCaseItem
                 Title="{gallery:TabControlShowCaseLangResource TabControlCardShapePositionTitle}"
                 Description="{gallery:TabControlShowCaseLangResource TabControlCardShapePositionDescription}"
-                Margin="0, 0, 10, 0"
                 IsDeferredContentEnabled="True">
                 <gallery:ShowCaseItem.DeferredContentTemplate>
                     <DataTemplate x:DataType="vm:TabControlViewModel">
@@ -424,7 +570,7 @@
 
             <gallery:ShowCaseItem
                 Title="{gallery:TabControlShowCaseLangResource TabControlAddCloseTitle}"
-                Description="{gallery:TabControlShowCaseLangResource TabControlAddCloseDescription}" Margin="0, 0, 30, 0"
+                Description="{gallery:TabControlShowCaseLangResource TabControlAddCloseDescription}"
                 IsDeferredContentEnabled="True">
                 <gallery:ShowCaseItem.DeferredContentTemplate>
                     <DataTemplate x:DataType="vm:TabControlViewModel">
@@ -464,8 +610,75 @@
                 </gallery:ShowCaseItem.DeferredContentTemplate>
             </gallery:ShowCaseItem>
 
+            <gallery:ShowCaseItem
+                Title="{gallery:TabControlShowCaseLangResource SemanticPartStyleTitle}"
+                Description="{gallery:TabControlShowCaseLangResource SemanticPartStyleDescription}"
+                SourceKey="tabcontrol-semantic-part"
+                BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                Span="Full"
+                MinHeight="300"
+                IsDeferredContentEnabled="True">
+                <gallery:ShowCaseItem.DeferredContentTemplate>
+                    <DataTemplate x:DataType="vm:TabControlViewModel">
+                        <StackPanel Spacing="16">
+                            <StackPanel.Styles>
+                                <Style Selector="atom|TabControl.semantic-style-demo">
+                                    <atom:TabControlHeaderStyle x:SetterTargetType="Border">
+                                        <Setter Property="Background" Value="#80F5F5F5" />
+                                    </atom:TabControlHeaderStyle>
+                                    <atom:TabControlContentStyle x:SetterTargetType="ContentPresenter">
+                                        <Setter Property="Padding" Value="16" />
+                                        <Setter Property="Background" Value="#CCE6F7FF" />
+                                    </atom:TabControlContentStyle>
+                                    <atom:TabControlItemStyle x:SetterTargetType="atom:TabItem">
+                                        <Setter Property="Padding" Value="6,10" />
+                                    </atom:TabControlItemStyle>
+                                </Style>
+                                <Style Selector="atom|TabItem.semantic-style-demo">
+                                    <atom:TabItemLabelStyle x:SetterTargetType="ContentPresenter">
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                        <Setter Property="Foreground" Value="#1890FF" />
+                                    </atom:TabItemLabelStyle>
+                                </Style>
+                            </StackPanel.Styles>
+                            <atom:TabControl Classes="semantic-style-demo"
+                                             BorderThickness="2"
+                                             BorderBrush="#E0000000"
+                                             BorderDashArray="4,2"
+                                             Padding="16"
+                                             Margin="0,0,0,10"
+                                             Initialized="HandleSemanticStyleDemoTabControlInitialized">
+                                <atom:TabItem Classes="semantic-style-demo"
+                                              Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN1}"
+                                              Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN1}" />
+                                <atom:TabItem Classes="semantic-style-demo"
+                                              Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN2}"
+                                              Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN2}" />
+                                <atom:TabItem Classes="semantic-style-demo"
+                                              Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN3}"
+                                              Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN3}" />
+                            </atom:TabControl>
+                            <atom:CardTabControl Classes="semantic-style-demo"
+                                                 TabStripPlacement="Left"
+                                                 Background="#CCFAFAFA"
+                                                 BorderThickness="2"
+                                                 BorderBrush="#D9D9D9"
+                                                 BorderDashArray="4,2"
+                                                 Padding="16">
+                                <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN1}"
+                                              Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN1}" />
+                                <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN2}"
+                                              Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN2}" />
+                                <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN3}"
+                                              Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN3}" />
+                            </atom:CardTabControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </gallery:ShowCaseItem.DeferredContentTemplate>
+            </gallery:ShowCaseItem>
+
 
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

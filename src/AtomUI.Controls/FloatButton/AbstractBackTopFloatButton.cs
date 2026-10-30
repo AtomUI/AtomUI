@@ -1,10 +1,8 @@
 using AtomUI.Icons.AntDesign;
-using AtomUI.MotionScene;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 
@@ -27,6 +25,9 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
 
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<AbstractBackTopFloatButton>();
+
+    public static readonly StyledProperty<bool> IsShowProgressProperty =
+        AvaloniaProperty.Register<AbstractBackTopFloatButton, bool>(nameof(IsShowProgress));
 
     public TimeSpan ToTopDuration
     {
@@ -52,6 +53,12 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         set => SetValue(MotionDurationProperty, value);
     }
 
+    public bool IsShowProgress
+    {
+        get => GetValue(IsShowProgressProperty);
+        set => SetValue(IsShowProgressProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -59,17 +66,23 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
     internal static readonly StyledProperty<bool> IsActiveProperty =
         AvaloniaProperty.Register<AbstractBackTopFloatButton, bool>(nameof(IsActive));
 
+    internal static readonly StyledProperty<double> ScrollProgressProperty =
+        AvaloniaProperty.Register<AbstractBackTopFloatButton, double>(nameof(ScrollProgress));
+
     internal bool IsActive
     {
         get => GetValue(IsActiveProperty);
         set => SetValue(IsActiveProperty, value);
     }
 
+    internal double ScrollProgress
+    {
+        get => GetValue(ScrollProgressProperty);
+        set => SetValue(ScrollProgressProperty, value);
+    }
+
     #endregion
 
-    private BaseMotionActor? _motionActor;
-    private bool _showAnimating;
-    private bool _hideAnimating;
     private CancellationTokenSource? _cancellationTokenSource;
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -94,16 +107,6 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         _cancellationTokenSource = null;
     }
 
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _motionActor = e.NameScope.Find<BaseMotionActor>(BaseMotionActor.MotionActorPart);
-        if (_motionActor != null)
-        {
-            _motionActor.SetCurrentValue(IsVisibleProperty, IsActive);
-        }
-    }
-
     protected override void ConfigureDefaultIcon()
     {
         if (Icon == null)
@@ -118,17 +121,6 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         if (change.Property == TargetProperty)
         {
             ConfigureTarget(change.OldValue as AvaScrollViewer, change.NewValue as AvaScrollViewer);
-        }
-        else if (change.Property == IsActiveProperty)
-        {
-            if (IsActive)
-            {
-                Dispatcher.InvokeAsync(ApplyShowMotionAsync);
-            }
-            else
-            {
-                Dispatcher.InvokeAsync(ApplyHideMotionAsync);
-            }
         }
     }
 
@@ -150,7 +142,17 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         if (sender is AvaScrollViewer scrollViewer)
         {
             IsActive = scrollViewer.Offset.Y >= VisibilityHeight;
+            UpdateScrollProgress(scrollViewer);
         }
+    }
+
+    private void UpdateScrollProgress(AvaScrollViewer scrollViewer)
+    {
+        var maxScroll = Math.Max(scrollViewer.Extent.Height - scrollViewer.Viewport.Height, 0d);
+        var progress  = maxScroll > 0d
+            ? Math.Clamp(scrollViewer.Offset.Y / maxScroll, 0d, 1d)
+            : 0d;
+        SetCurrentValue(ScrollProgressProperty, progress);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -159,56 +161,7 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         if (Target != null)
         {
             IsActive = Target.Offset.Y >= VisibilityHeight;
-        }
-    }
-
-    private async Task ApplyShowMotionAsync()
-    {
-        if (_motionActor is not null)
-        {
-            if (IsMotionEnabled)
-            {
-                if (_showAnimating)
-                {
-                    return;
-                }
-
-                _showAnimating = true;
-                _motionActor.SetCurrentValue(IsVisibleProperty, false);
-                var motion = new FadeInMotion(MotionDuration, new QuadraticEaseOut());
-                await motion.RunAsync(_motionActor,
-                    () => { _motionActor.SetCurrentValue(IsVisibleProperty, true); });
-                _showAnimating = false;
-            }
-            else
-            {
-                _motionActor.SetCurrentValue(IsVisibleProperty, true);
-            }
-        }
-    }
-
-    private async Task ApplyHideMotionAsync()
-    {
-        if (_motionActor is not null)
-        {
-            if (IsMotionEnabled)
-            {
-                if (_hideAnimating)
-                {
-                    return;
-                }
-
-                _hideAnimating = true;
-                var motion =
-                    new FadeOutMotion(MotionDuration, new QuadraticEaseOut());
-                await motion.RunAsync(_motionActor);
-                _hideAnimating = false;
-                _motionActor.SetCurrentValue(IsVisibleProperty, false);
-            }
-            else
-            {
-                _motionActor.SetCurrentValue(IsVisibleProperty, false);
-            }
+            UpdateScrollProgress(Target);
         }
     }
 

@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Reactive;
-using AtomUI.Controls;
 using AtomUI.Localization;
 using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
@@ -21,6 +20,16 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
     private readonly EventHandler<ThemeChangedEventArgs>? _themeChangedHandler;
     private readonly EventHandler<ThemeCatalogChangedEventArgs>? _themeCatalogChangedHandler;
     private readonly EventHandler<LanguageChangedEventArgs>? _languageChangedHandler;
+    private readonly Lazy<ReactiveCommand<bool, Unit>> _toggleDarkModeCommand;
+    private readonly Lazy<ReactiveCommand<ThemePreference, Unit>> _setAppearanceModeCommand;
+    private readonly Lazy<ReactiveCommand<bool, Unit>> _toggleCompactModeCommand;
+    private readonly Lazy<ReactiveCommand<bool, Unit>> _toggleMotionCommand;
+    private readonly Lazy<ReactiveCommand<bool, Unit>> _toggleWaveSpiritCommand;
+    private readonly Lazy<ReactiveCommand<string, Unit>> _switchThemeCommand;
+    private readonly Lazy<ReactiveCommand<Unit, Unit>> _switchToZhCNCommand;
+    private readonly Lazy<ReactiveCommand<Unit, Unit>> _switchToZhTWCommand;
+    private readonly Lazy<ReactiveCommand<Unit, Unit>> _switchToEnUSCommand;
+    private readonly Lazy<ReactiveCommand<Unit, Unit>> _switchToPtBRCommand;
     private IDisposable? _systemAppearanceSubscription;
     private bool _isDisposed;
     private bool _hasExplicitAppearanceMode;
@@ -42,25 +51,25 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
 
     public GalleryNavigationViewModel Navigation { get; }
 
-    public ReactiveCommand<bool, Unit> ToggleDarkModeCommand { get; }
+    public ReactiveCommand<bool, Unit> ToggleDarkModeCommand => _toggleDarkModeCommand.Value;
 
-    public ReactiveCommand<ThemePreference, Unit> SetAppearanceModeCommand { get; }
+    public ReactiveCommand<ThemePreference, Unit> SetAppearanceModeCommand => _setAppearanceModeCommand.Value;
 
-    public ReactiveCommand<bool, Unit> ToggleCompactModeCommand { get; }
+    public ReactiveCommand<bool, Unit> ToggleCompactModeCommand => _toggleCompactModeCommand.Value;
 
-    public ReactiveCommand<bool, Unit> ToggleMotionCommand { get; }
+    public ReactiveCommand<bool, Unit> ToggleMotionCommand => _toggleMotionCommand.Value;
 
-    public ReactiveCommand<bool, Unit> ToggleWaveSpiritCommand { get; }
+    public ReactiveCommand<bool, Unit> ToggleWaveSpiritCommand => _toggleWaveSpiritCommand.Value;
 
-    public ReactiveCommand<string, Unit> SwitchThemeCommand { get; }
+    public ReactiveCommand<string, Unit> SwitchThemeCommand => _switchThemeCommand.Value;
 
-    public ReactiveCommand<Unit, Unit> SwitchToZhCNCommand { get; }
+    public ReactiveCommand<Unit, Unit> SwitchToZhCNCommand => _switchToZhCNCommand.Value;
 
-    public ReactiveCommand<Unit, Unit> SwitchToZhTWCommand { get; }
+    public ReactiveCommand<Unit, Unit> SwitchToZhTWCommand => _switchToZhTWCommand.Value;
 
-    public ReactiveCommand<Unit, Unit> SwitchToEnUSCommand { get; }
+    public ReactiveCommand<Unit, Unit> SwitchToEnUSCommand => _switchToEnUSCommand.Value;
 
-    public ReactiveCommand<Unit, Unit> SwitchToPtBRCommand { get; }
+    public ReactiveCommand<Unit, Unit> SwitchToPtBRCommand => _switchToPtBRCommand.Value;
 
     public IReadOnlyList<ThemeInfo> AvailableThemes
     {
@@ -134,17 +143,17 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         SyncThemeState(_themeManager?.CurrentTheme, null);
         SyncLanguageState(_languageManager?.Current);
 
-        ToggleDarkModeCommand = ReactiveCommand.CreateFromTask<bool>(SetDarkModeAsync);
-        SetAppearanceModeCommand = ReactiveCommand.CreateFromTask<ThemePreference>(SetAppearanceModeAsync);
-        ToggleCompactModeCommand = ReactiveCommand.CreateFromTask<bool>(SetCompactModeAsync);
-        ToggleMotionCommand = ReactiveCommand.CreateFromTask<bool>(SetMotionEnabledAsync);
-        ToggleWaveSpiritCommand = ReactiveCommand.CreateFromTask<bool>(SetWaveSpiritEnabledAsync);
-        SwitchThemeCommand = ReactiveCommand.CreateFromTask<string>(SwitchThemeAsync);
+        _toggleDarkModeCommand = new(() => ReactiveCommand.CreateFromTask<bool>(SetDarkModeAsync));
+        _setAppearanceModeCommand = new(() => ReactiveCommand.CreateFromTask<ThemePreference>(SetAppearanceModeAsync));
+        _toggleCompactModeCommand = new(() => ReactiveCommand.CreateFromTask<bool>(SetCompactModeAsync));
+        _toggleMotionCommand = new(() => ReactiveCommand.CreateFromTask<bool>(SetMotionEnabledAsync));
+        _toggleWaveSpiritCommand = new(() => ReactiveCommand.CreateFromTask<bool>(SetWaveSpiritEnabledAsync));
+        _switchThemeCommand = new(() => ReactiveCommand.CreateFromTask<string>(SwitchThemeAsync));
 
-        SwitchToZhCNCommand = ReactiveCommand.Create(() => SetLanguage(LanguageTags.ZhCN));
-        SwitchToZhTWCommand = ReactiveCommand.Create(() => SetLanguage(LanguageTags.ZhTW));
-        SwitchToEnUSCommand = ReactiveCommand.Create(() => SetLanguage(LanguageTags.EnUS));
-        SwitchToPtBRCommand = ReactiveCommand.Create(() => SetLanguage(LanguageTags.PtBR));
+        _switchToZhCNCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.ZhCN)));
+        _switchToZhTWCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.ZhTW)));
+        _switchToEnUSCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.EnUS)));
+        _switchToPtBRCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.PtBR)));
 
         if (_themeManager is not null)
         {

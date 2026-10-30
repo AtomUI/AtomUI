@@ -9,25 +9,30 @@
             <ControlTemplate>
                 <Panel
                     Name="RootLayout">
-                    <Border Name="Frame" />
+                    <Border Name="Frame"
+                            Classes.semantic-section="True" />
                     <Grid Name="InfoLayout"
                           RowDefinitions="Auto, Auto, *, Auto, Auto">
                         <Grid Name="InfoHeader"
+                              Classes.semantic-header="True"
                               Grid.Row="0"
                               ColumnDefinitions="Auto, *, Auto">
                             <atom:IconButton Name="PART_CloseButton"
+                                             Classes.semantic-close="True"
                                              Grid.Column="0"
                                              Icon="{antdicons:AntDesignIconProvider CloseOutlined}"
                                              VerticalAlignment="Center"
                                              IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                              IsVisible="{TemplateBinding IsShowCloseButton}" />
                             <atom:TextBlock Name="HeaderText"
+                                            Classes.semantic-title="True"
                                             HorizontalAlignment="Left"
                                             VerticalAlignment="Center"
                                             Grid.Column="1"
                                             Text="{TemplateBinding Title}" />
                             <ContentPresenter
                                 Name="ExtraContentPresenter"
+                                Classes.semantic-extra="True"
                                 Grid.Column="2"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
@@ -38,6 +43,7 @@
                         <atom:Separator Grid.Row="1" SizeType="Custom" />
                         <ContentPresenter
                             Name="InfoContainer"
+                            Classes.semantic-body="True"
                             Grid.Row="2"
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}" />
@@ -46,6 +52,7 @@
                                         IsVisible="{TemplateBinding HasFooter}" />
                         <ContentPresenter
                             Name="InfoFooter"
+                            Classes.semantic-footer="True"
                             Grid.Row="4"
                             IsVisible="{TemplateBinding HasFooter}"
                             Content="{TemplateBinding Footer}"

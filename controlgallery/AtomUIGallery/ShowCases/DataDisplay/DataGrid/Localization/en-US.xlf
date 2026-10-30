@@ -8,7 +8,12 @@
     </unit>
     <unit id="BasicPagingDescription">
       <segment>
-        <source>Basic pagination table.</source>
+        <source>Basic pagination table with a page-size selector and opposite-side extra content.</source>
+      </segment>
+    </unit>
+    <unit id="BasicPagingExtraContentText">
+      <segment>
+        <source>Batch actions</source>
       </segment>
     </unit>
     <unit id="BasicPagingTitle">
@@ -471,6 +476,11 @@
         <source>Company Name</source>
       </segment>
     </unit>
+    <unit id="P2HeaderDescription">
+      <segment>
+        <source>Description</source>
+      </segment>
+    </unit>
     <unit id="P2HeaderDoorNo">
       <segment>
         <source>Door No.</source>
@@ -719,6 +729,86 @@
     <unit id="SelectionTitle">
       <segment>
         <source>Selection</source>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyCellDescription">
+      <segment>
+        <source>Body cell element with padding, word wrap and other data cell styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyRowDescription">
+      <segment>
+        <source>Body row element with hover, selected and expanded row styles. Group header rows belong to the body rows.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyWrapperDescription">
+      <segment>
+        <source>Body wrapper element with table body layout and container styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with header area, rows area and scrollbar layout.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>Footer element with table footer text color styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderCellDescription">
+      <segment>
+        <source>Header cell element with padding, background, text color and font weight.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderWrapperDescription">
+      <segment>
+        <source>Header wrapper element with table header layout and container styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPaginationItemDescription">
+      <segment>
+        <source>Pagination item element with page item sizing, active state and spacing styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPaginationRootDescription">
+      <segment>
+        <source>Pagination host element with table pagination layout and spacing styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize each semantic part with generated dedicated part styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewFooterText">
+      <segment>
+        <source>Footer</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewTitleText">
+      <segment>
+        <source>Semantics Preview</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with background, border radius, scrollbar colors and other table container styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Inner wrapper element with corner clipping and the loading wrapper.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with table title layout and separator styles.</source>
       </segment>
     </unit>
     <unit id="SizeDescription">

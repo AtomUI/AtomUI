@@ -9,6 +9,7 @@
                 <Panel>
                     <atom:InputClearIconButton
                         Name="PART_ClearButton"
+                        Classes.semantic-clear="True"
                         IsVisible="{TemplateBinding IsInClearMode}" />
                     <StackPanel Name="IconLayout"
                                 Orientation="Horizontal"

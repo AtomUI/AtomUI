@@ -6,7 +6,6 @@ using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -94,6 +93,91 @@ public class NavMenuItemActivationTests
             fixture.ThirdContainer.IsSelected.ShouldBeFalse();
             fixture.ClickedItems.ShouldBeEmpty();
             fixture.Command.ExecuteCount.ShouldBe(0);
+        }
+        finally
+        {
+            fixture.Window.Close();
+        }
+    }
+
+    [Theory]
+    [InlineData(0.1)]
+    [InlineData(0.5)]
+    [InlineData(0.9)]
+    public void Press_Parent_Header_Release_On_Child_Cancels_Activation(double horizontalPosition)
+    {
+        var fixture = CreateInlineParentFixture();
+        try
+        {
+            var parent = fixture.ParentContainer;
+            parent.Open();
+            Dispatcher.UIThread.RunJobs();
+            var child = parent.ContainerFromIndex(0).ShouldBeOfType<NavMenuItem>();
+            var parentHeader = GetHeader(parent);
+            var childHeader = GetHeader(child);
+            var parentPoint = parentHeader.TranslatePoint(
+                new Point(parentHeader.Bounds.Width * horizontalPosition, parentHeader.Bounds.Height / 2),
+                fixture.Window).ShouldNotBeNull();
+            var childPoint = childHeader.TranslatePoint(
+                new Point(childHeader.Bounds.Width * horizontalPosition, childHeader.Bounds.Height / 2),
+                fixture.Window).ShouldNotBeNull();
+            var expandedBounds = parent.Bounds;
+
+            child.IsEffectivelyVisible.ShouldBeTrue();
+            parent.IsVisualAncestorOf(child).ShouldBeTrue();
+            childPoint.Y.ShouldBeGreaterThan(parentPoint.Y + parentHeader.Bounds.Height / 2);
+            expandedBounds.Height.ShouldBeGreaterThan(parentHeader.Bounds.Height);
+
+            fixture.Window.MouseMove(parentPoint);
+            fixture.Window.MouseDown(parentPoint, MouseButton.Left);
+            parent.IsPointerHold.ShouldBeTrue();
+            fixture.Window.MouseMove(childPoint);
+            parent.IsPointerHold.ShouldBeFalse("the child row is outside the pressed parent header");
+            fixture.Window.MouseUp(childPoint, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            parent.IsSubMenuOpen.ShouldBeTrue();
+            parent.Bounds.ShouldBe(expandedBounds);
+            child.IsEffectivelyVisible.ShouldBeTrue();
+            parent.IsPointerHold.ShouldBeFalse();
+            fixture.Menu.SelectedItem.ShouldBeNull();
+            fixture.ClickedItems.ShouldBeEmpty();
+        }
+        finally
+        {
+            fixture.Window.Close();
+        }
+    }
+
+    [Theory]
+    [InlineData(0.1)]
+    [InlineData(0.5)]
+    [InlineData(0.9)]
+    public void Expanded_Parent_Header_Click_Commits_Across_The_Row(double horizontalPosition)
+    {
+        var fixture = CreateInlineParentFixture();
+        try
+        {
+            var parent = fixture.ParentContainer;
+            parent.Open();
+            Dispatcher.UIThread.RunJobs();
+            var header = GetHeader(parent);
+            var point = header.TranslatePoint(
+                new Point(header.Bounds.Width * horizontalPosition, header.Bounds.Height / 2),
+                fixture.Window).ShouldNotBeNull();
+
+            fixture.Window.MouseMove(point);
+            fixture.Window.MouseDown(point, MouseButton.Left);
+            parent.IsPointerHold.ShouldBeTrue();
+            parent.IsSubMenuOpen.ShouldBeTrue();
+            fixture.ClickedItems.ShouldBeEmpty();
+            fixture.Window.MouseUp(point, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            parent.IsSubMenuOpen.ShouldBeFalse();
+            parent.IsPointerHold.ShouldBeFalse();
+            fixture.Menu.SelectedItem.ShouldBeNull();
+            fixture.ClickedItems.ShouldBe(new[] { (INavMenuItem)parent });
         }
         finally
         {
@@ -289,6 +373,46 @@ public class NavMenuItemActivationTests
         }
         finally
         {
+            fixture.Window.Close();
+        }
+    }
+
+    [Fact]
+    public void Transferring_Pointer_Capture_Cancels_Activation_And_Preserves_New_Owner()
+    {
+        var fixture = CreateInlineLeafFixture();
+        IPointer? pointer = null;
+        try
+        {
+            pointer = BeginSyntheticPress(fixture, fixture.SecondContainer);
+            var pressedHeader = GetHeader(fixture.SecondContainer);
+            var newCaptureOwner = GetHeader(fixture.ThirdContainer);
+            pointer.Captured.ShouldBeSameAs(pressedHeader);
+
+            pointer.Capture(newCaptureOwner);
+
+            fixture.SecondContainer.IsPointerHold.ShouldBeFalse();
+            pointer.Captured.ShouldBeSameAs(newCaptureOwner);
+            pressedHeader.RaiseEvent(new PointerReleasedEventArgs(
+                pressedHeader,
+                pointer,
+                fixture.Window,
+                CenterOf(fixture.SecondContainer, fixture.Window),
+                101,
+                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased),
+                KeyModifiers.None,
+                MouseButton.Left));
+            Dispatcher.UIThread.RunJobs();
+
+            pointer.Captured.ShouldBeSameAs(newCaptureOwner);
+            fixture.Menu.SelectedItem.ShouldBeSameAs(fixture.FirstNode);
+            fixture.SelectedNodes.ShouldBeEmpty();
+            fixture.ClickedItems.ShouldBeEmpty();
+            fixture.Command.ExecuteCount.ShouldBe(0);
+        }
+        finally
+        {
+            pointer?.Capture(null);
             fixture.Window.Close();
         }
     }

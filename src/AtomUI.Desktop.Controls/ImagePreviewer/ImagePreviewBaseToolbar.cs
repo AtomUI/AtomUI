@@ -25,42 +25,26 @@ internal class ImagePreviewToolbarRequestEventArgs : RoutedEventArgs
 
 internal class ImagePreviewBaseToolbar : TemplatedControl
 {
+    #region 公共属性定义
+
     public static readonly DirectProperty<ImagePreviewBaseToolbar, int> CurrentIndexProperty =
         AvaloniaProperty.RegisterDirect<ImagePreviewBaseToolbar, int>(
             nameof(CurrentIndex),
             o => o.CurrentIndex,
             (o, v) => o.CurrentIndex = v);
-    
+
     public static readonly DirectProperty<ImagePreviewBaseToolbar, int> CountProperty =
         AvaloniaProperty.RegisterDirect<ImagePreviewBaseToolbar, int>(
             nameof(Count),
             o => o.Count,
             (o, v) => o.Count = v);
-    
+
     public static readonly DirectProperty<ImagePreviewBaseToolbar, bool> IsMultiImagesProperty =
         AvaloniaProperty.RegisterDirect<ImagePreviewBaseToolbar, bool>(
             nameof(IsMultiImages),
             o => o.IsMultiImages,
             (o, v) => o.IsMultiImages = v);
-    
-    internal static readonly DirectProperty<ImagePreviewBaseToolbar, bool> IsScaleDownEnabledProperty =
-        AvaloniaProperty.RegisterDirect<ImagePreviewBaseToolbar, bool>(
-            nameof(IsScaleDownEnabled),
-            o => o.IsScaleDownEnabled,
-            (o, v) => o.IsScaleDownEnabled = v);
-    
-    internal static readonly DirectProperty<ImagePreviewBaseToolbar, bool> IsScaleUpEnabledProperty =
-        AvaloniaProperty.RegisterDirect<ImagePreviewBaseToolbar, bool>(
-            nameof(IsScaleUpEnabled),
-            o => o.IsScaleUpEnabled,
-            (o, v) => o.IsScaleUpEnabled = v);
-    
-    internal static readonly DirectProperty<ImagePreviewBaseToolbar, bool> IsImageFitToWindowProperty =
-        AvaloniaProperty.RegisterDirect<ImagePreviewBaseToolbar, bool>(
-            nameof(IsImageFitToWindow),
-            o => o.IsImageFitToWindow,
-            (o, v) => o.IsImageFitToWindow = v);
-    
+
     private int _currentIndex;
 
     public int CurrentIndex
@@ -68,7 +52,7 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
         get => _currentIndex;
         internal set => SetAndRaise(CurrentIndexProperty, ref _currentIndex, value);
     }
-    
+
     private int _count;
 
     public int Count
@@ -76,7 +60,7 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
         get => _count;
         internal set => SetAndRaise(CountProperty, ref _count, value);
     }
-    
+
     private bool _isMultiImages;
 
     public bool IsMultiImages
@@ -84,60 +68,38 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
         get => _isMultiImages;
         set => SetAndRaise(IsMultiImagesProperty, ref _isMultiImages, value);
     }
-    
-    private bool _isScaleDownEnabled;
 
-    internal bool IsScaleDownEnabled
-    {
-        get => _isScaleDownEnabled;
-        set => SetAndRaise(IsScaleDownEnabledProperty, ref _isScaleDownEnabled, value);
-    }
-    
-    private bool _isScaleUpEnabled;
-
-    internal bool IsScaleUpEnabled
-    {
-        get => _isScaleUpEnabled;
-        set => SetAndRaise(IsScaleUpEnabledProperty, ref _isScaleUpEnabled, value);
-    }
-    
-    private bool _isImageFitToWindow;
-
-    internal bool IsImageFitToWindow
-    {
-        get => _isImageFitToWindow;
-        set => SetAndRaise(IsImageFitToWindowProperty, ref _isImageFitToWindow, value);
-    }
+    #endregion
 
     #region 公共事件定义
 
     public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> HorizontalFlipRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(HorizontalFlipRequest), RoutingStrategies.Bubble);
-    
+
     public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> VerticalFlipRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(VerticalFlipRequest), RoutingStrategies.Bubble);
-    
+
     public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> ScaleUpRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(ScaleUpRequest), RoutingStrategies.Bubble);
-    
+
     public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> ScaleDownRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(ScaleDownRequest), RoutingStrategies.Bubble);
-    
+
     public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> PreviousRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(PreviousRequest), RoutingStrategies.Bubble);
-    
+
     public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> NextRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(NextRequest), RoutingStrategies.Bubble);
-    
+
     public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> RotateLeftRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(RotateLeftRequest), RoutingStrategies.Bubble);
-    
+
     public static readonly RoutedEvent<ImagePreviewToolbarRequestEventArgs> RotateRightRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImagePreviewToolbarRequestEventArgs>(nameof(RotateRightRequest), RoutingStrategies.Bubble);
-    
+
     public static readonly RoutedEvent<ImageFitToWindowEventArgs> FitToWindowRequestEvent =
         RoutedEvent.Register<ImagePreviewBaseToolbar, ImageFitToWindowEventArgs>(nameof(FitToWindowRequest), RoutingStrategies.Bubble);
-    
+
     public event EventHandler<ImagePreviewToolbarRequestEventArgs>? HorizontalFlipRequest
     {
         add => AddHandler(HorizontalFlipRequestEvent, value);
@@ -161,7 +123,7 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
         add => AddHandler(ScaleDownRequestEvent, value);
         remove => RemoveHandler(ScaleDownRequestEvent, value);
     }
-    
+
     public event EventHandler<ImagePreviewToolbarRequestEventArgs>? PreviousRequest
     {
         add => AddHandler(PreviousRequestEvent, value);
@@ -185,26 +147,81 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
         add => AddHandler(RotateRightRequestEvent, value);
         remove => RemoveHandler(RotateRightRequestEvent, value);
     }
-    
+
     public event EventHandler<ImageFitToWindowEventArgs>? FitToWindowRequest
     {
         add => AddHandler(FitToWindowRequestEvent, value);
         remove => RemoveHandler(FitToWindowRequestEvent, value);
     }
+
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<ImagePreviewBaseToolbar, bool> IsScaleDownEnabledProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewBaseToolbar, bool>(
+            nameof(IsScaleDownEnabled),
+            o => o.IsScaleDownEnabled,
+            (o, v) => o.IsScaleDownEnabled = v);
+
+    internal static readonly DirectProperty<ImagePreviewBaseToolbar, bool> IsScaleUpEnabledProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewBaseToolbar, bool>(
+            nameof(IsScaleUpEnabled),
+            o => o.IsScaleUpEnabled,
+            (o, v) => o.IsScaleUpEnabled = v);
+
+    internal static readonly DirectProperty<ImagePreviewBaseToolbar, bool> IsImageFitToWindowProperty =
+        AvaloniaProperty.RegisterDirect<ImagePreviewBaseToolbar, bool>(
+            nameof(IsImageFitToWindow),
+            o => o.IsImageFitToWindow,
+            (o, v) => o.IsImageFitToWindow = v);
+
+    private bool _isScaleDownEnabled;
+
+    internal bool IsScaleDownEnabled
+    {
+        get => _isScaleDownEnabled;
+        set => SetAndRaise(IsScaleDownEnabledProperty, ref _isScaleDownEnabled, value);
+    }
+
+    private bool _isScaleUpEnabled;
+
+    internal bool IsScaleUpEnabled
+    {
+        get => _isScaleUpEnabled;
+        set => SetAndRaise(IsScaleUpEnabledProperty, ref _isScaleUpEnabled, value);
+    }
+
+    private bool _isImageFitToWindow;
+
+    internal bool IsImageFitToWindow
+    {
+        get => _isImageFitToWindow;
+        set => SetAndRaise(IsImageFitToWindowProperty, ref _isImageFitToWindow, value);
+    }
+
     #endregion
 
     private IconButton? _horizontalFlipButton;
+
     private IconButton? _verticalFlipButton;
+
     private IconButton? _scaleUpButton;
+
     private IconButton? _scaleDownButton;
+
     private IconButton? _previousButton;
+
     private IconButton? _nextButton;
+
     private IconButton? _rotateLeftButton;
+
     private IconButton? _rotateRightButton;
-    private ToggleIconButton? _fitToWindowButton;
+
+    private IconButton? _fitToWindowButton;
 
     protected virtual ImagePreviewToolbarSource ToolbarSource => ImagePreviewToolbarSource.Floating;
-    
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -225,7 +242,7 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
         _nextButton           = e.NameScope.Find<IconButton>("PART_NextButton");
         _rotateLeftButton     = e.NameScope.Find<IconButton>("PART_RotateLeftButton");
         _rotateRightButton    = e.NameScope.Find<IconButton>("PART_RotateRightButton");
-        _fitToWindowButton    = e.NameScope.Find<ToggleIconButton>("PART_FitToWindowButton");
+        _fitToWindowButton    = e.NameScope.Find<IconButton>("PART_FitToWindowButton");
 
         if (_horizontalFlipButton != null)
         {
@@ -262,7 +279,7 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
 
         if (_fitToWindowButton != null)
         {
-            _fitToWindowButton.IsCheckedChanged += HandleButtonClick;
+            _fitToWindowButton.Click += HandleButtonClick;
         }
     }
 
@@ -302,7 +319,7 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
         }
         else if (sender == _fitToWindowButton)
         {
-            RaiseToolbarEvent(new ImageFitToWindowEventArgs(_fitToWindowButton?.IsChecked == true)
+            RaiseToolbarEvent(new ImageFitToWindowEventArgs(true)
             {
                 RoutedEvent = FitToWindowRequestEvent
             });

@@ -1,10 +1,12 @@
 using AtomUI.Native;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.LogicalTree;
+using Avalonia.Styling;
 
 namespace AtomUI.Desktop.Controls;
 
-internal sealed class DialogWindow : Window
+internal sealed class DialogWindow : Window, IStyleHost
 {
     private readonly INativeWindowSizingHook? _nativeSizingHook;
     private DialogWindowCloseState _closeState;
@@ -17,6 +19,19 @@ internal sealed class DialogWindow : Window
         _nativeSizingHook?.IsUserResizeInProgress ?? _isNativeUserResizeInProgress;
 
     protected override Type StyleKeyOverride { get; } = typeof(Window);
+
+    // TopLevel 默认把样式宿主父级固定为 Application（IStyleHost.StylingParent => _globalStyles），
+    // owner 实例级 Semantic Style 因此永远进不了独立窗口宿主；窗口模板应用时 ContentPresenter
+    // 还会改写 surface 的继承父，模板之后才挂载的内容/按钮同样走不到 owner 样式链。
+    // 按 Avalonia PopupRoot 的既有范式（PopupRoot: IStyleHost.StylingParent => Parent）把样式
+    // 宿主链交还给逻辑父（owner Dialog），Dialog.Styles 里的 owner 作用域样式与一级嵌套样式
+    // 才能级联到窗口宿主子树。判断的是父级是否生根（窗口 Show 后自身即 ILogicalRoot，
+    // 自身的附加状态不可作依据）：owner 未生根（脱离页面树直接构造 presenter 的场景）时
+    // 退回 Application，保证 ControlTheme 仍可达；已挂载时全局样式经 owner 所在主窗口的链继续可达。
+    IStyleHost? IStyleHost.StylingParent
+        => Parent is { } parent && ((ILogical)parent).IsAttachedToLogicalTree
+            ? parent
+            : Application.Current;
 
     internal DialogWindow()
     {
@@ -84,11 +99,9 @@ internal sealed class DialogWindow : Window
             return requestedSize;
         }
 
-        if (requestedSize != ClientSize)
-        {
-            ClientSize = requestedSize;
-        }
-
+        // Width/Height request a platform resize through layout. Once shown, ClientSize
+        // belongs to the platform callback: native constraints may reject or adjust the
+        // request, leaving an unpainted strip if the requested size is published as actual.
         return requestedSize;
     }
 

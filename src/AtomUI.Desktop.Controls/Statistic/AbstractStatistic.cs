@@ -42,6 +42,9 @@ public abstract class AbstractStatistic : HeaderedContentControl
     
     public static readonly StyledProperty<double> ContentFontSizeProperty =
         AvaloniaProperty.Register<AbstractStatistic, double>(nameof(ContentFontSize));
+
+    public static readonly StyledProperty<IReadOnlyList<double>?> StrokeDashArrayProperty =
+        AvaloniaProperty.Register<AbstractStatistic, IReadOnlyList<double>?>(nameof(StrokeDashArray));
     
     public string DecimalSeparator
     {
@@ -103,6 +106,12 @@ public abstract class AbstractStatistic : HeaderedContentControl
     {
         get => GetValue(ContentFontSizeProperty);
         set => SetValue(ContentFontSizeProperty, value);
+    }
+
+    public IReadOnlyList<double>? StrokeDashArray
+    {
+        get => GetValue(StrokeDashArrayProperty);
+        set => SetValue(StrokeDashArrayProperty, value);
     }
 
     #endregion

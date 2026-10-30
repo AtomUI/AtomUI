@@ -24,18 +24,21 @@
                                 <atom:TabsContainerPanel Name="PART_TabsContainer"
                                                          TabStripPlacement="{TemplateBinding TabStripPlacement}">
                                 <atom:TabsContainerPanel.TabScrollViewer>
-                                    <atom:TabStripScrollViewer
+                                    <atom:TabScrollViewer
                                         Name="PART_CardTabStripScrollViewer"
                                         IsScrollChainingEnabled="False"
                                         TabStripPlacement="{TemplateBinding TabStripPlacement}"
-                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                        IsPopupPinnedOpen="{TemplateBinding IsPopupPinnedOpen}"
+                                        OverflowPopupTemplate="{TemplateBinding OverflowPopupTemplate}">
                                         <ItemsPresenter
                                             Name="PART_ItemsPresenter"
                                             ItemsPanel="{TemplateBinding ItemsPanel}" />
-                                    </atom:TabStripScrollViewer>
+                                    </atom:TabScrollViewer>
                                 </atom:TabsContainerPanel.TabScrollViewer>
                                 <atom:TabsContainerPanel.AddTabButton>
                                     <atom:IconButton Name="PART_AddTabButton"
+                                                     Classes.semantic-add="True"
                                                      Icon="{antdicons:AntDesignIconProvider PlusOutlined}"
                                                      BorderThickness="{TemplateBinding CardBorderThickness}"
                                                      CornerRadius="{TemplateBinding EffectiveCardBorderRadius}"

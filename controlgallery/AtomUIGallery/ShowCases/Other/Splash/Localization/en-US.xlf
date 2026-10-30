@@ -1,26 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="2.1" srcLang="en-US" xmlns="urn:oasis:names:tc:xliff:document:2.0">
   <file id="AtomUIGallery.Localization.SplashShowCaseLangResourceKind">
-    <unit id="ApiMethodSetProgress">
-      <segment>
-        <source>Updates progress, message and detail on the splash instance.</source>
-      </segment>
-    </unit>
-    <unit id="ApiOptionMinimumShowDuration">
-      <segment>
-        <source>Minimum display time before the splash window may close.</source>
-      </segment>
-    </unit>
-    <unit id="ApiServiceShowAsync">
-      <segment>
-        <source>Instance service API for applications that want dependency-injected startup flow control.</source>
-      </segment>
-    </unit>
-    <unit id="ApiStaticShowAsync">
-      <segment>
-        <source>Static convenience API that delegates to Splash.DefaultService.</source>
-      </segment>
-    </unit>
     <unit id="BasicDescription">
       <segment>
         <source>Use the visual Splash control to show startup copy with an indeterminate loading indicator.</source>
@@ -46,16 +26,6 @@
         <source>Preview</source>
       </segment>
     </unit>
-    <unit id="ComposedDescription">
-      <segment>
-        <source>Template the logo and footer when a product needs richer startup metadata.</source>
-      </segment>
-    </unit>
-    <unit id="ComposedTitle">
-      <segment>
-        <source>Logo, content and footer</source>
-      </segment>
-    </unit>
     <unit id="DeterminateDescription">
       <segment>
         <source>Set Progress and disable IsIndeterminate when startup has measurable phases.</source>
@@ -66,64 +36,19 @@
         <source>Determinate progress</source>
       </segment>
     </unit>
-    <unit id="P2ContentModuleCore">
+    <unit id="ErrorDescription">
       <segment>
-        <source>Core</source>
+        <source>Set Status to Error to switch the splash to its failure presentation; the user can then dismiss it.</source>
       </segment>
     </unit>
-    <unit id="P2ContentModuleGallery">
-      <segment>
-        <source>Gallery</source>
-      </segment>
-    </unit>
-    <unit id="P2ContentModuleTheme">
-      <segment>
-        <source>Theme</source>
-      </segment>
-    </unit>
-    <unit id="P2ContentShowWindowSplash">
-      <segment>
-        <source>Show window Splash</source>
-      </segment>
-    </unit>
-    <unit id="P2DetailError">
-      <segment>
-        <source>Use SetErrorAsync to surface a blocking startup error before closing.</source>
-      </segment>
-    </unit>
-    <unit id="P2DetailLoadingThemeAndResources">
-      <segment>
-        <source>Loading theme, language resources and cached state.</source>
-      </segment>
-    </unit>
-    <unit id="P2DetailProgress">
-      <segment>
-        <source>Theme, icons and route catalog are ready. Optional packages are being initialized.</source>
-      </segment>
-    </unit>
-    <unit id="P2DetailReady">
-      <segment>
-        <source>The main window can be shown after the minimum splash duration.</source>
-      </segment>
-    </unit>
-    <unit id="P2FooterDesktopOnly">
-      <segment>
-        <source>Window service is intended for desktop startup.</source>
-      </segment>
-    </unit>
-    <unit id="P2FooterStaticPreview">
-      <segment>
-        <source>Static Gallery preview</source>
-      </segment>
-    </unit>
-    <unit id="P2MessageError">
+    <unit id="ErrorMessage">
       <segment>
         <source>Startup failed</source>
       </segment>
     </unit>
-    <unit id="P2MessageLoadingModules">
+    <unit id="ErrorTitle">
       <segment>
-        <source>Loading modules</source>
+        <source>Error state</source>
       </segment>
     </unit>
     <unit id="P2MessagePreparingShell">
@@ -131,79 +56,9 @@
         <source>Preparing workspace</source>
       </segment>
     </unit>
-    <unit id="P2MessageReady">
-      <segment>
-        <source>Workspace ready</source>
-      </segment>
-    </unit>
-    <unit id="P2SubtitleDesktopBoot">
-      <segment>
-        <source>Desktop boot sequence</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashDetailComplete">
-      <segment>
-        <source>The fake startup flow has completed and the window will close.</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashDetailProgress">
-      <segment>
-        <source>This is a fake loading step for the Gallery demo.</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashDetailStarting">
-      <segment>
-        <source>A temporary Splash window is showing a mocked five-second startup.</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashFooter">
-      <segment>
-        <source>Desktop Extras package / window-hosted startup surface</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageComplete">
-      <segment>
-        <source>Gallery ready</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageFinalizing">
-      <segment>
-        <source>Finalizing workspace</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageLoadingControls">
-      <segment>
-        <source>Registering control packages</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageLoadingRoutes">
-      <segment>
-        <source>Preparing route catalog</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageLoadingTheme">
-      <segment>
-        <source>Loading theme resources</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageStarting">
-      <segment>
-        <source>Starting Gallery workspace</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashMessageWarmingCache">
-      <segment>
-        <source>Warming Gallery cache</source>
-      </segment>
-    </unit>
-    <unit id="P2WindowSplashSubtitle">
-      <segment>
-        <source>Desktop startup simulation</source>
-      </segment>
-    </unit>
     <unit id="PageDescription">
       <segment>
-        <source>Splash combines a compact branded surface, loading indicator, determinate progress, status copy, and optional footer. The service API can host it in a borderless startup window, while the visual control can be previewed directly in Gallery.</source>
+        <source>Splash draws the startup surface shown before the main window appears: brand logo, loading indicator or determinate progress, and status copy. Enable it with UseSplash on the AtomUIBuilder.</source>
       </segment>
     </unit>
     <unit id="PageSubtitle">
@@ -214,26 +69,6 @@
     <unit id="ScenarioExamples">
       <segment>
         <source>Examples</source>
-      </segment>
-    </unit>
-    <unit id="StatusDescription">
-      <segment>
-        <source>Switch Status to Success or Error when the startup flow reaches a terminal state.</source>
-      </segment>
-    </unit>
-    <unit id="StatusTitle">
-      <segment>
-        <source>Status</source>
-      </segment>
-    </unit>
-    <unit id="WindowServiceDescription">
-      <segment>
-        <source>Open a real desktop Splash window, run a five-second mock startup flow, then close it automatically.</source>
-      </segment>
-    </unit>
-    <unit id="WindowServiceTitle">
-      <segment>
-        <source>Window service</source>
       </segment>
     </unit>
   </file>

@@ -1,10 +1,8 @@
 using System.Diagnostics;
-using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
-using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Resources;
 using Avalonia;
@@ -12,7 +10,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -135,9 +132,6 @@ public partial class Button : AvaloniaButton,
     public static readonly StyledProperty<ButtonVariant?> VariantProperty =
         AvaloniaProperty.Register<Button, ButtonVariant?>(nameof(Variant));
 
-    public static readonly StyledProperty<IBrush?> CustomBackgroundProperty =
-        AvaloniaProperty.Register<Button, IBrush?>(nameof(CustomBackground));
-
     public ButtonType ButtonType
     {
         get => GetValue(ButtonTypeProperty);
@@ -222,12 +216,6 @@ public partial class Button : AvaloniaButton,
         set => SetValue(VariantProperty, value);
     }
 
-    public IBrush? CustomBackground
-    {
-        get => GetValue(CustomBackgroundProperty);
-        set => SetValue(CustomBackgroundProperty, value);
-    }
-
     #endregion
 
     #region 内部属性定义
@@ -239,7 +227,7 @@ public partial class Button : AvaloniaButton,
         AvaloniaProperty.Register<Button, object?>(nameof(RightExtraContent));
 
     internal static readonly StyledProperty<IDataTemplate?> RightExtraContentTemplateProperty =
-        AvaloniaProperty.Register<ContentControl, IDataTemplate?>(nameof(RightExtraContentTemplate));
+        AvaloniaProperty.Register<Button, IDataTemplate?>(nameof(RightExtraContentTemplate));
 
     internal static readonly StyledProperty<Thickness> EffectiveBorderThicknessProperty =
         AvaloniaProperty.Register<Button, Thickness>(
@@ -263,9 +251,6 @@ public partial class Button : AvaloniaButton,
 
     internal static readonly StyledProperty<bool> EffectiveIsBorderedProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(EffectiveIsBordered), true);
-
-    internal static readonly StyledProperty<bool> HasCustomBackgroundProperty =
-        AvaloniaProperty.Register<Button, bool>(nameof(HasCustomBackground));
 
     internal static readonly StyledProperty<IBrush?> VariantTextBrushProperty =
         AvaloniaProperty.Register<Button, IBrush?>(nameof(VariantTextBrush));
@@ -366,12 +351,6 @@ public partial class Button : AvaloniaButton,
     {
         get => GetValue(EffectiveIsBorderedProperty);
         set => SetValue(EffectiveIsBorderedProperty, value);
-    }
-
-    internal bool HasCustomBackground
-    {
-        get => GetValue(HasCustomBackgroundProperty);
-        set => SetValue(HasCustomBackgroundProperty, value);
     }
 
     internal IBrush? VariantTextBrush
@@ -557,18 +536,6 @@ public partial class Button : AvaloniaButton,
 
     #endregion
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
-
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -598,7 +565,7 @@ public partial class Button : AvaloniaButton,
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var size         = base.MeasureOverride(availableSize);
+        var size         = LayoutHelper.ApplyLayoutConstraints(this, base.MeasureOverride(availableSize));
         var targetWidth  = size.Width;
         var targetHeight = size.Height;
 
@@ -637,11 +604,6 @@ public partial class Button : AvaloniaButton,
             ConfigureEffectiveButtonState();
         }
 
-        if (ShouldConfigureCustomBackground(change.Property))
-        {
-            ConfigureCustomBackground();
-        }
-
         if (ShouldUpdatePseudoClasses(change.Property))
         {
             UpdatePseudoClasses();
@@ -666,9 +628,9 @@ public partial class Button : AvaloniaButton,
         }
 
         Debug.Assert(_waveSpiritDecorator != null);
-        ConfigureWaveSpiritBrush();
         Dispatcher.Post(() =>
         {
+            ConfigureWaveSpiritBrush();
             _waveSpiritDecorator?.Play();
         });
     }
@@ -701,25 +663,15 @@ public partial class Button : AvaloniaButton,
         {
             _waveSpiritDecorator.WaveBrush = waveBrush;
         }
+        else
+        {
+            _waveSpiritDecorator.ClearValue(WaveSpiritDecorator.WaveBrushProperty);
+        }
     }
 
     private IBrush? ResolveWaveSpiritBrush()
     {
-        if (EffectiveColor == ButtonColor.Default &&
-            Color is null &&
-            Variant is null &&
-            !IsDanger)
-        {
-            return null;
-        }
-
-        return EffectiveVariant switch
-        {
-            ButtonVariant.Solid    => VariantBackgroundBrush,
-            ButtonVariant.Outlined => VariantBorderBrush,
-            ButtonVariant.Dashed   => VariantBorderBrush,
-            _                      => null
-        };
+        return WaveSpiritDecorator.ResolveWaveSpiritBrush(BorderBrush, Background);
     }
 
     private void ConfigureWaveSpiritType()
@@ -762,7 +714,6 @@ public partial class Button : AvaloniaButton,
 
         ConfigureEffectiveBorderThickness();
         ConfigureVariantThemeVariables();
-        ConfigureCustomBackground();
     }
 
     private (ButtonColor Color, ButtonVariant Variant) ResolveEffectiveColorAndVariant()
@@ -807,14 +758,6 @@ public partial class Button : AvaloniaButton,
         return variant == ButtonVariant.Outlined ||
                variant == ButtonVariant.Dashed ||
                variant == ButtonVariant.Solid;
-    }
-
-    private void ConfigureCustomBackground()
-    {
-        HasCustomBackground = CustomBackground is not null &&
-                              IsEnabled &&
-                              EffectiveVariant == ButtonVariant.Solid &&
-                              !EffectiveIsDanger;
     }
 
     private void ConfigureVariantThemeVariables()
@@ -1149,7 +1092,6 @@ public partial class Button : AvaloniaButton,
         VariantBorderHoverBrush       = ToBrush(borderHover);
         VariantBorderPressedBrush     = ToBrush(borderPressed);
         VariantShadow                 = shadow;
-        ConfigureWaveSpiritBrush();
     }
 
     private static IBrush ToBrush(Color color)
@@ -1280,12 +1222,6 @@ public partial class Button : AvaloniaButton,
                property == IsGhostProperty ||
                property == ColorProperty ||
                property == VariantProperty;
-    }
-
-    private bool ShouldConfigureCustomBackground(AvaloniaProperty property)
-    {
-        return property == CustomBackgroundProperty ||
-               property == IsEnabledProperty;
     }
 
     private bool ShouldConfigureEffectiveBorderThickness(AvaloniaProperty property)

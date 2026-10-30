@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.Globalization;
-using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Internal.Calendar;
 using AtomUI.Localization;
 using Avalonia;
@@ -13,7 +12,6 @@ using Avalonia.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.VisualTree;
 using CalendarRangeBarPanelControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarRangeBarPanel;
-using CalendarViewControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarView;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -27,9 +25,9 @@ namespace AtomUI.Desktop.Controls;
     CalendarRootPseudoClass.Month,
     CalendarRootPseudoClass.Year,
     CalendarRootPseudoClass.ShowWeek)]
-[TemplatePart(CalendarViewPart, typeof(CalendarViewControl))]
+[TemplatePart(DateViewerPart, typeof(DateViewer))]
 [TemplatePart(RangeBarPanelPart, typeof(CalendarRangeBarPanelControl))]
-public class Calendar : TemplatedControl
+public partial class Calendar : TemplatedControl
 {
     #region Avalonia Properties
 
@@ -176,6 +174,20 @@ public class Calendar : TemplatedControl
 
     #region Internal Presentation Properties
 
+    internal static readonly StyledProperty<Avalonia.Styling.ControlTheme?> DateCellThemeProperty =
+        AvaloniaProperty.Register<Calendar, Avalonia.Styling.ControlTheme?>(nameof(DateCellTheme));
+    internal Avalonia.Styling.ControlTheme? DateCellTheme { get => GetValue(DateCellThemeProperty); set => SetValue(DateCellThemeProperty, value); }
+    internal static readonly StyledProperty<IDataTemplate?> DefaultDateCellTemplateProperty =
+        AvaloniaProperty.Register<Calendar, IDataTemplate?>(nameof(DefaultDateCellTemplate));
+    internal IDataTemplate? DefaultDateCellTemplate { get => GetValue(DefaultDateCellTemplateProperty); set => SetValue(DefaultDateCellTemplateProperty, value); }
+    internal static readonly DirectProperty<Calendar, DateViewerPresentation> DatePresentationProperty =
+        AvaloniaProperty.RegisterDirect<Calendar, DateViewerPresentation>(nameof(DatePresentation), calendar => calendar.DatePresentation);
+    internal DateViewerPresentation DatePresentation => Fullscreen ? DateViewerPresentation.Content : DateViewerPresentation.Compact;
+
+    internal static readonly DirectProperty<Calendar, DateViewer?> EffectiveDateViewerProperty =
+        AvaloniaProperty.RegisterDirect<Calendar, DateViewer?>(nameof(EffectiveDateViewer), calendar => calendar.EffectiveDateViewer);
+    internal DateViewer? EffectiveDateViewer => _dateViewer;
+
     internal static readonly StyledProperty<double> EffectiveMiniContentHeightProperty =
         AvaloniaProperty.Register<Calendar, double>(nameof(EffectiveMiniContentHeight), double.NaN);
 
@@ -212,16 +224,12 @@ public class Calendar : TemplatedControl
         BindPresentationMetrics();
     }
 
-    /// <summary>公开 <see cref="Mode"/> 到内部面板模式的映射：Month 显示日期，Year 显示月份。</summary>
-    internal CalendarViewMode ViewMode =>
-        Mode == CalendarMode.Year ? CalendarViewMode.Month : CalendarViewMode.Date;
-
-    internal const string CalendarViewPart = "PART_CalendarView";
+    internal const string DateViewerPart = "PART_DateViewer";
     internal const string RangeBarPanelPart = "PART_RangeBarPanel";
     internal const string DefaultHeaderPart = "PART_DefaultHeader";
     internal const string CustomHeaderPart = "PART_CustomHeader";
 
-    private CalendarViewControl? _calendarView;
+    private DateViewer? _dateViewer;
     private CalendarRangeBarPanelControl? _rangeBarPanel;
     private CalendarHeader? _defaultHeader;
     private ContentControl? _customHeader;
@@ -238,18 +246,13 @@ public class Calendar : TemplatedControl
     {
         base.OnApplyTemplate(e);
 
-        if (_calendarView is not null)
-        {
-            _calendarView.CellSelected -= OnCellSelected;
-        }
-
-        _calendarView = e.NameScope.Find<CalendarViewControl>(CalendarViewPart);
-        if (_calendarView is not null)
-        {
-            _calendarView.PresentationAdapter = _presentationAdapter;
-            _calendarView.Today = DateTime.Today;
-            _calendarView.CellSelected += OnCellSelected;
-        }
+        _dateViewer?.SetContentFactory(null);
+        _dateViewer?.SetAutomationNameFactory(null);
+        _dateViewer?.SetHost(null);
+        SetAndRaise(EffectiveDateViewerProperty, ref _dateViewer, e.NameScope.Find<DateViewer>(DateViewerPart));
+        _dateViewer?.SetHost(this);
+        _dateViewer?.SetContentFactory(CreateDateCellContext);
+        _dateViewer?.SetAutomationNameFactory(CreateDateAutomationName);
 
         _rangeBarPanel = e.NameScope.Find<CalendarRangeBarPanelControl>(RangeBarPanelPart);
         UpdateRangeBarPanelVisibility();
@@ -265,7 +268,6 @@ public class Calendar : TemplatedControl
         if (_defaultHeader is not null)
         {
             _defaultHeader.PresentationAdapter = _presentationAdapter;
-            _defaultHeader.IsVisible = HeaderTemplate is null;
             _defaultHeader.YearSelected += OnHeaderYearSelected;
             _defaultHeader.MonthSelected += OnHeaderMonthSelected;
             _defaultHeader.ModeSwitched += OnHeaderModeSwitched;
@@ -273,7 +275,6 @@ public class Calendar : TemplatedControl
 
         _customHeader = e.NameScope.Find<ContentControl>(CustomHeaderPart);
 
-        SyncViewMode();
         RefreshCustomHeaderContent();
         ApplyCulture();
         InvalidateRangeBars();
@@ -286,21 +287,9 @@ public class Calendar : TemplatedControl
     /// </summary>
     private void RefreshCustomHeaderContent()
     {
-        if (_customHeader is not null && HeaderTemplate is not null)
+        if (_customHeader is not null)
         {
-            _customHeader.Content = BuildHeaderContext();
-        }
-    }
-
-    /// <summary>
-    /// 命令式把公开 Mode 投影到内部面板的 ViewMode。
-    /// 不用 XAML binding，因为 <see cref="ViewMode"/> 是无变更通知的计算属性，绑定不会随 Mode 变化重新求值。
-    /// </summary>
-    private void SyncViewMode()
-    {
-        if (_calendarView is not null)
-        {
-            _calendarView.ViewMode = ViewMode;
+            _customHeader.Content = HeaderTemplate is null ? null : BuildHeaderContext();
         }
     }
 
@@ -309,6 +298,9 @@ public class Calendar : TemplatedControl
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        _dateViewer?.SetHost(this);
+        _dateViewer?.SetContentFactory(CreateDateCellContext);
+        _dateViewer?.SetAutomationNameFactory(CreateDateAutomationName);
         AttachLanguageListener();
         AttachRangeBars(RangeBars);
         ApplyCulture();
@@ -316,6 +308,9 @@ public class Calendar : TemplatedControl
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _dateViewer?.SetContentFactory(null);
+        _dateViewer?.SetAutomationNameFactory(null);
+        _dateViewer?.SetHost(null);
         base.OnDetachedFromVisualTree(e);
         DetachAllRangeBars();
         DetachLanguageListener();
@@ -493,7 +488,7 @@ public class Calendar : TemplatedControl
 
     private void OnLanguageChanged(object? sender, LanguageChangedEventArgs e) => ApplyCulture();
 
-    /// <summary>解析当前语言的 Culture 并推给 CalendarView / 默认 Header，触发它们按需同步。</summary>
+    /// <summary>解析当前语言的 Culture 并投影给共享日期面板 / 默认 Header，触发它们按需同步。</summary>
     private void ApplyCulture()
     {
         var culture = Application.Current is { } application
@@ -501,15 +496,7 @@ public class Calendar : TemplatedControl
             : null;
         culture ??= CultureInfo.CurrentCulture;
         CurrentCulture = culture;
-        if (_calendarView is not null)
-        {
-            _calendarView.Culture = culture;
-        }
-
-        if (_rangeBarPanel is not null)
-        {
-            _rangeBarPanel.Culture = culture;
-        }
+        _dateViewer?.RefreshHost();
 
         if (_defaultHeader is not null)
         {
@@ -529,10 +516,8 @@ public class Calendar : TemplatedControl
 
         _presentationAdapter = presentationAdapter;
         BindPresentationMetrics();
-        if (_calendarView is not null)
-        {
-            _calendarView.PresentationAdapter = presentationAdapter;
-        }
+        _dateViewer?.RefreshHost();
+        _dateViewer?.RefreshContent();
 
         if (_defaultHeader is not null)
         {
@@ -544,6 +529,7 @@ public class Calendar : TemplatedControl
 
     private void BindPresentationMetrics()
     {
+        // Adapter resource keys are computed at runtime (Gregorian/lunar); a fixed AXAML resource cannot express this switch.
         _miniContentHeightBinding?.Dispose();
         _fullCellMinHeightBinding?.Dispose();
         _rangeBarTopOffsetBinding?.Dispose();
@@ -562,7 +548,8 @@ public class Calendar : TemplatedControl
 
     internal void RefreshPresentation()
     {
-        _calendarView?.RefreshPresentation();
+        _dateViewer?.RefreshHost();
+        _dateViewer?.RefreshContent();
         _defaultHeader?.RefreshPresentation();
         RefreshCustomHeaderContent();
     }
@@ -581,8 +568,8 @@ public class Calendar : TemplatedControl
         base.OnPropertyChanged(change);
         if (change.Property == ModeProperty)
         {
-            SyncViewMode();
             RefreshCustomHeaderContent();
+            _dateViewer?.RefreshHost();
             UpdateRangeBarPanelVisibility();
             UpdateRootPseudoClasses();
         }
@@ -596,21 +583,23 @@ public class Calendar : TemplatedControl
             }
 
             RefreshCustomHeaderContent();
+            _dateViewer?.RefreshHost();
         }
         else if (change.Property == FullscreenProperty ||
                  change.Property == ShowWeekProperty)
         {
+            RaisePropertyChanged(DatePresentationProperty, default, DatePresentation);
+            _dateViewer?.RefreshHost();
             UpdateRangeBarPanelVisibility();
             UpdateRootPseudoClasses();
         }
         else if (change.Property == HeaderTemplateProperty)
         {
-            if (_defaultHeader is not null)
-            {
-                _defaultHeader.IsVisible = HeaderTemplate is null;
-            }
-
             RefreshCustomHeaderContent();
+        }
+        else if (change.Property == ValidRangeProperty || change.Property == DisabledDateProperty)
+        {
+            _dateViewer?.RefreshHost();
         }
     }
 
@@ -621,14 +610,6 @@ public class Calendar : TemplatedControl
         PseudoClasses.Set(CalendarRootPseudoClass.Month, Mode == CalendarMode.Month);
         PseudoClasses.Set(CalendarRootPseudoClass.Year, Mode == CalendarMode.Year);
         PseudoClasses.Set(CalendarRootPseudoClass.ShowWeek, ShowWeek);
-    }
-
-    private void OnCellSelected(object? sender, CalendarCellSelectedEventArgs e)
-    {
-        var source = e.Kind == CalendarViewCellKind.Month
-            ? CalendarSelectSource.Month
-            : CalendarSelectSource.Date;
-        CommitUserSelection(e.Value, source);
     }
 
     /// <summary>

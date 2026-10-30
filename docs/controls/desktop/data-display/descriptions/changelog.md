@@ -3,6 +3,18 @@
 本文档记录 Descriptions 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-08-13
+
+- Semantic Part
+  - 为 `Descriptions` 建立 `root`、`header`、`title`、`extra`、`label` 和 `content` 公共契约。
+  - 为运行时物化的 label/content 发布完整 owner-scoped `SelectorRoute`，通过 scope marker 跨越 Descriptions 根模板和内部 item 模板，同时隔离嵌套 Semantic owner。
+  - 将默认尺寸、Padding 和 Background 基线投影到公开 presenter，使合法 Semantic Setter 按 Avalonia 原生样式优先级生效。
+  - 通过根模板 `RootFrame` 投影 owner 的标准背景、边框、圆角和 Padding，使 root Semantic Part 能定制包含 Header 与内容区的完整表面。
+- Gallery
+  - 增加延迟创建的 Descriptions Semantic Parts Preview，以及 Small/默认 Large 两个同数据实例的 root/label 样式对照示例。
+- Tests
+  - 覆盖 descriptor、四种布局、三档尺寸、item 墠改重建、布局属性覆盖、嵌套 owner 隔离和 Gallery route 门禁。
+
 ## 2026-06-26
 
 - Docs

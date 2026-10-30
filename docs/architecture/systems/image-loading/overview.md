@@ -71,8 +71,7 @@ flowchart LR
 | Gallery Masonry 使用 `AsyncImageLoader.Avalonia` 附加属性 | 使用 AtomUI `AsyncImage` 和 `IsLoading`/`LoadState` |
 | Previewer loader 同时识别 Bitmap 和 SVG | raster 由 Shared codec 处理；网络和本地 SVG 由 Controls 显式 `SvgImageCodec` 处理，全部请求复用应用级 loader |
 
-仓库不保留上述旧入口的兼容 shim。后续修改必须原子地同步源码、Control 文档、Gallery API/示例、测试、包引用和 LLMS
-输入，不能重新暴露平行来源属性或控件私有加载管线。
+仓库不保留上述旧入口的兼容 shim。后续修改必须原子地同步源码、Control 文档、Gallery API/示例、测试和包引用，不能重新暴露平行来源属性或控件私有加载管线。
 
 ## 不属于本系统
 

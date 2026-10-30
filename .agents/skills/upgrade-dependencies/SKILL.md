@@ -7,10 +7,13 @@ description: Use when upgrading AtomUI NuGet dependencies, source dependency pro
 
 ## Core Principle
 
-Dependency upgrades in AtomUI are evidence-first work. The only objective basis for evaluating
-version changes is comparing the dependency project's source code between the current version and
-the target version. Changelogs, release notes, issues, and docs are useful references only; never
-use them as the primary compatibility basis.
+Dependency upgrades in AtomUI are evidence-first work. Establish what changed only by comparing
+the dependency project's source code at the exact current and target versions. Account for the
+complete changed-file inventory before narrowing inspection to code that can affect AtomUI.
+Upstream tests can clarify intended behavior, but a test or its description alone does not prove a
+production change. Changelogs, release notes, issues, and docs may suggest where to inspect; never
+infer or report a dependency change from them without confirming it in the version-to-version source diff.
+Compilation, semantic versioning, and a green existing suite do not establish behavioral compatibility.
 
 ## Hard Rules
 
@@ -28,7 +31,7 @@ use them as the primary compatibility basis.
 
 Check these before evaluating an upgrade:
 
-- `build/Version.props`
+- `build/Versions.props`
 - `Directory.Packages.props`
 - Relevant `*.csproj` package references
 - Existing lock files, restore output, or generated props when relevant
@@ -45,15 +48,31 @@ AtomUI keeps dependency source projects under `.referenceprojects`.
 4. Run `git fetch --tags --prune` in the reference repository.
 5. Resolve both the current version and target version to tags, branches, or commits.
 6. If a version cannot be resolved, report the exact blocker; do not guess.
-7. Use source diffs as the primary evidence:
+7. Inventory all changed files, then inspect the production source changes for every area that could
+   reach AtomUI. Inspect companion upstream tests to interpret source-backed behavior changes:
 
 ```bash
-git diff <old-ref>..<new-ref> --name-status
+git diff <old-ref>..<new-ref> --name-status --find-renames
 git diff <old-ref>..<new-ref> -- <relevant paths>
-git log --oneline <old-ref>..<new-ref>
 ```
 
 For Avalonia, use `.referenceprojects/Avalonia` when present.
+
+## Impact Trace
+
+For each changed upstream area, record either an AtomUI impact or a source-backed reason it cannot
+affect AtomUI. Use upstream test changes to clarify the intended behavior of a corresponding source
+change, including one that keeps the same API shape. Trace plausible impacts through direct calls
+and indirect consumers: inheritance and overrides, events, bindings and XAML, reflection, generated
+code, build tasks, package dependencies, AOT/trimming, and platform-specific paths. Search for
+both changed symbols and the behavior they implement; a symbol search alone can miss a change in
+notification timing or lifecycle.
+
+For each plausible impact, connect the old and new upstream behavior to the exact AtomUI consumer,
+its observable contract, and a risk-matched verification scenario. Choose the observable dimensions
+from the change: values, errors, state, notifications, ordering, lifecycle, rendering, input,
+accessibility, threading, performance, or platform behavior. Record uncertainty and unverified
+environments explicitly; do not turn an untested path into a "no impact" conclusion.
 
 ## Evaluation Checklist
 
@@ -61,6 +80,10 @@ Produce an evaluation before proposing implementation. Include:
 
 - Current version and target version.
 - Exact source refs compared.
+- The old and new source paths or diff hunks supporting each claimed dependency change; a claim found
+  only in a changelog, release note, issue, documentation page, or test is unverified.
+- Disposition of the complete changed-file inventory, including the upstream tests used to interpret
+  behavior and source-backed reasons for areas ruled out.
 - Source diff summary:
   - public API changes
   - internal API changes AtomUI depends on
@@ -68,12 +91,11 @@ Produce an evaluation before proposing implementation. Include:
   - removed or renamed symbols
   - dependency constraint changes
   - target framework, runtime, platform, or tooling changes
-- AtomUI usage impact from `rg` searches for affected symbols, namespaces, XAML members,
-  extension methods, reflection access, and package references.
+- The impact trace for affected AtomUI consumers and their observable contracts, including indirect
+  paths; use `rg` to locate usage but inspect the surrounding data and control flow.
 - Risk level with concrete reasons.
 - Required AtomUI changes, if any.
-- Verification commands and manual scenarios.
-- Changelog or release note references, clearly marked as secondary context.
+- Verification scenarios derived from each plausible impact, plus any residual unverified risk.
 
 ## Upgrade Plan Gate
 
@@ -87,7 +109,7 @@ Use this shape:
 
 - [ ] 1. Update version declarations in <files>.
 - [ ] 2. Apply compatibility fix for <specific API or behavior>.
-- [ ] 3. Update tests or Gallery scenarios for <specific affected area>.
+- [ ] 3. Add focused tests, probes, or Gallery scenarios for the contracts in the impact trace.
 - [ ] 4. Run restore/build verification.
 - [ ] 5. Run targeted verification for <specific control or feature>.
 - [ ] 6. Report residual risks and pre-existing failures.
@@ -116,4 +138,10 @@ dotnet build controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj -
 ```
 
 Add targeted tests, sample apps, Gallery scenarios, or reference-project inspections when the source
-diff shows control behavior, rendering, input, binding, platform, or threading changes.
+diff shows a plausible AtomUI impact. Reproduce the relevant trigger and assert the observable
+contract, not only the final value or a successful build. When behavior remains uncertain, compare
+old and new versions with a focused disposable probe. Follow the repository's temporary-test
+lifecycle. Existing full-suite, build, package, and publish checks complement these scenarios; they
+do not substitute for a missing impact-specific check. Before reporting completion, ensure the
+verification evidence corresponds to the final dependency version and AtomUI working tree, and list
+any platform or scenario that remains unverified.

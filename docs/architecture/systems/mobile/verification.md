@@ -96,4 +96,4 @@ Input、TextArea、SearchBar、PasscodeInput、VirtualInput 和 NumberKeyboard �
 ## 当前验证状态
 
 当前没有 `AtomUI.Mobile.Controls` 项目，因此本文件只定义验证不变量，没有 Mobile Contract、Headless、Platform 或 Release
-通过结论。现有 Desktop LLMS、Desktop Control 测试或 iOS Demo 环境经验不能替代上述 Mobile 证据。
+通过结论。现有 Desktop Control 测试或 iOS Demo 环境经验不能替代上述 Mobile 证据。

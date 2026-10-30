@@ -8,6 +8,28 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-10-03
+
+- Implementation
+  - Scope global focus handling to the track input root and compare rail/thumb bounds in track-local coordinates, removing duplicate layout offsets and foreign-window focus clearing.
+
+## 2026-08-20
+
+- Design
+  - 公开 Semantic Part：`Slider` 单一 owner 发布 `root` / `rail` / `tracks` / `track` / `handle` 五个 Part，对齐上游
+    6.6.0 `SliderSemanticType`（`classNames` / `styles` 均为 `{ root?, tracks?, track?, rail?, handle? }`）。
+  - rail / tracks / track 由 `SliderTrack` 自绘几何改为代码创建的 `Border` 元素（Semantic Part `rail` / `tracks` /
+    `track`），几何与画刷不变；mark 点 / 标签移入 internal `SliderMarksElement`，元素化前后默认视觉不变。
+  - 元素化后 `SliderTrack` 实现 `ICustomHitTest` 保持自身为 pointer 输入命中目标，轨道点击与 thumb 拖动路由与
+    自绘时期一致。
+  - `tracks` 单值模式跨度对齐上游：`Minimum → Value`（此前 `TracksBrush` 单值模式不绘制，仅影响显式设置
+    `TracksBrush` 的场景）。
+  - 上游 `tracks` 是仅被定制时才渲染的条件节点，AtomUI 恒渲染（默认透明）；上游 mark 位于 handle 之上的 DOM
+    顺序差异与 handle 圆点 `::after` box-shadow 差异已记录为可接受的结构差异。
+- Docs
+  - 新增 [Slider Semantic Part 契约](semantic-part.md)，定义五个 Part 的 Selector、类型、数量语义、尺寸基线与
+    验证契约；同步 overview、implementation 的 LLMS 语义区域与组合结构模型。
+
 ## 2026-07-30
 
 - Design

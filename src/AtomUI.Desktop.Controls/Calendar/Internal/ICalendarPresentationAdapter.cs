@@ -10,8 +10,8 @@ internal readonly record struct CalendarEffectiveRange(DateTime? Start, DateTime
             ? new CalendarEffectiveRange(null, null, false)
             : new CalendarEffectiveRange(validRange.Start, validRange.End, false);
 
-    internal DateTime? BuilderStart => IsEmpty ? DateTime.MaxValue.Date : Start;
-    internal DateTime? BuilderEnd => IsEmpty ? DateTime.MinValue.Date : End;
+    internal DateTime? MinDate => IsEmpty ? DateTime.MaxValue.Date : Start;
+    internal DateTime? MaxDate => IsEmpty ? DateTime.MinValue.Date : End;
 }
 
 internal readonly record struct CalendarPresentationMetrics(
@@ -21,19 +21,12 @@ internal readonly record struct CalendarPresentationMetrics(
 
 internal interface ICalendarPresentationAdapter
 {
+    DateViewerCellContext? CreateCellContext(Internal.DateViewer.DatePanelSession session, Internal.DateViewer.DateViewerCellModel model);
     CalendarPresentationMetrics Metrics { get; }
 
     CalendarEffectiveRange GetEffectiveRange(CalendarDateRange? validRange);
 
-    CalendarViewCell CreateCell();
-
-    CalendarCellContext CreateCellContext(CalendarView owner, CalendarViewCellModel model);
-
-    void ApplyCellPresentation(CalendarViewCell cell, CalendarView owner, CalendarViewCellModel model);
-
-    void ClearCellPresentation(CalendarViewCell cell);
-
-    string GetAutomationName(CalendarView owner, CalendarViewCellModel model);
+    string GetAutomationName(Internal.DateViewer.DatePanelSession session, Internal.DateViewer.DateViewerCellModel model);
 
     string FormatYearOption(int year, CultureInfo culture);
 

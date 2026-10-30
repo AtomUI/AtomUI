@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using AtomUI.Desktop.Controls;
 using Shouldly;
 using Xunit;
 using static AtomUI.Desktop.Controls.Tests.DataGrid.Data.Source.DataGridLocalSourceTests;

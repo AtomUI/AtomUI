@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using AtomUI.Controls;
 using AtomUI.Theme;
 using AtomUI.Theme.Compilation;
@@ -17,14 +18,14 @@ namespace AtomUI.Desktop.Controls;
 /// Avalonia 在跨断点 resize 过程中 activator 的评估顺序与声明顺序相关,
 /// 经实测只有这个顺序下所有方向的断点切换都能正确 fire。
 /// </summary>
-internal static class MediaBreakPointThemeBootstrapper
+internal sealed class MediaBreakPointThemeBootstrapper : IDisposable
 {
     // 注意:ContainerQuery.SetParent 只允许 ControlTheme 作为 parent,不接受 null,
     // 意味着一旦加入 ControlTheme.Children 就无法 Remove。因此首次加载后缓存 CQ,
     // 后续主题切换只就地更新 Query (断点阈值),不再增删节点。
-    private static readonly List<ContainerQuery> InjectedQueries = new();
-    private static ControlTheme? _windowTheme;
-    private static ThemeManager? _themeManager;
+    private readonly ConditionalWeakTable<ControlTheme, ThemeQueries> _themeQueries = new();
+    private readonly List<WeakReference<ThemeQueries>> _liveThemes = new();
+    private ThemeManager? _themeManager;
 
     private static readonly (Func<ThemeSnapshot, double?> Min, Func<ThemeSnapshot, double?> Max, MediaBreakPoint Bp)[] Rows =
     {
@@ -37,22 +38,58 @@ internal static class MediaBreakPointThemeBootstrapper
         (_ => null, t => Global(t, SharedTokenKind.ScreenSMMin) - 1, MediaBreakPoint.ExtraSmall),
     };
 
-    public static void Attach(ThemeManager themeManager)
+    private MediaBreakPointThemeBootstrapper(ThemeManager themeManager)
     {
-        if (_themeManager != null)
+        _themeManager = themeManager;
+        themeManager.ThemeChanged  += HandleThemeChanged;
+        themeManager.ControlThemeResolved += HandleControlThemeResolved;
+    }
+
+    public static IDisposable Attach(ThemeManager themeManager) => new MediaBreakPointThemeBootstrapper(themeManager);
+
+    public void Dispose()
+    {
+        var manager = Interlocked.Exchange(ref _themeManager, null);
+        if (manager is not null)
+        {
+            manager.ThemeChanged -= HandleThemeChanged;
+            manager.ControlThemeResolved -= HandleControlThemeResolved;
+        }
+        _themeQueries.Clear();
+        _liveThemes.Clear();
+    }
+
+    private void HandleControlThemeResolved(object key, ControlTheme theme)
+    {
+        if (key is not Type owner || owner != typeof(Window) || _themeManager?.CurrentSnapshot is not { } snapshot)
         {
             return;
         }
-
-        _themeManager              =  themeManager;
-        themeManager.ThemeChanged  += HandleThemeChanged;
-        if (themeManager.CurrentSnapshot is { } snapshot)
+        if (_themeQueries.TryGetValue(theme, out var existing))
         {
-            Rebuild(themeManager, snapshot);
+            Update(existing, snapshot);
+            return;
         }
+        // StyleQuery is computed from the committed Token snapshot; AXAML cannot express
+        // this runtime min/max query while retaining the exact ContainerQuery contract.
+        var queries = Rows.Select(row => BuildContainerQuery(row.Min(snapshot), row.Max(snapshot), row.Bp)).ToArray();
+        foreach (var query in queries)
+        {
+            theme.Children.Add(query);
+        }
+        var state = new ThemeQueries(queries, snapshot.GlobalTokenValues);
+        _themeQueries.Add(theme, state);
+        for (var index = _liveThemes.Count - 1; index >= 0; index--)
+        {
+            if (!_liveThemes[index].TryGetTarget(out _))
+            {
+                _liveThemes.RemoveAt(index);
+            }
+        }
+        _liveThemes.Add(new WeakReference<ThemeQueries>(state));
     }
 
-    private static void HandleThemeChanged(object? sender, ThemeChangedEventArgs args)
+    private void HandleThemeChanged(object? sender, ThemeChangedEventArgs args)
     {
         if (sender is not ThemeManager tm)
         {
@@ -61,40 +98,39 @@ internal static class MediaBreakPointThemeBootstrapper
 
         if (tm.CurrentSnapshot is { } snapshot)
         {
-            Rebuild(tm, snapshot);
+            for (var index = _liveThemes.Count - 1; index >= 0; index--)
+            {
+                if (_liveThemes[index].TryGetTarget(out var state))
+                {
+                    Update(state, snapshot);
+                }
+                else
+                {
+                    _liveThemes.RemoveAt(index);
+                }
+            }
         }
     }
 
-    private static void Rebuild(ThemeManager themeManager, ThemeSnapshot snapshot)
+    private static void Update(ThemeQueries state, ThemeSnapshot snapshot)
     {
-        if (_windowTheme == null)
+        if (ReferenceEquals(state.Values, snapshot.GlobalTokenValues))
         {
-            if (!themeManager.TryGetResource(typeof(Window), null, out var resource) ||
-                resource is not ControlTheme controlTheme)
-            {
-                return;
-            }
-            _windowTheme = controlTheme;
+            return;
         }
 
-        if (InjectedQueries.Count == 0)
+        for (var index = 0; index < Rows.Length; index++)
         {
-            var children = _windowTheme.Children;
-            foreach (var (minFn, maxFn, bp) in Rows)
-            {
-                var cq = BuildContainerQuery(minFn(snapshot), maxFn(snapshot), bp);
-                children.Add(cq);
-                InjectedQueries.Add(cq);
-            }
+            var (min, max, _) = Rows[index];
+            state.Queries[index].Query = BuildStyleQuery(min(snapshot), max(snapshot));
         }
-        else
-        {
-            for (var i = 0; i < Rows.Length; i++)
-            {
-                var (minFn, maxFn, _) = Rows[i];
-                InjectedQueries[i].Query = BuildStyleQuery(minFn(snapshot), maxFn(snapshot));
-            }
-        }
+        state.Values = snapshot.GlobalTokenValues;
+    }
+
+    private sealed class ThemeQueries(ContainerQuery[] queries, TokenValueTable values)
+    {
+        internal ContainerQuery[] Queries { get; } = queries;
+        internal TokenValueTable Values { get; set; } = values;
     }
 
     private static int Global(ThemeSnapshot snapshot, SharedTokenKind token)

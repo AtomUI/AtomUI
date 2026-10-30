@@ -35,7 +35,10 @@ public class LinuxWindowFixAotTests
             "src/AtomUI.Desktop.Controls/Window/Utils/WindowDrawnDecorationsReflectionExtensions.cs"));
 
         source.ShouldContain("DynamicDependency");
-        source.ShouldContain("DynamicallyAccessedMemberTypes.NonPublicFields, typeof(TopLevel)");
+        source.ShouldContain("typeof(TopLevel).GetField(");
+        source.ShouldContain("\"_topLevelHost\"");
+        source.ShouldNotContain("DynamicallyAccessedMemberTypes.NonPublicFields, typeof(TopLevel)");
+        source.ShouldContain("DynamicDependency(\"_decorations\"");
         source.ShouldContain("\"Avalonia.Controls.TopLevelHost\"");
         source.ShouldContain("\"Avalonia.Controls.Chrome.ResizeGripLayer\"");
         source.ShouldContain("DynamicallyAccessedMemberTypes.NonPublicProperties");

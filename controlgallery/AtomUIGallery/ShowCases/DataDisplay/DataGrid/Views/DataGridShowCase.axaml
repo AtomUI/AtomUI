@@ -6,8 +6,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.DataGrid"
              x:DataType="vm:DataGridViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="DataGrid"
                     Category="{gallery:DataGridShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,74 @@
                     Package="AtomUI.Desktop.Controls.DataGrid"
                     BaseClass="TemplatedControl"
                     MetadataValueWidth="260" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:DataGridBaseInfo">
+                    <gallery:SemanticPartPreview Name="DataGridSemanticPreview"
+                                                 SemanticOwner="{Binding #SemanticCaseGrid}"
+                                                 SemanticOwnerType="{x:Type atom:DataGrid}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <!-- 对齐上游 style-class 演示:4 个纯文本列,Small 尺寸,pageSize 3。
+                                 不设固定 Height:预览画布高度被宿主钳制在视口剩余空间内,
+                                 固定高度的内容会被裁剪,自然高度随画布收缩。 -->
+                            <atom:DataGrid x:Name="SemanticCaseGrid"
+                                           x:DataType="vm:ExpandableRowDataType"
+                                           SizeType="Small"
+                                           PageSize="3"
+                                           IsHideOnSinglePage="True"
+                                           Title="{gallery:DataGridShowCaseLangResource SemanticPreviewTitleText}"
+                                           Footer="{gallery:DataGridShowCaseLangResource SemanticPreviewFooterText}"
+                                           AttachedToVisualTree="HandleExampleDataGridAttached">
+                                <atom:DataGrid.Columns>
+                                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
+                                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" />
+                                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
+                                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderDescription}" FieldId="{x:Static vm:DataGridShowCaseFields.Description}" Binding="{Binding Description}" />
+                                </atom:DataGrid.Columns>
+                            </atom:DataGrid>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="section"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticSectionDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="header.wrapper"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticHeaderWrapperDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="header.cell"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticHeaderCellDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="title"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticTitleDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="body.wrapper"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticBodyWrapperDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="body.row"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticBodyRowDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="body.cell"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticBodyCellDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="footer"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticFooterDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="pagination.root"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticPaginationRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="pagination.item"
+                                Description="{gallery:DataGridShowCaseLangResource SemanticPaginationItemDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -1018,9 +1084,13 @@
 
             </StackPanel>
             <atom:DataGrid x:Name="BasicPagingCaseGrid" Height="400" PaginationVisibility="Bottom"
+                           IsShowPageSizeSelector="True"
                            PageSize="10"
                            x:DataType="vm:DataGridBaseInfo"
                            AttachedToVisualTree="HandleExampleDataGridAttached">
+                <atom:DataGrid.BottomPaginationExtraContent>
+                    <atom:Button Content="{gallery:DataGridShowCaseLangResource BasicPagingExtraContentText}" />
+                </atom:DataGrid.BottomPaginationExtraContent>
                 <atom:DataGrid.Columns>
                     <atom:DataGridTemplateColumn MinWidth="170" Header="{gallery:DataGridShowCaseLangResource P2HeaderName}">
                         <atom:DataGridTemplateColumn.CellTemplate>
@@ -1105,7 +1175,108 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem Title="{gallery:DataGridShowCaseLangResource SemanticPartStyleTitle}"
+                                      Description="{gallery:DataGridShowCaseLangResource SemanticPartStyleDescription}"
+                                      SourceKey="datagrid-semantic-part"
+                                      BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                                      IsOccupyEntireRow="True"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DataGridBaseInfo">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="12">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|DataGrid.semantic-info-table-demo">
+                                        <Setter Property="IsFrameBorderVisible" Value="True" />
+                                        <atom:DataGridTitleStyle x:SetterTargetType="atom:PixelAlignedBorder">
+                                            <Setter Property="Background" Value="#E6F4FF" />
+                                        </atom:DataGridTitleStyle>
+                                        <atom:DataGridHeaderWrapperStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="#E6F4FF" />
+                                        </atom:DataGridHeaderWrapperStyle>
+                                        <atom:DataGridHeaderCellStyle x:SetterTargetType="ContentControl">
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                            <Setter Property="Foreground" Value="#0958D9" />
+                                        </atom:DataGridHeaderCellStyle>
+                                        <atom:DataGridBodyRowStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="Foreground" Value="#003EB3" />
+                                        </atom:DataGridBodyRowStyle>
+                                        <atom:DataGridBodyCellStyle x:SetterTargetType="atom:DataGridCell">
+                                            <Setter Property="Foreground" Value="#003EB3" />
+                                        </atom:DataGridBodyCellStyle>
+                                        <atom:DataGridFooterStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="#0958D9" />
+                                        </atom:DataGridFooterStyle>
+                                        <atom:DataGridPaginationRootStyle x:SetterTargetType="atom:Pagination">
+                                            <Setter Property="Foreground" Value="#0958D9" />
+                                        </atom:DataGridPaginationRootStyle>
+                                        <atom:DataGridPaginationItemStyle x:SetterTargetType="ContentControl">
+                                            <Setter Property="Foreground" Value="#003EB3" />
+                                        </atom:DataGridPaginationItemStyle>
+                                    </Style>
+                                    <Style Selector="atom|DataGrid.semantic-alert-table-demo">
+                                        <Setter Property="IsFrameBorderVisible" Value="True" />
+                                        <atom:DataGridSectionStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="#FFFBE6" />
+                                        </atom:DataGridSectionStyle>
+                                        <atom:DataGridContentStyle x:SetterTargetType="Grid">
+                                            <Setter Property="Background" Value="#FFF1F0" />
+                                        </atom:DataGridContentStyle>
+                                        <atom:DataGridHeaderCellStyle x:SetterTargetType="ContentControl">
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                            <Setter Property="Foreground" Value="#D46B08" />
+                                        </atom:DataGridHeaderCellStyle>
+                                        <atom:DataGridBodyRowStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="Foreground" Value="#873800" />
+                                        </atom:DataGridBodyRowStyle>
+                                        <atom:DataGridBodyCellStyle x:SetterTargetType="atom:DataGridCell">
+                                            <Setter Property="Foreground" Value="#873800" />
+                                        </atom:DataGridBodyCellStyle>
+                                        <atom:DataGridTitleStyle x:SetterTargetType="atom:PixelAlignedBorder">
+                                            <Setter Property="Background" Value="#FFF1F0" />
+                                        </atom:DataGridTitleStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <!-- 对齐上游 style-class 演示的两张卡:4 列 + title/footer + pageSize 3,自然高度不裁剪 -->
+                                <atom:DataGrid x:Name="SemanticStyleCaseGridA"
+                                               x:DataType="vm:ExpandableRowDataType"
+                                               Classes="semantic-info-table-demo"
+                                               SizeType="Small"
+                                               PageSize="3"
+                                               IsHideOnSinglePage="True"
+                                               Title="{gallery:DataGridShowCaseLangResource SemanticPreviewTitleText}"
+                                               Footer="{gallery:DataGridShowCaseLangResource SemanticPreviewFooterText}"
+                                               AttachedToVisualTree="HandleExampleDataGridAttached">
+                                    <atom:DataGrid.Columns>
+                                        <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
+                                        <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" />
+                                        <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
+                                        <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderDescription}" FieldId="{x:Static vm:DataGridShowCaseFields.Description}" Binding="{Binding Description}" />
+                                    </atom:DataGrid.Columns>
+                                </atom:DataGrid>
+                                <atom:DataGrid x:Name="SemanticStyleCaseGridB"
+                                               x:DataType="vm:ExpandableRowDataType"
+                                               Classes="semantic-alert-table-demo"
+                                               PageSize="3"
+                                               IsHideOnSinglePage="True"
+                                               Title="{gallery:DataGridShowCaseLangResource SemanticPreviewTitleText}"
+                                               Footer="{gallery:DataGridShowCaseLangResource SemanticPreviewFooterText}"
+                                               AttachedToVisualTree="HandleExampleDataGridAttached">
+                                    <atom:DataGrid.Columns>
+                                        <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
+                                        <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" />
+                                        <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
+                                        <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderDescription}" FieldId="{x:Static vm:DataGridShowCaseFields.Description}" Binding="{Binding Description}" />
+                                    </atom:DataGrid.Columns>
+                                </atom:DataGrid>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

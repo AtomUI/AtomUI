@@ -56,7 +56,9 @@ Separator 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
-| `PART_Title` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
+| `PART_Title` | `TextBlock` | 稳定模板协作入口，承载标题文本，重命名前必须同步主题和实现。 |
+| `PART_RailStart` | `SeparatorRail` | 连接线起始段节点，承载标题左侧（或无标题/垂直时的整段）连接线，重命名前必须同步主题和实现。 |
+| `PART_RailEnd` | `SeparatorRail` | 连接线结束段节点，承载标题右侧连接线，无标题或垂直时归零，重命名前必须同步主题和实现。 |
 
 控件专属或内部伪类包括 `HasTitleText=:has-title`、`SeparatorPseudoClass.HasTitleText`。这些伪类属于主题 selector 可观察契约，不能在未同步主题和 Gallery 的情况下重命名或删除。
 
@@ -141,33 +143,17 @@ Separator 与同分类控件共享尺寸、状态、Token、Gallery 展示和验
 
 Separator 的视觉选项通过 public API 归一为 theme variables、伪类或模板绑定。Token 保存组件语义值，不能保存实例运行时状态或业务色值。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Separator 桌面版实现原理](implementation.md)
 - [Separator Token 设计](token.md)
+- [Separator Semantic Part 契约](semantic-part.md)
 - [Separator Changelog](changelog.md)
 
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Separator` | 控件根语义区域，承载 public API、状态归一、主题入口和 Gallery 可观察行为。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载用户内容、图标、文本或装饰性展示。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `state` | `状态区域` | 表达 hover、pressed、disabled、loading、selected 或控件专属状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `theme` | `主题区域` | 连接 ControlTheme、SharedToken、控件 Token 和资源键。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/separator/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/separator/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+`rail` 连接线语义与上游 `rail` 语义对齐，由模板中的 `SeparatorRail` 节点承载并以
+`Multiple` 基数公开；完整契约见 [Separator Semantic Part 契约](semantic-part.md)。
 
 验证策略：
 

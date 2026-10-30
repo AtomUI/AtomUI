@@ -3,6 +3,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
+using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -18,23 +20,20 @@ public class DataGridFrameCornerRadiusTests
     }
 
     [Fact]
-    public void Frame_Uses_Top_Only_CornerRadius_When_Frame_Border_Is_Hidden()
+    public void Frame_Preserves_CornerRadius_And_Blank_Area_Input_When_Border_Is_Hidden()
     {
         var cornerRadius = new CornerRadius(3, 5, 7, 11);
         var borderThickness = new Thickness(1, 2, 3, 4);
-        var grid = new global::AtomUI.Desktop.Controls.DataGrid
-        {
-            AutoGenerateColumns = false,
-            BorderThickness     = borderThickness,
-            CornerRadius        = cornerRadius,
-            Width               = 360,
-            Height              = 180
-        };
+        var grid = CreateGridWithRows(isFrameBorderVisible: false, rowCount: 2);
+        grid.BorderThickness    = borderThickness;
+        grid.CornerRadius       = cornerRadius;
+        grid.Height             = 260;
+        grid.IsHideOnSinglePage = true;
 
         var window = new Window
         {
             Width   = 420,
-            Height  = 260,
+            Height  = 340,
             Content = grid
         };
 
@@ -49,6 +48,11 @@ public class DataGridFrameCornerRadiusTests
 
             var headerFrame = FindTemplateBorder(grid, "ColumnHeadersPresenterFrame");
             headerFrame.CornerRadius.ShouldBe(GetTopOnlyCornerRadius(cornerRadius));
+            // Uniform frame geometry must keep the same blank-area input contract.
+            grid.BorderThickness = new Thickness(1);
+            grid.CornerRadius    = new CornerRadius(6);
+            Dispatcher.UIThread.RunJobs();
+            AssertBlankAreaOpensContextMenu(grid, window);
         }
         finally
         {
@@ -58,24 +62,20 @@ public class DataGridFrameCornerRadiusTests
     }
 
     [Fact]
-    public void Frame_Keeps_Full_CornerRadius_When_Frame_Border_Is_Visible()
+    public void Frame_Preserves_CornerRadius_And_Blank_Area_Input_When_Border_Is_Visible()
     {
         var cornerRadius = new CornerRadius(3, 5, 7, 11);
         var borderThickness = new Thickness(1, 2, 3, 4);
-        var grid = new global::AtomUI.Desktop.Controls.DataGrid
-        {
-            AutoGenerateColumns  = false,
-            BorderThickness      = borderThickness,
-            CornerRadius         = cornerRadius,
-            IsFrameBorderVisible = true,
-            Width                = 360,
-            Height               = 180
-        };
+        var grid = CreateGridWithRows(isFrameBorderVisible: true, rowCount: 2);
+        grid.BorderThickness    = borderThickness;
+        grid.CornerRadius       = cornerRadius;
+        grid.Height             = 260;
+        grid.IsHideOnSinglePage = true;
 
         var window = new Window
         {
             Width   = 420,
-            Height  = 260,
+            Height  = 340,
             Content = grid
         };
 
@@ -95,6 +95,11 @@ public class DataGridFrameCornerRadiusTests
 
             var headerFrame = FindTemplateBorder(grid, "ColumnHeadersPresenterFrame");
             headerFrame.CornerRadius.ShouldBe(GetTopOnlyCornerRadius(cornerRadius));
+            // Uniform frame geometry must keep the same blank-area input contract.
+            grid.BorderThickness = new Thickness(1);
+            grid.CornerRadius    = new CornerRadius(6);
+            Dispatcher.UIThread.RunJobs();
+            AssertBlankAreaOpensContextMenu(grid, window);
         }
         finally
         {
@@ -252,6 +257,37 @@ public class DataGridFrameCornerRadiusTests
         }
     }
 
+    private static void AssertBlankAreaOpensContextMenu(Control owner, Window window)
+    {
+        var menu = new ContextMenu();
+        menu.Items.Add(new MenuItem { Header = "Action" });
+        owner.ContextMenu = menu;
+        try
+        {
+            foreach (var x in new[] { 12d, owner.Bounds.Width / 2, owner.Bounds.Width - 12 })
+            {
+                var point = owner.TranslatePoint(new Point(x, owner.Bounds.Height - 30), window);
+                point.ShouldNotBeNull();
+                window.MouseMove(point.Value);
+                var hit = window.InputHitTest(point.Value) as Visual;
+                hit.ShouldNotBeNull();
+                hit.GetSelfAndVisualAncestors().ShouldContain(owner);
+                window.MouseDown(point.Value, MouseButton.Right);
+                window.MouseUp(point.Value, MouseButton.Right);
+                Dispatcher.UIThread.RunJobs();
+                menu.IsOpen.ShouldBeTrue();
+                menu.Bounds.Width.ShouldBeGreaterThan(0);
+                menu.Close();
+                Dispatcher.UIThread.RunJobs();
+            }
+        }
+        finally
+        {
+            menu.Close();
+            owner.ContextMenu = null;
+        }
+    }
+
     private static Border FindTemplateBorder(Control owner, string name)
     {
         return owner.GetVisualDescendants()
@@ -271,7 +307,7 @@ public class DataGridFrameCornerRadiusTests
         return new CornerRadius(cornerRadius.TopLeft, cornerRadius.TopRight, 0, 0);
     }
 
-    private static global::AtomUI.Desktop.Controls.DataGrid CreateGridWithRows(bool isFrameBorderVisible)
+    private static global::AtomUI.Desktop.Controls.DataGrid CreateGridWithRows(bool isFrameBorderVisible, int rowCount = 3)
     {
         var grid = new global::AtomUI.Desktop.Controls.DataGrid
         {
@@ -284,7 +320,7 @@ public class DataGridFrameCornerRadiusTests
                 new GridRow("John"),
                 new GridRow("Jim"),
                 new GridRow("Joe")
-            }),
+            }.Take(rowCount).ToArray()),
             Width = 360
         };
 

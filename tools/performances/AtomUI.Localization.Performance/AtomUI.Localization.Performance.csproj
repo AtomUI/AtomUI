@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
+        <TargetFrameworks>$(AtomUIDevelopTargetFramework)</TargetFrameworks>
         <OutputType>Exe</OutputType>
         <RootNamespace>AtomUI.Localization.Performance</RootNamespace>
         <AssemblyName>AtomUI.Localization.Performance</AssemblyName>

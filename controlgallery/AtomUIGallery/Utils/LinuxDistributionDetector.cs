@@ -304,11 +304,31 @@ public static class LinuxDistributionDetector
 
     private static string ParseRedHatRelease(string content)
     {
-        if (content.Contains("CentOS")) return "CentOS";
-        if (content.Contains("Red Hat Enterprise Linux")) return "Red Hat Enterprise Linux";
-        if (content.Contains("Fedora")) return "Fedora";
-        if (content.Contains("AlmaLinux")) return "AlmaLinux";
-        if (content.Contains("Rocky Linux")) return "Rocky Linux";
+        if (content.Contains("CentOS"))
+        {
+            return "CentOS";
+        }
+
+        if (content.Contains("Red Hat Enterprise Linux"))
+        {
+            return "Red Hat Enterprise Linux";
+        }
+
+        if (content.Contains("Fedora"))
+        {
+            return "Fedora";
+        }
+
+        if (content.Contains("AlmaLinux"))
+        {
+            return "AlmaLinux";
+        }
+
+        if (content.Contains("Rocky Linux"))
+        {
+            return "Rocky Linux";
+        }
+
         return "Red Hat Based";
     }
 

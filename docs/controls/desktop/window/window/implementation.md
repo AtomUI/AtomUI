@@ -30,10 +30,13 @@
 - `src/AtomUI.Desktop.Controls/Window/Utils/WindowTitleBarShadowBackground.cs`
 - `src/AtomUI.Desktop.Controls/Window/Utils/WindowVisualLayerClip.cs`
 - `src/AtomUI.Desktop.Controls/Window/Window.cs`
+- `src/AtomUI.Desktop.Controls/Window/Window.ContentCache.cs`
+- `src/AtomUI.Desktop.Controls/Window/WindowContentBackdrop.cs`
 - `src/AtomUI.Desktop.Controls/Window/WindowToken.cs`
 - `src/AtomUI.Native/WindowExtensions.cs`
 - `src/AtomUI.Native/Linux/WaylandWindowReflectionExtensions.cs`
 - `src/AtomUI.Native/Linux/WaylandWindowUtils.cs`
+- `src/AtomUI.Native/Linux/WaylandInitialScaling.cs`
 - `src/AtomUI.Native/Linux/WindowUtils.Linux.cs`
 
 职责边界：
@@ -56,7 +59,7 @@
 - `GenericLinuxWindowChromeManager`：Linux generic fallback manager，承接无法确定为 X11 或 Wayland 的后端并复用共享 Linux chrome 行为。
 - `X11WindowChromeManager`：X11 专属 manager，负责 map 前初始 geometry、`_GTK_FRAME_EXTENTS`、shadow input region 订阅策略和 10 DIP resize band 保留。
 - `WaylandWindowChromeManager`：Wayland 专属 manager，负责 shadow extents 归一、managed resize grip 接管和 input region 矩形计算。
-- `WindowsWindowChromeManager`：Windows 专属 manager，负责 Windows CSD frame dark mode 与可见 frame border 策略。
+- `WindowsWindowChromeManager`：Windows 专属 manager，负责 Windows CSD frame dark mode 与可见 frame border 策略；首次显示前挂载 `AtomUI.Native` 的 `WindowsBackgroundHook`，窗口关闭时释放。该 hook 在 live resize 期间不做 GDI 背景填充（见 [AtomUI.Native Windows 文档](../../../../modules/native/windows.md) 第 5 节）。
 - `FullscreenPopoverLayer`：internal 模板协作层，维护 macOS 全屏标题栏 popover 的显示、按钮和宿主 Window 订阅。
 - `WindowResizer`：internal 模板协作控件，使用 `GripThickness` 和 `BeginResizeDrag` 提供 managed resize grip。
 - `WindowVisualLayerClip`：internal visible frame 裁剪 helper，是完整 layer surface 排除 `FrameShadowThickness` 后的共享计算入口。
@@ -116,7 +119,7 @@ Public API / ItemsSource / Command / Event
 Window 对标题栏的协作拆成两条独立路径：
 
 1. 通用 host projection：Window 定义 caption requested visibility、窗口能力、WindowState、active state、Topmost、平台/CSD 输入、native chrome metrics、CaptionButtonCommand 和 effective Logo 通知的强类型集合，并把标题栏双击与拖动 pointer 订阅纳入同一个 `IDisposable` lease。
-2. 默认内容配置：`NotifyConfigureTitleBar` 只投影 Title、IsTitleVisible、Logo、TitleAlignment、LeftAddOn、RightAddOn 及其模板，服务 Window 模板创建的默认或派生标题栏。
+2. 默认内容配置：`NotifyConfigureTitleBar` 只投影 Title、IsTitleVisible、Logo、TitleAlignment、LeftAddOn、RightAddOn、`TitleBarFrameBackground` 及其模板，服务 Window 模板创建的默认或派生标题栏。`TitleBarFrameBackground` 使用 `BindingPriority.Template` 投影到默认标题栏的 `Background`，值为 `null` 时释放投影，让 ControlTheme 的主题默认背景重新生效。Linux CSD 例外：默认标题栏保持 `Transparent`，背景由 overlay 中的 `WindowTitleBarShadowBackground` 按 frame 裁剪绘制，避免不透明标题栏盖住该绘制层。
 
 每个 `WindowTitleBar` 按自己的 logical attach/detach 生命周期持有 host projection lease。同一 Window 中多个标题栏分别持有独立 lease；标题栏从 Window A 移到 Window B 时，必须先释放 A 的 lease，再从 B 创建新 lease。默认标题栏在 `OnApplyTemplate` 中无条件提前连接宿主，随后进入逻辑树时命中幂等路径；派生类覆盖 `NotifyConfigureTitleBar` 不能跳过通用宿主连接。
 
@@ -173,8 +176,12 @@ Window 的标题栏存在两套输入模型，维护时必须同时成立：
 
 | 路径 | 背景/装饰层 | 拖拽 / 默认标题栏层 | 用户交互层 |
 | --- | --- | --- | --- |
-| 非 CSD `WindowTheme.axaml` | `TitleBarFrameLayer` / `TitleBarFrameBackground` 位于默认 `WindowTitleBar` 下方，表达背景和装饰。 | `WindowTitleBar` 负责标题、Logo、caption buttons 和空白区域拖拽。 | `LeftAddOn` 和 `RightAddOn` 内部控件负责默认标题栏的按钮、菜单、搜索框等交互。 |
-| CSD `WindowDrawnDecorationsTheme.axaml` | `PART_TitleBar` 可承载 `TitleBarFrameLayer`，并使用 `ElementRole="TitleBar"` 表达标题栏拖拽区域。 | 默认 `WindowTitleBar` 的展示由 overlay presenter 承载，平台 chrome role 不应吞掉该 presenter 内部交互。 | `PART_TitleBarPresenter` 承载默认 `WindowTitleBar`，使用 `ElementRole="User"`；`LeftAddOn` 和 `RightAddOn` 在此获得 client input。 |
+| 非 CSD `WindowTheme.axaml` | `TitleBarFrameBackground` 由默认 `WindowTitleBar` 绘制；`TitleBarFrameLayer` 仍位于默认 `WindowTitleBar` 下方，表达装饰。 | `WindowTitleBar` 负责标题、Logo、caption buttons 和空白区域拖拽。 | `LeftAddOn` 和 `RightAddOn` 内部控件负责默认标题栏的按钮、菜单、搜索框等交互。 |
+| CSD `WindowDrawnDecorationsTheme.axaml` | Linux：`WindowTitleBarShadowBackground` 在 overlay 中按 frame 裁剪绘制 `TitleBarFrameBackground`；非 Linux：由 overlay 中的默认 `WindowTitleBar` 绘制。`PART_TitleBar` 可承载 `TitleBarFrameLayer`，并使用 `ElementRole="TitleBar"` 表达标题栏拖拽区域。 | 默认 `WindowTitleBar` 的展示由 overlay presenter 承载，平台 chrome role 不应吞掉该 presenter 内部交互。 | `PART_TitleBarPresenter` 承载默认 `WindowTitleBar`，使用 `ElementRole="User"`；`LeftAddOn` 和 `RightAddOn` 在此获得 client input。 |
+
+`TitleBarFrameBackground` 通过 `Window.NotifyConfigureTitleBar` 以 `BindingPriority.Template` 投影到默认 `WindowTitleBar.Background`；属性为 `null` 时释放该投影，回落到 `WindowTitleBar` ControlTheme 的 `ColorBgContainer` 动态资源。Linux CSD 是唯一例外：标题栏固定投影为 `Transparent`，由 `WindowTitleBarShadowBackground` 继续承担按 frame 裁剪的背景绘制。不能把这条绑定下放到 ControlTheme：默认标题栏实例由 Window 创建，且 `null` 必须回退到主题值。
+
+在 `ActualTransparencyLevel=None` 的平台（例如 Windows），drawn decorations 的 Underlay 会由不透明的 `PART_TransparencyFallback` 覆盖；因此 `TitleBarFrameLayer` 等 Underlay 视觉目前只在透明表面平台上可见，后续如需跨平台一致性应迁移到 Overlay。
 
 实现时必须避免以下错误结构：
 
@@ -182,6 +189,27 @@ Window 的标题栏存在两套输入模型，维护时必须同时成立：
 - 为了让 `TitleBarFrameLayer` 内部按钮可点，把背景/装饰层提升到 `TitleBar` 上方或改成 `ElementRole="User"`。
 - 给 `TitleBarFrameLayer` 的根节点设置可绘制透明背景后尝试承载整条标题栏交互；这会抢占拖拽区域并混淆职责。
 - 为了让某个按钮可点，在 code-behind 中手动转发 pointer 或 click；这会绕过 Avalonia 原生输入、焦点和命令语义。
+
+### 6.2 Windows 10 顶边 frame 补偿
+
+Avalonia 12 在 `WindowDecorations.Full` + `ExtendClientAreaToDecorationsHint=true` 下把客户区顶到窗口最上沿：`WM_NCCALCSIZE` 只保留左右下三边的非客户区，顶部 0 像素。Windows 11 的 DWM 会在窗口内部绘制可见边框，因此顶边正常；Windows 10 没有对应的 `DWMWA_VISIBLE_FRAME_BORDER_THICKNESS` 绘制，顶边只剩一片与标题栏同色的空白。该问题属于 Avalonia 上游行为，AtomUI 不能通过 `WM_NCCALCSIZE` 或窗口样式修改解决：
+
+- 清除 `WS_CAPTION` 可以让 DWM 重新绘制顶边，但会关闭 Win32 的最小化/还原动画；Avalonia 已在 #21498 中恢复 `WS_CAPTION` 以保留动画。
+- 保留 `WS_CAPTION` 并为顶边预留 1px 非客户区时，Win10 会绘制完整标题栏，不能只露出边框线。
+- AtomUI 不拥有非客户区计算，重新引入 `WM_NCCALCSIZE` hook 会与 Avalonia 的 resize/geometry 所有权冲突。
+
+因此 Window 采用客户区自绘补偿，契约如下：
+
+| 项 | 约束 |
+| --- | --- |
+| 触发条件 | `ShouldDrawLegacyWindowsFrameBorder`：`OsType=Windows`、`IsCsdEnabled=true`、`ExtendClientAreaToDecorationsHint=true`、`WindowDecorations=Full`、`WindowState=Normal`、`OsVersion.Major>=10` 且 `Build<22000`。Win11、Linux、macOS、最大化、全屏、`BorderOnly`/`None` 和非扩展客户区均不启用。 |
+| 视觉位置 | `WindowDrawnDecorationsTheme.axaml` Overlay 中两个 1 物理像素高的 `Border`，位于标题栏 presenter 之后（最上层），横跨整个客户区宽度，`IsHitTestVisible=false`。 |
+| 厚度 | `Window.LegacyWindowsFrameBorderThickness = 1 / RenderScaling`，随 `ScalingChanged` 刷新；150% 缩放下为 0.667 DIP，渲染为 1 个物理像素，与 DWM 左右边框一致。 |
+| 颜色 | `WindowToken.FrameBorderActive` / `FrameBorderInactive`（带 alpha 的深灰）。值复现 DWM 阴影纹理在顶边的合成结果：白底激活态约 `#707070`、非激活态约 `#AAAAAA`；使用 alpha 而不是固定实色，保证深色标题栏下仍按同一方式合成。 |
+| 状态 | 激活态读取 `Window.IsActive`；非激活态使用 `BoolConverters.Not`。 |
+| 输入 | 只补画视觉，不改变 DWM 的左右下边框、resize hit-test、标题栏拖拽或 caption button 交互。 |
+
+维护时不得把该补偿扩展到 Win11 或非 CSD 路径，也不得为了让颜色“更黑”改成固定实色；固定实色会在深色标题栏、非激活态或自定义标题栏背景下与 DWM 侧边框产生明显色差。若上游 Avalonia 在 Win10 恢复顶边绘制，优先删除该 overlay 层而不是继续叠加补偿。
 
 ## 7. 内部算法与关键流程
 
@@ -227,6 +255,17 @@ Resolve owner ThemeContext
 
 回归验证至少覆盖：根 Dark 主题在 `WindowOpenedEvent` 前的背景、owner 局部 ThemeContext、用户显式背景不被覆盖、关闭后 lease/资源桥释放，以及失败显示的回滚。Headless 测试只能证明 managed 状态顺序；Windows、macOS 和 Linux 的最终首帧必须通过各平台实机显示或录屏验证。
 
+### 7.2 不透明表面的动态 fallback 背景
+
+`WindowTheme` 负责通过 Token 资源更新 `Background` 和 `TransparencyBackgroundFallback`，用户 local value
+继续优先。实际透明度为 `None` 时，`PART_TransparencyFallback` 必须同步当前有效的
+`TransparencyBackgroundFallback`；透明表面仍由 Avalonia 清空该部件背景。
+
+Avalonia `TopLevel` 在应用模板和透明度变化时以 local value 写入该 Border 的 `Background`，普通
+ControlTheme Setter 和 `TemplateBinding` 无法覆盖这条赋值路径。`Window` 因此只补充 fallback 属性变化时
+的同步，不新增资源订阅，不参与 Token 解析，也不接管透明度切换。部件引用在模板重套用时替换、关闭时释放；
+没有该部件的自定义模板保持自身绘制行为。
+
 ## 8. 资源、性能与 AOT 边界
 
 资源和 AOT 约束：
@@ -244,6 +283,11 @@ Resolve owner ThemeContext
 - TitleBar 宿主发现只使用逻辑祖先和强类型 AvaloniaProperty binding，不使用全局 Window registry、反射或字符串 binding path；状态变化复用现有 lease，template reapply 不重复创建 lease。
 - 首次显示主题表面使用一次性 Snapshot 读取，不为同步 `Show` 临界区创建资源 observable 或订阅。
 - 大集合控件必须保证 container recycle 后不会泄漏旧 item 状态。
+- CSD 模板的内容根 `PART_ContentCacheHost` 与首个子元素 `PART_ContentBackdrop` 是覆盖层内容缓存的 template part；
+  `AcquireContentCache(overlay)` 为引用计数租约，模板重新应用时复位。条件与验证见
+  [覆盖层内容缓存](../../../../architecture/systems/control-infrastructure/overlay-content-cache.md)。
+- Wayland 下构造末尾、首次布局前调用 Native 的 `WaylandInitialScaling.Apply(PlatformImpl)`，按输出预测初始缩放，
+  避免先按缩放 1 布局再整窗重排；机制与边界见 [Native Linux](../../../../modules/native/linux.md)。
 
 ## 9. 维护不变量
 
@@ -260,7 +304,9 @@ Resolve owner ThemeContext
 - `TitleBarFrameLayer` 的背景/装饰层语义，以及标题栏交互内容必须通过 `TitleBar` 承载的职责边界。
 - 上层 Dialog/Drawer 不按 OS 或 CSD 状态复制 Window frame 几何，而是消费 Window 发布的 `FrameShadowThickness`、visible frame 和引用计数 chrome suppression lease。
 - `WindowDrawnDecorations` overlay 只包含 chrome；Dialog/Drawer 仍在 owning Window `TopLevel` 内，多个 owner 的 suppression lease 必须在最后一次释放后才恢复 chrome。
+- Windows 10 的顶边 frame 补偿只允许通过 `IsLegacyWindowsFrameBorderVisible` + overlay 自绘实现；不得清除 `WS_CAPTION`、重新引入 `WM_NCCALCSIZE` hook 或修改 Avalonia 的 resize 几何来换取边框。
 - 所有桌面平台共用 Window 首次显示主题表面准备流程，`WindowTheme` 是显示完成后的唯一长期背景所有者。
+- Windows live resize 不错帧依赖两项共同成立：`WithAtomUIDefaultOptions()` 的合成顺序以 `RedirectionSurface` 优先，以及 `WindowsBackgroundHook` 在 `WM_ENTERSIZEMOVE`～`WM_EXITSIZEMOVE` 期间不做 GDI 背景填充。调整任一项都必须按 [Windows Live Resize 与窗口装饰架构](../../../../architecture/systems/windowing/windows-live-resize.md) 重做拖动左/上边缘的视觉验证。
 - 旧 template part、事件订阅、Popup/Flyout/Window host 和 collection view 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。

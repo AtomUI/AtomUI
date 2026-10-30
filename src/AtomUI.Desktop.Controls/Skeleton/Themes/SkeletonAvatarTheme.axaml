@@ -8,11 +8,37 @@
         <ControlTheme.BasedOn>
             <themes:AbstractSkeletonTheme TargetType="atom:SkeletonAvatar" />
         </ControlTheme.BasedOn>
+
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:SkeletonAvatar">
+                <Panel Name="PART_RootLayout">
+                    <Border Name="PART_ActiveAnimationLayer"
+                            Classes.semantic-content="True"
+                            Width="{TemplateBinding Height}"
+                            Height="{TemplateBinding Height}"
+                            HorizontalAlignment="Left"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            IsVisible="{TemplateBinding IsActive}" />
+                    <Border Name="PART_ContentLayer"
+                            Classes.semantic-content="True"
+                            Width="{TemplateBinding Height}"
+                            Height="{TemplateBinding Height}"
+                            HorizontalAlignment="Left"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
         
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Background" Value="{atom:SkeletonTokenResource GradientFromColor}" />
-        
+
          <Style Selector="^[SizeType=Large]">
             <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeightLG}" />
             <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightLG}" />

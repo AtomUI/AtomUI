@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:atom="https://atomui.net"
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
-             xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:workspaceviews="using:AtomUIGallery.Workspace.Views"
              xmlns:vm="using:AtomUIGallery.Workspace.ViewModels"
              x:Class="AtomUIGallery.Workspace.Views.WorkspaceWindow"
@@ -18,8 +17,7 @@
              Width="1300">
     <atom:Window.Resources>
         <atom:Menu x:Key="WorkspaceTitleBarMenu">
-            <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemSettings}"
-                           Icon="{antdicons:AntDesignIconProvider Kind=SettingOutlined}">
+            <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemSettings}">
                 <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemWindowOptions}">
                     <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemEnableFullScreen}"
                                    ToggleType="CheckBox"
@@ -47,8 +45,7 @@
                                    Tag="{x:Static workspaceviews:WindowMenuItemKind.Resize}" />
                 </atom:MenuItem>
             </atom:MenuItem>
-            <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemTheme}"
-                           Icon="{antdicons:AntDesignIconProvider Kind=BulbOutlined}">
+            <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemTheme}">
                 <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemThemeSettings}"
                                Tag="{x:Static workspaceviews:WindowMenuItemKind.ThemeCatalog}" />
                 <atom:MenuSeparator />
@@ -81,8 +78,7 @@
                                IsChecked="True"
                                Tag="{x:Static workspaceviews:WindowMenuItemKind.WaveSpirit}" />
             </atom:MenuItem>
-            <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemLanguage}"
-                           Icon="{antdicons:AntDesignIconProvider Kind=GlobalOutlined}">
+            <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemLanguage}">
                 <atom:MenuItem Header="简体中文"
                                ToggleType="Radio"
                                IsChecked="{Binding IsZhCN}"

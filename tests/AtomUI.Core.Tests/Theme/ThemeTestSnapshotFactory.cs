@@ -22,7 +22,7 @@ internal static class ThemeTestSnapshotFactory
             GeneratedThemeSchema.GetAlgorithms());
         registry.TryGetAlgorithm(ThemeAlgorithm.Default, out var defaultAlgorithm).ShouldBeTrue();
         var location = new ThemeSourceLocation("test", 1, 1, "/Theme");
-        var definition = new BoundThemeDefinition(
+        var definition = new PreparedThemeDefinition(
             "TestTheme",
             "Test Theme",
             ThemeAppearance.Light,

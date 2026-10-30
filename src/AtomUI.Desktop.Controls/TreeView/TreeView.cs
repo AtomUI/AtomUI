@@ -1,10 +1,11 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Controls.Utils;
-using AtomUI.MotionScene;
+using AtomUI.Generated.AtomUIDesktopControls;
+using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -103,11 +104,11 @@ public partial class TreeView : AvaloniaTreeView,
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<TreeView>();
     
-    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty = 
-        Popup.OpenMotionProperty.AddOwner<TreeView>();
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        AvaloniaProperty.Register<TreeView, AbstractMotion?>(nameof(OpenMotion));
         
-    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty = 
-        Popup.CloseMotionProperty.AddOwner<TreeView>();
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        AvaloniaProperty.Register<TreeView, AbstractMotion?>(nameof(CloseMotion));
     
     public static readonly StyledProperty<ItemToggleType> ToggleTypeProperty =
         AvaloniaProperty.Register<TreeView, ItemToggleType>(nameof(ToggleType), ItemToggleType.None);
@@ -426,6 +427,7 @@ public partial class TreeView : AvaloniaTreeView,
             UnsubscribeFromCheckedItems();
             _checkedItems = value ?? new AvaloniaList<object>();
             SubscribeToCheckedItems();
+            RecordExplicitCheckedUpdateDuringReplay(true);
         }
     }
 
@@ -517,10 +519,24 @@ public partial class TreeView : AvaloniaTreeView,
         TreeViewItem.ContextMenuRequestEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemContextMenuRequest(args));
         TreeViewItem.ClickEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemClicked(args));
         RequestBringIntoViewEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleDescendantRequestBringIntoView(args));
+        Avalonia.Controls.Primitives.SelectingItemsControl.SelectionChangedEvent.AddClassHandler<TreeView>(
+            (treeView, args) => treeView.HandleSelectionChangedDuringItemsSourceReplay(args));
         ConfigureFilter();
 
-        SelectedItemProperty.Changed.AddClassHandler<TreeView>((treeView, args) => treeView.NotifyFormValueChanged(args.NewValue));
-        SelectedItemsProperty.Changed.AddClassHandler<TreeView>((treeView, args) => treeView.NotifyFormValueChanged(args.NewValue));
+        SelectedItemProperty.Changed.AddClassHandler<TreeView>((treeView, args) =>
+        {
+            if (!treeView.IsItemsSourceReplayPending)
+            {
+                treeView.NotifyFormValueChanged(args.NewValue);
+            }
+        });
+        SelectedItemsProperty.Changed.AddClassHandler<TreeView>((treeView, args) =>
+        {
+            if (!treeView.IsItemsSourceReplayPending)
+            {
+                treeView.NotifyFormValueChanged(args.NewValue);
+            }
+        });
     }
 
     public TreeView()
@@ -695,7 +711,9 @@ public partial class TreeView : AvaloniaTreeView,
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new TreeViewItem();
+        var treeViewItem = new TreeViewItem();
+        treeViewItem.Classes.Add(TreeViewSemanticParts.ItemClass);
+        return treeViewItem;
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -708,6 +726,7 @@ public partial class TreeView : AvaloniaTreeView,
         base.ContainerForItemPreparedOverride(container, item, index);
         if (container is TreeViewItem treeViewItem)
         {
+            treeViewItem.Classes.Add(TreeViewSemanticParts.ItemClass);
             treeViewItem.OwnerTreeView = this;
             
             if (item != null && item is not Visual && item is ITreeItemNode treeViewItemData)
@@ -794,7 +813,9 @@ public partial class TreeView : AvaloniaTreeView,
     
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        FinishDrag();
         base.OnDetachedFromVisualTree(e);
+        CancelItemsSourceReplay();
         InteractionHandler.Detach(this);
         
         // 清理所有待处理的异步加载操作
@@ -811,68 +832,31 @@ public partial class TreeView : AvaloniaTreeView,
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
-        if (change.Property == DefaultSelectedPathsProperty)
+        var isItemsSourceChange = change.Property == ItemsSourceProperty;
+        var replayRevision = isItemsSourceChange ? BeginItemsSourceReplay() : 0;
+        if (isItemsSourceChange)
         {
-            ConfigureDefaultSelectedPaths();
+            _itemsSourceReplayInternalDepth++;
         }
-        else if (change.Property == SwitcherRotationIconProperty)
+        try
         {
-            HandleSwitcherRotationIconChanged();
+            base.OnPropertyChanged(change);
+            HandlePropertyChangedCore(change, replayRevision);
         }
-        else if (change.Property == SwitcherExpandIconProperty)
+        catch
         {
-            HandleSwitcherExpandIconChanged();
-        }
-        else if (change.Property == SwitcherCollapseIconProperty)
-        {
-            HandleSwitcherCollapseIconChanged();
-        }
-        else if (change.Property == SwitcherLoadingIconProperty)
-        {
-            HandleSwitcherLoadingIconChanged();
-        }
-        else if (change.Property == SwitcherLeafIconProperty)
-        {
-            HandleSwitcherLeafIconChanged();
-        }
-        else if (change.Property == DataLoaderProperty)
-        {
-            HasTreeItemDataLoader = DataLoader != null;
-        }
-        else if (change.Property == FilterProperty ||
-                 change.Property == FilterStrategyProperty ||
-                 change.Property == ItemsSourceProperty ||
-                 change.Property == FilterValueProperty)
-        {
-            FilterTreeNode();
-        }
-
-        if (change.Property == IsShowEmptyIndicatorProperty ||
-            change.Property == ItemsSourceProperty ||
-            change.Property == FilterResultCountProperty ||
-            change.Property == IsFilterModeProperty ||
-            change.Property == EmptyIndicatorProperty ||
-            change.Property == EmptyIndicatorTemplateProperty)
-        {
-            ConfigureEmptyIndicator();
-        }
-        else if (change.Property == IsSelectableProperty)
-        {
-            if (!IsSelectable)
+            if (isItemsSourceChange)
             {
-                SetCurrentValue(SelectedItemProperty, null);
-                SelectedItems.Clear();
+                CancelItemsSourceReplay();
             }
+            throw;
         }
-
-        if (change.Property == ItemsSourceProperty)
+        finally
         {
-            if (_isTreeDataControllerAttached)
+            if (isItemsSourceChange)
             {
-                _treeDataController.SetRootSource(ItemsSource);
+                _itemsSourceReplayInternalDepth--;
             }
-            Dispatcher.Post(ConfigureStateAfterItemsSourceChanged);
         }
     }
 
@@ -1105,4 +1089,75 @@ public partial class TreeView : AvaloniaTreeView,
     {
     }
     #endregion
+
+    private void HandlePropertyChangedCore(AvaloniaPropertyChangedEventArgs change, int replayRevision)
+    {
+        if (change.Property == DefaultSelectedPathsProperty)
+        {
+            ConfigureDefaultSelectedPaths();
+        }
+        else if (change.Property == SwitcherRotationIconProperty)
+        {
+            HandleSwitcherRotationIconChanged();
+        }
+        else if (change.Property == SwitcherExpandIconProperty)
+        {
+            HandleSwitcherExpandIconChanged();
+        }
+        else if (change.Property == SwitcherCollapseIconProperty)
+        {
+            HandleSwitcherCollapseIconChanged();
+        }
+        else if (change.Property == SwitcherLoadingIconProperty)
+        {
+            HandleSwitcherLoadingIconChanged();
+        }
+        else if (change.Property == SwitcherLeafIconProperty)
+        {
+            HandleSwitcherLeafIconChanged();
+        }
+        else if (change.Property == DataLoaderProperty)
+        {
+            HasTreeItemDataLoader = DataLoader != null;
+        }
+        else if (change.Property == FilterProperty ||
+                 change.Property == FilterStrategyProperty ||
+                 change.Property == ItemsSourceProperty ||
+                 change.Property == FilterValueProperty)
+        {
+            FilterTreeNode();
+        }
+
+        if (change.Property == IsShowEmptyIndicatorProperty ||
+            change.Property == ItemsSourceProperty ||
+            change.Property == FilterResultCountProperty ||
+            change.Property == IsFilterModeProperty ||
+            change.Property == EmptyIndicatorProperty ||
+            change.Property == EmptyIndicatorTemplateProperty)
+        {
+            ConfigureEmptyIndicator();
+        }
+        else if (change.Property == IsSelectableProperty)
+        {
+            if (!IsSelectable)
+            {
+                SetCurrentValue(SelectedItemProperty, null);
+                SelectedItems.Clear();
+            }
+        }
+
+        if (change.Property == ItemsSourceProperty)
+        {
+            if (_isTreeDataControllerAttached)
+            {
+                _treeDataController.SetRootSource(ItemsSource);
+            }
+            Dispatcher.Post(() => CompleteItemsSourceReplay(replayRevision));
+        }
+        else if (change.Property == SelectedItemProperty || change.Property == SelectedItemsProperty)
+        {
+            RecordExplicitSelectionUpdateDuringReplay(true);
+        }
+
+    }
 }

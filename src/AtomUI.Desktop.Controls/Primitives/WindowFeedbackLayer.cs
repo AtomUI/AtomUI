@@ -35,6 +35,27 @@ internal sealed class WindowFeedbackLayer : Panel
         return layer;
     }
 
+    internal static void Activate(Panel? hostLayer, Control manager)
+    {
+        if (hostLayer is null)
+        {
+            return;
+        }
+
+        var children = hostLayer.Children;
+        var lastIndex = children.Count - 1;
+        if (lastIndex < 0 || ReferenceEquals(children[lastIndex], manager))
+        {
+            return;
+        }
+
+        var managerIndex = children.IndexOf(manager);
+        if (managerIndex >= 0)
+        {
+            children.Move(managerIndex, lastIndex);
+        }
+    }
+
     private static VisualLayerManager? FindFirstLayerManager(TopLevel topLevel)
     {
         foreach (var descendant in topLevel.GetTemplateDescendants())

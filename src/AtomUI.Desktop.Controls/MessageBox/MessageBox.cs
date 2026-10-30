@@ -13,7 +13,7 @@ public enum MessageBoxOkButtonStyle
     Primary
 }
 
-public class MessageBox : Dialog
+public partial class MessageBox : Dialog
 {
     #region Public Properties
 

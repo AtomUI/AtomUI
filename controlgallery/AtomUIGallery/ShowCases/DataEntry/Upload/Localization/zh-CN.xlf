@@ -229,6 +229,36 @@
         <target state="translated">可滚动列表</target>
       </segment>
     </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Each realized file container. The PictureCard and PictureCircle append trigger is not a file item.</source>
+        <target state="translated">每个已实例化的文件容器。PictureCard 和 PictureCircle 的追加触发入口不属于文件项。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListDescription">
+      <segment>
+        <source>The active file list for every ListType, including the PictureCard and PictureCircle wrap layout.</source>
+        <target state="translated">每种 ListType 的活动文件列表，包括 PictureCard 和 PictureCircle 的换行布局。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize the Upload root, list region, and every realized file item with generated semantic styles.</source>
+        <target state="translated">使用生成的语义样式自定义 Upload 根控件、列表区域和每个已实例化的文件项。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Upload owner that coordinates the trigger and list layout through the Upload control contract.</source>
+        <target state="translated">通过 Upload 控件契约协调触发入口和列表布局的 Upload 根控件。</target>
+      </segment>
+    </unit>
     <unit id="SuccessAutoRemoveDescription">
       <segment>
         <source>Use SuccessAutoRemoveDelay to remove successful files after a short delay.</source>

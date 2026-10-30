@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>AtomUI.Core</AssemblyName></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../../src/AtomUI.Core/Registration/ControlPackageMarkerAttribute.cs" Link="ControlPackageMarkerAttribute.cs" />
+    <Compile Include="../../../../src/AtomUI.Core/Registration/GeneratedTypeMapAccessorAttribute.cs" Link="GeneratedTypeMapAccessorAttribute.cs" />
+    <Compile Include="../../../../src/AtomUI.Core/Registration/ControlRegistrationFragmentAttribute.cs" Link="ControlRegistrationFragmentAttribute.cs" />
+  </ItemGroup>
+</Project>

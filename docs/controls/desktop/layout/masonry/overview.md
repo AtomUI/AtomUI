@@ -1,6 +1,6 @@
 # Masonry 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.Masonry` 桌面版的最新设计定位、公共契约、布局状态模型、主题边界和兼容要求。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Masonry 桌面版实现原理](implementation.md)，设计和契约变化记录见 [Masonry Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.Masonry` 桌面版的最新设计定位、公共契约、布局状态模型、主题边界和兼容要求。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，公共语义区域见 [Masonry Semantic Part 契约](semantic-part.md)，内部实现原理见 [Masonry 桌面版实现原理](implementation.md)，设计和契约变化记录见 [Masonry Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -103,6 +103,8 @@ attached property 的消费对象是 `MasonryPanel.Children` 中被测量和排�
 <atom:Masonry LayoutStrategy="Reflow" />
 ```
 
+Semantic Parts 摘要：Masonry 公开 `root` 与 `item` 两个职责区域。`root` 是 Masonry owner 本身；`item` 是每个已准备的 item container，直接子元素模式下是用户提供的直接 `Control`，`ItemsSource` 模式下是 generated `ContentPresenter`。完整 Selector、ContractType、cardinality 和定制边界由 [Masonry Semantic Part 契约](semantic-part.md) 维护。
+
 事件模型：
 
 ```csharp
@@ -113,7 +115,7 @@ public event EventHandler<MasonryLayoutChangedEventArgs>? LayoutChanged;
 
 ## 4. 行为与状态模型
 
-Masonry 本身没有 hover、pressed、disabled、loading 或 checked 等交互状态。它必须完整保留子元素自身的命中测试、焦点、键盘导航、拖拽、上下文菜单和动画行为。
+Masonry 本身没有 hover、pressed、disabled、loading 或 checked 等交互状态。它必须完整保留子元素自身的命中测试、焦点、键盘导航、拖拽、上下文菜单和动画行为。Masonry 自身为 item 提供布局动效：新 item 入场淡入、既有 item 位置变化时滑动、移除的 item 在原位置淡出（时长来自 `motionDurationSlow` / `motionDurationFast` token，全局禁用动效时退化为瞬时；机制见 [Masonry 桌面版实现原理](implementation.md)），item 自身的交互动画不受影响，动效结束后 item 的样式基值自动接管。
 
 有效状态由响应式属性、兼容属性、可用宽度和子项 attached property 共同决定。状态归一发生在 C# 布局层，AXAML 不承担列数、间距或子项位置计算。
 
@@ -131,29 +133,32 @@ Masonry 本身没有 hover、pressed、disabled、loading 或 checked 等交互�
 
 ## 5. 视觉与主题模型
 
-Masonry 的默认主题只装配 `ItemsPresenter` 与 internal `MasonryPanel`，并把 Masonry 布局属性传递给布局面板。Theme 不绘制子项外观，不通过 selector 计算列数和位置。
+Masonry 的默认主题装配 root chrome `PixelAlignedBorder`、`ItemsPresenter`、离场 ghost 层与 internal `MasonryPanel`，并把 Masonry 的布局属性与 root chrome 属性分别传递给对应层。Theme 不绘制子项外观，不通过 selector 计算列数和位置。Semantic Part marker 不写入主题静态节点；`.semantic-item` 由 Masonry 在 item container 准备阶段补齐。
 
 默认视觉树：
 
 ```text
 Masonry (ItemsControl, default ItemsPanel = MasonryPanel)
-└─ ItemsPresenter
-   └─ MasonryPanel (internal)
-      ├─ <子元素>
-      ├─ ContentPresenter → <子元素>
-      └─ ...
+└─ PixelAlignedBorder#PART_RootBorder
+   └─ Grid
+      ├─ ItemsPresenter
+      │  └─ MasonryPanel (internal)
+      │     ├─ <子元素>
+      │     ├─ ContentPresenter → <子元素>
+      │     └─ ...
+      └─ Canvas#PART_MotionGhostLayer (离场淡出托管，不参与命中测试)
 ```
 
 视觉树要求：
 
-- `Masonry` 和 `MasonryPanel` 节点只承担布局与容器装配职责。
+- `Masonry` 和 `MasonryPanel` 节点只承担布局与容器装配职责；root chrome 由 `PixelAlignedBorder` 承载。
 - 子项视觉结构完全由子项控件或 `ItemTemplate` 负责。
 - 不通过模板节点实现列、行、占位或测量辅助对象。
 - 不通过透明 Border 扩展命中区域。
 - 不通过不可见控件缓存测量结果。
 - 不为子项主动插入额外视觉包装层。
 
-Masonry 当前不定义专属 Token，不需要创建 `token.md`。Masonry 的间距和列宽属于实例布局状态，不应迁移为控件 Token。
+Masonry 当前不定义专属 Token，不需要创建 `token.md`。Masonry 的间距和列宽属于实例布局状态，不应迁移为控件 Token。root chrome 仅复用 `ItemsControl` 已有的 `Background`、`BorderBrush`、`BorderThickness`、`CornerRadius` 与 `Padding`，不引入独立 token 边界。item 动效时长复用全局 motion token（`MotionDurationSlow` / `MotionDurationFast`），由 ControlTheme Setter 馈入 internal 属性，同样不属于 Masonry 专属 Token。
 
 ## 6. 控件家族或集成关系
 
@@ -173,7 +178,7 @@ Masonry 不提供虚拟化语义。瀑布流虚拟化涉及滚动偏移、容器
 优化或扩展 Masonry 时必须保持以下不变量：
 
 - 不改变子元素 logical order、visual child order 和 ItemsControl 容器生成顺序。
-- 不修改子元素 `DataContext`、内容、样式类、主题或资源作用域。
+- 除了发布契约要求的 `.semantic-item` marker，不修改子元素 `DataContext`、内容、样式类、主题或资源作用域。
 - 不为子项主动插入额外视觉包装层。
 - 不要求用户为子项提供 key。
 - 不把 Masonry 变成 ScrollViewer、数据源管理器或卡片外观组件。
@@ -204,45 +209,25 @@ Masonry 不提供虚拟化语义。瀑布流虚拟化涉及滚动偏移、容器
 
 Masonry 的布局元数据属于 item container，而不是数据对象或模板内部视觉元素。该规则保证直接子元素和 `ItemsSource` 两种模式都通过同一套 `MasonryPanel.Children` 计算路径布局。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
+- [Masonry Semantic Part 契约](semantic-part.md)
 - [Masonry 桌面版实现原理](implementation.md)
 - [Masonry Changelog](changelog.md)
 - [AtomUI 响应式机制设计](../../../../architecture/systems/control-infrastructure/responsive.md)
 
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Masonry` | 布局控件根语义区域，承载布局 public API、尺寸和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `container` | `布局容器` | 组织子元素、间距、断点、对齐或分割状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `布局项` | 承载子内容、占位、跨度、排序或尺寸约束。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `theme` | `主题区域` | 连接 SharedToken、布局主题资源和 Gallery 可观察样式。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
 Token 说明：
 
-- Masonry 当前没有专属 `token.md`；LLMS 生成按第 5 节视觉与主题模型、SharedToken、控件家族 Token 或主题资源说明 Token 边界。
-
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/masonry/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/masonry/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+- Masonry 当前没有专属 `token.md`；Token 边界按第 5 节视觉与主题模型、SharedToken、控件家族 Token 或主题资源说明 Token 边界。
 
 验证策略：
 
 | 改动类型 | 验证要求 |
 | --- | --- |
 | 文档改动 | `git diff --check`。 |
-| C# 布局改动 | 覆盖固定列数、自适应列数、响应式列数、间距、整行项、显式列、不可见子项和无限宽度。 |
-| ItemsControl 集成 | 验证直接子元素、`ItemsSource`、`ItemContainerTheme`、`ItemTemplate` 和替换 `ItemsPanel`。 |
+| C# 布局改动 | 覆盖固定列数、自适应列数、响应式列数、间距、整行项、显式列、不可见子项、无限宽度和 `.semantic-item` marker 生命周期。 |
+| ItemsControl 集成 | 验证直接子元素、`ItemsSource`、`ItemContainerTheme`、`ItemTemplate`、`MasonryItemStyle` 和替换 `ItemsPanel`。 |
 | 事件改动 | 验证 `LayoutChanged` 派发避开 layout pass，且只在有效布局分配变化时触发。 |
 | Gallery 改动 | 走查图片、异步内容、高度变化、响应式和整行项示例。 |

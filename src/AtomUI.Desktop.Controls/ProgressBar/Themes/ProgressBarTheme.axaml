@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     xmlns:atom="https://atomui.net"
+    xmlns:atomc="https://atomui.net/common-controls"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ProgressBar}" TargetType="atom:ProgressBar">
         <ControlTheme.BasedOn>
@@ -13,6 +14,60 @@
                 Value="{atom:SharedTokenResource ColorTextLabel}" />
         <Setter Property="ColorTextLightSolid"
                 Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:ProgressBar">
+                <atomc:LineProgressPanel Name="PART_ProgressBody"
+                                         Classes.semantic-body="True">
+                    <Border Name="PART_ProgressRail"
+                            Classes.semantic-rail="True" />
+                    <Border Name="PART_ProgressTrack"
+                            Classes.semantic-track="True" />
+                    <Border Name="PART_ProgressSuccess" />
+                    <Canvas Name="PART_ProgressIndicator"
+                            Classes.semantic-indicator="True"
+                            IsVisible="{TemplateBinding IsProgressInfoVisible}">
+                        <LayoutTransformControl Name="PART_LayoutTransformControl">
+                            <Label Name="PART_PercentageLabel"
+                                   Padding="0"
+                                   Margin="0"
+                                   VerticalContentAlignment="Center"
+                                   Foreground="{TemplateBinding PercentageLabelColor}"
+                                   IsEnabled="{TemplateBinding IsEnabled}" />
+                        </LayoutTransformControl>
+
+                        <atom:IconPresenter
+                            Name="PART_ExceptionCompletedIconPresenter"
+                            Icon="{TemplateBinding ExceptionCompletedIcon}"
+                            HorizontalAlignment="Left" />
+
+                        <atom:IconPresenter
+                            Name="PART_SuccessCompletedIconPresenter"
+                            Icon="{TemplateBinding SuccessCompletedIcon}"
+                            HorizontalAlignment="Left" />
+                    </Canvas>
+                </atomc:LineProgressPanel>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^ /template/ Border#PART_ProgressRail">
+            <Setter Property="Background"
+                    Value="{Binding GrooveBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
+        <Style Selector="^ /template/ Border#PART_ProgressTrack">
+            <Setter Property="Background"
+                    Value="{Binding StrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
+        <Style Selector="^ /template/ Border#PART_ProgressSuccess">
+            <Setter Property="Background"
+                    Value="{Binding SuccessStrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
+
+        <Style Selector="^[StrokeLineCap=Round]">
+            <Style Selector="^ /template/ Border#PART_ProgressRail, ^ /template/ Border#PART_ProgressTrack, ^ /template/ Border#PART_ProgressSuccess">
+                <Setter Property="CornerRadius" Value="1000" />
+            </Style>
+        </Style>
         
         <Style Selector="^[IsProgressInfoVisible=True]">
             <Style Selector="^[Orientation=Horizontal]">

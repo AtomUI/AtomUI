@@ -25,6 +25,11 @@ ToggleSwitchToken 不承载以下状态：
 
 这些 Token 控制 ToggleSwitch 的胶囊轨道高度、最小宽度和内部 padding。普通尺寸根据 SharedToken 字号和行高计算，小号高度使用 `SharedToken.ControlHeight / 2`。
 
+`AbstractToggleSwitch` 另公开同名的 owner 级属性 `TrackHeight`、`TrackMinWidth`、`TrackPadding`、`KnobSize`（对应 antd
+Switch `ComponentToken` 的 `trackHeight` / `trackMinWidth` / `trackPadding` / `handleSize`）：Token 提供默认值与主题
+分支，公开属性是 Semantic Style 的定制入口，二者同名但职责分层，参见
+[ToggleSwitch Semantic Part 契约](semantic-part.md)。
+
 ### 2.2 把手 Token
 
 - `HandleBg`

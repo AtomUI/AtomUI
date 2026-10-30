@@ -1,6 +1,6 @@
 # Tooltip 桌面版架构设计
 
-本文档定义 `Tooltip` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Tooltip 桌面版实现原理](implementation.md)，Tooltip Token 的专项设计见 [Tooltip Token 设计](token.md)，设计和契约变化记录见 [Tooltip Changelog](changelog.md)。
+本文档定义 `Tooltip` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Tooltip 桌面版实现原理](implementation.md)，语义结构契约见 [Tooltip Semantic Part 契约](semantic-part.md)，Tooltip Token 的专项设计见 [Tooltip Token 设计](token.md)，设计和契约变化记录见 [Tooltip Changelog](changelog.md)。
 
 该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `ToolTip`，其 internal `IsPopupPinnedOpen` 只供测试和内部诊断使用；设置为 true 时保持 tooltip open state 并 relay 到 manually created Popup，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
 
@@ -139,6 +139,7 @@ Tooltip 与同分类控件共享尺寸、状态、Token、Gallery 展示和验�
 
 - 不擅自新增、删除、重命名或改变 public/protected API、Avalonia 属性、事件和默认值。
 - 不破坏 template part、伪类、ControlTheme key、Token 名称和资源 key。
+- 不破坏 Semantic Part 契约：`root`/`container`/`arrow` 的 selector class、route、`ContractType` 与 cardinality 以 [Tooltip Semantic Part 契约](semantic-part.md) 为准。
 - 不改变 Gallery 已展示的 XAML 用法、默认外观、交互顺序和状态优先级。
 - Template part 重新应用、集合替换、弹层关闭、窗口失活和控件 detach 时必须释放旧订阅和资源宿主。
 - 不通过隐藏延迟、强制刷新或吞异常掩盖状态同步问题。
@@ -164,34 +165,26 @@ Tooltip 的动效只表达状态变化反馈，不应改变 public API 语义。
 
 宿主够不到的场景（如 NavMenu 折叠项的内部 header）通过该模型获得完整 tooltip 定制能力，宿主侧不需要新增任何配置语言。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Tooltip 桌面版实现原理](implementation.md)
+- [Tooltip Semantic Part 契约](semantic-part.md)
 - [Tooltip Token 设计](token.md)
 - [Tooltip Changelog](changelog.md)
 
-LLMS 语义区域：
+语义结构（Semantic Part）：
 
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Tooltip` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
+Tooltip 公开 `root`、`container`、`arrow` 三个 Semantic Part。`root` 是 `ToolTip` owner 本体；`container` 与
+`arrow` 声明 `CrossNestedOwners=true`，marker 由共享 `ArrowDecoratedBox` 模板携带。完整 Part 表、Selector、
+数量语义与定制边界见 [Tooltip Semantic Part 契约](semantic-part.md)，此处只保留 owner 与职责摘要：
 
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/tooltip/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/tooltip/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+| Part | 职责 |
+| --- | --- |
+| `root` | 工具提示根语义区域，承载内容、打开状态与主题入口。 |
+| `container` | 内容盒，承载内边距、背景、圆角与文本样式。 |
+| `arrow` | 指向锚定控件的箭头指示器。 |
 
 验证策略：
 
@@ -201,5 +194,6 @@ LLMS 导出来源：
 | Public API | 覆盖属性默认值、事件触发、命令和继承语义。 |
 | 状态模型 | 覆盖 motion、disabled、hover、pressed、focus 以及控件特有状态。 |
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
+| Semantic Part | 检查 descriptor 字段、marker 与内置模板一致性、生成 Style 编译、跨嵌套 owner 命中（见 [Tooltip Semantic Part 契约](semantic-part.md)）。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |

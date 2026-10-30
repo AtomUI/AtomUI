@@ -205,6 +205,54 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Content element with margin, padding, background color and other content area styles</source>
+        <target state="translated">内容元素，包含外边距、内边距、背景色等内容区域样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraDescription">
+      <segment>
+        <source>Action area element with margin, text alignment, inner element spacing and other layout styles</source>
+        <target state="translated">操作区域元素，包含外边距、文本对齐、内部元素间距等布局样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with margin, text alignment, font size, status colors and other icon styles</source>
+        <target state="translated">图标元素，包含外边距、文本对齐、字体大小、状态颜色等图标样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize Result regions with owner-scoped Semantic Part styles.</source>
+        <target state="translated">使用作用于 Result 所有者范围的 Semantic Part 样式自定义各个区域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with text alignment, layout styles and other basic container styles</source>
+        <target state="translated">根元素，包含文本对齐、布局样式等基础容器样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSubTitleDescription">
+      <segment>
+        <source>Subtitle element with font size, text color, line height and other text styles</source>
+        <target state="translated">副标题元素，包含字体大小、文字颜色、行高等文字样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with font size, text color, line height, text alignment and other text styles</source>
+        <target state="translated">标题元素，包含字体大小、文字颜色、行高、对齐方式等文字样式</target>
+      </segment>
+    </unit>
     <unit id="ServerErrorDescription">
       <segment>
         <source>Something went wrong on server.</source>

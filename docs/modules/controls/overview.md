@@ -44,7 +44,22 @@ Source/Size 访问和释放遵守 UI dispatcher ownership。
 [控件 API](../../architecture/systems/image-loading/control-apis.md)中定义；底层类型见
 [公共契约](../../architecture/systems/image-loading/public-contracts.md)。
 
+## Motion 布局与接入职责
+
+[Motion 系统](../../architecture/systems/motion/overview.md)的重构目标中，Controls 拥有可复用的内容视口/布局原语和必要模板接入，
+Core 拥有动效定义与播放协议。布局原语只承担自然测量、占位、实际视口和完整内容排列，不成为所有动画必须使用的 Actor。
+普通视觉动效优先复用已有模板节点；需要独立变换或裁剪时由 ControlTheme 静态声明，不运行时重组内容树。
+
+`ContentViewport` 已实现公开的 `IMotionLayout`，并接入内容展开消费者；纯视觉动效直接使用实际表面。
+旧通用 Actor 类型已删除。第三方/AOT、几何输入与实际呈现的证据统一见
+[Motion 验证状态](../../architecture/systems/motion/verification.md)。
+
 ## 关键目录
+
+`Primitives/DashedBorder` 与其派生 `PixelAlignedBorder` 统一承载边框绘制、内容圆角裁剪和小数缩放适配。
+共享的数值计算、绘制缓存、裁剪所有权、缩放订阅生命周期及视觉兼容约束由
+[边框渲染架构](../../architecture/systems/rendering/border-rendering.md)拥有；该文档同时区分共享实现、消费模板与原生平台的验证边界。
+具体消费控件的文档继续拥有模板组合与语义部件契约。
 
 | 目录 | 说明 |
 |---|---|

@@ -1,6 +1,6 @@
 # Space 桌面版实现原理
 
-本文档描述 Space 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Space 桌面版架构设计](overview.md)，变化记录见 [Space Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Space Token 设计](token.md)。
+本文档描述 Space 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Space 桌面版架构设计](overview.md)，Semantic Part 契约见 [Space Semantic Part 契约](semantic-part.md)，变化记录见 [Space Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Space Token 设计](token.md)。
 
 ## 1. 实现定位
 
@@ -18,6 +18,7 @@
 - `src/AtomUI.Desktop.Controls/Space/ICompactSpaceAware.cs`
 - `src/AtomUI.Desktop.Controls/Space/InvalidSpaceFillerUsageException.cs`
 - `src/AtomUI.Desktop.Controls/Space/Space.cs`
+- `src/AtomUI.Desktop.Controls/Space/Space.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Space/SpaceToken.cs`
 - `src/AtomUI.Desktop.Controls/Space/Themes/CompactSpaceAddOnTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Space/Themes/CompactSpaceTheme.axaml`
@@ -25,6 +26,7 @@
 职责边界：
 
 - 控件主文件保留 public/protected API、Avalonia 属性注册、事件和主要生命周期入口。
+- 语义声明文件只承载 `Space` 的 runtime semantic contract，不写模板节点或主题样式。
 - Theme 文件负责静态视觉结构、template part、selector 和资源绑定。
 - Token 文件只提供组件视觉变量，不保存实例状态。
 - Gallery 文件只展示用法和示例，不作为运行时逻辑 owner。
@@ -80,6 +82,7 @@ Public API / ItemsSource / Command / Event
 - 构造阶段只注册必要状态，不依赖 template part。
 - 模板应用时获取 part、建立事件订阅和绑定，并先释放旧 part 订阅。
 - 控件卸载、弹层关闭、窗口关闭、集合替换或 container recycle 时释放事件订阅和资源宿主。
+- 运行时 semantic marker（`item` / `separator`）随 attach 与 `SplitTemplate` 变化重建，释放时只清理 `Space` 自己持有的 marker ownership，不触碰应用侧自行添加的 class。
 - DynamicResource、TokenResourceBinder 或 C# binding 必须有明确 owner 和释放点。
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
 
@@ -107,6 +110,8 @@ Space 的交互事件应从输入源收敛到控件级语义事件：
 - 主题资源、Token 和 SharedToken 计算后的视觉更新。
 - ItemsSource、selection、checked、expanded、filter、paging 或 upload task 的集合同步。
 - 状态变化时避免创建不必要的视觉对象、订阅或动画对象。
+- Root frame 布局与绘制：`Padding + BorderThickness` 构成 frame inset，`MeasureOverride` 用 inset 收缩测量约束并外扩 desired size，`ArrangeOverride` 用 inset 收缩排布区域，`Render` 通过 `BorderRenderHelper` 绘制背景、边框、圆角与虚线。
+- Runtime semantic marker：`item` / `separator` 标记由 `Space` 以 ownership set 维护，attach 与 `SplitTemplate` 变化时重建，移除子项时只清理 Space 自己添加的标记。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
 

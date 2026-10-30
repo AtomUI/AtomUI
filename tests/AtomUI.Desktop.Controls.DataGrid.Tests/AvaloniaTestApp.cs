@@ -28,21 +28,17 @@ public static class TestAppBuilder
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder.Configure<TestApplication>()
-                         .UseHeadless(new AvaloniaHeadlessPlatformOptions());
+                         .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                         .UseAtomUI(builder =>
+                         {
+                             builder.UseDesktopControls();
+                             builder.UseDesktopDataGrid();
+                             builder.UseLanguages(
+                                 LanguageTags.EnUS,
+                                 [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
+                         });
     }
 }
 
-internal sealed class TestApplication : Application
-{
-    public override void Initialize()
-    {
-        this.UseAtomUI(builder =>
-        {
-            builder.UseDesktopControls();
-            builder.UseDesktopDataGrid();
-            builder.UseLanguages(
-                LanguageTags.EnUS,
-                [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
-        });
-    }
-}
+// 本工程引用生成器：应用类声明为 partial，由生成器补上 RegisterServices 挂接。
+internal sealed partial class TestApplication : Application;

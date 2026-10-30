@@ -85,22 +85,26 @@ public class GalleryStickyTabsHostTests
         var themeSource   = ReadRepoFile("src/AtomUI.Toolkits.GalleryBase/Controls/Themes/GalleryStickyTabsHostTheme.axaml");
         var tokenSource   = ReadRepoFile("src/AtomUI.Toolkits.GalleryBase/Controls/GalleryStickyTabsHostToken.cs");
         var assetManifest = ReadRepoFile(
-            "src/AtomUI.Toolkits.GalleryBase/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.ThemeAssetManifestGenerator/GeneratedControlThemeAssetManifest.g.cs");
+            "src/AtomUI.Toolkits.GalleryBase/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedTypeMapRegistration.g.cs");
 
         hostSource.ShouldContain("HeaderProperty");
         hostSource.ShouldContain("StickyContentProperty");
         hostSource.ShouldContain("ContentProperty");
         hostSource.ShouldContain("IsStickyMirrorEnabledProperty");
         hostSource.ShouldContain("HasStickyContentProperty");
+        hostSource.ShouldContain("IsContentHeightBoundedProperty");
+        hostSource.ShouldContain("UpdateContentMaxHeight");
+        hostSource.ShouldContain("PART_HeaderHost");
+        hostSource.ShouldContain("PART_ContentHost");
         hostSource.ShouldContain("[Content]");
         hostSource.ShouldNotContain("RegisterTokenResourceScope");
-        hostSource.ShouldContain("ScopeAwareAdornerLayer.GetLayer(this)");
-        hostSource.ShouldContain("StickyMirrorZIndex       = -1");
-        hostSource.ShouldContain("VisualBrush");
-        hostSource.ShouldContain("IsHitTestVisible = false");
-        hostSource.ShouldContain("ZIndex           = StickyMirrorZIndex");
-        hostSource.ShouldContain("RemoveStickyMirror()");
-        hostSource.ShouldContain("!IsStickyMirrorEnabled");
+        hostSource.ShouldContain("ScopeAwareAdornerLayer.GetLayer");
+        hostSource.ShouldContain("StickyElevationZIndex = -1");
+        // Avalonia 12 的 VisualBrush 只在创建时录制一次合成内容，选中态、hover
+        // 和窗口尺寸变化都不会刷新，禁止用它实现吸顶镜像。
+        hostSource.ShouldNotContain("new VisualBrush");
+        hostSource.ShouldContain("ElevateStickyContent()");
+        hostSource.ShouldContain("DemoteStickyContent()");
         hostSource.ShouldNotContain("Popup");
         hostSource.ShouldNotContain("OverlayLayer.GetOverlayLayer(this)");
 
@@ -129,18 +133,32 @@ public class GalleryStickyTabsHostTests
         themeSource.ShouldContain("IsVisible=\"{TemplateBinding HasStickyContent}\"");
         themeSource.ShouldContain("ZIndex=\"1\"");
         themeSource.ShouldNotContain("<VisualLayerManager>");
-        themeSource.ShouldContain("<ContentPresenter Content=\"{TemplateBinding Content}\" />");
+        themeSource.ShouldContain("Name=\"PART_ContentHost\"");
+        themeSource.ShouldContain("Content=\"{TemplateBinding Content}\"");
+        themeSource.ShouldNotContain("ElementName=");
+        themeSource.ShouldNotContain("MultiBinding");
         assetManifest.ShouldContain("Controls/Themes/GalleryStickyTabsHostTheme.axaml");
     }
 
     [Fact]
-    public void Sticky_Host_Keeps_Sticky_Content_In_Inline_Presenter_When_Pinned()
+    public void Sticky_Host_Elevation_Must_Be_Paired_With_Restore()
     {
         var hostSource = ReadRepoFile("src/AtomUI.Toolkits.GalleryBase/Controls/GalleryStickyTabsHost.cs");
 
         hostSource.ShouldNotContain("MoveStickyContentToOverlay");
         hostSource.ShouldNotContain("MoveStickyContentInline");
         hostSource.ShouldNotContain("_inlineStickyContentPresenter.Content");
+        // 吸顶期间真实 StickyContent 宿主被提升进受控 adorner 层；取消吸顶或
+        // 模板释放时必须完整归还到 GalleryStickyTabsPanel 并清理显式尺寸、
+        // Canvas 定位与提升期间的 DataContext 覆盖。
+        hostSource.ShouldContain("private void ElevateStickyContent()");
+        hostSource.ShouldContain("private void DemoteStickyContent()");
+        hostSource.ShouldContain("ClearValue(WidthProperty)");
+        hostSource.ShouldContain("ClearValue(HeightProperty)");
+        hostSource.ShouldContain("ClearValue(Canvas.LeftProperty)");
+        hostSource.ShouldContain("ClearValue(Canvas.TopProperty)");
+        hostSource.ShouldContain("ClearValue(DataContextProperty)");
+        hostSource.ShouldContain("DemoteStickyContent();");
     }
 
     [Fact]
@@ -262,10 +280,16 @@ public class GalleryStickyTabsHostTests
                                                           visualLayerManager));
 
             nativeAdornerLayer.Children.Count.ShouldBe(1);
+            // 吸顶期间受控 adorner 层承载的是真实 StickyContent 宿主本身，
+            // 不是 VisualBrush 快照（快照不会跟随选中态与窗口尺寸刷新）。
+            var stickyContentHost = window.GetVisualDescendants()
+                                        .OfType<Control>()
+                                        .Single(control => control.Name == "PART_StickyContentHost");
+            stickyMirrorLayer.Children.ShouldContain(stickyContentHost);
             stickyMirrorLayer.Children
                              .OfType<Border>()
                              .Count(border => border.Background is VisualBrush)
-                             .ShouldBe(1);
+                             .ShouldBe(0);
             stickyMirrorLayer.ZIndex.ShouldBeGreaterThan(nativeAdornerLayer.ZIndex);
         }
         finally

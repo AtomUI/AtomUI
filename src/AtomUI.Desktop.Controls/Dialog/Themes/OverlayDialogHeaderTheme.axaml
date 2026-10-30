@@ -7,7 +7,9 @@
     <ControlTheme x:Key="{x:Type atom:OverlayDialogHeader}" TargetType="atom:OverlayDialogHeader">
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Name="HeaderFrame" Padding="{TemplateBinding Padding}"
+                <Border Name="HeaderFrame"
+                        Classes.semantic-header="True"
+                        Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}">
                     <DockPanel LastChildFill="True"
                                HorizontalSpacing="{atom:SharedTokenResource SpacingSM}">
@@ -25,11 +27,14 @@
                             </atom:DialogCaptionButton>
                             <atom:DialogCaptionButton
                                 Name="PART_CloseButton"
+                                Classes.semantic-close="True"
                                 NormalIcon="{antdicons:AntDesignIconProvider Kind=CloseOutlined}"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 IsVisible="{TemplateBinding IsCloseButtonEnabled}" />
                         </StackPanel>
-                        <TextBlock Name="Title" Text="{TemplateBinding Title}"
+                        <TextBlock Name="Title"
+                                   Classes.semantic-title="True"
+                                   Text="{TemplateBinding Title}"
                                    FontSize="{TemplateBinding TitleFontSize}"
                                    FontWeight="{TemplateBinding TitleFontWeight}" />
                     </DockPanel>

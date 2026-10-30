@@ -6,7 +6,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.VisualTree;
+using ProgressPath = Avalonia.Controls.Shapes.Path;
 
 namespace AtomUI.Controls.Commons;
 
@@ -53,6 +55,12 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         AvaloniaProperty.Register<AbstractCircleProgress, double>(
             nameof(CircleMinimumIconSize));
 
+    internal static readonly DirectProperty<AbstractCircleProgress, PenLineCap> ShapeStrokeLineCapProperty =
+        AvaloniaProperty.RegisterDirect<AbstractCircleProgress, PenLineCap>(
+            nameof(ShapeStrokeLineCap),
+            owner => owner.ShapeStrokeLineCap,
+            (owner, value) => owner.ShapeStrokeLineCap = value);
+
     internal double IndicatorAngle
     {
         get => GetValue(IndicatorAngleProperty);
@@ -71,7 +79,22 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         set => SetValue(CircleMinimumIconSizeProperty, value);
     }
 
+    private PenLineCap _shapeStrokeLineCap;
+
+    internal PenLineCap ShapeStrokeLineCap
+    {
+        get => _shapeStrokeLineCap;
+        private set => SetAndRaise(ShapeStrokeLineCapProperty, ref _shapeStrokeLineCap, value);
+    }
+
     #endregion
+
+    private ProgressPath? _progressRail;
+    private ProgressPath? _progressTrack;
+    private ProgressPath? _progressSuccess;
+
+    private protected override bool HasTemplateProgressVisuals =>
+        _progressRail is not null && _progressTrack is not null && _progressSuccess is not null;
 
     static AbstractCircleProgress()
     {
@@ -231,6 +254,22 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
                 SetupExtraInfoIconSize(circleSize);
             }
         }
+
+        if (change.Property == ValueProperty ||
+            change.Property == MinimumProperty ||
+            change.Property == MaximumProperty ||
+            change.Property == IndicatorAngleProperty ||
+            change.Property == SuccessThresholdProperty ||
+            change.Property == StepCountProperty ||
+            change.Property == StepGapProperty ||
+            change.Property == StrokeThicknessProperty ||
+            change.Property == StrokeLineCapProperty)
+        {
+            ShapeStrokeLineCap = StepCount > 0 && StepGap > 0
+                ? PenLineCap.Flat
+                : StrokeLineCap;
+            RefreshTemplateProgressVisuals();
+        }
     }
 
     private void SetupExtraInfoFontSize(double circleSize)
@@ -262,39 +301,82 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     protected override Size ArrangeOverride(Size finalSize)
     {
+        Rect progressIndicatorRect = default;
         if (IsProgressInfoVisible)
         {
-            var extraInfoRect = GetExtraInfoRect(new Rect(new Point(0, 0), finalSize));
-            var extraInfoPos  = extraInfoRect.Position;
+            var contentSize = GetVisibleProgressIndicatorContentSize();
+            progressIndicatorRect = new Rect(
+                0,
+                (finalSize.Height - contentSize.Height) / 2,
+                finalSize.Width,
+                contentSize.Height);
+
             if (LayoutTransformLabel is not null)
             {
                 var labelSize = LayoutTransformLabel.DesiredSize;
-                var offsetX   = (extraInfoRect.Width - labelSize.Width) / 2;
-                var offsetY   = (extraInfoRect.Height - labelSize.Height) / 2;
-                Canvas.SetLeft(LayoutTransformLabel, extraInfoPos.X + offsetX);
-                Canvas.SetTop(LayoutTransformLabel, extraInfoPos.Y + offsetY);
+                var offsetX = (progressIndicatorRect.Width - labelSize.Width) / 2;
+                var offsetY = (progressIndicatorRect.Height - labelSize.Height) / 2;
+                Canvas.SetLeft(LayoutTransformLabel, offsetX);
+                Canvas.SetTop(LayoutTransformLabel, offsetY);
             }
 
             if (SuccessCompletedIconPresenter is not null)
             {
                 var size    = SuccessCompletedIconPresenter.DesiredSize;
-                var offsetX = (extraInfoRect.Width - size.Width) / 2;
-                var offsetY = (extraInfoRect.Height - size.Height) / 2;
-                Canvas.SetLeft(SuccessCompletedIconPresenter, extraInfoPos.X + offsetX);
-                Canvas.SetTop(SuccessCompletedIconPresenter, extraInfoPos.Y + offsetY);
+                var offsetX = (progressIndicatorRect.Width - size.Width) / 2;
+                var offsetY = (progressIndicatorRect.Height - size.Height) / 2;
+                Canvas.SetLeft(SuccessCompletedIconPresenter, offsetX);
+                Canvas.SetTop(SuccessCompletedIconPresenter, offsetY);
             }
 
             if (ExceptionCompletedIconPresenter is not null)
             {
                 var size    = ExceptionCompletedIconPresenter.DesiredSize;
-                var offsetX = (extraInfoRect.Width - size.Width) / 2;
-                var offsetY = (extraInfoRect.Height - size.Height) / 2;
-                Canvas.SetLeft(ExceptionCompletedIconPresenter, extraInfoPos.X + offsetX);
-                Canvas.SetTop(ExceptionCompletedIconPresenter, extraInfoPos.Y + offsetY);
+                var offsetX = (progressIndicatorRect.Width - size.Width) / 2;
+                var offsetY = (progressIndicatorRect.Height - size.Height) / 2;
+                Canvas.SetLeft(ExceptionCompletedIconPresenter, offsetX);
+                Canvas.SetTop(ExceptionCompletedIconPresenter, offsetY);
             }
         }
 
-        return base.ArrangeOverride(finalSize);
+        var arrangedSize = base.ArrangeOverride(finalSize);
+        UpdateTemplateProgressVisuals(finalSize);
+        ArrangeProgressIndicator(progressIndicatorRect);
+        return arrangedSize;
+    }
+
+    private Size GetVisibleProgressIndicatorContentSize()
+    {
+        if (LayoutTransformLabel?.IsVisible == true)
+        {
+            LayoutTransformLabel.Measure(Size.Infinity);
+            if (LayoutTransformLabel.DesiredSize.Width > 0 && LayoutTransformLabel.DesiredSize.Height > 0)
+            {
+                return LayoutTransformLabel.DesiredSize;
+            }
+        }
+
+        if (SuccessCompletedIconPresenter?.IsVisible == true)
+        {
+            SuccessCompletedIconPresenter.Measure(Size.Infinity);
+            if (SuccessCompletedIconPresenter.DesiredSize.Width > 0 &&
+                SuccessCompletedIconPresenter.DesiredSize.Height > 0)
+            {
+                return SuccessCompletedIconPresenter.DesiredSize;
+            }
+        }
+
+        if (ExceptionCompletedIconPresenter?.IsVisible == true)
+        {
+            ExceptionCompletedIconPresenter.Measure(Size.Infinity);
+            if (ExceptionCompletedIconPresenter.DesiredSize.Width > 0 &&
+                ExceptionCompletedIconPresenter.DesiredSize.Height > 0)
+            {
+                return ExceptionCompletedIconPresenter.DesiredSize;
+            }
+        }
+
+        return new Size(0, Math.Max(FontSize, 1));
     }
 
     protected override Rect GetProgressBarRect(Rect controlRect)
@@ -334,7 +416,17 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        _progressRail = null;
+        _progressTrack = null;
+        _progressSuccess = null;
         base.OnApplyTemplate(e);
+        _progressRail = e.NameScope.Find<ProgressPath>(ProgressRailPart);
+        _progressTrack = e.NameScope.Find<ProgressPath>(ProgressTrackPart);
+        _progressSuccess = e.NameScope.Find<ProgressPath>(ProgressSuccessPart);
+        ShapeStrokeLineCap = StepCount > 0 && StepGap > 0
+            ? PenLineCap.Flat
+            : StrokeLineCap;
+        RefreshTemplateProgressVisuals();
         if (ExceptionCompletedIcon == null)
         {
             SetValue(ExceptionCompletedIconProperty, new CloseOutlined(), BindingPriority.Template);
@@ -345,4 +437,45 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             SetValue(SuccessCompletedIconProperty, new CheckOutlined(), BindingPriority.Template);
         }
     }
+
+    private protected abstract Geometry BuildRailGeometry(Rect grooveRect);
+    private protected abstract Geometry BuildTrackGeometry(Rect grooveRect);
+    private protected abstract Geometry BuildSuccessGeometry(Rect grooveRect);
+
+    private protected void RefreshTemplateProgressVisuals()
+    {
+        UpdateTemplateProgressVisuals(Bounds.Size);
+    }
+
+    internal Rect GetCircleProgressPathRect(Size size)
+    {
+        var strokeThickness = double.IsFinite(StrokeThickness)
+            ? Math.Max(0, StrokeThickness)
+            : 0;
+        var width = Math.Floor(Math.Max(0, size.Width - strokeThickness));
+        var height = Math.Floor(Math.Max(0, size.Height - strokeThickness));
+        return new Rect(
+            (size.Width - width) / 2,
+            (size.Height - height) / 2,
+            width,
+            height);
+    }
+
+    private void UpdateTemplateProgressVisuals(Size size)
+    {
+        if (!HasTemplateProgressVisuals || size.Width <= 0 || size.Height <= 0)
+        {
+            return;
+        }
+
+        var grooveRect = new Rect(default, GetCircleProgressPathRect(size).Size);
+
+        _progressRail!.Data = BuildRailGeometry(grooveRect);
+        _progressTrack!.Data = BuildTrackGeometry(grooveRect);
+        _progressSuccess!.IsVisible = !double.IsNaN(SuccessThreshold);
+        _progressSuccess.Data = _progressSuccess.IsVisible
+            ? BuildSuccessGeometry(grooveRect)
+            : null;
+    }
+
 }

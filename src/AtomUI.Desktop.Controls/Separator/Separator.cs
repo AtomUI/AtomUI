@@ -3,7 +3,7 @@ using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Separator : AbstractSeparator
+public partial class Separator : AbstractSeparator
 {
 }
 

@@ -7,38 +7,50 @@
     <ControlTheme x:Key="{x:Type atom:SimplePagination}" TargetType="atom:SimplePagination">
         <Setter Property="Template">
             <ControlTemplate>
-                <StackPanel Name="PART_RootLayoutPart"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal"
-                            IsVisible="{TemplateBinding IsEffectiveVisible}">
-                    <atom:PaginationNavItem Name="PART_PreviousNavItem"
-                                            PaginationItemType="Previous"
-                                            Icon="{antdicons:AntDesignIconProvider LeftOutlined}"
+                <atom:DashedBorder Background="{TemplateBinding Background}"
+                                   BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                   BorderBrush="{TemplateBinding BorderBrush}"
+                                   BorderThickness="{TemplateBinding BorderThickness}"
+                                   CornerRadius="{TemplateBinding CornerRadius}"
+                                   Padding="{TemplateBinding Padding}"
+                                   StrokeDashArray="{TemplateBinding BorderDashArray}"
+                                   StrokeDaskOffset="{TemplateBinding BorderDashOffset}">
+                    <StackPanel Name="PART_RootLayoutPart"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                IsVisible="{TemplateBinding IsEffectiveVisible}">
+                        <atom:PaginationNavItem Name="PART_PreviousNavItem"
+                                                Classes.semantic-item="True"
+                                                PaginationItemType="Previous"
+                                                Icon="{antdicons:AntDesignIconProvider LeftOutlined}"
+                                                SizeType="{TemplateBinding SizeType}"
+                                                IsEnabled="{TemplateBinding IsEnabled}"
+                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                        <atom:QuickJumpEdit Name="PART_QuickJumper"
+                                            IsVisible="{TemplateBinding IsReadOnly, Mode=Default, Converter={x:Static BoolConverters.Not}}"
                                             SizeType="{TemplateBinding SizeType}"
                                             IsEnabled="{TemplateBinding IsEnabled}"
-                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
-                    <atom:QuickJumpEdit Name="PART_QuickJumper"
-                                        IsVisible="{TemplateBinding IsReadOnly, Mode=Default, Converter={x:Static BoolConverters.Not}}"
-                                        SizeType="{TemplateBinding SizeType}"
-                                        IsEnabled="{TemplateBinding IsEnabled}"
-                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                        Minimum="1"/>
-                    <atom:TextBlock Name="PART_InfoIndicator"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Center"
-                                    IsEnabled="{TemplateBinding IsEnabled}" />
-                    <atom:PaginationNavItem Name="PART_NextNavItem"
-                                            PaginationItemType="Next"
-                                            Icon="{antdicons:AntDesignIconProvider RightOutlined}"
-                                            SizeType="{TemplateBinding SizeType}"
-                                            IsEnabled="{TemplateBinding IsEnabled}"
-                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
-                </StackPanel>
+                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                            Minimum="1" />
+                        <atom:TextBlock Name="PART_InfoIndicator"
+                                        Classes.semantic-info="True"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        IsEnabled="{TemplateBinding IsEnabled}" />
+                        <atom:PaginationNavItem Name="PART_NextNavItem"
+                                                Classes.semantic-item="True"
+                                                PaginationItemType="Next"
+                                                Icon="{antdicons:AntDesignIconProvider RightOutlined}"
+                                                SizeType="{TemplateBinding SizeType}"
+                                                IsEnabled="{TemplateBinding IsEnabled}"
+                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                    </StackPanel>
+                </atom:DashedBorder>
             </ControlTemplate>
         </Setter>
-        
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}"/>
-        
+
+        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+
         <Style Selector="^[Align=Start]">
             <Setter Property="HorizontalAlignment" Value="Left" />
         </Style>

@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.GroupBox"
              x:DataType="vm:GroupBoxViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="GroupBox"
                     Category="{gallery:GroupBoxShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,41 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="ContentControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:GroupBoxViewModel">
+                    <gallery:SemanticPartPreview Name="GroupBoxSemanticPreview"
+                                                 SemanticOwner="{Binding #GroupBoxSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:GroupBox}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:GroupBox Name="GroupBoxSemanticOwner"
+                                           HeaderTitle="Title info"
+                                           HeaderIcon="{antdicons:AntDesignIconProvider Kind=GithubOutlined}">
+                                <atom:TextBlock TextWrapping="Wrap"
+                                                Text="Content of group box" />
+                            </atom:GroupBox>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:GroupBoxShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="header"
+                                Description="{gallery:GroupBoxShowCaseLangResource SemanticHeaderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="icon"
+                                Description="{gallery:GroupBoxShowCaseLangResource SemanticIconDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="title"
+                                Description="{gallery:GroupBoxShowCaseLangResource SemanticTitleDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:GroupBoxShowCaseLangResource SemanticContentDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -134,7 +167,98 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:GroupBoxShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:GroupBoxShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="group-box-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:GroupBoxViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="12">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|GroupBox.semantic-object">
+                                        <atom:GroupBoxHeaderStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="#f0f0f0" />
+                                            <Setter Property="Padding" Value="16,2" />
+                                        </atom:GroupBoxHeaderStyle>
+                                        <atom:GroupBoxTitleStyle x:SetterTargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#141414" />
+                                        </atom:GroupBoxTitleStyle>
+                                        <atom:GroupBoxContentStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Padding" Value="16,12" />
+                                        </atom:GroupBoxContentStyle>
+                                    </Style>
+                                    <Style Selector="atom|GroupBox.semantic-function">
+                                        <atom:GroupBoxHeaderStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="#f5efff" />
+                                            <Setter Property="Padding" Value="16,2" />
+                                        </atom:GroupBoxHeaderStyle>
+                                        <atom:GroupBoxTitleStyle x:SetterTargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#141414" />
+                                        </atom:GroupBoxTitleStyle>
+                                        <atom:GroupBoxIconStyle x:SetterTargetType="atom:IconPresenter">
+                                            <Setter Property="Width" Value="20" />
+                                            <Setter Property="Height" Value="20" />
+                                            <Setter Property="IconBrush" Value="#722ED1" />
+                                        </atom:GroupBoxIconStyle>
+                                    </Style>
+                                    <!-- root 语义区域的定制入口：分组边框与背景由 GroupBox 自绘，
+                                         模板中没有承载节点，因此用 owner 作用域的普通 Setter 而不是 Part Style。 -->
+                                    <Style Selector="atom|GroupBox.semantic-border">
+                                        <Setter Property="BorderBrush" Value="#722ED1" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Setter Property="CornerRadius" Value="12" />
+                                        <Setter Property="Background" Value="#f9f0ff" />
+                                        <atom:GroupBoxHeaderStyle x:SetterTargetType="Border">
+                                            <Setter Property="Background" Value="#ffffff" />
+                                        </atom:GroupBoxHeaderStyle>
+                                    </Style>
+                                    <Style Selector="atom|GroupBox.semantic-border-plain">
+                                        <Setter Property="BorderBrush" Value="#13c2c2" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Setter Property="CornerRadius" Value="2" />
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <atom:GroupBoxTitleStyle x:SetterTargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#08979c" />
+                                        </atom:GroupBoxTitleStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:GroupBox Classes="semantic-object"
+                                               HeaderTitle="{gallery:GroupBoxShowCaseLangResource P2HeaderTitleTitleInfo}">
+                                    <atom:TextBlock TextWrapping="Wrap" Text="{gallery:GroupBoxShowCaseLangResource P2TextContentOfGroupBox}" />
+                                </atom:GroupBox>
+
+                                <atom:GroupBox Classes="semantic-function"
+                                               HeaderTitle="{gallery:GroupBoxShowCaseLangResource P2HeaderTitleTitleInfo}"
+                                               HeaderIcon="{antdicons:AntDesignIconProvider Kind=GithubOutlined}">
+                                    <atom:TextBlock TextWrapping="Wrap" Text="{gallery:GroupBoxShowCaseLangResource P2TextContentOfGroupBox}" />
+                                </atom:GroupBox>
+
+                                <atom:TextBlock Name="SemanticBorderCaption"
+                                                Margin="0,4,0,0"
+                                                TextWrapping="Wrap"
+                                                Text="{gallery:GroupBoxShowCaseLangResource SemanticBorderDescription}" />
+
+                                <atom:GroupBox Classes="semantic-border"
+                                               HeaderTitle="{gallery:GroupBoxShowCaseLangResource P2HeaderTitleTitleInfo}">
+                                    <atom:TextBlock TextWrapping="Wrap" Text="{gallery:GroupBoxShowCaseLangResource P2TextContentOfGroupBox}" />
+                                </atom:GroupBox>
+
+                                <atom:GroupBox Classes="semantic-border-plain"
+                                               HeaderTitle="{gallery:GroupBoxShowCaseLangResource P2HeaderTitleTitleInfo}">
+                                    <atom:TextBlock TextWrapping="Wrap" Text="{gallery:GroupBoxShowCaseLangResource P2TextContentOfGroupBox}" />
+                                </atom:GroupBox>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

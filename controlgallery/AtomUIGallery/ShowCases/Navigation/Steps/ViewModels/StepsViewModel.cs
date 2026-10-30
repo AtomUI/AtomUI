@@ -1,7 +1,4 @@
-using AtomUIGallery.Localization;
-using System.Globalization;
 using AtomUI.Controls;
-using AtomUI.Data;
 using Avalonia;
 using ReactiveUI;
 

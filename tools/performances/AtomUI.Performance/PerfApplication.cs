@@ -1,19 +1,6 @@
-using AtomUI.Desktop.Controls;
-using AtomUI.Theme;
 using Avalonia;
 
 namespace AtomUI.Performance;
 
-public sealed class PerfApplication : Application
-{
-    public override void Initialize()
-    {
-        this.UseAtomUI(builder =>
-        {
-            builder.WithDefaultTheme(IThemeManager.DEFAULT_THEME_ID);
-            builder.UseDesktopControls();
-            builder.UseDesktopColorPicker();
-            builder.UseDesktopDataGrid();
-        });
-    }
-}
+// 本工程引用生成器：应用类声明为 partial，由生成器补上 RegisterServices 挂接。
+public sealed partial class PerfApplication : Application;

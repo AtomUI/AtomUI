@@ -16,15 +16,20 @@
                            Margin="{TemplateBinding Padding}">
                     <atom:IconPresenter Name="IconPresenter"
                                         DockPanel.Dock="Left"
+                                        Classes.semantic-icon="True"
                                         Icon="{TemplateBinding Icon}"
                                         IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                     <atom:IconButton Name="PART_CloseButton"
                                      DockPanel.Dock="Right"
+                                     Classes.semantic-close="True"
+                                     Classes.semantic-item-remove="True"
                                      IsVisible="{TemplateBinding IsClosable}"
-                                     Icon="{TemplateBinding CloseIcon}" 
+                                     Icon="{TemplateBinding CloseIcon}"
                                      VerticalAlignment="Center"/>
                     <atom:TextBlock Name="TagTextLabel"
                                     VerticalAlignment="Center"
+                                    Classes.semantic-content="True"
+                                    Classes.semantic-item-content="True"
                                     Text="{TemplateBinding Text}"
                                     Padding="{TemplateBinding TagTextPaddingInline}" />
                 </DockPanel>

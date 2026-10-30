@@ -1,4 +1,4 @@
-﻿using AtomUI.Animations;
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Icons.AntDesign;
@@ -22,7 +22,7 @@ public enum TabSharp
     Card
 }
 
-public class TabStripItem : AvaloniaTabStripItem
+public partial class TabStripItem : AvaloniaTabStripItem
 {
     #region 公共属性定义
 
@@ -189,12 +189,46 @@ public class TabStripItem : AvaloniaTabStripItem
         _closeButton = null;
     }
 
+    private readonly TransitionInitializationSession _transitionInitialization;
+
+    public TabStripItem()
+    {
+        _transitionInitialization = new TransitionInitializationSession(this);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
         SetupShapeThemeBindings(false);
         ConfigureHasIcon();
         NotifyIconSlotOwner();
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromLogicalTree(e);
+        // A direct detach (e.Source == this) means the tab strip dropped this item from
+        // its logical children. Items that are their own container never receive
+        // ClearContainerForItemOverride, so the owner-created indexer bindings must be
+        // released here or the owner keeps the removed item alive for its lifetime.
+        // Cascaded detach (whole tree teardown) carries an ancestor's args and must keep
+        // the bindings so re-attaching the tree restores the property sync.
+        if (ReferenceEquals(e.Source, this) && e.Parent is BaseTabStrip tabStrip)
+        {
+            tabStrip.ReleaseTabStripItemOwnerBindings(this);
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -210,6 +244,7 @@ public class TabStripItem : AvaloniaTabStripItem
         {
             _closeButton.Click += HandleCloseRequest;
         }
+        _transitionInitialization.CompleteInitialization();
     }
 
     private void HandleCloseRequest(object? sender, RoutedEventArgs args)
@@ -272,16 +307,10 @@ public class TabStripItem : AvaloniaTabStripItem
         }
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        this.EnableTransitions();
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)

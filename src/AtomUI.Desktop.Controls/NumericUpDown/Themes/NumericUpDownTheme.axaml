@@ -9,6 +9,8 @@
             <ControlTemplate>
                 <atom:NumericUpDownSpinner
                     Name="PART_Spinner"
+                    Classes.semantic-scope-spinner="True"
+                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                     IsSpinEnabled="{TemplateBinding AllowSpin}"
                     IsEnabled="{TemplateBinding IsEnabled}"
                     SizeType="{TemplateBinding SizeType}"
@@ -24,46 +26,64 @@
                     LeftAddOnTemplate="{TemplateBinding LeftAddOnTemplate}"
                     RightAddOn="{TemplateBinding RightAddOn}"
                     RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
-                    InnerLeftContent="{TemplateBinding InnerLeftContent}"
-                    InnerLeftContentTemplate="{TemplateBinding InnerLeftContentTemplate}"
                     SpinnerHandleWidth="{TemplateBinding SpinnerHandleWidth}"
                     CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                     CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
                     IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
-                    <atom:ButtonSpinner.InnerRightContent>
+                    <atom:ButtonSpinner.InnerLeftContent>
+                        <atom:AddOnContentPresenter
+                            Name="PART_InnerLeftContentPresenter"
+                            Classes.semantic-prefix="True"
+                            VerticalAlignment="Stretch"
+                            VerticalContentAlignment="Center"
+                            HorizontalAlignment="Left"
+                            Focusable="False" />
+                    </atom:ButtonSpinner.InnerLeftContent>
+                    <atom:NumericUpDownInputPanel Name="PART_InputPanel" LastChildFill="True">
                         <StackPanel Orientation="Horizontal"
+                                    Name="PART_SuffixGroup"
+                                    Classes.semantic-suffix="True"
+                                    DockPanel.Dock="Right"
                                     Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
                             <atom:InputClearIconButton
                                 Name="PART_ClearButton"
+                                Classes.semantic-clear="True"
+                                VerticalAlignment="Center"
+                                Icon="{TemplateBinding ClearIcon}"
+                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 IsPassthroughMouseEvent="False" />
                             <atom:AddOnContentPresenter
                                 Name="PART_InnerRightContentPresenter"
                                 VerticalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
                                 HorizontalAlignment="Right"
-                                Focusable="False" />
+                                Focusable="False"
+                                Content="{TemplateBinding InnerRightContent}"
+                                ContentTemplate="{TemplateBinding InnerRightContentTemplate}" />
                         </StackPanel>
-                    </atom:ButtonSpinner.InnerRightContent>
-                    <atom:EmbeddedTextBox
-                        Name="PART_TextBox"
-                        VerticalContentAlignment="Center"
-                        VerticalAlignment="Stretch"
-                        HorizontalAlignment="Stretch"
-                        BorderThickness="0"
-                        Padding="0"
-                        FontSize="{TemplateBinding FontSize}"
-                        FontFamily="{TemplateBinding FontFamily}"
-                        FontStyle="{TemplateBinding FontStyle}"
-                        FontWeight="{TemplateBinding FontWeight}"
-                        TextWrapping="NoWrap"
-                        AcceptsReturn="False"
-                        DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
-                        SizeType="Custom"
-                        IsReadOnly="{TemplateBinding IsReadOnly}"
-                        Text="{TemplateBinding Text, Mode=TwoWay}"
-                        PlaceholderText="{TemplateBinding PlaceholderText}"
-                        PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                        <atom:EmbeddedTextBox
+                            Name="PART_TextBox"
+                            Classes.semantic-input="True"
+                            VerticalContentAlignment="Center"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            BorderThickness="0"
+                            Padding="0"
+                            FontSize="{TemplateBinding FontSize}"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontStyle="{TemplateBinding FontStyle}"
+                            FontWeight="{TemplateBinding FontWeight}"
+                            TextWrapping="NoWrap"
+                            AcceptsReturn="False"
+                            DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
+                            SizeType="Custom"
+                            IsCustomFontSize="{TemplateBinding IsCustomFontSize}"
+                            IsReadOnly="{TemplateBinding IsReadOnly}"
+                            Text="{TemplateBinding Text, Mode=TwoWay}"
+                            PlaceholderText="{TemplateBinding PlaceholderText}"
+                            PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
                         />
+                        </atom:NumericUpDownInputPanel>
                 </atom:NumericUpDownSpinner>
             </ControlTemplate>
         </Setter>
@@ -73,6 +93,8 @@
                 <ControlTemplate>
                     <atom:NumericUpDownSpinner
                         Name="PART_Spinner"
+                        Classes.semantic-scope-spinner="True"
+                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         IsSpinEnabled="{TemplateBinding AllowSpin}"
                         IsEnabled="{TemplateBinding IsEnabled}"
                         SizeType="{TemplateBinding SizeType}"
@@ -88,46 +110,70 @@
                         LeftAddOnTemplate="{TemplateBinding LeftAddOnTemplate}"
                         RightAddOn="{TemplateBinding RightAddOn}"
                         RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
-                        InnerLeftContent="{TemplateBinding InnerLeftContent}"
-                        InnerLeftContentTemplate="{TemplateBinding InnerLeftContentTemplate}"
                         SpinnerHandleWidth="{TemplateBinding SpinnerHandleWidth}"
                         CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                         CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
                         IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
-                        <atom:ButtonSpinner.InnerRightContent>
+                        <atom:ButtonSpinner.InnerLeftContent>
+                            <!-- Spinner 模式下 prefix 渲染在 −/+ 手柄之间的输入区内；
+                                 外边距跟随手柄的 InputPadding token。空内容时 presenter
+                                 自折叠（AddOnContentPresenter），外边距随之不占位。 -->
+                            <atom:AddOnContentPresenter
+                                Name="PART_InnerLeftContentPresenter"
+                                Classes.semantic-prefix="True"
+                                Margin="{atom:NumericUpDownTokenResource InputPadding}"
+                                VerticalAlignment="Stretch"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Focusable="False" />
+                        </atom:ButtonSpinner.InnerLeftContent>
+                        <atom:NumericUpDownInputPanel Name="PART_InputPanel" LastChildFill="True">
                             <StackPanel Orientation="Horizontal"
+                                        Name="PART_SuffixGroup"
+                                        Classes.semantic-suffix="True"
+                                        DockPanel.Dock="Right"
+                                        Margin="0,0,8,0"
                                         Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
                                 <atom:InputClearIconButton
                                     Name="PART_ClearButton"
+                                    Classes.semantic-clear="True"
+                                    VerticalAlignment="Center"
+                                    Icon="{TemplateBinding ClearIcon}"
+                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                     IsPassthroughMouseEvent="False" />
                                 <atom:AddOnContentPresenter
                                     Name="PART_InnerRightContentPresenter"
                                     VerticalAlignment="Stretch"
                                     VerticalContentAlignment="Center"
                                     HorizontalAlignment="Right"
-                                    Focusable="False" />
+                                    Focusable="False"
+                                    Content="{TemplateBinding InnerRightContent}"
+                                    ContentTemplate="{TemplateBinding InnerRightContentTemplate}" />
                             </StackPanel>
-                        </atom:ButtonSpinner.InnerRightContent>
-                        <atom:EmbeddedTextBox
-                            Name="PART_TextBox"
-                            VerticalContentAlignment="Center"
-                            VerticalAlignment="Stretch"
-                            HorizontalAlignment="Stretch"
-                            BorderThickness="0"
-                            Padding="0"
-                            FontSize="{TemplateBinding FontSize}"
-                            FontFamily="{TemplateBinding FontFamily}"
-                            FontStyle="{TemplateBinding FontStyle}"
-                            FontWeight="{TemplateBinding FontWeight}"
-                            TextWrapping="NoWrap"
-                            AcceptsReturn="False"
-                            DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
-                            SizeType="Custom"
-                            IsReadOnly="{TemplateBinding IsReadOnly}"
-                            Text="{TemplateBinding Text, Mode=TwoWay}"
-                            TextAlignment="Center"
-                            PlaceholderText="{TemplateBinding PlaceholderText}"
-                            PlaceholderForeground="{TemplateBinding PlaceholderForeground}" />
+                            <atom:EmbeddedTextBox
+                                Name="PART_TextBox"
+                                Classes.semantic-input="True"
+                                VerticalContentAlignment="Center"
+                                VerticalAlignment="Stretch"
+                                HorizontalAlignment="Stretch"
+                                BorderThickness="0"
+                                Padding="0"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                FontStyle="{TemplateBinding FontStyle}"
+                                FontWeight="{TemplateBinding FontWeight}"
+                                TextWrapping="NoWrap"
+                                AcceptsReturn="False"
+                                DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
+                                SizeType="Custom"
+                                IsCustomFontSize="{TemplateBinding IsCustomFontSize}"
+                                IsReadOnly="{TemplateBinding IsReadOnly}"
+                                Text="{TemplateBinding Text, Mode=TwoWay}"
+                                TextAlignment="Center"
+                                PlaceholderText="{TemplateBinding PlaceholderText}"
+                            PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                            />
+                        </atom:NumericUpDownInputPanel>
                     </atom:NumericUpDownSpinner>
                 </ControlTemplate>
             </Setter>

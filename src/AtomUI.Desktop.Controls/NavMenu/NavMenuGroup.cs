@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls.Templates;
@@ -58,9 +59,28 @@ public partial class NavMenuGroup : AvaloniaObject, INavMenuEntry
     internal void UpdateSemanticParentNode(INavMenuNode? parentNode)
     {
         SemanticParentNode = parentNode;
+        List<Exception>? callbackExceptions = null;
         foreach (var entry in _entries)
         {
-            AttachEntry(entry);
+            try
+            {
+                AttachEntry(entry);
+            }
+            catch (Exception exception)
+            {
+                // The group has already changed parent. Complete every descendant projection,
+                // including nested groups, before propagating custom node callback failures.
+                (callbackExceptions ??= []).Add(exception);
+            }
+        }
+
+        if (callbackExceptions is { Count: 1 })
+        {
+            ExceptionDispatchInfo.Capture(callbackExceptions[0]).Throw();
+        }
+        else if (callbackExceptions is not null)
+        {
+            throw new AggregateException(callbackExceptions);
         }
     }
 

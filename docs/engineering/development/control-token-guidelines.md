@@ -7,6 +7,10 @@ Global Token 使用示例；全部 Global Token 都可覆盖，不在单 Control
 [主题定制指南](../../guides/theming/customization.md)。Control Own Token 的定义继承、终端封闭、跨程序集复用和扁平 schema
 契约见 [Control Design Token 继承架构](../../architecture/systems/theming/control-design-token-inheritance.md)。
 
+控件注册采用逐控件 TypeMap 目标契约；架构采纳与源码迁移状态统一见
+[AOT 与裁剪架构](../../architecture/foundations/aot-and-trimming.md)。本文的 owner、片段和资产规则是新实现必须满足的
+要求，不表示当前源码已经完成迁移。完整注册模型见 [控件注册契约](../../architecture/foundations/control-registration-contracts.md)。
+
 ## Token 分层
 
 ```text
@@ -40,13 +44,20 @@ Effective Control Token
 - internal Part、Presenter、Decorator 或 Host 类型。
 - 运行时资源位置或 Visual/Logical parent。
 
-生成器按 Control、可选 Token 类型和主题资产的命名及目录约定生成 `XxxTokens.Identity`。C# 配置和 imperative
-查询使用该强类型入口，不能手写 Catalog/Id 字符串或 `new ControlTokenIdentity(...)`。
+生成器根据正常 Control/Token 关联生成 `XxxTokens.Identity`，其中保存真实 owner Type。正常 C# 配置和 imperative
+查询使用这一强类型入口。字符串 Catalog/Id 或 `new ControlTokenIdentity(...)` 只用于配置数据和查找，匹配已经保留的
+schema，不承担动态保留职责；不能以裸字符串代替已知 Control 的类型化入口。
+
+identity 的相等性、hash、`==` 和 `!=` 仍只比较 Catalog/Id；owner Type 是额外的可验证数据，不能通过自动生成的
+record equality 改变字符串身份语义。配置、RequiredTokenOwners 和其他 identity-keyed 合并必须在去重前校验：两侧
+owner 不同则失败；仅一侧带 owner 时保留带 owner 的 canonical identity。不能只替换 Dictionary value 而遗失原 key
+中的 owner 信息。最终 registry 再检查 owner 与真实 descriptor 一致。
 
 Catalog 是包级 identity 命名空间，不是 CLR namespace，也不是主题资产的 TargetType。AtomUI 内置包统一使用
-`AtomUI`；第三方包的生成 target 默认使用项目 `AssemblyName`，因此同一包生成的 Token key、descriptor 和
-asset manifest 始终共享同一个 Catalog。某个包为 Avalonia 或其他外部 Control 提供主题资产时，asset owner
-仍归属于声明该资产的包；TargetType 不会改变 owner Catalog。
+`AtomUI`；第三方包的生成 target 默认使用项目 `AssemblyName`，本包声明的 Token key 和 descriptor 使用本包 Catalog，
+跨包资源依赖保留各 Token owner 已有的 Catalog。主题资产属于声明它的包；`ExportedThemes.TargetType` 不直接产生
+Token identity，也不改变已有 owner Catalog。资产使用 `RequiredTokenOwners` 表达所需 identity 与实际 owner Type，
+不再用单一资产 owner identity 混合表示主题导出与 Token 依赖。
 
 ## Own Token 定义
 
@@ -82,7 +93,8 @@ internal sealed class RatingToken : AbstractControlDesignToken
   `required`。
 - Own Token 禁止与任一 Global Token 同名。
 - 禁止泛型 `[ControlDesignToken<TControl>]`、手写 ID 或 Theme Asset glob。
-- Control 没有 Own Token 时仍然拥有 identity，并天然可以覆盖完整 Global Token schema。
+- 拥有公开可配置 Token 契约的 Control 即使没有 Own Token，也拥有 identity，并可覆盖完整 Global Token schema。
+  仅有资源的内部 presenter 不因此获得虚构的 Token identity。
 
 多个 Control 需要相同值时，先判断它是否属于全局设计语言。属于时提升为 Global Token；不属于时分别定义语义
 清晰的 Own Token。只有至少两个真实终端共享同一 Control 视觉语义、默认计算依赖一致且平台差异仍可由终端表达时，
@@ -164,6 +176,10 @@ Global Token snapshot 不受影响。名称未出现在完整 Global Token schem
 `RatingTokenKey` 和 MarkupExtension 构造参数。主题作者可以选择 Rating Own Token 和 Global Token schema 中的
 全部候选；错误名称在 AXAML 编译期失败，运行时不解析字符串。
 
+生成扩展的 Global 与 Own 分支都携带实际 owner 的资源键。直接 boxed Token enum 仍属于支持的资源键形式；Control、
+TokenResourceExtension、TokenKey 和 OwnTokenKind 的使用都应保留对应注册片段。把 enum 转为裸整数或仅做常量计算
+不代表使用控件资源。Token-only、生成 identity-only 的代码不能依赖 owner 控件稍后才被构造来补注册。
+
 选择规则：
 
 - 希望某值永远跟随当前 ThemeContext 的全局结果时使用 `SharedTokenResource`。
@@ -208,16 +224,32 @@ Themes/
 \-- RangeDatePickerTheme.axaml
 ```
 
-构建集成把 `Themes/**/*.axaml` 提供给生成器。生成器产生 asset manifest、owner identity、引用的 Control
-identities、Semantic Part 契约和注册代码。
+构建集成把 `Themes/**/*.axaml` 提供给普通生成器，输出资产 factory、导出的主题 key/TargetType、RequiredTokenOwners、
+资源作用域/显式 include、Semantic Part 契约和注册片段。主题导出与 Token owner 是独立事实，不能用文件目录或单一
+OwnerIdentity 替代它们。
 开发者不编写 `ControlThemeAssets` Attribute、Theme Module、手工 manifest、逐主题 identity 或只用于聚合的额外
 AXAML。只有一个 ControlTheme 时就只有一个主题文件。
+
+主题和资源作者必须遵循：
+
+- 只有真正导出的顶层主题建立 Control → asset 关联；嵌套模板 TargetType 和局部定制主题不产生反向默认主题归属。
+- 自定义 `SearchButtonTheme` 不能使普通 Button 使用反向保留 SearchEdit；顶层命名主题则按其真实导出保留。
+- 同一字典导出多个主题时保留完整资产，由实际 factory 引用进入链接闭包；多个片段引用同一 AssetId 只挂载一次。
+- StaticResource 在本地、词法父作用域和明确 include 内解析。不同私有字典的同名 key 可以合法并存，不能全局合并或
+  按名字猜依赖。未在声明范围内提供的必需包内 StaticResource 必须诊断。
+- 开放宿主 DynamicResource 作为普通外部主题输入，不自动保留控件。无关、未 include 的私有同名 key 不足以判定冲突。
+- include 顺序、包提交顺序和包内明确资源优先级在 full/trimmed 中保持一致；先收集，全部包完成后再校验和挂载。
+  链接器可达性循环与资源构造循环必须区分，后者不能交给 TypeMap 修复。
 
 ## Semantic Part 与 Semantic Part Theme
 
 Semantic Part 的基础契约是 `.semantic-*` Selector、稳定 ContractType 和生成式 descriptor，完整设计见
 [AtomUI Semantic Part 系统设计](../../architecture/systems/theming/semantic-parts.md)。Token 只表达 Control 的稳定设计值，不为
 每个 Part 创建独立 Token identity，也不使用模板节点名称扩展 Token schema。
+
+每个 Control 的语义 descriptor 只有一个生成 factory，完整注册和 TypeMap 片段共用。生成的专用 Semantic Style 也必须
+成为 owner 片段的保留条件，不能假设 route 字符串会使 owner 自动可达。Semantic registry 与 Token schema 一起在
+首个控件创建前冻结；Style 构造函数不得追加注册，示例继续通过专用 Style 声明式定制。
 
 当某个 Part 是真实 public Control，并且允许用户完整替换其 ControlTheme 时，可以额外通过强类型
 `ControlTheme?` 属性开放 Semantic Part Theme：
@@ -257,19 +289,19 @@ Own Token 表达稳定 Control 语义，例如 `DefaultHoverColor`、`PrimarySha
 builder.UseAcmeControls();
 ```
 
-该入口直接注册 descriptor、Token schema 和主题资产，不运行时扫描程序集或 AXAML。第三方包不
-需要每 Theme 注册代码、泛型 Token Attribute、glob Attribute 或反射 fallback。
+作者提供普通 Provider，并通过生成 helper 表达正常入口和必要生命周期回调。完整与选中注册共用逐项 descriptor、Token、
+Semantic 和资产 factory，不运行时扫描程序集或 AXAML。作者不手写 TypeMap、AOT 分支、入口身份 Attribute、裁剪名单、
+逐 Theme 注册代码、泛型 Token Attribute 或 glob Attribute。
 
-第三方包默认以整个 Package 作为一个安全 Registration Unit。Own Token、内部 View/Presenter 和主题资源跟随 Package
-整体保留，普通作者不声明 `AtomUIRegistrationUnit`、Unit dependency 或 AXAML ownership metadata。只有经过体积测量和
-NativeAOT 验证的大型多控件包才启用 `AtomUIRegistrationGranularity=Directory`。
+第三方与第一方采用同一逐控件/真实资产契约；包和目录都不是保留粒度。SDK 自动交付普通生成器和发布后端，应用引导
+仅读 Package marker。仅引用包不会自动创建 Provider；缺包、错误 owner 或不兼容后端必须明确失败，不能整包兜底。
 
 完整项目与入口示例见
 [第三方 AtomUI Control Package 指南](../../guides/theming/third-party-control-packages.md)。
 
-## 构建期诊断
+## 诊断与启动校验
 
-以下情况必须构建失败：
+以下问题在普通包编译中可静态证明时必须构建失败：
 
 - Own Token 与 Global Token 同名。
 - 具体 `[ControlDesignToken]` 未 `sealed`，或作为另一 Token 的基类。
@@ -277,23 +309,28 @@ NativeAOT 验证的大型多控件包才启用 `AtomUIRegistrationGranularity=Di
 - 继承属性同名、隐藏、形态无效，或形成重复 schema key。
 - `CalculateTokenValues` 的直接 base 调用缺失、重复、不是第一条可执行语句或未原样转发参数。
 - TokenResource 引用了不存在或归属错误的 Token。
-- Control 配置包含既不是 Global Token、也不是当前 Own Token 的名称。
 - Control、Token、主题资产和 identity 约定存在歧义。
-- 重复 identity、重复资产 URI 或未注册 manifest。
+- 冲突 identity、资产/主题导出定义，或必需包内资源无法按声明作用域解析。
 - Semantic Part Theme 的 TargetType 与属性契约不兼容。
 - Semantic Part 的 ContractType 与模板 marker 类型不兼容，或 Part 名称、class、cardinality 与 descriptor 不一致。
 - internal 实现类型被错误声明为独立 Token owner。
-- Control Effective Global Binding 使用未注册的 exact CLR type，或尝试回退到基类 identity。
+
+配置规范化必须在身份去重前检查 owner 冲突。跨包依赖在全部入口返回后统一校验；缺少 RequiredTokenOwners、未注册
+exact CLR type、无效配置名称、资源与语义契约不完整时启动失败，不能回退到基类 identity 或追加全包注册。
+新注册诊断的语义与预留状态见 [编译期诊断规范](compiler-diagnostics-guidelines.md)，不沿用旧 LINK ID。
 
 ## 验证要求
 
 | 改动类型 | 验证要求 |
 | --- | --- |
-| 新增 Control | 验证 identity、可选 Own Token、主题 manifest、包级注册和无反射路径。 |
+| 新增 Control | 验证 identity、可选 Own Token、语义/主题片段、包入口和无运行时发现路径；内部资源控件不伪造 Token owner。 |
 | 修改 Own Token | 验证强类型 key、默认计算、override 和 AXAML 消费。 |
 | 修改 Own Token 继承层 | 验证继承链诊断、属性扁平化、base 计算顺序、跨程序集增量失效、sibling 隔离和 schema revision 等价。 |
 | 修改 Control 对 Global Token 的使用 | 验证 Effective Global 覆盖、Global fallback、算法间接派生和跨 Control 隔离。 |
-| 修改 Semantic Part | 验证 selector marker、ContractType、cardinality、模板变体和文档 descriptor 一致性。 |
+| 修改 Semantic Part | 验证 selector marker、ContractType、cardinality、模板变体、Style-only 保留与 descriptor 一致性。 |
 | 修改 Semantic Part Theme | 额外验证 owner/Part Token 分工、TargetType 和默认/实例替换。 |
-| 修改生成器 | 验证确定性输出、增量构建、NativeAOT 注册和错误诊断。 |
+| 修改生成器 | 验证确定性、增量构建、Token/identity-only 保留，以及 NativeAOT、trimmed CoreCLR、Browser 裁剪运行和 Browser AOT。 |
 | 修改主题视觉 | 验证 Light/Dark、Control 算法和相关 Control 家族。 |
+
+涉及 identity 合并时覆盖 raw→typed、typed→raw、正确 typed→错误 typed 及反序，确认 owner 校验不被 Dictionary 去重吞掉。
+涉及资源时同时验证共同资产优先级与未用资产删除；独立原型通过不能替代真实产品宿主验收。

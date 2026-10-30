@@ -2,12 +2,12 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Statistic : AbstractStatistic
+public partial class Statistic : AbstractStatistic
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<object?> ValueProperty =
-        AvaloniaProperty.Register<AbstractStatistic, object?>(nameof(Value));
+        AvaloniaProperty.Register<Statistic, object?>(nameof(Value));
     
     public object? Value
     {

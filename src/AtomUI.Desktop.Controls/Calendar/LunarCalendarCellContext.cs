@@ -5,7 +5,7 @@ public sealed record LunarCalendarCellContext : CalendarCellContext
     public LunarCalendarCellContext(
         DateTime value,
         DateTime today,
-        CalendarCellType cellType,
+        DateViewerCellType cellType,
         string displayValue,
         bool isToday,
         bool isInView,

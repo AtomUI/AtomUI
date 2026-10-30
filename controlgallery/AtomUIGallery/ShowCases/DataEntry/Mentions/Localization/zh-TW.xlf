@@ -187,6 +187,60 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button in the input suffix, rendered when IsAllowClear is enabled.</source>
+        <target state="translated">輸入區後綴內的清除按鈕，啟用 IsAllowClear 時渲染。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Input content panel hosting the placeholder and multiline text presenter.</source>
+        <target state="translated">輸入內容面板，承載佔位符與多行文字 presenter。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Multiline text presenter hosting the value and caret/selection state.</source>
+        <target state="translated">多行文字 presenter，承載 Value 與 caret/selection 狀態。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPlaceholderDescription">
+      <segment>
+        <source>Placeholder text shown while the value is empty.</source>
+        <target state="translated">文字為空時顯示的佔位符文字。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListDescription">
+      <segment>
+        <source>Candidate list container inside the popup.</source>
+        <target state="translated">彈層內的候選列表容器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListItemDescription">
+      <segment>
+        <source>Single option entry inside the candidate list, created at runtime.</source>
+        <target state="translated">候選列表中的單個選項條目，執行階段建立。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root border of the candidate popup layer.</source>
+        <target state="translated">候選彈層的根邊框節點。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix area of the input.</source>
+        <target state="translated">輸入框的前綴區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Mentions owner itself.</source>
+        <target state="translated">Mentions 控制項本體。</target>
+      </segment>
+    </unit>
     <unit id="SizeTypeDescription">
       <segment>
         <source>Mentions supports large, middle, small, and Custom sizes with local height and font overrides.</source>
@@ -209,6 +263,18 @@
       <segment>
         <source>Status</source>
         <target state="translated">狀態</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of Mentions with semantic part styles.</source>
+        <target state="translated">透過語義部件樣式自訂 Mentions 的語義結構樣式。</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
       </segment>
     </unit>
     <unit id="ValueBindingDescription">

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" trgLang="zh-CN" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUIGallery.Localization.DateViewerShowCaseLangResourceKind">
+    <unit id="PageSubtitle">
+      <segment>
+        <source>An embedded date panel for a value or an atomic range.</source>
+        <target state="translated">单值或原子范围的内嵌日期面板。</target>
+      </segment>
+    </unit>
+    <unit id="PageDescription">
+      <segment>
+        <source>Use DateViewer and RangeDateViewer directly without an input or popup. Browse and select dates, weeks, months, quarters, or years.</source>
+        <target state="translated">直接使用 DateViewer 和 RangeDateViewer，无需输入框或弹层，支持日期、周、月、季度和年份浏览与选择。</target>
+      </segment>
+    </unit>
+    <unit id="ComponentCategory">
+      <segment>
+        <source>Data Display</source>
+        <target state="translated">数据展示</target>
+      </segment>
+    </unit>
+    <unit id="ComponentStatusStable">
+      <segment>
+        <source>Stable</source>
+        <target state="translated">稳定</target>
+      </segment>
+    </unit>
+    <unit id="BasicTitle">
+      <segment>
+        <source>Embedded value and range</source>
+        <target state="translated">内嵌单值与范围</target>
+      </segment>
+    </unit>
+    <unit id="BasicDescription">
+      <segment>
+        <source>Value binds TwoWay by default. RangeDateViewer writes one immutable DateViewerRange, including partial selection.</source>
+        <target state="translated">Value 默认双向绑定。RangeDateViewer 以一个不可变 DateViewerRange 写回范围，包含单端点状态。</target>
+      </segment>
+    </unit>
+    <unit id="UnitsTitle">
+      <segment>
+        <source>Five selection units</source>
+        <target state="translated">五种选择单位</target>
+      </segment>
+    </unit>
+    <unit id="UnitsDescription">
+      <segment>
+        <source>One unit controls both panels. Week selects the entire week; other units output the first date of the selected period.</source>
+        <target state="translated">同一单位作用于单值与范围面板。周选择提供整周反馈，其他单位输出所选周期的首日。</target>
+      </segment>
+    </unit>
+    <unit id="BrowsingTitle">
+      <segment>
+        <source>Browse with an empty value</source>
+        <target state="translated">空值浏览</target>
+      </segment>
+    </unit>
+    <unit id="BrowsingDescription">
+      <segment>
+        <source>DisplayDate is independent of Value. Navigate through the header, then clear the selection while keeping the displayed period.</source>
+        <target state="translated">DisplayDate 与 Value 独立。通过页头浏览，清空选择时保留当前显示周期。</target>
+      </segment>
+    </unit>
+    <unit id="ContentTitle">
+      <segment>
+        <source>Compact and content presentation</source>
+        <target state="translated">紧凑与内容呈现</target>
+      </segment>
+    </unit>
+    <unit id="ContentDescription">
+      <segment>
+        <source>Compact uses the natural panel width; Content expands its cells inside the assigned width. Selection and navigation use the same model.</source>
+        <target state="translated">Compact 使用面板自然宽度，Content 在指定宽度内展开单元格；选择与导航共用同一模型。</target>
+      </segment>
+    </unit>
+    <unit id="CellTitle">
+      <segment>
+        <source>Cell content and date limits</source>
+        <target state="translated">单元格内容与日期约束</target>
+      </segment>
+    </unit>
+    <unit id="CellDescription">
+      <segment>
+        <source>CellTemplate adds content below the default date. The typed context exposes cell state. MinDate and MaxDate are inclusive; weekends are disabled.</source>
+        <target state="translated">CellTemplate 在默认日期下方增加内容，强类型上下文提供状态。MinDate 与 MaxDate 包含边界，周末不可选。</target>
+      </segment>
+    </unit>
+    <unit id="FullCellTitle">
+      <segment>
+        <source>Full cell content</source>
+        <target state="translated">完整单元格内容</target>
+      </segment>
+    </unit>
+    <unit id="FullCellDescription">
+      <segment>
+        <source>FullCellTemplate replaces the date content while the control retains selection, disabled state, focus, and automation.</source>
+        <target state="translated">FullCellTemplate 替换日期内容，控件保留选择、禁用、焦点和自动化语义。</target>
+      </segment>
+    </unit>
+    <unit id="HeaderTitle">
+      <segment>
+        <source>Typed header commands</source>
+        <target state="translated">强类型页头命令</target>
+      </segment>
+    </unit>
+    <unit id="HeaderDescription">
+      <segment>
+        <source>HeaderTemplate receives DateViewerHeaderContext. NavigateCommand takes an integer; ChangePanelCommand takes DateViewerPanelKind.</source>
+        <target state="translated">HeaderTemplate 接收 DateViewerHeaderContext。NavigateCommand 使用整数参数，ChangePanelCommand 使用 DateViewerPanelKind。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitle">
+      <segment>
+        <source>Semantic cell styles</source>
+        <target state="translated">语义单元格样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescription">
+      <segment>
+        <source>Apply generated DateViewerCellStyle and RangeDateViewerCellStyle within owner-scoped styles to customize the public cell part.</source>
+        <target state="translated">在 owner 作用域内声明生成的 DateViewerCellStyle 和 RangeDateViewerCellStyle，定制公开 cell 部件。</target>
+      </segment>
+    </unit>
+    <unit id="UnitDate">
+      <segment>
+        <source>Date</source>
+        <target state="translated">日期</target>
+      </segment>
+    </unit>
+    <unit id="UnitWeek">
+      <segment>
+        <source>Week</source>
+        <target state="translated">周</target>
+      </segment>
+    </unit>
+    <unit id="UnitMonth">
+      <segment>
+        <source>Month</source>
+        <target state="translated">月</target>
+      </segment>
+    </unit>
+    <unit id="UnitQuarter">
+      <segment>
+        <source>Quarter</source>
+        <target state="translated">季度</target>
+      </segment>
+    </unit>
+    <unit id="UnitYear">
+      <segment>
+        <source>Year</source>
+        <target state="translated">年</target>
+      </segment>
+    </unit>
+    <unit id="Clear">
+      <segment>
+        <source>Clear selection</source>
+        <target state="translated">清空选择</target>
+      </segment>
+    </unit>
+    <unit id="Previous">
+      <segment>
+        <source>Previous</source>
+        <target state="translated">上一周期</target>
+      </segment>
+    </unit>
+    <unit id="Next">
+      <segment>
+        <source>Next</source>
+        <target state="translated">下一周期</target>
+      </segment>
+    </unit>
+    <unit id="ChooseYear">
+      <segment>
+        <source>Choose year</source>
+        <target state="translated">选择年份</target>
+      </segment>
+    </unit>
+    <unit id="Compact">
+      <segment>
+        <source>Compact</source>
+        <target state="translated">紧凑</target>
+      </segment>
+    </unit>
+    <unit id="Content">
+      <segment>
+        <source>Content</source>
+        <target state="translated">内容</target>
+      </segment>
+    </unit>
+    <unit id="CellNote">
+      <segment>
+        <source>Available</source>
+        <target state="translated">可选</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The embedded panel surface and instance layout.</source>
+        <target state="translated">内嵌面板表面与实例布局。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Navigation or custom header content; hidden when ShowHeader is false.</source>
+        <target state="translated">导航或自定义页头，ShowHeader 为 false 时隐藏。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>The date body that contains the visible panels.</source>
+        <target state="translated">包含可见面板的日期正文。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>The single panel for browsing and selecting dates.</source>
+        <target state="translated">用于浏览和选择日期的单个面板。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCellDescription">
+      <segment>
+        <source>Interactive date, period, or week-number containers.</source>
+        <target state="translated">日期、周期或周号的交互容器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCellContentDescription">
+      <segment>
+        <source>Typed template content within the interactive cell.</source>
+        <target state="translated">交互单元格内的强类型模板内容。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>The Today action below the date panel; shown for standalone date selection.</source>
+        <target state="translated">日期面板下方的“今天”操作；仅在独立日期选择时显示。</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

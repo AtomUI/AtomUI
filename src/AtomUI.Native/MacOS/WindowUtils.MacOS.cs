@@ -17,7 +17,7 @@ internal static class WindowUtilsMacOS
     private static readonly ConcurrentDictionary<IntPtr, NativeNotificationObserverRegistration>
         NativeNotificationObservers = new();
     private static readonly object NativeNotificationObserverClassGate = new();
-    private static IntPtr _nativeNotificationObserverClass;
+    private static IntPtr s_nativeNotificationObserverClass;
     private static readonly IntPtr NativeNotificationObserverCallbackSelector =
         WindowUtilsInterop.sel_registerName("atomui_nativeNotification:");
     private static readonly IntPtr NativeKeyValueObserverCallbackSelector =
@@ -163,16 +163,16 @@ internal static class WindowUtilsMacOS
 
     private static IntPtr EnsureNativeNotificationObserverClass()
     {
-        if (_nativeNotificationObserverClass != IntPtr.Zero)
+        if (s_nativeNotificationObserverClass != IntPtr.Zero)
         {
-            return _nativeNotificationObserverClass;
+            return s_nativeNotificationObserverClass;
         }
 
         lock (NativeNotificationObserverClassGate)
         {
-            if (_nativeNotificationObserverClass != IntPtr.Zero)
+            if (s_nativeNotificationObserverClass != IntPtr.Zero)
             {
-                return _nativeNotificationObserverClass;
+                return s_nativeNotificationObserverClass;
             }
 
             var baseClass = WindowUtilsInterop.objc_getClass("NSObject");
@@ -224,7 +224,7 @@ internal static class WindowUtilsMacOS
                 WindowUtilsInterop.objc_registerClassPair(observerClass);
             }
 
-            _nativeNotificationObserverClass = observerClass;
+            s_nativeNotificationObserverClass = observerClass;
             return observerClass;
         }
     }

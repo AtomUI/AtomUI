@@ -13,13 +13,18 @@
                                   CornerRadius="{TemplateBinding CornerRadius}"
                                   Content="{TemplateBinding Content, Converter={StaticResource StringToTextBlockConverter}}"
                                   ContentTemplate="{TemplateBinding ContentTemplate}"
-                                  MinHeight="{TemplateBinding MinHeight}"
                                   Padding="{TemplateBinding Padding}"
                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
             </ControlTemplate>
         </Setter>
         
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Margin" Value="4,0" />
+        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
         <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemColor}" />
         <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />
         <Setter Property="MinHeight" Value="{atom:TimePickerTokenResource ItemHeight}" />

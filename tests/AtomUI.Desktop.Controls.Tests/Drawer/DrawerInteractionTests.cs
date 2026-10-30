@@ -10,7 +10,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media.Transformation;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using AtomUI.MotionScene;
+using AtomUI.Animations;
 using Shouldly;
 using Xunit;
 using AvaloniaWindow = Avalonia.Controls.Window;
@@ -194,7 +194,7 @@ public class DrawerInteractionTests
     }
 
     [Fact]
-    public void Reopening_Without_Motion_Clears_Completed_Close_Transform()
+    public async Task Reopening_Without_Motion_Clears_Completed_Close_Transform()
     {
         var drawer = new AtomUI.Desktop.Controls.Drawer
         {
@@ -213,27 +213,45 @@ public class DrawerInteractionTests
             var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
             layer.ShouldNotBeNull();
             var container = layer.GetVisualDescendants().OfType<DrawerContainer>().Single();
-            var motionActor = container.GetVisualDescendants().OfType<BaseMotionActor>().Single();
+            var motionActor = container.GetVisualDescendants().OfType<Border>().Single(control => control.Name == "PART_Surface");
+            (await new MoveRightOutMotion(240, TimeSpan.Zero).PlayAsync(motionActor, TestContext.Current.CancellationToken))
+                .IsCompleted.ShouldBeTrue();
 
             drawer.IsOpen = false;
             Dispatcher.UIThread.RunJobs();
             drawer.IsAttachedToVisualTree().ShouldBeTrue();
             container.GetVisualParent().ShouldBeNull();
 
-            var transformBuilder = new TransformOperations.Builder(1);
-            transformBuilder.AppendTranslate(240, 0);
-            motionActor.MotionTransformOperations = transformBuilder.Build();
-
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
             container.GetVisualParent().ShouldNotBeNull();
-            var reopenedMotionActor = container.GetVisualDescendants().OfType<BaseMotionActor>().Single();
+            var reopenedMotionActor = container.GetVisualDescendants().OfType<Border>().Single(control => control.Name == "PART_Surface");
             reopenedMotionActor.ShouldBeSameAs(motionActor);
-            reopenedMotionActor.MotionTransformOperations.ShouldBeNull();
-            reopenedMotionActor.RenderTransform.ShouldNotBeNull();
-            reopenedMotionActor.RenderTransform.Value.M31.ShouldBe(0, 0.001);
-            reopenedMotionActor.RenderTransform.Value.M32.ShouldBe(0, 0.001);
+            var matrix = reopenedMotionActor.RenderTransform?.Value ?? Matrix.Identity;
+            matrix.M31.ShouldBe(0, 0.001);
+            matrix.M32.ShouldBe(0, 0.001);
+
+            var mask = container.GetVisualDescendants().OfType<Border>().Single(control => control.Name == "PART_Mask");
+            (await new FadeOutMotion(TimeSpan.Zero).PlayAsync(reopenedMotionActor, TestContext.Current.CancellationToken)).IsCompleted.ShouldBeTrue();
+            (await new FadeOutMotion(TimeSpan.Zero).PlayAsync(mask, TestContext.Current.CancellationToken)).IsCompleted.ShouldBeTrue();
+            void FailOnce(object? sender, AvaloniaPropertyChangedEventArgs change)
+            {
+                if (change.Property == Visual.OpacityProperty && reopenedMotionActor.Opacity != 0)
+                {
+                    reopenedMotionActor.PropertyChanged -= FailOnce;
+                    throw new InvalidOperationException("drawer-cleanup-failure");
+                }
+            }
+            reopenedMotionActor.PropertyChanged += FailOnce;
+            var failure = Should.Throw<Exception>(container.Release);
+            failure.ToString().ShouldContain("drawer-cleanup-failure");
+            container.GetVisualParent().ShouldBeNull();
+            container.Content.ShouldBeNull();
+            container.Drawer.ShouldBeNull();
+            mask.Opacity.ShouldBe(1);
+            drawer.Title = "late-title";
+            container.Title.ShouldBeNull();
         }
         finally
         {

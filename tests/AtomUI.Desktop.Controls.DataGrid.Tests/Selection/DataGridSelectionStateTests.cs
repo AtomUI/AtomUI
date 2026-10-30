@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using AtomUI.Desktop.Controls;
 using Shouldly;
 using Xunit;
 

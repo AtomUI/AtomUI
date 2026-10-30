@@ -8,17 +8,21 @@
             <ControlTemplate>
                 <DockPanel LastChildFill="True" 
                            HorizontalSpacing="{atom:SharedTokenResource Spacing}">
-                    <ContentPresenter Name="AvatarContentPresenter" 
+                    <ContentPresenter Name="AvatarContentPresenter"
+                                      Classes.semantic-avatar="True"
                                       DockPanel.Dock="Left"
                                       Content="{TemplateBinding Avatar}"
                                       VerticalAlignment="Top"/>
-                    <DockPanel LastChildFill="True"
+                    <DockPanel Classes.semantic-section="True"
+                               LastChildFill="True"
                                VerticalSpacing="{atom:SharedTokenResource SpacingXS}">
                         <ContentPresenter Name="TitleContentPresenter"
+                                          Classes.semantic-title="True"
                                           DockPanel.Dock="Top"
                                           Content="{TemplateBinding Header}"
                                           ContentTemplate="{TemplateBinding HeaderTemplate}"/>
                         <ContentPresenter Name="DescriptionContentPresenter"
+                                          Classes.semantic-description="True"
                                           Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}"/>
                     </DockPanel>

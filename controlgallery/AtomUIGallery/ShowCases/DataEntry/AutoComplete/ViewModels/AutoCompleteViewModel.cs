@@ -20,20 +20,36 @@ public class AutoCompleteViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _basicOptionsAsyncLoader, value);
     }
 
-    private ICompleteOptionsAsyncLoader? _customLabelOptionsAsyncLoader;
+    private ICompleteOptionsAsyncLoader? _customOptionsAsyncLoader;
 
-    public ICompleteOptionsAsyncLoader? CustomLabelOptionsAsyncLoader
+    public ICompleteOptionsAsyncLoader? CustomOptionsAsyncLoader
     {
-        get => _customLabelOptionsAsyncLoader;
-        set => this.RaiseAndSetIfChanged(ref _customLabelOptionsAsyncLoader, value);
+        get => _customOptionsAsyncLoader;
+        set => this.RaiseAndSetIfChanged(ref _customOptionsAsyncLoader, value);
     }
 
-    private ICompleteOptionsAsyncLoader? _searchEditOptionsAsyncLoader;
+    private ICompleteOptionsAsyncLoader? _customInputOptionsAsyncLoader;
 
-    public ICompleteOptionsAsyncLoader? SearchEditOptionsAsyncLoader
+    public ICompleteOptionsAsyncLoader? CustomInputOptionsAsyncLoader
     {
-        get => _searchEditOptionsAsyncLoader;
-        set => this.RaiseAndSetIfChanged(ref _searchEditOptionsAsyncLoader, value);
+        get => _customInputOptionsAsyncLoader;
+        set => this.RaiseAndSetIfChanged(ref _customInputOptionsAsyncLoader, value);
+    }
+
+    private ICompleteOptionsAsyncLoader? _uncertainCategoryOptionsAsyncLoader;
+
+    public ICompleteOptionsAsyncLoader? UncertainCategoryOptionsAsyncLoader
+    {
+        get => _uncertainCategoryOptionsAsyncLoader;
+        set => this.RaiseAndSetIfChanged(ref _uncertainCategoryOptionsAsyncLoader, value);
+    }
+
+    private List<IAutoCompleteOption>? _certainCategoryOptions;
+
+    public List<IAutoCompleteOption>? CertainCategoryOptions
+    {
+        get => _certainCategoryOptions;
+        set => this.RaiseAndSetIfChanged(ref _certainCategoryOptions, value);
     }
 
     private List<IAutoCompleteOption>? _filterCaseOptions;
@@ -44,82 +60,68 @@ public class AutoCompleteViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _filterCaseOptions, value);
     }
 
-    private List<IAutoCompleteOption>? _cityOptions;
+    private List<IAutoCompleteOption>? _semanticPreviewOptions;
 
-    public List<IAutoCompleteOption>? CityOptions
+    public List<IAutoCompleteOption>? SemanticPreviewOptions
     {
-        get => _cityOptions;
-        set => this.RaiseAndSetIfChanged(ref _cityOptions, value);
+        get => _semanticPreviewOptions;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewOptions, value);
+    }
+
+    private List<IAutoCompleteOption>? _styleClassOptions;
+
+    public List<IAutoCompleteOption>? StyleClassOptions
+    {
+        get => _styleClassOptions;
+        set => this.RaiseAndSetIfChanged(ref _styleClassOptions, value);
     }
 
     public AutoCompleteViewModel(IScreen screen)
     {
         HostScreen = screen;
     }
-
 }
 
-public class BasicOptionsAsyncLoader : ICompleteOptionsAsyncLoader
+/// <summary>
+/// antd basic / status / variant / allowClear / custom demos 共用的 mockVal 逻辑：
+/// 由输入文本生成 [text, text 重复 2 次, text 重复 3 次] 三个选项。
+/// </summary>
+public class MockValOptionsAsyncLoader : ICompleteOptionsAsyncLoader
 {
-    public async Task<CompleteOptionsLoadResult> LoadAsync(string? context, CancellationToken token)
+    public Task<CompleteOptionsLoadResult> LoadAsync(string? context, CancellationToken token)
     {
-        await Task.Delay(TimeSpan.FromMilliseconds(200));
         List<IAutoCompleteOption> data = [];
         if (!string.IsNullOrWhiteSpace(context))
         {
+            for (var repeat = 1; repeat <= 3; repeat++)
             {
-                var value = context;
+                var value = string.Concat(Enumerable.Repeat(context, repeat));
                 data.Add(new AutoCompleteOption()
                 {
-                    Header = value.Replace("\r\n", " ")
-                                  .Replace("\n", " "),
-                    Content = value
-                });
-            }
-            {
-                var value = string.Concat(Enumerable.Repeat(context, 2));
-                data.Add(new AutoCompleteOption()
-                {
-                    Header = value.Replace("\r\n", " ")
-                                  .Replace("\n", " "),
-                    Content = value
-                });
-            }
-            {
-                var value = string.Concat(Enumerable.Repeat(context, 3));
-                data.Add(new AutoCompleteOption()
-                {
-                    Header = value.Replace("\r\n", " ")
-                                  .Replace("\n", " "),
+                    Header  = value.Replace("\r\n", " ").Replace("\n", " "),
                     Content = value
                 });
             }
         }
-        return new CompleteOptionsLoadResult()
+        return Task.FromResult(new CompleteOptionsLoadResult()
         {
             StatusCode = RpcStatusCode.Success,
             Data       = data
-        };
+        });
     }
 }
 
-public class CustomLabelOptionsAsyncLoader : ICompleteOptionsAsyncLoader
+/// <summary>
+/// antd options demo：由输入文本构造 value@domain 结构的邮箱选项。
+/// </summary>
+public class EmailOptionsAsyncLoader : ICompleteOptionsAsyncLoader
 {
-    protected List<string> Suffixes = new();
+    private static readonly string[] Suffixes = ["gmail.com", "163.com", "qq.com"];
 
-    public CustomLabelOptionsAsyncLoader()
+    public Task<CompleteOptionsLoadResult> LoadAsync(string? context, CancellationToken token)
     {
-        Suffixes.Add("gmail.com");
-        Suffixes.Add("163.com");
-        Suffixes.Add("qq.com");
-    }
-
-    public async Task<CompleteOptionsLoadResult> LoadAsync(string? context, CancellationToken token)
-    {
-        await Task.Delay(TimeSpan.FromMilliseconds(200));
         List<IAutoCompleteOption> data = [];
-
-        if (context != null && !string.IsNullOrWhiteSpace(context) && !context.Contains('@'))
+        if (!string.IsNullOrWhiteSpace(context) && !context.Contains('@'))
         {
             foreach (var suffix in Suffixes)
             {
@@ -131,19 +133,21 @@ public class CustomLabelOptionsAsyncLoader : ICompleteOptionsAsyncLoader
                 });
             }
         }
-
-        return new CompleteOptionsLoadResult()
+        return Task.FromResult(new CompleteOptionsLoadResult()
         {
             Data = data
-        };
+        });
     }
 }
 
-public class SearchEditOptionsAsyncLoader : ICompleteOptionsAsyncLoader
+/// <summary>
+/// antd uncertain-category demo：随机数量的 "Found {query} on {category}" 条目，
+/// 每条附带随机的结果数量。
+/// </summary>
+public class UncertainCategoryOptionsAsyncLoader : ICompleteOptionsAsyncLoader
 {
-    public async Task<CompleteOptionsLoadResult> LoadAsync(string? context, CancellationToken token)
+    public Task<CompleteOptionsLoadResult> LoadAsync(string? context, CancellationToken token)
     {
-        await Task.Delay(TimeSpan.FromMilliseconds(200));
         List<IAutoCompleteOption> data   = [];
         var                       random = new Random();
 
@@ -153,20 +157,19 @@ public class SearchEditOptionsAsyncLoader : ICompleteOptionsAsyncLoader
             for (var i = 0; i < count; i++)
             {
                 var newValue = $"{context}{i}";
-                var value    = $"Found {context} on {newValue}";
                 data.Add(new CustomAutoCompleteOption()
                 {
-                    Header      = value,
+                    Header      = $"Found {context} on {newValue}",
                     Content     = newValue,
                     ResultCount = random.Next(100, 200)
                 });
             }
         }
 
-        return new CompleteOptionsLoadResult()
+        return Task.FromResult(new CompleteOptionsLoadResult()
         {
             Data = data
-        };
+        });
     }
 }
 
@@ -175,8 +178,15 @@ public record CustomAutoCompleteOption : AutoCompleteOption
     public int ResultCount { get; set; }
 }
 
-public record CityAutoCompleteOption : AutoCompleteOption
+/// <summary>
+/// antd certain-category demo 的分组选项：IsGroupHeader 为 true 的条目渲染为类目标题行，
+/// 其余条目渲染为标题 + 引用计数。
+/// </summary>
+public record CategoryAutoCompleteOption : AutoCompleteOption
 {
-    public string? Country { get; set; }
-    public int Population { get; set; }
+    public bool IsGroupHeader { get; init; }
+
+    public bool IsGroupItem => !IsGroupHeader;
+
+    public int ReferenceCount { get; init; }
 }

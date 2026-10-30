@@ -10,12 +10,16 @@ internal static class ThemeGeneratorOptions
     private const string AssemblyMetadataAttribute = "System.Reflection.AssemblyMetadataAttribute";
     private const string BuiltInCatalogAssembly = "AtomUI";
 
-    internal static string GetControlCatalog(AnalyzerConfigOptionsProvider optionsProvider)
+    internal static string GetPackageId(AnalyzerConfigOptionsProvider optionsProvider, string assemblyName) =>
+        optionsProvider.GlobalOptions.TryGetValue("build_property.AtomUIRegistrationPackageId", out var value) &&
+        !string.IsNullOrWhiteSpace(value) ? value.Trim() : assemblyName;
+
+    internal static string GetControlCatalog(AnalyzerConfigOptionsProvider optionsProvider, string assemblyName)
     {
         return optionsProvider.GlobalOptions.TryGetValue(ControlCatalogProperty, out var value) &&
                !string.IsNullOrWhiteSpace(value)
             ? value.Trim()
-            : "AtomUI";
+            : assemblyName;
     }
 
     internal static string GetReferencedControlCatalog(IAssemblySymbol assembly)

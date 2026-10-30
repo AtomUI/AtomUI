@@ -1,9 +1,6 @@
-using System.Collections;
-using System.ComponentModel;
 using AtomUI.Controls.Data;
 using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls;
-using Avalonia.Controls.Selection;
 
 namespace AtomUI.Performance;
 
@@ -17,7 +14,8 @@ internal static partial class Program
         VerifyListViewCollectionFilterLifecycle(failures);
         VerifyListViewEmptyIndicatorLazyMaterialization(failures);
         VerifyListViewPaginationLifecycle(failures);
-        VerifyListViewSelectionModelLifecycle(failures);
+        // VerifyListViewSelectionModelLifecycle 已删除：ListView.Selection 变为只读的内部固定
+        // ListViewSelectionModel（不再支持外部替换选择模型），替换模型的订阅释放验证已无等价 API。
 
         if (failures.Count == 0)
         {
@@ -183,160 +181,5 @@ internal static partial class Program
         Expect(newPagination.PageSize == listView.PageSize,
             "New bottom pagination should receive the current ListView page size.",
             failures);
-    }
-
-    private static void VerifyListViewSelectionModelLifecycle(ICollection<string> failures)
-    {
-        var firstSelection = new CountingSelectionModel();
-        var secondSelection = new CountingSelectionModel();
-        var listView = CreateListView(CreateListViewItems(5));
-        listView.Selection = firstSelection;
-        using var realized = RealizeControl(listView);
-
-        listView.Selection = secondSelection;
-        RefreshLayout(realized.Window);
-
-        Expect(firstSelection.PropertyChangedSubscriberCount == 0,
-            "Replaced ListView selection model should release PropertyChanged subscription.",
-            failures);
-        Expect(firstSelection.SelectionChangedSubscriberCount == 0,
-            "Replaced ListView selection model should release SelectionChanged subscription.",
-            failures);
-        Expect(firstSelection.LostSelectionSubscriberCount == 0,
-            "Replaced ListView selection model should release LostSelection subscription.",
-            failures);
-    }
-
-    private sealed class CountingSelectionModel : ISelectionModel
-    {
-        private readonly List<int> _selectedIndexes = [];
-        private readonly List<object?> _selectedItems = [];
-        private PropertyChangedEventHandler? _propertyChanged;
-        private EventHandler<SelectionModelIndexesChangedEventArgs>? _indexesChanged;
-        private EventHandler<SelectionModelSelectionChangedEventArgs>? _selectionChanged;
-        private EventHandler? _lostSelection;
-        private EventHandler? _sourceReset;
-
-        public int PropertyChangedSubscriberCount { get; private set; }
-        public int SelectionChangedSubscriberCount { get; private set; }
-        public int LostSelectionSubscriberCount { get; private set; }
-        public IEnumerable? Source { get; set; }
-        public bool SingleSelect { get; set; }
-        public int SelectedIndex { get; set; } = -1;
-        public IReadOnlyList<int> SelectedIndexes => _selectedIndexes;
-        public object? SelectedItem { get; set; }
-        public IReadOnlyList<object?> SelectedItems => _selectedItems;
-        public int AnchorIndex { get; set; } = -1;
-        public int Count => Source is ICollection collection ? collection.Count : 0;
-
-        public event PropertyChangedEventHandler? PropertyChanged
-        {
-            add
-            {
-                _propertyChanged += value;
-                PropertyChangedSubscriberCount++;
-            }
-            remove
-            {
-                _propertyChanged -= value;
-                PropertyChangedSubscriberCount--;
-            }
-        }
-
-        public event EventHandler<SelectionModelIndexesChangedEventArgs>? IndexesChanged
-        {
-            add => _indexesChanged += value;
-            remove => _indexesChanged -= value;
-        }
-
-        public event EventHandler<SelectionModelSelectionChangedEventArgs>? SelectionChanged
-        {
-            add
-            {
-                _selectionChanged += value;
-                SelectionChangedSubscriberCount++;
-            }
-            remove
-            {
-                _selectionChanged -= value;
-                SelectionChangedSubscriberCount--;
-            }
-        }
-
-        public event EventHandler? LostSelection
-        {
-            add
-            {
-                _lostSelection += value;
-                LostSelectionSubscriberCount++;
-            }
-            remove
-            {
-                _lostSelection -= value;
-                LostSelectionSubscriberCount--;
-            }
-        }
-
-        public event EventHandler? SourceReset
-        {
-            add => _sourceReset += value;
-            remove => _sourceReset -= value;
-        }
-
-        public void BeginBatchUpdate()
-        {
-        }
-
-        public void EndBatchUpdate()
-        {
-        }
-
-        public bool IsSelected(int index) => _selectedIndexes.Contains(index);
-
-        public void Select(int index)
-        {
-            _selectedIndexes.Clear();
-            _selectedItems.Clear();
-            _selectedIndexes.Add(index);
-            SelectedIndex = index;
-            AnchorIndex   = index;
-        }
-
-        public void Deselect(int index)
-        {
-            _selectedIndexes.Remove(index);
-            if (SelectedIndex == index)
-            {
-                SelectedIndex = -1;
-            }
-        }
-
-        public void SelectRange(int start, int end)
-        {
-            for (var i = start; i <= end; i++)
-            {
-                Select(i);
-            }
-        }
-
-        public void DeselectRange(int start, int end)
-        {
-            for (var i = start; i <= end; i++)
-            {
-                Deselect(i);
-            }
-        }
-
-        public void SelectAll()
-        {
-        }
-
-        public void Clear()
-        {
-            _selectedIndexes.Clear();
-            _selectedItems.Clear();
-            SelectedIndex = -1;
-            SelectedItem  = null;
-        }
     }
 }

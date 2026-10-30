@@ -3,10 +3,55 @@
 本文档记录 Cascader 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-18
+
+- Behavior
+  - Use data-owned active paths and same-column sibling navigation; activate branches without entering their child column, support RTL and root-level return/close.
+  - Open with Down/Enter/Space, submit only an explicit valid candidate, close after permitted parent selection, and toggle subtree checks for multi-select without closing.
+  - Preserve valid search candidates by full path, include selectable parent paths, and keep IME/caret editing separate from candidate commands.
+- Implementation
+  - Complete Enter down/up cycles and retain the inline search input while rebuilding selected tags, preserving focus and preventing repeated commits.
+- Gallery
+  - Connect both external search examples to the shared keyboard implementation and coordinate search versus confirmation.
+
+## 2026-10-04
+
+- Fix
+  - Remove inherited ListBox item dividers from Cascader search-result dropdown options.
+
+## 2026-09-16
+
+- Behavior
+  - Relay the owner root `BorderBrush` / `Background` onto the `CascaderAddOnDecoratedBox` frame as local values, so an owner-scoped root setter reaches the visible outline instead of being silently ignored. The frame theme's state setters outrank a `TemplateBinding`, so the relay must use `BindingPriority.LocalValue` from code; it carries an ownership flag and only clears a slot when this control wrote it.
+  - Bind `IsMotionEnabled` onto the `CascaderAddOnDecoratedBox` frame (`TemplateBinding`); it was previously only propagated to the inner `SelectHandle`.
+
 ## 2026-09-05
 
 - Theme
   - Apply the reused SelectToken `MultiModePrefixIndent*` values as the extra left `Margin` of `PART_ContentLeftAddOn` in `CascaderAddOnDecoratedBoxTheme` for `IsMultiple=True` with a non-empty selection, aligning the multiple-mode prefix with the single-mode horizontal padding (same fix as Select / TreeSelect).
+
+## 2026-09-03
+
+- Architecture
+  - Publish the Cascader Semantic Part contract with thirteen parts (`root`, `prefix`, `content`, `placeholder`, `input`, `suffix`, `clear`, `item`, `itemContent`, `itemRemove`, `popup.root`, `popup.list`, `popup.listItem`) aligned with the Ant Design Cascader semantic structure; see `Cascader.SemanticParts.cs` and `semantic-part.md`.
+  - Resolve multiple-selection tag parts through the shared tag mechanism: `item` markers are injected when `SelectTagAwareTextBox` creates tag containers, and `itemContent` / `itemRemove` markers live in `TagTheme.axaml` (`SelectTag : Tag`); the generator's cross-nested validation now chains through a declared RuntimeCreated sibling part's ContractType.
+  - Anchor trigger-part markers in the host template (`CascaderTheme.axaml`) projected into `CascaderAddOnDecoratedBox`, reusing the shared `AddOnDecoratedBoxTheme` scope anchors for `prefix` / `suffix`.
+  - Publish the inline prefix presenter against the `ContentLeftAddOn` public API via a `$parent[atom:Cascader]` compiled binding: template-inflated property-value subtree nodes carry no `TemplatedParent`, so a `TemplateBinding` there resolves to nothing and the prefix falls back to the boxed outer add-on rendering.
+  - Validate the `clear` part across the nested owner boundary (`CrossNestedOwners=true`): the physical clear button marker lives in the shared `SelectHandleTheme.axaml`.
+  - Keep the cascade menu columns and items runtime-created: `CascaderView` injects `popup.list` markers on child level lists, and `CascaderViewLevelList` / `CascaderViewFilterList` inject `popup.listItem` markers at container creation.
+- API
+  - Promote `AbstractSelect.IsPopupPinnedOpen` from internal to public (mirroring `AbstractAutoComplete`) so pinned-open popups can be declared from AXAML.
+  - Align the pinned-popup light-dismiss mechanism with `AbstractAutoComplete` at the `AbstractSelect` level: suppress the mask in `OnPropertyChanged` and `OnApplyTemplate` before any open, drive template-applied opens through `OpeningDropDown`, sync `IsDropDownOpen=false` on `PopupClosed` (covering light-dismiss closes), and drop the Cascader template's `IsOpen` template binding so the popup is opened purely by code after the suppression.
+- Behavior
+  - Make the dropdown arrow indicator color customizable through the `suffix` semantic part style: `SelectHandleTheme` now derives the indicator brush from the inherited `TextElement.Foreground`, and the shared `AddOnDecoratedBoxTheme` supplies `ColorTextQuaternary` as the suffix area default, so setting `TextElement.Foreground` on `CascaderSuffixStyle` recolors the arrow while unstyled controls keep the previous quaternary appearance. The mechanism applies to every `SelectHandle` host (Cascader, Select, TreeSelect).
+  - Paint the `Filled` variant background across the full border box (`AddOnDecoratedBoxTheme.axaml` switches the content frame to `OuterBorderEdge` for `StyleVariant=Filled`): the variant keeps a 1px transparent border as height compensation, so the previous `InnerBorderEdge` fill rendered 2px shorter than the `Outlined` frame (30px instead of 32px at Middle). The fix applies to every control sharing `AddOnDecoratedBox` (Cascader, Select, LineEdit, AutoComplete, date/time pickers).
+- Gallery
+  - Add the Cascader Semantic Parts tab with a pinned-open preview and localized part descriptions; migrate the showcase host to `GalleryShowCaseHost` per the standard Semantic Part page model.
+  - Add the "Custom Semantic Part styling" example (aligned with the upstream semantic styling demo): object-style and variant-conditioned Cascader part styles covering prefix / placeholder / popup root / popup list item.
+- Tests
+  - Add `CascaderSemanticPartTests` and `CascaderPinnedPopupTests` covering descriptor shape, template marker inventory, generated style hits, popup part resolution and marker stability across reopen and source reset.
+  - Add `AddOnDecoratedBoxVariantTests` asserting the `Filled` frame paints `OuterBorderEdge` while `Outlined` keeps `InnerBorderEdge`, and both variants stay 32px tall at Middle.
+  - Add `SelectHandleIndicatorColorTests` covering the arrow indicator default (`ColorTextQuaternary` on Cascader and Select) and the `suffix` semantic style override reaching the presented icon.
 
 ## 2026-08-25
 

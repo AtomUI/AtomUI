@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -15,6 +13,15 @@ public enum StatisticShowCaseLangResourceKind
     AnimatedNumberDescription,
     TimerTitle,
     TimerDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticHeaderDescription,
+    SemanticTitleDescription,
+    SemanticContentDescription,
+    SemanticValueDescription,
+    SemanticPrefixDescription,
+    SemanticSuffixDescription,
     P2HeaderActiveUsers,
     P2HeaderAccountBalanceCny,
     P2HeaderFeedback,

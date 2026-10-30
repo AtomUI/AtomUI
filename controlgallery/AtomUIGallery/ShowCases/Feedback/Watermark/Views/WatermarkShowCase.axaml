@@ -28,6 +28,7 @@
                                    ContentMargin="28,10,28,28">
 
     <gallery:ShowCaseItem Title="{gallery:WatermarkShowCaseLangResource BasicTitle}" Description="{gallery:WatermarkShowCaseLangResource BasicDescription}"
+                          ZoomContentLayout="Stretch"
                           IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:WatermarkViewModel">
@@ -37,6 +38,7 @@
     </gallery:ShowCaseItem>
 
     <gallery:ShowCaseItem Title="{gallery:WatermarkShowCaseLangResource MultiLineTitle}"
+                                  ZoomContentLayout="Stretch"
                                   Description="{gallery:WatermarkShowCaseLangResource MultiLineDescription}"
                                   IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
@@ -45,7 +47,6 @@
                 HorizontalAlignment="Stretch">
             <atom:Watermark.Glyph>
                 <atom:TextGlyph Text="{gallery:WatermarkShowCaseLangResource P2WatermarkMultiLineText}"
-                                FontSize="18"
                                 Foreground="Gray" />
             </atom:Watermark.Glyph>
         </Border>
@@ -54,6 +55,7 @@
     </gallery:ShowCaseItem>
 
     <gallery:ShowCaseItem Title="{gallery:WatermarkShowCaseLangResource ImageWatermarkTitle}"
+                                  ZoomContentLayout="Stretch"
                                   Description="{gallery:WatermarkShowCaseLangResource ImageWatermarkDescription}"
                                   IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>

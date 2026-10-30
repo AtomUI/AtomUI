@@ -1,10 +1,8 @@
+using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 using AtomCalendar = AtomUI.Desktop.Controls.Calendar;
-using AtomCalendarButton = AtomUI.Desktop.Controls.CalendarButton;
-using AtomCalendarDayButton = AtomUI.Desktop.Controls.CalendarDayButton;
 using AtomCalendarMode = AtomUI.Desktop.Controls.CalendarMode;
-using AtomCalendarSelectionMode = AtomUI.Desktop.Controls.CalendarSelectionMode;
 
 namespace AtomUI.Performance;
 
@@ -13,9 +11,10 @@ internal static partial class Program
     private static bool RunCalendarStateVerification()
     {
         var failures = new List<string>();
-        VerifyMonthModeLazyYearView(failures);
-        VerifyInitialYearModeLazyMonthView(failures);
-        VerifyInitialDecadeModeLazyMonthView(failures);
+        VerifyCalendarMonthGridShape(failures);
+        VerifyCalendarModeSwitching(failures);
+        VerifyCalendarValueSelection(failures);
+        VerifyCalendarDisabledDates(failures);
 
         if (failures.Count == 0)
         {
@@ -31,140 +30,128 @@ internal static partial class Program
         return false;
     }
 
-    private static void VerifyMonthModeLazyYearView(ICollection<string> failures)
+    private static void VerifyCalendarMonthGridShape(ICollection<string> failures)
     {
-        var selectedDate = new DateTime(2024, 1, 20);
-        var calendar     = CreateVerificationCalendar(selectedDate: selectedDate);
+        var calendar = CreateCalendar(selectedDate: new DateTime(2024, 1, 20));
 
         using var realized = RealizeControl(calendar);
-        ExpectCalendarShape(calendar, 42, 0, "Default Month Calendar", failures);
-        ExpectSelectedDate(calendar, selectedDate, failures);
+        ExpectCalendarShape(calendar, dateCells: 42, monthCells: 0, weekCells: 0, "Month Calendar", failures);
 
-        calendar.DisplayMode = AtomCalendarMode.Year;
-        RefreshLayout(realized.Window);
-        ExpectCalendarShape(calendar, 42, 12, "Month -> Year Calendar", failures);
-
-        calendar.DisplayMode = AtomCalendarMode.Decade;
-        RefreshLayout(realized.Window);
-        ExpectCalendarShape(calendar, 42, 12, "Year -> Decade Calendar", failures);
-
-        calendar.DisplayMode = AtomCalendarMode.Year;
-        RefreshLayout(realized.Window);
-        ExpectCalendarShape(calendar, 42, 12, "Decade -> Year Calendar", failures);
-
-        calendar.DisplayMode = AtomCalendarMode.Month;
-        RefreshLayout(realized.Window);
-        ExpectCalendarShape(calendar, 42, 12, "Year -> Month Calendar", failures);
-        ExpectSelectedDate(calendar, selectedDate, failures);
+        var showWeekCalendar = CreateCalendar(selectedDate: new DateTime(2024, 1, 20), showWeek: true);
+        using var weekRealized = RealizeControl(showWeekCalendar);
+        ExpectCalendarShape(showWeekCalendar, dateCells: 42, monthCells: 0, weekCells: 6, "ShowWeek Calendar", failures);
     }
 
-    private static void VerifyInitialYearModeLazyMonthView(ICollection<string> failures)
+    private static void VerifyCalendarModeSwitching(ICollection<string> failures)
     {
         var selectedDate = new DateTime(2024, 1, 20);
-        var calendar     = CreateVerificationCalendar(AtomCalendarMode.Year, selectedDate);
+        var calendar = CreateCalendar(selectedDate: selectedDate);
 
         using var realized = RealizeControl(calendar);
-        ExpectCalendarShape(calendar, 0, 12, "Initial Year Calendar", failures);
+        ExpectCalendarShape(calendar, dateCells: 42, monthCells: 0, weekCells: 0, "Default Month Calendar", failures);
 
-        calendar.DisplayMode = AtomCalendarMode.Month;
+        calendar.Mode = AtomCalendarMode.Year;
         RefreshLayout(realized.Window);
-        ExpectCalendarShape(calendar, 42, 12, "Initial Year -> Month Calendar", failures);
-        ExpectSelectedDate(calendar, selectedDate, failures);
+        ExpectCalendarShape(calendar, dateCells: 0, monthCells: 12, weekCells: 0, "Month -> Year Calendar", failures);
 
-        calendar.DisplayMode = AtomCalendarMode.Year;
+        calendar.Mode = AtomCalendarMode.Month;
         RefreshLayout(realized.Window);
-        calendar.DisplayMode = AtomCalendarMode.Month;
-        RefreshLayout(realized.Window);
-        ExpectCalendarShape(calendar, 42, 12, "Repeated Year/Month Calendar", failures);
-        ExpectSelectedDate(calendar, selectedDate, failures);
+        ExpectCalendarShape(calendar, dateCells: 42, monthCells: 0, weekCells: 0, "Year -> Month Calendar", failures);
+        Expect(calendar.Value == selectedDate,
+            $"Calendar Value should survive mode switches, actual {calendar.Value:yyyy-MM-dd}.",
+            failures);
     }
 
-    private static void VerifyInitialDecadeModeLazyMonthView(ICollection<string> failures)
+    private static void VerifyCalendarValueSelection(ICollection<string> failures)
     {
         var selectedDate = new DateTime(2024, 1, 20);
-        var calendar     = CreateVerificationCalendar(AtomCalendarMode.Decade, selectedDate);
+        var calendar = CreateCalendar(selectedDate: selectedDate);
 
         using var realized = RealizeControl(calendar);
-        ExpectCalendarShape(calendar, 0, 12, "Initial Decade Calendar", failures);
+        var selectedCells = FindCalendarCells(calendar, ":selected");
+        Expect(selectedCells.Count == 1,
+            $"Calendar should mark exactly one selected cell, actual {selectedCells.Count}.",
+            failures);
+        var selectedCellDate = GetCalendarCellValue(selectedCells.FirstOrDefault());
+        Expect(selectedCellDate == selectedDate,
+            $"Selected cell should carry {selectedDate:yyyy-MM-dd}, actual {selectedCellDate:yyyy-MM-dd}.",
+            failures);
 
-        calendar.DisplayMode = AtomCalendarMode.Year;
+        calendar.Value = new DateTime(2024, 1, 25);
         RefreshLayout(realized.Window);
-        ExpectCalendarShape(calendar, 0, 12, "Initial Decade -> Year Calendar", failures);
-
-        calendar.DisplayMode = AtomCalendarMode.Month;
-        RefreshLayout(realized.Window);
-        ExpectCalendarShape(calendar, 42, 12, "Initial Decade -> Month Calendar", failures);
-        ExpectSelectedDate(calendar, selectedDate, failures);
+        selectedCells = FindCalendarCells(calendar, ":selected");
+        Expect(selectedCells.Count == 1 &&
+               GetCalendarCellValue(selectedCells.FirstOrDefault()) == new DateTime(2024, 1, 25),
+            "Calendar Value change should move the selected cell.",
+            failures);
     }
 
-    private static AtomCalendar CreateVerificationCalendar(
-        AtomCalendarMode displayMode = AtomCalendarMode.Month,
-        DateTime? selectedDate = null)
+    private static void VerifyCalendarDisabledDates(ICollection<string> failures)
     {
-        var calendar = new AtomCalendar
-        {
-            DisplayDate     = new DateTime(2024, 1, 1),
-            DisplayMode     = displayMode,
-            SelectionMode   = AtomCalendarSelectionMode.SingleDate,
-            IsMotionEnabled = false
-        };
+        var calendar = CreateCalendarWithDisabledDates();
 
-        if (selectedDate.HasValue)
-        {
-            calendar.SelectedDate = selectedDate.Value;
-        }
-
-        return calendar;
+        using var realized = RealizeControl(calendar);
+        var disabledCells = FindCalendarCells(calendar, ":disabled");
+        Expect(disabledCells.Count == 3,
+            $"Calendar should mark the three DisabledDate days as disabled, actual {disabledCells.Count}.",
+            failures);
+        Expect(disabledCells.All(cell => GetCalendarCellValue(cell).Day is 5 or 6 or 7),
+            "Disabled cells should carry the DisabledDate days.",
+            failures);
     }
 
     private static void ExpectCalendarShape(
         AtomCalendar calendar,
-        int expectedDayButtons,
-        int expectedCalendarButtons,
+        int dateCells,
+        int monthCells,
+        int weekCells,
         string label,
         ICollection<string> failures)
     {
-        var dayButtonCount      = CountVisuals<AtomCalendarDayButton>(calendar);
-        var calendarButtonCount = CountVisuals<AtomCalendarButton>(calendar);
+        var actualDateCells   = CountCalendarCells(calendar, ":date");
+        var actualMonthCells  = CountCalendarCells(calendar, ":month");
+        var actualWeekCells   = CountCalendarCells(calendar, ":week");
 
-        Expect(dayButtonCount == expectedDayButtons,
-            $"{label} should have {expectedDayButtons} CalendarDayButton visuals, actual {dayButtonCount}.",
+        Expect(actualDateCells == dateCells,
+            $"{label} should have {dateCells} date cells, actual {actualDateCells}.",
             failures);
-        Expect(calendarButtonCount == expectedCalendarButtons,
-            $"{label} should have {expectedCalendarButtons} CalendarButton visuals, actual {calendarButtonCount}.",
+        Expect(actualMonthCells == monthCells,
+            $"{label} should have {monthCells} month cells, actual {actualMonthCells}.",
             failures);
-    }
-
-    private static void ExpectSelectedDate(
-        AtomCalendar calendar,
-        DateTime selectedDate,
-        ICollection<string> failures)
-    {
-        Expect(calendar.SelectedDate == selectedDate,
-            $"Calendar SelectedDate should remain {selectedDate:yyyy-MM-dd}, actual {calendar.SelectedDate:yyyy-MM-dd}.",
-            failures);
-        Expect(calendar.SelectedDates.Count == 1 && calendar.SelectedDates[0] == selectedDate,
-            $"Calendar SelectedDates should keep only {selectedDate:yyyy-MM-dd}, actual count {calendar.SelectedDates.Count}.",
-            failures);
-
-        var selectedButton = FindDayButton(calendar, selectedDate);
-        Expect(selectedButton?.IsSelected == true,
-            $"Calendar day button for {selectedDate:yyyy-MM-dd} should be selected after mode changes.",
+        Expect(actualWeekCells == weekCells,
+            $"{label} should have {weekCells} week cells, actual {actualWeekCells}.",
             failures);
     }
 
-    private static AtomCalendarDayButton? FindDayButton(AtomCalendar calendar, DateTime date)
+    private static int CountCalendarCells(Control root, string pseudoClass)
     {
-        return calendar.GetSelfAndVisualDescendants()
-                       .OfType<AtomCalendarDayButton>()
-                       .FirstOrDefault(button =>
-                           button.DataContext is DateTime day &&
-                           day.Date == date.Date);
+        return root.GetSelfAndVisualDescendants()
+                   .OfType<Control>()
+                   .Count(control => control.GetType().Name == "CalendarViewCell" &&
+                                     control.Classes.Contains(pseudoClass));
     }
 
-    private static int CountVisuals<T>(Control control)
-        where T : Control
+    private static List<Control> FindCalendarCells(Control root, string pseudoClass)
     {
-        return control.GetSelfAndVisualDescendants().OfType<T>().Count();
+        return root.GetSelfAndVisualDescendants()
+                   .OfType<Control>()
+                   .Where(control => control.GetType().Name == "CalendarViewCell" &&
+                                     control.Classes.Contains(pseudoClass))
+                   .ToList();
+    }
+
+    private static DateTime GetCalendarCellValue(Control? cell)
+    {
+        if (cell is null)
+        {
+            return default;
+        }
+        var model = cell.GetType()
+                        .GetProperty("Model", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                        ?.GetValue(cell);
+        var value = model?.GetType()
+                          .GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)
+                          ?.GetValue(model);
+        return value is DateTime dateTime ? dateTime : default;
     }
 }

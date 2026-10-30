@@ -193,10 +193,34 @@
         <target state="translated">歐洲街拍</target>
       </segment>
     </unit>
+    <unit id="P2HeaderFunctionCard">
+      <segment>
+        <source>Function Card</source>
+        <target state="translated">條件樣式卡片</target>
+      </segment>
+    </unit>
+    <unit id="P2HeaderFunctionCardMeta">
+      <segment>
+        <source>Function Card Meta title</source>
+        <target state="translated">條件樣式卡片元信息標題</target>
+      </segment>
+    </unit>
     <unit id="P2HeaderLargeSizeCard">
       <segment>
         <source>Large size card</source>
         <target state="translated">大尺寸卡片</target>
+      </segment>
+    </unit>
+    <unit id="P2HeaderObjectCard">
+      <segment>
+        <source>Object Card</source>
+        <target state="translated">固定樣式卡片</target>
+      </segment>
+    </unit>
+    <unit id="P2HeaderObjectCardMeta">
+      <segment>
+        <source>Object Card Meta title</source>
+        <target state="translated">固定樣式卡片元信息標題</target>
       </segment>
     </unit>
     <unit id="P2HeaderProject">
@@ -269,6 +293,90 @@
       <segment>
         <source>Layout</source>
         <target state="translated">佈局</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCardActionsDescription">
+      <segment>
+        <source>The bottom action-group surface, including equal-width layout and divider boundaries.</source>
+        <target state="translated">底部操作組的完整表面，包括均分佈局和分隔線邊界。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCardBodyDescription">
+      <segment>
+        <source>The shared body surface for default, metadata, grid, tabs, and loading content.</source>
+        <target state="translated">普通、元信息、柵格、標籤頁和加載內容共享的主體表面。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCardCoverDescription">
+      <segment>
+        <source>The cover region that owns media clipping, top corner radius, and layout.</source>
+        <target state="translated">負責媒體裁剪、頂部圓角和佈局的封面區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCardExtraDescription">
+      <segment>
+        <source>The trailing auxiliary-content region in the card header.</source>
+        <target state="translated">卡片頭部尾側的輔助內容區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCardHeaderDescription">
+      <segment>
+        <source>The complete header surface and the shared layout boundary for title and extra content.</source>
+        <target state="translated">完整頭部表面，以及標題和額外內容共享的佈局邊界。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCardRootDescription">
+      <segment>
+        <source>The Card owner that controls appearance, size, loading, hover, and content composition.</source>
+        <target state="translated">統一控制外觀、尺寸、加載、懸停和內容組合的 Card 所有者。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCardTitleDescription">
+      <segment>
+        <source>The card-title presentation and typography region.</source>
+        <target state="translated">卡片標題的展示與排版區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMetaAvatarDescription">
+      <segment>
+        <source>The metadata avatar presentation and layout region.</source>
+        <target state="translated">元信息頭像的展示與佈局區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMetaDescriptionDescription">
+      <segment>
+        <source>The metadata description presentation and typography region.</source>
+        <target state="translated">元信息描述的展示與排版區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMetaRootDescription">
+      <segment>
+        <source>The CardMetaContent owner that composes avatar, title, and description.</source>
+        <target state="translated">組合頭像、標題和描述的 CardMetaContent 所有者。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMetaSectionDescription">
+      <segment>
+        <source>The shared detail-layout region for the metadata title and description.</source>
+        <target state="translated">元信息標題與描述共享的詳情佈局區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMetaTitleDescription">
+      <segment>
+        <source>The metadata title presentation and typography region.</source>
+        <target state="translated">元信息標題的展示與排版區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Card property selectors to customize published Semantic Parts.</source>
+        <target state="translated">使用所有者作用域選擇器和 Card 屬性選擇器，自定義已發佈的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
       </segment>
     </unit>
     <unit id="SimpleCardDescription">

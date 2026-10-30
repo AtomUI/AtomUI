@@ -29,7 +29,9 @@ internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
     {
         // Only update the DataContext if necessary
         if (!Equals(dataContext, DataContext))
+        {
             DataContext = dataContext;
+        }
 
         return GetValue(ValueProperty);
     }

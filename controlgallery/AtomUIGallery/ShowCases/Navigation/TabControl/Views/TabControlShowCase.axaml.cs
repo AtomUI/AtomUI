@@ -1,12 +1,11 @@
-using AtomUIGallery.Localization;
-using System.Globalization;
 using AtomUI.Controls;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Interactivity;
+using Avalonia.Media;
+using AtomTabControl = AtomUI.Desktop.Controls.TabControl;
 using AtomTabItem = AtomUI.Desktop.Controls.TabItem;
 
 namespace AtomUIGallery.ShowCases.TabControl;
@@ -97,6 +96,20 @@ public partial class TabControlShowCase : GalleryReactiveUserControl<TabControlV
             IsClosable = true,
             Tag        = index
         });
+    }
+
+    private static void HandleSemanticStyleDemoTabControlInitialized(object? sender, EventArgs e)
+    {
+        if (sender is not AtomTabControl tabControl)
+        {
+            return;
+        }
+
+        // The selected ink bar is not a public Semantic Part; its color and thickness
+        // are customized through the TabControl InkBarColor and InkBarThickness tokens
+        // (see semantic-part.md §5).
+        tabControl.Resources[TabControlTokenKind.InkBarColor]     = Color.FromArgb(0x4D, 0xFF, 0x4D, 0x4F);
+        tabControl.Resources[TabControlTokenKind.InkBarThickness] = 4.0;
     }
 
     private void TrackDynamicAddTabControl(CardTabControl tabControl)

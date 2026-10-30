@@ -18,7 +18,7 @@ public class Message : IMessage, INotifyPropertyChanged
         _content   = content;
         _icon      = icon;
         Type       = type;
-        Expiration = expiration.HasValue ? expiration.Value : TimeSpan.FromSeconds(5);
+        Expiration = expiration.HasValue ? expiration.Value : TimeSpan.FromSeconds(3);
         OnClose    = onClose;
     }
 

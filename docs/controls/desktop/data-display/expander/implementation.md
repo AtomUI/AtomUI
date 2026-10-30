@@ -1,12 +1,12 @@
 # Expander 桌面版实现原理
 
-本文档描述 Expander 桌面版的模板接入、展开状态流、触发区域、展开方向、动效取消与归一、自定义 padding 度量和维护边界。公共设计与 API 契约见 [Expander 桌面版架构设计](overview.md)，Token 语义见 [Expander Token 设计](token.md)，变化记录见 [Expander Changelog](changelog.md)。
+本文档描述 Expander 桌面版的模板接入、展开状态流、触发区域、展开方向、动效取消与归一、自定义 padding 度量和维护边界。公共设计与 API 契约见 [Expander 桌面版架构设计](overview.md)，Semantic Part 契约见 [Expander Semantic Part 契约](semantic-part.md)，Token 语义见 [Expander Token 设计](token.md)，变化记录见 [Expander Changelog](changelog.md)。
 
 ## 1. 实现定位
 
 Expander 的实现重点是在 Avalonia `Expander` 基础上稳定扩展 AtomUI 的视觉、触发区域和 motion 行为。实现文档覆盖 `Expander.cs`、`ExpanderPseudoClass.cs`、`ExpanderToken.cs` 和 `ExpanderTheme.axaml` 的职责边界。
 
-本文档不重新解释 Avalonia `Expander` 的基础 Header/Content 机制，也不重复 MotionScene、TokenResource 或 IconButton 的通用实现。
+本文档不重新解释 Avalonia `Expander` 的基础 Header/Content 机制。共享播放协议见 [Motion 系统](../../../../architecture/systems/motion/overview.md)。
 
 ## 2. 源码文件结构
 
@@ -15,9 +15,14 @@ Expander 的实现重点是在 Avalonia `Expander` 基础上稳定扩展 AtomUI 
 - `src/AtomUI.Desktop.Controls/Expander/Expander.cs`：公共 API、内部 effective state、template part 接入、触发区域、默认图标、边框状态、动效状态机和自定义 padding 度量。
 - `src/AtomUI.Desktop.Controls/Expander/ExpanderPseudoClass.cs`：方向、自定义 padding 和展开状态相关伪类常量。
 - `src/AtomUI.Desktop.Controls/Expander/ExpanderToken.cs`：Expander 控件 Token。
-- `src/AtomUI.Desktop.Controls/Expander/Themes/ExpanderTheme.axaml`：控件模板、SizeType 分支、方向分支、图标位置分支、触发分支、Borderless/Ghost 分支和 token 引用。
+- `src/AtomUI.Desktop.Controls/Expander/Expander.SemanticParts.cs`：五个 Semantic Part 的声明与生成式 descriptor 输入
+  （本次改造新增，Gate B 交付）；`body` 在此声明 `Cardinality=Optional`。
+- `src/AtomUI.Desktop.Controls/Expander/Themes/ExpanderTheme.axaml`：控件模板、SizeType 分支、方向分支、图标位置分支、触发分支、Borderless/Ghost 分支和 token 引用；四个静态 `.semantic-*` marker 在此声明。
 - `tests/AtomUI.Desktop.Controls.Tests/Expander/ExpanderBehaviorTests.cs`：Expander 行为和布局回归测试。
-- `src/AtomUI.Core/MotionScene/ContentExpansionAnimator.cs`：共用内容测量、进度插值与执行资源 owner。
+- `tests/AtomUI.Desktop.Controls.Tests/Expander/ExpanderSemanticPartTests.cs`：Semantic Part descriptor、模板 marker 契约、
+  生成 Style 命中与 `body` 呈现语义的回归测试（本次改造新增，Gate B 交付）。
+- `src/AtomUI.Core/Animations/Motion`：可复用动效定义、请求身份、框架时钟、属性覆盖与可见性生命周期。
+- `src/AtomUI.Controls/Primitives/ContentViewport.cs`：自然内容测量、实际视口、占位与四方向锚定。
 - `tests/AtomUI.Desktop.Controls.Tests/Motion`：共用展开机制的帧级几何和边界回归。
 
 ## 3. 核心类职责
@@ -30,6 +35,11 @@ Expander 的实现重点是在 Avalonia `Expander` 基础上稳定扩展 AtomUI 
 
 `ExpanderTheme.axaml` 是模板和视觉状态的唯一来源。稳定 template part 不应在 C# 中动态创建，也不应通过 C# 绑定替代可由 AXAML 表达的关系。
 
+正文字符串转换由 `ExpanderTheme.axaml` 自己的资源字典持有 `StringToTextBlockConverter`。
+模板通过同一词法作用域的 `StaticResource` 引用它，将字符串转换为垂直居中、水平拉伸且自动换行的 `TextBlock`；
+非字符串内容原样传递，`ContentTemplate` 保持原有处理路径。该转换器不依赖其他控件主题或宿主同名资源，
+按片段选择主题时也必须保留相同的内容呈现语义。
+
 ## 4. 状态与数据流
 
 展开状态流：
@@ -40,7 +50,7 @@ OnPointerPressed / PART_ExpandButton.Click
   → IsExpanded changed
   → UpdateContentVisibility(IsExpanded)
   → motion or stable state
-  → PART_ContentMotionActor.IsVisible
+  → PART_ContentViewport.IsVisible
 ```
 
 边框状态流：
@@ -52,7 +62,7 @@ BorderThickness / IsGhostStyle / IsBorderless
 
 BorderThickness / IsGhostStyle / IsBorderless / ExpandDirection
   → ConfigureContentBorderThickness()
-  → PART_ContentMotionActor / unnamed PixelAlignedBorder.BorderThickness
+  → PART_ContentViewport / unnamed PixelAlignedBorder.BorderThickness
 ```
 
 自定义 padding 状态流：
@@ -76,27 +86,80 @@ ExpandIcon == null
   → Set RightOutlined at Template priority
 ```
 
+### 4.1 Semantic Part marker 放置
+
+marker 与 descriptor 声明、生成常量的对应关系：
+
+| marker | 放置方式 | 位置 |
+| --- | --- | --- |
+| `.semantic-header` | 静态 `Classes.semantic-header="True"` | `ExpanderTheme.axaml` 的 `PixelAlignedBorder#PART_HeaderDecorator` |
+| `.semantic-icon` | 静态 `Classes.semantic-icon="True"` | `ExpanderTheme.axaml` 的 `IconButton#PART_ExpandButton` |
+| `.semantic-title` | 静态 `Classes.semantic-title="True"` | `ExpanderTheme.axaml` 的 `ContentPresenter#PART_HeaderPresenter` |
+| `.semantic-body` | 静态 `Classes.semantic-body="True"` | `ExpanderTheme.axaml` 的 `ContentPresenter#PART_ContentPresenter` |
+
+四个 marker 全部位于 `ExpanderTheme.axaml` 的**唯一** `ControlTemplate` 内，节点由 AXAML 静态声明，`TemplatedParent` 是
+Expander owner 本身。因此四个 Part 都声明 `RuntimeCreated=false`、`CrossVisualRoot=false`，且不携带显式 `SelectorRoute`；
+生成器按静态根模板 Part 把 route 规范化为 `/template/ .<SelectorClass>`。`root` 由生成器隐式生成，模板不添加
+`.semantic-root`。
+
+`header` 位于 `LayoutTransformControl#PART_HeaderLayoutTransform` 内，`body` 位于
+`ContentViewport#PART_ContentViewport` 内。Gate B 的 selector 命中测试确认：两者都不跨越第二层模板边界，
+`TemplatedParent` 仍是 Expander owner，因此单一 `/template/` 路由已经足够，不需要为它们声明更宽的 logical descendant
+路由，也不需要显式 `SelectorRoute`。
+
+cardinality 不是四者一致：`header` / `icon` / `title` 是模板常驻节点，任何状态下都存在于视觉树，声明 `Single`；`body`
+声明 `Optional`。原因是 `PART_ContentViewport` 折叠稳定态下 `IsVisible=false`，其内部 `ContentPresenter` 在首次呈现前
+不挂接视觉子级（Gate B 实测：actor `visualChildren=0`、`logicalChildren=1`），`body` 节点从视觉树缺席；首次展开后节点
+物化并保持存在，再次收起不会解除挂接。这一 0/1 差异来自 Avalonia `ContentPresenter` 的挂接时机，不是容器生命周期或
+marker 注入，详见 [semantic-part.md §4](semantic-part.md#4-状态与数量语义)。
+
+Expander 与 Collapse 在 marker 机制上的差异：
+
+- 没有运行时创建的容器或 item，因此不存在 `.semantic-scope-*` 锚点、容器创建/prepare/clear/recycle 路径，也不需要
+  `RuntimeCreated=true` 的 C# marker 注入点。
+- 没有 Popup、Overlay 或独立宿主，因此不存在跨视觉根 Part。
+- `Expander.cs` 在模板接入时只按 NameScope 查找 `PART_HeaderDecorator` 与 `PART_ExpandButton`
+  三个协作节点，不创建视觉节点，也不添加 marker；marker 完全由静态 AXAML 提供。
+
+`header` 的承载节点 `PART_HeaderDecorator` 在模板中声明于
+`LayoutTransformControl#PART_HeaderLayoutTransform` 之内。该节点是在 Expander 模板内联声明的，其 `TemplatedParent` 仍是
+Expander owner，因此路由保持单一 `/template/` 边界，不穿越 `LayoutTransformControl` 自身的 `ControlTemplate`。该结论必须
+由 Gate B 的 selector 命中测试验证，不得以源码文本扫描替代。
+
+### 4.2 圆角裁剪（Part 背景不溢出圆角）
+
+`PART_Frame` 同时声明 `ClipToBounds="True"` 与 `ClipContentToCornerRadius="True"`。后者是**必需**的，不是可选优化：
+
+- `PART_Frame` 自己绘制圆角（`CornerRadius` 来自 `ExpanderBorderRadius`），但 `PART_HeaderDecorator` 与
+  `PART_ContentPresenter` 是它的子节点，且各自带背景。
+- `ClipToBounds` 只做**矩形**裁剪，不做圆角裁剪。缺少 `ClipContentToCornerRadius` 时，子节点的不透明背景会平铺到方形
+  边界，覆盖父节点画出的圆弧，两个上角（以及展开态的下角）视觉上变成方角。
+- 默认主题 `HeaderBg = ColorFillAlter` 实测 alpha≈2%，缺陷几乎不可见；一旦通过 Semantic Part 或 `IsGhostStyle`
+  （header 背景为 `ColorBgContainer`，完全不透明）设置不透明背景就会显形。
+- 裁剪由 `PART_Frame` 统一施加于整棵子树，与 `IsExpanded`、`ExpandDirection`、`IsBorderless` / `IsGhostStyle` 无关，
+  不增删任何 marker，也不改变 Part 的命中数量。
+
+对照实现：`CollapseItem` 不走这条路径，而是由 `Collapse.ConfigureItemCorners` 按 first/last 给
+`HeaderCornerRadius` / `ContentCornerRadius` 赋值并绑定到子节点，使子节点背景跟随容器圆角而不是覆盖它。Expander 是单面板
+控件、没有 item 索引语义，因此选择在根节点统一裁剪，而不是复制 Collapse 的逐 corner 计算。
+
+测试限制：headless 测试平台的几何包含性无法表示圆角图形，`DashedBorder.UpdateClip` 会按设计把裁剪降级为**不应用**
+（见 `DashedBorderClipContentTests.Clip_Is_Not_Applied_When_The_Platform_Cannot_Hit_Test_The_Rounded_Figure`）。因此自动化
+测试只能断言模板契约（`ClipContentToCornerRadius` 为 `true`、`CornerRadius` 非零）与几何前置条件（header 位于角落圆角
+区域内），**实际裁剪效果必须在真实 Skia 后端做视觉验证**。
+
 ## 5. 生命周期与模板接入
-
-构造阶段：
-
-- 注册 `ExpanderToken.ScopeProvider`。
 
 模板接入：
 
 1. 解除旧 `_expandButton.Click` 事件订阅。
-2. 取消旧 content motion 并清理旧 motion actor 临时值。
-3. 从 NameScope 获取 `PART_ContentMotionActor`、`PART_HeaderDecorator` 和 `PART_ExpandButton`。
-4. 把新 motion actor 归一到当前 `IsExpanded` 的稳定状态。
-5. 订阅新 `_expandButton.Click`。
-6. 同步有效外框、Content 分隔线、图标 margin、默认图标和自定义 padding 伪类。
+2. 从 NameScope 获取 `PART_HeaderDecorator` 和 `PART_ExpandButton`，订阅新按钮。
+3. 同步有效外框、Content 分隔线、图标 margin、默认图标和自定义 padding 伪类。
+4. 主题把 `IsExpanded`、`IsMotionEnabled`、`MotionDuration` 投影到内容视口的 Motion 附加入口。
 
-脱离视觉树：
-
-- 通过当前 `ContentExpansionAnimator.ApplyState` 按 `IsExpanded` 归一 motion actor。
-- 归一过程取消执行并解除内部进度与布局接入，同步最终 `Opacity` / `IsVisible`；重新附着时再次投影当前状态。
-
-模板重套用和 detach 不能让旧 part 继续被事件、动画任务或 cancellation 持有。
+首次接入由可见性入口建立稳定状态。脱离视觉树时，Motion 取消旧请求并释放进度、属性覆盖和布局租约；
+重新挂载时按最新模板绑定初始化。Expander 不持有内容执行器或内容视口，不维护动画 completion 回调。
+模板重套用后旧视口的 continuation 不能修改新模板。
 
 ## 6. 交互与事件处理
 
@@ -122,7 +185,7 @@ Expander 不处理 keyboard、focus、drag/drop、popup 或 command 事件。
 
 ### 7.1 展开方向转换
 
-`DirectionFromExpandDirection` 把 Avalonia `ExpandDirection` 转为 MotionScene `Direction`：
+主题方向 selector 把 Avalonia `ExpandDirection` 映射为 `Motion.LayoutDirection`：
 
 ```text
 Left  → Direction.Left
@@ -131,26 +194,24 @@ Right → Direction.Right
 Down  → Direction.Bottom
 ```
 
-该转换只服务 content motion。Header dock、Header layout transform 和图标旋转由 AXAML selector 表达，必须与这个转换保持一致。
+该映射只服务内容视口。Header dock、Header layout transform 和图标旋转也由 AXAML selector 表达。
 
 ### 7.2 Content motion 状态机
 
-`Expander` 为当前 `PART_ContentMotionActor` 持有 Core 内部 `ContentExpansionAnimator`。状态入口提交
-`IsExpanded`、转换后的方向以及有效 `MotionDuration`；动画执行器统一使用 Avalonia 原生 `Animation` 驱动存储在
-actor 上的私有展开进度附加属性与 `Opacity`。进度属性及其布局失效通知由动画执行器拥有，actor 仅通过内部
-`IMotionActorLayout` 委托测量和排列来控制内容视口，不使用内容缩放表达展开进度。
+`PART_ContentViewport` 是实现 `IMotionLayout` 的 `ContentViewport`。主题声明 `ExpandMotion` 与 `CollapseMotion`，
+并通过 `atom:Motion.IsVisible` 绑定 `IsExpanded`。单次播放使用非视觉进度源接入 Avalonia 框架时钟，
+布局租约以实际 Bounds 捕获当前可见长度，内容保持自然尺寸排版，透明度与尺寸共享时间基准。
 
-- 无 motion actor：保留业务状态，不启动内容动画。
-- 初始模板接入、未附着、动效关闭或时长不大于零：直接投影稳定状态。
-- 新请求：先读取当前呈现的尺寸和透明度，再使旧执行失效并取消，从所捕获的起点开始插值。
-- 正常完成：当前执行恢复自然布局或隐藏内容，释放其执行资源并报告 actor 完成。
-- 反转、模板替换、方向变化或 detach：旧执行失效，其 continuation 无权覆盖新请求或新 actor。
+- 初始模板、重新挂载或动效关闭：按业务状态同步稳定布局。
+- 新请求：按当前可见长度和透明度连续替代旧执行，不通过缩放文字表达展开。
+- 正常展开完成：释放运行资源，终态覆盖保持最后一帧；正常收起完成：隐藏视口并释放覆盖。
+- 反转、模板替换、方向变化或 detach：旧请求失效，不能覆盖当前可见性。
 
 ### 7.3 Motion 资源清理
 
-动画执行器拥有单次执行的取消源、原生动画、内部进度值和 actor 布局接入。稳定状态通过 `ApplyState` 取消执行，
-解除内部接入并同步 `Opacity` / `IsVisible`。运行中关闭 `IsMotionEnabled` 立即按最新 `IsExpanded` 收敛；改变
-`ExpandDirection` 同样取消旧轴执行，并让模板在新方向建立稳定布局。
+Motion 拥有单次执行的取消源、原生时钟进度与属性覆盖，ContentViewport 拥有可释放的布局租约。
+关闭 `IsMotionEnabled` 或改变 `ExpandDirection` 时，可见性入口取消旧执行，按最新 `IsExpanded` 收敛。
+收起稳定态恢复底层透明度来源，隐藏由 `IsVisible=false` 表达，不向应用写入永久的 `Opacity=0`。
 
 清理只释放共用机制拥有的值和资源，不清除用户或模板设置的 `Height`、`Width`、Min/Max 约束、transform 或
 transition，也不修改内容自身的布局属性。
@@ -159,7 +220,7 @@ transition，也不修改内容自身的布局属性。
 
 `ConfigureContentBorderThickness` 取 `BorderThickness.Bottom` 作为 Header 与 Content 分隔线厚度。`IsGhostStyle` 或 `IsBorderless` 下，`SetupEffectiveBorderThickness` 和该方法分别把根边框与分隔线厚度归零，既有背景 selector 保持不变。
 
-分隔线位于 `PART_ContentMotionActor` 内部的 unnamed `PixelAlignedBorder`，Header 不承担边框。方向映射：
+分隔线位于 `PART_ContentViewport` 内部的 unnamed `PixelAlignedBorder`，Header 不承担边框。方向映射：
 
 - `Down`：Content 顶边。
 - `Up`：Content 底边。
@@ -214,8 +275,8 @@ Header dock、Header 旋转和展开图标继续由方向 selector 表达；内�
 生命周期边界：
 
 - `_expandButton.Click` 在模板重套用时先解除旧订阅，再订阅新 part。
-- `_contentExpansion` 随当前 actor 建立；单次执行的取消源由动画执行器在完成或取消后释放。
-- motion actor 临时值必须在状态归一时清理。
+- Motion 可见性 owner 随目标存在，单次运行的进度、取消源与任务在结束或取消后释放。
+- 属性覆盖与布局租约只由其 owner 释放，旧视口不能清理新请求。
 
 AOT 边界：
 
@@ -226,7 +287,7 @@ AOT 边界：
 性能边界：
 
 - Header/Content 默认视觉和未命名 Content 分隔线由静态 AXAML 提供，不在运行时动态构造模板视觉。
-- 展开/收起只操作单个 `LayoutAwareMotionActor`，不遍历复杂子树。
+- 展开/收起只操作单个 `ContentViewport`，不遍历复杂子树。
 - 展开、收起和 motion completion 不重新计算分隔线，也不创建边框 transition 或透明占位。
 - 自定义 padding 的 margin 计算是常量时间，不进入渲染热路径。
 
@@ -245,6 +306,16 @@ AOT 边界：
 - 自定义 HeaderPadding 下的图标间距必须跟随 HeaderPadding 对应方向，不回退到默认 SizeType token。
 - `:custom-header-padding` 和 `:custom-content-padding` 的伪类语义不能混用。
 - Expander 不引入多面板或手风琴状态；这属于 Collapse 的职责。
+- Semantic Part 的 marker 放置（`ExpanderTheme.axaml` 的 `semantic-header`、`semantic-icon`、`semantic-title`、
+  `semantic-body` 四个静态 marker）属于维护不变量：除 `body` 的“首次呈现前缺席”这一呈现历史差异外，状态切换、方向切换、
+  尺寸档切换、自定义 padding 伪类、模板重应用和 detach 都不得增删 marker，默认主题不得消费 `.semantic-*` selector，
+  `header` 与 `body` 的单一 `/template/` 路由不得因模板结构调整而退化为宽泛 logical descendant。`body` 的
+  `Optional` cardinality 与 `PART_ContentViewport` 的 `IsVisible` 语义绑定：不得把 `semantic-body` 移到 actor 自身
+  （会失去 `Padding` / `Background` 的承载节点），也不得为规避 0/1 差异而改变 actor 的可见性模型。
+- 圆角裁剪：`PART_Frame` 的 `ClipContentToCornerRadius="True"` 属于维护不变量，不得移除。移除后 header/body 的不透明
+  背景会重新覆盖 `PART_Frame` 的圆角（默认外观因 `HeaderBg` alpha≈2% 而不易察觉，但任何不透明 Part 背景都会显形）。
+  也不要改用「给子节点各自设圆角」之外的方式绕过——若将来改为 Collapse 式的逐 corner 绑定，必须同步更新 §4.2 与
+  对应测试断言。
 
 ## 10. 测试与验证
 
@@ -257,7 +328,15 @@ AOT 边界：
 - `ExpanderBehaviorTests.Icon_Trigger_Does_Not_Toggle_From_Header_Click`：Icon 触发模式下 Header 点击不切换。
 - `ExpanderBehaviorTests.Content_Motion_Reversal_Does_Not_Change_Separator_And_Uses_Latest_Expanded_State`：快速反向 motion 使用最新展开状态，且分隔线保持不变。
 - `ExpanderBehaviorTests.Template_Reapply_Clears_Old_Content_Motion_Actor_Values` / `Detach_Clears_Active_Content_Motion_Actor_Values`：模板重套用和 detach 的 cancellation 与临时值清理。
+- `ExpanderBehaviorTests.Frame_Enables_Content_Clip_To_Corner_Radius`：`PART_Frame` 开启圆角子级裁剪，且 header 位于圆角方形区域内（证明该裁剪承担遮挡职责）；覆盖展开/收起、Ghost、Borderless 组合。
+- `ExpanderBehaviorTests.Frame_Corner_Radius_Comes_From_The_Theme_And_Stays_Non_Degenerate`：`PART_Frame.CornerRadius` 来自 `ExpanderBorderRadius`（= `BorderRadiusLG`）且运行期可更新。
 - Gallery Expander 示例：Basic、Size、Borderless、Ghost、Custom Padding、Direction、Nested、No Arrow、Icon Position、Trigger。
+- Semantic Part：descriptor 的五个 Part 数量、顺序与字段（`header`/`icon`/`title` 为 `Single`、`body` 为 `Optional`、
+  `RuntimeCreated=false`、`CrossVisualRoot=false`、无显式 `SelectorRoute`、`SelectorRoute` 由生成器规范化为
+  `/template/ .<SelectorClass>`）；四个静态 marker 的存在与节点类型；生成的 `ExpanderHeaderStyle` / `ExpanderIconStyle` /
+  `ExpanderTitleStyle` / `ExpanderBodyStyle` 各精确命中一个节点；`body` 从未展开命中 0、展开后命中 1 且
+  `TemplatedParent` 为 owner、再次收起保持 1；方向、尺寸档、图标位置、触发模式、视觉模式、自定义 padding 与 disabled
+  切换后 `header`/`icon`/`title` 命中数量不变；未声明用户 Semantic Style 时不增加 selector activator。
 - 修改主题或动效时运行 Expander 定向测试；共享机制变化时增加该机制、NavMenu、Collapse 及必要直接消费者的定向验证。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。
 

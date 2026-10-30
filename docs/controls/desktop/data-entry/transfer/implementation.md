@@ -91,6 +91,91 @@ Public API / ItemsSource / Command / Event
 
 - `PART_IconPresenter`：展示用户内容、文本、图标或模板化数据。
 
+### 5.1 Semantic Part 接入
+
+上游准入审计（本地参考源码 `/Users/chinboy/Projects/ReferenceProjects/ant-design`，6.6 稳定线，commit
+`2b258157ff`，`6.6.1-22-g2b258157ff`）：Ant Design `Transfer` owner 在 `TransferSemanticType` 公开分区式
+`classNames` / `styles`，键为 `root`、`section`、`header`、`title`、`body`、`list`、`item`、`itemIcon`、
+`itemContent`、`footer`、`actions` 与方向作用域 `source.*` / `target.*`；`index.tsx` 经 `useMergeSemantic` 合并后
+由 `Section.tsx`（`section`/`header`/`title`/`body`/`footer`）、`ListBody.tsx`（`list`）、`ListItem.tsx`
+（`item`/`itemIcon`/`itemContent`）实际消费，deprecated `listStyle` / `operationStyle` 分别指向
+`styles.section` / `styles.actions` —— 满足系统设计 2.1 的完整准入 Gate。上游 `TransferProps` 没有 `size` 类
+Props，不存在外部尺寸档映射。
+
+AtomUI 对应审计与映射（契约见 [Transfer Semantic Part 契约](semantic-part.md)）：
+
+- owner 边界：`AbstractTransfer` 是抽象基类且自身 ControlTheme 不含 ControlTemplate，不声明 Part；两个具体
+  public owner `ListTransfer` / `TreeTransfer` 各自持有模板，在 `ListTransfer.SemanticParts.cs` /
+  `TreeTransfer.SemanticParts.cs` 声明完全相同的 Part 集合（同 ProgressBar / Badge 家族的多 owner 先例）。条目
+  容器 `TransferListItem` 是独立 public owner，在 `TransferListItem.SemanticParts.cs` 声明 `itemIcon` /
+  `itemContent`，与上游条目语义键对齐；上游 `item` 键由 `TransferListView` 继承 `ListView` 的 `item` 契约覆盖，
+  不重复声明。
+- `root` → owner 本身，隐式 Part，不生成 Style、不加 `.semantic-root`。
+- `source.section` / `target.section` → owner 模板内的 internal `TransferItemDecorator` 实例
+  （`SourceDecoratorView` / `TargetDecoratorView`），命名与上游 `source.section` / `target.section` 键逐字对齐
+  （`.` 为层级分隔符；跨实例合并的 `section` 键因"一个模板节点只承担一个公开 Part"不发布）。`ContractType` 为
+  `TemplatedControl`（装饰器的最低 public 类型）；`BorderBrush` / `BorderThickness` / `CornerRadius` 经既有
+  TemplateBinding 投影到分区 `Frame`。
+- `actions` → owner 模板内 `StackPanel#ActionsLayout`；上游 `actions` 的容器职责对应，两个操作按钮是 public
+  `Button`（嵌套 Button 家族契约）。
+- `header` / `title` / `body` / `list` / `footer` → internal `TransferItemDecorator` 共享模板内的
+  `PixelAlignedBorder#HeaderFrame`、`ContentPresenter#TitleContentPresenter`、`DockPanel#BodyLayout`、
+  `ContentPresenter#ContentPresenter` 与 `PixelAlignedBorder#FooterFrame`，`Multiple`（源、目标两个装饰器实例
+  同时实例化）。route 统一为 `/template/ .semantic-scope-section /template/ .semantic-*`：owner 模板在两个装饰器
+  实例上同时声明 `.semantic-scope-section` 路由边界（仅用于路由，不进入 Part 表），一步进入装饰器模板后同时命中
+  两个实例——与 Collapse `> .semantic-scope-item /template/ .semantic-header` 的共享模板纪律一致。
+- 方向限定分区部件 `source.header` / `target.header` / `source.title` / `target.title` / `source.body` /
+  `target.body` / `source.list` / `target.list` / `source.footer` / `target.footer`：与未限定部件共享终端
+  marker，route 中间锚点替换为 `.semantic-source` / `.semantic-target`，`Single`、`RuntimeCreated=true`。
+  生成器部件名与运行时描述符均接受点分驼峰名；`ControlSemanticDescriptor` 的去重键由 selector class 放宽为
+  解析路由（限定与未限定部件共享终端 class 属于合法形态）。运行时高亮解析（`SemanticPartTargetResolver`）
+  按锚链匹配：候选节点到 owner 的祖先链必须携带路由中的全部中间锚点类。
+- `itemIcon` / `itemContent` → `TransferListItem` 模板内 `CheckBox#SelectedIndicator` 与
+  `ContentPresenter#ContentPresenter`，静态模板节点、默认 route，`Multiple` 随条目数变化；容器由
+  `TransferListView` 创建路径建立继承 `.semantic-item` marker。
+- 条目级 Part 与方向限定（路 A，owner 收敛）：`item` / `itemIcon` / `itemContent` 与全部 `source.*` /
+  `target.*` 条目变体统一由 `ListTransfer` / `TreeTransfer` 声明（`TransferListItem` / `TransferListView` /
+  `TransferTreeView` 不再注册为 Semantic owner），route 使用 `>>` 后代步进（如
+  `>> .semantic-source-item /template/ .semantic-item-icon`，生成器翻译为 `.Descendant()`），生成的条目样式
+  直接挂在 Transfer 作用域下即可命中。方向条目类由视图在 prepare 路径按自身 `ViewType` 幂等补挂
+  （`ListTransferSemanticParts.SourceItemClass` / `TargetItemClass`、`TreeTransferSemanticParts` 同名常量）：
+  容器与视图绑定后不迁移、`ViewType` 不可变，marker 保持"一次建立、不再切换"纪律。树侧条目模板无
+  `.semantic-item-icon` / `.semantic-item-content` 节点，`TreeTransfer` 不声明 itemIcon / itemContent。
+- 嵌套视图 owner 集成：`TransferListView` / `TransferTreeView` 的 `CreateContainerForItemOverride` 重写了基类
+  容器创建路径，必须用生成常量（`ListViewSemanticParts.ItemClass` / `TreeViewSemanticParts.ItemClass`）在创建
+  时一次性补回继承的 `.semantic-item` marker，并在 prepare 路径幂等补齐；Transfer 场景不使用分组数据，
+  `groupHeader` 分支不需要建立。容器 prepare、restore、recycle、选择或过滤都不切换 marker。
+- 默认视觉对齐（属默认模板变更，随 Gate A 一并批准）：装饰器模板 `Frame` 增加
+  `Background="{TemplateBinding Background}"` 投影，使 `source` / `target` 分区级 Part 的 `Background` Setter
+  有真实落点（默认值为 null，分区默认外观不变，header 保留自身 `ColorBgContainer` 背景 token）；装饰器模板
+  增加 `DockPanel#BodyLayout` 主体包裹节点（Dock 顺序 header 顶、footer 底、body 填充，内部过滤输入顶、视图
+  宿主填充），使 `body` Part 与上游语义键对齐且布局测量链不变；`TransferListItem` 模板为 `SelectedIndicator`
+  与内容 presenter 建立条目级 marker。
+- 排除范围：嵌套视图分组 / 分页 / 滚动区域（`ListView` / `TreeView` 家族契约）、`TransferTreeViewItem` 条目区域
+  （`TreeViewItem` 家族契约，树侧条目指示 / 图标 / 标题已由其 `itemIndicator` / `itemIcon` / `itemTitle` 覆盖）、
+  操作按钮（Button 家族）、过滤输入（LineEdit 家族）、header 内部全选 CheckBox / internal 下拉指示按钮及其运行时
+  MenuFlyout、条目右缘移除按钮（上游语义键无对应分区），均不发布为 Transfer Part。跨实例合并的 `section` 键与
+  树侧 `TransferTreeViewItem` 条目区域的例外见上文。
+
+marker 纪律：所有 marker 静态声明（`Classes.semantic-*="True"`），运行期间不随 `IsOneWay`、footer 存在性、
+过滤开关、分页或数据状态增删；默认主题不消费 `.semantic-*` selector；控件代码不为 Semantic Part 增加
+VisualTree 扫描或实例级索引。
+
+### 5.2 尺寸与状态基线
+
+| 维度 | 事实 |
+| --- | --- |
+| 尺寸档 | owner `SizeType` 存在（`ICustomizableSizeTypeAware`，默认 `Middle`），经模板绑定转发到两个装饰器；装饰器主题不消费 `SizeType`，分区 header 高度 / 内距由 `ListTransferToken` / `TreeTransferToken` 的 `HeaderHeight` / `HeaderPadding`（`ControlHeightLG` 派生）固定。 |
+| 视图档位 | `TransferListView` 是 `ListView`（SizeType-aware，创建时未显式设档，默认 `Middle`）；`TransferTreeView` 基类 `TreeView` 无 SizeType API。过滤 `LineEdit` 未绑定档位（默认 `Middle`）。 |
+| 固定档位 | 操作区两个按钮与 `TransferListView` 底部分页器在模板 / 代码中固定 `SizeType=Small`。 |
+| 外部映射 | 上游 `TransferProps` 无 `size` 类 API，外部尺寸映射不适用（见 5.1 上游审计）。 |
+| 布局 owner | 分区宽度由 owner `ListWidth` / `IsStretchView` 模板投影到装饰器 `Width`；视图宿主高度由 `ListHeight` 投影；header 高度由内部 `HeaderHeight` 投影；`RootLayout` 列定义（Star/Auto）由 `ConfigureRootLayout` 代码维护。 |
+| 状态矩阵 | `IsOneWay`（隐藏回移按钮与目标选择）、`IsStretchView`（列布局）、`IsFilterEnabled`（过滤输入可见性）、footer 存在性（footer 可见性与 body 圆角）、`Status`（分区边框状态色）、空数据、分页开关——均不改变 Part 集合、marker 或数量语义。 |
+| 失败回归 | owner `SizeType` 切换 Large / Small 不改变任何测量值（当前无视觉分支的事实基线）；语义布局 Setter（如 `header` 的 `Height`、`list` 的 `Height`）与模板投影值按 Avalonia 原生优先级竞争后必须仍在 owner `ListWidth` / `ListHeight` 布局边界内收敛。 |
+
+当前结论：owner `SizeType` 只做属性转发、不驱动任何视觉分支，本控件没有跨档位尺寸协调需求；该事实由失败回归
+固化，若未来接入尺寸分支必须先更新本基线与 `semantic-part.md` 的相关承诺。
+
 ## 6. 交互与事件处理
 
 Transfer 的交互事件应从输入源收敛到控件级语义事件：
@@ -143,6 +228,7 @@ Transfer 的交互事件应从输入源收敛到控件级语义事件：
 - 对绑定集合的移动、移除和清空不能无条件替换集合实例；可写集合必须原地更新。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
+- Semantic Part marker、selector class、route、`ContractType` 与 cardinality（见 [Transfer Semantic Part 契约](semantic-part.md)）；嵌套视图容器创建 / 回收路径稳定携带继承 `.semantic-item` marker；marker 不随状态增删，默认主题不消费 `.semantic-*` selector。
 
 ## 10. 测试与验证
 
@@ -150,6 +236,8 @@ Transfer 的交互事件应从输入源收敛到控件级语义事件：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
 - 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试；Transfer key 选择语义由 `tests/AtomUI.Desktop.Controls.Tests/Transfer/TransferBehaviorTests.cs` 覆盖。
+- Semantic Part 变更运行 `tests/AtomUI.Desktop.Controls.Tests/Transfer/TransferSemanticPartTests.cs`，覆盖 descriptor 字段、模板 marker、生成 Style 命中、状态数量语义、嵌套视图容器 marker 与尺寸基线失败回归（见 5.1 / 5.2）。
+- Generator Semantic 测试、`tests/AtomUI.Toolkits.GalleryBase.Tests` 与 Gallery 定向测试按 [Semantic Part 系统设计](../../../../architecture/systems/theming/semantic-parts.md) 的验证矩阵执行。
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

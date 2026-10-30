@@ -445,6 +445,36 @@
         <target state="translated">Seleção</target>
       </segment>
     </unit>
+    <unit id="SemanticGroupHeaderDescription">
+      <segment>
+        <source>Group header element, with sticky positioning and background color</source>
+        <target state="translated">Elemento de cabeçalho de grupo, com posicionamento fixo e cor de fundo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, with padding, split line and hover background</source>
+        <target state="translated">Elemento de item, com preenchimento, linha divisória e fundo de hover</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use generated style classes to customize the published Semantic Parts.</source>
+        <target state="translated">Use classes de estilo geradas para personalizar as Semantic Parts publicadas.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, the scroll container, with font and relative positioning</source>
+        <target state="translated">Elemento raiz, o contêiner de rolagem, com fonte e posicionamento relativo</target>
+      </segment>
+    </unit>
     <unit id="SimpleListBoxDescription">
       <segment>
         <source>Basic usage example.</source>

@@ -1,13 +1,19 @@
 using System.Collections.ObjectModel;
+using System.Collections.Concurrent;
 
 namespace AtomUI.Localization;
 
 internal sealed class LanguageCatalogRegistry
 {
+    private const int NoCatalogSlot = -1;
+
     private readonly ReadOnlyCollection<LanguageCatalogDescriptor> _catalogs;
     private readonly IReadOnlyList<TranslationBundleDescriptor>[] _bundlesByCatalog;
     private readonly Dictionary<Type, int> _catalogSlotsByResourceType;
     private readonly Dictionary<string, int> _catalogSlotsById;
+    private readonly Dictionary<(string Assembly, string Name), int> _dataSlots = new();
+    private readonly HashSet<string> _dataMetadataNames = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<Type, int> _resolvedDataTypes = new();
 
     private LanguageCatalogRegistry(
         LanguageCatalogDescriptor[] catalogs,
@@ -19,19 +25,43 @@ internal sealed class LanguageCatalogRegistry
         _bundlesByCatalog = bundlesByCatalog;
         _catalogSlotsByResourceType = catalogSlotsByResourceType;
         _catalogSlotsById = catalogSlotsById;
+        for (var slot = 0; slot < catalogs.Length; slot++)
+        {
+            if (catalogs[slot] is LanguageDataCatalogDescriptor data)
+            {
+                if (!_dataSlots.TryAdd((data.AssemblyName, data.MetadataName), slot))
+                {
+                    throw new LanguageCatalogException($"Resource enum '{data.MetadataName}' is registered more than once.");
+                }
+                _dataMetadataNames.Add(data.MetadataName);
+            }
+        }
+        foreach (var resourceType in catalogSlotsByResourceType.Keys)
+        {
+            if (resourceType.FullName is { } name && resourceType.Assembly.GetName().Name is { } assembly &&
+                _dataSlots.ContainsKey((assembly, name)))
+            {
+                throw new LanguageCatalogException(
+                    $"Resource enum type '{name}' is registered by both a manual Catalog and module data.");
+            }
+        }
     }
 
     internal IReadOnlyList<LanguageCatalogDescriptor> Catalogs => _catalogs;
 
+    /// <summary>构建注册表。跨包引用必须闭合：bundle 指向未注册的 catalog 时抛出。</summary>
     internal static LanguageCatalogRegistry Create(
         IReadOnlyList<LanguageCatalogDescriptor> catalogInputs,
-        IReadOnlyList<TranslationBundleDescriptor> bundleInputs)
+        IReadOnlyList<TranslationBundleDescriptor> bundleInputs,
+        LanguageCatalogRegistry? previous = null, bool generatedDataVerified = false)
     {
         ArgumentNullException.ThrowIfNull(catalogInputs);
         ArgumentNullException.ThrowIfNull(bundleInputs);
 
-        var catalogs = catalogInputs.OrderBy(static catalog => catalog.CatalogId, StringComparer.Ordinal)
-                                    .ToArray();
+        var catalogs = previous is null
+            ? catalogInputs.OrderBy(static catalog => catalog.CatalogId, StringComparer.Ordinal).ToArray()
+            : catalogInputs.OrderBy(catalog => previous.TryGetCatalogSlot(catalog.CatalogId, out var slot) ? slot : int.MaxValue)
+                .ThenBy(catalog => catalog.CatalogId, StringComparer.Ordinal).ToArray();
         var slotsByType = new Dictionary<Type, int>();
         var slotsById = new Dictionary<string, int>(StringComparer.Ordinal);
         for (var slot = 0; slot < catalogs.Length; slot++)
@@ -43,7 +73,7 @@ internal sealed class LanguageCatalogRegistry
                     $"Catalog ID '{catalog.CatalogId}' is registered more than once. " +
                     "Each generated Catalog ID must be unique.");
             }
-            if (!slotsByType.TryAdd(catalog.ResourceKindType, slot))
+            if (catalog is not LanguageDataCatalogDescriptor && !slotsByType.TryAdd(catalog.ResourceKindType, slot))
             {
                 throw new LanguageCatalogException(
                     $"Resource enum type '{catalog.ResourceKindType.FullName}' is registered by more than one Catalog.");
@@ -85,8 +115,12 @@ internal sealed class LanguageCatalogRegistry
                                  .ThenByDescending(static bundle => bundle.SourceKind)
                                  .ThenBy(static bundle => bundle.SourceIdentity, StringComparer.Ordinal)
                                  .ToArray();
-            ValidateConflicts(catalog, orderedBundles);
-            ValidateEnglishSource(catalog, orderedBundles);
+            // Descriptor 和 Bundle 在构造时已冻结。相同输入无需再次逐 unit 验证冲突/en-US 覆盖。
+            if ((!generatedDataVerified || catalog is not LanguageDataCatalogDescriptor || orderedBundles.Any(static bundle => !bundle.IsModuleData)) &&
+                (previous is null || !previous.HasSameCatalog(catalog, orderedBundles, out _)))
+            {
+                ValidateTranslations(catalog, orderedBundles);
+            }
             readOnlyBundles[catalogSlot] = Array.AsReadOnly(orderedBundles);
         }
 
@@ -96,7 +130,35 @@ internal sealed class LanguageCatalogRegistry
     internal bool TryGetCatalogSlot(Type resourceKindType, out int catalogSlot)
     {
         ArgumentNullException.ThrowIfNull(resourceKindType);
-        return _catalogSlotsByResourceType.TryGetValue(resourceKindType, out catalogSlot);
+        if (_catalogSlotsByResourceType.TryGetValue(resourceKindType, out catalogSlot))
+        {
+            return true;
+        }
+        // 手工与模块数据 Catalog 的键都是 enum；Type、string 等键类型不可能命中，无需解析程序集名。
+        if (!resourceKindType.IsEnum)
+        {
+            catalogSlot = NoCatalogSlot;
+            return false;
+        }
+        // 注册表冻结后不变，命中与未命中都按类型缓存；token enum 等非语言键只解析一次。
+        if (!_resolvedDataTypes.TryGetValue(resourceKindType, out catalogSlot))
+        {
+            catalogSlot = ResolveDataCatalogSlot(resourceKindType);
+            _resolvedDataTypes.TryAdd(resourceKindType, catalogSlot);
+        }
+        return catalogSlot != NoCatalogSlot;
+    }
+
+    private int ResolveDataCatalogSlot(Type resourceKindType)
+    {
+        // 先按元数据名筛选，只有候选类型才需要分配 AssemblyName。
+        if (resourceKindType.FullName is { } name && _dataMetadataNames.Contains(name) &&
+            resourceKindType.Assembly.GetName().Name is { } assembly &&
+            _dataSlots.TryGetValue((assembly, name), out var slot))
+        {
+            return slot;
+        }
+        return NoCatalogSlot;
     }
 
     internal bool TryGetCatalogSlot(string catalogId, out int catalogSlot)
@@ -115,23 +177,33 @@ internal sealed class LanguageCatalogRegistry
         return _bundlesByCatalog[catalogSlot];
     }
 
-    private static void ValidateConflicts(
+    internal bool HasSameCatalog(LanguageCatalogDescriptor catalog,
+        IReadOnlyList<TranslationBundleDescriptor> bundles, out int slot)
+    {
+        return TryGetCatalogSlot(catalog.CatalogId, out slot) &&
+               ReferenceEquals(Catalogs[slot], catalog) &&
+               _bundlesByCatalog[slot].SequenceEqual(bundles);
+    }
+
+    private static void ValidateTranslations(
         LanguageCatalogDescriptor catalog,
         IReadOnlyList<TranslationBundleDescriptor> bundles)
     {
         var owners = new Dictionary<(LanguageTag, TranslationSourceKind, int), TranslationBundleDescriptor>();
+        var englishCoverage = new bool[catalog.Units.Count];
         foreach (var bundle in bundles)
         {
             for (var unitSlot = 0; unitSlot < bundle.Values.Count; unitSlot++)
             {
-                if (bundle.Values[unitSlot] is null)
+                if (!bundle.HasValue(unitSlot))
                 {
                     continue;
                 }
 
                 var key = (bundle.Language, bundle.SourceKind, unitSlot);
-                if (owners.TryGetValue(key, out var existing))
+                if (!owners.TryAdd(key, bundle))
                 {
+                    var existing = owners[key];
                     var unit = catalog.Units[unitSlot];
                     throw new LanguageCatalogException(
                         $"Catalog '{catalog.CatalogId}' unit '{unit.Key}' has conflicting " +
@@ -140,20 +212,16 @@ internal sealed class LanguageCatalogRegistry
                         "explicit application override.");
                 }
 
-                owners.Add(key, bundle);
+                if (bundle.Language == LanguageTags.EnUS)
+                {
+                    englishCoverage[unitSlot] = true;
+                }
             }
         }
-    }
-
-    private static void ValidateEnglishSource(
-        LanguageCatalogDescriptor catalog,
-        IReadOnlyList<TranslationBundleDescriptor> bundles)
-    {
+        // Report conflicts before missing source text, preserving deterministic validation order.
         for (var unitSlot = 0; unitSlot < catalog.Units.Count; unitSlot++)
         {
-            var hasEnglishValue = bundles.Any(bundle =>
-                bundle.Language == LanguageTags.EnUS && bundle.Values[unitSlot] is not null);
-            if (!hasEnglishValue)
+            if (!englishCoverage[unitSlot])
             {
                 var unit = catalog.Units[unitSlot];
                 throw new LanguageCatalogException(

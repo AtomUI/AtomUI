@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -70,5 +68,23 @@ public enum ModalShowCaseLangResourceKind
     P2TextName,
     P2TextAge,
     P2RunThisModalWillBeDestroyedAfter,
-    P2RunSecond
+    P2RunSecond,
+    SemanticRootDescription,
+    SemanticMaskDescription,
+    SemanticWrapperDescription,
+    SemanticContainerDescription,
+    SemanticHeaderDescription,
+    SemanticTitleDescription,
+    SemanticBodyDescription,
+    SemanticFooterDescription,
+    SemanticCloseDescription,
+    SemanticStageHint,
+    SemanticPreviewFooterLink,
+    SemanticStylesTitle,
+    SemanticStylesDescription,
+    SemanticWindowStageHint,
+    SemanticStylesHint,
+    SemanticStylesOpenStyledDialog,
+    SemanticStylesOpenStyledMessageBox,
+    SemanticStylesOpenStyledWindowDialog
 }

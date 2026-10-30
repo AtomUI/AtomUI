@@ -7,11 +7,16 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder BorderThickness="{TemplateBinding EffectiveBorderThickness}"
-                                         BorderBrush="{TemplateBinding BorderBrush}"
-                                         Padding="{TemplateBinding Padding}">
+                                         BorderBrush="{TemplateBinding BorderBrush}">
                     <ContentPresenter Name="ContentPresenter"
                                       Content="{TemplateBinding Content}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      FontFamily="{TemplateBinding FontFamily}"
+                                      FontSize="{TemplateBinding FontSize}"
+                                      FontStyle="{TemplateBinding FontStyle}"
+                                      FontWeight="{TemplateBinding FontWeight}"
                                       LineHeight="{TemplateBinding LineHeight}"
+                                      Padding="{TemplateBinding Padding}"
                                       TextWrapping="Wrap"
                                       VerticalContentAlignment="Center" />
                 </atom:PixelAlignedBorder>

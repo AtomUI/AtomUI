@@ -8,6 +8,7 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:CheckableTagGroup">
                 <atom:CheckableTagItemsControl Name="PART_CheckableTagItems"
+                                               Classes.semantic-scope-items="True"
                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                                IsMultiple="{TemplateBinding IsMultiple}"
                                                ItemSpacing="{TemplateBinding ItemSpacing}"

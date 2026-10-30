@@ -3,50 +3,47 @@
     <Import Project="$(MSBuildThisFileDirectory)ProjectDefaults.props" />
     <Import Project="$(MSBuildThisFileDirectory)PackageMetadata.props" />
     <Import Project="$(MSBuildThisFileDirectory)OutputPaths.props" />
+    <!-- Imported only for validation runs. In ordinary Debug/Release development builds the
+         property below is unset, so this file is not read at all and adds no evaluation cost to
+         the inner development loop. -->
+    <Import Project="$(MSBuildThisFileDirectory)PackageValidation.props"
+            Condition="'$(AtomUIPackageValidationBaselineVersion)' != '' or '$(EnablePackageValidation)' == 'true'" />
 
     <PropertyGroup>
         <AtomUIRepositoryBuild>true</AtomUIRepositoryBuild>
-        <AtomUIBuildTasksSourceAssembly Condition="'$(AtomUIBuildTasksSourceAssembly)' == ''">$(OutputPathWithoutFramework)/netstandard2.0/AtomUI.Build.Tasks.dll</AtomUIBuildTasksSourceAssembly>
-        <AtomUILinkedPublishGeneratorAssembly Condition="'$(AtomUILinkedPublishGeneratorAssembly)' == ''">$(OutputPathWithoutFramework)/netstandard2.0/AtomUI.Generator.LinkedPublish.dll</AtomUILinkedPublishGeneratorAssembly>
-    </PropertyGroup>
-
-    <!-- MSBuild keeps loaded task assemblies locked for the lifetime of the build node. In
-         repository builds, UsingTask registrations therefore point at a per-project shadow
-         copy whose directory changes whenever the toolset content changes, so a rebuild
-         never has to overwrite a file an active node still holds. The shadow key is produced
-         by the AtomUI.Build.Tasks build itself: file metadata and content are only
-         accessible inside targets, so the producer stamps AtomUI.BuildTasks.ShadowKey.props
-         next to the DLL (SHA256 of the compiled assembly; stable across no-op recompiles)
-         and consumers import it here at evaluation time. The copy itself is staged by
-         _AtomUIStageBuildTasksToolset in AtomUI.Repository.targets. -->
-    <Import Project="$(OutputPathWithoutFramework)/netstandard2.0/AtomUI.BuildTasks.ShadowKey.props"
-            Condition="Exists('$(OutputPathWithoutFramework)/netstandard2.0/AtomUI.BuildTasks.ShadowKey.props')" />
-
-    <PropertyGroup>
-        <AtomUIBuildTasksShadowKey Condition="'$(AtomUIBuildTasksShadowKey)' == ''">pending</AtomUIBuildTasksShadowKey>
-        <!-- Capture the shadow root here: IntermediateOutputPath is expanded eagerly, and the
-             SDK appends the TargetFramework segment to it after this props file is imported, so
-             execution-time reads of IntermediateOutputPath would produce a mismatched path. -->
-        <AtomUIBuildTasksShadowRoot>$(IntermediateOutputPath)/AtomUIBuildTasksShadow</AtomUIBuildTasksShadowRoot>
-        <AtomUIBuildTasksShadowDirectory>$(AtomUIBuildTasksShadowRoot)/$(TargetFramework)/$(AtomUIBuildTasksShadowKey)</AtomUIBuildTasksShadowDirectory>
-        <AtomUIBuildTasksAssembly Condition="'$(AtomUIBuildTasksAssembly)' == ''">$(AtomUIBuildTasksShadowDirectory)/AtomUI.Build.Tasks.dll</AtomUIBuildTasksAssembly>
+        <AtomUIToolchainProject>$(MSBuildThisFileDirectory)../src/AtomUI.Toolchain/AtomUI.Toolchain.csproj</AtomUIToolchainProject>
+        <!-- Application targeting belongs to the caller, not the portable build tools. -->
+        <AtomUIToolchainGlobalPropertiesToRemove>TargetFramework;TargetFrameworks;RuntimeIdentifier;RuntimeIdentifiers</AtomUIToolchainGlobalPropertiesToRemove>
+        <AtomUIToolchainOutputDirectory Condition="'$(AtomUIToolchainOutputDirectory)' == ''">$(OutputPathWithoutFramework)/toolchain</AtomUIToolchainOutputDirectory>
+        <AtomUIBuildTasksOutputDirectory Condition="'$(AtomUIBuildTasksOutputDirectory)' == ''">$(AtomUIToolchainOutputDirectory)/tasks</AtomUIBuildTasksOutputDirectory>
+        <AtomUIBuildTasksAssembly Condition="'$(AtomUIBuildTasksAssembly)' == ''">$(AtomUIBuildTasksOutputDirectory)/net10.0/AtomUI.Build.Tasks.dll</AtomUIBuildTasksAssembly>
+        <AtomUITypeMapBackendOutputDirectory>$(AtomUIToolchainOutputDirectory)/illink10/net10.0</AtomUITypeMapBackendOutputDirectory>
+        <AtomUINet8LinkerBackendAssembly>$(AtomUIToolchainOutputDirectory)/illink8/net10.0/AtomUI.Registration.ILLink8.dll</AtomUINet8LinkerBackendAssembly>
+        <AtomUIConditionalBridgeAssembly>$(AtomUITypeMapBackendOutputDirectory)/AtomUI.TypeMap.Linker.dll</AtomUIConditionalBridgeAssembly>
+        <AtomUINative8ManagedCompilerBundle Condition="'$(AtomUINative8ManagedCompilerBundle)' == ''">$(MSBuildThisFileDirectory)../.artifacts/tools/registration/net8/ilc/managed-bundle</AtomUINative8ManagedCompilerBundle>
     </PropertyGroup>
 
     <ItemGroup>
         <AtomUINuGetBuildAsset Include="$(MSBuildThisFileDirectory)AtomUI.Generator.props;
+                                         $(MSBuildThisFileDirectory)AtomUI.Toolchain.Tasks.targets;
                                          $(MSBuildThisFileDirectory)AtomUI.Generator.targets;
-                                         $(MSBuildThisFileDirectory)AtomUI.LinkedRegistration.props;
-                                         $(MSBuildThisFileDirectory)AtomUI.LinkedRegistration.targets;
-                                         $(MSBuildThisFileDirectory)AtomUI.LinkedRegistration.SidecarConsumer.targets;
+                                         $(MSBuildThisFileDirectory)AtomUI.Registration.targets;
+                                         $(MSBuildThisFileDirectory)AtomUI.Registration.Framework.targets;
+                                         $(MSBuildThisFileDirectory)AtomUI.Registration.Net8.targets;
+                                         $(MSBuildThisFileDirectory)AtomUI.Registration.Net8.Host.targets;
+                                         $(MSBuildThisFileDirectory)AtomUI.Registration.Net8.Transforms.targets;
+                                         $(MSBuildThisFileDirectory)AtomUI.Registration.Native8.targets;
+                                         $(MSBuildThisFileDirectory)AtomUI.Registration.Bridge.targets;
+                                         $(MSBuildThisFileDirectory)AtomUI.Net8.ILLink.Task.cs;
                                          $(MSBuildThisFileDirectory)AtomUI.Localization.props;
                                          $(MSBuildThisFileDirectory)AtomUI.Localization.targets;
-                                         $(MSBuildThisFileDirectory)AtomUI.ThemeAssets.targets">
+                                         $(MSBuildThisFileDirectory)AtomUI.ThemeAssets.targets;
+                                         $(MSBuildThisFileDirectory)AtomUI.CompiledThemes.targets;
+                                         $(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs">
             <PackagePath>buildTransitive/%(Filename)%(Extension)</PackagePath>
         </AtomUINuGetBuildAsset>
 
         <AtomUIGeneratorToolAsset Include="$(OutputPathWithoutFramework)/netstandard2.0/AtomUI.Generator.dll;
-                                           $(OutputPathWithoutFramework)/netstandard2.0/AtomUI.Generator.LinkedPublish.dll;
-                                           $(OutputPathWithoutFramework)/netstandard2.0/AtomUI.Build.Tasks.dll;
                                            $(OutputPathWithoutFramework)/netstandard2.0/System.Reflection.Metadata.dll;
                                            $(OutputPathWithoutFramework)/netstandard2.0/System.Collections.Immutable.dll;
                                            $(OutputPathWithoutFramework)/netstandard2.0/System.Memory.dll;
@@ -55,13 +52,58 @@
                                            $(OutputPathWithoutFramework)/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll">
             <PackagePath>tools/netstandard2.0/%(Filename)%(Extension)</PackagePath>
         </AtomUIGeneratorToolAsset>
+        <AtomUIGeneratorToolAsset Include="$(AtomUIBuildTasksOutputDirectory)/net10.0/AtomUI.Build.Tasks.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/AtomUI.Build.Tasks.deps.json;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/AtomUI.Build.Tasks.runtimeconfig.json;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Microsoft.Build.Framework.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.Base.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.Controls.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.DesignerSupport.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.Dialogs.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.Markup.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.Markup.Xaml.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.Metal.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.MicroCom.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.OpenGL.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.Vulkan.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/Avalonia.Remote.Protocol.dll;
+                                           $(AtomUIBuildTasksOutputDirectory)/net10.0/MicroCom.Runtime.dll">
+            <PackagePath>tools/net10.0/%(Filename)%(Extension)</PackagePath>
+        </AtomUIGeneratorToolAsset>
     </ItemGroup>
 
-    <ItemGroup Condition="('$(AtomUILinkedPublish)' == 'true' or '$(PublishTrimmed)' == 'true' or '$(PublishAot)' == 'true' or '$(RunAOTCompilation)' == 'true' or '$(AtomUIEmitLinkedManifest)' == 'true' or '$(AtomUIRegistrationStrict)' == 'true') and '$(MSBuildProjectName)' != 'AtomUI.Generator' and '$(MSBuildProjectName)' != 'AtomUI.Generator.LinkedPublish' and '$(MSBuildProjectName)' != 'AtomUI.Build.Tasks'">
-        <ProjectReference Include="$(MSBuildThisFileDirectory)../src/AtomUI.Generator.LinkedPublish/AtomUI.Generator.LinkedPublish.csproj"
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false"
-                          PrivateAssets="all" />
+    <ItemGroup>
+        <AtomUIGeneratorToolAsset Include="$(AtomUITypeMapBackendOutputDirectory)/AtomUI.TypeMap.Linker.dll;
+                                          $(AtomUITypeMapBackendOutputDirectory)/AtomUI.TypeMap.Linker.deps.json;
+                                          $(AtomUITypeMapBackendOutputDirectory)/AtomUI.TypeMap.Linker.runtimeconfig.json;
+                                          $(AtomUITypeMapBackendOutputDirectory)/Mono.Cecil.dll">
+            <PackagePath>tools/typemap/%(Filename)%(Extension)</PackagePath>
+        </AtomUIGeneratorToolAsset>
+        <AtomUIGeneratorToolAsset Include="$(AtomUINet8LinkerBackendAssembly)">
+            <PackagePath>tools/registration/net8/illink/%(Filename)%(Extension)</PackagePath>
+        </AtomUIGeneratorToolAsset>
+        <!-- Maintainer-built managed compiler only. Native helpers come from the consumer SDK's
+             matching official package and are never treated as portable package payload. -->
+        <AtomUIGeneratorToolAsset Include="$(AtomUINative8ManagedCompilerBundle)/ilc.dll;
+                                          $(AtomUINative8ManagedCompilerBundle)/ilc.deps.json;
+                                          $(AtomUINative8ManagedCompilerBundle)/ilc.runtimeconfig.json;
+                                          $(AtomUINative8ManagedCompilerBundle)/ILCompiler.Compiler.dll;
+                                          $(AtomUINative8ManagedCompilerBundle)/ILCompiler.TypeSystem.dll;
+                                          $(AtomUINative8ManagedCompilerBundle)/ILCompiler.MetadataTransform.dll;
+                                          $(AtomUINative8ManagedCompilerBundle)/ILCompiler.DependencyAnalysisFramework.dll;
+                                          $(AtomUINative8ManagedCompilerBundle)/ILCompiler.RyuJit.dll;
+                                          $(AtomUINative8ManagedCompilerBundle)/System.CommandLine.dll;
+                                          $(AtomUINative8ManagedCompilerBundle)/atomui-ilc8-capability.json">
+            <PackagePath>tools/registration/net8/ilc/managed-bundle/%(Filename)%(Extension)</PackagePath>
+        </AtomUIGeneratorToolAsset>
+        <AtomUIGeneratorToolAsset Include="$(AtomUINative8ManagedCompilerBundle)/../LICENSE.runtime.txt;
+                                          $(AtomUINative8ManagedCompilerBundle)/../THIRD-PARTY-NOTICES.runtime.txt">
+            <PackagePath>tools/registration/net8/ilc/%(Filename)%(Extension)</PackagePath>
+        </AtomUIGeneratorToolAsset>
+        <AtomUIRegistrationToolCandidate Include="$(AtomUITypeMapBackendOutputDirectory)/AtomUI.TypeMap.Linker.dll" Kind="Backend" />
+        <AtomUIRegistrationToolCandidate Include="$(AtomUINet8LinkerBackendAssembly)" Kind="Net8Backend" />
+        <AtomUIRegistrationToolCandidate Include="$(AtomUIBuildTasksAssembly)" Kind="Tasks" />
     </ItemGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)AtomUI.Generator.props" />

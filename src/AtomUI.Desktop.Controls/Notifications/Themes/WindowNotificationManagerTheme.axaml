@@ -2,65 +2,55 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    x:DataType="WindowNotificationManager"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:WindowNotificationManager}" TargetType="atom:WindowNotificationManager">
+    <ControlTheme x:Key="{x:Type atom:WindowNotificationManager}"
+                  TargetType="atom:WindowNotificationManager"
+                  x:DataType="atom:WindowNotificationManager">
+        <!--
+            manager 的 Padding 投影为列表外边距，保持 presenter 的命中范围紧贴可见卡片。
+            卡片之间的间距由 FeedbackStackPanel 管理，卡片自身保持零外边距。
+        -->
+        <Setter Property="ThemePadding" Value="{atom:NotificationCardTokenResource NotificationTopMargin}" />
+        <Setter Property="Padding" Value="{CompiledBinding ThemePadding, RelativeSource={RelativeSource Self}}" />
         <Setter Property="Template">
             <ControlTemplate>
-                <ReversibleStackPanel Name="PART_Items"/>
+                <atom:FeedbackStackPresenter Name="PART_Items"
+                                            Margin="{TemplateBinding Padding}"
+                                            Classes.semantic-list-content="True" />
             </ControlTemplate>
         </Setter>
-        
-        <Setter Property="IsMotionEnabled"
-                Value="{atom:SharedTokenResource EnableMotion}" />
-        
+
+        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
-        
-        <Style Selector="^[Position=TopLeft]">
-            <Style Selector="^ /template/ ReversibleStackPanel#PART_Items">
-                <Setter Property="ReverseOrder" Value="True" />
-                <Setter Property="HorizontalAlignment" Value="Left" />
-                <Setter Property="VerticalAlignment" Value="Top" />
-            </Style>
+
+        <Style Selector="^[Position=BottomLeft], ^[Position=BottomCenter], ^[Position=BottomRight]">
+            <Setter Property="ThemePadding" Value="{atom:NotificationCardTokenResource NotificationBottomMargin}" />
         </Style>
-        
-        <Style Selector="^[Position=TopRight]">
-            <Style Selector="^ /template/ ReversibleStackPanel#PART_Items">
-                <Setter Property="ReverseOrder" Value="True" />
-                <Setter Property="HorizontalAlignment" Value="Right" />
-                <Setter Property="VerticalAlignment" Value="Top" />
-            </Style>
+
+        <Style Selector="^[Position=TopLeft] /template/ atom|FeedbackStackPresenter#PART_Items">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
-        
-        <Style Selector="^[Position=TopCenter]">
-            <Style Selector="^ /template/ ReversibleStackPanel#PART_Items">
-                <Setter Property="ReverseOrder" Value="True" />
-                <Setter Property="HorizontalAlignment" Value="Center" />
-                <Setter Property="VerticalAlignment" Value="Top" />
-            </Style>
+        <Style Selector="^[Position=TopCenter] /template/ atom|FeedbackStackPresenter#PART_Items">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
-        
-        <Style Selector="^[Position=BottomLeft]">
-            <Style Selector="^ /template/ ReversibleStackPanel#PART_Items">
-                <Setter Property="HorizontalAlignment" Value="Left" />
-                <Setter Property="VerticalAlignment" Value="Bottom" />
-            </Style>
+        <Style Selector="^[Position=TopRight] /template/ atom|FeedbackStackPresenter#PART_Items">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
-        
-        <Style Selector="^[Position=BottomRight]">
-            <Style Selector="^ /template/ ReversibleStackPanel#PART_Items">
-                <Setter Property="HorizontalAlignment" Value="Right" />
-                <Setter Property="VerticalAlignment" Value="Bottom" />
-            </Style>
+        <Style Selector="^[Position=BottomLeft] /template/ atom|FeedbackStackPresenter#PART_Items">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
         </Style>
-        
-        <Style Selector="^[Position=BottomCenter]">
-            <Style Selector="^ /template/ ReversibleStackPanel#PART_Items">
-                <Setter Property="HorizontalAlignment" Value="Center" />
-                <Setter Property="VerticalAlignment" Value="Bottom" />
-            </Style>
+        <Style Selector="^[Position=BottomCenter] /template/ atom|FeedbackStackPresenter#PART_Items">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
         </Style>
-        
+        <Style Selector="^[Position=BottomRight] /template/ atom|FeedbackStackPresenter#PART_Items">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

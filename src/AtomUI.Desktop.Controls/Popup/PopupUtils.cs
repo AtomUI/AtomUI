@@ -1,5 +1,5 @@
-﻿using AtomUI.Controls;
-using AtomUI.MotionScene;
+using AtomUI.Controls;
+using AtomUI.Animations;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -367,7 +367,7 @@ internal static class PopupUtils
             placement.AnchorRectangle.Y * scaling + clientScreenPos.Y,
             placement.AnchorRectangle.Width  * scaling,
             placement.AnchorRectangle.Height * scaling);
-        var popupSizePx = placement.PopupSize * scaling;
+        var popupSizePx = placement.PopupSize.Deflate(placement.Deflate) * scaling;
         var offsetPx    = placement.Offset    * scaling;
 
         // —— 选屏：与 ManagedPopupPositioner.GetBounds 优先级一致：先 anchor 所在屏，再 TopLevel 所在屏，再主屏 ——
@@ -424,7 +424,7 @@ internal static class PopupUtils
             placement,
             placement.AnchorRectangle,
             bounds,
-            placement.PopupSize,
+            placement.PopupSize.Deflate(placement.Deflate),
             placement.Offset);
     }
 
@@ -603,9 +603,10 @@ internal static class PopupUtils
             return false;
         }
 
+        var popupSize = placement.PopupSize.Deflate(placement.Deflate);
         var (geometry, horizontalFlipped, verticalFlipped) = CalculateConstrainedGeometry(
             placement.AnchorRectangle,
-            placement.PopupSize,
+            popupSize,
             placement.Anchor,
             placement.Gravity,
             placement.ConstraintAdjustment,
@@ -613,8 +614,9 @@ internal static class PopupUtils
             bounds);
 
         // OverlayPopupHost positions against the full CSD surface. Convert the result into an
-        // unconstrained, RTL-invariant placement so Avalonia preserves the visible-frame geometry.
-        placement.AnchorRectangle      = new Rect(geometry.Position, placement.PopupSize);
+        // unconstrained, RTL-invariant placement of the deflated content rectangle.
+        // Avalonia inflates that rectangle by the child margin after positioning.
+        placement.AnchorRectangle      = new Rect(geometry.Position, popupSize);
         placement.Anchor               = PopupAnchor.None;
         placement.Gravity              = PopupGravity.None;
         placement.ConstraintAdjustment = PopupPositionerConstraintAdjustment.None;
@@ -811,16 +813,18 @@ internal static class PopupUtils
                     var (shadowOffsetX, shadowOffsetY) = CalculateShadowOffset(arrowPosition.Value,
                         shadowThickness, arrowIndicatorLayoutBounds);
 
+                    // 主轴：窗口在朝向 anchor 的一侧仍保留“阴影厚度 - 箭头占用”的残余阴影，
+                    // 内容（箭头尖）需要向 anchor 回退这段距离，再留出 marginToAnchor
+                    var primaryMargin = marginToAnchor -
+                                        GetAnchorSideResidualShadow(direction, shadowThickness, arrowIndicatorLayoutBounds);
                     var primaryIsHorizontal = direction is Direction.Left or Direction.Right;
                     if (primaryIsHorizontal)
                     {
-                        var primaryMargin = MathUtils.AreClose(marginToAnchor, 0.0d) ? shadowOffsetX : marginToAnchor;
                         hOffset += direction == Direction.Right ? primaryMargin : -primaryMargin;
                         vOffset += shadowOffsetY;
                     }
                     else
                     {
-                        var primaryMargin = MathUtils.AreClose(marginToAnchor, 0.0d) ? shadowOffsetY : marginToAnchor;
                         vOffset += direction == Direction.Bottom ? primaryMargin : -primaryMargin;
                         hOffset += shadowOffsetX;
                     }
@@ -846,6 +850,22 @@ internal static class PopupUtils
             flipY = constrainedFlipY;
         }
         return (flipX, flipY);
+    }
+
+    /// <summary>
+    /// 窗口型 Popup 朝向 anchor 一侧的残余阴影厚度，与 ShadowsAwareContainer 的有效阴影厚度一致：
+    /// 箭头可见时扣除箭头占用，箭头隐藏或不存在（arrowIndicatorLayoutBounds 为空）时为完整阴影厚度。
+    /// </summary>
+    internal static double GetAnchorSideResidualShadow(Direction? direction, Thickness shadowThickness, Rect arrowIndicatorLayoutBounds)
+    {
+        return direction switch
+        {
+            Direction.Top => Math.Max(shadowThickness.Bottom - arrowIndicatorLayoutBounds.Height, 0),
+            Direction.Bottom => Math.Max(shadowThickness.Top - arrowIndicatorLayoutBounds.Height, 0),
+            Direction.Left => Math.Max(shadowThickness.Right - arrowIndicatorLayoutBounds.Width, 0),
+            Direction.Right => Math.Max(shadowThickness.Left - arrowIndicatorLayoutBounds.Width, 0),
+            _ => 0
+        };
     }
 
     private static void ApplyMarginToAnchor(Direction? direction, double marginToAnchor, ref double hOffset, ref double vOffset)

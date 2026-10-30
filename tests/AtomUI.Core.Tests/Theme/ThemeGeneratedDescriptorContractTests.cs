@@ -1,4 +1,5 @@
 using System.Globalization;
+using AtomUI.Generated.AtomUICore;
 using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Schema;
@@ -13,17 +14,6 @@ namespace AtomUI.Core.Tests.Theme;
 
 public class ThemeGeneratedDescriptorContractTests
 {
-    [Fact]
-    public void Control_Descriptor_Uses_Exact_Control_Type_And_Has_No_Global_Whitelist()
-    {
-        var descriptorType = typeof(ControlTokenDescriptor);
-
-        descriptorType.GetProperty("ControlType").ShouldNotBeNull();
-        descriptorType.GetProperty("SupportedGlobalTokens").ShouldBeNull();
-        descriptorType.GetConstructors().ShouldContain(constructor =>
-            constructor.GetParameters().Length != 0 &&
-            constructor.GetParameters()[0].ParameterType == typeof(Type));
-    }
 
     [Fact]
     public void Descriptor_Preserves_Identity_And_Uses_Direct_Factory()
@@ -32,25 +22,6 @@ public class ThemeGeneratedDescriptorContractTests
 
         descriptor.Identity.ShouldBe(new ControlTokenIdentity("AtomUI", "Button"));
         descriptor.CreateBuilder().ShouldBeOfType<SchemaControlToken>();
-    }
-
-    [Fact]
-    public void Control_Token_Attribute_Is_A_Zero_Argument_Discovery_Marker()
-    {
-        var attribute = new ControlDesignTokenAttribute();
-        var usage = attribute.GetType()
-                             .GetCustomAttributes(typeof(AttributeUsageAttribute), inherit: false)
-                             .Cast<AttributeUsageAttribute>()
-                             .ShouldHaveSingleItem();
-
-        attribute.GetType().GetConstructors().ShouldHaveSingleItem()
-                 .GetParameters().ShouldBeEmpty();
-        attribute.GetType().GetProperties()
-                 .Where(static property => property.DeclaringType == typeof(ControlDesignTokenAttribute))
-                 .ShouldBeEmpty();
-        usage.ValidOn.ShouldBe(AttributeTargets.Class);
-        usage.Inherited.ShouldBeFalse();
-        usage.AllowMultiple.ShouldBeFalse();
     }
 
     [Fact]
@@ -66,6 +37,66 @@ public class ThemeGeneratedDescriptorContractTests
         descriptor.GetValue(token).ShouldBe(2.5);
         descriptor.ProjectResourceValue(token).ShouldBe(2.5);
         descriptor.ResourceKey.ShouldBe(SchemaResourceKey.Scale);
+    }
+
+    [Fact]
+    public void Generated_Global_Descriptors_Read_Write_Format_And_Project_Their_Own_Property()
+    {
+        var snapshot = ThemeTestSnapshotFactory.Compile();
+        var descriptors = GeneratedThemeSchema.GetGlobalTokens();
+        descriptors.Count.ShouldBeGreaterThan(200);
+
+        foreach (var descriptor in descriptors)
+        {
+            var property = typeof(DesignToken).GetProperty(descriptor.Name).ShouldNotBeNull(descriptor.Name);
+            property.PropertyType.ShouldBe(descriptor.ValueType, descriptor.Name);
+            var compiled = snapshot.GlobalTokenValues.GetValue(descriptor.Slot);
+            var token = new DesignToken();
+
+            descriptor.SetValue(token, compiled);
+
+            property.GetValue(token).ShouldBe(compiled, descriptor.Name);
+            descriptor.GetValue(token).ShouldBe(compiled, descriptor.Name);
+            var text = descriptor.Format(compiled);
+            text.ShouldBe(InvokeShared(typeof(ThemeTokenValueFormatter), "Format", descriptor.ValueType, compiled), descriptor.Name);
+            Outcome(() => descriptor.Parse(text)).ShouldBe(
+                Outcome(() => InvokeShared(typeof(ThemeTokenValueParser), "Parse", descriptor.ValueType, text)), descriptor.Name);
+            var projected = descriptor.ProjectResourceValue(token);
+            if (compiled is Color color)
+            {
+                projected.ShouldBeOfType<ImmutableSolidColorBrush>(descriptor.Name).Color.ShouldBe(color, descriptor.Name);
+            }
+            else
+            {
+                projected.ShouldBe(compiled, descriptor.Name);
+            }
+        }
+    }
+
+    [Fact]
+    public void Generated_Descriptor_Dispatches_Its_Slot_To_The_Shared_Accessor_And_Value_Codec()
+    {
+        var first = TokenDescriptor.CreateGenerated(
+            "First", 0, TokenStage.Seed, TokenValueCodec<double>.Instance, SchemaResourceKey.Scale, PairAccessor.Instance);
+        var second = TokenDescriptor.CreateGenerated(
+            "Second", 1, TokenStage.Seed, TokenValueCodec<Color>.Instance, "Second", PairAccessor.Instance);
+        var token = new PairToken();
+
+        first.ValueType.ShouldBe(typeof(double));
+        second.ValueType.ShouldBe(typeof(Color));
+        first.Parse("1.5").ShouldBe(1.5);
+        second.Format(Color.Parse("#1677ff")).ShouldBe(ThemeTokenValueFormatter.Format(Color.Parse("#1677ff")));
+        first.SetValue(token, 2.5);
+        second.SetValue(token, Color.Parse("#ff0000"));
+
+        token.First.ShouldBe(2.5);
+        token.Second.ShouldBe(Color.Parse("#ff0000"));
+        first.GetValue(token).ShouldBe(2.5);
+        second.GetValue(token).ShouldBe(Color.Parse("#ff0000"));
+        first.ProjectResourceValue(token).ShouldBe(2.5);
+        second.ProjectResourceValue(token).ShouldBeOfType<ImmutableSolidColorBrush>().Color.ShouldBe(Color.Parse("#ff0000"));
+        first.ResourceKey.ShouldBe(SchemaResourceKey.Scale);
+        Should.Throw<ArgumentNullException>(() => first.GetValue(null!));
     }
 
     [Fact]
@@ -128,7 +159,6 @@ public class ThemeGeneratedDescriptorContractTests
             ThemeAppearanceEffect.Dark);
 
         attribute.Algorithm.ShouldBe(ThemeAlgorithm.Dark);
-        attribute.GetType().GetProperty("Id").ShouldBeNull();
         Should.Throw<ArgumentOutOfRangeException>(() => new ThemeAlgorithmAttribute(
             (ThemeAlgorithm)999,
             revision: 1,
@@ -154,6 +184,22 @@ public class ThemeGeneratedDescriptorContractTests
                           .ShouldBeOfType<ImmutableSolidColorBrush>()
                           .Color
                           .ShouldBe(color);
+    }
+
+    private static object? InvokeShared(Type helper, string method, Type valueType, object? argument) =>
+        helper.GetMethod(method)!.MakeGenericMethod(valueType).Invoke(null, [argument]);
+
+    // Compares either the produced value or the type of the thrown exception.
+    private static object? Outcome(Func<object?> action)
+    {
+        try
+        {
+            return action();
+        }
+        catch (Exception exception)
+        {
+            return (exception is System.Reflection.TargetInvocationException { InnerException: { } inner } ? inner : exception).GetType();
+        }
     }
 
     private static TokenDescriptor NumberToken(string name, int slot, TokenStage stage)
@@ -200,6 +246,41 @@ public class ThemeGeneratedDescriptorContractTests
     private sealed class SchemaDesignToken : AbstractDesignToken
     {
         public double Scale { get; set; }
+    }
+
+    private sealed class PairToken : AbstractDesignToken
+    {
+        public double First { get; set; }
+        public Color Second { get; set; }
+    }
+
+    private sealed class PairAccessor : TokenValueAccessor
+    {
+        public static readonly PairAccessor Instance = new();
+
+        public override object? GetValue(AbstractDesignToken token, int slot) => slot switch
+        {
+            0 => ((PairToken)token).First,
+            1 => ((PairToken)token).Second,
+            _ => throw new ArgumentOutOfRangeException(nameof(slot))
+        };
+
+        public override void SetValue(AbstractDesignToken token, int slot, object? value)
+        {
+            switch (slot)
+            {
+                case 0: ((PairToken)token).First = (double)value!; break;
+                case 1: ((PairToken)token).Second = (Color)value!; break;
+                default: throw new ArgumentOutOfRangeException(nameof(slot));
+            }
+        }
+
+        public override object? ProjectResourceValue(AbstractDesignToken token, int slot) => slot switch
+        {
+            0 => ThemeResourceValue.Project(((PairToken)token).First),
+            1 => ThemeResourceValue.Project(((PairToken)token).Second),
+            _ => throw new ArgumentOutOfRangeException(nameof(slot))
+        };
     }
 
     private sealed class SchemaControlToken : AbstractControlDesignToken

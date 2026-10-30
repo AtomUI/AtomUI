@@ -15,8 +15,12 @@ public class SplitterThemeContractTests
 
         splitterSource.ShouldContain("public static readonly StyledProperty<double> LineThicknessProperty");
         splitterSource.ShouldContain("public static readonly StyledProperty<CornerRadius> LineCornerRadiusProperty");
+        splitterSource.ShouldContain("public static readonly StyledProperty<IReadOnlyList<double>?> BorderDashArrayProperty");
+        splitterSource.ShouldContain("public static readonly StyledProperty<double> BorderDashOffsetProperty");
         splitterSource.ShouldContain("public double LineThickness");
         splitterSource.ShouldContain("public CornerRadius LineCornerRadius");
+        splitterSource.ShouldContain("public IReadOnlyList<double>? BorderDashArray");
+        splitterSource.ShouldContain("public double BorderDashOffset");
 
         panelSource.ShouldContain("Splitter.LineThicknessProperty.AddOwner<SplitterPanel>()");
         panelSource.ShouldContain("Splitter.LineCornerRadiusProperty.AddOwner<SplitterPanel>()");
@@ -43,6 +47,8 @@ public class SplitterThemeContractTests
         splitterTheme.ShouldContain("BorderBrush=\"{TemplateBinding BorderBrush}\"");
         splitterTheme.ShouldContain("BorderThickness=\"{TemplateBinding BorderThickness}\"");
         splitterTheme.ShouldContain("CornerRadius=\"{TemplateBinding CornerRadius}\"");
+        splitterTheme.ShouldContain("StrokeDashArray=\"{TemplateBinding BorderDashArray}\"");
+        splitterTheme.ShouldContain("StrokeDaskOffset=\"{TemplateBinding BorderDashOffset}\"");
         splitterTheme.ShouldContain("LineThickness=\"{TemplateBinding LineThickness}\"");
         splitterTheme.ShouldContain("LineCornerRadius=\"{TemplateBinding LineCornerRadius}\"");
         splitterTheme.ShouldContain("<Setter Property=\"LineThickness\" Value=\"{atom:SplitterTokenResource HandleLineThickness}\" />");

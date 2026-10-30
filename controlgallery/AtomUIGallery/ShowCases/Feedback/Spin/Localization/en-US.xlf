@@ -86,6 +86,56 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticContainerDescription">
+      <segment>
+        <source>Container element with opacity and blur transition styles for the nested content.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>Description element with font size, foreground and line height styles for the tip text.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorContentDescription">
+      <segment>
+        <source>Content element with the built-in dot indicator or custom indicator presenter styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorDescription">
+      <segment>
+        <source>Indicator element with size, motion duration and other spinning indicator styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorRootDescription">
+      <segment>
+        <source>Root element of a SpinIndicator component.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticMaskDescription">
+      <segment>
+        <source>Mask element with background, opacity and other overlay dimming styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Spin's published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with the loading region's base layout, alignment and theme entry styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Section element with centered alignment, spacing and other loading area layout styles.</source>
+      </segment>
+    </unit>
     <unit id="SizeDescription">
       <segment>
         <source>SpinIndicator supports small, middle, large, and custom size types; the custom type follows the middle metrics by default and can override indicator metrics.</source>

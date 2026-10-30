@@ -1,16 +1,18 @@
-using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
+using Avalonia.Media;
 using Avalonia.Input;
-using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 using AvaloniaTextBox = Avalonia.Controls.TextBox;
 
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(":cell-active", ":input-target")]
+[global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
 internal class OtpLineEditCell : InputControlFrame
 {
     #region 公共属性定义
@@ -58,22 +60,58 @@ internal class OtpLineEditCell : InputControlFrame
     #endregion
 
     private OtpTextBox? _textBox;
+    private Avalonia.Controls.Shapes.Rectangle? _caret;
+    private OtpLineEdit? _owner;
 
     private const string CellActivePseudoClass = ":cell-active";
     private const string InputTargetPseudoClass = ":input-target";
 
     internal AvaloniaTextBox? TextBoxPart => _textBox;
 
-    protected override void OnInitialized()
+    private void RelayOwnerOverride(AvaloniaProperty sourceProperty, AvaloniaProperty targetProperty)
     {
-        base.OnInitialized();
-        this.DisableTransitions();
+        if (_owner is null)
+        {
+            return;
+        }
+
+        var value = _owner.GetValue(sourceProperty);
+        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
+        {
+            ClearValue(targetProperty);
+        }
+        else
+        {
+            SetValue(targetProperty, value, BindingPriority.LocalValue);
+        }
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
+    /// <summary>
+    /// Relays the owner's border brush onto this cell frame. <c>CellBorderBrush</c> is the
+    /// cell-specific override and wins over the generic root <c>BorderBrush</c>; when neither is
+    /// set the cell theme state machine owns the rest state.
+    /// </summary>
+    private void RelayOwnerBorderBrush()
     {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        if (_owner is null)
+        {
+            return;
+        }
+
+        var value = _owner.GetValue(OtpLineEdit.CellBorderBrushProperty);
+        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
+        {
+            value = _owner.GetValue(BorderBrushProperty);
+        }
+
+        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
+        {
+            ClearValue(BorderBrushProperty);
+        }
+        else
+        {
+            SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -81,7 +119,9 @@ internal class OtpLineEditCell : InputControlFrame
         base.OnApplyTemplate(e);
 
         _textBox = Content as OtpTextBox;
+        _caret = e.NameScope.Find<Avalonia.Controls.Shapes.Rectangle>("PART_Caret");
         ConfigureTextBoxCursor();
+        UpdateCaretVisibility();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -92,6 +132,13 @@ internal class OtpLineEditCell : InputControlFrame
         {
             PseudoClasses.Set(CellActivePseudoClass, change.GetNewValue<bool>());
             IsInputFocusWithin = change.GetNewValue<bool>();
+            UpdateCaretVisibility();
+        }
+
+        if (change.Property == DisplayTextProperty ||
+            change.Property == IsEffectivelyEnabledProperty)
+        {
+            UpdateCaretVisibility();
         }
 
         if (change.Property == IsInputTargetProperty)
@@ -100,11 +147,31 @@ internal class OtpLineEditCell : InputControlFrame
             ConfigureTextBoxCursor();
         }
 
-        if (change.Property == ContentProperty ||
-            change.Property == IsEffectivelyEnabledProperty)
+        if (change.Property == ContentProperty)
         {
             _textBox = Content as OtpTextBox;
             ConfigureTextBoxCursor();
+        }
+    }
+
+    private void UpdateCaretVisibility()
+    {
+        if (_caret is null)
+        {
+            return;
+        }
+
+        _caret.IsVisible = IsActive && IsEffectivelyEnabled;
+
+        // 有字符时插入点在字符右侧：右移半个字符 advance（数字等宽近似）
+        var offsetX = string.IsNullOrEmpty(DisplayText) ? 0 : FontSize * 0.30;
+        if (_caret.RenderTransform is TranslateTransform translate)
+        {
+            translate.X = offsetX;
+        }
+        else
+        {
+            _caret.RenderTransform = new TranslateTransform(offsetX, 0);
         }
     }
 
@@ -120,10 +187,43 @@ internal class OtpLineEditCell : InputControlFrame
         }
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+
+        _owner = this.GetVisualAncestors().OfType<OtpLineEdit>().FirstOrDefault();
+        if (_owner is not null)
+        {
+            _owner.PropertyChanged += OwnerPropertyChanged;
+            RelayOwnerOverride(OtpLineEdit.CellWidthProperty, WidthProperty);
+            RelayOwnerBorderBrush();
+        }
+    }
+
+    private void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
+    {
+        if (change.Property == OtpLineEdit.CellWidthProperty)
+        {
+            RelayOwnerOverride(change.Property, WidthProperty);
+        }
+        else if (change.Property == OtpLineEdit.CellBorderBrushProperty ||
+                 change.Property == BorderBrushProperty)
+        {
+            RelayOwnerBorderBrush();
+        }
+    }
+
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
 
+        if (_owner is not null)
+        {
+            _owner.PropertyChanged -= OwnerPropertyChanged;
+            ClearValue(WidthProperty);
+            ClearValue(BorderBrushProperty);
+        }
+        _owner = null;
         _textBox = null;
     }
 }

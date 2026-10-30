@@ -158,6 +158,10 @@ count 和主题资源变化只使当前 presenter 重绘。
 
 动画使用 internal `Progress` 从 `0` 到 `1` 循环，周期由 `Duration` 控制。`Progress` 变化只触发 `BorderBeamPresenter` 重绘。
 
+循环由实例级原生无限 `Style.Animations` 作用域推进，不在每个周期重新创建有限 RunAsync/Task/CTS。
+时长或运行条件变化时释放旧作用域再按当前参数建立新运行，detach 释放作用域和视口监听。
+`EffectiveViewport` 缓存真实几何，只有与绘制边界（包含 Outset）相交时运行；滚出视口停止，重新进入后恢复。
+
 实例级 `IsMotionEnabled=false`、有效不可见、detached 或 bounds 无有效尺寸时，动画必须停止或暂停。此时不应继续产生 UI 线程 invalidation。
 
 ### 8.4 多光束相位与路径度量

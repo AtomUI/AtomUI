@@ -1,4 +1,9 @@
 using System.Xml.Linq;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Styling;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 
@@ -6,6 +11,106 @@ namespace AtomUI.Desktop.Controls.Tests.ImagePreviewer;
 
 public class ImagePreviewerTitleBarThemeTests
 {
+    static ImagePreviewerTitleBarThemeTests()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+    }
+
+    [Theory]
+    [InlineData(OsType.Windows)]
+    [InlineData(OsType.Linux)]
+    [InlineData(OsType.macOS)]
+    public void ImagePreviewer_TitleBar_Caption_Group_Projects_Host_Contract_And_Executes_Window_Commands(
+        OsType osType)
+    {
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            var titleBar = new ImagePreviewerTitleBar
+            {
+                Width  = 640,
+                Height = 40
+            };
+            titleBar.SetValue(WindowTitleBar.OsTypeProperty, osType);
+            Application.Current!.TryFindResource(typeof(ImagePreviewerTitleBar), out var resource)
+                       .ShouldBeTrue();
+            titleBar.Theme = resource.ShouldBeAssignableTo<ControlTheme>();
+
+            var window = new global::AtomUI.Desktop.Controls.Window
+            {
+                Width                            = 640,
+                Height                           = 480,
+                IsTitleBarVisible                = false,
+                IsMinimizeCaptionButtonVisible   = false,
+                IsMaximizeCaptionButtonVisible   = true,
+                IsCloseCaptionButtonVisible      = false,
+                IsFullScreenCaptionButtonVisible = true,
+                IsPinCaptionButtonVisible        = true,
+                CanMinimize                      = false,
+                CanMaximize                      = false,
+                Topmost                         = true,
+                Content                         = titleBar
+            };
+
+            try
+            {
+                window.Show();
+                titleBar.ApplyTemplate();
+                Dispatcher.UIThread.RunJobs();
+                window.UpdateLayout();
+
+                var captionButtonGroup = titleBar.GetVisualDescendants()
+                                                 .OfType<CaptionButtonGroup>()
+                                                 .Single();
+                var command = captionButtonGroup.CaptionButtonCommand.ShouldNotBeNull();
+
+                command.ShouldBeSameAs(window.CaptionButtonCommand);
+                captionButtonGroup.IsWindowActive.ShouldBe(titleBar.IsWindowActive);
+                captionButtonGroup.IsMotionEnabled.ShouldBe(titleBar.IsMotionEnabled);
+                captionButtonGroup.HostWindowState.ShouldBe(titleBar.HostWindowState);
+                captionButtonGroup.IsWindowTopmost.ShouldBe(titleBar.IsWindowTopmost);
+                captionButtonGroup.IsMinimizeCaptionButtonVisible.ShouldBeFalse();
+                captionButtonGroup.IsMaximizeCaptionButtonVisible.ShouldBeTrue();
+                captionButtonGroup.IsCloseCaptionButtonVisible.ShouldBeFalse();
+                captionButtonGroup.IsFullScreenCaptionButtonVisible.ShouldBeTrue();
+                captionButtonGroup.IsPinCaptionButtonVisible.ShouldBeTrue();
+                captionButtonGroup.CanMinimize.ShouldBeFalse();
+                captionButtonGroup.CanMaximize.ShouldBeFalse();
+                captionButtonGroup.IsPinCaptionButtonSupported.ShouldBe(titleBar.IsPinCaptionButtonSupported);
+
+                window.CanMinimize = true;
+                window.CanMaximize = true;
+                Dispatcher.UIThread.RunJobs();
+
+                captionButtonGroup.CanMinimize.ShouldBeTrue();
+                captionButtonGroup.CanMaximize.ShouldBeTrue();
+
+                command.Execute(CaptionButtonAction.ToggleMaximize);
+                window.WindowState.ShouldBe(WindowState.Maximized);
+                captionButtonGroup.HostWindowState.ShouldBe(WindowState.Maximized);
+                captionButtonGroup.IsWindowMaximized.ShouldBeTrue();
+
+                command.Execute(CaptionButtonAction.ToggleMaximize);
+                window.WindowState.ShouldBe(WindowState.Normal);
+                captionButtonGroup.HostWindowState.ShouldBe(WindowState.Normal);
+                captionButtonGroup.IsWindowMaximized.ShouldBeFalse();
+
+                command.Execute(CaptionButtonAction.Minimize);
+                window.WindowState.ShouldBe(WindowState.Minimized);
+                captionButtonGroup.HostWindowState.ShouldBe(WindowState.Minimized);
+
+                window.WindowState = WindowState.Normal;
+                command.Execute(CaptionButtonAction.Close);
+                window.IsVisible.ShouldBeFalse();
+            }
+            finally
+            {
+                window.Content = null;
+                window.Close();
+                Dispatcher.UIThread.RunJobs();
+            }
+        });
+    }
+
     [Fact]
     public void ImagePreviewer_TitleBar_Background_Uses_Dialog_Frame_Background_Token()
     {

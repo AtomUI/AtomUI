@@ -313,6 +313,78 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticCountIndicatorDescription">
+      <segment>
+        <source>The complete count indicator visual, including its background and count text.</source>
+        <target state="translated">O visual completo do indicador numérico, incluindo o fundo e o texto da contagem.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCountRootDescription">
+      <segment>
+        <source>The CountBadge owner that controls count, visibility, color, size, offset, and decorated content.</source>
+        <target state="translated">O proprietário CountBadge que controla contagem, visibilidade, cor, tamanho, deslocamento e conteúdo decorado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDotIndicatorDescription">
+      <segment>
+        <source>The status dot visual and its motion boundary.</source>
+        <target state="translated">O visual do ponto de status e seu limite de movimento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDotRootDescription">
+      <segment>
+        <source>The DotBadge owner that controls status, text, color, visibility, offset, and decorated content.</source>
+        <target state="translated">O proprietário DotBadge que controla status, texto, cor, visibilidade, deslocamento e conteúdo decorado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartCardContent">
+      <segment>
+        <source>This card customizes its ribbon with Semantic Part style selectors.</source>
+        <target state="translated">Este cartão personaliza sua faixa com seletores de estilo de Semantic Part.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartCardHeader">
+      <segment>
+        <source>Card with custom ribbon</source>
+        <target state="translated">Cartão com faixa personalizada</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartRibbonText">
+      <segment>
+        <source>Custom Ribbon</source>
+        <target state="translated">Faixa personalizada</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped style selectors to customize Badge's published Semantic Parts.</source>
+        <target state="translated">Use seletores de estilo com escopo do proprietário para personalizar as Semantic Parts publicadas do Badge.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRibbonContentDescription">
+      <segment>
+        <source>The ribbon text display region.</source>
+        <target state="translated">A região de exibição do texto da faixa.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRibbonIndicatorDescription">
+      <segment>
+        <source>The complete ribbon visual, including its positioning and drawing boundary.</source>
+        <target state="translated">O visual completo da faixa, incluindo seu posicionamento e limite de desenho.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRibbonRootDescription">
+      <segment>
+        <source>The RibbonBadge owner that controls text, color, placement, visibility, offset, and decorated content.</source>
+        <target state="translated">O proprietário RibbonBadge que controla texto, cor, posição, visibilidade, deslocamento e conteúdo decorado.</target>
+      </segment>
+    </unit>
     <unit id="SizeDescription">
       <segment>
         <source>Set size of numeral Badge.</source>

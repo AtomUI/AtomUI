@@ -650,7 +650,7 @@ public abstract class AbstractTransfer: TemplatedControl,
         }
     }
 
-    protected List<IItemKey>? BuildSourcePanelSource(ISet<EntityKey>? targetKeySet)
+    protected IReadOnlyList<IItemKey>? BuildSourcePanelSource(ISet<EntityKey>? targetKeySet)
     {
         if (ItemsSource == null)
         {
@@ -677,7 +677,7 @@ public abstract class AbstractTransfer: TemplatedControl,
         return items;
     }
 
-    protected IEnumerable<IItemKey>? BuildTargetPanelSource(ISet<EntityKey>? targetKeySet)
+    protected IReadOnlyList<IItemKey>? BuildTargetPanelSource(ISet<EntityKey>? targetKeySet)
     {
         if (ItemsSource == null)
         {

@@ -1,4 +1,6 @@
-﻿using AtomUI.Animations;
+using AtomUI.Animations;
+using AtomUI.Utils;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -10,7 +12,7 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TabControl : BaseTabControl
+public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
 {
     #region 内部属性定义
 
@@ -34,15 +36,113 @@ public class TabControl : BaseTabControl
 
     #endregion
 
+    #region 内部协作 API
+
+    internal void NotifyTabReorderPreviewChanged()
+    {
+        SetupSelectedIndicator();
+    }
+
+    #endregion
+
     private Border? _selectedIndicator;
     private ItemsPresenter? _itemsPresenter;
-    private TabControlScrollViewer? _scrollViewer;
+    private TabScrollViewer? _scrollViewer;
     private IDisposable? _selectedItemBoundsSubscription;
+
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     public TabControl()
     {
+        _transitionInitialization = new TransitionInitializationSession(this);
         SelectionChanged += HandleSelectionChanged;
     }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        var size = base.ArrangeOverride(finalSize);
+        if (SelectedItem is not null && ContainerFromItem(SelectedItem) is TabItem)
+        {
+            SetupSelectedIndicator();
+        }
+
+        return size;
+    }
+
+    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+    {
+        var tabItem = new TabItem
+        {
+            Shape = TabSharp.Line
+        };
+        tabItem.Classes.Add(TabControlSemanticParts.ItemClass);
+        return tabItem;
+    }
+
+    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
+    {
+        base.PrepareContainerForItemOverride(container, item, index);
+        if (container is TabItem tabItem)
+        {
+            tabItem.Shape = TabSharp.Line;
+            tabItem.Classes.Add(TabControlSemanticParts.ItemClass);
+        }
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnApplyTemplate(e);
+        _selectedIndicator = e.NameScope.Find<Border>("PART_SelectedItemIndicator");
+        _itemsPresenter    = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
+
+        if (_scrollViewer != null)
+        {
+            _scrollViewer.PropertyChanged -= HandleScrollViewerPropertyChanged;
+        }
+
+        _scrollViewer = e.NameScope.Find<TabScrollViewer>("PART_TabsContainer");
+        if (_scrollViewer != null)
+        {
+            _scrollViewer.PropertyChanged += HandleScrollViewerPropertyChanged;
+        }
+
+        SubscribeSelectedItemBounds();
+        SetupSelectedIndicator();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnAttachedToVisualTree(e);
+        SubscribeSelectedItemBounds();
+        SetupSelectedIndicator();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        _selectedItemBoundsSubscription?.Dispose();
+        _selectedItemBoundsSubscription = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        SetupSelectedIndicator();
+    }
+    #region 实现 ITransitionInitializationOwner 接口
+
+    TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
+
+    #endregion
 
     private void HandleSelectionChanged(object? sender, SelectionChangedEventArgs args)
     {
@@ -77,17 +177,33 @@ public class TabControl : BaseTabControl
         if (Items.Count == 0)
         {
             _selectedIndicator?.SetCurrentValue(IsVisibleProperty, false);
+            _transitionInitialization.CompleteInitialization();
         }
         else
         {
             if (_selectedIndicator is not null && SelectedItem is not null && ContainerFromItem(SelectedItem) is TabItem tabItem)
             {
-                _selectedIndicator.SetCurrentValue(IsVisibleProperty, true);
+                if (_itemsPresenter is not { IsArrangeValid: true } || !tabItem.IsArrangeValid ||
+                    !tabItem.IsAttachedToVisualTree() ||
+                    !double.IsFinite(tabItem.Bounds.Width) || !double.IsFinite(tabItem.Bounds.Height) ||
+                    !MathUtils.GreaterThan(tabItem.Bounds.Width, 0) || !MathUtils.GreaterThan(tabItem.Bounds.Height, 0))
+                {
+                    return;
+                }
                 var selectedBounds = tabItem.Bounds;
                 var builder        = new TransformOperations.Builder(1);
                 var offset         = _itemsPresenter?.Bounds.Position ?? default;
                 var selectedSize   = selectedBounds.Size;
                 var previewOffset  = GetTabReorderPreviewPrimaryOffset(tabItem);
+                if (!double.IsFinite(offset.X) || !double.IsFinite(offset.Y) || !double.IsFinite(previewOffset))
+                {
+                    return;
+                }
+                using var snap = !_selectedIndicator.IsVisible && _transitionInitialization.IsReady
+                    ? new TransitionSuppressionScope(this)
+                    : null;
+                _selectedIndicator.SetCurrentValue(IsVisibleProperty, true);
+
 
                 if (TabStripPlacement == Dock.Top)
                 {
@@ -114,80 +230,16 @@ public class TabControl : BaseTabControl
                     builder.AppendTranslate(0, offset.Y + selectedBounds.Y + previewOffset);
                 }
 
-                SelectedIndicatorRenderTransform = builder.Build();
+                var transform = builder.Build();
+                var baseTransform = GetBaseValue(SelectedIndicatorRenderTransformProperty);
+                if (!baseTransform.HasValue || baseTransform.Value?.Value != transform.Value)
+                {
+                    SelectedIndicatorRenderTransform = transform;
+                }
+                _transitionInitialization.CompleteInitialization();
             }
         }
         
-    }
-
-    internal void NotifyTabReorderPreviewChanged()
-    {
-        SetupSelectedIndicator();
-    }
-
-    protected override Size ArrangeOverride(Size finalSize)
-    {
-        var size = base.ArrangeOverride(finalSize);
-        if (SelectedItem is not null && ContainerFromItem(SelectedItem) is TabItem)
-        {
-            SetupSelectedIndicator();
-        }
-
-        return size;
-    }
-
-    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
-    {
-        var tabItem = new TabItem
-        {
-            Shape = TabSharp.Line
-        };
-        return tabItem;
-    }
-
-    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
-    {
-        base.PrepareContainerForItemOverride(container, item, index);
-        if (container is TabItem tabItem)
-        {
-            tabItem.Shape = TabSharp.Line;
-        }
-    }
-
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _selectedIndicator = e.NameScope.Find<Border>("PART_SelectedItemIndicator");
-        _itemsPresenter    = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
-
-        if (_scrollViewer != null)
-        {
-            _scrollViewer.PropertyChanged -= HandleScrollViewerPropertyChanged;
-        }
-
-        _scrollViewer = e.NameScope.Find<TabControlScrollViewer>("PART_TabsContainer");
-        if (_scrollViewer != null)
-        {
-            _scrollViewer.TabControl      = this;
-            _scrollViewer.PropertyChanged += HandleScrollViewerPropertyChanged;
-        }
-
-        SubscribeSelectedItemBounds();
-        SetupSelectedIndicator();
-    }
-
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        SubscribeSelectedItemBounds();
-        SetupSelectedIndicator();
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        _selectedItemBoundsSubscription?.Dispose();
-        _selectedItemBoundsSubscription = null;
-        base.OnDetachedFromVisualTree(e);
     }
 
     private void HandleScrollViewerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -198,15 +250,5 @@ public class TabControl : BaseTabControl
         }
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
 
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 }

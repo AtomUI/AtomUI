@@ -19,3 +19,15 @@ Mobile Gallery 仍是批准的预实现架构，不能用 Desktop 或 Headless �
 
 Desktop/Browser 的共享不代表 Mobile 自动复用相同 Shell 或基础包。任何跨产品、跨平台 Gallery contract 都必须以真实重复、
 独立依赖边界和验证需求为输入另行设计。
+
+## Desktop 启动
+
+Desktop Gallery 在 `GalleryApplication.Configure` 中声明全部包与 `UseSplash(SplashMode.Auto, …)`（JIT 下显示 Gallery Logo 与
+标题，NativeAOT 下不显示）。AtomUI 内核在 `Initialize()` 之前提交，`WorkspaceWindow` 在构造函数中直接构建导航与
+`GalleryShellView`，主窗体出现时就是完整内容，没有加载占位。Splash 在主窗体首个渲染批次完成后淡出。
+
+Gallery 的附加内置主题随 `UseGalleryControls` 进入目录。Workspace ViewModel 通过 Core 的 `ThemeCatalogChanged` 更新
+AvailableThemes，窗口菜单沿用现有属性通知生成主题项；主题切换与手动目录刷新共用这条目录订阅链路。
+
+启动生命周期见[启动系统](../../architecture/systems/startup/overview.md)；Shell 所有权见
+[GalleryBase Shell](../../modules/toolkits-gallery-base/shell-and-platform.md)。

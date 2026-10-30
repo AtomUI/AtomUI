@@ -343,6 +343,54 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Each materialized description value presenter.</source>
+        <target state="translated">每個已具現化描述項目的值顯示區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraDescription">
+      <segment>
+        <source>The presenter for the header extra content.</source>
+        <target state="translated">顯示標頭附加內容的區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>The header layout containing title and extra content.</source>
+        <target state="translated">包含標題和附加內容的標頭版面配置區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Each materialized description label presenter.</source>
+        <target state="translated">每個已具現化描述項目的標籤顯示區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize the root and label styles of Descriptions through Semantic Parts.</source>
+        <target state="translated">透過 Semantic Part 自訂 Descriptions 的 root 和 label 樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Descriptions owner and state boundary.</source>
+        <target state="translated">Descriptions 的 owner 與狀態邊界。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>The presenter for the header title.</source>
+        <target state="translated">顯示標頭標題的區域。</target>
+      </segment>
+    </unit>
     <unit id="VerticalBorderDescription">
       <segment>
         <source>Descriptions with border and background color.</source>

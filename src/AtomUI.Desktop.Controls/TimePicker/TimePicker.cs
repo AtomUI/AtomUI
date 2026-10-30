@@ -1,11 +1,12 @@
-﻿using AtomUI.Controls.Utils;
+using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
-using Avalonia.Layout;
+using Avalonia.Input;
+using Avalonia.VisualTree;
 using Avalonia.LogicalTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -16,12 +17,15 @@ public enum ClockIdentifierType
     HourClock24
 }
 
-public class TimePicker : InfoPickerInput
+public partial class TimePicker : InfoPickerInput
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsNeedConfirmProperty =
-        AvaloniaProperty.Register<TimePicker, bool>(nameof(IsNeedConfirm));
+        AvaloniaProperty.Register<TimePicker, bool>(nameof(IsNeedConfirm), true);
+
+    public static readonly StyledProperty<bool> IsChangeOnScrollProperty =
+        AvaloniaProperty.Register<TimePicker, bool>(nameof(IsChangeOnScroll));
 
     public static readonly StyledProperty<bool> IsShowNowProperty =
         AvaloniaProperty.Register<TimePicker, bool>(nameof(IsShowNow), true);
@@ -33,7 +37,7 @@ public class TimePicker : InfoPickerInput
         AvaloniaProperty.Register<TimePicker, int>(nameof(SecondIncrement), 1, coerce: CoerceSecondIncrement);
 
     public static readonly StyledProperty<ClockIdentifierType> ClockIdentifierProperty =
-        AvaloniaProperty.Register<TimePicker, ClockIdentifierType>(nameof(ClockIdentifier));
+        AvaloniaProperty.Register<TimePicker, ClockIdentifierType>(nameof(ClockIdentifier), ClockIdentifierType.HourClock24);
 
     public static readonly StyledProperty<TimeSpan?> SelectedTimeProperty =
         AvaloniaProperty.Register<TimePicker, TimeSpan?>(nameof(SelectedTime),
@@ -51,6 +55,12 @@ public class TimePicker : InfoPickerInput
     {
         get => GetValue(IsNeedConfirmProperty);
         set => SetValue(IsNeedConfirmProperty, value);
+    }
+
+    public bool IsChangeOnScroll
+    {
+        get => GetValue(IsChangeOnScrollProperty);
+        set => SetValue(IsChangeOnScrollProperty, value);
     }
 
     public bool IsShowNow
@@ -131,18 +141,21 @@ public class TimePicker : InfoPickerInput
 
     private TimePickerPresenter? _pickerPresenter;
 
-    public TimePicker()
-    {
-    }
-
     static TimePicker()
     {
         SelectedTimeProperty.Changed.AddClassHandler<TimePicker>((timePicker, args) => timePicker.NotifyFormValueChanged(args.NewValue));
     }
 
+    public TimePicker()
+    {
+    }
+
     protected override Control CreatePickerPresenter()
     {
+        // This presenter is created in an independent Content subtree. The owner's
+        // ControlTheme cannot bind into its separate template owner.
         var timePickerPresenter = new TimePickerPresenter();
+        timePickerPresenter[!TimePickerPresenter.IsChangeOnScrollProperty] = this[!IsChangeOnScrollProperty];
         timePickerPresenter[!TimePickerPresenter.IsMotionEnabledProperty]  = this[!IsMotionEnabledProperty];
         timePickerPresenter[!TimePickerPresenter.MinuteIncrementProperty]  = this[!MinuteIncrementProperty];
         timePickerPresenter[!TimePickerPresenter.SecondIncrementProperty]  = this[!SecondIncrementProperty];
@@ -175,6 +188,9 @@ public class TimePicker : InfoPickerInput
             _pickerPresenter.ChoosingStatusChanged += HandleChoosingStatusChanged;
             _pickerPresenter.HoverTimeChanged      += HandleHoverTimeChanged;
             _pickerPresenter.Confirmed             += HandleConfirmed;
+            _pickerPresenter.Dismissed += HandleDismissed;
+            _pickerPresenter.CandidateChanged += HandleCandidateChanged;
+            _pickerPresenter.FocusLeft += HandleFocusLeft;
             _pickerPresenter.ResetOpenPanelState();
         }
     }
@@ -187,10 +203,16 @@ public class TimePicker : InfoPickerInput
             _pickerPresenter.ChoosingStatusChanged -= HandleChoosingStatusChanged;
             _pickerPresenter.HoverTimeChanged      -= HandleHoverTimeChanged;
             _pickerPresenter.Confirmed             -= HandleConfirmed;
+            _pickerPresenter.Dismissed -= HandleDismissed;
+            _pickerPresenter.CandidateChanged -= HandleCandidateChanged;
+            _pickerPresenter.FocusLeft -= HandleFocusLeft;
+            var candidate = _pickerPresenter.EndEditing();
             if (!IsNeedConfirm)
             {
-                SelectedTime = _pickerPresenter?.SelectedTime;
+                SetCurrentValue(SelectedTimeProperty, candidate);
             }
+            Text = DateTimeUtils.FormatTimeSpan(SelectedTime,
+                ClockIdentifier == ClockIdentifierType.HourClock12, AmText, PmText);
         }
     }
 
@@ -206,27 +228,25 @@ public class TimePicker : InfoPickerInput
 
     private void ClearHoverSelectedInfo()
     {
-        Text = DateTimeUtils.FormatTimeSpan(SelectedTime,
-            ClockIdentifier == ClockIdentifierType.HourClock12, AmText, PmText);
+        var displayTime = IsPickerOpen ? _pickerPresenter?.DisplayTime : SelectedTime;
+        Text = IsPickerOpen && _pickerPresenter?.PreviewTime == null && _pickerPresenter?.InputText != null
+            ? _pickerPresenter.InputText
+            : DateTimeUtils.FormatTimeSpan(displayTime,
+                ClockIdentifier == ClockIdentifierType.HourClock12, AmText, PmText);
     }
 
-    private void HandleHoverTimeChanged(object? sender, TimeSelectedEventArgs args)
-    {
-        if (args.Time.HasValue)
-        {
-            Text = DateTimeUtils.FormatTimeSpan(args.Time.Value,
-                ClockIdentifier == ClockIdentifierType.HourClock12, AmText, PmText);
-        }
-        else
-        {
-            Text = null;
-        }
-    }
+    private void HandleCandidateChanged(object? sender, EventArgs args) => ClearHoverSelectedInfo();
+    private void HandleHoverTimeChanged(object? sender, TimeSelectedEventArgs args) => ClearHoverSelectedInfo();
+    private void HandleDismissed(object? sender, EventArgs args) => ClosePickerFlyout();
 
     private void HandleConfirmed(object? sender, EventArgs args)
     {
-        SelectedTime = _pickerPresenter?.SelectedTime;
+        SetCurrentValue(SelectedTimeProperty, _pickerPresenter?.SelectedTime);
         ClosePickerFlyout();
+        if (IsPickerOpen)
+        {
+            _pickerPresenter?.ResetOpenPanelState();
+        }
     }
 
     /// <summary>
@@ -234,8 +254,9 @@ public class TimePicker : InfoPickerInput
     /// </summary>
     public override void Clear()
     {
+        SetCurrentValue(SelectedTimeProperty, null);
         base.Clear();
-        SelectedTime = null;
+        ClosePickerFlyout();
     }
 
     /// <summary>
@@ -314,25 +335,21 @@ public class TimePicker : InfoPickerInput
 
     private void CalculatePreferredWidth()
     {
-        if (!double.IsNaN(Width) || HorizontalAlignment == HorizontalAlignment.Stretch)
-        {
-            PreferredInputWidth = double.NaN;
-        }
-        else
-        {
-            var preferredInputWidth = CalculateContentPreferredWidth();
+        // 输入框预留宽度始终按内容基线计算：placeholder 与选中值共用同一宽度基线，
+        // 避免显式 Width / Stretch 场景下输入区宽度随文本内容跳变；控件总宽在显式
+        // Width / Stretch 时仍交给外部布局决定。
+        var preferredInputWidth = CalculateContentPreferredWidth();
 
-            if (!double.IsNaN(MinWidth))
-            {
-                preferredInputWidth = Math.Max(MinWidth, preferredInputWidth);
-            }
-
-            if (!double.IsNaN(MaxWidth))
-            {
-                preferredInputWidth = Math.Min(MaxWidth, preferredInputWidth);
-            }
-            PreferredInputWidth = preferredInputWidth;
+        if (!double.IsNaN(MinWidth))
+        {
+            preferredInputWidth = Math.Max(MinWidth, preferredInputWidth);
         }
+
+        if (!double.IsNaN(MaxWidth))
+        {
+            preferredInputWidth = Math.Min(MaxWidth, preferredInputWidth);
+        }
+        PreferredInputWidth = preferredInputWidth;
     }
 
     private double CalculateContentPreferredWidth()
@@ -356,9 +373,97 @@ public class TimePicker : InfoPickerInput
         }
     }
 
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        HandleFocusLeft(this, EventArgs.Empty);
+    }
+
+    private void HandleFocusLeft(object? sender, EventArgs args)
+    {
+        if (!IsPickerOpen || IsPopupPinnedOpen)
+        {
+            return;
+        }
+        var target = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() as Visual;
+        if (target != null && (target == this || target.GetVisualAncestors().Contains(this) ||
+            (PickerPresenter is Visual presenter && (target == presenter || target.GetVisualAncestors().Contains(presenter)))))
+        {
+            return;
+        }
+        ClosePickerFlyout();
+    }
+
+    private void ReleaseInputHandlers()
+    {
+        if (InfoInputBox != null)
+        {
+            InfoInputBox.PropertyChanged -= HandleInputTextChanged;
+        }
+    }
+
+    private void AttachInputHandlers()
+    {
+        ReleaseInputHandlers();
+        if (InfoInputBox != null)
+        {
+            InfoInputBox.PropertyChanged += HandleInputTextChanged;
+        }
+    }
+
+    private void HandleInputTextChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        if (args.Property != TextBox.TextProperty || sender is not TextBox input ||
+            string.Equals(input.Text ?? string.Empty, Text ?? string.Empty, StringComparison.Ordinal))
+        {
+            return;
+        }
+        var text = input.Text;
+        SetCurrentValue(IsPickerOpenProperty, true);
+        var valid = TimePickerPresenter.TryParseInput(text, ClockIdentifier, AmText, PmText, out var time);
+        _pickerPresenter?.SetInputCandidate(text, time, valid);
+        SetCurrentValue(TextProperty, text);
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (!e.Handled && e.Key == Key.Enter)
+        {
+            if (_pickerPresenter?.InputText is { Length: 0 })
+            {
+                Clear();
+            }
+            else
+            {
+                _pickerPresenter?.ConfirmCandidate();
+            }
+            e.Handled = true;
+        }
+        else if (!e.Handled && e.Key == Key.Escape && IsPickerOpen)
+        {
+            ClosePickerFlyout();
+            e.Handled = true;
+        }
+        base.OnKeyDown(e);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        AttachInputHandlers();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        ReleaseInputHandlers();
+        base.OnDetachedFromVisualTree(e);
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        ReleaseInputHandlers();
         base.OnApplyTemplate(e);
+        AttachInputHandlers();
         if (InfoIcon is null)
         {
             SetValue(InfoIconProperty, new ClockCircleOutlined(), BindingPriority.Template);

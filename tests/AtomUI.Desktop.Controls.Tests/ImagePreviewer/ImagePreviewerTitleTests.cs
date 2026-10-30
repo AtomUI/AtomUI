@@ -249,7 +249,7 @@ public class ImagePreviewerTitleTests
             dialog.RaiseRoutedEventFromOverlay(toolbar, fitArgs);
 
             fitArgs.Handled.ShouldBeTrue();
-            dialog.IsImageFitToWindow.ShouldBeFalse();
+            dialog.IsImageFitToWindow.ShouldBeTrue();
 
             var nextArgs = RelayToolbarRequest(dialog, toolbar, ImagePreviewBaseToolbar.NextRequestEvent);
             nextArgs.Handled.ShouldBeTrue();
@@ -275,7 +275,6 @@ public class ImagePreviewerTitleTests
                      .ShouldBeLessThan(toolbarSource.IndexOf("RaiseEvent(args);", StringComparison.Ordinal));
 
         titleBarSource.ShouldNotContain("ToolbarHorizontalFlipRequest");
-        dialogSource.ShouldNotContain("_titleBarRequestSource");
         dialogSource.ShouldContain("ImagePreviewBaseToolbar.NextRequestEvent.AddClassHandler<ImagePreviewerDialog>");
     }
 

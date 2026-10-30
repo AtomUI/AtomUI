@@ -1,4 +1,3 @@
-using System.Globalization;
 using AtomUI;
 using AtomUI.Controls;
 using ReactiveUI;
@@ -35,6 +34,36 @@ public class TimePickerViewModel : ReactiveObject, IRoutableViewModel
 
     public string BoundSelectedTimeText =>
         BoundSelectedTime?.ToString(@"hh\:mm\:ss", GalleryLocalization.GetFormattingCulture()) ?? "-";
+
+    private TimeSpan? _confirmRequiredSelectedTime;
+
+    public TimeSpan? ConfirmRequiredSelectedTime
+    {
+        get => _confirmRequiredSelectedTime;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _confirmRequiredSelectedTime, value);
+            this.RaisePropertyChanged(nameof(ConfirmRequiredSelectedTimeText));
+        }
+    }
+
+    public string ConfirmRequiredSelectedTimeText =>
+        ConfirmRequiredSelectedTime?.ToString(@"hh\:mm\:ss", GalleryLocalization.GetFormattingCulture()) ?? "-";
+
+    private TimeSpan? _noConfirmSelectedTime;
+
+    public TimeSpan? NoConfirmSelectedTime
+    {
+        get => _noConfirmSelectedTime;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _noConfirmSelectedTime, value);
+            this.RaisePropertyChanged(nameof(NoConfirmSelectedTimeText));
+        }
+    }
+
+    public string NoConfirmSelectedTimeText =>
+        NoConfirmSelectedTime?.ToString(@"hh\:mm\:ss", GalleryLocalization.GetFormattingCulture()) ?? "-";
 
     private TimeSpan? _boundRangeStartSelectedTime = new(9, 0, 0);
 

@@ -1,6 +1,6 @@
 using System.Collections.Frozen;
 using System.Runtime.CompilerServices;
-using Avalonia.Animation.Easings;
+using AtomUI.Generated.AtomUICore;
 using Avalonia.Media;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
@@ -12,16 +12,18 @@ namespace AtomUI.Theme.Compilation;
 
 internal sealed class ThemeCompiler
 {
+    private static readonly ConditionalWeakTable<IReadOnlyList<TokenDescriptor>, CanonicalGlobalSchema> GlobalSchemas = new();
+
     private const string CompilerPath = "ThemeCompiler";
     private static readonly ConditionalWeakTable<
-        BoundThemeDefinition,
+        PreparedThemeDefinition,
         ConditionalWeakTable<ThemeSchemaRegistry, NormalizedThemeConfig>> s_definitionDefaults = new();
     private static readonly ConditionalWeakTable<
         ThemeSchemaRegistry,
         NormalizedThemeConfig> s_libraryDefaults = new();
 
     internal static NormalizedThemeConfig CreateDefinitionDefaults(
-        BoundThemeDefinition definition,
+        PreparedThemeDefinition definition,
         ThemeSchemaRegistry registry)
     {
         ArgumentNullException.ThrowIfNull(definition);
@@ -36,7 +38,7 @@ internal sealed class ThemeCompiler
     }
 
     private static NormalizedThemeConfig CreateDefinitionDefaultsCore(
-        BoundThemeDefinition definition,
+        PreparedThemeDefinition definition,
         ThemeSchemaRegistry registry)
     {
         IReadOnlyList<ThemeAlgorithmDescriptor> algorithms = definition.Algorithms;
@@ -57,35 +59,29 @@ internal sealed class ThemeCompiler
             globalTokens[index] = new NormalizedTokenValue(
                 token.Descriptor,
                 token.Value,
-                token.Descriptor.Format(token.Value));
+                token.CanonicalValue);
         }
         Array.Sort(
             globalTokens,
             static (left, right) => left.Descriptor.Slot.CompareTo(right.Descriptor.Slot));
 
-        var controls = new NormalizedControlThemeConfig[definition.Controls.Count];
-        for (var index = 0; index < controls.Length; index++)
+        NormalizedControlThemeConfig ResolveControl(ControlTokenIdentity identity)
         {
-            var control = definition.Controls[index];
+            var control = definition.GetControl(identity);
             var mode = control.AlgorithmMode == ControlAlgorithmMode.Unspecified
-                ? ControlAlgorithmMode.Disabled
-                : control.AlgorithmMode;
-            controls[index] = NormalizedControlThemeConfig.CreateCanonical(
-                control.Descriptor.Identity,
-                mode,
-                mode == ControlAlgorithmMode.Custom
-                    ? ThemeConfigArray.Copy(control.Algorithms)
-                    : Array.Empty<ThemeAlgorithmDescriptor>(),
-                NormalizeBoundTokens(control.GlobalTokens),
-                NormalizeBoundTokens(control.OwnTokens));
+                ? ControlAlgorithmMode.Disabled : control.AlgorithmMode;
+            return NormalizedControlThemeConfig.CreateCanonical(control.Descriptor.Identity, mode,
+                mode == ControlAlgorithmMode.Custom ? ThemeConfigArray.Copy(control.Algorithms) : Array.Empty<ThemeAlgorithmDescriptor>(),
+                NormalizeBoundTokens(control.GlobalTokens), NormalizeBoundTokens(control.OwnTokens));
         }
+        if (definition.ControlRevision is { } revision)
+        {
+            return NormalizedThemeConfig.CreateDeferred(false, true, ThemeConfigArray.Copy(algorithms), globalTokens,
+                definition.ControlIdentities, identity => ResolveControl(identity), revision, (definition, registry));
+        }
+        var controls = definition.ControlIdentities.Select(ResolveControl).ToArray();
         Array.Sort(controls, static (left, right) => CompareIdentity(left.Identity, right.Identity));
-        return NormalizedThemeConfig.CreateCanonical(
-            false,
-            true,
-            ThemeConfigArray.Copy(algorithms),
-            globalTokens,
-            controls);
+        return NormalizedThemeConfig.CreateCanonical(false, true, ThemeConfigArray.Copy(algorithms), globalTokens, controls);
     }
 
     internal static NormalizedThemeConfig CreateLibraryDefaults(
@@ -120,7 +116,7 @@ internal sealed class ThemeCompiler
             result[index] = new NormalizedTokenValue(
                 token.Descriptor,
                 token.Value,
-                token.Descriptor.Format(token.Value));
+                token.CanonicalValue);
         }
         Array.Sort(
             result,
@@ -136,6 +132,15 @@ internal sealed class ThemeCompiler
     internal ThemeCompileResult Compile(
         ThemeCompileInput input,
         ControlCompilationCache? controlCompilationCache)
+        => CompileCore(input, controlCompilationCache, preserveAppendedSlots: false);
+
+    // Only the package transaction calls this: it preserves committed definitions/configuration,
+    // and registry entry identity proves that callbacks and slot assignments did not change.
+    internal ThemeCompileResult CompilePackageAppend(ThemeCompileInput input) =>
+        CompileCore(input, null, preserveAppendedSlots: true);
+
+    private ThemeCompileResult CompileCore(ThemeCompileInput input,
+        ControlCompilationCache? controlCompilationCache, bool preserveAppendedSlots)
     {
         ArgumentNullException.ThrowIfNull(input);
 
@@ -148,41 +153,44 @@ internal sealed class ThemeCompiler
                 return Failed(diagnostics);
             }
 
-            var appearance = ResolveAppearance(input.EffectiveConfig.Algorithms);
-            var reuseGlobal = CanReuseGlobal(input, appearance);
-            DesignToken globalBuilder;
-            TokenValueTable globalValues;
-            IReadOnlyDictionary<object, object?> globalResources;
-            IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> palettes;
-            if (reuseGlobal)
+            if (preserveAppendedSlots && (input.ReusableParent is not { } previousInput ||
+                previousInput.DefinitionRevision != input.DefinitionRevision ||
+                !CanReuseGlobal(input, ResolveAppearance(input.EffectiveConfig.Algorithms))))
             {
-                var parent = input.ReusableParent!;
-                globalValues    = parent.GlobalTokenValues;
-                globalResources = parent.GlobalResources;
-                palettes        = parent.PresetColorPalettes;
-                globalBuilder   = CreateBuilder(globalValues, palettes, input.Registry.GlobalTokens);
+                throw new InvalidOperationException("Package append cannot change committed global theme inputs.");
             }
-            else
+            var global = CompileGlobal(input);
+            var controls = CompileControls(input, global, controlCompilationCache);
+            if (preserveAppendedSlots)
             {
-                globalBuilder   = CompileGlobalBuilder(input);
-                globalValues    = TokenValueTable.Freeze(globalBuilder, input.Registry.GlobalTokens);
-                globalResources = BuildResourceMap(globalBuilder, input.Registry.GlobalTokens);
-                palettes        = FreezePresetPalettes(globalBuilder);
+                var previous = input.ReusableParent!;
+                if (!global.ReuseGlobal || previous.DefinitionRevision != input.DefinitionRevision)
+                {
+                    throw new InvalidOperationException("Package append cannot change committed global theme inputs.");
+                }
+                var cells = Enumerable.Range(0, controls.Count).Select(controls.GetCell).ToArray();
+                for (var slot = 0; slot < previous.Controls.Count; slot++)
+                {
+                    if (!input.Registry.HasSameControlSlot(previous.Registry, slot))
+                    {
+                        throw new InvalidOperationException("Package append cannot replace an existing Control slot or callback.");
+                    }
+                    var previousCell = previous.Controls.GetCell(slot);
+                    // A materialized cell contains only its value. A cold cell still owns
+                    // lazy factories from the previous registry/index generation; use the
+                    // freshly constructed cell for the new generation instead.
+                    if (previousCell.MaterializedValue is not null)
+                    {
+                        cells[slot] = previousCell;
+                    }
+                }
+                controls = new LazyControlSnapshots(cells);
             }
-
-            var controls = CompileControls(
-                input,
-                appearance,
-                globalBuilder,
-                globalValues,
-                globalResources,
-                reuseGlobal,
-                controlCompilationCache);
             var fingerprint = ThemeContentFingerprint.Compute(
                 input.DefinitionRevision,
                 input.EffectiveConfig,
                 input.Registry.Revision,
-                appearance);
+                global.Appearance);
 
             return new ThemeCompileResult(
                 new ThemeSnapshot(
@@ -190,13 +198,13 @@ internal sealed class ThemeCompiler
                     input.Definition,
                     input.DefinitionRevision,
                     fingerprint,
-                    appearance,
+                    global.Appearance,
                     input.Registry.Revision,
                     input.Registry,
                     input.EffectiveConfig,
-                    globalValues,
-                    globalResources,
-                    palettes,
+                    global.Values,
+                    global.Resources,
+                    global.Palettes,
                     controls),
                 CopyDiagnostics(diagnostics),
                 null);
@@ -207,12 +215,52 @@ internal sealed class ThemeCompiler
         }
     }
 
+    private readonly record struct GlobalCompileOutcome(
+        ThemeAppearance Appearance,
+        bool ReuseGlobal,
+        DesignToken? Builder,
+        TokenValueTable Values,
+        IReadOnlyDictionary<object, object?> Resources,
+        IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> Palettes);
+
+    private static GlobalCompileOutcome CompileGlobal(ThemeCompileInput input)
+    {
+        var appearance = ResolveAppearance(input.EffectiveConfig.Algorithms);
+        var reuseGlobal = CanReuseGlobal(input, appearance);
+        DesignToken? globalBuilder;
+        TokenValueTable globalValues;
+        IReadOnlyDictionary<object, object?> globalResources;
+        IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> palettes;
+        if (reuseGlobal)
+        {
+            var parent = input.ReusableParent!;
+            globalValues    = parent.GlobalTokenValues;
+            globalResources = parent.GlobalResources;
+            palettes        = parent.PresetColorPalettes;
+            globalBuilder   = null;
+        }
+        else
+        {
+            globalBuilder   = CompileGlobalBuilder(input);
+            globalValues    = TokenValueTable.Freeze(globalBuilder, input.Registry.GlobalTokens);
+            globalResources = BuildResourceMap(globalBuilder, input.Registry.GlobalTokens, globalValues);
+            palettes        = FreezePresetPalettes(globalBuilder);
+        }
+
+        return new GlobalCompileOutcome(
+            appearance,
+            reuseGlobal,
+            globalBuilder,
+            globalValues,
+            globalResources,
+            palettes);
+    }
+
     private static bool CanReuseGlobal(ThemeCompileInput input, ThemeAppearance appearance)
     {
         var parent = input.ReusableParent;
         if (parent is null ||
-            parent.DefinitionRevision != input.DefinitionRevision ||
-            parent.RegistryRevision != input.Registry.Revision ||
+            !input.Registry.HasSameGlobalSchema(parent.Registry) ||
             parent.Appearance != appearance)
         {
             return false;
@@ -231,31 +279,36 @@ internal sealed class ThemeCompiler
                    input.EffectiveConfig.GlobalTokens);
     }
 
-    private static IReadOnlyList<ControlThemeSnapshot> CompileControls(
+    // 先按有序游标解析配置和复用状态，仅在首次查询时计算控件值与差量。
+    private static LazyControlSnapshots CompileControls(
         ThemeCompileInput input,
-        ThemeAppearance globalAppearance,
-        DesignToken globalBuilder,
-        TokenValueTable globalValues,
-        IReadOnlyDictionary<object, object?> globalResources,
-        bool reuseGlobal,
+        GlobalCompileOutcome global,
         ControlCompilationCache? controlCompilationCache)
     {
-        var controls = new ControlThemeSnapshot[input.Registry.Controls.Count];
-        GlobalCompilationCacheKey? globalCompilationCacheKey = null;
+        var count = input.Registry.Controls.Count;
+        if (input.Registry.UsesStartupIndex || input.EffectiveConfig.HasDeferredControls ||
+            input.ReusableParent?.EffectiveConfig.HasDeferredControls == true)
+        {
+            return CompileIndexedControls(input, global, controlCompilationCache, count);
+        }
+        var cells = new ControlSnapshotCell[count];
         var configIndex = 0;
         var parentConfigIndex = 0;
         var changedControlIndex = 0;
-        for (var slot = 0; slot < controls.Length; slot++)
+        var effectiveControls = input.EffectiveConfig.Controls;
+        var previousControls = input.ReusableParent?.EffectiveConfig.Controls;
+        LazyControlSnapshotSource? source = null;
+        for (var slot = 0; slot < count; slot++)
         {
             var descriptor = input.Registry.Controls[slot];
             var config = FindControlConfig(
-                input.EffectiveConfig.Controls,
+                effectiveControls,
                 descriptor.Identity,
                 ref configIndex);
             var parentConfig = input.ReusableParent is null
                 ? null
                 : FindControlConfig(
-                    input.ReusableParent.EffectiveConfig.Controls,
+                    previousControls!,
                     descriptor.Identity,
                     ref parentConfigIndex);
             bool? controlChanged = input.ChangesFromReusableParent is null
@@ -266,66 +319,115 @@ internal sealed class ThemeCompiler
                     ref changedControlIndex);
             if (CanReuseControl(
                     input.ReusableParent,
+                    input.Registry,
                     descriptor,
                     config,
                     parentConfig,
-                    reuseGlobal,
+                    global.ReuseGlobal,
+                    global.Appearance,
                     controlChanged))
             {
-                controls[slot] = input.ReusableParent!.Controls[slot];
+                cells[slot] = input.ReusableParent!.Controls.GetCell(slot);
                 continue;
             }
             if (config is null && !descriptor.HasOwnTokens)
             {
-                controls[slot] = new ControlThemeSnapshot(
+                cells[slot] = new ControlSnapshotCell(new ControlThemeSnapshot(
                     descriptor.Slot,
-                    globalAppearance,
+                    global.Appearance,
                     FrozenDictionary<int, object?>.Empty,
                     FrozenDictionary<object, object?>.Empty,
                     TokenValueTable.Empty,
-                    FrozenDictionary<object, object?>.Empty);
+                    FrozenDictionary<object, object?>.Empty));
                 continue;
             }
 
-            ControlThemeSnapshot CompileCurrentControl()
-            {
-                return CompileControl(
-                    descriptor,
-                    config,
-                    input.EffectiveConfig.Algorithms,
-                    globalAppearance,
-                    globalBuilder,
-                    globalValues,
-                    globalResources,
-                    input.Registry.GlobalTokens);
-            }
-
-            controls[slot] = controlCompilationCache is null
-                ? CompileCurrentControl()
-                : controlCompilationCache.GetOrCompile(
-                    globalCompilationCacheKey ??= GlobalCompilationCacheKey.Create(input),
-                    descriptor,
-                    config,
-                    globalAppearance,
-                    CompileCurrentControl);
+            source ??= new LazyControlSnapshotSource(
+                input,
+                global.Appearance,
+                global.Builder,
+                global.Values,
+                global.Resources,
+                global.Palettes,
+                controlCompilationCache);
+            cells[slot] = new ControlSnapshotCell(source, descriptor, config);
         }
+        return new LazyControlSnapshots(cells);
+    }
 
-        return Array.AsReadOnly(controls);
+    private static LazyControlSnapshots CompileIndexedControls(ThemeCompileInput input, GlobalCompileOutcome global,
+        ControlCompilationCache? cache, int count)
+    {
+        var cells = new ControlSnapshotCell[count];
+        var configured = new HashSet<ControlTokenIdentity>(input.EffectiveConfig.ControlIdentities);
+        var effectiveConfig = input.EffectiveConfig;
+        var parent = input.ReusableParent;
+        var canReuse = parent is not null && ReferenceEquals(parent.Registry, input.Registry) &&
+            parent.Appearance == global.Appearance && global.ReuseGlobal;
+        var allControlsUnchanged = canReuse && effectiveConfig.Equals(parent!.EffectiveConfig);
+        var changedControls = canReuse && input.ChangesFromReusableParent is { } changes
+            ? changes.ChangedControls.ToHashSet()
+            : null;
+        LazyControlSnapshotSource? source = null;
+        for (var slot = 0; slot < count; slot++)
+        {
+            var identity = input.Registry.GetControlIdentity(slot);
+            if (allControlsUnchanged || (canReuse && changedControls is not null && !changedControls.Contains(identity)))
+            {
+                cells[slot] = parent!.Controls.GetCell(slot);
+                continue;
+            }
+            var hasConfig = configured.Contains(identity);
+            if (!hasConfig && !input.Registry.ControlHasOwnTokens(slot))
+            {
+                cells[slot] = new ControlSnapshotCell(new ControlThemeSnapshot(slot, global.Appearance,
+                    FrozenDictionary<int, object?>.Empty, FrozenDictionary<object, object?>.Empty,
+                    TokenValueTable.Empty, FrozenDictionary<object, object?>.Empty));
+                continue;
+            }
+            source ??= new LazyControlSnapshotSource(input, global.Appearance, global.Builder, global.Values,
+                global.Resources, global.Palettes, cache);
+            ControlThemeSnapshot? previousValue = null;
+            NormalizedControlThemeConfig? previousConfig = null;
+            if (canReuse && parent!.Controls.GetCell(slot).MaterializedValue is { } materialized)
+            {
+                previousValue = materialized;
+                // This control was already read in the parent; its deferred config is cached.
+                // Keep only the per-control value, not the previous full effective config.
+                parent.EffectiveConfig.TryGetControl(identity, out previousConfig);
+            }
+            var controlSlot = slot;
+            var registry = input.Registry;
+            cells[slot] = new ControlSnapshotCell(source, () => registry.Controls[controlSlot],
+                () => effectiveConfig.TryGetControl(identity, out var config) ? config : null, !hasConfig,
+                previousValue, previousConfig);
+        }
+        return new LazyControlSnapshots(cells);
     }
 
     private static bool CanReuseControl(
         ThemeSnapshot? parent,
+        ThemeSchemaRegistry registry,
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? config,
         NormalizedControlThemeConfig? parentConfig,
         bool reuseGlobal,
+        ThemeAppearance appearance,
         bool? controlChanged)
     {
-        if (parent is null)
+        // slot 仅在当前 schema 内有效；演化重排后不能按旧数组下标复用其他控件的差量。
+        if (parent is null || parent.RegistryRevision != registry.Revision)
         {
             return false;
         }
         if ((uint)descriptor.Slot >= (uint)parent.Controls.Count)
+        {
+            return false;
+        }
+        var previousDescriptor = parent.Registry.Controls[descriptor.Slot];
+        if (previousDescriptor.Identity != descriptor.Identity ||
+            previousDescriptor.ControlType != descriptor.ControlType ||
+            !ReferenceEquals(previousDescriptor.CompilationIdentity, descriptor.CompilationIdentity))
         {
             return false;
         }
@@ -336,7 +438,7 @@ internal sealed class ThemeCompiler
         }
         if (config is null && parentConfig is null && !descriptor.HasOwnTokens)
         {
-            return true;
+            return parent.Appearance == appearance;
         }
 
         if (!reuseGlobal)
@@ -348,7 +450,8 @@ internal sealed class ThemeCompiler
                (config is null ? parentConfig is null : config.Equals(parentConfig));
     }
 
-    private static ControlThemeSnapshot CompileControl(
+    // 由独立 lazy source 在首次查询时执行，不依赖历史快照。
+    internal static ControlThemeSnapshot CompileControl(
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? config,
         IReadOnlyList<ThemeAlgorithmDescriptor> globalAlgorithms,
@@ -406,7 +509,7 @@ internal sealed class ThemeCompiler
         else
         {
             var effectiveGlobalValues = TokenValueTable.Freeze(effectiveGlobalBuilder, globalDescriptors);
-            var effectiveGlobalResources = BuildResourceMap(effectiveGlobalBuilder, globalDescriptors);
+            var effectiveGlobalResources = BuildResourceMap(effectiveGlobalBuilder, globalDescriptors, effectiveGlobalValues);
             globalDelta = BuildTokenDelta(globalValues, effectiveGlobalValues);
             globalResourceDelta = BuildDenseResourceDelta(globalResources, effectiveGlobalResources);
         }
@@ -569,8 +672,7 @@ internal sealed class ThemeCompiler
 
         for (var index = 0; index < left.Count; index++)
         {
-            if (left[index].Algorithm != right[index].Algorithm ||
-                left[index].Revision != right[index].Revision)
+            if (!ReferenceEquals(left[index].CompilationIdentity, right[index].CompilationIdentity))
             {
                 return false;
             }
@@ -645,23 +747,43 @@ internal sealed class ThemeCompiler
             "A theme compilation requires at least one algorithm.");
     }
 
+    private sealed class CanonicalGlobalSchema
+    {
+        internal CanonicalGlobalSchema(IReadOnlyList<TokenDescriptor> descriptors)
+        {
+            var canonical = GeneratedThemeSchema.GetGlobalTokens();
+            IsCanonical = descriptors.Count == canonical.Count;
+            for (var index = 0; IsCanonical && index < canonical.Count; index++)
+            {
+                IsCanonical = ReferenceEquals(descriptors[index], canonical[index]);
+            }
+        }
+
+        internal bool IsCanonical { get; }
+    }
+
+    private static bool IsCanonicalGlobalSchema(IReadOnlyList<TokenDescriptor> descriptors)
+    {
+        // Compiler inputs are registry-owned immutable lists. Metadata equality cannot certify callbacks.
+        return GlobalSchemas.GetValue(descriptors, static value => new CanonicalGlobalSchema(value)).IsCanonical;
+    }
+
     private static DesignToken CopyBuilder(
         DesignToken source,
         IReadOnlyList<TokenDescriptor> descriptors)
     {
-        var copy = new DesignToken();
-        foreach (var descriptor in descriptors)
+        var canonical = IsCanonicalGlobalSchema(descriptors);
+        var copy = new DesignToken(initializeSeed: !canonical);
+        if (canonical)
         {
-            var value = descriptor.GetValue(source);
-            if (value is not null &&
-                !value.GetType().IsValueType &&
-                value is not string &&
-                value is not Avalonia.Media.FontFamily)
+            GeneratedThemeSchema.CopyGlobalValues(source, copy);
+        }
+        else
+        {
+            foreach (var descriptor in descriptors)
             {
-                value = descriptor.Parse(descriptor.Format(value));
+                descriptor.SetValue(copy, descriptor.CopyValue(descriptor.GetValue(source)));
             }
-
-            descriptor.SetValue(copy, value);
         }
 
         foreach (var palette in source.ColorPalettes)
@@ -681,7 +803,7 @@ internal sealed class ThemeCompiler
         {
             if (value.Descriptor.Stage == stage)
             {
-                value.Descriptor.SetValue(builder, value.Value);
+                value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
             }
         }
     }
@@ -692,19 +814,21 @@ internal sealed class ThemeCompiler
     {
         foreach (var value in values)
         {
-            value.Descriptor.SetValue(builder, value.Value);
+            value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
         }
     }
 
-    private static DesignToken CreateBuilder(
+    internal static DesignToken CreateBuilder(
         TokenValueTable values,
         IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> palettes,
         IReadOnlyList<TokenDescriptor> descriptors)
     {
-        var builder = new DesignToken();
+        var canonical = IsCanonicalGlobalSchema(descriptors);
+        var builder = new DesignToken(initializeSeed: !canonical);
         foreach (var descriptor in descriptors)
         {
-            descriptor.SetValue(builder, ThawValue(descriptor, values.GetValue(descriptor.Slot)));
+            var value = values.GetValue(descriptor.Slot);
+            descriptor.SetValue(builder, descriptor.CopyValue(value));
         }
 
         foreach (var palette in palettes)
@@ -715,63 +839,32 @@ internal sealed class ThemeCompiler
         return builder;
     }
 
-    private static object? ThawValue(TokenDescriptor descriptor, object? value)
-    {
-        if (value is null || value.GetType().IsValueType || value is string)
-        {
-            return value;
-        }
-
-        return descriptor.Parse(descriptor.Format(value));
-    }
-
-    private static void NormalizeFinalBehavior(DesignToken builder)
-    {
-        if (!builder.EnableMotion)
-        {
-            builder.MotionDurationFast     = TimeSpan.Zero;
-            builder.MotionDurationMid      = TimeSpan.Zero;
-            builder.MotionDurationSlow     = TimeSpan.Zero;
-            builder.MotionDurationVerySlow = TimeSpan.Zero;
-        }
-
-        if (!builder.EnableWaveSpirit)
-        {
-            builder.WaveAnimationRange = 0;
-            builder.WaveStartOpacity   = 0;
-        }
-    }
+    private static void NormalizeFinalBehavior(DesignToken builder) => builder.NormalizeFinalBehavior();
 
     private static IReadOnlyDictionary<object, object?> BuildResourceMap(
         AbstractDesignToken builder,
-        IReadOnlyList<TokenDescriptor> descriptors)
+        IReadOnlyList<TokenDescriptor> descriptors,
+        TokenValueTable? frozenValues = null)
     {
+        var reuseValues = frozenValues is not null && IsCanonicalGlobalSchema(descriptors);
         var resources = new Dictionary<object, object?>(descriptors.Count);
         foreach (var descriptor in descriptors)
         {
+            var value = reuseValues ? frozenValues!.GetValue(descriptor.Slot) : null;
+            // Only exact generated getters/projectors and unchanged immutable values can share this read.
+            // Other references and all custom projectors retain their original ownership/callback boundary.
+            var projected = reuseValues && (descriptor.ValueType.IsValueType || value is FontFamily)
+                ? ThemeResourceValue.Project(value)
+                : descriptor.ProjectResourceValue(builder);
             resources.Add(
                 descriptor.ResourceKey,
-                FreezeResourceValue(descriptor.ProjectResourceValue(builder)));
+                FreezeResourceValue(projected));
         }
 
         return resources.ToFrozenDictionary();
     }
 
-    private static object? FreezeResourceValue(object? value)
-    {
-        return value switch
-        {
-            SolidColorBrush brush => ThemeResourceValue.CloneSolidColorBrush(brush),
-            IBrush brush => brush.ToImmutable(),
-            SplineEasing easing => new SplineEasing(easing.X1, easing.Y1, easing.X2, easing.Y2),
-            SpringEasing easing => new SpringEasing(
-                easing.Mass,
-                easing.Stiffness,
-                easing.Damping,
-                easing.InitialVelocity),
-            _ => value
-        };
-    }
+    private static object? FreezeResourceValue(object? value) => ThemeResourceValue.Freeze(value);
 
     private static IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> FreezePresetPalettes(
         DesignToken builder)
@@ -791,7 +884,20 @@ internal sealed class ThemeCompiler
 
     private static ColorMap CopyColorMap(ColorMap source)
     {
-        return ColorMap.FromColors(GetColors(source));
+        // Preserve the base ColorMap shape even when the source is a derived record.
+        return new ColorMap
+        {
+            Color1 = source.Color1,
+            Color2 = source.Color2,
+            Color3 = source.Color3,
+            Color4 = source.Color4,
+            Color5 = source.Color5,
+            Color6 = source.Color6,
+            Color7 = source.Color7,
+            Color8 = source.Color8,
+            Color9 = source.Color9,
+            Color10 = source.Color10
+        };
     }
 
     private static Avalonia.Media.Color[] GetColors(ColorMap source)

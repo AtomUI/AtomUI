@@ -8,8 +8,8 @@
              x:DataType="vm:TabStripViewModel"
              x:CompileBindings="True">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="TabStrip"
                     Category="{gallery:TabStripShowCaseLangResource ComponentCategory}"
@@ -19,8 +19,93 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="BaseTabStrip" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:TabStripViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview Name="TabStripSemanticPreview"
+                                                     SemanticOwner="{Binding #TabStripSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:TabStrip}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:TabStrip Name="TabStripSemanticOwner"
+                                               Width="420"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center">
+                                    <atom:TabStripItem Content="{gallery:TabStripShowCaseLangResource P2ContentTabN1}" />
+                                    <atom:TabStripItem Content="{gallery:TabStripShowCaseLangResource P2ContentTabN2}" />
+                                    <atom:TabStripItem Content="{gallery:TabStripShowCaseLangResource P2ContentTabN3}" />
+                                </atom:TabStrip>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TabStripShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:TabStripShowCaseLangResource SemanticItemDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                        <gallery:SemanticPartPreview Name="CardTabStripSemanticPreview"
+                                                     SemanticOwner="{Binding #CardTabStripSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:CardTabStrip}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:CardTabStrip Name="CardTabStripSemanticOwner"
+                                                   Width="420"
+                                                   IsShowAddTabButton="True"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center">
+                                    <atom:TabStripItem Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}" Content="{gallery:TabStripShowCaseLangResource P2ContentTabN1}" />
+                                    <atom:TabStripItem Icon="{antdicons:AntDesignIconProvider Kind=AndroidOutlined}" Content="{gallery:TabStripShowCaseLangResource P2ContentTabN2}" />
+                                    <atom:TabStripItem Content="{gallery:TabStripShowCaseLangResource P2ContentTabN3}" />
+                                </atom:CardTabStrip>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TabStripShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="add"
+                                    Description="{gallery:TabStripShowCaseLangResource SemanticAddDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:TabStripShowCaseLangResource SemanticItemDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                        <gallery:SemanticPartPreview Name="TabStripItemSemanticPreview"
+                                                     SemanticOwner="{Binding #TabStripItemSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:TabStripItem}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:TabStrip Width="420"
+                                               IsTabClosable="True"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center">
+                                    <atom:TabStripItem Name="TabStripItemSemanticOwner"
+                                                       Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}"
+                                                       IsAutoHideCloseButton="False"
+                                                       Content="{gallery:TabStripShowCaseLangResource P2ContentTabN1}" />
+                                    <atom:TabStripItem IsClosable="False" Content="{gallery:TabStripShowCaseLangResource P2ContentTabN2}" />
+                                    <atom:TabStripItem IsClosable="False" Content="{gallery:TabStripShowCaseLangResource P2ContentTabN3}" />
+                                </atom:TabStrip>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TabStripShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="close"
+                                    Description="{gallery:TabStripShowCaseLangResource SemanticCloseDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="icon"
+                                    Description="{gallery:TabStripShowCaseLangResource SemanticIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="label"
+                                    Description="{gallery:TabStripShowCaseLangResource SemanticLabelDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -255,6 +340,56 @@
     </gallery:ShowCaseItem>
 
     <gallery:ShowCaseItem
+        SourceKey="tab-strip-overflow-popup-search"
+        Title="{gallery:TabStripShowCaseLangResource TabStripOverflowPopupSearchTitle}"
+        Description="{gallery:TabStripShowCaseLangResource TabStripOverflowPopupSearchDescription}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:TabStripViewModel">
+                <StackPanel Orientation="Vertical" Spacing="20">
+                    <atom:TabStrip MaxWidth="720"
+                                   HorizontalAlignment="Stretch"
+                                   ItemsSource="{Binding OverflowTabItems}"
+                                   SelectedIndex="1">
+                        <atom:TabStrip.OverflowPopupTemplate>
+                            <DataTemplate x:DataType="atom:TabOverflowPopupContext">
+                                <gallery:SearchableTabOverflowPopup
+                                    Context="{Binding}"
+                                    SearchPlaceholder="{gallery:TabStripShowCaseLangResource P2PlaceholderSearchTabs}"
+                                    EmptyText="{gallery:TabStripShowCaseLangResource P2TextNoMatchingTabs}" />
+                            </DataTemplate>
+                        </atom:TabStrip.OverflowPopupTemplate>
+                        <atom:TabStrip.ItemTemplate>
+                            <DataTemplate x:DataType="atom:TabItemData">
+                                <atom:TextBlock Text="{Binding Header}" />
+                            </DataTemplate>
+                        </atom:TabStrip.ItemTemplate>
+                    </atom:TabStrip>
+
+                    <atom:CardTabStrip MaxWidth="720"
+                                       HorizontalAlignment="Stretch"
+                                       ItemsSource="{Binding OverflowTabItems}"
+                                       SelectedIndex="1">
+                        <atom:CardTabStrip.OverflowPopupTemplate>
+                            <DataTemplate x:DataType="atom:TabOverflowPopupContext">
+                                <gallery:SearchableTabOverflowPopup
+                                    Context="{Binding}"
+                                    SearchPlaceholder="{gallery:TabStripShowCaseLangResource P2PlaceholderSearchTabs}"
+                                    EmptyText="{gallery:TabStripShowCaseLangResource P2TextNoMatchingTabs}" />
+                            </DataTemplate>
+                        </atom:CardTabStrip.OverflowPopupTemplate>
+                        <atom:CardTabStrip.ItemTemplate>
+                            <DataTemplate x:DataType="atom:TabItemData">
+                                <atom:TextBlock Text="{Binding Header}" />
+                            </DataTemplate>
+                        </atom:CardTabStrip.ItemTemplate>
+                    </atom:CardTabStrip>
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
         Title="{gallery:TabStripShowCaseLangResource TabStripCardTypeTitle}"
         Description="{gallery:TabStripShowCaseLangResource TabStripCardTypeDescription}"
         IsDeferredContentEnabled="True">
@@ -347,7 +482,6 @@
     <gallery:ShowCaseItem
         Title="{gallery:TabStripShowCaseLangResource TabStripCardShapePositionTitle}"
         Description="{gallery:TabStripShowCaseLangResource TabStripCardShapePositionDescription}"
-        Margin="0, 0, 10, 0"
         IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:TabStripViewModel">
@@ -421,7 +555,6 @@
     <gallery:ShowCaseItem
         Title="{gallery:TabStripShowCaseLangResource TabStripAddCloseTitle}"
         Description="{gallery:TabStripShowCaseLangResource TabStripAddCloseDescription}"
-        Margin="0, 0, 30, 0"
         IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:TabStripViewModel">
@@ -438,7 +571,64 @@
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
 
+    <gallery:ShowCaseItem
+        Title="{gallery:TabStripShowCaseLangResource SemanticPartStyleTitle}"
+        Description="{gallery:TabStripShowCaseLangResource SemanticPartStyleDescription}"
+        SourceKey="tabstrip-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        Span="Full"
+        MinHeight="300"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:TabStripViewModel">
+                <StackPanel Spacing="16">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|TabStrip.semantic-style-demo">
+                            <atom:TabStripItemStyle x:SetterTargetType="atom:TabStripItem">
+                                <Setter Property="Margin" Value="0,0,4,0" />
+                                <Style Selector="^:selected">
+                                    <Setter Property="Background" Value="#1A1677FF" />
+                                </Style>
+                            </atom:TabStripItemStyle>
+                        </Style>
+                        <Style Selector="atom|TabStripItem.semantic-style-demo">
+                            <atom:TabStripItemIconStyle x:SetterTargetType="atom:IconPresenter">
+                                <Setter Property="Margin" Value="0,0,4,0" />
+                            </atom:TabStripItemIconStyle>
+                            <atom:TabStripItemLabelStyle x:SetterTargetType="ContentPresenter">
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </atom:TabStripItemLabelStyle>
+                        </Style>
+                        <Style Selector="atom|CardTabStrip.semantic-style-demo">
+                            <atom:CardTabStripAddStyle x:SetterTargetType="atom:IconButton">
+                                <Setter Property="CornerRadius" Value="4" />
+                            </atom:CardTabStripAddStyle>
+                        </Style>
+                    </StackPanel.Styles>
+                    <atom:TabStrip Classes="semantic-style-demo">
+                        <atom:TabStripItem Classes="semantic-style-demo"
+                                           Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}"
+                                           Content="{gallery:TabStripShowCaseLangResource P2ContentTabN1}" />
+                        <atom:TabStripItem Classes="semantic-style-demo"
+                                           Icon="{antdicons:AntDesignIconProvider Kind=AndroidOutlined}"
+                                           Content="{gallery:TabStripShowCaseLangResource P2ContentTabN2}" />
+                        <atom:TabStripItem Classes="semantic-style-demo"
+                                           Content="{gallery:TabStripShowCaseLangResource P2ContentTabN3}" />
+                    </atom:TabStrip>
+                    <atom:CardTabStrip Classes="semantic-style-demo"
+                                       IsShowAddTabButton="True">
+                        <atom:TabStripItem Classes="semantic-style-demo"
+                                           Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}"
+                                           Content="{gallery:TabStripShowCaseLangResource P2ContentTabN1}" />
+                        <atom:TabStripItem Classes="semantic-style-demo"
+                                           Content="{gallery:TabStripShowCaseLangResource P2ContentTabN2}" />
+                    </atom:CardTabStrip>
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

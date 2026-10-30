@@ -9,6 +9,8 @@
                 <Panel>
                     <atom:SelectAddOnDecoratedBox
                         Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
+                        Classes.semantic-scope-input="True"
+                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         StyleVariant="{TemplateBinding StyleVariant}"
                         SizeType="{TemplateBinding SizeType}"
                         Status="{TemplateBinding Status}"
@@ -20,8 +22,6 @@
                         RightAddOn="{TemplateBinding RightAddOn}"
                         RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
                         IsEnabled="{TemplateBinding IsEnabled}"
-                        ContentLeftAddOn="{TemplateBinding ContentLeftAddOn}"
-                        ContentLeftAddOnTemplate="{TemplateBinding ContentLeftAddOnTemplate}"
                         Mode="{TemplateBinding Mode}"
                         CustomControlHeight="{TemplateBinding Height}"
                         HorizontalAlignment="Stretch"
@@ -31,8 +31,19 @@
                         CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                         CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
                         IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
+                        <atom:AddOnDecoratedBox.ContentLeftAddOn>
+                            <atom:AddOnContentPresenter
+                                Classes.semantic-prefix="True"
+                                Content="{CompiledBinding $parent[atom:Select].ContentLeftAddOn}"
+                                ContentTemplate="{CompiledBinding $parent[atom:Select].ContentLeftAddOnTemplate}"
+                                VerticalAlignment="Stretch"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Focusable="False" />
+                        </atom:AddOnDecoratedBox.ContentLeftAddOn>
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                             <StackPanel Orientation="Horizontal"
+                                        Classes.semantic-suffix="True"
                                         Spacing="{atom:SharedTokenResource SpacingXS}">
                                 <atom:SelectMaxCountIndicator
                                     Name="PART_SelectMaxCountIndicator"
@@ -45,6 +56,7 @@
                                     ContentTemplate="{CompiledBinding $parent[atom:Select].ContentRightAddOnTemplate}" />
                                 <atom:SelectHandle
                                     Name="PART_SelectHandle"
+                                    Classes.semantic-scope-handle="True"
                                     FormFeedback="{CompiledBinding $parent[atom:Select].FormFeedback}"
                                     LoadingIcon="{CompiledBinding $parent[atom:Select].SuffixLoadingIcon}"
                                     OpenIndicator="{CompiledBinding $parent[atom:Select].SuffixIcon}"
@@ -59,9 +71,10 @@
                                     IsDropDownOpen="{CompiledBinding $parent[atom:Select].IsDropDownOpen}" />
                             </StackPanel>
                         </atom:AddOnDecoratedBox.ContentRightAddOn>
-                        <Panel>
+                        <Panel Classes.semantic-content="True">
                             <atom:TextBlock
                                 Name="PlaceholderText"
+                                Classes.semantic-placeholder="True"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 TextTrimming="CharacterEllipsis"
@@ -69,6 +82,7 @@
                                 IsVisible="{TemplateBinding IsPlaceholderTextVisible}"
                                 Foreground="{TemplateBinding PlaceholderForeground}" />
                             <atom:SelectFilterTextBox Name="PART_SingleFilterInput"
+                                                      Classes.semantic-input="True"
                                                       IsVisible="False"
                                                       VerticalAlignment="Stretch"
                                                       FontSize="{TemplateBinding FontSize}"
@@ -83,6 +97,7 @@
                                                       atom:OverflowTip.PlacementTarget="{Binding $parent[atom:SelectAddOnDecoratedBox]}" />
                             <atom:SelectResultOptionsBox
                                 Name="SelectedOptionsBox"
+                                Classes.semantic-scope-tags="True"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
                                 Mode="{TemplateBinding Mode}"
@@ -108,8 +123,13 @@
                                 IsLightDismissEnabled="True"
                                 OverlayDismissEventPassThrough="True"
                                 RequestedPlacement="BottomEdgeAlignedLeft"
-                                ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}"
-                                IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}" />
+                                ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}">
+                        <Border Name="PopupFrame"
+                                Classes.semantic-popup-root="True"
+                                MaxHeight="{TemplateBinding MaxPopupHeight}"
+                                MinWidth="{TemplateBinding EffectivePopupWidth}"
+                                Padding="{TemplateBinding PopupContentPadding}" />
+                    </atom:Popup>
                 </Panel>
             </ControlTemplate>
         </Setter>

@@ -5,6 +5,7 @@ using AtomUI.Controls.Primitives;
 using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -17,8 +18,9 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Logging;
+using Avalonia.Styling;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -28,7 +30,7 @@ namespace AtomUI.Desktop.Controls;
     NavMenuPseudoClass.VerticalMode,
     NavMenuPseudoClass.DarkStyle,
     NavMenuPseudoClass.LightStyle)]
-public class NavMenu : ItemsControl,
+public partial class NavMenu : ItemsControl,
                        IFocusScope,
                        INavMenu,
                        IMotionAwareControl,
@@ -281,7 +283,12 @@ public class NavMenu : ItemsControl,
             nameof(EntryItemSpacing),
             inherits: true);
 
-    internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+    /// <summary>
+    /// Gets or sets a value indicating whether the submenu popup remains open without requiring
+    /// user interaction. Gallery semantic previews pin the popup open this way so the popup
+    /// parts can be inspected and highlighted.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<NavMenu>();
 
     private NavMenuMode _effectiveMode = NavMenuMode.Inline;
@@ -312,7 +319,12 @@ public class NavMenu : ItemsControl,
         private set => SetValue(EntryItemSpacingProperty, value);
     }
 
-    internal bool IsPopupPinnedOpen
+    /// <summary>
+    /// Gets or sets a value indicating whether the submenu popup remains open without requiring
+    /// user interaction. Gallery semantic previews pin the popup open this way so the popup
+    /// parts can be inspected and highlighted.
+    /// </summary>
+    public bool IsPopupPinnedOpen
     {
         get => GetValue(IsPopupPinnedOpenProperty);
         set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
@@ -333,8 +345,6 @@ public class NavMenu : ItemsControl,
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new StackPanel { Orientation = Orientation.Vertical });
 
-    private static readonly TimeSpan InlineCollapsedWidthMotionFrameInterval = TimeSpan.FromMilliseconds(16);
-
     private bool _defaultOpenPathsApplied;
     private int _motionContextLevel;
     private bool _originIsMotionEnabled;
@@ -342,9 +352,8 @@ public class NavMenu : ItemsControl,
     private List<TreeNodePath>? _inlineCollapsedDefaultOpenPathCache;
     private CancellationTokenSource? _inlineCollapsedWidthMotionCancellationTokenSource;
     private readonly NavMenuSelectionCoordinator _selectionCoordinator = new();
+    private readonly NavMenuPinnedOpenCoordinator _pinnedOpenCoordinator = new();
     private readonly NavMenuEntryOwnershipCoordinator _entryOwnershipCoordinator;
-    private readonly List<NavMenuItem> _pinnedOpenItems = new();
-    private int _pinnedOpenGeneration;
     private double _lastInlineExpandedWidth = double.NaN;
     
     static NavMenu()
@@ -392,6 +401,12 @@ public class NavMenu : ItemsControl,
     private protected virtual void HandleItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         _entryOwnershipCoordinator.Synchronize();
+        if (IsPopupPinnedOpen)
+        {
+            // 条目图变化会改变可钉住目标（例如声明式钉住先于条目填充写入）或使当前钉住节点失效。
+            // 此刻容器与节点的映射尚未收敛，交由协调器合并调度，在 ItemsPresenter 收敛后再求值。
+            _pinnedOpenCoordinator.QueueReconcile(this);
+        }
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -452,21 +467,26 @@ public class NavMenu : ItemsControl,
         {
             if (change.GetNewValue<bool>())
             {
-                EnsurePinnedOpenItem();
+                _pinnedOpenCoordinator.Reconcile(this);
             }
             else
             {
-                _pinnedOpenGeneration++;
-                ClearPinnedOpenItems();
+                // 取消钉住只解除关闭拦截：已打开的子菜单保持打开，只有该属性重新为 true 时
+                // 才在容器 prepare / attach 时把请求补回来。
+                _pinnedOpenCoordinator.Release();
             }
         }
     }
     
     private void HandleModeChanged()
     {
+        CancelInlineCollapsedWidthMotion();
+        ClearInlineCollapsedLayoutWidth();
+        _pinnedOpenCoordinator.Release();
         CloseOpenSubmenusPreservingSelection(this);
         UpdateEffectiveMode();
         ConfigureInteractionHandler(true);
+        _pinnedOpenCoordinator.Reconcile(this);
     }
 
     private void HandleInlineCollapsedChanged()
@@ -486,6 +506,10 @@ public class NavMenu : ItemsControl,
         {
             ExpandInlineMode();
         }
+
+        // inline collapsed 会把 EffectiveMode 在 Inline 与 Vertical 之间切换，钉住请求必须
+        // 跟随该有效模式收敛：折叠时补上钉住，展开回 Inline 时释放。
+        _pinnedOpenCoordinator.Reconcile(this);
     }
 
     private void UpdateEffectiveMode()
@@ -502,14 +526,14 @@ public class NavMenu : ItemsControl,
         base.OnAttachedToVisualTree(e);
         CoerceInlineCollapsedLayoutConstraints();
         ConfigureInteractionHandler(true);
-        EnsurePinnedOpenItem();
+        _pinnedOpenCoordinator.Reconcile(this);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         if (IsPopupPinnedOpen)
         {
-            _pinnedOpenGeneration++;
+            _pinnedOpenCoordinator.Release();
             ClosePinnedForLifecycle();
         }
 
@@ -551,142 +575,35 @@ public class NavMenu : ItemsControl,
         _selectionCoordinator.PrepareContainer(this, menuItem);
     }
 
+    /// <summary>
+    /// 容器 prepare 阶段的钉住不变量。钉住请求以节点为键保存在
+    /// <see cref="NavMenuPinnedOpenCoordinator"/> 中，因此声明式写法（AXAML 在容器生成前写入
+    /// <c>IsPopupPinnedOpen="True"</c>）以及 Mode 切换后的容器重建，都会在容器实现时按请求补齐，
+    /// 与选择状态走同一容器时序契约。
+    /// </summary>
+    internal void ApplyPinnedOpenStateToPreparedContainer(NavMenuItem menuItem)
+    {
+        _pinnedOpenCoordinator.PrepareContainer(this, menuItem);
+    }
+
     internal void ForgetGeneratedContainer(NavMenuItem menuItem)
     {
-        if (_pinnedOpenItems.Any(item => IsSameOrDescendant(item, menuItem)))
-        {
-            for (var i = _pinnedOpenItems.Count - 1; i >= 0; i--)
-            {
-                var pinnedItem = _pinnedOpenItems[i];
-                if (!IsSameOrDescendant(pinnedItem, menuItem))
-                {
-                    continue;
-                }
-
-                pinnedItem.IsPopupPinnedOpen = false;
-                _pinnedOpenItems.RemoveAt(i);
-            }
-
-            menuItem.CloseForLifecycle();
-        }
-
+        _pinnedOpenCoordinator.ForgetContainer(this, menuItem);
         _selectionCoordinator.Forget(menuItem);
         InteractionHandler?.Forget(menuItem);
-        QueuePinnedOpenItem();
-    }
-
-    private void EnsurePinnedOpenItem()
-    {
-        if (!IsPopupPinnedOpen ||
-            EffectiveMode == NavMenuMode.Inline ||
-            !this.IsAttachedToVisualTree())
+        if (IsPopupPinnedOpen)
         {
-            return;
+            // 容器移除后钉住路径可能整体失效，条目图收敛后再求值一次。
+            _pinnedOpenCoordinator.QueueReconcile(this);
         }
-
-        var menuItem = NavMenuSemanticNavigator.EnumerateDirectItems(this)
-                                               .OfType<NavMenuItem>()
-                                               .FirstOrDefault(item => item.HasSubMenu && item.IsSubMenuOpen) ??
-                       NavMenuSemanticNavigator.EnumerateDirectItems(this)
-                                               .OfType<NavMenuItem>()
-                                               .FirstOrDefault(item => item.HasSubMenu);
-        if (menuItem == null)
-        {
-            return;
-        }
-
-        var deepestOpenItem = menuItem;
-        while (NavMenuSemanticNavigator.EnumerateDirectItems(deepestOpenItem)
-                                             .OfType<NavMenuItem>()
-                                             .FirstOrDefault(item => item.HasSubMenu && item.IsSubMenuOpen) is { } child)
-        {
-            deepestOpenItem = child;
-        }
-
-        PinOpenPath(deepestOpenItem);
-    }
-
-    private void PinOpenPath(NavMenuItem leafItem)
-    {
-        var path = new List<NavMenuItem>();
-        for (var current = leafItem;
-             current != null && ReferenceEquals(current.OwnerMenu, this);
-             current = current.SemanticParentItem)
-        {
-            if (current.HasSubMenu && current.Mode != NavMenuMode.Inline)
-            {
-                path.Add(current);
-            }
-        }
-        path.Reverse();
-
-        for (var i = _pinnedOpenItems.Count - 1; i >= 0; i--)
-        {
-            var pinnedItem = _pinnedOpenItems[i];
-            if (path.Any(item => ReferenceEquals(item, pinnedItem)))
-            {
-                continue;
-            }
-
-            pinnedItem.IsPopupPinnedOpen = false;
-            _pinnedOpenItems.RemoveAt(i);
-        }
-
-        foreach (var item in path)
-        {
-            if (!_pinnedOpenItems.Any(pinnedItem => ReferenceEquals(pinnedItem, item)))
-            {
-                _pinnedOpenItems.Add(item);
-            }
-
-            item.IsPopupPinnedOpen = true;
-        }
-    }
-
-    private void ClearPinnedOpenItems()
-    {
-        foreach (var menuItem in _pinnedOpenItems)
-        {
-            menuItem.IsPopupPinnedOpen = false;
-        }
-
-        _pinnedOpenItems.Clear();
-    }
-
-    private void QueuePinnedOpenItem()
-    {
-        var generation = ++_pinnedOpenGeneration;
-        Dispatcher.UIThread.Post(
-            () =>
-            {
-                if (generation == _pinnedOpenGeneration)
-                {
-                    EnsurePinnedOpenItem();
-                }
-            },
-            DispatcherPriority.Loaded);
     }
 
     private void ClosePinnedForLifecycle()
     {
-        ClearPinnedOpenItems();
         foreach (var menuItem in NavMenuSemanticNavigator.EnumerateDirectItems(this).OfType<NavMenuItem>())
         {
             menuItem.CloseForLifecycle();
         }
-    }
-
-    private static bool IsSameOrDescendant(NavMenuItem candidate, NavMenuItem ancestor)
-    {
-        for (var current = candidate; current != null; current = current.SemanticParentItem)
-        {
-            if (ReferenceEquals(current, ancestor))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     internal bool SelectNavMenuItem(NavMenuItem menuItem)
@@ -768,7 +685,12 @@ public class NavMenu : ItemsControl,
 
     private bool TryGetInlineCollapsedLayoutWidth(out double layoutWidth)
     {
-        layoutWidth = InlineCollapsedLayoutWidth;
+        // Disposing a Forward animation before its first tick can fill its default 0.
+        // While cancelling, keep coercion at the last presented width until the caller
+        // installs the next start or clears the override. The CTS is the execution owner.
+        layoutWidth = _inlineCollapsedWidthMotionCancellationTokenSource is { IsCancellationRequested: true }
+            ? Bounds.Width
+            : InlineCollapsedLayoutWidth;
         if (!double.IsFinite(layoutWidth))
         {
             return false;
@@ -794,7 +716,7 @@ public class NavMenu : ItemsControl,
             e.Source is NavMenuItem openedItem &&
             ReferenceEquals(openedItem.OwnerMenu, this))
         {
-            PinOpenPath(openedItem);
+            _pinnedOpenCoordinator.ExtendToOpenedItem(this, openedItem);
         }
 
         if (EffectiveMode != NavMenuMode.Inline && e.Source is INavMenuItem menuItem)
@@ -859,9 +781,8 @@ public class NavMenu : ItemsControl,
                                                    out double startWidth,
                                                    out double targetWidth)
     {
-        CancelInlineCollapsedWidthMotion();
-
         startWidth  = NormalizeInlineCollapsedWidth(Bounds.Width);
+        CancelInlineCollapsedWidthMotion();
         targetWidth = collapse
             ? NormalizeInlineCollapsedWidth(InlineCollapsedWidth)
             : ResolveExpandedWidthForInlineCollapsedMotion(startWidth);
@@ -936,73 +857,70 @@ public class NavMenu : ItemsControl,
                                                           TimeSpan duration,
                                                           CancellationTokenSource cancellationTokenSource)
     {
-        var easing = new CubicEaseOut();
-        var startTimestamp = Stopwatch.GetTimestamp();
+        var cancellationToken = cancellationTokenSource.Token;
         try
         {
-            while (true)
+            // The endpoints depend on current rendered bounds and metadata coercion, so a
+            // ControlTheme transition cannot express this request-owned layout override.
+            var animation = new Animation
             {
-                await Task.Delay(InlineCollapsedWidthMotionFrameInterval, cancellationTokenSource.Token);
-
-                var progress = ResolveInlineCollapsedWidthMotionProgress(startTimestamp, duration);
-                if (progress >= 1d)
+                Duration = duration,
+                Easing = new CubicEaseOut(),
+                FillMode = FillMode.Forward,
+                Children =
                 {
-                    break;
+                    new KeyFrame
+                    {
+                        Cue = new Cue(0),
+                        Setters = { new Setter(InlineCollapsedLayoutWidthProperty, startWidth) }
+                    },
+                    new KeyFrame
+                    {
+                        Cue = new Cue(1),
+                        Setters = { new Setter(InlineCollapsedLayoutWidthProperty, targetWidth) }
+                    }
                 }
-
-                ApplyInlineCollapsedWidthMotionFrame(
-                    InterpolateInlineCollapsedWidth(startWidth, targetWidth, easing.Ease(progress)),
-                    cancellationTokenSource);
-            }
+            };
+            await animation.RunAsync(this, cancellationToken);
         }
-        catch (OperationCanceledException) when (cancellationTokenSource.IsCancellationRequested)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             // A newer inline collapsed transition owns the layout width now.
-            return;
         }
-
-        Dispatcher.UIThread.Post(() => CompleteInlineCollapsedWidthMotion(targetWidth, cancellationTokenSource));
-    }
-
-    private static double ResolveInlineCollapsedWidthMotionProgress(long startTimestamp, TimeSpan duration)
-    {
-        if (duration <= TimeSpan.Zero)
+        catch (Exception exception)
         {
-            return 1d;
+            Logger.TryGet(LogEventLevel.Error, LogArea.Control)?.Log(
+                this, "Inline collapsed width motion failed: {Exception}", exception);
         }
-
-        var elapsedSeconds = (Stopwatch.GetTimestamp() - startTimestamp) / (double)Stopwatch.Frequency;
-        return Math.Clamp(elapsedSeconds / duration.TotalSeconds, 0d, 1d);
-    }
-
-    private static double InterpolateInlineCollapsedWidth(double startWidth, double targetWidth, double progress)
-    {
-        return startWidth + (targetWidth - startWidth) * progress;
-    }
-
-    private void ApplyInlineCollapsedWidthMotionFrame(double width,
-                                                      CancellationTokenSource cancellationTokenSource)
-    {
-        Dispatcher.UIThread.Post(() =>
+        finally
         {
-            if (ReferenceEquals(_inlineCollapsedWidthMotionCancellationTokenSource, cancellationTokenSource))
+            // RunAsync can complete before Avalonia disposes its animation binding/final fill.
+            // Queue only teardown, after that stack unwinds; no frame values are posted.
+            if (!cancellationToken.IsCancellationRequested)
             {
-                InlineCollapsedLayoutWidth = width;
+                Dispatcher.UIThread.Post(() => CompleteInlineCollapsedWidthMotion(targetWidth, cancellationTokenSource));
             }
-        });
+        }
     }
 
     private void CompleteInlineCollapsedWidthMotion(double targetWidth,
                                                     CancellationTokenSource cancellationTokenSource)
     {
-        if (!ReferenceEquals(_inlineCollapsedWidthMotionCancellationTokenSource, cancellationTokenSource))
+        if (!ReferenceEquals(_inlineCollapsedWidthMotionCancellationTokenSource, cancellationTokenSource) ||
+            cancellationTokenSource.IsCancellationRequested)
         {
             return;
         }
 
         _inlineCollapsedWidthMotionCancellationTokenSource = null;
-        cancellationTokenSource.Cancel();
-        cancellationTokenSource.Dispose();
+        try
+        {
+            cancellationTokenSource.Cancel();
+        }
+        finally
+        {
+            cancellationTokenSource.Dispose();
+        }
         InlineCollapsedLayoutWidth = targetWidth;
         ClearInlineCollapsedLayoutWidth();
     }
@@ -1028,9 +946,18 @@ public class NavMenu : ItemsControl,
             return;
         }
 
-        _inlineCollapsedWidthMotionCancellationTokenSource = null;
-        cancellationTokenSource.Cancel();
-        cancellationTokenSource.Dispose();
+        try
+        {
+            cancellationTokenSource.Cancel();
+        }
+        finally
+        {
+            if (ReferenceEquals(_inlineCollapsedWidthMotionCancellationTokenSource, cancellationTokenSource))
+            {
+                _inlineCollapsedWidthMotionCancellationTokenSource = null;
+            }
+            cancellationTokenSource.Dispose();
+        }
     }
 
     private void ClearInlineCollapsedLayoutWidth()
@@ -1146,10 +1073,11 @@ public class NavMenu : ItemsControl,
         {
             SelectTargetMenuNode(SelectedItem, _selectedItemRevision);
         }
-        else if (DefaultSelectedPath != null)
+        else if (DefaultSelectedPath is { } path)
         {
+            var selectedItemRevision = _selectedItemRevision;
             Dispatcher.InvokeAsync(
-                () => ReplayDefaultSelectedPath(DefaultSelectedPath, DefaultSelectedPath.Length + 1),
+                () => ReplayDefaultSelectedPath(path, selectedItemRevision, path.Length + 1),
                 DispatcherPriority.Loaded);
         }
     }
@@ -1198,11 +1126,16 @@ public class NavMenu : ItemsControl,
             DispatcherPriority.Loaded);
     }
 
-    private void ReplayDefaultSelectedPath(TreeNodePath path, int remainingPasses)
+    private void ReplayDefaultSelectedPath(TreeNodePath path, int selectedItemRevision, int remainingPasses)
     {
+        if (selectedItemRevision != _selectedItemRevision || SelectedItem is not null)
+        {
+            return;
+        }
+
         var pathItems = TraverseNavMenuPath(path, (menuItem, i) =>
         {
-            if (i == path.Length - 1)
+            if (i == path.Length - 1 && selectedItemRevision == _selectedItemRevision && SelectedItem is null)
             {
                 SelectNavMenuItem(menuItem);
             }
@@ -1213,7 +1146,7 @@ public class NavMenu : ItemsControl,
             return;
         }
 
-        Dispatcher.InvokeAsync(() => ReplayDefaultSelectedPath(path, remainingPasses - 1),
+        Dispatcher.InvokeAsync(() => ReplayDefaultSelectedPath(path, selectedItemRevision, remainingPasses - 1),
             DispatcherPriority.Loaded);
     }
 
@@ -1569,7 +1502,7 @@ public class NavMenu : ItemsControl,
         var topLevel = TopLevel.GetTopLevel(current);
         void ExecuteLayoutPass()
         {
-            topLevel?.GetLayoutManager()?.ExecuteLayoutPass();
+            topLevel?.UpdateLayout();
         }
 
         ExecuteLayoutPass();

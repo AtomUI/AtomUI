@@ -15,6 +15,9 @@ public class AtomUIGalleryModuleTests
         configuration.DefaultRoute.Value.ShouldBe("Overview");
         configuration.NavigationNodes.Count.ShouldBeGreaterThan(0);
         configuration.Routes.Routes.Count.ShouldBeGreaterThan(60);
+        var dateViewerRoute = configuration.Routes.GetRequiredRoute("DateViewer");
+        dateViewerRoute.ViewType.ShouldBe(typeof(AtomUIGallery.ShowCases.DateViewer.DateViewerShowCase));
+        dateViewerRoute.ViewModelType.ShouldBe(typeof(AtomUIGallery.ShowCases.DateViewer.DateViewerViewModel));
 
         foreach (var node in Walk(configuration.NavigationNodes))
         {

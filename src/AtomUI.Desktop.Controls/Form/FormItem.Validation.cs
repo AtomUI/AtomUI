@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using AtomUI.Controls;
-using Avalonia.Controls.Documents;
+using AtomUI.Generated.AtomUIDesktopControls;
+using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
@@ -281,7 +282,7 @@ public partial class FormItem
         HasErrorOrWarningMsg = ValidateErrorMessages?.Count > 0 ||
                                ValidateWarningMessages?.Count > 0 ||
                                !string.IsNullOrWhiteSpace(Help);
-        BuildErrorMessageInlines();
+        BuildMessageItems();
 
         if (raiseValidateChanged)
         {
@@ -293,53 +294,56 @@ public partial class FormItem
         }
     }
 
-    private void BuildErrorMessageInlines()
+    private void BuildMessageItems()
     {
-        if (ValidateResult == FormValidateResult.Success)
+        ReleaseMessageItems();
+        if (_extraInfoLayout is null)
         {
-            ErrorMessageInlines = null;
             return;
         }
-
-        var inlines = new InlineCollection();
+        if (ValidateResult == FormValidateResult.Success)
+        {
+            return;
+        }
         if (ValidateErrorMessages != null)
         {
-            for (var i = 0; i < ValidateErrorMessages.Count; i++)
+            foreach (var message in ValidateErrorMessages)
             {
-                var message = ValidateErrorMessages[i];
-                inlines.Add(new Run(message)
-                {
-                    Foreground = ErrorMessageForeground,
-                });
-                if (i != ValidateErrorMessages.Count - 1)
-                {
-                    inlines.Add(new LineBreak());
-                }
+                AddMessageItem(message, ErrorMessageForeground);
             }
         }
-
         if (ValidateWarningMessages != null)
         {
-            for (var i = 0; i < ValidateWarningMessages.Count; i++)
+            foreach (var message in ValidateWarningMessages)
             {
-                if (inlines.Count > 0 && inlines[inlines.Count - 1] is not LineBreak)
-                {
-                    inlines.Add(new LineBreak());
-                }
-
-                var message = ValidateWarningMessages[i];
-                inlines.Add(new Run(message)
-                {
-                    Foreground = WarningMessageForeground,
-                });
-
-                if (i != ValidateWarningMessages.Count - 1)
-                {
-                    inlines.Add(new LineBreak());
-                }
+                AddMessageItem(message, WarningMessageForeground);
             }
         }
+    }
 
-        ErrorMessageInlines = inlines.Count > 0 ? inlines : null;
+    private void AddMessageItem(string message, IBrush? foreground)
+    {
+        var item = new Avalonia.Controls.TextBlock
+        {
+            Text       = message,
+            Foreground = foreground
+        };
+        item.Classes.Add(FormItemSemanticParts.HelpItemClass);
+        var insertIndex = _extraInfoLayout!.Children.Count;
+        if (_helpText is not null && _extraInfoLayout.Children.Contains(_helpText))
+        {
+            insertIndex = _extraInfoLayout.Children.IndexOf(_helpText);
+        }
+        _extraInfoLayout.Children.Insert(insertIndex, item);
+        _messageItems.Add(item);
+    }
+
+    private void ReleaseMessageItems()
+    {
+        foreach (var item in _messageItems)
+        {
+            _extraInfoLayout?.Children.Remove(item);
+        }
+        _messageItems.Clear();
     }
 }

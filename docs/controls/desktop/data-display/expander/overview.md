@@ -1,6 +1,6 @@
 # Expander 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.Expander` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Expander 桌面版实现原理](implementation.md)，Expander Token 的专项设计见 [Expander Token 设计](token.md)，设计和契约变化记录见 [Expander Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.Expander` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Expander 桌面版实现原理](implementation.md)，Semantic Part 契约见 [Expander Semantic Part 契约](semantic-part.md)，Expander Token 的专项设计见 [Expander Token 设计](token.md)，设计和契约变化记录见 [Expander Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -66,7 +66,7 @@ AtomUI 扩展契约：
 
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
-| `PART_Frame` | `PixelAlignedBorder` | 根边框、裁剪和整体布局承载。 |
+| `PART_Frame` | `PixelAlignedBorder` | 根边框、矩形裁剪与圆角裁剪（`ClipToBounds` + `ClipContentToCornerRadius`）和整体布局承载。 |
 | `PART_MainLayout` | `DockPanel` | Header 与 Content 的 dock 布局。 |
 | `PART_HeaderLayoutTransform` | `LayoutTransformControl` | 横向展开方向下旋转 Header。 |
 | `PART_HeaderDecorator` | `PixelAlignedBorder` | Header 背景和 padding 承载，也是 Header 点击范围；不绘制 Header/Content 分隔线。 |
@@ -74,10 +74,10 @@ AtomUI 扩展契约：
 | `PART_ExpandButton` | `IconButton` | 展开图标显示和图标触发入口。 |
 | `PART_HeaderPresenter` | `ContentPresenter` | Header 内容和模板承载。 |
 | `PART_AddOnContentPresenter` | `ContentPresenter` | AddOnContent 内容和模板承载。 |
-| `PART_ContentMotionActor` | `LayoutAwareMotionActor` | Content 分隔线和 Content 的共同展开/收起动效承载。 |
+| `PART_ContentViewport` | `ContentViewport` | Content 分隔线和 Content 的共同展开/收起动效承载。 |
 | `PART_ContentPresenter` | `ContentPresenter` | Content 内容、模板和 padding 承载。 |
 
-`PART_ContentMotionActor` 内包含一个未命名 `PixelAlignedBorder`。该视觉固定拥有 Content 靠近 Header 一侧的分隔线，但不作为新的 template part 或 selector 契约暴露。
+`PART_ContentViewport` 内包含一个未命名 `PixelAlignedBorder`。该视觉固定拥有 Content 靠近 Header 一侧的分隔线，但不作为新的 template part 或 selector 契约暴露。
 
 稳定伪类和主题状态：
 
@@ -92,6 +92,37 @@ AtomUI 扩展契约：
 
 Expander 没有专用 routed event 或 command。展开状态通过继承的 `IsExpanded` 表达。
 
+### 3.5 Semantic Part 契约
+
+`Expander` 公开与上游 Collapse 面板稳定 Semantic DOM 对齐的五个 Semantic Part，完整契约见 [Expander Semantic Part 契约](semantic-part.md)：
+
+| Part | Selector | AtomUI 节点 | Cardinality | 定制方式 |
+| --- | --- | --- | --- | --- |
+| `root` | 控件本身 | `Expander` owner（根边框投影到 `PART_Frame`） | `Single` | owner 选择器 + 公开属性 |
+| `header` | `.semantic-header` | `PixelAlignedBorder#PART_HeaderDecorator` | `Single` | `ExpanderHeaderStyle` |
+| `icon` | `.semantic-icon` | `IconButton#PART_ExpandButton` | `Single` | `ExpanderIconStyle` |
+| `title` | `.semantic-title` | `ContentPresenter#PART_HeaderPresenter` | `Single` | `ExpanderTitleStyle` |
+| `body` | `.semantic-body` | `ContentPresenter#PART_ContentPresenter` | `Optional` | `ExpanderBodyStyle` |
+
+Expander 是单面板控件，五个 Part 全部是 `ExpanderTheme.axaml` 单一模板内的静态节点，`TemplatedParent` 为 Expander owner
+本身。因此 `header`、`icon`、`title`、`body` 都声明 `RuntimeCreated=false`、`CrossVisualRoot=false`，生成 Style 路由是单一的
+`/template/` 边界，没有 `.semantic-scope-*` 中间锚点，也没有容器创建、prepare/clear/recycle 或跨视觉根路径。
+
+`body` 是唯一声明 `Optional` 的 Part：它位于 `PART_ContentViewport` 内部，而该 actor 折叠稳定态下 `IsVisible=false`，
+其内部 `ContentPresenter` 在首次呈现前不挂接视觉子级，因此 `body` 节点在从未展开的实例中从视觉树缺席；首次展开后节点
+物化并保持存在。`header` / `icon` / `title` 是常驻节点，任何状态下都恰好命中一个。除 `body` 的这一条呈现历史差异外，
+marker 不随展开、禁用、方向、尺寸档、图标位置、触发模式与视觉模式切换增删。定制摘要：
+
+- 状态型定制（展开/收起、展开方向、禁用、Ghost、Borderless、TriggerType、ExpandIconPosition、SizeType、自定义 padding）
+  通过 owner 公开属性完成，不改变 marker 数量。
+- 局部视觉定制通过生成的 Semantic Style 完成，`ContractType` 收缩到公开类型（`PixelAlignedBorder` / `IconButton` /
+  `ContentPresenter`），internal 节点不作为公共依赖类型。
+- 布局型 Setter（固定 `Height` / `Width` / Min/Max 等）不作为公共定制路径：头部与内容高度由尺寸档 Padding/字体链与
+  content motion 的尺寸进度共同驱动，见 [semantic-part.md §5](semantic-part.md#5-尺寸基线)。
+- Header/Content 分隔线（`PART_ContentViewport` 内未命名 `PixelAlignedBorder`）、`PART_AddOnContentPresenter`、模板结构
+  节点、动效 actor 与根表面背景/圆角/内边距都不属于 Semantic Part，见
+  [semantic-part.md §6](semantic-part.md#6-定制边界)。
+
 ## 4. 行为与状态模型
 
 核心状态流：
@@ -105,7 +136,7 @@ IsExpanded
         ↓
 Content motion / stable visibility
         ↓
-PART_ContentMotionActor.IsVisible
+PART_ContentViewport.IsVisible
 ```
 
 触发语义：
@@ -123,7 +154,7 @@ PART_ContentMotionActor.IsVisible
 
 动效状态：
 
-- `IsMotionEnabled=false` 时直接同步 `PART_ContentMotionActor.IsVisible` 和透明度。
+- `IsMotionEnabled=false` 时可见性入口立即同步 `PART_ContentViewport.IsVisible`，释放 Motion 的透明度覆盖。
 - Core 共用内容展开机制在上下方向改变内容视口高度，左右方向改变宽度，内容按正常尺寸排版并由视口裁剪。
 - 播放中反转必须从当前已呈现的尺寸和透明度接续；最终状态以最新 `IsExpanded` 为准，旧请求不能覆盖新请求。
 - 四个方向共同保持内容与标题的锚定边、分隔线相邻关系、自然内容尺寸及首尾帧连续性。具体执行路径由本控件实现文档描述。
@@ -151,7 +182,7 @@ Expander 的默认视觉由 `ExpanderTheme.axaml` 和 `ExpanderToken` 共同定�
 
 主题职责：
 
-- 提供 Header、Content、MotionActor 和 Frame 的稳定模板结构。
+- 提供 Header、Content、ContentViewport 和 Frame 的稳定模板结构。
 - 根据 `SizeType` 选择 Header/Content padding 和字体大小。
 - 根据 `ExpandDirection` 设置 Header dock、旋转和图标旋转。
 - Content 靠近 Header 的一侧固定承担分隔线，分隔线不依赖 `IsExpanded` 或 motion 时序。
@@ -180,7 +211,7 @@ Expander 属于 Data Display 分类，是单面板折叠容器。
 集成关系：
 
 - Avalonia `Expander`：继承 Header、Content、IsExpanded 和 ExpandDirection 基础语义。
-- MotionScene：提供内容动效基础设施；共用执行职责由[内容展开与收起动效设计](../../../../architecture/systems/control-infrastructure/content-expansion.md)定义，Expander 保留 `IsExpanded`、方向和模板接入所有权。
+- Motion：提供内容动效基础设施；共用执行职责由[内容展开与收起动效设计](../../../../architecture/systems/control-infrastructure/content-expansion.md)定义，Expander 保留 `IsExpanded`、方向和模板接入所有权。
 - Button/Icon：`PART_ExpandButton` 使用 AtomUI `IconButton` 和 默认 `RightOutlined` 默认图标。
 - Token 系统：通过 `ExpanderToken.ScopeProvider` 注册控件 Token 资源作用域。
 - Gallery：通过 Basic、Size、Borderless、Ghost、Custom Padding、Direction、Nested、No Arrow、Icon Position 和 Trigger 示例展示契约。
@@ -196,9 +227,9 @@ Expander 与 Collapse 的边界：
 
 - 公共 API 名称、类型、默认值和继承语义不能在未授权情况下改变。
 - `Header`、`Content`、`IsExpanded`、`ExpandDirection` 继续遵守 Avalonia `Expander` 语义。
-- `PART_Frame`、`PART_HeaderDecorator`、`PART_ExpandButton`、`PART_HeaderPresenter`、`PART_AddOnContentPresenter`、`PART_ContentMotionActor`、`PART_ContentPresenter` 的名称和外部协作语义保持稳定。
+- `PART_Frame`、`PART_HeaderDecorator`、`PART_ExpandButton`、`PART_HeaderPresenter`、`PART_AddOnContentPresenter`、`PART_ContentViewport`、`PART_ContentPresenter` 的名称和外部协作语义保持稳定。
 - `PART_HeaderDecorator` 只负责 Header 背景和 padding，不承担 Header/Content 分隔线。
-- Header/Content 分隔线必须位于 `PART_ContentMotionActor` 内部，并随 Content 自然显示、裁剪和隐藏。
+- Header/Content 分隔线必须位于 `PART_ContentViewport` 内部，并随 Content 自然显示、裁剪和隐藏。
 - `TriggerType=Icon` 时 Header 点击不能切换 `IsExpanded`。
 - `TriggerType=Header` 时 Header 区域点击应切换 `IsExpanded`。
 - 默认 `ExpandIcon` 为空时必须补齐 `RightOutlined`。
@@ -240,37 +271,17 @@ Expander 与 Collapse 的边界：
 
 Header/Content 分隔线由未命名的 Content `PixelAlignedBorder` 拥有，不由 Header 或 `IsExpanded` selector 控制。默认 bordered 模式下，分隔线位于 Content 靠近 Header 的一侧：`Down` 为顶边、`Up` 为底边、`Left` 为右边、`Right` 为左边。Borderless 和 Ghost 模式下，根边框和分隔线均为零，既有背景规则保持不变。
 
-分隔线与 Content 一起位于 `PART_ContentMotionActor` 内，因此收起时随 Content 自然隐藏。实现不得通过透明 Brush、边框 transition、延迟刷新或 motion completion 回调维护分隔线。
+分隔线与 Content 一起位于 `PART_ContentViewport` 内，因此收起时随 Content 自然隐藏。实现不得通过透明 Brush、边框 transition、延迟刷新或 motion completion 回调维护分隔线。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Expander 桌面版实现原理](implementation.md)
+- [Expander Semantic Part 契约](semantic-part.md)
 - [内容展开与收起动效设计](../../../../architecture/systems/control-infrastructure/content-expansion.md)
 - [Expander Token 设计](token.md)
 - [Expander Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Expander` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/expander/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/expander/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -280,6 +291,8 @@ LLMS 导出来源：
 | 状态行为 | Header/Icon 触发差异、禁用状态、展开方向、嵌套 Expander、动画中状态切换、模板重套用和 detach。 |
 | 内容动效设计 | 四方向逐帧验证尺寸、文字排版、锚定边及分隔线；覆盖首尾 tick、反转、关动效、方向切换和原有滚动约束。 |
 | AXAML / Template | 稳定 template part、方向 selector、padding 伪类、图标位置 selector、禁用前景和 Header/Content padding。 |
+| 圆角裁剪 | `PART_Frame` 的 `ClipContentToCornerRadius` 开启且圆角非零，header 位于角落圆角区域内；不透明 Part 背景不溢出圆角。headless 宿主会把裁剪降级为不应用，实际效果需在真实 Skia 后端（Gallery 桌面宿主）视觉验证，见 [implementation.md §4.2](implementation.md#42-圆角裁剪part-背景不溢出圆角)。 |
 | Token | Header/Content padding、背景、圆角、展开图标 margin 与 Token 类型、生成数据和 token.md 语义说明一致。 |
+| Semantic Part | 检查 descriptor 数量/顺序/字段、marker 数量与类型、五个 Part 在状态切换下的命中数量，见 [semantic-part.md §7](semantic-part.md#7-兼容性与验证)。 |
 | Gallery | Basic、Size、Borderless、Ghost、Custom Padding、Direction、Nested、No Arrow、Icon Position、Trigger 示例。 |
 | 文档 | 运行 `git diff --check`，检查相对链接存在。 |

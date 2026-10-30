@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
+        <TargetFrameworks>$(AtomUIDevelopTargetFramework)</TargetFrameworks>
         <OutputType>Exe</OutputType>
         <RootNamespace>AtomUI.Performance</RootNamespace>
         <AssemblyName>AtomUI.Performance</AssemblyName>

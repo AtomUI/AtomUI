@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -24,6 +22,13 @@ public enum CheckBoxShowCaseLangResourceKind
     ComponentCategory,
     ComponentStatusStable,
     ScenarioExamples,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticIconDescription,
+    SemanticLabelDescription,
+    SemanticPartFixedTitle,
+    SemanticPartConditionalTitle,
     P2ContentCheckbox,
     P2ContentUnchecked,
     P2ContentIndeterminate,

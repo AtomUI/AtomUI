@@ -1,4 +1,3 @@
-using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls.Primitives;
@@ -123,6 +122,9 @@ internal class AbstractUploadListItem : TemplatedControl, IMotionAwareControl
 
     static AbstractUploadListItem()
     {
+        // A deferred item theme can initialize this type before Upload. Register the
+        // parent class handler only after both types' static fields are initialized.
+        Upload.RegisterTaskRemoveRequestEvent(TaskRemoveRequestEvent);
         IconButton.ClickEvent.AddClassHandler<AbstractUploadListItem>((o, args) => o.HandleActionButtonClicked((args.Source as IconButton)!));
     }
     
@@ -133,18 +135,6 @@ internal class AbstractUploadListItem : TemplatedControl, IMotionAwareControl
             RoutedEvent = TaskRemoveRequestEvent,
             Source = this
         });
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
     }
 
     private void HandleActionButtonClicked(IconButton button)

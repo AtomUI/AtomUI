@@ -1,0 +1,123 @@
+{
+  "record_version": 1,
+  "observed_date": "2026-10-05",
+  "status": "mechanism_prototype_only",
+  "runtime_source": {
+    "repository": "https://github.com/dotnet/runtime",
+    "tag": "v8.0.27",
+    "commit": "a6bde67c455f2ac219988c7a66171631090b6f65"
+  },
+  "sdk_build_host": "10.0.300",
+  "native_target_runtime": "8.0.27",
+  "reference_native_runtime": "10.0.8",
+  "native_cases": [
+    {
+      "case": "ALL",
+      "net8": "a,b,direct,root1,root2,style,token,typeof",
+      "net10": "a,b,direct,root1,root2,style,token,typeof",
+      "same": true
+    },
+    {
+      "case": "CCTOR",
+      "net8": "direct",
+      "net10": "direct",
+      "same": true
+    },
+    {
+      "case": "CCTOR_TRANSITIVE",
+      "net8": "a,b",
+      "net10": "a,b",
+      "same": true
+    },
+    {
+      "case": "CYCLE",
+      "net8": "root1,root2",
+      "net10": "root1,root2",
+      "same": true
+    },
+    {
+      "case": "DIRECT",
+      "net8": "direct",
+      "net10": "direct",
+      "same": true
+    },
+    {
+      "case": "NONE",
+      "net8": "",
+      "net10": "",
+      "same": true
+    },
+    {
+      "case": "OFF",
+      "net8": "",
+      "net10": "",
+      "same": true
+    },
+    {
+      "case": "STATIC",
+      "net8": "",
+      "net10": "",
+      "same": true
+    },
+    {
+      "case": "STYLE",
+      "net8": "style",
+      "net10": "style",
+      "same": true
+    },
+    {
+      "case": "TOKEN",
+      "net8": "token",
+      "net10": "token",
+      "same": true
+    },
+    {
+      "case": "TRANSITIVE",
+      "net8": "a,b",
+      "net10": "a,b",
+      "same": true
+    },
+    {
+      "case": "TYPEOF",
+      "net8": "typeof",
+      "net10": "typeof",
+      "same": true
+    }
+  ],
+  "native_case_count": 12,
+  "all_case_selections_equal": true,
+  "native_baseline": "same-source stock ILC8 empty dispatcher fails",
+  "native_rejections": [
+    "scanner-disabled",
+    "mismatched defining assembly identity"
+  ],
+  "native_artifact_checks": [
+    "selected Register methods present",
+    "unselected Register methods absent",
+    "unused factory sentinel absent",
+    "static-only method present without corresponding registration"
+  ],
+  "managed": {
+    "linker": "8.0.27",
+    "host_runtime": "10.0.8",
+    "application_runtime": "8.0.27",
+    "selected_fragments": 9,
+    "asserted_absent_types": 8,
+    "independent_cecil_inspection": "passed",
+    "rejections": [
+      "unknown ABI",
+      "missing factory"
+    ]
+  },
+  "corelib_or_runtime_modified": false,
+  "unvalidated": [
+    "real AtomUI generated ABI and AXAML",
+    "multi-assembly and multi-group",
+    "full generic/forwarding/reflection coverage",
+    "native scanner-disabled mode",
+    "all host/target RIDs",
+    "cold NuGet tool delivery",
+    "production incremental/concurrent publishing",
+    "compiler servicing compatibility"
+  ]
+}

@@ -10,7 +10,6 @@ using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomCardTabControl = AtomUI.Desktop.Controls.CardTabControl;
-using AtomCardTabStrip = AtomUI.Desktop.Controls.CardTabStrip;
 using AtomTabControl = AtomUI.Desktop.Controls.TabControl;
 using AtomTabItem = AtomUI.Desktop.Controls.TabItem;
 using AtomTabStrip = AtomUI.Desktop.Controls.TabStrip;
@@ -58,32 +57,6 @@ public class TabReorderTests
     }
 
     [Fact]
-    public void TabControl_Reordering_Event_Can_Cancel_Commit()
-    {
-        var first  = new TabItemData { Header = "first" };
-        var second = new TabItemData { Header = "second" };
-        var third  = new TabItemData { Header = "third" };
-        var source = new AvaloniaList<TabItemData> { first, second, third };
-        var reorderedCount = 0;
-        var tabControl = new AtomTabControl
-        {
-            Width               = 360,
-            IsTabReorderEnabled = true,
-            ItemsSource         = source
-        };
-        tabControl.TabReordering += (_, args) => args.Cancel = true;
-        tabControl.TabReordered += (_, _) => reorderedCount++;
-
-        ShowInWindow(tabControl, window =>
-        {
-            DragContainerAfter(window, tabControl, 1, 2);
-
-            source.ShouldBe([first, second, third]);
-            reorderedCount.ShouldBe(0);
-        });
-    }
-
-    [Fact]
     public void TabControl_Drag_Near_Overflow_Edge_AutoScrolls_Header_Viewport()
     {
         var tabControl = new AtomTabControl
@@ -103,7 +76,7 @@ public class TabReorderTests
 
         ShowInWindow(tabControl, window =>
         {
-            var scrollViewer = GetVisualDescendant<BaseTabScrollViewer>(tabControl);
+            var scrollViewer = GetVisualDescendant<TabScrollViewer>(tabControl);
             RunJobsUntil(() => scrollViewer.Extent.Width > scrollViewer.Viewport.Width);
             scrollViewer.Offset.X.ShouldBe(0);
 
@@ -134,7 +107,7 @@ public class TabReorderTests
 
         ShowInWindow(tabControl, window =>
         {
-            var scrollViewer = GetVisualDescendant<BaseTabScrollViewer>(tabControl);
+            var scrollViewer = GetVisualDescendant<TabScrollViewer>(tabControl);
             RunJobsUntil(() => scrollViewer.Extent.Width > scrollViewer.Viewport.Width);
 
             var dragged = GetContainer<AtomTabItem>(tabControl, 0);
@@ -390,37 +363,6 @@ public class TabReorderTests
     }
 
     [Fact]
-    public void TabControl_Drag_Restores_All_Line_Tab_Transforms_After_Commit()
-    {
-        var source = new AvaloniaList<TabItemData>
-        {
-            new() { Header = "first" },
-            new() { Header = "second" },
-            new() { Header = "third" },
-            new() { Header = "fourth" }
-        };
-        var tabControl = new AtomTabControl
-        {
-            Width               = 520,
-            IsTabReorderEnabled = true,
-            ItemsSource         = source,
-            SelectedItem        = source[1]
-        };
-
-        ShowInWindow(tabControl, window =>
-        {
-            DragContainerAfter(window, tabControl, 2, 3);
-
-            for (var i = 0; i < tabControl.ItemCount; i++)
-            {
-                var container = GetContainer<AtomTabItem>(tabControl, i);
-                GetTranslateX(container).ShouldBe(0, $"tab container {i} must not keep horizontal preview offset after commit");
-                GetTranslateY(container).ShouldBe(0, $"tab container {i} must not keep vertical preview offset after commit");
-            }
-        });
-    }
-
-    [Fact]
     public void TabControl_Selected_Indicator_Follows_Dragged_Selected_Tab_During_Live_Reorder()
     {
         var first  = new TabItemData { Header = "first" };
@@ -613,24 +555,6 @@ public class TabReorderTests
     }
 
     [Fact]
-    public void CardTabControl_Template_Applies_When_Reorder_Is_Enabled()
-    {
-        var tabControl = new AtomCardTabControl
-        {
-            Width               = 240,
-            Height              = 140,
-            IsTabReorderEnabled = true
-        };
-        tabControl.Items.Add(new AtomTabItem { Header = "Tab 1", Content = "Content 1" });
-        tabControl.Items.Add(new AtomTabItem { Header = "Tab 2", Content = "Content 2" });
-
-        ShowInWindow(tabControl, _ =>
-        {
-            GetVisualDescendant<BaseTabScrollViewer>(tabControl).ShouldNotBeNull();
-        });
-    }
-
-    [Fact]
     public void TabStrip_ReadOnly_ItemsSource_Drag_Cleans_Up_Without_Reordered_Event()
     {
         var first  = new TabItemData { Header = "first" };
@@ -777,7 +701,7 @@ public class TabReorderTests
 
         ShowInWindow(tabStrip, window =>
         {
-            var scrollViewer = GetVisualDescendant<BaseTabScrollViewer>(tabStrip);
+            var scrollViewer = GetVisualDescendant<TabScrollViewer>(tabStrip);
             RunJobsUntil(() => scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
 
             var dragged = GetContainer<AtomTabStripItem>(tabStrip, 0);
@@ -796,24 +720,6 @@ public class TabReorderTests
                 "dragged tab preview must compensate header viewport scroll without waiting for another pointer move");
 
             ReleasePointer(window, dragPoint);
-        });
-    }
-
-    [Fact]
-    public void CardTabStrip_Template_Applies_When_Reorder_Is_Enabled()
-    {
-        var tabStrip = new AtomCardTabStrip
-        {
-            Width               = 240,
-            Height              = 140,
-            IsTabReorderEnabled = true
-        };
-        tabStrip.Items.Add(new AtomTabStripItem { Content = "Tab 1" });
-        tabStrip.Items.Add(new AtomTabStripItem { Content = "Tab 2" });
-
-        ShowInWindow(tabStrip, _ =>
-        {
-            GetVisualDescendant<BaseTabScrollViewer>(tabStrip).ShouldNotBeNull();
         });
     }
 

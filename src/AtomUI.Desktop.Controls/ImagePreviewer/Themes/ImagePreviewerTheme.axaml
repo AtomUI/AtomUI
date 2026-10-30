@@ -12,7 +12,11 @@
                                          BorderThickness="{TemplateBinding BorderThickness}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          CornerRadius="{TemplateBinding CornerRadius}">
-                    <atom:ImagePreviewerCover ImageSource="{TemplateBinding EffectiveCoverImage}"
+                    <atom:ImagePreviewerCover Classes.semantic-scope-cover="True"
+                                              OwnerPadding="{TemplateBinding Padding}"
+                                              OwnerBorderThickness="{TemplateBinding BorderThickness}"
+                                              OwnerCornerRadius="{TemplateBinding CornerRadius}"
+                                              ImageSource="{TemplateBinding EffectiveCoverImage}"
                                               IsLoading="{TemplateBinding IsCoverLoading}"
                                               IsFailed="{TemplateBinding IsCoverFailed}"
                                               Width="{TemplateBinding CoverWidth}"

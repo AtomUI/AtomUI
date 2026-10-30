@@ -1,8 +1,6 @@
-using AtomUI.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Shouldly;
 using Xunit;
@@ -14,28 +12,6 @@ public class IconInfoItemTests
     static IconInfoItemTests()
     {
         AvaloniaTestApp.EnsureInitialized();
-    }
-
-    [Fact]
-    public void IconInfoItem_Uses_Standard_Button_And_Motion_Contracts()
-    {
-        var item = new IconInfoItem();
-
-        item.ShouldBeAssignableTo<Button>();
-        item.ShouldBeAssignableTo<IMotionAwareControl>();
-    }
-
-    [Fact]
-    public void IconInfoItem_Raises_Standard_Button_Click_Event()
-    {
-        var item       = new IconInfoItem();
-        var button     = item.ShouldBeAssignableTo<Button>();
-        var clickCount = 0;
-        button.Click += (_, _) => clickCount++;
-
-        button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent, button));
-
-        clickCount.ShouldBe(1);
     }
 
     [Fact]
@@ -89,25 +65,18 @@ public class IconInfoItemTests
 
     private static string ReadRepoFile(string relativePath)
     {
-        var path = GetRepoFile(relativePath);
-        File.Exists(path).ShouldBeTrue($"Expected repository file to exist: {relativePath}");
-        return File.ReadAllText(path);
-    }
-
-    private static string GetRepoFile(string relativePath)
-    {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null)
         {
             var candidate = Path.Combine(directory.FullName, relativePath);
             if (File.Exists(candidate))
             {
-                return candidate;
+                return File.ReadAllText(candidate);
             }
 
             directory = directory.Parent;
         }
 
-        return Path.Combine(AppContext.BaseDirectory, relativePath);
+        throw new FileNotFoundException($"Could not find repository file: {relativePath}");
     }
 }

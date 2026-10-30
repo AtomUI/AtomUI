@@ -229,6 +229,54 @@
         <target state="translated">可选择的日历</target>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Body element with padding and layout control for the calendar table that contains the calendar grid</source>
+        <target state="translated">主体元素，包含日历表格的内边距、布局控制等样式，用于容纳日历网格</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with width, height and table styling control for the calendar table</source>
+        <target state="translated">内容元素，包含日历表格的宽度、高度等尺寸控制和表格样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with layout and style control for year selector, month selector and mode switcher</source>
+        <target state="translated">头部元素，包含年份选择器、月份选择器、模式切换器的布局和样式控制</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Item content element with height, overflow and other style control for custom content area inside calendar cells</source>
+        <target state="translated">条目内容元素，包含日历单元格内自定义内容区域的高度、溢出等样式控制</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element with background, border, hover state, selected state and other interactive styles for calendar cells</source>
+        <target state="translated">条目元素，包含日历单元格的背景色、边框、悬停态、选中态等交互样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Calendar property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域选择器和 Calendar 属性选择器定制已发布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element containing background, border, border-radius and overall layout structure of the calendar component</source>
+        <target state="translated">根元素，包含日历组件的背景色、边框、圆角等基础样式和整体布局结构</target>
+      </segment>
+    </unit>
     <unit id="ShowWeekDescription">
       <segment>
         <source>Show week numbers in full-screen and card calendars by setting ShowWeek to True.</source>

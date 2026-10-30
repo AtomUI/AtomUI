@@ -1,25 +1,20 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.Toolchain.Tasks.targets" Condition="'$(AtomUIToolchainTasksImported)' != 'true'" />
     <PropertyGroup>
         <AtomUIGenerateControlThemeAssetResources
             Condition="'$(AtomUIGenerateControlThemeAssetResources)' == ''">true</AtomUIGenerateControlThemeAssetResources>
         <AtomUIThemeAssetProjectDirectory>$(MSBuildProjectDirectory)</AtomUIThemeAssetProjectDirectory>
         <AtomUIThemeControlCatalog
             Condition="'$(AtomUIThemeControlCatalog)' == ''">$(AssemblyName)</AtomUIThemeControlCatalog>
-        <AtomUIPackageSharedThemePaths
-            Condition="'$(AtomUIPackageSharedThemePaths)' == ''">@(AtomUIPackageSharedTheme->'%(Identity)', ';')</AtomUIPackageSharedThemePaths>
     </PropertyGroup>
 
     <ItemGroup>
+        <CompilerVisibleProperty Include="AtomUIRegistrationPackageId" />
         <CompilerVisibleProperty Include="AtomUIThemeAssetProjectDirectory" />
         <CompilerVisibleProperty Include="AtomUIThemeControlCatalog" />
-        <CompilerVisibleProperty Include="AtomUIPackageSharedThemePaths" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Link" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="AtomUIRegistrationUnit" />
-        <CompilerVisibleItemMetadata Include="Compile" MetadataName="AtomUIRegistrationUnit" />
     </ItemGroup>
 
-    <UsingTask TaskName="AtomUI.Build.Tasks.GenerateThemeAssetWrappersTask"
-               AssemblyFile="$(AtomUIBuildTasksAssembly)" />
 
     <Target Name="GenerateAtomUIThemeAssetWrappers"
             BeforeTargets="GenerateAvaloniaResources"
@@ -31,7 +26,7 @@
         </PropertyGroup>
         <Error Condition="!Exists('$(AtomUIBuildTasksAssembly)')"
                Text="AtomUI.Build.Tasks could not be found at '$(AtomUIBuildTasksAssembly)'." />
-        <AtomUI.Build.Tasks.GenerateThemeAssetWrappersTask ThemeAssets="@(AvaloniaXaml)"
+        <AtomUI.Build.Tasks.GenerateThemeAssetWrappersTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)" ThemeAssets="@(AvaloniaXaml)"
                                                            OutputDirectory="$(_AtomUIThemeAssetOutputDirectory)"
                                                            AssemblyName="$(AssemblyName)"
                                                            GeneratedCodePath="$(_AtomUIThemeAssetGeneratedCode)">

@@ -1,6 +1,6 @@
 # DataGrid 桌面版架构设计
 
-本文档定义 `DataGrid` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [DataGrid 桌面版实现原理](implementation.md)，查询、范围数据源与虚拟化见 [DataGrid Query 与 Range Source 设计](query-range-source-design.md)，列宽测量与分配见 [DataGrid 列宽分配设计](column-sizing-design.md)，DataGrid Token 的专项设计见 [DataGrid Token 设计](token.md)，设计和契约变化记录见 [DataGrid Changelog](changelog.md)。
+本文档定义 `DataGrid` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [DataGrid 桌面版实现原理](implementation.md)，查询、范围数据源与虚拟化见 [DataGrid Query 与 Range Source 设计](query-range-source-design.md)，列宽测量与分配见 [DataGrid 列宽分配设计](column-sizing-design.md)，分页面板扩展区域见 [DataGrid 分页面板 Extra Content 设计](pagination-extra-content-design.md)，DataGrid Token 的专项设计见 [DataGrid Token 设计](token.md)，设计和契约变化记录见 [DataGrid Changelog](changelog.md)。
 
 该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `DataGrid`，其 internal `IsPopupPinnedOpen` 只供测试和内部诊断使用；设置为 true 时按 DisplayIndex 选择第一个有效列过滤入口，并通过 Header、FilterIndicator 和 Flyout relay 到具体 Popup，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变、目标列替换和模板重建仍按共享生命周期规则清理。
 
@@ -44,7 +44,8 @@ DataGrid 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | 内容与数据 | `ItemsSource`、`Query`、`AppliedQuery`、`GroupExpansion`、`TotalItemCount`、`TotalEntryCount`、`AutoGenerateColumns`、`CellTemplate`、`CellEditingTemplate` | 定义数据输入、查询、范围 presentation、模板和业务对象入口；`ItemsSource` 的类型是 `IDataGridSource?`。 |
 | 选择与当前项 | `Selection`、`CurrentRowKey`、`SelectionChanged`、`ClipboardCopyMode` | 以稳定 row key、query scope 和 index interval 维护可跨 range/page 的声明式状态。 |
 | 交互与加载 | `CanUserFilterColumns`、`CanUserReorderRows`、`CanUserResizeColumns`、`CanUserSortColumns`、`QueryChanged`、`LoadState`、`LoadError`、`IsDataStale`、`Reload()` | 表达用户查询意图、异步生命周期、错误与可提交能力。 |
-| 视觉与布局 | `BottomPaginationAlign`、`ColumnWidth`、`HorizontalAlignment`、`HorizontalScrollBarVisibility`、`MaxColumnWidth`、`MinColumnWidth`、`RowHeight`、`SeparatorBrush`、`SizeType`、`SublevelIndent` 等 14 项 | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
+| 视觉与布局 | `BottomPaginationAlign`、`ColumnWidth`、`HorizontalAlignment`、`HorizontalScrollBarVisibility`、`IsShowPageSizeSelector`、`MaxColumnWidth`、`MinColumnWidth`、`RowHeight`、`SeparatorBrush`、`SizeType`、`SublevelIndent` 等 15 项 | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
+| 分页面板扩展 | `TopPaginationExtraContent`、`TopPaginationExtraContentTemplate`、`BottomPaginationExtraContent`、`BottomPaginationExtraContentTemplate` | 在顶部/底部分页区域提供与 Pagination 相反一侧的独立 Extra Content；默认均为 `null`，不拥有分页状态。 |
 | 列查询契约 | `FieldId`、`CanUserSort`、`SupportedSortDirections`、只读 `SortState`、过滤候选展示属性 | 让列声明协议字段与能力覆盖，显示 Binding 不参与查询 identity。 |
 | 其他稳定入口 | `CellTheme`、`CustomOperatingIndicator`、`EmptyIndicator`、`Footer`、`FormatString`、`GridLinesVisibility`、`Level`、`Maximum`、`Minimum` 等 | 保留非数据架构 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
 
@@ -58,10 +59,16 @@ DataGrid 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 索引解释为 Source 集合索引。Source 不支持移动、当前 Query 语义禁止移动、编辑未能提交或 snapshot 失效时，handle 不进入
 可提交状态，也不发布 `RowReordered`。
 
-分页公共契约由 `PageSize`、`PaginationVisibility`、`TopPaginationAlign`、`BottomPaginationAlign` 和
-`IsHideOnSinglePage` 共同表达。`PageSize=0` 表示连续模式；非零值形成 `DataGridPageRequest`，其中 data start 使用 long、单页
-count 使用 int。分页总数只来自已提交 Source result 的 `TotalDataCount`，顶部和底部 Pagination 只投影同一份 applied page
-state。翻页成功后垂直 offset 归零；失败时页码、rows、totals、scrollbar 和 Query 共同回退到最后成功 presentation。
+分页公共契约由 `PageSize`、`IsShowPageSizeSelector`、`PaginationVisibility`、`TopPaginationAlign`、
+`BottomPaginationAlign` 和 `IsHideOnSinglePage` 共同表达。`IsShowPageSizeSelector` 默认为 `true`，转发到顶部和底部
+`Pagination.IsShowSizeChanger`；它只控制页大小选择器可见性，不创建独立的 DataGrid 页大小状态。`PageSize=0` 表示连续模式；
+非零值形成 `DataGridPageRequest`，其中 data start 使用 long、单页 count 使用 int。分页总数只来自已提交 Source result 的
+`TotalDataCount`，顶部和底部 Pagination 只投影同一份 applied page state。翻页成功后垂直 offset 归零；失败时页码、rows、
+totals、scrollbar 和 Query 共同回退到最后成功 presentation。
+
+分页面板可以在 Pagination 对侧提供 Extra Content。`Start` 对齐时 Pagination 左置、Extra Content 右置；`End` 对齐时
+Extra Content 左置、Pagination 右置；`Center` 对齐时 Extra Content 右置，Pagination 在剩余区域内居中。顶部和底部
+Extra Content 使用独立 Content/Template 属性，完整契约见 [DataGrid 分页面板 Extra Content 设计](pagination-extra-content-design.md)。
 
 列宽公共契约由 `DataGrid.ColumnWidth`、`DataGridColumn.Width`、控件级与列级最小/最大宽度，以及
 `DataGridLengthUnitType` 共同表达。`ColumnWidth` 默认为 `Auto`；单列可以使用 `Pixel`、`Auto`、
@@ -88,6 +95,8 @@ Query 投影，用户确认后一次性生成新的不可变 Query。过滤 DTO 
 | --- | --- | --- |
 | `PART_Ascending` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 | `PART_BottomGridLine` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
+| `PART_BottomPaginationExtraContentPresenter` | `ContentPresenter` | 展示底部分页面板 Extra Content。 |
+| `PART_BottomPaginationPanel` | `DockPanel` | 组合底部 Extra Content 与 Pagination，并执行相反侧对齐。 |
 | `PART_BottomPagination` | `Pagination` | 投影 applied page state 并转发底部翻页意图。 |
 | `PART_ColumnHeadersPresenter` | `DataGridColumnHeadersPresenter` | 测量普通列头，并在空数据布局中提供有限列视口宽度。 |
 | `PART_ContentFrame` | `?` | 承载根视觉、边框、背景或尺寸基线。 |
@@ -104,6 +113,8 @@ Query 投影，用户确认后一次性生成新的不可变 Query。过滤 DTO 
 | `PART_RootLayout` | `?` | 承载根视觉、边框、背景或尺寸基线。 |
 | `PART_RowPresenter` | `DataGridRowsPresenter` | 承载已物化行；空数据时保持隐藏，不作为 star 求解的必要前置。 |
 | `PART_SortIndicator` | `?` | 展示指示器、进度、分页或状态反馈。 |
+| `PART_TopPaginationExtraContentPresenter` | `ContentPresenter` | 展示顶部分页面板 Extra Content。 |
+| `PART_TopPaginationPanel` | `DockPanel` | 组合顶部 Extra Content 与 Pagination，并执行相反侧对齐。 |
 | `PART_TopPagination` | `Pagination` | 投影 applied page state 并转发顶部翻页意图。 |
 | `PART_VerticalIndicator` | `?` | 展示指示器、进度、分页或状态反馈。 |
 | `PART_VerticalSeparator` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
@@ -128,7 +139,8 @@ Public API / inherited command / Source invalidation / user input
 - Query、Selection、current、loading、motion 和 visual option 状态由 DataGrid 或明确 Source capability 单向推导，不能在 template part 之间双向竞争。
 - 排序、过滤和分组只由 `Query` 拥有；列、Header、Cell 和 Flyout 只投影相应字段状态。
 - `Filters` 候选项替换、reset 或 clear 时可以重新物化 Flyout 内容，但不能直接改变已应用 Query；用户确认或显式 API 才提交新的 Query。
-- 分页状态以 applied PageRequest 和 `TotalItemCount` 为 owner；上下 Pagination 不能互相覆盖，也不能在模板重建时反向重置 Query 或 Source。
+- 分页状态以 applied PageRequest 和 `TotalItemCount` 为 owner；页大小选择器的输入转换为新的 `DataGridPageRequest`，保持可保留的页序号并在新页数不足时收敛到最后一页。上下 Pagination 不能互相覆盖，也不能在模板重建时反向重置 Query 或 Source。
+- Extra Content 只属于 DataGrid 分页面板，不参与 Query、PageRequest、PageSize 或 Source request。它与内部 Pagination 共享有效可见性，不能在单页隐藏或连续模式下独立残留。
 - Loading 没有可展示的已提交 presentation，实际挂起时驱动 Spin；Refreshing 保持旧 presentation 的几何与完整不透明度，
   不自动启动 Spin。两种状态都禁止 edit/delete/move，成功时原子交换，失败时完整回退。
 - 连续滚轮、惯性或 scrollbar thumb 输入只保留最新有效 `DesiredViewport`。新目标先接管仍需要的 block，再使旧视口 scope
@@ -172,6 +184,7 @@ DataGrid 拥有独立 Control identity；`DataGridToken` 只表达 DataGrid Own 
 
 主题维护规则：
 
+- 默认背景为透明画刷，数据未填满的控件区域仍参与命中并可触发控件的上下文菜单；应用显式设置的背景继续优先。
 - 不删除或重命名已经稳定的 ControlTheme key、template part、伪类和资源 key。
 - 不把可由 AXAML 表达的模板状态迁移为 C# 动态创建视觉。
 - 不把 hover、pressed、selected、expanded、loading、filter、popup open 等运行时状态写入 Token。
@@ -335,7 +348,7 @@ DataGrid 的动效只表达状态变化反馈，不应改变 public API 语义�
 
 DataGrid 的视觉选项通过 public API 归一为 theme variables、伪类或模板绑定。Token 保存组件语义值，不能保存实例运行时状态或业务色值。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
@@ -345,26 +358,11 @@ DataGrid 的视觉选项通过 public API 归一为 theme variables、伪类或�
 - [DataGrid Token 设计](token.md)
 - [DataGrid Changelog](changelog.md)
 
-LLMS 语义区域：
+映射取舍：
 
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `DataGrid` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `query-range-source-design.md` + `column-sizing-design.md` + `token.md` + Gallery ShowCase | 生成 `controls/data-grid/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + `query-range-source-design.md` + `column-sizing-design.md` + theme/template 信息 | 生成 `controls/data-grid/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+- AntD `header.row`（thead 的 tr）在 AtomUI 中没有独立节点：`DataGridColumnHeadersPresenter` 直接承载各列头，因此不声明 `header.row`，避免虚构不存在的结构。
+- `DataGridRowHeader`（行头）无 AntD 对应物，不纳入语义部件。
+- 过滤/排序浮层属于列头触发的 Flyout 内容，遵循共享弹层契约，不在 Table 语义区域内声明。
 
 验证策略：
 

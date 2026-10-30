@@ -9,8 +9,14 @@
     </unit>
     <unit id="BasicPagingDescription">
       <segment>
-        <source>Basic pagination table.</source>
-        <target state="translated">基础分页表格。</target>
+        <source>Basic pagination table with a page-size selector and opposite-side extra content.</source>
+        <target state="translated">带页大小选择器和对侧扩展区域的基础分页表格。</target>
+      </segment>
+    </unit>
+    <unit id="BasicPagingExtraContentText">
+      <segment>
+        <source>Batch actions</source>
+        <target state="translated">批量操作</target>
       </segment>
     </unit>
     <unit id="BasicPagingTitle">
@@ -565,6 +571,12 @@
         <target state="translated">公司名称</target>
       </segment>
     </unit>
+    <unit id="P2HeaderDescription">
+      <segment>
+        <source>Description</source>
+        <target state="translated">描述</target>
+      </segment>
+    </unit>
     <unit id="P2HeaderDoorNo">
       <segment>
         <source>Door No.</source>
@@ -863,6 +875,102 @@
       <segment>
         <source>Selection</source>
         <target state="translated">选择</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyCellDescription">
+      <segment>
+        <source>Body cell element with padding, word wrap and other data cell styles.</source>
+        <target state="translated">数据单元格元素：内边距、文字换行等数据单元格基础样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyRowDescription">
+      <segment>
+        <source>Body row element with hover, selected and expanded row styles. Group header rows belong to the body rows.</source>
+        <target state="translated">数据行元素：悬浮、选中、展开等交互行样式；分组头行同样属于表体行。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyWrapperDescription">
+      <segment>
+        <source>Body wrapper element with table body layout and container styles.</source>
+        <target state="translated">表体容器元素：表格主体的布局与容器样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with header area, rows area and scrollbar layout.</source>
+        <target state="translated">内容元素：表头区、行区与滚动条的布局样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>Footer element with table footer text color styles.</source>
+        <target state="translated">底部元素：表格底部的文字颜色样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderCellDescription">
+      <segment>
+        <source>Header cell element with padding, background, text color and font weight.</source>
+        <target state="translated">表头单元格元素：内边距、背景、文字颜色与字重等表头单元格样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderWrapperDescription">
+      <segment>
+        <source>Header wrapper element with table header layout and container styles.</source>
+        <target state="translated">表头容器元素：表头的布局与容器样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPaginationItemDescription">
+      <segment>
+        <source>Pagination item element with page item sizing, active state and spacing styles.</source>
+        <target state="translated">分页项元素：分页项尺寸、激活态与间距样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPaginationRootDescription">
+      <segment>
+        <source>Pagination host element with table pagination layout and spacing styles.</source>
+        <target state="translated">分页宿主元素：表格分页布局与间距样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize each semantic part with generated dedicated part styles.</source>
+        <target state="translated">使用生成的专用部件样式定制各语义区域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewFooterText">
+      <segment>
+        <source>Footer</source>
+        <target state="translated">表尾</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewTitleText">
+      <segment>
+        <source>Semantics Preview</source>
+        <target state="translated">语义预览</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with background, border radius, scrollbar colors and other table container styles.</source>
+        <target state="translated">根元素：背景、圆角、滚动条颜色等表格容器基础样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Inner wrapper element with corner clipping and the loading wrapper.</source>
+        <target state="translated">内层包装元素：圆角裁剪与加载包裹容器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with table title layout and separator styles.</source>
+        <target state="translated">标题元素：表格标题的布局与分隔线样式。</target>
       </segment>
     </unit>
     <unit id="SizeDescription">

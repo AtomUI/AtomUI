@@ -163,6 +163,30 @@
         <target state="translated">範例</target>
       </segment>
     </unit>
+    <unit id="SemanticCoverDescription">
+      <segment>
+        <source>Cover element, set absolute positioning, z-index, background color and loading state overlay styles</source>
+        <target state="translated">遮罩層元素，設定絕對定位、層級、背景色和載入狀態覆蓋樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped style selectors to customize QRCode's published Semantic Parts.</source>
+        <target state="translated">使用擁有者作用域樣式選擇器自訂 QRCode 發布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, set flex layout, padding, background color, border, border radius and relative positioning styles</source>
+        <target state="translated">根元素，設定 flex 版面配置、內距、背景色、邊框、圓角和相對定位樣式</target>
+      </segment>
+    </unit>
     <unit id="WithIconDescription">
       <segment>
         <source>A QR code with an icon.</source>

@@ -8,6 +8,7 @@
             <ControlTemplate>
                 <Panel>
                     <atom:TextBlock Name="PART_LabelPart"
+                                    Classes.semantic-content="True"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Text="{TemplateBinding Text}" />

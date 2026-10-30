@@ -2,6 +2,10 @@
 
 本文档定义 AtomUI 控件研发时需要遵守或优先参考的工程标准，适用于 `AtomUI.Controls`、`AtomUI.Desktop.Controls`、DataGrid、ColorPicker 以及后续新增控件包。
 
+Bug 修复必须遵守[测试价值与生命周期规范](test-value-and-lifecycle.md)，否则不算完成修复。本文要求的失败复现和
+行为验证可以使用已有或临时测试；临时测试验证完成后默认删除，长期契约按准入条件保留最小充分保障，
+不得将每次修复的验证要求解释为必须永久新增测试。
+
 ## API 兼容性
 
 优化代码和修复 bug 时，默认不得修改任何既有 API、主题契约或可观察行为。即使重构后新的 API 看起来更合理，也不能擅自引入、重命名、删除或改变现有契约。
@@ -63,17 +67,37 @@ Control 对稳定视觉区域提供公共定制入口时，必须遵循
 
 - 除隐式 `root` 外，公开 Part 使用唯一 `.semantic-*` class，名称由语义职责产生，不包含 `PART_*`、序号或当前
   布局容器名称。
+- Control 使用可重复 `[SemanticPart]` 显式声明非 root Part；`SelectorClass`、`ContractType`、cardinality 和 `Since`
+  必须完整，不能依赖生成器从节点名称推断。
 - 每个 Part 必须声明稳定 `ContractType` 和 `Single`、`Optional` 或 `Multiple` cardinality。
+- 公共 Part selector 使用 owner 与生成 descriptor 的完整 `SelectorRoute`；`ContractType` 不得写成
+  `Control.semantic-*`、`:is(Control).semantic-*` 或其他类型前缀。
+- 包含 Setter 的 class-only Semantic Style 使用 `x:SetterTargetType="<ContractType>"` 提供 AXAML 编译期类型上下文；
+  该指令不属于运行时 Part selector。
 - 只有能够跨版本承诺的区域进入公开 descriptor；临时 frame、shadow、motion actor 和布局 wrapper 保留为内部
   Composition 节点。
 - 所有内置 ControlTemplate、Desktop/Browser 主题和适用派生主题必须实现相同 Part 契约。
+- AtomUI 自有 AXAML 模板使用静态 `Classes.semantic-*="True"` 声明 marker；字面量 `Classes="semantic-*"` 只作为
+  Generator 兼容输入，不作为新模板规范。Application 用户继续消费 `.semantic-*` Selector，不接触 marker 声明语法。
+- `Classes.semantic-*` 只能使用静态 `true`。不得使用 `False`、Binding 或其他动态值模拟 Optional Part 或状态切换；
+  状态由 StyledProperty、伪类或有效状态属性表达。
 - 动态创建节点使用生成的 semantic class 常量，并维护 logical parent、templated parent、回收和 re-template 生命周期。
-- 父主题最多进入自身模板一个 `/template/` 边界，不通过 Semantic Part 穿透子 Control 的 internal 模板。
+- 父控件只建模自己拥有的稳定 route。复杂 Part 可以跨越多个由 owner 创建并用 `.semantic-scope-*` 明确标记的模板边界，
+  不通过 Semantic Part 穿透未建模子 Control 的 internal 模板。
 - Popup 和 Overlay 默认使用 Selector；跨 VisualRoot 本身不构成新增 Theme 属性的理由。
 - ItemContainer Theme 和 Semantic Part Theme 只在真实 public 子 Control 允许完整 ControlTheme 替换时提供。
+- AtomUI 内置主题不得使用 `.semantic-*` 实现默认视觉；marker 必须静态，用户 Semantic Style 的 class activator
+  成本必须按真实候选节点和 listener 数量验证。
 - 删除、重命名 Part、修改 selector class、收窄 ContractType 或改变 cardinality 必须按公共 API 破坏性变更处理。
-- 控件实现完成后必须同步 `overview.md` Semantic Parts 表、`implementation.md` 模板映射、主题契约测试和
-  NativeAOT 风险验证。
+- `ATOMUIGEN020-029` 必须在提交前清零；不得通过关闭诊断、把静态节点伪装为 `RuntimeCreated` 或放宽
+  `ContractType` 掩盖模板缺失。
+- 在新增或修改布局型 Semantic Part 前，必须完成并记录尺寸/状态基线矩阵：尺寸档及其默认含义、owner/Part 的尺寸属性
+  owner、Token 映射、状态替代节点、模板路径和 Measure/Arrange 约束。必须先用失败回归证明基线缺失或尺寸混用问题，
+  再实施根因修复；禁止先添加固定 Height、MinHeight、Padding 或像素偏移让示例通过。
+- Semantic 示例必须先选择一套完整的 `Large`、`Middle`、`Small` 或 `Custom` 尺寸基线，再添加局部 Part Setter；未被
+  Setter 覆盖的属性不得来自另一套尺寸分支。外部组件的 `default` 名称不能未经事实映射直接等同于 AtomUI 默认档位。
+- 控件实现完成后必须同步 `semantic-part.md` 公共契约、`overview.md` 支持摘要、`implementation.md` 模板映射、
+  主题契约测试和 NativeAOT 风险验证。
 
 ## 可自定义尺寸模式
 
@@ -164,13 +188,24 @@ Theme 中增加 `Custom` selector。
 - 父控件的 `ControlTheme` selector 最多只进入自己的模板一层；禁止连续使用 `/template/` 穿过子控件模板继续选择其内部节点。
 - 子控件需要专用模板、内部节点样式或交互视觉时，应新增 `internal` 专用子控件及其 `ControlTheme`，由子控件自己维护内部模板。
 - 父主题可以根据自身状态设置直接模板子控件的属性，例如 `Foreground` 或 `IsVisible`，但不能依赖子控件的内部 `PART`、`TextPresenter` 或其他模板节点。
-- 生产 AXAML 应由主题边界回归测试扫描，确保每个 selector 分支最多包含一个 `/template/` 边界。
+- 生产 AXAML 应由主题边界回归测试扫描：默认 ControlTheme 的嵌套 Style 遵守 Avalonia 12 单 template selector 限制；应用侧
+  Semantic Style 的多段 `/template/` 仅在与 descriptor `SelectorRoute` 完全一致时允许。
+
+## 布局、绘制与输入几何
+
+- `DesiredSize` 是测量请求，包含外部 Margin；它用于自然尺寸、堆叠步进和 Dock 分配，不代表最终绘制或输入区域。
+- 父布局分配排列槽，子控件的 `Arrange` 应用 Width/Height、Min/Max、Margin 和对齐；Stretch 的有效槽不能被期望尺寸意外压成零。
+- `ArrangeOverride` 的 `finalSize` 与控件最终 `Bounds.Size` 是内容盒，不包含外部 Margin。绘制、背景、裁剪与命中使用实际内容盒。
+- 子控件只有一个排列 owner。Canvas、专用面板和外层控件不能各自重复排列同一节点；父级依赖的子项几何必须有明确失效路径，不能只依赖聚合期望尺寸恰好变化。
+- Raw pointer 坐标属于事件自己的 input root。跨根、变换和裁剪通过坐标转换及实际输入命中确认；仅平移原点后拼接未变换尺寸不能代替命中区域。
+- 无界测量必须返回有限的期望尺寸；阴影、Padding 等占用的空间在测量与排列阶段使用同一份分配规则。
 
 ## 持续视觉工作生命周期
 
 无限动画、Compositor 循环动画、自动播放定时器、倒计时刷新和其他周期性视觉工作必须以控件的有效可见性为运行边界。有效可见性同时包含控件自身和当前 Visual 祖先链；只检查实例 `IsVisible` 不能覆盖隐藏页面、隐藏容器或切页后仍保留在 VisualTree 中的场景。
 
 - 手工调用 `Animation.RunAsync` 的持续 Avalonia 动画必须显式使用 `PlaybackBehavior.OnlyIfVisible`。不能依赖默认 `Auto`，因为手工启动动画的默认语义不会因有效不可见而暂停。
+- 手工调用 `Animation.RunAsync` 的动画禁止使用 `IterationCount.Infinite`：Avalonia 会返回 faulted Task（`Looping animations must not use the Run method.`），无人观察时会在 GC 阶段触发 `TaskScheduler.UnobservedTaskException`。单实例持续动画应声明为 owner 私有的样式动画（`Style.Animations`，target 选模板叶子节点以避免样式作用域级联）；确需循环调用时使用有限迭代次数并观察返回的 Task。
 - Compositor 的 `AnimationIterationBehavior.Forever` 动画和 `DispatcherTimer` 不会自动遵守控件有效可见性。owner 必须跟踪自身及 Visual 祖先链的可见性，在有效不可见时停止，在恢复可见时按控件语义重新启动。
 - 暂停与恢复必须保持业务同步。纯装饰动画可以从初始状态重启；自动播放进度等与定时器耦合的状态必须和计时 owner 同步重置或恢复；基于绝对时间的统计值必须在恢复时先以当前时间重算，再继续周期刷新。
 - 可见性订阅、animation cancellation、Compositor target 和 timer handler 必须由启动持续工作的控件持有，并在 detach、unload、re-template 或功能关闭的对应路径释放。

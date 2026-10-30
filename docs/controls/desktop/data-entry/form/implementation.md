@@ -19,8 +19,9 @@ Form 的实现以 `ItemsControl` 为容器基础，`FormItem` 作为字段级容
 - `src/AtomUI.Controls/Form/FormValues.cs`、`FormValidateMessage.cs`、事件参数类型：表单值和验证事件数据结构。
 - `src/AtomUI.Desktop.Controls/Form/Form.cs`：桌面 Form 容器、表单项配置同步、验证聚合、提交、重置、动态删除和 ItemsControl 容器逻辑。
 - `src/AtomUI.Desktop.Controls/Form/FormItem.cs`：字段级布局、模板接入、内容接入、Form 配置接收、反馈创建和响应式列宽。
-- `src/AtomUI.Desktop.Controls/Form/FormItem.Validation.cs`：FormItem 验证运行、debounce、取消、策略执行、结果应用和消息 inlines 构建。
+- `src/AtomUI.Desktop.Controls/Form/FormItem.Validation.cs`：FormItem 验证运行、debounce、取消、策略执行、结果应用和逐条消息 items 构建。
 - `src/AtomUI.Desktop.Controls/Form/FormItemDecorator.cs`：组合输入控件的表单能力转发。
+- `src/AtomUI.Desktop.Controls/Form/FormItem.SemanticParts.cs`：FormItem Semantic Part 声明（`label`、`content`、`extra`、`help`）。
 - `src/AtomUI.Desktop.Controls/Form/FormSizeTypeBindingHelper.cs`：`CustomizableSizeType` 到新旧尺寸接口的转发规则。
 - `src/AtomUI.Desktop.Controls/Form/SubmitButton.cs`、`ResetButton.cs`：表单操作按钮和路由事件。
 - `src/AtomUI.Desktop.Controls/Form/FormToken.cs`：Form 控件 Token。
@@ -125,6 +126,21 @@ FormItem 生命周期：
 - `FormTheme.axaml` 中的 `PART_ItemsPresenter` 是 Form ItemsPresenter 的稳定入口。
 - 重新套用模板时必须允许布局重新计算，不能把旧 part 的尺寸缓存当作新模板尺寸。
 
+Semantic Part marker 映射（契约定义见 [Form Semantic Part 契约](semantic-part.md)）：
+
+| Part | marker 节点 | 声明方式 |
+| --- | --- | --- |
+| `label` | `FormItemTheme.axaml` 模板内 `TextBlock#PART_Label` | `Classes="semantic-label"` 静态 marker。 |
+| `content` | `FormItemTheme.axaml` 模板内 `ContentPresenter#ContentPresenter` | `Classes="semantic-content"` 静态 marker。 |
+| `extra` | `FormItemTheme.axaml` 模板内 `ContentPresenter#ExtraPresenter` | `Classes="semantic-extra"` 静态 marker。 |
+| `help` | `FormItemTheme.axaml` 模板内 `StackPanel#ExtraInfoLayout` | `Classes="semantic-help"` 静态 marker。 |
+| `helpItem` | `ExtraInfoLayout` 内逐条消息 `TextBlock` 与静态 `TextBlock#HelpText` | 消息节点在代码中用生成的 semantic class 常量添加 marker；`HelpText` 用 `Classes="semantic-help-item"` 静态 marker。 |
+
+descriptor 由 `FormItem.SemanticParts.cs` 的 `[SemanticPart]` 声明经生成器产出；`root` 隐式加入。前四个 Part 均为
+静态模板节点，`RuntimeCreated=false`；`helpItem` 是 `Multiple` Part，消息节点由验证结果应用的统一写入点在
+`ExtraInfoLayout` 中逐条创建、重建和清空（`RuntimeCreated=true`，顺序为消息在前、`HelpText` 在后）。`Form`、
+`FormItemDecorator`、`FormValidateFeedback`、`SubmitButton`、`ResetButton` 不声明 descriptor。
+
 ## 6. 交互与事件处理
 
 提交路径：
@@ -225,12 +241,15 @@ create new CancellationTokenSource
 - 内容控件 `DataValidationErrors` 中由 Form 拥有的 error
 - 内容控件 `NotifyValidateStatus(status)` 扩展状态
 - `HasErrorOrWarningMsg`
-- `ErrorMessageInlines`
+- 逐条消息 items（`helpItem` 运行时节点）
 - `ValidateChangedEvent`
 
 Form validator 产生的 error 必须写入内容控件的 `DataValidationErrors`，使 native binding validation、`DataValidationErrors.HasErrors`、`:error` 和由 `InputControlFrame` 投射的输入表面 error 视觉使用同一条通道。Form 清理时只能移除 Form-owned error，不能调用无差别清理导致 ViewModel 或 binding 写入的 native error 丢失。
 
-错误和警告消息被构造成 `InlineCollection`，并分别使用 `ErrorMessageForeground` 与 `WarningMessageForeground`。警告没有 Avalonia native validation 等价语义，因此只保留在 Form 消息、`ValidateStatus=Warning` 和控件扩展视觉状态中，不写入 `DataValidationErrors`。
+错误和警告消息被逐条构建为带 `semantic-help-item` marker 的 `TextBlock`，插入 `ExtraInfoLayout` 并分别使用
+`ErrorMessageForeground` 与 `WarningMessageForeground`；静态 `HelpText` 是 `Help` 文案的固定 `helpItem` 实例。
+每次重建先清空旧消息节点，再按"消息在前、`Help` 在后"排列。警告没有 Avalonia native validation 等价语义，
+因此只保留在 Form 消息、`ValidateStatus=Warning` 和控件扩展视觉状态中，不写入 `DataValidationErrors`。
 
 ### 7.5 Form 有效性聚合
 
@@ -302,6 +321,7 @@ AOT 边界：
 
 - `tests/AtomUI.Desktop.Controls.Tests/Form/FormBehaviorTests.cs`：覆盖默认 `OnChanged`、feedback 转发释放、验证取消、reset 取消、并行验证、stop when first failed 和 SubmitButton watch 行为。
 - `tests/AtomUI.Desktop.Controls.Tests/Form/FormCustomizableSizeTypeTests.cs`：覆盖 `CustomizableSizeType` 到新旧尺寸接口的转发。
+- `tests/AtomUI.Desktop.Controls.Tests/Form/FormSemanticPartTests.cs`：覆盖 descriptor 字段、模板 marker、Selector 命中、状态与布局矩阵、逐条消息项重建和动态增删项的 marker 生命周期。
 - `tests/AtomUIGallery.Tests/ShowCases/FormShowCasePageTests.cs`：覆盖 Gallery Form 页面结构、示例 snapshot、源码片段和本地化资源。
 
 维护 Form 时建议按风险选择验证：
@@ -310,6 +330,7 @@ AOT 边界：
 | --- | --- |
 | 验证逻辑 | 运行 Form behavior tests，并覆盖取消、reset、warning/error 和提交路径。 |
 | 尺寸转发 | 运行 Form customizable size tests，并在 Gallery 检查输入控件高度对齐。 |
+| Semantic Part | 运行 Form semantic part tests 与 Generator Semantic 测试，覆盖 marker、Selector 作用域和动态项生命周期。 |
 | AXAML / Theme | 运行 Gallery Form showcase tests，并手动检查布局、feedback、required mark 和删除按钮。 |
 | Token | 检查 Form Token 语义、FormItem 标签和 spacing。 |
 | 文档改动 | 运行 `git diff --check`，检查相对链接存在。 |

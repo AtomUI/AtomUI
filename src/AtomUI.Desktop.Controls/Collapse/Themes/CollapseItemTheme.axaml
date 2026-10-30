@@ -14,11 +14,14 @@
                     <DockPanel Name="PART_MainLayout"
                                LastChildFill="True">
                         <atom:PixelAlignedBorder Name="PART_HeaderDecorator"
+                                                 Classes.semantic-header="True"
                                                  DockPanel.Dock="Top"
+                                                 CornerRadius="{TemplateBinding HeaderCornerRadius}"
                                                  Padding="{TemplateBinding EffectiveHeaderPadding}">
                         <Grid ColumnDefinitions="Auto, *, Auto, Auto">
                             <atom:IconButton
                                 Name="PART_ExpandButton"
+                                Classes.semantic-icon="True"
                                 Grid.Column="0"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -27,6 +30,7 @@
                                 IsVisible="{TemplateBinding IsShowExpandIcon}"
                                 IsEnabled="{TemplateBinding IsEnabled}"/>
                             <ContentPresenter Name="PART_HeaderPresenter"
+                                              Classes.semantic-title="True"
                                               HorizontalAlignment="Stretch"
                                               VerticalAlignment="Center"
                                               HorizontalContentAlignment="Left"
@@ -46,17 +50,28 @@
                                 Grid.Column="2" />
                         </Grid>
                         </atom:PixelAlignedBorder>
-                        <atom:LayoutAwareMotionActor
-                            Name="PART_ContentMotionActor"
-                            ClipToBounds="True">
+                        <atom:ContentViewport
+                            Name="PART_ContentViewport"
+                            ClipToBounds="True"
+                            atom:Motion.IsVisible="{TemplateBinding IsSelected}"
+                            atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}"
+                            atom:Motion.DurationOverride="{TemplateBinding MotionDuration}">
+                            <atom:Motion.Enter>
+                                <atom:ExpandMotion />
+                            </atom:Motion.Enter>
+                            <atom:Motion.Leave>
+                                <atom:CollapseMotion />
+                            </atom:Motion.Leave>
                             <atom:PixelAlignedBorder Name="PART_ContentFrame"
+                                                     Classes.semantic-body="True"
+                                                     CornerRadius="{TemplateBinding ContentCornerRadius}"
                                                      BorderThickness="{TemplateBinding ContentBorderThickness}"
                                                      Padding="{TemplateBinding EffectiveContentPadding}">
                                 <ContentPresenter Name="PART_ContentPresenter"
                                                   Content="{TemplateBinding Content, Converter={StaticResource StringToTextBlockConverter}}"
                                                   ContentTemplate="{TemplateBinding ContentTemplate}"/>
                             </atom:PixelAlignedBorder>
-                        </atom:LayoutAwareMotionActor>
+                        </atom:ContentViewport>
                     </DockPanel>
                 </atom:PixelAlignedBorder>
             </ControlTemplate>

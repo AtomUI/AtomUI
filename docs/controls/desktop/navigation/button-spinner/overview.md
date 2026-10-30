@@ -1,6 +1,6 @@
 # ButtonSpinner 桌面版架构设计
 
-本文档定义 `ButtonSpinner` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [ButtonSpinner 桌面版实现原理](implementation.md)，ButtonSpinner Token 的专项设计见 [ButtonSpinner Token 设计](token.md)，设计和契约变化记录见 [ButtonSpinner Changelog](changelog.md)。
+本文档定义 `ButtonSpinner` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，公开语义区域契约见 [ButtonSpinner Semantic Part 契约](semantic-part.md)，内部实现原理见 [ButtonSpinner 桌面版实现原理](implementation.md)，ButtonSpinner Token 的专项设计见 [ButtonSpinner Token 设计](token.md)，设计和契约变化记录见 [ButtonSpinner Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -88,9 +88,9 @@ ButtonSpinner 的视觉模型由控件模板、ControlTheme、SharedToken 和必
 
 | 主题文件 | 职责 |
 | --- | --- |
-| `ButtonSpinnerDecoratedBoxTheme.axaml` | 定义局部操作入口、按钮或 handle 的状态视觉。 |
-| `ButtonSpinnerHandleTheme.axaml` | 定义局部操作入口、按钮或 handle 的状态视觉。 |
-| `ButtonSpinnerTheme.axaml` | 定义局部操作入口、按钮或 handle 的状态视觉。 |
+| `ButtonSpinnerTheme.axaml` | owner 模板：帧宿主（`semantic-scope-frame` 锚点）与 `SpinnerContent` 内的步进手柄；持有 `SizeType` 圆角映射与 `SpinnerHandleWidth` 默认值。 |
+| `ButtonSpinnerDecoratedBoxTheme.axaml` | 帧模板（`BasedOn` 共享 `AddOnDecoratedBoxTheme`）：左右 addon 区、内容框、内容左/右槽与浮动手柄 presenter；`SizeType` padding 与 `MinHeight` 基线。 |
+| `ButtonSpinnerHandleTheme.axaml` | 步进手柄模板：增加/减少按钮、手柄自身的背景与分隔线描边绘制、variant 与 disabled 状态视觉。 |
 
 ButtonSpinner 使用 `ButtonSpinnerToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 motion、visual option 运行时状态。
 
@@ -141,7 +141,7 @@ ButtonSpinner 的动效只表达状态变化反馈，不应改变 public API 语
 
 ButtonSpinner 的视觉选项通过 public API 归一为 theme variables、伪类或模板绑定。Token 保存组件语义值，不能保存实例运行时状态或业务色值。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
@@ -149,26 +149,14 @@ ButtonSpinner 的视觉选项通过 public API 归一为 theme variables、伪�
 - [ButtonSpinner Token 设计](token.md)
 - [ButtonSpinner Changelog](changelog.md)
 
-LLMS 语义区域：
+七个部件均为 `Single`，通过生成的强类型 Semantic Style 定制。完整 Selector、route、`ContractType`、状态矩阵与
+布局基线见 [ButtonSpinner Semantic Part 契约](semantic-part.md)。
 
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `ButtonSpinner` | 导航控件根语义区域，承载 public API、状态归一和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `trigger` | `触发区域` | 承载点击、键盘、打开关闭、跳转或提交入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `导航项区域` | 承载当前项、选中项、禁用项、层级项或分页项状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `popup` | `弹层或内容区域` | 承载 flyout、dropdown、tab content、submenu 或候选内容。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效区域` | 表达打开关闭、选中指示、切换和过渡反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/button-spinner/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/button-spinner/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
+公开语义区域的准入范围映射上游 `InputNumber` 已公开并实际消费的 `root` / `prefix` / `suffix` / `input` / `actions`
+键：帧内主内容区对应 `input` 职责（本控件不拥有文本编辑面，故发布为 `content`），帧内容左/右槽对应 `prefix` / `suffix`
+职责（为不破坏 `NumericUpDown` 已发布的 `Single` route，改用与公开 API 同名的 `innerLeftContent` /
+`innerRightContent`），步进按钮区对应 `actions`。单个上/下按钮上游没有公开语义键，属显式能力补充。
+`LeftAddOn` / `RightAddOn` 外部区域不发布部件，与输入家族保持一致。
 
 验证策略：
 

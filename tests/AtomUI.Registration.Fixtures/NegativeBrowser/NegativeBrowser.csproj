@@ -1,0 +1,22 @@
+<Project>
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.WebAssembly" />
+    <PropertyGroup>
+        <TargetFramework>net10.0-browser</TargetFramework><OutputType>Exe</OutputType><AssemblyName>AtomUI.Registration.Fixtures</AssemblyName>
+        <DefineConstants>$(DefineConstants);COMPLEX;BROWSER</DefineConstants><AllowUnsafeBlocks>true</AllowUnsafeBlocks><WasmEnableWebcil>false</WasmEnableWebcil>
+        <InvariantGlobalization>false</InvariantGlobalization>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="../Shared/ProductApp.cs" Link="ProductApp.cs" />
+        <Compile Include="../Browser/Program.cs" Link="Program.cs" />
+        <Content Include="../Browser/wwwroot/**" Link="wwwroot/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+        <ProjectReference Include="../../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
+        <ProjectReference Include="../ThirdParty/ThirdParty.csproj" />
+        <PackageReference Include="Avalonia.Browser" />
+    </ItemGroup>
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk.WebAssembly" />
+    <!-- Deliberate unsafe test harness: remove the converter and the build gate to prove Mono's
+         actual product runtime fails. No product consumer option enables this bypass. -->
+    <Target Name="AtomUIPrepareTypeMapBackend" />
+    <Target Name="AtomUIVerifyTypeMapLinkOutput" />
+    <Target Name="AtomUIVerifyTypeMapConsumedOutput" />
+</Project>

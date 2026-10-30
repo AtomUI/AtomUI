@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AtomUI.Reflection;
 using Avalonia.Input;
@@ -12,30 +11,35 @@ internal static class ContextMenuReflectionExtensions
 {
     #region 反射信息定义
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(AvaloniaContextMenu))]
     private static readonly Lazy<FieldInfo> PopupFieldInfo = new(() =>
-        typeof(AvaloniaContextMenu).GetFieldInfoOrThrow("_popup",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+        FixedMemberReflection.RequireField(
+            typeof(AvaloniaContextMenu).GetField("_popup", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(AvaloniaContextMenu),
+            "_popup"));
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(AvaloniaContextMenu))]
     private static readonly Lazy<MethodInfo> PopupOpenedMethodInfo = new(() =>
-        typeof(AvaloniaContextMenu).GetMethodInfoOrThrow("PopupOpened",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+        FixedMemberReflection.RequireMethod(
+            typeof(AvaloniaContextMenu).GetMethod("PopupOpened", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(AvaloniaContextMenu),
+            "PopupOpened"));
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(AvaloniaContextMenu))]
     private static readonly Lazy<MethodInfo> PopupClosedMethodInfo = new(() =>
-        typeof(AvaloniaContextMenu).GetMethodInfoOrThrow("PopupClosed",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+        FixedMemberReflection.RequireMethod(
+            typeof(AvaloniaContextMenu).GetMethod("PopupClosed", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(AvaloniaContextMenu),
+            "PopupClosed"));
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(AvaloniaContextMenu))]
     private static readonly Lazy<MethodInfo> PopupClosingMethodInfo = new(() =>
-        typeof(AvaloniaContextMenu).GetMethodInfoOrThrow("PopupClosing",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+        FixedMemberReflection.RequireMethod(
+            typeof(AvaloniaContextMenu).GetMethod("PopupClosing", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(AvaloniaContextMenu),
+            "PopupClosing"));
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(AvaloniaContextMenu))]
     private static readonly Lazy<MethodInfo> PopupKeyUpMethodInfo = new(() =>
-        typeof(AvaloniaContextMenu).GetMethodInfoOrThrow("PopupKeyUp",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+        FixedMemberReflection.RequireMethod(
+            typeof(AvaloniaContextMenu).GetMethod("PopupKeyUp", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(AvaloniaContextMenu),
+            "PopupKeyUp"));
 
     #endregion
 

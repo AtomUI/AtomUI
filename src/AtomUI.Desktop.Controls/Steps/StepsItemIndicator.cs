@@ -267,12 +267,6 @@ internal class StepsItemIndicator : TemplatedControl
         _waveSpiritDecorator.Play();
     }
 
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
-    {
-        base.OnSizeChanged(e);
-        SetCurrentValue(CornerRadiusProperty, new CornerRadius(e.NewSize.Width));
-    }
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

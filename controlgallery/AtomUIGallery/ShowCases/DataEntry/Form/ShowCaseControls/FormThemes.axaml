@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net"
                     x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="PriceInputTheme.axaml"/>
@@ -7,4 +8,23 @@
         <ResourceInclude Source="DonationTheme.axaml"/>
         <ResourceInclude Source="CaptchaTheme.axaml"/>
     </ResourceDictionary.MergedDictionaries>
+
+    <ControlTheme x:Key="LoginOptionsDecoratorTheme"
+                  TargetType="atom:FormItemDecorator"
+                  BasedOn="{StaticResource {x:Type atom:FormItemDecorator}}">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ColumnDefinitions="*,Auto">
+                    <ContentPresenter Content="{TemplateBinding Child}"
+                                      VerticalContentAlignment="Center" />
+                    <ContentPresenter Grid.Column="1"
+                                      Content="{TemplateBinding Extra}"
+                                      ContentTemplate="{TemplateBinding ExtraTemplate}"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      VerticalContentAlignment="Center" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
 </ResourceDictionary>

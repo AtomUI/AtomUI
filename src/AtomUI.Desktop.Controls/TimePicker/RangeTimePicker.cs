@@ -1,7 +1,9 @@
-﻿using AtomUI.Controls.Utils;
+using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Utils;
 using Avalonia;
+using Avalonia.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -11,7 +13,7 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class RangeTimePicker : RangeInfoPickerInput
+public partial class RangeTimePicker : RangeInfoPickerInput
 {
     #region 公共属性定义
 
@@ -40,11 +42,14 @@ public class RangeTimePicker : RangeInfoPickerInput
         AvaloniaProperty.Register<RangeTimePicker, int>(nameof(SecondIncrement), 1, coerce: CoerceSecondIncrement);
     
     public static readonly StyledProperty<ClockIdentifierType> ClockIdentifierProperty =
-        AvaloniaProperty.Register<RangeTimePicker, ClockIdentifierType>(nameof(ClockIdentifier));
+        AvaloniaProperty.Register<RangeTimePicker, ClockIdentifierType>(nameof(ClockIdentifier), ClockIdentifierType.HourClock24);
     
     public static readonly StyledProperty<bool> IsNeedConfirmProperty =
-        AvaloniaProperty.Register<RangeTimePicker, bool>(nameof(IsNeedConfirm));
+        AvaloniaProperty.Register<RangeTimePicker, bool>(nameof(IsNeedConfirm), true);
     
+    public static readonly StyledProperty<bool> IsChangeOnScrollProperty =
+        TimePicker.IsChangeOnScrollProperty.AddOwner<RangeTimePicker>();
+
     public static readonly StyledProperty<bool> IsShowNowProperty =
         AvaloniaProperty.Register<RangeTimePicker, bool>(nameof(IsShowNow), true);
 
@@ -96,6 +101,12 @@ public class RangeTimePicker : RangeInfoPickerInput
         set => SetValue(IsNeedConfirmProperty, value);
     }
     
+    public bool IsChangeOnScroll
+    {
+        get => GetValue(IsChangeOnScrollProperty);
+        set => SetValue(IsChangeOnScrollProperty, value);
+    }
+
     public bool IsShowNow
     {
         get => GetValue(IsShowNowProperty);
@@ -128,7 +139,7 @@ public class RangeTimePicker : RangeInfoPickerInput
         get => _preferredWidth;
         set
         {
-            if (_preferredWidth == value)
+            if (MathUtils.AreClose(_preferredWidth, value))
             {
                 return;
             }
@@ -177,10 +188,15 @@ public class RangeTimePicker : RangeInfoPickerInput
     /// </summary>
     public override void Clear()
     {
+        _pickerPresenter?.EndEditing();
+        SetCurrentValue(RangeStartSelectedTimeProperty, null);
+        SetCurrentValue(RangeEndSelectedTimeProperty, null);
         base.Clear();
-        
-        RangeStartSelectedTime = null;
-        RangeEndSelectedTime   = null;
+        ClosePickerFlyout();
+        if (IsPickerOpen)
+        {
+            NotifyRangeActivatedPartChanged();
+        }
     }
     
     /// <summary>
@@ -194,7 +210,10 @@ public class RangeTimePicker : RangeInfoPickerInput
     
     protected override Control CreatePickerPresenter()
     {
+        // This presenter is created in an independent Content subtree. The owner's
+        // ControlTheme cannot bind into its separate template owner.
         var timePickerPresenter = new TimePickerPresenter();
+        timePickerPresenter[!TimePickerPresenter.IsChangeOnScrollProperty] = this[!IsChangeOnScrollProperty];
         timePickerPresenter[!TimePickerPresenter.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
         timePickerPresenter[!TimePickerPresenter.MinuteIncrementProperty] = this[!MinuteIncrementProperty];
         timePickerPresenter[!TimePickerPresenter.SecondIncrementProperty] = this[!SecondIncrementProperty];
@@ -218,12 +237,48 @@ public class RangeTimePicker : RangeInfoPickerInput
 
     protected override void NotifyPickerOpened()
     {
+        if (RangeActivatedPart == RangeActivatedPart.None)
+        {
+            RangeActivatedPart = RangeActivatedPart.Start;
+        }
         base.NotifyPickerOpened();
         if (_pickerPresenter is not null)
         {
             _pickerPresenter.ChoosingStatusChanged += HandleChoosingStatusChanged;
             _pickerPresenter.HoverTimeChanged      += HandleHoverTimeChanged;
             _pickerPresenter.Confirmed             += HandleConfirmed;
+            _pickerPresenter.Dismissed += HandleDismissed;
+            _pickerPresenter.CandidateChanged += HandleCandidateChanged;
+            _pickerPresenter.FocusLeft += HandleFocusLeft;
+            NotifyRangeActivatedPartChanged();
+            _pickerPresenter.ResetOpenPanelState();
+        }
+    }
+
+    protected override void NotifyFlyoutAboutToClose(bool selectedIsValid)
+    {
+        // RangeInfoPickerInput clears the active endpoint here. Finalize the draft
+        // while its endpoint is still known, before that shared lifecycle transition.
+        if (_pickerPresenter is { IsEditing: true })
+        {
+            var candidate = _pickerPresenter.EndEditing();
+            if (!IsNeedConfirm)
+            {
+                CommitEndpoint(RangeActivatedPart, candidate);
+            }
+        }
+        base.NotifyFlyoutAboutToClose(selectedIsValid);
+    }
+
+    private void CommitEndpoint(RangeActivatedPart part, TimeSpan? value)
+    {
+        if (part == RangeActivatedPart.End)
+        {
+            SetCurrentValue(RangeEndSelectedTimeProperty, value);
+        }
+        else if (part == RangeActivatedPart.Start)
+        {
+            SetCurrentValue(RangeStartSelectedTimeProperty, value);
         }
     }
 
@@ -235,6 +290,11 @@ public class RangeTimePicker : RangeInfoPickerInput
             _pickerPresenter.ChoosingStatusChanged -= HandleChoosingStatusChanged;
             _pickerPresenter.HoverTimeChanged      -= HandleHoverTimeChanged;
             _pickerPresenter.Confirmed             -= HandleConfirmed;
+            _pickerPresenter.Dismissed -= HandleDismissed;
+            _pickerPresenter.CandidateChanged -= HandleCandidateChanged;
+            _pickerPresenter.FocusLeft -= HandleFocusLeft;
+            _pickerPresenter.EndEditing();
+            RefreshRangeTexts();
         }
     }
     
@@ -250,61 +310,52 @@ public class RangeTimePicker : RangeInfoPickerInput
     
     private void ClearHoverSelectedInfo()
     {
-        if (RangeActivatedPart == RangeActivatedPart.Start)
+        var display = _pickerPresenter?.DisplayTime;
+        var text = _pickerPresenter?.PreviewTime == null && _pickerPresenter?.InputText != null
+            ? _pickerPresenter.InputText
+            : DateTimeUtils.FormatTimeSpan(display, ClockIdentifier == ClockIdentifierType.HourClock12, AmText, PmText);
+        if (RangeActivatedPart == RangeActivatedPart.End)
         {
-            Text = DateTimeUtils.FormatTimeSpan(RangeStartSelectedTime,
-                ClockIdentifier == ClockIdentifierType.HourClock12);
-        }
-        else if (RangeActivatedPart == RangeActivatedPart.End)
-        {
-            SecondaryText = DateTimeUtils.FormatTimeSpan(RangeEndSelectedTime,
-                ClockIdentifier == ClockIdentifierType.HourClock12);
-        }
-    }
-    
-    private void HandleHoverTimeChanged(object? sender, TimeSelectedEventArgs args)
-    {
-        if (args.Time.HasValue)
-        {
-            if (RangeActivatedPart == RangeActivatedPart.Start)
-            {
-                Text = DateTimeUtils.FormatTimeSpan(args.Time.Value,
-                    ClockIdentifier == ClockIdentifierType.HourClock12, AmText, PmText);
-            }
-            else if (RangeActivatedPart == RangeActivatedPart.End)
-            {
-                SecondaryText = DateTimeUtils.FormatTimeSpan(args.Time.Value,
-                    ClockIdentifier == ClockIdentifierType.HourClock12, AmText, PmText);
-            }
+            SecondaryText = text;
         }
         else
         {
-            ClearHoverSelectedInfo();
+            Text = text;
         }
     }
-    
+
+    private void HandleCandidateChanged(object? sender, EventArgs args) => ClearHoverSelectedInfo();
+    private void HandleHoverTimeChanged(object? sender, TimeSelectedEventArgs args) => ClearHoverSelectedInfo();
+    private void HandleDismissed(object? sender, EventArgs args) => ClosePickerFlyout();
+
     private void HandleConfirmed(object? sender, EventArgs args)
     {
         if (RangeActivatedPart == RangeActivatedPart.Start)
         {
-            RangeStartSelectedTime = _pickerPresenter?.SelectedTime;
+            SetCurrentValue(RangeStartSelectedTimeProperty, _pickerPresenter?.SelectedTime);
             if (RangeEndSelectedTime is null)
             {
                 RangeActivatedPart = RangeActivatedPart.End;
+                _pickerPresenter?.ResetOpenPanelState();
                 return;
             }
         }
         else if (RangeActivatedPart == RangeActivatedPart.End)
         {
-            RangeEndSelectedTime = _pickerPresenter?.SelectedTime;
+            SetCurrentValue(RangeEndSelectedTimeProperty, _pickerPresenter?.SelectedTime);
             if (RangeStartSelectedTime is null)
             {
                 RangeActivatedPart = RangeActivatedPart.Start;
+                _pickerPresenter?.ResetOpenPanelState();
                 return;
             }
         }
 
         ClosePickerFlyout();
+        if (IsPickerOpen)
+        {
+            _pickerPresenter?.ResetOpenPanelState();
+        }
     }
     
     private static int CoerceMinuteIncrement(AvaloniaObject sender, int value)
@@ -329,12 +380,25 @@ public class RangeTimePicker : RangeInfoPickerInput
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
-        if (change.Property == RangeActivatedPartProperty)
+        if (change.Property == RangeActivatedPartProperty && _pickerPresenter is { IsEditing: true })
         {
-            NotifyRangeActivatedPartChanged();
+            var candidate = _pickerPresenter.EndEditing();
+            if (!IsNeedConfirm)
+            {
+                CommitEndpoint(change.GetOldValue<RangeActivatedPart>(), candidate);
+            }
+            RefreshRangeTexts();
         }
-        else if (IsFormattedTextAffectingProperty(change.Property))
+        base.OnPropertyChanged(change);
+        if (IsPickerOpen && _pickerPresenter is { IsEditing: true } &&
+            ((change.Property == RangeStartSelectedTimeProperty && RangeActivatedPart == RangeActivatedPart.Start) ||
+             (change.Property == RangeEndSelectedTimeProperty && RangeActivatedPart == RangeActivatedPart.End)))
+        {
+            _pickerPresenter.SetCurrentValue(TimePickerPresenter.SelectedTimeProperty,
+                RangeActivatedPart == RangeActivatedPart.Start ? RangeStartSelectedTime : RangeEndSelectedTime);
+            _pickerPresenter.ResetOpenPanelState();
+        }
+        if (IsFormattedTextAffectingProperty(change.Property))
         {
             RefreshRangeTexts();
             CalculatePreferredWidth();
@@ -489,46 +553,22 @@ public class RangeTimePicker : RangeInfoPickerInput
     protected override void NotifyRangeActivatedPartChanged()
     {
         base.NotifyRangeActivatedPartChanged();
-        if (RangeActivatedPart == RangeActivatedPart.Start)
+        if (_pickerPresenter != null)
         {
-            if (RangeEndSelectedTime is null)
+            var value = RangeActivatedPart switch
             {
-                ResetRangeStartTimeValue();
-            }
-            if (_pickerPresenter is not null)
+                RangeActivatedPart.Start => RangeStartSelectedTime,
+                RangeActivatedPart.End => RangeEndSelectedTime,
+                _ => (TimeSpan?)null
+            };
+            _pickerPresenter.SetCurrentValue(TimePickerPresenter.SelectedTimeProperty, value);
+            if (IsPickerOpen && RangeActivatedPart != RangeActivatedPart.None)
             {
-                _pickerPresenter.SelectedTime = RangeStartSelectedTime;
-            }
-        }
-        else if (RangeActivatedPart == RangeActivatedPart.End)
-        {
-            if (RangeStartSelectedTime is null)
-            {
-                ResetRangeEndTimeValue();
-            }
-            if (_pickerPresenter is not null)
-            {
-                _pickerPresenter.SelectedTime = RangeEndSelectedTime;
-            }
-        }
-        else
-        {
-            if (RangeStartSelectedTime is null)
-            {
-                ResetRangeStartTimeValue();
-            }
-    
-            if (RangeEndSelectedTime is null)
-            {
-                ResetRangeEndTimeValue();
-            }
-            if (_pickerPresenter is not null)
-            {
-                _pickerPresenter.SelectedTime = null;
+                _pickerPresenter.ResetOpenPanelState();
             }
         }
     }
-    
+
     protected override Size MeasureOverride(Size availableSize)
     {
         var size   = base.MeasureOverride(availableSize);
@@ -565,9 +605,113 @@ public class RangeTimePicker : RangeInfoPickerInput
         }
     }
     
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        HandleFocusLeft(this, EventArgs.Empty);
+    }
+
+    private void HandleFocusLeft(object? sender, EventArgs args)
+    {
+        if (!IsPickerOpen || IsPopupPinnedOpen)
+        {
+            return;
+        }
+        var target = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() as Visual;
+        if (target != null && (target == this || target.GetVisualAncestors().Contains(this) ||
+            (PickerPresenter is Visual presenter && (target == presenter || target.GetVisualAncestors().Contains(presenter)))))
+        {
+            return;
+        }
+        ClosePickerFlyout();
+    }
+
+    private void ReleaseInputHandlers()
+    {
+        if (InfoInputBox != null)
+        {
+            InfoInputBox.PropertyChanged -= HandleInputTextChanged;
+        }
+        if (SecondaryInfoInputBox != null)
+        {
+            SecondaryInfoInputBox.PropertyChanged -= HandleInputTextChanged;
+        }
+    }
+
+    private void AttachInputHandlers()
+    {
+        ReleaseInputHandlers();
+        if (InfoInputBox != null)
+        {
+            InfoInputBox.PropertyChanged += HandleInputTextChanged;
+        }
+        if (SecondaryInfoInputBox != null)
+        {
+            SecondaryInfoInputBox.PropertyChanged += HandleInputTextChanged;
+        }
+    }
+
+    private void HandleInputTextChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        if (args.Property != TextBox.TextProperty || sender is not TextBox input ||
+            string.Equals(input.Text ?? string.Empty, (ReferenceEquals(input, SecondaryInfoInputBox) ? SecondaryText : Text) ?? string.Empty, StringComparison.Ordinal))
+        {
+            return;
+        }
+        var text = input.Text;
+        RangeActivatedPart = ReferenceEquals(input, SecondaryInfoInputBox) ? RangeActivatedPart.End : RangeActivatedPart.Start;
+        SetCurrentValue(IsPickerOpenProperty, true);
+        var valid = TimePickerPresenter.TryParseInput(text, ClockIdentifier, AmText, PmText, out var time);
+        _pickerPresenter?.SetInputCandidate(text, time, valid);
+        if (RangeActivatedPart == RangeActivatedPart.End)
+        {
+            SetCurrentValue(SecondaryTextProperty, text);
+        }
+        else
+        {
+            SetCurrentValue(TextProperty, text);
+        }
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (!e.Handled && e.Key == Key.Enter)
+        {
+            if (_pickerPresenter?.InputText is { Length: 0 })
+            {
+                Clear();
+            }
+            else
+            {
+                _pickerPresenter?.ConfirmCandidate();
+            }
+            e.Handled = true;
+        }
+        else if (!e.Handled && e.Key == Key.Escape && IsPickerOpen)
+        {
+            ClosePickerFlyout();
+            e.Handled = true;
+        }
+        base.OnKeyDown(e);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        AttachInputHandlers();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        ReleaseInputHandlers();
+        base.OnDetachedFromVisualTree(e);
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        ReleaseInputHandlers();
         base.OnApplyTemplate(e);
+        AttachInputHandlers();
         if (InfoIcon is null)
         {
             SetValue(InfoIconProperty, new ClockCircleOutlined(), BindingPriority.Template);

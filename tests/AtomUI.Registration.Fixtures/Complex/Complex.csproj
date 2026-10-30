@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup><OutputType>Exe</OutputType><AssemblyName>AtomUI.Registration.Fixtures</AssemblyName><DefineConstants>$(DefineConstants);COMPLEX</DefineConstants></PropertyGroup>
+    <PropertyGroup Condition="'$(FixtureRealDesktop)' == 'true'"><DefineConstants>$(DefineConstants);REAL_DESKTOP</DefineConstants></PropertyGroup>
+    <ItemGroup>
+        <Compile Include="../Shared/ProductApp.cs" Link="ProductApp.cs" />
+        <Compile Include="../Shared/DesktopProgram.cs" Link="Program.cs" />
+        <ProjectReference Include="../../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
+        <ProjectReference Include="../ThirdParty/ThirdParty.csproj" />
+        <PackageReference Include="Avalonia.Headless" Condition="'$(FixtureRealDesktop)' != 'true'" />
+    </ItemGroup>
+</Project>

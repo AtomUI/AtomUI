@@ -8,7 +8,7 @@ Message Token 只表达组件级视觉变量，例如尺寸、间距、颜色、
 
 当前 Token scope：
 
-- `MessageToken`，scope id 为 `Message`，源码位于 `src/AtomUI.Desktop.Controls/Message/MessageToken.cs`。
+- internal `MessageCardToken`，scope id 为 `MessageCard`，源码位于 `src/AtomUI.Desktop.Controls/Message/MessageCardToken.cs`。
 
 ## 2. Token 分类
 
@@ -16,8 +16,8 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `CardHeight`、`MessageIconSize` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `ContentPadding`、`MessageIconMargin`、`MessageTopMargin` |
+| 尺寸与密度 | 卡片高度、图标尺寸。 | `CardHeight`、`MessageIconSize` |
+| 间距与布局 | 卡片 padding、图标间距、宿主边距。 | `ContentPadding`、`MessageIconMargin`、`MessageTopMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ContentBg` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
 
@@ -32,12 +32,20 @@ Message 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
+`MessageTopMargin` 为四边 `UniformlyMarginXS`，作为 `WindowMessageManager.Padding` 的默认值；模板将 Padding
+投影到 StackHost 的 Margin。应用可覆盖 owner Padding，卡片外框自身保持零外边距。
+
+Stack 的展开 gap 16、折叠 offset 8、背板高度 16 与左右缩进分别来自 SharedToken 的统一 margin 尺度；
+Notification 与 Message 共用这些几何语义，因此不在 `MessageCardToken` 中复制一组 Stack Token。背板背景复用
+`ContentBg`，阴影复用 SharedToken tertiary shadow。Stack 状态和活动项数量属于运行时状态，不能写入 Token。
+
 ## 4. 控件家族影响
 
 调整 Message Token 时必须评估以下范围：
 
 - `Message`
-- `MessageManager`
+- `MessageCard`
+- `WindowMessageManager`
 - 对应 Gallery ShowCase 的示例和源码片段。
 - Light/Dark 主题、Browser/Desktop 主题和 Compact/Form/Popup 集成场景。
 

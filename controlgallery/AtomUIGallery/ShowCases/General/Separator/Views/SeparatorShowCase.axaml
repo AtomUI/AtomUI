@@ -2,12 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AtomUIGallery.ShowCases.Separator.SeparatorShowCase"
              xmlns:atom="https://atomui.net"
+             xmlns:atomc="https://atomui.net/common-controls"
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              xmlns:vm="using:AtomUIGallery.ShowCases.Separator"
              x:DataType="vm:SeparatorViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Separator"
                     Category="{gallery:SeparatorShowCaseLangResource ComponentCategory}"
@@ -17,7 +18,55 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractSeparator" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:SeparatorViewModel">
+                    <gallery:SemanticPartPreview Name="SeparatorSemanticPreview"
+                                                 SemanticOwner="{Binding #SeparatorSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:Separator}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="16">
+                                <atom:TextBlock TextWrapping="Wrap" Text="{gallery:SeparatorShowCaseLangResource P2TextLoremIpsumDolorSitAmetConsecteturAdipiscingElit}" />
+                                <atom:Separator />
+                                <atom:TextBlock TextWrapping="Wrap" Text="{gallery:SeparatorShowCaseLangResource P2TextLoremIpsumDolorSitAmetConsecteturAdipiscingElit}" />
+                                <atom:Separator Name="SeparatorSemanticOwner"
+                                                Title="{gallery:SeparatorShowCaseLangResource P2TitleSolid}" />
+                                <atom:TextBlock TextWrapping="Wrap" Text="{gallery:SeparatorShowCaseLangResource P2TextLoremIpsumDolorSitAmetConsecteturAdipiscingElit}" />
+                                <atom:Separator Title="{gallery:SeparatorShowCaseLangResource P2TitleDotted}"
+                                                TitlePosition="Left"
+                                                Variant="Dotted" />
+                                <atom:TextBlock TextWrapping="Wrap" Text="{gallery:SeparatorShowCaseLangResource P2TextLoremIpsumDolorSitAmetConsecteturAdipiscingElit}" />
+                                <atom:Separator Title="{gallery:SeparatorShowCaseLangResource P2TitleDashed}"
+                                                TitlePosition="Right"
+                                                Variant="Dashed" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <atom:TextBlock Text="These" />
+                                    <atom:VerticalSeparator />
+                                    <atom:TextBlock Text="are" />
+                                    <atom:VerticalSeparator />
+                                    <atom:TextBlock Text="vertical" />
+                                    <atom:VerticalSeparator />
+                                    <atom:TextBlock Text="Dividers" />
+                                </StackPanel>
+                            </StackPanel>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:SeparatorShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="rail"
+                                Description="{gallery:SeparatorShowCaseLangResource SemanticRailDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:SeparatorShowCaseLangResource SemanticContentDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -143,7 +192,61 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:SeparatorShowCaseLangResource SemanticPartStyleTitle}"
+        Description="{gallery:SeparatorShowCaseLangResource SemanticPartStyleDescription}"
+        SourceKey="separator-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        Span="Full"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:SeparatorViewModel">
+                <StackPanel Orientation="Vertical"
+                            HorizontalAlignment="Stretch"
+                            Spacing="16">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|Separator.semantic-demo">
+                            <Setter Property="LineColor" Value="#7cb305" />
+                            <atom:SeparatorRailStyle x:SetterTargetType="atomc:SeparatorRail">
+                                <Setter Property="LineColor" Value="#7cb305" />
+                            </atom:SeparatorRailStyle>
+                            <atom:SeparatorContentStyle x:SetterTargetType="atom:TextBlock">
+                                <Setter Property="FontStyle" Value="Italic" />
+                            </atom:SeparatorContentStyle>
+                        </Style>
+                        <Style Selector="atom|Separator.semantic-demo[TitlePosition=Left]">
+                            <Setter Property="LineColor" Value="#722ed1" />
+                            <atom:SeparatorContentStyle x:SetterTargetType="atom:TextBlock">
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </atom:SeparatorContentStyle>
+                        </Style>
+                        <Style Selector="atom|Separator.semantic-demo.semantic-variant">
+                            <Setter Property="Variant" Value="Dashed" />
+                            <atom:SeparatorRailStyle x:SetterTargetType="atomc:SeparatorRail">
+                                <Setter Property="Opacity" Value="0.85" />
+                            </atom:SeparatorRailStyle>
+                        </Style>
+                        <Style Selector="atom|Separator.semantic-demo[SizeType=Small]">
+                            <Setter Property="Opacity" Value="0.6" />
+                        </Style>
+                    </StackPanel.Styles>
+
+                    <atom:Separator Classes="semantic-demo"
+                                    Title="{gallery:SeparatorShowCaseLangResource SemanticPartAllPartsTitle}" />
+                    <atom:Separator Classes="semantic-demo"
+                                    Title="{gallery:SeparatorShowCaseLangResource SemanticPartTitlePlacementTitle}"
+                                    TitlePosition="Left" />
+                    <atom:Separator Classes="semantic-demo semantic-variant"
+                                    Title="{gallery:SeparatorShowCaseLangResource SemanticPartDashedRailTitle}" />
+                    <atom:Separator Classes="semantic-demo"
+                                    Title="{gallery:SeparatorShowCaseLangResource SemanticPartSmallSizeTitle}"
+                                    SizeType="Small" />
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

@@ -313,6 +313,78 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticCountIndicatorDescription">
+      <segment>
+        <source>The complete count indicator visual, including its background and count text.</source>
+        <target state="translated">完整的数量徽标视觉，包括背景和数量文本。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticCountRootDescription">
+      <segment>
+        <source>The CountBadge owner that controls count, visibility, color, size, offset, and decorated content.</source>
+        <target state="translated">控制数量、可见性、颜色、尺寸、偏移和被装饰内容的 CountBadge 所有者。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDotIndicatorDescription">
+      <segment>
+        <source>The status dot visual and its motion boundary.</source>
+        <target state="translated">状态点视觉及其统一动效边界。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDotRootDescription">
+      <segment>
+        <source>The DotBadge owner that controls status, text, color, visibility, offset, and decorated content.</source>
+        <target state="translated">控制状态、文本、颜色、可见性、偏移和被装饰内容的 DotBadge 所有者。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartCardContent">
+      <segment>
+        <source>This card customizes its ribbon with Semantic Part style selectors.</source>
+        <target state="translated">此卡片通过 Semantic Part 样式选择器定制缎带。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartCardHeader">
+      <segment>
+        <source>Card with custom ribbon</source>
+        <target state="translated">带自定义缎带的卡片</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartRibbonText">
+      <segment>
+        <source>Custom Ribbon</source>
+        <target state="translated">自定义缎带</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped style selectors to customize Badge's published Semantic Parts.</source>
+        <target state="translated">使用所有者作用域样式选择器自定义 Badge 发布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRibbonContentDescription">
+      <segment>
+        <source>The ribbon text display region.</source>
+        <target state="translated">缎带文本的展示区域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRibbonIndicatorDescription">
+      <segment>
+        <source>The complete ribbon visual, including its positioning and drawing boundary.</source>
+        <target state="translated">完整的缎带视觉，包括定位和绘制边界。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRibbonRootDescription">
+      <segment>
+        <source>The RibbonBadge owner that controls text, color, placement, visibility, offset, and decorated content.</source>
+        <target state="translated">控制文本、颜色、位置、可见性、偏移和被装饰内容的 RibbonBadge 所有者。</target>
+      </segment>
+    </unit>
     <unit id="SizeDescription">
       <segment>
         <source>Set size of numeral Badge.</source>

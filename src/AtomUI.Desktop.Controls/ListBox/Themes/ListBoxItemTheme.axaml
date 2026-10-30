@@ -6,33 +6,40 @@
               TargetType="atom:ListBoxItem">
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ListBoxItem">
-            <Border Name="Frame"
-                    Background="{TemplateBinding Background}"
-                    CornerRadius="{TemplateBinding CornerRadius}"
-                    Padding="{TemplateBinding Padding}">
-                <DockPanel LastChildFill="True">
-                    <atom:IconTemplatePresenter
-                        Name="SelectedIndicator"
-                        IconTemplate="{TemplateBinding SelectedIndicator}"
-                        IsVisible="{TemplateBinding IsSelectedIndicatorVisible}"
-                        DockPanel.Dock="Right"/>
-                    <Panel>
-                        <ContentPresenter Name="ContentPresenter"
-                                          Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                          IsVisible="{TemplateBinding IsFiltering, Converter={x:Static BoolConverters.Not}}"/>
-                        <atom:HighlightableTextBlock HighlightForeground="{TemplateBinding FilterHighlightForeground}"
-                                                     HighlightStrategy="{TemplateBinding FilterHighlightStrategy}"
-                                                     IsVisible="{TemplateBinding IsFiltering}"
-                                                     HighlightWords="{TemplateBinding FilterHighlightWords}"
-                                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                     Text="{TemplateBinding ContentText}"/>
-                    </Panel>
-                </DockPanel>
-            </Border>
+            <Panel>
+                <atom:PixelAlignedBorder Name="Frame"
+                                         Background="{TemplateBinding Background}"
+                                         CornerRadius="{TemplateBinding CornerRadius}"
+                                         Padding="{TemplateBinding Padding}">
+                    <DockPanel LastChildFill="True">
+                        <atom:IconTemplatePresenter
+                            Name="SelectedIndicator"
+                            IconTemplate="{TemplateBinding SelectedIndicator}"
+                            IsVisible="{TemplateBinding IsSelectedIndicatorVisible}"
+                            DockPanel.Dock="Right"/>
+                        <Panel>
+                            <ContentPresenter Name="ContentPresenter"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              IsVisible="{TemplateBinding IsFiltering, Converter={x:Static BoolConverters.Not}}"/>
+                            <atom:HighlightableTextBlock HighlightForeground="{TemplateBinding FilterHighlightForeground}"
+                                                         HighlightStrategy="{TemplateBinding FilterHighlightStrategy}"
+                                                         IsVisible="{TemplateBinding IsFiltering}"
+                                                         HighlightWords="{TemplateBinding FilterHighlightWords}"
+                                                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                         Text="{TemplateBinding ContentText}"/>
+                        </Panel>
+                    </DockPanel>
+                </atom:PixelAlignedBorder>
+                <atom:PixelAlignedBorder Name="SplitLineFrame"
+                                         VerticalAlignment="Bottom"
+                                         BorderBrush="{TemplateBinding BorderBrush}"
+                                         BorderThickness="{TemplateBinding EffectiveBorderThickness}"
+                                         IsVisible="{TemplateBinding IsSplitLineEffectiveVisible}" />
+            </Panel>
         </ControlTemplate>
     </Setter>
     
@@ -41,6 +48,8 @@
         <Setter Property="Margin" Value="{atom:ListBoxTokenResource ItemMargin}" />
         <Setter Property="Foreground" Value="{atom:ListBoxTokenResource ItemColor}" />
         <Setter Property="Background" Value="{atom:ListBoxTokenResource ItemBgColor}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
 
         <Style Selector="^:pointerover:not(:disabled)">
@@ -61,19 +70,16 @@
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
             <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
             <Setter Property="Padding" Value="{atom:ListBoxTokenResource ItemPaddingLG}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
             <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
             <Setter Property="Padding" Value="{atom:ListBoxTokenResource ItemPadding}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusXS}" />
             <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
             <Setter Property="Padding" Value="{atom:ListBoxTokenResource ItemPaddingSM}" />
         </Style>

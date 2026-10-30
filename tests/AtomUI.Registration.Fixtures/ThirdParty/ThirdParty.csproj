@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup><AssemblyName>AtomUI.Registration.Fixtures.ThirdParty</AssemblyName><AtomUIRegistrationPackageId>Fixture.ThirdParty</AtomUIRegistrationPackageId><AtomUIThemeControlCatalog>Fixture.ThirdParty</AtomUIThemeControlCatalog></PropertyGroup>
+    <ItemGroup><ProjectReference Include="../../../src/AtomUI.Core/AtomUI.Core.csproj" /><ProjectReference Include="../Resources/Resources.csproj" /></ItemGroup>
+</Project>

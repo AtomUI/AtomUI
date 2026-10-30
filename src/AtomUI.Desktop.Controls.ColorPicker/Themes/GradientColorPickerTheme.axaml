@@ -20,6 +20,7 @@
                                              Background="{TemplateBinding Background}">
                         <DockPanel LastChildFill="True">
                             <atom:ColorBlock Name="PART_ColorIndicator"
+                                             Classes.semantic-body="True"
                                              SizeType="{TemplateBinding SizeType}"
                                              Size="{TemplateBinding ColorBlockSize}"
                                              Background="{TemplateBinding ColorBlockBackground}"
@@ -27,11 +28,13 @@
                                              DockPanel.Dock="Left"/>
                             <Panel VerticalAlignment="Center">
                                 <WrapPanel Name="PART_ColorTextPanel"
+                                           Classes.semantic-description="True"
                                            IsVisible="{TemplateBinding IsTextVisible}" />
                             </Panel>
                         </DockPanel>
                     </atom:PixelAlignedBorder>
                     <atom:Popup Name="PART_Popup"
+                                IsPopupPinnedOpen="{TemplateBinding IsPopupPinnedOpen}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="{TemplateBinding IsLightDismissEnabled}"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -40,12 +43,14 @@
                                 PlacementAnchor="{TemplateBinding PlacementAnchor}"
                                 PlacementGravity="{TemplateBinding PlacementGravity}"
                                 IsPointAtCenter="{TemplateBinding IsPointAtCenter}"
-                                IsOpen="{TemplateBinding IsPickerOpen, Mode=TwoWay}"
                                 MarginToAnchor="{TemplateBinding MarginToAnchor}">
-                        <atom:ArrowDecoratedBox Content="{TemplateBinding PickerPresenter}"
-                                                IsArrowVisible="{TemplateBinding IsArrowVisibleEffective}"
-                                                ArrowPosition="{TemplateBinding ArrowPosition}"
-                                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
+                        <atom:ColorPickerPopupRootFrame Classes.semantic-popup-root="True">
+                            <atom:ArrowDecoratedBox IsArrowVisible="{TemplateBinding IsArrowVisibleEffective}"
+                                                    ArrowPosition="{TemplateBinding ArrowPosition}"
+                                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                                <ContentPresenter Content="{TemplateBinding PickerPresenter}" />
+                            </atom:ArrowDecoratedBox>
+                        </atom:ColorPickerPopupRootFrame>
                     </atom:Popup>
                 </Panel>
             </ControlTemplate>

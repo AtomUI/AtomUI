@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -30,6 +28,18 @@ public enum BadgeShowCaseLangResourceKind
     RibbonDescription,
     ColorfulBadgeTitle,
     ColorfulBadgeDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticPartCardHeader,
+    SemanticPartCardContent,
+    SemanticPartRibbonText,
+    SemanticCountRootDescription,
+    SemanticCountIndicatorDescription,
+    SemanticDotRootDescription,
+    SemanticDotIndicatorDescription,
+    SemanticRibbonRootDescription,
+    SemanticRibbonIndicatorDescription,
+    SemanticRibbonContentDescription,
     P2TextSuccess,
     P2TextError,
     P2TextDefault,

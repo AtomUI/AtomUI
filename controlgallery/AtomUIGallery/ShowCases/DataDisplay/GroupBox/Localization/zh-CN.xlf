@@ -121,5 +121,53 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticBorderDescription">
+      <segment>
+        <source>The group border, background and corner radius belong to the root part; customize them with an owner-scoped style instead of a part style.</source>
+        <target state="translated">分组边框、背景与圆角属于 root 语义区域，请使用 owner 作用域样式定制，而不是 Part 样式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with padding and background color for the grouped content area</source>
+        <target state="translated">内容元素，包含内边距、背景色等分组内容区域的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with padding, background color and alignment for the header content area</source>
+        <target state="translated">头部元素，包含内边距、背景色、对齐方式等标题内容区域的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with icon size, margin and icon color for the header icon</source>
+        <target state="translated">图标元素，包含图标尺寸、边距、图标颜色等标题图标的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and GroupBox property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域选择器和 GroupBox 属性选择器定制已发布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with border, background, corner radius and header position that control the overall appearance of the group</source>
+        <target state="translated">根元素，包含边框、背景、圆角、标题位置等控制分组整体外观的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with layout, foreground color and typography styles for the header text</source>
+        <target state="translated">标题元素，包含布局、前景色、排版等标题文字的样式</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

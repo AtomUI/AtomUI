@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.TreeSelect"
              x:DataType="vm:TreeSelectViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="TreeSelect"
                     Category="{gallery:TreeSelectShowCaseLangResource ComponentCategory}"
@@ -19,7 +19,73 @@
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="TreeSelect"
                     MetadataValueWidth="220" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:TreeSelectViewModel">
+                    <gallery:SemanticPartPreview Name="TreeSelectSemanticPreview"
+                                                 Title="TreeSelect"
+                                                 SemanticOwner="{Binding #TreeSelectSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:TreeSelect}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:TreeSelect Name="TreeSelectSemanticOwner"
+                                             Width="420"
+                                             IsAllowClear="True"
+                                             IsMotionEnabled="False"
+                                             IsDropDownOpen="True"
+                                             IsPopupPinnedOpen="True"
+                                             IsMultiple="True"
+                                             IsFilterEnabled="True"
+                                             IsDefaultExpandAll="True"
+                                             ContentLeftAddOn="prefix"
+                                             ItemsSource="{Binding SemanticPreviewTreeNodes}"
+                                             SelectedItems="{Binding SemanticPreviewSelectedItems}"
+                                             PlaceholderText="{gallery:TreeSelectShowCaseLangResource P2PlaceholderTextPleaseSelect}" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="prefix"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticPrefixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="placeholder"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticPlaceholderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="input"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticInputDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="suffix"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticSuffixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="item"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticItemDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="itemContent"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticItemContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="itemRemove"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticItemRemoveDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="clear"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticClearDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.root"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.list"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticPopupListDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.listItem"
+                                Description="{gallery:TreeSelectShowCaseLangResource SemanticPopupListItemDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -371,7 +437,67 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+        Title="{gallery:TreeSelectShowCaseLangResource StyleClassTitle}"
+        Description="{gallery:TreeSelectShowCaseLangResource StyleClassDescription}"
+        SourceKey="treeselect-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:TreeSelectViewModel">
+        <StackPanel HorizontalAlignment="Left" Spacing="20">
+            <StackPanel.Styles>
+                <Style Selector="atom|TreeSelect.semantic-styles-demo">
+                    <atom:TreeSelectPrefixStyle x:SetterTargetType="ContentPresenter">
+                        <Style Selector="^ atom|Icon">
+                            <Setter Property="StrokeBrush" Value="#1890FF" />
+                        </Style>
+                    </atom:TreeSelectPrefixStyle>
+                    <atom:TreeSelectSuffixStyle x:SetterTargetType="StackPanel">
+                        <Setter Property="TextElement.Foreground" Value="#1890FF" />
+                    </atom:TreeSelectSuffixStyle>
+                    <atom:TreeSelectPopupRootStyle x:SetterTargetType="Border">
+                        <Setter Property="BorderBrush" Value="#1890FF" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </atom:TreeSelectPopupRootStyle>
+                </Style>
+                <Style Selector="atom|TreeSelect.semantic-styles-filled-demo">
+                    <atom:TreeSelectPrefixStyle x:SetterTargetType="ContentPresenter">
+                        <Style Selector="^ atom|Icon">
+                            <Setter Property="StrokeBrush" Value="#722ED1" />
+                        </Style>
+                    </atom:TreeSelectPrefixStyle>
+                    <atom:TreeSelectSuffixStyle x:SetterTargetType="StackPanel">
+                        <Setter Property="TextElement.Foreground" Value="#722ED1" />
+                    </atom:TreeSelectSuffixStyle>
+                    <atom:TreeSelectPopupRootStyle x:SetterTargetType="Border">
+                        <Setter Property="BorderBrush" Value="#722ED1" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </atom:TreeSelectPopupRootStyle>
+                </Style>
+            </StackPanel.Styles>
+            <atom:TreeSelect Classes="semantic-styles-demo"
+                             Name="ObjectStylesTreeSelect"
+                             Width="300"
+                             IsAllowClear="True"
+                             IsDefaultExpandAll="True"
+                             ContentLeftAddOn="{antdicons:AntDesignIconProvider Kind=MehOutlined}"
+                             ItemsSource="{Binding StyleClassTreeNodes}"
+                             PlaceholderText="Object" />
+            <atom:TreeSelect Classes="semantic-styles-demo semantic-styles-filled-demo"
+                             Name="FunctionStylesTreeSelect"
+                             Width="300"
+                             IsAllowClear="True"
+                             IsDefaultExpandAll="True"
+                             StyleVariant="Filled"
+                             ContentLeftAddOn="{antdicons:AntDesignIconProvider Kind=MehOutlined}"
+                             ItemsSource="{Binding StyleClassTreeNodes}"
+                             PlaceholderText="Function" />
+        </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

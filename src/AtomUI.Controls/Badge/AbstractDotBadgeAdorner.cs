@@ -1,16 +1,14 @@
-﻿using AtomUI.MotionScene;
 using Avalonia;
-using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Threading;
 
 namespace AtomUI.Controls.Commons;
 
-[TemplatePart("PART_MotionActor", typeof(BaseMotionActor))]
+[TemplatePart("PART_IndicatorSurface", typeof(Control))]
 internal abstract class AbstractDotBadgeAdorner : TemplatedControl
 {
     #region 公共属性定义
@@ -101,11 +99,13 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
     
     #endregion
 
-    private BaseMotionActor? _indicatorMotionActor;
-    private CancellationTokenSource? _motionCancellationTokenSource;
-    private Action? _pendingShowReadyAction;
-    private bool _pendingShowMotion;
-    private bool _showMotionStarted;
+    private Control? _indicator;
+    private readonly BadgeMotionSession _motion;
+
+    protected AbstractDotBadgeAdorner()
+    {
+        _motion = new BadgeMotionSession(this);
+    }
 
     static AbstractDotBadgeAdorner()
     {
@@ -115,181 +115,42 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _indicatorMotionActor = e.NameScope.Get<BaseMotionActor>(BaseMotionActor.MotionActorPart);
-        PrepareIndicatorForShowMotion();
-        TryStartPendingShowMotion();
+        _indicator = e.NameScope.Find<Control>("PART_IndicatorSurface");
+        _motion.SetTarget(_indicator);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        TryStartPendingShowMotion();
+        _motion.TryStart();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
-        CancelCurrentMotion();
-        _pendingShowReadyAction = null;
-        _pendingShowMotion      = false;
-        _showMotionStarted      = false;
+        _motion.Detach();
     }
 
-    private void CancelCurrentMotion()
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        _motionCancellationTokenSource?.Cancel();
-        _motionCancellationTokenSource?.Dispose();
-        _motionCancellationTokenSource = null;
-    }
-
-    private void ResetCurrentMotion()
-    {
-        CancelCurrentMotion();
-        _motionCancellationTokenSource = new CancellationTokenSource();
-    }
-
-    private void PrepareIndicatorForShowMotion()
-    {
-        if (!_pendingShowMotion || _indicatorMotionActor is null)
+        base.OnPropertyChanged(change);
+        if (change.Property == IsMotionEnabledProperty || change.Property == MotionDurationProperty)
         {
-            return;
+            _motion.UpdateConfiguration(IsMotionEnabled, MotionDuration);
         }
-
-        _indicatorMotionActor.Opacity         = 0.0;
-        _indicatorMotionActor.MotionTransform = BadgeMotionTransforms.ScaleNearZero;
-        _indicatorMotionActor.IsVisible       = true;
-    }
-
-    private void ApplyShowReadyAction()
-    {
-        var action = _pendingShowReadyAction;
-        _pendingShowReadyAction = null;
-        action?.Invoke();
-    }
-
-    private void ShowIndicatorWithoutMotion()
-    {
-        if (_indicatorMotionActor is null)
-        {
-            return;
-        }
-
-        _indicatorMotionActor.Opacity         = 1.0;
-        _indicatorMotionActor.MotionTransform = null;
-        _indicatorMotionActor.IsVisible       = true;
-    }
-
-    private void RequestShowMotion(Action? onShowReady)
-    {
-        ResetCurrentMotion();
-        _pendingShowReadyAction = onShowReady;
-        _pendingShowMotion      = true;
-        _showMotionStarted      = false;
-        PrepareIndicatorForShowMotion();
-        ApplyShowReadyAction();
-        TryStartPendingShowMotion();
-    }
-
-    private void TryStartPendingShowMotion()
-    {
-        if (!_pendingShowMotion ||
-            _showMotionStarted ||
-            !IsLoaded ||
-            _indicatorMotionActor is null ||
-            _motionCancellationTokenSource is null)
-        {
-            return;
-        }
-
-        _showMotionStarted = true;
-        var motionCancellationTokenSource = _motionCancellationTokenSource;
-        Dispatcher.UIThread.Post(
-            () => _ = RunPendingShowMotionAsync(motionCancellationTokenSource),
-            DispatcherPriority.Loaded);
-    }
-
-    private async Task RunPendingShowMotionAsync(CancellationTokenSource motionCancellationTokenSource)
-    {
-        if (_motionCancellationTokenSource != motionCancellationTokenSource ||
-            motionCancellationTokenSource.IsCancellationRequested ||
-            _indicatorMotionActor is null)
-        {
-            return;
-        }
-
-        try
-        {
-            await ApplyShowMotionAsync(motionCancellationTokenSource.Token);
-        }
-        catch (OperationCanceledException) when (motionCancellationTokenSource.IsCancellationRequested)
-        {
-        }
-        finally
-        {
-            if (_motionCancellationTokenSource == motionCancellationTokenSource)
-            {
-                _showMotionStarted = false;
-                if (!motionCancellationTokenSource.IsCancellationRequested)
-                {
-                    _pendingShowMotion = false;
-                }
-            }
-        }
-    }
-
-    private async Task ApplyShowMotionAsync(CancellationToken cancellationToken)
-    {
-        if (_indicatorMotionActor is not null)
-        {
-            var motion = new BadgeZoomBadgeInMotion(MotionDuration, null, FillMode.Forward);
-            try
-            {
-                await motion.RunAsync(_indicatorMotionActor,
-                    () => _indicatorMotionActor.IsVisible = true,
-                    cancellationToken);
-            }
-            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-            {
-                _indicatorMotionActor.Opacity         = 1.0;
-                _indicatorMotionActor.MotionTransform = null;
-                _indicatorMotionActor.IsVisible       = true;
-            }
-        }
-    }
-
-    private async Task ApplyHideMotionAsync(AdornerLayer? adornerLayer,
-                                            Action? onDetachCompleted,
-                                            CancellationToken cancellationToken)
-    {
-        try
-        {
-            if (_indicatorMotionActor is not null)
-            {
-                var motion = new BadgeZoomBadgeOutMotion(MotionDuration, null, FillMode.Forward);
-                await motion.RunAsync(_indicatorMotionActor, cancellationToken: cancellationToken);
-                _indicatorMotionActor.IsVisible = false;
-            }
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
-
-        adornerLayer?.Children.Remove(this);
-        onDetachCompleted?.Invoke();
     }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);
-        if (IsAdornerMode && _indicatorMotionActor is not null)
+        if (IsAdornerMode && _indicator is not null)
         {
             var offsetX = Offset.X;
             var offsetY = Offset.Y;
-            var dotSize = _indicatorMotionActor.Bounds.Size;
+            var dotSize = _indicator.Bounds.Size;
             offsetX += dotSize.Width / 3;
             offsetY -= dotSize.Height / 3;
-            _indicatorMotionActor.Arrange(new Rect(new Point(offsetX, offsetY), dotSize));
+            _indicator.Arrange(new Rect(new Point(offsetX, offsetY), dotSize));
         }
 
         return size;
@@ -297,47 +158,43 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
 
     internal void ApplyToTarget(AdornerLayer? adornerLayer, Control adorned, Action? onShowReady = null)
     {
-        if (adornerLayer is not null)
+        if (adornerLayer is not null &&
+            (!adornerLayer.Children.Contains(this) || !ReferenceEquals(AdornerLayer.GetAdornedElement(this), adorned)))
         {
-            adornerLayer.Children.Remove(this);
+            DetachFromAdornerLayer(adornerLayer);
 
             AdornerLayer.SetAdornedElement(this, adorned);
             AdornerLayer.SetIsClipEnabled(this, true);
+            ((ISetLogicalParent)this).SetParent(adorned);
             adornerLayer.Children.Add(this);
         }
         
-        if (IsMotionEnabled)
-        {
-            RequestShowMotion(onShowReady);
-        }
-        else
-        {
-            onShowReady?.Invoke();
-            _pendingShowMotion      = false;
-            _showMotionStarted      = false;
-            _pendingShowReadyAction = null;
-            ShowIndicatorWithoutMotion();
-        }
+        _motion.Show(IsMotionEnabled, MotionDuration, onShowReady);
+    }
+
+    internal void ShowWithoutMotion()
+    {
+        _motion.Show(false, MotionDuration, null);
     }
 
     internal void DetachFromTargetAsync(AdornerLayer? adornerLayer,
                                         bool enableMotion = true,
                                         Action? onDetachCompleted = null)
     {
-        _pendingShowMotion      = false;
-        _showMotionStarted      = false;
-        _pendingShowReadyAction = null;
-        if (enableMotion)
+        _motion.Hide(enableMotion && IsMotionEnabled, MotionDuration, () =>
         {
-            ResetCurrentMotion();
-            var token = _motionCancellationTokenSource!.Token;
-            Dispatcher.InvokeAsync(() => ApplyHideMotionAsync(adornerLayer, onDetachCompleted, token));
-        }
-        else
-        {
-            CancelCurrentMotion();
-            adornerLayer?.Children.Remove(this);
+            DetachFromAdornerLayer(adornerLayer);
             onDetachCompleted?.Invoke();
+        });
+    }
+
+    private void DetachFromAdornerLayer(AdornerLayer? adornerLayer)
+    {
+        adornerLayer?.Children.Remove(this);
+        if (((ILogical)this).LogicalParent is not null)
+        {
+            ((ISetLogicalParent)this).SetParent(null);
         }
+        AdornerLayer.SetAdornedElement(this, null);
     }
 }

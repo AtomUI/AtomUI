@@ -178,9 +178,19 @@ internal sealed class DialogPopupTestHost : IDisposable
         control.IsAttachedToVisualTree().ShouldBeTrue();
         control.Bounds.Width.ShouldBeGreaterThan(0);
         control.Bounds.Height.ShouldBeGreaterThan(0);
-        var position = control.TranslatePoint(
-            new Point(control.Bounds.Width / 2, control.Bounds.Height / 2),
-            Window).ShouldNotBeNull();
+        var center = new Point(control.Bounds.Width / 2, control.Bounds.Height / 2);
+        // Button release hit testing reads the compositor scene, which must reflect the current layout.
+        var isRendered = false;
+        for (var attempt = 0; attempt < 20 && !isRendered; attempt++)
+        {
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+            Pump();
+            isRendered = control.GetVisualsAt(center)
+                                .Any(visual => visual == control || control.IsVisualAncestorOf(visual));
+        }
+
+        isRendered.ShouldBeTrue("the click target must be present in the rendered hit-test scene.");
+        var position = control.TranslatePoint(center, Window).ShouldNotBeNull();
 
         RaisePointerClick(control, position);
     }

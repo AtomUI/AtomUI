@@ -1,11 +1,10 @@
-﻿using AtomUI.Desktop.Controls.CalendarView;
-using AtomUI.Desktop.Controls.Primitives;
+﻿using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
-using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -18,7 +17,7 @@ public enum DatePickerMode
     Year
 }
 
-public class DatePicker : InfoPickerInput
+public partial class DatePicker : InfoPickerInput
 {
     #region 公共属性定义
 
@@ -166,6 +165,36 @@ public class DatePicker : InfoPickerInput
     }
 
     private DatePickerPresenter? _pickerPresenter;
+    private ILanguageManager? _languageManager;
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _languageManager = Application.Current is { } app ? global::AtomUI.ApplicationExtensions.GetLanguageManager(app) : null;
+        if (_languageManager is not null)
+        {
+            _languageManager.LanguageChanged += OnLanguageChanged;
+        }
+
+        Text = FormatDateTime(SelectedDateTime);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        if (_languageManager is not null)
+        {
+            _languageManager.LanguageChanged -= OnLanguageChanged;
+        }
+
+        _languageManager = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void OnLanguageChanged(object? sender, LanguageChangedEventArgs e)
+    {
+        Text = FormatDateTime(SelectedDateTime);
+        CalculatePreferredWidth();
+    }
 
     /// <summary>
     /// 清除时间选择器的值，不考虑默认值
@@ -347,26 +376,22 @@ public class DatePicker : InfoPickerInput
 
     private void CalculatePreferredWidth()
     {
-        if (!double.IsNaN(Width) || HorizontalAlignment == HorizontalAlignment.Stretch)
-        {
-            PreferredInputWidth = double.NaN;
-        }
-        else
-        {
-            var formatInfo = DatePickerFormattingHelper.CreateFormatInfo(ClockIdentifier, AmText, PmText);
-            PreferredInputWidth = DatePickerFormattingHelper.CalculateBoundedPreferredInputWidth(
-                Format,
-                PickerMode,
-                IsShowTime,
-                ClockIdentifier,
-                FontSize,
-                FontFamily,
-                FontStyle,
-                FontWeight,
-                MinWidth,
-                MaxWidth,
-                formatInfo);
-        }
+        // 输入框预留宽度始终按内容基线计算：placeholder 与选中值共用同一宽度基线，
+        // 避免显式 Width / Stretch 场景下输入区宽度随文本内容跳变；控件总宽在显式
+        // Width / Stretch 时仍交给外部布局决定。
+        var formatInfo = DatePickerFormattingHelper.CreateFormatInfo(ClockIdentifier, AmText, PmText);
+        PreferredInputWidth = DatePickerFormattingHelper.CalculateBoundedPreferredInputWidth(
+            Format,
+            PickerMode,
+            IsShowTime,
+            ClockIdentifier,
+            FontSize,
+            FontFamily,
+            FontStyle,
+            FontWeight,
+            MinWidth,
+            MaxWidth,
+            formatInfo);
     }
 
     protected override bool ShowClearButtonPredicate()

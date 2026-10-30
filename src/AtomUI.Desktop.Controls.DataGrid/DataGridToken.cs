@@ -195,6 +195,16 @@ internal sealed class DataGridToken : AbstractControlDesignToken
     /// </summary>
     public Thickness PaginationMarginSM { get; set; }
 
+    /// <summary>
+    /// 分页面板的水平内边距
+    /// </summary>
+    public Thickness PaginationPanelMargin { get; set; }
+
+    /// <summary>
+    /// 分页面板的水平内边距（小号）
+    /// </summary>
+    public Thickness PaginationPanelMarginSM { get; set; }
+
     #region 内部 Token
 
     internal Thickness ExpandIconMargin { get; set; }
@@ -275,7 +285,12 @@ internal sealed class DataGridToken : AbstractControlDesignToken
         RowSelectedHoverBg          = EffectiveGlobalToken.ControlItemBgActiveHover;
         RowExpandedBg               = EffectiveGlobalToken.ColorFillAlter;
         CellPadding                 = EffectiveGlobalToken.Padding;
-        CellPaddingMD               = EffectiveGlobalToken.PaddingSM;
+        // 对齐 AntD：中等尺寸单元格横向 paddingXS、纵向 paddingSM（12x8）。
+        CellPaddingMD               = new Thickness(
+            EffectiveGlobalToken.PaddingXS.Left,
+            EffectiveGlobalToken.PaddingSM.Top,
+            EffectiveGlobalToken.PaddingXS.Right,
+            EffectiveGlobalToken.PaddingSM.Bottom);
         CellPaddingSM               = EffectiveGlobalToken.PaddingXS;
         BorderColor                 = EffectiveGlobalToken.ColorBorderSecondary;
         HeaderBorderRadius          = EffectiveGlobalToken.BorderRadiusLG;
@@ -284,11 +299,11 @@ internal sealed class DataGridToken : AbstractControlDesignToken
         CellFontSize                = EffectiveGlobalToken.FontSize;
         CellFontSizeMD              = EffectiveGlobalToken.FontSize;
         CellFontSizeSM              = EffectiveGlobalToken.FontSize;
-        HeaderSplitColor            = EffectiveGlobalToken.ColorSplit;
+        HeaderSplitColor            = EffectiveGlobalToken.ColorBorderSecondary;
         FixedHeaderSortActiveBg     = colorFillSecondarySolid;
         HeaderFilterHoverBg         = EffectiveGlobalToken.ColorFillContent;
         FilterDropdownMenuBg        = EffectiveGlobalToken.ColorBgContainer;
-        FilterDropdownBg            = EffectiveGlobalToken.ColorBgElevated;
+        FilterDropdownBg            = EffectiveGlobalToken.ColorBgContainer;
         ExpandIconBg                = EffectiveGlobalToken.ColorBgContainer;
         SelectionColumnWidth        = EffectiveGlobalToken.ControlHeight;
         ExpandIconMargin            = new Thickness(0, 
@@ -355,26 +370,31 @@ internal sealed class DataGridToken : AbstractControlDesignToken
         TableFilterButtonContainerMargin       = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
         TableFilterButtonLayoutSeparatorMargin = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXXS, 0, 0);
         TableFilterDropdownPadding             = EffectiveGlobalToken.PaddingXS;
+        // 对齐 AntD fixed.ts：冻结列分界阴影为 inset 10px 0 8px -8px（左）与 inset -10px 0 8px -8px（右）。
         LeftFrozenShadows = new BoxShadows(new BoxShadow
-        {
-            OffsetX = -10,
-            OffsetY = 0,
-            Blur    = 8,
-            Spread  = 0,
-            Color   = EffectiveGlobalToken.ColorSplit
-        });
-        RightFrozenShadows = new BoxShadows(new BoxShadow
         {
             OffsetX = 10,
             OffsetY = 0,
             Blur    = 8,
-            Spread  = 0,
+            Spread  = -8,
+            IsInset = true,
+            Color   = EffectiveGlobalToken.ColorSplit
+        });
+        RightFrozenShadows = new BoxShadows(new BoxShadow
+        {
+            OffsetX = -10,
+            OffsetY = 0,
+            Blur    = 8,
+            Spread  = -8,
+            IsInset = true,
             Color   = EffectiveGlobalToken.ColorSplit
         });
         ColumnReorderActiveBg = colorFillContentSolid;
 
         PaginationMargin   = new Thickness(0, EffectiveGlobalToken.UniformlyMargin);
         PaginationMarginSM = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS);
+        PaginationPanelMargin   = new Thickness(EffectiveGlobalToken.UniformlyMargin, 0);
+        PaginationPanelMarginSM = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0);
     }
     
 }

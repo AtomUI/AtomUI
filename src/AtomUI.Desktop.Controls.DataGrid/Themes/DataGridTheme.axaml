@@ -13,6 +13,7 @@
                                      CornerRadius="{TemplateBinding FrameCornerRadius}"
                                      ClipToBounds="True">
                 <Border Name="FrameContentClip"
+                        Classes.semantic-section="True"
                         CornerRadius="{TemplateBinding FrameCornerRadius}"
                         ClipToBounds="True">
                     <atom:Spin IsSpinning="{TemplateBinding EffectiveIsOperating}"
@@ -23,37 +24,68 @@
                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                                VerticalAlignment="{TemplateBinding VerticalAlignment}">
                         <DockPanel LastChildFill="True">
-                        <atom:Pagination DockPanel.Dock="Top"
-                                         Name="{x:Static atom:DataGridThemeConstants.TopPaginationPart}"
-                                         Align="{TemplateBinding TopPaginationAlign}"
-                                         IsHideOnSinglePage="{TemplateBinding IsHideOnSinglePage}"
-                                         IsEnabled="{TemplateBinding IsEnabled}"
-                                         SizeType="{TemplateBinding SizeType}"
-                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                         IsVisible="{TemplateBinding EffectivePaginationVisibility, Converter={x:Static atom:DataGridTheme.TopPaginationVisibilityConvertor}}" />
-                        <atom:PixelAlignedBorder Name="TitleFrame"
-                                                 DockPanel.Dock="Top"
-                                                 BorderThickness="{TemplateBinding BorderThickness, Converter={x:Static atom:DataGridTheme.TitleSeparatorThicknessConverter}}"
-                                                 IsVisible="{TemplateBinding Title, Converter={x:Static ObjectConverters.IsNotNull}}">
-                            <ContentPresenter Name="Title"
-                                              Content="{TemplateBinding Title}"
-                                              ContentTemplate="{TemplateBinding TitleTemplate}" />
-                        </atom:PixelAlignedBorder>
-                        <atom:Pagination DockPanel.Dock="Bottom"
-                                         Name="{x:Static atom:DataGridThemeConstants.BottomPaginationPart}"
-                                         Align="{TemplateBinding BottomPaginationAlign}"
-                                         IsHideOnSinglePage="{TemplateBinding IsHideOnSinglePage}"
-                                         IsEnabled="{TemplateBinding IsEnabled}"
-                                         SizeType="{TemplateBinding SizeType}"
-                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                         IsVisible="{TemplateBinding EffectivePaginationVisibility, Converter={x:Static atom:DataGridTheme.BottomPaginationVisibilityConvertor}}" />
+                        <DockPanel Name="{x:Static atom:DataGridThemeConstants.TopPaginationPanelPart}"
+                                   DockPanel.Dock="Top"
+                                   LastChildFill="True"
+                                   HorizontalSpacing="{atom:PaginationTokenResource PaginationLayoutSpacing}"
+                                   Margin="{atom:DataGridTokenResource PaginationPanelMargin}"
+                                   IsVisible="{TemplateBinding EffectivePaginationVisibility, Converter={x:Static atom:DataGridTheme.TopPaginationVisibilityConvertor}}">
+                            <ContentPresenter Name="{x:Static atom:DataGridThemeConstants.TopPaginationExtraContentPart}"
+                                              DockPanel.Dock="Left"
+                                              VerticalAlignment="Center"
+                                              VerticalContentAlignment="Center"
+                                              Content="{TemplateBinding TopPaginationExtraContent}"
+                                              ContentTemplate="{TemplateBinding TopPaginationExtraContentTemplate}"
+                                              IsVisible="{TemplateBinding TopPaginationExtraContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            <atom:Pagination Classes.semantic-pagination-root="True"
+                                             Name="{x:Static atom:DataGridThemeConstants.TopPaginationPart}"
+                                             Align="{TemplateBinding TopPaginationAlign}"
+                                             IsHideOnSinglePage="{TemplateBinding IsHideOnSinglePage}"
+                                             IsEnabled="{TemplateBinding IsEnabled}"
+                                             IsShowSizeChanger="{TemplateBinding IsShowPageSizeSelector}"
+                                             SizeType="{TemplateBinding SizeType}"
+                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                        </DockPanel>
+                            <atom:PixelAlignedBorder Name="TitleFrame"
+                                                     Classes.semantic-title="True"
+                                                     DockPanel.Dock="Top"
+                                                     BorderThickness="{TemplateBinding BorderThickness, Converter={x:Static atom:DataGridTheme.TitleSeparatorThicknessConverter}}"
+                                                     IsVisible="{TemplateBinding Title, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <ContentPresenter Name="Title"
+                                                  Content="{TemplateBinding Title}"
+                                                  ContentTemplate="{TemplateBinding TitleTemplate}" />
+                            </atom:PixelAlignedBorder>
+                        <DockPanel Name="{x:Static atom:DataGridThemeConstants.BottomPaginationPanelPart}"
+                                   DockPanel.Dock="Bottom"
+                                   LastChildFill="True"
+                                   HorizontalSpacing="{atom:PaginationTokenResource PaginationLayoutSpacing}"
+                                   Margin="{atom:DataGridTokenResource PaginationPanelMargin}"
+                                   IsVisible="{TemplateBinding EffectivePaginationVisibility, Converter={x:Static atom:DataGridTheme.BottomPaginationVisibilityConvertor}}">
+                            <ContentPresenter Name="{x:Static atom:DataGridThemeConstants.BottomPaginationExtraContentPart}"
+                                              DockPanel.Dock="Left"
+                                              VerticalAlignment="Center"
+                                              VerticalContentAlignment="Center"
+                                              Content="{TemplateBinding BottomPaginationExtraContent}"
+                                              ContentTemplate="{TemplateBinding BottomPaginationExtraContentTemplate}"
+                                              IsVisible="{TemplateBinding BottomPaginationExtraContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            <atom:Pagination Classes.semantic-pagination-root="True"
+                                             Name="{x:Static atom:DataGridThemeConstants.BottomPaginationPart}"
+                                             Align="{TemplateBinding BottomPaginationAlign}"
+                                             IsHideOnSinglePage="{TemplateBinding IsHideOnSinglePage}"
+                                             IsEnabled="{TemplateBinding IsEnabled}"
+                                             IsShowSizeChanger="{TemplateBinding IsShowPageSizeSelector}"
+                                             SizeType="{TemplateBinding SizeType}"
+                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
+                        </DockPanel>
                         <ContentPresenter Name="Footer"
+                                          Classes.semantic-footer="True"
                                           Content="{TemplateBinding Footer}"
                                           ContentTemplate="{TemplateBinding FooterTemplate}"
                                           IsVisible="{TemplateBinding Footer, Converter={x:Static ObjectConverters.IsNotNull}}"
                                           DockPanel.Dock="Bottom" />
 
                         <Grid
+                            Classes.semantic-content="True"
                             RowDefinitions="Auto, *, Auto, Auto"
                             ColumnDefinitions="Auto, *, Auto"
                             ClipToBounds="True">
@@ -64,6 +96,7 @@
                                 Grid.Column="0" />
 
                             <Border Name="ColumnHeadersPresenterFrame"
+                                    Classes.semantic-header-wrapper="True"
                                     Grid.Row="0"
                                     Grid.Column="1"
                                     Grid.ColumnSpan="2"
@@ -90,6 +123,7 @@
 
                             <atom:DataGridRowsPresenter
                                 Name="{x:Static atom:DataGridThemeConstants.RowsPresenterPart}"
+                                Classes.semantic-body-wrapper="True"
                                 Grid.Row="1"
                                 Grid.Column="0"
                                 Grid.RowSpan="1"
@@ -161,6 +195,7 @@
     </Setter>
 
     <Style Selector="^:is(atom|DataGrid)">
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="HeadersVisibility" Value="Column" />
         <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
         <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
@@ -192,6 +227,27 @@
             <Setter Property="BorderThickness" Value="0" />
         </Style>
 
+        <Style Selector="^[TopPaginationAlign=Start], ^[TopPaginationAlign=Center]">
+            <Style Selector="^ /template/ ContentPresenter#PART_TopPaginationExtraContentPresenter">
+                <Setter Property="DockPanel.Dock" Value="Right" />
+            </Style>
+        </Style>
+        <Style Selector="^[TopPaginationAlign=End]">
+            <Style Selector="^ /template/ ContentPresenter#PART_TopPaginationExtraContentPresenter">
+                <Setter Property="DockPanel.Dock" Value="Left" />
+            </Style>
+        </Style>
+        <Style Selector="^[BottomPaginationAlign=Start], ^[BottomPaginationAlign=Center]">
+            <Style Selector="^ /template/ ContentPresenter#PART_BottomPaginationExtraContentPresenter">
+                <Setter Property="DockPanel.Dock" Value="Right" />
+            </Style>
+        </Style>
+        <Style Selector="^[BottomPaginationAlign=End]">
+            <Style Selector="^ /template/ ContentPresenter#PART_BottomPaginationExtraContentPresenter">
+                <Setter Property="DockPanel.Dock" Value="Left" />
+            </Style>
+        </Style>
+
         <Style Selector="^ /template/ ContentPresenter#Footer">
             <Setter Property="Foreground"
                     Value="{atom:DataGridTokenResource TableFooterTextColor}" />
@@ -212,7 +268,7 @@
                 <Setter Property="Padding" Value="{atom:DataGridTokenResource TablePadding}" />
                 <Setter Property="FontSize" Value="{atom:DataGridTokenResource TableFontSize}" />
             </Style>
-            
+
             <Style Selector="^ /template/ atom|Pagination">
                 <Setter Property="Margin" Value="{atom:DataGridTokenResource PaginationMargin}" />
             </Style>
@@ -248,6 +304,14 @@
             </Style>
             <Style Selector="^ /template/ atom|Pagination">
                 <Setter Property="Margin" Value="{atom:DataGridTokenResource PaginationMarginSM}" />
+            </Style>
+            <Style Selector="^ /template/ DockPanel#PART_TopPaginationPanel">
+                <Setter Property="HorizontalSpacing" Value="{atom:PaginationTokenResource PaginationLayoutMiniSpacing}" />
+                <Setter Property="Margin" Value="{atom:DataGridTokenResource PaginationPanelMarginSM}" />
+            </Style>
+            <Style Selector="^ /template/ DockPanel#PART_BottomPaginationPanel">
+                <Setter Property="HorizontalSpacing" Value="{atom:PaginationTokenResource PaginationLayoutMiniSpacing}" />
+                <Setter Property="Margin" Value="{atom:DataGridTokenResource PaginationPanelMarginSM}" />
             </Style>
         </Style>
     </Style>

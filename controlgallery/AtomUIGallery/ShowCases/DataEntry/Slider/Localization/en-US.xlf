@@ -131,6 +131,41 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticHandleDescription">
+      <segment>
+        <source>Slider handle control element with absolute positioning, size, outline, user selection, background color, border shadow, border radius, cursor style and transition animation</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and generated Semantic Part styles to customize the published rail, tracks, track and handle parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRailDescription">
+      <segment>
+        <source>Background rail element with absolute positioning, background color, border radius and transition animation styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with relative positioning, height, margin, padding, cursor style and touch action control</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTrackDescription">
+      <segment>
+        <source>Track selection bar element with absolute positioning, background color, border radius and transition animation styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTracksDescription">
+      <segment>
+        <source>Multi-segment track container element with absolute positioning and transition animation styles</source>
+      </segment>
+    </unit>
     <unit id="VerticalDescription">
       <segment>
         <source>The vertical Slider.</source>

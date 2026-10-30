@@ -2,6 +2,32 @@
 
 本文档记录 FloatButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-27
+
+- Motion
+  - BackTop 直接在既有 Panel 上声明 Fade 显隐，移除 Actor 包装、方向 guard 和独立显隐执行器。
+  - FloatButtonGroup 通过静态菜单表面隔离 list 自定义变换，播放与连续替代统一交由 Core Motion。
+  - 保持 trigger 尺寸决定的四方向位移、透明度反向连续性、进度环和 Semantic Part 路由。
+
+
+## 2026-09-12
+
+- API
+  - Add `IsShowProgress` (`bool`, default `false`) to `BackTopFloatButton` and `BackTopFloatButtonHost`, aligned with antd 6.6.0 `FloatButton.BackTop` `showProgress`.
+- Theme
+  - Add the internal `BackTopProgressRing` template node to `BackTopFloatButtonTheme.axaml`; visibility defaults to hidden and is enabled by the `IsShowProgress=True` selector. Stroke width and colors consume global tokens (`LineWidthBold`, `ColorBorderSecondary`, `ColorPrimary`); no control token is introduced.
+- Implementation
+  - Derive the internal scroll progress from the `Target` ScrollViewer in `ScrollChanged` and `OnLoaded`; Avalonia `ScrollChanged` covers extent/viewport changes, so no dedicated resize listener is required.
+
+## 2026-08-16
+
+- Semantic Parts
+  - Add Ant Design-aligned Semantic Part descriptors for `FloatButton`, `BackTopFloatButton` and `FloatButtonGroup`.
+  - Add static template markers and generated owner-scoped style contracts without runtime discovery; `FloatButtonTheme` now owns its leaf shape templates so the generator can statically validate markers.
+  - Document the lazily materialized trigger-mode `list` part and the exclusion of badge adorners, tooltip and item-level group parts.
+- Gallery
+  - Add the Semantic Parts Preview and Ant Design-aligned custom styling example using AtomUI `v6.1.3` version metadata.
+
 ## 2026-07-09
 
 - Docs

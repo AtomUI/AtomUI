@@ -361,6 +361,24 @@
         <target state="translated">Zhong Hua Men</target>
       </segment>
     </unit>
+    <unit id="P2LargeSpaceButtonN1">
+      <segment>
+        <source>Large Space Button 1</source>
+        <target state="translated">Botão com Espaçamento Grande 1</target>
+      </segment>
+    </unit>
+    <unit id="P2LargeSpaceButtonN2">
+      <segment>
+        <source>Large Space Button 2</source>
+        <target state="translated">Botão com Espaçamento Grande 2</target>
+      </segment>
+    </unit>
+    <unit id="P2LargeSpaceButtonN3">
+      <segment>
+        <source>Large Space Button 3</source>
+        <target state="translated">Botão com Espaçamento Grande 3</target>
+      </segment>
+    </unit>
     <unit id="P2OkTextOk">
       <segment>
         <source>Ok</source>
@@ -431,6 +449,24 @@
       <segment>
         <source>End time</source>
         <target state="translated">Fim hora</target>
+      </segment>
+    </unit>
+    <unit id="P2StyledButtonN1">
+      <segment>
+        <source>Styled Button 1</source>
+        <target state="translated">Botão Estilizado 1</target>
+      </segment>
+    </unit>
+    <unit id="P2StyledButtonN2">
+      <segment>
+        <source>Styled Button 2</source>
+        <target state="translated">Botão Estilizado 2</target>
+      </segment>
+    </unit>
+    <unit id="P2StyledButtonN3">
+      <segment>
+        <source>Styled Button 3</source>
+        <target state="translated">Botão Estilizado 3</target>
       </segment>
     </unit>
     <unit id="P2TextBlock">
@@ -575,6 +611,36 @@
       <segment>
         <source>Size</source>
         <target state="translated">Tamanho</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Wrapped item element with spacing item layout and styles, providing wrapper for each child element for inline alignment</source>
+        <target state="translated">Elemento de item encapsulado com layout e estilos de espaçamento, fornecendo um invólucro para cada elemento filho para alinhamento em linha</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the Ant Design style-class demo: customize the root frame, item background and separator color through generated Semantic Part styles, and outline the root with a dashed border.</source>
+        <target state="translated">Espelha o demo style-class do Ant Design: personalize a moldura do root, o fundo do item e a cor do separador por meio dos estilos de Semantic Part gerados e contorne o root com uma borda tracejada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with flex layout, gap settings, alignment, wrap and other spacing container basic styles</source>
+        <target state="translated">Elemento raiz com layout flex, configurações de espaçamento, alinhamento, quebra e outros estilos básicos do contêiner de espaçamento</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSeparatorDescription">
+      <segment>
+        <source>Separator element with divider styling</source>
+        <target state="translated">Elemento separador com estilo de divisor</target>
       </segment>
     </unit>
     <unit id="SizeDescription">

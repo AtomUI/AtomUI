@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             x:Class="AtomUI.Desktop.Controls.Tests.Calendar.CalendarSemanticStylesView">
+    <UserControl.Styles>
+        <Style Selector="atom|Calendar.semantic-owner">
+            <atom:CalendarHeaderStyle><Setter Property="Tag" Value="header" /></atom:CalendarHeaderStyle>
+            <atom:CalendarBodyStyle><Setter Property="Tag" Value="body" /></atom:CalendarBodyStyle>
+            <atom:CalendarContentStyle>
+                <Setter Property="Tag" Value="content" />
+                <Setter Property="Background" Value="Gold" />
+            </atom:CalendarContentStyle>
+            <atom:CalendarItemStyle>
+                <Setter Property="Tag" Value="item" />
+                <Setter Property="Background" Value="Silver" />
+            </atom:CalendarItemStyle>
+            <atom:CalendarItemContentStyle><Setter Property="Tag" Value="item-content" /></atom:CalendarItemContentStyle>
+        </Style>
+    </UserControl.Styles>
+    <atom:Calendar Name="Calendar" Classes="semantic-owner" Value="2026-07-15" />
+</UserControl>

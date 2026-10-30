@@ -163,6 +163,12 @@
         <target state="translated">第二步內容</target>
       </segment>
     </unit>
+    <unit id="P2ContentThisIsAContent">
+      <segment>
+        <source>This is a content.</source>
+        <target state="translated">這是一段內容。</target>
+      </segment>
+    </unit>
     <unit id="P2ContentThisIsStepN1">
       <segment>
         <source>This is Step 1</source>
@@ -325,6 +331,24 @@
         <target state="translated">子標題</target>
       </segment>
     </unit>
+    <unit id="P2SubHeaderTimeN1">
+      <segment>
+        <source>00:00</source>
+        <target state="translated">00:00</target>
+      </segment>
+    </unit>
+    <unit id="P2SubHeaderTimeN2">
+      <segment>
+        <source>00:01</source>
+        <target state="translated">00:01</target>
+      </segment>
+    </unit>
+    <unit id="P2SubHeaderTimeN3">
+      <segment>
+        <source>00:02</source>
+        <target state="translated">00:02</target>
+      </segment>
+    </unit>
     <unit id="P2SubHeaderWaitingForLongTime">
       <segment>
         <source>waiting for longlong time</source>
@@ -437,6 +461,72 @@
       <segment>
         <source>Vertical</source>
         <target state="translated">垂直</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Content region of each item, with text styles and max width.</source>
+        <target state="translated">每個步驟項目的內容區域，設定文字樣式和最大寬度。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Step item container, carrying item state, title and connector styling.</source>
+        <target state="translated">步驟項目容器，承載項目狀態、標題和連接線樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIconDescription">
+      <segment>
+        <source>Icon region of each item, with icon size, margin and rounded frame.</source>
+        <target state="translated">每個步驟項目的圖示區域，設定圖示尺寸、外邊距和圓角邊框。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemRailDescription">
+      <segment>
+        <source>Connector rail of each item, with width, color and state variants.</source>
+        <target state="translated">每個步驟項目的連接線，設定寬度、顏色和狀態變體。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemSectionDescription">
+      <segment>
+        <source>Section region of each item, grouping title, subtitle and content with layout and alignment.</source>
+        <target state="translated">每個步驟項目的內容區，組合標題、副標題與詳情，設定版面配置與對齊方式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemSubtitleDescription">
+      <segment>
+        <source>Subtitle region of each item, with text color and margin.</source>
+        <target state="translated">每個步驟項目的副標題區域，設定文字顏色與外邊距。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemTitleDescription">
+      <segment>
+        <source>Title region of each item, with text color and alignment.</source>
+        <target state="translated">每個步驟項目的標題區域，設定文字顏色與對齊方式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemWrapperDescription">
+      <segment>
+        <source>Wrapper region of each item, with size, padding and border styles.</source>
+        <target state="translated">每個步驟項目的包裹區域，設定尺寸、內邊距和邊框樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Style the root and item parts through generated Semantic Part styles: a dashed outline around the root, rounded item icons, italic content, and a navigation-specific root border color.</source>
+        <target state="translated">透過生成的 Semantic Part 樣式自訂 root 與 item 各部件：root 使用虛線描邊、圖示使用圓角、內容使用斜體，導航類型下 root 使用專屬邊框色。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Step bar root, defining flow direction, alignment and item composition.</source>
+        <target state="translated">步驟列根元素，定義流程方向、對齊方式和項目構成。</target>
       </segment>
     </unit>
     <unit id="StepsWithProgressDescription">

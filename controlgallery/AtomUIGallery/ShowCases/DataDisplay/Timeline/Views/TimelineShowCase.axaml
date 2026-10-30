@@ -6,11 +6,12 @@
     xmlns:gallery="https://atomui.net/oss-controls/gallery"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:vm="using:AtomUIGallery.ShowCases.Timeline"
-    x:DataType="vm:TimelineViewModel">
+    x:DataType="vm:TimelineViewModel"
+    x:CompileBindings="True">
 
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Timeline"
                     Category="{gallery:TimelineShowCaseLangResource ComponentCategory}"
@@ -20,7 +21,106 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractTimeline" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:TimelineViewModel">
+                    <StackPanel Orientation="Vertical" Spacing="16">
+                        <gallery:SemanticPartPreview
+                            Name="TimelineSemanticPreview"
+                            SemanticOwner="{Binding #TimelineSemanticOwner}"
+                            SemanticOwnerType="{x:Type atom:Timeline}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:Timeline Name="TimelineSemanticOwner"
+                                               Width="400"
+                                               HorizontalAlignment="Left">
+                                    <atom:TimelineItem Label="2015-09-01"
+                                                       Content="{gallery:TimelineShowCaseLangResource P2ContentCreateAServices}" />
+                                    <atom:TimelineItem Label="2015-09-01 09:12:11"
+                                                       Content="{gallery:TimelineShowCaseLangResource P2ContentSolveInitialNetworkProblems}" />
+                                    <atom:TimelineItem Content="{gallery:TimelineShowCaseLangResource P2ContentTechnicalTesting}" />
+                                    <atom:TimelineItem Label="2015-09-01 09:12:11"
+                                                       Content="{gallery:TimelineShowCaseLangResource P2ContentNetworkProblemsBeingSolved}" />
+                                </atom:Timeline>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemWrapper"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemWrapperDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemIcon"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemSection"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemSectionDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemHeader"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemHeaderDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemTitle"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemContent"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemContentDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemRail"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemRailDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview
+                            Name="TimelineItemsSemanticPreview"
+                            SemanticOwner="{Binding #TimelineItemsSemanticOwner}"
+                            SemanticOwnerType="{x:Type atom:Timeline}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:Timeline Name="TimelineItemsSemanticOwner"
+                                               Width="400"
+                                               HorizontalAlignment="Left">
+                                    <atom:TimelineItem Label="2015-09-01 09:12:11"
+                                                       Content="{gallery:TimelineShowCaseLangResource P2ContentSolveInitialNetworkProblems}" />
+                                    <atom:TimelineItem Label="2015-09-01 11:11:11"
+                                                       Content="{gallery:TimelineShowCaseLangResource P2ContentTechnicalTesting}" />
+                                </atom:Timeline>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemsRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemsItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemWrapper"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemsWrapperDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemIcon"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemsIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemSection"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemsSectionDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemHeader"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemsHeaderDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemTitle"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemsTitleDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemContent"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemsContentDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="itemRail"
+                                    Description="{gallery:TimelineShowCaseLangResource SemanticTimelineItemsRailDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -166,7 +266,54 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+    <gallery:ShowCaseItem SourceKey="timeline-semantic-part"
+                          Title="{gallery:TimelineShowCaseLangResource SemanticPartStyleTitle}"
+                          Description="{gallery:TimelineShowCaseLangResource SemanticPartStyleDescription}"
+                          BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                          Span="Full"
+                          IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:TimelineViewModel">
+                <StackPanel Orientation="Vertical"
+                            HorizontalAlignment="Stretch"
+                            Spacing="24">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|Timeline.semantic-object">
+                            <Setter Property="Padding" Value="8" />
+                            <Setter Property="CornerRadius" Value="4" />
+                            <atom:TimelineItemIconStyle x:SetterTargetType="Border">
+                                <Setter Property="BorderBrush" Value="#1890ff" />
+                            </atom:TimelineItemIconStyle>
+                        </Style>
+                        <Style Selector="atom|Timeline.semantic-function">
+                            <Setter Property="Padding" Value="6,10" />
+                            <Setter Property="CornerRadius" Value="4" />
+                            <Setter Property="BorderBrush" Value="#A294F9" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <atom:TimelineItemIconStyle x:SetterTargetType="Border">
+                                <Setter Property="BorderBrush" Value="#A294F9" />
+                            </atom:TimelineItemIconStyle>
+                        </Style>
+                    </StackPanel.Styles>
+                    <atom:Timeline Classes="semantic-object" Orientation="Horizontal">
+                        <atom:TimelineItem Label="2015-09-01"
+                                           Content="{gallery:TimelineShowCaseLangResource P2ContentCreateAServicesSite}" />
+                        <atom:TimelineItem Label="2015-09-01 09:12:11"
+                                           Content="{gallery:TimelineShowCaseLangResource P2ContentSolveInitialNetworkProblems}" />
+                        <atom:TimelineItem Content="{gallery:TimelineShowCaseLangResource P2ContentTechnicalTesting}" />
+                    </atom:Timeline>
+                    <atom:Timeline Classes="semantic-function">
+                        <atom:TimelineItem Label="2015-09-01"
+                                           Content="{gallery:TimelineShowCaseLangResource P2ContentCreateAServicesSite}" />
+                        <atom:TimelineItem Label="2015-09-01 09:12:11"
+                                           Content="{gallery:TimelineShowCaseLangResource P2ContentSolveInitialNetworkProblems}" />
+                        <atom:TimelineItem Content="{gallery:TimelineShowCaseLangResource P2ContentTechnicalTesting}" />
+                    </atom:Timeline>
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

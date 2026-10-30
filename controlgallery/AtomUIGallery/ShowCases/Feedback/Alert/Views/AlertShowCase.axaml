@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Alert"
              x:DataType="vm:AlertViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Alert"
                     Category="{gallery:AlertShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,62 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="TemplatedControl" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:AlertViewModel">
+                    <gallery:SemanticPartPreview Name="AlertSemanticPreview"
+                                                 SemanticOwnerType="{x:Type atom:Alert}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:Alert Name="AlertSemanticOwner"
+                                        Type="Info"
+                                        IsShowIcon="True"
+                                        IsClosable="True"
+                                        Message="Info Text"
+                                        Description="Info Description Info Description Info Description Info Description">
+                                <atom:Alert.ExtraAction>
+                                    <StackPanel Orientation="Vertical"
+                                                MinWidth="80"
+                                                Spacing="8">
+                                        <atom:Button ButtonType="Primary"
+                                                     SizeType="Small"
+                                                     HorizontalAlignment="Stretch"
+                                                     Content="Accept" />
+                                        <atom:Button SizeType="Small"
+                                                     IsDanger="True"
+                                                     IsGhost="True"
+                                                     HorizontalAlignment="Stretch"
+                                                     Content="Decline" />
+                                    </StackPanel>
+                                </atom:Alert.ExtraAction>
+                            </atom:Alert>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:AlertShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="icon"
+                                Description="{gallery:AlertShowCaseLangResource SemanticIconDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="section"
+                                Description="{gallery:AlertShowCaseLangResource SemanticSectionDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="title"
+                                Description="{gallery:AlertShowCaseLangResource SemanticTitleDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="description"
+                                Description="{gallery:AlertShowCaseLangResource SemanticDescriptionDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="actions"
+                                Description="{gallery:AlertShowCaseLangResource SemanticActionsDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="close"
+                                Description="{gallery:AlertShowCaseLangResource SemanticCloseDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -194,7 +248,65 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:AlertShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:AlertShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="alert-semantic-part"
+                    BadgeText="v6.1.3"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:AlertViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Stretch"
+                                        Spacing="16">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|Alert.semantic-style-demo">
+                                        <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Setter Property="StrokeDashArray" Value="4,2" />
+                                        <Setter Property="CornerRadius" Value="8" />
+                                        <Setter Property="Padding" Value="12" />
+                                    </Style>
+                                    <Style Selector="atom|Alert.semantic-object-demo">
+                                        <atom:AlertIconStyle x:SetterTargetType="atom:Icon">
+                                            <Setter Property="Width" Value="18" />
+                                            <Setter Property="Height" Value="18" />
+                                        </atom:AlertIconStyle>
+                                        <atom:AlertSectionStyle x:SetterTargetType="StackPanel">
+                                            <Setter Property="TextElement.FontWeight" Value="Medium" />
+                                        </atom:AlertSectionStyle>
+                                    </Style>
+                                    <Style Selector="atom|Alert.semantic-function-demo">
+                                        <Setter Property="Background" Value="#1A52C41A" />
+                                        <Setter Property="BorderBrush" Value="#B7EB8F" />
+                                        <atom:AlertIconStyle x:SetterTargetType="atom:Icon">
+                                            <Setter Property="FillBrush" Value="#52C41A" />
+                                        </atom:AlertIconStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:Alert Name="AlertObjectSemanticDemo"
+                                            Classes="semantic-style-demo semantic-object-demo"
+                                            Type="Info"
+                                            IsShowIcon="True"
+                                            Message="Object styles">
+                                    <atom:Alert.ExtraAction>
+                                        <atom:Button SizeType="Small"
+                                                     Content="Action" />
+                                    </atom:Alert.ExtraAction>
+                                </atom:Alert>
+                                <atom:Alert Name="AlertFunctionSemanticDemo"
+                                            Classes="semantic-style-demo semantic-function-demo"
+                                            Type="Success"
+                                            IsShowIcon="True"
+                                            Message="Function styles" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

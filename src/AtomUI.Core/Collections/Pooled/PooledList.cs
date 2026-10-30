@@ -139,7 +139,9 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public PooledList(int capacity, ClearMode clearMode, ArrayPool<T> customPool, bool sizeToCapacity)
     {
         if (capacity < 0)
+        {
             ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.capacity, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+        }
 
         _pool        = customPool ?? ArrayPool<T>.Shared;
         _clearOnFree = ShouldClear(clearMode);
@@ -292,7 +294,9 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
                 using (var en = collection.GetEnumerator())
                 {
                     while (en.MoveNext())
+                    {
                         Add(en.Current);
+                    }
                 }
                 break;
         }
@@ -550,11 +554,19 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public int BinarySearch(int index, int count, T item, IComparer<T>? comparer)
     {
         if (index < 0)
+        {
             ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
+        }
+
         if (count < 0)
+        {
             ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+        }
+
         if (_size - index < count)
+        {
             ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
+        }
 
         return Array.BinarySearch(_items, index, count, item, comparer);
     }
@@ -641,7 +653,9 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public void CopyTo(Span<T> span)
     {
         if (span.Length < Count)
+        {
             throw new ArgumentException("Destination span is shorter than the list to be copied.");
+        }
 
         Span.CopyTo(span);
     }
@@ -686,9 +700,15 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
             // Allow the list to grow to maximum possible capacity (~2G elements) before encountering overflow.
             // Note that this check works even when _items.Length overflowed thanks to the (uint) cast
             if ((uint)newCapacity > MaxArrayLength)
+            {
                 newCapacity = MaxArrayLength;
+            }
+
             if (newCapacity < min)
+            {
                 newCapacity = min;
+            }
+
             Capacity = newCapacity;
         }
     }
@@ -699,7 +719,9 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public bool TryFind(Func<T, bool> match, [MaybeNullWhen(false)] out T result)
     {
         if (match == null)
+        {
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
+        }
 
         for (int i = 0; i < _size; i++)
         {
@@ -717,7 +739,9 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public PooledList<T> FindAll(Func<T, bool> match)
     {
         if (match == null)
+        {
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
+        }
 
         var list = new PooledList<T>();
         for (int i = 0; i < _size; i++)
@@ -739,19 +763,27 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public int FindIndex(int startIndex, int count, Func<T, bool> match)
     {
         if ((uint)startIndex > (uint)_size)
+        {
             ThrowHelper.ThrowStartIndexArgumentOutOfRange_ArgumentOutOfRange_Index();
+        }
 
         if (count < 0 || startIndex > _size - count)
+        {
             ThrowHelper.ThrowCountArgumentOutOfRange_ArgumentOutOfRange_Count();
+        }
 
         if (match is null)
+        {
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
+        }
 
         int endIndex = startIndex + count;
         for (int i = startIndex; i < endIndex; i++)
         {
             if (match(_items[i]))
+            {
                 return i;
+            }
         }
         return -1;
     }
@@ -841,7 +873,9 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
         }
 
         if (version != _version)
+        {
             ThrowHelper.ThrowInvalidOperationException_InvalidOperation_EnumFailedVersion();
+        }
     }
 
     /// <summary>
@@ -906,7 +940,10 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public int IndexOf(T item, int index)
     {
         if (index > _size)
+        {
             ThrowHelper.ThrowArgumentOutOfRange_IndexException();
+        }
+
         return Array.IndexOf(_items, item, index, _size - index);
     }
 
@@ -918,10 +955,14 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public int IndexOf(T item, int index, int count)
     {
         if (index > _size)
+        {
             ThrowHelper.ThrowArgumentOutOfRange_IndexException();
+        }
 
         if (count < 0 || index > _size - count)
+        {
             ThrowHelper.ThrowCountArgumentOutOfRange_ArgumentOutOfRange_Count();
+        }
 
         return Array.IndexOf(_items, item, index, count);
     }
@@ -940,7 +981,10 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
         }
 
         if (_size == _items.Length)
+        {
             EnsureCapacity(_size + 1);
+        }
+
         if (index < _size)
         {
             Array.Copy(_items, index, _items, index + 1, _size - index);
@@ -1044,7 +1088,10 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public void InsertRange(int index, T[] array)
     {
         if (array is null)
+        {
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.array);
+        }
+
         InsertRange(index, array.AsSpan());
     }
 
@@ -1104,7 +1151,10 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public int LastIndexOf(T item, int index)
     {
         if (index >= _size)
+        {
             ThrowHelper.ThrowArgumentOutOfRange_IndexException();
+        }
+
         return LastIndexOf(item, index, index + 1);
     }
 
@@ -1173,22 +1223,31 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public int RemoveAll(Func<T, bool> match)
     {
         if (match == null)
+        {
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
+        }
 
         int freeIndex = 0;   // the first free slot in items array
 
         // Find the first item which needs to be removed.
         while (freeIndex < _size && !match(_items[freeIndex]))
+        {
             freeIndex++;
+        }
+
         if (freeIndex >= _size)
+        {
             return 0;
+        }
 
         int current = freeIndex + 1;
         while (current < _size)
         {
             // Find the first item which needs to be kept.
             while (current < _size && match(_items[current]))
+            {
                 current++;
+            }
 
             if (current < _size)
             {
@@ -1216,7 +1275,9 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public void RemoveAt(int index)
     {
         if ((uint)index >= (uint)_size)
+        {
             ThrowHelper.ThrowArgumentOutOfRange_IndexException();
+        }
 
         _size--;
         if (index < _size)
@@ -1238,13 +1299,19 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public void RemoveRange(int index, int count)
     {
         if (index < 0)
+        {
             ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
+        }
 
         if (count < 0)
+        {
             ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+        }
 
         if (_size - index < count)
+        {
             ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
+        }
 
         if (count > 0)
         {
@@ -1279,13 +1346,19 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public void Reverse(int index, int count)
     {
         if (index < 0)
+        {
             ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
+        }
 
         if (count < 0)
+        {
             ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+        }
 
         if (_size - index < count)
+        {
             ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
+        }
 
         if (count > 1)
         {
@@ -1321,13 +1394,19 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public void Sort(int index, int count, IComparer<T>? comparer)
     {
         if (index < 0)
+        {
             ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
+        }
 
         if (count < 0)
+        {
             ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+        }
 
         if (_size - index < count)
+        {
             ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
+        }
 
         if (count > 1)
         {
@@ -1407,7 +1486,9 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     private void ReturnArray()
     {
         if (_items.Length == 0)
+        {
             return;
+        }
 
         try
         {

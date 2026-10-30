@@ -1,5 +1,3 @@
-using AtomUIGallery.Localization;
-using System.Globalization;
 using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
@@ -132,6 +130,21 @@ public class DatePickerViewModel : ReactiveObject, IRoutableViewModel
     public DatePickerViewModel(IScreen screen)
     {
         HostScreen = screen;
+    }
+
+    private DateTime? _semanticPreviewRangeStart = DateTime.Today;
+    private DateTime? _semanticPreviewRangeEnd = DateTime.Today.AddDays(16);
+
+    public DateTime? SemanticPreviewRangeStart
+    {
+        get => _semanticPreviewRangeStart;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewRangeStart, value);
+    }
+
+    public DateTime? SemanticPreviewRangeEnd
+    {
+        get => _semanticPreviewRangeEnd;
+        set => this.RaiseAndSetIfChanged(ref _semanticPreviewRangeEnd, value);
     }
 
     public void HandlePickerSizeTypeOptionCheckedChanged(object? sender, OptionCheckedChangedEventArgs args)

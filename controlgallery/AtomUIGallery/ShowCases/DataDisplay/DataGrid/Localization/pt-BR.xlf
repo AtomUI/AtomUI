@@ -9,8 +9,14 @@
     </unit>
     <unit id="BasicPagingDescription">
       <segment>
-        <source>Basic pagination table.</source>
-        <target state="translated">Básico paginação tabela.</target>
+        <source>Basic pagination table with a page-size selector and opposite-side extra content.</source>
+        <target state="translated">Tabela de paginação básica com seletor de itens por página e conteúdo extra no lado oposto.</target>
+      </segment>
+    </unit>
+    <unit id="BasicPagingExtraContentText">
+      <segment>
+        <source>Batch actions</source>
+        <target state="translated">Ações em lote</target>
       </segment>
     </unit>
     <unit id="BasicPagingTitle">
@@ -565,6 +571,12 @@
         <target state="translated">Company Name</target>
       </segment>
     </unit>
+    <unit id="P2HeaderDescription">
+      <segment>
+        <source>Description</source>
+        <target state="translated">Descrição</target>
+      </segment>
+    </unit>
     <unit id="P2HeaderDoorNo">
       <segment>
         <source>Door No.</source>
@@ -863,6 +875,102 @@
       <segment>
         <source>Selection</source>
         <target state="translated">Seleção</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyCellDescription">
+      <segment>
+        <source>Body cell element with padding, word wrap and other data cell styles.</source>
+        <target state="translated">Elemento de célula do corpo com espaçamento interno, quebra de texto e outros estilos básicos de célula de dados.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyRowDescription">
+      <segment>
+        <source>Body row element with hover, selected and expanded row styles. Group header rows belong to the body rows.</source>
+        <target state="translated">Elemento de linha do corpo com estilos de linha interativos de foco, seleção e expansão. As linhas de cabeçalho de grupo também pertencem às linhas do corpo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyWrapperDescription">
+      <segment>
+        <source>Body wrapper element with table body layout and container styles.</source>
+        <target state="translated">Elemento contêiner do corpo com layout e estilos de contêiner do corpo da tabela.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with header area, rows area and scrollbar layout.</source>
+        <target state="translated">Elemento de conteúdo com área de cabeçalho, área de linhas e layout da barra de rolagem.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>Footer element with table footer text color styles.</source>
+        <target state="translated">Elemento de rodapé com estilos de cor do texto do rodapé da tabela.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderCellDescription">
+      <segment>
+        <source>Header cell element with padding, background, text color and font weight.</source>
+        <target state="translated">Elemento de célula do cabeçalho com espaçamento interno, plano de fundo, cor e peso da fonte.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderWrapperDescription">
+      <segment>
+        <source>Header wrapper element with table header layout and container styles.</source>
+        <target state="translated">Elemento contêiner do cabeçalho com layout e estilos de contêiner do cabeçalho da tabela.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPaginationItemDescription">
+      <segment>
+        <source>Pagination item element with page item sizing, active state and spacing styles.</source>
+        <target state="translated">Elemento de item de paginação: dimensionamento, estado ativo e espaçamento dos itens de página.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPaginationRootDescription">
+      <segment>
+        <source>Pagination host element with table pagination layout and spacing styles.</source>
+        <target state="translated">Elemento host de paginação: layout e espaçamento da paginação da tabela.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize each semantic part with generated dedicated part styles.</source>
+        <target state="translated">Personalize cada parte semântica com estilos dedicados gerados.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewFooterText">
+      <segment>
+        <source>Footer</source>
+        <target state="translated">Rodapé</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPreviewTitleText">
+      <segment>
+        <source>Semantics Preview</source>
+        <target state="translated">Pré-visualização de semântica</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with background, border radius, scrollbar colors and other table container styles.</source>
+        <target state="translated">Elemento raiz com plano de fundo, raio dos cantos, cores da barra de rolagem e outros estilos básicos do contêiner da tabela.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Inner wrapper element with corner clipping and the loading wrapper.</source>
+        <target state="translated">Elemento contêiner interno com recorte dos cantos e o wrapper de carregamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with table title layout and separator styles.</source>
+        <target state="translated">Elemento de título com layout do título da tabela e estilos do separador.</target>
       </segment>
     </unit>
     <unit id="SizeDescription">

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <PropertyGroup>
+    <TargetFramework>net10.0-browser</TargetFramework><OutputType>Exe</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks><WasmEnableWebcil>false</WasmEnableWebcil><InvariantGlobalization>true</InvariantGlobalization>
+    <PublishTrimmed>true</PublishTrimmed>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Host/Program.cs" Link="Program.cs" />
+    <ProjectReference Include="../PackageA/PackageA.csproj" /><ProjectReference Include="../PackageB/PackageB.csproj" /><ProjectReference Include="../Empty/Empty.csproj" />
+  </ItemGroup>
+</Project>

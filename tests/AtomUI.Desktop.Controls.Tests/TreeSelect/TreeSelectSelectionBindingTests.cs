@@ -186,6 +186,12 @@ public class TreeSelectSelectionBindingTests
             FindSelectTag(treeSelect, "Second").ShouldNotBeNull();
             treeView.SelectedItems.Cast<ITreeItemNode>().ShouldContain(secondNode);
 
+            treeView.ItemsSource = new List<ITreeItemNode> { firstNode, secondNode };
+            Dispatcher.UIThread.RunJobs();
+            formValueChangedCount.ShouldBe(1);
+            treeView.SelectedItems.Cast<ITreeItemNode>().ShouldContain(firstNode);
+            treeView.SelectedItems.Cast<ITreeItemNode>().ShouldContain(secondNode);
+
             viewModel.SelectedItems.Remove(firstNode);
             Dispatcher.UIThread.RunJobs();
 
@@ -207,6 +213,22 @@ public class TreeSelectSelectionBindingTests
             treeSelect.SelectedCount.ShouldBe(0);
             treeSelect.IsSelectionEmpty.ShouldBeTrue();
             treeView.SelectedItems.Cast<ITreeItemNode>().ShouldBeEmpty();
+
+            var oldEqualNode = new EqualByKeyNode { ItemKey = "equal", Header = "Equal", Value = "equal" };
+            var source = new ObservableCollection<ITreeItemNode> { oldEqualNode };
+            treeSelect.ItemsSource = source;
+            treeSelect.SelectedItems = new List<ITreeItemNode> { oldEqualNode };
+            Dispatcher.UIThread.RunJobs();
+            formValueChangedCount = 0;
+
+            var newEqualNode = new EqualByKeyNode { ItemKey = "equal", Header = "Equal", Value = "equal" };
+            source[0] = newEqualNode;
+            Dispatcher.UIThread.RunJobs();
+
+            treeSelect.SelectedItems.ShouldNotBeNull();
+            treeSelect.SelectedItems.Single().ShouldBeSameAs(newEqualNode);
+            treeView.SelectedItems.Cast<ITreeItemNode>().Single().ShouldBeSameAs(newEqualNode);
+            formValueChangedCount.ShouldBe(1);
         });
     }
 
@@ -326,6 +348,41 @@ public class TreeSelectSelectionBindingTests
             treeSelect.EffectiveSelectedItems.ShouldNotBeNull();
             treeSelect.EffectiveSelectedItems.ShouldBe([secondNode]);
             treeView.CheckedItems.Cast<ITreeItemNode>().ShouldNotContain(firstNode);
+
+            viewModel.SelectedItems.Add(firstNode);
+            Dispatcher.UIThread.RunJobs();
+            var firstReplacement = new TreeItemNode { Header = "First replacement", Value = "first" };
+            var secondReplacement = new TreeItemNode { Header = "Second replacement", Value = "second" };
+            var formValueChangedCount = 0;
+            ((IFormItemAware)treeSelect).ValueChanged += (_, _) => formValueChangedCount++;
+
+            treeSelect.ItemsSource = new List<ITreeItemNode> { firstReplacement, secondReplacement };
+            Dispatcher.UIThread.RunJobs();
+
+            formValueChangedCount.ShouldBe(1);
+            treeSelect.SelectedItems.ShouldNotBeNull();
+            treeSelect.SelectedItems.ShouldContain(firstReplacement);
+            treeSelect.SelectedItems.ShouldContain(secondReplacement);
+            treeView.CheckedItems.Cast<ITreeItemNode>().ShouldContain(firstReplacement);
+            treeView.CheckedItems.Cast<ITreeItemNode>().ShouldContain(secondReplacement);
+
+            var oldEqualNode = new EqualByKeyNode { ItemKey = "equal", Header = "Equal", Value = "equal" };
+            var source = new ObservableCollection<ITreeItemNode> { oldEqualNode };
+            treeSelect.ItemsSource = source;
+            treeSelect.SelectedItems = new List<ITreeItemNode> { oldEqualNode };
+            Dispatcher.UIThread.RunJobs();
+            formValueChangedCount = 0;
+
+            var newEqualNode = new EqualByKeyNode { ItemKey = "equal", Header = "Equal", Value = "equal" };
+            oldEqualNode.Equals(newEqualNode).ShouldBeTrue();
+            source[0] = newEqualNode;
+            Dispatcher.UIThread.RunJobs();
+
+            treeSelect.SelectedItems.ShouldNotBeNull();
+            treeSelect.SelectedItems.Count.ShouldBe(1);
+            treeSelect.SelectedItems[0].ShouldBeSameAs(newEqualNode);
+            treeView.CheckedItems.Cast<ITreeItemNode>().Single().ShouldBeSameAs(newEqualNode);
+            formValueChangedCount.ShouldBe(1);
         });
     }
 
@@ -582,6 +639,38 @@ public class TreeSelectSelectionBindingTests
                 _selectedItems = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItems)));
             }
+        }
+    }
+
+    private sealed class EqualByKeyNode : ITreeItemNode
+    {
+        public EntityKey? ItemKey { get; init; }
+        public ITreeNode<ITreeItemNode>? ParentNode { get; private set; }
+        public object? Header { get; init; }
+        public PathIcon? Icon => null;
+        public bool IsEnabled { get; set; } = true;
+        public bool? IsChecked { get; set; }
+        public bool IsSelected { get; set; }
+        public bool IsExpanded { get; set; }
+        public bool IsIndicatorEnabled { get; set; } = true;
+        public string? GroupName => null;
+        public bool IsLeaf => true;
+        public object? Value { get; set; }
+        public IEnumerable<ITreeItemNode> Children => Array.Empty<ITreeItemNode>();
+
+        public void UpdateParentNode(ITreeItemNode? parentNode)
+        {
+            ParentNode = parentNode;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is EqualByKeyNode other && Equals(ItemKey, other.ItemKey);
+        }
+
+        public override int GetHashCode()
+        {
+            return ItemKey?.GetHashCode() ?? 0;
         }
     }
 }

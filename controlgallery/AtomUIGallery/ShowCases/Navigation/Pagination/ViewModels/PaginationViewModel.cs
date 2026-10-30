@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Reactive;
 using AtomUI.Controls;
 using ReactiveUI;

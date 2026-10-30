@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.AutoComplete"
              x:DataType="vm:AutoCompleteViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="AutoComplete"
                     Category="{gallery:AutoCompleteShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,59 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractAutoComplete" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:AutoCompleteViewModel">
+                    <gallery:SemanticPartPreview Name="AutoCompleteSemanticPreview"
+                                                 Title="AutoComplete"
+                                                 SemanticOwner="{Binding #AutoCompleteSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:AutoComplete}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:AutoComplete Name="AutoCompleteSemanticOwner"
+                                               Width="320"
+                                               IsAllowClear="True"
+                                               IsMotionEnabled="False"
+                                               MinimumPrefixLength="0"
+                                               IsDropDownOpen="True"
+                                               IsPopupPinnedOpen="True"
+                                               ContentLeftAddOn="prefix"
+                                               OptionsSource="{Binding SemanticPreviewOptions}"
+                                               PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextInputHere}"
+                                               Filter="{atom:ValueFilterProvider Contains}" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:AutoCompleteShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="prefix"
+                                Description="{gallery:AutoCompleteShowCaseLangResource SemanticPrefixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:AutoCompleteShowCaseLangResource SemanticContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="placeholder"
+                                Description="{gallery:AutoCompleteShowCaseLangResource SemanticPlaceholderDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="input"
+                                Description="{gallery:AutoCompleteShowCaseLangResource SemanticInputDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="clear"
+                                Description="{gallery:AutoCompleteShowCaseLangResource SemanticClearDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.root"
+                                Description="{gallery:AutoCompleteShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.list"
+                                Description="{gallery:AutoCompleteShowCaseLangResource SemanticPopupListDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.listItem"
+                                Description="{gallery:AutoCompleteShowCaseLangResource SemanticPopupListItemDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -27,208 +78,209 @@
                                    InitialDeferredLoadItemCount="4"
                                    DeferredLoadBatchSize="2"
                                    ContentMargin="28,10,28,28">
-                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource BasicUsageTitle}"
-                                      Description="{gallery:AutoCompleteShowCaseLangResource BasicUsageDescription}"
-                                      IsDeferredContentEnabled="True">
-                    <gallery:ShowCaseItem.DeferredContentTemplate>
-                        <DataTemplate x:DataType="vm:AutoCompleteViewModel">
-                            <atom:AutoComplete Name="BasicAutoComplete"
-                                               OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
-                                               PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextInputHere}"
-                                               Width="200" />
-                        </DataTemplate>
-                    </gallery:ShowCaseItem.DeferredContentTemplate>
-                </gallery:ShowCaseItem>
-
-                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource CustomizedTitle}"
-                                      Description="{gallery:AutoCompleteShowCaseLangResource CustomizedDescription}"
-                                      IsDeferredContentEnabled="True">
-                    <gallery:ShowCaseItem.DeferredContentTemplate>
-                        <DataTemplate x:DataType="vm:AutoCompleteViewModel">
-                            <atom:AutoComplete Name="CustomizedAutoComplete"
-                                               OptionsAsyncLoader="{Binding CustomLabelOptionsAsyncLoader}"
-                                               PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextInputHere}"
-                                               Width="200" />
-                        </DataTemplate>
-                    </gallery:ShowCaseItem.DeferredContentTemplate>
-                </gallery:ShowCaseItem>
-
-                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource CustomOptionRenderingTitle}"
-                                      Description="{gallery:AutoCompleteShowCaseLangResource CustomOptionRenderingDescription}"
-                                      IsDeferredContentEnabled="True">
-                    <gallery:ShowCaseItem.DeferredContentTemplate>
-                        <DataTemplate x:DataType="vm:AutoCompleteViewModel">
-                            <atom:AutoComplete Name="CityAutoComplete"
-                                               OptionsSource="{Binding CityOptions}"
-                                               PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextTryAOrB}"
-                                               Width="320"
-                                               IsAllowClear="True"
-                                               Filter="{atom:ValueFilterProvider Contains}">
-                                <atom:AutoComplete.OptionTemplate>
-                                    <DataTemplate x:DataType="vm:CityAutoCompleteOption">
-                                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="2">
-                                            <TextBlock Grid.Row="0" Grid.Column="0"
-                                                       Text="{Binding Header}"
-                                                       FontWeight="SemiBold"
-                                                       TextTrimming="CharacterEllipsis" />
-                                            <Border Grid.Row="0" Grid.Column="1"
-                                                    Padding="6 0"
-                                                    VerticalAlignment="Center"
-                                                    Background="{atom:SharedTokenResource ColorFillSecondary}"
-                                                    CornerRadius="{atom:SharedTokenResource BorderRadiusXS}">
-                                                <TextBlock Text="{Binding Country}"
-                                                           FontSize="{atom:SharedTokenResource FontSizeSM}" />
-                                            </Border>
-                                            <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                                                       Text="{Binding Population, StringFormat='Population {0:N0}'}"
-                                                       FontSize="{atom:SharedTokenResource FontSizeSM}"
-                                                       Foreground="{atom:SharedTokenResource ColorTextTertiary}" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </atom:AutoComplete.OptionTemplate>
-                            </atom:AutoComplete>
-                        </DataTemplate>
-                    </gallery:ShowCaseItem.DeferredContentTemplate>
-                </gallery:ShowCaseItem>
-
-                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource SizeTypeTitle}"
-                                      Description="{gallery:AutoCompleteShowCaseLangResource SizeTypeDescription}"
+                <!-- 1. 基本使用 -->
+                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource BasicTitle}"
+                                      Description="{gallery:AutoCompleteShowCaseLangResource BasicDescription}"
                                       IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:AutoCompleteViewModel">
                             <StackPanel Spacing="10">
-                                <atom:AutoComplete Width="220"
-                                                   Name="LargeAutoComplete"
+                                <atom:AutoComplete Name="BasicAutoComplete"
                                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
-                                                   SizeType="Large"
-                                                   PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderSizeTypeLarge}" />
-                                <atom:AutoComplete Width="220"
-                                                   Name="MiddleAutoComplete"
+                                                   PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextInputHere}"
+                                                   Width="200" />
+                                <atom:AutoComplete Name="ControlledAutoComplete"
                                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
-                                                   SizeType="Middle"
-                                                   PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderSizeTypeMiddle}" />
-                                <atom:AutoComplete Width="220"
-                                                   Name="SmallAutoComplete"
-                                                   OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
-                                                   SizeType="Small"
-                                                   PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderSizeTypeSmall}" />
-                                <atom:AutoComplete Width="220"
-                                                   Name="CustomAutoComplete"
-                                                   OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
-                                                   SizeType="Custom"
-                                                   Height="36"
-                                                   PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderSizeTypeCustom}" />
+                                                   PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextControlMode}"
+                                                   Width="200" />
                             </StackPanel>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <gallery:ShowCaseItem
-                    Title="{gallery:AutoCompleteShowCaseLangResource LookupPatternsUncertainCategoryTitle}"
-                    Description="{gallery:AutoCompleteShowCaseLangResource LookupPatternsUncertainCategoryDescription}"
-                    IsDeferredContentEnabled="True">
+                <!-- 2. 自定义选项 -->
+                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource CustomOptionsTitle}"
+                                      Description="{gallery:AutoCompleteShowCaseLangResource CustomOptionsDescription}"
+                                      IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:AutoCompleteViewModel">
-                            <atom:AutoCompleteSearchEdit Name="SearchAutoComplete"
-                                                         OptionsAsyncLoader="{Binding SearchEditOptionsAsyncLoader}"
-                                                         PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextInputHere}"
-                                                         Width="300"
-                                                         SizeType="Large"
-                                                         SearchButtonStyle="Primary"
-                                                         Filter="{atom:ValueFilterProvider Contains}">
-                                <atom:AutoCompleteSearchEdit.OptionTemplate>
-                                    <DataTemplate x:DataType="vm:CustomAutoCompleteOption">
-                                        <DockPanel LastChildFill="True">
-                                            <TextBlock
-                                                Text="{gallery:AutoCompleteShowCaseLangResource P2TextResults}"
-                                                DockPanel.Dock="Right"
-                                                Margin="5 0 0 0" />
-                                            <TextBlock Text="{Binding ResultCount}"
-                                                       DockPanel.Dock="Right" />
-                                            <TextBlock Text="{Binding Header}"
-                                                       TextTrimming="CharacterEllipsis" />
-                                        </DockPanel>
-                                    </DataTemplate>
-                                </atom:AutoCompleteSearchEdit.OptionTemplate>
-                            </atom:AutoCompleteSearchEdit>
-
+                            <atom:AutoComplete Name="CustomOptionsAutoComplete"
+                                               OptionsAsyncLoader="{Binding CustomOptionsAsyncLoader}"
+                                               PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextInputHere}"
+                                               Width="200" />
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <gallery:ShowCaseItem
-                    Title="{gallery:AutoCompleteShowCaseLangResource TextAreaAutoCompletionTitle}"
-                    Description="{gallery:AutoCompleteShowCaseLangResource TextAreaAutoCompletionDescription}"
-                    IsDeferredContentEnabled="True">
+                <!-- 3. 自定义输入组件 -->
+                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource CustomInputTitle}"
+                                      Description="{gallery:AutoCompleteShowCaseLangResource CustomInputDescription}"
+                                      IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:AutoCompleteViewModel">
-                            <atom:AutoCompleteTextArea Name="TextAreaAutoComplete"
-                                                       OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
+                            <atom:AutoCompleteTextArea Name="CustomInputAutoComplete"
+                                                       OptionsAsyncLoader="{Binding CustomInputOptionsAsyncLoader}"
                                                        PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextInputHere}"
-                                                       Width="300"
-                                                       Lines="5"
-                                                       IsAllowClear="True" />
+                                                       Width="200"
+                                                       Height="50" />
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
+                <!-- 4. 不区分大小写 -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource NonCaseSensitiveTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource NonCaseSensitiveDescription}"
                                       IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:AutoCompleteViewModel">
-                            <atom:AutoComplete Name="FilterAutoComplete"
+                            <atom:AutoComplete Name="NonCaseSensitiveAutoComplete"
                                                OptionsSource="{Binding FilterCaseOptions}"
                                                PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextTryToTypeB}"
-                                               Width="300"
-                                               IsAllowClear="True"
+                                               Width="200"
                                                Filter="{atom:ValueFilterProvider Contains}" />
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
+                <!-- 5. 查询模式 - 确定类目 -->
+                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource CertainCategoryTitle}"
+                                      Description="{gallery:AutoCompleteShowCaseLangResource CertainCategoryDescription}"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:AutoCompleteViewModel">
+                            <StackPanel>
+                            <StackPanel.Styles>
+                                <Style Selector="atom|AutoCompleteSearchEdit.semantic-certain-category">
+                                    <atom:AutoCompletePopupRootStyle x:SetterTargetType="Border">
+                                        <Setter Property="Width" Value="500" />
+                                    </atom:AutoCompletePopupRootStyle>
+                                    <atom:AutoCompletePopupListStyle x:SetterTargetType="TemplatedControl">
+                                        <Setter Property="MaxHeight" Value="300" />
+                                    </atom:AutoCompletePopupListStyle>
+                                </Style>
+                            </StackPanel.Styles>
+                            <atom:AutoCompleteSearchEdit Name="CertainCategoryAutoComplete"
+                                                         Classes="semantic-certain-category"
+                                                         SizeType="Large"
+                                                         IsPopupMatchSelectWidth="False"
+                                                         OptionsSource="{Binding CertainCategoryOptions}"
+                                                         PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextInputHere}"
+                                                         Width="250">
+                                <atom:AutoCompleteSearchEdit.OptionTemplate>
+                                    <DataTemplate x:DataType="vm:CategoryAutoCompleteOption">
+                                        <Panel>
+                                            <!-- 类目标题行 -->
+                                            <Border Classes="group-header"
+                                                    IsVisible="{Binding IsGroupHeader}"
+                                                    Padding="0,8,0,8"
+                                                    BorderThickness="0,0,0,1"
+                                                    BorderBrush="{atom:SharedTokenResource ColorSplit}">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding Header}"
+                                                               FontWeight="Bold"
+                                                               Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{gallery:AutoCompleteShowCaseLangResource P2TextMore}"
+                                                               Foreground="{atom:SharedTokenResource ColorPrimary}" />
+                                                </Grid>
+                                            </Border>
+                                            <!-- 类目条目行 -->
+                                            <Grid ColumnDefinitions="*,Auto"
+                                                  Margin="16,0,0,0"
+                                                  IsVisible="{Binding IsGroupItem}">
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding Header}"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                                    <ContentControl Content="{antdicons:AntDesignIconProvider Kind=UserOutlined, Width=14, Height=14}"
+                                                                    VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding ReferenceCount}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Panel>
+                                    </DataTemplate>
+                                </atom:AutoCompleteSearchEdit.OptionTemplate>
+                            </atom:AutoCompleteSearchEdit>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
+                <!-- 6. 查询模式 - 不确定类目 -->
+                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource UncertainCategoryTitle}"
+                                      Description="{gallery:AutoCompleteShowCaseLangResource UncertainCategoryDescription}"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:AutoCompleteViewModel">
+                            <atom:AutoCompleteSearchEdit Name="UncertainCategoryAutoComplete"
+                                                         SizeType="Large"
+                                                         Width="300"
+                                                         SearchButtonStyle="Primary"
+                                                         OptionsAsyncLoader="{Binding UncertainCategoryOptionsAsyncLoader}"
+                                                         PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextInputHere}">
+                                <atom:AutoCompleteSearchEdit.OptionTemplate>
+                                    <DataTemplate x:DataType="vm:CustomAutoCompleteOption">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Header}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
+                                                <TextBlock Text="{Binding ResultCount}" />
+                                                <TextBlock Text="{gallery:AutoCompleteShowCaseLangResource P2TextResults}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </atom:AutoCompleteSearchEdit.OptionTemplate>
+                            </atom:AutoCompleteSearchEdit>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
+                <!-- 7. 自定义状态 -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource StatusTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource StatusDescription}"
                                       IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:AutoCompleteViewModel">
                             <StackPanel Spacing="10">
-                                <atom:AutoComplete Name="ErrorAutoComplete"
+                                <atom:AutoComplete Name="ErrorStatusAutoComplete"
                                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
-                                                   Width="200"
-                                                   Status="Error" />
-                                <atom:AutoComplete Width="200"
-                                                   Name="WarningAutoComplete"
+                                                   Status="Error"
+                                                   Width="200" />
+                                <atom:AutoComplete Name="WarningStatusAutoComplete"
                                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
-                                                   Status="Warning" />
+                                                   Status="Warning"
+                                                   Width="200" />
                             </StackPanel>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource VariantsTitle}"
-                                      Description="{gallery:AutoCompleteShowCaseLangResource VariantsDescription}"
+                <!-- 8. 多种形态 -->
+                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource VariantTitle}"
+                                      Description="{gallery:AutoCompleteShowCaseLangResource VariantDescription}"
                                       IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:AutoCompleteViewModel">
-                            <StackPanel Spacing="10">
+                            <StackPanel Spacing="12">
                                 <atom:AutoComplete Width="200"
-                                                   Name="OutlineAutoComplete"
+                                                   Name="OutlinedVariantAutoComplete"
                                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
                                                    StyleVariant="Outlined"
                                                    PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextOutline}" />
                                 <atom:AutoComplete Width="200"
-                                                   Name="FilledAutoComplete"
+                                                   Name="FilledVariantAutoComplete"
                                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
                                                    StyleVariant="Filled"
                                                    PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextFilled}" />
                                 <atom:AutoComplete Width="200"
-                                                   Name="BorderlessAutoComplete"
+                                                   Name="BorderlessVariantAutoComplete"
                                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
                                                    StyleVariant="Borderless"
                                                    PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextBorderless}" />
                                 <atom:AutoComplete Width="200"
-                                                   Name="UnderlinedAutoComplete"
+                                                   Name="UnderlinedVariantAutoComplete"
                                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
                                                    StyleVariant="Underlined"
                                                    PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextUnderlined}" />
@@ -237,8 +289,9 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource CustomizeClearButtonTitle}"
-                                      Description="{gallery:AutoCompleteShowCaseLangResource CustomizeClearButtonDescription}"
+                <!-- 9. 自定义清除按钮 -->
+                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource AllowClearTitle}"
+                                      Description="{gallery:AutoCompleteShowCaseLangResource AllowClearDescription}"
                                       IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:AutoCompleteViewModel">
@@ -248,7 +301,7 @@
                                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
                                                    PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextUnclearable}" />
                                 <atom:AutoComplete Width="200"
-                                                   Name="ClearableAutoComplete"
+                                                   Name="CustomClearIconAutoComplete"
                                                    OptionsAsyncLoader="{Binding BasicOptionsAsyncLoader}"
                                                    IsAllowClear="True"
                                                    PlaceholderText="{gallery:AutoCompleteShowCaseLangResource P2PlaceholderTextCustomizedClearIcon}"
@@ -257,7 +310,60 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <!-- 10. 自定义语义结构的样式 -->
+                <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource StyleClassTitle}"
+                                      Description="{gallery:AutoCompleteShowCaseLangResource StyleClassDescription}"
+                                      SourceKey="auto-complete-semantic-part"
+                                      BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:AutoCompleteViewModel">
+                            <StackPanel HorizontalAlignment="Left" Spacing="20">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|AutoComplete.semantic-styles-demo">
+                                        <atom:AutoCompletePopupRootStyle x:SetterTargetType="Border">
+                                            <Setter Property="BorderBrush" Value="#1890FF" />
+                                            <Setter Property="BorderThickness" Value="1" />
+                                        </atom:AutoCompletePopupRootStyle>
+                                        <atom:AutoCompletePopupListStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="Background" Value="#D9F0F0F0" />
+                                        </atom:AutoCompletePopupListStyle>
+                                        <atom:AutoCompletePopupListItemStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="TextElement.Foreground" Value="#272727" />
+                                        </atom:AutoCompletePopupListItemStyle>
+                                    </Style>
+                                    <Style Selector="atom|AutoComplete.semantic-styles-filled-demo">
+                                        <atom:AutoCompletePopupRootStyle x:SetterTargetType="Border">
+                                            <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                            <Setter Property="BorderThickness" Value="1" />
+                                        </atom:AutoCompletePopupRootStyle>
+                                        <atom:AutoCompletePopupListStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="Background" Value="#D9F0F0F0" />
+                                        </atom:AutoCompletePopupListStyle>
+                                        <atom:AutoCompletePopupListItemStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="TextElement.Foreground" Value="#272727" />
+                                        </atom:AutoCompletePopupListItemStyle>
+                                    </Style>
+                                </StackPanel.Styles>
+                                <atom:AutoComplete Classes="semantic-styles-demo"
+                                                   Name="ObjectStylesAutoComplete"
+                                                   Width="200"
+                                                   IsAllowClear="True"
+                                                   OptionsSource="{Binding StyleClassOptions}"
+                                                   PlaceholderText="object styles" />
+                                <atom:AutoComplete Classes="semantic-styles-demo semantic-styles-filled-demo"
+                                                   Name="FunctionStylesAutoComplete"
+                                                   Width="200"
+                                                   IsAllowClear="True"
+                                                   StyleVariant="Filled"
+                                                   OptionsSource="{Binding StyleClassOptions}"
+                                                   PlaceholderText="function styles" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

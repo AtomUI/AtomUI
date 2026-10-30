@@ -20,6 +20,7 @@
                                                 IsVisible="{TemplateBinding IsCurrentIndicatorVisible}" />
                             <atom:InputClearIconButton
                                 Name="PART_ClearButton"
+                                Classes.semantic-clear="True"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 IsVisible="False" />
                         </Panel>
@@ -42,9 +43,13 @@
             <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
         </Style>
 
+        <!--
+            箭头颜色跟随 suffix 语义容器的 TextElement.Foreground 继承值（用户可用 suffix Part Style 覆写）；
+            Foreground 未设置时绑定产生 Unset，回退到上方 atom|Icon 的默认 quaternary。
+        -->
         <Style Selector="^ /template/ atom|IconPresenter">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorTextQuaternary}" />
+                    Value="{CompiledBinding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" />
             <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
             <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
         </Style>

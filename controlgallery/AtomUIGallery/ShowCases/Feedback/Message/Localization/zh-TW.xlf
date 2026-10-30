@@ -67,6 +67,12 @@
         <target state="translated">其他消息類型</target>
       </segment>
     </unit>
+    <unit id="P2ContentDestroyAll">
+      <segment>
+        <source>Destroy all</source>
+        <target state="translated">全部銷毀</target>
+      </segment>
+    </unit>
     <unit id="P2ContentDisplayALoadingIndicator">
       <segment>
         <source>Display a loading indicator</source>
@@ -85,10 +91,28 @@
         <target state="translated">錯誤</target>
       </segment>
     </unit>
+    <unit id="P2ContentFunctionStyle">
+      <segment>
+        <source>Function style</source>
+        <target state="translated">函式樣式</target>
+      </segment>
+    </unit>
     <unit id="P2ContentInfo">
       <segment>
         <source>Info</source>
         <target state="translated">信息</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentObjectStyle">
+      <segment>
+        <source>Object style</source>
+        <target state="translated">物件樣式</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentOpenMessageBox">
+      <segment>
+        <source>Open the message box</source>
+        <target state="translated">開啟訊息框</target>
       </segment>
     </unit>
     <unit id="P2ContentSuccess">
@@ -115,6 +139,12 @@
         <target state="translated">這是一條錯誤消息。</target>
       </segment>
     </unit>
+    <unit id="P2MessageFunctionStyles">
+      <segment>
+        <source>This is a message with function styles</source>
+        <target state="translated">這是一條使用函式樣式的訊息</target>
+      </segment>
+    </unit>
     <unit id="P2MessageHelloAtomUIAvalonia">
       <segment>
         <source>Hello, AtomUI/Avalonia!</source>
@@ -131,6 +161,24 @@
       <segment>
         <source>Loading finished</source>
         <target state="translated">加載完成</target>
+      </segment>
+    </unit>
+    <unit id="P2MessageLongStackedFormat">
+      <segment>
+        <source>Message {0}: This is a slightly longer stacked message.</source>
+        <target state="translated">訊息 {0}：這是一條稍長的堆疊訊息。</target>
+      </segment>
+    </unit>
+    <unit id="P2MessageObjectStyles">
+      <segment>
+        <source>This is a message with object styles</source>
+        <target state="translated">這是一條使用物件樣式的訊息</target>
+      </segment>
+    </unit>
+    <unit id="P2MessageStackedFormat">
+      <segment>
+        <source>Message {0}: This is a stacked message.</source>
+        <target state="translated">訊息 {0}：這是一條堆疊訊息。</target>
       </segment>
     </unit>
     <unit id="P2MessageSuccess">
@@ -161,6 +209,78 @@
       <segment>
         <source>Examples</source>
         <target state="translated">示例</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>The status icon of the message card. Customize its size, brush and line height.</source>
+        <target state="translated">訊息卡片的狀態圖示元素，可自訂尺寸、筆刷與行高。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListContentDescription">
+      <segment>
+        <source>The notice arrangement container of the message list. Customize its direction, order and alignment.</source>
+        <target state="translated">訊息列表的 notice 排列容器，可自訂方向、順序與對齊。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListRootDescription">
+      <segment>
+        <source>The message list root. It hosts the cards, queue, timeout and host layer lifecycle.</source>
+        <target state="translated">訊息列表根元素，承載卡片、佇列、逾時與宿主層生命週期。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Mirrors the upstream style-class demo: object styles and type-branched function styles shape the card root, icon and title through owner-scoped Semantic Part styles.</source>
+        <target state="translated">對齊上游 style-class 範例：物件式樣式與按類型分支的函式式樣式，透過 owner 作用域的 Semantic Part 樣式自訂卡片 root、icon 與 title。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The message card root. It hosts the content, type, close state and enter/leave motion.</source>
+        <target state="translated">訊息卡片根元素，承載內容、類型、關閉狀態與進出場動效。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>The message text element. Customize its color, font size, line height and wrapping.</source>
+        <target state="translated">訊息文字元素，可自訂文字顏色、字級、行高與換行。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticWrapperDescription">
+      <segment>
+        <source>The wrapping element for the icon and title. Customize the layout, alignment and gap.</source>
+        <target state="translated">圖示與標題的包裹元素，可自訂版面、間距與對齊。</target>
+      </segment>
+    </unit>
+    <unit id="StackDescription">
+      <segment>
+        <source>Stack configuration, disabled by default. Messages will be stacked when the amount is over threshold. Only the latest message is shown in the collapsed stack.</source>
+        <target state="translated">堆疊設定預設關閉。當訊息數量超過閾值時將摺疊顯示；摺疊狀態下只顯示最新一條訊息。</target>
+      </segment>
+    </unit>
+    <unit id="StackEnabledLabel">
+      <segment>
+        <source>Enabled:</source>
+        <target state="translated">啟用：</target>
+      </segment>
+    </unit>
+    <unit id="StackThresholdLabel">
+      <segment>
+        <source>Threshold:</source>
+        <target state="translated">閾值：</target>
+      </segment>
+    </unit>
+    <unit id="StackTitle">
+      <segment>
+        <source>Stack</source>
+        <target state="translated">堆疊</target>
       </segment>
     </unit>
   </file>

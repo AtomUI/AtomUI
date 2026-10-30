@@ -10,40 +10,38 @@
         <themes:AbstractProgressBarTheme TargetType="atomc:AbstractCircleProgress" />
     </ControlTheme.BasedOn>
 
-    <Setter Property="Template">
-        <ControlTemplate TargetType="atomc:AbstractCircleProgress">
-            <Canvas>
-                <LayoutTransformControl Name="PART_LayoutTransformControl">
-                    <Label Name="PART_PercentageLabel"
-                           Padding="0"
-                           Margin="0"
-                           VerticalContentAlignment="Center"
-                           HorizontalContentAlignment="Center"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           IsEnabled="{TemplateBinding IsEnabled}" 
-                           IsVisible="{TemplateBinding IsPercentLabelVisible}"/>
-                </LayoutTransformControl>
-                
-                <atom:IconPresenter
-                    Name="PART_ExceptionCompletedIconPresenter"
-                    Icon="{TemplateBinding ExceptionCompletedIcon}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"/>
-                <atom:IconPresenter
-                    Name="PART_SuccessCompletedIconPresenter"
-                    Icon="{TemplateBinding SuccessCompletedIcon}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"/>
-            </Canvas>
-        </ControlTemplate>
-    </Setter>
-
     <Style Selector="^:is(atomc|AbstractCircleProgress)">
         <Setter Property="CircleMinimumTextFontSize"
                 Value="{atom:ProgressBarTokenResource CircleMinimumTextFontSize}" />
         <Setter Property="CircleMinimumIconSize"
                 Value="{atom:ProgressBarTokenResource CircleMinimumIconSize}" />
+
+        <Style Selector="^ /template/ Path#PART_ProgressRail">
+            <Setter Property="Stroke"
+                    Value="{Binding GrooveBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="StrokeThickness"
+                    Value="{Binding StrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="StrokeLineCap"
+                    Value="{Binding ShapeStrokeLineCap, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
+
+        <Style Selector="^ /template/ Path#PART_ProgressTrack">
+            <Setter Property="Stroke"
+                    Value="{Binding StrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="StrokeThickness"
+                    Value="{Binding StrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="StrokeLineCap"
+                    Value="{Binding ShapeStrokeLineCap, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
+
+        <Style Selector="^ /template/ Path#PART_ProgressSuccess">
+            <Setter Property="Stroke"
+                    Value="{Binding SuccessStrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="StrokeThickness"
+                    Value="{Binding StrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="StrokeLineCap"
+                    Value="{Binding ShapeStrokeLineCap, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
             <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />

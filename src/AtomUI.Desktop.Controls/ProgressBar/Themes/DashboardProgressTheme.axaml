@@ -3,10 +3,59 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     xmlns:atom="https://atomui.net"
+    xmlns:atomc="https://atomui.net/common-controls"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:DashboardProgress}" TargetType="atom:DashboardProgress">
         <ControlTheme.BasedOn>
             <themes:AbstractCircleProgressTheme TargetType="atom:DashboardProgress" />
         </ControlTheme.BasedOn>
+
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:DashboardProgress">
+                <atomc:CircleProgressPanel Classes.semantic-body="True">
+                    <Path Name="PART_ProgressRail"
+                          Stroke="{TemplateBinding GrooveBrush}"
+                          StrokeThickness="{TemplateBinding StrokeThickness}"
+                          StrokeLineCap="{TemplateBinding ShapeStrokeLineCap}"
+                          Classes.semantic-rail="True" />
+                    <Path Name="PART_ProgressTrack"
+                          Stroke="{TemplateBinding StrokeBrush}"
+                          StrokeThickness="{TemplateBinding StrokeThickness}"
+                          StrokeLineCap="{TemplateBinding ShapeStrokeLineCap}"
+                          Classes.semantic-track="True" />
+                    <Path Name="PART_ProgressSuccess"
+                          Stroke="{TemplateBinding SuccessStrokeBrush}"
+                          StrokeThickness="{TemplateBinding StrokeThickness}"
+                          StrokeLineCap="{TemplateBinding ShapeStrokeLineCap}" />
+                    <Canvas Name="PART_ProgressIndicator"
+                            Classes.semantic-indicator="True"
+                            IsVisible="{TemplateBinding IsProgressInfoVisible}">
+                        <LayoutTransformControl Name="PART_LayoutTransformControl">
+                            <Label Name="PART_PercentageLabel"
+                                   Padding="0"
+                                   Margin="0"
+                                   VerticalContentAlignment="Center"
+                                   HorizontalContentAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   IsEnabled="{TemplateBinding IsEnabled}"
+                                   IsVisible="{TemplateBinding IsPercentLabelVisible}" />
+                        </LayoutTransformControl>
+
+                        <atom:IconPresenter
+                            Name="PART_ExceptionCompletedIconPresenter"
+                            Icon="{TemplateBinding ExceptionCompletedIcon}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
+                        <atom:IconPresenter
+                            Name="PART_SuccessCompletedIconPresenter"
+                            Icon="{TemplateBinding SuccessCompletedIcon}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
+                    </Canvas>
+                </atomc:CircleProgressPanel>
+            </ControlTemplate>
+        </Setter>
+
     </ControlTheme>
 </ResourceDictionary>

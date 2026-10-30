@@ -20,11 +20,13 @@
                                 <ContentPresenter Name="HeaderEndExtraContent"
                                                   Content="{TemplateBinding HeaderEndExtraContent}"
                                                   ContentTemplate="{TemplateBinding HeaderEndExtraContentTemplate}" />
-                                <atom:TabStripScrollViewer
+                                <atom:TabScrollViewer
                                     Name="PART_TabsContainer"
                                     IsScrollChainingEnabled="False"
                                     TabStripPlacement="{TemplateBinding TabStripPlacement}"
-                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                    IsPopupPinnedOpen="{TemplateBinding IsPopupPinnedOpen}"
+                                    OverflowPopupTemplate="{TemplateBinding OverflowPopupTemplate}">
                                     <Panel>
                                         <ItemsPresenter
                                             Name="PART_ItemsPresenter"
@@ -32,7 +34,7 @@
                                         <Border Name="PART_SelectedItemIndicator"
                                                 RenderTransform="{TemplateBinding SelectedIndicatorRenderTransform}"/>
                                     </Panel>
-                                </atom:TabStripScrollViewer>
+                                </atom:TabScrollViewer>
                             </DockPanel>
                         </Border>
                     </Panel>
@@ -41,7 +43,7 @@
         </Setter>
 
         <Setter Property="SelectedIndicatorThickness"
-                Value="{atom:SharedTokenResource LineWidthBold}" />
+                Value="{atom:TabControlTokenResource InkBarThickness}" />
 
         <Style Selector="^ /template/ Border#PART_SelectedItemIndicator">
             <Setter Property="Background" Value="{atom:TabControlTokenResource InkBarColor}" />
@@ -99,7 +101,7 @@
             <!-- tabs 是否居中 -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#AlignWrapper > Border">
-                    <Setter Property="HorizontalAlignment" Value="Center" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
             </Style>
 
@@ -167,7 +169,7 @@
             <!-- tabs 是否居中 -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#AlignWrapper > Border">
-                    <Setter Property="HorizontalAlignment" Value="Center" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
             </Style>
 

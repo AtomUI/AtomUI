@@ -10,20 +10,26 @@
                     <atom:WaveSpiritDecorator Name="PART_WaveSpirit"
                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                               IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"/>
-                    <Canvas Name="PART_MainContainer"
-                            ClipToBounds="True">
+                    <atom:ToggleSwitchContentPanel Name="PART_MainContainer"
+                                                   ClipToBounds="True"
+                                                   OnContentOffset="{TemplateBinding OnContentOffset}"
+                                                   OffContentOffset="{TemplateBinding OffContentOffset}">
                         <ContentPresenter Name="PART_OnContentPresenter"
+                                          Classes.semantic-content="True"
                                           Content="{TemplateBinding OnContent}"
                                           ContentTemplate="{TemplateBinding OnContentTemplate}"
                                           IsVisible="{TemplateBinding OnContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
                         <ContentPresenter Name="PART_OffContentPresenter"
+                                          Classes.semantic-content="True"
                                           Content="{TemplateBinding OffContent}"
                                           ContentTemplate="{TemplateBinding OffContentTemplate}"
                                           IsVisible="{TemplateBinding OffContent, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        <atom:SwitchKnob Name="PART_SwitchKnob"
-                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                         IsCheckedState="{TemplateBinding IsChecked}" />
-                    </Canvas>
+                    </atom:ToggleSwitchContentPanel>
+                    <atom:SwitchKnob Name="PART_SwitchKnob"
+                                     atom:TransitionInitialization.Mode="Owner"
+                                     Classes.semantic-indicator="True"
+                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                     IsCheckedState="{TemplateBinding IsChecked}" />
                 </Panel>
             </ControlTemplate>
         </Setter>
@@ -111,7 +117,7 @@
         </Style>
 
         <Style Selector="^ /template/ atom|SwitchKnob#PART_SwitchKnob">
-            <Setter Property="KnobBackgroundColor"
+            <Setter Property="Background"
                     Value="{atom:ToggleSwitchTokenResource HandleBg}" />
             <Setter Property="KnobBoxShadow"
                     Value="{atom:ToggleSwitchTokenResource HandleShadow}" />

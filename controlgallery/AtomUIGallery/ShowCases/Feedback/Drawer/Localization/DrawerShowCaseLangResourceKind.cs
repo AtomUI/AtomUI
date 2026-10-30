@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -70,5 +68,19 @@ public enum DrawerShowCaseLangResourceKind
     P2ContentOpenLargeSizeN736px,
     P2ContentOpenCustomSizeN400px,
     P2ContentOpenCustomSizeN50,
-    P2ContentOpen
+    P2ContentOpen,
+    SemanticRootDescription,
+    SemanticMaskDescription,
+    SemanticSectionDescription,
+    SemanticHeaderDescription,
+    SemanticTitleDescription,
+    SemanticExtraDescription,
+    SemanticBodyDescription,
+    SemanticFooterDescription,
+    SemanticCloseDescription,
+    SemanticStageHint,
+    SemanticPreviewTitleText,
+    SemanticPreviewFooterLink,
+    SemanticStylesTitle,
+    SemanticStylesDescription
 }

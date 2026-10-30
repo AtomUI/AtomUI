@@ -14,8 +14,8 @@
     </UserControl.Styles>
 
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Drawer"
                     Category="{gallery:DrawerShowCaseLangResource ComponentCategory}"
@@ -25,7 +25,78 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="Control" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:DrawerViewModel">
+                    <gallery:SemanticPartPreview Name="DrawerSemanticPreview"
+                                                 Title="Drawer"
+                                                 SemanticOwner="{Binding #DrawerSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:Drawer}"
+                                                 PreviewStageMinHeight="434">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <!-- 对齐 antd getContainer={false} 的内联容器：ScrollContentPresenter 是
+                                 ScopeAwareAdornerLayer 的最近层宿主，层注入只包裹舞台自身，
+                                 不会逃逸到页面级滚动容器重挂整页内容；舞台限高裁剪，抽屉常开
+                                 渲染于舞台局部 layer。舞台用 MinHeight + 拉伸：空间充裕时自然长高，宿主钳制时随画布收缩，不与视口相抵被裁。 -->
+                            <ScrollContentPresenter>
+                                <Border Name="DrawerSemanticStage"
+                                        MinHeight="320"
+                                        Margin="24,24,24,24"
+                                        Background="{atom:SharedTokenResource ColorFillAlter}"
+                                        BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
+                                        BorderThickness="1"
+                                        CornerRadius="{atom:SharedTokenResource BorderRadiusLG}"
+                                        ClipToBounds="True">
+                                    <!-- Grid 让 owner 拉伸铺满舞台：root 部件高亮 = 整个内联容器（对齐 antd root 语义）。 -->
+                                    <Grid>
+                                        <atom:TextBlock Margin="24,16,24,0"
+                                                        VerticalAlignment="Top"
+                                                        Foreground="{atom:SharedTokenResource ColorTextSecondary}"
+                                                        Text="{gallery:DrawerShowCaseLangResource SemanticStageHint}" />
+                                        <atom:Drawer Name="DrawerSemanticOwner"
+                                                     Title="{gallery:DrawerShowCaseLangResource SemanticPreviewTitleText}"
+                                                     IsOpen="True"
+                                                     IsPinnedOpen="True"
+                                                     IsMotionEnabled="False"
+                                                     DialogSize="300"
+                                                     OpenOn="{Binding #DrawerSemanticStage}">
+                                            <atom:Drawer.Extra>
+                                                <atom:Button Content="{gallery:DrawerShowCaseLangResource P2ContentCancel}" />
+                                            </atom:Drawer.Extra>
+                                            <atom:Drawer.Footer>
+                                                <atom:Button ButtonType="Link"
+                                                             Content="{gallery:DrawerShowCaseLangResource SemanticPreviewFooterLink}" />
+                                            </atom:Drawer.Footer>
+                                            <atom:TextBlock Text="{gallery:DrawerShowCaseLangResource P2TextSomeContents}" />
+                                        </atom:Drawer>
+                                    </Grid>
+                                </Border>
+                            </ScrollContentPresenter>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription Path="root"
+                                Description="{gallery:DrawerShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription Path="mask"
+                                Description="{gallery:DrawerShowCaseLangResource SemanticMaskDescription}" />
+                            <gallery:SemanticPartDescription Path="section"
+                                Description="{gallery:DrawerShowCaseLangResource SemanticSectionDescription}" />
+                            <gallery:SemanticPartDescription Path="header"
+                                Description="{gallery:DrawerShowCaseLangResource SemanticHeaderDescription}" />
+                            <gallery:SemanticPartDescription Path="title"
+                                Description="{gallery:DrawerShowCaseLangResource SemanticTitleDescription}" />
+                            <gallery:SemanticPartDescription Path="extra"
+                                Description="{gallery:DrawerShowCaseLangResource SemanticExtraDescription}" />
+                            <gallery:SemanticPartDescription Path="body"
+                                Description="{gallery:DrawerShowCaseLangResource SemanticBodyDescription}" />
+                            <gallery:SemanticPartDescription Path="footer"
+                                Description="{gallery:DrawerShowCaseLangResource SemanticFooterDescription}" />
+                            <gallery:SemanticPartDescription Path="close"
+                                Description="{gallery:DrawerShowCaseLangResource SemanticCloseDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -357,7 +428,64 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem Title="{gallery:DrawerShowCaseLangResource SemanticStylesTitle}"
+                                      Description="{gallery:DrawerShowCaseLangResource SemanticStylesDescription}"
+                                      Height="300" IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DrawerViewModel">
+                            <Panel>
+                                <StackPanel Orientation="Vertical" Spacing="10" VerticalAlignment="Top">
+                                    <atom:TextBlock Text="{gallery:DrawerShowCaseLangResource P2TextRenderInThis}" />
+                                    <atom:ToggleSwitch Content="{gallery:DrawerShowCaseLangResource P2ContentOpen}" />
+                                </StackPanel>
+
+                                <atom:Drawer Classes="semantic-object-style-demo"
+                                             IsOpen="{Binding $parent[Panel].((Panel)Children[0]).((atom:ToggleSwitch)Children[1]).IsChecked}"
+                                             Title="{gallery:DrawerShowCaseLangResource P2TitleBasicDrawer}"
+                                             OpenOn="{Binding $parent[gallery:ShowCaseItem]}">
+                                    <atom:Drawer.Styles>
+                                        <Style Selector="atom|Drawer.semantic-object-style-demo">
+                                            <atom:DrawerMaskStyle x:SetterTargetType="Border">
+                                                <Setter Property="Background" Value="#661677ff" />
+                                            </atom:DrawerMaskStyle>
+                                            <atom:DrawerSectionStyle x:SetterTargetType="Border">
+                                                <Setter Property="CornerRadius" Value="8,0,0,8" />
+                                            </atom:DrawerSectionStyle>
+                                            <atom:DrawerHeaderStyle x:SetterTargetType="Grid">
+                                                <Setter Property="Margin" Value="24,12" />
+                                            </atom:DrawerHeaderStyle>
+                                            <atom:DrawerTitleStyle x:SetterTargetType="atom:TextBlock">
+                                                <Setter Property="Foreground" Value="#1677ff" />
+                                            </atom:DrawerTitleStyle>
+                                            <atom:DrawerExtraStyle x:SetterTargetType="ContentPresenter">
+                                                <Setter Property="Margin" Value="0,0,8,0" />
+                                            </atom:DrawerExtraStyle>
+                                            <atom:DrawerBodyStyle x:SetterTargetType="ContentPresenter">
+                                                <Setter Property="Padding" Value="24" />
+                                            </atom:DrawerBodyStyle>
+                                            <atom:DrawerFooterStyle x:SetterTargetType="ContentPresenter">
+                                                <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
+                                            </atom:DrawerFooterStyle>
+                                            <atom:DrawerCloseStyle x:SetterTargetType="atom:IconButton">
+                                                <Setter Property="Foreground" Value="#1677ff" />
+                                            </atom:DrawerCloseStyle>
+                                        </Style>
+                                    </atom:Drawer.Styles>
+                                    <atom:Drawer.Footer>
+                                        <atom:Button ButtonType="Link"
+                                                     Content="{gallery:DrawerShowCaseLangResource SemanticPreviewFooterLink}" />
+                                    </atom:Drawer.Footer>
+                                    <StackPanel Orientation="Vertical" Spacing="5">
+                                        <atom:TextBlock Text="{gallery:DrawerShowCaseLangResource P2TextSomeContents}" />
+                                        <atom:TextBlock Text="{gallery:DrawerShowCaseLangResource P2TextSomeContents}" />
+                                        <atom:TextBlock Text="{gallery:DrawerShowCaseLangResource P2TextSomeContents}" />
+                                    </StackPanel>
+                                </atom:Drawer>
+                            </Panel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

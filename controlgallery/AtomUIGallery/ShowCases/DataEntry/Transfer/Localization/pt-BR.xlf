@@ -271,6 +271,192 @@
         <target state="translated">Pesquisar</target>
       </segment>
     </unit>
+    <unit id="SemanticActionsDescription">
+      <segment>
+        <source>Middle actions area that hosts the move-to-target and move-to-source buttons</source>
+        <target state="translated">Área de ações central que agrupa os botões de mover para o destino e mover para a origem</target>
+      </segment>
+    </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Panel body region that hosts the filter input and the list content host</source>
+        <target state="translated">Região do corpo do painel que agrupa a entrada de filtro e o host de conteúdo da lista</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>Panel bottom region that renders the direction footer and its template</source>
+        <target state="translated">Região inferior do painel que renderiza o rodapé da direção e seu modelo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Panel header region that hosts the select-all checkbox, selection count and title</source>
+        <target state="translated">Região do cabeçalho do painel que agrupa a caixa de seleção geral, a contagem de seleção e o título</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Item content element, only applies to text content styles</source>
+        <target state="translated">Elemento de conteúdo do item, aplica-se apenas aos estilos de conteúdo de texto</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, only applies to list item styles</source>
+        <target state="translated">Elemento de item, aplica-se apenas aos estilos de itens da lista</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemIconDescription">
+      <segment>
+        <source>Item icon element, only applies to icon styles</source>
+        <target state="translated">Elemento de ícone do item, aplica-se apenas aos estilos de ícones</target>
+      </segment>
+    </unit>
+    <unit id="SemanticListDescription">
+      <segment>
+        <source>List content host that carries the source or target view control</source>
+        <target state="translated">Host de conteúdo da lista que carrega o controle de visualização da origem ou do destino</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartFooterText">
+      <segment>
+        <source>Custom Footer</source>
+        <target state="translated">Custom Footer</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Transfer property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">Use seletores com escopo do proprietário e seletores de propriedades do Transfer para personalizar as Semantic Parts publicadas.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element that lays out the source panel, the actions area and the target panel</source>
+        <target state="translated">Elemento raiz que organiza o painel de origem, a área de ações e o painel de destino</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceBodyDescription">
+      <segment>
+        <source>Source body element, only applies to left list body styles</source>
+        <target state="translated">Elemento de corpo da origem, aplica-se apenas aos estilos do corpo da lista esquerda</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceDescription">
+      <segment>
+        <source>Source panel container that wraps the whole source section decorator</source>
+        <target state="translated">Contêiner do painel de origem que envolve todo o decorador da seção de origem</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceFooterDescription">
+      <segment>
+        <source>Source footer element, only applies to left footer area styles</source>
+        <target state="translated">Elemento de rodapé da origem, aplica-se apenas aos estilos da área de rodapé esquerda</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceHeaderDescription">
+      <segment>
+        <source>Source header element, only applies to left header area styles</source>
+        <target state="translated">Elemento de cabeçalho da origem, aplica-se apenas aos estilos da área de cabeçalho esquerda</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceItemContentDescription">
+      <segment>
+        <source>Source item content element, only applies to left text content styles</source>
+        <target state="translated">Elemento de conteúdo do item da origem, aplica-se apenas aos estilos de conteúdo de texto esquerdos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceItemDescription">
+      <segment>
+        <source>Source item element, only applies to left list item styles</source>
+        <target state="translated">Elemento de item da origem, aplica-se apenas aos estilos de itens da lista esquerda</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceItemIconDescription">
+      <segment>
+        <source>Source item icon element, only applies to left icon styles</source>
+        <target state="translated">Elemento de ícone do item da origem, aplica-se apenas aos estilos de ícones esquerdos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceListDescription">
+      <segment>
+        <source>Source list element, only applies to left list content styles</source>
+        <target state="translated">Elemento de lista da origem, aplica-se apenas aos estilos de conteúdo da lista esquerda</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSourceTitleDescription">
+      <segment>
+        <source>Source title element, only applies to left title text styles</source>
+        <target state="translated">Elemento de título da origem, aplica-se apenas aos estilos de texto do título esquerdo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetBodyDescription">
+      <segment>
+        <source>Target body element, only applies to right list body styles</source>
+        <target state="translated">Elemento de corpo do destino, aplica-se apenas aos estilos do corpo da lista direita</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetDescription">
+      <segment>
+        <source>Target panel container that wraps the whole target section decorator</source>
+        <target state="translated">Contêiner do painel de destino que envolve todo o decorador da seção de destino</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetFooterDescription">
+      <segment>
+        <source>Target footer element, only applies to right footer area styles</source>
+        <target state="translated">Elemento de rodapé do destino, aplica-se apenas aos estilos da área de rodapé direita</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetHeaderDescription">
+      <segment>
+        <source>Target header element, only applies to right header area styles</source>
+        <target state="translated">Elemento de cabeçalho do destino, aplica-se apenas aos estilos da área de cabeçalho direita</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetItemContentDescription">
+      <segment>
+        <source>Target item content element, only applies to right text content styles</source>
+        <target state="translated">Elemento de conteúdo do item do destino, aplica-se apenas aos estilos de conteúdo de texto direitos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetItemDescription">
+      <segment>
+        <source>Target item element, only applies to right list item styles</source>
+        <target state="translated">Elemento de item do destino, aplica-se apenas aos estilos de itens da lista direita</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetItemIconDescription">
+      <segment>
+        <source>Target item icon element, only applies to right icon styles</source>
+        <target state="translated">Elemento de ícone do item do destino, aplica-se apenas aos estilos de ícones direitos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetListDescription">
+      <segment>
+        <source>Target list element, only applies to right list content styles</source>
+        <target state="translated">Elemento de lista do destino, aplica-se apenas aos estilos de conteúdo da lista direita</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTargetTitleDescription">
+      <segment>
+        <source>Target title element, only applies to right title text styles</source>
+        <target state="translated">Elemento de título do destino, aplica-se apenas aos estilos de texto do título direito</target>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title presenter that renders the source or target panel title</source>
+        <target state="translated">Apresentador de título que renderiza o título do painel de origem ou de destino</target>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to Transfer with status, which could be error or warning.</source>

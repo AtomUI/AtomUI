@@ -42,12 +42,12 @@ internal static partial class Program
             "PART_TextPresenter",
             failures);
         VerifyAvatarPresenterVisibility(
-            new Avatar { Src = GetAvatarSvgPath() },
+            new Avatar { Source = CreateAvatarFileSource() },
             "Svg Avatar",
-            "SvgPresenter",
+            "ImagePresenter",
             failures);
         VerifyAvatarPresenterVisibility(
-            new Avatar { BitmapSrc = AvatarBitmap.Value },
+            new Avatar { Source = AvatarBitmapSource.Value },
             "Bitmap Avatar",
             "ImagePresenter",
             failures);
@@ -59,7 +59,18 @@ internal static partial class Program
                                                         ICollection<string> failures)
     {
         using var realized = RealizeControl(avatar);
+        WaitUntilAvatarImageTerminal(avatar, realized.Window);
         ExpectAvatarPresenterVisibility(avatar, label, visiblePresenterName, failures);
+    }
+
+    private static void WaitUntilAvatarImageTerminal(Avatar avatar, Avalonia.Controls.Window window)
+    {
+        if (avatar.Source is null)
+        {
+            return;
+        }
+        WaitUntil(() => avatar.LoadState is ImageLoadState.Loaded or ImageLoadState.Failed, "avatar image terminal state");
+        RefreshLayout(window);
     }
 
     private static void VerifyAvatarContentTypeSwitching(ICollection<string> failures)
@@ -84,21 +95,20 @@ internal static partial class Program
         ExpectAvatarPresenterVisibility(avatar, "Avatar after switching to Text", "PART_TextPresenter", failures);
 
         var textPresenter = FindVisualByName<Avalonia.Controls.TextBlock>(avatar, "PART_TextPresenter");
-        avatar.SetCurrentValue(Avatar.SrcProperty, GetAvatarSvgPath());
-        RefreshLayout(realized.Window);
+        avatar.SetCurrentValue(AbstractAvatar.SourceProperty, CreateAvatarFileSource());
+        WaitUntilAvatarImageTerminal(avatar, realized.Window);
         Expect(textPresenter?.GetVisualParent() != null && !textPresenter.IsVisible,
-            "Avatar should keep static TextBlock hidden when switching to Svg.",
+            "Avatar should keep static TextBlock hidden when switching to image content.",
             failures);
-        ExpectAvatarPresenterVisibility(avatar, "Avatar after switching to Svg", "SvgPresenter", failures);
+        ExpectAvatarPresenterVisibility(avatar, "Avatar after switching to image source", "ImagePresenter", failures);
 
-        var svgPresenter = FindVisualByTypeName(avatar, "Svg", "SvgPresenter");
-        avatar.SetCurrentValue(Avatar.SrcProperty, null);
-        avatar.SetCurrentValue(Avatar.BitmapSrcProperty, AvatarBitmap.Value);
-        RefreshLayout(realized.Window);
-        Expect(svgPresenter?.GetVisualParent() != null && !svgPresenter.IsVisible,
-            "Avatar should keep static Svg hidden when switching to BitmapSrc.",
+        var imagePresenter = FindVisualByName<Avalonia.Controls.Image>(avatar, "ImagePresenter");
+        avatar.SetCurrentValue(AbstractAvatar.SourceProperty, AvatarBitmapSource.Value);
+        WaitUntilAvatarImageTerminal(avatar, realized.Window);
+        Expect(imagePresenter != null && imagePresenter.IsVisible,
+            "Avatar should keep ImagePresenter visible when switching between image sources.",
             failures);
-        ExpectAvatarPresenterVisibility(avatar, "Avatar after switching to BitmapSrc", "ImagePresenter", failures);
+        ExpectAvatarPresenterVisibility(avatar, "Avatar after switching to bytes source", "ImagePresenter", failures);
     }
 
     private static void VerifyAvatarGroupFoldLifecycle(ICollection<string> failures)
@@ -163,7 +173,6 @@ internal static partial class Program
         {
             FindVisualByName<Control>(avatar, "IconPresenter"),
             FindVisualByName<Control>(avatar, "ImagePresenter"),
-            FindVisualByName<Control>(avatar, "SvgPresenter"),
             FindVisualByName<Control>(avatar, "PART_TextPresenter")
         };
 

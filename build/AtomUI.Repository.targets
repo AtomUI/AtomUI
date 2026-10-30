@@ -37,7 +37,22 @@
         <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
     </ItemGroup>
 
+    <ItemGroup Condition="'$(IsTestProject)' != 'true' and '$(IsRoslynComponent)' != 'true' and '$(MSBuildProjectName)' != 'AtomUI.Toolchain'">
+        <ProjectReference Include="$(MSBuildThisFileDirectory)../src/AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" PrivateAssets="all"
+                          Condition="'@(ProjectReference->WithMetadataValue('Filename', 'AtomUI.Generator'))' == ''" />
+    </ItemGroup>
+
     <Import Project="$(MSBuildThisFileDirectory)AtomUI.Generator.targets" />
+
+    <ItemGroup>
+        <ProjectReference Update="@(ProjectReference->WithMetadataValue('Filename', 'AtomUI.Toolchain'))">
+            <GlobalPropertiesToRemove>%(ProjectReference.GlobalPropertiesToRemove);$(AtomUIToolchainGlobalPropertiesToRemove)</GlobalPropertiesToRemove>
+        </ProjectReference>
+    </ItemGroup>
+
+    <!-- Toolchain owns its portable restore properties through TreatAsLocalProperty.
+         Mutating NuGet's path/graph items here also stripped the application's RID. -->
 
     <Target Name="AtomUICleanTestResultsBeforeRun"
             BeforeTargets="VSTest"
@@ -72,34 +87,13 @@
         <RemoveDir Directories="@(_AtomUITestResultsDirectoryToCleanAfterRun)" />
     </Target>
 
-    <!-- Stage the AtomUI.Build.Tasks toolset next to the shadow assembly path used by the
-         UsingTask registrations (see AtomUIBuildTasksAssembly in AtomUI.Repository.props).
-         The destination directory embeds the source DLL's content key, so a rebuilt
-         toolset lands in a fresh directory and a build node locking a previous shadow copy
-         can never block the build. Anchored on BeforeBuild plus every target that invokes
-         these tasks, including GetAtomUILinkedRegistrationSidecar, which other projects
-         invoke directly through ProjectReference target calls where BeforeBuild never runs.
-         Missing source assemblies are tolerated here: projects without task inputs must
-         build without the toolset, and the feature targets keep their own Exists guards for
-         projects that do consume the tasks. Older shadow directories are intentionally
-         retained: another concurrently evaluated build may still be using an older key, so
-         deleting any non-current directory here would reintroduce the missing task assembly
-         race this staging target is meant to avoid. Cross-targeting pack builds also stage
-         the toolset because package asset preparation runs tasks before the inner target
-         frameworks are selected. -->
-    <Target Name="_AtomUIStageBuildTasksToolset"
-            BeforeTargets="BeforeBuild;GenerateAtomUIThemeAssetWrappers;AtomUIGetLanguageModuleSourceAssets;AtomUIResolveLanguageContractProjectReferences;AtomUIInferLanguagePackageContractPolicy;AtomUIGetLanguagePackProjectAssets;AtomUIResolveLanguagePackProjectReferences;AtomUIExportLanguageTemplates;AtomUIPrepareLanguagePackage;AtomUIPrepareLanguageModuleAssets;CollectAtomUIProjectReferenceSidecars;CollectAtomUIAxamlUsage;EmitAtomUILinkedRegistrationSidecar;GetAtomUILinkedRegistrationSidecar;AtomUIPrepareLinkedRegistrationSidecarForPack;ValidateAtomUIApplicationRegistrationPlan"
-            Condition="'$(MSBuildProjectName)' != 'AtomUI.Build.Tasks' and
-                       '$(AtomUIBuildTasksSourceAssembly)' != '' and
-                       '$(AtomUIBuildTasksAssembly)' == '$(AtomUIBuildTasksShadowDirectory)/AtomUI.Build.Tasks.dll' and
-                       Exists('$(AtomUIBuildTasksSourceAssembly)')">
-        <ItemGroup>
-            <_AtomUIBuildTasksToolsetFile Include="$(OutputPathWithoutFramework)/netstandard2.0/AtomUI.Build.Tasks.dll" />
-            <_AtomUIBuildTasksToolsetFile Include="$(OutputPathWithoutFramework)/netstandard2.0/System.*.dll" />
-        </ItemGroup>
-        <Copy SourceFiles="@(_AtomUIBuildTasksToolsetFile)"
-              DestinationFolder="$(AtomUIBuildTasksShadowDirectory)"
-              SkipUnchangedFiles="true" />
+    <!-- Package assembly owns tool preparation, not the source generator project. -->
+    <Target Name="AtomUIPrepareRepositoryPackageTools"
+            BeforeTargets="AtomUIPrepareGeneratorConsumerPackageAssets;_GetPackageFiles"
+            Condition="'$(NoBuild)' != 'true' and '$(IsPackable)' == 'true' and ('$(AtomUIRegistrationPackageId)' != '' or '$(MSBuildProjectName)' == 'AtomUI.Generator')">
+        <MSBuild Projects="$(AtomUIToolchainProject)" Targets="BuildToolchain"
+                 RemoveProperties="$(AtomUIToolchainGlobalPropertiesToRemove)"
+                 Properties="Configuration=$(Configuration);AtomUIToolchainProfile=Tasks" />
     </Target>
 
     <Target Name="AtomUIPrepareGeneratorConsumerPackageAssets"
@@ -123,6 +117,25 @@
         <Error Condition="!Exists('%(AtomUINuGetBuildAsset.Identity)')"
                Text="AtomUI Generator build asset could not be found at '%(AtomUINuGetBuildAsset.Identity)'." />
         <Error Condition="!Exists('%(AtomUIGeneratorToolAsset.Identity)')"
-               Text="AtomUI Generator tool asset could not be found at '%(AtomUIGeneratorToolAsset.Identity)'. Build AtomUI.Generator before packing registration product packages." />
+               Text="Prepared AtomUI.Toolchain asset is missing at '%(AtomUIGeneratorToolAsset.Identity)'. Prepare the toolchain with BuildToolchain before packing with --no-build." />
+    </Target>
+    <!-- Source checkout publishing prepares the same toolchain that packages ship. This hook
+         is absent from NuGet consumers and is never reached by an ordinary product Build. -->
+    <Target Name="AtomUIPrepareRepositoryPublishTools"
+            BeforeTargets="AtomUIPrepareTypeMapBackend;AtomUIPrepareNet8ManagedRegistration;AtomUIPrepareConditionalBridgeManaged;AtomUIPrepareConditionalBridgeNative;AtomUIPrepareNative8Registration"
+            Condition="'$(MSBuildProjectName)' != 'AtomUI.Toolchain' and ('$(PublishTrimmed)' == 'true' or '$(PublishAot)' == 'true')">
+        <PropertyGroup>
+            <_AtomUIRepositoryToolchainTarget>BuildManagedToolchain</_AtomUIRepositoryToolchainTarget>
+            <_AtomUIRepositoryToolchainTarget Condition="'$(_AtomUINative8Registration)' == 'true'">Build</_AtomUIRepositoryToolchainTarget>
+            <_AtomUIRepositoryBackendProfile Condition="'$(_AtomUIRegistrationFrameworkFamily)' == 'OfficialTypeMap'">ILLink10</_AtomUIRepositoryBackendProfile>
+            <_AtomUIRepositoryBackendProfile Condition="'$(_AtomUIRegistrationFrameworkFamily)' == 'Net8Compatibility'">ILLink8</_AtomUIRepositoryBackendProfile>
+        </PropertyGroup>
+        <MSBuild Projects="$(AtomUIToolchainProject)" Targets="$(_AtomUIRepositoryToolchainTarget)"
+                 RemoveProperties="NoBuild;NoRestore;$(AtomUIToolchainGlobalPropertiesToRemove)"
+                 Properties="Configuration=$(Configuration);AtomUIToolchainProfile=Tasks;AtomUIToolchainBackendProfiles=$(_AtomUIRepositoryBackendProfile)" />
+        <MSBuild Condition="'$(_AtomUINative8Registration)' == 'true'"
+                 Projects="$(AtomUIToolchainProject)" Targets="PrepareNativeCompiler"
+                 RemoveProperties="NoBuild;NoRestore;$(AtomUIToolchainGlobalPropertiesToRemove)"
+                 Properties="Configuration=$(Configuration);AtomUIToolchainProfile=Tasks" />
     </Target>
 </Project>

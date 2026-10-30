@@ -9,6 +9,7 @@
 | [AtomUI.Performance](AtomUI.Performance/AtomUI.Performance.csproj) | 控件级基准 | 批量创建单个控件或小组合，观测实例化、布局、visual tree、分配和专项行为验证 | 微基准，不代表 Gallery 页面打开体验 |
 | [AtomUI.Localization.Performance](AtomUI.Localization.Performance/AtomUI.Localization.Performance.csproj) | Localization 基准 | 测量 Registry/Snapshot 构建、`ILocalizer.Get`、语言切换和 Snapshot 内存增长 | 纯 Localization 运行时基线，不加载桌面控件主题 |
 | [AtomUI.GalleryPerformance](AtomUI.GalleryPerformance/AtomUI.GalleryPerformance.csproj) | Gallery 场景复现 | 启动 Gallery Workspace，走真实 route/view/XAML，测量 showcase 从导航触发到视觉树和布局稳定 | 体验路径基准，必须复现 Gallery 真实使用方式 |
+| [AtomUI.StartupPerformance](AtomUI.StartupPerformance/README.md) | 启动基准 | 冷启动进程：平台初始化、AtomUI 初始化、窗口首帧与渲染批次、UI 线程最长阻塞 | 独立进程交错采样；单次运行只作 smoke |
 
 ## AtomUI.Performance 结构
 
@@ -36,9 +37,43 @@
 - Gallery 场景工具必须加载真实 Gallery XAML，不能用合成控件替代真实 showcase。
 - Gallery 场景工具需要在结果里输出源 XAML 形态和运行时视觉树形态，用来证明测量对象一致。
 - `Cold first navigation` 必须用 `--cold-iterations <N>` 做独立进程多样本统计；单样本只用于 smoke，不能作为优化提升或回退结论。
+- 启动结论必须用 `AtomUI.StartupPerformance` 的独立进程交错采样（`run_samples.py`，每变体至少 10 轮）；单次运行只作 smoke。采样期间不得并行构建或测试。
+- 启动期的 UI 卡顿不得用 `DispatcherTimer` 测量：它由平台 runloop 服务，主循环开始前在 macOS 上几乎不触发，会得到恒为 0 的假结果。用 `AtomUI.StartupPerformance` 的后台心跳探针（`Mark.FirstUiPump` / `Mark.MaxUiGap`）。
 - 文档中必须说明触发点、是否包含鼠标事件、是否包含 GPU 上屏、是否是 headless。
 
 ## 当前命令
+
+### 原生 Gallery 动效采样
+
+`AtomUI.GalleryPerformance --native-motion` 是单独的原生宿主模式，运行真实 `GalleryApplication`、Workspace和页面。
+原有导航/构建模式仍为Headless，两种口径分开使用。场景为 `sidebar`、`submenu`、`progress`、`statistic`、
+`beam`、`popup`、`beam-offscreen`、`all`；所有动作通过公开控件API驱动，不测原生鼠标输入延迟。
+Popup场景使用真实NavMenu Popup；若其未配置OpenMotion/CloseMotion，结果明确标记为静态开合成本，不声称取得动画FPS。
+离屏循环允许零更新，且必须通过真实viewport几何断言，不用隐藏控件模拟离屏。
+
+```bash
+dotnet build tools/performances/AtomUI.GalleryPerformance/AtomUI.GalleryPerformance.csproj -c Release --framework net10.0
+python3 tools/performances/run_native_motion.py \
+  --binary .artifacts/bin/Release/net10.0/AtomUI.GalleryPerformance \
+  --output-dir /tmp/atomui-motion-baseline --label baseline --scenario sidebar \
+  --processes 3 --warmup 5 --iterations 30 --sample-ms 450 --refresh-rate 60
+# 修改后使用相同参数和新的输出目录，可追加：
+# --compare /tmp/atomui-motion-baseline/summary.json
+```
+
+`--refresh-rate` 是调用方核实后的屏幕频率声明，不是工具自动检测值；不传时不计算刷新预算。
+每个进程保留身份、程序集SHA、产品差异摘要、窗口/DPI/主题、场景树形态及原始时间序列，聚合输出中位/P95/P99、
+超过1.5/2个刷新预算的次数、每动作CPU/分配/GC和实际布局pass耗时。首次创建和稳态窗口分开，单次结果只作smoke。
+使用同版本独立进程做A/A噪声对照，测量期间避免并行构建/测试或切换系统负载；长期结论需足够样本。
+有限动画必须包含跨时刻的真实中间值与多个绘制完成批次，不能用一次终值跳变冒充动画。
+聚合与比较同时核对宿主、实际目标类型、观测属性和动画合同；非等价场景明确拒绝比较。
+
+采样器只订阅已存在的batch，不调用RequestAnimationFrame/RequestCommit来制造帧。
+Processed/Rendered分别是合成批次处理/绘制完成，均不是显示器present；不把SceneInvalidated通知数称为FPS。
+CPU和分配包含诊断回调开销，前后必须使用同一版本工具，不能拿不同观测配置相减。
+布局/合成诊断读取当前Avalonia内部钩子，只在这个JIT工具中存在；版本升级后必须核验，钩子变化明确失败，不静默输出0。
+工具不进入产品运行依赖，不提供AOT/trim验证。缺失原生平台只能标为未验，Headless不能替代。
+输出和取证媒体放系统临时目录，完成分析后清理；相同输出目录中的旧进程文件不会被覆盖。
 
 控件级 AddOnDecoratedBox/LineEdit 基准：
 

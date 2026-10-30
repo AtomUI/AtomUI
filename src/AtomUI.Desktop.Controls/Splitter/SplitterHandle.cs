@@ -87,6 +87,7 @@ internal class SplitterHandle : TemplatedControl
     public event EventHandler<VectorEventArgs>? DragStarted;
     public event EventHandler<VectorEventArgs>? DragDelta;
     public event EventHandler<VectorEventArgs>? DragCompleted;
+    public event EventHandler? DraggerDoubleClicked;
     public event EventHandler? CollapsePreviousRequested;
     public event EventHandler? CollapseNextRequested;
 
@@ -198,6 +199,7 @@ internal class SplitterHandle : TemplatedControl
         _dragBar.DragStarted   += HandleDragBarStarted;
         _dragBar.DragDelta     += HandleDragBarDelta;
         _dragBar.DragCompleted += HandleDragBarCompleted;
+        _dragBar.DoubleClicked += HandleDragBarDoubleClicked;
     }
 
     private void DetachDragBar()
@@ -210,6 +212,7 @@ internal class SplitterHandle : TemplatedControl
         _dragBar.DragStarted   -= HandleDragBarStarted;
         _dragBar.DragDelta     -= HandleDragBarDelta;
         _dragBar.DragCompleted -= HandleDragBarCompleted;
+        _dragBar.DoubleClicked -= HandleDragBarDoubleClicked;
     }
 
     private void HandleDragBarStarted(object? sender, VectorEventArgs e)
@@ -225,6 +228,11 @@ internal class SplitterHandle : TemplatedControl
     private void HandleDragBarCompleted(object? sender, VectorEventArgs e)
     {
         DragCompleted?.Invoke(this, e);
+    }
+
+    private void HandleDragBarDoubleClicked(object? sender, EventArgs e)
+    {
+        DraggerDoubleClicked?.Invoke(this, EventArgs.Empty);
     }
 
     private static void AttachCollapseButton(IconButton? button, EventHandler<RoutedEventArgs> handler)

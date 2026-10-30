@@ -4,6 +4,10 @@
 
 ## 1. 控件定位
 
+选中滑块首次出现时直接使用当前选中容器的完整矩形，后续有效选择变化保留飞行动画。就绪状态、首次有效几何
+与主题过渡的共享契约见 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)，
+源码接入差异与验证边界见 [状态动效初始化验证](../../../../architecture/systems/control-infrastructure/transition-initialization-verification.md)。
+
 | 项 | 值 |
 | --- | --- |
 | NuGet 包 | `AtomUI.Desktop.Controls` |
@@ -149,7 +153,7 @@ SegmentedTheme / SegmentedItemTheme
 track + selected thumb + item states
 ```
 
-根控件在 `Render()` 中绘制轨道背景和选中滑块。item 模板绘制每个选项自身的背景、图标、内容和状态颜色。选中滑块位置来自当前选中容器相对根控件的坐标，尺寸来自当前选中容器最终排列后的 `Bounds.Size`。
+根控件在 `Render()` 中绘制轨道背景和选中滑块。item 模板绘制每个选项自身的 hover/pressed 背景遮罩、图标、内容和状态颜色。选中背景由选中滑块独占承载：item 的 `:selected` 不绘制背景，选中滑块飞行途中目标项也不会提前点亮；滑块飞行期间非选中 item 的 hover/pressed 背景遮罩被屏蔽，对齐上游 `thumb ~ item::after` 透明规则。无选中项时滑块不绘制。选中滑块位置来自当前选中容器相对根控件的坐标，尺寸来自当前选中容器最终排列后的 `Bounds.Size`。
 
 `Shape=Default` 时，根、item 和滑块圆角继续由 SizeType 对应的 SharedToken 决定。`Shape=Round` 时，Shape 分支在 SizeType 分支之后统一覆盖根、item 和滑块圆角为胶囊几何；该覆盖不新增 Design Token，也不改变模板结构。
 
@@ -191,7 +195,14 @@ Segmented 的共享实现位于 `AtomUI.Controls`，桌面实现位于 `AtomUI.D
 
 ### 8.1 选中滑块模型
 
-选中滑块是根控件 render 层的视觉，不是单独的 visual child。它的 `SelectedThumbPos` 来自选中容器相对根控件的坐标，`SelectedThumbSize` 来自选中容器最终排列后的 `Bounds.Size`。选择变化时立即同步一次；布局完成后再次按最终 Bounds 校准，从而覆盖方向、expanding、可见性和父容器尺寸变化。
+选中滑块是根控件 render 层的视觉，不是单独的 visual child。它的 `SelectedThumbPos` 来自选中容器相对根控件的坐标，`SelectedThumbSize` 来自选中容器最终排列后的 `Bounds.Size`。
+
+滑块矩形同步分两条路径：选择变化时（`SelectionChanged`）允许动画飞行，滑块位移与尺寸同时插值，时长取
+SharedToken `MotionDurationSlow`（300ms），缓动为 `cubic-bezier(0.645, 0.045, 0.355, 1)`（对齐上游
+motionEaseInOut）；布局完成后（`ArrangeOverride`）按最终 Bounds 校准，一律瞬移动画。滑块首次出现、无选中来源
+容器、过渡系统尚未就绪或目标矩形无变化时也一律瞬移。无选中项（如 Form `ClearFormValue`）时滑块停止绘制。
+
+item 的文字和图标颜色切换不受滑块飞行约束，立即生效并由 `MotionDurationMid` 柔化过渡。
 
 该模型要求 item 布局完成后再同步滑块尺寸。修改布局、容器创建或选择时序时，必须验证滑块和 item 边界一致。
 
@@ -207,34 +218,14 @@ Segmented 的共享实现位于 `AtomUI.Controls`，桌面实现位于 `AtomUI.D
 
 `SizeType=Custom` 是 `ICustomizableSizeTypeAware` 的自定义尺寸入口。默认主题下，Custom 使用 Middle 分支作为初始视觉基线；实例上的显式属性值覆盖主题 setter。控件不新增 Segmented 专属 `CustomHeight`、`CustomPadding` 等公开 API。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Segmented 桌面版实现原理](implementation.md)
+- [Segmented Semantic Part 契约](semantic-part.md)
 - [Segmented Token 设计](token.md)
 - [Segmented Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Segmented` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/segmented/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/segmented/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -242,8 +233,9 @@ LLMS 导出来源：
 | --- | --- |
 | Public API | `SizeType`、`Orientation`、`Shape`、`IsExpanding`、`IsMotionEnabled`、`SelectedIndex`、`SelectedItem`、`SelectionChanged`、`SegmentedItem.Icon`、`SegmentedItem.IsSelected`。 |
 | 状态行为 | 默认选择、显式选择保留、绑定选择保留、pointer release 选择、四方向键循环选择、Form value、disabled item、hidden item。 |
-| 布局与滑块 | 横向/纵向自然布局、水平 expanding、垂直宽度适配、动态方向切换、最终 Bounds 滑块矩形。 |
+| 布局与滑块 | 横向/纵向自然布局、水平 expanding、垂直宽度适配、动态方向切换、最终 Bounds 滑块矩形；滑块过渡时长/缓动契约（300ms + `cubic-bezier(0.645, 0.045, 0.355, 1)`）、飞行期间 item 背景遮罩抑制、无选中时滑块隐藏、detach 清理。 |
 | AXAML / Template | 根 `Frame`、`PART_ItemsPresenter`、`SegmentedStackPanel`、item `Frame`、`IconPresenter`、`Content` 和 SizeType/Shape 样式分支。 |
+| Semantic Part | descriptor 只含 `root`/`item`/`icon`/`label`；`semantic-item` marker 随容器创建/prepare 幂等就位，`semantic-icon`/`semantic-label` marker 位于 item 模板节点；集合重置、图文/纯图标/纯文本选项与选择变化不增删 marker；owner-scoped Semantic Style 命中最低 public 类型；选中滑块不属于任何 Part。 |
 | Token | 轨道 padding/background、item 文本/背景状态色、item 最小高度、图标和图文间距。 |
 | Gallery | Basic、Block、Disabled、Dynamic、Sizes、Vertical、Round Shape、Icon Only、With Icon 示例，以及 Token 语义和 ShowCase 示例。 |
 | 文档 | 运行 `git diff --check`，检查相对链接存在。 |

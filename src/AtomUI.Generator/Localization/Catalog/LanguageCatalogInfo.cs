@@ -79,13 +79,16 @@ internal sealed class LanguageCatalogInfo
 
 internal sealed class LanguageCatalogUnitInfo
 {
-    internal LanguageCatalogUnitInfo(string key, Location location)
+    internal LanguageCatalogUnitInfo(string key, Location location, int enumValue = 0)
     {
         Key = key;
         Location = location;
+        EnumValue = enumValue;
     }
 
     internal string Key { get; }
+
+    internal int EnumValue { get; }
 
     internal Location Location { get; }
 }

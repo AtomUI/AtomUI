@@ -5,9 +5,51 @@
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.Notification"
              x:DataType="viewModels:NotificationViewModel">
+    <UserControl.Resources>
+        <!-- 默认样式示例：浅绿卡片 + 2px 绿边 + 圆角 16 + 硬阴影，icon / title / description 绿字；
+             error 分支整卡转红。 -->
+        <Styles x:Key="NotificationSemanticStyleStyles">
+            <Style Selector="atom|NotificationCard.semantic-default-style-demo">
+                <Setter Property="Background" Value="#F6FFED" />
+                <Setter Property="BorderBrush" Value="#95DE64" />
+                <Setter Property="BorderThickness" Value="2" />
+                <Setter Property="CornerRadius" Value="16" />
+                <Setter Property="BoxShadow" Value="4 4 0 #D9F7BE" />
+                <atom:NotificationCardIconStyle x:SetterTargetType="atom:IconPresenter">
+                    <Setter Property="IconBrush" Value="#237804" />
+                </atom:NotificationCardIconStyle>
+                <atom:NotificationCardTitleStyle x:SetterTargetType="atom:SelectableTextBlock">
+                    <Setter Property="Foreground" Value="#237804" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                </atom:NotificationCardTitleStyle>
+                <atom:NotificationCardDescriptionStyle x:SetterTargetType="ContentPresenter">
+                    <Setter Property="Foreground" Value="#3F6600" />
+                </atom:NotificationCardDescriptionStyle>
+            </Style>
+            <!-- error 分支只覆盖背景色 / 边框色 / 阴影色，边框粗细与圆角沿用默认样式的那两个 Setter，
+                 所以这里必须重复声明 BorderThickness 与 CornerRadius；否则会回落到主题默认值
+                 （零边框 / 半径 8），卡片边框更细、圆角更小。 -->
+            <Style Selector="atom|NotificationCard.semantic-error-style-demo:error">
+                <Setter Property="Background" Value="#FFF2F0" />
+                <Setter Property="BorderBrush" Value="#FFCCC7" />
+                <Setter Property="BorderThickness" Value="2" />
+                <Setter Property="CornerRadius" Value="16" />
+                <Setter Property="BoxShadow" Value="4 4 0 #FFCCC7" />
+                <atom:NotificationCardIconStyle x:SetterTargetType="atom:IconPresenter">
+                    <Setter Property="IconBrush" Value="#CF1322" />
+                </atom:NotificationCardIconStyle>
+                <atom:NotificationCardTitleStyle x:SetterTargetType="atom:SelectableTextBlock">
+                    <Setter Property="Foreground" Value="#CF1322" />
+                </atom:NotificationCardTitleStyle>
+                <atom:NotificationCardDescriptionStyle x:SetterTargetType="ContentPresenter">
+                    <Setter Property="Foreground" Value="#5C0011" />
+                </atom:NotificationCardDescriptionStyle>
+            </Style>
+        </Styles>
+    </UserControl.Resources>
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Notification"
                     Category="{gallery:NotificationShowCaseLangResource ComponentCategory}"
@@ -17,8 +59,90 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="WindowNotificationManager" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="viewModels:NotificationViewModel">
+                    <!-- 单个预览舞台同时承载「通知列表宿主」与「通知卡片」两个公开 owner 的 Part，
+                         右侧按 owner 顺序列出全部 11 个 Part。
+                         NotificationCard 没有声明式构造入口（只能由 manager 创建），因此卡片实例由
+                         code-behind 在舞台内播种并挂到下方 Owner 锚点上；manager 用无宿主实例铺满舞台。 -->
+                    <gallery:SemanticPartPreview Name="NotificationSemanticPreview"
+                                                 Title="Notification"
+                                                 SemanticOwner="{Binding #NotificationSemanticAnchor}">
+                        <gallery:SemanticPartPreview.SemanticOwners>
+                            <gallery:SemanticPartPreviewOwner Owner="{Binding #NotificationCardSemanticOwner}"
+                                                             OwnerType="{x:Type atom:NotificationCard}" />
+                            <gallery:SemanticPartPreviewOwner Owner="{Binding #NotificationManagerSemanticOwner}"
+                                                             OwnerType="{x:Type atom:WindowNotificationManager}" />
+                        </gallery:SemanticPartPreview.SemanticOwners>
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <Panel MinHeight="320"
+                                   Background="{atom:SharedTokenResource ColorFillAlter}">
+                                <!-- manager 无宿主实例拉伸铺满舞台；root 高亮 = 列表宿主本身。 -->
+                                <atom:WindowNotificationManager Name="NotificationManagerSemanticOwner"
+                                                               MaxItems="3"
+                                                               IsMotionEnabled="False" />
+                                <!-- 卡片锚点：NotificationCard 有公开无参构造，可声明式实例化两张常驻卡片。 -->
+                                <StackPanel Name="NotificationSemanticAnchor"
+                                            Orientation="Vertical"
+                                            Spacing="16"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                    <atom:NotificationCard Name="NotificationCardSemanticOwner"
+                                                           NotificationType="Success"
+                                                           Title="Notification Title"
+                                                           Content="This is a notification description."
+                                                           IsMotionEnabled="False"
+                                                           Expiration="0:0:4.5"
+                                                           IsShowProgress="True">
+                                        <atom:NotificationCard.Actions>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <atom:Button ButtonType="Primary" SizeType="Small" Content="Confirm" />
+                                            </StackPanel>
+                                        </atom:NotificationCard.Actions>
+                                    </atom:NotificationCard>
+                                </StackPanel>
+                            </Panel>
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription Path="root"
+                                                             OwnerType="{x:Type atom:NotificationCard}"
+                                                             Description="{gallery:NotificationShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription Path="wrapper"
+                                                             OwnerType="{x:Type atom:NotificationCard}"
+                                                             Description="{gallery:NotificationShowCaseLangResource SemanticWrapperDescription}" />
+                            <gallery:SemanticPartDescription Path="icon"
+                                                             OwnerType="{x:Type atom:NotificationCard}"
+                                                             Description="{gallery:NotificationShowCaseLangResource SemanticIconDescription}" />
+                            <gallery:SemanticPartDescription Path="section"
+                                                             OwnerType="{x:Type atom:NotificationCard}"
+                                                             Description="{gallery:NotificationShowCaseLangResource SemanticSectionDescription}" />
+                            <gallery:SemanticPartDescription Path="title"
+                                                             OwnerType="{x:Type atom:NotificationCard}"
+                                                             Description="{gallery:NotificationShowCaseLangResource SemanticTitleDescription}" />
+                            <gallery:SemanticPartDescription Path="description"
+                                                             OwnerType="{x:Type atom:NotificationCard}"
+                                                             Description="{gallery:NotificationShowCaseLangResource SemanticDescriptionDescription}" />
+                            <gallery:SemanticPartDescription Path="close"
+                                                             OwnerType="{x:Type atom:NotificationCard}"
+                                                             Description="{gallery:NotificationShowCaseLangResource SemanticCloseDescription}" />
+                            <gallery:SemanticPartDescription Path="actions"
+                                                             OwnerType="{x:Type atom:NotificationCard}"
+                                                             Description="{gallery:NotificationShowCaseLangResource SemanticActionsDescription}" />
+                            <gallery:SemanticPartDescription Path="progress"
+                                                             OwnerType="{x:Type atom:NotificationCard}"
+                                                             Description="{gallery:NotificationShowCaseLangResource SemanticProgressDescription}" />
+                            <gallery:SemanticPartDescription Path="root"
+                                                             OwnerType="{x:Type atom:WindowNotificationManager}"
+                                                             Description="{gallery:NotificationShowCaseLangResource SemanticListRootDescription}" />
+                            <gallery:SemanticPartDescription Path="listContent"
+                                                             OwnerType="{x:Type atom:WindowNotificationManager}"
+                                                             Description="{gallery:NotificationShowCaseLangResource SemanticListContentDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -81,6 +205,61 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
+                <gallery:ShowCaseItem
+                    Title="{gallery:NotificationShowCaseLangResource StackTitle}"
+                    Description="{gallery:NotificationShowCaseLangResource StackDescription}"
+                    BadgeText="v6.1.9"
+                    SourceKey="notification-stack"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="viewModels:NotificationViewModel">
+                            <StackPanel Spacing="24">
+                                <StackPanel Orientation="Horizontal"
+                                            VerticalAlignment="Center"
+                                            Spacing="32">
+                                    <StackPanel Orientation="Horizontal"
+                                                VerticalAlignment="Center"
+                                                Spacing="12">
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="{gallery:NotificationShowCaseLangResource StackEnabledLabel}" />
+                                        <atom:ToggleSwitch Name="NotificationStackEnabledSwitch"
+                                                           VerticalAlignment="Center"
+                                                           IsChecked="True"
+                                                           IsCheckedChanged="HandleStackEnabledChanged" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal"
+                                                VerticalAlignment="Center"
+                                                Spacing="12">
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="{gallery:NotificationShowCaseLangResource StackThresholdLabel}" />
+                                        <atom:NumericUpDown Name="NotificationStackThresholdInput"
+                                                            Width="100"
+                                                            VerticalAlignment="Center"
+                                                            Minimum="1"
+                                                            Maximum="10"
+                                                            Increment="1"
+                                                            FormatString="0"
+                                                            Value="3"
+                                                            IsEnabled="{Binding #NotificationStackEnabledSwitch.IsChecked}"
+                                                            ValueChanged="HandleStackThresholdChanged" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <atom:Separator />
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <atom:Button Name="OpenStackNotificationButton"
+                                                 ButtonType="Primary"
+                                                 Click="ShowStackNotification"
+                                                 Content="{gallery:NotificationShowCaseLangResource P2ContentOpenTheNotificationBox}" />
+                                    <atom:Button Name="DestroyStackNotificationsButton"
+                                                 ButtonType="Default"
+                                                 Click="DestroyStackNotifications"
+                                                 Content="{gallery:NotificationShowCaseLangResource P2ContentDestroyAll}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
                 <gallery:ShowCaseItem Title="{gallery:NotificationShowCaseLangResource CustomizedIconTitle}"
                                   Description="{gallery:NotificationShowCaseLangResource CustomizedIconDescription}" IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
@@ -105,7 +284,28 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem Title="{gallery:NotificationShowCaseLangResource ActionsTitle}"
+                                  Description="{gallery:NotificationShowCaseLangResource ActionsDescription}" IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="viewModels:NotificationViewModel">
+                            <atom:Button ButtonType="Primary" Click="ShowActionsNotification" Content="{gallery:NotificationShowCaseLangResource P2ContentOpenTheNotificationBox}" />
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem Title="{gallery:NotificationShowCaseLangResource SemanticPartStyleTitle}"
+                                  Description="{gallery:NotificationShowCaseLangResource SemanticPartStyleDescription}" IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="viewModels:NotificationViewModel">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <atom:Button ButtonType="Primary" Click="HandleShowDefaultStyleNotification" Content="{gallery:NotificationShowCaseLangResource P2ContentDefaultNotification}" />
+                                <atom:Button ButtonType="Default" Click="HandleShowErrorStyleNotification" Content="{gallery:NotificationShowCaseLangResource P2ContentErrorNotification}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

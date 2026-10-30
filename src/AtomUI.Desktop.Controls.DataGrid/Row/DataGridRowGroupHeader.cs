@@ -6,6 +6,7 @@
 using System.Diagnostics;
 using System.Reactive.Linq;
 using AtomUI.Desktop.Controls.Utils;
+using AtomUI.Generated.AtomUIDesktopControlsDataGrid;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -154,7 +155,12 @@ public class DataGridRowGroupHeader : TemplatedControl
         PressedMixin.Attach<DataGridRowGroupHeader>();
         IsTabStopProperty.OverrideDefaultValue<DataGridRowGroupHeader>(false);
     }
-    
+
+    public DataGridRowGroupHeader()
+    {
+        Classes.Add(DataGridSemanticParts.BodyRowClass);
+    }
+
     private void HandleSublevelIndentChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (OwningGrid != null)

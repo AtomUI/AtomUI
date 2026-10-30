@@ -19,11 +19,19 @@
             <Setter Property="Height" Value="70" />
             <Setter Property="Width" Value="50" />
         </Style>
+        <Style Selector="Border.space-surface">
+            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="BoxShadow" Value="0 0 10 0 #1A000000" />
+        </Style>
     </UserControl.Styles>
 
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="Space"
                     Category="{gallery:SpaceShowCaseLangResource ComponentCategory}"
@@ -34,8 +42,44 @@
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="Control"
                     MetadataValueWidth="220" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="viewModels:SpaceViewModel">
+                    <StackPanel Spacing="24">
+                        <gallery:SemanticPartPreview Name="SpaceSemanticPreview"
+                                                     SemanticOwner="{Binding #SpaceSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:Space}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:Space Name="SpaceSemanticOwner"
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                    <atom:Space.SplitTemplate>
+                                        <Template>
+                                            <atom:Separator Orientation="Vertical" />
+                                        </Template>
+                                    </atom:Space.SplitTemplate>
+                                    <atom:Button ButtonType="Primary" Content="{gallery:SpaceShowCaseLangResource P2ContentPrimary}" />
+                                    <atom:Button Content="{gallery:SpaceShowCaseLangResource P2ContentDefault}" />
+                                    <atom:Button ButtonType="Dashed" Content="{gallery:SpaceShowCaseLangResource P2ContentDashed}" />
+                                </atom:Space>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:SpaceShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="item"
+                                    Description="{gallery:SpaceShowCaseLangResource SemanticItemDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="separator"
+                                    Description="{gallery:SpaceShowCaseLangResource SemanticSeparatorDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -456,7 +500,63 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+    <gallery:ShowCaseItem Title="{gallery:SpaceShowCaseLangResource SemanticPartStyleTitle}"
+                          Description="{gallery:SpaceShowCaseLangResource SemanticPartStyleDescription}"
+                          SourceKey="space-semantic-part"
+                          BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                          Span="Full"
+                          IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="viewModels:SpaceViewModel">
+        <Border Classes="space-surface">
+            <StackPanel Spacing="10">
+                <StackPanel.Styles>
+                    <Style Selector="atom|Space.semantic-style-demo-object">
+                        <Setter Property="BorderBrush" Value="#E0000000" />
+                        <Setter Property="BorderThickness" Value="2" />
+                        <Setter Property="BorderDashArray" Value="4,2" />
+                        <Setter Property="Padding" Value="8" />
+                        <atom:SpaceItemStyle x:SetterTargetType="atom:Button">
+                            <Setter Property="Background" Value="#F0F0F0" />
+                            <Setter Property="Padding" Value="4" />
+                        </atom:SpaceItemStyle>
+                        <atom:SpaceSeparatorStyle x:SetterTargetType="atom:TextBlock">
+                            <Setter Property="Foreground" Value="#FF0000" />
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </atom:SpaceSeparatorStyle>
+                    </Style>
+                    <Style Selector="atom|Space.semantic-style-demo-function">
+                        <Setter Property="Background" Value="#E6F7FF" />
+                        <Setter Property="BorderBrush" Value="#1890FF" />
+                        <Setter Property="Padding" Value="8" />
+                    </Style>
+                </StackPanel.Styles>
+                <atom:Space Classes="semantic-style-demo-object"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Left">
+                    <atom:Space.SplitTemplate>
+                        <Template>
+                            <atom:TextBlock Text="•" />
+                        </Template>
+                    </atom:Space.SplitTemplate>
+                    <atom:Button Content="{gallery:SpaceShowCaseLangResource P2StyledButtonN1}" />
+                    <atom:Button Content="{gallery:SpaceShowCaseLangResource P2StyledButtonN2}" />
+                    <atom:Button Content="{gallery:SpaceShowCaseLangResource P2StyledButtonN3}" />
+                </atom:Space>
+                <atom:Space Classes="semantic-style-demo-function"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Left"
+                            SizeType="Large">
+                    <atom:Button Content="{gallery:SpaceShowCaseLangResource P2LargeSpaceButtonN1}" />
+                    <atom:Button Content="{gallery:SpaceShowCaseLangResource P2LargeSpaceButtonN2}" />
+                    <atom:Button Content="{gallery:SpaceShowCaseLangResource P2LargeSpaceButtonN3}" />
+                </atom:Space>
+            </StackPanel>
+        </Border>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

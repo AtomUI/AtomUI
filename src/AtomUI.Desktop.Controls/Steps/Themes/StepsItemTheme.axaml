@@ -26,12 +26,14 @@
                     TitlePlacement="{TemplateBinding TitlePlacement}">
                     <atom:StepsPanelItemFrame
                         Name="ItemWrapper"
+                        Classes.semantic-item-wrapper="True"
                         atom:StepsItemLayoutPanel.Role="ItemWrapper"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         BackgroundSizing="OuterBorderEdge"
                         CornerRadius="{TemplateBinding CornerRadius}"
+                        Type="{TemplateBinding Type}"
                         IsFirst="{TemplateBinding IsFirst}"
                         PanelVariant="{TemplateBinding PanelVariant}"
                         ArrowWidth="{atom:StepsTokenResource PanelArrowWidth}"
@@ -39,6 +41,7 @@
 
                     <atom:StepsItemIndicator
                         Name="PART_Indicator"
+                        Classes.semantic-item-icon="True"
                         atom:StepsItemLayoutPanel.Role="Indicator"
                         Status="{TemplateBinding EffectiveStatus}"
                         Type="{TemplateBinding Type}"
@@ -52,33 +55,45 @@
                         IsProgressFrameReserved="{TemplateBinding IsProgressFrameReserved}"
                         Percent="{TemplateBinding Percent}" />
 
-                    <ContentPresenter
-                        Name="HeaderPresenter"
-                        atom:StepsItemLayoutPanel.Role="Header"
-                        Content="{TemplateBinding Header, Converter={StaticResource StepsStringToTextBlockConverter}}"
-                        ContentTemplate="{TemplateBinding HeaderTemplate}"
-                        Foreground="{TemplateBinding Foreground}"
-                        VerticalAlignment="Center" />
+                    <atom:StepsItemSectionPanel
+                        Name="Section"
+                        Classes.semantic-item-section="True"
+                        atom:StepsItemLayoutPanel.Role="Section"
+                        Type="{TemplateBinding Type}"
+                        Orientation="{TemplateBinding Orientation}"
+                        TitlePlacement="{TemplateBinding TitlePlacement}">
+                        <ContentPresenter
+                            Name="HeaderPresenter"
+                            Classes.semantic-item-title="True"
+                            atom:StepsItemLayoutPanel.Role="Header"
+                            Content="{TemplateBinding Header, Converter={StaticResource StepsStringToTextBlockConverter}}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"
+                            Foreground="{TemplateBinding Foreground}"
+                            VerticalAlignment="Center" />
 
-                    <ContentPresenter
-                        Name="SubHeaderPresenter"
-                        atom:StepsItemLayoutPanel.Role="SubHeader"
-                        Content="{TemplateBinding SubHeader, Converter={StaticResource StepsStringToTextBlockConverter}}"
-                        ContentTemplate="{TemplateBinding SubHeaderTemplate}"
-                        IsVisible="{TemplateBinding SubHeader, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        VerticalAlignment="Center" />
+                        <ContentPresenter
+                            Name="SubHeaderPresenter"
+                            Classes.semantic-item-subtitle="True"
+                            atom:StepsItemLayoutPanel.Role="SubHeader"
+                            Content="{TemplateBinding SubHeader, Converter={StaticResource StepsStringToTextBlockConverter}}"
+                            ContentTemplate="{TemplateBinding SubHeaderTemplate}"
+                            IsVisible="{TemplateBinding SubHeader, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            VerticalAlignment="Center" />
+
+                        <ContentPresenter
+                            Name="ContentPresenter"
+                            Classes.semantic-item-content="True"
+                            atom:StepsItemLayoutPanel.Role="Content"
+                            Content="{TemplateBinding Content, Converter={StaticResource StepsStringToTextBlockConverter}}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            MaxWidth="{atom:StepsTokenResource DescriptionMaxWidth}" />
+                    </atom:StepsItemSectionPanel>
 
                     <atom:PixelAlignedBorder
                         Name="Connector"
+                        Classes.semantic-item-rail="True"
                         atom:StepsItemLayoutPanel.Role="Connector"
                         UseLayoutRounding="False" />
-
-                    <ContentPresenter
-                        Name="ContentPresenter"
-                        atom:StepsItemLayoutPanel.Role="Content"
-                        Content="{TemplateBinding Content, Converter={StaticResource StepsStringToTextBlockConverter}}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        MaxWidth="{atom:StepsTokenResource DescriptionMaxWidth}" />
 
                     <atom:StepsNavigationArrow
                         Name="NavigationArrow"
@@ -115,6 +130,9 @@
             </ControlTemplate>
         </Setter>
 
+        <Style Selector="^ /template/ atom|StepsItemLayoutPanel">
+            <Setter Property="PreferredHorizontalConnectorLength" Value="{atom:SharedTokenResource UniformlyMargin}" />
+        </Style>
         <Style Selector="^[CanInvoke=True]">
             <Setter Property="Cursor" Value="Hand" />
         </Style>

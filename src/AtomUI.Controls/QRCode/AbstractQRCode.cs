@@ -225,7 +225,6 @@ public abstract class AbstractQRCode : TemplatedControl
         using var surface = SKSurface.Create(info);
         var       canvas  = surface.Canvas;
         var       color   = ((ISolidColorBrush?)Color)?.Color ?? Colors.Black;
-        var       bgColor = ((ISolidColorBrush?)Background)?.Color ?? Colors.Transparent;
 
         canvas.Render(
             qrcode,
@@ -233,8 +232,19 @@ public abstract class AbstractQRCode : TemplatedControl
             info.Height,
             SKColor.Empty,
             new SKColor(color.R, color.G, color.B, color.A),
-            new SKColor(bgColor.R, bgColor.G, bgColor.B, bgColor.A)
+            SKColors.Transparent
         );
+
+        if (Icon is not null && IconSize > 0)
+        {
+            var iconOffset = (Size - IconSize) / 2f;
+            using var clearPaint = new SKPaint
+            {
+                BlendMode = SKBlendMode.Clear,
+                IsAntialias = false
+            };
+            canvas.DrawRect(iconOffset, iconOffset, IconSize, IconSize, clearPaint);
+        }
 
         using var image     = surface.Snapshot();
         using var data      = image.Encode(SKEncodedImageFormat.Png, 100);
@@ -248,9 +258,10 @@ public abstract class AbstractQRCode : TemplatedControl
         base.OnPropertyChanged(change);
         if (change.Property == ValueProperty || 
             change.Property == ColorProperty || 
-            change.Property == BackgroundProperty || 
             change.Property == EccLevelProperty || 
-            change.Property == SizeProperty)
+            change.Property == SizeProperty ||
+            change.Property == IconProperty ||
+            change.Property == IconSizeProperty)
         {
             SetupQRCode();
         }

@@ -1,6 +1,6 @@
 # Space 桌面版架构设计
 
-本文档定义 `Space` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Space 桌面版实现原理](implementation.md)，Space Token 的专项设计见 [Space Token 设计](token.md)，设计和契约变化记录见 [Space Changelog](changelog.md)。
+本文档定义 `Space` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，Semantic Part 契约见 [Space Semantic Part 契约](semantic-part.md)，内部实现原理见 [Space 桌面版实现原理](implementation.md)，Space Token 的专项设计见 [Space Token 设计](token.md)，设计和契约变化记录见 [Space Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -15,6 +15,8 @@
 Space 是 AtomUI 桌面控件体系中的间距布局控件，用于在一组子元素之间提供一致的水平、垂直或紧凑间距。
 
 Space 不负责复杂响应式排版、滚动容器或数据虚拟化列表。这些职责应由业务层、组合控件或更专用的 AtomUI 控件承担。
+
+Space 的公开语义区域使用 `root`、`item` 和 `separator` 三个 Semantic Part；完整契约见 [Space Semantic Part 契约](semantic-part.md)。
 
 主要源码入口：
 
@@ -39,10 +41,10 @@ Space 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
-| 内容与数据 | `CompactSpaceItemPosition`、`Content`、`ContentTemplate`、`ItemHeight`、`ItemSpacing`、`ItemWidth`、`ItemsAlignment` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
+| 内容与数据 | `CompactSpaceItemPosition`、`Content`、`ContentTemplate`、`ItemHeight`、`ItemSpacing`、`ItemWidth`、`ItemsAlignment`、`SplitTemplate` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
 | 选择与集合 | `PositionIndex` | 维护选择、展开、过滤、分页、分组或集合状态。 |
 | 交互与状态 | `IsUsedInCompactSpace`、`Status` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
-| 视觉与布局 | `CompactSpaceOrientation`、`LineSpacing`、`Orientation`、`SizeType`、`StyleVariant` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
+| 视觉与布局 | `Background`、`BorderBrush`、`BorderDashArray`、`BorderDashOffset`、`BorderThickness`、`CompactSpaceOrientation`、`CornerRadius`、`LineSpacing`、`Orientation`、`Padding`、`SizeType`、`StyleVariant` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
 
 当前没有抽取到控件专属 public 事件；交互通知主要来自继承事件、命令或 Gallery 可观察状态。
 
@@ -88,6 +90,10 @@ Space 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的�
 | `CompactSpaceTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 
 Space 使用 `SpaceToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 collection/filter、visual option 运行时状态。
+
+`Space` 本体没有独立的 `SpaceTheme.axaml`：root frame 由控件自身在 `Render` 中绘制（复用 `BorderRenderHelper`），
+root 边框、背景、内边距与虚线由 `Space` 自有的 root frame 样式属性表达，定制边界见 [Space Semantic Part 契约](semantic-part.md)
+第 3 节。主题文件只覆盖 `CompactSpace` / `CompactSpaceAddOn` 的模板与状态视觉。
 
 主题维护规则：
 
@@ -139,33 +145,13 @@ Space 的集合状态必须能处理 source replace、reset、clear 和 containe
 
 Space 的视觉选项通过 public API 归一为 theme variables、伪类或模板绑定。Token 保存组件语义值，不能保存实例运行时状态或业务色值。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Space 桌面版实现原理](implementation.md)
 - [Space Token 设计](token.md)
 - [Space Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Space` | 布局控件根语义区域，承载布局 public API、尺寸和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `container` | `布局容器` | 组织子元素、间距、断点、对齐或分割状态。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `布局项` | 承载子内容、占位、跨度、排序或尺寸约束。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `theme` | `主题区域` | 连接 SharedToken、布局主题资源和 Gallery 可观察样式。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/space/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/space/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 

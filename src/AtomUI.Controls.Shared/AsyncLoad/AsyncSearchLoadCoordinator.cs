@@ -11,6 +11,7 @@ public sealed class AsyncSearchLoadCoordinator<TContext, TResult>
     private readonly object _sync = new();
     private CancellationTokenSource? _cts;
     private long _generation;
+    private long _cancelledGeneration = -1;
 
     public TimeSpan DebounceInterval { get; set; } = TimeSpan.Zero;
 
@@ -103,8 +104,12 @@ public sealed class AsyncSearchLoadCoordinator<TContext, TResult>
     {
         lock (_sync)
         {
-            _cts?.Cancel();
-            _cts?.Dispose();
+            if (_cts is not null)
+            {
+                _cancelledGeneration = _generation;
+                _cts.Cancel();
+                _cts.Dispose();
+            }
             _cts = null;
         }
     }
@@ -116,10 +121,17 @@ public sealed class AsyncSearchLoadCoordinator<TContext, TResult>
             return AsyncLoadOutcome<TResult>.Cancel();
         }
 
+        bool cancelled;
         bool superseded;
         lock (_sync)
         {
+            cancelled = _cancelledGeneration == generation;
             superseded = _generation != generation;
+        }
+
+        if (cancelled)
+        {
+            return AsyncLoadOutcome<TResult>.Cancel();
         }
 
         if (superseded)

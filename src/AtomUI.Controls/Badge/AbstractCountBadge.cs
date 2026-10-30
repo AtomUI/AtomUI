@@ -112,6 +112,8 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
     private bool _adornerLayerRetryScheduled;
     private int _adornerLayerRetryCount;
     private IDisposable? _motionBinding;
+    private AncestorVisibilityTracker? _ancestorVisibilityTracker;
+    private Panel? _standaloneContentHost;
 
     static AbstractCountBadge()
     {
@@ -120,6 +122,10 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
             OverflowCountProperty,
             SizeProperty);
         AffectsRender<AbstractCountBadge>(BadgeColorProperty, OffsetProperty);
+        // 装饰型控件必须包裹目标而不是拉伸占满父槽（与 AbstractDotBadge 一致）：
+        // 拉伸会把指示器锚点和 root 语义部件标记拖到父槽右缘。
+        HorizontalAlignmentProperty.OverrideDefaultValue<AbstractCountBadge>(Avalonia.Layout.HorizontalAlignment.Left);
+        VerticalAlignmentProperty.OverrideDefaultValue<AbstractCountBadge>(Avalonia.Layout.VerticalAlignment.Top);
     }
 
     private protected abstract AbstractCountBadgeAdorner CreateBadgeAdorner();
@@ -129,7 +135,7 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         var badgeAdorner = CreateBadgeAdorner();
         if (DecoratedTarget is not null)
         {
-            DetachChild(badgeAdorner);
+            DetachStandaloneAdorner(badgeAdorner);
             AttachChild(DecoratedTarget);
             badgeAdorner.IsAdornerMode = true;
             _adornerLayer = AdornerLayer.GetAdornerLayer(this);
@@ -143,13 +149,25 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
             _adornerLayerRetryCount     = 0;
             _adornerLayerRetryScheduled = false;
             badgeAdorner.ApplyToTarget(_adornerLayer, this);
+            SyncLayerAdornerVisibility();
         }
         else
         {
             DetachLayerAdorner();
             badgeAdorner.IsAdornerMode = false;
-            AttachChild(badgeAdorner);
+            AttachStandaloneAdorner(badgeAdorner);
             badgeAdorner.ApplyToTarget(null, this, () => IsVisible = true);
+        }
+    }
+
+    // 指示器渲染在跨根的 AdornerLayer 中，祖先仅以 IsVisible=false 隐藏宿主子树时，
+    // 控件不触发 detach 清理、Avalonia 也不会隐藏装饰层中的残留视觉，
+    // 必须按有效可见性显式同步，否则指示器会以退化布局坐标漂移在页面上。
+    private void SyncLayerAdornerVisibility()
+    {
+        if (_badgeAdorner is { IsAdornerMode: true } && _adornerLayer is not null)
+        {
+            _badgeAdorner.SetCurrentValue(IsVisibleProperty, IsEffectivelyVisible && BadgeIsVisible);
         }
     }
 
@@ -172,14 +190,14 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
                     {
                         if (_badgeAdorner == badgeAdorner)
                         {
-                            DetachChild(badgeAdorner);
+                            DetachStandaloneAdorner(badgeAdorner);
                             IsVisible = false;
                         }
                     });
             }
             else
             {
-                DetachChild(_badgeAdorner);
+                DetachStandaloneAdorner(_badgeAdorner);
                 _badgeAdorner.DetachFromTarget(null, false);
             }
         }
@@ -197,7 +215,7 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
                         {
                             if (_badgeAdorner == badgeAdorner)
                             {
-                                DetachChild(badgeAdorner);
+                                DetachStandaloneAdorner(badgeAdorner);
                             }
                         });
                 }
@@ -216,7 +234,7 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
             }
             else
             {
-                DetachChild(_badgeAdorner);
+                DetachStandaloneAdorner(_badgeAdorner);
                 _badgeAdorner.DetachFromTarget(_adornerLayer, false);
                 _adornerLayer = null;
             }
@@ -242,6 +260,9 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         {
             PrepareAdorner();
         }
+
+        _ancestorVisibilityTracker?.Dispose();
+        _ancestorVisibilityTracker = new AncestorVisibilityTracker(this, SyncLayerAdornerVisibility);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -249,6 +270,8 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         base.OnDetachedFromVisualTree(e);
         _motionBinding?.Dispose();
         _motionBinding = null;
+        _ancestorVisibilityTracker?.Dispose();
+        _ancestorVisibilityTracker = null;
         Loaded -= HandleAdornerLayerRetryLoaded;
         _adornerLayerRetryScheduled = false;
         _adornerLayerRetryCount     = 0;
@@ -338,6 +361,66 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         LogicalChildren.Add(child);
     }
 
+    // standalone 指示器不能直接挂 Control.VisualChildren：普通控件集合缺少 Panel
+    // 式的逻辑挂载联动，adorner 子树会停留在样式未应用状态（ControlTheme 的
+    // Setter 全部失效、desired=0，宿主布局退化为空白）。经内部 Panel 宿主挂载补齐联动。
+    private void AttachStandaloneAdorner(Control adorner)
+    {
+        if (_standaloneContentHost is null)
+        {
+            _standaloneContentHost = new Panel();
+            AttachChild(_standaloneContentHost);
+        }
+
+        if (!_standaloneContentHost.Children.Contains(adorner))
+        {
+            _standaloneContentHost.Children.Add(adorner);
+        }
+
+        // 首次挂载可能发生在宿主 attach 级联内部：逻辑根尚未贯通到本 Panel，
+        // 子级收不到 AttachedToLogicalTree，ControlTheme 与模板 Setter 全部
+        // 不应用、desired 停留 0。补设逻辑父（SetParent → FindLogicalRoot →
+        // ApplyStyling）；不能用视觉重挂——detach 会取消待播的 show 动画，
+        // 让指示器停留在 opacity 0。级联内同步设置可能失败，Post 兜底重试。
+        if (((StyledElement)adorner).Parent is null)
+        {
+            var hostPanel = _standaloneContentHost;
+            ((ISetLogicalParent)adorner).SetParent(hostPanel);
+            if (((StyledElement)adorner).Parent is null)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (_standaloneContentHost == hostPanel &&
+                        hostPanel.Children.Contains(adorner) &&
+                        ((StyledElement)adorner).Parent is null)
+                    {
+                        ((ISetLogicalParent)adorner).SetParent(hostPanel);
+                    }
+                }, DispatcherPriority.Loaded);
+            }
+        }
+    }
+
+    private void DetachStandaloneAdorner(Control? adorner)
+    {
+        if (adorner is null)
+        {
+            return;
+        }
+
+        if (_standaloneContentHost is not { } host)
+        {
+            return;
+        }
+
+        host.Children.Remove(adorner);
+        if (host.Children.Count == 0)
+        {
+            DetachChild(host);
+            _standaloneContentHost = null;
+        }
+    }
+
     private void DetachChild(Control? child)
     {
         if (child is null)
@@ -380,12 +463,12 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
                 _badgeAdorner.IsAdornerMode = false;
                 if (BadgeIsVisible)
                 {
-                    AttachChild(_badgeAdorner);
+                    AttachStandaloneAdorner(_badgeAdorner);
                 }
             }
             else if (DecoratedTarget is not null)
             {
-                DetachChild(_badgeAdorner);
+                DetachStandaloneAdorner(_badgeAdorner);
                 _badgeAdorner.IsAdornerMode = true;
                 AttachChild(DecoratedTarget);
             }

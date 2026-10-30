@@ -1,6 +1,7 @@
 using System.Globalization;
-using AtomUI.Animations;
 using AtomUI.Controls;
+using AtomUI.Data;
+using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Media;
 using AtomUI.Reflection;
 using AtomUI.Utils;
@@ -12,15 +13,23 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Rendering;
 
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Vertical, StdPseudoClass.Horizontal)]
-public class SliderTrack : TemplatedControl
+public class SliderTrack : TemplatedControl, ICustomHitTest
 {
+    /// <summary>
+    /// SliderTrack no longer self-draws its rail/track visuals, so it has no draw
+    /// list for the compositor to hit test against. Report the whole bounds as the
+    /// hit target so pointer input still routes through the track exactly as it did
+    /// when the rail was self-drawn.
+    /// </summary>
+    public bool HitTest(Point point) => new Rect(Bounds.Size).Contains(point);
+
     #region 公共属性定义
 
     public static readonly StyledProperty<double> MinimumProperty =
@@ -333,9 +342,9 @@ public class SliderTrack : TemplatedControl
 
     internal SliderMark? GetMarkForPosition(Point point)
     {
-        if (Marks is not null && _renderContextData?.MarkTextRects is not null)
+        if (Marks is not null && _markTextRects is not null)
         {
-            var entries = _renderContextData.MarkTextRects;
+            var entries = _markTextRects;
             for (var i = 0; i < entries.Count; i++)
             {
                 if (entries[i].Item1.Contains(point))
@@ -356,19 +365,23 @@ public class SliderTrack : TemplatedControl
                values.Count >= 2 &&
                !SliderRangeMath.HasDisabledHandle(values.Count, DisabledHandles) &&
                _thumbs.All(thumb => !thumb.Bounds.Contains(point)) &&
-               _renderContextData?.TrackRangeRect.Contains(point) == true;
+               _trackRangeRect.Contains(point);
     }
 
     #endregion
 
     private readonly List<SliderThumb> _thumbs = [];
+    private readonly List<(Border Element, IDisposable Binding)> _trackSegmentElements = [];
     private VectorEventArgs? _deferredThumbDrag;
     private Vector _lastDrag;
-    private RenderContextData? _renderContextData;
+    private Border? _railElement;
+    private Border? _tracksElement;
+    private SliderMarksElement? _marksElement;
+    private Rect _railRect;
+    private Rect _trackRangeRect;
+    private List<(Rect, int, bool, FormattedText)>? _markTextRects;
     private IDisposable? _focusProcessDisposable;
     private Size _markLabelSize;
-    private IPen? _markBorderPen;
-    private IPen? _markBorderActivePen;
 
     static SliderTrack()
     {
@@ -385,15 +398,6 @@ public class SliderTrack : TemplatedControl
             DisabledHandlesProperty,
             OrientationProperty,
             IsRangeModeProperty);
-        AffectsRender<SliderTrack>(TrackBarBrushProperty,
-            TracksBrushProperty,
-            TrackGrooveBrushProperty,
-            IsIncludedProperty,
-            MarkBorderBrushProperty,
-            MarkLabelBrushProperty,
-            ValueProperty,
-            RangeValuesProperty,
-            IsRangeModeProperty);
     }
 
     public SliderTrack()
@@ -407,7 +411,8 @@ public class SliderTrack : TemplatedControl
         var inputManager = AvaloniaLocator.Current.GetService<IInputManager>()!;
         _focusProcessDisposable = inputManager.Process.Subscribe(args =>
         {
-            if (args is RawPointerEventArgs pointerEventArgs)
+            if (args is RawPointerEventArgs pointerEventArgs &&
+                this.TryGetInputPosition(pointerEventArgs, out var position))
             {
                 var eventType = pointerEventArgs.Type;
                 switch (eventType)
@@ -417,7 +422,7 @@ public class SliderTrack : TemplatedControl
                     case RawPointerEventType.MiddleButtonDown:
                     case RawPointerEventType.XButton1Down:
                     case RawPointerEventType.XButton2Down:
-                        HandleGlobalMousePressed(pointerEventArgs.Position);
+                        HandleGlobalMousePressed(position);
                         break;
                 }
             }
@@ -478,6 +483,8 @@ public class SliderTrack : TemplatedControl
             thumb.AdjustDrag(adjust);
         }
 
+        ArrangeTrackElements(arrangeSize, values);
+
         _lastDrag = default;
         return arrangeSize;
     }
@@ -512,31 +519,16 @@ public class SliderTrack : TemplatedControl
         {
             EnsureThumbs();
         }
+        else if (change.Property == IsIncludedProperty)
+        {
+            UpdatePartVisibility();
+            PushMarkRenderInfo(GetRailRect(Bounds.Size), EffectiveRangeValues, Bounds.Size);
+        }
 
         if (IsMarkTextProperty(change.Property))
         {
             RefreshMarkTextMetrics();
         }
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
-
-    public override void Render(DrawingContext context)
-    {
-        PrepareRenderInfo();
-        DrawGroove(context);
-        DrawTrackBars(context);
-        DrawMark(context);
     }
 
     private static IReadOnlyList<double>? CoerceRangeValues(AvaloniaObject sender, IReadOnlyList<double>? values)
@@ -550,6 +542,9 @@ public class SliderTrack : TemplatedControl
 
     private void EnsureThumbs()
     {
+        EnsureTrackElements();
+        SyncTrackSegmentElements();
+
         var handleCount = IsRangeMode ? EffectiveRangeValues.Count : 1;
         while (_thumbs.Count < handleCount)
         {
@@ -577,6 +572,7 @@ public class SliderTrack : TemplatedControl
             IsMotionEnabled = IsMotionEnabled
         };
         thumb.SetTemplatedParent(TemplatedParent ?? this);
+        thumb.Classes.Add(SliderSemanticParts.HandleClass);
         ToolTip.SetShowDelay(thumb, 20);
         thumb.DragDelta += ThumbDragged;
         thumb.DragCompleted += ThumbDragCompleted;
@@ -605,17 +601,109 @@ public class SliderTrack : TemplatedControl
         }
     }
 
-    private void HandleGlobalMousePressed(Point point)
+    private void EnsureTrackElements()
     {
-        if (_renderContextData is null)
+        if (_railElement is not null)
         {
             return;
         }
 
-        var globalOffset = GetGlobalOffset();
-        var trailGlobalBounds = new Rect(globalOffset + _renderContextData.RailRect.Position,
-            _renderContextData.RailRect.Size);
-        if (trailGlobalBounds.Contains(point))
+        _railElement = CreatePartBorder(SliderSemanticParts.RailClass, isVisible: true);
+        BindUtils.RelayBind(this, TrackGrooveBrushProperty, _railElement, Border.BackgroundProperty,
+            BindingMode.OneWay, BindingPriority.Template);
+        LogicalChildren.Add(_railElement);
+        VisualChildren.Add(_railElement);
+
+        _tracksElement = CreatePartBorder(SliderSemanticParts.TracksClass, IsIncluded);
+        BindUtils.RelayBind(this, TracksBrushProperty, _tracksElement, Border.BackgroundProperty,
+            BindingMode.OneWay, BindingPriority.Template);
+        LogicalChildren.Add(_tracksElement);
+        VisualChildren.Add(_tracksElement);
+
+        _marksElement = new SliderMarksElement
+        {
+            IsHitTestVisible = false
+        };
+        _marksElement.SetTemplatedParent(TemplatedParent ?? this);
+        BindUtils.RelayBind(this, MarkBorderBrushProperty, _marksElement,
+            SliderMarksElement.MarkBorderBrushProperty, BindingMode.OneWay, BindingPriority.Template);
+        BindUtils.RelayBind(this, MarkBorderActiveBrushProperty, _marksElement,
+            SliderMarksElement.MarkBorderActiveBrushProperty, BindingMode.OneWay, BindingPriority.Template);
+        BindUtils.RelayBind(this, MarkBackgroundBrushProperty, _marksElement,
+            SliderMarksElement.MarkBackgroundBrushProperty, BindingMode.OneWay, BindingPriority.Template);
+        BindUtils.RelayBind(this, MarkBorderThicknessProperty, _marksElement,
+            SliderMarksElement.MarkBorderThicknessProperty, BindingMode.OneWay, BindingPriority.Template);
+        BindUtils.RelayBind(this, SliderMarkSizeProperty, _marksElement,
+            SliderMarksElement.SliderMarkSizeProperty, BindingMode.OneWay, BindingPriority.Template);
+        LogicalChildren.Add(_marksElement);
+        VisualChildren.Add(_marksElement);
+    }
+
+    private Border CreatePartBorder(string semanticClass, bool isVisible)
+    {
+        var border = new Border
+        {
+            IsHitTestVisible = false,
+            IsVisible        = isVisible
+        };
+        border.SetTemplatedParent(TemplatedParent ?? this);
+        border.Classes.Add(semanticClass);
+        return border;
+    }
+
+    private void SyncTrackSegmentElements()
+    {
+        var values = EffectiveRangeValues;
+        var segmentCount = !IsRangeMode || values.Count < 2 ? 1 : values.Count - 1;
+        while (_trackSegmentElements.Count < segmentCount)
+        {
+            AddTrackSegmentElement();
+        }
+
+        while (_trackSegmentElements.Count > segmentCount)
+        {
+            RemoveTrackSegmentElement();
+        }
+    }
+
+    private void AddTrackSegmentElement()
+    {
+        var segment = CreatePartBorder(SliderSemanticParts.TrackClass, IsIncluded);
+        var binding = BindUtils.RelayBind(this, TrackBarBrushProperty, segment, Border.BackgroundProperty,
+            BindingMode.OneWay, BindingPriority.Template);
+        LogicalChildren.Add(segment);
+        var insertIndex = _marksElement is null ? VisualChildren.Count : VisualChildren.IndexOf(_marksElement);
+        VisualChildren.Insert(insertIndex, segment);
+        _trackSegmentElements.Add((segment, binding));
+    }
+
+    private void RemoveTrackSegmentElement()
+    {
+        var (element, binding) = _trackSegmentElements[^1];
+        _trackSegmentElements.RemoveAt(_trackSegmentElements.Count - 1);
+        LogicalChildren.Remove(element);
+        VisualChildren.Remove(element);
+        element.SetTemplatedParent(null);
+        binding.Dispose();
+    }
+
+    private void UpdatePartVisibility()
+    {
+        var isIncluded = IsIncluded;
+        if (_tracksElement is not null)
+        {
+            _tracksElement.IsVisible = isIncluded;
+        }
+
+        foreach (var (element, _) in _trackSegmentElements)
+        {
+            element.IsVisible = isIncluded;
+        }
+    }
+
+    private void HandleGlobalMousePressed(Point point)
+    {
+        if (_railRect.Contains(point))
         {
             return;
         }
@@ -626,17 +714,6 @@ public class SliderTrack : TemplatedControl
         }
     }
 
-    private Point GetGlobalOffset()
-    {
-        var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel is null)
-        {
-            return default;
-        }
-
-        return this.TranslatePoint(Bounds.Position, topLevel) ?? default;
-    }
-
     private void HandleThumbFocus(SliderThumb sliderThumb, Point point)
     {
         var topLevel = TopLevel.GetTopLevel(this);
@@ -645,10 +722,7 @@ public class SliderTrack : TemplatedControl
             return;
         }
 
-        var offset = GetGlobalOffset();
-        var thumbGOffset = offset + sliderThumb.Bounds.Position;
-        var thumbGBounds = new Rect(thumbGOffset, sliderThumb.Bounds.Size);
-        if (!thumbGBounds.Contains(point) && sliderThumb.IsFocused)
+        if (!sliderThumb.Bounds.Contains(point) && sliderThumb.IsFocused)
         {
             topLevel.FocusManager?.Focus(null);
         }
@@ -838,24 +912,96 @@ public class SliderTrack : TemplatedControl
     {
         CalculateMaxMarkSize(true);
         InvalidateMeasure();
-        InvalidateVisual();
+        PushMarkRenderInfo(GetRailRect(Bounds.Size), EffectiveRangeValues, Bounds.Size);
     }
 
-    private void PrepareRenderInfo()
+    private void ArrangeTrackElements(Size arrangeSize, IReadOnlyList<double> values)
     {
-        var railRect = GetRailRect(Bounds.Size);
-        var values = EffectiveRangeValues;
-        _renderContextData = new RenderContextData
+        if (_railElement is null || _tracksElement is null || _marksElement is null)
         {
-            RailRect = railRect,
-            SegmentRects = CreateSegmentRects(railRect, values),
-            TrackRangeRect = CreateTrackRangeRect(railRect, values)
-        };
-
-        if (Marks?.Count > 0)
-        {
-            PrepareMarkRenderInfo(railRect);
+            return;
         }
+
+        var railRect = GetRailRect(arrangeSize);
+        _railRect = railRect;
+        var segmentRects = CreateSegmentRects(railRect, values);
+        _trackRangeRect = CreateTrackRangeRect(railRect, values);
+
+        var pillRadius = (Orientation == Orientation.Horizontal ? railRect.Height : railRect.Width) / 2;
+        var cornerRadius = new CornerRadius(pillRadius);
+        _railElement.CornerRadius = cornerRadius;
+        _railElement.Arrange(railRect);
+        _tracksElement.CornerRadius = cornerRadius;
+        _tracksElement.Arrange(_trackRangeRect);
+        for (var i = 0; i < _trackSegmentElements.Count; i++)
+        {
+            var segment = _trackSegmentElements[i].Element;
+            segment.CornerRadius = cornerRadius;
+            segment.Arrange(segmentRects[i]);
+        }
+
+        _marksElement.Arrange(new Rect(arrangeSize));
+        PushMarkRenderInfo(railRect, values, arrangeSize);
+    }
+
+    private void PushMarkRenderInfo(Rect railRect, IReadOnlyList<double> values, Size boundsSize)
+    {
+        if (_marksElement is null)
+        {
+            return;
+        }
+
+        if (Marks is null || Marks.Count == 0)
+        {
+            _marksElement.MarkRects     = null;
+            _marksElement.MarkTextRects = null;
+            _markTextRects              = null;
+            _marksElement.InvalidateVisual();
+            return;
+        }
+
+        var markRects     = new List<(Rect, int, bool)>(Marks.Count);
+        var markTextRects = new List<(Rect, int, bool, FormattedText)>(Marks.Count);
+        var thumbSize     = GetThumbSize();
+
+        for (var i = 0; i < Marks.Count; i++)
+        {
+            var mark = Marks[i];
+            var markIncluded = IsMarkIncluded(mark.Value, values);
+            var center = MarkCenterPoint(railRect, mark.Value);
+            var markRect = new Rect(
+                new Point(center.X - SliderMarkSize / 2, center.Y - SliderMarkSize / 2),
+                new Size(SliderMarkSize, SliderMarkSize));
+            markRects.Add((markRect, i, markIncluded));
+
+            Point textPosition;
+            if (Orientation == Orientation.Horizontal)
+            {
+                var textOffsetX = center.X - mark.LabelSize.Width / 2;
+                var textOffsetY = railRect.Center.Y + thumbSize / 4;
+                if (textOffsetX + mark.LabelSize.Width > boundsSize.Width)
+                {
+                    textOffsetX = boundsSize.Width - mark.LabelSize.Width;
+                }
+
+                textPosition = new Point(textOffsetX, textOffsetY);
+            }
+            else
+            {
+                var textOffsetX = railRect.Center.X + thumbSize / 2;
+                var textOffsetY = i == 0
+                    ? markRect.Y - Padding.Bottom
+                    : markRect.Y - mark.LabelSize.Height / 2;
+                textPosition = new Point(textOffsetX, textOffsetY);
+            }
+
+            markTextRects.Add((new Rect(textPosition, mark.LabelSize), i, markIncluded, mark.FormattedText!));
+        }
+
+        _marksElement.MarkRects     = markRects;
+        _marksElement.MarkTextRects = markTextRects;
+        _markTextRects              = markTextRects;
+        _marksElement.InvalidateVisual();
     }
 
     private List<Rect> CreateSegmentRects(Rect railRect, IReadOnlyList<double> values)
@@ -893,13 +1039,15 @@ public class SliderTrack : TemplatedControl
 
     private Rect CreateTrackRangeRect(Rect railRect, IReadOnlyList<double> values)
     {
-        if (!IsRangeMode || values.Count == 0)
+        if (values.Count == 0)
         {
             return default;
         }
 
-        var startRatio = SliderRangeMath.ValueToRatio(values[0], Minimum, Maximum);
-        var endRatio = SliderRangeMath.ValueToRatio(values[^1], Minimum, Maximum);
+        var startValue = IsRangeMode ? values[0] : Minimum;
+        var endValue   = values[^1];
+        var startRatio = SliderRangeMath.ValueToRatio(startValue, Minimum, Maximum);
+        var endRatio   = SliderRangeMath.ValueToRatio(endValue, Minimum, Maximum);
         if (IsDirectionReversed)
         {
             startRatio = 1 - startRatio;
@@ -907,53 +1055,6 @@ public class SliderTrack : TemplatedControl
         }
 
         return SliderRangeMath.CreateSegmentRect(railRect, Orientation, startRatio, endRatio);
-    }
-
-    private void PrepareMarkRenderInfo(Rect railRect)
-    {
-        if (Marks is null || _renderContextData is null)
-        {
-            return;
-        }
-
-        _renderContextData.MarkRects = new List<(Rect, int, bool)>(Marks.Count);
-        _renderContextData.MarkTextRects = new List<(Rect, int, bool, FormattedText)>(Marks.Count);
-        var thumbSize = GetThumbSize();
-        var rangeValues = EffectiveRangeValues;
-
-        for (var i = 0; i < Marks.Count; i++)
-        {
-            var mark = Marks[i];
-            var markIncluded = IsMarkIncluded(mark.Value, rangeValues);
-            var center = MarkCenterPoint(railRect, mark.Value);
-            var markRect = new Rect(
-                new Point(center.X - SliderMarkSize / 2, center.Y - SliderMarkSize / 2),
-                new Size(SliderMarkSize, SliderMarkSize));
-            _renderContextData.MarkRects.Add((markRect, i, markIncluded));
-
-            Point textPosition;
-            if (Orientation == Orientation.Horizontal)
-            {
-                var textOffsetX = center.X - mark.LabelSize.Width / 2;
-                var textOffsetY = railRect.Center.Y + thumbSize / 4;
-                if (textOffsetX + mark.LabelSize.Width > Bounds.Width)
-                {
-                    textOffsetX = Bounds.Width - mark.LabelSize.Width;
-                }
-
-                textPosition = new Point(textOffsetX, textOffsetY);
-            }
-            else
-            {
-                var textOffsetX = railRect.Center.X + thumbSize / 2;
-                var textOffsetY = i == 0
-                    ? markRect.Y - Padding.Bottom
-                    : markRect.Y - mark.LabelSize.Height / 2;
-                textPosition = new Point(textOffsetX, textOffsetY);
-            }
-
-            _renderContextData.MarkTextRects.Add((new Rect(textPosition, mark.LabelSize), i, markIncluded, mark.FormattedText!));
-        }
     }
 
     private Point MarkCenterPoint(Rect railRect, double value)
@@ -987,73 +1088,5 @@ public class SliderTrack : TemplatedControl
         return values.Count > 0 &&
                MathUtils.GreaterThanOrClose(value, values[0]) &&
                MathUtils.LessThanOrClose(value, values[^1]);
-    }
-
-    private void DrawGroove(DrawingContext context)
-    {
-        context.DrawPilledRect(TrackGrooveBrush, null, _renderContextData!.RailRect, Orientation);
-    }
-
-    private void DrawMark(DrawingContext context)
-    {
-        if (_renderContextData?.MarkRects is not null)
-        {
-            foreach (var markRectEntry in _renderContextData.MarkRects)
-            {
-                var centerPos = markRectEntry.Item1.Center;
-                var radius = SliderMarkSize / 2;
-                if (markRectEntry.Item3)
-                {
-                    PenUtils.TryModifyOrCreate(ref _markBorderActivePen,
-                        MarkBorderActiveBrush,
-                        MarkBorderThickness.Left);
-                    context.DrawEllipse(MarkBackgroundBrush, _markBorderActivePen, centerPos, radius, radius);
-                }
-                else
-                {
-                    PenUtils.TryModifyOrCreate(ref _markBorderPen,
-                        MarkBorderBrush,
-                        MarkBorderThickness.Left);
-                    context.DrawEllipse(MarkBackgroundBrush, _markBorderPen, centerPos, radius, radius);
-                }
-            }
-        }
-
-        if (_renderContextData?.MarkTextRects is not null)
-        {
-            foreach (var markTextRectEntry in _renderContextData.MarkTextRects)
-            {
-                context.DrawText(markTextRectEntry.Item4, markTextRectEntry.Item1.Position);
-            }
-        }
-    }
-
-    private void DrawTrackBars(DrawingContext context)
-    {
-        if (!IsIncluded || _renderContextData is null)
-        {
-            return;
-        }
-
-        if (TracksBrush is not null &&
-            _renderContextData.TrackRangeRect.Width > 0 &&
-            _renderContextData.TrackRangeRect.Height > 0)
-        {
-            context.DrawPilledRect(TracksBrush, null, _renderContextData.TrackRangeRect, Orientation);
-        }
-
-        foreach (var segmentRect in _renderContextData.SegmentRects)
-        {
-            context.DrawPilledRect(TrackBarBrush, null, segmentRect, Orientation);
-        }
-    }
-
-    private class RenderContextData
-    {
-        public Rect RailRect { get; set; }
-        public Rect TrackRangeRect { get; set; }
-        public List<Rect> SegmentRects { get; set; } = [];
-        public List<(Rect, int, bool)>? MarkRects { get; set; }
-        public List<(Rect, int, bool, FormattedText)>? MarkTextRects { get; set; }
     }
 }

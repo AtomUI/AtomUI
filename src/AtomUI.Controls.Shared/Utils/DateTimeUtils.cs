@@ -42,6 +42,11 @@ internal static class DateTimeUtils
         var needMonthSweep   = ContainsToken(format, 'M');
         var needWeekdaySweep = ContainsToken(format, 'd', minRepeat: 3);
         var needAmPmSweep    = ContainsToken(format, 't');
+        // Formatting all candidate dates preserves culture/calendar behavior. After replacing
+        // digits, identical strings have identical text metrics and need shaping only once.
+        var measuredTexts = needMonthSweep || needWeekdaySweep
+            ? new HashSet<string>(StringComparer.Ordinal)
+            : null;
 
         var maxWidth  = 0d;
         var maxHeight = 0d;
@@ -69,6 +74,10 @@ internal static class DateTimeUtils
                     var sample = new DateTime(date.Year, date.Month, date.Day, hour, 58, 58);
                     var text   = formatInfo != null ? sample.ToString(format, formatInfo) : sample.ToString(format);
                     text = ReplaceDigits(text, widestDigit);
+                    if (measuredTexts is not null && !measuredTexts.Add(text))
+                    {
+                        continue;
+                    }
                     var size = TextUtils.CalculateTextSize(text, fontSize, fontFamily, fontStyle, fontWeight);
                     if (size.Width > maxWidth)
                     {

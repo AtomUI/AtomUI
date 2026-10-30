@@ -8,8 +8,9 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:TimePickerPresenter">
                 <Border>
-                    <DockPanel Name="PART_MainLayout" LastChildFill="True">
+                    <DockPanel Name="PART_MainLayout" LastChildFill="True" Classes.semantic-popup-container="True">
                         <atom:PixelAlignedBorder Name="PART_ButtonsFrame"
+                                                 Classes.semantic-popup-footer="True"
                                                  BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource BorderThicknessFilterConverter}}"
                                                  IsVisible="{TemplateBinding IsButtonsPanelVisible}"
                                                  DockPanel.Dock="Bottom">
@@ -17,12 +18,15 @@
                                 <atom:Button
                                     Name="PART_NowButton"
                                     ButtonType="Link"
+                                    IsVisible="{TemplateBinding IsShowNow}"
                                     HorizontalAlignment="Left"
                                     SizeType="Small"
                                     Content="{atom:TimePickerLangResource Now}" />
                                 <atom:Button
                                     Name="PART_ConfirmButton"
                                     ButtonType="Primary"
+                                    IsVisible="{TemplateBinding IsNeedConfirm}"
+                                    IsEnabled="{TemplateBinding CanConfirm}"
                                     HorizontalAlignment="Right"
                                     SizeType="Small"
                                     Content="{atom:CommonLangResource Ok}" />
@@ -30,10 +34,12 @@
                         </atom:PixelAlignedBorder>
                         <atom:TimeView Name="PART_TimeView"
                                        IsShowHeader="False"
+                                       SelectorRowCount="8"
                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                        MinuteIncrement="{TemplateBinding MinuteIncrement}"
                                        SecondIncrement="{TemplateBinding SecondIncrement}"
-                                       SelectedTime="{TemplateBinding SelectedTime}"
+                                       SelectedTime="{TemplateBinding TempSelectedTime}"
+                                       IsChangeOnScroll="{TemplateBinding IsChangeOnScroll}"
                                        ClockIdentifier="{TemplateBinding ClockIdentifier}"/>
                     </DockPanel>
                 </Border>
@@ -41,6 +47,10 @@
             </ControlTemplate>
         </Setter>
         
+        <Style Selector="^[IsNeedConfirm=False] /template/ atom|Button#PART_NowButton">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+
         <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_ButtonsFrame">
             <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />

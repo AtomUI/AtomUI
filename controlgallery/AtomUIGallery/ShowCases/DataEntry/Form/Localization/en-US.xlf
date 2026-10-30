@@ -1266,6 +1266,91 @@
         <source>Validation</source>
       </segment>
     </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with form content area layout, styling and control container related styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraDescription">
+      <segment>
+        <source>Extra prompt container element with spacing, color, and typography styles for supplementary text</source>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraPasswordMustContainLettersAndNumbers">
+      <segment>
+        <source>Password must contain letters and numbers.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticHelpDescription">
+      <segment>
+        <source>Help container element with spacing, motion, and presentation styles for help and validation areas</source>
+      </segment>
+    </unit>
+    <unit id="SemanticHelpItemDescription">
+      <segment>
+        <source>Single help message item with typography styles for prompt, error, and warning text</source>
+      </segment>
+    </unit>
+    <unit id="SemanticHelpUse4To16Characters">
+      <segment>
+        <source>Use 4 to 16 characters.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label element with flex layout, overflow hidden, whitespace nowrap, text alignment, vertical alignment, plus label color, font size, height, required marks and other label display styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticMessageUseAtLeast8Characters">
+      <segment>
+        <source>Use at least 8 characters.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with form item margin-bottom, vertical-align, transitions, hidden states, error/warning states and other basic form item container styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleEmailPlaceholder">
+      <segment>
+        <source>Please enter email</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleMessagePleaseEnterEmail">
+      <segment>
+        <source>Please enter email!</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleMessagePleaseEnterUsername">
+      <segment>
+        <source>Please enter username!</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleResetButtonText">
+      <segment>
+        <source>reset</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleSubmitButtonText">
+      <segment>
+        <source>Submit</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStyleUsernamePlaceholder">
+      <segment>
+        <source>Please enter username</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStylingDescription">
+      <segment>
+        <source>You can customize the semantic style of Form by passing objects/functions through `classNames` and `styles`.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticStylingTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
     <unit id="TimeRelatedControlsDescription">
       <segment>
         <source>The value of time-related components is a dayjs object, which we need to pre-process it before we submit to server.</source>

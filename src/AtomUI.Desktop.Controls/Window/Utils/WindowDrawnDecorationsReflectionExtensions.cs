@@ -8,14 +8,10 @@ namespace AtomUI.Desktop.Controls;
 
 internal static class WindowDrawnDecorationsReflectionExtensions
 {
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(TopLevel))]
     private static readonly Lazy<FieldInfo?> TopLevelHostFieldInfo = new(() =>
         typeof(TopLevel).GetField("_topLevelHost", BindingFlags.Instance | BindingFlags.NonPublic));
 
-    [DynamicDependency(
-        DynamicallyAccessedMemberTypes.NonPublicFields,
-        "Avalonia.Controls.TopLevelHost",
-        "Avalonia.Controls")]
+    [DynamicDependency("_decorations", "Avalonia.Controls.TopLevelHost", "Avalonia.Controls")]
     private static readonly Lazy<FieldInfo?> DecorationsFieldInfo = new(() =>
         Type.GetType("Avalonia.Controls.TopLevelHost, Avalonia.Controls")?.GetField(
             "_decorations",

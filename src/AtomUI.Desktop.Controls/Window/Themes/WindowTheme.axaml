@@ -49,7 +49,6 @@
                                         <Panel Name="TitleBarPanel" IsVisible="{TemplateBinding IsTitleBarVisible}"
                                                DockPanel.Dock="Top">
                                             <ContentPresenter Name="TitleBarFrameLayer"
-                                                              Background="{TemplateBinding TitleBarFrameBackground}"
                                                               Content="{TemplateBinding TitleBarFrameLayer}"
                                                               ContentTemplate="{TemplateBinding TitleBarFrameLayerTemplate}"
                                                               Opacity="{TemplateBinding TitleBarFrameLayerOpacity}"
@@ -119,7 +118,6 @@
                                 <Panel Name="TitleBarPanel" IsVisible="{TemplateBinding IsTitleBarVisible}"
                                        DockPanel.Dock="Top">
                                     <ContentPresenter Name="TitleBarFrameLayer"
-                                                      Background="{TemplateBinding TitleBarFrameBackground}"
                                                       Content="{TemplateBinding TitleBarFrameLayer}"
                                                       ContentTemplate="{TemplateBinding TitleBarFrameLayerTemplate}"
                                                       Opacity="{TemplateBinding TitleBarFrameLayerOpacity}"
@@ -169,7 +167,9 @@
                             CornerRadius="{TemplateBinding CornerRadius}">
                             <VisualLayerManager Name="PART_VisualLayerManager"
                                                 Padding="{TemplateBinding OffScreenMargin, Mode=OneWay}">
-                                <Panel Margin="{Binding $parent[atom:Window].EffectiveContentFrameMargin}">
+                                <Panel Name="PART_ContentCacheHost"
+                                       Margin="{Binding $parent[atom:Window].EffectiveContentFrameMargin}">
+                                    <atom:WindowContentBackdrop Name="PART_ContentBackdrop" IsVisible="False" />
                                     <ContentPresenter Name="ContentFrameLayer"
                                                       Background="{TemplateBinding ContentFrameBackground}"
                                                       CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource WindowContentBottomCornerRadiusFilter}}"

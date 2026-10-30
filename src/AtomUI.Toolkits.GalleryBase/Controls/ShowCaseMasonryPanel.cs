@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
@@ -23,6 +22,8 @@ public class ShowCaseMasonryPanel : Panel
     private double _measuredEffectiveWidth;
     private int _measuredChildCount;
     private bool _hasMeasuredLayout;
+    private double _previousAvailableWidth = double.NaN;
+    private double? _arrangedEffectiveWidth;
     private readonly Dictionary<Control, int> _stableColumns = new(ReferenceEqualityComparer.Instance);
     private int _stableColumnCount;
     private bool _hasStableAssignments;
@@ -62,7 +63,16 @@ public class ShowCaseMasonryPanel : Panel
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var layout = CalculateLayout(availableSize.Width, true);
+        if (_previousAvailableWidth != availableSize.Width)
+        {
+            _arrangedEffectiveWidth = null;
+        }
+        _previousAvailableWidth = availableSize.Width;
+        // Ancestor layout rounding can give us a different final width even when the
+        // measure constraint is unchanged. Reuse that width on the follow-up measure
+        // so arrange-time child measurement does not invalidate us on every pass.
+        var effectiveWidth = _arrangedEffectiveWidth ?? ResolveAvailableWidth(availableSize.Width);
+        var layout = CalculateLayout(effectiveWidth, true);
         _measuredLayout = layout;
         _measuredEffectiveWidth = layout.Width;
         _measuredChildCount = Children.Count;
@@ -74,6 +84,7 @@ public class ShowCaseMasonryPanel : Panel
     protected override Size ArrangeOverride(Size finalSize)
     {
         var effectiveWidth = ResolveAvailableWidth(finalSize.Width);
+        _arrangedEffectiveWidth = effectiveWidth;
         var canReuseMeasuredLayout = _hasMeasuredLayout &&
                                       _measuredChildCount == Children.Count &&
                                       AreClose(_measuredEffectiveWidth, effectiveWidth);
@@ -101,6 +112,8 @@ public class ShowCaseMasonryPanel : Panel
     {
         _hasMeasuredLayout = false;
         _measuredLayout = null;
+        _previousAvailableWidth = double.NaN;
+        _arrangedEffectiveWidth = null;
         ClearStableAssignments();
         base.OnDetachedFromVisualTree(e);
     }

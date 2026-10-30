@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup><AssemblyName>Fixture.BinaryAdapter</AssemblyName></PropertyGroup>
+    <ItemGroup><ProjectReference Include="../../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" /></ItemGroup>
+</Project>

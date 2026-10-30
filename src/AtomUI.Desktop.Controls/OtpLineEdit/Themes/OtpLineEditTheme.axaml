@@ -12,6 +12,7 @@
                                 Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
                         <ItemsControl
                             Name="PART_CellsHost"
+                            Classes.semantic-cell-list="True"
                             ItemsSource="{TemplateBinding CellItems}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -22,8 +23,10 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="atom:OtpLineEditCellInfo">
                                     <StackPanel Orientation="Horizontal"
-                                                VerticalAlignment="Center">
+                                                VerticalAlignment="Center"
+                                                Classes.semantic-scope-cell="True">
                                         <atom:OtpLineEditCell
+                                            Classes.semantic-cell="True"
                                             DisplayText="{Binding DisplayText}"
                                             PlaceholderText="{Binding PlaceholderText}"
                                             IsActive="{Binding IsActive}"
@@ -55,14 +58,23 @@
                                                 IsCellActive="{Binding IsActive}"
                                                 Text="{Binding DisplayText}" />
                                         </atom:OtpLineEditCell>
-                                        <ContentControl
-                                            Name="PART_SeparatorPresenter"
-                                            Margin="4,0"
+                                        <!--
+                                            分隔符字形由 OtpSeparatorPresenter 按当前
+                                            字体的 glyph metrics 实测墨迹盒自动居中，
+                                            任意字符、字体、字号都无需人工校准。容器
+                                            与 cell 中心对齐（测试锁定）。
+                                        -->
+                                        <Border
+                                            Margin="4,0,0,0"
                                             VerticalAlignment="Center"
-                                            VerticalContentAlignment="Center"
-                                            Content="{Binding Separator}"
-                                            ContentTemplate="{Binding SeparatorTemplate}"
-                                            IsVisible="{Binding IsSeparatorVisible}" />
+                                            Classes.semantic-separator="True"
+                                            IsVisible="{Binding IsSeparatorVisible}">
+                                            <atom:OtpSeparatorPresenter
+                                                Name="PART_SeparatorPresenter"
+                                                VerticalContentAlignment="Center"
+                                                Content="{Binding Separator}"
+                                                ContentTemplate="{Binding SeparatorTemplate}" />
+                                        </Border>
                                     </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

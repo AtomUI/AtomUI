@@ -15,6 +15,21 @@ namespace AtomUI.Core.Tests.Theme;
 public class ThemeTokenResourceProviderTests
 {
     [Fact]
+    public void Typed_Own_Keys_Validate_Owner_Without_Removing_Boxed_Enum_Support()
+    {
+        var provider = new ThemeTokenResourceProvider(Compile());
+        var correct = ControlTokenIdentity.ForControl(typeof(ButtonThemeTestControl), "AtomUI", CompilerButtonToken.ID);
+        var wrong = ControlTokenIdentity.ForControl(typeof(DerivedButtonThemeTestControl), "AtomUI", CompilerButtonToken.ID);
+        provider.TryGetResource(ControlTokenResourceKey.Own(correct, CompilerButtonTokenKind.Height), null, out var own).ShouldBeTrue();
+        own.ShouldBe(32d);
+        provider.TryGetResource(CompilerButtonTokenKind.Height, null, out var boxed).ShouldBeTrue();
+        boxed.ShouldBe(32d);
+        Should.Throw<InvalidOperationException>(() => provider.TryGetResource(ControlTokenResourceKey.Own(wrong, CompilerButtonTokenKind.Height), null, out _));
+        Should.Throw<InvalidOperationException>(() => provider.TryGetResource(ControlTokenResourceKey.Global(wrong, SharedTokenKind.ColorPrimary), null, out _));
+        Should.Throw<InvalidOperationException>(() => provider.TryGetResource(ControlTokenResourceKey.Own(correct, BrushTokenKind.Brush), null, out _));
+    }
+
+    [Fact]
     public void ControlShared_Key_Resolves_Private_Value_Without_Changing_Global()
     {
         var snapshot = CompileButtonPrimary("#00b96b");
@@ -22,7 +37,7 @@ public class ThemeTokenResourceProviderTests
 
         provider.TryGetResource(SharedTokenKind.ColorPrimary, null, out var global).ShouldBeTrue();
         provider.TryGetResource(
-            BoundKey(snapshot, "AtomUI", CompilerButtonToken.ID, SharedTokenKind.ColorPrimary),
+            SharedKey("AtomUI", CompilerButtonToken.ID, SharedTokenKind.ColorPrimary),
             null,
             out var control).ShouldBeTrue();
 
@@ -37,7 +52,7 @@ public class ThemeTokenResourceProviderTests
 
         provider.TryGetResource(SharedTokenKind.ColorPrimary, null, out var global).ShouldBeTrue();
         provider.TryGetResource(
-            BoundKey(snapshot, "AtomUI", CompilerButtonToken.ID, SharedTokenKind.ColorPrimary),
+            SharedKey("AtomUI", CompilerButtonToken.ID, SharedTokenKind.ColorPrimary),
             null,
             out var control).ShouldBeTrue();
 
@@ -51,11 +66,11 @@ public class ThemeTokenResourceProviderTests
         var provider = new ThemeTokenResourceProvider(snapshot);
 
         provider.TryGetResource(
-            BoundKey(snapshot, "First", CompilerButtonToken.ID, SharedTokenKind.ColorPrimary),
+            SharedKey("First", CompilerButtonToken.ID, SharedTokenKind.ColorPrimary),
             null,
             out var firstValue).ShouldBeTrue();
         provider.TryGetResource(
-            BoundKey(snapshot, "Second", CompilerButtonToken.ID, SharedTokenKind.ColorPrimary),
+            SharedKey("Second", CompilerButtonToken.ID, SharedTokenKind.ColorPrimary),
             null,
             out var secondValue).ShouldBeTrue();
 
@@ -72,38 +87,28 @@ public class ThemeTokenResourceProviderTests
         foreach (var (parentControl, childControl) in CrossControlPairs)
         {
             provider.TryGetResource(
-                BoundKey(snapshot, "AtomUI", parentControl, SharedTokenKind.ColorPrimary),
+                SharedKey("AtomUI", parentControl, SharedTokenKind.ColorPrimary),
                 null,
                 out var parentPrimary).ShouldBeTrue();
             provider.TryGetResource(
-                BoundKey(snapshot, "AtomUI", childControl, SharedTokenKind.ColorPrimary),
+                SharedKey("AtomUI", childControl, SharedTokenKind.ColorPrimary),
                 null,
                 out var childPrimary).ShouldBeTrue();
 
             parentPrimary.ShouldNotBe(childPrimary);
 
             provider.TryGetResource(
-                BoundKey(snapshot, "AtomUI", parentControl, SharedTokenKind.ColorInfo),
+                SharedKey("AtomUI", parentControl, SharedTokenKind.ColorInfo),
                 null,
                 out var parentInfo).ShouldBeTrue();
             provider.TryGetResource(
-                BoundKey(snapshot, "AtomUI", childControl, SharedTokenKind.ColorInfo),
+                SharedKey("AtomUI", childControl, SharedTokenKind.ColorInfo),
                 null,
                 out var childInfo).ShouldBeTrue();
 
             parentInfo.ShouldBeSameAs(globalInfo);
             childInfo.ShouldBeSameAs(globalInfo);
         }
-    }
-
-    [Fact]
-    public void ControlShared_Key_Is_Boxed_Once_Per_Registry_Slot()
-    {
-        var snapshot = Compile();
-        var first = BoundKey(snapshot, "AtomUI", CompilerButtonToken.ID, SharedTokenKind.ColorPrimary);
-        var second = BoundKey(snapshot, "AtomUI", CompilerButtonToken.ID, SharedTokenKind.ColorPrimary);
-
-        first.ShouldBeSameAs(second);
     }
 
     [Fact]
@@ -353,13 +358,12 @@ public class ThemeTokenResourceProviderTests
         (CompilerDataGridToken.ID, CompilerButtonToken.ID)
     ];
 
-    private static object BoundKey(
-        ThemeSnapshot snapshot,
+    private static object SharedKey(
         string catalog,
         string id,
         SharedTokenKind kind)
     {
-        return snapshot.Registry.GetControlSharedResourceKey(
+        return ControlTokenResourceKey.Global(
             new AtomUI.Theme.Schema.ControlTokenIdentity(catalog, id),
             kind);
     }

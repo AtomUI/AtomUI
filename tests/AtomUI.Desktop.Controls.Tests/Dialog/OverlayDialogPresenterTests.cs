@@ -1,6 +1,7 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.Tests.Window;
+using AtomUI.Desktop.Controls.Tests.Motion;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -17,6 +18,7 @@ using BindingFlags = System.Reflection.BindingFlags;
 
 namespace AtomUI.Desktop.Controls.Tests.Dialog;
 
+[Collection(DialogLifecycleTestCollection.Name)]
 public class OverlayDialogPresenterTests
 {
     static OverlayDialogPresenterTests()
@@ -164,7 +166,7 @@ public class OverlayDialogPresenterTests
     }
 
     [Fact]
-    public void ShowAsync_Initializes_Motion_Actors_Before_The_First_Loaded_Frame()
+    public void ShowAsync_Prepares_The_Surface_And_Mask_Before_The_First_Loaded_Frame()
     {
         RunOnUIThread(() =>
         {
@@ -195,10 +197,11 @@ public class OverlayDialogPresenterTests
                 Dispatcher.UIThread.RunJobs();
 
                 var showTask = presenter.ShowAsync(CancellationToken.None).AsTask();
-                var actors = presenter.GetVisualDescendants().OfType<MotionActor>().ToArray();
+                var actors = presenter.GetVisualDescendants().OfType<Control>().ToArray();
 
-                actors.Single(actor => actor.Name == "PART_SurfaceMotionActor").Opacity.ShouldBe(0);
-                actors.Single(actor => actor.Name == "PART_MaskMotionActor").Opacity.ShouldBe(0);
+                actors.Single(actor => actor.Name == "PART_SurfaceMotionRoot").Opacity.ShouldBe(0);
+                var maskHost = actors.Single(actor => actor.Name == "PART_MaskHost").ShouldBeOfType<ContentControl>();
+                maskHost.Content.ShouldBeOfType<OverlayDialogMask>().Opacity.ShouldBe(0);
 
                 WaitWithDispatcherPump(showTask);
             }
@@ -244,8 +247,8 @@ public class OverlayDialogPresenterTests
 
                 var showTask = presenter.ShowAsync(CancellationToken.None).AsTask();
                 var maskActor = presenter.GetVisualDescendants()
-                                         .OfType<MotionActor>()
-                                         .Single(actor => actor.Name == "PART_MaskMotionActor");
+                                         .OfType<Control>()
+                                         .Single(actor => actor.Name == "PART_MaskHost");
 
                 maskActor.IsVisible.ShouldBeFalse();
                 WaitWithDispatcherPump(showTask);
@@ -410,6 +413,107 @@ public class OverlayDialogPresenterTests
     }
 
     [Fact]
+    public void Modal_With_Stretch_Steps_Keeps_Its_Natural_Size_In_Different_Owner_Widths()
+    {
+        RunOnUIThread(() =>
+        {
+            double? naturalWidth = null;
+            foreach (var ownerWidth in new[] { 900d, 1400d })
+            {
+                var placementTarget = new Border { Width = 100, Height = 40 };
+                var window = new AtomUI.Desktop.Controls.Window
+                {
+                    Width = ownerWidth,
+                    Height = 650,
+                    Content = placementTarget
+                };
+                var steps = new AtomUI.Desktop.Controls.Steps
+                {
+                    Margin = new Thickness(72, 0),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    SizeType = AtomUI.SizeType.Small,
+                    IsItemClickable = false
+                };
+                for (var index = 1; index <= 4; index++)
+                {
+                    steps.Items.Add(new StepsItem { Header = $"第{index}步" });
+                }
+                var content = new UserControl
+                {
+                    Content = new Avalonia.Controls.Grid
+                    {
+                        RowDefinitions = new RowDefinitions("Auto,Auto,*,Auto"),
+                        RowSpacing = 12,
+                        Children = { steps }
+                    }
+                };
+                using var cancellation = new CancellationTokenSource();
+                Task<object?>? dialogTask = null;
+                try
+                {
+                    window.Show();
+                    Dispatcher.UIThread.RunJobs();
+                    dialogTask = AtomUI.Desktop.Controls.Dialog.ShowDialogModalAsync(
+                        content,
+                        options: new DialogOptions
+                        {
+                            PlacementTarget = placementTarget,
+                            Title = "新建",
+                            IsDragMovable = true,
+                            IsMaskClosable = false,
+                            DialogHostType = DialogHostType.Overlay,
+                            HorizontalStartupLocation = DialogHorizontalAnchor.Center,
+                            VerticalStartupLocation = DialogVerticalAnchor.Center,
+                            IsMotionEnabled = false
+                        },
+                        cancellationToken: cancellation.Token);
+                    Dispatcher.UIThread.RunJobs();
+                    AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+                    window.UpdateLayout();
+                    dialogTask.IsCompleted.ShouldBeFalse();
+
+                    var surface = content.GetVisualAncestors().OfType<DialogSurface>().Single();
+                    var surfaceBounds = GetSurfaceBodyBounds(surface, window);
+                    surfaceBounds.Width.ShouldBeGreaterThan(400);
+                    surfaceBounds.Width.ShouldBeLessThan(800);
+                    if (naturalWidth is { } previousWidth)
+                    {
+                        surfaceBounds.Width.ShouldBe(previousWidth, 0.01);
+                    }
+                    naturalWidth = surfaceBounds.Width;
+                    surfaceBounds.Center.X.ShouldBe(window.ClientSize.Width / 2, 1);
+                    surfaceBounds.Center.Y.ShouldBe(window.ClientSize.Height / 2, 1);
+                    surface.GetVisualDescendants().OfType<OverlayDialogHeader>().Single().Title.ShouldBe("新建");
+
+                    var mask = window.GetVisualDescendants().OfType<OverlayDialogMask>().Single();
+                    mask.Bounds.Size.ShouldBe(window.ClientSize);
+                    steps.HorizontalAlignment.ShouldBe(HorizontalAlignment.Stretch);
+                    steps.Items.Cast<StepsItem>().ShouldAllBe(item => item.Bounds.Width > 0);
+                    foreach (var item in steps.Items.Cast<StepsItem>().Take(3))
+                    {
+                        var connector = item.GetVisualDescendants().OfType<PixelAlignedBorder>()
+                                            .Single(control => control.Name == "Connector");
+                        connector.IsVisible.ShouldBeTrue();
+                        connector.Bounds.Width.ShouldBeGreaterThan(connector.Bounds.Height);
+                        connector.Background.ShouldNotBeNull();
+                    }
+                }
+                finally
+                {
+                    cancellation.Cancel();
+                    if (dialogTask is not null)
+                    {
+                        PumpUntil(() => dialogTask.IsCompleted);
+                        dialogTask.IsCanceled.ShouldBeTrue();
+                    }
+                    window.Close();
+                    Dispatcher.UIThread.RunJobs();
+                }
+            }
+        });
+    }
+
+    [Fact]
     public void Open_Presenter_Tracks_Dialog_Size_Constraints()
     {
         RunOnUIThread(() =>
@@ -508,7 +612,7 @@ public class OverlayDialogPresenterTests
     }
 
     [Fact]
-    public void Runtime_Minimum_Clamp_Commits_A_Natural_Axis_As_Actual_Size()
+    public void Runtime_Minimum_Clamp_Preserves_The_Natural_Axis()
     {
         RunOnUIThread(() =>
         {
@@ -532,12 +636,13 @@ public class OverlayDialogPresenterTests
                 Dispatcher.UIThread.RunJobs();
 
                 fixture.Presenter.Surface.Bounds.Width.ShouldBe(clampedWidth);
-                fixture.Presenter.Surface.Width.ShouldBe(clampedWidth);
+                fixture.Presenter.Surface.Width.ShouldBe(double.NaN);
 
                 fixture.Dialog.HostMinWidth = 0;
                 Dispatcher.UIThread.RunJobs();
 
-                fixture.Presenter.Surface.Bounds.Width.ShouldBe(clampedWidth);
+                fixture.Presenter.Surface.Bounds.Width.ShouldBe(naturalWidth);
+                fixture.Presenter.Surface.Width.ShouldBe(double.NaN);
             }
             finally
             {
@@ -724,13 +829,14 @@ public class OverlayDialogPresenterTests
                 IsMotionEnabled = false,
                 IsResizable = true,
                 IsMaximizable = true,
+                Content = new Border { Width = 180, Height = 70 },
                 HostWidth = 320,
-                HostHeight = 220
+                HostHeight = double.NaN
             });
 
             try
             {
-                ResizeSurface(fixture, ResizeHandleLocation.SouthEast, new Vector(45, 35));
+                ResizeSurface(fixture, ResizeHandleLocation.East, new Vector(45, 0));
                 var resizedBounds = GetSurfaceBodyBounds(fixture.Presenter.Surface, fixture.Presenter);
                 var maximizeButton = fixture.Presenter.Surface.Header.ShouldNotBeNull()
                                             .GetVisualDescendants()
@@ -743,6 +849,8 @@ public class OverlayDialogPresenterTests
                 Dispatcher.UIThread.RunJobs();
 
                 GetSurfaceBodyBounds(fixture.Presenter.Surface, fixture.Presenter).ShouldBe(resizedBounds);
+                fixture.Presenter.Surface.Width.ShouldBe(resizedBounds.Width);
+                fixture.Presenter.Surface.Height.ShouldBe(double.NaN);
             }
             finally
             {
@@ -805,10 +913,11 @@ public class OverlayDialogPresenterTests
     }
 
     [Fact]
-    public void CloseAsync_During_Opening_Waits_For_Opening_To_Settle_Before_Closing_Motion()
+    public void CloseAsync_During_Opening_Retargets_The_Current_Frame()
     {
         RunOnUIThread(() =>
         {
+            using var clock = new AtomUI.Desktop.Controls.Tests.Motion.ManualMotionClock();
             var placementTarget = new Border { Width = 100, Height = 40 };
             var root = new ScopeAwareOverlayLayerPanel
             {
@@ -837,26 +946,30 @@ public class OverlayDialogPresenterTests
                 Dispatcher.UIThread.RunJobs();
                 var showTask = presenter.ShowAsync(CancellationToken.None).AsTask();
                 var surfaceActor = presenter.GetVisualDescendants()
-                                            .OfType<MotionActor>()
-                                            .Single(actor => actor.Name == "PART_SurfaceMotionActor");
-                var motionStartCount = 0;
-                bool? showCompletedWhenClosingStarted = null;
-                surfaceActor.PreStart += (_, _) =>
-                {
-                    motionStartCount++;
-                    if (motionStartCount == 2)
-                    {
-                        showCompletedWhenClosingStarted = showTask.IsCompleted;
-                    }
-                };
+                                            .OfType<Control>()
+                                            .Single(actor => actor.Name == "PART_SurfaceMotionRoot");
 
                 Dispatcher.UIThread.RunJobs();
-                motionStartCount.ShouldBe(1);
-
+                window.UpdateLayout();
+                clock.Step(0);
+                Dispatcher.UIThread.RunJobs();
+                clock.Step(150);
+                Dispatcher.UIThread.RunJobs();
+                var opacity = surfaceActor.Opacity;
+                var transform = MotionTransformProbe.Matrix(surfaceActor);
                 var closeTask = presenter.CloseAsync().AsTask();
+                PumpUntil(() => showTask.IsCompleted);
+
+                showTask.IsCompleted.ShouldBeTrue();
+                closeTask.IsCompleted.ShouldBeFalse();
+                surfaceActor.Opacity.ShouldBe(opacity, .001);
+                MotionTransformProbe.Matrix(surfaceActor).ShouldBe(transform);
+                clock.Step(150);
+                Dispatcher.UIThread.RunJobs();
+                clock.Step(300);
+                Dispatcher.UIThread.RunJobs();
                 WaitWithDispatcherPump(closeTask);
 
-                showCompletedWhenClosingStarted.ShouldBe(true);
                 WaitWithDispatcherPump(presenter.DisposeAsync().AsTask());
             }
             finally
@@ -984,8 +1097,8 @@ public class OverlayDialogPresenterTests
             try
             {
                 var maskActor = fixture.Presenter.GetVisualDescendants()
-                                       .OfType<MotionActor>()
-                                       .Single(actor => actor.Name == "PART_MaskMotionActor");
+                                       .OfType<Control>()
+                                       .Single(actor => actor.Name == "PART_DialogMask");
 
                 maskActor.Margin.ShouldBe(default);
                 maskActor.Bounds.Size.ShouldBe(fixture.Presenter.Bounds.Size);
@@ -1030,8 +1143,8 @@ public class OverlayDialogPresenterTests
             try
             {
                 var maskActor = fixture.Presenter.GetVisualDescendants()
-                                       .OfType<MotionActor>()
-                                       .Single(actor => actor.Name == "PART_MaskMotionActor");
+                                       .OfType<Control>()
+                                       .Single(actor => actor.Name == "PART_DialogMask");
 
                 maskActor.Margin.ShouldBe(default);
                 maskActor.Bounds.Size.ShouldBe(fixture.Presenter.Bounds.Size);
@@ -1232,8 +1345,8 @@ public class OverlayDialogPresenterTests
             try
             {
                 var maskActor = fixture.Presenter.GetVisualDescendants()
-                                       .OfType<MotionActor>()
-                                       .Single(actor => actor.Name == "PART_MaskMotionActor");
+                                       .OfType<Control>()
+                                       .Single(actor => actor.Name == "PART_DialogMask");
 
                 maskActor.Margin.ShouldBe(default);
                 maskActor.Bounds.Size.ShouldBe(fixture.Presenter.Bounds.Size);
@@ -1370,8 +1483,8 @@ public class OverlayDialogPresenterTests
                 dialogLayer.AvailableSize.ShouldBe(window.ClientSize);
                 dialogLayer.Bounds.Size.ShouldBe(window.ClientSize);
                 var maskActor = presenter.GetVisualDescendants()
-                                         .OfType<MotionActor>()
-                                         .Single(actor => actor.Name == "PART_MaskMotionActor");
+                                         .OfType<Control>()
+                                         .Single(actor => actor.Name == "PART_DialogMask");
                 maskActor.Width.ShouldBe(window.ClientSize.Width);
                 maskActor.Height.ShouldBe(window.ClientSize.Height);
 
@@ -1462,8 +1575,8 @@ public class OverlayDialogPresenterTests
                 Dispatcher.UIThread.RunJobs();
 
                 var maskActor = fixture.Presenter.GetVisualDescendants()
-                                       .OfType<MotionActor>()
-                                       .Single(actor => actor.Name == "PART_MaskMotionActor");
+                                       .OfType<Control>()
+                                       .Single(actor => actor.Name == "PART_DialogMask");
 
                 maskActor.Margin.ShouldBe(default);
                 maskActor.Bounds.Size.ShouldBe(fixture.Presenter.Bounds.Size);
@@ -2108,15 +2221,28 @@ public class OverlayDialogPresenterTests
 
     private static void WaitWithDispatcherPump(Task task)
     {
-        var timeoutAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
-        while (!task.IsCompleted && DateTimeOffset.UtcNow < timeoutAt)
-        {
-            Dispatcher.UIThread.RunJobs();
-            Thread.Sleep(1);
-        }
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        _ = task.ContinueWith(
+            _ => cancellation.Cancel(),
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+        Dispatcher.UIThread.MainLoop(cancellation.Token);
 
         task.IsCompleted.ShouldBeTrue();
         task.GetAwaiter().GetResult();
+    }
+
+    private static void PumpUntil(Func<bool> condition)
+    {
+        var timeoutAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
+        while (!condition() && DateTimeOffset.UtcNow < timeoutAt)
+        {
+            using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(20));
+            Dispatcher.UIThread.MainLoop(cancellation.Token);
+        }
+
+        condition().ShouldBeTrue();
     }
 
     private static void RunOnUIThread(Action action)

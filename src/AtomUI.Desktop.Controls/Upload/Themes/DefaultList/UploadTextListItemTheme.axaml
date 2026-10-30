@@ -17,6 +17,7 @@
                             IsVisible="False">
                         <atom:ProgressBar Name="ProgressBar"
                                           SizeType="Small"
+                                          IndicatorThickness="{atom:UploadTokenResource TextListProgressLineHeight}"
                                           Value="{TemplateBinding Progress}"
                                           IsProgressInfoVisible="False" />
                     </Border>
@@ -32,6 +33,11 @@
         
         <Style Selector="^ /template/ StackPanel#RootLayout">
             <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|ProgressBar#ProgressBar">
+            <Setter Property="GrooveBrush" Value="{atom:SharedTokenResource ColorFillSecondary}" />
+            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
         </Style>
 
     </ControlTheme>

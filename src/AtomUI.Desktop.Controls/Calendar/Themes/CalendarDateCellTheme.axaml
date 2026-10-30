@@ -1,0 +1,193 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net"
+                    xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
+                    xmlns:controls="clr-namespace:AtomUI.Desktop.Controls"
+                    x:ClassModifier="internal">
+        <ControlTheme x:Key="CalendarDateCellTheme" TargetType="viewer:DateViewerCell">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="ClipToBounds" Value="False" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <ControlTemplate TargetType="viewer:DateViewerCell">
+                    <Border Name="PART_Item"
+                            Background="{TemplateBinding Background}"
+                            Cursor="Hand"
+                            Focusable="False"
+                            Padding="0"
+                            ClipToBounds="False"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
+                        <Border Name="PART_CellInner"
+                                Background="Transparent"
+                                Cursor="Hand"
+                                ClipToBounds="False"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                            <Grid ClipToBounds="False">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <ContentControl Name="PART_CellContent"
+                                                Classes.semantic-cell-content="True"
+                                                Content="{TemplateBinding Context}" ContentTemplate="{TemplateBinding CellTemplate}"
+                                                Cursor="Hand"
+                                                Grid.Row="1"
+                                                HorizontalContentAlignment="Stretch"
+                                                VerticalContentAlignment="Stretch"
+                                                ClipToBounds="False"
+                                                IsVisible="False" />
+                                <atom:TextBlock Name="PART_Value"
+                                                Cursor="Hand"
+                                                Grid.Row="0"
+                                                Text="{TemplateBinding DisplayText}"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center" />
+                                <Border Grid.Row="0" Name="PART_CellOutline" Grid.RowSpan="2"
+                                        IsHitTestVisible="False" />
+                            </Grid>
+                        </Border>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+
+            <!-- 基础单元格视觉 -->
+            <Style Selector="^ /template/ Border#PART_Item">
+                <Setter Property="Transitions">
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
+                    </Transitions>
+                </Setter>
+            </Style>
+            <Style Selector="^ /template/ Border#PART_CellInner">
+                <Setter Property="MinWidth" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                <Setter Property="Transitions">
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
+                        <atom:SolidColorBrushTransition Property="BorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
+                    </Transitions>
+                </Setter>
+            </Style>
+            <Style Selector="^ /template/ atom|TextBlock#PART_Value">
+                <!-- Foreground inherits from the cell; state colors belong to the cell theme. -->
+                <Setter Property="Transitions">
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
+                    </Transitions>
+                </Setter>
+            </Style>
+
+            <!-- Mini 布局 -->
+            <Style Selector="^[Presentation=Compact] /template/ Border#PART_Item">
+                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style Selector="^[Presentation=Compact] /template/ Border#PART_CellInner">
+                <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style Selector="^[Presentation=Compact] /template/ Border#PART_CellOutline">
+                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+            </Style>
+            <Style Selector="^[Presentation=Compact]:month /template/ Border#PART_CellInner">
+                <Setter Property="Width" Value="{atom:CalendarTokenResource YearMonthCellWidth}" />
+            </Style>
+
+            <!-- Fullscreen 布局 -->
+            <Style Selector="^[Presentation=Content] /template/ Border#PART_Item">
+                <Setter Property="Margin" Value="4,0" />
+            </Style>
+            <Style Selector="^[Presentation=Content] /template/ Border#PART_CellInner">
+                <Setter Property="CornerRadius" Value="0" />
+                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorFillSecondary}" />
+                <Setter Property="BorderThickness" Value="0,2,0,0" />
+                <Setter Property="MinHeight" Value="{Binding $parent[controls:Calendar].EffectiveFullCellMinHeight}" />
+                <Setter Property="Padding" Value="8,4,8,0" />
+            </Style>
+            <Style Selector="^[Presentation=Content] /template/ atom|TextBlock#PART_Value">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="VerticalAlignment" Value="Top" />
+            </Style>
+
+            <!-- 今天 -->
+            <Style Selector="^[Presentation=Compact]:date:today /template/ Border#PART_CellOutline">
+                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+            </Style>
+            <Style Selector="^[Presentation=Content]:date:today /template/ Border#PART_CellInner">
+                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+            </Style>
+
+            <!-- 选中 -->
+            <Style Selector="^[Presentation=Compact]:selected:not(:disabled) /template/ Border#PART_CellInner">
+                <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
+            </Style>
+            <Style Selector="^[Presentation=Content]:selected /template/ Border#PART_CellInner">
+                <Setter Property="Background" Value="{atom:CalendarTokenResource ItemActiveBg}" />
+            </Style>
+
+            <!-- 键盘焦点 -->
+            <Style Selector="^[Presentation=Compact]:focus-visible /template/ Border#PART_CellOutline">
+                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="BorderThickness" Value="2" />
+            </Style>
+            <Style Selector="^[Presentation=Content]:focus-visible /template/ Border#PART_CellInner">
+                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="BorderThickness" Value="0,2,0,0" />
+            </Style>
+
+            <!-- 禁用 -->
+            <Style Selector="^:disabled">
+                <Setter Property="Cursor" Value="Arrow" />
+            </Style>
+            <Style Selector="^:disabled /template/ Border#PART_Item">
+                <Setter Property="IsHitTestVisible" Value="False" />
+            </Style>
+            <Style Selector="^[Presentation=Compact]:disabled">
+                <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+            </Style>
+            <Style Selector="^[Presentation=Compact]:date:disabled:today /template/ Border#PART_CellOutline">
+                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            </Style>
+
+            <!-- hover（非禁用非周序号） -->
+            <Style Selector="^:pointerover:not(:disabled):not(:week):not(:selected) /template/ Border#PART_CellInner">
+                <Setter Property="Background" Value="{atom:SharedTokenResource ControlItemBgHover}" />
+            </Style>
+            <Style Selector="^[Presentation=Content]:not(:week) /template/ ContentControl#PART_CellContent">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+            <Style Selector="^:cell-template /template/ ContentControl#PART_CellContent">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+            <Style Selector="^:full-template /template/ ContentControl#PART_CellContent">
+                <Setter Property="IsVisible" Value="True" />
+                <Setter Property="Grid.Row" Value="0" />
+                <Setter Property="Grid.RowSpan" Value="2" />
+                <Setter Property="ContentTemplate" Value="{Binding EffectiveFullCellTemplate, RelativeSource={RelativeSource TemplatedParent}}" />
+            </Style>
+            <Style Selector="^:full-template /template/ atom|TextBlock#PART_Value">
+                <Setter Property="IsVisible" Value="False" />
+            </Style>
+            <Style Selector="^[Presentation=Compact]:selected:not(:disabled)">
+                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+            </Style>
+            <Style Selector="^[Presentation=Content]:selected:not(:disabled)">
+                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+            </Style>
+            <Style Selector="^:week">
+                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            </Style>
+            <Style Selector="^:outside, ^:disabled">
+                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            </Style>
+        </ControlTheme>
+</ResourceDictionary>

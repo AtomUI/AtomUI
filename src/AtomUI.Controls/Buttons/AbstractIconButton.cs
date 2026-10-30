@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AtomUI.Animations;
 using AtomUI.Reflection;
@@ -57,6 +56,12 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
         set => SetValue(LoadingAnimationDurationProperty, value);
     }
 
+    public IBrush? IconBrush
+    {
+        get => GetValue(IconBrushProperty);
+        set => SetValue(IconBrushProperty, value);
+    }
+
     public double IconWidth
     {
         get => GetValue(IconWidthProperty);
@@ -75,10 +80,10 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
-    public IBrush? IconBrush
+    public bool IsPassthroughMouseEvent
     {
-        get => GetValue(IconBrushProperty);
-        set => SetValue(IconBrushProperty, value);
+        get => GetValue(IsPassthroughMouseEventProperty);
+        set => SetValue(IsPassthroughMouseEventProperty, value);
     }
     
     #endregion
@@ -88,25 +93,56 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
     internal static readonly StyledProperty<bool> IsPassthroughMouseEventProperty = 
         AvaloniaProperty.Register<AbstractIconButton, bool>(nameof(IsPassthroughMouseEvent));
     
-    public bool IsPassthroughMouseEvent
-    {
-        get => GetValue(IsPassthroughMouseEventProperty);
-        set => SetValue(IsPassthroughMouseEventProperty, value);
-    }
-    
     #endregion
     
     #region 反射信息定义
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(AvaloniaButton))]
-    private static readonly Lazy<FieldInfo> IsFlyoutOpenFieldInfo = new Lazy<FieldInfo>(() => 
-        typeof(AvaloniaButton).GetFieldInfoOrThrow("_isFlyoutOpen",
-            BindingFlags.Instance | BindingFlags.NonPublic));
+    private static readonly Lazy<FieldInfo> IsFlyoutOpenFieldInfo = new(() =>
+        FixedMemberReflection.RequireField(
+            typeof(AvaloniaButton).GetField("_isFlyoutOpen", BindingFlags.Instance | BindingFlags.NonPublic),
+            typeof(AvaloniaButton),
+            "_isFlyoutOpen"));
     #endregion
+
+    private readonly TransitionInitializationSession _transitionInitialization;
 
     static AbstractIconButton()
     {
         AffectsMeasure<AbstractIconButton>(IconProperty);
         AffectsRender<AbstractIconButton>(IconBrushProperty);
+    }
+
+    protected AbstractIconButton()
+    {
+        // Parent templates assign IconBrush through styles after this control is attached,
+        // so the initial appearance must commit without running the theme transition.
+        _transitionInitialization = new TransitionInitializationSession(this);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _transitionInitialization.CompleteInitialization();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var size = base.MeasureOverride(availableSize);
+        // Template changes invalidate measure even when several changes coalesce back
+        // to the applied template and Avalonia skips OnApplyTemplate.
+        _transitionInitialization.CompleteInitialization();
+        return size;
     }
     
     protected bool IsFlyoutOpen()
@@ -132,15 +168,4 @@ public abstract class AbstractIconButton : AvaloniaButton, IMotionAwareControl
         e.Handled = !IsPassthroughMouseEvent;
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        this.Dispatcher.Post(this.EnableTransitions);
-    }
 }

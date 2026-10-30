@@ -3,7 +3,7 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-public class AutoCompleteTextArea : AbstractAutoComplete
+public partial class AutoCompleteTextArea : AbstractAutoComplete
 {
     #region 公共属性定义
     

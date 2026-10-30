@@ -487,6 +487,84 @@
         <target state="translated">带搜索框的选择器</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button in the suffix handle, rendered when IsAllowClear is enabled.</source>
+        <target state="translated">后缀 handle 内的清除按钮，启用 IsAllowClear 时渲染。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Selection content panel hosting the placeholder, selection result, search input and tags.</source>
+        <target state="translated">选择内容面板，承载占位符、选中结果、搜索输入与标签。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Search input rendered in filter mode.</source>
+        <target state="translated">过滤模式下渲染的搜索输入框。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemContentDescription">
+      <segment>
+        <source>Text content inside a selected tag.</source>
+        <target state="translated">选中标签内的文本内容。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Selected tag element shown in the selector for multiple mode.</source>
+        <target state="translated">多选模式下选择器中的选中标签。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemRemoveDescription">
+      <segment>
+        <source>Remove button inside a selected tag.</source>
+        <target state="translated">选中标签内的移除按钮。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPlaceholderDescription">
+      <segment>
+        <source>Placeholder text shown while nothing is selected.</source>
+        <target state="translated">未选择任何项时显示的占位符文本。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListDescription">
+      <segment>
+        <source>Candidate list container inside the popup.</source>
+        <target state="translated">弹层内的候选列表容器。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListItemDescription">
+      <segment>
+        <source>Single option entry inside the candidate list, created at runtime.</source>
+        <target state="translated">候选列表中的单个选项条目，运行时创建。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root border of the candidate popup layer.</source>
+        <target state="translated">候选弹层的根边框节点。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix area of the selector.</source>
+        <target state="translated">选择框的前缀区域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Select owner itself.</source>
+        <target state="translated">Select 控件本体。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSuffixDescription">
+      <segment>
+        <source>Suffix area hosting the max-count indicator, user suffix content and the selection handle.</source>
+        <target state="translated">后缀区域，承载最大数量指示、用户后缀内容与选择 handle。</target>
+      </segment>
+    </unit>
     <unit id="SizesDescription">
       <segment>
         <source>The height of the input field for the select defaults to 32px. If size is set to large, the height will be 40px, and if set to small, 24px. Custom can use local size properties.</source>
@@ -509,6 +587,18 @@
       <segment>
         <source>Status</source>
         <target state="translated">状态</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of Select with semantic part styles.</source>
+        <target state="translated">通过语义部件样式自定义 Select 的语义结构样式。</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
       </segment>
     </unit>
     <unit id="TagsDescription">

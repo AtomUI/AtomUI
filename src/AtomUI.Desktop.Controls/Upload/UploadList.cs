@@ -1,4 +1,5 @@
 using AtomUI.Controls;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -58,15 +59,22 @@ internal class UploadList : ItemsControl, IMotionAwareControl
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
+        AbstractUploadListItem listItem;
         if (ListType == UploadListType.Picture)
         {
-            return new UploadPictureListItem();
+            listItem = new UploadPictureListItem();
         }
-        if (ListType == UploadListType.PictureCard || ListType == UploadListType.PictureCircle)
+        else if (ListType == UploadListType.PictureCard || ListType == UploadListType.PictureCircle)
         {
-            return new UploadPictureShapeListItem();
+            listItem = new UploadPictureShapeListItem();
         }
-        return new UploadTextListItem();
+        else
+        {
+            listItem = new UploadTextListItem();
+        }
+
+        listItem.Classes.Add(UploadSemanticParts.ItemClass);
+        return listItem;
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)

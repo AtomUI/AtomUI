@@ -3,6 +3,17 @@
 本文档记录 Select 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-04
+
+- Fix
+  - Remove inherited ListView item dividers from Select dropdown options while preserving the standard ListView divider contract.
+
+## 2026-09-16
+
+- Behavior
+  - Relay the owner root `BorderBrush` / `Background` onto the `SelectAddOnDecoratedBox` frame as local values, so an owner-scoped root setter reaches the visible outline instead of being silently ignored. The frame state machine owns those two property slots, and the frame theme's `:focus-within` / `[IsInnerBoxHover]` setters outrank a `TemplateBinding`, so the relay must use `BindingPriority.LocalValue` from code. The relay carries an ownership flag and only clears a slot when this control wrote it.
+  - Bind `IsMotionEnabled` onto the `SelectAddOnDecoratedBox` frame (`TemplateBinding`). It was previously only propagated to the inner `SelectHandle`, so the frame kept its `BorderBrush` / `Background` transitions on even with motion disabled; a `SolidColorBrush` transition then keeps its value ahead of the relay's local value and the root customization appeared not to apply.
+
 ## 2026-09-05
 
 - Fix
@@ -14,6 +25,21 @@
 - Tests
   - Add headless tests for the empty dropdown indicator (default shown, custom honored, `IsShowEmptyIndicator=false` respected).
   - Add headless layout tests asserting Multiple / Tags prefix left inset equals the Single mode inset, and a SelectToken unit test asserting `MultiModePadding*.Left + MultiModePrefixIndent*.Left == SingleModePadding*.Left` per size.
+
+## 2026-09-04
+
+- Architecture
+  - Publish the Select Semantic Part contract with thirteen parts (`root`, `prefix`, `content`, `placeholder`, `input`, `suffix`, `clear`, `item`, `itemContent`, `itemRemove`, `popup.root`, `popup.list`, `popup.listItem`) aligned with the Ant Design Select semantic structure; see `Select.SemanticParts.cs` and `semantic-part.md`.
+  - Anchor trigger-part markers in the host template (`SelectTheme.axaml`) projected into `SelectAddOnDecoratedBox`, reusing the shared `AddOnDecoratedBoxTheme` scope anchors for `prefix` / `suffix`.
+  - Resolve multiple-selection tag parts through the shared tag mechanism: `item` markers are injected when `SelectResultOptionsBox` creates tag containers, and `itemContent` / `itemRemove` markers live in `TagTheme.axaml` (`SelectTag : Tag`); the generator's cross-nested validation chains through the declared RuntimeCreated `item` sibling part's ContractType.
+  - Keep the popup root static while injecting the candidate list at runtime: `popup.root` is the static `PopupFrame` border child of `PART_Popup`, `popup.list` markers are injected in `EnsurePopupContent`, and `popup.listItem` markers are injected at `SelectCandidateList` container creation.
+  - Resolve `PopupFrame` from `Popup.Child` at point of use instead of caching it in a field: template re-application in a pinned-open state inflates a fresh `Popup` whose static frame becomes the new `Popup.Child`, so a cached reference previously pointed at the stale frame and rejected the candidate list as "already has a parent".
+- Gallery
+  - Add the Select Semantic Parts tab with a pinned-open preview and localized part descriptions; migrate the showcase host to `GalleryShowCaseHost` per the standard Semantic Part page model.
+  - Add the "Custom Semantic Part styling" example (aligned with the upstream semantic styling demo): object-style and variant-conditioned Select part styles covering prefix / placeholder / suffix / popup root / popup list item.
+- Tests
+  - Add `SelectSemanticPartTests` covering descriptor shape, template marker inventory, default-theme non-consumption, generated style hits, tag part style hits, inline prefix presentation and popup part marker exposure.
+  - Update `SelectShowCasePageTests` and `SelectShowCaseExamples.snapshot` for the migrated host, added example and semantic preview template.
 
 ## 2026-08-25
 

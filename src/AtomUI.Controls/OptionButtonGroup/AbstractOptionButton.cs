@@ -115,6 +115,8 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     private readonly BorderRenderHelper _borderRenderHelper;
     private WaveSpiritDecorator? _waveSpiritDecorator;
 
+    private readonly TransitionInitializationSession _transitionInitialization;
+
     static AbstractOptionButton()
     {
         AffectsMeasure<AbstractOptionButton>(SizeTypeProperty, ButtonStyleProperty);
@@ -129,7 +131,26 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
 
     public AbstractOptionButton()
     {
+        _transitionInitialization = new TransitionInitializationSession(this);
         _borderRenderHelper = new BorderRenderHelper();
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        _transitionInitialization.CompleteInitialization();
     }
 
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -247,17 +268,7 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     {
         base.OnApplyTemplate(e);
         _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>("PART_WaveSpirit");
+        _transitionInitialization.CompleteInitialization();
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        this.DisableTransitions();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
-    }
 }

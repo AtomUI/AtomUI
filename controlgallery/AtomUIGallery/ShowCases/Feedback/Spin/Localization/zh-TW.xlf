@@ -103,6 +103,66 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticContainerDescription">
+      <segment>
+        <source>Container element with opacity and blur transition styles for the nested content.</source>
+        <target state="translated">容器元素，包含嵌套內容的透明度和模糊過渡樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>Description element with font size, foreground and line height styles for the tip text.</source>
+        <target state="translated">描述元素，包含提示文字的字號、前景色和行高樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorContentDescription">
+      <segment>
+        <source>Content element with the built-in dot indicator or custom indicator presenter styles.</source>
+        <target state="translated">內容元素，包含內建圓點指示器或自訂指示器呈現內容的樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorDescription">
+      <segment>
+        <source>Indicator element with size, motion duration and other spinning indicator styles.</source>
+        <target state="translated">指示器元素，包含尺寸、動效時長以及其他載入指示樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorRootDescription">
+      <segment>
+        <source>Root element of a SpinIndicator component.</source>
+        <target state="translated">SpinIndicator 元件的根元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMaskDescription">
+      <segment>
+        <source>Mask element with background, opacity and other overlay dimming styles.</source>
+        <target state="translated">遮罩元素，包含背景、透明度以及其他遮罩變暗樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Spin's published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域樣式自訂 Spin 已發佈的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with the loading region's base layout, alignment and theme entry styles.</source>
+        <target state="translated">根元素，包含載入區域的基礎佈局、對齊和主題入口樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Section element with centered alignment, spacing and other loading area layout styles.</source>
+        <target state="translated">載入區域元素，包含居中對齊、間距以及其他載入區域佈局樣式。</target>
+      </segment>
+    </unit>
     <unit id="SizeDescription">
       <segment>
         <source>SpinIndicator supports small, middle, large, and custom size types; the custom type follows the middle metrics by default and can override indicator metrics.</source>

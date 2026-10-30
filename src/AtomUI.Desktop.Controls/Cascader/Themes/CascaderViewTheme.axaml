@@ -8,6 +8,7 @@
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:CascaderView">
             <atom:PixelAlignedBorder Name="Frame"
+                                     Classes.semantic-scope-frame="True"
                                      Background="{TemplateBinding Background}"
                                      BorderBrush="{TemplateBinding BorderBrush}"
                                      BorderThickness="{TemplateBinding BorderThickness}"
@@ -28,8 +29,9 @@
                             <atom:CascaderViewFrame BorderBrush="{TemplateBinding BorderBrush}">
                                 <StackPanel Orientation="Horizontal"
                                             Name="PART_ItemsPanel">
-                                    <atom:CascaderViewLevelList Name="PART_RootLevelList"
-                                                                ItemsSource="{Binding Options, RelativeSource={RelativeSource TemplatedParent}}"
+                                <atom:CascaderViewLevelList Name="PART_RootLevelList"
+                                                            Classes.semantic-popup-list="True"
+                                                            ItemsSource="{Binding Options, RelativeSource={RelativeSource TemplatedParent}}"
                                                                 ItemTemplate="{TemplateBinding OptionTemplate}"
                                                                 ExpandTrigger="{TemplateBinding ExpandTrigger}"
                                                                 IsAllowSelectParent="{TemplateBinding IsAllowSelectParent}"/>
@@ -54,6 +56,7 @@
                             PresetImage="Simple" />
                     </Panel>
                     <atom:CascaderViewFilterList Name="PART_FilterList"
+                                                 Classes.semantic-popup-list="True"
                                                  ItemsSource="{TemplateBinding FilteredPathInfos}"
                                                  IsVisible="{TemplateBinding IsFiltering}"
                                                  IsBorderless="True"

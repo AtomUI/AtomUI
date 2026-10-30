@@ -187,6 +187,60 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button in the input suffix, rendered when IsAllowClear is enabled.</source>
+        <target state="translated">Botão de limpar no sufixo da entrada, renderizado quando IsAllowClear está habilitado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Input content panel hosting the placeholder and multiline text presenter.</source>
+        <target state="translated">Painel de conteúdo da entrada que hospeda o placeholder e o apresentador de texto multilinha.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInputDescription">
+      <segment>
+        <source>Multiline text presenter hosting the value and caret/selection state.</source>
+        <target state="translated">Apresentador de texto multilinha que hospeda o valor e o estado de caret/seleção.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPlaceholderDescription">
+      <segment>
+        <source>Placeholder text shown while the value is empty.</source>
+        <target state="translated">Texto de placeholder exibido quando o valor está vazio.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListDescription">
+      <segment>
+        <source>Candidate list container inside the popup.</source>
+        <target state="translated">Contêiner da lista de candidatos dentro do popup.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupListItemDescription">
+      <segment>
+        <source>Single option entry inside the candidate list, created at runtime.</source>
+        <target state="translated">Entrada de opção única dentro da lista de candidatos, criada em tempo de execução.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root border of the candidate popup layer.</source>
+        <target state="translated">Borda raiz da camada popup de candidatos.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPrefixDescription">
+      <segment>
+        <source>Prefix area of the input.</source>
+        <target state="translated">Área de prefixo da entrada.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Mentions owner itself.</source>
+        <target state="translated">O próprio componente Mentions.</target>
+      </segment>
+    </unit>
     <unit id="SizeTypeDescription">
       <segment>
         <source>Mentions supports large, middle, small, and Custom sizes with local height and font overrides.</source>
@@ -209,6 +263,18 @@
       <segment>
         <source>Status</source>
         <target state="translated">Status</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassDescription">
+      <segment>
+        <source>Customize the semantic structure style of Mentions with semantic part styles.</source>
+        <target state="translated">Personalize o estilo de estrutura semântica do Mentions com estilos de parte semântica.</target>
+      </segment>
+    </unit>
+    <unit id="StyleClassTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
       </segment>
     </unit>
     <unit id="ValueBindingDescription">

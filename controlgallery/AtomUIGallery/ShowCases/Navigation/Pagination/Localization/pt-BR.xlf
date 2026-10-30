@@ -49,6 +49,24 @@
         <target state="translated">.NET 10</target>
       </segment>
     </unit>
+    <unit id="CustomComponentAutomationName">
+      <segment>
+        <source>Page size</source>
+        <target state="translated">Itens por página</target>
+      </segment>
+    </unit>
+    <unit id="CustomComponentDescription">
+      <segment>
+        <source>Replace the page size changer with a custom NumericUpDown.</source>
+        <target state="translated">Substitua o seletor de itens por página por um NumericUpDown personalizado.</target>
+      </segment>
+    </unit>
+    <unit id="CustomComponentTitle">
+      <segment>
+        <source>Custom component</source>
+        <target state="translated">Componente personalizado</target>
+      </segment>
+    </unit>
     <unit id="MiniSizeDescription">
       <segment>
         <source>Mini size pagination.</source>
@@ -63,8 +81,8 @@
     </unit>
     <unit id="MoreDescription">
       <segment>
-        <source>More pages.</source>
-        <target state="translated">Mais pages.</target>
+        <source>Hover or focus an ellipsis to reveal a five-page jump action.</source>
+        <target state="translated">Passe o mouse ou foque nas reticências para revelar uma ação de salto de cinco páginas.</target>
       </segment>
     </unit>
     <unit id="MoreTitle">
@@ -113,6 +131,36 @@
       <segment>
         <source>Examples</source>
         <target state="translated">Exemplos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInfoDescription">
+      <segment>
+        <source>Info element, set font, color and alignment styles for the page info text</source>
+        <target state="translated">Elemento de info, define estilos de fonte, cor e alinhamento para o texto de informação da página</target>
+      </segment>
+    </unit>
+    <unit id="SemanticItemDescription">
+      <segment>
+        <source>Item element, set size, padding, border, background color, hover state and active state styles</source>
+        <target state="translated">Elemento de item, define tamanho, preenchimento, borda, cor de fundo, estado de foco e estado ativo</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Style the root and items through generated Semantic Part styles: a dashed outline around the root, rounded item corners, and item backgrounds that apply only at small size.</source>
+        <target state="translated">Personalize root e item por meio dos estilos de Semantic Part gerados: contorno tracejado no root, cantos arredondados nos itens e fundos de item aplicados somente no tamanho small.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element, set flex layout, alignment, flex wrap and list styles</source>
+        <target state="translated">Elemento raiz, define layout flex, alinhamento, quebra de linha e estilos de lista</target>
       </segment>
     </unit>
     <unit id="SimpleModeDescription">

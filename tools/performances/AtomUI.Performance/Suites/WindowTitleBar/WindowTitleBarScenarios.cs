@@ -83,8 +83,11 @@ internal static partial class Program
             IsMaximizeCaptionButtonVisible   = true,
             IsMinimizeCaptionButtonVisible   = true,
             IsWindowActive                   = true,
-            IsWindowFullScreen               = isFullScreen,
-            IsWindowMaximized                = isMaximized
+            HostWindowState                  = isFullScreen
+                ? WindowState.FullScreen
+                : isMaximized
+                    ? WindowState.Maximized
+                    : WindowState.Normal
         };
         group.SetValue(CaptionButtonGroup.OsTypeProperty, osType);
         return group;

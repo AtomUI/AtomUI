@@ -161,9 +161,29 @@
         <source>Europe Street beat</source>
       </segment>
     </unit>
+    <unit id="P2HeaderFunctionCard">
+      <segment>
+        <source>Function Card</source>
+      </segment>
+    </unit>
+    <unit id="P2HeaderFunctionCardMeta">
+      <segment>
+        <source>Function Card Meta title</source>
+      </segment>
+    </unit>
     <unit id="P2HeaderLargeSizeCard">
       <segment>
         <source>Large size card</source>
+      </segment>
+    </unit>
+    <unit id="P2HeaderObjectCard">
+      <segment>
+        <source>Object Card</source>
+      </segment>
+    </unit>
+    <unit id="P2HeaderObjectCardMeta">
+      <segment>
+        <source>Object Card Meta title</source>
       </segment>
     </unit>
     <unit id="P2HeaderProject">
@@ -224,6 +244,76 @@
     <unit id="ScenarioLayout">
       <segment>
         <source>Layout</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCardActionsDescription">
+      <segment>
+        <source>The bottom action-group surface, including equal-width layout and divider boundaries.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCardBodyDescription">
+      <segment>
+        <source>The shared body surface for default, metadata, grid, tabs, and loading content.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCardCoverDescription">
+      <segment>
+        <source>The cover region that owns media clipping, top corner radius, and layout.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCardExtraDescription">
+      <segment>
+        <source>The trailing auxiliary-content region in the card header.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCardHeaderDescription">
+      <segment>
+        <source>The complete header surface and the shared layout boundary for title and extra content.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCardRootDescription">
+      <segment>
+        <source>The Card owner that controls appearance, size, loading, hover, and content composition.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticCardTitleDescription">
+      <segment>
+        <source>The card-title presentation and typography region.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticMetaAvatarDescription">
+      <segment>
+        <source>The metadata avatar presentation and layout region.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticMetaDescriptionDescription">
+      <segment>
+        <source>The metadata description presentation and typography region.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticMetaRootDescription">
+      <segment>
+        <source>The CardMetaContent owner that composes avatar, title, and description.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticMetaSectionDescription">
+      <segment>
+        <source>The shared detail-layout region for the metadata title and description.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticMetaTitleDescription">
+      <segment>
+        <source>The metadata title presentation and typography region.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and Card property selectors to customize published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
       </segment>
     </unit>
     <unit id="SimpleCardDescription">

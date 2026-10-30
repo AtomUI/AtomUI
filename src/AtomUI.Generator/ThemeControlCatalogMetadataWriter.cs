@@ -1,4 +1,3 @@
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace AtomUI.Generator;
@@ -6,7 +5,7 @@ namespace AtomUI.Generator;
 internal static class ThemeControlCatalogMetadataWriter
 {
     internal static void Write(
-        SourceProductionContext context,
+        GenerationOutput context,
         string controlCatalog)
     {
         var catalog = SymbolDisplay.FormatLiteral(controlCatalog, quote: true);

@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using AtomUI;
 using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Controls;

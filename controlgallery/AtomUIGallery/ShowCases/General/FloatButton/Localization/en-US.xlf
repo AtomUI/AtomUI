@@ -6,6 +6,16 @@
         <source>BackTop makes it easy to go back to the top of the page.</source>
       </segment>
     </unit>
+    <unit id="BackTopProgressDescription">
+      <segment>
+        <source>Show the current scroll progress around the BackTop button edge.</source>
+      </segment>
+    </unit>
+    <unit id="BackTopProgressTitle">
+      <segment>
+        <source>BackTop with progress</source>
+      </segment>
+    </unit>
     <unit id="BackTopTitle">
       <segment>
         <source>BackTop</source>
@@ -154,6 +164,51 @@
     <unit id="ScenarioExamples">
       <segment>
         <source>Examples</source>
+      </segment>
+    </unit>
+    <unit id="SemanticBackTopRootDescription">
+      <segment>
+        <source>Root element of a BackTopFloatButton component.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Content element with font size, foreground, line height and other description styles, available in the square shape.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticGroupRootDescription">
+      <segment>
+        <source>Root element of a FloatButtonGroup component with placement, trigger and open state entry.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with brush, size and other icon styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticListDescription">
+      <segment>
+        <source>List element with background, corner radius, spacing and other menu item container styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize FloatButton's published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with the float button's shape, type, shadow and theme entry styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTriggerDescription">
+      <segment>
+        <source>Trigger element with the group's main button styles, shown in click or hover trigger mode.</source>
       </segment>
     </unit>
     <unit id="ShapeDescription">

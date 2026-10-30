@@ -8,34 +8,40 @@
     <ControlTheme x:Key="{x:Type atom:Card}" TargetType="atom:Card">
         <Setter Property="Template">
             <ControlTemplate>
-                <Panel>
-                    <atom:PixelAlignedBorder Name="Frame"
-                                             BorderThickness="{TemplateBinding EffectiveBorderThickness}"
-                                             BorderBrush="{TemplateBinding BorderBrush}"
-                                             CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                             Background="{TemplateBinding Background}"
-                                             ClipToBounds="False"
-                                             BoxShadow="{TemplateBinding BoxShadow}">
-                    </atom:PixelAlignedBorder>
+                <atom:PixelAlignedBorder Name="Frame"
+                                         BorderThickness="{TemplateBinding EffectiveBorderThickness}"
+                                         BorderBrush="{TemplateBinding BorderBrush}"
+                                         CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                                         Background="{TemplateBinding Background}"
+                                         ClipToBounds="False"
+                                         BoxShadow="{TemplateBinding BoxShadow}">
                     <DockPanel LastChildFill="True">
-                        <atom:PixelAlignedBorder Name="HeaderFrame" DockPanel.Dock="Top"
+                        <atom:PixelAlignedBorder Name="HeaderFrame"
+                                                 Classes.semantic-header="True"
+                                                 DockPanel.Dock="Top"
                                                  BorderThickness="{TemplateBinding HeaderBorderThickness}">
                             <DockPanel LastChildFill="True">
-                                <ContentPresenter Name="HeaderExtra" DockPanel.Dock="Right" VerticalAlignment="Center"
+                                <ContentPresenter Name="HeaderExtra"
+                                                  Classes.semantic-extra="True"
+                                                  DockPanel.Dock="Right"
+                                                  VerticalAlignment="Center"
                                                   Content="{TemplateBinding Extra}"
                                                   ContentTemplate="{TemplateBinding ExtraTemplate}" />
                                 <ContentPresenter Name="TitlePresenter"
+                                                  Classes.semantic-title="True"
                                                   Content="{TemplateBinding Header}"
                                                   ContentTemplate="{TemplateBinding HeaderTemplate}"
                                                   VerticalAlignment="Center" />
                             </DockPanel>
                         </atom:PixelAlignedBorder>
                         <atom:CardActionPanel Name="PART_ActionPanel"
+                                              Classes.semantic-actions="True"
                                               DockPanel.Dock="Bottom"
                                               CornerRadius="{TemplateBinding CornerRadius}"
                                               IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                               IsVisible="{TemplateBinding IsActionsPanelVisible}" />
                         <Border Name="CoverFrame"
+                                Classes.semantic-cover="True"
                                 CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource CornerRadiusFilterConverter}}"
                                 ClipToBounds="True"
                                 DockPanel.Dock="Top">
@@ -45,7 +51,8 @@
                                               VerticalContentAlignment="Stretch"
                                               HorizontalContentAlignment="Stretch" />
                         </Border>
-                        <Border Name="CardContent">
+                        <Border Name="CardContent"
+                                Classes.semantic-body="True">
                             <atom:Skeleton IsLoading="{TemplateBinding IsLoading}"
                                            IsActive="True"
                                            ParagraphRows="4"
@@ -59,7 +66,7 @@
                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
                     </DockPanel>
-                </Panel>
+                </atom:PixelAlignedBorder>
             </ControlTemplate>
         </Setter>
         
@@ -77,6 +84,7 @@
         </Style>
         <Setter Property="BoxShadow" Value="0 1 2 -1 #00000000, 0 3 6 0 #00000000, 0 5 12 4 #00000000" />
         <Style Selector="^[StyleVariant=Borderless]">
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsTertiary}" />
         </Style>
 

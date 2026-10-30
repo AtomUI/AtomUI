@@ -1,5 +1,6 @@
 using AtomUI.Animations;
 using AtomUI.Controls;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Mixins;
@@ -14,7 +15,8 @@ internal enum PaginationItemType
     Previous,
     PageIndicator,
     Next,
-    Ellipses
+    JumpPrevious,
+    JumpNext
 }
 
 internal class PaginationNavItem : ContentControl, ISelectable
@@ -38,6 +40,9 @@ internal class PaginationNavItem : ContentControl, ISelectable
     
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<PaginationNavItem, PathIcon?>(nameof(Icon));
+
+    public static readonly StyledProperty<PathIcon?> JumpIconProperty =
+        AvaloniaProperty.Register<PaginationNavItem, PathIcon?>(nameof(JumpIcon));
 
     public bool IsSelected
     {
@@ -77,6 +82,12 @@ internal class PaginationNavItem : ContentControl, ISelectable
         set => SetValue(IconProperty, value);
     }
 
+    public PathIcon? JumpIcon
+    {
+        get => GetValue(JumpIconProperty);
+        set => SetValue(JumpIconProperty, value);
+    }
+
     #endregion
 
     #region 公共事件定义
@@ -98,6 +109,8 @@ internal class PaginationNavItem : ContentControl, ISelectable
 
     #endregion
     
+    private readonly TransitionInitializationSession _transitionInitialization;
+
     static PaginationNavItem()
     {
         SelectableMixin.Attach<PaginationNavItem>(IsSelectedProperty);
@@ -113,22 +126,51 @@ internal class PaginationNavItem : ContentControl, ISelectable
         RaiseEvent(e);
     }
 
-    protected override void OnInitialized()
+    public PaginationNavItem()
     {
-        base.OnInitialized();
-        this.DisableTransitions();
+        _transitionInitialization = new TransitionInitializationSession(this);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _transitionInitialization.CompleteInitialization();
+    }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        _transitionInitialization?.Reset();
+        base.OnTemplateChanged(e);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        Dispatcher.Post(this.EnableTransitions);
+        _transitionInitialization.CompleteInitialization();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        SyncSemanticItemMarker();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         
+        if (change.Property == PaginationItemTypeProperty)
+        {
+            SyncSemanticItemMarker();
+        }
+
         if (change.Property == IsPressedProperty)
         {
             UpdatePseudoClasses();
@@ -155,11 +197,19 @@ internal class PaginationNavItem : ContentControl, ISelectable
             e.Handled = true;
             if (this.ContainsSelfOrDescendantAt(e.GetPosition(this)))
             {
-                if (PaginationItemType != PaginationItemType.Ellipses)
-                {
-                    OnClick();
-                }
+                OnClick();
             }
+        }
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+
+        if (IsEnabled && e.Key == Key.Enter)
+        {
+            OnClick();
+            e.Handled = true;
         }
     }
 
@@ -180,5 +230,17 @@ internal class PaginationNavItem : ContentControl, ISelectable
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(StdPseudoClass.Pressed, IsPressed);
+    }
+
+    private void SyncSemanticItemMarker()
+    {
+        if (PaginationItemType is PaginationItemType.JumpPrevious or PaginationItemType.JumpNext)
+        {
+            Classes.Remove(PaginationSemanticParts.ItemClass);
+        }
+        else
+        {
+            Classes.Add(PaginationSemanticParts.ItemClass);
+        }
     }
 }

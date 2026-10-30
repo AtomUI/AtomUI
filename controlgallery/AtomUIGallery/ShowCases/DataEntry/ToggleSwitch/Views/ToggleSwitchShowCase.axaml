@@ -8,8 +8,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.ToggleSwitch"
              x:DataType="vm:ToggleSwitchViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="ToggleSwitch"
                     Category="{gallery:ToggleSwitchShowCaseLangResource ComponentCategory}"
@@ -19,8 +19,33 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractToggleSwitch" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:ToggleSwitchViewModel">
+                    <gallery:SemanticPartPreview Name="ToggleSwitchSemanticPreview"
+                                                 SemanticOwner="{Binding #ToggleSwitchSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:ToggleSwitch}">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:ToggleSwitch Name="ToggleSwitchSemanticOwner"
+                                               OnContent="ON"
+                                               OffContent="OFF"
+                                               IsChecked="True" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:ToggleSwitchShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="content"
+                                Description="{gallery:ToggleSwitchShowCaseLangResource SemanticContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="indicator"
+                                Description="{gallery:ToggleSwitchShowCaseLangResource SemanticIndicatorDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -127,7 +152,60 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:ToggleSwitchShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:ToggleSwitchShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="toggleswitch-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:ToggleSwitchViewModel">
+                            <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Left"
+                                        Spacing="12">
+                                <StackPanel.Styles>
+                                    <Style Selector="atom|ToggleSwitch.semantic-object">
+                                        <Setter Property="GrooveBackground" Value="#F5D2D2" />
+                                    </Style>
+                                    <Style Selector="atom|ToggleSwitch.semantic-function">
+                                        <Setter Property="GrooveBackground" Value="#BDE3C3" />
+                                    </Style>
+                                    <Style Selector="atom|ToggleSwitch.semantic-mui">
+                                        <Setter Property="TrackHeight" Value="14" />
+                                        <Setter Property="TrackMinWidth" Value="32" />
+                                        <Setter Property="TrackPadding" Value="-3" />
+                                        <Setter Property="KnobSize" Value="20,20" />
+                                        <atom:ToggleSwitchIndicatorStyle x:SetterTargetType="TemplatedControl">
+                                            <Setter Property="Background" Value="#1976d2" />
+                                            <Setter Property="Effect">
+                                                <DropShadowEffect OffsetX="0"
+                                                                  OffsetY="1"
+                                                                  BlurRadius="4"
+                                                                  Color="#4D000000" />
+                                            </Setter>
+                                        </atom:ToggleSwitchIndicatorStyle>
+                                    </Style>
+                                    <Style Selector="atom|ToggleSwitch.semantic-mui:checked">
+                                        <Setter Property="GrooveBackground" Value="#801976d2" />
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <atom:ToggleSwitch Classes="semantic-object"
+                                                   SizeType="Small"
+                                                   Width="40"
+                                                   OnContent="on"
+                                                   OffContent="off" />
+                                <atom:ToggleSwitch Classes="semantic-function"
+                                                   OnContent="on"
+                                                   OffContent="off" />
+                                <atom:ToggleSwitch Classes="semantic-mui"
+                                                   IsChecked="True" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

@@ -6,6 +6,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Threading;
 using Shouldly;
 using Xunit;
@@ -183,6 +184,200 @@ public class TreeViewBindableNodeTests
             window.Close();
             Dispatcher.UIThread.RunJobs();
         }
+    }
+
+    [Fact]
+    public void Clearing_Expanded_Roots_Does_Not_Throw()
+    {
+        var grandChild = new BindableTreeItemNode
+        {
+            Header = "GrandChild"
+        };
+        var child = new BindableTreeItemNode
+        {
+            Header     = "Child",
+            IsExpanded = true,
+            Children   = [grandChild]
+        };
+        var parent = new BindableTreeItemNode
+        {
+            Header     = "Parent",
+            IsExpanded = true,
+            Children   = [child]
+        };
+        var roots = new AvaloniaList<ITreeItemNode> { parent };
+        var treeView = new AtomUI.Desktop.Controls.TreeView
+        {
+            IsMotionEnabled      = false,
+            IsShowEmptyIndicator = false,
+            ItemsSource          = roots,
+            ItemTemplate = new TreeDataTemplate
+            {
+                DataType    = typeof(ITreeItemNode),
+                ItemsSource = new Binding("Children")
+            }
+        };
+
+        ShowInWindow(treeView, () =>
+        {
+            var parentContainer = (AtomTreeViewItem)treeView.ContainerFromItem(parent)!;
+            var childContainer  = (AtomTreeViewItem)parentContainer.ContainerFromItem(child)!;
+            childContainer.ContainerFromItem(grandChild).ShouldBeAssignableTo<AtomTreeViewItem>();
+
+            roots.Clear();
+            Dispatcher.UIThread.RunJobs();
+
+            treeView.ContainerFromItem(parent).ShouldBeNull();
+        });
+    }
+
+    [Fact]
+    public void Clearing_Expanded_Roots_With_Plain_Parent_Node_Does_Not_Throw()
+    {
+        var grandChild = new BindableTreeItemNode
+        {
+            Header = "GrandChild"
+        };
+        var child = new PlainTreeItemNode
+        {
+            Header     = "Child",
+            IsExpanded = true,
+            Children   = new List<ITreeItemNode> { grandChild }
+        };
+        var parent = new PlainTreeItemNode
+        {
+            Header     = "Parent",
+            IsExpanded = true,
+            Children   = new List<ITreeItemNode> { child }
+        };
+        var roots = new AvaloniaList<ITreeItemNode> { parent };
+        var treeView = new AtomUI.Desktop.Controls.TreeView
+        {
+            IsMotionEnabled      = false,
+            IsShowEmptyIndicator = false,
+            ItemsSource          = roots,
+            ItemTemplate = new TreeDataTemplate
+            {
+                DataType    = typeof(ITreeItemNode),
+                ItemsSource = new Binding("Children")
+            }
+        };
+
+        ShowInWindow(treeView, () =>
+        {
+            var parentContainer = (AtomTreeViewItem)treeView.ContainerFromItem(parent)!;
+            var childContainer  = (AtomTreeViewItem)parentContainer.ContainerFromItem(child)!;
+            childContainer.ContainerFromItem(grandChild).ShouldBeAssignableTo<AtomTreeViewItem>();
+
+            roots.Clear();
+            Dispatcher.UIThread.RunJobs();
+
+            treeView.ContainerFromItem(parent).ShouldBeNull();
+        });
+    }
+
+    private class PlainTreeItemNode : ITreeItemNode
+    {
+        public object? Header { get; set; }
+        public PathIcon? Icon => null;
+        public bool? IsChecked { get; set; }
+        public bool IsSelected { get; set; }
+        public bool IsExpanded { get; set; }
+        public bool IsIndicatorEnabled { get; set; } = true;
+        public string? GroupName => null;
+        public bool IsLeaf => false;
+        public object? Value { get; set; }
+        public bool IsEnabled { get; set; } = true;
+        public ITreeNode<ITreeItemNode>? ParentNode => null;
+        public EntityKey? ItemKey { get; set; }
+        public IEnumerable<ITreeItemNode> Children { get; set; } = new List<ITreeItemNode>();
+        public void UpdateParentNode(ITreeItemNode? parentNode)
+        {
+        }
+    }
+
+    [Fact]
+    public void Clearing_Plain_Subtree_Releases_Node_Bindings_Of_Discarded_Containers()
+    {
+        var leaf = new BindableTreeItemNode
+        {
+            Header = "Leaf"
+        };
+        var child = new PlainTreeItemNode
+        {
+            Header     = "Child",
+            IsExpanded = true,
+            Children   = new List<ITreeItemNode> { leaf }
+        };
+        var parent = new PlainTreeItemNode
+        {
+            Header     = "Parent",
+            IsExpanded = true,
+            Children   = new List<ITreeItemNode> { child }
+        };
+        var roots = new AvaloniaList<ITreeItemNode> { parent };
+        var treeView = new AtomUI.Desktop.Controls.TreeView
+        {
+            IsMotionEnabled      = false,
+            IsShowEmptyIndicator = false,
+            ItemsSource          = roots,
+            ItemTemplate = new TreeDataTemplate
+            {
+                DataType    = typeof(ITreeItemNode),
+                ItemsSource = new Binding("Children")
+            }
+        };
+
+        ShowInWindow(treeView, () =>
+        {
+            var parentContainer = (AtomTreeViewItem)treeView.ContainerFromItem(parent)!;
+            var childContainer  = (AtomTreeViewItem)parentContainer.ContainerFromItem(child)!;
+            childContainer.ContainerFromItem(leaf).ShouldBeAssignableTo<AtomTreeViewItem>();
+
+            roots.Clear();
+            Dispatcher.UIThread.RunJobs();
+
+            // Containers discarded mid-teardown (including ones Avalonia re-realizes from a live
+            // ItemsView) must not keep strong PropertyChanged subscriptions on the model node:
+            // each leaked subscription roots its whole discarded container chain for as long as
+            // the user-kept node lives. Weak-event subscriptions from Avalonia template bindings
+            // do not root their subscriber and are collected with it, so only strong container
+            // targets are asserted here.
+            var leakedContainers = CollectStrongContainerSubscribers(leaf);
+            leakedContainers.ShouldBeEmpty(
+                "discarded containers still subscribed: " +
+                string.Join(", ", leakedContainers.Select(c => c.GetHashCode().ToString("X8"))));
+        });
+    }
+
+    private static IReadOnlyList<AtomTreeViewItem> CollectStrongContainerSubscribers(AvaloniaObject target)
+    {
+        var field = typeof(AvaloniaObject).GetField(
+            "_propertyChanged",
+            BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var handlers = (Delegate?)field.GetValue(target);
+        if (handlers is null)
+        {
+            return [];
+        }
+
+        var containers = new HashSet<AtomTreeViewItem>();
+        foreach (var handler in handlers.GetInvocationList())
+        {
+            if (handler.Target is AtomTreeViewItem container)
+            {
+                containers.Add(container);
+                continue;
+            }
+
+            var owner = handler.Target?.GetType().GetField("<>4__this")?.GetValue(handler.Target);
+            if (owner is AtomTreeViewItem ownerContainer)
+            {
+                containers.Add(ownerContainer);
+            }
+        }
+
+        return containers.ToList();
     }
 
     [Fact]

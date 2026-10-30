@@ -61,6 +61,18 @@
         <target state="translated">Personalizar Descrição</target>
       </segment>
     </unit>
+    <unit id="P2DescriptionFunctionStyles">
+      <segment>
+        <source>Function styles</source>
+        <target state="translated">Estilos funcionais</target>
+      </segment>
+    </unit>
+    <unit id="P2DescriptionObjectStyles">
+      <segment>
+        <source>Object styles</source>
+        <target state="translated">Estilos de objeto</target>
+      </segment>
+    </unit>
     <unit id="PageDescription">
       <segment>
         <source>Use Empty to communicate that a container has no result, no configured content, or an optional recovery action.</source>
@@ -77,6 +89,42 @@
       <segment>
         <source>Examples</source>
         <target state="translated">Exemplos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>The description text region controlled by Description and IsDescriptionVisible.</source>
+        <target state="translated">A região de texto da descrição, controlada por Description e IsDescriptionVisible.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticFooterDescription">
+      <segment>
+        <source>The optional action region provided by Footer and FooterTemplate.</source>
+        <target state="translated">A região de ação opcional fornecida por Footer e FooterTemplate.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticImageDescription">
+      <segment>
+        <source>The stable image region for preset and custom SVG content.</source>
+        <target state="translated">A região de imagem estável para conteúdo SVG predefinido e personalizado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Empty's published Semantic Parts.</source>
+        <target state="translated">Use estilos com escopo de owner para personalizar as Semantic Parts publicadas do Empty.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The Empty owner controls overall layout, alignment, visibility, and root styling.</source>
+        <target state="translated">O owner Empty controla o layout geral, o alinhamento, a visibilidade e o estilo da raiz.</target>
       </segment>
     </unit>
     <unit id="SizeDescription">

@@ -7,7 +7,7 @@ namespace AtomUI.Theme.Compilation;
 internal sealed record ThemeCompileInput
 {
     internal ThemeCompileInput(
-        BoundThemeDefinition definition,
+        PreparedThemeDefinition definition,
         ThemeDefinitionRevision definitionRevision,
         NormalizedThemeConfig effectiveConfig,
         ThemeSchemaRegistry registry,
@@ -26,7 +26,7 @@ internal sealed record ThemeCompileInput
         ChangesFromReusableParent = changesFromReusableParent;
     }
 
-    internal BoundThemeDefinition Definition { get; }
+    internal PreparedThemeDefinition Definition { get; }
     internal ThemeDefinitionRevision DefinitionRevision { get; }
     internal NormalizedThemeConfig EffectiveConfig { get; }
     internal ThemeSchemaRegistry Registry { get; }

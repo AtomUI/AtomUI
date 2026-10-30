@@ -2,12 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AtomUIGallery.ShowCases.TimePicker.TimePickerShowCase"
              xmlns:atom="https://atomui.net"
+             xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              xmlns:vm="using:AtomUIGallery.ShowCases.TimePicker"
              x:DataType="vm:TimePickerViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="TimePicker"
                     Category="{gallery:TimePickerShowCaseLangResource ComponentCategory}"
@@ -17,7 +18,69 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="InfoPickerInput" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
+
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:TimePickerViewModel">
+                    <gallery:SemanticPartPreview Name="TimePickerSemanticPreview"
+                                                 Title="TimePicker"
+                                                 SemanticOwner="{Binding #TimeRangeSemanticOwner}"
+                                                 SemanticOwnerType="{x:Type atom:RangeTimePicker}"
+                                                 PreviewStageMinHeight="560"
+                                                 PreviewContentAlignment="Top">
+                        <gallery:SemanticPartPreview.PreviewContent>
+                            <atom:RangeTimePicker Name="TimeRangeSemanticOwner"
+                                                  Width="420"
+                                                  IsMotionEnabled="False"
+                                                  IsPickerOpen="True"
+                                                  IsPopupPinnedOpen="True"
+                                                  ClockIdentifier="HourClock12"
+                                                  RangeStartSelectedTime="10:09:20"
+                                                  RangeEndSelectedTime="12:12:20"
+                                                  PlaceholderText="{gallery:TimePickerShowCaseLangResource P2PlaceholderTextStartTime}"
+                                                  SecondaryPlaceholderText="{gallery:TimePickerShowCaseLangResource P2SecondaryPlaceholderTextEndTime}" />
+                        </gallery:SemanticPartPreview.PreviewContent>
+                        <gallery:SemanticPartPreview.PartDescriptions>
+                            <gallery:SemanticPartDescription
+                                Path="root"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="prefix"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticPrefixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="input"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticInputDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="secondaryInput"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticSecondaryInputDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="suffix"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticSuffixDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="clear"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticClearDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.root"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticPopupRootDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.container"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticPopupContainerDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.content"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticPopupContentDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.column"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticPopupColumnDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.item"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticPopupItemDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="popup.footer"
+                                Description="{gallery:TimePickerShowCaseLangResource SemanticPopupFooterDescription}" />
+                        </gallery:SemanticPartPreview.PartDescriptions>
+                    </gallery:SemanticPartPreview>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
 
             <gallery:ShowCasePanel Name="ExamplesContent"
@@ -32,7 +95,47 @@
         Description="{gallery:TimePickerShowCaseLangResource BasicDescription}">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:TimePickerViewModel">
-        <atom:TimePicker PlaceholderText="{gallery:TimePickerShowCaseLangResource P2PlaceholderTextSelectTime}" IsNeedConfirm="False" IsShowNow="True" />
+        <atom:TimePicker PlaceholderText="{gallery:TimePickerShowCaseLangResource P2PlaceholderTextSelectTime}" PickerDisplayTime="00:00:00" IsShowNow="True" />
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:TimePickerShowCaseLangResource NeedConfirmTitle}"
+        Description="{gallery:TimePickerShowCaseLangResource NeedConfirmDescription}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:TimePickerViewModel">
+                <WrapPanel ItemSpacing="24" LineSpacing="20">
+                    <StackPanel Width="190" Spacing="8">
+                        <TextBlock Text="IsNeedConfirm=True" FontWeight="Medium" />
+                        <atom:TimePicker IsNeedConfirm="True"
+                                         Width="160"
+                                         HorizontalAlignment="Left"
+                                         PickerDisplayTime="00:00:00"
+                                         PlaceholderText="{gallery:TimePickerShowCaseLangResource P2PlaceholderTextSelectTime}"
+                                         SelectedTime="{Binding ConfirmRequiredSelectedTime}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{gallery:TimePickerShowCaseLangResource P2TextSelectedTime}"
+                                       Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                            <TextBlock Text="{Binding ConfirmRequiredSelectedTimeText}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Width="190" Spacing="8">
+                        <TextBlock Text="IsNeedConfirm=False" FontWeight="Medium" />
+                        <atom:TimePicker IsNeedConfirm="False"
+                                         Width="160"
+                                         HorizontalAlignment="Left"
+                                         PickerDisplayTime="00:00:00"
+                                         PlaceholderText="{gallery:TimePickerShowCaseLangResource P2PlaceholderTextSelectTime}"
+                                         SelectedTime="{Binding NoConfirmSelectedTime}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{gallery:TimePickerShowCaseLangResource P2TextSelectedTime}"
+                                       Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                            <TextBlock Text="{Binding NoConfirmSelectedTimeText}" />
+                        </StackPanel>
+                    </StackPanel>
+                </WrapPanel>
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
@@ -295,7 +398,55 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:TimePickerShowCaseLangResource SemanticPartStyleTitle}"
+        Description="{gallery:TimePickerShowCaseLangResource SemanticPartStyleDescription}"
+        SourceKey="timepicker-semantic-part"
+        BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:TimePickerViewModel">
+        <StackPanel HorizontalAlignment="Left" Spacing="20">
+            <StackPanel.Styles>
+                <Style Selector="atom|TimePicker.semantic-styles-demo">
+                    <atom:TimePickerPrefixStyle x:SetterTargetType="ContentPresenter">
+                        <Style Selector="^ atom|Icon">
+                            <Setter Property="StrokeBrush" Value="#1890FF" />
+                        </Style>
+                    </atom:TimePickerPrefixStyle>
+                    <atom:TimePickerPopupRootStyle x:SetterTargetType="atom:ArrowDecoratedBox">
+                        <Setter Property="BorderBrush" Value="#1890FF" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </atom:TimePickerPopupRootStyle>
+                    <atom:TimePickerPopupItemStyle x:SetterTargetType="ListBoxItem">
+                        <Setter Property="Foreground" Value="#722ED1" />
+                    </atom:TimePickerPopupItemStyle>
+                </Style>
+                <Style Selector="atom|RangeTimePicker.semantic-styles-demo">
+                    <atom:RangeTimePickerInputStyle x:SetterTargetType="TextBox">
+                        <Setter Property="FontStyle" Value="Italic" />
+                    </atom:RangeTimePickerInputStyle>
+                    <atom:RangeTimePickerPopupColumnStyle x:SetterTargetType="Panel">
+                        <Setter Property="Width" Value="56" />
+                    </atom:RangeTimePickerPopupColumnStyle>
+                </Style>
+            </StackPanel.Styles>
+            <atom:TimePicker Classes="semantic-styles-demo"
+                             Width="300"
+                             IsNeedConfirm="False"
+                             IsShowNow="True"
+                             ContentLeftAddOn="{antdicons:AntDesignIconProvider Kind=MehOutlined}"
+                             PlaceholderText="Object" />
+            <atom:RangeTimePicker Classes="semantic-styles-demo"
+                                  Width="420"
+                                  ContentLeftAddOn="{antdicons:AntDesignIconProvider Kind=MehOutlined}"
+                                  PlaceholderText="Range" />
+        </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

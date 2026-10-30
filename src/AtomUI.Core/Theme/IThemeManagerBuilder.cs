@@ -1,7 +1,6 @@
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
-using AtomUI.Theme.Resources;
-using AtomUI.Theme.Schema;
+using AtomUI.Theme.Definitions.Compiled;
 using Avalonia.Media;
 
 namespace AtomUI.Theme;
@@ -9,6 +8,7 @@ namespace AtomUI.Theme;
 public interface IThemeManagerBuilder
 {
     void AddThemeDefinitionResolver(IThemeDefinitionResolver resolver);
+    void AddCompiledThemePackage(CompiledThemePackage package);
     void AddControlPackage(ControlPackageRegistration package);
     void AddInitializer(Action<IThemeManager> initializer);
     void WithInitialTheme(string themeId, ThemeConfig? config = null);

@@ -105,8 +105,8 @@ internal sealed class ListBoxToken : AbstractControlDesignToken
         ItemPaddingSM = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
         ItemPadding   = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, 0);
 
-        ContentPadding   = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS / 2);
-        ItemMargin       = new Thickness(0, 0.5);
+        ContentPadding   = new Thickness(0);
+        ItemMargin       = new Thickness(0);
 
         FilterHighlightColor = EffectiveGlobalToken.ColorError;
 

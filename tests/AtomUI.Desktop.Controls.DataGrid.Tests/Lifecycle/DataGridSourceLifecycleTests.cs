@@ -1,7 +1,5 @@
 using System.Runtime.CompilerServices;
-using AtomUI.Desktop.Controls;
 using AtomUI.Desktop.Controls.Tests.DataGrid.Data.Source;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Controls.Primitives;

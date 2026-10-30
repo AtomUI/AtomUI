@@ -56,30 +56,36 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
                 return false;
             }
 
-            var control = snapshot.Controls[controlSlot];
-            var found = control.TryGetSharedResource(
-                snapshot.Registry.GetSharedResourceKey(controlKey.Kind),
-                snapshot.GlobalResources,
-                out value);
+            var resourceKey = snapshot.Registry.GetSharedResourceKey(controlKey.Kind);
+            snapshot.Registry.NotifyControlFirstUse(controlSlot);
+            var cell = snapshot.Controls.GetCell(controlSlot);
+            var found = cell.UsesRootSharedResources
+                ? snapshot.GlobalResources.TryGetValue(resourceKey, out value)
+                : cell.GetValue().TryGetSharedResource(resourceKey, snapshot.GlobalResources, out value);
             value = ThemeResourceValue.CloneForConsumer(value);
             return found;
         }
 
         if (key is ControlOwnTokenResourceKey ownKey)
         {
-            if (!snapshot.Registry.TryGetControl(ownKey.ControlType, out var descriptor))
+            ControlTokenDescriptor? descriptor;
+            var registered = ownKey.ControlType is { } controlType
+                ? snapshot.Registry.TryGetControl(controlType, out descriptor)
+                : snapshot.Registry.TryGetControl(ownKey.Identity, out descriptor);
+            if (!registered || descriptor is null)
             {
                 throw new InvalidOperationException(
-                    $"Control type '{ownKey.ControlType.FullName}' is not registered in the active theme schema.");
+                    $"Control owner '{ownKey.ControlType?.FullName ?? ownKey.Identity.ToString()}' is not registered in the active theme schema.");
             }
             if (!snapshot.Registry.TryGetControlResourceSlot(ownKey.ResourceKey, out var ownControlSlot) ||
                 ownControlSlot != descriptor.Slot)
             {
                 throw new InvalidOperationException(
                     $"Own Token resource key '{ownKey.ResourceKey}' does not belong to Control type " +
-                    $"'{ownKey.ControlType.FullName}'.");
+                    $"'{descriptor.ControlType.FullName}'.");
             }
 
+            snapshot.Registry.NotifyControlFirstUse(descriptor.Slot);
             var found = snapshot.Controls[descriptor.Slot]
                                    .ControlResources
                                    .TryGetValue(ownKey.ResourceKey, out value);
@@ -95,6 +101,7 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
         if (snapshot.Registry.TryGetControlResourceSlot(key, out var resourceControlSlot) &&
             (uint)resourceControlSlot < (uint)snapshot.Controls.Count)
         {
+            snapshot.Registry.NotifyControlFirstUse(resourceControlSlot);
             var found = snapshot.Controls[resourceControlSlot].ControlResources.TryGetValue(key, out value);
             value = ThemeResourceValue.CloneForConsumer(value);
             return found;

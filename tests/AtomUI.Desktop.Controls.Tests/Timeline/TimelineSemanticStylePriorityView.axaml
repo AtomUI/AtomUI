@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             x:Class="AtomUI.Desktop.Controls.Tests.Timeline.TimelineSemanticStylePriorityView">
+    <UserControl.Styles>
+        <Style Selector="atom|Timeline.semantic-owner">
+            <atom:TimelineItemHeaderStyle x:SetterTargetType="StackPanel">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="Tag" Value="header" />
+            </atom:TimelineItemHeaderStyle>
+            <atom:TimelineItemTitleStyle x:SetterTargetType="TextBlock">
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="Tag" Value="title" />
+            </atom:TimelineItemTitleStyle>
+            <atom:TimelineItemContentStyle x:SetterTargetType="ContentPresenter">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="Tag" Value="content" />
+            </atom:TimelineItemContentStyle>
+        </Style>
+    </UserControl.Styles>
+    <atom:Timeline Name="Timeline" Classes="semantic-owner" Orientation="Vertical">
+        <atom:TimelineItem Label="2026-09-17" Content="First event" />
+    </atom:Timeline>
+</UserControl>

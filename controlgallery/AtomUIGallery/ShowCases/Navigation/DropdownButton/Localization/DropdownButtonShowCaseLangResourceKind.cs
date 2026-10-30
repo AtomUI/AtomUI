@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -36,5 +34,24 @@ public enum DropdownButtonShowCaseLangResourceKind
     P2ContentBottomRight,
     P2ContentTopLeft,
     P2ContentTop,
-    P2ContentTopRight
+    P2ContentTopRight,
+    SemanticItemContentDescription,
+    SemanticItemDescription,
+    SemanticItemIconDescription,
+    SemanticItemTitleDescription,
+    SemanticPopupRootDescription,
+    SemanticPreviewGroupTitle,
+    SemanticPreviewFirstMenuItem,
+    SemanticPreviewSecondMenuItem,
+    SemanticPreviewSubMenu,
+    SemanticPreviewItem1,
+    SemanticPreviewOption1,
+    SemanticPreviewOption2,
+    SemanticStylesDescription,
+    SemanticStylesTitle,
+    SemanticStylesObjectButton,
+    SemanticStylesFunctionButton,
+    SemanticStylesItemProfile,
+    SemanticStylesItemSettings,
+    SemanticStylesItemLogout
 }

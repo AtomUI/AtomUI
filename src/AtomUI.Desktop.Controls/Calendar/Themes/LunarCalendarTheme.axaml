@@ -3,10 +3,47 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:AtomUI.Desktop.Controls"
     xmlns:themes="clr-namespace:AtomUI.Desktop.Controls.Themes"
+    xmlns:calendar="clr-namespace:AtomUI.Desktop.Controls.Internal.Calendar"
+    xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
+    xmlns:atom="https://atomui.net"
     x:Class="AtomUI.Desktop.Controls.Themes.LunarCalendarControlTheme"
     TargetType="controls:LunarCalendar"
     x:ClassModifier="internal">
+    <ControlTheme.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceInclude Source="/Calendar/Themes/CalendarDateCellTheme.axaml" />
+        </ResourceDictionary.MergedDictionaries>
+        <ControlTheme x:Key="LunarDateCellTheme" TargetType="viewer:DateViewerCell" BasedOn="{StaticResource CalendarDateCellTheme}">
+            <Style Selector="^[Presentation=Content]:date:selected:not(:disabled) /template/ Border#PART_CellInner">
+                <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+            </Style>
+            <Style Selector="^[Presentation=Compact]:date /template/ Border#PART_Item">
+                <Setter Property="Height" Value="{atom:LunarCalendarTokenResource MiniDateCellSize}" />
+            </Style>
+            <Style Selector="^[Presentation=Compact]:date /template/ Border#PART_CellInner">
+                <Setter Property="Width" Value="{atom:LunarCalendarTokenResource MiniDateCellSize}" />
+                <Setter Property="Height" Value="{atom:LunarCalendarTokenResource MiniDateCellSize}" />
+            </Style>
+            <Style Selector="^[Presentation=Compact]:month /template/ Border#PART_Item">
+                <Setter Property="Height" Value="{atom:LunarCalendarTokenResource MiniDateCellSize}" />
+            </Style>
+            <Style Selector="^[Presentation=Compact]:month /template/ Border#PART_CellInner">
+                <Setter Property="Width" Value="{atom:LunarCalendarTokenResource MiniMonthCellWidth}" />
+                <Setter Property="Height" Value="{atom:LunarCalendarTokenResource MiniDateCellSize}" />
+            </Style>
+        </ControlTheme>
+        <DataTemplate x:Key="LunarDefaultCellContent" x:DataType="controls:LunarCalendarCellContext">
+            <calendar:LunarCalendarCellContent Classes.semantic-scope-lunar="True" Context="{Binding}"
+                Presentation="{Binding $parent[viewer:DateViewerCell].Presentation}"
+                HighlightWeekends="{Binding $parent[controls:LunarCalendar].HighlightWeekends}" />
+        </DataTemplate>
+        </ResourceDictionary>
+    </ControlTheme.Resources>
     <ControlTheme.BasedOn>
         <themes:CalendarControlTheme TargetType="controls:LunarCalendar" />
     </ControlTheme.BasedOn>
+    <Setter Property="DefaultDateCellTemplate" Value="{StaticResource LunarDefaultCellContent}" />
+    <Setter Property="DateCellTheme" Value="{StaticResource LunarDateCellTheme}" />
 </ControlTheme>

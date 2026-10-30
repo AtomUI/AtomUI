@@ -69,7 +69,7 @@ internal static class ReferencedLanguageCatalogResolver
                                     .Where(static field =>
                                         !field.IsImplicitlyDeclared && field.HasConstantValue))
         {
-            units.Add(new LanguageCatalogUnitInfo(field.Name, Location.None));
+            units.Add(new LanguageCatalogUnitInfo(field.Name, Location.None, Convert.ToInt32(field.ConstantValue, System.Globalization.CultureInfo.InvariantCulture)));
         }
 
         if (units.Count == 0)

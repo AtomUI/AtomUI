@@ -1,0 +1,58 @@
+<Project>
+    <!-- One declaration registry shared by every feature target and every imported package. -->
+    <PropertyGroup><AtomUIToolchainTasksImported>true</AtomUIToolchainTasksImported></PropertyGroup>
+    <UsingTask TaskName="AtomUI.Build.Tasks.GenerateCompiledThemeInputTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.ConditionalPublishTransformTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.ExportLanguageTemplatesTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.GenerateLanguagePackagePropsTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.GenerateThemeAssetWrappersTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.PrepareConditionalRegistrationBridgeTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.PrepareConditionalRegistrationInputsTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.PrepareLanguagePackageAssetsTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.PrepareLanguagePackageTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.PrepareNative8RegistrationTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.PrepareNet8LinkHostTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.PrepareTypeMapLinkTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.ResolveRegistrationToolsTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.ValidateRegistrationToolchainTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.VerifyConditionalRegistrationBridgeTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.VerifyConditionalRegistrationOutputTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.VerifyNative8RegistrationTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.VerifyTypeMapReceiptTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
+</Project>

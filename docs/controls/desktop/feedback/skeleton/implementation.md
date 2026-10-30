@@ -22,6 +22,12 @@
 - `src/AtomUI.Desktop.Controls/Skeleton/SkeletonParagraph.cs`
 - `src/AtomUI.Desktop.Controls/Skeleton/SkeletonTitle.cs`
 - `src/AtomUI.Desktop.Controls/Skeleton/SkeletonToken.cs`
+- `src/AtomUI.Desktop.Controls/Skeleton/Skeleton.SemanticParts.cs`
+- `src/AtomUI.Desktop.Controls/Skeleton/SkeletonAvatar.SemanticParts.cs`
+- `src/AtomUI.Desktop.Controls/Skeleton/SkeletonButton.SemanticParts.cs`
+- `src/AtomUI.Desktop.Controls/Skeleton/SkeletonInput.SemanticParts.cs`
+- `src/AtomUI.Desktop.Controls/Skeleton/SkeletonImage.SemanticParts.cs`
+- `src/AtomUI.Desktop.Controls/Skeleton/SkeletonNode.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Skeleton/Themes/AbstractSkeletonTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Skeleton/Themes/AbstractSkeletonTheme.cs`
 - `src/AtomUI.Desktop.Controls/Skeleton/Themes/SkeletonAvatarTheme.axaml`
@@ -42,6 +48,9 @@
 - Theme 文件负责静态视觉结构、template part、selector 和资源绑定。
 - Token 文件只提供组件视觉变量，不保存实例状态。
 - Gallery 文件只展示用法和示例，不作为运行时逻辑 owner。
+- Semantic descriptor 由各 public owner 的 `[SemanticPart]` 声明生成；模板只使用静态 `Classes.semantic-*="True"` marker。
+- `SkeletonAvatar`、`SkeletonButton` 和 `SkeletonInput` 的 typed theme 保留现有 BasedOn 样式，并提供等价显式叶子模板，
+  使生成器能够验证静态 marker，而不引入运行时发现路径。
 
 ## 3. 核心类职责
 
@@ -116,6 +125,11 @@ Public API / ItemsSource / Command / Event
 - `PART_RootLayout`：承载根视觉、边框、背景或尺寸基线。
 - `PART_Title`：稳定模板协作入口，重命名前必须同步主题和实现。
 
+`SkeletonTheme` 的加载占位模板使用两列 `Grid`：第一列的 `DockPanel.semantic-header` 只承载
+`PART_Avatar`，第二列的 `StackPanel.semantic-section` 承载 `PART_Title` 和 `PART_Paragraph`，并填充剩余宽度。
+两者是同一布局容器的 sibling，确保 Semantic Preview 高亮 `header` 时只覆盖头像 cell；`ContentPresenter` 仍作为加载完成后的
+独立 sibling 显示用户内容。
+
 ## 6. 交互与事件处理
 
 Skeleton 的交互事件应从输入源收敛到控件级语义事件：
@@ -136,8 +150,14 @@ Skeleton 的交互事件应从输入源收敛到控件级语义事件：
 - 主题资源、Token 和 SharedToken 计算后的视觉更新。
 - 内容、命令和视觉状态在模板节点之间的同步。
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
+- Semantic Part marker 不参与状态切换；active 与普通 content layer 都静态存在，`IsVisible` 只决定当前可观察 target。
+- `SkeletonParagraph` 作为唯一状态 owner，在创建运行时 `SkeletonLine` 与 Background 变化时直接同步行背景；
+  不引入字符串绑定或额外订阅，行节点在 Paragraph 模板重建时随 Children 清理。
+- `SkeletonTheme` 覆盖主控件根 Background 的默认值为透明，避免根 surface 与子占位层重复绘制；显式 Background 仍由根 Border 投影。
+- `SkeletonLine` 按最终内容盒解析 `LineWidth`：像素值作为上限，百分比相对于最终宽度计算；内部占位层使用最终高度，
+  不计入外部 Margin。`LineWidth` 变化使测量失效，确保运行时修改能够更新布局。
 
-Active shimmer 使用单个无限 Avalonia `Animation` 驱动。该动画必须显式采用 `PlaybackBehavior.OnlyIfVisible`，使 Skeleton 自身或任一 Visual 祖先不可见时暂停时钟；重新可见后由 Avalonia 恢复当前动画，不为每次可见性变化重建动画对象。
+Active shimmer 由挂在模板叶子节点 `PART_ActiveAnimationLayer` 上的样式动画（`Style.Animations`）驱动，图层 `Background` 由动画直接写入。不得改回在控件上手工调用 `Animation.RunAsync`：Avalonia 的 `RunAsync` 禁止 `IterationCount.Infinite`（返回 faulted Task，未观察时会在 GC 阶段触发 `TaskScheduler.UnobservedTaskException`），样式动画是 Avalonia 公开 API 中唯一原生支持 Infinite 且不创建 Task 的单实例持续动画路径。动画必须显式采用 `PlaybackBehavior.OnlyIfVisible`，使 Skeleton 自身或任一 Visual 祖先不可见时暂停时钟；重新可见后由 Avalonia 恢复当前动画，不为每次可见性变化重建动画对象。动画 target 必须是模板叶子节点而非控件自身，避免样式作用域级联到嵌套的 Skeleton 子控件。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
 
@@ -146,6 +166,7 @@ Active shimmer 使用单个无限 Avalonia `Animation` 驱动。该动画必须�
 资源和 AOT 约束：
 
 - 不通过运行时反射扫描 public API、Token 或 Gallery 示例数据。
+- 不通过 VisualTree 扫描维护 Semantic Part；Gallery Preview 使用生成 descriptor 和 owner-scoped marker 解析。
 - 不把可静态声明的模板结构迁移到 C# 动态创建。
 - 异步加载、上传、弹层和窗口生命周期必须能取消或释放。
 - 缓存对象必须与控件、窗口、弹层或数据 owner 生命周期一致。

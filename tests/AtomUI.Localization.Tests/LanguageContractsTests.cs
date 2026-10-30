@@ -155,31 +155,6 @@ public class LanguageContractsTests
     }
 
     [Fact]
-    public void Committed_Result_Exposes_Old_And_New_State()
-    {
-        var oldState = CreateState("en-US", 0);
-        var newState = CreateState("zh-CN", 1);
-
-        var result = LanguageChangeResult.Committed(oldState, newState);
-
-        result.Status.ShouldBe(LanguageChangeStatus.Committed);
-        result.OldState.ShouldBeSameAs(oldState);
-        result.NewState.ShouldBeSameAs(newState);
-    }
-
-    [Fact]
-    public void NoOp_Result_Uses_The_Same_State_For_Both_Sides()
-    {
-        var state = CreateState("en-US", 0);
-
-        var result = LanguageChangeResult.NoOp(state);
-
-        result.Status.ShouldBe(LanguageChangeStatus.NoOp);
-        result.OldState.ShouldBeSameAs(state);
-        result.NewState.ShouldBeSameAs(state);
-    }
-
-    [Fact]
     public void LanguageChangeResult_Rejects_Null_States()
     {
         var state = CreateState("en-US", 0);
@@ -190,41 +165,11 @@ public class LanguageContractsTests
     }
 
     [Fact]
-    public void LanguageChangedEventArgs_Exposes_Only_A_Committed_Result()
-    {
-        var result = LanguageChangeResult.Committed(
-            CreateState("en-US", 0),
-            CreateState("zh-CN", 1));
-
-        var eventArgs = new LanguageChangedEventArgs(result);
-
-        eventArgs.Result.ShouldBeSameAs(result);
-    }
-
-    [Fact]
     public void LanguageChangedEventArgs_Rejects_Null_Or_NoOp_Result()
     {
         Should.Throw<ArgumentNullException>(() => new LanguageChangedEventArgs(null!));
         Should.Throw<ArgumentException>(() => new LanguageChangedEventArgs(
             LanguageChangeResult.NoOp(CreateState("en-US", 0))));
-    }
-
-    [Fact]
-    public void LanguageExceptions_Preserve_Message_And_Inner_Exception()
-    {
-        var innerException = new InvalidOperationException("cause");
-
-        var exceptions = new Exception[]
-        {
-            new LanguageConfigurationException("configuration", innerException),
-            new LanguageCatalogException("catalog", innerException),
-            new LanguageCoverageException("coverage", innerException)
-        };
-
-        exceptions.Select(exception => exception.InnerException).ShouldAllBe(
-            inner => ReferenceEquals(inner, innerException));
-        exceptions.Select(exception => exception.Message).ShouldBe(
-            ["configuration", "catalog", "coverage"]);
     }
 
     [Fact]

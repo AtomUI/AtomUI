@@ -1,13 +1,9 @@
-using AtomUIGallery.Localization;
 using System.Collections;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
-using AtomUI.Data;
 using AtomUI.Desktop.Controls;
-using Avalonia;
-using Avalonia.Threading;
 using ReactiveUI;
 
 namespace AtomUIGallery.ShowCases.DataGrid;
@@ -21,6 +17,7 @@ public partial class DataGridViewModel : ReactiveObject, IRoutableViewModel, IDi
     public string UrlPathSegment { get; } = ID.ToString();
 
     internal GalleryLocalDataGridSource<DataGridBaseInfo>? BasicCaseDataSource { get; set; }
+    internal GalleryLocalDataGridSource<ExpandableRowDataType>? SemanticCaseDataSource { get; set; }
     internal GalleryLocalDataGridSource<DataGridBaseInfo>? FilterAndSorterDataSource { get; set; }
     internal GalleryLocalDataGridSource<MultiSorterDataType>? MultiSorterDataSource { get; set; }
     internal GalleryLocalDataGridSource<ExpandableRowDataType>? ExpandableRowDataSource { get; set; }
@@ -187,6 +184,7 @@ public static class DataGridShowCaseFields
     public static DataGridFieldId Name { get; } = new("name");
     public static DataGridFieldId Age { get; } = new("age");
     public static DataGridFieldId Address { get; } = new("address");
+    public static DataGridFieldId Description { get; } = new("description");
     public static DataGridFieldId Money { get; } = new("money");
     public static DataGridFieldId Chinese { get; } = new("chinese");
     public static DataGridFieldId Math { get; } = new("math");
@@ -509,6 +507,14 @@ internal static class DataGridShowCaseSourceDescriptors
             .Field(DataGridShowCaseFields.Name, static row => row.Name, StringComparer.Ordinal)
             .Field(DataGridShowCaseFields.Age, static row => row.Age)
             .Field(DataGridShowCaseFields.Address, static row => row.Address, StringComparer.Ordinal);
+
+    public static DataGridLocalSourceDescriptor<ExpandableRowDataType> Semantic { get; } =
+        DataGridLocalSourceDescriptor.For<ExpandableRowDataType>(static row => DataGridRowKey.FromString(row.Key))
+            .Field(DataGridShowCaseFields.Key, static row => row.Key, StringComparer.Ordinal)
+            .Field(DataGridShowCaseFields.Name, static row => row.Name, StringComparer.Ordinal)
+            .Field(DataGridShowCaseFields.Age, static row => row.Age)
+            .Field(DataGridShowCaseFields.Address, static row => row.Address, StringComparer.Ordinal)
+            .Field(DataGridShowCaseFields.Description, static row => row.Description, StringComparer.Ordinal);
 
     public static DataGridLocalSourceDescriptor<MultiSorterDataType> MultiSorter { get; } =
         DataGridLocalSourceDescriptor.For<MultiSorterDataType>(static row => DataGridRowKey.FromString(row.Key))

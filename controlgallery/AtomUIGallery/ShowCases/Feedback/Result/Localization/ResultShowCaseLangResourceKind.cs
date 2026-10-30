@@ -1,5 +1,3 @@
-using AtomUI.Localization;
-
 namespace AtomUIGallery.Localization;
 
 [LanguageCatalog]
@@ -21,6 +19,14 @@ public enum ResultShowCaseLangResourceKind
     ErrorDescription,
     CustomIconTitle,
     CustomIconDescription,
+    SemanticPartStyleTitle,
+    SemanticPartStyleDescription,
+    SemanticRootDescription,
+    SemanticIconDescription,
+    SemanticTitleDescription,
+    SemanticSubTitleDescription,
+    SemanticExtraDescription,
+    SemanticBodyDescription,
     PageSubtitle,
     PageDescription,
     ComponentCategory,

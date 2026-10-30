@@ -1,6 +1,6 @@
 # Card 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.Card` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Card 桌面版实现原理](implementation.md)，Card Token 的专项设计见 [Card Token 设计](token.md)，设计和契约变化记录见 [Card Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.Card` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，公共语义区域见 [Card Semantic Part 契约](semantic-part.md)，内部实现原理见 [Card 桌面版实现原理](implementation.md)，Card Token 的专项设计见 [Card Token 设计](token.md)，设计和契约变化记录见 [Card Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -18,7 +18,7 @@ Card 的职责是提供稳定的信息容器视觉和组合入口。它不负责
 
 ## 2. 设计语言
 
-Card 的设计语言来自 参考设计体系的卡片容器：一个有明确边界的内容表面承载同一主题的信息，Header 表示信息组名称，Extra 表示辅助操作，Cover 表示主要媒体，Actions 表示底部轻量操作。
+Card 的设计语言围绕具有明确边界的信息表面展开：Header 表示信息组名称，Extra 表示辅助操作，Cover 表示主要媒体，Actions 表示底部轻量操作。
 
 | 维度 | 含义 | 典型表达 |
 | --- | --- | --- |
@@ -142,6 +142,19 @@ CardTheme / CardActionPanelTheme / CardGridItemTheme / CardTabsContentTheme / Ca
 
 根容器边框、圆角、背景和部分文字色来自 SharedToken。Header 高度、字体、padding、body padding、操作区背景、tabs margin、extra 色、卡片阴影、操作图标尺寸和 grid item 阴影来自 CardToken。
 
+### 5.1 Semantic Part 支持摘要
+
+Card 家族由两个独立 public owner 公开 Semantic Part：
+
+| Owner | Parts | 职责摘要 |
+| --- | --- | --- |
+| `Card` | `root`、`header`、`title`、`extra`、`cover`、`body`、`actions` | 覆盖 Card 根表面、头部、标题、辅助内容、封面、主体和底部操作组。 |
+| `CardMetaContent` | `root`、`section`、`avatar`、`title`、`description` | 覆盖 Meta 根区域、详情区、头像、标题和描述。 |
+
+`CardGridContent`、`CardGridItem`、`CardTabsContent` 和 `CardActionButton` 是公开组合类型，但不由 Card 家族推导独立
+Semantic Part descriptor。完整 Selector、ContractType、cardinality、状态矩阵和排除边界以
+[Card Semantic Part 契约](semantic-part.md)为准。
+
 ## 6. 控件家族或集成关系
 
 Card 属于 Data Display 分类，常与 Grid、Image、Avatar、TabControl、Skeleton、HyperLinkButton 和 IconButton 组合。
@@ -201,34 +214,14 @@ others/null -> Default
 
 `CardTabsContent` 既支持 XAML `Items` 集合，也支持 `TabItemsSource` / `TabItemTemplate`。模板内 `TabControl` 负责实际 tab 选择和内容显示，Card 只负责把内容类型、SizeType 和 Motion 状态同步给它。
 
-## 9. 文档导航、LLMS 导出与验证策略
+## 9. 文档导航与验证策略
 
 关联文档：
 
+- [Card Semantic Part 契约](semantic-part.md)
 - [Card 桌面版实现原理](implementation.md)
 - [Card Token 设计](token.md)
 - [Card Changelog](changelog.md)
-
-LLMS 语义区域：
-
-| Part | AtomUI 节点 | 职责 | 相关 API | 相关 Token | 稳定性 |
-| --- | --- | --- | --- | --- | --- |
-| `root` | `Card` | 数据展示控件根语义区域，承载 public API、数据状态和主题入口。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `item` | `条目或容器区域` | 承载集合项、单元格、标签、时间节点、卡片或展示单元。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `header` | `标题或头部区域` | 承载标题、字段名、列头、操作入口或摘要信息。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `content` | `内容区域` | 承载主体内容、媒体、文本、空状态、加载状态或详情区域。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-| `motion` | `动效或浮层区域` | 表达展开收起、轮播、tooltip、tour、预览或虚拟化反馈。 | 见 API 与契约模型 | 见视觉与主题模型 | stable |
-
-LLMS 导出来源：
-
-| LLMS 内容 | 来源 | 说明 |
-| --- | --- | --- |
-| 单控件完整文档 | `overview.md` + `implementation.md` + `token.md` + Gallery ShowCase | 生成 `controls/card/index-cn.md` |
-| 单控件语义文档 | `overview.md` + `implementation.md` + theme/template 信息 | 生成 `controls/card/semantic-cn.md` |
-| API 表 | overview.md 语义摘要 + 源码 public surface | 不在 `overview.md` 中复制完整 API 表 |
-| Design Token 表 | token.md、Token 类型或第 5 节主题模型 | 不在生成产物中手工维护第二份 Token 表 |
-| 示例 | Gallery ShowCase + source snippet catalog | 只引用稳定示例 |
-| 源码索引 | `implementation.md` | 用于定位控件源码、主题和测试 |
 
 验证策略：
 
@@ -240,3 +233,4 @@ LLMS 导出来源：
 | Token | Header、Body、Actions、Tabs、Extra、Shadow、Grid item 和 action icon Token。 |
 | Gallery | Basic、NoBorder、Simple、CustomizedContent、CardInColumn、GridCard、InnerCard、LoadingCard、WithTabs、MoreContentConfiguration 示例。 |
 | 文档 | 运行 `git diff --check`，检查相对链接存在。 |
+| Semantic descriptor | 分别验证 `Card` 与 `CardMetaContent` 的 Part 集合、ContractType、cardinality、owner 隔离和静态 marker。 |

@@ -1,0 +1,76 @@
+using System.Runtime.InteropServices;
+using P1;
+using Builder = AtomUI.Registration.ControlPackageRegistrationBuilder;
+var builder = new Builder();
+#if CASE_ALL || CASE_DIRECT || CASE_OFF || CASE_OR || CASE_SECOND || CASE_BOTH
+Usage.Touch(Usage.Direct());
+#endif
+#if CASE_ALL || CASE_TOKEN
+Usage.Touch(Usage.Token());
+#endif
+#if CASE_ALL || CASE_STYLE
+Usage.Touch(Usage.Style());
+#endif
+#if CASE_ALL || CASE_TRANSITIVE || CASE_CCTOR
+Usage.Touch(Usage.Transitive());
+#endif
+#if CASE_ALL || CASE_CYCLE
+Usage.Touch(Usage.Cycle());
+#endif
+#if CASE_ALL || CASE_GENERIC
+Usage.Touch(Usage.Generic());
+#endif
+#if CASE_ALL || CASE_STATIC
+Console.WriteLine(StaticOnly.Calculate());
+#endif
+#if CASE_SAME_NAME
+Usage.Touch(new P1.DirectControl());
+#endif
+#if CASE_OR
+Usage.Touch(AdditionalUsage.Alias());
+#endif
+#if CASE_ARRAY
+Usage.Touch(AdditionalUsage.Array());
+#endif
+#if CASE_TYPEOF
+Console.WriteLine(AdditionalUsage.TypeOf().FullName);
+#endif
+#if CASE_THROW || CASE_CCTOR_THROW
+Usage.Touch(AdditionalUsage.Throwing());
+#endif
+bool caught = false;
+try
+{
+#if CASE_CCTOR || CASE_CCTOR_THROW
+    builder = CctorEntry<int>.Result;
+#elif CASE_SECOND
+    SecondPackage.Collect(builder);
+#elif !CASE_OFF
+    Package.Collect(builder);
+#endif
+#if CASE_BOTH
+    SecondPackage.Collect(builder);
+#endif
+}
+catch (InvalidOperationException error) when (error.Message == "EXPECTED_MANAGED_CALLI_EXCEPTION")
+{
+    caught = true;
+    Console.WriteLine("managed exception propagated");
+}
+catch (TypeInitializationException error) when (error.InnerException?.Message == "EXPECTED_MANAGED_CALLI_EXCEPTION")
+{
+    caught = true;
+    Console.WriteLine("cctor exception propagated");
+}
+#if CASE_THROW || CASE_CCTOR_THROW
+if (!caught) { return 2; }
+#else
+if (caught) { return 3; }
+#endif
+string actual = string.Join(",", builder.Items.OrderBy(x => x, StringComparer.Ordinal));
+Console.WriteLine("registered=" + actual);
+Console.WriteLine("runtime=" + RuntimeInformation.FrameworkDescription);
+string expected = Environment.GetEnvironmentVariable("ATOMUI_EXPECT") ?? "";
+if (actual != expected) { Console.Error.WriteLine("FAIL expected=" + expected + " actual=" + actual); return 1; }
+return 0;
+namespace P1 { public sealed class DirectControl { } }

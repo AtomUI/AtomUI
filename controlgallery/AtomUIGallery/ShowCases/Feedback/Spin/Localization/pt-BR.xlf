@@ -103,6 +103,66 @@
         <target state="translated">Exemplos</target>
       </segment>
     </unit>
+    <unit id="SemanticContainerDescription">
+      <segment>
+        <source>Container element with opacity and blur transition styles for the nested content.</source>
+        <target state="translated">Elemento contêiner com estilos de opacidade e transição de desfoque para o conteúdo aninhado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDescriptionDescription">
+      <segment>
+        <source>Description element with font size, foreground and line height styles for the tip text.</source>
+        <target state="translated">Elemento de descrição com estilos de tamanho de fonte, cor de primeiro plano e altura de linha para o texto de dica.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorContentDescription">
+      <segment>
+        <source>Content element with the built-in dot indicator or custom indicator presenter styles.</source>
+        <target state="translated">Elemento de conteúdo com estilos do indicador de pontos interno ou do apresentador de indicador personalizado.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorDescription">
+      <segment>
+        <source>Indicator element with size, motion duration and other spinning indicator styles.</source>
+        <target state="translated">Elemento indicador com tamanho, duração de movimento e outros estilos do indicador de carregamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIndicatorRootDescription">
+      <segment>
+        <source>Root element of a SpinIndicator component.</source>
+        <target state="translated">Elemento raiz de um componente SpinIndicator.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticMaskDescription">
+      <segment>
+        <source>Mask element with background, opacity and other overlay dimming styles.</source>
+        <target state="translated">Elemento de máscara com estilos de fundo, opacidade e outro escurecimento de sobreposição.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Spin's published Semantic Parts.</source>
+        <target state="translated">Use estilos com escopo de owner para personalizar os Semantic Parts publicados do Spin.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with the loading region's base layout, alignment and theme entry styles.</source>
+        <target state="translated">Elemento raiz com estilos de layout base, alinhamento e entrada de tema da região de carregamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Section element with centered alignment, spacing and other loading area layout styles.</source>
+        <target state="translated">Elemento de seção com alinhamento centralizado, espaçamento e outros estilos de layout da área de carregamento.</target>
+      </segment>
+    </unit>
     <unit id="SizeDescription">
       <segment>
         <source>SpinIndicator supports small, middle, large, and custom size types; the custom type follows the middle metrics by default and can override indicator metrics.</source>

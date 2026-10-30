@@ -313,6 +313,48 @@
         <target state="translated">样式</target>
       </segment>
     </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with border radius, transition animations, border styles, hover states, focus states and other interactive styles</source>
+        <target state="translated">单选图标元素，包含圆角样式、过渡动画、边框样式、悬停状态、焦点状态等交互样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label element with padding, text color, disabled states, alignment and other text styles</source>
+        <target state="translated">标签文本元素，包含内边距、文字颜色、禁用状态、对齐方式等文本样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartConditionalTitle">
+      <segment>
+        <source>Conditional styling</source>
+        <target state="translated">条件样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartFixedTitle">
+      <segment>
+        <source>Fixed styling</source>
+        <target state="translated">固定样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and RadioButton property selectors to customize the published Semantic Parts.</source>
+        <target state="translated">使用 owner 作用域选择器和 RadioButton 属性选择器定制已发布的 Semantic Part。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自定义语义结构的样式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with layout styles, cursor styles, disabled text color and other basic container styles</source>
+        <target state="translated">根元素，包含布局样式、光标样式、禁用状态文字颜色等基础容器样式</target>
+      </segment>
+    </unit>
     <unit id="SizeTypeDescription">
       <segment>
         <source>There are three sizes available: large, medium, and small. It can coordinate with input box.</source>

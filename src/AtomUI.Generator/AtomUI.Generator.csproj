@@ -1,5 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk"
-         TreatAsLocalProperty="IsAotCompatible;EnableAotAnalyzer;EnableTrimAnalyzer;EnableSingleFileAnalyzer;PublishAot;PublishTrimmed;PublishSingleFile;RunAOTCompilation;SelfContained;RuntimeIdentifier">
+<Project Sdk="Microsoft.NET.Sdk"
+         TreatAsLocalProperty="IsTrimmable;IsAotCompatible;EnableAotAnalyzer;EnableTrimAnalyzer;EnableSingleFileAnalyzer;PublishAot;PublishTrimmed;PublishSingleFile;RunAOTCompilation;SelfContained;RuntimeIdentifier">
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
@@ -8,7 +8,10 @@
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <IncludeInPublish>false</IncludeInPublish>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <IsAotCompatible>false</IsAotCompatible>
+        <IsTrimmable>false</IsTrimmable>
+        <RuntimeIdentifier></RuntimeIdentifier>
         <EnableAotAnalyzer>false</EnableAotAnalyzer>
         <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
         <EnableSingleFileAnalyzer>false</EnableSingleFileAnalyzer>
@@ -22,30 +25,32 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all"/>
-        <ProjectReference Include="../AtomUI.Build.Tasks/AtomUI.Build.Tasks.csproj"
+        <ProjectReference Include="../AtomUI.Toolchain/AtomUI.Toolchain.csproj"
                           ReferenceOutputAssembly="false"
+                          SkipGetTargetFrameworkProperties="true"
+                          Private="false"
                           PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Remove="LinkedRegistration/ApplicationRegistrationPlanGenerator.cs" />
-        <Compile Remove="LinkedRegistration/LinkedAxamlUsageInput.cs" />
-        <Compile Remove="LinkedRegistration/LinkedRegistrationManifestCatalog.cs" />
-        <Compile Remove="LinkedRegistration/LinkedRegistrationUsageGenerator.cs" />
-        <Compile Remove="LinkedRegistration/Model/ApplicationPackagePlan.cs" />
-        <Compile Remove="LinkedRegistration/Model/LinkedUsageInfo.cs" />
-        <Compile Remove="LinkedRegistration/Model/RegistrationUnitDependencyAnalyzer.cs" />
-        <Compile Remove="LinkedRegistration/Writers/ApplicationRegistrationPlanWriter.cs" />
-        <Compile Include="../AtomUI.Build.Tasks/LocalizationBuild/**/*.cs"
+        <Compile Include="../AtomUI.Toolchain/Common/Startup/**/*.cs" Link="Startup/Data/%(Filename)%(Extension)" />
+        <Compile Include="../AtomUI.Toolchain/Common/Registration/RegistrationFrameworkPolicy.cs"
+                 Link="Registration/RegistrationFrameworkPolicy.cs" />
+        <Compile Include="../AtomUI.Toolchain/Common/Localization/**/*.cs"
                  Link="LocalizationBuild/%(RecursiveDir)%(Filename)%(Extension)" />
-        <Compile Include="../AtomUI.Build.Tasks/SourceGeneration/GeneratedCodeNamespace.cs"
+        <Compile Include="../AtomUI.Toolchain/Common/SourceGeneration/GeneratedCodeNamespace.cs"
                  Link="SourceGeneration/GeneratedCodeNamespace.cs" />
+        <Compile Include="../AtomUI.Core/Theme/Definitions/Compiled/BuiltInThemeLiteralValue.cs;../AtomUI.Core/Theme/Definitions/Compiled/CompiledThemeManifest.cs" Link="ThemeDefinitions/Shared/%(Filename)%(Extension)" />
+        <Compile Include="../AtomUI.Toolchain/Common/ThemeDefinitions/**/*.cs" Link="ThemeDefinitions/Shared/%(Filename)%(Extension)" />
+        <EmbeddedResource Include="../AtomUI.Localization/LanguageData/language-tags.tsv" LogicalName="AtomUI.LanguageTags.tsv" />
         <InternalsVisibleTo Include="AtomUI.Generator.Tests" />
     </ItemGroup>
 
     <!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
     <ItemGroup>
         <None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <AtomUIGeneratorToolAsset Update="$(OutputPathWithoutFramework)/netstandard2.0/System.*.dll"
+              PackagePath="tools/netstandard2.0/%(Filename)%(Extension);analyzers/dotnet/cs/%(Filename)%(Extension)" />
         <None Include="@(AtomUINuGetBuildAsset)"
               Pack="true"
               Visible="false" />
@@ -54,15 +59,4 @@
               Visible="false" />
     </ItemGroup>
 
-    <Target Name="AtomUIPrepareLinkedPublishGeneratorForPack"
-            BeforeTargets="_GetPackageFiles"
-            Condition="'$(IsPackable)' == 'true'">
-        <MSBuild Projects="$(MSBuildProjectDirectory)/../AtomUI.Generator.LinkedPublish/AtomUI.Generator.LinkedPublish.csproj"
-                 Targets="Build"
-                 BuildInParallel="false"
-                 Properties="Configuration=$(Configuration)"
-                 Condition="'$(NoBuild)' != 'true'" />
-        <Error Condition="!Exists('$(AtomUILinkedPublishGeneratorAssembly)')"
-               Text="AtomUI linked-publish Generator could not be found at '$(AtomUILinkedPublishGeneratorAssembly)'. Build AtomUI.Generator.LinkedPublish before packing with NoBuild=true." />
-    </Target>
 </Project>

@@ -157,6 +157,30 @@
         <target state="translated">Salvar seu changes.</target>
       </segment>
     </unit>
+    <unit id="P2SemanticStepDescription">
+      <segment>
+        <source>Hello World?!</source>
+        <target state="translated">Olá Mundo?!</target>
+      </segment>
+    </unit>
+    <unit id="P2SemanticStepSaveDescription">
+      <segment>
+        <source>Save your changes.</source>
+        <target state="translated">Salve suas alterações.</target>
+      </segment>
+    </unit>
+    <unit id="P2SemanticStepSaveTitle">
+      <segment>
+        <source>Save</source>
+        <target state="translated">Salvar</target>
+      </segment>
+    </unit>
+    <unit id="P2SemanticStepTitle">
+      <segment>
+        <source>Hello World!</source>
+        <target state="translated">Olá Mundo!</target>
+      </segment>
+    </unit>
     <unit id="P2TextHorizontalOffset">
       <segment>
         <source>Horizontal offset:</source>
@@ -245,6 +269,108 @@
       <segment>
         <source>Examples</source>
         <target state="translated">Exemplos</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupActionsDescription">
+      <segment>
+        <source>Popup actions container</source>
+        <target state="translated">Contêiner do grupo de botões de ação que organiza os botões anterior/próximo/concluir.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupCloseDescription">
+      <segment>
+        <source>Popup close button</source>
+        <target state="translated">Botão de fechar que encerra o fluxo de guia.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupCoverDescription">
+      <segment>
+        <source>Popup cover area</source>
+        <target state="translated">Área de capa do cartão que hospeda a imagem de capa da etapa.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupDescriptionDescription">
+      <segment>
+        <source>Popup description text</source>
+        <target state="translated">Estilos do texto de descrição da etapa de guia.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupFooterDescription">
+      <segment>
+        <source>Popup footer area</source>
+        <target state="translated">Área de rodapé do cartão que compõe os indicadores e os botões de ação.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupHeaderDescription">
+      <segment>
+        <source>Popup header area</source>
+        <target state="translated">Área de cabeçalho do cartão que compõe o título e o botão de fechar.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupIndicatorDescription">
+      <segment>
+        <source>Popup single indicator</source>
+        <target state="translated">Ponto indicador de uma única etapa, incluindo o estilo do estado ativo.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupIndicatorsDescription">
+      <segment>
+        <source>Popup indicators container</source>
+        <target state="translated">Contêiner do grupo de indicadores que hospeda todos os pontos das etapas.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupMaskDescription">
+      <segment>
+        <source>Popup mask layer</source>
+        <target state="translated">Camada de máscara que cobre a tela fora do alvo, realça o alvo atual e bloqueia a interação.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Popup root container</source>
+        <target state="translated">Contêiner raiz do popup que carrega o cartão, a decoração de seta e os estilos de posicionamento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupSectionDescription">
+      <segment>
+        <source>Popup card content area</source>
+        <target state="translated">Área principal do cartão com estilos de raio de canto, fundo e preenchimento.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupTitleDescription">
+      <segment>
+        <source>Popup title text</source>
+        <target state="translated">Estilos do texto do título da etapa de guia.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Tour root container</source>
+        <target state="translated">Contêiner raiz do Tour que carrega as etapas, o estado aberto e o controle do fluxo de guia.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesDescription">
+      <segment>
+        <source>Use dedicated semantic part styles to customize popup sections.</source>
+        <target state="translated">Use estilos dedicados de partes semânticas para personalizar as seções do popup.</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesFunctionButton">
+      <segment>
+        <source>Begin Tour Function</source>
+        <target state="translated">Iniciar Tour Função</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesObjectButton">
+      <segment>
+        <source>Begin Tour Object</source>
+        <target state="translated">Iniciar Tour Objeto</target>
+      </segment>
+    </unit>
+    <unit id="SemanticStylesTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">Estilo personalizado de Semantic Part</target>
       </segment>
     </unit>
   </file>

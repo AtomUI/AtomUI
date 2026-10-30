@@ -7,8 +7,8 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.FloatButton"
              x:DataType="vm:FloatButtonViewModel">
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
-        <gallery:GalleryStickyTabsHost StickyContentPadding="28,0,28,0">
-            <gallery:GalleryStickyTabsHost.Header>
+        <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
+            <gallery:GalleryShowCaseHost.Header>
                 <gallery:GalleryShowCaseHeader
                     Title="FloatButton"
                     Category="{gallery:FloatButtonShowCaseLangResource ComponentCategory}"
@@ -18,8 +18,86 @@
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
                     BaseClass="AbstractFloatButton" />
-            </gallery:GalleryStickyTabsHost.Header>
+            </gallery:GalleryShowCaseHost.Header>
 
+            <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
+                <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                    <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Stretch"
+                                Spacing="24">
+                        <gallery:SemanticPartPreview Name="FloatButtonSemanticPreview"
+                                                     SemanticOwner="{Binding #FloatButtonSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:FloatButton}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:FloatButton Name="FloatButtonSemanticOwner"
+                                                  Shape="Square"
+                                                  Icon="{antdicons:AntDesignIconProvider FileTextOutlined}"
+                                                  Content="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}"
+                                                  HorizontalAlignment="Center" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:FloatButtonShowCaseLangResource SemanticRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="icon"
+                                    Description="{gallery:FloatButtonShowCaseLangResource SemanticIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="content"
+                                    Description="{gallery:FloatButtonShowCaseLangResource SemanticContentDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="FloatButtonGroupSemanticPreview"
+                                                     SemanticOwner="{Binding #FloatButtonGroupSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:FloatButtonGroup}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:FloatButtonGroup Name="FloatButtonGroupSemanticOwner"
+                                                       Trigger="Click"
+                                                       IsOpen="True"
+                                                       IsMotionEnabled="False"
+                                                       HorizontalAlignment="Center">
+                                    <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}" />
+                                    <atom:FloatButton Icon="{antdicons:AntDesignIconProvider CommentOutlined}" />
+                                </atom:FloatButtonGroup>
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:FloatButtonShowCaseLangResource SemanticGroupRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="trigger"
+                                    Description="{gallery:FloatButtonShowCaseLangResource SemanticTriggerDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="list"
+                                    Description="{gallery:FloatButtonShowCaseLangResource SemanticListDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+
+                        <gallery:SemanticPartPreview Name="BackTopFloatButtonSemanticPreview"
+                                                     SemanticOwner="{Binding #BackTopFloatButtonSemanticOwner}"
+                                                     SemanticOwnerType="{x:Type atom:BackTopFloatButton}">
+                            <gallery:SemanticPartPreview.PreviewContent>
+                                <atom:BackTopFloatButton Name="BackTopFloatButtonSemanticOwner"
+                                                         Shape="Square"
+                                                         Content="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}"
+                                                         HorizontalAlignment="Center" />
+                            </gallery:SemanticPartPreview.PreviewContent>
+                            <gallery:SemanticPartPreview.PartDescriptions>
+                                <gallery:SemanticPartDescription
+                                    Path="root"
+                                    Description="{gallery:FloatButtonShowCaseLangResource SemanticBackTopRootDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="icon"
+                                    Description="{gallery:FloatButtonShowCaseLangResource SemanticIconDescription}" />
+                                <gallery:SemanticPartDescription
+                                    Path="content"
+                                    Description="{gallery:FloatButtonShowCaseLangResource SemanticContentDescription}" />
+                            </gallery:SemanticPartPreview.PartDescriptions>
+                        </gallery:SemanticPartPreview>
+                    </StackPanel>
+                </DataTemplate>
+            </gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
 
             <gallery:ShowCasePanel Name="ExamplesContent"
                                    IsScrollEnabled="False"
@@ -27,406 +105,469 @@
                                    InitialDeferredLoadItemCount="4"
                                    DeferredLoadBatchSize="2"
                                    ContentMargin="28,10,28,28">
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource BasicTitle}"
-        Description="{gallery:FloatButtonShowCaseLangResource BasicDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
-        <atom:ScrollViewer Height="300">
-            <Border Background="White">
-                <Panel Height="500">
-                    <atom:FloatButtonHost />
-                </Panel>
-            </Border>
-        </atom:ScrollViewer>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource BasicTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource BasicDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <atom:ScrollViewer Height="300">
+                                <Border Background="White">
+                                    <Panel Height="500">
+                                        <atom:FloatButtonHost />
+                                    </Panel>
+                                </Border>
+                            </atom:ScrollViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource TypeTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource TypeDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <atom:ScrollViewer Height="300">
+                                <Border Background="White">
+                                    <Panel Height="500">
+                                        <atom:FloatButtonHost ButtonType="Default"
+                                                              Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}"
+                                                              FloatOffsetX="80" />
+                                        <atom:FloatButtonHost ButtonType="Primary"
+                                                              Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}" />
+                                    </Panel>
+                                </Border>
+                            </atom:ScrollViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource TypeTitle}"
-        Description="{gallery:FloatButtonShowCaseLangResource TypeDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
-        <atom:ScrollViewer Height="300">
-            <Border Background="White">
-                <Panel Height="500">
-                    <atom:FloatButtonHost ButtonType="Default"
-                                          Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}"
-                                          FloatOffsetX="80" />
-                    <atom:FloatButtonHost ButtonType="Primary"
-                                          Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}" />
-                </Panel>
-            </Border>
-        </atom:ScrollViewer>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource ShapeTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource ShapeDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <atom:ScrollViewer Height="300">
+                                <Border Background="White">
+                                    <Panel Height="500">
+                                        <atom:FloatButtonHost ButtonType="Primary"
+                                                              Shape="Circle"
+                                                              Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
+                                                              FloatOffsetX="80" />
+                                        <atom:FloatButtonHost ButtonType="Primary"
+                                                              Shape="Square"
+                                                              Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}" />
+                                    </Panel>
+                                </Border>
+                            </atom:ScrollViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-	    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource DescriptionTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource DescriptionDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <atom:ScrollViewer Height="300">
+                                <Border Background="White">
+                                    <Panel Height="500">
+                                        <atom:FloatButtonHost Shape="Square"
+                                                              Icon="{antdicons:AntDesignIconProvider FileTextOutlined}" Margin="0"
+                                                              FloatOffsetX="145"
+                                                              Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}" />
+                                        <atom:FloatButtonHost Shape="Square"
+                                                              FloatOffsetX="80"
+                                                              Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}" />
+                                        <atom:FloatButtonHost Shape="Square"
+                                                              Icon="{antdicons:AntDesignIconProvider FileTextOutlined}"
+                                                              Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}" />
+                                    </Panel>
+                                </Border>
+                            </atom:ScrollViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource CommandTitle}"
-        Description="{gallery:FloatButtonShowCaseLangResource CommandDescription}"
-        SourceKey="float-button-command"
-        BadgeText="v6.0.8"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
-        <Grid Height="300">
-            <atom:ScrollViewer>
-                <Border Background="White">
-                    <Panel Height="500">
-                        <atom:FloatButtonHost ButtonType="Primary"
-                                              Icon="{antdicons:AntDesignIconProvider ThunderboltOutlined}"
-                                              Command="{Binding FloatButtonCommand}"
-                                              CommandParameter="{gallery:FloatButtonShowCaseLangResource P2CommandHost}"
-                                              FloatOffsetX="80" />
-                        <atom:FloatButtonGroupHost Shape="Circle"
-                                                   Trigger="Click">
-                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}"
-                                              Tooltip="{gallery:FloatButtonShowCaseLangResource P2CommandGroupChild}"
-                                              Command="{Binding FloatButtonCommand}"
-                                              CommandParameter="{gallery:FloatButtonShowCaseLangResource P2CommandGroupChild}" />
-                        </atom:FloatButtonGroupHost>
-                    </Panel>
-                </Border>
-            </atom:ScrollViewer>
-            <atom:PixelAlignedBorder Name="CommandFeedbackCard"
-                                     Width="220"
-                                     Padding="14,12"
-                                     HorizontalAlignment="Right"
-                                     VerticalAlignment="Bottom"
-                                     Margin="24,24,160,24"
-                                     Background="{atom:SharedTokenResource ColorBgContainer}"
-                                     BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
-                                     BorderThickness="1"
-                                     CornerRadius="8">
-                <Grid ColumnDefinitions="Auto,*"
-                      RowDefinitions="Auto,Auto"
-                      ColumnSpacing="12"
-                      RowSpacing="8">
-                    <atom:TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2CommandCount}"
-                                    Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
-                    <atom:TextBlock Grid.Column="1"
-                                    Text="{Binding CommandClickCount}"
-                                    FontSize="18"
-                                    FontWeight="SemiBold"
-                                    Foreground="{atom:SharedTokenResource ColorPrimary}" />
-                    <atom:TextBlock Grid.Row="1"
-                                    Text="{gallery:FloatButtonShowCaseLangResource P2CommandSource}"
-                                    Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
-                    <atom:TextBlock Grid.Row="1"
-                                    Grid.Column="1"
-                                    Text="{Binding LastCommandSource}"
-                                    FontWeight="SemiBold" />
-                </Grid>
-            </atom:PixelAlignedBorder>
-        </Grid>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource TooltipTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource TooltipDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <atom:ScrollViewer Height="300">
+                                <Border Background="White">
+                                    <Panel Height="500">
+                                        <atom:FloatButtonHost FloatOffsetX="80"
+                                                              Tooltip="{gallery:FloatButtonShowCaseLangResource P2TooltipSinceN5N25N0}" TooltipColor="blue" />
+                                        <atom:FloatButtonHost Tooltip="{gallery:FloatButtonShowCaseLangResource P2TooltipDocuments}" />
+                                    </Panel>
+                                </Border>
+                            </atom:ScrollViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource GroupTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource GroupDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <atom:ScrollViewer Height="300">
+                                <Border Background="White">
+                                    <Panel Height="500">
+                                        <atom:FloatButtonGroupHost Shape="Square" FloatOffsetX="80">
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}" />
+                                            <atom:FloatButton />
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider SyncOutlined}" />
+                                            <atom:BackTopFloatButton />
+                                        </atom:FloatButtonGroupHost>
+                                        <atom:FloatButtonGroupHost Shape="Circle">
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}" />
+                                            <atom:FloatButton />
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider SyncOutlined}" />
+                                            <atom:BackTopFloatButton />
+                                        </atom:FloatButtonGroupHost>
+                                    </Panel>
+                                </Border>
+                            </atom:ScrollViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource ShapeTitle}"
-        Description="{gallery:FloatButtonShowCaseLangResource ShapeDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
-        <atom:ScrollViewer Height="300">
-            <Border Background="White">
-                <Panel Height="500">
-                    <atom:FloatButtonHost ButtonType="Primary"
-                                          Shape="Circle"
-                                          Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
-                                          FloatOffsetX="80" />
-                    <atom:FloatButtonHost ButtonType="Primary"
-                                          Shape="Square"
-                                          Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}" />
-                </Panel>
-            </Border>
-        </atom:ScrollViewer>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource MenuModeTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource MenuModeDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <atom:ScrollViewer Height="300">
+                                <Border Background="White">
+                                    <Panel Height="500">
+                                        <atom:FloatButtonGroupHost Shape="Circle"
+                                                                   Trigger="Hover"
+                                                                   Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
+                                                                   ButtonType="Primary"
+                                                                   FloatOffsetX="80">
+                                            <atom:FloatButton />
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider CommentOutlined}" />
+                                        </atom:FloatButtonGroupHost>
 
+                                        <atom:FloatButtonGroupHost Shape="Circle"
+                                                                   Trigger="Click"
+                                                                   Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
+                                                                   ButtonType="Primary">
+                                            <atom:FloatButton />
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider CommentOutlined}" />
+                                        </atom:FloatButtonGroupHost>
+                                    </Panel>
+                                </Border>
+                            </atom:ScrollViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource ControlledModeTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource ControlledModeDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <StackPanel Spacing="10">
+                                <atom:ToggleSwitch HorizontalContentAlignment="Left"
+                                                   VerticalAlignment="Top"
+                                                   IsChecked="{Binding IsOpened, Mode=TwoWay}" />
+                                <atom:ScrollViewer Height="300">
+                                    <Border Background="White">
+                                        <Panel Height="500">
+                                            <atom:FloatButtonGroupHost Shape="Square"
+                                                                       FloatOffsetX="80"
+                                                                       Trigger="Hover"
+                                                                       Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
+                                                                       IsOpen="{Binding IsOpened}">
+                                                <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
+                                                <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
+                                                <atom:FloatButton Icon="{antdicons:AntDesignIconProvider TwitterOutlined}" />
+                                            </atom:FloatButtonGroupHost>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource TooltipTitle}"
-        Description="{gallery:FloatButtonShowCaseLangResource TooltipDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
-        <atom:ScrollViewer Height="300">
-            <Border Background="White">
-                <Panel Height="500">
-                    <atom:FloatButtonHost FloatOffsetX="80"
-                                          Tooltip="{gallery:FloatButtonShowCaseLangResource P2TooltipSinceN5N25N0}" TooltipColor="blue" />
-                    <atom:FloatButtonHost Tooltip="{gallery:FloatButtonShowCaseLangResource P2TooltipDocuments}" />
-                </Panel>
-            </Border>
-        </atom:ScrollViewer>
+                                            <atom:FloatButtonGroupHost Shape="Circle"
+                                                                       Trigger="Click"
+                                                                       Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
+                                                                       IsOpen="{Binding IsOpened}">
+                                                <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
+                                                <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
+                                                <atom:FloatButton Icon="{antdicons:AntDesignIconProvider TwitterOutlined}" />
+                                            </atom:FloatButtonGroupHost>
+                                        </Panel>
+                                    </Border>
+                                </atom:ScrollViewer>
+                            </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource PlacementTitle}"
+                    IsOccupyEntireRow="True"
+                    Description="{gallery:FloatButtonShowCaseLangResource PlacementDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <atom:ScrollViewer Height="400">
+                                <Border Background="White">
+                                    <Panel Height="600">
+                                        <atom:FloatButtonGroupHost Shape="Circle"
+                                                                   Trigger="Click"
+                                                                   Placement="Center"
+                                                                   MenuPlacement="Top"
+                                                                   FloatOffsetY="-60"
+                                                                   Icon="{antdicons:AntDesignIconProvider UpOutlined}">
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
+                                        </atom:FloatButtonGroupHost>
+                                        <atom:FloatButtonGroupHost Shape="Circle"
+                                                                   Trigger="Click"
+                                                                   Placement="Center"
+                                                                   MenuPlacement="Left"
+                                                                   FloatOffsetX="-60"
+                                                                   Icon="{antdicons:AntDesignIconProvider LeftOutlined}">
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
+                                        </atom:FloatButtonGroupHost>
+                                        <atom:FloatButtonGroupHost Shape="Circle"
+                                                                   Trigger="Click"
+                                                                   Icon="{antdicons:AntDesignIconProvider DownOutlined}"
+                                                                   Placement="Center"
+                                                                   MenuPlacement="Bottom"
+                                                                   FloatOffsetY="60">
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
+                                        </atom:FloatButtonGroupHost>
+                                        <atom:FloatButtonGroupHost Shape="Circle"
+                                                                   Trigger="Click"
+                                                                   Icon="{antdicons:AntDesignIconProvider RightOutlined}"
+                                                                   Placement="Center"
+                                                                   MenuPlacement="Right"
+                                                                   FloatOffsetX="60">
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
+                                        </atom:FloatButtonGroupHost>
+                                    </Panel>
+                                </Border>
+                            </atom:ScrollViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource DescriptionTitle}"
-        Description="{gallery:FloatButtonShowCaseLangResource DescriptionDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
-        <atom:ScrollViewer Height="300">
-            <Border Background="White">
-                <Panel Height="500">
-                    <atom:FloatButtonHost Shape="Square"
-                                          Icon="{antdicons:AntDesignIconProvider FileTextOutlined}" Margin="0"
-                                          FloatOffsetX="145"
-                                          Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}" />
-                    <atom:FloatButtonHost Shape="Square"
-                                          FloatOffsetX="80"
-                                          Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}" />
-                    <atom:FloatButtonHost Shape="Square"
-                                          Icon="{antdicons:AntDesignIconProvider FileTextOutlined}"
-                                          Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}" />
-                </Panel>
-            </Border>
-        </atom:ScrollViewer>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource BackTopTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource BackTopDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <atom:ScrollViewer Height="300">
+                                <Border Background="White">
+                                    <Panel Height="1000">
+                                        <StackPanel>
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                        </StackPanel>
+                                        <atom:BackTopFloatButtonHost ButtonType="Default" />
+                                    </Panel>
+                                </Border>
+                            </atom:ScrollViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource BackTopProgressTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource BackTopProgressDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <atom:ScrollViewer Height="300">
+                                <Border Background="White">
+                                    <Panel Height="1000">
+                                        <StackPanel>
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                            <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
+                                        </StackPanel>
+                                        <atom:BackTopFloatButtonHost ButtonType="Default"
+                                                                     IsShowProgress="True"
+                                                                     VisibilityHeight="0" />
+                                        <atom:BackTopFloatButtonHost ButtonType="Default"
+                                                                     Shape="Square"
+                                                                     IsShowProgress="True"
+                                                                     VisibilityHeight="0"
+                                                                     FloatOffsetX="72" />
+                                    </Panel>
+                                </Border>
+                            </atom:ScrollViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource GroupTitle}"
-        Description="{gallery:FloatButtonShowCaseLangResource GroupDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource BadgeTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource BadgeDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <atom:ScrollViewer Height="300">
+                                <Border Background="White">
+                                    <Panel Height="500">
+                                        <atom:FloatButtonHost FloatOffsetX="145" IsBadgeEnabled="True" IsDotBadge="True" />
+                                        <atom:FloatButtonGroupHost Shape="Circle"
+                                                                   Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
+                                                                   ButtonType="Primary"
+                                                                   FloatOffsetX="80">
+                                            <atom:FloatButton IsBadgeEnabled="True" IsDotBadge="False" BadgeCount="5" BadgeColor="blue" />
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider CommentOutlined}"
+                                                              IsBadgeEnabled="True" IsDotBadge="False" BadgeCount="5" />
+                                        </atom:FloatButtonGroupHost>
 
-        <atom:ScrollViewer Height="300">
-            <Border Background="White">
-                <Panel Height="500">
-                    <atom:FloatButtonGroupHost Shape="Square" FloatOffsetX="80">
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}" />
-                        <atom:FloatButton />
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider SyncOutlined}" />
-                        <atom:BackTopFloatButton />
-                    </atom:FloatButtonGroupHost>
-                    <atom:FloatButtonGroupHost Shape="Circle">
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}" />
-                        <atom:FloatButton />
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider SyncOutlined}" />
-                        <atom:BackTopFloatButton />
-                    </atom:FloatButtonGroupHost>
-                </Panel>
-            </Border>
-        </atom:ScrollViewer>
+                                        <atom:FloatButtonGroupHost Shape="Circle"
+                                                                   Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
+                                                                   ButtonType="Primary">
+                                            <atom:FloatButton IsBadgeEnabled="True" IsDotBadge="False" BadgeCount="12" />
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider CommentOutlined}"
+                                                              IsBadgeEnabled="True" IsDotBadge="False" BadgeCount="123" />
+                                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider ToTopOutlined}"
+                                                              IsBadgeEnabled="True" IsDotBadge="False" BadgeCount="1230"
+                                                              BadgeOverflowCount="" />
+                                        </atom:FloatButtonGroupHost>
+                                    </Panel>
+                                </Border>
+                            </atom:ScrollViewer>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource CommandTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource CommandDescription}"
+                    SourceKey="float-button-command"
+                    BadgeText="v6.0.8"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <Grid Height="300">
+                                <atom:ScrollViewer>
+                                    <Border Background="White">
+                                        <Panel Height="500">
+                                            <atom:FloatButtonHost ButtonType="Primary"
+                                                                  Icon="{antdicons:AntDesignIconProvider ThunderboltOutlined}"
+                                                                  Command="{Binding FloatButtonCommand}"
+                                                                  CommandParameter="{gallery:FloatButtonShowCaseLangResource P2CommandHost}"
+                                                                  FloatOffsetX="80" />
+                                            <atom:FloatButtonGroupHost Shape="Circle"
+                                                                       Trigger="Click">
+                                                <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}"
+                                                                  Tooltip="{gallery:FloatButtonShowCaseLangResource P2CommandGroupChild}"
+                                                                  Command="{Binding FloatButtonCommand}"
+                                                                  CommandParameter="{gallery:FloatButtonShowCaseLangResource P2CommandGroupChild}" />
+                                            </atom:FloatButtonGroupHost>
+                                        </Panel>
+                                    </Border>
+                                </atom:ScrollViewer>
+                                <atom:PixelAlignedBorder Name="CommandFeedbackCard"
+                                                         Width="220"
+                                                         Padding="14,12"
+                                                         HorizontalAlignment="Right"
+                                                         VerticalAlignment="Bottom"
+                                                         Margin="24,24,160,24"
+                                                         Background="{atom:SharedTokenResource ColorBgContainer}"
+                                                         BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
+                                                         BorderThickness="1"
+                                                         CornerRadius="8">
+                                    <Grid ColumnDefinitions="Auto,*"
+                                          RowDefinitions="Auto,Auto"
+                                          ColumnSpacing="12"
+                                          RowSpacing="8">
+                                        <atom:TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2CommandCount}"
+                                                        Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                                        <atom:TextBlock Grid.Column="1"
+                                                        Text="{Binding CommandClickCount}"
+                                                        FontSize="18"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{atom:SharedTokenResource ColorPrimary}" />
+                                        <atom:TextBlock Grid.Row="1"
+                                                        Text="{gallery:FloatButtonShowCaseLangResource P2CommandSource}"
+                                                        Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                                        <atom:TextBlock Grid.Row="1"
+                                                        Grid.Column="1"
+                                                        Text="{Binding LastCommandSource}"
+                                                        FontWeight="SemiBold" />
+                                    </Grid>
+                                </atom:PixelAlignedBorder>
+                            </Grid>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
 
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource MenuModeTitle}"
-        Description="{gallery:FloatButtonShowCaseLangResource MenuModeDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
-        <atom:ScrollViewer Height="300">
-            <Border Background="White">
-                <Panel Height="500">
-                    <atom:FloatButtonGroupHost Shape="Circle"
-                                               Trigger="Hover"
-                                               Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
-                                               ButtonType="Primary"
-                                               FloatOffsetX="80">
-                        <atom:FloatButton />
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider CommentOutlined}" />
-                    </atom:FloatButtonGroupHost>
-
-                    <atom:FloatButtonGroupHost Shape="Circle"
-                                               Trigger="Click"
-                                               Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
-                                               ButtonType="Primary">
-                        <atom:FloatButton />
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider CommentOutlined}" />
-                    </atom:FloatButtonGroupHost>
-                </Panel>
-            </Border>
-        </atom:ScrollViewer>
-
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
-
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource ControlledModeTitle}"
-        Description="{gallery:FloatButtonShowCaseLangResource ControlledModeDescription}"
-        BadgeText="v6.0.8"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
-        <StackPanel Spacing="10">
-            <atom:ToggleSwitch HorizontalContentAlignment="Left"
-                               VerticalAlignment="Top"
-                               IsChecked="{Binding IsOpened, Mode=TwoWay}" />
-            <atom:ScrollViewer Height="300">
-                <Border Background="White">
-                    <Panel Height="500">
-                        <atom:FloatButtonGroupHost Shape="Square"
-                                                   FloatOffsetX="80"
-                                                   Trigger="Hover"
-                                                   Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
-                                                   IsOpen="{Binding IsOpened}">
-                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
-                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
-                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider TwitterOutlined}" />
-                        </atom:FloatButtonGroupHost>
-
-                        <atom:FloatButtonGroupHost Shape="Circle"
-                                                   Trigger="Click"
-                                                   Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
-                                                   IsOpen="{Binding IsOpened}">
-                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
-                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
-                            <atom:FloatButton Icon="{antdicons:AntDesignIconProvider TwitterOutlined}" />
-                        </atom:FloatButtonGroupHost>
-                    </Panel>
-                </Border>
-            </atom:ScrollViewer>
-
-        </StackPanel>
-
-
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
-
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource PlacementTitle}"
-        IsOccupyEntireRow="True"
-        Description="{gallery:FloatButtonShowCaseLangResource PlacementDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
-        <atom:ScrollViewer Height="400">
-            <Border Background="White">
-                <Panel Height="600">
-                    <atom:FloatButtonGroupHost Shape="Circle"
-                                               Trigger="Click"
-                                               Placement="Center"
-                                               MenuPlacement="Top"
-                                               FloatOffsetY="-60"
-                                               Icon="{antdicons:AntDesignIconProvider UpOutlined}">
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
-                    </atom:FloatButtonGroupHost>
-                    <atom:FloatButtonGroupHost Shape="Circle"
-                                               Trigger="Click"
-                                               Placement="Center"
-                                               MenuPlacement="Left"
-                                               FloatOffsetX="-60"
-                                               Icon="{antdicons:AntDesignIconProvider LeftOutlined}">
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
-                    </atom:FloatButtonGroupHost>
-                    <atom:FloatButtonGroupHost Shape="Circle"
-                                               Trigger="Click"
-                                               Icon="{antdicons:AntDesignIconProvider DownOutlined}"
-                                               Placement="Center"
-                                               MenuPlacement="Bottom"
-                                               FloatOffsetY="60">
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
-                    </atom:FloatButtonGroupHost>
-                    <atom:FloatButtonGroupHost Shape="Circle"
-                                               Trigger="Click"
-                                               Icon="{antdicons:AntDesignIconProvider RightOutlined}"
-                                               Placement="Center"
-                                               FloatOffsetX="60"
-                                               MenuPlacement="Right">
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QqOutlined}" />
-                    </atom:FloatButtonGroupHost>
-                </Panel>
-            </Border>
-        </atom:ScrollViewer>
-
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
-
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource BadgeTitle}"
-        Description="{gallery:FloatButtonShowCaseLangResource BadgeDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
-        <atom:ScrollViewer Height="300">
-            <Border Background="White">
-                <Panel Height="500">
-                    <atom:FloatButtonHost FloatOffsetX="145" IsBadgeEnabled="True" IsDotBadge="True" />
-                    <atom:FloatButtonGroupHost Shape="Circle"
-                                               Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
-                                               ButtonType="Primary"
-                                               FloatOffsetX="80">
-                        <atom:FloatButton IsBadgeEnabled="True" IsDotBadge="False" BadgeCount="5" BadgeColor="blue" />
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider CommentOutlined}"
-                                          IsBadgeEnabled="True" IsDotBadge="False" BadgeCount="5" />
-                    </atom:FloatButtonGroupHost>
-
-                    <atom:FloatButtonGroupHost Shape="Circle"
-                                               Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
-                                               ButtonType="Primary">
-                        <atom:FloatButton IsBadgeEnabled="True" IsDotBadge="False" BadgeCount="12" />
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider CommentOutlined}"
-                                          IsBadgeEnabled="True" IsDotBadge="False" BadgeCount="123" />
-                        <atom:FloatButton Icon="{antdicons:AntDesignIconProvider ToTopOutlined}"
-                                          IsBadgeEnabled="True" IsDotBadge="False" BadgeCount="1230"
-                                          BadgeOverflowCount="" />
-                    </atom:FloatButtonGroupHost>
-                </Panel>
-            </Border>
-        </atom:ScrollViewer>
-
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
-
-    <gallery:ShowCaseItem
-        Title="{gallery:FloatButtonShowCaseLangResource BackTopTitle}"
-        Description="{gallery:FloatButtonShowCaseLangResource BackTopDescription}"
-        IsDeferredContentEnabled="True">
-        <gallery:ShowCaseItem.DeferredContentTemplate>
-            <DataTemplate x:DataType="vm:FloatButtonViewModel">
-        <atom:ScrollViewer Height="300">
-            <Border Background="White">
-                <Panel Height="1000">
-                    <StackPanel>
-                        <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
-                        <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
-                        <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
-                        <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
-                        <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
-                        <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
-                        <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
-                        <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
-                    </StackPanel>
-                    <atom:BackTopFloatButtonHost ButtonType="Default" />
-                </Panel>
-            </Border>
-        </atom:ScrollViewer>
-
-            </DataTemplate>
-        </gallery:ShowCaseItem.DeferredContentTemplate>
-    </gallery:ShowCaseItem>
+                <gallery:ShowCaseItem
+                    Title="{gallery:FloatButtonShowCaseLangResource SemanticPartStyleTitle}"
+                    Description="{gallery:FloatButtonShowCaseLangResource SemanticPartStyleDescription}"
+                    SourceKey="float-button-semantic-part"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:FloatButtonViewModel">
+                            <Border Background="White"
+                                    Padding="24"
+                                    HorizontalAlignment="Left">
+                                <Border.Styles>
+                                    <Style Selector="atom|FloatButton.semantic-style-demo, atom|FloatButton.semantic-function-demo">
+                                        <Setter Property="BorderBrush"
+                                                Value="{atom:SharedTokenResource ColorBorder}" />
+                                        <Setter Property="BorderThickness"
+                                                Value="1" />
+                                        <Setter Property="CornerRadius"
+                                                Value="{atom:SharedTokenResource BorderRadius}" />
+                                    </Style>
+                                    <Style Selector="atom|FloatButton.semantic-style-demo">
+                                        <Setter Property="BoxShadow"
+                                                Value="0 1 2 0 #0D000000" />
+                                    </Style>
+                                    <Style Selector="atom|FloatButton.semantic-function-demo[ButtonType=Primary]">
+                                        <Setter Property="Background"
+                                                Value="#171717" />
+                                        <atom:FloatButtonIconStyle x:SetterTargetType="atom:IconPresenter">
+                                            <Setter Property="IconBrush"
+                                                    Value="#FFFFFF" />
+                                        </atom:FloatButtonIconStyle>
+                                    </Style>
+                                </Border.Styles>
+                                <atom:FloatButtonGroup Shape="Circle">
+                                    <atom:FloatButton Classes="semantic-function-demo"
+                                                      ButtonType="Primary"
+                                                      Icon="{antdicons:AntDesignIconProvider LinkOutlined}" />
+                                    <atom:FloatButton Classes="semantic-style-demo"
+                                                      Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}" />
+                                </atom:FloatButtonGroup>
+                            </Border>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
-        </gallery:GalleryStickyTabsHost>
+        </gallery:GalleryShowCaseHost>
     </Grid>
 </UserControl>

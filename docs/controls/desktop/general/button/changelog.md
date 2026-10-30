@@ -17,6 +17,59 @@
   - Add regression coverage that rejects Button-family Browser theme override assets in source and generated theme manifests.
   - Add Desktop.Controls coverage that rejects Browser-specific theme asset folders while keeping exact Browser unsupported-control identity filtering.
 
+## 2026-08-27
+
+- API (Breaking)
+  - Remove the public `CustomBackground` property, the internal `HasCustomBackground` flag and the template `CustomBackgroundLayer` overlay from Button and DropdownButton. The property duplicated the standard `Background` responsibility during the period when root customization was broken.
+  - Migration: set the standard `Background` (or `BorderBrush`) directly on the button. Semantic change: a customized surface now keeps the custom value across hover, pressed and disabled states (matching inline style semantics), instead of fading out to the state background.
+- Theme
+  - Drop the custom background overlay layer and its selector rules from the Button family themes. The frame `Frame` renders `Background` / `BorderBrush` directly via `TemplateBinding`.
+- Tests
+  - Rewrite the custom-background gating tests into root surface contract tests: local `Background` (including gradients) renders on the frame and survives pointerover / pressed / disabled; wave brush keeps resolving from final visual properties; source contract asserts no `CustomBackground` remains in `Button.cs` or Button family themes.
+
+## 2026-08-13
+
+- Docs
+  - Split the complete public Semantic Part contract into `semantic-part.md`; keep `overview.md` focused on the supported Part
+    summary and `implementation.md` focused on marker-to-node mapping.
+
+## 2026-08-12
+
+- Fix
+  - Resolve Button wave color from the final root `BorderBrush` and `Background` immediately before playback, so Theme state,
+    Semantic root Style and ordinary user Style share one visual color source.
+  - Reject transparent, white and non-solid final brushes as wave colors, clear stale local wave values when no valid color
+    exists, and keep `CustomBackground` outside the wave color pipeline.
+- Theme Contract
+  - Use `MinHeight` rather than fixed `Height` for the Large, Middle and Small Button size baselines, allowing content and
+    Semantic Part layout setters to expand the natural measured height.
+  - Keep `SizeType=Custom` free of a preset height baseline while retaining Middle defaults for typography, padding, corner
+    radius and icon metrics.
+- Layout
+  - Apply the Button owner layout constraints before deriving Circle and Round geometry so preset `MinHeight` cannot produce
+    an ellipse or a vertically stretched icon-only Button.
+- Docs
+  - Define the diagnostic boundary between Semantic Style priority and cross-node layout constraints, and record the required
+    verification matrix for content/icon layout setters across size, shape, loading and shared Button theme variants.
+- Gallery
+  - Add a deferred, full-width Button example that demonstrates object/function Semantic Part styling through owner-scoped
+    selectors, including stable content colors across Button interaction states.
+
+## 2026-08-11
+
+- Theme Contract
+  - Separate the `.semantic-*` selector identity from `ContractType`; use `x:SetterTargetType` as the AXAML Setter type context.
+  - Define class activator cost as opt-in application styling cost and keep Button built-in themes free of Semantic Style rules.
+  - Use static `Classes.semantic-*="True"` markers in shared Button templates while keeping application selectors unchanged.
+
+## 2026-08-10
+
+- Theme Contract
+  - Add the Button Semantic Part contract with implicit `root`, `.semantic-icon`, and `.semantic-content`.
+  - Define `icon` as `Control` / `Multiple`, covering both user and loading icon implementations.
+  - Define `content` as `ContentPresenter` / `Single` and keep `root` free of a `.semantic-root` marker.
+  - Apply the same marker contract to all shared Button template variants and register the generated descriptor statically.
+
 ## 2026-08-03
 
 - Design

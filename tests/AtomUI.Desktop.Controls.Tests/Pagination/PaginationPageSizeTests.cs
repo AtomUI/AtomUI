@@ -1,5 +1,9 @@
+using System.ComponentModel;
 using System.Reflection;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -15,6 +19,241 @@ public class PaginationPageSizeTests
     static PaginationPageSizeTests()
     {
         AvaloniaTestApp.EnsureInitialized();
+    }
+
+    [Fact]
+    public void Pagination_Custom_SizeSelector_Follows_PageNavigation_By_Default()
+    {
+        var pagination = new AtomUI.Desktop.Controls.Pagination
+        {
+            IsShowSizeChanger  = true,
+            SizeChangerTemplate = CreateSizeChangerTemplate(),
+            IsMotionEnabled    = false
+        };
+
+        ShowInWindow(pagination, () =>
+        {
+            var root = pagination.GetVisualDescendants()
+                                .OfType<StackPanel>()
+                                .Single(control => control.Name == "PART_RootLayout");
+            var childNames = root.Children.OfType<Control>().Select(control => control.Name).ToArray();
+
+            Array.IndexOf(childNames, "PART_Nav")
+                .ShouldBeLessThan(Array.IndexOf(childNames, "PART_SizeChangerPresenter"));
+        });
+    }
+
+    [Fact]
+    public void Pagination_PageSize_Clamp_Emits_Single_State_Notification()
+    {
+        var pagination = new AtomUI.Desktop.Controls.Pagination
+        {
+            Total       = 100,
+            CurrentPage = 10,
+            PageSize    = 10
+        };
+        var notificationCount = 0;
+        pagination.CurrentPageChanged += (_, _) => notificationCount++;
+
+        pagination.PageSize = 100;
+
+        pagination.CurrentPage.ShouldBe(1);
+        pagination.PageCount.ShouldBe(1);
+        notificationCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Pagination_Custom_Size_Changer_API_Uses_Null_Default_And_TwoWay_Context()
+    {
+        var pagination = new AtomUI.Desktop.Controls.Pagination();
+
+        pagination.SizeChangerTemplate.ShouldBeNull();
+        PaginationSizeChangerContext.PageSizeProperty
+                                    .GetMetadata(typeof(PaginationSizeChangerContext))
+                                    .DefaultBindingMode
+                                    .ShouldBe(BindingMode.TwoWay);
+        PaginationSizeChangerContext.SizeTypeProperty.IsReadOnly.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Pagination_Custom_Size_Changer_Materializes_Context_And_Updates_Page_State()
+    {
+        var pagination = new AtomUI.Desktop.Controls.Pagination
+        {
+            Total                = 500,
+            CurrentPage          = 50,
+            PageSize             = 10,
+            SizeType             = CustomizableSizeType.Small,
+            IsShowSizeChanger    = true,
+            SizeChangerTemplate  = CreateSizeChangerTemplate(),
+            IsMotionEnabled      = false
+        };
+
+        ShowInWindow(pagination, () =>
+        {
+            var customRoot = pagination.GetVisualDescendants()
+                                       .OfType<Border>()
+                                       .Single(control => control.Name == "CustomPageSizeChanger");
+            var context = customRoot.Tag.ShouldBeOfType<PaginationSizeChangerContext>();
+
+            context.PageSize.ShouldBe(10);
+            context.SizeType.ShouldBe(CustomizableSizeType.Small);
+            pagination.GetVisualDescendants().OfType<AtomUIComboBox>().ShouldBeEmpty();
+
+            context.PageSize = 100;
+            Dispatcher.UIThread.RunJobs();
+
+            pagination.PageSize.ShouldBe(100);
+            pagination.PageCount.ShouldBe(5);
+            pagination.CurrentPage.ShouldBe(5);
+
+            pagination.PageSize = 25;
+            Dispatcher.UIThread.RunJobs();
+            context.PageSize.ShouldBe(25);
+        });
+    }
+
+    [Fact]
+    public void Pagination_Custom_Size_Changer_Switches_Content_And_Survives_Template_Reapply()
+    {
+        var observedContexts = new List<PaginationSizeChangerContext>();
+        var template = CreateSizeChangerTemplate(observedContexts);
+        var pagination = new AtomUI.Desktop.Controls.Pagination
+        {
+            Total               = 100,
+            IsShowSizeChanger   = true,
+            SizeChangerTemplate = template,
+            IsEnabled           = false,
+            IsMotionEnabled     = false
+        };
+
+        ShowInWindow(pagination, () =>
+        {
+            var firstRoot = FindCustomSizeChanger(pagination);
+            var context = firstRoot.Tag.ShouldBeOfType<PaginationSizeChangerContext>();
+            firstRoot.IsEffectivelyEnabled.ShouldBeFalse();
+
+            pagination.SizeChangerTemplate = null;
+            Dispatcher.UIThread.RunJobs();
+            firstRoot.IsAttachedToVisualTree().ShouldBeFalse();
+            pagination.GetVisualDescendants().OfType<AtomUIComboBox>().Count().ShouldBe(1);
+
+            pagination.SizeChangerTemplate = template;
+            Dispatcher.UIThread.RunJobs();
+            FindCustomSizeChanger(pagination).Tag.ShouldBeSameAs(context);
+            pagination.GetVisualDescendants().OfType<AtomUIComboBox>().ShouldBeEmpty();
+
+            pagination.IsShowSizeChanger = false;
+            Dispatcher.UIThread.RunJobs();
+            pagination.GetVisualDescendants()
+                      .OfType<Border>()
+                      .ShouldNotContain(control => control.Name == "CustomPageSizeChanger");
+
+            pagination.IsShowSizeChanger = true;
+            Dispatcher.UIThread.RunJobs();
+            FindCustomSizeChanger(pagination).Tag.ShouldBeSameAs(context);
+
+            pagination.ClearValue(TemplatedControl.TemplateProperty);
+            pagination.ApplyTemplate();
+            Dispatcher.UIThread.RunJobs();
+
+            FindCustomSizeChanger(pagination).Tag.ShouldBeSameAs(context);
+            pagination.GetVisualDescendants()
+                      .OfType<Border>()
+                      .Count(control => control.Name == "CustomPageSizeChanger")
+                      .ShouldBe(1);
+            observedContexts.ShouldAllBe(candidate => ReferenceEquals(candidate, context));
+        });
+    }
+
+    [Fact]
+    public void Pagination_Custom_Size_Changer_Replays_Template_Changes_Made_While_Detached()
+    {
+        var pagination = new AtomUI.Desktop.Controls.Pagination
+        {
+            Total               = 100,
+            IsShowSizeChanger   = true,
+            SizeChangerTemplate = CreateSizeChangerTemplate(),
+            IsMotionEnabled     = false
+        };
+
+        ShowInWindow(pagination, window =>
+        {
+            FindCustomSizeChanger(pagination).ShouldNotBeNull();
+
+            window.Content = null;
+            Dispatcher.UIThread.RunJobs();
+            pagination.SizeChangerTemplate = null;
+
+            window.Content = pagination;
+            Dispatcher.UIThread.RunJobs();
+
+            pagination.GetVisualDescendants().OfType<AtomUIComboBox>().Count().ShouldBe(1);
+            pagination.GetVisualDescendants()
+                      .OfType<Border>()
+                      .ShouldNotContain(control => control.Name == "CustomPageSizeChanger");
+        });
+    }
+
+    [Fact]
+    public void Pagination_Custom_Size_Changer_Preserves_External_TwoWay_PageSize_Binding()
+    {
+        var source = new PageSizeBindingSource { PageSize = 10 };
+        var pagination = new AtomUI.Desktop.Controls.Pagination
+        {
+            Total               = 500,
+            IsShowSizeChanger   = true,
+            SizeChangerTemplate = CreateSizeChangerTemplate(),
+            IsMotionEnabled     = false
+        };
+        pagination.Bind(
+            AbstractPagination.PageSizeProperty,
+            new Binding(nameof(PageSizeBindingSource.PageSize))
+            {
+                Source = source,
+                Mode   = BindingMode.TwoWay
+            });
+
+        ShowInWindow(pagination, () =>
+        {
+            var context = FindCustomSizeChanger(pagination).Tag.ShouldBeOfType<PaginationSizeChangerContext>();
+
+            context.PageSize = 25;
+            Dispatcher.UIThread.RunJobs();
+            source.PageSize.ShouldBe(25);
+            pagination.PageSize.ShouldBe(25);
+
+            source.PageSize = 40;
+            Dispatcher.UIThread.RunJobs();
+            pagination.PageSize.ShouldBe(40);
+            context.PageSize.ShouldBe(40);
+        });
+    }
+
+    [Fact]
+    public void Pagination_Custom_Size_Changer_Projects_Zero_As_Default_Until_Positive_Request()
+    {
+        var pagination = new AtomUI.Desktop.Controls.Pagination
+        {
+            Total               = 100,
+            PageSize            = 0,
+            IsShowSizeChanger   = true,
+            SizeChangerTemplate = CreateSizeChangerTemplate(),
+            IsMotionEnabled     = false
+        };
+
+        ShowInWindow(pagination, () =>
+        {
+            var context = FindCustomSizeChanger(pagination).Tag.ShouldBeOfType<PaginationSizeChangerContext>();
+            pagination.PageSize.ShouldBe(0);
+            context.PageSize.ShouldBe(AbstractPagination.DefaultPageSize);
+
+            context.PageSize = AbstractPagination.DefaultPageSize;
+            Dispatcher.UIThread.RunJobs();
+
+            pagination.PageSize.ShouldBe(AbstractPagination.DefaultPageSize);
+            context.PageSize.ShouldBe(AbstractPagination.DefaultPageSize);
+        });
     }
 
     [Fact]
@@ -273,6 +512,50 @@ public class PaginationPageSizeTests
 
         pageSizeProperty.ShouldNotBeNull($"Expected {item.GetType().Name} to expose a PageSize property.");
         return (int)pageSizeProperty.GetValue(item)!;
+    }
+
+    private static FuncDataTemplate<PaginationSizeChangerContext> CreateSizeChangerTemplate(
+        IList<PaginationSizeChangerContext>? observedContexts = null)
+    {
+        return new FuncDataTemplate<PaginationSizeChangerContext>((context, _) =>
+        {
+            var nonNullContext = context.ShouldNotBeNull();
+            observedContexts?.Add(nonNullContext);
+            return new Border
+            {
+                Name = "CustomPageSizeChanger",
+                Tag  = nonNullContext
+            };
+        });
+    }
+
+    private static Border FindCustomSizeChanger(AtomUI.Desktop.Controls.Pagination pagination)
+    {
+        return pagination.GetVisualDescendants()
+                         .OfType<Border>()
+                         .Single(control => control.Name == "CustomPageSizeChanger");
+    }
+
+    private sealed class PageSizeBindingSource : INotifyPropertyChanged
+    {
+        private int _pageSize;
+
+        public int PageSize
+        {
+            get => _pageSize;
+            set
+            {
+                if (_pageSize == value)
+                {
+                    return;
+                }
+
+                _pageSize = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PageSize)));
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
 
     private static void ShowInWindow(Control content, Action assertion)

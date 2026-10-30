@@ -1,8 +1,9 @@
 using AtomUI.Controls.Commons;
+using AtomUI.Generated.AtomUIDesktopControls;
 
 namespace AtomUI.Desktop.Controls;
 
-public class RibbonBadge : AbstractRibbonBadge
+public partial class RibbonBadge : AbstractRibbonBadge
 {
     public RibbonBadge()
     {
@@ -13,6 +14,7 @@ public class RibbonBadge : AbstractRibbonBadge
         if (_ribbonBadgeAdorner is null)
         {
             _ribbonBadgeAdorner = new RibbonBadgeAdorner();
+            _ribbonBadgeAdorner.Classes.Add(RibbonBadgeSemanticParts.IndicatorClass);
             SetupTokenBindings();
             if (RibbonColor is not null)
             {

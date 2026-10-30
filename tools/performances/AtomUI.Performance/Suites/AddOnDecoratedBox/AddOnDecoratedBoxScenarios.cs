@@ -87,7 +87,11 @@ internal static partial class Program
             LeftAddOn            = leftAddOn,
             RightAddOn           = rightAddOn
         };
-        lineEdit.FormFeedback = formFeedback;
+        if (formFeedback is not null)
+        {
+            // FormFeedback 变为私有 setter，通过 IFormItemFeedbackAware 设置（与测试用法一致）
+            ((IFormItemFeedbackAware)lineEdit).SetFeedbackControl(formFeedback);
+        }
 
         if (maxLength > 0)
         {

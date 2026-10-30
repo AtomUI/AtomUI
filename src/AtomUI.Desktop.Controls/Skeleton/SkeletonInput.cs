@@ -3,12 +3,12 @@ using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
-public class SkeletonInput : SkeletonElement
+public partial class SkeletonInput : SkeletonElement
 {
     public SkeletonInput()
     {
     }
-    
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -17,7 +17,7 @@ public class SkeletonInput : SkeletonElement
             ConfigureWidth();
         }
     }
-    
+
     private void ConfigureWidth()
     {
         if (!double.IsNaN(Height) && !IsBlock)

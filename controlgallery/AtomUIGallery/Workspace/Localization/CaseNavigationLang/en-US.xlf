@@ -56,6 +56,11 @@
         <source>DataGrid</source>
       </segment>
     </unit>
+    <unit id="DataDisplay_DateViewer">
+      <segment>
+        <source>DateViewer</source>
+      </segment>
+    </unit>
     <unit id="DataDisplay_Descriptions">
       <segment>
         <source>Descriptions</source>

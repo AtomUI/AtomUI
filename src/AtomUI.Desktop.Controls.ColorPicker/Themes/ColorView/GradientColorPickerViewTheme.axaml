@@ -55,6 +55,7 @@
                                     MinValue="{TemplateBinding MinValue}" />
                                 <DockPanel LastChildFill="True" ClipToBounds="False">
                                     <atom:ColorBlock Name="ColorPreview"
+                                                     IsEmptyColorMode="{TemplateBinding IsEmptyDraft}"
                                                      Background="{TemplateBinding HsvColorBrush}"
                                                      DockPanel.Dock="Right"
                                                      Margin="0, 2, 0, 2" />
@@ -75,11 +76,28 @@
                                                           ThumbColorValueBrush="{TemplateBinding HsvColorBrush}" />
                                     </Panel>
                                 </DockPanel>
-                                <atom:ColorPickerInput ColorValue="{TemplateBinding HsvValue, Mode=TwoWay}"
+                                <atom:ColorPickerInput Name="PART_ColorInput"
+                                                       IsNeedConfirm="{TemplateBinding IsNeedConfirm}"
+                                                       IsInputValid="{TemplateBinding CanConfirm, Mode=TwoWay}"
+                                                       ColorValue="{TemplateBinding HsvValue, Mode=TwoWay}"
                                                        Format="{TemplateBinding Format, Mode=TwoWay}"
                                                        IsFormatEnabled="{TemplateBinding IsFormatEnabled, Mode=TwoWay}"
                                                        IsAlphaVisible="{TemplateBinding IsAlphaEffectiveVisible}"
                                                        IsClearEnabled="{TemplateBinding IsClearEnabled}" />
+                            </StackPanel>
+                            <StackPanel Name="PART_ConfirmationFooter"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Right"
+                                        Spacing="{atom:SharedTokenResource SpacingXS}"
+                                        IsVisible="{TemplateBinding IsNeedConfirm}">
+                                <atom:Button Name="PART_CancelButton"
+                                             SizeType="Small"
+                                             Content="{atom:ColorPickerLangResource Cancel}" />
+                                <atom:Button Name="PART_ConfirmButton"
+                                             SizeType="Small"
+                                             ButtonType="Primary"
+                                             IsEnabled="{TemplateBinding CanConfirm}"
+                                             Content="{atom:ColorPickerLangResource Confirm}" />
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>

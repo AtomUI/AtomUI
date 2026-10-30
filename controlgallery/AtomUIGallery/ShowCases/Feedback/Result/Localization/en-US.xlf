@@ -171,6 +171,46 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticBodyDescription">
+      <segment>
+        <source>Content element with margin, padding, background color and other content area styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticExtraDescription">
+      <segment>
+        <source>Action area element with margin, text alignment, inner element spacing and other layout styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Icon element with margin, text alignment, font size, status colors and other icon styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Customize Result regions with owner-scoped Semantic Part styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with text alignment, layout styles and other basic container styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSubTitleDescription">
+      <segment>
+        <source>Subtitle element with font size, text color, line height and other text styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with font size, text color, line height, text alignment and other text styles</source>
+      </segment>
+    </unit>
     <unit id="ServerErrorDescription">
       <segment>
         <source>Something went wrong on server.</source>

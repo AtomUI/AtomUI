@@ -103,6 +103,60 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticActionsDescription">
+      <segment>
+        <source>Step handle region holding both step buttons, its background, divider strokes and corner radius</source>
+        <target state="translated">承載兩個步進按鈕的手柄區域，包含其背景、分隔線與圓角。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticContentDescription">
+      <segment>
+        <source>Main content element rendered inside the input frame</source>
+        <target state="translated">渲染在輸入框內部的主內容元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticDecreaseButtonDescription">
+      <segment>
+        <source>Decrease step button inside the step handle</source>
+        <target state="translated">步進手柄內的減少按鈕。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticIncreaseButtonDescription">
+      <segment>
+        <source>Increase step button inside the step handle</source>
+        <target state="translated">步進手柄內的增加按鈕。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInnerLeftContentDescription">
+      <segment>
+        <source>Inner content element rendered before the main content</source>
+        <target state="translated">渲染在主內容之前的內部左側內容元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticInnerRightContentDescription">
+      <segment>
+        <source>Inner content element rendered after the main content</source>
+        <target state="translated">渲染在主內容之後的內部右側內容元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use the generated ButtonSpinner Semantic Part styles to customize the published parts declaratively.</source>
+        <target state="translated">使用生成的 ButtonSpinner 語意部件樣式類，以宣告式方式客製已發佈的語意部件。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with size, variant, status, spin enablement and other basic spinner container styles</source>
+        <target state="translated">根元素，包含尺寸、變體、狀態、步進開關等基礎容器樣式。</target>
+      </segment>
+    </unit>
     <unit id="StatusDescription">
       <segment>
         <source>Add status to Input with status, which could be error or warning.</source>

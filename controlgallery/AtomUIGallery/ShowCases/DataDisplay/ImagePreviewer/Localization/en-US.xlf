@@ -18,7 +18,7 @@
     </unit>
     <unit id="BasicUsageDescription">
       <segment>
-        <source>Click the image to zoom in.</source>
+        <source>Open a fitted preview, then zoom between 0.1 and 8 times its initial size. Disable wheel zoom to keep toolbar and touch zoom available.</source>
       </segment>
     </unit>
     <unit id="BasicUsageTitle">
@@ -146,6 +146,56 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticCoverDescription">
+      <segment>
+        <source>Cover hover overlay (mask and indicator content) of the shared cover template.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticImageDescription">
+      <segment>
+        <source>Cover image element rendered inside the shared cover template.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Owner-scoped styles targeting public Semantic Parts of the ImagePreviewer family via their real selectors.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupActionsDescription">
+      <segment>
+        <source>Capsule action-button group inside the preview footer.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupBodyDescription">
+      <segment>
+        <source>Centered image interaction area of the preview viewer.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupFooterDescription">
+      <segment>
+        <source>Bottom toolbar area with the page indicator and action group.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupMaskDescription">
+      <segment>
+        <source>Full-surface translucent mask of the overlay preview surface (overlay host only).</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root container of the preview surface (dialog content wrapper / overlay template root).</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The trigger control root (single or multi cover entry).</source>
+      </segment>
+    </unit>
     <unit id="TwentyRemoteImagesDescription">
       <segment>
         <source>Load a fixed set of 20 public images with cover-only loading and neighbor preloading.</source>
@@ -154,6 +204,11 @@
     <unit id="TwentyRemoteImagesTitle">
       <segment>
         <source>20 remote images</source>
+      </segment>
+    </unit>
+    <unit id="WheelZoomEnabled">
+      <segment>
+        <source>Enable wheel zoom</source>
       </segment>
     </unit>
   </file>

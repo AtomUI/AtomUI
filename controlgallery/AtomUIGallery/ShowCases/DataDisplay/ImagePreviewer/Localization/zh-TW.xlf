@@ -21,8 +21,8 @@
     </unit>
     <unit id="BasicUsageDescription">
       <segment>
-        <source>Click the image to zoom in.</source>
-        <target state="translated">點擊圖片放大預覽。</target>
+        <source>Open a fitted preview, then zoom between 0.1 and 8 times its initial size. Disable wheel zoom to keep toolbar and touch zoom available.</source>
+        <target state="translated">開啟後完整適配視口，縮放範圍為初始尺寸的 0.1～8 倍。關閉滾輪縮放後，仍可使用工具列與觸控縮放。</target>
       </segment>
     </unit>
     <unit id="BasicUsageTitle">
@@ -175,6 +175,66 @@
         <target state="translated">範例</target>
       </segment>
     </unit>
+    <unit id="SemanticCoverDescription">
+      <segment>
+        <source>Cover hover overlay (mask and indicator content) of the shared cover template.</source>
+        <target state="translated">共享封面模板的封面懸浮層（遮罩與指示內容）。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticImageDescription">
+      <segment>
+        <source>Cover image element rendered inside the shared cover template.</source>
+        <target state="translated">共享封面模板內渲染的封面圖片元素。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Owner-scoped styles targeting public Semantic Parts of the ImagePreviewer family via their real selectors.</source>
+        <target state="translated">透過真實選擇器作用於 ImagePreviewer 家族公開 Semantic Part 的 owner 作用域樣式。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+        <target state="translated">自訂語義結構的樣式</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupActionsDescription">
+      <segment>
+        <source>Capsule action-button group inside the preview footer.</source>
+        <target state="translated">預覽頁腳內的膠囊形操作按鈕組。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupBodyDescription">
+      <segment>
+        <source>Centered image interaction area of the preview viewer.</source>
+        <target state="translated">預覽檢視器的居中圖片互動區域。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupFooterDescription">
+      <segment>
+        <source>Bottom toolbar area with the page indicator and action group.</source>
+        <target state="translated">底部工具列區域，含頁碼指示與操作組。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupMaskDescription">
+      <segment>
+        <source>Full-surface translucent mask of the overlay preview surface (overlay host only).</source>
+        <target state="translated">overlay 預覽浮層的全鋪半透明遮罩（僅 overlay 宿主存在）。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticPopupRootDescription">
+      <segment>
+        <source>Root container of the preview surface (dialog content wrapper / overlay template root).</source>
+        <target state="translated">預覽浮層根容器（dialog 內容包裹 / overlay 模板根）。</target>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>The trigger control root (single or multi cover entry).</source>
+        <target state="translated">觸發控件根（單封面或多封面入口）。</target>
+      </segment>
+    </unit>
     <unit id="TwentyRemoteImagesDescription">
       <segment>
         <source>Load a fixed set of 20 public images with cover-only loading and neighbor preloading.</source>
@@ -185,6 +245,12 @@
       <segment>
         <source>20 remote images</source>
         <target state="translated">20 張遠程圖片</target>
+      </segment>
+    </unit>
+    <unit id="WheelZoomEnabled">
+      <segment>
+        <source>Enable wheel zoom</source>
+        <target state="translated">啟用滾輪縮放</target>
       </segment>
     </unit>
   </file>

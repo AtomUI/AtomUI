@@ -30,6 +30,11 @@ public class SkeletonLine : AbstractSkeleton
 
     private Panel? _rootLayout;
 
+    static SkeletonLine()
+    {
+        AffectsMeasure<SkeletonLine>(LineWidthProperty);
+    }
+
     protected override Size MeasureOverride(Size availableSize)
     {
         var actualWidth = availableSize.Width;
@@ -44,18 +49,11 @@ public class SkeletonLine : AbstractSkeleton
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size        = base.ArrangeOverride(finalSize);
-        var actualWidth = finalSize.Width;
-        if (!LineWidth.IsAbsolute)
-        {
-            if (!double.IsInfinity(actualWidth))
-            {
-                actualWidth = Math.Min(actualWidth, actualWidth * (LineWidth.Value / 100.0));
-            }
-        }
+        var actualWidth = Math.Min(finalSize.Width, LineWidth.Resolve(finalSize.Width));
         
         if (_rootLayout != null)
         {
-            _rootLayout.Arrange(new Rect(0, 0, actualWidth, DesiredSize.Height));
+            _rootLayout.Arrange(new Rect(0, 0, actualWidth, finalSize.Height));
         }
         return size;
     }

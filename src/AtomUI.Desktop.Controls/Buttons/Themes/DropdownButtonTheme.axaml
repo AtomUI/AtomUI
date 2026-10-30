@@ -28,10 +28,6 @@
                                            BackgroundSizing="{TemplateBinding BackgroundSizing}"
                                            CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                            Background="{TemplateBinding Background}" />
-                        <Border Name="CustomBackgroundLayer"
-                                IsHitTestVisible="False"
-                                Background="{TemplateBinding CustomBackground}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}" />
                         <Border Padding="{TemplateBinding Padding}">
                             <DockPanel Name="PART_RootLayout"
                                        LastChildFill="True"
@@ -75,6 +71,13 @@
                                     IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             </DockPanel>
                         </Border>
+                        <Border Name="FocusVisual"
+                                IsVisible="False"
+                                IsHitTestVisible="False"
+                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
+                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
+                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>

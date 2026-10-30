@@ -4,6 +4,10 @@
     xmlns:atom="https://atomui.net"
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
+    <!-- 图标几何通过显式 include 保留在本字典的词法作用域中，运行时与设计器使用同一资源路径。 -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://AtomUI.Desktop.Controls/WindowTitleBar/Themes/WindowsCaptionIconGeometries.axaml" />
+    </ResourceDictionary.MergedDictionaries>
     <ControlTheme x:Key="{x:Type atom:CaptionButtonGroup}" TargetType="atom:CaptionButtonGroup">
         <Style Selector="^[OsType=Linux]">
             <Setter Property="Template">
@@ -81,7 +85,7 @@
                 </ControlTemplate>
             </Setter>
             <Style Selector="^ /template/ atom|CaptionButton">
-                <Setter Property="BackgroundInset" Value="2" />
+                <Setter Property="BackgroundInset" Value="{atom:WindowTitleBarTokenResource CaptionButtonBackgroundInset}" />
             </Style>
         </Style>
         

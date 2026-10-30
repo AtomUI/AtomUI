@@ -10,18 +10,18 @@ public enum SkeletonButtonShape
     Circle
 }
 
-public class SkeletonButton : SkeletonElement
+public partial class SkeletonButton : SkeletonElement
 {
     #region 公共属性定义
     public static readonly StyledProperty<SkeletonButtonShape> ShapeProperty =
         AvaloniaProperty.Register<SkeletonButton, SkeletonButtonShape>(nameof(Shape));
-    
+
     public SkeletonButtonShape Shape
     {
         get => GetValue(ShapeProperty);
         set => SetValue(ShapeProperty, value);
     }
-    
+
     #endregion
 
     public SkeletonButton()

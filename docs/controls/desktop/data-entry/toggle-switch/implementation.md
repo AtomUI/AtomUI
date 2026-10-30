@@ -1,6 +1,6 @@
 # ToggleSwitch 桌面版实现原理
 
-本文档描述 ToggleSwitch 桌面版的内部布局、状态流转、模板接入、加载动画、内容绑定、Form 和 Token 使用。公共设计与 API 契约见 [ToggleSwitch 桌面版架构设计](overview.md)，Token 语义见 [ToggleSwitch Token 设计](token.md)，变化记录见 [ToggleSwitch Changelog](changelog.md)。
+本文档描述 ToggleSwitch 桌面版的内部布局、状态流转、模板接入、加载动画、内容绑定、Form 和 Token 使用。公共设计与 API 契约见 [ToggleSwitch 桌面版架构设计](overview.md)，Semantic Part 契约见 [ToggleSwitch Semantic Part 契约](semantic-part.md)，Token 语义见 [ToggleSwitch Token 设计](token.md)，变化记录见 [ToggleSwitch Changelog](changelog.md)。
 
 ## 1. 实现定位
 
@@ -12,6 +12,7 @@ ToggleSwitch 的 public 桌面类型位于 `AtomUI.Desktop.Controls`，实际交
 
 - `src/AtomUI.Desktop.Controls/Switch/ToggleSwitch.cs`：public 桌面控件，注册 `ToggleSwitchToken` resource scope。
 - `src/AtomUI.Controls/Switch/AbstractToggleSwitch.cs`：公共 API、测量、布局、内容绑定、loading、hit test、Form 和渲染主逻辑。
+- `src/AtomUI.Controls/Switch/ToggleSwitchContentPanel.cs`：跟踪内容期望尺寸的内部 Canvas，独立拥有两个内容 presenter 的排列。
 - `src/AtomUI.Controls/Switch/SwitchKnob.cs`：把手绘制、加载指示绘制、把手宽度动画和加载动画生命周期。
 - `src/AtomUI.Desktop.Controls/Switch/ToggleSwitchToken.cs`：ToggleSwitch 控件级 Token。
 - `src/AtomUI.Desktop.Controls/Switch/Themes/ToggleSwitchTheme.axaml`：主模板、状态 selector、SizeType 分支和 Token 引用。
@@ -38,11 +39,13 @@ MeasureOverride
       ↓
 Track size + content desired size
       ↓
+ArrangeOverride 的最终内容盒（已应用 Width/Height、Min/Max，不含 Margin）
+      ↓
 CalculateElementsOffset
       ↓
 KnobRect + KnobMovingRect + OnContentOffset + OffContentOffset
       ↓
-ArrangeOverride + Render
+ToggleSwitchContentPanel 排列内容 + Render 绘制最终轨道
 ```
 
 checked 变化时，如果启用 motion，控件先基于当前 groove size 重新计算元素位置，再由 `RectTransition` 和 `PointTransition` 执行动画。`_isCheckedChanged` 用于让 arrange 阶段在 checked 切换后使用 `KnobMovingRect`，保持过渡位置一致。
@@ -67,6 +70,15 @@ Form.ClearValue()    → IsChecked = null
 
 ## 5. 生命周期与模板接入
 
+`AbstractToggleSwitch` 构造时创建 `TransitionInitializationSession`，在挂载、分离及模板变更时复位。初次排列直接提交把手矩形与
+内容偏移；owner 已加载且最终尺寸、把手排列有效后释放根控件的过渡覆盖。`SwitchKnob` 在模板构建时通过固定的
+`TransitionInitialization.Mode="Owner"` 接入，与 owner 基线和自身 Loaded 汇合后恢复宽度过渡。主题只保留
+`IsMotionEnabled` 条件，不订阅动态 Ready 属性；自定义过渡的绑定及最新集合也由属性系统保留并恢复。
+初始化 checked 不排队波纹，已就绪的状态切换才生成反馈，执行时再次核对当前部件与生命周期，分离及模板替换时
+取消 owner 持有的待执行操作。共享规则见
+[状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)，验证范围见
+[状态动效初始化验证](../../../../architecture/systems/control-infrastructure/transition-initialization-verification.md)。
+
 `OnApplyTemplate` 获取以下稳定 part：
 
 - `PART_SwitchKnob`
@@ -76,6 +88,17 @@ Form.ClearValue()    → IsChecked = null
 - `PART_MainContainer`
 
 模板接入后，控件把当前 `KnobSize` 写入 `SwitchKnob`，再根据当前 `IsLoading` 同步把手 loading 状态。模板 part 没有全局事件订阅，主要生命周期风险来自内容图标 relay binding 和 loading animation。
+
+模板层级与 antd Switch 对齐：`PART_SwitchKnob` 位于外层 `Panel`（root 的直接子层），不在 `PART_MainContainer`（内容
+`Canvas`，`ClipToBounds=True`）之内。内容 on/off presenter 的离屏裁剪依赖 `PART_MainContainer`，把手越出轨道边界的
+自定义几何（负 `TrackPadding`、`KnobSize` 大于 `TrackHeight`）则不受该 Canvas 裁剪，例如 MUI 形态的 20px 把手
+悬挂在 14px 轨道之外。此结构是内置模板的稳定保证，用户样式不得依赖 `PART_*` 或 `/template/` 重建。
+
+Semantic Part marker 映射：`PART_SwitchKnob` 声明 `Classes.semantic-indicator="True"`，`PART_OnContentPresenter` 与
+`PART_OffContentPresenter` 声明 `Classes.semantic-content="True"`，`root` 不声明 marker。三个 Part 与模板节点的映射是
+静态 AXAML marker，不随 `IsChecked`、`IsLoading`、`SizeType` 或内容变化增删；轨道胶囊由 owner `Render` 直接绘制，没有
+独立 track 节点，因此不对应任何 `.semantic-*` marker。完整契约见
+[ToggleSwitch Semantic Part 契约](semantic-part.md)。
 
 内容变化时，`SetupContent` 会释放旧 on/off 内容对应的 `CompositeDisposable`，再为新的 `PathIcon` / `Icon` 建立尺寸和前景色绑定。维护时必须保持内容替换和 disposable 释放成对出现。
 
@@ -110,7 +133,16 @@ loading 状态下 pointer press/release 不进入基类逻辑，因此不会切�
 
 ### 7.1 测量与宽度计算
 
-测量阶段分别测量 on/off content presenter，取二者最大宽度作为内容宽度，再叠加 `InnerMinMargin` 和 `InnerMaxMargin`。最终宽度取该值与 `TrackMinWidth` 的较大值，高度使用 `TrackHeight`。
+测量阶段分别测量 on/off content presenter，取二者最大宽度作为内容宽度；有内容时再叠加 `InnerMinMargin` 和
+`InnerMaxMargin`，无内容时宽度收敛到 `TrackMinWidth`（与 antd 的 min-width 语义一致）。显式 `Width` 优先于内容
+测量宽度（且不小于 `TrackMinWidth`）。期望高度使用 `TrackHeight`；把手、内容位置、绘制和命中区域统一使用最终排列内容盒。
+内部内容画布汇报两个 presenter 的最大期望尺寸，使内容高度变化能够沿模板树触发 owner 重新测量。
+owner 的偏移还依赖每个 presenter 的尺寸；画布测量完成时标记 owner 的排列失效，防止把手尺寸掩盖较小内容的尺寸变化。
+
+`TrackHeight`、`TrackMinWidth`、`TrackPadding`、`KnobSize` 是 owner 级公开 StyledProperty（对应 antd Switch
+`ComponentToken` 的 `trackHeight` / `trackMinWidth` / `trackPadding` / `handleSize`），默认值由 SizeType 主题分支从
+`ToggleSwitchToken` 写入，Semantic Style 可以直接覆盖。`KnobSize` 变化时同步写入 `SwitchKnob.KnobSize`，四者均
+`AffectsMeasure`。
 
 ### 7.2 把手位置
 
@@ -118,7 +150,13 @@ loading 状态下 pointer press/release 不进入基类逻辑，因此不会切�
 
 ### 7.3 内容偏移
 
-`ExtraInfoRect` 根据当前状态和内部边距计算内容区域。checked 时 on content 进入可见区域，off content 移到右侧不可见区域；unchecked 时反向处理。内容偏移使用 `PointTransition` 过渡。
+`ExtraInfoRect` 根据当前状态和内部边距计算内容区域。默认字符串的垂直中心取自 `TextBlock.TextLayout` 中
+各字体运行的真实字形轮廓、基线和 shaping offset，而不是含下伸预留空间的字体行盒。因此 On / Off、中文、
+带下伸或组合字符的标签按其可见字形居中，不写死下移量。计算复用已完成的排版，仅在测量阶段提取轮廓边界并保存偏移数值，每帧排列不生成 Geometry；
+空白、无可用字形度量及显式或隐式自定义模板 / 控件内容保持期望尺寸居中。
+checked 时 on content 进入可见区域，off content 移到右侧不可见区域；unchecked 时反向处理。pressed 内容位移从当前
+把手几何推导，不累计旧偏移。内容偏移使用 `PointTransition` 过渡，并通过 AXAML TemplateBinding 传给内部内容画布；
+画布是 presenter 的唯一排列 owner，负责普通布局和每一帧偏移动画。既有自定义模板仍可使用标准 Canvas，owner 保留原有定位兼容路径；默认模板通过专用画布处理内容尺寸失效与动画排列。
 
 ### 7.4 轨道绘制
 
@@ -126,7 +164,12 @@ loading 状态下 pointer press/release 不进入基类逻辑，因此不会切�
 
 ### 7.5 把手与 loading 绘制
 
-`SwitchKnob.Render` 根据 `KnobRenderWidth` 和高度判断绘制圆形或胶囊把手。loading 状态下，按当前 `Rotation` 绘制 90 度 arc。`GetLoadIndicatorPen` 缓存 pen，并在 brush 引用变化时重建。
+`SwitchKnob.Render` 根据 `KnobRenderWidth` 和高度判断绘制圆形或胶囊把手，填充色来自标准的 `Background` 属性（主题通过 `HandleBg` Token 设置，`.semantic-indicator` 可直接覆盖）。loading 状态下，按当前 `Rotation` 绘制 90 度 arc。`GetLoadIndicatorPen` 缓存 pen，并在 brush 引用变化时重建。
+
+把手阴影由 `KnobBoxShadow`（主题从 `HandleShadow` Token 设置）派生：`SwitchKnob.OnPropertyChanged` 把
+`BoxShadow` 转换为 `DropShadowEffect`，以 `BindingPriority.Style` 写入 `EffectProperty` 即时帧。同优先级下用户
+样式帧后求值、后写入，因此 `.semantic-indicator` 的 `Effect` Setter 可以覆盖主题派生阴影；若 `KnobBoxShadow` 为
+null 则清空派生效值。
 
 ## 8. 资源、性能与 AOT 边界
 

@@ -201,6 +201,41 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticIconDescription">
+      <segment>
+        <source>Checkbox icon element with size, direction, background, border, border-radius, transitions, and checked state checkmark styles</source>
+      </segment>
+    </unit>
+    <unit id="SemanticLabelDescription">
+      <segment>
+        <source>Label text element with padding and spacing styles relative to the checkbox</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartConditionalTitle">
+      <segment>
+        <source>Conditional styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartFixedTitle">
+      <segment>
+        <source>Fixed styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped selectors and CheckBox property selectors to customize the published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with inline-flex layout, baseline alignment, cursor style, reset styles and other basic checkbox container styles</source>
+      </segment>
+    </unit>
     <unit id="UseWithGridDescription">
       <segment>
         <source>We can use Checkbox and Grid in Checkbox.Group, to implement complex layout.</source>

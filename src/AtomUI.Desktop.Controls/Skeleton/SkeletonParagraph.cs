@@ -10,10 +10,10 @@ public class SkeletonParagraph : AbstractSkeleton
 
     public static readonly StyledProperty<Dimension> LastLineWidthProperty =
         AvaloniaProperty.Register<SkeletonParagraph, Dimension>(nameof(LastLineWidth), new Dimension(1.0, DimensionUnitType.Percentage));
-    
+
     public static readonly StyledProperty<List<Dimension>?> LineWidthsProperty =
         AvaloniaProperty.Register<SkeletonParagraph, List<Dimension>?>(nameof(LineWidths));
-    
+
     public static readonly StyledProperty<int> RowsProperty =
         AvaloniaProperty.Register<SkeletonParagraph, int>(nameof(Rows), 2, validate: i => i >= 1);
 
@@ -25,27 +25,27 @@ public class SkeletonParagraph : AbstractSkeleton
         get => GetValue(LastLineWidthProperty);
         set => SetValue(LastLineWidthProperty, value);
     }
-    
+
     public List<Dimension>? LineWidths
     {
         get => GetValue(LineWidthsProperty);
         set => SetValue(LineWidthsProperty, value);
     }
-    
+
     public int Rows
     {
         get => GetValue(RowsProperty);
         set => SetValue(RowsProperty, value);
     }
-    
+
     public bool IsRound
     {
         get => GetValue(IsRoundProperty);
         set => SetValue(IsRoundProperty, value);
     }
-    
+
     #endregion
-    
+
     private StackPanel? _linesLayout;
 
     public SkeletonParagraph()
@@ -80,6 +80,10 @@ public class SkeletonParagraph : AbstractSkeleton
         {
             ConfigureLinesRoundness();
         }
+        else if (change.Property == BackgroundProperty)
+        {
+            ConfigureLinesBackground();
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -99,7 +103,8 @@ public class SkeletonParagraph : AbstractSkeleton
                 var line = new SkeletonLine
                 {
                     IsActive = IsActive,
-                    IsRound  = IsRound
+                    IsRound = IsRound,
+                    Background = Background
                 };
                 ConfigureLineWidth(line, i);
                 _linesLayout.Children.Add(line);
@@ -171,6 +176,20 @@ public class SkeletonParagraph : AbstractSkeleton
                 if (child is SkeletonLine line)
                 {
                     line.IsRound = IsRound;
+                }
+            }
+        }
+    }
+
+    private void ConfigureLinesBackground()
+    {
+        if (_linesLayout != null)
+        {
+            foreach (var child in _linesLayout.Children)
+            {
+                if (child is SkeletonLine line)
+                {
+                    line.Background = Background;
                 }
             }
         }

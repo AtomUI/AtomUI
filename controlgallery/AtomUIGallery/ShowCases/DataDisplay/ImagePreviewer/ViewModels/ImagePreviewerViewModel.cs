@@ -1,11 +1,11 @@
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Reactive;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using ReactiveUI;
+using SkiaSharp;
 
 namespace AtomUIGallery.ShowCases.ImagePreviewer;
 
@@ -48,6 +48,14 @@ public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
     {
         get => _defaultImages;
         set => this.RaiseAndSetIfChanged(ref _defaultImages, value);
+    }
+
+    private IList<ImagePreviewItem>? _grayscaleImages;
+
+    public IList<ImagePreviewItem>? GrayscaleImages
+    {
+        get => _grayscaleImages;
+        set => this.RaiseAndSetIfChanged(ref _grayscaleImages, value);
     }
 
     private IList<ImagePreviewItem>? _twoImages;
@@ -164,6 +172,10 @@ public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
         [
             CreateItem("avares://AtomUIGallery/Assets/ImagePreviewerShowCase/1.png")
         ];
+        GrayscaleImages =
+        [
+            CreateGrayscaleItem("avares://AtomUIGallery/Assets/ImagePreviewerShowCase/1.png")
+        ];
         ThreeImages =
         [
             CreateItem("avares://AtomUIGallery/Assets/ImagePreviewerShowCase/4.webp"),
@@ -216,6 +228,7 @@ public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
         HandleStopRapidSwitch();
         RemoteImages       = null;
         DefaultImages      = null;
+        GrayscaleImages    = null;
         ThreeImages        = null;
         TwoImages          = null;
         TwentyRemoteImages = null;
@@ -355,5 +368,43 @@ public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
     private static ImagePreviewItem CreateItem(string source)
     {
         return new ImagePreviewItem(ImageSource.Parse(source));
+    }
+
+    private static ImagePreviewItem CreateGrayscaleItem(string source)
+    {
+        var grayscaleBytes = ApplyGrayscale(ReadAssetBytes(source), 0.5f);
+        return new ImagePreviewItem(new StreamImageSource(
+            _ => new ValueTask<Stream>(new MemoryStream(grayscaleBytes)),
+            "grayscale-1",
+            "v1"));
+    }
+
+    private static byte[] ApplyGrayscale(byte[] pngBytes, float amount)
+    {
+        using var source = SKBitmap.Decode(pngBytes);
+        if (source is null)
+        {
+            return pngBytes;
+        }
+
+        // CSS filter: grayscale(amount) —— 在原始颜色与亮度灰度之间按 amount 插值。
+        var inv = 1f - amount;
+        var matrix = new[]
+        {
+            0.2126f + 0.7874f * inv, 0.7152f - 0.7152f * inv, 0.0722f - 0.0722f * inv, 0f, 0f,
+            0.2126f - 0.2126f * inv, 0.7152f + 0.2848f * inv, 0.0722f - 0.0722f * inv, 0f, 0f,
+            0.2126f - 0.2126f * inv, 0.7152f - 0.7152f * inv, 0.0722f + 0.9278f * inv, 0f, 0f,
+            0f, 0f, 0f, 1f, 0f
+        };
+        using var paint  = new SKPaint { ColorFilter = SKColorFilter.CreateColorMatrix(matrix) };
+        using var result = new SKBitmap(source.Width, source.Height, source.ColorType, source.AlphaType);
+        using (var canvas = new SKCanvas(result))
+        {
+            canvas.DrawBitmap(source, 0f, 0f, paint);
+        }
+
+        using var image = SKImage.FromBitmap(result);
+        using var data  = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data.ToArray();
     }
 }

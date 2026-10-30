@@ -105,6 +105,13 @@ owned transport/file-cache 资源。没有在途工作时 Dispose 保持同步�
 把剩余管线 drain 转移到后台，不能同步等待 dispatcher、网络或解码 worker。取消 token source、HTTP response、stream
 和图片释放不得在持有 coordinator/cache lock 时执行。
 
+HTTP transport、`HttpMessageHandler` 和 `HttpClient` 在第一个真实 HTTP/HTTPS source read 时按 loader 延迟创建，普通
+Asset/File/Bytes/Stream/Borrowed 请求不触发网络对象。延迟 owner 在同一锁内完成唯一实例的构造和发布；构造失败不发布
+半初始化实例，后续请求可以重新尝试。loader dispose 与首次创建竞争时，dispose 必须等待当前构造完成，再把已经发布的
+transport 恰好释放一次；dispose 已开始后不允许新建 transport。未发生 HTTP 请求时，dispose 只丢弃未执行的 factory。
+传入的自定义 `HttpMessageHandler` 与默认 handler 沿用 `HttpClient(..., disposeHandler: true)` 所有权，由实际创建的
+transport 释放；多个 Application loader 从不共享 transport、handler 或 client。
+
 ## 注册语义
 
 `UseImageLoading()` 由 Shared 提供，`UseCommonControls()` 调用它；Controls 随后把统一 `SvgImageCodec` 添加到同一个图片
@@ -203,6 +210,12 @@ timeout 也是 waiter-local cancellation，计时从请求接纳而非取得 sch
 仍在等待的 waiter 发布失败结果，不负缓存错误，也不进行隐式无限重试。
 
 ## 调度与优先级
+
+三个并发池在构造时保留配置校验，各自在第一次入队时才启动 worker Task。启动与工作发布在同一队列锁内完成，
+未使用的池不创建 worker；部分启动失败时拒绝该工作项，并取消、等待已启动的 worker 后释放池资源。Dispose 在锁外取消，
+已启动的 worker 异步完成释放，不能阻塞正在运行的 action；未启动的池直接释放取消源和 semaphore。worker Task 数量不等于 OS 线程数量。
+worker 沿用池构造时的 ExecutionContext（包括抑制 flow 时的空上下文），在 worker 入口恢复；首次请求的环境上下文不进入池。
+快照在完成启动或池销毁时从池字段释放，执行中的 worker 自行持有所需上下文；恢复通知不在入队调用方的队列锁内触发。
 
 HTTP 下载池、本地读取池和 decode 池各自限制并发，排队项共享以下优先级。`MaxConcurrentDownloads` 只约束 HTTP，
 本地 source 不得因远程请求超时、限流或连接失败而发生队首阻塞：

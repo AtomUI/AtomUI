@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
+using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -12,7 +13,7 @@ using VirtualizingStackPanel = Avalonia.Controls.VirtualizingStackPanel;
 
 namespace AtomUI.Desktop.Controls;
 
-public class TransferListView : ListView, ITransferView
+public partial class TransferListView : ListView, ITransferView
 {
     #region 公共属性定义
     public static readonly DirectProperty<TransferListView, IList<EntityKey>?> SelectedKeysProperty =
@@ -117,21 +118,32 @@ public class TransferListView : ListView, ITransferView
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
-        return new TransferListItem();
+        var listItem = new TransferListItem();
+        listItem.Classes.Add(ListViewSemanticParts.ItemClass);
+        return listItem;
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<TransferListItem>(item, out recycleKey);
     }
-    
+
     protected override void PrepareListViewItem(ListViewItem listItem, object? item, int index)
     {
         base.PrepareListViewItem(listItem, item, index);
         if (listItem is TransferListItem transferListItem)
         {
+            transferListItem.Classes.Add(ListViewSemanticParts.ItemClass);
+            transferListItem.Classes.Add(GetDirectionItemClass());
             transferListItem[!TransferListItem.IsCheckableProperty] = this[!IsSelectableProperty];
         }
+    }
+
+    private string GetDirectionItemClass()
+    {
+        return ViewType == TransferViewType.Source
+            ? ListTransferSemanticParts.SourceItemClass
+            : ListTransferSemanticParts.TargetItemClass;
     }
 
     public void DeselectAll() => Selection.Clear();

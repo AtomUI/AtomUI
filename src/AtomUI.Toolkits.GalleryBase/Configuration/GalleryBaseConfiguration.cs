@@ -24,6 +24,8 @@ public sealed class GalleryBaseConfiguration
 
     public GallerySourceCodeDisplayConfiguration SourceCodeDisplay { get; }
 
+    public GalleryShowCaseZoomConfiguration ShowCaseZoom { get; }
+
     private GalleryBaseConfiguration(GalleryBrandingConfiguration branding,
                                      IReadOnlyList<GalleryNavigationNode> navigationNodes,
                                      IReadOnlyList<EntityKey> defaultOpenKeys,
@@ -31,7 +33,8 @@ public sealed class GalleryBaseConfiguration
                                      GalleryRouteRegistry routes,
                                      GalleryShellConfiguration shell,
                                      GalleryPlatformConfiguration platform,
-                                     GallerySourceCodeDisplayConfiguration sourceCodeDisplay)
+                                     GallerySourceCodeDisplayConfiguration sourceCodeDisplay,
+                                     GalleryShowCaseZoomConfiguration showCaseZoom)
     {
         Branding          = branding;
         NavigationNodes   = navigationNodes;
@@ -41,6 +44,7 @@ public sealed class GalleryBaseConfiguration
         Shell             = shell;
         Platform          = platform;
         SourceCodeDisplay = sourceCodeDisplay;
+        ShowCaseZoom      = showCaseZoom;
     }
 
     internal static GalleryBaseConfiguration Create(GalleryBaseOptions options)
@@ -60,7 +64,8 @@ public sealed class GalleryBaseConfiguration
             routes,
             GalleryShellConfiguration.FromOptions(options.Shell),
             GalleryPlatformConfiguration.FromOptions(options.Platform),
-            GallerySourceCodeDisplayConfiguration.FromOptions(options.SourceCodeDisplay));
+            GallerySourceCodeDisplayConfiguration.FromOptions(options.SourceCodeDisplay),
+            GalleryShowCaseZoomConfiguration.FromOptions(options.ShowCaseZoom));
     }
 
     private static void ValidateNavigation(GalleryNavigationBuilder navigation,
@@ -72,8 +77,10 @@ public sealed class GalleryBaseConfiguration
             throw new GalleryConfigurationException("Gallery navigation DefaultRoute must be configured.");
         }
 
-        var defaultNode = Walk(navigationNodes).FirstOrDefault(node => node.Key == navigation.DefaultRoute);
-        if (defaultNode is null)
+        var nodesByKey = new Dictionary<EntityKey, GalleryNavigationNode>();
+        GalleryNavigationNode? firstUnregisteredRoute = null;
+        IndexNavigation(navigationNodes, routes, nodesByKey, ref firstUnregisteredRoute);
+        if (!nodesByKey.TryGetValue(navigation.DefaultRoute, out var defaultNode))
         {
             throw new GalleryConfigurationException(
                 $"Gallery navigation DefaultRoute '{navigation.DefaultRoute}' does not exist in navigation nodes.");
@@ -91,7 +98,6 @@ public sealed class GalleryBaseConfiguration
                 $"Gallery navigation DefaultRoute '{navigation.DefaultRoute}' does not have a registered route.");
         }
 
-        var nodesByKey = Walk(navigationNodes).ToDictionary(node => node.Key);
         var defaultOpenKeys = new HashSet<EntityKey>();
         foreach (var defaultOpenKey in navigation.DefaultOpenKeys)
         {
@@ -120,25 +126,26 @@ public sealed class GalleryBaseConfiguration
             }
         }
 
-        foreach (var routeNode in Walk(navigationNodes).Where(node => node.IsRoute))
+        if (firstUnregisteredRoute is not null)
         {
-            if (!routes.ContainsRoute(routeNode.Key))
-            {
-                throw new GalleryConfigurationException(
-                    $"Gallery navigation page '{routeNode.Key}' does not have a registered route.");
-            }
+            throw new GalleryConfigurationException(
+                $"Gallery navigation page '{firstUnregisteredRoute.Key}' does not have a registered route.");
         }
     }
 
-    private static IEnumerable<GalleryNavigationNode> Walk(IEnumerable<GalleryNavigationNode> nodes)
+    private static void IndexNavigation(IReadOnlyList<GalleryNavigationNode> nodes,
+                                         GalleryRouteRegistry routes,
+                                         Dictionary<EntityKey, GalleryNavigationNode> nodesByKey,
+                                         ref GalleryNavigationNode? firstUnregisteredRoute)
     {
         foreach (var node in nodes)
         {
-            yield return node;
-            foreach (var child in Walk(node.Children))
+            nodesByKey.Add(node.Key, node);
+            if (firstUnregisteredRoute is null && node.IsRoute && !routes.ContainsRoute(node.Key))
             {
-                yield return child;
+                firstUnregisteredRoute = node;
             }
+            IndexNavigation(node.Children, routes, nodesByKey, ref firstUnregisteredRoute);
         }
     }
 
@@ -317,5 +324,20 @@ public sealed class GallerySourceCodeDisplayConfiguration
     internal static GallerySourceCodeDisplayConfiguration FromOptions(GallerySourceCodeDisplayOptions options)
     {
         return new GallerySourceCodeDisplayConfiguration(options.IsEnabled, options.SnippetProvider);
+    }
+}
+
+public sealed class GalleryShowCaseZoomConfiguration
+{
+    public bool IsEnabled { get; }
+
+    private GalleryShowCaseZoomConfiguration(bool isEnabled)
+    {
+        IsEnabled = isEnabled;
+    }
+
+    internal static GalleryShowCaseZoomConfiguration FromOptions(GalleryShowCaseZoomOptions options)
+    {
+        return new GalleryShowCaseZoomConfiguration(options.IsEnabled);
     }
 }

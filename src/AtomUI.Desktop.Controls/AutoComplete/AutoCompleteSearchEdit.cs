@@ -4,11 +4,11 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-public class AutoCompleteSearchEdit : CompactSpaceAwareAutoComplete
+public partial class AutoCompleteSearchEdit : CompactSpaceAwareAutoComplete
 {
     #region 公共属性定义
 
-    public static readonly StyledProperty<SearchEditButtonStyle> SearchButtonStyleProperty =
+    public static readonly StyledProperty<SearchButtonType> SearchButtonStyleProperty =
         SearchEdit.SearchButtonStyleProperty.AddOwner<AutoCompleteSearchEdit>();
 
     public static readonly StyledProperty<string> SearchButtonTextProperty =
@@ -20,7 +20,7 @@ public class AutoCompleteSearchEdit : CompactSpaceAwareAutoComplete
     public static readonly StyledProperty<bool> IsSearchOnEnterEnabledProperty =
         SearchEdit.IsSearchOnEnterEnabledProperty.AddOwner<AutoCompleteSearchEdit>();
     
-    public SearchEditButtonStyle SearchButtonStyle
+    public SearchButtonType SearchButtonStyle
     {
         get => GetValue(SearchButtonStyleProperty);
         set => SetValue(SearchButtonStyleProperty, value);

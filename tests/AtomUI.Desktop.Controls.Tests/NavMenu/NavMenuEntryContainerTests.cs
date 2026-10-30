@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using Avalonia.Headless;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Shouldly;
@@ -14,6 +13,56 @@ public class NavMenuEntryContainerTests
     static NavMenuEntryContainerTests()
     {
         AvaloniaTestApp.EnsureInitialized();
+    }
+
+    [Fact]
+    public void Node_HeaderTemplate_Changes_Use_Current_Owner_Fallback_When_Cleared()
+    {
+        var node = new NavMenuNode { Header = "Node" };
+        var firstFallback = new FuncDataTemplate<INavMenuNode>((_, _) => new TextBlock { Text = "First fallback" });
+        var nextFallback = new FuncDataTemplate<INavMenuNode>((_, _) => new TextBlock { Text = "Next fallback" });
+        var nodeTemplate = new FuncDataTemplate<INavMenuNode>((_, _) => new TextBlock { Text = "Node template" });
+        var menu = new AtomUI.Desktop.Controls.NavMenu
+        {
+            Mode = NavMenuMode.Inline,
+            IsMotionEnabled = false,
+            ItemTemplate = firstFallback
+        };
+        menu.Items.Add(node);
+        ShowInWindow(menu, _ =>
+        {
+            var container = menu.ContainerFromItem(node).ShouldBeOfType<NavMenuItem>();
+            container.HeaderTemplate.ShouldBeSameAs(firstFallback);
+            node.HeaderTemplate = nodeTemplate;
+            Dispatcher.UIThread.RunJobs();
+            container.HeaderTemplate.ShouldBeSameAs(nodeTemplate);
+            menu.ItemTemplate = nextFallback;
+            Dispatcher.UIThread.RunJobs();
+            // ItemsControl may recreate containers when its ItemTemplate changes.
+            container = menu.ContainerFromItem(node).ShouldBeOfType<NavMenuItem>();
+            container.HeaderTemplate.ShouldBeSameAs(nodeTemplate);
+            node.HeaderTemplate = null;
+            Dispatcher.UIThread.RunJobs();
+            container.HeaderTemplate.ShouldBeSameAs(nextFallback);
+        });
+    }
+
+    [Fact]
+    public void Realized_Node_Tracks_ItemKey_Changes_And_Null()
+    {
+        var node = new NavMenuNode { Header = "Node", ItemKey = "old" };
+        var menu = new AtomUI.Desktop.Controls.NavMenu { Mode = NavMenuMode.Inline, IsMotionEnabled = false };
+        menu.Items.Add(node);
+        ShowInWindow(menu, _ =>
+        {
+            var container = menu.ContainerFromItem(node).ShouldBeOfType<NavMenuItem>();
+            node.ItemKey = "new";
+            Dispatcher.UIThread.RunJobs();
+            container.ItemKey.ShouldBe(node.ItemKey);
+            node.ItemKey = null;
+            Dispatcher.UIThread.RunJobs();
+            container.ItemKey.ShouldBeNull();
+        });
     }
 
     [Fact]

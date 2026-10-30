@@ -20,9 +20,11 @@ public class PopupEntryInventoryTests
         "src/AtomUI.Desktop.Controls/Menu/Themes/MenuItemTheme.axaml",
         "src/AtomUI.Desktop.Controls/Menu/Themes/TopLevelMenuItemTheme.axaml",
         "src/AtomUI.Desktop.Controls/NavMenu/Themes/NavMenuItemTheme.axaml",
+        "src/AtomUI.Desktop.Controls/TabControl/Themes/TabScrollViewerTheme.axaml",
         "src/AtomUI.Desktop.Controls/Primitives/InfoPickerInput/Themes/InfoPickerInputTheme.axaml",
         "src/AtomUI.Desktop.Controls/Primitives/InfoPickerInput/Themes/RangeInfoPickerInputTheme.axaml",
         "src/AtomUI.Desktop.Controls/Select/Themes/SelectTheme.axaml",
+        "src/AtomUI.Desktop.Controls/TimePicker/Themes/RangeTimePickerTheme.axaml",
         "src/AtomUI.Desktop.Controls/Tour/Themes/TourTheme.axaml",
         "src/AtomUI.Desktop.Controls/TreeSelect/Themes/TreeSelectTheme.axaml"
     ];
@@ -73,8 +75,6 @@ public class PopupEntryInventoryTests
                 [
                     "src/AtomUI.Desktop.Controls/Flyouts/FlyoutStateHelper.cs",
                     "src/AtomUI.Desktop.Controls/Flyouts/MenuFlyoutPresenter.cs",
-                    "src/AtomUI.Desktop.Controls/TabControl/TabControlScrollViewer.cs",
-                    "src/AtomUI.Desktop.Controls/TabControl/TabStrip/TabStripScrollViewer.cs",
                     "src/AtomUI.Desktop.Controls/Transfer/TransferSelectDropdown.cs",
                     "src/AtomUI.Desktop.Controls/TreeView/FloatableTreeView.cs"
                 ]
@@ -90,8 +90,6 @@ public class PopupEntryInventoryTests
                     "src/AtomUI.Desktop.Controls/Flyouts/FlyoutHost.cs",
                     "src/AtomUI.Desktop.Controls/PopupConfirm/PopupConfirm.cs",
                     "src/AtomUI.Desktop.Controls/SplitButton/SplitButton.cs",
-                    "src/AtomUI.Desktop.Controls/TabControl/TabControlScrollViewer.cs",
-                    "src/AtomUI.Desktop.Controls/TabControl/TabStrip/TabStripScrollViewer.cs",
                     "src/AtomUI.Desktop.Controls/Transfer/TransferSelectDropdown.cs"
                 ]
             },
@@ -117,8 +115,6 @@ public class PopupEntryInventoryTests
             { "src/AtomUI.Desktop.Controls/SplitButton/SplitButton.cs", "new FlyoutStateHelper" },
             { "src/AtomUI.Desktop.Controls/Avatar/AvatarGroup.cs", "new Flyout" },
             { "src/AtomUI.Desktop.Controls/Transfer/TransferSelectDropdown.cs", "new MenuFlyout" },
-            { "src/AtomUI.Desktop.Controls/TabControl/TabControlScrollViewer.cs", "MenuFlyout.ShowAt" },
-            { "src/AtomUI.Desktop.Controls/TabControl/TabStrip/TabStripScrollViewer.cs", "MenuFlyout.ShowAt" },
             { "src/AtomUI.Desktop.Controls/PopupConfirm/PopupConfirm.cs", "new PopupConfirmFlyout" },
             { "src/AtomUI.Desktop.Controls.DataGrid/Column/Filters/DataGridFilterIndicator.cs", "new FlyoutStateHelper" }
         };

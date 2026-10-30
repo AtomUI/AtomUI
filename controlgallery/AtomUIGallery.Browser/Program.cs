@@ -1,4 +1,5 @@
 using System.Runtime.Versioning;
+using AtomUI;
 using Avalonia;
 using Avalonia.Browser;
 using ReactiveUI.Avalonia;
@@ -20,7 +21,8 @@ internal static class Program
     {
         var builder = AppBuilder.Configure<BrowserGalleryApplication>()
                                 .UseReactiveUI(build =>
-                                    build.ConfigureViewLocator(locator => AtomUIGalleryModule.RegisterViews(locator)));
+                                    build.ConfigureViewLocator(locator => AtomUIGalleryModule.RegisterViews(locator)))
+                                .UseAtomUI(BrowserGalleryApplication.Configure);
 #if DEBUG
         builder = builder.WithDeveloperTools();
 #endif

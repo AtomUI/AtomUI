@@ -6,5 +6,15 @@
         <source>Transparent</source>
       </segment>
     </unit>
+    <unit id="Confirm">
+      <segment>
+        <source>Confirm</source>
+      </segment>
+    </unit>
+    <unit id="Cancel">
+      <segment>
+        <source>Cancel</source>
+      </segment>
+    </unit>
   </file>
 </xliff>

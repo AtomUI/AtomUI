@@ -47,7 +47,11 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         set => SetValue(ColorTextLightSolidProperty, value);
     }
     #endregion
-    
+
+    private LineProgressPanel? _progressBody;
+
+    private protected override bool HasTemplateProgressVisuals => _progressBody is not null;
+
     static AbstractGeneralProgressBar()
     {
         AffectsMeasure<AbstractGeneralProgressBar>(IndicatorThicknessProperty, PercentPositionProperty);
@@ -103,45 +107,11 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         return new Size(targetWidth, targetHeight);
     }
 
-    protected override Size ArrangeOverride(Size finalSize)
-    {
-        if (IsProgressInfoVisible)
-        {
-            var extraInfoRect = GetExtraInfoRect(new Rect(new Point(0, 0), finalSize));
-            if (LayoutTransformLabel is not null)
-            {
-                Canvas.SetTop(LayoutTransformLabel, extraInfoRect.Top);
-                Canvas.SetLeft(LayoutTransformLabel, extraInfoRect.Left);
-            }
-
-            if (SuccessCompletedIconPresenter is not null)
-            {
-                Canvas.SetLeft(SuccessCompletedIconPresenter, extraInfoRect.Left);
-                Canvas.SetTop(SuccessCompletedIconPresenter, extraInfoRect.Top);
-            }
-
-            if (ExceptionCompletedIconPresenter is not null)
-            {
-                Canvas.SetLeft(ExceptionCompletedIconPresenter, extraInfoRect.Left);
-                Canvas.SetTop(ExceptionCompletedIconPresenter, extraInfoRect.Top);
-            }
-        }
-
-        return base.ArrangeOverride(finalSize);
-    }
-
     protected override void RenderGroove(DrawingContext context)
     {
         var controlRect = new Rect(new Point(0, 0), Bounds.Size);
         _grooveRect = GetProgressBarRect(controlRect);
-        if (StrokeLineCap == PenLineCap.Round)
-        {
-            context.DrawPilledRect(GrooveBrush, null, _grooveRect, Orientation);
-        }
-        else
-        {
-            context.FillRectangle(GrooveBrush!, _grooveRect);
-        }
+        DrawProgressRectangle(context, GrooveBrush, _grooveRect);
     }
 
     protected override void RenderIndicatorBar(DrawingContext context)
@@ -158,18 +128,21 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         }
 
         deflateValue = range * (1 - CalculateProgressRatio(Value));
-        DrawIndicatorBar(context, deflateValue, StrokeBrush!);
+        DrawIndicatorBar(context, deflateValue, StrokeBrush);
 
         // 绘制成功阈值
         if (!double.IsNaN(SuccessThreshold))
         {
             var successThreshold             = Math.Clamp(SuccessThreshold, Minimum, Maximum);
             var successThresholdDeflateValue = range * (1 - CalculateProgressRatio(successThreshold));
-            DrawIndicatorBar(context, successThresholdDeflateValue, SuccessStrokeBrush!);
+            DrawIndicatorBar(context, successThresholdDeflateValue, SuccessStrokeBrush);
         }
     }
 
-    protected void DrawIndicatorBar(DrawingContext context, double deflateValue, IBrush brush)
+    private void DrawIndicatorBar(
+        DrawingContext context,
+        double deflateValue,
+        IBrush? fallbackBrush)
     {
         Rect indicatorRect = default;
         bool isEmpty       = false;
@@ -200,14 +173,28 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
         if (!isEmpty)
         {
-            if (StrokeLineCap == PenLineCap.Round)
-            {
-                context.DrawPilledRect(brush, null, indicatorRect, Orientation);
-            }
-            else
-            {
-                context.FillRectangle(brush, indicatorRect);
-            }
+            DrawProgressRectangle(context, fallbackBrush, indicatorRect);
+        }
+    }
+
+    private void DrawProgressRectangle(
+        DrawingContext context,
+        IBrush? fallbackBrush,
+        Rect rect)
+    {
+        var brush = fallbackBrush;
+        if (brush is null)
+        {
+            return;
+        }
+
+        if (StrokeLineCap == PenLineCap.Round)
+        {
+            context.DrawPilledRect(brush, null, rect, Orientation);
+        }
+        else
+        {
+            context.FillRectangle(brush, rect);
         }
     }
 
@@ -261,9 +248,12 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        _progressBody = null;
         CalculateSizeTypeThresholdValue();
         CalculateMinBarThickness();
         base.OnApplyTemplate(e);
+        _progressBody = e.NameScope.Find<LineProgressPanel>(ProgressBodyPart);
+        _progressBody?.InvalidateArrange();
     }
 
     protected override SizeType CalculateEffectiveSizeType(double size)
@@ -583,9 +573,23 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         {
             UpdatePseudoClasses();
         }
-        else if (change.Property == IsProgressInfoVisibleProperty)
+
+        if (change.Property == IsProgressInfoVisibleProperty)
         {
             CalculateMinBarThickness();
+        }
+
+        if (change.Property == ValueProperty ||
+            change.Property == MinimumProperty ||
+            change.Property == MaximumProperty ||
+            change.Property == SuccessThresholdProperty ||
+            change.Property == OrientationProperty ||
+            change.Property == StrokeThicknessProperty ||
+            change.Property == StrokeLineCapProperty ||
+            change.Property == IsProgressInfoVisibleProperty ||
+            change.Property == PercentPositionProperty)
+        {
+            _progressBody?.InvalidateArrange();
         }
     }
 
@@ -680,5 +684,34 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
     {
         base.OnAttachedToVisualTree(e);
         UpdatePseudoClasses();
+    }
+
+    internal Rect GetLineProgressBarRect(Size size)
+    {
+        _grooveRect = GetProgressBarRect(new Rect(default, size));
+        return _grooveRect;
+    }
+
+    internal Rect GetLineTrackRect(Rect grooveRect, double value)
+    {
+        var range = Orientation == Orientation.Horizontal ? grooveRect.Width : grooveRect.Height;
+        var deflateValue = range * (1 - CalculateProgressRatio(value));
+        return Orientation == Orientation.Horizontal
+            ? grooveRect.Deflate(new Thickness(0, 0, deflateValue, 0))
+            : grooveRect.Deflate(new Thickness(0, 0, 0, deflateValue));
+    }
+
+    internal Rect GetLineProgressIndicatorRect(Size size)
+    {
+        return IsProgressInfoVisible
+            ? GetExtraInfoRect(new Rect(default, size))
+            : default;
+    }
+
+    internal bool IsLineTrackVisible(Rect rect)
+    {
+        return Orientation == Orientation.Horizontal
+            ? StrokeLineCap == PenLineCap.Round ? rect.Width >= rect.Height / 2 : rect.Width >= 1
+            : StrokeLineCap == PenLineCap.Round ? rect.Height >= rect.Width / 2 : rect.Height >= 1;
     }
 }

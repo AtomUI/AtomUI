@@ -146,5 +146,55 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticAvatarDescription">
+      <segment>
+        <source>Avatar element with inline-block display, vertical alignment, background color, size, border radius and other avatar placeholder styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticElementContentDescription">
+      <segment>
+        <source>Content element with placeholder background, border, radius and size styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticElementRootDescription">
+      <segment>
+        <source>Root element of a Skeleton element component.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticHeaderDescription">
+      <segment>
+        <source>Header element with table cell, padding, vertical alignment and other avatar placeholder area layout styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticParagraphDescription">
+      <segment>
+        <source>Paragraph element with padding, list item styles, background color, border radius and other paragraph placeholder styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleDescription">
+      <segment>
+        <source>Use owner-scoped styles to customize Skeleton's published Semantic Parts.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticPartStyleTitle">
+      <segment>
+        <source>Custom Semantic Part styling</source>
+      </segment>
+    </unit>
+    <unit id="SemanticRootDescription">
+      <segment>
+        <source>Root element with table display, width, animation effects, border radius and other skeleton container basic styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticSectionDescription">
+      <segment>
+        <source>Section element with skeleton content area layout styles.</source>
+      </segment>
+    </unit>
+    <unit id="SemanticTitleDescription">
+      <segment>
+        <source>Title element with width, height, background color, border radius and other title placeholder styles.</source>
+      </segment>
+    </unit>
   </file>
 </xliff>

@@ -4,7 +4,7 @@ using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomUICalendar = AtomUI.Desktop.Controls.Calendar;
-using CalendarCellControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarViewCell;
+using CalendarCellControl = AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell;
 
 namespace AtomUI.Desktop.Controls.Tests.Calendar;
 

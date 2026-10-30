@@ -20,16 +20,21 @@ on:
 env:
    SourceDir: ${{ github.workspace }}
    BuildDir: ${{ github.workspace }}/binaries
-   AtomUIToolsSourceDir: ${{ github.workspace }}/binaries/atomuitools-source
-   AtomUIToolsBinDir: ${{ github.workspace }}/binaries/atomuitools
    GalleryPublishDir: ${{ github.workspace }}/binaries/gallery_published
    GalleryArtifactsOutputDir: ${{ github.workspace }}/binaries/artifacts_output
-   AtomUIToolsMacBin: ${{ github.workspace }}/binaries/atomuitools/AtomUITools.Mac
-   AtomUIToolsWinBin: ${{ github.workspace }}/binaries/atomuitools/AtomUITools.Windows
-   AtomUIToolsLinuxBin: ${{ github.workspace }}/binaries/atomuitools/AtomUITools.Linux
 jobs:
+   Prepare:
+      name: Prepare release metadata
+      runs-on: ubuntu-latest
+      outputs:
+         build_stamp: ${{ steps.stamp.outputs.build_stamp }}
+      steps:
+         -  name: Compute build stamp
+            id: stamp
+            run: echo "build_stamp=$(date -u +%m%d)" >> "$GITHUB_OUTPUT"
    BuildAtomUIGalleryDmgX64Installers:
       name: Build macOS x86_64 DMG Installer
+      needs: Prepare
       runs-on: macos-15-intel
       steps:
          -  name: Checkout code
@@ -58,13 +63,6 @@ jobs:
 
                Write-Host "Installed certificates:"
                security find-identity -v -p codesigning
-         -  name: Checkout AtomUITools code
-            uses: actions/checkout@v6
-            with:
-               repository: AtomUI/AtomUITools
-               ref: develop
-               token: ${{ secrets.ACCESS_TOKEN }}
-               path: ${{ env.AtomUIToolsSourceDir }}
          -  name: Setup .NET 10
             uses: actions/setup-dotnet@v5
             with:
@@ -73,7 +71,6 @@ jobs:
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/dmg/x64" -Force
@@ -82,13 +79,12 @@ jobs:
                   Write-Host "Optional Homebrew runner taps were not present or could not be untapped."
                   $global:LASTEXITCODE = 0
                }
-               brew install create-dmg openssl@3
-               Set-Location ${{ env.AtomUIToolsSourceDir }}/scripts
-               pwsh ./PublishAtomUIToolsLocal.ps1 -publishRootPath "${{ env.AtomUIToolsBinDir }}" -runtime osx-x64
+               brew install openssl@3
          -  name: Build DMG for osx-x64
             shell: pwsh
             env:
                KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+               CERT_IDENTITY: ${{ secrets.CERT_IDENTITY }}
             run: |
                $galleryScriptsPath = "${{ env.SourceDir }}/controlgallery/AtomUIGallery.Desktop/scripts"
                $galleryPublishDirX64 = "${{ env.GalleryPublishDir }}/osx-x64"
@@ -103,23 +99,25 @@ jobs:
                security unlock-keychain -p $env:KEYCHAIN_PASSWORD build.keychain
                security set-keychain-settings -lut 21600 build.keychain
 
-               ${{ env.AtomUIToolsMacBin }} create-dmg `
-                  --runtime osx-x64 `
-                  --config "$galleryPublishDirX64/config/InstallerConfig.xml" `
-                  --packages "$galleryPublishDirX64/packages" `
-                  --output "${{ env.GalleryArtifactsOutputDir }}/dmg/x64" `
-                  --verbosity Detailed `
-                  --certIdentity "${{ secrets.CERT_IDENTITY }}" `
-                  --cleanupBundleOption true
+               & "$galleryScriptsPath/packaging/New-GalleryDmg.ps1" `
+                  -ConfigPath "$galleryPublishDirX64/config/InstallerConfig.xml" `
+                  -PackagesPath "$galleryPublishDirX64/packages" `
+                  -OutputPath "${{ env.GalleryArtifactsOutputDir }}/dmg/x64" `
+                  -Runtime osx-x64 `
+                  -BuildStamp "${{ needs.Prepare.outputs.build_stamp }}" `
+                  -CertIdentity $env:CERT_IDENTITY `
+                  -RequireSignature
 
          -  name: Upload x86_64 DMG artifacts
             uses: actions/upload-artifact@v7
             with:
                name: dmg-packages-osx-x64
                path: ${{ env.GalleryArtifactsOutputDir }}/dmg/x64/*.dmg
+               if-no-files-found: error
    
    BuildAtomUIGalleryDmgArm64Installers:
       name: Build macOS arm64 DMG Installer
+      needs: Prepare
       runs-on: macos-latest
       steps:
          -  name: Checkout code
@@ -152,18 +150,10 @@ jobs:
             uses: actions/setup-dotnet@v5
             with:
                dotnet-version: '10.0.x'
-         -  name: Checkout AtomUITools code
-            uses: actions/checkout@v6
-            with:
-               repository: AtomUI/AtomUITools
-               ref: develop
-               token: ${{ secrets.ACCESS_TOKEN }}
-               path: ${{ env.AtomUIToolsSourceDir }}
          -  name: Prepare build environment
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/dmg/arm64" -Force
@@ -172,13 +162,12 @@ jobs:
                   Write-Host "Optional Homebrew runner taps were not present or could not be untapped."
                   $global:LASTEXITCODE = 0
                }
-               brew install create-dmg openssl@3
-               Set-Location ${{ env.AtomUIToolsSourceDir }}/scripts
-               pwsh ./PublishAtomUIToolsLocal.ps1 -publishRootPath "${{ env.AtomUIToolsBinDir }}" -runtime osx-arm64
+               brew install openssl@3
          -  name: Build DMG for osx-arm64
             shell: pwsh
             env:
                KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+               CERT_IDENTITY: ${{ secrets.CERT_IDENTITY }}
             run: |
                $galleryScriptsPath = "${{ env.SourceDir }}/controlgallery/AtomUIGallery.Desktop/scripts"
                $galleryPublishDirArm64 = "${{ env.GalleryPublishDir }}/osx-arm64"
@@ -193,14 +182,14 @@ jobs:
                security unlock-keychain -p $env:KEYCHAIN_PASSWORD build.keychain
                security set-keychain-settings -lut 21600 build.keychain
 
-               & ${{ env.AtomUIToolsMacBin }} create-dmg `
-               --runtime osx-arm64 `
-               --config "$galleryPublishDirArm64/config/InstallerConfig.xml" `
-               --packages "$galleryPublishDirArm64/packages" `
-               --output "${{ env.GalleryArtifactsOutputDir }}/dmg/arm64" `
-               --verbosity Detailed `
-               --certIdentity "${{ secrets.CERT_IDENTITY }}" `
-               --cleanupBundleOption true
+               & "$galleryScriptsPath/packaging/New-GalleryDmg.ps1" `
+                  -ConfigPath "$galleryPublishDirArm64/config/InstallerConfig.xml" `
+                  -PackagesPath "$galleryPublishDirArm64/packages" `
+                  -OutputPath "${{ env.GalleryArtifactsOutputDir }}/dmg/arm64" `
+                  -Runtime osx-arm64 `
+                  -BuildStamp "${{ needs.Prepare.outputs.build_stamp }}" `
+                  -CertIdentity $env:CERT_IDENTITY `
+                  -RequireSignature
 
                Get-ChildItem -Path "${{ env.GalleryArtifactsOutputDir }}" | Format-Table
          -  name: Upload arm64 DMG artifacts
@@ -208,9 +197,11 @@ jobs:
             with:
                name: dmg-packages-osx-arm64
                path: ${{ env.GalleryArtifactsOutputDir }}/dmg/arm64/*.dmg
+               if-no-files-found: error
    
    BuildAtomUIGalleryAppImageX64Installers:
       name: Build Linux X64 AppImage Installer
+      needs: Prepare
       runs-on: ubuntu-latest
       steps:
          -  name: Checkout code
@@ -221,42 +212,18 @@ jobs:
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/appimage/x64" -Force
                
                sudo apt-get update
                sudo apt-get install -y fuse libfuse2 patchelf desktop-file-utils file clang zlib1g-dev
-               sudo apt-get install -y libxcb1 libxcb-shape0 libxcb-shape0-dev
+               sudo apt-get install -y libxcb1 libxcb-shape0 libxcb-shape0-dev xvfb
                
-               wget https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20250213-2/linuxdeploy-x86_64.AppImage
-               chmod +x linuxdeploy-x86_64.AppImage
-               sudo mv linuxdeploy-x86_64.AppImage /usr/local/bin/linuxdeploy
-               
-               wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
-               chmod +x appimagetool-x86_64.AppImage
-               sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
-               
-               linuxdeploy --version
-               appimagetool --version
          -  name: Setup .NET 10
             uses: actions/setup-dotnet@v5
             with:
                dotnet-version: '10.0.x'
-         -  name: Checkout AtomUITools code
-            uses: actions/checkout@v6
-            with:
-               repository: AtomUI/AtomUITools
-               ref: develop
-               token: ${{ secrets.ACCESS_TOKEN }}
-               path: ${{ env.AtomUIToolsSourceDir }}
-         -  name: Build AtomUITools (Linux)
-            shell: pwsh
-            run: |
-               Set-Location ${{ env.AtomUIToolsSourceDir }}/scripts
-               ./PublishAtomUIToolsLocal.ps1 -publishRootPath "${{ env.AtomUIToolsBinDir }}" -runtime linux-x64
-
          -  name: Build AppImage for linux-x64
             shell: pwsh
             run: |
@@ -271,16 +238,25 @@ jobs:
                Set-Location $galleryScriptsPath
                ./PublishToLocal.ps1 -publishRootPath $galleryPublishDirX64 -runtime linux-x64 -buildType ${{ inputs.BuildConfiguration }} -publishAot '${{ inputs.PublishAot }}'
                
-               Set-Location ${{ env.BuildDir }}
-               Get-Location
-               ${{ env.AtomUIToolsLinuxBin }} create-appimage `
-                 --runtime linux-x64 `
-                 --config "$galleryPublishDirX64/config/InstallerConfig.xml" `
-                 --packages "$galleryPublishDirX64/packages" `
-                 --output $appImageOutputDirX64 `
-                 --verbosity Detailed `
-                 --cleanupBundleOption false
-               & "$galleryScriptsPath/EnsureAppImageLauncher.ps1" -appImageOutputDir $appImageOutputDirX64
+               & "$galleryScriptsPath/packaging/New-GalleryAppImage.ps1" `
+                 -ConfigPath "$galleryPublishDirX64/config/InstallerConfig.xml" `
+                 -PackagesPath "$galleryPublishDirX64/packages" `
+                 -OutputPath $appImageOutputDirX64 `
+                 -Runtime linux-x64 `
+                 -BuildStamp "${{ needs.Prepare.outputs.build_stamp }}"
+
+               # Smoke test: the extracted AppRun must keep the Gallery running for 20 seconds.
+               $smokeDir = Join-Path $env:RUNNER_TEMP "appimage-smoke"
+               New-Item -ItemType Directory -Path $smokeDir -Force | Out-Null
+               $appImage = Get-ChildItem -Path $appImageOutputDirX64 -Filter "*.AppImage" -File | Select-Object -First 1
+               Push-Location $smokeDir
+               & $appImage.FullName --appimage-extract | Out-Null
+               Pop-Location
+               xvfb-run -a timeout -k 10s 20s "$smokeDir/squashfs-root/AppRun"
+               if ($LASTEXITCODE -ne 124) {
+                  throw "Gallery AppImage exited early with code $LASTEXITCODE."
+               }
+               $global:LASTEXITCODE = 0
                ls -al $galleryPublishDirX64/packages
                ls -al $appImageOutputDirX64
          -  name: Upload x86_64 AppImage artifacts
@@ -288,9 +264,11 @@ jobs:
             with:
                name: linux-appimage-x86_64
                path: ${{ env.GalleryArtifactsOutputDir }}/appimage/x64/*.AppImage
+               if-no-files-found: error
    
    BuildAtomUIGalleryAppImageArm64Installers:
       name: Build Linux Arm64 AppImage Installer
+      needs: Prepare
       runs-on: ubuntu-24.04-arm
       steps:
          -  name: Checkout code
@@ -301,42 +279,18 @@ jobs:
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/appimage/arm64" -Force
 
                sudo apt-get update
                sudo apt-get install -y fuse libfuse2 patchelf desktop-file-utils file clang zlib1g-dev
-               sudo apt-get install -y libxcb1 libxcb-shape0 libxcb-shape0-dev
+               sudo apt-get install -y libxcb1 libxcb-shape0 libxcb-shape0-dev xvfb
 
-               wget https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20250213-2/linuxdeploy-aarch64.AppImage
-               chmod +x linuxdeploy-aarch64.AppImage
-               sudo mv linuxdeploy-aarch64.AppImage /usr/local/bin/linuxdeploy
-
-               wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage
-               chmod +x appimagetool-aarch64.AppImage
-               sudo mv appimagetool-aarch64.AppImage /usr/local/bin/appimagetool
-
-               linuxdeploy --version
-               appimagetool --version
          -  name: Setup .NET 10
             uses: actions/setup-dotnet@v5
             with:
                dotnet-version: '10.0.x'
-         -  name: Checkout AtomUITools code
-            uses: actions/checkout@v6
-            with:
-               repository: AtomUI/AtomUITools
-               ref: develop
-               token: ${{ secrets.ACCESS_TOKEN }}
-               path: ${{ env.AtomUIToolsSourceDir }}
-         -  name: Build AtomUITools (Linux)
-            shell: pwsh
-            run: |
-               Set-Location ${{ env.AtomUIToolsSourceDir }}/scripts
-               ./PublishAtomUIToolsLocal.ps1 -publishRootPath "${{ env.AtomUIToolsBinDir }}" -runtime linux-arm64
-
          -  name: Build AppImage for linux-arm64
             shell: pwsh
             run: |
@@ -351,16 +305,25 @@ jobs:
                Set-Location $galleryScriptsPath
                ./PublishToLocal.ps1 -publishRootPath $galleryPublishDirArm64 -runtime linux-arm64 -buildType ${{ inputs.BuildConfiguration }} -publishAot '${{ inputs.PublishAot }}'
 
-               Set-Location ${{ env.BuildDir }}
-               Get-Location
-               ${{ env.AtomUIToolsLinuxBin }} create-appimage `
-                 --runtime linux-arm64 `
-                 --config "$galleryPublishDirArm64/config/InstallerConfig.xml" `
-                 --packages "$galleryPublishDirArm64/packages" `
-                 --output $appImageOutputDirArm64 `
-                 --verbosity Detailed `
-                 --cleanupBundleOption false
-               & "$galleryScriptsPath/EnsureAppImageLauncher.ps1" -appImageOutputDir $appImageOutputDirArm64
+               & "$galleryScriptsPath/packaging/New-GalleryAppImage.ps1" `
+                 -ConfigPath "$galleryPublishDirArm64/config/InstallerConfig.xml" `
+                 -PackagesPath "$galleryPublishDirArm64/packages" `
+                 -OutputPath $appImageOutputDirArm64 `
+                 -Runtime linux-arm64 `
+                 -BuildStamp "${{ needs.Prepare.outputs.build_stamp }}"
+
+               # Smoke test: the extracted AppRun must keep the Gallery running for 20 seconds.
+               $smokeDir = Join-Path $env:RUNNER_TEMP "appimage-smoke"
+               New-Item -ItemType Directory -Path $smokeDir -Force | Out-Null
+               $appImage = Get-ChildItem -Path $appImageOutputDirArm64 -Filter "*.AppImage" -File | Select-Object -First 1
+               Push-Location $smokeDir
+               & $appImage.FullName --appimage-extract | Out-Null
+               Pop-Location
+               xvfb-run -a timeout -k 10s 20s "$smokeDir/squashfs-root/AppRun"
+               if ($LASTEXITCODE -ne 124) {
+                  throw "Gallery AppImage exited early with code $LASTEXITCODE."
+               }
+               $global:LASTEXITCODE = 0
                ls -al $galleryPublishDirArm64/packages
                ls -al $appImageOutputDirArm64
          -  name: Upload arm64 AppImage artifacts
@@ -368,9 +331,11 @@ jobs:
             with:
                name: linux-appimage-arm64
                path: ${{ env.GalleryArtifactsOutputDir }}/appimage/arm64/*.AppImage
+               if-no-files-found: error
    
    BuildAtomUIGalleryWindowsX64Zip:
       name: Build Windows X86_64 Zip Package
+      needs: Prepare
       runs-on: windows-latest
       steps:
          -  name: Checkout code
@@ -381,7 +346,6 @@ jobs:
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/zip/x64" -Force
@@ -389,18 +353,6 @@ jobs:
             uses: actions/setup-dotnet@v5
             with:
                dotnet-version: '10.0.x'
-         -  name: Checkout AtomUITools code
-            uses: actions/checkout@v6
-            with:
-               repository: AtomUI/AtomUITools
-               ref: develop
-               token: ${{ secrets.ACCESS_TOKEN }}
-               path: ${{ env.AtomUIToolsSourceDir }}
-         -  name: Build AtomUITools (Windows)
-            shell: pwsh
-            run: |
-               Set-Location ${{ env.AtomUIToolsSourceDir }}/scripts
-               pwsh ./PublishAtomUIToolsLocal.ps1 -publishRootPath "${{ env.AtomUIToolsBinDir }}" -runtime win-x64
          -  name: Build Zip package for win-x64
             shell: pwsh
             run: |
@@ -413,22 +365,21 @@ jobs:
 
                Set-Location $galleryScriptsPath
                ./PublishToLocal.ps1 -publishRootPath $galleryPublishDirX64 -runtime win-x64 -buildType ${{ inputs.BuildConfiguration }} -publishAot '${{ inputs.PublishAot }}'
-               Set-Location ${{ env.BuildDir }}
-               Get-Location
-               ${{ env.AtomUIToolsWinBin }} create-zip `
-                 --runtime win-x64 `
-                 --config "$galleryPublishDirX64/config/InstallerConfig.xml" `
-                 --packages "$galleryPublishDirX64/packages" `
-                 --output "${{ env.GalleryArtifactsOutputDir }}/zip/x64" `
-                 --verbosity Detailed `
-                 --cleanupBundleOption false
+               & "$galleryScriptsPath/packaging/New-GalleryZip.ps1" `
+                 -ConfigPath "$galleryPublishDirX64/config/InstallerConfig.xml" `
+                 -PackagesPath "$galleryPublishDirX64/packages" `
+                 -OutputPath "${{ env.GalleryArtifactsOutputDir }}/zip/x64" `
+                 -Runtime win-x64 `
+                 -BuildStamp "${{ needs.Prepare.outputs.build_stamp }}"
          -  name: Upload x86_64 zip artifacts
             uses: actions/upload-artifact@v7
             with:
                name: windows-zip-x86_64
                path: ${{ env.GalleryArtifactsOutputDir }}/zip/x64/*.zip
+               if-no-files-found: error
    BuildAtomUIGalleryWindowsArm64Zip:
       name: Build Windows Arm64 Zip Package
+      needs: Prepare
       runs-on: windows-11-arm
       steps:
          -  name: Checkout code
@@ -439,7 +390,6 @@ jobs:
             shell: pwsh
             run: |
                New-Item -ItemType Directory -Path "${{ env.BuildDir }}" -Force
-               New-Item -ItemType Directory -Path "${{ env.AtomUIToolsBinDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/zip/arm64" -Force
@@ -448,18 +398,6 @@ jobs:
             uses: actions/setup-dotnet@v5
             with:
                dotnet-version: '10.0.x'
-         -  name: Checkout AtomUITools code
-            uses: actions/checkout@v6
-            with:
-               repository: AtomUI/AtomUITools
-               ref: develop
-               token: ${{ secrets.ACCESS_TOKEN }}
-               path: ${{ env.AtomUIToolsSourceDir }}
-         -  name: Build AtomUITools (Windows Arm64)
-            shell: pwsh
-            run: |
-               Set-Location ${{ env.AtomUIToolsSourceDir }}/scripts
-               pwsh ./PublishAtomUIToolsLocal.ps1 -publishRootPath "${{ env.AtomUIToolsBinDir }}" -runtime win-arm64
          -  name: Build Zip package for win-arm64
             shell: pwsh
             run: |
@@ -472,17 +410,15 @@ jobs:
 
                Set-Location $galleryScriptsPath
                ./PublishToLocal.ps1 -publishRootPath $galleryPublishDirArm64 -runtime win-arm64 -buildType ${{ inputs.BuildConfiguration }} -publishAot '${{ inputs.PublishAot }}'
-               Set-Location ${{ env.BuildDir }}
-               Get-Location
-               ${{ env.AtomUIToolsWinBin }} create-zip `
-                 --runtime win-arm64 `
-                 --config "$galleryPublishDirArm64/config/InstallerConfig.xml" `
-                 --packages "$galleryPublishDirArm64/packages" `
-                 --output "${{ env.GalleryArtifactsOutputDir }}/zip/arm64" `
-                 --verbosity Detailed `
-                 --cleanupBundleOption false
+               & "$galleryScriptsPath/packaging/New-GalleryZip.ps1" `
+                 -ConfigPath "$galleryPublishDirArm64/config/InstallerConfig.xml" `
+                 -PackagesPath "$galleryPublishDirArm64/packages" `
+                 -OutputPath "${{ env.GalleryArtifactsOutputDir }}/zip/arm64" `
+                 -Runtime win-arm64 `
+                 -BuildStamp "${{ needs.Prepare.outputs.build_stamp }}"
          -  name: Upload arm64 zip artifacts
             uses: actions/upload-artifact@v7
             with:
                name: windows-zip-arm64
                path: ${{ env.GalleryArtifactsOutputDir }}/zip/arm64/*.zip
+               if-no-files-found: error

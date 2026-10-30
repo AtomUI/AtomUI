@@ -11,6 +11,7 @@ OtpLineEdit 的实现以控件根节点作为值、焦点位置、验证状态�
 主要源码：
 
 - `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEdit.cs`：公共 API、Avalonia 属性注册、事件、Form 接口、状态入口和模板生命周期。
+- `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEdit.SemanticParts.cs`：Semantic Part descriptor 声明（`root`、`cellList`、`cell`、`separator`），cell 与 separator 为 `Multiple` + RuntimeCreated。
 - `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEditCell.cs`：内部 cell 控件，承载单字符显示、placeholder、active、mask 和事件回调。
 - `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEditSeparatorContext.cs`：separator 模板上下文，提供前后 cell index 和 display index。
 - `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEditToken.cs`：cell 宽度和 cell 间距 Token。
@@ -113,7 +114,7 @@ OtpLineEdit
 | `PART_RootPanel` | template part | `OtpLineEditTheme.axaml` | `OtpLineEdit` template | 布局、focus、validation | template-stable | 可用于主题维护，不作为用户 API。 |
 | `PART_CellsHost` | template part | `OtpLineEditTheme.axaml` | `OtpLineEdit` template | `Length`、`Separator` | template-stable | 只能作为 cell host，不能拥有值。 |
 | `OtpLineEditCell` | internal control | `OtpLineEditCell.cs` | `OtpLineEdit` generated cells | `Text` display、keyboard input | internal-observable | 用于理解行为，不指导用户直接依赖。 |
-| separator presenter | template visual | `OtpLineEditTheme.axaml` | `OtpLineEdit` generated cells | `Separator`、`SeparatorInterval` | internal-observable | 只表达视觉分隔符。 |
+| separator presenter | template visual | `OtpLineEditTheme.axaml` | `OtpLineEdit` generated cells | `Separator` | internal-observable | 只表达视觉分隔符。 |
 | `PART_ClearButton` | template part | `OtpLineEditTheme.axaml` | `OtpLineEdit` template | `IsAllowClear`、`Clear()` | template-stable | 主题可维护，事件订阅必须释放。 |
 | `PART_FormFeedBack` | template part | `OtpLineEditTheme.axaml` | `OtpLineEdit` template | Form feedback | template-stable | 只承载 Form feedback 内容。 |
 
@@ -341,7 +342,7 @@ AOT 边界：
 - `Formatter` 和 `InputMode` 执行顺序稳定。
 - `Backspace`、`Delete`、`Left`、`Right`、`Home`、`End` 行为正确。
 - `IsMasked` 只影响显示，不影响 `Text`、Form value 和 Completed。
-- `Separator` 和 `SeparatorInterval` 只影响视觉，不影响 `Text.Length`。
+- `Separator` 只影响视觉，不影响 `Text.Length`。
 - `Completed` 只在从未完成进入完成时触发。
 - `DataValidationErrors` 驱动根控件和所有 cell 的 error 视觉。
 - Form reset 不清除非 Form 写入的 native validation error。

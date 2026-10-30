@@ -1,0 +1,39 @@
+{
+    "tools": {
+        "appimagetool": {
+            "version": "1.9.1",
+            "assets": {
+                "x86_64": {
+                    "url": "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage",
+                    "sha256": "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0"
+                },
+                "aarch64": {
+                    "url": "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-aarch64.AppImage",
+                    "sha256": "f0837e7448a0c1e4e650a93bb3e85802546e60654ef287576f46c71c126a9158"
+                }
+            }
+        },
+        "linuxdeploy": {
+            "version": "1-alpha-20250213-2",
+            "assets": {
+                "x86_64": {
+                    "url": "https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20250213-2/linuxdeploy-x86_64.AppImage",
+                    "sha256": "4648f278ab3ef31f819e67c30d50f462640e5365a77637d7e6f2ad9fd0b4522a"
+                },
+                "aarch64": {
+                    "url": "https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20250213-2/linuxdeploy-aarch64.AppImage",
+                    "sha256": "06706ac8189797dccd36bd384105892cb5e6e71f784f4df526cc958adc223cd6"
+                }
+            }
+        },
+        "create-dmg": {
+            "version": "v1.3.0",
+            "assets": {
+                "any": {
+                    "url": "https://github.com/create-dmg/create-dmg/archive/refs/tags/v1.3.0.tar.gz",
+                    "sha256": "c50d2bc97c3d6292642bac55f530d247eaf4bf65ee605f26b4caf339383e381c"
+                }
+            }
+        }
+    }
+}

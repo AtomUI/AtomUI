@@ -68,13 +68,6 @@ jobs:
 
                Write-Host "Installed certificates:"
                security find-identity -v -p codesigning
-         -  name: Checkout AtomUITools code
-            uses: actions/checkout@v6
-            with:
-               repository: AtomUI/AtomUITools
-               ref: develop
-               token: ${{ secrets.ACCESS_TOKEN }}
-               path: ${{ env.AtomUIToolsSourceDir }}
          -  name: Setup .NET 10
             uses: actions/setup-dotnet@v5
             with:
@@ -92,9 +85,7 @@ jobs:
                   Write-Host "Optional Homebrew runner taps were not present or could not be untapped."
                   $global:LASTEXITCODE = 0
                }
-               brew install create-dmg openssl@3
-               Set-Location ${{ env.AtomUIToolsSourceDir }}/scripts
-               pwsh ./PublishAtomUIToolsLocal.ps1 -publishRootPath "${{ env.AtomUIToolsBinDir }}" -runtime osx-x64
+               brew install openssl@3
          -  name: Build DMG for osx-x64
             shell: pwsh
             env:
@@ -113,14 +104,13 @@ jobs:
                security unlock-keychain -p $env:KEYCHAIN_PASSWORD build.keychain
                security set-keychain-settings -lut 21600 build.keychain
 
-               ${{ env.AtomUIToolsMacBin }} create-dmg `
-                  --runtime osx-x64 `
-                  --config "$galleryPublishDirX64/config/InstallerConfig.xml" `
-                  --packages "$galleryPublishDirX64/packages" `
-                  --output "${{ env.GalleryArtifactsOutputDir }}/dmg/x64" `
-                  --verbosity Detailed `
-                  --certIdentity "${{ secrets.CERT_IDENTITY }}" `
-                  --cleanupBundleOption true
+               & "$galleryScriptsPath/packaging/New-GalleryDmg.ps1" `
+                  -ConfigPath "$galleryPublishDirX64/config/InstallerConfig.xml" `
+                  -PackagesPath "$galleryPublishDirX64/packages" `
+                  -OutputPath "${{ env.GalleryArtifactsOutputDir }}/dmg/x64" `
+                  -Runtime osx-x64 `
+                  -BuildStamp "${{ needs.Prepare.outputs.build_stamp }}" `
+                  -CertIdentity "${{ secrets.CERT_IDENTITY }}"
 
          -  name: Upload x86_64 DMG artifacts
             uses: actions/upload-artifact@v7
@@ -163,13 +153,6 @@ jobs:
             uses: actions/setup-dotnet@v5
             with:
                dotnet-version: '10.0.x'
-         -  name: Checkout AtomUITools code
-            uses: actions/checkout@v6
-            with:
-               repository: AtomUI/AtomUITools
-               ref: develop
-               token: ${{ secrets.ACCESS_TOKEN }}
-               path: ${{ env.AtomUIToolsSourceDir }}
          -  name: Prepare build environment
             shell: pwsh
             run: |
@@ -183,9 +166,7 @@ jobs:
                   Write-Host "Optional Homebrew runner taps were not present or could not be untapped."
                   $global:LASTEXITCODE = 0
                }
-               brew install create-dmg openssl@3
-               Set-Location ${{ env.AtomUIToolsSourceDir }}/scripts
-               pwsh ./PublishAtomUIToolsLocal.ps1 -publishRootPath "${{ env.AtomUIToolsBinDir }}" -runtime osx-arm64
+               brew install openssl@3
          -  name: Build DMG for osx-arm64
             shell: pwsh
             env:
@@ -204,14 +185,13 @@ jobs:
                security unlock-keychain -p $env:KEYCHAIN_PASSWORD build.keychain
                security set-keychain-settings -lut 21600 build.keychain
 
-               & ${{ env.AtomUIToolsMacBin }} create-dmg `
-               --runtime osx-arm64 `
-               --config "$galleryPublishDirArm64/config/InstallerConfig.xml" `
-               --packages "$galleryPublishDirArm64/packages" `
-               --output "${{ env.GalleryArtifactsOutputDir }}/dmg/arm64" `
-               --verbosity Detailed `
-               --certIdentity "${{ secrets.CERT_IDENTITY }}" `
-               --cleanupBundleOption true
+               & "$galleryScriptsPath/packaging/New-GalleryDmg.ps1" `
+                  -ConfigPath "$galleryPublishDirArm64/config/InstallerConfig.xml" `
+                  -PackagesPath "$galleryPublishDirArm64/packages" `
+                  -OutputPath "${{ env.GalleryArtifactsOutputDir }}/dmg/arm64" `
+                  -Runtime osx-arm64 `
+                  -BuildStamp "${{ needs.Prepare.outputs.build_stamp }}" `
+                  -CertIdentity "${{ secrets.CERT_IDENTITY }}"
 
                Get-ChildItem -Path "${{ env.GalleryArtifactsOutputDir }}" | Format-Table
          -  name: Upload arm64 DMG artifacts

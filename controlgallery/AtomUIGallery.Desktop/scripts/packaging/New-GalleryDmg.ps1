@@ -167,7 +167,35 @@ $arguments += @(
     $dmgName,
     $bundlePath
 )
-Invoke-GalleryCommand -FilePath $createDmg -ArgumentList $arguments -WorkingDirectory $OutputPath
-
-Remove-Item -LiteralPath $bundlePath -Recurse -Force
+# Finder AppleScript layout can time out intermittently on hosted runners; create-dmg then exits without retrying.
+$maxAttempts = 3
+try {
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        try {
+            Invoke-GalleryCommand -FilePath $createDmg -ArgumentList $arguments -WorkingDirectory $OutputPath
+            break
+        }
+        catch {
+            Get-ChildItem -LiteralPath $OutputPath -Filter "rw.*.dmg" -File | Remove-Item -Force
+            if (Test-Path -LiteralPath $dmgPath) {
+                Remove-Item -LiteralPath $dmgPath -Force
+            }
+            if ($attempt -eq $maxAttempts) {
+                throw
+            }
+            Write-Host "create-dmg attempt $attempt failed: $($_.Exception.Message) Retrying." -ForegroundColor Yellow
+            Start-Sleep -Seconds 10
+        }
+    }
+}
+finally {
+    # Never leave the intermediate read-write image or the bundle where the *.dmg upload glob can pick them up.
+    Get-ChildItem -LiteralPath $OutputPath -Filter "rw.*.dmg" -File | Remove-Item -Force
+    if (Test-Path -LiteralPath $bundlePath) {
+        Remove-Item -LiteralPath $bundlePath -Recurse -Force
+    }
+}
+if (-not (Test-Path -LiteralPath $dmgPath -PathType Leaf)) {
+    throw "create-dmg reported success but $dmgPath was not created."
+}
 Write-Host "Created $dmgPath" -ForegroundColor Green

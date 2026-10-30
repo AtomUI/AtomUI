@@ -39,8 +39,9 @@ PublishAot:
 `release-gallery.yml` 的 `Prepare` job 按 UTC 计算一次 `MMdd` 构建后缀并传给全部平台 job，同一次发布的产物后缀一致；
 本机运行省略 `-BuildStamp` 时取当前 UTC 日期。
 
-外部工具（appimagetool、linuxdeploy、create-dmg）在 `packaging-tools.json` 中固定版本与 SHA256，脚本下载后校验，
-不使用 `continuous` 构建或未锁定的 Homebrew 版本。升级工具时只修改该清单的版本、URL 与 SHA256，并完整运行一次
+外部工具（appimagetool、linuxdeploy、AppImage type2-runtime、create-dmg）在 `packaging-tools.json` 中固定版本与 SHA256，
+脚本下载后校验，不使用 `continuous` 构建或未锁定的 Homebrew 版本。appimagetool 通过 `--runtime-file` 使用清单中的
+runtime，否则它会自行下载 continuous runtime 并嵌入 AppImage。升级工具时只修改该清单的版本、URL 与 SHA256，并完整运行一次
 Gallery 发布 workflow 验证全部平台。
 
 macOS 签名沿用既有顺序：`Contents/MacOS` 下文件按序号（Ordinal）排序逐个签名、主程序最后，再签 bundle，最后
@@ -99,8 +100,11 @@ macOS 任务安装：
 
 ```bash
 brew untap --force aws/tap azure/bicep
-brew install create-dmg openssl@3
+brew install openssl@3
 ```
+
+create-dmg 不通过 Homebrew 安装，由 `New-GalleryDmg.ps1` 按工具清单下载。Finder AppleScript 布局偶发超时时脚本最多重试 3 次，
+每次失败都清理中间的 `rw.*.dmg`；最终未生成 DMG 时任务失败。
 
 GitHub-hosted macOS runner 可能预置 `aws/tap` 和 `azure/bicep`。Gallery 发布不依赖这些 tap，workflow 在安装包依赖前先 untap，避免 Homebrew tap trust 检查把无关第三方 tap 的预警或强制校验带进发布流程。
 
@@ -110,14 +114,20 @@ Linux AppImage 任务安装：
 
 ```bash
 sudo apt-get install -y fuse libfuse2 patchelf desktop-file-utils file clang zlib1g-dev
+sudo apt-get install -y libxcb1 libxcb-shape0 libxcb-shape0-dev xvfb
 ```
+
+`xvfb` 供 AppImage 冒烟测试使用；linuxdeploy、appimagetool 与 runtime 不再由 workflow 手动下载。
 
 `clang` 和 `zlib1g-dev` 是 Linux NativeAOT 链接所需的本地工具链依赖。
 
 `New-GalleryAppImage.ps1` 在调用 appimagetool 前就生成完整的 AppDir：根目录 `AppRun`（设置 `LD_LIBRARY_PATH`
-到 `usr/lib` 后执行 Gallery）、`.desktop`、普通文件形式的 `.DirIcon`，并统一权限（目录 755、文件 644，`AppRun`、主程序与
+到 `usr/lib` 后执行 Gallery）、`.desktop`、普通文件形式的 `.DirIcon`；iconset 各尺寸另放入
+`usr/share/icons/hicolor/<N>x<N>/apps/AtomUIGallery.png`（linuxdeploy 缺少主题图标时会失败），linuxdeploy 之后把根目录
+`AtomUIGallery.png` 还原为 512 像素原图；并统一权限（目录 755、文件 644，`AppRun`、主程序与
 `usr/lib` 下共享库 755），以满足 appimagetool 的 AppDir 校验。AppImage 只打包一次，随后解包检查 `AppRun`、`.desktop`、
-`.DirIcon` 与主程序。workflow 另外在 `xvfb-run` 下运行解包后的 `AppRun` 20 秒作为冒烟测试。
+`.DirIcon` 与主程序。workflow 另外在 `xvfb-run` 下运行解包后的 `AppRun` 20 秒作为冒烟测试（`timeout -k 10s 20s`，进程不响应 SIGTERM 时强制结束）。
+全部安装包上传步骤设置 `if-no-files-found: error`，打包未生成产物时发布失败。
 
 ## 维护检查
 

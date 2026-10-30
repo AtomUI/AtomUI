@@ -34,6 +34,19 @@
                     "sha256": "c50d2bc97c3d6292642bac55f530d247eaf4bf65ee605f26b4caf339383e381c"
                 }
             }
+        },
+        "type2-runtime": {
+            "version": "20251108",
+            "assets": {
+                "x86_64": {
+                    "url": "https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-x86_64",
+                    "sha256": "2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d"
+                },
+                "aarch64": {
+                    "url": "https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-aarch64",
+                    "sha256": "00cbdfcf917cc6c0ff6d3347d59e0ca1f7f45a6df1a428a0d6d8a78664d87444"
+                }
+            }
         }
     }
 }

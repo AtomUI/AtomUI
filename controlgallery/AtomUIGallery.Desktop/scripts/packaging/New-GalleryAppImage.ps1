@@ -33,6 +33,8 @@ $OutputPath = (Resolve-Path -LiteralPath $OutputPath).Path
 $toolsPath = Join-Path ([System.IO.Path]::GetTempPath()) "atomui-packaging-tools"
 $linuxDeploy = Install-GalleryPackagingTool -Name linuxdeploy -Architecture $architecture -Destination $toolsPath
 $appImageTool = Install-GalleryPackagingTool -Name appimagetool -Architecture $architecture -Destination $toolsPath
+# appimagetool otherwise downloads the unpinned continuous runtime that becomes the AppImage ELF header.
+$runtimeFile = Install-GalleryPackagingTool -Name "type2-runtime" -Architecture $architecture -Destination $toolsPath
 Invoke-GalleryCommand -FilePath "chmod" -ArgumentList @("+x", $linuxDeploy, $appImageTool)
 
 $appDir = Join-Path $OutputPath "$($config.Name).AppDir"
@@ -134,7 +136,7 @@ if (Test-Path -LiteralPath $appImagePath) {
     Remove-Item -LiteralPath $appImagePath -Force
 }
 $env:ARCH = $architecture
-Invoke-GalleryCommand -FilePath $appImageTool -ArgumentList @($appDir, $appImageName) -WorkingDirectory $OutputPath
+Invoke-GalleryCommand -FilePath $appImageTool -ArgumentList @("--runtime-file", $runtimeFile, $appDir, $appImageName) -WorkingDirectory $OutputPath
 Invoke-GalleryCommand -FilePath "chmod" -ArgumentList @("755", $appImagePath)
 
 # Verify the packed image rather than the AppDir: extraction needs no FUSE.

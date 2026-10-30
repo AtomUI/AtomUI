@@ -155,7 +155,7 @@ P1–P3 每阶段只切换一个平台，其他平台仍用 AtomUITools，出问
 | 风险 | 对策 |
 | --- | --- |
 | macOS 签名顺序或范围与旧工具不一致导致校验失败 | 完全复制现有顺序与参数，`codesign --verify --deep --strict` 作为硬门禁，P3 单独进行 |
-| create-dmg 在 runner 上依赖 Finder AppleScript 布局 | 与现状使用同一工具，仅改为锁定版本；若布局步骤失败沿用其自身的重试与超时 |
+| create-dmg 在 runner 上依赖 Finder AppleScript 布局 | 与现状使用同一工具，仅改为锁定版本；create-dmg 对 AppleScript 失败不重试，脚本自行最多重试 3 次并清理中间镜像（实施后补充） |
 | linuxdeploy 对 NativeAOT 产物的依赖部署行为变化 | 锁定现用版本，对等对比 `usr/lib` 清单 |
 | 锁定的工具出现安全修复 | 只需更新 `packaging-tools.json` 与 SHA256，并跑一次完整发布验证 |
 

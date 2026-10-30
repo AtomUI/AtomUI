@@ -111,6 +111,7 @@ jobs:
             with:
                name: dmg-packages-osx-x64
                path: ${{ env.GalleryArtifactsOutputDir }}/dmg/x64/*.dmg
+               if-no-files-found: error
    
    BuildAtomUIGalleryDmgArm64Installers:
       name: Build macOS arm64 DMG Installer
@@ -192,6 +193,7 @@ jobs:
             with:
                name: dmg-packages-osx-arm64
                path: ${{ env.GalleryArtifactsOutputDir }}/dmg/arm64/*.dmg
+               if-no-files-found: error
    
    BuildAtomUIGalleryAppImageX64Installers:
       name: Build Linux X64 AppImage Installer
@@ -246,7 +248,7 @@ jobs:
                Push-Location $smokeDir
                & $appImage.FullName --appimage-extract | Out-Null
                Pop-Location
-               xvfb-run -a timeout 20s "$smokeDir/squashfs-root/AppRun"
+               xvfb-run -a timeout -k 10s 20s "$smokeDir/squashfs-root/AppRun"
                if ($LASTEXITCODE -ne 124) {
                   throw "Gallery AppImage exited early with code $LASTEXITCODE."
                }
@@ -258,6 +260,7 @@ jobs:
             with:
                name: linux-appimage-x86_64
                path: ${{ env.GalleryArtifactsOutputDir }}/appimage/x64/*.AppImage
+               if-no-files-found: error
    
    BuildAtomUIGalleryAppImageArm64Installers:
       name: Build Linux Arm64 AppImage Installer
@@ -312,7 +315,7 @@ jobs:
                Push-Location $smokeDir
                & $appImage.FullName --appimage-extract | Out-Null
                Pop-Location
-               xvfb-run -a timeout 20s "$smokeDir/squashfs-root/AppRun"
+               xvfb-run -a timeout -k 10s 20s "$smokeDir/squashfs-root/AppRun"
                if ($LASTEXITCODE -ne 124) {
                   throw "Gallery AppImage exited early with code $LASTEXITCODE."
                }
@@ -324,6 +327,7 @@ jobs:
             with:
                name: linux-appimage-arm64
                path: ${{ env.GalleryArtifactsOutputDir }}/appimage/arm64/*.AppImage
+               if-no-files-found: error
    
    BuildAtomUIGalleryWindowsX64Zip:
       name: Build Windows X86_64 Zip Package
@@ -368,6 +372,7 @@ jobs:
             with:
                name: windows-zip-x86_64
                path: ${{ env.GalleryArtifactsOutputDir }}/zip/x64/*.zip
+               if-no-files-found: error
    BuildAtomUIGalleryWindowsArm64Zip:
       name: Build Windows Arm64 Zip Package
       needs: Prepare
@@ -412,3 +417,4 @@ jobs:
             with:
                name: windows-zip-arm64
                path: ${{ env.GalleryArtifactsOutputDir }}/zip/arm64/*.zip
+               if-no-files-found: error

@@ -218,4 +218,3 @@ cmake-build-*/
 .worktrees/
 .zcode/
 tmp/
-docs/superpowers/plans

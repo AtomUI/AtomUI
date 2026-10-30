@@ -84,6 +84,7 @@ jobs:
             shell: pwsh
             env:
                KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+               CERT_IDENTITY: ${{ secrets.CERT_IDENTITY }}
             run: |
                $galleryScriptsPath = "${{ env.SourceDir }}/controlgallery/AtomUIGallery.Desktop/scripts"
                $galleryPublishDirX64 = "${{ env.GalleryPublishDir }}/osx-x64"
@@ -104,7 +105,8 @@ jobs:
                   -OutputPath "${{ env.GalleryArtifactsOutputDir }}/dmg/x64" `
                   -Runtime osx-x64 `
                   -BuildStamp "${{ needs.Prepare.outputs.build_stamp }}" `
-                  -CertIdentity "${{ secrets.CERT_IDENTITY }}"
+                  -CertIdentity $env:CERT_IDENTITY `
+                  -RequireSignature
 
          -  name: Upload x86_64 DMG artifacts
             uses: actions/upload-artifact@v7
@@ -165,6 +167,7 @@ jobs:
             shell: pwsh
             env:
                KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+               CERT_IDENTITY: ${{ secrets.CERT_IDENTITY }}
             run: |
                $galleryScriptsPath = "${{ env.SourceDir }}/controlgallery/AtomUIGallery.Desktop/scripts"
                $galleryPublishDirArm64 = "${{ env.GalleryPublishDir }}/osx-arm64"
@@ -185,7 +188,8 @@ jobs:
                   -OutputPath "${{ env.GalleryArtifactsOutputDir }}/dmg/arm64" `
                   -Runtime osx-arm64 `
                   -BuildStamp "${{ needs.Prepare.outputs.build_stamp }}" `
-                  -CertIdentity "${{ secrets.CERT_IDENTITY }}"
+                  -CertIdentity $env:CERT_IDENTITY `
+                  -RequireSignature
 
                Get-ChildItem -Path "${{ env.GalleryArtifactsOutputDir }}" | Format-Table
          -  name: Upload arm64 DMG artifacts

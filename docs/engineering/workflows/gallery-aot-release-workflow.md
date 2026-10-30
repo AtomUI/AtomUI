@@ -35,17 +35,22 @@ PublishAot:
 | `New-GalleryDmg.ps1` | `{Name}-{Version}.{BuildStamp}-{rid}.dmg`，可选 `-CertIdentity` 签名 | macOS |
 
 三个脚本共用 `GalleryPackaging.Common.ps1`，参数为 `-ConfigPath`（`PublishToLocal.ps1` 输出的 `config/InstallerConfig.xml`，
-仓库模板中的 `__VERSION__` 会被拒绝）、`-PackagesPath`、`-OutputPath`、`-Runtime`、`-BuildStamp`。
+仓库模板中的 `__VERSION__` 和含换行的配置值会被拒绝）、`-PackagesPath`、`-OutputPath`、`-Runtime`、`-BuildStamp`。
 `release-gallery.yml` 的 `Prepare` job 按 UTC 计算一次 `MMdd` 构建后缀并传给全部平台 job，同一次发布的产物后缀一致；
-本机运行省略 `-BuildStamp` 时取当前 UTC 日期。
+CI（`GITHUB_ACTIONS=true`）中缺少 `-BuildStamp` 直接失败，本机运行省略时取当前 UTC 日期。后缀插在版本最后一个点之后的
+数字后面，与原打包工具一致：`6.2.10` → `6.2.10.1030`，`6.0.0-rc` → `6.0.0.1030-rc`，`6.2.0-beta.1` → `6.2.0-beta.1.1030`。
 
 外部工具（appimagetool、linuxdeploy、AppImage type2-runtime、create-dmg）在 `packaging-tools.json` 中固定版本与 SHA256，
 脚本下载后校验，不使用 `continuous` 构建或未锁定的 Homebrew 版本。appimagetool 通过 `--runtime-file` 使用清单中的
-runtime，否则它会自行下载 continuous runtime 并嵌入 AppImage。升级工具时只修改该清单的版本、URL 与 SHA256，并完整运行一次
-Gallery 发布 workflow 验证全部平台。
+runtime，否则它会自行下载 continuous runtime 并嵌入 AppImage。create-dmg 按 tag 下载仓库原始文件（脚本、`support/`
+模板与仓库哨兵文件 `.this-is-the-create-dmg-repo`，缺少哨兵时它不会读取同目录的 `support/`），逐个校验，不依赖 GitHub
+动态生成的源码包校验和。下载对任何失败最多重试 3 次。工具下载到每次运行独立的目录（CI 为 `RUNNER_TEMP` 下），运行结束删除。
+升级工具时只修改该清单的版本、URL 与 SHA256，并完整运行一次 Gallery 发布 workflow 验证全部平台。
 
 macOS 签名沿用既有顺序：`Contents/MacOS` 下文件按序号（Ordinal）排序逐个签名、主程序最后，再签 bundle，最后
-`codesign --verify --deep --strict`。本机无法授权 Finder 自动化时可加 `-SkipFinderLayout` 跳过 DMG 窗口布局，CI 不使用。
+`codesign --verify --deep --strict`。签名身份经步骤环境变量 `CERT_IDENTITY` 传入脚本，不直接插值进脚本文本；CI 传
+`-RequireSignature`，缺少身份时失败而不是产出未签名 DMG。本机无法授权 Finder 自动化时可加 `-SkipFinderLayout` 跳过 DMG
+窗口布局，CI 不使用。
 
 ## 发布脚本职责
 

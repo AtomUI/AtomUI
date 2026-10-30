@@ -54,6 +54,13 @@ function Read-GalleryInstallerConfig {
         }
     }
 
+    # Values are written into .desktop entries and Info.plist; a line break would inject extra keys.
+    foreach ($property in $config.PSObject.Properties) {
+        if ($null -ne $property.Value -and $property.Value -match '[\r\n]') {
+            throw "Installer config '$Path' value <$($property.Name)> must be a single line."
+        }
+    }
+
     # The repository templates contain __VERSION__; PublishToLocal.ps1 replaces it in the published copy.
     if ($config.Version -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') {
         throw "Installer config '$Path' has an invalid version '$($config.Version)'; use the published config, not the repository template."
@@ -68,6 +75,10 @@ function Get-GalleryBuildStamp {
     )
 
     if ([string]::IsNullOrWhiteSpace($BuildStamp)) {
+        # In CI every job must use the stamp computed once by the Prepare job.
+        if ($env:GITHUB_ACTIONS -eq "true") {
+            throw "A build stamp is required in CI; pass the Prepare job output."
+        }
         return [DateTime]::UtcNow.ToString("MMdd")
     }
     if ($BuildStamp -notmatch '^(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$') {
@@ -91,12 +102,30 @@ function Get-GalleryArtifactName {
         [string]$Runtime
     )
 
-    $stampedVersion = "$Version.$BuildStamp"
     switch ($Kind) {
-        "zip" { return "$Name-$stampedVersion-$Runtime.zip" }
-        "appimage" { return "$Name-$Runtime-$stampedVersion.AppImage" }
-        "dmg" { return "$Name-$stampedVersion-$Runtime.dmg" }
+        "zip" { return "$(Add-GalleryBuildStamp "$Name-$Version" $BuildStamp)-$Runtime.zip" }
+        "appimage" { return "$(Add-GalleryBuildStamp "$Name-$Runtime-$Version" $BuildStamp).AppImage" }
+        "dmg" { return "$(Add-GalleryBuildStamp "$Name-$Version" $BuildStamp)-$Runtime.dmg" }
     }
+}
+
+# Inserts ".{stamp}" after the digits following the last dot, as the previous installer tool did:
+# 6.2.10 -> 6.2.10.1030, 6.0.0-rc -> 6.0.0.1030-rc, 6.2.0-beta.1 -> 6.2.0-beta.1.1030.
+function Add-GalleryBuildStamp([string]$Text, [string]$Stamp) {
+    $position = $Text.LastIndexOf('.') + 1
+    while ($position -lt $Text.Length -and [char]::IsDigit($Text[$position])) {
+        $position++
+    }
+    return $Text.Insert($position, ".$Stamp")
+}
+
+function New-GalleryToolsDirectory {
+    # A fresh directory per run: concurrent runs cannot replace each other's verified tools,
+    # and nothing is executed from a predictable shared path. CI runners provide RUNNER_TEMP.
+    $root = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { [System.IO.Path]::GetTempPath() }
+    $path = Join-Path $root "atomui-packaging-tools-$([guid]::NewGuid().ToString('N'))"
+    New-Item -ItemType Directory -Path $path | Out-Null
+    return $path
 }
 
 function Invoke-GalleryCommand {
@@ -141,15 +170,55 @@ function Install-GalleryPackagingTool {
     }
 
     New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+    # Multi-file tools list each file with its own checksum; the tool root directory is returned.
+    if ($asset.PSObject.Properties.Name -contains "files") {
+        $toolRoot = Join-Path $Destination $Name
+        foreach ($file in $asset.files) {
+            Save-GalleryVerifiedFile -Url $file.url -Sha256 $file.sha256 -Path (Join-Path $toolRoot $file.path) `
+                -Description "$Name $($tool.version) $($file.path)"
+        }
+        return $toolRoot
+    }
+
     $fileName = [System.IO.Path]::GetFileName(([uri]$asset.url).AbsolutePath)
     $filePath = Join-Path $Destination $fileName
-    Write-Host "Downloading $Name $($tool.version): $($asset.url)" -ForegroundColor Cyan
-    Invoke-WebRequest -Uri $asset.url -OutFile $filePath
-
-    $actualHash = (Get-FileHash -LiteralPath $filePath -Algorithm SHA256).Hash.ToLowerInvariant()
-    if ($actualHash -ne $asset.sha256.ToLowerInvariant()) {
-        Remove-Item -LiteralPath $filePath -Force
-        throw "SHA256 mismatch for $Name $($tool.version) ($Architecture): expected $($asset.sha256), got $actualHash."
-    }
+    Save-GalleryVerifiedFile -Url $asset.url -Sha256 $asset.sha256 -Path $filePath `
+        -Description "$Name $($tool.version) ($Architecture)"
     return $filePath
+}
+
+function Save-GalleryVerifiedFile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Url,
+        [Parameter(Mandatory = $true)]
+        [string]$Sha256,
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [Parameter(Mandatory = $true)]
+        [string]$Description
+    )
+
+    New-Item -ItemType Directory -Path (Split-Path -Parent $Path) -Force | Out-Null
+    Write-Host "Downloading $($Description): $Url" -ForegroundColor Cyan
+    # Retry connection-level failures too (TLS resets, DNS); -MaximumRetryCount only covers HTTP status errors.
+    for ($attempt = 1; ; $attempt++) {
+        try {
+            Invoke-WebRequest -Uri $Url -OutFile $Path
+            break
+        }
+        catch {
+            if ($attempt -ge 3) {
+                throw
+            }
+            Write-Host "Download attempt $attempt failed: $($_.Exception.Message) Retrying." -ForegroundColor Yellow
+            Start-Sleep -Seconds 5
+        }
+    }
+
+    $actualHash = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($actualHash -ne $Sha256.ToLowerInvariant()) {
+        Remove-Item -LiteralPath $Path -Force
+        throw "SHA256 mismatch for $($Description): expected $Sha256, got $actualHash."
+    }
 }

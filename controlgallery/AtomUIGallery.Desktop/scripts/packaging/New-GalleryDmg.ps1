@@ -14,7 +14,9 @@ param(
     [string]$BuildStamp,
     [string]$CertIdentity,
     # Skips create-dmg's Finder (AppleScript) window layout; for local runs without Finder automation access.
-    [switch]$SkipFinderLayout
+    [switch]$SkipFinderLayout,
+    # Release builds must be signed; fail instead of producing an unsigned DMG when no identity is supplied.
+    [switch]$RequireSignature
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,6 +24,10 @@ $ErrorActionPreference = "Stop"
 
 if (-not $IsMacOS) {
     throw "DMG packaging is only supported on macOS."
+}
+
+if ($RequireSignature -and [string]::IsNullOrWhiteSpace($CertIdentity)) {
+    throw "A signing identity is required but none was provided."
 }
 
 $config = Read-GalleryInstallerConfig -Path $ConfigPath
@@ -130,15 +136,12 @@ else {
     Write-Host "No signing identity was provided; the bundle is left unsigned." -ForegroundColor Yellow
 }
 
-$toolsPath = Join-Path ([System.IO.Path]::GetTempPath()) "atomui-packaging-tools"
-$createDmgArchive = Install-GalleryPackagingTool -Name "create-dmg" -Architecture any -Destination $toolsPath
-$createDmgRoot = Join-Path $toolsPath "create-dmg"
-if (Test-Path -LiteralPath $createDmgRoot) {
-    Remove-Item -LiteralPath $createDmgRoot -Recurse -Force
-}
-New-Item -ItemType Directory -Path $createDmgRoot | Out-Null
-Invoke-GalleryCommand -FilePath "tar" -ArgumentList @("-xzf", $createDmgArchive, "-C", $createDmgRoot, "--strip-components", "1")
+$toolsPath = New-GalleryToolsDirectory
+# create-dmg reads support/ next to the script only when its repository sentinel file is present,
+# so the manifest keeps the repository layout including that sentinel.
+$createDmgRoot = Install-GalleryPackagingTool -Name "create-dmg" -Architecture any -Destination $toolsPath
 $createDmg = Join-Path $createDmgRoot "create-dmg"
+Invoke-GalleryCommand -FilePath "chmod" -ArgumentList @("+x", $createDmg)
 
 $dmgName = Get-GalleryArtifactName -Kind dmg -Name $config.Name -Version $config.Version -BuildStamp $stamp -Runtime $Runtime
 $dmgPath = Join-Path $OutputPath $dmgName
@@ -194,6 +197,7 @@ finally {
     if (Test-Path -LiteralPath $bundlePath) {
         Remove-Item -LiteralPath $bundlePath -Recurse -Force
     }
+    Remove-Item -LiteralPath $toolsPath -Recurse -Force -ErrorAction SilentlyContinue
 }
 if (-not (Test-Path -LiteralPath $dmgPath -PathType Leaf)) {
     throw "create-dmg reported success but $dmgPath was not created."

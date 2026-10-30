@@ -30,8 +30,28 @@
             "version": "v1.3.0",
             "assets": {
                 "any": {
-                    "url": "https://github.com/create-dmg/create-dmg/archive/refs/tags/v1.3.0.tar.gz",
-                    "sha256": "c50d2bc97c3d6292642bac55f530d247eaf4bf65ee605f26b4caf339383e381c"
+                    "files": [
+                        {
+                            "path": "create-dmg",
+                            "url": "https://raw.githubusercontent.com/create-dmg/create-dmg/v1.3.0/create-dmg",
+                            "sha256": "bb9ea3194e55f2f76a821e87541513748d0fedc69f45cf4f0951cad15ae0cae5"
+                        },
+                        {
+                            "path": "support/template.applescript",
+                            "url": "https://raw.githubusercontent.com/create-dmg/create-dmg/v1.3.0/support/template.applescript",
+                            "sha256": "b5dd7c55ddaa5db1884ac5cf523c4413d452a75df967daf55b8d45ba501fe457"
+                        },
+                        {
+                            "path": "support/eula-resources-template.xml",
+                            "url": "https://raw.githubusercontent.com/create-dmg/create-dmg/v1.3.0/support/eula-resources-template.xml",
+                            "sha256": "a804e533e9c99491a74cb4502c435b00d902dc7a45d3693057a29674e584a70b"
+                        },
+                        {
+                            "path": ".this-is-the-create-dmg-repo",
+                            "url": "https://raw.githubusercontent.com/create-dmg/create-dmg/v1.3.0/.this-is-the-create-dmg-repo",
+                            "sha256": "fb2494eb10146a84bbb20ebb198c2a09fb72aed119706dc55b6ec3644018383f"
+                        }
+                    ]
                 }
             }
         },

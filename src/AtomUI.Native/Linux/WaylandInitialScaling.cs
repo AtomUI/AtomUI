@@ -29,6 +29,8 @@ internal static class WaylandInitialScaling
     private const string GlobalsTypeName = "Avalonia.Wayland.Server.Transient.WaylandGlobals";
     private const string TrackerTypeName = "Avalonia.Wayland.Server.Transient.WaylandOutputsTracker";
     private const string OutputTypeName = TrackerTypeName + "+Output";
+    // DynamicDependency uses documentation-ID type names, where nested types are separated by '.'.
+    private const string OutputDependencyTypeName = TrackerTypeName + ".Output";
     private const BindingFlags Instance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
     // Protocol scales are multiples of 1/120.
     private const double FractionalDenominator = 120;
@@ -116,7 +118,7 @@ internal static class WaylandInitialScaling
     [DynamicDependency("get_Outputs", GlobalsTypeName, "Avalonia.Wayland")]
     [DynamicDependency("get_HasFractionalScaling", GlobalsTypeName, "Avalonia.Wayland")]
     [DynamicDependency("get_Outputs", TrackerTypeName, "Avalonia.Wayland")]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, OutputTypeName, "Avalonia.Wayland")]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, OutputDependencyTypeName, "Avalonia.Wayland")]
     private static Members? Bind()
     {
         var version = Type.GetType("Avalonia.WaylandPlatformOptions, Avalonia.Wayland")?.Assembly

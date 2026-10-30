@@ -6,6 +6,39 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 6.2.10
+
+`2026-10-30`
+
+- 破坏性变更
+  - 动效：公共动效类型由 `AtomUI.MotionScene` 移至 `AtomUI.Animations`；移除 `IMotion`、`MotionSpiritType`、动效 Actor（`BaseMotionActor`、`BaseLayoutAwareMotionActor`、`MotionActor`、`LayoutAwareMotionActor`、`IMotionActor`）以及基于 Actor 的 `Run`/`RunAsync`。`AbstractMotion` 改为抽象类，通过 `Build(MotionBuilder, in MotionContext)` 描述、`PlayAsync(Control)` 播放，`Duration`/`Easing` 默认值改为跟随主题 Token；详见 [6.2.10 迁移指南](docs/releases/6.2.10-api-changes.zh-CN.md)。
+  - 控件：Popup、Flyout、FlyoutHost、ContextMenu、TreeView 的 `OpenMotion`/`CloseMotion` 改用 `AtomUI.Animations.AbstractMotion`；Badge、Collapse、Expander、Dialog、Drawer、FloatButton、Message、Notification、NavMenu、TreeView、TreeSelect、Transfer 主题中的动效模板部件更名；详见 [6.2.10 迁移指南](docs/releases/6.2.10-api-changes.zh-CN.md)。
+  - Window：`WithAtomUIDefaultOptions()` 在 Windows 上改为优先 `RedirectionSurface`，需要 `AcrylicBlur`、`Mica` 的应用须自行把 `WinUIComposition` 排在前面；详见 [6.2.10 迁移指南](docs/releases/6.2.10-api-changes.zh-CN.md)。
+  - 注册：生成的 `ControlPackageGroup_*` 标识随 6.2.10 程序集版本变化。请同步升级 AtomUI 包与 Generator、重新构建预编译消费方，并重新发布裁剪/NativeAOT 应用；详见 [6.2.10 迁移指南](docs/releases/6.2.10-api-changes.zh-CN.md)。
+- 动效
+  - 动效直接作用于控件，由帧驱动并写入合成层变换通道，不再需要 Actor 包装；反向请求从当前呈现值连续接续，不再重新开始。
+  - 通过 `Motion.IsVisible`/`Enter`/`Leave` 与新增的 `ContentViewport` 声明显隐与展开收起动效，新增 `SequenceMotion` 与 `ParallelMotion`。
+  - 布局动效只失效动画中的视口，并只重新排列尺寸变化的祖先，消除子菜单、Expander、Collapse、TreeView 展开时的逐帧整窗重绘。
+  - 修复展开前内容短暂暴露自然高度，以及准备期间重入导致旧请求覆盖新布局的问题。
+- Popup
+  - 窗口型 Popup 改用与 Overlay Popup 相同的 `BoxShadowsSecondary` 阴影，内容与锚点的距离保持不变。
+  - 窗口型 Popup 的阴影区域在 Windows、X11、Wayland、macOS 上把指针输入交给下方内容，包括其他应用程序。
+- Window
+  - Windows 优先使用 `RedirectionSurface`，消除 live resize 时的对向边缘错帧与白屏。
+  - 恢复 Windows 10 在 `RedirectionSurface` 下激活态的左、右、下边框。
+  - Wayland 在首次布局前预测窗口缩放，消除启动约 250 ms 后的整窗重排。
+- Dialog 与 Drawer
+  - 模态遮罩与抽屉动画期间合成缓存的窗口内容，在实测 Wayland Gallery 上每帧渲染线程耗时降低约 70%。
+  - 无放置目标的对话框从面板中心缩放。
+- NavMenu
+  - Inline 折叠宽度动画改由原生时钟驱动，移除 16 ms 定时循环。
+- Wayland
+  - 默认按预计上屏时间提交已准备好的 EGL 帧；可通过 AppContext 开关 `AtomUI.Experimental.WaylandFramePacing` 关闭。
+- DataGrid
+  - 行未填满表格时，右键空白区域可打开上下文菜单。
+- 文档
+  - 增加中英文设计语言与主题定制规范。
+
 ## 6.2.9
 
 `2026-10-25`

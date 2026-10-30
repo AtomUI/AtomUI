@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview-cn)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.9-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.10-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-license-shield]][github-license-link]
 
@@ -72,10 +72,11 @@ TypeMap 发布默认支持 .NET 10 及后续稳定版本。Browser 裁剪与 AOT
 
 #### 最新版本说明
 
-AtomUI 6.2.9 恢复 Splash 完整卡片阴影，并将静态阴影与动画内容分开缓存；同时将
-`AtomUI.Fonts.AlibabaPuHuiTi` 纳入正式 NuGet 发布。生成式注册组标识随版本变化，请同步升级 AtomUI 包与
-Generator，重新构建预编译消费方并重新发布裁剪/NativeAOT 应用；详见
-[6.2.9 迁移指南](docs/releases/6.2.9-api-changes.zh-CN.md) 和 [Changelog](./CHANGELOG.zh-CN.md)。
+AtomUI 6.2.10 用直接作用于控件的帧驱动动效替换基于 Actor 的动效库，让窗口型 Popup 的阴影在 Windows、Linux、
+macOS 上对输入穿透，并通过优先使用 RedirectionSurface 消除 Windows live resize 错帧。本版本包含破坏性变更：动效类型移至
+`AtomUI.Animations`，动效 Actor 与模板部件调整，Acrylic/Mica 需要显式配置合成顺序。请同步升级 AtomUI 包与 Generator
+并重新构建预编译消费方；详见 [6.2.10 迁移指南](docs/releases/6.2.10-api-changes.zh-CN.md) 和
+[Changelog](./CHANGELOG.zh-CN.md)。
 
 #### 感谢通明湖中心孵化 AtomUI OSS
 
@@ -132,10 +133,10 @@ AtomUI 推荐通过 NuGet 安装。先安装主桌面控件包，再根据应用
 | AtomUI.Generator                    | 面向自定义控件、Token 与本地化开发的源代码生成器   |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.2.9
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.9
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.9
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.9
+dotnet add package AtomUI.Desktop.Controls --version 6.2.10
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.10
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.10
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.10
 ```
 
 您也可以在 IDE 的 NuGet 包管理器中安装。以 Rider 为例，可以依次点击：
@@ -162,10 +163,10 @@ NuGet -> 软件包
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.9"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.9"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.9"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.9"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.10"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.10"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.10"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.10"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>

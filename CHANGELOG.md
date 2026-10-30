@@ -4,6 +4,39 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## 6.2.10
+
+`2026-10-30`
+
+- Breaking Changes
+  - Motion: public motion types move from `AtomUI.MotionScene` to `AtomUI.Animations`; `IMotion`, `MotionSpiritType`, the motion actors (`BaseMotionActor`, `BaseLayoutAwareMotionActor`, `MotionActor`, `LayoutAwareMotionActor`, `IMotionActor`) and the actor-based `Run`/`RunAsync` are removed. `AbstractMotion` becomes abstract with `Build(MotionBuilder, in MotionContext)` and `PlayAsync(Control)`, and its `Duration`/`Easing` defaults now follow theme tokens; see the [6.2.10 migration guide](docs/releases/6.2.10-api-changes.md).
+  - Controls: `OpenMotion`/`CloseMotion` on Popup, Flyout, FlyoutHost, ContextMenu and TreeView now use `AtomUI.Animations.AbstractMotion`, and motion template parts are renamed in Badge, Collapse, Expander, Dialog, Drawer, FloatButton, Message, Notification, NavMenu, TreeView, TreeSelect and Transfer themes; see the [6.2.10 migration guide](docs/releases/6.2.10-api-changes.md).
+  - Window: `WithAtomUIDefaultOptions()` now prefers `RedirectionSurface` on Windows, so `AcrylicBlur` and `Mica` require configuring `WinUIComposition` first; see the [6.2.10 migration guide](docs/releases/6.2.10-api-changes.md).
+  - Registration: generated `ControlPackageGroup_*` identities change with the 6.2.10 assembly version. Upgrade AtomUI packages and the Generator together, rebuild compiled consumers, and republish trimmed/NativeAOT applications; see the [6.2.10 migration guide](docs/releases/6.2.10-api-changes.md).
+- Motion
+  - Play motions directly on controls with frame-driven, compositor-channel transforms instead of actor wrappers; reversed requests continue from the presented value instead of restarting.
+  - Declare show/hide and expand/collapse motion with `Motion.IsVisible`/`Enter`/`Leave` and the new `ContentViewport`, and add `SequenceMotion` and `ParallelMotion`.
+  - Limit layout-motion invalidation to the animated viewport and re-arrange only ancestors whose size changed, removing per-frame full-window redraws in submenus, Expander, Collapse and TreeView.
+  - Fix opening content briefly exposing its natural height, and preparation re-entrancy that let an earlier request overwrite a newer layout.
+- Popup
+  - Use the same `BoxShadowsSecondary` shadow for window-type popups as for overlay popups, and keep content at the same distance from the anchor.
+  - Let the shadow area of window-type popups pass pointer input to the content below on Windows, X11, Wayland and macOS, including other applications.
+- Window
+  - Eliminate opposite-edge lag and white flashes during live resize on Windows by preferring `RedirectionSurface`.
+  - Restore the active-state left, right and bottom frame borders on Windows 10 under `RedirectionSurface`.
+  - Predict the Wayland window scale before the first layout, removing the relayout about 250 ms after startup.
+- Dialog and Drawer
+  - Composite cached window content while the modal mask or drawer animates, cutting render-thread time per frame by about 70% on the measured Wayland Gallery.
+  - Zoom dialogs without a placement target from the panel center.
+- NavMenu
+  - Drive inline-collapsed width animation from the native clock instead of a 16 ms timer loop.
+- Wayland
+  - Submit prepared EGL frames with presentation-time pacing by default; opt out with the `AtomUI.Experimental.WaylandFramePacing` AppContext switch.
+- DataGrid
+  - Open the context menu when right-clicking the blank area of a grid that is not filled by rows.
+- Documentation
+  - Add Chinese and English design language and theme customization guidelines.
+
 ## 6.2.9
 
 `2026-10-25`

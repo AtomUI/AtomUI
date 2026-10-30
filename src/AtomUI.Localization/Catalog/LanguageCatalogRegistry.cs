@@ -5,11 +5,14 @@ namespace AtomUI.Localization;
 
 internal sealed class LanguageCatalogRegistry
 {
+    private const int NoCatalogSlot = -1;
+
     private readonly ReadOnlyCollection<LanguageCatalogDescriptor> _catalogs;
     private readonly IReadOnlyList<TranslationBundleDescriptor>[] _bundlesByCatalog;
     private readonly Dictionary<Type, int> _catalogSlotsByResourceType;
     private readonly Dictionary<string, int> _catalogSlotsById;
     private readonly Dictionary<(string Assembly, string Name), int> _dataSlots = new();
+    private readonly HashSet<string> _dataMetadataNames = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<Type, int> _resolvedDataTypes = new();
 
     private LanguageCatalogRegistry(
@@ -30,6 +33,7 @@ internal sealed class LanguageCatalogRegistry
                 {
                     throw new LanguageCatalogException($"Resource enum '{data.MetadataName}' is registered more than once.");
                 }
+                _dataMetadataNames.Add(data.MetadataName);
             }
         }
         foreach (var resourceType in catalogSlotsByResourceType.Keys)
@@ -126,19 +130,35 @@ internal sealed class LanguageCatalogRegistry
     internal bool TryGetCatalogSlot(Type resourceKindType, out int catalogSlot)
     {
         ArgumentNullException.ThrowIfNull(resourceKindType);
-        if (_catalogSlotsByResourceType.TryGetValue(resourceKindType, out catalogSlot) ||
-            _resolvedDataTypes.TryGetValue(resourceKindType, out catalogSlot))
+        if (_catalogSlotsByResourceType.TryGetValue(resourceKindType, out catalogSlot))
         {
             return true;
         }
-        if (resourceKindType.FullName is { } name &&
-            resourceKindType.Assembly.GetName().Name is { } assembly &&
-            _dataSlots.TryGetValue((assembly, name), out catalogSlot))
+        // 手工与模块数据 Catalog 的键都是 enum；Type、string 等键类型不可能命中，无需解析程序集名。
+        if (!resourceKindType.IsEnum)
         {
+            catalogSlot = NoCatalogSlot;
+            return false;
+        }
+        // 注册表冻结后不变，命中与未命中都按类型缓存；token enum 等非语言键只解析一次。
+        if (!_resolvedDataTypes.TryGetValue(resourceKindType, out catalogSlot))
+        {
+            catalogSlot = ResolveDataCatalogSlot(resourceKindType);
             _resolvedDataTypes.TryAdd(resourceKindType, catalogSlot);
-            return true;
         }
-        return false;
+        return catalogSlot != NoCatalogSlot;
+    }
+
+    private int ResolveDataCatalogSlot(Type resourceKindType)
+    {
+        // 先按元数据名筛选，只有候选类型才需要分配 AssemblyName。
+        if (resourceKindType.FullName is { } name && _dataMetadataNames.Contains(name) &&
+            resourceKindType.Assembly.GetName().Name is { } assembly &&
+            _dataSlots.TryGetValue((assembly, name), out var slot))
+        {
+            return slot;
+        }
+        return NoCatalogSlot;
     }
 
     internal bool TryGetCatalogSlot(string catalogId, out int catalogSlot)

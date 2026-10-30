@@ -1,3 +1,4 @@
+using AtomUI.Localization.Data;
 using Shouldly;
 using Xunit;
 
@@ -192,6 +193,64 @@ public class LanguageCatalogRegistryTests
             builder.AddCatalog(CreateCatalog<AlphaResourceKind>("Acme:Alpha", "Value")));
     }
 
+    [Fact]
+    public void Data_Catalog_Type_Resolves_By_Assembly_And_Metadata_Name()
+    {
+        var registry = CreateDataRegistry(typeof(DeltaResourceKind).Assembly.GetName().Name!, typeof(DeltaResourceKind).FullName!);
+
+        registry.TryGetCatalogSlot(typeof(DeltaResourceKind), out var slot).ShouldBeTrue();
+        registry.TryGetCatalogSlot(typeof(DeltaResourceKind), out var cachedSlot).ShouldBeTrue();
+
+        slot.ShouldBe(0);
+        cachedSlot.ShouldBe(0);
+    }
+
+    [Fact]
+    public void Data_Catalog_Does_Not_Match_The_Same_Metadata_Name_From_Another_Assembly()
+    {
+        var registry = CreateDataRegistry("Other.Assembly", typeof(DeltaResourceKind).FullName!);
+
+        registry.TryGetCatalogSlot(typeof(DeltaResourceKind), out _).ShouldBeFalse();
+        registry.TryGetCatalogSlot(typeof(DeltaResourceKind), out _).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Unregistered_Key_Types_Miss_Without_Allocating_After_First_Lookup()
+    {
+        var registry = CreateDataRegistry(typeof(DeltaResourceKind).Assembly.GetName().Name!, typeof(DeltaResourceKind).FullName!);
+        // Avalonia 以控件 Type 查找 ControlTheme（键类型为 RuntimeType），以字符串或 token enum 查找其它资源。
+        Type[] keyTypes = [typeof(Type).GetType(), typeof(string), typeof(GammaResourceKind)];
+        foreach (var keyType in keyTypes)
+        {
+            registry.TryGetCatalogSlot(keyType, out _).ShouldBeFalse();
+        }
+
+        var allocated = GC.GetAllocatedBytesForCurrentThread();
+        var found = false;
+        for (var index = 0; index < 100; index++)
+        {
+            foreach (var keyType in keyTypes)
+            {
+                found |= registry.TryGetCatalogSlot(keyType, out _);
+            }
+        }
+
+        found.ShouldBeFalse();
+        (GC.GetAllocatedBytesForCurrentThread() - allocated).ShouldBe(0);
+    }
+
+    private static LanguageCatalogRegistry CreateDataRegistry(string assemblyName, string metadataName)
+    {
+        var catalog = new LanguageDataCatalogDescriptor(new LanguageModuleCatalog(
+            "Acme:Delta",
+            assemblyName,
+            metadataName,
+            [new LanguageModuleUnit("Value", 0, false)]));
+        return LanguageCatalogRegistry.Create(
+            [catalog],
+            [CreateBundle(catalog, LanguageTags.EnUS, ["Delta"])]);
+    }
+
     private static string BundleIdentity(TranslationBundleDescriptor bundle)
     {
         return $"{bundle.Language.Value}:{bundle.SourceKind}:{bundle.SourceIdentity}";
@@ -230,6 +289,16 @@ public class LanguageCatalogRegistryTests
     }
 
     private enum BetaResourceKind
+    {
+        Value
+    }
+
+    private enum GammaResourceKind
+    {
+        Value
+    }
+
+    private enum DeltaResourceKind
     {
         Value
     }

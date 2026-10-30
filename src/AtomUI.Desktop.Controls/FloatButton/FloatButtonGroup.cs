@@ -277,11 +277,6 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        if (_triggerButton != null)
-        {
-            _triggerButton.PointerEntered -= HandlePointerEntered;
-            _triggerButton.PointerExited  -= HandlePointerExited;
-        }
         DetachItemsControlChildren();
         _itemsControl  = e.NameScope.Find<FloatButtonItemsControl>("ItemsControl");
         _triggerButton = e.NameScope.Find<FloatButton>("Trigger");
@@ -290,12 +285,6 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
         if (_menuSurface != null)
         {
             UpdateMenuMotion(initialize: true);
-        }
-        
-        if (_triggerButton != null)
-        {
-            _triggerButton.PointerEntered += HandlePointerEntered;
-            _triggerButton.PointerExited  += HandlePointerExited;
         }
         
         if (_itemsControl != null)
@@ -373,15 +362,19 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
         floatButton.SetCurrentValue(AbstractFloatButton.IsEmbedModeProperty, true);
     }
 
-    private void HandlePointerEntered(object? sender, PointerEventArgs? e)
+    // Hover is tracked on the whole group rather than the trigger button: the menu
+    // surface lives in the group's visual tree, so moving from the trigger onto the
+    // menu keeps the group hovered and the menu stays reachable.
+    protected override void OnPointerEntered(PointerEventArgs e)
     {
+        base.OnPointerEntered(e);
         if (Trigger == FloatButtonGroupTrigger.Hover)
         {
             RequestOpenStateChange(true);
         }
     }
     
-    private void HandlePointerExited(object? sender, PointerEventArgs e)
+    protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
         if (Trigger == FloatButtonGroupTrigger.Hover)

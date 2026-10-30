@@ -561,6 +561,64 @@ public class FloatButtonHostOverlayTests
         }
     }
 
+    [Fact]
+    public void Hover_Group_Keeps_Menu_Open_While_Pointer_Moves_Onto_Menu()
+    {
+        var menuItem = new AtomUI.Desktop.Controls.FloatButton();
+        var group = new FloatButtonGroup
+        {
+            Trigger             = FloatButtonGroupTrigger.Hover,
+            IsMotionEnabled     = false,
+            VerticalAlignment   = Avalonia.Layout.VerticalAlignment.Bottom,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Children =
+            {
+                new AtomUI.Desktop.Controls.FloatButton(),
+                menuItem
+            }
+        };
+
+        var window = new Avalonia.Controls.Window
+        {
+            Width   = 320,
+            Height  = 240,
+            Content = group
+        };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        try
+        {
+            var trigger = group.GetVisualDescendants()
+                               .OfType<AtomUI.Desktop.Controls.FloatButton>()
+                               .Single(button => button.Classes.Contains("semantic-trigger"));
+
+            MoveTo(trigger, window);
+            Dispatcher.UIThread.RunJobs();
+            group.IsOpen.ShouldBeTrue();
+
+            MoveTo(menuItem, window);
+            Dispatcher.UIThread.RunJobs();
+            group.IsOpen.ShouldBeTrue();
+
+            window.MouseMove(new Point(2, 2));
+            Dispatcher.UIThread.RunJobs();
+            group.IsOpen.ShouldBeFalse();
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    private static void MoveTo(Control control, Avalonia.Controls.Window window)
+    {
+        var point = control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), window);
+        point.ShouldNotBeNull();
+        window.MouseMove(point.Value);
+    }
+
     private static Avalonia.Controls.Window CreateWindow(Control host, out ScopeAwareOverlayLayerPanel overlayPanel)
     {
         overlayPanel = new ScopeAwareOverlayLayerPanel

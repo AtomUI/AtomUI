@@ -346,6 +346,8 @@ public partial class NavMenu : ItemsControl,
         new(() => new StackPanel { Orientation = Orientation.Vertical });
 
     private bool _defaultOpenPathsApplied;
+    // IsAttachedToVisualTree() still reports true inside OnDetachedFromVisualTree, so track attachment explicitly.
+    private bool _isAttachedToVisualTree;
     private int _motionContextLevel;
     private bool _originIsMotionEnabled;
     private List<IReadOnlyList<INavMenuNode>>? _inlineCollapsedOpenNodePathCache;
@@ -524,6 +526,7 @@ public partial class NavMenu : ItemsControl,
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        _isAttachedToVisualTree = true;
         CoerceInlineCollapsedLayoutConstraints();
         ConfigureInteractionHandler(true);
         _pinnedOpenCoordinator.Reconcile(this);
@@ -538,6 +541,7 @@ public partial class NavMenu : ItemsControl,
         }
 
         base.OnDetachedFromVisualTree(e);
+        _isAttachedToVisualTree = false;
         CancelInlineCollapsedWidthMotion();
         ClearInlineCollapsedLayoutWidth();
         InteractionHandler?.Detach(this);
@@ -621,6 +625,14 @@ public partial class NavMenu : ItemsControl,
         if (needMount)
         {
             InteractionHandler?.Detach(this);
+        }
+
+        // DefaultNavMenuInteractionHandler subscribes to the app-wide IInputManager.Process on attach;
+        // mounting one while detached would root this menu, so defer until OnAttachedToVisualTree.
+        if (!_isAttachedToVisualTree)
+        {
+            InteractionHandler = null;
+            return;
         }
         
         if (EffectiveMode == NavMenuMode.Inline)

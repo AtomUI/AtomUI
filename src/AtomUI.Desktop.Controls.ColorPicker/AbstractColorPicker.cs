@@ -448,6 +448,8 @@ public abstract class AbstractColorPicker : AvaloniaButton,
     private TopLevel? _registeredTopLevel;
     private bool _isPickerShowing;
     private int _popupLifecycleCloseDepth;
+    // IsAttachedToVisualTree() still reports true inside OnDetachedFromVisualTree, so track attachment explicitly.
+    private bool _isAttachedToVisualTree;
 
     static AbstractColorPicker()
     {
@@ -552,6 +554,13 @@ public abstract class AbstractColorPicker : AvaloniaButton,
     {
         _popupPointerSubscription?.Dispose();
         _popupPointerSubscription = null;
+
+        // IInputManager.Process is app-wide; subscribing while detached (e.g. TriggerType changed with
+        // IsPickerOpen already true) would never be released and would root this picker.
+        if (!_isAttachedToVisualTree)
+        {
+            return;
+        }
 
         var inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
         if (inputManager != null)
@@ -1057,6 +1066,7 @@ public abstract class AbstractColorPicker : AvaloniaButton,
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        _isAttachedToVisualTree = true;
         SetupTriggerHandler();
         AttachPopupHandlers();
         if (IsPickerOpen)
@@ -1072,6 +1082,7 @@ public abstract class AbstractColorPicker : AvaloniaButton,
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _isAttachedToVisualTree = false;
         ClosePickerForLifecycle();
         base.OnDetachedFromVisualTree(e);
         UnregisterWindowDeactivatedHandler();

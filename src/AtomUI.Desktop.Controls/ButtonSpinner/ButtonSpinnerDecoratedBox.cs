@@ -207,20 +207,34 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
-        _mouseMoveDisposable?.Dispose();
-        _mouseMoveDisposable = null;
+        // IsAttachedToVisualTree() still reports true while detaching, so release explicitly.
+        DisposeMoveProcessor();
         IsSpinnerContentHover = false;
         UpdateHandleVisualState();
     }
 
+    // IInputManager.Process is app-wide; any subscription left behind roots this control and its page,
+    // so subscribe only while attached and keep every enable/handle change routed through here.
     private void ConfigureMoveProcessor()
     {
-        if (IsEffectivelyEnabled && IsShowHandle && IsHandleFloatable)
+        if (this.IsAttachedToVisualTree() && IsEffectivelyEnabled && IsShowHandle && IsHandleFloatable)
         {
-            _mouseMoveDisposable?.Dispose();
-            var inputManager = AvaloniaLocator.Current.GetService(typeof(IInputManager)) as IInputManager;;
-            _mouseMoveDisposable = inputManager?.Process.Subscribe(HandleMouseMove);
+            if (_mouseMoveDisposable == null)
+            {
+                var inputManager = AvaloniaLocator.Current.GetService(typeof(IInputManager)) as IInputManager;
+                _mouseMoveDisposable = inputManager?.Process.Subscribe(HandleMouseMove);
+            }
         }
+        else
+        {
+            DisposeMoveProcessor();
+        }
+    }
+
+    private void DisposeMoveProcessor()
+    {
+        _mouseMoveDisposable?.Dispose();
+        _mouseMoveDisposable = null;
     }
 
     private void HandleMouseMove(RawInputEventArgs args)
@@ -273,35 +287,15 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
             UpdateHandleVisualState();
         }
 
-        if (this.IsAttachedToVisualTree())
+        if (change.Property == IsEffectivelyEnabledProperty ||
+            change.Property == IsShowHandleProperty ||
+            change.Property == IsHandleFloatableProperty)
         {
-            if (change.Property == IsHandleFloatableProperty)
-            {
-                if (change.OldValue is bool oldValue)
-                {
-                    if (oldValue)
-                    {
-                        _mouseMoveDisposable?.Dispose();
-                    }
-                }
-
-                if (IsHandleFloatable)
-                {
-                    ConfigureMoveProcessor();
-                }
-            }
+            ConfigureMoveProcessor();
         }
 
         if (change.Property == IsEffectivelyEnabledProperty)
         {
-            if (!IsEffectivelyEnabled)
-            {
-                _mouseMoveDisposable?.Dispose();
-            }
-            else
-            {
-                ConfigureMoveProcessor();
-            }
             UpdateHandleVisualState();
         }
 

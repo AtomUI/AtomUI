@@ -138,8 +138,10 @@ hover、滚动、裁剪、资源释放等仍保留原始复现条件和交互/�
 ## 全量、CI 和维护
 
 ```bash
-# 仅在用户明确要求或版本发布时使用
+# 仅在用户明确要求或版本发布时使用；默认不含端到端 AtomUI.Localization.IntegrationTests
 scripts/run-full-regression.sh
+# 版本发布，或改动本地化/Generator/打包链路时必须带上集成测试
+scripts/run-full-regression.sh --with-integration
 
 # 维护影响规则时的快速检查
 python3 scripts/verification/test.py audit

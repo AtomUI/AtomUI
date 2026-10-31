@@ -5,7 +5,10 @@
 # 流程：预检残留进程 → 逐项目统计测试数 → 带进度/ETA/卡死预警的运行 → 汇总
 #
 # 用法:
-#   scripts/run-full-regression.sh [--projects p1,p2] [--filter FX] [--stall 秒] [--prune]
+#   scripts/run-full-regression.sh [--projects p1,p2] [--with-integration] [--filter FX] [--stall 秒] [--prune]
+#
+# 默认不跑端到端集成测试（真实 pack + 临时 NuGet feed + consumer 构建，单项目 6~8 分钟）；
+# 发版或改动本地化/打包链路时加 --with-integration。
 #
 # 输出行前缀（供 agent 解析）:
 #   [COUNT]  统计阶段   [RUN] 项目开始   [PROG] 进度（每 30s）
@@ -19,12 +22,13 @@ CADENCE=30      # 秒，进度行打印间隔
 STALL=120       # 秒，无进度告警阈值
 FILTER=""
 PRUNE=0
+WITH_INTEGRATION=0
+EXPLICIT_PROJECTS=0
 
 # 默认项目集：按预期耗时降序，大套件先跑尽早暴露问题
 PROJECTS=(
     AtomUI.Desktop.Controls.Tests
     AtomUI.Desktop.Controls.Rendering.Tests
-    AtomUI.Localization.IntegrationTests
     AtomUIGallery.Tests
     AtomUI.Generator.Tests
     AtomUI.TypeMap.Linker.Tests
@@ -39,14 +43,20 @@ PROJECTS=(
     AtomUI.Icons.Shared.Tests
 )
 
+# 端到端集成测试：仅 --with-integration 时加入（发版必须带上）
+INTEGRATION_PROJECTS=(
+    AtomUI.Localization.IntegrationTests
+)
+
 usage() {
-    sed -n '3,10p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '3,13p' "$0" | sed 's/^# \{0,1\}//'
     exit "${1:-0}"
 }
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        --projects) IFS=',' read -r -a PROJECTS <<< "$2"; shift 2 ;;
+        --projects) IFS=',' read -r -a PROJECTS <<< "$2"; EXPLICIT_PROJECTS=1; shift 2 ;;
+        --with-integration) WITH_INTEGRATION=1; shift ;;
         --filter)   FILTER="$2"; shift 2 ;;
         --stall)    STALL="$2"; shift 2 ;;
         --prune)    PRUNE=1; shift ;;
@@ -61,7 +71,21 @@ FAILURES="$WORKDIR/failures.txt"
 filter_args=""
 [ -n "$FILTER" ] && filter_args="--filter $FILTER"
 
+# 显式 --projects 时按用户给定集合执行，不再增删
+SKIPPED_INTEGRATION=""
+if [ "$EXPLICIT_PROJECTS" -eq 0 ]; then
+    if [ "$WITH_INTEGRATION" -eq 1 ]; then
+        # 集成测试耗时最长，放在大套件之后尽早跑完
+        PROJECTS=("${PROJECTS[@]:0:2}" "${INTEGRATION_PROJECTS[@]}" "${PROJECTS[@]:2}")
+    else
+        SKIPPED_INTEGRATION="$(IFS=','; echo "${INTEGRATION_PROJECTS[*]}")"
+    fi
+fi
+
 echo "[MODE] FINAL FULL REGRESSION — only after focused bug-module tests are green"
+if [ -n "$SKIPPED_INTEGRATION" ]; then
+    echo "[MODE] 未包含集成测试: ${SKIPPED_INTEGRATION}（发版或改动本地化/打包链路时加 --with-integration）"
+fi
 
 fmt_clock() { # 秒 -> mm:ss
     awk -v s="$1" 'BEGIN { printf "%02d:%02d", int(s/60), s%60 }'
@@ -83,7 +107,7 @@ if [ -n "$stray" ]; then
 fi
 
 # ---------- ② 统计测试数（含构建） ----------
-echo "[COUNT] 统计测试数（含构建, framework=$FRAMEWORK）..."
+echo "[COUNT] 统计测试数（含构建, framework=${FRAMEWORK}）..."
 counts=()
 total=0
 for p in "${PROJECTS[@]}"; do
@@ -199,6 +223,9 @@ if [ "$any_fail" -eq 0 ]; then
 else
     echo "[SUMMARY] TOTAL: 存在失败, 详见上方清单; 总耗时 $(fmt_clock $total_dur)"
     echo "[DIAGNOSTICS] 失败清单与完整异常栈已保留: $WORKDIR"
+fi
+if [ -n "$SKIPPED_INTEGRATION" ]; then
+    echo "[SUMMARY] 注意: 未包含集成测试 ${SKIPPED_INTEGRATION}（加 --with-integration 运行）"
 fi
 if [ "$any_fail" -eq 0 ]; then
     rm -rf "$WORKDIR"

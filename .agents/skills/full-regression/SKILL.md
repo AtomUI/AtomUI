@@ -19,11 +19,21 @@ description: Use when the user asks to run the full AtomUI regression test suite
 scripts/run-full-regression.sh
 ```
 
+默认集合**不含**端到端集成测试 `AtomUI.Localization.IntegrationTests`（真实 pack、临时 NuGet feed、consumer
+构建，单项目 6~8 分钟且常触发 `[STALL]`）。以下场景必须加 `--with-integration`：
+
+- 执行 version-release 的发版全量；
+- 改动涉及 `src/AtomUI.Localization*`、`src/LanguagePacks/`、`src/AtomUI.Generator*` 或 `build/` 打包链路。
+
+未带该参数时脚本在 `[MODE]` 与 `[SUMMARY]` 各输出一行"未包含集成测试"，汇报结果时必须同时转述，
+不得把默认全量通过表述为"全部测试通过"。
+
 可选参数：
 
 | 参数 | 说明 |
 | --- | --- |
-| `--projects p1,p2` | 只跑子集（调试 skill 或快速冒烟时用） |
+| `--projects p1,p2` | 只跑子集（调试 skill 或快速冒烟时用）；显式指定时按给定集合执行，忽略 `--with-integration` |
+| `--with-integration` | 加入端到端集成测试项目（发版及本地化/打包链路改动必须带上） |
 | `--filter FX` | 透传 vstest 过滤器（统计阶段同步生效） |
 | `--stall N` | 无进度告警阈值秒数（默认 120） |
 | `--prune` | 预检发现本仓库残留 testhost 进程时自动清理 |

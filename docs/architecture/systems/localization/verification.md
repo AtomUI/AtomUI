@@ -121,7 +121,7 @@ Warning 只用于产物仍然确定可用、但维护质量可能下降的场景
 | `AtomUI.Localization.Tests` | BCP 47 规范化、CLDR 回退、Registry、Snapshot、优先级、切换、Culture、RTL、线程语义 |
 | `AtomUI.Generator.Tests` | 输入 parser/metadata、Catalog symbol index、active/dormant planner、Catalog semantic validator、Bundle compiler、pipeline、Writer、诊断、确定性与增量更新 |
 | `AtomUI.Build.Tasks.Tests` | 共享 XLIFF 文件规则、reader/writer/merge、静态包 final 门禁、manifest、props、包安全和模板导出 |
-| `AtomUI.Localization.IntegrationTests` | 模块/静态语言包真实 pack 布局、临时 NuGet feed、Generator 消费和运行时切换 |
+| `AtomUI.Localization.IntegrationTests` | 模块/静态语言包真实 pack 布局、临时 NuGet feed、Generator 消费和运行时切换（不在默认全量内，需 `scripts/run-full-regression.sh --with-integration` 或单独 `dotnet test`） |
 | 控件测试项目 | 现有 XAML Extension、控件 C# 查询、三种内置语言完整性 |
 | `AtomUIGallery.Tests` | 应用 Catalog、语言菜单、ViewModel/导航刷新和支持语言配置 |
 

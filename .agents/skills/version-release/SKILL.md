@@ -160,10 +160,11 @@ SDK-requirement changes count.
   `dotnet test <test-project> --framework net10.0 --no-restore`.
 - **Run the full regression test suite. This step is mandatory when
   executing the `version-release` skill and cannot be replaced by targeted
-  module tests. Use the repository's maintained full-test entry point, such
-  as `dotnet test AtomUI.slnx --framework net10.0 --no-restore`, when
-  applicable. Record the command, result, and any unrelated failures
-  separately.**
+  module tests. Use the repository's maintained full-test entry point,
+  `scripts/run-full-regression.sh --with-integration`. The default run
+  skips the end-to-end `AtomUI.Localization.IntegrationTests`; a release
+  must include it via `--with-integration`. Record the command, result, and
+  any unrelated failures separately.**
 - Run build or pack validation when packaging or build files changed.
 - Run the two automated breaking-change gates against the previous release and report both
   results:

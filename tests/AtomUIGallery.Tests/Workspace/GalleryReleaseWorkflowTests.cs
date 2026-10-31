@@ -46,9 +46,11 @@ public class GalleryReleaseWorkflowTests
         var tapCleanupIndex = workflow.IndexOf("brew untap --force aws/tap azure/bicep", prepareStepIndex, StringComparison.Ordinal);
         tapCleanupIndex.ShouldBeGreaterThanOrEqualTo(0, $"Missing Homebrew tap cleanup in workflow job: {jobName}");
 
-        var brewInstallIndex = workflow.IndexOf("brew install create-dmg openssl@3", prepareStepIndex, StringComparison.Ordinal);
+        // DMG images are built by the in-repo New-GalleryDmg.ps1, so only openssl@3 comes from Homebrew.
+        var brewInstallIndex = workflow.IndexOf("brew install openssl@3", prepareStepIndex, StringComparison.Ordinal);
         brewInstallIndex.ShouldBeGreaterThanOrEqualTo(0, $"Missing Homebrew package install in workflow job: {jobName}");
         tapCleanupIndex.ShouldBeLessThan(brewInstallIndex, $"Homebrew tap cleanup must run before package install in workflow job: {jobName}");
+        workflow.ShouldNotContain("create-dmg", Case.Sensitive, $"Workflow must not install create-dmg; DMG packaging uses New-GalleryDmg.ps1 in job: {jobName}");
     }
 
     private static string GetRepoFile(string relativePath)

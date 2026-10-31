@@ -143,8 +143,8 @@ AtomUI 自身版本由 `build/Versions.props` 中的 `AtomUIVersion` 管理。
 ```bash
 python3 scripts/verification/test.py plan
 python3 scripts/verification/test.py run --scope iterate --path <affected-module-path>
-# 仅在用户明确要求或发版时：
-scripts/run-full-regression.sh
+# 仅在用户明确要求或发版时；打包链路改动与发版必须包含端到端集成测试：
+scripts/run-full-regression.sh --with-integration
 ```
 
 注册迁移要求同时验证 source、传递 ProjectReference、预编译 consumer DLL、干净 NuGet cache 和第三方包。

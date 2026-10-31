@@ -286,7 +286,7 @@
                                         <Panel Height="500">
                                             <atom:FloatButtonGroupHost Shape="Square"
                                                                        FloatOffsetX="80"
-                                                                       Trigger="Hover"
+                                                                       Trigger="Click"
                                                                        Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
                                                                        IsOpen="{Binding IsOpened}">
                                                 <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />

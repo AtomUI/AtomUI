@@ -2,6 +2,16 @@
 
 本文档记录 FloatButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-31
+
+- Behavior
+  - Issue #518：`FloatButtonGroup` 交互统一以 current value 语义回写 `IsOpen`，直接使用 group 并设置或绑定 `IsOpen` 时也能经 TwoWay 回写；移除 host 侧重复的 open/close request 链路。
+  - 设置本地值 `IsOpen=True` 的 group 点击 trigger 会收起（此前保持打开）。
+  - 禁用的 group 不再响应 click trigger 的打开/收起。
+  - `Clicked`、`Opened`、`Closed` 事件此前已声明但从未触发，现按文档时机触发。
+- Gallery
+  - 受控模式示例两个 group 均改为 `Trigger="Click"`，对齐 Ant Design `controlled` demo。
+
 ## 2026-10-27
 
 - Motion

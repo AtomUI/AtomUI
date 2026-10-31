@@ -204,24 +204,7 @@ public class FloatButtonGroupHost : TemplatedControl, IMotionAwareControl
         disposables.Add(BindUtils.RelayBind(this, IsOpenProperty, floatButtonGroup, IsOpenProperty));
         
         floatButtonGroup.Children.AddRange(Children);
-        floatButtonGroup.OpenRequest  += OnFloatButtonGroupOpenRequest;
-        floatButtonGroup.CloseRequest += OnFloatButtonGroupCloseRequest;
-        disposables.Add(Disposable.Create(() =>
-        {
-            floatButtonGroup.OpenRequest  -= OnFloatButtonGroupOpenRequest;
-            floatButtonGroup.CloseRequest -= OnFloatButtonGroupCloseRequest;
-        }));
         return floatButtonGroup;
-    }
-    
-    private void OnFloatButtonGroupOpenRequest(object? sender, EventArgs args)
-    {
-        SetCurrentValue(IsOpenProperty, true);
-    }
-
-    private void OnFloatButtonGroupCloseRequest(object? sender, EventArgs args)
-    {
-        SetCurrentValue(IsOpenProperty, false);
     }
 
     protected virtual void NotifyChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)

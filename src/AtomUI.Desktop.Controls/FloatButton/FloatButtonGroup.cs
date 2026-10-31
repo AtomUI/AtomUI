@@ -196,17 +196,9 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
 
     #endregion
 
-    #region 内部属性定义
-
-    internal event EventHandler? OpenRequest;
-    internal event EventHandler? CloseRequest;
-
-    #endregion
-    
     private FloatButtonItemsControl? _itemsControl;
     private bool _initPressed;
     private bool _wasOpenOnPointerPressed;
-    private bool _selfManagesOpen;
     private IDisposable? _clickTriggerDisposable;
     private FloatButton? _triggerButton;
     private FloatButton? _clickTriggerKeyboardButton;
@@ -266,6 +258,7 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
         {
             CalculateItemsControlPosition();
             UpdateMenuMotion();
+            RaiseEvent(new RoutedEventArgs(change.GetNewValue<bool>() ? OpenedEvent : ClosedEvent));
         }
         if (change.Property == TriggerProperty ||
             change.Property == MenuPlacementProperty)
@@ -278,9 +271,17 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
     {
         base.OnApplyTemplate(e);
         DetachItemsControlChildren();
+        if (_triggerButton != null)
+        {
+            _triggerButton.Click -= HandleTriggerButtonClick;
+        }
         _itemsControl  = e.NameScope.Find<FloatButtonItemsControl>("ItemsControl");
         _triggerButton = e.NameScope.Find<FloatButton>("Trigger");
         _menuSurface   = e.NameScope.Find<Border>("PART_MenuSurface");
+        if (_triggerButton != null)
+        {
+            _triggerButton.Click += HandleTriggerButtonClick;
+        }
 
         if (_menuSurface != null)
         {
@@ -383,32 +384,24 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
         }
     }
 
+    // Interactions write IsOpen with current-value semantics so a TwoWay binding (the
+    // equivalent of Ant Design's open + onOpenChange) receives the new state, while a
+    // disabled group ignores open requests like Ant Design's triggerOpen guard. The
+    // raw click-trigger input subscription bypasses Avalonia's disabled routing, so
+    // the guard must live here rather than rely on the trigger button being disabled.
     private void RequestOpenStateChange(bool isOpen)
     {
-        // A consumer that sets or binds IsOpen drives the state; the group only
-        // reports intent via OpenRequest/CloseRequest. Without an external value
-        // the group manages the state itself and keeps doing so across toggles.
-        if (!_selfManagesOpen && !IsSet(IsOpenProperty))
+        if (!IsEffectivelyEnabled || IsOpen == isOpen)
         {
-            _selfManagesOpen = true;
+            return;
         }
 
-        if (_selfManagesOpen)
-        {
-            SetCurrentValue(IsOpenProperty, isOpen);
-        }
+        SetCurrentValue(IsOpenProperty, isOpen);
+    }
 
-        if (_overlayLayer != null)
-        {
-            if (isOpen)
-            {
-                OpenRequest?.Invoke(this, EventArgs.Empty);
-            }
-            else
-            {
-                CloseRequest?.Invoke(this, EventArgs.Empty);
-            }
-        }
+    private void HandleTriggerButtonClick(object? sender, RoutedEventArgs e)
+    {
+        RaiseEvent(new RoutedEventArgs(ClickedEvent));
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

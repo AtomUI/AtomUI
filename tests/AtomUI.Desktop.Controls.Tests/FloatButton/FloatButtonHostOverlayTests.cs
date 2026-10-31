@@ -412,7 +412,7 @@ public class FloatButtonHostOverlayTests
     }
 
     [Fact]
-    public void Controlled_Direct_Group_Keeps_Menu_Open_On_Trigger_Click()
+    public void Direct_Group_With_Local_IsOpen_Writes_Trigger_Close_Back()
     {
         var group = new FloatButtonGroup
         {
@@ -444,7 +444,7 @@ public class FloatButtonHostOverlayTests
             Click(trigger, window);
             Dispatcher.UIThread.RunJobs();
 
-            group.IsOpen.ShouldBeTrue();
+            group.IsOpen.ShouldBeFalse();
         }
         finally
         {

@@ -100,7 +100,9 @@ Public API / ItemsSource / Command / Event
 
 - 外部设置的 Avalonia 属性必须在模板应用前后保持一致。
 - 集合、选择、展开、过滤、分页、上传任务或异步 loader 必须能处理 reset、replace 和 clear。
-- `IsOpen` 由 group 与 host 共享为受控打开状态；hover/click、open request 和 close request 应使用 current value 语义回写，不得以 style priority 覆盖绑定或本地值。
+- `IsOpen` 由 group 与 host 共享为受控打开状态；group 是唯一写入方，hover/click 一律以 current value 语义写入 group `IsOpen`，经 host 的 TwoWay relay 回到 host 与用户绑定，不得以 style priority 覆盖绑定或本地值，也不得按值来源（本地值、绑定、host relay）分叉。
+- 打开请求在 group 不可用（`IsEffectivelyEnabled == false`）或目标值与当前值相同时直接忽略，对齐 Ant Design `triggerOpen` 的 disabled 与去重判断；click 模式经原始输入订阅，不依赖 Avalonia 的禁用路由，因此必须在请求入口判断。
+- `Hover` 模式下点击 trigger 不切换打开状态，只经 hover 进出开合，与 Ant Design `trigger="hover"` 一致。
 - `Command`、`CommandParameter` 和 `CanExecute` 不建立 host 私有状态机；`FloatButtonHost`、`BackTopFloatButtonHost` 创建的真实按钮通过属性投影接收命令契约。
 - `IsShowProgress` 只控制进度环显隐；`ScrollProgress` 是从 `Target` 派生的 internal 状态，`BackTopFloatButtonHost` 通过 `AddOwner` 把开关投影给 overlay 中的真实按钮，不建立第二份滚动状态。
 - `BackTopFloatButton` 点击时先检查有效可用状态；当命令不可执行导致按钮不可用时，不应触发滚动动作。
@@ -181,7 +183,7 @@ FloatButton 的交互事件应从输入源收敛到控件级语义事件：
 - `FloatButtonGroupHost` trigger 点击只处理展开/收起，不默认触发业务 `Command`；业务命令应挂在 group 内部子 `FloatButton`。
 - `FloatButtonHost` 与 `BackTopFloatButtonHost` 对外表现为可绑定命令的 host，但命令执行仍发生在 overlay 内真实按钮的 Avalonia Button 点击路径中。
 
-稳定事件路径包括 `Clicked`、`Closed`、`Opened`。事件参数和触发时机属于兼容边界。
+稳定事件路径包括 `Clicked`、`Closed`、`Opened`。事件参数和触发时机属于兼容边界：`Opened`/`Closed` 在 group `IsOpen` 实际变化后触发（含外部绑定写入）；`Clicked` 在 trigger 按钮 `Click` 后触发，`Click` 与 `Hover` 模式都触发，对应 Ant Design `FloatButton.Group` 的 `onClick`。
 
 ## 7. 内部算法与关键流程
 

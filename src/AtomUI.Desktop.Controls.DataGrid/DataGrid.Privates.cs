@@ -4119,12 +4119,7 @@ public partial class DataGrid
                         }
                         else if (GetRowSelection(slot)) // Unselecting single row or Selecting a previously multi-selected row
                         {
-                            if (!ctrl && SelectionMode == DataGridSelectionMode.Extended && !Selection.IsEmpty)
-                            {
-                                // Unselect everything except the row that was clicked on
-                                action = DataGridSelectionAction.SelectCurrent;
-                            }
-                            else if (ctrl && EditingRow == null)
+                            if ((ctrl || SelectionMode == DataGridSelectionMode.Extended) && EditingRow == null)
                             {
                                 action = DataGridSelectionAction.RemoveCurrentFromSelection;
                             }
@@ -4133,9 +4128,9 @@ public partial class DataGrid
                                 action = DataGridSelectionAction.None;
                             }
                         }
-                        else // Selecting a single row or multi-selecting with Ctrl
+                        else // Extended selection toggles rows without requiring Ctrl.
                         {
-                            if (SelectionMode == DataGridSelectionMode.Single || !ctrl)
+                            if (SelectionMode == DataGridSelectionMode.Single)
                             {
                                 // Unselect the currently selected rows except the new selected row
                                 action = DataGridSelectionAction.SelectCurrent;

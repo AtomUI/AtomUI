@@ -428,6 +428,10 @@ public partial class DataGrid
         if (isNewDataGeneration)
         {
             ResetRowHeightEstimateForDataGeneration();
+            // The scroll intent target is an offset in the replaced generation's height
+            // space. Keeping it lets re-anchoring clamp the new data to the old position.
+            _rangeMeasurementScrollDirection = 0;
+            _rangeMeasurementScrollTarget = 0;
         }
         var previousPins = _rangeVisualPins;
         UnloadElements(recycle: true);

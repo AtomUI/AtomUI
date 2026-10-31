@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -52,6 +53,97 @@ public class DataGridRangeMutationTests
             source.Order.ShouldBe([2, 3, 1, 4]);
             drag.Pointer.Captured.ShouldBeNull();
             cleanupObserved.ShouldBeTrue();
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void Local_Source_Row_Reorder_Moves_Observable_Collection_Item()
+    {
+        var rows = new ObservableCollection<Row>(Enumerable.Range(1, 4).Select(value => new Row(value, value)));
+        using var source = LocalSource(rows);
+        var (grid, window) = Realize(source);
+        var reorderedCount = 0;
+        grid.RowReordered += (_, _) => reorderedCount++;
+
+        try
+        {
+            EnsureFourRows(grid);
+            var handle = GetHandle(grid);
+            var drag = BeginPointerDrag(handle, window);
+            drag.Pointer.Captured.ShouldBeSameAs(handle);
+            var target = MovePointerDragToRow(grid, handle, window, drag, 2);
+            // A real render loop lays out the drag ghost row, which has no slot of its own.
+            grid.RowsPresenter!.DraggedRowIndex.ShouldNotBeNull();
+            grid.RowsPresenter.InvalidateArrange();
+            window.UpdateLayout();
+
+            EndPointerDrag(handle, window, drag, target);
+            PumpUntil(() => reorderedCount == 1 && grid.LoadState == DataGridLoadState.Ready);
+
+            rows.Select(static row => row.Id).ShouldBe([2, 3, 1, 4]);
+            grid.IsDataStale.ShouldBeFalse();
+            grid.DisplayData.GetScrollingRows()
+                .Cast<DataGridRow>()
+                .OrderBy(static row => row.Index)
+                .Select(static row => ((Row)row.DataContext!).Id)
+                .ShouldBe([2, 3, 1, 4]);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public async Task Local_Source_Move_Supports_Before_And_After_Keys_On_Plain_List()
+    {
+        var rows = Enumerable.Range(1, 4).Select(value => new Row(value, value)).ToList();
+        using var source = LocalSource(rows);
+        var snapshot = (await source.FetchAsync(
+            new DataGridFetchRequest(
+                DataGridQuery.Empty,
+                null,
+                DataGridGroupExpansion.AllExpanded,
+                new DataGridRange(0, 4),
+                null,
+                0,
+                0),
+            CancellationToken.None)).Snapshot;
+
+        var result = await source.MoveAsync(
+            new DataGridMoveRequest(DataGridQuery.Empty, snapshot, Key(4), beforeKey: Key(1), afterKey: null),
+            CancellationToken.None);
+
+        rows.Select(static row => row.Id).ShouldBe([4, 1, 2, 3]);
+        result.Snapshot.ShouldNotBeNull();
+        result.Snapshot.ShouldNotBe(snapshot);
+
+        await source.MoveAsync(
+            new DataGridMoveRequest(DataGridQuery.Empty, result.Snapshot!.Value, Key(4), beforeKey: null, afterKey: Key(2)),
+            CancellationToken.None);
+
+        rows.Select(static row => row.Id).ShouldBe([1, 2, 4, 3]);
+    }
+
+    [Fact]
+    public void Local_Source_Over_Read_Only_Items_Does_Not_Start_Row_Reorder()
+    {
+        var rows = Enumerable.Range(1, 4).Select(value => new Row(value, value)).ToArray();
+        using var source = LocalSource(rows);
+        source.CanMove.ShouldBeFalse();
+        var (grid, window) = Realize(source);
+        try
+        {
+            EnsureFourRows(grid);
+            var drag = BeginPointerDrag(GetHandle(grid), window);
+
+            drag.Pointer.Captured.ShouldBeNull();
         }
         finally
         {
@@ -532,6 +624,16 @@ public class DataGridRangeMutationTests
         PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
         return (grid, window);
     }
+
+    private static DataGridLocalSource<Row> LocalSource(IReadOnlyList<Row> rows) =>
+        DataGridLocalSource.Create(
+            rows,
+            DataGridLocalSourceDescriptor.For<Row>(static row => Key(row.Id))
+                                         .Field(
+                                             ValueField,
+                                             static row => row.Value,
+                                             Comparer<int>.Default,
+                                             static value => DataGridScalar.FromInt64(value)));
 
     private static void EnsureFourRows(global::AtomUI.Desktop.Controls.DataGrid grid)
     {

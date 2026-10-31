@@ -138,6 +138,7 @@ public partial class DataGrid
                 out var movableSource,
                 out var presentation,
                 out var generation) ||
+            movableSource is IDataGridMoveAvailability { CanMove: false } ||
             !IsRangeMoveSemanticallyAllowed)
         {
             return ValueTask.FromResult(false);
@@ -203,9 +204,10 @@ public partial class DataGrid
         using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
             generationCancellationToken,
             callerCancellationToken);
+        DataGridMutationResult result;
         try
         {
-            await execute(capability, request, linkedCancellation.Token).ConfigureAwait(false);
+            result = await execute(capability, request, linkedCancellation.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (
             generationCancellationToken.IsCancellationRequested &&
@@ -220,18 +222,31 @@ public partial class DataGrid
 
         if (Dispatcher.UIThread.CheckAccess())
         {
-            return owner.CompleteRangeMutation(source, query, snapshot);
+            return owner.CompleteRangeMutation(source, query, snapshot, result.Snapshot);
         }
         return await Dispatcher.UIThread.InvokeAsync(() =>
             ownerReference.TryGetTarget(out var currentOwner) &&
-            currentOwner.CompleteRangeMutation(source, query, snapshot));
+            currentOwner.CompleteRangeMutation(source, query, snapshot, result.Snapshot));
     }
 
     private bool CompleteRangeMutation(
         IDataGridSource source,
         DataGridQuery query,
-        DataGridSnapshotId snapshot)
+        DataGridSnapshotId snapshot,
+        DataGridSnapshotId? resultSnapshot)
     {
+        // A source that invalidates itself while mutating (for example an observable local collection)
+        // may already have been reloaded to the snapshot the mutation produced.
+        if (resultSnapshot is { } mutatedSnapshot &&
+            mutatedSnapshot != snapshot &&
+            ReferenceEquals(ItemsSource, source) &&
+            _rangePresentationIndex is { } current &&
+            current.Snapshot.Query == query &&
+            current.Snapshot.Snapshot == mutatedSnapshot)
+        {
+            return true;
+        }
+
         if (!ReferenceEquals(ItemsSource, source) ||
             _rangePresentationIndex is not { } presentation ||
             presentation.Snapshot.Query != query ||
@@ -252,6 +267,7 @@ public partial class DataGrid
 
     private bool CompleteRangeMove(
         IDataGridSource source,
-        DataGridMoveRequest request) =>
-        CompleteRangeMutation(source, request.Query, request.Snapshot);
+        DataGridMoveRequest request,
+        DataGridMutationResult result) =>
+        CompleteRangeMutation(source, request.Query, request.Snapshot, result.Snapshot);
 }

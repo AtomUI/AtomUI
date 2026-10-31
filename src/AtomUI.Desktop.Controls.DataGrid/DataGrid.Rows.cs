@@ -794,6 +794,10 @@ public partial class DataGrid
     {
         return element switch
         {
+            // The row-reorder ghost row is never assigned a slot, so it must not read or record slot heights.
+            DataGridRow { Slot: < 0 } ghostRow => IsInvalidSlotElementHeight(ghostRow.DesiredSize.Height)
+                ? GetRangeDefaultHeight()
+                : ghostRow.DesiredSize.Height,
             DataGridRow row => GetMeasuredSlotElementHeight(row.Slot, row),
             DataGridRowGroupHeader groupHeader when groupHeader.DisplaySlot >= 0 =>
                 GetMeasuredSlotElementHeight(groupHeader.DisplaySlot, groupHeader),

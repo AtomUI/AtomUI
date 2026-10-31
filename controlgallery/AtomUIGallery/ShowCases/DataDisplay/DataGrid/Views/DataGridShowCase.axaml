@@ -960,8 +960,8 @@
                 <atom:DataGrid.Columns>
                     <atom:DataGridRowReorderColumn />
                     <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
                 </atom:DataGrid.Columns>
             </atom:DataGrid>
 
@@ -976,8 +976,8 @@
                 <atom:DataGrid.Columns>
                     <atom:DataGridRowReorderColumn />
                     <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
                 </atom:DataGrid.Columns>
             </atom:DataGrid>
         </StackPanel>

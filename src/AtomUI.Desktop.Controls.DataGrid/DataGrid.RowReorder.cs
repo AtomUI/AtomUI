@@ -86,6 +86,7 @@ public partial class DataGrid
 
         var item = row.DataContext;
         if (ItemsSource is not IDataGridMovableSource movableSource ||
+            movableSource is IDataGridMoveAvailability { CanMove: false } ||
             !IsRangeMoveSemanticallyAllowed ||
             _rangeGeneration is not { } generation ||
             _rangePresentationIndex is not { } presentation ||
@@ -338,11 +339,11 @@ public partial class DataGrid
     {
         try
         {
-            await source.MoveAsync(request, cancellationToken).ConfigureAwait(false);
+            var result = await source.MoveAsync(request, cancellationToken).ConfigureAwait(false);
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 if (!ownerReference.TryGetTarget(out var owner) ||
-                    !owner.CompleteRangeMove(source, request))
+                    !owner.CompleteRangeMove(source, request, result))
                 {
                     return;
                 }

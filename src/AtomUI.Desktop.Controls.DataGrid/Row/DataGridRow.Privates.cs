@@ -35,6 +35,9 @@ public partial class DataGridRow
     
     internal static readonly StyledProperty<bool> IsDraggingProperty =
         AvaloniaProperty.Register<DataGridRow, bool>(nameof(IsDragging));
+
+    internal static readonly StyledProperty<DataGridRowDropPosition> DropPositionProperty =
+        AvaloniaProperty.Register<DataGridRow, DataGridRowDropPosition>(nameof(DropPosition));
     
     internal static readonly DirectProperty<DataGridRow, bool> IsEditingModeProperty =
         AvaloniaProperty.RegisterDirect<DataGridRow, bool>(
@@ -57,6 +60,12 @@ public partial class DataGridRow
     {
         get => GetValue(IsDraggingProperty);
         set => SetValue(IsDraggingProperty, value);
+    }
+    
+    internal DataGridRowDropPosition DropPosition
+    {
+        get => GetValue(DropPositionProperty);
+        set => SetValue(DropPositionProperty, value);
     }
     
     internal bool IsEditingMode
@@ -680,6 +689,7 @@ public partial class DataGridRow
             ClearHiddenClipGeometry();
             IsRangeBacked = false;
         }
+        DropPosition = DataGridRowDropPosition.None;
         Slot = -1;
     }
 

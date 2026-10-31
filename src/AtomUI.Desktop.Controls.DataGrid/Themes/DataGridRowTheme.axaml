@@ -50,6 +50,24 @@
                             HorizontalAlignment="Stretch"
                             Grid.Row="2"
                             Grid.Column="1" />
+                        <Rectangle
+                            Name="{x:Static atom:DataGridRowThemeConstants.DropBeforeIndicatorPart}"
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.RowSpan="3"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Top"
+                            IsHitTestVisible="False"
+                            IsVisible="False" />
+                        <Rectangle
+                            Name="{x:Static atom:DataGridRowThemeConstants.DropAfterIndicatorPart}"
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.RowSpan="3"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Bottom"
+                            IsHitTestVisible="False"
+                            IsVisible="False" />
                     </atom:DataGridFrozenGrid>
                 </Border>
             </ControlTemplate>
@@ -58,6 +76,17 @@
         <Setter Property="Focusable" Value="False" />
         <Style Selector="^ /template/ Rectangle#PART_BottomGridLine">
             <Setter Property="Fill" Value="{atom:DataGridTokenResource TableBorderColor}" />
+        </Style>
+
+        <Style Selector="^ /template/ Rectangle#PART_DropBeforeIndicator, ^ /template/ Rectangle#PART_DropAfterIndicator">
+            <Setter Property="Fill" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="Height" Value="2" />
+        </Style>
+        <Style Selector="^[DropPosition=Before] /template/ Rectangle#PART_DropBeforeIndicator">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^[DropPosition=After] /template/ Rectangle#PART_DropAfterIndicator">
+            <Setter Property="IsVisible" Value="True" />
         </Style>
         
         <Style Selector="^[IsDragging=True]">
@@ -91,6 +120,11 @@
                     <Setter Property="Background"
                             Value="{atom:DataGridTokenResource TableRowHoverBg}" />
                 </Style>
+            </Style>
+
+            <Style Selector="^[DropPosition=Before], ^[DropPosition=After]">
+                <Setter Property="Background"
+                        Value="{atom:DataGridTokenResource TableSelectedRowBg}" />
             </Style>
         </Style>
         

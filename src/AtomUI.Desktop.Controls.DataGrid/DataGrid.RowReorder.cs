@@ -60,6 +60,7 @@ public partial class DataGrid
         public int SourceIndex { get; }
         public Rect SourceBounds { get; }
         public int? TargetIndex { get; set; }
+        public DataGridRow? DropTargetRow { get; set; }
         public RowReorderSessionState State { get; set; } = RowReorderSessionState.Pressed;
     }
 
@@ -177,6 +178,7 @@ public partial class DataGrid
         }
 
         session.TargetIndex                    = targetIndex;
+        UpdateRowReorderDropTarget(session);
         session.RowsPresenter.DragRowOffset   = session.SourceBounds.Y +
                                                  pointerPosition.Y -
                                                  session.StartPosition.Y +
@@ -394,12 +396,53 @@ public partial class DataGrid
             ReleaseRowReorderPointerCapture(session);
         }
 
+        SetRowReorderDropTarget(session, null, DataGridRowDropPosition.None);
         session.RowsPresenter.NotifyDropped();
         session.RowsPresenter.DraggedRowIndex = null;
         session.RowsPresenter.DragRowOffset   = 0;
         if (hadDragVisual)
         {
             session.RowsPresenter.InvalidateArrange();
+        }
+    }
+
+    private void UpdateRowReorderDropTarget(RowReorderSession session)
+    {
+        DataGridRow? targetRow = null;
+        var position = DataGridRowDropPosition.None;
+        if (session.TargetIndex is { } targetIndex && targetIndex != session.SourceIndex)
+        {
+            var displayedElementCount = DisplayData.NumDisplayedScrollingElements;
+            for (var displayIndex = 0; displayIndex < displayedElementCount; displayIndex++)
+            {
+                if (DisplayData.GetScrollingElementAtDisplayIndex(displayIndex) is DataGridRow row &&
+                    row.Index == targetIndex)
+                {
+                    targetRow = row;
+                    // Matches TryCreateRangeMoveRequest: moving up inserts before the target, moving down after it.
+                    position = targetIndex < session.SourceIndex
+                        ? DataGridRowDropPosition.Before
+                        : DataGridRowDropPosition.After;
+                    break;
+                }
+            }
+        }
+        SetRowReorderDropTarget(session, targetRow, position);
+    }
+
+    private static void SetRowReorderDropTarget(
+        RowReorderSession session,
+        DataGridRow? targetRow,
+        DataGridRowDropPosition position)
+    {
+        if (session.DropTargetRow is { } previous && !ReferenceEquals(previous, targetRow))
+        {
+            previous.DropPosition = DataGridRowDropPosition.None;
+        }
+        session.DropTargetRow = targetRow;
+        if (targetRow is not null)
+        {
+            targetRow.DropPosition = position;
         }
     }
 

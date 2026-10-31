@@ -101,6 +101,69 @@ public class DataGridRangeMutationTests
     }
 
     [Fact]
+    public void Row_Reorder_Marks_Drop_Target_Row_With_Insert_Position()
+    {
+        var source = new MovableSource(4);
+        var (grid, window) = Realize(source);
+        try
+        {
+            EnsureFourRows(grid);
+            var handle = GetHandle(grid, rowIndex: 2);
+            var drag = BeginPointerDrag(handle, window);
+
+            MovePointerDragToRow(grid, handle, window, drag, 0);
+            DropPositions(grid).ShouldBe([
+                DataGridRowDropPosition.Before,
+                DataGridRowDropPosition.None,
+                DataGridRowDropPosition.None,
+                DataGridRowDropPosition.None]);
+
+            MovePointerDragToRow(grid, handle, window, drag, 3);
+            DropPositions(grid).ShouldBe([
+                DataGridRowDropPosition.None,
+                DataGridRowDropPosition.None,
+                DataGridRowDropPosition.None,
+                DataGridRowDropPosition.After]);
+
+            var target = MovePointerDragToRow(grid, handle, window, drag, 2);
+            DropPositions(grid).ShouldAllBe(position => position == DataGridRowDropPosition.None);
+
+            target = MovePointerDragToRow(grid, handle, window, drag, 1);
+            EndPointerDrag(handle, window, drag, target);
+            DropPositions(grid).ShouldAllBe(position => position == DataGridRowDropPosition.None);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void Cancelled_Row_Reorder_Clears_Drop_Target_Row()
+    {
+        var source = new MovableSource(4);
+        var (grid, window) = Realize(source);
+        try
+        {
+            EnsureFourRows(grid);
+            var handle = GetHandle(grid);
+            var drag = BeginPointerDrag(handle, window);
+            MovePointerDragToRow(grid, handle, window, drag, 2);
+            DropPositions(grid)[2].ShouldBe(DataGridRowDropPosition.After);
+
+            drag.Pointer.Capture(null);
+
+            DropPositions(grid).ShouldAllBe(position => position == DataGridRowDropPosition.None);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
     public async Task Local_Source_Move_Supports_Before_And_After_Keys_On_Plain_List()
     {
         var rows = Enumerable.Range(1, 4).Select(value => new Row(value, value)).ToList();
@@ -634,6 +697,13 @@ public class DataGridRangeMutationTests
                                              static row => row.Value,
                                              Comparer<int>.Default,
                                              static value => DataGridScalar.FromInt64(value)));
+
+    private static DataGridRowDropPosition[] DropPositions(global::AtomUI.Desktop.Controls.DataGrid grid) =>
+        grid.DisplayData.GetScrollingRows()
+            .Cast<DataGridRow>()
+            .OrderBy(static row => row.Index)
+            .Select(static row => row.DropPosition)
+            .ToArray();
 
     private static void EnsureFourRows(global::AtomUI.Desktop.Controls.DataGrid grid)
     {

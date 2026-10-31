@@ -42,6 +42,8 @@ internal static class DataGridRowThemeConstants
 {
     public const string FramePart = "PART_Frame";
     public const string BottomGridLinePart = "PART_BottomGridLine";
+    public const string DropBeforeIndicatorPart = "PART_DropBeforeIndicator";
+    public const string DropAfterIndicatorPart = "PART_DropAfterIndicator";
     public const string CellsPresenterPart = "PART_CellsPresenter";
     public const string DetailsPresenterPart = "PART_DetailsPresenter";
     public const string RootLayoutPart = "PART_RootLayout";

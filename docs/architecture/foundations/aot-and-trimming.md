@@ -7,7 +7,7 @@
 **状态：TypeMap 主体源码迁移与旧注册路径退役已完成；资源平台声明收敛已实现；正式交付验收尚未完成，未发布。**
 
 当前源码采用逐 Control 注册片段与独立主题资产，由官方链接器计算保留闭包。NativeAOT/CoreCLR 使用官方 TypeMap；
-Browser/Mono 在官方 ILLink 标记之后将已选映射转换为静态映射。普通包入口、产品 buildTransitive 与独立冷 NuGet 消费
+Mono 宿主（Browser、iOS/tvOS/Mac Catalyst、Android）在官方 ILLink 标记之后将已选映射转换为静态映射。普通包入口、产品 buildTransitive 与独立冷 NuGet 消费
 已经接入该实现。旧 usage、Sidecar、Unit、应用 Plan 与 LinkedPublish analyzer 已移除，没有可切回的 legacy backend。
 
 2026-09-28 源码已采用[类型与资源平台契约](aot-typemap-registration.md#7-平台分支)：控件的普通 .NET 平台声明
@@ -71,7 +71,7 @@ Chrome 自动化在本轮不可用，Browser 执行证据来自真实 IAB；此�
 | --- | --- |
 | [TypeMap 注册架构](aot-typemap-registration.md) | 条件映射、代理、Package marker、应用引导、执行模式与平台可用域 |
 | [Control 注册契约](control-registration-contracts.md) | 类型、Token、Semantic Part、主题导出、资源作用域及优先级 |
-| [浏览器链接架构](aot-browser-linking.md) | 已选映射转换、链接阶段、构建与失败边界 |
+| [浏览器链接架构](aot-browser-linking.md) | Mono 已选映射转换、链接阶段、构建与失败边界，含 iOS/Android 接入 |
 | [控件注册生成器](../../modules/generator/control-registration.md) | 普通生成器的职责与实现入口 |
 | [TypeMap 链接工具](../../modules/typemap-linker/overview.md) | 浏览器构建工具的模块边界 |
 | [TypeMap ABI 契约](../../reference/aot/typemap-contract.md) | 隐藏生成 ABI、标记与版本化协议 |
@@ -88,7 +88,7 @@ Chrome 自动化在本轮不可用，Browser 执行证据来自真实 IAB；此�
 5. 运行时只查询已确定映射、激活已知代理、收集记录并提交；不扫描程序集或执行依赖图遍历。
 6. 所有包收集完成后统一校验、排序、挂载和冻结；Token slots 与 Semantic registry 在首次控件实例化前固定。
 7. 主题切换、scoped Token、模板创建均不追加注册，也不在资源缺失时重试完整注册。
-8. Browser 裁剪解释执行与 Browser AOT 均精细选择；转换步骤不可用时发布失败。
+8. Browser 裁剪解释执行、Browser AOT 与其他 Mono 宿主的链接构建均精细选择；转换步骤不可用时发布失败。
 9. Language、Provider、图片服务、Global Token、算法与 initializer 保持各自明确的生命周期顺序。
 10. 构建工具不进入应用运行时部署；普通非裁剪执行和裁剪执行复用同一片段事实源。
 
@@ -105,7 +105,7 @@ flowchart TD
     Facts --> Linker[官方 ILLink / ILC 可达性闭包]
     Targets --> Linker
     Linker --> Native[官方 NativeAOT / CoreCLR TypeMap]
-    Linker --> Materializer[Browser 已选映射转换]
+    Linker --> Materializer[Mono 已选映射转换]
     Native --> Collection[包入口收集片段和工厂]
     Materializer --> Collection
     Collection --> Freeze[跨包校验 / 资源排序挂载 / 冻结]
@@ -121,9 +121,10 @@ Package Core，其控件主题也按实际契约选择；不能继续用 Common 
 
 | 模式 | 注册执行 |
 | --- | --- |
-| 普通 Debug、非裁剪 Release，包括 Browser Debug | 直接收集全部片段，共用单项工厂与资源排序 |
-| trimmed CoreCLR、Desktop NativeAOT | 官方 TypeMap 选择片段 |
-| Browser trimmed interpreter、Browser AOT | 官方 ILLink 标记，再由浏览器后端转换已选映射 |
+| 普通 Debug、非裁剪 Release，包括 Browser Debug 与 `TrimMode=copy` 的 iOS 构建 | 直接收集全部片段，共用单项工厂与资源排序 |
+| trimmed CoreCLR、Desktop/iOS NativeAOT | 官方 TypeMap 选择片段 |
+| Browser trimmed interpreter、Browser AOT | 官方 ILLink 标记，再由 Mono 后端转换已选映射 |
+| iOS/tvOS/Mac Catalyst/Android Mono 的 partial/full 链接 | 同上；接入与消费校验见[其他 Mono 宿主](aot-browser-linking.md#8-其他-mono-宿主) |
 
 非裁剪全量是正常执行模式，不能作为裁剪发布失败后的恢复路径。模式由构建资产与官方 linker feature switch 选择，
 不能由产品包的 Debug/Release 编译常量决定；同一个 NuGet 包必须能服务不同消费发布模式。
@@ -191,7 +192,7 @@ Common 在 Desktop 前、扩展包在基础包后的顺序由真实入口调用�
 | 资源 | 默认/命名/多目标主题、局部及 include 作用域、宿主 DynamicResource、resource-only、确定覆盖顺序 |
 | 生命周期 | 首次实例化前冻结、跨包依赖、原始 Package Core 顺序、重复/递归/失败、多个 builder 隔离 |
 | 稳态 | 模板、主题切换、scoped Token 与 Semantic Part 正常且 schema 不变化 |
-| Browser 后端 | 工具缺失/损坏/未知 ABI/残留 accessor 失败，正确增量失效，解释与 AOT 均细粒度 |
+| Mono 后端 | 工具缺失/损坏/未知 ABI/残留 accessor 失败，正确增量失效，Browser 解释与 AOT、iOS partial/full 均细粒度；copy 模式不打开裁剪开关 |
 | 裁剪 | unused Control/proxy/factory 缺失，新增同目录无关控件不扩大集合，全量 manifest 不意外 root |
 | 分发 | 构建工具自动注入且只注入一次，构建工具和旧协议产物不进入运行时部署 |
 

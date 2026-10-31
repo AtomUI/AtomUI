@@ -4,9 +4,11 @@
 > [AOT 与裁剪架构](../../architecture/foundations/aot-and-trimming.md#1-状态与事实边界)。
 
 本页详解统一 [Toolchain 项目](../toolchain/overview.md)的 `Backends/ILLink10`。其内部产物仍名为
-`AtomUI.TypeMap.Linker.dll`，在 Browser/Mono 裁剪发布的独立链接宿主中执行。它在官方 ILLink 完成条件类型映射的标记后，
-把 AtomUI 自有 map accessor 转换为仅含已选目标的静态映射。Browser 的 trimmed interpreter 与 AOT 都必须使用此后端，
-保持与 Desktop 相同的自动精细裁剪契约。
+`AtomUI.TypeMap.Linker.dll`，在 Mono 宿主（Browser、iOS/tvOS/Mac Catalyst、Android）裁剪链接的独立链接宿主中执行。
+它在官方 ILLink 完成条件类型映射的标记后，把 AtomUI 自有 map accessor 转换为仅含已选目标的静态映射。Browser 的
+trimmed interpreter 与 AOT、移动端 Mono 的 partial/full 链接都必须使用此后端，保持与 Desktop 相同的自动精细裁剪契约。
+后端本身与平台无关；各宿主的接入判定与消费校验挂接点见
+[其他 Mono 宿主](../../architecture/foundations/aot-browser-linking.md#8-其他-mono-宿主)。
 
 ## 模块所有权
 
@@ -95,7 +97,8 @@ Browser 映射物化入口仍为 `AtomUI.TypeMap.Linker.MaterializeTypeMapsStep`
 能力标识属于工具版本契约，由实现中的 `ToolchainContract` 定义；未知或缺失标识导致错误。
 后端另行读取当前已加载 ILLink 的完整程序集身份与 informational version，不能只相信调用者传入的字符串。
 TypeMap 从 .NET 10 引入，现代发布默认支持 .NET 10 及后续稳定版本，不按 SDK、功能带、补丁或构建号逐个准入。
-Browser 目标框架允许 `net10.0-browser` 及以后版本，使用 SDK 选择的官方 ILLink 与 WASM 工作负载。
+Browser 目标框架允许 `net10.0-browser` 及以后版本，使用 SDK 选择的官方 ILLink 与 WASM 工作负载；
+移动端允许 `net10.0-ios`/`-tvos`/`-maccatalyst`/`-android` 及以后版本的 Mono 运行时，使用平台 SDK 选择的官方 ILLink。
 后端只检查官方链接器身份与 TypeMap 引入版本的下限；不读取或逐项比对链接器 targets 的参数定义，
 也不校验 WASM 任务程序集的信息版本。保留 Mark/Sweep/Output 阶段、已标记映射和 accessor/helper ABI 验证，
 并在链接后与 AOT/bundle 消费前验证实际产物。工具链出现真实的不兼容时按错误适配，不预先屏蔽未知的新版本。
@@ -103,7 +106,7 @@ Browser 目标框架允许 `net10.0-browser` 及以后版本，使用 SDK 选择
 签名与回执记录实际加载的 ILLink 版本，工具文件内容进入增量指纹；升级工具后必须重新链接。
 net10 消费 net8-only 包的独立条件桥接仍有自己的 SDK/runtime 门禁，本次 Browser 后端规则不扩大其准入范围。
 
-Browser 后端的转换检查独立于桌面工具链规则。纯现代桌面 trimmed CoreCLR 与 NativeAOT 只消费官方
+Mono 后端的转换检查独立于桌面工具链规则。纯现代桌面 trimmed CoreCLR 与 NativeAOT 只消费官方
 TypeMap 契约，不加载本工具，也不校验 SDK 版本字符串；它们只要求实际 ILLink（官方身份）与 NativeAOT 编译器的
 版本匹配目标框架，最低为 TypeMap 引入的 `10.0.0`，不设置已验证补丁号下限或后续目标框架上限。
 工具自身使用 `Major` 运行时前滚策略，新 SDK 环境不必额外安装原 .NET 10 工具宿主。
@@ -111,7 +114,8 @@ TypeMap 契约，不加载本工具，也不校验 SDK 版本字符串；它们�
 
 后端在筛选 marked accessor **之前**检查所有发现的标记包是否实际采用 `Link` action。
 `Skip` 等 action 不保证方法有 Mark 记录，因此先筛 `IsMarked` 会把未转换包误判成零 slot。
-工具不在 Mark 后改变 action，也不再次执行 Mark。
+工具不在 Mark 后改变 action，也不再次执行 Mark。存在可达 accessor 时，后端还要求 ILLink 已登记 TypeMap 入口程序集
+（`Annotations.GetEntryPointAssembly()` 非空）；入口程序集为 Copy 时官方 TypeMap 不会解析，继续物化只会得到空映射。
 
 后端按验证阶段建立实例级元数据索引。同一输入程序集的嵌套类型和方法在读取阶段只展开一次；Sweep 后使用新的延迟索引，
 避免用 Sweep 前的 Cecil 定义掩盖已删除成员；OutputStep 后重读的程序集再以其自身定义建立索引。索引只复用元数据枚举结果，

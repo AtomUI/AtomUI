@@ -166,7 +166,7 @@ Popup/Flyout 通过逻辑树自然继承，独立 Window/Dialog/Notification Top
 保留已物化 cell 与全局值；失败恢复旧表并释放新贡献，成功只发布一次根资源变更。它不扫描程序集或自动发现包。
 依赖、资源工厂重试、服务生命周期和清单版本边界见[控件包启动接入](../../guides/startup/package-authoring.md)。
 
-NativeAOT/CoreCLR 使用官方 TypeMap；Browser 裁剪与 AOT 使用官方 ILLink 标记结果的编译期转换后端。
+NativeAOT/CoreCLR 使用官方 TypeMap；Browser 与 iOS/Android 等 Mono 宿主的裁剪构建使用官方 ILLink 标记结果的编译期转换后端。
 生成的资产可用性谓词保留资源自身的 OS/最低版本 guard，不能用控件可用性代替资产可用性。
 完整契约见[TypeMap 注册管线](aot-typemap-registration.md)和[控件与资源注册契约](control-registration-contracts.md)。
 

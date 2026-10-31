@@ -31,22 +31,57 @@
         </ItemGroup>
     </Target>
 
-    <!-- This target is reached only by an actual application link/AOT publish, including /t:Publish.
-         Ordinary builds (even with inherited PublishTrimmed) retain the ordinary full collector. -->
-    <Target Name="AtomUISetRegistrationPublishMode" BeforeTargets="PrepareForILLink"
+    <!-- Mono does not implement runtime TypeMapping, so every Mono host that selects fragments must use the
+         materializing backend. UseMonoRuntime, TrimMode and PublishTrimmed come from platform SDKs (some inside
+         targets), so the decision is made at execution time and shared by every registration target below.
+         Selection only happens when assemblies are actually linked; TrimMode=copy (e.g. iOS x64 simulator or
+         MtouchInterpreter) is the ordinary non-trimmed mode, not a publish fallback. -->
+    <Target Name="AtomUIResolveMonoTypeMapBackend">
+        <PropertyGroup>
+            <_AtomUIMonoTypeMapPlatform />
+            <_AtomUIMonoTypeMapPlatform Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">browser</_AtomUIMonoTypeMapPlatform>
+            <_AtomUIMonoTypeMapPlatform Condition="'$(_AtomUIMonoTypeMapPlatform)' == '' and '$(UseMonoRuntime)' == 'true' and ('$(_AtomUIRegistrationTargetPlatform)' == 'ios' or '$(_AtomUIRegistrationTargetPlatform)' == 'tvos' or '$(_AtomUIRegistrationTargetPlatform)' == 'maccatalyst')">apple</_AtomUIMonoTypeMapPlatform>
+            <_AtomUIMonoTypeMapPlatform Condition="'$(_AtomUIMonoTypeMapPlatform)' == '' and '$(UseMonoRuntime)' == 'true' and '$(_AtomUIRegistrationTargetPlatform)' == 'android'">android</_AtomUIMonoTypeMapPlatform>
+            <_AtomUIMonoTypeMapBackend>false</_AtomUIMonoTypeMapBackend>
+            <_AtomUIMonoTypeMapBackend Condition="'$(_AtomUIMonoTypeMapPlatform)' == 'browser' and '$(PublishTrimmed)' == 'true'">true</_AtomUIMonoTypeMapBackend>
+            <_AtomUIMonoTypeMapBackend Condition="('$(_AtomUIMonoTypeMapPlatform)' == 'apple' or '$(_AtomUIMonoTypeMapPlatform)' == 'android') and '$(PublishTrimmed)' == 'true' and '$(RunILLink)' != 'false' and '$(TrimMode)' != 'copy'">true</_AtomUIMonoTypeMapBackend>
+        </PropertyGroup>
+    </Target>
+
+    <!-- Reached only when ILLink is about to run. Desktop/NativeAOT reach it only on an actual link/AOT publish;
+         Apple Mono SDKs link on every build, so for Mono hosts the switch also requires the backend to be engaged.
+         Otherwise the ordinary full collector is retained. -->
+    <Target Name="AtomUISetRegistrationPublishMode" BeforeTargets="PrepareForILLink" DependsOnTargets="AtomUIResolveMonoTypeMapBackend"
             Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">
-        <AtomUI.Build.Tasks.ValidateRegistrationToolchainTask Condition="'$(_AtomUINet8ManagedRegistration)' != 'true' and '$(_AtomUINative8Registration)' != 'true' and '$(RuntimeIdentifier)' != 'browser-wasm'" TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+        <!-- Mono hosts validate the actual ILLink inside the backend link task instead. -->
+        <AtomUI.Build.Tasks.ValidateRegistrationToolchainTask Condition="'$(_AtomUINet8ManagedRegistration)' != 'true' and '$(_AtomUINative8Registration)' != 'true' and '$(_AtomUIMonoTypeMapPlatform)' == ''" TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
             TargetFrameworkIdentifier="$(_AtomUIRegistrationFrameworkIdentifier)" TargetFrameworkVersion="$(_AtomUIRegistrationFrameworkVersion)"
             LinkerAssembly="$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(ILLinkTasksAssembly)')), 'illink.dll'))" />
-        <ItemGroup>
+        <ItemGroup Condition="'$(_AtomUIMonoTypeMapPlatform)' == '' or '$(_AtomUIMonoTypeMapBackend)' == 'true'">
             <RuntimeHostConfigurationOption Remove="AtomUI.Registration.Trimmed" />
             <RuntimeHostConfigurationOption Include="AtomUI.Registration.Trimmed" Value="true" Trim="true" />
         </ItemGroup>
     </Target>
 
+    <!-- AtomUISetRegistrationPublishMode (before PrepareForILLink) has already resolved the Mono backend decision. -->
     <Target Name="AtomUIPrepareTypeMapBackend" AfterTargets="PrepareForILLink" BeforeTargets="_RunILLink"
-            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">
-        <Error Condition="'$(_AtomUIRegistrationFrameworkFamily)' != 'OfficialTypeMap' or '$(_AtomUIRegistrationTargetPlatform)' != 'browser' or '$(TrimMode)' != 'full' or '$(RunILLink)' == 'false'" Code="ATOMUIREG006" Text="AtomUI Browser TypeMap requires net10.0-browser or later with actual full ILLink processing." />
+            Condition="'$(_AtomUIMonoTypeMapBackend)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">
+        <Error Condition="'$(_AtomUIMonoTypeMapPlatform)' == 'browser' and ('$(_AtomUIRegistrationFrameworkFamily)' != 'OfficialTypeMap' or '$(_AtomUIRegistrationTargetPlatform)' != 'browser' or '$(TrimMode)' != 'full' or '$(RunILLink)' == 'false')" Code="ATOMUIREG006" Text="AtomUI Browser TypeMap requires net10.0-browser or later with actual full ILLink processing." />
+        <Error Condition="'$(_AtomUIMonoTypeMapPlatform)' != 'browser' and '$(_AtomUIRegistrationFrameworkFamily)' != 'OfficialTypeMap'" Code="ATOMUIREG006" Text="AtomUI Mono TypeMap on '$(_AtomUIRegistrationTargetPlatform)' requires a net10.0 or later platform target framework with actual ILLink processing." />
+        <!-- ILLink resolves TypeMap groups only from an EntryPoint root whose action is Link or CopyUsed. Under partial
+             trimming (iOS SdkOnly) a non-trimmable application assembly is Copy, so TypeMap resolution never starts and
+             every map would be empty. CopyUsed keeps the application code untouched while restoring the entry root. -->
+        <ItemGroup>
+            <__AtomUITypeMapOtherAssemblyToLink Include="@(ManagedAssemblyToLink)" />
+            <__AtomUITypeMapOtherAssemblyToLink Remove="@(IntermediateAssembly)" />
+            <_AtomUITypeMapEntryAssemblyToLink Include="@(ManagedAssemblyToLink)" />
+            <_AtomUITypeMapEntryAssemblyToLink Remove="@(__AtomUITypeMapOtherAssemblyToLink)" />
+            <_AtomUITypeMapEntryAssemblyToLink Remove="@(_AtomUITypeMapEntryAssemblyToLink)" Condition="'%(_AtomUITypeMapEntryAssemblyToLink.TrimMode)' != '' and '%(_AtomUITypeMapEntryAssemblyToLink.TrimMode)' != 'copy'" />
+            <_AtomUITypeMapEntryAssemblyToLink Remove="@(_AtomUITypeMapEntryAssemblyToLink)" Condition="'%(_AtomUITypeMapEntryAssemblyToLink.TrimMode)' == '' and ('%(_AtomUITypeMapEntryAssemblyToLink.IsTrimmable)' == 'true' or ('%(_AtomUITypeMapEntryAssemblyToLink.IsTrimmable)' == '' and '$(TrimMode)' == 'full'))" />
+            <_AtomUITypeMapEntryAssemblyToLink TrimMode="copyused" />
+            <ManagedAssemblyToLink Remove="@(_AtomUITypeMapEntryAssemblyToLink)" />
+            <ManagedAssemblyToLink Include="@(_AtomUITypeMapEntryAssemblyToLink)" />
+        </ItemGroup>
         <AtomUI.Build.Tasks.ResolveRegistrationToolsTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)" Candidates="@(AtomUIRegistrationToolCandidate)" IncludeBackend="true">
             <Output TaskParameter="BackendAssembly" PropertyName="_AtomUIResolvedBackend" />
         </AtomUI.Build.Tasks.ResolveRegistrationToolsTask>
@@ -71,7 +106,11 @@
     <!-- An optional ABI-only bridge runs after step injection and before this exact input capture.
          The ordinary net10 path retains the same ordering and the same official linker inputs. -->
     <Target Name="AtomUICaptureTypeMapBackendInputs" AfterTargets="AtomUIPrepareTypeMapBackend" BeforeTargets="_RunILLink"
-            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">
+            Condition="'$(_AtomUIMonoTypeMapBackend)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">
+        <ItemGroup>
+            <!-- Apple SDK custom steps read their options from this opaque file; it is part of the effective link. -->
+            <AtomUITypeMapAdditionalLinkInput Include="$(_CustomLinkerOptionsFile)" Condition="'$(_AtomUIMonoTypeMapPlatform)' == 'apple' and '$(_CustomLinkerOptionsFile)' != '' and Exists('$(_CustomLinkerOptionsFile)')" />
+        </ItemGroup>
         <ItemGroup>
             <_AtomUITypeMapInput Include="$(MSBuildAllProjects);@(TrimmerRootDescriptor);@(AtomUITypeMapAdditionalLinkInput)" />
             <!-- Custom steps must declare any additional opaque configuration/dynamic dependencies as
@@ -116,7 +155,7 @@
             BackendAssembly="$(_AtomUIResolvedBackend)" LinkerAssembly="$(_AtomUIActualLinker)" Capability="$(AtomUITypeMapCapability)"
             ReceiptPath="$(AtomUITypeMapReceipt)" SignaturePath="$(_AtomUITypeMapSignature)" LinkSemaphore="$(_LinkSemaphore)" OutputDirectory="$(IntermediateLinkDir)"
             Inputs="@(_AtomUITypeMapInput)" Assemblies="@(ManagedAssemblyToLink)" LinkOptions="@(_AtomUILinkOption)" LinkItems="@(_AtomUILinkItem)"
-            Configuration="$(TargetFramework)|$(RuntimeIdentifier)|$(RunAOTCompilation)|$(WasmEnableSIMD)|$(WasmEnableThreads)" />
+            Configuration="$(TargetFramework)|$(RuntimeIdentifier)|$(RunAOTCompilation)|$(WasmEnableSIMD)|$(WasmEnableThreads)|$(MtouchLink)|$(MtouchInterpreter)|$(AndroidLinkMode)" />
         <PropertyGroup><MSBuildAllProjects>$(MSBuildAllProjects);$(_AtomUITypeMapSignature)</MSBuildAllProjects></PropertyGroup>
         <ItemGroup><FileWrites Include="$(_AtomUITypeMapSignature);$(AtomUITypeMapReceipt);$(AtomUITypeMapReceipt).binding" /></ItemGroup>
     </Target>
@@ -137,5 +176,23 @@
         </PropertyGroup>
         <AtomUI.Build.Tasks.VerifyTypeMapReceiptTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
             ReceiptPath="$(AtomUITypeMapReceipt)" SignaturePath="$(_AtomUITypeMapSignature)" ConsumedAssemblies="@(_WasmAssembliesInternal)" RequireConsumedAssemblies="true" />
+    </Target>
+
+    <!-- Apple SDKs copy ResolvedFileToPublish into the .app; IL stripping and Mono AOT follow and may rewrite
+         bytes, so validate the linked files the bundle consumes before them. -->
+    <Target Name="AtomUIVerifyTypeMapAppleBundleInput" BeforeTargets="_ComputeStripAssemblyIL"
+            Condition="'$(_AtomUIMonoTypeMapPlatform)' == 'apple' and '$(_AtomUITypeMapSignature)' != ''">
+        <ItemGroup>
+            <_AtomUITypeMapAppleBundleAssembly Include="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.Extension)' == '.dll' and '%(ResolvedFileToPublish.Culture)' == ''" />
+        </ItemGroup>
+        <AtomUI.Build.Tasks.VerifyTypeMapReceiptTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            ReceiptPath="$(AtomUITypeMapReceipt)" SignaturePath="$(_AtomUITypeMapSignature)" ConsumedAssemblies="@(_AtomUITypeMapAppleBundleAssembly)" RequireConsumedAssemblies="true" />
+    </Target>
+
+    <!-- iOS arm64 simulator Debug also runs Mono AOT (dedup), so this gate is not device-only. -->
+    <Target Name="AtomUIVerifyTypeMapAppleAotInput" BeforeTargets="_AOTCompile"
+            Condition="'$(_AtomUIMonoTypeMapPlatform)' == 'apple' and '$(_AtomUITypeMapSignature)' != '' and '$(_RunAotCompiler)' == 'true'">
+        <AtomUI.Build.Tasks.VerifyTypeMapReceiptTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            ReceiptPath="$(AtomUITypeMapReceipt)" SignaturePath="$(_AtomUITypeMapSignature)" ConsumedAssemblies="@(_AssembliesToAOT)" RequireConsumedAssemblies="true" />
     </Target>
 </Project>

@@ -68,7 +68,7 @@ public sealed class ResolveRegistrationToolsTask : ITask
             }
             if (IncludeBackend && BackendAssembly.Length == 0)
             {
-                throw new InvalidDataException("The required AtomUI Browser TypeMap backend is missing.");
+                throw new InvalidDataException("The required AtomUI Mono TypeMap backend is missing.");
             }
             if (IncludeNet8Backend && Net8BackendAssembly.Length == 0)
             {

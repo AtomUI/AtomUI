@@ -62,9 +62,9 @@ Important source boundaries:
 - `AtomUI.Toolchain`: one build-tool project with isolated Tasks/ILLink8/ILLink10 profiles and the ILC8 adapter recipe; never an application runtime dependency.
 - `AtomUIGallery`: Gallery shell, showcases, API tables, token tables, and NativeAOT publish target.
 
-Approved Mobile target boundary: `AtomUI.Mobile.Controls` is a product package parallel to `AtomUI.Desktop.Controls`, with iOS-first
-implementation and iOS/Android architecture from Foundation. The current solution has no Mobile Controls project, source, platform
-validation, release, or publication evidence.
+Mobile boundary: `AtomUI.Mobile.Controls` lives in the separate AtomUI.Mobile repository and consumes AtomUI packages from
+NuGet. `AtomUI.Core`, `AtomUI.Controls.Shared`, `AtomUI.Controls` and `AtomUI.Native` grant it internal visibility; Mobile
+architecture, controls and Gallery documentation are maintained in that repository.
 
 ## Instruction Structure
 
@@ -82,7 +82,7 @@ Read the relevant document before touching the corresponding area:
 - Overall architecture: [docs/architecture/overview.md](docs/architecture/overview.md)
 - Module boundaries: [docs/architecture/foundations/dependency-graph.md](docs/architecture/foundations/dependency-graph.md)
 - Build-tool ownership and profiles: [docs/modules/toolchain/overview.md](docs/modules/toolchain/overview.md)
-- Mobile target architecture: [docs/architecture/systems/mobile/overview.md](docs/architecture/systems/mobile/overview.md)
+- Mobile (separate repository) entry: [docs/architecture/systems/mobile/overview.md](docs/architecture/systems/mobile/overview.md)
 - Localization target architecture: [docs/architecture/systems/localization/overview.md](docs/architecture/systems/localization/overview.md)
 - AI collaboration and bug-fix discipline: [docs/engineering/contributing/agent-guidelines.md](docs/engineering/contributing/agent-guidelines.md)
 - Test value, temporary-first lifecycle, and mandatory feature/bug-fix acceptance: [docs/engineering/development/test-value-and-lifecycle.md](docs/engineering/development/test-value-and-lifecycle.md)
@@ -96,14 +96,12 @@ Read the relevant document before touching the corresponding area:
 - Compiler diagnostics: [docs/engineering/development/compiler-diagnostics-guidelines.md](docs/engineering/development/compiler-diagnostics-guidelines.md)
 - Code style: [docs/engineering/development/code-style-guidelines.md](docs/engineering/development/code-style-guidelines.md)
 - Documentation structure and file naming: [docs/engineering/contributing/documentation-structure-guidelines.md](docs/engineering/contributing/documentation-structure-guidelines.md)
-- Mobile documentation contract: [docs/engineering/contributing/mobile-documentation-guidelines.md](docs/engineering/contributing/mobile-documentation-guidelines.md)
 - Changelog and release notes: [docs/engineering/contributing/changelog-guidelines.md](docs/engineering/contributing/changelog-guidelines.md)
 - Apple iOS development environment: [docs/engineering/platforms/apple-ios/overview.md](docs/engineering/platforms/apple-ios/overview.md)
 - Android engineering boundary (Host and commands unvalidated): [docs/engineering/platforms/android/overview.md](docs/engineering/platforms/android/overview.md)
 - Gallery NativeAOT release flow: [docs/engineering/workflows/gallery-aot-release-workflow.md](docs/engineering/workflows/gallery-aot-release-workflow.md)
 - Gallery page structure: [docs/gallery/authoring/gallery-showcase-design-pattern.md](docs/gallery/authoring/gallery-showcase-design-pattern.md)
 - Gallery organization: [docs/gallery/authoring/organization.md](docs/gallery/authoring/organization.md)
-- Mobile Gallery host boundary: [docs/gallery/platforms/mobile-gallery.md](docs/gallery/platforms/mobile-gallery.md)
 - Resource lifecycle case study: [docs/engineering/case-studies/avalonia-dynamic-resource-memory-leak-case-study.md](docs/engineering/case-studies/avalonia-dynamic-resource-memory-leak-case-study.md)
 - Non-Visual AvaloniaObject scoped resource host generator: [docs/modules/generator/scoped-resource-host-generator.md](docs/modules/generator/scoped-resource-host-generator.md)
 

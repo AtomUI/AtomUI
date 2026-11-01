@@ -41,6 +41,7 @@
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.ColorPicker"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Extras"/>
+        <InternalsVisibleTo Include="AtomUI.Mobile.Controls"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Core.Tests"/>
@@ -48,6 +49,8 @@
         <InternalsVisibleTo Include="AtomUI.Registration.Fixtures"/>
         <InternalsVisibleTo Include="AtomUI.Toolkits.GalleryBase.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Localization.IntegrationTests"/>
+        <InternalsVisibleTo Include="AtomUI.AI.Controls"/>
+        <InternalsVisibleTo Include="AtomUI.AI.Controls.Tests"/>
     </ItemGroup>
 
     <ItemGroup>

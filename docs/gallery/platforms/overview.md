@@ -1,14 +1,14 @@
 # Gallery 平台宿主
 
 Gallery 平台文档区分产品内容、共享展示基础和具体 Host 的运行责任。当前 Desktop/Browser Gallery 已有源码；iOS/Android
-Mobile Gallery 仍是批准的预实现架构，不能用 Desktop 或 Headless 结果替代移动平台证据。
+Mobile Gallery 位于 AtomUI.Mobile 仓库，不能用 Desktop 或 Headless 结果替代移动平台证据。
 
 | 平台 | 当前状态 | Host 职责 | 内容职责 |
 | --- | --- | --- | --- |
 | Desktop | 已有实现 | Desktop lifetime、Window、标题栏、窗口状态、平台日志和启动 | 当前 AtomUI Desktop ShowCase、API、Token 和导航 |
 | Browser | 已有实现 | SingleView lifetime、Browser 字体/资源、媒体断点和浏览器启动 | 与 Desktop 共享当前 AtomUI Gallery 内容 |
-| iOS | 预实现 | iOS 生命周期、启动、签名/部署和 Mobile adapter 注册 | 由目标 Mobile Gallery content 提供 |
-| Android | 预实现 | Android 生命周期、启动/部署和 Mobile adapter 注册 | 由目标 Mobile Gallery content 提供 |
+| iOS | AtomUI.Mobile 仓库 | iOS 生命周期、启动、签名/部署 | 由 AtomUI.Mobile 的 Showcase 提供 |
+| Android | AtomUI.Mobile 仓库 | Android 生命周期、启动/部署 | 由 AtomUI.Mobile 的 Showcase 提供 |
 
 ## 阅读入口
 

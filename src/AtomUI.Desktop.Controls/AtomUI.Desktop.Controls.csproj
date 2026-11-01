@@ -23,6 +23,8 @@
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Extras" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
         <InternalsVisibleTo Include="AtomUI.Performance" />
+        <InternalsVisibleTo Include="AtomUI.AI.Controls" />
+        <InternalsVisibleTo Include="AtomUI.AI.Controls.Tests" />
     </ItemGroup>
 
     <ItemGroup>

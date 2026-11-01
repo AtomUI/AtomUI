@@ -57,18 +57,16 @@ docs/
 - [Control 开发规范](engineering/development/control-development-guidelines.md)
 - [Control 文档规范](engineering/contributing/control-documentation-guidelines.md)
 
-## Mobile 预实现入口
+## AtomUI Mobile
 
-> 状态：预实现架构。本文定义已批准的目标契约，不表示当前仓库已经包含或发布 `AtomUI.Mobile.Controls`。
+AtomUI Mobile 位于独立仓库 [AtomUI/AtomUI.Mobile](https://github.com/AtomUI/AtomUI.Mobile)，以 NuGet 方式消费本仓库的包。下列 Mobile 入口均指向该仓库的正式文档；iOS 与
+Android 工程环境文档仍由本仓库维护。
 
-- [Mobile 系统架构](architecture/systems/mobile/overview.md)：跨模块 Runtime、Viewport、Overlay、Gesture、Theme/API 和验证。
-- [Mobile Controls 模块](modules/mobile-controls/overview.md)：目标包、源码 ownership、启动、打包和平台 adapter。
-- [Mobile Control 能力清单](controls/mobile/overview.md)：七分类、82 项能力、API strategy 和独立证据状态。
+- [Mobile 系统架构](architecture/systems/mobile/overview.md)：指向 AtomUI.Mobile 的 Runtime、Overlay、Gesture 与验证契约。
+- [Mobile Controls 模块](modules/mobile-controls/overview.md)：指向 AtomUI.Mobile 的包、上游集成与打包说明。
+- [Mobile Control 能力清单](controls/mobile/overview.md)：指向 AtomUI.Mobile 的能力清单与状态模型。
 - [Apple iOS 工程环境](engineering/platforms/apple-ios/overview.md)：稳定工具链、签名、资源、Simulator/真机和验证规则。
 - [Android 工程环境](engineering/platforms/android/overview.md)：Host、命令、版本和平台证据尚未验证的责任模型。
-- [Mobile Gallery](gallery/platforms/mobile-gallery.md)：独立 Mobile content、iOS Host、Android Host 和平台验收边界。
-
-Mobile 目标与当前 Desktop 源码结构分开表达。现有 `AtomUI.Toolkits.GalleryBase` 不自动成为 Mobile
-Foundation 依赖或输出。
+- [Mobile Gallery](gallery/platforms/mobile-gallery.md)：指向 AtomUI.Mobile 的 Gallery 与宿主边界。
 
 随着专题完成职责迁移，本入口同步切换到新的 Architecture、Guide、Reference 或 Module 路径，不保留重复副本。

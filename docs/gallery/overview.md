@@ -14,7 +14,7 @@
 
 - [Gallery 平台宿主](platforms/overview.md)
 - [Browser Gallery 主题与宿主](platforms/browser-gallery-porting-notes.md)
-- [Mobile Gallery](platforms/mobile-gallery.md)：预实现架构；Mobile content、iOS Host、Android Host 和平台验证边界。
+- [Mobile Gallery](platforms/mobile-gallery.md)：指向独立 AtomUI.Mobile 仓库的 Mobile Gallery 与 iOS/Android 宿主。
 
 ## Localization
 

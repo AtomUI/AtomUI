@@ -255,6 +255,7 @@ public partial class DataGrid
         switch (transition.Kind)
         {
             case DataGridPresentationTransitionKind.Committed:
+                AdoptRestartedRangeGeneration(generation);
                 try
                 {
                     ApplyRangeSnapshot(transition.Snapshot!, isInvalidation);
@@ -287,6 +288,19 @@ public partial class DataGrid
             default:
                 throw new InvalidOperationException(
                     $"Unknown presentation transition '{transition.Kind}'.");
+        }
+    }
+
+    // 同一查询在快照过期后由协调器重启为新代际并完成提交时，表格改为持有新代际
+    private void AdoptRestartedRangeGeneration(DataGridGeneration committedGeneration)
+    {
+        if (_rangeCoordinator?.ActiveGeneration is { } active &&
+            !ReferenceEquals(active, committedGeneration) &&
+            ReferenceEquals(active.Source, committedGeneration.Source) &&
+            active.QueryRevision == committedGeneration.QueryRevision &&
+            active.SnapshotExpiryRestarts > committedGeneration.SnapshotExpiryRestarts)
+        {
+            _rangeGeneration = active;
         }
     }
 

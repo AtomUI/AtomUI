@@ -372,8 +372,7 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
 
         result[!DataGridColumnHeader.ContentProperty]                 = this[!HeaderProperty];
         result[!DataGridColumnHeader.ContentTemplateProperty]         = this[!HeaderTemplateProperty];
-        result[!DataGridColumnHeader.SizeTypeProperty]                = OwningGrid[!DataGrid.SizeTypeProperty];
-        result[!DataGridColumnHeader.IsMotionEnabledProperty]         = OwningGrid[!DataGrid.IsMotionEnabledProperty];
+        result.BindOwningGridProperties(OwningGrid);
         result[!DataGridColumnHeader.SupportedSortDirectionsProperty] = this[!SupportedSortDirectionsProperty];
         result[!DataGridColumnHeader.HorizontalContentAlignmentProperty] = this[!HeaderContentHorizontalAlignmentProperty];
         result[!DataGridColumnHeader.VerticalContentAlignmentProperty] = this[!HeaderContentVerticalAlignmentProperty];

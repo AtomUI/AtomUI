@@ -57,6 +57,7 @@ internal class DataGridOperationButtons : TemplatedControl
     private PopupConfirm? _deleteAction;
     private HyperLinkTextBlock? _saveAction;
     private PopupConfirm? _cancelAction;
+    private IDisposable? _owningGridBinding;
     
     internal DataGrid? OwningGrid { get; set; }
     internal DataGridRow? OwningRow { get; set; }
@@ -67,6 +68,19 @@ internal class DataGridOperationButtons : TemplatedControl
             (buttons, args) => buttons.HandleActionClick(args));
         PopupConfirm.ConfirmedEvent.AddClassHandler<DataGridOperationButtons>(
             (buttons, args) => buttons.HandlePopupConfirmed(args));
+    }
+
+    // 绑定订阅表格的属性变更，由生成它的列在行被丢弃时通过 ReleaseOwningGridBinding 释放
+    internal void BindOwningGridProperties(DataGrid owningGrid)
+    {
+        _owningGridBinding?.Dispose();
+        _owningGridBinding = Bind(IsMotionEnabledProperty, owningGrid[!DataGrid.IsMotionEnabledProperty]);
+    }
+
+    internal void ReleaseOwningGridBinding()
+    {
+        _owningGridBinding?.Dispose();
+        _owningGridBinding = null;
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

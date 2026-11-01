@@ -409,6 +409,20 @@ public partial class DataGrid
         if (heightIndex is null || isNewDataGeneration)
         {
             heightIndex = new SparseHeightDeltaIndex(defaultHeight);
+            if (isNewDataGeneration)
+            {
+                // 滚动意图与期望偏移都属于被替换代际的高度空间；无论后续走完整提交还是复用重叠视口，
+                // 都要先作废意图，并把期望偏移按其相对已提交首行的位置换算到新高度空间
+                // （快照过期重启后视口仍按槽位加载，不换算会落到未加载的槽位上）。
+                ClearRangeScrollIntent();
+                if (!viewportAnchor.HasValue && _rangeHeightIndex is { } previousHeights)
+                {
+                    var committedFirst = snapshot.CommittedViewport.FirstVisibleIndex;
+                    var withinFirstRow = _rangeDesiredOffset - previousHeights.GetOffset(committedFirst);
+                    _rangeDesiredOffset = heightIndex.GetOffset(committedFirst) +
+                                          Math.Clamp(withinFirstRow, 0, heightIndex.GetHeight(committedFirst));
+                }
+            }
         }
         else
         {
@@ -491,9 +505,6 @@ public partial class DataGrid
         if (isNewDataGeneration)
         {
             ResetRowHeightEstimateForDataGeneration();
-            // The scroll intent target is an offset in the replaced generation's height
-            // space. Keeping it lets re-anchoring clamp the new data to the old position.
-            ClearRangeScrollIntent();
         }
         var previousPins = _rangeVisualPins;
         UnloadElements(recycle: true);
@@ -837,7 +848,12 @@ public partial class DataGrid
         {
             return;
         }
-        var anchor = CaptureFirstCompleteRangeAnchor();
+        // 提交过程中插入元素也会触发重建，此时显示行尚未完整、不能据显示捕获锚点；
+        // 只把期望偏移按其所在槽位的相对位置换算到新高度空间，由提交结束时统一落点
+        var committing = _committingRangePresentation;
+        var anchor = committing ? null : CaptureFirstCompleteRangeAnchor();
+        var desiredSlot = SlotCount > 0 ? _rangeHeightIndex.FindSlotAtOffset(_rangeDesiredOffset, SlotCount) : 0;
+        var desiredWithinSlot = _rangeDesiredOffset - _rangeHeightIndex.GetOffset(desiredSlot);
         if (discardMeasuredDataHeights)
         {
             _rangeHeightIndex.RemoveHeightClass(DataGridHeightClass.Data);
@@ -846,8 +862,13 @@ public partial class DataGrid
             GetRangeDefaultHeight(_rangePresentationIndex.Snapshot));
         // 整体重建后高度空间已变，旧滚动目标不能再参与锚点恢复
         ClearRangeScrollIntent();
-        // 提交过程中插入元素也会触发重建，此时显示行尚未完整，偏移由提交结束时统一落点
-        if (!anchor.HasValue || _committingRangePresentation)
+        if (committing)
+        {
+            _rangeDesiredOffset = _rangeHeightIndex.GetOffset(desiredSlot) +
+                                  Math.Clamp(desiredWithinSlot, 0, _rangeHeightIndex.GetHeight(desiredSlot));
+            return;
+        }
+        if (!anchor.HasValue)
         {
             return;
         }

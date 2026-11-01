@@ -176,16 +176,12 @@ public class DataGridRowGroupHeader : TemplatedControl
         _rootElement = e.NameScope.Find<Panel>(DataGridRowThemeConstants.FramePart) ??
                        e.NameScope.Find<Panel>(DataGridRowGroupHeaderThemeConstants.RootLayoutPart);
 
-        _expanderButtonSubscription?.Dispose();
         _expanderButton = e.NameScope.Find<ToggleButton>(DataGridRowGroupHeaderThemeConstants.ExpanderButtonPart);
         if(_expanderButton != null)
         {
             EnsureExpanderButtonIsChecked();
-            _expanderButtonSubscription =
-                _expanderButton.GetObservable(ToggleButton.IsCheckedProperty)
-                               .Skip(1)
-                               .Subscribe(HandleExpanderButtonIsCheckedChanged);
         }
+        SubscribeExpanderButton();
 
         _headerElement = e.NameScope.Find<DataGridRowHeader>(DataGridRowThemeConstants.RowHeaderPart) ??
                          e.NameScope.Find<DataGridRowHeader>(DataGridRowGroupHeaderThemeConstants.RowHeaderPart);
@@ -554,6 +550,21 @@ public class DataGridRowGroupHeader : TemplatedControl
 
     private bool IsExpanded => SourceGroup is not null &&
                                !(OwningGrid?.GroupExpansion.CollapsedGroups.Contains(SourceGroup.Key) ?? false);
+
+    // 回收的组头会从 RowsPresenter 移除再加回而不重新应用模板，订阅须随可视树挂接成对建立与释放
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        SubscribeExpanderButton();
+    }
+
+    private void SubscribeExpanderButton()
+    {
+        _expanderButtonSubscription?.Dispose();
+        _expanderButtonSubscription = _expanderButton?.GetObservable(ToggleButton.IsCheckedProperty)
+                                                     .Skip(1)
+                                                     .Subscribe(HandleExpanderButtonIsCheckedChanged);
+    }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {

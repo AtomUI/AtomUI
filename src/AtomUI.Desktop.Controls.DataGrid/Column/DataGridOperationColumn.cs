@@ -26,9 +26,16 @@ internal class DataGridOperationColumn : DataGridColumn
         Debug.Assert(OwningGrid != null);
         var operationButtons = new DataGridOperationButtons();
         operationButtons.OwningGrid = OwningGrid;
-        operationButtons[!DataGridOperationButtons.IsMotionEnabledProperty] =
-            OwningGrid[!DataGrid.IsMotionEnabledProperty];
+        operationButtons.BindOwningGridProperties(OwningGrid);
         return operationButtons;
+    }
+
+    internal override void ReleaseElement(Control element)
+    {
+        if (element is DataGridOperationButtons operationButtons)
+        {
+            operationButtons.ReleaseOwningGridBinding();
+        }
     }
 
     protected override object? PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)

@@ -103,8 +103,13 @@ public class DataGridColumnGroupItem : AvaloniaObject,
             }
 
             UnregisterOwningGridResourceHost();
+            _headerCell?.ReleaseOwningGridBinding();
             _owningGrid = value;
             RegisterOwningGridResourceHost(_owningGrid);
+            if (_owningGrid is not null)
+            {
+                _headerCell?.BindOwningGridProperties(_owningGrid);
+            }
         }
     }
 
@@ -258,7 +263,7 @@ public class DataGridColumnGroupItem : AvaloniaObject,
         result[!DataGridColumnGroupHeader.HeaderTemplateProperty]             = this[!HeaderTemplateProperty];
         result[!DataGridColumnGroupHeader.HorizontalContentAlignmentProperty] = this[!HorizontalAlignmentProperty];
         result[!DataGridColumnGroupHeader.VerticalContentAlignmentProperty]   = this[!VerticalAlignmentProperty];
-        result[!DataGridColumnGroupHeader.SizeTypeProperty]                   = OwningGrid[!DataGrid.SizeTypeProperty];
+        result.BindOwningGridProperties(OwningGrid);
         return result;
     }
 

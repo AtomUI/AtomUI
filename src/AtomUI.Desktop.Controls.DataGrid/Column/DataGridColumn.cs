@@ -561,8 +561,13 @@ public abstract partial class DataGridColumn : AvaloniaObject, IResourceHost, IT
             }
 
             UnregisterOwningGridResourceHost();
+            _headerCell?.ReleaseOwningGridBindings();
             _owningGrid = value;
             RegisterOwningGridResourceHost(_owningGrid);
+            if (_owningGrid is not null)
+            {
+                _headerCell?.BindOwningGridProperties(_owningGrid);
+            }
             NotifyOwningGridAttached(_owningGrid);
         }
     }

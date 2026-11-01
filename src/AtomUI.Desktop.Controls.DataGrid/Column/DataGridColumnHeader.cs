@@ -1,3 +1,4 @@
+using System.Reactive.Disposables;
 // (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
@@ -297,6 +298,7 @@ internal partial class DataGridColumnHeader : ContentControl
     private bool _areHandlersSuspended;
     private bool _desiredSeparatorVisibility = true;
     private IDisposable? _popupPinnedOpenRelay;
+    private IDisposable? _owningGridBindings;
     private INotifyCollectionChanged? _subscribedFilterItems;
     private RectangleGeometry? _clipGeometry;
     private static Lazy<Cursor> s_resizeCursor = new (() => new Cursor(StandardCursorType.SizeWestEast));
@@ -403,6 +405,24 @@ internal partial class DataGridColumnHeader : ContentControl
     }
     
     //TODO DragDrop
+
+    // 表头对表格属性的绑定会订阅表格的属性变更；列离开表格时必须释放，否则表格会一直持有已移除的列。
+    // 由列在 OwningGrid 变化时成对调用。
+    internal void BindOwningGridProperties(DataGrid owningGrid)
+    {
+        _owningGridBindings?.Dispose();
+        _owningGridBindings = new CompositeDisposable(2)
+        {
+            Bind(SizeTypeProperty, owningGrid[!DataGrid.SizeTypeProperty]),
+            Bind(IsMotionEnabledProperty, owningGrid[!DataGrid.IsMotionEnabledProperty])
+        };
+    }
+
+    internal void ReleaseOwningGridBindings()
+    {
+        _owningGridBindings?.Dispose();
+        _owningGridBindings = null;
+    }
 
     internal void HandleMouseLeftButtonDown(ref bool handled, PointerEventArgs args, Point mousePosition)
     {

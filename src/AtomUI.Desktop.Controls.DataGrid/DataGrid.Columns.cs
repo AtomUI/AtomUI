@@ -120,6 +120,8 @@ public partial class DataGrid
     private DataGridColumnDraggingOverIndicator? _dataGridDraggingOverIndicator;
     private DataGridColumn? _popupPinnedOpenFilterColumn;
     private double? _columnViewportWidth;
+    // 已接入本表格的列分组根项：Reset 事件不携带旧项，退订与解除挂接必须依据这份记录
+    private readonly List<IDataGridColumnGroupItem> _attachedColumnGroupRoots = [];
 
     protected virtual void NotifyColumnDisplayIndexChanged(DataGridColumnEventArgs e)
     {
@@ -2532,60 +2534,93 @@ public partial class DataGrid
     {
         if (e.Action == NotifyCollectionChangedAction.Reset)
         {
+            foreach (var root in _attachedColumnGroupRoots.ToArray())
+            {
+                DetachColumnGroupRoot(root);
+            }
             ColumnsInternal.Clear();
-            return;
+            foreach (var root in ColumnGroupsInternal)
+            {
+                AttachColumnGroupRoot(root);
+            }
         }
-
-        if (e.Action == NotifyCollectionChangedAction.Remove)
+        else
         {
+            // Remove / Replace / Add：先解除旧项，再接入新项
             if (e.OldItems != null)
             {
-                var oldItems = e.OldItems;
-                for (var i = 0; i < oldItems.Count; i++)
+                foreach (var item in e.OldItems)
                 {
-                    var item = oldItems[i];
-                    if (item is DataGridColumn column)
+                    if (item is IDataGridColumnGroupItem root)
                     {
-                        ColumnsInternal.Remove(column);
-                    }
-                    else if (item is DataGridColumnGroupItem gridColumn)
-                    {
-                        RemoveColumnsFromGroupTree(gridColumn);
-                    }
-
-                    if (item is IDataGridColumnGroupItem gridItem)
-                    {
-                        gridItem.GroupChanged -= HandleColumnGroupItemChanged;
+                        DetachColumnGroupRoot(root);
                     }
                 }
             }
-        }
-        else if (e.Action == NotifyCollectionChangedAction.Add)
-        {
             if (e.NewItems != null)
             {
-                var newItems = e.NewItems;
-                for (var i = 0; i < newItems.Count; i++)
+                foreach (var item in e.NewItems)
                 {
-                    var item = newItems[i];
-                    if (item is DataGridColumn column)
+                    if (item is IDataGridColumnGroupItem root)
                     {
-                        ColumnsInternal.Add(column);
-                    }
-                    else if (item is DataGridColumnGroupItem gridColumn)
-                    {
-                        AddColumnsFromGroupTree(gridColumn);
-                    }
-
-                    if (item is IDataGridColumnGroupItem gridItem)
-                    {
-                        gridItem.GroupChanged += HandleColumnGroupItemChanged;
+                        AttachColumnGroupRoot(root);
                     }
                 }
             }
         }
 
         IsGroupHeaderMode = ColumnGroupsInternal.Count > 0;
+        RebuildColumnGroupView();
+    }
+
+    // 分组表头视图在模板应用时构建；分组在运行时变化后需要重建，旧视图项释放对表格的绑定并交还列头
+    private void RebuildColumnGroupView()
+    {
+        if (!_templatedApplied || _groupColumnHeadersPresenter is null)
+        {
+            return;
+        }
+        foreach (var viewItem in _groupColumnHeadersPresenter.Children.OfType<DataGridHeaderViewItem>().ToArray())
+        {
+            _groupColumnHeadersPresenter.Children.Remove(viewItem);
+            viewItem.Release();
+        }
+        BuildColumnGroupView();
+        if (IsGroupHeaderMode)
+        {
+            SetupColumnGroupFrozenState();
+        }
+    }
+
+    private void AttachColumnGroupRoot(IDataGridColumnGroupItem root)
+    {
+        if (root is DataGridColumn column)
+        {
+            ColumnsInternal.Add(column);
+        }
+        else if (root is DataGridColumnGroupItem groupItem)
+        {
+            AddColumnsFromGroupTree(groupItem);
+        }
+        root.GroupChanged += HandleColumnGroupItemChanged;
+        _attachedColumnGroupRoots.Add(root);
+    }
+
+    private void DetachColumnGroupRoot(IDataGridColumnGroupItem root)
+    {
+        if (!_attachedColumnGroupRoots.Remove(root))
+        {
+            return;
+        }
+        root.GroupChanged -= HandleColumnGroupItemChanged;
+        if (root is DataGridColumn column)
+        {
+            ColumnsInternal.Remove(column);
+        }
+        else if (root is DataGridColumnGroupItem groupItem)
+        {
+            RemoveColumnsFromGroupTree(groupItem);
+        }
     }
 
     private void HandleColumnGroupItemChanged(object? sender, DataGridColumnGroupChangedArgs args)

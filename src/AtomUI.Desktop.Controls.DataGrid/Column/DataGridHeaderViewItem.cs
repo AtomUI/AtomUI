@@ -88,13 +88,24 @@ internal class DataGridHeaderViewItem : ContentControl
     internal DataGridColumn? OwningColumn { get; set; }
     internal DataGrid OwningGrid { get; set; }
     private RectangleGeometry? _clipGeometry;
+    private IDisposable? _owningGridBinding;
     
     #endregion
     
     public DataGridHeaderViewItem(DataGrid owningGrid)
     {
-        OwningGrid                     = owningGrid;
-        this[!BorderThicknessProperty] = OwningGrid[!BorderThicknessProperty];
+        OwningGrid         = owningGrid;
+        _owningGridBinding = Bind(BorderThicknessProperty, OwningGrid[!BorderThicknessProperty]);
+    }
+
+    // 视图项在分组表头重建时被丢弃：释放对表格的绑定并交还承载的列头，
+    // 否则表格会经由绑定持有旧视图项及其中已移除的列。
+    internal void Release()
+    {
+        _owningGridBinding?.Dispose();
+        _owningGridBinding = null;
+        Content            = null;
+        OwningColumn       = null;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

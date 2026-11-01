@@ -135,7 +135,7 @@ public partial class DataGridRow
                     IsVisible = false,
                     OwningRow = this
                 };
-                _fillerCell[!DataGridCell.SizeTypeProperty] = this[!SizeTypeProperty];
+                _fillerCell.BindOwningRowProperties(this);
                 if (_cellsElement != null)
                 {
                     _cellsElement.Children.Add(_fillerCell);

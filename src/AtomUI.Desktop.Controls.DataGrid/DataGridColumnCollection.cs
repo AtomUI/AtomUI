@@ -36,6 +36,45 @@ internal class DataGridColumnCollection : ObservableCollection<DataGridColumn>
     internal DataGridColumn? FirstVisibleScrollingColumn => GetFirstColumn(true /*isVisible*/, false /*isFrozen*/, null /*isReadOnly*/);
     internal List<DataGridColumn> ItemsInternal { get; private set; }
 
+    /// <summary>
+    /// 显示顺序中最后一个可见的左冻结列，左冻结阴影画在它的右侧。
+    /// </summary>
+    internal DataGridColumn? LastVisibleLeftFrozenColumn
+    {
+        get
+        {
+            DataGridColumn? result = null;
+            for (var displayIndex = 0; displayIndex < GetDisplayedColumnCount(); displayIndex++)
+            {
+                var column = GetDisplayedColumnAtDisplayIndex(displayIndex);
+                if (column.IsVisible && column.IsLeftFrozen)
+                {
+                    result = column;
+                }
+            }
+            return result;
+        }
+    }
+
+    /// <summary>
+    /// 显示顺序中第一个可见的右冻结列，右冻结阴影画在它的左侧。
+    /// </summary>
+    internal DataGridColumn? FirstVisibleRightFrozenColumn
+    {
+        get
+        {
+            for (var displayIndex = 0; displayIndex < GetDisplayedColumnCount(); displayIndex++)
+            {
+                var column = GetDisplayedColumnAtDisplayIndex(displayIndex);
+                if (column.IsVisible && column.IsRightFrozen)
+                {
+                    return column;
+                }
+            }
+            return null;
+        }
+    }
+
     internal DataGridColumn? LastVisibleColumn => GetLastColumn(true /*isVisible*/, null /*isFrozen*/, null /*isReadOnly*/);
     internal DataGridColumn? LastVisibleScrollingColumn => GetLastColumn(true /*isVisible*/, false /*isFrozen*/, null /*isReadOnly*/);
     internal DataGridColumn? LastVisibleWritableColumn => GetLastColumn(true /*isVisible*/, null /*isFrozen*/, false /*isReadOnly*/);

@@ -113,11 +113,11 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
         double realFrozenRightEdge   = DesiredSize.Width;
         
         double scrollingLeftEdge  = -OwningGrid.HorizontalOffset;
-        var    visibleColumnIndex = 0;
         var columns                  = OwningGrid.ColumnsInternal;
         int displayedColumnCount     = columns.GetDisplayedColumnCount();
-        var actualVisibleColumnCount = 0;
         var hasRightFrozen           = false;
+        var lastLeftFrozenColumn     = columns.LastVisibleLeftFrozenColumn;
+        var firstRightFrozenColumn   = columns.FirstVisibleRightFrozenColumn;
         
         // 需要先计算出 frozenRightEdge
         for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
@@ -128,18 +128,17 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
                 continue;
             }
 
-            actualVisibleColumnCount++;
             if (column.IsRightFrozen)
             {
                 realFrozenRightEdge -= column.ActualWidth;
                 hasRightFrozen      =  true;
             }
         }
-        // left and normal
+        // left and normal：右冻结列只在下方的右侧循环中排列并计宽一次
         for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
         {
             DataGridColumn dataGridColumn = columns.GetDisplayedColumnAtDisplayIndex(displayIndex);
-            if (!dataGridColumn.IsVisible)
+            if (!dataGridColumn.IsVisible || dataGridColumn.IsRightFrozen)
             {
                 continue;
             }
@@ -157,7 +156,7 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
                 frozenLeftEdge += dataGridColumn.ActualWidth;
                 columnHeader.IsFrozen             =  true;
                 columnHeader.FrozenShadowPosition =  FrozenColumnShadowPosition.Right;
-                columnHeader.IsShowFrozenShadow   =  (visibleColumnIndex == OwningGrid.LeftFrozenColumnCount - 1) && OwningGrid.HorizontalOffset > 0;
+                columnHeader.IsShowFrozenShadow   =  dataGridColumn == lastLeftFrozenColumn && OwningGrid.HorizontalOffset > 0;
             }
             else
             {
@@ -171,16 +170,11 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
                 columnHeader.IsFrozen = false;
             }
             scrollingLeftEdge += dataGridColumn.ActualWidth;
-            if (!dataGridColumn.IsRightFrozen)
-            {
-                visibleColumnIndex++;
-            }
         }
 
 
         if (hasRightFrozen)
         {
-            visibleColumnIndex = actualVisibleColumnCount - 1;
             // right
             for (int displayIndex = displayedColumnCount - 1; displayIndex >= 0; displayIndex--)
             {
@@ -199,11 +193,12 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
                     columnHeader.ClearClipGeometry(); // The layout system could have clipped this because it's not aware of our render transform
                     columnHeader.IsFrozen             =  true;
                     columnHeader.FrozenShadowPosition =  FrozenColumnShadowPosition.Left;
+                    // 填充列位于全部列之后（未滚动时右冻结列处于自然位置）
+                    scrollingLeftEdge += dataGridColumn.ActualWidth;
                     var horizontalScrollBarVisible = OwningGrid.HorizontalScrollBar?.IsVisible ?? false;
-                    columnHeader.IsShowFrozenShadow   =  (visibleColumnIndex == displayedColumnCount - OwningGrid.RightFrozenColumnCount) &&
+                    columnHeader.IsShowFrozenShadow   =  dataGridColumn == firstRightFrozenColumn &&
                                                          horizontalScrollBarVisible &&
                                                          OwningGrid.HorizontalOffset < OwningGrid.HorizontalMaximizeOffset;
-                    visibleColumnIndex--;
                 }
             }
         }

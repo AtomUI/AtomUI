@@ -1025,9 +1025,9 @@
                                    x:DataType="vm:DataGridBaseInfo"
                            AttachedToVisualTree="HandleExampleDataGridAttached">
                 <atom:DataGrid.Columns>
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
-                    <atom:DataGridNumericColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" FormatString="0" />
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" IsReadOnly="False" />
+                    <atom:DataGridNumericColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" FormatString="0" IsReadOnly="False" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" IsReadOnly="False" />
                     <atom:DataGridTemplateColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAction}">
                         <atom:DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -1045,6 +1045,28 @@
                 </atom:DataGrid.Columns>
             </atom:DataGrid>
         </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
+<gallery:ShowCaseItem Title="{gallery:DataGridShowCaseLangResource EditableRowsTitle}"
+                          Description="{gallery:DataGridShowCaseLangResource EditableRowsDescription}"
+                          IsOccupyEntireRow="True"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DataGridViewModel">
+
+            <atom:DataGrid x:Name="EditableRowsDataGrid"
+                           x:DataType="vm:DataGridBaseInfo"
+                           Height="400"
+                           AttachedToVisualTree="HandleExampleDataGridAttached">
+                <atom:DataGrid.Columns>
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" IsReadOnly="False" />
+                    <atom:DataGridNumericColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" FormatString="0" IsReadOnly="False" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" IsReadOnly="False" />
+                    <atom:DataGridOperationColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAction}" />
+                </atom:DataGrid.Columns>
+            </atom:DataGrid>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>

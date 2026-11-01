@@ -629,7 +629,7 @@ public partial class DataGridRow
             PseudoClasses.Set(StdPseudoClass.Editing, IsEditing);
             PseudoClasses.Set(StdPseudoClass.Invalid, !IsValid);
             PseudoClasses.Set(DataGridPseudoClass.RowHover, IsMouseOver);
-            IsEditingMode = IsEditing;
+            IsEditingMode = IsEditing && OwningGrid.IsEditingWholeRow;
             ApplyHeaderStatus();
         }
     }

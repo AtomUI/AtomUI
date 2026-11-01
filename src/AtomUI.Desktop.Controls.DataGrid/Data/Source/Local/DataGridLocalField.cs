@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Globalization;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -42,6 +43,11 @@ internal interface IDataGridLocalField<T>
     DataGridScalar GetScalar(T item);
 
     bool Evaluate(T item, DataGridFilter filter);
+
+    /// <summary>
+    /// Converts the scalar to the field value without writing it, so a multi-field edit can fail before any write.
+    /// </summary>
+    Action<T> PrepareWrite(DataGridScalar value);
 }
 
 public sealed class DataGridLocalField<T, TValue> : IDataGridLocalField<T>
@@ -56,16 +62,24 @@ public sealed class DataGridLocalField<T, TValue> : IDataGridLocalField<T>
         ImmutableArray<DataGridLocalFilter<TValue>> filters = default,
         DataGridSortDirections sortDirections = DataGridSortDirections.All,
         bool canGroup = false,
-        string? propertyChangedName = null)
+        string? propertyChangedName = null,
+        Action<T, TValue>? setter = null,
+        Func<DataGridScalar, TValue>? fromScalar = null)
     {
         ArgumentNullException.ThrowIfNull(getter);
         ArgumentNullException.ThrowIfNull(sortComparer);
         ArgumentNullException.ThrowIfNull(toScalar);
+        if (setter is null && fromScalar is not null)
+        {
+            throw new ArgumentException("A scalar reader requires a setter.", nameof(fromScalar));
+        }
 
         FieldId = fieldId;
         Getter = getter;
         SortComparer = sortComparer;
         ToScalar = toScalar;
+        Setter = setter;
+        FromScalar = setter is null ? null : fromScalar ?? DataGridLocalScalarConverter<TValue>.ConvertBack;
         Filters = filters.IsDefault ? ImmutableArray<DataGridLocalFilter<TValue>>.Empty : filters;
 
         var filterSchemas = ImmutableArray.CreateBuilder<DataGridFilterOperatorSchema>(Filters.Length);
@@ -89,7 +103,8 @@ public sealed class DataGridLocalField<T, TValue> : IDataGridLocalField<T>
             sortDirections,
             filterSchemas.MoveToImmutable(),
             canGroup,
-            DataGridFieldDisplayAccessor.Create(getter, propertyChangedName: propertyChangedName));
+            DataGridFieldDisplayAccessor.Create(getter, propertyChangedName: propertyChangedName),
+            isEditable: setter is not null);
     }
 
     public DataGridFieldId FieldId { get; }
@@ -101,6 +116,16 @@ public sealed class DataGridLocalField<T, TValue> : IDataGridLocalField<T>
     public Func<TValue, DataGridScalar> ToScalar { get; }
 
     public ImmutableArray<DataGridLocalFilter<TValue>> Filters { get; }
+
+    /// <summary>
+    /// Gets the setter that applies committed edits; null makes the field read-only.
+    /// </summary>
+    public Action<T, TValue>? Setter { get; }
+
+    /// <summary>
+    /// Gets the conversion from an edited scalar to the field value; null when the field is read-only.
+    /// </summary>
+    public Func<DataGridScalar, TValue>? FromScalar { get; }
 
     DataGridFieldSchema IDataGridLocalField<T>.Schema => Schema;
 
@@ -119,6 +144,25 @@ public sealed class DataGridLocalField<T, TValue> : IDataGridLocalField<T>
                 $"No local evaluator exists for operator '{filter.Operator}' on field '{FieldId}'.");
         }
         return localFilter.Evaluate(Getter(item), filter.Values);
+    }
+
+    Action<T> IDataGridLocalField<T>.PrepareWrite(DataGridScalar value)
+    {
+        if (Setter is not { } setter || FromScalar is not { } fromScalar)
+        {
+            throw new ArgumentException($"Field '{FieldId}' is not editable.");
+        }
+        TValue converted;
+        try
+        {
+            converted = fromScalar(value);
+        }
+        catch (Exception exception) when (exception is not ArgumentException)
+        {
+            throw new ArgumentException(
+                $"The value '{value.ToCanonicalString()}' cannot be written to field '{FieldId}'.", exception);
+        }
+        return item => setter(item, converted);
     }
 }
 
@@ -151,7 +195,9 @@ public sealed class DataGridLocalSourceDescriptor<T>
         ImmutableArray<DataGridLocalFilter<TValue>> filters = default,
         DataGridSortDirections sortDirections = DataGridSortDirections.All,
         bool canGroup = false,
-        string? propertyChangedName = null) =>
+        string? propertyChangedName = null,
+        Action<T, TValue>? setter = null,
+        Func<DataGridScalar, TValue>? fromScalar = null) =>
         Field(
             new DataGridFieldId(fieldId),
             getter,
@@ -160,7 +206,9 @@ public sealed class DataGridLocalSourceDescriptor<T>
             filters,
             sortDirections,
             canGroup,
-            propertyChangedName);
+            propertyChangedName,
+            setter,
+            fromScalar);
 
     public DataGridLocalSourceDescriptor<T> Field<TValue>(
         DataGridFieldId fieldId,
@@ -170,7 +218,9 @@ public sealed class DataGridLocalSourceDescriptor<T>
         ImmutableArray<DataGridLocalFilter<TValue>> filters = default,
         DataGridSortDirections sortDirections = DataGridSortDirections.All,
         bool canGroup = false,
-        string? propertyChangedName = null)
+        string? propertyChangedName = null,
+        Action<T, TValue>? setter = null,
+        Func<DataGridScalar, TValue>? fromScalar = null)
     {
         if (!_fieldIds.Add(fieldId))
         {
@@ -184,7 +234,9 @@ public sealed class DataGridLocalSourceDescriptor<T>
             filters,
             sortDirections,
             canGroup,
-            propertyChangedName));
+            propertyChangedName,
+            setter,
+            fromScalar));
         return this;
     }
 }
@@ -218,4 +270,52 @@ internal static class DataGridLocalScalarConverter<TValue>
                 $"No default DataGridScalar conversion exists for '{typeof(TValue)}'. Supply an explicit converter.")
         };
     }
+
+    public static TValue ConvertBack(DataGridScalar scalar)
+    {
+        var value = scalar.ToValue();
+        if (value is null)
+        {
+            if (default(TValue) is null)
+            {
+                return default!;
+            }
+            throw new ArgumentException($"A null value cannot be written to '{typeof(TValue)}'.");
+        }
+        if (value is TValue typed)
+        {
+            return typed;
+        }
+
+        var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+        if (IsNumericKind(scalar.Kind) && IsNumericType(targetType))
+        {
+            if (IsIntegralType(targetType) && value is double or decimal &&
+                System.Convert.ToDecimal(value, CultureInfo.InvariantCulture) % 1 != 0)
+            {
+                throw new ArgumentException($"The value '{value}' is not an integer.");
+            }
+            try
+            {
+                return (TValue)System.Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+            }
+            catch (OverflowException exception)
+            {
+                throw new ArgumentException($"The value '{value}' is out of range for '{targetType}'.", exception);
+            }
+        }
+        throw new ArgumentException(
+            $"A scalar of kind '{scalar.Kind}' cannot be written to '{typeof(TValue)}'. Supply an explicit converter.");
+    }
+
+    private static bool IsNumericKind(DataGridScalarKind kind) =>
+        kind is DataGridScalarKind.SignedInteger or DataGridScalarKind.UnsignedInteger or
+            DataGridScalarKind.Double or DataGridScalarKind.Decimal;
+
+    private static bool IsNumericType(Type type) =>
+        IsIntegralType(type) || type == typeof(float) || type == typeof(double) || type == typeof(decimal);
+
+    private static bool IsIntegralType(Type type) =>
+        type == typeof(sbyte) || type == typeof(short) || type == typeof(int) || type == typeof(long) ||
+        type == typeof(byte) || type == typeof(ushort) || type == typeof(uint) || type == typeof(ulong);
 }

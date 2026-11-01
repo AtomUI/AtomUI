@@ -2154,9 +2154,8 @@ public partial class DataGrid
     }
 
     /// <summary>
-    /// 是否全部选中
+    /// Whether every selectable row is selected.
     /// </summary>
-    /// <returns></returns>
     internal bool IsAllRowSelected()
     {
         var scope = GetCommittedSelectionScope();

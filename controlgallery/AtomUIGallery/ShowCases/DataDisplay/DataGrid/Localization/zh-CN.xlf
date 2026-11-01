@@ -103,6 +103,18 @@
         <target state="translated">可编辑单元格</target>
       </segment>
     </unit>
+    <unit id="EditableRowsDescription">
+      <segment>
+        <source>Table with editable rows. Edit puts the whole row in edit and Save commits it at once.</source>
+        <target state="translated">包含可编辑行的表格，点击“编辑”后整行进入编辑，“保存”一次性提交。</target>
+      </segment>
+    </unit>
+    <unit id="EditableRowsTitle">
+      <segment>
+        <source>Editable Rows</source>
+        <target state="translated">可编辑行</target>
+      </segment>
+    </unit>
     <unit id="ExpandableRowDescription">
       <segment>
         <source>When there's too much information to show and the table can't display all at once.</source>

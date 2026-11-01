@@ -3,17 +3,17 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using AtomUI.Desktop.Controls.Utils;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
-// 编辑：单元格/行的进入、提交、取消与编辑元素焦点（当前范围数据源下 BeginEdit 返回 false）
+// 编辑：单元格/行的进入、提交、取消与编辑元素焦点；编辑器只读取绑定值，提交统一经 IDataGridEditableSource 写回
 public partial class DataGrid
 {
     /// <summary>
@@ -41,9 +41,93 @@ public partial class DataGrid
         return true;
     }
 
+    internal bool IsEditingWholeRow => _isEditingWholeRow;
+
+    /// <summary>
+    /// Enters whole-row editing for the operation column: every editable cell of the row gets its editor.
+    /// </summary>
+    internal bool BeginWholeRowEdit(DataGridRow dataGridRow)
+    {
+        if (_isEditingWholeRow && EditingRow == dataGridRow)
+        {
+            return true;
+        }
+        if (dataGridRow.OwningGrid != this || !dataGridRow.RowKey.IsValid || dataGridRow.Slot < 0)
+        {
+            return false;
+        }
+
+        var firstEditableColumn = ColumnsItemsInternal.FirstOrDefault(column =>
+            column.IsVisible && !GetColumnEffectiveReadOnlyState(column));
+        if (firstEditableColumn is null)
+        {
+            return false;
+        }
+
+        // Moving currency to the row commits the edit in progress, exactly as a pointer press would.
+        if (CurrentSlot != dataGridRow.Slot)
+        {
+            UpdateSelectionAndCurrency(
+                firstEditableColumn.Index,
+                dataGridRow.Slot,
+                DataGridSelectionAction.SelectCurrent,
+                scrollIntoView: false);
+            if (!_successfullyUpdatedSelection || CurrentSlot != dataGridRow.Slot)
+            {
+                return false;
+            }
+        }
+        else if (!CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true))
+        {
+            return false;
+        }
+
+        if (EditingRow == null && !BeginRowEdit(dataGridRow))
+        {
+            return false;
+        }
+
+        _isEditingWholeRow = true;
+        foreach (var column in ColumnsItemsInternal)
+        {
+            if (column.IsVisible && !GetColumnEffectiveReadOnlyState(column))
+            {
+                PopulateCellContent(
+                    isCellEdited: true,
+                    dataGridColumn: column,
+                    dataGridRow: dataGridRow,
+                    dataGridCell: dataGridRow.Cells[column.Index]);
+            }
+        }
+        dataGridRow.ApplyState();
+        return true;
+    }
+
+    /// <summary>
+    /// Saves or discards the whole-row edit started by <see cref="BeginWholeRowEdit"/>.
+    /// </summary>
+    internal bool EndWholeRowEdit(DataGridRow dataGridRow, DataGridEditAction editAction)
+    {
+        if (!_isEditingWholeRow || EditingRow != dataGridRow)
+        {
+            return false;
+        }
+        return editAction == DataGridEditAction.Commit
+            ? CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true)
+            : CancelEdit(DataGridEditingUnit.Row);
+    }
+
+    private bool IsColumnSourceEditable(DataGridColumn column) =>
+        ItemsSource is IDataGridEditableSource source &&
+        column is DataGridBoundColumn { CanEditThroughSource: true } &&
+        column.FieldId is { IsValid: true } fieldId &&
+        source.Schema.TryGetField(fieldId, out var field) &&
+        field.IsEditable;
+
     private bool BeginCellEdit(RoutedEventArgs editingEventArgs)
     {
-        if (CurrentColumnIndex == -1)
+        // Whole-row editing already shows every editor; cells are not entered one by one.
+        if (CurrentColumnIndex == -1 || _isEditingWholeRow)
         {
             return false;
         }
@@ -54,8 +138,12 @@ public partial class DataGrid
         Debug.Assert(CurrentSlot >= -1);
         Debug.Assert(CurrentSlot < SlotCount);
         Debug.Assert(EditingRow == null || EditingRow.Slot == CurrentSlot);
-        Debug.Assert(!GetColumnEffectiveReadOnlyState(CurrentColumn));
         Debug.Assert(CurrentColumn.IsVisible);
+
+        if (GetColumnEffectiveReadOnlyState(CurrentColumn) || IsRangeGroupSlot(CurrentSlot))
+        {
+            return false;
+        }
 
         if (_editingColumnIndex != -1)
         {
@@ -115,22 +203,26 @@ public partial class DataGrid
         return true;
     }
 
-    //TODO Validation
     private bool BeginRowEdit(DataGridRow dataGridRow)
     {
-        // Inline editing requires a key-based edit buffer and is not entered by
-        // the range-backed control; mutations use EditRowAsync instead.
-        return false;
+        // Edited values stay in the editors until committed by row key, so no item buffer is opened.
+        if (!dataGridRow.RowKey.IsValid)
+        {
+            return false;
+        }
+
+        EditingRow = dataGridRow;
+        if (IsSlotVisible(dataGridRow.Slot))
+        {
+            dataGridRow.ApplyState();
+        }
+        return true;
     }
 
     private bool CancelRowEdit(bool exitEditingMode)
     {
-        if (EditingRow == null)
-        {
-            return true;
-        }
-
-        return false;
+        // Editors never write to the data item, so discarding them is the whole cancellation.
+        return true;
     }
 
     private bool CommitEditForOperation(int columnIndex, int slot, bool forCurrentCellChange)
@@ -175,24 +267,138 @@ public partial class DataGrid
         return true;
     }
 
-    //TODO Validation
     private bool CommitRowEdit(bool exitEditingMode)
     {
-        if (EditingRow == null)
+        // Cell edits commit as each cell ends; only whole-row editing still holds values here.
+        if (EditingRow is not { } editingRow || !_isEditingWholeRow)
         {
             return true;
         }
 
-        Debug.Assert(EditingRow != null && EditingRow.Index >= -1);
-        Debug.Assert(EditingRow.Slot < SlotCount);
+        Debug.Assert(editingRow.Index >= -1);
+        Debug.Assert(editingRow.Slot < SlotCount);
 
-        //if (!ValidateEditingRow(scrollIntoView: true, wireEvents: false))
-        if (!EditingRow.IsValid)
+        var values = ImmutableDictionary.CreateBuilder<DataGridFieldId, DataGridScalar>();
+        var isValid = true;
+        foreach (var column in ColumnsItemsInternal)
+        {
+            var cell = editingRow.Cells[column.Index];
+            if (column.EditingElement is { } editingElement &&
+                ReferenceEquals(cell.Content, editingElement) &&
+                !TryReadEditedCell(editingRow, cell, editingElement, values))
+            {
+                isValid = false;
+            }
+        }
+        if (!isValid)
         {
             return false;
         }
 
+        if (values.Count > 0)
+        {
+            CommitEditedValues(editingRow.RowKey, values.ToImmutable());
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Converts one editor value to the scalar of its field, marking the cell invalid when it cannot be written.
+    /// Unchanged values are left out so a no-op edit does not reach the source.
+    /// </summary>
+    private bool TryReadEditedCell(
+        DataGridRow editingRow,
+        DataGridCell editingCell,
+        Control editingElement,
+        ImmutableDictionary<DataGridFieldId, DataGridScalar>.Builder values)
+    {
+        if (editingCell.OwningColumn is not DataGridBoundColumn { FieldId: { IsValid: true } fieldId } column ||
+            ItemsSource is not { } source ||
+            !source.Schema.TryGetField(fieldId, out var field))
+        {
+            return true;
+        }
+
+        if (column.TryGetEditedValue(editingElement, field.ValueType, out var value, out var error))
+        {
+            if (DataGridScalar.TryFromValue(value, out var scalar))
+            {
+                DataValidationErrors.ClearErrors(editingElement);
+                if (!IsCurrentFieldValue(field, editingRow.DataContext, scalar))
+                {
+                    values[fieldId] = scalar;
+                }
+                return true;
+            }
+            error = new InvalidCastException(
+                $"Values of type '{field.ValueType.Name}' cannot be committed as a data source scalar.");
+        }
+
+        DataValidationErrors.SetError(editingElement, error);
+        if (editingCell.IsValid)
+        {
+            editingCell.IsValid = false;
+            editingCell.UpdatePseudoClasses();
+        }
+        if (editingRow.IsValid)
+        {
+            editingRow.IsValid = false;
+            editingRow.ApplyState();
+        }
         return false;
+    }
+
+    private static bool IsCurrentFieldValue(DataGridFieldSchema field, object? item, DataGridScalar value) =>
+        field.DisplayAccessor is { } accessor &&
+        item is not null &&
+        DataGridScalar.TryFromValue(accessor.GetValue(item), out var current) &&
+        current == value;
+
+    /// <summary>
+    /// Commits edited values after the current input has been handled, so a source that reloads
+    /// synchronously never rebuilds rows while currency or editing state is still changing.
+    /// Failures are reported through <see cref="EditCommitFailed"/> because the editors have already closed.
+    /// </summary>
+    private void CommitEditedValues(
+        DataGridRowKey rowKey,
+        ImmutableDictionary<DataGridFieldId, DataGridScalar> values)
+    {
+        var ownerReference = new WeakReference<DataGrid>(this);
+        Dispatcher.UIThread.Post(() => CommitEditedValuesAsync(ownerReference, rowKey, values));
+    }
+
+    private static async void CommitEditedValuesAsync(
+        WeakReference<DataGrid> ownerReference,
+        DataGridRowKey rowKey,
+        ImmutableDictionary<DataGridFieldId, DataGridScalar> values)
+    {
+        if (!ownerReference.TryGetTarget(out var owner))
+        {
+            return;
+        }
+
+        Exception? failure = null;
+        try
+        {
+            if (!await owner.EditRowAsync(rowKey, values))
+            {
+                failure = new InvalidOperationException(
+                    "The edit was not committed because the data source changed or is not ready.");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // The presentation generation ended; the reload that replaced it shows the source state.
+        }
+        catch (Exception exception)
+        {
+            failure = exception;
+        }
+
+        if (failure is not null && ownerReference.TryGetTarget(out owner))
+        {
+            owner.NotifyEditCommitFailed(new DataGridEditCommitFailedEventArgs(rowKey, values, failure));
+        }
     }
 
     /// <summary>
@@ -315,46 +521,21 @@ public partial class DataGrid
             Debug.Assert(_editingColumnIndex == CurrentColumnIndex);
         }
 
-        // If we're committing, explicitly update the source but watch out for any validation errors
-        if (editAction == DataGridEditAction.Commit)
+        // If we're committing, convert the editor value first; an invalid value keeps the cell in edit
+        var committedValues = ImmutableDictionary.CreateBuilder<DataGridFieldId, DataGridScalar>();
+        if (editAction == DataGridEditAction.Commit &&
+            !TryReadEditedCell(editingRow, editingCell, editingElement, committedValues))
         {
-            void SetValidationStatus(BindingExpressionBase binding)
-            {
-                if (!DataValidationErrors.GetHasErrors(editingElement))
-                {
-                    ResetValidationStatus();
-                }
-                else
-                {
-                    if (editingCell.IsValid)
-                    {
-                        editingCell.IsValid = false;
-                        editingCell.UpdatePseudoClasses();
-                    }
-
-                    if (editingRow.IsValid)
-                    {
-                        editingRow.IsValid = false;
-                        editingRow.ApplyState();
-                    }
-                }
-            }
-
-            var editBinding = CurrentColumn?.CellEditBinding;
-            if (editBinding != null && DataValidationErrors.GetHasErrors(editingElement))
-            {
-                editBinding.UpdateSource();
-                SetValidationStatus(editBinding);
-                ScrollSlotIntoView(CurrentColumnIndex, CurrentSlot, forCurrentCellChange: false,
-                    forceHorizontalScroll: true);
-                return false;
-            }
+            ScrollSlotIntoView(CurrentColumnIndex, CurrentSlot, forCurrentCellChange: false,
+                forceHorizontalScroll: true);
+            return false;
         }
 
         ResetValidationStatus();
         Debug.Assert(CurrentColumn != null);
         if (exitEditingMode)
         {
+            DataValidationErrors.ClearErrors(editingElement);
             CurrentColumn.EndCellEditInternal(editingElement);
             _editingColumnIndex = -1;
             editingCell.UpdatePseudoClasses();
@@ -386,6 +567,11 @@ public partial class DataGrid
         if (raiseEvents)
         {
             NotifyCellEditEnded(new DataGridCellEditEndedEventArgs(CurrentColumn, editingRow, editAction));
+        }
+
+        if (committedValues.Count > 0)
+        {
+            CommitEditedValues(editingRow.RowKey, committedValues.ToImmutable());
         }
 
         // There's a chance that somebody reopened this cell for edit within the CellEditEnded handler,
@@ -457,6 +643,7 @@ public partial class DataGrid
         // Update the previously edited row's state
         if (exitEditingMode && editingRow == EditingRow)
         {
+            RestoreWholeRowCells(editingRow);
             RemoveEditingElements();
             ResetEditingRow();
         }
@@ -579,19 +766,51 @@ public partial class DataGrid
             editingElement));
     }
 
+    /// <summary>
+    /// Puts display elements back into the cells that whole-row editing filled with editors.
+    /// </summary>
+    private void RestoreWholeRowCells(DataGridRow editingRow)
+    {
+        if (!_isEditingWholeRow)
+        {
+            return;
+        }
+
+        foreach (var column in ColumnsItemsInternal)
+        {
+            var cell = editingRow.Cells[column.Index];
+            if (column.EditingElement is { } editingElement && ReferenceEquals(cell.Content, editingElement))
+            {
+                DataValidationErrors.ClearErrors(editingElement);
+                PopulateCellContent(
+                    isCellEdited: false,
+                    dataGridColumn: column,
+                    dataGridRow: editingRow,
+                    dataGridCell: cell);
+            }
+        }
+    }
+
     private void ResetEditingRow()
     {
-        if (EditingRow != null
-            && EditingRow != _focusedRow
-            && !IsSlotVisible(EditingRow.Slot))
+        var editingRow = EditingRow;
+        if (editingRow != null
+            && editingRow != _focusedRow
+            && !IsSlotVisible(editingRow.Slot))
         {
             // Unload the old editing row if it's off screen
-            EditingRow.Clip = null;
-            UnloadRow(EditingRow);
+            editingRow.Clip = null;
+            UnloadRow(editingRow);
             DisplayData.FullyRecycleElements();
         }
 
+        _isEditingWholeRow = false;
         EditingRow = null;
+        if (editingRow is { OwningGrid: not null } && IsSlotVisible(editingRow.Slot))
+        {
+            // Leave the editing visual state (pseudo-class, operation buttons) now that the row is no longer edited.
+            editingRow.ApplyState();
+        }
     }
 
     //TODO Validation UI

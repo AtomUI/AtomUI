@@ -95,6 +95,25 @@ public readonly struct DataGridScalar : IEquatable<DataGridScalar>, IComparable<
         return _stringValue!;
     }
 
+    /// <summary>
+    /// Returns the boxed CLR value carried by the scalar, using UTC for <see cref="DateTimeOffset"/>.
+    /// </summary>
+    internal object? ToValue() => Kind switch
+    {
+        DataGridScalarKind.Null => null,
+        DataGridScalarKind.Boolean => _signedValue != 0,
+        DataGridScalarKind.SignedInteger => _signedValue,
+        DataGridScalarKind.UnsignedInteger => _unsignedValue,
+        DataGridScalarKind.Double => _doubleValue,
+        DataGridScalarKind.Decimal => _decimalValue,
+        DataGridScalarKind.String => _stringValue,
+        DataGridScalarKind.Guid => _guidValue,
+        DataGridScalarKind.DateOnly => DateOnly.FromDayNumber((int)_signedValue),
+        DataGridScalarKind.TimeOnly => new TimeOnly(_signedValue),
+        DataGridScalarKind.DateTimeOffset => new DateTimeOffset(_signedValue, TimeSpan.Zero),
+        _ => throw new InvalidOperationException($"Unknown scalar kind '{Kind}'.")
+    };
+
     internal static bool TryFromValue(object? value, out DataGridScalar scalar)
     {
         switch (value)

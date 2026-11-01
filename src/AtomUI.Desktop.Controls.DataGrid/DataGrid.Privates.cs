@@ -291,6 +291,9 @@ public partial class DataGrid
     private int _desiredCurrentColumnIndex;
     private int _editingColumnIndex;
 
+    // 整行编辑（操作列“编辑”）：EditingRow 的全部可编辑单元格同时持有编辑器，_editingColumnIndex 保持 -1
+    private bool _isEditingWholeRow;
+
     // this is a workaround only for the scenarios where we need it, it is not all encompassing nor always updated
     private RoutedEventArgs? _editingEventArgs;
     private bool _executingLostFocusActions;
@@ -1044,7 +1047,7 @@ public partial class DataGrid
         KeyboardHelper.GetMetaKeyState(this, e.KeyModifiers, out bool ctrl, out bool shift);
 
         if (!shift && !ctrl &&
-            _editingColumnIndex == -1 && CurrentColumnIndex != -1 && GetRowSelection(CurrentSlot) &&
+            _editingColumnIndex == -1 && CurrentColumnIndex != -1 && CurrentSlot != -1 &&
             !GetColumnEffectiveReadOnlyState(CurrentColumn))
         {
             if (ScrollSlotIntoView(CurrentColumnIndex, CurrentSlot, forCurrentCellChange: false,

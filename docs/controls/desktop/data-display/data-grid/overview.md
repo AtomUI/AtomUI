@@ -59,6 +59,13 @@ DataGrid 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 索引解释为 Source 集合索引。Source 不支持移动、当前 Query 语义禁止移动、编辑未能提交或 snapshot 失效时，handle 不进入
 可提交状态，也不发布 `RowReordered`。
 
+行内编辑统一经 `IDataGridEditableSource.CommitAsync` 写回：列需 `IsReadOnly=False`、为 `DataGridBoundColumn` 并以 `FieldId`
+指向 `IsEditable` 字段。编辑器只读取绑定值，不直接写数据项；单元格编辑在单元格结束时提交，`DataGridOperationColumn` 的“编辑”
+使整行可编辑单元格同时进入编辑，“保存”一次提交、“取消”直接丢弃。值无法转换时保持编辑并显示校验错误；编辑器关闭后的
+Source 失败通过 `EditCommitFailed` 报告。`DataGridLocalSource` 中提供 `setter` 的字段可编辑，未影响当前 Query 的编辑保留
+snapshot，影响 sort/filter/group 的编辑触发失效重载。完整决策见
+[行内编辑设计](../../../../superpowers/specs/2026-10-31-datagrid-inline-editing-design.md)。
+
 分页公共契约由 `PageSize`、`IsShowPageSizeSelector`、`PaginationVisibility`、`TopPaginationAlign`、
 `BottomPaginationAlign` 和 `IsHideOnSinglePage` 共同表达。`IsShowPageSizeSelector` 默认为 `true`，转发到顶部和底部
 `Pagination.IsShowSizeChanger`；它只控制页大小选择器可见性，不创建独立的 DataGrid 页大小状态。`PageSize=0` 表示连续模式；

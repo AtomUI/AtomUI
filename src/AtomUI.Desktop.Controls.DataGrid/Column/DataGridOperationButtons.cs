@@ -2,7 +2,6 @@ using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
@@ -100,7 +99,7 @@ internal class DataGridOperationButtons : TemplatedControl
         }
         else if (ReferenceEquals(e.Source, _saveAction))
         {
-            EndEditingRow();
+            EndEditingRow(DataGridEditAction.Commit);
         }
     }
 
@@ -112,7 +111,7 @@ internal class DataGridOperationButtons : TemplatedControl
         }
         else if (ReferenceEquals(e.Source, _cancelAction))
         {
-            EndEditingRow();
+            EndEditingRow(DataGridEditAction.Cancel);
         }
     }
 
@@ -131,19 +130,20 @@ internal class DataGridOperationButtons : TemplatedControl
         }
     }
 
+    // IsEditing follows the row's whole-row editing state, so the buttons only ask the grid to change it.
     private void BeginEditingRow()
     {
         if (OwningRow != null && OwningGrid != null)
         {
-            SetValue(IsEditingProperty, true, BindingPriority.Template);
+            OwningGrid.BeginWholeRowEdit(OwningRow);
         }
     }
     
-    private void EndEditingRow()
+    private void EndEditingRow(DataGridEditAction editAction)
     {
         if (OwningRow != null && OwningGrid != null)
         {
-            SetValue(IsEditingProperty, false, BindingPriority.Template);
+            OwningGrid.EndWholeRowEdit(OwningRow, editAction);
         }
     }
 

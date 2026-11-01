@@ -108,7 +108,7 @@ public partial class DataGrid
         }
     }
 
-    internal int EditingColumnIndex { get; private set; }
+    internal int EditingColumnIndex => _editingColumnIndex;
 
     internal bool HasFiniteColumnViewport => _columnViewportWidth.HasValue &&
                                              !double.IsPositiveInfinity(_columnViewportWidth.Value);
@@ -1879,7 +1879,10 @@ public partial class DataGrid
     {
         Debug.Assert(dataGridColumn != null);
 
-        return IsReadOnly || dataGridColumn.IsReadOnly || dataGridColumn is DataGridFillerColumn;
+        return IsReadOnly ||
+               dataGridColumn.IsReadOnly ||
+               dataGridColumn is DataGridFillerColumn ||
+               !IsColumnSourceEditable(dataGridColumn);
     }
 
     /// <devdoc>

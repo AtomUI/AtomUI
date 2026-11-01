@@ -135,6 +135,10 @@ public partial class DataGridShowCase : GalleryReactiveUserControl<DataGridViewM
                 DataGridShowCaseDataSources.EnsureEditableCellsDataSource(viewModel);
                 dataGrid.ItemsSource = viewModel.EditableCellsDataSource?.Source;
                 break;
+            case "EditableRowsDataGrid":
+                DataGridShowCaseDataSources.EnsureEditableRowsDataSource(viewModel);
+                dataGrid.ItemsSource = viewModel.EditableRowsDataSource?.Source;
+                break;
             case "BasicPagingCaseGrid":
                 DataGridShowCaseDataSources.EnsurePagingGridDataSource(viewModel);
                 dataGrid.ItemsSource = viewModel.PagingGridDataSource?.Source;
@@ -822,7 +826,7 @@ internal static class DataGridShowCaseDataSources
         ];
         viewModel.EditableCellsDataSource = new(
             items,
-            DataGridShowCaseSourceDescriptors.Base);
+            DataGridShowCaseSourceDescriptors.Editable);
     }
 
     public static void EnsureEditableRowsDataSource(DataGridViewModel viewModel)
@@ -845,7 +849,7 @@ internal static class DataGridShowCaseDataSources
         }
         viewModel.EditableRowsDataSource = new(
             items,
-            DataGridShowCaseSourceDescriptors.Base);
+            DataGridShowCaseSourceDescriptors.Editable);
     }
 
     public static void EnsurePagingGridDataSource(DataGridViewModel viewModel)

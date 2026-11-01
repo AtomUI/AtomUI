@@ -45,6 +45,8 @@ public enum DataGridShowCaseLangResourceKind
     CustomEmptyAndLoadingDescription,
     EditableCellsTitle,
     EditableCellsDescription,
+    EditableRowsTitle,
+    EditableRowsDescription,
     BasicPagingTitle,
     BasicPagingDescription,
     BasicPagingExtraContentText,

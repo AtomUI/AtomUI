@@ -6,7 +6,10 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class DataGridOperationColumn : DataGridColumn
+/// <summary>
+/// Shows edit/delete actions per row; edit puts every editable cell of the row in edit and saves them together.
+/// </summary>
+public sealed class DataGridOperationColumn : DataGridColumn
 {
     private DataGrid? _owningGrid;
 

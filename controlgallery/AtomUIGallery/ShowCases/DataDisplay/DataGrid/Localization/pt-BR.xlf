@@ -103,6 +103,18 @@
         <target state="translated">Editable Cells</target>
       </segment>
     </unit>
+    <unit id="EditableRowsDescription">
+      <segment>
+        <source>Table with editable rows. Edit puts the whole row in edit and Save commits it at once.</source>
+        <target state="translated">Tabela com linhas editáveis: Editar coloca a linha inteira em edição e Salvar confirma tudo de uma vez.</target>
+      </segment>
+    </unit>
+    <unit id="EditableRowsTitle">
+      <segment>
+        <source>Editable Rows</source>
+        <target state="translated">Linhas editáveis</target>
+      </segment>
+    </unit>
     <unit id="ExpandableRowDescription">
       <segment>
         <source>When there's too much information to show and the table can't display all at once.</source>

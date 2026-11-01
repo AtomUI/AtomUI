@@ -86,6 +86,16 @@
         <source>Editable Cells</source>
       </segment>
     </unit>
+    <unit id="EditableRowsDescription">
+      <segment>
+        <source>Table with editable rows. Edit puts the whole row in edit and Save commits it at once.</source>
+      </segment>
+    </unit>
+    <unit id="EditableRowsTitle">
+      <segment>
+        <source>Editable Rows</source>
+      </segment>
+    </unit>
     <unit id="ExpandableRowDescription">
       <segment>
         <source>When there's too much information to show and the table can't display all at once.</source>

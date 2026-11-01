@@ -871,7 +871,9 @@ IDataGridKeyLookupSource      resolve selected/current key outside cache
 IDataGridBulkSelectionSource  operate on declarative selection outside cache
 ```
 
-Mutation request 携带 Query、snapshot 和 row key，成功后返回新 snapshot 或触发 Invalidated。行移动使用 source key 与目标邻接
+Mutation request 携带 Query、snapshot 和 row key，成功后返回新 snapshot 或触发 Invalidated；返回请求时的 snapshot 表示当前
+presentation 的顺序与成员仍然有效，DataGrid 不重载，只重建被编辑行的相关单元格。字段是否可写由 `DataGridFieldSchema.IsEditable`
+声明，`DataGridEditRequest.Values` 只能包含可写字段。行移动使用 source key 与目标邻接
 key，不把 view index 当作 Source index。Source 不支持移动或 Query 语义不允许移动时，reorder handle 不进入可提交状态。
 
 用户触发 Query、PageRequest、GroupExpansion 或 Source replacement 前必须提交当前 edit；失败则中止操作。Invalidated 是外部

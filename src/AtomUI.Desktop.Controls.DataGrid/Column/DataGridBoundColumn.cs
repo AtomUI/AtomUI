@@ -4,16 +4,19 @@
 // All other rights reserved.
 
 using System.Diagnostics;
+using System.Globalization;
 using AtomUI.Desktop.Controls.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 
 namespace AtomUI.Desktop.Controls;
 
 public abstract class DataGridBoundColumn : DataGridColumn
 {
     private BindingBase? _binding;
+    private BindingBase? _editingBinding;
 
     /// <summary>
     /// Gets or sets the binding that associates the column with a property in the data source.
@@ -34,6 +37,7 @@ public abstract class DataGridBoundColumn : DataGridColumn
                 }
 
                 _binding = value; 
+                _editingBinding = null;
 
                 if (_binding != null)
                 {
@@ -85,10 +89,11 @@ public abstract class DataGridBoundColumn : DataGridColumn
         Control element = GenerateEditingElementDirect(cell, dataItem);
         editBinding = null;
 
-        if (Binding != null)
+        // Edits are committed through the data source, so the editor only reads the bound value.
+        if (Binding != null && (_editingBinding ??= CreateOneWayBinding(Binding)) is { } editingBinding)
         {
             Debug.Assert(BindingTarget != null);
-            editBinding = element.Bind(BindingTarget, Binding);
+            editBinding = element.Bind(BindingTarget, editingBinding);
         }
 
         return element;
@@ -113,6 +118,56 @@ public abstract class DataGridBoundColumn : DataGridColumn
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Whether the editor value can be read back and converted without writing to the data item.
+    /// </summary>
+    internal bool CanEditThroughSource =>
+        BindingTarget != null && Binding is CompiledBinding or ReflectionBinding;
+
+    /// <summary>
+    /// Reads the editor value and converts it to the field type with the converter the display binding uses.
+    /// </summary>
+    internal bool TryGetEditedValue(Control editingElement, Type valueType, out object? value, out Exception? error)
+    {
+        Debug.Assert(BindingTarget != null && Binding != null);
+        var editorValue = editingElement.GetValue(BindingTarget);
+        var (converter, parameter, culture) = GetBindingConversion(Binding);
+        try
+        {
+            value = (converter ?? DataGridValueConverter.Instance).ConvertBack(
+                editorValue,
+                valueType,
+                parameter,
+                culture ?? CultureInfo.CurrentCulture);
+        }
+        catch (Exception exception)
+        {
+            value = null;
+            error = exception;
+            return false;
+        }
+
+        if (value is BindingNotification { Error: { } notificationError })
+        {
+            value = null;
+            error = notificationError;
+            return false;
+        }
+        if (value == AvaloniaProperty.UnsetValue || value == BindingOperations.DoNothing)
+        {
+            value = null;
+            error = new InvalidCastException($"The edited value cannot be converted to '{valueType.Name}'.");
+            return false;
+        }
+        if (value is null && valueType.IsValueType && Nullable.GetUnderlyingType(valueType) is null)
+        {
+            error = new ArgumentNullException(nameof(value), "A value is required.");
+            return false;
+        }
+        error = null;
+        return true;
     }
 
     internal string? GetBindingPath()
@@ -143,6 +198,62 @@ public abstract class DataGridBoundColumn : DataGridColumn
                 compiledBinding.Mode = mode;
                 break;
         }
+    }
+
+    private static BindingBase? CreateOneWayBinding(BindingBase binding)
+    {
+        return binding switch
+        {
+            CompiledBinding compiledBinding => new CompiledBinding
+            {
+                Path = compiledBinding.Path,
+                Mode = BindingMode.OneWay,
+                Converter = compiledBinding.Converter,
+                ConverterCulture = compiledBinding.ConverterCulture,
+                ConverterParameter = compiledBinding.ConverterParameter,
+                FallbackValue = compiledBinding.FallbackValue,
+                TargetNullValue = compiledBinding.TargetNullValue,
+                StringFormat = compiledBinding.StringFormat,
+                Source = compiledBinding.Source,
+                Priority = compiledBinding.Priority,
+                Delay = compiledBinding.Delay
+            },
+            ReflectionBinding reflectionBinding => new ReflectionBinding
+            {
+                Path = reflectionBinding.Path,
+                Mode = BindingMode.OneWay,
+                Converter = reflectionBinding.Converter,
+                ConverterCulture = reflectionBinding.ConverterCulture,
+                ConverterParameter = reflectionBinding.ConverterParameter,
+                FallbackValue = reflectionBinding.FallbackValue,
+                TargetNullValue = reflectionBinding.TargetNullValue,
+                StringFormat = reflectionBinding.StringFormat,
+                Source = reflectionBinding.Source,
+                Priority = reflectionBinding.Priority,
+                Delay = reflectionBinding.Delay,
+                ElementName = reflectionBinding.ElementName,
+                RelativeSource = reflectionBinding.RelativeSource,
+                TypeResolver = reflectionBinding.TypeResolver
+            },
+            _ => null
+        };
+    }
+
+    private static (IValueConverter? Converter, object? Parameter, CultureInfo? Culture) GetBindingConversion(
+        BindingBase binding)
+    {
+        return binding switch
+        {
+            ReflectionBinding reflectionBinding => (
+                reflectionBinding.Converter,
+                reflectionBinding.ConverterParameter,
+                reflectionBinding.ConverterCulture),
+            CompiledBinding compiledBinding => (
+                compiledBinding.Converter,
+                compiledBinding.ConverterParameter,
+                compiledBinding.ConverterCulture),
+            _ => (null, null, null)
+        };
     }
 
     private static string? GetBindingPath(BindingBase binding)

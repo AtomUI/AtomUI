@@ -1029,6 +1029,11 @@ public partial class DataGrid : TemplatedControl,
     public event EventHandler<DataGridRowEditEndingEventArgs>? RowEditEnding;
 
     /// <summary>
+    /// Occurs when an inline edit has left edit mode but the data source rejected or could not receive it.
+    /// </summary>
+    public event EventHandler<DataGridEditCommitFailedEventArgs>? EditCommitFailed;
+
+    /// <summary>
     /// Occurs when the immutable declarative selection expression changes.
     /// </summary>
     public event EventHandler<DataGridSelectionChangedEventArgs>? SelectionChanged;
@@ -1190,12 +1195,8 @@ public partial class DataGrid : TemplatedControl,
     /// <returns>True if operation was successful. False otherwise.</returns>
     public bool BeginEdit(RoutedEventArgs editingEventArgs)
     {
-        // Inline edits require a committed row entry and an editable Source capability.
-        if (IsRangePresentationActive)
-        {
-            return false;
-        }
-        if (CurrentColumnIndex == -1 || !GetRowSelection(CurrentSlot))
+        // Editing follows the current cell; row selection is an independent feature in this grid.
+        if (CurrentColumnIndex == -1 || CurrentSlot == -1)
         {
             return false;
         }
@@ -1543,6 +1544,14 @@ public partial class DataGrid : TemplatedControl,
     protected virtual void NotifyPreparingCellForEdit(DataGridPreparingCellForEditEventArgs e)
     {
         PreparingCellForEdit?.Invoke(this, e);
+    }
+
+    /// <summary>
+    /// Raises the EditCommitFailed event.
+    /// </summary>
+    protected virtual void NotifyEditCommitFailed(DataGridEditCommitFailedEventArgs e)
+    {
+        EditCommitFailed?.Invoke(this, e);
     }
 
     /// <summary>

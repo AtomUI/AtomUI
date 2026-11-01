@@ -34,7 +34,7 @@ internal class DataGridColumnCollection : ObservableCollection<DataGridColumn>
     internal List<DataGridColumn> ItemsInternal { get; private set; }
 
     /// <summary>
-    /// 显示顺序中最后一个可见的左冻结列，左冻结阴影画在它的右侧。
+    /// The last visible left-frozen column in display order; the left frozen shadow is drawn on its right edge.
     /// </summary>
     internal DataGridColumn? LastVisibleLeftFrozenColumn
     {
@@ -54,7 +54,7 @@ internal class DataGridColumnCollection : ObservableCollection<DataGridColumn>
     }
 
     /// <summary>
-    /// 显示顺序中第一个可见的右冻结列，右冻结阴影画在它的左侧。
+    /// The first visible right-frozen column in display order; the right frozen shadow is drawn on its left edge.
     /// </summary>
     internal DataGridColumn? FirstVisibleRightFrozenColumn
     {

@@ -25,16 +25,20 @@ public partial class DataGrid
             presentation.Snapshot.Snapshot,
             rowKey,
             values);
-        return ObserveRangeMutationAsync(
-            new WeakReference<DataGrid>(this),
-            source,
-            request.Query,
-            request.Snapshot,
-            generation.CancellationToken,
-            cancellationToken,
-            editableSource,
+        var ownerReference = new WeakReference<DataGrid>(this);
+        return ObserveRangeEditAsync(
+            ownerReference,
             request,
-            static (capability, mutation, token) => capability.CommitAsync(mutation, token));
+            ObserveRangeMutationAsync(
+                ownerReference,
+                source,
+                request.Query,
+                request.Snapshot,
+                generation.CancellationToken,
+                cancellationToken,
+                editableSource,
+                request,
+                static (capability, mutation, token) => capability.CommitAsync(mutation, token)));
     }
 
     public ValueTask<bool> DeleteRowAsync(
@@ -229,6 +233,65 @@ public partial class DataGrid
             currentOwner.CompleteRangeMutation(source, query, snapshot, result.Snapshot));
     }
 
+    private static async ValueTask<bool> ObserveRangeEditAsync(
+        WeakReference<DataGrid> ownerReference,
+        DataGridEditRequest request,
+        ValueTask<bool> mutation)
+    {
+        if (!await mutation.ConfigureAwait(false))
+        {
+            return false;
+        }
+
+        // A source that keeps the snapshot changed values in place; rebuild the edited cells so items
+        // without change notification show the committed values.
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            if (ownerReference.TryGetTarget(out var owner))
+            {
+                owner.RefreshRangeRowCells(request.RowKey, request.Values);
+            }
+        }
+        else
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (ownerReference.TryGetTarget(out var currentOwner))
+                {
+                    currentOwner.RefreshRangeRowCells(request.RowKey, request.Values);
+                }
+            });
+        }
+        return true;
+    }
+
+    private void RefreshRangeRowCells(
+        DataGridRowKey rowKey,
+        ImmutableDictionary<DataGridFieldId, DataGridScalar> values)
+    {
+        foreach (var element in DisplayData.GetScrollingRows())
+        {
+            if (element is not DataGridRow { DataContext: not null } row || row.RowKey != rowKey)
+            {
+                continue;
+            }
+            foreach (var column in ColumnsItemsInternal)
+            {
+                var cell = row.Cells[column.Index];
+                if (column is DataGridBoundColumn { FieldId: { } fieldId } &&
+                    values.ContainsKey(fieldId) &&
+                    !ReferenceEquals(cell.Content, column.EditingElement))
+                {
+                    PopulateCellContent(
+                        isCellEdited: false,
+                        dataGridColumn: column,
+                        dataGridRow: row,
+                        dataGridCell: cell);
+                }
+            }
+        }
+    }
+
     private bool CompleteRangeMutation(
         IDataGridSource source,
         DataGridQuery query,
@@ -252,6 +315,12 @@ public partial class DataGrid
             presentation.Snapshot.Query != query)
         {
             return false;
+        }
+
+        // 数据源返回请求时的 snapshot：当前呈现的顺序与成员仍然有效，重载没有意义
+        if (resultSnapshot == snapshot && presentation.Snapshot.Snapshot == snapshot)
+        {
+            return true;
         }
 
         // 数据源在变更过程中自行发出失效并已开始重载：该重载会反映本次变更，变更视为成功，不再重复加载

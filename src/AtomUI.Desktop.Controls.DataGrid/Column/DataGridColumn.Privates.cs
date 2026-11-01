@@ -99,7 +99,7 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     
     internal double LayoutRoundedWidth { get; private set; }
 
-    internal BindingExpressionBase? CellEditBinding => _editBinding;
+    internal Control? EditingElement => _editingElement;
 
     IDataGridColumnGroupItem? IDataGridColumnGroupItem.GroupParent { get; set; }
     ObservableCollection<IDataGridColumnGroupItem> IDataGridColumnGroupItem.GroupChildren { get; } = new();
@@ -123,7 +123,6 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     private IDataTemplate? _headerTemplate;
     private DataGridColumnHeader? _headerCell;
     private Control? _editingElement;
-    private BindingExpressionBase? _editBinding;
     private ControlTheme? _cellTheme;
     private Classes? _cellStyleClasses;
     private bool _setWidthInternalNoCallback;
@@ -356,7 +355,7 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     }
 
     /// <summary>
-    /// 与 GenerateElement 配对：单元格所在行被永久丢弃时调用，解除生成元素上指向表格的绑定。
+    /// Pairs with GenerateElement: called when the cell's row is discarded for good, releasing the element's bindings to the grid.
     /// </summary>
     internal virtual void ReleaseElement(Control element)
     {
@@ -559,7 +558,7 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     {
         if (_editingElement == null)
         {
-            _editingElement = GenerateEditingElement(cell, dataItem, out _editBinding);
+            _editingElement = GenerateEditingElement(cell, dataItem, out _);
         }
 
         return _editingElement;

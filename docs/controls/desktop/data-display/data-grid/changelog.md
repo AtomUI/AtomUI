@@ -2,6 +2,19 @@
 
 本文档记录 DataGrid 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-31
+
+- API
+  - `DataGridFieldSchema` 新增 `IsEditable`；`DataGridLocalSourceDescriptor<T>.Field` 与 `DataGridLocalField<T,TValue>` 新增 `setter`、`fromScalar`。
+  - `DataGridLocalSource<T>` 实现 `IDataGridEditableSource`（Commit 全有或全无、Delete、Cancel；Add 不支持）。
+  - 新增 `EditCommitFailed` 事件与 `DataGridEditCommitFailedEventArgs`；`DataGridOperationColumn` 改为 public sealed。
+- Implementation
+  - 范围数据源下补齐单元格编辑与操作列整行编辑：编辑器使用列绑定的 OneWay 副本，提交时经列转换器转为字段值与 `DataGridScalar`，统一走 `CommitAsync`。
+  - 返回请求 snapshot 的 mutation 不再触发重载，只重建被编辑行的相关单元格，Tab 连续编辑不再被重载取消。
+  - `BeginEdit`、F2 以当前单元格为前提，不再要求行处于选中状态；修复 `EditingColumnIndex` 从未赋值导致恒为 0 的问题。
+- Gallery
+  - 可编辑单元格示例的列改为可编辑，新增“可编辑行”示例，并同步四种语言资源。
+
 ## 2026-10-26
 
 - Implementation

@@ -4,7 +4,8 @@ param(
     [string]$BuildType = "Release",
     [string]$PackageOutputDir = "",
     [string]$PackageValidationBaselineVersion = "",
-    [string]$NativeCompilerSourceRoot = ""
+    [string]$NativeCompilerSourceRoot = "",
+    [string]$VersionOverride = ""
 )
 
 Set-StrictMode -Version Latest
@@ -40,6 +41,9 @@ $buildArguments = @(
 )
 if (-not [string]::IsNullOrWhiteSpace($NativeCompilerSourceRoot)) {
     $buildArguments += "-p:AtomUINative8CompilerSourceRoot=$NativeCompilerSourceRoot"
+}
+if (-not [string]::IsNullOrWhiteSpace($VersionOverride)) {
+    $buildArguments += "-p:AtomUIVersion=$VersionOverride"
 }
 
 # When a baseline version is supplied, the packages are validated against that released version:
@@ -81,6 +85,9 @@ foreach ($project in $AtomUIReleasePackageProjects) {
 $version = [string]$versionProps.Project.PropertyGroup.AtomUIVersion
 if ([string]::IsNullOrWhiteSpace($version)) {
     throw "Unable to read AtomUIVersion from build/Versions.props"
+}
+if (-not [string]::IsNullOrWhiteSpace($VersionOverride)) {
+    $version = $VersionOverride
 }
 
 $expectedPackageNames = @($AtomUIExpectedPackageIds | ForEach-Object { "$($_).$version.nupkg" })

@@ -50,6 +50,9 @@ public partial class DataGrid
                 HorizontalAdjustment = 0;
             }
 
+            var heightIncreased = _rowsPresenterAvailableSize.HasValue && value.HasValue &&
+                                  double.IsFinite(value.Value.Height) &&
+                                  MathUtils.GreaterThan(value.Value.Height, _rowsPresenterAvailableSize.Value.Height);
             _rowsPresenterAvailableSize = value;
             if (value.HasValue)
             {
@@ -57,6 +60,10 @@ public partial class DataGrid
                     ? double.PositiveInfinity
                     : Math.Max(0, value.Value.Width - ActualRowHeaderWidth);
                 ResolveStarColumnWidths(availableCellsWidth);
+            }
+            if (heightIncreased)
+            {
+                ClampRangeOffsetToViewport();
             }
         }
     }

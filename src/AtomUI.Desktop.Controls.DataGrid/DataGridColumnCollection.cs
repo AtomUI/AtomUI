@@ -355,6 +355,11 @@ internal class DataGridColumnCollection : ObservableCollection<DataGridColumn>
         return GetNextColumn(dataGridColumnStart, true /*isVisible*/, null /*isFrozen*/, null /*isReadOnly*/);
     }
 
+    internal DataGridColumn? GetNextVisibleScrollingColumn(DataGridColumn dataGridColumnStart)
+    {
+        return GetNextColumn(dataGridColumnStart, true /*isVisible*/, false /*isFrozen*/, null /*isReadOnly*/);
+    }
+
     internal DataGridColumn? GetNextVisibleFrozenColumn(DataGridColumn dataGridColumnStart)
     {
         return GetNextColumn(dataGridColumnStart, true /*isVisible*/, true /*isFrozen*/, null /*isReadOnly*/);

@@ -1480,11 +1480,13 @@ public partial class DataGrid
             }
 
             cx -= _negHorizontalOffset;
+            // 右冻结列已在上面的冻结列累加中计入，这里只走滚动列，否则右冻结列会被重复计宽，
+            // 导致区域变宽时 cx 虚高、无法回收多余的 HorizontalOffset。
             while (cx < displayWidth && dataGridColumn != null)
             {
                 cx += GetEdgedColumnWidth(dataGridColumn);
                 visibleScrollingColumnsTmp++;
-                dataGridColumn = ColumnsInternal.GetNextVisibleColumn(dataGridColumn);
+                dataGridColumn = ColumnsInternal.GetNextVisibleScrollingColumn(dataGridColumn);
             }
 
             numVisibleScrollingCols = visibleScrollingColumnsTmp;
@@ -1584,7 +1586,7 @@ public partial class DataGrid
                 dataGridColumn = ColumnsItemsInternal[firstDisplayedScrollingCol];
                 for (int jump = 0; jump < jumpFromFirstVisibleScrollingCol; jump++)
                 {
-                    dataGridColumn = ColumnsInternal.GetNextVisibleColumn(dataGridColumn);
+                    dataGridColumn = ColumnsInternal.GetNextVisibleScrollingColumn(dataGridColumn);
                     Debug.Assert(dataGridColumn != null);
                 }
 

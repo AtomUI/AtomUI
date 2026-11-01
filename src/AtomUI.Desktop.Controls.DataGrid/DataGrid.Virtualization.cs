@@ -114,6 +114,24 @@ public partial class DataGrid
         return true;
     }
 
+    // 视口变高会让滚动上界变小，RangeBase 会自行把滚动条 Value 夹到新上界，
+    // 但已提交的偏移量不会跟随；这里把它收敛到新上界并按新视口重新提交呈现窗口，
+    // 否则末行之后会留出与视口增高量等高的空白。只在视口变高时调用，
+    // 行高实测导致的内容总高缩水仍交给原有的锚点恢复逻辑处理。
+    private void ClampRangeOffsetToViewport()
+    {
+        if (!IsRangePresentationActive || SlotCount == 0)
+        {
+            return;
+        }
+
+        var maximumOffset = Math.Max(0, GetRangeExtent() - CellsEstimatedHeight);
+        if (MathUtils.GreaterThan(Math.Max(_verticalOffset, _rangeDesiredOffset), maximumOffset))
+        {
+            QueueRangeScrollOffset(maximumOffset, -1);
+        }
+    }
+
     private void QueueRangeViewport(DataGridDesiredViewport viewport)
     {
         _pendingRangeViewport = viewport;

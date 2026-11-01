@@ -6,6 +6,37 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 6.2.11
+
+`2026-11-01`
+
+- Breaking Changes
+  - FloatButtonGroup：即使 `IsOpen` 设置了本地值或绑定，trigger 交互现在也会更新状态，并开始触发 `Clicked`/`Opened`/`Closed`。请检查受控状态处理，详见[迁移指南](docs/releases/6.2.11-api-changes.zh-CN.md)。#518
+  - DataGrid：字段 schema、本地字段及 descriptor 的签名增加可编辑与写回参数。请重新编译消费方，并显式为源端编辑启用可写字段，详见[迁移指南](docs/releases/6.2.11-api-changes.zh-CN.md)。
+  - Registration：生成的 `ControlPackageGroup_*` 身份随程序集版本变化。请同步升级相关包与 Generator、重新编译消费方，并重新发布裁剪/NativeAOT 应用，详见[迁移指南](docs/releases/6.2.11-api-changes.zh-CN.md)。
+  - Gallery 打包：移除 `EnsureAppImageLauncher.ps1`，请用仓库内 AppImage、DMG 和 zip 打包脚本替代原辅助脚本及外部 AtomUITools 调用，详见[迁移指南](docs/releases/6.2.11-api-changes.zh-CN.md)。
+- DataGrid
+  - 单元格与整行行内编辑经 `IDataGridEditableSource` 提交；本地字段支持 setter 和标量转换，校验字段是否可写，并在值无效时保持编辑状态。
+  - 支持可写本地源的行拖拽排序，显示目标行及插入位置反馈，并修复拖拽影子行布局。#519
+  - 行重排后保持视口位置，拖至首行的目标行立即可见。#522
+  - 数据换代时清除旧滚动意图，视口变大后收敛偏移，并修复滚动回退、删行及收起详情后的偏移错误。#520 #521
+  - 修复 Shift 选区、当前行投影、`ScrollIntoView`，以及挂起键盘导航覆盖后续鼠标选择的问题。
+  - 同步嵌套列分组、对齐冻结分组表头、避免重复计算冻结列宽度，并让右冻结列左缘手柄调整该列自身。
+  - 丢弃容器时释放行、列头与筛选弹层绑定，并在快照过期重启后恢复展开分组。
+- FloatButton
+  - Hover 模式下，指针从 trigger 移向菜单时保持菜单打开。#516
+  - 禁用的 group 忽略 trigger 交互，同步打开状态绑定及生命周期事件。#518
+- Resource Lifecycle
+  - ColorPicker、ButtonSpinner 和 NavMenu 脱离可视树时释放全局输入及共享 Flyout 订阅。#517
+- Localization
+  - 缓存语言目录未命中并跳过非 enum 键，避免资源查找中的重复反射分配。
+- Registration and Build
+  - 为受支持且实际执行链接的 iOS/Android Mono 应用物化 TypeMap 注册，包括 iOS partial linking。
+  - NuGet 打包脚本新增可选 `VersionOverride`，默认版本来源仍为 `AtomUIVersion`。
+- Gallery
+  - 使用仓库内脚本生成 Windows zip、Linux AppImage 和 macOS DMG，并统一一次发布中的构建后缀。
+  - 固定并校验外部打包工具，保留签名身份，校验下载、安装包配置及上传产物。
+
 ## 6.2.10
 
 `2026-10-30`

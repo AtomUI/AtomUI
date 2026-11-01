@@ -158,13 +158,15 @@ SDK-requirement changes count.
   changelog and, when breaking, covered by the migration docs.
 - Run targeted tests for the controls or modules changed. Prefer
   `dotnet test <test-project> --framework net10.0 --no-restore`.
-- **Run the full regression test suite. This step is mandatory when
-  executing the `version-release` skill and cannot be replaced by targeted
-  module tests. Use the repository's maintained full-test entry point,
-  `scripts/run-full-regression.sh --with-integration`. The default run
-  skips the end-to-end `AtomUI.Localization.IntegrationTests`; a release
-  must include it via `--with-integration`. Record the command, result, and
-  any unrelated failures separately.**
+- **Run the full regression test suite with `scripts/run-full-regression.sh`.
+  This step is mandatory for a release and cannot be replaced by targeted tests.
+  The default release suite excludes `AtomUI.Localization.IntegrationTests`.
+  Do not add `--with-integration` or run that project separately merely because
+  this is a release or its range touches Localization, Generator, language packs,
+  or `build/`. Include it only when the user explicitly requests that project
+  or `--with-integration`. Report the default exclusion as the intended scope,
+  not as an unfinished release gate or a reason to rerun. Record the command,
+  result, and unrelated failures separately.**
 - Run build or pack validation when packaging or build files changed.
 - Run the two automated breaking-change gates against the previous release and report both
   results:

@@ -8,7 +8,7 @@
 #   scripts/run-full-regression.sh [--projects p1,p2] [--with-integration] [--filter FX] [--stall 秒] [--prune]
 #
 # 默认不跑端到端集成测试（真实 pack + 临时 NuGet feed + consumer 构建，单项目 6~8 分钟）；
-# 发版或改动本地化/打包链路时加 --with-integration。
+# 普通全量与发版均保持默认排除；仅用户明确要求时加 --with-integration。
 #
 # 输出行前缀（供 agent 解析）:
 #   [COUNT]  统计阶段   [RUN] 项目开始   [PROG] 进度（每 30s）
@@ -43,7 +43,7 @@ PROJECTS=(
     AtomUI.Icons.Shared.Tests
 )
 
-# 端到端集成测试：仅 --with-integration 时加入（发版必须带上）
+# 端到端集成测试：仅用户明确要求 --with-integration 时加入，发版不自动追加
 INTEGRATION_PROJECTS=(
     AtomUI.Localization.IntegrationTests
 )
@@ -84,7 +84,7 @@ fi
 
 echo "[MODE] FINAL FULL REGRESSION — only after focused bug-module tests are green"
 if [ -n "$SKIPPED_INTEGRATION" ]; then
-    echo "[MODE] 未包含集成测试: ${SKIPPED_INTEGRATION}（发版或改动本地化/打包链路时加 --with-integration）"
+    echo "[MODE] 未包含集成测试: ${SKIPPED_INTEGRATION}（默认排除；仅按用户明确要求加 --with-integration）"
 fi
 
 fmt_clock() { # 秒 -> mm:ss
@@ -225,7 +225,7 @@ else
     echo "[DIAGNOSTICS] 失败清单与完整异常栈已保留: $WORKDIR"
 fi
 if [ -n "$SKIPPED_INTEGRATION" ]; then
-    echo "[SUMMARY] 注意: 未包含集成测试 ${SKIPPED_INTEGRATION}（加 --with-integration 运行）"
+    echo "[SUMMARY] 注意: 未包含集成测试 ${SKIPPED_INTEGRATION}（默认排除；仅按用户明确要求加 --with-integration）"
 fi
 if [ "$any_fail" -eq 0 ]; then
     rm -rf "$WORKDIR"

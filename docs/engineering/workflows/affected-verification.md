@@ -140,7 +140,7 @@ hover、滚动、裁剪、资源释放等仍保留原始复现条件和交互/�
 ```bash
 # 仅在用户明确要求或版本发布时使用；默认不含端到端 AtomUI.Localization.IntegrationTests
 scripts/run-full-regression.sh
-# 版本发布，或改动本地化/Generator/打包链路时必须带上集成测试
+# 仅用户明确要求包含端到端集成测试时使用；发版和变更范围不自动触发
 scripts/run-full-regression.sh --with-integration
 
 # 维护影响规则时的快速检查

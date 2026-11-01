@@ -4,6 +4,37 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## 6.2.11
+
+`2026-11-01`
+
+- Breaking Changes
+  - FloatButtonGroup: trigger interactions now update `IsOpen` even when it has a local value or binding, and `Clicked`/`Opened`/`Closed` now fire. Review controlled-state handlers; see the [migration guide](docs/releases/6.2.11-api-changes.md). #518
+  - DataGrid: field-schema and local-field/descriptor signatures add editability and write-back parameters. Rebuild compiled consumers and explicitly opt writable fields into source-backed editing; see the [migration guide](docs/releases/6.2.11-api-changes.md).
+  - Registration: generated `ControlPackageGroup_*` identities change with the assembly version. Upgrade related packages and Generator together, rebuild consumers and republish trimmed/NativeAOT applications; see the [migration guide](docs/releases/6.2.11-api-changes.md).
+  - Gallery packaging: replace the removed `EnsureAppImageLauncher.ps1` and external AtomUITools calls with the repository's AppImage, DMG and zip packaging scripts; see the [migration guide](docs/releases/6.2.11-api-changes.md).
+- DataGrid
+  - Commit cell and whole-row inline edits through `IDataGridEditableSource`; add local-field setters and scalar conversion, validate editable fields, and keep invalid values in edit mode.
+  - Support row reordering on writable local sources, show target-row and insertion-position feedback, and fix drag-ghost layout. #519
+  - Keep the viewport in place after row reordering so a row dropped at the top is immediately visible. #522
+  - Clear obsolete scroll intent when data generations change, clamp offsets after viewport growth, and fix scroll rollback, row-deletion and details-collapse offset errors. #520 #521
+  - Fix Shift selection, current-row projection, `ScrollIntoView` and pending keyboard navigation overriding a later pointer selection.
+  - Synchronize nested column groups, align frozen group headers, avoid double-counting frozen widths, and resize a right-frozen column from its own left edge.
+  - Release row, header and filter-popup bindings when containers are discarded, and recover expanded groups after snapshot-expiry restarts.
+- FloatButton
+  - Keep hover-triggered menus open while the pointer moves from the trigger to the menu. #516
+  - Ignore trigger interactions on disabled groups and synchronize open-state bindings and lifecycle events. #518
+- Resource Lifecycle
+  - Release global-input and shared-flyout subscriptions when ColorPicker, ButtonSpinner and NavMenu detach from the visual tree. #517
+- Localization
+  - Cache catalog misses and skip non-enum keys to avoid repeated reflection allocations during resource lookup.
+- Registration and Build
+  - Materialize TypeMap registrations for supported linked iOS/Android Mono applications, including iOS partial linking.
+  - Add an optional `VersionOverride` to the NuGet packaging script while keeping `AtomUIVersion` as the default version source.
+- Gallery
+  - Build Windows zip, Linux AppImage and macOS DMG artifacts with repository-owned scripts and one shared build stamp.
+  - Pin and verify external packaging tools, preserve signing identities, and validate downloads, installer configuration and uploaded artifacts.
+
 ## 6.2.10
 
 `2026-10-30`

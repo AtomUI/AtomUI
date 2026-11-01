@@ -303,6 +303,10 @@ public partial class DataGrid
             previousSnapshot,
             snapshot,
             isInvalidation);
+        ReprojectCurrentCellForCommittedSnapshot(
+            previousSnapshot,
+            snapshot,
+            isInvalidation);
         ApplyRangeSnapshotMetadata(snapshot);
         ApplyPendingRangeNavigation();
         SetAndRaise(LoadErrorProperty, ref _loadError, null);

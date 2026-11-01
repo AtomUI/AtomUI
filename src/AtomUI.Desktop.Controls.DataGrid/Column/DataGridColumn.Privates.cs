@@ -355,6 +355,13 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
         }
     }
 
+    /// <summary>
+    /// 与 GenerateElement 配对：单元格所在行被永久丢弃时调用，解除生成元素上指向表格的绑定。
+    /// </summary>
+    internal virtual void ReleaseElement(Control element)
+    {
+    }
+
     internal virtual DataGridColumnHeader CreateHeader()
     {
         var result = new DataGridColumnHeader

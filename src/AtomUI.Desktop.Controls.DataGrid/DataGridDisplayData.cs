@@ -117,6 +117,11 @@ internal class DataGridDisplayData
         }
         else
         {
+            // 回收池中的行不再被复用，丢弃前解除其对表格的绑定
+            foreach (var row in _recyclableRows.Concat(_fullyRecycledRows))
+            {
+                row.ReleaseOwningGridBindings();
+            }
             _recyclableRows.Clear();
             _fullyRecycledRows.Clear();
             _recyclableGroupHeaders.Clear();

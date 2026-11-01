@@ -289,6 +289,7 @@ public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
         {
             LogicalChildren.Remove(_dragIndicator);
             VisualChildren.Remove(_dragIndicator);
+            _dragIndicator.ReleaseOwningGridBindings();
         }
 
         _dragIndicator = null;

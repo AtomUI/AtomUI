@@ -1,3 +1,4 @@
+using System.Reactive.Disposables;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using Avalonia;
@@ -22,6 +23,24 @@ internal class DataGridRowReorderHandle : TemplatedControl
     internal DataGridRow? OwningRow;
 
     private IconButton? _indicatorButton;
+    private IDisposable? _owningGridBindings;
+
+    // 绑定订阅表格的属性变更，由生成它的列在行被丢弃时通过 ReleaseOwningGridBindings 释放
+    internal void BindOwningGridProperties(DataGrid owningGrid)
+    {
+        _owningGridBindings?.Dispose();
+        _owningGridBindings = new CompositeDisposable(2)
+        {
+            Bind(IsMotionEnabledProperty, owningGrid[!DataGrid.IsMotionEnabledProperty]),
+            Bind(IsEnabledProperty, owningGrid[!DataGrid.IsEnabledProperty])
+        };
+    }
+
+    internal void ReleaseOwningGridBindings()
+    {
+        _owningGridBindings?.Dispose();
+        _owningGridBindings = null;
+    }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {

@@ -1361,7 +1361,8 @@ public partial class DataGrid
         {
             newCell.OwningColumn       = column;
             newCell.IsVisible          = column.IsVisible;
-            newCell[!DataGridCell.SizeTypeProperty] = this[!SizeTypeProperty];
+            // 单元格跟随所属行（行再跟随表格），绑定留在行内部，行被丢弃时无需逐格解除
+            newCell[!DataGridCell.SizeTypeProperty] = row[!DataGridRow.SizeTypeProperty];
         }
 
         row.Cells.Insert(column.Index, newCell);

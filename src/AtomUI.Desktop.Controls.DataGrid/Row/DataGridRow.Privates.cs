@@ -135,7 +135,7 @@ public partial class DataGridRow
                     IsVisible = false,
                     OwningRow = this
                 };
-                _fillerCell[!SizeTypeProperty] = OwningGrid[!DataGrid.SizeTypeProperty];
+                _fillerCell[!DataGridCell.SizeTypeProperty] = this[!SizeTypeProperty];
                 if (_cellsElement != null)
                 {
                     _cellsElement.Children.Add(_fillerCell);
@@ -348,6 +348,7 @@ public partial class DataGridRow
     private Control? _detailsContent;
     private Control? _headerContent;
     private IDisposable? _detailsContentSizeSubscription;
+    private IDisposable? _owningGridBindings;
     private DataGridDetailsPresenter? _detailsElement;
     
     // Locally cache whether or not details are visible so we don't run redundant storyboards
@@ -632,8 +633,39 @@ public partial class DataGridRow
     }
 
     //TODO Animation
+    // 行对表格属性的绑定会订阅表格的属性变更；行被永久丢弃（不再回收复用）时必须释放，
+    // 否则表格会一直持有已卸载的行、单元格及其内容。ClearValue 不会释放 LocalValue 绑定，
+    // 因此由行持有绑定句柄；复用路径重新取用行时重新绑定。
+    internal void BindOwningGridProperties(DataGrid owningGrid)
+    {
+        _owningGridBindings?.Dispose();
+        _owningGridBindings = new CompositeDisposable(2)
+        {
+            Bind(IsMotionEnabledProperty, owningGrid[!DataGrid.IsMotionEnabledProperty]),
+            Bind(SizeTypeProperty, owningGrid[!DataGrid.SizeTypeProperty])
+        };
+    }
+
+    internal void ReleaseOwningGridBindings()
+    {
+        _owningGridBindings?.Dispose();
+        _owningGridBindings = null;
+        foreach (DataGridCell cell in Cells)
+        {
+            if (cell.Content is Control element)
+            {
+                cell.OwningColumn?.ReleaseElement(element);
+            }
+        }
+    }
+
     internal void DetachFromDataGrid(bool recycle)
     {
+        if (!recycle)
+        {
+            ReleaseOwningGridBindings();
+        }
+
         var isRangeBacked = IsRangeBacked;
         var wasAttached = OwningGrid is not null;
         if (wasAttached)

@@ -44,7 +44,7 @@ internal class DataGridRowExpander : ToggleButton
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     internal ITransform? VerticalIndicatorRenderTransform
     {
         get => GetValue(VerticalIndicatorRenderTransformProperty);
@@ -66,6 +66,20 @@ internal class DataGridRowExpander : ToggleButton
     private Rectangle? _horizontalIndicator;
     private Rectangle? _verticalIndicator;
     private IDisposable? _detailsVisibilitySubscription;
+    private IDisposable? _owningGridBinding;
+
+    // 绑定订阅表格的属性变更，由生成它的列在行被丢弃时通过 ReleaseOwningGridBinding 释放
+    internal void BindOwningGridProperties(DataGrid owningGrid)
+    {
+        _owningGridBinding?.Dispose();
+        _owningGridBinding = Bind(IsMotionEnabledProperty, owningGrid[!DataGrid.IsMotionEnabledProperty]);
+    }
+
+    internal void ReleaseOwningGridBinding()
+    {
+        _owningGridBinding?.Dispose();
+        _owningGridBinding = null;
+    }
 
     protected override Size ArrangeOverride(Size finalSize)
     {

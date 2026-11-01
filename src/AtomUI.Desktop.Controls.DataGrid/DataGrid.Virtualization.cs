@@ -666,8 +666,7 @@ public partial class DataGrid
         row.Index = entry.WindowDataIndex;
         row.Slot = slot;
         row.DataContext = entry.Item;
-        row[!DataGridRow.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
-        row[!DataGridRow.SizeTypeProperty] = this[!SizeTypeProperty];
+        row.BindOwningGridProperties(this);
         CompleteCellsCollection(row);
         NotifyLoadingRow(new DataGridRowEventArgs(row));
         row.ApplyState();

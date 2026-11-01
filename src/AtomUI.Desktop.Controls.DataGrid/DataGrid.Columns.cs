@@ -2179,21 +2179,24 @@ public partial class DataGrid
                      (DisplayData.LastTotallyDisplayedScrollingCol != columnIndex &&
                       ColumnsInternal.DisplayInOrder(DisplayData.LastTotallyDisplayedScrollingCol, columnIndex)))
             {
+                // 滚动区的右边界要扣除右冻结列，否则目标列会停在右冻结列下方
+                double leftFrozenWidth  = ColumnsInternal.GetVisibleLeftFrozenEdgedColumnsWidth();
+                double scrollingRight   = CellsWidth - ColumnsInternal.GetVisibleRightFrozenEdgedColumnsWidth();
                 double xColumnLeftEdge  = GetColumnXFromIndex(columnIndex);
                 double xColumnRightEdge = xColumnLeftEdge + GetEdgedColumnWidth(ColumnsItemsInternal[columnIndex]);
-                double change           = xColumnRightEdge - HorizontalOffset - CellsWidth;
+                double change           = xColumnRightEdge - HorizontalOffset - scrollingRight;
                 double widthRemaining   = change;
 
                 DataGridColumn newFirstDisplayedScrollingCol =
                     ColumnsItemsInternal[DisplayData.FirstDisplayedScrollingCol];
-                DataGridColumn? nextColumn = ColumnsInternal.GetNextVisibleColumn(newFirstDisplayedScrollingCol);
+                DataGridColumn? nextColumn = ColumnsInternal.GetNextVisibleScrollingColumn(newFirstDisplayedScrollingCol);
                 double newColumnWidth = GetEdgedColumnWidth(newFirstDisplayedScrollingCol) - _negHorizontalOffset;
                 while (nextColumn != null && widthRemaining >= newColumnWidth)
                 {
                     widthRemaining                -= newColumnWidth;
                     newFirstDisplayedScrollingCol = nextColumn;
                     newColumnWidth                = GetEdgedColumnWidth(newFirstDisplayedScrollingCol);
-                    nextColumn                    = ColumnsInternal.GetNextVisibleColumn(newFirstDisplayedScrollingCol);
+                    nextColumn                    = ColumnsInternal.GetNextVisibleScrollingColumn(newFirstDisplayedScrollingCol);
                     _negHorizontalOffset          = 0;
                 }
 
@@ -2202,12 +2205,11 @@ public partial class DataGrid
                 if (newFirstDisplayedScrollingCol.Index == columnIndex)
                 {
                     _negHorizontalOffset = 0;
-                    double frozenColumnWidth = ColumnsInternal.GetVisibleLeftFrozenEdgedColumnsWidth();
                     // If the entire column cannot be displayed, we want to start showing it from its LeftEdge
-                    if (newColumnWidth > (CellsWidth - frozenColumnWidth))
+                    if (newColumnWidth > (scrollingRight - leftFrozenWidth))
                     {
                         DisplayData.LastTotallyDisplayedScrollingCol = -1;
-                        change = xColumnLeftEdge - HorizontalOffset - frozenColumnWidth;
+                        change = xColumnLeftEdge - HorizontalOffset - leftFrozenWidth;
                     }
                 }
 

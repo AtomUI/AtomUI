@@ -350,6 +350,11 @@ public partial class DataGrid
             UpdateDisplayedRows(DisplayData.FirstScrollingSlot, CellsEstimatedHeight);
         }
 
+        if (IsRangePresentationActive)
+        {
+            return ScrollRangeSlotIntoView(slot);
+        }
+
         if (DisplayData.FirstScrollingSlot < slot &&
             (DisplayData.LastScrollingSlot > slot || DisplayData.LastScrollingSlot == -1))
         {
@@ -452,6 +457,32 @@ public partial class DataGrid
         InvalidateMeasure();
         InvalidateRowsMeasure(false /*invalidateIndividualRows*/);
 
+        return true;
+    }
+
+    // 范围呈现下的滚动意图必须经 QueueRangeScrollOffset 提交，期望偏移、实际偏移与滚动条才能保持同一真相；
+    // 目标行不在已提交窗口内时也由同一路径请求加载。
+    private bool ScrollRangeSlotIntoView(int slot)
+    {
+        var rowTop = GetRangeOffset(slot);
+        var rowBottom = rowTop + GetRangeHeight(slot);
+        var viewportHeight = CellsEstimatedHeight;
+        double targetOffset;
+        if (MathUtils.LessThan(rowTop, _rangeDesiredOffset) ||
+            MathUtils.GreaterThanOrClose(rowBottom - rowTop, viewportHeight))
+        {
+            targetOffset = rowTop;
+        }
+        else if (MathUtils.GreaterThan(rowBottom, _rangeDesiredOffset + viewportHeight))
+        {
+            targetOffset = rowBottom - viewportHeight;
+        }
+        else
+        {
+            return true;
+        }
+
+        QueueRangeScrollOffset(targetOffset, Math.Sign(targetOffset - _rangeDesiredOffset));
         return true;
     }
 
@@ -680,8 +711,7 @@ public partial class DataGrid
             dataGridRow.Slot                                  = slot;
             dataGridRow.OwningGrid                            = this;
             dataGridRow.DataContext                           = dataContext;
-            dataGridRow[!DataGridRow.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
-            dataGridRow[!DataGridRow.SizeTypeProperty]        = this[!SizeTypeProperty];
+            dataGridRow.BindOwningGridProperties(this);
 
             CompleteCellsCollection(dataGridRow);
             NotifyLoadingRow(new DataGridRowEventArgs(dataGridRow));
@@ -695,8 +725,7 @@ public partial class DataGrid
         var dataGridRow = new DataGridRow();
         dataGridRow.OwningGrid                            = this;
         dataGridRow.DataContext                           = dataContext;
-        dataGridRow[!DataGridRow.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
-        dataGridRow[!DataGridRow.SizeTypeProperty]        = this[!SizeTypeProperty];
+        dataGridRow.BindOwningGridProperties(this);
         CompleteCellsCollection(dataGridRow);
         return dataGridRow;
     }

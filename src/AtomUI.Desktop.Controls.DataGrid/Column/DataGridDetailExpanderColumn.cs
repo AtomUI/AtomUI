@@ -25,10 +25,18 @@ public sealed class DataGridDetailExpanderColumn : DataGridColumn
     {
         Debug.Assert(OwningGrid != null);
         var expander = new DataGridRowExpander();
-        expander[!DataGridRowExpander.IsMotionEnabledProperty] = OwningGrid[!DataGrid.IsMotionEnabledProperty];
+        expander.BindOwningGridProperties(OwningGrid);
         return expander;
     }
-    
+
+    internal override void ReleaseElement(Control element)
+    {
+        if (element is DataGridRowExpander expander)
+        {
+            expander.ReleaseOwningGridBinding();
+        }
+    }
+
     protected override object? PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)
     {
         return null;

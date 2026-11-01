@@ -527,24 +527,6 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     }
 
     /// <summary>
-    /// Set the column's Width without breaking inheritance.
-    /// </summary>
-    /// <param name="width">The new Width.</param>
-    internal void SetWidthInternal(DataGridLength width)
-    {
-        bool originalValue = _settingWidthInternally;
-        _settingWidthInternally = true;
-        try
-        {
-            SetCurrentValue(WidthProperty, width);
-        }
-        finally
-        {
-            _settingWidthInternally = originalValue;
-        }
-    }
-
-    /// <summary>
     /// Sets the column's Width directly, without any callback effects.
     /// </summary>
     /// <param name="width">The new Width.</param>

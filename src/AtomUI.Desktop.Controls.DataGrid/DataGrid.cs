@@ -1170,9 +1170,7 @@ public partial class DataGrid : TemplatedControl,
         _rowHeaderDesiredWidth                 =  0;
 
         RangeDataAccess       = new DataGridRangeDataAccess(this);
-        _showDetailsTable    = new IndexToValueTable<bool>();
         _rowDetailsHeightEstimateTable = new IndexToValueTable<double>();
-        _collapsedSlotsTable = new IndexToValueTable<bool>();
 
         AnchorSlot          = -1;
         _lastEstimatedRow   = -1;

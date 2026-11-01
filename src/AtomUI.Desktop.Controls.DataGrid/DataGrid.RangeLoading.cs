@@ -37,7 +37,6 @@ public partial class DataGrid
         SetSelectionState(DataGridSelectionState.Empty);
         SetAndRaise(CurrentRowKeyProperty, ref _currentRowKey, null);
         _rangeSelectionAnchorDataIndex = -1;
-        _currentRowDataIndexHint = -1;
         ResetAppliedRangeState();
 
         if (!_isRangeAttached || value is null)

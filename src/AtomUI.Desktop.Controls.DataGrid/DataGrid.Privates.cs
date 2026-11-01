@@ -24,7 +24,6 @@ public partial class DataGrid
 {
     internal const bool DefaultCanUserReorderColumns = true;
     internal const bool DefaultCanUserResizeColumns = true;
-    internal const bool DefaultCanUserSortColumns = false;
     internal const bool DefaultCanUserFilterColumns = false;
     internal const bool DefaultIsSorterTooltipVisible = false;
 
@@ -169,12 +168,6 @@ public partial class DataGrid
 
     internal double HorizontalMaximizeOffset => _hScrollBar?.Maximum ?? 0.0d;
 
-    private int NoSelectionChangeCount
-    {
-        get => _noSelectionChangeCount;
-        set => _noSelectionChangeCount = value;
-    }
-
     /// <summary>
     /// Indicates whether or not to use star-sizing logic.  If the DataGrid has infinite available space,
     /// then star sizing doesn't make sense.  In this case, all star columns grow to a predefined size of
@@ -238,16 +231,6 @@ public partial class DataGrid
 
     #endregion
 
-    /// <summary>
-    /// The default order to use for columns when there is no <see cref="DisplayAttribute.Order"/>
-    /// value available for the property.
-    /// </summary>
-    /// <remarks>
-    /// The value of 10,000 comes from the DataAnnotations spec, allowing
-    /// some properties to be ordered at the beginning and some at the end.
-    /// </remarks>
-    private const int DefaultColumnDisplayOrder = 10000;
-
     private const double MinimumRowHeaderWidth = 4;
     private const double MinimumColumnHeaderHeight = 4;
     internal const double MaximumStarColumnWidth = 10000;
@@ -275,7 +258,6 @@ public partial class DataGrid
 
     // prevents reentry into the VerticalScroll event handler
     private Queue<Action> _lostFocusActions;
-    private IndexToValueTable<bool> _showDetailsTable;
     private readonly Dictionary<DataGridRowKey, bool> _rangeDetailsVisibility = [];
     private readonly Dictionary<DataGridRowKey, double> _rangeMeasuredDetailsHeights = [];
     private readonly Dictionary<DataGridRowKey, (long DataGeneration, int Slot)> _rangeDetailsSlotHints = [];
@@ -284,7 +266,6 @@ public partial class DataGrid
     private int? _mouseOverRowIndex; // -1 is used for the 'new row'
     private bool _makeFirstDisplayedCellCurrentCellPending;
     private bool _measured;
-    private int _noSelectionChangeCount;
     private bool _scrollingByHeight;
     private bool _temporarilyResetCurrentCell;
     private DataGridColumn? _previousCurrentColumn;
@@ -299,9 +280,7 @@ public partial class DataGrid
     // the number of pixels of the firstDisplayedScrollingCol which are not displayed
     private double _negHorizontalOffset;
     private byte _autoGeneratingColumnOperationCount;
-    private bool _areHandlersSuspended;
     private bool _autoSizingColumns;
-    private IndexToValueTable<bool> _collapsedSlotsTable;
     private Control? _clickedElement;
 
     // used to store the current column during a Reset
@@ -315,7 +294,6 @@ public partial class DataGrid
     private Visual? _focusedObject;
     private byte _horizontalScrollChangesIgnored;
     private DataGridRow? _focusedRow;
-    private bool _ignoreNextScrollBarsLayout;
     private bool _successfullyUpdatedSelection;
 
     // An approximation of the sum of the heights in pixels of the scrolling rows preceding
@@ -585,28 +563,6 @@ public partial class DataGrid
         return true;
     }
 
-    internal IEnumerable<object?> GetSelectionInclusive(int startRowIndex, int endRowIndex)
-    {
-        if (_rangePresentationIndex is null ||
-            GetCommittedSelectionScope() is not { } scope)
-        {
-            yield break;
-        }
-        foreach (var block in _rangePresentationIndex.Snapshot.Blocks)
-        {
-            foreach (var entry in block.Entries)
-            {
-                if (entry.Kind == DataGridSourceEntryKind.Data &&
-                    entry.WindowDataIndex >= startRowIndex &&
-                    entry.WindowDataIndex <= endRowIndex &&
-                    Selection.Contains(entry.RowKey, entry.DataIndex, scope))
-                {
-                    yield return entry.Item;
-                }
-            }
-        }
-    }
-
     internal void InitializeElements(bool recycleRows)
     {
         try
@@ -653,17 +609,6 @@ public partial class DataGrid
     }
 
     // Returns the committed item or group entry for a display slot.
-    internal object? ItemFromSlot(int slot, ref int rowIndex)
-    {
-        if (!TryGetCommittedRangeEntry(slot, out var entry))
-        {
-            return null;
-        }
-        rowIndex = entry.Kind == DataGridSourceEntryKind.Data
-            ? entry.WindowDataIndex
-            : -1;
-        return entry.Kind == DataGridSourceEntryKind.Data ? entry.Item : entry.Group;
-    }
 
     internal bool ProcessDownKey(KeyEventArgs e)
     {
@@ -748,111 +693,6 @@ public partial class DataGrid
     {
         KeyboardHelper.GetMetaKeyState(this, e.KeyModifiers, out bool ctrl, out bool shift);
         return ProcessRightKey(shift, ctrl);
-    }
-
-    /// <summary>
-    /// Selects items and updates currency based on parameters
-    /// </summary>
-    /// <param name="columnIndex">column index to make current</param>
-    /// <param name="item">A committed data item to make current.</param>
-    /// <param name="backupSlot">slot to use in case the item is no longer valid</param>
-    /// <param name="action">selection action to perform</param>
-    /// <param name="scrollIntoView">whether or not the new current item should be scrolled into view</param>
-    internal void ProcessSelectionAndCurrency(int columnIndex, object item, int backupSlot,
-                                              DataGridSelectionAction action, bool scrollIntoView)
-    {
-        _noSelectionChangeCount++;
-        _noCurrentCellChangeCount++;
-        try
-        {
-            var slot = FindCommittedRangeSlot(item);
-
-            if (slot == -1)
-            {
-                slot = backupSlot;
-            }
-
-            if (slot < 0 || slot > SlotCount)
-            {
-                return;
-            }
-
-            switch (action)
-            {
-                case DataGridSelectionAction.AddCurrentToSelection:
-                    SetRowSelection(slot, isSelected: true, setAnchorSlot: true);
-                    break;
-                case DataGridSelectionAction.RemoveCurrentFromSelection:
-                    SetRowSelection(slot, isSelected: false, setAnchorSlot: false);
-                    break;
-                case DataGridSelectionAction.SelectFromAnchorToCurrent:
-                    if (SelectionMode == DataGridSelectionMode.Extended && AnchorSlot != -1)
-                    {
-                        int anchorSlot = AnchorSlot;
-                        if (slot <= anchorSlot)
-                        {
-                            SetRowsSelection(slot, anchorSlot);
-                        }
-                        else
-                        {
-                            SetRowsSelection(anchorSlot, slot);
-                        }
-                    }
-                    else
-                    {
-                        goto case DataGridSelectionAction.SelectCurrent;
-                    }
-
-                    break;
-                case DataGridSelectionAction.SelectCurrent:
-                    ClearRowSelection(slot, setAnchorSlot: true);
-                    break;
-                case DataGridSelectionAction.None:
-                    break;
-            }
-
-            if (CurrentSlot != slot || (CurrentColumnIndex != columnIndex && columnIndex != -1))
-            {
-                if (columnIndex == -1)
-                {
-                    if (CurrentColumnIndex != -1)
-                    {
-                        columnIndex = CurrentColumnIndex;
-                    }
-                    else
-                    {
-                        DataGridColumn? firstVisibleColumn = ColumnsInternal.FirstVisibleNonFillerColumn;
-                        if (firstVisibleColumn != null)
-                        {
-                            columnIndex = firstVisibleColumn.Index;
-                        }
-                    }
-                }
-
-                if (columnIndex != -1)
-                {
-                    if (!SetCurrentCellCore(
-                            columnIndex, slot,
-                            commitEdit: true,
-                            endRowEdit: CurrentSlot != slot)
-                        || (scrollIntoView &&
-                            !ScrollSlotIntoView(
-                                columnIndex, slot,
-                                forCurrentCellChange: true,
-                                forceHorizontalScroll: false)))
-                    {
-                        return;
-                    }
-                }
-            }
-
-            _successfullyUpdatedSelection = true;
-        }
-        finally
-        {
-            NoCurrentCellChangeCount--;
-            NoSelectionChangeCount--;
-        }
     }
 
     internal bool ProcessUpKey(KeyEventArgs e)
@@ -1075,7 +915,6 @@ public partial class DataGrid
     {
         _successfullyUpdatedSelection = false;
 
-        _noSelectionChangeCount++;
         _noCurrentCellChangeCount++;
         try
         {
@@ -1110,7 +949,6 @@ public partial class DataGrid
         finally
         {
             NoCurrentCellChangeCount--;
-            NoSelectionChangeCount--;
         }
     }
 
@@ -1287,20 +1125,6 @@ public partial class DataGrid
 
         PseudoClasses.Set(DataGridPseudoClass.EmptyColumns, visibleColumnCount == 0);
         PseudoClasses.Set(DataGridPseudoClass.EmptyRows, TotalEntryCount == 0);
-    }
-
-    private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value,
-                                       BindingPriority priority = BindingPriority.LocalValue)
-    {
-        _areHandlersSuspended = true;
-        try
-        {
-            SetValue(property, value, priority);
-        }
-        finally
-        {
-            _areHandlersSuspended = false;
-        }
     }
 
     private void EnsureVerticalGridLines()
@@ -1547,11 +1371,6 @@ public partial class DataGrid
 
     private void ComputeScrollBarsLayout()
     {
-        if (_ignoreNextScrollBarsLayout)
-        {
-            _ignoreNextScrollBarsLayout = false;
-        }
-
         bool isHorizontalScrollBarOverCells = IsHorizontalScrollBarOverCells;
         bool isVerticalScrollBarOverCells   = IsVerticalScrollBarOverCells;
 
@@ -2142,75 +1961,49 @@ public partial class DataGrid
         }
     }
 
-    private void HandleHorizontalGridLinesBrushChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        if (!_areHandlersSuspended && _rowsPresenter != null)
-        {
-            foreach (DataGridRow row in GetAllRows())
-            {
-                row.EnsureGridLines();
-            }
-        }
-    }
-
     private void HandleIsReadOnlyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (!_areHandlersSuspended)
+        var value = (bool)(change.NewValue ?? false);
+        if (value && !CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true))
         {
-            var value = (bool)(change.NewValue ?? false);
-            if (value && !CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true))
-            {
-                CancelEdit(DataGridEditingUnit.Row, raiseEvents: false);
-            }
+            CancelEdit(DataGridEditingUnit.Row, raiseEvents: false);
         }
     }
 
     private void HandleMaxColumnWidthChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (!_areHandlersSuspended)
+        var oldValue = (double)(change.OldValue ?? 0);
+        int displayedColumnCount = ColumnsInternal.GetDisplayedColumnCount();
+        for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
         {
-            var oldValue = (double)(change.OldValue ?? 0);
-            int displayedColumnCount = ColumnsInternal.GetDisplayedColumnCount();
-            for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
-            {
-                DataGridColumn column = ColumnsInternal.GetDisplayedColumnAtDisplayIndex(displayIndex);
-                HandleColumnMaxWidthChanged(column, Math.Min(column.MaxWidth, oldValue));
-            }
+            DataGridColumn column = ColumnsInternal.GetDisplayedColumnAtDisplayIndex(displayIndex);
+            HandleColumnMaxWidthChanged(column, Math.Min(column.MaxWidth, oldValue));
         }
     }
 
     private void HandleMinColumnWidthChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (!_areHandlersSuspended)
+        double oldValue = (double)(change.OldValue ?? 0);
+        int displayedColumnCount = ColumnsInternal.GetDisplayedColumnCount();
+        for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
         {
-            double oldValue = (double)(change.OldValue ?? 0);
-            int displayedColumnCount = ColumnsInternal.GetDisplayedColumnCount();
-            for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
-            {
-                DataGridColumn column = ColumnsInternal.GetDisplayedColumnAtDisplayIndex(displayIndex);
-                HandleColumnMinWidthChanged(column, Math.Max(column.MinWidth, oldValue));
-            }
+            DataGridColumn column = ColumnsInternal.GetDisplayedColumnAtDisplayIndex(displayIndex);
+            HandleColumnMinWidthChanged(column, Math.Max(column.MinWidth, oldValue));
         }
     }
 
     private void HandleRowHeightChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (!_areHandlersSuspended)
-        {
-            InvalidateRowHeightEstimate();
-            // Re-measure all the rows due to the Height change
-            InvalidateRowsMeasure(invalidateIndividualElements: true);
-            // DataGrid needs to update the layout information and the ScrollBars
-            InvalidateMeasure();
-        }
+        InvalidateRowHeightEstimate();
+        // Re-measure all the rows due to the Height change
+        InvalidateRowsMeasure(invalidateIndividualElements: true);
+        // DataGrid needs to update the layout information and the ScrollBars
+        InvalidateMeasure();
     }
 
     private void HandleRowHeaderWidthChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (!_areHandlersSuspended)
-        {
-            EnsureRowHeaderWidth();
-        }
+        EnsureRowHeaderWidth();
     }
 
     //TODO Validation
@@ -2615,7 +2408,7 @@ public partial class DataGrid
 
     private bool IsSlotOutOfBounds(int slot)
     {
-        return slot >= SlotCount || slot < -1 || _collapsedSlotsTable.Contains(slot);
+        return slot >= SlotCount || slot < -1;
     }
 
     private bool IsSlotOutOfSelectionBounds(int slot)
@@ -2840,66 +2633,58 @@ public partial class DataGrid
             }
         }
 
-        _noSelectionChangeCount++;
-        try
+        int                     desiredSlot;
+        int                     columnIndex;
+        DataGridSelectionAction action;
+        if (CurrentColumnIndex == -1)
         {
-            int                     desiredSlot;
-            int                     columnIndex;
-            DataGridSelectionAction action;
-            if (CurrentColumnIndex == -1)
+            desiredSlot = FirstVisibleSlot;
+            columnIndex = firstVisibleColumnIndex;
+            action      = DataGridSelectionAction.SelectCurrent;
+        }
+        else if (ctrl)
+        {
+            if (shift)
             {
-                desiredSlot = FirstVisibleSlot;
-                columnIndex = firstVisibleColumnIndex;
-                action      = DataGridSelectionAction.SelectCurrent;
-            }
-            else if (ctrl)
-            {
-                if (shift)
-                {
-                    // Both Ctrl and Shift
-                    desiredSlot = lastSlot;
-                    columnIndex = CurrentColumnIndex;
-                    action = (SelectionMode == DataGridSelectionMode.Extended)
-                        ? DataGridSelectionAction.SelectFromAnchorToCurrent
-                        : DataGridSelectionAction.SelectCurrent;
-                }
-                else
-                {
-                    // Ctrl without Shift
-                    desiredSlot = lastSlot;
-                    columnIndex = CurrentColumnIndex;
-                    action      = DataGridSelectionAction.SelectCurrent;
-                }
+                // Both Ctrl and Shift
+                desiredSlot = lastSlot;
+                columnIndex = CurrentColumnIndex;
+                action = (SelectionMode == DataGridSelectionMode.Extended)
+                    ? DataGridSelectionAction.SelectFromAnchorToCurrent
+                    : DataGridSelectionAction.SelectCurrent;
             }
             else
             {
-                if (nextSlot == -1)
-                {
-                    return true;
-                }
-
-                if (shift)
-                {
-                    // Shift without Ctrl
-                    desiredSlot = nextSlot;
-                    columnIndex = CurrentColumnIndex;
-                    action      = DataGridSelectionAction.SelectFromAnchorToCurrent;
-                }
-                else
-                {
-                    // Neither Ctrl nor Shift
-                    desiredSlot = nextSlot;
-                    columnIndex = CurrentColumnIndex;
-                    action      = DataGridSelectionAction.SelectCurrent;
-                }
+                // Ctrl without Shift
+                desiredSlot = lastSlot;
+                columnIndex = CurrentColumnIndex;
+                action      = DataGridSelectionAction.SelectCurrent;
+            }
+        }
+        else
+        {
+            if (nextSlot == -1)
+            {
+                return true;
             }
 
-            UpdateSelectionAndCurrency(columnIndex, desiredSlot, action, scrollIntoView: true);
+            if (shift)
+            {
+                // Shift without Ctrl
+                desiredSlot = nextSlot;
+                columnIndex = CurrentColumnIndex;
+                action      = DataGridSelectionAction.SelectFromAnchorToCurrent;
+            }
+            else
+            {
+                // Neither Ctrl nor Shift
+                desiredSlot = nextSlot;
+                columnIndex = CurrentColumnIndex;
+                action      = DataGridSelectionAction.SelectCurrent;
+            }
         }
-        finally
-        {
-            NoSelectionChangeCount--;
-        }
+
+        UpdateSelectionAndCurrency(columnIndex, desiredSlot, action, scrollIntoView: true);
 
         return _successfullyUpdatedSelection;
     }
@@ -2920,26 +2705,18 @@ public partial class DataGrid
             return true;
         }
 
-        _noSelectionChangeCount++;
-        try
+        if (!ctrl)
         {
-            if (!ctrl)
-            {
-                return ProcessRightMost(lastVisibleColumnIndex, firstVisibleSlot);
-            }
-            else
-            {
-                DataGridSelectionAction action = (shift && SelectionMode == DataGridSelectionMode.Extended)
-                    ? DataGridSelectionAction.SelectFromAnchorToCurrent
-                    : DataGridSelectionAction.SelectCurrent;
-
-                var targetSlot = IsRangePresentationActive ? SlotCount - 1 : lastVisibleSlot;
-                UpdateSelectionAndCurrency(lastVisibleColumnIndex, targetSlot, action, scrollIntoView: true);
-            }
+            return ProcessRightMost(lastVisibleColumnIndex, firstVisibleSlot);
         }
-        finally
+        else
         {
-            NoSelectionChangeCount--;
+            DataGridSelectionAction action = (shift && SelectionMode == DataGridSelectionMode.Extended)
+                ? DataGridSelectionAction.SelectFromAnchorToCurrent
+                : DataGridSelectionAction.SelectCurrent;
+
+            var targetSlot = IsRangePresentationActive ? SlotCount - 1 : lastVisibleSlot;
+            UpdateSelectionAndCurrency(lastVisibleColumnIndex, targetSlot, action, scrollIntoView: true);
         }
 
         return _successfullyUpdatedSelection;
@@ -3045,26 +2822,18 @@ public partial class DataGrid
             return true;
         }
 
-        _noSelectionChangeCount++;
-        try
+        if (!ctrl)
         {
-            if (!ctrl)
-            {
-                return ProcessLeftMost(firstVisibleColumnIndex, firstVisibleSlot);
-            }
-            else
-            {
-                DataGridSelectionAction action = (shift && SelectionMode == DataGridSelectionMode.Extended)
-                    ? DataGridSelectionAction.SelectFromAnchorToCurrent
-                    : DataGridSelectionAction.SelectCurrent;
-
-                var targetSlot = IsRangePresentationActive ? 0 : firstVisibleSlot;
-                UpdateSelectionAndCurrency(firstVisibleColumnIndex, targetSlot, action, scrollIntoView: true);
-            }
+            return ProcessLeftMost(firstVisibleColumnIndex, firstVisibleSlot);
         }
-        finally
+        else
         {
-            NoSelectionChangeCount--;
+            DataGridSelectionAction action = (shift && SelectionMode == DataGridSelectionMode.Extended)
+                ? DataGridSelectionAction.SelectFromAnchorToCurrent
+                : DataGridSelectionAction.SelectCurrent;
+
+            var targetSlot = IsRangePresentationActive ? 0 : firstVisibleSlot;
+            UpdateSelectionAndCurrency(firstVisibleColumnIndex, targetSlot, action, scrollIntoView: true);
         }
 
         return _successfullyUpdatedSelection;
@@ -3096,45 +2865,37 @@ public partial class DataGrid
             }
         }
 
-        _noSelectionChangeCount++;
-        try
+        if (ctrl)
         {
-            if (ctrl)
+            return ProcessLeftMost(firstVisibleColumnIndex, firstVisibleSlot);
+        }
+        else
+        {
+            if (IsRangeGroupSlot(CurrentSlot))
             {
-                return ProcessLeftMost(firstVisibleColumnIndex, firstVisibleSlot);
+                CollapseGroup(GetCommittedRangeEntry(CurrentSlot).Group!.Key);
+            }
+            else if (CurrentColumnIndex == -1)
+            {
+                UpdateSelectionAndCurrency(
+                    firstVisibleColumnIndex,
+                    firstVisibleSlot,
+                    DataGridSelectionAction.SelectCurrent,
+                    scrollIntoView: true);
             }
             else
             {
-                if (IsRangeGroupSlot(CurrentSlot))
+                if (previousVisibleColumnIndex == -1)
                 {
-                    CollapseGroup(GetCommittedRangeEntry(CurrentSlot).Group!.Key);
+                    return true;
                 }
-                else if (CurrentColumnIndex == -1)
-                {
-                    UpdateSelectionAndCurrency(
-                        firstVisibleColumnIndex,
-                        firstVisibleSlot,
-                        DataGridSelectionAction.SelectCurrent,
-                        scrollIntoView: true);
-                }
-                else
-                {
-                    if (previousVisibleColumnIndex == -1)
-                    {
-                        return true;
-                    }
 
-                    UpdateSelectionAndCurrency(
-                        previousVisibleColumnIndex,
-                        CurrentSlot,
-                        DataGridSelectionAction.None,
-                        scrollIntoView: true);
-                }
+                UpdateSelectionAndCurrency(
+                    previousVisibleColumnIndex,
+                    CurrentSlot,
+                    DataGridSelectionAction.None,
+                    scrollIntoView: true);
             }
-        }
-        finally
-        {
-            NoSelectionChangeCount--;
         }
 
         return _successfullyUpdatedSelection;
@@ -3143,29 +2904,21 @@ public partial class DataGrid
     // Ctrl Left <==> Home
     private bool ProcessLeftMost(int firstVisibleColumnIndex, int firstVisibleSlot)
     {
-        _noSelectionChangeCount++;
-        try
+        int                     desiredSlot;
+        DataGridSelectionAction action;
+        if (CurrentColumnIndex == -1)
         {
-            int                     desiredSlot;
-            DataGridSelectionAction action;
-            if (CurrentColumnIndex == -1)
-            {
-                desiredSlot = firstVisibleSlot;
-                action      = DataGridSelectionAction.SelectCurrent;
-                Debug.Assert(Selection.IsEmpty);
-            }
-            else
-            {
-                desiredSlot = CurrentSlot;
-                action      = DataGridSelectionAction.None;
-            }
+            desiredSlot = firstVisibleSlot;
+            action      = DataGridSelectionAction.SelectCurrent;
+            Debug.Assert(Selection.IsEmpty);
+        }
+        else
+        {
+            desiredSlot = CurrentSlot;
+            action      = DataGridSelectionAction.None;
+        }
 
-            UpdateSelectionAndCurrency(firstVisibleColumnIndex, desiredSlot, action, scrollIntoView: true);
-        }
-        finally
-        {
-            NoSelectionChangeCount--;
-        }
+        UpdateSelectionAndCurrency(firstVisibleColumnIndex, desiredSlot, action, scrollIntoView: true);
 
         return _successfullyUpdatedSelection;
     }
@@ -3196,32 +2949,24 @@ public partial class DataGrid
             slot = GetNextVisibleSlot(slot);
         }
 
-        _noSelectionChangeCount++;
-        try
+        DataGridSelectionAction action;
+        int                     columnIndex;
+        if (CurrentColumnIndex == -1)
         {
-            DataGridSelectionAction action;
-            int                     columnIndex;
-            if (CurrentColumnIndex == -1)
-            {
-                columnIndex = firstVisibleColumnIndex;
-                action      = DataGridSelectionAction.SelectCurrent;
-            }
-            else
-            {
-                columnIndex = CurrentColumnIndex;
-                action = (shift && SelectionMode == DataGridSelectionMode.Extended)
-                    ? action = DataGridSelectionAction.SelectFromAnchorToCurrent
-                    : IsRangePresentationActive
-                        ? DataGridSelectionAction.None
-                        : DataGridSelectionAction.SelectCurrent;
-            }
+            columnIndex = firstVisibleColumnIndex;
+            action      = DataGridSelectionAction.SelectCurrent;
+        }
+        else
+        {
+            columnIndex = CurrentColumnIndex;
+            action = (shift && SelectionMode == DataGridSelectionMode.Extended)
+                ? action = DataGridSelectionAction.SelectFromAnchorToCurrent
+                : IsRangePresentationActive
+                    ? DataGridSelectionAction.None
+                    : DataGridSelectionAction.SelectCurrent;
+        }
 
-            UpdateSelectionAndCurrency(columnIndex, nextPageSlot, action, scrollIntoView: true);
-        }
-        finally
-        {
-            NoSelectionChangeCount--;
-        }
+        UpdateSelectionAndCurrency(columnIndex, nextPageSlot, action, scrollIntoView: true);
 
         return _successfullyUpdatedSelection;
     }
@@ -3254,32 +2999,24 @@ public partial class DataGrid
 
         Debug.Assert(previousPageSlot != -1);
 
-        _noSelectionChangeCount++;
-        try
+        int                     columnIndex;
+        DataGridSelectionAction action;
+        if (CurrentColumnIndex == -1)
         {
-            int                     columnIndex;
-            DataGridSelectionAction action;
-            if (CurrentColumnIndex == -1)
-            {
-                columnIndex = firstVisibleColumnIndex;
-                action      = DataGridSelectionAction.SelectCurrent;
-            }
-            else
-            {
-                columnIndex = CurrentColumnIndex;
-                action = (shift && SelectionMode == DataGridSelectionMode.Extended)
-                    ? DataGridSelectionAction.SelectFromAnchorToCurrent
-                    : IsRangePresentationActive
-                        ? DataGridSelectionAction.None
-                        : DataGridSelectionAction.SelectCurrent;
-            }
+            columnIndex = firstVisibleColumnIndex;
+            action      = DataGridSelectionAction.SelectCurrent;
+        }
+        else
+        {
+            columnIndex = CurrentColumnIndex;
+            action = (shift && SelectionMode == DataGridSelectionMode.Extended)
+                ? DataGridSelectionAction.SelectFromAnchorToCurrent
+                : IsRangePresentationActive
+                    ? DataGridSelectionAction.None
+                    : DataGridSelectionAction.SelectCurrent;
+        }
 
-            UpdateSelectionAndCurrency(columnIndex, previousPageSlot, action, scrollIntoView: true);
-        }
-        finally
-        {
-            NoSelectionChangeCount--;
-        }
+        UpdateSelectionAndCurrency(columnIndex, previousPageSlot, action, scrollIntoView: true);
 
         return _successfullyUpdatedSelection;
     }
@@ -3309,49 +3046,41 @@ public partial class DataGrid
             }
         }
 
-        _noSelectionChangeCount++;
-        try
+        if (ctrl)
         {
-            if (ctrl)
+            return ProcessRightMost(lastVisibleColumnIndex, firstVisibleSlot);
+        }
+        else
+        {
+            if (IsRangeGroupSlot(CurrentSlot))
             {
-                return ProcessRightMost(lastVisibleColumnIndex, firstVisibleSlot);
+                ExpandGroup(GetCommittedRangeEntry(CurrentSlot).Group!.Key);
+            }
+            else if (CurrentColumnIndex == -1)
+            {
+                int firstVisibleColumnIndex = ColumnsInternal.FirstVisibleColumn == null
+                    ? -1
+                    : ColumnsInternal.FirstVisibleColumn.Index;
+
+                UpdateSelectionAndCurrency(
+                    firstVisibleColumnIndex,
+                    firstVisibleSlot,
+                    DataGridSelectionAction.SelectCurrent,
+                    scrollIntoView: true);
             }
             else
             {
-                if (IsRangeGroupSlot(CurrentSlot))
+                if (nextVisibleColumnIndex == -1)
                 {
-                    ExpandGroup(GetCommittedRangeEntry(CurrentSlot).Group!.Key);
+                    return true;
                 }
-                else if (CurrentColumnIndex == -1)
-                {
-                    int firstVisibleColumnIndex = ColumnsInternal.FirstVisibleColumn == null
-                        ? -1
-                        : ColumnsInternal.FirstVisibleColumn.Index;
 
-                    UpdateSelectionAndCurrency(
-                        firstVisibleColumnIndex,
-                        firstVisibleSlot,
-                        DataGridSelectionAction.SelectCurrent,
-                        scrollIntoView: true);
-                }
-                else
-                {
-                    if (nextVisibleColumnIndex == -1)
-                    {
-                        return true;
-                    }
-
-                    UpdateSelectionAndCurrency(
-                        nextVisibleColumnIndex,
-                        CurrentSlot,
-                        DataGridSelectionAction.None,
-                        scrollIntoView: true);
-                }
+                UpdateSelectionAndCurrency(
+                    nextVisibleColumnIndex,
+                    CurrentSlot,
+                    DataGridSelectionAction.None,
+                    scrollIntoView: true);
             }
-        }
-        finally
-        {
-            NoSelectionChangeCount--;
         }
 
         return _successfullyUpdatedSelection;
@@ -3360,28 +3089,20 @@ public partial class DataGrid
     // Ctrl Right <==> End
     private bool ProcessRightMost(int lastVisibleColumnIndex, int firstVisibleSlot)
     {
-        _noSelectionChangeCount++;
-        try
+        int                     desiredSlot;
+        DataGridSelectionAction action;
+        if (CurrentColumnIndex == -1)
         {
-            int                     desiredSlot;
-            DataGridSelectionAction action;
-            if (CurrentColumnIndex == -1)
-            {
-                desiredSlot = firstVisibleSlot;
-                action      = DataGridSelectionAction.SelectCurrent;
-            }
-            else
-            {
-                desiredSlot = CurrentSlot;
-                action      = DataGridSelectionAction.None;
-            }
+            desiredSlot = firstVisibleSlot;
+            action      = DataGridSelectionAction.SelectCurrent;
+        }
+        else
+        {
+            desiredSlot = CurrentSlot;
+            action      = DataGridSelectionAction.None;
+        }
 
-            UpdateSelectionAndCurrency(lastVisibleColumnIndex, desiredSlot, action, scrollIntoView: true);
-        }
-        finally
-        {
-            NoSelectionChangeCount--;
-        }
+        UpdateSelectionAndCurrency(lastVisibleColumnIndex, desiredSlot, action, scrollIntoView: true);
 
         return _successfullyUpdatedSelection;
     }
@@ -3449,50 +3170,42 @@ public partial class DataGrid
         int targetSlot        = -1;
         int targetColumnIndex = -1;
 
-        _noSelectionChangeCount++;
-        try
+        if (neighborVisibleWritableColumnIndex == -1)
         {
-            if (neighborVisibleWritableColumnIndex == -1)
+            targetSlot = neighborSlot;
+            if (shift)
             {
-                targetSlot = neighborSlot;
-                if (shift)
-                {
-                    Debug.Assert(ColumnsInternal.LastVisibleWritableColumn != null);
-                    targetColumnIndex = ColumnsInternal.LastVisibleWritableColumn.Index;
-                }
-                else
-                {
-                    Debug.Assert(ColumnsInternal.FirstVisibleWritableColumn != null);
-                    targetColumnIndex = ColumnsInternal.FirstVisibleWritableColumn.Index;
-                }
+                Debug.Assert(ColumnsInternal.LastVisibleWritableColumn != null);
+                targetColumnIndex = ColumnsInternal.LastVisibleWritableColumn.Index;
             }
             else
             {
-                targetSlot        = CurrentSlot;
-                targetColumnIndex = neighborVisibleWritableColumnIndex;
+                Debug.Assert(ColumnsInternal.FirstVisibleWritableColumn != null);
+                targetColumnIndex = ColumnsInternal.FirstVisibleWritableColumn.Index;
             }
-
-            DataGridSelectionAction action;
-            if (targetSlot != CurrentSlot || (SelectionMode == DataGridSelectionMode.Extended))
-            {
-                if (IsSlotOutOfBounds(targetSlot))
-                {
-                    return true;
-                }
-
-                action = DataGridSelectionAction.SelectCurrent;
-            }
-            else
-            {
-                action = DataGridSelectionAction.None;
-            }
-
-            UpdateSelectionAndCurrency(targetColumnIndex, targetSlot, action, scrollIntoView: true);
         }
-        finally
+        else
         {
-            NoSelectionChangeCount--;
+            targetSlot        = CurrentSlot;
+            targetColumnIndex = neighborVisibleWritableColumnIndex;
         }
+
+        DataGridSelectionAction action;
+        if (targetSlot != CurrentSlot || (SelectionMode == DataGridSelectionMode.Extended))
+        {
+            if (IsSlotOutOfBounds(targetSlot))
+            {
+                return true;
+            }
+
+            action = DataGridSelectionAction.SelectCurrent;
+        }
+        else
+        {
+            action = DataGridSelectionAction.None;
+        }
+
+        UpdateSelectionAndCurrency(targetColumnIndex, targetSlot, action, scrollIntoView: true);
 
         if (_successfullyUpdatedSelection && !IsRangeGroupSlot(targetSlot))
         {
@@ -3521,67 +3234,59 @@ public partial class DataGrid
 
         int previousVisibleSlot = (CurrentSlot != -1) ? GetPreviousVisibleSlot(CurrentSlot) : -1;
 
-        _noSelectionChangeCount++;
 
-        try
+        int                     slot;
+        int                     columnIndex;
+        DataGridSelectionAction action;
+        if (CurrentColumnIndex == -1)
         {
-            int                     slot;
-            int                     columnIndex;
-            DataGridSelectionAction action;
-            if (CurrentColumnIndex == -1)
+            slot        = firstVisibleSlot;
+            columnIndex = firstVisibleColumnIndex;
+            action      = DataGridSelectionAction.SelectCurrent;
+        }
+        else if (ctrl)
+        {
+            if (shift)
             {
+                // Both Ctrl and Shift
                 slot        = firstVisibleSlot;
-                columnIndex = firstVisibleColumnIndex;
-                action      = DataGridSelectionAction.SelectCurrent;
-            }
-            else if (ctrl)
-            {
-                if (shift)
-                {
-                    // Both Ctrl and Shift
-                    slot        = firstVisibleSlot;
-                    columnIndex = CurrentColumnIndex;
-                    action = (SelectionMode == DataGridSelectionMode.Extended)
-                        ? DataGridSelectionAction.SelectFromAnchorToCurrent
-                        : DataGridSelectionAction.SelectCurrent;
-                }
-                else
-                {
-                    // Ctrl without Shift
-                    slot        = firstVisibleSlot;
-                    columnIndex = CurrentColumnIndex;
-                    action      = DataGridSelectionAction.SelectCurrent;
-                }
+                columnIndex = CurrentColumnIndex;
+                action = (SelectionMode == DataGridSelectionMode.Extended)
+                    ? DataGridSelectionAction.SelectFromAnchorToCurrent
+                    : DataGridSelectionAction.SelectCurrent;
             }
             else
             {
-                if (previousVisibleSlot == -1)
-                {
-                    return true;
-                }
-
-                if (shift)
-                {
-                    // Shift without Ctrl
-                    slot        = previousVisibleSlot;
-                    columnIndex = CurrentColumnIndex;
-                    action      = DataGridSelectionAction.SelectFromAnchorToCurrent;
-                }
-                else
-                {
-                    // Neither Shift nor Ctrl
-                    slot        = previousVisibleSlot;
-                    columnIndex = CurrentColumnIndex;
-                    action      = DataGridSelectionAction.SelectCurrent;
-                }
+                // Ctrl without Shift
+                slot        = firstVisibleSlot;
+                columnIndex = CurrentColumnIndex;
+                action      = DataGridSelectionAction.SelectCurrent;
+            }
+        }
+        else
+        {
+            if (previousVisibleSlot == -1)
+            {
+                return true;
             }
 
-            UpdateSelectionAndCurrency(columnIndex, slot, action, scrollIntoView: true);
+            if (shift)
+            {
+                // Shift without Ctrl
+                slot        = previousVisibleSlot;
+                columnIndex = CurrentColumnIndex;
+                action      = DataGridSelectionAction.SelectFromAnchorToCurrent;
+            }
+            else
+            {
+                // Neither Shift nor Ctrl
+                slot        = previousVisibleSlot;
+                columnIndex = CurrentColumnIndex;
+                action      = DataGridSelectionAction.SelectCurrent;
+            }
         }
-        finally
-        {
-            NoSelectionChangeCount--;
-        }
+
+        UpdateSelectionAndCurrency(columnIndex, slot, action, scrollIntoView: true);
 
         return _successfullyUpdatedSelection;
     }
@@ -3748,13 +3453,11 @@ public partial class DataGrid
             if (TryGetCommittedRangeEntry(slot, out var currentEntry) &&
                 currentEntry.Kind == DataGridSourceEntryKind.Data)
             {
-                SetCurrentRowKeyFromCoordinates(
-                    currentEntry.RowKey,
-                    currentEntry.DataIndex);
+                SetCurrentRowKeyFromCoordinates(currentEntry.RowKey);
             }
             else
             {
-                SetCurrentRowKeyFromCoordinates(null, -1);
+                SetCurrentRowKeyFromCoordinates(null);
             }
         }
 
@@ -3888,9 +3591,6 @@ public partial class DataGrid
 
                 if (!_hScrollBar.IsVisible)
                 {
-                    // This will trigger a call to this method via Cells_SizeChanged for
-                    _ignoreNextScrollBarsLayout = true;
-                    // which no processing is needed.
                     _hScrollBar.IsVisible = true;
                     if (_hScrollBar.DesiredSize.Height == 0)
                     {
@@ -3904,10 +3604,7 @@ public partial class DataGrid
                 _hScrollBar.Maximum = 0;
                 if (_hScrollBar.IsVisible)
                 {
-                    // This will trigger a call to this method via Cells_SizeChanged for
-                    // which no processing is needed.
                     _hScrollBar.IsVisible       = false;
-                    _ignoreNextScrollBarsLayout = true;
                 }
             }
 
@@ -3963,16 +3660,12 @@ public partial class DataGrid
 
                 if (!_vScrollBar.IsVisible)
                 {
-                    // This will trigger a call to this method via Cells_SizeChanged for
-                    // which no processing is needed.
                     _vScrollBar.IsVisible = true;
                     if (_vScrollBar.DesiredSize.Width == 0)
                     {
                         // We need to know the width for the rest of layout to work correctly so measure it now
                         _vScrollBar.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
                     }
-
-                    _ignoreNextScrollBarsLayout = true;
                 }
             }
             else
@@ -3980,10 +3673,7 @@ public partial class DataGrid
                 _vScrollBar.Maximum = 0;
                 if (_vScrollBar.IsVisible)
                 {
-                    // This will trigger a call to this method via Cells_SizeChanged for
-                    // which no processing is needed.
                     _vScrollBar.IsVisible       = false;
-                    _ignoreNextScrollBarsLayout = true;
                 }
             }
         }
@@ -4017,15 +3707,7 @@ public partial class DataGrid
         }
 
         // Unselect everything except the row that was clicked on
-        _noSelectionChangeCount++;
-        try
-        {
-            UpdateSelectionAndCurrency(columnIndex, slot, DataGridSelectionAction.SelectCurrent, scrollIntoView: false);
-        }
-        finally
-        {
-            NoSelectionChangeCount--;
-        }
+        UpdateSelectionAndCurrency(columnIndex, slot, DataGridSelectionAction.SelectCurrent, scrollIntoView: false);
 
         return true;
     }
@@ -4056,24 +3738,34 @@ public partial class DataGrid
             return true;
         }
 
-        try
+        beginEdit = allowEdit &&
+                    CurrentSlot == slot &&
+                    columnIndex != -1 &&
+                    (wasInEdit || CurrentColumnIndex == columnIndex) &&
+                    !GetColumnEffectiveReadOnlyState(ColumnsItemsInternal[columnIndex]);
+
+        DataGridSelectionAction action = DataGridSelectionAction.None;
+
+        DataGridColumn? column = null;
+        if (columnIndex != -1)
         {
-            _noSelectionChangeCount++;
-            beginEdit = allowEdit &&
-                        CurrentSlot == slot &&
-                        columnIndex != -1 &&
-                        (wasInEdit || CurrentColumnIndex == columnIndex) &&
-                        !GetColumnEffectiveReadOnlyState(ColumnsItemsInternal[columnIndex]);
+            column = ColumnsInternal[columnIndex];
+        }
 
-            DataGridSelectionAction action = DataGridSelectionAction.None;
-
-            DataGridColumn? column = null;
-            if (columnIndex != -1)
+        var clickInSelectIndicator = false;
+        if (columnIndex != -1)
+        {
+            if (column is DataGridSelectionColumn selectionColumn)
             {
-                column = ColumnsInternal[columnIndex];
+                var row = DisplayData.GetDisplayedElement(slot) as DataGridRow;
+                Debug.Assert(row != null);
+                var dataGridCell = row.Cells[columnIndex];
+                clickInSelectIndicator = selectionColumn.NotifyAboutToUpdateSelection(pointerPressedEventArgs, dataGridCell);
             }
-            
-            var clickInSelectIndicator = false;
+        }
+
+        if (SelectTriggerType == DataGridSelectTriggerType.SelectIndicator && clickInSelectIndicator)
+        {
             if (columnIndex != -1)
             {
                 if (column is DataGridSelectionColumn selectionColumn)
@@ -4081,88 +3773,70 @@ public partial class DataGrid
                     var row = DisplayData.GetDisplayedElement(slot) as DataGridRow;
                     Debug.Assert(row != null);
                     var dataGridCell = row.Cells[columnIndex];
-                    clickInSelectIndicator = selectionColumn.NotifyAboutToUpdateSelection(pointerPressedEventArgs, dataGridCell);
+                    action = selectionColumn.GetSelectionAction(dataGridCell);
                 }
             }
-
-            if (SelectTriggerType == DataGridSelectTriggerType.SelectIndicator && clickInSelectIndicator)
+        }
+        else
+        {
+            if (SelectionMode != DataGridSelectionMode.None)
             {
-                if (columnIndex != -1)
+                if (clickInSelectIndicator)
                 {
-                    if (column is DataGridSelectionColumn selectionColumn)
+                    if (columnIndex != -1)
                     {
-                        var row = DisplayData.GetDisplayedElement(slot) as DataGridRow;
-                        Debug.Assert(row != null);
-                        var dataGridCell = row.Cells[columnIndex];
-                        action = selectionColumn.GetSelectionAction(dataGridCell);
-                    }
-                }
-            }
-            else
-            {
-                if (SelectionMode != DataGridSelectionMode.None)
-                {
-                    if (clickInSelectIndicator)
-                    {
-                        if (columnIndex != -1)
+                        if (column is DataGridSelectionColumn selectionColumn)
                         {
-                            if (column is DataGridSelectionColumn selectionColumn)
-                            {
-                                var row = DisplayData.GetDisplayedElement(slot) as DataGridRow;
-                                Debug.Assert(row != null);
-                                var dataGridCell = row.Cells[columnIndex];
-                                action = selectionColumn.GetSelectionAction(dataGridCell);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (SelectionMode == DataGridSelectionMode.Extended && shift)
-                        {
-                            // Shift select multiple rows
-                            action = DataGridSelectionAction.SelectFromAnchorToCurrent;
-                        }
-                        else if (GetRowSelection(slot)) // Unselecting single row or Selecting a previously multi-selected row
-                        {
-                            if (!ctrl && SelectionMode == DataGridSelectionMode.Extended && !Selection.IsEmpty)
-                            {
-                                // Unselect everything except the row that was clicked on
-                                action = DataGridSelectionAction.SelectCurrent;
-                            }
-                            else if (ctrl && EditingRow == null)
-                            {
-                                action = DataGridSelectionAction.RemoveCurrentFromSelection;
-                            }
-                            else
-                            {
-                                action = DataGridSelectionAction.None;
-                            }
-                        }
-                        else // Selecting a single row or multi-selecting with Ctrl
-                        {
-                            if (SelectionMode == DataGridSelectionMode.Single || !ctrl)
-                            {
-                                // Unselect the currently selected rows except the new selected row
-                                action = DataGridSelectionAction.SelectCurrent;
-                            }
-                            else
-                            {
-                                action = DataGridSelectionAction.AddCurrentToSelection;
-                            }
+                            var row = DisplayData.GetDisplayedElement(slot) as DataGridRow;
+                            Debug.Assert(row != null);
+                            var dataGridCell = row.Cells[columnIndex];
+                            action = selectionColumn.GetSelectionAction(dataGridCell);
                         }
                     }
                 }
                 else
                 {
-                    action = DataGridSelectionAction.None;
+                    if (SelectionMode == DataGridSelectionMode.Extended && shift)
+                    {
+                        // Shift select multiple rows
+                        action = DataGridSelectionAction.SelectFromAnchorToCurrent;
+                    }
+                    else if (GetRowSelection(slot)) // Unselecting single row or Selecting a previously multi-selected row
+                    {
+                        if (!ctrl && SelectionMode == DataGridSelectionMode.Extended && !Selection.IsEmpty)
+                        {
+                            // Unselect everything except the row that was clicked on
+                            action = DataGridSelectionAction.SelectCurrent;
+                        }
+                        else if (ctrl && EditingRow == null)
+                        {
+                            action = DataGridSelectionAction.RemoveCurrentFromSelection;
+                        }
+                        else
+                        {
+                            action = DataGridSelectionAction.None;
+                        }
+                    }
+                    else // Selecting a single row or multi-selecting with Ctrl
+                    {
+                        if (SelectionMode == DataGridSelectionMode.Single || !ctrl)
+                        {
+                            // Unselect the currently selected rows except the new selected row
+                            action = DataGridSelectionAction.SelectCurrent;
+                        }
+                        else
+                        {
+                            action = DataGridSelectionAction.AddCurrentToSelection;
+                        }
+                    }
                 }
             }
-            UpdateSelectionAndCurrency(columnIndex, slot, action, scrollIntoView: false);
+            else
+            {
+                action = DataGridSelectionAction.None;
+            }
         }
-        finally
-        {
-            NoSelectionChangeCount--;
-        }
+        UpdateSelectionAndCurrency(columnIndex, slot, action, scrollIntoView: false);
 
         if (_successfullyUpdatedSelection && beginEdit && BeginCellEdit(pointerPressedEventArgs))
         {
@@ -4300,12 +3974,9 @@ public partial class DataGrid
 
     private void HandleSelectionModeChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (!_areHandlersSuspended)
-        {
-            AnchorSlot = -1;
-            _rangeSelectionAnchorDataIndex = -1;
-            Selection = Selection.NormalizeForMode(SelectionMode);
-        }
+        AnchorSlot = -1;
+        _rangeSelectionAnchorDataIndex = -1;
+        Selection = Selection.NormalizeForMode(SelectionMode);
     }
 
     private void HandleAutoGenerateColumnsChanged(AvaloniaPropertyChangedEventArgs change)

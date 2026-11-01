@@ -407,15 +407,6 @@ public partial class DataGrid
         }
     }
 
-    internal bool ColumnRequiresRightGridLine(DataGridColumn dataGridColumn, bool includeLastRightGridLineWhenPresent)
-    {
-        return AreVerticalGridLinesVisible &&
-               (dataGridColumn != ColumnsInternal.LastVisibleColumn ||
-                (includeLastRightGridLineWhenPresent &&
-                 ColumnsInternal.FillerColumn != null &&
-                 ColumnsInternal.FillerColumn.IsActive));
-    }
-
     internal DataGridColumnCollection CreateColumnsInstance()
     {
         return new DataGridColumnCollection(this);

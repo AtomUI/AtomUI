@@ -260,12 +260,6 @@ public partial class DataGrid
                Selection.Contains(entry.RowKey, entry.DataIndex, scope);
     }
 
-    internal bool IsColumnDisplayed(int columnIndex)
-    {
-        return columnIndex >= FirstDisplayedNonFillerColumnIndex &&
-               columnIndex <= DisplayData.LastTotallyDisplayedScrollingCol;
-    }
-
     internal bool IsRowRecyclable(DataGridRow row)
     {
         return (row != EditingRow && row != _focusedRow);
@@ -276,8 +270,7 @@ public partial class DataGrid
         return DisplayData.NumDisplayedScrollingElements > 0
                && slot >= DisplayData.FirstScrollingSlot
                && slot <= DisplayData.LastScrollingSlot
-               && slot != -1
-               && !_collapsedSlotsTable.Contains(slot);
+               && slot != -1;
     }
 
     internal void OnRowsMeasure()
@@ -324,7 +317,7 @@ public partial class DataGrid
 
     internal bool ScrollSlotIntoView(int slot, bool scrolledHorizontally)
     {
-        Debug.Assert(_collapsedSlotsTable.Contains(slot) || !IsSlotOutOfBounds(slot));
+        Debug.Assert(!IsSlotOutOfBounds(slot));
 
         if (scrolledHorizontally && DisplayData.FirstScrollingSlot <= slot && DisplayData.LastScrollingSlot >= slot)
         {
@@ -582,7 +575,6 @@ public partial class DataGrid
         ClearRowSelection(resetAnchorSlot: true);
         UnloadElements(recycle);
 
-        _showDetailsTable.Clear();
         _rowDetailsHeightEstimateTable.Clear();
         SlotCount         = 0;
         NegVerticalOffset = 0;
@@ -590,7 +582,6 @@ public partial class DataGrid
         ComputeScrollBarsLayout();
     }
 
-    // Updates _collapsedSlotsTable and returns the number of pixels that were collapsed
     internal DataGridRowsEnumerable GetAllRows()
     {
         return new DataGridRowsEnumerable(_rowsPresenter);
@@ -649,25 +640,6 @@ public partial class DataGrid
 
     // Expands slots from startSlot to endSlot inclusive and adds the amount expanded in this suboperation to
     // the given totalHeightChanged of the entire operation
-    private void GenerateEditingElements()
-    {
-        if (EditingRow != null)
-        {
-            Debug.Assert(EditingRow.Cells.Count == ColumnsItemsInternal.Count);
-            Debug.Assert(EditingRow.DataContext != null);
-            int displayedColumnCount = ColumnsInternal.GetDisplayedColumnCount();
-            for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
-            {
-                DataGridColumn column = ColumnsInternal.GetDisplayedColumnAtDisplayIndex(displayIndex);
-                if (!column.IsVisible || column.IsReadOnly)
-                {
-                    continue;
-                }
-
-                column.GenerateEditingElementInternal(EditingRow.Cells[column.Index], EditingRow.DataContext);
-            }
-        }
-    }
 
     /// <summary>
     /// Returns a row for the provided index. The row gets first loaded through the LoadingRow event.
@@ -1020,16 +992,6 @@ public partial class DataGrid
         InvalidateRowHeightEstimate();
     }
 
-    private void NotifyElementsChanged(bool grew)
-    {
-        if (grew &&
-            ColumnsItemsInternal.Count > 0 &&
-            CurrentColumnIndex == -1)
-        {
-            MakeFirstDisplayedCellCurrentCell();
-        }
-    }
-
     private void LoadRowVisualsForDisplay(DataGridRow row)
     {
         // If the row has been recycled, reapply the BackgroundBrush
@@ -1169,37 +1131,6 @@ public partial class DataGrid
         AvailableSlotElementRoom = CellsEstimatedHeight;
     }
 
-    /// <summary>
-    /// Determines whether the row at the provided index must be displayed or not.
-    /// </summary>
-    private bool SlotIsDisplayed(int slot)
-    {
-        Debug.Assert(slot >= 0);
-
-        if (slot >= DisplayData.FirstScrollingSlot &&
-            slot <= DisplayData.LastScrollingSlot)
-        {
-            // Additional row takes the spot of a displayed row - it is necessarily displayed
-            return true;
-        }
-        if (DisplayData.FirstScrollingSlot == -1 &&
-                 CellsEstimatedHeight > 0 &&
-                 CellsWidth > 0)
-        {
-            return true;
-        }
-        if (slot == GetNextVisibleSlot(DisplayData.LastScrollingSlot))
-        {
-            if (AvailableSlotElementRoom > 0)
-            {
-                // There is room for this additional row
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     // Updates display information and displayed rows after scrolling the given number of pixels
     internal void ScrollSlotsByHeight(double height)
     {
@@ -1259,8 +1190,6 @@ public partial class DataGrid
                                                                  ? RowDetailsHeightEstimate
                                                                  : 0);
                             int scrolledToSlot = newFirstScrollingSlot + (int)(height / singleRowHeightEstimate);
-                            scrolledToSlot += _collapsedSlotsTable.GetIndexCount(newFirstScrollingSlot,
-                                newFirstScrollingSlot + scrolledToSlot);
                             newFirstScrollingSlot = Math.Min(GetNextVisibleSlot(scrolledToSlot), lastVisibleSlot);
                         }
                         else
@@ -1334,7 +1263,6 @@ public partial class DataGrid
                                                                  ? RowDetailsHeightEstimate
                                                                  : 0);
                             int scrolledToSlot = newFirstScrollingSlot + (int)(height / singleRowHeightEstimate);
-                            scrolledToSlot -= _collapsedSlotsTable.GetIndexCount(scrolledToSlot, newFirstScrollingSlot);
 
                             newFirstScrollingSlot = Math.Max(0, GetPreviousVisibleSlot(scrolledToSlot + 1));
                         }
@@ -1562,23 +1490,6 @@ public partial class DataGrid
         return MathUtils.GreaterThanOrClose(verticalOffset, maximum);
     }
 
-    private void SelectDisplayedElement(int slot)
-    {
-        Debug.Assert(IsSlotVisible(slot));
-        Control element = DisplayData.GetDisplayedElement(slot);
-        if (element is DataGridRow row)
-        {
-            row.ApplyState();
-            EnsureRowDetailsVisibility(row, raiseNotification: true, animate: true);
-        }
-        else
-        {
-            // Assume it's a RowGroupHeader
-            DataGridRowGroupHeader? groupHeader = element as DataGridRowGroupHeader;
-            groupHeader?.UpdatePseudoClasses();
-        }
-    }
-
     private void UnloadElements(bool recycle)
     {
         // Since we're unloading all the elements, we can't be in editing mode anymore,
@@ -1665,7 +1576,6 @@ public partial class DataGrid
 
     private void UpdateDisplayedRows(int newFirstDisplayedSlot, double displayHeight)
     {
-        Debug.Assert(!_collapsedSlotsTable.Contains(newFirstDisplayedSlot));
         var committedStart = IsRangePresentationActive
             ? _rangePresentationIndex!.Snapshot.CommittedViewport.FirstVisibleIndex
             : 0;
@@ -1765,7 +1675,6 @@ public partial class DataGrid
     // when scrolling down to a full row
     private void UpdateDisplayedRowsFromBottom(int newLastDisplayedScrollingRow)
     {
-        //Debug.Assert(!_collapsedSlotsTable.Contains(newLastDisplayedScrollingRow));
 
         var committedStart = IsRangePresentationActive
             ? _rangePresentationIndex!.Snapshot.CommittedViewport.FirstVisibleIndex
@@ -1826,7 +1735,6 @@ public partial class DataGrid
 
     private void ClearRowGroupHeadersTable()
     {
-        _collapsedSlotsTable.Clear();
         _rowDetailsHeightEstimateTable.Clear();
         _rowGroupHeightsByLevel = [];
         RowGroupSublevelIndents = [];
@@ -1897,25 +1805,6 @@ public partial class DataGrid
             RowGroupSublevelIndents[level] += change;
         }
         EnsureRowGroupSpacerColumnWidth(groupLevelCount);
-    }
-
-    private int GetDetailsCountInclusive(int lowerBound, int upperBound)
-    {
-        if (upperBound < lowerBound)
-        {
-            return 0;
-        }
-        var count = 0;
-        for (var slot = lowerBound; slot <= upperBound; slot++)
-        {
-            if (TryGetCommittedRangeEntry(slot, out var entry) &&
-                entry.Kind == DataGridSourceEntryKind.Data &&
-                GetRowDetailsVisibility(entry.WindowDataIndex))
-            {
-                count++;
-            }
-        }
-        return count;
     }
 
     private double GetDisplayedRowDetailsHeight(DataGridRow row, double rowHeight)
@@ -1992,45 +1881,6 @@ public partial class DataGrid
         }
 
         return RowDetailsHeightEstimate;
-    }
-
-    private double GetRowDetailsHeightEstimateInclusive(int lowerBound, int upperBound)
-    {
-        if (upperBound < lowerBound)
-        {
-            return 0;
-        }
-
-        int detailsCount = GetDetailsCountInclusive(lowerBound, upperBound);
-        if (detailsCount == 0)
-        {
-            return 0;
-        }
-
-        double totalHeight = detailsCount * RowDetailsHeightEstimate;
-        foreach (int slot in _rowDetailsHeightEstimateTable.EnumerateIndexes(lowerBound))
-        {
-            if (slot > upperBound)
-            {
-                break;
-            }
-
-            if (!GetRowDetailsVisibilityFromSlot(slot))
-            {
-                continue;
-            }
-
-            double? measuredDetailsHeight = _rowDetailsHeightEstimateTable.GetValueAt(slot, out bool found);
-            if (found &&
-                measuredDetailsHeight.HasValue &&
-                !IsInvalidSlotElementHeight(measuredDetailsHeight.Value) &&
-                MathUtils.GreaterThanOrClose(measuredDetailsHeight.Value, RowDetailsHeightEstimate))
-            {
-                totalHeight += measuredDetailsHeight.Value - RowDetailsHeightEstimate;
-            }
-        }
-
-        return Math.Max(0, totalHeight);
     }
 
     private bool GetRowDetailsVisibilityFromSlot(int slot)

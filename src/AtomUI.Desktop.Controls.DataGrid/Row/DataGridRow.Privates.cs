@@ -109,20 +109,6 @@ public partial class DataGridRow
         }
     }
     
-    internal double ActualBottomGridLineHeight
-    {
-        get
-        {
-            if (_bottomGridLine != null && OwningGrid != null && OwningGrid.AreRowBottomGridLinesRequired)
-            {
-                // Unfortunately, _bottomGridLine has no size yet so we can't get its actualheight
-                // TODO 需要审查这里不是常量可以吗？是不是会导致高度计算错误
-                return BorderUtils.BuildRenderScaleAwareThickness(OwningGrid, OwningGrid.BorderThickness.Left);
-            }
-            return 0;
-        }
-    }
-    
     internal DataGridCell FillerCell
     {
         get
@@ -145,18 +131,11 @@ public partial class DataGridRow
         }
     }
     
-    internal bool HasBottomGridLine => _bottomGridLine != null;
-    
     internal bool HasHeaderCell => _headerElement != null;
 
     internal DataGridRowHeader? HeaderCell => _headerElement;
     
     internal bool IsEditing => OwningGrid != null && OwningGrid.EditingRow == this;
-    
-    /// <summary>
-    /// Layout when template is applied
-    /// </summary>
-    internal bool IsLayoutDelayed { get; private set; }
     
     internal bool IsMouseOver
     {
@@ -792,12 +771,6 @@ public partial class DataGridRow
     internal void InvalidateDesiredHeight()
     {
         _cellsElement?.InvalidateDesiredHeight();
-    }
-
-    internal void ResetGridLine()
-    {
-        _bottomGridLine             = null;
-        _bottomGridLineClipGeometry = null;
     }
 
     private void UnloadDetailsTemplate(bool recycle)

@@ -155,8 +155,6 @@ public class DataGridCell : ContentControl
 
     internal DataGrid? OwningGrid => OwningRow?.OwningGrid ?? OwningColumn?.OwningGrid;
 
-    internal double ActualRightGridLineWidth => _rightGridLine?.Bounds.Width ?? 0;
-
     internal int ColumnIndex => OwningColumn?.Index ?? -1;
     internal int RowIndex => OwningRow?.Index ?? -1;
 

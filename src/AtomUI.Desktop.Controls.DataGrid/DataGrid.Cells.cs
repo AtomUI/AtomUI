@@ -51,16 +51,4 @@ public partial class DataGrid
     
     #endregion
     
-    internal static DataGridCell? GetOwningCell(Control element)
-    {
-        Debug.Assert(element != null);
-        DataGridCell? cell   = element as DataGridCell;
-        Control?      target = element;
-        while (target != null && cell == null)
-        {
-            target = target.Parent as Control;
-            cell   = target as DataGridCell;
-        }
-        return cell;
-    }
 }

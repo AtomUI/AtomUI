@@ -5,7 +5,6 @@ namespace AtomUI.Desktop.Controls;
 public partial class DataGrid
 {
     private long _rangeSelectionAnchorDataIndex = -1;
-    private long _currentRowDataIndexHint = -1;
     private RangeNavigationIntent? _pendingRangeNavigation;
     private long _rangeBringIntoViewIntent;
 
@@ -30,11 +29,8 @@ public partial class DataGrid
         }
 
         var intent = checked(++_rangeBringIntoViewIntent);
-        if (TryFindCommittedRangeSlot(rowKey, out var slot, out var dataIndex))
+        if (TryFindCommittedRangeSlot(rowKey, out var slot, out _))
         {
-            _currentRowDataIndexHint = CurrentRowKey == rowKey
-                ? dataIndex
-                : _currentRowDataIndexHint;
             return ValueTask.FromResult(ApplyRangeBringIntoView(
                 intent,
                 source,
@@ -166,9 +162,8 @@ public partial class DataGrid
         if (IsRangePresentationActive)
         {
             if (value is { } key &&
-                TryFindCommittedRangeSlot(key, out var slot, out var dataIndex))
+                TryFindCommittedRangeSlot(key, out var slot, out _))
             {
-                _currentRowDataIndexHint = dataIndex;
                 SetAndRaise(CurrentRowKeyProperty, ref _currentRowKey, value);
                 var columnIndex = CurrentColumnIndex != -1
                     ? CurrentColumnIndex
@@ -194,7 +189,6 @@ public partial class DataGrid
                         endRowEdit: true,
                         updateRangeCurrentKey: false);
                 }
-                _currentRowDataIndexHint = -1;
                 SetAndRaise(CurrentRowKeyProperty, ref _currentRowKey, value);
             }
         }
@@ -205,11 +199,8 @@ public partial class DataGrid
         ApplyRangeCurrentStateToRealizedRows();
     }
 
-    private void SetCurrentRowKeyFromCoordinates(
-        DataGridRowKey? value,
-        long dataIndexHint)
+    private void SetCurrentRowKeyFromCoordinates(DataGridRowKey? value)
     {
-        _currentRowDataIndexHint = dataIndexHint;
         if (_currentRowKey != value)
         {
             SetAndRaise(CurrentRowKeyProperty, ref _currentRowKey, value);

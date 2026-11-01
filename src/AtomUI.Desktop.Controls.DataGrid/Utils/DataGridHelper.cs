@@ -27,26 +27,6 @@ internal static class DataGridHelper
         }
     }
 
-    public static ListSortDirection FromSupportedDirections(DataGridSortDirections supportedDirections)
-    {
-        return supportedDirections switch
-        {
-            DataGridSortDirections.Ascending => ListSortDirection.Ascending,
-            DataGridSortDirections.Descending => ListSortDirection.Descending,
-            _ => throw new ArgumentOutOfRangeException($"unsupported SupportedDirections: {supportedDirections}."),
-        };
-    }
-
-    public static DataGridSortDirections FromListSortDirection(ListSortDirection sortDirection)
-    {
-        return sortDirection switch
-        {
-            ListSortDirection.Ascending => DataGridSortDirections.Ascending,
-            ListSortDirection.Descending => DataGridSortDirections.Descending,
-            _ => throw new ArgumentOutOfRangeException($"unsupported ListSortDirection: {sortDirection}."),
-        };
-    }
-    
     public static bool AreEqualAt3Decimals(double a, double b)
     {
         long scaledA = (long)Math.Round(a * 10000);

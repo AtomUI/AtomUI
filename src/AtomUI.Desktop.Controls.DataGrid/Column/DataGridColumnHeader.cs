@@ -762,24 +762,6 @@ internal partial class DataGridColumnHeader : ContentControl
     }
 
     /// <summary>
-    /// Returns true if the mouse is
-    /// - to the left of the element, or within the left half of the element
-    /// and
-    /// - within the vertical range of the element, or ignoreVertical == true
-    /// </summary>
-    /// <param name="mousePosition"></param>
-    /// <param name="element"></param>
-    /// <param name="ignoreVertical"></param>
-    /// <returns></returns>
-    private bool IsReorderTargeted(Point mousePosition, Control element, bool ignoreVertical)
-    {
-        Point position = this.Translate(element, mousePosition);
-
-        return (position.X < 0 || (position.X >= 0 && position.X <= element.Bounds.Width / 2))
-               && (ignoreVertical || (position.Y >= 0 && position.Y <= element.Bounds.Height));
-    }
-
-    /// <summary>
     /// Resets the static DataGridColumnHeader properties when a header loses mouse capture
     /// </summary>
     private void HandleLostMouseCapture()

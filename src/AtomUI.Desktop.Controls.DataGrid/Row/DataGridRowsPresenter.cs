@@ -294,21 +294,4 @@ public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
 
         _dragIndicator = null;
     }
-    
-#if DEBUG
-    internal void PrintChildren()
-    {
-        foreach (Control element in Children)
-        {
-            if (element is DataGridRow row)
-            {
-                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Slot: {0} Row: {1} Visibility: {2} ", row.Slot, row.Index, row.IsVisible));
-            }
-            else if (element is DataGridRowGroupHeader groupHeader)
-            {
-                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Slot: {0} GroupHeader: {1} Visibility: {2}", groupHeader.SourceSlot, groupHeader.SourceGroup?.Key, groupHeader.IsVisible));
-            }
-        }
-    }
-#endif
 }

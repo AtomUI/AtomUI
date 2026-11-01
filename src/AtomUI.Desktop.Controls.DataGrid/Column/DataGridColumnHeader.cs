@@ -291,6 +291,8 @@ internal partial class DataGridColumnHeader : ContentControl
     private static double s_originalWidth;
     private static Point? s_dragStart;
     private static DataGridColumn? s_dragColumn;
+    // 右冻结列的宽度向左扩展：拖拽向左移动时列变宽
+    private static bool s_dragColumnGrowsLeftward;
     private static DataGridColumn? s_currentDraggingOverColumn;
     private static DataGridColumnHeader? s_dragOwner;
     private static double s_leftFrozenColumnsWidth;
@@ -436,24 +438,12 @@ internal partial class DataGridColumnHeader : ContentControl
             s_rightFrozenColumnsWidth   = OwningGrid.ColumnsInternal.GetVisibleRightFrozenEdgedColumnsWidth();
             s_lastMousePositionHeaders = this.Translate(OwningGrid.ColumnHeaders, mousePosition);
 
-            double          distanceFromLeft  = mousePosition.X;
-            double          distanceFromRight = Bounds.Width - distanceFromLeft;
-            DataGridColumn? currentColumn     = OwningColumn;
-            DataGridColumn? previousColumn    = null;
-            if (!(OwningColumn is DataGridFillerColumn))
+            double distanceFromLeft  = mousePosition.X;
+            double distanceFromRight = Bounds.Width - distanceFromLeft;
+            if (HeaderDragMode == DragMode.MouseDown && s_dragColumn == null &&
+                GetResizeColumn(distanceFromLeft, distanceFromRight, out var growsLeftward) is { } resizeColumn)
             {
-                Debug.Assert(currentColumn != null);
-                previousColumn = OwningGrid.ColumnsInternal.GetPreviousVisibleNonFillerColumn(currentColumn);
-            }
-
-            if (HeaderDragMode == DragMode.MouseDown && s_dragColumn == null && (distanceFromRight <= ResizeRegionWidth))
-            {
-                Debug.Assert(currentColumn != null);
-                handled = TrySetResizeColumn(currentColumn);
-            }
-            else if (HeaderDragMode == DragMode.MouseDown && s_dragColumn == null && distanceFromLeft <= ResizeRegionWidth && previousColumn != null)
-            {
-                handled = TrySetResizeColumn(previousColumn);
+                handled = TrySetResizeColumn(resizeColumn, growsLeftward);
             }
 
             if (HeaderDragMode == DragMode.Resize && s_dragColumn != null)
@@ -578,12 +568,51 @@ internal partial class DataGridColumnHeader : ContentControl
         return column.ActualCanUserResize;
     }
 
-    private bool TrySetResizeColumn(DataGridColumn column)
+    /// <summary>
+    /// Resolves which column the resize grip under the pointer adjusts. A seam owned by a right-frozen
+    /// column resizes that column toward the left, because right-frozen columns are pinned to the right
+    /// edge and the scrolling column before them may be scrolled away or covered by the frozen area.
+    /// </summary>
+    private DataGridColumn? GetResizeColumn(double distanceFromLeft, double distanceFromRight, out bool growsLeftward)
+    {
+        growsLeftward = false;
+        if (OwningGrid == null || OwningColumn is not { } currentColumn)
+        {
+            return null;
+        }
+
+        if (distanceFromRight <= ResizeRegionWidth)
+        {
+            if (currentColumn.IsRightFrozen &&
+                OwningGrid.ColumnsInternal.GetNextVisibleColumn(currentColumn) is { IsRightFrozen: true } nextColumn)
+            {
+                growsLeftward = true;
+                return nextColumn;
+            }
+            return currentColumn;
+        }
+
+        if (distanceFromLeft <= ResizeRegionWidth)
+        {
+            if (currentColumn.IsRightFrozen)
+            {
+                growsLeftward = true;
+                return currentColumn;
+            }
+            return currentColumn is DataGridFillerColumn
+                ? null
+                : OwningGrid.ColumnsInternal.GetPreviousVisibleNonFillerColumn(currentColumn);
+        }
+        return null;
+    }
+
+    private bool TrySetResizeColumn(DataGridColumn column, bool growsLeftward)
     {
         // If datagrid.CanUserResizeColumns == false, then the column can still override it
         if (CanResizeColumn(column))
         {
             s_dragColumn = column;
+            s_dragColumnGrowsLeftward = growsLeftward;
             s_dragOwner  = this;
 
             HeaderDragMode = DragMode.Resize;
@@ -789,6 +818,7 @@ internal partial class DataGridColumnHeader : ContentControl
         }
         HeaderDragMode            = DragMode.None;
         s_dragColumn               = null;
+        s_dragColumnGrowsLeftward  = false;
         s_dragStart                = null;
         s_dragOwner                = null;
         s_lastMousePositionHeaders = null;
@@ -978,7 +1008,9 @@ internal partial class DataGridColumnHeader : ContentControl
         {
             // resize column
             double mouseDelta   = Math.Round(mousePositionHeaders.X - s_dragStart.Value.X);
-            double desiredWidth = s_originalWidth + mouseDelta;
+            double desiredWidth = s_dragColumnGrowsLeftward
+                ? s_originalWidth - mouseDelta
+                : s_originalWidth + mouseDelta;
 
             desiredWidth = Math.Max(s_dragColumn.ActualMinWidth, Math.Min(s_dragColumn.ActualMaxWidth, desiredWidth));
             s_dragColumn.Resize(s_dragColumn.Width,
@@ -999,18 +1031,10 @@ internal partial class DataGridColumnHeader : ContentControl
         }
 
         // set mouse if we can resize column
-        double          distanceFromLeft  = mousePosition.X;
-        double          distanceFromRight = Bounds.Width - distanceFromLeft;
-        DataGridColumn? currentColumn     = OwningColumn;
-        DataGridColumn? previousColumn    = null;
-
-        if (!(OwningColumn is DataGridFillerColumn))
-        {
-            previousColumn = OwningGrid.ColumnsInternal.GetPreviousVisibleNonFillerColumn(currentColumn);
-        }
-
-        if ((distanceFromRight <= ResizeRegionWidth && currentColumn != null && CanResizeColumn(currentColumn)) ||
-            (distanceFromLeft <= ResizeRegionWidth && previousColumn != null && CanResizeColumn(previousColumn)))
+        double distanceFromLeft  = mousePosition.X;
+        double distanceFromRight = Bounds.Width - distanceFromLeft;
+        if (GetResizeColumn(distanceFromLeft, distanceFromRight, out _) is { } resizeColumn &&
+            CanResizeColumn(resizeColumn))
         {
             var resizeCursor = s_resizeCursor.Value;
             if (Cursor != resizeCursor)

@@ -147,6 +147,8 @@ public partial class DataGrid
             return;
         }
         CancelRowReorder();
+        // 失效后槽位编号会变化，按旧槽位记录的导航意图不再指向原目标
+        _pendingRangeNavigation = null;
         if (EditingRow is not null)
         {
             CancelEdit(DataGridEditingUnit.Row, raiseEvents: false);

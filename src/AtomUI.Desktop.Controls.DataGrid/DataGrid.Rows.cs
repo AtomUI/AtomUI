@@ -962,11 +962,15 @@ public partial class DataGrid
 
             if (row != null &&
                 MathUtils.AreClose(RowHeightEstimate, DefaultRowHeight) &&
-                double.IsNaN(row.Height) &&
-                !GetRowDetailsVisibility(row.Index))
+                double.IsNaN(row.Height))
             {
-                RowHeightEstimate = measuredHeight;
-                RebaseRangeHeightIndex(discardMeasuredDataHeights: false);
+                // 详情可见的行同样参与普通行高度估计，只取不含详情区的部分
+                var rowOwnHeight = GetRowDetailsVisibility(row.Index) ? row.HeightWithoutDetails : measuredHeight;
+                if (!IsInvalidSlotElementHeight(rowOwnHeight))
+                {
+                    RowHeightEstimate = rowOwnHeight;
+                    RebaseRangeHeightIndex(discardMeasuredDataHeights: false);
+                }
             }
         }
 

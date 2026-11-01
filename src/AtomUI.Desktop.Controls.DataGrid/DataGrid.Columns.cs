@@ -2017,7 +2017,11 @@ public partial class DataGrid
             dataGridColumn.HeaderCell.SupportedSortDirections = dataGridColumn.EffectiveSupportedSortDirections;
             dataGridColumn.HeaderCell.CanUserFilter     = dataGridColumn.CanUserFilter;
             dataGridColumn.HeaderCell.IsSorterTooltipVisible = dataGridColumn.IsSorterTooltipVisible;
-            _columnHeadersPresenter.Children.Insert(dataGridColumn.DisplayIndexWithFiller, dataGridColumn.HeaderCell);
+            // 分组表头模式下列头由分组视图项承载（重建分组视图时放置），普通表头区保持为空
+            if (!IsGroupHeaderMode)
+            {
+                _columnHeadersPresenter.Children.Insert(dataGridColumn.DisplayIndexWithFiller, dataGridColumn.HeaderCell);
+            }
         }
     }
 
@@ -2614,19 +2618,18 @@ public partial class DataGrid
         }
     }
 
+    // 分组树任意层级的增删（列或整个子分组）都经根项上报，按子树同步列并重建分组表头视图
     private void HandleColumnGroupItemChanged(object? sender, DataGridColumnGroupChangedArgs args)
     {
-        if (args.GroupItem is DataGridColumn gridColumn)
+        if (args.ChangedType == NotifyColumnGroupChangedType.Add)
         {
-            if (args.ChangedType == NotifyColumnGroupChangedType.Add)
-            {
-                ColumnsInternal.Add(gridColumn);
-            }
-            else if (args.ChangedType == NotifyColumnGroupChangedType.Remove)
-            {
-                ColumnsInternal.Remove(gridColumn);
-            }
+            AddColumnsFromGroupTree(args.GroupItem);
         }
+        else if (args.ChangedType == NotifyColumnGroupChangedType.Remove)
+        {
+            RemoveColumnsFromGroupTree(args.GroupItem);
+        }
+        RebuildColumnGroupView();
     }
 
     private void AddColumnsFromGroupTree(IDataGridColumnGroupItem groupItem)

@@ -16,6 +16,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -218,6 +219,28 @@ public partial class DataGridRow
                 Debug.Assert(!double.IsNaN(_detailsElement.ContentHeight));
                 Debug.Assert(!double.IsNaN(_detailsDesiredHeight));
                 return DesiredSize.Height + _detailsDesiredHeight - _detailsElement.ContentHeight;
+            }
+            return DesiredSize.Height;
+        }
+    }
+
+    // 不含详情区的行自身高度：详情可见时据此估计普通行高度，否则折叠详情后的锚点恢复会使用过时的默认估值
+    internal double HeightWithoutDetails
+    {
+        get
+        {
+            // 详情区在根容器中独占一行（模板可能用带内边距的外框包住呈现器），
+            // 减去该行元素的期望高度即得不含详情的行高
+            if (_detailsElement != null && _appliedDetailsVisibility == true && _appliedDetailsTemplate != null)
+            {
+                Visual detailsArea = _detailsElement;
+                while (detailsArea.GetVisualParent() is { } parent && !ReferenceEquals(parent, RootElement))
+                {
+                    detailsArea = parent;
+                }
+                return detailsArea is Layoutable layoutable
+                    ? DesiredSize.Height - layoutable.DesiredSize.Height
+                    : double.NaN;
             }
             return DesiredSize.Height;
         }

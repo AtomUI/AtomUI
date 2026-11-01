@@ -249,19 +249,27 @@ public partial class DataGrid
 
         if (!ReferenceEquals(ItemsSource, source) ||
             _rangePresentationIndex is not { } presentation ||
-            presentation.Snapshot.Query != query ||
-            presentation.Snapshot.Snapshot != snapshot ||
-            IsDataStale ||
-            LoadState != DataGridLoadState.Ready)
+            presentation.Snapshot.Query != query)
         {
             return false;
         }
 
-        if (!IsDataStale && LoadState != DataGridLoadState.Refreshing)
+        // 数据源在变更过程中自行发出失效并已开始重载：该重载会反映本次变更，变更视为成功，不再重复加载
+        if (IsDataStale || LoadState == DataGridLoadState.Refreshing)
         {
-            SetAndRaise(IsDataStaleProperty, ref _isDataStale, true);
-            BeginRangeLoad(isInvalidation: true);
+            return true;
         }
+
+        if (presentation.Snapshot.Snapshot != snapshot || LoadState != DataGridLoadState.Ready)
+        {
+            return false;
+        }
+
+        // 与数据源失效路径一致，以首个完整行为锚点重载，变更发生在视口上方时视图不跳动
+        SetAndRaise(IsDataStaleProperty, ref _isDataStale, true);
+        BeginRangeLoad(
+            isInvalidation: true,
+            CaptureFirstCompleteRangeAnchor());
         return true;
     }
 

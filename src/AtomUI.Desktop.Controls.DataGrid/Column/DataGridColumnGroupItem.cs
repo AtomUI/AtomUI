@@ -119,6 +119,8 @@ public class DataGridColumnGroupItem : AvaloniaObject,
     private DataGridColumnGroupHeader? _headerCell;
     private DataGrid? _owningGrid;
     private DataGrid? _subscribedResourceHostGrid;
+    // 已接入的子项：Reset 不携带旧项，解除父子关系与退订子分组必须依据这份记录
+    private readonly List<IDataGridColumnGroupItem> _attachedChildren = [];
 
     static DataGridColumnGroupItem()
     {
@@ -211,47 +213,71 @@ public class DataGridColumnGroupItem : AvaloniaObject,
     
     private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            foreach (var child in _attachedChildren.ToArray())
+            {
+                DetachChild(child);
+            }
+            foreach (var child in GroupChildren)
+            {
+                AttachChild(child);
+            }
+            return;
+        }
+
         if (e.OldItems != null)
         {
-            var oldItems = e.OldItems;
-            for (var i = 0; i < oldItems.Count; i++)
+            foreach (var item in e.OldItems)
             {
-                var item = oldItems[i];
                 if (item is IDataGridColumnGroupItem groupItem)
                 {
-                    HandleColumnGroupChanged(groupItem, NotifyColumnGroupChangedType.Remove);
-                    groupItem.GroupParent = null;
+                    DetachChild(groupItem);
                 }
             }
         }
 
         if (e.NewItems != null)
         {
-            var newItems = e.NewItems;
-            for (var i = 0; i < newItems.Count; i++)
+            foreach (var item in e.NewItems)
             {
-                var item = newItems[i];
                 if (item is IDataGridColumnGroupItem groupItem)
                 {
-                    groupItem.GroupParent = this;
-                    HandleColumnGroupChanged(groupItem, NotifyColumnGroupChangedType.Add);
+                    AttachChild(groupItem);
                 }
             }
         }
     }
 
-    private void HandleColumnGroupChanged(IDataGridColumnGroupItem groupItem, NotifyColumnGroupChangedType changedType)
+    private void AttachChild(IDataGridColumnGroupItem child)
     {
-        if (groupItem is DataGridColumn)
+        child.GroupParent = this;
+        _attachedChildren.Add(child);
+        if (child is DataGridColumnGroupItem subGroup)
         {
-            Debug.Assert(groupItem.GroupParent != null);
-            var current = groupItem;
-            while (current.GroupParent != null)
-            {
-                current = current.GroupParent;
-            }
-            GroupChanged?.Invoke(this, new DataGridColumnGroupChangedArgs(groupItem, changedType));
+            subGroup.GroupChanged += HandleSubGroupChanged;
         }
+        GroupChanged?.Invoke(this, new DataGridColumnGroupChangedArgs(child, NotifyColumnGroupChangedType.Add));
+    }
+
+    private void DetachChild(IDataGridColumnGroupItem child)
+    {
+        if (!_attachedChildren.Remove(child))
+        {
+            return;
+        }
+        if (child is DataGridColumnGroupItem subGroup)
+        {
+            subGroup.GroupChanged -= HandleSubGroupChanged;
+        }
+        GroupChanged?.Invoke(this, new DataGridColumnGroupChangedArgs(child, NotifyColumnGroupChangedType.Remove));
+        child.GroupParent = null;
+    }
+
+    // 子分组内部的增删同样属于本分组树的变化，向上转发直至根，表格只订阅根项
+    private void HandleSubGroupChanged(object? sender, DataGridColumnGroupChangedArgs args)
+    {
+        GroupChanged?.Invoke(this, args);
     }
     
     internal virtual DataGridColumnGroupHeader CreateHeader()

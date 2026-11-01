@@ -162,6 +162,11 @@ public partial class DataGrid
             var firstSlot = Math.Max(committedFirst, _rangeHeightIndex!.FindSlotAtOffset(target, SlotCount));
             NegVerticalOffset = Math.Max(0, target - GetRangeOffset(firstSlot));
             SetVerticalOffset(target);
+            // 显示行只能按相邻槽位向上扩展；新首行与当前显示不相邻时先回收全部显示行再从新首行重建
+            if (displayedFirst - firstSlot > 1)
+            {
+                ResetDisplayedRows();
+            }
             UpdateDisplayedRows(firstSlot, CellsEstimatedHeight);
             return;
         }

@@ -159,6 +159,20 @@ public partial class DataGrid
             return;
         }
 
+        // 与其他当前格变更路径一致，在批次结束时统一比较并触发 CurrentCellChanged
+        NoCurrentCellChangeCount++;
+        try
+        {
+            SetCurrentRowKeyCore(value);
+        }
+        finally
+        {
+            NoCurrentCellChangeCount--;
+        }
+    }
+
+    private void SetCurrentRowKeyCore(DataGridRowKey? value)
+    {
         if (IsRangePresentationActive)
         {
             if (value is { } key &&
@@ -408,6 +422,9 @@ public partial class DataGrid
         {
             return;
         }
+        // 直接作用于已加载行的选择/当前格变更是更新的用户意图，挂起的导航随之作废，
+        // 否则其目标块加载完成后会覆盖这次操作
+        _pendingRangeNavigation = null;
 
         switch (action)
         {

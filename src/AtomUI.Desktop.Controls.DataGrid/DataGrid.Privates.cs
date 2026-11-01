@@ -9,10 +9,8 @@ using AtomUI.Desktop.Controls.Utils;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
@@ -164,6 +162,15 @@ public partial class DataGrid
     internal double NegVerticalOffset { get; private set; }
 
     internal double HorizontalMaximizeOffset => _hScrollBar?.Maximum ?? 0.0d;
+
+    // 冻结列阴影的唯一判定：表头、分组表头与单元格共用，按 3 位小数比较以忽略浮点残差，
+    // 避免各自用不同数据源与精度判断而在滚动边缘出现表头与单元格不一致。
+    internal bool IsLeftFrozenShadowVisible =>
+        DataGridHelper.AreLessAt3Decimals(0, HorizontalOffset);
+
+    internal bool IsRightFrozenShadowVisible =>
+        _hScrollBar is { IsVisible: true } &&
+        DataGridHelper.AreLessAt3Decimals(HorizontalOffset, HorizontalMaximizeOffset);
 
     /// <summary>
     /// Indicates whether or not to use star-sizing logic.  If the DataGrid has infinite available space,

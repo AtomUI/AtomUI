@@ -156,7 +156,7 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
                 frozenLeftEdge += dataGridColumn.ActualWidth;
                 columnHeader.IsFrozen             =  true;
                 columnHeader.FrozenShadowPosition =  FrozenColumnShadowPosition.Right;
-                columnHeader.IsShowFrozenShadow   =  dataGridColumn == lastLeftFrozenColumn && OwningGrid.HorizontalOffset > 0;
+                columnHeader.IsShowFrozenShadow   =  dataGridColumn == lastLeftFrozenColumn && OwningGrid.IsLeftFrozenShadowVisible;
             }
             else
             {
@@ -195,10 +195,8 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
                     columnHeader.FrozenShadowPosition =  FrozenColumnShadowPosition.Left;
                     // 填充列位于全部列之后（未滚动时右冻结列处于自然位置）
                     scrollingLeftEdge += dataGridColumn.ActualWidth;
-                    var horizontalScrollBarVisible = OwningGrid.HorizontalScrollBar?.IsVisible ?? false;
                     columnHeader.IsShowFrozenShadow   =  dataGridColumn == firstRightFrozenColumn &&
-                                                         horizontalScrollBarVisible &&
-                                                         OwningGrid.HorizontalOffset < OwningGrid.HorizontalMaximizeOffset;
+                                                         OwningGrid.IsRightFrozenShadowVisible;
                 }
             }
         }

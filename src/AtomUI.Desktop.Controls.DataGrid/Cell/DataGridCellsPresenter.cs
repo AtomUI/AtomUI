@@ -108,7 +108,6 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
             }
         }
         
-        var maxOffsetX = finalSize.Width - frozenRightEdge;
         
         // left and normal：右冻结列只在下方的右侧循环中排列并计宽一次
         for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
@@ -129,7 +128,7 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
                 frozenLeftEdge            += column.ActualWidth;
                 cell.IsFrozen             =  true;
                 cell.FrozenShadowPosition =  FrozenColumnShadowPosition.Right;
-                cell.IsShowFrozenShadow   =  column == lastLeftFrozenColumn && OwningGrid.HorizontalOffset > 0;
+                cell.IsShowFrozenShadow   =  column == lastLeftFrozenColumn && OwningGrid.IsLeftFrozenShadowVisible;
             }
  
             else
@@ -168,10 +167,7 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
                     cellLeftEdge              = frozenRightEdge;
                     cell.IsFrozen             = true;
                     cell.FrozenShadowPosition = FrozenColumnShadowPosition.Left;
-                    var horizontalScrollBarVisible = OwningGrid.HorizontalScrollBar?.IsVisible ?? false;
-                    cell.IsShowFrozenShadow = column == firstRightFrozenColumn &&
-                                              horizontalScrollBarVisible &&
-                                              DataGridHelper.AreLessAt3Decimals(OwningGrid.HorizontalOffset, maxOffsetX);
+                    cell.IsShowFrozenShadow = column == firstRightFrozenColumn && OwningGrid.IsRightFrozenShadowVisible;
                     if (cell.IsVisible)
                     {
                         cell.Arrange(new Rect(cellLeftEdge, 0, column.LayoutRoundedWidth, finalSize.Height));

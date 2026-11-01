@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.Diagnostics;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
@@ -378,7 +379,7 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
             }
             _frozenLeftEdge += dataGridColumn.ActualWidth;
             headerViewItem.IsFrozen             =  true;
-            headerViewItem.IsShowRightFrozenShadow   =  dataGridColumn == OwningGrid.ColumnsInternal.LastVisibleLeftFrozenColumn && OwningGrid.HorizontalOffset > 0;
+            headerViewItem.IsShowRightFrozenShadow   =  dataGridColumn == OwningGrid.ColumnsInternal.LastVisibleLeftFrozenColumn && OwningGrid.IsLeftFrozenShadowVisible;
             SetupParentShadowInfo(dataGridColumn, headerViewItem.IsShowRightFrozenShadow, true);
         }
         else if (dataGridColumn.IsRightFrozen)
@@ -387,13 +388,13 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
             headerViewItem.Arrange(new Rect(columnFrozenRightEdge,  rect.Y, dataGridColumn.LayoutRoundedWidth, rect.Height));
             headerViewItem.ClearClipGeometry(); // The layout system could have clipped this because it's not aware of our render transform
             headerViewItem.IsFrozen             =  true;
-            headerViewItem.IsShowLeftFrozenShadow   =  dataGridColumn == OwningGrid.ColumnsInternal.FirstVisibleRightFrozenColumn && OwningGrid.HorizontalOffset < OwningGrid.HorizontalMaximizeOffset;
+            headerViewItem.IsShowLeftFrozenShadow   =  dataGridColumn == OwningGrid.ColumnsInternal.FirstVisibleRightFrozenColumn && OwningGrid.IsRightFrozenShadowVisible;
             SetupParentShadowInfo(dataGridColumn, headerViewItem.IsShowLeftFrozenShadow, false);
         }
         else
         {
             headerViewItem.Arrange(new Rect(_scrollingLeftEdge, rect.Y, dataGridColumn.LayoutRoundedWidth, rect.Height));
-            EnsureColumnHeaderClip(headerViewItem, dataGridColumn.ActualWidth, rect.Height, _frozenLeftEdge, _scrollingLeftEdge);
+            EnsureColumnHeaderClip(headerViewItem, dataGridColumn.ActualWidth, rect.Height, _frozenLeftEdge, RightFrozenStart, _scrollingLeftEdge);
             if (DragColumn == dataGridColumn && DragIndicator != null)
             {
                 _dragIndicatorLeftEdge = _scrollingLeftEdge + DragIndicatorOffset;
@@ -621,20 +622,10 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
             var hasChildren = groupItem.GroupChildren.Count > 0;
             if (groupItem.GroupHeaderViewItem != null)
             {
-                // 安排自己
                 if (hasChildren)
                 {
-                    var size = groupItem.GroupHeaderViewItem.DesiredSize;
-                    selfHeight = size.Height;
-                    var offsetX = rect.X;
-                    if (groupItem is DataGridColumnGroupItem groupItemX)
-                    {
-                        if (!groupItemX.IsFrozen)
-                        {
-                            offsetX -= OwningGrid!.HorizontalOffset;
-                        }
-                    }
-                    groupItem.GroupHeaderViewItem.Arrange(new Rect(offsetX, rect.Y, size.Width, hasChildren ? selfHeight : rect.Height));
+                    // 分组表头的位置由子项实际占据的范围决定（子项在下方先行排列）
+                    selfHeight = groupItem.GroupHeaderViewItem.DesiredSize.Height;
                 }
                 else
                 {
@@ -673,19 +664,65 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
                         }
                     }
                 }
+
+                if (groupItem.GroupHeaderViewItem is { } groupHeaderViewItem)
+                {
+                    ArrangeGroupHeaderOverChildren(groupItem, groupHeaderViewItem, rect.Y, selfHeight);
+                }
             }
         }
     }
 
-    private static void EnsureColumnHeaderClip(DataGridHeaderViewItem headerViewItem, double width, double height,
-                                               double frozenLeftEdge, double columnHeaderLeftEdge)
+    // 冻结列的子项会被钉在左/右边缘，分组表头按自身自然位置排列会与子项错位；
+    // 改为横跨子项实际排列后的范围，滚动分组时与原先“自然位置减去横向偏移”的结果一致。
+    private void ArrangeGroupHeaderOverChildren(IDataGridColumnGroupItemInternal groupItem,
+                                                DataGridHeaderViewItem groupHeaderViewItem,
+                                                double y,
+                                                double height)
     {
-        // Clip the cell only if it's scrolled under frozen columns.  Unfortunately, we need to clip in this case
-        // because cells could be transparent
-        if (frozenLeftEdge > columnHeaderLeftEdge)
+        var left  = double.PositiveInfinity;
+        var right = double.NegativeInfinity;
+        foreach (var child in groupItem.GroupChildren)
         {
-            double            xClip = Math.Min(width, frozenLeftEdge - columnHeaderLeftEdge);
-            headerViewItem.UpdateClipGeometry(new Rect(xClip, 0, width - xClip, height));
+            if (child is IDataGridColumnGroupItemInternal { GroupHeaderViewItem: { IsVisible: true } childView })
+            {
+                left  = Math.Min(left, childView.Bounds.X);
+                right = Math.Max(right, childView.Bounds.Right);
+            }
+        }
+        if (double.IsInfinity(left))
+        {
+            groupHeaderViewItem.Arrange(new Rect(0, y, 0, height));
+            return;
+        }
+
+        var width = right - left;
+        groupHeaderViewItem.Arrange(new Rect(left, y, width, height));
+        if (groupItem is DataGridColumnGroupItem { IsFrozen: true })
+        {
+            groupHeaderViewItem.ClearClipGeometry();
+        }
+        else
+        {
+            EnsureColumnHeaderClip(groupHeaderViewItem, width, height, _frozenLeftEdge, RightFrozenStart, left);
+        }
+    }
+
+    // 右冻结区的起点：滚动内容在其右侧的部分被右冻结列遮挡
+    private double RightFrozenStart =>
+        _frozenRightEdge - (OwningGrid?.ColumnsInternal.GetVisibleRightFrozenEdgedColumnsWidth() ?? 0);
+
+    private static void EnsureColumnHeaderClip(DataGridHeaderViewItem headerViewItem, double width, double height,
+                                               double frozenLeftEdge, double rightFrozenStart, double columnHeaderLeftEdge)
+    {
+        // Clip the header only if it's scrolled under left or right frozen columns.  Unfortunately, we need to clip
+        // in this case because headers could be transparent
+        var clipLeft  = Math.Max(0, frozenLeftEdge - columnHeaderLeftEdge);
+        var clipRight = Math.Max(0, columnHeaderLeftEdge + width - rightFrozenStart);
+        if (MathUtils.GreaterThan(clipLeft, 0) || MathUtils.GreaterThan(clipRight, 0))
+        {
+            var xClip = Math.Min(width, clipLeft);
+            headerViewItem.UpdateClipGeometry(new Rect(xClip, 0, Math.Max(0, width - xClip - clipRight), height));
         }
         else
         {
@@ -717,11 +754,15 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
                 rightEdge = Math.Min(rightEdge, frozenColumnsWidth);
             }
         }
-        else if (OwningGrid.LeftFrozenColumnCount > 0)
+        else
         {
             // If we're dragging a scrolling column, we want to clip both the DragIndicator and the DropLocationIndicator
-            // controls when they go into the frozen column range.
-            leftEdge = frozenColumnsWidth;
+            // controls when they go into the left or right frozen column range.
+            if (OwningGrid.LeftFrozenColumnCount > 0)
+            {
+                leftEdge = frozenColumnsWidth;
+            }
+            rightEdge = Math.Min(rightEdge, RightFrozenStart);
         }
 
         Rect? clipRect = null;

@@ -50,9 +50,6 @@ public partial class DataGrid
                 HorizontalAdjustment = 0;
             }
 
-            var heightIncreased = _rowsPresenterAvailableSize.HasValue && value.HasValue &&
-                                  double.IsFinite(value.Value.Height) &&
-                                  MathUtils.GreaterThan(value.Value.Height, _rowsPresenterAvailableSize.Value.Height);
             _rowsPresenterAvailableSize = value;
             if (value.HasValue)
             {
@@ -60,10 +57,6 @@ public partial class DataGrid
                     ? double.PositiveInfinity
                     : Math.Max(0, value.Value.Width - ActualRowHeaderWidth);
                 ResolveStarColumnWidths(availableCellsWidth);
-            }
-            if (heightIncreased)
-            {
-                ClampRangeOffsetToViewport();
             }
         }
     }
@@ -1212,6 +1205,14 @@ public partial class DataGrid
     {
         Debug.Assert(DisplayData.FirstScrollingSlot >= 0);
         Debug.Assert(!MathUtils.IsZero(height));
+
+        if (IsRangePresentationActive)
+        {
+            // 范围呈现下相对当前显示位置滚动，经 QueueRangeScrollOffset 提交以保持期望偏移、实际偏移与滚动条一致，
+            // 向上越过已提交窗口时也能请求加载
+            QueueRangeScrollOffset(_verticalOffset + height, Math.Sign(height));
+            return;
+        }
 
         _scrollingByHeight = true;
         try

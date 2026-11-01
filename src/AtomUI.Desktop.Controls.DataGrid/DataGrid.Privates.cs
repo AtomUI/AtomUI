@@ -1774,6 +1774,7 @@ public partial class DataGrid
         UpdateHorizontalScrollBar(needHorizScrollbar, forceHorizScrollbar, totalVisibleWidth, totalVisibleFrozenWidth,
             cellsWidth);
         UpdateVerticalScrollBar(needVertScrollbar, forceVertScrollbar, totalVisibleHeight, cellsHeight);
+        ClampRangeOffsetToMaximum();
 
         if (_topRightCornerHeader != null)
         {
@@ -3949,6 +3950,11 @@ public partial class DataGrid
                     // total height of the display area
                     _vScrollBar.ViewportSize = cellsHeight;
                     _vScrollBar.IsEnabled    = true;
+                    // 与横向一致：上界较低时写入的偏移会被 RangeBase 夹住，上界回升后需按偏移重新同步 Value
+                    if (!MathUtils.AreClose(_vScrollBar.Value, _verticalOffset))
+                    {
+                        _vScrollBar.Value = _verticalOffset;
+                    }
                 }
                 else
                 {

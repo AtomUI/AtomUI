@@ -167,6 +167,8 @@ public partial class DataGrid
         {
             return;
         }
+        // 挂起的视口请求属于上一代数据，按新代际的槽位解释会把新结果定位到旧位置
+        _pendingRangeViewport = null;
         var fallback = _rangeCoordinator.AppliedSnapshot;
         var generation = _rangeCoordinator.BeginGeneration(
             ItemsSource,
@@ -263,6 +265,8 @@ public partial class DataGrid
                 }
                 break;
             case DataGridPresentationTransitionKind.RolledBack:
+                // 回滚后继续显示旧快照，滚动请求退回到当前显示位置
+                AbandonPendingRangeScroll();
                 if (transition.Snapshot is { } fallback)
                 {
                     RollBackRangeIntent(fallback);
@@ -368,8 +372,7 @@ public partial class DataGrid
 
     private void SetRangeError(Exception exception)
     {
-        _rangeDesiredOffset = _verticalOffset;
-        _pendingRangeViewport = null;
+        AbandonPendingRangeScroll();
         SetAndRaise(LoadErrorProperty, ref _loadError, exception);
         SetDataLoadState(DataGridLoadState.Error);
     }

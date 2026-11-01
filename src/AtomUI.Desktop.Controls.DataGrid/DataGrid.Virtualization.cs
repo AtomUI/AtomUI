@@ -92,17 +92,22 @@ public partial class DataGrid
             return false;
         }
 
-        var maximumOffset = Math.Max(0, GetRangeExtent() - CellsEstimatedHeight);
-        var legalOffset = Math.Clamp(requestedOffset, 0, maximumOffset);
+        var legalOffset = Math.Clamp(requestedOffset, 0, RangeMaximumOffset);
         if (MathUtils.AreClose(legalOffset, _rangeDesiredOffset))
         {
             return false;
         }
 
+        RequestRangeScrollOffset(legalOffset, scrollDirection);
+        return true;
+    }
+
+    private void RequestRangeScrollOffset(double legalOffset, int scrollDirection)
+    {
         _rangeDesiredOffset = legalOffset;
         _rangeMeasurementScrollDirection = scrollDirection;
         _rangeMeasurementScrollTarget = legalOffset;
-        var firstVisibleSlot = _rangeHeightIndex.FindSlotAtOffset(legalOffset, SlotCount);
+        var firstVisibleSlot = _rangeHeightIndex!.FindSlotAtOffset(legalOffset, SlotCount);
         var visibleCount = Math.Max(
             GetInitialRangeVisibleCount(),
             _rangePresentationIndex!.Snapshot.CommittedViewport.VisibleCount);
@@ -111,25 +116,73 @@ public partial class DataGrid
             firstVisibleSlot,
             visibleCount,
             scrollDirection));
-        return true;
     }
 
-    // 视口变高会让滚动上界变小，RangeBase 会自行把滚动条 Value 夹到新上界，
-    // 但已提交的偏移量不会跟随；这里把它收敛到新上界并按新视口重新提交呈现窗口，
-    // 否则末行之后会留出与视口增高量等高的空白。只在视口变高时调用，
-    // 行高实测导致的内容总高缩水仍交给原有的锚点恢复逻辑处理。
-    private void ClampRangeOffsetToViewport()
+    private double RangeMaximumOffset => Math.Max(0, GetRangeExtent() - CellsEstimatedHeight);
+
+    // 视口变高或内容总高缩水都会降低滚动上界，RangeBase 会自行把滚动条 Value 夹到新上界，
+    // 但偏移不会跟随；上界在滚动条布局中统一计算，偏移也在这里统一收敛，
+    // 否则末行之后会留出与上界降幅等高的空白。只收敛越界部分，不改变界内的滚动意图。
+    private void ClampRangeOffsetToMaximum()
     {
         if (!IsRangePresentationActive || SlotCount == 0)
         {
             return;
         }
 
-        var maximumOffset = Math.Max(0, GetRangeExtent() - CellsEstimatedHeight);
-        if (MathUtils.GreaterThan(Math.Max(_verticalOffset, _rangeDesiredOffset), maximumOffset))
+        if (MathUtils.GreaterThan(Math.Max(_verticalOffset, _rangeDesiredOffset), RangeMaximumOffset))
         {
-            QueueRangeScrollOffset(maximumOffset, -1);
+            ReconcileCommittedRangeOffset(RangeMaximumOffset);
         }
+    }
+
+    // 纵向位置的唯一落点：把目标偏移落到已提交视口，使显示的行、_verticalOffset、
+    // _rangeDesiredOffset 与滚动条保持同一真相。
+    // - 目标在显示首行之后：沿用以显示首行为基准的 NegVerticalOffset，由测量阶段向前归一化；
+    // - 目标在显示首行之前但仍在已提交窗口内：从包含目标的槽位重建显示行；
+    // - 目标在已提交窗口之前：先按窗口起点显示，再以目标请求包含它的视口。
+    private void ReconcileCommittedRangeOffset(double offset)
+    {
+        var committedFirst = _rangePresentationIndex!.Snapshot.CommittedViewport.FirstVisibleIndex;
+        var maximumOffset = RangeMaximumOffset;
+        var target = Math.Clamp(offset, 0, maximumOffset);
+        var windowStart = GetRangeOffset(committedFirst);
+        if (MathUtils.LessThan(target, windowStart))
+        {
+            ApplyRangeVerticalOffset(Math.Min(windowStart, maximumOffset), committedFirst);
+            RequestRangeScrollOffset(target, -1);
+            return;
+        }
+
+        _rangeDesiredOffset = target;
+        var displayedFirst = DisplayData.FirstScrollingSlot;
+        if (displayedFirst > committedFirst &&
+            MathUtils.LessThan(target, GetRangeOffset(displayedFirst)))
+        {
+            var firstSlot = Math.Max(committedFirst, _rangeHeightIndex!.FindSlotAtOffset(target, SlotCount));
+            NegVerticalOffset = Math.Max(0, target - GetRangeOffset(firstSlot));
+            SetVerticalOffset(target);
+            UpdateDisplayedRows(firstSlot, CellsEstimatedHeight);
+            return;
+        }
+
+        ApplyRangeVerticalOffset(target, displayedFirst >= committedFirst ? displayedFirst : committedFirst);
+    }
+
+    // 滚动意图（方向与目标偏移）只属于发起它的那次滚动及当时的高度空间。
+    // 高度整体重建、加载失败或回滚、数据换代后旧目标已无意义，继续生效会把偏移推到未加载区域。
+    private void ClearRangeScrollIntent()
+    {
+        _rangeMeasurementScrollDirection = 0;
+        _rangeMeasurementScrollTarget = 0;
+    }
+
+    // 未完成的滚动请求作废：期望偏移退回到当前已显示的位置，挂起的视口请求与滚动意图一并清除。
+    private void AbandonPendingRangeScroll()
+    {
+        _rangeDesiredOffset = _verticalOffset;
+        _pendingRangeViewport = null;
+        ClearRangeScrollIntent();
     }
 
     private void QueueRangeViewport(DataGridDesiredViewport viewport)
@@ -173,18 +226,16 @@ public partial class DataGrid
             committed.Value.FirstVisibleIndex == viewport.Value.FirstVisibleIndex &&
             committed.Value.VisibleCount == viewport.Value.VisibleCount)
         {
-            ApplyRangeOffsetWithinCommittedViewport(committed.Value);
+            ApplyRangeOffsetWithinCommittedViewport();
             return;
         }
 
         BeginViewportRangeLoad(viewport.Value);
     }
 
-    private void ApplyRangeOffsetWithinCommittedViewport(DataGridDesiredViewport viewport)
+    private void ApplyRangeOffsetWithinCommittedViewport()
     {
-        var maximumOffset = Math.Max(0, GetRangeExtent() - CellsEstimatedHeight);
-        var legalOffset = Math.Clamp(_rangeDesiredOffset, 0, maximumOffset);
-        ApplyRangeVerticalOffset(legalOffset, viewport.FirstVisibleIndex);
+        ReconcileCommittedRangeOffset(_rangeDesiredOffset);
         ComputeScrollBarsLayout();
         InvalidateRowsMeasure(invalidateIndividualElements: false);
         InvalidateRowsArrange();
@@ -299,17 +350,11 @@ public partial class DataGrid
             _rangeHeightIndex.SetMeasuredHeight(slot, height, heightClass);
             if (anchor.HasValue && _rangePresentationIndex is not null)
             {
-                var maximumOffset = Math.Max(0, GetRangeExtent() - CellsEstimatedHeight);
-                var restoredOffset = PreserveRangeScrollDirection(Math.Clamp(
+                var maximumOffset = RangeMaximumOffset;
+                ReconcileCommittedRangeOffset(PreserveRangeScrollDirection(Math.Clamp(
                     _rangePresentationIndex.RestoreAnchor(anchor.Value),
                     0,
-                    maximumOffset), maximumOffset);
-                _rangeDesiredOffset = restoredOffset;
-                ApplyRangeVerticalOffset(
-                    restoredOffset,
-                    DisplayData.FirstScrollingSlot >= 0
-                        ? DisplayData.FirstScrollingSlot
-                        : _rangePresentationIndex.Snapshot.CommittedViewport.FirstVisibleIndex);
+                    maximumOffset), maximumOffset));
             }
         }
     }
@@ -448,8 +493,7 @@ public partial class DataGrid
             ResetRowHeightEstimateForDataGeneration();
             // The scroll intent target is an offset in the replaced generation's height
             // space. Keeping it lets re-anchoring clamp the new data to the old position.
-            _rangeMeasurementScrollDirection = 0;
-            _rangeMeasurementScrollTarget = 0;
+            ClearRangeScrollIntent();
         }
         var previousPins = _rangeVisualPins;
         UnloadElements(recycle: true);
@@ -469,13 +513,9 @@ public partial class DataGrid
         }
         else
         {
-            var committedFirst = snapshot.CommittedViewport.FirstVisibleIndex;
-            var maximumOffset = Math.Max(0, GetRangeExtent() - CellsEstimatedHeight);
-            var desiredOffset = Math.Clamp(
-                Math.Max(_rangeDesiredOffset, GetRangeOffset(committedFirst)),
-                0,
-                maximumOffset);
-            ApplyRangeVerticalOffset(desiredOffset, committedFirst);
+            ReconcileCommittedRangeOffset(viewportAnchor.HasValue
+                ? nextIndex.RestoreAnchor(viewportAnchor.Value)
+                : _rangeDesiredOffset);
             _committingRangePresentation = true;
             try
             {
@@ -492,15 +532,10 @@ public partial class DataGrid
             {
                 _committingRangePresentation = false;
             }
-            if (viewportAnchor.HasValue)
-            {
-                var restoredOffset = Math.Clamp(
-                    nextIndex.RestoreAnchor(viewportAnchor.Value),
-                    0,
-                    Math.Max(0, GetRangeExtent() - CellsEstimatedHeight));
-                _rangeDesiredOffset = restoredOffset;
-                ApplyRangeVerticalOffset(restoredOffset, committedFirst);
-            }
+            // 插入元素时实测的行高与估值重建可能改变偏移的含义，按最终高度再落一次偏移
+            ReconcileCommittedRangeOffset(viewportAnchor.HasValue
+                ? nextIndex.RestoreAnchor(viewportAnchor.Value)
+                : _rangeDesiredOffset);
             DisplayData.NumTotallyDisplayedScrollingElements =
                 CalculateTotallyVisibleRangeElementCount(staged);
         }
@@ -575,6 +610,12 @@ public partial class DataGrid
     {
         var nextFirst = snapshot.CommittedViewport.FirstVisibleIndex;
         var nextLast = checked(nextFirst + snapshot.CommittedViewport.VisibleCount - 1);
+        // 提交期间不做实测重锚；在已显示内容上方插入的行实测高度会推动内容，
+        // 因此记录插入前的内容锚点，插入后把它的位移叠加到目标偏移上，保持目标相对内容不变。
+        var contentAnchor = viewportAnchor.HasValue || DisplayData.FirstScrollingSlot < 0
+            ? null
+            : CaptureFirstCompleteRangeAnchor();
+        var offsetBeforeInsertion = _verticalOffset;
         RemoveNonDisplayedRows(nextFirst, nextLast);
 
         var previousPins = _rangeVisualPins;
@@ -586,12 +627,6 @@ public partial class DataGrid
         IsEmptyDataSource = nextIndex.SlotCount == 0;
         DisplayData.PendingVerticalScrollHeight = 0;
         AvailableSlotElementRoom = CellsEstimatedHeight;
-
-        var desiredOffset = Math.Clamp(
-            Math.Max(_rangeDesiredOffset, GetRangeOffset(nextFirst)),
-            0,
-            Math.Max(0, GetRangeExtent() - CellsEstimatedHeight));
-        _rangeDesiredOffset = desiredOffset;
 
         _committingRangePresentation = true;
         try
@@ -619,17 +654,14 @@ public partial class DataGrid
             _committingRangePresentation = false;
         }
 
-        ApplyRangeVerticalOffset(desiredOffset, nextFirst);
-
-        if (viewportAnchor.HasValue)
+        var targetOffset = viewportAnchor.HasValue
+            ? nextIndex.RestoreAnchor(viewportAnchor.Value)
+            : _rangeDesiredOffset;
+        if (contentAnchor.HasValue)
         {
-            var restoredOffset = Math.Clamp(
-                nextIndex.RestoreAnchor(viewportAnchor.Value),
-                0,
-                Math.Max(0, GetRangeExtent() - CellsEstimatedHeight));
-            _rangeDesiredOffset = restoredOffset;
-            ApplyRangeVerticalOffset(restoredOffset, nextFirst);
+            targetOffset += nextIndex.RestoreAnchor(contentAnchor.Value) - offsetBeforeInsertion;
         }
+        ReconcileCommittedRangeOffset(targetOffset);
 
         DisplayData.NumTotallyDisplayedScrollingElements =
             CalculateTotallyVisibleRangeElementCount(
@@ -760,8 +792,7 @@ public partial class DataGrid
         _rangePresentationIndex = null;
         _rangeHeightIndex = null;
         _rangeDesiredOffset = 0;
-        _rangeMeasurementScrollDirection = 0;
-        _rangeMeasurementScrollTarget = 0;
+        ClearRangeScrollIntent();
         _pendingRangeViewport = null;
         SlotCount = 0;
         VisibleSlotCount = 0;
@@ -813,21 +844,14 @@ public partial class DataGrid
         }
         _rangeHeightIndex.RebaseDefaultHeight(
             GetRangeDefaultHeight(_rangePresentationIndex.Snapshot));
-        if (!anchor.HasValue)
+        // 整体重建后高度空间已变，旧滚动目标不能再参与锚点恢复
+        ClearRangeScrollIntent();
+        // 提交过程中插入元素也会触发重建，此时显示行尚未完整，偏移由提交结束时统一落点
+        if (!anchor.HasValue || _committingRangePresentation)
         {
             return;
         }
-        var maximumOffset = Math.Max(0, GetRangeExtent() - CellsEstimatedHeight);
-        var restoredOffset = PreserveRangeScrollDirection(Math.Clamp(
-            _rangePresentationIndex.RestoreAnchor(anchor.Value),
-            0,
-            maximumOffset), maximumOffset);
-        _rangeDesiredOffset = restoredOffset;
-        ApplyRangeVerticalOffset(
-            restoredOffset,
-            DisplayData.FirstScrollingSlot >= 0
-                ? DisplayData.FirstScrollingSlot
-                : _rangePresentationIndex.Snapshot.CommittedViewport.FirstVisibleIndex);
+        ReconcileCommittedRangeOffset(_rangePresentationIndex.RestoreAnchor(anchor.Value));
     }
 
     private void SeedRangeDetailsHeights(
@@ -899,17 +923,9 @@ public partial class DataGrid
         {
             return;
         }
-        var maximumOffset = Math.Max(0, heightIndex.GetExtent(snapshot.TotalEntryCount) - CellsEstimatedHeight);
-        var restoredOffset = PreserveRangeScrollDirection(Math.Clamp(
-            _rangePresentationIndex.RestoreAnchor(anchor.Value),
-            0,
-            maximumOffset), maximumOffset);
-        _rangeDesiredOffset = restoredOffset;
-        ApplyRangeVerticalOffset(
-            restoredOffset,
-            DisplayData.FirstScrollingSlot >= 0
-                ? DisplayData.FirstScrollingSlot
-                : snapshot.CommittedViewport.FirstVisibleIndex);
+        // 详情高度批量写入后高度空间已变，旧滚动目标不能再参与锚点恢复
+        ClearRangeScrollIntent();
+        ReconcileCommittedRangeOffset(_rangePresentationIndex.RestoreAnchor(anchor.Value));
     }
 
     private void ApplyRangeVerticalOffset(double offset, int firstVisibleSlot)

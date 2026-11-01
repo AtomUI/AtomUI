@@ -243,6 +243,11 @@ PointerPressed
 每个 DataGrid 只有一个会话。handle 不修改数据，presenter 不决定移动语义，Source 不持有视觉对象。Source、Query、snapshot、
 row、pointer 或 capability 变化均取消会话。完成和取消共用幂等清理入口，释放 capture、ghost、offset、transition 和引用。
 
+拖动提交和 `MoveRowAsync` 共用源移动执行入口。每个 DataGrid 的 `AsyncLocal<DataGridMoveRequest?>` 只在源 `MoveAsync`
+的执行上下文中保存请求身份，finally 恢复原值；异步等待只传递该上下文容器和弱引用，不持有 DataGrid 或行容器。
+源在返回之前同步或异步发出的 `Invalidated` 可据此选用位置锚点；通知跨线程时先捕获请求，再显式传递到 UI 线程。
+匹配当前 Query 和 snapshot 的主动移动按当前首个可见 slot 与行内偏移恢复，普通外部失效和同源其他 Grid 保持内容锚点。
+
 ## 5. 组合结构模型
 
 ### 5.1 控件角色图
@@ -465,6 +470,8 @@ Invalidated/collection Reset 成功后都从新 baseline 采样。首个有效 d
 
 测量修正以首个完整可见 entry key 与 intra-row offset 为锚。Query/PageRequest 成功后 vertical offset 归零；GroupExpansion
 保持操作 header 的屏幕 Y；Invalidated 优先按首行 key 恢复，失败时 clamp 到最近合法 slot。
+主动行移动使用无行/组身份的位置锚点，直接保留 slot 和行内偏移；首行只显示一部分时也以该部分可见行作为位置基准。
+若新行比原行内偏移更短，恢复到该 slot 顶部，保证该行可见；不能越过它或只留下不足一个像素的片段。
 
 DataGrid 写入 vertical scrollbar 前仍把 extent travel clamp 到非负；`AbstractScrollBar` 再对所有有限值统一保证
 `Maximum >= Minimum`。小于一个物理像素的 travel range 收敛到 Minimum，因此 Auto scrollbar 不抖动，也不会通过非法负

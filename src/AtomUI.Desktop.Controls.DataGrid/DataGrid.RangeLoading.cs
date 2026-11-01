@@ -121,26 +121,28 @@ public partial class DataGrid
         {
             return;
         }
+        var moveRequest = _rangeMoveContext.Value;
         if (Dispatcher.UIThread.CheckAccess())
         {
-            ApplyRangeSourceInvalidation(source);
+            ApplyRangeSourceInvalidation(source, moveRequest);
             return;
         }
         var ownerReference = new WeakReference<DataGrid>(this);
-        Dispatcher.UIThread.Post(() => ApplyRangeSourceInvalidation(ownerReference, source));
+        Dispatcher.UIThread.Post(() => ApplyRangeSourceInvalidation(ownerReference, source, moveRequest));
     }
 
     private static void ApplyRangeSourceInvalidation(
         WeakReference<DataGrid> ownerReference,
-        IDataGridSource source)
+        IDataGridSource source,
+        DataGridMoveRequest? moveRequest)
     {
         if (ownerReference.TryGetTarget(out var owner))
         {
-            owner.ApplyRangeSourceInvalidation(source);
+            owner.ApplyRangeSourceInvalidation(source, moveRequest);
         }
     }
 
-    private void ApplyRangeSourceInvalidation(IDataGridSource source)
+    private void ApplyRangeSourceInvalidation(IDataGridSource source, DataGridMoveRequest? moveRequest)
     {
         if (!_isRangeAttached || !ReferenceEquals(ItemsSource, source))
         {
@@ -157,7 +159,7 @@ public partial class DataGrid
         SetAndRaise(IsDataStaleProperty, ref _isDataStale, _rangeCoordinator?.AppliedSnapshot is not null);
         BeginRangeLoad(
             isInvalidation: true,
-            CaptureFirstCompleteRangeAnchor());
+            CaptureRangeMutationAnchor(moveRequest));
     }
 
     private void BeginRangeLoad(

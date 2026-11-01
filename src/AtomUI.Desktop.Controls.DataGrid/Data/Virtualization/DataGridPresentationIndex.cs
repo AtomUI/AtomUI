@@ -8,9 +8,9 @@ internal readonly struct DataGridViewportAnchor
         int fallbackSlot,
         double screenOffset)
     {
-        if (rowKey.IsValid == groupKey.IsValid)
+        if (rowKey.IsValid && groupKey.IsValid)
         {
-            throw new ArgumentException("An anchor must identify exactly one row or group.");
+            throw new ArgumentException("An anchor cannot identify both a row and a group.");
         }
         if (fallbackSlot < 0)
         {
@@ -190,6 +190,21 @@ internal sealed class DataGridPresentationIndex
         return CaptureAnchorAtSlot(slot, viewportOffset);
     }
 
+    public DataGridViewportAnchor CapturePositionAnchor(double viewportOffset)
+    {
+        if (SlotCount == 0)
+        {
+            throw new InvalidOperationException("An empty presentation has no scroll anchor.");
+        }
+        var slot = _heights.FindSlotAtOffset(viewportOffset, SlotCount);
+        // Without an identity, RestoreAnchor keeps the visible slot and its intra-row position.
+        return new DataGridViewportAnchor(
+            default,
+            default,
+            slot,
+            _heights.GetOffset(slot) - viewportOffset);
+    }
+
     public DataGridViewportAnchor CaptureAnchorAtSlot(int slot, double viewportOffset)
     {
         if (!double.IsFinite(viewportOffset) || viewportOffset < 0)
@@ -223,8 +238,18 @@ internal sealed class DataGridPresentationIndex
         {
             slot = Math.Clamp(anchor.FallbackSlot, 0, SlotCount - 1);
         }
+        var slotTop = _heights.GetOffset(slot);
+        var offset = slotTop - anchor.ScreenOffset;
+        if (!anchor.RowKey.IsValid &&
+            !anchor.GroupKey.IsValid &&
+            offset >= _heights.GetOffset(slot + 1))
+        {
+            // A shorter replacement row cannot retain the old intra-row offset. Keep this
+            // slot fully visible instead of restoring past it or leaving only a subpixel sliver.
+            offset = slotTop;
+        }
         return Math.Clamp(
-            _heights.GetOffset(slot) - anchor.ScreenOffset,
+            offset,
             0,
             _heights.GetExtent(SlotCount));
     }

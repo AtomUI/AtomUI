@@ -753,6 +753,9 @@ Maximum 表示“无需滚动”。
 
 新 Query 或 PageRequest 成功后垂直 offset 归零；GroupExpansion 改变时保持操作 group header 的屏幕 Y；Invalidated 刷新优先按
 首行 key 恢复，无法解析时落到最近合法 slot。
+由本 DataGrid 主动行移动引起的重载使用位置锚点，保持当前首个可见 slot 与行内偏移，不追随被重排的旧首行 key。
+当该 slot 的新行高度不足以容纳原行内偏移时，位置收敛到该 slot 顶部。
+同源其他 DataGrid 和普通外部失效仍使用内容锚点；位置锚点与内容锚点都只作用于本次原子代际提交。
 
 ### 7.6 原子提交与容器回收
 

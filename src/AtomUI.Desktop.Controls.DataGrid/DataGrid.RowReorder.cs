@@ -233,6 +233,7 @@ public partial class DataGrid
             _ = CompleteRangeRowReorderAsync(
                 new WeakReference<DataGrid>(this),
                 new WeakReference<DataGridRow>(session.Row),
+                _rangeMoveContext,
                 session.RangeSource!,
                 pendingMove,
                 session.MutationCancellationToken);
@@ -335,13 +336,14 @@ public partial class DataGrid
     private static async Task CompleteRangeRowReorderAsync(
         WeakReference<DataGrid> ownerReference,
         WeakReference<DataGridRow> rowReference,
+        AsyncLocal<DataGridMoveRequest?> moveContext,
         IDataGridMovableSource source,
         DataGridMoveRequest request,
         CancellationToken cancellationToken)
     {
         try
         {
-            var result = await source.MoveAsync(request, cancellationToken).ConfigureAwait(false);
+            var result = await ExecuteRangeMoveAsync(moveContext, source, request, cancellationToken).ConfigureAwait(false);
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 if (!ownerReference.TryGetTarget(out var owner) ||

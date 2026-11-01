@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
@@ -154,6 +155,7 @@ public partial class DataGrid
             rowKey,
             beforeKey,
             afterKey);
+        var moveContext = _rangeMoveContext;
         return ObserveRangeMutationAsync(
             new WeakReference<DataGrid>(this),
             source,
@@ -163,7 +165,7 @@ public partial class DataGrid
             cancellationToken,
             movableSource,
             request,
-            static (capability, mutation, token) => capability.MoveAsync(mutation, token));
+            (capability, mutation, token) => ExecuteRangeMoveAsync(moveContext, capability, mutation, token));
     }
 
     internal bool IsRangeMoveSemanticallyAllowed =>
@@ -171,22 +173,25 @@ public partial class DataGrid
         Query.Filters.IsEmpty &&
         Query.Groups.IsEmpty;
 
+    private readonly AsyncLocal<DataGridMoveRequest?> _rangeMoveContext = new();
+
     private bool TryCaptureRangeMutation<TCapability>(
-        out IDataGridSource source,
-        out TCapability capability,
-        out DataGridPresentationIndex presentation,
-        out DataGridGeneration generation)
+        [NotNullWhen(true)] out IDataGridSource? source,
+        [NotNullWhen(true)] out TCapability? capability,
+        [NotNullWhen(true)] out DataGridPresentationIndex? presentation,
+        [NotNullWhen(true)] out DataGridGeneration? generation)
         where TCapability : class, IDataGridSource
     {
-        source = ItemsSource!;
-        capability = ItemsSource as TCapability ?? null!;
-        presentation = _rangePresentationIndex!;
-        generation = _rangeGeneration!;
+        source = ItemsSource;
+        capability = source as TCapability;
+        presentation = _rangePresentationIndex;
+        generation = _rangeGeneration;
         return _isRangeAttached &&
                IsRangePresentationActive &&
                !IsDataStale &&
                LoadState == DataGridLoadState.Ready &&
-               source is TCapability &&
+               source is not null &&
+               capability is not null &&
                presentation is not null &&
                generation is not null &&
                ReferenceEquals(generation.Source, source) &&
@@ -205,6 +210,7 @@ public partial class DataGrid
         Func<TCapability, TRequest, CancellationToken, ValueTask<DataGridMutationResult>> execute)
         where TCapability : IDataGridSource
     {
+        var moveRequest = request is DataGridMoveRequest move ? move : (DataGridMoveRequest?)null;
         using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
             generationCancellationToken,
             callerCancellationToken);
@@ -226,11 +232,44 @@ public partial class DataGrid
 
         if (Dispatcher.UIThread.CheckAccess())
         {
-            return owner.CompleteRangeMutation(source, query, snapshot, result.Snapshot);
+            return owner.CompleteRangeMutation(source, query, snapshot, result.Snapshot, moveRequest);
         }
         return await Dispatcher.UIThread.InvokeAsync(() =>
             ownerReference.TryGetTarget(out var currentOwner) &&
-            currentOwner.CompleteRangeMutation(source, query, snapshot, result.Snapshot));
+            currentOwner.CompleteRangeMutation(source, query, snapshot, result.Snapshot, moveRequest));
+    }
+
+    private static async ValueTask<DataGridMutationResult> ExecuteRangeMoveAsync(
+        AsyncLocal<DataGridMoveRequest?> moveContext,
+        IDataGridMovableSource source,
+        DataGridMoveRequest request,
+        CancellationToken cancellationToken)
+    {
+        var previous = moveContext.Value;
+        moveContext.Value = request;
+        try
+        {
+            // A source may invalidate synchronously or on its async continuation before returning.
+            // Execution-local context distinguishes those notifications from unrelated invalidations
+            // and from another grid sharing the source, without retaining the grid across the await.
+            return await source.MoveAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            moveContext.Value = previous;
+        }
+    }
+
+    private DataGridViewportAnchor? CaptureRangeMutationAnchor(DataGridMoveRequest? moveRequest)
+    {
+        if (moveRequest is { } move &&
+            _rangePresentationIndex is { SlotCount: > 0 } presentation &&
+            presentation.Snapshot.Query == move.Query &&
+            presentation.Snapshot.Snapshot == move.Snapshot)
+        {
+            return presentation.CapturePositionAnchor(_verticalOffset);
+        }
+        return CaptureFirstCompleteRangeAnchor();
     }
 
     private static async ValueTask<bool> ObserveRangeEditAsync(
@@ -296,7 +335,8 @@ public partial class DataGrid
         IDataGridSource source,
         DataGridQuery query,
         DataGridSnapshotId snapshot,
-        DataGridSnapshotId? resultSnapshot)
+        DataGridSnapshotId? resultSnapshot,
+        DataGridMoveRequest? moveRequest = null)
     {
         // A source that invalidates itself while mutating (for example an observable local collection)
         // may already have been reloaded to the snapshot the mutation produced.
@@ -334,11 +374,11 @@ public partial class DataGrid
             return false;
         }
 
-        // 与数据源失效路径一致，以首个完整行为锚点重载，变更发生在视口上方时视图不跳动
+        // 主动移动保持视口位置；其他变更沿用内容锚点，保持原完整行的屏幕位置。
         SetAndRaise(IsDataStaleProperty, ref _isDataStale, true);
         BeginRangeLoad(
             isInvalidation: true,
-            CaptureFirstCompleteRangeAnchor());
+            CaptureRangeMutationAnchor(moveRequest));
         return true;
     }
 
@@ -346,5 +386,5 @@ public partial class DataGrid
         IDataGridSource source,
         DataGridMoveRequest request,
         DataGridMutationResult result) =>
-        CompleteRangeMutation(source, request.Query, request.Snapshot, result.Snapshot);
+        CompleteRangeMutation(source, request.Query, request.Snapshot, result.Snapshot, request);
 }

@@ -64,7 +64,7 @@ public class DataGridRangeMutationTests
     [Fact]
     public void Local_Source_Row_Reorder_Moves_Observable_Collection_Item()
     {
-        var rows = new ObservableCollection<Row>(Enumerable.Range(1, 4).Select(value => new Row(value, value)));
+        var rows = new ObservableCollection<Row>(Enumerable.Range(1, 30).Select(value => new Row(value, value)));
         using var source = LocalSource(rows);
         var (grid, window) = Realize(source);
         var reorderedCount = 0;
@@ -85,7 +85,11 @@ public class DataGridRangeMutationTests
             EndPointerDrag(handle, window, drag, target);
             PumpUntil(() => reorderedCount == 1 && grid.LoadState == DataGridLoadState.Ready);
 
-            rows.Select(static row => row.Id).ShouldBe([2, 3, 1, 4]);
+            rows.Select(static row => row.Id).ShouldBe(new[] { 2, 3, 1 }.Concat(Enumerable.Range(4, 27)));
+            // Overflow must remain present so following the old first row would move the viewport.
+            grid.VerticalScrollBar!.IsVisible.ShouldBeTrue();
+            grid.VerticalOffset.ShouldBe(0);
+            grid.DisplayData.FirstScrollingSlot.ShouldBe(0);
             grid.IsDataStale.ShouldBeFalse();
             grid.DisplayData.GetScrollingRows()
                 .Cast<DataGridRow>()

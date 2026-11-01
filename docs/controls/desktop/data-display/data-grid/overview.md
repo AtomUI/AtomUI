@@ -59,6 +59,10 @@ DataGrid 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 索引解释为 Source 集合索引。Source 不支持移动、当前 Query 语义禁止移动、编辑未能提交或 snapshot 失效时，handle 不进入
 可提交状态，也不发布 `RowReordered`。
 
+主动行移动（含拖动和 `MoveRowAsync`）重载数据时保持当前可见 slot 与行内偏移，目标行在当前视口中的新顺序立即可见。
+重排后占据该 slot 的行较矮、原行内偏移无法保留时，视口回到该 slot 顶部。
+普通外部数据失效仍按内容行 key 保持屏幕位置；共享同一 Source 的其他 DataGrid 沿用该内容锚定规则。
+
 行内编辑统一经 `IDataGridEditableSource.CommitAsync` 写回：列需 `IsReadOnly=False`、为 `DataGridBoundColumn` 并以 `FieldId`
 指向 `IsEditable` 字段。编辑器只读取绑定值，不直接写数据项；单元格编辑在单元格结束时提交，`DataGridOperationColumn` 的“编辑”
 使整行可编辑单元格同时进入编辑，“保存”一次提交、“取消”直接丢弃。值无法转换时保持编辑并显示校验错误；编辑器关闭后的

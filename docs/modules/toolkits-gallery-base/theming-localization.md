@@ -260,6 +260,8 @@ GalleryBase 的 Catalog 和三种内置语言由生成器编译进 owning assemb
 GeneratedLanguageModuleRegistration.Register(builder.Localization);
 ```
 
+GalleryBase 自有 `Localization/**/*.xlf` 由公共本地化 targets 自动发现并投影为生成器输入。新增标准目录下的 Catalog 时，不在 GalleryBase 项目文件中重复声明 `AtomUILanguage Include`；项目级重复声明会干扰 Rider 的文件角色，使 XLIFF 未进入 IDE 生成器输入，而普通构建仍可能通过。
+
 产品 Catalog 采用同一 `[LanguageCatalog]` + XLIFF 约定，并由产品自己的生成模块注册入口加入。宿主只需在
 `UseAtomUI(...)` 配置阶段调用产品模块扩展；GalleryBase 不扫描产品程序集。
 

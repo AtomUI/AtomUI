@@ -26,7 +26,7 @@
                                                  SemanticOwner="{Binding #RadioButtonSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:RadioButton}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:RadioButton Name="RadioButtonSemanticOwner"
+                            <atom:RadioButton x:Name="RadioButtonSemanticOwner"
                                               Content="{gallery:RadioButtonShowCaseLangResource P2ContentRadio}" />
                         </gallery:SemanticPartPreview.PreviewContent>
                         <gallery:SemanticPartPreview.PartDescriptions>

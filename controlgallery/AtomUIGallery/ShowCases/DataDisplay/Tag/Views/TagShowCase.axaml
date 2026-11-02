@@ -31,7 +31,7 @@
                             <gallery:SemanticPartPreview.PreviewContent>
                                 <StackPanel Orientation="Vertical"
                                             HorizontalAlignment="Left">
-                                    <atom:Tag Name="TagSemanticOwner"
+                                    <atom:Tag x:Name="TagSemanticOwner"
                                               IsClosable="True"
                                               Icon="{antdicons:AntDesignIconProvider Kind=SmileOutlined}"
                                               Text="{gallery:TagShowCaseLangResource P2ContentTagN1}" />
@@ -58,7 +58,7 @@
                             SemanticOwner="{Binding #CheckableTagGroupSemanticOwner}"
                             SemanticOwnerType="{x:Type atom:CheckableTagGroup}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:CheckableTagGroup Name="CheckableTagGroupSemanticOwner"
+                                <atom:CheckableTagGroup x:Name="CheckableTagGroupSemanticOwner"
                                                         HorizontalAlignment="Left"
                                                         Options="{Binding CheckableTagOptions}" />
                             </gallery:SemanticPartPreview.PreviewContent>

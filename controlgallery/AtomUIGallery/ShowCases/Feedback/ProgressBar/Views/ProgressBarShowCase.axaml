@@ -60,7 +60,7 @@
                                                     HorizontalAlignment="Center"
                                                     ContentTemplate="{StaticResource SemanticProgressToolbarTemplate}" />
                                     <Grid Height="200" HorizontalAlignment="Stretch">
-                                        <atom:ProgressBar Name="ProgressBarSemanticOwner"
+                                        <atom:ProgressBar x:Name="ProgressBarSemanticOwner"
                                                           Classes.gradient-preview="{Binding IsSemanticGradientEnabled}"
                                                           HorizontalAlignment="Stretch"
                                                           VerticalAlignment="Top"
@@ -93,7 +93,7 @@
                                                     HorizontalAlignment="Center"
                                                     ContentTemplate="{StaticResource SemanticProgressToolbarTemplate}" />
                                     <Grid Height="200" HorizontalAlignment="Stretch">
-                                        <atom:StepsProgressBar Name="StepsProgressBarSemanticOwner"
+                                        <atom:StepsProgressBar x:Name="StepsProgressBarSemanticOwner"
                                                                Classes.gradient-preview="{Binding IsSemanticGradientEnabled}"
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Top"
@@ -125,7 +125,7 @@
                                                     HorizontalAlignment="Center"
                                                     ContentTemplate="{StaticResource SemanticProgressToolbarTemplate}" />
                                     <Grid Height="200" HorizontalAlignment="Stretch">
-                                        <atom:CircleProgress Name="CircleProgressSemanticOwner"
+                                        <atom:CircleProgress x:Name="CircleProgressSemanticOwner"
                                                              Classes.gradient-preview="{Binding IsSemanticGradientEnabled}"
                                                              HorizontalAlignment="Center"
                                                              VerticalAlignment="Top"
@@ -158,7 +158,7 @@
                                                     HorizontalAlignment="Center"
                                                     ContentTemplate="{StaticResource SemanticProgressToolbarTemplate}" />
                                     <Grid Height="200" HorizontalAlignment="Stretch">
-                                        <atom:DashboardProgress Name="DashboardProgressSemanticOwner"
+                                        <atom:DashboardProgress x:Name="DashboardProgressSemanticOwner"
                                                                 Classes.gradient-preview="{Binding IsSemanticGradientEnabled}"
                                                                 HorizontalAlignment="Center"
                                                                 VerticalAlignment="Top"

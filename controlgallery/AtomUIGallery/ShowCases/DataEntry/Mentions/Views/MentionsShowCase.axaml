@@ -27,7 +27,7 @@
                                                  SemanticOwner="{Binding #MentionsSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:Mentions}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:Mentions Name="MentionsSemanticOwner"
+                            <atom:Mentions x:Name="MentionsSemanticOwner"
                                            Width="420"
                                            IsAllowClear="True"
                                            IsMotionEnabled="False"

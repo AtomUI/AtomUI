@@ -40,7 +40,7 @@
                                  不会逃逸到页面级滚动容器重挂整页内容；舞台限高裁剪，抽屉常开
                                  渲染于舞台局部 layer。舞台用 MinHeight + 拉伸：空间充裕时自然长高，宿主钳制时随画布收缩，不与视口相抵被裁。 -->
                             <ScrollContentPresenter>
-                                <Border Name="DrawerSemanticStage"
+                                <Border x:Name="DrawerSemanticStage"
                                         MinHeight="320"
                                         Margin="24,24,24,24"
                                         Background="{atom:SharedTokenResource ColorFillAlter}"
@@ -54,7 +54,7 @@
                                                         VerticalAlignment="Top"
                                                         Foreground="{atom:SharedTokenResource ColorTextSecondary}"
                                                         Text="{gallery:DrawerShowCaseLangResource SemanticStageHint}" />
-                                        <atom:Drawer Name="DrawerSemanticOwner"
+                                        <atom:Drawer x:Name="DrawerSemanticOwner"
                                                      Title="{gallery:DrawerShowCaseLangResource SemanticPreviewTitleText}"
                                                      IsOpen="True"
                                                      IsPinnedOpen="True"

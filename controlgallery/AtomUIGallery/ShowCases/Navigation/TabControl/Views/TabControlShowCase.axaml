@@ -29,7 +29,7 @@
                                                      SemanticOwner="{Binding #TabControlSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:TabControl}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:TabControl Name="TabControlSemanticOwner"
+                                <atom:TabControl x:Name="TabControlSemanticOwner"
                                                  Width="420"
                                                  IsTabClosable="True"
                                                  HorizontalAlignment="Center"
@@ -61,7 +61,7 @@
                                                      SemanticOwner="{Binding #CardTabControlSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:CardTabControl}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:CardTabControl Name="CardTabControlSemanticOwner"
+                                <atom:CardTabControl x:Name="CardTabControlSemanticOwner"
                                                      Width="420"
                                                      IsShowAddTabButton="True"
                                                      HorizontalAlignment="Center"
@@ -98,7 +98,7 @@
                                                  IsTabClosable="True"
                                                  HorizontalAlignment="Center"
                                                  VerticalAlignment="Center">
-                                    <atom:TabItem Name="TabItemSemanticOwner"
+                                    <atom:TabItem x:Name="TabItemSemanticOwner"
                                                   Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN1}"
                                                   Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}"
                                                   IsAutoHideCloseButton="False"

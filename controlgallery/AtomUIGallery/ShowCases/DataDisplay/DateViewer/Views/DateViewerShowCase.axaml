@@ -29,7 +29,7 @@
                             </Style>
                         </gallery:SemanticPartPreview.Styles>
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:DateViewer Name="DateViewerSemanticOwner" Classes="semantic-footer-demo" HorizontalAlignment="Center"
+                            <atom:DateViewer x:Name="DateViewerSemanticOwner" Classes="semantic-footer-demo" HorizontalAlignment="Center"
                                              DisplayDate="{Binding SampleDate, Mode=OneWay}" ShowWeek="True" />
                         </gallery:SemanticPartPreview.PreviewContent>
                         <gallery:SemanticPartPreview.PartDescriptions>

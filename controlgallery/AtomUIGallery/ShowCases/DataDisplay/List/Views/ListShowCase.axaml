@@ -28,7 +28,7 @@
                             SemanticOwner="{Binding #ListViewSemanticOwner}"
                             SemanticOwnerType="{x:Type atom:ListView}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:ListView Name="ListViewSemanticOwner"
+                                <atom:ListView x:Name="ListViewSemanticOwner"
                                                ItemsSource="{Binding SemanticListItems}"
                                                IsGroupEnabled="True" />
                             </gallery:SemanticPartPreview.PreviewContent>
@@ -50,7 +50,7 @@
                             SemanticOwner="{Binding #ListBoxSemanticOwner}"
                             SemanticOwnerType="{x:Type atom:ListBox}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:ListBox Name="ListBoxSemanticOwner"
+                                <atom:ListBox x:Name="ListBoxSemanticOwner"
                                               ItemsSource="{Binding SemanticListBoxItems}" />
                             </gallery:SemanticPartPreview.PreviewContent>
                             <gallery:SemanticPartPreview.PartDescriptions>

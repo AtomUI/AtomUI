@@ -231,8 +231,8 @@
     </unit>
     <unit id="SemanticPopupEmptyDescription">
       <segment>
-        <source>Empty state shown when an active filter matches nothing.</source>
-        <target state="translated">生效过滤模式下无匹配项时显示的空态。</target>
+        <source>Empty state shown when the source is empty or an active filter has no visible matches.</source>
+        <target state="translated">数据源为空或生效过滤无可见匹配项时显示的空态。</target>
       </segment>
     </unit>
     <unit id="SemanticPopupListDescription">
@@ -317,6 +317,48 @@
       <segment>
         <source>Variants</source>
         <target state="translated">不同形态</target>
+      </segment>
+    </unit>
+    <unit id="EmptyIndicatorTitle">
+      <segment>
+        <source>Empty state</source>
+        <target state="translated">空态</target>
+      </segment>
+    </unit>
+    <unit id="EmptyIndicatorDescription">
+      <segment>
+        <source>Empty sources and filters without matches show an empty state. Customize its content, template and padding, or turn it off.</source>
+        <target state="translated">数据源为空或过滤无匹配项时显示空态，可定制内容、模板和内边距，也可关闭。</target>
+      </segment>
+    </unit>
+    <unit id="EmptyDefaultPlaceholder">
+      <segment>
+        <source>Default empty state</source>
+        <target state="translated">默认空态</target>
+      </segment>
+    </unit>
+    <unit id="EmptyContentPlaceholder">
+      <segment>
+        <source>Custom empty content</source>
+        <target state="translated">自定义空态内容</target>
+      </segment>
+    </unit>
+    <unit id="EmptyTemplatePlaceholder">
+      <segment>
+        <source>Custom empty template</source>
+        <target state="translated">自定义空态模板</target>
+      </segment>
+    </unit>
+    <unit id="EmptyDisabledPlaceholder">
+      <segment>
+        <source>Empty state disabled</source>
+        <target state="translated">关闭空态提示</target>
+      </segment>
+    </unit>
+    <unit id="EmptyContentText">
+      <segment>
+        <source>No available options</source>
+        <target state="translated">暂无可用选项</target>
       </segment>
     </unit>
   </file>

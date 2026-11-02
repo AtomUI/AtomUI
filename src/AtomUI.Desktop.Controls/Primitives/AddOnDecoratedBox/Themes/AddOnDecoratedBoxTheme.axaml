@@ -21,7 +21,7 @@
                     CornerRadius="{TemplateBinding LeftAddOnCornerRadius}"
                     IsVisible="{Binding Child, ElementName=PART_LeftAddOnPresenter, Converter={x:Static ObjectConverters.IsNotNull}}">
                     <atom:AddOnContentPresenter
-                        Name="PART_LeftAddOnPresenter"
+                        x:Name="PART_LeftAddOnPresenter"
                         VerticalAlignment="Stretch"
                         VerticalContentAlignment="Center"
                         Focusable="False"
@@ -38,7 +38,7 @@
                     CornerRadius="{TemplateBinding RightAddOnCornerRadius}"
                     IsVisible="{Binding Child, ElementName=PART_RightAddOnPresenter, Converter={x:Static ObjectConverters.IsNotNull}}">
                     <atom:AddOnContentPresenter
-                        Name="PART_RightAddOnPresenter"
+                        x:Name="PART_RightAddOnPresenter"
                         VerticalAlignment="Stretch"
                         VerticalContentAlignment="Center"
                         Focusable="False"

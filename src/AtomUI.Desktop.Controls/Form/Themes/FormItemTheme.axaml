@@ -16,7 +16,7 @@
                                                IsVisible="False" />
                     </Panel>
                     <Grid Name="PART_BodyLayout">
-                        <Panel Name="PART_LabelLayout"
+                        <Panel x:Name="PART_LabelLayout"
                                VerticalAlignment="Top"
                                IsVisible="{TemplateBinding LabelText, Converter={x:Static ObjectConverters.IsNotNull}}"
                                ClipToBounds="True">

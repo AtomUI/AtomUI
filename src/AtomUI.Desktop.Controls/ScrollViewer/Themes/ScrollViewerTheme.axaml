@@ -15,7 +15,7 @@
                                Grid.Row="0"
                                Grid.Column="0"
                                ClipToBounds="False">
-                            <ScrollContentPresenter Name="PART_ContentPresenter"
+                            <ScrollContentPresenter x:Name="PART_ContentPresenter"
                                                     Background="{TemplateBinding Background}"
                                                     HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
                                                     VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"

@@ -29,7 +29,7 @@
                                                  PreviewStageMinHeight="560"
                                                  PreviewContentAlignment="Top">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:RangeTimePicker Name="TimeRangeSemanticOwner"
+                            <atom:RangeTimePicker x:Name="TimeRangeSemanticOwner"
                                                   Width="420"
                                                   IsMotionEnabled="False"
                                                   IsPickerOpen="True"

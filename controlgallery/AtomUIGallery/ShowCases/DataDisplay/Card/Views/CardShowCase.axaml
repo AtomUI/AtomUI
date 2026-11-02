@@ -84,7 +84,7 @@
                                                      SemanticOwner="{Binding #CardMetaSemanticOwner}">
                             <gallery:SemanticPartPreview.PreviewContent>
                                 <atom:Card Width="300">
-                                    <atom:CardMetaContent Name="CardMetaSemanticOwner"
+                                    <atom:CardMetaContent x:Name="CardMetaSemanticOwner"
                                                           Header="{gallery:CardShowCaseLangResource P2HeaderCardTitle}"
                                                           Content="{gallery:CardShowCaseLangResource P2ContentThisIsTheDescription}">
                                         <atom:CardMetaContent.Avatar>

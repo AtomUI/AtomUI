@@ -28,7 +28,7 @@
                                                      SemanticOwner="{Binding #TabStripSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:TabStrip}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:TabStrip Name="TabStripSemanticOwner"
+                                <atom:TabStrip x:Name="TabStripSemanticOwner"
                                                Width="420"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center">
@@ -50,7 +50,7 @@
                                                      SemanticOwner="{Binding #CardTabStripSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:CardTabStrip}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:CardTabStrip Name="CardTabStripSemanticOwner"
+                                <atom:CardTabStrip x:Name="CardTabStripSemanticOwner"
                                                    Width="420"
                                                    IsShowAddTabButton="True"
                                                    HorizontalAlignment="Center"
@@ -80,7 +80,7 @@
                                                IsTabClosable="True"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center">
-                                    <atom:TabStripItem Name="TabStripItemSemanticOwner"
+                                    <atom:TabStripItem x:Name="TabStripItemSemanticOwner"
                                                        Icon="{antdicons:AntDesignIconProvider Kind=AppleOutlined}"
                                                        IsAutoHideCloseButton="False"
                                                        Content="{gallery:TabStripShowCaseLangResource P2ContentTabN1}" />

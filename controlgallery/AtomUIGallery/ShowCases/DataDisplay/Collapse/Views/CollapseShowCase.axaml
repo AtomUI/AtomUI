@@ -26,7 +26,7 @@
                                                  SemanticOwner="{Binding #CollapseSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:Collapse}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:Collapse Name="CollapseSemanticOwner">
+                            <atom:Collapse x:Name="CollapseSemanticOwner">
                                 <atom:CollapseItem Header="This is panel header" IsSelected="True">
                                     <atom:TextBlock TextWrapping="Wrap" Text="This is panel body" />
                                 </atom:CollapseItem>

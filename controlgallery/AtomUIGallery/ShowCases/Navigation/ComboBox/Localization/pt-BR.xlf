@@ -231,8 +231,8 @@
     </unit>
     <unit id="SemanticPopupEmptyDescription">
       <segment>
-        <source>Empty state shown when an active filter matches nothing.</source>
-        <target state="translated">Estado vazio exibido quando um filtro ativo não corresponde a nada.</target>
+        <source>Empty state shown when the source is empty or an active filter has no visible matches.</source>
+        <target state="translated">Estado vazio exibido quando a fonte está vazia ou um filtro ativo não tem resultados visíveis.</target>
       </segment>
     </unit>
     <unit id="SemanticPopupListDescription">
@@ -317,6 +317,48 @@
       <segment>
         <source>Variants</source>
         <target state="translated">Variantes</target>
+      </segment>
+    </unit>
+    <unit id="EmptyIndicatorTitle">
+      <segment>
+        <source>Empty state</source>
+        <target state="translated">Estado vazio</target>
+      </segment>
+    </unit>
+    <unit id="EmptyIndicatorDescription">
+      <segment>
+        <source>Empty sources and filters without matches show an empty state. Customize its content, template and padding, or turn it off.</source>
+        <target state="translated">Fontes vazias e filtros sem resultados exibem um estado vazio. Personalize o conteúdo, o modelo e o espaçamento ou desative-o.</target>
+      </segment>
+    </unit>
+    <unit id="EmptyDefaultPlaceholder">
+      <segment>
+        <source>Default empty state</source>
+        <target state="translated">Estado vazio padrão</target>
+      </segment>
+    </unit>
+    <unit id="EmptyContentPlaceholder">
+      <segment>
+        <source>Custom empty content</source>
+        <target state="translated">Conteúdo vazio personalizado</target>
+      </segment>
+    </unit>
+    <unit id="EmptyTemplatePlaceholder">
+      <segment>
+        <source>Custom empty template</source>
+        <target state="translated">Modelo vazio personalizado</target>
+      </segment>
+    </unit>
+    <unit id="EmptyDisabledPlaceholder">
+      <segment>
+        <source>Empty state disabled</source>
+        <target state="translated">Estado vazio desativado</target>
+      </segment>
+    </unit>
+    <unit id="EmptyContentText">
+      <segment>
+        <source>No available options</source>
+        <target state="translated">Nenhuma opção disponível</target>
       </segment>
     </unit>
   </file>

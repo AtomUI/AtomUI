@@ -117,7 +117,6 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     private bool? _isReadOnly;
     private double? _maxWidth;
     private double? _minWidth;
-    private bool _settingWidthInternally;
     private int _displayIndexWithFiller;
     private object? _header;
     private IDataTemplate? _headerTemplate;

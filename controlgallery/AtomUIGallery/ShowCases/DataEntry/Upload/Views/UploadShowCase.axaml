@@ -26,7 +26,7 @@
                                                  SemanticOwner="{Binding #UploadSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:Upload}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:Upload Name="UploadSemanticOwner"
+                            <atom:Upload x:Name="UploadSemanticOwner"
                                          AutoUpload="False"
                                          Files="{Binding DefaultFiles}"
                                          HorizontalAlignment="Stretch"

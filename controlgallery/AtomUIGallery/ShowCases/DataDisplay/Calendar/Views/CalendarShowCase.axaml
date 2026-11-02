@@ -34,7 +34,7 @@
                                                  SemanticOwner="{Binding #CalendarSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:Calendar}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:Calendar Name="CalendarSemanticOwner" />
+                            <atom:Calendar x:Name="CalendarSemanticOwner" />
                         </gallery:SemanticPartPreview.PreviewContent>
                         <gallery:SemanticPartPreview.PartDescriptions>
                             <gallery:SemanticPartDescription

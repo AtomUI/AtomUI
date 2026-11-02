@@ -183,7 +183,7 @@ public class MessageShowCasePageTests
 
         // manager 有两个 public 构造（含无参），因此预览可声明式实例化；manager 没有声明式消息入口，
         // 示例数据由 owner 的 Loaded 事件调用 Show() 播种。
-        source.ShouldContain("<atom:WindowMessageManager Name=\"MessageManagerSemanticOwner\"");
+        source.ShouldContain("<atom:WindowMessageManager x:Name=\"MessageManagerSemanticOwner\"");
         source.ShouldContain("Loaded=\"HandleSemanticPreviewOwnerLoaded\"");
         codeBehind.ShouldContain("HandleSemanticPreviewOwnerLoaded");
         // 舞台根是 Panel/StackPanel 而非 owner 类型，必须显式绑定 SemanticOwner 才能做归属校验。

@@ -40,7 +40,7 @@
                                             </atom:ListTransferTargetSectionStyle>
                                         </Style>
                                     </StackPanel.Styles>
-                                    <atom:ListTransfer Name="ListTransferSemanticOwner"
+                                    <atom:ListTransfer x:Name="ListTransferSemanticOwner"
                                                        Classes="semantic-antd-preview"
                                                        IsFilterEnabled="True"
                                                        FilterPlaceholderText="{gallery:TransferShowCaseLangResource P2FilterPlaceholderTextSearchHere}"
@@ -152,7 +152,7 @@
                                                      SemanticOwner="{Binding #TreeTransferSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:TreeTransfer}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:TreeTransfer Name="TreeTransferSemanticOwner"
+                                <atom:TreeTransfer x:Name="TreeTransferSemanticOwner"
                                                    SourceTitle="{gallery:TransferShowCaseLangResource P2SourceTitle}"
                                                    TargetTitle="{gallery:TransferShowCaseLangResource P2TargetTitle}"
                                                    IsStretchView="True"

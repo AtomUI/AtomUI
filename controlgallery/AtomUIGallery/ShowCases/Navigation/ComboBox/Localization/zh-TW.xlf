@@ -231,8 +231,8 @@
     </unit>
     <unit id="SemanticPopupEmptyDescription">
       <segment>
-        <source>Empty state shown when an active filter matches nothing.</source>
-        <target state="translated">生效過濾模式下無符合項時顯示的空狀態。</target>
+        <source>Empty state shown when the source is empty or an active filter has no visible matches.</source>
+        <target state="translated">資料來源為空或有效篩選無可見符合項目時顯示的空態。</target>
       </segment>
     </unit>
     <unit id="SemanticPopupListDescription">
@@ -317,6 +317,48 @@
       <segment>
         <source>Variants</source>
         <target state="translated">不同形態</target>
+      </segment>
+    </unit>
+    <unit id="EmptyIndicatorTitle">
+      <segment>
+        <source>Empty state</source>
+        <target state="translated">空態</target>
+      </segment>
+    </unit>
+    <unit id="EmptyIndicatorDescription">
+      <segment>
+        <source>Empty sources and filters without matches show an empty state. Customize its content, template and padding, or turn it off.</source>
+        <target state="translated">資料來源為空或篩選無符合項目時顯示空態，可自訂內容、範本與內距，也可關閉。</target>
+      </segment>
+    </unit>
+    <unit id="EmptyDefaultPlaceholder">
+      <segment>
+        <source>Default empty state</source>
+        <target state="translated">預設空態</target>
+      </segment>
+    </unit>
+    <unit id="EmptyContentPlaceholder">
+      <segment>
+        <source>Custom empty content</source>
+        <target state="translated">自訂空態內容</target>
+      </segment>
+    </unit>
+    <unit id="EmptyTemplatePlaceholder">
+      <segment>
+        <source>Custom empty template</source>
+        <target state="translated">自訂空態範本</target>
+      </segment>
+    </unit>
+    <unit id="EmptyDisabledPlaceholder">
+      <segment>
+        <source>Empty state disabled</source>
+        <target state="translated">關閉空態提示</target>
+      </segment>
+    </unit>
+    <unit id="EmptyContentText">
+      <segment>
+        <source>No available options</source>
+        <target state="translated">暫無可用選項</target>
       </segment>
     </unit>
   </file>

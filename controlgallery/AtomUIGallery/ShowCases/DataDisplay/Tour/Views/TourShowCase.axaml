@@ -57,7 +57,7 @@
                                     </StackPanel.Styles>
                                     <atom:Button Name="TourSemanticAnchorButton"
                                                  Content="Show" />
-                                    <atom:Tour Name="TourSemanticOwner"
+                                    <atom:Tour x:Name="TourSemanticOwner"
                                                Classes="semantic-preview-stage"
                                                IsMotionEnabled="False"
                                                IsPopupPinnedOpen="True"

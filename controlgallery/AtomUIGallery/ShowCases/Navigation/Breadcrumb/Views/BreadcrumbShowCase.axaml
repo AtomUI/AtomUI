@@ -37,7 +37,7 @@
                                                  SemanticOwner="{Binding #BreadcrumbSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:Breadcrumb}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:Breadcrumb Name="BreadcrumbSemanticOwner"
+                            <atom:Breadcrumb x:Name="BreadcrumbSemanticOwner"
                                              HorizontalAlignment="Center"
                                              VerticalAlignment="Center">
                                 <atom:BreadcrumbItem Icon="{antdicons:AntDesignIconProvider Kind=HomeOutlined}"

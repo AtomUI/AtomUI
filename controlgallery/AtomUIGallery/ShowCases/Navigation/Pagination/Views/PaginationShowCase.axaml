@@ -26,7 +26,7 @@
                                                      SemanticOwner="{Binding #PaginationSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:Pagination}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:Pagination Name="PaginationSemanticOwner"
+                                <atom:Pagination x:Name="PaginationSemanticOwner"
                                                  Total="50"
                                                  CurrentPage="1"
                                                  HorizontalAlignment="Center"
@@ -45,7 +45,7 @@
                                                      SemanticOwner="{Binding #SimplePaginationSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:SimplePagination}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:SimplePagination Name="SimplePaginationSemanticOwner"
+                                <atom:SimplePagination x:Name="SimplePaginationSemanticOwner"
                                                        Total="50"
                                                        CurrentPage="1"
                                                        HorizontalAlignment="Center"

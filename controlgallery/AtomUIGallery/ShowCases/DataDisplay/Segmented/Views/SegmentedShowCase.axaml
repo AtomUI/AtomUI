@@ -30,7 +30,7 @@
                             <StackPanel Orientation="Vertical"
                                         HorizontalAlignment="Left"
                                         Spacing="16">
-                                <atom:Segmented Name="SegmentedSemanticOwner">
+                                <atom:Segmented x:Name="SegmentedSemanticOwner">
                                     <atom:SegmentedItem Icon="{antdicons:AntDesignIconProvider Kind=BarsOutlined}"
                                                         Content="{gallery:SegmentedShowCaseLangResource P2ContentList}" />
                                     <atom:SegmentedItem Content="{gallery:SegmentedShowCaseLangResource P2ContentKanban}"

@@ -32,7 +32,7 @@
                                                      SemanticOwner="{Binding #LineEditSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:LineEdit}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:LineEdit Name="LineEditSemanticOwner"
+                                <atom:LineEdit x:Name="LineEditSemanticOwner"
                                                Width="420"
                                                SizeType="Middle"
                                                StyleVariant="Outlined"
@@ -70,7 +70,7 @@
                                                      SemanticOwner="{Binding #PasswordSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:LineEdit}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:LineEdit Name="PasswordSemanticOwner"
+                                <atom:LineEdit x:Name="PasswordSemanticOwner"
                                                Width="420"
                                                SizeType="Middle"
                                                StyleVariant="Outlined"
@@ -110,7 +110,7 @@
                                                      SemanticOwner="{Binding #TextAreaSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:TextArea}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:TextArea Name="TextAreaSemanticOwner"
+                                <atom:TextArea x:Name="TextAreaSemanticOwner"
                                                Text="Hello, AtomUI"
                                                Lines="3"
                                                IsAllowClear="True"
@@ -138,7 +138,7 @@
                                                      SemanticOwner="{Binding #SearchEditSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:SearchEdit}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:SearchEdit Name="SearchEditSemanticOwner"
+                                <atom:SearchEdit x:Name="SearchEditSemanticOwner"
                                                  Text="Hello, AtomUI"
                                                  InnerLeftContent="{antdicons:AntDesignIconProvider Kind=UserOutlined}"
                                                  IsAllowClear="True"
@@ -173,7 +173,7 @@
                                                      SemanticOwner="{Binding #OtpSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:OtpLineEdit}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:OtpLineEdit Name="OtpSemanticOwner"
+                                <atom:OtpLineEdit x:Name="OtpSemanticOwner"
                                                   Length="6"
                                                   Separator="-" />
                             </gallery:SemanticPartPreview.PreviewContent>

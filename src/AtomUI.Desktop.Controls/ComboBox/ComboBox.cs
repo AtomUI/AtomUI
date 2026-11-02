@@ -13,6 +13,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -105,6 +106,18 @@ public partial class ComboBox : AvaloniaComboBox,
     public static readonly StyledProperty<DefaultFilterValueSelector?> FilterValueSelectorProperty =
         AvaloniaProperty.Register<ComboBox, DefaultFilterValueSelector?>(
             nameof(FilterValueSelector));
+
+    public static readonly StyledProperty<bool> IsShowEmptyIndicatorProperty =
+        AvaloniaProperty.Register<ComboBox, bool>(nameof(IsShowEmptyIndicator), true);
+
+    public static readonly StyledProperty<object?> EmptyIndicatorProperty =
+        AvaloniaProperty.Register<ComboBox, object?>(nameof(EmptyIndicator));
+
+    public static readonly StyledProperty<IDataTemplate?> EmptyIndicatorTemplateProperty =
+        AvaloniaProperty.Register<ComboBox, IDataTemplate?>(nameof(EmptyIndicatorTemplate));
+
+    public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
+        AvaloniaProperty.Register<ComboBox, Thickness>(nameof(EmptyIndicatorPadding));
 
     public object? LeftAddOn
     {
@@ -254,6 +267,45 @@ public partial class ComboBox : AvaloniaComboBox,
         set => SetValue(FilterValueSelectorProperty, value);
     }
 
+    /// <summary>
+    /// Whether to show the empty indicator when the source is empty or filtering has no visible matches.
+    /// Defaults to true and does not change filtering or selection.
+    /// </summary>
+    public bool IsShowEmptyIndicator
+    {
+        get => GetValue(IsShowEmptyIndicatorProperty);
+        set => SetValue(IsShowEmptyIndicatorProperty, value);
+    }
+
+    /// <summary>
+    /// Custom empty content. The default Empty is shown when both content and template are null.
+    /// </summary>
+    [DependsOn(nameof(EmptyIndicatorTemplate))]
+    public object? EmptyIndicator
+    {
+        get => GetValue(EmptyIndicatorProperty);
+        set => SetValue(EmptyIndicatorProperty, value);
+    }
+
+    /// <summary>
+    /// Template for empty content, including null content when only a template is specified.
+    /// The template must match the supplied content through IDataTemplate.Match.
+    /// </summary>
+    public IDataTemplate? EmptyIndicatorTemplate
+    {
+        get => GetValue(EmptyIndicatorTemplateProperty);
+        set => SetValue(EmptyIndicatorTemplateProperty, value);
+    }
+
+    /// <summary>
+    /// Padding around empty content. Defaults to zero; the default theme supplies SharedToken.Padding.
+    /// </summary>
+    public Thickness EmptyIndicatorPadding
+    {
+        get => GetValue(EmptyIndicatorPaddingProperty);
+        set => SetValue(EmptyIndicatorPaddingProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -290,6 +342,11 @@ public partial class ComboBox : AvaloniaComboBox,
         AvaloniaProperty.RegisterDirect<ComboBox, bool>(
             nameof(IsEffectiveEmptyVisible),
             o => o.IsEffectiveEmptyVisible);
+
+    internal static readonly DirectProperty<ComboBox, bool> IsDefaultEmptyIndicatorVisibleProperty =
+        AvaloniaProperty.RegisterDirect<ComboBox, bool>(
+            nameof(IsDefaultEmptyIndicatorVisible),
+            o => o.IsDefaultEmptyIndicatorVisible);
     
     private double _effectivePopupWidth;
 
@@ -347,6 +404,14 @@ public partial class ComboBox : AvaloniaComboBox,
         private set => SetAndRaise(IsEffectiveEmptyVisibleProperty, ref _isEffectiveEmptyVisible, value);
     }
 
+    private bool _isDefaultEmptyIndicatorVisible;
+
+    internal bool IsDefaultEmptyIndicatorVisible
+    {
+        get => _isDefaultEmptyIndicatorVisible;
+        private set => SetAndRaise(IsDefaultEmptyIndicatorVisibleProperty, ref _isDefaultEmptyIndicatorVisible, value);
+    }
+
     #endregion
 
     private Popup? _popup;
@@ -367,6 +432,7 @@ public partial class ComboBox : AvaloniaComboBox,
     private readonly Dictionary<ComboBoxItem, FilterVisibilityState> _filterItemVisibilityContext = new();
     private bool _isFrameBorderBrushRelayed;
     private bool _isFrameBackgroundRelayed;
+    private EventHandler? _formValueChanged;
     // Keep popup closing after SelectionChanged callbacks finish updating bound state.
     private bool _selectionFromEventInProgress;
 
@@ -442,6 +508,8 @@ public partial class ComboBox : AvaloniaComboBox,
         RelayRootSurfaceBrush(BackgroundProperty);
         if (_popup != null)
         {
+            // Popup.IsPopupPinnedOpen is internal and cannot be targeted by compiled AXAML.
+            // This relay is disposed and recreated with the template Popup.
             _popupPinnedOpenBinding = BindUtils.RelayBind(
                 this,
                 IsPopupPinnedOpenProperty,
@@ -577,11 +645,6 @@ public partial class ComboBox : AvaloniaComboBox,
         }
     }
 
-    private static void ApplySemanticItemMarker(ComboBoxItem comboBoxItem)
-    {
-        comboBoxItem.Classes.Add(ComboBoxSemanticParts.PopupListItemClass);
-    }
-
     protected override void ClearContainerForItemOverride(Control element)
     {
         if (element is ITransitionInitializationOwner owner)
@@ -693,6 +756,15 @@ public partial class ComboBox : AvaloniaComboBox,
             ClearCandidateItemSelection();
             RefreshFilteredItemVisibility();
         }
+        else if (change.Property == IsShowEmptyIndicatorProperty)
+        {
+            RefreshFilteredItemVisibility();
+        }
+        else if (change.Property == EmptyIndicatorProperty ||
+                 change.Property == EmptyIndicatorTemplateProperty)
+        {
+            ConfigureEmptyIndicator();
+        }
     }
 
     protected override void OnGotFocus(FocusChangedEventArgs e)
@@ -789,7 +861,6 @@ public partial class ComboBox : AvaloniaComboBox,
 
     #region 实现 FormItem 接口
     
-    private EventHandler? _formValueChanged;
     event EventHandler? IFormItemAware.ValueChanged
     {
         add => _formValueChanged += value;
@@ -836,6 +907,11 @@ public partial class ComboBox : AvaloniaComboBox,
         FormFeedback = value;
     }
     #endregion
+
+    private static void ApplySemanticItemMarker(ComboBoxItem comboBoxItem)
+    {
+        comboBoxItem.Classes.Add(ComboBoxSemanticParts.PopupListItemClass);
+    }
 
     private void HandleOpenPopupClicked(object? sender, EventArgs e)
     {
@@ -1509,33 +1585,40 @@ public partial class ComboBox : AvaloniaComboBox,
     {
         var filterValue    = FilterValue;
         var hasFilterValue = !string.IsNullOrEmpty(filterValue?.ToString());
+        var hasVisibleMatch = Items.Count > 0;
 
         if (!IsEffectiveFilterEnabled || !hasFilterValue || Filter == null)
         {
             ClearFilteredItemVisibility();
-            EnsureCandidateItemSelectionIsValid();
-            return;
         }
-
-        var textBinding     = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
-        using var evaluator = BindingEvaluator<string?>.TryCreate(textBinding);
-        var hasVisibleMatch = false;
-
-        for (var index = 0; index < Items.Count; index++)
+        else
         {
-            var item    = Items[index];
-            var matched = Filter.Filter(SelectFilterValue(item, evaluator), filterValue);
-            var comboBoxItem = GetFilterItemContainer(index);
-            if (comboBoxItem != null)
-            {
-                ApplyFilterState(comboBoxItem, matched);
-            }
+            var textBinding     = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
+            using var evaluator = BindingEvaluator<string?>.TryCreate(textBinding);
+            hasVisibleMatch = false;
 
-            hasVisibleMatch |= IsVisibleFilterMatch(item, comboBoxItem, matched);
+            for (var index = 0; index < Items.Count; index++)
+            {
+                var item    = Items[index];
+                var matched = Filter.Filter(SelectFilterValue(item, evaluator), filterValue);
+                var comboBoxItem = GetFilterItemContainer(index);
+                if (comboBoxItem != null)
+                {
+                    ApplyFilterState(comboBoxItem, matched);
+                }
+
+                hasVisibleMatch |= IsVisibleFilterMatch(item, comboBoxItem, matched);
+            }
         }
 
-        IsEffectiveEmptyVisible = !hasVisibleMatch;
+        IsEffectiveEmptyVisible = IsShowEmptyIndicator && !hasVisibleMatch;
+        ConfigureEmptyIndicator();
         EnsureCandidateItemSelectionIsValid();
+    }
+
+    private void ConfigureEmptyIndicator()
+    {
+        IsDefaultEmptyIndicatorVisible = IsEffectiveEmptyVisible && EmptyIndicator is null && EmptyIndicatorTemplate is null;
     }
 
     private void ApplyCurrentFilterState(ComboBoxItem comboBoxItem, object? item)
@@ -1575,7 +1658,6 @@ public partial class ComboBox : AvaloniaComboBox,
         {
             ClearFilterState(item);
         }
-        IsEffectiveEmptyVisible = false;
     }
 
     private void ClearFilterState(ComboBoxItem comboBoxItem)

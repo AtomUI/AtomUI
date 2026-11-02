@@ -28,7 +28,7 @@
                                                      SemanticOwner="{Binding #NavMenuSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:NavMenu}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:NavMenu Name="NavMenuSemanticOwner"
+                                <atom:NavMenu x:Name="NavMenuSemanticOwner"
                                               Mode="Inline"
                                               Width="260"
                                               IsMotionEnabled="False"
@@ -97,7 +97,7 @@
                                                      Loaded="HandleVerticalSemanticPreviewLoaded"
                                                      Unloaded="HandleVerticalSemanticPreviewUnloaded">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:NavMenu Name="VerticalNavMenuSemanticOwner"
+                                <atom:NavMenu x:Name="VerticalNavMenuSemanticOwner"
                                               Mode="Vertical"
                                               Width="260"
                                               IsMotionEnabled="False"
@@ -166,7 +166,7 @@
                                                      Loaded="HandleMenuSemanticPreviewLoaded"
                                                      Unloaded="HandleMenuSemanticPreviewUnloaded">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:Menu Name="MenuSemanticOwner"
+                                <atom:Menu x:Name="MenuSemanticOwner"
                                            IsMotionEnabled="False"
                                            IsPopupPinnedOpen="True"
                                            HorizontalAlignment="Center"

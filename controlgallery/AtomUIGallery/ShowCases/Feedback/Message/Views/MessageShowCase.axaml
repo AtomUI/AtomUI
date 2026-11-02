@@ -86,17 +86,17 @@
                             <Panel MinHeight="320"
                                    Background="{atom:SharedTokenResource ColorFillAlter}">
                                 <!-- manager 无宿主实例拉伸铺满舞台；root 高亮 = 列表宿主本身。 -->
-                                <atom:WindowMessageManager Name="MessageManagerSemanticOwner"
+                                <atom:WindowMessageManager x:Name="MessageManagerSemanticOwner"
                                                            MaxItems="3"
                                                            IsMotionEnabled="False"
                                                            Loaded="HandleSemanticPreviewOwnerLoaded" />
                                 <!-- 卡片锚点：同一舞台内两条常驻卡片，离屏居中排布。 -->
-                                <StackPanel Name="MessageSemanticAnchor"
+                                <StackPanel x:Name="MessageSemanticAnchor"
                                             Orientation="Vertical"
                                             Spacing="16"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center">
-                                    <atom:MessageCard Name="MessageCardSemanticOwner"
+                                    <atom:MessageCard x:Name="MessageCardSemanticOwner"
                                                       MessageType="Success"
                                                       Message="Hello, Ant Design!"
                                                       IsMotionEnabled="False" />
@@ -199,7 +199,7 @@
                                                 Spacing="12">
                                         <TextBlock VerticalAlignment="Center"
                                                    Text="{gallery:MessageShowCaseLangResource StackEnabledLabel}" />
-                                        <atom:ToggleSwitch Name="StackEnabledSwitch"
+                                        <atom:ToggleSwitch x:Name="StackEnabledSwitch"
                                                            IsChecked="True"
                                                            IsCheckedChanged="HandleStackEnabledChanged" />
                                     </StackPanel>

@@ -26,7 +26,7 @@
                                                  SemanticOwner="{Binding #ExpanderSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:Expander}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:Expander Name="ExpanderSemanticOwner"
+                            <atom:Expander x:Name="ExpanderSemanticOwner"
                                            IsExpanded="True"
                                            Header="This is panel header">
                                 <atom:TextBlock TextWrapping="Wrap" Text="This is panel body" />

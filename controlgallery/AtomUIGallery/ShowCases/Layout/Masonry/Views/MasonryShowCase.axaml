@@ -28,7 +28,7 @@
                         SemanticOwner="{Binding #MasonrySemanticOwner}"
                         SemanticOwnerType="{x:Type atom:Masonry}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:Masonry Name="MasonrySemanticOwner"
+                            <atom:Masonry x:Name="MasonrySemanticOwner"
                                           ItemsSource="{Binding SemanticItems}"
                                           ColumnCount="3"
                                           ColumnGap="16"

@@ -28,7 +28,7 @@
                                                  SemanticOwner="{Binding #CascaderSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:Cascader}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:Cascader Name="CascaderSemanticOwner"
+                            <atom:Cascader x:Name="CascaderSemanticOwner"
                                            Width="420"
                                            IsAllowClear="True"
                                            IsMotionEnabled="False"

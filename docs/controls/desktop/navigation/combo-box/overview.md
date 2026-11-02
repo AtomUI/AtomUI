@@ -46,6 +46,7 @@ ComboBox 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
 | 内容与数据 | `ContentLeftAddOn`、`ContentLeftAddOnTemplate`、`ContentRightAddOn`、`ContentRightAddOnTemplate`、`FilterValue`、`FilterValueSelector`、`LeftAddOnTemplate`、`OptionFontSize`、`RightAddOnTemplate` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
+| 空态 | `IsShowEmptyIndicator`、`EmptyIndicator`、`EmptyIndicatorTemplate`、`EmptyIndicatorPadding` | 控制空态开关、内容、模板和内容区域内边距；显示条件见 §4.1。 |
 | 选择与集合 | `SelectedItem`、`SelectedIndex`、`DropDownDisplayPageSize`、`Filter`、`IsFilterEnabled` | 维护选择、展开、过滤、分页、分组或集合状态。 |
 | 交互与状态 | `IsAllowClear`、`IsMotionEnabled`、`ShouldUseOverlayPopup`、`IsPopupPinnedOpen`、`Status`、`IsShowOverflowTip`、`OverflowTipDelay`、`OverflowTipPlacement` | 表达用户可观察状态、可用性、清除、加载、反馈和非编辑态选中内容溢出提示语义。Form 校验扩展状态进入内部 `FormStatus`，不覆盖显式 `Status`。 |
 | 视觉与布局 | `SizeType`、`StyleVariant` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
@@ -65,7 +66,7 @@ ComboBox 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | `PART_ComboBoxHandle` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 | `PART_ContentRightAddOnPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
 | `PART_EditableTextBox` | `?` | 承载文本输入、过滤、显示或编辑入口。 |
-| `PART_EmptyIndicator` | `?` | 展示指示器、进度、分页或状态反馈。 |
+| `PART_EmptyIndicator` | `Border` | 承载默认或自定义空态，保持 `popup.empty` 的语义节点身份。 |
 | `PART_FormFeedBack` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 | `PART_ItemsPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
 | `PART_OpenIndicatorButton` | `?` | 承载用户触发入口、导航或关闭动作。 |
@@ -74,7 +75,22 @@ ComboBox 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 
 当前未抽取到控件专属伪类；主题主要依赖 Avalonia 标准伪类、模板绑定和内部 StyledProperty。
 
-### 3.1 Semantic Parts
+### 3.1 空态 API
+
+空态 API 与 `ListView`、`Select` 保持同名和同义；所有属性均为 `StyledProperty`，默认绑定模式为单向，支持样式、绑定与实例值，遵循 Avalonia 属性优先级。
+
+| 属性 | 类型 | 注册默认值 | 语义 |
+| --- | --- | --- | --- |
+| `IsShowEmptyIndicator` | `bool` | `true` | 允许显示空态；不改变过滤结果、选择值或弹层开合状态。 |
+| `EmptyIndicator` | `object?` | `null` | 自定义空态内容，由空态内容 presenter 呈现。 |
+| `EmptyIndicatorTemplate` | `IDataTemplate?` | `null` | 应用于 `EmptyIndicator` 的内容模板；仅设置模板时也使用自定义呈现路径。 |
+| `EmptyIndicatorPadding` | `Thickness` | `default(Thickness)`，即零内边距 | 默认主题通过 SharedToken `Padding` 提供有效值；修改后影响空态区域布局。 |
+
+`EmptyIndicator` 与 `EmptyIndicatorTemplate` 均为 `null` 时显示默认 `Empty`（`SizeType=Small`、`PresetImage=Simple`）；任一非空时使用自定义呈现路径，并隐藏默认视觉。模板选择遵循 `IDataTemplate.Match`。仅设置模板时内容为 `null`，模板须匹配 `null`，不隐式使用选中项或数据源作为模板数据；无内容绑定的空态可使用不声明数据类型的 `DataTemplate`，带类型约束的模板应同时提供匹配的 `EmptyIndicator` 数据。清空两项后恢复默认视觉。
+
+开关、内容、模板和内边距的运行时变更必须立即更新呈现与布局，不要求重建控件、重新打开弹层或修改 `ItemsSource`。空态不增加公开事件或 Token；`IsEffectiveEmptyVisible` 保持只由控件内部推导的只读状态。
+
+### 3.2 Semantic Parts
 
 ComboBox 的公共 Semantic Part 契约如下。契约字段（Selector、ContractType、Cardinality、CrossVisualRoot、RuntimeCreated、CrossNestedOwners）的完整定义与每个部件的数据以 [ComboBox Semantic Part 契约](semantic-part.md) 为唯一真源，本节只做摘要。
 
@@ -91,7 +107,7 @@ ComboBox 的公共 Semantic Part 契约如下。契约字段（Selector、Contra
 | `popup.root` | `Border` | 弹层框体，承载候选列表与空态。 |
 | `popup.list` | `Avalonia.Controls.ScrollViewer` | 候选列表滚动区，与空态互斥。 |
 | `popup.listItem` | `ComboBoxItem` | 单个候选项容器，运行时容器创建时注入 marker。 |
-| `popup.empty` | `Border` | 生效过滤模式下无匹配项时的弹层空态区（未开启过滤时不显示）。 |
+| `popup.empty` | `Border` | 数据源为空或有效过滤无可见匹配项时的弹层空态承载区，受 `IsShowEmptyIndicator` 控制。 |
 
 **明确不发布的区域**：清除部件（`frame` 的 hover / focus / 校验态状态色由共享主题驱动，不作为独立部件发布）（`IsAllowClear` 为未实现 API）、非编辑态选中内容节点、Form 反馈节点、内置 AddOn 区、`ComboBoxItem` 作为独立 owner、`atom:Empty` 内部视觉、弹层宿主与定位。逐项理由见 [ComboBox Semantic Part 契约 §5](semantic-part.md)。
 
@@ -119,6 +135,31 @@ Public API / inherited command / item source / user input
 - 模板重套用时必须把 public API 对应状态回放到新的 part、伪类和主题变量。
 - 集合、弹层、异步、动效或窗口相关状态必须能处理 reset、close、cancel、detach 和 owner 释放。
 
+### 4.1 候选与空态
+
+空态是候选数据状态的视觉反馈，由 `ComboBox` 统一计算；过滤应用、过滤清理和模板节点均不能各自维护一份显示判定。
+
+```text
+有效过滤 = IsEditable && IsFilterEnabled && Filter != null
+           && FilterValue 的字符串表示非 null、非空字符串
+候选为空 = Items.Count == 0 ||（有效过滤 && 没有可见匹配项）
+显示空态 = IsShowEmptyIndicator && 候选为空
+```
+
+空白字符串沿用过滤器现有语义，不额外执行 Trim。可见匹配项沿用过滤与容器可见性判定，不能把用户原本隐藏的条目恢复为可见。非过滤状态按 `Items.Count` 判空，不额外推导“非空集合全部被应用手动隐藏”的空态。
+
+| 数据与过滤状态 | `IsShowEmptyIndicator` | 呈现 |
+| --- | --- | --- |
+| 集合为空，有效过滤开启或关闭 | `true` | 空态区域。 |
+| 集合非空，未启用有效过滤 | `true` | 候选列表。 |
+| 集合非空，有效过滤存在可见匹配项 | `true` | 过滤后的候选列表。 |
+| 集合非空，有效过滤无可见匹配项 | `true` | 空态区域。 |
+| 任意数据与过滤状态 | `false` | 隐藏空态，候选列表仍按原过滤结果呈现，可以为空。 |
+
+列表和空态区域互斥，默认空态与自定义空态内容互斥。清空过滤值、禁用过滤或退出编辑态后，重新按当前集合数量判断空态。空态不写入 `SelectedItem` / `SelectedIndex`，不自动开合弹层；弹层关闭时节点存在与状态计算不代表用户可见。
+
+远程请求和加载状态由业务层负责；空集合统一按空数据处理，不在 ComboBox 中增加请求或加载状态机。
+
 ## 5. 视觉与主题模型
 
 ComboBox 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
@@ -130,6 +171,8 @@ ComboBox 的视觉模型由控件模板、ControlTheme、SharedToken 和必要�
 | `ComboBoxTheme.axaml` | 定义布局、内容承载或框架节点视觉。 |
 
 非编辑态选中内容的完整文本提示复用共享 `OverflowTip` attached behavior。模板只在 `SelectedContentPresenter` 上接入 `IsShowOverflowTip`、`OverflowTipDelay`、`OverflowTipPlacement` 和 `SelectionBoxItem`；`IsEditable=true` 时编辑输入框不默认启用该提示。
+
+空态沿用现有 `PART_EmptyIndicator` 外层 `Border`，内部承载默认 `Empty` 与自定义内容 presenter；内容、模板、内边距及显隐关系在 ControlTheme 中声明。`EmptyIndicatorPadding` 作用于空态内容区域，`PopupContentPadding` 保持弹层框体内边距职责，两者不互相替代。空态切换沿用候选行尺寸、弹层宽度与最大高度、定位、滚动及键盘选择契约。
 
 ComboBox 使用 `ComboBoxToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 open/close、collection/filter、input/value、motion、visual option 运行时状态。
 
@@ -217,6 +260,7 @@ ComboBox 的视觉选项通过 public API 归一为 theme variables、伪类或�
 | 文档改动 | 运行 `git diff --check`，检查相对链接存在。 |
 | Public API | 覆盖属性默认值、事件触发、命令和继承语义。 |
 | 状态模型 | 覆盖 open/close、collection/filter、input/value、motion、visual option、disabled、hover、pressed、focus 以及控件特有状态。 |
+| 空态 | 覆盖 §4.1 状态矩阵、集合增删与替换、过滤清空、空态 API 运行时变更，以及模板重应用与弹层重开。 |
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Semantic Part | 检查 descriptor 声明与 `semantic-part.md` 一致、静态 marker 与运行时 marker 就位、生成专用 Style 恰好命中目标节点，并确认不存在 code-behind 属性回退。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |

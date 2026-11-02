@@ -30,7 +30,7 @@
                                                  SemanticOwner="{Binding #DropdownButtonSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:DropdownButton}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:DropdownButton Name="DropdownButtonSemanticOwner"
+                            <atom:DropdownButton x:Name="DropdownButtonSemanticOwner"
                                                  ButtonType="Link"
                                                  TriggerType="Hover"
                                                  Content="{gallery:DropdownButtonShowCaseLangResource P2ContentHoverMe}"

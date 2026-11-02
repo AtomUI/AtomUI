@@ -51,7 +51,7 @@
                                                      SemanticOwner="{Binding #SpaceSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:Space}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:Space Name="SpaceSemanticOwner"
+                                <atom:Space x:Name="SpaceSemanticOwner"
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center">

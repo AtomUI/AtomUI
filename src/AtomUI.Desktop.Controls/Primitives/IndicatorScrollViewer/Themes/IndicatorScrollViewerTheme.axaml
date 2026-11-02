@@ -12,7 +12,7 @@
                                              Orientation="Vertical"
                                              Opacity="{TemplateBinding ScrollBarOpacity}"
                                              DockPanel.Dock="Right"/>
-                    <ScrollContentPresenter Name="PART_ContentPresenter"
+                    <ScrollContentPresenter x:Name="PART_ContentPresenter"
                                             Background="{TemplateBinding Background}"
                                             HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
                                             VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"

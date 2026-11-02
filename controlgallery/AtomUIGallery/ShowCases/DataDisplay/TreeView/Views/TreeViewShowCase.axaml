@@ -40,7 +40,7 @@
                                             <antdicons:DownOutlined RenderTransform="rotate(-90deg)" />
                                         </atom:IconTemplate>
                                     </atom:TreeView.SwitcherRotationIcon>
-                                    <atom:TreeViewItem Name="TreeViewItemSemanticOwner"
+                                    <atom:TreeViewItem x:Name="TreeViewItemSemanticOwner"
                                                        Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1}"
                                                        ItemKey="0-0"
                                                        Icon="{antdicons:AntDesignIconProvider Kind=SmileOutlined}">

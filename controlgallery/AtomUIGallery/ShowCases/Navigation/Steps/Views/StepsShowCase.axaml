@@ -30,7 +30,7 @@
                                                      SemanticOwnerType="{x:Type atom:Steps}">
                             <gallery:SemanticPartPreview.PreviewContent>
                                 <StackPanel Spacing="24">
-                                    <atom:Steps Name="StepsSemanticOwner"
+                                    <atom:Steps x:Name="StepsSemanticOwner"
                                                 Current="1"
                                                 TitlePlacement="Vertical"
                                                 HorizontalAlignment="Center"

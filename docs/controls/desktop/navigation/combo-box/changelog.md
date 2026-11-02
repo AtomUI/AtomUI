@@ -2,6 +2,23 @@
 
 本文档记录 ComboBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-02
+
+- Design
+  - 定义[统一候选空态模型](overview.md#41-候选与空态)：集合为空或有效过滤无可见匹配项时，根据空态开关显示反馈；过滤清理只恢复容器可见性，最终空态由候选刷新流程统一推导。
+  - 定义[空态 API](overview.md#31-空态-api)：`IsShowEmptyIndicator`、`EmptyIndicator`、`EmptyIndicatorTemplate`、`EmptyIndicatorPadding`，覆盖开关、默认与自定义内容、内容模板和内边距。
+  - 明确现有 `popup.empty` 外层节点、marker、route 和数量语义，以及候选行、弹层布局与交互契约的兼容边界；空态内边距复用 SharedToken `Padding`。
+- Behavior
+  - 空数据判定进入统一候选刷新流程；清空过滤、退出编辑态、集合清空或替换后均根据当前数据更新空态，空态开关不恢复被过滤的候选行。
+- Theme
+  - 在既有空态语义外框内声明自定义内容 presenter 与默认 Empty；通过模板绑定消费空态内容、内容模板与内边距，保持列表和空态互斥。
+- Gallery
+  - 增加默认空态、自定义内容、仅内容模板与关闭空态的示例；自定义空态外框使用 `ComboBoxPopupEmptyStyle` 声明式定制，更新四种语言的语义说明。
+- Docs
+  - 同步架构、实现、Semantic Part 与 Token 文档，公开 API 由源码和控件文档维护；Gallery 按现行规范只展示示例与 Semantic Parts。
+- Validation
+  - 修复前后证据、实际验证范围与清理结果统一见[空态修复执行记录](../../../../superpowers/progress/2026-11-02-combobox-empty-state.md)，不将 Headless 或 Skia 结果扩大为原生平台验收结论。
+
 ## 2026-10-20
 
 - Fixed

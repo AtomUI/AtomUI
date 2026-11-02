@@ -29,7 +29,7 @@
                                                      SemanticOwner="{Binding #SkeletonSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:Skeleton}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:Skeleton Name="SkeletonSemanticOwner"
+                                <atom:Skeleton x:Name="SkeletonSemanticOwner"
                                                IsLoading="True"
                                                IsShowAvatar="True"
                                                ParagraphRows="4" />
@@ -74,7 +74,7 @@
                                                     IsPlain="True" />
                                     <Grid Name="SkeletonElementPreviewHost"
                                           HorizontalAlignment="Stretch">
-                                        <atom:SkeletonAvatar Name="SkeletonAvatarSemanticOwner"
+                                        <atom:SkeletonAvatar x:Name="SkeletonAvatarSemanticOwner"
                                                              Classes="semantic-preview-owner"
                                                              Width="NaN"
                                                              HorizontalAlignment="Stretch"

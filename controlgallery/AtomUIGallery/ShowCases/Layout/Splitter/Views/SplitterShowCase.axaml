@@ -54,7 +54,7 @@
                                                      SemanticOwner="{Binding #SplitterSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:Splitter}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:Splitter Name="SplitterSemanticOwner"
+                                <atom:Splitter x:Name="SplitterSemanticOwner"
                                                Orientation="Vertical"
                                                Height="220">
                                     <Border Classes="splitter-panel"

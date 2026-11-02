@@ -27,7 +27,7 @@
                             SemanticOwner="{Binding #SliderSemanticOwner}"
                             SemanticOwnerType="{x:Type atom:Slider}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:Slider Name="SliderSemanticOwner"
+                                <atom:Slider x:Name="SliderSemanticOwner"
                                              Maximum="100"
                                              Minimum="0"
                                              IsRangeMode="True"

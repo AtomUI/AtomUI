@@ -29,7 +29,7 @@
                                                      SemanticOwner="{Binding #FloatButtonSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:FloatButton}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:FloatButton Name="FloatButtonSemanticOwner"
+                                <atom:FloatButton x:Name="FloatButtonSemanticOwner"
                                                   Shape="Square"
                                                   Icon="{antdicons:AntDesignIconProvider FileTextOutlined}"
                                                   Content="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}"
@@ -52,7 +52,7 @@
                                                      SemanticOwner="{Binding #FloatButtonGroupSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:FloatButtonGroup}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:FloatButtonGroup Name="FloatButtonGroupSemanticOwner"
+                                <atom:FloatButtonGroup x:Name="FloatButtonGroupSemanticOwner"
                                                        Trigger="Click"
                                                        IsOpen="True"
                                                        IsMotionEnabled="False"
@@ -78,7 +78,7 @@
                                                      SemanticOwner="{Binding #BackTopFloatButtonSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:BackTopFloatButton}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:BackTopFloatButton Name="BackTopFloatButtonSemanticOwner"
+                                <atom:BackTopFloatButton x:Name="BackTopFloatButtonSemanticOwner"
                                                          Shape="Square"
                                                          Content="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}"
                                                          HorizontalAlignment="Center" />

@@ -282,9 +282,9 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
 | CrossVisualRoot | `true` |
 | RuntimeCreated | `false` |
 | CrossNestedOwners | `false` |
-| AtomUI 节点 | `ComboBoxTheme.axaml` 中 `PART_EmptyIndicator`（内含 `atom:Empty`） |
-| 职责 | 生效过滤模式下无匹配项时显示的弹层空态区；`IsVisible` 由 `IsEffectiveEmptyVisible` 驱动，与 `popup.list` 互斥。**仅在 `IsEditable=true` + `IsFilterEnabled=true` + 存在过滤值 + 无匹配项时可见**：未开启过滤时 `IsEffectiveEmptyVisible` 被强制为 `false`，此时弹层显示的是空的列表区而非空态区，空态节点仍存在但隐藏。 |
-| 相关 API | `IsEditable`、`IsFilterEnabled`、`Text` / `FilterValue`；`IsEffectiveEmptyVisible`（internal，由上述状态推导） |
+| AtomUI 节点 | `ComboBoxTheme.axaml` 中 `PART_EmptyIndicator` 外层 `Border`，承载默认 `Empty` 或自定义内容 presenter |
+| 职责 | 数据源为空或有效过滤无可见匹配项时的弹层空态区；`IsVisible` 由 `IsEffectiveEmptyVisible` 驱动，与 `popup.list` 互斥，受 `IsShowEmptyIndicator` 控制。完整显示规则见[架构设计 §4.1](overview.md#41-候选与空态)。 |
+| 相关 API | `IsShowEmptyIndicator`、`EmptyIndicator`、`EmptyIndicatorTemplate`、`EmptyIndicatorPadding`；`ItemsSource`、`IsEditable`、`IsFilterEnabled`、`Text` / `FilterValue`；`IsEffectiveEmptyVisible`（internal） |
 | 相关 Token | SharedToken（`Padding`） |
 | 稳定性 | stable since 6.2.0 |
 
@@ -312,8 +312,8 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
   幂等注入，`ClearContainerForItemOverride` 不摘除 marker（与 `TabStrip`、`Breadcrumb`、`TreeView` 同型）。
 - `placeholder` / `input` / `popup.list` / `popup.empty` 的存在条件是**状态性隐藏而非节点缺失**：`IsVisible` 在
   `IsEditable` / `IsEffectiveEmptyVisible` 变化时切换，节点与 marker 本身常驻，因此数量语义为 `Single`。
-  `IsEffectiveEmptyVisible` 只在生效过滤模式（`IsEditable` + `IsFilterEnabled` + 过滤值 + 无匹配项）下为真；
-  未开启过滤时它被强制为 `false`，因此「候选为空」并不等于「空态可见」。
+  `IsEffectiveEmptyVisible` 按[候选与空态模型](overview.md#41-候选与空态)推导；集合为空时不依赖过滤模式，
+  空态开关关闭时节点仍存在但隐藏。默认内容与自定义内容切换不替换外层语义节点。
 - `popup.root` 是 `PART_Popup` 的静态直接子节点；Avalonia 12 的模板内 Popup 为内容传播 `TemplatedParent`，
   故 `popup.*` 在弹层打开后仍可由 owner-scoped Style 命中（系统设计 §9.1）。
 - 弹层四部件只有在弹层打开时才进入真实视觉树；未打开时生成 Style 不命中任何节点，属预期。
@@ -322,7 +322,7 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
 
 `root`、`prefix`、`frame`、`content`、`placeholder`、`input`、`suffix`、`indicator`、`popup.root`、`popup.list`、
 `popup.empty` 均为每模板唯一节点，`Single`。状态变化（`IsEditable`、`IsFilterEnabled`、`SelectedItem` 非空、
-disabled、`Status`/`FormStatus`、`IsDropDownOpen`、过滤结果不同）只切换可见性或有效视觉值，**不增删 marker**。
+disabled、`Status`/`FormStatus`、`IsDropDownOpen`、集合空与非空、过滤结果、空态开关与内容切换）只切换可见性、内部内容或有效视觉值，**不增删 marker**。
 
 `popup.listItem` 为 `Multiple`：条目数量随 `ItemsSource` 与过滤结果变化；虚拟化或容器回收复用容器时 marker
 保持稳定，容器从一个 owner 转移到另一个 owner 时不遗留旧状态。
@@ -415,7 +415,10 @@ Semantic Style 在目标节点上以更高优先级覆写，不需要也不应�
   容器级样式（背景、前景、内边距、圆角、hover/selected 视觉）已由 `popup.listItem` 完整覆盖；注册它会增加一份
   无独立职责的契约（对照：`TabStripItem` 有自己的 close/icon/label 才独立注册，`ListBoxItem` 不注册）。
 - **空态内部视觉**（`atom:Empty` 的插图与描述）：`Empty` 有自身语义 owner，`popup.empty` 只承诺承载它的
-  `Border` 节点的外框与内边距。
+  `Border` 节点的外框与内边距。应用通过 `EmptyIndicator` / `EmptyIndicatorTemplate` 定制空态内容，通过
+  `IsShowEmptyIndicator` 控制开关；外层样式使用 `ComboBoxPopupEmptyStyle` 在 AXAML 中声明，不通过修改内部
+  `IsVisible`、获取节点后赋值或替换语义外框来驱动业务状态。`EmptyIndicatorPadding` 提供 owner 级内边距入口，
+  与语义 Style 同时使用时遵循 Avalonia 属性优先级，不在代码中增加额外优先级中继。
 - **弹层 Popup 宿主与定位**（`PART_Popup`、阴影、`MarginToAnchor`、钉住打开、light-dismiss）：由共享 Popup
   契约承担，`popup.root` 只覆盖弹层内容框体的视觉。
 - `PART_*` 名称、internal 类型、`.semantic-scope-*` 路由标记与模板层级。
@@ -444,6 +447,7 @@ Semantic Style 服从 Avalonia 原生属性优先级。
   `ComboBoxPinnedPopupOverlayTests`）。
 - `IsEditable` 切换后 `input` 与 `placeholder` 节点的命中稳定。
 - 状态变化（`IsEditable`、`IsFilterEnabled`、过滤结果、选择变化、disabled、`Status`）不改变 marker 身份与数量语义。
+- 集合为空、过滤无可见匹配项、关闭空态以及切换默认或自定义内容时，`popup.empty` 保持同一个外层 `Border`、marker、route 和 `Single` 数量语义；生成的 `ComboBoxPopupEmptyStyle` 仍命中该节点。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - 根表面 `BorderBrush` / `Background` 定制压过帧的 hover / rest 状态机，清空后交还状态机，模板应用前设置的值同样生效，
   未定制时保持主题 rest 状态；帧已接收 owner 的 `IsMotionEnabled`（见 `ComboBoxRootSurfaceRelayTests`）。

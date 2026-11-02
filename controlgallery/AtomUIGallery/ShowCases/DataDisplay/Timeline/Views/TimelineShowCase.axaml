@@ -31,7 +31,7 @@
                             SemanticOwner="{Binding #TimelineSemanticOwner}"
                             SemanticOwnerType="{x:Type atom:Timeline}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:Timeline Name="TimelineSemanticOwner"
+                                <atom:Timeline x:Name="TimelineSemanticOwner"
                                                Width="400"
                                                HorizontalAlignment="Left">
                                     <atom:TimelineItem Label="2015-09-01"
@@ -79,7 +79,7 @@
                             SemanticOwner="{Binding #TimelineItemsSemanticOwner}"
                             SemanticOwnerType="{x:Type atom:Timeline}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:Timeline Name="TimelineItemsSemanticOwner"
+                                <atom:Timeline x:Name="TimelineItemsSemanticOwner"
                                                Width="400"
                                                HorizontalAlignment="Left">
                                     <atom:TimelineItem Label="2015-09-01 09:12:11"

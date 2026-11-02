@@ -26,7 +26,7 @@
                                                  SemanticOwner="{Binding #GroupBoxSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:GroupBox}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:GroupBox Name="GroupBoxSemanticOwner"
+                            <atom:GroupBox x:Name="GroupBoxSemanticOwner"
                                            HeaderTitle="Title info"
                                            HeaderIcon="{antdicons:AntDesignIconProvider Kind=GithubOutlined}">
                                 <atom:TextBlock TextWrapping="Wrap"

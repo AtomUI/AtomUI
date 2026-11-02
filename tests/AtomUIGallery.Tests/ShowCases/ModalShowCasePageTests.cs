@@ -165,7 +165,7 @@ public class ModalShowCasePageTests
         preview.ShouldContain($"SemanticOwner=\"{{Binding #{ownerName}}}\"");
         preview.ShouldContain($"Name=\"{stageName}\"");
         preview.ShouldContain($"Name=\"{stageLayerName}\"");
-        preview.ShouldContain($"<atom:ScopeAwareOverlayLayerPanel Name=\"{stageLayerName}\"");
+        preview.ShouldContain($"<atom:ScopeAwareOverlayLayerPanel x:Name=\"{stageLayerName}\"");
         preview.ShouldContain($"OverlayScope=\"{{Binding #{stageLayerName}}}\"");
         preview.ShouldContain($"PlacementTarget=\"{{Binding #{stageLayerName}}}\"");
         preview.ShouldContain("IsOpen=\"True\"");

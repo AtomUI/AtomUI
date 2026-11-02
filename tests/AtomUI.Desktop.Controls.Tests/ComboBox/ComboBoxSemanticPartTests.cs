@@ -315,10 +315,8 @@ public class ComboBoxSemanticPartTests
     }
 
     [Fact]
-    public void Popup_Empty_Marker_Replaces_The_List_When_The_Filter_Matches_Nothing()
+    public void Popup_Empty_Marker_Tracks_Empty_Source_Filter_And_Custom_Content()
     {
-        // 空态只在生效的过滤模式下出现（IsEditable + IsFilterEnabled + 过滤值 + 无匹配项）。
-        // 未开启过滤时 IsEffectiveEmptyVisible 被强制为 false，弹层里是空的列表区而非空态区。
         var comboBox = new AtomUIComboBox
         {
             Width = 320,
@@ -347,6 +345,30 @@ public class ComboBoxSemanticPartTests
                   .OfType<AvaloniaScrollViewer>()
                   .Single(control => control.Classes.Contains(PopupListClass))
                   .IsEffectivelyVisible.ShouldBeFalse();
+
+            comboBox.Text = string.Empty;
+            comboBox.IsFilterEnabled = false;
+            comboBox.ItemsSource = Array.Empty<string>();
+            Dispatcher.UIThread.RunJobs();
+            empties[0].IsEffectivelyVisible.ShouldBeTrue();
+
+            comboBox.EmptyIndicator = "No available options";
+            Dispatcher.UIThread.RunJobs();
+            empties[0].GetVisualDescendants().OfType<AvaloniaTextBlock>()
+                      .ShouldContain(text => text.Text == "No available options" && text.IsEffectivelyVisible);
+            empties[0].GetVisualDescendants().OfType<Desktop.Controls.Empty>()
+                      .Single().IsEffectivelyVisible.ShouldBeFalse();
+
+            comboBox.IsShowEmptyIndicator = false;
+            Dispatcher.UIThread.RunJobs();
+            empties[0].IsEffectivelyVisible.ShouldBeFalse();
+            comboBox.EmptyIndicator = null;
+            comboBox.IsShowEmptyIndicator = true;
+            Dispatcher.UIThread.RunJobs();
+            empties[0].GetVisualDescendants().OfType<Desktop.Controls.Empty>()
+                      .Single().IsEffectivelyVisible.ShouldBeTrue();
+            window.GetVisualDescendants().OfType<Border>()
+                  .Single(control => control.Classes.Contains(PopupEmptyClass)).ShouldBeSameAs(empties[0]);
         });
     }
 

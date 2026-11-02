@@ -80,16 +80,16 @@
                             <Panel MinHeight="320"
                                    Background="{atom:SharedTokenResource ColorFillAlter}">
                                 <!-- manager 无宿主实例拉伸铺满舞台；root 高亮 = 列表宿主本身。 -->
-                                <atom:WindowNotificationManager Name="NotificationManagerSemanticOwner"
+                                <atom:WindowNotificationManager x:Name="NotificationManagerSemanticOwner"
                                                                MaxItems="3"
                                                                IsMotionEnabled="False" />
                                 <!-- 卡片锚点：NotificationCard 有公开无参构造，可声明式实例化两张常驻卡片。 -->
-                                <StackPanel Name="NotificationSemanticAnchor"
+                                <StackPanel x:Name="NotificationSemanticAnchor"
                                             Orientation="Vertical"
                                             Spacing="16"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center">
-                                    <atom:NotificationCard Name="NotificationCardSemanticOwner"
+                                    <atom:NotificationCard x:Name="NotificationCardSemanticOwner"
                                                            NotificationType="Success"
                                                            Title="Notification Title"
                                                            Content="This is a notification description."
@@ -222,7 +222,7 @@
                                                 Spacing="12">
                                         <TextBlock VerticalAlignment="Center"
                                                    Text="{gallery:NotificationShowCaseLangResource StackEnabledLabel}" />
-                                        <atom:ToggleSwitch Name="NotificationStackEnabledSwitch"
+                                        <atom:ToggleSwitch x:Name="NotificationStackEnabledSwitch"
                                                            VerticalAlignment="Center"
                                                            IsChecked="True"
                                                            IsCheckedChanged="HandleStackEnabledChanged" />

@@ -193,7 +193,7 @@
     </unit>
     <unit id="SemanticPopupEmptyDescription">
       <segment>
-        <source>Empty state shown when an active filter matches nothing.</source>
+        <source>Empty state shown when the source is empty or an active filter has no visible matches.</source>
       </segment>
     </unit>
     <unit id="SemanticPopupListDescription">
@@ -264,6 +264,41 @@
     <unit id="VariantsTitle">
       <segment>
         <source>Variants</source>
+      </segment>
+    </unit>
+    <unit id="EmptyIndicatorTitle">
+      <segment>
+        <source>Empty state</source>
+      </segment>
+    </unit>
+    <unit id="EmptyIndicatorDescription">
+      <segment>
+        <source>Empty sources and filters without matches show an empty state. Customize its content, template and padding, or turn it off.</source>
+      </segment>
+    </unit>
+    <unit id="EmptyDefaultPlaceholder">
+      <segment>
+        <source>Default empty state</source>
+      </segment>
+    </unit>
+    <unit id="EmptyContentPlaceholder">
+      <segment>
+        <source>Custom empty content</source>
+      </segment>
+    </unit>
+    <unit id="EmptyTemplatePlaceholder">
+      <segment>
+        <source>Custom empty template</source>
+      </segment>
+    </unit>
+    <unit id="EmptyDisabledPlaceholder">
+      <segment>
+        <source>Empty state disabled</source>
+      </segment>
+    </unit>
+    <unit id="EmptyContentText">
+      <segment>
+        <source>No available options</source>
       </segment>
     </unit>
   </file>

@@ -1224,7 +1224,7 @@ public class WindowResizeArtifactTests
                                    .ToArray();
         bindings.ShouldContain(binding =>
             (string?)binding.Attribute("RelativeSource") == "{RelativeSource TemplatedParent}" &&
-            (string?)binding.Attribute("Path") == "HasTitleBar");
+            (string?)binding.Attribute("Path") == "(WindowDrawnDecorations.HasTitleBar)");
         bindings.ShouldContain(binding =>
             (string?)binding.Attribute("Path") == "$parent[atom:Window].IsTitleBarVisible");
     }

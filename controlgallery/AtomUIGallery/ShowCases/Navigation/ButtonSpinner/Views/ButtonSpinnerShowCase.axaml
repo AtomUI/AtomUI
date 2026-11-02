@@ -26,7 +26,7 @@
                                                  SemanticOwner="{Binding #ButtonSpinnerSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:ButtonSpinner}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:ButtonSpinner Name="ButtonSpinnerSemanticOwner"
+                            <atom:ButtonSpinner x:Name="ButtonSpinnerSemanticOwner"
                                                 Width="320"
                                                 InnerLeftContent="￥"
                                                 InnerRightContent="RMB">

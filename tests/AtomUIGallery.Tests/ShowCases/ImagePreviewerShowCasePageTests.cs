@@ -19,9 +19,8 @@ public class ImagePreviewerShowCasePageTests
     [Fact]
     public void ImagePreviewer_ShowCase_Semantic_Example_Materializes_Without_Access_Violation()
     {
-        // Semantic Style 经 x:SetterTargetType 在 internal ImagePreviewRenderer 上解析
-        // CornerRadiusProperty；internal 属性字段会让 XAML 编译器生成的 ldsfld 在运行时抛
-        // FieldAccessException（跨程序集访问器检查），必须实例化真实页面走一遍 deferred 物化。
+        // Semantic Style 使用公开 Control 作为 Setter 上下文，经 Border.CornerRadius 解析公开属性字段，
+        // 避免引用 internal renderer 的字段；实例化真实页面验证 deferred 物化与样式命中。
         AvaloniaTestApp.EnsureInitialized();
         var page = new ImagePreviewerShowCase();
 

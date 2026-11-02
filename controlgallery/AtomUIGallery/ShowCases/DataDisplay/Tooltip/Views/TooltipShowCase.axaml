@@ -29,7 +29,7 @@
                         <gallery:SemanticPartPreview.PreviewContent>
                             <!--  预览舞台按 Stretch 测量内容，此处居中让 ToolTip 收缩到内容宽度,
                                   否则胶囊会被撑到 ToolTipMaxWidth(250) 满宽  -->
-                            <atom:ToolTip Name="TooltipSemanticOwner"
+                            <atom:ToolTip x:Name="TooltipSemanticOwner"
                                           HorizontalAlignment="Center"
                                           Content="{gallery:TooltipShowCaseLangResource P2ToolTipTipPromptText}" />
                         </gallery:SemanticPartPreview.PreviewContent>

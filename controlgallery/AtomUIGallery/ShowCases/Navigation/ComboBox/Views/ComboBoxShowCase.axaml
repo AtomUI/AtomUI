@@ -34,7 +34,7 @@
                                 因此钉住的弹层不会创建遮罩，也不会阻断卡片悬停。
                                 过滤模式开启以便 input 部件可见（与 placeholder 互斥）。
                             -->
-                            <atom:ComboBox Name="ComboBoxSemanticOwner"
+                            <atom:ComboBox x:Name="ComboBoxSemanticOwner"
                                            Width="320"
                                            IsMotionEnabled="False"
                                            IsEditable="True"
@@ -223,6 +223,50 @@
             <atom:ComboBoxItem Content="Gamma" />
             <atom:ComboBoxItem Content="Delta" />
         </atom:ComboBox>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:ComboBoxShowCaseLangResource EmptyIndicatorTitle}"
+        Description="{gallery:ComboBoxShowCaseLangResource EmptyIndicatorDescription}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:ComboBoxViewModel">
+                <StackPanel Spacing="12">
+                    <StackPanel.Styles>
+                        <Style Selector="atom|ComboBox.empty-template-demo">
+                            <atom:ComboBoxPopupEmptyStyle x:SetterTargetType="Border">
+                                <Setter Property="Background" Value="#F6FFED" />
+                                <Setter Property="CornerRadius" Value="6" />
+                            </atom:ComboBoxPopupEmptyStyle>
+                        </Style>
+                    </StackPanel.Styles>
+                    <atom:ComboBox x:Name="DefaultEmptyComboBox"
+                                   Width="300"
+                                   PlaceholderText="{gallery:ComboBoxShowCaseLangResource EmptyDefaultPlaceholder}" />
+                    <atom:ComboBox x:Name="ContentEmptyComboBox"
+                                   Width="300"
+                                   EmptyIndicator="{gallery:ComboBoxShowCaseLangResource EmptyContentText}"
+                                   PlaceholderText="{gallery:ComboBoxShowCaseLangResource EmptyContentPlaceholder}" />
+                    <atom:ComboBox x:Name="TemplateEmptyComboBox"
+                                   Classes="empty-template-demo"
+                                   Width="300"
+                                   EmptyIndicatorPadding="24"
+                                   PlaceholderText="{gallery:ComboBoxShowCaseLangResource EmptyTemplatePlaceholder}">
+                        <atom:ComboBox.EmptyIndicatorTemplate>
+                            <DataTemplate>
+                                <atom:TextBlock Text="{gallery:ComboBoxShowCaseLangResource EmptyContentText}"
+                                                TextAlignment="Center"
+                                                FontStyle="Italic" />
+                            </DataTemplate>
+                        </atom:ComboBox.EmptyIndicatorTemplate>
+                    </atom:ComboBox>
+                    <atom:ComboBox x:Name="DisabledEmptyComboBox"
+                                   Width="300"
+                                   IsShowEmptyIndicator="False"
+                                   PlaceholderText="{gallery:ComboBoxShowCaseLangResource EmptyDisabledPlaceholder}" />
+                </StackPanel>
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>

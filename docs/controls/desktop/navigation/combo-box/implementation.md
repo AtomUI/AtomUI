@@ -84,6 +84,24 @@ Public API / ItemsSource / Command / Event
 - popup 候选必须由单一 active candidate owner 驱动：鼠标命中可用 `ComboBoxItem` 时只迁移候选，不滚动、不提交；`Up` / `Down` 复用同一状态并允许滚动，`Enter` 从 active candidate 写入真实 `SelectedItem`。容器 recycle、ItemsSource / filter 变化和 popup close 必须清理旧投影。
 - overview.md 的 API 契约说明应与源码实际状态流一致。
 
+### 4.1 候选刷新与空态归属
+
+公共语义与完整判定公式由[架构设计 §4.1](overview.md#41-候选与空态)维护。内部职责按以下方向收敛：
+
+```text
+Items / 过滤条件变化
+  -> 应用过滤或恢复容器原始可见性
+  -> 汇总候选是否为空
+  -> 根据空态开关计算 IsEffectiveEmptyVisible
+  -> ControlTheme 切换列表、默认空态与自定义空态内容
+```
+
+候选刷新流程拥有候选是否为空的判定；过滤清理只恢复容器的原始可见性，不直接写空态为 `false`。无过滤值、过滤器为空或退出有效过滤时，也必须经过最终空态计算，不能在恢复容器后提前跳过。
+
+`IsEffectiveEmptyVisible` 是控件内部的只读派生状态，模板只消费它。默认视觉显隐再由有效空态状态、内容和模板是否为空推导。空态内容 presenter 使用 `EmptyIndicator` 与 `EmptyIndicatorTemplate`，不读取选择值，也不接管过滤或弹层开合。
+
+集合监听复用 `Items.CollectionChanged` 的现有入口，覆盖增删、Clear、Reset 和数据源替换。过滤过程中复用同一轮的匹配与可见性汇总，不为判空再扫描一次集合。空态内容、模板或内边距变化仅更新呈现与布局，不重复执行过滤。
+
 ## 5. 生命周期与模板接入
 
 生命周期规则：
@@ -97,12 +115,23 @@ Public API / ItemsSource / Command / Event
 - DynamicResource、TokenResourceBinder 或 C# binding 必须有明确 owner 和释放点。
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
 
+空态刷新与生命周期的关系：
+
+| 入口 | 空态职责 |
+| --- | --- |
+| 初始化、模板应用 | 从当前数据和过滤条件计算有效状态；新模板不能依赖旧部件实例。 |
+| 集合或过滤条件变化 | 刷新候选可见性后统一判空，并清理失效 active candidate。 |
+| 弹层打开、`Popup.Opened` | 使用当前候选状态呈现，首次打开与重新打开保持一致。 |
+| 空态开关变化 | 重算有效空态显隐，不修改候选过滤结果或提交选择。 |
+| 内容、模板、内边距变化 | 更新默认或自定义内容与测量，保持候选及选择状态。 |
+| 卸载与容器回收 | 恢复容器原始可见性并清理旧引用；重新挂载及打开时根据当前数据恢复呈现。 |
+
 稳定 template part 接入点：
 
 - `PART_ComboBoxHandle`：稳定模板协作入口，重命名前必须同步主题和实现。
 - `PART_ContentRightAddOnPresenter`：展示用户内容、文本、图标或模板化数据。
 - `PART_EditableTextBox`：承载文本输入、过滤、显示或编辑入口。
-- `PART_EmptyIndicator`：展示指示器、进度、分页或状态反馈。
+- `PART_EmptyIndicator`：承载默认与自定义空态，保持外层 `Border` 和 `semantic-popup-empty` marker。
 - `PART_FormFeedBack`：稳定模板协作入口，重命名前必须同步主题和实现。
 - `PART_ItemsPresenter`：展示用户内容、文本、图标或模板化数据。
 - `PART_OpenIndicatorButton`：承载用户触发入口、导航或关闭动作。
@@ -173,7 +202,8 @@ marker 归属表：
 状态与数量不变量：
 
 - `placeholder` / `input` / `popup.list` / `popup.empty` 的可见性由状态切换，节点与 marker 常驻，因此都是 `Single`；
-  `IsEditable` 在 `placeholder` 与 `input` 之间切换可见性，过滤结果在 `popup.list` 与 `popup.empty` 之间切换。
+  `IsEditable` 在 `placeholder` 与 `input` 之间切换可见性，统一候选空态模型在 `popup.list` 与 `popup.empty` 之间切换。
+  默认或自定义空态内容的替换不改变 `popup.empty` 外层节点的身份、route 或数量语义。
 - `popup.listItem` 为 `Multiple`，数量随 `ItemsSource` 与过滤结果变化，但单个容器的 marker 身份不随
   hover / active candidate / selected / disabled / 过滤隐藏 变化。
 - 弹层四部件只在弹层打开后存在于真实视觉树；未打开时不命中属预期，不是契约缺失。
@@ -246,6 +276,8 @@ ComboBox 的交互事件应从输入源收敛到控件级语义事件：
 - 避免为每次状态变化创建不必要的视觉对象、订阅或动画对象。
 - 大集合控件必须保证 container recycle 后不会泄漏旧 item 状态。
 
+空态使用静态属性注册和 ControlTheme 绑定；内容 presenter 复用 Avalonia 的模板呈现能力。该模型不增加计时器、远程任务、全局订阅、反射扫描或 C# 动态创建的模板视觉。内边距的 SharedToken 绑定归主题资源系统所有，模板替换时随旧模板释放。
+
 ## 9. 维护不变量
 
 维护 ComboBox 时不得破坏：
@@ -265,6 +297,7 @@ ComboBox 的交互事件应从输入源收敛到控件级语义事件：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
 - 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
+- 空态行为验证以空 `ItemsSource`、已打开的实际 Popup 和有效可见的 `PART_EmptyIndicator` 为基线，同时检查布局尺寸、列表互斥、默认与自定义内容互斥。数据变化、过滤清空、开关与内容变更以及模板重应用覆盖范围见[架构设计 §4.1](overview.md#41-候选与空态)。
 - Semantic Part 变更运行 `tests/AtomUI.Desktop.Controls.Tests/ComboBox/ComboBoxSemanticPartTests.cs`：断言 descriptor
   的 Part 数量/顺序/字段（含 `frame` 的自定义边框色压过主题状态色）、静态 marker 集合、运行时容器 marker 的 prepare/clear/recycle 稳定性、生成专用 Style 恰好命中
   一个节点，并断言不存在 code-behind 属性回退。

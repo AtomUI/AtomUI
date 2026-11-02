@@ -27,7 +27,7 @@
                                                  SemanticOwner="{Binding #AutoCompleteSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:AutoComplete}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:AutoComplete Name="AutoCompleteSemanticOwner"
+                            <atom:AutoComplete x:Name="AutoCompleteSemanticOwner"
                                                Width="320"
                                                IsAllowClear="True"
                                                IsMotionEnabled="False"

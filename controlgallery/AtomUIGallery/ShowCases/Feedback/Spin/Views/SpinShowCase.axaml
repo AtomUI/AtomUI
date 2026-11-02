@@ -29,7 +29,7 @@
                                                      SemanticOwner="{Binding #SpinSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:Spin}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:Spin Name="SpinSemanticOwner"
+                                <atom:Spin x:Name="SpinSemanticOwner"
                                            IsSpinning="True"
                                            IsTipVisible="True"
                                            IsMaskBackgroundEnabled="True"
@@ -65,7 +65,7 @@
                                                      SemanticOwner="{Binding #SpinIndicatorSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:SpinIndicator}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:SpinIndicator Name="SpinIndicatorSemanticOwner"
+                                <atom:SpinIndicator x:Name="SpinIndicatorSemanticOwner"
                                                     SizeType="Middle"
                                                     HorizontalAlignment="Center" />
                             </gallery:SemanticPartPreview.PreviewContent>

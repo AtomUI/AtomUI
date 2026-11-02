@@ -726,10 +726,7 @@ public abstract partial class DataGridColumn : AvaloniaObject, IResourceHost, IT
         }
         else if (change.Property == WidthProperty)
         {
-            if (!_settingWidthInternally)
-            {
-                InheritsWidth = false;
-            }
+            InheritsWidth = false;
             if (_setWidthInternalNoCallback == false)
             {
                 var grid  = OwningGrid;

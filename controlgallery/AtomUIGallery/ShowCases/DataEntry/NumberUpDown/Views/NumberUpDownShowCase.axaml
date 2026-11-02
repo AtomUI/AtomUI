@@ -28,7 +28,7 @@
                                                      SemanticOwner="{Binding #NumberUpDownSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:NumericUpDown}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:NumericUpDown Name="NumberUpDownSemanticOwner"
+                                <atom:NumericUpDown x:Name="NumberUpDownSemanticOwner"
                                                     Width="320"
                                                     Value="10"
                                                     IsAllowClear="True"
@@ -59,7 +59,7 @@
                                                      SemanticOwner="{Binding #SpinnerModeSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:NumericUpDown}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:NumericUpDown Name="SpinnerModeSemanticOwner"
+                                <atom:NumericUpDown x:Name="SpinnerModeSemanticOwner"
                                                     Width="320"
                                                     Mode="Spinner"
                                                     Minimum="1"

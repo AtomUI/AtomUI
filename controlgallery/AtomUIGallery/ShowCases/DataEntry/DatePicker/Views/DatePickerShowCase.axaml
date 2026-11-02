@@ -32,7 +32,7 @@
                             <!-- 双月日历弹层约 470px 高:舞台最小高度 560 且锚点置顶,
                                  让弹层向下展开,避免翻转向上遮挡页面 Tabs;
                                  舞台随宿主钳制高度收缩,不产生可视区之外的布局。 -->
-                            <atom:RangeDatePicker Name="DatePickerSemanticOwner"
+                            <atom:RangeDatePicker x:Name="DatePickerSemanticOwner"
                                                       VerticalAlignment="Top"
                                                       Width="420"
                                                       IsMotionEnabled="False"

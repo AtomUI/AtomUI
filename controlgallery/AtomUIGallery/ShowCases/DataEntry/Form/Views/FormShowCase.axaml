@@ -48,7 +48,7 @@
                                                    Help="{gallery:FormShowCaseLangResource SemanticHelpUse4To16Characters}">
                                         <atom:LineEdit />
                                     </atom:FormItem>
-                                    <atom:FormItem Name="PasswordSemanticItem"
+                                    <atom:FormItem x:Name="PasswordSemanticItem"
                                                    LabelText="{gallery:FormShowCaseLangResource P2LabelTextPassword}"
                                                    FieldName="password"
                                                    IsRequired="True"

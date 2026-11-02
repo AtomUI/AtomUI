@@ -2,6 +2,10 @@
 
 本文档记录 ImagePreviewer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-02
+
+- Gallery 与 Semantic Part 文档的图片样式使用公开 `Control` 作为 `x:SetterTargetType`，保持 `Border.CornerRadius` 限定属性与生成专用 Style；移除对 internal `ImagePreviewRenderer` 的跨程序集引用，保留封面图片圆角效果。
+
 ## 2026-10-21
 
 - 修复快速连续点击旋转时图片角度倒转、来回摆动的问题：`Scale=1` 时不再向 `RenderTransform` 写入无意义的 Scale 操作，避免 Avalonia 的 TransformOperations 插值在动画重定向后退化为矩阵分解并归一化旋转角。
@@ -37,7 +41,7 @@
 - Behavior
   - `cover` 遮罩几何对齐上游 `genImageCoverStyle` 的 `position:absolute; inset:0` cover：遮罩不再被 owner `Padding` 缩进到图片区，而是经负 Margin（`OwnerPadding` + `OwnerBorderThickness` 之和的负值，owner 模板经 `TemplateBinding` / `RelativeSource` 中继）铺满整个 owner root（含 padding 环与边框）。hover 时 30% 黑色遮罩压暗 padding 环（白色 padding 视觉上变成约 178 灰的一圈"粗框"）是上游固有视觉，单封面与组封面一致复现。
   - 修复遮罩 padding 环被裁剪不显示的问题：移除 `ImagePreviewerCoverTheme` 的 `ClipToBounds=True` Setter，并在 `ImagePreviewerCover` 静态构造 `ClipToBoundsProperty.OverrideDefaultValue(false)`（Avalonia `TemplatedControl` 类级默认值为 `true`，属合成层裁剪，会把负 Margin 遮罩裁回 cover 内区且不体现在布局 Bounds 上）；`#Mask` 与 cover 模板 border/loading/error presenter 的圆角改经 `OwnerCornerRadius` 中继直接跟随 owner `CornerRadius`——遮罩以负 Margin 越过 owner padding，无法被 owner 的圆角裁剪覆盖，圆角需直接涂在遮罩上以对齐上游 root `overflow:hidden + border-radius` 的视觉效果。
-  - `image` 部件新增封面图片圆角能力：`ImagePreviewRenderer` 暴露 `CornerRadius`（AddOwner `Border.CornerRadiusProperty`）并把 `RoundRectGeometryBuilder` WinUI 关键点圆角几何（与 `DashedBorder.ClipContentToCornerRadius` 同算法）设到子 `Image` 的 `Clip` 属性——渲染管线遍历每个 Visual 时应用其 `Clip`，Image 只渲染一次且带裁剪；不得在 `Render` override 里 `PushGeometryClip` 包着 `image.Render` 手绘（子 Image 是 VisualChild，渲染器在父 `Render` 后还会独立遍历 VisualChildren 再画一遍无裁剪的 Image，覆盖手绘结果）。内置主题不设默认值（对齐上游默认 image 无圆角），经生成 `ImagePreviewerImageStyle` 由用户 Semantic Style 定制（`x:SetterTargetType="atom:ImagePreviewRenderer"`，Setter 属性名必须写限定名 `Property="Border.CornerRadius"`，否则经 internal 渲染器类型字段解析在运行时抛 `FieldAccessException`）。
+  - `image` 部件新增封面图片圆角能力：`ImagePreviewRenderer` 暴露 `CornerRadius`（AddOwner `Border.CornerRadiusProperty`）并把 `RoundRectGeometryBuilder` WinUI 关键点圆角几何（与 `DashedBorder.ClipContentToCornerRadius` 同算法）设到子 `Image` 的 `Clip` 属性——渲染管线遍历每个 Visual 时应用其 `Clip`，Image 只渲染一次且带裁剪；不得在 `Render` override 里 `PushGeometryClip` 包着 `image.Render` 手绘（子 Image 是 VisualChild，渲染器在父 `Render` 后还会独立遍历 VisualChildren 再画一遍无裁剪的 Image，覆盖手绘结果）。内置主题不设默认值（对齐上游默认 image 无圆角），经生成 `ImagePreviewerImageStyle` 由用户 Semantic Style 定制（`x:SetterTargetType="Control"`，Setter 属性名写限定名 `Property="Border.CornerRadius"`，经公开 `Border` 类型解析共享属性）。
 - Gallery
   - 「自定义语义结构的样式」示例对齐上游 `style-class.tsx`：并排两个 160 宽 `ImagePreviewer`，`root` 经 owner 属性表达
     padding 4 + 圆角 8 + 裁剪，右侧再加常驻 2px `#A594F9` 边框（经上游三张截图逐像素核对，边框在常态与 hover 态均常驻，

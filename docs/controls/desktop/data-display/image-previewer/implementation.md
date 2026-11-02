@@ -408,9 +408,9 @@ Loading/error 自定义模板只替换内容。模板不能通过视觉存在与
   不得改为 `Render` override 中 `PushGeometryClip` 包着 `image.Render` 手绘——子 Image 是 VisualChild，渲染器在
   父 `Render` 之后还会独立遍历 VisualChildren 再绘制一次无裁剪的 Image，覆盖手绘结果；该值不由内置主题默认设置
   （对齐上游默认 image 无圆角），经生成 `ImagePreviewerImageStyle` 由用户 Semantic Style 定制，Setter 属性名必须写
-  限定名 `Property="Border.CornerRadius"`（直接写 `CornerRadius` 会经 internal 渲染器类型自身的字段解析，
-  XAML 编译期不做可见性检查，运行时抛 `FieldAccessException`），`x:SetterTargetType="atom:ImagePreviewRenderer"`
-  提供类型上下文；回归测试断言生成 Style 的 `CornerRadius` Setter 经 owner 作用域命中模板内 renderer
+  限定名 `Property="Border.CornerRadius"`，从公开 `Border` 类型解析共享属性；`x:SetterTargetType="Control"`
+  使用 `image` 部件的公开 ContractType，不向应用暴露 internal renderer 类型或字段。
+  回归测试断言生成 Style 的 `CornerRadius` Setter 经 owner 作用域命中模板内 renderer
   （`renderer.CornerRadius == 4`），并断言圆角落到子 `Image.Clip` 的圆角几何（外角点在几何外、直边内点在几何内、
   零圆角清除 Clip、Clip 边界跟随子 Image 布局变化重建）。
 - renderer、loading presenter 和 error presenter 只消费状态，不发起 I/O 或拥有结果。

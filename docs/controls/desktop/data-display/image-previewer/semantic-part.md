@@ -232,10 +232,9 @@ styles 示例）。上游该示例自定义 `root` 与 `image`：`root`（paddin
 遮罩把白色 padding 环压成约 178 灰（255×0.7），视觉上等价于 hover 出现一圈粗灰框——AtomUI 的 `cover` 部件复现该几何，
 遮罩经负 Margin 铺满 owner root（含 padding 环），见下文。AtomUI 中 `root` 即 owner，直接以 owner 属性表达；`image`
 part 的 `borderRadius` 经生成 `ImagePreviewerImageStyle` 落到 `ImagePreviewRenderer.CornerRadius`（AddOwner
-`Border.CornerRadiusProperty`，内部把 WinUI 关键点圆角几何设到子 `Image` 的 `Clip` 上），`x:SetterTargetType` 指向
-internal 渲染器类型；Setter 属性名必须写限定名 `Property="Border.CornerRadius"`——经 public 声明类型 `Border` 的字段
-解析，直接写 `CornerRadius` 会解析到 internal 渲染器类型自身的字段，XAML 编译器生成的字段访问不做编译期可见性检查，
-运行时抛 `FieldAccessException`。
+`Border.CornerRadiusProperty`，内部把 WinUI 关键点圆角几何设到子 `Image` 的 `Clip` 上）。`x:SetterTargetType="Control"`
+使用 `image` 部件的公开 ContractType；Setter 属性名写限定名 `Property="Border.CornerRadius"`，经公开声明类型
+`Border` 的字段解析。示例不引用 internal 渲染器类型或其属性字段。
 `filter` 无等价属性，右侧 `grayscale` 仍由 ViewModel 用 SkiaSharp 颜色矩阵去饱和图像源复现；`cover` 与 `popup.mask`
 上游未覆盖，保持默认视觉（默认 `cover` 即全铺遮罩 + 0.3 透明度淡入）：
 
@@ -243,7 +242,7 @@ internal 渲染器类型；Setter 属性名必须写限定名 `Property="Border.
 <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Left">
     <StackPanel.Styles>
         <Style Selector="atom|ImagePreviewer.semantic-styles-demo">
-            <atom:ImagePreviewerImageStyle x:SetterTargetType="atom:ImagePreviewRenderer">
+            <atom:ImagePreviewerImageStyle x:SetterTargetType="Control">
                 <Setter Property="Border.CornerRadius" Value="4" />
             </atom:ImagePreviewerImageStyle>
         </Style>

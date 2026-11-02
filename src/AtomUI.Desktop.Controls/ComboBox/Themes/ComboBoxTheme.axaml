@@ -130,13 +130,22 @@
                                 <Border
                                     Name="PART_EmptyIndicator"
                                     Classes.semantic-popup-empty="True"
-                                    Padding="{atom:SharedTokenResource Padding}"
+                                    Padding="{TemplateBinding EmptyIndicatorPadding}"
                                     IsVisible="{TemplateBinding IsEffectiveEmptyVisible}">
-                                    <atom:Empty
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        SizeType="Small"
-                                        PresetImage="Simple" />
+                                    <Panel>
+                                        <ContentPresenter
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Content="{TemplateBinding EmptyIndicator}"
+                                            ContentTemplate="{TemplateBinding EmptyIndicatorTemplate}"
+                                            IsVisible="{TemplateBinding IsDefaultEmptyIndicatorVisible, Converter={x:Static BoolConverters.Not}}" />
+                                        <atom:Empty
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            IsVisible="{TemplateBinding IsDefaultEmptyIndicatorVisible}"
+                                            SizeType="Small"
+                                            PresetImage="Simple" />
+                                    </Panel>
                                 </Border>
                             </Panel>
                         </Border>
@@ -151,6 +160,7 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
         <Setter Property="PopupContentPadding" Value="{atom:ComboBoxTokenResource PopupContentPadding}" />
+        <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource Padding}" />
         <Setter Property="OptionFontSize" Value="{atom:SharedTokenResource FontSize}" />
         <Setter Property="ItemHeight" Value="{atom:SharedTokenResource ControlHeight}" />
         

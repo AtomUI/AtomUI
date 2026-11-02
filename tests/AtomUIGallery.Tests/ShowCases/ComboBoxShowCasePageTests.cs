@@ -165,9 +165,14 @@ public class ComboBoxShowCasePageTests
     }
 
     [Fact]
-    public void ComboBox_ShowCase_Editable_Filter_No_Match_Shows_Empty_Indicator()
+    public void ComboBox_ShowCase_Filter_And_Empty_Content_Examples_Render()
     {
         AvaloniaTestApp.EnsureInitialized();
+        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/ComboBox/Views/ComboBoxShowCase.axaml");
+        source.ShouldContain("<atom:ComboBoxPopupEmptyStyle");
+        source.ShouldContain("<Setter Property=\"Background\" Value=\"#F6FFED\" />");
+        source.ShouldNotContain("Loaded=");
+        source.ShouldNotContain("Unloaded=");
         var oldDeferredLoadingDisabled = GalleryShowCaseRuntimeOptions.IsDeferredLoadingDisabled;
         try
         {
@@ -200,6 +205,36 @@ public class ComboBoxShowCasePageTests
                               .OfType<Empty>()
                               .SingleOrDefault()
                               .ShouldNotBeNull();
+
+                editableComboBox.IsDropDownOpen = false;
+                Dispatcher.UIThread.RunJobs();
+                foreach (var name in new[] { "DefaultEmptyComboBox", "ContentEmptyComboBox", "TemplateEmptyComboBox", "DisabledEmptyComboBox" })
+                {
+                    var box = page.GetVisualDescendants().OfType<AtomUIComboBox>().Single(control => control.Name == name);
+                    box.BringIntoView();
+                    Dispatcher.UIThread.RunJobs();
+                    window.UpdateLayout();
+                    box.IsDropDownOpen = true;
+                    Dispatcher.UIThread.RunJobs();
+                    window.UpdateLayout();
+                    box.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.Popup>().Single()
+                       .IsOpen.ShouldBeTrue($"{name} must open its physical popup at {box.Bounds}.");
+                    var frame = GetVisualDescendant<Border>(window, "PopupFrame");
+                    var indicator = GetVisualDescendant<Border>(frame, "PART_EmptyIndicator");
+                    indicator.IsEffectivelyVisible.ShouldBe(name != "DisabledEmptyComboBox");
+                    if (name == "TemplateEmptyComboBox")
+                    {
+                        indicator.Padding.ShouldBe(new Thickness(24));
+                        var background = indicator.Background.ShouldBeAssignableTo<Avalonia.Media.ISolidColorBrush>();
+                        background.ShouldNotBeNull();
+                        background.Color.ShouldBe(Avalonia.Media.Color.Parse("#F6FFED"));
+                        indicator.GetVisualDescendants().OfType<Avalonia.Controls.TextBlock>()
+                                 .ShouldContain(text => text.Text == "No available options" && text.IsEffectivelyVisible);
+                        indicator.GetVisualDescendants().OfType<Empty>().Single().IsEffectivelyVisible.ShouldBeFalse();
+                    }
+                    box.IsDropDownOpen = false;
+                    Dispatcher.UIThread.RunJobs();
+                }
             });
         }
         finally

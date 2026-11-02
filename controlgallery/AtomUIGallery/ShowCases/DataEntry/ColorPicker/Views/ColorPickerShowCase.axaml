@@ -30,7 +30,7 @@
                         <gallery:SemanticPartPreview.PreviewContent>
                             <!-- 弹层高约 470+边距：舞台保留 trigger 下方空间并从顶部排布，
                                  避免较矮视口把 trigger 居中到可视区之外。 -->
-                            <atom:ColorPicker Name="ColorPickerSemanticOwner"
+                            <atom:ColorPicker x:Name="ColorPickerSemanticOwner"
                                               DefaultValue="#1677ff"
                                               IsTextVisible="True"
                                               IsPopupPinnedOpen="True" />

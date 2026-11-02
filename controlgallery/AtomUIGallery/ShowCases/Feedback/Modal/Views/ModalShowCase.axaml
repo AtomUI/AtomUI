@@ -39,7 +39,7 @@
                                         BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
                                         BorderThickness="1"
                                         CornerRadius="{atom:SharedTokenResource BorderRadiusLG}">
-                                    <atom:ScopeAwareOverlayLayerPanel Name="ModalSemanticStageLayer">
+                                    <atom:ScopeAwareOverlayLayerPanel x:Name="ModalSemanticStageLayer">
                                         <Panel>
                                             <atom:TextBlock Margin="24,16,24,0"
                                                             VerticalAlignment="Top"
@@ -48,7 +48,7 @@
                                                             Text="{gallery:ModalShowCaseLangResource SemanticStageHint}" />
                                             <!-- owner 显式铺满舞台（420x320）：Dialog 主题默认零尺寸，而 resolver
                                              对零尺寸目标不建 Adorner，不铺满则 root 部件无法高亮（先例：Drawer 舞台 Grid 拉伸）。 -->
-                                            <atom:Dialog Name="ModalSemanticOwner"
+                                            <atom:Dialog x:Name="ModalSemanticOwner"
                                                          Width="420"
                                                          Height="320"
                                                          Title="{gallery:ModalShowCaseLangResource P2TitleBasicModal}"
@@ -112,14 +112,14 @@
                                         BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
                                         BorderThickness="1"
                                         CornerRadius="{atom:SharedTokenResource BorderRadiusLG}">
-                                    <atom:ScopeAwareOverlayLayerPanel Name="MessageBoxSemanticStageLayer">
+                                    <atom:ScopeAwareOverlayLayerPanel x:Name="MessageBoxSemanticStageLayer">
                                         <Panel>
                                             <atom:TextBlock Margin="24,16,24,0"
                                                             VerticalAlignment="Top"
                                                             TextWrapping="Wrap"
                                                             Foreground="{atom:SharedTokenResource ColorTextSecondary}"
                                                             Text="{gallery:ModalShowCaseLangResource SemanticStageHint}" />
-                                            <atom:MessageBox Name="MessageBoxSemanticOwner"
+                                            <atom:MessageBox x:Name="MessageBoxSemanticOwner"
                                                              Width="420"
                                                              Height="320"
                                                              Title="{gallery:ModalShowCaseLangResource P2TitleNormal}"
@@ -201,7 +201,7 @@
                                                          Content="{gallery:ModalShowCaseLangResource P2ContentOpenWindowDialog}" />
                                         </StackPanel>
                                         <!-- owner 显式铺满舞台：Dialog 主题默认零尺寸，resolver 对零尺寸目标不建 Adorner。 -->
-                                        <atom:Dialog Name="WindowDialogSemanticOwner"
+                                        <atom:Dialog x:Name="WindowDialogSemanticOwner"
                                                      Width="420"
                                                      Height="200"
                                                      Title="{gallery:ModalShowCaseLangResource P2TitleBasicModal}"

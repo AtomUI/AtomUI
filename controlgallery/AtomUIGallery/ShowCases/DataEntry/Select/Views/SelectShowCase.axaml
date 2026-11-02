@@ -29,7 +29,7 @@
                                                  SemanticOwner="{Binding #SelectSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:Select}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:Select Name="SelectSemanticOwner"
+                            <atom:Select x:Name="SelectSemanticOwner"
                                          Width="420"
                                          IsAllowClear="True"
                                          IsMotionEnabled="False"

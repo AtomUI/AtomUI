@@ -277,6 +277,9 @@ After AtomUI is registered, you can use AtomUI controls and Ant Design icons dir
 You can launch the gallery project locally to browse the available controls, usage patterns, examples and generated
 documentation.
 
+To run the Gallery in an IDE, open `AtomUI.slnx`, expand the `Gallery` solution folder, and set
+`AtomUIGallery.Desktop` as the startup project.
+
 ```bash
 git clone https://github.com/AtomUI/AtomUI.git
 cd AtomUI

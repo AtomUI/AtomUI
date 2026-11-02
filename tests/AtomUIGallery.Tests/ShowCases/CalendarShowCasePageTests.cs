@@ -31,7 +31,7 @@ public class CalendarShowCasePageTests
         source.ShouldContain("Name=\"CalendarSemanticPreview\"");
         source.ShouldContain("SemanticOwner=\"{Binding #CalendarSemanticOwner}\"");
         source.ShouldContain("SemanticOwnerType=\"{x:Type atom:Calendar}\"");
-        source.ShouldContain("<atom:Calendar Name=\"CalendarSemanticOwner\" />");
+        source.ShouldContain("<atom:Calendar x:Name=\"CalendarSemanticOwner\" />");
         CountOccurrences(source, "<gallery:SemanticPartDescription").ShouldBe(6);
         foreach (var path in new[] { "root", "header", "body", "content", "item", "itemContent" })
         {

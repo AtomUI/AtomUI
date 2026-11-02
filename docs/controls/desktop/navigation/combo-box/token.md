@@ -32,6 +32,10 @@ ComboBox 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
+空态内容区域的内边距由 `EmptyIndicatorPadding` 表达，默认 ControlTheme 使用 SharedToken `Padding` 提供有效值，
+不新增 ComboBox 专属空态 Token。`PopupContentPadding` 继续表示弹层框体内边距，`ItemPadding` 继续表示候选行
+内边距。空态开关和内容属于控件实例状态，不进入 Token。属性契约见[空态 API](overview.md#31-空态-api)。
+
 ## 4. 控件家族影响
 
 调整 ComboBox Token 时必须评估以下范围：

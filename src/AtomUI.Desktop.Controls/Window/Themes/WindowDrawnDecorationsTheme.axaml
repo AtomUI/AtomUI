@@ -13,7 +13,7 @@
                 <WindowDrawnDecorationsContent>
                     <WindowDrawnDecorationsContent.Underlay>
                         <Panel Name="PART_UnderlayWrapper">
-                            <Border Name="PART_WindowFrame" IsHitTestVisible="False"
+                            <Border x:Name="PART_WindowFrame" IsHitTestVisible="False"
                                     CornerRadius="{Binding $parent[atom:Window].CornerRadius}">
                                 <ContentPresenter Name="WindowFrameLayer"
                                                   Content="{Binding $parent[atom:Window].WindowFrameLayer}"
@@ -33,7 +33,7 @@
                                               Height="{TemplateBinding TitleBarHeight}">
                                 <ContentPresenter.IsVisible>
                                     <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="HasTitleBar" />
+                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="(WindowDrawnDecorations.HasTitleBar)" />
                                         <Binding Path="$parent[atom:Window].IsTitleBarVisible" />
                                     </MultiBinding>
                                 </ContentPresenter.IsVisible>
@@ -52,7 +52,7 @@
                                 OsType="{Binding $parent[atom:Window].OsType}">
                                 <atom:WindowTitleBarShadowBackground.IsVisible>
                                     <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="HasTitleBar" />
+                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="(WindowDrawnDecorations.HasTitleBar)" />
                                         <Binding Path="$parent[atom:Window].IsTitleBarVisible" />
                                     </MultiBinding>
                                 </atom:WindowTitleBarShadowBackground.IsVisible>
@@ -67,7 +67,7 @@
                                                       WindowDecorationProperties.ElementRole="User">
                                         <ContentPresenter.IsVisible>
                                             <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="HasTitleBar" />
+                                                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="(WindowDrawnDecorations.HasTitleBar)" />
                                                 <Binding Path="$parent[atom:Window].IsTitleBarVisible" />
                                             </MultiBinding>
                                         </ContentPresenter.IsVisible>

@@ -39,7 +39,7 @@ public class TooltipShowCasePageTests
 
         // 预览舞台以 Stretch 测量内容，ToolTip 若不声明非 Stretch 的对齐会被
         // 撑到 ToolTipMaxWidth(250) 满宽，胶囊宽度远超 "prompt text" 所需。
-        const string ownerStart = "<atom:ToolTip Name=\"TooltipSemanticOwner\"";
+        const string ownerStart = "<atom:ToolTip x:Name=\"TooltipSemanticOwner\"";
         var ownerStartIndex = source.IndexOf(ownerStart, StringComparison.Ordinal);
         ownerStartIndex.ShouldBeGreaterThanOrEqualTo(0);
 

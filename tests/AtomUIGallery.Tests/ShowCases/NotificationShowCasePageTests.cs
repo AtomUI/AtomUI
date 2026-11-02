@@ -183,8 +183,8 @@ public class NotificationShowCasePageTests
         // 模板根必须是普通 Panel；两个 owner 都用声明式实例（卡片有无参公开构造）。
         source.ShouldNotContain("<ScrollContentPresenter");
         source.ShouldContain("<Panel MinHeight=\"320\"");
-        source.ShouldContain("<atom:WindowNotificationManager Name=\"NotificationManagerSemanticOwner\"");
-        source.ShouldContain("<atom:NotificationCard Name=\"NotificationCardSemanticOwner\"");
+        source.ShouldContain("<atom:WindowNotificationManager x:Name=\"NotificationManagerSemanticOwner\"");
+        source.ShouldContain("<atom:NotificationCard x:Name=\"NotificationCardSemanticOwner\"");
         source.ShouldContain("SemanticOwner=\"{Binding #NotificationSemanticAnchor}\"");
 
         // 面板按 owner 顺序列出全部 11 个 Part（卡片 9 + manager 2）。

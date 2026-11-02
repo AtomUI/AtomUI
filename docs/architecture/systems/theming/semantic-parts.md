@@ -212,6 +212,11 @@ Avalonia 的裸类型 selector 是精确 `StyleKey` 匹配，因此 `Control.sem
 必须显式声明 `x:SetterTargetType`。该指令是用户 AXAML 中可见的编译期契约，只参与 Setter property 解析，不参与 Selector
 匹配，不是 Part identity，不改变样式优先级。AtomUI 不修改 Avalonia 12 编译器，也不对该指令做 lowering、自动注入或隐藏。
 
+Gallery 与应用示例的 `x:SetterTargetType` 必须使用消费程序集可访问的公开类型，优先采用部件的现有 `ContractType`，
+不得引用控件库的 internal 实现类型。
+通过 `AddOwner` 共享的属性须使用公开声明类型限定属性名，例如 `x:SetterTargetType="Control"` 配合
+`Property="Border.CornerRadius"`；不通过公开内部节点或授予 Gallery 内部访问权限满足示例的类型解析。
+
 把 `ContractType` 收窄到更具体类型，或让实现节点不再兼容原类型，属于破坏性变更。
 
 ### 3.5 StyleType

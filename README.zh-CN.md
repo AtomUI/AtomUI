@@ -252,6 +252,8 @@ public partial class App : Application
 
 您可以在本机启动 Gallery 项目，浏览 AtomUI 控件、典型用法、示例和生成文档。
 
+在 IDE 中打开 `AtomUI.slnx`，展开 `Gallery` 解决方案文件夹，将 `AtomUIGallery.Desktop` 设为启动项目即可运行。
+
 ```bash
 git clone https://github.com/AtomUI/AtomUI.git
 cd AtomUI

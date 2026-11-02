@@ -166,6 +166,10 @@ Selection 使用 ExplicitKeys、AllMatchingQuery、IndexIntervals 和 ExcludedKe
 Row/Cell 只投影当前 entry 的判定结果，container recycle 不改变 selection。CurrentRowKey 是 identity；DataIndex hint 只用于定位。
 未加载 key 的解析依赖可选 `IDataGridKeyLookupSource`，不能伪造 SelectedItem 或 index。
 
+左键输入先检查选择列指示器的实际 Bounds。允许选择且命中指示器时，由选择列生成增删动作；未命中时仅 `Cell`
+触发类型解释 Ctrl/Shift 和普通行选择。`SelectIndicator` 的非指示器点击使用 `None` 选择动作，继续沿统一路径更新
+current、焦点和编辑状态，不通过拦截单元格事件或扩大 checkbox 命中区域避免选择丢失。
+
 ### 4.5 分页
 
 ```text

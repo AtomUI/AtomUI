@@ -42,7 +42,7 @@ DataGrid 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
 | 内容与数据 | `ItemsSource`、`Query`、`AppliedQuery`、`GroupExpansion`、`TotalItemCount`、`TotalEntryCount`、`AutoGenerateColumns`、`CellTemplate`、`CellEditingTemplate` | 定义数据输入、查询、范围 presentation、模板和业务对象入口；`ItemsSource` 的类型是 `IDataGridSource?`。 |
-| 选择与当前项 | `Selection`、`CurrentRowKey`、`SelectionChanged`、`ClipboardCopyMode` | 以稳定 row key、query scope 和 index interval 维护可跨 range/page 的声明式状态。 |
+| 选择与当前项 | `SelectionMode`、`SelectTriggerType`、`Selection`、`CurrentRowKey`、`SelectionChanged`、`ClipboardCopyMode` | 以稳定 row key、query scope 和 index interval 维护可跨 range/page 的声明式状态。 |
 | 交互与加载 | `CanUserFilterColumns`、`CanUserReorderRows`、`CanUserResizeColumns`、`CanUserSortColumns`、`QueryChanged`、`LoadState`、`LoadError`、`IsDataStale`、`Reload()` | 表达用户查询意图、异步生命周期、错误与可提交能力。 |
 | 视觉与布局 | `BottomPaginationAlign`、`ColumnWidth`、`HorizontalAlignment`、`HorizontalScrollBarVisibility`、`IsShowPageSizeSelector`、`MaxColumnWidth`、`MinColumnWidth`、`RowHeight`、`SeparatorBrush`、`SizeType`、`SublevelIndent` 等 15 项 | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
 | 分页面板扩展 | `TopPaginationExtraContent`、`TopPaginationExtraContentTemplate`、`BottomPaginationExtraContent`、`BottomPaginationExtraContentTemplate` | 在顶部/底部分页区域提供与 Pagination 相反一侧的独立 Extra Content；默认均为 `null`，不拥有分页状态。 |
@@ -253,6 +253,11 @@ DataGrid 与同分类控件共享尺寸、状态、Token、Gallery 展示和验�
 跨页全选和范围选择。容器只按 RowKey/DataIndex 投影状态；回收不会改变选择。`CurrentRowKey` 是 current identity，internal
 DataIndex hint 只用于定位。Source replacement 清空 selection/current；Query 与 invalidation 按
 [Query 与 Range Source 设计](query-range-source-design.md#91-声明式选择)定义确定的保留和失效规则。
+
+`SelectionMode` 默认为 `None`；`Single` 使用单选指示器，`Extended` 使用复选指示器。`SelectTriggerType` 默认为
+`SelectIndicator`：左键点击指示器改变选择，点击普通单元格或选择列空白保留已有选择，包括带 Ctrl/Shift 的点击。
+非指示器点击仍可更新当前单元格、焦点并进入编辑。显式设置 `Cell` 时，普通点击选择当前行，`Extended` 下
+Ctrl（macOS 为 Command）切换单行选择、Shift 从锚点扩展范围；选择指示器仍支持增删选中行。
 
 ### 8.2 集合与数据同步模型
 

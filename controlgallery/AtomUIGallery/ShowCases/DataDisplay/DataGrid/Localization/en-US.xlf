@@ -733,7 +733,7 @@
     </unit>
     <unit id="SelectionDescription">
       <segment>
-        <source>Rows can be selectable by making first column as a selectable column. You can use rowSelection.type to set selection type. Default is checkbox.</source>
+        <source>Use SelectionMode to switch between multiple selection and single selection. Click a checkbox or radio button to select a row; clicking elsewhere in the row keeps the selection unchanged.</source>
       </segment>
     </unit>
     <unit id="SelectionTitle">

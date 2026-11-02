@@ -2,6 +2,14 @@
 
 本文档记录 DataGrid 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-02
+
+- Interaction
+  - `SelectIndicator` 左键点击普通单元格或选择列空白时保留已有选择；选择指示器继续增删选中行，单元格 current、焦点和编辑路径保持可用。
+  - `Cell` 保留普通点击及 Ctrl/Shift 扩展选择语义。
+- Gallery
+  - 选择示例采用 `SelectIndicator`，同步四种语言中的选择操作说明。
+
 ## 2026-11-01
 
 - Implementation

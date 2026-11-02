@@ -879,8 +879,8 @@
     </unit>
     <unit id="SelectionDescription">
       <segment>
-        <source>Rows can be selectable by making first column as a selectable column. You can use rowSelection.type to set selection type. Default is checkbox.</source>
-        <target state="translated">通过将第一列设置为可选择列，可以让行支持选择。可使用 rowSelection.type 设置选择类型，默认是 checkbox。</target>
+        <source>Use SelectionMode to switch between multiple selection and single selection. Click a checkbox or radio button to select a row; clicking elsewhere in the row keeps the selection unchanged.</source>
+        <target state="translated">通过 SelectionMode 切换多选和单选。点击复选框或单选框选择行；点击行内其他位置保留已有选择。</target>
       </segment>
     </unit>
     <unit id="SelectionTitle">

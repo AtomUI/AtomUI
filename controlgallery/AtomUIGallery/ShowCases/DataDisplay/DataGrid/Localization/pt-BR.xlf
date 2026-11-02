@@ -879,8 +879,8 @@
     </unit>
     <unit id="SelectionDescription">
       <segment>
-        <source>Rows can be selectable by making first column as a selectable column. You can use rowSelection.type to set selection type. Default is checkbox.</source>
-        <target state="translated">Rows can be selectable by making first column as a selectable column. You can use rowSelection.type to set selection type. Default is checkbox.</target>
+        <source>Use SelectionMode to switch between multiple selection and single selection. Click a checkbox or radio button to select a row; clicking elsewhere in the row keeps the selection unchanged.</source>
+        <target state="translated">Use SelectionMode para alternar entre seleção múltipla e seleção única. Clique em uma caixa de seleção ou botão de opção para selecionar uma linha; clicar em outra área da linha mantém a seleção atual.</target>
       </segment>
     </unit>
     <unit id="SelectionTitle">

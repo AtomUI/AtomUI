@@ -44,6 +44,8 @@ AOT 串行 publish 并实际启动；无 IL 警告，五条已知 Homebrew dylib
 
 清理后 Timeline 精确 filter **52 PASS，979ms**；NET8 Desktop（覆盖 Common）Release **18.43s，0 警告／0 错误**。作者自审为本单 agent 任务的审查边界，不冒充独立审查。
 
-## 未完成范围
+## P1结束时的未完成范围
 
 P2 的 root／title／content 字体及其他 Global、逐 Own 定制／极值、Compact／RTL 与完整业务状态继续；原生最终显示面和其他平台归 CT-25。不得把 P1 的六根矩阵换算为137项 CT-15 范围或完整家族通过；总进度见 [tasks](tasks.md)。
+
+2026-11-03家族出口：P2/P3及软件Skia正式采用后的原路径已按[最终有限出口](feedback-final-exit-results.md)收敛，具体重放及范围见[采用结果](feedback-region-sdk-adoption-results.md)。本段P1历史结论不改写；原生其他平台、未配对clock与CT25/FW1等原批准边界保持。

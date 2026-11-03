@@ -1,4 +1,6 @@
-﻿using System.Reactive.Disposables;
+using System.Reactive.Disposables;
+using AtomUI.Data;
+using Avalonia.Data;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -124,6 +126,7 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
     private ContentPresenter? _customIndicatorPresenter;
     private Control? _animatedIndicatorTarget;
     private CompositeDisposable? _effectiveVisibilitySubscriptions;
+    private CompositeDisposable? _customIndicatorSizeBindings;
 
     static AbstractSpinIndicator()
     {
@@ -144,6 +147,7 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
     {
         base.OnAttachedToVisualTree(e);
         ConfigureEffectiveVisibilityTracking();
+        ObserveCustomIndicatorPresenter();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -151,6 +155,11 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         _effectiveVisibilitySubscriptions?.Dispose();
         _effectiveVisibilitySubscriptions = null;
         StopIndicatorAnimation();
+        if (_customIndicatorPresenter is not null)
+        {
+            _customIndicatorPresenter.PropertyChanged -= HandleIndicatorPresenterPropertyChanged;
+        }
+        ReleaseCustomIndicatorSizeBindings();
         base.OnDetachedFromVisualTree(e);
     }
 
@@ -164,17 +173,14 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
             _customIndicatorPresenter.PropertyChanged -= HandleIndicatorPresenterPropertyChanged;
         }
 
+        ReleaseCustomIndicatorSizeBindings();
         _builtInIndicatorLayout   = null;
         _customIndicatorPresenter = null;
 
         _builtInIndicatorLayout = e.NameScope.Find<SpinIndicatorDotPanel>("BuiltInIndicatorLayout");
         _customIndicatorPresenter = e.NameScope.Find<ContentPresenter>("PART_CustomIndicatorPresenter");
 
-        if (_customIndicatorPresenter is not null)
-        {
-            _customIndicatorPresenter.PropertyChanged += HandleIndicatorPresenterPropertyChanged;
-            UpdateCustomIndicatorSize();
-        }
+        ObserveCustomIndicatorPresenter();
 
         SyncCustomIndicatorState();
         if (IsLoaded)
@@ -188,7 +194,6 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         base.OnPropertyChanged(change);
         if (change.Property == IndicatorSizeProperty)
         {
-            UpdateCustomIndicatorSize();
             UpdateAnimatedTargetCenterPoint();
         }
         else if (change.Property == CustomIndicatorProperty ||
@@ -206,7 +211,7 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
 
     private void SyncCustomIndicatorState()
     {
-        SetCurrentValue(IsCustomIndicatorProperty, CustomIndicator is not null);
+        SetCurrentValue(IsCustomIndicatorProperty, CustomIndicator is not null || CustomIndicatorTemplate is not null);
     }
 
     private void StartIndicatorAnimation()
@@ -288,13 +293,14 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         }
 
         UpdateTargetCenterPoint(target, visual);
+        visual.RotationAngle = 0;
         var easing = MotionEasingCurve ?? new LinearEasing();
         var rotationAnimation = visual.Compositor.CreateScalarKeyFrameAnimation();
         rotationAnimation.Target            = ROTATION_PROPERTY;
         rotationAnimation.Duration          = GetCompositionDuration();
         rotationAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
         rotationAnimation.StopBehavior      = AnimationStopBehavior.SetToInitialValue;
-        rotationAnimation.InsertKeyFrame(0, 0, easing);
+        // The explicit zero would duplicate the implicit starting keyframe.
         rotationAnimation.InsertKeyFrame(1, FULL_ROTATION_RADIANS, easing);
         visual.StartAnimation(ROTATION_PROPERTY, rotationAnimation);
 
@@ -392,6 +398,7 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
                 continue;
             }
 
+            dotVisual.Opacity = (float)DOT_START_OPACITY;
             var opacityAnimation = compositor.CreateScalarKeyFrameAnimation();
             opacityAnimation.Target            = OPACITY_PROPERTY;
             opacityAnimation.Duration          = GetCompositionDuration();
@@ -400,7 +407,11 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
             opacityAnimation.Direction         = PlaybackDirection.Alternate;
             opacityAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
             opacityAnimation.StopBehavior      = AnimationStopBehavior.SetToInitialValue;
-            opacityAnimation.InsertKeyFrame(0, (float)DOT_START_OPACITY, easing);
+            // Keep the pre-delay value while avoiding an explicit key at implicit
+            // zero. The smallest normal float is below any nonzero TimeSpan-tick
+            // progress and avoids native targets flushing a subnormal key to zero.
+            const float firstKeyProgress = 1.17549435E-38f;
+            opacityAnimation.InsertKeyFrame(firstKeyProgress, (float)DOT_START_OPACITY, easing);
             opacityAnimation.InsertKeyFrame(1, 1, easing);
 
             dotVisual.StartAnimation(OPACITY_PROPERTY, opacityAnimation);
@@ -454,18 +465,37 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         }
     }
 
+    private void ObserveCustomIndicatorPresenter()
+    {
+        if (_customIndicatorPresenter is not null)
+        {
+            _customIndicatorPresenter.PropertyChanged -= HandleIndicatorPresenterPropertyChanged;
+            _customIndicatorPresenter.PropertyChanged += HandleIndicatorPresenterPropertyChanged;
+        }
+        UpdateCustomIndicatorSize();
+    }
+
     private void UpdateCustomIndicatorSize()
     {
-        if (_customIndicatorPresenter?.Child is not PathIcon child)
+        ReleaseCustomIndicatorSizeBindings();
+        if (!this.IsAttachedToVisualTree() || _customIndicatorPresenter?.Child is not PathIcon child)
         {
             return;
         }
 
-        var size = IndicatorSize;
-        if (!double.IsNaN(size))
+        // Caller Content is not in this control's template selector scope and has
+        // no TemplatedParent. A typed Style-priority relay sizes that runtime
+        // membership without overwriting native values; detach/replacement releases it.
+        _customIndicatorSizeBindings = new CompositeDisposable
         {
-            child.SetValue(WidthProperty, size);
-            child.SetValue(HeightProperty, size);
-        }
+            BindUtils.RelayBind(this, IndicatorSizeProperty, child, WidthProperty, BindingMode.OneWay, BindingPriority.Style),
+            BindUtils.RelayBind(this, IndicatorSizeProperty, child, HeightProperty, BindingMode.OneWay, BindingPriority.Style)
+        };
+    }
+
+    private void ReleaseCustomIndicatorSizeBindings()
+    {
+        _customIndicatorSizeBindings?.Dispose();
+        _customIndicatorSizeBindings = null;
     }
 }

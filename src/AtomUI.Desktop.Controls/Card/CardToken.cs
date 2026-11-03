@@ -5,8 +5,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class CardToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class CardToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -96,12 +96,14 @@ internal sealed class CardToken : AbstractControlDesignToken
     /// <summary>
     /// 操作区每一项的间距
     ///  Margin of each item in card actions
+    /// 历史保留资源，无独立生产消费者；不作为视觉调节入口。
     /// </summary>
     public double ActionsSpacing { get; set; }
     
     /// <summary>
     /// 内置标签页组件下间距
     /// Margin bottom of tabs component
+    /// 历史保留资源，无独立生产消费者；不作为视觉调节入口。
     /// </summary>
     public Thickness TabsMarginBottom { get; set; }
     
@@ -120,12 +122,14 @@ internal sealed class CardToken : AbstractControlDesignToken
     /// <summary>
     /// 卡片头部内边距
     /// Padding of card header
+    /// 历史保留资源，无独立生产消费者；不作为视觉调节入口。
     /// </summary>
     public Thickness CardHeadPadding { get; set; }
     
     /// <summary>
     /// 卡片基础内边距
     /// Padding of base card
+    /// 历史保留资源，无独立生产消费者；不作为视觉调节入口。
     /// </summary>
     public Thickness CardPaddingBase { get; set; }
     
@@ -140,36 +144,77 @@ internal sealed class CardToken : AbstractControlDesignToken
     /// </summary>
     public BoxShadows CardGridItemShadows { get; set; }
     
-    public CardToken()
+    [ControlTokenDefault(nameof(HeaderBg))]
+    private static Color DefaultForHeaderBg(in ControlTokenDefaultContext context) =>
+        Colors.Transparent;
 
-    {
-    }
+    [ControlTokenDefault(nameof(HeaderFontSizeLG))]
+    private static double DefaultForHeaderFontSizeLG(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeLG;
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        HeaderBg         = Colors.Transparent;
-        HeaderFontSizeLG = EffectiveGlobalToken.FontSizeLG;
-        HeaderFontSize   = EffectiveGlobalToken.FontSize;
-        HeaderFontSizeSM = EffectiveGlobalToken.FontSize;
+    [ControlTokenDefault(nameof(HeaderFontSize))]
+    private static double DefaultForHeaderFontSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize;
 
-        HeaderHeightLG   = EffectiveGlobalToken.FontHeightLG + EffectiveGlobalToken.UniformlyPadding * 2;
-        HeaderHeight     = EffectiveGlobalToken.FontHeight + EffectiveGlobalToken.UniformlyPaddingXS * 2;
-        HeaderHeightSM   = EffectiveGlobalToken.FontHeightSM;
-        ActionsBg        = EffectiveGlobalToken.ColorBgContainer;
-        ActionsSpacing   = EffectiveGlobalToken.SpacingSM;
-        TabsMarginBottom = new Thickness(0, 0, 0, -EffectiveGlobalToken.UniformlyPadding - EffectiveGlobalToken.LineWidth);
-        ExtraColor       = EffectiveGlobalToken.ColorText;
-        
-        BodyPaddingLG = EffectiveGlobalToken.PaddingLG;
-        BodyPadding   = EffectiveGlobalToken.PaddingSM;
-        BodyPaddingSM = EffectiveGlobalToken.PaddingXS;
-        
-        HeaderPaddingLG  = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG, 0);
-        HeaderPadding    = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, 0);
-        HeaderPaddingSM  = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
+    [ControlTokenDefault(nameof(HeaderFontSizeSM))]
+    private static double DefaultForHeaderFontSizeSM(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize;
 
-        CardShadows         = new BoxShadows(new BoxShadow()
+    [ControlTokenDefault(nameof(HeaderHeightLG))]
+    private static double DefaultForHeaderHeightLG(in ControlTokenDefaultContext context) =>
+        context.Global.FontHeightLG + context.Global.UniformlyPadding * 2;
+
+    [ControlTokenDefault(nameof(HeaderHeight))]
+    private static double DefaultForHeaderHeight(in ControlTokenDefaultContext context) =>
+        context.Global.FontHeight + context.Global.UniformlyPaddingXS * 2;
+
+    [ControlTokenDefault(nameof(HeaderHeightSM))]
+    private static double DefaultForHeaderHeightSM(in ControlTokenDefaultContext context) =>
+        context.Global.FontHeightSM;
+
+    [ControlTokenDefault(nameof(BodyPaddingLG))]
+    private static Thickness DefaultForBodyPaddingLG(in ControlTokenDefaultContext context) =>
+        context.Global.PaddingLG;
+
+    [ControlTokenDefault(nameof(BodyPadding))]
+    private static Thickness DefaultForBodyPadding(in ControlTokenDefaultContext context) =>
+        context.Global.PaddingSM;
+
+    [ControlTokenDefault(nameof(BodyPaddingSM))]
+    private static Thickness DefaultForBodyPaddingSM(in ControlTokenDefaultContext context) =>
+        context.Global.PaddingXS;
+
+    [ControlTokenDefault(nameof(HeaderPaddingLG))]
+    private static Thickness DefaultForHeaderPaddingLG(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingLG, 0);
+
+    [ControlTokenDefault(nameof(HeaderPadding))]
+    private static Thickness DefaultForHeaderPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingSM, 0);
+
+    [ControlTokenDefault(nameof(HeaderPaddingSM))]
+    private static Thickness DefaultForHeaderPaddingSM(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingXS, 0);
+
+    [ControlTokenDefault(nameof(ActionsBg))]
+    private static Color DefaultForActionsBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(ActionsSpacing))]
+    private static double DefaultForActionsSpacing(in ControlTokenDefaultContext context) =>
+        context.Global.SpacingSM;
+
+    [ControlTokenDefault(nameof(TabsMarginBottom))]
+    private static Thickness DefaultForTabsMarginBottom(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, 0, -context.Global.UniformlyPadding - context.Global.LineWidth);
+
+    [ControlTokenDefault(nameof(ExtraColor))]
+    private static Color DefaultForExtraColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(CardShadows))]
+    private static BoxShadows DefaultForCardShadows(in ControlTokenDefaultContext context) =>
+        new BoxShadows(new BoxShadow()
         {
             OffsetX = 0,
             OffsetY = 1,
@@ -194,14 +239,30 @@ internal sealed class CardToken : AbstractControlDesignToken
                 Color   = ColorUtils.FromRgbF(0.09, 0, 0, 0)
             }
         ]);
-        var lineWidth = EffectiveGlobalToken.LineWidth;
-        CardGridItemShadows = new BoxShadows(new BoxShadow()
+
+    [ControlTokenDefault(nameof(CardHeadPadding))]
+    private static Thickness DefaultForCardHeadPadding(in ControlTokenDefaultContext context) =>
+        context.Global.Padding;
+
+    [ControlTokenDefault(nameof(CardPaddingBase))]
+    private static Thickness DefaultForCardPaddingBase(in ControlTokenDefaultContext context) =>
+        context.Global.PaddingLG;
+
+    [ControlTokenDefault(nameof(CardActionsIconSize))]
+    private static double DefaultForCardActionsIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize;
+
+    [ControlTokenDefault(nameof(CardGridItemShadows))]
+    private static BoxShadows DefaultForCardGridItemShadows(in ControlTokenDefaultContext context)
+    {
+        var lineWidth = context.Global.LineWidth;
+        return new BoxShadows(new BoxShadow()
         {
             OffsetX = lineWidth,
             OffsetY = 0,
             Blur    = 0,
             Spread  = 0,
-            Color   = EffectiveGlobalToken.ColorBorderSecondary
+            Color   = context.Global.ColorBorderSecondary
         }, [
             new BoxShadow
             {
@@ -209,7 +270,7 @@ internal sealed class CardToken : AbstractControlDesignToken
                 OffsetY = lineWidth,
                 Blur    = 0,
                 Spread  = 0,
-                Color   = EffectiveGlobalToken.ColorBorderSecondary
+                Color   = context.Global.ColorBorderSecondary
             },
             new BoxShadow
             {
@@ -217,7 +278,7 @@ internal sealed class CardToken : AbstractControlDesignToken
                 OffsetY = lineWidth,
                 Blur    = 0,
                 Spread  = 0,
-                Color   = EffectiveGlobalToken.ColorBorderSecondary
+                Color   = context.Global.ColorBorderSecondary
             },
             new BoxShadow
             {
@@ -226,7 +287,7 @@ internal sealed class CardToken : AbstractControlDesignToken
                 OffsetY = 0,
                 Blur    = 0,
                 Spread  = 0,
-                Color   = EffectiveGlobalToken.ColorBorderSecondary
+                Color   = context.Global.ColorBorderSecondary
             },
             new BoxShadow
             {
@@ -235,12 +296,9 @@ internal sealed class CardToken : AbstractControlDesignToken
                 OffsetY = lineWidth,
                 Blur    = 0,
                 Spread  = 0,
-                Color   = EffectiveGlobalToken.ColorBorderSecondary
+                Color   = context.Global.ColorBorderSecondary
             },
         ]);
-        CardHeadPadding     = EffectiveGlobalToken.Padding;
-        CardPaddingBase     = EffectiveGlobalToken.PaddingLG;
-        CardActionsIconSize = EffectiveGlobalToken.FontSize;
     }
-    
+
 }

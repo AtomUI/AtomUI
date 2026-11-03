@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections;
 using System.Collections.Specialized;
 using Avalonia;
@@ -17,7 +18,7 @@ namespace AtomUI.Controls.Commons;
 [TemplatePart("PART_CheckableTagItems", typeof(SelectingItemsControl))]
 public abstract class AbstractCheckableTagGroup : TemplatedControl,
                                                   IMotionAwareControl,
-                                                  IFormItemAware
+                                                  IFormItemAware, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -169,6 +170,8 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
     private bool _isItemsControlSubscribed;
     private bool _isConvertingMode;
 
+    private EventHandler? _formValueChanged;
+
     static AbstractCheckableTagGroup()
     {
         OrientationProperty.OverrideDefaultValue<AbstractCheckableTagGroup>(Orientation.Horizontal);
@@ -235,9 +238,13 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
         }
     }
 
-    #region 实现 FormItem 接口
+    #region 实现 IThemeInheritanceSource 接口
 
-    private EventHandler? _formValueChanged;
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 实现 FormItem 接口
 
     event EventHandler IFormItemAware.ValueChanged
     {

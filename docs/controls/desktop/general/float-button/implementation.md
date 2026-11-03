@@ -74,6 +74,8 @@
 - 数据对象、选项对象、任务对象或节点对象只保存业务数据，不应反向持有不可释放的视觉对象。
 - 弹层、窗口、计时器、异步 loader 和全局管理器必须有明确关闭、解绑或释放路径。
 
+`FloatButtonHost`与`BackTopFloatButtonHost`创建的按钮在显示期间属于host的原生`LogicalChildren`，视觉父仍是`ScopeAwareOverlayLayer`。逻辑成员关系让局部主题、资源更新和继承沿host传播；detach时先移除视觉与逻辑成员，再释放属性投影。按钮保留自己的公开Control identity。定位只使用真正视觉父层的尺寸；视觉attach/detach负责接入和解除既有层`SizeChanged`订阅，不能把逻辑host当作定位Canvas。
+
 ## 4. 状态与数据流
 
 FloatButton 的状态流遵循下面路径：
@@ -237,7 +239,7 @@ FloatButton 的交互事件应从输入源收敛到控件级语义事件：
 - Avalonia Button 命令语义：`CanExecute`、禁用状态、点击事件和命令执行顺序不得被 host 手动调用路径绕开。
 - Host overlay 投影的 acquire/release 必须成对；不能留下命令绑定、数据上下文绑定或 child 逻辑父级保留。
 - Group 子按钮的命令绑定必须能继承 host `DataContext`，同时保留子项本地 `DataContext` 的优先级。
-- `BackTopProgressRing` 显隐契约：进度环默认隐藏，仅 `IsShowProgress=True` 的主题 selector 置可见；进度环线宽与颜色来自全局 SharedToken，不得引入控件实例色值或运行时状态色。
+- `BackTopProgressRing` 显隐契约：进度环默认隐藏，仅 `IsShowProgress=True` 的主题 selector 置可见；进度环线宽与颜色来自 BackTop owner Global Token，不得引入控件实例色值或运行时状态色。
 - 旧 template part、事件订阅、Popup/Flyout/Window host 和 collection view 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
@@ -253,3 +255,28 @@ FloatButton 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+## CT15 真实投射与退出
+
+公共FontSize沿原SM角色解析自身Global，Family复用真实继承与Native优先。Base模板用AbstractFloatButton anchor越过内部节点，进度按BackTop public owner，Group列表/分隔/spacing由已有owner代理归Group；公开子FloatButton保留自身identity，Host既有逻辑membership/定位责任不改。
+
+每次badge模式/模板更换先退役旧visual和typed relay句柄；detach退出、attach按当前状态恢复，避免重复累积。BackTop两模板Canvas修为基类声明的PART_BadgeLayout。实例BadgeColor采用可释放覆盖层，clear/无效回底层原Token；Count/Overflow/Color/Motion仍原业务投射，未新增Part或状态Token。
+
+Group Children投射保持Prepare Local优先，逐子项membership持有Shape/Motion句柄，在Remove/Replace/旧模板/detach释放并退出Embed，attach重建当前children；Move不换对象。Controls.Clear实际Remove路径与同实例重加/三触发模式已验证，不能仅凭未触达Reset分支声称新bug或全INotify输入支持。List专用Style/Native Padding投射到两套ContentFrame，默认0不变；不改变trigger收敛尺寸、原展开方向或scroll预算。
+
+纯成员整理阶段84聚焦验证通过，32默认同；19C#/9注册类21→0，成员体与初始化表达式/注册顺序同。两无副作用static easing初始化位置移动单列，不冒称完整初始化次序同。正常Skia/AOT、清理后模块与限定视觉尚在执行，详见[CT15结果](../../../../superpowers/plans/2026-10-22-custom-theme/float-button-consumers-results.md)。
+
+
+BackTop显隐复用可取消且只允许最新请求完成的动效运行；换模板、detach退出旧actor请求。回顶保留原官方Animation/CubicEase/ToTopDuration，私有Animatable Vector值逐帧单向投射运行时Target.Offset，使用SetCurrentValue保留调用者binding；取消/换Target/detach后退休投射，正常结束提交精确Y=0。ControlTheme无法直接声明这个运行时Target跨树计算动画，显隐仍作用真实模板MotionActor。无Target的独立默认可见与清除Target保留最近展示合同不改变。当前扩展93项聚焦通过，Skia/AOT/清理后门槛仍待。
+
+
+最终临时阶段95项通过（49临时/46既有），全部32默认/type/key/slot精确保持。Group实际菜单SizeChanged在模板/detach退休、attach恢复，刷新原同步测量位置；专用Padding清除后Top/Left原22/34 DIP残留两有效反例归零。后行为补充阶段成员19源/10含注册类型0问题，多出的私有Animatable值类型不新增ControlMetadata。三版各200帧、跨运行静态162/168零，6静态/28定时及主恢复非零保留；清理后验收和限定批准尚待。
+
+
+CT15清理后限定验收：FloatButton精确46项通过、NET8零警告零错误，临时49用例/媒体/驱动已清理；65对具体静态及两offset分类仍待用户审查，完整家族不因此关闭。详见[正式限定结果](../../../../superpowers/plans/2026-10-22-custom-theme/float-button-consumers-results.md)。
+
+
+2026-10-31：65对具体静态（含列明派生换行/裁剪）与两scalar offset Reserved兼容分类已获用户限定批准；两scalar保持未消费，以公开BadgeOffset Point定制，完整家族/CT15及其他边界保留。该批准不授权提交。
+
+
+BackTop 的 Target.ScrollChanged 订阅由视觉树成员资格持有：挂载时读取当前目标并去重订阅，脱离时解除；未挂载或脱离后替换 Target 只更新当前派生值，不订阅外部长寿命 ScrollViewer。再次挂载恢复当前 Target，避免退出按钮被存活页面保留。此事件关系位于运行时跨树对象，ControlTheme 无法等价表达；不改变 Target/VisibilityHeight/450ms 回顶与滚动条合同。

@@ -4,6 +4,27 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:GroupBox}" TargetType="atom:GroupBox">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:OwnerTokenResource Kind="ColorText" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="ColorText" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="PART_Frame"
@@ -47,12 +68,12 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-        <Setter Property="HeaderTitleColor" Value="{atom:SharedTokenResource ColorText}" />
-        <Setter Property="HeaderFontSize" Value="{atom:SharedTokenResource FontSize}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgContainer}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
+        <Setter Property="HeaderTitleColor" Value="{atom:OwnerTokenResource ColorText}" />
+        <Setter Property="HeaderFontSize" Value="{atom:OwnerTokenResource FontSize}" />
 
         <Style Selector="^ /template/ Panel#PART_HeaderContainer">
             <Setter Property="Margin" Value="{atom:GroupBoxTokenResource HeaderContainerMargin}" />
@@ -64,9 +85,9 @@
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_HeaderIconPresenter">
             <Setter Property="Margin" Value="{atom:GroupBoxTokenResource HeaderIconMargin}" />
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorText}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeLG}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorText, AnchorControlType={x:Type atom:GroupBox}}" />
+            <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:GroupBox}}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:GroupBox}}" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 

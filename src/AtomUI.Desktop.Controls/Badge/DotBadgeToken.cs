@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class DotBadgeToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class DotBadgeToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     public double DotSize { get; set; }
 
@@ -17,14 +17,18 @@ internal sealed class DotBadgeToken : AbstractControlDesignToken
 
     public Thickness LabelMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
+    [ControlTokenDefault(nameof(DotSize))]
+    private static double DefaultForDotSize(in ControlTokenDefaultContext context) => context.Global.FontSizeSM / 2;
 
-        DotSize     = EffectiveGlobalToken.FontSizeSM / 2;
-        DotColor    = EffectiveGlobalToken.ColorError;
-        ShadowSize  = EffectiveGlobalToken.LineWidth;
-        ShadowColor = EffectiveGlobalToken.ColorBorderBg;
-        LabelMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, 0, 0);
-    }
+    [ControlTokenDefault(nameof(DotColor))]
+    private static Color DefaultForDotColor(in ControlTokenDefaultContext context) => context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(ShadowSize))]
+    private static double DefaultForShadowSize(in ControlTokenDefaultContext context) => context.Global.LineWidth;
+
+    [ControlTokenDefault(nameof(ShadowColor))]
+    private static Color DefaultForShadowColor(in ControlTokenDefaultContext context) => context.Global.ColorBorderBg;
+
+    [ControlTokenDefault(nameof(LabelMargin))]
+    private static Thickness DefaultForLabelMargin(in ControlTokenDefaultContext context) => new(context.Global.UniformlyMarginXS, 0, 0, 0);
 }

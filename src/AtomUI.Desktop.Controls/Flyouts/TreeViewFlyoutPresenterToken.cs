@@ -4,14 +4,11 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class TreeViewFlyoutPresenterToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class TreeViewFlyoutPresenterToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
-    public TreeViewFlyoutPresenterToken()
 
-    {
-    }
     
     /// <summary>
     /// 弹出框背景色
@@ -43,16 +40,21 @@ internal sealed class TreeViewFlyoutPresenterToken : AbstractControlDesignToken
     /// </summary>
     public double PopupMaxHeight { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        PopupMinWidth     = 120;
-        PopupMaxWidth = 800;
+    [ControlTokenDefault(nameof(PopupMinWidth))]
+    private static double DefaultForPopupMinWidth(in ControlTokenDefaultContext context) => 120;
 
-        PopupMinHeight = EffectiveGlobalToken.ControlHeightSM * 3;
-        PopupMaxHeight = EffectiveGlobalToken.ControlHeightSM * 30;
-        
-        PopupContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, EffectiveGlobalToken.BorderRadiusLG.TopLeft / 2);
-        PopupBgColor        = EffectiveGlobalToken.ColorBgElevated;
-    }
-    
+    [ControlTokenDefault(nameof(PopupMaxWidth))]
+    private static double DefaultForPopupMaxWidth(in ControlTokenDefaultContext context) => 800;
+
+    [ControlTokenDefault(nameof(PopupMinHeight))]
+    private static double DefaultForPopupMinHeight(in ControlTokenDefaultContext context) => context.Global.ControlHeightSM * 3;
+
+    [ControlTokenDefault(nameof(PopupMaxHeight))]
+    private static double DefaultForPopupMaxHeight(in ControlTokenDefaultContext context) => context.Global.ControlHeightSM * 30;
+
+    [ControlTokenDefault(nameof(PopupContentPadding))]
+    private static Thickness DefaultForPopupContentPadding(in ControlTokenDefaultContext context) => new Thickness(context.Global.UniformlyPaddingXXS, context.Global.BorderRadiusLG.TopLeft / 2);
+
+    [ControlTokenDefault(nameof(PopupBgColor))]
+    private static Color DefaultForPopupBgColor(in ControlTokenDefaultContext context) => context.Global.ColorBgElevated;
 }

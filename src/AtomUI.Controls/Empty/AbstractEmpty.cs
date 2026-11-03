@@ -7,6 +7,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Threading;
 
 namespace AtomUI.Controls.Commons;
 
@@ -149,6 +150,8 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
     #endregion
     
     private Avalonia.Svg.Svg? _svg;
+    private WeakReference<Control>? _pendingTemplateFocus;
+    private int _templateGeneration;
 
     static AbstractEmpty()
     {
@@ -194,6 +197,17 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
+        if (change.Property == TemplateProperty)
+        {
+            var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() as Control;
+            if (focused is not null)
+            {
+                _pendingTemplateFocus = this.IsVisualAncestorOf(focused)
+                    ? new WeakReference<Control>(focused)
+                    : null;
+            }
+            ++_templateGeneration;
+        }
         base.OnPropertyChanged(change);
         if (this.IsAttachedToVisualTree())
         {
@@ -270,6 +284,20 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
         }
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        CheckImageSource();
+        SetupImage();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        ++_templateGeneration;
+        _pendingTemplateFocus = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -281,5 +309,24 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
     {
         base.OnAttachedToVisualTree(e);
         SetupImage();
+        if (_pendingTemplateFocus is { } focus)
+        {
+            _pendingTemplateFocus = null;
+            var generation = _templateGeneration;
+            var weakOwner = new WeakReference<AbstractEmpty>(this);
+            // A native Footer is reparented by the new presenter. Restore only
+            // after it attaches, without retaining it or replacing later focus.
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (weakOwner.TryGetTarget(out var owner) && owner._templateGeneration == generation &&
+                    focus.TryGetTarget(out var control) && owner.IsVisualAncestorOf(control) &&
+                    TopLevel.GetTopLevel(owner) is { } topLevel &&
+                    ReferenceEquals(TopLevel.GetTopLevel(control), topLevel) &&
+                    topLevel.FocusManager?.GetFocusedElement() is null)
+                {
+                    control.Focus();
+                }
+            }, DispatcherPriority.Loaded);
+        }
     }
 }

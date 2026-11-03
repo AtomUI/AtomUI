@@ -5,8 +5,8 @@ using Avalonia.Media.Immutable;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class RibbonBadgeToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class RibbonBadgeToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     public Point Offset { get; set; }
 
@@ -16,13 +16,15 @@ internal sealed class RibbonBadgeToken : AbstractControlDesignToken
 
     public Thickness TextPadding { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
+    [ControlTokenDefault(nameof(Offset))]
+    private static Point DefaultForOffset(in ControlTokenDefaultContext context) => new(context.Global.UniformlyMarginXS, context.Global.UniformlyMarginXS);
 
-        Offset             = new Point(EffectiveGlobalToken.UniformlyMarginXS, EffectiveGlobalToken.UniformlyMarginXS);
-        CornerTransform    = new ScaleTransform(1, 0.75).ToImmutable();
-        CornerDarkenAmount = 15;
-        TextPadding        = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-    }
+    [ControlTokenDefault(nameof(CornerTransform))]
+    private static ImmutableTransform? DefaultForCornerTransform(in ControlTokenDefaultContext context) => new ScaleTransform(1, 0.75).ToImmutable();
+
+    [ControlTokenDefault(nameof(CornerDarkenAmount))]
+    private static int DefaultForCornerDarkenAmount(in ControlTokenDefaultContext context) => 15;
+
+    [ControlTokenDefault(nameof(TextPadding))]
+    private static Thickness DefaultForTextPadding(in ControlTokenDefaultContext context) => new(context.Global.UniformlyPaddingXS, 0);
 }

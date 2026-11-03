@@ -11,6 +11,6 @@
         <Setter Property="FoldInfoAvatarForeground"
                 Value="{atom:AvatarTokenResource AvatarColor}" />
         <Setter Property="FoldInfoAvatarBackground" Value="{atom:AvatarTokenResource AvatarBg}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
     </ControlTheme>
 </ResourceDictionary>

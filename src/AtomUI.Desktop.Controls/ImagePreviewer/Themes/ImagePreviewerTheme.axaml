@@ -5,6 +5,20 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ImagePreviewer}" TargetType="atom:ImagePreviewer">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder Background="{TemplateBinding Background}"
@@ -34,15 +48,15 @@
         
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         
         <Setter Property="CoverIndicatorContentTemplate">
             <DataTemplate>
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Spacing="{atom:SharedTokenResource SpacingXXS}">
-                    <antdicons:EyeOutlined StrokeBrush="{atom:SharedTokenResource ColorTextLightSolid}"/>
+                            Spacing="{atom:OwnerTokenResource Kind=SpacingXXS, SourceControlType={x:Type atom:ImagePreviewer}}">
+                    <antdicons:EyeOutlined StrokeBrush="{atom:OwnerTokenResource Kind=ColorTextLightSolid, SourceControlType={x:Type atom:ImagePreviewer}}"/>
                     <TextBlock
                         Text="{atom:ImagePreviewerLangResource Preview}" />
                 </StackPanel>

@@ -1,5 +1,9 @@
 # 控件主题消费规范
 
+内部模板资源输入应锚定实际模板实例，再解析其注册 owner；不得被目标节点自身的 primitive 身份截断，也不得将派生公开控件静态回落到基类身份。声明在模板属性上的输入保持 Template 优先级，使专用 Semantic Part Style 仍可覆盖及退出恢复。
+
+跨树对象只有 parent 关系、未进入宿主逻辑子集合时，资源查询成功不代表能够收到更新通知。此类消费应复用已有 scoped resource bridge，并在逻辑卸载时移除、释放；不能以复制资源字典或找部件回写样式属性替代发布。TransitionBase 等无独立宿主对象的动态输入绑定在 Control 的 style Setter 上，由 owner 工厂复制到各实例；不得直接挂接无宿主的资源订阅。
+
 > 本文定义消费与验收要求，不表示全部现有Control已经完成接线。
 
 本文的适用范围、规范用语与事实边界见[全局规范入口](overview.md)。
@@ -54,6 +58,8 @@
 - detach/attach、owner切换、re-template、容器回收、Popup关闭和功能关闭必须更新或释放对应依赖。
 - 热路径不为每个实例复制Token字典或建立全局主题订阅；缓存有容量/释放边界，不持有旧Visual和历史snapshot。
 - 持续视觉工作遵守有效可见性、Motion/Wave等最终开关及已有动效合同；主题切换不得新增长期后台视觉工作。
+- 动态Transition在目标的ControlTheme style Setter中读取实际owner的有效Global；继承主题用于不同公开identity时，不能固定为基类identity。代码动画由主题把时长写入其现有输入，再在执行开始时取得快照；已开始的原生motion不因主题更新而改写自己的执行快照。
+- 跨视觉根的普通Control必须建立完整、对称的逻辑成员或已有作用域资源桥；只写逻辑Parent不足以保证资源通知遍历其子树。独立TopLevel复用ThemeContextLease，资源owner和物理窗口owner分别按其职责确定。
 
 检查：动态值、重挂载与回收验证；必要时对象计数/WeakReference，不能仅凭RSS或截图判定无泄漏。
 

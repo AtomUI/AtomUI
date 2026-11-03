@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using AtomUI.Controls;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -17,8 +18,10 @@ namespace AtomUI.Desktop.Controls;
     NotificationPseudoClass.BottomRight,
     NotificationPseudoClass.TopCenter,
     NotificationPseudoClass.BottomCenter)]
-public partial class WindowMessageManager : TemplatedControl, IMessageManager, IMotionAwareControl, IDisposable
+public partial class WindowMessageManager : TemplatedControl, IMessageManager, IMotionAwareControl, IDisposable, IThemeInheritanceSource
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<NotificationPosition> PositionProperty =
         AvaloniaProperty.Register<WindowMessageManager, NotificationPosition>(
             nameof(Position), NotificationPosition.TopCenter);
@@ -37,21 +40,6 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<WindowMessageManager>();
-
-    private readonly ObservableCollection<MessageCard> _cards = new();
-    private TopLevel? _topLevel;
-    private bool _isDisposed;
-    private Panel? _hostLayer;
-    private bool _hostLayerUsesNativeAdorner;
-    private IDisposable? _safeAreaMarginSubscription;
-    private FeedbackStackPresenter? _presenter;
-    private FeedbackLifetimeScheduler? _lifetimeScheduler;
-    private bool _isLifecyclePaused = true;
-    private bool _hasBeenAttached;
-    private bool _isStackPaused;
-    private const int MaxHostLayerRetryCount = 30;
-    private bool _hostLayerRetryScheduled;
-    private int _hostLayerRetryCount;
 
     public NotificationPosition Position
     {
@@ -89,6 +77,10 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    #endregion
+
+    #region 内部属性定义
+
     internal IReadOnlyList<MessageCard> Cards => _cards;
 
     internal bool HasLifetimeScheduler => _lifetimeScheduler is not null;
@@ -96,6 +88,23 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
     internal int LifetimeEntryCount => _lifetimeScheduler?.Count ?? 0;
 
     internal bool IsLifetimePaused => _lifetimeScheduler?.IsAllPaused ?? _isLifecyclePaused;
+
+    #endregion
+
+    private readonly ObservableCollection<MessageCard> _cards = new();
+    private TopLevel? _topLevel;
+    private bool _isDisposed;
+    private Panel? _hostLayer;
+    private bool _hostLayerUsesNativeAdorner;
+    private IDisposable? _safeAreaMarginSubscription;
+    private FeedbackStackPresenter? _presenter;
+    private FeedbackLifetimeScheduler? _lifetimeScheduler;
+    private bool _isLifecyclePaused = true;
+    private bool _hasBeenAttached;
+    private bool _isStackPaused;
+    private const int MaxHostLayerRetryCount = 30;
+    private bool _hostLayerRetryScheduled;
+    private int _hostLayerRetryCount;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WindowMessageManager" /> class without a host.
@@ -140,11 +149,8 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
         _presenter = e.NameScope.Find<FeedbackStackPresenter>("PART_Items");
         if (_presenter is not null)
         {
-            _presenter[!FeedbackStackPresenter.PositionProperty] = this[!PositionProperty];
-            _presenter[!FeedbackStackPresenter.IsStackEnabledProperty] = this[!IsStackEnabledProperty];
-            _presenter[!FeedbackStackPresenter.StackThresholdProperty] = this[!StackThresholdProperty];
-            _presenter[!FeedbackStackPresenter.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
-            _presenter.StackMode = FeedbackStackMode.Message;
+            // The stable private collection is not a template-readable API;
+            // template replacement and Dispose release its presenter membership.
             _presenter.ItemsSource = _cards;
             _presenter.StackHoverChanged += OnStackHoverChanged;
         }
@@ -170,31 +176,6 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
     // 宿主层释放契约：manager 运行途中离开视觉树即释放其上的全部卡片（对齐上游 message-list 卸载行为）。
     // 必须推迟到 detach 级联完成之后：在 detach 过程中同步关闭卡片会让 presenter 重建容器树，
     // 触发 Avalonia 视觉树内部集合越界。从未 attach 过的 manager 不适用——release/6.0 允许 attach 前 Show。
-    private void ScheduleReleaseCardsOnHostDetach()
-    {
-        if (!_hasBeenAttached || _isDisposed)
-        {
-            return;
-        }
-
-        Dispatcher.UIThread.Post(() =>
-        {
-            // 执行时已重新入树（反馈层迁移等瞬时 detach）则不释放。
-            if (_isDisposed || !_isLifecyclePaused)
-            {
-                return;
-            }
-
-            // 关闭回调可能同步修改 _cards，先拷贝快照。
-            var cards = _cards.ToArray();
-            for (var i = 0; i < cards.Length; i++)
-            {
-                var card = cards[i];
-                _lifetimeScheduler?.Remove(card);
-                card.Close();
-            }
-        });
-    }
 
     /// <summary>
     /// Shows a Message
@@ -217,8 +198,7 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
             OnClose = message.OnClose,
             HoverChanged = OnCardHoverChanged
         };
-        card[!MessageCard.PositionProperty] = this[!PositionProperty];
-        card[!MessageCard.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+        card.BindOwner(this);
         if (classes is not null)
         {
             for (var i = 0; i < classes.Length; i++)
@@ -273,6 +253,86 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
             _isStackPaused = false;
             UpdateSchedulerPauseState();
         }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    public void Dispose()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+        _isDisposed = true;
+
+        if (_topLevel is not null)
+        {
+            _topLevel.TemplateApplied -= TopLevelOnTemplateApplied;
+        }
+        if (_presenter is not null)
+        {
+            _presenter.StackHoverChanged -= OnStackHoverChanged;
+            _presenter.ItemsSource = null;
+            _presenter = null;
+        }
+        _lifetimeScheduler?.Dispose();
+        _lifetimeScheduler = null;
+        for (var i = 0; i < _cards.Count; i++)
+        {
+            var card = _cards[i];
+            card.MessageClosed -= OnMessageClosed;
+            card.ReleaseOwner();
+        }
+        _cards.Clear();
+        _isLifecyclePaused = true;
+        _isStackPaused = false;
+        _hostLayerRetryScheduled = false;
+        _hostLayerRetryCount = 0;
+        RemoveFromHostLayer();
+        _topLevel = null;
+    }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    // ControlTheme owns typography; this read-only bridge exposes the protected
+    // native inheritance source without code-installed style bindings.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    private void ScheduleReleaseCardsOnHostDetach()
+    {
+        if (!_hasBeenAttached || _isDisposed)
+        {
+            return;
+        }
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            // 执行时已重新入树（反馈层迁移等瞬时 detach）则不释放。
+            if (_isDisposed || !_isLifecyclePaused)
+            {
+                return;
+            }
+
+            // 关闭回调可能同步修改 _cards，先拷贝快照。
+            var cards = _cards.ToArray();
+            for (var i = 0; i < cards.Length; i++)
+            {
+                var card = cards[i];
+                _lifetimeScheduler?.Remove(card);
+                card.Close();
+            }
+        });
     }
 
     private void OnCardHoverChanged(IFeedbackStackItem item, bool isPointerOver)
@@ -446,41 +506,6 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
         }
         _hostLayer = null;
         _hostLayerUsesNativeAdorner = false;
-    }
-
-    public void Dispose()
-    {
-        if (_isDisposed)
-        {
-            return;
-        }
-        _isDisposed = true;
-
-        if (_topLevel is not null)
-        {
-            _topLevel.TemplateApplied -= TopLevelOnTemplateApplied;
-        }
-        if (_presenter is not null)
-        {
-            _presenter.StackHoverChanged -= OnStackHoverChanged;
-            _presenter.ItemsSource = null;
-            _presenter = null;
-        }
-        _lifetimeScheduler?.Dispose();
-        _lifetimeScheduler = null;
-        for (var i = 0; i < _cards.Count; i++)
-        {
-            var card = _cards[i];
-            card.MessageClosed -= OnMessageClosed;
-            card.ReleaseOwner();
-        }
-        _cards.Clear();
-        _isLifecyclePaused = true;
-        _isStackPaused = false;
-        _hostLayerRetryScheduled = false;
-        _hostLayerRetryCount = 0;
-        RemoveFromHostLayer();
-        _topLevel = null;
     }
 
     private void UpdatePseudoClasses(NotificationPosition position)

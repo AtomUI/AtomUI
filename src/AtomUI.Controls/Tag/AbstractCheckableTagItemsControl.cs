@@ -1,3 +1,5 @@
+using System.Reactive.Disposables;
+using AtomUI.Data;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -9,6 +11,8 @@ namespace AtomUI.Controls.Commons;
 
 internal abstract class AbstractCheckableTagItemsControl : SelectingItemsControl
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<double> ItemSpacingProperty =
         AbstractCheckableTagGroup.ItemSpacingProperty.AddOwner<AbstractCheckableTagItemsControl>();
 
@@ -54,9 +58,16 @@ internal abstract class AbstractCheckableTagItemsControl : SelectingItemsControl
         set => SetValue(IsMultipleProperty, value);
     }
 
+    #endregion
+
+    #region 内部事件定义
+
     internal event Action<CheckableTagOptionItem, bool>? ItemCheckedChanged;
 
+    #endregion
+
     private bool _isUpdatingCheckedStates;
+    private readonly Dictionary<AbstractCheckableTag, CompositeDisposable> _containerBindings = new();
 
     static AbstractCheckableTagItemsControl()
     {
@@ -89,11 +100,41 @@ internal abstract class AbstractCheckableTagItemsControl : SelectingItemsControl
             checkableTag.SetCurrentValue(
                 ContentControl.ContentProperty,
                 ItemTemplate != null ? optionItem.Source : optionItem.Content);
-            checkableTag[!ContentControl.ContentTemplateProperty] = this[!ItemTemplateProperty];
         }
 
-        checkableTag[!AbstractCheckableTag.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+        ConfigureContainerBindings(checkableTag, item is CheckableTagOptionItem);
         SetContainerCheckedState(checkableTag, IsItemSelected(item));
+    }
+
+    protected override void ClearContainerForItemOverride(Control container)
+    {
+        if (container is AbstractCheckableTag tag && _containerBindings.Remove(tag, out var bindings))
+        {
+            bindings.Dispose();
+        }
+        base.ClearContainerForItemOverride(container);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        for (var index = 0; index < ItemCount; index++)
+        {
+            if (ContainerFromIndex(index) is AbstractCheckableTag tag && !_containerBindings.ContainsKey(tag))
+            {
+                ConfigureContainerBindings(tag, Items[index] is CheckableTagOptionItem);
+            }
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        foreach (var bindings in _containerBindings.Values)
+        {
+            bindings.Dispose();
+        }
+        _containerBindings.Clear();
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -105,6 +146,8 @@ internal abstract class AbstractCheckableTagItemsControl : SelectingItemsControl
             UpdateCheckedStates();
         }
     }
+
+    #region 内部协作 API
 
     internal void SetSelectedOptions(IReadOnlyList<CheckableTagOptionItem> optionItems)
     {
@@ -123,6 +166,28 @@ internal abstract class AbstractCheckableTagItemsControl : SelectingItemsControl
         }
 
         UpdateCheckedStates();
+    }
+
+    #endregion
+
+    private void ConfigureContainerBindings(AbstractCheckableTag tag, bool hasOptionItem)
+    {
+        if (_containerBindings.Remove(tag, out var previous))
+        {
+            previous.Dispose();
+        }
+        // Container projections are established at LocalValue during Prepare,
+        // before logical membership. ControlTheme setters cannot preserve that
+        // priority and timing; membership owns and retires these typed relays.
+        var bindings = new CompositeDisposable
+        {
+            BindUtils.RelayBind(this, IsMotionEnabledProperty, tag, AbstractCheckableTag.IsMotionEnabledProperty)
+        };
+        if (hasOptionItem)
+        {
+            bindings.Add(BindUtils.RelayBind(this, ItemTemplateProperty, tag, ContentControl.ContentTemplateProperty));
+        }
+        _containerBindings.Add(tag, bindings);
     }
 
     private void UpdateSelectionMode(bool isMultiple)

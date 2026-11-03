@@ -27,9 +27,6 @@ public partial class Statistic : AbstractStatistic
             (o, v) => o.EffectiveValue = v);
     
     private string? _effectiveValue;
-    private object? _generatedContent;
-    private bool _isUsingGeneratedContent;
-    private bool _isInitialized;
 
     internal string? EffectiveValue
     {
@@ -38,6 +35,10 @@ public partial class Statistic : AbstractStatistic
     }
 
     #endregion
+
+    private object? _generatedContent;
+    private bool _isUsingGeneratedContent;
+    private bool _isInitialized;
 
     static Statistic()
     {

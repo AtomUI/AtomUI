@@ -2,6 +2,18 @@
 
 本文档记录 Tour 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-01
+
+- 保持九Own的36默认/type/key/slot，迁V2R1；局部Global/可选字体到实际popup与组合目标。
+- 修复重挂/退休投射、热Own偏移、专用圆点Style优先、同实例动作和根模板退出。
+- 当前目标更换/移动和无效锚点生命周期同步，保留原坐标/内容/导航/pinned合同。
+- 当前51聚焦通过、成员15-7-0；完整Skia/AOT/清理后验收及限定批准仍待，不关闭完整CT15。
+
+## 2026-10-29
+
+- Theme / Implementation
+  - 共享遮罩纳入当前owner逻辑子集合，响应热时长更新；转交时释放前owner引用，关闭旧Tour不影响新owner。
+
 ## 2026-10-24
 
 - 修复同一目标、相同 placement 的连续步骤丢失实际 Popup 翻转状态，保持箭头指向目标；默认画面中卡片随箭头布局上移6 DIP的差异已获批准。
@@ -47,3 +59,10 @@
   - Add Tour implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add Tour control-level changelog.
   - Add Tour Token documentation covering TourToken.
+
+
+CT15最新限定出口：60聚焦、正确managed/AOT各112检查/212帧；44明确静态待批准，原140可比/72缺帧及跨运行14非零保留。31临时/1448取证/614原会话和4最终文件清理，最终Tour21+PopupPlacement8共29通过、NET8零警告。完整家族/平台/GC/极值与CT15仍未关闭，见[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/tour-consumers-visual-review.md)。
+
+## 2026-11-01
+
+- Release shared mask projections when a Tour closes, detaches or transfers the layer to another owner; preserve current values when reopening and avoid retaining retired Tour content through the window.

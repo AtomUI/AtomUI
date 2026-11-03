@@ -18,6 +18,19 @@ public class TreeViewFlyoutPresenter : FloatableTreeView, IShadowMaskInfoProvide
     public static readonly StyledProperty<ArrowPosition> ArrowPositionProperty =
         ArrowDecoratedBox.ArrowPositionProperty.AddOwner<TreeViewFlyoutPresenter>();
 
+    #endregion
+
+    #region 公共事件定义
+
+    public static readonly RoutedEvent<FlyoutTreeViewItemClickedEventArgs> TreeViewItemClickedEvent =
+        RoutedEvent.Register<TreeViewFlyoutPresenter, FlyoutTreeViewItemClickedEventArgs>(
+            nameof(TreeViewItemClicked),
+            RoutingStrategies.Bubble);
+
+    #endregion
+
+    #region 公共属性定义
+
     /// <summary>
     /// 是否显示指示箭头
     /// </summary>
@@ -35,16 +48,11 @@ public class TreeViewFlyoutPresenter : FloatableTreeView, IShadowMaskInfoProvide
         get => GetValue(ArrowPositionProperty);
         set => SetValue(ArrowPositionProperty, value);
     }
-    
+
     #endregion
 
     #region 公共事件定义
 
-    public static readonly RoutedEvent<FlyoutTreeViewItemClickedEventArgs> TreeViewItemClickedEvent =
-        RoutedEvent.Register<TreeViewFlyoutPresenter, FlyoutTreeViewItemClickedEventArgs>(
-            nameof(TreeViewItemClicked),
-            RoutingStrategies.Bubble);
-    
     public event EventHandler<FlyoutTreeViewItemClickedEventArgs>? TreeViewItemClicked
     {
         add => AddHandler(TreeViewItemClickedEvent, value);
@@ -52,13 +60,23 @@ public class TreeViewFlyoutPresenter : FloatableTreeView, IShadowMaskInfoProvide
     }
 
     #endregion
-        
-    #region 内部属性定义
-    
+
+    #region 运行时字段
+
     private ArrowDecoratedBox? _arrowDecoratedBox;
 
     #endregion
-    
+
+    #region 构造与初始化
+
+    static TreeViewFlyoutPresenter()
+    {
+        // Tree items expose one bubbling Click event. Observe it at this presenter
+        // instead of retaining per-item MenuItem delegates on the wrong type.
+        TreeViewItem.ClickEvent.AddClassHandler<TreeViewFlyoutPresenter>((presenter, args) =>
+            presenter.HandleTreeViewItemClicked(args.Source, args));
+    }
+
     public TreeViewFlyoutPresenter()
         : base(new DefaultTreeViewInteractionHandler(true))
     {
@@ -68,62 +86,11 @@ public class TreeViewFlyoutPresenter : FloatableTreeView, IShadowMaskInfoProvide
         : base(menuInteractionHandler)
     {
     }
-    
-    protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
-    {
-        base.ContainerForItemPreparedOverride(container, item, index);
-        if (container is MenuItem menuItem)
-        {
-            BindTreeViewItemClickedRecursive(menuItem);
-        }
-    }
-    
-    protected override void ClearContainerForItemOverride(Control container)
-    {
-        base.ClearContainerForItemOverride(container);
-        if (container is MenuItem menuItem)
-        {
-            ClearMenuItemClickedRecursive(menuItem);
-        }
-    }
-    
-    private void BindTreeViewItemClickedRecursive(MenuItem menuItem)
-    {
-        foreach (var childItem in menuItem.Items)
-        {
-            if (childItem is MenuItem childMenuItem)
-            {
-                BindTreeViewItemClickedRecursive(childMenuItem);
-            }
-        }
 
-        // 绑定自己
-        menuItem.Click += HandleTreeViewItemClicked;
-    }
+    #endregion
 
-    private void ClearMenuItemClickedRecursive(MenuItem menuItem)
-    {
-        foreach (var childItem in menuItem.Items)
-        {
-            if (childItem is MenuItem childMenuItem)
-            {
-                ClearMenuItemClickedRecursive(childMenuItem);
-            }
-        }
+    #region 公共与受保护 API
 
-        // 绑定自己
-        menuItem.Click -= HandleTreeViewItemClicked;
-    }
-
-    private void HandleTreeViewItemClicked(object? sender, RoutedEventArgs args)
-    {
-        if (sender is TreeViewItem treeViewItem)
-        {
-            var ev = new FlyoutTreeViewItemClickedEventArgs(TreeViewItemClickedEvent, treeViewItem);
-            RaiseEvent(ev);
-        }
-    }
-    
     public CornerRadius GetMaskCornerRadius()
     {
         if (_arrowDecoratedBox is not null)
@@ -133,7 +100,7 @@ public class TreeViewFlyoutPresenter : FloatableTreeView, IShadowMaskInfoProvide
 
         return new CornerRadius(0);
     }
-    
+
     public Rect GetMaskBounds()
     {
         if (_arrowDecoratedBox is not null)
@@ -150,22 +117,28 @@ public class TreeViewFlyoutPresenter : FloatableTreeView, IShadowMaskInfoProvide
     {
         return _arrowDecoratedBox?.Background;
     }
-    
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         _arrowDecoratedBox = e.NameScope.Find<ArrowDecoratedBox>(ArrowDecoratedBox.ArrowDecoratorPart);
-    } 
-    
-    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
-    {
-        if (container is MenuItem menuItem)
-        {
-            menuItem[!MenuItem.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
-        }
-
-        base.PrepareContainerForItemOverride(container, item, index);
     }
+
+    #endregion
+
+    #region 私有实现
+
+    private void HandleTreeViewItemClicked(object? sender, RoutedEventArgs args)
+    {
+        if (sender is TreeViewItem treeViewItem)
+        {
+            var ev = new FlyoutTreeViewItemClickedEventArgs(TreeViewItemClickedEvent, treeViewItem);
+            RaiseEvent(ev);
+        }
+    }
+
+    #endregion
+
 }
 
 public class FlyoutTreeViewItemClickedEventArgs : RoutedEventArgs

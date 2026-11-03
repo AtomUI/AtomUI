@@ -5,6 +5,20 @@
     xmlns:atom="https://atomui.net"
     xmlns:antdicons="https://atomui.net/icons/antdesign">
     <ControlTheme x:Key="{x:Type atom:QRCode}" TargetType="atom:QRCode">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder Name="Frame"
@@ -97,14 +111,14 @@
         
         <Setter Property="IconBgColor" Value="Transparent" />
         <Setter Property="BorderThickness"
-                Value="{atom:SharedTokenResource BorderThickness}" />
+                Value="{atom:OwnerTokenResource BorderThickness}" />
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
         <Setter Property="Padding" Value="0" />
 
         <Style Selector="^[IsBordered=True]">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingSM}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
+            <Setter Property="Padding" Value="{atom:OwnerTokenResource PaddingSM}" />
         </Style>
 
         <Style Selector="^ /template/ Border#Cover">

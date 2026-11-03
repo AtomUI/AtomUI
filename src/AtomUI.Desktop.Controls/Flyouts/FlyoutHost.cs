@@ -3,8 +3,10 @@ using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Animations;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -20,7 +22,7 @@ public enum FlyoutTriggerType
     Focus,
 }
 
-public partial class FlyoutHost : ContentControl, IMotionAwareControl
+public partial class FlyoutHost : ContentControl, IMotionAwareControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -256,6 +258,15 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
 
     #region 控件 API
 
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        if (IsPopupPinnedOpen && this.IsAttachedToVisualTree())
+        {
+            QueuePinnedOpen();
+        }
+    }
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -480,4 +491,6 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
     }
 
     #endregion
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

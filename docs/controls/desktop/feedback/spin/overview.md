@@ -57,7 +57,7 @@ Spin 的公共契约由 public/protected 类型成员、Avalonia 属性、事件
 
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
-| `PART_CustomIndicatorPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
+| `PART_CustomIndicatorPresenter` | `ContentPresenter` | 展示用户内容、文本、图标或模板化数据。 |
 
 当前未抽取到控件专属伪类；主题主要依赖 Avalonia 标准伪类、模板绑定和内部 StyledProperty。
 
@@ -75,7 +75,7 @@ Public API / inherited command / item source / user input
 
 状态维护规则：
 
-- Disabled 或不可交互状态优先屏蔽 pointer、keyboard、motion 和提交类反馈。
+- IsEnabled 继续使用原生输入禁用语义；独立指示器的持续旋转按有效显隐管理。
 - motion、visual option 状态由控件实例或明确的数据 owner 推导，不能在 template part 之间双向竞争。
 - 模板重套用时必须把 public API 对应状态回放到新的 part、伪类和主题变量。
 - 集合、弹层、异步、动效或窗口相关状态必须能处理 reset、close、cancel、detach 和 owner 释放。
@@ -160,3 +160,10 @@ Spin 的视觉选项通过 public API 归一为 theme variables、伪类或模�
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+
+## custom-theme 输入与优先级
+
+七个 Own 归 Spin，SpinIndicator 没有独立 Own 定义；两个公开控件有各自 Global 身份。字体未明确配置时继承原生父值，明确局部 Global 进入根和实际内容；原生 FontFamily/FontSize 优先。组合圆点和 Tip 使用 Spin 的 ColorPrimary，独立圆点使用 SpinIndicator 的 ColorPrimary。完整公式见 [Token](token.md)。
+
+自定义 Content、ContentTemplate 任选其一即可进入自定义路径。caller PathIcon 的显式 Width/Height、Style 和 Foreground 保留；无尺寸值时跟随 IndicatorSize，退出后释放投射。Custom 尺寸默认 Middle，原生尺寸优先。IsSpinning 关闭组合遮罩，独立 Indicator 仍按自身有效显隐播放；不把 IsMotionEnabled 宣称为独立旋转开关。

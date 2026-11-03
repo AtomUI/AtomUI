@@ -133,7 +133,7 @@ Tag 的视觉组合由以下矩阵表达：
 - `TagVariant`、`Variant=Filled` 默认值、`TagColor` 颜色分类、ControlTheme key、template part 和伪类是稳定契约。
 - `IsBordered` 不属于当前契约，不得重新引入；旧 `bordered` 和 `color="xxx-inverse"` 兼容入口不属于当前设计。
 - 不把可由 AXAML 表达的模板状态迁移为 C# 动态创建视觉。
-- 不在控件中增加全局 Tag 配置或 ThemeConfig 组件配置；全局默认样式由 Avalonia Style 承担。
+- ThemeConfig 的 control 配置只承载视觉 Global/Own；Variant、TagColor、checked 和关闭行为仍由实例/Style表达，不写入Token。
 - 不把 hover、pressed、selected、expanded、loading、filter、popup open 等运行时状态写入 Token。
 - Browser 或平台特化主题必须保持同一 API 的语义一致。
 
@@ -202,3 +202,15 @@ CheckableTag 使用 ToggleButton 的二态状态；CheckableTagGroup 将 `Option
 | Semantic Part | `Tag` descriptor 只含 `root`/`icon`/`content`/`close`，`CheckableTagGroup` descriptor 只含 `root`/`item`；Tag 三节点 marker 静态常驻、折叠节点 marker 保留；Group item marker 随容器创建/prepare 幂等就位，选择变化与模式转换不增删 marker；owner-scoped Semantic Style 命中最低 public 类型。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+
+## 10. CT15 消费与继承边界
+
+Tag的9个Own保持原名称、type/key/slot及四算法默认，迁为DependencyDefaultsV2/revision1。TagCloseIconSize进入真实close glyph，0保留关闭节点与事件；既有Font/颜色/边距字段继续其原角色。普通Tag的明确FontFamily、边框、圆角与状态色读取实际注册owner，原生属性及用户Style优先，完整Text不改写。
+
+CheckableTag复用TagFontSize家族回退；明确本Checkable Global.FontSizeSM覆盖该回退，Native FontSize仍优先。本owner的FontFamily、checked/hover/pressed/disabled/focus颜色、边框与圆角进入原目标。Group以自身Global配置spacing与FontFamily，后者按真实物理继承进入子项，不新建第二套选择或字体状态机。模板变化可以由框架重建container，稳定的是Group公开值、完整内容及item语义契约。
+
+SelectTag继承TagTheme，其高度/字号与多选布局仍复用CT13既定归属；本包不修改Select输入源码或批准结论。新增Tag Own大值的派生影响、未覆盖平台和完整CT15另行保留，不能由默认通过推导。当前验证与限定审查边界见[CT15执行记录](../../../../superpowers/plans/2026-10-22-custom-theme/tag-consumers.md)。
+
+
+CT15当前仅[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/tag-consumers-visual-review.md)26对及列明SelectTag派生影响已获批准；恢复/跨运行微差、CT13既定边界和完整Tag/CT15保留，不授权提交。

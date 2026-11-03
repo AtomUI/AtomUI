@@ -174,3 +174,7 @@ PopupConfirm 与同分类控件共享尺寸、状态、Token、Gallery 展示和
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+### 主题消费边界
+
+PopupConfirm root承担触发内容与确认状态，实际确认文本位于运行时PopupConfirmContainer；不把root继承字体新增为弹层转发API。确认容器按真实公共owner解析明确Global字体/前景，标题仍ColorTextHeading/FontWeightStrong角色，状态glyph保留原图标与Info/Warning/Error角色。实际内容/生成的专用popup Style仍可定制；独立Button和共享FlyoutPresenter框体职责保持。没有额外SizeType/Custom档位。

@@ -6,6 +6,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
@@ -122,6 +124,9 @@ public abstract class AbstractSpin : ContentControl, ICustomizableSizeTypeAware,
             o => o.IsCustomIndicator,
             (o, v) => o.IsCustomIndicator = v);
     
+    internal static readonly StyledProperty<double> MaskOpacityProperty =
+        AvaloniaProperty.Register<AbstractSpin, double>(nameof(MaskOpacity));
+
     private bool _isCustomIndicator;
 
     internal bool IsCustomIndicator
@@ -130,9 +135,6 @@ public abstract class AbstractSpin : ContentControl, ICustomizableSizeTypeAware,
         set => SetAndRaise(IsCustomIndicatorProperty, ref _isCustomIndicator, value);
     }
     
-    internal static readonly StyledProperty<double> MaskOpacityProperty =
-        AvaloniaProperty.Register<AbstractSpin, double>(nameof(MaskOpacity));
-
     internal double MaskOpacity
     {
         get => GetValue(MaskOpacityProperty);
@@ -148,8 +150,22 @@ public abstract class AbstractSpin : ContentControl, ICustomizableSizeTypeAware,
         _transitionInitialization = new TransitionInitializationSession(this);
     }
 
+    private WeakReference<Control>? _pendingTemplateFocus;
+    private int _templateGeneration;
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
+        if (change.Property == TemplateProperty)
+        {
+            var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() as Control;
+            if (focused is not null)
+            {
+                _pendingTemplateFocus = this.IsVisualAncestorOf(focused)
+                    ? new WeakReference<Control>(focused)
+                    : null;
+            }
+            ++_templateGeneration;
+        }
         base.OnPropertyChanged(change);
         if (change.Property == CustomIndicatorTemplateProperty ||
             change.Property == CustomIndicatorProperty)
@@ -162,10 +178,31 @@ public abstract class AbstractSpin : ContentControl, ICustomizableSizeTypeAware,
     {
         base.OnApplyTemplate(e);
         SetCurrentValue(IsCustomIndicatorProperty, CustomIndicator != null || CustomIndicatorTemplate != null);
+        if (_pendingTemplateFocus is { } focus)
+        {
+            _pendingTemplateFocus = null;
+            var generation = _templateGeneration;
+            var weakOwner = new WeakReference<AbstractSpin>(this);
+            // Runtime Content is reparented by the new presenter. A theme Setter
+            // cannot restore focus or preserve later user focus requests.
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (weakOwner.TryGetTarget(out var owner) && owner._templateGeneration == generation &&
+                    focus.TryGetTarget(out var control) && owner.IsVisualAncestorOf(control) &&
+                    TopLevel.GetTopLevel(owner) is { } topLevel &&
+                    ReferenceEquals(TopLevel.GetTopLevel(control), topLevel) &&
+                    topLevel.FocusManager?.GetFocusedElement() is null)
+                {
+                    control.Focus();
+                }
+            }, DispatcherPriority.Loaded);
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        ++_templateGeneration;
+        _pendingTemplateFocus = null;
         _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }

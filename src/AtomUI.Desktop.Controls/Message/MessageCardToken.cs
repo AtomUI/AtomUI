@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class MessageCardToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class MessageCardToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
     /// <summary>
@@ -19,7 +19,7 @@ internal sealed class MessageCardToken : AbstractControlDesignToken
     public Thickness ContentPadding { get; set; }
 
     /// <summary>
-    /// 提示框高度
+    /// 历史保留高度资源；无生产消费者，不约束自适应内容高度。
     /// </summary>
     public double CardHeight { get; set; }
 
@@ -34,22 +34,28 @@ internal sealed class MessageCardToken : AbstractControlDesignToken
     public Thickness MessageIconMargin { get; set; }
     public Thickness MessageTopMargin { get; set; }
 
-    public MessageCardToken()
+    [ControlTokenDefault(nameof(ContentBg))]
+    private static Color DefaultForContentBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgElevated;
 
-    {
-    }
+    [ControlTokenDefault(nameof(ContentPadding))]
+    private static Thickness DefaultForContentPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(
+            (context.Global.ControlHeightLG - context.Global.FontSize * context.Global.RelativeLineHeight) / 2,
+            context.Global.UniformlyPaddingXS);
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ContentBg = EffectiveGlobalToken.ColorBgElevated;
-        ContentPadding = new Thickness(
-            (EffectiveGlobalToken.ControlHeightLG -
-             EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight) / 2,
-            EffectiveGlobalToken.UniformlyPaddingXS);
-        MessageIconMargin = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        MessageTopMargin  = new Thickness(EffectiveGlobalToken.UniformlyMarginXS);
-        MessageIconSize   = EffectiveGlobalToken.FontSizeSM * EffectiveGlobalToken.RelativeLineHeightSM;
-    }
-    
+    [ControlTokenDefault(nameof(CardHeight))]
+    private static double DefaultForCardHeight(in ControlTokenDefaultContext context) => 0d;
+
+    [ControlTokenDefault(nameof(MessageIconSize))]
+    private static double DefaultForMessageIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeSM * context.Global.RelativeLineHeightSM;
+
+    [ControlTokenDefault(nameof(MessageIconMargin))]
+    private static Thickness DefaultForMessageIconMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyMarginXS, 0);
+
+    [ControlTokenDefault(nameof(MessageTopMargin))]
+    private static Thickness DefaultForMessageTopMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMarginXS);
 }

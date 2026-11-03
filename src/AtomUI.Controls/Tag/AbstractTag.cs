@@ -33,7 +33,7 @@ internal struct TagStatusCalcColor
 }
 
 [TemplatePart("PART_CloseButton", typeof(AbstractIconButton))]
-public abstract class AbstractTag : TemplatedControl
+public abstract class AbstractTag : TemplatedControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -207,16 +207,6 @@ public abstract class AbstractTag : TemplatedControl
         base.OnDetachedFromVisualTree(e);
     }
     
-    private void ApplyThemeSnapshot(ThemeSnapshot snapshot)
-    {
-        SetupStatusColorMap(snapshot);
-        SetupPresetColorMap(snapshot);
-        _solidTextColor = s_themeTokenResolver.GetGlobal<Color>(
-            snapshot,
-            (int)SharedTokenKind.ColorTextLightSolid);
-        UpdateTagColorVisualState();
-    }
-    
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -240,7 +230,6 @@ public abstract class AbstractTag : TemplatedControl
         {
             UpdateTagColorVisualState();
         }
-        ConfigureBorderThickness();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -265,9 +254,31 @@ public abstract class AbstractTag : TemplatedControl
         }
     }
 
-    private void ConfigureBorderThickness()
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    private void ApplyThemeSnapshot(ThemeSnapshot snapshot)
     {
-        SetValue(BorderThicknessProperty, RenderScaleAwareBorderThickness, BindingPriority.Template);
+        SetupStatusColorMap(snapshot);
+        SetupPresetColorMap(snapshot);
+        _solidTextColor = GetEffectiveGlobal<Color>(snapshot, SharedTokenKind.ColorTextLightSolid);
+        UpdateTagColorVisualState();
+    }
+
+    private T GetEffectiveGlobal<T>(ThemeSnapshot snapshot, SharedTokenKind token)
+    {
+        // Color/variant calculations require runtime palette data rather than a
+        // ControlTheme binding. Match the registered owner used by AXAML resources.
+        var tokenSlot = snapshot.Registry.GetSharedTokenSlot(token);
+        if (snapshot.Registry.TryGetControl(GetType(), out var descriptor) ||
+            snapshot.Registry.TryGetControl(StyleKey, out descriptor))
+        {
+            return s_themeTokenResolver.GetEffectiveGlobal<T>(snapshot, descriptor.Slot, tokenSlot);
+        }
+        return s_themeTokenResolver.GetGlobal<T>(snapshot, tokenSlot);
     }
 
     private void SetupPresetColorMap(ThemeSnapshot snapshot)
@@ -295,7 +306,7 @@ public abstract class AbstractTag : TemplatedControl
     {
         Color Global(SharedTokenKind kind)
         {
-            return s_themeTokenResolver.GetGlobal<Color>(snapshot, (int)kind);
+            return GetEffectiveGlobal<Color>(snapshot, kind);
         }
 
         _statusColorMap = new Dictionary<TagStatus, TagStatusCalcColor>(4)

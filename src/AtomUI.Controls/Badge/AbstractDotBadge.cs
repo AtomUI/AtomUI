@@ -1,4 +1,7 @@
-﻿using AtomUI.Utils;
+using System.Reactive.Disposables;
+using AtomUI.Data;
+using AtomUI.Theme.Resources;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -19,7 +22,7 @@ public enum DotBadgeStatus
     Warning
 }
 
-public abstract class AbstractDotBadge : Control, IMotionAwareControl
+public abstract class AbstractDotBadge : Control, IMotionAwareControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -42,7 +45,7 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
 
     public static readonly StyledProperty<bool> BadgeIsVisibleProperty =
         AvaloniaProperty.Register<AbstractDotBadge, bool>(nameof(BadgeIsVisible), true);
-    
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty
         = MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractDotBadge>();
 
@@ -82,7 +85,7 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         get => GetValue(BadgeIsVisibleProperty);
         set => SetValue(BadgeIsVisibleProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -91,14 +94,29 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
 
     #endregion
 
+    #region 运行时字段
+
+    private CompositeDisposable? _adornerBindings;
+
+    private IDisposable? _instanceColorValue;
+
     private protected AbstractDotBadgeAdorner? _dotBadgeAdorner;
+
     private protected AdornerLayer? _adornerLayer;
+
     private const int MaxAdornerLayerRetryCount = 30;
+
     private bool _adornerLayerRetryScheduled;
+
     private int _adornerLayerRetryCount;
+
     private IDisposable? _motionBinding;
+
     private AncestorVisibilityTracker? _ancestorVisibilityTracker;
+
     private Panel? _standaloneContentHost;
+
+    #endregion
 
     static AbstractDotBadge()
     {
@@ -108,7 +126,162 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         VerticalAlignmentProperty.OverrideDefaultValue<AbstractDotBadge>(VerticalAlignment.Top);
     }
 
+    #region 公共与受保护 API
+
     private protected abstract AbstractDotBadgeAdorner CreateDotBadgeAdorner();
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        SetupTokenBindings();
+        if (_dotBadgeAdorner is not null)
+        {
+            ConfigureDotColor(DotColor);
+        }
+        _motionBinding?.Dispose();
+        _motionBinding = this.ConfigureMotionBindingStyle();
+        _adornerLayerRetryCount = 0;
+        if (BadgeIsVisible)
+        {
+            PrepareAdorner();
+        }
+        else if (DecoratedTarget is not null)
+        {
+            AttachChild(DecoratedTarget);
+        }
+
+        _ancestorVisibilityTracker?.Dispose();
+        _ancestorVisibilityTracker = new AncestorVisibilityTracker(this, SyncLayerAdornerVisibility);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _adornerBindings?.Dispose();
+        _adornerBindings = null;
+        _instanceColorValue?.Dispose();
+        _instanceColorValue = null;
+        _motionBinding?.Dispose();
+        _motionBinding = null;
+        _ancestorVisibilityTracker?.Dispose();
+        _ancestorVisibilityTracker = null;
+        Loaded -= HandleAdornerLayerRetryLoaded;
+        _adornerLayerRetryScheduled = false;
+        _adornerLayerRetryCount     = 0;
+        HideAdorner(false);
+    }
+
+    private protected virtual void SetupTokenBindings()
+    {
+        _adornerBindings?.Dispose();
+        _adornerBindings = null;
+        if (_dotBadgeAdorner is not null)
+        {
+            // Runtime adorner projections are LocalValue and are established
+            // before template/visual attachment; AXAML setters cannot preserve
+            // this preparation contract. The owner holds their release handles.
+            _adornerBindings = new CompositeDisposable
+            {
+                BindUtils.RelayBind(this, StatusProperty, _dotBadgeAdorner, AbstractDotBadgeAdorner.StatusProperty),
+                BindUtils.RelayBind(this, TextProperty, _dotBadgeAdorner, AbstractDotBadgeAdorner.TextProperty),
+                BindUtils.RelayBind(this, OffsetProperty, _dotBadgeAdorner, AbstractDotBadgeAdorner.OffsetProperty),
+                BindUtils.RelayBind(this, IsMotionEnabledProperty, _dotBadgeAdorner, AbstractDotBadgeAdorner.IsMotionEnabledProperty)
+            };
+        }
+    }
+
+    private protected virtual void NotifyDecoratedTargetChanged(Control? oldDecoratedTarget = null)
+    {
+        if (_dotBadgeAdorner is not null)
+        {
+            DetachChild(oldDecoratedTarget);
+            if (DecoratedTarget is null)
+            {
+                _dotBadgeAdorner.IsAdornerMode = false;
+                DetachLayerAdorner();
+                if (BadgeIsVisible)
+                {
+                    AttachStandaloneAdorner(_dotBadgeAdorner);
+                }
+            }
+            else
+            {
+                DetachStandaloneAdorner(_dotBadgeAdorner);
+                _dotBadgeAdorner.IsAdornerMode = true;
+                AttachChild(DecoratedTarget);
+            }
+        }
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == IsVisibleProperty ||
+            change.Property == BadgeIsVisibleProperty)
+        {
+            var badgeIsVisible = change.GetNewValue<bool>();
+            if (badgeIsVisible &&
+                (change.Property == BadgeIsVisibleProperty || BadgeIsVisible))
+            {
+                PrepareAdorner();
+            }
+            else
+            {
+                HideAdorner(IsMotionEnabled && IsLoaded);
+            }
+        }
+
+        if (this.IsAttachedToVisualTree())
+        {
+            if (change.Property == DecoratedTargetProperty)
+            {
+                var oldDecoratedTarget = change.GetOldValue<Control?>();
+                DetachChild(oldDecoratedTarget);
+                if ((oldDecoratedTarget is null) != (DecoratedTarget is null))
+                {
+                    ResetDotBadgeAdorner();
+                }
+                NotifyDecoratedTargetChanged();
+                if (BadgeIsVisible)
+                {
+                    PrepareAdorner();
+                }
+                else if (DecoratedTarget is not null)
+                {
+                    AttachChild(DecoratedTarget);
+                }
+            }
+
+            if (change.Property == DotColorProperty)
+            {
+                ConfigureDotColor(change.GetNewValue<string>());
+            }
+        }
+    }
+
+    private protected virtual void ConfigureDotColor(string? colorStr)
+    {
+        _instanceColorValue?.Dispose();
+        _instanceColorValue = null;
+        var brush = BadgeColorUtils.CalculateColor(colorStr);
+        if (_dotBadgeAdorner is not null && brush is not null)
+        {
+            // Preset/instance strings require runtime parsing. A removable value
+            // frame preserves the underlying AXAML token binding for clear/restore.
+            _instanceColorValue = _dotBadgeAdorner.SetValue(AbstractDotBadgeAdorner.BadgeDotColorProperty,
+                brush, Avalonia.Data.BindingPriority.Animation);
+        }
+    }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 私有实现
 
     private void PrepareAdorner()
     {
@@ -230,34 +403,6 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         }
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        _motionBinding?.Dispose();
-        _motionBinding = this.ConfigureMotionBindingStyle();
-        _adornerLayerRetryCount = 0;
-        if (BadgeIsVisible)
-        {
-            PrepareAdorner();
-        }
-
-        _ancestorVisibilityTracker?.Dispose();
-        _ancestorVisibilityTracker = new AncestorVisibilityTracker(this, SyncLayerAdornerVisibility);
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        _motionBinding?.Dispose();
-        _motionBinding = null;
-        _ancestorVisibilityTracker?.Dispose();
-        _ancestorVisibilityTracker = null;
-        Loaded -= HandleAdornerLayerRetryLoaded;
-        _adornerLayerRetryScheduled = false;
-        _adornerLayerRetryCount     = 0;
-        HideAdorner(false);
-    }
-
     private void ScheduleAdornerLayerRetry()
     {
         if (_adornerLayerRetryScheduled ||
@@ -317,17 +462,6 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         PrepareAdorner();
     }
 
-    private protected virtual void SetupTokenBindings()
-    {
-        if (_dotBadgeAdorner is not null)
-        {
-            _dotBadgeAdorner[!AbstractDotBadgeAdorner.StatusProperty] = this[!StatusProperty];
-            _dotBadgeAdorner[!AbstractDotBadgeAdorner.TextProperty]   = this[!TextProperty];
-            _dotBadgeAdorner[!AbstractDotBadgeAdorner.OffsetProperty] = this[!OffsetProperty];
-            _dotBadgeAdorner[!IsMotionEnabledProperty]                = this[!IsMotionEnabledProperty];
-        }
-    }
-
     private void AttachChild(Control child)
     {
         if (child.GetVisualParent() == this)
@@ -338,6 +472,7 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         child.SetLogicalParent(this);
         VisualChildren.Add(child);
         LogicalChildren.Add(child);
+        InvalidateMeasure();
     }
 
     // standalone 指示器不能直接挂 Control.VisualChildren：普通控件集合缺少 Panel
@@ -351,29 +486,31 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
             AttachChild(_standaloneContentHost);
         }
 
+        // The Panel provides the visual attach cascade; the public Badge remains
+        // the direct logical/style owner required by its generated Part route.
+        if (!LogicalChildren.Contains(adorner))
+        {
+            adorner.SetLogicalParent(this);
+            LogicalChildren.Add(adorner);
+        }
         if (!_standaloneContentHost.Children.Contains(adorner))
         {
             _standaloneContentHost.Children.Add(adorner);
         }
-
-        // 首次挂载可能发生在宿主 attach 级联内部：逻辑根尚未贯通到本 Panel，
-        // 子级收不到 AttachedToLogicalTree，ControlTheme 与模板 Setter 全部
-        // 不应用、desired 停留 0。补设逻辑父（SetParent → FindLogicalRoot →
-        // ApplyStyling）；不能用视觉重挂——detach 会取消待播的 show 动画，
-        // 让指示器停留在 opacity 0。级联内同步设置可能失败，Post 兜底重试。
         if (((StyledElement)adorner).Parent is null)
         {
             var hostPanel = _standaloneContentHost;
-            ((ISetLogicalParent)adorner).SetParent(hostPanel);
+            ((ISetLogicalParent)adorner).SetParent(this);
             if (((StyledElement)adorner).Parent is null)
             {
                 Dispatcher.UIThread.Post(() =>
                 {
                     if (_standaloneContentHost == hostPanel &&
                         hostPanel.Children.Contains(adorner) &&
+                        LogicalChildren.Contains(adorner) &&
                         ((StyledElement)adorner).Parent is null)
                     {
-                        ((ISetLogicalParent)adorner).SetParent(hostPanel);
+                        ((ISetLogicalParent)adorner).SetParent(this);
                     }
                 }, DispatcherPriority.Loaded);
             }
@@ -393,6 +530,7 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         }
 
         host.Children.Remove(adorner);
+        LogicalChildren.Remove(adorner);
         if (host.Children.Count == 0)
         {
             DetachChild(host);
@@ -418,6 +556,7 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         }
 
         child.SetLogicalParent(null);
+        InvalidateMeasure();
     }
 
     private void DetachLayerAdorner()
@@ -433,6 +572,10 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
 
     private void ResetDotBadgeAdorner()
     {
+        _instanceColorValue?.Dispose();
+        _instanceColorValue = null;
+        _adornerBindings?.Dispose();
+        _adornerBindings = null;
         if (_dotBadgeAdorner is null)
         {
             return;
@@ -443,73 +586,5 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         _dotBadgeAdorner = null;
     }
 
-    private protected virtual void NotifyDecoratedTargetChanged(Control? oldDecoratedTarget = null)
-    {
-        if (_dotBadgeAdorner is not null)
-        {
-            DetachChild(oldDecoratedTarget);
-            if (DecoratedTarget is null)
-            {
-                _dotBadgeAdorner.IsAdornerMode = false;
-                DetachLayerAdorner();
-                if (BadgeIsVisible)
-                {
-                    AttachStandaloneAdorner(_dotBadgeAdorner);
-                }
-            }
-            else
-            {
-                DetachStandaloneAdorner(_dotBadgeAdorner);
-                _dotBadgeAdorner.IsAdornerMode = true;
-                AttachChild(DecoratedTarget);
-            }
-        }
-    }
-
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == IsVisibleProperty ||
-            change.Property == BadgeIsVisibleProperty)
-        {
-            var badgeIsVisible = change.GetNewValue<bool>();
-            if (badgeIsVisible)
-            {
-                PrepareAdorner();
-            }
-            else
-            {
-                HideAdorner(IsMotionEnabled && IsLoaded);
-            }
-        }
-
-        if (this.IsAttachedToVisualTree())
-        {
-            if (change.Property == DecoratedTargetProperty)
-            {
-                var oldDecoratedTarget = change.GetOldValue<Control?>();
-                DetachChild(oldDecoratedTarget);
-                if ((oldDecoratedTarget is null) != (DecoratedTarget is null))
-                {
-                    ResetDotBadgeAdorner();
-                }
-                NotifyDecoratedTargetChanged();
-                if (BadgeIsVisible)
-                {
-                    PrepareAdorner();
-                }
-            }
-
-            if (change.Property == DotColorProperty)
-            {
-                ConfigureDotColor(change.GetNewValue<string>());
-            }
-        }
-    }
-
-    private protected virtual void ConfigureDotColor(string colorStr)
-    {
-        _dotBadgeAdorner!.BadgeDotColor = BadgeColorUtils.CalculateColor(colorStr);
-    }
-    
+    #endregion
 }

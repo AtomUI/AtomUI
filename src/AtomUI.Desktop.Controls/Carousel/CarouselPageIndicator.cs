@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Reactive.Disposables;
 using AtomUI.Animations;
 using AtomUI.Controls;
@@ -13,40 +14,75 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class CarouselPageIndicator : ContentControl, ISelectable
+internal class CarouselPageIndicator : ContentControl, ISelectable, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsSelectedProperty =
         SelectingItemsControl.IsSelectedProperty.AddOwner<CarouselPageIndicator>();
-    
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CarouselPageIndicator>();
-    
+
     public static readonly StyledProperty<bool> IsShowTransitionProgressProperty = 
         Carousel.IsShowTransitionProgressProperty.AddOwner<CarouselPageIndicator>();
-    
+
     public static readonly StyledProperty<TimeSpan> AutoPlaySpeedProperty = 
         Carousel.AutoPlaySpeedProperty.AddOwner<CarouselPageIndicator>();
-    
+
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly StyledProperty<double> FrameOpacityProperty =
+        AvaloniaProperty.Register<CarouselPageIndicator, double>(nameof(FrameOpacity));
+
+    internal static readonly DirectProperty<CarouselPageIndicator, double> ProgressValueProperty =
+        AvaloniaProperty.RegisterDirect<CarouselPageIndicator, double>(
+            nameof(ProgressValue),
+            o => o.ProgressValue,
+            (o, v) => o.ProgressValue = v);
+
+    internal static readonly DirectProperty<CarouselPageIndicator, double> EffectiveProgressWidthProperty =
+        AvaloniaProperty.RegisterDirect<CarouselPageIndicator, double>(
+            nameof(EffectiveProgressWidth),
+            o => o.EffectiveProgressWidth,
+            (o, v) => o.EffectiveProgressWidth = v);
+
+    #endregion
+
+    private static readonly Easing DefaultProgressEasing = new LinearEasing();
+
+    private Animation? _animation;
+
+    private CancellationTokenSource? _cancellationTokenSource;
+
+    private CompositeDisposable? _effectiveVisibilitySubscriptions;
+
+    private Border? _frame;
+
+    private readonly TransitionInitializationSession _transitionInitialization;
+
+    #region 公共属性定义
+
     public bool IsSelected
     {
         get => GetValue(IsSelectedProperty);
         set => SetValue(IsSelectedProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     public bool IsShowTransitionProgress
     {
         get => GetValue(IsShowTransitionProgressProperty);
         set => SetValue(IsShowTransitionProgressProperty, value);
     }
-    
+
     public TimeSpan AutoPlaySpeed
     {
         get => GetValue(AutoPlaySpeedProperty);
@@ -54,22 +90,9 @@ internal class CarouselPageIndicator : ContentControl, ISelectable
     }
 
     #endregion
-    
-    internal static readonly StyledProperty<double> FrameOpacityProperty =
-        AvaloniaProperty.Register<CarouselPageIndicator, double>(nameof(FrameOpacity));
-    
-    internal static readonly DirectProperty<CarouselPageIndicator, double> ProgressValueProperty =
-        AvaloniaProperty.RegisterDirect<CarouselPageIndicator, double>(
-            nameof(ProgressValue),
-            o => o.ProgressValue,
-            (o, v) => o.ProgressValue = v);
-    
-    internal static readonly DirectProperty<CarouselPageIndicator, double> EffectiveProgressWidthProperty =
-        AvaloniaProperty.RegisterDirect<CarouselPageIndicator, double>(
-            nameof(EffectiveProgressWidth),
-            o => o.EffectiveProgressWidth,
-            (o, v) => o.EffectiveProgressWidth = v);
-    
+
+    #region 内部属性定义
+
     internal double FrameOpacity
     {
         get => GetValue(FrameOpacityProperty);
@@ -83,7 +106,7 @@ internal class CarouselPageIndicator : ContentControl, ISelectable
         get => _progressValue;
         set => SetAndRaise(ProgressValueProperty, ref _progressValue, value);
     }
-    
+
     private double _effectiveProgressWidth;
 
     internal double EffectiveProgressWidth
@@ -92,14 +115,7 @@ internal class CarouselPageIndicator : ContentControl, ISelectable
         set => SetAndRaise(EffectiveProgressWidthProperty, ref _effectiveProgressWidth, value);
     }
 
-    private static readonly Easing DefaultProgressEasing = new LinearEasing();
-    
-    private Animation? _animation;
-    private CancellationTokenSource? _cancellationTokenSource;
-    private CompositeDisposable? _effectiveVisibilitySubscriptions;
-    private Border? _frame;
-    
-    private readonly TransitionInitializationSession _transitionInitialization;
+    #endregion
 
     static CarouselPageIndicator()
     {
@@ -154,7 +170,7 @@ internal class CarouselPageIndicator : ContentControl, ISelectable
             ConfigureProgressWidth();
         }
     }
-    
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -166,6 +182,27 @@ internal class CarouselPageIndicator : ContentControl, ISelectable
         UpdateProgressAnimationState(IsEffectivelyVisible);
         _transitionInitialization.CompleteInitialization();
     }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        ConfigureProgressVisibilityTracking();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _transitionInitialization.Reset();
+        _effectiveVisibilitySubscriptions?.Dispose();
+        _effectiveVisibilitySubscriptions = null;
+        StopProgressAnimation();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => CarouselThemeOwner.Resolve(this);
+
+    #endregion
 
     private void BuildProgressAnimation(bool force = false)
     {
@@ -203,20 +240,6 @@ internal class CarouselPageIndicator : ContentControl, ISelectable
         }
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        ConfigureProgressVisibilityTracking();
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        _transitionInitialization.Reset();
-        _effectiveVisibilitySubscriptions?.Dispose();
-        _effectiveVisibilitySubscriptions = null;
-        StopProgressAnimation();
-        base.OnDetachedFromVisualTree(e);
-    }
 
     private void ConfigureProgressVisibilityTracking()
     {
@@ -258,16 +281,14 @@ internal class CarouselPageIndicator : ContentControl, ISelectable
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
         SetCurrentValue(ProgressValueProperty, 0d);
+        ConfigureProgressWidth();
     }
 
     private void ConfigureProgressWidth()
     {
-        if (IsSelected && IsShowTransitionProgress)
-        {
-            var width = _frame?.Bounds.Width ?? 0.0;
-            SetCurrentValue(EffectiveProgressWidthProperty, width * ProgressValue);
-        }
-
+        var width = IsSelected && IsShowTransitionProgress
+            ? (_frame?.Bounds.Width ?? 0.0) * ProgressValue
+            : 0.0;
+        SetCurrentValue(EffectiveProgressWidthProperty, width);
     }
-
 }

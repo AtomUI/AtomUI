@@ -97,3 +97,8 @@ Spinning 反馈在 `container` 上有两条互斥路径：`IsMaskBlurEnabled=Tru
 - Gallery Semantic Parts Tab 延迟创建主控件和 `SpinIndicator` Preview；Examples Tab 的既有示例树保持不变。
 - Semantic 示例标题使用 `Custom Semantic Part styling`，文案只描述 AtomUI owner-scoped Style；Tag 使用当前版本
   `GalleryVersionInfo.DisplayVersion`（`v6.1.3`）。
+
+
+## 动态定制验收边界
+
+生成的 SpinContainerStyle、SpinMaskStyle、SpinSectionStyle、SpinIndicatorStyle、SpinDescriptionStyle 和 SpinIndicatorContentStyle 必须在 AXAML 声明式应用。热加 Style 时隐藏且尚未测量的替代 presenter 可能延后样式初始化；两个 marker 数量保持，切换后当前可见目标必须实际命中并保留关键 Setter。不得把未命中记为限制或改用节点赋值。Caller-owned glyph 的默认尺寸投射由运行成员生命周期负责，不是对 Semantic Part 的替代定制入口。

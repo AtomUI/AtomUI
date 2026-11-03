@@ -1,18 +1,21 @@
 ﻿using AtomUI.Icons.AntDesign;
+using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class PopupConfirmContainer : TemplatedControl
+internal class PopupConfirmContainer : TemplatedControl, IControlThemeGlobalOwnerSource, IThemeInheritanceSource
 {
-    #region 内部属性定义
+    #region 公共属性定义
 
     public static readonly StyledProperty<string> OkTextProperty =
         PopupConfirm.OkTextProperty.AddOwner<PopupConfirmContainer>();
@@ -101,6 +104,7 @@ internal class PopupConfirmContainer : TemplatedControl
     internal WeakReference<PopupConfirm> PopupConfirmRef { get; set; }
     private Button? _okButton;
     private Button? _cancelButton;
+    private ThemeContextResourceBridge? _themeResourceBridge;
 
     static PopupConfirmContainer()
     {
@@ -111,6 +115,18 @@ internal class PopupConfirmContainer : TemplatedControl
     public PopupConfirmContainer(PopupConfirm popupConfirm)
     {
         PopupConfirmRef = new WeakReference<PopupConfirm>(popupConfirm);
+    }
+
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        UpdateThemeResourceBridge();
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        ClearThemeResourceBridge();
+        base.OnDetachedFromLogicalTree(e);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -132,6 +148,41 @@ internal class PopupConfirmContainer : TemplatedControl
         }
         UpdatePseudoClasses();
     }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == ThemeScope.ContextProperty && ((ILogical)this).IsAttachedToLogicalTree)
+        {
+            UpdateThemeResourceBridge();
+        }
+        if (this.IsAttachedToVisualTree())
+        {
+            if (change.Property == IconProperty)
+            {
+                SetupDefaultIcon();
+            }
+        }
+
+        if (change.Property == ConfirmContentProperty ||
+            change.Property == ConfirmContentTemplateProperty)
+        {
+            UpdatePseudoClasses();
+        }
+    }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner =>
+        PopupConfirmRef.TryGetTarget(out var owner) ? owner : null;
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     private void HandleButtonClick(RoutedEventArgs args)
     {
@@ -164,24 +215,6 @@ internal class PopupConfirmContainer : TemplatedControl
             popupConfirm.HideFlyout(true);
         }
     }
-    
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (this.IsAttachedToVisualTree())
-        {
-            if (change.Property == IconProperty)
-            {
-                SetupDefaultIcon();
-            }
-        }
-
-        if (change.Property == ConfirmContentProperty ||
-            change.Property == ConfirmContentTemplateProperty)
-        {
-            UpdatePseudoClasses();
-        }
-    }
 
     private void SetupDefaultIcon()
     {
@@ -191,9 +224,37 @@ internal class PopupConfirmContainer : TemplatedControl
             SetValue(IconProperty, new ExclamationCircleFilled(), BindingPriority.Template);
         }
     }
-    
+
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(PopupConfirmPseudoClass.EmptyContent, ConfirmContent == null);
     }
+
+    private void UpdateThemeResourceBridge()
+    {
+        var context = GetValue(ThemeScope.ContextProperty) ?? ThemeScope.ResolveContext(this);
+        if (context is not null && ReferenceEquals(_themeResourceBridge?.OwnerContext, context))
+        {
+            return;
+        }
+        ClearThemeResourceBridge();
+        if (context is not null)
+        {
+            // The runtime flyout root is outside its owner's logical children.
+            // AXAML cannot forward that missing publication; reuse the scoped bridge.
+            _themeResourceBridge = new ThemeContextResourceBridge(context);
+            Resources.MergedDictionaries.Add(_themeResourceBridge);
+        }
+    }
+
+    private void ClearThemeResourceBridge()
+    {
+        if (_themeResourceBridge is { } bridge)
+        {
+            _themeResourceBridge = null;
+            Resources.MergedDictionaries.Remove(bridge);
+            bridge.Dispose();
+        }
+    }
+
 }

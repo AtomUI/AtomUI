@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -6,7 +7,7 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
+internal class ImagePreviewerCover : ContentControl, IMotionAwareControl, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
@@ -218,6 +219,12 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
         UpdateVisualState();
 
     }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => ImagePreviewThemeOwner.Resolve(this);
+
+    #endregion
 
     private void UpdateVisualState()
     {

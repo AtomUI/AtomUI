@@ -58,6 +58,16 @@
 - 数据对象、选项对象、任务对象或节点对象只保存业务数据，不应反向持有不可释放的视觉对象。
 - 弹层、窗口、计时器、异步 loader 和全局管理器必须有明确关闭、解绑或释放路径。
 
+### 主题与运行关系
+
+MessageCard的正文原有FontSize/ColorText角色默认位于root，SelectableTextBlock继承；FontFamily复用Core真实InheritanceParent只读桥，最终Setter由AXAML拥有。manager拥有独立Global和有限字体继承。状态IconBrush在IconPresenter目标上明确MessageCard owner，避免该独立公开primitive截走资源。
+
+五种默认图标由现有MessageType状态Style内的Template逐卡实例化，不共享Visual，也不在C#重建或记录默认图标旗标。Icon=null按原合同恢复默认；初始Local null可能与属性默认相同、不触发PropertyChanged，因此OnApplyTemplate也清除该空本地值。Type切换更新默认图标，原生自定义Icon保持优先。
+
+Show创建的卡片在template之外接收Position/Motion，不能用manager TemplateBinding跨进运行期集合。Card.BindOwner持有两项类型化订阅，Motion以Template优先级提供默认，ReleaseOwner先停motion协调，再释放订阅/回调；关闭和manager Dispose均走此出口。稳定PART_Items的Position/Stack/Threshold/Motion则直接用AXAML TemplateBinding，C#只接入私有稳定_cards集合及事件；换模板/Dispose立即解绑旧presenter。
+
+六Own默认为V2 Revision1，CardHeight仍是无消费者的Reserved；具体公式/owner/优先级见[token](token.md)。IMessage在Show时提供内容、类型、图标与时长快照，既有卡片公开属性仍可动态更新；不因数据模型存在通知接口而隐式增加新的model订阅。
+
 ## 4. 状态与数据流
 
 Message 的状态流遵循下面路径：

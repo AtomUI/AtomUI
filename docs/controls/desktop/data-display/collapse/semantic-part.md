@@ -326,6 +326,8 @@ TemplateBinding）；固定 `Height` / `Width` / Min/Max 类布局 Setter 会与
 
 ## 6. 定制边界
 
+CT15消费验证使用AXAML声明的CollapseHeaderStyle、CollapseIconStyle、CollapseTitleStyle、CollapseBodyStyle命中两项实际容器，并验证clear恢复；静态断言锁定四个专用类和关键Setter，禁止获取节点后直接设置颜色的回退。本次不修改四个Part的route/class/数量语义，也不把标题、正文或原内容合同转成code-behind定制。
+
 以下区域明确不属于 Collapse Semantic Part：
 
 - `CollapseItem` 容器本身与 item shell 边框（面板之间的底部分隔线）；上游不公开 `.ant-collapse-item`，容器上的

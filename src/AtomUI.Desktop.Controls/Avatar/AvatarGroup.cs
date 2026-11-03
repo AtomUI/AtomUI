@@ -1,6 +1,8 @@
 using System.Collections.Specialized;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
+using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -129,6 +131,10 @@ public class AvatarGroup : TemplatedControl, IMotionAwareControl
     private StackPanel? _foldCountStackPanel;
     private IDisposable? _foldCountFlyoutPinBinding;
     private IDisposable? _motionBinding;
+    private readonly Dictionary<Avatar, CompositeDisposable> _avatarBindings = new();
+    private CompositeDisposable? _foldAvatarBindings;
+    private CompositeDisposable? _foldHostBindings;
+    private ThemeContextResourceBridge? _foldThemeResourceBridge;
 
     static AvatarGroup()
     {
@@ -165,6 +171,7 @@ public class AvatarGroup : TemplatedControl, IMotionAwareControl
         _motionBinding?.Dispose();
         _motionBinding = null;
         ReleaseFoldInfo();
+        ReleaseAvatarBindings();
     }
 
     private protected virtual void InvalidateMeasureOnChildrenChanged()
@@ -204,7 +211,11 @@ public class AvatarGroup : TemplatedControl, IMotionAwareControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == FoldAvatarFlyoutTriggerTypeProperty)
+        if (change.Property == ThemeScope.ContextProperty)
+        {
+            UpdateFoldThemeResourceBridge();
+        }
+        else if (change.Property == FoldAvatarFlyoutTriggerTypeProperty)
         {
             ConfigureFoldAvatarCursor();
         }
@@ -240,11 +251,18 @@ public class AvatarGroup : TemplatedControl, IMotionAwareControl
 
     private void ConfigureChildren()
     {
+        foreach (var retired in _avatarBindings.Keys.Where(avatar => !Children.Contains(avatar)).ToArray())
+        {
+            _avatarBindings[retired].Dispose();
+            _avatarBindings.Remove(retired);
+        }
         foreach (var child in Children)
         {
-            if (child is Avatar avatar)
+            if (child is Avatar avatar && !_avatarBindings.ContainsKey(avatar))
             {
-                ConfigureAvatar(avatar);
+                var bindings = BindAvatarProperties(avatar);
+                bindings.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, avatar, IsMotionEnabledProperty));
+                _avatarBindings.Add(avatar, bindings);
             }
         }
     }
@@ -292,18 +310,26 @@ public class AvatarGroup : TemplatedControl, IMotionAwareControl
         return MaxDisplayCount.HasValue && Children.Count > visibleCount;
     }
 
-    private void BindAvatarProperties(Avatar avatar)
+    private CompositeDisposable BindAvatarProperties(Avatar avatar)
     {
-        avatar[!BorderThicknessProperty] = this[!BorderThicknessProperty];
-        avatar[!ShapeProperty]           = this[!ShapeProperty];
-        avatar[!SizeProperty]            = this[!SizeProperty];
-        avatar[!SizeTypeProperty]        = this[!SizeTypeProperty];
+        // Children and the fold avatar are runtime collection/content objects,
+        // outside a ControlTemplate path. Membership owns their typed relays.
+        return new CompositeDisposable
+        {
+            BindUtils.RelayBind(this, BorderThicknessProperty, avatar, BorderThicknessProperty),
+            BindUtils.RelayBind(this, ShapeProperty, avatar, ShapeProperty),
+            BindUtils.RelayBind(this, SizeTypeProperty, avatar, SizeTypeProperty),
+            BindUtils.RelayBind(this, SizeProperty, avatar, SizeProperty)
+        };
     }
 
-    private void ConfigureAvatar(Avatar avatar)
+    private void ReleaseAvatarBindings()
     {
-        BindAvatarProperties(avatar);
-        avatar[!IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+        foreach (var bindings in _avatarBindings.Values)
+        {
+            bindings.Dispose();
+        }
+        _avatarBindings.Clear();
     }
 
     private Avatar GetFoldCountAvatar()
@@ -312,9 +338,9 @@ public class AvatarGroup : TemplatedControl, IMotionAwareControl
         {
             _foldCountAvatar = new Avatar();
 
-            BindAvatarProperties(_foldCountAvatar);
-            _foldCountAvatar[!ForegroundProperty] = this[!FoldInfoAvatarForegroundProperty];
-            _foldCountAvatar[!BackgroundProperty] = this[!FoldInfoAvatarBackgroundProperty];
+            _foldAvatarBindings = BindAvatarProperties(_foldCountAvatar);
+            _foldAvatarBindings.Add(BindUtils.RelayBind(this, FoldInfoAvatarForegroundProperty, _foldCountAvatar, ForegroundProperty));
+            _foldAvatarBindings.Add(BindUtils.RelayBind(this, FoldInfoAvatarBackgroundProperty, _foldCountAvatar, BackgroundProperty));
         }
 
         return _foldCountAvatar;
@@ -327,14 +353,18 @@ public class AvatarGroup : TemplatedControl, IMotionAwareControl
             var foldCountAvatar = GetFoldCountAvatar();
             _foldCountStackPanel             = new StackPanel();
             _foldCountStackPanel.Orientation = Orientation.Horizontal;
+            UpdateFoldThemeResourceBridge();
 
             _foldCountFlyout                       = new FlyoutHost();
             _foldCountFlyout.ZIndex                = Int32.MaxValue;
             _foldCountFlyout.Content               = foldCountAvatar;
             _foldCountFlyout.ShouldUseOverlayPopup = true;
 
-            _foldCountStackPanel[!StackPanel.SpacingProperty] = this[!GroupSpaceProperty];
-            _foldCountFlyout[!FlyoutHost.TriggerProperty]     = this[!FoldAvatarFlyoutTriggerTypeProperty];
+            _foldHostBindings = new CompositeDisposable
+            {
+                BindUtils.RelayBind(this, GroupSpaceProperty, _foldCountStackPanel, StackPanel.SpacingProperty),
+                BindUtils.RelayBind(this, FoldAvatarFlyoutTriggerTypeProperty, _foldCountFlyout, FlyoutHost.TriggerProperty)
+            };
 
             _foldCountFlyout.Flyout = new Flyout
             {
@@ -351,8 +381,40 @@ public class AvatarGroup : TemplatedControl, IMotionAwareControl
         return _foldCountFlyout;
     }
 
+    private void UpdateFoldThemeResourceBridge()
+    {
+        var context = _foldCountStackPanel is not null ? ThemeScope.ResolveContext(this) : null;
+        if (context is not null && ReferenceEquals(_foldThemeResourceBridge?.OwnerContext, context))
+        {
+            return;
+        }
+        ClearFoldThemeResourceBridge();
+        if (context is not null)
+        {
+            // Runtime popup Content crosses the visual root without resource-change
+            // propagation. AXAML cannot forward that publication; reuse the scoped bridge.
+            _foldThemeResourceBridge = new ThemeContextResourceBridge(context);
+            _foldCountStackPanel!.Resources.MergedDictionaries.Add(_foldThemeResourceBridge);
+        }
+    }
+
+    private void ClearFoldThemeResourceBridge()
+    {
+        if (_foldThemeResourceBridge is { } bridge)
+        {
+            _foldThemeResourceBridge = null;
+            _foldCountStackPanel?.Resources.MergedDictionaries.Remove(bridge);
+            bridge.Dispose();
+        }
+    }
+
     private void ReleaseFoldInfo()
     {
+        ClearFoldThemeResourceBridge();
+        _foldAvatarBindings?.Dispose();
+        _foldAvatarBindings = null;
+        _foldHostBindings?.Dispose();
+        _foldHostBindings = null;
         _foldCountStackPanel?.Children.Clear();
         if (_foldCountFlyout is { } foldCountFlyout)
         {

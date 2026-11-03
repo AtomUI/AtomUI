@@ -80,7 +80,7 @@ Status / Icon / Header / SubHeader / Extra / Content
 稳定 template part 接入点：
 
 - `PART_ErrorCodeImage`：静态 `Svg`，根据 403、404、500 状态替换 Source。
-- `PART_StatusIconPresenter`：静态 `ContentPresenter`，其 Child 变化时重新应用普通图标尺寸与画刷。
+- `PART_StatusIconPresenter`：静态 `ContentPresenter`，其 Child 变化时为新glyph建立可释放尺寸/画刷投射。
 
 Semantic marker 与真实节点映射：
 
@@ -104,7 +104,7 @@ Result 没有控件专属 pointer、keyboard、command 或 public 事件。它�
 维护者需要重点关注以下流程：
 
 1. `Status` 或 `Icon` 变化时，普通状态更新 `StatusIcon`；异常状态更新静态 SVG 的 Source。
-2. `PART_StatusIconPresenter.Child` 变化时，`UpdateStatusIcon` 把 `StatusIconSize` 和 `StatusIconBrush` 应用到新 Child；`Icon` 子类同时同步 FillBrush 与 StrokeBrush。
+2. `PART_StatusIconPresenter.Child` 变化时，为新Icon建立typed relay，尺寸/Foreground/FillBrush/StrokeBrush使用原StatusIcon输入；替换与detach释放旧句柄。Template优先级覆盖Icon基础Style，Native glyph Local值更高。
 3. `HeaderFontSize`、`SubHeaderFontSize` 或相对行高变化时重新计算绝对 `LineHeight`。
 4. 模板重套用先释放旧 presenter 订阅，再获取两个新图标 part，并回放图标与文本行高状态。
 
@@ -155,3 +155,19 @@ Result 没有 `SizeType`。默认尺寸基线由 `FramePadding`、`StatusIconSiz
 Result 专项测试必须覆盖 descriptor、六个静态 marker target、五个生成 Style 的实际命中、七种 `Status`、自定义 Icon、可选内容显隐、
 `extra` 区域拉伸与内容居中、普通图标 presenter re-template 订阅和默认主题不消费 `.semantic-*`。Gallery 测试必须覆盖六项
 Part 描述、与 Ant Design 对齐的 owner-scoped 样式示例、AtomUI `v6.1.3` Tag 和 Semantic Preview 的延迟实例化。
+
+## CT15 消费者切片
+
+公共AbstractResult提供真实继承父供现有可选字体绑定，主题优先保持Native与继承；Global由Result identity进入原title/subTitle/body和相对行高，不把业务状态写入Token。已有模板保持两个icon容器及其余四presenter，五专用Style声明式验证，descriptor/route/ContractType不变。内部glyph/异常SVG内容不扩大为新Part；glyph.Parent实际为ContentPresenter，但无TemplatedParent，真实ControlTheme selector试验未能应用到该Content，故使用带生命周期的typed relay；不再用一次CurrentValue写入与基础Style竞争。
+
+attach重放脱离期间的Status/Icon，修复重挂仍显示旧图标；不重建整个控件或改调用方Content。保留原模板事件退出测试。一个“外部强持当前Presenter后owner应回收”的临时探针因完整模板父链仍存在而判据不足，已按INCONCLUSIVE处置，不当作泄漏修复或GC通过，也不归FW1。完整资源出口仍按实际证据保留。
+
+当前60默认精确同、19项匹配验证通过，8C#/2注册类7问题纯移到0且完整指纹同。正常Skia旧新/AOT与清理后最终验收进行中，见[执行记录](../../../../superpowers/plans/2026-10-22-custom-theme/result-consumers.md)。
+
+### glyph准备与原生优先
+
+清除自定义Icon会创建新默认glyph，重新配置主题也可能重施Icon基础Style。旧CurrentValue投射发生在Style完成之前时会被覆盖成14DIP/默认灰白色，导致尺寸、布局和颜色往返失败。现复用typed relay在Template优先级持续输入原StatusIconSize/Brush，逐Child与模板/树membership持有句柄，旧Child/退役/离树释放、attach恢复。没有运行时反射或重试延迟。
+
+这同时明确修正自定义glyph Native值优先：显式Width27/Height31/Orange不再被统一72及状态色覆盖；未显式设置时仍按Result Own投射。该兼容变化需CT15具体视觉审查，不隐藏为纯移动。公开icon Part仍仅两个容器，不把内部glyph变成新Semantic入口。
+
+CT15阶段结果：24匹配验证、managed/AOT各72检查，132跨运行精确0，候选/AOT各32恢复0；临时材料已清理，最终9精确用例及NET8零警告通过。60对有意变化含自定义glyph原生优先修正待限定审查，原失败账本/资源判据不足/平台/极值和完整家族边界保留，见[结果](../../../../superpowers/plans/2026-10-22-custom-theme/result-consumers-results.md)。

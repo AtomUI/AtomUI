@@ -58,3 +58,11 @@ Carousel 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## CT15 依赖与真实消费
+
+七Own迁DependencyDefaultsV2/revision1，四算法28默认/type/key/slot保持。IndicatorWidth/Height为普通点尺寸，IndicatorActiveWidth为选中点宽，IndicatorGap进入真实分页StackPanel.Spacing；PaginationOffset仍控制分页边缘与未显式指定箭头时的原边距。ArrowSize进入导航glyph；ArrowOffset仅显式Own激活（含0），缺值回原分页offset，不能把其默认SpacingXS强施到旧12边距。Native优先和clear均按原属性系统处理。
+
+组合导航/分页/indicator的Global由Carousel拥有；独立CarouselNavButton保留自身Global身份，CarouselPage保持自身字体Global/Native及正常继承。命名颜色、内容页背景和用户文本仍属原内容，不能统一替换成主题色。正常持续动画、旧新/AOT与清理后验收尚在执行，见[CT15记录](../../../../superpowers/plans/2026-10-22-custom-theme/carousel-consumers.md)。
+
+CT15阶段验证：26聚焦+2持续工作用例通过，managed/AOT各48，112静态跨运行精确0；临时材料已清理，最终3精确用例/NET8零警告通过。44对有意静态变化待限定审查，4跨运行时相/16旧新持续态和完整家族边界保留，见[结果](../../../../superpowers/plans/2026-10-22-custom-theme/carousel-consumers-results.md)。

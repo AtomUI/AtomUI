@@ -2,8 +2,8 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class StatisticToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class StatisticToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -18,16 +18,10 @@ internal sealed class StatisticToken : AbstractControlDesignToken
     /// </summary>
     public double ContentFontSize { get; set; }
     
-    public StatisticToken()
+    [ControlTokenDefault(nameof(TitleFontSize))]
+    private static double DefaultForTitleFontSize(in ControlTokenDefaultContext context) => context.Global.FontSize;
 
-    {
-    }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        TitleFontSize = EffectiveGlobalToken.FontSize;
-        ContentFontSize = EffectiveGlobalToken.FontSizeHeading3;
-    }
+    [ControlTokenDefault(nameof(ContentFontSize))]
+    private static double DefaultForContentFontSize(in ControlTokenDefaultContext context) => context.Global.FontSizeHeading3;
     
 }

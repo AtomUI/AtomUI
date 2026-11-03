@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
@@ -15,7 +16,8 @@ public class MenuFlyoutPresenter : MenuBase,
                                    IArrowAwareShadowMaskInfoProvider,
                                    IMotionAwareControl,
                                    ICustomizableSizeTypeAware,
-                                   IScrollAwareControl
+                                   IScrollAwareControl,
+                                   IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -28,10 +30,18 @@ public class MenuFlyoutPresenter : MenuBase,
     public static readonly StyledProperty<int> DisplayPageSizeProperty =
         Menu.DisplayPageSizeProperty.AddOwner<MenuFlyoutPresenter>();
 
+    #endregion
+
+    #region 公共事件定义
+
     public static readonly RoutedEvent<FlyoutMenuItemClickedEventArgs> MenuItemClickedEvent =
         RoutedEvent.Register<MenuFlyoutPresenter, FlyoutMenuItemClickedEventArgs>(
             nameof(MenuItemClicked),
             RoutingStrategies.Bubble);
+
+    #endregion
+
+    #region 公共属性定义
 
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<MenuFlyoutPresenter>();
@@ -81,12 +91,6 @@ public class MenuFlyoutPresenter : MenuBase,
         set => SetValue(IsScrollEnabledProperty, value);
     }
 
-    public event EventHandler<FlyoutMenuItemClickedEventArgs>? MenuItemClicked
-    {
-        add => AddHandler(MenuItemClickedEvent, value);
-        remove => RemoveHandler(MenuItemClickedEvent, value);
-    }
-
     public bool ShouldUseOverlayPopup
     {
         get => GetValue(ShouldUseOverlayPopupProperty);
@@ -94,6 +98,16 @@ public class MenuFlyoutPresenter : MenuBase,
     }
 
     public MenuFlyout? MenuFlyout { get; set; }
+
+    #endregion
+
+    #region 公共事件定义
+
+    public event EventHandler<FlyoutMenuItemClickedEventArgs>? MenuItemClicked
+    {
+        add => AddHandler(MenuItemClickedEvent, value);
+        remove => RemoveHandler(MenuItemClickedEvent, value);
+    }
 
     #endregion
 
@@ -106,12 +120,6 @@ public class MenuFlyoutPresenter : MenuBase,
     internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<MenuFlyoutPresenter>();
 
-    internal bool IsPopupPinnedOpen
-    {
-        get => GetValue(IsPopupPinnedOpenProperty);
-        set => SetValue(IsPopupPinnedOpenProperty, value);
-    }
-
     internal static readonly StyledProperty<double> MaxPopupHeightProperty =
         AvaloniaProperty.Register<MenuFlyoutPresenter, double>(nameof(MaxPopupHeight));
 
@@ -119,6 +127,12 @@ public class MenuFlyoutPresenter : MenuBase,
     {
         get => GetValue(ItemHeightProperty);
         set => SetValue(ItemHeightProperty, value);
+    }
+
+    internal bool IsPopupPinnedOpen
+    {
+        get => GetValue(IsPopupPinnedOpenProperty);
+        set => SetValue(IsPopupPinnedOpenProperty, value);
     }
 
     internal double MaxPopupHeight
@@ -129,8 +143,15 @@ public class MenuFlyoutPresenter : MenuBase,
 
     #endregion
 
+    #region 运行时字段
+
     private ArrowDecoratedBox? _arrowDecoratedBox;
+
     private MenuPinnedOpenScope? _pinnedOpenScope;
+
+    #endregion
+
+    #region 构造与初始化
 
     static MenuFlyoutPresenter()
     {
@@ -147,6 +168,10 @@ public class MenuFlyoutPresenter : MenuBase,
         : base(menuInteractionHandler)
     {
     }
+
+    #endregion
+
+    #region 公共与受保护 API
 
     public override void Close()
     {
@@ -186,18 +211,6 @@ public class MenuFlyoutPresenter : MenuBase,
         else if (change.Property == SelectedIndexProperty)
         {
             _pinnedOpenScope?.SelectCurrent();
-        }
-    }
-
-    internal void ReconcilePinnedOpenChildren()
-    {
-        if (IsPopupPinnedOpen)
-        {
-            (_pinnedOpenScope ??= new MenuPinnedOpenScope(this)).Reconcile();
-        }
-        else
-        {
-            _pinnedOpenScope?.Release();
         }
     }
 
@@ -317,15 +330,6 @@ public class MenuFlyoutPresenter : MenuBase,
     {
     }
 
-    private void HandleMenuItemClicked(RoutedEventArgs args)
-    {
-        if (args.Source is MenuItem menuItem)
-        {
-            var ev = new FlyoutMenuItemClickedEventArgs(MenuItemClickedEvent, menuItem);
-            RaiseEvent(ev);
-        }
-    }
-
     public override void Open()
     {
         throw new NotSupportedException("Use MenuFlyout.ShowAt(Control) instead");
@@ -392,6 +396,26 @@ public class MenuFlyoutPresenter : MenuBase,
         return _arrowDecoratedBox?.Background;
     }
 
+    #endregion
+
+    #region 内部协作 API
+
+    internal void ReconcilePinnedOpenChildren()
+    {
+        if (IsPopupPinnedOpen)
+        {
+            (_pinnedOpenScope ??= new MenuPinnedOpenScope(this)).Reconcile();
+        }
+        else
+        {
+            _pinnedOpenScope?.Release();
+        }
+    }
+
+    #endregion
+
+    #region 实现 IArrowAwareShadowMaskInfoProvider 接口
+
     ArrowPosition IArrowAwareShadowMaskInfoProvider.GetArrowPosition()
     {
         return _arrowDecoratedBox?.ArrowPosition ?? default;
@@ -426,6 +450,25 @@ public class MenuFlyoutPresenter : MenuBase,
         return _arrowDecoratedBox;
     }
 
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 私有实现
+
+    private void HandleMenuItemClicked(RoutedEventArgs args)
+    {
+        if (args.Source is MenuItem menuItem)
+        {
+            var ev = new FlyoutMenuItemClickedEventArgs(MenuItemClickedEvent, menuItem);
+            RaiseEvent(ev);
+        }
+    }
+
     private void ConfigureMaxPopupHeight()
     {
         var maxPopupHeight = IsScrollEnabled
@@ -433,6 +476,9 @@ public class MenuFlyoutPresenter : MenuBase,
             : double.PositiveInfinity;
         SetCurrentValue(MaxPopupHeightProperty, maxPopupHeight);
     }
+
+    #endregion
+
 }
 
 public class FlyoutMenuItemClickedEventArgs : RoutedEventArgs
@@ -444,4 +490,6 @@ public class FlyoutMenuItemClickedEventArgs : RoutedEventArgs
     {
         Item = menuItem;
     }
+
+
 }

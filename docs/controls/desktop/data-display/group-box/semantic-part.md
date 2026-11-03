@@ -433,6 +433,8 @@ Part Setter 命中只证明目标属性已生效；如果最终布局仍被 owne
 
 ## 7. 兼容性与验证
 
+CT15消费验证使用AXAML专用GroupBoxHeaderStyle、GroupBoxIconStyle、GroupBoxTitleStyle、GroupBoxContentStyle命中实际四目标并clear恢复，静态断言锁定类和关键Setter且无code-behind视觉设置回退。Header仍是缺口几何来源，合法Part padding/字号/对齐变化需要owner随实际布局重绘；不修改五Part（含隐式root）的route/class/ContractType/数量。
+
 删除或重命名 Part、修改 selector class、收窄 `ContractType`、改变 cardinality，或者让内置模板缺少 marker，均属于公共主题
 契约变更。把 `Decorator#PART_HeaderContent` 再退回 `Decorator` 会同时收窄 `header` 的 `ContractType` 并移除
 `Background` 能力，属于破坏性变更。

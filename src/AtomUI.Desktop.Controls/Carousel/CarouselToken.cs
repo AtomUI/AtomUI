@@ -2,15 +2,10 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class CarouselToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class CarouselToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
-    public CarouselToken()
-
-    {
-    }
-    
     /// <summary>
     /// 指示点宽度
     /// Width of indicator
@@ -53,16 +48,24 @@ internal sealed class CarouselToken : AbstractControlDesignToken
     /// </summary>
     public double ArrowOffset { get; set; }
     
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        IndicatorActiveWidth = 24;
-        ArrowSize            = 16;
-        ArrowOffset          = EffectiveGlobalToken.SpacingXS;
-        IndicatorWidth       = 16;
-        IndicatorHeight      = 3;
-        IndicatorGap         = EffectiveGlobalToken.UniformlyMarginXS;
-        PaginationOffset     = 12;
-    }
-    
+    [ControlTokenDefault(nameof(IndicatorActiveWidth))]
+    private static double DefaultForIndicatorActiveWidth(in ControlTokenDefaultContext context) => 24;
+
+    [ControlTokenDefault(nameof(ArrowSize))]
+    private static double DefaultForArrowSize(in ControlTokenDefaultContext context) => 16;
+
+    [ControlTokenDefault(nameof(ArrowOffset))]
+    private static double DefaultForArrowOffset(in ControlTokenDefaultContext context) => context.Global.SpacingXS;
+
+    [ControlTokenDefault(nameof(IndicatorWidth))]
+    private static double DefaultForIndicatorWidth(in ControlTokenDefaultContext context) => 16;
+
+    [ControlTokenDefault(nameof(IndicatorHeight))]
+    private static double DefaultForIndicatorHeight(in ControlTokenDefaultContext context) => 3;
+
+    [ControlTokenDefault(nameof(IndicatorGap))]
+    private static double DefaultForIndicatorGap(in ControlTokenDefaultContext context) => context.Global.UniformlyMarginXS;
+
+    [ControlTokenDefault(nameof(PaginationOffset))]
+    private static double DefaultForPaginationOffset(in ControlTokenDefaultContext context) => 12;
 }

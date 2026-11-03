@@ -46,8 +46,8 @@
                                    HorizontalSpacing="{atom:WindowTitleBarTokenResource LogoAndTitleSpacing}">
                             <atom:IconPresenter Name="PART_IconPresenter"
                                                 DockPanel.Dock="Left"
-                                                Width="{atom:SharedTokenResource IconSize}"
-                                                Height="{atom:SharedTokenResource IconSize}"
+                                                Width="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:ImagePreviewerTitleBar}}"
+                                                Height="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:ImagePreviewerTitleBar}}"
                                                 Icon="{TemplateBinding Icon}"
                                                 IconBrush="{TemplateBinding Foreground}"
                                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -121,8 +121,8 @@
                                    HorizontalSpacing="{atom:WindowTitleBarTokenResource LogoAndTitleSpacing}">
                             <atom:IconPresenter Name="PART_IconPresenter"
                                                 DockPanel.Dock="Left"
-                                                Width="{atom:SharedTokenResource IconSize}"
-                                                Height="{atom:SharedTokenResource IconSize}"
+                                                Width="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:ImagePreviewerTitleBar}}"
+                                                Height="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:ImagePreviewerTitleBar}}"
                                                 Icon="{TemplateBinding Icon}"
                                                 IconBrush="{TemplateBinding Foreground}"
                                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -196,8 +196,8 @@
                                    HorizontalSpacing="{atom:WindowTitleBarTokenResource LogoAndTitleSpacing}">
                             <atom:IconPresenter Name="PART_IconPresenter"
                                                 DockPanel.Dock="Left"
-                                                Width="{atom:SharedTokenResource IconSize}"
-                                                Height="{atom:SharedTokenResource IconSize}"
+                                                Width="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:ImagePreviewerTitleBar}}"
+                                                Height="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:ImagePreviewerTitleBar}}"
                                                 Icon="{TemplateBinding Icon}"
                                                 IconBrush="{TemplateBinding Foreground}"
                                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />

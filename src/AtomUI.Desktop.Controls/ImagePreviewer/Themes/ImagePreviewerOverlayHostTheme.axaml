@@ -12,7 +12,7 @@
             <ControlTemplate>
                 <Panel Classes.semantic-popup-root="True">
                     <Panel Classes.semantic-popup-mask="True"
-                           Background="{atom:SharedTokenResource ColorBgMask}" />
+                           Background="{atom:OwnerTokenResource Kind=ColorBgMask, AnchorControlType={x:Type atom:ImagePreviewerOverlayHost}}" />
                     <ContentPresenter Content="{TemplateBinding Content}"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Stretch" />
@@ -20,17 +20,17 @@
                                      Icon="{antdicons:AntDesignIconProvider CloseOutlined}"
                                      HorizontalAlignment="Right"
                                      VerticalAlignment="Top"
-                                     Margin="{atom:SharedTokenResource MarginSM}" />
+                                     Margin="{atom:OwnerTokenResource Kind=MarginSM, AnchorControlType={x:Type atom:ImagePreviewerOverlayHost}}" />
                 </Panel>
             </ControlTemplate>
         </Setter>
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton">
             <Setter Property="IconWidth" Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}" />
             <Setter Property="IconHeight" Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}" />
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorTextLightSolid, AnchorControlType={x:Type atom:ImagePreviewerOverlayHost}}" />
             <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource NavButtonBgColor}" />
             <Setter Property="CornerRadius" Value="100" />
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingSM}" />
+            <Setter Property="Padding" Value="{atom:OwnerTokenResource Kind=PaddingSM, AnchorControlType={x:Type atom:ImagePreviewerOverlayHost}}" />
         </Style>
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover">
             <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource NavButtonBgHoverColor}" />

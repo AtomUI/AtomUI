@@ -3,14 +3,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class AlertToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class AlertToken : AbstractControlDesignToken, IControlTokenDefaults
 {
-
-    public AlertToken()
-
-    {
-    }
 
     /// <summary>
     /// 默认内间距
@@ -23,7 +18,7 @@ internal sealed class AlertToken : AbstractControlDesignToken
     public Thickness WithDescriptionPadding { get; set; }
 
     /// <summary>
-    /// 带有描述的 Message 外间距
+    /// 带有描述的标题外间距；仅明确 Own 配置时应用，未配置保持 0
     /// </summary>
     public Thickness MessageWithDescriptionMargin { get; set; }
 
@@ -48,7 +43,7 @@ internal sealed class AlertToken : AbstractControlDesignToken
     public double WithDescriptionIconSize { get; set; }
 
     /// <summary>
-    /// 关闭按钮的大小
+    /// 关闭图标大小；仅明确 Own 配置时应用，未配置保持有效 Global IconSizeSM
     /// </summary>
     public double CloseIconSize { get; set; }
 
@@ -62,22 +57,43 @@ internal sealed class AlertToken : AbstractControlDesignToken
     /// </summary>
     public Thickness DescriptionLabelMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        const double paddingHorizontal = 12; // Fixed value here.
-        WithDescriptionIconSize = EffectiveGlobalToken.FontSizeHeading3;
-        DefaultPadding          = new Thickness(paddingHorizontal, EffectiveGlobalToken.PaddingContentVerticalSM);
-        WithDescriptionPadding  = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, EffectiveGlobalToken.UniformlyPaddingMD);
+    [ControlTokenDefault(nameof(DefaultPadding))]
+    private static Thickness DefaultForDefaultPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(12, context.Global.PaddingContentVerticalSM);
 
-        MessageWithDescriptionMargin = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXS);
-        IconDefaultMargin            = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        IconWithDescriptionMargin    = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginSM, 0);
-        ExtraElementMargin           = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, 0, 0);
-        DescriptionLabelMargin       = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
+    [ControlTokenDefault(nameof(WithDescriptionPadding))]
+    private static Thickness DefaultForWithDescriptionPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.PaddingContentHorizontalLG, context.Global.UniformlyPaddingMD);
 
-        CloseIconSize = EffectiveGlobalToken.FontSizeIcon + 2;
-        DefaultIconSize = EffectiveGlobalToken.FontSizeLG;
-    }
-    
+    [ControlTokenDefault(nameof(MessageWithDescriptionMargin))]
+    private static Thickness DefaultForMessageWithDescriptionMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, 0, context.Global.UniformlyMarginXS);
+
+    [ControlTokenDefault(nameof(IconDefaultMargin))]
+    private static Thickness DefaultForIconDefaultMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyMarginXS, 0);
+
+    [ControlTokenDefault(nameof(IconWithDescriptionMargin))]
+    private static Thickness DefaultForIconWithDescriptionMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyMarginSM, 0);
+
+    [ControlTokenDefault(nameof(DefaultIconSize))]
+    private static double DefaultForDefaultIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeLG;
+
+    [ControlTokenDefault(nameof(WithDescriptionIconSize))]
+    private static double DefaultForWithDescriptionIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeHeading3;
+
+    [ControlTokenDefault(nameof(CloseIconSize))]
+    private static double DefaultForCloseIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeIcon + 2;
+
+    [ControlTokenDefault(nameof(ExtraElementMargin))]
+    private static Thickness DefaultForExtraElementMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMarginXS, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(DescriptionLabelMargin))]
+    private static Thickness DefaultForDescriptionLabelMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.UniformlyMarginXS, 0, 0);
 }

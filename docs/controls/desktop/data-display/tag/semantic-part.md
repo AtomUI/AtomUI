@@ -353,3 +353,13 @@ marker，均属于公共主题契约变更。
   移除后状态机恢复。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - Generator 静态输出和 NativeAOT 路径不依赖反射或运行时扫描。
+
+
+## 8. CT15 专用Style验证边界
+
+临时AXAML仅通过TagIconStyle、TagContentStyle、TagCloseStyle及CheckableTagGroupItemStyle声明定制，观测节点只读；Icon27/Orange、文本21/Navy/Padding5、close31/Red及item Corner7/Teal/Margin3均真实命中。原route、ContractType、marker与cardinality未变，不因同名内部IconPresenter误定位而改route。item随框架container退役/重建，稳定的是当前逻辑item与语义契约，不能要求旧container在退役后继续接收新模板。
+
+本轮未通过/未验证项与限定视觉批准以[CT15记录](../../../../superpowers/plans/2026-10-22-custom-theme/tag-consumers.md)为准，命中通过不代表完整CT15关闭。
+
+
+CT15当前仅[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/tag-consumers-visual-review.md)26对及列明SelectTag派生影响已获批准；恢复/跨运行微差、CT13既定边界和完整Tag/CT15保留，不授权提交。

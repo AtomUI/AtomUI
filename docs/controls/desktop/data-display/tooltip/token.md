@@ -17,11 +17,26 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `ToolTipMaxWidth` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `Padding` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ToolTipColor`、`BorderRadiusOuter` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `BorderRadiusOuter` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `ContentPadding` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ToolTipColor`、`ToolTipBackground` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `ToolTipCornerRadius` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+### Own完整清单与有效默认
+
+六项使用DependencyDefaultsV2 Revision1，名称/type/key/slot及原公式保持，无新增Own依赖边。`G`为ToolTip有效Global；明确Own优先，清除恢复默认，合法0/透明不当作“未配置”。字号仍遵循目标属性验证，不统一扩大范围。
+
+| 字段 | 类型 | 默认 | 分类 / 实际消费者 |
+| --- | --- | --- | --- |
+| ToolTipMaxWidth | double | 250 | Active：模板ArrowDecoratedBox.MaxWidth，保留自然换行 |
+| ToolTipColor | Color | G.ColorTextLightSolid | Active：根Foreground→实际正文，原生Foreground可覆盖 |
+| ToolTipBackground | Color | G.ColorBgSpotlight | Active：根Background→内容/箭头；预设或显式Color临时覆盖 |
+| ToolTipCornerRadius | CornerRadius | 4 | Active：模板容器圆角 |
+| ContentPadding | Thickness | 水平G.UniformlyPaddingSM，垂直G.UniformlyPaddingSM/2+2 | Active：内容padding |
+| MotionDuration | TimeSpan | G.MotionDurationMid | Reserved / LegacyInactive：仅保留历史资源，实际动效消费Owner.Global.MotionDurationMid |
+
+内部ArrowDecoratedBox不替代ToolTip的Global身份。正文FontSize、FontFamily、实际MinHeight和资源热更新按ToolTip终端解析；根承接原可见默认14/浅色文本角色，不重注册Avalonia metadata默认。没有SizeType/Custom预设，实例/附加尺寸仍遵循原公开合同。
 
 ## 3. 控件专项模型中的 Token 使用
 

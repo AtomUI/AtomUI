@@ -2,6 +2,7 @@ using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Animations;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -14,7 +15,7 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class DrawerContainer : ContentControl
+internal class DrawerContainer : ContentControl, IControlThemeGlobalOwnerSource
 {
     #region 内部属性定义
 
@@ -550,12 +551,11 @@ internal class DrawerContainer : ContentControl
             currentParent.Children.Remove(this);
         }
 
-        // 语义部件契约：容器必须逻辑挂到 Drawer owner 下，owner 嵌套的生成
-        // Semantic Style 才能命中容器子树。必须在 Children.Add 之前设置：
-        // Panel 收集子项不会覆盖已显式设置的逻辑父（先例：ImagePreviewer 的 OverlayHost）。
+        // Native logical membership also propagates scoped resource changes to this external visual root.
+        // Attach before the layer collects the visual so the Panel retains the explicit owner.
         if (Drawer is not null && Drawer.TryGetTarget(out var drawer))
         {
-            ((ISetLogicalParent)this).SetParent(drawer);
+            drawer.AttachContainerToLogicalTree(this);
         }
 
         if (!layer.Children.Contains(this))
@@ -576,6 +576,10 @@ internal class DrawerContainer : ContentControl
             TryCleanup(() => layer?.Children.Remove(this), ref failures);
         }
 
+        if (Drawer is not null && Drawer.TryGetTarget(out var drawer))
+        {
+            TryCleanup(() => drawer.DetachContainerFromLogicalTree(this), ref failures);
+        }
         TryCleanup(() => ((ISetLogicalParent)this).SetParent(null), ref failures);
         TryCleanup(() => ScopeAwareAdornerLayer.SetAdornedElement(this, null), ref failures);
         TryCleanup(ClearHostMargin, ref failures);
@@ -882,4 +886,7 @@ internal class DrawerContainer : ContentControl
         _originInfoContainerTransform = null;
         _isChildDrawerPushed          = false;
     }
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner =>
+        Drawer != null && Drawer.TryGetTarget(out var owner) ? owner : null;
 }

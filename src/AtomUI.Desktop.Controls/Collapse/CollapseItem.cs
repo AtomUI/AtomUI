@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
@@ -16,7 +17,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Selected)]
-public class CollapseItem : HeaderedContentControl, ISelectable
+public class CollapseItem : HeaderedContentControl, ISelectable, IThemeInheritanceSource, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
@@ -338,6 +339,8 @@ public class CollapseItem : HeaderedContentControl, ISelectable
         }
     }
 
+    #region 内部协作 API
+
     internal bool IsPointInHeaderBounds(Point position)
     {
         if (_headerDecorator is not null && TriggerType != CollapseTriggerType.Icon)
@@ -347,6 +350,21 @@ public class CollapseItem : HeaderedContentControl, ISelectable
 
         return false;
     }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner =>
+        SelectingItemsControl.ItemsControlFromItemContainer(this) as Collapse;
+
+    #endregion
 
     private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
     {

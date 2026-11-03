@@ -22,7 +22,7 @@
                                 VerticalAlignment="Stretch"
                                 MinWidth="{atom:ImagePreviewerTokenResource CoverImageWidth}"
                                 MinHeight="{atom:ImagePreviewerTokenResource CoverImageWidth}"
-                                Background="{atom:SharedTokenResource ColorFillTertiary}"
+                                Background="{atom:OwnerTokenResource Kind=ColorFillTertiary, AnchorControlType={x:Type atom:ImagePreviewerCover}}"
                                 CornerRadius="{TemplateBinding OwnerCornerRadius}"
                                 IsVisible="False">
                             <Panel HorizontalAlignment="Center"
@@ -42,7 +42,7 @@
                                 VerticalAlignment="Stretch"
                                 MinWidth="{atom:ImagePreviewerTokenResource CoverImageWidth}"
                                 MinHeight="{atom:ImagePreviewerTokenResource CoverImageWidth}"
-                                Background="{atom:SharedTokenResource ColorFillTertiary}"
+                                Background="{atom:OwnerTokenResource Kind=ColorFillTertiary, AnchorControlType={x:Type atom:ImagePreviewerCover}}"
                                 CornerRadius="{TemplateBinding OwnerCornerRadius}"
                                 IsVisible="{TemplateBinding HasError}">
                             <Panel HorizontalAlignment="Center"
@@ -50,7 +50,7 @@
                                 <StackPanel Name="DefaultErrorLayout"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
-                                            Spacing="{atom:SharedTokenResource SpacingXXS}"
+                                            Spacing="{atom:OwnerTokenResource Kind=SpacingXXS, AnchorControlType={x:Type atom:ImagePreviewerCover}}"
                                             IsVisible="{TemplateBinding ErrorContent, Converter={x:Static ObjectConverters.IsNull}}">
                                     <antdicons:PictureOutlined Name="DefaultErrorIcon"
                                                               HorizontalAlignment="Center" />
@@ -71,7 +71,7 @@
                                 Opacity="{TemplateBinding MaskOpacity}"
                                 IsVisible="{TemplateBinding IsCoverMaskVisible}"
                                 Background="{atom:ImagePreviewerTokenResource MaskBgColor}"
-                                TextBlock.Foreground="{atom:SharedTokenResource ColorTextLightSolid}"
+                                TextBlock.Foreground="{atom:OwnerTokenResource Kind=ColorTextLightSolid, AnchorControlType={x:Type atom:ImagePreviewerCover}}"
                                 CornerRadius="{TemplateBinding OwnerCornerRadius}"
                                 Margin="{Binding OwnerMaskMargin, RelativeSource={RelativeSource TemplatedParent}}">
                             <ContentPresenter Name="MaskContentPresenter"
@@ -87,14 +87,14 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
       
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource Kind=EnableMotion, AnchorControlType={x:Type atom:ImagePreviewerCover}}" />
         <Style Selector="^ /template/ TextBlock#DefaultErrorText">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextTertiary}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextTertiary, AnchorControlType={x:Type atom:ImagePreviewerCover}}" />
         </Style>
         <Style Selector="^ /template/ atom|Icon#DefaultErrorIcon">
             <Setter Property="Width" Value="48" />
             <Setter Property="Height" Value="48" />
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorTextTertiary}" />
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource Kind=ColorTextTertiary, AnchorControlType={x:Type atom:ImagePreviewerCover}}" />
         </Style>
 
         <Style Selector="^:loading:not(:has-image) /template/ Border#PART_LoadingPresenter">

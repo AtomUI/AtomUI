@@ -34,3 +34,19 @@
   - Add Spin implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add Spin control-level changelog.
   - Add Spin Token documentation covering SpinToken.
+
+
+## 未发布：custom-theme CT15
+
+- 七个 Own 默认迁至 DependencyDefaultsV2 revision 1，保留四算法28默认及原资源身份。
+- Spin/独立 SpinIndicator 接入可选字体和有效 Global；组合 Tip/圆点/Mask/Spacing 使用实际 Spin owner。
+- 自定义模板单独存在也选择自定义路径；caller PathIcon 尺寸投射可释放，保留原生尺寸与普通 Style。
+- 原生内容重模板恢复焦点，保留后续焦点优先和原内容/滚动合同。
+- 复用既有持续动画、有效显隐及退休机制；限定视觉、平台和完整家族结论按 CT15 结果记录，不据此关闭家族。
+
+
+## 未发布：CT15 精确循环补充
+
+- 修正内置/自定义指示器整周期沿用上一旋转角度。
+- 恢复内置首点初始0.3及各点循环初值，保留原Alternate曲线、错峰延时、时长与有效显隐/退出机制。
+- 正常曲线、周期与有意边界变化分别取证；原46对静态批准及其他未通过边界保持，完整家族/CT15不据局部验证关闭。

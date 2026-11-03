@@ -103,6 +103,7 @@ Dialog 公开 `Opened`、`Closing`、`Accepted`、`Rejected`、`Finished`、`Clo
 - Enter/Escape 根据当前有效按钮序列查找 default/escape 按钮，运行时修改标准按钮或自定义按钮会立即生效。
 - `IsConfirmLoading=true` 只阻止用户发起的普通关闭，不阻止 owner close、detach、取消和失败 teardown。
 - 打开后焦点进入 DialogSurface；嵌套 Dialog 关闭时恢复下层 Surface，最后一层关闭时恢复原触发控件。
+- modal Overlay 的 Tab/ShiftTab 在当前 Overlay 会话范围内循环，不进入 owner 的输入或按钮；modeless Overlay 保持正常的向外遍历。运行中切换 IsModal 即时启停该导航约束，嵌套会话在最上层范围内导航，关闭后恢复下层原焦点。
 - Overlay 等待表面与遮罩的真实 Motion 任务，再断开 composition children、释放 Surface 并移除 layer。
   禁用动效跳过轨迹，保留完整宿主生命周期；Window 使用原生 Opened / Closed。
 - `IsResizable=true` 允许在有效尺寸区间内交互缩放，不表示无约束 resize。结构性最小尺寸在宿主容量允许时始终保留标题、Footer 和非零正文 viewport；`HostMin*` 只能提高该下限，`HostMax*=PositiveInfinity` 仍受 owner 或 screen capacity 限制。Overlay handle 捕获 pointer，release 或 capture lost 都会完整结束当前 resize，不复用上一次拖拽 origin。
@@ -212,16 +213,17 @@ owner resize、frame shadow、drawn frame thickness、Window state 和 `ClientSi
 | `mask` | `OverlayDialogMaskTheme` 的 `Border#Frame` | modal 遮罩（`ColorBgMask`）。 | Optional |
 | `wrapper` | `OverlayDialogPresenterTheme` 的 `ContentPresenter.semantic-wrapper` | Surface 包裹层，位于私有动效表面内。 | Optional |
 | `container` | `DialogSurfaceTheme` 的 `Border#Frame` | 对话主体框体（背景、圆角、裁剪）。 | Single |
-| `header` | `OverlayDialogHeaderTheme` 的 `Border#HeaderFrame` | 标题区框体（背景、内边距）。 | Single |
-| `title` | `OverlayDialogHeaderTheme` 的 `TextBlock#Title` | 标题文字排版。 | Single |
+| `header` | `OverlayDialogHeaderTheme` 的 `Border#HeaderFrame` | 标题区框体（背景、内边距），仅Overlay物化。 | Optional |
+| `title` | `OverlayDialogHeaderTheme` 的 `TextBlock#Title` | 标题文字排版，仅Overlay物化。 | Optional |
 | `body` | `DialogSurfaceTheme` 的 `Border#ContentFrame` | 正文区（内边距、内容承载）。 | Single |
-| `footer` | `DialogSurfaceTheme` 的 `Border#FooterFrame` | 底部操作区框体。 | Optional |
+| `footer` | `DialogSurfaceTheme` 的 `Border#FooterFrame` | 底部操作区框体，隐藏时节点保留。 | Single |
 | `close` | `OverlayDialogHeaderTheme` 的 `PART_CloseButton` | 关闭按钮视觉。 | Optional |
 
-宿主边界：`mask`/`wrapper` 仅 Overlay 宿主物化；Window 宿主内 marker 完整存在，但 owner 作用域 Semantic Style 不跨
-`TopLevel` 级联（先例：ImagePreviewer 的 native dialog）。
+宿主边界：`mask`/`wrapper`/`header`/`title`/`close` 仅 Overlay 宿主物化；Window 宿主的 `container`/`body`/`footer` 通过现有逻辑成员与资源桥接受 Dialog 或 MessageBox 的专用 Semantic Part Style。原生 chrome 不由这些 Part 定制。完整可达性和可选部件条件以 [Semantic Part 契约](semantic-part.md) 为准。
 
-验证按改动范围运行 Dialog/MessageBox 定向测试、完整 Desktop Controls 测试、Gallery 测试与构建；涉及 AOT 发布路径时执行 Gallery NativeAOT publish，并始终运行 `git diff --check`。Dialog 内容 Popup 家族由原语、控件家族、DataGrid 专项与入口库存测试覆盖，完整清单和断言见 [Modal 内容弹层叠放设计](popup-layering-design.md)。
+验证按改动范围运行 Dialog/MessageBox 精确模块测试和所需构建；临时验证清理后再次验收受影响模块，完整回归仅在用户明确要求或发布流程执行。涉及 AOT 路径时按具体风险补匹配探针或 Gallery NativeAOT publish，并运行 `git diff --check`。Dialog 内容 Popup 家族由原语、控件家族、DataGrid 专项与入口库存测试覆盖，完整清单和断言见 [Modal 内容弹层叠放设计](popup-layering-design.md)。
 
 当前最终 Popup 分层方案已在 Windows CSD、macOS 原生 chrome，以及 Ubuntu GNOME Wayland 环境完成实机测试；
 Wayland 证据仅覆盖 Dialog 内容 Popup 真实窗口人工回归。Linux X11 尚未测试，不属于当前已验证平台。
+
+2026-10-31 主题消费：Dialog 17 Own与MessageBox 2 Own使用DependencyDefaultsV2 Revision1，显式HeaderPadding参与MinHeight默认；Surface/presenter将Global解析到实际公共终端owner，未配置正文排版保留实际宿主继承，标题和独立按钮维持各自角色。root为零尺寸会话控制器，定制Host使用Host*，定制实际区域使用内容及生成的专用Part Style；不把控制器继承属性自动新增为Host转发API。

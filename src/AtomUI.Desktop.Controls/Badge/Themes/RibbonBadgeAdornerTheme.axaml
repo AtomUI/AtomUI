@@ -3,6 +3,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:RibbonBadge}" TargetType="atom:RibbonBadge">
+        <Setter Property="TextElement.FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="TextElement.FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+    </ControlTheme>
+
     <ControlTheme x:Key="{x:Type atom:RibbonBadgeAdorner}" TargetType="atom:RibbonBadgeAdorner">
         <Setter Property="Template">
             <ControlTemplate>
@@ -17,8 +34,8 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="RibbonColor" Value="{atom:SharedTokenResource ColorPrimary}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="RibbonColor" Value="{atom:OwnerTokenResource ColorPrimary}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         <Setter Property="BadgeRibbonOffset" Value="{atom:RibbonBadgeTokenResource Offset}" />
         <Setter Property="BadgeRibbonCornerTransform"
                 Value="{atom:RibbonBadgeTokenResource CornerTransform}" />
@@ -26,7 +43,7 @@
                 Value="{atom:RibbonBadgeTokenResource CornerDarkenAmount}" />
 
         <Style Selector="^ /template/ atom|TextBlock#PART_LabelPart">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextLightSolid}" />
             <Setter Property="LineHeight"
                     Value="{atom:RibbonBadgeTokenResource FontHeight}" />
             <Setter Property="Padding"

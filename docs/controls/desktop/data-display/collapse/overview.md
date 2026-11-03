@@ -126,6 +126,10 @@ Public API / inherited command / item source / user input
 
 ## 5. 视觉与主题模型
 
+Collapse根保留真实继承父级的字体/前景；明确Global才进入可选字体/ColorText入口，原生值优先。CollapseItem在组合中将标题、边框、禁用色、图标与字号角色连接实际Collapse owner，独立使用仍保留自身身份；正文沿原内容树继承，用户原生内容不替换。生成和caller-owned容器均验证原生字体/clear。
+
+item的尺寸、动效、trigger、方向和边框投射只在当前membership内存在。移除、clear、detach退休旧投射，重模板与重新挂载恢复当前owner；这不改变原Accordion、多选、焦点、键盘、标题/正文/AddOn及展开裁剪合同。
+
 Collapse 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
 | 主题文件 | 职责 |

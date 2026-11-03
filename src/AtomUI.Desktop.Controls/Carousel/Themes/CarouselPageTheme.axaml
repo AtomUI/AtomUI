@@ -4,6 +4,20 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:CarouselPage}" TargetType="atom:CarouselPage">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <ContentPresenter Name="ContentPresenter"

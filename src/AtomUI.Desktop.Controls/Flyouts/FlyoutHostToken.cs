@@ -3,8 +3,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class FlyoutHostToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class FlyoutHostToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -32,19 +32,20 @@ internal sealed class FlyoutHostToken : AbstractControlDesignToken
     /// </summary>
     public double VerticalOffset { get; set; }
 
-    public FlyoutHostToken()
 
-    {
-    }
     
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        MarginToAnchor    = EffectiveGlobalToken.UniformlyMarginXXS;
-        OverlayHostShadow = EffectiveGlobalToken.BoxShadowsSecondary;
-        PopupRootShadow   = EffectiveGlobalToken.BoxShadowsSecondary;
-        HorizontalOffset = EffectiveGlobalToken.UniformlyMarginXS;
-        VerticalOffset   = EffectiveGlobalToken.UniformlyMarginXS;
-    }
-    
+    [ControlTokenDefault(nameof(MarginToAnchor))]
+    private static double DefaultForMarginToAnchor(in ControlTokenDefaultContext context) => context.Global.UniformlyMarginXXS;
+
+    [ControlTokenDefault(nameof(OverlayHostShadow))]
+    private static BoxShadows DefaultForOverlayHostShadow(in ControlTokenDefaultContext context) => context.Global.BoxShadowsSecondary;
+
+    [ControlTokenDefault(nameof(PopupRootShadow))]
+    private static BoxShadows DefaultForPopupRootShadow(in ControlTokenDefaultContext context) => context.Global.BoxShadowsSecondary;
+
+    [ControlTokenDefault(nameof(HorizontalOffset))]
+    private static double DefaultForHorizontalOffset(in ControlTokenDefaultContext context) => context.Global.UniformlyMarginXS;
+
+    [ControlTokenDefault(nameof(VerticalOffset))]
+    private static double DefaultForVerticalOffset(in ControlTokenDefaultContext context) => context.Global.UniformlyMarginXS;
 }

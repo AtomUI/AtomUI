@@ -88,7 +88,7 @@ WindowNotificationManager (root，对应上游 list)
 | AtomUI 节点 | NotificationCard owner（表面投影到 `Border#Frame`，动效由 Frame 承载） |
 | 职责 | 通知项根元素：承载 `Title`、`Content`、`Icon`、`Actions`、`NotificationType`、`IsClosing`、`IsClosed`、`IsMotionEnabled` 与进入/退出动效；根表面（背景、边框、圆角、阴影、内边距）投影到模板中的 `Border#Frame`。对应上游 notice root。 |
 | 相关 API | `Title`、`Content`、`Icon`、`Actions`、`ActionsTemplate`、`NotificationType`、`IsClosing`、`IsClosed`、`IsMotionEnabled`、`Close()`、`NotificationClosed` |
-| 相关 Token | `NotificationBg`、`NotificationPadding`、SharedToken（`BoxShadows`、`BorderRadiusLG`） |
+| 相关 Token | `NotificationBg`、`NotificationPadding`、Card Global（`BoxShadows`、`BorderRadiusLG`） |
 | 稳定性 | stable since 6.2.0 |
 
 #### `wrapper`
@@ -562,3 +562,10 @@ Semantic Style 服从 Avalonia 原生属性优先级。Notification 没有用户
 - 正文、关闭按钮和 runtime progress 使用同一模板 owner；进度条跨列、贴底且可获得有限测量宽度。
 - render-only Frame 负责进出场，外层卡片负责队列投影；折叠快照的完成、取消和卸载均释放位图与旧节点引用。
 - 六种 `Position`、运行时切换、非默认 `Padding` 与 Stack 配置不改变 Part 身份；可见数量由活动卡片和堆叠状态决定。
+
+
+### 动态进度与排版边界
+
+progress仍按IsShowProgress与有限Expiration运行期创建，真实TemplatedParent和Grid逻辑成员关系共同保证专用NotificationCardProgressStyle可达；隐藏、持久化、换模板和detach解除旧part身份及资源。总时长属于Card生命周期，视觉part重建沿用原总量与当前remaining，不能以重建100%规避状态合同。
+
+description的正文角色默认由root提供，原生字号/前景与专用description Style可达实际内容；title保持AtomUI SelectableTextBlock及原FontSizeLG/ColorTextHeading，不能换成另一个同名类型以绕过合同。字符串正文是Avalonia SelectableTextBlock，用户Control内容原样保留。两类文本的选择/键盘和Part公共类型分别核对，不混用类型夹具。

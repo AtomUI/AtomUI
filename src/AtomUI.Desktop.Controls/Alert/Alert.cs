@@ -1,4 +1,5 @@
 ﻿using AtomUI.Icons.AntDesign;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -25,7 +26,7 @@ public static class AlertPseudoClass
 }
 
 [PseudoClasses(AlertPseudoClass.HasDescription, AlertPseudoClass.HasExtraAction)]
-public partial class Alert : TemplatedControl
+public partial class Alert : TemplatedControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -171,6 +172,14 @@ public partial class Alert : TemplatedControl
         UpdatePseudoClasses();
         SetupCloseButton();
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    // ControlTheme cannot read the protected inheritance parent. Its Setters own
+    // the optional typography values; this bridge exposes the actual native source.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     private void HandleCloseBtnClick(object? sender, RoutedEventArgs e)
     {

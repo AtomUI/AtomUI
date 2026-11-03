@@ -1,8 +1,11 @@
-using AtomUI.Controls.Commons;
-using Avalonia;
 using Avalonia.Controls;
+using System.Reactive.Disposables;
+using AtomUI.Data;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
+using AtomUI.Controls.Commons;
+using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -11,6 +14,8 @@ using IconControl = AtomUI.Controls.Icon;
 
 public partial class Result : AbstractResult
 {
+    #region 内部属性定义
+
     internal static readonly StyledProperty<double> StatusIconSizeProperty =
         AvaloniaProperty.Register<Result, double>(nameof(StatusIconSize), double.NaN);
 
@@ -29,7 +34,10 @@ public partial class Result : AbstractResult
         set => SetValue(StatusIconBrushProperty, value);
     }
 
+    #endregion
+
     private ContentPresenter? _statusIconPresenter;
+    private CompositeDisposable? _glyphBindings;
 
     public Result()
     {
@@ -37,63 +45,75 @@ public partial class Result : AbstractResult
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        ReleaseGlyphBindings();
+        if (_statusIconPresenter is not null)
+        {
+            _statusIconPresenter.PropertyChanged -= HandlePresenterPropertyChanged;
+        }
         base.OnApplyTemplate(e);
-
-        if (_statusIconPresenter != null)
-        {
-            _statusIconPresenter.PropertyChanged -= HandleStatusIconPresenterPropertyChanged;
-        }
-
         _statusIconPresenter = e.NameScope.Find<ContentPresenter>("PART_StatusIconPresenter");
-
-        if (_statusIconPresenter != null)
-        {
-            _statusIconPresenter.PropertyChanged += HandleStatusIconPresenterPropertyChanged;
-            UpdateStatusIcon();
-        }
+        ObservePresenter();
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        base.OnPropertyChanged(change);
-        if (change.Property == StatusIconSizeProperty ||
-            change.Property == StatusIconBrushProperty)
-        {
-            UpdateStatusIcon();
-        }
+        base.OnAttachedToVisualTree(e);
+        ObservePresenter();
     }
 
-    private void HandleStatusIconPresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        if (_statusIconPresenter is not null)
+        {
+            _statusIconPresenter.PropertyChanged -= HandlePresenterPropertyChanged;
+        }
+        ReleaseGlyphBindings();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void ObservePresenter()
+    {
+        if (_statusIconPresenter is not null)
+        {
+            _statusIconPresenter.PropertyChanged -= HandlePresenterPropertyChanged;
+            _statusIconPresenter.PropertyChanged += HandlePresenterPropertyChanged;
+        }
+        ConfigureGlyphBindings();
+    }
+
+    private void HandlePresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property == ContentPresenter.ChildProperty)
         {
-            UpdateStatusIcon();
+            ConfigureGlyphBindings();
         }
     }
 
-    private void UpdateStatusIcon()
+    private void ConfigureGlyphBindings()
     {
-        if (_statusIconPresenter?.Child is not Control child)
+        ReleaseGlyphBindings();
+        if (_statusIconPresenter?.Child is not IconControl glyph)
         {
             return;
         }
-
-        var size = StatusIconSize;
-        if (!double.IsNaN(size))
+        // The runtime Content has no TemplatedParent. A real selector probe
+        // proved this ControlTheme's template styles are not applied to it,
+        // despite its logical Presenter parent. Typed projections therefore live
+        // with this membership at Template priority: above the Icon's base theme,
+        // below native glyph values, and disposable on replacement/detach.
+        _glyphBindings = new CompositeDisposable
         {
-            child.SetCurrentValue(WidthProperty, size);
-            child.SetCurrentValue(HeightProperty, size);
-        }
+            BindUtils.RelayBind(this, StatusIconSizeProperty, glyph, WidthProperty, BindingMode.OneWay, BindingPriority.Template),
+            BindUtils.RelayBind(this, StatusIconSizeProperty, glyph, HeightProperty, BindingMode.OneWay, BindingPriority.Template),
+            BindUtils.RelayBind(this, StatusIconBrushProperty, glyph, ForegroundProperty, BindingMode.OneWay, BindingPriority.Template),
+            BindUtils.RelayBind(this, StatusIconBrushProperty, glyph, IconControl.FillBrushProperty, BindingMode.OneWay, BindingPriority.Template),
+            BindUtils.RelayBind(this, StatusIconBrushProperty, glyph, IconControl.StrokeBrushProperty, BindingMode.OneWay, BindingPriority.Template)
+        };
+    }
 
-        var brush = StatusIconBrush;
-        if (brush != null)
-        {
-            child.SetCurrentValue(ForegroundProperty, brush);
-            if (child is IconControl icon)
-            {
-                icon.SetCurrentValue(IconControl.FillBrushProperty, brush);
-                icon.SetCurrentValue(IconControl.StrokeBrushProperty, brush);
-            }
-        }
+    private void ReleaseGlyphBindings()
+    {
+        _glyphBindings?.Dispose();
+        _glyphBindings = null;
     }
 }

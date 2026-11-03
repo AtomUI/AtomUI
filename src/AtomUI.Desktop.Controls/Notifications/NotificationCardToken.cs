@@ -4,14 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class NotificationCardToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class NotificationCardToken : AbstractControlDesignToken, IControlTokenDefaults
 {
-
-    public NotificationCardToken()
-
-    {
-    }
 
     /// <summary>
     /// 提醒框背景色
@@ -100,59 +95,80 @@ internal sealed class NotificationCardToken : AbstractControlDesignToken
     /// </summary>
     public Thickness NotificationBottomMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
+    [ControlTokenDefault(nameof(NotificationBg))]
+    private static Color DefaultForNotificationBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgElevated;
 
-        // 间距直接取全局 Token 的同名值，不再做控件级缩放：
-        //   卡片内边距         = paddingMD(纵向) / paddingLG(横向)
-        //   图标与内容间距     = marginSM
-        //   标题与描述间距     = marginXS
-        //   操作组上边距       = marginSM
-        //   标题右侧留白       = paddingLG
-        //   关闭按钮偏移       = paddingMD(纵向) / paddingLG(横向)
-        // 之前这里对四个值统一乘了 2/3，让卡片比对照实现矮一截，属于本控件自创的缩放，已移除。
-        var paddingMD = EffectiveGlobalToken.UniformlyPaddingMD;
-        var paddingLG = EffectiveGlobalToken.UniformlyPaddingLG;
-        var marginXS  = EffectiveGlobalToken.UniformlyMarginXS;
-        var marginSM  = EffectiveGlobalToken.UniformlyMarginSM;
+    [ControlTokenDefault(nameof(NotificationPadding))]
+    private static Thickness DefaultForNotificationPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingLG, context.Global.UniformlyPaddingMD, context.Global.UniformlyPaddingLG, context.Global.UniformlyPaddingMD);
 
-        // 卡片内边距上下对称：纵向 paddingMD、横向 paddingLG。
-        NotificationPadding = new Thickness(paddingLG, paddingMD, paddingLG, paddingMD);
-        NotificationBg = EffectiveGlobalToken.ColorBgElevated;
-        NotificationIconSize = EffectiveGlobalToken.FontSizeLG * EffectiveGlobalToken.RelativeLineHeightLG;
-        NotificationCloseButtonSize = EffectiveGlobalToken.ControlHeightLG * 0.55;
+    [ControlTokenDefault(nameof(NotificationIconSize))]
+    private static double DefaultForNotificationIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeLG * context.Global.RelativeLineHeightLG;
 
-        // 标题与描述之间的纵向间距。
-        NotificationSectionSpacing = marginXS;
-        // 操作组与上方内容之间的间距。
-        NotificationActionsMargin = new Thickness(0, marginSM, 0, 0);
-        // 关闭按钮是贴卡片右上角的覆盖层：纵向离顶 paddingMD、横向离右 paddingLG。
-        NotificationCloseButtonMargin = new Thickness(0, paddingMD, paddingLG, 0);
-        // 标题右侧留白，避免文本压到关闭按钮。
-        NotificationTitlePadding = new Thickness(0, 0, paddingLG, 0);
-        // 进度条贴卡片底边，左右各内缩一个圆角半径，避免盖住圆角。
-        NotificationProgressHeight = 2;
-        NotificationProgressTrackBg = EffectiveGlobalToken.ColorFillQuaternary;
-        NotificationProgressMargin = new Thickness(EffectiveGlobalToken.BorderRadiusLG.TopLeft, 0, EffectiveGlobalToken.BorderRadiusLG.TopRight, 0);
+    [ControlTokenDefault(nameof(NotificationIconMargin))]
+    private static Thickness DefaultForNotificationIconMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyMarginSM, 0);
 
-        NotificationProgressBg = new LinearGradientBrush
+    [ControlTokenDefault(nameof(NotificationCloseButtonSize))]
+    private static double DefaultForNotificationCloseButtonSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG * 0.55;
+
+    [ControlTokenDefault(nameof(NotificationCloseButtonPadding))]
+    private static Thickness DefaultForNotificationCloseButtonPadding(in ControlTokenDefaultContext context) =>
+        context.Global.PaddingXXS;
+
+    [ControlTokenDefault(nameof(NotificationSectionSpacing))]
+    private static double DefaultForNotificationSectionSpacing(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyMarginXS;
+
+    [ControlTokenDefault(nameof(NotificationTitlePadding))]
+    private static Thickness DefaultForNotificationTitlePadding(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyPaddingLG, 0);
+
+    [ControlTokenDefault(nameof(NotificationActionsMargin))]
+    private static Thickness DefaultForNotificationActionsMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.UniformlyMarginSM, 0, 0);
+
+    [ControlTokenDefault(nameof(NotificationCloseButtonMargin))]
+    private static Thickness DefaultForNotificationCloseButtonMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.UniformlyPaddingMD, context.Global.UniformlyPaddingLG, 0);
+
+    [ControlTokenDefault(nameof(NotificationProgressTrackBg))]
+    private static Color DefaultForNotificationProgressTrackBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorFillQuaternary;
+
+    [ControlTokenDefault(nameof(NotificationProgressHeight))]
+    private static double DefaultForNotificationProgressHeight(in ControlTokenDefaultContext context) =>
+        2d;
+
+    [ControlTokenDefault(nameof(NotificationProgressMargin))]
+    private static Thickness DefaultForNotificationProgressMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.BorderRadiusLG.TopLeft, 0, context.Global.BorderRadiusLG.TopRight, 0);
+
+    [ControlTokenDefault(nameof(NotificationWidth))]
+    private static double DefaultForNotificationWidth(in ControlTokenDefaultContext context) =>
+        384d;
+
+    [ControlTokenDefault(nameof(NotificationTopMargin))]
+    private static Thickness DefaultForNotificationTopMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMarginLG, context.Global.UniformlyMarginLG, context.Global.UniformlyMarginLG, 0);
+
+    [ControlTokenDefault(nameof(NotificationBottomMargin))]
+    private static Thickness DefaultForNotificationBottomMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMarginLG, 0, context.Global.UniformlyMarginLG, context.Global.UniformlyMarginLG);
+
+    [ControlTokenDefault(nameof(NotificationProgressBg))]
+    private static IImmutableBrush? DefaultForNotificationProgressBg(in ControlTokenDefaultContext context) =>
+        new LinearGradientBrush
         {
             StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
-            EndPoint   = new RelativePoint(1, 0.5, RelativeUnit.Relative),
+            EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
             GradientStops = new GradientStops
             {
-                new() { Color = EffectiveGlobalToken.ColorPrimaryBorderHover, Offset = 0 },
-                new() { Color = EffectiveGlobalToken.ColorPrimary, Offset      = 1 }
+                new() { Color = context.Global.ColorPrimaryBorderHover, Offset = 0 },
+                new() { Color = context.Global.ColorPrimary, Offset = 1 }
             }
         }.ToImmutable();
-        NotificationWidth = 384;
-        // 图标与右侧内容之间的横向间距。
-        NotificationIconMargin         = new Thickness(0, 0, marginSM, 0);
-        NotificationTopMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginLG, EffectiveGlobalToken.UniformlyMarginLG, EffectiveGlobalToken.UniformlyMarginLG, 0);
-        NotificationBottomMargin =
-            new Thickness(EffectiveGlobalToken.UniformlyMarginLG, 0, EffectiveGlobalToken.UniformlyMarginLG, EffectiveGlobalToken.UniformlyMarginLG);
-        NotificationCloseButtonPadding = EffectiveGlobalToken.PaddingXXS;
-    }
-    
 }

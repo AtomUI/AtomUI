@@ -6,6 +6,14 @@
 
 - Gallery 与 Semantic Part 文档的图片样式使用公开 `Control` 作为 `x:SetterTargetType`，保持 `Border.CornerRadius` 限定属性与生成专用 Style；移除对 internal `ImagePreviewRenderer` 的跨程序集引用，保留封面图片圆角效果。
 
+## 2026-10-31
+
+- Preserve fourteen defaults under DependencyDefaultsV2/revision1 and activate explicitly configured switch size while preserving automatic defaults and native priority.
+- Resolve composition Global resources and optional typography from the public entry; forward Overlay resource publication with the existing disposable bridge.
+- Restore generated dedicated Semantic Part styles across the native window's rooted owner style chain. Correct the existing reverse expectation without adding test cases.
+- Keep full visual/AOT, lifecycle, cleanup and family acceptance open in CT15.
+
+
 ## 2026-10-24
 
 - Fix：Full／Thumbnail的进度与结果提交保留所属UI dispatcher，避免迟到后台回调在应用隔离空窗重新创建全局UI dispatcher；保留原generation、取消及结果lease规则。
@@ -229,3 +237,5 @@
   - Add ImagePreviewer implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add ImagePreviewer control-level changelog.
   - Add ImagePreviewer Token documentation covering ImagePreviewerToken.
+
+CT15 verification checkpoint: 142 focused checks, managed/AOT200 each; 104 intentional pairs pending limited review. Temporary sources/media/driver cleaned; final117 focused tests and NET8 zero warnings passed. 29 static and64 timed cross-runtime differences, OS/Browser/input/extreme boundaries and full-family acceptance remain open. See [results](../../../../superpowers/plans/2026-10-22-custom-theme/image-previewer-consumers-results.md).

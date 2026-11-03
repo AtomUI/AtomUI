@@ -53,6 +53,10 @@
 - TimelineIndicator 只消费布局和视觉属性排列 rail/圆点/图标并决定掩膜，不参与容器顺序计算。
 - Template part 是视觉协作对象，生命周期受 ControlTemplate 和 `OnApplyTemplate` 管理。
 
+容器的方向、Mode、Reverse 绑定由 AbstractTimelineItem 的真实逻辑 Parent 生命周期管理。挂入 Timeline 时订阅，移除或换父时释放；公开自带容器与数据生成容器使用同一规则。Mode／Reverse 是不可样式化的 DirectProperty 运行状态，不能由 ControlTheme Setter 代替。控件移出集合后不继续接收旧 owner 的状态，重新挂入时投影新 owner。
+
+集合状态计算读取当前 Items 的实际计数，自带 TimelineItem 直接按源顺序取值，数据项使用已生成容器。逻辑子节点通知可能早于 ItemCount 发布及旧 presenter 容器删除；不能把旧计数和旧索引当作权威输入，否则删除末项或 pending 后会留下错误首尾、间距和 rail。
+
 ### Indicator 主题与布局边界
 
 `TimelineIndicatorThemeBindings` 只提供有限转换器及现有 AvaloniaProperty 的静态引用。Common primitive 的 internal 静态字段不能直接被 XAML 的 `x:Static` 解析，Desktop 桥接引用供 AXAML 使用；不注册新属性、不反射、不在代码中建立样式绑定。
@@ -63,7 +67,7 @@
 
 Timeline／TimelineItem 用内部只读桥接暴露真实 InheritanceParent，Core 编译 Self observable 观察继承字体与前景。最终 FontFamily／FontSize／Foreground 由各自 ControlTheme 的存在位 MultiBinding 选择，不在 C# 给 Part 赋值。Parent 或逻辑挂载变化刷新源，分离停止父订阅，绑定释放移除事件；长寿命 parent/provider 不应保留移除的 item、title 或 content presenter。字体与前景的本地值和生成专用 Style 保留原生优先级。
 
-AbstractTimelineItem 在自己的 MeasureOverride／ArrangeOverride 消费 Padding，因此 Padding 必须声明 AffectsMeasure；只让 section 的 AxisOverflow 触发 Arrange 会留下旧 DesiredSize。Own 全部置零再清除时曾出现中间图标项 Padding 已恢复20而 DesiredHeight仍为19（原39），后续项上移20；仅重新测量该项即可恢复完整画面。修复在属性失效声明处，不手动重建页面或在资源回调中逐项 InvalidateMeasure。
+AbstractTimelineItem 在自己的 MeasureOverride／ArrangeOverride 消费 Padding，因此 Padding 必须声明 AffectsMeasure；只让 section 的 AxisOverflow 触发 Arrange 会留下旧 DesiredSize、后续项位置及滚动 extent。失效责任属于消费该属性的控件，不通过重建页面或资源回调中的逐项 InvalidateMeasure 代替。
 
 ## 4. 状态与数据流
 

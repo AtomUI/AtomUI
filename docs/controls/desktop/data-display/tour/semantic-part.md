@@ -1,5 +1,8 @@
 # Tour Semantic Part 契约
 
+CT15真实专用入口：12个生成AXAML Style已实测覆盖并清除，包含圆点Width/Fill；原DotsLayout普通StyleTrigger压住外部定制，已移为局部隐式Ellipse ControlTheme，保留marker、active class、route及N*size+(N+1)*spacing。精确类型/关键Setter与无FindControl/Loaded/Unloaded回退已锁定；同一既有静态case同步声明形态，常驻用例净增0。尚无本包最终视觉批准。 见[CT15结果](../../../../superpowers/plans/2026-10-22-custom-theme/tour-consumers-results.md)。
+
+
 本文档定义 Tour 控件公开的 Semantic Part、Selector、类型约束、数量语义和定制边界。控件整体设计见
 [Tour 桌面版架构设计](overview.md)，descriptor、marker 与宿主/模板节点的映射及维护不变量见
 [Tour 桌面版实现原理](implementation.md)，系统级规则见
@@ -83,9 +86,9 @@ marker 类，无 TemplatedParent），内置主题不使用 `.semantic-*` select
 | 稳定性 | stable since 6.2.0 |
 
 遮罩是跨根部件中的特殊形态：物理节点是 VLM 级共享单例（`TourLayer.GetTourLayer` 创建并 `AddLayer`），归属规则
-"谁打开谁拥有，关闭即释放"。`Tour.ShowTour()` 挂载时执行三步：`AddLayer`（VLM 内部把层逻辑挂到自身）→
-`SetParent(null)`（解除 VLM 归属）→ `SetParent(tourOwner)`（挂到当前 Tour）；`HideTour()` 与生命周期关闭在归属
-自己时执行 `SetParent(null)` 释放，下一个打开的 Tour 可重新挂载。owner 作用域 Semantic Style 经 `>>`（沿逻辑树
+"谁打开谁拥有，关闭即释放"。`Tour.ShowTour()`挂载时解除VLM或前一个Tour的归属，再加入当前Tour的原生
+`LogicalChildren`；接管同时清除前owner持有的层引用。`HideTour()`与生命周期关闭只释放自己仍拥有的逻辑成员，
+前一个Tour关闭不会影响新owner。owner作用域Semantic Style经`>>`（沿逻辑树
 匹配的 Descendant 选择器）跨视觉根命中遮罩；`Tour` 实现 `ISemanticPartCrossRootProvider`，在遮罩可见时经
 `GetCrossRoots()` 上报该层，挂载/释放触发 `CrossRootsChanged` 供语义高亮会话跟随刷新。
 
@@ -298,7 +301,7 @@ marker），路由经 owner 模板的 `.semantic-popup-root` 锚点加第二段 
 
 圆点由 `DefaultTourIndicator` 代码物化并只挂 `semantic-popup-indicator` marker 类与 `active` 激活态类；
 视觉（尺寸/颜色/间距）全部由 `DefaultTourIndicatorTheme` 表达——圆点无 TemplatedParent，`/template/` 选择器链
-无法命中，主题样式声明在模板内 `DotsLayout` 元素作用域（`StackPanel.Styles`）沿逻辑树流到圆点，尺寸/颜色经
+不承担这些运行时节点的默认主题入口；默认视觉声明在 `DotsLayout.Resources` 的隐式 `Ellipse` ControlTheme 中，尺寸/颜色经
 `RelativeSource AncestorType` 绑定到指示器实例。激活态经 `.active` 类选择器表达。布局契约保持旧自绘版公式
 `N*size + (N+1)*spacing`（`MeasureOverride` 覆写承担，左右各留一份间距）。
 
@@ -414,3 +417,6 @@ TopLevel）；遮罩经共享 `TourLayer` 的逻辑父挂载命中。无需在�
 - 圆点物化数量与激活态、布局公式 `N*size + (N+1)*spacing`、主题样式真正落到圆点（尺寸 > 0）。
 - Gallery 语义预览列出全部 13 个 Part 并全部参与高亮；style-class 示例锁定专用 Style 形态（无 code-behind
   回退）。NativeAOT publish；descriptor 与生成 Style 使用编译期生成数据，不依赖运行时反射或 VisualTree 扫描。
+
+
+CT15最新限定出口：60聚焦、正确managed/AOT各112检查/212帧；44明确静态待批准，原140可比/72缺帧及跨运行14非零保留。31临时/1448取证/614原会话和4最终文件清理，最终Tour21+PopupPlacement8共29通过、NET8零警告。完整家族/平台/GC/极值与CT15仍未关闭，见[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/tour-consumers-visual-review.md)。

@@ -27,7 +27,7 @@ Alert 的设计语言围绕控件职责、可观察状态和主题契约组织�
 | 维度 | 含义 | Alert 中的表达 |
 | --- | --- | --- |
 | 产品语义 | 控件在界面中承担的稳定职责。 | Alert 是 AtomUI 桌面控件体系中的警告提示控件，用于展示页面内的成功、信息、警告和错误反馈。 |
-| 内容承载 | 用户数据、展示内容、集合项或操作入口如何进入控件。 | `CloseIcon`、`Description`、`IsShowIcon`。 |
+| 内容承载 | 用户数据、展示内容、集合项或操作入口如何进入控件。 | `Message`、`Description`、`ExtraAction`、`CloseIcon`。 |
 | 状态反馈 | public API、内部状态和伪类如何形成用户可感知反馈。 | 基础交互和主题状态。 |
 | 主题语义 | ControlTheme、SharedToken、控件 Token 和模板绑定如何表达视觉。 | Alert Token + ControlTheme。 |
 
@@ -63,7 +63,7 @@ Alert 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 Alert 的状态流按以下路径收敛：
 
 ```text
-Public API / inherited command / item source / user input
+Type / Message / Description / ExtraAction / CloseIcon / flags / user input
   -> 控件实例状态
   -> effective state / pseudo-class / template property
   -> ControlTheme selector / presenter / renderer
@@ -84,6 +84,10 @@ Alert 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的�
 | 主题文件 | 职责 |
 | --- | --- |
 | `AlertTheme.axaml` | 提供单一静态模板、状态 selector、Token 绑定和 Semantic marker。 |
+
+根字体族、字号、前景支持明确Global输入与原生继承/本地优先级；标题继续无描述FontSize、有描述FontSizeLG的角色，专用Title Style可单独定制。Alert不提供SizeType，尺寸沿用公开Width/Height/Padding与各Own几何。
+
+CloseIconSize与MessageWithDescriptionMargin只在明确Own配置时激活，未配置保留历史实际关闭图标尺寸及标题Margin；资源默认不自动成为旧界面几何。专用Icon/Title/Close Style仍优先，详细消费者及默认语义见[token](token.md)。
 
 Alert 使用 `AlertToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 基础交互和主题状态 运行时状态。
 
@@ -118,7 +122,7 @@ Alert 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证�
 - 不破坏 template part、伪类、ControlTheme key、Token 名称和资源 key。
 - 不破坏七个 Semantic Part 的名称、selector、ContractType、cardinality 和 marker 身份。
 - 不改变 Gallery 已展示的 XAML 用法、默认外观、交互顺序和状态优先级。
-- Template part 重新应用、集合替换、弹层关闭、窗口失活和控件 detach 时必须释放旧订阅和资源宿主。
+- 模板重套用解除旧close订阅；资源/继承源的跨owner挂接与分离匹配，保持无全局资源保留。
 - 不通过隐藏延迟、强制刷新或吞异常掩盖状态同步问题。
 - 不引入运行时反射扫描作为 API、Token 或数据路径发现机制。
 - 文档只描述当前稳定设计；历史变化记录在 `changelog.md`。

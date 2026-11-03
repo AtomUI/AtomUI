@@ -1,3 +1,4 @@
+using System.Reactive.Linq;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Animation;
@@ -83,11 +84,14 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
 
     #endregion
 
-    private CancellationTokenSource? _cancellationTokenSource;
+    private bool _isAttachedToVisualTree;
+    private CancellationTokenSource? _scrollCancellation;
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        _isAttachedToVisualTree = true;
+        UpdateTargetState();
         if (Target != null)
         {
             Target.ScrollChanged -= HandleScrollChanged;
@@ -97,14 +101,13 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _isAttachedToVisualTree = false;
+        CancelScrollMotion();
         base.OnDetachedFromVisualTree(e);
         if (Target != null)
         {
             Target?.ScrollChanged -= HandleScrollChanged;
         }
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = null;
     }
 
     protected override void ConfigureDefaultIcon()
@@ -122,19 +125,40 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         {
             ConfigureTarget(change.OldValue as AvaScrollViewer, change.NewValue as AvaScrollViewer);
         }
+        else if (change.Property == VisibilityHeightProperty)
+        {
+            UpdateTargetState();
+        }
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        UpdateTargetState();
+    }
+
+    protected override void OnClick()
+    {
+        if (IsEffectivelyEnabled && Target != null)
+        {
+            _ = ScrollToTopAsync(Target);
+        }
+        base.OnClick();
     }
 
     private void ConfigureTarget(AvaScrollViewer? oldScrollViewer, AvaScrollViewer? newScrollViewer)
     {
+        CancelScrollMotion();
         if (oldScrollViewer != null)
         {
             oldScrollViewer.ScrollChanged -= HandleScrollChanged;
         }
 
-        if (newScrollViewer != null)
+        if (_isAttachedToVisualTree && newScrollViewer != null)
         {
             newScrollViewer.ScrollChanged += HandleScrollChanged;
         }
+        UpdateTargetState();
     }
 
     private void HandleScrollChanged(object? sender, ScrollChangedEventArgs e)
@@ -155,45 +179,99 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         SetCurrentValue(ScrollProgressProperty, progress);
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
+    private void UpdateTargetState()
     {
-        base.OnLoaded(e);
+        // Without a target, preserve the existing standalone/template visibility contract.
         if (Target != null)
         {
-            IsActive = Target.Offset.Y >= VisibilityHeight;
+            SetCurrentValue(IsActiveProperty, Target.Offset.Y >= VisibilityHeight);
             UpdateScrollProgress(Target);
         }
     }
 
-    protected override void OnClick()
+    private void CancelScrollMotion()
     {
-        if (IsEffectivelyEnabled)
+        _scrollCancellation?.Cancel();
+        _scrollCancellation?.Dispose();
+        _scrollCancellation = null;
+    }
+
+    private async Task ScrollToTopAsync(AvaScrollViewer target)
+    {
+        CancelScrollMotion();
+        var cancellation = new CancellationTokenSource();
+        _scrollCancellation = cancellation;
+        var token = cancellation.Token;
+        var currentOffset = target.Offset;
+        var destination = new Vector(currentOffset.X, 0);
+        try
         {
-            if (Target != null)
+            // Offset is a runtime target outside this control's template. Commit only this
+            // request's terminal value after releasing Animation priority, preserving caller bindings.
+            var animation = new Animation
             {
-                _cancellationTokenSource?.Cancel();
-                _cancellationTokenSource?.Dispose();
-                _cancellationTokenSource = new CancellationTokenSource();
-                var currentOffset = Target.Offset;
-                var animation = new Animation
+                Easing = new CubicEaseInOut(),
+                Duration = ToTopDuration,
+                FillMode = FillMode.None,
+                Children =
                 {
-                    Easing   = new CubicEaseInOut(),
-                    Duration = ToTopDuration,
-                    Children =
+                    new KeyFrame
                     {
-                        new KeyFrame
-                        {
-                            Setters = { new Setter(AvaScrollViewer.OffsetProperty, currentOffset) }, Cue = new Cue(0.0d)
-                        },
-                        new KeyFrame
-                        {
-                            Setters = { new Setter(AvaScrollViewer.OffsetProperty, new Vector(currentOffset.X, 0)) }, Cue = new Cue(1.0d)
-                        }
+                        Setters = { new Setter(ScrollOffsetAnimation.ValueProperty, currentOffset) }, Cue = new Cue(0d)
+                    },
+                    new KeyFrame
+                    {
+                        Setters = { new Setter(ScrollOffsetAnimation.ValueProperty, destination) }, Cue = new Cue(1d)
                     }
-                };
-                animation.RunAsync(Target, _cancellationTokenSource.Token);
+                }
+            };
+            // Direct Offset animation can leave this two-way scroll target at Animation
+            // priority after completion. Animate an owned value, then project to the runtime
+            // target with SetCurrentValue so the target's binding and scrolling remain writable.
+            var value = new ScrollOffsetAnimation();
+            value.SetCurrentValue(ScrollOffsetAnimation.ValueProperty, currentOffset);
+            using (value.GetObservable(ScrollOffsetAnimation.ValueProperty).Subscribe(offset =>
+                   {
+                       if (!token.IsCancellationRequested && ReferenceEquals(_scrollCancellation, cancellation) &&
+                           ReferenceEquals(Target, target) && _isAttachedToVisualTree)
+                       {
+                           target.SetCurrentValue(AvaScrollViewer.OffsetProperty, offset);
+                       }
+                   }))
+            {
+                await animation.RunAsync(value, token);
+            }
+            await Dispatcher.InvokeAsync(() =>
+            {
+                if (!token.IsCancellationRequested && ReferenceEquals(_scrollCancellation, cancellation) &&
+                    ReferenceEquals(Target, target) && _isAttachedToVisualTree)
+                {
+                    target.SetCurrentValue(AvaScrollViewer.OffsetProperty, destination);
+                    UpdateTargetState();
+                }
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            // Target replacement, detach or another click supersedes this request.
+        }
+        finally
+        {
+            if (ReferenceEquals(_scrollCancellation, cancellation))
+            {
+                _scrollCancellation = null;
+                cancellation.Dispose();
             }
         }
-        base.OnClick();
+    }
+
+    private sealed class ScrollOffsetAnimation : Animatable
+    {
+        #region 内部属性定义
+
+        internal static readonly StyledProperty<Vector> ValueProperty =
+            AvaloniaProperty.Register<ScrollOffsetAnimation, Vector>("Value");
+
+        #endregion
     }
 }

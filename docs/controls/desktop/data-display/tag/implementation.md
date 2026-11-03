@@ -252,3 +252,15 @@ child IsCheckedChanged
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+
+## 11. CT15 资源消费与投射生命周期
+
+Tag颜色状态计算通过既有ThemeTokenResolver，按实际注册GetType/StyleKey取effective Global；原命名palette、状态分类、HSL计算及Template优先级的可退役颜色值frame保持。字体家族由ControlTheme optional绑定复用实际继承parent，未明确配置时维持原继承；TagFontSize仍Own角色。边框以编译绑定持续消费RenderScaleAwareBorderThickness，替代ApplyTemplate一次性赋值。普通Tag、Checkable和Group的Global均按自己的注册身份解析。
+
+Checkable容器在Prepare时以LocalValue接收ContentTemplate/motion投射，ControlTheme setter无法等价保持该优先级与准备时机，因此保留typed代码relay并说明原因。每个实际container持有CompositeDisposable，重Prepare先退役旧句柄，ClearContainer/Detach释放，Attach只为实际尚存container恢复。ContentTemplate仍仅对option wrapper投射，不改变内部其他输入语义。ClearValue不等于dispose绑定；直接保留旧Indexer表达式会使退休item经source旧ItemsControl保留Group。修复后保留退休item不再保留Group/Scope。
+
+Group或ItemTemplate变化可能重建容器，观测应追踪同一Group当前实际容器，旧引用只用于退出验证。选择状态仍以Group业务值为唯一owner，不新增Local恢复引擎或新的选择缓存。独立字体接口与成员整理不改变注册、初始化、事件顺序或原完整内容。
+
+
+CT15当前仅[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/tag-consumers-visual-review.md)26对及列明SelectTag派生影响已获批准；恢复/跨运行微差、CT13既定边界和完整Tag/CT15保留，不授权提交。

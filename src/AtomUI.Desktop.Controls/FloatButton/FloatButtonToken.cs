@@ -3,15 +3,10 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class FloatButtonToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class FloatButtonToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
-    public FloatButtonToken()
-
-    {
-    }
-    
     /// <summary>
     /// FloatButton 尺寸
     /// Size of FloatButton
@@ -54,19 +49,27 @@ internal sealed class FloatButtonToken : AbstractControlDesignToken
     /// </summary>
     public double FloatOffsetY { get; set; }
     
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        PrimaryColor          = EffectiveGlobalToken.ColorTextLightSolid;
-        FloatButtonIconSize   = EffectiveGlobalToken.FontSizeIcon * 1.5;
-        FloatButtonSize       = EffectiveGlobalToken.ControlHeightLG;
-        DescriptionLineHeight = EffectiveGlobalToken.FontSizeSM * 1.2;
-        FloatOffsetX          = EffectiveGlobalToken.UniformlyMargin;
-        FloatOffsetY          = EffectiveGlobalToken.UniformlyMargin;
-        var r       = Math.Sqrt(2);
-        var offsetR = (r - 1) / r;
-        SquareBadgeOffset = EffectiveGlobalToken.BorderRadius.BottomLeft * offsetR;
-        CircleBadgeOffset = EffectiveGlobalToken.ControlHeight / 2 * offsetR;
-    }
-    
+    [ControlTokenDefault(nameof(PrimaryColor))]
+    private static Color DefaultForPrimaryColor(in ControlTokenDefaultContext context) => context.Global.ColorTextLightSolid;
+
+    [ControlTokenDefault(nameof(FloatButtonIconSize))]
+    private static double DefaultForFloatButtonIconSize(in ControlTokenDefaultContext context) => context.Global.FontSizeIcon * 1.5;
+
+    [ControlTokenDefault(nameof(FloatButtonSize))]
+    private static double DefaultForFloatButtonSize(in ControlTokenDefaultContext context) => context.Global.ControlHeightLG;
+
+    [ControlTokenDefault(nameof(DescriptionLineHeight))]
+    private static double DefaultForDescriptionLineHeight(in ControlTokenDefaultContext context) => context.Global.FontSizeSM * 1.2;
+
+    [ControlTokenDefault(nameof(FloatOffsetX))]
+    private static double DefaultForFloatOffsetX(in ControlTokenDefaultContext context) => context.Global.UniformlyMargin;
+
+    [ControlTokenDefault(nameof(FloatOffsetY))]
+    private static double DefaultForFloatOffsetY(in ControlTokenDefaultContext context) => context.Global.UniformlyMargin;
+
+    [ControlTokenDefault(nameof(SquareBadgeOffset))]
+    private static double DefaultForSquareBadgeOffset(in ControlTokenDefaultContext context) => context.Global.BorderRadius.BottomLeft * ((Math.Sqrt(2) - 1) / Math.Sqrt(2));
+
+    [ControlTokenDefault(nameof(CircleBadgeOffset))]
+    private static double DefaultForCircleBadgeOffset(in ControlTokenDefaultContext context) => context.Global.ControlHeight / 2 * ((Math.Sqrt(2) - 1) / Math.Sqrt(2));
 }

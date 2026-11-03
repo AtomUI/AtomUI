@@ -1,15 +1,19 @@
 using AtomUI.Controls;
 using AtomUI.Reflection;
+using AtomUI.Theme.Resources;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public abstract class AbstractStatistic : HeaderedContentControl
+public abstract class AbstractStatistic : HeaderedContentControl, IThemeInheritanceSource
 {
     #region 公共属性定义
     
@@ -116,6 +120,9 @@ public abstract class AbstractStatistic : HeaderedContentControl
 
     #endregion
 
+    private WeakReference<Control>? _pendingTemplateFocus;
+    private int _templateGeneration;
+
     static AbstractStatistic()
     {
         HeaderProperty.Changed.AddClassHandler<AbstractStatistic>((x, e) => x.HandleChildChanged(e));
@@ -127,7 +134,60 @@ public abstract class AbstractStatistic : HeaderedContentControl
     public AbstractStatistic()
     {
     }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        if (change.Property == TemplateProperty)
+        {
+            var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() as Control;
+            if (focused is not null)
+            {
+                _pendingTemplateFocus = this.IsVisualAncestorOf(focused)
+                    ? new WeakReference<Control>(focused)
+                    : null;
+            }
+            ++_templateGeneration;
+        }
+        base.OnPropertyChanged(change);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        ++_templateGeneration;
+        _pendingTemplateFocus = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        if (_pendingTemplateFocus is { } focus)
+        {
+            _pendingTemplateFocus = null;
+            var generation = _templateGeneration;
+            var weakOwner = new WeakReference<AbstractStatistic>(this);
+            // Native header/value/add-on controls reattach after presenter creation;
+            // a theme Setter cannot restore runtime focus or guard later user input.
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (weakOwner.TryGetTarget(out var owner) && owner._templateGeneration == generation &&
+                    focus.TryGetTarget(out var control) && owner.IsVisualAncestorOf(control) &&
+                    TopLevel.GetTopLevel(owner) is { } topLevel &&
+                    ReferenceEquals(TopLevel.GetTopLevel(control), topLevel) &&
+                    topLevel.FocusManager?.GetFocusedElement() is null)
+                {
+                    control.Focus();
+                }
+            }, DispatcherPriority.Loaded);
+        }
+    }
     
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
     private void HandleChildChanged(AvaloniaPropertyChangedEventArgs e)
     {
         if (e.OldValue is ILogical oldChild)

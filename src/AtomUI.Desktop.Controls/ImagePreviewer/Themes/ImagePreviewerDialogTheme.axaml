@@ -8,6 +8,21 @@
         <atom:WindowTheme TargetType="atom:ImagePreviewerDialog" />
     </ControlTheme.BasedOn>
 
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <atom:WindowTokenResource Kind="FontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" AnchorControlType="{x:Type atom:ImagePreviewerDialog}" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" AnchorControlType="{x:Type atom:ImagePreviewerDialog}" />
+        </MultiBinding>
+    </Setter>
+    <Setter Property="FontSize">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+            <atom:WindowTokenResource Kind="FontSize" />
+            <atom:OwnerTokenResource Kind="FontSize" AnchorControlType="{x:Type atom:ImagePreviewerDialog}" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontSize" AnchorControlType="{x:Type atom:ImagePreviewerDialog}" />
+        </MultiBinding>
+    </Setter>
+
     <Setter Property="SizeToContent" Value="Manual" />
     <Setter Property="CanResize" Value="True" />
     <Setter Property="CanMaximize" Value="True" />
@@ -20,11 +35,11 @@
     <Setter Property="ImageScaleY" Value="1.0" />
     <Setter Property="MinWidth" Value="{atom:ImagePreviewerTokenResource DialogMinWidth}" />
     <Setter Property="MinHeight" Value="{atom:ImagePreviewerTokenResource DialogMinHeight}" />
-    <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgLayout}" />
+    <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgLayout, AnchorControlType={x:Type atom:ImagePreviewerDialog}}" />
     <Setter Property="TitleBarFrameBackground"
             Value="{atom:ImagePreviewerTokenResource TitleBarBackgroundColor}" />
 
     <Style Selector="^ /template/ atom|ImagePreviewNavButton">
-        <Setter Property="Margin" Value="{atom:SharedTokenResource MarginSM}" />
+        <Setter Property="Margin" Value="{atom:OwnerTokenResource Kind=MarginSM, AnchorControlType={x:Type atom:ImagePreviewerDialog}}" />
     </Style>
 </ControlTheme>

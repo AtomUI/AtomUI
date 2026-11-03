@@ -18,10 +18,7 @@ ImagePreviewer 家族公开 8 个 Semantic Part，由两个 public owner 分别�
 部件，AtomUI 同样不将其公开为 Part。
 
 `popup.*` 属于独立宿主部件：预览宿主（native `ImagePreviewerDialog` 或 Browser `ImagePreviewerOverlayHost`）由
-`OpenDialog()` 运行时创建，并经 logical parent 挂入 owner，宿主 ThemeVariant 经 binding 中继。owner 作用域 Semantic Style
-只在 overlay 宿主（与 owner 同 TopLevel 的树内浮层，对齐上游 `.ant-image-preview`）保证命中；native `ImagePreviewerDialog`
-是独立 `Window`/TopLevel，Avalonia 样式级联不跨 TopLevel 边界，因此 owner 作用域 Semantic Style 不进入 dialog，dialog 内的
-预览视觉经 host 契约（owner 属性/Token 中继与 App 级 `ImageViewer` 主题）定制。`popup.*` 部件随宿主打开而存在、随关闭而销毁，
+`OpenDialog()` 运行时创建，并经 logical parent 挂入 owner，宿主 ThemeVariant 经 binding 中继。owner-scoped generated Semantic Styles apply in both hosts. Native dialog retains the rooted public owner's StyleHost chain across its independent TopLevel, with Application fallback for detached direct construction. `popup.*` 部件随宿主打开而存在、随关闭而销毁，
 因此统一声明 `CrossVisualRoot=true`、`CrossNestedOwners=true`、`RuntimeCreated=true`，路由以 `>>` 从 owner 直接定位 marker
 节点，不设中间 scope 锚点（overlay 宿主模板根与 viewer 在逻辑树上为兄弟，锚点式路由无法在双宿主间一致命中）。`popup.mask`
 仅 Overlay 宿主存在（`Optional`），承担上游浮层"压暗下层页面"的职能；native `ImagePreviewerDialog` 是独立窗口、无下层页面
@@ -207,12 +204,12 @@ Gallery 仅列出描述、不参与高亮；触发区部件（`root`/`image`/`co
   - `popup.body` 两个宿主均存在：viewer 模板内 `PART_ImageViewerScene`，承载居中图片与指针交互。
   - `popup.footer` 两个宿主均存在：viewer 模板内 `ImagePreviewFloatToolbar`，含页码指示与操作组。
   - `popup.actions` 两个宿主均存在：footer 内 `#ActionFrame`，胶囊形操作按钮组。
-  - `popup.close` 仅 overlay 宿主存在：`PART_CloseButton`；native dialog 由 OS 标题栏关闭按钮承担（`Optional`）。
+  - `PART_CloseButton` 是 Overlay 内部关闭控件；native OS 标题栏关闭按钮同样不属于公开 Part。
 
 ## 3. 数量语义
 
 `root`、`popup.root`、`popup.body`、`popup.footer`、`popup.actions` 为 `Single`：静态模板节点或每次打开唯一的宿主容器。
-`popup.mask` 与 `popup.close` 为 `Optional`：仅 overlay 宿主物化（每次打开至多一个），native dialog 中为 0。
+`popup.mask` 为 `Optional`：仅 overlay 宿主物化（每次打开至多一个），native dialog 中为 0。
 `image` / `cover` 在 `ImagePreviewer` 为 `Single`（静态单封面），在 `ImageGroupPreviewer` 为 `Multiple`（随 `ItemsSource`
 物化的封面项，回收复用时 marker 保持不变）。打开、关闭与重开不维护任何跨打开的 marker 状态；状态变化（`IsOpen`、
 `CurrentIndex`、loading/error）只切换可见性或有效视觉值，不增删 marker。
@@ -276,7 +273,7 @@ Style 可以定制 `CornerRadius`（这是上游 `styles.image.borderRadius` 的
 同一 WinUI 关键点算法），与 owner 根的裁剪职责互不重叠。
 
 `popup.*` 的生成 Style 由 `Nesting()` 经 owner logical parent 链命中 overlay 宿主节点（与 owner 同 TopLevel），无需在用户
-Style 中复写 `>>` route；native `ImagePreviewerDialog` 为独立 TopLevel，owner 作用域样式不级联进去，其预览视觉走 host 契约。
+Style 中复写 `>>` route；native `ImagePreviewerDialog` 通过已生根 owner 的 StyleHost 链级联专用 Style。
 不得使用以下写法：
 
 - `.semantic-root`、`PART_*`、Name selector、internal 类型或视觉祖先顺序作为应用主题契约。
@@ -306,26 +303,15 @@ Style 服从 Avalonia 原生属性优先级。
 删除或重命名 Part、修改 selector class / route、收窄 `ContractType`（含把公共基类承诺收窄为具体实现类型）、改变
 cardinality，或让任一内置模板变体缺少 marker，均属于公共主题契约变更。
 
-与上游 Image 控件的对照差异（有意保持）：
+与上游 Image 控件的对照差异及验证：
 
-- 上游 `popup.mask` / `popup.close` 在单图与 PreviewGroup 预览中恒存在；AtomUI 因 native dialog 是独立窗口（无下层页面
-  可压暗、关闭由 OS 标题栏承担），将两者声明为仅 overlay 宿主的 `Optional`。
-- 上游遮罩默认点击关闭（`maskClosable=true`）；AtomUI overlay 未实现该行为，关闭仅经 `popup.close`。Part 契约只承诺样式
-  命中，不承诺该行为。
-- 上游预览浮层与触发图片在同一 DOM，owner 作用域样式天然命中；AtomUI 的 owner 作用域 Semantic Style 只保证命中 overlay
-  宿主（与 owner 同 TopLevel 的树内浮层），native `ImagePreviewerDialog` 是独立 TopLevel，样式级联不跨窗口边界，预览视觉经
-  host 契约定制。
-- AtomUI 操作组的基础适配与 reset 由统一预览变换状态提供；按钮组仍只作为 `popup.actions` 的内部内容，不进入 Semantic Part 契约。
+- `popup.mask` 仅 Overlay 存在；native dialog 没有下层页面可压暗。关闭按钮与导航按钮不属于已发布的八个 Part。
+- Overlay 遮罩点击关闭尚未实现；现有内部关闭按钮及键盘/可取消关闭行为保留，本包不借主题改造新增行为。
+- 两种宿主均需命中公开 owner 的生成专用 AXAML Style。native dialog 使用已生根 owner 的 StyleHost 父链，未生根独立构造回退 Application。
+- 操作组内部按钮不扩展为 Part；基础适配和 reset 继续由统一预览变换状态提供。
+- 验证八项 descriptor、真实 marker、专用 Style 的声明与命中、缺失 Optional、open-close-reopen、detach、实例隔离及 source 替换。
+- NativeAOT 使用静态生成数据。真实 OS/Browser 验证与完整家族像素出口仍按实际证据保留，Gallery 高亮发现由现有跨根提供者负责。
 
-验证至少覆盖（实现测试矩阵见 [实现原理](implementation.md)）：
+## CT15 current contract correction
 
-- owner descriptor 只包含本节 9 个 Part，字段值与本节一致；内置模板不消费 `.semantic-*` selector。
-- 六个主题的静态 marker 清单，及 native dialog 运行时注入 `popup.root` marker、overlay 新增 `popup.mask` 遮罩子元素。
-- 生成 Semantic Style 在 overlay 宿主命中全部 `popup.*`；`popup.mask` / `popup.close` 在 overlay 命中、在 native dialog
-  不存在的 Optional 语义。native dialog 内 marker 完整存在，但 owner 作用域样式不跨 Window/TopLevel 级联（回归测试固定该
-  边界，见 [实现原理](implementation.md)）。
-- open-close-reopen、owner detach 与 close 后不残留 marker、多个 owner 实例的宿主隔离、source 替换后 marker 与命中关系
-  保持不变。
-- Gallery 语义预览列出全部 9 个 Part；`root`/`image`/`cover` 在 owner 模板内高亮，`popup.*` 因宿主 internal、无公开访问器而
-  仅列出描述不参与高亮（见 §1）。NativeAOT publish；descriptor 与生成 Style 使用编译期生成数据，不依赖运行时反射或
-  VisualTree 扫描。
+There are eight published parts, as defined by the descriptors and the first section above. `popup.close` is not published; the existing Overlay close button and native OS chrome remain ordinary controls. Native popup.root/body/footer/actions must now receive generated dedicated AXAML styles through the rooted public owner. The former TopLevel styling limitation is fixed, not an allowed fallback. Pixel/AOT and full-family acceptance remain open in the [CT15 record](../../../../superpowers/plans/2026-10-22-custom-theme/image-previewer-consumers.md).

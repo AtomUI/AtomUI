@@ -1,7 +1,12 @@
+using System.Reactive.Disposables;
+using AtomUI.Data;
+using Avalonia.Data;
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Presenters;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 
@@ -22,40 +27,40 @@ internal enum TourStepNavType
     Finished,
 }
 
-internal class TourStepsView : SelectingItemsControl
+internal class TourStepsView : SelectingItemsControl, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<TourStepsView>();
-    
+
     public static readonly StyledProperty<TourStyleType> StyleTypeProperty =
         Tour.StyleTypeProperty.AddOwner<TourStepsView>();
-    
+
     public static readonly StyledProperty<bool> IsArrowVisibleProperty =
         Tour.IsArrowVisibleProperty.AddOwner<TourStepsView>();
-    
+
     public static readonly StyledProperty<bool> IsPointAtCenterProperty =
         Tour.IsPointAtCenterProperty.AddOwner<TourStepsView>();
-    
+
     public static readonly StyledProperty<TourPlacementMode> PlacementProperty =
         Tour.PlacementProperty.AddOwner<TourStepsView>();
-    
+
     public static readonly StyledProperty<bool> IsShowMaskProperty =
         Tour.IsShowMaskProperty.AddOwner<TourStepsView>();
-    
+
     public static readonly StyledProperty<IBrush?> MaskColorProperty =
         Tour.MaskColorProperty.AddOwner<TourStepsView>();
-    
+
     public static readonly StyledProperty<bool> IsScrollIntoViewProperty =
         Tour.IsScrollIntoViewProperty.AddOwner<TourStepsView>();
-    
+
     public static readonly StyledProperty<IIconTemplate?> CloseIconProperty =
         Tour.CloseIconProperty.AddOwner<TourStepsView>();
-    
+
     public static readonly StyledProperty<TourIndicator?> IndicatorProperty =
         Tour.IndicatorProperty.AddOwner<TourStepsView>();
-    
+
     public static readonly StyledProperty<IList<Control>?> CustomActionsProperty =
         AvaloniaProperty.Register<TourStepsView, IList<Control>?>(nameof(CustomActions));
 
@@ -64,7 +69,7 @@ internal class TourStepsView : SelectingItemsControl
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     public TourStyleType StyleType
     {
         get => GetValue(StyleTypeProperty);
@@ -82,31 +87,31 @@ internal class TourStepsView : SelectingItemsControl
         get => GetValue(IsPointAtCenterProperty);
         set => SetValue(IsPointAtCenterProperty, value);
     }
-    
+
     public TourPlacementMode Placement
     {
         get => GetValue(PlacementProperty);
         set => SetValue(PlacementProperty, value);
     }
-    
+
     public bool IsShowMask
     {
         get => GetValue(IsShowMaskProperty);
         set => SetValue(IsShowMaskProperty, value);
     }
-    
+
     public IBrush? MaskColor
     {
         get => GetValue(MaskColorProperty);
         set => SetValue(MaskColorProperty, value);
     }
-    
+
     public bool IsScrollIntoView
     {
         get => GetValue(IsScrollIntoViewProperty);
         set => SetValue(IsScrollIntoViewProperty, value);
     }
-        
+
     public IIconTemplate? CloseIcon
     {
         get => GetValue(CloseIconProperty);
@@ -118,25 +123,28 @@ internal class TourStepsView : SelectingItemsControl
         get => GetValue(IndicatorProperty);
         set => SetValue(IndicatorProperty, value);
     }
-    
+
     public IList<Control>? CustomActions
     {
         get => GetValue(CustomActionsProperty);
         set => SetValue(CustomActionsProperty, value);
     }
+
     #endregion
 
     #region 公共事件定义
 
     public event EventHandler? CloseRequest;
+
     public event EventHandler<TourStepNavRequestEventArgs>? NavRequest;
+
     #endregion
 
     #region 内部属性定义
 
     internal static readonly StyledProperty<TourStepPosition> IndexPositionProperty =
         AvaloniaProperty.Register<TourStepsView, TourStepPosition>(nameof(IndexPosition));
-    
+
     internal static readonly DirectProperty<TourStepsView, TourStyleType> CurrentStyleTypeProperty =
         AvaloniaProperty.RegisterDirect<TourStepsView, TourStyleType>(nameof(CurrentStyleType),
             o => o.CurrentStyleType,
@@ -147,7 +155,7 @@ internal class TourStepsView : SelectingItemsControl
         get => GetValue(IndexPositionProperty);
         set => SetValue(IndexPositionProperty, value);
     }
-    
+
     private TourStyleType _currentStyleType;
 
     internal TourStyleType CurrentStyleType
@@ -155,9 +163,37 @@ internal class TourStepsView : SelectingItemsControl
         get => _currentStyleType;
         private set => SetAndRaise(CurrentStyleTypeProperty, ref _currentStyleType, value);
     }
+
     #endregion
-    
+
+    #region 内部协作 API
+
+internal void ReleaseTemplateContent()
+    {
+        // Retire the old template's TwoWay edge before clearing its items, so
+        // selection reset cannot write into the live Tour or its caller binding.
+        BindingOperations.GetBindingExpressionBase(this, SelectedIndexProperty)?.Dispose();
+        BindingOperations.GetBindingExpressionBase(this, ItemsSourceProperty)?.Dispose();
+        BindingOperations.GetBindingExpressionBase(this, IndicatorProperty)?.Dispose();
+        BindingOperations.GetBindingExpressionBase(this, CustomActionsProperty)?.Dispose();
+        SetCurrentValue(ItemsSourceProperty, null);
+        SetCurrentValue(IndicatorProperty, null);
+        SetCurrentValue(CustomActionsProperty, null);
+        _indicatorPresenter?.UpdateChild();
+    }
+
+    #endregion
+
+    #region 运行时字段
+
     private Panel? _customActionsPanel;
+
+    private readonly Dictionary<TourStep, CompositeDisposable> _stepBindings = new();
+    private ContentPresenter? _indicatorPresenter;
+
+    #endregion
+
+    #region 构造与初始化
 
     static TourStepsView()
     {
@@ -165,61 +201,26 @@ internal class TourStepsView : SelectingItemsControl
         Button.ClickEvent.AddClassHandler<TourStepsView>((view, args) => view.HandleButtonClick(args));
     }
 
-    private void HandleButtonClick(RoutedEventArgs args)
-    {
-        if (args.Source is DialogCaptionButton)
-        {
-            CloseRequest?.Invoke(this, EventArgs.Empty);
-        }
-        else if (args.Source is Button button && button.Tag is TourStepNavType navType)
-        {
-            if (navType == TourStepNavType.Finished)
-            {
-                CloseRequest?.Invoke(this, EventArgs.Empty);
-            }
-            else if (navType == TourStepNavType.Previous)
-            {
-                NavRequest?.Invoke(this, new TourStepNavRequestEventArgs(SelectedIndex - 1));
-            }
-            else if (navType == TourStepNavType.Next)
-            {
-                NavRequest?.Invoke(this, new TourStepNavRequestEventArgs(SelectedIndex + 1));
-            }
-        }
-    }
-    
+    #endregion
+
+    #region 公共与受保护 API
+
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<TourStep>(item, out recycleKey);
     }
-    
+
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         return new TourStep();
     }
-    
+
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
         if (container is TourStep tourStep)
         {
-            if (item != null && item is not Visual)
-            {
-                tourStep.SetCurrentValue(TourStep.ContentProperty, item);
-                tourStep[!TourStep.ContentTemplateProperty] = this[!ItemTemplateProperty];
-            }
-            tourStep[!TourStep.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
-            tourStep[!TourStep.CloseIconTemplateProperty] = this[!CloseIconProperty];
-            if (!ReferenceEquals(tourStep, item))
-            {
-                tourStep[~TourStep.StyleTypeProperty] = this[!StyleTypeProperty];
-                tourStep[~TourStep.IsArrowVisibleProperty] = this[!IsArrowVisibleProperty];
-                tourStep[~TourStep.IsPointAtCenterProperty] = this[!IsPointAtCenterProperty];
-                tourStep[~TourStep.PlacementProperty] = this[!PlacementProperty];
-                tourStep[~TourStep.IsShowMaskProperty] = this[!IsShowMaskProperty];
-                tourStep[~TourStep.IsScrollIntoViewProperty] = this[!IsScrollIntoViewProperty];
-                tourStep[~TourStep.MaskColorProperty] = this[!MaskColorProperty];
-            }
+            PrepareStepBindings(tourStep, item);
             PrepareStepItem(tourStep, item, index);
         }
         else
@@ -227,14 +228,53 @@ internal class TourStepsView : SelectingItemsControl
             throw new ArgumentOutOfRangeException(nameof(container), "The container type is incorrect, it must be type TourStep.");
         }
     }
-    
+
+    protected override void ClearContainerForItemOverride(Control container)
+    {
+        if (container is TourStep step)
+        {
+            RetireStepBindings(step);
+        }
+        base.ClearContainerForItemOverride(container);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        foreach (var step in _stepBindings.Keys.ToArray())
+        {
+            RetireStepBindings(step);
+        }
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        foreach (var container in GetRealizedContainers())
+        {
+            var index = IndexFromContainer(container);
+            if (container is TourStep step && index >= 0 && index < Items.Count)
+            {
+                PrepareStepBindings(step, Items[index]);
+            }
+        }
+    }
+
     protected virtual void PrepareStepItem(TourStep tourStep, object? item, int index)
     {
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        if (_customActionsPanel != null && CustomActions != null)
+        {
+            foreach (var action in CustomActions)
+            {
+                _customActionsPanel.Children.Remove(action);
+            }
+        }
         base.OnApplyTemplate(e);
+        _indicatorPresenter = e.NameScope.Find<ContentPresenter>("IndicatorPresenter");
         _customActionsPanel = e.NameScope.Find<StackPanel>("ActionsLayout");
         if (_customActionsPanel != null)
         {
@@ -250,13 +290,6 @@ internal class TourStepsView : SelectingItemsControl
                 }
             }
         }
-    }
-
-    private void SyncActionProperties(ITourAction customAction)
-    {
-        customAction.StyleType   = CurrentStyleType;
-        customAction.ActiveIndex = SelectedIndex;
-        customAction.StepCount   = ItemCount;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -324,4 +357,94 @@ internal class TourStepsView : SelectingItemsControl
             }
         }
     }
+
+    #endregion
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Avalonia.Controls.Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => TourThemeOwner.Resolve(this);
+
+    #endregion
+
+    #region 私有实现
+
+    private void HandleButtonClick(RoutedEventArgs args)
+    {
+        if (args.Source is DialogCaptionButton)
+        {
+            CloseRequest?.Invoke(this, EventArgs.Empty);
+        }
+        else if (args.Source is Button button && button.Tag is TourStepNavType navType)
+        {
+            if (navType == TourStepNavType.Finished)
+            {
+                CloseRequest?.Invoke(this, EventArgs.Empty);
+            }
+            else if (navType == TourStepNavType.Previous)
+            {
+                NavRequest?.Invoke(this, new TourStepNavRequestEventArgs(SelectedIndex - 1));
+            }
+            else if (navType == TourStepNavType.Next)
+            {
+                NavRequest?.Invoke(this, new TourStepNavRequestEventArgs(SelectedIndex + 1));
+            }
+        }
+    }
+
+    private void PrepareStepBindings(TourStep step, object? item)
+    {
+        RetireStepBindings(step);
+        // Runtime items are prepared before template membership with the original
+        // Local/Template priorities. A template setter cannot preserve this timing;
+        // release each typed projection when its container membership ends.
+        var bindings = new CompositeDisposable();
+        _stepBindings.Add(step, bindings);
+        step.DetachedFromVisualTree += HandleStepDetached;
+        if (item != null && item is not Visual)
+        {
+            step.SetCurrentValue(TourStep.ContentProperty, item);
+            bindings.Add(BindUtils.RelayBind(this, ItemTemplateProperty, step, TourStep.ContentTemplateProperty));
+        }
+        bindings.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, step, TourStep.IsMotionEnabledProperty));
+        bindings.Add(BindUtils.RelayBind(this, CloseIconProperty, step, TourStep.CloseIconTemplateProperty));
+        if (!ReferenceEquals(step, item))
+        {
+            bindings.Add(BindUtils.RelayBind(this, StyleTypeProperty, step, TourStep.StyleTypeProperty, priority: BindingPriority.Template));
+            bindings.Add(BindUtils.RelayBind(this, IsArrowVisibleProperty, step, TourStep.IsArrowVisibleProperty, priority: BindingPriority.Template));
+            bindings.Add(BindUtils.RelayBind(this, IsPointAtCenterProperty, step, TourStep.IsPointAtCenterProperty, priority: BindingPriority.Template));
+            bindings.Add(BindUtils.RelayBind(this, PlacementProperty, step, TourStep.PlacementProperty, priority: BindingPriority.Template));
+            bindings.Add(BindUtils.RelayBind(this, IsShowMaskProperty, step, TourStep.IsShowMaskProperty, priority: BindingPriority.Template));
+            bindings.Add(BindUtils.RelayBind(this, IsScrollIntoViewProperty, step, TourStep.IsScrollIntoViewProperty, priority: BindingPriority.Template));
+            bindings.Add(BindUtils.RelayBind(this, MaskColorProperty, step, TourStep.MaskColorProperty, priority: BindingPriority.Template));
+        }
+    }
+
+    private void RetireStepBindings(TourStep step)
+    {
+        if (_stepBindings.Remove(step, out var bindings))
+        {
+            step.DetachedFromVisualTree -= HandleStepDetached;
+            bindings.Dispose();
+        }
+    }
+
+    private void HandleStepDetached(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is TourStep step)
+        {
+            RetireStepBindings(step);
+        }
+    }
+
+
+
+    private void SyncActionProperties(ITourAction customAction)
+    {
+        customAction.StyleType   = CurrentStyleType;
+        customAction.ActiveIndex = SelectedIndex;
+        customAction.StepCount   = ItemCount;
+    }
+
+    #endregion
+
 }

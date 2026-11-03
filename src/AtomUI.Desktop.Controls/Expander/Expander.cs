@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+using AtomUI.Theme.Resources;
+using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
@@ -29,11 +30,12 @@ public enum ExpanderIconPosition
 
 [PseudoClasses(
     ExpanderPseudoClass.Expanded,
-    ExpanderPseudoClass.ExpandUp, 
+    ExpanderPseudoClass.ExpandUp,
     ExpanderPseudoClass.ExpandDown,
     ExpanderPseudoClass.ExpandLeft,
     ExpanderPseudoClass.ExpandRight)]
-public partial class Expander : AvaloniaExpander, IMotionAwareControl
+public partial class Expander : AvaloniaExpander, IMotionAwareControl,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -63,16 +65,16 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
 
     public static readonly StyledProperty<ExpanderIconPosition> ExpandIconPositionProperty =
         AvaloniaProperty.Register<Expander, ExpanderIconPosition>(nameof(ExpandIconPosition));
-    
+
     public static readonly StyledProperty<Thickness?> HeaderPaddingProperty =
         AvaloniaProperty.Register<Expander, Thickness?>(nameof(HeaderPadding));
-    
+
     public static readonly StyledProperty<Thickness?> ContentPaddingProperty =
         AvaloniaProperty.Register<Expander, Thickness?>(nameof(ContentPadding));
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Expander>();
-    
+
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
@@ -126,7 +128,7 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
         get => GetValue(ExpandIconPositionProperty);
         set => SetValue(ExpandIconPositionProperty, value);
     }
-    
+
     public Thickness? HeaderPadding
     {
         get => GetValue(HeaderPaddingProperty);
@@ -138,23 +140,23 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
         get => GetValue(ContentPaddingProperty);
         set => SetValue(ContentPaddingProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     #endregion
 
     #region 内部属性定义
 
     internal static readonly StyledProperty<Thickness> ContentBorderThicknessProperty =
         AvaloniaProperty.Register<Expander, Thickness>(nameof(ContentBorderThickness));
-    
+
     internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<Expander>();
-    
+
     internal static readonly DirectProperty<Expander, Thickness> EffectiveBorderThicknessProperty =
         AvaloniaProperty.RegisterDirect<Expander, Thickness>(nameof(EffectiveBorderThickness),
             o => o.EffectiveBorderThickness,
@@ -196,12 +198,13 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
     #endregion
 
     private Control? _headerDecorator;
+
     private IconButton? _expandButton;
 
     public Expander()
     {
     }
-    
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -272,6 +275,13 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
         ToggleExpanded();
         e.Handled = true;
     }
+
+    #region 实现 控件接口
+
+    // ControlTheme keeps native inheritance when no explicit owner typography is configured.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     private void HandleExpandButtonClicked(object? sender, RoutedEventArgs args)
     {
@@ -354,10 +364,11 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
             ? new Thickness(0, 0, headerPadding.Left, 0)
             : new Thickness(headerPadding.Right, 0, 0, 0);
     }
-    
+
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(ExpanderPseudoClass.CustomHeaderPadding, HeaderPadding != null);
         PseudoClasses.Set(ExpanderPseudoClass.CustomContentPadding, ContentPadding != null);
     }
+
 }

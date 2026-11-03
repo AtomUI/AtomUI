@@ -1,5 +1,7 @@
 # Statistic Semantic Part 契约
 
+CT15 沿用 root、header、title、content、value、prefix、suffix 契约与原 selector。六个非 root 区域通过 `StatisticHeaderStyle`、`StatisticTitleStyle`、`StatisticContentStyle`、`StatisticValueStyle`、`StatisticPrefixStyle`、`StatisticSuffixStyle` 声明式定制实际节点，清除后回到当前 Own/Global/继承值；不通过 code-behind 找节点写样式。计时与 CountUp 的既有业务角色不自动扩充为 Statistic 的专用 Part。实际验证与限定视觉边界见 [CT15 Statistic](../../../../superpowers/plans/2026-10-22-custom-theme/statistic-consumers-results.md)。
+
 本文档定义 Statistic 对应用公开的 Semantic Part、Selector、类型约束、数量语义和定制边界。Statistic 的整体设计见
 [Statistic 桌面版架构设计](overview.md)，真实模板节点与状态流见 [Statistic 桌面版实现原理](implementation.md)，系统级规则见
 [AtomUI Semantic Part 系统设计](../../../../architecture/systems/theming/semantic-parts.md)。

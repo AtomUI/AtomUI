@@ -103,6 +103,8 @@ DotBadge
 
 target mode 不创建 Label。`DecoratedTarget` 在 `null` 与非 `null` 之间切换时，owner 销毁旧 DotBadgeAdorner 并按新模式重建，使两套 ControlTemplate 不共享残留状态。
 
+`DotBadgeIndicator` 将点颜色、阴影颜色和阴影尺寸都声明为绘制输入。仅热更新 `ShadowColor` 时，现有实例重建阴影并在正常绘制帧生效；无需同时改变 `ShadowSize`、重挂或重新创建 Adorner。
+
 ### 5.3 RibbonBadge
 
 ```text
@@ -281,6 +283,12 @@ Gallery Desktop 宿主通过 AtomUI Window 的 Avalonia 12 `VisualLayerManager` 
 
 ## 9. 资源、性能与 AOT 边界
 
+独立 Dot 与 Count 一样，挂回内部显示宿主后必须经过现有 `ApplyToTarget(null, owner, onShowReady)` 显示准备。关闭动效会隐藏 motion actor，仅设置外层 owner.IsVisible 不能恢复其子树；显示准备负责取消旧动效、恢复 actor 并按原时长开始显示。它不替换调用方目标或文字，不为 Processing 增加新的动画。
+
+Dot 外层 `IsVisible` 的变化仍须尊重调用方明确设置的 `BadgeIsVisible=false`；只有显式恢复 Badge 标志才启动显示准备。初始隐藏和隐藏期间替换 target 时，调用方 target 仍须挂载并参与布局。动态增加或移除 owner 的直接子项后失效测量，保证初始隐藏的 standalone 首次显示能应用模板、测量完整文字；不以强制模板应用或延迟刷新代替布局合同。
+
+同一目标合同也适用于 Count 的默认零值隐藏：尚未创建 Adorner 时，target 仍参与原尺寸布局和输入，隐藏时替换应先退出旧目标再挂入新目标。`SetupShowZero` 的原归一规则保持。Ribbon 外层显隐同样尊重明确的 `BadgeIsVisible=false`，仍通过原显示／隐藏路径保留 target 和原文本。
+
 Badge Semantic Part 的默认运行时成本仅包括 descriptor 静态数据和既有视觉节点上的静态 class：
 
 - descriptor、Part 名称、selector class 和类型 identity 由 Generator 静态产生，不使用反射发现。
@@ -328,3 +336,26 @@ Badge Semantic Part 的默认运行时成本仅包括 descriptor 静态数据和
 | 性能 | 默认 Theme 无 `.semantic-*` selector；批量实例 class listener 和 detach 释放符合预算；无 runtime registry 查询。 |
 | Gallery | Semantic Parts Tab 首次选择前不创建三个 Preview 或演示 owner；Count/Dot 只登记各自 runtime Adorner；Ribbon 保持 inline；多 Preview 随宿主统一激活、停用和释放。 |
 | AOT | Generator 输出为静态代码，NativeAOT 发布不依赖反射或动态代码。 |
+
+
+## 11. CT15 字体、资源与投射退出
+
+public owner仍没有ControlTemplate；在原主题资源文件中提供仅含TextElement字体Setter的ControlTheme，既有optional继承机制保持原默认值，原生附加FontFamily优先。Adorner只继承owner有效字体，不把Global样式放在子层覆盖原生；其颜色/圆角Global通过既有IControlThemeGlobalOwnerSource映射到真实public owner。
+
+standalone Count/Dot保留辅助Panel作为visual挂载级联，但Adorner直接加入Badge的logical membership，使生成direct-child Part route真实命中。退役时同时清owner membership，不通过视觉重挂取消原show motion。target mode保留原AdornerLayer与logical/style Badge owner；资源发布缺口由Adorner局部复用ThemeContextResourceBridge处理，context变化重绑、logical detach移除并dispose，无新Scope引擎。
+
+owner→Adorner的Local准备投射不在ControlTemplate内，setter不能等价保持原时机与优先级，代码注明原因并按实际生命周期持有typed relay CompositeDisposable。detach释放、attach重建，Dot换模式reset释放旧对象；不建立旧Local恢复系统。Dot/Ribbon retained旧Adorner不再保留owner/Scope。Count早期发现的composition保留链按下文“Count运行成员退出”修正；原失败记录保留，不改依赖、不反射清私有父节点，不重写CT25/FW1结论。
+
+
+### CT15 实例颜色覆盖与退役
+
+三族保留原preset/hex颜色解析，实例颜色以可释放的Avalonia值层覆盖内部颜色属性；clear或无效值释放覆盖并恢复底层Token，避免Count/Dot写null及Ribbon保留旧颜色。detach释放，重挂按当前实例值恢复，Dot模式切换也退出旧层。该层只服务实例颜色投射，不是Semantic Part定制入口。早期57项中56PASS/1 Count GC FAIL的记录保留；该退出问题的限定后续见下文及[结果](../../../../superpowers/plans/2026-10-22-custom-theme/badge-count-retirement-results.md)。显隐/重挂及校准恢复仍非零，完整家族未验收。
+
+
+## Count运行成员退出
+
+Count的standalone host由控件创建，成员移出时同时退休视觉/逻辑成员和该host的公开composition collection成员，避免owner离树后renderer不再同步的旧关系。仅解除本项目动态分支，不清框架私有字段，不改变显示中的结构、原生目标尺寸或Style入口。
+
+Layer模式先通过AdornerLayer.SetAdornedElement清association，再移出layer/逻辑父，使框架仍能更新现存composition visual中的关联。normal hide完成时和owner退出沿同一合同；仅将public属性置空而过晚执行会留下旧呈现关联。模板、show/hide曲线、原count/glyph/target与公开API保持，重挂和模式往返复用原adornment。
+
+回收探针采用NoInlining创建/退出，固定GC轮数后单次读取WeakReference；保留已退出adorner仍需释放owner。该条件与正常可见帧、焦点/指针/键盘、层次关系分别验证，不能用RSS或模块绿覆盖历史GC失败。

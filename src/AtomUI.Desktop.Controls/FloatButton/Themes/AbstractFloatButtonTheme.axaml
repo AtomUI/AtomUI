@@ -7,8 +7,8 @@
     <Style Selector="^:is(atomc|AbstractFloatButton)">
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="BadgeEffectiveColor" Value="{atom:FloatButtonTokenResource ColorError}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="BadgeEffectiveColor" Value="{atom:OwnerTokenResource ColorError}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="Background" Value="Transparent" />
 
         <Style Selector="^[IsMotionEnabled=True]">
@@ -21,12 +21,19 @@
 
         <Style Selector="^[IsEmbedMode=False], ^[IsEmbedMode=True][Shape=Circle]">
             <Style Selector="^ /template/ Border#BackgroundFrame">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+                <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgElevated, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
             </Style>
         </Style>
-        <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
-        <Setter Property="ZIndex" Value="{atom:SharedTokenResource ZIndexPopupBase}" />
-        <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingXXS}" />
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
+        <Setter Property="ZIndex" Value="{atom:OwnerTokenResource Kind=ZIndexPopupBase, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
+        <Setter Property="Padding" Value="{atom:OwnerTokenResource Kind=PaddingXXS, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
         <Setter Property="Width" Value="{atom:FloatButtonTokenResource FloatButtonSize}" />
 
         <Style Selector="^[Shape=Circle][IsDotBadge=True]">
@@ -43,7 +50,7 @@
         </Style>
 
         <Style Selector="^[IsEmbedMode=False]">
-            <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsSecondary}" />
+            <Setter Property="BoxShadow" Value="{atom:OwnerTokenResource Kind=BoxShadowsSecondary, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
         </Style>
 
         <Style Selector="^[Shape=Circle]">
@@ -52,7 +59,7 @@
 
         <Style Selector="^[Shape=Square]">
             <Setter Property="MinHeight" Value="{atom:FloatButtonTokenResource FloatButtonSize}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadiusLG, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
             <Style Selector="^ /template/ StackPanel#RootLayout">
                 <Setter Property="HorizontalAlignment" Value="Center" />
                 <Setter Property="VerticalAlignment" Value="Center" />
@@ -66,38 +73,38 @@
         <Style Selector="^[IsEmbedMode=True]">
             <Style Selector="^[Shape=Square]">
                 <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="Margin" Value="{atom:SharedTokenResource MarginXXS}" />
+                    <Setter Property="Margin" Value="{atom:OwnerTokenResource Kind=MarginXXS, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
                 </Style>
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadiusSM, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
             </Style>
             <Style Selector="^[Shape=Circle]">
                 <Setter Property="BoxShadow"
-                        Value="{atom:SharedTokenResource BoxShadowsSecondary}" />
+                        Value="{atom:OwnerTokenResource Kind=BoxShadowsSecondary, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
             </Style>
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorText}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorText, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
             <Setter Property="Width" Value="{atom:FloatButtonTokenResource FloatButtonIconSize}" />
             <Setter Property="Height" Value="{atom:FloatButtonTokenResource FloatButtonIconSize}" />
         </Style>
 
         <Style Selector="^[ButtonType=Default]">
             <Style Selector="^:pointerover">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}" />
+                <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgTextHover, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
             </Style>
         </Style>
 
         <Style Selector="^[ButtonType=Primary]">
             <Setter Property="Foreground" Value="{atom:FloatButtonTokenResource PrimaryColor}" />
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
             <Style Selector="^:pointerover">
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+                        Value="{atom:OwnerTokenResource Kind=ColorPrimaryHover, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
             </Style>
             <Style Selector="^:pressed">
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorPrimaryActive}" />
+                        Value="{atom:OwnerTokenResource Kind=ColorPrimaryActive, AnchorControlType={x:Type atomc:AbstractFloatButton}}" />
             </Style>
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"

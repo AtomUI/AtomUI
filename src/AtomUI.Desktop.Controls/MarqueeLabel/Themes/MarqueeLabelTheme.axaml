@@ -1,0 +1,31 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atom="https://atomui.net"
+    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:MarqueeLabel}" TargetType="atom:MarqueeLabel">
+        <Setter Property="CycleSpace" Value="{atom:MarqueeLabelTokenResource CycleSpace}" />
+        <Setter Property="MoveSpeed" Value="{atom:MarqueeLabelTokenResource DefaultSpeed}" />
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:OwnerTokenResource Kind="ColorText" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="ColorText" />
+            </MultiBinding>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

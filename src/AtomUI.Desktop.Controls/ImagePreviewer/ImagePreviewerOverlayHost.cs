@@ -1,3 +1,5 @@
+using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using System.Collections.Specialized;
 using AtomUI.Controls;
 using Avalonia;
@@ -6,13 +8,14 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
 internal class ImagePreviewerOverlayHost : ContentControl,
-                                           IMotionAwareControl
+                                           IMotionAwareControl, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
@@ -368,6 +371,8 @@ internal class ImagePreviewerOverlayHost : ContentControl,
 
     #endregion
 
+    private ThemeContextResourceBridge? _themeResourceBridge;
+
     private readonly AbstractImagePreviewer _imagePreviewer;
 
     private readonly ImageViewer _imageViewer;
@@ -489,6 +494,18 @@ internal class ImagePreviewerOverlayHost : ContentControl,
         }
     }
 
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        UpdateThemeResourceBridge();
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        ClearThemeResourceBridge();
+        base.OnDetachedFromLogicalTree(e);
+    }
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -511,6 +528,11 @@ internal class ImagePreviewerOverlayHost : ContentControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == ThemeScope.ContextProperty && ((ILogical)this).IsAttachedToLogicalTree)
+        {
+            UpdateThemeResourceBridge();
+        }
+
         if (change.Property == CurrentIndexProperty)
         {
             HandleCurrentIndexChanged();
@@ -539,6 +561,12 @@ internal class ImagePreviewerOverlayHost : ContentControl,
         _displayTracker.Clear();
         callback?.Invoke();
     }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => _imagePreviewer;
+
+    #endregion
 
     private ImageViewer CreateImageViewer()
     {
@@ -831,5 +859,32 @@ internal class ImagePreviewerOverlayHost : ContentControl,
     private void HandlePreviousRequest()
     {
         SwitchImage(-1);
+    }
+
+    private void UpdateThemeResourceBridge()
+    {
+        var context = GetValue(ThemeScope.ContextProperty) ?? ThemeScope.ResolveContext(this);
+        if (context is not null && ReferenceEquals(_themeResourceBridge?.OwnerContext, context))
+        {
+            return;
+        }
+        ClearThemeResourceBridge();
+        if (context is not null)
+        {
+            // The overlay's visual layer is outside the owner's scoped resource
+            // notification branch. AXAML cannot forward publication across it.
+            _themeResourceBridge = new ThemeContextResourceBridge(context);
+            Resources.MergedDictionaries.Add(_themeResourceBridge);
+        }
+    }
+
+    private void ClearThemeResourceBridge()
+    {
+        if (_themeResourceBridge is { } bridge)
+        {
+            _themeResourceBridge = null;
+            Resources.MergedDictionaries.Remove(bridge);
+            bridge.Dispose();
+        }
     }
 }

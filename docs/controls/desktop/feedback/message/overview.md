@@ -87,6 +87,12 @@ Public API / inherited command / item source / user input
 - 模板重套用时必须把 public API 对应状态回放到新的 part、伪类和主题变量。
 - 集合、弹层、异步、动效或窗口相关状态必须能处理 reset、close、cancel、detach 和 owner 释放。
 
+### 实际主题入口
+
+MessageCard的原有正文字号/前景角色由root默认提供，原生FontSize/Foreground和专用title Style能够进入实际SelectableTextBlock；FontFamily保持真实原生继承与明确Card Global。root的原未消费有效值随角色归位，实际默认正文保持原角色。Card/manager拥有独立Global，内部IconPresenter的消息状态色明确属于Card。
+
+五种默认图标按当前MessageType在主题中逐卡实例化，用户Icon优先，null恢复默认；Loading继续正常Spin。六Own中五项有实际消费者，CardHeight为历史Reserved，不声称能限制内容高度；保留自适应布局、公开原生尺寸和完整原内容，详见[token](token.md)。
+
 ## 5. 视觉与主题模型
 
 Message 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
@@ -228,3 +234,8 @@ Semantic Parts 摘要（完整契约见 [Message Semantic Part 契约](semantic-
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+
+### 消息文本与窗口锚点
+
+消息正文保持 SelectableTextBlock 的 NoWrap；显式换行参与自然高度，过长单行仍受可用宽度约束，完整文本值不会被改写。窗口级管理器相对反馈层宿主边缘定位；安全区由窗口装饰/框体或平台 Insets 决定，不额外加标题栏高度。布局几何的唯一 owner 仍为[共享反馈堆叠](../../../../architecture/systems/control-infrastructure/feedback-stack.md)。

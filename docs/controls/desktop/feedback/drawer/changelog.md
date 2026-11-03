@@ -2,10 +2,23 @@
 
 本文档记录 Drawer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-01
+
+- 保持13 Own的52四算法默认/type/key/slot，迁V2/revision1；保持Custom fallback与Native尺寸优先。
+- 原Global与可选字体归公共Drawer，复用LogicalChildren、OpenOn与CT11机制。
+- 标题局部省略避免覆盖Extra，完整Title属性与原布局预算保留；重模板回放当前打开状态。
+- 当前73聚焦通过，原视觉失败留账；最终三版、临时清理、精确模块与限定批准仍待，完整CT15不关闭。
+
 ## 2026-10-29
 
 - Performance
   - Hold the Window content cache lease for the whole open and close motion (with or without mask), so the sliding panel and mask composite cached window content instead of re-rendering the page beneath; render-thread median drops from about 8.5 ms to 2.5 ms per frame on the measured Wayland Gallery. Drawers whose layer lies inside the cached content (local scroll or content-control hosts) keep direct rendering.
+
+## 2026-10-29
+
+- Theme / Implementation
+  - 已打开的Container接入完整LogicalChildren，对称释放并跟随owner时长及资源热更新。
+
 
 ## 2026-09-10
 
@@ -67,3 +80,10 @@
   - Add Drawer implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add Drawer control-level changelog.
   - Add Drawer Token documentation covering DrawerToken.
+
+
+CT15最新限定验收：有效managed/AOT各116检查/196帧，164静态跨运行全0、各68主恢复0；35临时/1518取证/550原会话和4最终文件已清理，最终38精确模块及NET8零警告零错误通过。仅20对明确静态待用户限定批准，定时/平台/GC/极值与完整家族仍保留，详见[限定视觉表](../../../../superpowers/plans/2026-10-22-custom-theme/drawer-consumers-visual-review.md)。
+
+## 2026-11-01
+
+- Acquire percentage OpenOn size subscriptions only while attached, preventing a living target from retaining an unattached or retired Drawer after target replacement. Keep current size restoration on reattach.

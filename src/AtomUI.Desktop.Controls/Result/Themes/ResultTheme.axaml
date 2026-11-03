@@ -4,6 +4,20 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Result}" TargetType="atom:Result">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:DashedBorder Name="Frame"
@@ -64,8 +78,8 @@
         </Setter>
 
         <Setter Property="Padding" Value="{atom:ResultTokenResource FramePadding}" />
-        <Setter Property="RelativeHeaderLineHeight" Value="{atom:SharedTokenResource RelativeLineHeightHeading3}" />
-        <Setter Property="RelativeSubHeaderLineHeight" Value="{atom:SharedTokenResource RelativeLineHeight}" />
+        <Setter Property="RelativeHeaderLineHeight" Value="{atom:OwnerTokenResource Kind=RelativeLineHeightHeading3, SourceControlType={x:Type atom:Result}}" />
+        <Setter Property="RelativeSubHeaderLineHeight" Value="{atom:OwnerTokenResource Kind=RelativeLineHeight, SourceControlType={x:Type atom:Result}}" />
         <Setter Property="HeaderFontSize" Value="{atom:ResultTokenResource HeaderFontSize}" />
         <Setter Property="SubHeaderFontSize" Value="{atom:ResultTokenResource SubHeaderFontSize}" />
         <Style Selector="^/template/ ContentPresenter#PART_StatusIconPresenter">
@@ -82,18 +96,18 @@
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#Header">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextHeading}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextHeading, SourceControlType={x:Type atom:Result}}" />
             <Setter Property="Margin" Value="{atom:ResultTokenResource HeaderMargin}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#SubHeader">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextDescription, SourceControlType={x:Type atom:Result}}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#Content">
             <Setter Property="Margin" Value="{atom:ResultTokenResource ContentMargin}" />
             <Setter Property="Padding" Value="{atom:ResultTokenResource ContentPadding}" />
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorFillAlter, SourceControlType={x:Type atom:Result}}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#ExtraContent">

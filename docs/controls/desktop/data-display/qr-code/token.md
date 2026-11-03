@@ -50,6 +50,10 @@ QRCode 的控件专项模型通过 Theme 消费 Token：
 
 ## 6. 验证策略
 
+CT15 的两个 Own 使用 DependencyDefaultsV2 revision 1，四算法原默认、类型、key、slot 保持。`QRCodeTextColor` 取当前 QRCode Global 的 `ColorText`；`QRCodeMaskBackgroundColor` 保留固定 alpha244 与当前 `ColorBgContainer` 的 RGB。原生 `Color`、`Foreground` 和 `QRCodeCoverStyle` 按目标优先级覆盖，透明颜色是明确输入，清除后回到当前默认。
+
+原边框厚度、圆角、分隔色与 bordered padding 在 ControlTheme 解析实际 QRCode owner Global；可选字体保留真实继承和原生优先级，并进入实际状态文字。`Size` 是原生整数尺寸，没有 SizeType/Custom 分档；不通过 Token 改写二维码文本、纠错级别、原 quiet zone 或图标中心挖空。编码占位/解码探针与 UI 完整 RGBA 验收分开，不能用前者代替视觉通过。限定证据见 [CT15 QRCode](../../../../superpowers/plans/2026-10-22-custom-theme/qr-code-consumers-results.md)。
+
 | 改动类型 | 验证要求 |
 | --- | --- |
 | Token 文档 | `git diff --check`，检查相对链接存在。 |

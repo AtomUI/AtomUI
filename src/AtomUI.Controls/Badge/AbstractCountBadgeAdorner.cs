@@ -1,3 +1,5 @@
+using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -9,7 +11,7 @@ using Avalonia.Media;
 namespace AtomUI.Controls.Commons;
 
 [TemplatePart("PART_IndicatorSurface", typeof(Control))]
-internal abstract class AbstractCountBadgeAdorner : TemplatedControl
+internal abstract class AbstractCountBadgeAdorner : TemplatedControl, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
@@ -151,6 +153,7 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
     private Control? _indicator;
     private readonly BadgeMotionSession _motion;
     private bool _preserveCountTextForHide;
+    private ThemeContextResourceBridge? _themeResourceBridge;
 
     protected AbstractCountBadgeAdorner()
     {
@@ -203,9 +206,26 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         }
     }
 
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        UpdateThemeResourceBridge();
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        ClearThemeResourceBridge();
+        base.OnDetachedFromLogicalTree(e);
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == ThemeScope.ContextProperty && ((ILogical)this).IsAttachedToLogicalTree)
+        {
+            UpdateThemeResourceBridge();
+        }
+
         if (change.Property == IsMotionEnabledProperty || change.Property == MotionDurationProperty)
         {
             _motion.UpdateConfiguration(IsMotionEnabled, MotionDuration);
@@ -290,11 +310,45 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
 
     private void DetachFromAdornerLayer(AdornerLayer? adornerLayer)
     {
+        // Clear the association while the layer can still update the existing
+        // composition visual. Removing the visual first leaves its old adorned
+        // visual reference alive after the public property has been cleared.
+        AdornerLayer.SetAdornedElement(this, null);
         adornerLayer?.Children.Remove(this);
         if (((ILogical)this).LogicalParent is not null)
         {
             ((ISetLogicalParent)this).SetParent(null);
         }
-        AdornerLayer.SetAdornedElement(this, null);
+    }
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner =>
+        Parent is AbstractCountBadge owner ? owner :
+        Parent is Panel { Parent: AbstractCountBadge panelOwner } ? panelOwner : null;
+
+    private void UpdateThemeResourceBridge()
+    {
+        var context = GetValue(ThemeScope.ContextProperty) ?? ThemeScope.ResolveContext(this);
+        if (context is not null && ReferenceEquals(_themeResourceBridge?.OwnerContext, context))
+        {
+            return;
+        }
+        ClearThemeResourceBridge();
+        if (context is not null)
+        {
+            // AdornerLayer owns the visual branch without owning the logical
+            // Badge membership. AXAML cannot forward its missing publication.
+            _themeResourceBridge = new ThemeContextResourceBridge(context);
+            Resources.MergedDictionaries.Add(_themeResourceBridge);
+        }
+    }
+
+    private void ClearThemeResourceBridge()
+    {
+        if (_themeResourceBridge is { } bridge)
+        {
+            _themeResourceBridge = null;
+            Resources.MergedDictionaries.Remove(bridge);
+            bridge.Dispose();
+        }
     }
 }

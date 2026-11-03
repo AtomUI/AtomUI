@@ -17,10 +17,10 @@
         <Setter Property="OkText" Value="{atom:CommonLangResource Ok}"/>
         <Setter Property="CancelText" Value="{atom:CommonLangResource Cancel}"/>
         <Setter Property="MarginToAnchor" Value="{atom:PopupTokenResource MarginToAnchor}"/>
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}"/>
+        <Setter Property="MotionDuration" Value="{atom:OwnerTokenResource MotionDurationMid}"/>
         <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.PopoverOpen}" />
         <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.PopoverClose}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}"/>
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}"/>
         <Setter Property="PopupRootShadow" Value="{atom:FlyoutHostTokenResource PopupRootShadow}"/>
         <Setter Property="OverlayHostShadow" Value="{atom:FlyoutHostTokenResource OverlayHostShadow}"/>
         <Setter Property="ShouldUseOverlayPopup" Value="True"/>

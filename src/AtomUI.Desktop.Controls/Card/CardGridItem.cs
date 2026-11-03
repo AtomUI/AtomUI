@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -5,8 +6,10 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-public class CardGridItem : ContentControl
+public class CardGridItem : ContentControl, IThemeInheritanceSource
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty = 
         Border.BoxShadowProperty.AddOwner<CardGridItem>();
     
@@ -25,6 +28,9 @@ public class CardGridItem : ContentControl
     public static readonly StyledProperty<bool> IsHoverableProperty = 
         AvaloniaProperty.Register<CardGridItem, bool>(nameof (IsHoverable), true);
     
+    public static readonly StyledProperty<SizeType> SizeTypeProperty =
+        SizeTypeControlProperty.SizeTypeProperty.AddOwner<CardGridItem>();
+
     public BoxShadows BoxShadow
     {
         get => GetValue(BoxShadowProperty);
@@ -61,19 +67,20 @@ public class CardGridItem : ContentControl
         set => SetValue(IsHoverableProperty, value);
     }
     
-    #region 内部属性定义
-
-    public static readonly StyledProperty<SizeType> SizeTypeProperty = 
-        SizeTypeControlProperty.SizeTypeProperty.AddOwner<CardGridItem>();
-    
-    internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CardGridItem>();
-    
     public SizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
+
+    #endregion
+
+    #region 内部属性定义
+
+    
+    internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CardGridItem>();
+    
     
     internal bool IsMotionEnabled
     {
@@ -104,5 +111,13 @@ public class CardGridItem : ContentControl
             Grid.SetRowSpan(this, RowSpan);
         }
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    // ControlTheme cannot read the protected inheritance parent; its Setters own
+    // optional typography while this bridge exposes the actual native source.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
 }

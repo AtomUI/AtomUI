@@ -73,6 +73,10 @@ Public API / ItemsSource / Command / Event
 
 ## 5. 生命周期与模板接入
 
+生成的 Bitmap 由 QRCode 独占管理：替换时释放旧实例，空 Value 或卸载时先清空 Bitmap 属性再释放；离树期间更新输入不分配生成图，重新挂载时按当前 Value/Color/EccLevel/Size/Icon 重建。模板和动态资源继续更新同一个数据入口；调用方的 Icon 始终由调用方拥有，不能连同生成 Bitmap 一起释放。Skia surface、snapshot、编码数据及读取流均有明确作用域。
+
+刷新按钮在模板替换和卸载时解绑，挂载时仅接当前按钮一次；离树按钮不保留触发 owner 的幽灵订阅。原生状态内容重模板时保留对象与文本，焦点仅以弱引用保存，在 Loaded 后检查 generation、同 TopLevel/后代和当前无后来用户焦点才恢复，卸载取消。运行时数据生成、订阅和焦点生命周期无法由主题 Setter 表达；样式仍由 AXAML 管理。
+
 生命周期规则：
 
 - 构造阶段只注册必要状态，不依赖 template part。

@@ -5,8 +5,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class TagToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class TagToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     /// <summary>
     /// 默认背景色
@@ -26,25 +26,32 @@ internal sealed class TagToken : AbstractControlDesignToken
     public Thickness TagTextPaddingInline { get; set; }
     public Color SolidTextColor { get; set; }
 
-    public TagToken()
+    [ControlTokenDefault(nameof(TagFontSize))]
+    private static double DefaultForTagFontSize(in ControlTokenDefaultContext context) => context.Global.FontSizeSM;
 
-    {
-    }
+    [ControlTokenDefault(nameof(TagLineHeight))]
+    private static double DefaultForTagLineHeight(in ControlTokenDefaultContext context) => context.Global.FontHeightSM;
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        TagFontSize      = EffectiveGlobalToken.FontSizeSM;
-        TagLineHeight    = EffectiveGlobalToken.FontHeightSM;
-        TagCloseIconSize = EffectiveGlobalToken.IconSizeXS;
-        TagIconSize      = EffectiveGlobalToken.FontSizeIcon;
-        TagPadding       = new Thickness(EffectiveGlobalToken.SizeXS - 1, 0);
-        DefaultBg            = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillTertiary, EffectiveGlobalToken.ColorBgContainer);
-        DefaultColor         = EffectiveGlobalToken.ColorText;
-        TagTextPaddingInline = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, 0);
-        SolidTextColor       = ColorUtils.IsBright(EffectiveGlobalToken.ColorBgSolid, Colors.White)
-            ? Colors.Black
-            : Colors.White;
-    }
-    
+    [ControlTokenDefault(nameof(TagCloseIconSize))]
+    private static double DefaultForTagCloseIconSize(in ControlTokenDefaultContext context) => context.Global.IconSizeXS;
+
+    [ControlTokenDefault(nameof(TagIconSize))]
+    private static double DefaultForTagIconSize(in ControlTokenDefaultContext context) => context.Global.FontSizeIcon;
+
+    [ControlTokenDefault(nameof(TagPadding))]
+    private static Thickness DefaultForTagPadding(in ControlTokenDefaultContext context) => new(context.Global.SizeXS - 1, 0);
+
+    [ControlTokenDefault(nameof(DefaultBg))]
+    private static Color DefaultForDefaultBg(in ControlTokenDefaultContext context) =>
+        ColorUtils.OnBackground(context.Global.ColorFillTertiary, context.Global.ColorBgContainer);
+
+    [ControlTokenDefault(nameof(DefaultColor))]
+    private static Color DefaultForDefaultColor(in ControlTokenDefaultContext context) => context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(TagTextPaddingInline))]
+    private static Thickness DefaultForTagTextPaddingInline(in ControlTokenDefaultContext context) => new(context.Global.UniformlyPaddingXXS, 0);
+
+    [ControlTokenDefault(nameof(SolidTextColor))]
+    private static Color DefaultForSolidTextColor(in ControlTokenDefaultContext context) =>
+        ColorUtils.IsBright(context.Global.ColorBgSolid, Colors.White) ? Colors.Black : Colors.White;
 }

@@ -111,6 +111,10 @@ Background / BorderBrush / BorderThickness / CornerRadius render state
 
 ## 5. 视觉与主题模型
 
+GroupBox的Own/Global、原生属性和专用Semantic Style分别进入原目标并保留原生优先级。字体/前景缺省保持真实继承，HeaderFontSize/HeaderTitleColor仍是独立标题角色；IconPresenter的模板输入由当前GroupBox提供。
+
+固定外框下改变标题位置或子布局，也必须更新实际边框缺口。当前Header布局完成后比较绝对gap/border bounds，只有几何变化才使owner绘制失效；不改变既有缺口、背景和renderScale边框算法。观察者在换模板、卸载时退休，重挂只接一次。
+
 GroupBox 的默认 Theme 位于 `src/AtomUI.Desktop.Controls/GroupBox/Themes/GroupBoxTheme.axaml`。Theme 提供 Header、Frame 和 Content 的可测量结构，并设置默认背景、边框、圆角、标题颜色、标题字号和间距。
 
 标题缺口是 GroupBox 的视觉契约：Header 内容区域必须从上边框中形成缺口。缺口不能依赖用 `Background` 覆盖边框线，因为 `Background` 允许为透明或半透明。

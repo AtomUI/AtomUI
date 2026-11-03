@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 ﻿using AtomUI.Controls.Utils;
 using AtomUI.Media;
 using Avalonia;
@@ -10,7 +11,7 @@ using Avalonia.Media.Immutable;
 namespace AtomUI.Controls.Commons;
 
 [TemplatePart("PART_LabelPart",  typeof(TextBlock))]
-internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
+internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl, IControlThemeGlobalOwnerSource
 {
     #region 内部属性定义
 
@@ -47,7 +48,7 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
             nameof(IsAdornerMode),
             o => o.IsAdornerMode,
             (o, v) => o.IsAdornerMode = v);
-    
+
     internal IBrush? RibbonColor
     {
         get => GetValue(RibbonColorProperty);
@@ -58,14 +59,6 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
     {
         get => GetValue(TextProperty);
         set => SetValue(TextProperty, value);
-    }
-    
-    private bool _isAdornerMode;
-
-    internal bool IsAdornerMode
-    {
-        get => _isAdornerMode;
-        set => SetAndRaise(IsAdornerModeProperty, ref _isAdornerMode, value);
     }
 
     internal RibbonBadgePlacement Placement
@@ -97,15 +90,32 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
         get => GetValue(BadgeRibbonCornerTransformProperty);
         set => SetValue(BadgeRibbonCornerTransformProperty, value);
     }
-    
+
+    private bool _isAdornerMode;
+
+    internal bool IsAdornerMode
+    {
+        get => _isAdornerMode;
+        set => SetAndRaise(IsAdornerModeProperty, ref _isAdornerMode, value);
+    }
+
     #endregion
-    
+
+    #region 运行时字段
+
     private TextBlock? _labelText;
+
     private Color? _cornerBrushSourceColor;
+
     private int _cornerBrushDarkenAmount;
+
     private IBrush? _cornerBrush;
+
     private Size _arrangedSize;
+
     private readonly BorderRenderHelper _borderRenderHelper;
+
+    #endregion
 
     static AbstractRibbonBadgeAdorner()
     {
@@ -122,6 +132,8 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
     {
         _borderRenderHelper = new BorderRenderHelper();
     }
+
+    #region 公共与受保护 API
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -193,6 +205,18 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
             context.DrawGeometry(cornerBrush, null, BuildFoldGeometry(layout.Fold));
         }
     }
+
+    #endregion
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner =>
+        Parent is AbstractRibbonBadge owner ? owner :
+        Parent is Panel { Parent: AbstractRibbonBadge panelOwner } ? panelOwner : null;
+
+    #endregion
+
+    #region 私有实现
 
     private IBrush? GetCornerBrush(Color? backgroundColor)
     {
@@ -287,4 +311,6 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
     private readonly record struct RibbonBadgeLayout(Rect BodyRect, Point FoldOrigin, RibbonBadgeFold Fold);
 
     private readonly record struct RibbonBadgeFold(Point P1, Point P2, Point P3, Size Size);
+
+    #endregion
 }

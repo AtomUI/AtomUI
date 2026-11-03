@@ -12,6 +12,10 @@ Collapse Token 只表达组件级视觉变量，例如尺寸、间距、颜色�
 
 ## 2. Token 分类
 
+`CollapseToken` 使用 V2 revision 1，保留15个 Own 字段及四算法60条默认/type/key/slot。Header/Content padding 的 Small、Middle、Large、Custom消费原规则保持：Custom复用Middle；Start/End各三组expand margin进入实际IconButton，HeaderBg/ContentBg仍按普通、borderless、ghost原状态角色消费，圆角在owner分配给首末项。
+
+padding优先级为item原生HeaderPadding/ContentPadding、明确设置的owner ItemHeaderPadding/ItemContentPadding、当前尺寸Own默认；清除原生值后回到下一层，不将局部覆盖写回token。Global字体、heading/body/border/icon角色消费不新增Own；未明确配置ColorText时保持原前景继承。
+
 Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |

@@ -214,3 +214,12 @@ FloatButton 家族的业务命令只属于真实交互按钮。普通 `FloatButt
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+
+CT15当前限定切片覆盖两按钮/三Host/Group实际Own、Global、六专用Style与动态退出，原文字/受控开关/滚动预算保留。字体23与专用Content Padding11,7在原35/40窄宽下可导致逐字符换行、自然高度增长和菜单越出窗口上缘；不以删内容或改宽度消差。BackTop正常显示、精确回顶及Caller Offset binding修复；完整家族、平台/极值/GC及恢复非零仍见[限定审查](../../../../superpowers/plans/2026-10-22-custom-theme/float-button-consumers-visual-review.md)，当前未批准。
+
+
+CT15清理后限定验收：FloatButton精确46项通过、NET8零警告零错误，临时49用例/媒体/驱动已清理；65对具体静态及两offset分类仍待用户审查，完整家族不因此关闭。详见[正式限定结果](../../../../superpowers/plans/2026-10-22-custom-theme/float-button-consumers-results.md)。
+
+
+2026-10-31：65对具体静态（含列明派生换行/裁剪）与两scalar offset Reserved兼容分类已获用户限定批准；两scalar保持未消费，以公开BadgeOffset Point定制，完整家族/CT15及其他边界保留。该批准不授权提交。

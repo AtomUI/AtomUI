@@ -1,12 +1,13 @@
 using AtomUI.Media;
+using AtomUI.Theme;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class ImagePreviewerToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class ImagePreviewerToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -84,37 +85,47 @@ internal sealed class ImagePreviewerToken : AbstractControlDesignToken
     /// </summary>
     public double CoverImageWidth { get; set; }
     
-    public ImagePreviewerToken()
+    [ControlTokenDefault(nameof(PreviewOperationColor))]
+    private static Color DefaultForPreviewOperationColor(in ControlTokenDefaultContext context) => context.Global.ColorTextLightSolid.SetAlphaF(0.65);
 
-    {
-    }
-    
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        PreviewOperationColor         = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.65);
-        PreviewOperationHoverColor    = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.85);
-        PreviewOperationColorDisabled = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.25);
-        PreviewOperationSize          = EffectiveGlobalToken.FontSizeIcon * 1.5;
-        ImagePreviewSwitchSize        = EffectiveGlobalToken.ControlHeightLG;
-        MaskBgColor                   = ColorUtils.FromRgbF(0.3, 0, 0, 0);
-        DialogMinWidth                = 710;
-        DialogMinHeight               = 240;
-        CoverImageWidth               = 200;
-        
-        if (isDarkMode)
-        {
-            TitleBarBackgroundColor       = EffectiveGlobalToken.ColorBorderSecondary;
-        }
-        else
-        {
-            TitleBarBackgroundColor       = EffectiveGlobalToken.ColorBorderSecondary.Darken(1);
-        }
+    [ControlTokenDefault(nameof(PreviewOperationHoverColor))]
+    private static Color DefaultForPreviewOperationHoverColor(in ControlTokenDefaultContext context) => context.Global.ColorTextLightSolid.SetAlphaF(0.85);
 
-        NavButtonBgColor             = EffectiveGlobalToken.ColorBgMask.SetAlphaF(0.1);
-        NavButtonBgHoverColor        = EffectiveGlobalToken.ColorBgMask.SetAlphaF(0.2);
-        FloatToolbarPadding          = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG, 0);
-        FloatToolbarIndicatorPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-    }
-    
+    [ControlTokenDefault(nameof(PreviewOperationColorDisabled))]
+    private static Color DefaultForPreviewOperationColorDisabled(in ControlTokenDefaultContext context) => context.Global.ColorTextLightSolid.SetAlphaF(0.25);
+
+    [ControlTokenDefault(nameof(PreviewOperationSize))]
+    private static double DefaultForPreviewOperationSize(in ControlTokenDefaultContext context) => context.Global.FontSizeIcon * 1.5;
+
+    [ControlTokenDefault(nameof(ImagePreviewSwitchSize))]
+    private static double DefaultForImagePreviewSwitchSize(in ControlTokenDefaultContext context) => context.Global.ControlHeightLG;
+
+    [ControlTokenDefault(nameof(MaskBgColor))]
+    private static Color DefaultForMaskBgColor(in ControlTokenDefaultContext context) => ColorUtils.FromRgbF(0.3, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(DialogMinWidth))]
+    private static double DefaultForDialogMinWidth(in ControlTokenDefaultContext context) => 710;
+
+    [ControlTokenDefault(nameof(DialogMinHeight))]
+    private static double DefaultForDialogMinHeight(in ControlTokenDefaultContext context) => 240;
+
+    [ControlTokenDefault(nameof(CoverImageWidth))]
+    private static double DefaultForCoverImageWidth(in ControlTokenDefaultContext context) => 200;
+
+    [ControlTokenDefault(nameof(TitleBarBackgroundColor))]
+    private static Color DefaultForTitleBarBackgroundColor(in ControlTokenDefaultContext context) => context.Appearance == ThemeAppearance.Dark
+            ? context.Global.ColorBorderSecondary
+            : context.Global.ColorBorderSecondary.Darken(1);
+
+    [ControlTokenDefault(nameof(NavButtonBgColor))]
+    private static Color DefaultForNavButtonBgColor(in ControlTokenDefaultContext context) => context.Global.ColorBgMask.SetAlphaF(0.1);
+
+    [ControlTokenDefault(nameof(NavButtonBgHoverColor))]
+    private static Color DefaultForNavButtonBgHoverColor(in ControlTokenDefaultContext context) => context.Global.ColorBgMask.SetAlphaF(0.2);
+
+    [ControlTokenDefault(nameof(FloatToolbarPadding))]
+    private static Thickness DefaultForFloatToolbarPadding(in ControlTokenDefaultContext context) => new(context.Global.UniformlyPaddingLG, 0);
+
+    [ControlTokenDefault(nameof(FloatToolbarIndicatorPadding))]
+    private static Thickness DefaultForFloatToolbarIndicatorPadding(in ControlTokenDefaultContext context) => new(context.Global.UniformlyPaddingXS, 0);
 }

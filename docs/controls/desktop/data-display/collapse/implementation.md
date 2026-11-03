@@ -4,6 +4,10 @@
 
 ## 1. 实现定位
 
+容器投射由owner按CollapseItem管理typed Local relay：Prepare先退休旧lease，Clear及item detach释放，owner detach批量释放，attach为现有realized容器重接。caller-owned容器不依赖框架一定调用Clear回调，旧Owner padding随lease清空。ControlTheme无法等价保持runtime准备阶段、internal成员及原Local优先级，具体理由写在代码注释中；模板可表达的字体、颜色、状态视觉仍声明于AXAML。
+
+Global通过OwnerTokenResource在CollapseItem锚点查实际公开owner；字体/前景可选绑定读取真实InheritanceParent，正文ColorText明确配置才改变继承结果。没有增加反射绑定或修改共享动效实现；原ContentExpansionAnimator、选择模型及几何计算保持。
+
 本文档覆盖 Collapse 的控件实现、主题接入、状态同步和 Gallery 可见维护边界。具体属性注册、默认值、绘制细节和 AXAML selector 仍应直接阅读源码；本文只记录维护者必须理解的稳定结构和不变量。
 
 ## 2. 源码文件结构

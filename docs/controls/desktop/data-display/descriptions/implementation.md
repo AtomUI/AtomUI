@@ -78,7 +78,7 @@ DescriptionItem.Span / IsFilled changed
   → InvalidateMeasure()
 ```
 
-`DescriptionItem` 不参与视觉树，因此它的 property changed handler 不能反向持有旧生成视觉。生成视觉重建前必须先解除旧 item 订阅并清空 item 到 visual 的映射。
+`DescriptionItem` 不参与视觉树，其property changed handler按当前位置更新生成视觉，不捕获旧cell。模型membership与生成cell membership分开：同一模型仍在Items中时，布局重建保留既有scoped resource host和模型订阅；旧cell的typed Local投射、事件及Native呈现先退休，再按当前布局建立新cell。模型移除/reset/集合替换或owner detach才结束对应模型scope attachment。
 
 媒体断点流：
 
@@ -132,6 +132,10 @@ otherwise
 - 根据当前断点更新列数并布局。
 
 `Items` 属性替换时必须从旧集合解绑，再订阅新集合；如果模板已经接入且控件附加到视觉树，则清空旧视觉、生成新视觉并重新布局。
+
+所有受支持的清空/替换路径先执行RetireGridCells；旧ContentPresenter在清空Content后立即UpdateChild，释放对同一Native Control的visual parent持有，防止新cell建立时出现已有parent异常。原Model.Content不替换、不转成字符串。生成cell准备的internal flags和原Local优先级由typed relay保留，ControlTheme不能等价表达该runtime时机/优先级，代码已注释原因。
+
+焦点回放仅持弱引用并带generation，Loaded后检查同TopLevel、当前cell祖先及当前焦点仍空；新的结构更新、模板切换、detach取消旧generation，完成或目标已移除时消费pending。连续同周期更新保留尚未恢复的弱目标，用户后来选择的焦点优先。detach标dirty，reattach在资源发布请求布局前重建当前模型快照，避免新Items数量与旧cell数量失配。
 
 `DescriptionItem` 生命周期：
 

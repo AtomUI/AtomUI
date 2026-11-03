@@ -85,7 +85,7 @@ Group 内的子项按钮是独立的 `FloatButton` owner，可以在 group-scope
   list 由模板直接创建，关闭时随祖先表面隐藏，开关切换保持同一实例。
 - `trigger` Part 的契约边界止于公开 `FloatButton` 控件本身；其模板内的 `icon`/`content` 由 `FloatButton` owner 的
   descriptor 负责，不由 `FloatButtonGroup` 重复公开。
-- Badge（`DotBadgeAdorner` / `CountBadgeAdorner`）是 Badge 家族的运行时创建控件，拥有独立 descriptor；
+- Badge（`DotBadgeAdorner` / `CountBadgeAdorner`）复用Badge主题资产，但这些Adorner不是公开CountBadge/DotBadge semantic owner，不能自动套用其descriptor批准；
   FloatButton 模板中的 `PART_BadgeLayout` 只是内部定位宿主，不属于任何 Part。
 - ToolTip 是独立的 overlay 控件家族，通过附加属性接入，不属于 FloatButton 的 Part。
 - `FloatButtonSeparatorLayer`、菜单动效表面、`BackgroundFrame`/`Frame` 表面层和 `EmptyControl` 占位都是内部
@@ -112,3 +112,13 @@ Group 的 `MenuPlacement` 决定 `list` 的 Orientation 与展开方向；Trigge
   `BackTopFloatButton` Preview；Examples Tab 的既有示例树保持不变。
 - Semantic 示例标题使用 `Custom Semantic Part styling`，文案只描述 AtomUI owner-scoped Style；Tag 使用当前版本
   `GalleryVersionInfo.DisplayVersion`（`v6.1.3`）。
+
+CT15补充：六专用Style均以AXAML声明实测命中，含Group Default/Click/Hover的list Padding进入真实ContentFrame；没有Name/Loaded/Unloaded节点赋值回退。BackTop声明BadgeLayout接入只修内部模板协作，不发布Badge Part。完整视觉/平台与未决字段分类仍见上述CT15记录。
+
+当前六专用Style静态/实际命中及模式/模板退出已验证；List Padding清除后菜单位置跟随真实reflow刷新，Top/Left末端重新锚定0。Part优先仍高于Own图标尺寸：示例Part33时不宣称Own31同时可见。原窄宽/长文字下字体23和Content Padding11,7造成逐字符换行、菜单出视口沿原Window边界裁剪的影响列入限定审查，不自动当完整体验通过。
+
+
+CT15清理后限定验收：FloatButton精确46项通过、NET8零警告零错误，临时49用例/媒体/驱动已清理；65对具体静态及两offset分类仍待用户审查，完整家族不因此关闭。详见[正式限定结果](../../../../superpowers/plans/2026-10-22-custom-theme/float-button-consumers-results.md)。
+
+
+2026-10-31：65对具体静态（含列明派生换行/裁剪）与两scalar offset Reserved兼容分类已获用户限定批准；两scalar保持未消费，以公开BadgeOffset Point定制，完整家族/CT15及其他边界保留。该批准不授权提交。

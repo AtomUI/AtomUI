@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class DialogToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class DialogToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -98,39 +98,71 @@ internal sealed class DialogToken : AbstractControlDesignToken
     /// </summary>
     public Thickness LoadingIndicatorMargin { get; set; }
     
-    public DialogToken()
+    [ControlTokenDefault(nameof(HeaderBg))]
+    private static Color DefaultForHeaderBg(in ControlTokenDefaultContext context) =>
+        Colors.Transparent;
 
-    {
-    }
+    [ControlTokenDefault(nameof(HeaderMarginBottom))]
+    private static Thickness DefaultForHeaderMarginBottom(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, 0, context.Global.UniformlyMarginXS);
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        HeaderBg       = Colors.Transparent;
-        HeaderFontSize = EffectiveGlobalToken.FontSizeHeading5;
-        ContentBg      = EffectiveGlobalToken.ColorBgElevated;
-        HeaderColor    = EffectiveGlobalToken.ColorTextHeading;
-        ContentPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, 0,
-            EffectiveGlobalToken.PaddingContentHorizontalLG, 0);
-        WindowContentPadding = new Thickness(
-            EffectiveGlobalToken.PaddingContentHorizontalLG,
-            EffectiveGlobalToken.PaddingContentVerticalLG,
-            EffectiveGlobalToken.PaddingContentHorizontalLG,
-            EffectiveGlobalToken.PaddingContentVerticalLG);
-        HeaderPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, EffectiveGlobalToken.UniformlyPaddingSM,
-            EffectiveGlobalToken.PaddingContentHorizontalSM, 0);
-        HeaderMarginBottom = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXS);
-        LogoSize           = EffectiveGlobalToken.SizeLG;
-        MinHeight = EffectiveGlobalToken.ControlHeightLG + HeaderPadding.Top + HeaderPadding.Bottom +
-                    EffectiveGlobalToken.UniformlyMarginXS;
-        MinWidth     = 200;
-        CloseBtnSize = EffectiveGlobalToken.ControlHeight;
-        FooterPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, 0,
-            EffectiveGlobalToken.PaddingContentHorizontalLG, EffectiveGlobalToken.UniformlyPaddingMD);
-        FooterMarginTop    = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
-        FooterBg           = Colors.Transparent;
-        ButtonGroupSpacing = EffectiveGlobalToken.SpacingXS;
-        LoadingIndicatorMargin = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMargin);
-    }
-    
+    [ControlTokenDefault(nameof(LogoSize))]
+    private static double DefaultForLogoSize(in ControlTokenDefaultContext context) =>
+        context.Global.SizeLG;
+
+    [ControlTokenDefault(nameof(HeaderFontSize))]
+    private static double DefaultForHeaderFontSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeHeading5;
+
+    [ControlTokenDefault(nameof(HeaderColor))]
+    private static Color DefaultForHeaderColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextHeading;
+
+    [ControlTokenDefault(nameof(ContentBg))]
+    private static Color DefaultForContentBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgElevated;
+
+    [ControlTokenDefault(nameof(HeaderPadding))]
+    private static Thickness DefaultForHeaderPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.PaddingContentHorizontalLG, context.Global.UniformlyPaddingSM, context.Global.PaddingContentHorizontalSM, 0);
+
+    [ControlTokenDefault(nameof(ContentPadding))]
+    private static Thickness DefaultForContentPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.PaddingContentHorizontalLG, 0, context.Global.PaddingContentHorizontalLG, 0);
+
+    [ControlTokenDefault(nameof(WindowContentPadding))]
+    private static Thickness DefaultForWindowContentPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.PaddingContentHorizontalLG, context.Global.PaddingContentVerticalLG, context.Global.PaddingContentHorizontalLG, context.Global.PaddingContentVerticalLG);
+
+    [ControlTokenDefault(nameof(FooterBg))]
+    private static Color DefaultForFooterBg(in ControlTokenDefaultContext context) =>
+        Colors.Transparent;
+
+    [ControlTokenDefault(nameof(FooterPadding))]
+    private static Thickness DefaultForFooterPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.PaddingContentHorizontalLG, 0, context.Global.PaddingContentHorizontalLG, context.Global.UniformlyPaddingMD);
+
+    [ControlTokenDefault(nameof(FooterMarginTop))]
+    private static Thickness DefaultForFooterMarginTop(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.UniformlyMarginXS, 0, 0);
+
+    [ControlTokenDefault(nameof(CloseBtnSize))]
+    private static double DefaultForCloseBtnSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight;
+
+    [ControlTokenDefault(nameof(MinWidth))]
+    private static double DefaultForMinWidth(in ControlTokenDefaultContext context) =>
+        200d;
+
+    [ControlTokenDefault(nameof(ButtonGroupSpacing))]
+    private static double DefaultForButtonGroupSpacing(in ControlTokenDefaultContext context) =>
+        context.Global.SpacingXS;
+
+    [ControlTokenDefault(nameof(LoadingIndicatorMargin))]
+    private static Thickness DefaultForLoadingIndicatorMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, 0, context.Global.UniformlyMargin);
+
+    [ControlTokenDefault(nameof(MinHeight), nameof(HeaderPadding))]
+    private static double DefaultForMinHeight(in ControlTokenDefaultContext context, Thickness headerPadding) =>
+        context.Global.ControlHeightLG + headerPadding.Top + headerPadding.Bottom + context.Global.UniformlyMarginXS;
 }

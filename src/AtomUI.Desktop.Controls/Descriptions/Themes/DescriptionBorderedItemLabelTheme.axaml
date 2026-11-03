@@ -24,13 +24,13 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="RelativeLineHeight" Value="{atom:SharedTokenResource RelativeLineHeight}"/>
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="RelativeLineHeight" Value="{atom:OwnerTokenResource Kind=RelativeLineHeight, SourceControlType={x:Type atom:Descriptions}}"/>
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource Kind=BorderThickness, SourceControlType={x:Type atom:Descriptions}}" />
         
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorSplit, SourceControlType={x:Type atom:Descriptions}}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextSecondary, SourceControlType={x:Type atom:Descriptions}}"/>
         <Setter Property="Background" Value="{atom:DescriptionsTokenResource LabelBg}"/>
-        <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}"/>
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource Kind=FontSize, SourceControlType={x:Type atom:Descriptions}}"/>
         
         <Style Selector="^[SizeType=Large]">
             <Setter Property="Padding" Value="{atom:DescriptionsTokenResource ItemPaddingLG}"/>

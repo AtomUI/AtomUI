@@ -3,7 +3,15 @@
               xmlns:atom="https://atomui.net"
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.TagTheme"
-              TargetType="atom:Tag">
+              TargetType="atom:Tag" x:DataType="atom:Tag">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+    <Setter Property="BorderThickness" Value="{CompiledBinding $self.RenderScaleAwareBorderThickness}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:Tag">
             <Panel>
@@ -45,17 +53,17 @@
         <Setter Property="FontSize" Value="{atom:TagTokenResource TagFontSize}" />
         <Setter Property="Padding" Value="{atom:TagTokenResource TagPadding}" />
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="RenderScaleAwareBorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="RenderScaleAwareBorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         <Setter Property="TagTextPaddingInline"
                 Value="{atom:TagTokenResource TagTextPaddingInline}" />
 
         <Style Selector="^[Variant=Solid]:not(:preset-color):not(:status-color):not(:custom-color)">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgSolid}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgSolid}" />
             <Setter Property="Foreground" Value="{atom:TagTokenResource SolidTextColor}" />
         </Style>
         <Style Selector="^[Variant=Outlined]:not(:preset-color):not(:status-color):not(:custom-color)">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
@@ -69,9 +77,9 @@
 
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton">
             <Setter Property="IconWidth"
-                    Value="{atom:SharedTokenResource IconSizeXS}" />
+                    Value="{atom:TagTokenResource TagCloseIconSize}" />
             <Setter Property="IconHeight"
-                    Value="{atom:SharedTokenResource IconSizeXS}" />
+                    Value="{atom:TagTokenResource TagCloseIconSize}" />
             <Setter Property="IconBrush"
                     Value="{TemplateBinding Foreground}" />
         </Style>

@@ -2,6 +2,18 @@
 
 本文档记录 Tag 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-31
+
+- Theme
+  - Migrate the nine existing Own defaults to DependencyDefaultsV2/revision1 without changing formulas, keys or slots.
+  - Connect TagCloseIconSize to the actual close glyph and consume Tag, CheckableTag and Group Global values through their registered owners.
+  - Preserve native/Part priority and the TagFontSize family fallback; keep the existing owner-bound TokenTransitions mechanism.
+- Lifecycle
+  - Own and dispose each generated container's template/motion relays during retirement or detach, restoring current projections on attach.
+  - Preserve original option-wrapper content, selection ownership, events and Semantic Part routes.
+- Verification
+  - Keep CT15 acceptance limited to recorded engineering/visual evidence; inherited SelectTag sizing and the CT13 approved boundary remain unchanged.
+
 ## 2026-08-19
 
 - Design
@@ -66,3 +78,6 @@
   - Add Tag implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add Tag control-level changelog.
   - Add Tag Token documentation covering TagToken.
+
+
+CT15当前仅[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/tag-consumers-visual-review.md)26对及列明SelectTag派生影响已获批准；恢复/跨运行微差、CT13既定边界和完整Tag/CT15保留，不授权提交。

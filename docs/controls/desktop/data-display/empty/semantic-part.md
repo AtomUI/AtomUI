@@ -1,5 +1,7 @@
 # Empty Semantic Part 契约
 
+CT15 沿用 root/image/description/footer 四个 Part 与原 marker、selector 和 cardinality。应用通过 `EmptyImageStyle`、`EmptyDescriptionStyle`、`EmptyFooterStyle` 声明式定制实际 Svg、描述 TextBlock、Footer ContentPresenter；清除样式后回到当前 Own/Global/继承值。重模板不更改自定义 Footer 对象或 SVG 内容合同；字体与间距变化可能影响原宽度下的自然布局，限定视觉结论见 [CT15 Empty](../../../../superpowers/plans/2026-10-22-custom-theme/empty-consumers-results.md)。
+
 本文档定义 Empty 对应用公开的 Semantic Part、Selector、类型约束、数量语义和定制边界。Empty 的整体设计见
 [Empty 桌面版架构设计](overview.md)，真实模板节点与生命周期见 [Empty 桌面版实现原理](implementation.md)，系统级规则见
 [AtomUI Semantic Part 系统设计](../../../../architecture/systems/theming/semantic-parts.md)。

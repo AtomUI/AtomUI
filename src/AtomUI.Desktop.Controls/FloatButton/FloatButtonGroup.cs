@@ -1,8 +1,10 @@
 using System.Collections.Specialized;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Commons;
 using AtomUI.Controls.Primitives;
 using AtomUI.Controls.Utils;
+using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Animations;
 using Avalonia;
@@ -196,6 +198,7 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
 
     #endregion
 
+    private readonly Dictionary<AbstractFloatButton, CompositeDisposable> _itemBindings = new();
     private FloatButtonItemsControl? _itemsControl;
     private bool _initPressed;
     private bool _wasOpenOnPointerPressed;
@@ -335,7 +338,7 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
                     {
                         if (e.OldItems[i] is AbstractFloatButton floatButton)
                         {
-                            floatButton.SetCurrentValue(AbstractFloatButton.IsEmbedModeProperty, false);
+                            RetireItemBindings(floatButton);
                         }
                     }
                     _itemsControl.Children.RemoveRange(e.OldStartingIndex, e.OldItems!.Count);
@@ -346,6 +349,14 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
                     {
                         var index = i + e.OldStartingIndex;
                         var child = (Control)e.NewItems![i]!;
+                        if (e.OldItems[i] is AbstractFloatButton previous)
+                        {
+                            RetireItemBindings(previous);
+                        }
+                        if (child is AbstractFloatButton next)
+                        {
+                            NotifyAddItem(next);
+                        }
                         _itemsControl.Children[index] = child;
                     }
                     break;
@@ -358,8 +369,15 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
 
     protected void NotifyAddItem(AbstractFloatButton floatButton)
     {
-        floatButton[!AbstractFloatButton.ShapeProperty]           = this[!ShapeProperty];
-        floatButton[!AbstractFloatButton.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+        RetireItemBindings(floatButton);
+        // Children are caller-owned runtime content, prepared at Local priority
+        // before list membership. Template setters cannot preserve that contract;
+        // these typed handles belong to this group membership and must retire.
+        _itemBindings.Add(floatButton, new CompositeDisposable
+        {
+            BindUtils.RelayBind(this, ShapeProperty, floatButton, AbstractFloatButton.ShapeProperty),
+            BindUtils.RelayBind(this, IsMotionEnabledProperty, floatButton, AbstractFloatButton.IsMotionEnabledProperty)
+        });
         floatButton.SetCurrentValue(AbstractFloatButton.IsEmbedModeProperty, true);
     }
 
@@ -408,11 +426,16 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
     {
         base.OnAttachedToVisualTree(e);
         _isAttachedToVisualTree = true;
+        foreach (var child in Children.OfType<AbstractFloatButton>())
+        {
+            NotifyAddItem(child);
+        }
         ConfigureTriggerType();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        RetireAllItemBindings();
         base.OnDetachedFromVisualTree(e);
         _isAttachedToVisualTree = false;
         DisposeClickTrigger();
@@ -467,6 +490,7 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
 
     private void DetachItemsControlChildren()
     {
+        RetireAllItemBindings();
         if (_itemsControl is { Children.Count: > 0 } itemsControl)
         {
             itemsControl.Children.RemoveRange(0, itemsControl.Children.Count);
@@ -668,5 +692,22 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
         base.OnLoaded(e);
         CalculateItemsControlPosition();
         UpdateMenuMotion(initialize: true);
+    }
+
+    private void RetireItemBindings(AbstractFloatButton child)
+    {
+        if (_itemBindings.Remove(child, out var bindings))
+        {
+            bindings.Dispose();
+        }
+        child.SetCurrentValue(AbstractFloatButton.IsEmbedModeProperty, false);
+    }
+
+    private void RetireAllItemBindings()
+    {
+        foreach (var child in _itemBindings.Keys.ToArray())
+        {
+            RetireItemBindings(child);
+        }
     }
 }

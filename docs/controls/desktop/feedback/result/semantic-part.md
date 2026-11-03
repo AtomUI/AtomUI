@@ -251,3 +251,5 @@ Header/SubHeader 字号变化后，控件必须重新使用同一基线完成 Me
 - Gallery Semantic Preview 只在首次选择 Semantic Parts Tab 后创建，并展示六项 Part 描述。
 - Gallery object/function 样式示例严格映射 Ant Design Result 示例的控件数量、顺序、文案和视觉值，只使用 owner-scoped 生成 Style。
 - Gallery 所有 Semantic Part Tag 使用当前 AtomUI 版本 `v6.1.3`，不复制上游 Semantic DOM 的 since 版本。
+
+CT15阶段结果：24匹配验证、managed/AOT各72检查，132跨运行精确0，候选/AOT各32恢复0；临时材料已清理，最终9精确用例及NET8零警告通过。60对有意变化含自定义glyph原生优先修正待限定审查，原失败账本/资源判据不足/平台/极值和完整家族边界保留，见[结果](../../../../superpowers/plans/2026-10-22-custom-theme/result-consumers-results.md)。

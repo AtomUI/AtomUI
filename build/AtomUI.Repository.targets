@@ -1,4 +1,5 @@
 <Project>
+    <Import Project="$(MSBuildThisFileDirectory)AtomUI.SkiaCompatibility.targets" />
     <PropertyGroup>
         <EnableTrimAnalyzer
             Condition="'$(EnableTrimAnalyzer)' == '' and

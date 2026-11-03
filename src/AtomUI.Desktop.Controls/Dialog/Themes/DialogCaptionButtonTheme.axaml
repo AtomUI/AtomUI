@@ -38,18 +38,18 @@
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM, AnchorControlType={x:Type atom:DialogSurface}}" />
         
-        <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorIcon}" />
+        <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorIcon, AnchorControlType={x:Type atom:DialogSurface}}" />
         
         <Style Selector="^:pointerover">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}" />
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorIconHover}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgTextHover, AnchorControlType={x:Type atom:DialogSurface}}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorIconHover, AnchorControlType={x:Type atom:DialogSurface}}" />
         </Style>
         
         <Style Selector="^:pressed">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextActive}" />
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorIconHover}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgTextActive, AnchorControlType={x:Type atom:DialogSurface}}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorIconHover, AnchorControlType={x:Type atom:DialogSurface}}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">

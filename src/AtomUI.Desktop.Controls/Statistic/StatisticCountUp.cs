@@ -1,11 +1,12 @@
 using Avalonia;
+using AtomUI.Theme.Resources;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class StatisticCountUp : TemplatedControl
+public class StatisticCountUp : TemplatedControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -21,6 +22,9 @@ public class StatisticCountUp : TemplatedControl
     public static readonly StyledProperty<int> PrecisionProperty =
         AvaloniaProperty.Register<StatisticCountUp, int>(nameof(Precision), 0);
     
+    public static readonly StyledProperty<double> AnimatingValueProperty =
+        AvaloniaProperty.Register<StatisticCountUp, double>(nameof(AnimatingValue), 0);
+
     public double EndValue
     {
         get => GetValue(EndValueProperty);
@@ -45,23 +49,22 @@ public class StatisticCountUp : TemplatedControl
         set => SetValue(PrecisionProperty, value);
     }
 
+    public double AnimatingValue
+    {
+        get => GetValue(AnimatingValueProperty);
+        set => SetValue(AnimatingValueProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
     
-    public static readonly StyledProperty<double> AnimatingValueProperty =
-        AvaloniaProperty.Register<StatisticCountUp, double>(nameof(AnimatingValue), 0);
     
     internal static readonly DirectProperty<StatisticCountUp, string?> FormattedValueProperty =
         AvaloniaProperty.RegisterDirect<StatisticCountUp, string?>(nameof(FormattedValue),
             o => o.FormattedValue,
             (o, v) => o.FormattedValue = v);
     
-    public double AnimatingValue
-    {
-        get => GetValue(AnimatingValueProperty);
-        set => SetValue(AnimatingValueProperty, value);
-    }
     
     private string? _formattedValue;
 
@@ -109,4 +112,10 @@ public class StatisticCountUp : TemplatedControl
         base.OnLoaded(e);
         AnimatingValue = EndValue;
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 }

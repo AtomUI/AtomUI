@@ -89,6 +89,10 @@ Empty
 
 ## 6. 生命周期与模板接入
 
+`AbstractEmpty` 在重新挂载后检查当前互斥输入，并回放到原 renderer；离树期间切换 Preset/Source 不再留下旧插画。互斥异常、Source/Path 优先清理和内置 SVG 生成公式保持。
+
+原生 Footer 在换模板时由新 ContentPresenter 重新挂接。模板变更前仅保存原后代焦点的弱引用；Loaded 回调同时检查 owner generation、同一 TopLevel、当前仍为后代且没有后来用户焦点，才恢复焦点。卸载递增 generation 并清 pending，回调不强持有 owner 或 Footer。此处是运行时内容与焦点生命周期，无法通过 ControlTheme Setter 表达；样式、图片尺寸、间距和字体绑定仍由 AXAML 管理。该修复不改 Footer 的对象身份、文本、caret 或内容模板合同。
+
 生命周期规则：
 
 - 构造阶段只注册必要状态，不依赖 template part。

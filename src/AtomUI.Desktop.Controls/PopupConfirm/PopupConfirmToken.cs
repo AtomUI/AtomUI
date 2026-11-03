@@ -3,22 +3,17 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class PopupConfirmToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class PopupConfirmToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
-    public PopupConfirmToken()
-
-    {
-    }
-
     /// <summary>
-    /// 菜单 Popup 最小宽度
+    /// 历史保留资源，默认240；无生产消费者，不作为弹层最小宽度入口。
     /// </summary>
     public double PopupMinWidth { get; set; }
 
     /// <summary>
-    /// 菜单 Popup 最小高度
+    /// 历史保留资源，默认80；无生产消费者，不作为弹层最小高度入口。
     /// </summary>
     public double PopupMinHeight { get; set; }
 
@@ -47,16 +42,29 @@ internal sealed class PopupConfirmToken : AbstractControlDesignToken
     /// </summary>
     public Thickness TitleMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        PopupMinWidth          = 240;
-        PopupMinHeight         = 80;
-        ButtonSpacing          = EffectiveGlobalToken.UniformlyMarginXS;
-        IconMargin             = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS / 2, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        ContentContainerMargin = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXS);
-        TitleMargin            = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXS);
-        ButtonContainerMargin  = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
-    }
-    
+    [ControlTokenDefault(nameof(PopupMinWidth))]
+    private static double DefaultForPopupMinWidth(in ControlTokenDefaultContext context) => 240d;
+
+    [ControlTokenDefault(nameof(PopupMinHeight))]
+    private static double DefaultForPopupMinHeight(in ControlTokenDefaultContext context) => 80d;
+
+    [ControlTokenDefault(nameof(ButtonSpacing))]
+    private static double DefaultForButtonSpacing(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyMarginXS;
+
+    [ControlTokenDefault(nameof(IconMargin))]
+    private static Thickness DefaultForIconMargin(in ControlTokenDefaultContext context) =>
+        new(0, context.Global.UniformlyMarginXS / 2, context.Global.UniformlyMarginXS, 0);
+
+    [ControlTokenDefault(nameof(ContentContainerMargin))]
+    private static Thickness DefaultForContentContainerMargin(in ControlTokenDefaultContext context) =>
+        new(0, 0, 0, context.Global.UniformlyMarginXS);
+
+    [ControlTokenDefault(nameof(TitleMargin))]
+    private static Thickness DefaultForTitleMargin(in ControlTokenDefaultContext context) =>
+        new(0, 0, 0, context.Global.UniformlyMarginXS);
+
+    [ControlTokenDefault(nameof(ButtonContainerMargin))]
+    private static Thickness DefaultForButtonContainerMargin(in ControlTokenDefaultContext context) =>
+        new(0, context.Global.UniformlyMarginXS, 0, 0);
 }

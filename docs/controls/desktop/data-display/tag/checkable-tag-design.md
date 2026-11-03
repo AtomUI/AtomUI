@@ -184,7 +184,7 @@ CheckableTagGroup
 
 主题状态包括 unchecked、checked、pointerover、pressed、focus、disabled。checked 状态只读取 `IsChecked`，不通过 `TagColor` 或 `Variant` 派生。`CheckableTag` 复用 Tag 家族的尺寸、字号、圆角和内容间距语义，并从 SharedToken 读取 primary、text、hover、disabled 和 focus 颜色。
 
-`CheckableTagGroup` 不定义控件 Token；Group 间距使用 SharedToken。选择值、`IsMultiple`、checked、hover、pressed、focus 和 disabled 均为实例状态，不写入 `TagToken`。
+`CheckableTagGroup` 不定义控件 Token；Group间距读取自身Global.SpacingXS。选择值、`IsMultiple`、checked、hover、pressed、focus 和 disabled 均为实例状态，不写入 `TagToken`。
 
 ## 7. 数据流与生命周期
 
@@ -275,3 +275,9 @@ CheckableTag IsCheckedChanged
 | Theme | unchecked/checked/hover/pressed/focus/disabled、Light/Dark 和 Browser/Desktop 一致性。 |
 | Gallery | 独立 Checkable、可取消 Single 和 Multiple 示例，并展示 TwoWay 状态。 |
 | AOT | 不新增 ReflectionBinding、运行时扫描或 trimming warning；Gallery NativeAOT publish 可用。 |
+
+
+CT15补充：Group自身Global.FontFamily沿真实继承进入当前子项，Native字体家族优先；Checkable明确自身Global.FontSizeSM时覆盖TagFontSize家族回退。两者不接管对方的选择/颜色状态。container的Local投射绑定由membership持有与dispose，退役对象不再保留旧ItemsControl/Group；重挂恢复当前模板与motion，模板更新按框架规则重建容器。
+
+
+CT15当前仅[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/tag-consumers-visual-review.md)26对及列明SelectTag派生影响已获批准；恢复/跨运行微差、CT13既定边界和完整Tag/CT15保留，不授权提交。

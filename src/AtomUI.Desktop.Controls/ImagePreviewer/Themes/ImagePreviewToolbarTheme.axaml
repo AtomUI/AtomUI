@@ -39,37 +39,37 @@
 
         <Style Selector="^ /template/ atom|IconButton">
             <Setter Property="IsPassthroughMouseEvent" Value="False" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeightSM}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
+            <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=ControlHeightSM, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=ControlHeightSM, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|ToggleIconButton">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeightSM}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
+            <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=ControlHeightSM, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=ControlHeightSM, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pointerover">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgTextHover, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|ToggleIconButton:pointerover">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgTextHover, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pressed">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextActive}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgTextActive, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|ToggleIconButton:pressed">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextActive}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgTextActive, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
         </Style>
 
         <Style Selector="^ /template/ StackPanel#RootLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource Kind=SpacingXXS, AnchorControlType={x:Type atom:ImagePreviewToolbar}}" />
         </Style>
 
     </ControlTheme>

@@ -181,3 +181,9 @@ PopupConfirm 继承 FlyoutHost 的公开配置入口；它的独立主题显式�
 
 组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
 不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。
+
+## 2026-10-31 实际确认容器
+
+七Own使用DependencyDefaultsV2 Revision1，五间距消费者保持；PopupMinWidth/PopupMinHeight为历史资源，原240/80不施加到当前自然布局。确认容器通过既有内部owner代理接口指向实际PopupConfirm，AXAML锚定真实容器解析终端Global，避免独立IconPresenter的identity遮挡确认角色。正文可选字体/前景复用Core真实继承源；标题/图标的颜色、字重与尺寸由相应角色输入，原生实际内容与专用Style优先。
+
+运行时flyout跨根缺失资源发布转发，复用ThemeContextResourceBridge在容器logical attach/context变化建立，在detach退役；不修改共享scope引擎和既有Flyout动效。确认/取消的真实键盘激活、一次事件及普通非pinned关闭保持，pinned的普通关闭门控不绕过；完整共享框体与真实平台出口仍按Flyout家族独立验收。

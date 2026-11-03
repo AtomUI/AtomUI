@@ -1,4 +1,5 @@
 using AtomUI.Controls;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -8,7 +9,7 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class DrawerInfoContainer : HeaderedContentControl
+internal class DrawerInfoContainer : HeaderedContentControl, IControlThemeGlobalOwnerSource
 {
     #region 内部属性定义
     
@@ -166,8 +167,21 @@ internal class DrawerInfoContainer : HeaderedContentControl
 
     #endregion
 
+
+
+    #region 内部协作 API
+
     internal event EventHandler? CloseRequested;
+
+    #endregion
+
+    #region 运行时字段
+
     private IconButton? _closeButton;
+
+    #endregion
+
+    #region 公共与受保护 API
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -222,6 +236,14 @@ internal class DrawerInfoContainer : HeaderedContentControl
             _closeButton.Click += HandleCloseButtonClick;
         }
     }
+
+    #endregion
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => DrawerThemeOwner.Resolve(this);
+
+    #endregion
 
     private void HandleCloseButtonClick(object? sender, RoutedEventArgs e)
     {

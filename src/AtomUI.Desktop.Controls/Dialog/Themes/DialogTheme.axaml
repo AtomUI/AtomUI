@@ -4,7 +4,7 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Dialog}" TargetType="atom:Dialog">
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="Width" Value="0"/>

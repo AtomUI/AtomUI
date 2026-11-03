@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -163,6 +164,8 @@ public abstract class AbstractTimelineItem : ContentControl
 
     #endregion
 
+    private CompositeDisposable? _ownerBindings;
+
     static AbstractTimelineItem()
     {
         // 指示器内的 rail 会跨出 item 底部边界去衔接下一项节点顶边；
@@ -204,6 +207,23 @@ public abstract class AbstractTimelineItem : ContentControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == ParentProperty)
+        {
+            _ownerBindings?.Dispose();
+            _ownerBindings = null;
+            if (Parent is AbstractTimeline owner)
+            {
+                // Runtime containers can be supplied directly or generated. Mode and
+                // IsReverse are DirectProperty state, so ControlTheme cannot project
+                // them. The real logical parent owns all three inputs; releasing on
+                // Parent change also covers own containers skipped by generator clear.
+                _ownerBindings = new CompositeDisposable(
+                    Bind(OrientationProperty, owner.GetObservable(AbstractTimeline.OrientationProperty)),
+                    Bind(ModeProperty, owner.GetObservable(AbstractTimeline.ModeProperty)),
+                    Bind(IsReverseProperty, owner.GetObservable(AbstractTimeline.IsReverseProperty)));
+            }
+        }
+
         if (change.Property == IsOddProperty ||
             change.Property == IsFirstProperty ||
             change.Property == IsLastProperty ||

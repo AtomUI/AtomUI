@@ -122,6 +122,10 @@ HeaderLayout.IsVisible
 
 ## 5. 视觉与主题模型
 
+明确Global字体与Shared角色进入实际Root及生成cell，原生内容仍为同一对象。结构重建前退休旧cell的Local投射和旧presenter对Native内容的持有，保留model.Content、文本、caret与原生属性；布局、模板、受支持集合重建后，仅在同Root/目标已重挂/焦点仍空时回放弱焦点。后来用户焦点不被覆盖，连续结构更新只延续尚未完成的弱目标。
+
+卸载退休生成呈现并标记快照失效；重挂先按当前模型重建匹配cell数，再接入媒体与模型资源发布。Items替换、Add/Remove/Reset和非null ItemsSource重新物化复用同一退休路径；attached Move/Replace的既定NotSupportedException与ItemsSource=null保留Items行为保持。
+
 Descriptions 的默认视觉由根主题、默认项主题和边框 cell 主题组成。
 
 | 主题文件 | 职责 |

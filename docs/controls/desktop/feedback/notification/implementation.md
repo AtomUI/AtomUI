@@ -67,6 +67,16 @@
 - 数据对象、选项对象、任务对象或节点对象只保存业务数据，不应反向持有不可释放的视觉对象。
 - 弹层、窗口、计时器、异步 loader 和全局管理器必须有明确关闭、解绑或释放路径。
 
+### 实际主题与运行关系
+
+17 Own为V2 Revision1，默认保留原immutable渐变和全部公式/常量。Global按Card/manager真实owner读取；嵌套IconPresenter/close IconButton显式Card source。正文角色字号/前景默认位于root，保留标题FontSizeLG/ColorTextHeading及两类SelectableTextBlock的实际合同；FontFamily通过Core有限原生继承桥和AXAML Setter选择，原生/专用Style优先。
+
+manager模板内稳定presenter状态使用TemplateBinding。运行期卡片先于template需要Position/Motion默认，由Card.BindOwner持有两项类型化订阅；Motion使用Template优先级，ReleaseOwner先停motion/快照，再释放订阅及manager/回调引用。私有稳定_cards集合与事件仍在C#由换模板/Dispose解绑。未重写既有默认图标数据工厂和共享motion/snapshot/scheduler。
+
+progress总时长归有限卡片生命周期，视觉part更换、隐藏/恢复及重挂不改总量；Card.Expiration承接当前remaining，更新当前分子。Expiration=null结束该有限进度周期，下一有限值取得新总量。detach只删除progress并解除TemplatedParent，保留仍有效的模板layout引用；Template属性变更才清引用，OnApplyTemplate重新获取。attach按当前状态重建part，仍有限宽跨列贴底，不增加永久占位。
+
+动态IsShowProgress在已挂载卡片上变化时调用manager现有scheduler.Refresh，重新安排progress需求；不创建逐项timer，也不在Show对象初始化期间触发额外调度/用户回调。快照与关闭/hover/Stack时长机制保持原owner边界。
+
 ## 4. 状态与数据流
 
 Notification 的状态流遵循下面路径：
@@ -202,7 +212,7 @@ Notification 的交互事件应从输入源收敛到控件级语义事件：
   开启且列表 hover 时，manager 暂停全部活动 deadline，离开后从剩余时长恢复。
 - presenter 只保存最后一次真实 pointer 事件的屏幕坐标；resize 或 placement 布局移动改变 bounds 时重新换算并验证命中，
   已移出则同步收拢 Stack 和恢复生命周期。重复 Enter / Exit 必须收敛 panel 状态，不能因缓存布尔值相同而直接返回。
-- 生命周期调度不递减 public `Expiration`，只把剩余时间单向投影到可见进度；没有进度刷新需求时按最近 deadline 单次唤醒。
+- 生命周期调度不改写INotification模型的展示时长快照；当前remaining经IFeedbackStackItem投射到Card.Expiration，再更新可见progress，没有进度刷新需求时按最近 deadline 单次唤醒。
 - scheduler 在本次唤醒结束时清空扫描临时列表，关闭回调完成后读取最新单调时刻再安排下一次唤醒；空闲 manager 不得
   因复用列表保留已关闭卡片，也不得把回调耗时再次计入后续 deadline。
 - `MaxItems` 淘汰先固定本批最旧活动项，再按创建顺序请求关闭；同步关闭或回调修改集合不得改变已选批次。

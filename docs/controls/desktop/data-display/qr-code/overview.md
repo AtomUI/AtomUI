@@ -91,6 +91,8 @@ Public API / inherited command / item source / user input
 
 ## 5. 视觉与主题模型
 
+局部 QRCode Global 作用于原字体、边框、圆角、bordered padding 与两个 Own 颜色依赖，原生属性和专用 `QRCodeCoverStyle` 保持优先。预设状态与调用方状态内容都保留原数据合同。清空 Value 会移除旧二维码，卸载释放生成图，重挂按当前输入重建；Icon 属于调用方。二维码仍使用原编码器、纠错级别和 quiet zone，主题改造不改变 payload。
+
 QRCode 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
 | 主题文件 | 职责 |

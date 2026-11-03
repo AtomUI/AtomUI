@@ -6,6 +6,15 @@
     <ControlTheme x:Key="{x:Type atom:ToolTip}" TargetType="atom:ToolTip">
         <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.TooltipOpen}" />
         <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.TooltipClose}" />
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
+        <Setter Property="Foreground" Value="{atom:ToolTipTokenResource ToolTipColor}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:ArrowDecoratedBox Name="{x:Static atom:ArrowDecoratedBox.ArrowDecoratorPart}"
@@ -22,15 +31,15 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="Background" Value="{atom:ToolTipTokenResource ToolTipBackground}" />
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationFast}" />
+        <Setter Property="MotionDuration" Value="{atom:OwnerTokenResource MotionDurationFast}" />
 
         <Style Selector="^ /template/ atom|ArrowDecoratedBox#PART_ArrowDecorator">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{TemplateBinding FontSize}" />
             <Setter Property="MaxWidth" Value="{atom:ToolTipTokenResource ToolTipMaxWidth}" />
-            <Setter Property="Foreground" Value="{atom:ToolTipTokenResource ToolTipColor}" />
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="Foreground" Value="{TemplateBinding Foreground}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight, SourceControlType={x:Type atom:ToolTip}}" />
             <Setter Property="Padding" Value="{atom:ToolTipTokenResource ContentPadding}" />
             <Setter Property="CornerRadius" Value="{atom:ToolTipTokenResource ToolTipCornerRadius}" />
         </Style>

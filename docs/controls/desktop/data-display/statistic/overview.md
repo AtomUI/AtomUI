@@ -79,6 +79,10 @@ Public API / inherited command / item source / user input
 
 ## 5. 视觉与主题模型
 
+Statistic、TimerStatistic 与独立 CountUp 各自的 Global 身份按真实目标解析。共享的两 Own 仍属于 Statistic，控制原标题与内容字号；局部 Global 可控制相应字体、标题/内容颜色及原 spacing。原生属性和六个专用 Semantic Style 继续是定制入口。数据格式、精度、单位、Formatter、原生 Content 优先与 loading 不因主题迁移改写。
+
+换模板后原生输入保留对象、文本和 caret，并在没有后来用户焦点的条件下恢复焦点。已完成倒计时在重挂或刷新间隔变化后保持完成；只有 Value 变化建立新计时方向。Headless 工程验证不代替真实 OS 输入、完整平台与极值出口。
+
 Statistic 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
 | 主题文件 | 职责 |

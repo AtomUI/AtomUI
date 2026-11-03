@@ -7,6 +7,8 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using SkiaSharp;
 using SkiaSharp.QrCode;
 
@@ -80,16 +82,16 @@ public abstract class AbstractQRCode : TemplatedControl
         set => SetValue(ColorProperty, value);
     }
 
-    public int Size
-    {
-        get => GetValue(SizeProperty);
-        set => SetValue(SizeProperty, value);
-    }
-
     public QRCodeEccLevel EccLevel
     {
         get => GetValue(EccLevelProperty);
         set => SetValue(EccLevelProperty, value);
+    }
+
+    public int Size
+    {
+        get => GetValue(SizeProperty);
+        set => SetValue(SizeProperty, value);
     }
 
     public int IconSize
@@ -178,6 +180,8 @@ public abstract class AbstractQRCode : TemplatedControl
     #endregion
 
     private Button? _refreshButton;
+    private WeakReference<Control>? _pendingTemplateFocus;
+    private int _templateGeneration;
 
     static AbstractQRCode()
     {
@@ -188,17 +192,66 @@ public abstract class AbstractQRCode : TemplatedControl
     {
         base.OnApplyTemplate(e);
 
+        SetRefreshButton(e.NameScope.Find<Button>("PART_RefreshButton"));
+        SetupQRCode();
+        if (_pendingTemplateFocus is { } focus)
+        {
+            _pendingTemplateFocus = null;
+            var generation = _templateGeneration;
+            var weakOwner = new WeakReference<AbstractQRCode>(this);
+            // Native status content reattaches after presenter creation. Runtime
+            // focus restoration and later-user-focus guards cannot be theme Setters.
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (weakOwner.TryGetTarget(out var owner) && owner._templateGeneration == generation &&
+                    focus.TryGetTarget(out var control) && owner.IsVisualAncestorOf(control) &&
+                    TopLevel.GetTopLevel(owner) is { } topLevel &&
+                    ReferenceEquals(TopLevel.GetTopLevel(control), topLevel) &&
+                    topLevel.FocusManager?.GetFocusedElement() is null)
+                {
+                    control.Focus();
+                }
+            }, DispatcherPriority.Loaded);
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        SetRefreshButton(_refreshButton);
+        SetupQRCode();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        ++_templateGeneration;
+        _pendingTemplateFocus = null;
         if (_refreshButton != null)
         {
             _refreshButton.Click -= HandleRefreshButtonClicked;
         }
-        
-        _refreshButton = e.NameScope.Find<Button>("PART_RefreshButton");
+        ClearBitmap();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void SetRefreshButton(Button? button)
+    {
         if (_refreshButton != null)
+        {
+            _refreshButton.Click -= HandleRefreshButtonClicked;
+        }
+        _refreshButton = button;
+        if (this.IsAttachedToVisualTree() && _refreshButton != null)
         {
             _refreshButton.Click += HandleRefreshButtonClicked;
         }
-        SetupQRCode();
+    }
+
+    private void ClearBitmap()
+    {
+        var oldBitmap = Bitmap;
+        Bitmap = null;
+        oldBitmap?.Dispose();
     }
 
     private void HandleRefreshButtonClicked(object? sender, RoutedEventArgs args)
@@ -208,8 +261,9 @@ public abstract class AbstractQRCode : TemplatedControl
 
     private void SetupQRCode()
     {
-        if (string.IsNullOrEmpty(Value))
-        { 
+        if (!this.IsAttachedToVisualTree() || string.IsNullOrEmpty(Value))
+        {
+            ClearBitmap();
             return;
         }
         var eccLevel = EccLevel switch
@@ -248,13 +302,25 @@ public abstract class AbstractQRCode : TemplatedControl
 
         using var image     = surface.Snapshot();
         using var data      = image.Encode(SKEncodedImageFormat.Png, 100);
+        using var stream    = data.AsStream();
         var       oldBitmap = Bitmap;
-        Bitmap = new Bitmap(data.AsStream());
+        Bitmap = new Bitmap(stream);
         oldBitmap?.Dispose();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
+        if (change.Property == TemplateProperty)
+        {
+            var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() as Control;
+            if (focused is not null)
+            {
+                _pendingTemplateFocus = this.IsVisualAncestorOf(focused)
+                    ? new WeakReference<Control>(focused)
+                    : null;
+            }
+            ++_templateGeneration;
+        }
         base.OnPropertyChanged(change);
         if (change.Property == ValueProperty || 
             change.Property == ColorProperty || 

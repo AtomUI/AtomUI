@@ -1,3 +1,5 @@
+using System.Reactive.Disposables;
+using AtomUI.Data;
 using AtomUI.Controls.Commons;
 using Avalonia;
 
@@ -22,38 +24,37 @@ public partial class BackTopFloatButton : AbstractBackTopFloatButton
     
     private protected override void ConfigureBadge()
     {
-        if (_badgeLayout != null)
+        RetireBadge();
+        if (_badgeLayout is null || !IsBadgeEnabled)
         {
-            if (IsBadgeEnabled)
-            {
-                if (IsDotBadge)
-                {
-                    var dotBadge = new DotBadgeAdorner();
-                    dotBadge[!DotBadgeAdorner.BadgeDotColorProperty]   = this[!BadgeEffectiveColorProperty];
-                    dotBadge[!DotBadgeAdorner.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
-                    _badge                                             = dotBadge;
-                }
-                else
-                {
-                    var countBadge = new CountBadgeAdorner();
-                    countBadge[!CountBadgeAdorner.BadgeColorProperty]      = this[!BadgeEffectiveColorProperty];
-                    countBadge[!CountBadgeAdorner.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
-                    countBadge[!CountBadgeAdorner.CountProperty]           = this[!BadgeCountProperty];
-                    countBadge[!CountBadgeAdorner.OverflowCountProperty]   = this[!BadgeOverflowCountProperty];
-                    _badge                                                 = countBadge;
-                }
-                
-                _badgeLayout.Children.Add(_badge);
-                CalculateBadgePosition();
-            }
-            else
-            {
-                if (_badge != null)
-                {
-                    _badgeLayout.Children.Remove(_badge);
-                }
-                _badge = null;
-            }
+            return;
         }
+        // Runtime badge Content is outside this ControlTheme's template scope.
+        // Keep the original Local preparation priority with membership-owned
+        // typed relay handles, retired on mode/template/tree changes.
+        if (IsDotBadge)
+        {
+            var badge = new DotBadgeAdorner();
+            _badgeBindings = new CompositeDisposable
+            {
+                BindUtils.RelayBind(this, BadgeEffectiveColorProperty, badge, DotBadgeAdorner.BadgeDotColorProperty),
+                BindUtils.RelayBind(this, IsMotionEnabledProperty, badge, DotBadgeAdorner.IsMotionEnabledProperty)
+            };
+            _badge = badge;
+        }
+        else
+        {
+            var badge = new CountBadgeAdorner();
+            _badgeBindings = new CompositeDisposable
+            {
+                BindUtils.RelayBind(this, BadgeEffectiveColorProperty, badge, CountBadgeAdorner.BadgeColorProperty),
+                BindUtils.RelayBind(this, IsMotionEnabledProperty, badge, CountBadgeAdorner.IsMotionEnabledProperty),
+                BindUtils.RelayBind(this, BadgeCountProperty, badge, CountBadgeAdorner.CountProperty),
+                BindUtils.RelayBind(this, BadgeOverflowCountProperty, badge, CountBadgeAdorner.OverflowCountProperty)
+            };
+            _badge = badge;
+        }
+        _badgeLayout.Children.Add(_badge);
+        CalculateBadgePosition();
     }
 }

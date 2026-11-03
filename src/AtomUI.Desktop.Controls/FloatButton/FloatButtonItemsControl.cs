@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections.Specialized;
 using AtomUI.Controls;
 using Avalonia;
@@ -11,65 +12,65 @@ namespace AtomUI.Desktop.Controls;
 
 using ControlList = Avalonia.Controls.Controls;
 
-internal class FloatButtonItemsControl : TemplatedControl
+internal class FloatButtonItemsControl : TemplatedControl, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
-    
+
     public static readonly StyledProperty<FloatButtonShape> ShapeProperty =
         FloatButton.ShapeProperty.AddOwner<FloatButtonItemsControl>();
-    
+
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
         Border.BoxShadowProperty.AddOwner<FloatButtonItemsControl>();
-    
+
     public static readonly StyledProperty<Orientation> OrientationProperty =
         StackPanel.OrientationProperty.AddOwner<FloatButtonItemsControl>();
-    
+
     public static readonly StyledProperty<FloatButtonGroupMenuPlacement> MenuPlacementProperty =
         FloatButtonGroup.MenuPlacementProperty.AddOwner<FloatButtonItemsControl>();
 
     public static readonly StyledProperty<bool> IsTriggerModeProperty =
         AvaloniaProperty.Register<FloatButtonItemsControl, bool>(nameof(IsTriggerMode));
-    
+
     public FloatButtonShape Shape
     {
         get => GetValue(ShapeProperty);
         set => SetValue(ShapeProperty, value);
     }
-    
+
     public BoxShadows BoxShadow
     {
         get => GetValue(BoxShadowProperty);
         set => SetValue(BoxShadowProperty, value);
     }
-    
+
     public Orientation Orientation
     {
         get => GetValue(OrientationProperty);
         set => SetValue(OrientationProperty, value);
     }
-    
+
     public FloatButtonGroupMenuPlacement MenuPlacement
     {
         get => GetValue(MenuPlacementProperty);
         set => SetValue(MenuPlacementProperty, value);
     }
-    
+
     public bool IsTriggerMode
     {
         get => GetValue(IsTriggerModeProperty);
         set => SetValue(IsTriggerModeProperty, value);
     }
-    
+
     [Content] 
     public ControlList Children { get; } = new ();
- 
+
     #endregion
 
     #region 内部属性定义
 
     internal static readonly StyledProperty<IList<(Point, Point)>?> LinesProperty =
         AvaloniaProperty.Register<FloatButtonItemsControl, IList<(Point, Point)>?>(nameof(Lines));
-    
+
     internal IList<(Point, Point)>? Lines
     {
         get => GetValue(LinesProperty);
@@ -77,19 +78,19 @@ internal class FloatButtonItemsControl : TemplatedControl
     }
 
     #endregion
-    
+
     private StackPanel? _itemsLayout;
 
     static FloatButtonItemsControl()
     {
         AffectsMeasure<FloatButtonItemsControl>(ShapeProperty, OrientationProperty);
     }
-    
+
     public FloatButtonItemsControl()
     {
         Children.CollectionChanged += NotifyChildrenChanged;
     }
-    
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -98,14 +99,6 @@ internal class FloatButtonItemsControl : TemplatedControl
         _itemsLayout?.Children.AddRange(Children);
     }
 
-    private void DetachItemsLayoutChildren()
-    {
-        if (_itemsLayout is { Children.Count: > 0 } itemsLayout)
-        {
-            itemsLayout.Children.RemoveRange(0, itemsLayout.Children.Count);
-        }
-    }
-    
     protected virtual void NotifyChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (_itemsLayout != null)
@@ -194,6 +187,35 @@ internal class FloatButtonItemsControl : TemplatedControl
             Lines = lines;
         }
         return size;
+    }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner
+    {
+        get
+        {
+            for (Control? current = TemplatedParent as Control ?? Parent as Control;
+                 current is not null;
+                 current = current.TemplatedParent as Control ?? current.Parent as Control)
+            {
+                if (current is FloatButtonGroup group)
+                {
+                    return group;
+                }
+            }
+            return null;
+        }
+    }
+
+    #endregion
+
+    private void DetachItemsLayoutChildren()
+    {
+        if (_itemsLayout is { Children.Count: > 0 } itemsLayout)
+        {
+            itemsLayout.Children.RemoveRange(0, itemsLayout.Children.Count);
+        }
     }
 
     private int CountVisibleChildren()

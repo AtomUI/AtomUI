@@ -1,5 +1,9 @@
 # Drawer 桌面版实现原理
 
+CT15 接入（2026-11-01）：Drawer以真实InheritanceParent桥及ControlTheme可选TextElement字体保留原继承/Native优先；两个私有容器通过现有Global owner代理归公共Drawer，模板视觉声明Owner资源/anchor。LogicalChildren、ThemeVariant、OpenOn/chrome lease及CT11路径复用。Motion/Push/Size默认保留Template优先typed binder：根Setter或SizeType selector会改变Style/StyleTrigger优先级，静态caller style与Native/clear合同已有实测，代码已写明不等价原因。
+
+标题AXAML局部CharacterEllipsis保留全文属性与Extra；稳定打开及原开启请求完成后回放当前模板actor，防止新模板停在Opacity0。首开预隐藏、关闭版本校验和原视口/extent保留。当前73项聚焦通过、52默认同，纯成员阶段7源/3控件16→0且指纹/注册/字段事件顺序同；最终三版、清理后模块/NET8及限定批准尚待，见[结果](../../../../superpowers/plans/2026-10-22-custom-theme/drawer-consumers-results.md)。
+
 本文档描述 Drawer 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Drawer 桌面版架构设计](overview.md)，变化记录见 [Drawer Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Drawer Token 设计](token.md)。
 
 ## 1. 实现定位
@@ -89,7 +93,7 @@ Public API / ItemsSource / Command / Event
 ### 语义部件基础设施
 
 - 全部非 root 语义部件位于运行时创建的 `DrawerContainer` 内，统一 `CrossVisualRoot + RuntimeCreated`，marker 静态声明在 `DrawerContainerTheme.axaml`（`PART_Mask`）与 `DrawerInfoContainerTheme.axaml`（`Frame`、`InfoHeader`、`HeaderText`、`ExtraContentPresenter`、`InfoContainer`、`InfoFooter`、`PART_CloseButton`）。
-- 容器可达性不变量：`AttachToLayer` 在 `layer.Children.Add` 之前调用 `((ISetLogicalParent)this).SetParent(drawer)`（Panel 不会覆盖已显式设置的逻辑父），`DetachFromLayer` 置空；owner 嵌套生成 Semantic Style 的命中依赖此不变量。
+- 容器可达性不变量：`AttachToLayer`在把容器加入layer之前，由Drawer加入真正的`LogicalChildren`（Panel保留已建立的逻辑owner），`DetachFromLayer`对称移除；除Semantic Style命中外，完整成员关系还负责向已打开容器传播资源热更新。动画时长由主题读取Drawer有效Global的Slow，视觉位置和可用尺寸继续由实际layer计算。
 - `BindToDrawer` 显式中继 `ThemeVariantScope.ActualThemeVariant`（ImagePreviewer 先例），保证容器跟随 owner 主题变体。
 - `Drawer : ISemanticPartCrossRootProvider`：容器挂层（`Open` 末尾）、`NotifyClosed`、`ReleaseDrawerContainer` 三处触发 `CrossRootsChanged`；`GetCrossRoots()` 仅在容器有视觉父时返回 `[container]`。
 - `IsPinnedOpen`：`DrawerContainer.OnPointerReleased`（遮罩点击）与 `HandleCloseRequested`（关闭按钮）两处拦截，钉住时不落 `IsOpen=false`。
@@ -185,3 +189,9 @@ Drawer 的交互事件应从输入源收敛到控件级语义事件：
 
 本专项当前实机证据为 Windows 已测试、macOS 已测试；Linux X11/Wayland 未测试。未执行平台不得根据共享代码路径
 或 Headless 结果推断为已通过。
+
+
+CT15最新限定验收：有效managed/AOT各116检查/196帧，164静态跨运行全0、各68主恢复0；35临时/1518取证/550原会话和4最终文件已清理，最终38精确模块及NET8零警告零错误通过。仅20对明确静态待用户限定批准，定时/平台/GC/极值与完整家族仍保留，详见[限定视觉表](../../../../superpowers/plans/2026-10-22-custom-theme/drawer-consumers-visual-review.md)。
+
+
+百分比 OpenOn 的 SizeChanged 订阅仅在 Drawer 处于视觉树且已打开时获取；未挂载或脱离后替换 OpenOn 只计算当前尺寸，不让存活目标保留已退出 Drawer。再次挂载沿原 Open 路径恢复订阅，关闭和脱离解除，保留横纵百分比公式与原容器/滚动合同。

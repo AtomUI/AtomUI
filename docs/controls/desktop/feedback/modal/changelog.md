@@ -2,11 +2,22 @@
 
 本文档记录 Modal 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-31
+
+- Dialog 17项与MessageBox 2项Own迁有效默认Revision1，MinHeight读取有效Own HeaderPadding，保留明确下游值及原默认/资源协议。
+- Surface/OverlayPresenter Global映射真实Dialog/MessageBox终端，内部模板按锚点读取公共owner，避免internal类型回退成无效资源key。
+- Surface可选字体/字号/前景接通，未配置保留物理宿主原生继承；标题角色、原生内容/专用Part及Host尺寸/会话机制保持。
+
 ## 2026-10-29
 
 - Performance
   - Hold the Window content cache lease while the modal mask fades in or out, so mask frames composite cached window content instead of re-rendering the page; render-thread median drops from about 9.5 ms to 2.4 ms per mask frame on the measured Wayland Gallery.
   - Surface zoom now writes the compositor transform channels instead of `RenderTransform`; closing during opening hands the channels over without a reset.
+
+## 2026-10-29
+
+- Theme / Implementation
+  - 已生根Dialog的Overlay加入逻辑子集合；未生根时复用placement target资源桥。Native窗口首次测量与显示取同一逻辑资源owner，物理窗口ownership保持。
 
 ## 2026-10-28
 
@@ -17,6 +28,7 @@
   - 关闭先连续替代入场，生命周期任务先登记后执行，保留 Footer、按钮、焦点和实际宿主释放边界。
 - Validation
   - 受控时钟覆盖首帧、原点、反向、实际结束和覆盖释放；原生呈现预算独立验收，不以 Headless 推断 FPS。
+
 
 ## 2026-10-17
 
@@ -228,3 +240,8 @@
   - Add Modal implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add Modal control-level changelog.
   - Add Modal Token documentation covering DialogToken.
+
+
+## 2026-11-01
+
+- 修正 modal Overlay 的 Tab/ShiftTab 可进入 owner 输入/按钮的问题；导航约束由 ControlTheme 按 IsModal 声明，保留 modeless 向外遍历、嵌套恢复和既有 Enter/Escape/关闭否决行为。

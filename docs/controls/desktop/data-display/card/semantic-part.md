@@ -265,7 +265,7 @@ root 是 Card owner 本身，在 Card 实例生命周期内始终存在且恰好
 `IsInnerMode`、`IsHoverable`、边框、背景、圆角、阴影、动效和全部内容入口，也是其他 Card Part 的 owner-scoped
 Selector 边界。
 
-适合在 root 上定制整体背景、边框、圆角、阴影、透明度、Margin 和状态组合。root 不表示模板中的背景 Frame、DockPanel、
+适合在root定制整体背景、边框、圆角、阴影、透明度、Margin、外表面Padding和状态组合。root 不表示模板中的背景 Frame、DockPanel、
 Skeleton 或任一内容 presenter；这些节点的 Name、数量和层级不属于 root 契约。
 
 ### 2.2 header
@@ -480,3 +480,9 @@ Semantic Style 服从 Avalonia 原生属性优先级。Part Setter 命中只证�
 - `CardGridContent`、`CardGridItem`、`CardTabsContent` 和 `CardActionButton` 不产生 Card 家族额外 descriptor。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - Generator 静态输出和 NativeAOT 路径不依赖反射、VisualTree 扫描或运行时 descriptor 发现。
+
+## 主题默认与真实效果
+
+CardActionsStyle的Background和Padding投射到内部现有Frame，纵向分隔线使用真实child坐标；Tag命中不能替代颜色、inset和完整点击区域验证。原actions未消费Padding top1纠正为原生0，实际默认0与原透明背景保持。明确ActionsBg与ExtraColor只是ControlTheme可选默认，CardActionsStyle/CardExtraStyle仍可覆盖。
+
+Card根Padding作用于整个外Frame，CardBodyStyle.Padding只作用body；GridItem原生Padding优先于其三档默认。Meta的同名title由自身owner隔离，Card标题选择器不穿入其模板。所有布局型定制保持原内容、尺寸及原input/scroll合同；无支持能力的状态不伪造。

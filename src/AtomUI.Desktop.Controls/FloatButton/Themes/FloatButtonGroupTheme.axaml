@@ -43,11 +43,11 @@
 
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="MenuMotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="MenuMotionDuration" Value="{atom:OwnerTokenResource MotionDurationMid}" />
 
         <Style Selector="^[Shape=Square]">
-            <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsSecondary}" />
+            <Setter Property="BoxShadow" Value="{atom:OwnerTokenResource Kind=BoxShadowsSecondary, AnchorControlType={x:Type atom:FloatButtonGroup}}" />
         </Style>
 
         <Style Selector="^[MenuPlacement=Top], ^[MenuPlacement=Bottom]">

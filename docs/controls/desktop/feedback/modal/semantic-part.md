@@ -232,13 +232,13 @@ Dialog body 内嵌 `Skeleton`（加载态常驻），用户内容还常包含 `C
   不维护跨打开状态。
 - **Overlay 宿主**：`OverlayDialogPresenter` 由 `OpenAsync` 运行时创建，加入 `DialogOverlayLayer`。为让 owner 作用域
   的生成 Semantic Style 命中 presenter 子树，实现阶段必须按 Drawer 先例，在 `layer.Children.Add` **之前**对 presenter
-  执行 `((ISetLogicalParent)presenter).SetParent(_dialog)`，并在 teardown 时置空；`Dialog` 必须实现
+  加入Dialog的原生`LogicalChildren`，并在teardown时对称移除；`Dialog`必须实现
   `ISemanticPartCrossRootProvider`，`GetCrossRoots()` 返回存活的 presenter/Surface，供 Gallery 语义预览收集跨根。
   该逻辑父**只在 Dialog owner 已附加到逻辑树时设置**（与 `OverlayDialogPresenter` 既有的 inheritance parent 条件一致）：
   owner 未附加时 owner 作用域样式本就无法激活，此时保持 layer 所有权以避免改变 presenter 的 `Parent` 语义。
   因此 Overlay 可达性的前提是 owner 已进入可视/逻辑树（声明式 `IsOpen` 与静态 API 两条路径都满足）。
-- **Window 宿主**：`DialogSurface` 是 `DialogWindow.Content`，`DialogWindow` 的逻辑父已指向 `Dialog`
-  （`WindowDialogPresenter` 的 `SetParent(_dialog)`），因此 `container`/`body`/`footer` 的 marker 在该宿主完整存在
+- **Window 宿主**：`DialogSurface`是`DialogWindow.Content`，Dialog已生根时逻辑owner指向Dialog；未生根时资源owner
+  取placement target，再回退物理owner。`container`/`body`/`footer`的marker在该宿主完整存在
   （`mask`/`wrapper`/`header`/`title`/`close` 不物化，见上文 Optional 说明）。**owner 实例级 Semantic Style 经该逻辑
   父链在 Window 宿主同样命中**（控件级回归 `Window_Host_Owner_Scoped_Semantic_Styles_Cascade_Via_Logical_Parent`
   实证：owner `Styles` 中的生成 Part Style 命中独立 TopLevel 内的 `container`；Gallery 的样式化窗口 Dialog 演示即该
@@ -444,3 +444,8 @@ internal-observable）。本次改造将其替换为上述 8 个公共 Part；`h
 - 上游 `close` 绝对定位，AtomUI `close` 在标题栏按钮组内（§5.4）。
 - 上游 `container` 独占 `boxShadow`，AtomUI 阴影当前在 `PART_ShadowHost`（§5.1，待 Gate A 决策）。
 - Window 宿主为原生窗口，无 `mask`/`wrapper`/`header`/`title`/`close`；owner 实例级样式经逻辑父链命中（§2）。
+
+
+### 主题输入与原生字体边界
+
+root仍是零尺寸会话控制器，继承属性不隐式成为Surface请求。实际body/container/title等Part使用声明的ContractType原生属性定制；Global字体则通过当前Surface的具体Dialog/MessageBox owner消费，未明确配置时保留真实Host字体。两者不能以“将控制器原12转发到Window原14”相互替代。MinHeight的HeaderPadding依赖只改变明确Own上游的下游默认，不修改Part路线/基数或Host结构下限。

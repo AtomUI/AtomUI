@@ -241,3 +241,13 @@ ToolTip 实例拥有 OpenMotion/CloseMotion，主题提供 ZoomBig/Fast 默认�
 
 组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
 不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。
+
+## 2026-10-31 消费者与资源边界
+
+ToolTip的6 Own使用DependencyDefaultsV2 Revision1，5 Active；历史MotionDuration只保留资源，实际动效继续消费Owner.Global.MotionDurationMid，不增加第二动效入口。正文默认14/浅色文本角色由根Setter承接，模板ArrowDecoratedBox使用TemplateBinding字号/前景，MinHeight显式选择ToolTip Global；FontFamily复用Core有限真实继承源。
+
+freestanding Popup有逻辑parent却不在该parent的LogicalChildren中，资源查询可找到最新scope而ResourcesChanged不自动向其内容转发。ToolTip复用ThemeContextResourceBridge：logical attach建立，context变化重建，detach清理；不增加scope、复制调度器或替换Avalonia。打开/弹层绑定与当前模板part绑定分开持有，OnApplyTemplate先释放旧part；当前host/实例的附加属性选源是运行关系，模板路径不能等价表达，所以类型化绑定由当前part订阅集管理。
+
+颜色采用可退役覆盖帧保留原preset覆盖关系，同时保留底层Local/资源表达式；Preset与Color变更重新取当前选定来源，清除/关闭/换模板释放，资源在覆盖期间更新后仍能恢复最新值。渲染变换、Transitions和已完成CT11动效机制不改。Closed结束后清除内部AdornedControl，避免保留可复用Tip时反向保留旧host；通知顺序及声明式卸载/重挂意图保持。
+
+ToolTip重套模板时，外层共享ShadowsAwareContainer也会重新解析当前Border/Arrow，圆角和阴影mask不再引用旧part；订阅沿共享surface bindings退役，保留原几何/裁剪数值。

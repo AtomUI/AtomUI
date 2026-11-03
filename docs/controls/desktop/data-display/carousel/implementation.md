@@ -160,3 +160,15 @@ AutoPlay 由 Carousel 持有的单个 `DispatcherTimer` 驱动，选中页的进
 
 `CarouselPageIndicator` 的选中宽度和透明度由共享初始化会话管理，首次选中页直接呈现。自动播放进度使用独立 Animation，其播放、可见性跟踪和取消流程保持独立。
 共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。
+
+## CT15 真实消费者与退出
+
+Carousel、CarouselPage、CarouselNavButton具有独立公开identity。组合导航、分页与indicator通过已有owner代理消费Carousel Global；独立Nav仍自身identity，Page字体保持自身Global/Native与正常继承。七Own保持四算法28默认，ArrowOffset为显式可选输入、缺省回原PaginationOffset。轴向有效Margin继续由原运行时函数计算，ControlTheme声明标量输入和最终TemplateBinding；两个Direct包装器各自通知正确property。
+
+CarouselPagination在Prepare持有每container typed relay句柄，保持Local时机及ContentTemplate非空条件；ClearContainer/detach释放、attach恢复现存容器，避免退役indicator通过Indexer source保留producer。进度停止/关闭/失选将ProgressValue与有效显示宽度都清零；真实正常时钟反例和A/B见CT15记录。
+
+模板重套用前解除旧导航button Click，attach恢复当前节点；函数先移除后添加避免重复。VirtualizingCarouselPanel退出时取消transition，释放旧visual membership与回收标记、清池并使重挂重新measure；caller-owned页保留Content和Native值，只有生成container调用框架ClearItemContainer。保留原虚拟化、Items/ItemsSource、选择、固定视口、分页/滚动/裁剪和原始页面内容。
+
+当前聚焦验证/实际Skia反证及剩余边界见[CT15执行](../../../../superpowers/plans/2026-10-22-custom-theme/carousel-consumers.md)；视觉/AOT、清理与最终验收尚未完成，不以默认迁移/共享动效证据关闭家族。没有公开Semantic Part descriptor，不发布虚构Part，内部PART仅模板协作。
+
+CT15阶段验证：26聚焦+2持续工作用例通过，managed/AOT各48，112静态跨运行精确0；临时材料已清理，最终3精确用例/NET8零警告通过。44对有意静态变化待限定审查，4跨运行时相/16旧新持续态和完整家族边界保留，见[结果](../../../../superpowers/plans/2026-10-22-custom-theme/carousel-consumers-results.md)。

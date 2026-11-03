@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections;
 using System.Collections.Specialized;
 using AtomUI.Controls;
@@ -11,7 +12,7 @@ namespace AtomUI.Desktop.Controls;
 
 using ControlList = Avalonia.Controls.Controls;
 
-public class CardTabsContent : TemplatedControl
+public class CardTabsContent : TemplatedControl, IThemeInheritanceSource
 {
     #region 公共属性定义
     public static readonly StyledProperty<object?> TabBarExtraContentProperty = 
@@ -50,6 +51,12 @@ public class CardTabsContent : TemplatedControl
         get => GetValue(TabItemTemplateProperty);
         set => SetValue(TabItemTemplateProperty,  value);
     }
+    public SizeType SizeType
+    {
+        get => GetValue(SizeTypeProperty);
+        set => SetValue(SizeTypeProperty, value);
+    }
+
     #endregion
     
     #region 内部属性定义
@@ -60,11 +67,6 @@ public class CardTabsContent : TemplatedControl
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CardTabsContent>();
     
-    public SizeType SizeType
-    {
-        get => GetValue(SizeTypeProperty);
-        set => SetValue(SizeTypeProperty, value);
-    }
     
     internal bool IsMotionEnabled
     {
@@ -103,6 +105,14 @@ public class CardTabsContent : TemplatedControl
         }
     }
     
+    #region 实现 IThemeInheritanceSource 接口
+
+    // ControlTheme cannot read the protected inheritance parent; its Setters own
+    // optional typography while this bridge exposes the actual native source.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
     private void HandleTabsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (_tabControl != null)

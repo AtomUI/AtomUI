@@ -8,12 +8,17 @@
             <atom:IconButtonTheme TargetType="atom:ImagePreviewNavButton" />
         </ControlTheme.BasedOn>
         
+        <!-- Explicit Own activates the previously unconsumed option; unset keeps
+             the original auto size and native Width/Height retain priority. -->
+        <Setter Property="Width" Value="{atom:ImagePreviewerTokenResource ImagePreviewSwitchSize, WhenExplicit=True}" />
+        <Setter Property="Height" Value="{atom:ImagePreviewerTokenResource ImagePreviewSwitchSize, WhenExplicit=True}" />
+
         <Style Selector="^:is(atom|ImagePreviewNavButton)">
             <Setter Property="IconWidth" Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}"/>
             <Setter Property="IconHeight" Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}"/>
             <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource NavButtonBgColor}"/>
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextLightSolid}"/>
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingXS}"/>
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorTextLightSolid, AnchorControlType={x:Type atom:ImagePreviewNavButton}}"/>
+            <Setter Property="Padding" Value="{atom:OwnerTokenResource Kind=PaddingXS, AnchorControlType={x:Type atom:ImagePreviewNavButton}}"/>
         
             <Style Selector="^:pointerover">
                 <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource NavButtonBgHoverColor}"/>

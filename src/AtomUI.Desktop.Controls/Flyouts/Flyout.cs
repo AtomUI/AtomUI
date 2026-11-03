@@ -229,6 +229,8 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
 
     private bool _hasPendingPinnedOpen;
 
+    private Control? _resourceBindingContext;
+
     private PopupControl? _popupControl;
 
     private AvaloniaObject? _motionConfigurationOwner;
@@ -297,6 +299,12 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
 
     protected override bool ShowAtCore(Control placementTarget, bool showAtPointer = false)
     {
+        if (IsOpen && !ReferenceEquals(Target, placementTarget))
+        {
+            // Retire the old host before installing the new target's resources;
+            // otherwise base.ShowAtCore's close callback releases the new lease.
+            CloseForLifecycle();
+        }
         EnsureGlobalResourceBindings(placementTarget);
         if (Popup is PopupControl popup)
         {
@@ -333,6 +341,17 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (IsOpen && change.Property == HorizontalOffsetProperty)
+        {
+            // PopupFlyoutBase copies offsets only while opening. This runtime
+            // popup is outside a ControlTheme; replay hot Own/native offsets
+            // without reopening it or losing focus and the original content.
+            Popup.SetCurrentValue(AvaloniaPopup.HorizontalOffsetProperty, HorizontalOffset);
+        }
+        else if (IsOpen && change.Property == VerticalOffsetProperty)
+        {
+            Popup.SetCurrentValue(AvaloniaPopup.VerticalOffsetProperty, VerticalOffset);
+        }
         if (change.Property == IsPopupPinnedOpenProperty &&
             !change.GetNewValue<bool>())
         {
@@ -424,6 +443,7 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
 
         _globalResourceBindingDisposables?.Dispose();
         _globalResourceBindingDisposables = null;
+        _resourceBindingContext = null;
     }
 
     internal void CloseForLifecycle()
@@ -474,10 +494,12 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
 
     private void EnsureGlobalResourceBindings(Control context)
     {
-        if (_globalResourceBindingDisposables is not null)
+        if (_globalResourceBindingDisposables is not null && ReferenceEquals(_resourceBindingContext, context))
         {
             return;
         }
+        ReleaseGlobalResourceBindings();
+        _resourceBindingContext = context;
 
         _globalResourceBindingDisposables = new CompositeDisposable(3)
         {
@@ -647,7 +669,7 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         _pointerHorizontalOffsetBinding = null;
         _pointerVerticalOffsetBinding   = null;
 
-        if (_globalResourceBindingDisposables is null)
+        if (_globalResourceBindingDisposables is null || _resourceBindingContext is not { } context)
         {
             return;
         }
@@ -656,10 +678,19 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
             _pointerHorizontalOffsetTokenKey != null &&
             _pointerVerticalOffsetTokenKey != null)
         {
-            _pointerHorizontalOffsetBinding = TokenResourceBinder.CreateGlobalResourceBinding(
-                this, HorizontalOffsetProperty, _pointerHorizontalOffsetTokenKey, BindingPriority.Style);
-            _pointerVerticalOffsetBinding = TokenResourceBinder.CreateGlobalResourceBinding(
-                this, VerticalOffsetProperty, _pointerVerticalOffsetTokenKey, BindingPriority.Style);
+            // The non-Visual flyout must read the placement target's scoped Own
+            // identity, not an enum key through Application resources. Runtime
+            // Pointer state retains its original Style-priority fallback.
+            _pointerHorizontalOffsetBinding = _pointerHorizontalOffsetTokenKey is FlyoutHostTokenKind horizontal
+                ? TokenResourceBinder.CreateControlTokenBinding(typeof(FlyoutHost), context, this,
+                    HorizontalOffsetProperty, horizontal, BindingPriority.Style)
+                : TokenResourceBinder.CreateGlobalResourceBinding(
+                    this, HorizontalOffsetProperty, _pointerHorizontalOffsetTokenKey, BindingPriority.Style);
+            _pointerVerticalOffsetBinding = _pointerVerticalOffsetTokenKey is FlyoutHostTokenKind vertical
+                ? TokenResourceBinder.CreateControlTokenBinding(typeof(FlyoutHost), context, this,
+                    VerticalOffsetProperty, vertical, BindingPriority.Style)
+                : TokenResourceBinder.CreateGlobalResourceBinding(
+                    this, VerticalOffsetProperty, _pointerVerticalOffsetTokenKey, BindingPriority.Style);
         }
     }
 

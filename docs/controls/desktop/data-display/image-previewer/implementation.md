@@ -424,9 +424,8 @@ Loading/error 自定义模板只替换内容。模板不能通过视觉存在与
   一致命中），`popup.actions` 只允许以已发布的 `.semantic-popup-footer` 作为模板跨入锚点。
 - overlay 宿主模板根 Panel 只承担 `popup.root` 容器职责、不得直接涂背景；半透明遮罩背景必须由独立的 `popup.mask` 子元素
   承担，与上游 `.ant-image-preview`（root）与 `.ant-image-preview-mask`（mask）的分层一致。
-- 宿主必须保持挂入 owner 的 logical parent 链与 ThemeVariant binding 中继；popup 部件生成 Selector 依赖该链命中 overlay
-  宿主子树（overlay 与 owner 同 TopLevel）。native dialog 是独立 Window/TopLevel，owner 作用域样式不跨其边界级联，dialog 内
-  预览视觉经 host 契约（owner 属性/Token 中继与 App 级 `ImageViewer` 主题）定制；破坏该链只破坏 overlay 宿主的 `popup.*` 命中。
+- Both hosts retain the public owner's logical and theme-variant chains. Native dialog uses the existing rooted-owner `IStyleHost.StylingParent` pattern to apply generated Semantic Part styles across its independent TopLevel; detached owners fall back to Application themes. Overlay and native routes must both hit their real parts.
+
 
 ## 11. 测试与验证
 
@@ -468,9 +467,17 @@ Loading/error 自定义模板只替换内容。模板不能通过视觉存在与
   `ImagePreviewFloatToolbarTheme`、`ImagePreviewerOverlayHostTheme` 的静态 marker 清单（含 overlay 新增 `popup.mask`
   遮罩子元素），及 native dialog 运行时注入 `popup.root` marker 的断言。
 - 生成 Semantic Style 命中：嵌套 Semantic Style 在 overlay 宿主命中全部 `popup.*`（overlay 与 owner 同 TopLevel）；
-  native dialog 内 marker 完整存在但 owner 作用域样式不跨 Window/TopLevel 级联（以回归测试固定该边界）；`popup.mask`
+  native dialog 经 rooted-owner StyleHost 链命中专用 AXAML Style（原反向测试已纠正）；`popup.mask`
   在 overlay 命中、在 native dialog 不存在的 Optional 语义。
 - popup 生命周期：open-close-reopen、owner detach 与 close 后不残留 marker、多个 owner 实例的宿主隔离、source 替换后
   marker 与命中关系保持不变。
 - Gallery 语义预览：`root`/`image`/`cover` 在 owner 模板内高亮，`popup.*` 因宿主 internal 且无公开访问器仅列出描述、不参与
   高亮；NativeAOT publish。
+
+## CT15 consumer checkpoint
+
+Fourteen Own defaults use DependencyDefaultsV2/revision1 with 56 unchanged four-algorithm value/type/key/slot records. ImagePreviewSwitchSize activates only for explicit Own input, retaining automatic default size and native priority. Public entry typography preserves inheritance and native values; native host typography falls back to the original Window resource unless the entry Global is explicit. Private composition assets use the existing owner proxy and AnchorControlType; detached assets retain a valid resource fallback. Overlay logical attach/context changes establish the existing resource publication bridge, removed and disposed on detach.
+
+140 focused checks passed at this checkpoint. Full state, lifecycle, rendering/AOT, cleanup and final acceptance remain open; see [CT15 execution record](../../../../superpowers/plans/2026-10-22-custom-theme/image-previewer-consumers.md).
+
+CT15 verification checkpoint: 142 focused checks, managed/AOT200 each; 104 intentional pairs pending limited review. Temporary sources/media/driver cleaned; final117 focused tests and NET8 zero warnings passed. 29 static and64 timed cross-runtime differences, OS/Browser/input/extreme boundaries and full-family acceptance remain open. See [results](../../../../superpowers/plans/2026-10-22-custom-theme/image-previewer-consumers-results.md).

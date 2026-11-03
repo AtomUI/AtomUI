@@ -1,3 +1,5 @@
+using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -9,7 +11,7 @@ using Avalonia.Media;
 namespace AtomUI.Controls.Commons;
 
 [TemplatePart("PART_IndicatorSurface", typeof(Control))]
-internal abstract class AbstractDotBadgeAdorner : TemplatedControl
+internal abstract class AbstractDotBadgeAdorner : TemplatedControl, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
@@ -46,6 +48,7 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
     }
 
     private DotBadgeStatus? _status;
+    private ThemeContextResourceBridge? _themeResourceBridge;
 
     public DotBadgeStatus? Status
     {
@@ -131,9 +134,26 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
         _motion.Detach();
     }
 
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        UpdateThemeResourceBridge();
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        ClearThemeResourceBridge();
+        base.OnDetachedFromLogicalTree(e);
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == ThemeScope.ContextProperty && ((ILogical)this).IsAttachedToLogicalTree)
+        {
+            UpdateThemeResourceBridge();
+        }
+
         if (change.Property == IsMotionEnabledProperty || change.Property == MotionDurationProperty)
         {
             _motion.UpdateConfiguration(IsMotionEnabled, MotionDuration);
@@ -196,5 +216,36 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
             ((ISetLogicalParent)this).SetParent(null);
         }
         AdornerLayer.SetAdornedElement(this, null);
+    }
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner =>
+        Parent is AbstractDotBadge owner ? owner :
+        Parent is Panel { Parent: AbstractDotBadge panelOwner } ? panelOwner : null;
+
+    private void UpdateThemeResourceBridge()
+    {
+        var context = GetValue(ThemeScope.ContextProperty) ?? ThemeScope.ResolveContext(this);
+        if (context is not null && ReferenceEquals(_themeResourceBridge?.OwnerContext, context))
+        {
+            return;
+        }
+        ClearThemeResourceBridge();
+        if (context is not null)
+        {
+            // AdornerLayer owns the visual branch without owning the logical
+            // Badge membership. AXAML cannot forward its missing publication.
+            _themeResourceBridge = new ThemeContextResourceBridge(context);
+            Resources.MergedDictionaries.Add(_themeResourceBridge);
+        }
+    }
+
+    private void ClearThemeResourceBridge()
+    {
+        if (_themeResourceBridge is { } bridge)
+        {
+            _themeResourceBridge = null;
+            Resources.MergedDictionaries.Remove(bridge);
+            bridge.Dispose();
+        }
     }
 }

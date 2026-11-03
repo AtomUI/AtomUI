@@ -76,7 +76,7 @@ WindowMessageManager (root，对应上游 list)
 | AtomUI 节点 | MessageCard owner（表面投影到 `Border#PART_Frame`，动效由 Frame 承载） |
 | 职责 | 单条消息项根元素：承载 `Message`、`MessageType`、`Icon`、`IsClosing`、`IsClosed`、`IsMotionEnabled` 与进入/退出动效；根表面（背景、圆角、阴影、内边距）投影到模板中的 `Border#PART_Frame`。对应上游 notice root。 |
 | 相关 API | `Message`、`MessageType`、`Icon`、`IsClosing`、`IsClosed`、`IsMotionEnabled`、`Close()`、`MessageClosed` |
-| 相关 Token | `ContentBg`、`ContentPadding`、SharedToken（`BoxShadows`、`BorderRadiusLG`） |
+| 相关 Token | `ContentBg`、`ContentPadding`、Card Global（`BoxShadows`、`BorderRadiusLG`） |
 | 稳定性 | stable since 6.2.0 |
 
 #### `wrapper`
@@ -220,7 +220,7 @@ API，`IsClosing` / `IsClosed` 关闭状态，以及 `IsMotionEnabled` 与进出
   `ContractType` 与 `x:SetterTargetType` 据此声明。适合定制 `Foreground`、`FontSize`、`LineHeight`、
   `TextWrapping`。
 
-`icon` 的可见性由 `Icon` 数据状态驱动（`SetupDefaultMessageIcon` 会为所有 `MessageType` 设置默认图标）；
+`icon` 的可见性由 `Icon` 数据状态驱动（ControlTheme的五状态Style以Template逐卡创建默认图标，null按原合同恢复当前类型默认）；
 Semantic Style 覆盖 `IsVisible` 会绕过数据状态机，属于不推荐用法。
 
 ### 2.3 WindowMessageManager root / listContent
@@ -401,3 +401,10 @@ marker，均属于公共主题契约变更。
 `Position` 在模板应用和属性变化时同步伪类及 presenter 状态。验证顶部/底部的左、中、右六种定位，覆盖运行时
 切换、非默认 `Padding`、堆叠开关和阈值变化。列表的公开样式目标始终是 `ItemsControl`；内部 presenter、panel
 和背板变更不能改变 `semantic-list-content` 的 owner 作用域或 marker 数量。
+
+
+### 排版与状态边界
+
+正文的原有字号/前景角色默认放在Card root，title继承，因此原生root FontSize/Foreground与专用MessageCardTitleStyle都可达实际SelectableTextBlock；LineHeight和选择色仍读取各自Card Global。FontFamily按真实原生继承与明确Card Global选择。root移入角色默认会改变原未被正文消费的root有效字号/前景，不能用默认像素一致掩盖该属性合同变化。
+
+默认类型图标仍是数据默认：每卡/每状态Template实例化，用户Icon本地值优先，切换类型可更新默认；marker本身保持唯一稳定实例。图标状态色显式读取MessageCard owner，专用MessageCardIconStyle仍可覆盖IconBrush等公开视觉属性。`DockPanel.HorizontalSpacing`及`IconPresenter.IconBrush`在外部AXAML Setter中应使用明确目标类型或x:SetterTargetType；不能把root没有同名属性的编译失败改成代码回退。

@@ -1,35 +1,14 @@
 using AtomUI.Controls.Commons;
-using AtomUI.Data;
-using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-public class MarqueeLabel : AbstractMarqueeLabel
+public class MarqueeLabel : AbstractMarqueeLabel, IThemeInheritanceSource
 {
-    private IDisposable? _tokenBindings;
+    #region 实现 IThemeInheritanceSource 接口
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        _tokenBindings?.Dispose();
-        _tokenBindings = new System.Reactive.Disposables.CompositeDisposable
-        {
-            TokenResourceBinder.CreateControlTokenBinding(
-                this,
-                CycleSpaceProperty,
-                MarqueeLabelTokenKind.CycleSpace),
-            TokenResourceBinder.CreateControlTokenBinding(
-                this,
-                MoveSpeedProperty,
-                MarqueeLabelTokenKind.DefaultSpeed)
-        };
-    }
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        _tokenBindings?.Dispose();
-        _tokenBindings = null;
-        base.OnDetachedFromVisualTree(e);
-    }
+    #endregion
 }

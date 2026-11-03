@@ -31,7 +31,7 @@ Badge 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
-- Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
+- 20个Own默认以DependencyDefaultsV2/revision1从有效Global派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
 ### 3.1 RibbonBadge Token 语义
@@ -77,3 +77,16 @@ Badge 的控件专项模型通过 Theme 消费 Token：
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | Ribbon offset / 折角 Token | 验证 Start/End、target/standalone、长短文本和预设色/自定义色下的主体位置、折角三角形和背景区像素。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+
+## 7. CT15 依赖与消费者
+
+Count11/Dot5/Ribbon4保持名称、type/key/slot及四算法80默认。Count的CornerRadius/SM通过既有Own依赖参数读取有效IndicatorHeight/SM；明确CornerRadius（含0）仍优先，未将半径公式改成height/2。Count字体、颜色、padding、shadow各保留原角色；Dot点大小/颜色/阴影/label间距与Ribbon Offset/immutable transform/darken/padding进入原paint/layout目标。
+
+Dot 的 `ShadowColor` 可独立热更新，包含透明值和清除回默认；现有指示器的阴影绘制随之刷新，不依赖 `ShadowSize` 同时变化。该接线修正不改变其默认颜色、资源key或slot。
+
+字体Global落在三个public owner的无模板ControlTheme，以TextElement附加属性表达，保留原生附加字体优先和clear回Global；Count真实字号仍Own TextFontSize/SM角色。内部Adorner通过既有公共owner代理解析颜色/圆角等Global，不使用内部独立身份偷换owner。Count/Dot target mode的跨根发布复用现有ThemeContextResourceBridge，logical detach移除并dispose。
+
+Ribbon immutable transform需验证其Matrix.Value，不以默认ToString仅输出CLR类型名作为完整值证明。原Offset横向外伸/纵向避让、三角折角与darken语义不改。Count两条已定位退出路径的修正见[退出结果](../../../../superpowers/plans/2026-10-22-custom-theme/badge-count-retirement-results.md)，其余视觉边界见[CT15记录](../../../../superpowers/plans/2026-10-22-custom-theme/badge-consumers.md)，不因默认迁移/局部通过关闭家族。
+
+实例颜色覆盖释放后恢复本来Token绑定；不把实例颜色状态写进Own，也不改变原颜色映射。25临时与32既有匹配验证中Count composition回收1FAIL，其余56PASS；颜色clear已通过，其他视觉/生命周期边界仍见上述CT15记录。

@@ -2,6 +2,13 @@
 
 本文档记录 Message 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-31
+
+- 六Own迁有效默认Revision1，保留全部默认/type/key/slot，明确CardHeight为Reserved，不新增固定高度约束。
+- Card/manager Global按真实owner消费；正文角色默认移到root，使原生字号/前景进入实际SelectableTextBlock，FontFamily复用真实继承。
+- 默认图标迁入既有五状态Style的逐实例Template，修复类型切换保留旧图标；保留自定义Icon及null恢复默认。
+- 卡片与manager的运行期状态订阅有明确释放归属；稳定presenter状态绑定移至AXAML，原关闭/计时/堆叠机制复用。
+
 ## 2026-10-27
 
 - Motion
@@ -9,6 +16,7 @@
   - 进入/退出改用共享 Motion 轨迹和框架时钟，关闭从当前透明度与矩阵连续替代入场。
   - 协调层保留业务版本与单次关闭提交，移除旧过渡订阅、两套取消源、额外帧屏障与等待旧执行清理的路径。
   - 保持 64 DIP 方向、完整时长曲线、堆叠布局与 Semantic Part route，补齐同步通知重入的覆盖释放。
+
 
 ## 2026-09-22
 
@@ -121,3 +129,8 @@
   - Add Message implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add Message control-level changelog.
   - Add Message Token documentation covering MessageToken.
+
+
+## 2026-11-01
+
+- 补充既有消息 NoWrap、显式换行自然高度与窗口反馈层锚点边界，保持原模板和布局行为。

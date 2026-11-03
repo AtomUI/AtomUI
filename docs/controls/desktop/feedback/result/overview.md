@@ -154,3 +154,5 @@ Result 公开 `root`、`icon`、`title`、`subTitle`、`extra` 和 `body`。完�
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查 Semantic Preview、owner-scoped Style 示例、源码片段入口和延迟实例化。 |
+
+CT15阶段结果：24匹配验证、managed/AOT各72检查，132跨运行精确0，候选/AOT各32恢复0；临时材料已清理，最终9精确用例及NET8零警告通过。60对有意变化含自定义glyph原生优先修正待限定审查，原失败账本/资源判据不足/平台/极值和完整家族边界保留，见[结果](../../../../superpowers/plans/2026-10-22-custom-theme/result-consumers-results.md)。

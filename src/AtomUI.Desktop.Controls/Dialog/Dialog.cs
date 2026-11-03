@@ -19,6 +19,7 @@ public partial class Dialog : TemplatedControl,
                               ISemanticPartCrossRootProvider
 {
     #region 公共属性定义
+
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<Dialog, string?>(nameof(Title));
 
@@ -166,8 +167,6 @@ public partial class Dialog : TemplatedControl,
         set => SetValue(ContentTemplateProperty, value);
     }
 
-    public IAvaloniaDependencyResolver? DependencyResolver { get; set; }
-
     public bool IsOpen
     {
         get => GetValue(IsOpenProperty);
@@ -265,12 +264,6 @@ public partial class Dialog : TemplatedControl,
         set => SetValue(ResultProperty, value);
     }
 
-    public DialogHostType DialogHostType
-    {
-        get => GetValue(DialogHostTypeProperty);
-        set => SetValue(DialogHostTypeProperty, value);
-    }
-
     public DialogStandardButtons StandardButtons
     {
         get => GetValue(StandardButtonsProperty);
@@ -299,6 +292,12 @@ public partial class Dialog : TemplatedControl,
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
+    }
+
+    public DialogHostType DialogHostType
+    {
+        get => GetValue(DialogHostTypeProperty);
+        set => SetValue(DialogHostTypeProperty, value);
     }
 
     /// <summary>
@@ -360,6 +359,8 @@ public partial class Dialog : TemplatedControl,
         set => SetValue(HostMaxHeightProperty, value);
     }
 
+    public IAvaloniaDependencyResolver? DependencyResolver { get; set; }
+
     public AvaloniaList<DialogButton> CustomButtons { get; } = new();
 
     public Action<IReadOnlyList<DialogButton>>? ButtonsConfigure
@@ -382,42 +383,20 @@ public partial class Dialog : TemplatedControl,
     #region 公共事件定义
 
     public event EventHandler? Closed;
+
     public event EventHandler? Opened;
+
     public event EventHandler<CancelEventArgs>? Closing;
+
     public event EventHandler? Accepted;
+
     public event EventHandler? Rejected;
+
     public event EventHandler<DialogFinishedEventArgs>? Finished;
+
     public event EventHandler<DialogButtonClickedEventArgs>? ButtonClicked;
 
-    #endregion
-
-    #region ISemanticPartCrossRootProvider 实现
-
     public event EventHandler? CrossRootsChanged;
-
-    public IReadOnlyList<Visual> GetCrossRoots()
-    {
-        var presenter = _session?.Presenter;
-        if (presenter is Visual overlayRoot && overlayRoot.GetVisualParent() is not null)
-        {
-            return [overlayRoot];
-        }
-
-        // Window 宿主：跨根是原生 DialogWindow（独立 TopLevel）。语义预览据此在该窗口内解析并高亮部件
-        // （Adorner 落在宿主窗口自己的 AdornerLayer，先例：ImagePreviewer 的 native dialog）。
-        // 该上报只服务跨根解析；owner 作用域的样式级联仍不跨 TopLevel（见 semantic-part.md）。
-        if (presenter is WindowDialogPresenter { HostWindow.IsVisible: true } windowPresenter)
-        {
-            return [windowPresenter.HostWindow];
-        }
-
-        return Array.Empty<Visual>();
-    }
-
-    internal void NotifyCrossRootsChanged()
-    {
-        CrossRootsChanged?.Invoke(this, EventArgs.Empty);
-    }
 
     #endregion
 
@@ -475,17 +454,14 @@ public partial class Dialog : TemplatedControl,
             _ => PlacementTarget is not null
         };
 
-    private protected IReadOnlyList<DialogButton> SurfaceButtons =>
-        _surfaceButtons ?? Array.Empty<DialogButton>();
-
     #endregion
 
-    #region 运行时字段
+    #region 内部协作 API
 
-    private Action<IReadOnlyList<DialogButton>>? _buttonsConfigure;
-    private IReadOnlyList<DialogButton>? _surfaceButtons;
-
-    #endregion
+    internal void NotifyCrossRootsChanged()
+    {
+        CrossRootsChanged?.Invoke(this, EventArgs.Empty);
+    }
 
     internal virtual object? GetSurfaceContent()
     {
@@ -510,4 +486,53 @@ public partial class Dialog : TemplatedControl,
             _surfaceButtons = null;
         }
     }
+
+    internal void AttachOverlayPresenter(OverlayDialogPresenter presenter)
+    {
+        if (!LogicalChildren.Contains(presenter))
+        {
+            LogicalChildren.Add(presenter);
+        }
+    }
+
+    internal void DetachOverlayPresenter(OverlayDialogPresenter presenter)
+    {
+        LogicalChildren.Remove(presenter);
+    }
+
+    #endregion
+
+    #region 运行时字段
+
+    private Action<IReadOnlyList<DialogButton>>? _buttonsConfigure;
+
+    private IReadOnlyList<DialogButton>? _surfaceButtons;
+
+    #endregion
+
+    #region 公共与受保护 API
+
+    public IReadOnlyList<Visual> GetCrossRoots()
+    {
+        var presenter = _session?.Presenter;
+        if (presenter is Visual overlayRoot && overlayRoot.GetVisualParent() is not null)
+        {
+            return [overlayRoot];
+        }
+
+        // Window 宿主：跨根是原生 DialogWindow（独立 TopLevel）。语义预览据此在该窗口内解析并高亮部件
+        // （Adorner 落在宿主窗口自己的 AdornerLayer，先例：ImagePreviewer 的 native dialog）。
+        // 该上报只服务跨根解析；owner 作用域的样式级联仍不跨 TopLevel（见 semantic-part.md）。
+        if (presenter is WindowDialogPresenter { HostWindow.IsVisible: true } windowPresenter)
+        {
+            return [windowPresenter.HostWindow];
+        }
+
+        return Array.Empty<Visual>();
+    }
+
+    private protected IReadOnlyList<DialogButton> SurfaceButtons =>
+        _surfaceButtons ?? Array.Empty<DialogButton>();
+
+    #endregion
 }

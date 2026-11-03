@@ -75,6 +75,10 @@ Public API / ItemsSource / Command / Event
 
 ## 5. 生命周期与模板接入
 
+原生 Header、Content 与前后缀中的输入控件在换模板时由新 presenter 重新挂接。AbstractStatistic 仅保存原后代焦点的弱引用，在 Loaded 后检查 generation、同一 TopLevel、后代关系和当前焦点为空，再恢复；卸载取消旧回调，不覆盖后来用户焦点，不改变内容对象、文本、caret 或原生字体颜色。运行时焦点恢复无法由主题 Setter 表达；视觉绑定仍由 AXAML 管理。
+
+TimerStatistic 的计时方向属于当前 `Value` 的业务状态。只有 Value 实际变化时重新分类；重挂或修改 RefreshDuration 仅重建原 clock，已完成的倒计时保持 0，完成事件不重复。显隐暂停/恢复、旧 Tick 解绑与卸载释放沿用既有机制；新设置过去时间仍按原合同正计时，不能把重建时的当前时间当成新的业务目标。
+
 生命周期规则：
 
 - 构造阶段只注册必要状态，不依赖 template part。

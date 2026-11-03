@@ -4,6 +4,7 @@ using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Animations;
 using AtomUI.Utils;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -19,7 +20,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 internal sealed class OverlayDialogPresenter : ContentControl,
-                                               IDialogPresenter
+                                               IDialogPresenter, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
@@ -203,6 +204,34 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         return new ValueTask(_showTask);
     }
 
+    public ValueTask CloseAsync()
+    {
+        if (_closeTask is null)
+        {
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _closeTask = completion.Task;
+            _ = CompleteOperationAsync(completion, CloseCoreAsync);
+        }
+        return new ValueTask(_closeTask);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        if (_disposeTask is null)
+        {
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _disposeTask = completion.Task;
+            _ = CompleteOperationAsync(completion, DisposeCoreAsync);
+        }
+        return new ValueTask(_disposeTask);
+    }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => _dialog;
+
+    #endregion
+
     private async Task ShowCoreAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -230,10 +259,19 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         // 作用域样式本就无法激活，也避免改变 presenter 的 Parent 语义。该条件与上面的 inheritance parent 一致。
         if (((ILogical)_dialog).IsAttachedToLogicalTree)
         {
-            ((ISetLogicalParent)this).SetParent(_dialog);
+            _dialog.AttachOverlayPresenter(this);
         }
 
         _dialogLayer.Add(this);
+        if (!((ILogical)_dialog).IsAttachedToLogicalTree)
+        {
+            // This runtime overlay root is not a logical child of the placement target.
+            // Reuse the scoped bridge so its resource notifications reach the whole surface.
+            var bridge = new DialogResourceBridge(_placementTarget);
+            _bindings.Add(bridge);
+            _bindings.Add(Disposable.Create(() => Resources.MergedDictionaries.Remove(bridge)));
+            Resources.MergedDictionaries.Add(bridge);
+        }
         _dialog.NotifyCrossRootsChanged();
         AttachOwnerGeometryBindings();
         UpdateLayerBounds(_dialogLayer.AvailableSize);
@@ -318,16 +356,6 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         }
     }
 
-    public ValueTask CloseAsync()
-    {
-        if (_closeTask is null)
-        {
-            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            _closeTask = completion.Task;
-            _ = CompleteOperationAsync(completion, CloseCoreAsync);
-        }
-        return new ValueTask(_closeTask);
-    }
 
     private async Task CloseCoreAsync()
     {
@@ -448,17 +476,6 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         }
     }
 
-    public ValueTask DisposeAsync()
-    {
-        if (_disposeTask is null)
-        {
-            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            _disposeTask = completion.Task;
-            _ = CompleteOperationAsync(completion, DisposeCoreAsync);
-        }
-        return new ValueTask(_disposeTask);
-    }
-
     private async Task DisposeCoreAsync()
     {
         Exception? firstException = null;
@@ -556,6 +573,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         // 只清除本 presenter 自己建立的 owner 逻辑父，避免误清 layer 建立的所有权。
         if (ReferenceEquals(((ILogical)this).LogicalParent, _dialog))
         {
+            _dialog.DetachOverlayPresenter(this);
             ((ISetLogicalParent)this).SetParent(null);
         }
 
@@ -1169,5 +1187,4 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _dialogLayer?.Activate(this);
         _surface.Focus(NavigationMethod.Pointer);
     }
-
 }

@@ -4,6 +4,28 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:WindowMessageManager}" TargetType="atom:WindowMessageManager">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:OwnerTokenResource Kind="ColorText" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="ColorText" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Padding" Value="{atom:MessageCardTokenResource MessageTopMargin}" />
         <Setter Property="Template">
             <ControlTemplate>
@@ -31,12 +53,17 @@
                                 Margin="{Binding FirstBackplateMargin, ElementName=PART_Items}" />
                     </Panel>
                     <atom:FeedbackStackPresenter x:Name="PART_Items"
+                                          Position="{TemplateBinding Position}"
+                                          IsStackEnabled="{TemplateBinding IsStackEnabled}"
+                                          StackThreshold="{TemplateBinding StackThreshold}"
+                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                          StackMode="Message"
                                           Classes.semantic-list-content="True" />
                 </Grid>
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion, SourceControlType={x:Type atom:WindowMessageManager}}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
 
@@ -49,8 +76,8 @@
             <Setter Property="VerticalAlignment" Value="Top" />
             <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="Background" Value="{atom:MessageCardTokenResource ContentBg}" />
-            <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsTertiary}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+            <Setter Property="BoxShadow" Value="{atom:OwnerTokenResource BoxShadowsTertiary, SourceControlType={x:Type atom:WindowMessageManager}}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG, SourceControlType={x:Type atom:WindowMessageManager}}" />
             <Setter Property="Opacity" Value="1" />
             <Setter Property="RenderTransform" Value="translate(0px, 0px)" />
             <Setter Property="Transitions">

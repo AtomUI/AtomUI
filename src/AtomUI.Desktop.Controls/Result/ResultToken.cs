@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class ResultToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class ResultToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
     /// <summary>
@@ -41,32 +41,48 @@ internal sealed class ResultToken : AbstractControlDesignToken
     public Thickness HeaderMargin { get; set; }
     public Thickness StatusImageMargin { get; set; }
 
-    public ResultToken()
+    [ControlTokenDefault(nameof(HeaderFontSize))]
+    private static double DefaultForHeaderFontSize(in ControlTokenDefaultContext context) => context.Global.FontSizeHeading3;
 
-    {
-    }
+    [ControlTokenDefault(nameof(SubHeaderFontSize))]
+    private static double DefaultForSubHeaderFontSize(in ControlTokenDefaultContext context) => context.Global.FontSize;
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        HeaderFontSize    = EffectiveGlobalToken.FontSizeHeading3;
-        SubHeaderFontSize = EffectiveGlobalToken.FontSize;
-        StatusIconSize    = EffectiveGlobalToken.FontSizeHeading3 * 3;
-        ExtraMargin       = new Thickness(0, EffectiveGlobalToken.UniformlyMargin, 0, 0);
+    [ControlTokenDefault(nameof(StatusIconSize))]
+    private static double DefaultForStatusIconSize(in ControlTokenDefaultContext context) => context.Global.FontSizeHeading3 * 3;
 
-        ImageWidth  = 250;
-        ImageHeight = 295;
+    [ControlTokenDefault(nameof(ExtraMargin))]
+    private static Thickness DefaultForExtraMargin(in ControlTokenDefaultContext context) => new(0, context.Global.UniformlyMargin, 0, 0);
 
-        ResultInfoIconColor    = EffectiveGlobalToken.ColorInfo;
-        ResultSuccessIconColor = EffectiveGlobalToken.ColorSuccess;
-        ResultWarningIconColor = EffectiveGlobalToken.ColorWarning;
-        ResultErrorIconColor   = EffectiveGlobalToken.ColorError;
+    [ControlTokenDefault(nameof(ImageWidth))]
+    private static double DefaultForImageWidth(in ControlTokenDefaultContext context) => 250;
 
-        ContentPadding    = new Thickness(EffectiveGlobalToken.UniformlyPadding * 2.5, EffectiveGlobalToken.UniformlyPaddingLG);
-        ContentMargin     = new Thickness(0, EffectiveGlobalToken.UniformlyPaddingLG, 0, 0);
-        StatusImageMargin = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMargin);
-        HeaderMargin      = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS);
-        FramePadding      = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG * 2, EffectiveGlobalToken.UniformlyMarginXL);
-    }
-    
+    [ControlTokenDefault(nameof(ImageHeight))]
+    private static double DefaultForImageHeight(in ControlTokenDefaultContext context) => 295;
+
+    [ControlTokenDefault(nameof(ResultInfoIconColor))]
+    private static Color DefaultForResultInfoIconColor(in ControlTokenDefaultContext context) => context.Global.ColorInfo;
+
+    [ControlTokenDefault(nameof(ResultSuccessIconColor))]
+    private static Color DefaultForResultSuccessIconColor(in ControlTokenDefaultContext context) => context.Global.ColorSuccess;
+
+    [ControlTokenDefault(nameof(ResultWarningIconColor))]
+    private static Color DefaultForResultWarningIconColor(in ControlTokenDefaultContext context) => context.Global.ColorWarning;
+
+    [ControlTokenDefault(nameof(ResultErrorIconColor))]
+    private static Color DefaultForResultErrorIconColor(in ControlTokenDefaultContext context) => context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(ContentPadding))]
+    private static Thickness DefaultForContentPadding(in ControlTokenDefaultContext context) => new(context.Global.UniformlyPadding * 2.5, context.Global.UniformlyPaddingLG);
+
+    [ControlTokenDefault(nameof(ContentMargin))]
+    private static Thickness DefaultForContentMargin(in ControlTokenDefaultContext context) => new(0, context.Global.UniformlyPaddingLG, 0, 0);
+
+    [ControlTokenDefault(nameof(StatusImageMargin))]
+    private static Thickness DefaultForStatusImageMargin(in ControlTokenDefaultContext context) => new(0, 0, 0, context.Global.UniformlyMargin);
+
+    [ControlTokenDefault(nameof(HeaderMargin))]
+    private static Thickness DefaultForHeaderMargin(in ControlTokenDefaultContext context) => new(0, context.Global.UniformlyMarginXS);
+
+    [ControlTokenDefault(nameof(FramePadding))]
+    private static Thickness DefaultForFramePadding(in ControlTokenDefaultContext context) => new(context.Global.UniformlyPaddingLG * 2, context.Global.UniformlyMarginXL);
 }

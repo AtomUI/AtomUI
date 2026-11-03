@@ -1,5 +1,7 @@
 # Drawer Semantic Part 契约
 
+CT15（2026-11-01）：八个既有专用AXAML Style已在真实打开跨根容器命中，并验证类型/关键Setter及无FindControl/Loaded/Unloaded赋值回退；不改部件或route。标题局部省略保留全文并约束glyph不越入Extra；换模板回放可见性。独立1DIP校准作用于layer父布局Panel，不覆盖Container由AdornerLayer拥有的MatrixTransform，也不充当Part定制入口。最终三版/清理/限定视觉批准仍待。
+
 本文定义 Drawer 的 Semantic Part 契约：部件清单、marker 落点、跨根可达性与定制方式。控件定位与公共 API 见 [overview.md](overview.md)，实现结构见 [implementation.md](implementation.md)，系统级设计见 [Semantic Parts 系统设计](../../../../architecture/systems/theming/semantic-parts.md)，Gallery 预览模式见 [Semantic Part Preview](../../../../gallery/authoring/semantic-part-preview.md)。
 
 ## 1. Semantic Parts
@@ -156,7 +158,7 @@ Drawer 的语义 owner 是 `AtomUI.Desktop.Controls.Drawer` 本身（无模板�
 ## 2. 职责与存在条件
 
 - 部件仅在 `IsOpen=true` 且 `DrawerContainer` 挂到 `ScopeAwareAdornerLayer` 时物化；关闭后容器脱离 layer，所有部件目标消失。
-- 容器挂层时通过 `ISetLogicalParent.SetParent(drawer)` 挂到 owner 逻辑树下（先于 `layer.Children.Add`，脱离时置空），owner 嵌套的生成 Semantic Style 因此可达；同时按 ImagePreviewer 先例显式中继 `ThemeVariantScope.ActualThemeVariant`。
+- 容器挂层时先加入Drawer的原生`LogicalChildren`，再加入视觉layer；脱离时对称移除，使生成Semantic Style与资源热更新都沿完整逻辑树到达容器。同时按ImagePreviewer先例显式中继`ThemeVariantScope.ActualThemeVariant`。
 - `Drawer : ISemanticPartCrossRootProvider` 在容器挂层/脱离/释放时触发 `CrossRootsChanged`，`GetCrossRoots()` 返回存活容器；Gallery 语义预览据此自动收集跨根，无需页面 code-behind 注册 `AdditionalRoots`（区别于 DropdownButton 的 Popup 根注册模式）。
 - `IsPinnedOpen=true` 时遮罩点击与关闭按钮不再把 `IsOpen` 置 false（对齐上游语义演示的受控常开）；外部代码直接设置 `IsOpen` 仍正常关闭。
 
@@ -211,3 +213,6 @@ Drawer 的语义 owner 是 `AtomUI.Desktop.Controls.Drawer` 本身（无模板�
 - `tests/AtomUI.Desktop.Controls.Tests/Drawer/DrawerSemanticPartTests.cs`：descriptor 契约、两个容器主题的静态 marker 清单、打开后 marker 物化、容器逻辑父不变量、生成 Style 跨根命中全部 8 个目标、`IsPinnedOpen` 钉住语义、`GetCrossRoots` 上报。
 - `tests/AtomUIGallery.Tests/ShowCases/DrawerSemanticPartHighlightTests.cs`：页面级端到端——语义页签内 9 张部件卡 hover 逐一高亮（各 1 个描边）、钉住忽略遮罩点击、页签切换清理高亮会话。
 - `tests/AtomUIGallery.Tests/ShowCases/DrawerShowCasePageTests.cs`：AXAML 契约断言（内联钉住模式、PartDescriptions 顺序、生成 Style 唯一定制入口、无 code-behind 回退）。
+
+
+CT15最新限定验收：有效managed/AOT各116检查/196帧，164静态跨运行全0、各68主恢复0；35临时/1518取证/550原会话和4最终文件已清理，最终38精确模块及NET8零警告零错误通过。仅20对明确静态待用户限定批准，定时/平台/GC/极值与完整家族仍保留，详见[限定视觉表](../../../../superpowers/plans/2026-10-22-custom-theme/drawer-consumers-visual-review.md)。

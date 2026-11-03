@@ -18,7 +18,7 @@ namespace AtomUI.Controls;
 
 public abstract class Icon : PathIcon, ICustomHitTest
 {
-    protected override Type StyleKeyOverride { get; } = typeof(Icon);
+    #region 公共属性定义
 
     public static readonly StyledProperty<IconAnimation> LoadingAnimationProperty =
         AvaloniaProperty.Register<Icon, IconAnimation>(
@@ -63,37 +63,49 @@ public abstract class Icon : PathIcon, ICustomHitTest
     public static readonly StyledProperty<TimeSpan> LoadingAnimationDurationProperty =
         AvaloniaProperty.Register<Icon, TimeSpan>(
             nameof(LoadingAnimationDuration), TimeSpan.FromSeconds(1));
-    
+
+    public IconAnimation LoadingAnimation
+    {
+        get => GetValue(LoadingAnimationProperty);
+        set => SetValue(LoadingAnimationProperty, value);
+    }
+
     public IBrush? StrokeBrush
     {
         get => GetValue(StrokeBrushProperty);
         set => SetValue(StrokeBrushProperty, value);
     }
-    
+
     public IBrush? FillBrush
     {
         get => GetValue(FillBrushProperty);
         set => SetValue(FillBrushProperty, value);
     }
-    
+
     public IBrush? SecondaryStrokeBrush
     {
         get => GetValue(SecondaryStrokeBrushProperty);
         set => SetValue(SecondaryStrokeBrushProperty, value);
     }
-    
+
     public IBrush? SecondaryFillBrush
     {
         get => GetValue(SecondaryFillBrushProperty);
         set => SetValue(SecondaryFillBrushProperty, value);
     }
-    
+
     public IBrush? FallbackBrush
     {
         get => GetValue(FallbackBrushProperty);
         set => SetValue(FallbackBrushProperty, value);
     }
-    
+
+    public IconThemeType IconTheme
+    {
+        get => GetValue(IconThemeProperty);
+        set => SetValue(IconThemeProperty, value);
+    }
+
     public double StrokeWidth
     {
         get => GetValue(StrokeWidthProperty);
@@ -111,12 +123,6 @@ public abstract class Icon : PathIcon, ICustomHitTest
         get => GetValue(StrokeLineJoinProperty);
         set => SetValue(StrokeLineJoinProperty, value);
     }
-    
-    public IconThemeType IconTheme
-    {
-        get => GetValue(IconThemeProperty);
-        set => SetValue(IconThemeProperty, value);
-    }
 
     public TimeSpan LoadingAnimationDuration
     {
@@ -124,16 +130,15 @@ public abstract class Icon : PathIcon, ICustomHitTest
         set => SetValue(LoadingAnimationDurationProperty, value);
     }
 
-    public IconAnimation LoadingAnimation
-    {
-        get => GetValue(LoadingAnimationProperty);
-        set => SetValue(LoadingAnimationProperty, value);
-    }
+    #endregion
+
+    protected override Type StyleKeyOverride { get; } = typeof(Icon);
 
     private const float FULL_ROTATION_RADIANS = (float)(Math.PI * 2);
     private const string ROTATION_PROPERTY    = "RotationAngle";
 
     private CompositeDisposable? _effectiveVisibilitySubscriptions;
+    private CompositeDisposable? _drawingGeometrySubscriptions;
 
     protected virtual IList<DrawingInstruction> DrawingInstructions { get; } = Array.Empty<DrawingInstruction>();
     protected Rect ViewBox;
@@ -315,6 +320,7 @@ public abstract class Icon : PathIcon, ICustomHitTest
         }
 
         visual.StopAnimation(ROTATION_PROPERTY);
+        visual.RotationAngle = 0;
         UpdateLoadingAnimationCenterPoint(visual);
 
         Easing easing = LoadingAnimation == IconAnimation.Pulse
@@ -325,7 +331,9 @@ public abstract class Icon : PathIcon, ICustomHitTest
         rotationAnimation.Duration          = GetCompositionAnimationDuration();
         rotationAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
         rotationAnimation.StopBehavior      = AnimationStopBehavior.SetToInitialValue;
-        rotationAnimation.InsertKeyFrame(0, 0, easing);
+        // The zero starting value is the implicit first keyframe. An explicit
+        // key at zero creates a zero-length interval at exact loop boundaries
+        // in the current compositor evaluator, which keeps the preceding value.
         rotationAnimation.InsertKeyFrame(1, FULL_ROTATION_RADIANS, easing);
         visual.StartAnimation(ROTATION_PROPERTY, rotationAnimation);
     }
@@ -417,6 +425,8 @@ public abstract class Icon : PathIcon, ICustomHitTest
 
     protected override void OnUnloaded(RoutedEventArgs e)
     {
+        _drawingGeometrySubscriptions?.Dispose();
+        _drawingGeometrySubscriptions = null;
         _effectiveVisibilitySubscriptions?.Dispose();
         _effectiveVisibilitySubscriptions = null;
         StopLoadingAnimation();
@@ -431,6 +441,8 @@ public abstract class Icon : PathIcon, ICustomHitTest
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _drawingGeometrySubscriptions?.Dispose();
+        _drawingGeometrySubscriptions = null;
         _effectiveVisibilitySubscriptions?.Dispose();
         _effectiveVisibilitySubscriptions = null;
         StopLoadingAnimation();
@@ -446,6 +458,7 @@ public abstract class Icon : PathIcon, ICustomHitTest
             return;
         }
 
+        ConfigureDrawingGeometryTracking();
         var       realSize             = DesiredSize.Deflate(Margin);
         var       scale                = new Vector(realSize.Width / ViewBox.Width, realSize.Height / ViewBox.Height);
         var       globalGeometryMatrix = CalculateGlobalGeometryMatrix();
@@ -454,6 +467,36 @@ public abstract class Icon : PathIcon, ICustomHitTest
         {
             instruction.Draw(context, in globalGeometryMatrix, this);
         }
+    }
+
+    private void ConfigureDrawingGeometryTracking()
+    {
+        if (_drawingGeometrySubscriptions != null || this.GetVisualRoot() == null)
+        {
+            return;
+        }
+
+        // Instruction paths are runtime drawing data outside ControlTheme. Preserve
+        // live caller geometry while each retained draw owns an independent snapshot.
+        var ownerReference = new WeakReference<Icon>(this);
+        var subscriptions = new CompositeDisposable();
+        foreach (var geometry in DrawingInstructions.OfType<PathDrawingInstruction>()
+                                                    .Select(instruction => instruction.Data)
+                                                    .OfType<Geometry>()
+                                                    .Distinct())
+        {
+            EventHandler handler = (_, _) =>
+            {
+                if (ownerReference.TryGetTarget(out var owner))
+                {
+                    owner.InvalidateVisual();
+                }
+            };
+            geometry.Changed += handler;
+            subscriptions.Add(Disposable.Create(() => geometry.Changed -= handler));
+        }
+
+        _drawingGeometrySubscriptions = subscriptions;
     }
 
     protected virtual Matrix CalculateGlobalGeometryMatrix()

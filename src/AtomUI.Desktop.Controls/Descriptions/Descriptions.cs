@@ -1,18 +1,23 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Data;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public partial class Descriptions : TemplatedControl, ISizeTypeAware
+public partial class Descriptions : TemplatedControl, ISizeTypeAware, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -107,7 +112,15 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
         set => SetValue(ItemsSourceProperty, value);
     }
 
+    #endregion
+
+    #region 运行时字段
+
     private DescriptionItems _items = new();
+
+    #endregion
+
+    #region 公共属性定义
 
     [Content]
     public DescriptionItems Items
@@ -129,12 +142,19 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
                 AttachDescriptionItems(_items);
             }
 
-            if (_gridLayout != null && this.IsAttachedToVisualTree())
+            if (_gridLayout is not null)
             {
-                _gridLayout.Children.Clear();
-                AddDescriptionItems((IEnumerable<DescriptionItem>)_items);
-                DoLayoutChildren();
-                InvalidateMeasure();
+                if (this.IsAttachedToVisualTree())
+                {
+                    RebuildDescriptionItems();
+                    DoLayoutChildren();
+                    InvalidateMeasure();
+                }
+                else
+                {
+                    RetireGridCells();
+                    _isCellSnapshotDirty = true;
+                }
             }
         }
     }
@@ -158,6 +178,11 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
 
     #endregion
 
+    private readonly Dictionary<Control, CompositeDisposable> _cellBindings = new();
+    private bool _isCellSnapshotDirty;
+    private int _cellGeneration;
+    private WeakReference<Control>? _pendingTemplateFocus;
+    private WeakReference<Control>? _pendingCellFocus;
     private Grid? _gridLayout;
     private MediaBreakPoint? _breakPoint;
     private int _effectiveColumns;
@@ -177,6 +202,19 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        if (_isCellSnapshotDirty)
+        {
+            // Models can change while their scoped hosts are detached. Rebuild
+            // the matching cell count before host publication can request layout.
+            RebuildDescriptionItems();
+        }
+        else if (_gridLayout is not null)
+        {
+            foreach (var cell in _gridLayout.Children)
+            {
+                PrepareCellBindings(cell);
+            }
+        }
         AttachMediaOwner(MediaQueryHost.FindOwner(this));
         AttachDescriptionItems(Items);
         UpdateGridColumnsForCurrentBreakPoint(true);
@@ -184,21 +222,39 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        ++_cellGeneration;
+        _pendingTemplateFocus = null;
+        _pendingCellFocus = null;
+        foreach (var cell in _cellBindings.Keys.ToArray())
+        {
+            RetireCellBindings(cell);
+        }
         base.OnDetachedFromVisualTree(e);
         DetachAllDescriptionItems();
         DetachMediaOwner();
+        RetireGridCells();
+        _isCellSnapshotDirty = true;
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        var focus = _pendingTemplateFocus ?? CaptureCellFocus() ?? _pendingCellFocus;
+        _pendingTemplateFocus = null;
+        RetireGridCells();
         base.OnApplyTemplate(e);
         _gridLayout = e.NameScope.Find<Grid>("PART_GridLayout");
-        RebuildDescriptionItems();
+        RebuildDescriptionItems(focus);
         UpdateGridColumnsForCurrentBreakPoint(true);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
+        if (change.Property == TemplateProperty)
+        {
+            _pendingTemplateFocus ??= CaptureCellFocus() ?? _pendingCellFocus;
+            ++_cellGeneration;
+            RetireGridCells();
+        }
         base.OnPropertyChanged(change);
         if (change.Property == ItemsSourceProperty)
         {
@@ -238,6 +294,12 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
             throw new NotSupportedException();
         }
 
+        WeakReference<Control>? focus = null;
+        var generation = 0;
+        if (canUpdateVisuals)
+        {
+            (focus, generation) = BeginCellUpdate();
+        }
         if (isAttached)
         {
             UpdateDescriptionItemAttachments(e);
@@ -245,6 +307,11 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
 
         if (!canUpdateVisuals)
         {
+            if (_gridLayout is not null)
+            {
+                RetireGridCells();
+            }
+            _isCellSnapshotDirty = true;
             return;
         }
 
@@ -265,6 +332,7 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
 
                 break;
             case NotifyCollectionChangedAction.Reset:
+                RetireGridCells();
                 _gridLayout!.Children.Clear();
                 AddDescriptionItems(Items);
                 break;
@@ -272,7 +340,17 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
 
         DoLayoutChildren();
         InvalidateMeasure();
+        if (focus is not null)
+        {
+            QueueCellFocus(focus, generation);
+        }
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     private void AttachDescriptionItems(IEnumerable<DescriptionItem> items)
     {
@@ -575,15 +653,66 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
         return items;
     }
 
-    private void RebuildDescriptionItems()
+    private void RebuildDescriptionItems(WeakReference<Control>? focus = null)
     {
         if (_gridLayout == null)
         {
             return;
         }
 
+        var (restoreFocus, generation) = BeginCellUpdate(focus);
+        RetireGridCells();
         _gridLayout.Children.Clear();
         AddDescriptionItems(Items);
+        _isCellSnapshotDirty = false;
+        if (restoreFocus is not null)
+        {
+            QueueCellFocus(restoreFocus, generation);
+        }
+    }
+
+    private (WeakReference<Control>? Focus, int Generation) BeginCellUpdate(WeakReference<Control>? focus = null)
+    {
+        focus ??= CaptureCellFocus();
+        // Consecutive structural updates can run before Loaded restores focus.
+        // Carry the unfinished weak target only while no later focus exists.
+        if (focus is null && TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is null)
+        {
+            focus = _pendingCellFocus;
+        }
+        _pendingCellFocus = focus;
+        return (focus, ++_cellGeneration);
+    }
+
+    private WeakReference<Control>? CaptureCellFocus()
+    {
+        var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() as Control;
+        return focused is not null && _gridLayout?.IsVisualAncestorOf(focused) == true
+            ? new WeakReference<Control>(focused)
+            : null;
+    }
+
+    private void QueueCellFocus(WeakReference<Control> focus, int generation)
+    {
+        // The same native content is reparented during this rebuild. Wait for
+        // its replacement presenter to attach; do not replace a later user focus
+        // or retain the owner/content when the queued operation is cancelled.
+        var weakOwner = new WeakReference<Descriptions>(this);
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (!weakOwner.TryGetTarget(out var owner) || owner._cellGeneration != generation)
+            {
+                return;
+            }
+            owner._pendingCellFocus = null;
+            if (focus.TryGetTarget(out var control) && owner._gridLayout?.IsVisualAncestorOf(control) == true &&
+                TopLevel.GetTopLevel(owner) is { } topLevel &&
+                ReferenceEquals(TopLevel.GetTopLevel(control), topLevel) &&
+                topLevel.FocusManager?.GetFocusedElement() is null)
+            {
+                control.Focus();
+            }
+        }, DispatcherPriority.Loaded);
     }
 
     private void AddDescriptionItems(IEnumerable<DescriptionItem> items)
@@ -620,6 +749,7 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
             var removeCount = GetGridChildCount(items.Count);
             for (var i = 0; i < removeCount && removeIndex < _gridLayout.Children.Count; i++)
             {
+                RetireCell(_gridLayout.Children[removeIndex]);
                 _gridLayout.Children.RemoveAt(removeIndex);
             }
         }
@@ -646,8 +776,8 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
     {
         var itemLabel   = new DescriptionBorderedItemLabel();
         var itemContent = new DescriptionBorderedItemContent();
-        itemLabel[!SizeTypeProperty]   = this[!SizeTypeProperty];
-        itemContent[!SizeTypeProperty] = this[!SizeTypeProperty];
+        PrepareCellBindings(itemLabel);
+        PrepareCellBindings(itemContent);
         itemLabel.Content              = item.Label;
         itemContent.Content            = item.Content;
         AddGridChild(itemLabel, gridChildIndex);
@@ -662,14 +792,84 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
             Header  = item.Label,
             Content = item.Content
         };
-        descriptionDefaultItem[!DescriptionDefaultItem.SizeTypeProperty] = this[!SizeTypeProperty];
-        descriptionDefaultItem[!DescriptionDefaultItem.IsColonVisibleProperty] = this[!IsShowColonProperty];
-        if (Layout == Orientation.Vertical)
-        {
-            descriptionDefaultItem[!DescriptionDefaultItem.IsBorderedProperty] = this[!IsBorderedProperty];
-        }
+        PrepareCellBindings(descriptionDefaultItem);
 
         AddGridChild(descriptionDefaultItem, gridChildIndex);
+    }
+
+    private void PrepareCellBindings(Control cell)
+    {
+        RetireCellBindings(cell);
+        // Cells are generated/replaced outside the owner's template and keep
+        // the original Local preparation priority, including internal flags.
+        // A ControlTheme setter cannot preserve that timing/priority; retire
+        // these typed projections with their generated-cell membership.
+        var bindings = new CompositeDisposable();
+        _cellBindings.Add(cell, bindings);
+        cell.DetachedFromVisualTree += HandleCellDetached;
+        if (cell is DescriptionDefaultItem defaultItem)
+        {
+            bindings.Add(BindUtils.RelayBind(this, SizeTypeProperty, defaultItem, DescriptionDefaultItem.SizeTypeProperty));
+            bindings.Add(BindUtils.RelayBind(this, IsShowColonProperty, defaultItem, DescriptionDefaultItem.IsColonVisibleProperty));
+            if (Layout == Orientation.Vertical)
+            {
+                bindings.Add(BindUtils.RelayBind(this, IsBorderedProperty, defaultItem, DescriptionDefaultItem.IsBorderedProperty));
+            }
+        }
+        else if (cell is DescriptionBorderedCell borderedCell)
+        {
+            bindings.Add(BindUtils.RelayBind(this, SizeTypeProperty, borderedCell, DescriptionBorderedCell.SizeTypeProperty));
+        }
+    }
+
+    private void RetireCellBindings(Control cell)
+    {
+        if (_cellBindings.Remove(cell, out var bindings))
+        {
+            cell.DetachedFromVisualTree -= HandleCellDetached;
+            bindings.Dispose();
+        }
+    }
+
+    private void HandleCellDetached(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is Control cell)
+        {
+            RetireCellBindings(cell);
+        }
+    }
+
+    private void RetireGridCells()
+    {
+        if (_gridLayout is not null)
+        {
+            foreach (var cell in _gridLayout.Children.ToArray())
+            {
+                RetireCell(cell);
+            }
+        }
+    }
+
+    private void RetireCell(Control cell)
+    {
+        RetireCellBindings(cell);
+        if (cell is ContentControl { Content: Control content } holder)
+        {
+            var presenters = holder.GetVisualDescendants().OfType<ContentPresenter>()
+                .Where(presenter => ReferenceEquals(presenter.TemplatedParent, holder) &&
+                                    ReferenceEquals(presenter.Child, content)).ToArray();
+            holder.SetCurrentValue(ContentControl.ContentProperty, null);
+            foreach (var presenter in presenters)
+            {
+                // A retained presenter otherwise owns the same native content
+                // until its next measure, after the replacement cell is built.
+                if (ReferenceEquals(presenter.Content, content))
+                {
+                    presenter.SetCurrentValue(ContentPresenter.ContentProperty, null);
+                }
+                presenter.UpdateChild();
+            }
+        }
     }
 
     private void AddGridChild(Control child, int? gridChildIndex)

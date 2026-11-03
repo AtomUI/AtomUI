@@ -6,6 +6,15 @@
     x:ClassModifier="internal">
     <atom:StringToSelectableTextBlockConverter x:Key="StringToSelectableTextBlockConverter" />
     <ControlTheme x:Key="{x:Type atom:NotificationCard}" TargetType="atom:NotificationCard">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize, SourceControlType={x:Type atom:NotificationCard}}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText, SourceControlType={x:Type atom:NotificationCard}}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <!--
@@ -84,9 +93,9 @@
         </Setter>
 
         <Setter Property="IsMotionEnabled"
-                Value="{atom:SharedTokenResource EnableMotion}" />
+                Value="{atom:OwnerTokenResource EnableMotion, SourceControlType={x:Type atom:NotificationCard}}" />
         <Setter Property="OpenCloseMotionDuration"
-                Value="{atom:SharedTokenResource MotionDurationMid}" />
+                Value="{atom:OwnerTokenResource MotionDurationMid, SourceControlType={x:Type atom:NotificationCard}}" />
         <Setter Property="ClipToBounds" Value="False" />
 <Setter Property="Transitions">
             <atom:TokenTransitions>
@@ -114,8 +123,8 @@
         -->
         <Setter Property="Background" Value="{atom:NotificationCardTokenResource NotificationBg}" />
         <Setter Property="Padding" Value="{atom:NotificationCardTokenResource NotificationPadding}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-        <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadows}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG, SourceControlType={x:Type atom:NotificationCard}}" />
+        <Setter Property="BoxShadow" Value="{atom:OwnerTokenResource BoxShadows, SourceControlType={x:Type atom:NotificationCard}}" />
 
         <Style Selector="^ /template/ Border#Frame">
             <Setter Property="Margin" Value="0" />
@@ -141,28 +150,28 @@
         <Style Selector="^[NotificationType=Information]">
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:OwnerTokenResource ColorPrimary, SourceControlType={x:Type atom:NotificationCard}}" />
             </Style>
         </Style>
 
         <Style Selector="^[NotificationType=Error]">
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorError}" />
+                        Value="{atom:OwnerTokenResource ColorError, SourceControlType={x:Type atom:NotificationCard}}" />
             </Style>
         </Style>
 
         <Style Selector="^[NotificationType=Success]">
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorSuccess}" />
+                        Value="{atom:OwnerTokenResource ColorSuccess, SourceControlType={x:Type atom:NotificationCard}}" />
             </Style>
         </Style>
 
         <Style Selector="^[NotificationType=Warning]">
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorWarning}" />
+                        Value="{atom:OwnerTokenResource ColorWarning, SourceControlType={x:Type atom:NotificationCard}}" />
             </Style>
         </Style>
 
@@ -174,23 +183,19 @@
 
         <Style Selector="^ /template/ atom|SelectableTextBlock#HeaderTitle">
             <Setter Property="LineHeight"
-                    Value="{atom:SharedTokenResource FontHeightLG}" />
+                    Value="{atom:OwnerTokenResource FontHeightLG, SourceControlType={x:Type atom:NotificationCard}}" />
             <Setter Property="FontSize"
-                    Value="{atom:SharedTokenResource FontSizeLG}" />
+                    Value="{atom:OwnerTokenResource FontSizeLG, SourceControlType={x:Type atom:NotificationCard}}" />
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextHeading}" />
+                    Value="{atom:OwnerTokenResource ColorTextHeading, SourceControlType={x:Type atom:NotificationCard}}" />
             <!-- 只有标题行与关闭按钮同排，因此仅标题为关闭按钮预留右侧空间。 -->
             <Setter Property="Padding"
                     Value="{atom:NotificationCardTokenResource NotificationTitlePadding}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#Content">
-            <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorText}" />
-            <Setter Property="FontSize"
-                    Value="{atom:SharedTokenResource FontSize}" />
             <Setter Property="LineHeight"
-                    Value="{atom:SharedTokenResource FontHeight}" />
+                    Value="{atom:OwnerTokenResource FontHeight, SourceControlType={x:Type atom:NotificationCard}}" />
             <!-- 描述在标题下方，不与关闭按钮同排，因此不预留右侧空间。 -->
         </Style>
 
@@ -211,27 +216,27 @@
             <Setter Property="Padding"
                     Value="{atom:NotificationCardTokenResource NotificationCloseButtonPadding}" />
             <Setter Property="CornerRadius"
-                    Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                    Value="{atom:OwnerTokenResource BorderRadiusSM, SourceControlType={x:Type atom:NotificationCard}}" />
             <Setter Property="IconHeight"
-                    Value="{atom:SharedTokenResource IconSizeSM}" />
+                    Value="{atom:OwnerTokenResource IconSizeSM, SourceControlType={x:Type atom:NotificationCard}}" />
             <Setter Property="IconWidth"
-                    Value="{atom:SharedTokenResource IconSizeSM}" />
+                    Value="{atom:OwnerTokenResource IconSizeSM, SourceControlType={x:Type atom:NotificationCard}}" />
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorIcon}" />
+                    Value="{atom:OwnerTokenResource ColorIcon, SourceControlType={x:Type atom:NotificationCard}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgTextHover}" />
+                    Value="{atom:OwnerTokenResource ColorBgTextHover, SourceControlType={x:Type atom:NotificationCard}}" />
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorIconHover}" />
+                    Value="{atom:OwnerTokenResource ColorIconHover, SourceControlType={x:Type atom:NotificationCard}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pressed">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgTextActive}" />
+                    Value="{atom:OwnerTokenResource ColorBgTextActive, SourceControlType={x:Type atom:NotificationCard}}" />
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorIconHover}" />
+                    Value="{atom:OwnerTokenResource ColorIconHover, SourceControlType={x:Type atom:NotificationCard}}" />
         </Style>
 
         <!-- ============================= progress ============================== -->

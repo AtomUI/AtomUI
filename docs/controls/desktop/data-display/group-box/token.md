@@ -10,6 +10,8 @@ GroupBox Token 不表达实例状态，也不负责 Header 缺口的运行时 bo
 
 ## 2. Token 分类
 
+Token定义采用V2 revision1，7字段及四算法28条默认/type/key/slot保持。四个有消费者字段继续进入实际Header/body几何；Root可选字体/前景读取真实InheritanceParent，Shared基础角色连接实际GroupBox Global。模板IconPresenter的三处输入显式锚定GroupBox，独立IconPresenter的主题身份保持。
+
 GroupBox Token 按语义分为三类。
 
 ### 内容区域 Token
@@ -35,6 +37,8 @@ GroupBox Token 按语义分为三类。
 | `VerticalMarginInline` | `double` | 纵向分隔线横向外间距语义值。 |
 
 `TextPaddingInline`、`OrientationMarginPercent` 和 `VerticalMarginInline` 是 GroupBox fieldset 语义保留值。维护时不得把它们误改为实例状态或模板节点尺寸。
+
+三字段分类为 Reserved：定义、double类型、默认公式、资源key/slot及配置解析保留，0与非零配置均不改变当前几何；它们不是有效的布局调节项，也不是现有Thickness或标题对齐的别名。
 
 ## 3. 控件专项模型中的 Token 使用
 

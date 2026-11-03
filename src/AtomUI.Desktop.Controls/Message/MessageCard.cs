@@ -1,5 +1,7 @@
 using AtomUI.Controls;
-using AtomUI.Icons.AntDesign;
+using AtomUI.Data;
+using AtomUI.Theme.Resources;
+using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -16,7 +18,7 @@ namespace AtomUI.Desktop.Controls;
     MessageCardPseudoClass.Success, 
     MessageCardPseudoClass.Warning, 
     MessageCardPseudoClass.Loading)]
-public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedbackStackItem
+public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedbackStackItem, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -165,6 +167,7 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     private bool _isStackVisible = true;
     private readonly FeedbackCardMotionCoordinator _motionCoordinator;
     private Control? _motionTarget;
+    private CompositeDisposable? _ownerBindings;
     
     public MessageCard()
     {
@@ -198,9 +201,23 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     {
     }
 
+    internal void BindOwner(WindowMessageManager owner)
+    {
+        _ownerBindings?.Dispose();
+        // Cards are created outside the manager template and need state before
+        // attachment. TemplateBinding cannot reach these runtime collection items.
+        _ownerBindings = new CompositeDisposable(2)
+        {
+            BindUtils.RelayBind(owner, WindowMessageManager.PositionProperty, this, PositionProperty),
+            BindUtils.RelayBind(owner, WindowMessageManager.IsMotionEnabledProperty, this, IsMotionEnabledProperty, priority: BindingPriority.Template)
+        };
+    }
+
     internal void ReleaseOwner()
     {
         _motionCoordinator.Dispose();
+        _ownerBindings?.Dispose();
+        _ownerBindings = null;
         HoverChanged = null;
         OnClose = null;
     }
@@ -225,7 +242,6 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         {
             if (change.Property == MessageTypeProperty)
             {
-                SetupDefaultMessageIcon();
                 UpdatePseudoClasses();
             }
         }
@@ -234,7 +250,8 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         {
             if (Icon is null)
             {
-                SetupDefaultMessageIcon();
+                // Null resets to the active per-instance icon default in ControlTheme.
+                ClearValue(IconProperty);
             }
         }
 
@@ -289,7 +306,12 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         _motionTarget = e.NameScope.Find<Control>("PART_Frame");
         ApplyMotionTarget();
         UpdatePseudoClasses();
-        SetupDefaultMessageIcon();
+        if (Icon is null)
+        {
+            // Initial LocalValue null can equal the property default and skip
+            // OnPropertyChanged. Preserve null-as-reset when the template arrives.
+            ClearValue(IconProperty);
+        }
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -329,36 +351,9 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         PseudoClasses.Set(MessageCardPseudoClass.Loading, MessageType == MessageType.Loading);
     }
 
-    private void SetupDefaultMessageIcon()
-    {
-        Icon? icon = null;
-        if (MessageType == MessageType.Information)
-        {
-            icon = new InfoCircleFilled();
-        }
-        else if (MessageType == MessageType.Success)
-        {
-            icon = new CheckCircleFilled();
-        }
-        else if (MessageType == MessageType.Error)
-        {
-            icon = new CloseCircleFilled();
-        }
-        else if (MessageType == MessageType.Warning)
-        {
-            icon = new ExclamationCircleFilled();
-        }
-        else if (MessageType == MessageType.Loading)
-        {
-            icon                  = new LoadingOutlined();
-            icon.LoadingAnimation = IconAnimation.Spin;
-        }
-
-        if (Icon is null)
-        {
-            ClearValue(IconProperty);
-            SetValue(IconProperty, icon, BindingPriority.Template);
-        }
-    }
     
+
+    // Only the control can expose its protected native inheritance parent;
+    // the actual optional FontFamily selection remains in ControlTheme.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

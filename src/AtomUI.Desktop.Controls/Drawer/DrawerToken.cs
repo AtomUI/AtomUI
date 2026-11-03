@@ -5,16 +5,11 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class DrawerToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class DrawerToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
-    public DrawerToken()
-
-    {
-    }
-
-    /// <summary>
+/// <summary>
     /// 左边缘阴影
     /// </summary>
     public BoxShadows BoxShadowDrawerLeft { get; set; }
@@ -79,11 +74,8 @@ internal sealed class DrawerToken : AbstractControlDesignToken
     /// </summary>
     public double PushOffsetPercent { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-
-        BoxShadowDrawerLeft = new BoxShadows(new BoxShadow()
+    [ControlTokenDefault(nameof(BoxShadowDrawerLeft))]
+    private static BoxShadows DefaultForBoxShadowDrawerLeft(in ControlTokenDefaultContext context) => new BoxShadows(new BoxShadow()
         {
             OffsetX = 6,
             OffsetY = 0,
@@ -109,7 +101,8 @@ internal sealed class DrawerToken : AbstractControlDesignToken
             }
         ]);
 
-        BoxShadowDrawerRight = new BoxShadows(new BoxShadow()
+    [ControlTokenDefault(nameof(BoxShadowDrawerRight))]
+    private static BoxShadows DefaultForBoxShadowDrawerRight(in ControlTokenDefaultContext context) => new BoxShadows(new BoxShadow()
         {
             OffsetX = -6,
             OffsetY = 0,
@@ -134,8 +127,9 @@ internal sealed class DrawerToken : AbstractControlDesignToken
                 Color   = ColorUtils.FromRgbF(0.05, 0, 0, 0)
             }
         ]);
-        
-        BoxShadowDrawerUp = new BoxShadows(new BoxShadow()
+
+    [ControlTokenDefault(nameof(BoxShadowDrawerUp))]
+    private static BoxShadows DefaultForBoxShadowDrawerUp(in ControlTokenDefaultContext context) => new BoxShadows(new BoxShadow()
         {
             OffsetX = 0,
             OffsetY = 6,
@@ -160,8 +154,9 @@ internal sealed class DrawerToken : AbstractControlDesignToken
                 Color   = ColorUtils.FromRgbF(0.05, 0, 0, 0)
             }
         ]);
-        
-        BoxShadowDrawerDown = new BoxShadows(new BoxShadow()
+
+    [ControlTokenDefault(nameof(BoxShadowDrawerDown))]
+    private static BoxShadows DefaultForBoxShadowDrawerDown(in ControlTokenDefaultContext context) => new BoxShadows(new BoxShadow()
         {
             OffsetX = 0,
             OffsetY = -6,
@@ -187,15 +182,30 @@ internal sealed class DrawerToken : AbstractControlDesignToken
             }
         ]);
 
-        SmallSize         = new Dimension(378);
-        MiddleSize        = new Dimension(520);
-        LargeSize         = new Dimension(736);
-        HeaderMargin      = new Thickness(EffectiveGlobalToken.UniformlyMarginLG, EffectiveGlobalToken.UniformlyMargin);
-        FooterPadding     = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingXS);
-        CloseIconPadding  = EffectiveGlobalToken.PaddingXXS;
-        CloseIconMargin   = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        ContentPadding    = EffectiveGlobalToken.PaddingLG;
-        PushOffsetPercent = 0.4;
-    }
-    
+    [ControlTokenDefault(nameof(SmallSize))]
+    private static Dimension DefaultForSmallSize(in ControlTokenDefaultContext context) => new Dimension(378);
+
+    [ControlTokenDefault(nameof(MiddleSize))]
+    private static Dimension DefaultForMiddleSize(in ControlTokenDefaultContext context) => new Dimension(520);
+
+    [ControlTokenDefault(nameof(LargeSize))]
+    private static Dimension DefaultForLargeSize(in ControlTokenDefaultContext context) => new Dimension(736);
+
+    [ControlTokenDefault(nameof(HeaderMargin))]
+    private static Thickness DefaultForHeaderMargin(in ControlTokenDefaultContext context) => new Thickness(context.Global.UniformlyMarginLG, context.Global.UniformlyMargin);
+
+    [ControlTokenDefault(nameof(FooterPadding))]
+    private static Thickness DefaultForFooterPadding(in ControlTokenDefaultContext context) => new Thickness(context.Global.UniformlyPadding, context.Global.UniformlyPaddingXS);
+
+    [ControlTokenDefault(nameof(CloseIconPadding))]
+    private static Thickness DefaultForCloseIconPadding(in ControlTokenDefaultContext context) => context.Global.PaddingXXS;
+
+    [ControlTokenDefault(nameof(CloseIconMargin))]
+    private static Thickness DefaultForCloseIconMargin(in ControlTokenDefaultContext context) => new Thickness(0, 0, context.Global.UniformlyMarginXS, 0);
+
+    [ControlTokenDefault(nameof(ContentPadding))]
+    private static Thickness DefaultForContentPadding(in ControlTokenDefaultContext context) => context.Global.PaddingLG;
+
+    [ControlTokenDefault(nameof(PushOffsetPercent))]
+    private static double DefaultForPushOffsetPercent(in ControlTokenDefaultContext context) => 0.4;
 }

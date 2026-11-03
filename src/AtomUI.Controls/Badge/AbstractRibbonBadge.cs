@@ -1,4 +1,7 @@
-﻿using Avalonia;
+using System.Reactive.Disposables;
+using AtomUI.Data;
+using AtomUI.Theme.Resources;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -12,7 +15,7 @@ public enum RibbonBadgePlacement
     End
 }
 
-public abstract class AbstractRibbonBadge : Control
+public abstract class AbstractRibbonBadge : Control, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -36,17 +39,17 @@ public abstract class AbstractRibbonBadge : Control
     public static readonly StyledProperty<bool> BadgeIsVisibleProperty =
         AvaloniaProperty.Register<AbstractRibbonBadge, bool>(nameof(BadgeIsVisible), true);
 
+    public string? RibbonColor
+    {
+        get => GetValue(RibbonColorProperty);
+        set => SetValue(RibbonColorProperty, value);
+    }
+
     [Content]
     public Control? DecoratedTarget
     {
         get => GetValue(DecoratedTargetProperty);
         set => SetValue(DecoratedTargetProperty, value);
-    }
-
-    public string? RibbonColor
-    {
-        get => GetValue(RibbonColorProperty);
-        set => SetValue(RibbonColorProperty, value);
     }
 
     public Point Offset
@@ -74,7 +77,17 @@ public abstract class AbstractRibbonBadge : Control
     }
 
     #endregion
-    
+
+    #region 运行时字段
+
+    private CompositeDisposable? _adornerBindings;
+
+    private IDisposable? _instanceColorValue;
+
+    private protected AbstractRibbonBadgeAdorner? _ribbonBadgeAdorner;
+
+    #endregion
+
     static AbstractRibbonBadge()
     {
         AffectsMeasure<AbstractRibbonBadge>(DecoratedTargetProperty,
@@ -85,45 +98,8 @@ public abstract class AbstractRibbonBadge : Control
         HorizontalAlignmentProperty.OverrideDefaultValue<AbstractRibbonBadge>(Avalonia.Layout.HorizontalAlignment.Left);
         VerticalAlignmentProperty.OverrideDefaultValue<AbstractRibbonBadge>(Avalonia.Layout.VerticalAlignment.Top);
     }
-    
-    private protected AbstractRibbonBadgeAdorner? _ribbonBadgeAdorner;
 
-    private void AttachChild(Control child)
-    {
-        if (child.GetVisualParent() == this)
-        {
-            return;
-        }
-
-        child.SetLogicalParent(this);
-        VisualChildren.Add(child);
-        LogicalChildren.Add(child);
-    }
-
-    private void DetachChild(Control? child)
-    {
-        if (child is null)
-        {
-            return;
-        }
-
-        if (child.GetVisualParent() == this)
-        {
-            VisualChildren.Remove(child);
-        }
-
-        if (LogicalChildren.Contains(child))
-        {
-            LogicalChildren.Remove(child);
-        }
-
-        child.SetLogicalParent(null);
-    }
-
-    private void DetachRibbonAdorner()
-    {
-        DetachChild(_ribbonBadgeAdorner);
-    }
+    #region 公共与受保护 API
 
     private protected void HandleDecoratedTargetChanged(Control? oldDecoratedTarget = null)
     {
@@ -138,29 +114,35 @@ public abstract class AbstractRibbonBadge : Control
         }
     }
 
-    private protected void SetupRibbonColor(string colorStr)
+    private protected void SetupRibbonColor(string? colorStr)
     {
-        var colorSpan = colorStr.AsSpan().Trim();
-
-        if (BadgeColorUtils.TryGetPresetColor(colorSpan, out var presetColor))
+        _instanceColorValue?.Dispose();
+        _instanceColorValue = null;
+        var brush = BadgeColorUtils.CalculateColor(colorStr);
+        if (_ribbonBadgeAdorner is not null && brush is not null)
         {
-            _ribbonBadgeAdorner!.RibbonColor = new SolidColorBrush(presetColor);
-            return;
-        }
-
-        if (Color.TryParse(colorSpan, out var color))
-        {
-            _ribbonBadgeAdorner!.RibbonColor = new SolidColorBrush(color);
+            // Preset/instance strings require runtime parsing. A removable value
+            // frame preserves the underlying AXAML token binding for clear/restore.
+            _instanceColorValue = _ribbonBadgeAdorner.SetValue(AbstractRibbonBadgeAdorner.RibbonColorProperty,
+                brush, Avalonia.Data.BindingPriority.Animation);
         }
     }
 
     private protected virtual void SetupTokenBindings()
     {
+        _adornerBindings?.Dispose();
+        _adornerBindings = null;
         if (_ribbonBadgeAdorner is not null)
         {
-            _ribbonBadgeAdorner[!AbstractRibbonBadgeAdorner.TextProperty]      = this[!TextProperty];
-            _ribbonBadgeAdorner[!AbstractRibbonBadgeAdorner.OffsetProperty]    = this[!OffsetProperty];
-            _ribbonBadgeAdorner[!AbstractRibbonBadgeAdorner.PlacementProperty] = this[!PlacementProperty];
+            // Runtime adorner projections are LocalValue and are established
+            // before template/visual attachment; AXAML setters cannot preserve
+            // this preparation contract. The owner holds their release handles.
+            _adornerBindings = new CompositeDisposable
+            {
+                BindUtils.RelayBind(this, TextProperty, _ribbonBadgeAdorner, AbstractRibbonBadgeAdorner.TextProperty),
+                BindUtils.RelayBind(this, OffsetProperty, _ribbonBadgeAdorner, AbstractRibbonBadgeAdorner.OffsetProperty),
+                BindUtils.RelayBind(this, PlacementProperty, _ribbonBadgeAdorner, AbstractRibbonBadgeAdorner.PlacementProperty)
+            };
         }
     }
 
@@ -171,7 +153,8 @@ public abstract class AbstractRibbonBadge : Control
             change.Property == BadgeIsVisibleProperty)
         {
             var badgeIsVisible = change.GetNewValue<bool>();
-            if (badgeIsVisible)
+            if (badgeIsVisible &&
+                (change.Property == BadgeIsVisibleProperty || BadgeIsVisible))
             {
                 PrepareAdorner();
             }
@@ -197,45 +180,14 @@ public abstract class AbstractRibbonBadge : Control
 
     private protected abstract AbstractRibbonBadgeAdorner CreateBadgeAdorner();
 
-    private void PrepareAdorner()
-    {
-        var ribbonBadgeAdorner = CreateBadgeAdorner();
-        if (DecoratedTarget is not null)
-        {
-            AttachChild(DecoratedTarget);
-            ribbonBadgeAdorner.IsAdornerMode = true;
-            AttachChild(ribbonBadgeAdorner);
-        }
-        else
-        {
-            DetachRibbonAdorner();
-            ribbonBadgeAdorner.IsAdornerMode = false;
-            AttachChild(ribbonBadgeAdorner);
-            IsVisible = true;
-        }
-
-        InvalidateMeasure();
-    }
-
-    private void HideAdorner()
-    {
-        if (DecoratedTarget is null)
-        {
-            DetachRibbonAdorner();
-            IsVisible = false;
-        }
-        else
-        {
-            AttachChild(DecoratedTarget);
-            DetachRibbonAdorner();
-        }
-
-        InvalidateMeasure();
-    }
-
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        SetupTokenBindings();
+        if (_ribbonBadgeAdorner is not null)
+        {
+            SetupRibbonColor(RibbonColor);
+        }
         if (BadgeIsVisible)
         {
             PrepareAdorner();
@@ -249,6 +201,10 @@ public abstract class AbstractRibbonBadge : Control
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
+        _adornerBindings?.Dispose();
+        _adornerBindings = null;
+        _instanceColorValue?.Dispose();
+        _instanceColorValue = null;
         HideAdorner();
     }
 
@@ -295,4 +251,89 @@ public abstract class AbstractRibbonBadge : Control
 
         return finalSize;
     }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 私有实现
+
+    private void AttachChild(Control child)
+    {
+        if (child.GetVisualParent() == this)
+        {
+            return;
+        }
+
+        child.SetLogicalParent(this);
+        VisualChildren.Add(child);
+        LogicalChildren.Add(child);
+    }
+
+    private void DetachChild(Control? child)
+    {
+        if (child is null)
+        {
+            return;
+        }
+
+        if (child.GetVisualParent() == this)
+        {
+            VisualChildren.Remove(child);
+        }
+
+        if (LogicalChildren.Contains(child))
+        {
+            LogicalChildren.Remove(child);
+        }
+
+        child.SetLogicalParent(null);
+    }
+
+    private void DetachRibbonAdorner()
+    {
+        DetachChild(_ribbonBadgeAdorner);
+    }
+
+    private void PrepareAdorner()
+    {
+        var ribbonBadgeAdorner = CreateBadgeAdorner();
+        if (DecoratedTarget is not null)
+        {
+            AttachChild(DecoratedTarget);
+            ribbonBadgeAdorner.IsAdornerMode = true;
+            AttachChild(ribbonBadgeAdorner);
+        }
+        else
+        {
+            DetachRibbonAdorner();
+            ribbonBadgeAdorner.IsAdornerMode = false;
+            AttachChild(ribbonBadgeAdorner);
+            IsVisible = true;
+        }
+
+        InvalidateMeasure();
+    }
+
+    private void HideAdorner()
+    {
+        if (DecoratedTarget is null)
+        {
+            DetachRibbonAdorner();
+            IsVisible = false;
+        }
+        else
+        {
+            AttachChild(DecoratedTarget);
+            DetachRibbonAdorner();
+        }
+
+        InvalidateMeasure();
+    }
+
+    #endregion
 }

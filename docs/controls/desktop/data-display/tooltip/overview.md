@@ -207,3 +207,9 @@ Tooltip 公开 `root`、`container`、`arrow` 三个 Semantic Part。`root` 是 
 | Semantic Part | 检查 descriptor 字段、marker 与内置模板一致性、生成 Style 编译、跨嵌套 owner 命中（见 [Tooltip Semantic Part 契约](semantic-part.md)）。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+### 主题消费与打开周期
+
+实际文字字号/前景由ToolTip根的FontSize/Foreground角色进入模板，默认可见14及浅色正文保持；原生实例字号/前景和专用container/arrow Style可覆盖真实目标。FontFamily使用明确ToolTip Global或实际宿主继承，内部ArrowDecoratedBox不替代ToolTip的Global身份。当前选定来源的TipHostWidth、文本布局、箭头和颜色在打开期间持续更新，模板重建先退役旧part绑定，再向新part应用当前值。
+
+PresetColor优先Color，均未设置时使用原Background；颜色覆盖保留底层Native值/资源绑定，清除后恢复其当前值，关闭和模板退役释放覆盖帧。Closed内部通知仍先提供当次宿主，清理后不再通过AdornedControl反向保留已移除宿主；同一ToolTip实例可再次打开。没有SizeType/Custom档位，尺寸仍由原附加属性、内容、原生请求与既有最大宽约束决定。

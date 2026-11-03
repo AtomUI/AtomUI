@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -27,8 +28,10 @@ internal sealed class DialogSurfaceCloseRequestedEventArgs : EventArgs
     }
 }
 
-internal sealed class DialogSurface : ContentControl, IDisposable
+internal sealed class DialogSurface : ContentControl, IDisposable, IControlThemeGlobalOwnerSource, IThemeInheritanceSource
 {
+    #region 内部属性定义
+
     internal static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<DialogSurface, string?>(nameof(Title));
 
@@ -199,6 +202,8 @@ internal sealed class DialogSurface : ContentControl, IDisposable
         set => SetValue(ContentViewportMinHeightProperty, value);
     }
 
+    #endregion
+
     private readonly Dialog _dialog;
     private readonly CompositeDisposable _bindings = new();
     private CompositeDisposable? _confirmLoadingBindings;
@@ -214,6 +219,8 @@ internal sealed class DialogSurface : ContentControl, IDisposable
     internal OverlayDialogResizer? Resizer { get; private set; }
     internal Control? SurfaceContentLayer { get; private set; }
 
+    #region 内部事件定义
+
     internal event EventHandler<DialogSurfaceCloseRequestedEventArgs>? CloseRequested;
     internal event EventHandler? HostCloseRequested;
     internal event EventHandler? MaximizeRequested;
@@ -225,6 +232,8 @@ internal sealed class DialogSurface : ContentControl, IDisposable
     internal event EventHandler<PointerEventArgs>? HeaderPointerMoved;
     internal event EventHandler<PointerReleasedEventArgs>? HeaderPointerReleased;
     internal event EventHandler? StructuralMinimumChanged;
+
+    #endregion
 
     static DialogSurface()
     {
@@ -300,11 +309,6 @@ internal sealed class DialogSurface : ContentControl, IDisposable
         base.OnMeasureInvalidated();
     }
 
-    private void HandleCustomButtonsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        SynchronizeCustomButtons();
-        UpdateEffectiveFooterVisibility();
-    }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -344,6 +348,116 @@ internal sealed class DialogSurface : ContentControl, IDisposable
         }
 
         InvalidateStructuralMinimum();
+    }
+
+    #region 内部协作 API
+
+    internal Size MeasureStructuralMinimum()
+    {
+        var headerSize = default(Size);
+        if (IsHeaderVisible && Header is { IsVisible: true } header)
+        {
+            header.Measure(Size.Infinity);
+            headerSize = header.DesiredSize;
+        }
+
+        var footerSize = default(Size);
+        if (IsEffectiveFooterVisible)
+        {
+            var footer = (Control?)_footerFrame ?? ButtonBox;
+            if (footer is { IsVisible: true })
+            {
+                footer.Measure(Size.Infinity);
+                footerSize = footer.DesiredSize;
+            }
+        }
+
+        var contentPadding = _contentFrame?.Padding ?? default;
+        var contentBorder = _contentFrame?.BorderThickness ?? default;
+        var contentWidth = NormalizeViewportMinimum(ContentViewportMinWidth) +
+                           contentPadding.Left + contentPadding.Right +
+                           contentBorder.Left + contentBorder.Right;
+        var contentHeight = NormalizeViewportMinimum(ContentViewportMinHeight) +
+                            contentPadding.Top + contentPadding.Bottom +
+                            contentBorder.Top + contentBorder.Bottom;
+
+        return new Size(
+            Math.Max(contentWidth, Math.Max(headerSize.Width, footerSize.Width)),
+            contentHeight + headerSize.Height + footerSize.Height);
+    }
+
+    #endregion
+
+    #region 内部协作 API
+
+    internal bool TryInvokeStandardButton(Key key)
+    {
+        var standardButton = key switch
+        {
+            Key.Enter => DefaultStandardButton,
+            Key.Escape => ResolveEscapeStandardButton(),
+            _ => DialogStandardButton.NoButton
+        };
+        if (standardButton == DialogStandardButton.NoButton)
+        {
+            return false;
+        }
+
+        var button = _synchronizedButtons.FirstOrDefault(candidate =>
+            candidate.StandardButtonType == standardButton && candidate.IsEffectivelyEnabled);
+        if (button is null)
+        {
+            return false;
+        }
+
+        HandleButtonClicked(this, new DialogButtonClickedEventArgs(button));
+        return true;
+    }
+
+    #endregion
+
+    #region 内部协作 API
+
+    internal void DisconnectCompositionChildren()
+    {
+        foreach (var visual in this.GetVisualDescendants().Prepend(this))
+        {
+            if (ElementComposition.GetElementVisual(visual) is CompositionContainerVisual compositionVisual)
+            {
+                compositionVisual.Children.RemoveAll();
+            }
+        }
+    }
+
+    #endregion
+
+    public void Dispose()
+    {
+        ReleaseButtonBox();
+        ReleaseHeader();
+        ReleaseResizer();
+        ReleaseStructuralFrames();
+        SurfaceContentLayer = null;
+        _bindings.Dispose();
+    }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => _dialog;
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    // Preserve the actual physical host typography when no owner Global is set.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    private void HandleCustomButtonsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        SynchronizeCustomButtons();
+        UpdateEffectiveFooterVisibility();
     }
 
     private void SynchronizeCustomButtons()
@@ -460,40 +574,6 @@ internal sealed class DialogSurface : ContentControl, IDisposable
         InvalidateStructuralMinimum();
     }
 
-    internal Size MeasureStructuralMinimum()
-    {
-        var headerSize = default(Size);
-        if (IsHeaderVisible && Header is { IsVisible: true } header)
-        {
-            header.Measure(Size.Infinity);
-            headerSize = header.DesiredSize;
-        }
-
-        var footerSize = default(Size);
-        if (IsEffectiveFooterVisible)
-        {
-            var footer = (Control?)_footerFrame ?? ButtonBox;
-            if (footer is { IsVisible: true })
-            {
-                footer.Measure(Size.Infinity);
-                footerSize = footer.DesiredSize;
-            }
-        }
-
-        var contentPadding = _contentFrame?.Padding ?? default;
-        var contentBorder = _contentFrame?.BorderThickness ?? default;
-        var contentWidth = NormalizeViewportMinimum(ContentViewportMinWidth) +
-                           contentPadding.Left + contentPadding.Right +
-                           contentBorder.Left + contentBorder.Right;
-        var contentHeight = NormalizeViewportMinimum(ContentViewportMinHeight) +
-                            contentPadding.Top + contentPadding.Bottom +
-                            contentBorder.Top + contentBorder.Bottom;
-
-        return new Size(
-            Math.Max(contentWidth, Math.Max(headerSize.Width, footerSize.Width)),
-            contentHeight + headerSize.Height + footerSize.Height);
-    }
-
     private static double NormalizeViewportMinimum(double value)
     {
         return double.IsFinite(value) ? Math.Max(0, value) : 0;
@@ -503,41 +583,6 @@ internal sealed class DialogSurface : ContentControl, IDisposable
     {
         _isStructuralMinimumDirty = true;
         InvalidateMeasure();
-    }
-
-    internal bool TryInvokeStandardButton(Key key)
-    {
-        var standardButton = key switch
-        {
-            Key.Enter => DefaultStandardButton,
-            Key.Escape => ResolveEscapeStandardButton(),
-            _ => DialogStandardButton.NoButton
-        };
-        if (standardButton == DialogStandardButton.NoButton)
-        {
-            return false;
-        }
-
-        var button = _synchronizedButtons.FirstOrDefault(candidate =>
-            candidate.StandardButtonType == standardButton && candidate.IsEffectivelyEnabled);
-        if (button is null)
-        {
-            return false;
-        }
-
-        HandleButtonClicked(this, new DialogButtonClickedEventArgs(button));
-        return true;
-    }
-
-    internal void DisconnectCompositionChildren()
-    {
-        foreach (var visual in this.GetVisualDescendants().Prepend(this))
-        {
-            if (ElementComposition.GetElementVisual(visual) is CompositionContainerVisual compositionVisual)
-            {
-                compositionVisual.Children.RemoveAll();
-            }
-        }
     }
 
     private DialogStandardButton ResolveEscapeStandardButton()
@@ -557,16 +602,6 @@ internal sealed class DialogSurface : ContentControl, IDisposable
         IsEffectiveFooterVisible = IsFooterVisible &&
                                    !IsLoading &&
                                    (StandardButtons.Count > 0 || _dialog.CustomButtons.Count > 0);
-    }
-
-    public void Dispose()
-    {
-        ReleaseButtonBox();
-        ReleaseHeader();
-        ReleaseResizer();
-        ReleaseStructuralFrames();
-        SurfaceContentLayer = null;
-        _bindings.Dispose();
     }
 
     private void ReleaseButtonBox()

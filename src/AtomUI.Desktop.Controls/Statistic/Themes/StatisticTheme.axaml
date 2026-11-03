@@ -54,17 +54,17 @@
         </Setter>
         
         <Style Selector="^ /template/ StackPanel#RootLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}"/>
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXXS}"/>
         </Style>
         
         <Style Selector="^[IsLoading=True]">
             <Style Selector="^ /template/ StackPanel#RootLayout">
-                <Setter Property="Spacing" Value="{atom:SharedTokenResource Spacing}"/>
+                <Setter Property="Spacing" Value="{atom:OwnerTokenResource Spacing}"/>
             </Style>
         </Style>
         
         <Style Selector="^ /template/ StackPanel#ContentLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}"/>
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXXS}"/>
         </Style>
         
     </ControlTheme>

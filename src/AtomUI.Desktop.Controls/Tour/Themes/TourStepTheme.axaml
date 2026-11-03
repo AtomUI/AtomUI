@@ -42,43 +42,43 @@
         <Style Selector="^ /template/ atom|DialogCaptionButton">
             <Setter Property="Width" Value="{atom:TourTokenResource CloseBtnSize}" />
             <Setter Property="Height" Value="{atom:TourTokenResource CloseBtnSize}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:TourStep}}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:TourStep}}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#Title">
             <Setter Property="Foreground" Value="{atom:TourTokenResource HeaderColor}" />
-            <Setter Property="FontWeight" Value="{atom:SharedTokenResource FontWeightStrong}" />
+            <Setter Property="FontWeight" Value="{atom:OwnerTokenResource Kind=FontWeightStrong, AnchorControlType={x:Type atom:TourStep}}" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
            
         <Style Selector="^[StyleType=Primary]">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextLightSolid, AnchorControlType={x:Type atom:TourStep}}" />
             
             <Style Selector="^ /template/ ContentPresenter#Title">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+                <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextLightSolid, AnchorControlType={x:Type atom:TourStep}}" />
             </Style>
             
             <Style Selector="^ /template/ atom|DialogCaptionButton#CloseButton">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorTextLightSolid, AnchorControlType={x:Type atom:TourStep}}" />
             </Style>
             
             <Style Selector="^ /template/ atom|DialogCaptionButton#CloseButton:pointerover">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorTextLightSolid, AnchorControlType={x:Type atom:TourStep}}" />
             </Style>
         
             <Style Selector="^ /template/ atom|DialogCaptionButton#CloseButton:pressed">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorTextLightSolid, AnchorControlType={x:Type atom:TourStep}}" />
             </Style>
             
         </Style>
 
         <Style Selector="^ /template/ DockPanel#RootLayout">
-            <Setter Property="VerticalSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="VerticalSpacing" Value="{atom:OwnerTokenResource Kind=SpacingXS, AnchorControlType={x:Type atom:TourStep}}" />
         </Style>
         
         <Style Selector="^ /template/ StackPanel#ContentLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource Kind=SpacingXS, AnchorControlType={x:Type atom:TourStep}}" />
         </Style>
 
         <Setter Property="IsVisible" Value="False" />

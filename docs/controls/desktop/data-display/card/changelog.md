@@ -3,6 +3,18 @@
 本文档记录 Card 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-02
+
+- 修复操作区外框不变、原生 Action 只改变安排位置时分隔线未更新的问题。保留子项布局和绘制公式；使用控件自拥有的布局通知，仅在实际子项几何变化时使绘制失效。
+
+## 2026-10-31
+
+- 22 Own迁移有效默认Revision1，保留全部名称/type/key/slot与历史默认；明确4项Reserved，不为悬空字段创造重复布局功能。
+- 接通ActionsBg和ExtraColor的明确Own、清除与专用Style优先；保留未配置实际透明/继承色。
+- 五个文字根与各公开/内部owner Global接通，保留Native本地值、角色字号与独立子Control合同。
+- 修复Small Grid/Tabs外层重复padding；root/GridItem原生Padding及actions专用Background/Padding进入实际模板，自绘分隔线跟随child坐标。
+- 容器状态和扩展按实际membership获取/释放，保留本地disabled/hover/size值；自带容器移出不再被长寿命Grid保留。
+
 ## 2026-08-13
 
 - Semantic Part

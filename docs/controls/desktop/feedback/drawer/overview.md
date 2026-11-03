@@ -1,5 +1,7 @@
 # Drawer 桌面版架构设计
 
+CT15 当前接入（2026-11-01）：可选字体沿真实继承进入跨根容器，未显式覆盖的12/Black与Native值保持；原Mask、标题、关闭等Global归公共Drawer。长标题局部省略，Title全文、Extra、原宽度及滚动预算保留；已打开时换模板回放可见状态。73项聚焦与52默认通过，最终三版/清理/限定批准仍待，完整Drawer/CT15不关闭，见[结果](../../../../superpowers/plans/2026-10-22-custom-theme/drawer-consumers-results.md)。
+
 本文档定义 `Drawer` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Drawer 桌面版实现原理](implementation.md)，Drawer Token 的专项设计见 [Drawer Token 设计](token.md)，设计和契约变化记录见 [Drawer Changelog](changelog.md)。
 
 ## 1. 控件定位
@@ -179,3 +181,6 @@ Drawer 的视觉选项通过 public API 归一为 theme variables、伪类或模
 
 当前本专项平台证据：Windows 已测试，macOS 已测试；Linux X11/Wayland 未测试。该状态只说明最终 owning
 TopLevel/chrome suppression/popup 分层方案的实机证据，不代表 Drawer 的其他平台能力已被本次验收覆盖。
+
+
+CT15最新限定验收：有效managed/AOT各116检查/196帧，164静态跨运行全0、各68主恢复0；35临时/1518取证/550原会话和4最终文件已清理，最终38精确模块及NET8零警告零错误通过。仅20对明确静态待用户限定批准，定时/平台/GC/极值与完整家族仍保留，详见[限定视觉表](../../../../superpowers/plans/2026-10-22-custom-theme/drawer-consumers-visual-review.md)。

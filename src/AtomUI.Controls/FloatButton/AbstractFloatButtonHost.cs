@@ -218,7 +218,11 @@ public abstract class AbstractFloatButtonHost : TemplatedControl, IMotionAwareCo
         Disposables?.Dispose();
         Disposables =   new CompositeDisposable();
         FloatButton ??= CreateFloatButton(Disposables);
-        _overlayLayer?.Children.Add(FloatButton);
+        if (_overlayLayer is { } layer)
+        {
+            LogicalChildren.Add(FloatButton);
+            layer.Children.Add(FloatButton);
+        }
     }
 
     private void CleanupScopedOverlayLayer()
@@ -226,6 +230,7 @@ public abstract class AbstractFloatButtonHost : TemplatedControl, IMotionAwareCo
         if (FloatButton != null)
         {
             _overlayLayer?.Children.Remove(FloatButton);
+            LogicalChildren.Remove(FloatButton);
             Disposables?.Dispose();
             Disposables = null;
             FloatButton = null;
@@ -238,6 +243,7 @@ public abstract class AbstractFloatButtonHost : TemplatedControl, IMotionAwareCo
 
     protected void BindFloatButtonProperties(AbstractFloatButton floatButton, CompositeDisposable disposables)
     {
+        // This button is created at runtime in an external overlay, outside the host's ControlTemplate.
         disposables.Add(BindUtils.RelayBind(this, IconProperty, floatButton, AbstractFloatButton.IconProperty));
         disposables.Add(BindUtils.RelayBind(this, TooltipProperty, floatButton, AbstractFloatButton.TooltipProperty));
         disposables.Add(BindUtils.RelayBind(this, TooltipColorProperty, floatButton, AbstractFloatButton.TooltipColorProperty));

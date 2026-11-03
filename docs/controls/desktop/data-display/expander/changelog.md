@@ -58,3 +58,8 @@
   - 建立 Expander 控件文档目录，补齐 `overview.md`、`implementation.md`、`token.md` 和 `changelog.md`。
   - 记录 Expander 的公共契约、触发区域、展开方向、动效状态机、自定义 padding、主题结构、Token 分类和验证策略。
   - 在 Data Display 分类入口中登记 Expander 文档。
+
+
+## 2026-10-30 主题消费与字体
+
+根与标题的 Global 输入从 Expander 模板 owner 解析，箭头等中间 primitive 不改变其所属输入。可选字体保留实际继承，尺寸基础默认与三档预设分开。四方向、收起展开、内容裁剪及原有 Transitions 声明位置保持。

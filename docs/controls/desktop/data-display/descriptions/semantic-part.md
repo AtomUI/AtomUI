@@ -295,6 +295,8 @@ Style 优先级失效。
 
 ## 6. 兼容性与验证
 
+CT15消费验证通过AXAML专用DescriptionsHeaderStyle、DescriptionsTitleStyle、DescriptionsExtraStyle、DescriptionsLabelStyle、DescriptionsContentStyle覆盖四种布局的真实目标，并验证clear。静态用例锁定五类及关键Setter，无获取节点后设置颜色的代码回退。本次六Part的class/route/数量语义保持；生成cell重建退休旧目标，不将旧实例继续当作当前Part。
+
 删除或重命名 Part、修改 selector class、收窄 `ContractType`、改变 cardinality，或者让任一适用布局缺少 marker，均属于公共
 主题契约变更。
 

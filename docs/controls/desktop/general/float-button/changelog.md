@@ -19,6 +19,17 @@
   - FloatButtonGroup 通过静态菜单表面隔离 list 自定义变换，播放与连续替代统一交由 Core Motion。
   - 保持 trigger 尺寸决定的四方向位移、透明度反向连续性、进度环和 Semantic Part 路由。
 
+- Preserve eight Own defaults under DependencyDefaultsV2/revision1; leave the two legacy scalar badge-offset fields pending a documented classification review.
+- Apply existing typography and composition Global roles to the actual public owners while retaining native priorities and Host ownership.
+- Retire badge visuals/projections on mode, template and tree changes; restore token colour after clearing instance colour and connect BackTop's declared badge layout.
+- Release Group child projections at membership exit and project list Padding into both visible templates.
+- Preserve normal BackTop visibility across rapid state/template/tree changes; release retired scroll requests and retain exact scroll completion plus caller Offset bindings.
+- Keep full CT15 visual/AOT, input/platform and family exit acceptance open.
+
+## 2026-10-29
+
+- Theme / Implementation
+  - Host的运行时按钮完整接入/移除逻辑子集合，跟随局部主题与热资源更新；定位使用视觉父层，卸载时解除层尺寸订阅。
 
 ## 2026-09-12
 
@@ -72,3 +83,13 @@
   - Add FloatButton implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add FloatButton control-level changelog.
   - Add FloatButton Token documentation covering FloatButtonToken.
+
+
+CT15清理后限定验收：FloatButton精确46项通过、NET8零警告零错误，临时49用例/媒体/驱动已清理；65对具体静态及两offset分类仍待用户审查，完整家族不因此关闭。详见[正式限定结果](../../../../superpowers/plans/2026-10-22-custom-theme/float-button-consumers-results.md)。
+
+
+2026-10-31：65对具体静态（含列明派生换行/裁剪）与两scalar offset Reserved兼容分类已获用户限定批准；两scalar保持未消费，以公开BadgeOffset Point定制，完整家族/CT15及其他边界保留。该批准不授权提交。
+
+## 2026-11-01
+
+- Bind BackTop's target scroll subscription to visual membership, so replacing Target before attach or after detach does not retain the retired button through a living ScrollViewer. Keep attach-time progress restoration and normal return-to-top behavior.

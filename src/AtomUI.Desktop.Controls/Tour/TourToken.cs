@@ -5,8 +5,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class TourToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class TourToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -51,23 +51,32 @@ internal sealed class TourToken : AbstractControlDesignToken
     
     #endregion
     
-    public TourToken()
 
-    {
-    }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        CloseBtnSize          = EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight;
-        PrimaryPrevBtnBg      = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.15);
-        PrimaryNextBtnHoverBg = ColorUtils.OnBackground(EffectiveGlobalToken.ColorBgTextHover, EffectiveGlobalToken.ColorWhite);
-        IndicatorSize         = 6;
-        TourBorderRadius      = EffectiveGlobalToken.BorderRadiusLG;
-        TourViewMinWidth      = 200;
-        TourViewMinHeight     = 120;
-        HeaderColor           = EffectiveGlobalToken.ColorTextHeading;
-        PopupMarginToAnchor   = EffectiveGlobalToken.SpacingXXS;
-    }
-    
+    [ControlTokenDefault(nameof(CloseBtnSize))]
+    private static double DefaultForCloseBtnSize(in ControlTokenDefaultContext context) => context.Global.FontSize * context.Global.RelativeLineHeight;
+
+    [ControlTokenDefault(nameof(PrimaryPrevBtnBg))]
+    private static Color DefaultForPrimaryPrevBtnBg(in ControlTokenDefaultContext context) => context.Global.ColorTextLightSolid.SetAlphaF(0.15);
+
+    [ControlTokenDefault(nameof(PrimaryNextBtnHoverBg))]
+    private static Color DefaultForPrimaryNextBtnHoverBg(in ControlTokenDefaultContext context) => ColorUtils.OnBackground(context.Global.ColorBgTextHover, context.Global.ColorWhite);
+
+    [ControlTokenDefault(nameof(IndicatorSize))]
+    private static double DefaultForIndicatorSize(in ControlTokenDefaultContext context) => 6;
+
+    [ControlTokenDefault(nameof(TourBorderRadius))]
+    private static CornerRadius DefaultForTourBorderRadius(in ControlTokenDefaultContext context) => context.Global.BorderRadiusLG;
+
+    [ControlTokenDefault(nameof(TourViewMinWidth))]
+    private static double DefaultForTourViewMinWidth(in ControlTokenDefaultContext context) => 200;
+
+    [ControlTokenDefault(nameof(TourViewMinHeight))]
+    private static double DefaultForTourViewMinHeight(in ControlTokenDefaultContext context) => 120;
+
+    [ControlTokenDefault(nameof(HeaderColor))]
+    private static Color DefaultForHeaderColor(in ControlTokenDefaultContext context) => context.Global.ColorTextHeading;
+
+    [ControlTokenDefault(nameof(PopupMarginToAnchor))]
+    private static double DefaultForPopupMarginToAnchor(in ControlTokenDefaultContext context) => context.Global.SpacingXXS;
 }

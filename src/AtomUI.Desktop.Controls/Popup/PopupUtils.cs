@@ -853,6 +853,13 @@ internal static class PopupUtils
             flipX = constrainedFlipX;
             flipY = constrainedFlipY;
         }
+        else if (isUseOverlayHost)
+        {
+            // Margin can make the native positioner choose a different flip from
+            // the preliminary zero-margin probe. Report the final inputs without
+            // changing the host geometry or the existing CSD constrained branch.
+            (flipX, flipY) = CalculateOverlayPopupHostFlipInfo(placement);
+        }
         return (flipX, flipY);
     }
 

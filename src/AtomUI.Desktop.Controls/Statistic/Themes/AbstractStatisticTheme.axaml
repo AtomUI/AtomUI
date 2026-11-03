@@ -4,13 +4,27 @@
               xmlns:atom="https://atomui.net"
               x:Class="AtomUI.Desktop.Controls.Themes.AbstractStatisticTheme"
               x:ClassModifier="internal">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+    <Setter Property="FontSize">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+            <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontSize" />
+        </MultiBinding>
+    </Setter>
     <Style Selector="^:is(atom|AbstractStatistic)">
         <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextDescription, AnchorControlType={x:Type atom:AbstractStatistic}}" />
             <Setter Property="FontSize" Value="{atom:StatisticTokenResource TitleFontSize}" />
         </Style>
 
-        <Setter Property="ContentForeground" Value="{atom:SharedTokenResource ColorTextHeading}" />
+        <Setter Property="ContentForeground" Value="{atom:OwnerTokenResource ColorTextHeading}" />
         <Setter Property="ContentFontSize" Value="{atom:StatisticTokenResource ContentFontSize}" />
 
         <Style Selector="^ /template/ StackPanel#ContentLayout">

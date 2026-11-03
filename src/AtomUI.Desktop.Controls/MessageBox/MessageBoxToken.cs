@@ -2,8 +2,8 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class MessageBoxToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class MessageBoxToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
     /// <summary>
@@ -16,16 +16,10 @@ internal sealed class MessageBoxToken : AbstractControlDesignToken
     /// </summary>
     public double MinWidth { get; set; }
 
-    public MessageBoxToken()
+    [ControlTokenDefault(nameof(StyleIconSize))]
+    private static double DefaultForStyleIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.SizeLG * 1.2;
 
-    {
-    }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        StyleIconSize = EffectiveGlobalToken.SizeLG * 1.2;
-        MinWidth      = 410;
-    }
-
+    [ControlTokenDefault(nameof(MinWidth))]
+    private static double DefaultForMinWidth(in ControlTokenDefaultContext context) => 410d;
 }

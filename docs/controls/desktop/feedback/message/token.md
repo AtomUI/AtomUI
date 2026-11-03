@@ -10,18 +10,28 @@ Message Token 只表达组件级视觉变量，例如尺寸、间距、颜色、
 
 - internal `MessageCardToken`，scope id 为 `MessageCard`，源码位于 `src/AtomUI.Desktop.Controls/Message/MessageCardToken.cs`。
 
-## 2. Token 分类
+## 2. 实际字段与默认
 
-Token 按控件语义分类维护：
+六字段使用DependencyDefaultsV2 Revision1，默认仅依赖有效MessageCard Global或原常量，无Own依赖边；保留名称/type/key/slot。五Active，一Reserved。
 
-| 分类 | 语义 | 代表 Token |
+| 字段 | 默认输入 | 消费合同 |
 | --- | --- | --- |
-| 尺寸与密度 | 卡片高度、图标尺寸。 | `CardHeight`、`MessageIconSize` |
-| 间距与布局 | 卡片 padding、图标间距、宿主边距。 | `ContentPadding`、`MessageIconMargin`、`MessageTopMargin` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ContentBg` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
+| ContentBg | ColorBgElevated | 卡片root Background→Frame，以及manager两层静态背板背景 |
+| ContentPadding | horizontal=(ControlHeightLG-FontSize×RelativeLineHeight)/2，vertical=UniformlyPaddingXS | root Padding→真实Frame，保留自适应高度 |
+| MessageIconSize | FontSizeSM×RelativeLineHeightSM | IconPresenter Width/Height |
+| MessageIconMargin | right=UniformlyMarginXS | IconPresenter Margin |
+| MessageTopMargin | 四边UniformlyMarginXS | manager Padding→StackHost.Margin |
+| CardHeight | 原double 0 | **Reserved**：当前无生产消费者，不作为固定高度或MinHeight入口 |
 
-未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+CardHeight保留历史资源、默认、type/key/slot及配置往返，不能据名称声称调节界面。实际高度由正文、图标和Padding测量；原生Width/Height/MinHeight及Part增量定制保持。Message没有SizeType，不创造三档或Custom枚举。合法几何0与明确透明值有效，清除恢复当前默认。
+
+### Global、排版与优先级
+
+Card和manager分别读取真实owner Global。IconPresenter是独立公开身份，Message状态色必须明确SourceControlType=MessageCard；不能误取IconPresenter Global。manager背板的圆角/阴影属于manager，背景仍复用Card.ContentBg。
+
+正文原有FontSize/ColorText角色默认由Card root提供，再由SelectableTextBlock继承；实际默认画面保持，root原未被正文消费的字号/前景有效值随此角色归位。原生root FontSize/Foreground与专用MessageCardTitleStyle可达真实正文，LineHeight/选择色仍分别消费对应Card Global，不复制为同一变量。FontFamily使用有限真实原生继承源，明确Card Global可覆盖，清除与重挂由当前owner接管。manager字体保留独立owner与原生继承；卡片字号/前景角色不自动变为manager字号。
+
+主题默认、状态、原生本地值和专用Style遵循Avalonia优先级。五种默认图标由现有类型Style内的Template逐卡实例化；切换类型同步更新，用户Icon优先，null按原合同恢复当前类型默认。Loading仍使用正常Spin，不用关闭动效规避动态验证。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -35,8 +45,7 @@ Message 的控件专项模型通过 Theme 消费 Token：
 `MessageTopMargin` 为四边 `UniformlyMarginXS`，作为 `WindowMessageManager.Padding` 的默认值；模板将 Padding
 投影到 StackHost 的 Margin。应用可覆盖 owner Padding，卡片外框自身保持零外边距。
 
-Stack 的展开 gap 16、折叠 offset 8、背板高度 16 与左右缩进分别来自 SharedToken 的统一 margin 尺度；
-Notification 与 Message 共用这些几何语义，因此不在 `MessageCardToken` 中复制一组 Stack Token。背板背景复用
+Stack当前展开gap16、折叠offset8、背板高度16与缩进由共享反馈堆叠实现拥有；这些常量尚不能仅凭Global schema可配置就声称已消费。Notification与Message共用几何语义，不在MessageCardToken复制一组Stack字段。背板背景复用
 `ContentBg`，阴影复用 SharedToken tertiary shadow。Stack 状态和活动项数量属于运行时状态，不能写入 Token。
 
 ## 4. 控件家族影响

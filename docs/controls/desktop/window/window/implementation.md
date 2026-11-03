@@ -246,6 +246,7 @@ Resolve owner ThemeContext
 实现必须满足以下约束：
 
 - 资源读取发生在 `ThemeContextLease` 的资源桥挂载之后，确保 owner 局部主题和 Window control token override 优先于根主题。
+- 主题owner优先采用已建立且具有有效Context的逻辑父，再回退到显示API的物理owner；两者可以不同。原生Dialog由页面中的Dialog或placement target提供局部主题，OS窗口ownership仍由原有Show/ShowDialog参数决定。首次测量与显示使用同一资源owner。
 - 显示调用是同步临界区，首帧背景只做一次 Snapshot-backed 资源读取和临时属性赋值，不创建 `DynamicResource`、resource observable 或短生命周期 Token 订阅。
 - 临时属性值使用 `BindingPriority.Template` 或等价的低优先级可释放值帧，因此不得覆盖用户 local value；释放时也不得影响用户值。
 - `base.ShowDialog` 返回窗口生命周期 `Task` 后即可释放首帧临时值，不得让临时值存活到 Dialog 关闭。

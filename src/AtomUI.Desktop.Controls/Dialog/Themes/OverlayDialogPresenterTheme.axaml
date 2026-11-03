@@ -5,8 +5,8 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:OverlayDialogPresenter}" TargetType="atom:OverlayDialogPresenter">
         <Setter Property="Focusable" Value="True" />
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
-        <Setter Property="OpeningMotionDuration" Value="{atom:SharedTokenResource MotionDurationSlow}" />
+        <Setter Property="MotionDuration" Value="{atom:DialogTokenResource MotionDurationMid}" />
+        <Setter Property="OpeningMotionDuration" Value="{atom:DialogTokenResource MotionDurationSlow}" />
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:OverlayDialogPresenter">
                 <Panel>
@@ -28,5 +28,8 @@
             </ControlTemplate>
         </Setter>
 
+        <Style Selector="^[IsModal=True]">
+            <Setter Property="KeyboardNavigation.TabNavigation" Value="Cycle" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

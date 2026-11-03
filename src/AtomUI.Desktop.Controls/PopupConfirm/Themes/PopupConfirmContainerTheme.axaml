@@ -4,6 +4,27 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:PopupConfirmContainer}" TargetType="atom:PopupConfirmContainer">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" AnchorControlType="{x:Type atom:PopupConfirmContainer}" />
+                <atom:OwnerTokenResource Kind="FontFamily" AnchorControlType="{x:Type atom:PopupConfirmContainer}" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" AnchorControlType="{x:Type atom:PopupConfirmContainer}" />
+                <atom:OwnerTokenResource Kind="FontSize" AnchorControlType="{x:Type atom:PopupConfirmContainer}" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:OwnerTokenResource Kind="ColorText" WhenExplicit="True" AnchorControlType="{x:Type atom:PopupConfirmContainer}" />
+                <atom:OwnerTokenResource Kind="ColorText" AnchorControlType="{x:Type atom:PopupConfirmContainer}" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <DockPanel Name="PART_MainLayout"
@@ -54,8 +75,8 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Style Selector="^ /template/ atom|TextBlock#PART_Title">
             <Setter Property="Margin" Value="{atom:PopupConfirmTokenResource TitleMargin}" />
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextHeading}" />
-            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextHeading, AnchorControlType={x:Type atom:PopupConfirmContainer}}" />
+            <Setter Property="FontWeight" Value="{atom:OwnerTokenResource FontWeightStrong, AnchorControlType={x:Type atom:PopupConfirmContainer}}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#PART_Content">
@@ -77,27 +98,27 @@
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
             <Setter Property="Margin" Value="{atom:PopupConfirmTokenResource IconMargin}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeLG}" />
+            <Setter Property="Width" Value="{atom:OwnerTokenResource IconSizeLG, AnchorControlType={x:Type atom:PopupConfirmContainer}}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource IconSizeLG, AnchorControlType={x:Type atom:PopupConfirmContainer}}" />
             <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
 
         <Style Selector="^[ConfirmStatus=Info]">
             <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:OwnerTokenResource ColorPrimary, AnchorControlType={x:Type atom:PopupConfirmContainer}}" />
             </Style>
         </Style>
         <Style Selector="^[ConfirmStatus=Warning]">
             <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorWarning}" />
+                        Value="{atom:OwnerTokenResource ColorWarning, AnchorControlType={x:Type atom:PopupConfirmContainer}}" />
             </Style>
         </Style>
         <Style Selector="^[ConfirmStatus=Error]">
             <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorError}" />
+                        Value="{atom:OwnerTokenResource ColorError, AnchorControlType={x:Type atom:PopupConfirmContainer}}" />
             </Style>
         </Style>
     </ControlTheme>

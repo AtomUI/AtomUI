@@ -2,6 +2,16 @@
 
 本文档记录 Collapse 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-01
+
+- Theme
+  - Migrate 15 Own fields to V2 revision 1 without changing the four-algorithm defaults, keys, slots or original size/state roles.
+  - Connect Global typography and heading/body/border/icon roles to the actual owner while retaining native overrides and inherited foreground when configuration is absent.
+- Fix
+  - Retire item projections on clear/removal/detach and restore current-owner bindings on reattach, preserving original content, selection and motion.
+- Docs
+  - Document membership boundaries and verify all four dedicated Semantic Part Styles. CT15 visual, platform and family exit boundaries remain open until their explicit evidence and approval.
+
 ## 2026-10-27
 
 - Implementation
@@ -10,6 +20,7 @@
   - 保持手风琴空间交换、内容自然排版、视口命中、结构边线与 Semantic Part route；隐藏后恢复底层透明度来源。
 - Docs
   - 同步模板绑定、布局租约、请求替代和资源释放边界。
+
 
 ## 2026-09-10
 

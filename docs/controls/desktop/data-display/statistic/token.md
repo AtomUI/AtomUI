@@ -52,6 +52,12 @@ Statistic 的控件专项模型通过 Theme 消费 Token：
 
 ## 6. 验证策略
 
+CT15 将 `StatisticToken` 迁移到 DependencyDefaultsV2 revision 1。`TitleFontSize` 与 `ContentFontSize` 分别依赖 Statistic Global 的 `FontSize`、`FontSizeHeading3`；四算法原默认、类型、key、slot 保持。两字段由 Statistic 身份持有，TimerStatistic 与 StatisticCountUp 沿用原限定 Own 资源，没有为三个 Global-only metadata 新增 Own fragment。
+
+字号是正值。官方 Avalonia 12.1.4 对 0 字号会在文本布局抛出 `Invalid FontRenderingEmSize`；旧新实测一致，不将 0 解释为折叠文本或静默夹值。原生 `ContentFontSize`、控件字体和专用部件 Style 继续按各自目标的 Avalonia 优先级生效。CountUp 未明确配置自身 Global 字号时保持原共享 Own 内容字号；明确自身 Global `FontSize` 才覆盖此 fallback。
+
+标题颜色、内容 heading 与 Statistic 原两种 spacing 角色在 ControlTheme 使用实际 owner Global。Root 可选字体保留真实继承，标题/内容字号仍是原两 Own 角色，不把 Root 字号等同于所有部件字号。范围与未通过项见 [CT15 Statistic 结果](../../../../superpowers/plans/2026-10-22-custom-theme/statistic-consumers-results.md)。
+
 | 改动类型 | 验证要求 |
 | --- | --- |
 | Token 文档 | `git diff --check`，检查相对链接存在。 |

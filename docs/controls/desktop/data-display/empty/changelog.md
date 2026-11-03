@@ -14,6 +14,14 @@
   - 澄清 EmptyToken 的尺寸与间距职责、预设图形的 SharedToken 配色来源，以及摘挂和模板重套用时的 Semantic target 身份。
   - 补充同一实例摘挂、自定义来源、离树期间来源或主题变化的验证要求。
 
+## 2026-11-01
+
+- 将六个 Own 字段迁移到 DependencyDefaultsV2 revision 1，保留四算法默认、名称、类型、key 和 slot；预设插画与描述接入实际 Empty Global，并复用可选字体解析。
+- 修复离树图片来源变更未回放；保留自定义 SVG 的原内容与颜色，以及互斥来源合同。
+- 修复原生 Footer 换模板后焦点丢失；弱引用与 generation 取消旧回调，并保留后来用户焦点、对象、文本和 caret。
+- 三个专用 Semantic Style 继续是部件定制入口。临时验证、正常 Skia/AOT、清理后模块验收及限定视觉结论在 CT15 结果中逐项记录，完整家族与 CT15 不因此关闭。
+
+
 ## 2026-08-19
 
 - Gallery

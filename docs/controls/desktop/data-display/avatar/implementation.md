@@ -20,6 +20,7 @@ src/AtomUI.Controls/Avatar/
 ├── Avatar.cs
 ├── AvatarPseudoClass.cs
 ├── AvatarShape.cs
+├── AvatarThemeConverters.cs
 ├── AvatarToken.cs
 └── Themes/AvatarTheme.axaml
 ```
@@ -145,12 +146,12 @@ generation 和 attach 状态，再提交结果。成功时先保存 lease、状�
 `AvatarTheme.axaml` 通过 internal `ContentType` 选择 Image、Text 或 Icon presenter。唯一稳定 template part 是
 `PART_TextPresenter: Avalonia.Controls.TextBlock`。
 
-`AbstractAvatar` 只把 `Gap` 投影为模板内部的水平 Text padding。Border 用该 padding 定义文字可用区域，Viewbox 以
+`AvatarTheme` 用编译绑定和无状态类型化 converter 把 `Gap` 投影为模板内部的水平 Text padding。Border 用该 padding 定义文字可用区域，Viewbox 以
 `PART_TextPresenter` 的自然排版尺寸为输入并使用 `StretchDirection=DownOnly`：自然宽度不超过可用宽度时保持原尺寸，超过时
 等比缩小到可用区域。缩放和居中由同一个模板布局坐标系负责，不单独调用文字测量工具，也不叠加横向补偿 transform；Text、
 Font、Gap 或控件尺寸变化通过 Avalonia measure/arrange 自动重新计算。
 
-`Size` 非 `NaN` 时保存原 SizeType 并切换到 Custom；恢复 `NaN` 后回到原 SizeType。Circle 形状把最终宽度的一半写入模板
+`AbstractAvatar` 负责 `Size` 非 `NaN` 时保存原 SizeType 并切换到 Custom；恢复 `NaN` 后回到原 SizeType。模板的 Custom 编译绑定持续观察 Size/Icon/Source，连续修改尺寸时更新真实 box 与 Icon 尺寸。Circle 通过 Bounds.Width 编译绑定把最终宽度的一半写入
 CornerRadius。图片请求尺寸来自 Bounds 与 TopLevel render scaling，而不是 Token 名称或逻辑像素直接值。
 
 ## 9. 资源、性能与 AOT 边界
@@ -188,3 +189,17 @@ CornerRadius。图片请求尺寸来自 Bounds 与 TopLevel render scaling，而
 - Gallery 示例只使用 `Source`/`ImageSource`。
 - 默认 Application `Compatible` 模式加载含重复 id 的本地 SVG；`Strict` 下同一来源报告 `InvalidImageData`，并继续验证
   FallbackSource、`ImageFailed`、伪类和 generation 语义。两种模式对不安全或超预算 SVG 的结果完全相同。
+
+
+## 12. CT15 消费与组合绑定
+
+单头像实现既有 `IThemeInheritanceSource`，模板的 optional 字体绑定仅在 Avatar owner 明确指定 Global FontFamily/FontSize 时覆盖原物理继承，原生 Font 属性仍优先。Square 各档圆角消费本 Avatar owner Global；默认文字仍来自原继承，本机14，三 TextFontSize Own 实际供 Icon 尺寸使用。
+
+AvatarGroup 的 BorderThickness 消费自身注册 owner 的 Global；GroupSpace、GroupOverlapping 与 fold 颜色继续复用 Avatar Own。二者的 control identity 不可混同。Children 与 fold Avatar 是运行期集合/Content 对象，不处于 ControlTemplate 路径，故保留类型化 relay：每个 membership 持有自己的 CompositeDisposable，成员退役、Group detach 时释放；fold host/Avatar 的绑定随 fold 退役释放。SizeType 必须先于 Size 投射，避免构造时显式 Size 刚进入 Custom 后被 preset 覆盖。该机制保持原组合投射优先级，不建立旧 Local 值恢复引擎。
+
+本家族未发布生成的 Semantic Part manifest；Frame/Icon/Image 为 internal-observable，PART_TextPresenter 仍为唯一稳定模板 part。定制使用公开 root Style/原生属性，观测内部节点不得变成赋值回退。CT15 验证结果与未覆盖边界见 [执行记录](../../../../superpowers/plans/2026-10-22-custom-theme/avatar-consumers.md)。
+
+fold 的 StackPanel 是跨根弹层 Content，context 值能正确继承并不保证 DynamicResource 收到发布事件。AvatarGroup 仅在该运行期内容根复用 ThemeContextResourceBridge，随 Group Context 变化更新，fold退役/detach时先从资源集合移除并dispose，避免保留旧Scope。单头像不为此增加常驻bridge，共享Flyout不由本包改写。
+
+
+CT15当前仅[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/avatar-consumers-visual-review.md)48对有意变化已获批准，其他关闭/往返微差及完整Avatar/CT15保留，不授权提交。

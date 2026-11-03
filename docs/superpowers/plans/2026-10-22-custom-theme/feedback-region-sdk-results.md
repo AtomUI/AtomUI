@@ -1,0 +1,206 @@
+# CT15 限定依赖修复验证
+
+授权见[提案登记](feedback-region-rendering-repair-proposal.md#限定授权登记)，原始因果只见[Card真实执行条件](card-original-restore-history.md#原真实执行条件的下一步观测2026-11-02)。当前仅在`/private/tmp/atomui-ct15-region-sdk-validation`执行；未改产品依赖引用、NuGet缓存或参考checkout，未建分支/worktree或提交。
+
+## 精确源码与基线
+
+从现有本地Avalonia `12.1.4`对象`2d79ba55fae1b1e71c69f93a668080c9029e6a31`导出Avalonia.Skia的56个原文件和官方签名输入，记录逐文件SHA。临时独立csproj引用官方net10运行程序集与原SkiaSharp3.119.4/HarfBuzzSharp8.3.1.3，匹配AssemblyVersion12.1.4.0、公钥标记c8d484a7012f9a8b，未修改其他依赖。未变源码基线构建0警告/0错误0.99s。Python tarfile旧API的filter参数不支持，改为逐成员检查路径/链接后导出；不计产品失败。
+
+源码比较范围只有同版本导出基线与候选改动；没有升级到未经核对的新版本。原临时编译配置暂未复制官方trim/DisableRuntimeMarshalling元数据，本轮先验证managed绘制逻辑，不能据此声称最终AOT配置等价；必要发布前必须补齐并复核。
+
+## 候选路线选择
+
+整帧SKPicture重放虽消除原四差分，但接入时发现不能直接假定graphics lease的Canvas/Surface合同不受影响，因此不把它直接作为依赖实现。选择更小的单次几何绘制保守裁剪候选：
+
+- 只在现有Canvas clip为复杂形状时，于DrawGeometry/DrawRectangle使用真实绘制边界；映射到设备空间后外扩2物理像素并向外取整，以独立save/restore收窄当前clip。
+- 当前脏区仍由原clip约束，不扩大区域，不设置控件ClipToBounds，不清全屏，不重复server树遍历，不切换Canvas/Surface，不改变graphics lease或shader/颜色配置。
+- 几何使用GetRenderBounds(pen)；矩形包括pen与原BoxShadows.TransformBounds。单矩形快路径避免计算几何bounds。非有限/超出安全数值范围时保持原绘制。
+- 临时SDK只修改DrawingContextImpl.cs；新增私有配对裁剪helper，不新增公共API、持久字段、订阅或native缓存。用现有SKAutoCanvasRestore在异常路径归还图形状态。
+
+首次编译SKRect缺RoundOut已改为明确floor/ceiling，属于临时构建错误。候选构建0警告/0错误0.46s；原Card probe构建0警告24.30s。三份临时运行目录除Avalonia.Skia.dll外所有managed DLL SHA完全相同，运行时打印实际载入路径/程序集身份/SHA，避免只按复制文件名认定版本。
+
+## 当前执行门禁
+
+同一原1260×1380/12卡/三尺寸/22阶段/正常主题和原输入历史：官方包、同版本重建基线、候选分别执行完整900性质/88图；重复版本不算新增不同用例。先核对官方与重建基线逐图等价，再核对候选默认、原32恢复及所有其他旧新变化；未取得结果前不填写通过。随后仅补有风险依据的graphics状态/lease、资源和性能验证，源码稳定后合批AOT与必要当前原生后端。
+
+2026-11-02用户进一步要求自行选择最优路线、不再让其逐项选择。本包在现有授权和原完成判据内自主执行，不用选择/归属审批代替修复。正式采用、其余FW2是否同因以及完整CT15不能由局部原型通过自动推断。当前临时工程/媒体存在，清理与精确模块门禁尚未完成。
+
+## 第一轮真实窗口结果与必要修正
+
+三版原完整900性质/88图均PASS；官方与未修改源码重建版88对RGBA全部0。第一候选四默认旧新0，原8恢复阶段×4算法共32个self-restore全部0；原官方及重建仍312/312/110/110。运行时实际SDK SHA分别为官方AB801E03246F8FD39E0681888FED615CBE818313DE5F74CF782154871171B334、重建5A7B480ACC85CE97FF15D01069821DF040475A3D4FB305033F101365AC6E65D7、候选1CD5EDC7B8638734664F25E81133E02FB5705ABD5DC334C0A602D933D249920E。不把重复900称作更多不同用例。
+
+直接graphics合同的五种变换（identity、0.5缩放、旋转、高DPI、shear）共35判据，官方32PASS/3原复杂clip差分FAIL。首候选35中32PASS/3FAIL：Canvas/Surface identity、矩阵/保存层/clip状态及绘制后继续lease均通过，但half/rotation/DPI出现新增327/max128、90/max42、1356/max128裁剪，故拒绝交付这个候选。临时ref assembly隐藏AvaloniaLocator.Current及GetFeature方法名的夹具编译/调用纠正不算产品反证。
+
+根因是布局阴影位移与SDK现有实际绘制次序不同。第二候选联合保留原布局bounds及实际阴影caster/blur/append-translation范围，包括context隐藏DPI后变换；不纠正原位移语义、不改CT12既有补偿。新clip只允许更保守，不缩调用方绘制范围。相同35判据全部PASS、五组整帧complex/full都0，保留首候选失败记录。
+
+随后把配对裁剪保存改为int save-count与try/finally，去掉每次绘制的新增托管lease对象；保留真实Canvas/Surface及异常恢复。补齐官方IsTrimmable/IsAotCompatible/DisableRuntimeMarshalling构建元数据，未变源码基线和候选分别构建0警告3.18s/0警告0.64s。第三候选SHA e4586826ab36d0e5fd3f218b92d2ce71277df8503eaf96e5df9c53ba80e4537e；需后续以该准确产物复验，不拿第一轮图冒充最终配置。新增native Surface直接绘制标记检查，避免只比较句柄就认定原生内容合同通过。
+
+## 完整参考检错与损伤区域策略
+
+第三候选（含Surface真实绘制标记）35 graphics判据全PASS；原完整900性质也PASS。但以同一真实server状态完整绘制作为参考，88张中84张零、Global四张仍L/D114/max19、C/DC199/max29，严格保留FAIL。普通吞吐benchmark每90帧约1.6秒，受16ms调度主导，不能据此宣称绘制CPU无退化；已复用诊断回调增加不含帧节拍等待的dirty-update/render CPU计时，待最终路线稳定后使用。
+
+把物理AA裕量2→1没有改变四Global残留。随后进一步缩小SDK修复范围：阴影继续走原入口，仅背景fill和border stroke分别进入保守裁剪；不再新增阴影边界逻辑。第五候选SHA17a5eac53b020c6e2203b5593f5d03db0aaf1612999d878405c20189c4acd5b4，35 graphics全PASS，900性质PASS，但四Global仍相同。因此不把裕量/阴影作用域假设继续扩展，不将84/88写成全部通过。
+
+Global原前缀真实执行条件进一步分离：首NoCull诊断误取最后一次空dirty区域，不能作剔除结论；修正为最后非空区域，并加完整copy正对照（四组0）。最后实际区域为8条宽带；在其中关闭dirty节点剔除重放与实际图0，仍114/199。覆盖到的残留78/129像素不由节点剔除解释，其余36/70来自此前部分帧，不能据最后一批区域判定它们。原前缀352性质PASS，不是新增352不同用例。
+
+临时仅切换官方支持的MaxDirtyRects=0精确区域模式，同一原前缀352性质PASS、四Global与完整参考均RGBA0；实际24个约19×19小区域替代原8条宽带。这个模式还少了原1像素外扩（精确tracker的已知实现差别），不能只凭它就把所有作用归为合并策略。下一控制保留原MultiDirtyRectTracker和1px外扩，仅以足够的区域容量和零合并额外面积复核。SDK代码未继续改动，未将此临时host选项自动当正式产品接入。
+
+Float原200帧/72性质已恢复到同一个参数化driver，入口仅改为可路由Run并保留完整操作主体、AXAML/真实输入/正常motion。复用同一应用payload和SDK产物，不再为每个家族另造工程；后续只在已完成的原独立场景验证是否被这一修复覆盖，其他FW2仍不自动认定同因。
+
+保留原MultiDirtyRectTracker和1px外扩、将合并额外面积设0并提供1024区域容量时，Global原前缀四张同样与完整参考RGBA0。实际最后一批是24个21×21小区，不再是跨相邻Card边缘的8条宽带；因此未借消除AA余量来得到通过，也未扩大重绘到全屏。
+
+候选路线随此证据收敛为两项：DrawingContextImpl只在几何fill/stroke绘制时配对收窄保守边界；SkiaPlatform初始化时只补未指定的精确区域默认值（region=true、capacity=1024、merge-overhead=0），保留应用显式选择。没有复制框架状态机/整帧SKPicture替换，没有改变Canvas/Surface。第六候选SHA d9f621ba9a823d88e9dd25290bb35b4254110bd869bc469606e64da3babcb0b3，源码两文件。构建0警告0.79s；同一driver构建0警告1.60s。无options、只有region配置、显式legacy容量/合并/SaveLayer、显式关闭region四个实际启动配置检查均PASS。下一以原输入、无验证profile参数跑900/88参考和Float完整历史，不把手工profile通过替代候选默认路径。
+
+当前批次依赖源码冻结，沿同一payload顺序切换官方SDK/候选SDK，每个进程打印实际SHA。新CPU计时只在真实dirty更新到render完成区间采样，并断言每批90个实际dirty帧；不再把帧节拍等待当绘制成本。所有媒体/临时SDK仍存在，AOT尚未开始，清理后门禁未完成，真实产品引用未改变。
+
+第六候选不加任何验证profile参数，原Card900性质PASS，88实际帧对同一server完整参考全部RGBA0。Float新官方基线仍72中68PASS/4最终恢复FAIL，候选70PASS/2FAIL：Compact明暗最终恢复0，普通明暗仍10/max4、9/max3；完整参考确认两残留在最初default的Group trigger底角，最终恢复帧自身与完整参考0。Float168静态中58张仍非零，不因两个恢复通过关闭家族。
+
+真实dirty-update/render CPU计时检出第六候选性能不合格：每90帧官方约1405–1577ms，候选约2917–3114ms，均确认90个dirty帧，拒绝交付。下一单因素复用已通过graphics合同的整次矩形保守裁剪，让阴影滤镜也在单个保守矩形内执行；保留实际位移/DPI范围，避免阴影在多片clip上额外处理。第七候选SHA c85a1fbecddb40ab4a79e9b728a0f33d41f0e70253055ccaaae9fe9197b43cd5，35graphics与900性质通过，完整参考和CPU结果待记录。未重新发布AOT。
+
+Timeline原64帧/440性质完整场景已按原977 Program及970 AXAML构造输入恢复到同一个driver，仅包装Run入口，不另建工程或替代为简化模型。后续用于独立核对候选是否覆盖原P3-B，不预判同根因。
+
+性能源码核对发现CDirtyRegion2按容量分配平方overhead矩阵，并按容量循环；容量1024成本明显，零阈值还使overhead=0不能提前退出。第八候选改为128/0.5：Add先把损伤坐标floor/ceiling到整数，正额外面积至少1，所以0.5仍只容许零额外面积合并；overhead矩阵由约8MiB降至约129KiB。SHA91d24adb6126a6bd0f4fe772d76263724c561c3acb4db931d4008fbf9dbfeb1c，构建0警告0.70s。普通明暗及Compact每90帧CPU约1424–1626ms，与当前官方批次接近；DarkCompact 2086/1717/1516ms有波动，性能整体门禁尚未通过，待只对该变体交错复核。
+
+独立Timeline真实原历史已完成：官方440性质PASS且P3-B原102/102/82/82精确复现；第八候选440性质PASS、四parts-restore全部RGBA0，完整64帧实际/同server完整参考全部RGBA0。仅补本次确切原组合，不自动覆盖后来24独立Part或其他家族；不能因候选SDK通过而把仍用官方依赖的产品状态倒写成通过。
+
+Float第八候选普通明亮原50帧/18性质17PASS/1严格最终恢复FAIL；未强制清焦点/关闭motion，未将其他绿色覆盖该FAIL。正在原场景仅以生成的FloatButtonGroupTriggerStyle声明BitmapCache验证稳定trigger与持续菜单的绘制隔离；不设置代码回退、不改变操作/内容/窗口。该试验不是已经批准的产品修复，必须检查默认相对原完整参考、热更新/重模板/输入和释放，失败即撤回，不自行豁免。
+
+trigger缓存试验原Light50帧18性质全PASS，但默认相对原未缓存完整参考新增12/max4，Global新增46/max4，42静态中13张仍与参考非零；因此已撤回专用Style中的CacheMode，不进入产品。没有用self-restore0掩盖默认/其他状态变化。
+
+随后只做一次实际SDK恒等覆盖过滤器验证（不是近似控件模型）：原Light50/18仍17PASS/1FAIL，初帧对完整参考仍9/max3，未消除问题。第九候选Source及运行结果留在临时失败账本，SDK代码与实际运行DLL已精确恢复第八候选；不发布或保留无效滤镜/字段。Float该分支暂止，不继续堆同类滤镜假设。当前按同一真实Tag/Avatar原历史推进独立验证，不让Float单项拖住其余已授权工作。
+
+Tag官方/第八候选原主历史各104性质PASS、各152图；四默认旧新RGBA0。四Own清除恢复由官方0/24/2/21像素到候选全0；Compact native-clear相对正确global基线仍5/max1、DarkCompact仍7/max2，不与default错比后宣称新巨差。对应40有限恢复只这两条非零，其余38条0。
+
+Avatar官方/候选原主历史各76性质PASS、各116图，四默认旧新0。原popup独立历史各20性质PASS，open-default→open-restore仍明12/max8、暗12/max7、Compact明暗0；候选未消除此两条AR路径，不转通过。独立关闭/跨运行仍各按原批准范围保持。
+
+DarkCompact按官方A/候选B/B/A交错复核，每批三组90实际dirty帧，官方六组CPU中位1433.9115ms、候选六组1426.1325ms。当前这个12卡负载未复现此前大幅退化；只按此负载保留结论，不扩展成全控件性能证明。
+
+公开UseSaveLayerRootClip=true仅在同原Float Light50帧复核：主最终恢复仍FAIL，Host恢复反而新增FAIL，18项16PASS/2FAIL。这个单因素组合已拒绝，环境变量仅对该子进程生效，没有改SDK默认或产品配置。trigger缓存、恒等滤镜、root SaveLayer三个分支均不继续重复。
+
+原生源码核对固定到SkiaSharp v3.119.4 `f568ac94dd768ef9a2f593537cfde2dd0d348ef5`及其mono/skia子模块`7dbfc07dd33181f84e0958afb7ee805c6c769f0b`，仅下载相关文本源到授权临时目录。Mask/RLE/裁剪路径作为后续精确原生定位依据，不把别的Skia分支或网络问题页当当前二进制根因证明；没有原生内存补丁或运行期变量篡改。
+
+## 同源NET8与一次集中NativeAOT
+
+第八候选源码冻结后补齐net8.0目标。首次临时工程缺NET8资产、随后默认程序集搜索误取相邻NET10引用，分别产生NETSDK1005/CS1705及警告；已将引用Include改为完整官方运行程序集路径并限制AssemblySearchPaths，实际NET8候选最终构建0警告/0错误0.44s。未以这些临时配置失败归因产品，也未修改产品官方引用。
+
+同一个参数化driver在临时csproj显式指向sdk-final/net10.0/Avalonia.Skia.dll，并排除官方Skia compile/runtime资产；ReferencePath与ReferenceCopyLocalPaths均解析到SHA91d24adb6126a6bd0f4fe772d76263724c561c3acb4db931d4008fbf9dbfeb1c。原五家族操作主体及AXAML保持，已执行的JIT-only server参考/graphics/CPU诊断源码物理移出AOT输入，避免不必要反射进入发布；既有有效结果保留。
+
+首次NativeAOT成功但启动身份输出使用Assembly.Location而产生IL3000；在执行前纠正为NativeAOT记录已验证的构建输入SHA、managed继续读取真实Location/SHA。最终集中发布成功，无CS/IL警告；五条Homebrew dylib构建系统版本高于macOS-12.0的原有linker警告单列，不宣称发布全零警告。随后使用这一个native可执行文件依次复核Card、Timeline、Tag、Avatar主历史及popup、Float原完整历史；结果未出前不填PASS，不按家族重复发布。产品依赖尚未替换。
+
+NativeAOT已完成Card900性质、Timeline440性质：88/64张分别与现有候选managed全部RGBA0。Tag104性质PASS，152cross中151零，Compact checked新增可见1/max1，严格保留；Avatar主76性质PASS、116cross全零；popup20性质PASS、20cross18零，Light closed80/max3、Compact closed53/max12仍非零。open恢复与closed跨运行不混报，不用同帧性质PASS覆盖像素FAIL。Float比较器初次误拿候选6参考，已排除这批跨源码比较；只比较同SDK8 Light原历史，完整其他算法仅作为本次AOT原功能/自身恢复，不伪称同源cross已覆盖。
+
+下一单变量实验保持Float原完整Light50帧及全部输入，只把圆角背景fill由Skia DrawRoundRect改为同一精确RoundRect生成的DrawPath；阴影、stroke、clip、原内容与motion不改，用于区分原生专用圆角绘制与通用path路径。仅managed先判断，不为该小实验重新发布AOT；无改善即撤回。
+
+集中AOT原Float完整200帧、72性质中70PASS/2FAIL；main最终恢复Light7/max3、Dark9/max3，Compact明暗0。与同SDK8 managed的42个Light静态仅32零、10非零（1-5像素/max3-4）；这不是相位未配对的持续帧，不改记INPUT_NOT_PAIRED。Tag一像素及Avatar closed两对同样严格保留。
+
+圆角fill单变量候选10（SHA80cf77d5d3f78780a7f76a5acc8c2e6f6c3378e6c06f1c48d8d15c1fd39d594b）SDK/driver构建0警告0.87s/1.73s；原Float Light18中17PASS/1FAIL，self恢复5/max4，default相对SDK8变7/max3，global/own/end三对0。不能归为有效修复，已精确恢复SDK8源码及实际运行DLL。后续仅一次单原语记录/原clip重放用于排除原语提交路径；保留Canvas/Surface对外身份，调用返回前配对释放，原历史/区域/内容不变；先managed，不重发AOT。
+
+本次已查看AOT Float完整默认、Avatar popup关闭图及此前Card/Timeline/Tag真实全图。原窄文本换行、浅文字对比及裁剪均按既有批准范围保留，不用清晰度改善或扩大重绘区域绕过原合同。
+
+单原语Picture候选11（SHAe2528a73296e785e89876214944f9958dd6cbda6acd49678941ca97ebbffe8a4）SDK/driver零警告0.63s/0.77s，原Light18仍17PASS/1FAIL、自恢复13/max4；default/global/own/end相对SDK8分别12/max3、65/max2、48/max2、13/max1。这个路径改变了颜色舍入且未修复原失败，明确拒绝，源码/运行DLL已精确恢复SDK8；不继续堆Path/Picture/滤镜近似。后续必须在原初帧到恢复完整历史记录实际native绘制上下文，先证明同命令与哪一个原clip输入复制残留，未取得证据不新增候选。
+
+## 清理、精确验收与实际阻塞
+
+SDK8集中NativeAOT可执行SHA256为15795621f44e65a525c92cc57afa9be5a5a69e50051eb9c20d111aebb74446ab；ILC响应文件实际-r指向sdk-final/net10.0/Avalonia.Skia.dll。测试输入不以输出中写死的SHA单独认定，构建引用解析和ILC实际输入同时核对。一次native发布供六个原入口复用，未做每家族重复发布。
+
+官方取证audit与cleanup均clean、findings=[]，6836取证文件全部删除；此前5个不活跃重复payload共535文件约3.07GB先行清理，随后授权SDK临时目录805文件2011255367字节及全部probe/native/源导出/签名输入/marker删除。精确两文件补丁保留在[审查记录](feedback-region-sdk-review.md)，不将临时二进制入库。
+
+清理后的真实工作树持共享产物非阻塞独占锁，重新编译精确Desktop Card/Timeline/Tag/Avatar/FloatButton共193PASS/0FAIL/0Skip（4s），Common Avatar7PASS/0FAIL/0Skip（358ms）；未跑全量/affected-wide。无产品源码增量，产品NET8沿用相同源码既有零警告17.67s收据；依赖候选NET8自身另有零警告0.44s，二者不混报。git diff --check通过，tests临时C#0，SDK临时目录不存在。
+
+总表/任务表/两CSV只同步本次状态和权威链接，137metadata/274Own及256/10/7/1决策数不变。作者自审确认：旧失败不倒写、候选没有正式采用、SDK8未修复项不记PASS、三个无效缓存/滤镜/图层和后来Path/Picture分支均撤回；不是独立评审，CT12/13/14既定结论及CT25/FW1保持。
+
+当前不能关闭CT15：有效SDK8只在临时授权内证明部分修复；正式产品仍加载官方依赖。现有明确授权为“限定临时依赖修复验证；正式采用另审”，且原约束“不替换官方依赖”没有被具体撤销。自主选择路线不能被解释为已通过正式采用审查。即使采用SDK8，Tag两native恢复/一checked cross、Avatar两open恢复/两closed cross、Float两最终恢复/十个Light静态cross依然严格未通过，不能因此关闭完整CT15。按照用户不再选择的指示，本轮不再提出归属或豁免选择；保留这个实质依赖限制及未修复失败，不用新的近似模型消耗迭代。
+
+## 2026-11-03 剩余三控件继续修复
+
+用户要求继续且不再选择；本轮不将临时包收尾作为CT15终止。有限完成条件仍是原Tag TR1-7、Avatar AR1/2及closed比较、Float原最终恢复及现有静态差异获得同条件有效修复；相关原输入/内容/状态/模板/裁剪与资源合同保持，必要构建合批，清理后精确模块。排除重做已通过137/274审计、其他家族和无限平台组合。
+
+上轮上下文store跨回合不可用，外部driver已按规定清理，因此只从同一会话已审查的源码文本恢复三入口到原授权临时目录；不执行原历史命令、不恢复旧产品源。底层采用原官方12.1.4精确导出源码加只读primitive日志，先将原Avatar原20帧基线与诊断版本对照，记录实际Skia输入矩阵/clip/paint/currentOpacity。要排除的唯一因素是：即时输出相同而合成器差异，是否已经出现在交给Skia的真实原语输入；在这个证据之前不新加滤镜/缓存/重放候选。依赖替换、容差、FW1及CT12/13/14结论不变。
+
+实际primitive只读诊断源码构建0警告2.34s，原Avatar完整两版各20性质通过；诊断前后四open初图全部RGBA0，原L12/max8/D12/max7/两Compact0严格复现。真实native记录表明：原32×32、矩阵平移50/148、半透明#3f000000/#3fffffff、Opacity1保持，初始popup展开期间裁剪仅(50,178)-(82,180)或最后一行；Own恢复则整32×32重绘。
+
+按记录的同32圆/16半径/原颜色/真实Rgba8888 Premul、白与#141414背景在同一个driver作原生单变量重放：2行clip精确得到12/max8与12/max7，**整窗差分坐标集合及各有符号RGBA差均与原Avatar两组逐点相同**；1行clip另为2/max4、2/max3。等价RoundRect Path与RoundRect整图0、两者同样受条带clip影响。此前未包含真实1–2行clip的官方近似圆未复现记录保持；本次是在恢复原实际native输入之后取得的精确反例，不用它替代产品后验收。下一仅验证将原语coverage完整计算再按原clip合成，绘制区域不扩张，不使用控件缓存/关闭motion/强制背景重绘。
+
+原生完整coverage中间层实验：透明Rgba8888/F16/F32与Alpha8会产生额外舍入，均拒绝；同一真实primitive保留当前目标背景、完整原语栅格化并经原clip以Src写回，则明暗各1/2行四比较全0。该候选不扩最终重绘区域；保留真实Surface/Canvas，不改平台默认或加入控件缓存。首实现误用不存在的Surface.Info/Canvas.ReadPixels，临时编译四错误后按SkiaSharp官方API修正为Surface.Snapshot.Info/ReadPixels，并明确跳过原SaveLayer路径（追踪最外保存计数，Effects同样追踪），无新公开API。
+
+真实Avatar候选四算法20性质通过、open恢复四组全0，但完整server参考最初发现L/C6 max1、D/DC17 max2的popup区域差异；关闭通用Geometry分流这个单变量后，四算法open-default/open-own/open-restore及retired共16图全部与同server完整绘制RGBA0。原AR1/2两条12像素已在此临时候选修正；Light closed124/max1、Compact closed117/max12仍FAIL，Dark/DarkCompact closed0。没有用self0掩盖新参考非零；通用Geometry路线保持未通过，不将其当正式实现。Tag/Float原完整历史正在同一次源码冻结batch复核，不重复AOT。
+
+圆角限定候选完整Tag104性质通过，原四Own清除与四Native清除共8恢复均RGBA0；152状态图对同server参考126零/26FAIL，不能因恢复0计整族通过。Float完整200/72仍70PASS/2FAIL（L14/max2、D3/max1），168静态仅57零/111非零；相应候选不作为Float交付。保留原当前输入、文字/尺寸/裁剪。
+
+把primitive中间层从局部坐标改为原全局设备坐标、保留真实surface properties的单变量，没有消除通用Geometry差异；该几何分流继续关闭。全局scratch为context内临时native资源并在Dispose释放，不是控件缓存。只读closed诊断首次copy2保留模板旧时间戳导致MSBuild沿用旧SDK，未产生日志；整批不算有效埋点。改为写入源码并重新核对真正编译1.33s后，取得9028行实际native输入；不把0.36s空增量当新探针编译成功。后续源码切换写入新时间戳，不复制旧时间制造假有效。
+
+closed日志进一步记录Group三个Avatar为31×31/.5 inset、1像素stroke，以及原文字在关闭期间实际被5–10像素窄条截断。文字primitive同背景全设备坐标处理后，Light closed原124像素消失，但标题新增3/max1，Compact closed仍FAIL。因此限定helper的触发条件为原root dirty region确实没有完整覆盖primitive，保留控件固有的静态文字clip；不改布局/内容，不将标题新差异批准为正确。接下来用同源Avatar20和Tag原Global前缀48检查区分这一个条件，尚未发布AOT或替换产品依赖。
+
+保留固有clip的context内记录后，Avatar20参考只剩DarkCompact closed图片(52,220)1/max13，Tag原Global前缀28帧全部RGBA0。旧wrapper按字符串改输出路径出现登记/输出目录混淆，当前来源明确的完整有效帧只按实际damage-guard目录与源码记录核对；对应已弃坏批不复用作PASS。后续改为唯一参数化run.py：显式family/mode/variant/source、拒绝覆盖已有目录、统一登记与输出路径、记录实际source/SDK SHA及argv，停止复制近似runner。
+
+图片单点进入同一真实bitmap Draw路径后出现72个AA边缘新差分，定位为固有圆角clip在中间层与最终写回重复相乘；拒绝这版。候选改为覆盖计算时重放原固有clip，写回只通过原root dirty region，并按已记录矩阵/顺序/保存层数恢复原Canvas clip stack；严格检查层数，不进入不认识的外部save/layer作用域。没有扩大dirty region或强制窗口重绘。
+
+cliponce候选源码SHA18d8bd27f518c19e5d08b60ecb67e9cd4d189b7737e591c522875ab7ad0bd7fe、SDK SHA df0bc50a7fd7050d629df11a55437dbec2e45d3e471ed93bf7d1c8af13898552：原Avatar popup完整20性质PASS，20实际图与同server完整参考全部RGBA0，四open恢复0；原AR1/2及本轮closed像素缺口在该临时候选上消除。实际bitmap仍借用调用方资源，临时copy/clip path/scratch在作用域或context Dispose配对释放；bitmap处理中只在已核对的两内部实现内临时借用scratch Canvas并finally恢复，公开lease返回仍为原Canvas/Surface。通用Geometry分流尚未开放，随后只以同一已修正clip合同验证原Tag前缀，不提前宣布完整Avatar/CT15或AOT通过。
+
+Float带阴影矩形改为同一次primitive整体绘制（原shadow/fill/stroke次序、旧位移与隐藏DPI保持），Light原18性质全部PASS；42静态仍22非零，拒绝仅以恢复绿交付。依据原Card真实复合clip因果，补齐“复杂root region即使包含primitive也需归一”的条件后，Light原18PASS，42实际/同server完整参考全部RGBA0。没有改merge参数或扩大重绘到全屏。
+
+新增region作用域退出后继续绘制的有效反证触发native crash（借用的region已释放），在Pop清除borrowed region/save count后解决。图形夹具须在full/complex两侧明确同一后续Transform；原Pop恢复原矩阵合同保持。最终五变换（identity/half/rotation/DPI/shear）的lease、matrix/save/clip、退出后继续绘制共45检查PASS，五整帧full/complex全0。临时恢复旧GraphicsContracts漏用GetFeature修订、夹具后续Transform轨迹不同分别留作坏批，不计产品RED。
+
+在原66色Tag真实树、每批60个实际dirty帧断言下作A/B/B/A CPU比较；未等初始静态的首官方批出现66帧并拒绝。补原Stable与20帧预热后各6组有效：首候选明显退化。像素对齐、非圆角、无pen/shadow填充保留原direct快路径后，再C/A/A/C交错6+6组，官方中位122.798771ms/60帧、候选132.960149ms/60帧（约+0.169ms/帧，+8.28%）；这里只量化本负载成本，不称无开销/全场景性能通过，保留首退化。候选未改全局Canvas/Surface或默认依赖设置。
+
+源码移除诊断开关，默认完整修复路径冻结：source SHA e044dfefa59fbd2c8232b602af8a9b95fa1024e8889a2d6c623b804b44509407，net10 SDK SHA 295e944cc682c97355ffe23cfee9968a24e8c1c106d51fbcaa371f26d453e608。net10/net8候选各0警告0错误0.60s/0.78s；冻结后45图形复验全PASS。随后集中Tag主/overflow/calibration、Avatar主/popup/calibration与Float原完整四算法，不再逐小实验AOT。当前仍处临时授权验证，未正式采用或计完整CT15完成。
+
+冻结候选Tag原完整主历史104性质、大矩阵12性质、独立校准4性质均PASS；相应152+12+16实际帧对同server完整参考全部RGBA0。原TR1-6对应自身恢复与参考不再由旧失败数量阻塞此临时候选；原历史FAIL留账，TR7跨运行仍待本次同源AOT补证，未转完整CT15完成。Avatar原主历史76性质已通过，完整其余入口及Float四算法仍集中执行。
+
+作者审查另补原IRenderInterfaceRegion合同：PushClip后调用方可修改/释放原region，Canvas保留的clip仍须有效。当前候选最初借用其引用，已准备由context持有native region独立副本并在Pop/异常Dispose释放；这不改变当前主矩阵输入/几何结果。新增与原gfx场景合并的早释放、context强持有而native scratch/paint已释放判据，先记录有效前失败后修正，再进入AOT，避免只用窗口GC推导native资源正确。原非正矩形在leased context的返回/异常次序亦按官方方法保持，不新造语义。
+
+冻结managed完整矩阵汇总：Tag120性质/180帧、Avatar100性质/152帧、Float72性质/168静态全部通过；共292性质、500静态与真实server完整参考RGBA0，Float另外32真实clock图只记原输入/功能，不将不同曝光相位当像素PASS。旧源SDK8、近似模型及本轮所有失败候选的记录不倒写。
+
+最终native所有权补验取得早释放region后的原native crash RED。context改持独立native region快照并在Pop/异常Dispose释放；调用方修改或释放原region不改变已Push的clip。75个五变换/lease/clip/matrix/作用域退出/资源强持有且native Handle归零判据全部PASS；net10/net8各零警告0.74s/0.54s，最终SDK ecf02d77fd6b27310757f742eacb28a0a05066389049e99b012f356f96392332。非正rect在leased上下文的原返回次序保持；未验证GPU路径明确保留原绘制，修复仅作用于本次确证的software Skia，不用软件反例代替GPU平台通过。
+
+已执行的FullFrameOracle/GraphicsContracts/原生单变量replay/benchmark源码在进入AOT前物理移除，三族一个参数化driver和原全部AXAML/操作/内容保持；没有Compile Remove、Skip或额外工程。新清理driver managed构建0警告11.93s，只有一次集中NativeAOT发布；JIT/AOT后验收将用同一无诊断业务源与最终ownership SDK，不冒称旧ownership源码的图是新源码取样。实际编译元数据已由生成AssemblyInfo核对IsTrimmable、IsAotCompatible、DisableRuntimeMarshalling，程序集版本/key保持12.1.4.0/c8d484a7012f9a8b。
+
+## 最终同源三控件收据
+
+最终ownership/GPU保持源码及同一个去除JIT观察器的业务driver完成JIT/AOT各292性质检查：Tag主104/overflow12/cal4；Avatar主76/popup20/cal4；Float72，均PASS/exit0。500静态同源cross全部RGBA0，且新JIT帧逐张与同原完整历史的完整server参考全0；Float32真实时相图保留为未配对，不计静态或视觉PASS。当前仅临时候选的软件Skia路径获得这些结果，原官方产品依赖仍未采用，不修改CT12/13/14或FW1结论。
+
+单次AOT binary SHA fb887ded369e0be632f1b4e20837e716fd34b97456680921b5a7ddeadc630703；ILC响应文件-r精确指向SDK ecf02d77fd6b27310757f742eacb28a0a05066389049e99b012f356f96392332。零IL/CS警告，五条既有Homebrew系统版本linker警告单列。配对采样共用一个父级共享产物独占锁，payload冻结且不在采样中写DLL；各独立headless进程只读输入。首次登记并发写manifest造成setup JSON失败，未进入相应业务采样；保留有效JIT Tag主结果，登记改串行并恢复原baseline/ID后，只重启未执行批次。这个工程坏批不算产品FAIL或更多用例。
+
+已查看最终AOT Tag Compact Native清除与Avatar DarkCompact closed完整图，原文字/33与37图标、有限视口/可见条、图像与Group内容、原低对比/自然裁剪保持。源码与只读证据仍因同一共享修复的其余原依赖验证在使用，未提前清理或宣布CT15完成；接续同项目Card原900/88验证，不另造近似模型或新分支/worktree。
+
+## 共享依赖的接续核对
+
+三族同源500静态通过后继续同一项目，恢复原Card900/88（原Style fixture与完整历史，不重建近似树）。相同最终ownership SDK功能900PASS，但完整参考80/88零，四Global L/D294/max36、C/DC338/max36，四Global恢复19–32/max1严格FAIL。不是把三族局部分包通过当CT15完成，也不拿SDK8不同merge默认的绿覆盖本次实际默认路径。
+
+唯一变量补齐物理AA外缘后，原Global完整前缀352性质PASS，52帧中只四Global非零且均24/max1，原大差分显著缩小。逐点位置显示12张Card操作分隔线端点各2像素；实际CardActionPanel使用DrawLine，原helper没有涵盖。按同一保留原背景、固有clip一次/原root region写回机制补DrawLine后，原前缀352性质PASS、52实际/完整参考全部RGBA0；不改业务或几何、merge默认、原判据。接续原Card完整与Timeline64/440，合批新源码依赖验收，不立即重发AOT。三族上一同源源码/500全0结论按原SHA保留，不能倒写成新AA/Line源码也已AOT通过。
+
+后续发现Card前缀52全0而正常默认完整回放仍8FAIL的唯一配置差别：前缀显式region=true，完整按真实without-options默认走SingleDirtyRectTracker。本候选此前只识别region接口，未识别单矩形损伤；不能把前缀绿覆盖正常默认失败。按原实际compositor调用链定位到中间SurfaceRenderTarget layer，单在Framebuffer标识不足；修正为真实scene layer继承首clip-as-damage标识，并明确排除RenderTargetBitmap参考/普通离屏绘制。不强设CompositionOptions，也不改Base的dirty/culling/merge实现。
+
+Timeline原977/970完整业务及样式在同一driver复用，440性质/64帧对完整server参考全0（新AA/Line源码managed，尚未冒称新AOT）。Card normal-default新scene-root候选900性质PASS；全88完整参考比较完成后另记。临时SDK此次实际涉及DrawingContextImpl、Effects、FramebufferRenderTarget、SurfaceRenderTarget四文件，较早“两文件”只属于原三族r2审查输入；当前未正式采用、原AOT500按原source/SDK SHA保持，不能混报新源码通过。
+
+scene-layer root修正后，Card normal-default完整900性质/88帧全部PASS与完整参考RGBA0（SDK89d89df6898b53766d5e5844803bb0f185989cea3d0a0e77071ba1b3cdef755f）；这次没有依赖With/验证profile的region配置。该源码net8零警告0.77s，75图形/资源检查全PASS。正常reference明确不参与compositor root-damage捕获，防止把候选自身重复当参考。
+
+新增物理AA边缘、DrawLine和真实scene层标识属于原实际失败所需的新代码，因此五家族合批r3 NativeAOT发布，不复用r2二进制冒充。r3去观察器driver编译零警告1.87s；NativeAOT发布成功，无IL/CS警告，五条原Homebrew系统版本ld警告单列。ILC输入仍精确指向上述最终SDK，按同源业务/源/依赖/config重新配对；三族原r2的500全0仍按其旧范围保留，r3和Card/Timeline的最终cross尚在执行。
+
+r3四文件候选75个图形/资源检查复验PASS；同源码五家族集中NativeAOT发布成功，无IL/CS警告，五条原Homebrew最低OS链接警告单列。新native可执行47139328字节、SHA73df9c8f9ed18f9366185fdae7324921c61bdb715a86dd89485904626f85e7d4；ILC输入SDK89d89df6898b53766d5e5844803bb0f185989cea3d0a0e77071ba1b3cdef755f精确核对。当前新源码Tag180与Avatar152静态已同源cross/完整参考全0，Float两运行72性质PASS，最终像素及Card/Timeline原完整历史还在执行；不预报这些待完成数据通过。
+
+## 最终性能收敛与r4验收
+
+r3同源结果：五家族JIT/AOT各1632性质PASS，652静态cross全0、全部对原完整server参考0，Float32真实clock帧依旧未配对。最后重测当前r3代码的66-Tag负载发现CPU中位成本约+1.09ms/帧（旧r2+0.169ms不能代替它），未按低数字交付。
+
+复用早先已证明的保守clip归一机制，只有root损伤完整覆盖可见primitive时直接在原Canvas收窄clip并绘制，避免背景readback；真正截断的primitive仍走已验证的同背景完整覆盖。相同负载F/A/A/F交错各6组、每组60实际dirty帧：官方中位139.9945625ms/60、候选148.317516ms/60，约+0.138716ms/帧（5.95%），只量化本负载，未宣称零开销或所有负载。
+
+完整覆盖快路径本来就不分配scratch，旧夹具五个“必须分配”断言因此无效；改为使用真实Avatar两行截断原触发证明scratch/paint确实创建、context强持有时已Dispose，保留所有原lease/变换/退出后绘制判据，共73PASS，未让测试镜像实现。Avatar原20帧、Card原前缀52帧完整参考全0，Float Light18性质PASS。最终默认行为r4源码SDK9236ca0713e2f8ede9e26f566c1083ce7da825e70d382f69371a0648c513e8a0正在同源五族最后验收；r3结果按原hash留账，不把它写成新快路径AOT已通过。
+
+## r4最终同源结果
+
+最终source SHA cce50b01291d65feeef984c2a256a9c82d264113ffc11b2212adadb3e9cddc2e；SDK9236ca0713e2f8ede9e26f566c1083ce7da825e70d382f69371a0648c513e8a0。最后一次native可执行47139328字节、SHA f01d0d04231d4eb304189dbd3a61a08e6d73e977d38ab6bd7c25b31d9a32a9e3，ILC-r精确指向同一SDK。net8编译0警告0错误0.55s、无观察器JIT driver0警告1.78s，AOT0 IL/CS警告，五条既有Homebrew系统版本ld警告继续单列。
+
+九个原入口共JIT/AOT各1632性质、各684图，其中652静态（Tag180、Avatar152、Float168、Timeline64、Card88）同源跨运行全部RGBA0；新JIT逐张对对应原完整历史的完整server参考也全0。Card走正常without-options默认配置，原900性质及八恢复/所有Global同时通过；Timeline原440通过。Float32真实时钟输入图不配对相位，仍不计视觉PASS。所有18个运行meta均exit0，重复版本不计更多不同用例。
+
+当前四文件704行补丁SHA5f3f7577ce54fed650ae9673f38334f9ad136a35b90a55c85c812c3bd5747def；没有修改当前项目官方依赖引用、NuGet缓存、native Skia/HarfBuzz或Base。73项最终native状态/lease/作用域与真实两行截断资源释放通过；同66-Tag负载最终约+0.139ms/帧的已量化成本不隐藏。整个CT15尚未自动关闭：正式采用仍受原“限定临时验证；正式采用另审”授权边界约束，GPU/真实clock及其他未逐项覆盖路径保留，不把五家族或SDK候选通过自动冒充所有产品路径通过。
+
+## 最终清理与模块收据
+
+r4最终九入口JIT/AOT各1632性质全部PASS/exit0，652静态cross与对应完整server参考全部RGBA0；Float32真实clock未配对继续保留。整套结果与当前704行补丁、source/SDK/native SHA对应，不用r2/r3旧绿代替r4。后续没有算法调整。已查看最终AOT Float DarkCompact Global完整图：原窄宽换行、窗口上缘裁剪和原文字仍保持；原低对比/极值边界没有被改造成“无裁剪”。
+
+官方evidence audit/cleanup均clean、findings=[]，11875取证文件删除；外部SDK/driver/发布/签名导出/源码/日志与marker共949文件1844134200字节删除。可审查的四文件补丁和来源只以Markdown文字保留在[正式审查记录](feedback-region-sdk-review.md)，没有新增永久测试或媒体/二进制入库。
+
+清理后在feature/custom-theme原目录，先持共享产物非阻塞独占锁，再真实重建精确Card/Timeline/Tag/Avatar/FloatButton 193PASS/0FAIL/0Skip（4s）和Common Avatar7PASS/0FAIL/0Skip（370ms）。tests临时C#0、授权SDK临时目录不存在、git diff --check通过；未跑全量或affected-wide、未建分支/worktree、未委派或提交，所有此前未提交改动保留。当前产品源/官方依赖未变，既有产品NET8同源收据沿用，候选net8零警告0.55s独立分账。
+
+作者最后另步自审（非独立评审）：完整/部分覆盖两路径正确保持原Canvas、clip、matrix与native资源所有权，region早释放及scope退出后继续绘制有效；最终快路径的正对照使用真实两行截断而非要求无用分配。默认single/multi损伤与scene中间层经过真实原路径证明；GPU与未知层保持原路。原失败及不完整/工程坏批全部保留，未将其改名为PASS；正式采用仍未发生，完整CT15仍不标完成。

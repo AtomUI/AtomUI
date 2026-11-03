@@ -1,5 +1,9 @@
+using AtomUI.Theme.Resources;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Data;
+using Avalonia.Data;
+using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -7,7 +11,7 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-public class CardGridContent : ItemsControl
+public class CardGridContent : ItemsControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -38,6 +42,12 @@ public class CardGridContent : ItemsControl
         set => SetValue(IsHoverableProperty, value);
     }
 
+    public SizeType SizeType
+    {
+        get => GetValue(SizeTypeProperty);
+        set => SetValue(SizeTypeProperty, value);
+    }
+
     #endregion
     
     #region 内部属性定义
@@ -48,11 +58,6 @@ public class CardGridContent : ItemsControl
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CardGridContent>();
     
-    public SizeType SizeType
-    {
-        get => GetValue(SizeTypeProperty);
-        set => SetValue(SizeTypeProperty, value);
-    }
     
     internal bool IsMotionEnabled
     {
@@ -67,6 +72,7 @@ public class CardGridContent : ItemsControl
 
     public CardGridContent()
     {
+        LogicalChildren.CollectionChanged += HandleLogicalChildrenChanged;
         SetCurrentValue(ColumnDefinitionsProperty, new ColumnDefinitions());
         SetCurrentValue(RowDefinitionsProperty, new RowDefinitions());
     }
@@ -99,11 +105,14 @@ public class CardGridContent : ItemsControl
 
             if (ItemTemplate != null)
             {
-                gridItem[!CardGridItem.ContentTemplateProperty] = this[!ItemTemplateProperty];
+                disposables.Add(BindUtils.RelayBind(this, ItemTemplateProperty, gridItem, CardGridItem.ContentTemplateProperty, priority: BindingPriority.Template));
             }
-            gridItem[!SizeTypeProperty]        = this[!SizeTypeProperty];
-            gridItem[!IsEnabledProperty]       = this[!IsEnabledProperty];
-            gridItem[!IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+            // Runtime supplied/generated containers can outlive their owner membership.
+            // Their state defaults must work before templates; native item values win.
+            disposables.Add(BindUtils.RelayBind(this, SizeTypeProperty, gridItem, CardGridItem.SizeTypeProperty, priority: BindingPriority.Template));
+            disposables.Add(BindUtils.RelayBind(this, IsEnabledProperty, gridItem, CardGridItem.IsEnabledProperty, priority: BindingPriority.Template));
+            disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, gridItem, CardGridItem.IsMotionEnabledProperty, priority: BindingPriority.Template));
+            disposables.Add(BindUtils.RelayBind(this, IsHoverableProperty, gridItem, CardGridItem.IsHoverableProperty, priority: BindingPriority.Template));
             PrepareCardGridItem(gridItem, item, index, disposables);
         }
         else
@@ -147,6 +156,16 @@ public class CardGridContent : ItemsControl
         }
     }
 
+    #region 实现 IThemeInheritanceSource 接口
+
+    // ControlTheme cannot read the protected inheritance parent; it owns the
+    // optional typography while this bridge exposes the actual native source.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    // Grid definitions are CLR collections, not Avalonia properties. AXAML cannot
+    // install reactive bindings on them (AVLN3000); keep the typed projection.
     private void SyncGridPanelProperties()
     {
         if (_itemsPresenter?.Panel != null)
@@ -156,6 +175,30 @@ public class CardGridContent : ItemsControl
             {
                 gridPanel.ColumnDefinitions = ColumnDefinitions;
                 gridPanel.RowDefinitions = RowDefinitions;
+            }
+        }
+    }
+
+    private void HandleLogicalChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems is not null)
+        {
+            foreach (var child in e.OldItems)
+            {
+                if (child is CardGridItem item)
+                {
+                    DisposeCardGridItemState(item);
+                }
+            }
+        }
+        else if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            foreach (var item in _cardGridItemDisposables.Keys.ToArray())
+            {
+                if (!LogicalChildren.Contains(item))
+                {
+                    DisposeCardGridItemState(item);
+                }
             }
         }
     }

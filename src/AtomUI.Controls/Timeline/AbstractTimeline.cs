@@ -58,11 +58,7 @@ public abstract class AbstractTimeline : ItemsControl
 
     #endregion
 
-    #region 内部属性定义
-
     private WeakReference<AbstractTimelineItem>? _pendingItemReference;
-
-    #endregion
 
     static AbstractTimeline()
     {
@@ -115,17 +111,6 @@ public abstract class AbstractTimeline : ItemsControl
         return NeedsContainer<AbstractTimelineItem>(item, out recycleKey);
     }
 
-    protected override void PrepareContainerForItemOverride(Control element, object? item, int index)
-    {
-        base.PrepareContainerForItemOverride(element, item, index);
-        if (element is AbstractTimelineItem timelineItem)
-        {
-            timelineItem[!AbstractTimelineItem.OrientationProperty] = this[!OrientationProperty];
-            timelineItem[!AbstractTimelineItem.ModeProperty]      = this[!ModeProperty];
-            timelineItem[!AbstractTimelineItem.IsReverseProperty] = this[!IsReverseProperty];
-        }
-    }
-
     protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
@@ -158,9 +143,11 @@ public abstract class AbstractTimeline : ItemsControl
     private void CalculateItemsPositionInfo()
     {
         var visibleItems = new List<AbstractTimelineItem>();
-        for (var index = 0; index < ItemCount; index++)
+        // Logical children change before ItemsControl publishes ItemCount and before
+        // the presenter removes its old containers. Use the authoritative source.
+        for (var index = 0; index < Items.Count; index++)
         {
-            if (ContainerFromIndex(index) is not AbstractTimelineItem timelineItem)
+            if ((Items[index] as AbstractTimelineItem ?? ContainerFromIndex(index)) is not AbstractTimelineItem timelineItem)
             {
                 continue;
             }
@@ -207,9 +194,13 @@ public abstract class AbstractTimeline : ItemsControl
         }
     }
 
+    #region 内部协作 API
+
     internal void NotifyItemLayoutChanged()
     {
         CalculateItemsPositionInfo();
     }
+
+    #endregion
 
 }

@@ -10,18 +10,39 @@ Notification Token 只表达组件级视觉变量，例如尺寸、间距、颜�
 
 - internal `NotificationCardToken`，scope id 为 `NotificationCard`，源码位于 `src/AtomUI.Desktop.Controls/Notifications/NotificationCardToken.cs`。
 
-## 2. Token 分类
+## 2. 实际字段与有效默认
 
-Token 按控件语义分类维护：
+17字段使用DependencyDefaultsV2 Revision1，全部Active，无Own依赖边；读取有效NotificationCard Global或原常量，名称/type/key/slot与原不可变渐变保持。
 
-| 分类 | 语义 | 代表 Token |
+| 字段 | 默认输入 | 实际消费 |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `NotificationIconSize`、`NotificationCloseButtonSize`、`NotificationProgressHeight`、`NotificationWidth` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `NotificationPadding`、`NotificationIconMargin`、`NotificationSectionSpacing`、`NotificationTitlePadding`、`NotificationActionsMargin`、`NotificationCloseButtonPadding`、`NotificationCloseButtonMargin`、`NotificationProgressMargin`、`NotificationTopMargin`、`NotificationBottomMargin` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `NotificationBg`、`NotificationProgressBg`、`NotificationProgressTrackBg` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
+| NotificationBg | ColorBgElevated | root Background→Frame |
+| NotificationPadding | horizontal=UniformlyPaddingLG，vertical=UniformlyPaddingMD | root Padding→ContentBox；外Frame保持零Padding |
+| NotificationIconSize | FontSizeLG×RelativeLineHeightLG | IconPresenter Width/Height |
+| NotificationIconMargin | right=UniformlyMarginSM | icon Margin |
+| NotificationCloseButtonSize | ControlHeightLG×0.55 | close Width/Height命中尺寸 |
+| NotificationCloseButtonPadding | PaddingXXS | close Padding |
+| NotificationSectionSpacing | UniformlyMarginXS | section Spacing |
+| NotificationTitlePadding | right=UniformlyPaddingLG | 仅title Padding，描述不留close同排空位 |
+| NotificationActionsMargin | top=UniformlyMarginSM | actions Margin |
+| NotificationCloseButtonMargin | top=UniformlyPaddingMD，right=UniformlyPaddingLG | 覆盖层close Margin |
+| NotificationProgressBg | ColorPrimaryBorderHover→ColorPrimary | 原双stop immutable线性渐变，progress填充值 |
+| NotificationProgressTrackBg | ColorFillQuaternary | progress底槽 |
+| NotificationProgressHeight | 原double2 | progress绘制厚度/期望高度 |
+| NotificationProgressMargin | BorderRadiusLG.TopLeft/TopRight水平内缩 | progress Margin |
+| NotificationWidth | 原double384 | root Width |
+| NotificationTopMargin | 三边UniformlyMarginLG，bottom0 | 顶部manager Padding |
+| NotificationBottomMargin | left/right/bottom=UniformlyMarginLG，top0 | 底部manager Padding |
 
-未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+Notification没有SizeType，不创造三档或Custom枚举。Native Width/Height/Padding和对应Part增量定制保持；合法几何0与明确透明值可用，清除回当前默认，不承诺任意组合都不会裁剪。
+
+### owner、排版与优先级
+
+Card/manager分别读取各自Global。IconPresenter和close IconButton是独立公开primitive，通知状态/close角色输入明确SourceControlType=NotificationCard；运行期ProgressBar只拥有内部绘制职责，不新增identity。其Own样式/资源通过真实TemplatedParent和逻辑成员关系动态更新并在移除时释放。
+
+正文原FontSize/ColorText角色默认位于Card root，再由description ContentPresenter/字符串生成的Avalonia SelectableTextBlock继承；原生root字号/前景进入实际正文。标题仍由既有AtomUI SelectableTextBlock承载，保留FontSizeLG/ColorTextHeading角色及其独立选择/键盘合同。FontFamily采用有限真实原生继承和明确Card Global，manager保持独立字体owner。root原未被正文消费的有效字号/前景随角色归位，实际默认画面须单独验证。
+
+主题默认、状态、Native值及专用Style遵循Avalonia优先级，不新增样式合并引擎或C#节点定制回退。既有默认类型图标数据工厂、自定义Icon及Default无图标合同保持。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -33,7 +54,7 @@ Notification 的控件专项模型通过 Theme 消费 Token：
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
 `NotificationProgressBg` 使用主色边框 hover 色到主色的线性渐变。`NotificationCloseButtonSize` 控制关闭按钮的固定命中尺寸；
-hover 和 pressed 背景由 SharedToken 的文本背景状态色在主题 selector 中表达，不引入额外控件 Token。
+hover和pressed背景由Card Global文本背景状态色在主题selector表达，不引入额外控件 Token。
 
 卡片间距 Token 直接取全局 Token 的对应值：
 
@@ -57,7 +78,7 @@ hover 和 pressed 背景由 SharedToken 的文本背景状态色在主题 select
 底部为 `(marginLG, 0, marginLG, marginLG)`。模板把 Padding 绑定到 presenter.Margin，应用的显式 Padding
 可覆盖默认值。`NotificationPadding` 只控制卡片 `ContentBox` 内边距。
 
-Stack 的展开 gap 16 与折叠 offset 8 来自 SharedToken 的统一 margin 尺度，由内部 presenter/panel 管理，
+Stack当前展开gap16与折叠offset8由内部presenter/panel管理，不能仅凭Global schema可配置就声称这两个通用几何已消费，
 不作为 `ItemsControl` 类型的 `listContent` 的公开 Setter。三层 scale 是共享布局行为，不属于
 `NotificationCardToken`。Stack 状态、层索引、可见项数和剩余时长均是运行时状态，不能写入 Token。
 

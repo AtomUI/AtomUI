@@ -1,3 +1,7 @@
+using System.Reactive.Disposables;
+using AtomUI.Data;
+using Avalonia.VisualTree;
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -6,31 +10,44 @@ using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class CarouselPagination : SelectingItemsControl
+internal class CarouselPagination : SelectingItemsControl, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CarouselPagination>();
-    
+
     public static readonly StyledProperty<bool> IsShowTransitionProgressProperty = 
         Carousel.IsShowTransitionProgressProperty.AddOwner<CarouselPagination>();
-    
+
     public static readonly StyledProperty<TimeSpan> AutoPlaySpeedProperty = 
         Carousel.AutoPlaySpeedProperty.AddOwner<CarouselPagination>();
-    
+
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly StyledProperty<double> ItemSpacingProperty =
+        AvaloniaProperty.Register<CarouselPagination, double>(nameof(ItemSpacing));
+
+    #endregion
+
+    private readonly Dictionary<CarouselPageIndicator, CompositeDisposable> _containerBindings = new();
+
+    #region 公共属性定义
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     public bool IsShowTransitionProgress
     {
         get => GetValue(IsShowTransitionProgressProperty);
         set => SetValue(IsShowTransitionProgressProperty, value);
     }
-    
+
     public TimeSpan AutoPlaySpeed
     {
         get => GetValue(AutoPlaySpeedProperty);
@@ -38,24 +55,22 @@ internal class CarouselPagination : SelectingItemsControl
     }
 
     #endregion
-    
+
     #region 内部属性定义
 
-    internal static readonly StyledProperty<double> ItemSpacingProperty =
-        AvaloniaProperty.Register<CarouselPagination, double>(nameof(ItemSpacing));
-    
     internal double ItemSpacing
     {
         get => GetValue(ItemSpacingProperty);
         set => SetValue(ItemSpacingProperty, value);
     }
+
     #endregion
 
     static CarouselPagination()
     {
         AutoScrollToSelectedItemProperty.OverrideDefaultValue<CarouselPagination>(false);
     }
-    
+
     public CarouselPagination()
     {
         SelectionMode = SelectionMode.Single;
@@ -70,7 +85,7 @@ internal class CarouselPagination : SelectingItemsControl
     {
         return NeedsContainer<CarouselPageIndicator>(item, out recycleKey);
     }
-    
+
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
@@ -84,15 +99,8 @@ internal class CarouselPagination : SelectingItemsControl
                 }
             }
             
-            if (ItemTemplate != null)
-            {
-                pageIndicator[!CarouselPageIndicator.ContentTemplateProperty] = this[!ItemTemplateProperty];
-            }
-            
-            pageIndicator[!IsMotionEnabledProperty]          = this[!IsMotionEnabledProperty];
-            pageIndicator[!IsShowTransitionProgressProperty] = this[!IsShowTransitionProgressProperty];
-            pageIndicator[!AutoPlaySpeedProperty]            = this[!AutoPlaySpeedProperty];
-        
+            ConfigureContainerBindings(pageIndicator);
+
             PreparePageIndicator(pageIndicator, item, index);
         }
         else
@@ -100,11 +108,42 @@ internal class CarouselPagination : SelectingItemsControl
             throw new ArgumentOutOfRangeException(nameof(container), "The container type is incorrect, it must be type CarouselPageIndicator.");
         }
     }
-    
+
+    protected override void ClearContainerForItemOverride(Control container)
+    {
+        if (container is CarouselPageIndicator indicator && _containerBindings.Remove(indicator, out var bindings))
+        {
+            bindings.Dispose();
+        }
+        base.ClearContainerForItemOverride(container);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        for (var index = 0; index < ItemCount; index++)
+        {
+            if (ContainerFromIndex(index) is CarouselPageIndicator indicator && !_containerBindings.ContainsKey(indicator))
+            {
+                ConfigureContainerBindings(indicator);
+            }
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        foreach (var bindings in _containerBindings.Values)
+        {
+            bindings.Dispose();
+        }
+        _containerBindings.Clear();
+        base.OnDetachedFromVisualTree(e);
+    }
+
     protected virtual void PreparePageIndicator(CarouselPageIndicator pageIndicator, object? item, int index)
     {
     }
-    
+
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -130,5 +169,33 @@ internal class CarouselPagination : SelectingItemsControl
                 e.Handled = UpdateSelectionFromEvent(container, e);
             }
         }
+    }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => CarouselThemeOwner.Resolve(this);
+
+    #endregion
+
+    private void ConfigureContainerBindings(CarouselPageIndicator indicator)
+    {
+        if (_containerBindings.Remove(indicator, out var previous))
+        {
+            previous.Dispose();
+        }
+        // Runtime containers receive Local projections during Prepare, before
+        // logical membership. ControlTheme cannot preserve that timing/priority;
+        // each membership owns and retires these typed relay handles.
+        var bindings = new CompositeDisposable
+        {
+            BindUtils.RelayBind(this, IsMotionEnabledProperty, indicator, CarouselPageIndicator.IsMotionEnabledProperty),
+            BindUtils.RelayBind(this, IsShowTransitionProgressProperty, indicator, CarouselPageIndicator.IsShowTransitionProgressProperty),
+            BindUtils.RelayBind(this, AutoPlaySpeedProperty, indicator, CarouselPageIndicator.AutoPlaySpeedProperty)
+        };
+        if (ItemTemplate != null)
+        {
+            bindings.Add(BindUtils.RelayBind(this, ItemTemplateProperty, indicator, CarouselPageIndicator.ContentTemplateProperty));
+        }
+        _containerBindings.Add(indicator, bindings);
     }
 }

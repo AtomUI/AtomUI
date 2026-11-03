@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -10,9 +11,10 @@ namespace AtomUI.Controls.Commons;
 
 using SvgControl = Avalonia.Svg.Svg;
 
-public abstract class AbstractResult : ContentControl
+public abstract class AbstractResult : ContentControl, IThemeInheritanceSource
 {
     #region 公共属性定义
+
     public static readonly StyledProperty<object?> ExtraProperty =
         AvaloniaProperty.Register<AbstractResult, object?>(nameof(Extra));
 
@@ -178,6 +180,7 @@ public abstract class AbstractResult : ContentControl
         get => _statusIcon;
         set => SetAndRaise(StatusIconProperty, ref _statusIcon, value);
     }
+
     #endregion
 
     private SvgControl? _statusImage;
@@ -212,6 +215,12 @@ public abstract class AbstractResult : ContentControl
         }
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        ConfigureStatusImage();
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -220,6 +229,12 @@ public abstract class AbstractResult : ContentControl
         ConfigureHeaderLineHeight();
         ConfigureSubHeaderLineHeight();
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     private void ConfigureStatusImage()
     {

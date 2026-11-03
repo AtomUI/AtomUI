@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
@@ -55,7 +56,9 @@ internal sealed class WindowDialogPresenter : IDialogPresenter
         _resourceBridge = new DialogResourceBridge(_dialog);
         HostWindow.Resources.MergedDictionaries.Add(_resourceBridge);
 
-        ((ISetLogicalParent)HostWindow).SetParent(_dialog);
+        StyledElement resourceOwner = ((ILogical)_dialog).IsAttachedToLogicalTree
+            ? _dialog : _dialog.PlacementTarget ?? (StyledElement)_owner;
+        ((ISetLogicalParent)HostWindow).SetParent(resourceOwner);
         BindDialogProperties();
         HostWindow.CloseRequested += HandleWindowCloseRequested;
         HostWindow.Opened += HandleWindowOpened;
@@ -143,8 +146,8 @@ internal sealed class WindowDialogPresenter : IDialogPresenter
         _openingCancellationSource =
             CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var openingCancellationToken = _openingCancellationSource.Token;
-        // Native Window content is not attached yet, so inherit Dialog resources for natural measurement.
-        ((ISetInheritanceParent)_surface).SetParent(_dialog);
+        // Native Window content is not attached yet; use the same scoped owner for natural measurement.
+        ((ISetInheritanceParent)_surface).SetParent(HostWindow.Parent ?? _dialog);
         var initialWindowSize = InitializeSizing();
         ApplyStartupPlacement(initialWindowSize);
         if (_dialog.IsModal &&

@@ -62,3 +62,28 @@ ImagePreviewer 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## CT15 dependency and consumer checkpoint
+
+All fourteen fields retain their names, types, keys, slots and four-algorithm defaults under V2/revision1. ImagePreviewSwitchSize is an optional explicit override for navigation Width/Height; unset preserves the former automatic dimensions and native values win. The other fields retain their existing cover, toolbar, navigation, title and window-bound roles. Real hover/disabled properties and both entry/host shapes passed focused checks; full-family rendering/lifecycle acceptance is still open. See [CT15 execution](../../../../superpowers/plans/2026-10-22-custom-theme/image-previewer-consumers.md).
+
+| Own | Original default input | Actual consumer / update responsibility |
+| --- | --- | --- |
+| PreviewOperationSize | Global.FontSizeIcon * 1.5 | toolbar and navigation icon dimensions, live resources |
+| PreviewOperationColor | Global.ColorTextLightSolid @ .65 | operation icons and footer foreground |
+| PreviewOperationHoverColor | Global.ColorTextLightSolid @ .85 | operation hover selectors |
+| PreviewOperationColorDisabled | Global.ColorTextLightSolid @ .25 | disabled operation/navigation selectors |
+| ImagePreviewSwitchSize | Global.ControlHeightLG | explicit-only navigation Width/Height, 0 supported; unset auto |
+| MaskBgColor | black @ .30 | cover mask paint |
+| DialogMinWidth | 710 | native preview window minimum, existing sizing rules retained |
+| DialogMinHeight | 240 | native preview window minimum |
+| TitleBarBackgroundColor | Global.ColorBorderSecondary; Light darken(1) | native title frame and title bar background |
+| NavButtonBgColor | Global.ColorBgMask @ .10 | navigation, Overlay close and footer capsule paint |
+| NavButtonBgHoverColor | Global.ColorBgMask @ .20 | navigation and Overlay close hover |
+| FloatToolbarPadding | Global.UniformlyPaddingLG,0 | footer action frame padding |
+| FloatToolbarIndicatorPadding | Global.UniformlyPaddingXS,0 | footer index frame padding |
+| CoverImageWidth | 200 | loading/error placeholder fallback; natural image sizing remains independent |
+
+Global roles retain their original semantics: solid text/icon colour, tertiary error colour, spacing/padding/margins and title icon size. Motion collections keep their existing declared duration kinds; the existing TokenTransitions owner binding resolves through the public composition owner. TitleFontSize remains the WindowTitleBar role rather than being replaced by body size. All fourteen fields are consumer-verified at the current checkpoint; full family acceptance still requires the remaining evidence.
+
+CT15 verification checkpoint: 142 focused checks, managed/AOT200 each; 104 intentional pairs pending limited review. Temporary sources/media/driver cleaned; final117 focused tests and NET8 zero warnings passed. 29 static and64 timed cross-runtime differences, OS/Browser/input/extreme boundaries and full-family acceptance remain open. See [results](../../../../superpowers/plans/2026-10-22-custom-theme/image-previewer-consumers-results.md).

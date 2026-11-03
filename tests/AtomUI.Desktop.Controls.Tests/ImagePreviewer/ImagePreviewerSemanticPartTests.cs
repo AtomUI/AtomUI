@@ -333,20 +333,11 @@ public class ImagePreviewerSemanticPartTests
     }
 
     [Fact]
-    public void Native_Dialog_Owner_Styles_Do_Not_Cross_The_TopLevel_Boundary()
+    public void Native_Dialog_Owner_Generated_Styles_Reach_The_Independent_TopLevel()
     {
-        var owner = new AtomUIPreviewer();
-        owner.Classes.Add("semantic-owner");
-        var ownerStyle = new Style(s => s.OfType<AtomUIPreviewer>().Class("semantic-owner"));
-        var bodyStyle = (Style)Activator.CreateInstance(
-            GetDescriptor(typeof(AtomUIPreviewer))
-                .Parts.Single(static part => part.Name == "popup.body")
-                .StyleType.ShouldNotBeNull()).ShouldNotBeNull();
-        bodyStyle.Setters.Add(new Setter(Control.TagProperty, "popup.body"));
-        ownerStyle.Children.Add(bodyStyle);
-        owner.Styles.Add(ownerStyle);
-
-        var window = new AvaloniaWindow { Content = owner };
+        var view = new ImagePreviewerNativeSemanticStyleView();
+        var owner = view.FindControl<AtomUIPreviewer>("Previewer").ShouldNotBeNull();
+        var window = new AvaloniaWindow { Content = view };
         window.Show();
         window.UpdateLayout();
 
@@ -364,11 +355,24 @@ public class ImagePreviewerSemanticPartTests
 
         try
         {
-            // 跨 TopLevel 边界时 owner 作用域 Semantic Style 不级联进 native dialog；
-            // marker 仍存在（descriptor/marker 契约与 Gallery AdditionalRoots 解析不依赖样式级联）。
             var body = dialog.GetVisualDescendants().OfType<Panel>().Single(c => c.Classes.Contains(PopupBodyClass));
-            body.Tag.ShouldBeNull(
-                "owner-scoped Semantic Styles must not cascade into the independent native dialog TopLevel");
+            body.Tag.ShouldBe("popup.body");
+            body.Background.ShouldBeAssignableTo<global::Avalonia.Media.ISolidColorBrush>()!.Color
+                .ShouldBe(global::Avalonia.Media.Color.Parse("#FFCE27A9"));
+
+            // The existing cross-TopLevel contract now uses the dedicated AXAML
+            // style, with no node assignment or code-behind styling fallback.
+            var document = XDocument.Load(GetRepoFile(
+                "tests/AtomUI.Desktop.Controls.Tests/ImagePreviewer/ImagePreviewerNativeSemanticStyleView.axaml"));
+            document.Descendants().Any(x => x.Name.LocalName == "ImagePreviewerPopupBodyStyle").ShouldBeTrue();
+            document.Descendants().Any(x => x.Name.LocalName == "Setter" &&
+                (string?)x.Attribute("Property") == "Background" &&
+                (string?)x.Attribute("Value") == "#FFCE27A9").ShouldBeTrue();
+            var codeBehind = File.ReadAllText(GetRepoFile(
+                "tests/AtomUI.Desktop.Controls.Tests/ImagePreviewer/ImagePreviewerNativeSemanticStyleView.axaml.cs"));
+            codeBehind.ShouldNotContain("FindControl(");
+            codeBehind.ShouldNotContain("Loaded +=");
+            codeBehind.ShouldNotContain("Unloaded +=");
         }
         finally
         {

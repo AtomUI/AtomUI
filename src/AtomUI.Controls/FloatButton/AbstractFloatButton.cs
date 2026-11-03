@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
@@ -6,6 +7,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
@@ -13,68 +15,69 @@ using AvaloniaButton = Avalonia.Controls.Button;
 
 [TemplatePart("PART_BadgeLayout", typeof(Canvas))]
 [PseudoClasses(ButtonPseudoClass.IconOnly)]
-public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
+public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl, IThemeInheritanceSource
 {
     #region 公共属性定义
+
     public static readonly StyledProperty<FloatButtonPlacement> PlacementProperty =
         AvaloniaProperty.Register<AbstractFloatButton, FloatButtonPlacement>(nameof(Placement));
-    
+
     public static readonly StyledProperty<double> FloatOffsetXProperty =
         AvaloniaProperty.Register<AbstractFloatButton, double>(nameof(FloatOffsetX));
-    
+
     public static readonly StyledProperty<double> FloatOffsetYProperty =
         AvaloniaProperty.Register<AbstractFloatButton, double>(nameof(FloatOffsetY));
-    
+
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<AbstractFloatButton, PathIcon?>(nameof(Icon));
-    
+
     public static readonly StyledProperty<string?> TooltipProperty =
         AvaloniaProperty.Register<AbstractFloatButton, string?>(nameof(Tooltip));
-    
+
     public static readonly StyledProperty<Color?> TooltipColorProperty =
         AvaloniaProperty.Register<AbstractFloatButton, Color?>(nameof(TooltipColor));
-    
+
     public static readonly StyledProperty<FloatButtonType> ButtonTypeProperty =
         AvaloniaProperty.Register<AbstractFloatButton, FloatButtonType>(nameof(ButtonType), FloatButtonType.Default);
-    
+
     public static readonly StyledProperty<FloatButtonShape> ShapeProperty =
         AvaloniaProperty.Register<AbstractFloatButton, FloatButtonShape>(nameof(Shape), FloatButtonShape.Circle);
-    
+
     public static readonly StyledProperty<Uri?> HrefProperty =
         AvaloniaProperty.Register<AbstractFloatButton, Uri?>(nameof(Href));
-    
+
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
         Border.BoxShadowProperty.AddOwner<AbstractFloatButton>();
-    
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractFloatButton>();
-    
+
     public static readonly StyledProperty<bool> IsBadgeEnabledProperty =
         AvaloniaProperty.Register<AbstractFloatButton, bool>(nameof(IsBadgeEnabled));
-    
+
     public static readonly StyledProperty<bool> IsDotBadgeProperty =
         AvaloniaProperty.Register<AbstractFloatButton, bool>(nameof(IsDotBadge));
-    
+
     public static readonly StyledProperty<int> BadgeCountProperty =
         AvaloniaProperty.Register<AbstractFloatButton, int>(nameof(BadgeCount));
-    
+
     public static readonly StyledProperty<string?> BadgeColorProperty =
         AvaloniaProperty.Register<AbstractFloatButton, string?>(
             nameof(BadgeColor));
-    
+
     public static readonly StyledProperty<Point> BadgeOffsetProperty =
         AvaloniaProperty.Register<AbstractFloatButton, Point>(nameof(BadgeOffset));
 
     public static readonly StyledProperty<int> BadgeOverflowCountProperty =
         AvaloniaProperty.Register<AbstractFloatButton, int>(nameof(BadgeOverflowCount), 99,
             coerce: (o, v) => Math.Max(0, v));
-    
+
     public FloatButtonPlacement Placement
     {
         get => GetValue(PlacementProperty);
         set => SetValue(PlacementProperty, value);
     }
-    
+
     public double FloatOffsetX
     {
         get => GetValue(FloatOffsetXProperty);
@@ -86,55 +89,55 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         get => GetValue(FloatOffsetYProperty);
         set => SetValue(FloatOffsetYProperty, value);
     }
-    
+
     public PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
-    
+
     public string? Tooltip
     {
         get => GetValue(TooltipProperty);
         set => SetValue(TooltipProperty, value);
     }
-    
+
     public Color? TooltipColor
     {
         get => GetValue(TooltipColorProperty);
         set => SetValue(TooltipColorProperty, value);
     }
-    
+
     public FloatButtonType ButtonType
     {
         get => GetValue(ButtonTypeProperty);
         set => SetValue(ButtonTypeProperty, value);
     }
-    
+
     public FloatButtonShape Shape
     {
         get => GetValue(ShapeProperty);
         set => SetValue(ShapeProperty, value);
     }
-    
+
     public Uri? Href
     {
         get => GetValue(HrefProperty);
         set => SetValue(HrefProperty, value);
     }
-    
+
     public BoxShadows BoxShadow
     {
         get => GetValue(BoxShadowProperty);
         set => SetValue(BoxShadowProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     public bool IsBadgeEnabled
     {
         get => GetValue(IsBadgeEnabledProperty);
@@ -146,19 +149,19 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         get => GetValue(IsDotBadgeProperty);
         set => SetValue(IsDotBadgeProperty, value);
     }
-    
+
     public int BadgeCount
     {
         get => GetValue(BadgeCountProperty);
         set => SetValue(BadgeCountProperty, value);
     }
-    
+
     public string? BadgeColor
     {
         get => GetValue(BadgeColorProperty);
         set => SetValue(BadgeColorProperty, value);
     }
-    
+
     public Point BadgeOffset
     {
         get => GetValue(BadgeOffsetProperty);
@@ -170,15 +173,17 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         get => GetValue(BadgeOverflowCountProperty);
         set => SetValue(BadgeOverflowCountProperty, value);
     }
+
     #endregion
 
     #region 内部属性定义
+
     internal static readonly DirectProperty<AbstractFloatButton, bool> IsEmbedModeProperty =
         AvaloniaProperty.RegisterDirect<AbstractFloatButton, bool>(
             nameof(IsEmbedMode),
             o => o.IsEmbedMode,
             (o, v) => o.IsEmbedMode = v);
-    
+
     internal static readonly StyledProperty<IBrush?> BadgeEffectiveColorProperty =
         AvaloniaProperty.Register<AbstractFloatButton, IBrush?>(
             nameof(BadgeEffectiveColor));
@@ -190,7 +195,7 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         get => _isEmbedMode;
         set => SetAndRaise(IsEmbedModeProperty, ref _isEmbedMode, value);
     }
-    
+
     internal IBrush? BadgeEffectiveColor
     {
         get => GetValue(BadgeEffectiveColorProperty);
@@ -198,153 +203,11 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
     }
 
     #endregion
-    
-    private protected ScopeAwareOverlayLayer? _overlayLayer;
-    private protected Canvas? _badgeLayout;
-    private protected Control? _badge;
 
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
-    {
-        base.OnSizeChanged(e);
-        if (Shape == FloatButtonShape.Circle)
-        {
-            SetValue(CornerRadiusProperty, new CornerRadius(e.NewSize.Height / 2), BindingPriority.Template);
-        }
+    #region 内部协作 API
 
-        if (_overlayLayer != null)
-        {
-            CalculatePosition(this, _overlayLayer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
-        }
-        CalculateBadgePosition();
-    }
-
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _badgeLayout = e.NameScope.Find<Canvas>("PART_BadgeLayout");
-        ConfigureBadge();
-    }
-
-    protected override Size MeasureOverride(Size availableSize)
-    {
-        var size       = base.MeasureOverride(availableSize);
-        var effectSize = Math.Max(size.Width, size.Height);
-        return new Size(effectSize, effectSize);
-    }
-
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == IconProperty ||
-            change.Property == ContentProperty ||
-            change.Property == ShapeProperty)
-        {
-            UpdatePseudoClasses();
-        }
-
-        if (change.Property == IsEmbedModeProperty ||
-            change.Property == ParentProperty)
-        {
-            SetupParentLayer(Parent);
-            if (_overlayLayer != null)
-            {
-                CalculatePosition(this, _overlayLayer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
-            }
-        }
-        else if (change.Property == FloatOffsetXProperty ||
-                 change.Property == FloatOffsetYProperty ||
-                 change.Property == PlacementProperty)
-        {
-            if (_overlayLayer != null)
-            {
-                CalculatePosition(this, _overlayLayer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
-            }
-        }
-        else if (change.Property == IsBadgeEnabledProperty ||
-                 change.Property == IsDotBadgeProperty)
-
-        {
-            ConfigureBadge();
-        }
-        else if (change.Property == BadgeOffsetProperty)
-        {
-            CalculateBadgePosition();
-        }
-        else if (change.Property == BadgeColorProperty)
-        {
-            SetCurrentValue(BadgeEffectiveColorProperty, BadgeColorUtils.CalculateColor(BadgeColor));
-        }
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        ConfigureDefaultIcon();
-
-    }
-
-    protected virtual void UpdatePseudoClasses()
-    {
-        if (Shape == FloatButtonShape.Square)
-        {
-            PseudoClasses.Set(ButtonPseudoClass.IconOnly, Icon is not null && Content is null);
-        }
-        else
-        {
-            PseudoClasses.Set(ButtonPseudoClass.IconOnly, true);
-        }
-    }
-
-    protected virtual void ConfigureDefaultIcon()
-    {
-        if ((Shape == FloatButtonShape.Circle && Icon == null) ||
-            (Shape == FloatButtonShape.Square && Content == null && Icon == null))
-        {
-            SetCurrentValue(IconProperty, new FileTextOutlined());
-        }
-    }
-
-    private void SetupParentLayer(StyledElement? parent)
-    {
-        if (_overlayLayer != null)
-        {
-            _overlayLayer.SizeChanged -= HandleLayerSizeChanged;
-        }
-        if (!IsEmbedMode)
-        {
-            if (parent is ScopeAwareOverlayLayer scopeAwareOverlayLayer)
-            {
-                _overlayLayer                      =  scopeAwareOverlayLayer;
-                scopeAwareOverlayLayer.SizeChanged += HandleLayerSizeChanged;
-            }
-        }
-        else
-        {
-            _overlayLayer = null;
-        }
-    }
-
-    private void HandleLayerSizeChanged(object? sender, SizeChangedEventArgs e)
-    {
-        CalculatePosition(this, e.NewSize, Placement, FloatOffsetX, FloatOffsetY);
-    }
-
-    private protected abstract void ConfigureBadge();
-    private protected virtual void CalculateBadgePosition()
-    {
-        if (IsBadgeEnabled && _badge != null)
-        {
-            var targetOffsetX = DesiredSize.Width;
-            var targetOffsetY = 0.0d;
-            targetOffsetX += BadgeOffset.X;
-            targetOffsetY += BadgeOffset.Y;
-            Canvas.SetLeft(_badge, targetOffsetX);
-            Canvas.SetTop(_badge, targetOffsetY);
-        }
-    }
-
-    internal static void CalculatePosition(Control floatControl, 
-                                           Size layerSize, 
+    internal static void CalculatePosition(Control floatControl,
+                                           Size layerSize,
                                            FloatButtonPlacement placement,
                                            double offsetX,
                                            double offsetY)
@@ -416,5 +279,213 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         }
         Canvas.SetLeft(floatControl, targetOffsetX);
         Canvas.SetTop(floatControl, targetOffsetY);
+    }
+
+    #endregion
+
+    #region 运行时字段
+
+    private protected ScopeAwareOverlayLayer? _overlayLayer;
+
+    private protected Canvas? _badgeLayout;
+
+    private protected Control? _badge;
+
+    private protected IDisposable? _badgeBindings;
+
+    private IDisposable? _badgeColorValue;
+
+    #endregion
+
+    #region 公共与受保护 API
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        SetupParentLayer(this.GetVisualParent());
+        ConfigureBadgeColorValue();
+        if (_badgeLayout is not null && _badge is null && IsBadgeEnabled)
+        {
+            ConfigureBadge();
+        }
+        if (_overlayLayer is not null)
+        {
+            CalculatePosition(this, _overlayLayer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        SetupParentLayer(null);
+        RetireBadge();
+        _badgeColorValue?.Dispose();
+        _badgeColorValue = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        if (Shape == FloatButtonShape.Circle)
+        {
+            SetValue(CornerRadiusProperty, new CornerRadius(e.NewSize.Height / 2), BindingPriority.Template);
+        }
+
+        if (_overlayLayer != null)
+        {
+            CalculatePosition(this, _overlayLayer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
+        }
+        CalculateBadgePosition();
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        RetireBadge();
+        base.OnApplyTemplate(e);
+        _badgeLayout = e.NameScope.Find<Canvas>("PART_BadgeLayout");
+        ConfigureBadge();
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var size       = base.MeasureOverride(availableSize);
+        var effectSize = Math.Max(size.Width, size.Height);
+        return new Size(effectSize, effectSize);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == IconProperty ||
+            change.Property == ContentProperty ||
+            change.Property == ShapeProperty)
+        {
+            UpdatePseudoClasses();
+        }
+
+        if (change.Property == IsEmbedModeProperty ||
+            change.Property == ParentProperty)
+        {
+            SetupParentLayer(this.GetVisualParent());
+            if (_overlayLayer != null)
+            {
+                CalculatePosition(this, _overlayLayer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
+            }
+        }
+        else if (change.Property == FloatOffsetXProperty ||
+                 change.Property == FloatOffsetYProperty ||
+                 change.Property == PlacementProperty)
+        {
+            if (_overlayLayer != null)
+            {
+                CalculatePosition(this, _overlayLayer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
+            }
+        }
+        else if (change.Property == IsBadgeEnabledProperty ||
+                 change.Property == IsDotBadgeProperty)
+
+        {
+            ConfigureBadge();
+        }
+        else if (change.Property == BadgeOffsetProperty)
+        {
+            CalculateBadgePosition();
+        }
+        else if (change.Property == BadgeColorProperty)
+        {
+            ConfigureBadgeColorValue();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ConfigureDefaultIcon();
+
+    }
+
+    protected virtual void UpdatePseudoClasses()
+    {
+        if (Shape == FloatButtonShape.Square)
+        {
+            PseudoClasses.Set(ButtonPseudoClass.IconOnly, Icon is not null && Content is null);
+        }
+        else
+        {
+            PseudoClasses.Set(ButtonPseudoClass.IconOnly, true);
+        }
+    }
+
+    protected virtual void ConfigureDefaultIcon()
+    {
+        if ((Shape == FloatButtonShape.Circle && Icon == null) ||
+            (Shape == FloatButtonShape.Square && Content == null && Icon == null))
+        {
+            SetCurrentValue(IconProperty, new FileTextOutlined());
+        }
+    }
+
+    private protected void RetireBadge()
+    {
+        _badgeBindings?.Dispose();
+        _badgeBindings = null;
+        if (_badge is not null)
+        {
+            _badgeLayout?.Children.Remove(_badge);
+            _badge = null;
+        }
+    }
+
+    private protected abstract void ConfigureBadge();
+
+    private protected virtual void CalculateBadgePosition()
+    {
+        if (IsBadgeEnabled && _badge != null)
+        {
+            var targetOffsetX = DesiredSize.Width;
+            var targetOffsetY = 0.0d;
+            targetOffsetX += BadgeOffset.X;
+            targetOffsetY += BadgeOffset.Y;
+            Canvas.SetLeft(_badge, targetOffsetX);
+            Canvas.SetTop(_badge, targetOffsetY);
+        }
+    }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    private void ConfigureBadgeColorValue()
+    {
+        _badgeColorValue?.Dispose();
+        _badgeColorValue = null;
+        if (BadgeColorUtils.CalculateColor(BadgeColor) is { } brush)
+        {
+            // An instance colour overlays, rather than replaces, the themed
+            // input. Removing/invalidating it restores the live token binding.
+            _badgeColorValue = SetValue(BadgeEffectiveColorProperty, brush, BindingPriority.Animation);
+        }
+    }
+
+    private void SetupParentLayer(StyledElement? parent)
+    {
+        if (_overlayLayer != null)
+        {
+            _overlayLayer.SizeChanged -= HandleLayerSizeChanged;
+        }
+        _overlayLayer = !IsEmbedMode ? parent as ScopeAwareOverlayLayer : null;
+        if (_overlayLayer is { } layer)
+        {
+            layer.SizeChanged += HandleLayerSizeChanged;
+        }
+    }
+
+    private void HandleLayerSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        CalculatePosition(this, e.NewSize, Placement, FloatOffsetX, FloatOffsetY);
     }
 }

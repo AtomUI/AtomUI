@@ -1,9 +1,8 @@
-using System.Diagnostics;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Metadata;
 
@@ -18,8 +17,10 @@ internal enum AvatarContentType
 
 [PseudoClasses(":loading", ":loaded", ":failed", ":fallback")]
 [TemplatePart("PART_TextPresenter", typeof(TextBlock))]
-public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, IImageLoadControl, IImageLoadControllerHost
+public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, IImageLoadControl, IImageLoadControllerHost, IThemeInheritanceSource
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<double> GapProperty =
         AvaloniaProperty.Register<AbstractAvatar, double>(nameof(Gap), 4.0);
 
@@ -69,45 +70,6 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
 
     public static readonly DirectProperty<AbstractAvatar, bool> IsFailedProperty =
         AvaloniaProperty.RegisterDirect<AbstractAvatar, bool>(nameof(IsFailed), control => control.IsFailed);
-
-    internal static readonly StyledProperty<double> EffectiveIconSizeProperty =
-        AvaloniaProperty.Register<AbstractAvatar, double>(nameof(EffectiveIconSize));
-
-    internal static readonly StyledProperty<Thickness> TextPaddingProperty =
-        AvaloniaProperty.Register<AbstractAvatar, Thickness>(nameof(TextPadding));
-
-    internal static readonly DirectProperty<AbstractAvatar, AvatarContentType> ContentTypeProperty =
-        AvaloniaProperty.RegisterDirect<AbstractAvatar, AvatarContentType>(
-            nameof(ContentType),
-            control => control.ContentType,
-            (control, value) => control.ContentType = value);
-
-    internal static readonly DirectProperty<AbstractAvatar, IImage?> LoadedImageProperty =
-        AvaloniaProperty.RegisterDirect<AbstractAvatar, IImage?>(nameof(LoadedImage), control => control.LoadedImage);
-
-    private readonly ImageLoadController _controller;
-    private CustomizableSizeType? _originSizeType;
-    private AvatarContentType _contentType = AvatarContentType.Icon;
-    private IImage? _loadedImage;
-    private ImageLoadState _loadState;
-    private ImageLoadError? _loadError;
-    private ImageLoadProgress? _loadProgress;
-    private bool _isLoading;
-    private bool _isLoaded;
-    private bool _isFailed;
-    private bool _isAttached;
-
-    static AbstractAvatar()
-    {
-        AffectsMeasure<AbstractAvatar>(SizeTypeProperty, TextProperty, GapProperty);
-        AffectsRender<AbstractAvatar>(ShapeProperty, IconProperty, SourceProperty, GapProperty);
-    }
-
-    protected AbstractAvatar()
-    {
-        _controller = new ImageLoadController(this);
-        ConfigureTextPadding();
-    }
 
     public double Gap
     {
@@ -170,21 +132,48 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    private ImageLoadState _loadState;
+
     public ImageLoadState LoadState => _loadState;
+
+    private ImageLoadError? _loadError;
 
     public ImageLoadError? LoadError => _loadError;
 
+    private ImageLoadProgress? _loadProgress;
+
     public ImageLoadProgress? LoadProgress => _loadProgress;
+
+    private bool _isLoading;
 
     public bool IsLoading => _isLoading;
 
+    private bool _isLoaded;
+
     public new bool IsLoaded => _isLoaded;
+
+    private bool _isFailed;
 
     public bool IsFailed => _isFailed;
 
-    public event EventHandler<ImageOpenedEventArgs>? ImageOpened;
+    #endregion
 
-    public event EventHandler<ImageFailedEventArgs>? ImageFailed;
+    #region 内部属性定义
+
+    internal static readonly StyledProperty<double> EffectiveIconSizeProperty =
+        AvaloniaProperty.Register<AbstractAvatar, double>(nameof(EffectiveIconSize));
+
+    internal static readonly StyledProperty<Thickness> TextPaddingProperty =
+        AvaloniaProperty.Register<AbstractAvatar, Thickness>(nameof(TextPadding));
+
+    internal static readonly DirectProperty<AbstractAvatar, AvatarContentType> ContentTypeProperty =
+        AvaloniaProperty.RegisterDirect<AbstractAvatar, AvatarContentType>(
+            nameof(ContentType),
+            control => control.ContentType,
+            (control, value) => control.ContentType = value);
+
+    internal static readonly DirectProperty<AbstractAvatar, IImage?> LoadedImageProperty =
+        AvaloniaProperty.RegisterDirect<AbstractAvatar, IImage?>(nameof(LoadedImage), control => control.LoadedImage);
 
     internal double EffectiveIconSize
     {
@@ -198,19 +187,50 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         set => SetValue(TextPaddingProperty, value);
     }
 
+    private AvatarContentType _contentType = AvatarContentType.Icon;
+
     internal AvatarContentType ContentType
     {
         get => _contentType;
         set => SetAndRaise(ContentTypeProperty, ref _contentType, value);
     }
 
+    private IImage? _loadedImage;
+
     internal IImage? LoadedImage => _loadedImage;
 
-    Visual IImageLoadControllerHost.Visual => this;
+    #endregion
 
-    ImageRequestPriority IImageLoadControllerHost.Priority => ImageRequestPriority.Normal;
+    #region 运行时字段
 
-    bool IImageLoadControllerHost.IsImageLoadAttached => _isAttached;
+    private readonly ImageLoadController _controller;
+
+    private CustomizableSizeType? _originSizeType;
+
+    private bool _isAttached;
+
+    #endregion
+
+    #region 公共事件定义
+
+    public event EventHandler<ImageOpenedEventArgs>? ImageOpened;
+
+    public event EventHandler<ImageFailedEventArgs>? ImageFailed;
+
+    #endregion
+
+    static AbstractAvatar()
+    {
+        AffectsMeasure<AbstractAvatar>(SizeTypeProperty, TextProperty, GapProperty);
+        AffectsRender<AbstractAvatar>(ShapeProperty, IconProperty, SourceProperty, GapProperty);
+    }
+
+    protected AbstractAvatar()
+    {
+        _controller = new ImageLoadController(this);
+    }
+
+    #region 公共与受保护 API
 
     public void Reload() => _controller.Reload();
 
@@ -220,10 +240,6 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         if (change.Property == SizeProperty)
         {
             ConfigureCustomSize();
-        }
-        else if (change.Property == SizeTypeProperty)
-        {
-            ConfigureIconSize();
         }
 
         if (change.Property == SourceProperty ||
@@ -236,21 +252,11 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         {
             ConfigureContentType();
         }
-        if (change.Property == GapProperty)
-        {
-            ConfigureTextPadding();
-        }
-        else if (change.Property == ShapeProperty)
-        {
-            ConfigureShape();
-        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        ConfigureShape();
-        ConfigureIconSize();
         ConfigureContentType();
     }
 
@@ -275,17 +281,19 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         base.OnDetachedFromVisualTree(e);
     }
 
+    #endregion
+
+    #region 实现 IImageLoadControllerHost 接口
+
+    Visual IImageLoadControllerHost.Visual => this;
+
+    ImageRequestPriority IImageLoadControllerHost.Priority => ImageRequestPriority.Normal;
+
+    bool IImageLoadControllerHost.IsImageLoadAttached => _isAttached;
+
     (int Width, int Height)? IImageLoadControllerHost.GetDecodePixelSize()
     {
         return GetDecodePixelSize(Bounds.Size);
-    }
-
-    private (int Width, int Height)? GetDecodePixelSize(Size arrangedSize)
-    {
-        var scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
-        var width = Quantize(arrangedSize.Width * scaling);
-        var height = Quantize(arrangedSize.Height * scaling);
-        return width == 0 && height == 0 ? null : (width, height);
     }
 
     ImageLoadError? IImageLoadControllerHost.GetConfigurationError() => null;
@@ -320,6 +328,22 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
     void IImageLoadControllerHost.RaiseImageFailed(ImageFailedEventArgs eventArgs) =>
         ImageLoadEventDispatcher.Dispatch(ImageFailed, this, eventArgs);
 
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    private (int Width, int Height)? GetDecodePixelSize(Size arrangedSize)
+    {
+        var scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
+        var width = Quantize(arrangedSize.Width * scaling);
+        var height = Quantize(arrangedSize.Height * scaling);
+        return width == 0 && height == 0 ? null : (width, height);
+    }
+
     private void ConfigureCustomSize()
     {
         if (!double.IsNaN(Size))
@@ -337,21 +361,6 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         }
     }
 
-    private void ConfigureIconSize()
-    {
-        if (SizeType != CustomizableSizeType.Custom)
-        {
-            return;
-        }
-        Debug.Assert(!double.IsNaN(Size));
-        SetValue(WidthProperty, Size, BindingPriority.Template);
-        SetValue(HeightProperty, Size, BindingPriority.Template);
-        SetValue(
-            EffectiveIconSizeProperty,
-            Icon is not null || Source is not null ? Size / 2 : 18,
-            BindingPriority.Template);
-    }
-
     private void ConfigureContentType()
     {
         ContentType = LoadedImage is not null
@@ -359,17 +368,6 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
             : Text is not null
                 ? AvatarContentType.Text
                 : AvatarContentType.Icon;
-    }
-
-    private void ConfigureTextPadding() =>
-        SetValue(TextPaddingProperty, new Thickness(Gap, 0), BindingPriority.Template);
-
-    private void ConfigureShape()
-    {
-        if (Shape == AvatarShape.Circle)
-        {
-            SetValue(CornerRadiusProperty, new CornerRadius(Width / 2), BindingPriority.Template);
-        }
     }
 
     private static int Quantize(double value)
@@ -380,4 +378,5 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         }
         return checked((int)(Math.Ceiling(value / 16) * 16));
     }
+
 }

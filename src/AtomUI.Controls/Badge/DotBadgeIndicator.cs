@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 
@@ -6,6 +6,19 @@ namespace AtomUI.Controls.Commons;
 
 internal class DotBadgeIndicator : Control
 {
+
+    #region 公共属性定义
+
+    public double BadgeShadowSize
+    {
+        get => GetValue(BadgeShadowSizeProperty);
+        set => SetValue(BadgeShadowSizeProperty, value);
+    }
+
+    #endregion
+
+    #region 内部属性定义
+
     internal static readonly StyledProperty<IBrush?> BadgeDotColorProperty =
         AvaloniaProperty.Register<DotBadgeIndicator, IBrush?>(
             nameof(BadgeDotColor));
@@ -30,18 +43,20 @@ internal class DotBadgeIndicator : Control
         set => SetValue(BadgeShadowColorProperty, value);
     }
 
-    public double BadgeShadowSize
-    {
-        get => GetValue(BadgeShadowSizeProperty);
-        set => SetValue(BadgeShadowSizeProperty, value);
-    }
+    #endregion
+
+    #region 运行时字段
 
     private BoxShadows _boxShadows;
 
+    #endregion
+
     static DotBadgeIndicator()
     {
-        AffectsRender<DotBadgeIndicator>(BadgeDotColorProperty, BadgeShadowSizeProperty);
+        AffectsRender<DotBadgeIndicator>(BadgeDotColorProperty, BadgeShadowColorProperty, BadgeShadowSizeProperty);
     }
+
+    #region 公共与受保护 API
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -65,6 +80,10 @@ internal class DotBadgeIndicator : Control
             _boxShadows);
     }
 
+    #endregion
+
+    #region 私有实现
+
     private void BuildBoxShadow(bool force = false)
     {
         if (_boxShadows == default || force)
@@ -82,4 +101,7 @@ internal class DotBadgeIndicator : Control
             }
         }
     }
+
+    #endregion
+
 }

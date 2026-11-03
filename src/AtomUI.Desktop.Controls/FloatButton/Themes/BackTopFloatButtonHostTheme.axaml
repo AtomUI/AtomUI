@@ -4,10 +4,10 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:BackTopFloatButtonHost}" TargetType="atom:BackTopFloatButtonHost">
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="Placement" Value="BottomRight" />
         <Setter Property="FloatOffsetX" Value="{atom:FloatButtonTokenResource FloatOffsetX}" />
         <Setter Property="FloatOffsetY" Value="{atom:FloatButtonTokenResource FloatOffsetY}" />
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
+        <Setter Property="MotionDuration" Value="{atom:OwnerTokenResource MotionDurationMid}" />
     </ControlTheme>
 </ResourceDictionary>

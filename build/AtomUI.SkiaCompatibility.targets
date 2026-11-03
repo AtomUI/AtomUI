@@ -1,0 +1,26 @@
+<Project>
+    <PropertyGroup>
+        <AtomUISkiaCompatibilityProject>$(MSBuildThisFileDirectory)../compat/Avalonia.Skia/AtomUI.Compatibility.Avalonia.Skia.csproj</AtomUISkiaCompatibilityProject>
+        <!-- Directory.Build.targets can be imported before package items are declared.
+             Use the finite repository host inventory, not an early PackageReference query. -->
+        <AtomUIUseSkiaCompatibility Condition="'$(AtomUIUseSkiaCompatibility)' == '' and
+            $([System.Text.RegularExpressions.Regex]::IsMatch('$(MSBuildProjectName)',
+                '^(AtomUIGallery\.(Desktop|Browser|Tests)|AtomUI\.(Core|Controls|Controls\.Shared|Desktop\.Controls|Desktop\.Controls\.Rendering|Desktop\.Controls\.DataGrid|Icons\.Shared|Toolkits\.GalleryBase)\.Tests|AtomUI\.Localization\.IntegrationTests)$'))">true</AtomUIUseSkiaCompatibility>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(AtomUIUseSkiaCompatibility)' == 'true'">
+        <ProjectReference Include="$(AtomUISkiaCompatibilityProject)" PrivateAssets="all" />
+    </ItemGroup>
+    <!-- Repository projects share bin directories. Child libraries must not overwrite the
+         selected runtime with the official managed DLL while building an application. -->
+    <Target Name="AtomUISelectSkiaCompatibilityAssets" AfterTargets="ResolvePackageAssets"
+            BeforeTargets="ResolveLockFileReferences;ResolveLockFileCopyLocalFiles">
+        <ItemGroup>
+            <RuntimeCopyLocalItems Remove="@(RuntimeCopyLocalItems)"
+                                   Condition="'$(AtomUIUseSkiaCompatibility)' != 'false' and
+                                       '%(RuntimeCopyLocalItems.Filename)%(RuntimeCopyLocalItems.Extension)' == 'Avalonia.Skia.dll'" />
+            <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)"
+                Condition="'$(AtomUIUseSkiaCompatibility)' == 'true' and
+                    '%(ResolvedCompileFileDefinitions.Filename)%(ResolvedCompileFileDefinitions.Extension)' == 'Avalonia.Skia.dll'" />
+        </ItemGroup>
+    </Target>
+</Project>

@@ -3,6 +3,17 @@
 本文档记录 GroupBox 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-01
+
+- Theme
+  - Migrate Own7 to V2 revision1 without changing defaults, names, types, keys or slots; three unused scalars remain subject to the CT15 compatibility ruling.
+  - Connect actual GroupBox Global typography and Shared roles while preserving native/dedicated style priority and the standalone IconPresenter identity.
+- Fix
+  - Invalidate recorded border drawing when child layout moves the actual header gap at a fixed owner size; retire/reconnect the observer on template and attach boundaries.
+  - Preserve the original geometry, transparent-background behavior and renderScale border rounding.
+- Validation
+  - Verify four dedicated Semantic Styles, active Own targets and observer cleanup; full visual/platform/family conclusions remain bounded by CT15 evidence.
+
 ## 2026-09-16
 
 - Feature
@@ -57,3 +68,8 @@
   - 按内容区域、Header 结构和 fieldset 语义分类记录 GroupBox Token 边界。
 - Fix
   - 将 Header 缺口从背景遮挡改为边框几何排除，修复 `Background="Transparent"` 时标题下方露出边框短线的问题。
+
+
+## 2026-11-01
+
+- 明确 TextPaddingInline、OrientationMarginPercent、VerticalMarginInline 为 Reserved 兼容字段；保留定义、默认与资源键，不增加几何消费。分类已获限定批准，完整视觉和家族出口不由此关闭。

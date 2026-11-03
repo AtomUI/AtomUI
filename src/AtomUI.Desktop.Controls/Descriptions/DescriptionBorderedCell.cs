@@ -6,48 +6,54 @@ namespace AtomUI.Desktop.Controls;
 
 internal class DescriptionBorderedCell : ContentControl
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<double> RelativeLineHeightProperty =
         AvaloniaProperty.Register<DescriptionBorderedCell, double>(nameof(RelativeLineHeight));
-    
+
     public static readonly StyledProperty<double> LineHeightProperty =
         AvaloniaProperty.Register<DescriptionBorderedCell, double>(nameof(LineHeight));
-    
+
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<DescriptionBorderedCell>();
-    
-    internal static readonly DirectProperty<DescriptionBorderedCell, bool> IsLastRowProperty =
-        AvaloniaProperty.RegisterDirect<DescriptionBorderedCell, bool>(nameof(IsLastRow),
-            o => o.IsLastRow,
-            (o, v) => o.IsLastRow = v);
-    
-    internal static readonly DirectProperty<DescriptionBorderedCell, bool> IsLastColumnProperty =
-        AvaloniaProperty.RegisterDirect<DescriptionBorderedCell, bool>(nameof(IsLastColumn),
-            o => o.IsLastColumn,
-            (o, v) => o.IsLastColumn = v);
-    
-    internal static readonly DirectProperty<DescriptionBorderedCell, Thickness> EffectiveBorderThicknessProperty =
-        AvaloniaProperty.RegisterDirect<DescriptionBorderedCell, Thickness>(nameof(EffectiveBorderThickness),
-            o => o.EffectiveBorderThickness,
-            (o, v) => o.EffectiveBorderThickness = v);
-    
+
     public double RelativeLineHeight
     {
         get => GetValue(RelativeLineHeightProperty);
         set => SetValue(RelativeLineHeightProperty, value);
     }
-    
+
     public double LineHeight
     {
         get => GetValue(LineHeightProperty);
         set => SetValue(LineHeightProperty, value);
     }
-    
+
     public SizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
-    
+
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<DescriptionBorderedCell, bool> IsLastRowProperty =
+        AvaloniaProperty.RegisterDirect<DescriptionBorderedCell, bool>(nameof(IsLastRow),
+            o => o.IsLastRow,
+            (o, v) => o.IsLastRow = v);
+
+    internal static readonly DirectProperty<DescriptionBorderedCell, bool> IsLastColumnProperty =
+        AvaloniaProperty.RegisterDirect<DescriptionBorderedCell, bool>(nameof(IsLastColumn),
+            o => o.IsLastColumn,
+            (o, v) => o.IsLastColumn = v);
+
+    internal static readonly DirectProperty<DescriptionBorderedCell, Thickness> EffectiveBorderThicknessProperty =
+        AvaloniaProperty.RegisterDirect<DescriptionBorderedCell, Thickness>(nameof(EffectiveBorderThickness),
+            o => o.EffectiveBorderThickness,
+            (o, v) => o.EffectiveBorderThickness = v);
+
     private bool _isLastRow;
 
     internal bool IsLastRow
@@ -55,7 +61,7 @@ internal class DescriptionBorderedCell : ContentControl
         get => _isLastRow;
         set => SetAndRaise(IsLastRowProperty, ref _isLastRow, value);
     }
-    
+
     private bool _isLastColumn;
 
     internal bool IsLastColumn
@@ -63,7 +69,7 @@ internal class DescriptionBorderedCell : ContentControl
         get => _isLastColumn;
         set => SetAndRaise(IsLastColumnProperty, ref _isLastColumn, value);
     }
-    
+
     private Thickness _effectiveBorderThickness;
 
     internal Thickness EffectiveBorderThickness
@@ -71,7 +77,11 @@ internal class DescriptionBorderedCell : ContentControl
         get => _effectiveBorderThickness;
         set => SetAndRaise(EffectiveBorderThicknessProperty, ref _effectiveBorderThickness, value);
     }
-    
+
+    #endregion
+
+    #region 公共与受保护 API
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -87,6 +97,10 @@ internal class DescriptionBorderedCell : ContentControl
             ConfigureEffectiveBorderThickness();
         }
     }
+
+    #endregion
+
+    #region 私有实现
 
     private void ConfigureEffectiveBorderThickness()
     {
@@ -113,4 +127,7 @@ internal class DescriptionBorderedCell : ContentControl
             }
         }
     }
+
+    #endregion
+
 }

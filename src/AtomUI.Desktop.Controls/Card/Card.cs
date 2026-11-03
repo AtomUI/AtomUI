@@ -1,7 +1,9 @@
+using AtomUI.Theme.Resources;
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
+using Avalonia.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -26,7 +28,8 @@ internal enum CardContentType
 
 public partial class Card : HeaderedContentControl,
                     ISizeTypeAware,
-                    IMotionAwareControl
+                    IMotionAwareControl,
+                    IThemeInheritanceSource
 {
     #region 公共属性定义
     
@@ -247,6 +250,41 @@ public partial class Card : HeaderedContentControl,
         }
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        ConfigureContentBorderThickness();
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        UpdatePseudoClasses();
+        if (_cardActionPanel != null)
+        {
+            _cardActionPanel.Actions.Clear();
+        }
+        _cardActionPanel = e.NameScope.Find<CardActionPanel>("PART_ActionPanel");
+        if (_cardActionPanel != null)
+        {
+            foreach (var action in Actions)
+            {
+                _cardActionPanel.Actions.Add(action);
+            }
+        }
+        ConfigureContentType();
+        ConfigureContentCornerRadius();
+        ConfigureHeaderBorderThickness();
+    }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    // ControlTheme cannot read the protected inheritance parent; its Setters own
+    // optional typography while this bridge exposes the actual native source.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
     private void ConfigureContentType()
     {
         DisposeContentStateBindings();
@@ -275,8 +313,9 @@ public partial class Card : HeaderedContentControl,
     {
         _contentStateBindings = new CompositeDisposable(2)
         {
-            BindUtils.RelayBind(this, IsMotionEnabledProperty, cardTabsContent, CardTabsContent.IsMotionEnabledProperty),
-            BindUtils.RelayBind(this, SizeTypeProperty, cardTabsContent, CardTabsContent.SizeTypeProperty)
+            // Dynamic Content must receive state before any template or ancestor exists.
+            BindUtils.RelayBind(this, IsMotionEnabledProperty, cardTabsContent, CardTabsContent.IsMotionEnabledProperty, priority: BindingPriority.Template),
+            BindUtils.RelayBind(this, SizeTypeProperty, cardTabsContent, CardTabsContent.SizeTypeProperty, priority: BindingPriority.Template)
         };
     }
 
@@ -284,8 +323,9 @@ public partial class Card : HeaderedContentControl,
     {
         _contentStateBindings = new CompositeDisposable(2)
         {
-            BindUtils.RelayBind(this, IsMotionEnabledProperty, cardGridContent, CardGridContent.IsMotionEnabledProperty),
-            BindUtils.RelayBind(this, SizeTypeProperty, cardGridContent, CardGridContent.SizeTypeProperty)
+            // Runtime Content replacement owns acquisition and disposal of these defaults.
+            BindUtils.RelayBind(this, IsMotionEnabledProperty, cardGridContent, CardGridContent.IsMotionEnabledProperty, priority: BindingPriority.Template),
+            BindUtils.RelayBind(this, SizeTypeProperty, cardGridContent, CardGridContent.SizeTypeProperty, priority: BindingPriority.Template)
         };
     }
 
@@ -295,11 +335,6 @@ public partial class Card : HeaderedContentControl,
         _contentStateBindings = null;
     }
     
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        ConfigureContentBorderThickness();
-    }
     
     private void ConfigureContentBorderThickness()
     {
@@ -328,27 +363,6 @@ public partial class Card : HeaderedContentControl,
         {
             SetCurrentValue(EffectiveCornerRadiusProperty, CornerRadius);
         }
-    }
-
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        UpdatePseudoClasses();
-        if (_cardActionPanel != null)
-        {
-            _cardActionPanel.Actions.Clear();
-        }
-        _cardActionPanel = e.NameScope.Find<CardActionPanel>("PART_ActionPanel");
-        if (_cardActionPanel != null)
-        {
-            foreach (var action in Actions)
-            {
-                _cardActionPanel.Actions.Add(action);
-            }
-        }
-        ConfigureContentType();
-        ConfigureContentCornerRadius();
-        ConfigureHeaderBorderThickness();
     }
 
     private void UpdatePseudoClasses()

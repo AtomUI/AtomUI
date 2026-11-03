@@ -172,3 +172,6 @@ Semantic Style 服从 Avalonia 原生属性优先级。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - Gallery Semantic Parts Tab 中 3 个 Part 均可解析高亮。
 - descriptor、生成 Style 与 NativeAOT 路径使用编译期生成数据，不依赖运行时反射或 VisualTree 扫描。
+### 2026-10-31 定制与生命周期补充
+
+container/arrow继续使用生成的ToolTipContainerStyle/ToolTipArrowStyle，root使用普通owner Style，不通过code-behind取节点设置属性。container的Padding/Background/TextElement字体输入进入真实模板内容，arrow的FilledColor可独立覆盖。模板重建保留相同marker路由并退役旧part订阅；原Content、换行/裁剪和宿主约束不移除。

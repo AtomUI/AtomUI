@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class CountBadgeToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class CountBadgeToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     public double IndicatorHeight { get; set; }
 
@@ -29,22 +29,37 @@ internal sealed class CountBadgeToken : AbstractControlDesignToken
 
     public CornerRadius CornerRadiusSM { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
+    [ControlTokenDefault(nameof(IndicatorHeight))]
+    private static double DefaultForIndicatorHeight(in ControlTokenDefaultContext context) =>
+        Math.Round(context.Global.FontSize * context.Global.RelativeLineHeight) - 2 * context.Global.LineWidth;
 
-        var lineWidth = EffectiveGlobalToken.LineWidth;
-        IndicatorHeight = Math.Round(EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight) -
-                          2 * lineWidth;
-        IndicatorHeightSM = EffectiveGlobalToken.FontSize;
-        TextFontSize       = EffectiveGlobalToken.FontSizeSM;
-        TextFontSizeSM     = EffectiveGlobalToken.FontSizeSM - 2;
-        TextColor          = EffectiveGlobalToken.ColorTextLightSolid;
-        IndicatorColor     = EffectiveGlobalToken.ColorError;
-        ShadowSize         = lineWidth;
-        ShadowColor        = EffectiveGlobalToken.ColorBorderBg;
-        TextPadding        = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, 0);
-        CornerRadius       = new CornerRadius(IndicatorHeight);
-        CornerRadiusSM     = new CornerRadius(IndicatorHeightSM);
-    }
+    [ControlTokenDefault(nameof(IndicatorHeightSM))]
+    private static double DefaultForIndicatorHeightSM(in ControlTokenDefaultContext context) => context.Global.FontSize;
+
+    [ControlTokenDefault(nameof(TextFontSize))]
+    private static double DefaultForTextFontSize(in ControlTokenDefaultContext context) => context.Global.FontSizeSM;
+
+    [ControlTokenDefault(nameof(TextFontSizeSM))]
+    private static double DefaultForTextFontSizeSM(in ControlTokenDefaultContext context) => context.Global.FontSizeSM - 2;
+
+    [ControlTokenDefault(nameof(TextColor))]
+    private static Color DefaultForTextColor(in ControlTokenDefaultContext context) => context.Global.ColorTextLightSolid;
+
+    [ControlTokenDefault(nameof(IndicatorColor))]
+    private static Color DefaultForIndicatorColor(in ControlTokenDefaultContext context) => context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(ShadowSize))]
+    private static double DefaultForShadowSize(in ControlTokenDefaultContext context) => context.Global.LineWidth;
+
+    [ControlTokenDefault(nameof(ShadowColor))]
+    private static Color DefaultForShadowColor(in ControlTokenDefaultContext context) => context.Global.ColorBorderBg;
+
+    [ControlTokenDefault(nameof(TextPadding))]
+    private static Thickness DefaultForTextPadding(in ControlTokenDefaultContext context) => new(context.Global.UniformlyPaddingXXS, 0);
+
+    [ControlTokenDefault(nameof(CornerRadius), nameof(IndicatorHeight))]
+    private static CornerRadius DefaultForCornerRadius(in ControlTokenDefaultContext context, double indicatorHeight) => new(indicatorHeight);
+
+    [ControlTokenDefault(nameof(CornerRadiusSM), nameof(IndicatorHeightSM))]
+    private static CornerRadius DefaultForCornerRadiusSM(in ControlTokenDefaultContext context, double indicatorHeightSM) => new(indicatorHeightSM);
 }

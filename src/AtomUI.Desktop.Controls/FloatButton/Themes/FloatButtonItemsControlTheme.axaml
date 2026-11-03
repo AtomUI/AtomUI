@@ -12,6 +12,7 @@
                         <DockPanel Name="RootLayout" LastChildFill="True">
                             <Control Name="EmptyControl" />
                             <Border Name="ContentFrame"
+                                    Padding="{TemplateBinding Padding}"
                                     CornerRadius="{TemplateBinding CornerRadius}"
                                     BoxShadow="{TemplateBinding BoxShadow}"
                                     Background="{TemplateBinding Background}">
@@ -31,6 +32,7 @@
             <Setter Property="Template">
                 <ControlTemplate>
                     <Border Name="ContentFrame"
+                            Padding="{TemplateBinding Padding}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             BoxShadow="{TemplateBinding BoxShadow}"
                             Background="{TemplateBinding Background}">
@@ -47,17 +49,17 @@
         <Setter Property="ClipToBounds" Value="False" />
 
         <Style Selector="^[Shape=Square]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
-            <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsSecondary}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgElevated, AnchorControlType={x:Type atom:FloatButtonItemsControl}}" />
+            <Setter Property="BoxShadow" Value="{atom:OwnerTokenResource Kind=BoxShadowsSecondary, AnchorControlType={x:Type atom:FloatButtonItemsControl}}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadiusLG, AnchorControlType={x:Type atom:FloatButtonItemsControl}}" />
         </Style>
         <Style Selector="^ /template/ atomc|FloatButtonSeparatorLayer">
-            <Setter Property="SeparatorBrush" Value="{atom:SharedTokenResource ColorSplit}" />
+            <Setter Property="SeparatorBrush" Value="{atom:OwnerTokenResource Kind=ColorSplit, AnchorControlType={x:Type atom:FloatButtonItemsControl}}" />
         </Style>
         
         <Style Selector="^[Shape=Circle]">
             <Style Selector="^ /template/ StackPanel#PART_ItemsLayout">
-                <Setter Property="Spacing" Value="{atom:SharedTokenResource Spacing}" />
+                <Setter Property="Spacing" Value="{atom:OwnerTokenResource Kind=Spacing, AnchorControlType={x:Type atom:FloatButtonItemsControl}}" />
             </Style>
             <Style Selector="^ /template/ atomc|FloatButtonSeparatorLayer">
                 <Setter Property="IsVisible" Value="False" />
@@ -68,25 +70,25 @@
             <Style Selector="^[MenuPlacement=Top]">
                 <Style Selector="^ /template/ Control#EmptyControl">
                     <Setter Property="DockPanel.Dock" Value="Bottom" />
-                    <Setter Property="Height" Value="{atom:SharedTokenResource Spacing}" />
+                    <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=Spacing, AnchorControlType={x:Type atom:FloatButtonItemsControl}}" />
                 </Style>
             </Style>
             <Style Selector="^[MenuPlacement=Bottom]">
                 <Style Selector="^ /template/ Control#EmptyControl">
                     <Setter Property="DockPanel.Dock" Value="Top" />
-                    <Setter Property="Height" Value="{atom:SharedTokenResource Spacing}" />
+                    <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=Spacing, AnchorControlType={x:Type atom:FloatButtonItemsControl}}" />
                 </Style>
             </Style>
             <Style Selector="^[MenuPlacement=Left]">
                 <Style Selector="^ /template/ Control#EmptyControl">
                     <Setter Property="DockPanel.Dock" Value="Right" />
-                    <Setter Property="Width" Value="{atom:SharedTokenResource Spacing}" />
+                    <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=Spacing, AnchorControlType={x:Type atom:FloatButtonItemsControl}}" />
                 </Style>
             </Style>
             <Style Selector="^[MenuPlacement=Right]">
                 <Style Selector="^ /template/ Control#EmptyControl">
                     <Setter Property="DockPanel.Dock" Value="Left" />
-                    <Setter Property="Width" Value="{atom:SharedTokenResource Spacing}" />
+                    <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=Spacing, AnchorControlType={x:Type atom:FloatButtonItemsControl}}" />
                 </Style>
             </Style>
         </Style>

@@ -1,5 +1,7 @@
 ﻿using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
+using AtomUI.Data;
+using AtomUI.Theme.Resources;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -11,12 +13,34 @@ namespace AtomUI.Desktop.Controls;
 
 public class FlyoutPresenter : ArrowDecoratedBox
 {
+    private IDisposable? _ownerBackgroundBinding;
     // 我们在这里并没有增加任何元素或者样式
     protected override Type StyleKeyOverride => typeof(ArrowDecoratedBox);
 
     public FlyoutPresenter()
     {
         SetValue(CursorProperty, new Cursor(StandardCursorType.Arrow), BindingPriority.Template);
+    }
+
+    protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _ownerBackgroundBinding?.Dispose();
+        // Runtime content outside the host ControlTemplate retains its existing
+        // Arrow StyleKey. A host template setter cannot reach this target; keep
+        // Style priority so native instance and semantic styles still win.
+        var owner = this.FindLogicalAncestorOfType<FlyoutHost>();
+        _ownerBackgroundBinding = owner != null
+            ? TokenResourceBinder.CreateControlTokenBinding(
+                owner, this, BackgroundProperty, SharedTokenKind.ColorBgElevated, BindingPriority.Style)
+            : null;
+    }
+
+    protected override void OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        _ownerBackgroundBinding?.Dispose();
+        _ownerBackgroundBinding = null;
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

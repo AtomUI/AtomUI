@@ -16,6 +16,9 @@
     <Project Path="src/AtomUI.Toolkits.GalleryBase/AtomUI.Toolkits.GalleryBase.csproj" />
     <Project Path="src/AtomUI.Toolkits.GalleryBase.Generator/AtomUI.Toolkits.GalleryBase.Generator.csproj" />
   </Folder>
+  <Folder Name="/Compatibility/">
+    <Project Path="compat/Avalonia.Skia/AtomUI.Compatibility.Avalonia.Skia.csproj" />
+  </Folder>
   <Folder Name="/Localization/">
     <Project Path="src/AtomUI.LanguagePack.Template/AtomUI.LanguagePack.Template.csproj" />
     <Project Path="src/AtomUI.Localization/AtomUI.Localization.csproj" />

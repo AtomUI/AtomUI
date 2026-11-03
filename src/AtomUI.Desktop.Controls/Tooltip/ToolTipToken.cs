@@ -4,15 +4,10 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class ToolTipToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class ToolTipToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
-    public ToolTipToken()
-
-    {
-    }
-
     /// <summary>
     /// tooltip 的最大宽度，超过了就换行
     /// </summary>
@@ -39,20 +34,29 @@ internal sealed class ToolTipToken : AbstractControlDesignToken
     public Thickness ContentPadding { get; set; }
     
     /// <summary>
-    /// 动画时长
+    /// 历史保留资源；实际动效消费 Global.MotionDurationMid，不作为独立视觉入口。
     /// </summary>
     public TimeSpan MotionDuration { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
+    [ControlTokenDefault(nameof(ToolTipMaxWidth))]
+    private static double DefaultForToolTipMaxWidth(in ControlTokenDefaultContext context) => 250d;
 
-        ToolTipMaxWidth   = 250;
-        ToolTipColor      = EffectiveGlobalToken.ColorTextLightSolid;
-        ToolTipBackground = EffectiveGlobalToken.ColorBgSpotlight;
-        ToolTipCornerRadius = new CornerRadius(4);
-        ContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, EffectiveGlobalToken.UniformlyPaddingSM / 2 + 2);
-        MotionDuration = EffectiveGlobalToken.MotionDurationMid;
-    }
-    
+    [ControlTokenDefault(nameof(ToolTipColor))]
+    private static Color DefaultForToolTipColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextLightSolid;
+
+    [ControlTokenDefault(nameof(ToolTipBackground))]
+    private static Color DefaultForToolTipBackground(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgSpotlight;
+
+    [ControlTokenDefault(nameof(ToolTipCornerRadius))]
+    private static CornerRadius DefaultForToolTipCornerRadius(in ControlTokenDefaultContext context) => new(4);
+
+    [ControlTokenDefault(nameof(ContentPadding))]
+    private static Thickness DefaultForContentPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingSM, context.Global.UniformlyPaddingSM / 2 + 2);
+
+    [ControlTokenDefault(nameof(MotionDuration))]
+    private static TimeSpan DefaultForMotionDuration(in ControlTokenDefaultContext context) =>
+        context.Global.MotionDurationMid;
 }

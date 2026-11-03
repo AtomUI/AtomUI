@@ -3,6 +3,18 @@
 本文档记录 Descriptions 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-01
+
+- Theme
+  - Migrate Own10 to V2 revision 1 with all40 four-algorithm defaults, keys, types and slots preserved.
+  - Connect Global typography and Shared roles to the actual public Descriptions scope without adding identities for model/internal helpers.
+- Fix
+  - Retire generated-cell projections and old native-content presenters before structural replacement, preserving the original content object and input state.
+  - Restore weak native focus after layout/template/collection rebuilds without overriding a later user focus; replay current detached model updates before layout on reattach.
+  - Keep existing attached Move/Replace rejection and ItemsSource materialization/null contracts.
+- Validation
+  - Verify all five dedicated Semantic Part Styles and the unchanged role/size boundaries. Visual/platform/family exit conclusions remain limited to the CT15 evidence ledger.
+
 ## 2026-08-13
 
 - Semantic Part

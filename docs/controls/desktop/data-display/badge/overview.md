@@ -199,3 +199,10 @@ Gallery 预览基础设施和多 owner 内容根的通用生命周期见
 | Gallery | Semantic Parts Tab 保持延迟创建；三个 owner 使用独立 Preview；Count/Dot 只注册各自具体 runtime Adorner，Ribbon 不使用 additional root。 |
 | Ribbon 渲染 | 使用 Skia/headless 像素回归验证 Start/End、target/standalone、不同文本长度和颜色下的折角三角区、主体区和背景区。 |
 | 性能与 AOT | 验证默认主题不消费 semantic class、无反射/动态代码，并按 overlay 风险执行 NativeAOT 发布检查。 |
+
+
+## 10. CT15 当前限定边界
+
+20 Own迁V2R1保持80默认，Count两圆角默认跟随有效Own高度；三个public owner的字体Global、内部Adorner真实owner Global、原生附加字体优先与专用Style匹配验证。Count/Dot standalone保留visual Panel而logical/style owner直接为Badge，target mode仍为AdornerLayer，不增加template或公开内部类型。
+
+计数/状态/目标内容/原裁剪、Ribbon折角语义和原输入合同保持。完整CT15出口、Count composition退出和Skia/AOT非零仍以[实际执行记录](../../../../superpowers/plans/2026-10-22-custom-theme/badge-consumers.md)为准；当前无完整Badge或CT15完成结论。

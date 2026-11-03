@@ -308,3 +308,10 @@ Semantic marker 不改变 focus、hit testing、automation owner、可访问名�
 - 默认主题不消费 `.semantic-*`，Control 包不扫描 VisualTree 或查询 runtime registry。
 - Gallery 只把当前 owner 对应的具体 runtime Adorner作为 additional root，不把共享 `AdornerLayer` 整体加入 Preview。
 - Generator 静态输出和 NativeAOT 路径不依赖反射或动态代码。
+
+
+## 9. CT15 实际命中修复
+
+四个生成专用Style均以临时AXAML声明，覆盖Count/Dot standalone与target、Ribbon inline两模式；观测只读，不以代码设置Part属性。standalone辅助Panel曾成为Adorner logical parent，使已发布direct-child route失配（Count Width53实际NaN）；修复为public Badge direct logical/style membership，保留Panel visual attach级联和原route/ContractType。字体改造未新增Part，Dot说明文本仍不公开。
+
+临时布局Setter Count53×31/Margin5、Dot19×19/Margin3、Ribbon Margin7/Opacity.75与content Font23/Orange/Padding13均匹配通过；这不等于完整视觉/平台或Count资源退出通过，见[CT15记录](../../../../superpowers/plans/2026-10-22-custom-theme/badge-consumers.md)。

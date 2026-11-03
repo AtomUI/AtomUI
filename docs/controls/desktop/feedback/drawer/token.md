@@ -1,5 +1,7 @@
 # Drawer Token 设计
 
+CT15（2026-11-01）：13字段采用DependencyDefaultsV2/revision1，四算法52默认/type/key/slot逐字保持；四shadow常量、378/520/736、Margin/Padding及Push0.4原公式不变。十三Own已进入四方向、布局、三档/Custom fallback/Native257/百分比400及嵌套push真实目标。Custom继续Small fallback，明确Native DialogSize优先；不增加Custom token。可选字体无默认12→14漂移，不另发明正文颜色角色。完整视觉/清理与限定批准仍待，见[结果](../../../../superpowers/plans/2026-10-22-custom-theme/drawer-consumers-results.md)。
+
 本文档定义 Drawer 相关控件 Token 的专属语义、分类、使用范围和兼容边界。控件 Token 的通用分层、命名、计算、Theme Variables 边界和预设色规则见 [AtomUI 控件 Token 设计规范](../../../../engineering/development/control-token-guidelines.md)。Drawer 整体架构见 [Drawer 桌面版架构设计](overview.md)，内部实现原理见 [Drawer 桌面版实现原理](implementation.md)，设计和契约变化记录见 [Drawer Changelog](changelog.md)。
 
 ## 1. 定位
@@ -56,3 +58,6 @@ Drawer 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+
+CT15最新限定验收：有效managed/AOT各116检查/196帧，164静态跨运行全0、各68主恢复0；35临时/1518取证/550原会话和4最终文件已清理，最终38精确模块及NET8零警告零错误通过。仅20对明确静态待用户限定批准，定时/平台/GC/极值与完整家族仍保留，详见[限定视觉表](../../../../superpowers/plans/2026-10-22-custom-theme/drawer-consumers-visual-review.md)。

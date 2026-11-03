@@ -14,10 +14,10 @@
             <Setter Property="VerticalAlignment" Value="Stretch" />
             <Setter Property="IconWidth" Value="{atom:CardTokenResource CardActionsIconSize}" />
             <Setter Property="IconHeight" Value="{atom:CardTokenResource CardActionsIconSize}" />
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorIcon}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorIcon, SourceControlType={x:Type atom:CardActionButton}}" />
 
             <Style Selector="^:pointerover">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorPrimary, SourceControlType={x:Type atom:CardActionButton}}" />
             </Style>
         </Style>
 

@@ -5,6 +5,7 @@ using AtomUI.Controls.Primitives;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -18,7 +19,8 @@ namespace AtomUI.Desktop.Controls;
 public partial class Drawer : Control,
                              IMotionAwareControl,
                              ICustomizableSizeTypeAware,
-                             ISemanticPartCrossRootProvider
+                             ISemanticPartCrossRootProvider,
+                             IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -31,19 +33,19 @@ public partial class Drawer : Control,
     public static readonly StyledProperty<Thickness> ContentPaddingProperty =
         AvaloniaProperty.Register<Drawer, Thickness>(nameof(ContentPadding));
 
-    public static readonly StyledProperty<bool> IsOpenProperty = 
+    public static readonly StyledProperty<bool> IsOpenProperty =
         AvaloniaProperty.Register<Drawer, bool>(nameof(IsOpen), false, false, BindingMode.TwoWay);
 
-    public static readonly StyledProperty<DrawerPlacement> PlacementProperty = 
+    public static readonly StyledProperty<DrawerPlacement> PlacementProperty =
         AvaloniaProperty.Register<Drawer, DrawerPlacement>(nameof(Placement), DrawerPlacement.Right);
 
     public static readonly StyledProperty<Control?> OpenOnProperty =
         AvaloniaProperty.Register<Drawer, Control?>(nameof(OpenOn));
 
-    public static readonly StyledProperty<bool> IsShowMaskProperty = 
+    public static readonly StyledProperty<bool> IsShowMaskProperty =
         AvaloniaProperty.Register<Drawer, bool>(nameof(IsShowMask), true);
 
-    public static readonly StyledProperty<bool> IsShowCloseButtonProperty = 
+    public static readonly StyledProperty<bool> IsShowCloseButtonProperty =
         AvaloniaProperty.Register<Drawer, bool>(nameof(IsShowCloseButton), true);
 
     public static readonly StyledProperty<bool> IsCloseOnMaskClickProperty =
@@ -52,7 +54,7 @@ public partial class Drawer : Control,
     public static readonly StyledProperty<bool> IsPinnedOpenProperty =
         AvaloniaProperty.Register<Drawer, bool>(nameof(IsPinnedOpen));
 
-    public static readonly StyledProperty<string> TitleProperty = 
+    public static readonly StyledProperty<string> TitleProperty =
         AvaloniaProperty.Register<Drawer, string>(nameof(Title));
 
     public static readonly StyledProperty<object?> FooterProperty =
@@ -78,7 +80,7 @@ public partial class Drawer : Control,
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Drawer>();
-    
+
     [Content]
     [DependsOn(nameof(ContentTemplate))]
     public object? Content
@@ -206,38 +208,20 @@ public partial class Drawer : Control,
     #region 公共事件定义
 
     public event EventHandler? Opened;
+
     public event EventHandler? Closed;
 
-    #endregion
-
-    #region ISemanticPartCrossRootProvider 实现
-
     public event EventHandler? CrossRootsChanged;
-
-    public IReadOnlyList<Visual> GetCrossRoots()
-    {
-        if (_container is not null && _container.GetVisualParent() is not null)
-        {
-            return [_container];
-        }
-
-        return Array.Empty<Visual>();
-    }
-
-    private void RaiseCrossRootsChanged()
-    {
-        CrossRootsChanged?.Invoke(this, EventArgs.Empty);
-    }
 
     #endregion
 
     #region 内部属性定义
-    
+
     internal static readonly DirectProperty<Drawer, double> EffectiveDialogSizeProperty =
         AvaloniaProperty.RegisterDirect<Drawer, double>(nameof(EffectiveDialogSize),
             o => o.EffectiveDialogSize,
             (o, v) => o.EffectiveDialogSize = v);
-    
+
     private double _effectiveDialogSize;
 
     internal double EffectiveDialogSize
@@ -248,17 +232,75 @@ public partial class Drawer : Control,
 
     #endregion
 
+    #region 内部协作 API
+
+    internal void AttachContainerToLogicalTree(DrawerContainer container)
+    {
+        if (!LogicalChildren.Contains(container))
+        {
+            LogicalChildren.Add(container);
+        }
+    }
+
+    internal void DetachContainerFromLogicalTree(DrawerContainer container)
+    {
+        LogicalChildren.Remove(container);
+    }
+
+    internal void NotifyChildDrawerAboutToOpen(Drawer childDrawer)
+    {
+        _container?.NotifyChildDrawerAboutToOpen(childDrawer);
+    }
+
+    internal void NotifyChildDrawerAboutToClose(Drawer childDrawer)
+    {
+        _container?.NotifyChildDrawerAboutToClose(childDrawer);
+    }
+
+    internal void NotifyChildDrawerPlacementChanged(Drawer childDrawer)
+    {
+        _container?.NotifyChildDrawerPlacementChanged(childDrawer);
+    }
+
+    #endregion
+
+    #region 运行时字段
+
     private DrawerContainer? _container;
+
     private CompositeDisposable? _relayBindingDisposables;
+
     private IDisposable? _motionBinding;
+
     private IDisposable? _pushOffsetBinding;
+
     private IDisposable? _dialogSizeBinding;
+
     private Control? _openOnSizeChangedTarget;
+
     private int _visualTreeVersion;
-    
+
+    #endregion
+
+    #region 构造与初始化
+
     static Drawer()
     {
         SizeTypeProperty.OverrideDefaultValue<Drawer>(CustomizableSizeType.Small);
+    }
+
+    #endregion
+
+    #region 公共与受保护 API
+
+    public IReadOnlyList<Visual> GetCrossRoots()
+    {
+        if (_container is not null && _container.GetVisualParent() is not null)
+        {
+            return [_container];
+        }
+
+        return Array.Empty<Visual>();
     }
 
     public static Drawer? GetDrawer(Visual element)
@@ -275,6 +317,9 @@ public partial class Drawer : Control,
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        // These root bindings have Template priority. A ControlTheme root setter has
+        // Style priority and would let static caller styles replace the existing defaults;
+        // retain the current precedence and attach/detach ownership for this non-template owner.
         _motionBinding?.Dispose();
         _motionBinding = this.ConfigureMotionBindingStyle();
         _pushOffsetBinding?.Dispose();
@@ -332,31 +377,6 @@ public partial class Drawer : Control,
         });
     }
 
-    private Drawer? FindParentDrawer()
-    {
-        Drawer? target  = null;
-        var     current = Parent;
-        while (current != null && current.GetType() != typeof(ScopeAwareAdornerLayer))
-        {
-            if (current is DrawerContainer container)
-            {
-                if (container.Drawer != null && container.Drawer.TryGetTarget(out var drawer))
-                {
-                    target = drawer;
-                }
-            }
-
-            if (target != null)
-            {
-                break;
-            }
-
-            current = current.Parent;
-        }
-
-        return target;
-    }
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -385,7 +405,7 @@ public partial class Drawer : Control,
         {
             ApplyDialogSizeTokenBinding();
         }
-        
+
         if (change.Property == OpenOnProperty)
         {
             var newOpenOn = change.NewValue as Control;
@@ -397,6 +417,97 @@ public partial class Drawer : Control,
                     ScopeAwareAdornerLayer.GetLayer(newOpenOn ?? this));
             }
         }
+    }
+
+    protected internal virtual void NotifyBeforeOpen(ScopeAwareAdornerLayer layer)
+    {
+        Drawer? firstParentDrawer = null;
+        var current = Parent;
+        while (current != null && current.GetType() != typeof(ScopeAwareAdornerLayer))
+        {
+            if (current is DrawerContainer container)
+            {
+                if (container.Drawer != null && container.Drawer.TryGetTarget(out var drawer))
+                {
+                    if (firstParentDrawer == null)
+                    {
+                        firstParentDrawer = drawer;
+                        DataContext       =  firstParentDrawer.DataContext;
+                    }
+                    drawer.NotifyChildDrawerAboutToOpen(this);
+                }
+            }
+
+            current = current.Parent;
+        }
+    }
+
+    protected virtual void NotifyBeforeClose(ScopeAwareAdornerLayer layer)
+    {
+        var current = Parent;
+        while (current != null && current.GetType() != typeof(ScopeAwareAdornerLayer))
+        {
+            if (current is DrawerContainer container)
+            {
+                if (container.Drawer != null && container.Drawer.TryGetTarget(out var drawer))
+                {
+                    drawer.NotifyChildDrawerAboutToClose(this);
+                }
+            }
+
+            current = current.Parent;
+        }
+    }
+
+    protected internal virtual void NotifyOpened()
+    {
+        Opened?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected internal virtual void NotifyClosed()
+    {
+        Closed?.Invoke(this, EventArgs.Empty);
+        RaiseCrossRootsChanged();
+    }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 私有实现
+
+    private void RaiseCrossRootsChanged()
+    {
+        CrossRootsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private Drawer? FindParentDrawer()
+    {
+        Drawer? target  = null;
+        var     current = Parent;
+        while (current != null && current.GetType() != typeof(ScopeAwareAdornerLayer))
+        {
+            if (current is DrawerContainer container)
+            {
+                if (container.Drawer != null && container.Drawer.TryGetTarget(out var drawer))
+                {
+                    target = drawer;
+                }
+            }
+
+            if (target != null)
+            {
+                break;
+            }
+
+            current = current.Parent;
+        }
+
+        return target;
     }
 
     private void HandleOpenOnSizeChanged(object? sender, SizeChangedEventArgs e)
@@ -481,7 +592,7 @@ public partial class Drawer : Control,
 
     private void ConfigureOpenOnSizeChangedSubscription()
     {
-        if (!IsOpen || !DialogSize.IsPercentage || OpenOn is null)
+        if (!this.IsAttachedToVisualTree() || !IsOpen || !DialogSize.IsPercentage || OpenOn is null)
         {
             DetachOpenOnSizeChanged();
             return;
@@ -508,61 +619,6 @@ public partial class Drawer : Control,
         _openOnSizeChangedTarget = null;
     }
 
-    protected internal virtual void NotifyBeforeOpen(ScopeAwareAdornerLayer layer)
-    {
-        Drawer? firstParentDrawer = null;
-        var current = Parent;
-        while (current != null && current.GetType() != typeof(ScopeAwareAdornerLayer))
-        {
-            if (current is DrawerContainer container)
-            {
-                if (container.Drawer != null && container.Drawer.TryGetTarget(out var drawer))
-                {
-                    if (firstParentDrawer == null)
-                    {
-                        firstParentDrawer = drawer;
-                        DataContext       =  firstParentDrawer.DataContext;
-                    }
-                    drawer.NotifyChildDrawerAboutToOpen(this);
-                }
-            }
-
-            current = current.Parent;
-        }
-    }
-
-    internal void NotifyChildDrawerAboutToOpen(Drawer childDrawer)
-    {
-        _container?.NotifyChildDrawerAboutToOpen(childDrawer);
-    }
-
-    internal void NotifyChildDrawerAboutToClose(Drawer childDrawer)
-    {
-        _container?.NotifyChildDrawerAboutToClose(childDrawer);
-    }
-
-    internal void NotifyChildDrawerPlacementChanged(Drawer childDrawer)
-    {
-        _container?.NotifyChildDrawerPlacementChanged(childDrawer);
-    }
-
-    protected virtual void NotifyBeforeClose(ScopeAwareAdornerLayer layer)
-    {
-        var current = Parent;
-        while (current != null && current.GetType() != typeof(ScopeAwareAdornerLayer))
-        {
-            if (current is DrawerContainer container)
-            {
-                if (container.Drawer != null && container.Drawer.TryGetTarget(out var drawer))
-                {
-                    drawer.NotifyChildDrawerAboutToClose(this);
-                }
-            }
-
-            current = current.Parent;
-        }
-    }
-
     private void NotifyParentDrawersChildPlacementChanged()
     {
         var current = Parent;
@@ -580,19 +636,11 @@ public partial class Drawer : Control,
         }
     }
 
-    protected internal virtual void NotifyOpened()
-    {
-        Opened?.Invoke(this, EventArgs.Empty);
-    }
-
-    protected internal virtual void NotifyClosed()
-    {
-        Closed?.Invoke(this, EventArgs.Empty);
-        RaiseCrossRootsChanged();
-    }
-    
     private void ApplyDialogSizeTokenBinding()
     {
+        // Size selectors in ControlTheme would use Style/StyleTrigger priority rather
+        // than this Template-priority default, changing caller style precedence and
+        // the existing Custom fallback. Keep the typed, lifetime-owned default binding.
         _dialogSizeBinding?.Dispose();
         _dialogSizeBinding = null;
         if (!this.IsAttachedToVisualTree())
@@ -632,4 +680,6 @@ public partial class Drawer : Control,
             }
         }
     }
+
+    #endregion
 }

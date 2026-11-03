@@ -50,7 +50,7 @@ Avatar 使用有限面积内的强识别内容表达主体身份。图片是首�
 | `SizeType: CustomizableSizeType` | `Middle` | Small、Middle、Large 或 Custom 尺寸语义 |
 | `Size: double` | `NaN` | 显式尺寸；非 `NaN` 时进入 Custom，恢复 `NaN` 时恢复原 SizeType |
 | `Shape: AvatarShape` | `Circle` | Circle 或 Square |
-| `IsMotionEnabled: bool` | SharedToken | 控制主题动效，不改变加载状态机 |
+| `IsMotionEnabled: bool` | owner Global | 控制主题动效，不改变加载状态机 |
 
 只读加载状态：
 
@@ -183,3 +183,13 @@ Avatar 只观察统一 loader 的最终结果：默认 `Compatible` 下含重复
 验证分为 public API 反射契约、加载状态与生命周期测试、Theme/Template 结构、Gallery 示例、Browser 实机加载和
 Desktop/Browser NativeAOT publish。SVG 回归同时覆盖默认 `Compatible` 加载含重复 id 的本地资源，以及 `Strict` 下的
 `InvalidImageData` 和既有 fallback 语义；两种模式都必须继续拒绝不安全或超预算内容。
+
+
+## 10. CT15 定制边界
+
+Avatar 的明确 control Global FontFamily/FontSize 覆盖原继承，原生 Font 属性继续优先；未明确配置时维持原文字尺寸。Square 圆角读取当前 Avatar 的 Global；Circle 随实际宽度更新。Custom 状态下连续修改 Size 仍需更新 box、Icon 和图片裁剪；NaN 恢复原尺寸档。
+
+AvatarGroup 复用 Avatar 的11个 Own，边框厚度则读取 AvatarGroup 自己的 Global。移除成员和 detach 会退役该 membership 的投射绑定，保留已移除的 child 不应保留旧 Group；再加入时建立当前投射。该变化不扩展公开 Semantic Part API，也不改变图片租约、完整 Text、Gap/Viewbox、fold 和弹层合同。限定工程及视觉边界以 [CT15 记录](../../../../superpowers/plans/2026-10-22-custom-theme/avatar-consumers.md)为准，不能代表完整CT15验收。
+
+
+CT15当前仅[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/avatar-consumers-visual-review.md)48对有意变化已获批准，其他关闭/往返微差及完整Avatar/CT15保留，不授权提交。

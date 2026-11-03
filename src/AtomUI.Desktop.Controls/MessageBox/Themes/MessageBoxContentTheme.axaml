@@ -7,7 +7,7 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:MessageBoxContent">
                 <DockPanel LastChildFill="True"
-                           HorizontalSpacing="{atom:SharedTokenResource SpacingSM}">
+                           HorizontalSpacing="{atom:OwnerTokenResource SpacingSM, AnchorControlType={x:Type atom:DialogSurface}, Priority=Template}">
                     <atom:IconPresenter Name="StyleIconPresenter"
                                         Icon="{TemplateBinding StyleIcon}"
                                         VerticalAlignment="Top"
@@ -28,31 +28,31 @@
 
         <Style Selector="^[Style=Confirm]">
             <Style Selector="^ /template/ atom|IconPresenter#StyleIconPresenter">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorWarning}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorWarning, AnchorControlType={x:Type atom:DialogSurface}}" />
             </Style>
         </Style>
 
         <Style Selector="^[Style=Information]">
             <Style Selector="^ /template/ atom|IconPresenter#StyleIconPresenter">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorInfo}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorInfo, AnchorControlType={x:Type atom:DialogSurface}}" />
             </Style>
         </Style>
 
         <Style Selector="^[Style=Success]">
             <Style Selector="^ /template/ atom|IconPresenter#StyleIconPresenter">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorSuccess, AnchorControlType={x:Type atom:DialogSurface}}" />
             </Style>
         </Style>
 
         <Style Selector="^[Style=Error]">
             <Style Selector="^ /template/ atom|IconPresenter#StyleIconPresenter">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorError, AnchorControlType={x:Type atom:DialogSurface}}" />
             </Style>
         </Style>
 
         <Style Selector="^[Style=Warning]">
             <Style Selector="^ /template/ atom|IconPresenter#StyleIconPresenter">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorWarning}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorWarning, AnchorControlType={x:Type atom:DialogSurface}}" />
             </Style>
         </Style>
     </ControlTheme>

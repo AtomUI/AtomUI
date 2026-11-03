@@ -26,7 +26,7 @@
 
         <Setter Property="Height" Value="{atom:CarouselTokenResource IndicatorHeight}" />
         <Setter Property="Width" Value="{atom:CarouselTokenResource IndicatorWidth}" />
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type atom:CarouselPageIndicator}}" />
         <Setter Property="Cursor" Value="Hand" />
 
         <Setter Property="FrameOpacity" Value="0.2" />

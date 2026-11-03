@@ -501,7 +501,7 @@ DecodeSpec 保存解码结果。多个来源只有在同一 CachePartition 中�
   打开期间存在，关闭后不残留任何 marker 节点；内置主题不使用 `.semantic-*` selector 实现默认视觉；`.semantic-scope-*`
   路由锚点不是公开 Part，不进入兼容承诺；native dialog 的窗口 chrome（标题栏、caption 按钮、窗口边框）不属于任何 Part；
   宿主必须保持挂入 owner 的 logical parent 链，popup 部件的生成 Selector 依赖该链命中 overlay 宿主（与 owner 同 TopLevel）；
-  native dialog 是独立 TopLevel，owner 作用域样式不跨窗口级联，预览视觉经 host 契约定制。
+  native dialog 虽为独立 TopLevel，仍通过已生根 owner 的 StyleHost 链命中专用 Style。
 - 宿主分层与上游 DOM 对齐：overlay 宿主模板根 Panel 只承担 `popup.root` 容器职责、不带背景，遮罩背景必须由独立的
   `popup.mask` 子元素承担；`popup.mask` 仅 Overlay 宿主存在（`Optional`），native dialog 不物化该部件。
 - 遮罩点击关闭（上游 `maskClosable=true` 默认）当前未在 overlay 宿主实现，关闭经 overlay 宿主内嵌关闭按钮（非语义部件）；Part 契约只承诺样式命中，
@@ -590,7 +590,6 @@ fallback 或 `ImageFailed`。
 - 显示与主题：两种 ImageSwitchMode 的显示矩阵、基础适配尺寸、统一变换状态、鼠标中心缩放、拖拽 rebound、稳定 Template Part、伪类、loading/error 门控、标题、Light/Dark 和宿主一致性。
 - 发布：Gallery public API 示例、Shared/Desktop targeted tests、Browser managed publish、Desktop NativeAOT publish 与启动 smoke。
 - Semantic Part：两个 owner 的 descriptor 断言（名称、Selector、SelectorRoute、ContractType、Cardinality 与 cross-root/runtime
-  标志）、全部内置主题的 marker 完整性、生成 Semantic Style 在 overlay 宿主的命中（native dialog 内 marker 完整但 owner
-  作用域样式不跨 TopLevel 级联）、open-close-reopen 生命周期、多 owner 实例隔离、Gallery 语义预览（`root`/`image`/`cover`
+  标志）、全部内置主题的 marker 完整性、生成 Semantic Style 在 overlay 宿主的命中（native dialog 同样沿已生根 owner 的 StyleHost 链命中）、open-close-reopen 生命周期、多 owner 实例隔离、Gallery 语义预览（`root`/`image`/`cover`
   高亮，`popup.*` 仅列出描述）和 NativeAOT publish。
 - Gallery API 与 ShowCase 只能使用 `ItemsSource` 和 `ImagePreviewItem`。

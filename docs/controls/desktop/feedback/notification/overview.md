@@ -83,6 +83,10 @@ Public API / inherited command / item source / user input
 - 模板重套用时必须把 public API 对应状态回放到新的 part、伪类和主题变量。
 - 集合、弹层、异步、动效或窗口相关状态必须能处理 reset、close、cancel、detach 和 owner 释放。
 
+### 主题入口
+
+17 Own均有实际消费者，按有效Global计算并保留原默认/资源协议；Card/manager和嵌套primitive的owner明确。正文原字号/前景角色默认归Card root，使原生字号/前景可达实际内容；标题保留自身角色，FontFamily采用真实原生继承与明确Global。root有效值归位与实际默认画面分别核对。Native尺寸、专用八Part及manager listContent定制沿原入口，详见[token](token.md)与[Semantic Part](semantic-part.md)。
+
 ## 5. 视觉与主题模型
 
 Notification 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
@@ -146,6 +150,9 @@ Notification 与同分类控件共享尺寸、状态、Token、Gallery 展示和
 ### 8.1 进度与当前时长模型
 
 `NotificationProgressBar.CurrentExpiration` 是 scheduler 剩余时间经 NotificationCard 对进度模板的单向投影，只为可见进度提供状态。模板不能通过修改该值反向重排 scheduler deadline；隐藏、关闭、禁用进度、重套模板或 detach 时必须停止进度刷新。
+
+
+有限显示的总时长由Card持有，换模板、临时关闭进度或重挂只重建视觉Part，不能把当前remaining当成新总量而令进度回满。Expiration=null结束有限进度周期，下一有限值建立新总量。动态启停进度通知同一个manager scheduler.Refresh调整需求，不新增计时器；模型时长快照与剩余投影保持各自职责。
 
 ### 8.2 集合与数据同步模型
 

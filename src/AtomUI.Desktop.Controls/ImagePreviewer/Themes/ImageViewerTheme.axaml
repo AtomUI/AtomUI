@@ -44,7 +44,7 @@
                             <StackPanel Name="DefaultErrorLayout"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Spacing="{atom:SharedTokenResource SpacingXXS}"
+                                        Spacing="{atom:OwnerTokenResource Kind=SpacingXXS, AnchorControlType={x:Type atom:ImageViewer}}"
                                         IsVisible="{TemplateBinding ErrorContent, Converter={x:Static ObjectConverters.IsNull}}">
                                 <antdicons:PictureOutlined Name="DefaultErrorIcon"
                                                           HorizontalAlignment="Center" />
@@ -88,13 +88,13 @@
         </Setter>
 
         <Style Selector="^ /template/ atom|ImagePreviewNavButton">
-            <Setter Property="Margin" Value="{atom:SharedTokenResource MarginSM}" />
+            <Setter Property="Margin" Value="{atom:OwnerTokenResource Kind=MarginSM, AnchorControlType={x:Type atom:ImageViewer}}" />
         </Style>
         <Style Selector="^ /template/ atom|ImagePreviewRenderer#PART_ImageRenderer">
             <Setter Property="Cursor" Value="DragMove" />
         </Style>
         <Style Selector="^ /template/ TextBlock#DefaultErrorText">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextTertiary}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextTertiary, AnchorControlType={x:Type atom:ImageViewer}}" />
         </Style>
         <Style Selector="^:loading:not(:has-image) /template/ Border#PART_LoadingPresenter">
             <Setter Property="IsVisible" Value="True" />
@@ -102,7 +102,7 @@
         <Style Selector="^ /template/ atom|Icon#DefaultErrorIcon">
             <Setter Property="Width" Value="48" />
             <Setter Property="Height" Value="48" />
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorTextTertiary}" />
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource Kind=ColorTextTertiary, AnchorControlType={x:Type atom:ImageViewer}}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True][SuppressTransformAnimation=False]">

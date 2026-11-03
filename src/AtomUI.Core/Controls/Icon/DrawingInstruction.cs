@@ -28,27 +28,21 @@ public abstract class DrawingInstruction
             fillBrush = icon.FindIconBrush(FillBrush.Value);
         }
 
-        var        pen             = BuildPen(icon);
-        Transform? originTransform = null;
-        try
+        var pen = BuildPen(icon);
+        // Generated icons share instruction paths. A retained compositor draw must
+        // own its transform without publishing edits on the shared source geometry.
+        var geometry = _geometry.Clone();
+        if (Transform != null)
         {
-            originTransform = _geometry.Transform;
-            if (Transform != null)
-            {
-                _geometry.Transform = new MatrixTransform(Transform.Value * globalGeometryMatrix);
-            }
-            else
-            {
-                _geometry.Transform = new MatrixTransform(globalGeometryMatrix);
-            }
+            geometry.Transform = new MatrixTransform(Transform.Value * globalGeometryMatrix);
+        }
+        else
+        {
+            geometry.Transform = new MatrixTransform(globalGeometryMatrix);
+        }
 
-            using var opacityState = drawingContext.PushOpacity(Opacity);
-            drawingContext.DrawGeometry(fillBrush, pen, _geometry);
-        }
-        finally
-        {
-            _geometry.Transform = originTransform;
-        }
+        using var opacityState = drawingContext.PushOpacity(Opacity);
+        drawingContext.DrawGeometry(fillBrush, pen, geometry);
     }
     
     protected abstract Geometry BuildGeometry();

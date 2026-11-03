@@ -4,6 +4,27 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:CardGridItem}" TargetType="atom:CardGridItem">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:OwnerTokenResource Kind="ColorText" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="ColorText" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="Frame" Padding="{TemplateBinding Padding}"
@@ -23,21 +44,15 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="BoxShadow" Value="{atom:CardTokenResource CardGridItemShadows}" />
         <Style Selector="^[SizeType=Large]">
-            <Style Selector="^ /template/ Border#Frame">
-                <Setter Property="Padding" Value="{atom:CardTokenResource BodyPaddingLG}" />
-            </Style>
+            <Setter Property="Padding" Value="{atom:CardTokenResource BodyPaddingLG}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Style Selector="^ /template/ Border#Frame">
-                <Setter Property="Padding" Value="{atom:CardTokenResource BodyPadding}" />
-            </Style>
+            <Setter Property="Padding" Value="{atom:CardTokenResource BodyPadding}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Style Selector="^ /template/ Border#Frame">
-                <Setter Property="Padding" Value="{atom:CardTokenResource BodyPaddingSM}" />
-            </Style>
+            <Setter Property="Padding" Value="{atom:CardTokenResource BodyPaddingSM}" />
         </Style>
 
         <Style Selector="^[IsHoverable=True]">

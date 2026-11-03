@@ -1,10 +1,11 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-public partial class CardMetaContent : HeaderedContentControl
+public partial class CardMetaContent : HeaderedContentControl, IThemeInheritanceSource
 {
     #region 公共属性定义
     
@@ -18,4 +19,12 @@ public partial class CardMetaContent : HeaderedContentControl
     }
     
     #endregion
+    #region 实现 IThemeInheritanceSource 接口
+
+    // ControlTheme cannot read the protected inheritance parent; its Setters own
+    // optional typography while this bridge exposes the actual native source.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
 }

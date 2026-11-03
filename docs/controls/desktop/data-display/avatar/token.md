@@ -29,7 +29,7 @@ Avatar 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
-- Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
+- Token 默认值通过 DependencyDefaultsV2/revision1 从 owner Global 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
 ## 4. 控件家族影响
@@ -58,3 +58,45 @@ Avatar 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+
+## 7. CT15 字段消费者裁定
+
+11 Own 的名称、type、key、slot与四算法默认公式保持，Math.Round仍采用原默认取整。ContainerSize/SM/LG进入三档真实宽高；TextFontSize/SM/LG保持现有 Icon 尺寸角色，不据字段名强行改变默认文字。GroupSpace/GroupOverlapping用于overflow排列和重叠；GroupBorderColor进入单头像边框；AvatarBg/AvatarColor用于原内容与fold颜色。
+
+文字通过原生 Font 属性、继承及明确 Avatar Global FontFamily/FontSize 定制，仍由Gap约束的DownOnly Viewbox呈现。Square圆角来自Avatar Global，Circle来自实际宽度。AvatarGroup的边框厚度来自其自身Global；其余上述Own仍以Avatar identity解析。合法0、清空、三档/Custom、动态配置和实际值应以专项验证为准，不将默认迁移等同家族出口。
+
+
+| Own | V2 默认输入 | 真实消费 |
+| --- | --- | --- |
+| ContainerSize / LG / SM | ControlHeight / LG / SM | Middle/Large/Small box宽高 |
+| TextFontSize | Round((FontSizeLG+FontSizeXL)/2) | Middle EffectiveIconSize |
+| TextFontSizeLG / SM | FontSizeHeading3 / FontSize | Large/Small EffectiveIconSize |
+| GroupSpace | UniformlyMarginXXS | overflow StackPanel.Spacing |
+| GroupOverlapping | UniformlyMarginXS | Group测量与排列重叠 |
+| GroupBorderColor | ColorBorderBg | Avatar.BorderBrush |
+| AvatarBg | ColorTextPlaceholder | Text/Icon背景与fold背景 |
+| AvatarColor | ColorTextLightSolid | Avatar.Foreground与fold前景 |
+
+明确字号与方形圆角可配置在 Avatar identity 下：
+
+```csharp
+new ThemeConfigBuilder().WithControl(AvatarTokens.Identity,
+    new ControlThemeConfigBuilder()
+        .WithToken("FontFamily", "Menlo")
+        .WithToken("FontSize", "23")
+        .WithToken("BorderRadius", "9")
+        .Build()).Build();
+```
+
+原生入口仍可声明在 root Style 或实例上：
+
+```xml
+<atom:Avatar Text="Original complete text" Shape="Square"
+             FontSize="17" FontFamily="Menlo" Gap="7" Size="48" />
+```
+
+不要用取得Frame/Icon/Image节点后赋值来代替公开入口；不要把TextFontSize三Own误写成自然文字字号。Group的Global使用其注册identity（`new ControlTokenIdentity("AtomUI", "AvatarGroup")`），不会通过Avatar identity替Group消费边框厚度。
+
+
+CT15当前仅[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/avatar-consumers-visual-review.md)48对有意变化已获批准，其他关闭/往返微差及完整Avatar/CT15保留，不授权提交。

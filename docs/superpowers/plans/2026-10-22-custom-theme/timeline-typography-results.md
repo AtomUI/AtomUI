@@ -47,6 +47,8 @@ AbstractTimelineItem 在自己的 MeasureOverride 消费 Padding，现将 Paddin
 
 清理后Core显式资源13项 **PASS，167ms**；Desktop Timeline／OTP **118 PASS，3s**。NET8 Desktop（覆盖Core／Common）Release **23.05s，0警告／0错误**；6文件／2控件成员审计0问题。文档链接、目录键集和最终diff检查见本包文本记录；仅作者自审，不冒充独立审查。上述仍为当前Mac Headless/Skia＋NativeAOT，不代表原生最终显示面或其他OS。
 
-## 剩余边界
+## P2结束时的剩余边界
 
 P2覆盖不等于完整 Timeline 家族：Compact／RTL、全部业务和持续动效、极端字体／几何、原生最终显示面及其他平台仍待后续；CT15其他展示／反馈控件继续。作者自审为当前单 agent 的审查范围，不冒充独立审查。
+
+2026-11-03家族出口：后续P3状态/周期/原组合恢复及正式依赖采用已纳入[最终有限出口](feedback-final-exit-results.md)，当前具名恢复证据见[采用结果](feedback-region-sdk-adoption-results.md)。不以P2局部通过代替该最终验收，不扩大平台/任意极值或FW1边界。

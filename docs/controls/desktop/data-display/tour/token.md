@@ -1,5 +1,8 @@
 # Tour Token 设计
 
+CT15九Own采用DependencyDefaultsV2/revision1，四算法36默认/type/key/slot逐字保持。CloseBtnSize、HeaderColor、IndicatorSize、圆角、min宽高和Primary Prev/Next hover已到真实目标；PopupMarginToAnchor热更新有效反证后接入资源订阅，原Popup与尺寸不变。0值保留原布局语义，Native字体/clear及原继承大小不作默认漂移。完整视觉/平台与极值仍以本批限定结果为准。 见[CT15结果](../../../../superpowers/plans/2026-10-22-custom-theme/tour-consumers-results.md)。
+
+
 本文档定义 Tour 相关控件 Token 的专属语义、分类、使用范围和兼容边界。控件 Token 的通用分层、命名、计算、Theme Variables 边界和预设色规则见 [AtomUI 控件 Token 设计规范](../../../../engineering/development/control-token-guidelines.md)。Tour 整体架构见 [Tour 桌面版架构设计](overview.md)，内部实现原理见 [Tour 桌面版实现原理](implementation.md)，设计和契约变化记录见 [Tour Changelog](changelog.md)。
 
 ## 1. 定位
@@ -58,3 +61,6 @@ Tour 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+
+CT15最新限定出口：60聚焦、正确managed/AOT各112检查/212帧；44明确静态待批准，原140可比/72缺帧及跨运行14非零保留。31临时/1448取证/614原会话和4最终文件清理，最终Tour21+PopupPlacement8共29通过、NET8零警告。完整家族/平台/GC/极值与CT15仍未关闭，见[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/tour-consumers-visual-review.md)。

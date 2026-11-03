@@ -1,5 +1,8 @@
 # Tour 桌面版实现原理
 
+CT15工程：Root可选字体由ControlTheme及真实InheritanceParent桥选择，经Arrow模板根声明式进入popup；组合视图/步骤/指示器复用公共Tour Global owner代理，独立使用无父Tour时保留自身身份。原步骤Local/Template投射改为逐container可释放typed句柄，own-container实际Detached亦退休，attach恢复。Root collection/indicator/既有view事件在重挂恢复。Popup margin保留resolved placement计算与原Local优先，观察Own资源，在模板/关闭/卸载退休；失锚先关闭host再释放订阅，防止回默认触发无效目标重定位。 见[CT15结果](../../../../superpowers/plans/2026-10-22-custom-theme/tour-consumers-results.md)。
+
+
 本文档描述 Tour 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Tour 桌面版架构设计](overview.md)，Semantic Part 契约见 [Tour Semantic Part 契约](semantic-part.md)，变化记录见 [Tour Changelog](changelog.md)。涉及控件 Token 的实现应同时阅读 [Tour Token 设计](token.md)。
 
 Popup 接入边界：`Tour` 负责业务状态和内容准备，`PART_Popup` 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
@@ -61,7 +64,7 @@ Popup 接入边界：`Tour` 负责业务状态和内容准备，`PART_Popup` 负
 - Template part 是视觉协作对象，生命周期必须受 `OnApplyTemplate` 或模板加载流程管理。
 - 数据对象、选项对象、任务对象或节点对象只保存业务数据，不应反向持有不可释放的视觉对象。
 - 弹层、窗口、计时器、异步 loader 和全局管理器必须有明确关闭、解绑或释放路径。
-- 共享 `TourLayer` 遮罩遵循“谁打开谁拥有”：打开路径挂逻辑父并上报跨根，关闭路径解除逻辑父；跨 Tour 复用必须先 `SetParent(null)` 再挂新 owner（Avalonia `SetParent` 非 null 到非 null 会抛异常）。
+- 共享`TourLayer`遮罩遵循“谁打开谁拥有”：打开路径加入当前Tour的原生`LogicalChildren`并上报跨根，关闭路径对称移除，使局部资源与时长更新到达已经打开的遮罩。跨Tour接管先移除前owner的逻辑成员与层引用，再交给新owner；关闭前一个Tour不能隐藏或解除新owner的遮罩。
 
 ## 4. 状态与数据流
 
@@ -112,8 +115,8 @@ Public API / ItemsSource / Command / Event
 Semantic Part 的公共契约（13 个部件的字段、存在条件、数量语义与 Selector 用法）见 [Tour Semantic Part 契约](semantic-part.md)。实现侧需要维护的不变量：
 
 - marker 分布：`TourTheme` 的 `PART_ArrowDecorator`（ArrowDecoratedBox）挂 `popup.root`；`TourStepTheme` 挂 `popup.section` / `popup.header` / `popup.cover` / `popup.title` / `popup.close` / `popup.description`；`TourStepsViewTheme` 挂 `popup.footer` / `popup.indicators` / `popup.actions`；`DefaultTourIndicator` 的物化圆点由控件代码用生成常量挂 `popup.indicator`。内置主题默认视觉不使用 `.semantic-*` selector。
-- 共享遮罩跨根命中：`popup.mask` 的载体 `TourLayer` 由 `VisualLayerManager` 呈现，与 Tour 不在同一视觉子树；`AttachMaskLayer` 在打开路径把它挂为当前 Tour 的逻辑子节点并抛 `CrossRootsChanged`，owner 作用域 Semantic Style（`Tour.TourPopupMaskStyle`，即 `>> .semantic-popup-mask` descendant 路由）沿逻辑父链跨视觉根命中；关闭路径 `DetachMaskLayer` 解除逻辑父并再次通知。
-- `DefaultTourIndicator` 物化圆点没有 `TemplatedParent`，任何以 `/template/` 为锚的 selector 链都无法命中它们；圆点的尺寸/颜色/间距样式声明在模板内 `DotsLayout` 的 `Styles` 集合中，沿逻辑树流到物化圆点，绑定经 `RelativeSource AncestorType` 回到控件属性。`MeasureOverride` 布局契约保持 `StepCount*size + (StepCount+1)*spacing`。
+- 共享遮罩跨根命中：`popup.mask`的载体`TourLayer`由`VisualLayerManager`呈现，与Tour不在同一视觉子树；打开路径把它加入当前Tour的逻辑子集合并抛`CrossRootsChanged`，owner作用域Semantic Style（`Tour.TourPopupMaskStyle`，即`>> .semantic-popup-mask` descendant路由）沿逻辑父链跨视觉根命中；关闭路径只释放自己仍持有的层并再次通知。
+- `DefaultTourIndicator` 物化圆点没有 `TemplatedParent`，默认视觉由 `DotsLayout.Resources` 内的隐式 `Ellipse` ControlTheme 承担，绑定经 `RelativeSource AncestorType` 回到指示器；active 仍用声明式 class selector。原局部普通 StyleTrigger 会压过专用 Semantic Style，现已用真实 Width/Fill 覆盖反证修正，不改变专用 route。`MeasureOverride` 布局契约保持 `StepCount*size + (StepCount+1)*spacing`。
 
 ## 6. 交互与事件处理
 
@@ -176,3 +179,18 @@ Tour 的交互事件应从输入源收敛到控件级语义事件：
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - Semantic Part 声明或 marker 变更时同步 `semantic-part.md`，并保持 `TourSemanticPartTests` 与 Gallery Tour 语义预览/高亮测试通过。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+
+模板退出先释放旧TwoWay选择边与ItemsSource/Indicator/Actions绑定，再退出caller-owned内容；关闭旧popup后重新挂当前模板，不重置公开CurrentIndex。当前步骤Target和目标layout只在打开期间观察，导航/关闭/卸载退出；空集合gap使用范围guard。无效锚点退出前置host关闭，原普通/失败smoke均留账，51聚焦与完整取证分别报告，不将前者当完整家族完成。
+
+
+CT15具体依赖修复：非CSD overlay加入margin后的最终定位可能与初始翻转probe不同，Popup辅助函数现按最终输入报告flip，保留host几何和既有CSD分支。原几何反例与8既有PopupPlacement检查通过；此新场景不改写CT12/13/14既定批准，不扩大CT25/FW1。完整三版、清理和限定视觉仍待。
+
+
+CT15最新限定出口：60聚焦、正确managed/AOT各112检查/212帧；44明确静态待批准，原140可比/72缺帧及跨运行14非零保留。31临时/1448取证/614原会话和4最终文件清理，最终Tour21+PopupPlacement8共29通过、NET8零警告。完整家族/平台/GC/极值与CT15仍未关闭，见[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/tour-consumers-visual-review.md)。
+
+
+共享 TourLayer 由窗口长期持有，当前 Tour 通过可释放的三条绑定投射 mask 颜色、目标区域与圆角。绑定属于 mask 的逻辑成员资格：关闭、脱离和转交下一 Tour 时解除，再次打开按当前值重建。跨视觉根运行时共享节点不能由 Tour ControlTheme 等价表达，代码绑定保持原本地优先级。仅解除逻辑父不能释放绑定对旧 Tour 的引用。
+
+
+CrossRootsChanged在共享mask转交时只发出一次完成通知：先清旧owner层引用，再统一解除绑定与逻辑成员资格。观察者不应收到旧owner仍包含mask的中间报告或重复通知。

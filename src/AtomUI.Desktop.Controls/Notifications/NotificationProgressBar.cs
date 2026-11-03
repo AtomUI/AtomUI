@@ -28,11 +28,6 @@ internal class NotificationProgressBar : TemplatedControl
     public static readonly StyledProperty<TimeSpan> CurrentExpirationProperty =
         AvaloniaProperty.Register<NotificationProgressBar, TimeSpan>(nameof(CurrentExpiration));
 
-    internal double ProgressIndicatorThickness
-    {
-        get => GetValue(ProgressIndicatorThicknessProperty);
-        set => SetValue(ProgressIndicatorThicknessProperty, value);
-    }
 
     public IBrush? ProgressIndicatorBrush
     {
@@ -60,6 +55,16 @@ internal class NotificationProgressBar : TemplatedControl
 
     #endregion
     
+    #region 内部属性定义
+
+    internal double ProgressIndicatorThickness
+    {
+        get => GetValue(ProgressIndicatorThicknessProperty);
+        set => SetValue(ProgressIndicatorThicknessProperty, value);
+    }
+
+    #endregion
+
     static NotificationProgressBar()
     {
         AffectsMeasure<NotificationProgressBar>(ProgressIndicatorThicknessProperty);

@@ -156,3 +156,9 @@ Gallery 的 `Object styles` 与 `Function styles` 两条示例按 Ant Design Ale
 - 默认主题不消费 `.semantic-*`，未声明用户 Style 时不增加反射、VisualTree 搜索或运行时 selector 组装。
 - Gallery Semantic Preview 只在首次选择 Semantic Parts Tab 后创建，并展示七项 Part 描述。
 - Gallery 样式示例只使用 owner-scoped 生成 Style，不依赖内部 Name、原始 route 或固定高度。
+
+## 主题默认与专用Style的层级
+
+四个状态Icon的颜色资源绑定使用Template优先级，AlertIconStyle的FillBrush可覆盖它们。专用Style的Tag命中只证明route，维护时还须核对真实颜色/尺寸，不能在code-behind写目标属性作为回退。
+
+有描述标题的MessageWithDescriptionMargin与close的CloseIconSize是ControlTheme可选默认；AlertTitleStyle的Margin/字体/行高、AlertCloseStyle的IconWidth/IconHeight仍可覆盖。Title同时涵盖Label和Marquee，过大的字体需要配套的行高/尺寸；不承诺固定高度下任意字号均不裁剪。原有Type/描述/关闭/ExtraAction切换保留目标节点身份及数量。

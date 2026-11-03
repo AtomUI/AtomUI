@@ -35,12 +35,20 @@
 - 数据对象、选项对象、任务对象或节点对象只保存业务数据，不应反向持有不可释放的视觉对象。
 - 弹层、窗口、计时器、异步 loader 和全局管理器必须有明确关闭、解绑或释放路径。
 
+### 主题投射与继承
+
+Alert通过内部只读IThemeInheritanceSource暴露真实InheritanceParent；Core现有有限继承源与AXAML的存在位选择拥有FontFamily/FontSize/Foreground的最终默认，不在控件代码建立样式绑定或保存字体旗标。挂载、父级变化和分离由原生绑定及共享继承源管理，移除后不能由长寿命provider保留旧Alert或模板部件。
+
+模板的Global输入显式选取Alert owner，跳过组合中的公共Icon/Marquee/Close节点，避免消费到错误identity；保留独立子Control本身的主题职责。四个图标的FillBrush绑定使用Template优先级；专用Style已命中但颜色不生效时，应检查属性优先级，不能用Tag命中代替颜色实际值验证。
+
+10个默认函数只读取有效Global/常量，具体公式与可选激活合同见[token](token.md)。两个历史无消费者字段只在明确Own时启用：CloseIconSize通过既有double存在位选择保留未配置IconSizeSM，MessageWithDescriptionMargin只在有描述的两种标题上启用。原有DescriptionLabelMargin单独控制描述留白，不把两个字段合并成别名。
+
 ## 4. 状态与数据流
 
 Alert 的状态流遵循下面路径：
 
 ```text
-Public API / ItemsSource / Command / Event
+Type / Message / Description / ExtraAction / flags / input / CloseRequest
   -> 控件实例状态
   -> internal state / effective state / pseudo-class
   -> template part property / AXAML selector

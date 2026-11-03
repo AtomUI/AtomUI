@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -6,7 +7,7 @@ namespace AtomUI.Controls.Commons;
 
 public abstract class AbstractCheckableTag : ToggleButton,
                                              IMotionAwareControl,
-                                             IFormItemAware
+                                             IFormItemAware, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -30,6 +31,8 @@ public abstract class AbstractCheckableTag : ToggleButton,
 
     #endregion
 
+    private EventHandler? _formValueChanged;
+
     static AbstractCheckableTag()
     {
         AffectsMeasure<AbstractCheckableTag>(IconProperty);
@@ -39,9 +42,13 @@ public abstract class AbstractCheckableTag : ToggleButton,
             (tag, _) => tag.HandleIsCheckedChanged());
     }
 
-    #region 实现 FormItem 接口
+    #region 实现 IThemeInheritanceSource 接口
 
-    private EventHandler? _formValueChanged;
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 实现 FormItem 接口
 
     event EventHandler IFormItemAware.ValueChanged
     {

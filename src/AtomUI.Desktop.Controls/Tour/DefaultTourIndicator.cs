@@ -18,13 +18,13 @@ public class DefaultTourIndicator : TourIndicator
 
     public static readonly StyledProperty<double> IndicatorSizeProperty = 
         AvaloniaProperty.Register<DefaultTourIndicator, double>(nameof(IndicatorSize));
-    
+
     public static readonly StyledProperty<IBrush?> IndicatorColorProperty = 
         AvaloniaProperty.Register<DefaultTourIndicator, IBrush?>(nameof(IndicatorColor));
-    
+
     public static readonly StyledProperty<IBrush?> IndicatorActiveColorProperty = 
         AvaloniaProperty.Register<DefaultTourIndicator, IBrush?>(nameof(IndicatorActiveColor));
-    
+
     public static readonly StyledProperty<double> ItemSpacingProperty = 
         AvaloniaProperty.Register<DefaultTourIndicator, double>(nameof(ItemSpacing));
 
@@ -33,32 +33,45 @@ public class DefaultTourIndicator : TourIndicator
         get => GetValue(IndicatorSizeProperty);
         set => SetValue(IndicatorSizeProperty, value);
     }
-        
+
     public IBrush? IndicatorColor
     {
         get => GetValue(IndicatorColorProperty);
         set => SetValue(IndicatorColorProperty, value);
     }
-    
+
     public IBrush? IndicatorActiveColor
     {
         get => GetValue(IndicatorActiveColorProperty);
         set => SetValue(IndicatorActiveColorProperty, value);
     }
-    
+
     public double ItemSpacing
     {
         get => GetValue(ItemSpacingProperty);
         set => SetValue(ItemSpacingProperty, value);
     }
+
     #endregion
 
+    #region 运行时字段
+
     private Panel? _dotsLayout;
+
+    private const string ActiveClass = "active";
+
+    #endregion
+
+    #region 构造与初始化
 
     static DefaultTourIndicator()
     {
         AffectsMeasure<DefaultTourIndicator>(ItemSpacingProperty, IndicatorSizeProperty, StepCountProperty);
     }
+
+    #endregion
+
+    #region 公共与受保护 API
 
     /// <summary>
     /// 保持与旧自绘版一致的布局契约：N*size + (N+1)*spacing
@@ -86,6 +99,10 @@ public class DefaultTourIndicator : TourIndicator
             SyncDots();
         }
     }
+
+    #endregion
+
+    #region 私有实现
 
     private void SyncDots()
     {
@@ -121,5 +138,6 @@ public class DefaultTourIndicator : TourIndicator
         }
     }
 
-    private const string ActiveClass = "active";
+    #endregion
+
 }

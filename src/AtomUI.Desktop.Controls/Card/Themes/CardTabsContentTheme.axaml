@@ -4,6 +4,27 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:CardTabsContent}" TargetType="atom:CardTabsContent">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:OwnerTokenResource Kind="ColorText" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="ColorText" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:TabControl Name="PART_TabControl"
@@ -21,24 +42,24 @@
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ atom|TabControl">
                 <Setter Property="ContentPadding" Value="{atom:CardTokenResource BodyPaddingLG}" />
-                <Setter Property="HeaderStartEdgePadding" Value="{atom:SharedTokenResource UniformlyPaddingLG}" />
-                <Setter Property="HeaderEndEdgePadding" Value="{atom:SharedTokenResource UniformlyPaddingLG}" />
+                <Setter Property="HeaderStartEdgePadding" Value="{atom:OwnerTokenResource UniformlyPaddingLG, SourceControlType={x:Type atom:CardTabsContent}}" />
+                <Setter Property="HeaderEndEdgePadding" Value="{atom:OwnerTokenResource UniformlyPaddingLG, SourceControlType={x:Type atom:CardTabsContent}}" />
             </Style>
         </Style>
         
         <Style Selector="^[SizeType=Middle]">
             <Style Selector="^ /template/ atom|TabControl">
                 <Setter Property="ContentPadding" Value="{atom:CardTokenResource BodyPadding}" />
-                <Setter Property="HeaderStartEdgePadding" Value="{atom:SharedTokenResource UniformlyPaddingSM}" />
-                <Setter Property="HeaderEndEdgePadding" Value="{atom:SharedTokenResource UniformlyPaddingSM}" />
+                <Setter Property="HeaderStartEdgePadding" Value="{atom:OwnerTokenResource UniformlyPaddingSM, SourceControlType={x:Type atom:CardTabsContent}}" />
+                <Setter Property="HeaderEndEdgePadding" Value="{atom:OwnerTokenResource UniformlyPaddingSM, SourceControlType={x:Type atom:CardTabsContent}}" />
             </Style>
         </Style>
         
         <Style Selector="^[SizeType=Small]">
             <Style Selector="^ /template/ atom|TabControl">
                 <Setter Property="ContentPadding" Value="{atom:CardTokenResource BodyPaddingSM}" />
-                <Setter Property="HeaderStartEdgePadding" Value="{atom:SharedTokenResource UniformlyPaddingXS}" />
-                <Setter Property="HeaderEndEdgePadding" Value="{atom:SharedTokenResource UniformlyPaddingXS}" />
+                <Setter Property="HeaderStartEdgePadding" Value="{atom:OwnerTokenResource UniformlyPaddingXS, SourceControlType={x:Type atom:CardTabsContent}}" />
+                <Setter Property="HeaderEndEdgePadding" Value="{atom:OwnerTokenResource UniformlyPaddingXS, SourceControlType={x:Type atom:CardTabsContent}}" />
             </Style>
         </Style>
         

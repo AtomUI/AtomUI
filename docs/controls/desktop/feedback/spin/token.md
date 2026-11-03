@@ -1,58 +1,23 @@
-# Spin Token 设计
+# Spin Token
 
-本文档定义 Spin 相关控件 Token 的专属语义、分类、使用范围和兼容边界。控件 Token 的通用分层、命名、计算、Theme Variables 边界和预设色规则见 [AtomUI 控件 Token 设计规范](../../../../engineering/development/control-token-guidelines.md)。Spin 整体架构见 [Spin 桌面版架构设计](overview.md)，内部实现原理见 [Spin 桌面版实现原理](implementation.md)，设计和契约变化记录见 [Spin Changelog](changelog.md)。
+Spin 与 SpinIndicator 的运行身份分别是 `AtomUI:Spin`、`AtomUI:SpinIndicator`。七个 Own 仅在 SpinToken 定义；SpinIndicator 复用 Spin 的 typed Own 资源，不建立第二套 Own。内部 SpinIndicatorDotPanel 是四点布局面板，没有独立 fragment。公共行为见 [overview](overview.md)，部件见 [semantic-part](semantic-part.md)。
 
-## 1. 定位
+SpinToken 使用 DependencyDefaultsV2 revision 1。每个默认只依赖表内 Global；下面的中间尺寸不是其他 Own 字段，单独覆盖 IndicatorSize 不会重算 DotSize。
 
-Spin Token 只表达组件级视觉变量，例如尺寸、间距、颜色、圆角、阴影、图标尺寸和弹层边界。Token 不承载运行时选择、展开、加载、错误、上传任务、过滤条件或业务状态。
-
-当前 Token scope：
-
-- `SpinToken`，scope id 为 `Spin`，源码位于 `src/AtomUI.Desktop.Controls/Spin/SpinToken.cs`。
-
-## 2. Token 分类
-
-Token 按控件语义分类维护：
-
-| 分类 | 语义 | 代表 Token |
+| Own | 默认公式 | 消费 |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `DotSize`、`DotSizeSM`、`DotSizeLG`、`IndicatorSizeLG`、`IndicatorSize`、`IndicatorSizeSM` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | 按源码 Token 语义维护 |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 按源码 Token 语义维护 |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `IndicatorSizeLG`、`IndicatorSize`、`IndicatorSizeSM`、`IndicatorDuration` |
+| IndicatorSize | ControlHeightLG / 2 + 2 | Middle/Custom 外框 |
+| IndicatorSizeSM | ControlHeightLG × 0.35 + 1 | Small 外框 |
+| IndicatorSizeLG | ControlHeight + 4 | Large 外框 |
+| DotSize | ((ControlHeightLG / 2 − UniformlyMarginXXS / 2) / 2) × 0.75 | Middle/Custom 点径 |
+| DotSizeSM | ((ControlHeightLG × 0.35 − UniformlyMarginXXS / 2) / 2) × 0.75 | Small 点径 |
+| DotSizeLG | ((ControlHeight − UniformlyMarginXXS) / 2) × 0.75 | Large 点径 |
+| IndicatorDuration | MotionDurationSlow × 4 | 两公开控件 MotionDuration |
 
-未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+四算法原默认：普通/暗为外框 SM/M/L = 15/22/36、点径 = 4.5/6.75/10.5；Compact/暗Compact 为 13.25/19.5/32、3.84375/5.8125/9。四种时长均1200ms。单位为 DIP、TimeSpan；不由名称推导额外 Own 比例或限制。
 
-## 3. 控件专项模型中的 Token 使用
+Spin 的局部 Global FontFamily/FontSize 通过可选 ControlTheme 输入进入根与真实 Tip；未明确配置时保留实际字体继承，原生字体值优先。ColorPrimary 经 Spin 模板进入 Tip 和组合 Indicator，ColorBgMask 进入启用的 Mask，SpacingXXS 进入 section。独立 SpinIndicator 的 ColorPrimary 取自身有效 Global。原语义角色保持。
 
-Spin 的控件专项模型通过 Theme 消费 Token：
+SizeType=Custom 默认使用 Middle 指标；原生 IndicatorSize、DotSize 和 MotionDuration 优先。点径0沿原语义可见性，不转换为业务开关；实际合成器时长小于1ms时保留原1ms防护。IsSpinning、Tip、IsTipVisible、CustomIndicator、遮罩选项都是实例状态，不进入 Token。
 
-- C# 控件负责状态归一和伪类同步。
-- AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
-- Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
-- Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
-
-## 4. 控件家族影响
-
-调整 Spin Token 时必须评估以下范围：
-
-- `Spin`
-- 对应 Gallery ShowCase 的示例和源码片段。
-- Light/Dark 主题、Browser/Desktop 主题和 Compact/Form/Popup 集成场景。
-
-## 5. 兼容性要求
-
-- 不删除或重命名已生成的 TokenKind、TokenResource key 和 AXAML 引用。
-- 不把实例状态、交互状态或 `EffectiveXxx` 状态写成 Token。
-- 不在 Token 中展开颜色、variant 和状态的组合矩阵；组合关系应由 Theme selector 表达。
-- Token 默认值变更必须同步评估 Gallery 示例和截图可观察外观。
-- 如需引入新 Token，必须同步 Token 类型、生成资源、主题引用和本文档。
-
-## 6. 验证策略
-
-| 改动类型 | 验证要求 |
-| --- | --- |
-| Token 文档 | `git diff --check`，检查相对链接存在。 |
-| Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
-| Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
-| 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+Semantic 定制只用生成的专用 AXAML Style，不能改写节点属性替代 Style。定制只覆盖目标视觉，不改变 Owner、Own 身份或持续动画状态。平台、全域极值与完整家族验收以限定结果记录为准，不因默认迁移完成而标通过。

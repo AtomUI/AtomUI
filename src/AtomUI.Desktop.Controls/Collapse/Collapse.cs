@@ -1,5 +1,8 @@
 ﻿using System.Collections.Specialized;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Data;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -25,7 +28,7 @@ public enum CollapseExpandIconPosition
 }
 
 [TemplatePart("PART_ItemsPresenter", typeof(ItemsPresenter))]
-public partial class Collapse : SelectingItemsControl, IMotionAwareControl
+public partial class Collapse : SelectingItemsControl, IMotionAwareControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -129,6 +132,8 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
 
     #endregion
 
+    private readonly Dictionary<CollapseItem, CompositeDisposable> _itemBindings = new();
+
     private const string ScopePanelClass = "semantic-scope-panel";
     private const string ScopeItemClass = "semantic-scope-item";
 
@@ -198,18 +203,7 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
                 }
             }
 
-            if (ItemTemplate != null)
-            {
-                collapseItem[!CollapseItem.ContentTemplateProperty] = this[!ItemTemplateProperty];
-            }
-            
-            collapseItem[!CollapseItem.SizeTypeProperty]           = this[!SizeTypeProperty];
-            collapseItem[!CollapseItem.BorderThicknessProperty]    = this[!EffectiveBorderThicknessProperty];
-            collapseItem[!CollapseItem.IsGhostStyleProperty]       = this[!IsGhostStyleProperty];
-            collapseItem[!CollapseItem.IsBorderlessProperty]       = this[!IsBorderlessProperty];
-            collapseItem[!CollapseItem.TriggerTypeProperty]        = this[!TriggerTypeProperty];
-            collapseItem[!CollapseItem.ExpandIconPositionProperty] = this[!ExpandIconPositionProperty];
-            collapseItem[!CollapseItem.IsMotionEnabledProperty]    = this[!IsMotionEnabledProperty];
+            PrepareItemBindings(collapseItem);
             PrepareCollapseItem(collapseItem, item, index);
             ConfigureItemPaddings(collapseItem);
             ConfigureItemBorders(collapseItem, index);
@@ -219,6 +213,15 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
         {
             throw new ArgumentOutOfRangeException(nameof(container), "The container type is incorrect, it must be type CollapseItem.");
         }
+    }
+
+    protected override void ClearContainerForItemOverride(Control container)
+    {
+        if (container is CollapseItem item)
+        {
+            RetireItemBindings(item);
+        }
+        base.ClearContainerForItemOverride(container);
     }
 
     protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
@@ -335,8 +338,22 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        foreach (var container in GetRealizedContainers().OfType<CollapseItem>())
+        {
+            PrepareItemBindings(container);
+            ConfigureItemPaddings(container);
+        }
         SetupEffectiveBorderThickness();
         NormalizeAccordionSelection();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        foreach (var item in _itemBindings.Keys.ToArray())
+        {
+            RetireItemBindings(item);
+        }
+        base.OnDetachedFromVisualTree(e);
     }
 
     public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
@@ -363,6 +380,56 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
         UpdateSelection(index, select: true);
         eventArgs.Handled = true;
         return true;
+    }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 私有实现
+
+    private void PrepareItemBindings(CollapseItem item)
+    {
+        RetireItemBindings(item);
+        // Runtime item preparation precedes template membership and keeps the
+        // original Local priority, including internal state and caller-owned
+        // containers. ControlTheme setters cannot preserve that timing/priority;
+        // each projection therefore ends with the container's membership.
+        var bindings = new CompositeDisposable();
+        _itemBindings.Add(item, bindings);
+        item.DetachedFromVisualTree += HandleItemDetached;
+        if (ItemTemplate is not null)
+        {
+            bindings.Add(BindUtils.RelayBind(this, ItemTemplateProperty, item, CollapseItem.ContentTemplateProperty));
+        }
+        bindings.Add(BindUtils.RelayBind(this, SizeTypeProperty, item, CollapseItem.SizeTypeProperty));
+        bindings.Add(BindUtils.RelayBind(this, EffectiveBorderThicknessProperty, item, CollapseItem.BorderThicknessProperty));
+        bindings.Add(BindUtils.RelayBind(this, IsGhostStyleProperty, item, CollapseItem.IsGhostStyleProperty));
+        bindings.Add(BindUtils.RelayBind(this, IsBorderlessProperty, item, CollapseItem.IsBorderlessProperty));
+        bindings.Add(BindUtils.RelayBind(this, TriggerTypeProperty, item, CollapseItem.TriggerTypeProperty));
+        bindings.Add(BindUtils.RelayBind(this, ExpandIconPositionProperty, item, CollapseItem.ExpandIconPositionProperty));
+        bindings.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, item, CollapseItem.IsMotionEnabledProperty));
+    }
+
+    private void RetireItemBindings(CollapseItem item)
+    {
+        if (_itemBindings.Remove(item, out var bindings))
+        {
+            item.DetachedFromVisualTree -= HandleItemDetached;
+            bindings.Dispose();
+            item.OwnerHeaderPadding = null;
+            item.OwnerContentPadding = null;
+        }
+    }
+
+    private void HandleItemDetached(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is CollapseItem item)
+        {
+            RetireItemBindings(item);
+        }
     }
 
     private void ConfigureItemsBorders()
@@ -485,4 +552,6 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
             : SelectionMode.Multiple | SelectionMode.Toggle;
         NormalizeAccordionSelection();
     }
+
+    #endregion
 }

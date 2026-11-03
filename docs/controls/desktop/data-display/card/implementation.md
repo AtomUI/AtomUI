@@ -25,7 +25,7 @@ Card 的实现重点是把 Header/Extra/Cover/Content/Actions 组合成一个稳
 
 ## 3. 核心类职责
 
-`Card` 是状态协调器。它继承 `HeaderedContentControl`，负责公共属性、Headerless 伪类、Actions 同步、ContentType 派生、CardToken scope 注册和初始动效屏蔽。
+`Card` 是状态协调器。它继承 `HeaderedContentControl`，负责公共属性、Headerless 伪类、Actions 同步、ContentType 派生、CardToken scope 注册和主题动效状态。
 
 `CardActionPanel` 是内部 action layout 和 render owner。它持有内部 `Actions` 集合，模板接入后将集合写入 `UniformGrid`，并在 `Render` 中绘制操作区顶部边线和纵向分隔线。
 
@@ -40,6 +40,14 @@ Card 的实现重点是把 Header/Extra/Cover/Content/Actions 组合成一个稳
 Card 的尺寸/状态基线必须先于布局型 Semantic Setter 确定。`Large`、`Middle`、`Small` 的 Header/Body Token、Extra 内容、
 Headerless、Loading、Meta/Grid/Tabs 和 Actions 共同构成完整布局规格；`.semantic-header` 与 `.semantic-body` 只能覆盖
 选定规格之上的增量属性，不能把不同尺寸档位的 Padding、字体或 MinHeight 混合使用。
+
+### 主题与原生继承
+
+五个公开文字根通过内部只读IThemeInheritanceSource提供真实InheritanceParent，Core有限继承源与AXAML存在位选择拥有FontFamily/FontSize/Foreground。无配置保留当前父字体/前景，Native本地值与专用Style优先；不新增字体旗标或C#样式绑定。内部action panel没有独立identity，读取Card owner；公开Meta/Grid/Tabs/ActionButton各自保留自己的Global边界。
+
+Card到动态Grid/Tabs Content的Size/Motion默认在模板出现前就需工作，因此保留类型化运行期绑定，以Template优先级提供默认并由内容替换释放；明确本地内容值优先。Grid容器的Size/Enabled/Motion/Hover与可选ItemTemplate绑定纳入既有disposable，自带容器也在实际逻辑成员移除时释放，不能仅依赖generator Clear。
+
+Grid.ColumnDefinitions/RowDefinitions是CLR集合，无法安装Avalonia绑定；保留原强类型投射和模板/属性变化路径，不用反射、延时或重建替代。具体Own分类、默认与保留资源见[token](token.md)。
 
 ## 4. 状态与数据流
 
@@ -71,6 +79,8 @@ Card.Actions.CollectionChanged
 
 `CardActionPanel.Actions.CollectionChanged` 再同步到 `UniformGrid.Children`，并设置 `UniformGrid.Columns = Actions.Count`。
 
+分隔线读取各 Action 的实际位置与尺寸。子项仅改变 `HorizontalAlignment` 时，操作区外框可能保持不变；操作区通过自拥有的 `LayoutUpdated` 比较最后绘制的矩形值，只在几何变化时重新绘制。该事件的外部布局管理器接线由框架随挂载/卸载管理，不观察或保留旧模板 Grid，也不把 Action 对象放入绘制缓存。原生布局、线段公式和 Semantic Part 入口保持不变。
+
 Grid 内容流：
 
 ```text
@@ -85,7 +95,7 @@ Grid item 容器流：
 ```text
 PrepareContainerForItemOverride
   -> CardGridItem.Content / ContentTemplate
-  -> bind SizeType / IsEnabled / IsMotionEnabled
+  -> bind SizeType / IsEnabled / IsMotionEnabled / IsHoverable
   -> PrepareCardGridItem(..., CompositeDisposable)
 
 ClearContainerForItemOverride
@@ -108,10 +118,7 @@ Card 构造阶段：
 - 注册 `CardToken.ScopeProvider`。
 - 订阅 `Actions.CollectionChanged`。`Actions` 是 Card 自身持有的生命周期集合，不需要在普通 detach 中解除。
 
-Card 初始化和加载：
-
-- `OnInitialized()` 调用 `DisableTransitions()`，避免初始样式应用触发过渡。
-- `OnLoaded()` 通过 dispatcher 在加载完成后启用过渡。
+Card动效沿用共享CT11机制：`IsMotionEnabled`与主题`TokenTransitions`由AXAML拥有，不在本类新增初始化/Loaded延时或C#过渡绑定。
 
 Card 模板接入：
 
@@ -235,7 +242,7 @@ otherwise
   EffectiveCornerRadius = CornerRadius
 ```
 
-Borderless 和 Outlined 的实际边框厚度由 `ConfigureContentBorderThickness()` 根据 `StyleVariant` 计算。
+`ConfigureContentBorderThickness()`投射当前原生BorderThickness；Borderless的默认零值由Theme selector提供，因此原生/专用Style高优先级值可保留。
 
 ### 8.3 Headerless 伪类
 
@@ -256,7 +263,7 @@ Header == null
 
 - 非 Visual item 且 `CardGridItem.Content` 未显式设置时，将 item 作为 content。
 - `ItemTemplate` 非空时同步到 `CardGridItem.ContentTemplate`。
-- Size、Enabled 和 Motion 状态通过 Avalonia property binding 同步到容器。
+- Size、Enabled、Motion与Hover默认通过Template优先级类型化绑定同步，本地值优先；绑定均进入容器disposable。
 - `PrepareCardGridItem` 允许派生类追加容器级绑定或订阅，追加内容必须放入传入的 `CompositeDisposable`。
 
 容器 recycle 或清理时，`CompositeDisposable` 必须被释放，防止旧 item 状态泄漏到新 item。
@@ -278,8 +285,8 @@ Card 不依赖运行时反射发现模板结构。模板协作通过固定 part 
 
 - `CardToken` 通过 token generator 注册，Theme 通过 `CardTokenResource` 使用。
 - `CardActionButton`、`CardGridItem`、`CardMetaContent` 等是 Visual 控件，Token resource 由主题和视觉树生命周期管理。
-- `Card` 到动态 `Content` 的 Size/Motion 同步使用 `BindUtils.RelayBind`，因为目标不是稳定 template part；绑定 owner 是 `_contentStateBindings`。
-- `CardGridContent.PrepareCardGridItem` 的扩展 disposable 由 `_cardGridItemDisposables` 管理，并在 container clear/recycle 时释放。
+- `Card`到动态Content的Size/Motion在模板外工作，使用Template优先级类型化绑定，owner为_contentStateBindings；替换时先Dispose，再投射新对象。
+- CardGridContent的容器状态及扩展由_cardGridItemDisposables管理；逻辑成员移除覆盖跳过generator clear的自带容器，Root本身仍存活时也不得保留旧item。
 - 不在 layout hot path 中读取全局资源或创建反射路径。
 - Semantic descriptor 由 Generator 静态生成，marker 随模板节点一次性初始化；Control 包运行时不查询 registry，也不扫描
   VisualTree。
@@ -299,7 +306,7 @@ AOT 边界：
 - `ContentType` 必须覆盖 Meta、Grid、Tabs 和 Default 四个分支。
 - 重新配置内容类型前必须释放旧内容状态绑定。
 - `CardGridContent` 的行列定义 wrapper 必须读写 `ColumnDefinitionsProperty` 和 `RowDefinitionsProperty`。
-- `PrepareCardGridItem` 传入的 `CompositeDisposable` 必须有清理路径。
+- `PrepareCardGridItem`扩展与状态绑定使用同一CompositeDisposable；generated clear和自带容器逻辑移除均结束其membership生命周期。
 - `CardActionPanel` 换模板时必须清空旧 panel children，避免 action visual 同时挂到多个父级。
 - `CardTabsContent` 换模板时必须清空旧 TabControl items，再复制当前 Items。
 - `Actions`、`CardTabsContent.Items` 的 Reset 行为当前为 `NotSupportedException`，不能在结构整理中静默改变。
@@ -325,8 +332,14 @@ AOT 边界：
 - `CardSemanticPartTests`：验证 `Card` 与 `CardMetaContent` descriptor、静态 marker、真实模板 cardinality、Headerless、Loading、Meta/Grid/Tabs、动态 Actions 和同名 title owner 隔离。
 - Gallery Card 示例：Basic、NoBorder、Simple、CustomizedContent、CardInColumn、GridCard、InnerCard、LoadingCard、WithTabs、MoreContentConfiguration 和 `v6.1.3` Semantic Part 样例。
 - `CardShowCasePageTests`：Card ShowCase 页面结构、本地化、源码片段、示例 snapshot，以及 Semantic 样例完整尺寸基线。
-- 修改运行时代码时运行 `tests/AtomUI.Desktop.Controls.Tests` 中 Card 相关测试，并按影响范围扩大到完整 Desktop 控件测试。
+- 修改运行时代码时执行Card精确模块验收；仅按实际新增影响路径追加精确模块，不自行跑整个Desktop或全量回归。
 - 修改 Gallery 或 Gallery 示例或源码片段时运行 `tests/AtomUIGallery.Tests` 中 Card ShowCase 相关测试。
 - Semantic Part 验证覆盖两个 descriptor、静态 marker、空区域、Loading、Meta/Grid/Tabs、动态 Actions、owner 隔离和未声明
   owner 排除边界。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。
+
+### 表面与分隔线失效责任
+
+Card外Frame读取root Padding，GridItem的Frame读取root三档默认或Native本地Padding；Small的普通body padding不泄漏到Grid/Tabs外壳。actions Frame读取root Background与Padding，明确Own背景和专用Style使用同一原生层级。无配置保持原透明背景及实际0 inset，不自动施加历史未消费资源。
+
+CardActionPanel自绘纵线从实际action到panel的坐标变换取得边界，包含模板Padding；不能把相对UniformGrid的Bounds当作panel坐标。Padding与动作集合是直接绘制输入，变化必须使记录的绘制失效；不通过输入handler、定时器、重排延时或强制页面刷新补偿几何。

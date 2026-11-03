@@ -60,6 +60,12 @@ Empty 的控件专项模型通过 Theme 消费 Token：
 
 ## 6. 验证策略
 
+CT15 的 `EmptyToken` 使用 DependencyDefaultsV2 revision 1，六个 Own 字段的名称、类型、资源 key、slot 及四算法默认保持。`EmptyImgHeight` / `EmptyImgHeightSM` / `EmptyImgHeightMD` 分别使用当前 Empty Global 的 `ControlHeightLG × 2.5 / 0.875 / 1.85`；两个描述 margin 与 Footer margin 保持原公式。高度 0 只折叠图片占用，不替换图片来源。
+
+预设 Default/Simple 的五个画刷输入与描述的 `ColorTextDescription` 从 Empty owner 的 Global 解析。图片颜色仍走原生成器和背景混色公式；自定义 `ImageSource` / `ImagePath` 保留调用方 SVG 内容、命名色与固有比例，不接受预设插画 palette 的重着色。Root 字体按原生值、继承与明确 Empty Global 的既有可选字体规则解析；描述与 Footer 继续使用各自原角色。专用 `EmptyImageStyle`、`EmptyDescriptionStyle`、`EmptyFooterStyle` 覆盖实际目标，清除后回到当前 Token 或继承值。
+
+限定验证与尚未覆盖的边界见 [CT15 Empty 结果](../../../../superpowers/plans/2026-10-22-custom-theme/empty-consumers-results.md)。局部分包或默认迁移不构成完整 CT15 通过。
+
 | 改动类型 | 验证要求 |
 | --- | --- |
 | Token 文档 | `git diff --check`，检查相对链接存在。 |

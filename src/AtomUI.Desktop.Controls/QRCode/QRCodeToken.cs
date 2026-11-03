@@ -3,8 +3,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class QRCodeToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class QRCodeToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -19,17 +19,14 @@ internal sealed class QRCodeToken : AbstractControlDesignToken
     /// </summary>
     public Color QRCodeMaskBackgroundColor { get; set; }
 
-    public QRCodeToken()
+    [ControlTokenDefault(nameof(QRCodeTextColor))]
+    private static Color DefaultForQRCodeTextColor(in ControlTokenDefaultContext context) => context.Global.ColorText;
 
+    [ControlTokenDefault(nameof(QRCodeMaskBackgroundColor))]
+    private static Color DefaultForQRCodeMaskBackgroundColor(in ControlTokenDefaultContext context)
     {
-    }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var colorBgContainer = EffectiveGlobalToken.ColorBgContainer;
-        QRCodeTextColor           = EffectiveGlobalToken.ColorText;
-        QRCodeMaskBackgroundColor = Color.FromArgb(244, colorBgContainer.R, colorBgContainer.G, colorBgContainer.B);
+        var colorBgContainer = context.Global.ColorBgContainer;
+        return Color.FromArgb(244, colorBgContainer.R, colorBgContainer.G, colorBgContainer.B);
     }
     
 }

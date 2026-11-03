@@ -1,16 +1,11 @@
-﻿using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class SpinToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class SpinToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
-    public SpinToken()
-
-    {
-    }
-
     /// <summary>
     /// 加载圆圈尺寸
     /// </summary>
@@ -46,21 +41,24 @@ internal sealed class SpinToken : AbstractControlDesignToken
     /// </summary>
     public TimeSpan IndicatorDuration { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var controlHeightLG = EffectiveGlobalToken.ControlHeightLG;
-        var controlHeight   = EffectiveGlobalToken.ControlHeight;
-        var indicatorSize     = controlHeightLG / 2;
-        var indicatorSizeSM   = controlHeightLG * 0.35;
-        var indicatorSizeLG   = controlHeight;
-        IndicatorDuration = EffectiveGlobalToken.MotionDurationSlow * 4;
-        DotSize           = ((indicatorSize - EffectiveGlobalToken.UniformlyMarginXXS / 2) / 2) * 0.75;
-        DotSizeLG         = ((indicatorSizeLG - EffectiveGlobalToken.UniformlyMarginXXS) / 2) * 0.75;
-        DotSizeSM         = ((indicatorSizeSM - EffectiveGlobalToken.UniformlyMarginXXS / 2) / 2) * 0.75;
-        IndicatorSize     = indicatorSize + 2;
-        IndicatorSizeSM   = indicatorSizeSM + 1;
-        IndicatorSizeLG   = indicatorSizeLG + 4;
-    }
-    
+    [ControlTokenDefault(nameof(IndicatorDuration))]
+    private static TimeSpan DefaultForIndicatorDuration(in ControlTokenDefaultContext context) => context.Global.MotionDurationSlow * 4;
+
+    [ControlTokenDefault(nameof(DotSize))]
+    private static double DefaultForDotSize(in ControlTokenDefaultContext context) => ((context.Global.ControlHeightLG / 2 - context.Global.UniformlyMarginXXS / 2) / 2) * 0.75;
+
+    [ControlTokenDefault(nameof(DotSizeLG))]
+    private static double DefaultForDotSizeLG(in ControlTokenDefaultContext context) => ((context.Global.ControlHeight - context.Global.UniformlyMarginXXS) / 2) * 0.75;
+
+    [ControlTokenDefault(nameof(DotSizeSM))]
+    private static double DefaultForDotSizeSM(in ControlTokenDefaultContext context) => ((context.Global.ControlHeightLG * 0.35 - context.Global.UniformlyMarginXXS / 2) / 2) * 0.75;
+
+    [ControlTokenDefault(nameof(IndicatorSize))]
+    private static double DefaultForIndicatorSize(in ControlTokenDefaultContext context) => context.Global.ControlHeightLG / 2 + 2;
+
+    [ControlTokenDefault(nameof(IndicatorSizeSM))]
+    private static double DefaultForIndicatorSizeSM(in ControlTokenDefaultContext context) => context.Global.ControlHeightLG * 0.35 + 1;
+
+    [ControlTokenDefault(nameof(IndicatorSizeLG))]
+    private static double DefaultForIndicatorSizeLG(in ControlTokenDefaultContext context) => context.Global.ControlHeight + 4;
 }

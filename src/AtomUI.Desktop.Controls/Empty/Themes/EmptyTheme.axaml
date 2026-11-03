@@ -4,6 +4,20 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Empty}" TargetType="atom:Empty">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:DashedBorder Background="{TemplateBinding Background}"
@@ -55,11 +69,11 @@
         
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="BorderColor" Value="{atom:SharedTokenResource ColorFill}"/>
-        <Setter Property="BorderColorSecondary" Value="{atom:SharedTokenResource ColorBorderSecondary}"/>
-        <Setter Property="ShadowColor" Value="{atom:SharedTokenResource ColorFillTertiary}"/>
-        <Setter Property="ContentColor" Value="{atom:SharedTokenResource ColorFillQuaternary}"/>
-        <Setter Property="BgColor" Value="{atom:SharedTokenResource ColorBgElevated}"/>
+        <Setter Property="BorderColor" Value="{atom:OwnerTokenResource ColorFill}"/>
+        <Setter Property="BorderColorSecondary" Value="{atom:OwnerTokenResource ColorBorderSecondary}"/>
+        <Setter Property="ShadowColor" Value="{atom:OwnerTokenResource ColorFillTertiary}"/>
+        <Setter Property="ContentColor" Value="{atom:OwnerTokenResource ColorFillQuaternary}"/>
+        <Setter Property="BgColor" Value="{atom:OwnerTokenResource ColorBgElevated}"/>
         
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ atom|TextBlock#Description">
@@ -80,7 +94,7 @@
         </Style>
         
         <Style Selector="^ /template/ atom|TextBlock#Description">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}"/>
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextDescription, AnchorControlType={x:Type atom:Empty}}"/>
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter">

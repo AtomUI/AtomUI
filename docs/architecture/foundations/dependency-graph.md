@@ -69,6 +69,13 @@
 主题策略或平台默认配置下沉到 Native。反过来，P/Invoke、原生结构体、协议对象和可释放 native hook
 也不应散落在控件实现里。
 
+## 仓库软件 Skia 兼容构建
+
+`compat/Avalonia.Skia` 是固定官方源码的构建依赖，输出相同身份的 `Avalonia.Skia` 管理程序集。
+Gallery host 与 Avalonia 测试通过仓库构建显式选择它；Core、Shared 和控件包没有新增反向运行依赖，
+它也不进入 Toolchain。该项目不改官方 native 库或 NuGet 缓存，不自动进入对外控件包。
+源码来源、四文件修正、关闭开关及验证边界见[兼容构建说明](../../../compat/Avalonia.Skia/overview.md)。
+
 ## 统一图片加载职责
 
 统一图片加载不新增项目引用；它使用当前的 `AtomUI.Core -> AtomUI.Controls.Shared -> AtomUI.Controls ->

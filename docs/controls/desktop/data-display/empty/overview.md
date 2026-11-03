@@ -91,6 +91,8 @@ Public API / inherited command / item source / user input
 
 ## 5. 视觉与主题模型
 
+Empty 的局部 Global 可控制预设插画 palette、描述颜色与字体；原生字体与三个专用 Semantic Style 继续按 Avalonia 优先级覆盖。自定义 SVG 保留自身颜色和内容。六个 Own 尺寸/间距使用 V2 依赖默认，四算法原默认值保持。离树图片切换在重挂时回放，原生 Footer 重模板时保留内容，并在未发生后来用户焦点的条件下恢复原焦点；OS 输入和完整平台出口仍须独立验证。
+
 Empty 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
 | 主题文件 | 职责 |

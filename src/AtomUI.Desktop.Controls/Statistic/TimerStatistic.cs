@@ -37,8 +37,9 @@ public class TimerStatistic : AbstractStatistic
     }
 
 
-    public Func<TimeSpan, string>? Formatter;
     #endregion
+
+    public Func<TimeSpan, string>? Formatter;
 
     #region 公共事件定义
 
@@ -81,6 +82,7 @@ public class TimerStatistic : AbstractStatistic
     private bool _isAttachedToVisualTree;
     private bool _isCountdown;
     private bool _hasCountdownFinished;
+    private bool _requiresTargetClassification = true;
 
     static TimerStatistic()
     {
@@ -122,6 +124,7 @@ public class TimerStatistic : AbstractStatistic
             if (change.Property == ValueProperty)
             {
                 _hasCountdownFinished = false;
+                _requiresTargetClassification = true;
             }
 
             if (_isAttachedToVisualTree)
@@ -171,9 +174,14 @@ public class TimerStatistic : AbstractStatistic
     {
         ReleaseTimer();
 
-        var now = DateTime.Now;
-        _isCountdown          = Value > now;
-        _hasCountdownFinished = false;
+        // Rebuilding a clock must not turn an expired countdown into count-up.
+        // Only a new public target establishes a new direction and finish state.
+        if (_requiresTargetClassification)
+        {
+            _isCountdown = Value > DateTime.Now;
+            _hasCountdownFinished = false;
+            _requiresTargetClassification = false;
+        }
         
         _timer          =  new DispatcherTimer();
         _timer.Interval =  RefreshDuration;

@@ -3,6 +3,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:CountBadge}" TargetType="atom:CountBadge">
+        <Setter Property="TextElement.FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+    </ControlTheme>
+
     <ControlTheme x:Key="{x:Type atom:CountBadgeAdorner}" TargetType="atom:CountBadgeAdorner">
         <Setter Property="Template">
             <ControlTemplate>
@@ -28,7 +38,7 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="BadgeShadowSize" Value="{atom:CountBadgeTokenResource ShadowSize}" />
         <Setter Property="BadgeShadowColor" Value="{atom:CountBadgeTokenResource ShadowColor}" />
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
+        <Setter Property="MotionDuration" Value="{atom:CountBadgeTokenResource MotionDurationMid}" />
         <Setter Property="BadgeColor" Value="{atom:CountBadgeTokenResource IndicatorColor}" />
 
         <Style Selector="^[IsAdornerMode=True]">

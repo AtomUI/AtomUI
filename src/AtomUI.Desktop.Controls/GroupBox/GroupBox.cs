@@ -1,10 +1,12 @@
 ﻿using AtomUI.Controls.Utils;
 using AtomUI.Utils;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -15,7 +17,7 @@ public enum GroupBoxTitlePosition
     Center
 }
 
-public partial class GroupBox : ContentControl
+public partial class GroupBox : ContentControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -112,9 +114,23 @@ public partial class GroupBox : ContentControl
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        ConfigureHeaderGeometryObservation(false);
         base.OnApplyTemplate(e);
         _headerContentContainer = e.NameScope.Find<Decorator>("PART_HeaderContent");
         _frame                  = e.NameScope.Find<Border>("PART_Frame");
+        ConfigureHeaderGeometryObservation(this.IsAttachedToVisualTree());
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        ConfigureHeaderGeometryObservation(true);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        ConfigureHeaderGeometryObservation(false);
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -125,12 +141,8 @@ public partial class GroupBox : ContentControl
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = LayoutHelper.ArrangeChild(_frame, finalSize, default, BorderThickness);
-        if (_headerContentContainer is not null)
-        {
-            var headerOffset = _headerContentContainer.TranslatePoint(new Point(0, 0), this) ?? default;
-            var offsetY      = headerOffset.Y + _headerContentContainer.DesiredSize.Height / 2;
-            _borderBounds = new Rect(new Point(0, offsetY), new Size(finalSize.Width, finalSize.Height - offsetY));
-        }
+        UpdateBorderBounds(finalSize);
+        InvalidateChangedHeaderGeometry();
 
         return size;
     }
@@ -148,6 +160,52 @@ public partial class GroupBox : ContentControl
         if (_borderGeometryCache is not null)
         {
             context.DrawGeometry(BorderBrush, null, _borderGeometryCache);
+        }
+    }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    private void ConfigureHeaderGeometryObservation(bool enabled)
+    {
+        if (_headerContentContainer is not null)
+        {
+            _headerContentContainer.LayoutUpdated -= HandleHeaderLayoutUpdated;
+            if (enabled)
+            {
+                // A child/ancestor can finish layout without arranging this
+                // fixed-size owner. ControlTheme cannot invalidate its drawing
+                // from the resulting absolute gap; retire this observer on exit.
+                _headerContentContainer.LayoutUpdated += HandleHeaderLayoutUpdated;
+            }
+        }
+    }
+
+    private void HandleHeaderLayoutUpdated(object? sender, EventArgs e)
+    {
+        UpdateBorderBounds(Bounds.Size);
+        InvalidateChangedHeaderGeometry();
+    }
+
+    private void UpdateBorderBounds(Size size)
+    {
+        if (_headerContentContainer is not null)
+        {
+            var headerOffset = _headerContentContainer.TranslatePoint(new Point(0, 0), this) ?? default;
+            var offsetY = headerOffset.Y + _headerContentContainer.DesiredSize.Height / 2;
+            _borderBounds = new Rect(new Point(0, offsetY), new Size(size.Width, size.Height - offsetY));
+        }
+    }
+
+    private void InvalidateChangedHeaderGeometry()
+    {
+        if (!_geometryCacheInitialized || _cachedBorderBounds != _borderBounds ||
+            _cachedHeaderGapBounds != CalculateHeaderGapBounds())
+        {
+            InvalidateVisual();
         }
     }
 

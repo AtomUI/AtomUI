@@ -1,4 +1,7 @@
 using AtomUI.Controls;
+using AtomUI.Data;
+using AtomUI.Theme.Resources;
+using System.Reactive.Disposables;
 using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Reflection;
@@ -20,19 +23,20 @@ namespace AtomUI.Desktop.Controls;
 public partial class NotificationCard : ContentControl,
                                 IMotionAwareControl,
                                 IFeedbackStackItem,
-                                IFeedbackStackTransitionSnapshotItem
+                                IFeedbackStackTransitionSnapshotItem,
+                                IThemeInheritanceSource
 {
     #region 公共属性定义
-    
+
     public static readonly DirectProperty<NotificationCard, bool> IsClosingProperty =
         AvaloniaProperty.RegisterDirect<NotificationCard, bool>(nameof(IsClosing), o => o.IsClosing);
-    
+
     public static readonly StyledProperty<bool> IsClosedProperty =
         AvaloniaProperty.Register<NotificationCard, bool>(nameof(IsClosed));
 
     public static readonly StyledProperty<bool> IsShowProgressProperty =
         AvaloniaProperty.Register<NotificationCard, bool>(nameof(IsShowProgress));
-    
+
     public static readonly StyledProperty<NotificationType> NotificationTypeProperty =
         AvaloniaProperty.Register<NotificationCard, NotificationType>(
             nameof(NotificationType),
@@ -40,9 +44,17 @@ public partial class NotificationCard : ContentControl,
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<NotificationCard>();
-    
+
+    #endregion
+
+    #region 公共事件定义
+
     public static readonly RoutedEvent<RoutedEventArgs> NotificationClosedEvent =
         RoutedEvent.Register<NotificationCard, RoutedEventArgs>(nameof(NotificationClosed), RoutingStrategies.Bubble);
+
+    #endregion
+
+    #region 公共属性定义
 
     public static readonly StyledProperty<string> TitleProperty =
         AvaloniaProperty.Register<NotificationCard, string>(nameof(Title));
@@ -67,16 +79,18 @@ public partial class NotificationCard : ContentControl,
     /// </summary>
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
         Border.BoxShadowProperty.AddOwner<NotificationCard>();
-    
+
     public static readonly StyledProperty<TimeSpan?> ExpirationProperty =
         AvaloniaProperty.Register<NotificationCard, TimeSpan?>(nameof(Expiration));
-    
+
+    private bool _isClosing;
+
     public bool IsClosing
     {
         get => _isClosing;
         private set => SetAndRaise(IsClosingProperty, ref _isClosing, value);
     }
-    
+
     public bool IsClosed
     {
         get => GetValue(IsClosedProperty);
@@ -93,6 +107,12 @@ public partial class NotificationCard : ContentControl,
     {
         get => GetValue(NotificationTypeProperty);
         set => SetValue(NotificationTypeProperty, value);
+    }
+
+    public bool IsMotionEnabled
+    {
+        get => GetValue(IsMotionEnabledProperty);
+        set => SetValue(IsMotionEnabledProperty, value);
     }
 
     public string Title
@@ -133,7 +153,7 @@ public partial class NotificationCard : ContentControl,
         get => GetValue(BoxShadowProperty);
         set => SetValue(BoxShadowProperty, value);
     }
-    
+
     /// <summary>
     /// Gets the expiration time of the notification after which it will automatically close.
     /// If the value is null then the notification will remain open until the user closes it.
@@ -144,18 +164,18 @@ public partial class NotificationCard : ContentControl,
         set => SetValue(ExpirationProperty, value);
     }
 
+
+
+    #endregion
+
+    #region 公共事件定义
+
     public event EventHandler<RoutedEventArgs>? NotificationClosed
     {
         add => AddHandler(NotificationClosedEvent, value);
         remove => RemoveHandler(NotificationClosedEvent, value);
     }
 
-    public bool IsMotionEnabled
-    {
-        get => GetValue(IsMotionEnabledProperty);
-        set => SetValue(IsMotionEnabledProperty, value);
-    }
-    
     #endregion
 
     #region 内部属性定义
@@ -192,10 +212,9 @@ public partial class NotificationCard : ContentControl,
         get => _openCloseMotionDuration;
         set => SetAndRaise(OpenCloseMotionDurationProperty, ref _openCloseMotionDuration, value);
     }
-    
+
     #endregion
 
-    private bool _isClosing;
     private bool _isStackVisible = true;
     private readonly FeedbackCardMotionCoordinator _motionCoordinator;
     private WindowNotificationManager? _notificationManager;
@@ -204,8 +223,9 @@ public partial class NotificationCard : ContentControl,
     private NotificationProgressBar? _progressBar;
     private PathIcon? _templateNotificationIcon;
     private bool _isApplyingTemplateNotificationIcon;
-    private TimeSpan _progressBarTotalExpiration;
+    private TimeSpan _progressTotalExpiration;
     private Control? _motionTarget;
+    private CompositeDisposable? _ownerBindings;
     private FeedbackStackTransitionSnapshotHost? _stackTransitionSnapshotHost;
     private Matrix _stackCollapseSnapshotTarget;
     private bool _isStackCollapseSnapshotArmed;
@@ -228,7 +248,7 @@ public partial class NotificationCard : ContentControl,
     {
         _motionCoordinator = new FeedbackCardMotionCoordinator(CompleteCloseMotion);
     }
-    
+
     public void Close()
     {
         if (IsClosing)
@@ -238,6 +258,149 @@ public partial class NotificationCard : ContentControl,
 
         IsClosing = true;
     }
+
+    #region 内部协作 API
+
+    internal void BindOwner(WindowNotificationManager manager)
+    {
+        _ownerBindings?.Dispose();
+        _notificationManager = manager;
+        // Runtime queue items need these defaults before attachment/templates;
+        // manager ControlTheme cannot bind across its private item collection.
+        _ownerBindings = new CompositeDisposable(2)
+        {
+            BindUtils.RelayBind(manager, WindowNotificationManager.PositionProperty, this, PositionProperty),
+            BindUtils.RelayBind(manager, WindowNotificationManager.IsMotionEnabledProperty, this, IsMotionEnabledProperty, priority: BindingPriority.Template)
+        };
+    }
+
+    internal void ReleaseOwner()
+    {
+        ReleaseStackTransitionSnapshot();
+        _motionCoordinator.Dispose();
+        _ownerBindings?.Dispose();
+        _ownerBindings = null;
+        _notificationManager = null;
+        OnClick = null;
+        OnClose = null;
+    }
+
+    #endregion
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == TemplateProperty)
+        {
+            ClearProgressBar();
+            _layout = null;
+        }
+
+        if (this.IsAttachedToVisualTree())
+        {
+            if (change.Property == NotificationTypeProperty)
+            {
+                SetupNotificationTypePseudoClasses();
+                SetupDefaultNotificationIcon();
+            }
+        }
+
+        if (change.Property == RenderTransformProperty)
+        {
+            TryCompleteStackTransitionSnapshot(change.GetNewValue<ITransform?>());
+        }
+        else if (change.Property == IsClosedProperty)
+        {
+            ReleaseStackTransitionSnapshot();
+            UpdateMotionConfiguration();
+            if (!IsClosing && !IsClosed)
+            {
+                return;
+            }
+
+            RaiseEvent(new RoutedEventArgs(NotificationClosedEvent));
+        }
+        else if (change.Property == PositionProperty)
+        {
+            ReleaseStackTransitionSnapshot();
+            SetupPositionPseudoClasses(change.GetNewValue<NotificationPosition>());
+            UpdateMotionConfiguration();
+        }
+        else if (change.Property == IsClosingProperty)
+        {
+            if (IsClosing)
+            {
+                ReleaseStackTransitionSnapshot();
+                InvalidateFeedbackStackMeasure();
+                _motionCoordinator.StartClose(IsClosed, IsMotionEnabled, Position, OpenCloseMotionDuration);
+            }
+        }
+        else if (change.Property == IconProperty)
+        {
+            if (!_isApplyingTemplateNotificationIcon &&
+                (Icon is null || ReferenceEquals(Icon, _templateNotificationIcon)))
+            {
+                SetupDefaultNotificationIcon();
+            }
+        }
+        else if (change.Property == IsShowProgressProperty ||
+                 change.Property == ExpirationProperty)
+        {
+            if (change.Property == ExpirationProperty)
+            {
+                // Total belongs to this finite display lifetime, not to its
+                // replaceable visual Part. Remaining-time updates keep the total.
+                if (Expiration is null)
+                {
+                    _progressTotalExpiration = default;
+                }
+                else if (_progressTotalExpiration <= TimeSpan.Zero)
+                {
+                    _progressTotalExpiration = Expiration.Value;
+                }
+            }
+            ConfigureProgressBar();
+            if (change.Property == IsShowProgressProperty && this.IsAttachedToVisualTree())
+            {
+                _notificationManager?.RefreshProgress();
+            }
+        }
+        else if (change.Property == IsMotionEnabledProperty ||
+                 change.Property == OpenCloseMotionDurationProperty)
+        {
+            if (!IsMotionEnabled)
+            {
+                ReleaseStackTransitionSnapshot();
+            }
+            UpdateMotionConfiguration();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    protected override void OnPointerEntered(PointerEventArgs e)
+    {
+        base.OnPointerEntered(e);
+        _notificationManager?.SetItemPaused(this, true);
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        base.OnPointerExited(e);
+        _notificationManager?.SetItemPaused(this, false);
+    }
+
+    #region 实现 IFeedbackStackItem / IFeedbackStackTransitionSnapshotItem 接口
 
     bool IFeedbackStackItem.IsStackVisible
     {
@@ -285,14 +448,7 @@ public partial class NotificationCard : ContentControl,
         ReleaseStackTransitionSnapshot();
     }
 
-    internal void ReleaseOwner()
-    {
-        ReleaseStackTransitionSnapshot();
-        _motionCoordinator.Dispose();
-        _notificationManager = null;
-        OnClick = null;
-        OnClose = null;
-    }
+    #endregion
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -301,6 +457,7 @@ public partial class NotificationCard : ContentControl,
         SetupNotificationTypePseudoClasses();
         SetupDefaultNotificationIcon();
         ApplyMotionTarget();
+        ConfigureProgressBar();
         if (_closeButton != null)
         {
             _closeButton.Click += HandleCloseButtonClose;
@@ -317,7 +474,7 @@ public partial class NotificationCard : ContentControl,
             _closeButton.Click -= HandleCloseButtonClose;
         }
         ClearProgressBar();
-        _layout = null;
+        // Keep the current template part while detached; Template changes clear it.
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -344,6 +501,13 @@ public partial class NotificationCard : ContentControl,
         ApplyMotionTarget();
         ConfigureProgressBar();
     }
+    #region 实现 IThemeInheritanceSource 接口
+
+    // Only this owner exposes its protected native source; the optional
+    // FontFamily selection and typography defaults remain in ControlTheme.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     private void ApplyMotionTarget()
     {
@@ -364,73 +528,6 @@ public partial class NotificationCard : ContentControl,
     private void HandleCloseButtonClose(object? sender, EventArgs args)
     {
         Close();
-    }
-
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-
-        if (this.IsAttachedToVisualTree())
-        {
-            if (change.Property == NotificationTypeProperty)
-            {
-                SetupNotificationTypePseudoClasses();
-                SetupDefaultNotificationIcon();
-            }
-        }
-        
-        if (change.Property == RenderTransformProperty)
-        {
-            TryCompleteStackTransitionSnapshot(change.GetNewValue<ITransform?>());
-        }
-        else if (change.Property == IsClosedProperty)
-        {
-            ReleaseStackTransitionSnapshot();
-            UpdateMotionConfiguration();
-            if (!IsClosing && !IsClosed)
-            {
-                return;
-            }
-
-            RaiseEvent(new RoutedEventArgs(NotificationClosedEvent));
-        }
-        else if (change.Property == PositionProperty)
-        {
-            ReleaseStackTransitionSnapshot();
-            SetupPositionPseudoClasses(change.GetNewValue<NotificationPosition>());
-            UpdateMotionConfiguration();
-        } 
-        else if (change.Property == IsClosingProperty)
-        {
-            if (IsClosing)
-            {
-                ReleaseStackTransitionSnapshot();
-                InvalidateFeedbackStackMeasure();
-                _motionCoordinator.StartClose(IsClosed, IsMotionEnabled, Position, OpenCloseMotionDuration);
-            }
-        } 
-        else if (change.Property == IconProperty)
-        {
-            if (!_isApplyingTemplateNotificationIcon &&
-                (Icon is null || ReferenceEquals(Icon, _templateNotificationIcon)))
-            {
-                SetupDefaultNotificationIcon();
-            }
-        }
-        else if (change.Property == IsShowProgressProperty ||
-                 change.Property == ExpirationProperty)
-        {
-            ConfigureProgressBar();
-        }
-        else if (change.Property == IsMotionEnabledProperty ||
-                 change.Property == OpenCloseMotionDurationProperty)
-        {
-            if (!IsMotionEnabled)
-            {
-                ReleaseStackTransitionSnapshot();
-            }
-            UpdateMotionConfiguration();
-        }
     }
 
     private bool HasStackTransformTransition()
@@ -515,7 +612,6 @@ public partial class NotificationCard : ContentControl,
 
         if (_progressBar is null)
         {
-            _progressBarTotalExpiration = Expiration.Value;
             _progressBar = new NotificationProgressBar
             {
                 Name = "ProgressBar"
@@ -530,7 +626,7 @@ public partial class NotificationCard : ContentControl,
             _layout.Children.Add(_progressBar);
         }
 
-        _progressBar.SetCurrentValue(NotificationProgressBar.ExpirationProperty, _progressBarTotalExpiration);
+        _progressBar.SetCurrentValue(NotificationProgressBar.ExpirationProperty, _progressTotalExpiration);
         _progressBar.SetCurrentValue(NotificationProgressBar.CurrentExpirationProperty, Expiration.Value);
     }
 
@@ -543,8 +639,7 @@ public partial class NotificationCard : ContentControl,
 
         _layout?.Children.Remove(_progressBar);
         _progressBar.SetTemplatedParent(null);
-        _progressBar                = null;
-        _progressBarTotalExpiration = default;
+        _progressBar = null;
     }
 
     private void SetupNotificationTypePseudoClasses()
@@ -610,18 +705,6 @@ public partial class NotificationCard : ContentControl,
         }
 
         return null;
-    }
-
-    protected override void OnPointerEntered(PointerEventArgs e)
-    {
-        base.OnPointerEntered(e);
-        _notificationManager?.SetItemPaused(this, true);
-    }
-
-    protected override void OnPointerExited(PointerEventArgs e)
-    {
-        base.OnPointerExited(e);
-        _notificationManager?.SetItemPaused(this, false);
     }
 
     private void SetupPositionPseudoClasses(NotificationPosition position)

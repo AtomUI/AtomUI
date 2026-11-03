@@ -13,6 +13,6 @@
             </ControlTemplate>
         </Setter>
         <Setter Property="Opacity" Value="1"/>
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgMask}"/>
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgMask, AnchorControlType={x:Type atom:OverlayDialogPresenter}}"/>
     </ControlTheme>
 </ResourceDictionary>

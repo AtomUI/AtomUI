@@ -5,6 +5,27 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Alert}" TargetType="atom:Alert">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:OwnerTokenResource Kind="ColorText" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="ColorText" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder Background="{TemplateBinding Background}"
@@ -18,19 +39,19 @@
                                DockPanel.Dock="Left">
                             <antdicons:CheckCircleFilled Name="SuccessIcon"
                                                          Classes.semantic-icon="True"
-                                                         FillBrush="{atom:SharedTokenResource ColorSuccess}"
+                                                         FillBrush="{atom:OwnerTokenResource ColorSuccess, SourceControlType={x:Type atom:Alert}, Priority=Template}"
                                                          IsVisible="False"/>
                             <antdicons:InfoCircleFilled Name="InfoIcon"
                                                         Classes.semantic-icon="True"
-                                                        FillBrush="{atom:SharedTokenResource ColorPrimary}"
+                                                        FillBrush="{atom:OwnerTokenResource ColorPrimary, SourceControlType={x:Type atom:Alert}, Priority=Template}"
                                                         IsVisible="False"/>
                             <antdicons:ExclamationCircleFilled Name="WarningIcon"
                                                                Classes.semantic-icon="True"
-                                                               FillBrush="{atom:SharedTokenResource ColorWarning}"
+                                                               FillBrush="{atom:OwnerTokenResource ColorWarning, SourceControlType={x:Type atom:Alert}, Priority=Template}"
                                                                IsVisible="False"/>
                             <antdicons:CloseCircleFilled Name="ErrorIcon"
                                                          Classes.semantic-icon="True"
-                                                         FillBrush="{atom:SharedTokenResource ColorError}"
+                                                         FillBrush="{atom:OwnerTokenResource ColorError, SourceControlType={x:Type atom:Alert}, Priority=Template}"
                                                          IsVisible="False"/>
                         </Panel>
                         
@@ -79,34 +100,34 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG, SourceControlType={x:Type atom:Alert}}" />
         
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness, SourceControlType={x:Type atom:Alert}}" />
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         
         <Style Selector="^ /template/ DockPanel#RootLayout">
-            <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource SpacingXXS, SourceControlType={x:Type atom:Alert}}" />
         </Style>
  
         <Style Selector="^[Type=Success]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorSuccessBg}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSuccessBorder}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorSuccessBg, SourceControlType={x:Type atom:Alert}}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorSuccessBorder, SourceControlType={x:Type atom:Alert}}" />
         </Style>
 
         <Style Selector="^[Type=Info]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorder}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorInfoBg, SourceControlType={x:Type atom:Alert}}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorInfoBorder, SourceControlType={x:Type atom:Alert}}" />
         </Style>
 
         <Style Selector="^[Type=Warning]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorWarningBg}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorWarningBorder}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorWarningBg, SourceControlType={x:Type atom:Alert}}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorWarningBorder, SourceControlType={x:Type atom:Alert}}" />
         </Style>
 
         <Style Selector="^[Type=Error]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorErrorBg}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorErrorBorder}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorErrorBg, SourceControlType={x:Type atom:Alert}}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorErrorBorder, SourceControlType={x:Type atom:Alert}}" />
         </Style>
 
         <Style Selector="^:not(:has-description)">
@@ -120,19 +141,20 @@
         <Style Selector="^:has-description">
             <Style Selector="^ /template/ Label#MessageLabel, ^ /template/ atom|MarqueeLabel#MarqueeLabel">
                 <Setter Property="TemplatedControl.FontSize"
-                        Value="{atom:SharedTokenResource FontSizeLG}" />
+                        Value="{atom:OwnerTokenResource FontSizeLG, SourceControlType={x:Type atom:Alert}}" />
+                <Setter Property="Margin" Value="{atom:AlertTokenResource MessageWithDescriptionMargin, WhenExplicit=True}" />
                 <Setter Property="TemplatedControl.VerticalAlignment" Value="Top" />
             </Style>
         </Style>
         <Style Selector="^:not(:has-description)">
             <Style Selector="^ /template/ Label#MessageLabel, ^ /template/ atom|MarqueeLabel#MarqueeLabel">
                 <Setter Property="TemplatedControl.FontSize"
-                        Value="{atom:SharedTokenResource FontSize}" />
+                        Value="{atom:OwnerTokenResource FontSize, SourceControlType={x:Type atom:Alert}}" />
                 <Setter Property="TemplatedControl.VerticalAlignment" Value="Stretch" />
             </Style>
         </Style>
         <Style Selector="^ /template/ Label#MessageLabel">
-            <Setter Property="TextBox.LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
+            <Setter Property="TextBox.LineHeight" Value="{atom:OwnerTokenResource FontHeight, SourceControlType={x:Type atom:Alert}}" />
         </Style>
          <!-- 根据是否显示 MarqueeLabel 是指对应的样式 -->
          <Style Selector="^[IsMessageMarqueeEnabled=True]">
@@ -142,7 +164,7 @@
          </Style>
         
         <Style Selector="^ /template/ Label#DescriptionLabel">
-            <Setter Property="TextBox.LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
+            <Setter Property="TextBox.LineHeight" Value="{atom:OwnerTokenResource FontHeight, SourceControlType={x:Type atom:Alert}}" />
             <Setter Property="Margin" Value="{atom:AlertTokenResource DescriptionLabelMargin}" />
         </Style>
  
@@ -158,8 +180,22 @@
             </Style>
         </Style>
         <Style Selector="^ /template/ atom|IconButton#PART_CloseBtn">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <!-- Optional double presence preserves the original glyph default. -->
+            <Setter Property="IconWidth">
+                <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                    <atom:OwnerTokenResource Kind="IconSizeSM" SourceControlType="{x:Type atom:Alert}" />
+                    <atom:AlertTokenResource Kind="CloseIconSize" WhenExplicit="True" />
+                    <atom:AlertTokenResource Kind="CloseIconSize" />
+                </MultiBinding>
+            </Setter>
+            <!-- Optional double presence preserves the original glyph default. -->
+            <Setter Property="IconHeight">
+                <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                    <atom:OwnerTokenResource Kind="IconSizeSM" SourceControlType="{x:Type atom:Alert}" />
+                    <atom:AlertTokenResource Kind="CloseIconSize" WhenExplicit="True" />
+                    <atom:AlertTokenResource Kind="CloseIconSize" />
+                </MultiBinding>
+            </Setter>
             <Setter Property="Margin" Value="{atom:AlertTokenResource ExtraElementMargin}" />
         </Style>
 

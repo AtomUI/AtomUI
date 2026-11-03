@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -7,7 +8,7 @@ namespace AtomUI.Desktop.Controls;
 
 [global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
 [TemplatePart("PART_IconPresenter", typeof(IconPresenter))]
-internal class ImagePreviewerTitleBar : WindowTitleBar
+internal class ImagePreviewerTitleBar : WindowTitleBar, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
@@ -126,6 +127,10 @@ internal class ImagePreviewerTitleBar : WindowTitleBar
 
     public ImagePreviewerTitleBar()
     {
+        // LeftAddOn is an immediately available runtime Control. A template-only
+        // replacement changes creation and null-content visibility; /template/
+        // cannot reach this Content subtree. Keep the internal-state projections
+        // at their original preparation time and Local priority.
         var toolbar = new ImagePreviewToolbar();
         toolbar.Bind(ImagePreviewBaseToolbar.CurrentIndexProperty,
             this.GetObservable(CurrentIndexProperty));
@@ -143,4 +148,9 @@ internal class ImagePreviewerTitleBar : WindowTitleBar
             this.GetObservable(IsLastImageProperty));
         LeftAddOn = toolbar;
     }
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => ImagePreviewThemeOwner.Resolve(this);
+
+    #endregion
 }

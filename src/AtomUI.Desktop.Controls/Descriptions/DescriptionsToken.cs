@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class DescriptionsToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class DescriptionsToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -68,24 +68,35 @@ internal sealed class DescriptionsToken : AbstractControlDesignToken
     /// </summary>
     public Color ExtraColor { get; set; }
 
-    public DescriptionsToken()
 
-    {
-    }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        LabelBg      = EffectiveGlobalToken.ColorFillAlter;
-        LabelColor   = EffectiveGlobalToken.ColorTextTertiary;
-        TitleColor   = EffectiveGlobalToken.ColorText;
-        HeaderMargin = new Thickness(0, 0, 0, EffectiveGlobalToken.FontSizeSM * EffectiveGlobalToken.RelativeLineHeightSM);
-        ItemPaddingLG  = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG, EffectiveGlobalToken.UniformlyPadding);
-        ItemPadding  = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG, EffectiveGlobalToken.UniformlyPaddingSM);
-        ItemPaddingSM  = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingXS);
-        ColonMargin  = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS / 2, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        ContentColor = EffectiveGlobalToken.ColorText;
-        ExtraColor   = EffectiveGlobalToken.ColorText;
-    }
-    
+    [ControlTokenDefault(nameof(LabelBg))]
+    private static Color DefaultForLabelBg(in ControlTokenDefaultContext context) => context.Global.ColorFillAlter;
+
+    [ControlTokenDefault(nameof(LabelColor))]
+    private static Color DefaultForLabelColor(in ControlTokenDefaultContext context) => context.Global.ColorTextTertiary;
+
+    [ControlTokenDefault(nameof(TitleColor))]
+    private static Color DefaultForTitleColor(in ControlTokenDefaultContext context) => context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(HeaderMargin))]
+    private static Thickness DefaultForHeaderMargin(in ControlTokenDefaultContext context) => new Thickness(0, 0, 0, context.Global.FontSizeSM * context.Global.RelativeLineHeightSM);
+
+    [ControlTokenDefault(nameof(ItemPaddingLG))]
+    private static Thickness DefaultForItemPaddingLG(in ControlTokenDefaultContext context) => new Thickness(context.Global.UniformlyPaddingLG, context.Global.UniformlyPadding);
+
+    [ControlTokenDefault(nameof(ItemPadding))]
+    private static Thickness DefaultForItemPadding(in ControlTokenDefaultContext context) => new Thickness(context.Global.UniformlyPaddingLG, context.Global.UniformlyPaddingSM);
+
+    [ControlTokenDefault(nameof(ItemPaddingSM))]
+    private static Thickness DefaultForItemPaddingSM(in ControlTokenDefaultContext context) => new Thickness(context.Global.UniformlyPadding, context.Global.UniformlyPaddingXS);
+
+    [ControlTokenDefault(nameof(ColonMargin))]
+    private static Thickness DefaultForColonMargin(in ControlTokenDefaultContext context) => new Thickness(context.Global.UniformlyMarginXXS / 2, 0, context.Global.UniformlyMarginXS, 0);
+
+    [ControlTokenDefault(nameof(ContentColor))]
+    private static Color DefaultForContentColor(in ControlTokenDefaultContext context) => context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(ExtraColor))]
+    private static Color DefaultForExtraColor(in ControlTokenDefaultContext context) => context.Global.ColorText;
 }

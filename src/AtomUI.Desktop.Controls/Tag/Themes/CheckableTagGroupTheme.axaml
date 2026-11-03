@@ -5,6 +5,13 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:CheckableTagGroup}"
                   TargetType="atom:CheckableTagGroup">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:CheckableTagGroup">
                 <atom:CheckableTagItemsControl Name="PART_CheckableTagItems"
@@ -19,8 +26,8 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="ItemSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
-        <Setter Property="LineSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="ItemSpacing" Value="{atom:OwnerTokenResource SpacingXS}" />
+        <Setter Property="LineSpacing" Value="{atom:OwnerTokenResource SpacingXS}" />
     </ControlTheme>
 </ResourceDictionary>

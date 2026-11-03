@@ -1,0 +1,12 @@
+# CT15 展示控件严格退出补证
+
+仅补现有结果中尚无完整严格GC的TimerStatistic、StatisticCountUp、QRCode、Empty四个实际对象出口，不重复Own/Global/专用Part迁移。保留存活ThemeConfigProvider/Window和原完整业务字符串；Timer用真实正常计时、CountUp实际动画、QRCode完整Value及Loading→Active、Empty完整Description和Footer输入/120viewport900extent。去掉子控件后provider仍活着，NoInlining只保留弱引用。Debug/Release核对；无有效失败不改产品。临时源码清理后只精确Statistic/QRCode/Empty模块，不全量。原视觉恢复/持续态/平台与完整CT15继续保留。
+
+
+Debug四临时用例4PASS/0Skip/12.4786s。Timer未来20秒正常运行后退出、CountUp在公开EndValue热变化/正常动画后退出、QRCode原完整字符串Loading→Active、Empty完整Description/Footer输入与120/900视口均回收；provider/window继续存活。首编译ThemeConfigProvider误用Content（实际Child）及QRCodeStatus namespace缺失属驱动诊断，修正后才计有效执行。未取得产品失败，不改产品源码。Release严格回收核对继续；四者其他恢复/持续态/平台/完整家族边界未自动关闭。
+
+
+Release对应四场景4PASS/0Skip/13.0868s，无产品修改。按当前出口台账追加Spin与Marquee两条持续动画回收，而非重做已批准周期：Spin保留IsSpinning/Tip/原120viewport900extent；Marquee保持220×28/Clip及完整业务文本、default150与CycleSpace200。同一存活provider/Window与NoInlining，另方法只运行新增两条，之后Release验证对应路径。累计为六不同场景，不把重复Debug/Release计为新增合同数量。
+
+
+最终结果：六不同场景Debug均PASS（原四12.4786s/新增二8.5300s），Release均PASS（四13.0868s/二7.4010s）；没有产品反例或源码修改，不把重复运行计为更多用例。6临时case/1源5368字节与7会话文件25204字节已删除，无媒体。清理后实际重建精确Statistic5+QRCode8+Empty13+Spin16+Marquee1共43PASS/0Skip/3.8264s；最终产品源码未变，复用Drawer最终NET8零警告零错误16.76s。git diff --check通过。作者另步自审确认provider/window保持存活与NoInlining观测，没有强持有被测对象；只补本六条对象退出，不关闭其他恢复/持续态/平台/极值或完整CT15。

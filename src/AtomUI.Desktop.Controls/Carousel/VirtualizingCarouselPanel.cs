@@ -15,44 +15,28 @@ internal class VirtualizingCarouselPanel: VirtualizingPanel, ILogicalScrollable
         AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, object?>("RecycleKey");
 
     private static readonly object ItemIsItsOwnContainer = new object();
+
     private Size _extent;
+
     private Vector _offset;
+
     private Size _viewport;
+
     private Dictionary<object, Stack<Control>>? _recyclePool;
+
     private Control? _realized;
+
     private int _realizedIndex = -1;
+
     private Control? _transitionFrom;
+
     private int _transitionFromIndex = -1;
+
     private CancellationTokenSource? _transition;
+
     private EventHandler? _scrollInvalidated;
+
     private bool _isMeasureQueued;
-
-    bool ILogicalScrollable.CanHorizontallyScroll { get; set; }
-    bool ILogicalScrollable.CanVerticallyScroll { get; set; }
-    bool ILogicalScrollable.IsLogicalScrollEnabled => true;
-    Size ILogicalScrollable.ScrollSize => new(1, 1);
-    Size ILogicalScrollable.PageScrollSize => new(1, 1);
-    Size IScrollable.Extent => Extent;
-    Size IScrollable.Viewport => Viewport;
-    bool IScrollable.CanHorizontallyScroll => ((ILogicalScrollable)this).CanHorizontallyScroll;
-    bool IScrollable.CanVerticallyScroll => ((ILogicalScrollable)this).CanVerticallyScroll;
-
-    Vector IScrollable.Offset 
-    {
-        get => _offset;
-        set
-        {
-            if (!MathUtils.AreClose(_offset.X, value.X))
-            {
-                if (!_isMeasureQueued)
-                {
-                    _isMeasureQueued = true;
-                    InvalidateMeasure();
-                }
-            }
-            _offset = value;
-        }
-    }
 
     private Size Extent
     {
@@ -80,15 +64,35 @@ internal class VirtualizingCarouselPanel: VirtualizingPanel, ILogicalScrollable
         }
     }
 
-    event EventHandler? ILogicalScrollable.ScrollInvalidated
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        add => _scrollInvalidated += value;
-        remove => _scrollInvalidated -= value;
-    }
+        _transition?.Cancel();
+        _transition?.Dispose();
+        _transition = null;
+        _transitionFrom = null;
+        _transitionFromIndex = -1;
+        _realized = null;
+        _realizedIndex = -1;
+        _recyclePool?.Clear();
 
-    bool ILogicalScrollable.BringIntoView(Control target, Rect targetRect) => false;
-    Control? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, Control? from) => null;
-    void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e) => _scrollInvalidated?.Invoke(this, e);
+        // A replaced ItemsPresenter cannot reuse this panel's visual membership.
+        // In particular, an own-container marker must not make the new panel skip
+        // attachment of the same caller-owned page. Preserve the items/content,
+        // but retire preparation and visual membership with this panel.
+        foreach (var child in Children.ToArray())
+        {
+            // ClearItemContainer clears generated Content; caller-owned pages
+            // must keep their original Content and native values.
+            if (child.GetValue(RecycleKeyProperty) != ItemIsItsOwnContainer)
+            {
+                ItemContainerGenerator?.ClearItemContainer(child);
+            }
+            child.ClearValue(RecycleKeyProperty);
+            RemoveInternalChild(child);
+        }
+        base.OnDetachedFromVisualTree(e);
+        InvalidateMeasure();
+    }
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -133,7 +137,7 @@ internal class VirtualizingCarouselPanel: VirtualizingPanel, ILogicalScrollable
                 _realized      = null;
                 _realizedIndex = -1;
             }
-                
+
             // Get or create an element for the new item.
             if (index >= 0 && index < items.Count)
             {
@@ -296,6 +300,65 @@ internal class VirtualizingCarouselPanel: VirtualizingPanel, ILogicalScrollable
             InvalidateMeasure();
         }
     }
+
+    #region 实现 ILogicalScrollable 接口
+
+    bool ILogicalScrollable.CanHorizontallyScroll { get; set; }
+
+    bool ILogicalScrollable.CanVerticallyScroll { get; set; }
+
+    bool ILogicalScrollable.IsLogicalScrollEnabled => true;
+
+    Size ILogicalScrollable.ScrollSize => new(1, 1);
+
+    Size ILogicalScrollable.PageScrollSize => new(1, 1);
+
+    #endregion
+
+    #region 实现 IScrollable 接口
+
+    Size IScrollable.Extent => Extent;
+
+    Size IScrollable.Viewport => Viewport;
+
+    bool IScrollable.CanHorizontallyScroll => ((ILogicalScrollable)this).CanHorizontallyScroll;
+
+    bool IScrollable.CanVerticallyScroll => ((ILogicalScrollable)this).CanVerticallyScroll;
+
+    Vector IScrollable.Offset
+    {
+        get => _offset;
+        set
+        {
+            if (!MathUtils.AreClose(_offset.X, value.X))
+            {
+                if (!_isMeasureQueued)
+                {
+                    _isMeasureQueued = true;
+                    InvalidateMeasure();
+                }
+            }
+            _offset = value;
+        }
+    }
+
+    #endregion
+
+    #region 实现 ILogicalScrollable 接口
+
+    event EventHandler? ILogicalScrollable.ScrollInvalidated
+    {
+        add => _scrollInvalidated += value;
+        remove => _scrollInvalidated -= value;
+    }
+
+    bool ILogicalScrollable.BringIntoView(Control target, Rect targetRect) => false;
+
+    Control? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, Control? from) => null;
+
+    void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e) => _scrollInvalidated?.Invoke(this, e);
+
+    #endregion
 
     private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
     {

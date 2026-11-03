@@ -43,10 +43,14 @@
   而不重绘整页；条件不满足时租约为 null，保持直接绘制。条件与验证见
   [覆盖层内容缓存](../../../../architecture/systems/control-infrastructure/overlay-content-cache.md)。
 - `WindowDialogPresenter` 拥有一个 `DialogWindow`，并将同一个 `DialogSurface` 作为原生 Window 内容。
-  `DialogWindow` 逻辑父是 owner `Dialog`（presenter 构造时 `SetParent`），并按 `PopupRoot` 既有范式覆写
-  `IStyleHost.StylingParent => Parent`，使 owner 实例级 Semantic Style 能级联进独立窗口宿主；owner 未生根
-  （脱离页面树直接构造 presenter）时退回 `Application`，保证 ControlTheme 仍可达。
+  `DialogWindow`逻辑资源owner优先取已生根的Dialog，否则取placement target，最后回退物理owner；原生窗口的ThemeContextLease和首次自然测量使用相同owner。`IStyleHost.StylingParent`继续按实际Parent级联，物理modal owner和窗口输入策略独立保持。
 - `MessageBox` 不拥有隐藏 Dialog；它覆盖 Surface 内容和按钮配置 hook。
+
+### 主题消费与字体
+
+17 Dialog Own和2 MessageBox Own为有效默认Revision1，MinHeight通过显式HeaderPadding依赖计算；默认资源不变。Surface/OverlayPresenter的只读公共owner代理让Global读取具体终端身份，Header/Caption/Mask/MessageBoxContent模板使用Surface/presenter锚点定位，不能给内部资产类型虚构schema身份。
+
+Surface可选FontFamily/FontSize/Foreground Setter复用Core有限继承源与存在位选择，明确Global才覆盖实际宿主继承。未生根Window控制器原12/Black与实际Host/Surface原14/系统字体不同，不能把控制器全部继承值relay到Surface；本包未新增该转发。原生内容和专用body/title/container Style仍由真实目标消费。资源桥、会话关闭、物理modal owner和焦点恢复沿用原机制。
 
 ## 4. 状态与数据流
 
@@ -129,12 +133,12 @@ Window 和 Overlay 各自拥有一个 Surface 实例，不共享同一个视觉�
 | `close` | `OverlayDialogHeaderTheme.axaml` | `DialogCaptionButton#PART_CloseButton` |
 
 Overlay 可达性依赖两条实现不变量：`OverlayDialogPresenter` 必须在加入 `DialogOverlayLayer` **之前**被显式设为
-`Dialog` 的逻辑子节点（`((ISetLogicalParent)presenter).SetParent(_dialog)`，先例：`DrawerContainer`），否则 owner
+`Dialog`的原生`LogicalChildren`成员，否则owner
 作用域生成的 Semantic Style 无法沿逻辑祖先链命中 presenter 子树；`Dialog` 必须实现
 `ISemanticPartCrossRootProvider` 并在 presenter 附加/释放时上报 `GetCrossRoots()`，供 Gallery 语义预览收集跨根。
 Window 宿主同样上报：跨根是原生 `DialogWindow`（`GetCrossRoots()` 在 `HostWindow.IsVisible` 时返回该窗口，
 `WindowDialogPresenter` 在窗口显示、Opened 与 teardown 时触发 `CrossRootsChanged`），语义预览据此在该窗口内解析并
-高亮部件（Adorner 落在宿主窗口自己的 AdornerLayer）；该上报只服务跨根解析，owner 作用域的样式级联仍不跨 TopLevel。
+高亮部件（Adorner落在宿主窗口自己的AdornerLayer）；跨根上报与样式级联是分别维护的合同，Window宿主通过其StylingParent逻辑链支持已生根owner的实例级专用Style。
 完整契约见 [Modal / Dialog Semantic Part 契约](semantic-part.md)。
 
 ## 6. 生命周期与模板接入
@@ -150,6 +154,8 @@ Window 宿主同样上报：跨根是原生 `DialogWindow`（`GetCrossRoots()` �
 | Overlay mask/header/resize handlers 与 pointer capture | `OverlayDialogPresenter` / `OverlayDialogResizer` | release、capture lost、re-template 或 `DisposeAsync` |
 | Window events and property bindings | `WindowDialogPresenter` | `DisposeAsync` |
 | Dialog-to-Window resource bridge | `WindowDialogPresenter` | 从 Window resources 移除并在 `DisposeAsync` 退订 |
+| Overlay logical child | 已生根的`Dialog` | presenter移出layer时对称移除，传播热资源更新 |
+| 未生根Dialog的placement target资源桥 | `OverlayDialogPresenter`既有bindings集合 | `DisposeAsync`退订并从resources移除 |
 | Surface composition child links | concrete presenter | Overlay 在退出 motion 后、移除 layer 前断开；Window 在原生关闭后于 dispose 中断开 |
 | inheritance/resource parent | presenter | 从 layer/window 移除后清空 |
 | MessageBox default button content cache | `MessageBox` 当前 Surface | `ReleaseSurfaceButtons` |
@@ -304,4 +310,9 @@ Dialog 内容区内的 popup 沿 placement target 解析同一 Window `TopLevel`
 Wayland 证据仅覆盖 Dialog 内容 Popup 真实窗口人工回归。Linux X11 尚未测试。Headless 测试只能证明
 共享 managed 不变量，不能替代缺失平台的实机证据。
 
-迭代先运行 Dialog/MessageBox filter，再运行完整 `AtomUI.Desktop.Controls.Tests`、Gallery tests/build、NativeAOT publish 和 `git diff --check`。
+迭代运行 Dialog/MessageBox 精确 filter；临时验证完成并删除后，再按清理后的树验收本模块。按具体改动补 NET8、Gallery 或 NativeAOT 专项并运行 `git diff --check`；完整回归仅在用户明确要求或发布流程执行。
+
+
+### Overlay modal 的 Tab 导航
+
+OverlayDialogPresenterTheme 在已有 IsModal=True 条件 Style 内声明 KeyboardNavigation.TabNavigation=Cycle。该约束以 presenter 的实际视觉子树为范围，覆盖 Surface 和现有可聚焦根，不新增键盘事件转发或资源订阅。IsModal 的既有 owner 绑定负责热更新，modeless 取消条件后回到默认 Continue；DialogSession 继续负责打开时进入 Surface 和关闭后的原焦点恢复。

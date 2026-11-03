@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -34,7 +35,8 @@ public enum ImageSwitchMode
 
 public abstract class AbstractImagePreviewer : TemplatedControl,
                                                IMotionAwareControl,
-                                               ISemanticPartCrossRootProvider
+                                               ISemanticPartCrossRootProvider,
+                                               IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -846,6 +848,12 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         disposables.Add(BindUtils.RelayBind(this, PreviewTitleIconProperty, dialogHost, ImagePreviewerDialog.TitleIconProperty));
         disposables.Add(BindUtils.RelayBind(this, PreviewTitleResolverProperty, dialogHost, ImagePreviewerDialog.PreviewTitleResolverProperty));
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     private void RaiseCrossRootsChanged()
     {

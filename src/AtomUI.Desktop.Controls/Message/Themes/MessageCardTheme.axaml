@@ -2,8 +2,18 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:MessageCard}" TargetType="atom:MessageCard">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize, SourceControlType={x:Type atom:MessageCard}}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText, SourceControlType={x:Type atom:MessageCard}}" />
         <Setter Property="Template">
             <ControlTemplate>
                     <Border Name="PART_Frame"
@@ -29,7 +39,7 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion, SourceControlType={x:Type atom:MessageCard}}" />
         
         <Style Selector="^ /template/ atom|IconPresenter">
             <Setter Property="Width" Value="{atom:MessageCardTokenResource MessageIconSize}" />
@@ -37,42 +47,57 @@
         </Style>
 
         <Style Selector="^[MessageType=Information]">
+            <Setter Property="Icon">
+                <Template><antdicons:InfoCircleFilled /></Template>
+            </Setter>
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:OwnerTokenResource ColorPrimary, SourceControlType={x:Type atom:MessageCard}}" />
             </Style>
         </Style>
 
         <Style Selector="^[MessageType=Loading]">
+            <Setter Property="Icon">
+                <Template><antdicons:LoadingOutlined LoadingAnimation="Spin" /></Template>
+            </Setter>
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:OwnerTokenResource ColorPrimary, SourceControlType={x:Type atom:MessageCard}}" />
             </Style>
         </Style>
 
         <Style Selector="^[MessageType=Error]">
+            <Setter Property="Icon">
+                <Template><antdicons:CloseCircleFilled /></Template>
+            </Setter>
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorError}" />
+                        Value="{atom:OwnerTokenResource ColorError, SourceControlType={x:Type atom:MessageCard}}" />
             </Style>
         </Style>
 
         <Style Selector="^[MessageType=Success]">
+            <Setter Property="Icon">
+                <Template><antdicons:CheckCircleFilled /></Template>
+            </Setter>
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorSuccess}" />
+                        Value="{atom:OwnerTokenResource ColorSuccess, SourceControlType={x:Type atom:MessageCard}}" />
             </Style>
         </Style>
 
         <Style Selector="^[MessageType=Warning]">
+            <Setter Property="Icon">
+                <Template><antdicons:ExclamationCircleFilled /></Template>
+            </Setter>
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorWarning}" />
+                        Value="{atom:OwnerTokenResource ColorWarning, SourceControlType={x:Type atom:MessageCard}}" />
             </Style>
         </Style>
 
         <Setter Property="OpenCloseMotionDuration"
-                Value="{atom:SharedTokenResource MotionDurationMid}" />
+                Value="{atom:OwnerTokenResource MotionDurationMid, SourceControlType={x:Type atom:MessageCard}}" />
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="Transitions">
@@ -97,8 +122,8 @@
         -->
         <Setter Property="Background" Value="{atom:MessageCardTokenResource ContentBg}" />
         <Setter Property="Padding" Value="{atom:MessageCardTokenResource ContentPadding}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-        <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadows}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG, SourceControlType={x:Type atom:MessageCard}}" />
+        <Setter Property="BoxShadow" Value="{atom:OwnerTokenResource BoxShadows, SourceControlType={x:Type atom:MessageCard}}" />
 
         <Style Selector="^ /template/ Border#PART_Frame">
             <Setter Property="Margin" Value="0" />
@@ -109,11 +134,9 @@
         </Style>
 
         <Style Selector="^ /template/ SelectableTextBlock#PART_Message">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
-            <Setter Property="SelectionBrush" Value="{atom:SharedTokenResource SelectionBackground}" />
-            <Setter Property="SelectionForegroundBrush" Value="{atom:SharedTokenResource SelectionForeground}" />
+            <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeight, SourceControlType={x:Type atom:MessageCard}}" />
+            <Setter Property="SelectionBrush" Value="{atom:OwnerTokenResource SelectionBackground, SourceControlType={x:Type atom:MessageCard}}" />
+            <Setter Property="SelectionForegroundBrush" Value="{atom:OwnerTokenResource SelectionForeground, SourceControlType={x:Type atom:MessageCard}}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconPresenter#PART_IconContent">

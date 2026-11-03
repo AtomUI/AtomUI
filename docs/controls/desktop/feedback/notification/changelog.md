@@ -2,6 +2,13 @@
 
 本文档记录 Notification 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-31
+
+- 17 Own迁有效默认Revision1，保留公式、常量、immutable双stop渐变和全部资源协议。
+- Card/manager Global与嵌套primitive source接通；正文角色默认归root，Native字号/前景可达正文，标题角色和真实字体继承保留。
+- 修复进度重挂缺失、换模板/隐藏恢复把remaining当总量，以及动态开启进度不刷新调度的问题；总量和视觉Part生命周期分开，复用现有manager scheduler。
+- manager卡片状态订阅有明确释放归属，稳定模板状态绑定迁AXAML；保持默认图标、关闭/hover/Stack/motion与快照机制。
+
 ## 2026-10-27
 
 - Motion
@@ -9,6 +16,7 @@
   - 进入/退出改用共享 Motion 轨迹和框架时钟，关闭从当前透明度与矩阵连续替代入场。
   - 协调层保留业务版本与单次关闭提交，移除旧过渡订阅、两套取消源、额外帧屏障与等待旧执行清理的路径。
   - 保持阴影、64 DIP 方向、堆叠与内容快照、进度条及 Semantic Part route。
+
 
 ## 2026-09-22
 

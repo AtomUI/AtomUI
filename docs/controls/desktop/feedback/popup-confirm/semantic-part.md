@@ -327,3 +327,7 @@ PopupConfirm 的唯一 Semantic owner 是 `PopupConfirm`。`PopupConfirm` 继承
 - Gallery Semantic Parts Tab 延迟创建 Preview，弹层钉住常开，9 个 Part 均可解析高亮（跨视觉根弹层根由
   `SemanticPartPreview.AdditionalRoots` 显式注册）。
 - descriptor、生成 Style 与 NativeAOT 路径使用编译期生成数据，不依赖运行时反射或 VisualTree 扫描。
+
+### 2026-10-31 字体与角色输入
+
+八个专用PopupConfirmPopup*Style继续命中真实跨根部件，默认主题不消费semantic选择器。标题/description的字体与前景、icon颜色/尺寸和actions间距通过各自生成类定制；明确终端Global提供确认角色输入，actual用户Control内容的本地字体保持。root仍是触发/确认组织边界，popup.root承载共享框体，不增加控制器继承属性转发。

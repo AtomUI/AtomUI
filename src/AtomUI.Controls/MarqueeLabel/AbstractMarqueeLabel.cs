@@ -142,20 +142,29 @@ public abstract class AbstractMarqueeLabel : TextBlock
         {
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = new CancellationTokenSource();
-            var animationTask = _animation!.RunAsync(this, _cancellationTokenSource.Token);
+            var cancellationTokenSource = new CancellationTokenSource();
+            _cancellationTokenSource = cancellationTokenSource;
+            var animation = _animation;
+            var animationTask = animation.RunAsync(this, cancellationTokenSource.Token);
             _animationRunning = true;
             this.Dispatcher.InvokeAsync(async () =>
             {
                 await animationTask;
-                _animationRunning = false;
-                _animation        = null;
+                if (ReferenceEquals(_animation, animation) &&
+                    ReferenceEquals(_cancellationTokenSource, cancellationTokenSource))
+                {
+                    _animationRunning = false;
+                    _animation = null;
+                    _cancellationTokenSource = null;
+                    cancellationTokenSource.Dispose();
+                }
             });
         }
     }
 
     private void HandleCleanupMarqueeAnimation()
     {
+        _animationRunning = false;
         if (_cancellationTokenSource != null)
         {
             _cancellationTokenSource.Cancel();
@@ -169,25 +178,25 @@ public abstract class AbstractMarqueeLabel : TextBlock
         if (availableSize.Width > size.Width || MathUtils.AreClose(availableSize.Width, size.Width))
         {
             HandleCleanupMarqueeAnimation();
+            _animation = null;
             PivotOffset            = 0;
             _lastDesiredWidth      = 0;
+            _lastTextWidth         = 0;
             _pivotOffsetStartValue = 0;
         }
         else
         {
-            if (!MathUtils.AreClose(_lastDesiredWidth, size.Width))
-            {
-                _lastDesiredWidth = size.Width;
-                if (!MathUtils.AreClose(_lastTextWidth, TextLayout.Width))
-                {
-                    _lastTextWidth = TextLayout.Width;
-                }
-            }
+            _lastDesiredWidth = size.Width;
+            var textWidthChanged = !MathUtils.AreClose(_lastTextWidth, TextLayout.Width);
+            _lastTextWidth = TextLayout.Width;
 
-            if (!_animationRunning)
+            if (textWidthChanged || !_animationRunning)
             {
                 ReConfigureAnimation();
-                HandleStartupMarqueeAnimation();
+                if (!IsPointerOver)
+                {
+                    HandleStartupMarqueeAnimation();
+                }
             }
         }
     }
@@ -196,9 +205,7 @@ public abstract class AbstractMarqueeLabel : TextBlock
     {
         if (_animation is not null && _animationRunning)
         {
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = null;
+            HandleCleanupMarqueeAnimation();
         }
 
         var cycleWidth = _lastTextWidth + CycleSpace;

@@ -15,6 +15,8 @@ namespace AtomUI.Controls.Commons;
 /// </summary>
 internal class BackTopProgressRing : Control
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<double> ProgressProperty =
         AvaloniaProperty.Register<BackTopProgressRing, double>(nameof(Progress));
 
@@ -60,13 +62,17 @@ internal class BackTopProgressRing : Control
         set => SetValue(CornerRadiusProperty, value);
     }
 
+    #endregion
+
+    private IPen? _trackPen;
+
     static BackTopProgressRing()
     {
         AffectsRender<BackTopProgressRing>(ProgressProperty, TrackBrushProperty,
             IndicatorBrushProperty, StrokeThicknessProperty, CornerRadiusProperty);
     }
 
-    private IPen? _trackPen;
+    #region 内部协作 API
 
     /// <summary>
     /// 计算环的几何：外/中心线/内边界矩形与对应圆角半径。
@@ -89,6 +95,8 @@ internal class BackTopProgressRing : Control
         return new BackTopProgressRingMetrics(outerRect, centerlineRect, innerRect,
             outerRadius, centerlineRadius, innerRadius);
     }
+
+    #endregion
 
     public override void Render(DrawingContext context)
     {

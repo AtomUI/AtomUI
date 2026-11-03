@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
@@ -6,13 +7,15 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
+using Avalonia.Styling;
 using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
 internal class ImagePreviewerDialog : Window,
-                                      IMotionAwareControl
+                                      IMotionAwareControl, IStyleHost, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
@@ -502,8 +505,8 @@ internal class ImagePreviewerDialog : Window,
         _imageViewer    = CreateImageViewer();
         _imageViewer.PreviewChanged += HandleViewerPreviewChanged;
         // popup.root：native dialog 的内容根包裹 Panel，用生成的 SemanticPart 常量注入
-        // marker（overlay 宿主在模板根静态声明同一 marker）。owner 作用域 Semantic Style
-        // 不跨 Window/TopLevel 级联，仅 overlay 宿主可命中，见 semantic-part.md。
+        // marker（overlay 宿主在模板根静态声明同一 marker）。IStyleHost retains
+        // the public owner's generated styles across this independent TopLevel.
         Content = new Panel
         {
             Children = { _imageViewer },
@@ -617,6 +620,24 @@ internal class ImagePreviewerDialog : Window,
             previewerTitleBar[!ImagePreviewerTitleBar.IsLastImageProperty]        = this[!IsLastImageProperty];
         }
     }
+
+    #region 实现 IStyleHost 接口
+
+    // TopLevel otherwise starts at Application, excluding the rooted public owner's
+    // generated Semantic Part styles. Reuse the DialogWindow/PopupRoot host chain;
+    // a detached owner still needs Application themes for direct host construction.
+    IStyleHost? IStyleHost.StylingParent
+        => Parent is { } parent && ((ILogical)parent).IsAttachedToLogicalTree
+            ? parent
+            : Application.Current;
+
+    #endregion
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => _imagePreviewer;
+
+    #endregion
 
     private ImageViewer CreateImageViewer()
     {

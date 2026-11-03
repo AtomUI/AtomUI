@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -23,7 +24,7 @@ internal class ImagePreviewToolbarRequestEventArgs : RoutedEventArgs
     }
 }
 
-internal class ImagePreviewBaseToolbar : TemplatedControl
+internal class ImagePreviewBaseToolbar : TemplatedControl, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
@@ -282,6 +283,12 @@ internal class ImagePreviewBaseToolbar : TemplatedControl
             _fitToWindowButton.Click += HandleButtonClick;
         }
     }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => ImagePreviewThemeOwner.Resolve(this);
+
+    #endregion
 
     private void HandleButtonClick(object? sender, RoutedEventArgs e)
     {

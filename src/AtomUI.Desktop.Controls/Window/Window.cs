@@ -31,12 +31,11 @@ public partial class Window : AvaloniaWindow,
                               IOperationSystemAware,
                               IMediaBreakAwareControl
 {
-    private const double WindowsCsdMinimumHeightInTitleBars = 2;
-
     #region 公共属性定义
+
     public static readonly StyledProperty<object?> LogoProperty =
         WindowTitleBar.LogoProperty.AddOwner<Window>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> LogoTemplateProperty =
         WindowTitleBar.LogoTemplateProperty.AddOwner<Window>();
 
@@ -60,43 +59,43 @@ public partial class Window : AvaloniaWindow,
 
     public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
         WindowTitleBar.RightAddOnTemplateProperty.AddOwner<Window>();
-    
+
     public static readonly StyledProperty<bool> IsTitleBarVisibleProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsTitleBarVisible), defaultValue: true);
-    
+
     public static readonly StyledProperty<object?> WindowFrameLayerProperty =
         AvaloniaProperty.Register<Window, object?>(nameof(WindowFrameLayer));
-    
+
     public static readonly StyledProperty<IDataTemplate?> WindowFrameLayerTemplateProperty =
         AvaloniaProperty.Register<Window, IDataTemplate?>(nameof(WindowFrameLayerTemplate));
-    
+
     public static readonly StyledProperty<double> WindowFrameLayerOpacityProperty =
         AvaloniaProperty.Register<Window, double>(nameof(WindowFrameLayerOpacity), 1.0);
-    
+
     public static readonly StyledProperty<object?> ContentFrameLayerProperty =
         AvaloniaProperty.Register<Window, object?>(nameof(ContentFrameLayer));
-    
+
     public static readonly StyledProperty<IDataTemplate?> ContentFrameLayerTemplateProperty =
         AvaloniaProperty.Register<Window, IDataTemplate?>(nameof(ContentFrameLayerTemplate));
-    
+
     public static readonly StyledProperty<double> ContentFrameLayerOpacityProperty =
         AvaloniaProperty.Register<Window, double>(nameof(ContentFrameLayerOpacity), 1.0);
-    
+
     public static readonly StyledProperty<IBrush?> ContentFrameBackgroundProperty =
         AvaloniaProperty.Register<Window, IBrush?>(nameof(ContentFrameBackground));
-    
+
     public static readonly StyledProperty<object?> TitleBarFrameLayerProperty =
         AvaloniaProperty.Register<Window, object?>(nameof(TitleBarFrameLayer));
-    
+
     public static readonly StyledProperty<IDataTemplate?> TitleBarFrameLayerTemplateProperty =
         AvaloniaProperty.Register<Window, IDataTemplate?>(nameof(TitleBarFrameLayerTemplate));
-    
+
     public static readonly StyledProperty<double> TitleBarFrameLayerOpacityProperty =
         AvaloniaProperty.Register<Window, double>(nameof(TitleBarFrameLayerOpacity), 1.0);
-    
+
     public static readonly StyledProperty<IBrush?> TitleBarFrameBackgroundProperty =
         AvaloniaProperty.Register<Window, IBrush?>(nameof(TitleBarFrameBackground));
-    
+
     public static readonly StyledProperty<bool> IsMinimizeCaptionButtonVisibleProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsMinimizeCaptionButtonVisible), true);
 
@@ -111,32 +110,26 @@ public partial class Window : AvaloniaWindow,
 
     public static readonly StyledProperty<bool> IsPinCaptionButtonVisibleProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsPinCaptionButtonVisible));
-    
+
     public static readonly StyledProperty<bool> IsMoveEnabledProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsMoveEnabled), defaultValue: true);
-    
-    public static readonly StyledProperty<MediaBreakPoint> MediaBreakPointProperty = 
+
+    public static readonly StyledProperty<MediaBreakPoint> MediaBreakPointProperty =
         MediaBreakAwareControlProperty.MediaBreakPointProperty.AddOwner<Window>();
-    
+
     public static readonly StyledProperty<OsType> OsTypeProperty =
         OperationSystemAwareControlProperty.OsTypeProperty.AddOwner<Window>();
-    
+
     public static readonly StyledProperty<Version> OsVersionProperty =
         OperationSystemAwareControlProperty.OsVersionProperty.AddOwner<Window>();
-    
-    public bool IsTitleBarVisible
-    {
-        get => GetValue(IsTitleBarVisibleProperty);
-        set => SetValue(IsTitleBarVisibleProperty, value);
-    }
-    
+
     [DependsOn(nameof(LogoTemplate))]
     public object? Logo
     {
         get => GetValue(LogoProperty);
         set => SetValue(LogoProperty, value);
     }
-    
+
     public IDataTemplate? LogoTemplate
     {
         get => GetValue(LogoTemplateProperty);
@@ -186,76 +179,82 @@ public partial class Window : AvaloniaWindow,
         get => GetValue(RightAddOnTemplateProperty);
         set => SetValue(RightAddOnTemplateProperty, value);
     }
-    
+
+    public bool IsTitleBarVisible
+    {
+        get => GetValue(IsTitleBarVisibleProperty);
+        set => SetValue(IsTitleBarVisibleProperty, value);
+    }
+
     [DependsOn(nameof(WindowFrameLayerTemplate))]
     public object? WindowFrameLayer
     {
         get => GetValue(WindowFrameLayerProperty);
         set => SetValue(WindowFrameLayerProperty, value);
     }
-    
+
     public object? WindowFrameLayerTemplate
     {
         get => GetValue(WindowFrameLayerTemplateProperty);
         set => SetValue(WindowFrameLayerTemplateProperty, value);
     }
-    
+
     public double WindowFrameLayerOpacity
     {
         get => GetValue(WindowFrameLayerOpacityProperty);
         set => SetValue(WindowFrameLayerOpacityProperty, value);
     }
-    
+
     [DependsOn(nameof(ContentFrameLayerTemplate))]
     public object? ContentFrameLayer
     {
         get => GetValue(ContentFrameLayerProperty);
         set => SetValue(ContentFrameLayerProperty, value);
     }
-    
+
     public object? ContentFrameLayerTemplate
     {
         get => GetValue(ContentFrameLayerTemplateProperty);
         set => SetValue(ContentFrameLayerTemplateProperty, value);
     }
-    
+
     public double ContentFrameLayerOpacity
     {
         get => GetValue(ContentFrameLayerOpacityProperty);
         set => SetValue(ContentFrameLayerOpacityProperty, value);
     }
-    
+
     public IBrush? ContentFrameBackground
     {
         get => GetValue(ContentFrameBackgroundProperty);
         set => SetValue(ContentFrameBackgroundProperty, value);
     }
-    
+
     [DependsOn(nameof(TitleBarFrameLayerTemplate))]
     public object? TitleBarFrameLayer
     {
         get => GetValue(TitleBarFrameLayerProperty);
         set => SetValue(TitleBarFrameLayerProperty, value);
     }
-    
+
     public object? TitleBarFrameLayerTemplate
     {
         get => GetValue(TitleBarFrameLayerTemplateProperty);
         set => SetValue(TitleBarFrameLayerTemplateProperty, value);
     }
-    
+
     public double TitleBarFrameLayerOpacity
     {
         get => GetValue(TitleBarFrameLayerOpacityProperty);
         set => SetValue(TitleBarFrameLayerOpacityProperty, value);
     }
-    
+
     public IBrush? TitleBarFrameBackground
     {
         get => GetValue(TitleBarFrameBackgroundProperty);
         set => SetValue(TitleBarFrameBackgroundProperty, value);
     }
-    
+
     public bool IsMinimizeCaptionButtonVisible
     {
         get => GetValue(IsMinimizeCaptionButtonVisibleProperty);
@@ -285,43 +284,45 @@ public partial class Window : AvaloniaWindow,
         get => GetValue(IsPinCaptionButtonVisibleProperty);
         set => SetValue(IsPinCaptionButtonVisibleProperty, value);
     }
-    
+
     public bool IsMoveEnabled
     {
         get => GetValue(IsMoveEnabledProperty);
         set => SetValue(IsMoveEnabledProperty, value);
     }
-    
+
     public MediaBreakPoint MediaBreakPoint
     {
         get => GetValue(MediaBreakPointProperty);
         internal set => SetValue(MediaBreakPointProperty, value);
     }
-    
+
     public OsType OsType => GetValue(OsTypeProperty);
+
     public Version OsVersion => GetValue(OsVersionProperty);
-    
+
     #endregion
-    
+
     #region 公共事件定义
-    
+
     public event EventHandler<MediaBreakPointChangedEventArgs>? MediaBreakPointChanged;
 
     #endregion
-    
+
     #region 内部属性定义
+
     internal static readonly DirectProperty<Window, Thickness> NativeChromeInsetsProperty =
         AvaloniaProperty.RegisterDirect<Window, Thickness>(
             nameof(NativeChromeInsets),
             o => o.NativeChromeInsets,
             (o, v) => o.NativeChromeInsets = v);
-    
+
     internal static readonly DirectProperty<Window, WindowTitleBar?> TitleBarProperty =
         AvaloniaProperty.RegisterDirect<Window, WindowTitleBar?>(
             nameof(TitleBar),
             o => o.TitleBar,
             (o, v) => o.TitleBar = v);
-    
+
     internal static readonly DirectProperty<Window, bool> IsCsdEnabledProperty =
         AvaloniaProperty.RegisterDirect<Window, bool>(
             nameof(IsCsdEnabled),
@@ -393,13 +394,13 @@ public partial class Window : AvaloniaWindow,
         AvaloniaProperty.RegisterDirect<Window, ICommand>(
             nameof(CaptionButtonCommand),
             o => o.CaptionButtonCommand);
-    
+
     internal static readonly StyledProperty<double> TitleBarHeightProperty =
         AvaloniaProperty.Register<Window, double>(nameof(TitleBarHeight));
-    
+
     internal static readonly StyledProperty<BoxShadows> FrameShadowProperty =
         AvaloniaProperty.Register<Window, BoxShadows>(nameof(FrameShadow));
-    
+
     internal static readonly StyledProperty<Thickness> FrameShadowThicknessProperty =
         AvaloniaProperty.Register<Window, Thickness>(nameof(FrameShadowThickness));
 
@@ -409,9 +410,6 @@ public partial class Window : AvaloniaWindow,
             o => o.VisibleFrameBorderThickness,
             (o, v) => o.VisibleFrameBorderThickness = v);
 
-    private static readonly IDataTemplate s_windowIconLogoTemplate =
-        new FuncDataTemplate<WindowIcon>((icon, _) => CreateWindowIconLogo(icon));
-    
     private Thickness _nativeChromeInsets;
 
     internal Thickness NativeChromeInsets
@@ -419,7 +417,7 @@ public partial class Window : AvaloniaWindow,
         get => _nativeChromeInsets;
         private set => SetAndRaise(NativeChromeInsetsProperty, ref _nativeChromeInsets, value);
     }
-    
+
     private WindowTitleBar? _titleBar;
 
     internal WindowTitleBar? TitleBar
@@ -427,7 +425,7 @@ public partial class Window : AvaloniaWindow,
         get => _titleBar;
         set => SetAndRaise(TitleBarProperty, ref _titleBar, value);
     }
-    
+
     private bool _isCsdEnabled;
 
     internal bool IsCsdEnabled
@@ -445,17 +443,6 @@ public partial class Window : AvaloniaWindow,
             EffectiveContentFrameMarginProperty,
             ref _effectiveContentFrameMargin,
             value);
-    }
-
-    internal void RaiseRoutedEventFromOverlay(Interactive source, RoutedEventArgs args)
-    {
-        if (args.RoutedEvent is null)
-        {
-            return;
-        }
-
-        using var route = BuildEventRoute(args.RoutedEvent);
-        route.RaiseEvent(source, args);
     }
 
     private bool _isCustomResizerVisible;
@@ -572,25 +559,29 @@ public partial class Window : AvaloniaWindow,
             value);
     }
 
+    private readonly WindowCaptionButtonCommand _captionButtonCommand;
+
     internal ICommand CaptionButtonCommand => _captionButtonCommand;
-    
+
     internal double TitleBarHeight
     {
         get => GetValue(TitleBarHeightProperty);
         set => SetValue(TitleBarHeightProperty, value);
     }
-    
+
     internal BoxShadows FrameShadow
     {
         get => GetValue(FrameShadowProperty);
         set => SetValue(FrameShadowProperty, value);
     }
-    
+
     internal Thickness FrameShadowThickness
     {
         get => GetValue(FrameShadowThicknessProperty);
         set => SetValue(FrameShadowThicknessProperty, value);
     }
+
+    private Thickness _visibleFrameBorderThickness;
 
     /// <summary>
     /// The visible native or drawn frame border around the client surface.
@@ -605,47 +596,342 @@ public partial class Window : AvaloniaWindow,
             ref _visibleFrameBorderThickness,
             value);
     }
+
     #endregion
 
-    private Thickness _visibleFrameBorderThickness;
-    
-    protected override Type StyleKeyOverride { get; } = typeof(Window);
+    #region 内部协作 API
+
+    internal void RaiseRoutedEventFromOverlay(Interactive source, RoutedEventArgs args)
+    {
+        if (args.RoutedEvent is null)
+        {
+            return;
+        }
+
+        using var route = BuildEventRoute(args.RoutedEvent);
+        route.RaiseEvent(source, args);
+    }
+
+    internal IDisposable SuppressDrawnChromeOverlay()
+    {
+        _drawnChromeOverlaySuppressionCount++;
+        IsDrawnChromeOverlayVisible = false;
+        return Disposable.Create(this, static window => window.ReleaseDrawnChromeOverlaySuppression());
+    }
+
+    internal void PreparePlatformChromeInitialShowLayout()
+    {
+        EnsureInitialized();
+        ApplyStyling();
+    }
+
+    internal void PreparePlatformChromeInitialShowHandle()
+    {
+        EnsureInitialized();
+    }
+
+    internal void SetPlatformChromeClientSize(Size clientSize)
+    {
+        ClientSize = clientSize;
+    }
+
+    internal void ConfigureManagedResizeGrip(Thickness gripThickness)
+    {
+        if (_windowResizer is null)
+        {
+            return;
+        }
+
+        var shadow = FrameShadowThickness;
+        _windowResizer.GripThickness = gripThickness;
+        _windowResizer.Margin = new Thickness(
+            Math.Max(0, shadow.Left - gripThickness.Left),
+            Math.Max(0, shadow.Top - gripThickness.Top),
+            Math.Max(0, shadow.Right - gripThickness.Right),
+            Math.Max(0, shadow.Bottom - gripThickness.Bottom));
+    }
+
+    internal void NotifyMediaBreakPointChanged(MediaBreakPoint breakPoint)
+    {
+        if (MediaBreakPoint == breakPoint)
+        {
+            return;
+        }
+        SetCurrentValue(MediaBreakPointProperty, breakPoint);
+        if (!_mediaQueryReady)
+        {
+            return;
+        }
+        MediaBreakPointChanged?.Invoke(this, new MediaBreakPointChangedEventArgs(breakPoint));
+    }
+
+    internal void NotifyCloseRequestByUser()
+    {
+        CloseByClickCloseCaptionButton = true;
+    }
+
+    internal void QueueMacOsWindowConfiguration(bool forceFollowUp = false)
+    {
+        if (!OperatingSystem.IsMacOS())
+        {
+            return;
+        }
+
+        _macOsCacheValid = false;
+        if (_macOsWindowConfigurationQueued)
+        {
+            _macOsWindowConfigurationFollowUpQueued |= forceFollowUp;
+            return;
+        }
+
+        _macOsWindowConfigurationQueued = true;
+        Dispatcher.Post(ApplyQueuedMacOsWindowConfiguration, Avalonia.Threading.DispatcherPriority.Render);
+    }
+
+    internal static double CalculateWindowsCsdMinimumHeight(double titleBarHeight)
+    {
+        return double.IsFinite(titleBarHeight) && titleBarHeight > 0
+            ? titleBarHeight * WindowsCsdMinimumHeightInTitleBars
+            : 0;
+    }
+
+    internal static Thickness CalculateEffectiveContentFrameMargin(
+        Thickness windowDecorationMargin,
+        bool isCsdEnabled,
+        bool isTitleBarVisible,
+        double drawnTitleBarHeight)
+    {
+        if (!isCsdEnabled ||
+            isTitleBarVisible ||
+            !double.IsFinite(drawnTitleBarHeight) ||
+            drawnTitleBarHeight <= 0)
+        {
+            return windowDecorationMargin;
+        }
+
+        return new Thickness(
+            windowDecorationMargin.Left,
+            Math.Max(0, windowDecorationMargin.Top - drawnTitleBarHeight),
+            windowDecorationMargin.Right,
+            windowDecorationMargin.Bottom);
+    }
+
+    internal static bool ShouldDrawLegacyWindowsFrameBorder(
+        OsType osType,
+        Version osVersion,
+        bool isCsdEnabled,
+        bool extendClientAreaToDecorations,
+        WindowDecorations decorations,
+        WindowState windowState)
+    {
+        // Win10 的 DWM 在扩展客户区下把窗口顶边让给客户区，导致可见边框只剩左右下三边。
+        // Win11 的 DWM 会在窗口内部绘制 1px 可见边框，不需要客户区补偿。
+        return osType == OsType.Windows &&
+               isCsdEnabled &&
+               extendClientAreaToDecorations &&
+               decorations == WindowDecorations.Full &&
+               windowState == WindowState.Normal &&
+               osVersion.Major >= 10 &&
+               osVersion.Build < 22000;
+    }
+
+    internal IDisposable CreateTitleBarHostProjection(WindowTitleBar titleBar)
+    {
+        var lease = new CompositeDisposable();
+        titleBar.MaximizeWindowRequested += HandleTitleDoubleClicked;
+        titleBar.PointerPressed          += HandleTitleBarPointerPressed;
+        titleBar.PointerReleased         += HandleTitleBarPointerReleased;
+        titleBar.PointerMoved            += HandleTitleBarPointerMoved;
+        titleBar.PointerCaptureLost      += HandleTitleBarPointerCaptureLost;
+        lease.Add(Disposable.Create(() =>
+        {
+            titleBar.MaximizeWindowRequested -= HandleTitleDoubleClicked;
+            titleBar.PointerPressed          -= HandleTitleBarPointerPressed;
+            titleBar.PointerReleased         -= HandleTitleBarPointerReleased;
+            titleBar.PointerMoved            -= HandleTitleBarPointerMoved;
+            titleBar.PointerCaptureLost      -= HandleTitleBarPointerCaptureLost;
+            if (ReferenceEquals(_moveDragTitleBar, titleBar))
+            {
+                ResetTitleBarMoveDragState();
+            }
+        }));
+
+        try
+        {
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.NativeChromeInsetsProperty,
+                this.GetObservable(NativeChromeInsetsProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.IsCsdEnabledProperty,
+                this.GetObservable(IsCsdEnabledProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.HostWindowStateProperty,
+                this.GetObservable(WindowStateProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.IsWindowActiveProperty,
+                this.GetObservable(WindowBase.IsActiveProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.IsWindowTopmostProperty,
+                this.GetObservable(TopmostProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.IsMinimizeCaptionButtonVisibleProperty,
+                this.GetObservable(IsMinimizeCaptionButtonVisibleProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.IsMaximizeCaptionButtonVisibleProperty,
+                this.GetObservable(IsMaximizeCaptionButtonVisibleProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.IsCloseCaptionButtonVisibleProperty,
+                this.GetObservable(IsCloseCaptionButtonVisibleProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.IsFullScreenCaptionButtonVisibleProperty,
+                this.GetObservable(IsFullScreenCaptionButtonVisibleProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.IsPinCaptionButtonVisibleProperty,
+                this.GetObservable(IsPinCaptionButtonVisibleProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.CanMinimizeProperty,
+                this.GetObservable(CanMinimizeProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.CanMaximizeProperty,
+                this.GetObservable(CanMaximizeProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.IsPinCaptionButtonSupportedProperty,
+                this.GetObservable(IsPinCaptionButtonSupportedProperty)));
+            lease.Add(titleBar.Bind(
+                WindowTitleBar.CaptionButtonCommandProperty,
+                this.GetObservable(CaptionButtonCommandProperty)));
+            lease.Add(this.GetObservable(EffectiveLogoProperty).Subscribe(
+                _ => titleBar.NotifyHostEffectiveLogoChanged()));
+            lease.Add(this.GetObservable(EffectiveLogoTemplateProperty).Subscribe(
+                _ => titleBar.NotifyHostEffectiveLogoChanged()));
+            return lease;
+        }
+        catch
+        {
+            lease.Dispose();
+            throw;
+        }
+    }
+
+    // Logo 回退解析（纯函数）：显式 Logo/LogoTemplate 优先；都未设置时依次回退到
+    // 本窗口 Icon → 主窗口显式 Logo/LogoTemplate → 主窗口 Icon。
+    // 回退结果只进 EffectiveLogo/EffectiveLogoTemplate 供渲染使用，绝不写回公开属性，
+    // 避免"运行时设置 Logo 时残留框架注入模板"之类的状态污染。
+    internal static (object? Logo, IDataTemplate? Template) ResolveEffectiveLogo(
+        Window window,
+        Window? mainWindow)
+    {
+        if (window.Logo is not null || window.LogoTemplate is not null)
+        {
+            return (window.Logo, window.LogoTemplate);
+        }
+
+        if (window.Icon is { } hostIcon)
+        {
+            return (hostIcon, s_windowIconLogoTemplate);
+        }
+
+        if (mainWindow is not null && !ReferenceEquals(mainWindow, window))
+        {
+            if (mainWindow.Logo is not null || mainWindow.LogoTemplate is not null)
+            {
+                return (mainWindow.Logo, mainWindow.LogoTemplate);
+            }
+
+            if (mainWindow.Icon is { } mainIcon)
+            {
+                return (mainIcon, s_windowIconLogoTemplate);
+            }
+        }
+
+        return (null, null);
+    }
+
+    internal void RefreshPlatformCsdStatus()
+    {
+        ConfigureCsdStatus();
+        UpdateCaptionButtonCapabilities();
+        ApplyCurrentWindowsCsdFrameTheme();
+        ConfigureCustomResizerVisible();
+    }
+
+    #endregion
+
+    #region 运行时字段
+
+    private const double WindowsCsdMinimumHeightInTitleBars = 2;
+
+    private static readonly IDataTemplate s_windowIconLogoTemplate =
+        new FuncDataTemplate<WindowIcon>((icon, _) => CreateWindowIconLogo(icon));
+
     private protected bool CloseByClickCloseCaptionButton;
+
     private WindowTitleBar? _moveDragTitleBar;
+
     private Point? _lastMousePressedPoint;
+
     private PointerPressedEventArgs? _lastMousePressedEventArgs;
+
     private readonly IWindowChromeManager? _platformChromeManager;
-    private readonly WindowCaptionButtonCommand _captionButtonCommand;
+
     private FullscreenPopoverLayer? _fullscreenPopoverLayer;
+
     private WindowResizer? _windowResizer;
+
     private Border? _transparencyFallbackBorder;
+
     private MediaBreakPointIndicator? _mediaBreakPointIndicator;
+
     private CompositeDisposable? _defaultTitleBarBindings;
+
     private IDisposable? _titleBarFrameBackgroundProjection;
+
     private Window? _mainWindowLogoFallbackSource;
+
     private CompositeDisposable? _mainWindowLogoFallbackLease;
+
     private bool _isOpened;
+
     private int _drawnChromeOverlaySuppressionCount;
+
     private ThemeContextLease? _themeContextLease;
+
     private WindowState _windowStateBeforeFullScreen = WindowState.Normal;
 
     // macOS 下 ConfigureMacOsWindow 的输入缓存，用于在 live resize 时短路，避免重复 P/Invoke
     private double? _macOsCachedTitleBarHeight;
+
     private double? _macOsCachedOffsetX;
+
     private double? _macOsCachedSpacing;
+
     private Size _macOsCachedClientSize;
+
     private double? _macOsCachedButtonX;
+
     private double? _macOsCachedButtonY;
+
     private bool _macOsCacheValid;
+
     private bool _macOsWindowConfigurationQueued;
+
     private bool _macOsWindowConfigurationFollowUpQueued;
+
     private IDisposable? _macOsWindowButtonObserver;
+
     private bool _macOsWindowConfigurationApplying;
+
     private int _macOsNativeButtonChangeQueued;
-    
+
+    private bool _mediaQueryReady;
+
+    #endregion
+
+    #region 构造与初始化
+
     static Window()
     {
-        AffectsRender<Window>(TitleBarFrameBackgroundProperty, 
+        AffectsRender<Window>(TitleBarFrameBackgroundProperty,
             ContentFrameBackgroundProperty);
         ConfigureOsType();
         FrameShadowProperty.Changed.AddClassHandler<Window>((window, args) =>
@@ -673,26 +959,11 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
-    internal IDisposable SuppressDrawnChromeOverlay()
-    {
-        _drawnChromeOverlaySuppressionCount++;
-        IsDrawnChromeOverlayVisible = false;
-        return Disposable.Create(this, static window => window.ReleaseDrawnChromeOverlaySuppression());
-    }
+    #endregion
 
-    private void ReleaseDrawnChromeOverlaySuppression()
-    {
-        if (_drawnChromeOverlaySuppressionCount == 0)
-        {
-            return;
-        }
+    #region 公共与受保护 API
 
-        _drawnChromeOverlaySuppressionCount--;
-        if (_drawnChromeOverlaySuppressionCount == 0)
-        {
-            IsDrawnChromeOverlayVisible = true;
-        }
-    }
+    protected override Type StyleKeyOverride { get; } = typeof(Window);
 
     public override void Show()
     {
@@ -782,187 +1053,6 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
-    private CompositeDisposable CreateInitialSurfaceThemeValues()
-    {
-        var values = new CompositeDisposable();
-        if (!this.TryFindResource(WindowTokenKind.DefaultBackground, out var resource))
-        {
-            return values;
-        }
-
-        IBrush? background = resource switch
-        {
-            IBrush brush => brush,
-            Color color  => new SolidColorBrush(color),
-            _            => null
-        };
-        if (background is null)
-        {
-            return values;
-        }
-
-        // WindowOpenedEvent precedes ApplyStyling. Prime only the synchronous show interval;
-        // local values still win, and WindowTheme owns the surface after these frames are removed.
-        try
-        {
-            if (SetValue(BackgroundProperty, background, BindingPriority.Template) is { } backgroundValue)
-            {
-                values.Add(backgroundValue);
-            }
-            if (SetValue(
-                    TransparencyBackgroundFallbackProperty,
-                    background,
-                    BindingPriority.Template) is { } fallbackValue)
-            {
-                values.Add(fallbackValue);
-            }
-            return values;
-        }
-        catch
-        {
-            values.Dispose();
-            throw;
-        }
-    }
-
-    private ThemeContextLease? PrepareThemeContextLease(StyledElement owner)
-    {
-        var context = ThemeScope.ResolveContext(owner);
-        if (context is null || _themeContextLease?.IsOwnedBy(context) == true)
-        {
-            return null;
-        }
-
-        var lease = ThemeContextLease.Attach(this, context);
-        _themeContextLease = lease;
-        return lease;
-    }
-
-    private void ReleaseFailedThemeContextLease(ThemeContextLease? lease)
-    {
-        if (lease is null || !ReferenceEquals(_themeContextLease, lease))
-        {
-            return;
-        }
-
-        _themeContextLease = null;
-        lease.Dispose();
-        ResetThemeContextState();
-    }
-
-    private void ResetThemeContextState()
-    {
-        SetValue(RequestedThemeVariantProperty, null);
-        SetValue(ThemeScope.ContextProperty, null);
-    }
-
-    internal void PreparePlatformChromeInitialShowLayout()
-    {
-        EnsureInitialized();
-        ApplyStyling();
-    }
-
-    internal void PreparePlatformChromeInitialShowHandle()
-    {
-        EnsureInitialized();
-    }
-
-    internal void SetPlatformChromeClientSize(Size clientSize)
-    {
-        ClientSize = clientSize;
-    }
-
-    internal void ConfigureManagedResizeGrip(Thickness gripThickness)
-    {
-        if (_windowResizer is null)
-        {
-            return;
-        }
-
-        var shadow = FrameShadowThickness;
-        _windowResizer.GripThickness = gripThickness;
-        _windowResizer.Margin = new Thickness(
-            Math.Max(0, shadow.Left - gripThickness.Left),
-            Math.Max(0, shadow.Top - gripThickness.Top),
-            Math.Max(0, shadow.Right - gripThickness.Right),
-            Math.Max(0, shadow.Bottom - gripThickness.Bottom));
-    }
-
-    private void HandleFrameShadowPropertyChanged(BoxShadows frameShadow)
-    {
-        if (_platformChromeManager is not null)
-        {
-            _platformChromeManager.HandleFrameShadowChanged(frameShadow);
-            return;
-        }
-
-        FrameShadowThickness = frameShadow.Thickness();
-    }
-
-    private static void ConfigureOsType()
-    {
-        if (OperatingSystem.IsWindows())
-        {
-            OsTypeProperty.OverrideDefaultValue<Window>(OsType.Windows);
-        }
-        else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
-        {
-            OsTypeProperty.OverrideDefaultValue<Window>(OsType.macOS);
-        }
-        else if (OperatingSystem.IsLinux())
-        {
-            OsTypeProperty.OverrideDefaultValue<Window>(OsType.Linux);
-        }
-        else
-        {
-            OsTypeProperty.OverrideDefaultValue<Window>(OsType.Unknown);
-        }
-        OsVersionProperty.OverrideDefaultValue<Window>(Environment.OSVersion.Version);
-    }
-    
-    void IOperationSystemAware.SetOsType(OsType osType)
-    {
-        SetValue(OsTypeProperty, osType);
-    }
-    
-    void IOperationSystemAware.SetOsVersion(Version version)
-    {
-        SetValue(OsVersionProperty, version);
-    }
-    
-    private bool _mediaQueryReady;
-
-    internal void NotifyMediaBreakPointChanged(MediaBreakPoint breakPoint)
-    {
-        if (MediaBreakPoint == breakPoint)
-        {
-            return;
-        }
-        SetCurrentValue(MediaBreakPointProperty, breakPoint);
-        if (!_mediaQueryReady)
-        {
-            return;
-        }
-        MediaBreakPointChanged?.Invoke(this, new MediaBreakPointChangedEventArgs(breakPoint));
-    }
-
-    private void HandleFirstLayoutUpdatedForMediaQuery(object? sender, EventArgs e)
-    {
-        LayoutUpdated -= HandleFirstLayoutUpdatedForMediaQuery;
-        _mediaQueryReady = true;
-        MediaBreakPointChanged?.Invoke(this, new MediaBreakPointChangedEventArgs(MediaBreakPoint));
-    }
-
-    private void HandleIndicatorMediaBreakPointChanged(object? sender, MediaBreakPointChangedEventArgs args)
-    {
-        NotifyMediaBreakPointChanged(args.MediaBreakPoint);
-    }
-    
-    internal void NotifyCloseRequestByUser()
-    {
-        CloseByClickCloseCaptionButton = true;
-    }
-    
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         _transparencyFallbackBorder = null;
@@ -999,410 +1089,6 @@ public partial class Window : AvaloniaWindow,
             _fullscreenPopoverLayer?.Detach();
             _fullscreenPopoverLayer = e.NameScope.Find<FullscreenPopoverLayer>("PART_FullscreenPopoverLayer");
             _fullscreenPopoverLayer?.Attach(this);
-        }
-    }
-
-    private void HandleCreateTitleBar()
-    {
-        if (_titleBar != null)
-        {
-            DetachTitleBar(_titleBar);
-        }
-        var titleBar = NotifyCreateTitleBar(_titleBar);
-        
-        if (titleBar != null)
-        {
-            titleBar.AttachHost(this);
-            titleBar.SizeChanged += HandleTitleBarSizeChanged;
-            NotifyConfigureTitleBar(titleBar);
-        }
-        
-        TitleBar = titleBar;
-    }
-
-    private void DetachTitleBar(WindowTitleBar titleBar)
-    {
-        _defaultTitleBarBindings?.Dispose();
-        _defaultTitleBarBindings = null;
-        _titleBarFrameBackgroundProjection?.Dispose();
-        _titleBarFrameBackgroundProjection = null;
-        titleBar.SizeChanged -= HandleTitleBarSizeChanged;
-        titleBar.DetachHost(this);
-    }
-    
-    private void HandleTitleDoubleClicked(object? sender, EventArgs e)
-    {
-        if (sender is not WindowTitleBar titleBar ||
-            !ReferenceEquals(titleBar.HostWindow, this) ||
-            !CanResize)
-        {
-            return;
-        }
-
-        ExecuteCaptionButtonAction(CaptionButtonAction.ToggleMaximize);
-    }
-
-    private void HandleTitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        if (sender is not WindowTitleBar titleBar ||
-            !ReferenceEquals(titleBar.HostWindow, this) ||
-            !IsMoveEnabled ||
-            WindowState == WindowState.FullScreen ||
-            !e.Properties.IsLeftButtonPressed)
-        {
-            ResetTitleBarMoveDragState();
-            return;
-        }
-        _moveDragTitleBar          = titleBar;
-        _lastMousePressedPoint     = e.GetPosition(this);
-        _lastMousePressedEventArgs = e;
-    }
-
-    private void HandleTitleBarPointerMoved(object? sender, PointerEventArgs e)
-    {
-        if (!ReferenceEquals(sender, _moveDragTitleBar))
-        {
-            return;
-        }
-
-        if (!IsMoveEnabled || WindowState == WindowState.FullScreen || !e.Properties.IsLeftButtonPressed)
-        {
-            ResetTitleBarMoveDragState();
-            return;
-        }
-
-        Point mousePosition = e.GetPosition(this);
-        if (_lastMousePressedPoint != null)
-        {
-            var   distanceFromInitial = (Vector)(mousePosition - _lastMousePressedPoint);
-            if (distanceFromInitial.Length > Constants.DragThreshold)
-            {
-                if (_lastMousePressedEventArgs is not { } pointerPressedEventArgs)
-                {
-                    ResetTitleBarMoveDragState();
-                    return;
-                }
-
-                ResetTitleBarMoveDragState();
-                BeginMoveDrag(pointerPressedEventArgs);
-            }
-        }
-    }
-
-    private void HandleTitleBarSizeChanged(object? sender, SizeChangedEventArgs e)
-    {
-        EnsureWindowsCsdMinimumHeight(e.NewSize.Height);
-        if (_platformChromeManager is not null)
-        {
-            _platformChromeManager.ConfigureTitleBarHeightHint(e.NewSize.Height);
-        }
-        else
-        {
-            SetCurrentValue(ExtendClientAreaTitleBarHeightHintProperty, e.NewSize.Height);
-        }
-    }
-
-    internal void QueueMacOsWindowConfiguration(bool forceFollowUp = false)
-    {
-        if (!OperatingSystem.IsMacOS())
-        {
-            return;
-        }
-
-        _macOsCacheValid = false;
-        if (_macOsWindowConfigurationQueued)
-        {
-            _macOsWindowConfigurationFollowUpQueued |= forceFollowUp;
-            return;
-        }
-
-        _macOsWindowConfigurationQueued = true;
-        Dispatcher.Post(ApplyQueuedMacOsWindowConfiguration, Avalonia.Threading.DispatcherPriority.Render);
-    }
-
-    [SupportedOSPlatform("macos")]
-    private void EnsureMacOsWindowButtonObserver()
-    {
-        if (_macOsWindowButtonObserver is null)
-        {
-            _macOsWindowButtonObserver = this.ObserveStandardWindowButtonChanges(
-                HandleMacOsNativeWindowButtonChange);
-        }
-    }
-
-    private void StopMacOsWindowButtonObserver()
-    {
-        _macOsWindowButtonObserver?.Dispose();
-        _macOsWindowButtonObserver = null;
-    }
-
-    private void HandleMacOsNativeWindowButtonChange()
-    {
-        if (Volatile.Read(ref _macOsWindowConfigurationApplying))
-        {
-            return;
-        }
-
-        if (Interlocked.Exchange(ref _macOsNativeButtonChangeQueued, 1) != 0)
-        {
-            return;
-        }
-
-        Dispatcher.Post(HandleMacOsNativeWindowButtonChangeOnUi, Avalonia.Threading.DispatcherPriority.Render);
-    }
-
-    private void HandleMacOsNativeWindowButtonChangeOnUi()
-    {
-        Interlocked.Exchange(ref _macOsNativeButtonChangeQueued, 0);
-        if (!OperatingSystem.IsMacOS() ||
-            _macOsWindowConfigurationApplying ||
-            !IsVisible ||
-            !ExtendClientAreaToDecorationsHint ||
-            WindowState == WindowState.FullScreen ||
-            !this.IsStandardWindowButtonsVisible())
-        {
-            return;
-        }
-
-        var closeFrame = this.GetStandardWindowButtonFrame(WindowUtilsInterop.NSWindowButton.CloseButton);
-        if (closeFrame is not { } frame ||
-            _macOsCachedButtonX is not { } expectedX ||
-            _macOsCachedButtonY is not { } expectedY ||
-            Math.Abs(frame.X - expectedX) > 0.5 ||
-            Math.Abs(frame.Y - expectedY) > 0.5)
-        {
-            QueueMacOsWindowConfiguration();
-        }
-    }
-
-    private void ApplyQueuedMacOsWindowConfiguration()
-    {
-        _macOsWindowConfigurationQueued = false;
-        if (!OperatingSystem.IsMacOS())
-        {
-            return;
-        }
-
-        _macOsWindowConfigurationApplying = true;
-        try
-        {
-            ConfigureMacOsWindow();
-        }
-        finally
-        {
-            _macOsWindowConfigurationApplying = false;
-        }
-
-        if (IsVisible &&
-            ExtendClientAreaToDecorationsHint &&
-            WindowState != WindowState.FullScreen)
-        {
-            EnsureMacOsWindowButtonObserver();
-        }
-        else
-        {
-            StopMacOsWindowButtonObserver();
-        }
-
-        if (_macOsWindowConfigurationFollowUpQueued)
-        {
-            _macOsWindowConfigurationFollowUpQueued = false;
-            QueueMacOsWindowConfiguration();
-        }
-    }
-
-    private void HandleTitleBarPointerReleased(object? sender, PointerReleasedEventArgs e)
-    {
-        if (ReferenceEquals(sender, _moveDragTitleBar) && e.InitialPressMouseButton == MouseButton.Left)
-        {
-            ResetTitleBarMoveDragState();
-        }
-    }
-
-    private void HandleTitleBarPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
-    {
-        if (ReferenceEquals(sender, _moveDragTitleBar))
-        {
-            ResetTitleBarMoveDragState();
-        }
-    }
-
-    private void ResetTitleBarMoveDragState()
-    {
-        _moveDragTitleBar          = null;
-        _lastMousePressedPoint     = null;
-        _lastMousePressedEventArgs = null;
-    }
-
-    internal static double CalculateWindowsCsdMinimumHeight(double titleBarHeight)
-    {
-        return double.IsFinite(titleBarHeight) && titleBarHeight > 0
-            ? titleBarHeight * WindowsCsdMinimumHeightInTitleBars
-            : 0;
-    }
-
-    internal static Thickness CalculateEffectiveContentFrameMargin(
-        Thickness windowDecorationMargin,
-        bool isCsdEnabled,
-        bool isTitleBarVisible,
-        double drawnTitleBarHeight)
-    {
-        if (!isCsdEnabled ||
-            isTitleBarVisible ||
-            !double.IsFinite(drawnTitleBarHeight) ||
-            drawnTitleBarHeight <= 0)
-        {
-            return windowDecorationMargin;
-        }
-
-        return new Thickness(
-            windowDecorationMargin.Left,
-            Math.Max(0, windowDecorationMargin.Top - drawnTitleBarHeight),
-            windowDecorationMargin.Right,
-            windowDecorationMargin.Bottom);
-    }
-
-    private void UpdateEffectiveContentFrameMargin()
-    {
-        EffectiveContentFrameMargin = CalculateEffectiveContentFrameMargin(
-            WindowDecorationMargin,
-            IsCsdEnabled,
-            IsTitleBarVisible,
-            IsCsdEnabled && !IsTitleBarVisible ? this.GetDrawnDecorationsTitleBarHeight() : 0);
-    }
-
-    internal static bool ShouldDrawLegacyWindowsFrameBorder(
-        OsType osType,
-        Version osVersion,
-        bool isCsdEnabled,
-        bool extendClientAreaToDecorations,
-        WindowDecorations decorations,
-        WindowState windowState)
-    {
-        // Win10 的 DWM 在扩展客户区下把窗口顶边让给客户区，导致可见边框只剩左右下三边。
-        // Win11 的 DWM 会在窗口内部绘制 1px 可见边框，不需要客户区补偿。
-        return osType == OsType.Windows &&
-               isCsdEnabled &&
-               extendClientAreaToDecorations &&
-               decorations == WindowDecorations.Full &&
-               windowState == WindowState.Normal &&
-               osVersion.Major >= 10 &&
-               osVersion.Build < 22000;
-    }
-
-    private void UpdateLegacyWindowsFrameBorderVisibility()
-    {
-        IsLegacyWindowsFrameBorderVisible = ShouldDrawLegacyWindowsFrameBorder(
-            OsType,
-            OsVersion,
-            IsCsdEnabled,
-            ExtendClientAreaToDecorationsHint,
-            WindowDecorations,
-            WindowState);
-        UpdateLegacyWindowsFrameBorderThickness();
-    }
-
-    private void UpdateLegacyWindowsFrameBorderThickness()
-    {
-        var scaling = RenderScaling;
-        LegacyWindowsFrameBorderThickness = 1 / (double.IsFinite(scaling) && scaling > 0 ? scaling : 1);
-    }
-
-    private void HandleWindowScalingChanged(object? sender, EventArgs e)
-    {
-        UpdateLegacyWindowsFrameBorderThickness();
-    }
-
-    private void EnsureWindowsCsdMinimumHeight(double measuredTitleBarHeight = 0)
-    {
-        if (!OperatingSystem.IsWindows() || !IsCsdEnabled)
-        {
-            return;
-        }
-
-        var titleBarHeight = Math.Max(measuredTitleBarHeight, TitleBarHeight);
-        var minimumHeight  = CalculateWindowsCsdMinimumHeight(titleBarHeight);
-        if (minimumHeight > 0 && MinHeight < minimumHeight)
-        {
-            SetCurrentValue(MinHeightProperty, minimumHeight);
-        }
-    }
-    
-    internal IDisposable CreateTitleBarHostProjection(WindowTitleBar titleBar)
-    {
-        var lease = new CompositeDisposable();
-        titleBar.MaximizeWindowRequested += HandleTitleDoubleClicked;
-        titleBar.PointerPressed          += HandleTitleBarPointerPressed;
-        titleBar.PointerReleased         += HandleTitleBarPointerReleased;
-        titleBar.PointerMoved            += HandleTitleBarPointerMoved;
-        titleBar.PointerCaptureLost      += HandleTitleBarPointerCaptureLost;
-        lease.Add(Disposable.Create(() =>
-        {
-            titleBar.MaximizeWindowRequested -= HandleTitleDoubleClicked;
-            titleBar.PointerPressed          -= HandleTitleBarPointerPressed;
-            titleBar.PointerReleased         -= HandleTitleBarPointerReleased;
-            titleBar.PointerMoved            -= HandleTitleBarPointerMoved;
-            titleBar.PointerCaptureLost      -= HandleTitleBarPointerCaptureLost;
-            if (ReferenceEquals(_moveDragTitleBar, titleBar))
-            {
-                ResetTitleBarMoveDragState();
-            }
-        }));
-
-        try
-        {
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.NativeChromeInsetsProperty,
-                this.GetObservable(NativeChromeInsetsProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.IsCsdEnabledProperty,
-                this.GetObservable(IsCsdEnabledProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.HostWindowStateProperty,
-                this.GetObservable(WindowStateProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.IsWindowActiveProperty,
-                this.GetObservable(WindowBase.IsActiveProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.IsWindowTopmostProperty,
-                this.GetObservable(TopmostProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.IsMinimizeCaptionButtonVisibleProperty,
-                this.GetObservable(IsMinimizeCaptionButtonVisibleProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.IsMaximizeCaptionButtonVisibleProperty,
-                this.GetObservable(IsMaximizeCaptionButtonVisibleProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.IsCloseCaptionButtonVisibleProperty,
-                this.GetObservable(IsCloseCaptionButtonVisibleProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.IsFullScreenCaptionButtonVisibleProperty,
-                this.GetObservable(IsFullScreenCaptionButtonVisibleProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.IsPinCaptionButtonVisibleProperty,
-                this.GetObservable(IsPinCaptionButtonVisibleProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.CanMinimizeProperty,
-                this.GetObservable(CanMinimizeProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.CanMaximizeProperty,
-                this.GetObservable(CanMaximizeProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.IsPinCaptionButtonSupportedProperty,
-                this.GetObservable(IsPinCaptionButtonSupportedProperty)));
-            lease.Add(titleBar.Bind(
-                WindowTitleBar.CaptionButtonCommandProperty,
-                this.GetObservable(CaptionButtonCommandProperty)));
-            lease.Add(this.GetObservable(EffectiveLogoProperty).Subscribe(
-                _ => titleBar.NotifyHostEffectiveLogoChanged()));
-            lease.Add(this.GetObservable(EffectiveLogoTemplateProperty).Subscribe(
-                _ => titleBar.NotifyHostEffectiveLogoChanged()));
-            return lease;
-        }
-        catch
-        {
-            lease.Dispose();
-            throw;
         }
     }
 
@@ -1446,80 +1132,6 @@ public partial class Window : AvaloniaWindow,
         };
     }
 
-    private void ProjectTitleBarFrameBackground(WindowTitleBar titleBar, IBrush? brush)
-    {
-        _titleBarFrameBackgroundProjection?.Dispose();
-
-        // Linux CSD 的标题栏背景由 drawn decorations overlay 的
-        // WindowTitleBarShadowBackground 按 frame 裁剪绘制；默认标题栏必须保持透明，
-        // 否则不透明背景会盖住该绘制层。其他平台由默认标题栏直接绘制。
-        if (OsType == OsType.Linux && IsCsdEnabled)
-        {
-            _titleBarFrameBackgroundProjection = titleBar.SetValue(
-                WindowTitleBar.BackgroundProperty,
-                Brushes.Transparent,
-                BindingPriority.Template);
-            return;
-        }
-
-        _titleBarFrameBackgroundProjection = brush is null
-            ? null
-            : titleBar.SetValue(
-                WindowTitleBar.BackgroundProperty,
-                brush,
-                BindingPriority.Template);
-    }
-
-    private bool CanExecuteCaptionButtonAction(CaptionButtonAction action)
-    {
-        return action switch
-        {
-            CaptionButtonAction.Minimize => CanMinimize && WindowState != WindowState.FullScreen,
-            CaptionButtonAction.ToggleMaximize => CanMaximize && WindowState != WindowState.FullScreen,
-            CaptionButtonAction.ToggleFullScreen => WindowState != WindowState.Maximized,
-            CaptionButtonAction.TogglePin => IsPinCaptionButtonSupported,
-            CaptionButtonAction.Close => true,
-            _ => false
-        };
-    }
-
-    private void ExecuteCaptionButtonAction(CaptionButtonAction action)
-    {
-        if (!CanExecuteCaptionButtonAction(action))
-        {
-            return;
-        }
-
-        switch (action)
-        {
-            case CaptionButtonAction.Minimize:
-                WindowState = WindowState.Minimized;
-                break;
-            case CaptionButtonAction.ToggleMaximize:
-                WindowState = WindowState == WindowState.Maximized
-                    ? WindowState.Normal
-                    : WindowState.Maximized;
-                break;
-            case CaptionButtonAction.ToggleFullScreen:
-                WindowState = WindowState == WindowState.FullScreen
-                    ? _windowStateBeforeFullScreen
-                    : WindowState.FullScreen;
-                break;
-            case CaptionButtonAction.TogglePin:
-                Topmost = !Topmost;
-                break;
-            case CaptionButtonAction.Close:
-                NotifyCloseRequestByUser();
-                Close();
-                break;
-        }
-    }
-
-    private void UpdateCaptionButtonCapabilities()
-    {
-        IsPinCaptionButtonSupported = _platformChromeManager?.SupportsPinCaptionButton == true;
-    }
-
     protected virtual WindowTitleBar? NotifyCreateTitleBar(WindowTitleBar? oldTitleBar)
     {
         return new WindowTitleBar
@@ -1527,7 +1139,7 @@ public partial class Window : AvaloniaWindow,
             Name = "PART_TitleBar"
         };
     }
-    
+
     public static Window? GetMainWindow()
     {
         var lifetime = Application.Current?.ApplicationLifetime;
@@ -1536,93 +1148,6 @@ public partial class Window : AvaloniaWindow,
             return desktopLifetime.MainWindow as Window;
         }
         return null;
-    }
-    
-    [SupportedOSPlatform("macos")]
-    private void ConfigureMacOsWindow()
-    {
-        if (!ExtendClientAreaToDecorationsHint)
-        {
-            StopMacOsWindowButtonObserver();
-            NativeChromeInsets = default;
-            _macOsCachedButtonX = null;
-            _macOsCachedButtonY = null;
-            _macOsCacheValid   = false;
-            return;
-        }
-
-        // AppKit 在录屏/窗口共享期间会暂时隐藏标准按钮。隐藏期间不写回坐标，
-        // 等收到恢复通知后再执行一次完整布局，避免覆盖 AppKit 的共享控件状态。
-        if (!this.IsStandardWindowButtonsVisible())
-        {
-            return;
-        }
-
-        double? titleBarHeight = null;
-        if (!MathUtils.AreClose(ExtendClientAreaTitleBarHeightHint, -1))
-        {
-            titleBarHeight = ExtendClientAreaTitleBarHeightHint;
-        }
-
-        double? offsetX = null;
-        double? spacing = null;
-        if (IsSet(MacStandardWindowButtons.OffsetXProperty))
-        {
-            offsetX = MacStandardWindowButtons.GetOffsetX(this);
-        }
-
-        if (IsSet(MacStandardWindowButtons.SpacingProperty))
-        {
-            spacing = MacStandardWindowButtons.GetSpacing(this);
-        }
-
-        var effectSpacing = spacing ?? 20;
-        var currentClientSize = ClientSize;
-
-        // live resize 期间，除 ClientSize 外的输入都不变化；即使高度变了，AppKit 的 autoresizing
-        // 会把按钮维持在相对标题栏的同一视觉位置。当 4 个输入都和上次完全一致时，
-        // 底层 SetStandardWindowButtonsLayout 的 GetFrame 短路也会命中，这里提前返回，
-        // 避免一次 P/Invoke 往返。
-        if (_macOsCacheValid &&
-            Nullable.Equals(_macOsCachedTitleBarHeight, titleBarHeight) &&
-            Nullable.Equals(_macOsCachedOffsetX, offsetX) &&
-            Nullable.Equals(_macOsCachedSpacing, spacing) &&
-            _macOsCachedClientSize == currentClientSize)
-        {
-            return;
-        }
-
-        MacStandardWindowButtons.SetStandardWindowButtonsLayout(this, titleBarHeight, offsetX, null, effectSpacing);
-        var offset = this.GetRecommendedTitleBarContentLeftMargin(effectSpacing);
-        if (offset is not { } titleBarOffset)
-        {
-            // The title bar can measure before the native NSWindow standard buttons exist.
-            // Do not cache that no-op pass, otherwise OnOpened may skip the first real correction.
-            NativeChromeInsets = default;
-            _macOsCacheValid = false;
-            return;
-        }
-
-        NativeChromeInsets = new Thickness(titleBarOffset, 0, 0, 0);
-
-        var closeFrame = this.GetStandardWindowButtonFrame(
-            WindowUtilsInterop.NSWindowButton.CloseButton);
-        if (closeFrame is not { } configuredCloseFrame)
-        {
-            NativeChromeInsets = default;
-            _macOsCachedButtonX = null;
-            _macOsCachedButtonY = null;
-            _macOsCacheValid = false;
-            return;
-        }
-
-        _macOsCachedTitleBarHeight = titleBarHeight;
-        _macOsCachedOffsetX        = offsetX;
-        _macOsCachedSpacing        = spacing;
-        _macOsCachedClientSize     = currentClientSize;
-        _macOsCachedButtonX        = configuredCloseFrame.X;
-        _macOsCachedButtonY        = configuredCloseFrame.Y;
-        _macOsCacheValid           = true;
     }
 
     protected override void OnOpened(EventArgs e)
@@ -1662,117 +1187,6 @@ public partial class Window : AvaloniaWindow,
         ResetThemeContextState();
         ReleaseMainWindowLogoFallbackSubscription();
         base.OnClosed(e);
-    }
-
-    private void UpdateEffectiveLogo()
-    {
-        var mainWindow = GetMainWindow();
-        UpdateMainWindowLogoFallbackSubscription(mainWindow);
-        var (logo, template) = ResolveEffectiveLogo(this, mainWindow);
-        EffectiveLogo         = logo;
-        EffectiveLogoTemplate = template;
-    }
-
-    private void UpdateMainWindowLogoFallbackSubscription(Window? mainWindow)
-    {
-        var fallbackSource = _isOpened &&
-                             Logo is null &&
-                             LogoTemplate is null &&
-                             Icon is null &&
-                             mainWindow is not null &&
-                             !ReferenceEquals(mainWindow, this)
-            ? mainWindow
-            : null;
-        if (ReferenceEquals(_mainWindowLogoFallbackSource, fallbackSource))
-        {
-            return;
-        }
-
-        ReleaseMainWindowLogoFallbackSubscription();
-        if (fallbackSource is null)
-        {
-            return;
-        }
-
-        var lease = new CompositeDisposable();
-        _mainWindowLogoFallbackSource = fallbackSource;
-        _mainWindowLogoFallbackLease  = lease;
-        try
-        {
-            lease.Add(fallbackSource.GetObservable(LogoProperty).Subscribe(_ => UpdateEffectiveLogo()));
-            lease.Add(fallbackSource.GetObservable(LogoTemplateProperty).Subscribe(_ => UpdateEffectiveLogo()));
-            lease.Add(fallbackSource.GetObservable(IconProperty).Subscribe(_ => UpdateEffectiveLogo()));
-        }
-        catch
-        {
-            ReleaseMainWindowLogoFallbackSubscription();
-            throw;
-        }
-    }
-
-    private void ReleaseMainWindowLogoFallbackSubscription()
-    {
-        _mainWindowLogoFallbackSource = null;
-        _mainWindowLogoFallbackLease?.Dispose();
-        _mainWindowLogoFallbackLease = null;
-    }
-
-    // Logo 回退解析（纯函数）：显式 Logo/LogoTemplate 优先；都未设置时依次回退到
-    // 本窗口 Icon → 主窗口显式 Logo/LogoTemplate → 主窗口 Icon。
-    // 回退结果只进 EffectiveLogo/EffectiveLogoTemplate 供渲染使用，绝不写回公开属性，
-    // 避免"运行时设置 Logo 时残留框架注入模板"之类的状态污染。
-    internal static (object? Logo, IDataTemplate? Template) ResolveEffectiveLogo(
-        Window window,
-        Window? mainWindow)
-    {
-        if (window.Logo is not null || window.LogoTemplate is not null)
-        {
-            return (window.Logo, window.LogoTemplate);
-        }
-
-        if (window.Icon is { } hostIcon)
-        {
-            return (hostIcon, s_windowIconLogoTemplate);
-        }
-
-        if (mainWindow is not null && !ReferenceEquals(mainWindow, window))
-        {
-            if (mainWindow.Logo is not null || mainWindow.LogoTemplate is not null)
-            {
-                return (mainWindow.Logo, mainWindow.LogoTemplate);
-            }
-
-            if (mainWindow.Icon is { } mainIcon)
-            {
-                return (mainIcon, s_windowIconLogoTemplate);
-            }
-        }
-
-        return (null, null);
-    }
-
-    private static Control? CreateWindowIconLogo(WindowIcon? icon)
-    {
-        if (icon == null)
-        {
-            return null;
-        }
-
-        try
-        {
-            using var stream = new MemoryStream();
-            icon.Save(stream);
-            stream.Position = 0;
-            return new Image
-            {
-                Source  = new Bitmap(stream),
-                Stretch = Stretch.Uniform
-            };
-        }
-        catch
-        {
-            return null;
-        }
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
@@ -1894,6 +1308,657 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
+    #endregion
+
+    #region 实现 IOperationSystemAware 接口
+
+    void IOperationSystemAware.SetOsType(OsType osType)
+    {
+        SetValue(OsTypeProperty, osType);
+    }
+
+    void IOperationSystemAware.SetOsVersion(Version version)
+    {
+        SetValue(OsVersionProperty, version);
+    }
+
+    #endregion
+
+    #region 私有实现
+
+    private void ReleaseDrawnChromeOverlaySuppression()
+    {
+        if (_drawnChromeOverlaySuppressionCount == 0)
+        {
+            return;
+        }
+
+        _drawnChromeOverlaySuppressionCount--;
+        if (_drawnChromeOverlaySuppressionCount == 0)
+        {
+            IsDrawnChromeOverlayVisible = true;
+        }
+    }
+
+    private CompositeDisposable CreateInitialSurfaceThemeValues()
+    {
+        var values = new CompositeDisposable();
+        if (!this.TryFindResource(WindowTokenKind.DefaultBackground, out var resource))
+        {
+            return values;
+        }
+
+        IBrush? background = resource switch
+        {
+            IBrush brush => brush,
+            Color color  => new SolidColorBrush(color),
+            _            => null
+        };
+        if (background is null)
+        {
+            return values;
+        }
+
+        // WindowOpenedEvent precedes ApplyStyling. Prime only the synchronous show interval;
+        // local values still win, and WindowTheme owns the surface after these frames are removed.
+        try
+        {
+            if (SetValue(BackgroundProperty, background, BindingPriority.Template) is { } backgroundValue)
+            {
+                values.Add(backgroundValue);
+            }
+            if (SetValue(
+                    TransparencyBackgroundFallbackProperty,
+                    background,
+                    BindingPriority.Template) is { } fallbackValue)
+            {
+                values.Add(fallbackValue);
+            }
+            return values;
+        }
+        catch
+        {
+            values.Dispose();
+            throw;
+        }
+    }
+
+    private ThemeContextLease? PrepareThemeContextLease(StyledElement owner)
+    {
+        // A native dialog can have a scoped logical owner distinct from its OS window owner.
+        var context = Parent is { } logicalOwner ? ThemeScope.ResolveContext(logicalOwner) : null;
+        context ??= ThemeScope.ResolveContext(owner);
+        if (context is null || _themeContextLease?.IsOwnedBy(context) == true)
+        {
+            return null;
+        }
+
+        var lease = ThemeContextLease.Attach(this, context);
+        _themeContextLease = lease;
+        return lease;
+    }
+
+    private void ReleaseFailedThemeContextLease(ThemeContextLease? lease)
+    {
+        if (lease is null || !ReferenceEquals(_themeContextLease, lease))
+        {
+            return;
+        }
+
+        _themeContextLease = null;
+        lease.Dispose();
+        ResetThemeContextState();
+    }
+
+    private void ResetThemeContextState()
+    {
+        SetValue(RequestedThemeVariantProperty, null);
+        SetValue(ThemeScope.ContextProperty, null);
+    }
+
+    private void HandleFrameShadowPropertyChanged(BoxShadows frameShadow)
+    {
+        if (_platformChromeManager is not null)
+        {
+            _platformChromeManager.HandleFrameShadowChanged(frameShadow);
+            return;
+        }
+
+        FrameShadowThickness = frameShadow.Thickness();
+    }
+
+    private static void ConfigureOsType()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            OsTypeProperty.OverrideDefaultValue<Window>(OsType.Windows);
+        }
+        else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
+        {
+            OsTypeProperty.OverrideDefaultValue<Window>(OsType.macOS);
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            OsTypeProperty.OverrideDefaultValue<Window>(OsType.Linux);
+        }
+        else
+        {
+            OsTypeProperty.OverrideDefaultValue<Window>(OsType.Unknown);
+        }
+        OsVersionProperty.OverrideDefaultValue<Window>(Environment.OSVersion.Version);
+    }
+
+    private void HandleFirstLayoutUpdatedForMediaQuery(object? sender, EventArgs e)
+    {
+        LayoutUpdated -= HandleFirstLayoutUpdatedForMediaQuery;
+        _mediaQueryReady = true;
+        MediaBreakPointChanged?.Invoke(this, new MediaBreakPointChangedEventArgs(MediaBreakPoint));
+    }
+
+    private void HandleIndicatorMediaBreakPointChanged(object? sender, MediaBreakPointChangedEventArgs args)
+    {
+        NotifyMediaBreakPointChanged(args.MediaBreakPoint);
+    }
+
+    private void HandleCreateTitleBar()
+    {
+        if (_titleBar != null)
+        {
+            DetachTitleBar(_titleBar);
+        }
+        var titleBar = NotifyCreateTitleBar(_titleBar);
+
+        if (titleBar != null)
+        {
+            titleBar.AttachHost(this);
+            titleBar.SizeChanged += HandleTitleBarSizeChanged;
+            NotifyConfigureTitleBar(titleBar);
+        }
+
+        TitleBar = titleBar;
+    }
+
+    private void DetachTitleBar(WindowTitleBar titleBar)
+    {
+        _defaultTitleBarBindings?.Dispose();
+        _defaultTitleBarBindings = null;
+        _titleBarFrameBackgroundProjection?.Dispose();
+        _titleBarFrameBackgroundProjection = null;
+        titleBar.SizeChanged -= HandleTitleBarSizeChanged;
+        titleBar.DetachHost(this);
+    }
+
+    private void HandleTitleDoubleClicked(object? sender, EventArgs e)
+    {
+        if (sender is not WindowTitleBar titleBar ||
+            !ReferenceEquals(titleBar.HostWindow, this) ||
+            !CanResize)
+        {
+            return;
+        }
+
+        ExecuteCaptionButtonAction(CaptionButtonAction.ToggleMaximize);
+    }
+
+    private void HandleTitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is not WindowTitleBar titleBar ||
+            !ReferenceEquals(titleBar.HostWindow, this) ||
+            !IsMoveEnabled ||
+            WindowState == WindowState.FullScreen ||
+            !e.Properties.IsLeftButtonPressed)
+        {
+            ResetTitleBarMoveDragState();
+            return;
+        }
+        _moveDragTitleBar          = titleBar;
+        _lastMousePressedPoint     = e.GetPosition(this);
+        _lastMousePressedEventArgs = e;
+    }
+
+    private void HandleTitleBarPointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (!ReferenceEquals(sender, _moveDragTitleBar))
+        {
+            return;
+        }
+
+        if (!IsMoveEnabled || WindowState == WindowState.FullScreen || !e.Properties.IsLeftButtonPressed)
+        {
+            ResetTitleBarMoveDragState();
+            return;
+        }
+
+        Point mousePosition = e.GetPosition(this);
+        if (_lastMousePressedPoint != null)
+        {
+            var   distanceFromInitial = (Vector)(mousePosition - _lastMousePressedPoint);
+            if (distanceFromInitial.Length > Constants.DragThreshold)
+            {
+                if (_lastMousePressedEventArgs is not { } pointerPressedEventArgs)
+                {
+                    ResetTitleBarMoveDragState();
+                    return;
+                }
+
+                ResetTitleBarMoveDragState();
+                BeginMoveDrag(pointerPressedEventArgs);
+            }
+        }
+    }
+
+    private void HandleTitleBarSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        EnsureWindowsCsdMinimumHeight(e.NewSize.Height);
+        if (_platformChromeManager is not null)
+        {
+            _platformChromeManager.ConfigureTitleBarHeightHint(e.NewSize.Height);
+        }
+        else
+        {
+            SetCurrentValue(ExtendClientAreaTitleBarHeightHintProperty, e.NewSize.Height);
+        }
+    }
+
+    [SupportedOSPlatform("macos")]
+    private void EnsureMacOsWindowButtonObserver()
+    {
+        if (_macOsWindowButtonObserver is null)
+        {
+            _macOsWindowButtonObserver = this.ObserveStandardWindowButtonChanges(
+                HandleMacOsNativeWindowButtonChange);
+        }
+    }
+
+    private void StopMacOsWindowButtonObserver()
+    {
+        _macOsWindowButtonObserver?.Dispose();
+        _macOsWindowButtonObserver = null;
+    }
+
+    private void HandleMacOsNativeWindowButtonChange()
+    {
+        if (Volatile.Read(ref _macOsWindowConfigurationApplying))
+        {
+            return;
+        }
+
+        if (Interlocked.Exchange(ref _macOsNativeButtonChangeQueued, 1) != 0)
+        {
+            return;
+        }
+
+        Dispatcher.Post(HandleMacOsNativeWindowButtonChangeOnUi, Avalonia.Threading.DispatcherPriority.Render);
+    }
+
+    private void HandleMacOsNativeWindowButtonChangeOnUi()
+    {
+        Interlocked.Exchange(ref _macOsNativeButtonChangeQueued, 0);
+        if (!OperatingSystem.IsMacOS() ||
+            _macOsWindowConfigurationApplying ||
+            !IsVisible ||
+            !ExtendClientAreaToDecorationsHint ||
+            WindowState == WindowState.FullScreen ||
+            !this.IsStandardWindowButtonsVisible())
+        {
+            return;
+        }
+
+        var closeFrame = this.GetStandardWindowButtonFrame(WindowUtilsInterop.NSWindowButton.CloseButton);
+        if (closeFrame is not { } frame ||
+            _macOsCachedButtonX is not { } expectedX ||
+            _macOsCachedButtonY is not { } expectedY ||
+            Math.Abs(frame.X - expectedX) > 0.5 ||
+            Math.Abs(frame.Y - expectedY) > 0.5)
+        {
+            QueueMacOsWindowConfiguration();
+        }
+    }
+
+    private void ApplyQueuedMacOsWindowConfiguration()
+    {
+        _macOsWindowConfigurationQueued = false;
+        if (!OperatingSystem.IsMacOS())
+        {
+            return;
+        }
+
+        _macOsWindowConfigurationApplying = true;
+        try
+        {
+            ConfigureMacOsWindow();
+        }
+        finally
+        {
+            _macOsWindowConfigurationApplying = false;
+        }
+
+        if (IsVisible &&
+            ExtendClientAreaToDecorationsHint &&
+            WindowState != WindowState.FullScreen)
+        {
+            EnsureMacOsWindowButtonObserver();
+        }
+        else
+        {
+            StopMacOsWindowButtonObserver();
+        }
+
+        if (_macOsWindowConfigurationFollowUpQueued)
+        {
+            _macOsWindowConfigurationFollowUpQueued = false;
+            QueueMacOsWindowConfiguration();
+        }
+    }
+
+    private void HandleTitleBarPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (ReferenceEquals(sender, _moveDragTitleBar) && e.InitialPressMouseButton == MouseButton.Left)
+        {
+            ResetTitleBarMoveDragState();
+        }
+    }
+
+    private void HandleTitleBarPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
+    {
+        if (ReferenceEquals(sender, _moveDragTitleBar))
+        {
+            ResetTitleBarMoveDragState();
+        }
+    }
+
+    private void ResetTitleBarMoveDragState()
+    {
+        _moveDragTitleBar          = null;
+        _lastMousePressedPoint     = null;
+        _lastMousePressedEventArgs = null;
+    }
+
+    private void UpdateEffectiveContentFrameMargin()
+    {
+        EffectiveContentFrameMargin = CalculateEffectiveContentFrameMargin(
+            WindowDecorationMargin,
+            IsCsdEnabled,
+            IsTitleBarVisible,
+            IsCsdEnabled && !IsTitleBarVisible ? this.GetDrawnDecorationsTitleBarHeight() : 0);
+    }
+
+    private void UpdateLegacyWindowsFrameBorderVisibility()
+    {
+        IsLegacyWindowsFrameBorderVisible = ShouldDrawLegacyWindowsFrameBorder(
+            OsType,
+            OsVersion,
+            IsCsdEnabled,
+            ExtendClientAreaToDecorationsHint,
+            WindowDecorations,
+            WindowState);
+        UpdateLegacyWindowsFrameBorderThickness();
+    }
+
+    private void UpdateLegacyWindowsFrameBorderThickness()
+    {
+        var scaling = RenderScaling;
+        LegacyWindowsFrameBorderThickness = 1 / (double.IsFinite(scaling) && scaling > 0 ? scaling : 1);
+    }
+
+    private void HandleWindowScalingChanged(object? sender, EventArgs e)
+    {
+        UpdateLegacyWindowsFrameBorderThickness();
+    }
+
+    private void EnsureWindowsCsdMinimumHeight(double measuredTitleBarHeight = 0)
+    {
+        if (!OperatingSystem.IsWindows() || !IsCsdEnabled)
+        {
+            return;
+        }
+
+        var titleBarHeight = Math.Max(measuredTitleBarHeight, TitleBarHeight);
+        var minimumHeight  = CalculateWindowsCsdMinimumHeight(titleBarHeight);
+        if (minimumHeight > 0 && MinHeight < minimumHeight)
+        {
+            SetCurrentValue(MinHeightProperty, minimumHeight);
+        }
+    }
+
+    private void ProjectTitleBarFrameBackground(WindowTitleBar titleBar, IBrush? brush)
+    {
+        _titleBarFrameBackgroundProjection?.Dispose();
+
+        // Linux CSD 的标题栏背景由 drawn decorations overlay 的
+        // WindowTitleBarShadowBackground 按 frame 裁剪绘制；默认标题栏必须保持透明，
+        // 否则不透明背景会盖住该绘制层。其他平台由默认标题栏直接绘制。
+        if (OsType == OsType.Linux && IsCsdEnabled)
+        {
+            _titleBarFrameBackgroundProjection = titleBar.SetValue(
+                WindowTitleBar.BackgroundProperty,
+                Brushes.Transparent,
+                BindingPriority.Template);
+            return;
+        }
+
+        _titleBarFrameBackgroundProjection = brush is null
+            ? null
+            : titleBar.SetValue(
+                WindowTitleBar.BackgroundProperty,
+                brush,
+                BindingPriority.Template);
+    }
+
+    private bool CanExecuteCaptionButtonAction(CaptionButtonAction action)
+    {
+        return action switch
+        {
+            CaptionButtonAction.Minimize => CanMinimize && WindowState != WindowState.FullScreen,
+            CaptionButtonAction.ToggleMaximize => CanMaximize && WindowState != WindowState.FullScreen,
+            CaptionButtonAction.ToggleFullScreen => WindowState != WindowState.Maximized,
+            CaptionButtonAction.TogglePin => IsPinCaptionButtonSupported,
+            CaptionButtonAction.Close => true,
+            _ => false
+        };
+    }
+
+    private void ExecuteCaptionButtonAction(CaptionButtonAction action)
+    {
+        if (!CanExecuteCaptionButtonAction(action))
+        {
+            return;
+        }
+
+        switch (action)
+        {
+            case CaptionButtonAction.Minimize:
+                WindowState = WindowState.Minimized;
+                break;
+            case CaptionButtonAction.ToggleMaximize:
+                WindowState = WindowState == WindowState.Maximized
+                    ? WindowState.Normal
+                    : WindowState.Maximized;
+                break;
+            case CaptionButtonAction.ToggleFullScreen:
+                WindowState = WindowState == WindowState.FullScreen
+                    ? _windowStateBeforeFullScreen
+                    : WindowState.FullScreen;
+                break;
+            case CaptionButtonAction.TogglePin:
+                Topmost = !Topmost;
+                break;
+            case CaptionButtonAction.Close:
+                NotifyCloseRequestByUser();
+                Close();
+                break;
+        }
+    }
+
+    private void UpdateCaptionButtonCapabilities()
+    {
+        IsPinCaptionButtonSupported = _platformChromeManager?.SupportsPinCaptionButton == true;
+    }
+
+    [SupportedOSPlatform("macos")]
+    private void ConfigureMacOsWindow()
+    {
+        if (!ExtendClientAreaToDecorationsHint)
+        {
+            StopMacOsWindowButtonObserver();
+            NativeChromeInsets = default;
+            _macOsCachedButtonX = null;
+            _macOsCachedButtonY = null;
+            _macOsCacheValid   = false;
+            return;
+        }
+
+        // AppKit 在录屏/窗口共享期间会暂时隐藏标准按钮。隐藏期间不写回坐标，
+        // 等收到恢复通知后再执行一次完整布局，避免覆盖 AppKit 的共享控件状态。
+        if (!this.IsStandardWindowButtonsVisible())
+        {
+            return;
+        }
+
+        double? titleBarHeight = null;
+        if (!MathUtils.AreClose(ExtendClientAreaTitleBarHeightHint, -1))
+        {
+            titleBarHeight = ExtendClientAreaTitleBarHeightHint;
+        }
+
+        double? offsetX = null;
+        double? spacing = null;
+        if (IsSet(MacStandardWindowButtons.OffsetXProperty))
+        {
+            offsetX = MacStandardWindowButtons.GetOffsetX(this);
+        }
+
+        if (IsSet(MacStandardWindowButtons.SpacingProperty))
+        {
+            spacing = MacStandardWindowButtons.GetSpacing(this);
+        }
+
+        var effectSpacing = spacing ?? 20;
+        var currentClientSize = ClientSize;
+
+        // live resize 期间，除 ClientSize 外的输入都不变化；即使高度变了，AppKit 的 autoresizing
+        // 会把按钮维持在相对标题栏的同一视觉位置。当 4 个输入都和上次完全一致时，
+        // 底层 SetStandardWindowButtonsLayout 的 GetFrame 短路也会命中，这里提前返回，
+        // 避免一次 P/Invoke 往返。
+        if (_macOsCacheValid &&
+            Nullable.Equals(_macOsCachedTitleBarHeight, titleBarHeight) &&
+            Nullable.Equals(_macOsCachedOffsetX, offsetX) &&
+            Nullable.Equals(_macOsCachedSpacing, spacing) &&
+            _macOsCachedClientSize == currentClientSize)
+        {
+            return;
+        }
+
+        MacStandardWindowButtons.SetStandardWindowButtonsLayout(this, titleBarHeight, offsetX, null, effectSpacing);
+        var offset = this.GetRecommendedTitleBarContentLeftMargin(effectSpacing);
+        if (offset is not { } titleBarOffset)
+        {
+            // The title bar can measure before the native NSWindow standard buttons exist.
+            // Do not cache that no-op pass, otherwise OnOpened may skip the first real correction.
+            NativeChromeInsets = default;
+            _macOsCacheValid = false;
+            return;
+        }
+
+        NativeChromeInsets = new Thickness(titleBarOffset, 0, 0, 0);
+
+        var closeFrame = this.GetStandardWindowButtonFrame(
+            WindowUtilsInterop.NSWindowButton.CloseButton);
+        if (closeFrame is not { } configuredCloseFrame)
+        {
+            NativeChromeInsets = default;
+            _macOsCachedButtonX = null;
+            _macOsCachedButtonY = null;
+            _macOsCacheValid = false;
+            return;
+        }
+
+        _macOsCachedTitleBarHeight = titleBarHeight;
+        _macOsCachedOffsetX        = offsetX;
+        _macOsCachedSpacing        = spacing;
+        _macOsCachedClientSize     = currentClientSize;
+        _macOsCachedButtonX        = configuredCloseFrame.X;
+        _macOsCachedButtonY        = configuredCloseFrame.Y;
+        _macOsCacheValid           = true;
+    }
+
+    private void UpdateEffectiveLogo()
+    {
+        var mainWindow = GetMainWindow();
+        UpdateMainWindowLogoFallbackSubscription(mainWindow);
+        var (logo, template) = ResolveEffectiveLogo(this, mainWindow);
+        EffectiveLogo         = logo;
+        EffectiveLogoTemplate = template;
+    }
+
+    private void UpdateMainWindowLogoFallbackSubscription(Window? mainWindow)
+    {
+        var fallbackSource = _isOpened &&
+                             Logo is null &&
+                             LogoTemplate is null &&
+                             Icon is null &&
+                             mainWindow is not null &&
+                             !ReferenceEquals(mainWindow, this)
+            ? mainWindow
+            : null;
+        if (ReferenceEquals(_mainWindowLogoFallbackSource, fallbackSource))
+        {
+            return;
+        }
+
+        ReleaseMainWindowLogoFallbackSubscription();
+        if (fallbackSource is null)
+        {
+            return;
+        }
+
+        var lease = new CompositeDisposable();
+        _mainWindowLogoFallbackSource = fallbackSource;
+        _mainWindowLogoFallbackLease  = lease;
+        try
+        {
+            lease.Add(fallbackSource.GetObservable(LogoProperty).Subscribe(_ => UpdateEffectiveLogo()));
+            lease.Add(fallbackSource.GetObservable(LogoTemplateProperty).Subscribe(_ => UpdateEffectiveLogo()));
+            lease.Add(fallbackSource.GetObservable(IconProperty).Subscribe(_ => UpdateEffectiveLogo()));
+        }
+        catch
+        {
+            ReleaseMainWindowLogoFallbackSubscription();
+            throw;
+        }
+    }
+
+    private void ReleaseMainWindowLogoFallbackSubscription()
+    {
+        _mainWindowLogoFallbackSource = null;
+        _mainWindowLogoFallbackLease?.Dispose();
+        _mainWindowLogoFallbackLease = null;
+    }
+
+    private static Control? CreateWindowIconLogo(WindowIcon? icon)
+    {
+        if (icon == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            using var stream = new MemoryStream();
+            icon.Save(stream);
+            stream.Position = 0;
+            return new Image
+            {
+                Source  = new Bitmap(stream),
+                Stretch = Stretch.Uniform
+            };
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private void UpdateEffectiveFullscreenTitleVisible()
     {
         IsEffectiveFullscreenTitleVisible = IsTitleVisible && Title is not null;
@@ -1952,14 +2017,6 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
-    internal void RefreshPlatformCsdStatus()
-    {
-        ConfigureCsdStatus();
-        UpdateCaptionButtonCapabilities();
-        ApplyCurrentWindowsCsdFrameTheme();
-        ConfigureCustomResizerVisible();
-    }
-
     private void ApplyCurrentWindowsCsdFrameTheme()
     {
         if ((PlatformThemeVariant?)ActualThemeVariant is { } platformThemeVariant)
@@ -2007,4 +2064,6 @@ public partial class Window : AvaloniaWindow,
             }
         }
     }
+
+    #endregion
 }

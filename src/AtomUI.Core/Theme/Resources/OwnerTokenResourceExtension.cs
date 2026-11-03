@@ -17,6 +17,9 @@ internal sealed class OwnerTokenResourceExtension : MarkupExtension
     public SharedTokenKind Kind { get; set; }
     public bool WhenExplicit { get; set; }
     public bool WhenControlExplicit { get; set; }
+    public Type? SourceControlType { get; set; }
+    public Type? AnchorControlType { get; set; }
+    public BindingPriority Priority { get; set; } = BindingPriority.LocalValue;
 
     public OwnerTokenResourceExtension() { }
 
@@ -26,9 +29,9 @@ internal sealed class OwnerTokenResourceExtension : MarkupExtension
     }
 
     public override object ProvideValue(IServiceProvider serviceProvider) =>
-        CreateBinding(Kind, WhenExplicit || WhenControlExplicit, WhenControlExplicit);
+        CreateBinding(Kind, WhenExplicit || WhenControlExplicit, WhenControlExplicit, SourceControlType, AnchorControlType, Priority);
 
-    internal static BindingBase CreateBinding(SharedTokenKind kind, bool whenExplicit = false, bool controlOnly = false)
+    internal static BindingBase CreateBinding(SharedTokenKind kind, bool whenExplicit = false, bool controlOnly = false, Type? sourceControlType = null, Type? anchorControlType = null, BindingPriority priority = BindingPriority.LocalValue)
     {
         var source = new ClrPropertyInfo("OwnerTokenValue", value =>
         {
@@ -46,7 +49,7 @@ internal sealed class OwnerTokenResourceExtension : MarkupExtension
                 .Select(_ =>
                 {
                     var context = owner.GetValue(ThemeScope.ContextProperty) ?? ThemeScope.ResolveContext(owner);
-                    return (Context: context, Key: ResolveResourceKey(owner, context, kind));
+                    return (Context: context, Key: ResolveResourceKey(owner, context, kind, sourceControlType, anchorControlType));
                 })
                 .DistinctUntilChanged()
                 .Select(source => source.Context is null || (whenExplicit && source.Key is SharedTokenKind)
@@ -56,24 +59,48 @@ internal sealed class OwnerTokenResourceExtension : MarkupExtension
         }, null, typeof(IObservable<object?>));
         return new CompiledBindingExtension(new CompiledBindingPathBuilder().Self()
             .Property(source, PropertyInfoAccessorFactory.CreateInpcPropertyAccessor)
-            .StreamObservable<object?>().Build());
+            .StreamObservable<object?>().Build()) { Priority = priority };
     }
 
-    private static object ResolveResourceKey(Control owner, ThemeContext? context, SharedTokenKind kind)
+    private static object ResolveResourceKey(Control owner, ThemeContext? context, SharedTokenKind kind, Type? sourceControlType, Type? anchorControlType)
     {
         if (context is null)
         {
             return kind;
         }
+        var registry = context.Snapshot.Registry;
+        // A composition theme owns its template inputs even when the target is a
+        // separately registered primitive. Start lookup at that theme's actual
+        // instance; derived internal themes retain the concrete public parent.
+        var anchorReached = anchorControlType is null;
         for (Control? candidate = owner; candidate is not null;
              candidate = candidate.TemplatedParent as Control ?? candidate.Parent as Control)
         {
-            var registry = context.Snapshot.Registry;
+            anchorReached |= anchorControlType?.IsInstanceOfType(candidate) == true;
+            if (!anchorReached)
+            {
+                continue;
+            }
+            if (sourceControlType is not null && candidate.GetType() != sourceControlType && candidate.StyleKey != sourceControlType)
+            {
+                continue;
+            }
+            if (candidate is IControlThemeGlobalOwnerSource { ThemeGlobalOwner: { } actualOwner } &&
+                (registry.TryGetControl(actualOwner.GetType(), out var actual) || registry.TryGetControl(actualOwner.StyleKey, out actual)))
+            {
+                return ControlTokenResourceKey.Global(actual.Identity, kind);
+            }
             if (registry.TryGetControl(candidate.GetType(), out var descriptor) ||
                 registry.TryGetControl(candidate.StyleKey, out descriptor))
             {
                 return ControlTokenResourceKey.Global(descriptor.Identity, kind);
             }
+        }
+        if (sourceControlType is not null)
+        {
+            // A standalone use of a composition theme retains its declared
+            // resource identity when no matching owner exists in the tree.
+            return ControlTokenResourceKey.Global(sourceControlType, kind);
         }
         return kind;
     }

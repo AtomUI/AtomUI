@@ -1,5 +1,8 @@
 # Tour 桌面版架构设计
 
+CT15当前工程（2026-11-01）：九Own迁V2R1并保持36四算法默认/type/key/slot；原Global和可选字体进入实际popup，Native值与独立使用的叶子身份保留。当前目标替换/移动跟随原坐标算法，失去当前锚点沿生命周期关闭，pinned不拦截生命周期退出。步骤/指示器/动作跨模板与树重建保留原内容和当前步骤。51聚焦通过、成员15源/7控件0问题；完整普通Skia/AOT、清理及限定批准尚待，完整CT15不关闭。 见[CT15结果](../../../../superpowers/plans/2026-10-22-custom-theme/tour-consumers-results.md)。
+
+
 本文档定义 `Tour` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Tour 桌面版实现原理](implementation.md)，Tour Token 的专项设计见 [Tour Token 设计](token.md)，Semantic Part 契约见 [Tour Semantic Part 契约](semantic-part.md)，设计和契约变化记录见 [Tour Changelog](changelog.md)。
 
 该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `Tour`，其 public `IsPopupPinnedOpen` 用于语义预览与设计检查场景钉住弹层常开；设置为 true 时保持 `Tour.IsOpen` 并 relay 到 `PART_Popup`，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
@@ -179,3 +182,6 @@ Tour 的视觉选项通过 public API 归一为 theme variables、伪类或模�
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+
+CT15最新限定出口：60聚焦、正确managed/AOT各112检查/212帧；44明确静态待批准，原140可比/72缺帧及跨运行14非零保留。31临时/1448取证/614原会话和4最终文件清理，最终Tour21+PopupPlacement8共29通过、NET8零警告。完整家族/平台/GC/极值与CT15仍未关闭，见[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/tour-consumers-visual-review.md)。

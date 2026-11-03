@@ -2,6 +2,13 @@
 
 本文档记录 Alert 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-30
+
+- 接通CloseIconSize与MessageWithDescriptionMargin的明确Own输入、0与清除；保留未配置时原IconSizeSM及标题Margin，不自动施加历史资源默认。
+- 21处模板Global输入选择实际Alert owner；补根可选字体族/字号/前景，保留原生继承、本地值和标题角色字号。
+- 四个状态图标的颜色绑定恢复Template优先级，使生成的AlertIconStyle.FillBrush实际生效。
+- 10个Own迁移有效默认求值Revision1，名称/type/key/slot与未配置默认不变；关闭请求、ExtraAction、Marquee及静态部件合同保持。
+
 ## 2026-08-19
 
 - Gallery

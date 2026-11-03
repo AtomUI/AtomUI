@@ -48,6 +48,10 @@ Header 内容变化、字体变化、icon 可见性变化和标题位置变化�
 
 ## 5. 生命周期与模板接入
 
+模板应用前先从旧Header移除LayoutUpdated观察，再查找新Header/Frame，只有owner已挂载才接入新观察；attach恢复，detach退休。子布局可能在固定owner Bounds不变时单独完成，ControlTheme无法据绝对gap调用owner.InvalidateVisual，故这项运行时绘制通知保留在C#并写明理由。
+
+Arrange和Header布局完成共用原border bounds计算，比较最后已绘制cache与当前绝对Header gap/border bounds，变化才InvalidateVisual。此通知不重写Render geometry公式，不用背景遮挡透明缺口，不改变布局预算；原生左右位置单变量和订阅0/1退休验证锁定此边界。
+
 `OnApplyTemplate` 实际解析两个 part 引用：
 
 - `PART_Frame`（`Border`）→ `_frame`，布局测量与边框 bounds 参考。

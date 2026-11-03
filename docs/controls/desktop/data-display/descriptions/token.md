@@ -16,6 +16,10 @@ DescriptionsToken 不承载以下状态：
 
 ## 2. Token 分类
 
+`DescriptionsToken` 使用 V2 revision 1，10字段及四算法40条默认/type/key/slot保持。Global字体和Shared角色进入真实Root与生成cell：Root读取实际InheritanceParent；内部cell主题通过现有OwnerTokenResource的SourceControlType=Descriptions消费声明公开scope，不新增独立identity。运行注册表中只有Descriptions独立注册Own10，其余模型/内部视觉无独立fragment。
+
+保留原角色边界：普通label/colon使用LabelColor，边框label使用ColorTextSecondary；ItemPadding三档只在边框布局消费，普通模式保持原自然布局。此API使用SizeType三档且默认Large，不新增Custom枚举；原生内容自身字体/颜色及专用Semantic Style仍按原生优先级覆盖。
+
 ### 2.1 文本颜色 Token
 
 - `LabelColor`

@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net8.0</TargetFrameworks>
+        <AssemblyName>Avalonia.Skia</AssemblyName>
+        <RootNamespace>Avalonia.Skia</RootNamespace>
+        <AssemblyVersion>12.1.4.0</AssemblyVersion>
+        <FileVersion>12.1.4.0</FileVersion>
+        <Version>12.1.4-atomui.ct15.1</Version>
+        <PackageId>AtomUI.Compatibility.Avalonia.Skia</PackageId>
+        <IsPackable>false</IsPackable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <IsTrimmable>true</IsTrimmable>
+        <IsAotCompatible>true</IsAotCompatible>
+        <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+        <SignAssembly>true</SignAssembly>
+        <PublicSign>true</PublicSign>
+        <AssemblyOriginatorKeyFile>avalonia.snk</AssemblyOriginatorKeyFile>
+        <AssemblySearchPaths>{HintPathFromItem};{RawFileName};{TargetFrameworkDirectory}</AssemblySearchPaths>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="upstream/**/*.cs" />
+        <EmbeddedResource Include="upstream/Assets/NoiseAsset_256X256_PNG.png"
+                          LogicalName="Avalonia.Skia.Assets.NoiseAsset_256X256_PNG.png" />
+        <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"
+                          GeneratePathProperty="true" ExcludeAssets="compile;runtime" />
+        <!-- Exact dependencies of official Avalonia.Skia 12.1.4; native assets stay official. -->
+        <PackageReference Include="SkiaSharp" Version="3.119.4" />
+        <PackageReference Include="HarfBuzzSharp" Version="8.3.1.3" />
+    </ItemGroup>
+    <!-- Upstream is a friend assembly. Its compilation needs the official runtime metadata,
+         including internal members intentionally omitted from reference assemblies. -->
+    <Target Name="ReferencePinnedAvaloniaRuntime" BeforeTargets="ResolveAssemblyReferences"
+            DependsOnTargets="ResolvePackageAssets">
+        <ItemGroup>
+            <Reference Include="$(PkgAvalonia)/lib/$(TargetFramework)/Avalonia*.dll">
+                <Private>false</Private>
+            </Reference>
+        </ItemGroup>
+    </Target>
+    <Target Name="RejectUnreviewedAvaloniaVersion" BeforeTargets="CoreCompile">
+        <Error Condition="'$(AvaloniaVersion)' != '12.1.4'"
+               Text="The software Skia compatibility source is pinned to Avalonia 12.1.4. Review its upstream diff before changing this version." />
+    </Target>
+</Project>

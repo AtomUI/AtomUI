@@ -2,6 +2,18 @@
 
 本文档记录 Avatar 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-31
+
+- Theme
+  - Adopt DependencyDefaultsV2/revision1 for the eleven existing Own defaults while preserving keys, slots, formulas and original text inheritance.
+  - Consume explicit Avatar Global fonts and square radii, and AvatarGroup Global border thickness through the actual registered owners.
+  - Move Gap, circle radius and continuous Custom box/icon inputs to ControlTheme compiled bindings and typed converters.
+- Behavior
+  - Release member and fold relays when their membership ends or the group detaches; retain the existing projection priority and image-loading pipeline.
+  - Project group SizeType before Size so an initial explicit size is not overwritten by a preset.
+- Verification
+  - Keep CT15 acceptance limited to recorded scenarios; pending visual changes and platform/family exits remain open.
+
 ## 2026-09-10
 
 - Behavior
@@ -60,3 +72,6 @@
   - Add Avatar implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add Avatar control-level changelog.
   - Add Avatar Token documentation covering AvatarToken.
+
+
+CT15当前仅[限定表](../../../../superpowers/plans/2026-10-22-custom-theme/avatar-consumers-visual-review.md)48对有意变化已获批准，其他关闭/往返微差及完整Avatar/CT15保留，不授权提交。

@@ -4,6 +4,13 @@
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.CheckableTagTheme"
               TargetType="atom:CheckableTag">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:CheckableTag">
             <Panel>
@@ -28,8 +35,8 @@
                     </DockPanel>
                 </atom:PixelAlignedBorder>
                 <Border Name="FocusVisual"
-                        BorderBrush="{atom:SharedTokenResource ColorPrimary}"
-                        BorderThickness="{atom:SharedTokenResource BorderThickness}"
+                        BorderBrush="{atom:OwnerTokenResource ColorPrimary}"
+                        BorderThickness="{atom:OwnerTokenResource BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         IsHitTestVisible="False"
                         IsVisible="False" />
@@ -43,13 +50,19 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
-    <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-    <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+    <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
+    <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />
-    <Setter Property="FontSize" Value="{atom:TagTokenResource TagFontSize}" />
-    <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
-    <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+    <Setter Property="FontSize">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+            <atom:TagTokenResource Kind="TagFontSize" />
+            <atom:OwnerTokenResource Kind="FontSizeSM" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontSizeSM" />
+        </MultiBinding>
+    </Setter>
+    <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+    <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
     <Setter Property="MinHeight" Value="{atom:TagTokenResource TagLineHeight}" />
     <Setter Property="Padding" Value="{atom:TagTokenResource TagPadding}" />
 
@@ -72,22 +85,22 @@
     </Style>
 
     <Style Selector="^:not(:checked):pointerover:not(:disabled)">
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillSecondary}" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorFillSecondary}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorPrimary}" />
     </Style>
 
     <Style Selector="^:checked:not(:disabled)">
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimary}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextLightSolid}" />
     </Style>
 
     <Style Selector="^:checked:pointerover:not(:disabled)">
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimaryHover}" />
     </Style>
 
     <Style Selector="^:pressed:not(:disabled)">
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimaryActive}" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimaryActive}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextLightSolid}" />
     </Style>
 
     <Style Selector="^:focus-visible /template/ Border#FocusVisual">
@@ -96,10 +109,10 @@
 
     <Style Selector="^:disabled">
         <Setter Property="Cursor" Value="Arrow" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
     </Style>
 
     <Style Selector="^:checked:disabled">
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
     </Style>
 </ControlTheme>

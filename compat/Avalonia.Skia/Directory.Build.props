@@ -1,0 +1,12 @@
+<Project>
+    <!-- The pinned third-party assembly does not participate in AtomUI control generation. -->
+    <Import Project="../../build/Versions.props" />
+    <PropertyGroup>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>latest</LangVersion>
+        <AvaloniaAccessUnstablePrivateApis>true</AvaloniaAccessUnstablePrivateApis>
+        <!-- This is Avalonia's own pinned friend assembly, rather than a private-API consumer. -->
+        <NoWarn>$(NoWarn);AVA3001</NoWarn>
+    </PropertyGroup>
+</Project>

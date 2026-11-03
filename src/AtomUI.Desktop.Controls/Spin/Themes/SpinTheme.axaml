@@ -4,6 +4,20 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Spin}" TargetType="atom:Spin">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel Name="RootLayout">
@@ -45,7 +59,7 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="MotionEasingCurve" Value="LinearEasing" />
         <Setter Property="MaskOpacity" Value="1.0" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="MotionDuration"
                 Value="{atom:SpinTokenResource IndicatorDuration}" />
 
@@ -56,8 +70,11 @@
                 </atom:TokenTransitions>
             </Setter>
         </Style>
+        <Style Selector="^ /template/ atom|SpinIndicator#Indicator">
+            <Setter Property="DotBgBrush" Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atom:Spin}}" />
+        </Style>
         <Style Selector="^ /template/ atom|TextBlock#Tip">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atom:Spin}}" />
         </Style>
         
         <Style Selector="^[IsSpinning=True]">
@@ -76,14 +93,14 @@
             
             <Style Selector="^[IsMaskBackgroundEnabled=True]">
                 <Style Selector="^ /template/ Border#Mask">
-                    <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgMask}" />
+                    <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgMask, AnchorControlType={x:Type atom:Spin}}" />
                 </Style>
             </Style>
             
         </Style>
         
         <Style Selector="^ /template/ StackPanel#IndicatorLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}"/>
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource Kind=SpacingXXS, AnchorControlType={x:Type atom:Spin}}"/>
         </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -153,11 +153,22 @@ public class TourSemanticPartTests
             (PopupActionsClass, "StackPanel"),
             (PopupIndicatorsClass, "ContentPresenter"));
 
-        // 圆点由 DefaultTourIndicator 代码物化并挂 marker 类；主题负责视觉（尺寸/颜色），
-        // 此处锁定主题中存在圆点选择器，防止代码回退为直接设置视觉属性。
+        // Runtime dots use a local implicit ControlTheme: defaults must not be
+        // ordinary local StyleTriggers that override owner semantic styles.
         var indicatorTheme = ReadThemeDocument(DefaultTourIndicatorThemePath);
-        indicatorTheme.ToString().ShouldContain("Ellipse.semantic-popup-indicator");
-        indicatorTheme.ToString().ShouldContain("Ellipse.semantic-popup-indicator.active");
+        var dotTheme = indicatorTheme.Descendants().Single(element =>
+            element.Name.LocalName == "ControlTheme" &&
+            (string?)element.Attribute("TargetType") == "Ellipse");
+        dotTheme.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml"))!
+                .Value.ShouldBe("{x:Type Ellipse}");
+        foreach (var property in new[] { "Width", "Height", "Fill" })
+        {
+            dotTheme.Elements().ShouldContain(element =>
+                element.Name.LocalName == "Setter" && (string?)element.Attribute("Property") == property);
+        }
+        dotTheme.Descendants().ShouldContain(element =>
+            element.Name.LocalName == "Style" &&
+            (string?)element.Attribute("Selector") == "^.semantic-popup-indicator.active");
     }
 
     [Fact]

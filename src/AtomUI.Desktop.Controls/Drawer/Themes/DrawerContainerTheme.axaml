@@ -38,9 +38,9 @@
         </Setter>
         
         <Setter Property="MotionDuration"
-                Value="{atom:SharedTokenResource MotionDurationSlow}" />
+                Value="{atom:DrawerTokenResource MotionDurationSlow}" />
         <Setter Property="Background"
-                Value="{atom:SharedTokenResource ColorBgMask}" />
+                Value="{atom:OwnerTokenResource ColorBgMask}" />
 
         <Style Selector="^[Placement=Left] /template/ Border#PART_Surface">
             <Setter Property="HorizontalAlignment" Value="Left" />

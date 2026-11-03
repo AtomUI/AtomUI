@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using AtomUI.Utils;
 using Avalonia;
@@ -13,7 +14,7 @@ using Avalonia.Media.Transformation;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(":loading", ":has-image")]
-internal class ImageViewer : TemplatedControl, IMotionAwareControl
+internal class ImageViewer : TemplatedControl, IMotionAwareControl, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
@@ -749,6 +750,16 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
 
     private bool CanTransformCurrentImage => CurrentImage != null;
 
+    private Size ViewportSize => _scene is { Bounds.Width: > 0, Bounds.Height: > 0 }
+        ? _scene.Bounds.Size
+        : Bounds.Size;
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => ImagePreviewThemeOwner.Resolve(this);
+
+    #endregion
+
     private void HandleButtonClick(object? sender, RoutedEventArgs e)
     {
         if (sender == _previousButton)
@@ -831,10 +842,6 @@ internal class ImageViewer : TemplatedControl, IMotionAwareControl
         SetCurrentValue(IsScaleDownEnabledProperty, CanTransformCurrentImage && scale > min + 0.000001);
         SetCurrentValue(IsScaleUpEnabledProperty, CanTransformCurrentImage && scale < max - 0.000001);
     }
-
-    private Size ViewportSize => _scene is { Bounds.Width: > 0, Bounds.Height: > 0 }
-        ? _scene.Bounds.Size
-        : Bounds.Size;
 
     private void HandleSceneSizeChanged(object? sender, SizeChangedEventArgs e)
     {

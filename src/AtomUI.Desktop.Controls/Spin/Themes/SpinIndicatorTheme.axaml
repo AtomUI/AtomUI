@@ -5,6 +5,20 @@
     xmlns:atomc="https://atomui.net/common-controls"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SpinIndicator}" TargetType="atom:SpinIndicator">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -53,7 +67,7 @@
         <Setter Property="MotionEasingCurve" Value="LinearEasing" />
         <Setter Property="MotionDuration"
                 Value="{atom:SpinTokenResource IndicatorDuration}" />
-        <Setter Property="DotBgBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+        <Setter Property="DotBgBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
 
         <Style Selector="^[IsCustomIndicator=True] /template/ atomc|SpinIndicatorDotPanel#BuiltInIndicatorLayout">
             <Setter Property="IsVisible" Value="False" />

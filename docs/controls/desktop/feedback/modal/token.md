@@ -23,6 +23,42 @@ Token 按控件语义分类维护：
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
+### 有效默认与终端owner
+
+Dialog的17项和MessageBox的2项Own使用DependencyDefaultsV2 Revision1，名称/type/key/slot及原常量/公式保持。Dialog.MinHeight声明HeaderPadding为强类型Own上游参数：ControlHeightLG+有效HeaderPadding.Top/Bottom+UniformlyMarginXS；明确MinHeight仍优先。原Whole evaluator仅在全局默认上计算，无法让明确HeaderPadding参与此下游默认。
+
+DialogSurface与OverlayDialogPresenter通过内部IControlThemeGlobalOwnerSource指向实际Dialog或MessageBox，不增加identity或scope。模板内Global使用真实Surface/presenter锚点，避免以未注册internal类型构造Global资源key；尚未挂载的过渡阶段保留Shared回退，进入真实树后重新解析。两种Host的DialogResourceBridge/ThemeContextLease和真实逻辑成员机制保持。
+
+Surface正文的FontFamily/FontSize/ColorText为明确终端Global激活的可选输入，未配置回退实际宿主原生继承；标题保留HeaderFontSize/HeaderColor角色，按钮等独立公开组件保留各自职责。Dialog/MessageBox root是零尺寸会话控制器，继承的布局/字体属性不自动等同Host展示请求；实际内容和专用Part承担当层原生定制。Host*尺寸请求及结构下限不改。
+
+### Own完整清单
+
+以下19项均为Active；`G`表示对应Token默认计算的有效Global，Thickness按左/上/右/下排列。未列出新的统一范围限制：颜色保留透明语义，字体/尺寸/间距遵循各真实Avalonia目标及结构约束；清除明确Own恢复下表默认，不用0代表“未配置”。
+
+| identity / 字段 | 类型 | 默认 | 实际消费者 |
+| --- | --- | --- | --- |
+| Dialog.HeaderBg | Color | Transparent | Overlay header背景 |
+| Dialog.HeaderMarginBottom | Thickness | 0,0,0,G.UniformlyMarginXS | Overlay header.Margin |
+| Dialog.LogoSize | double | G.SizeLG | Overlay header的Logo presenter宽高 |
+| Dialog.HeaderFontSize | double | G.FontSizeHeading5 | Overlay标题字号 |
+| Dialog.HeaderColor | Color | G.ColorTextHeading | Overlay标题前景 |
+| Dialog.ContentBg | Color | G.ColorBgElevated | Surface框体背景 |
+| Dialog.HeaderPadding | Thickness | G.PaddingContentHorizontalLG,G.UniformlyPaddingSM,G.PaddingContentHorizontalSM,0 | Overlay header.Padding；MinHeight默认上游 |
+| Dialog.ContentPadding | Thickness | G.PaddingContentHorizontalLG,0,G.PaddingContentHorizontalLG,0 | Overlay body.Padding |
+| Dialog.WindowContentPadding | Thickness | G.PaddingContentHorizontalLG,G.PaddingContentVerticalLG,G.PaddingContentHorizontalLG,G.PaddingContentVerticalLG | Window body.Padding |
+| Dialog.FooterBg | Color | Transparent | footer.Background |
+| Dialog.FooterPadding | Thickness | G.PaddingContentHorizontalLG,0,G.PaddingContentHorizontalLG,G.UniformlyPaddingMD | footer.Padding |
+| Dialog.FooterMarginTop | Thickness | 0,G.UniformlyMarginXS,0,0 | footer.Margin |
+| Dialog.CloseBtnSize | double | G.ControlHeight | Overlay caption按钮宽高 |
+| Dialog.MinWidth | double | 200 | Surface正文viewport结构基线 |
+| Dialog.MinHeight | double | G.ControlHeightLG+有效HeaderPadding.Top+Bottom+G.UniformlyMarginXS | Surface正文viewport结构基线；明确0仍优先 |
+| Dialog.ButtonGroupSpacing | double | G.SpacingXS | ButtonBox实际DockPanel.HorizontalSpacing |
+| Dialog.LoadingIndicatorMargin | Thickness | 0,0,0,G.UniformlyMargin | body Skeleton.Margin |
+| MessageBox.StyleIconSize | double | G.SizeLG×1.2 | 状态glyph presenter宽高，明确0有效 |
+| MessageBox.MinWidth | double | 410 | MessageBox.HostMinWidth，明确0仍受Dialog结构基线约束 |
+
+两种Host共享body/footer；header/title/close/Logo由Overlay模板物化，Window由原生标题区承担，对应Own不新增跨chrome转发。独立公开Button与Dialog的Token角色不合并。
+
 ## 3. 控件专项模型中的 Token 使用
 
 Modal 的控件专项模型通过 Theme 消费 Token：

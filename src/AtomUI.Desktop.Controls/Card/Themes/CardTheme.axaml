@@ -6,9 +6,30 @@
     x:ClassModifier="internal">
     <converters:CornerRadiusFilterConverter x:Key="CornerRadiusFilterConverter" Filter="TopLeft, TopRight" />
     <ControlTheme x:Key="{x:Type atom:Card}" TargetType="atom:Card">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:OwnerTokenResource Kind="ColorText" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="ColorText" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:PixelAlignedBorder Name="Frame"
+                <atom:PixelAlignedBorder Name="Frame" Padding="{TemplateBinding Padding}"
                                          BorderThickness="{TemplateBinding EffectiveBorderThickness}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          CornerRadius="{TemplateBinding EffectiveCornerRadius}"
@@ -71,11 +92,11 @@
         </Setter>
         
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG, SourceControlType={x:Type atom:Card}}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorderSecondary, SourceControlType={x:Type atom:Card}}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness, SourceControlType={x:Type atom:Card}}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgContainer, SourceControlType={x:Type atom:Card}}" />
 
         <Style Selector="^:headerless">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#HeaderFrame">
@@ -85,18 +106,22 @@
         <Setter Property="BoxShadow" Value="0 1 2 -1 #00000000, 0 3 6 0 #00000000, 0 5 12 4 #00000000" />
         <Style Selector="^[StyleVariant=Borderless]">
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsTertiary}" />
+            <Setter Property="BoxShadow" Value="{atom:OwnerTokenResource BoxShadowsTertiary, SourceControlType={x:Type atom:Card}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|PixelAlignedBorder#HeaderFrame">
             <Setter Property="Background" Value="{atom:CardTokenResource HeaderBg}" />
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+                    Value="{atom:OwnerTokenResource ColorBorderSecondary, SourceControlType={x:Type atom:Card}}" />
+        </Style>
+
+        <Style Selector="^ /template/ ContentPresenter#HeaderExtra">
+            <Setter Property="Foreground" Value="{atom:CardTokenResource ExtraColor, WhenExplicit=True}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#TitlePresenter">
             <Setter Property="TextElement.FontWeight"
-                    Value="{atom:SharedTokenResource FontWeightStrong}" />
+                    Value="{atom:OwnerTokenResource FontWeightStrong, SourceControlType={x:Type atom:Card}}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
@@ -124,14 +149,12 @@
                 <Setter Property="TextElement.FontSize"
                         Value="{atom:CardTokenResource HeaderFontSizeSM}" />
             </Style>
-            <Style Selector="^ /template/ Border#CardContent">
-                <Setter Property="Padding" Value="{atom:CardTokenResource BodyPaddingSM}" />
-            </Style>
+
         </Style>
 
         <Style Selector="^[IsInnerMode=True]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#HeaderFrame">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
+                <Setter Property="Background" Value="{atom:OwnerTokenResource ColorFillAlter, SourceControlType={x:Type atom:Card}}" />
             </Style>
         </Style>
 

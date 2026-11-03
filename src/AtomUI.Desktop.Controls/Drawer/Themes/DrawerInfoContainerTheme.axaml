@@ -29,6 +29,7 @@
                                             HorizontalAlignment="Left"
                                             VerticalAlignment="Center"
                                             Grid.Column="1"
+                                            TextTrimming="CharacterEllipsis"
                                             Text="{TemplateBinding Title}" />
                             <ContentPresenter
                                 Name="ExtraContentPresenter"
@@ -64,7 +65,7 @@
 
         <Setter Property="ClipToBounds" Value="False" />
         <Style Selector="^ /template/ Border#Frame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgElevated, AnchorControlType={x:Type atom:DrawerInfoContainer}}" />
         </Style>
 
         <Style Selector="^[Placement=Top]">
@@ -123,25 +124,25 @@
         </Style>
 
         <Style Selector="^ /template/ atom|TextBlock#HeaderText">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightLG}" />
-            <Setter Property="FontWeight" Value="{atom:SharedTokenResource FontWeightStrong}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource Kind=FontSizeLG, AnchorControlType={x:Type atom:DrawerInfoContainer}}" />
+            <Setter Property="LineHeight" Value="{atom:OwnerTokenResource Kind=FontHeightLG, AnchorControlType={x:Type atom:DrawerInfoContainer}}" />
+            <Setter Property="FontWeight" Value="{atom:OwnerTokenResource Kind=FontWeightStrong, AnchorControlType={x:Type atom:DrawerInfoContainer}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadiusSM, AnchorControlType={x:Type atom:DrawerInfoContainer}}" />
             <Setter Property="Padding" Value="{atom:DrawerTokenResource CloseIconPadding}" />
             <Setter Property="Margin" Value="{atom:DrawerTokenResource CloseIconMargin}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource FontSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource Kind=FontSize, AnchorControlType={x:Type atom:DrawerInfoContainer}}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource Kind=FontSize, AnchorControlType={x:Type atom:DrawerInfoContainer}}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgTextHover, AnchorControlType={x:Type atom:DrawerInfoContainer}}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pressed">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextActive}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgTextActive, AnchorControlType={x:Type atom:DrawerInfoContainer}}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#InfoContainer">

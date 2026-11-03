@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             x:Class="AtomUI.Desktop.Controls.Tests.ImagePreviewer.ImagePreviewerNativeSemanticStyleView">
+    <UserControl.Styles>
+        <Style Selector="atom|ImagePreviewer.semantic-owner">
+            <atom:ImagePreviewerPopupBodyStyle>
+                <Setter Property="Tag" Value="popup.body" />
+                <Setter Property="Background" Value="#FFCE27A9" />
+            </atom:ImagePreviewerPopupBodyStyle>
+        </Style>
+    </UserControl.Styles>
+    <atom:ImagePreviewer Name="Previewer" Classes="semantic-owner" />
+</UserControl>

@@ -23,6 +23,22 @@ Token 按控件语义分类维护：
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
+### Own完整清单与有效默认
+
+七项使用DependencyDefaultsV2 Revision1，原类型/名称/key/slot/公式保持，无Own依赖边。`G`为PopupConfirm有效Global；明确Own优先，清除恢复默认，合法0按原布局意义消费。
+
+| 字段 | 类型 | 默认 | 分类 / 实际消费者 |
+| --- | --- | --- | --- |
+| ButtonSpacing | double | G.UniformlyMarginXS | Active：actions.StackPanel.Spacing |
+| IconMargin | Thickness | 0,G.UniformlyMarginXS/2,G.UniformlyMarginXS,0 | Active：状态glyph margin |
+| ContentContainerMargin | Thickness | 0,0,0,G.UniformlyMarginXS | Active：description presenter margin |
+| ButtonContainerMargin | Thickness | 0,G.UniformlyMarginXS,0,0 | Active：actions margin；空描述状态仍覆盖为0 |
+| TitleMargin | Thickness | 0,0,0,G.UniformlyMarginXS | Active：标题margin |
+| PopupMinWidth | double | 240 | Reserved / LegacyInactive：仅历史资源，无生产消费者，不施加新的弹层宽下限 |
+| PopupMinHeight | double | 80 | Reserved / LegacyInactive：仅历史资源，无生产消费者，不施加新的弹层高下限 |
+
+确认容器的正文可选字体/前景与标题ColorTextHeading/FontWeightStrong、glyph IconSizeLG/Info/Warning/Error角色，按实际PopupConfirm owner解析；不创建第二套scope。共享FlyoutPresenter框体与独立Button继续遵循各自合同，实际区域定制使用生成的专用popup Style。root继承字体不是新增的弹层转发API，没有额外SizeType/Custom档位。
+
 ## 3. 控件专项模型中的 Token 使用
 
 PopupConfirm 的控件专项模型通过 Theme 消费 Token：

@@ -169,6 +169,10 @@ Card 属于 Data Display 分类，常与 Grid、Image、Avatar、TabControl、Sk
 
 Card 不实现 Form、CompactSpace、选择、弹层或媒体断点接口。
 
+五个公开文字根支持本identity的明确Global字体/字号/前景，未配置保留原生继承。Header/Meta标题/描述等角色字号仍独立，专用Style可覆盖。Small Grid/Tabs的外body不重复加普通padding，内部padding仍由对应item/content负责。
+
+ActionsBg和ExtraColor为明确Own激活的可选默认；历史ActionsSpacing/TabsMarginBottom/CardHeadPadding/CardPaddingBase保留为Reserved，不声称有可见消费者。详见[token](token.md)。Card只有既定三档SizeType，Native Width/Height/Padding与语义部件增量定制不创造Custom枚举。
+
 ## 7. 兼容性不变量
 
 维护 Card 时必须保持以下不变量：

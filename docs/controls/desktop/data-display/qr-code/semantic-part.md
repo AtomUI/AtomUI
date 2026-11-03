@@ -1,5 +1,7 @@
 # QRCode Semantic Part 契约
 
+CT15 沿用 root/cover 两个 Part 与原 marker/selector/cardinality。应用通过 `QRCodeCoverStyle` 声明式定制实际 Border 的 Background、Padding、BorderThickness、CornerRadius 等表面属性，清除后回到当前 Own 与原默认；不在 code-behind 找 Cover 写样式。四状态仍复用同一 Cover，原生状态内容的对象、字体和键盘合同保持。限定工程/视觉边界见 [CT15 QRCode](../../../../superpowers/plans/2026-10-22-custom-theme/qr-code-consumers-results.md)。
+
 本文档定义 QRCode 对应用公开的 Semantic Part、Selector、类型约束、数量语义和定制边界。QRCode 的整体设计见
 [QRCode 桌面版架构设计](overview.md)，真实模板节点与生命周期见 [QRCode 桌面版实现原理](implementation.md)，系统级规则见
 [AtomUI Semantic Part 系统设计](../../../../architecture/systems/theming/semantic-parts.md)。

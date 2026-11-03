@@ -14,15 +14,25 @@ namespace AtomUI.Desktop.Controls;
 
 internal class ShadowsAwareContainer : Decorator
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
         Border.BoxShadowProperty.AddOwner<ShadowsAwareContainer>();
     
     public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
         Border.CornerRadiusProperty.AddOwner<ShadowsAwareContainer>();
 
+    #endregion
+
+    #region 内部属性定义
+
     internal static readonly StyledProperty<IBrush?> SurfaceBackgroundProperty =
         Popup.SurfaceBackgroundProperty.AddOwner<ShadowsAwareContainer>();
     
+    #endregion
+
+    #region 公共属性定义
+
     public static readonly StyledProperty<bool> IsArrowVisibleProperty =
         ArrowDecoratedBox.IsArrowVisibleProperty.AddOwner<ShadowsAwareContainer>();
     
@@ -47,11 +57,6 @@ internal class ShadowsAwareContainer : Decorator
         set => SetValue(CornerRadiusProperty, value);
     }
 
-    internal IBrush? SurfaceBackground
-    {
-        get => GetValue(SurfaceBackgroundProperty);
-        set => SetValue(SurfaceBackgroundProperty, value);
-    }
     
     public bool IsArrowVisible
     {
@@ -77,14 +82,24 @@ internal class ShadowsAwareContainer : Decorator
         set => SetValue(IsOverlayModeProperty, value);
     }
 
+    #endregion
+
     #region 内部属性定义
+
     internal static readonly DirectProperty<ShadowsAwareContainer, Rect> ArrowIndicatorLayoutBoundsProperty =
         AvaloniaProperty.RegisterDirect<ShadowsAwareContainer, Rect>(
             nameof(ArrowIndicatorLayoutBounds),
             o => o.ArrowIndicatorLayoutBounds,
             (o, v) => o.ArrowIndicatorLayoutBounds = v);
     
+    internal IBrush? SurfaceBackground
+    {
+        get => GetValue(SurfaceBackgroundProperty);
+        set => SetValue(SurfaceBackgroundProperty, value);
+    }
+
     private Rect _arrowIndicatorLayoutBounds;
+
 
     internal Rect ArrowIndicatorLayoutBounds
     {
@@ -387,11 +402,13 @@ internal class ShadowsAwareContainer : Decorator
                 // 模板后续（重新）应用时重新探测，部件就绪即恢复箭头绑定
                 SetCurrentValue(IsArrowVisibleProperty, false);
                 SetCurrentValue(CornerRadiusProperty, default);
-                if (child is TemplatedControl templatedChild)
-                {
-                    templatedChild.TemplateApplied += HandleSurfaceTemplateApplied;
-                    _surfaceBindings.Add(Disposable.Create(() => templatedChild.TemplateApplied -= HandleSurfaceTemplateApplied));
-                }
+            }
+            if (child is TemplatedControl templatedChild)
+            {
+                // A successful first template can also be replaced. Retire bindings
+                // to its old border/arrow before tracking the current mask geometry.
+                templatedChild.TemplateApplied += HandleSurfaceTemplateApplied;
+                _surfaceBindings.Add(Disposable.Create(() => templatedChild.TemplateApplied -= HandleSurfaceTemplateApplied));
             }
         }
         else if (child is Border bordered)
@@ -420,6 +437,8 @@ internal class ShadowsAwareContainer : Decorator
 
     private sealed class PopupFrameRenderer : Control
     {
+        #region 公共属性定义
+
         public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
             AvaloniaProperty.Register<PopupFrameRenderer, BoxShadows>(nameof(BoxShadow));
 
@@ -446,6 +465,8 @@ internal class ShadowsAwareContainer : Decorator
             get => GetValue(SurfaceBackgroundProperty);
             set => SetValue(SurfaceBackgroundProperty, value);
         }
+
+        #endregion
 
         static PopupFrameRenderer()
         {

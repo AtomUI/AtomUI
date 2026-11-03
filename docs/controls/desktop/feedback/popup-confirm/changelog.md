@@ -1,5 +1,11 @@
 # PopupConfirm Changelog
 
+## 2026-10-31
+
+- 七Own保留原值/key/type/slot并迁有效默认；PopupMinWidth/PopupMinHeight保留历史资源，不新增自然尺寸下限。
+- 确认容器复用scope发布桥和真实终端owner，字体/标题/状态glyph Global及Own间距支持打开期间热更新，原生内容和专用Part保持。
+- 保留原动态图标、确认/取消事件、键盘与pinned关闭合同。
+
 本文档记录 PopupConfirm 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-11-04

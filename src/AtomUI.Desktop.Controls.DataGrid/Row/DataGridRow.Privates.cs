@@ -345,6 +345,8 @@ public partial class DataGridRow
     // Optimal height of the details based on the Element created by the DataTemplate
     private double _detailsDesiredHeight;
 
+    private bool _detailsThemeMetricsDirty;
+
     private bool _detailsLoaded;
     private bool _detailsVisibilityNotificationPending;
     private Control? _detailsContent;
@@ -796,6 +798,14 @@ public partial class DataGridRow
         _cellsElement?.InvalidateDesiredHeight();
     }
 
+    internal void InvalidateThemeMeasurements()
+    {
+        _detailsDesiredHeight = double.NaN;
+        _previousDetailsHeight = null;
+        _detailsThemeMetricsDirty = true;
+        InvalidateMeasure();
+    }
+
     private void UnloadDetailsTemplate(bool recycle)
     {
         Debug.Assert(OwningGrid != null);
@@ -818,6 +828,7 @@ public partial class DataGridRow
 
         _appliedDetailsTemplate = null;
         _detailsDesiredHeight   = double.NaN;
+        _detailsThemeMetricsDirty = false;
         _previousDetailsHeight  = null;
         if (!recycle)
         {

@@ -337,7 +337,7 @@ public partial class DataGrid
             }
 
             DataGridViewportAnchor? anchor = null;
-            if (!_committingRangePresentation &&
+            if (!_committingRangePresentation && !_rowMetricsChanging &&
                 _rangePresentationIndex is not null &&
                 SlotCount > 0)
             {

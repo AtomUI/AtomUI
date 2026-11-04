@@ -8,5 +8,11 @@
         <ControlTheme.BasedOn>
             <themes:MenuItemTheme TargetType="atom:DataGridFilterMenuItem"/>
         </ControlTheme.BasedOn>
+        <Setter Property="Background">
+            <MultiBinding Converter="{x:Static themes:DataGridThemeBindings.OptionalValue}">
+                <atom:MenuTokenResource Kind="ItemBg" />
+                <atom:DataGridTokenResource Kind="FilterDropdownMenuBg" WhenExplicit="True" />
+            </MultiBinding>
+        </Setter>
     </ControlTheme>
 </ResourceDictionary>

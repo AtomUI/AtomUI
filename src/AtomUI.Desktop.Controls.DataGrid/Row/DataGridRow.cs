@@ -3,6 +3,7 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Automation;
@@ -19,7 +20,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Selected, StdPseudoClass.Editing, StdPseudoClass.Invalid, DataGridPseudoClass.RowHover)]
-public partial class DataGridRow : TemplatedControl
+public partial class DataGridRow : TemplatedControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -28,13 +29,13 @@ public partial class DataGridRow : TemplatedControl
     /// </summary>
     public static readonly StyledProperty<object?> HeaderProperty =
         AvaloniaProperty.Register<DataGridRow, object?>(nameof(Header));
-    
+
     public static readonly DirectProperty<DataGridRow, bool> IsSelectedProperty =
         AvaloniaProperty.RegisterDirect<DataGridRow, bool>(
             nameof(IsSelected),
             o => o.IsSelected,
             (o, v) => o.IsSelected = v);
-    
+
     public static readonly DirectProperty<DataGridRow, bool> IsValidProperty =
         AvaloniaProperty.RegisterDirect<DataGridRow, bool>(
             nameof(IsValid),
@@ -42,23 +43,23 @@ public partial class DataGridRow : TemplatedControl
 
     public static readonly StyledProperty<IDataTemplate?> DetailsTemplateProperty =
         AvaloniaProperty.Register<DataGridRow, IDataTemplate?>(nameof(DetailsTemplate));
-    
+
     public static readonly StyledProperty<IDataTemplate?> HeaderContentTemplateProperty =
         AvaloniaProperty.Register<DataGridRow, IDataTemplate?>(nameof(HeaderContentTemplate));
-    
+
     public static readonly StyledProperty<bool> IsDetailsVisibleProperty =
         AvaloniaProperty.Register<DataGridRow, bool>(nameof(IsDetailsVisible));
-    
+
     public static readonly DirectProperty<DataGridRow, int> IndexProperty =
         AvaloniaProperty.RegisterDirect<DataGridRow, int>(nameof(Index), 
             o => o.Index, 
             (o, v) => o.Index = v);
-    
+
     public static readonly DirectProperty<DataGridRow, int> LogicIndexProperty =
         AvaloniaProperty.RegisterDirect<DataGridRow, int>(nameof(LogicIndex), 
             o => o.LogicIndex,
             (o, v) => o.LogicIndex = v);
-    
+
     /// <summary>
     /// Gets or sets the row header.
     /// </summary>
@@ -67,15 +68,17 @@ public partial class DataGridRow : TemplatedControl
         get => GetValue(HeaderProperty);
         set => SetValue(HeaderProperty, value);
     }
-    
+
     private bool _isSelected;
-    
+
     public bool IsSelected
     {
         get => _isSelected;
         set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
     }
-    
+
+    private bool _isValid = true;
+
     /// <summary>
     /// Gets a value that indicates whether the data in a row is valid.
     /// </summary>
@@ -84,8 +87,7 @@ public partial class DataGridRow : TemplatedControl
         get => _isValid;
         internal set => SetAndRaise(IsValidProperty, ref _isValid, value);
     }
-    private bool _isValid = true;
-    
+
     /// <summary>
     /// Gets or sets the template that is used to display the details section of the row.
     /// </summary>
@@ -94,7 +96,7 @@ public partial class DataGridRow : TemplatedControl
         get => GetValue(DetailsTemplateProperty);
         set => SetValue(DetailsTemplateProperty, value);
     }
-    
+
     /// <summary>
     /// Gets or sets the template that is used to display the header content of the row.
     /// </summary>
@@ -103,7 +105,7 @@ public partial class DataGridRow : TemplatedControl
         get => GetValue(HeaderContentTemplateProperty);
         set => SetValue(HeaderContentTemplateProperty, value);
     }
-    
+
     /// <summary>
     /// Gets or sets a value that indicates when the details section of the row is displayed.
     /// </summary>
@@ -112,7 +114,9 @@ public partial class DataGridRow : TemplatedControl
         get => GetValue(IsDetailsVisibleProperty);
         set => SetValue(IsDetailsVisibleProperty, value);
     }
-    
+
+    private int _index;
+
     /// <summary>
     /// Index of the row
     /// </summary>
@@ -121,16 +125,39 @@ public partial class DataGridRow : TemplatedControl
         get => _index;
         internal set => SetAndRaise(IndexProperty, ref _index, value);
     }
-    private int _index;
-    
+
+    private int _logicIndex;
+
     public int LogicIndex
     {
         get => _logicIndex;
         internal set => SetAndRaise(LogicIndexProperty, ref _logicIndex, value);
     }
-    private int _logicIndex;
-    
+
     #endregion
+
+    #region 内部协作 API
+
+    internal void ApplyHiddenClipGeometry()
+    {
+        _hiddenClipGeometry ??= new RectangleGeometry();
+        if (!ReferenceEquals(Clip, _hiddenClipGeometry))
+        {
+            Clip = _hiddenClipGeometry;
+        }
+    }
+
+    internal void ClearHiddenClipGeometry()
+    {
+        if (Clip is not null)
+        {
+            Clip = null;
+        }
+    }
+
+    #endregion
+
+    #region 构造与初始化
 
     static DataGridRow()
     {
@@ -142,7 +169,7 @@ public partial class DataGridRow : TemplatedControl
         IsTabStopProperty.OverrideDefaultValue<DataGridRow>(false);
         AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<DataGridRow>(IsOffscreenBehavior.FromClip);
     }
-    
+
     public DataGridRow()
     {
         Classes.Add(DataGridSemanticParts.BodyRowClass);
@@ -158,7 +185,11 @@ public partial class DataGridRow : TemplatedControl
         Cells.CellAdded           += HandleCellAdded;
         Cells.CellRemoved         += HandleCellRemoved;
     }
-    
+
+    #endregion
+
+    #region 控件 API 与生命周期
+
     /// <summary>
     /// Returns the row which contains the given element
     /// </summary>
@@ -177,7 +208,7 @@ public partial class DataGridRow : TemplatedControl
         }
         return row;
     }
-    
+
     /// <summary>
     /// Arranges the content of the <see cref="T:AtomUI.Desktop.Controls.DataGridRow" />.
     /// </summary>
@@ -222,23 +253,6 @@ public partial class DataGridRow : TemplatedControl
         return size;
     }
 
-    internal void ApplyHiddenClipGeometry()
-    {
-        _hiddenClipGeometry ??= new RectangleGeometry();
-        if (!ReferenceEquals(Clip, _hiddenClipGeometry))
-        {
-            Clip = _hiddenClipGeometry;
-        }
-    }
-
-    internal void ClearHiddenClipGeometry()
-    {
-        if (Clip is not null)
-        {
-            Clip = null;
-        }
-    }
-    
     /// <summary>
     /// Measures the children of a <see cref="T:AtomUI.Desktop.Controls.DataGridRow" /> to
     /// prepare for arranging them during the <see cref="M:System.Windows.FrameworkElement.ArrangeOverride(System.Windows.Size)" /> pass.
@@ -256,6 +270,19 @@ public partial class DataGridRow : TemplatedControl
             return base.MeasureOverride(availableSize);
         }
 
+        if (_detailsThemeMetricsDirty)
+        {
+            _detailsThemeMetricsDirty = false;
+            if (_appliedDetailsVisibility == true && _detailsElement is not null)
+            {
+                // The content instance is unchanged. Measure its natural size under
+                // the committed typography instead of its previous ContentHeight cap.
+                EnsureDetailsDesiredHeight();
+                _detailsElement.ContentHeight = _detailsDesiredHeight;
+                _checkDetailsContentHeight = true;
+            }
+        }
+
         //Allow the DataGrid specific components to adjust themselves based on new values
         _headerElement?.InvalidateMeasure();
         _cellsElement?.InvalidateMeasure();
@@ -264,7 +291,7 @@ public partial class DataGridRow : TemplatedControl
         Size desiredSize = base.MeasureOverride(availableSize);
         return desiredSize.WithWidth(Math.Max(desiredSize.Width, OwningGrid.CellsWidth));
     }
-    
+
     /// <summary>
     /// Builds the visual tree for the column header when a new template is applied.
     /// </summary>
@@ -342,45 +369,19 @@ public partial class DataGridRow : TemplatedControl
         }
         
     }
-    
+
     protected override void OnPointerEntered(PointerEventArgs e)
     {
         base.OnPointerEntered(e);
         IsMouseOver = true;
     }
 
-    private void UpdateBottomGridLineClip(Rect clipRect)
-    {
-        if (_bottomGridLine is null)
-        {
-            return;
-        }
-
-        if (_bottomGridLineClipGeometry is null)
-        {
-            _bottomGridLineClipGeometry = new RectangleGeometry
-            {
-                Rect = clipRect
-            };
-        }
-        else if (!_bottomGridLineClipGeometry.Rect.Equals(clipRect))
-        {
-            _bottomGridLineClipGeometry.Rect = clipRect;
-            _bottomGridLine.InvalidateVisual();
-        }
-
-        if (!ReferenceEquals(_bottomGridLine.Clip, _bottomGridLineClipGeometry))
-        {
-            _bottomGridLine.Clip = _bottomGridLineClipGeometry;
-        }
-    }
-    
     protected override void OnPointerExited(PointerEventArgs e)
     {
         IsMouseOver = false;
         base.OnPointerExited(e);
     }
-    
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -429,4 +430,41 @@ public partial class DataGridRow : TemplatedControl
         }
     }
 
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 私有实现
+
+    private void UpdateBottomGridLineClip(Rect clipRect)
+    {
+        if (_bottomGridLine is null)
+        {
+            return;
+        }
+
+        if (_bottomGridLineClipGeometry is null)
+        {
+            _bottomGridLineClipGeometry = new RectangleGeometry
+            {
+                Rect = clipRect
+            };
+        }
+        else if (!_bottomGridLineClipGeometry.Rect.Equals(clipRect))
+        {
+            _bottomGridLineClipGeometry.Rect = clipRect;
+            _bottomGridLine.InvalidateVisual();
+        }
+
+        if (!ReferenceEquals(_bottomGridLine.Clip, _bottomGridLineClipGeometry))
+        {
+            _bottomGridLine.Clip = _bottomGridLineClipGeometry;
+        }
+    }
+
+    #endregion
 }

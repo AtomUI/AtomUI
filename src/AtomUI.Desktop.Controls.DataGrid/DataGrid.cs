@@ -5,6 +5,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using AtomUI.Utils;
 using Avalonia;
@@ -24,19 +25,19 @@ namespace AtomUI.Desktop.Controls;
 [PseudoClasses(StdPseudoClass.Invalid, DataGridPseudoClass.EmptyRows, DataGridPseudoClass.EmptyColumns)]
 public partial class DataGrid : TemplatedControl,
                                 ICustomizableSizeTypeAware,
-                                IMotionAwareControl
+                                IMotionAwareControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<DataGrid>();
-    
+
     public static readonly StyledProperty<bool> IsOperatingProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(IsOperating));
-    
+
     public static readonly StyledProperty<string?> OperatingMsgProperty =
         AvaloniaProperty.Register<DataGrid, string?>(nameof(OperatingMsg));
-    
+
     public static readonly StyledProperty<object?> CustomOperatingIndicatorProperty =
         AvaloniaProperty.Register<DataGrid, object?>(nameof(CustomOperatingIndicator));
 
@@ -48,28 +49,28 @@ public partial class DataGrid : TemplatedControl,
 
     public static readonly StyledProperty<bool> CanUserReorderColumnsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserReorderColumns));
-    
+
     public static readonly StyledProperty<bool> CanUserResizeColumnsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserResizeColumns));
-    
+
     public static readonly StyledProperty<bool> CanUserSortColumnsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserSortColumns), false);
-    
+
     public static readonly StyledProperty<bool> CanUserFilterColumnsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserFilterColumns), false);
-    
+
     public static readonly StyledProperty<bool> CanUserReorderRowsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserReorderRows), false);
-    
+
     public static readonly StyledProperty<bool> IsSorterTooltipVisibleProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(IsSorterTooltipVisible), true);
-    
+
     public static readonly StyledProperty<double> ColumnHeaderHeightProperty = 
         AvaloniaProperty.Register<DataGrid, double>(nameof(ColumnHeaderHeight), defaultValue: double.NaN, validate: IsValidColumnHeaderHeight);
-    
+
     public static readonly StyledProperty<DataGridLength> ColumnWidthProperty =
         AvaloniaProperty.Register<DataGrid, DataGridLength>(nameof(ColumnWidth), defaultValue: DataGridLength.Auto);
-    
+
     public static readonly StyledProperty<ControlTheme> RowGroupThemeProperty =
         AvaloniaProperty.Register<DataGrid, ControlTheme>(nameof(RowGroupTheme));
 
@@ -77,7 +78,7 @@ public partial class DataGrid : TemplatedControl,
         AvaloniaProperty.Register<DataGrid, int>(
             nameof(LeftFrozenColumnCount),
             validate: ValidateFrozenColumnCount);
-    
+
     public static readonly StyledProperty<int> RightFrozenColumnCountProperty =
         AvaloniaProperty.Register<DataGrid, int>(
             nameof(RightFrozenColumnCount),
@@ -133,13 +134,13 @@ public partial class DataGrid : TemplatedControl,
             nameof(RowHeaderWidth),
             defaultValue: double.NaN,
             validate: IsValidRowHeaderWidth);
-    
+
     public static readonly StyledProperty<IDataTemplate?> RowHeaderContentTemplateProperty =
         AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(RowHeaderContentTemplate));
 
     public static readonly StyledProperty<DataGridSelectionMode> SelectionModeProperty =
         AvaloniaProperty.Register<DataGrid, DataGridSelectionMode>(nameof(SelectionMode), DataGridSelectionMode.None);
-    
+
     public static readonly StyledProperty<DataGridSelectTriggerType> SelectTriggerTypeProperty =
         AvaloniaProperty.Register<DataGrid, DataGridSelectTriggerType>(nameof(SelectTriggerType), DataGridSelectTriggerType.SelectIndicator);
 
@@ -252,22 +253,22 @@ public partial class DataGrid : TemplatedControl,
 
     public static readonly StyledProperty<IDataTemplate?> FooterTemplateProperty =
         AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(FooterTemplate));
-    
+
     public static readonly StyledProperty<object?> EmptyIndicatorProperty =
         AvaloniaProperty.Register<DataGrid, object?>(nameof(EmptyIndicator));
-    
+
     public static readonly StyledProperty<IDataTemplate?> EmptyIndicatorTemplateProperty =
         AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(EmptyIndicatorTemplate));
-    
+
     public static readonly StyledProperty<DataGridPaginationVisibility> PaginationVisibilityProperty =
         AvaloniaProperty.Register<DataGrid, DataGridPaginationVisibility>(nameof(PaginationVisibility), DataGridPaginationVisibility.Bottom);
-    
+
     public static readonly StyledProperty<PaginationAlign> TopPaginationAlignProperty =
         AvaloniaProperty.Register<DataGrid, PaginationAlign>(nameof(TopPaginationAlign), PaginationAlign.End);
-    
+
     public static readonly StyledProperty<PaginationAlign> BottomPaginationAlignProperty =
         AvaloniaProperty.Register<DataGrid, PaginationAlign>(nameof(BottomPaginationAlign), PaginationAlign.End);
-    
+
     public static readonly StyledProperty<int> PageSizeProperty =
         AvaloniaProperty.Register<DataGrid, int>(nameof(PageSize));
 
@@ -297,26 +298,26 @@ public partial class DataGrid : TemplatedControl,
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
-    
+
     public bool IsOperating
     {
         get => GetValue(IsOperatingProperty);
         set => SetValue(IsOperatingProperty, value);
     }
-    
+
     public string? OperatingMsg
     {
         get => GetValue(OperatingMsgProperty);
         set => SetValue(OperatingMsgProperty, value);
     }
-    
+
     [DependsOn(nameof(CustomOperatingIndicatorTemplate))]
     public object? CustomOperatingIndicator
     {
         get => GetValue(CustomOperatingIndicatorProperty);
         set => SetValue(CustomOperatingIndicatorProperty, value);
     }
-    
+
     public IDataTemplate? CustomOperatingIndicatorTemplate
     {
         get => GetValue(CustomOperatingIndicatorTemplateProperty);
@@ -365,7 +366,7 @@ public partial class DataGrid : TemplatedControl,
         get => GetValue(CanUserFilterColumnsProperty);
         set => SetValue(CanUserFilterColumnsProperty, value);
     }
-    
+
     /// <summary>
     /// Gets or sets a value that indicates whether the user can change
     /// the row order by dragging row reorder handle with the mouse.
@@ -420,7 +421,7 @@ public partial class DataGrid : TemplatedControl,
         get => GetValue(LeftFrozenColumnCountProperty);
         set => SetValue(LeftFrozenColumnCountProperty, value);
     }
-    
+
     /// <summary>
     /// Gets or sets the number of right edge columns that the user cannot scroll horizontally.
     /// </summary>
@@ -476,15 +477,6 @@ public partial class DataGrid : TemplatedControl,
         set => SetValue(IsRowGroupHeadersFrozenProperty, value);
     }
 
-    /// <summary>
-    /// Gets or sets whether scroll gestures should include inertia in their behavior and value.
-    /// </summary>
-    public bool IsScrollInertiaEnabled
-    {
-        get => GetValue(IsScrollInertiaEnabledProperty);
-        set => SetValue(IsScrollInertiaEnabledProperty, value);
-    }
-
     private bool _isValid = true;
 
     public bool IsValid
@@ -516,6 +508,15 @@ public partial class DataGrid : TemplatedControl,
     }
 
     /// <summary>
+    /// Gets or sets whether scroll gestures should include inertia in their behavior and value.
+    /// </summary>
+    public bool IsScrollInertiaEnabled
+    {
+        get => GetValue(IsScrollInertiaEnabledProperty);
+        set => SetValue(IsScrollInertiaEnabledProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the standard height of rows in the control.
     /// </summary>
     public double RowHeight
@@ -532,7 +533,7 @@ public partial class DataGrid : TemplatedControl,
         get => GetValue(RowHeaderWidthProperty);
         set => SetValue(RowHeaderWidthProperty, value);
     }
-    
+
     /// <summary>
     /// Gets or sets the template that is used to display the content of the row header.
     /// </summary>
@@ -540,6 +541,24 @@ public partial class DataGrid : TemplatedControl,
     {
         get => GetValue(RowHeaderContentTemplateProperty);
         set => SetValue(RowHeaderContentTemplateProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the selection behavior of the data grid.
+    /// </summary>
+    public DataGridSelectionMode SelectionMode
+    {
+        get => GetValue(SelectionModeProperty);
+        set => SetValue(SelectionModeProperty, value);
+    }
+
+    /// <summary>
+    /// Get or trigger the type of row selection
+    /// </summary>
+    public DataGridSelectTriggerType SelectTriggerType
+    {
+        get => GetValue(SelectTriggerTypeProperty);
+        set => SetValue(SelectTriggerTypeProperty, value);
     }
 
     /// <summary>
@@ -551,24 +570,6 @@ public partial class DataGrid : TemplatedControl,
         set => SetValue(VerticalScrollBarVisibilityProperty, value);
     }
 
-    /// <summary>
-    /// Gets or sets the selection behavior of the data grid.
-    /// </summary>
-    public DataGridSelectionMode SelectionMode
-    {
-        get => GetValue(SelectionModeProperty);
-        set => SetValue(SelectionModeProperty, value);
-    }
-    
-    /// <summary>
-    /// Get or trigger the type of row selection
-    /// </summary>
-    public DataGridSelectTriggerType SelectTriggerType
-    {
-        get => GetValue(SelectTriggerTypeProperty);
-        set => SetValue(SelectTriggerTypeProperty, value);
-    }
-    
     /// <summary>
     /// The property which determines how DataGrid content is copied to the Clipboard.
     /// </summary>
@@ -724,7 +725,7 @@ public partial class DataGrid : TemplatedControl,
         get => GetValue(FooterTemplateProperty);
         set => SetValue(FooterTemplateProperty, value);
     }
-    
+
     [DependsOn(nameof(EmptyIndicatorTemplate))]
     public object? EmptyIndicator
     {
@@ -743,17 +744,23 @@ public partial class DataGrid : TemplatedControl,
         get => GetValue(PaginationVisibilityProperty);
         set => SetValue(PaginationVisibilityProperty, value);
     }
-    
+
     public PaginationAlign TopPaginationAlign
     {
         get => GetValue(TopPaginationAlignProperty);
         set => SetValue(TopPaginationAlignProperty, value);
     }
-    
+
     public PaginationAlign BottomPaginationAlign
     {
         get => GetValue(BottomPaginationAlignProperty);
         set => SetValue(BottomPaginationAlignProperty, value);
+    }
+
+    public int PageSize
+    {
+        get => GetValue(PageSizeProperty);
+        set => SetValue(PageSizeProperty, value);
     }
 
     /// <summary>
@@ -806,13 +813,13 @@ public partial class DataGrid : TemplatedControl,
         get => GetValue(IsHideOnSinglePageProperty);
         set => SetValue(IsHideOnSinglePageProperty, value);
     }
-    
-    public int PageSize
+
+    public bool IsMotionEnabled
     {
-        get => GetValue(PageSizeProperty);
-        set => SetValue(PageSizeProperty, value);
+        get => GetValue(IsMotionEnabledProperty);
+        set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     /// <summary>
     /// Gets or sets the column that contains the current cell.
     /// </summary>
@@ -893,46 +900,18 @@ public partial class DataGrid : TemplatedControl,
 
     public ObservableCollection<IDataGridColumnGroupItem> ColumnGroups => ColumnGroupsInternal;
 
-    public bool IsMotionEnabled
+    /// <summary>
+    /// Gets the data item bound to the row that contains the current cell.
+    /// </summary>
+    protected object? CurrentItem
     {
-        get => GetValue(IsMotionEnabledProperty);
-        set => SetValue(IsMotionEnabledProperty, value);
-    }
-
-    #endregion
-
-    #region 属性验证方法
-
-    private static bool IsValidColumnHeaderHeight(double value)
-    {
-        return double.IsNaN(value) ||
-               (value >= MinimumColumnHeaderHeight && value <= MaxHeadersThickness);
-    }
-
-    private static bool ValidateFrozenColumnCount(int value) => value >= 0;
-
-    private static bool IsValidColumnWidth(double value)
-    {
-        return !double.IsNaN(value) && value > 0;
-    }
-
-    private static bool IsValidMinColumnWidth(double value)
-    {
-        return !double.IsNaN(value) && !double.IsPositiveInfinity(value) && value >= 0;
-    }
-
-    private static bool IsValidRowHeight(double value)
-    {
-        return double.IsNaN(value) ||
-               (value >= DataGridRow.MinimumHeight &&
-                value <= DataGridRow.MaximumHeight);
-    }
-
-    private static bool IsValidRowHeaderWidth(double value)
-    {
-        return double.IsNaN(value) ||
-               (value >= MinimumRowHeaderWidth &&
-                value <= MaxHeadersThickness);
+        get
+        {
+            return TryGetCommittedRangeEntry(CurrentSlot, out var entry) &&
+                   entry.Kind == DataGridSourceEntryKind.Data
+                ? entry.Item
+                : null;
+        }
     }
 
     #endregion
@@ -983,17 +962,17 @@ public partial class DataGrid : TemplatedControl,
     /// a preview should be shown, or cancel reordering.
     /// </summary>
     public event EventHandler<DataGridColumnReorderingEventArgs>? ColumnReordering;
-    
+
     /// <summary>
     /// This event is dispatched when the drag indicator is dragged to a specific column.
     /// </summary>
     public event EventHandler<DataGridColumnDraggingOverEventArgs>? ColumnDraggingOver;
-    
+
     /// <summary>
     /// Raised when row reordering ends, to allow subscribers to clean up.
     /// </summary>
     public event EventHandler<DataGridRowEventArgs>? RowReordered;
-    
+
     /// <summary>
     /// Raised when starting a row reordering action.  Subscribers to this event can
     /// set tooltip and caret UIElements, constrain tooltip position, indicate that
@@ -1072,6 +1051,7 @@ public partial class DataGrid : TemplatedControl,
     public event EventHandler<DataGridRowDetailsEventArgs>? UnloadingRowDetails;
 
     public event EventHandler<ScrollEventArgs>? HorizontalScroll;
+
     public event EventHandler<ScrollEventArgs>? VerticalScroll;
 
     /// <summary>
@@ -1089,7 +1069,7 @@ public partial class DataGrid : TemplatedControl,
     /// Event listeners can modify or add to the row clipboard content.
     /// </summary>
     public event EventHandler<DataGridRowClipboardEventArgs>? CopyingRowClipboardContent;
-    
+
     /// <summary>
     /// Raised when a page index change completed
     /// </summary>
@@ -1104,19 +1084,19 @@ public partial class DataGrid : TemplatedControl,
 
     #endregion
 
+    #region 内部协作 API
+
     /// <summary>
-    /// Gets the data item bound to the row that contains the current cell.
+    /// Raises the CellPointerPressed event.
     /// </summary>
-    protected object? CurrentItem
+    internal virtual void NotifyCellPointerPressed(DataGridCellPointerPressedEventArgs e)
     {
-        get
-        {
-            return TryGetCommittedRangeEntry(CurrentSlot, out var entry) &&
-                   entry.Kind == DataGridSourceEntryKind.Data
-                ? entry.Item
-                : null;
-        }
+        CellPointerPressed?.Invoke(this, e);
     }
+
+    #endregion
+
+    #region 构造与初始化
 
     static DataGrid()
     {
@@ -1187,6 +1167,10 @@ public partial class DataGrid : TemplatedControl,
         _rowGroupHeightsByLevel      = [];
         UpdatePseudoClasses();
     }
+
+    #endregion
+
+    #region 控件 API 与生命周期
 
     /// <summary>
     /// Enters editing mode for the current cell and current row (if they're not already in editing mode).
@@ -1481,14 +1465,6 @@ public partial class DataGrid : TemplatedControl,
     }
 
     /// <summary>
-    /// Raises the CellPointerPressed event.
-    /// </summary>
-    internal virtual void NotifyCellPointerPressed(DataGridCellPointerPressedEventArgs e)
-    {
-        CellPointerPressed?.Invoke(this, e);
-    }
-
-    /// <summary>
     /// Raises the CurrentCellChanged event.
     /// </summary>
     protected virtual void NotifyCurrentCellChanged(EventArgs e)
@@ -1581,33 +1557,6 @@ public partial class DataGrid : TemplatedControl,
             LoadingOrUnloadingRow = true;
             handler(this, e);
             LoadingOrUnloadingRow = false;
-        }
-    }
-
-    /// <summary>
-    /// Comparator class so we can sort list by the display index
-    /// </summary>
-    public class DisplayIndexComparer : IComparer<DataGridColumn>
-    {
-        int IComparer<DataGridColumn>.Compare(DataGridColumn? x, DataGridColumn? y)
-        {
-            if (x == null && y == null)
-            {
-                return 0;
-            }
-
-            if (x == null && y != null)
-            {
-                return -1;
-            }
-
-            if (x != null && y == null)
-            {
-                return 1;
-            }
-
-            Debug.Assert(x != null && y != null);
-            return (x.DisplayIndexWithFiller < y.DisplayIndexWithFiller) ? -1 : 1;
         }
     }
 
@@ -1860,6 +1809,11 @@ public partial class DataGrid : TemplatedControl,
     {
         base.OnPropertyChanged(change);
 
+        if (change.Property == SizeTypeProperty && _rowMetricSubscription is not null)
+        {
+            RefreshRowMetricInputs(_rowMetricResolver.Capture(this));
+        }
+
         var refreshDisplayedRowsGridLines = false;
         if (change.Property == BorderThicknessProperty ||
             change.Property == GridLinesVisibilityProperty ||
@@ -1935,4 +1889,75 @@ public partial class DataGrid : TemplatedControl,
             }
         }
     }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 私有实现
+
+    private static bool IsValidColumnHeaderHeight(double value)
+    {
+        return double.IsNaN(value) ||
+               (value >= MinimumColumnHeaderHeight && value <= MaxHeadersThickness);
+    }
+
+    private static bool ValidateFrozenColumnCount(int value) => value >= 0;
+
+    private static bool IsValidColumnWidth(double value)
+    {
+        return !double.IsNaN(value) && value > 0;
+    }
+
+    private static bool IsValidMinColumnWidth(double value)
+    {
+        return !double.IsNaN(value) && !double.IsPositiveInfinity(value) && value >= 0;
+    }
+
+    private static bool IsValidRowHeight(double value)
+    {
+        return double.IsNaN(value) ||
+               (value >= DataGridRow.MinimumHeight &&
+                value <= DataGridRow.MaximumHeight);
+    }
+
+    private static bool IsValidRowHeaderWidth(double value)
+    {
+        return double.IsNaN(value) ||
+               (value >= MinimumRowHeaderWidth &&
+                value <= MaxHeadersThickness);
+    }
+
+    /// <summary>
+    /// Comparator class so we can sort list by the display index
+    /// </summary>
+    public class DisplayIndexComparer : IComparer<DataGridColumn>
+    {
+        int IComparer<DataGridColumn>.Compare(DataGridColumn? x, DataGridColumn? y)
+        {
+            if (x == null && y == null)
+            {
+                return 0;
+            }
+
+            if (x == null && y != null)
+            {
+                return -1;
+            }
+
+            if (x != null && y == null)
+            {
+                return 1;
+            }
+
+            Debug.Assert(x != null && y != null);
+            return (x.DisplayIndexWithFiller < y.DisplayIndexWithFiller) ? -1 : 1;
+        }
+    }
+
+    #endregion
 }

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Reactive.Linq;
 using AtomUI.Desktop.Controls.Utils;
 using AtomUI.Generated.AtomUIDesktopControlsDataGrid;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -18,7 +19,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Current, StdPseudoClass.Expanded)]
-public class DataGridRowGroupHeader : TemplatedControl
+public class DataGridRowGroupHeader : TemplatedControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -574,4 +575,6 @@ public class DataGridRowGroupHeader : TemplatedControl
         ClearChildClipGeometries();
         ClearChildTranslateTransforms();
     }
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

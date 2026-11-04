@@ -4,6 +4,7 @@
 // All other rights reserved.
 
 using System.Diagnostics;
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControlsDataGrid;
 using AtomUI.Utils;
@@ -22,7 +23,7 @@ namespace AtomUI.Desktop.Controls;
 [TemplatePart(DataGridCellThemeConstants.RightGridLinePart, typeof(Rectangle))]
 [PseudoClasses(StdPseudoClass.Selected, StdPseudoClass.Current, StdPseudoClass.Edited, StdPseudoClass.Invalid,
     StdPseudoClass.Focus)]
-public class DataGridCell : ContentControl
+public class DataGridCell : ContentControl, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -39,6 +40,22 @@ public class DataGridCell : ContentControl
         internal set => SetAndRaise(IsValidProperty, ref _isValid, value);
     }
 
+    bool _isSorting = false;
+
+    public bool IsSorting
+    {
+        get => _isSorting;
+        internal set => SetAndRaise(IsSortingProperty, ref _isSorting, value);
+    }
+
+    bool _owningColumnDragging = false;
+
+    public bool OwningColumnDragging
+    {
+        get => _owningColumnDragging;
+        internal set => SetAndRaise(OwningColumnDraggingProperty, ref _owningColumnDragging, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -51,7 +68,7 @@ public class DataGridCell : ContentControl
             nameof(IsSorting),
             o => o.IsSorting, 
             (o, v) => o.IsSorting = v);
-    
+
     internal static readonly DirectProperty<DataGridCell, bool> OwningColumnDraggingProperty =
         AvaloniaProperty.RegisterDirect<DataGridCell, bool>(
             nameof(OwningColumnDragging),
@@ -63,47 +80,31 @@ public class DataGridCell : ContentControl
             nameof(IsFrozen),
             o => o.IsFrozen, 
             (o, v) => o.IsFrozen = v);
-    
+
     internal static readonly DirectProperty<DataGridCell, bool> IsShowFrozenShadowProperty =
         AvaloniaProperty.RegisterDirect<DataGridCell, bool>(
             nameof(IsShowFrozenShadow),
             o => o.IsShowFrozenShadow, 
             (o, v) => o.IsShowFrozenShadow = v);
-    
+
     internal static readonly DirectProperty<DataGridCell, FrozenColumnShadowPosition> FrozenShadowPositionProperty =
         AvaloniaProperty.RegisterDirect<DataGridCell, FrozenColumnShadowPosition>(
             nameof(FrozenShadowPosition),
             o => o.FrozenShadowPosition, 
             (o, v) => o.FrozenShadowPosition = v);
-    
+
     internal static readonly DirectProperty<DataGridCell, bool> IsClipContentProperty =
         AvaloniaProperty.RegisterDirect<DataGridCell, bool>(
             nameof(IsClipContent),
             o => o.IsClipContent, 
             (o, v) => o.IsClipContent = v);
-    
+
     internal CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
 
-    bool _isSorting = false;
-
-    public bool IsSorting
-    {
-        get => _isSorting;
-        internal set => SetAndRaise(IsSortingProperty, ref _isSorting, value);
-    }
-    
-    bool _owningColumnDragging = false;
-
-    public bool OwningColumnDragging
-    {
-        get => _owningColumnDragging;
-        internal set => SetAndRaise(OwningColumnDraggingProperty, ref _owningColumnDragging, value);
-    }
-    
     bool _isFrozen = false;
 
     internal bool IsFrozen
@@ -111,7 +112,7 @@ public class DataGridCell : ContentControl
         get => _isFrozen;
         set => SetAndRaise(IsFrozenProperty, ref _isFrozen, value);
     }
-    
+
     bool _isShowFrozenShadow = false;
 
     internal bool IsShowFrozenShadow
@@ -119,15 +120,7 @@ public class DataGridCell : ContentControl
         get => _isShowFrozenShadow;
         set => SetAndRaise(IsShowFrozenShadowProperty, ref _isShowFrozenShadow, value);
     }
-    
-    bool _isClipContent = true;
 
-    internal bool IsClipContent
-    {
-        get => _isClipContent;
-        set => SetAndRaise(IsClipContentProperty, ref _isClipContent, value);
-    }
-    
     FrozenColumnShadowPosition _frozenShadowPosition = FrozenColumnShadowPosition.Right;
 
     internal FrozenColumnShadowPosition FrozenShadowPosition
@@ -135,10 +128,16 @@ public class DataGridCell : ContentControl
         get => _frozenShadowPosition;
         set => SetAndRaise(FrozenShadowPositionProperty, ref _frozenShadowPosition, value);
     }
-    
-    internal DataGridRow? OwningRow { get; set; }
 
-    private DataGridColumn? _owningColumn;
+    bool _isClipContent = true;
+
+    internal bool IsClipContent
+    {
+        get => _isClipContent;
+        set => SetAndRaise(IsClipContentProperty, ref _isClipContent, value);
+    }
+
+    internal DataGridRow? OwningRow { get; set; }
 
     internal DataGridColumn? OwningColumn
     {
@@ -156,6 +155,7 @@ public class DataGridCell : ContentControl
     internal DataGrid? OwningGrid => OwningRow?.OwningGrid ?? OwningColumn?.OwningGrid;
 
     internal int ColumnIndex => OwningColumn?.Index ?? -1;
+
     internal int RowIndex => OwningRow?.Index ?? -1;
 
     internal bool IsCurrent => OwningGrid != null &&
@@ -164,40 +164,95 @@ public class DataGridCell : ContentControl
                                OwningGrid.CurrentColumnIndex == OwningColumn.Index &&
                                OwningGrid.CurrentSlot == OwningRow.Slot;
 
-    private bool IsEdited => OwningGrid != null &&
-                             OwningGrid.EditingRow == OwningRow &&
-                             OwningGrid.EditingColumnIndex == ColumnIndex;
+    internal bool HasLongLivedSortSubscription => false;
 
-    private bool IsMouseOver
+    #endregion
+
+    #region 内部协作 API
+
+    internal void UpdatePseudoClasses()
     {
-        get => OwningRow != null && OwningRow.MouseOverColumnIndex == ColumnIndex;
-        set
+        if (OwningGrid == null || OwningColumn == null || OwningRow == null || !OwningRow.IsVisible ||
+            OwningRow.Slot == -1)
         {
-            Debug.Assert(OwningRow != null);
-            if (value != IsMouseOver)
+            return;
+        }
+
+        PseudoClasses.Set(StdPseudoClass.Selected, OwningRow.IsSelected);
+        PseudoClasses.Set(StdPseudoClass.Current, IsCurrent);
+        PseudoClasses.Set(StdPseudoClass.Edited, IsEdited);
+        PseudoClasses.Set(StdPseudoClass.Invalid, !IsValid);
+        PseudoClasses.Set(StdPseudoClass.Focus, OwningGrid.IsFocused && IsCurrent);
+    }
+
+    // Makes sure the right gridline has the proper stroke and visibility. If lastVisibleColumn is specified, the
+    // right gridline will be collapsed if this cell belongs to the lastVisibleColumn and there is no filler column
+    internal void EnsureGridLine(DataGridColumn? lastVisibleColumn)
+    {
+        if (OwningGrid != null && _rightGridLine != null)
+        {
+            bool newVisibility =
+                OwningGrid.AreVerticalGridLinesVisible
+                && ((OwningGrid.ColumnsInternal.FillerColumn != null &&
+                     OwningGrid.ColumnsInternal.FillerColumn.IsActive) || OwningColumn != lastVisibleColumn);
+
+            if (newVisibility != _rightGridLine.IsVisible)
             {
-                if (value)
-                {
-                    OwningRow.MouseOverColumnIndex = ColumnIndex;
-                }
-                else
-                {
-                    OwningRow.MouseOverColumnIndex = null;
-                }
+                _rightGridLine.IsVisible = newVisibility;
             }
+
+            _rightGridLine.Width = BorderUtils.BuildRenderScaleAwareThickness(OwningGrid, OwningGrid.BorderThickness.Left);
+        }
+    }
+
+    internal void UpdateClipGeometry(Rect clipRect)
+    {
+        if (_clipGeometry is null)
+        {
+            _clipGeometry = new RectangleGeometry
+            {
+                Rect = clipRect
+            };
+        }
+        else if (!_clipGeometry.Rect.Equals(clipRect))
+        {
+            _clipGeometry.Rect = clipRect;
+            InvalidateVisual();
+        }
+
+        if (!ReferenceEquals(Clip, _clipGeometry))
+        {
+            Clip = _clipGeometry;
+        }
+    }
+
+    internal void ClearClipGeometry()
+    {
+        if (Clip is not null)
+        {
+            Clip = null;
         }
     }
 
     #endregion
 
+    #region 运行时字段
+
+    private DataGridColumn? _owningColumn;
+
     private Rectangle? _rightGridLine;
+
     private RectangleGeometry? _clipGeometry;
+
     private IDisposable? _headerDragModeSubscription;
     private IDisposable? _owningRowBinding;
     private bool _templateApplied;
+
     private static readonly Func<DataGridColumnHeader.DragMode, bool> IsReorderDragModeConverter = IsReorderDragMode;
 
-    internal bool HasLongLivedSortSubscription => false;
+    #endregion
+
+    #region 构造与初始化
 
     static DataGridCell()
     {
@@ -214,6 +269,10 @@ public class DataGridCell : ContentControl
     {
         Classes.Add(DataGridSemanticParts.BodyCellClass);
     }
+
+    #endregion
+
+    #region 控件 API 与生命周期
 
     /// <summary>
     /// Builds the visual tree for the cell control when a new template is applied.
@@ -238,29 +297,6 @@ public class DataGridCell : ContentControl
             EnsureGridLine(null);
         }
         EnsureColumnBindings();
-    }
-    
-    private void EnsureColumnBindings()
-    {
-        if (OwningGrid == null ||
-            OwningColumn == null ||
-            OwningColumn is DataGridFillerColumn)
-        {
-            return;
-        }
-
-        var headerCell = OwningColumn.HeaderCell;
-        _headerDragModeSubscription = this.Bind(
-            OwningColumnDraggingProperty,
-            headerCell.GetObservable(
-                DataGridColumnHeader.HeaderDragModeProperty,
-                IsReorderDragModeConverter),
-            BindingPriority.Template);
-    }
-
-    private static bool IsReorderDragMode(DataGridColumnHeader.DragMode dragMode)
-    {
-        return dragMode == DataGridColumnHeader.DragMode.Reorder;
     }
 
     // 单元格的尺寸跟随所属行；绑定会订阅行的属性变更，由单元格集合在插入与移除时成对建立与释放，
@@ -311,6 +347,66 @@ public class DataGridCell : ContentControl
         {
             IsMouseOver = false;
         }
+    }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 私有实现
+
+    private bool IsEdited => OwningGrid != null &&
+                             OwningGrid.EditingRow == OwningRow &&
+                             OwningGrid.EditingColumnIndex == ColumnIndex;
+
+    private bool IsMouseOver
+    {
+        get => OwningRow != null && OwningRow.MouseOverColumnIndex == ColumnIndex;
+        set
+        {
+            Debug.Assert(OwningRow != null);
+            if (value != IsMouseOver)
+            {
+                if (value)
+                {
+                    OwningRow.MouseOverColumnIndex = ColumnIndex;
+                }
+                else
+                {
+                    OwningRow.MouseOverColumnIndex = null;
+                }
+            }
+        }
+    }
+
+    private void EnsureColumnBindings()
+    {
+        if (OwningGrid == null ||
+            OwningColumn == null ||
+            OwningColumn is DataGridFillerColumn)
+        {
+            return;
+        }
+
+        // HeaderCell is created lazily by its non-Visual column. A theme path
+        // would evaluate that getter before this template/attachment checkpoint;
+        // retain the resolved runtime source and dispose it on template/detach.
+        var headerCell = OwningColumn.HeaderCell;
+        _headerDragModeSubscription = this.Bind(
+            OwningColumnDraggingProperty,
+            headerCell.GetObservable(
+                DataGridColumnHeader.HeaderDragModeProperty,
+                IsReorderDragModeConverter),
+            BindingPriority.Template);
+    }
+
+    private static bool IsReorderDragMode(DataGridColumnHeader.DragMode dragMode)
+    {
+        return dragMode == DataGridColumnHeader.DragMode.Reorder;
     }
 
     //TODO TabStop
@@ -376,70 +472,6 @@ public class DataGridCell : ContentControl
         }
     }
 
-    internal void UpdatePseudoClasses()
-    {
-        if (OwningGrid == null || OwningColumn == null || OwningRow == null || !OwningRow.IsVisible ||
-            OwningRow.Slot == -1)
-        {
-            return;
-        }
-
-        PseudoClasses.Set(StdPseudoClass.Selected, OwningRow.IsSelected);
-        PseudoClasses.Set(StdPseudoClass.Current, IsCurrent);
-        PseudoClasses.Set(StdPseudoClass.Edited, IsEdited);
-        PseudoClasses.Set(StdPseudoClass.Invalid, !IsValid);
-        PseudoClasses.Set(StdPseudoClass.Focus, OwningGrid.IsFocused && IsCurrent);
-    }
-
-    // Makes sure the right gridline has the proper stroke and visibility. If lastVisibleColumn is specified, the 
-    // right gridline will be collapsed if this cell belongs to the lastVisibleColumn and there is no filler column
-    internal void EnsureGridLine(DataGridColumn? lastVisibleColumn)
-    {
-        if (OwningGrid != null && _rightGridLine != null)
-        {
-            bool newVisibility =
-                OwningGrid.AreVerticalGridLinesVisible
-                && ((OwningGrid.ColumnsInternal.FillerColumn != null &&
-                     OwningGrid.ColumnsInternal.FillerColumn.IsActive) || OwningColumn != lastVisibleColumn);
-
-            if (newVisibility != _rightGridLine.IsVisible)
-            {
-                _rightGridLine.IsVisible = newVisibility;
-            }
-
-            _rightGridLine.Width = BorderUtils.BuildRenderScaleAwareThickness(OwningGrid, OwningGrid.BorderThickness.Left);
-        }
-    }
-
-    internal void UpdateClipGeometry(Rect clipRect)
-    {
-        if (_clipGeometry is null)
-        {
-            _clipGeometry = new RectangleGeometry
-            {
-                Rect = clipRect
-            };
-        }
-        else if (!_clipGeometry.Rect.Equals(clipRect))
-        {
-            _clipGeometry.Rect = clipRect;
-            InvalidateVisual();
-        }
-
-        if (!ReferenceEquals(Clip, _clipGeometry))
-        {
-            Clip = _clipGeometry;
-        }
-    }
-
-    internal void ClearClipGeometry()
-    {
-        if (Clip is not null)
-        {
-            Clip = null;
-        }
-    }
-
     private void OnOwningColumnSet(DataGridColumn? column)
     {
         IsSorting = column?.SortState.Direction is not null;
@@ -460,4 +492,6 @@ public class DataGridCell : ContentControl
             Classes.Add(DataGridSemanticParts.BodyCellClass);
         }
     }
+
+    #endregion
 }

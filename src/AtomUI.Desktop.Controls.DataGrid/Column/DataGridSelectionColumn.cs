@@ -1,5 +1,8 @@
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Reactive.Linq;
+using AtomUI.Theme.Resources;
+using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -14,8 +17,25 @@ public class DataGridSelectionColumn : DataGridColumn
     private DataGrid? _owningGrid;
     private CheckBox? _headerCheckBox;
     private readonly HashSet<DataGridRow> _trackedRows = new();
+    private IDisposable? _selectionWidthBinding;
 
     public override bool IsReadOnly => true;
+
+    protected override void NotifyOwningGridAttached(DataGrid? owningGrid)
+    {
+        base.NotifyOwningGridAttached(owningGrid);
+        _selectionWidthBinding?.Dispose();
+        _selectionWidthBinding = null;
+        if (owningGrid is not null)
+        {
+            // A non-Visual column is outside ControlTheme selectors. Its scoped
+            // resource host supplies an explicit Own default below caller Width.
+            var key = new ExplicitTokenResourceKey(DataGridTokenKind.SelectionColumnWidth);
+            _selectionWidthBinding = Bind(WidthProperty, this.GetResourceObservable(key)
+                .Select(value => value is double width ? (object)new DataGridLength(width) : AvaloniaProperty.UnsetValue),
+                BindingPriority.Template);
+        }
+    }
     
     protected override Control? GenerateEditingElement(DataGridCell cell, object dataItem, out BindingExpressionBase? editBinding)
     {
@@ -224,6 +244,8 @@ public class DataGridSelectionColumn : DataGridColumn
 
     protected internal override void NotifyOwningGridAboutToDetached()
     {
+        _selectionWidthBinding?.Dispose();
+        _selectionWidthBinding = null;
         base.NotifyOwningGridAboutToDetached();
         ReleaseOwningGrid();
     }

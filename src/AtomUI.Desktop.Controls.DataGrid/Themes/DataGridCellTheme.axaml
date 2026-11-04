@@ -4,6 +4,22 @@
     x:ClassModifier="internal"
     xmlns:atom="https://atomui.net">
     <ControlTheme x:Key="{x:Type atom:DataGridCell}" TargetType="atom:DataGridCell">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:OwnerTokenResource Kind="ColorText" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="ColorText" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="Frame"
@@ -36,6 +52,8 @@
             </ControlTemplate>
         </Setter>
         
+        <Setter Property="Padding" Value="{atom:DataGridTokenResource CellPaddingMD}" />
+        <Setter Property="FontSize" Value="{atom:DataGridTokenResource CellFontSizeMD}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -49,7 +67,7 @@
             <Setter Property="Padding" Value="{atom:DataGridTokenResource TablePadding}"/>
             <Setter Property="FontSize" Value="{atom:DataGridTokenResource TableFontSize}"/>
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="Padding" Value="{atom:DataGridTokenResource TablePaddingMiddle}"/>
             <Setter Property="FontSize" Value="{atom:DataGridTokenResource TableFontSizeMiddle}"/>
         </Style>

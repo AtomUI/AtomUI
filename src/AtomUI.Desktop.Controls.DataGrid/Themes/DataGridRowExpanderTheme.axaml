@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:ClassModifier="internal"
     xmlns:atom="https://atomui.net"
+    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     >
     <ControlTheme x:Key="{x:Type atom:DataGridRowExpander}" TargetType="atom:DataGridRowExpander">
         <Setter Property="Template">
@@ -10,7 +11,7 @@
                 <atom:PixelAlignedBorder Name="Frame"
                                          BorderThickness="{TemplateBinding BorderThickness}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
-                                         Background="Transparent"
+                                         Background="{TemplateBinding Background}"
                                          CornerRadius="{TemplateBinding CornerRadius}">
                     <Canvas VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                         <Rectangle Name="{x:Static atom:DataGridRowExpanderThemeConstants.HorizontalIndicatorPart}"
@@ -34,22 +35,39 @@
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Cursor" Value="Hand"/>
         
-        <Setter Property="Width" Value="{atom:SharedTokenResource SizeMS}"/>
-        <Setter Property="Height" Value="{atom:SharedTokenResource SizeMS}"/>
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}"/>
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}"/>
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}"/>
+        <Setter Property="Width">
+            <MultiBinding Converter="{x:Static themes:DataGridThemeBindings.OptionalValue}">
+                <atom:OwnerTokenResource Kind="SizeMS" SourceControlType="{x:Type atom:DataGrid}" />
+                <atom:DataGridTokenResource Kind="ExpandIconSize" WhenExplicit="True" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Height">
+            <MultiBinding Converter="{x:Static themes:DataGridThemeBindings.OptionalValue}">
+                <atom:OwnerTokenResource Kind="SizeMS" SourceControlType="{x:Type atom:DataGrid}" />
+                <atom:DataGridTokenResource Kind="ExpandIconSize" WhenExplicit="True" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Background">
+            <MultiBinding Converter="{x:Static themes:DataGridThemeBindings.OptionalValue}">
+                <Binding Source="{x:Static Brushes.Transparent}" />
+                <atom:DataGridTokenResource Kind="ExpandIconBg" WhenExplicit="True" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Margin" Value="{atom:DataGridTokenResource Kind=ExpandIconMargin, WhenExplicit=True}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadiusSM, SourceControlType={x:Type atom:DataGrid}}"/>
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorder, SourceControlType={x:Type atom:DataGrid}}"/>
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource Kind=BorderThickness, SourceControlType={x:Type atom:DataGrid}}"/>
         
-        <Setter Property="IndicatorFill" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
+        <Setter Property="IndicatorFill" Value="{atom:OwnerTokenResource Kind=ColorTextSecondary, SourceControlType={x:Type atom:DataGrid}}"/>
         
         <Style Selector="^:focus">
-            <Setter Property="IndicatorFill" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>
+            <Setter Property="IndicatorFill" Value="{atom:OwnerTokenResource Kind=ColorPrimaryHover, SourceControlType={x:Type atom:DataGrid}}"/>
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorPrimaryHover, SourceControlType={x:Type atom:DataGrid}}"/>
         </Style>
         
         <Style Selector="^:pointerover">
-            <Setter Property="IndicatorFill" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>
+            <Setter Property="IndicatorFill" Value="{atom:OwnerTokenResource Kind=ColorPrimaryHover, SourceControlType={x:Type atom:DataGrid}}"/>
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorPrimaryHover, SourceControlType={x:Type atom:DataGrid}}"/>
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
@@ -62,8 +80,8 @@
         </Style>
         
         <Style Selector="^:pressed">
-            <Setter Property="IndicatorFill" Value="{atom:SharedTokenResource ColorPrimaryActive}"/>
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryActive}"/>
+            <Setter Property="IndicatorFill" Value="{atom:OwnerTokenResource Kind=ColorPrimaryActive, SourceControlType={x:Type atom:DataGrid}}"/>
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorPrimaryActive, SourceControlType={x:Type atom:DataGrid}}"/>
         </Style>
         
         <Style Selector="^ /template/ Rectangle#PART_VerticalIndicator">

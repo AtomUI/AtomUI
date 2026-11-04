@@ -774,7 +774,7 @@ public partial class DataGrid
                     ? targetHeight
                     : desiredHeight;
             }
-            if (!IsInvalidSlotElementHeight(estimatedHeight) &&
+            if (!_rowMetricsChanging && !IsInvalidSlotElementHeight(estimatedHeight) &&
                 MathUtils.GreaterThan(estimatedHeight, measuredHeight))
             {
                 measuredHeight = estimatedHeight;
@@ -1948,7 +1948,7 @@ public partial class DataGrid
                 entry.Kind == DataGridSourceEntryKind.Data &&
                 GetRowDetailsVisibility(entry.RowKey))
             {
-                if (!_rangeMeasuredDetailsHeights.TryGetValue(entry.RowKey, out var previousHeight) ||
+                if (_rowMetricsChanging || !_rangeMeasuredDetailsHeights.TryGetValue(entry.RowKey, out var previousHeight) ||
                     MathUtils.GreaterThan(measuredDetailsHeight, previousHeight))
                 {
                     _rangeMeasuredDetailsHeights[entry.RowKey] = measuredDetailsHeight;
@@ -1957,7 +1957,7 @@ public partial class DataGrid
             }
 
             var estimateChanged = false;
-            if (IsInvalidSlotElementHeight(RowDetailsHeightEstimate) ||
+            if (_rowMetricsChanging || IsInvalidSlotElementHeight(RowDetailsHeightEstimate) ||
                 MathUtils.GreaterThan(measuredDetailsHeight, RowDetailsHeightEstimate))
             {
                 RowDetailsHeightEstimate = measuredDetailsHeight;

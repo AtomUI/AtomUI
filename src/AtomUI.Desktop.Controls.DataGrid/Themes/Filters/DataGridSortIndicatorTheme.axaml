@@ -6,6 +6,7 @@
     xmlns:atom="https://atomui.net"
     >
     <ControlTheme x:Key="{x:Type atom:DataGridSortIndicator}" TargetType="atom:DataGridSortIndicator">
+        <Setter Property="Margin" Value="{atom:DataGridTokenResource Kind=SortIndicatorLayoutMargin, WhenExplicit=True}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <StackPanel Orientation="Vertical">
@@ -37,7 +38,7 @@
         <Style Selector="^[CurrentSortDirection=Ascending]">
             <Style Selector="^ /template/ atom|Icon#PART_Ascending">
                 <Setter Property="StrokeBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:OwnerTokenResource Kind=ColorPrimary, SourceControlType={x:Type atom:DataGrid}}" />
             </Style>
         </Style>
         <Style Selector="^:not(^[CurrentSortDirection=Ascending])">
@@ -56,7 +57,7 @@
         <Style Selector="^[CurrentSortDirection=Descending]">
             <Style Selector="^ /template/ atom|Icon#PART_Descending">
                 <Setter Property="StrokeBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:OwnerTokenResource Kind=ColorPrimary, SourceControlType={x:Type atom:DataGrid}}" />
             </Style>
         </Style>
         <Style Selector="^:not(^[CurrentSortDirection=Descending])">

@@ -209,6 +209,12 @@ DataGrid 拥有独立 Control identity；`DataGridToken` 只表达 DataGrid Own 
 - 不把 hover、pressed、selected、expanded、loading、filter、popup open 等运行时状态写入 Token。
 - Browser 或平台特化主题必须保持同一 API 的语义一致。
 
+### 字体、局部主题与Custom
+
+根DataGrid与公开Cell/Row/RowHeader/RowGroupHeader保留各自注册身份；明确的字体/前景与原生继承、列Local文字属性按现行优先级组合。asset-only内部绘制目标消费实际DataGrid的Own/Global，已打开的菜单/树过滤器随scope更新并在退出时释放资源桥。
+
+Custom使用与原Middle相同的默认回退，并允许适用的应用Style及生成专用部件Style接管；固定几何和数据/交互规则保持。实际字段入口及无绘制消费者的13个兼容槽位见[token.md](token.md#6-实际消费与范围边界)。
+
 ## 6. 控件家族或集成关系
 
 DataGrid 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证规则。组合或派生控件应显式说明哪些 API 被继承、覆盖或不支持。

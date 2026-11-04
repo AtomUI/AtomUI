@@ -91,3 +91,39 @@ DataGrid 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+
+## 6. 实际消费与范围边界
+
+DataGrid 保留78个Own字段与17个显式别名。48个Active字段和17个Legacy别名到达实际模板、行状态或列资源；默认依赖求值不等于存在绘制消费者。
+
+### 6.1 明确配置入口
+
+以下既有字段只在配置明确提供时覆盖历史基线，清除后恢复原行为：
+
+| 字段 | 实际目标 | 未配置时 |
+| --- | --- | --- |
+| `SelectionColumnWidth` | 非Visual选择列的Width默认 | 保留Auto及原列宽约束；调用方Width优先 |
+| `ExpandIconBg` / `ExpandIconSize` / `ExpandIconMargin` | 展开按钮的实际Frame背景、控件宽高和margin | 背景Transparent、原SizeMS、原margin；9 DIP加减号保持固定 |
+| `FixedHeaderSortActiveBg` | 实际冻结排序header及其hover/shadow分支 | 按原HeaderSortActiveBg/HeaderSortHoverBg/HeaderBg分支 |
+| `HeaderFilterHoverBg` | filter indicator hover背景 | 原ColorBgTextHover |
+| `FilterDropdownMenuBg` | 实际DataGridFilterMenuItem背景 | 原Menu ItemBg，原hover/checked/disabled状态继续优先 |
+| `SortIndicatorLayoutMargin` | 实际排序indicator margin | 原margin |
+
+规范Own的别名归一、独立派生覆盖及逐层清除按第5节；不把名称相似的独立Table字段新增为别名。
+
+### 6.2 Global、字体与Style优先级
+
+根DataGrid消费其注册Global；内部asset-only header、排序/过滤indicator、展开及操作/拖动主题锚定实际DataGrid。公开Cell、Row、RowHeader、RowGroupHeader保留各自Global身份，明确FontFamily/ColorText按各自配置消费，未明确时继承实际parent。列明确文字属性、控件Local值和应用Style按Avalonia原优先级保留。
+
+Large/Middle/Small继续使用各自Own字体与间距。Custom回退等于原Middle，但不再由Middle条件选择器占有，适用的header/cell/rowheader/details/title/footer/pagination可由应用Style或生成的专用Semantic Part Style定制。这不改变虚拟化、冻结、滚动条、数据和业务状态，也不构成全部Custom组合承诺。
+
+### 6.3 无绘制消费者的兼容槽位
+
+以下13字段保留名称、类型、默认公式、资源编号、slot和编辑入口；当前不声明可调节绘制能力：
+
+- 固定glyph历史局部量：`ExpandIconHalfInner`、`ExpandIconScale`。
+- 独立历史镜像：`TableHeaderCellSplitColor`、`TableHeaderSortBg`、`TableHeaderSortHoverBg`、`TableBodySortBg`、`TableFixedHeaderSortActiveBg`、`TableHeaderFilterActiveBg`、`TableSelectionColumnWidth`、`TableExpandIconBg`。
+- 未接线的历史尺寸：`TableFilterDropdownHeight`、`TableFilterDropdownSearchWidth`、`TableExpandColumnWidth`。
+
+独立历史镜像的默认仍跟随第5.2节指定输入，明确配置仍可独立存储与读取；不会因此投射到模板。固定glyph、Focus笔和拖动指示线等几何不机械改成Token。工程核定与限定审查状态见[DataGrid家族记录](../../../../superpowers/plans/2026-10-22-custom-theme/data-grid-family-exit.md)。

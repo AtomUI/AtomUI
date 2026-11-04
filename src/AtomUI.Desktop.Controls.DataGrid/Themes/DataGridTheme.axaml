@@ -196,11 +196,19 @@
 
     <Style Selector="^:is(atom|DataGrid)">
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
         <Setter Property="HeadersVisibility" Value="Column" />
         <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
         <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
         <Setter Property="SelectionMode" Value="None" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="CornerRadius" Value="{atom:DataGridTokenResource TableRadius}" />
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
@@ -256,7 +264,19 @@
 
         <Style Selector="^ /template/ ContentPresenter#EmptyIndicator">
             <Setter Property="Padding"
-                    Value="{atom:SharedTokenResource PaddingXL}" />
+                    Value="{atom:OwnerTokenResource PaddingXL}" />
+        </Style>
+
+        <Style Selector="^ /template/ ContentPresenter#Title">
+            <Setter Property="Padding" Value="{atom:DataGridTokenResource CellPaddingMD}" />
+            <Setter Property="FontSize" Value="{atom:DataGridTokenResource CellFontSizeMD}" />
+        </Style>
+        <Style Selector="^ /template/ ContentPresenter#Footer">
+            <Setter Property="Padding" Value="{atom:DataGridTokenResource CellPaddingMD}" />
+            <Setter Property="FontSize" Value="{atom:DataGridTokenResource CellFontSizeMD}" />
+        </Style>
+        <Style Selector="^ /template/ atom|Pagination">
+            <Setter Property="Margin" Value="{atom:DataGridTokenResource PaginationMargin}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
@@ -273,7 +293,7 @@
                 <Setter Property="Margin" Value="{atom:DataGridTokenResource PaginationMargin}" />
             </Style>
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Style Selector="^ /template/ ContentPresenter#Title">
                 <Setter Property="Padding"
                         Value="{atom:DataGridTokenResource TablePaddingMiddle}" />

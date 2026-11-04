@@ -1,3 +1,4 @@
+using Avalonia.LogicalTree;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -6,6 +7,8 @@ namespace AtomUI.Desktop.Controls;
 
 internal class DataGridTreeFilterFlyoutPresenter : TreeViewFlyoutPresenter
 {
+    private DataGridFilterThemeScope? _themeScope;
+
     private Button? _resetButton;
     private Button? _okButton;
 
@@ -13,6 +16,20 @@ internal class DataGridTreeFilterFlyoutPresenter : TreeViewFlyoutPresenter
     {
         Button.ClickEvent.AddClassHandler<DataGridTreeFilterFlyoutPresenter>(
             (presenter, args) => presenter.HandleButtonClick(args));
+    }
+
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        _themeScope?.Dispose();
+        _themeScope = new DataGridFilterThemeScope(this);
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        _themeScope?.Dispose();
+        _themeScope = null;
+        base.OnDetachedFromLogicalTree(e);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

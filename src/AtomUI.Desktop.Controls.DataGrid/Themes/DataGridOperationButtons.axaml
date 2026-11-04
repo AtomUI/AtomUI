@@ -45,7 +45,7 @@
         </Setter>
 
         <Style Selector="^ /template/ StackPanel">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource Kind=SpacingXS, SourceControlType={x:Type atom:DataGrid}}" />
         </Style>
 
     </ControlTheme>

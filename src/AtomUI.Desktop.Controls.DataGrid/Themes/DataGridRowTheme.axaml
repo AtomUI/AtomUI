@@ -4,6 +4,22 @@
     x:ClassModifier="internal"
     xmlns:atom="https://atomui.net">
     <ControlTheme x:Key="{x:Type atom:DataGridRow}" TargetType="atom:DataGridRow">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedForeground" />
+                <atom:OwnerTokenResource Kind="ColorText" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="ColorText" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="{x:Static atom:DataGridRowThemeConstants.FramePart}"
@@ -132,6 +148,11 @@
             <Setter Property="Background" Value="{atom:DataGridTokenResource TableExpandedRowBg}" />
         </Style>
 
+        <Style Selector="^ /template/ Border#DetailsPresenterFrame">
+            <Setter Property="Padding" Value="{atom:DataGridTokenResource CellPaddingMD}" />
+            <Setter Property="TextElement.FontSize" Value="{atom:DataGridTokenResource CellFontSizeMD}" />
+        </Style>
+
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ Border#DetailsPresenterFrame">
                 <Setter Property="Padding" Value="{atom:DataGridTokenResource TablePadding}" />
@@ -139,7 +160,7 @@
                         Value="{atom:DataGridTokenResource TableFontSize}" />
             </Style>
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Style Selector="^ /template/ Border#DetailsPresenterFrame">
                 <Setter Property="Padding"
                         Value="{atom:DataGridTokenResource TablePaddingMiddle}" />

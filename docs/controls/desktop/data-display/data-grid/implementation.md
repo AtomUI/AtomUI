@@ -674,3 +674,17 @@ DataGridMenuFilterFlyout 与 DataGridTreeFilterFlyout 继承 Flyout 的配置入
 ### 滚动后的静止指针命中
 
 RowsPresenter在滚动布局更新后请求所属Window刷新最终scene的指针命中。同窗口请求合并，跨窗口独立；不轮询重绘。更新悬停不能改动滚动条、冻结列、选择或滚动链，隐藏／重新显示及关闭窗口后的回收均按既有显示生命周期处理。
+
+
+### 主题消费与打开的过滤器
+
+ControlTheme声明DataGrid与asset-only内部目标的Global、Own和字体投射。公开Cell/Row/RowHeader/RowGroupHeader只提供实际继承parent的只读接口，AXAML决定明确字体/前景与继承回退；不在代码中寻找语义节点设置样式。
+
+选择列是非Visual descriptor，无法由模板选择器设置其Width。它在真实OwningGrid挂载时订阅明确SelectionColumnWidth，在Template优先级提供默认；owner切换或移除时释放订阅，调用方Width继续优先。
+
+DataGrid运行时菜单和树过滤器的根有继承parent，但不属于锚点的逻辑子节点集合。每个已打开根复用scoped资源桥转发缺失的发布通知；挂载/换context/退出分别建立、更换和移除桥及订阅。样式仍由AXAML应用，同一打开实例可热更新和撤回Own/Global，不通过重建菜单代替恢复。菜单选项背景在DataGridFilterMenuItem专用主题中声明，保留Flyout转发的ItemContainerTheme契约及已有状态优先级。
+
+Custom仅退出本家族原Middle条件选择器，普通基础Setter提供相同中档回退。专用Semantic Part Style的实际可见目标和回收后目标按真实模板/逻辑拓扑命中；隐藏0×0 filler和未活动的缓存项不作为可见绘制出口。
+
+
+Own/Global排版输入和SizeType改变时，DataGrid将旧range/details测量视为前一几何修订的数据。它保留第一个完整行的逻辑锚点，把同一绑定批的退休操作合并到正常布局中；该批完成后结算锚点与extent。既有增长保护在稳定修订内继续生效，正在切换的批次允许旧测量收缩。详情内容实例保持，旧ContentHeight上限在正常Measure中按当前字体重测。纯颜色更新不进入该作业，退出时取消挂起操作并移除一次布局订阅。

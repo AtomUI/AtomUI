@@ -4,6 +4,7 @@
               x:Class="AtomUI.Desktop.Controls.Themes.DataGridColumnHeaderTheme"
               x:ClassModifier="internal"
               xmlns:atom="https://atomui.net"
+              xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
               >
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:DataGridColumnHeader">
@@ -61,7 +62,7 @@
 
     <Style Selector="^:is(atom|DataGridColumnHeader)">
         <Setter Property="Foreground" Value="{atom:DataGridTokenResource TableHeaderTextColor}" />
-        <Setter Property="FontWeight" Value="{atom:SharedTokenResource FontWeightStrong}" />
+        <Setter Property="FontWeight" Value="{atom:OwnerTokenResource Kind=FontWeightStrong, SourceControlType={x:Type atom:DataGrid}}" />
         <Setter Property="atom:ToolTip.Placement" Value="Top" />
         <Setter Property="atom:ToolTip.ShowDelay" Value="1000" />
         <Setter Property="atom:ToolTip.ServiceEnabled" Value="False" />
@@ -83,13 +84,18 @@
             <Setter Property="atom:ToolTip.ServiceEnabled" Value="True" />
         </Style>
 
+        <Setter Property="FontSize" Value="{atom:DataGridTokenResource CellFontSizeMD}" />
+        <Style Selector="^ /template/ Border#PART_ContentFrame">
+            <Setter Property="Padding" Value="{atom:DataGridTokenResource CellPaddingMD}" />
+        </Style>
+
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ Border#PART_ContentFrame">
                 <Setter Property="Padding" Value="{atom:DataGridTokenResource TablePadding}" />
             </Style>
             <Setter Property="FontSize" Value="{atom:DataGridTokenResource TableFontSize}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Style Selector="^ /template/ Border#PART_ContentFrame">
                 <Setter Property="Padding"
                         Value="{atom:DataGridTokenResource TablePaddingMiddle}" />
@@ -106,7 +112,7 @@
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_VerticalSeparator">
             <Setter Property="BorderBrush" Value="{atom:DataGridTokenResource HeaderSplitColor}" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource FontHeight}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=FontHeight, SourceControlType={x:Type atom:DataGrid}}" />
         </Style>
 
         <Style Selector="^[IsSeparatorFullHeight=True] /template/ atom|PixelAlignedBorder#PART_VerticalSeparator">
@@ -115,11 +121,11 @@
         </Style>
 
         <Style Selector="^ /template/ StackPanel#IndicatorsLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource UniformlyMarginXXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource Kind=UniformlyMarginXXS, SourceControlType={x:Type atom:DataGrid}}" />
         </Style>
 
         <Style Selector="^ /template/ DockPanel#ContentLayout">
-            <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource UniformlyMarginXS}" />
+            <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource Kind=UniformlyMarginXS, SourceControlType={x:Type atom:DataGrid}}" />
         </Style>
         <Style Selector="^:sort-ascending">
             <Style Selector="^ /template/ atom|DataGridSortIndicator#PART_SortIndicator">
@@ -180,6 +186,33 @@
                             Value="{atom:DataGridTokenResource RightFrozenShadows}" />
                 </Style>
                 <Setter Property="ZIndex" Value="1" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[IsFrozen=True]">
+            <Style Selector="^:sort-ascending, ^:sort-descending">
+                <Setter Property="Background">
+                    <MultiBinding Converter="{x:Static themes:DataGridThemeBindings.OptionalValue}">
+                        <atom:DataGridTokenResource Kind="HeaderSortActiveBg" />
+                        <atom:DataGridTokenResource Kind="FixedHeaderSortActiveBg" WhenExplicit="True" />
+                    </MultiBinding>
+                </Setter>
+                <Style Selector="^:pointerover">
+                    <Setter Property="Background">
+                        <MultiBinding Converter="{x:Static themes:DataGridThemeBindings.OptionalValue}">
+                            <atom:DataGridTokenResource Kind="HeaderSortHoverBg" />
+                            <atom:DataGridTokenResource Kind="FixedHeaderSortActiveBg" WhenExplicit="True" />
+                        </MultiBinding>
+                    </Setter>
+                </Style>
+                <Style Selector="^[IsShowFrozenShadow=True]">
+                    <Setter Property="Background">
+                        <MultiBinding Converter="{x:Static themes:DataGridThemeBindings.OptionalValue}">
+                            <atom:DataGridTokenResource Kind="HeaderBg" />
+                            <atom:DataGridTokenResource Kind="FixedHeaderSortActiveBg" WhenExplicit="True" />
+                        </MultiBinding>
+                    </Setter>
+                </Style>
             </Style>
         </Style>
 

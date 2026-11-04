@@ -68,11 +68,11 @@
                     Value="{atom:DataGridTokenResource TableFilterButtonLayoutSeparatorMargin}" />
         </Style>
 
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorText, SourceControlType={x:Type atom:DataGrid}}" />
         <Setter Property="Background" Value="{atom:DataGridTokenResource TableFilterDropdownBg}" />
         <Setter Property="Padding"
                 Value="{atom:DataGridTokenResource TableFilterDropdownPadding}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadius, SourceControlType={x:Type atom:DataGrid}}" />
 
     </ControlTheme>
 </ResourceDictionary>

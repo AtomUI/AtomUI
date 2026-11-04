@@ -73,12 +73,14 @@ haptic 或生命周期能力确实需要原生调用时才进入 Native。Native
 src/AtomUI.Native/
 ├── AtomUI.Native.csproj
 ├── NativeWindowSizing.cs
+├── NativeWindowStyles.cs
 ├── NativePopupShadowHitTest.cs
 ├── WindowExtensions.cs
 ├── FileSystem/
 │   └── NativeFileSystem.cs
 ├── Windows/
 │   ├── WindowsCsdSizingHook.cs
+│   ├── WindowsBorderlessStyleHook.cs
 │   ├── WindowsPopupShadowHitTestHook.cs
 │   ├── WindowUtils.Interop.cs
 │   └── WindowUtils.Windows.cs
@@ -98,6 +100,9 @@ src/AtomUI.Native/
 ### Windows
 
 - `SetWindowIgnoreMouseEventsWindows()` 修改 `WS_EX_TRANSPARENT/WS_EX_LAYERED`。
+- `WindowsBorderlessStyleHook` 在 `WM_STYLECHANGING` 中为使用 redirection bitmap、没有 overlapped 装饰位的顶层 HWND
+  补齐 `WS_POPUP`，避免 ANGLE/DXGI 交换链创建失败。Desktop 包应用作用域负责首次显示前挂接和释放，覆盖普通 Avalonia Window；
+  Native 不读取请求的全屏状态、不修改 Avalonia 状态或保存快照，见 [Windows 平台 API](windows.md) 第 8 节。
 - `WindowsCsdSizingHook` 封装 opt-in 的 `WM_GETMINMAXINFO` track size 修正和
   `WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE` live resize 信号。
 - `WindowsBackgroundHook` 在首次显示前用 GDI 填充客户区背景，避免原生空白帧；它只处理

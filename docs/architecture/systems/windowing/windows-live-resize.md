@@ -27,6 +27,22 @@ AtomUI Window 负责 Control 状态、主题、标题栏内容和最小布局约
 这条边界不禁止窄范围 Native 能力。`AtomUI.Native` 可以封装 Windows 公共 API 无法表达的 sizing boundary、
 整窗鼠标穿透或明确的原生生命周期信号，但必须由上层显式启用和释放，且不能接管 caption、CSD 或 Snap Layout。
 
+### 无装饰顶层窗口的原生样式完整性
+
+`UseDesktopControls()` 在应用作用域启用 `WindowsWindowStyleCompatibility`，覆盖普通 `Avalonia.Controls.Window`。
+首次显示前挂接 `AtomUI.Native.WindowsBorderlessStyleHook`，在 `WM_STYLECHANGING` 中检查待提交的 `GWL_STYLE`：
+使用 redirection bitmap、非 `WS_CHILD`、没有 `WS_POPUP` 且没有任何 `WS_OVERLAPPEDWINDOW` 装饰位时，补齐 `WS_POPUP`。
+挂接时已经存在的同类 HWND 也做一次相同的幂等归一化。
+
+原因是 Avalonia 12.1.4 进入全屏时去除 overlapped 装饰位但未补 popup 类型；禁用调整大小、最小化和最大化的无装饰普通窗口
+也会生成相同类型的 style。在 issue #528 的 ANGLE/RedirectionSurface 路径中，这会使 DXGI 交换链创建返回
+`DXGI_ERROR_INVALID_CALL`；全屏置顶 HWND 仍会激活和遮挡输入。只修全屏定位阶段会遗漏普通状态恢复。
+
+兼容能力只补一个原生类型位，不修改 `WindowState`、Topmost、owner、geometry、装饰属性或全屏保存快照；
+不使用私有字段反射、延时刷新、surface 重试或合成后端切换。已有 child、popup、overlapped 装饰位的 style，以及带
+`WS_EX_NOREDIRECTIONBITMAP` 的 HWND 不变。进入/退出全屏和后续属性变更仍由 Avalonia 完成；普通有装饰位的状态不残留 popup 位。
+详见 [Native Windows API](../../../modules/native/windows.md#8-windowsborderlessstylehook无装饰顶层窗口样式完整性)。
+
 ## 配置链路
 
 ```text

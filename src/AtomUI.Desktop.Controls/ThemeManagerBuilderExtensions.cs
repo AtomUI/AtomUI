@@ -33,6 +33,11 @@ public static class ThemeManagerBuilderExtensions
             return;
         }
 
+        if (OperatingSystem.IsWindows())
+        {
+            context.Own(new WindowsWindowStyleCompatibility());
+        }
+
         if (context.ThemeManager is ThemeManager themeManager)
         {
             context.Own(MediaBreakPointThemeBootstrapper.Attach(themeManager));

@@ -7,7 +7,11 @@ namespace AtomUI.Native.Windows;
 internal static class WindowUtilsInterop
 {
     // 常量定义
+    public const int GWL_STYLE = -16;
     public const int GWL_EXSTYLE = -20;
+    public const uint WS_POPUP = 0x80000000;
+    public const uint WS_CHILD = 0x40000000;
+    public const uint WS_OVERLAPPEDWINDOW = 0x00CF0000;
     public const long WS_EX_TRANSPARENT = 0x20L;
     public const long WS_EX_LAYERED = 0x80000L;
     public const long WS_EX_NOREDIRECTIONBITMAP = 0x200000L;
@@ -25,14 +29,30 @@ internal static class WindowUtilsInterop
     public const int WM_SHOWWINDOW = 0x0018;
     public const int WM_ACTIVATE = 0x0006;
     public const int WM_WINDOWPOSCHANGED = 0x0047;
+    public const int WM_STYLECHANGING = 0x007C;
     public const int WM_DPICHANGED = 0x02E0;
     public const int WM_NCACTIVATE = 0x0086;
     public const int WM_DESTROY = 0x0002;
+    public const int WM_NCDESTROY = 0x0082;
     public const int WM_NCHITTEST = 0x0084;
     public const int HTTRANSPARENT = -1;
     public const int S_OK = 0;
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct STYLESTRUCT
+    {
+        public uint StyleOld;
+        public uint StyleNew;
+    }
+
     // 使用正确的 Windows 类型
+    // GWL_STYLE/GWL_EXSTYLE contain 32-bit values on both 32-bit and 64-bit Windows.
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongW", SetLastError = true)]
+    public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll", EntryPoint = "SetWindowLongW", SetLastError = true)]
+    public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
     [DllImport("user32.dll", EntryPoint = "GetWindowLongW", SetLastError = true)]
     public static extern long GetWindowLongPtr(IntPtr hWnd, int nIndex);
 

@@ -4,6 +4,31 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## 6.2.12
+
+`2026-11-04`
+
+- Breaking Changes
+  - Motion: Popup-based components use consistent default enter/leave animations. A close request can finish asynchronously; wait for `Closed` before assuming the host is removed, or disable the relevant motion. See the [migration guide](docs/releases/6.2.12-api-changes.md).
+  - ComboBox: Empty sources now display an empty indicator by default. Set `IsShowEmptyIndicator="False"` to retain the previous display; see the [migration guide](docs/releases/6.2.12-api-changes.md).
+  - DataGrid: In the default `SelectIndicator` mode, ordinary cell clicks preserve selection. Use `SelectTriggerType="Cell"` for cell-driven selection; see the [migration guide](docs/releases/6.2.12-api-changes.md).
+  - Registration: Generated `ControlPackageGroup_*` identities change with the assembly version. Upgrade related packages and Generator together, rebuild consumers and republish trimmed/NativeAOT applications; see the [migration guide](docs/releases/6.2.12-api-changes.md).
+- Motion
+  - Add `OpenMotion`/`CloseMotion` configuration to selector, picker, autocomplete, button and submenu owners, with component-specific direction and origin. Explicit null disables the corresponding direction; direct Popup instances remain unanimated by default.
+  - Preserve application Style/binding overrides, isolate default definitions per instance, and release retired popup hosts, forwarding subscriptions and composition resources on replacement, retemplating or detachment.
+  - Complete active playback when motion is disabled, and keep overlay and native popup presentation consistent.
+- ComboBox and Empty
+  - Add customizable empty content, content templates and padding for empty sources and filters without matches, with Gallery examples using the dedicated semantic-part Style.
+  - Restore Empty illustrations when reattaching to the visual tree and avoid clearing an existing image while theme resources are temporarily unavailable.
+- DataGrid
+  - Keep current-cell, focus and editing behavior available while selection is controlled by indicators; retain Ctrl/Shift selection in `Cell` mode.
+- DatePicker and TimePicker
+  - Restore right-side add-on content templates, icons and Form feedback after moving their bindings into the shared input theme.
+- Window
+  - Fix rendering failure for Windows borderless topmost windows entering fullscreen, including restoration and window-style lifecycle handling. #528
+- Gallery
+  - Fix AXAML element-name bindings, include showcase source files at build time, and add the missing range-date separator example.
+
 ## 6.2.11
 
 `2026-11-01`

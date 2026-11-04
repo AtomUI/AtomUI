@@ -6,6 +6,31 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 6.2.12
+
+`2026-11-04`
+
+- Breaking Changes
+  - Motion：弹层组件统一默认入场/离场动效，关闭请求可能异步完成；依赖宿主已拆除的逻辑须等待 `Closed`，或禁用相应动效。详见[迁移指南](docs/releases/6.2.12-api-changes.zh-CN.md)。
+  - ComboBox：空数据源现在默认显示空态，设置 `IsShowEmptyIndicator="False"` 可保留原显示方式，详见[迁移指南](docs/releases/6.2.12-api-changes.zh-CN.md)。
+  - DataGrid：默认 `SelectIndicator` 模式下普通单元格点击保留选择；需要点击单元格选择时设置 `SelectTriggerType="Cell"`，详见[迁移指南](docs/releases/6.2.12-api-changes.zh-CN.md)。
+  - Registration：生成的 `ControlPackageGroup_*` 身份随程序集版本变化。请同步升级相关包与 Generator、重新编译消费方并重新发布裁剪/NativeAOT 应用，详见[迁移指南](docs/releases/6.2.12-api-changes.zh-CN.md)。
+- Motion
+  - 为选择器、Picker、自动完成、按钮及子菜单的配置 owner 提供 `OpenMotion`/`CloseMotion`，按组件确定方向与原点；显式 null 禁用对应方向，直接使用的 Popup 默认仍无动效。
+  - 保留应用 Style/绑定覆盖，默认定义按实例隔离，更换弹层、重建模板或脱离时释放旧宿主、转发订阅与合成资源。
+  - 禁用动效时收敛正在播放的请求，并保持 overlay 与原生弹层呈现一致。
+- ComboBox 与 Empty
+  - 为空源及筛选无匹配提供自定义空态内容、内容模板与内边距；Gallery 通过专用 Semantic Part Style 展示定制。
+  - Empty 重新挂树时恢复插画，主题资源暂缺时保留已有图片，避免空态图片被清空。
+- DataGrid
+  - 通过指示器控制选择时保留 current 单元格、焦点与编辑能力；`Cell` 模式继续支持 Ctrl/Shift 选择。
+- DatePicker 与 TimePicker
+  - 修复绑定迁入共享输入主题后，右侧附加内容模板、图标与 Form 反馈未正确显示的问题。
+- Window
+  - 修复 Windows 无装饰置顶窗口进入全屏后无法渲染的问题，覆盖恢复及窗口样式生命周期处理。#528
+- Gallery
+  - 修复 AXAML 元素名称绑定，在构建期收集示例源码，并补充日期范围分隔符示例。
+
 ## 6.2.11
 
 `2026-11-01`

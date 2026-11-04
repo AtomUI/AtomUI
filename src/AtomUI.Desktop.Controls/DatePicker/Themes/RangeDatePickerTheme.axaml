@@ -52,14 +52,14 @@
                                         Spacing="{atom:SharedTokenResource SpacingXS}">
                                 <atom:PickerClearUpButton
                                     Name="PART_ClearUpButton"
-                                    Icon="{TemplateBinding InfoIcon}"
-                                    FormFeedback="{TemplateBinding FormFeedback}"
+                                    Icon="{CompiledBinding $parent[atom:InfoPickerInput].InfoIcon}"
+                                    FormFeedback="{CompiledBinding $parent[atom:InfoPickerInput].FormFeedback}"
                                     IsInClearMode="{CompiledBinding $parent[atom:InfoPickerInput].IsClearButtonVisible}"
-                                    IsVisible="{TemplateBinding InfoIcon, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                    IsVisible="{CompiledBinding $parent[atom:InfoPickerInput].InfoIcon, Converter={x:Static ObjectConverters.IsNotNull}}"
                                     Classes.semantic-scope-handle="True" />
                                 <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter"
-                                                            Content="{TemplateBinding ContentRightAddOn}"
-                                                            ContentTemplate="{TemplateBinding ContentRightAddOnTemplate}" />
+                                                            Content="{CompiledBinding $parent[atom:InfoPickerInput].ContentRightAddOn}"
+                                                            ContentTemplate="{CompiledBinding $parent[atom:InfoPickerInput].ContentRightAddOnTemplate}" />
                             </StackPanel>
                         </atom:AddOnDecoratedBox.ContentRightAddOn>
                         <Grid ColumnDefinitions="*, Auto, *">

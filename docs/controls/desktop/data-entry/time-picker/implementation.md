@@ -121,6 +121,7 @@ Pointer 判断使用剪裁后的 ScrollContentPresenter 视口，不能使用完
 - 弹层内容由 owner `CreatePickerPresenter()` 在首次打开时运行时创建并经 `PickerPresenter` 属性装入 `PART_Popup` 的内容根盒子；presenter / TimeView 主题模板上的 Semantic marker 随模板应用静态存在，`popup.item` marker 由 `DateTimePickerPanel.RefreshItems` 创建 `TimeViewCell` 时注入。弹层关闭不销毁 marker，列表滚动、容器复用、增量变化与弹层重开后 marker 保持；`OnDetachedFromVisualTree` 释放 owned presenter 后，下次打开重建并重新获得同一组 marker。
 - 单值 `TimePicker` 的触发区与 `popup.root` marker 位于共享 `InfoPickerInputTheme.axaml`；`RangeTimePicker` 的对应 marker 位于自有 `RangeTimePickerTheme.axaml` 模板覆写。共享主题中的 marker（含 `PickerClearUpButtonTheme.axaml` 的 `semantic-clear`）同时服务于 DatePicker 与 TimePicker 两个家族的同类 Part；`TimeViewTheme.axaml` 的 `semantic-time-*` marker 对 DatePicker 是 inert class。
 - `prefix` 投影节点（`AddOnContentPresenter`）以 `CompiledBinding $parent[atom:InfoPickerInput]` 接收 `ContentLeftAddOn` / `ContentLeftAddOnTemplate`；该投影是宿主模板对 `ContentLeftAddOn` 承载方式的等价重构，`ContentLeftAddOn` 为空的既有用法不受影响。
+- 共享输入主题及范围覆写模板的右侧附加区位于 AddOnDecoratedBox 内容子树；内容、内容模板、图标、反馈及图标可见性通过 `CompiledBinding $parent[atom:InfoPickerInput]` 读取输入 owner，不依赖内容节点的 TemplatedParent。
 
 稳定 template part 接入点：
 

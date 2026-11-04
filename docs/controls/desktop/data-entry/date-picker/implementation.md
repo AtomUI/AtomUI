@@ -52,6 +52,8 @@ Footer 报告操作，确认策略不进入 DatePanel。范围已有两端点只
 | Footer | Today/Now/Confirm，会话决定可用性与提交。 |
 
 这是当前职责树；真实 Name/route 来自现有 AXAML。布局、可见性与固定关系留在主题，各子控件维护自己的模板。
+共享输入主题及范围覆写模板的右侧附加区位于 AddOnDecoratedBox 内容子树，内容、内容模板、图标、反馈及图标可见性使用
+`CompiledBinding $parent[atom:InfoPickerInput]` 显式读取输入 owner，避免把内容节点的 TemplatedParent 当作输入 owner。
 单/双面板与时间是配置，不再用 DualMonthCalendar 继承链表达。
 Compact 日期面板使用共享的 36 单位日期行与正文留白，Presenter 为日期、月和年面板分配 301 单位高度，
 季度面板保持 86 单位；托管 DateViewer 隐藏自己的默认 Today 页脚，Picker Footer 仍由 Presenter 负责。

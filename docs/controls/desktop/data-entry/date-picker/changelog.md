@@ -4,6 +4,9 @@
 
 ## 2026-11-04
 
+- Fixed
+  - 共享 InfoPickerInput 右侧内容、内容模板、图标及 Form 反馈显式绑定输入 owner，恢复 template-only 附加内容和动态更新。
+
 - Changed
   - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
 

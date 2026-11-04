@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
@@ -11,6 +12,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -1002,11 +1004,34 @@ public class SelectBehaviorTests
             Dispatcher.UIThread.RunJobs();
             candidateList.CandidateSelectedItem.ShouldBeSameAs(jack);
 
-            select.IsDropDownOpen = false;
-            Dispatcher.UIThread.RunJobs();
+            var popup = GetVisualDescendant<Popup>(select, "PART_Popup");
+            var popupClosed = false;
+            void OnPopupClosed(object? sender, EventArgs args)
+            {
+                popupClosed = true;
+            }
 
-            candidateList.CandidateSelectedIndex.ShouldBe(-1);
-            candidateList.CandidateSelectedItem.ShouldBeNull();
+            popup.Closed += OnPopupClosed;
+            try
+            {
+                select.IsDropDownOpen = false;
+                // Candidate cleanup follows the physical close, after default leave motion.
+                var timeout = Stopwatch.StartNew();
+                while (!popupClosed && timeout.Elapsed < TimeSpan.FromSeconds(2))
+                {
+                    AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+                    Dispatcher.UIThread.RunJobs();
+                    Thread.Sleep(5);
+                }
+
+                popupClosed.ShouldBeTrue();
+                candidateList.CandidateSelectedIndex.ShouldBe(-1);
+                candidateList.CandidateSelectedItem.ShouldBeNull();
+            }
+            finally
+            {
+                popup.Closed -= OnPopupClosed;
+            }
         });
     }
 

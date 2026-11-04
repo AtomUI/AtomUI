@@ -4,6 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Select}" TargetType="atom:Select">
+        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
+        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -119,6 +121,9 @@
                         </Panel>
                     </atom:SelectAddOnDecoratedBox>
                     <atom:Popup Name="PART_Popup"
+                                OpenMotion="{TemplateBinding OpenMotion}"
+                                CloseMotion="{TemplateBinding CloseMotion}"
+                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="True"
                                 OverlayDismissEventPassThrough="True"

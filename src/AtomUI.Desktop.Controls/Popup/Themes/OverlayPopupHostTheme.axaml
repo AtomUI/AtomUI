@@ -25,5 +25,10 @@
         <Setter Property="FontStyle" Value="Normal" />
         <Setter Property="ClipToBounds" Value="False" />
 
+        <Style Selector="^ /template/ atom|PopupSurface#PART_PopupSurface">
+            <Setter Property="IsHitTestVisible"
+                    Value="{CompiledBinding $parent[atom:Popup].IsPlayingCloseMotion, Converter={x:Static BoolConverters.Not}}" />
+        </Style>
+
     </ControlTheme>
 </ResourceDictionary>

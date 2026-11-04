@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
@@ -18,12 +19,13 @@ public class ContextMenu : AvaloniaContextMenu,
                            IScrollAwareControl
 {
     #region 公共属性定义
+
     public static readonly StyledProperty<BoxShadows> PopupRootShadowProperty =
         Popup.PopupRootShadowProperty.AddOwner<ContextMenu>();
-    
+
     public static readonly StyledProperty<BoxShadows> OverlayHostShadowProperty =
         Popup.OverlayHostShadowProperty.AddOwner<ContextMenu>();
-    
+
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<ContextMenu>();
 
@@ -38,22 +40,22 @@ public class ContextMenu : AvaloniaContextMenu,
 
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         Menu.ShouldUseOverlayPopupProperty.AddOwner<ContextMenu>();
-    
+
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<ContextMenu>();
-    
+
     public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
         Popup.OpenMotionProperty.AddOwner<ContextMenu>();
-        
+
     public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
         Popup.CloseMotionProperty.AddOwner<ContextMenu>();
-    
+
     public BoxShadows PopupRootShadow
     {
         get => GetValue(PopupRootShadowProperty);
         set => SetValue(PopupRootShadowProperty, value);
     }
-    
+
     public BoxShadows OverlayHostShadow
     {
         get => GetValue(OverlayHostShadowProperty);
@@ -89,13 +91,13 @@ public class ContextMenu : AvaloniaContextMenu,
         get => GetValue(ShouldUseOverlayPopupProperty);
         set => SetValue(ShouldUseOverlayPopupProperty, value);
     }
-    
+
     public TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
     }
-    
+
     public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
@@ -141,10 +143,19 @@ public class ContextMenu : AvaloniaContextMenu,
 
     #endregion
 
+    #region 运行时字段
+
     private Popup? _popup;
+
     private IDisposable? _deactivationSubscription;
+
     private bool _ignorePlacementChanged;
+
     private Control? _pinnedOpenOwner;
+
+    #endregion
+
+    #region 构造函数
 
     static ContextMenu()
     {
@@ -158,66 +169,14 @@ public class ContextMenu : AvaloniaContextMenu,
         CreatePopup();
     }
 
-    private Popup CreatePopup()
-    {
-        _popup = new Popup
-        {
-            IsLightDismissEnabled          = true,
-            OverlayDismissEventPassThrough = true,
-            TakesFocusFromNativeControl    = Popup.GetTakesFocusFromNativeControl(this),
-        };
-        CustomPopupPlacementCallback =  _popup.HandleCustomPlacement;
-        _popup.Opened                += HandlePopupOpened;
-        _popup.Closed                += this.OnPopupClosed;
-        _popup.AddClosingEventHandler(HandlePopupClosing);
-        _popup.KeyUp += this.OnPopupClosing;
-        
-        _popup[!Popup.PopupRootShadowProperty]       = this[!PopupRootShadowProperty];
-        _popup[!Popup.OverlayHostShadowProperty]     = this[!OverlayHostShadowProperty];
-        _popup[!Popup.MotionDurationProperty]        = this[!MotionDurationProperty];
-        _popup[!Popup.OpenMotionProperty]            = this[!OpenMotionProperty];
-        _popup[!Popup.CloseMotionProperty]           = this[!CloseMotionProperty];
-        _popup[!Popup.IsMotionEnabledProperty]       = this[!IsMotionEnabledProperty];
-        _popup[!Popup.ShouldUseOverlayLayerProperty] = this[!ShouldUseOverlayPopupProperty];
-        _popup[!Popup.IsPopupPinnedOpenProperty]     = this[!IsPopupPinnedOpenProperty];
+    #endregion
 
-        this.SetPopup(_popup);
-        return _popup;
-    }
+    #region 控件 API
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
         CustomPopupPlacementCallback =  _popup!.HandleCustomPlacement;
-    }
-
-    private void HandlePopupClosing(object? sender, CancelEventArgs e)
-    {
-        if (InteractionHandler is DefaultMenuInteractionHandler interactionHandler)
-        {
-            interactionHandler.CancelPendingHoverOperations();
-        }
-
-        if (!e.Cancel)
-        {
-            this.OnPopupClosing(sender, e);
-        }
-    }
-
-    private void HandlePopupOpened(object? sender, EventArgs e)
-    {
-        this.OnPopupOpened(sender, e);
-        if (_popup?.PlacementTarget is { } target)
-        {
-            var topLevel = TopLevel.GetTopLevel(target);
-            _deactivationSubscription?.Dispose();
-            _deactivationSubscription = TopLevelDeactivation.Subscribe(topLevel, HandleWindowDeactivated);
-        }
-    }
-
-    private void HandleWindowDeactivated(object? sender, EventArgs e)
-    {
-        Close();
     }
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
@@ -323,20 +282,8 @@ public class ContextMenu : AvaloniaContextMenu,
         {
             return;
         }
-        
-        for (var i = 0; i < ItemCount; i++)
-        {
-            var container = ContainerFromIndex(i);
-            if (container is MenuItem menuItem)
-            {
-                menuItem.Close();
-            }
-        }
 
         _popup!.IsOpen = false;
-
-        _deactivationSubscription?.Dispose();
-        _deactivationSubscription = null;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -357,6 +304,100 @@ public class ContextMenu : AvaloniaContextMenu,
         {
             TryOpenPinned();
         }
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        ConfigureMaxPopupHeight();
+        ConfigurePlacement();
+    }
+
+    #endregion
+
+    #region 内部实现
+
+    private Popup CreatePopup()
+    {
+        _popup = new Popup
+        {
+            IsLightDismissEnabled          = true,
+            OverlayDismissEventPassThrough = true,
+            TakesFocusFromNativeControl    = Popup.GetTakesFocusFromNativeControl(this),
+        };
+        CustomPopupPlacementCallback =  _popup.HandleCustomPlacement;
+        _popup.Opened                += HandlePopupOpened;
+        _popup.Closed                += HandlePopupClosed;
+        _popup.CloseRequested += HandlePopupClosing;
+        _popup.KeyUp += HandlePopupKeyUp;
+
+        _popup[!Popup.PopupRootShadowProperty]       = this[!PopupRootShadowProperty];
+        _popup[!Popup.OverlayHostShadowProperty]     = this[!OverlayHostShadowProperty];
+        _popup[!Popup.MotionDurationProperty]        = this[!MotionDurationProperty];
+        _popup[!Popup.OpenMotionProperty]            = this[!OpenMotionProperty];
+        _popup[!Popup.CloseMotionProperty]           = this[!CloseMotionProperty];
+        _popup[!Popup.IsMotionEnabledProperty]       = this[!IsMotionEnabledProperty];
+        _popup[!Popup.ShouldUseOverlayLayerProperty] = this[!ShouldUseOverlayPopupProperty];
+        _popup[!Popup.IsPopupPinnedOpenProperty]     = this[!IsPopupPinnedOpenProperty];
+
+        this.SetPopup(_popup);
+        return _popup;
+    }
+
+    private void HandlePopupClosing(object? sender, CancelEventArgs e)
+    {
+        if (InteractionHandler is DefaultMenuInteractionHandler interactionHandler)
+        {
+            interactionHandler.CancelPendingHoverOperations();
+        }
+
+        if (!e.Cancel)
+        {
+            this.OnPopupClosing(sender, e);
+        }
+        if (!e.Cancel)
+        {
+            for (var i = 0; i < ItemCount; i++)
+            {
+                if (ContainerFromIndex(i) is MenuItem menuItem)
+                {
+                    menuItem.Close();
+                }
+            }
+        }
+    }
+
+    private void HandlePopupClosed(object? sender, EventArgs e)
+    {
+        _deactivationSubscription?.Dispose();
+        _deactivationSubscription = null;
+        this.OnPopupClosed(sender, e);
+    }
+
+    private void HandlePopupKeyUp(object? sender, KeyEventArgs e)
+    {
+        var keymap = Application.Current?.PlatformSettings?.HotkeyConfiguration;
+        if (IsOpen && keymap?.OpenContextMenu.Any(key => key.Matches(e)) == true)
+        {
+            Close();
+            e.Handled = _popup?.IsPlayingCloseMotion == true || !IsOpen;
+        }
+    }
+
+    private void HandlePopupOpened(object? sender, EventArgs e)
+    {
+        this.OnPopupOpened(sender, e);
+        if (_popup?.PlacementTarget is { } target)
+        {
+            var topLevel = TopLevel.GetTopLevel(target);
+            _deactivationSubscription?.Dispose();
+            _deactivationSubscription = TopLevelDeactivation.Subscribe(topLevel, HandleWindowDeactivated);
+        }
+    }
+
+    private void HandleWindowDeactivated(object? sender, EventArgs e)
+    {
+        Close();
     }
 
     private static void HandleOwnerContextMenuChanged(Control owner, AvaloniaPropertyChangedEventArgs change)
@@ -434,13 +475,6 @@ public class ContextMenu : AvaloniaContextMenu,
         _deactivationSubscription = null;
     }
 
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        ConfigureMaxPopupHeight();
-        ConfigurePlacement();
-    }
-
     private void ConfigureMaxPopupHeight()
     {
         var maxPopupHeight = IsScrollEnabled
@@ -448,7 +482,7 @@ public class ContextMenu : AvaloniaContextMenu,
             : double.PositiveInfinity;
         SetCurrentValue(MaxPopupHeightProperty, maxPopupHeight);
     }
-    
+
     private void ConfigurePlacement()
     {
         try
@@ -473,4 +507,6 @@ public class ContextMenu : AvaloniaContextMenu,
             _ignorePlacementChanged = false;
         }
     }
+
+    #endregion
 }

@@ -227,6 +227,13 @@ AOT 边界：
 - popup 内容清理必须断开事件、ItemsSource、TemplatedParent 和 popup child 引用。
 - Semantic Part marker 的维护边界：`TreeSelectTheme.axaml` 承载触发区静态 marker（`semantic-scope-input`、`semantic-prefix`、`semantic-suffix`、`semantic-scope-handle`、`semantic-content`、`semantic-placeholder`、`semantic-input`、`semantic-scope-tags`、`semantic-popup-root`）；共享 `SelectHandleTheme.axaml` 承载清除按钮的 `semantic-clear` marker（`clear` Part 声明 `CrossNestedOwners=true`，生成器沿 SelectHandle 主题链校验）；共享 `TagTheme.axaml` 承载 `itemContent` / `itemRemove` marker。运行时注入点：共享 `SelectTagAwareTextBox` 创建标签时追加 `TagItemClass`、创建搜索框时追加 `TagSearchInputClass`；`TreeSelect.EnsurePopupContent` 创建候选树时追加 `TreeSelectSemanticParts.PopupListClass` 并显式 `SetTemplatedParent(this)`；`TreeViewSelectTreeViewItem` 构造函数追加 `TreeSelectSemanticParts.PopupListItemClass`。marker 随容器实例创建一次，prepare/clear/recycle 路径不得增删；`PopupFrame` 以 `Popup.Child` 取回，不在控件中缓存字段。
 
+### 弹层动效接入约束
+
+TreeSelect 通过 AbstractSelect 继承根弹层配置，主题默认与用户覆盖在 TreeSelect 实例上解析后单向进入 PART_Popup。TreeView 内容视口沿原展开路径执行，根弹层动效不改变树占位、虚拟化、限高、复选或键盘行为。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 对应验证：
@@ -249,3 +256,6 @@ git diff --check
 ```bash
 dotnet test tests/AtomUIGallery.Tests/AtomUIGallery.Tests.csproj --framework net10.0 --no-restore --filter FullyQualifiedName~TreeSelectShowCasePageTests
 ```
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

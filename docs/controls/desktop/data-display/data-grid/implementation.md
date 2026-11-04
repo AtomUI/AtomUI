@@ -609,6 +609,13 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 - 文档、源码 public surface、Gallery 与 tests 的一致性。
 - Extra Content 与 Pagination 共享有效可见性；Pagination Align 为 Start/End 时分别形成左右相反布局，Center 使用右侧 Extra Content 加剩余区域居中 Pagination。
 
+### 弹层动效接入约束
+
+DataGridMenuFilterFlyout 与 DataGridTreeFilterFlyout 继承 Flyout 的配置入口，默认装配明确使用 Dropdown 根层语义；不通过 Popup 预设属性或按内容是 Menu/Tree 猜测。列头容器回收、owner 失效或模板替换强制结束旧展示会话并释放配置转发，筛选提交和网格虚拟化保持原合同。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 11. 测试与验证
 
 ### 11.1 Query、Source 与状态机
@@ -643,3 +650,6 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 - DataGrid detail/recycle/offset/extent 测试保持或加强，不删除或放宽既有行为断言。
 - 运行 DataGrid 专用测试、完整 solution tests、DataGrid performance state verifier、AOT/trim verify、Gallery
   NativeAOT publish/startup smoke 和 `git diff --check`。
+
+筛选 Flyout 在其配置作用域以低优先级值提供独立默认定义；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

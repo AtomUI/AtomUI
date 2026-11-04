@@ -33,6 +33,16 @@ Tooltip 的控件专项模型通过 Theme 消费 Token：
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 - `ToolTipMaxWidth` 约束弹层内容最大宽度；文本内容默认在该约束内换行（`TextWrapping.Wrap`），超出部分换行展示而不是被裁剪或截断。
 
+### 共享动效 Token
+
+Tooltip 的入场和离场时长契约消费 `MotionDurationFast`，默认 100ms；`EnableMotion` 决定是否播放。
+Fast 只覆盖 ZoomBig 的时长，不新增专属轨迹或 ToolTipToken 成员。`MouseEnterDelay`、`MouseLeaveDelay`
+属于触发调度，不从动画时长推导。原点的边对齐偏移读取有效全局 `BorderRadius`，不使用实例任意 CornerRadius 替代。
+
+轨迹由[组件规格](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)拥有，
+原点算法由[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md#43-tooltip-与-popover-家族)拥有；
+源码接入差异集中记录在[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)，Token 文档不宣称主题实现已完成校准。
+
 ## 4. 控件家族影响
 
 调整 Tooltip Token 时必须评估以下范围：

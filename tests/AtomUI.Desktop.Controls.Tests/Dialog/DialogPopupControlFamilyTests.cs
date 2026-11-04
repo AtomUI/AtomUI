@@ -125,7 +125,7 @@ public class DialogPopupControlFamilyTests
                 ShouldUseOverlayPopup = true,
                 Items = { child }
             };
-            var menu = new AtomUI.Desktop.Controls.Menu { Items = { parent } };
+            var menu = new AtomUI.Desktop.Controls.Menu { IsMotionEnabled = false, Items = { parent } };
             using var host = DialogPopupTestHost.Open(menu);
 
             parent.IsSubMenuOpen = true;

@@ -45,7 +45,7 @@ Menu 的公共契约由 public/protected 类型成员、Avalonia 属性、事件
 | 选择与集合 | `DisplayPageSize`、`IsScrollEnabled` | 维护弹层显示页数上限、滚动开关、选择、展开和集合状态。 |
 | 交互与状态 | `IsMotionEnabled`、`ShouldUseOverlayPopup` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
 | 视觉与布局 | `LineWidth`、`Orientation`、`OverlayHostShadow`、`PopupRootShadow`、`SizeType` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
-| 动效与异步 | `CloseMotion`、`MotionDuration`、`OpenMotion` | 约束动效开关、异步加载、播放速度、超时和任务边界。 |
+| 子菜单/独立浮层动效 | MenuItem 的 `OpenMotion` / `CloseMotion`，ContextMenu / MenuFlyout 的既有同名入口 | 配置所在项或根浮层；Menu 本体不增加整树配置。 |
 
 稳定事件包括 `IsCheckStateChanged`。事件触发顺序属于兼容契约，不能因内部状态重排而改变。
 
@@ -87,6 +87,14 @@ Menu 家族对应用公开基于 Selector 的 Semantic Part 契约，完整定�
   （与上游 horizontal 一致）；子菜单内分组提供 `subMenu.itemTitle` / `subMenu.list`。
 - 用户入口是生成的强类型 Semantic Style（如 `MenuItemStyle`、`MenuSubMenuItemStyle`、`MenuPopupRootStyle`），在 AXAML 中
   作为 `atom|Menu` owner-scoped 普通 Style 的嵌套样式声明，并显式给出 `x:SetterTargetType`。
+
+### 打开与关闭动效配置
+
+MenuItem 对其实际子菜单 Popup 提供 OpenMotion/CloseMotion；ContextMenu、独立 MenuFlyout 使用各自已有入口。Menu 本体不增加控制整棵菜单或全部层级的同名配置。
+
+这些入口的显式 null、主题默认与清除覆盖按[共享配置契约](../../../../architecture/systems/motion/popup-motion.md#3-public-api-与主题覆盖)处理，各层默认保持独立。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
 
 ## 4. 行为与状态模型
 
@@ -213,7 +221,9 @@ Menu 的集合状态必须能处理 source replace、reset、clear 和 container
 
 ### 8.3 动效模型
 
-Menu 的动效只表达状态变化反馈，不应改变 public API 语义。初始加载、禁用态和卸载路径应能抑制或取消动效，避免保留旧控件实例。
+Menu 水平顶层弹层采用固定 SlideUp、MotionDurationMid。独立 Menu 的其他子菜单采用 ZoomBig、MotionDurationMid：LTR 按最终 placement 选角点，RTL 最终原点为右上。ContextMenu/MenuFlyout 根弹层采用 Dropdown 四方向 Slide，其嵌套子菜单采用固定左上原点的 ZoomBig，包含 RTL 和翻转。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ### 8.4 视觉选项模型
 

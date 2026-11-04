@@ -106,6 +106,9 @@ ControlTemplate 和 Avalonia 样式优先级作为实现事实。
 Semantic target，也不改变 cardinality。`ContractType` 使用 `Control`，避免把公共定制契约锁死在 `Avalonia.Svg.Svg`；调用方可以
 安全定制通用布局、尺寸、透明度和变换属性，但不得通过 Semantic Style 接管 `Source`、`Path` 或内置图形配色状态。
 
+同一模板实例摘出再挂回时，图片恢复仍由 Empty 维护，不更换 image target；生成 Style 的定制应持续作用于同一节点。
+图片同步与资源暂缺规则见 [生命周期与模板接入](implementation.md#6-生命周期与模板接入)。
+
 ### 2.3 `description`
 
 `description` marker 静态放置在 `TextBlock`。`Description` 为 `null` 或空字符串时节点仍属于模板结构；
@@ -173,7 +176,8 @@ Semantic target，也不改变 cardinality。`ContractType` 使用 `Control`，�
 | `Footer` 为字符串、Control 或模板化数据 | 1 | 1 | 1 | 1，可见 |
 | Default/Simple/ImagePath/ImageSource | 1 | 1，同一 target | 1 | 1 |
 | Large/Middle/Small | 1 | 1 | 1 | 1 |
-| 模板重套用 | 1 个新 root owner | 1 个新 target | 1 个新 target | 1 个新 target |
+| 同一模板实例摘出再挂回 | 1，同一 owner | 1，同一 target | 1，同一 target | 1，同一 target |
+| 模板重套用 | 1，同一 owner | 1 个新 target | 1 个新 target | 1 个新 target |
 
 Static marker 表达模板职责，内容存在性通过 `IsVisible` 和 Presenter 内容表达。不得为了模拟条件节点而在属性变化时动态创建、删除或
 重新标记 Visual。
@@ -218,6 +222,7 @@ Empty 不提供 Semantic Part Theme 替换，也不跨 VisualRoot。所有非 ro
 - `IsDescriptionVisible` 直接控制 description 节点可见性，模板应用前设置、运行时切换和 re-template 后都正确。
 - Footer 支持 `null`、字符串、Control、`FooterTemplate` 和运行时替换，且旧内容不被 owner 保留。
 - Default、Simple、ImagePath、ImageSource 切换不改变 image marker 身份。
+- 同一模板实例摘挂后图片恢复，生成的专用 Style 仍命中同一 target，不通过代码设置图片节点的样式属性补偿。
 - Large、Middle、Small 的 image 高度、description margin 和 footer margin 使用完整一致的尺寸基线。
 - root 的背景、边框、圆角、Padding 和 `StrokeDashArray` 投影生效，三个生成 Style 在 Application、局部 Styles 与
   owner class scope 中遵循 Avalonia 样式优先级。

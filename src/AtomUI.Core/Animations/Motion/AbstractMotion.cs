@@ -51,7 +51,7 @@ public abstract class AbstractMotion
             ? tokenDuration : TimeSpan.FromMilliseconds(200);
         var requestedDuration = durationOverride ?? Motion.GetDurationOverride(target);
         var duration = requestedDuration ?? Duration ?? defaultDuration;
-        var disabled = !Motion.GetIsEnabled(target) || TokenResourceUtils.FindTokenResource(target, SharedTokenKind.EnableMotion) is false;
+        var disabled = !Motion.IsAnimationEnabled(target);
         if (disabled)
         {
             duration = TimeSpan.Zero;

@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -25,6 +26,12 @@ public abstract class AbstractSelect : TemplatedControl,
                                        IFormItemFeedbackAware
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<AbstractSelect>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<AbstractSelect>();
     public static readonly StyledProperty<bool> IsAllowClearProperty =
         AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsAllowClear));
 
@@ -146,6 +153,18 @@ public abstract class AbstractSelect : TemplatedControl,
         AvaloniaProperty.RegisterDirect<AbstractSelect, bool>(
             nameof(IsLoading),
             o => o.IsLoading);
+
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
 
     public bool IsAllowClear
     {
@@ -407,6 +426,7 @@ public abstract class AbstractSelect : TemplatedControl,
     #endregion
 
     #region 内部属性定义
+
 
     internal static readonly DirectProperty<AbstractSelect, double> ItemHeightProperty =
         AvaloniaProperty.RegisterDirect<AbstractSelect, double>(

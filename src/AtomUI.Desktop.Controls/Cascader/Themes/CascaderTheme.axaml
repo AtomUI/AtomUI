@@ -5,6 +5,8 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Cascader}" TargetType="atom:Cascader">
+        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
+        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -127,6 +129,8 @@
                         </Panel>
                     </atom:CascaderAddOnDecoratedBox>
                     <atom:Popup Name="PART_Popup"
+                                OpenMotion="{TemplateBinding OpenMotion}"
+                                CloseMotion="{TemplateBinding CloseMotion}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="True"
                                 OverlayDismissEventPassThrough="True"
@@ -275,7 +279,7 @@
                 <antdicons:LoadingOutlined LoadingAnimation="Spin" />
             </atom:IconTemplate>
         </Setter>
-        
+
         <Style Selector="^:disabled">
             <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
             <Style Selector="^ /template/ TextBlock#SingleSelectResultPresenter">

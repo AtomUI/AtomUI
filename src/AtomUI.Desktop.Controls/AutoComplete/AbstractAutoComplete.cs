@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -35,7 +36,7 @@ public enum AutoCompletePlacementMode
 }
 
 [PseudoClasses(AutoCompletePseudoClass.CandidatePopupOpen)]
-public abstract class AbstractAutoComplete : TemplatedControl, 
+public abstract class AbstractAutoComplete : TemplatedControl,
                                              ICustomizableSizeTypeAware,
                                              IMotionAwareControl,
                                              IFormItemAware,
@@ -44,22 +45,29 @@ public abstract class AbstractAutoComplete : TemplatedControl,
                                              IFormItemFeedbackAware
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<AbstractAutoComplete>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<AbstractAutoComplete>();
+
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, PathIcon?>(nameof(ClearIcon));
-    
+
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractAutoComplete>();
-    
+
     public static readonly StyledProperty<int> CaretIndexProperty =
         AvaloniaTextBox.CaretIndexProperty.AddOwner<AbstractAutoComplete>(new(
             defaultValue: 0,
             defaultBindingMode: BindingMode.TwoWay));
-    
+
     public static readonly StyledProperty<int> MinimumPrefixLengthProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, int>(
             nameof(MinimumPrefixLength), 1,
             validate: IsValidMinimumPrefixLength);
-    
+
     public static readonly StyledProperty<TimeSpan> AsyncLoadDebounceProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, TimeSpan>(
             nameof(AsyncLoadDebounce),
@@ -70,88 +78,88 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         AvaloniaProperty.Register<AbstractAutoComplete, TimeSpan>(
             nameof(AsyncLoadTimeout),
             TimeSpan.FromSeconds(10));
-    
+
     public static readonly StyledProperty<int> MaxLengthProperty =
         AvaloniaTextBox.MaxLengthProperty.AddOwner<AbstractAutoComplete>();
-    
+
     public static readonly StyledProperty<string?> ValueProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, string?>(nameof(Value));
-    
+
     public static readonly StyledProperty<bool> IsAllowClearProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, bool>(nameof(IsAllowClear));
 
     public static readonly StyledProperty<bool> IsAutoFocusProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, bool>(nameof(IsAutoFocus));
-    
+
     public static readonly StyledProperty<string?> DefaultValueProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, string?>(nameof(DefaultValue));
-    
-    public static readonly StyledProperty<int> DisplayCandidateCountProperty = 
+
+    public static readonly StyledProperty<int> DisplayCandidateCountProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, int>(nameof (DisplayCandidateCount), 10);
-    
+
     public static readonly StyledProperty<object?> ContentLeftAddOnProperty =
         AddOnDecoratedBox.ContentLeftAddOnProperty.AddOwner<AbstractAutoComplete>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> ContentLeftAddOnTemplateProperty =
         AddOnDecoratedBox.ContentLeftAddOnTemplateProperty.AddOwner<AbstractAutoComplete>();
 
     public static readonly StyledProperty<object?> ContentRightAddOnProperty =
         AddOnDecoratedBox.ContentRightAddOnProperty.AddOwner<AbstractAutoComplete>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> ContentRightAddOnTemplateProperty =
         AddOnDecoratedBox.ContentRightAddOnTemplateProperty.AddOwner<AbstractAutoComplete>();
-    
+
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
         InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<AbstractAutoComplete>();
 
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<AbstractAutoComplete>();
-    
+
     public static readonly StyledProperty<string?> PlaceholderTextProperty =
         TextBox.PlaceholderTextProperty.AddOwner<AbstractAutoComplete>();
-    
+
     public static readonly StyledProperty<IBrush?> PlaceholderForegroundProperty =
         TextBox.PlaceholderForegroundProperty.AddOwner<AbstractAutoComplete>();
-    
+
     public static readonly StyledProperty<IEnumerable<IAutoCompleteOption>?> OptionsSourceProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, IEnumerable<IAutoCompleteOption>?>(nameof(OptionsSource));
-    
+
     public static readonly StyledProperty<IDataTemplate?> OptionTemplateProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, IDataTemplate?>(nameof(OptionTemplate));
-    
-    public static readonly StyledProperty<bool> IsMotionEnabledProperty = 
+
+    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractAutoComplete>();
-    
+
     public static readonly DirectProperty<AbstractAutoComplete, bool> IsLoadingProperty =
         AvaloniaProperty.RegisterDirect<AbstractAutoComplete, bool>(
             nameof(IsLoading),
             o => o.IsLoading);
-    
+
     public static readonly StyledProperty<bool> IsReadOnlyProperty =
         AvaloniaTextBox.IsReadOnlyProperty.AddOwner<AbstractAutoComplete>();
-    
+
     public static readonly StyledProperty<double> MaxDropDownHeightProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, double>(
             nameof(MaxDropDownHeight),
             double.PositiveInfinity,
             validate: IsValidMaxDropDownHeight);
-    
+
     public static readonly StyledProperty<IValueFilter?> FilterProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, IValueFilter?>(nameof(Filter));
-    
+
     public static readonly DirectProperty<AbstractAutoComplete, string?> FilterValueProperty =
         AvaloniaProperty.RegisterDirect<AbstractAutoComplete, string?>(
             nameof(FilterValue),
             o => o.FilterValue,
             unsetValue: string.Empty);
-    
+
     public static readonly StyledProperty<DefaultFilterValueSelector?> FilterValueSelectorProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, DefaultFilterValueSelector?>(
             nameof(FilterValueSelector));
-    
+
     public static readonly StyledProperty<ICompleteOptionsAsyncLoader?> OptionsAsyncLoaderProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, ICompleteOptionsAsyncLoader?>(nameof(OptionsAsyncLoader));
-    
+
     public static readonly StyledProperty<bool> IsDropDownOpenProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, bool>(
             nameof(IsDropDownOpen));
@@ -161,44 +169,62 @@ public abstract class AbstractAutoComplete : TemplatedControl,
 
     public static readonly StyledProperty<AutoCompletePlacementMode> PlacementProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, AutoCompletePlacementMode>(nameof(Placement), AutoCompletePlacementMode.Bottom);
-    
+
     public static readonly StyledProperty<bool> IsCompletionEnabledProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, bool>(
             nameof(IsCompletionEnabled));
-    
+
     public static readonly StyledProperty<IAutoCompleteOption?> SelectedOptionProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, IAutoCompleteOption?>(
             nameof(SelectedOption),
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
-    
+
     public static readonly StyledProperty<bool> ClearSelectionOnLostFocusProperty =
         AvaloniaTextBox.ClearSelectionOnLostFocusProperty.AddOwner<AbstractAutoComplete>();
-    
+
     public static readonly StyledProperty<bool> IsPopupMatchSelectWidthProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, bool>(nameof(IsPopupMatchSelectWidth), true);
 
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, bool>(nameof(ShouldUseOverlayPopup), true);
-    
+
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
+
     public PathIcon? ClearIcon
     {
         get => GetValue(ClearIconProperty);
         set => SetValue(ClearIconProperty, value);
     }
-    
+
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
-    
+
     public int CaretIndex
     {
         get => GetValue(CaretIndexProperty);
         set => SetValue(CaretIndexProperty, value);
     }
-    
+
+    public int MinimumPrefixLength
+    {
+        get => GetValue(MinimumPrefixLengthProperty);
+        set => SetValue(MinimumPrefixLengthProperty, value);
+    }
+
     public TimeSpan AsyncLoadDebounce
     {
         get => GetValue(AsyncLoadDebounceProperty);
@@ -210,55 +236,49 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         get => GetValue(AsyncLoadTimeoutProperty);
         set => SetValue(AsyncLoadTimeoutProperty, value);
     }
-    
-    public int MinimumPrefixLength
-    {
-        get => GetValue(MinimumPrefixLengthProperty);
-        set => SetValue(MinimumPrefixLengthProperty, value);
-    }
-    
+
     public int MaxLength
     {
         get => GetValue(MaxLengthProperty);
         set => SetValue(MaxLengthProperty, value);
     }
-    
+
     public string? Value
     {
         get => GetValue(ValueProperty);
         set => SetValue(ValueProperty, value);
     }
-    
+
     public bool IsAllowClear
     {
         get => GetValue(IsAllowClearProperty);
         set => SetValue(IsAllowClearProperty, value);
     }
-    
-    public string? DefaultValue
-    {
-        get => GetValue(DefaultValueProperty);
-        set => SetValue(DefaultValueProperty, value);
-    }
-        
-    public int DisplayCandidateCount
-    {
-        get => GetValue(DisplayCandidateCountProperty);
-        set => SetValue(DisplayCandidateCountProperty, value);
-    }
-    
+
     public bool IsAutoFocus
     {
         get => GetValue(IsAutoFocusProperty);
         set => SetValue(IsAutoFocusProperty, value);
     }
-    
+
+    public string? DefaultValue
+    {
+        get => GetValue(DefaultValueProperty);
+        set => SetValue(DefaultValueProperty, value);
+    }
+
+    public int DisplayCandidateCount
+    {
+        get => GetValue(DisplayCandidateCountProperty);
+        set => SetValue(DisplayCandidateCountProperty, value);
+    }
+
     public object? ContentLeftAddOn
     {
         get => GetValue(ContentLeftAddOnProperty);
         set => SetValue(ContentLeftAddOnProperty, value);
     }
-    
+
     public IDataTemplate? ContentLeftAddOnTemplate
     {
         get => GetValue(ContentLeftAddOnTemplateProperty);
@@ -270,13 +290,13 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         get => GetValue(ContentRightAddOnProperty);
         set => SetValue(ContentRightAddOnProperty, value);
     }
-    
+
     public IDataTemplate? ContentRightAddOnTemplate
     {
         get => GetValue(ContentRightAddOnTemplateProperty);
         set => SetValue(ContentRightAddOnTemplateProperty, value);
     }
-    
+
     public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
@@ -288,7 +308,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
     }
-    
+
     public string? PlaceholderText
     {
         get => GetValue(PlaceholderTextProperty);
@@ -300,32 +320,26 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         get => GetValue(PlaceholderForegroundProperty);
         set => SetValue(PlaceholderForegroundProperty, value);
     }
-    
+
     public IEnumerable<IAutoCompleteOption>? OptionsSource
     {
         get => GetValue(OptionsSourceProperty);
         set => SetValue(OptionsSourceProperty, value);
     }
-    
+
     [InheritDataTypeFromItems(nameof(OptionsSource))]
     public IDataTemplate? OptionTemplate
     {
         get => GetValue(OptionTemplateProperty);
         set => SetValue(OptionTemplateProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
-    public double MaxDropDownHeight
-    {
-        get => GetValue(MaxDropDownHeightProperty);
-        set => SetValue(MaxDropDownHeightProperty, value);
-    }
-    
+
     private bool _isLoading;
 
     public bool IsLoading
@@ -333,20 +347,29 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         get => _isLoading;
         internal set => SetAndRaise(IsLoadingProperty, ref _isLoading, value);
     }
-    
+
     public bool IsReadOnly
     {
         get => GetValue(IsReadOnlyProperty);
         set => SetValue(IsReadOnlyProperty, value);
     }
-    
+
+    public double MaxDropDownHeight
+    {
+        get => GetValue(MaxDropDownHeightProperty);
+        set => SetValue(MaxDropDownHeightProperty, value);
+    }
+
     public IValueFilter? Filter
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);
     }
-    
+
     private string? _filterValue;
+
+    private bool _allowWrite;
+
     public string? FilterValue
     {
         get => _filterValue;
@@ -363,19 +386,19 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             }
         }
     }
-    
+
     public DefaultFilterValueSelector? FilterValueSelector
     {
         get => GetValue(FilterValueSelectorProperty);
         set => SetValue(FilterValueSelectorProperty, value);
     }
-    
+
     public ICompleteOptionsAsyncLoader? OptionsAsyncLoader
     {
         get => GetValue(OptionsAsyncLoaderProperty);
         set => SetValue(OptionsAsyncLoaderProperty, value);
     }
-    
+
     public bool IsDropDownOpen
     {
         get => GetValue(IsDropDownOpenProperty);
@@ -391,31 +414,31 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         get => GetValue(IsPopupPinnedOpenProperty);
         set => SetValue(IsPopupPinnedOpenProperty, value);
     }
-    
+
     public AutoCompletePlacementMode Placement
     {
         get => GetValue(PlacementProperty);
         set => SetValue(PlacementProperty, value);
     }
-    
+
     public bool IsCompletionEnabled
     {
         get => GetValue(IsCompletionEnabledProperty);
         set => SetValue(IsCompletionEnabledProperty, value);
     }
-    
+
     public IAutoCompleteOption? SelectedOption
     {
         get => GetValue(SelectedOptionProperty);
         set => SetValue(SelectedOptionProperty, value);
     }
-    
+
     public bool ClearSelectionOnLostFocus
     {
         get => GetValue(ClearSelectionOnLostFocusProperty);
         set => SetValue(ClearSelectionOnLostFocusProperty, value);
     }
-    
+
     public bool IsPopupMatchSelectWidth
     {
         get => GetValue(IsPopupMatchSelectWidthProperty);
@@ -429,148 +452,9 @@ public abstract class AbstractAutoComplete : TemplatedControl,
     }
 
     public ItemsSourceView OptionsView => ItemsSourceView.GetOrCreate(_options);
-    
-    [Content] 
+
+    [Content]
     public ItemCollection Options => _options;
-    
-    #endregion
-
-    #region 公共事件定义
-    
-    public static readonly RoutedEvent<CompleteValueChangedEventArgs> ValueChangedEvent =
-        RoutedEvent.Register<AbstractAutoComplete, CompleteValueChangedEventArgs>(
-            nameof(ValueChanged),
-            RoutingStrategies.Bubble);
-    
-    public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
-        RoutedEvent.Register<SelectionChangedEventArgs>(
-            nameof(SelectionChanged),
-            RoutingStrategies.Bubble,
-            typeof(AbstractAutoComplete));
-    
-    public event EventHandler<CompleteValueChangedEventArgs>? ValueChanged
-    {
-        add => AddHandler(ValueChangedEvent, value);
-        remove => RemoveHandler(ValueChangedEvent, value);
-    }
-    
-    public event EventHandler<SelectionChangedEventArgs> SelectionChanged
-    {
-        add => AddHandler(SelectionChangedEvent, value);
-        remove => RemoveHandler(SelectionChangedEvent, value);
-    }
-    
-    public event EventHandler<CompleteOptionsLoadedEventArgs>? OptionsLoaded;
-    public event EventHandler<CompletePopulatingEventArgs>? Populating;
-    public event EventHandler<CompletePopulatedEventArgs>? Populated;
-    public event EventHandler<CancelEventArgs>? DropDownOpening;
-    public event EventHandler? DropDownOpened;
-    public event EventHandler<CancelEventArgs>? DropDownClosing;
-    public event EventHandler? DropDownClosed;
-    
-    #endregion
-
-    #region 内部属性定义
-    
-    internal static readonly DirectProperty<AbstractAutoComplete, double> ItemHeightProperty =
-        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
-            nameof(ItemHeight),
-            o => o.ItemHeight,
-            (o, v) => o.ItemHeight = v);
-    
-    internal static readonly DirectProperty<AbstractAutoComplete, double> MaxPopupHeightProperty =
-        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
-            nameof(MaxPopupHeight),
-            o => o.MaxPopupHeight,
-            (o, v) => o.MaxPopupHeight = v);
-    
-    internal static readonly DirectProperty<AbstractAutoComplete, double> MinPopupWidthProperty =
-        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
-            nameof(MinPopupWidth),
-            o => o.MinPopupWidth,
-            (o, v) => o.MinPopupWidth = v);
-    
-    internal static readonly DirectProperty<AbstractAutoComplete, double> EffectivePopupWidthProperty =
-        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
-            nameof(EffectivePopupWidth),
-            o => o.EffectivePopupWidth,
-            (o, v) => o.EffectivePopupWidth = v);
-    
-    internal static readonly DirectProperty<AbstractAutoComplete, Thickness> PopupContentPaddingProperty =
-        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, Thickness>(nameof(PopupContentPadding),
-            o => o.PopupContentPadding,
-            (o, v) => o.PopupContentPadding = v);
-    
-    internal static readonly DirectProperty<AbstractAutoComplete, PlacementMode> PopupPlacementProperty =
-        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, PlacementMode>(nameof(PopupPlacement),
-            o => o.PopupPlacement,
-            (o, v) => o.PopupPlacement = v);
-    
-    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty = 
-        AvaloniaProperty.Register<AbstractAutoComplete, FormValidateFeedback?>(nameof(FormFeedback));
-
-    internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
-        InputControlState.FormStatusProperty.AddOwner<AbstractAutoComplete>();
-
-    private double _itemHeight;
-
-    internal double ItemHeight
-    {
-        get => _itemHeight;
-        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
-    }
-    
-    private double _maxPopupHeight;
-
-    internal double MaxPopupHeight
-    {
-        get => _maxPopupHeight;
-        set => SetAndRaise(MaxPopupHeightProperty, ref _maxPopupHeight, value);
-    }
-    
-    private double _minPopupWidth;
-
-    internal double MinPopupWidth
-    {
-        get => _minPopupWidth;
-        set => SetAndRaise(MinPopupWidthProperty, ref _minPopupWidth, value);
-    }
-    
-    private double _effectivePopupWidth;
-
-    internal double EffectivePopupWidth
-    {
-        get => _effectivePopupWidth;
-        set => SetAndRaise(EffectivePopupWidthProperty, ref _effectivePopupWidth, value);
-    }
-    
-    private Thickness _popupContentPadding;
-
-    internal Thickness PopupContentPadding
-    {
-        get => _popupContentPadding;
-        set => SetAndRaise(PopupContentPaddingProperty, ref _popupContentPadding, value);
-    }
-
-    private PlacementMode _placementMode;
-
-    internal PlacementMode PopupPlacement
-    {
-        get => _placementMode;
-        set => SetAndRaise(PopupPlacementProperty, ref _placementMode, value);
-    }
-    
-    internal FormValidateFeedback? FormFeedback
-    {
-        get => GetValue(FormFeedbackProperty);
-        set => SetValue(FormFeedbackProperty, value);
-    }
-
-    internal FormValidateStatus FormStatus
-    {
-        get => GetValue(FormStatusProperty);
-        private set => SetCurrentValue(FormStatusProperty, value);
-    }
 
     protected AvaloniaTextBox? TextInputBox
     {
@@ -595,31 +479,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             }
         }
     }
-    
-    private int TextInputBoxSelectionStart
-    {
-        get
-        {
-            if (TextInputBox != null)
-            {
-                return Math.Min(TextInputBox.SelectionStart, TextInputBox.SelectionEnd);
-            }
-            return 0;
-        }
-    }
-    
-    private int TextInputBoxSelectionLength
-    {
-        get
-        {
-            if (TextInputBox != null)
-            {
-                return Math.Abs(TextInputBox.SelectionEnd - TextInputBox.SelectionStart);
-            }
-            return 0;
-        }
-    }
-    
+
     protected ICandidateList? CandidateList
     {
         get => _candidateList;
@@ -644,31 +504,207 @@ public abstract class AbstractAutoComplete : TemplatedControl,
     }
 
     #endregion
-    
+
+    #region 公共事件定义
+
+    public static readonly RoutedEvent<CompleteValueChangedEventArgs> ValueChangedEvent =
+        RoutedEvent.Register<AbstractAutoComplete, CompleteValueChangedEventArgs>(
+            nameof(ValueChanged),
+            RoutingStrategies.Bubble);
+
+    public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
+        RoutedEvent.Register<SelectionChangedEventArgs>(
+            nameof(SelectionChanged),
+            RoutingStrategies.Bubble,
+            typeof(AbstractAutoComplete));
+
+    public event EventHandler<CompleteValueChangedEventArgs>? ValueChanged
+    {
+        add => AddHandler(ValueChangedEvent, value);
+        remove => RemoveHandler(ValueChangedEvent, value);
+    }
+
+    public event EventHandler<SelectionChangedEventArgs> SelectionChanged
+    {
+        add => AddHandler(SelectionChangedEvent, value);
+        remove => RemoveHandler(SelectionChangedEvent, value);
+    }
+
+    public event EventHandler<CompleteOptionsLoadedEventArgs>? OptionsLoaded;
+
+    public event EventHandler<CompletePopulatingEventArgs>? Populating;
+
+    public event EventHandler<CompletePopulatedEventArgs>? Populated;
+
+    public event EventHandler<CancelEventArgs>? DropDownOpening;
+
+    public event EventHandler? DropDownOpened;
+
+    public event EventHandler<CancelEventArgs>? DropDownClosing;
+
+    public event EventHandler? DropDownClosed;
+
+    #endregion
+
+    #region 内部属性定义
+
+
+    internal static readonly DirectProperty<AbstractAutoComplete, double> ItemHeightProperty =
+        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
+            nameof(ItemHeight),
+            o => o.ItemHeight,
+            (o, v) => o.ItemHeight = v);
+
+    internal static readonly DirectProperty<AbstractAutoComplete, double> MaxPopupHeightProperty =
+        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
+            nameof(MaxPopupHeight),
+            o => o.MaxPopupHeight,
+            (o, v) => o.MaxPopupHeight = v);
+
+    internal static readonly DirectProperty<AbstractAutoComplete, double> MinPopupWidthProperty =
+        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
+            nameof(MinPopupWidth),
+            o => o.MinPopupWidth,
+            (o, v) => o.MinPopupWidth = v);
+
+    internal static readonly DirectProperty<AbstractAutoComplete, double> EffectivePopupWidthProperty =
+        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
+            nameof(EffectivePopupWidth),
+            o => o.EffectivePopupWidth,
+            (o, v) => o.EffectivePopupWidth = v);
+
+    internal static readonly DirectProperty<AbstractAutoComplete, Thickness> PopupContentPaddingProperty =
+        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, Thickness>(nameof(PopupContentPadding),
+            o => o.PopupContentPadding,
+            (o, v) => o.PopupContentPadding = v);
+
+    internal static readonly DirectProperty<AbstractAutoComplete, PlacementMode> PopupPlacementProperty =
+        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, PlacementMode>(nameof(PopupPlacement),
+            o => o.PopupPlacement,
+            (o, v) => o.PopupPlacement = v);
+
+    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
+        AvaloniaProperty.Register<AbstractAutoComplete, FormValidateFeedback?>(nameof(FormFeedback));
+
+    internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
+        InputControlState.FormStatusProperty.AddOwner<AbstractAutoComplete>();
+
+    private double _itemHeight;
+
+    internal double ItemHeight
+    {
+        get => _itemHeight;
+        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
+    }
+
+    private double _maxPopupHeight;
+
+    internal double MaxPopupHeight
+    {
+        get => _maxPopupHeight;
+        set => SetAndRaise(MaxPopupHeightProperty, ref _maxPopupHeight, value);
+    }
+
+    private double _minPopupWidth;
+
+    internal double MinPopupWidth
+    {
+        get => _minPopupWidth;
+        set => SetAndRaise(MinPopupWidthProperty, ref _minPopupWidth, value);
+    }
+
+    private double _effectivePopupWidth;
+
+    internal double EffectivePopupWidth
+    {
+        get => _effectivePopupWidth;
+        set => SetAndRaise(EffectivePopupWidthProperty, ref _effectivePopupWidth, value);
+    }
+
+    private Thickness _popupContentPadding;
+
+    internal Thickness PopupContentPadding
+    {
+        get => _popupContentPadding;
+        set => SetAndRaise(PopupContentPaddingProperty, ref _popupContentPadding, value);
+    }
+
+    private PlacementMode _placementMode;
+
+    internal PlacementMode PopupPlacement
+    {
+        get => _placementMode;
+        set => SetAndRaise(PopupPlacementProperty, ref _placementMode, value);
+    }
+
+    internal FormValidateFeedback? FormFeedback
+    {
+        get => GetValue(FormFeedbackProperty);
+        set => SetValue(FormFeedbackProperty, value);
+    }
+
+    internal FormValidateStatus FormStatus
+    {
+        get => GetValue(FormStatusProperty);
+        private set => SetCurrentValue(FormStatusProperty, value);
+    }
+
+    #endregion
+
+    #region 运行时字段
+
     private readonly ItemCollection _options = new();
+
     private protected DispatcherTimer? _delayTimer;
+
     private protected AvaloniaTextBox? _textInputBox;
+
     private protected IList<IAutoCompleteOption>? _view;
+
     private protected ICandidateList? _candidateList;
+
     private protected Popup? _popup;
+
     private protected bool _ignorePopupClose;
-    private bool _allowWrite;
+
     private bool _cancelRequested;
+
     private bool _filterInAction;
+
     private int _ignoreValuePropertyChange;
+
     private bool _ignorePropertyChange;
+
     private bool _popupHasOpened;
+
     private int _textSelectionStart;
+
     private CompositeDisposable? _subscriptionsOnOpen;
+
     private readonly AsyncSearchLoadCoordinator<string?, CompleteOptionsLoadResult> _asyncLoadCoordinator = new();
+
     private IDisposable? _textInputBoxSubscriptions;
+
     private bool _userCalledPopulate;
+
     private bool _ignoreTextSelectionChange;
+
     private bool _skipSelectedOptionTextUpdate;
+
     private bool _isFocused;
+
     private IDisposable? _deactivationSubscription;
+
     private IDisposable? _popupPinnedOpenBinding;
+
     private int _popupLifecycleCloseDepth;
+
+    private EventHandler? _formValueChanged;
+
+    #endregion
+
+    #region 构造函数
+
     static AbstractAutoComplete()
     {
         IsTabStopProperty.OverrideDefaultValue<AbstractAutoComplete>(false);
@@ -687,6 +723,10 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         Options.CollectionChanged += HandleOptionsChanged;
     }
 
+    #endregion
+
+    #region 控件 API
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -702,7 +742,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         base.OnGotFocus(e);
         FocusChanged(HasFocus());
     }
-    
+
     protected override void OnLostFocus(FocusChangedEventArgs e)
     {
         base.OnLostFocus(e);
@@ -720,10 +760,6 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         else if (change.Property == IsPopupMatchSelectWidthProperty)
         {
             ConfigurePopupMinWith(DesiredSize.Width);
-        }
-        else if (change.Property == PopupPlacementProperty)
-        {
-            ConfigurePopupMotion();
         }
         else if (change.Property == IsPopupPinnedOpenProperty)
         {
@@ -745,85 +781,8 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         MaxPopupHeight = ItemHeight * DisplayCandidateCount + PopupContentPadding.Top + PopupContentPadding.Bottom;
     }
 
-    private void ConfigurePopupMotion()
-    {
-        if (_popup == null)
-        {
-            return;
-        }
-
-        var (openMotion, closeMotion) = PopupUtils.CreateMotionForPlacement(PopupPlacement);
-        _popup.OpenMotion  = openMotion;
-        _popup.CloseMotion = closeMotion;
-    }
-
     protected bool HasFocus() => IsKeyboardFocusWithin;
-    
-    private void FocusChanged(bool hasFocus)
-    {
-        // The OnGotFocus & OnLostFocus are asynchronously and cannot
-        // reliably tell you that have the focus.  All they do is let you
-        // know that the focus changed sometime in the past.  To determine
-        // if you currently have the focus you need to do consult the
-        // FocusManager (see HasFocus()).
-        
-        bool wasFocused = _isFocused;
-        _isFocused = hasFocus;
-        
-        if (hasFocus)
-        {
-        
-            if (!wasFocused && TextInputBox != null && TextInputBoxSelectionLength <= 0)
-            {
-                TextInputBox.Focus();
-                TextInputBox.SelectAll();
-            }
-        }
-        else
-        {
-            // Check if we still have focus in the parent's focus scope
-            if (GetFocusScope() is { } scope &&
-                (FocusManagerReflectionExtensions.GetFocusManager(this)?.GetFocusedElement(scope) is not { } focused ||
-                 (focused != this &&
-                  (focused is Visual v && !this.IsVisualAncestorOf(v)))))
-            {
-                SetCurrentValue(IsDropDownOpenProperty, false);
-            }
-        
-            _userCalledPopulate = false;
-        
-            var textInputBoxContextMenuIsOpen = TextInputBox?.ContextFlyout?.IsOpen == true || TextInputBox?.ContextMenu?.IsOpen == true;
-            var contextMenuIsOpen = ContextFlyout?.IsOpen == true || ContextMenu?.IsOpen == true;
-        
-            if (!textInputBoxContextMenuIsOpen && !contextMenuIsOpen && ClearSelectionOnLostFocus)
-            {
-                ClearTextInputBoxSelection();
-            }
-        }
-        
-        _isFocused = hasFocus;
-        
-        IFocusScope? GetFocusScope()
-        {
-            IInputElement? c = this;
-        
-            while (c != null)
-            {
-                if (c is IFocusScope scope &&
-                    c is Visual v &&
-                    TopLevel.GetTopLevel(v) is Visual root &&
-                    root.IsVisible)
-                {
-                    return scope;
-                }
-        
-                c = (c as Visual)?.GetVisualParent<IInputElement>();
-            }
-        
-            return null;
-        }
-    }
-    
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         _ = e ?? throw new ArgumentNullException(nameof(e));
@@ -886,7 +845,361 @@ public abstract class AbstractAutoComplete : TemplatedControl,
                 break;
         }
     }
-    
+
+    protected virtual void NotifyPopulating(CompletePopulatingEventArgs e)
+    {
+        IsLoading = true;
+        Populating?.Invoke(this, e);
+    }
+
+    protected virtual void NotifyPopulated(CompletePopulatedEventArgs e)
+    {
+        IsLoading = false;
+        Populated?.Invoke(this, e);
+    }
+
+    protected void ClearView()
+    {
+        _view = null;
+    }
+
+    protected virtual void NotifyDropDownOpening(CancelEventArgs eventArgs)
+    {
+        DropDownOpening?.Invoke(this, eventArgs);
+    }
+
+    protected virtual void NotifyDropDownOpened(EventArgs eventArgs)
+    {
+        DropDownOpened?.Invoke(this, eventArgs);
+    }
+
+    protected virtual void NotifyDropDownClosing(CancelEventArgs eventArgs)
+    {
+        DropDownClosing?.Invoke(this, eventArgs);
+    }
+
+    protected virtual void NotifyDropDownClosed(EventArgs eventArgs)
+    {
+        DropDownClosed?.Invoke(this, eventArgs);
+    }
+
+    protected virtual void NotifyValueChanged(CompleteValueChangedEventArgs eventArgs)
+    {
+        RaiseEvent(eventArgs);
+    }
+
+    protected virtual void NotifySelectionChanged(SelectionChangedEventArgs e)
+    {
+        RaiseEvent(e);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+
+        if (_popup != null)
+        {
+            _popupPinnedOpenBinding?.Dispose();
+            _popupPinnedOpenBinding = null;
+            _popup.Opened -= HandlePopupOpened;
+            _popup.Closed -= HandlePopupClosed;
+        }
+
+        TextInputBox       = e.NameScope.Find<AvaloniaTextBox>(AutoCompleteThemeConstants.TextBoxPart);
+        _popup        = e.NameScope.Find<Popup>(AutoCompleteThemeConstants.PopupPart);
+        CandidateList = e.NameScope.Find<ICandidateList>(AutoCompleteThemeConstants.CandidateListPart);
+
+        if (_popup != null)
+        {
+            _popupPinnedOpenBinding = BindUtils.RelayBind(
+                this,
+                IsPopupPinnedOpenProperty,
+                _popup,
+                Popup.IsPopupPinnedOpenProperty);
+            _popup.Opened              += HandlePopupOpened;
+            _popup.Closed              += HandlePopupClosed;
+            _popup.OverlayInputPassThroughElement = TextInputBox;
+        }
+
+        // If the drop down property indicates that the popup is open,
+        // flip its value to invoke the changed handler.
+        if (IsDropDownOpen && _popup != null && !_popup.IsOpen)
+        {
+            OpeningDropDown(false);
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _deactivationSubscription =
+            TopLevelDeactivation.Subscribe(TopLevel.GetTopLevel(this), HandleWindowDeactivated);
+        if (IsPopupPinnedOpen && !IsDropDownOpen)
+        {
+            SetCurrentValue(IsDropDownOpenProperty, true);
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _popupLifecycleCloseDepth++;
+        try
+        {
+            SetCurrentValue(IsDropDownOpenProperty, false);
+            _popup?.CloseForLifecycle();
+        }
+        finally
+        {
+            _popupLifecycleCloseDepth--;
+        }
+
+        base.OnDetachedFromVisualTree(e);
+        _deactivationSubscription?.Dispose();
+        _deactivationSubscription = null;
+    }
+
+    protected virtual void HandleTextInputBoxTextChanged()
+    {
+        //Uses Dispatcher.Post to allow the TextInputBox selection to update before processing
+        Dispatcher.Post(() =>
+        {
+            // Call the central updated text method as a user-initiated action
+            HandleValueUpdated(_textInputBox!.Text, true);
+            if (TextInputBox != null && string.IsNullOrWhiteSpace(TextInputBox.Text))
+            {
+                ClearView();
+            }
+        });
+    }
+
+    private protected virtual void HandleCandidateListComplete(object? sender, RoutedEventArgs e)
+    {
+        SetCurrentValue(SelectedOptionProperty, _candidateList!.SelectedItem);
+        SetCurrentValue(IsDropDownOpenProperty, false);
+        // Text should not be selected
+        ClearTextInputBoxSelection();
+        TextInputBox!.Focus();
+    }
+
+    protected virtual void ConfigurePopupMinWith(double selectWidth)
+    {
+        if (IsPopupMatchSelectWidth)
+        {
+            SetCurrentValue(EffectivePopupWidthProperty, selectWidth);
+        }
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+
+        if(!e.Handled && e.Source is Visual source)
+        {
+            if (_popup?.IsInsidePopup(source) == true)
+            {
+                e.Handled = true;
+                return;
+            }
+        }
+        if (IsDropDownOpen)
+        {
+            // When a drop-down is open with OverlayDismissEventPassThrough enabled and the control
+            // is pressed, close the drop-down
+            if (e.Source is Control sourceControl)
+            {
+                var textInputBox = sourceControl.FindAncestorOfType<AvaloniaTextBox>();
+                if (textInputBox != null)
+                {
+                    _ignorePopupClose = true;
+                    e.Handled         = true;
+                    return;
+                }
+            }
+            else
+            {
+                SetCurrentValue(IsDropDownOpenProperty, false);
+                e.Handled = true;
+            }
+
+            e.Handled = true;
+        }
+        else
+        {
+            PseudoClasses.Set(StdPseudoClass.Pressed, true);
+            e.Handled = true;
+        }
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        if (!e.Handled && e.Source is Visual source)
+        {
+            if (_popup?.IsInsidePopup(source) == true)
+            {
+                e.Handled = true;
+            }
+            else if (PseudoClasses.Contains(StdPseudoClass.Pressed))
+            {
+                if (IsDropDownOpen)
+                {
+                    SetCurrentValue(IsDropDownOpenProperty, false);
+                }
+                else if (_view?.Count > 0)
+                {
+                    _ignorePropertyChange = true;
+                    SetCurrentValue(IsDropDownOpenProperty, true);
+                    OpeningDropDown(false);
+                }
+
+                e.Handled = true;
+            }
+        }
+
+        PseudoClasses.Set(StdPseudoClass.Pressed, false);
+        base.OnPointerReleased(e);
+    }
+
+    #endregion
+
+    #region 实现 FormItem 接口
+
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+
+    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
+
+    protected virtual void NotifySetFormValue(string? value)
+    {
+        SetCurrentValue(ValueProperty, value);
+    }
+
+    protected virtual string? NotifyGetFormValue()
+    {
+        return Value;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(ValueProperty, null);
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (FormStatus != status)
+        {
+            SetCurrentValue(FormStatusProperty, status);
+        }
+    }
+
+    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
+    {
+        FormFeedback = value;
+    }
+
+    #endregion
+
+    #region 内部实现
+
+    private int TextInputBoxSelectionStart
+    {
+        get
+        {
+            if (TextInputBox != null)
+            {
+                return Math.Min(TextInputBox.SelectionStart, TextInputBox.SelectionEnd);
+            }
+            return 0;
+        }
+    }
+
+    private int TextInputBoxSelectionLength
+    {
+        get
+        {
+            if (TextInputBox != null)
+            {
+                return Math.Abs(TextInputBox.SelectionEnd - TextInputBox.SelectionStart);
+            }
+            return 0;
+        }
+    }
+
+    private void FocusChanged(bool hasFocus)
+    {
+        // The OnGotFocus & OnLostFocus are asynchronously and cannot
+        // reliably tell you that have the focus.  All they do is let you
+        // know that the focus changed sometime in the past.  To determine
+        // if you currently have the focus you need to do consult the
+        // FocusManager (see HasFocus()).
+
+        bool wasFocused = _isFocused;
+        _isFocused = hasFocus;
+
+        if (hasFocus)
+        {
+
+            if (!wasFocused && TextInputBox != null && TextInputBoxSelectionLength <= 0)
+            {
+                TextInputBox.Focus();
+                TextInputBox.SelectAll();
+            }
+        }
+        else
+        {
+            // Check if we still have focus in the parent's focus scope
+            if (GetFocusScope() is { } scope &&
+                (FocusManagerReflectionExtensions.GetFocusManager(this)?.GetFocusedElement(scope) is not { } focused ||
+                 (focused != this &&
+                  (focused is Visual v && !this.IsVisualAncestorOf(v)))))
+            {
+                SetCurrentValue(IsDropDownOpenProperty, false);
+            }
+
+            _userCalledPopulate = false;
+
+            var textInputBoxContextMenuIsOpen = TextInputBox?.ContextFlyout?.IsOpen == true || TextInputBox?.ContextMenu?.IsOpen == true;
+            var contextMenuIsOpen = ContextFlyout?.IsOpen == true || ContextMenu?.IsOpen == true;
+
+            if (!textInputBoxContextMenuIsOpen && !contextMenuIsOpen && ClearSelectionOnLostFocus)
+            {
+                ClearTextInputBoxSelection();
+            }
+        }
+
+        _isFocused = hasFocus;
+
+        IFocusScope? GetFocusScope()
+        {
+            IInputElement? c = this;
+
+            while (c != null)
+            {
+                if (c is IFocusScope scope &&
+                    c is Visual v &&
+                    TopLevel.GetTopLevel(v) is Visual root &&
+                    root.IsVisible)
+                {
+                    return scope;
+                }
+
+                c = (c as Visual)?.GetVisualParent<IInputElement>();
+            }
+
+            return null;
+        }
+    }
+
     private void ClearTextInputBoxSelection()
     {
         if (TextInputBox != null)
@@ -896,7 +1209,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             TextInputBox.SelectionEnd   = length;
         }
     }
-    
+
     private void HandleAsyncLoadDebounceChanged(AvaloniaPropertyChangedEventArgs e)
     {
         var newValue = (TimeSpan)e.NewValue!;
@@ -924,12 +1237,12 @@ public abstract class AbstractAutoComplete : TemplatedControl,
 
         // Update the prefix/search text.
         FilterValue = Value;
-        
+
         if (TryPopulateAsync(FilterValue))
         {
             return;
         }
-        
+
         // The Populated event enables advanced, custom filtering. The
         // client needs to directly update the ItemsSource collection or
         // call the Populate method on the control to continue the
@@ -940,18 +1253,6 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         {
             PopulateComplete();
         }
-    }
-    
-    protected virtual void NotifyPopulating(CompletePopulatingEventArgs e)
-    {
-        IsLoading = true;
-        Populating?.Invoke(this, e);
-    }
-
-    protected virtual void NotifyPopulated(CompletePopulatedEventArgs e)
-    {
-        IsLoading = false;
-        Populated?.Invoke(this, e);
     }
 
     private void HandlePlacementChanged()
@@ -971,7 +1272,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         HandleValueUpdated((string?)e.NewValue, false);
         _formValueChanged?.Invoke(this, EventArgs.Empty);
     }
-    
+
     private void HandleFilterValuePropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
         if (_ignorePropertyChange)
@@ -989,7 +1290,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             throw new InvalidOperationException("Cannot set read-only property FilterValue.");
         }
     }
-    
+
     private void HandleItemsSourceChanged(AvaloniaPropertyChangedEventArgs change)
     {
         // Clear and set the view on the selection adapter
@@ -1002,7 +1303,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
     {
         RefreshView();
     }
-    
+
     private void HandleValueUpdated(string? newText, bool userInitiated)
     {
         // Only process this event if it is coming from someone outside
@@ -1012,9 +1313,9 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             _ignoreValuePropertyChange--;
             return;
         }
-        
+
         newText ??= string.Empty;
-        
+
         // The TextInputBox.TextChanged event was not firing immediately and
         // was causing an immediate update, even with wrapping. If there is
         // a selection currently, no update should happen.
@@ -1022,21 +1323,21 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         {
             return;
         }
-        
+
         // Evaluate the conditions needed for completion.
         // 1. Minimum prefix length
         // 2. If a delay timer is in use, use it
         bool minimumLengthReached = newText.Length >= MinimumPrefixLength && MinimumPrefixLength >= 0;
-        
+
         _userCalledPopulate = minimumLengthReached && userInitiated;
-        
+
         // Update the interface and values only as necessary
         UpdateValue(newText, userInitiated);
-        
+
         if (minimumLengthReached)
         {
             _ignoreTextSelectionChange = true;
-        
+
             if (_delayTimer != null)
             {
                 _delayTimer.Start();
@@ -1053,9 +1354,9 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             {
                 _skipSelectedOptionTextUpdate = true;
             }
-        
+
             SetCurrentValue(SelectedOptionProperty, null);
-        
+
             if (IsDropDownOpen)
             {
                 SetCurrentValue(IsDropDownOpenProperty, false);
@@ -1078,13 +1379,13 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             SetCurrentValue(ValueProperty, value);
             callTextChanged = true;
         }
-        
+
         // Update the TextInputBox's Text dependency property
         if ((userInitiated == null || userInitiated == false) && TextInputBox != null && TextInputBox.Text != value)
         {
             _ignoreValuePropertyChange++;
             TextInputBox.Text = value ?? string.Empty;
-        
+
             // Text dependency property value was set, fire event
             if (!callTextChanged && (Value == value || Value == null))
             {
@@ -1097,12 +1398,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             NotifyValueChanged(new CompleteValueChangedEventArgs(Value, ValueChangedEvent));
         }
     }
-    
-    protected void ClearView()
-    {
-        _view = null;
-    }
-    
+
     private void RefreshView()
     {
         // If we have a running filter, trigger a request first
@@ -1110,23 +1406,23 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         {
             _cancelRequested = true;
         }
-        
+
         // Indicate that filtering is ongoing
         _filterInAction = true;
-        
+
         try
         {
             // Cache the current text value
             var text = Value ?? string.Empty;
-        
+
             // Determine if any filtering mode is on
             bool filtering = Filter != null;
-        
+
             var items = Options;
-        
+
             // cache properties
             var newViewItems = new Collection<IAutoCompleteOption>();
-            
+
             foreach (var item in items)
             {
                 if (item is IAutoCompleteOption option)
@@ -1136,21 +1432,21 @@ public abstract class AbstractAutoComplete : TemplatedControl,
                     {
                         return;
                     }
-        
+
                     var inResults = !filtering;
 
                     if (!inResults)
                     {
                         inResults = Filter?.Filter(GetValueByOption(option), text) ?? true;
                     }
-              
+
                     if (inResults)
                     {
                         newViewItems.Add(option);
                     }
                 }
             }
-            
+
             _view = newViewItems;
             if (_candidateList != null)
             {
@@ -1167,36 +1463,13 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             _cancelRequested = false;
         }
     }
-    
+
     private static bool IsValidMinimumPrefixLength(int value) => value >= -1;
+
     private static bool IsValidAsyncLoadDebounce(TimeSpan value) => value.TotalMilliseconds >= 0.0;
+
     private static bool IsValidMaxDropDownHeight(double value) => value >= 0.0;
 
-    protected virtual void NotifyDropDownOpening(CancelEventArgs eventArgs)
-    {
-        DropDownOpening?.Invoke(this, eventArgs);
-    }
-    
-    protected virtual void NotifyDropDownOpened(EventArgs eventArgs)
-    {
-        DropDownOpened?.Invoke(this, eventArgs);
-    }
-    
-    protected virtual void NotifyDropDownClosing(CancelEventArgs eventArgs)
-    {
-        DropDownClosing?.Invoke(this, eventArgs);
-    }
-
-    protected virtual void NotifyDropDownClosed(EventArgs eventArgs)
-    {
-        DropDownClosed?.Invoke(this, eventArgs);
-    }
-
-    protected virtual void NotifyValueChanged(CompleteValueChangedEventArgs eventArgs)
-    {
-        RaiseEvent(eventArgs);
-    }
-    
     private void HandleIsDropDownOpenChanged(AvaloniaPropertyChangedEventArgs e)
     {
         // Ignore the change if requested
@@ -1234,7 +1507,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
 
         UpdatePseudoClasses();
     }
-    
+
     private void HandleSelectedOptionPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
         if (_ignorePropertyChange)
@@ -1242,7 +1515,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             _ignorePropertyChange = false;
             return;
         }
-    
+
         // Update the text display
         if (_skipSelectedOptionTextUpdate)
         {
@@ -1252,29 +1525,23 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         {
             HandleSelectedOptionChanged(e.NewValue);
         }
-    
+
         // Fire the SelectionChanged event
         var removed = new List<object>(e.OldValue != null ? 1 : 0);
         if (e.OldValue != null)
         {
             removed.Add(e.OldValue);
         }
-    
+
         var added = new List<object>(e.NewValue != null ? 1 : 0);
         if (e.NewValue != null)
         {
             added.Add(e.NewValue);
         }
-    
+
         NotifySelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, removed, added));
     }
-    
-    
-    protected virtual void NotifySelectionChanged(SelectionChangedEventArgs e)
-    {
-        RaiseEvent(e);
-    }
-    
+
     private void ClosingDropDown(bool oldValue)
     {
         var args = new CancelEventArgs();
@@ -1292,7 +1559,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
 
         UpdatePseudoClasses();
     }
-    
+
     private void OpenDropDown()
     {
         if (_popup != null)
@@ -1302,7 +1569,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         _popupHasOpened = true;
         NotifyDropDownOpened(EventArgs.Empty);
     }
-    
+
     private void CloseDropDown()
     {
         if (_popupHasOpened)
@@ -1314,7 +1581,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             NotifyDropDownClosed(EventArgs.Empty);
         }
     }
-    
+
     private void OpeningDropDown(bool oldValue)
     {
         var args = new CancelEventArgs();
@@ -1334,78 +1601,12 @@ public abstract class AbstractAutoComplete : TemplatedControl,
 
         UpdatePseudoClasses();
     }
-    
+
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(AutoCompletePseudoClass.CandidatePopupOpen, IsDropDownOpen);
     }
 
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        
-        if (_popup != null)
-        {
-            _popupPinnedOpenBinding?.Dispose();
-            _popupPinnedOpenBinding = null;
-            _popup.Opened -= HandlePopupOpened;
-            _popup.Closed -= HandlePopupClosed;
-        }
-
-        TextInputBox       = e.NameScope.Find<AvaloniaTextBox>(AutoCompleteThemeConstants.TextBoxPart);
-        _popup        = e.NameScope.Find<Popup>(AutoCompleteThemeConstants.PopupPart);
-        CandidateList = e.NameScope.Find<ICandidateList>(AutoCompleteThemeConstants.CandidateListPart);
-
-        if (_popup != null)
-        {
-            _popupPinnedOpenBinding = BindUtils.RelayBind(
-                this,
-                IsPopupPinnedOpenProperty,
-                _popup,
-                Popup.IsPopupPinnedOpenProperty);
-            _popup.Opened              += HandlePopupOpened;
-            _popup.Closed              += HandlePopupClosed;
-            _popup.OverlayInputPassThroughElement = TextInputBox;
-            ConfigurePopupMotion();
-        }
-        
-        // If the drop down property indicates that the popup is open,
-        // flip its value to invoke the changed handler.
-        if (IsDropDownOpen && _popup != null && !_popup.IsOpen)
-        {
-            OpeningDropDown(false);
-        }
-    }
-    
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        _deactivationSubscription =
-            TopLevelDeactivation.Subscribe(TopLevel.GetTopLevel(this), HandleWindowDeactivated);
-        if (IsPopupPinnedOpen && !IsDropDownOpen)
-        {
-            SetCurrentValue(IsDropDownOpenProperty, true);
-        }
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        _popupLifecycleCloseDepth++;
-        try
-        {
-            SetCurrentValue(IsDropDownOpenProperty, false);
-            _popup?.CloseForLifecycle();
-        }
-        finally
-        {
-            _popupLifecycleCloseDepth--;
-        }
-
-        base.OnDetachedFromVisualTree(e);
-        _deactivationSubscription?.Dispose();
-        _deactivationSubscription = null;
-    }
-    
     private void HandleWindowDeactivated(object? sender, EventArgs e)
     {
         SetCurrentValue(IsDropDownOpenProperty, false);
@@ -1422,7 +1623,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         var selectedItem = TryGetMatch(Value, _view, ValueFilterFactory.BuildFilter(ValueFilterMode.EqualsCaseSensitive));
         CandidateList!.SelectedItem = selectedItem;
     }
-    
+
     private void HandlePopupClosed(object? sender, EventArgs e)
     {
         _subscriptionsOnOpen?.Dispose();
@@ -1440,7 +1641,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         }
         NotifyDropDownClosed(EventArgs.Empty);
     }
-    
+
     private void HandleIsVisibleChanged(bool isVisible)
     {
         if (!isVisible && IsDropDownOpen)
@@ -1448,7 +1649,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             SetCurrentValue(IsDropDownOpenProperty, false);
         }
     }
-    
+
     private void HandleIsEnabledChanged(bool isEnabled)
     {
         if (!isEnabled && IsDropDownOpen)
@@ -1456,21 +1657,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             SetCurrentValue(IsDropDownOpenProperty, false);
         }
     }
-    
-    protected virtual void HandleTextInputBoxTextChanged()
-    {
-        //Uses Dispatcher.Post to allow the TextInputBox selection to update before processing
-        Dispatcher.Post(() =>
-        {
-            // Call the central updated text method as a user-initiated action
-            HandleValueUpdated(_textInputBox!.Text, true);
-            if (TextInputBox != null && string.IsNullOrWhiteSpace(TextInputBox.Text))
-            {
-                ClearView();
-            }
-        });
-    }
-    
+
     private bool TryPopulateAsync(string? filterValue)
     {
         if (OptionsAsyncLoader == null)
@@ -1523,16 +1710,16 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             StatusCode          = statusCode
         }));
     }
-    
+
     private void PopulateComplete()
     {
         // Apply the search filter
         RefreshView();
-        
+
         // Fire the Populated event containing the read-only view data.
         var populated = new CompletePopulatedEventArgs(_view);
         NotifyPopulated(populated);
-        
+
         bool isDropDownOpen = _userCalledPopulate && (_view!.Count > 0);
         if (isDropDownOpen != IsDropDownOpen)
         {
@@ -1550,7 +1737,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
 
         UpdateTextCompletion(_userCalledPopulate);
     }
-    
+
     private void UpdateTextCompletion(bool userInitiated)
     {
         // By default this method will clear the selected value
@@ -1578,13 +1765,13 @@ public abstract class AbstractAutoComplete : TemplatedControl,
                     var top = Filter?.Mode == ValueFilterMode.StartsWith || Filter?.Mode == ValueFilterMode.StartsWithCaseSensitive
                         ? _view[0]
                         : TryGetMatch(value, _view, ValueFilterFactory.BuildFilter(ValueFilterMode.StartsWith));
-                
+
                     // If the search was successful, update SelectedOption
                     if (top != null)
                     {
                         newSelectedItem = top;
                         var topString = (top.Content ?? top.Header ?? top.ItemKey)?.ToString();
-                
+
                         // Only replace partially when the two words being the same
                         int minLength = Math.Min(topString?.Length ?? 0, Value?.Length ?? 0);
                         var isPrefixMatch = Value == null || topString == null
@@ -1613,15 +1800,15 @@ public abstract class AbstractAutoComplete : TemplatedControl,
                 newSelectedItem = TryGetMatch(value, _view, ValueFilterFactory.BuildFilter(ValueFilterMode.EqualsCaseSensitive));
             }
         }
-        
+
         // Update the selected item property
-        
+
         if (SelectedOption != newSelectedItem)
         {
             _skipSelectedOptionTextUpdate = true;
         }
         SetCurrentValue(SelectedOptionProperty, newSelectedItem);
-        
+
         // Restore updates for TextSelection
         if (_ignoreTextSelectionChange)
         {
@@ -1632,7 +1819,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
             }
         }
     }
-    
+
     private IAutoCompleteOption? TryGetMatch(string? filterValue, IList<IAutoCompleteOption>? view, IValueFilter? predicate)
     {
         if (predicate is null)
@@ -1668,7 +1855,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         }
         return value;
     }
-    
+
     private void HandleSelectedOptionChanged(object? newItem)
     {
         string? text = null;
@@ -1683,20 +1870,11 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         }
         // Update the Text property and the TextInputBox values
         UpdateValue(text);
-        
+
         // Move the caret to the end of the text box
         ClearTextInputBoxSelection();
     }
-    
-    private protected virtual void HandleCandidateListComplete(object? sender, RoutedEventArgs e)
-    {
-        SetCurrentValue(SelectedOptionProperty, _candidateList!.SelectedItem);
-        SetCurrentValue(IsDropDownOpenProperty, false);
-        // Text should not be selected
-        ClearTextInputBoxSelection();
-        TextInputBox!.Focus();
-    }
-    
+
     private void HandleCandidateListCanceled(object? sender, RoutedEventArgs e)
     {
         UpdateValue(FilterValue);
@@ -1704,126 +1882,6 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         UpdateTextCompletion(false);
         SetCurrentValue(IsDropDownOpenProperty, false);
     }
-    
-    protected virtual void ConfigurePopupMinWith(double selectWidth)
-    {
-        if (IsPopupMatchSelectWidth)
-        {
-            SetCurrentValue(EffectivePopupWidthProperty, selectWidth);
-        }
-    }
-    
-    protected override void OnPointerPressed(PointerPressedEventArgs e)
-    {
-        base.OnPointerPressed(e);
-        
-        if(!e.Handled && e.Source is Visual source)
-        {
-            if (_popup?.IsInsidePopup(source) == true)
-            {
-                e.Handled = true;
-                return;
-            }
-        }
-        if (IsDropDownOpen)
-        {
-            // When a drop-down is open with OverlayDismissEventPassThrough enabled and the control
-            // is pressed, close the drop-down
-            if (e.Source is Control sourceControl)
-            {
-                var textInputBox = sourceControl.FindAncestorOfType<AvaloniaTextBox>();
-                if (textInputBox != null)
-                {
-                    _ignorePopupClose = true;
-                    e.Handled         = true;
-                    return;
-                }
-            }
-            else
-            {
-                SetCurrentValue(IsDropDownOpenProperty, false); 
-                e.Handled = true;
-            }
 
-            e.Handled = true;
-        }
-        else
-        {
-            PseudoClasses.Set(StdPseudoClass.Pressed, true);
-            e.Handled = true;
-        }
-    }
-    
-    protected override void OnPointerReleased(PointerReleasedEventArgs e)
-    {
-        if (!e.Handled && e.Source is Visual source)
-        {
-            if (_popup?.IsInsidePopup(source) == true)
-            {
-                e.Handled = true;
-            }
-            else if (PseudoClasses.Contains(StdPseudoClass.Pressed))
-            {
-                if (IsDropDownOpen)
-                {
-                    SetCurrentValue(IsDropDownOpenProperty, false);
-                }
-                else if (_view?.Count > 0)
-                {
-                    _ignorePropertyChange = true;
-                    SetCurrentValue(IsDropDownOpenProperty, true);
-                    OpeningDropDown(false);
-                }
-       
-                e.Handled = true;
-            }
-        }
-    
-        PseudoClasses.Set(StdPseudoClass.Pressed, false);
-        base.OnPointerReleased(e);
-    }
-
-    #region 实现 FormItem 接口
-    private EventHandler? _formValueChanged;
-    event EventHandler? IFormItemAware.ValueChanged
-    {
-        add => _formValueChanged += value;
-        remove => _formValueChanged -= value;
-    }
-
-    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
-
-    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
-    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
-    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
-    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
-
-    protected virtual void NotifySetFormValue(string? value)
-    {
-        SetCurrentValue(ValueProperty, value);
-    }
-
-    protected virtual string? NotifyGetFormValue()
-    {
-        return Value;
-    }
-
-    protected virtual void NotifyClearFormValue()
-    {
-        SetCurrentValue(ValueProperty, null);
-    }
-
-    protected virtual void NotifyValidateStatus(FormValidateStatus status)
-    {
-        if (FormStatus != status)
-        {
-            SetCurrentValue(FormStatusProperty, status);
-        }
-    }
-    
-    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
-    {
-        FormFeedback = value;
-    }
     #endregion
 }

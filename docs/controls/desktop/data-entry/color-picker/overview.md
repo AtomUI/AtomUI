@@ -97,6 +97,14 @@ ColorPicker 的公共契约由 public/protected 类型成员、Avalonia 属性�
 
 控件专属或内部伪类包括 `ColorPickerPseudoClass.FlyoutOpen`、`ColorSliderPseudoClass.DarkSelector`、`ColorSliderPseudoClass.LightSelector`、`ColorSpectrumPseudoClass.DarkSelector`、`ColorSpectrumPseudoClass.LargeSelector`、`ColorSpectrumPseudoClass.LightSelector`、`ColorSpectrumPseudoClass.Pressed`、`DarkSelector=:dark-selector`、`FlyoutOpen=:flyout-open`、`LargeSelector=:large-selector`、`LightSelector=:light-selector`、`Pressed=:pressed`。这些伪类属于主题 selector 可观察契约，不能在未同步主题和 Gallery 的情况下重命名或删除。
 
+### 打开与关闭动效配置
+
+AbstractColorPicker 声明 OpenMotion/CloseMotion，两类颜色选择器继承；普通 Button 不因此新增同名 API。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 ColorPicker 的状态流按以下路径收敛：
@@ -219,7 +227,9 @@ ColorPicker 的集合状态必须能处理 source replace、reset、clear 和 co
 
 ### 8.4 动效模型
 
-ColorPicker 的动效只表达状态变化反馈，不应改变 public API 语义。初始加载、禁用态和卸载路径应能抑制或取消动效，避免保留旧控件实例。
+ColorPicker 弹层遵循其 Popover 承载语义：ZoomBig、MotionDurationMid，原点来自实际 alignment 与箭头 Token 偏移，不把所有标准方位统一为居中 Zoom。颜色面板候选与确认模型独立保留。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ### 8.5 视觉选项模型
 

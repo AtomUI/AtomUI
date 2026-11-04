@@ -11,6 +11,8 @@ internal sealed class MotionPlayback
 {
     private static readonly ConditionalWeakTable<Control, TargetState> States = new();
     private static long _nextRequest;
+    private static readonly EventHandler<ResourcesChangedEventArgs> PolicyResourcesChanged = HandleAnimationPolicyChanged;
+    private static readonly EventHandler PolicyThemeChanged = HandleAnimationPolicyChanged;
 
     private readonly TargetState _state;
     private readonly MotionPlan _plan;
@@ -112,6 +114,14 @@ internal sealed class MotionPlayback
             target.IsAttachedToVisualTree() && States.TryGetValue(target, out var state) && state.RequestId == result.RequestId;
     }
 
+    internal static void CompleteCurrent(Control target)
+    {
+        if (States.TryGetValue(target, out var state))
+        {
+            state.Active?.Complete();
+        }
+    }
+
     internal static void Reset(Control target)
     {
         if (!States.TryGetValue(target, out var state))
@@ -177,6 +187,17 @@ internal sealed class MotionPlayback
         CancellationTokenRegistration registration = default;
         try
         {
+            if (shouldAnimate)
+            {
+                // Static callbacks retain no target or retired request. Resolve
+                // the current owner only when the resource policy changes.
+                _state.Target.ResourcesChanged += PolicyResourcesChanged;
+                _state.Target.ActualThemeVariantChanged += PolicyThemeChanged;
+                if (!Motion.IsAnimationEnabled(_state.Target))
+                {
+                    Complete();
+                }
+            }
             try
             {
                 if (_plan.FillsBefore || _plan.Delay == TimeSpan.Zero || !shouldAnimate)
@@ -205,12 +226,15 @@ internal sealed class MotionPlayback
                     Dispatcher.UIThread.Post(() => run.Cancel(MotionOutcome.Cancelled));
                 }
             }, this);
-            _phase = Phase.Playing;
-            if (_plan.FillsBefore || _plan.Delay == TimeSpan.Zero)
+            if (_phase == Phase.Preparing)
+            {
+                _phase = Phase.Playing;
+            }
+            if (_phase == Phase.Playing && (_plan.FillsBefore || _plan.Delay == TimeSpan.Zero))
             {
                 Apply(TimeSpan.Zero);
             }
-            if (shouldAnimate && CanWrite)
+            if (shouldAnimate && CanWrite && _phase == Phase.Playing)
             {
                 animated = true;
                 _frames = new MotionFrameDriver(_state.Target, _plan.Duration + _plan.Delay, Tick);
@@ -252,6 +276,11 @@ internal sealed class MotionPlayback
             _phase = Phase.Finished;
             _frames?.Stop();
             _frames = null;
+            if (shouldAnimate)
+            {
+                _state.Target.ResourcesChanged -= PolicyResourcesChanged;
+                _state.Target.ActualThemeVariantChanged -= PolicyThemeChanged;
+            }
             registration.Dispose();
             try
             {
@@ -306,6 +335,29 @@ internal sealed class MotionPlayback
             return;
         }
         _stopReason = outcome;
+        _phase = Phase.Settling;
+        _frames?.Stop();
+    }
+
+    private static void HandleAnimationPolicyChanged(object? sender, ResourcesChangedEventArgs e)
+    {
+        HandleAnimationPolicyChanged(sender, EventArgs.Empty);
+    }
+
+    private static void HandleAnimationPolicyChanged(object? sender, EventArgs e)
+    {
+        if (sender is Control target && !Motion.IsAnimationEnabled(target))
+        {
+            CompleteCurrent(target);
+        }
+    }
+
+    private void Complete()
+    {
+        if (!CanWrite || _phase is Phase.Settling or Phase.Finished)
+        {
+            return;
+        }
         _phase = Phase.Settling;
         _frames?.Stop();
     }

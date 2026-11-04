@@ -278,6 +278,13 @@ Pointer 路径：
 - 展开、过滤、异步加载和勾选不能通过延迟刷新或抑制标记掩盖状态所有权问题。
 - 重新套用模板、container recycle、ItemsSource replacement 和 detach 都必须有对应 release 路径。
 
+### 弹层动效接入约束
+
+Cascader 通过 AbstractSelect 继承配置，组件主题提供根弹层 Select Slide 默认，经声明式单向绑定进入 PART_Popup。路径、逐级加载、列内容、限高和嵌套滚动保持原合同，不能因动画替换候选内容或改写选中路径。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 关键测试：
@@ -296,3 +303,6 @@ dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.cs
 dotnet build controlgallery/AtomUIGallery/AtomUIGallery.csproj --no-restore
 git diff --check
 ```
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

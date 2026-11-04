@@ -1,5 +1,4 @@
 using AtomUI.Controls;
-using AtomUI.Animations;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -13,6 +12,20 @@ namespace AtomUI.Desktop.Controls;
 
 internal static class PopupUtils
 {
+    internal static Thickness CalculateZoomMotionMargin(Size size, Point origin, double renderScaling)
+    {
+        // ZoomBig stays between .8 and 1. Its endpoint union bounds the entire
+        // non-overshooting default curve. Round outwards to physical pixels.
+        var left = Math.Max(0, -origin.X * .2);
+        var top = Math.Max(0, -origin.Y * .2);
+        var right = Math.Max(0, (origin.X - size.Width) * .2);
+        var bottom = Math.Max(0, (origin.Y - size.Height) * .2);
+        return new Thickness(Math.Ceiling(left * renderScaling) / renderScaling,
+            Math.Ceiling(top * renderScaling) / renderScaling,
+            Math.Ceiling(right * renderScaling) / renderScaling,
+            Math.Ceiling(bottom * renderScaling) / renderScaling);
+    }
+
     internal static ArrowPosition? CalculateArrowPosition(
         PlacementMode placement,
         PopupAnchor? anchor,
@@ -149,16 +162,7 @@ internal static class PopupUtils
         };
     }
 
-    internal static (AbstractMotion? open, AbstractMotion? close) CreateMotionForPlacement(PlacementMode placement)
-    {
-        if (!IsCanonicalAnchorPlacementMode(placement))
-        {
-            return (null, null);
-        }
 
-        return (new ZoomBigInMotion(), new ZoomBigOutMotion());
-    }
-    
     public static void ValidateEdge(this PopupAnchor edge)
     {
         if (edge.HasAllFlags(PopupAnchor.Left | PopupAnchor.Right) ||
@@ -695,7 +699,7 @@ internal static class PopupUtils
 
         return new Point(offsetX, offsetY);
     }
-    
+
     internal static (double offsetX, double offsetY) CalculateShadowOffset(ArrowPosition arrowPosition, Thickness shadowThickness, Rect arrowBounds)
     {
         var shadowOffsetX = 0.0d;
@@ -802,14 +806,14 @@ internal static class PopupUtils
                 direction = GetDirection(requestedPlacement);
                 direction = FlipDirection(direction.Value, flipX, flipY);
             }
-            
+
             if (!isUseOverlayHost)
             {
                 var arrowPosition = CalculateArrowPosition(requestedPlacement, anchor, gravity);
                 if (arrowPosition != null)
                 {
                     arrowPosition = ArrowPositionUtils.FlipArrowPosition(arrowPosition.Value, flipX, flipY);
-                    
+
                     var (shadowOffsetX, shadowOffsetY) = CalculateShadowOffset(arrowPosition.Value,
                         shadowThickness, arrowIndicatorLayoutBounds);
 
@@ -839,7 +843,7 @@ internal static class PopupUtils
                 ApplyMarginToAnchor(direction, marginToAnchor, ref hOffset, ref vOffset);
             }
         }
-        
+
         placement.Offset = new Point(hOffset, vOffset);
         if (isUseOverlayHost && TryConstrainOverlayPopupToVisibleFrame(
                 placement,

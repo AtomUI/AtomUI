@@ -193,7 +193,7 @@ Default handler：
 
 - pointer enter 可延迟打开 popup。
 - pointer leave 可延迟关闭 popup。
-- 延迟打开 / 关闭任务记录各自的目标容器；目标 container clear、handler detach 或新 pointer 状态替换旧任务时精确取消并清空目标引用。hover 延迟流程独立于激活事务。
+- 延迟打开 / 关闭任务记录各自的目标容器；目标 container clear、handler detach 或新 pointer 状态替换旧任务时精确取消并清空目标引用。hover 延迟流程独立于激活事务。顶层 popup 项可直接延迟打开；嵌套项必须仍有已打开的父 popup，不能以“非顶层”过滤掉水平、垂直或折叠导航的根级 hover。
 - 父节点合法释放时确保 popup 打开（已打开则保持）。
 - 叶子节点合法释放进入 selection coordinator。
 - popup close 由 pointer、窗口失焦、非客户端点击和同级打开状态共同控制。
@@ -506,6 +506,13 @@ inline collapsed cache 不得持有 `NavMenuItem`、header、popup 或 template 
 - 纯节点菜单不增加结构容器、递归扁平缓存或每项 spacing binding。
 - root Header/Footer 保持固定，空 slot 不占布局；结构标题和分隔线的 mode/collapsed 变体由各自内部 ControlTheme 维护。
 
+### 弹层动效接入约束
+
+内部 NavMenuItem/主题拥有实际子菜单的逐层配置，向该项 PART_Popup 单向传递。Mode、IsTopLevel 和层级上下文在主题选择默认，不变成 Popup 的预设属性。Inline 继续使用内容视口，选择路径、互斥及 SubmenuOpened/SubmenuClosed 不由物理动画重定义。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. Semantic Part 实现
 
 Semantic Part 声明位于 `src/AtomUI.Desktop.Controls/NavMenu/NavMenu.SemanticParts.cs`，`NavMenu` 本体保持 partial。上游
@@ -606,3 +613,6 @@ owner 之间转移或被回收复用时既不残留旧层级，也不重复添�
 - 文档改动运行 `git diff --check`。
 - 共用内容动效的验证还需覆盖不等高分支交换、三层嵌套中内容尺寸变化、原有 ScrollViewer 约束与命中范围；
   使用可控时钟和 1× / 2× 帧采样验证共享契约，不能只检查最终可见性。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

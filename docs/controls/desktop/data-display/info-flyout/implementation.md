@@ -157,6 +157,13 @@ InfoFlyout 的交互事件应从输入源收敛到控件级语义事件：
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 
+### 弹层动效接入约束
+
+FlyoutHost 托管时由 Host 拥有公开配置，内部 Flyout 只单向转发到 Popup；独立 Flyout/TreeViewFlyout 由自身拥有。主题或有真实展示上下文的低优先级装配提供默认，非视觉对象不在构造时永久订阅全局资源。正常关闭、取消打开、owner 替换和 unregister 释放会话。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 推荐验证：
@@ -166,3 +173,6 @@ InfoFlyout 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

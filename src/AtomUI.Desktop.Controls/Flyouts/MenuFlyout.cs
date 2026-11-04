@@ -1,6 +1,7 @@
 using System.Collections;
 using System.ComponentModel;
 using System.Reactive.Disposables;
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
@@ -67,8 +68,15 @@ public class MenuFlyout : Flyout, IScrollAwareControl
 
     #endregion
 
+    #region 运行时字段
+
     private protected MenuFlyoutPresenter? Presenter;
+
     private CompositeDisposable? _presenterBindingDisposables;
+
+    #endregion
+
+    #region 构造函数
 
     static MenuFlyout()
     {
@@ -81,6 +89,18 @@ public class MenuFlyout : Flyout, IScrollAwareControl
         Items = (ItemCollection)Activator.CreateInstance(itemCollectionType, true)!;
         BindPointerPlacementOffsets(FlyoutHostTokenKind.HorizontalOffset, FlyoutHostTokenKind.VerticalOffset);
     }
+
+    #endregion
+
+    #region 内部协作 API
+
+    internal override AbstractMotion GetDefaultOpenMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.DropdownOpen);
+
+    internal override AbstractMotion GetDefaultCloseMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.DropdownClose);
+
+    #endregion
+
+    #region 控件 API
 
     protected override Control CreatePresenter()
     {
@@ -127,11 +147,6 @@ public class MenuFlyout : Flyout, IScrollAwareControl
         return Presenter;
     }
 
-    private void HandleMenuItemClicked(object? sender, FlyoutMenuItemClickedEventArgs e)
-    {
-        MenuItemClicked?.Invoke(sender, e);
-    }
-
     protected override void OnOpening(CancelEventArgs args)
     {
         if (Popup.Child is { } presenter)
@@ -154,4 +169,15 @@ public class MenuFlyout : Flyout, IScrollAwareControl
             Items.SetItemsSource(change.GetNewValue<IEnumerable?>());
         }
     }
+
+    #endregion
+
+    #region 内部实现
+
+    private void HandleMenuItemClicked(object? sender, FlyoutMenuItemClickedEventArgs e)
+    {
+        MenuItemClicked?.Invoke(sender, e);
+    }
+
+    #endregion
 }

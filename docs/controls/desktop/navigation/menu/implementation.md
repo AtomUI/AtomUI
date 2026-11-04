@@ -90,7 +90,7 @@ Public API / ItemsSource / Command / Event
 - 选择与集合：`DisplayPageSize`、`IsScrollEnabled`。
 - 交互与状态：`IsMotionEnabled`、`ShouldUseOverlayPopup`。
 - 视觉与布局：`LineWidth`、`Orientation`、`OverlayHostShadow`、`PopupRootShadow`、`SizeType`。
-- 动效与异步：`CloseMotion`、`MotionDuration`、`OpenMotion`。
+- 子菜单/独立浮层动效：由 MenuItem、ContextMenu、MenuFlyout 的实际配置入口提供，不广播根 Menu 的空值。
 
 维护要求：
 
@@ -276,6 +276,13 @@ Menu 的交互事件应从输入源收敛到控件级语义事件：
 - plain Menu 的语义层级只在其自身子树内下发；共享容器在 ContextMenu / MenuFlyout / DropdownButton 弹层中的 marker 行为不变。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 
+### 弹层动效接入约束
+
+MenuItem 拥有自身子菜单配置，ContextMenu 和独立 MenuFlyout 分别拥有根弹层配置，实际 Popup 单向消费。MenuSemanticLevel 与容器层级由主题选择默认，不能在 Popup 上设置组件预设枚举。未配置菜单项时保留该层默认，显式 null 禁用该方向；不把根 Menu 的空值广播到全部子项。hover intent、关闭链、滚动与持续选择由原 owner 管理。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 推荐验证：
@@ -315,3 +322,6 @@ Semantic Part 至少覆盖以下回归场景（见 [Menu Semantic Part 契约](s
   `Border#PopupFrame` popup.root marker、`MenuItemGroupTheme` 的标题 / 列表双层级 marker 均在模板中静态声明。
 - 声明式钉住时序：`IsPopupPinnedOpen="True"` 在容器生成前写入时，容器 prepare 阶段补齐请求，普通关闭请求不得收起弹层。
 - 用户入口：`atom|Menu` owner-scoped 生成 Semantic Style 可编译并命中；默认主题不消费 `.semantic-*`。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

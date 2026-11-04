@@ -34,6 +34,8 @@
                         </DockPanel>
                     </atom:PixelAlignedBorder>
                     <atom:Popup Name="PART_Popup"
+                                OpenMotion="{TemplateBinding OpenMotion}"
+                                CloseMotion="{TemplateBinding CloseMotion}"
                                 IsPopupPinnedOpen="{TemplateBinding IsPopupPinnedOpen}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="{TemplateBinding IsLightDismissEnabled}"

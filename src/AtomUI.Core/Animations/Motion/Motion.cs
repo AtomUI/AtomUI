@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -70,6 +71,13 @@ public sealed class Motion
         VisibilityOwners.GetValue(target, static control => new MotionVisibility(control)).SnapCurrent();
     }
 
+    internal static bool IsAnimationEnabled(Control target) =>
+        GetIsEnabled(target) &&
+        (!target.TryFindResource(EnableMotionResourceKey, target.ActualThemeVariant, out var enabled) || enabled is not false);
+
+    // Resource dictionaries use object keys. Reuse the boxed enum for repeated
+    // preparation/policy reads instead of boxing once per guard.
+    private static readonly object EnableMotionResourceKey = SharedTokenKind.EnableMotion;
     private static readonly ConditionalWeakTable<Control, MotionVisibility> VisibilityOwners = new();
     private static readonly Task<MotionResult> StableVisibility = Task.FromResult(new MotionResult(MotionOutcome.Completed, 0, false));
 
@@ -85,9 +93,13 @@ public sealed class Motion
         LeaveProperty.Changed.AddClassHandler<Control>(static (target, _) => ConfigureVisibility(target));
         IsEnabledProperty.Changed.AddClassHandler<Control>(static (target, change) =>
         {
-            if (!change.GetNewValue<bool>() && VisibilityOwners.TryGetValue(target, out var owner))
+            if (!change.GetNewValue<bool>())
             {
-                owner.SnapCurrent();
+                if (VisibilityOwners.TryGetValue(target, out var owner))
+                {
+                    owner.SnapCurrent();
+                }
+                MotionPlayback.CompleteCurrent(target);
             }
         });
         LayoutDirectionProperty.Changed.AddClassHandler<Control>(static (target, _) =>

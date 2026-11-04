@@ -103,6 +103,7 @@ public class Issue489KeyboardActivationTests
         var dropdownButton = new DropdownButton
         {
             Content        = "Menu",
+            IsMotionEnabled = false,
             DropdownFlyout = new MenuFlyout
             {
                 IsMotionEnabled = false,

@@ -39,6 +39,29 @@ DatePicker 提供单值日期时间输入，RangeDatePicker 提供范围日期�
 内部 Calendar、CalendarItem、Presenter、HeaderBackground 与指示器不是用户日期 API。
 Picker owner 发布绑定、Form、部分/最终确认，不把 DateViewer.Selected 机械转发成提交。
 
+### 打开与关闭动效配置
+
+InfoPickerInput 声明 OpenMotion/CloseMotion；DatePicker 直接继承，RangeDatePicker 经 RangeInfoPickerInput 继承，不重复注册。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+实例配置仅引用纯定义对象，例如：
+
+```xml
+<atom:DatePicker>
+    <atom:DatePicker.OpenMotion>
+        <atom:FadeInMotion />
+    </atom:DatePicker.OpenMotion>
+    <atom:DatePicker.CloseMotion>
+        <atom:FadeOutMotion />
+    </atom:DatePicker.CloseMotion>
+</atom:DatePicker>
+```
+
+Motion 不持有 DatePicker/Popup 的反向引用；共享定义仍存活时，页面与旧弹层必须可回收。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 输入 owner 拥有受控提交值，编辑会话拥有打开期间候选日期时间与确认进度。
@@ -77,6 +100,12 @@ RangeDatePicker 的范围编辑使用端点轮转状态机。每次用户成功�
 
 Picker 主题完整规定面板、Cell、Header/Footer、时间、双面板间距、连续范围形状与动效。
 统一 Cell 不继承 Calendar Mini 尺寸；输入宽度、placeholder 截断、显式宽度与 Stretch 保持原体验。
+
+### 弹层动效契约
+
+DatePicker 与 RangeDatePicker 的完整弹层采用 Slide、MotionDurationMid：实际下方 SlideUp，上方 SlideDown。范围箭头、日期/时间面板和阴影随同一表面动画，活动端点与确认语义不变。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ## 6. 家族与集成
 

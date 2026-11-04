@@ -4,6 +4,8 @@
               x:Class="AtomUI.Desktop.Controls.Themes.AbstractAutoCompleteTheme"
               TargetType="atom:AbstractAutoComplete"
               x:ClassModifier="internal">
+    <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
+    <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
 
     <Style Selector="^:is(atom|AbstractAutoComplete)">
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
@@ -25,7 +27,7 @@
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>
-        
+
         <Style Selector="^[IsPopupMatchSelectWidth=True]">
             <Style Selector="^ /template/ Border#PopupFrame">
                 <Setter Property="Width" Value="{Binding EffectivePopupWidth, RelativeSource={RelativeSource TemplatedParent}}" />
@@ -37,7 +39,7 @@
                 <Setter Property="MaxWidth" Value="{atom:AutoCompleteTokenResource MaxPopupWidth}" />
             </Style>
         </Style>
-        
+
         <Setter Property="OptionTemplate">
             <DataTemplate x:DataType="atom:IAutoCompleteOption">
                 <TextBlock Text="{Binding Header}"

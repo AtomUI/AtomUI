@@ -70,6 +70,14 @@ DropdownButton 的公共契约由 public/protected 类型成员、Avalonia 属�
 
 DropdownButton 继承 Button 的 `IconWidthProperty`、`IconHeightProperty` 及 CLR wrapper。`PART_ButtonIcon` 与 `PART_LoadingIcon` 通过 `TemplateBinding` 消费这两个属性，保持与 Button 相同的 SizeType 默认值、本地值优先级和 icon-only loading 状态语义。`PART_DropdownIndicator` 展示的 `OpenIndicator` 是独立图标角色，不受 `IconWidth`、`IconHeight` 控制。
 
+### 打开与关闭动效配置
+
+DropdownButton 自身通过 AddOwner 提供 OpenMotion/CloseMotion，作用于关联 DropdownFlyout 根弹层，不放到普通 Button 基类。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 DropdownButton 的状态流按以下路径收敛：
@@ -108,6 +116,12 @@ DropdownButton 当前没有专属 Token 文档；主题通过 SharedToken、关�
 - Native 和 Browser 支持宿主必须使用同一套 DropdownButton 主题资产；平台差异不能通过 Browser 专用主题分叉复制视觉。
 - 用户 icon 与 loading icon 的尺寸只能从 DropdownButton 自身的 `IconWidth`、`IconHeight` 投影；应用和 Gallery 不得通过 `/template/` 或 `PART_ButtonIcon`、`PART_LoadingIcon` selector 修改内部尺寸。
 - `OpenIndicator` 尺寸由 DropdownButton 主题单独管理，不复用用户 icon 的宽高属性。
+
+### 弹层动效契约
+
+DropdownButton 的 MenuFlyout 根弹层采用 Dropdown 四方向 Slide、MotionDurationMid；嵌套子菜单采用 ZoomBig、MotionDurationMid，原点固定左上，包含 RTL 和翻转。按钮本身的状态反馈不代替弹层入离场。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ## 6. 控件家族或集成关系
 

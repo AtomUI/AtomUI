@@ -3,6 +3,22 @@
 本文档记录 Cascader 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - 从 AbstractSelect 继承 OpenMotion/CloseMotion，作用于完整根弹层，不用于每列候选的独立展开。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-10-18
 
 - Behavior

@@ -79,6 +79,7 @@ internal static class NativeMotionProbe
                         scene.ObserveAfterChange?.Invoke(observation);
                         await Task.Delay(sampleMs);
                         await observation.EndAsync(sample);
+                        observation.EnsureUninterrupted();
                         scene.Validate(direction);
                         if (scene.RequiresMotion && !sample.HasIntermediateValues())
                         {
@@ -106,7 +107,9 @@ internal static class NativeMotionProbe
 
             var report = new
             {
-                Schema = 2,
+                Schema = 3,
+                Status = "Completed",
+                MeasurementCondition = "Active window; no external pointer or keyboard input; interruptions fail with exit 3, no retry",
                 options.Label,
                 options.Scenario,
                 options.Warmup,
@@ -138,6 +141,16 @@ internal static class NativeMotionProbe
             await File.WriteAllTextAsync(options.Output, JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
             Console.WriteLine($"NATIVE_MOTION_COMPLETE output={options.Output} samples={results.Count}");
             lifetime.Shutdown(0);
+        }
+        catch (OperationCanceledException error)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(options.Output)!);
+            await File.WriteAllTextAsync(options.Output, JsonSerializer.Serialize(new
+            {
+                Schema = 3, Status = "Interrupted", Reason = error.Message, AcceptedSamples = 0
+            }));
+            Console.Error.WriteLine($"NATIVE_MOTION_INTERRUPTED: {error.Message} No samples accepted.");
+            lifetime.Shutdown(3);
         }
         catch (Exception error)
         {

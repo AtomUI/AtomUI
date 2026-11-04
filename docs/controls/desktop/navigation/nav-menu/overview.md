@@ -178,6 +178,14 @@ NavMenu 家族只有 `NavMenu` 一个 public owner：`NavMenuItem`、`NavMenuGro
 Part 的 Selector、ContractType、cardinality、marker 放置、数量语义、尺寸基线、定制边界与验证矩阵以
 [NavMenu Semantic Part 契约](semantic-part.md) 为准。
 
+### 打开与关闭动效配置
+
+NavMenu 本体不新增语义不明的整树 OpenMotion/CloseMotion。实际 popup 项的内部 NavMenuItem 与主题承担逐层配置，不提升内部容器为公开类型；Inline 内容展开不混用 popup 动效。
+
+这些入口的显式 null、主题默认与清除覆盖按[共享配置契约](../../../../architecture/systems/motion/popup-motion.md#3-public-api-与主题覆盖)处理，各层默认保持独立。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 NavMenu 的交互行为由 mode 决定。所有 mode 共用项激活事务契约：指针按下只建立待提交事务并尝试移动真实焦点，合法释放（按下与释放命中同一项）才按固定顺序提交选择并派发命令与事件，其余中断路径一律取消。键盘 Enter/Space 与指针合法释放复用激活入口；程序化 `SelectedItem` 是独立的选择入口，只同步选择状态，不执行节点命令或触发 `NavMenuItemClick`。完整状态机、提交顺序、同步重入和取消路径见 [NavMenu 项激活事务设计](item-activation-design.md)。
@@ -268,6 +276,12 @@ Theme 映射规则：
 - Horizontal 顶层 light style 通过 `PART_ActiveIndicator` 表达选中；dark style 可以使用 selected background。
 
 Header 背景与 NavMenuItem / inline submenu 背景块是不同职责，不应混为一个 selector 控制。
+
+### 弹层动效契约
+
+NavMenu Horizontal 顶层弹层采用固定 SlideUp、MotionDurationMid；Vertical、Horizontal 次级和 InlineCollapsed 弹层采用 ZoomBig、MotionDurationMid，按独立 Menu 的 placement/RTL 原点规则处理。Inline 内容继续使用自然高度与透明度，不迁为 PopupSurface 缩放。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ## 6. 控件家族或集成关系
 

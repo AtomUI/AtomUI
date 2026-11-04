@@ -132,6 +132,14 @@ Query 投影，用户确认后一次性生成新的不可变 Query。过滤 DTO 
 
 控件专属或内部伪类包括 `DataGridPseudoClass.EmptyColumns`、`DataGridPseudoClass.EmptyRows`、`DataGridPseudoClass.FirstColumnHeader`、`DataGridPseudoClass.GroupItemLeaf`、`DataGridPseudoClass.LastColumnHeader`、`DataGridPseudoClass.MiddleColumnHeader`、`DataGridPseudoClass.RowHover`、`EmptyColumns=:empty-columns`、`EmptyRows=:empty-rows`、`FirstColumnHeader=:first-column-header`、`GroupItemLeaf=:is-leaf-item`、`LastColumnHeader=:last-column-header` 等 14 项。这些伪类属于主题 selector 可观察契约，不能在未同步主题和 Gallery 的情况下重命名或删除。
 
+### 打开与关闭动效配置
+
+筛选弹层通过其实际 Flyout 继承的 OpenMotion/CloseMotion 配置。DataGrid 本体不增加控制行、列、编辑及全部弹层的同名入口。
+
+这些入口的显式 null、主题默认与清除覆盖按[共享配置契约](../../../../architecture/systems/motion/popup-motion.md#3-public-api-与主题覆盖)处理，各层默认保持独立。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 DataGrid 的状态流按以下路径收敛：
@@ -358,7 +366,9 @@ range source、分页和纵向虚拟化只让已实现 cells 参与 `Auto` / `Si
 
 ### 8.6 动效模型
 
-DataGrid 的动效只表达状态变化反馈，不应改变 public API 语义。初始加载、禁用态和卸载路径应能抑制或取消动效，避免保留旧控件实例。
+DataGrid 菜单筛选与树筛选的根浮层均遵循 Dropdown：四方向 Slide、MotionDurationMid。筛选内容是 Menu 或 Tree 不改变根弹层语义；嵌套菜单仍采用 Dropdown 子菜单固定左上原点的 ZoomBig。此规则不接管网格行、列和编辑反馈动效。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ### 8.7 视觉选项模型
 

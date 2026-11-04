@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Reflection;
@@ -19,6 +20,12 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
 {
     #region 公共属性定义
 
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<MenuItem>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<MenuItem>();
+
     public new static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<MenuItem, PathIcon?>(nameof(Icon));
 
@@ -31,16 +38,28 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
     public static readonly StyledProperty<int> DisplayPageSizeProperty =
         Menu.DisplayPageSizeProperty.AddOwner<MenuItem>();
 
-    public CustomizableSizeType SizeType
+    public AbstractMotion? OpenMotion
     {
-        get => GetValue(SizeTypeProperty);
-        set => SetValue(SizeTypeProperty, value);
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
     }
 
     public new PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
+    }
+
+    public CustomizableSizeType SizeType
+    {
+        get => GetValue(SizeTypeProperty);
+        set => SetValue(SizeTypeProperty, value);
     }
 
     public bool IsScrollEnabled
@@ -55,28 +74,11 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
         set => SetValue(DisplayPageSizeProperty, value);
     }
 
-    #endregion
-
-    IEnumerable<IMenuItemData> ITreeNode<IMenuItemData>.Children => EnumerateChildren();
     public ITreeNode<IMenuItemData>? ParentNode => Parent as ITreeNode<IMenuItemData>;
+
     public EntityKey? ItemKey { get; set; }
 
-    private Popup? _popup;
-    private MenuPinnedOpenScope? _pinnedOpenScope;
-    private bool _isSyncingSubMenuPopupState;
-    private bool _isUsingDetachedTitleBarPopupPlacement;
-    private IDisposable? _detachedTitleBarPopupPlacementTracker;
-
-    private IEnumerable<IMenuItemData> EnumerateChildren()
-    {
-        foreach (var item in Items)
-        {
-            if (item is IMenuItemData menuItem)
-            {
-                yield return menuItem;
-            }
-        }
-    }
+    #endregion
 
     #region 公共事件定义
 
@@ -92,6 +94,11 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
     #endregion
 
     #region 内部属性定义
+
+
+    internal static readonly DirectProperty<MenuItem, MenuSemanticLevel> SemanticLevelProperty =
+        AvaloniaProperty.RegisterDirect<MenuItem, MenuSemanticLevel>(nameof(SemanticLevel),
+            item => item.SemanticLevel);
 
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<MenuItem>();
@@ -110,6 +117,23 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
 
     internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<MenuItem>();
+
+    // Runtime owner context, not a user style input. Publishing it lets the
+    // ControlTheme update its motion preset when a container changes owners.
+    private MenuSemanticLevel _semanticLevel;
+
+    internal MenuSemanticLevel SemanticLevel
+    {
+        get => _semanticLevel;
+        set
+        {
+            MenuSemanticLevelScope.ApplyItemLevel(this, value);
+            if (SetAndRaise(SemanticLevelProperty, ref _semanticLevel, value))
+            {
+                MenuSemanticLevelScope.ApplyChildrenLevel(this, ResolveChildSemanticLevel());
+            }
+        }
+    }
 
     internal bool IsMotionEnabled
     {
@@ -149,8 +173,23 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
 
     internal bool IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false;
 
+    #endregion
+
+    #region 运行时字段
+
+    private Popup? _popup;
+
+    private MenuPinnedOpenScope? _pinnedOpenScope;
+
+    private bool _isSyncingSubMenuPopupState;
+
+    private bool _isUsingDetachedTitleBarPopupPlacement;
+
+    private IDisposable? _detachedTitleBarPopupPlacementTracker;
 
     #endregion
+
+    #region 构造函数
 
     static MenuItem()
     {
@@ -164,6 +203,10 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
             RoutingStrategies.Bubble,
             handledEventsToo: true);
     }
+
+    #endregion
+
+    #region 控件 API
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -234,57 +277,6 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
         else if (change.Property == SelectedIndexProperty)
         {
             _pinnedOpenScope?.SelectCurrent();
-        }
-    }
-
-    private void ReconcileSubMenuAvailability()
-    {
-        UpdateSubMenuPopupPinnedOpen();
-        CoerceValue(IsSubMenuOpenProperty);
-        if (IsPopupPinnedOpen && ItemCount > 0 && !IsSubMenuOpen)
-        {
-            SetCurrentValue(IsSubMenuOpenProperty, true);
-        }
-
-        ReconcilePinnedOpenChildren();
-    }
-
-    private static bool CoerceIsSubMenuOpen(AvaloniaObject sender, bool value)
-    {
-        // ItemCount is the source of truth here. Avalonia publishes ItemCount changes before it
-        // updates the :empty pseudo-class that backs HasSubMenu, so coercion during a collection
-        // transition must not depend on HasSubMenu's transient value.
-        if (sender is MenuItem { ItemCount: 0 } leaf && leaf.IsAttachedToVisualTree())
-        {
-            return false;
-        }
-
-        // Reject a normal collapse before Avalonia closes descendants and publishes
-        // SubmenuOpened again. Lifecycle teardown unpins before requesting closure.
-        return value || sender is MenuItem { IsPopupPinnedOpen: true, HasSubMenu: true } item &&
-            item.IsAttachedToVisualTree() && item._popup?.CanOpenPinnedPopup() == true;
-    }
-
-    private void UpdatePseudoClasses()
-    {
-        PseudoClasses.Set(MenuItemPseudoClass.TopLevel, IsTopLevel);
-    }
-
-    // 由 owner 在容器 prepare 时下发。None 表示该 MenuItem 不属于 plain Menu 语义作用域（MenuFlyout /
-    // ContextMenu / DropdownButton 弹层创建并复用同一容器类型），此时恢复复用方的 .semantic-item marker。
-    private MenuSemanticLevel _semanticLevel;
-
-    internal MenuSemanticLevel SemanticLevel
-    {
-        get => _semanticLevel;
-        set
-        {
-            MenuSemanticLevelScope.ApplyItemLevel(this, value);
-            if (_semanticLevel != value)
-            {
-                _semanticLevel = value;
-                MenuSemanticLevelScope.ApplyChildrenLevel(this, ResolveChildSemanticLevel());
-            }
         }
     }
 
@@ -386,27 +378,6 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
     {
     }
 
-    // 自身层级决定子容器层级：plain Menu 顶层项的子项属于子菜单层，子菜单项的子项仍在子菜单层。
-    // None 表示不在 plain Menu 语义作用域内，子容器保持复用方既有的 marker 行为。
-    private MenuSemanticLevel ResolveChildSemanticLevel()
-    {
-        return SemanticLevel == MenuSemanticLevel.None
-            ? MenuSemanticLevel.None
-            : MenuSemanticLevel.SubMenu;
-    }
-
-    internal void ReconcilePinnedOpenChildren()
-    {
-        if (IsPopupPinnedOpen)
-        {
-            (_pinnedOpenScope ??= new MenuPinnedOpenScope(this)).Reconcile();
-        }
-        else
-        {
-            _pinnedOpenScope?.Release();
-        }
-    }
-
     protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
@@ -460,6 +431,142 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
         ConfigureDetachedTitleBarPopupPlacement();
         UpdatePseudoClasses();
         ConfigureMaxPopupHeight();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        // Avalonia's keyboard handler may call Open() for the newly selected root item even when
+        // it is a leaf. Re-coerce here as well so a leaf configured before attachment cannot leave
+        // its template-owned PART_Popup open as an empty shell.
+        CoerceValue(IsSubMenuOpenProperty);
+        // 钉住弹层的宿主生命周期关闭 / 重开会把菜单树整体从视觉树摘下再挂回；
+        // IsSubMenuOpen 的属性值在钉住期间被保留（由 IsPopupPinnedOpen 请求驱动），但子弹层
+        // 的打开状态不会随属性值自动恢复，重新附着时补一次延迟同步。
+        if (IsSubMenuOpen && _popup is { IsOpen: false })
+        {
+            DeferSubMenuPopupOpen(_popup);
+        }
+    }
+
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        ConfigureDetachedTitleBarPopupPlacement();
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        ClearDetachedTitleBarPopupPlacement();
+        base.OnDetachedFromLogicalTree(e);
+    }
+
+    public async Task CloseItemAsync(CancellationToken cancellationToken = default)
+    {
+        for (var i = 0; i < ItemCount; i++)
+        {
+            var container = ContainerFromIndex(i);
+            if (container is MenuItem childMenuItem)
+            {
+                await childMenuItem.CloseItemAsync(cancellationToken);
+            }
+        }
+
+        IsSubMenuOpen = false;
+    }
+
+    #endregion
+
+    #region 内部协作 API
+
+    internal void ReconcilePinnedOpenChildren()
+    {
+        if (IsPopupPinnedOpen)
+        {
+            (_pinnedOpenScope ??= new MenuPinnedOpenScope(this)).Reconcile();
+        }
+        else
+        {
+            _pinnedOpenScope?.Release();
+        }
+    }
+
+    internal void CloseForLifecycle()
+    {
+        IsPopupPinnedOpen = false;
+        for (var i = 0; i < ItemCount; i++)
+        {
+            if (ContainerFromIndex(i) is MenuItem childMenuItem)
+            {
+                childMenuItem.CloseForLifecycle();
+            }
+        }
+
+        _popup?.CloseForLifecycle();
+        SetCurrentValue(IsSubMenuOpenProperty, false);
+    }
+
+    #endregion
+
+    #region 实现 ITreeNode<IMenuItemData> 接口
+
+    IEnumerable<IMenuItemData> ITreeNode<IMenuItemData>.Children => EnumerateChildren();
+
+    #endregion
+
+    #region 内部实现
+
+    private IEnumerable<IMenuItemData> EnumerateChildren()
+    {
+        foreach (var item in Items)
+        {
+            if (item is IMenuItemData menuItem)
+            {
+                yield return menuItem;
+            }
+        }
+    }
+
+    private void ReconcileSubMenuAvailability()
+    {
+        UpdateSubMenuPopupPinnedOpen();
+        CoerceValue(IsSubMenuOpenProperty);
+        if (IsPopupPinnedOpen && ItemCount > 0 && !IsSubMenuOpen)
+        {
+            SetCurrentValue(IsSubMenuOpenProperty, true);
+        }
+
+        ReconcilePinnedOpenChildren();
+    }
+
+    private static bool CoerceIsSubMenuOpen(AvaloniaObject sender, bool value)
+    {
+        // ItemCount is the source of truth here. Avalonia publishes ItemCount changes before it
+        // updates the :empty pseudo-class that backs HasSubMenu, so coercion during a collection
+        // transition must not depend on HasSubMenu's transient value.
+        if (sender is MenuItem { ItemCount: 0 } leaf && leaf.IsAttachedToVisualTree())
+        {
+            return false;
+        }
+
+        // Reject a normal collapse before Avalonia closes descendants and publishes
+        // SubmenuOpened again. Lifecycle teardown unpins before requesting closure.
+        return value || sender is MenuItem { IsPopupPinnedOpen: true, HasSubMenu: true } item &&
+            item.IsAttachedToVisualTree() && item._popup?.CanOpenPinnedPopup() == true;
+    }
+
+    private void UpdatePseudoClasses()
+    {
+        PseudoClasses.Set(MenuItemPseudoClass.TopLevel, IsTopLevel);
+    }
+
+    // 自身层级决定子容器层级：plain Menu 顶层项的子项属于子菜单层，子菜单项的子项仍在子菜单层。
+    // None 表示不在 plain Menu 语义作用域内，子容器保持复用方既有的 marker 行为。
+    private MenuSemanticLevel ResolveChildSemanticLevel()
+    {
+        return SemanticLevel == MenuSemanticLevel.None
+            ? MenuSemanticLevel.None
+            : MenuSemanticLevel.SubMenu;
     }
 
     // 钉住语义按菜单树下发（宿主 Flyout → Presenter → 各级 MenuItem），但只允许作用在
@@ -546,63 +653,6 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
         }
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        // Avalonia's keyboard handler may call Open() for the newly selected root item even when
-        // it is a leaf. Re-coerce here as well so a leaf configured before attachment cannot leave
-        // its template-owned PART_Popup open as an empty shell.
-        CoerceValue(IsSubMenuOpenProperty);
-        // 钉住弹层的宿主生命周期关闭 / 重开会把菜单树整体从视觉树摘下再挂回；
-        // IsSubMenuOpen 的属性值在钉住期间被保留（由 IsPopupPinnedOpen 请求驱动），但子弹层
-        // 的打开状态不会随属性值自动恢复，重新附着时补一次延迟同步。
-        if (IsSubMenuOpen && _popup is { IsOpen: false })
-        {
-            DeferSubMenuPopupOpen(_popup);
-        }
-    }
-
-    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToLogicalTree(e);
-        ConfigureDetachedTitleBarPopupPlacement();
-    }
-
-    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
-    {
-        ClearDetachedTitleBarPopupPlacement();
-        base.OnDetachedFromLogicalTree(e);
-    }
-
-    public async Task CloseItemAsync(CancellationToken cancellationToken = default)
-    {
-        for (var i = 0; i < ItemCount; i++)
-        {
-            var container = ContainerFromIndex(i);
-            if (container is MenuItem childMenuItem)
-            {
-                await childMenuItem.CloseItemAsync(cancellationToken);
-            }
-        }
-
-        IsSubMenuOpen = false;
-    }
-
-    internal void CloseForLifecycle()
-    {
-        IsPopupPinnedOpen = false;
-        for (var i = 0; i < ItemCount; i++)
-        {
-            if (ContainerFromIndex(i) is MenuItem childMenuItem)
-            {
-                childMenuItem.CloseForLifecycle();
-            }
-        }
-
-        _popup?.CloseForLifecycle();
-        SetCurrentValue(IsSubMenuOpenProperty, false);
-    }
-
     private void CloseOwningMenuBeforeClickHandler(RoutedEventArgs e)
     {
         if (!ReferenceEquals(e.Source, this) || HasSubMenu || StaysOpenOnClick)
@@ -672,4 +722,5 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
             ref _isUsingDetachedTitleBarPopupPlacement);
     }
 
+    #endregion
 }

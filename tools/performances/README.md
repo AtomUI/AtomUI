@@ -48,7 +48,7 @@
 `AtomUI.GalleryPerformance --native-motion` 是单独的原生宿主模式，运行真实 `GalleryApplication`、Workspace和页面。
 原有导航/构建模式仍为Headless，两种口径分开使用。场景为 `sidebar`、`submenu`、`progress`、`statistic`、
 `beam`、`popup`、`beam-offscreen`、`all`；所有动作通过公开控件API驱动，不测原生鼠标输入延迟。
-Popup场景使用真实NavMenu Popup；若其未配置OpenMotion/CloseMotion，结果明确标记为静态开合成本，不声称取得动画FPS。
+Popup场景使用真实NavMenu Popup，必须出现真实动画中间值；缺失默认动效会明确失败，不接收静态终值作为动画样本。
 离屏循环允许零更新，且必须通过真实viewport几何断言，不用隐藏控件模拟离屏。
 
 ```bash
@@ -60,6 +60,12 @@ python3 tools/performances/run_native_motion.py \
 # 修改后使用相同参数和新的输出目录，可追加：
 # --compare /tmp/atomui-motion-baseline/summary.json
 ```
+
+原生公开API采样期间，窗口必须保持激活且不能收到未编排的输入。窗口失活后菜单正常关闭属于交互合同；
+探针将整批测量标记为 `Interrupted`、`AcceptedSamples=0`，以 exit 3 结束，runner 不重试、不生成聚合 summary。
+这不关闭产品的hover/失焦策略。开始前让布局稳定，采样期间保持测试窗口前台，避免鼠标、键盘和滚轮操作。
+Schema 3 记录这一测量条件，旧版/中断报告不能混入。前后实际动画回调间隔中位数相差超过10%时拒绝成本比较；
+声明相同屏幕刷新率并不能覆盖自适应刷新差异。自然原生CPU数据还会受每动作实际tick数影响，精确帧成本应结合固定tick实验。
 
 `--refresh-rate` 是调用方核实后的屏幕频率声明，不是工具自动检测值；不传时不计算刷新预算。
 每个进程保留身份、程序集SHA、产品差异摘要、窗口/DPI/主题、场景树形态及原始时间序列，聚合输出中位/P95/P99、

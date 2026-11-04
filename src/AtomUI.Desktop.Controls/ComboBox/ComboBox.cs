@@ -1,5 +1,5 @@
-using AtomUI.Animations;
-﻿using System.Collections.Specialized;
+﻿using AtomUI.Animations;
+using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
@@ -21,14 +21,20 @@ using AvaloniaComboBox = Avalonia.Controls.ComboBox;
 using AvaloniaTextBox = Avalonia.Controls.TextBox;
 
 public partial class ComboBox : AvaloniaComboBox,
-                        IMotionAwareControl,
-                        ICustomizableSizeTypeAware,
-                        IInputControlStatusAware,
-                        IInputControlStyleVariantAware,
-                        IFormItemAware,
-                        IFormItemFeedbackAware
+                                IMotionAwareControl,
+                                ICustomizableSizeTypeAware,
+                                IInputControlStatusAware,
+                                IInputControlStyleVariantAware,
+                                IFormItemAware,
+                                IFormItemFeedbackAware
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<ComboBox>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<ComboBox>();
 
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<ComboBox>();
@@ -118,6 +124,18 @@ public partial class ComboBox : AvaloniaComboBox,
 
     public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
         AvaloniaProperty.Register<ComboBox, Thickness>(nameof(EmptyIndicatorPadding));
+
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
 
     public object? LeftAddOn
     {
@@ -309,6 +327,7 @@ public partial class ComboBox : AvaloniaComboBox,
     #endregion
 
     #region 内部属性定义
+
     
     internal static readonly DirectProperty<ComboBox, double> EffectivePopupWidthProperty =
         AvaloniaProperty.RegisterDirect<ComboBox, double>(
@@ -347,7 +366,7 @@ public partial class ComboBox : AvaloniaComboBox,
         AvaloniaProperty.RegisterDirect<ComboBox, bool>(
             nameof(IsDefaultEmptyIndicatorVisible),
             o => o.IsDefaultEmptyIndicatorVisible);
-    
+
     private double _effectivePopupWidth;
 
     internal double EffectivePopupWidth
@@ -454,7 +473,7 @@ public partial class ComboBox : AvaloniaComboBox,
     {
         SelectionBoxItemProperty.Changed.AddClassHandler<ComboBox>((box, args) => box.NotifyFormValueChanged(args.NewValue));
         Items.CollectionChanged += HandleItemsCollectionChanged;
-        ContainerPrepared += HandleContainerPrepared;
+        ContainerPrepared       += HandleContainerPrepared;
 
         // 阻止下拉框打开时的 BringIntoView 行为，防止触发页面滚动
         AddHandler(RequestBringIntoViewEvent, (sender, e) =>
@@ -487,10 +506,10 @@ public partial class ComboBox : AvaloniaComboBox,
         if (_popup != null)
         {
             _popupPinnedOpenBinding?.Dispose();
-            _popupPinnedOpenBinding = null;
-            _popup.Opened -= HandlePopupOpened;
-            _popup.Closed -= HandlePopupClosed;
-            _popup.OverlayInputPassThroughElement = null;
+            _popupPinnedOpenBinding               =  null;
+            _popup.Opened                         -= HandlePopupOpened;
+            _popup.Closed                         -= HandlePopupClosed;
+            _popup.OverlayInputPassThroughElement =  null;
         }
 
         if (_editableTextBox != null)
@@ -502,8 +521,8 @@ public partial class ComboBox : AvaloniaComboBox,
         ClearEditableTextBoxPlaceholderParts();
 
         _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
-        _editableTextBox = e.NameScope.Find<AvaloniaTextBox>("PART_EditableTextBox");
-        _popup = e.NameScope.Find<Popup>("PART_Popup");
+        _editableTextBox   = e.NameScope.Find<AvaloniaTextBox>("PART_EditableTextBox");
+        _popup             = e.NameScope.Find<Popup>("PART_Popup");
         RelayRootSurfaceBrush(BorderBrushProperty);
         RelayRootSurfaceBrush(BackgroundProperty);
         if (_popup != null)
@@ -1541,8 +1560,8 @@ public partial class ComboBox : AvaloniaComboBox,
             return true;
         }
 
-        var textBinding     = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
-        using var evaluator = BindingEvaluator<string?>.TryCreate(textBinding);
+        var       textBinding = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
+        using var evaluator   = BindingEvaluator<string?>.TryCreate(textBinding);
         return Filter.Filter(SelectFilterValue(item, evaluator), filterValue);
     }
 
@@ -1583,8 +1602,8 @@ public partial class ComboBox : AvaloniaComboBox,
 
     private void RefreshFilteredItemVisibility()
     {
-        var filterValue    = FilterValue;
-        var hasFilterValue = !string.IsNullOrEmpty(filterValue?.ToString());
+        var filterValue     = FilterValue;
+        var hasFilterValue  = !string.IsNullOrEmpty(filterValue?.ToString());
         var hasVisibleMatch = Items.Count > 0;
 
         if (!IsEffectiveFilterEnabled || !hasFilterValue || Filter == null)
@@ -1593,14 +1612,14 @@ public partial class ComboBox : AvaloniaComboBox,
         }
         else
         {
-            var textBinding     = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
-            using var evaluator = BindingEvaluator<string?>.TryCreate(textBinding);
+            var       textBinding = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
+            using var evaluator   = BindingEvaluator<string?>.TryCreate(textBinding);
             hasVisibleMatch = false;
 
             for (var index = 0; index < Items.Count; index++)
             {
-                var item    = Items[index];
-                var matched = Filter.Filter(SelectFilterValue(item, evaluator), filterValue);
+                var item         = Items[index];
+                var matched      = Filter.Filter(SelectFilterValue(item, evaluator), filterValue);
                 var comboBoxItem = GetFilterItemContainer(index);
                 if (comboBoxItem != null)
                 {
@@ -1632,9 +1651,9 @@ public partial class ComboBox : AvaloniaComboBox,
             return;
         }
 
-        var textBinding     = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
-        using var evaluator = BindingEvaluator<string?>.TryCreate(textBinding);
-        var matched         = Filter.Filter(SelectFilterValue(item, evaluator), filterValue);
+        var       textBinding = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
+        using var evaluator   = BindingEvaluator<string?>.TryCreate(textBinding);
+        var       matched     = Filter.Filter(SelectFilterValue(item, evaluator), filterValue);
         ApplyFilterState(comboBoxItem, matched);
     }
 

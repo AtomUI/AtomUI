@@ -63,6 +63,14 @@ AutoComplete 的公共契约由 public/protected 类型成员、Avalonia 属性�
 
 控件专属或内部伪类包括 `AutoCompletePseudoClass.CandidatePopupOpen`、`CandidatePopupOpen=:candidateopen`。这些伪类属于主题 selector 可观察契约，不能在未同步主题和 Gallery 的情况下重命名或删除。
 
+### 打开与关闭动效配置
+
+AbstractAutoComplete 声明 OpenMotion/CloseMotion，AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea 继承；不在 CompactSpace 子类重复声明。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 AutoComplete 的状态流按以下路径收敛：
@@ -156,7 +164,9 @@ AutoComplete 的集合状态必须能处理 source replace、reset、clear 和 c
 
 ### 8.4 动效模型
 
-AutoComplete 的动效只表达状态变化反馈，不应改变 public API 语义。初始加载、禁用态和卸载路径应能抑制或取消动效，避免保留旧控件实例。
+AutoComplete、AutoCompleteTextArea 和 AutoCompleteSearchEdit 的候选弹层遵循 Select：Slide、MotionDurationMid，实际下方 SlideUp、上方 SlideDown。异步候选与补全提交不由动画接管。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ### 8.5 视觉选项模型
 

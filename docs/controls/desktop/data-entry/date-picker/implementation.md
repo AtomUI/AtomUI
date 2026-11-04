@@ -95,6 +95,7 @@ Today/Now/Confirm 共用有效约束，但时间来源和确认行为按原规�
 
 面板资源由 DateViewer 拥有，Picker 保留真实静态依赖，不依靠全量 Gallery。
 会话不持有 DynamicResource；主题消费资源，非 Visual 资源对象有 scoped lifecycle。
+OpenMotion/CloseMotion 只是定义引用；播放任务、帧驱动和全局策略观察随本次请求释放。共享 Motion 长期存活、快速重开、离场中卸载和换模板后旧 Popup/Surface 的回收，服从[内存验收门禁](../../../../architecture/systems/motion/popup-motion.md#81-内存验收阻断条件)。
 测量首开/重开、Hover、双面板、时间与真实 Gallery，保持相同功能与动效。
 
 ## 10. 维护不变量
@@ -103,8 +104,18 @@ Today/Now/Confirm 共用有效约束，但时间来源和确认行为按原规�
 保持外部越界值、输入宽度、native validation、所有关闭路径及端点确认。
 父主题不跨入子模板修补视觉，共享基础设施不进行无关改造。
 
+### 弹层动效接入约束
+
+InfoPickerInput 声明配置入口，DatePicker/RangeDatePicker 实例拥有有效值；主题提供 Slide 默认并以单向模板绑定传给实际 PART_Popup。编辑会话仍负责候选、活动端点、确认和关闭清理，动画不延迟提交意图，不重排日期网格或改变 Footer/双面板尺寸。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 11. 测试与验证
 
 基线包含逐步值、文本、焦点、面板、活动端点、确认、通知与 Popup 状态；新旧同序列比较。
 最终工作树分别验证模块、真实 Gallery、资源释放和 AOT；未执行项目不得写成已通过。
 [共享验收](../date-viewer/shared-panel-design.md#103-验收矩阵)要求的证据不能由普通单测替代。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

@@ -4,6 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ComboBox}" TargetType="atom:ComboBox">
+        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
+        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -104,6 +106,9 @@
                         与共享 AbstractSelect 的既有约定一致。
                     -->
                     <atom:Popup Name="PART_Popup"
+                                OpenMotion="{TemplateBinding OpenMotion}"
+                                CloseMotion="{TemplateBinding CloseMotion}"
+                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="True"
                                 OverlayDismissEventPassThrough="True"
@@ -163,7 +168,7 @@
         <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource Padding}" />
         <Setter Property="OptionFontSize" Value="{atom:SharedTokenResource FontSize}" />
         <Setter Property="ItemHeight" Value="{atom:SharedTokenResource ControlHeight}" />
-        
+
         <Style Selector="^[SizeType=Large]">
             <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
         </Style>

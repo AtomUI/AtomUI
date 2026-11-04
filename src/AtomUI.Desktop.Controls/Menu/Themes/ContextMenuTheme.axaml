@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:ContextMenu}" TargetType="atom:ContextMenu">
+    <ControlTheme x:Key="{x:Type atom:ContextMenu}" TargetType="atom:ContextMenu" x:DataType="atom:ContextMenu">
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="Frame"
@@ -30,6 +30,8 @@
         <Setter Property="VerticalOffset" Value="{atom:MenuTokenResource ContextMenuOffsetY}" />
         <Setter Property="CornerRadius" Value="{atom:PopupTokenResource PopupCornerRadius}" />
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownOpen}" />
+        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownClose}" />
         <Setter Property="Padding" Value="{atom:MenuTokenResource MenuPopupContentPadding}" />
         <Setter Property="Background" Value="{atom:MenuTokenResource MenuPopupBgColor}" />
         <Setter Property="MinWidth" Value="{atom:MenuTokenResource MenuPopupMinWidth}" />

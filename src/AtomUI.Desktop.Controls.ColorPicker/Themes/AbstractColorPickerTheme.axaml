@@ -5,6 +5,8 @@
     x:Class="AtomUI.Desktop.Controls.Themes.AbstractColorPickerTheme"
     TargetType="atom:AbstractColorPicker"
     x:ClassModifier="internal">
+    <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.PopoverOpen}" />
+    <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.PopoverClose}" />
 
     <Style Selector="^:is(atom|AbstractColorPicker)">
         <Setter Property="HorizontalAlignment" Value="Left" />
@@ -21,10 +23,11 @@
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
         <Setter Property="MarginToAnchor" Value="{atom:ColorPickerTokenResource UniformlyMarginXXS}" />
 
+
         <Style Selector="^:pointerover, ^:flyout-open">
             <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryHover}" />
         </Style>
-        
+
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_Frame">
             <Setter Property="Cursor" Value="Hand" />
         </Style>
@@ -41,7 +44,7 @@
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorError}" />
         </Style>
-        
+
         <Style Selector="^[Status=Warning]">
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorWarning}" />

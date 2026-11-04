@@ -2,6 +2,24 @@
 
 本文档记录 Popup 控件级 API、Theme、Token、实现结构和设计契约变化，不替代仓库根目录 `CHANGELOG.md`。
 
+## 2026-11-04
+
+- Changed
+  - Flyout 配置 owner 退役时释放框架的上次定位目标及已脱离 presenter 的旧合成缓存，保留普通关闭/重开语义。
+  - 主题静态默认值声明为真实 AbstractMotion 原型，由定义自身的 ITemplate 能力复制配置；修正 IDE 的静态成员类型错误，保留每实例隔离。
+  - 移除 DefaultMotions、Motion 对容器和几何发布属性；主题独立创建默认定义，Popup 在请求准备边界消费实际几何。普通自定义 Motion 不进入默认准备路径。
+
+## 2026-11-03
+
+- Changed
+  - Popup 提供 OpenMotionProperty/CloseMotionProperty 的共享注册；同包控件族基类通过 AddOwner 复用，保持已有属性身份。直接 Popup 的两项元数据默认均为 null。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 定义语义中立默认、唯一配置 owner、布局后取值、Surface 几何和完整阴影的共享动效契约。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-10-29
 
 - Token

@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 import statistics
 import subprocess
+import sys
 
 
 def distribution(values):
@@ -21,8 +22,12 @@ def distribution(values):
 def summarize(reports):
     first = reports[0]
     for report in reports:
+        if report.get("Status") != "Completed":
+            raise ValueError(f"Native report is {report.get('Status', 'not completed')}; no samples accepted")
+        if report.get("Schema") != 3:
+            raise ValueError("Native report predates the uninterrupted measurement protocol")
         for key in ("Schema", "Scenario", "Warmup", "Iterations", "DeclaredRefreshRateHz",
-                    "ControlsAssemblySha256", "CoreAssemblySha256", "SharedControlsAssemblySha256", "ProductDiffSha256", "Configuration", "AvaloniaVersion",
+                    "ControlsAssemblySha256", "CoreAssemblySha256", "SharedControlsAssemblySha256", "ProductDiffSha256", "Configuration", "MeasurementCondition", "AvaloniaVersion",
                     "RenderScaling", "ClientSize", "ThemeVariant", "Platform", "Host", "Architecture"):
             if report[key] != first[key]:
                 raise ValueError(f"Mismatched sample identity/configuration: {key}")
@@ -30,8 +35,8 @@ def summarize(reports):
             raise ValueError("Native process produced no measured actions")
     samples = [sample for report in reports for sample in report["Samples"]]
     result = {key: first[key] for key in ("Schema", "Label", "Scenario", "Warmup", "Iterations",
-              "DeclaredRefreshRateHz", "ControlsAssemblySha256", "CoreAssemblySha256", "SharedControlsAssemblySha256", "ProductDiffSha256", "Platform",
-              "Configuration", "AvaloniaVersion", "Presentation", "Instrumentation", "RenderScaling", "ClientSize", "ThemeVariant", "Host", "Architecture")}
+              "DeclaredRefreshRateHz", "ControlsAssemblySha256", "CoreAssemblySha256", "SharedControlsAssemblySha256", "ProductDiffSha256", "Platform", "MeasurementCondition",
+              "Configuration", "MeasurementCondition", "AvaloniaVersion", "Presentation", "Instrumentation", "RenderScaling", "ClientSize", "ThemeVariant", "Host", "Architecture")}
     result["processes"] = len(reports)
     result["cases"] = {}
     for scenario, direction in sorted({(s["Scenario"], s["Direction"]) for s in samples}):
@@ -45,7 +50,7 @@ def summarize(reports):
                 "animation_contracts": sorted({s["AnimationContract"] for s in report_samples})})
         if any(identity != identities[0] for identity in identities):
             raise ValueError(f"Scenario identity differs across processes: {scenario}/{direction}")
-        if scenario in ("sidebar", "submenu", "progress", "statistic"):
+        if scenario in ("popup", "sidebar", "submenu", "progress", "statistic"):
             for sample in group:
                 values = sample["Values"]
                 numbers = [v["Value"] for v in values]
@@ -94,8 +99,14 @@ def compare(before, current):
         old_case = before["cases"][key]
         if case["sample_ms"] != old_case["sample_ms"] or case["identity"] != old_case["identity"]:
             raise ValueError(f"Comparison workload differs: {key}")
-        comparison[key] = {}
-        for metric in ("Values_interval_ms", "Rendered_interval_ms", "CpuMilliseconds_per_action",
+        old_cadence = old_case["Values_interval_ms"]["median"]
+        new_cadence = case["Values_interval_ms"]["median"]
+        # Adaptive refresh changes work per action. A 10% cadence mismatch is
+        # not an optimization result, even when the declared refresh rate matches.
+        if old_cadence and new_cadence and abs(new_cadence - old_cadence) / min(old_cadence, new_cadence) > .10:
+            raise ValueError(f"Observed animation cadence differs: {key}: {old_cadence:.3f} vs {new_cadence:.3f} ms")
+        comparison[key] = {"observed_cadence_ms": {"baseline": old_cadence, "current": new_cadence}}
+        for metric in ("CpuMilliseconds_per_action",
                        "UiAllocatedBytes_per_action", "layout_passes_per_action"):
             old = old_case[metric]["median"]
             new = case[metric]["median"]
@@ -136,6 +147,9 @@ def main():
             with subprocess.Popen(command, stdout=stream, stderr=subprocess.STDOUT) as process:
                 try:
                     code = process.wait(timeout=1800)
+                    if code == 3:
+                        print(f"Native measurement interrupted; no samples accepted. See {log}", file=sys.stderr)
+                        raise SystemExit(3)
                     if code:
                         raise subprocess.CalledProcessError(code, command)
                 except BaseException:

@@ -1,5 +1,6 @@
 using AtomUI.Desktop.Controls.Internal.DateViewer;
 using AtomUI.Desktop.Controls.Primitives;
+using AtomUI.Desktop.Controls.Tests.Motion;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -214,6 +215,7 @@ public class DatePickerViewerBehaviorTests
     [InlineData(true)]
     public void Range_Partial_Confirmation_Survives_Reopen_And_Final_Confirmation_Orders_Dates(bool showTime)
     {
+        using var clock = new ManualMotionClock();
         var picker = new RangeDatePicker
         {
             PickerDisplayDate = new DateTime(2026, 7, 15),
@@ -253,6 +255,11 @@ public class DatePickerViewerBehaviorTests
 
             Activate(viewer, new DateTime(2026, 7, 20));
             var window = TopLevel.GetTopLevel(picker).ShouldBeAssignableTo<AvaloniaWindow>()!;
+            // Keep the rapid close/reopen above; settle the rendered button
+            // before using its layout coordinates for physical input.
+            clock.Step(0);
+            clock.Step(1000);
+            Drain();
             ClickConfirm(window, presenter);
 
             picker.RangeStartSelectedDate.ShouldBe(new DateTime(2026, 7, 20));
@@ -264,6 +271,7 @@ public class DatePickerViewerBehaviorTests
     [Fact]
     public void End_First_Time_Range_Discards_Unconfirmed_Preview_But_Preserves_Confirmed_End_Across_Reopen()
     {
+        using var clock = new ManualMotionClock();
         var picker = new RangeDatePicker
         {
             PickerDisplayDate = new DateTime(2026, 10, 4),
@@ -306,6 +314,11 @@ public class DatePickerViewerBehaviorTests
             picker.RangeActivatedPart.ShouldBe(RangeActivatedPart.Start);
             Activate(viewer, new DateTime(2026, 10, 12));
             var window = TopLevel.GetTopLevel(picker).ShouldBeAssignableTo<AvaloniaWindow>()!;
+            // Keep the rapid close/reopen above; settle the rendered button
+            // before using its layout coordinates for physical input.
+            clock.Step(0);
+            clock.Step(1000);
+            Drain();
             ClickConfirm(window, presenter);
 
             picker.RangeStartSelectedDate.ShouldBe(new DateTime(2026, 10, 12));

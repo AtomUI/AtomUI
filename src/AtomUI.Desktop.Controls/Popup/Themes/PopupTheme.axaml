@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:Popup}" TargetType="atom:Popup">
+    <ControlTheme x:Key="{x:Type atom:Popup}" TargetType="atom:Popup" x:DataType="atom:Popup">
         <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
         <Setter Property="OverlayHostShadow" Value="{atom:PopupTokenResource OverlayHostShadow}" />
         <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />

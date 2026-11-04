@@ -1,4 +1,5 @@
-﻿using System.Reactive.Disposables;
+﻿using AtomUI.Animations;
+using System.Reactive.Disposables;
 using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
@@ -15,6 +16,12 @@ using FlyoutControl = Flyout;
 public partial class DropdownButton : Button
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<DropdownButton>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<DropdownButton>();
 
     public static readonly StyledProperty<MenuFlyout?> DropdownFlyoutProperty =
         AvaloniaProperty.Register<DropdownButton, MenuFlyout?>(nameof(DropdownFlyout));
@@ -64,6 +71,18 @@ public partial class DropdownButton : Button
 
     public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         FlyoutControl.IsPopupPinnedOpenProperty.AddOwner<DropdownButton>();
+
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
 
     public MenuFlyout? DropdownFlyout
     {
@@ -177,6 +196,7 @@ public partial class DropdownButton : Button
 
     #region 内部属性定义
 
+
     internal static readonly DirectProperty<DropdownButton, bool> IsContentVisibleProperty =
         AvaloniaProperty.RegisterDirect<DropdownButton, bool>(nameof(IsContentVisible),
             o => o.IsContentVisible,
@@ -239,49 +259,97 @@ public partial class DropdownButton : Button
     
     private void RegisterDropdownFlyout(MenuFlyout? menuFlyout)
     {
-        if (menuFlyout == null || ReferenceEquals(_registeredDropdownFlyout, menuFlyout))
+        if (menuFlyout is null || ReferenceEquals(_registeredDropdownFlyout, menuFlyout) || _flyoutBindingDisposables?.IsDisposed == true)
         {
             return;
         }
-
         UnregisterDropdownFlyout(_registeredDropdownFlyout);
-
-        _registeredDropdownFlyout = menuFlyout;
-        menuFlyout.MenuItemClicked += HandleMenuItemClicked;
-        menuFlyout.Opening += HandleMenuFlyoutOpening;
-
-        _flyoutBindingDisposables?.Dispose();
-        _flyoutBindingDisposables = new CompositeDisposable(9);
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementProperty, menuFlyout, FlyoutControl.RequestedPlacementProperty));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementAnchorProperty, menuFlyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementGravityProperty, menuFlyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsArrowVisibleProperty, menuFlyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsPointAtCenterProperty, menuFlyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, MarginToAnchorProperty, menuFlyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, menuFlyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayPopupProperty, menuFlyout, MenuFlyout.ShouldUseOverlayPopupProperty));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsPopupPinnedOpenProperty, menuFlyout, FlyoutControl.IsPopupPinnedOpenProperty));
-
-        if (IsPopupPinnedOpen && this.IsAttachedToVisualTree())
+        if (!ReferenceEquals(menuFlyout, DropdownFlyout))
         {
-            QueuePinnedOpen();
+            RegisterDropdownFlyout(DropdownFlyout);
+            return;
+        }
+        var bindings = new CompositeDisposable(14);
+        var registration = new CompositeDisposable(1);
+        registration.Add(Disposable.Create(() =>
+        {
+            try
+            {
+                menuFlyout.CloseForLifecycle();
+            }
+            finally
+            {
+                try { bindings.Dispose(); }
+                finally { menuFlyout.ClearMotionConfigurationOwner(this); }
+            }
+        }));
+        _registeredDropdownFlyout = menuFlyout;
+        _flyoutBindingDisposables = registration;
+        try
+        {
+            menuFlyout.SetMotionConfigurationOwner(this);
+            if (registration.IsDisposed)
+            {
+                return;
+            }
+            menuFlyout.MenuItemClicked += HandleMenuItemClicked;
+            menuFlyout.Opening += HandleMenuFlyoutOpening;
+            Bind(() => BindUtils.RelayBind(this, OpenMotionProperty, menuFlyout, AtomUI.Desktop.Controls.Flyout.OpenMotionProperty));
+            Bind(() => BindUtils.RelayBind(this, CloseMotionProperty, menuFlyout, AtomUI.Desktop.Controls.Flyout.CloseMotionProperty));
+            Bind(() => BindUtils.RelayBind(this, PlacementProperty, menuFlyout, FlyoutControl.RequestedPlacementProperty));
+            Bind(() => BindUtils.RelayBind(this, PlacementAnchorProperty, menuFlyout));
+            Bind(() => BindUtils.RelayBind(this, PlacementGravityProperty, menuFlyout));
+            Bind(() => BindUtils.RelayBind(this, IsArrowVisibleProperty, menuFlyout));
+            Bind(() => BindUtils.RelayBind(this, IsPointAtCenterProperty, menuFlyout));
+            Bind(() => BindUtils.RelayBind(this, MarginToAnchorProperty, menuFlyout));
+            Bind(() => BindUtils.RelayBind(this, IsMotionEnabledProperty, menuFlyout));
+            Bind(() => BindUtils.RelayBind(this, ShouldUseOverlayPopupProperty, menuFlyout, MenuFlyout.ShouldUseOverlayPopupProperty));
+            Bind(() => BindUtils.RelayBind(this, IsPopupPinnedOpenProperty, menuFlyout, FlyoutControl.IsPopupPinnedOpenProperty));
+            if (!registration.IsDisposed && IsPopupPinnedOpen && this.IsAttachedToVisualTree())
+            {
+                QueuePinnedOpen();
+            }
+        }
+        catch
+        {
+            if (ReferenceEquals(_flyoutBindingDisposables, registration)) { UnregisterDropdownFlyout(menuFlyout); }
+            else { registration.Dispose(); }
+            throw;
+        }
+
+        // Only replaceable runtime targets need a scoped code relay. A retired
+        // lease cannot acquire more bindings after a synchronous user callback.
+        void Bind(Func<IDisposable> acquire)
+        {
+            if (!registration.IsDisposed)
+            {
+                bindings.Add(acquire());
+            }
         }
     }
 
     private void UnregisterDropdownFlyout(MenuFlyout? menuFlyout)
     {
-        if (menuFlyout == null || !ReferenceEquals(_registeredDropdownFlyout, menuFlyout))
+        if (menuFlyout is null || !ReferenceEquals(_registeredDropdownFlyout, menuFlyout))
         {
             return;
         }
-
         menuFlyout.MenuItemClicked -= HandleMenuItemClicked;
         menuFlyout.Opening -= HandleMenuFlyoutOpening;
         ++_pinnedOpenGeneration;
-        menuFlyout.CloseForLifecycle();
+        var registration = _flyoutBindingDisposables!;
         _registeredDropdownFlyout = null;
-        _flyoutBindingDisposables?.Dispose();
-        _flyoutBindingDisposables = null;
+        try
+        {
+            registration.Dispose();
+        }
+        finally
+        {
+            if (ReferenceEquals(_flyoutBindingDisposables, registration))
+            {
+                _flyoutBindingDisposables = null;
+            }
+        }
     }
     
     private void HandleMenuItemClicked(object? sender, FlyoutMenuItemClickedEventArgs args)

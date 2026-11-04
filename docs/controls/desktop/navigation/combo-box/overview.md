@@ -113,6 +113,14 @@ ComboBox 的公共 Semantic Part 契约如下。契约字段（Selector、Contra
 
 **定制入口**：应用使用生成的语义专用 Style（`ComboBoxFrameStyle`、`ComboBoxPrefixStyle`、`ComboBoxIndicatorStyle`、`ComboBoxPopupRootStyle` 等，命名空间 `AtomUI.Theme.Styling`，AXAML 命名空间 `https://atomui.net`）在 AXAML 中声明式定制。禁止在 code-behind 中获取节点后直接设置 `Background` / `Foreground` / `Padding` / `CornerRadius` 等属性作为定制手段。
 
+### 打开与关闭动效配置
+
+ComboBox 自身通过 AddOwner 复用 Popup 的两项注册，不改变 AvaloniaComboBox 继承关系。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 ComboBox 的状态流按以下路径收敛：
@@ -235,7 +243,9 @@ ComboBox 实现 `IFormItemAware` 时以 `SelectedItem` 作为表单值 owner：
 
 ### 8.4 动效模型
 
-ComboBox 的动效只表达状态变化反馈，不应改变 public API 语义。初始加载、禁用态和卸载路径应能抑制或取消动效，避免保留旧控件实例。
+候选弹层采用 Select 对应的 Slide、MotionDurationMid：实际位于下方使用 SlideUp，位于上方使用 SlideDown。方向读取最终定位与翻转结果，不能统一套用居中 ZoomBig。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ### 8.5 视觉选项模型
 

@@ -52,28 +52,34 @@
                                         Spacing="{atom:SharedTokenResource SpacingXS}">
                                 <atom:PickerClearUpButton
                                     Name="PART_ClearUpButton"
+                                    Icon="{TemplateBinding InfoIcon}"
+                                    FormFeedback="{TemplateBinding FormFeedback}"
+                                    IsInClearMode="{CompiledBinding $parent[atom:InfoPickerInput].IsClearButtonVisible}"
+                                    IsVisible="{TemplateBinding InfoIcon, Converter={x:Static ObjectConverters.IsNotNull}}"
                                     Classes.semantic-scope-handle="True" />
-                                <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter" />
+                                <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter"
+                                                            Content="{TemplateBinding ContentRightAddOn}"
+                                                            ContentTemplate="{TemplateBinding ContentRightAddOnTemplate}" />
                             </StackPanel>
                         </atom:AddOnDecoratedBox.ContentRightAddOn>
                         <Grid ColumnDefinitions="*, Auto, *">
                             <atom:InfoPickerTextBox Name="PART_InfoInputBox"
-                                                  Classes.semantic-input="True"
-                                                  Grid.Column="0"
-                                                  HorizontalContentAlignment="Stretch"
-                                                  VerticalContentAlignment="Center"
-                                                  VerticalAlignment="Stretch"
-                                                  HorizontalAlignment="Stretch"
-                                                  TextWrapping="NoWrap"
-                                                  AcceptsReturn="False"
-                                                  FontSize="{TemplateBinding FontSize}"
-                                                  FontFamily="{TemplateBinding FontFamily}"
-                                                  FontStyle="{TemplateBinding FontStyle}"
-                                                  FontWeight="{TemplateBinding FontWeight}"
-                                                  DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
-                                                  IsReadOnly="{TemplateBinding IsReadOnly}"
-                                                  Text="{TemplateBinding Text}"
-                                                  PlaceholderText="{TemplateBinding PlaceholderText}" />
+                                                    Classes.semantic-input="True"
+                                                    Grid.Column="0"
+                                                    HorizontalContentAlignment="Stretch"
+                                                    VerticalContentAlignment="Center"
+                                                    VerticalAlignment="Stretch"
+                                                    HorizontalAlignment="Stretch"
+                                                    TextWrapping="NoWrap"
+                                                    AcceptsReturn="False"
+                                                    FontSize="{TemplateBinding FontSize}"
+                                                    FontFamily="{TemplateBinding FontFamily}"
+                                                    FontStyle="{TemplateBinding FontStyle}"
+                                                    FontWeight="{TemplateBinding FontWeight}"
+                                                    DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
+                                                    IsReadOnly="{TemplateBinding IsReadOnly}"
+                                                    Text="{TemplateBinding Text}"
+                                                    PlaceholderText="{TemplateBinding PlaceholderText}" />
                             <antdicons:SwapRightOutlined
                                 Name="PART_RangePickerArrow"
                                 Grid.Column="1" />
@@ -102,6 +108,8 @@
                                    Opacity="{TemplateBinding RangePickerIndicatorOpacity}" />
                     </Canvas>
                     <atom:Popup Name="PART_Popup"
+                                OpenMotion="{TemplateBinding OpenMotion}"
+                                CloseMotion="{TemplateBinding CloseMotion}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="True"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -120,7 +128,7 @@
                                                          IsFloatingArrowPosition="True"
                                                          IsHorizontalFlipped="{Binding $parent[atom:Popup].IsHorizontalFlipped}"
                                                          RangePickerIndicatorOffsetStart="{TemplateBinding RangePickerIndicatorOffsetStart}"
-                                                         RangePickerIndicatorOffsetEnd="{TemplateBinding RangePickerIndicatorOffsetEnd}"/>
+                                                         RangePickerIndicatorOffsetEnd="{TemplateBinding RangePickerIndicatorOffsetEnd}" />
                     </atom:Popup>
                 </Panel>
             </ControlTemplate>

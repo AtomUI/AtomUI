@@ -2,7 +2,7 @@
 
 本文档描述 DropdownButton 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [DropdownButton 桌面版架构设计](overview.md)，Semantic Part 契约见 [DropdownButton Semantic Part 契约](semantic-part.md)，变化记录见 [DropdownButton Changelog](changelog.md)。DropdownButton 没有独立 Token 文档；涉及主题变量时应回到 overview 的视觉与主题模型。
 
-Popup 接入边界：`DropdownButton` 负责业务状态和内容准备，`DropdownFlyout` / `MenuFlyout` 仅作为 relay 适配层，Flyout Popup 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
+Popup 接入边界：`DropdownButton` 负责业务状态和内容准备，`DropdownFlyout` / `MenuFlyout` 仅作为 relay 适配层，Flyout Popup 负责实际显示。模板重建或宿主切换时必须先强制关闭旧物理宿主，再释放旧 relay、绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
 
 ## 1. 实现定位
 
@@ -157,6 +157,13 @@ DropdownButton 的交互事件应从输入源收敛到控件级语义事件：
 - 外部样式不得使用 `/template/` 或 part selector 修改用户 icon、loading icon 的宽高。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 
+### 弹层动效接入约束
+
+DropdownButton 是按钮组合的公开动效配置入口，向关联 MenuFlyout 再向 Popup 单向转发；内部 Flyout 不建立竞争默认。主题按菜单路径提供 Dropdown 根层默认，嵌套 MenuItem 保留各自主题。Flyout 更换或 detach 时先结束旧物理宿主再释放旧转发，宽度匹配、hover 延迟和命令执行保持原合同。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 推荐验证：
@@ -167,3 +174,6 @@ DropdownButton 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

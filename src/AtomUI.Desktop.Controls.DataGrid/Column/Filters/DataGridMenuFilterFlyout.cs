@@ -1,5 +1,4 @@
 using AtomUI.Controls;
-using AtomUI.Animations;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -11,18 +10,14 @@ internal class DataGridMenuFilterFlyout : MenuFlyout
     public event EventHandler<DataGridFilterValuesSelectedEventArgs>? FilterValuesSelected;
     internal Func<bool>? ShouldFilterOnPassiveClose { get; set; }
     internal bool IsActiveShutdown = false;
-    
-    public DataGridMenuFilterFlyout()
-    {
-        OpenMotion  = new SlideUpInMotion();
-        CloseMotion = new SlideUpOutMotion();
-    }
-    
+
+
+
     protected override Control CreatePresenter()
     {
         foreach (var item in Items)
         {
-            if (item is Control control) 
+            if (item is Control control)
             {
                 control.SetLogicalParent(null);
                 control.SetVisualParent(null);
@@ -113,7 +108,7 @@ internal class DataGridFilterMenuItem : MenuItem
 
         OwningPresenter?.NotifyFilterSelectionChanged();
     }
-    
+
     private void ClearCheckStateRecursive(SelectingItemsControl itemsControl)
     {
         for (var i = 0; i < itemsControl.ItemCount; i++)
@@ -130,7 +125,7 @@ internal class DataGridFilterMenuItem : MenuItem
             menuItem.IsChecked = false;
         }
     }
-    
+
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);

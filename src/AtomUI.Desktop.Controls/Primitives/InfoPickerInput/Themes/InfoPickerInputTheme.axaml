@@ -3,6 +3,8 @@
               xmlns:atom="https://atomui.net"
               x:Class="AtomUI.Desktop.Controls.Primitives.Themes.InfoPickerInputTheme"
               TargetType="atom:InfoPickerInput">
+    <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
+    <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:InfoPickerInput">
             <Panel>
@@ -43,8 +45,14 @@
                                     Spacing="{atom:SharedTokenResource SpacingXS}">
                             <atom:PickerClearUpButton
                                 Name="PART_ClearUpButton"
+                                Icon="{TemplateBinding InfoIcon}"
+                                FormFeedback="{TemplateBinding FormFeedback}"
+                                IsInClearMode="{CompiledBinding $parent[atom:InfoPickerInput].IsClearButtonVisible}"
+                                IsVisible="{TemplateBinding InfoIcon, Converter={x:Static ObjectConverters.IsNotNull}}"
                                 Classes.semantic-scope-handle="True" />
-                            <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter" />
+                            <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter"
+                                                        Content="{TemplateBinding ContentRightAddOn}"
+                                                        ContentTemplate="{TemplateBinding ContentRightAddOnTemplate}" />
                         </StackPanel>
                     </atom:AddOnDecoratedBox.ContentRightAddOn>
                     <atom:InfoPickerTextBox Name="PART_InfoInputBox"
@@ -67,6 +75,8 @@
                 </atom:AddOnDecoratedBox>
 
                 <atom:Popup Name="PART_Popup"
+                            OpenMotion="{TemplateBinding OpenMotion}"
+                            CloseMotion="{TemplateBinding CloseMotion}"
                             WindowManagerAddShadowHint="False"
                             IsLightDismissEnabled="True"
                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -94,7 +104,7 @@
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
         <Setter Property="MarginToAnchor" Value="{atom:PopupTokenResource MarginToAnchor}" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
-        
+
         <Style Selector="^:flyout-open">
             <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
                 <Setter Property="Foreground"

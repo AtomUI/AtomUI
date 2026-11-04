@@ -431,5 +431,15 @@
         <source>Variants</source>
       </segment>
     </unit>
+    <unit id="PopupMotionTitle">
+      <segment>
+        <source>Popup motion</source>
+      </segment>
+    </unit>
+    <unit id="PopupMotionDescription">
+      <segment>
+        <source>The first picker uses FadeInMotion and FadeOutMotion. The second disables both directions with explicit null values.</source>
+      </segment>
+    </unit>
   </file>
 </xliff>

@@ -2,6 +2,22 @@
 
 本文档记录 Menu 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - MenuItem 对其实际子菜单 Popup 提供 OpenMotion/CloseMotion；ContextMenu、独立 MenuFlyout 使用各自已有入口。Menu 本体不增加控制整棵菜单或全部层级的同名配置。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 区分水平顶层 SlideUp、独立菜单 placement/RTL ZoomBig，以及 Dropdown 根层与固定原点子菜单。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-09-18
 
 - 修复 pin 向所有兄弟项传播导致的开合冲突；同级活动链由 owner 维护，普通关闭使用 coercion 而非关闭后回弹。

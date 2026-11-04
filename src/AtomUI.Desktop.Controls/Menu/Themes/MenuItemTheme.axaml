@@ -4,7 +4,10 @@
               xmlns:antdicons="https://atomui.net/icons/antdesign"
               x:Class="AtomUI.Desktop.Controls.Themes.MenuItemTheme"
               TargetType="atom:MenuItem"
+              x:DataType="atom:MenuItem"
               x:ClassModifier="internal">
+    <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.MenuOpen}" />
+    <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.MenuClose}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:MenuItem">
             <Panel>
@@ -85,6 +88,8 @@
                     </Grid>
                 </Border>
                 <atom:Popup Name="PART_Popup"
+                            OpenMotion="{TemplateBinding OpenMotion}"
+                            CloseMotion="{TemplateBinding CloseMotion}"
                             WindowManagerAddShadowHint="False"
                             IsLightDismissEnabled="False"
                             RequestedPlacement="RightEdgeAlignedTop"

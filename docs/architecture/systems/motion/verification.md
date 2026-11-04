@@ -1,7 +1,75 @@
 # Motion 验证状态与完成门禁
 
-本页区分[目标架构](overview.md)与当前可用实现，定义迁移、平台与发布验收。内置消费者已迁移，
-各阶段的定向验证、原生观测与平台性能验收分别记录，不能相互替代。
+本页区分[目标架构](overview.md)与当前可用实现，定义迁移、平台与发布验收。已有消费者的执行机制迁移与
+组件默认规格接入分开验收；各阶段的定向验证、原生观测与平台性能验收不能相互替代。
+
+## 弹层组件动效接入状态
+
+### 2026-11-03：请求成本与原生采样闭环
+
+初轮遗留问题已完成根因定位和定向修复，方法、命令、完整数值与限制集中在[闭环记录](../../../superpowers/progress/2026-11-03-popup-motion-performance-closure.md)。
+
+- 原生提前关闭来自窗口失活/平台失焦后的正常菜单关闭。探针要求前台、无未编排输入；中断时整批拒收、exit 3、AcceptedSamples=0，不重试，不取消产品失焦/hover关闭行为。同一原生场景的单变量失活重放已验证。
+- 准备期消除重复装箱、每请求委托及无消费者几何工作。相同驱动旧实现关闭准备5,456B，当前5,432B；新增开销已消除。9项策略/替代/回收/几何专项通过，400活动tick分配不变、内容新增Measure/Arrange=0。
+- 3对交错进程证明准备成本下降，tick耗时在A/A噪声范围。DatePicker页面每版10独立冷进程与重复导航未见回退，不宣称明显页面提速。
+- 原生3进程60个正式开关动作均Status=Completed且有中间动画值。清理后Desktop1,220/Core1/DataGrid4项通过，osx-arm64 NativeAOT发布及产物验证通过；已有依赖/本机动态库告警保留。
+
+唯一整体审阅无Critical/Important。未覆盖平台与显示present边界保持不变，不把合成回调当作显示FPS。
+
+### 2026-11-03：基类配置与可回收性合同
+
+正式设计采用[基类属性与配置归属](popup-motion.md#2-基类属性默认装配与所有权)：
+已有族基类提供 OpenMotion/CloseMotion，不同继承树通过 AddOwner 复用 Popup 的既有注册；
+Menu/NavMenu 本体与 DataGrid 不增加含义不清的整树/全局浮层配置。
+源码现已补齐基类和独立入口，统一使用 Popup 的属性注册；组件主题提供默认，配置单向传到实际宿主。
+DefaultMotionPreset、PopupMotionPreset 和 IsMotionAllowed 已从源码删除；Core 活动请求观察有效全局策略，禁用后完成到终点。
+
+| 合同 | 本轮证据 |
+| --- | --- |
+| API 与属性优先级 | 9 个入口注册身份、13 个真实模板的默认/custom/null/ClearValue 与绑定更新通过 |
+| 动态策略 | 入场、离场和 Delay 中禁用正常完成，重新启用不重播 |
+| AXAML 与回收 | 编译 DatePicker/Fade AXAML；closed/entry/exit/delay/reverse 卸载后 Window/View/Picker/Popup/Surface 回收；保留已完成 Task/共享定义时目标回收 |
+| 换模板 | 保留 DatePicker，旧 Popup/Surface 回收，新模板可重新打开；原失败→通过，未放宽 GC 断言 |
+| 可替换 Flyout | DropdownButton/SplitButton 关闭通知重入的旧注册覆盖问题，2 项失败→通过 |
+| 帧成本 | Slide/Zoom 各 400 个受控 tick，实际内容新增 Measure/Arrange 均为 0，定义引用不变 |
+| 专项合批 | 最终 40 项通过；临时源码已删除，清理后的测试程序集不含临时类型 |
+| 原生交互 | macOS/scale=2，真实 Gallery RawPointerEvent 输入；DatePicker 编译 Fade 示例点击、换模板再打开、InfoFlyout/Tooltip hover 开关与物理关闭通过，旧 DatePicker 页面回收 |
+| 固定时钟成本 | Slide/Zoom 各方向 5 次预热、30 次测量；400 个活动 tick 中间值有效，内容新增 Measure/Arrange=0；逐 tick 分配与重构前完全一致 |
+| 策略观察成本 | 关闭准备相对旧实现的额外分配由首稿 616B 收敛为 288B（减少53.2%）；观察只存在于活动请求，不新增逐帧查 Token 或分配 |
+| 清理后模块 | Desktop 1,367、Core 1、DataGrid 4、Gallery 10 项全部通过；未运行全量回归 |
+| NativeAOT | osx-arm64 发布及产物验证通过；固定反射成员名字保留。未执行 AOT 版换模板交互；已有 ReactiveUI、DataGrid ReflectionBinding 与本机动态库告警保留 |
+
+详细执行证据集中在[本轮记录](../../../superpowers/progress/2026-11-03-popup-motion-unification.md)。
+以下为初轮遗留问题记录，已由上条闭环定位并修正：原生回调间隔早期约8.5ms、后续约16.7ms；原始 probe 的间歇提前关闭在前版也复现。
+单进程固定 tick 的 A/A 耗时亦有明显波动，故不将 CPU/耗时差值作为提速百分比，不宣称原生性能基准已稳定。
+这里只确认指定场景的功能、回收、逐 tick 分配及布局成本；没有 Gallery 冷启动/页面加载提速结论。
+Windows/Linux、显示器实际呈现 FPS 与其他未覆盖后端不在本轮通过范围。
+
+### 2026-11-02：前版默认装配的实现与验证证据
+
+2026-11-02，已接入[弹层组件动效架构](popup-motion.md)及[组件规格矩阵](built-in-motion.md#弹层组件选择)。
+下列记录对应当日预设装配实现；通用 Popup 无默认动效，语义组件按族接入。它不证明上一节的新增基类 API 或可回收性已验收。
+
+| 项目 | 实现与验证范围 |
+| --- | --- |
+| 默认装配 | 选择器/Picker、AutoComplete、Menu/NavMenu、Flyout/ContextMenu、Tooltip、ColorPicker 和 DataGrid 筛选已接入；原始12条真实模板/owner验证有 RED→GREEN |
+| 方向与原点 | 组件族、实际翻转、RTL、alignment 与 shadow 内容坐标分流；几何相等复用定义，默认反向保留活动原点，自定义 Origin 不改写 |
+| 配置 owner | Popup 提供只读默认视图；Host/ContextMenu 主题与独立 Flyout 低优先级默认各自拥有配置，owner→Popup 单向转发，退役租约后强制物理关闭再释放定位绑定 |
+| 请求与输入 | 布局后重读 Motion；同步 Closing 在离场前允许取消；关闭完成通知在旧宿主释放后发布；快速反向/禁用/全局策略/透明准备重入及 Overlay 离场输入有定向证据 |
+| native 包络 | 标准静态 presenter 暴露透明 motion Deflate，动作前按需扩展并保持内容屏幕坐标；真实 macOS/scale2 越界2 DIP由RED转GREEN，Height=150时保持内容高度150 |
+| 性能边界 | 400tick实际内容Measure/Arrange为0/0，默认定义0次重建；显式同效果基线成本保持，不能据此声明显示器帧率或提速百分比 |
+
+macOS 原生真实时钟已验证 InfoFlyout 三轮开/关（200ms且有中间值）；hover 的锚点进入、内容内保持、离开、关闭中移回均走
+框架 raw 指针与实际 hit-test，事件计数没有额外开关。Tooltip/OverflowTip hover 验证 Fast100ms与中间帧；折叠NavMenu根项hover打开门禁已由同一原生输入RED→GREEN修复。
+原生静态/动画终态独立窗口RGBA比较零差异，中间帧可见缩放/淡入且箭头保留；这不是OS物理鼠标或实际display present证据。
+
+详细命令、原始失败、修复、实际统计与清理以[本轮执行记录](../../../superpowers/progress/2026-11-02-popup-motion-implementation.md)为唯一权威。
+曾发生的退出SIGABRT不能被探针COMPLETE覆盖：已从Flyout生命周期关闭先终止物理Popup再拆定位绑定修复，同一原生场景最终exit0。
+Windows、Linux X11/Wayland 本轮新动效实机和实际显示器呈现仍未验证，不以macOS或Headless通过代替。
+清理后Desktop受影响范围1554项、最后NavMenu改动定向310项、DataGrid14项通过（范围有重叠，不相加）；
+Release/osx-arm64 NativeAOT发布及输出校验通过。发布仍有原有DataGridBoundColumn/ReactiveUI裁剪与AOT告警，
+以及本机Homebrew动态库部署版本警告，不作为旧macOS运行认证。三进程60个原生动作均有中间值并正常退出；
+Rendered最大间隔60.81ms，未取得正式帧率预算达标证据。临时验证删除、0净新增永久测试，不运行未授权全量回归。
 
 ## 当前源码边界
 
@@ -319,3 +387,19 @@ Native feedback 保持开启；每变体预热 2 轮、每方向 20 次、动作
 因此**不能宣称 Overlay Dialog＋mask 已稳定 60FPS**。数据为合成器 presentation feedback，非高速相机；未测 120Hz、VRR、
 多输出、Release/NativeAOT，不代表 Windows/macOS。临时宿主与内容标注已删除，无新增永久测试；
 Desktop.Controls 4119/4128（9 项基线失败不变）、Core 8、Controls 27 通过。
+
+
+## 2026-11-04：主题默认值简化
+
+OpenMotion/CloseMotion 由主题按样式实例创建独立默认定义；不再发布默认 Motion 对或几何属性，不再反向回传默认值。
+内部准备契约只消费几何/菜单语义值快照，普通用户 Motion 保留原管线。实例隔离、覆盖优先级、hover 交互与强持有定义时的回收专项33项通过；
+macOS 原生 Popup、NativeAOT 发布/启动分别取证。固定 clock 的完整周期分配略降，关闭准备新增88B请求定义；耗时波动不支持速度或FPS结论。
+本轮最终模块、临时测试清理、DataGrid 原输入序列及详细数值见[唯一执行记录](../../../superpowers/progress/2026-11-04-popup-motion-theme-defaults.md)。
+
+
+### 全组件默认值复审补充
+
+15个属性入口、16份主题的32个默认Setter及14原型的声明/物化类型均已核对。PopupConfirm独立主题补齐Popover默认；
+外部持有可复用Flyout时，owner退役释放框架上次定位目标和已脱离Border旧合成缓存，普通关闭仍保留重开语义。
+完整审计43项、DataGrid装配2项通过，清理后精确模块86项通过；共享生命周期测试以真实GC替代私有方法存在断言，永久测试数量不增加。
+类型、实例隔离、92,000次缓存读取0B、11种回收情形、原失败/因果验证、AOT及清理见[权威记录](../../../superpowers/progress/2026-11-04-popup-motion-theme-defaults.md#全组件默认值复审)。

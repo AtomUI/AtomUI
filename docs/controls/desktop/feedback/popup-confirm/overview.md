@@ -69,6 +69,14 @@ PopupConfirm 的公共契约由 public/protected 类型成员、Avalonia 属性�
 
 控件专属或内部伪类包括 `EmptyContent=:empty-content`、`PopupConfirmPseudoClass.EmptyContent`。这些伪类属于主题 selector 可观察契约，不能在未同步主题和 Gallery 的情况下重命名或删除。
 
+### 打开与关闭动效配置
+
+从 FlyoutHost 继承 OpenMotion/CloseMotion，在 PopupConfirm 实例设置；内部 PopupConfirmFlyout 只承载和转发。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 PopupConfirm 的状态流按以下路径收敛：
@@ -105,6 +113,12 @@ PopupConfirm 使用 `PopupConfirmToken` 作为控件 Token scope。Token 只表�
 - 不把可由 AXAML 表达的模板状态迁移为 C# 动态创建视觉。
 - 不把 hover、pressed、selected、expanded、loading、filter、popup open 等运行时状态写入 Token。
 - Browser 或平台特化主题必须保持同一 API 的语义一致。
+
+### 弹层动效契约
+
+PopupConfirm 遵循 Popconfirm/Popover：ZoomBig、MotionDurationMid，使用实际 alignment 与箭头 Token 偏移原点。标题、说明、操作区、箭头与阴影共同变化，确认/取消行为继续由 PopupConfirm 管理。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ## 6. 控件家族或集成关系
 

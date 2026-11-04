@@ -50,6 +50,12 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
                              IMenuChildSelectable
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<NavMenuItem>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<NavMenuItem>();
     
     public static readonly StyledProperty<ICommand?> CommandProperty =
         Button.CommandProperty.AddOwner<NavMenuItem>(new(enableDataValidation: true));
@@ -91,6 +97,18 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     public static readonly StyledProperty<EntityKey?> ItemKeyProperty =
         AvaloniaProperty.Register<NavMenuItem, EntityKey?>(nameof(ItemKey));
     
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
+
     public ICommand? Command
     {
         get => GetValue(CommandProperty);
@@ -251,6 +269,7 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     #endregion
     
     #region 内部属性定义
+
     
     internal static readonly DirectProperty<NavMenuItem, double> EffectivePopupMinWidthProperty =
         AvaloniaProperty.RegisterDirect<NavMenuItem, double>(nameof(EffectivePopupMinWidth),

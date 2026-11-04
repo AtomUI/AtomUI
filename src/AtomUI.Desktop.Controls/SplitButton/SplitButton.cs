@@ -1,4 +1,5 @@
-﻿using System.Reactive.Disposables;
+﻿using AtomUI.Animations;
+using System.Reactive.Disposables;
 using System.Windows.Input;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
@@ -14,7 +15,6 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -26,6 +26,12 @@ public partial class SplitButton : ContentControl,
                            ICompactSpaceAware
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<SplitButton>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<SplitButton>();
 
     public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
         RoutedEvent.Register<SplitButton, RoutedEventArgs>(
@@ -98,6 +104,18 @@ public partial class SplitButton : ContentControl,
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<SplitButton>();
     
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
+
     public event EventHandler<RoutedEventArgs>? Click
     {
         add => AddHandler(ClickEvent, value);
@@ -252,6 +270,7 @@ public partial class SplitButton : ContentControl,
     #endregion
 
     #region 内部属性定义
+
     
     internal static readonly StyledProperty<IBrush?> SplitSeparatorBrushProperty = 
         AvaloniaProperty.Register<SplitButton, IBrush?>(nameof (SplitSeparatorBrush));
@@ -416,60 +435,99 @@ public partial class SplitButton : ContentControl,
     /// <param name="flyout">The flyout to connect events to.</param>
     private void RegisterFlyoutEvents(Flyout? flyout)
     {
-        if (flyout == null || ReferenceEquals(_registeredFlyout, flyout))
+        if (flyout is null || ReferenceEquals(_registeredFlyout, flyout) || _flyoutBindingDisposables?.IsDisposed == true)
         {
             return;
         }
-
         UnregisterFlyoutEvents(_registeredFlyout);
-
-        _registeredFlyout = flyout;
-        flyout.Opened += HandleFlyoutOpened;
-        flyout.Closed += HandleFlyoutClosed;
-
-        _flyoutBindingDisposables?.Dispose();
-        _flyoutBindingDisposables = new CompositeDisposable(10);
-
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementProperty, flyout, Flyout.RequestedPlacementProperty));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementAnchorProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementGravityProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsArrowVisibleProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsPointAtCenterProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, GutterToFlyoutProperty, flyout, MenuFlyout.MarginToAnchorProperty));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayPopupProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsPopupPinnedOpenProperty, flyout, Flyout.IsPopupPinnedOpenProperty));
-
-        _flyoutBindingDisposables.Add(flyout.GetPropertyChangedObservable(Popup
-                                                .RequestedPlacementProperty)
-                                            .Subscribe(HandleFlyoutPlacementPropertyChanged));
-
-        if (IsPopupPinnedOpen && this.IsAttachedToVisualTree())
+        if (!ReferenceEquals(flyout, Flyout))
         {
-            QueuePinnedOpen();
+            RegisterFlyoutEvents(Flyout);
+            return;
+        }
+        var bindings = new CompositeDisposable(14);
+        var registration = new CompositeDisposable(1);
+        registration.Add(Disposable.Create(() =>
+        {
+            try
+            {
+                flyout.CloseForLifecycle();
+            }
+            finally
+            {
+                try { bindings.Dispose(); }
+                finally { flyout.ClearMotionConfigurationOwner(this); }
+            }
+        }));
+        _registeredFlyout = flyout;
+        _flyoutBindingDisposables = registration;
+        try
+        {
+            flyout.SetMotionConfigurationOwner(this);
+            if (registration.IsDisposed)
+            {
+                return;
+            }
+            flyout.Opened += HandleFlyoutOpened;
+            flyout.Closed += HandleFlyoutClosed;
+            Bind(() => BindUtils.RelayBind(this, OpenMotionProperty, flyout, AtomUI.Desktop.Controls.Flyout.OpenMotionProperty));
+            Bind(() => BindUtils.RelayBind(this, CloseMotionProperty, flyout, AtomUI.Desktop.Controls.Flyout.CloseMotionProperty));
+            Bind(() => BindUtils.RelayBind(this, PlacementProperty, flyout, Flyout.RequestedPlacementProperty));
+            Bind(() => BindUtils.RelayBind(this, PlacementAnchorProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, PlacementGravityProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, IsArrowVisibleProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, IsPointAtCenterProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, GutterToFlyoutProperty, flyout, MenuFlyout.MarginToAnchorProperty));
+            Bind(() => BindUtils.RelayBind(this, IsMotionEnabledProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, ShouldUseOverlayPopupProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, IsPopupPinnedOpenProperty, flyout, Flyout.IsPopupPinnedOpenProperty));
+            Bind(() => flyout.GetPropertyChangedObservable(Popup.RequestedPlacementProperty).Subscribe(HandleFlyoutPlacementPropertyChanged));
+            if (!registration.IsDisposed && IsPopupPinnedOpen && this.IsAttachedToVisualTree())
+            {
+                QueuePinnedOpen();
+            }
+        }
+        catch
+        {
+            if (ReferenceEquals(_flyoutBindingDisposables, registration)) { UnregisterFlyoutEvents(flyout); }
+            else { registration.Dispose(); }
+            throw;
+        }
+
+        // Only replaceable runtime targets need a scoped code relay. A retired
+        // lease cannot acquire more bindings after a synchronous user callback.
+        void Bind(Func<IDisposable> acquire)
+        {
+            if (!registration.IsDisposed)
+            {
+                bindings.Add(acquire());
+            }
         }
     }
 
-    /// <summary>
-    /// Explicitly unregisters all flyout events.
-    /// </summary>
-    /// <param name="flyout">The flyout to disconnect events from.</param>
     private void UnregisterFlyoutEvents(Flyout? flyout)
     {
-        if (flyout == null || !ReferenceEquals(_registeredFlyout, flyout))
+        if (flyout is null || !ReferenceEquals(_registeredFlyout, flyout))
         {
             return;
         }
-
         flyout.Opened -= HandleFlyoutOpened;
         flyout.Closed -= HandleFlyoutClosed;
-
         ++_pinnedOpenGeneration;
-        flyout.CloseForLifecycle();
+        var registration = _flyoutBindingDisposables!;
         _registeredFlyout = null;
-        _isFlyoutOpen     = false;
-        _flyoutBindingDisposables?.Dispose();
-        _flyoutBindingDisposables = null;
+        _isFlyoutOpen = false;
+        try
+        {
+            registration.Dispose();
+        }
+        finally
+        {
+            if (ReferenceEquals(_flyoutBindingDisposables, registration))
+            {
+                _flyoutBindingDisposables = null;
+            }
+        }
     }
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

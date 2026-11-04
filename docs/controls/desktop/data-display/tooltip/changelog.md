@@ -2,6 +2,22 @@
 
 本文档记录 Tooltip 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - ToolTip 实例公开 OpenMotion/CloseMotion；字符串 Tip 创建的实例由主题提供默认。OverflowTip 复用实际 ToolTip，不重复注册，也不新增宿主 Motion 附加属性。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 ZoomBig 使用 Fast 时长、alignment/箭头 Token 原点与实例/宿主来源规则。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-10-03
 
 - Implementation

@@ -1,5 +1,8 @@
 using System.Diagnostics;
 using System.Reflection;
+using System.Reactive.Linq;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Rendering.Composition;
@@ -24,6 +27,8 @@ internal sealed class NativeMotionObservation : IDisposable
     private readonly Stopwatch _clock = Stopwatch.StartNew();
     private readonly Process _process = Process.GetCurrentProcess();
     private NativeMotionSample? _current;
+    private readonly IDisposable? _inputSubscription;
+    private string? _interruption;
     internal string TargetType => _target.GetType().FullName!;
 
     internal NativeMotionObservation(TopLevel root, Control target, string propertyName)
@@ -54,9 +59,22 @@ internal sealed class NativeMotionObservation : IDisposable
             _afterCommit.GetAddMethod(true)!.Invoke(_compositor, [_committed]);
             _target.PropertyChanged += PropertyChanged;
             _root.LayoutUpdated += LayoutUpdated;
+            if (_root is WindowBase window)
+            {
+                window.Deactivated += Deactivated;
+            }
+            _inputSubscription = AvaloniaLocator.Current.GetService<IInputManager>()?.Process.Subscribe(InputReceived);
         }
         catch
         {
+            _inputSubscription?.Dispose();
+            if (_root is WindowBase window)
+            {
+                window.Deactivated -= Deactivated;
+            }
+            _root.LayoutUpdated -= LayoutUpdated;
+            _target.PropertyChanged -= PropertyChanged;
+            _afterCommit.GetRemoveMethod(true)!.Invoke(_compositor, [_committed]);
             _layoutTimed.SetValue(_layoutManager, originalLayoutTimed);
             _process.Dispose();
             throw;
@@ -65,6 +83,7 @@ internal sealed class NativeMotionObservation : IDisposable
 
     internal NativeMotionSample Begin(string scenario, string direction, int iteration)
     {
+        EnsureUninterrupted();
         var sample = new NativeMotionSample(scenario, direction, iteration, _clock.Elapsed.TotalMilliseconds)
         {
             AllocatedBytes = GC.GetTotalAllocatedBytes(precise: false),
@@ -74,6 +93,29 @@ internal sealed class NativeMotionObservation : IDisposable
         };
         _current = sample;
         return sample;
+    }
+
+    internal void EnsureUninterrupted()
+    {
+        if (_interruption is not null || _root is WindowBase { IsActive: false })
+        {
+            throw new OperationCanceledException(_interruption ?? "The measurement window is not active.");
+        }
+    }
+
+    private void Deactivated(object? sender, EventArgs e)
+    {
+        _interruption ??= "The measurement window lost activation; normal menu deactivation closes its popup.";
+    }
+
+    private void InputReceived(RawInputEventArgs input)
+    {
+        // Public-API samples have no input steps. Do not suppress real input or
+        // menu dismissal: reject the measurement rather than blame the control.
+        if (input.Timestamp > 0)
+        {
+            _interruption ??= $"Unscripted {input.GetType().Name} input interrupted the public-API measurement.";
+        }
     }
 
     internal void ObserveTarget(Control target)
@@ -94,7 +136,17 @@ internal sealed class NativeMotionObservation : IDisposable
     internal async Task EndAsync(NativeMotionSample sample)
     {
         _current = null;
-        await Task.WhenAll(sample.PendingBatches).WaitAsync(TimeSpan.FromSeconds(5));
+        EnsureUninterrupted();
+        try
+        {
+            await Task.WhenAll(sample.PendingBatches).WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        catch
+        {
+            EnsureUninterrupted();
+            throw;
+        }
+        EnsureUninterrupted();
         sample.PendingBatches.Clear();
         sample.ElapsedMilliseconds = _clock.Elapsed.TotalMilliseconds - sample.StartMilliseconds;
         sample.AllocatedBytes = GC.GetTotalAllocatedBytes(precise: false) - sample.AllocatedBytes;
@@ -162,6 +214,11 @@ internal sealed class NativeMotionObservation : IDisposable
     public void Dispose()
     {
         _current = null;
+        _inputSubscription?.Dispose();
+        if (_root is WindowBase window)
+        {
+            window.Deactivated -= Deactivated;
+        }
         _root.LayoutUpdated -= LayoutUpdated;
         _target.PropertyChanged -= PropertyChanged;
         _afterCommit.GetRemoveMethod(true)!.Invoke(_compositor, [_committed]);

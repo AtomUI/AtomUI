@@ -212,6 +212,13 @@ Tooltip 的交互事件应从输入源收敛到控件级语义事件：
 - `IsOpen`、`Tip` 与宿主 attach/detach 变化只能经调和入口影响弹层物理开关；不新增第二条直接开关 popup 的路径。
 - 只有 `ToolTipOpening` 否决和弹层外部关闭可以回写 `IsOpen=false`。
 
+### 弹层动效接入约束
+
+ToolTip 实例拥有 OpenMotion/CloseMotion，主题提供 ZoomBig/Fast 默认，运行时创建的跨根 Popup 单向消费实例有效值。定位、颜色等既有宿主附加属性继续沿原 ResolveValueSource 规则；Motion 不另立宿主优先级。关闭、owner 更换和失败释放接入与订阅，OverflowTip 的溢出测量、显示条件和延迟保持原合同。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 推荐验证：
@@ -228,3 +235,6 @@ Tooltip 的交互事件应从输入源收敛到控件级语义事件：
 - `OverflowTip` 回归测试覆盖 TextBox 精确 viewport、内部 viewport 独立变化、模板重套用、第三方 TextBox fallback 和禁止外部 `PART_TextPresenter` 查询。
 - 文本布局回归覆盖长文本在 `ToolTipMaxWidth` 内换行且不裁剪、`TextWrapping`/`TextTrimming` 附加属性默认值、打开期间修改即时生效，以及主题 `PART_ContentPresenter` 的换行契约。
 - Tip 实例定制回归覆盖实例直接使用、实例级 placement/preset color/文本换行覆盖宿主、实例未设置时回落宿主，以及实例 `Background` 局部值保持。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

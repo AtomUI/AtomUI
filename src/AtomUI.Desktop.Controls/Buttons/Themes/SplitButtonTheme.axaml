@@ -3,6 +3,8 @@
                     xmlns:atom="https://atomui.net"
                     x:ClassModifier="internal">
 <ControlTheme x:Key="{x:Type atom:SplitButton}" TargetType="atom:SplitButton">
+        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownOpen}" />
+        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownClose}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <DockPanel Name="PART_MainLayout"

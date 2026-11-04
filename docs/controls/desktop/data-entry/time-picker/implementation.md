@@ -221,6 +221,13 @@ Semantic Part 尺寸与状态基线矩阵（布局型 Part 进入实现前的事
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 - Semantic Part marker 的维护边界：共享 `InfoPickerInputTheme.axaml` 承载单选触发区静态 marker（`semantic-scope-input`、`semantic-prefix`、`semantic-input`、`semantic-suffix`、`semantic-scope-handle`、`semantic-popup-root`）；`RangeTimePickerTheme.axaml` 承载范围触发区同名 marker 与 `semantic-secondary-input`；共享 `PickerClearUpButtonTheme.axaml` 承载 `semantic-clear` marker（`clear` Part 声明 `CrossNestedOwners=true`，生成器沿 PickerClearUpButton 主题链校验）；`TimePickerPresenterTheme.axaml` 承载 `semantic-popup-container` / `semantic-popup-footer`；`TimeViewTheme.axaml` 承载 `semantic-time-content` / `semantic-time-column`（×4 列宿主）。运行时注入点：`DateTimePickerPanel.RefreshItems` 创建 `TimeViewCell` 时追加 `popup.item` 的生成 selector class 常量。marker 随实例创建一次，列表滚动、容器复用、`ClockIdentifier` 切换、弹层重开和容器回收路径不得增删；`TimeViewTheme` 的 `semantic-time-*` marker 对未声明该契约的 DatePicker 家族保持 inert，共享主题 marker 中的同名 Part 类（`semantic-popup-*`）在两个 picker 家族各自的弹层内互不嵌套。
 
+### 弹层动效接入约束
+
+TimePicker/RangeTimePicker 继承 InfoPickerInput 配置入口，共享主题提供 Slide 默认并单向传给 PART_Popup。时间候选、确认和滚轮选择仍由 Picker 管理，保持列 viewport、offset、可见滚动条及 IsChangeOnScroll 语义。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 推荐验证：
@@ -234,3 +241,6 @@ Semantic Part 尺寸与状态基线矩阵（布局型 Part 进入实现前的事
 Semantic Part 行为验证：
 
 - `tests/AtomUI.Desktop.Controls.Tests/TimePicker/TimePickerSemanticPartTests.cs`：descriptor 契约（TimePicker 11 个、RangeTimePicker 12 个 Part）、宿主/共享/内部主题静态 marker 清单、`popup.item` 运行时注入与滚动复用/rebuild 保持、生成 Style 命中触发区与弹层目标（含 `secondaryInput`、`popup.content`、`popup.column`）、弹层首次打开/关闭/重开 marker 保持、`ClockIdentifier` 12↔24 切换、清除模式与 footer 可见性不增删 marker、默认主题不消费 `.semantic-*`、尺寸基线失败回归。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

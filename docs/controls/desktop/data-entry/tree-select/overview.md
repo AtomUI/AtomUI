@@ -94,6 +94,14 @@ TreeSelect 继承 `AbstractSelect` 的输入壳体、弹层、清除、状态、
 | `PopupFrame` | `Border` | 懒创建的候选弹层外壳。 |
 | `PART_TreeView` | `TreeSelectTreeView` | 懒创建的树候选控件。 |
 
+### 打开与关闭动效配置
+
+从 AbstractSelect 继承 OpenMotion/CloseMotion，控制根弹层，不改变 TreeView 内容展开。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 TreeSelect 的核心状态流：
@@ -144,6 +152,12 @@ TreeSelect 的默认视觉由 TreeSelect 专属主题、`InputControlFrame` / Se
 单选结果文本和多选 tag 的完整内容提示复用共享 `OverflowTip` attached behavior。主题通过 `IsShowOverflowTip`、`OverflowTipDelay` 和 `OverflowTipPlacement` 控制提示开关、延迟和位置，实际 tooltip 仅在文本视觉溢出时托管到 `ToolTip`。
 
 右侧 count、content add-on 和 handle 的稳定 template part 状态由 AXAML compiled ancestor binding 表达。C# 中只保留 frame layout part 到 SelectHandle 的 hover / pressed sibling 状态转发，因为该关系不是 templated parent 绑定，不能用 `TemplateBinding` 表达；该转发不改变 `InputControlFrame` 对输入表面状态的唯一 ownership。
+
+### 弹层动效契约
+
+TreeSelect 根弹层采用 Select 对应的 Slide、MotionDurationMid，按实际上下位置选择 SlideUp/SlideDown。内部树节点的展开属于树布局动效，与根弹层入离场分别管理。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ## 6. 控件家族或集成关系
 

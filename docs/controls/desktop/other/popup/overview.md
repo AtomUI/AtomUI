@@ -51,6 +51,14 @@ content 决定 Padding、边框、箭头和业务视觉。
 Avalonia `Popup` 继承属性继续负责 `Child`、`PlacementTarget`、`IsOpen`、`IsLightDismissEnabled`、offset、anchor、
 gravity、overlay 选择和焦点行为。AtomUI 不复制这些契约。
 
+### 打开与关闭动效配置
+
+Popup 提供 OpenMotionProperty/CloseMotionProperty 的共享注册；同包控件族基类通过 AddOwner 复用，保持已有属性身份。直接 Popup 的两项元数据默认均为 null。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 Popup 使用显式 surface ownership，不根据 Child 类型、Child Background、透明度、Dialog ancestry 或 Theme 应用时序推断。
@@ -83,11 +91,14 @@ Pinned 状态不改变上述会话分类：外点、Escape、失焦、window dea
 ```text
 Popup
   -> PopupRoot or OverlayPopupHost       transparent host
+     -> PART_ContentPresenter            native only: transparent motion Deflate
      -> PopupSurface : Panel             open/close motion target
         -> VisualLayerManager
            -> ShadowsAwareContainer      frame surface + shadow
               -> Child                   direct content or specialized presenter
 ```
+
+native 标准 presenter 的 Child 为 PopupSurface；仅 native 增加该层，Overlay 直接使用 PopupSurface。透明动效缓冲的计算、约束及释放见[共享动效架构](../../../../architecture/systems/motion/popup-motion.md#6-宿主与输入边界)。
 
 native 与 overlay 两条路径共享相同的 frame surface 实现：
 
@@ -112,6 +123,12 @@ Windows 上阴影区域不接收鼠标输入（见 [实现原理](implementation
 
 内容相对 anchor 的位置与阴影厚度无关：native 路径在朝向 anchor 的一侧扣除残余阴影后再留出 `MarginToAnchor`，
 与 overlay 路径落在同一屏幕位置。
+
+### 弹层动效契约
+
+Popup 是语义中立的宿主原语，通用默认允许无动效；具体组件主题或非视觉接入选择对应规格。OpenMotion/CloseMotion 的显式 null 禁用该侧，不能被默认回退重新启用。native/overlay 使用 PopupSurface 让内容、边框、箭头和阴影共同动画。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ## 6. 控件家族与集成关系
 

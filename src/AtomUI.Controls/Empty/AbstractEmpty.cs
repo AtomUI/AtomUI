@@ -201,7 +201,6 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
                 change.Property == ImagePathProperty ||
                 change.Property == ImageSourceProperty)
             {
-                CheckImageSource();
                 SetupImage();
             }
             else if (change.Property == BorderColorProperty ||
@@ -217,47 +216,57 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
 
     private void SetupImage()
     {
+        CheckImageSource();
         if (_svg is null)
         {
             return;
         }
 
+        string? imageSource = null;
+        var imagePath = ImagePath;
         if (PresetImage is not null)
         {
-            _svg.Path   = null;
-            _svg.Source = null;
-            if (BorderColor != null && ShadowColor != null && ContentColor != null && BgColor != null && BorderColorSecondary != null)
+            if (BorderColor is null || BorderColorSecondary is null || ShadowColor is null || ContentColor is null || BgColor is null)
             {
-                var colorBgContainer = ((ISolidColorBrush)BgColor!).Color;
-                var borderColor      = ColorUtils.OnBackground(((ISolidColorBrush)BorderColor).Color, colorBgContainer);
-                var borderColorSecondary =
-                    ColorUtils.OnBackground(((ISolidColorBrush)BorderColorSecondary).Color, colorBgContainer);
-                var shadowColor  = ColorUtils.OnBackground(((ISolidColorBrush)ShadowColor).Color, colorBgContainer);
-                var contentColor = ColorUtils.OnBackground(((ISolidColorBrush)ContentColor).Color, colorBgContainer);
-                if (PresetImage.Value == PresetEmptyImage.Default)
-                {
-                    _svg.Source = BuiltInImageBuilder.BuildDefaultImage(shadowColor, borderColor, borderColorSecondary);
-                }
-                else
-                {
-                    _svg.Source = BuiltInImageBuilder.BuildSimpleImage(contentColor, borderColor, shadowColor);
-                }
+                return;
             }
+
+            var colorBgContainer = ((ISolidColorBrush)BgColor).Color;
+            var borderColor      = ColorUtils.OnBackground(((ISolidColorBrush)BorderColor).Color, colorBgContainer);
+            var borderColorSecondary =
+                ColorUtils.OnBackground(((ISolidColorBrush)BorderColorSecondary).Color, colorBgContainer);
+            var shadowColor  = ColorUtils.OnBackground(((ISolidColorBrush)ShadowColor).Color, colorBgContainer);
+            var contentColor = ColorUtils.OnBackground(((ISolidColorBrush)ContentColor).Color, colorBgContainer);
+            imageSource = PresetImage.Value == PresetEmptyImage.Default
+                ? BuiltInImageBuilder.BuildDefaultImage(shadowColor, borderColor, borderColorSecondary)
+                : BuiltInImageBuilder.BuildSimpleImage(contentColor, borderColor, shadowColor);
         }
         else if (ImageSource is not null)
         {
-            _svg.Path   = null;
-            _svg.Source = ImageSource;
+            imageSource = ImageSource;
         }
-        else if (ImagePath is not null)
+
+        if (imagePath is not null)
         {
-            _svg.Source = null;
-            _svg.Path = ImagePath;
+            if (_svg.Source is not null)
+            {
+                _svg.Source = null;
+            }
+            if (_svg.Path != imagePath)
+            {
+                _svg.Path = imagePath;
+            }
         }
         else
         {
-            _svg.Source = null;
-            _svg.Path   = null;
+            if (_svg.Path is not null)
+            {
+                _svg.Path = null;
+            }
+            if (_svg.Source != imageSource)
+            {
+                _svg.Source = imageSource;
+            }
         }
     }
 
@@ -265,7 +274,12 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
     {
         base.OnApplyTemplate(e);
         _svg = e.NameScope.Find<Avalonia.Svg.Svg>("PART_SvgImage");
-        CheckImageSource();
+        SetupImage();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
         SetupImage();
     }
 }

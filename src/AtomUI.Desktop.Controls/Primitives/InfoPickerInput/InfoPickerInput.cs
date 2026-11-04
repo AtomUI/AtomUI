@@ -1,16 +1,17 @@
-﻿using System.Reactive.Disposables;
+﻿using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Data;
+using AtomUI.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
@@ -25,6 +26,12 @@ public abstract class InfoPickerInput : TemplatedControl,
                                         IFormItemFeedbackAware
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<InfoPickerInput>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<InfoPickerInput>();
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<InfoPickerInput>();
     
@@ -87,6 +94,18 @@ public abstract class InfoPickerInput : TemplatedControl,
     public static readonly StyledProperty<Control?> PickerPresenterProperty =
         AvaloniaProperty.Register<InfoPickerInput, Control?>(nameof(PickerPresenter));
     
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
+
     public object? LeftAddOn
     {
         get => GetValue(LeftAddOnProperty);
@@ -209,6 +228,7 @@ public abstract class InfoPickerInput : TemplatedControl,
     #endregion
 
     #region 内部属性定义
+
 
     internal static readonly StyledProperty<string?> TextProperty =
         AvaloniaProperty.Register<InfoPickerInput, string?>(nameof(Text));
@@ -383,7 +403,6 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     private protected AddOnDecoratedBox? DecoratedBox;
     private protected PickerClearUpButton? PickerClearUpButton;
-    private CompositeDisposable? _contentRightAddOnBindings;
     private protected Popup? PickerPopup;
     protected bool CurrentValidSelected;
     protected TextBox? InfoInputBox;
@@ -537,7 +556,6 @@ public abstract class InfoPickerInput : TemplatedControl,
 
         RelayFrameBorderBrush();
         SetupPopupProperties();
-        SetupContentRightAddOnBindings(e);
         ConfigureArrowPosition();
         ConfigureShowArrowEffective();
         if (IsPickerOpen)
@@ -546,7 +564,38 @@ public abstract class InfoPickerInput : TemplatedControl,
             ApplyPopupOpenState(true);
         }
     }
-    
+
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.OldValue is IControlTemplate)
+        {
+            // Retired template theme activators can subscribe to this owner.
+            // Logical detach only releases ordinary styles in the framework.
+            var ownerParts = this.GetVisualDescendants().OfType<Control>()
+                .Where(part => ReferenceEquals(part.TemplatedParent, this)).ToArray();
+            // This owner intentionally preserves the presenter across templates.
+            // It may already be absent from the retired Popup.Child subtree.
+            var borders = PickerPresenter?.GetSelfAndVisualDescendants().OfType<Border>().ToArray();
+            ClosePickerForLifecycle();
+            if (borders is not null)
+            {
+                foreach (var border in borders)
+                {
+                    border.ReleaseDetachedCompositionCache();
+                }
+            }
+            if (ReferenceEquals(Template, e.NewValue))
+            {
+                foreach (var part in ownerParts)
+                {
+                    part.ReleaseTemplatedParentTheme();
+                }
+            }
+        }
+        base.OnTemplateChanged(e);
+    }
+
     private void HandleDecoratedBoxTemplateApplied(object? sender, TemplateAppliedEventArgs args)
     {
         PickerInnerBox = DecoratedBox!.ContentFrame;
@@ -615,32 +664,6 @@ public abstract class InfoPickerInput : TemplatedControl,
         }
     
         return false;
-    }
-
-    private void SetupContentRightAddOnBindings(TemplateAppliedEventArgs e)
-    {
-        _contentRightAddOnBindings?.Dispose();
-        _contentRightAddOnBindings = new CompositeDisposable();
-
-        if (PickerClearUpButton is { } clearUpButton)
-        {
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, IsClearButtonVisibleProperty, clearUpButton,
-                PickerClearUpButton.IsInClearModeProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, InfoIconProperty, clearUpButton,
-                PickerClearUpButton.IconProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, FormFeedbackProperty, clearUpButton,
-                PickerClearUpButton.FormFeedbackProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, InfoIconProperty, clearUpButton,
-                Visual.IsVisibleProperty, value => value is not null));
-        }
-
-        if (e.NameScope.Find<ContentPresenter>("PART_ContentRightAddOnPresenter") is { } contentPresenter)
-        {
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, ContentRightAddOnProperty, contentPresenter,
-                ContentPresenter.ContentProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, ContentRightAddOnTemplateProperty,
-                contentPresenter, ContentPresenter.ContentTemplateProperty));
-        }
     }
 
     protected virtual void ConfigureIsClearButtonVisible()

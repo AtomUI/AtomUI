@@ -1,6 +1,8 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AtomUI.Reflection;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 
@@ -10,6 +12,20 @@ using AvaloniaPopup = Avalonia.Controls.Primitives.Popup;
 
 internal static class PopupFlyoutBaseReflectionExtensions
 {
+    private static readonly Lazy<MethodInfo> SetDefaultPlacementTargetMethodInfo = new(() =>
+        FixedMemberReflection.RequireMethod(
+            typeof(PopupFlyoutBase).GetMethod("SetDefaultPlacementTarget", BindingFlags.Instance | BindingFlags.NonPublic,
+                null, [typeof(Control)], null),
+            typeof(PopupFlyoutBase), "SetDefaultPlacementTarget"));
+
+    [DynamicDependency("SetDefaultPlacementTarget", typeof(PopupFlyoutBase))]
+    internal static void ClearDefaultPlacementTarget(this PopupFlyoutBase flyoutBase)
+    {
+        // The framework keeps this target for IsOpen-based reopening. Retire it
+        // only with the owning registration, never during an ordinary close.
+        SetDefaultPlacementTargetMethodInfo.Value.Invoke(flyoutBase, [null]);
+    }
+
     private static readonly Lazy<FieldInfo> PopupLazyFieldInfo = new(() =>
         FixedMemberReflection.RequireField(
             typeof(PopupFlyoutBase).GetField("_popupLazy", BindingFlags.Instance | BindingFlags.NonPublic),

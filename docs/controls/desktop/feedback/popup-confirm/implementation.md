@@ -161,6 +161,13 @@ PopupConfirm 的交互事件应从输入源收敛到控件级语义事件：
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 - 已发布的 Semantic Part 名称、selector class / route、ContractType 和数量语义（见 [Semantic Part 契约](semantic-part.md)）。
 
+### 弹层动效接入约束
+
+PopupConfirm 继承 FlyoutHost 的公开配置入口；它的独立主题显式提供 Popover 的两个真实 AbstractMotion 默认原型，不能依赖 CLR 继承自动获得基类主题 Setter。内部 PopupConfirmFlyout 只承载并单向转发。确认/取消意图与物理关闭分开，不能因 leave 完成重复提交事件。内容替换、detach 和物理关闭释放旧 presenter 与资源绑定。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 推荐验证：
@@ -171,3 +178,6 @@ PopupConfirm 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

@@ -65,6 +65,14 @@ SplitButton 的公共契约由 public/protected 类型成员、Avalonia 属性�
 
 当前未抽取到控件专属伪类；主题主要依赖 Avalonia 标准伪类、模板绑定和内部 StyledProperty。
 
+### 打开与关闭动效配置
+
+SplitButton 自身通过 AddOwner 提供 OpenMotion/CloseMotion，仅作用于次按钮关联浮层，不改变主按钮反馈。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 SplitButton 的状态流按以下路径收敛：
@@ -138,7 +146,9 @@ SplitButton 涉及弹层、窗口或 overlay 宿主时，打开状态、取消�
 
 ### 8.2 动效模型
 
-SplitButton 的动效只表达状态变化反馈，不应改变 public API 语义。初始加载、禁用态和卸载路径应能抑制或取消动效，避免保留旧控件实例。
+SplitButton 承载 MenuFlyout 时，根弹层采用 Dropdown 四方向 Slide、MotionDurationMid，嵌套子菜单采用固定左上原点的 ZoomBig、MotionDurationMid。承载其他 Flyout 时继承该 Flyout 的语义规格，主按钮点击反馈独立保留。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ### 8.3 视觉选项模型
 

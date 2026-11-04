@@ -107,7 +107,7 @@ Public API / ItemsSource / Command / Event
 - 构造阶段只注册必要状态，不依赖 template part。
 - 模板应用时获取 part、建立事件订阅和绑定，并先释放旧 part 订阅。
 - `OnApplyTemplate` 在连接 `PART_Popup` 的 pinned 模板绑定、事件和 dismiss 行为后，才把已有的业务打开状态投射到物理 Popup；Popup 外部关闭再回写业务状态。pinned 锚点暂时隐藏时，业务状态保持不变，物理宿主关闭并由共享 Popup 在锚点恢复后重开。
-- 开启动画由共享 Popup 管理；`PopupMotionActor` 无论在 `Opened` 前还是后挂载，都必须进入同一开启动画路径。`Closed` 负责取消动画并释放当前 actor，ColorPicker 不保存或补偿 motion actor 状态。
+- 开启动画由共享 Popup 管理；`PopupSurface` 无论在 `Opened` 前还是后就绪，都必须进入同一开启动画路径。`Closed` 负责取消动画并清理当前表面登记，ColorPicker 不保存或补偿 Popup 的播放状态。
 - 首次打开竞态、Popup 直接 Child 转发契约、pinned light-dismiss 全局审计与回归测试范式统一记录在
   [Semantic Part Popup 首次打开生命周期竞态案例](../../../../engineering/case-studies/semantic-part-popup-first-open-lifecycle-case-study.md)，本控件文档只维护 ColorPicker 自身不变量。
 - 控件卸载、弹层关闭、窗口关闭、集合替换或 container recycle 时释放事件订阅和资源宿主。
@@ -198,6 +198,13 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 
+### 弹层动效接入约束
+
+AbstractColorPicker 实例拥有公开配置，主题提供 Popover ZoomBig 默认，实际 PART_Popup 单向消费。共享几何计算不通过 SetupPopupProperties 本地赋值改写用户 Motion；纯色/渐变、确认与颜色事件保持原合同。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 推荐验证：
@@ -209,3 +216,6 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 - 确认与取消能力按 [专项验证矩阵](confirmation-design.md#10-验证要求) 验证默认兼容、候选隔离、清空确认、取消与所有关闭路径；临时验证代码的去留遵循项目测试生命周期规范。
 - Semantic Part 契约与 marker 变更运行 `tests/AtomUI.Desktop.Controls.Tests/ColorPicker/ColorPickerSemanticPartTests.cs`（descriptor 五部件、模板静态 marker 清单、默认主题不消费 semantic selector、`IsPopupPinnedOpen` 公共 API、overlay 弹层下生成 Style 命中触发区与 popup.root 目标）。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

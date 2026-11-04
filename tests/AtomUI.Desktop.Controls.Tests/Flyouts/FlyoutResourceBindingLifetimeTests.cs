@@ -1,5 +1,8 @@
-using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Threading;
 using Shouldly;
 using Xunit;
 
@@ -17,12 +20,46 @@ public class FlyoutResourceBindingLifetimeTests
     }
 
     [Fact]
-    public void Flyout_Has_Explicit_Global_Resource_Binding_Lifecycle()
+    public void Reusable_Flyout_Does_Not_Keep_A_Retired_Owner_Alive()
     {
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        AvaloniaTestApp.EnsureInitialized();
+        var window = new AtomUI.Desktop.Controls.Window { Width = 700, Height = 600 };
+        window.Show();
+        var retired = RetireOwner(window);
+        try
+        {
+            for (var i = 0; i < 5; i++)
+            {
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                Dispatcher.UIThread.RunJobs();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+            retired.Owner.IsAlive.ShouldBeFalse("a reusable Flyout must release the retired owner's positioning context");
+            GC.KeepAlive(retired.Flyout);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
 
-        typeof(Flyout).GetMethod("EnsureGlobalResourceBindings", flags).ShouldNotBeNull();
-        typeof(Flyout).GetMethod("ReleaseGlobalResourceBindings", flags).ShouldNotBeNull();
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (Flyout Flyout, WeakReference Owner) RetireOwner(AtomUI.Desktop.Controls.Window window)
+    {
+        var flyout = new Flyout { Content = new Border { Width = 120, Height = 80 } };
+        var owner = new FlyoutHost { Flyout = flyout, IsMotionEnabled = false, Width = 160, Height = 40 };
+        window.Content = owner;
+        Dispatcher.UIThread.RunJobs();
+        flyout.ShowAt(owner);
+        Dispatcher.UIThread.RunJobs();
+        flyout.Hide();
+        Dispatcher.UIThread.RunJobs();
+        window.Content = new Border();
+        Dispatcher.UIThread.RunJobs();
+        return (flyout, new WeakReference(owner));
     }
 
     private static string GetRepoFile(string relativePath)

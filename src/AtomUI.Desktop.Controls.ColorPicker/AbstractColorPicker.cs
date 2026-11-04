@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Media;
@@ -34,6 +35,13 @@ public abstract class AbstractColorPicker : AvaloniaButton,
                                             IInputControlStyleVariantAware
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<AbstractColorPicker>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<AbstractColorPicker>();
+
     public static readonly StyledProperty<bool> IsNeedConfirmProperty =
         AvaloniaProperty.Register<AbstractColorPicker, bool>(nameof(IsNeedConfirm));
 
@@ -108,6 +116,18 @@ public abstract class AbstractColorPicker : AvaloniaButton,
     /// </summary>
     public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<AbstractColorPicker>();
+
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
 
     public bool IsNeedConfirm
     {
@@ -259,6 +279,7 @@ public abstract class AbstractColorPicker : AvaloniaButton,
     #endregion
 
     #region 内部属性定义
+
 
     internal static readonly DirectProperty<AbstractColorPicker, IBrush?> ColorBlockBackgroundProperty =
         AvaloniaProperty.RegisterDirect<AbstractColorPicker, IBrush?>(
@@ -415,6 +436,66 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         private set => SetAndRaise(IsLightDismissEnabledProperty, ref _isLightDismissEnabled, value);
     }
 
+    internal bool IsConfirmationOperationActive => _confirmationOperation != ConfirmationOperation.None;
+
+    #endregion
+
+    #region 运行时字段
+
+    private TopLevel? _deactivationTopLevel;
+
+    private IDisposable? _deactivationSubscription;
+
+    private Popup? _popup;
+
+    private CompositeDisposable? _triggerSubscriptions;
+
+    private DispatcherTimer? _mouseEnterDelayTimer;
+
+    private DispatcherTimer? _mouseLeaveDelayTimer;
+
+    private IDisposable? _popupPointerSubscription;
+
+    private TopLevel? _registeredTopLevel;
+
+    private bool _isPickerShowing;
+
+    private int _popupLifecycleCloseDepth;
+
+    // IsAttachedToVisualTree() still reports true inside OnDetachedFromVisualTree, so track attachment explicitly.
+    private bool _isAttachedToVisualTree;
+
+    private ConfirmationOperation _confirmationOperation;
+
+    private EventHandler? _formValueChanged;
+
+    #endregion
+
+    #region 构造函数
+
+    static AbstractColorPicker()
+    {
+        AffectsMeasure<AbstractColorPicker>(IsTextVisibleProperty,
+            FormatProperty,
+            ColorBlockBackgroundProperty,
+            ColorBlockSizeProperty,
+            TriggerPaddingProperty);
+        IsPickerOpenProperty.Changed.AddClassHandler<AbstractColorPicker>((picker, args) => picker.HandleIsPickerOpenChanged(args));
+        TriggerTypeProperty.Changed.AddClassHandler<AbstractColorPicker>((picker, _) => picker.SetupTriggerHandler());
+        InputElement.PointerPressedEvent.AddClassHandler<AbstractColorPicker>(
+            (picker, args) => picker.HandleClickModePointerPressed(args),
+            RoutingStrategies.Tunnel,
+            handledEventsToo: true);
+    }
+
+    public AbstractColorPicker()
+    {
+    }
+
+    #endregion
+
+    #region 控件 API
+
     protected void SetColorBlockBackgroundBrushIfChanged(IBrush? brush)
     {
         if (ReferenceEquals(ColorBlockBackground, brush))
@@ -436,41 +517,339 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         SetCurrentValue(ColorBlockBackgroundProperty, new SolidColorBrush(color));
     }
 
+    protected abstract void GenerateValueText();
+
+    protected abstract void GenerateColorBlockBackground();
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == IsTextVisibleProperty || change.Property == FormatProperty)
+        {
+            GenerateValueText();
+        }
+        else if (change.Property == CornerRadiusProperty ||
+                 change.Property == CompactSpaceItemPositionProperty ||
+                 change.Property == CompactSpaceOrientationProperty)
+        {
+            ConfigureCornerRadius();
+        }
+
+        if (change.Property == IsArrowVisibleProperty ||
+            change.Property == PlacementProperty ||
+            change.Property == PlacementAnchorProperty ||
+            change.Property == PlacementGravityProperty)
+        {
+            ConfigureShowArrowEffective();
+        }
+
+        if (change.Property == PlacementProperty ||
+            change.Property == PlacementAnchorProperty ||
+            change.Property == PlacementGravityProperty ||
+            change.Property == IsPopupHorizontalFlippedProperty ||
+            change.Property == IsPopupVerticalFlippedProperty)
+        {
+            ConfigureArrowPosition();
+        }
+
+        if (change.Property == SizeTypeProperty ||
+            change.Property == HeightProperty ||
+            change.Property == TriggerPaddingProperty ||
+            change.Property == BorderThicknessProperty)
+        {
+            ConfigureColorBlockSize();
+        }
+
+        if (change.Property == IsNeedConfirmProperty && IsPickerOpen && !IsConfirmationOperationActive)
+        {
+            ResetConfirmationDraft();
+        }
+
+        if (change.Property == IsPopupPinnedOpenProperty)
+        {
+            ApplyPopupTriggerSettings();
+
+            if (change.GetNewValue<bool>())
+            {
+                SetCurrentValue(IsPickerOpenProperty, true);
+            }
+            else if (IsPickerOpen)
+            {
+                if (_popup is { IsOpen: true })
+                {
+                    SetCurrentValue(IsPickerOpenProperty, true);
+                }
+                else
+                {
+                    ClosePickerForLifecycle();
+                }
+            }
+        }
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        if (IsNeedConfirm && PickerPresenter is AbstractColorPickerView view)
+        {
+            view.EndEdit();
+        }
+        base.OnApplyTemplate(e);
+        DetachPopupHandlers();
+        _popup = e.NameScope.Find<Popup>("PART_Popup");
+        if (_popup != null)
+        {
+            if (!IsPopupPinnedOpen)
+            {
+                _popup.OverlayInputPassThroughElement = this;
+            }
+            AttachPopupHandlers();
+
+            // Popup's computed flip properties are read-only binding sources.
+            // TemplateBinding cannot target them or express OneWayToSource.
+            this[!IsPopupHorizontalFlippedProperty] = _popup[!Popup.IsHorizontalFlippedProperty];
+            this[!IsPopupVerticalFlippedProperty] = _popup[!Popup.IsVerticalFlippedProperty];
+
+
+            ApplyPopupTriggerSettings();
+        }
+        SetupPopupProperties();
+        ConfigureShowArrowEffective();
+        ConfigureArrowPosition();
+        ConfigureColorBlockSize();
+        // The business state can become open before the template has produced PART_Popup.
+        // Defer the physical open until placement, pinning and dismiss behavior are ready.
+        if (IsPickerOpen && _popup != null && !_popup.IsOpen)
+        {
+            _popup.IsOpen = true;
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _isAttachedToVisualTree = true;
+        SetupTriggerHandler();
+        AttachPopupHandlers();
+        if (IsPickerOpen)
+        {
+            RegisterWindowDeactivatedHandler();
+        }
+
+        if (IsPopupPinnedOpen && !IsPickerOpen)
+        {
+            SetCurrentValue(IsPickerOpenProperty, true);
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _isAttachedToVisualTree = false;
+        ClosePickerForLifecycle();
+        base.OnDetachedFromVisualTree(e);
+        UnregisterWindowDeactivatedHandler();
+
+        StopMouseEnterTimer();
+        StopMouseLeaveTimer();
+        UnregisterRootPointerHandler();
+        UnsubscribeFromPopupPointer();
+        DetachPopupHandlers();
+        _triggerSubscriptions?.Dispose();
+        _triggerSubscriptions = null;
+    }
+
+    protected virtual void SetupPopupProperties()
+    {
+        // Retained as the existing derived-picker template hook. Default motion
+        // relationships are declared by AbstractColorPickerTheme, not local values.
+    }
+
+    public void ClosePicker()
+    {
+        SetCurrentValue(IsPickerOpenProperty, false);
+    }
+
+    protected virtual void NotifyPickerOpened()
+    {
+        RegisterWindowDeactivatedHandler();
+
+        if (PickerPresenter is null)
+        {
+            PickerPresenter = CreatePresenter();
+            // The presenter is created at runtime in a Content subtree; the owner's
+            // ControlTheme cannot bind through this independent template owner.
+            if (PickerPresenter is AbstractColorPickerView view)
+            {
+                view[!AbstractColorPickerView.IsNeedConfirmProperty] = this[!IsNeedConfirmProperty];
+            }
+            NotifyPickerPresenterCreated(PickerPresenter);
+        }
+
+        AttachConfirmationHandlers();
+        if (TriggerType == FlyoutTriggerType.Focus)
+        {
+            RegisterRootPointerHandler();
+            Dispatcher.Post(() => _isPickerShowing = false);
+        }
+        else
+        {
+            _isPickerShowing = false;
+        }
+    }
+
+    protected virtual void NotifyPickerClosed()
+    {
+        ReleaseConfirmationHandlers();
+        UnregisterWindowDeactivatedHandler();
+        UnregisterRootPointerHandler();
+        UnsubscribeFromPopupPointer();
+    }
+
+    protected virtual void NotifyPickerPresenterCreated(Control pickerPresenter)
+    {
+    }
+
+    protected abstract Control CreatePresenter();
+
+    protected virtual void UpdatePseudoClasses()
+    {
+        PseudoClasses.Set(ColorPickerPseudoClass.FlyoutOpen, IsPickerOpen);
+    }
+
+    public static string FormatColor(Color color, ColorFormat format)
+    {
+        if (format == ColorFormat.Hex)
+        {
+            return ColorToHexConverter.ToHexString(color, AlphaComponentPosition.Leading, false, true);
+        }
+        if (format == ColorFormat.Rgba)
+        {
+            return $"rgba({(int)color.R}, {(int)color.G}, {(int)color.B}, {color.GetAlphaF():0.00})";
+        }
+
+        var hsvColor = color.ToHsv();
+        return $"hsva({hsvColor.H:0}, {hsvColor.S * 100:0}%, {hsvColor.V * 100:0}%,  {hsvColor.A:0.00})";
+    }
+
     #endregion
 
-    private TopLevel? _deactivationTopLevel;
-    private IDisposable? _deactivationSubscription;
-    private Popup? _popup;
-    private CompositeDisposable? _triggerSubscriptions;
-    private DispatcherTimer? _mouseEnterDelayTimer;
-    private DispatcherTimer? _mouseLeaveDelayTimer;
-    private IDisposable? _popupPointerSubscription;
-    private TopLevel? _registeredTopLevel;
-    private bool _isPickerShowing;
-    private int _popupLifecycleCloseDepth;
-    // IsAttachedToVisualTree() still reports true inside OnDetachedFromVisualTree, so track attachment explicitly.
-    private bool _isAttachedToVisualTree;
+    #region 内部协作 API
 
-    static AbstractColorPicker()
+    internal void ShowPicker(bool immediately = false)
     {
-        AffectsMeasure<AbstractColorPicker>(IsTextVisibleProperty,
-            FormatProperty,
-            ColorBlockBackgroundProperty,
-            ColorBlockSizeProperty,
-            TriggerPaddingProperty);
-        IsPickerOpenProperty.Changed.AddClassHandler<AbstractColorPicker>((picker, args) => picker.HandleIsPickerOpenChanged(args));
-        TriggerTypeProperty.Changed.AddClassHandler<AbstractColorPicker>((picker, _) => picker.SetupTriggerHandler());
-        InputElement.PointerPressedEvent.AddClassHandler<AbstractColorPicker>(
-            (picker, args) => picker.HandleClickModePointerPressed(args),
-            RoutingStrategies.Tunnel,
-            handledEventsToo: true);
+        if (!IsEnabled || !IsVisible)
+        {
+            return;
+        }
+
+        StopMouseLeaveTimer();
+
+        if (immediately || MouseEnterDelay == 0)
+        {
+            ShowPickerCore();
+        }
+        else
+        {
+            StartMouseEnterTimer();
+        }
     }
 
-    public AbstractColorPicker()
+    internal void HidePicker(bool immediately = false)
+    {
+        StopMouseEnterTimer();
+
+        if (immediately || MouseLeaveDelay == 0)
+        {
+            HidePickerCore();
+        }
+        else
+        {
+            StartMouseLeaveTimer();
+        }
+    }
+
+    internal void NotifyFormValueChanged()
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    internal virtual void ResetConfirmationDraft()
     {
     }
 
-    #region TriggerType 实现
+    internal virtual void CommitConfirmationDraft()
+    {
+    }
+
+    #endregion
+
+    #region 实现 ICompactSpaceAware 接口
+
+    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
+    {
+        IsUsedInCompactSpace = position != null;
+        CompactSpaceItemPosition = position;
+    }
+
+    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
+    {
+        CompactSpaceOrientation = orientation;
+    }
+
+    double ICompactSpaceAware.GetBorderThickness()
+    {
+        return CompactSpaceOrientation == Orientation.Horizontal ? BorderThickness.Left : BorderThickness.Top;
+    }
+
+    #endregion
+
+    #region 实现 FormItem 接口
+
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+
+    protected virtual void NotifySetFormValue(object? value)
+    {
+    }
+
+    protected virtual object? NotifyGetFormValue()
+    {
+        return null;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (status == FormValidateStatus.Error)
+        {
+            SetCurrentValue(StatusProperty, InputControlStatus.Error);
+        }
+        else if (status == FormValidateStatus.Warning)
+        {
+            SetCurrentValue(StatusProperty, InputControlStatus.Warning);
+        }
+        else
+        {
+            SetCurrentValue(StatusProperty, InputControlStatus.Default);
+        }
+    }
+
+    #endregion
+
+    #region 内部实现
 
     private void SetupTriggerHandler()
     {
@@ -519,8 +898,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
             Popup.IsLightDismissEnabledProperty,
             IsLightDismissEnabled);
     }
-
-    #region Hover trigger
 
     private void SetupHoverTrigger()
     {
@@ -601,10 +978,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         }
     }
 
-    #endregion
-
-    #region Click trigger
-
     private void HandleClickModePointerPressed(PointerPressedEventArgs e)
     {
         if (TriggerType != FlyoutTriggerType.Click)
@@ -640,10 +1013,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         }
         return IsVisualInPickerScope(visual);
     }
-
-    #endregion
-
-    #region Focus trigger
 
     private void SetupFocusTrigger()
     {
@@ -694,10 +1063,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         });
     }
 
-    #endregion
-
-    #region Root pointer handler for Focus mode
-
     private void RegisterRootPointerHandler()
     {
         UnregisterRootPointerHandler();
@@ -727,10 +1092,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
             HidePicker(immediately: true);
         }
     }
-
-    #endregion
-
-    #region Timer helpers
 
     private void StartMouseEnterTimer()
     {
@@ -782,10 +1143,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         }
     }
 
-    #endregion
-
-    #region Scope helpers
-
     private bool IsVisualInPickerScope(Visual visual)
         => PopupUtils.IsVisualInPopupScope(visual, this, _popup?.Child as Visual);
 
@@ -794,29 +1151,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         var topLevel = TopLevel.GetTopLevel(this);
         return topLevel?.FocusManager.GetFocusedElement() is Visual focused
                && IsVisualInPickerScope(focused);
-    }
-
-    #endregion
-
-    #region ShowPicker / HidePicker
-
-    internal void ShowPicker(bool immediately = false)
-    {
-        if (!IsEnabled || !IsVisible)
-        {
-            return;
-        }
-
-        StopMouseLeaveTimer();
-
-        if (immediately || MouseEnterDelay == 0)
-        {
-            ShowPickerCore();
-        }
-        else
-        {
-            StartMouseEnterTimer();
-        }
     }
 
     private void ShowPickerCore()
@@ -835,31 +1169,11 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         SetCurrentValue(IsPickerOpenProperty, true);
     }
 
-    internal void HidePicker(bool immediately = false)
-    {
-        StopMouseEnterTimer();
-
-        if (immediately || MouseLeaveDelay == 0)
-        {
-            HidePickerCore();
-        }
-        else
-        {
-            StartMouseLeaveTimer();
-        }
-    }
-
     private void HidePickerCore()
     {
         StopMouseLeaveTimer();
         SetCurrentValue(IsPickerOpenProperty, false);
     }
-
-    #endregion
-
-    #endregion
-
-    #region 箭头管理
 
     private void ConfigureShowArrowEffective()
     {
@@ -881,119 +1195,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
             arrowPosition = ArrowPositionUtils.FlipArrowPosition(
                 arrowPosition.Value, IsPopupHorizontalFlipped, IsPopupVerticalFlipped);
             SetCurrentValue(ArrowPositionProperty, arrowPosition);
-        }
-    }
-
-    #endregion
-
-    protected abstract void GenerateValueText();
-    protected abstract void GenerateColorBlockBackground();
-
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == IsTextVisibleProperty || change.Property == FormatProperty)
-        {
-            GenerateValueText();
-        }
-        else if (change.Property == CornerRadiusProperty ||
-                 change.Property == CompactSpaceItemPositionProperty ||
-                 change.Property == CompactSpaceOrientationProperty)
-        {
-            ConfigureCornerRadius();
-        }
-
-        if (change.Property == IsArrowVisibleProperty ||
-            change.Property == PlacementProperty ||
-            change.Property == PlacementAnchorProperty ||
-            change.Property == PlacementGravityProperty)
-        {
-            ConfigureShowArrowEffective();
-        }
-
-        if (change.Property == PlacementProperty ||
-            change.Property == PlacementAnchorProperty ||
-            change.Property == PlacementGravityProperty ||
-            change.Property == IsPopupHorizontalFlippedProperty ||
-            change.Property == IsPopupVerticalFlippedProperty)
-        {
-            ConfigureArrowPosition();
-        }
-
-        if (change.Property == PlacementProperty)
-        {
-            ConfigurePopupMotion();
-        }
-
-        if (change.Property == SizeTypeProperty ||
-            change.Property == HeightProperty ||
-            change.Property == TriggerPaddingProperty ||
-            change.Property == BorderThicknessProperty)
-        {
-            ConfigureColorBlockSize();
-        }
-
-        if (change.Property == IsNeedConfirmProperty && IsPickerOpen && !IsConfirmationOperationActive)
-        {
-            ResetConfirmationDraft();
-        }
-
-        if (change.Property == IsPopupPinnedOpenProperty)
-        {
-            ApplyPopupTriggerSettings();
-
-            if (change.GetNewValue<bool>())
-            {
-                SetCurrentValue(IsPickerOpenProperty, true);
-            }
-            else if (IsPickerOpen)
-            {
-                if (_popup is { IsOpen: true })
-                {
-                    SetCurrentValue(IsPickerOpenProperty, true);
-                }
-                else
-                {
-                    ClosePickerForLifecycle();
-                }
-            }
-        }
-    }
-
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        if (IsNeedConfirm && PickerPresenter is AbstractColorPickerView view)
-        {
-            view.EndEdit();
-        }
-        base.OnApplyTemplate(e);
-        DetachPopupHandlers();
-        _popup = e.NameScope.Find<Popup>("PART_Popup");
-        if (_popup != null)
-        {
-            if (!IsPopupPinnedOpen)
-            {
-                _popup.OverlayInputPassThroughElement = this;
-            }
-            AttachPopupHandlers();
-
-            // Popup's computed flip properties are read-only binding sources.
-            // TemplateBinding cannot target them or express OneWayToSource.
-            this[!IsPopupHorizontalFlippedProperty] = _popup[!Popup.IsHorizontalFlippedProperty];
-            this[!IsPopupVerticalFlippedProperty] = _popup[!Popup.IsVerticalFlippedProperty];
-
-
-            ApplyPopupTriggerSettings();
-        }
-        SetupPopupProperties();
-        ConfigureShowArrowEffective();
-        ConfigureArrowPosition();
-        ConfigureColorBlockSize();
-        // The business state can become open before the template has produced PART_Popup.
-        // Defer the physical open until placement, pinning and dismiss behavior are ready.
-        if (IsPickerOpen && _popup != null && !_popup.IsOpen)
-        {
-            _popup.IsOpen = true;
         }
     }
 
@@ -1063,39 +1264,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         }
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        _isAttachedToVisualTree = true;
-        SetupTriggerHandler();
-        AttachPopupHandlers();
-        if (IsPickerOpen)
-        {
-            RegisterWindowDeactivatedHandler();
-        }
-
-        if (IsPopupPinnedOpen && !IsPickerOpen)
-        {
-            SetCurrentValue(IsPickerOpenProperty, true);
-        }
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        _isAttachedToVisualTree = false;
-        ClosePickerForLifecycle();
-        base.OnDetachedFromVisualTree(e);
-        UnregisterWindowDeactivatedHandler();
-
-        StopMouseEnterTimer();
-        StopMouseLeaveTimer();
-        UnregisterRootPointerHandler();
-        UnsubscribeFromPopupPointer();
-        DetachPopupHandlers();
-        _triggerSubscriptions?.Dispose();
-        _triggerSubscriptions = null;
-    }
-
     private void ClosePickerForLifecycle()
     {
         try
@@ -1144,75 +1312,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         _deactivationTopLevel = null;
     }
 
-    protected virtual void SetupPopupProperties()
-    {
-        ConfigurePopupMotion();
-    }
-
-    private void ConfigurePopupMotion()
-    {
-        if (_popup == null)
-        {
-            return;
-        }
-
-        var (openMotion, closeMotion) = PopupUtils.CreateMotionForPlacement(Placement);
-        _popup.OpenMotion = openMotion;
-        _popup.CloseMotion = closeMotion;
-    }
-
-    public void ClosePicker()
-    {
-        SetCurrentValue(IsPickerOpenProperty, false);
-    }
-
-    internal void NotifyFormValueChanged()
-    {
-        _formValueChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    protected virtual void NotifyPickerOpened()
-    {
-        RegisterWindowDeactivatedHandler();
-
-        if (PickerPresenter is null)
-        {
-            PickerPresenter = CreatePresenter();
-            // The presenter is created at runtime in a Content subtree; the owner's
-            // ControlTheme cannot bind through this independent template owner.
-            if (PickerPresenter is AbstractColorPickerView view)
-            {
-                view[!AbstractColorPickerView.IsNeedConfirmProperty] = this[!IsNeedConfirmProperty];
-            }
-            NotifyPickerPresenterCreated(PickerPresenter);
-        }
-
-        AttachConfirmationHandlers();
-        if (TriggerType == FlyoutTriggerType.Focus)
-        {
-            RegisterRootPointerHandler();
-            Dispatcher.Post(() => _isPickerShowing = false);
-        }
-        else
-        {
-            _isPickerShowing = false;
-        }
-    }
-
-    protected virtual void NotifyPickerClosed()
-    {
-        ReleaseConfirmationHandlers();
-        UnregisterWindowDeactivatedHandler();
-        UnregisterRootPointerHandler();
-        UnsubscribeFromPopupPointer();
-    }
-
-    protected virtual void NotifyPickerPresenterCreated(Control pickerPresenter)
-    {
-    }
-
-    protected abstract Control CreatePresenter();
-
     private void AttachConfirmationHandlers()
     {
         ReleaseConfirmationHandlers();
@@ -1237,17 +1336,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
         None,
         Confirming,
         Cancelling
-    }
-
-    private ConfirmationOperation _confirmationOperation;
-    internal bool IsConfirmationOperationActive => _confirmationOperation != ConfirmationOperation.None;
-
-    internal virtual void ResetConfirmationDraft()
-    {
-    }
-
-    internal virtual void CommitConfirmationDraft()
-    {
     }
 
     private void HandleConfirmationRequested(object? sender, EventArgs args)
@@ -1325,26 +1413,6 @@ public abstract class AbstractColorPicker : AvaloniaButton,
                sender is AbstractColorPicker { IsPopupPinnedOpen: true, _popupLifecycleCloseDepth: 0 };
     }
 
-    protected virtual void UpdatePseudoClasses()
-    {
-        PseudoClasses.Set(ColorPickerPseudoClass.FlyoutOpen, IsPickerOpen);
-    }
-
-    public static string FormatColor(Color color, ColorFormat format)
-    {
-        if (format == ColorFormat.Hex)
-        {
-            return ColorToHexConverter.ToHexString(color, AlphaComponentPosition.Leading, false, true);
-        }
-        if (format == ColorFormat.Rgba)
-        {
-            return $"rgba({(int)color.R}, {(int)color.G}, {(int)color.B}, {color.GetAlphaF():0.00})";
-        }
-
-        var hsvColor = color.ToHsv();
-        return $"hsva({hsvColor.H:0}, {hsvColor.S * 100:0}%, {hsvColor.V * 100:0}%,  {hsvColor.A:0.00})";
-    }
-
     private void ConfigureCornerRadius()
     {
         EffectiveCornerRadius = CompactSpace.CalculateEffectiveCornerRadius(
@@ -1354,65 +1422,5 @@ public abstract class AbstractColorPicker : AvaloniaButton,
             CompactSpaceOrientation);
     }
 
-    void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
-    {
-        IsUsedInCompactSpace = position != null;
-        CompactSpaceItemPosition = position;
-    }
-
-    void ICompactSpaceAware.NotifyOrientationChange(Orientation orientation)
-    {
-        CompactSpaceOrientation = orientation;
-    }
-
-    double ICompactSpaceAware.GetBorderThickness()
-    {
-        return CompactSpaceOrientation == Orientation.Horizontal ? BorderThickness.Left : BorderThickness.Top;
-    }
-
-    #region 实现 FormItem 接口
-
-    private EventHandler? _formValueChanged;
-    event EventHandler? IFormItemAware.ValueChanged
-    {
-        add => _formValueChanged += value;
-        remove => _formValueChanged -= value;
-    }
-
-    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value);
-
-    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
-    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
-    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
-
-    protected virtual void NotifySetFormValue(object? value)
-    {
-    }
-
-    protected virtual object? NotifyGetFormValue()
-    {
-        return null;
-    }
-
-    protected virtual void NotifyClearFormValue()
-    {
-    }
-
-    protected virtual void NotifyValidateStatus(FormValidateStatus status)
-    {
-        if (status == FormValidateStatus.Error)
-        {
-            SetCurrentValue(StatusProperty, InputControlStatus.Error);
-        }
-        else if (status == FormValidateStatus.Warning)
-        {
-            SetCurrentValue(StatusProperty, InputControlStatus.Warning);
-        }
-        else
-        {
-            SetCurrentValue(StatusProperty, InputControlStatus.Default);
-        }
-    }
     #endregion
-
 }

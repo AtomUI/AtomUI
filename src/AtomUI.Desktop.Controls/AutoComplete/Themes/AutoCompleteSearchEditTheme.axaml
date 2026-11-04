@@ -38,6 +38,8 @@
                                                     IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}" />
 
                     <atom:Popup Name="{x:Static atom:AutoCompleteThemeConstants.PopupPart}"
+                                OpenMotion="{TemplateBinding OpenMotion}"
+                                CloseMotion="{TemplateBinding CloseMotion}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="True"
                                 OverlayDismissEventPassThrough="True"

@@ -91,6 +91,14 @@ TimePicker 的公共契约由 public/protected 类型成员、Avalonia 属性、
 
 宿主的 `SelectedTime` / 范围端点是提交值，Presenter 的候选值驱动输入文本。选择每一列后立即显示完整候选时间，弹层保持打开；悬停只临时预览，离开选项恢复候选文本。`IsNeedConfirm=false` 时关闭或失焦提交最后的有效候选；为 `true` 时普通关闭丢弃未确认候选。OK、Enter 和 Now 使用显式提交流程，Now 在有效步进范围内选取当前时间并提交。已有值与 `PickerDisplayTime` 显示锚点可以通过 OK 显式确认；打开显示锚点本身不提交。
 
+### 打开与关闭动效配置
+
+从 InfoPickerInput 继承 OpenMotion/CloseMotion；RangeTimePicker 经 RangeInfoPickerInput 继承，范围类型不重复定义。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 TimePicker 的状态流按以下路径收敛：
@@ -145,6 +153,12 @@ TimePicker 使用 `TimePickerToken` 作为控件 Token scope。Token 只表达�
 - 不把可由 AXAML 表达的模板状态迁移为 C# 动态创建视觉。
 - 不把 hover、pressed、selected、expanded、loading、filter、popup open 等运行时状态写入 Token。
 - Browser 或平台特化主题必须保持同一 API 的语义一致。
+
+### 弹层动效契约
+
+TimePicker 与 RangeTimePicker 复用 Picker 弹层规格：Slide、MotionDurationMid，实际下方 SlideUp、上方 SlideDown。时间列和范围箭头随完整表面变化，不以列滚动模拟入场。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ## 6. 控件家族或集成关系
 

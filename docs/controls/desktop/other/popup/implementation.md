@@ -122,11 +122,15 @@ ContentPresenter Child observable 在 Child/Presenter 替换时重新配置圆�
 并在降级期间订阅提供方的 `TemplateApplied`，下一次模板应用时重新探测，部件就绪即恢复箭头 relay binding；订阅随
 `surface bindings` 统一释放。custom placement 同样把部件不可用按箭头隐藏处理，复用阴影厚度补偿路径。
 
-Popup 持有本次宿主请求版本和局部 `Idle -> Pending -> Playing -> Completing` 关闭阶段；Core Motion 拥有活动播放资源。
+Popup 持有本次宿主请求版本和局部 `Idle -> Requesting -> Pending -> Playing -> Completing` 关闭阶段；Core Motion 拥有活动播放资源。
 快速重开使旧版本失效，由新入场连续替代离场；同一时刻最多调度一次有效关闭。完成结果核对请求与表面身份，
 最终排队的 Close 再次核对版本、阶段和独立关闭意图。绑定已将 IsOpen 设为 false 时仍必须完成物理关闭；
 false→true 或显式重开在 Completing 阶段也使旧关闭失效。`Closed` 取消播放并清空表面、打开时 TopLevel、tracker 与 wheel guard。
 离场期间更换模板时，旧表面不再可用，新表面先保持隐藏，再按当前版本稳定关闭；重新打开可取消这次排队关闭。
+
+普通关闭在 Requesting 阶段先转发 owner 的可取消 Closing，取消时保留子菜单与宿主。Completing 直到物理 Closed 才退回 Idle；同步完成通知里打开新宿主时，旧代际不得覆盖新请求。
+
+native 模板的标准 PART_ContentPresenter 将 PopupSurface.Margin 暴露为定位 Deflate。内部 Popover/Tooltip 默认动画的端点包络确实超界时，播放前分配向外取整的透明缓冲；内容约束加回缓冲后写入宿主，宽高约束更新同步换算，保持实际内容尺寸与屏幕坐标。物理关闭清空 MotionMargin。只在动作准备时做几何和必要布局，不随 tick 调整。
 
 `PopupSurface` 直接继承 Panel，是宿主实际表面，承载原有的阴影和 VisualLayerManager，不实现 Actor。
 开启动画接受表面先就绪或 `Opened` 先发生两种顺序。逻辑 attach 在宿主显示前建立作用域透明度覆盖；
@@ -311,10 +315,17 @@ StyledProperty 和 ControlTheme 均为静态/AOT 可发现契约。源码库存�
   否则阴影区域会重新拦截输入。
 - native placement 的主轴偏移必须扣除朝向 anchor 一侧的残余阴影；改变阴影 Token 不得改变内容相对 anchor 的位置。
 
+### 弹层动效接入约束
+
+Popup 单向消费配置 owner 的有效 OpenMotion/CloseMotion，拥有真实定位、Surface 几何、首帧准备、请求身份和物理关闭；不再以 DefaultMotionPreset/MotionProfile 判断组件种类，也不镜像全局开关。布局后重读有效定义再冻结快照；关闭沿单一 Idle/Requesting/Pending/Playing/Completing 状态机收敛，生命周期关闭立即释放。全局禁用的执行收敛属于 Core。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 11. 测试与验证
 
 - `PopupShadowTests` 验证公开 surface API、`null` 默认值、显式 renderer fill、透明 frame 和 shadow clipping。
-- `PopupPlacementTests` 与 `PopupLifecycleTests` 验证 placement、开启动画 actor 乱序、关闭动效状态、pinned 有效性门禁、显式 `ShowAt`、pending unpin、placement target/logical owner detach、跨 TopLevel target 切换和 host teardown。
+- `PopupPlacementTests` 与 `PopupLifecycleTests` 验证 placement、表面就绪与 `Opened` 的先后顺序、关闭动效状态、pinned 有效性门禁、显式 `ShowAt`、pending unpin、placement target/logical owner detach、跨 TopLevel target 切换和 host teardown。
 - `PopupPinnedOpenContractTests` 验证 Property 字段、CLR wrapper 和 ToolTip attached accessors 都保持 internal，且 Gallery/API/AXAML surface 不包含该能力。
 - `ToolTipPopupModeTests` 验证 host mode 和 transparent PopupRoot。
 - `DialogPopupPrimitiveLayeringTests` 验证 Direct Popup 与四类 content-owned 原语。
@@ -376,3 +387,16 @@ Windows 10 build 19045（150% 缩放，`RedirectionSurface`）复测，记录见
 - 第一层、第二层结论与 Win11 一致。第二层测试中浮层超出主窗口 119px，靶子收到 ENTER/LEAVE/CLICK。
 - 定位：横向全部一致。下方放置且显示或居中箭头的 6 组逐像素一致；其余 30 组窗口型比 overlay 高 1 物理像素
   （约 0.67 DIP），原因尚未确认。
+
+### 默认定义的创建与准备
+
+组件主题直接给 OpenMotion/CloseMotion 设置声明类型为 AbstractMotion 的默认原型；定义自身的 ITemplate 能力在样式实例化时复制配置，
+非视觉 Flyout 显式调用同一复制入口。Popup 不向 owner 发布默认值或几何属性，
+普通用户 Motion 直接播放；支持内部准备契约的默认定义只接受本次布局/菜单语义值快照，返回当前方向的内置 Motion。
+定义与静态原型不保存 owner、target、任务或订阅；公开定义在几何变化时保持稳定，显式 null 与应用 Style/Binding 的优先级不变。
+反向沿用活动原点和 native 包络准备仍属于 Popup 的请求状态，不写回定义。具体契约见[共享弹层设计](../../../../architecture/systems/motion/popup-motion.md)。
+
+
+可复用 Flyout 解除配置 owner 后，定位目标缓存和退役 presenter 的合成缓存随旧身份释放。
+清理只发生在旧宿主结束且没有新活动宿主时；普通 Hide 仍可通过 IsOpen=true 重开，重新定位时不复用退役 owner。
+固定方法反射保留与 Border 缓存保护遵守共享弹层生命周期契约，不新增逐帧清理或资源查询。

@@ -7,15 +7,27 @@
     <ControlTheme x:Key="{x:Type PopupRoot}" TargetType="PopupRoot">
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:PopupSurface Name="PART_PopupSurface" ClipToBounds="False">
+                <!-- The standard presenter exposes only the transparent motion
+                     margin as positioning Deflate, preserving content geometry. -->
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  Background="{x:Null}"
+                                  BorderBrush="{x:Null}"
+                                  BorderThickness="0"
+                                  HorizontalContentAlignment="Stretch"
+                                  VerticalContentAlignment="Stretch">
+                    <atom:PopupSurface Name="PART_PopupSurface" ClipToBounds="False"
+                                       Margin="{CompiledBinding $parent[atom:Popup].MotionMargin}">
                         <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
                         <VisualLayerManager ClipToBounds="False">
                             <atom:ShadowsAwareContainer>
-                                <ContentPresenter Content="{TemplateBinding Content}"
-                                                  ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                <!-- The static motion surface is Content of the
+                                     host presenter, outside its template chain. -->
+                                <ContentPresenter Content="{CompiledBinding $parent[PopupRoot].Content}"
+                                                  ContentTemplate="{CompiledBinding $parent[PopupRoot].ContentTemplate}" />
                             </atom:ShadowsAwareContainer>
                         </VisualLayerManager>
-                </atom:PopupSurface>
+                    </atom:PopupSurface>
+                </ContentPresenter>
             </ControlTemplate>
         </Setter>
 

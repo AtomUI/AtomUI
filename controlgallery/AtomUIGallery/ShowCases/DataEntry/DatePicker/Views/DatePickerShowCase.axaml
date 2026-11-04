@@ -119,6 +119,23 @@
     </gallery:ShowCaseItem>
 
     <gallery:ShowCaseItem
+        Title="{gallery:DatePickerShowCaseLangResource PopupMotionTitle}"
+        Description="{gallery:DatePickerShowCaseLangResource PopupMotionDescription}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:DatePickerViewModel">
+                <StackPanel Spacing="10" HorizontalAlignment="Left">
+                    <atom:DatePicker Name="CustomMotionDatePicker" Width="260">
+                        <atom:DatePicker.OpenMotion><atom:FadeInMotion /></atom:DatePicker.OpenMotion>
+                        <atom:DatePicker.CloseMotion><atom:FadeOutMotion /></atom:DatePicker.CloseMotion>
+                    </atom:DatePicker>
+                    <atom:DatePicker Name="NoMotionDatePicker" Width="260" OpenMotion="{x:Null}" CloseMotion="{x:Null}" />
+                </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
         Title="{gallery:DatePickerShowCaseLangResource SwitchableTitle}"
         Description="{gallery:DatePickerShowCaseLangResource SwitchableDescription}"
         IsDeferredContentEnabled="True">

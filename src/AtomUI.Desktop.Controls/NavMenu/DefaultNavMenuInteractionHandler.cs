@@ -286,7 +286,7 @@ internal class DefaultNavMenuInteractionHandler : NavMenuInteractionHandlerBase
             _currentOpenDelayRunDisposable = null;
             _pendingOpenItem               = null;
             var parent = item.Parent as NavMenuItem;
-            if (!item.IsTopLevel && parent?.Popup?.IsOpen == true)
+            if (item.IsTopLevel || parent?.Popup?.IsOpen == true)
             {
                 item.Open();
             }

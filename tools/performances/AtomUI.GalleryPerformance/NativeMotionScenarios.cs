@@ -124,8 +124,8 @@ internal sealed class NativeMotionScenarios : IDisposable
                 },
                 Validate = direction => Require(popup.IsOpen == (direction == "open"), "Popup did not settle"),
                 ReadFinalValue = () => actor?.Opacity ?? 0,
-                RequiresMotion = popup.OpenMotion is not null && popup.CloseMotion is not null,
-                AnimationContract = $"Real NavMenu Popup: OpenMotion={popup.OpenMotion?.GetType().Name ?? "none"}; CloseMotion={popup.CloseMotion?.GetType().Name ?? "none"}. Absent motions are reported as static open/close, not FPS.",
+                RequiresMotion = true,
+                AnimationContract = $"Real NavMenu Popup: OpenMotion={popup.OpenMotion?.GetType().Name ?? "none"}; CloseMotion={popup.CloseMotion?.GetType().Name ?? "none"}. Missing default animation is an invalid popup motion measurement.",
                 Cleanup = item.Close
             };
         }

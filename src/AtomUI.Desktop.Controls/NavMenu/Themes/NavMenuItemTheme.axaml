@@ -6,6 +6,8 @@
     x:ClassModifier="internal">
     <converters:NavMenuIsSubMenuOpenConverter x:Key="IsSubMenuOpenConverter" />
     <ControlTheme x:Key="{x:Type atom:NavMenuItem}" TargetType="atom:NavMenuItem">
+        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.NavMenuOpen}" />
+        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.NavMenuClose}" />
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
                 <StackPanel Orientation="Vertical"
@@ -35,6 +37,8 @@
                                                            IsInlineCollapsed="{TemplateBinding IsInlineCollapsed}"
                                                            IsTopLevel="{TemplateBinding IsTopLevel}" />
                         <atom:Popup Name="PART_Popup"
+                                    OpenMotion="{TemplateBinding OpenMotion}"
+                                    CloseMotion="{TemplateBinding CloseMotion}"
                                     WindowManagerAddShadowHint="False"
                                     IsLightDismissEnabled="False"
                                     ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}"
@@ -91,6 +95,8 @@
                                                          atom:ToolTip.ShowDelay="{TemplateBinding CollapsedTooltipShowDelay}"
                                                          atom:ToolTip.BetweenShowDelay="{TemplateBinding CollapsedTooltipBetweenShowDelay}" />
                         <atom:Popup Name="PART_Popup"
+                                    OpenMotion="{TemplateBinding OpenMotion}"
+                                    CloseMotion="{TemplateBinding CloseMotion}"
                                     WindowManagerAddShadowHint="False"
                                     IsLightDismissEnabled="False"
                                     ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}"
@@ -239,6 +245,5 @@
                 </Style>
             </Style>
         </Style>
-
-    </ControlTheme>
+</ControlTheme>
 </ResourceDictionary>

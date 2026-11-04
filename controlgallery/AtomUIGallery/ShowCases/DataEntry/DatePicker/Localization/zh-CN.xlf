@@ -517,5 +517,17 @@
         <target state="translated">变体</target>
       </segment>
     </unit>
+    <unit id="PopupMotionTitle">
+      <segment>
+        <source>Popup motion</source>
+        <target state="translated">弹层动效</target>
+      </segment>
+    </unit>
+    <unit id="PopupMotionDescription">
+      <segment>
+        <source>The first picker uses FadeInMotion and FadeOutMotion. The second disables both directions with explicit null values.</source>
+        <target state="translated">第一个选择器使用 FadeInMotion 和 FadeOutMotion；第二个通过显式 null 禁用打开和关闭动效。</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

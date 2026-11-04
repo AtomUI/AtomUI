@@ -39,27 +39,33 @@
                         <StackPanel Orientation="Horizontal"
                                     Spacing="{atom:SharedTokenResource SpacingXS}">
                             <atom:PickerClearUpButton
-                                Name="PART_ClearUpButton" />
-                            <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter" />
+                                Name="PART_ClearUpButton"
+                                Icon="{TemplateBinding InfoIcon}"
+                                FormFeedback="{TemplateBinding FormFeedback}"
+                                IsInClearMode="{CompiledBinding $parent[atom:InfoPickerInput].IsClearButtonVisible}"
+                                IsVisible="{TemplateBinding InfoIcon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter"
+                                                        Content="{TemplateBinding ContentRightAddOn}"
+                                                        ContentTemplate="{TemplateBinding ContentRightAddOnTemplate}" />
                         </StackPanel>
                     </atom:AddOnDecoratedBox.ContentRightAddOn>
                     <Grid ColumnDefinitions="*, Auto, *">
                         <atom:InfoPickerTextBox Name="PART_InfoInputBox"
-                                              Grid.Column="0"
-                                              HorizontalContentAlignment="Stretch"
-                                              VerticalContentAlignment="Center"
-                                              VerticalAlignment="Stretch"
-                                              HorizontalAlignment="Stretch"
-                                              TextWrapping="NoWrap"
-                                              AcceptsReturn="False"
-                                              FontSize="{TemplateBinding FontSize}"
-                                              FontFamily="{TemplateBinding FontFamily}"
-                                              FontStyle="{TemplateBinding FontStyle}"
-                                              FontWeight="{TemplateBinding FontWeight}"
-                                              DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
-                                              IsReadOnly="{TemplateBinding IsReadOnly}"
-                                              Text="{TemplateBinding Text}"
-                                              PlaceholderText="{TemplateBinding PlaceholderText}" />
+                                                Grid.Column="0"
+                                                HorizontalContentAlignment="Stretch"
+                                                VerticalContentAlignment="Center"
+                                                VerticalAlignment="Stretch"
+                                                HorizontalAlignment="Stretch"
+                                                TextWrapping="NoWrap"
+                                                AcceptsReturn="False"
+                                                FontSize="{TemplateBinding FontSize}"
+                                                FontFamily="{TemplateBinding FontFamily}"
+                                                FontStyle="{TemplateBinding FontStyle}"
+                                                FontWeight="{TemplateBinding FontWeight}"
+                                                DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
+                                                IsReadOnly="{TemplateBinding IsReadOnly}"
+                                                Text="{TemplateBinding Text}"
+                                                PlaceholderText="{TemplateBinding PlaceholderText}" />
                         <antdicons:SwapRightOutlined
                             Name="PART_RangePickerArrow"
                             Grid.Column="1" />
@@ -87,6 +93,8 @@
                                Opacity="{TemplateBinding RangePickerIndicatorOpacity}" />
                 </Canvas>
                 <atom:Popup Name="PART_Popup"
+                            OpenMotion="{TemplateBinding OpenMotion}"
+                            CloseMotion="{TemplateBinding CloseMotion}"
                             WindowManagerAddShadowHint="False"
                             IsLightDismissEnabled="True"
                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -100,7 +108,7 @@
                     <atom:ArrowDecoratedBox Content="{TemplateBinding PickerPresenter}"
                                             IsArrowVisible="{TemplateBinding IsArrowVisibleEffective}"
                                             ArrowPosition="{TemplateBinding ArrowPosition}"
-                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
+                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
                 </atom:Popup>
             </Panel>
         </ControlTemplate>
@@ -175,8 +183,10 @@
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="PickerIndicatorOffsetX" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <DoubleTransition Property="RangePickerIndicatorOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+                    <DoubleTransition Property="PickerIndicatorOffsetX"
+                                      Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+                    <DoubleTransition Property="RangePickerIndicatorOpacity"
+                                      Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                 </Transitions>
             </Setter>
         </Style>

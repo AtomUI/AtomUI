@@ -2,7 +2,21 @@
 
 本文档记录 ComboBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - ComboBox 自身通过 AddOwner 复用 Popup 的两项注册，不改变 AvaloniaComboBox 继承关系。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
 ## 2026-11-02
+
+- Changed
+  - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
 - Design
   - 定义[统一候选空态模型](overview.md#41-候选与空态)：集合为空或有效过滤无可见匹配项时，根据空态开关显示反馈；过滤清理只恢复容器可见性，最终空态由候选刷新流程统一推导。

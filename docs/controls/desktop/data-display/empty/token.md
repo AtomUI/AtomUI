@@ -4,7 +4,8 @@
 
 ## 1. 定位
 
-Empty Token 只表达组件级视觉变量，例如尺寸、间距、颜色、圆角、阴影、图标尺寸和弹层边界。Token 不承载运行时选择、展开、加载、错误、上传任务、过滤条件或业务状态。
+Empty Token 只表达预设图片高度、描述间距和 Footer 间距。内置图形颜色直接使用 SharedToken 输入，不由 EmptyToken
+另行定义。Token 不承载图片来源、图片生成结果、资源就绪状态或控件挂树状态。
 
 当前 Token scope：
 
@@ -16,21 +17,29 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `EmptyImgHeight`、`EmptyImgHeightSM`、`EmptyImgHeightMD` |
+| 尺寸与密度 | 三档 SizeType 的 image 高度。 | `EmptyImgHeight`、`EmptyImgHeightSM`、`EmptyImgHeightMD` |
 | 间距与布局 | image、description 与 footer 之间的稳定间距。 | `DescriptionMargin`、`DescriptionMarginSM`、`FooterMargin` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 按源码 Token 语义维护 |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
-
-未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
 ## 3. 控件专项模型中的 Token 使用
 
 Empty 的控件专项模型通过 Theme 消费 Token：
 
-- C# 控件负责状态归一和伪类同步。
-- AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
-- Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
+- AXAML/ControlTheme 负责把 EmptyToken 映射到 image 高度、description margin 和 footer margin。
+- EmptyToken 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+
+预设图形的颜色绑定由 `EmptyTheme.axaml` 声明：
+
+| 内部颜色输入 | SharedToken |
+| --- | --- |
+| `BorderColor` | `ColorFill` |
+| `BorderColorSecondary` | `ColorBorderSecondary` |
+| `ShadowColor` | `ColorFillTertiary` |
+| `ContentColor` | `ColorFillQuaternary` |
+| `BgColor` | `ColorBgElevated` |
+
+`AbstractEmpty` 消费这些输入进行颜色叠加并生成 SVG。资源暂缺、恢复和重新挂树的结果提交规则由
+[图片计算与结果提交](implementation.md#81-图片计算与结果提交)统一定义；不通过新增 Token 或固定颜色保存图片状态。
 
 ## 4. 控件家族影响
 

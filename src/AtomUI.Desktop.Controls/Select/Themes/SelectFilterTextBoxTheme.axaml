@@ -9,6 +9,14 @@
             <themes:EmbeddedTextBoxTheme TargetType="{x:Type atom:SelectFilterTextBox}" />
         </ControlTheme.BasedOn>
 
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+        <Setter Property="CaretBrush" Value="{atom:OwnerTokenResource ColorText}" />
+        <Setter Property="SelectionBrush" Value="{atom:OwnerTokenResource SelectionBackground}" />
+        <Setter Property="SelectionForegroundBrush" Value="{atom:OwnerTokenResource SelectionForeground}" />
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
+        </Style>
+
         <Setter Property="Padding" Value="0" />
         <Setter Property="BorderThickness" Value="0" />
 

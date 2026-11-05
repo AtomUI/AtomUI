@@ -9,3 +9,6 @@
 先完成本地可审查源码与工作流、临时 RED/GREEN、清理和聚焦校验，再申请必要的提交及远端分支创建／推送授权。用户此前的 Actions 授权不被扩大为提交或创建分支授权；未经具体方案的“我同意”不创建远端分支。此处是待执行方案，尚无 Windows/Linux/Browser 通过结论。
 
 实现补充：复用已安装的Chrome命令行，无需浏览器SDK依赖；以[官方Headless CLI](https://developer.chrome.com/docs/automation-and-testing/headless)启动独立临时profile和SwiftShader软件后端。最初dump-dom／virtual-time-budget路径在真实Mono AOT下早于异步启动完成，已用同发布物的持续运行单变量对照证明（4.491秒空DOM对5.260秒完成23断言）。现由仅本机HTTP响应临时加入的观察脚本回传真实DOM、浏览器错误与User Agent，使用独立随机回传地址和严格Origin；Python只接受实际pre#result中的精确PRODUCT_PASS browser，并再次拒绝错误、重复和非成功receipt。不制造产品标记，不以HTML源码文字或页面加载代替运行。等待采用有界真实时钟，结束／超时清理本次进程组、server与profile。此入口只证明产品fixture合同，不作为连续动效、性能或像素证据。
+
+
+CT20新增G1已获准仅归CT25/FW1继续调查；完整触发历史、严格FAIL与唯一批准登记见[CT20权威出口](custom-size-exit.md)。不泛化FW2、其他失败，不授权依赖或Git修改。

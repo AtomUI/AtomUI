@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Diagnostics;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Utils;
@@ -17,7 +18,7 @@ namespace AtomUI.Controls.Commons;
 public abstract class AbstractRate : TemplatedControl, 
                                      IMotionAwareControl, 
                                      ISizeTypeAware,
-                                     IFormItemAware
+                                     IFormItemAware, IThemeInheritanceSource
 {
     #region 公共属性定义
     
@@ -165,6 +166,8 @@ public abstract class AbstractRate : TemplatedControl,
     private bool _isPointerInRate;
     private RateItem? _focusStartItem;
     
+    private EventHandler? _formValueChanged;
+
     static AbstractRate()
     {
         AffectsMeasure<AbstractRate>(CountProperty, CharacterProperty);
@@ -234,7 +237,139 @@ public abstract class AbstractRate : TemplatedControl,
         _pointerEventHandleDisposable = null;
         ResetPointerState();
     }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        ResetPointerState();
+        _itemsControl = e.NameScope.Find<ItemsControl>("PART_RateItems");
+        HandleCountChanged();
+        HandleEffectiveValueChanged();
+    }
+
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        var point = e.GetPosition(_itemsControl);
+        var value = CalculateEffectiveValue(point);
+        if (value != null)
+        {
+            SetCurrentValue(EffectiveValueProperty, value);
+        }
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        if (_itemsControl != null)
+        {
+            for (var i = 0; i < Count; i++)
+            {
+                if (_itemsControl.ContainerFromIndex(i) is RateItem rateItem)
+                {
+                    if (rateItem.Bounds.Contains(e.GetPosition(_itemsControl)))
+                    {
+                        _focusStartItem = rateItem;
+                    }
+                }
+            }
+        }
+    }
+
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        if (_focusStartItem != null)
+        {
+            _focusStartItem.IsFocusStartItem = false;
+            _focusStartItem                  = null;
+        }
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (IsKeyboardEnabled && !_isPointerInRate)
+        {
+            var currentValue = Value;
+            if (e.Key == Key.Left)
+            {
+                if (IsAllowHalf)
+                {
+                    currentValue -= 0.5;
+                }
+                else
+                {
+                    currentValue -= 1.0;
+                }
+
+                if (_focusStartItem != null)
+                {
+                    _focusStartItem.IsFocusStartItem = true;
+                }
+            }
+            else if (e.Key == Key.Right)
+            {
+                if (IsAllowHalf)
+                {
+                    currentValue += 0.5;
+                }
+                else
+                {
+                    currentValue += 1.0;
+                }
+                if (_focusStartItem != null)
+                {
+                    _focusStartItem.IsFocusStartItem = true;
+                }
+            }
+            currentValue = Math.Max(0, Math.Min(currentValue, Count));
+            SetCurrentValue(ValueProperty, currentValue);
+        }
+    }
     
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 实现 FormItem 接口
+
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value as double?);
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+
+    protected virtual void NotifySetFormValue(double? value)
+    {
+        SetCurrentValue(ValueProperty, value);
+    }
+
+    protected virtual double? NotifyGetFormValue()
+    {
+        return Value;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(ValueProperty, 0.0);
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+    }
+    #endregion
+
     private void HandleGlobalPointerEvent(RawInputEventArgs args)
     {
         if (!IsEffectivelyEnabled)
@@ -318,15 +453,6 @@ public abstract class AbstractRate : TemplatedControl,
         SetCurrentValue(EffectiveValueProperty, Value);
     }
 
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        ResetPointerState();
-        _itemsControl = e.NameScope.Find<ItemsControl>("PART_RateItems");
-        HandleCountChanged();
-        HandleEffectiveValueChanged();
-    }
-
     private void HandleCountChanged()
     {
         if (_itemsControl != null)
@@ -376,45 +502,6 @@ public abstract class AbstractRate : TemplatedControl,
                     }
                 }
             }
-        }
-    }
-
-    protected override void OnPointerMoved(PointerEventArgs e)
-    {
-        base.OnPointerMoved(e);
-        var point = e.GetPosition(_itemsControl);
-        var value = CalculateEffectiveValue(point);
-        if (value != null)
-        {
-            SetCurrentValue(EffectiveValueProperty, value);
-        }
-    }
-
-    protected override void OnPointerPressed(PointerPressedEventArgs e)
-    {
-        base.OnPointerPressed(e);
-        if (_itemsControl != null)
-        {
-            for (var i = 0; i < Count; i++)
-            {
-                if (_itemsControl.ContainerFromIndex(i) is RateItem rateItem)
-                {
-                    if (rateItem.Bounds.Contains(e.GetPosition(_itemsControl)))
-                    {
-                        _focusStartItem = rateItem;
-                    }
-                }
-            }
-        }
-    }
-
-    protected override void OnLostFocus(FocusChangedEventArgs e)
-    {
-        base.OnLostFocus(e);
-        if (_focusStartItem != null)
-        {
-            _focusStartItem.IsFocusStartItem = false;
-            _focusStartItem                  = null;
         }
     }
 
@@ -491,84 +578,17 @@ public abstract class AbstractRate : TemplatedControl,
         }
     }
 
-    protected override void OnKeyDown(KeyEventArgs e)
-    {
-        base.OnKeyDown(e);
-        if (IsKeyboardEnabled && !_isPointerInRate)
-        {
-            var currentValue = Value;
-            if (e.Key == Key.Left)
-            {
-                if (IsAllowHalf)
-                {
-                    currentValue -= 0.5;
-                }
-                else
-                {
-                    currentValue -= 1.0;
-                }
 
-                if (_focusStartItem != null)
-                {
-                    _focusStartItem.IsFocusStartItem = true;
-                }
-            }
-            else if (e.Key == Key.Right)
-            {
-                if (IsAllowHalf)
-                {
-                    currentValue += 0.5;
-                }
-                else
-                {
-                    currentValue += 1.0;
-                }
-                if (_focusStartItem != null)
-                {
-                    _focusStartItem.IsFocusStartItem = true;
-                }
-            }
-            currentValue = Math.Max(0, Math.Min(currentValue, Count));
-            SetCurrentValue(ValueProperty, currentValue);
-        }
-    }
-    
-    #region 实现 FormItem 接口
-    private EventHandler? _formValueChanged;
-    event EventHandler? IFormItemAware.ValueChanged
-    {
-        add => _formValueChanged += value;
-        remove => _formValueChanged -= value;
-    }
 
-    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value as double?);
 
-    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
-    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
-    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
-    
+
+
+
+
+
     private void HandleValueChanged()
     {
         _formValueChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    protected virtual void NotifySetFormValue(double? value)
-    {
-        SetCurrentValue(ValueProperty, value);
-    }
-
-    protected virtual double? NotifyGetFormValue()
-    {
-        return Value;
-    }
-
-    protected virtual void NotifyClearFormValue()
-    {
-        SetCurrentValue(ValueProperty, 0.0);
-    }
-
-    protected virtual void NotifyValidateStatus(FormValidateStatus status)
-    {
-    }
-    #endregion
 }

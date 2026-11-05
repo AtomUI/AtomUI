@@ -371,3 +371,13 @@ AbstractSelect 上的公开配置由 Select 实例拥有，主题为其提供 Se
 Custom 多选的紧凑 padding 在 owner 默认层计算，显式 padding 不再由内部 frame 自动压缩；标签名义测量预算保持独立。
 
 几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+输入 add-on 的 Outlined 常态边框、Error/Warning 边框及其 hover/focus/open 分支、Filled 常态与校验背景，从 Select 的有效 Global 读取。内部 add-on 不具有独立 identity；原生根画刷中继、状态归一和模板优先级保持，清除显式根画刷后恢复当前 owner 资源。
+
+## 私有过滤输入的主题来源
+
+Select、TreeSelect、Cascader 共享的私有 SelectFilterTextBox 将正文、光标、选区与选中文字、禁用颜色读取到各自公开选择 owner 的有效 Global。字号与字体继承链已经正确，保持原有 Single/Multiple 模型和几何；没有新 Own 或公开开关。
+
+### Custom 尺寸与原生优先级
+
+Custom 的根 CornerRadius 为基础默认。Padding 在基础 Setter 的类型化 MultiBinding 中按 Single/Multiple/Tags、选择是否为空及现有高度预算选择 InputPadding、SingleModePadding 或 MultiModePadding；有限高度下的紧凑垂直留白仍由原有转换器计算。普通 Style/LocalValue 覆盖最终 Padding 时不再被 Custom/empty 条件规则压住。三档预设、标签内在高度和内部输入的字号投射保持独立。

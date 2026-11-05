@@ -6,7 +6,7 @@
     <ControlTheme x:Key="{x:Type atom:SliderThumb}" TargetType="atom:SliderThumb">
 
         <Setter Property="Focusable" Value="True" />
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgContainer}" />
         <Setter Property="BorderThickness"
                 Value="{atom:SliderTokenResource ThumbCircleBorderThickness}" />
         <Setter Property="BorderBrush" Value="{atom:SliderTokenResource ThumbCircleBorderColor}" />

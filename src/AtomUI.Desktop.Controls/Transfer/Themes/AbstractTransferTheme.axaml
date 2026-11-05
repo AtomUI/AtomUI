@@ -5,21 +5,37 @@
               xmlns:antdicons="https://atomui.net/icons/antdesign"
               xmlns:system="using:System"
               x:Class="AtomUI.Desktop.Controls.Themes.AbstractTransferTheme">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
+    <Setter Property="FontSize">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+            <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontSize" />
+        </MultiBinding>
+    </Setter>
+
 
     <Style Selector="^:is(atom|AbstractTransfer)">
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
 
         <Style Selector="^ /template/ StackPanel#ActionsLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource Kind=SpacingXXS, AnchorControlType={x:Type atom:AbstractTransfer}}" />
         </Style>
 
         <Style Selector="^ /template/ Grid#RootLayout">
-            <Setter Property="ColumnSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="ColumnSpacing" Value="{atom:OwnerTokenResource Kind=SpacingXS, AnchorControlType={x:Type atom:AbstractTransfer}}" />
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextDisabled, AnchorControlType={x:Type atom:AbstractTransfer}}" />
         </Style>
 
         <Setter Property="SelectionsIcon">

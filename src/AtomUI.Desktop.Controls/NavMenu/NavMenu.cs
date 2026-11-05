@@ -1,8 +1,8 @@
+using AtomUI.Theme.Resources;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
@@ -34,7 +34,8 @@ public partial class NavMenu : ItemsControl,
                        IFocusScope,
                        INavMenu,
                        IMotionAwareControl,
-                       IMenuChildSelectable
+                       IMenuChildSelectable,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -259,12 +260,6 @@ public partial class NavMenu : ItemsControl,
 
     #region 公共事件定义
 
-    public static readonly RoutedEvent<NavMenuItemClickEventArgs> NavMenuItemClickEvent =
-        RoutedEvent.Register<NavMenu, NavMenuItemClickEventArgs>(nameof(NavMenuItemClick), RoutingStrategies.Bubble);
-
-    public static readonly RoutedEvent<NavMenuNodeSelectedEventArgs> NavMenuNodeSelectedEvent =
-        RoutedEvent.Register<NavMenu, NavMenuNodeSelectedEventArgs>(nameof(NavMenuNodeSelected), RoutingStrategies.Bubble);
-
     public event EventHandler<NavMenuItemClickEventArgs>? NavMenuItemClick
     {
         add => AddHandler(NavMenuItemClickEvent, value);
@@ -277,9 +272,18 @@ public partial class NavMenu : ItemsControl,
         remove => RemoveHandler(NavMenuNodeSelectedEvent, value);
     }
 
+    public static readonly RoutedEvent<NavMenuItemClickEventArgs> NavMenuItemClickEvent =
+        RoutedEvent.Register<NavMenu, NavMenuItemClickEventArgs>(nameof(NavMenuItemClick), RoutingStrategies.Bubble);
+
+    public static readonly RoutedEvent<NavMenuNodeSelectedEventArgs> NavMenuNodeSelectedEvent =
+        RoutedEvent.Register<NavMenu, NavMenuNodeSelectedEventArgs>(nameof(NavMenuNodeSelected), RoutingStrategies.Bubble);
+
     #endregion
 
     #region 内部属性定义
+
+    internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
+        MotionAwareControlProperty.MotionDurationProperty.AddOwner<NavMenu>();
 
     internal static readonly DirectProperty<NavMenu, NavMenuMode> EffectiveModeProperty =
         AvaloniaProperty.RegisterDirect<NavMenu, NavMenuMode>(
@@ -300,6 +304,12 @@ public partial class NavMenu : ItemsControl,
         AvaloniaProperty.Register<NavMenu, double>(
             nameof(EntryItemSpacing),
             inherits: true);
+
+    internal TimeSpan MotionDuration
+    {
+        get => GetValue(MotionDurationProperty);
+        set => SetValue(MotionDurationProperty, value);
+    }
 
     private NavMenuMode _effectiveMode = NavMenuMode.Inline;
 
@@ -329,11 +339,11 @@ public partial class NavMenu : ItemsControl,
         private set => SetValue(EntryItemSpacingProperty, value);
     }
 
+    internal INavMenuInteractionHandler? InteractionHandler { get; private set; }
+
     #endregion
 
     #region 内部协作 API
-
-    internal INavMenuInteractionHandler? InteractionHandler { get; private set; }
 
     internal virtual void PrepareNavMenuItem(NavMenuItem menuItem, object? item, int index)
     {
@@ -738,7 +748,10 @@ public partial class NavMenu : ItemsControl,
         SelectedItem = null;
     }
 
-    #region 实现 INavMenuElement 接口
+    #region 实现 控件接口
+
+    // ControlTheme keeps native inheritance when no explicit owner typography is configured.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 
     IEnumerable<INavMenuItem> INavMenuElement.SubItems => EnumerateSubItems();
 
@@ -1007,7 +1020,7 @@ public partial class NavMenu : ItemsControl,
             return;
         }
 
-        var duration = ResolveInlineCollapsedWidthMotionDuration();
+        var duration = MotionDuration;
         if (duration <= TimeSpan.Zero)
         {
             InlineCollapsedLayoutWidth = targetWidth;
@@ -1091,19 +1104,6 @@ public partial class NavMenu : ItemsControl,
         }
         InlineCollapsedLayoutWidth = targetWidth;
         ClearInlineCollapsedLayoutWidth();
-    }
-
-    private TimeSpan ResolveInlineCollapsedWidthMotionDuration()
-    {
-        var application = Application.Current;
-        var themeVariant = application?.ActualThemeVariant;
-        if (application?.TryGetResource(SharedTokenKind.MotionDurationMid, themeVariant, out var value) == true &&
-            value is TimeSpan duration)
-        {
-            return duration;
-        }
-
-        return TimeSpan.FromMilliseconds(200);
     }
 
     private void CancelInlineCollapsedWidthMotion()
@@ -1582,4 +1582,5 @@ public partial class NavMenu : ItemsControl,
 
         return menuItem.GetPopupOverlayLayer() is not null;
     }
+
 }

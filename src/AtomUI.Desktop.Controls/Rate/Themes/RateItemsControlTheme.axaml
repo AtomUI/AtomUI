@@ -18,7 +18,7 @@
         </Setter>
         
         <Style Selector="^ /template/ StackPanel#ItemsLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXS}"/>
         </Style>
         <Setter Property="ClipToBounds" Value="False"/>
     </ControlTheme>

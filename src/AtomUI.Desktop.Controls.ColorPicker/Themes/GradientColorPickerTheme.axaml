@@ -52,10 +52,14 @@
                                 PlacementGravity="{TemplateBinding PlacementGravity}"
                                 IsPointAtCenter="{TemplateBinding IsPointAtCenter}"
                                 MarginToAnchor="{TemplateBinding MarginToAnchor}">
-                        <atom:ColorPickerPopupRootFrame Classes.semantic-popup-root="True">
-                            <atom:ArrowDecoratedBox IsArrowVisible="{TemplateBinding IsArrowVisibleEffective}"
+                        <atom:ColorPickerPopupRootFrame Classes.semantic-popup-host="True">
+                            <atom:ArrowDecoratedBox Classes.semantic-popup-surface="True"
+                                                    IsArrowVisible="{TemplateBinding IsArrowVisibleEffective}"
                                                     ArrowPosition="{TemplateBinding ArrowPosition}"
                                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}">
+                                <atom:ArrowDecoratedBox.Theme>
+                                    <themes:ColorPickerPopupSurfaceTheme TargetType="atom:ArrowDecoratedBox" />
+                                </atom:ArrowDecoratedBox.Theme>
                                 <ContentPresenter Content="{TemplateBinding PickerPresenter}" />
                             </atom:ArrowDecoratedBox>
                         </atom:ColorPickerPopupRootFrame>

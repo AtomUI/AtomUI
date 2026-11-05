@@ -5,6 +5,11 @@
 - 实现结构
   - TextBox、LineEdit、SearchEdit、TextArea 的输入模板统一直接使用 Avalonia `TextPresenter`，移除内部选区缓存兼容子类；PART 名称、绑定、Semantic Part 契约和选择/密码行为保持一致。
 
+## 2026-11-04
+
+- Custom 根留白和圆角降为基础默认，保留输入框体投射、三档预设与原生 Style 优先级。
+
+
 ## 2026-10-23
 
 - 内部输入框体及实际存在的clear/reveal按钮消费公开owner的有效Global，支持内容子树和重挂载，保留原状态与标准属性优先级。

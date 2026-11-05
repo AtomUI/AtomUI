@@ -43,7 +43,7 @@
         </Setter>
 
         <Style Selector="^ /template/ StackPanel#ActionsLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXXS, SourceControlType={x:Type atom:Upload}}" />
         </Style>
         
         <Style Selector="^[ListType=PictureCircle]">

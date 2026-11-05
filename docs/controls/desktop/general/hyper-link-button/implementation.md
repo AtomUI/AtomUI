@@ -15,3 +15,7 @@ Global尺寸、图标、motion与状态色由HyperLinkButton自己的类型化�
 loading图标的Spin由当前IsMotionEnabled开关约束；关闭时图标仍可见并保留loading透明度，恢复时重启旋转。该规则声明于ControlTheme，不创建额外动画或订阅。
 
 Frame的BorderBrush/BorderThickness使用TemplateBinding；Background使用编译TemplatedParent绑定，明确Template优先级及TargetNullValue=Transparent。该回退只作用于Frame，root默认getter和未设置状态保持null。普通/ghost/disabled不再向子Frame强写透明背景；最终root值由Avalonia原生属性/Style优先级决定。默认线宽0，BorderColorDisabled只有在应用请求边框时可见；模板、布局和命中不通过代码回写属性实现。
+
+### Custom 尺寸与原生优先级
+
+Custom 的高度、字号、留白及普通/仅图标指标使用基础 Setter；仅图标回退由类型化 MultiBinding 选择，三档预设保持独立。未配置的 Custom 高度仍取中档；大字与大留白配方应同时明确 Height（需要自然测量时设为 Auto），避免固定高度裁切内容。

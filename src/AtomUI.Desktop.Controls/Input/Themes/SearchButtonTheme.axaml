@@ -12,15 +12,15 @@
     <Style Selector="^:is(atom|Button)[ButtonType=Text]">
         <Style Selector="^:pointerover">
             <Setter Property="Background"
-                    Value="{atom:SearchEditTokenResource ColorBgTextHover}" />
+                    Value="{atom:OwnerTokenResource ColorBgTextHover, SourceControlType={x:Type atom:SearchEdit}}" />
         </Style>
 
         <Style Selector="^:pressed">
             <Setter Property="Background"
-                    Value="{atom:SearchEditTokenResource ColorBgTextActive}" />
+                    Value="{atom:OwnerTokenResource ColorBgTextActive, SourceControlType={x:Type atom:SearchEdit}}" />
         </Style>
 
-        <Setter Property="Foreground" Value="{atom:SearchEditTokenResource ColorTextDescription}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDescription, SourceControlType={x:Type atom:SearchEdit}}" />
 
         <Style Selector="^:pointerover">
             <Setter Property="Foreground" Value="{atom:ButtonTokenResource DefaultHoverColor}" />
@@ -31,7 +31,7 @@
         </Style>
         
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SearchEditTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled, SourceControlType={x:Type atom:SearchEdit}}" />
         </Style>
     </Style>
 

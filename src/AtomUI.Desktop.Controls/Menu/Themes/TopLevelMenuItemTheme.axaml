@@ -6,6 +6,14 @@
     <ControlTheme x:Key="TopLevelMenuItemTheme" TargetType="atom:MenuItem">
         <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.HorizontalMenuOpen}" />
         <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.HorizontalMenuClose}" />
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -71,10 +79,21 @@
         </Setter>
 
         <Style Selector="^:toplevel">
+            <Setter Property="CornerRadius"
+                    Value="{atom:MenuTokenResource TopLevelItemBorderRadius}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeight, AnchorControlType={x:Type atom:MenuItem}}" />
+            <Setter Property="Padding" Value="{atom:MenuTokenResource TopLevelItemPadding}" />
+            <Setter Property="FontSize" Value="{atom:MenuTokenResource TopLevelItemFontSize}" />
+            <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+                <Setter Property="LineHeight"
+                        Value="{atom:MenuTokenResource TopLevelItemLineHeight}" />
+            </Style>
+
             <Style Selector="^ /template/ Border#Frame">
                 <Setter Property="Cursor" Value="Hand" />
             </Style>
-            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Background" Value="{atom:MenuTokenResource TopLevelItemBg}" />
+            <Setter Property="Foreground" Value="{atom:MenuTokenResource TopLevelItemColor}" />
             <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
             <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
 
@@ -91,15 +110,15 @@
 
             <Style Selector="^[IsSubMenuOpen=True]">
                 <Setter Property="Background"
-                        Value="{atom:MenuTokenResource TopLevelItemHoverBg}" />
+                        Value="{atom:MenuTokenResource TopLevelItemSelectedBg}" />
                 <Setter Property="Foreground"
-                        Value="{atom:MenuTokenResource TopLevelItemHoverColor}" />
+                        Value="{atom:MenuTokenResource TopLevelItemSelectedColor}" />
             </Style>
 
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="CornerRadius"
                         Value="{atom:MenuTokenResource TopLevelItemBorderRadiusLG}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeightLG, AnchorControlType={x:Type atom:MenuItem}}" />
                 <Setter Property="Padding" Value="{atom:MenuTokenResource TopLevelItemPaddingLG}" />
                 <Setter Property="FontSize"
                         Value="{atom:MenuTokenResource TopLevelItemFontSizeLG}" />
@@ -109,10 +128,10 @@
                 </Style>
             </Style>
 
-            <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <Style Selector="^[SizeType=Middle]">
                 <Setter Property="CornerRadius"
                         Value="{atom:MenuTokenResource TopLevelItemBorderRadius}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeight, AnchorControlType={x:Type atom:MenuItem}}" />
                 <Setter Property="Padding" Value="{atom:MenuTokenResource TopLevelItemPadding}" />
                 <Setter Property="FontSize" Value="{atom:MenuTokenResource TopLevelItemFontSize}" />
                 <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
@@ -124,7 +143,7 @@
             <Style Selector="^[SizeType=Small]">
                 <Setter Property="CornerRadius"
                         Value="{atom:MenuTokenResource TopLevelItemBorderRadiusSM}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeightSM, AnchorControlType={x:Type atom:MenuItem}}" />
                 <Setter Property="Padding" Value="{atom:MenuTokenResource TopLevelItemPaddingSM}" />
                 <Setter Property="FontSize"
                         Value="{atom:MenuTokenResource TopLevelItemFontSizeSM}" />
@@ -136,7 +155,7 @@
 
             <Style Selector="^ /template/ Border#PopupFrame">
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorBgElevated}" />
+                        Value="{atom:OwnerTokenResource Kind=ColorBgElevated, AnchorControlType={x:Type atom:MenuItem}}" />
                 <Setter Property="CornerRadius"
                         Value="{atom:PopupTokenResource PopupCornerRadius}" />
                 <Setter Property="MinWidth"

@@ -20,8 +20,8 @@
         
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
-                <WrapPanel LineSpacing="{atom:SharedTokenResource SpacingXS}"
-                           ItemSpacing="{atom:SharedTokenResource SpacingXS}"/>
+                <WrapPanel LineSpacing="{atom:OwnerTokenResource SpacingXS, SourceControlType={x:Type atom:Upload}}"
+                           ItemSpacing="{atom:OwnerTokenResource SpacingXS, SourceControlType={x:Type atom:Upload}}"/>
             </ItemsPanelTemplate>
         </Setter>
     </ControlTheme>

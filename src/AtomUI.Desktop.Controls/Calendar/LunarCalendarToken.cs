@@ -10,7 +10,20 @@ internal sealed partial class LunarCalendarToken : AbstractControlDesignToken, I
     public double MiniDateCellSize { get; set; }
     public double MiniMonthCellWidth { get; set; }
     public double SecondaryTextFontSize { get; set; }
-    public double SecondaryTextLineHeight { get; set; }
+    public double SecondaryTextLineHeight
+    {
+        get => _secondaryTextLineHeight;
+        set
+        {
+            if (!double.IsFinite(value) || value <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "Lunar text line height must be positive and finite.");
+            }
+            _secondaryTextLineHeight = value;
+        }
+    }
+
+    private double _secondaryTextLineHeight;
     public Color SecondaryTextColor { get; set; }
     public Color WeekendTextColor { get; set; }
     public Color HolidayMarkerColor { get; set; }

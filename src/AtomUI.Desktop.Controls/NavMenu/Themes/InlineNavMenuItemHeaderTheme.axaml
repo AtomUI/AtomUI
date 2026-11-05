@@ -41,7 +41,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             IsEnabled="{TemplateBinding IsEnabled}"
-                            Icon="{TemplateBinding Icon}" 
+                            Icon="{TemplateBinding Icon}"
                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                         <ContentPresenter
                             Name="ItemTextPresenter"
@@ -66,14 +66,14 @@
                 </Border>
             </ControlTemplate>
         </Setter>
-        
+
         <Style Selector="^:is(atom|InlineNavMenuItemHeader)">
             <Setter Property="Height" Value="{atom:NavMenuTokenResource ItemHeight}" />
             <Setter Property="Margin" Value="{atom:NavMenuTokenResource ItemContentMargin}" />
             <Setter Property="InlineItemIndentUnit"
                     Value="{atom:NavMenuTokenResource InlineItemIndentUnit}" />
             <Setter Property="MenuIndicatorRenderTransform" Value="rotate(90deg)" />
-            
+
             <Style Selector="^ /template/ Border#MenuIndicatorIconFrame">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
@@ -81,7 +81,7 @@
             <Style Selector="^[IsSubMenuOpen=True]">
                 <Setter Property="MenuIndicatorRenderTransform" Value="rotate(-90deg)" />
             </Style>
-            
+
             <Style Selector="^[HasSubMenu=False]">
                 <Style Selector="^ /template/ Border#MenuIndicatorIconFrame">
                     <Setter Property="IsVisible" Value="False" />
@@ -90,7 +90,8 @@
 
             <Style Selector="^[IsMotionEnabled=True]">
                 <Setter Property="Transitions">
-                    <atom:TokenTransitions>
+                    <atom:TokenTransitions EasingInput="{atom:NavMenuTokenResource ItemBackgroundMotionEasing}"
+                                       EasingProperty="{x:Static TemplatedControl.BackgroundProperty}">
                         <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}"/>
                         <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                         <TransformOperationsTransition Property="MenuIndicatorRenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />

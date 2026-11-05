@@ -548,3 +548,8 @@ git diff --check
 
 `ListViewItem` 在构造阶段抑制过渡，覆盖 owner 准备容器时写入的初始选中外观；加载后恢复最新集合。父控件在清理容器之前复位会话，避免离树前的清理写入启动过渡。
 共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。
+
+
+## 有效主题输入与生命周期
+
+列表根、公开条目及 Transfer 派生条目保留实际注册身份；组标题等内部节点解析所属公开 owner。边框、尺寸与标记消费有效 Global，可选字体保持原生继承。Custom 使用稳定基础默认值，退出预设尺寸选择器。

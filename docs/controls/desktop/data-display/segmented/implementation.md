@@ -335,3 +335,8 @@ AOT 边界：
 - 修改布局或选择行为时运行 `tests/AtomUI.Desktop.Controls.Tests` 中 Segmented 相关测试，并按影响范围扩大到完整 Desktop 控件测试。
 - 修改 Gallery 示例时运行 `tests/AtomUIGallery.Tests` 中 Segmented 相关测试。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。
+
+
+## 有效主题输入与生命周期
+
+轨道与公开条目分别保留 Global 身份，内部图标等模板输入从所属条目解析。字体族可选覆盖；Custom 使用基础默认并退出三档预设 activator。TrackPadding 到最小高度的既有有效 Own 依赖及自动高度 0 下限保持。

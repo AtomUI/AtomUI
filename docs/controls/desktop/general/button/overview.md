@@ -223,6 +223,17 @@ Button 与 CompactSpace、FormItem、Wave 和宿主注册协同。`Color + Varia
 
 ## 8. 专项模型
 
+### 根阴影输入
+
+`BoxShadow`（`Avalonia.Media.BoxShadows`）是实际按钮阴影的公开根属性。未定制时跟随当前颜色、变体与自身主题计算；普通原生Style和本地值可以覆盖，包括预设色按钮。显式空集合表示无阴影，`ClearValue(Button.BoxShadowProperty)`恢复当前Style或主题默认。该属性不改变布局尺寸、命中区或Semantic Part数量，DropdownButton继承相同入口。
+
+```xml
+<atom:Button Color="Red" Variant="Solid"
+             Content="Action" BoxShadow="0 6 12 0 #26000000" />
+```
+
+DefaultShadow、PrimaryShadow、DangerShadow仍各按原有语义提供默认值；预设色未定制时保留Palette和Global输入。133个Own字段不因根属性增加而改变。
+
 ### 8.1 Color / Variant 模型
 
 多彩按钮属于 Button 当前设计模型的一部分，不应通过扩展 `ButtonType` 枚举表达。

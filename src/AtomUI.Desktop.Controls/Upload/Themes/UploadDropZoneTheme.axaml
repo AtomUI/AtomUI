@@ -4,6 +4,22 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:UploadDropZone}" TargetType="atom:UploadDropZone">
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <ContentPresenter Name="PART_ContentPresenter"
@@ -13,5 +29,8 @@
                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
             </ControlTemplate>
         </Setter>
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

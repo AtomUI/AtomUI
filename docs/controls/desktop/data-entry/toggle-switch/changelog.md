@@ -1,5 +1,10 @@
 # ToggleSwitch Changelog
 
+## 2026-11-04
+
+- 21字段采用真实 Own 依赖默认；补齐 owner Global/字体和 Custom 字号接管。
+- 加载旋转遵守 motion 开关和周期热更新，保留业务加载态。
+
 本文档记录 ToggleSwitch 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-10-20

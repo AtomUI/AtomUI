@@ -21,7 +21,8 @@ public sealed class ThemeConfig
         IReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig> controls,
         IReadOnlyList<ThemeStyleAsset>? styleAssets = null,
         ThemeBrandSelection? brandSelection = null,
-        ThemeBrandRequirements? brandRequirements = null)
+        ThemeBrandRequirements? brandRequirements = null,
+        string? brandThemeId = null)
     {
         Inherit    = inherit;
         Algorithms = algorithms is null ? null : Array.AsReadOnly(algorithms.ToArray());
@@ -48,6 +49,7 @@ public sealed class ThemeConfig
         StyleAssets = Array.AsReadOnly(assets);
         BrandSelection = brandSelection;
         BrandRequirements = brandRequirements;
+        BrandThemeId = brandThemeId;
     }
 
     public bool Inherit { get; }
@@ -62,4 +64,6 @@ public sealed class ThemeConfig
     internal IReadOnlyList<ThemeStyleAsset> StyleAssets { get; }
     internal ThemeBrandSelection? BrandSelection { get; }
     internal ThemeBrandRequirements? BrandRequirements { get; }
+    // Bound recipes keep their registered base when an ancestor switches its own definition.
+    internal string? BrandThemeId { get; }
 }

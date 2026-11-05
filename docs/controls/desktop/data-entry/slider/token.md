@@ -73,7 +73,7 @@ Mark Token 服务 mark 点的尺寸和边框状态色。Mark 文本使用 Slider
 ```text
 SharedToken
     ↓
-SliderToken.CalculateTokenValues()
+SliderToken 的 DependencyDefaultsV2 默认计划
     ↓
 SliderTheme / SliderTrackTheme / SliderThumbTheme
     ↓
@@ -102,9 +102,9 @@ SliderToken 只服务 Slider、SliderTrack 和 SliderThumb，不被 NumericUpDow
 
 ## 5. 兼容性要求
 
-`SliderToken.CalculateTokenValues()` 使用 SharedToken 推导：
+`SliderToken 的 DependencyDefaultsV2 默认计划` 使用 SharedToken 推导：
 
-- rail 厚度。
+- rail 的固定默认厚度（可由 Own 覆盖）。
 - thumb 圆点尺寸。
 - hover 圆点和边框增量。
 - active、hover、disabled 颜色。
@@ -123,3 +123,9 @@ Token 不参与 handle 值排序、disabled 边界、整体轨道 offset 或 Too
 | Padding | 验证有无 mark 的 horizontal / vertical 布局和文本不重叠。 |
 | 动态 handle | 验证所有动态 thumb 使用相同 Token 和主题状态。 |
 | Token 生成 | 检查 SliderTokenKind、AXAML 引用、默认值计算和 token.md 语义一致。 |
+
+## 派生默认值与兼容字段
+
+25字段保留原类型和资源编号，采用 DependencyDefaultsV2。ThumbSize 依赖实际 ThumbCircleSizeHover、ThumbCircleBorderThicknessHover、ThumbOutlineThickness；ThumbOutlineColor 依赖实际 active 色；方向 padding 依赖实际 SliderTrackSize。显式派生字段本身继续优先。
+
+24字段服务现有 rail/track/mark/handle 及方向分支。MarginPartWithMark 保留导出和默认计算，当前没有布局消费者；mark 标签留位由实际文本度量承担，不额外叠加这项历史 margin。Slider、公开 SliderTrack/SliderThumb 保留各自 Global 身份和共享 Slider Own；组合主题明确提供的输入继续由 owner 负责。

@@ -11,6 +11,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -113,10 +114,8 @@ internal class TimeView : TemplatedControl
             o => o.SpacerWidth,
             (o, v) => o.SpacerWidth = v);
 
-    internal static readonly DirectProperty<TimeView, double> ItemHeightProperty =
-        AvaloniaProperty.RegisterDirect<TimeView, double>(nameof(ItemHeight),
-            o => o.ItemHeight,
-            (o, v) => o.ItemHeight = v);
+    internal static readonly StyledProperty<double> ItemHeightProperty =
+        DateTimePickerPanel.ItemHeightProperty.AddOwner<TimeView>();
 
     internal static readonly StyledProperty<bool> IsPointerInSelectorProperty =
         AvaloniaProperty.Register<TimeView, bool>(nameof(IsPointerInSelector), false);
@@ -145,12 +144,10 @@ internal class TimeView : TemplatedControl
         set => SetAndRaise(SpacerWidthProperty, ref _spacerWidth, value);
     }
 
-    private double _itemHeight;
-
     internal double ItemHeight
     {
-        get => _itemHeight;
-        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
+        get => GetValue(ItemHeightProperty);
+        set => SetValue(ItemHeightProperty, value);
     }
 
     internal bool IsPointerInSelector
@@ -273,8 +270,12 @@ internal class TimeView : TemplatedControl
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        // The divider uses the runtime popup host's identity and physical-pixel
+        // scaling; ControlTheme cannot apply this per-instance scaling callback.
+        // The binding is released on visual detach, alongside the input observer.
+        var picker = this.GetLogicalAncestors().OfType<Primitives.InfoPickerInput>().FirstOrDefault();
         _spacerWidthDisposable = TokenResourceBinder.CreateControlTokenBinding(
-            typeof(TimePicker),
+            picker?.GetType() ?? typeof(TimePicker),
             this,
             this,
             SpacerWidthProperty,
@@ -495,11 +496,15 @@ internal class TimeView : TemplatedControl
             ClockIdentifier == ClockIdentifierType.HourClock12, AmText, PmText);
     }
 
+    #region 内部协作 API
+
     internal void SyncDisplayTimeToPanel(TimeSpan time)
     {
         _pendingDisplayTime = time;
         ApplyPendingDisplayTime();
     }
+
+    #endregion
 
     private void SyncTimeValueToPanel(TimeSpan time)
     {

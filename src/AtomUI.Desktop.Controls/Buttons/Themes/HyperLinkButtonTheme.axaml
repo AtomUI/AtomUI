@@ -3,7 +3,7 @@
                     xmlns:atom="https://atomui.net"
                     xmlns:antdicons="https://atomui.net/icons/antdesign"
                     x:ClassModifier="internal">
-<ControlTheme x:Key="{x:Type atom:HyperLinkButton}" TargetType="atom:HyperLinkButton">
+<ControlTheme x:Key="{x:Type atom:HyperLinkButton}" TargetType="atom:HyperLinkButton" x:DataType="atom:HyperLinkButton">
         <Setter Property="FontFamily">
             <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
                 <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
@@ -92,14 +92,16 @@
             </Style>
         </Style>
 
-        <Style Selector="^[SizeType=Custom]">
-            <Setter Property="Height" Value="{atom:HyperLinkButtonTokenResource ControlHeight}" />
-            <Setter Property="Padding" Value="{atom:HyperLinkButtonTokenResource ContentPadding}" />
-            <Setter Property="FontSize" Value="{atom:HyperLinkButtonTokenResource ContentFontSize}" />
-            <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{atom:HyperLinkButtonTokenResource IconOnyPadding}" />
-            </Style>
-        </Style>
+        <Setter Property="Height" Value="{atom:HyperLinkButtonTokenResource ControlHeight}" />
+        <Setter Property="FontSize" Value="{atom:HyperLinkButtonTokenResource ContentFontSize}" />
+        <Setter Property="Padding">
+            <MultiBinding Converter="{x:Static atom:ButtonThemeConverters.IconOnlyValue}">
+                <CompiledBindingExtension Path="$self.Content" />
+                <CompiledBindingExtension Path="$self.Icon" />
+                <atom:HyperLinkButtonTokenResource Kind="ContentPadding" />
+                <atom:HyperLinkButtonTokenResource Kind="IconOnyPadding" />
+            </MultiBinding>
+        </Setter>
 
         <!--  text 和 icon 都存在的情况 -->
         <Style Selector="^[SizeType=Large]">
@@ -110,10 +112,22 @@
             <Setter Property="IconWidth" Value="{atom:HyperLinkButtonTokenResource IconSize}" />
             <Setter Property="IconHeight" Value="{atom:HyperLinkButtonTokenResource IconSize}" />
         </Style>
-        <Style Selector="^[SizeType=Custom]">
-            <Setter Property="IconWidth" Value="{atom:HyperLinkButtonTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:HyperLinkButtonTokenResource IconSize}" />
-        </Style>
+        <Setter Property="IconWidth">
+            <MultiBinding Converter="{x:Static atom:ButtonThemeConverters.IconOnlyValue}">
+                <CompiledBindingExtension Path="$self.Content" />
+                <CompiledBindingExtension Path="$self.Icon" />
+                <atom:HyperLinkButtonTokenResource Kind="IconSize" />
+                <atom:HyperLinkButtonTokenResource Kind="OnlyIconSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="IconHeight">
+            <MultiBinding Converter="{x:Static atom:ButtonThemeConverters.IconOnlyValue}">
+                <CompiledBindingExtension Path="$self.Content" />
+                <CompiledBindingExtension Path="$self.Icon" />
+                <atom:HyperLinkButtonTokenResource Kind="IconSize" />
+                <atom:HyperLinkButtonTokenResource Kind="OnlyIconSize" />
+            </MultiBinding>
+        </Setter>
         <Style Selector="^[SizeType=Small]">
             <Setter Property="IconWidth" Value="{atom:HyperLinkButtonTokenResource IconSizeSM}" />
             <Setter Property="IconHeight" Value="{atom:HyperLinkButtonTokenResource IconSizeSM}" />
@@ -130,12 +144,6 @@
                         Value="{atom:HyperLinkButtonTokenResource OnlyIconSizeLG}" />
             </Style>
             <Style Selector="^[SizeType=Middle]">
-                <Setter Property="IconWidth"
-                        Value="{atom:HyperLinkButtonTokenResource OnlyIconSize}" />
-                <Setter Property="IconHeight"
-                        Value="{atom:HyperLinkButtonTokenResource OnlyIconSize}" />
-            </Style>
-            <Style Selector="^[SizeType=Custom]">
                 <Setter Property="IconWidth"
                         Value="{atom:HyperLinkButtonTokenResource OnlyIconSize}" />
                 <Setter Property="IconHeight"

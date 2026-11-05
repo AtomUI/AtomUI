@@ -1,5 +1,7 @@
 # DateViewer Token 设计
 
+FontFamily／FontSize为可选Global：明确配置本公开身份时使用有效值，缺省与清除保留实际父级继承。页头及默认footer的单侧分隔线使用有效BorderThickness，0可明确移除线条；内部原生转换器只选取所需侧，不改Own定义或默认1 DIP。
+
 DateViewerToken 为独立单值与范围面板提供默认资源。关联 [架构](overview.md)、[实现](implementation.md)、
 [共享设计](shared-panel-design.md)、[Changelog](changelog.md)；全局规则见
 [控件 Token 规范](../../../../engineering/development/control-token-guidelines.md)。

@@ -5,7 +5,7 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:MenuSeparator}" TargetType="atom:MenuSeparator">
         <Setter Property="MinHeight" Value="{atom:MenuTokenResource SeparatorItemHeight}"/>
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}"/>
-        <Setter Property="LineWidth" Value="{atom:SharedTokenResource LineWidth}"/>
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorder, AnchorControlType={x:Type atom:MenuSeparator}}"/>
+        <Setter Property="LineWidth" Value="{atom:OwnerTokenResource Kind=LineWidth, AnchorControlType={x:Type atom:MenuSeparator}}"/>
     </ControlTheme>
 </ResourceDictionary>

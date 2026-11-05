@@ -228,3 +228,9 @@ N 次光束 draw call。额外持久内存保持 `O(1)`，单帧绘制成本为 
 - Gallery hover、同一 Multiple beams 示例内 `Count=3` / `Count=2` 对照、标准 Avalonia `Border` 自定义容器示例、Customized color 六组预设，以及 Duration `3s` / `6s` / `12s`、BeamSize `100` / `56` / `160`、BorderThickness `2` 线宽对照的 Style、SourceKey、延迟加载结构和四语资源。
 - Show on hover、Multiple beams、Custom container、Duration、Size 和 Line width 六个本次新增 ShowcaseItem 使用 AtomUI 当前版本 `v6.1.8` 的 `BadgeText`。
 - 文档改动运行 `git diff --check`。
+
+## 实际 owner 与时钟观察
+
+BorderBeamTheme 在公开 owner 上声明 Global/Own 输入，模板再投射到实际 presenter；不借用 content 或外层控件的身份。渐变 stop 归一、范围裁剪、固定路径几何和实例 motion 语义保持。
+
+Progress 是 DirectProperty，时钟验收应读取真实 Progress 随帧推进和退出后的停止，不以 IsAnimating(ProgressProperty) 代替。周期变化重启现有执行，detach 释放动画与 stop 集合订阅；重新 attach 恢复当前集合和输入。

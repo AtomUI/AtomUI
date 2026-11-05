@@ -10,6 +10,10 @@ Upload Token 只表达组件级视觉变量，例如尺寸、间距、颜色、�
 
 - `UploadToken`，scope id 为 `Upload`，源码位于 `src/AtomUI.Desktop.Controls/Upload/UploadToken.cs`。
 
+十三字段采用DependencyDefaultsV2、声明修订1；默认只依赖有效Global或原常量，无Own依赖边。名称、类型、公共资源ID和slot保持。PictureCardSize仍按ControlHeightLG×2.55原运算顺序求值，不取整；TextListProgressLineHeight默认2，TextListProgressPadding仍为左侧FontSize+UniformlyPaddingXS。运行上传状态与实例尺寸不参与默认求值。
+
+公开表面Global按Upload、UploadDefaultDropArea与UploadTrigger各自exact identity消费；UploadToken Own仍为既有共享布局输入，不因相邻组成关系建立新别名。 不新增Own/key或状态字段。
+
 ## 2. Token 分类
 
 Token 按控件语义分类维护：
@@ -29,7 +33,7 @@ Upload 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
-- Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
+- Token默认从有效Global或原常量派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
 ## 4. 控件家族影响
@@ -60,3 +64,9 @@ Upload 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 公开字体与组合输入
+
+四个公开 owner 的可选 FontFamily/FontSize 进入自身内容；未配置保留实际父继承。DropArea 标题与副标题继续独立 FontSizeLG/FontSize 角色。内部列表、状态内容与动作的显式组合输入从公开 Upload 读取有效 Global；IconButton、ProgressBar 自己的基础主题 identity 保留。圆形内容和触发器的默认圆角由 ControlTheme 绑定 Bounds 得出，资源更新和 Circle→Card→Circle 不再遗留 SetCurrentValue 的圆角；公开实例值仍保留原生优先级。
+
+这些入口消费有效 Global，不增加 Own 字段、资源 ID 或 slot。Semantic Part 定制仍使用生成的专用 Style；不能通过查找内部节点赋值替代。当前本机验证与未决框架恢复/CT25 边界见 [CT13 家族出口](../../../../superpowers/plans/2026-10-22-custom-theme/input-family-exit-results.md)。

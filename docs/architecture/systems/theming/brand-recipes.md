@@ -141,3 +141,12 @@ Catalog 重载与 package append 当前继续消费既有不可变资产输入�
 故障注入覆盖AddOwner/RemoveOwner、资格激活/回退、stamp失效、Setter与资源通知、退役和重复关闭；分别检查Token结果、表现结果、所有host的实际状态及释放，不能只检查最后一个返回值。
 
 Ant默认、shadcn、Bootstrap与零圆角/粗边框/大字号/紧凑/关闭动效配方贯穿实际渲染验证。实现证据不足时不将目标合同写成已经支持完整品牌原子切换。
+
+
+### 局部完整配方的基础主题与请求回执
+
+`CreateConfig` 绑定配方时保留其已登记 `themeId`。局部 scope 按该 definition/revision 编译、严格校验 requirements，父 scope 或应用选择另一主题不改变它的基础定义；Catalog reload 使用候选目录校验该锚点。未绑定配方的普通 ThemeConfig 保持原父定义/继承与重置语义。definition 不同时不复用父 snapshot 的编译捷径。
+
+`ThemeConfigProvider.ThemeTransitionCompleted` 发布原请求和真实 `ThemeTransitionResult`，覆盖 Committed、NoOp、Superseded、Failed。原 ThemeChanged/ThemeChangeFailed 语义保持；没有完成回执订阅时不分配新回执对象。工具按请求 Config 引用与自身 generation 接受结果，不能把输入赋值当作提交。Token 与 Presentation 结果仍分开判断。
+
+`ThemeTokenInspection` 仅在工具请求时返回注册 descriptor 与选中 scope/owner 的格式化有效值，不实例化全体 Control、不追踪生产访问，也不在启动/热查询路径建立额外表或缓存。

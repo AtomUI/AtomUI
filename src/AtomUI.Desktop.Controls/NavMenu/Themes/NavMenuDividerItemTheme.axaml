@@ -7,18 +7,18 @@
                   TargetType="atom:NavMenuDividerItem">
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:PixelAlignedBorder Background="{atom:SharedTokenResource ColorSplit}" />
+                <atom:PixelAlignedBorder Background="{atom:OwnerTokenResource Kind=ColorSplit, AnchorControlType={x:Type atom:NavMenuDividerItem}, Priority=Template}" />
             </ControlTemplate>
         </Setter>
 
         <Style Selector="^[Orientation=Horizontal]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource LineWidth}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=LineWidth, AnchorControlType={x:Type atom:NavMenuDividerItem}}" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
         <Style Selector="^[Orientation=Vertical]">
-            <Setter Property="Width" Value="{atom:SharedTokenResource LineWidth}" />
+            <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=LineWidth, AnchorControlType={x:Type atom:NavMenuDividerItem}}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
         </Style>

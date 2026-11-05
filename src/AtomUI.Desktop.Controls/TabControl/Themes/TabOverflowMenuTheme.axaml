@@ -23,7 +23,7 @@
                 </atom:ScrollViewer>
             </ControlTemplate>
         </Setter>
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgElevated, AnchorControlType={x:Type atom:TabOverflowMenu}}" />
         <Setter Property="CornerRadius" Value="{atom:PopupTokenResource PopupCornerRadius}" />
         <Setter Property="Padding" Value="{atom:MenuTokenResource MenuPopupContentPadding}" />
         <Setter Property="ItemsPanel">
@@ -69,15 +69,15 @@
         <Setter Property="Padding" Value="{atom:MenuTokenResource ItemPaddingInline}" />
         <Setter Property="Background" Value="{atom:MenuTokenResource ItemBg}" />
         <Setter Property="CornerRadius" Value="{atom:MenuTokenResource ItemBorderRadius}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource Kind=EnableMotion, AnchorControlType={x:Type atom:TabOverflowMenu}}" />
+
         <Style Selector="^:pointerover">
             <Setter Property="Foreground" Value="{atom:MenuTokenResource ItemHoverColor}" />
             <Setter Property="Background" Value="{atom:MenuTokenResource ItemHoverBg}" />
         </Style>
 
         <Style Selector="^:selected">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atom:TabOverflowMenu}}" />
             <Setter Property="Background" Value="{atom:MenuTokenResource ItemHoverBg}" />
         </Style>
 
@@ -86,8 +86,8 @@
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_ItemCloseButton">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:TabOverflowMenu}}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:TabOverflowMenu}}" />
             <Setter Property="IsVisible" Value="False" />
         </Style>
 
@@ -96,7 +96,7 @@
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
-        
+
         <Style Selector="^:disabled">
             <Setter Property="Foreground" Value="{atom:MenuTokenResource ItemDisabledColor}" />
         </Style>

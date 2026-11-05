@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
@@ -19,7 +20,8 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Selected)]
-public partial class TabItem : HeaderedContentControl, ISelectable
+public partial class TabItem : HeaderedContentControl, ISelectable,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -443,4 +445,7 @@ public partial class TabItem : HeaderedContentControl, ISelectable
         base.OnLoaded(e);
         _transitionInitialization.CompleteInitialization();
     }
+
+    // The theme preserves the actual inheritance parent when owner typography is not explicit.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

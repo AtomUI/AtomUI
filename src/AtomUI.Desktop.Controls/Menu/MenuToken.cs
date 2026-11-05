@@ -5,16 +5,11 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class MenuToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class MenuToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
-    public MenuToken()
-
-    {
-    }
-
-    /// <summary>
+/// <summary>
     /// 菜单内容边距
     /// </summary>
     public Thickness MenuPopupContentPadding { get; set; }
@@ -96,6 +91,7 @@ internal sealed class MenuToken : AbstractControlDesignToken
 
     /// <summary>
     /// 图标与文字间距
+    /// Historical compatibility field; built-in icon spacing is owned by ItemMargin. No alias or active consumer.
     /// </summary>
     public double ItemIconMarginInlineEnd { get; set; }
 
@@ -219,90 +215,167 @@ internal sealed class MenuToken : AbstractControlDesignToken
     /// </summary>
     public double ContextMenuOffsetY { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
+    [ControlTokenDefault(nameof(MenuPopupContentPadding))]
+    private static Thickness DefaultForMenuPopupContentPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingXXS, context.Global.BorderRadiusLG.TopLeft / 2);
 
-        var colorTextDisabled  = EffectiveGlobalToken.ColorTextDisabled;
-        var colorError         = EffectiveGlobalToken.ColorError;
-        var colorTextSecondary = EffectiveGlobalToken.ColorTextQuaternary;
-        var colorBgContainer   = EffectiveGlobalToken.ColorBgContainer;
-        var colorBgElevated    = EffectiveGlobalToken.ColorBgElevated;
-        var colorBgTextHover   = EffectiveGlobalToken.ColorBgTextHover;
-        var padding            = EffectiveGlobalToken.UniformlyPadding;
-        var controlHeight      = EffectiveGlobalToken.ControlHeight;
-        var controlHeightSM    = EffectiveGlobalToken.ControlHeightSM;
-        var controlHeightLG    = EffectiveGlobalToken.ControlHeightLG;
+    [ControlTokenDefault(nameof(MenuPopupMinWidth))]
+    private static double DefaultForMenuPopupMinWidth(in ControlTokenDefaultContext context) =>
+        120;
 
-        var fontSize   = EffectiveGlobalToken.FontSize;
-        var fontSizeLG = EffectiveGlobalToken.FontSizeLG;
+    [ControlTokenDefault(nameof(MenuPopupMaxWidth))]
+    private static double DefaultForMenuPopupMaxWidth(in ControlTokenDefaultContext context) =>
+        800;
 
-        KeyGestureColor  = colorTextSecondary;
-        ItemBorderRadius = EffectiveGlobalToken.BorderRadius;
-        ItemColor        = EffectiveGlobalToken.ColorText;
-        ItemHoverColor   = ItemColor;
-        ItemBg           = colorBgElevated;
-        ItemHoverBg      = colorBgTextHover;
-        ItemMargin       = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXXS, 0);
+    [ControlTokenDefault(nameof(MenuTearOffHeight), nameof(ItemHeight))]
+    private static double DefaultForMenuTearOffHeight(in ControlTokenDefaultContext context, double itemHeight) =>
+        itemHeight * 1.2;
 
-        ItemDisabledColor = colorTextDisabled;
+    [ControlTokenDefault(nameof(MenuPopupBgColor))]
+    private static Color DefaultForMenuPopupBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgElevated;
 
-        DangerItemColor      = colorError;
-        DangerItemHoverColor = colorError;
+    [ControlTokenDefault(nameof(ItemColor))]
+    private static Color DefaultForItemColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
 
-        ItemHeight       = controlHeight;
-        MenuPopupBgColor = EffectiveGlobalToken.ColorBgElevated;
+    [ControlTokenDefault(nameof(KeyGestureColor))]
+    private static Color DefaultForKeyGestureColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextQuaternary;
 
-        ItemPaddingInline       = new Thickness(padding, EffectiveGlobalToken.UniformlyPaddingXXS);
-        ItemIconSize            = EffectiveGlobalToken.IconSize;
-        ItemIconMarginInlineEnd = controlHeight - fontSize;
+    [ControlTokenDefault(nameof(ItemMargin))]
+    private static Thickness DefaultForItemMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyMarginXXS, 0);
 
-        TopLevelItemColor         = EffectiveGlobalToken.ColorText;
-        TopLevelItemSelectedColor = EffectiveGlobalToken.ColorTextSecondary;
-        TopLevelItemHoverColor    = EffectiveGlobalToken.ColorTextSecondary;
+    [ControlTokenDefault(nameof(ItemHoverColor), nameof(ItemColor))]
+    private static Color DefaultForItemHoverColor(in ControlTokenDefaultContext context, Color itemColor) =>
+        itemColor;
 
-        TopLevelItemBg         = colorBgContainer;
-        TopLevelItemHoverBg    = colorBgTextHover;
-        TopLevelItemSelectedBg = colorBgTextHover;
+    [ControlTokenDefault(nameof(ItemDisabledColor))]
+    private static Color DefaultForItemDisabledColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDisabled;
 
-        TopLevelItemBorderRadiusSM = EffectiveGlobalToken.BorderRadiusSM;
-        TopLevelItemBorderRadius   = EffectiveGlobalToken.BorderRadius;
-        TopLevelItemBorderRadiusLG = EffectiveGlobalToken.BorderRadiusLG;
+    [ControlTokenDefault(nameof(DangerItemColor))]
+    private static Color DefaultForDangerItemColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
 
-        TopLevelItemFontSize   = !double.IsNaN(TopLevelItemFontSize) ? TopLevelItemFontSize : fontSize;
-        TopLevelItemFontSizeSM = !double.IsNaN(TopLevelItemFontSizeSM) ? TopLevelItemFontSizeSM : fontSize;
-        TopLevelItemFontSizeLG = !double.IsNaN(TopLevelItemFontSizeLG) ? TopLevelItemFontSizeLG : fontSizeLG;
+    [ControlTokenDefault(nameof(DangerItemHoverColor))]
+    private static Color DefaultForDangerItemHoverColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
 
-        TopLevelItemLineHeight = !double.IsNaN(TopLevelItemLineHeight)
-            ? TopLevelItemLineHeight
-            : CalculatorUtils.CalculateLineHeight(TopLevelItemFontSize) * TopLevelItemFontSize;
-        TopLevelItemLineHeightSM = !double.IsNaN(TopLevelItemLineHeightSM)
-            ? TopLevelItemLineHeightSM
-            : CalculatorUtils.CalculateLineHeight(TopLevelItemFontSizeSM) * TopLevelItemFontSizeSM;
-        TopLevelItemLineHeightLG = !double.IsNaN(TopLevelItemLineHeightLG)
-            ? TopLevelItemLineHeightLG
-            : CalculatorUtils.CalculateLineHeight(TopLevelItemFontSizeLG) * TopLevelItemFontSizeLG;
+    [ControlTokenDefault(nameof(ItemBg))]
+    private static Color DefaultForItemBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgElevated;
 
-        TopLevelItemPaddingSM = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalXS * 0.7,
-            Math.Max((controlHeightSM - TopLevelItemLineHeightSM) / 2, 0));
-        TopLevelItemPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalXS,
-            Math.Max((controlHeight - TopLevelItemLineHeight) / 2, 0));
-        TopLevelItemPaddingLG = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalSM,
-            Math.Max((controlHeightLG - TopLevelItemLineHeightLG) / 2, 0));
+    [ControlTokenDefault(nameof(ItemHoverBg))]
+    private static Color DefaultForItemHoverBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgTextHover;
 
-        TopLevelItemPopupMarginToAnchor = EffectiveGlobalToken.UniformlyMarginXXS;
+    [ControlTokenDefault(nameof(ItemHeight))]
+    private static double DefaultForItemHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight;
 
-        MenuPopupMinWidth = 120;
-        MenuPopupMaxWidth = 800;
+    [ControlTokenDefault(nameof(ItemIconSize))]
+    private static double DefaultForItemIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.IconSize;
 
-        SeparatorItemHeight = EffectiveGlobalToken.LineWidth * 5;
-        MenuTearOffHeight   = ItemHeight * 1.2;
+    [ControlTokenDefault(nameof(ItemIconMarginInlineEnd))]
+    private static double DefaultForItemIconMarginInlineEnd(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight - context.Global.FontSize;
 
-        MenuPopupContentPadding =
-            new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, EffectiveGlobalToken.BorderRadiusLG.TopLeft / 2);
+    [ControlTokenDefault(nameof(ItemBorderRadius))]
+    private static CornerRadius DefaultForItemBorderRadius(in ControlTokenDefaultContext context) =>
+        context.Global.BorderRadius;
 
-        ContextMenuOffsetX = EffectiveGlobalToken.SpacingXXS;
-        ContextMenuOffsetY = EffectiveGlobalToken.SpacingXXS;
-    }
+    [ControlTokenDefault(nameof(ItemPaddingInline))]
+    private static Thickness DefaultForItemPaddingInline(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPadding, context.Global.UniformlyPaddingXXS);
 
+    [ControlTokenDefault(nameof(TopLevelItemColor))]
+    private static Color DefaultForTopLevelItemColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(TopLevelItemSelectedColor))]
+    private static Color DefaultForTopLevelItemSelectedColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextSecondary;
+
+    [ControlTokenDefault(nameof(TopLevelItemHoverColor))]
+    private static Color DefaultForTopLevelItemHoverColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextSecondary;
+
+    [ControlTokenDefault(nameof(TopLevelItemBg))]
+    private static Color DefaultForTopLevelItemBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgContainer;
+
+    [ControlTokenDefault(nameof(TopLevelItemSelectedBg))]
+    private static Color DefaultForTopLevelItemSelectedBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgTextHover;
+
+    [ControlTokenDefault(nameof(TopLevelItemHoverBg))]
+    private static Color DefaultForTopLevelItemHoverBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorBgTextHover;
+
+    [ControlTokenDefault(nameof(TopLevelItemBorderRadiusSM))]
+    private static CornerRadius DefaultForTopLevelItemBorderRadiusSM(in ControlTokenDefaultContext context) =>
+        context.Global.BorderRadiusSM;
+
+    [ControlTokenDefault(nameof(TopLevelItemBorderRadius))]
+    private static CornerRadius DefaultForTopLevelItemBorderRadius(in ControlTokenDefaultContext context) =>
+        context.Global.BorderRadius;
+
+    [ControlTokenDefault(nameof(TopLevelItemBorderRadiusLG))]
+    private static CornerRadius DefaultForTopLevelItemBorderRadiusLG(in ControlTokenDefaultContext context) =>
+        context.Global.BorderRadiusLG;
+
+    [ControlTokenDefault(nameof(TopLevelItemPaddingSM), nameof(TopLevelItemLineHeightSM))]
+    private static Thickness DefaultForTopLevelItemPaddingSM(in ControlTokenDefaultContext context, double topLevelItemLineHeightSM) =>
+        new Thickness(context.Global.PaddingContentHorizontalXS * 0.7, Math.Max((context.Global.ControlHeightSM - topLevelItemLineHeightSM) / 2, 0));
+
+    [ControlTokenDefault(nameof(TopLevelItemPadding), nameof(TopLevelItemLineHeight))]
+    private static Thickness DefaultForTopLevelItemPadding(in ControlTokenDefaultContext context, double topLevelItemLineHeight) =>
+        new Thickness(context.Global.PaddingContentHorizontalXS, Math.Max((context.Global.ControlHeight - topLevelItemLineHeight) / 2, 0));
+
+    [ControlTokenDefault(nameof(TopLevelItemPaddingLG), nameof(TopLevelItemLineHeightLG))]
+    private static Thickness DefaultForTopLevelItemPaddingLG(in ControlTokenDefaultContext context, double topLevelItemLineHeightLG) =>
+        new Thickness(context.Global.PaddingContentHorizontalSM, Math.Max((context.Global.ControlHeightLG - topLevelItemLineHeightLG) / 2, 0));
+
+    [ControlTokenDefault(nameof(TopLevelItemFontSizeSM))]
+    private static double DefaultForTopLevelItemFontSizeSM(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize;
+
+    [ControlTokenDefault(nameof(TopLevelItemFontSize))]
+    private static double DefaultForTopLevelItemFontSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize;
+
+    [ControlTokenDefault(nameof(TopLevelItemFontSizeLG))]
+    private static double DefaultForTopLevelItemFontSizeLG(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeLG;
+
+    [ControlTokenDefault(nameof(TopLevelItemLineHeight), nameof(TopLevelItemFontSize))]
+    private static double DefaultForTopLevelItemLineHeight(in ControlTokenDefaultContext context, double topLevelItemFontSize) =>
+        CalculatorUtils.CalculateLineHeight(topLevelItemFontSize) * topLevelItemFontSize;
+
+    [ControlTokenDefault(nameof(TopLevelItemLineHeightLG), nameof(TopLevelItemFontSizeLG))]
+    private static double DefaultForTopLevelItemLineHeightLG(in ControlTokenDefaultContext context, double topLevelItemFontSizeLG) =>
+        CalculatorUtils.CalculateLineHeight(topLevelItemFontSizeLG) * topLevelItemFontSizeLG;
+
+    [ControlTokenDefault(nameof(TopLevelItemLineHeightSM), nameof(TopLevelItemFontSizeSM))]
+    private static double DefaultForTopLevelItemLineHeightSM(in ControlTokenDefaultContext context, double topLevelItemFontSizeSM) =>
+        CalculatorUtils.CalculateLineHeight(topLevelItemFontSizeSM) * topLevelItemFontSizeSM;
+
+    [ControlTokenDefault(nameof(TopLevelItemPopupMarginToAnchor))]
+    private static double DefaultForTopLevelItemPopupMarginToAnchor(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyMarginXXS;
+
+    [ControlTokenDefault(nameof(SeparatorItemHeight))]
+    private static double DefaultForSeparatorItemHeight(in ControlTokenDefaultContext context) =>
+        context.Global.LineWidth * 5;
+
+    [ControlTokenDefault(nameof(ContextMenuOffsetX))]
+    private static double DefaultForContextMenuOffsetX(in ControlTokenDefaultContext context) =>
+        context.Global.SpacingXXS;
+
+    [ControlTokenDefault(nameof(ContextMenuOffsetY))]
+    private static double DefaultForContextMenuOffsetY(in ControlTokenDefaultContext context) =>
+        context.Global.SpacingXXS;
 }

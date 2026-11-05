@@ -1,5 +1,10 @@
 # Slider Changelog
 
+## 2026-11-04
+
+- 25字段采用依赖默认计划，修复 thumb 留位/outline/方向 padding 的 Own 派生；保持历史 MarginPartWithMark 导出。
+- 接通可选字体及实际 Global；修复 detach 后重新挂载时指针与轨道订阅未恢复。
+
 本文档记录 Slider 控件级设计、API、主题契约、Token 和实现结构的变化。它用于维护控件设计历史，不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 记录原则：

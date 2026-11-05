@@ -1,29 +1,48 @@
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
+              xmlns:primitives="using:AtomUI.Desktop.Controls.Primitives.Themes"
               x:Class="AtomUI.Desktop.Controls.Themes.AbstractAutoCompleteTheme"
               TargetType="atom:AbstractAutoComplete"
               x:ClassModifier="internal">
     <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
     <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
 
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
     <Style Selector="^:is(atom|AbstractAutoComplete)">
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="PlaceholderForeground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+        <Setter Property="PlaceholderForeground" Value="{atom:OwnerTokenResource ColorTextPlaceholder}" />
         <Setter Property="ItemHeight" Value="{atom:AutoCompleteTokenResource OptionHeight}" />
         <Setter Property="PopupContentPadding"
                 Value="{atom:AutoCompleteTokenResource PopupContentPadding}" />
         <Setter Property="MinPopupWidth" Value="{atom:AutoCompleteTokenResource MinPopupWidth}" />
+        <Style Selector="^ /template/ atom|CandidateList#PART_CandidateList">
+            <Setter Property="ItemContainerTheme">
+                <primitives:CandidateListItemTheme TargetType="atom:CandidateListItem">
+                    <Style Selector="^[SizeType=Large], ^[SizeType=Middle], ^[SizeType=Small], ^[SizeType=Custom]">
+                        <Setter Property="MinHeight" Value="{atom:AutoCompleteTokenResource OptionHeight}" />
+                    </Style>
+                </primitives:CandidateListItemTheme>
+            </Setter>
+        </Style>
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor" Value="{atom:PopupTokenResource MarginToAnchor}" />
             <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
             <Setter Property="OverlayHostShadow" Value="{atom:PopupTokenResource OverlayHostShadow}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgElevated}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>

@@ -18,8 +18,8 @@
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <WrapPanel
-                                            ItemSpacing="{atom:SharedTokenResource SpacingXXS}"
-                                            LineSpacing="{atom:SharedTokenResource SpacingXXS}" />
+                                            ItemSpacing="{atom:OwnerTokenResource Kind=SpacingXXS, AnchorControlType={x:Type atom:AbstractColorPickerView}}"
+                                            LineSpacing="{atom:OwnerTokenResource Kind=SpacingXXS, AnchorControlType={x:Type atom:AbstractColorPickerView}}" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>

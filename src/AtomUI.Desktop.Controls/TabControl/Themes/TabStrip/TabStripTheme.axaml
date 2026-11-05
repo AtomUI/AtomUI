@@ -51,19 +51,19 @@
 
         <Style Selector="^[TabStripPlacement=Top]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource Kind=SpacingXS, AnchorControlType={x:Type atom:TabStrip}}"/>
             </Style>
-            
+
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
                 <Setter Property="DockPanel.Dock" Value="Left"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
-            
+
             <Style Selector="^ /template/ ContentPresenter#HeaderEndExtraContent">
                 <Setter Property="DockPanel.Dock" Value="Right"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
-            
+
             <!-- tabs 是否居中 -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#AlignWrapper > Border">
@@ -85,19 +85,19 @@
 
         <Style Selector="^[TabStripPlacement=Right]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="VerticalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="VerticalSpacing" Value="{atom:OwnerTokenResource Kind=SpacingXS, AnchorControlType={x:Type atom:TabStrip}}"/>
             </Style>
-            
+
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
                 <Setter Property="DockPanel.Dock" Value="Top"/>
                 <Setter Property="HorizontalAlignment" Value="Center"/>
             </Style>
-            
+
             <Style Selector="^ /template/ ContentPresenter#HeaderEndExtraContent">
                 <Setter Property="DockPanel.Dock" Value="Bottom"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
-            
+
             <!-- tabs 是否居中 -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#AlignWrapper > Border">
@@ -119,19 +119,19 @@
 
         <Style Selector="^[TabStripPlacement=Bottom]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource Kind=SpacingXS, AnchorControlType={x:Type atom:TabStrip}}"/>
             </Style>
-            
+
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
                 <Setter Property="DockPanel.Dock" Value="Left"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
-            
+
             <Style Selector="^ /template/ ContentPresenter#HeaderEndExtraContent">
                 <Setter Property="DockPanel.Dock" Value="Right"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
-            
+
             <!-- tabs 是否居中 -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#AlignWrapper > Border">
@@ -153,19 +153,19 @@
 
         <Style Selector="^[TabStripPlacement=Left]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="VerticalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="VerticalSpacing" Value="{atom:OwnerTokenResource Kind=SpacingXS, AnchorControlType={x:Type atom:TabStrip}}"/>
             </Style>
-            
+
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
                 <Setter Property="DockPanel.Dock" Value="Top"/>
                 <Setter Property="HorizontalAlignment" Value="Center"/>
             </Style>
-            
+
             <Style Selector="^ /template/ ContentPresenter#HeaderEndExtraContent">
                 <Setter Property="DockPanel.Dock" Value="Bottom"/>
                 <Setter Property="HorizontalAlignment" Value="Center"/>
             </Style>
-            
+
             <!-- tabs 是否居中 -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#AlignWrapper > Border">

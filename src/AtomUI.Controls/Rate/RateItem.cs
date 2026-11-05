@@ -218,6 +218,15 @@ internal class RateItem : TemplatedControl
         ConfigureCharacterBrushes();
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        // Container preparation and scoped resources can change inputs off-tree.
+        // The detached VisualBrush glyph must snapshot those effective inputs on entry.
+        ConfigureCharacterBrushes();
+        ConfigureStarClip();
+    }
+
     private void ConfigureCharacterBrushes()
     {
         SetCurrentValue(CharacterBgBrushProperty, BuildCharacterVisualBrush(StarBgColor));

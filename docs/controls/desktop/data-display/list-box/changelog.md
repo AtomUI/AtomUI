@@ -42,3 +42,8 @@
   - 新增 ListBox 桌面版实现原理文档，记录源码职责、容器生命周期、过滤、点击、空状态、虚拟化上下文和 CandidateList 复用边界。
   - 新增 ListBox Token 设计文档，记录 root 结构、条目文字、条目背景、条目间距、选中指示器和过滤 Token 边界。
   - 在 Data Display 分类入口中登记 ListBox 文档。
+
+
+## 2026-10-30 主题消费与字体
+
+根与条目从各自注册身份读取有效 Global；内部选中标记的目标是 IconTemplatePresenter。过滤中的禁用正文与普通呈现器均消费 ItemDisabledColor，高亮颜色保持独立。字体族和根字号采用可选覆盖，未显式配置时保留实际父级继承与实例 Local 优先级。

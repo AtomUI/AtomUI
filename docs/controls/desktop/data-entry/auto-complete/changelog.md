@@ -18,6 +18,21 @@
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-10-30
+
+- 私有复用输入的Global由实际公开变体提供，正文、光标、选区与状态沿原主题消费；Own及公开子Button保持身份。
+- 标准Foreground进入实际正文，Dark根getter对齐原可见颜色；私有owner绑定保留原生Resources覆盖，不设置实例Token字典或私有主题作用域。
+
+- 接通公开owner占位文字与弹层Global颜色，保留标准属性及专用Style优先级。
+
+- 输入本体消费公开owner有效Global字体，保留未配置时的原可见字体模型、普通Style/Local优先级及内部输入身份隔离。
+- 多行root标准FontSize与原可见三档预设对齐；默认行框随实际字体自然行距增长，显式FontHeight仍保持精确值。
+
+- 既有Own默认迁移DependencyDefaultsV2 rev1，保留公式、名称/类型和资源ID/slot，无新增Own依赖边。
+- 候选行最小高度读取OptionHeight，padding变化参与原有页数预算重算，保留数据、滚动、状态与专用Style优先级。
+- 控件成员按契约分区整理，初始化字段顺序与非修复成员语法保持；没有拆分文件或改变API签名。
+
+
 ## 2026-10-04
 
 - Fix

@@ -194,3 +194,7 @@ ToggleSwitch 当前主题提供普通和小号两组尺寸。`Middle`、`Large` 
 | AXAML/Theme | template part、SizeType 分支、content presenter、SwitchKnob、WaveSpirit 和 loading opacity。 |
 | Token | `ToggleSwitchToken`、生成的 TokenKind、Token 类型、生成数据和主题引用一致。 |
 | Gallery | 走查基础、禁用、文字与图标、两种尺寸和加载示例。 |
+
+## 有效主题输入
+
+Custom 退出预设字号规则；可选字体、Own 派生和实际 owner 色保持原生优先级。加载请求与旋转执行分离，motion 关闭后仍保持业务加载态。

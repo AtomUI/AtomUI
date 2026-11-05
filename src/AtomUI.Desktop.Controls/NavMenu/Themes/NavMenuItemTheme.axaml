@@ -196,6 +196,10 @@
             </Style>
         </Style>
 
+        <Style Selector="^:not(:toplevel) /template/ :is(atom|BaseNavMenuItemHeader)#PART_Header">
+            <Setter Property="CornerRadius" Value="{atom:NavMenuTokenResource SubMenuItemBorderRadius}" />
+        </Style>
+
         <Style Selector="^[IsDarkStyle=True]">
             <Style Selector="^ /template/ atom|NavMenuPopupFrame#PART_PopupFrame">
                 <Setter Property="Background"
@@ -206,23 +210,29 @@
         <Style Selector="^[Mode=Horizontal],^[Mode=Vertical]">
             <Style Selector="^ /template/ atom|Popup#PART_Popup">
                 <Setter Property="RequestedPlacement" Value="RightEdgeAlignedTop" />
-                <Setter Property="HorizontalOffset" Value="{atom:SharedTokenResource SpacingXS}" />
-                <Setter Property="VerticalOffset" Value="{atom:SharedTokenResource SpacingXXS}" />
+                <Setter Property="HorizontalOffset" Value="{atom:OwnerTokenResource Kind=SpacingXS, AnchorControlType={x:Type atom:NavMenuItem}}" />
+                <Setter Property="VerticalOffset" Value="{atom:OwnerTokenResource Kind=SpacingXXS, AnchorControlType={x:Type atom:NavMenuItem}}" />
             </Style>
         </Style>
 
         <Style Selector="^[Mode=Horizontal]:toplevel">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource Kind=FontSize, AnchorControlType={x:Type atom:NavMenuItem}}" />
             <Style Selector="^ /template/ atom|Popup#PART_Popup">
                 <Setter Property="RequestedPlacement" Value="Bottom" />
-                <Setter Property="VerticalOffset" Value="{atom:SharedTokenResource SpacingXXS}" />
+                <Setter Property="VerticalOffset" Value="0" />
+                <Setter Property="MarginToAnchor" Value="{atom:NavMenuTokenResource TopLevelItemPopupMarginToAnchor}" />
                 <Setter Property="HorizontalOffset" Value="0" />
             </Style>
         </Style>
 
+        <Style Selector="^[Mode=Vertical]:toplevel /template/ atom|Popup#PART_Popup">
+            <Setter Property="HorizontalOffset" Value="0" />
+            <Setter Property="MarginToAnchor" Value="{atom:NavMenuTokenResource TopLevelItemPopupMarginToAnchor}" />
+        </Style>
+
         <Style Selector="^[Mode=Inline]">
             <Setter Property="OpenCloseMotionDuration"
-                    Value="{atom:SharedTokenResource MotionDurationMid}" />
+                    Value="{atom:OwnerTokenResource MotionDurationMid}" />
 
             <Setter Property="Focusable" Value="False" />
             <Style Selector="^[IsItemBackgroundEnabled=True]">

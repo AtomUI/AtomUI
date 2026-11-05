@@ -40,7 +40,7 @@ TimePickerToken 使用 DependencyDefaultsV2（Revision1），保留8个字段的
 
 | 字段 | 默认输入 | 实际区域／边界 |
 | --- | --- | --- |
-| ItemHeight | 有效Global ControlHeight-4 | 时间行最小高度、列布局行高、header高度；正行高热更新保持逻辑视口／分数偏移，非法值边界仍待单独核定 |
+| ItemHeight | 有效Global ControlHeight-4 | 时间行最小高度、列布局行高、header高度；必须为正有限数，求值入口拒绝0／负数／NaN／Infinity，热更新保持逻辑视口／分数偏移 |
 | ItemWidth | 有效Global ControlHeightLG×1.4 | 时／分／秒列宿主宽度 |
 | PeriodHostWidth | 有效Own ItemWidth | 12小时制AM/PM列宿主宽度，24小时制该列隐藏 |
 | ItemPadding | (有效Own ItemWidth-ItemHeight)/2的left Thickness | 时间行内间距；不承诺所有自定义宽高下文字精确居中 |
@@ -57,7 +57,7 @@ Cell没有独立Own字段，字体族／字号在明确配置后取本身份有�
 
 普通／hover文字使用ColorTextSecondary，普通背景ColorTransparent、hover背景ColorBgTextHover；selected文字ColorText及背景ControlItemBgActive。只有Cell直接配置相应Global字段时切换来源，否则保留原ListView角色的有效配色，包含已有ListView Own／control Global和根Global组合。ColorTextDisabled同样须Cell直接明确配置，未配置保留原禁用外观；不能因原Name selector无效就默认改灰。清除恢复旧角色，透明色也视为明确值。
 
-以上最终Setter均在ControlTheme，禁用Foreground通过owner原模板绑定传到真实ContentPresenter。未配置时disabled Setter不激活，避免改变原应用Style优先级。实例本地值及生成的TimePickerPopupItemStyle等专用Style仍按原生优先级覆盖；Semantic Part定制使用AXAML专用Style，不通过代码查找行修改样式。内部TimeView的其他Global及完整日期家族状态仍单独验收。
+以上最终Setter均在ControlTheme，禁用Foreground通过owner原模板绑定传到真实ContentPresenter。未配置时disabled Setter不激活，避免改变原应用Style优先级。实例本地值及生成的TimePickerPopupItemStyle等专用Style仍按原生优先级覆盖；Semantic Part定制使用AXAML专用Style，不通过代码查找行修改样式。内部TimeView及Presenter的Global资源以InfoPickerInput为锚点，读取实际四种Picker宿主身份，避免重挂后误取ArrowDecoratedBox；时间Own几何角色保持。
 
 ButtonsMargin作用在footer内部布局Panel，不等同于生成的popup.footer Style对外层Border设置Margin。应用应按实际区域配置，语义样式仍只用生成专用Style在AXAML声明；不找节点赋样式值。0间距是明确输入，清除回到默认8。
 

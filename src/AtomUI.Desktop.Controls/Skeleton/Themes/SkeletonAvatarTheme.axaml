@@ -35,40 +35,47 @@
             </ControlTemplate>
         </Setter>
         
+        <Setter Property="Width" Value="{atom:OwnerTokenResource ControlHeight}" />
+        <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeight}" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Background" Value="{atom:SkeletonTokenResource GradientFromColor}" />
 
-         <Style Selector="^[SizeType=Large]">
-            <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeightLG}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightLG}" />
+         <Style Selector="^[SizeType=Large][IsCustomSize=False]">
+            <Setter Property="Width" Value="{atom:OwnerTokenResource ControlHeightLG}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeightLG}" />
         </Style>
 
-        <Style Selector="^[SizeType=Middle]">
-            <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeight}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
+        <Style Selector="^[SizeType=Middle][IsCustomSize=False]">
+            <Setter Property="Width" Value="{atom:OwnerTokenResource ControlHeight}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeight}" />
         </Style>
 
-        <Style Selector="^[SizeType=Small]">
-            <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeightSM}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+        <Style Selector="^[SizeType=Small][IsCustomSize=False]">
+            <Setter Property="Width" Value="{atom:OwnerTokenResource ControlHeightSM}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeightSM}" />
         </Style>
         
+        <Style Selector="^[IsCustomSize=True]">
+            <Setter Property="Width" Value="{CompiledBinding $self.Size, DataType={x:Type atom:SkeletonAvatar}}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.Size, DataType={x:Type atom:SkeletonAvatar}}" />
+        </Style>
+
         <Style Selector="^[Shape=Square]">
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
             </Style>
             
             <Style Selector="^[IsCustomSize=True]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
             </Style>
         </Style>
     </ControlTheme>

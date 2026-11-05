@@ -285,3 +285,7 @@ ProgressBar 不参与 Form 值提交，不实现选择、输入、弹出层或�
 | Token | 验证 `ProgressBarTokenKind`、主题引用和 Token 类型、生成数据和 token.md 语义说明一致。 |
 | 渲染 | 验证水平、垂直、步骤、圆形、仪表盘、分段、线帽、渐变画刷，以及线形 `Border`、步骤 `Rectangle`、圆形/仪表盘 `Shape` target。 |
 | 文档 | 运行 `git diff --check`，并检查控件文档相对链接存在。 |
+
+## 有效主题输入
+
+四种公开控件独立解析有效 Global，共用原 ProgressBar Own。可选字体族保留真实继承；线形预设字号和信息留位会随 owner 变化更新。结果互斥和内嵌百分比按第4节合同执行，不改变固定圆形/步骤几何。

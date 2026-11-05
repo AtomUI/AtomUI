@@ -1,0 +1,51 @@
+<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:atom="https://atomui.net"
+              xmlns:primitives="using:AtomUI.Desktop.Controls.Primitives.Themes"
+              x:Class="AtomUI.Desktop.Controls.Themes.ColorPickerPopupSurfaceTheme"
+              x:ClassModifier="internal"
+              TargetType="atom:ArrowDecoratedBox">
+    <ControlTheme.BasedOn>
+        <primitives:ArrowDecoratedBoxTheme TargetType="atom:ArrowDecoratedBox" />
+    </ControlTheme.BasedOn>
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:ArrowDecoratedBox">
+            <DockPanel Name="ContentLayout" LastChildFill="True">
+                <Panel Name="ArrowPositionLayout">
+                    <LayoutTransformControl
+                        Name="PART_ArrowIndicatorLayout"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        IsVisible="{TemplateBinding IsArrowVisible}"
+                        Opacity="{TemplateBinding ArrowOpacity}"
+                        ClipToBounds="False">
+                        <atom:ArrowIndicator
+                            Name="PART_ArrowIndicator"
+                            Classes.semantic-arrow="True"
+                            FilledColor="{CompiledBinding #PART_ContentDecorator.Background}"
+                            ArrowSize="{TemplateBinding ArrowSize}"
+                            StrokeBrush="{atom:ArrowDecoratedBoxTokenResource ArrowStrokeColor}"
+                            StrokeThickness="{atom:ArrowDecoratedBoxTokenResource ArrowStrokeThickness}"/>
+                    </LayoutTransformControl>
+                </Panel>
+                <Border
+                    Name="PART_ContentDecorator"
+                    Classes.semantic-container="True"
+                    Classes.semantic-popup-root="True"
+                    Margin="0"
+                    BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Padding="0">
+                    <ContentPresenter
+                        Name="ContentPresenter"
+                        Margin="{TemplateBinding Padding}"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </Border>
+            </DockPanel>
+        </ControlTemplate>
+    </Setter>
+</ControlTheme>

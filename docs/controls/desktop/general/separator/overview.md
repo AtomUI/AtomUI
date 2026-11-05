@@ -165,3 +165,7 @@ Separator 的视觉选项通过 public API 归一为 theme variables、伪类或
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+## 有效主题输入
+
+owner 的实际 Global/字体及实例字号参与标题与 rail。em 留白和边缘比例动态更新会重排原目标，横向三档/Custom 和纵向语义保持。

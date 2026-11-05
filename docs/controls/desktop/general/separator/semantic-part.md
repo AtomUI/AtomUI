@@ -86,3 +86,7 @@ Semantic Style 只覆盖 `rail` 连接线节点与 `content` 文本节点的视�
 - `rail` 与上游 `rail` 语义对齐；连接线定制可走 Semantic Style 或
   `LineColor` / `LineWidth` / `Variant` 公共 API。
 - Gallery Semantic Parts Tab 延迟创建 Separator Preview；Examples Tab 的既有示例树保持不变。
+
+## 字号与动态 rail 几何
+
+标题字号/字重经 owner 投射到实际 content，实例排版与专用 Content Style 不再被子节点默认覆盖。TextPaddingInline 与边缘比例的更新在同一 rail 目标重新排列；Rail Style 仍直接定制真实线条，未改 route 或 contract type。

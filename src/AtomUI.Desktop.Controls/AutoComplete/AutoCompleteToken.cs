@@ -3,8 +3,8 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class AutoCompleteToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class AutoCompleteToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -28,18 +28,18 @@ internal sealed class AutoCompleteToken : AbstractControlDesignToken
     /// </summary>
     public double MaxPopupWidth { get; set; }
     
-    public AutoCompleteToken()
+    [ControlTokenDefault(nameof(OptionHeight))]
+    private static double DefaultForOptionHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight;
 
-    {
-    }
+    [ControlTokenDefault(nameof(PopupContentPadding))]
+    private static Thickness DefaultForPopupContentPadding(in ControlTokenDefaultContext context) =>
+        new(context.Global.UniformlyPaddingXXS / 2);
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        OptionHeight        = EffectiveGlobalToken.ControlHeight;
-        PopupContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS / 2);
-        MinPopupWidth       = 120;
-        MaxPopupWidth       = 200;
-    }
+    [ControlTokenDefault(nameof(MinPopupWidth))]
+    private static double DefaultForMinPopupWidth(in ControlTokenDefaultContext context) => 120;
+
+    [ControlTokenDefault(nameof(MaxPopupWidth))]
+    private static double DefaultForMaxPopupWidth(in ControlTokenDefaultContext context) => 200;
     
 }

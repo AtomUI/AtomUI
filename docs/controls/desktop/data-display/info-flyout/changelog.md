@@ -18,6 +18,21 @@
 - Changed
   - 明确 Popover 对应的 ZoomBig、Mid 时长、alignment 原点及公开配置 owner。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-11-01
+
+- Theme
+  - Migrate two Own definitions to V2 revision 1, preserving 11 fields and all four-algorithm defaults.
+  - Consume optional Global fonts on actual owners and owner background on the ordinary popup presenter, preserving native and dedicated Semantic Part Style priority.
+  - Resolve Pointer offsets from the current anchor scope and retire the old lease before retargeting.
+- Fix
+  - Replay hot Own/native offsets to the actual open Popup and reconcile a pinned Host after template replacement without replacing its content or scroll position.
+  - Connect TreeViewFlyoutPresenter background through its root TemplateBinding; the effective null-to-Own correction requires bounded visual approval.
+  - Keep every original tree row reachable through a real ScrollViewer inside the existing height limits.
+  - Relay actual TreeViewItem clicks through the published event without per-item recursive MenuItem subscriptions.
+- Docs
+  - Correct the source-derived TreeViewFlyoutPresenterToken name and document resource retirement and scope boundaries. CT15 remains open; platform, full lifecycle and visual exclusions remain subject to their evidence records.
+
+
 ## 2026-09-07
 
 - Feature
@@ -58,4 +73,4 @@
   - Establish InfoFlyout desktop architecture documentation under `docs/controls/desktop/data-display/info-flyout/overview.md`.
   - Add InfoFlyout implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add InfoFlyout control-level changelog.
-  - Add InfoFlyout Token documentation covering FlyoutHostToken, TreeFlyoutToken.
+  - Add InfoFlyout Token documentation covering FlyoutHostToken, TreeViewFlyoutPresenterToken.

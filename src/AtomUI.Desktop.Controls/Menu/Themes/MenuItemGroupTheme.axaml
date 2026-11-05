@@ -4,6 +4,14 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:MenuItemGroup}" TargetType="atom:MenuItemGroup">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:MenuItemGroup">
                 <StackPanel>
@@ -12,7 +20,7 @@
                                       Classes.semantic-sub-menu-item-title="True"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Center"
-                                      Foreground="{atom:SharedTokenResource ColorTextDescription}"
+                                      Foreground="{atom:OwnerTokenResource Kind=ColorTextDescription, AnchorControlType={x:Type atom:MenuItemGroup}, Priority=Template}"
                                       Padding="16,8"
                                       Content="{TemplateBinding Header}"
                                       ContentTemplate="{TemplateBinding HeaderTemplate}" />

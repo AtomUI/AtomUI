@@ -75,3 +75,5 @@ git diff --check
 ## 根几何与 Effective Global 消费
 
 公开 owner 的 `Padding`、`BorderThickness`、`CornerRadius` 默认值从该 Control 的 Effective Global 读取，再以原生主题优先级投射到实际框体。共享框体继续负责状态色、focus/hover shadow、variant 与 CompactSpace；不能把它描述为跳过 owner 的全局几何入口。字号和其他消费链按各控件当前模板分别定义。本次未增加 Own 字段或改变 Token identity。详见 [共享输入架构的根几何合同](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+内部 add-on 的通用状态颜色使用 Cascader 有效 Global：`ColorBorder`、`ColorError`/`ColorWarning` 与对应 BorderHover、`ColorFillTertiary`/`ColorFillSecondary`、Error/Warning 的 Bg/BgHover。它们不属于新增 Own；主题对原键的选择和状态条件保持。

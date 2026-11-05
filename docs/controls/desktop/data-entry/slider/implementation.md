@@ -181,3 +181,9 @@ Tooltip 文本和 placement 由 Slider 在模板应用、thumb 数量变化、�
 - `AtomUIGallery.Tests` Slider 页面测试：稳定 Showcase、绑定、禁用指定 handle、多点组合结构、Semantic Part 预览与自定义语义结构的样式示例。
 - Gallery 走查：horizontal / vertical、reverse、marks、tick、Light / Dark、多点组合、禁用指定滑块，以及 100% / 125% / 150% 缩放下的 thumb 平滑度与边框清晰度。
 - 文档验证：运行目标测试、Gallery build 和 `git diff --check`。
+
+## 主题与输入生命周期
+
+Root 的可选 FontFamily/FontSize 保留真实继承和实例优先级，模板将其传入实际 mark 文本度量。内部主题按实际公开 owner 解析 Global；Own 默认的依赖更新与既有缓存失效、方向布局、动态 handle/segment 调整共用现有输入，不重建主题字典。
+
+Slider 的指针处理器与 ThumbsChanged 订阅在模板接入时建立，在 detach 释放；reattach 重新建立。Watermark 或 adorner 层首次注入导致父内容重挂时，同一 Slider 继续保留原尺寸、实际命中与输入。未通过改动 hittest 区域或数值算法规避问题；现有重挂拖动取消路径保持。

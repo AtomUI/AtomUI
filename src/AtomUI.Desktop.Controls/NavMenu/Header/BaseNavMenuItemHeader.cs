@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -6,84 +7,86 @@ using Avalonia.Controls.Templates;
 
 namespace AtomUI.Desktop.Controls;
 
-public class BaseNavMenuItemHeader : TemplatedControl
+public class BaseNavMenuItemHeader : TemplatedControl,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
+
     public static readonly StyledProperty<object?> HeaderProperty =
         HeaderedContentControl.HeaderProperty.AddOwner<BaseNavMenuItemHeader>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
         HeaderedItemsControl.HeaderTemplateProperty.AddOwner<BaseNavMenuItemHeader>();
-    
+
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<BaseNavMenuItemHeader, PathIcon?>(nameof(Icon));
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<BaseNavMenuItemHeader>();
-    
+
     public static readonly DirectProperty<BaseNavMenuItemHeader, bool> HasSubMenuProperty =
         AvaloniaProperty.RegisterDirect<BaseNavMenuItemHeader, bool>(nameof(HasSubMenu),
             o => o.HasSubMenu,
             (o, v) => o.HasSubMenu = v);
-    
+
     public static readonly StyledProperty<bool> IsSubMenuOpenProperty =
         AvaloniaProperty.Register<BaseNavMenuItemHeader, bool>(nameof(IsSubMenuOpen));
-    
+
     public static readonly DirectProperty<BaseNavMenuItemHeader, bool> IsDarkStyleProperty =
         AvaloniaProperty.RegisterDirect<BaseNavMenuItemHeader, bool>(nameof(IsDarkStyle),
             o => o.IsDarkStyle,
             (o, v) => o.IsDarkStyle = v);
-    
+
     public static readonly DirectProperty<BaseNavMenuItemHeader, bool> IsSelectedProperty =
         AvaloniaProperty.RegisterDirect<BaseNavMenuItemHeader, bool>(
-            nameof(IsSelected), 
+            nameof(IsSelected),
             o => o.IsSelected,
             (o, v) => o.IsSelected = v);
-    
+
     public static readonly DirectProperty<BaseNavMenuItemHeader, bool> IsInSelectedPathProperty =
         AvaloniaProperty.RegisterDirect<BaseNavMenuItemHeader, bool>(
-            nameof(IsInSelectedPath), 
+            nameof(IsInSelectedPath),
             o => o.IsInSelectedPath,
             (o, v) => o.IsInSelectedPath = v);
-    
+
     public object? Header
     {
         get => GetValue(HeaderProperty);
         set => SetValue(HeaderProperty, value);
     }
-    
+
     public IDataTemplate? HeaderTemplate
     {
         get => GetValue(HeaderTemplateProperty);
         set => SetValue(HeaderTemplateProperty, value);
     }
-    
+
     public PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     private bool _hasSubMenu;
-    
+
     public bool HasSubMenu
     {
         get => _hasSubMenu;
         set => SetAndRaise(HasSubMenuProperty, ref _hasSubMenu, value);
     }
-    
+
     public bool IsSubMenuOpen
     {
         get => GetValue(IsSubMenuOpenProperty);
         set => SetValue(IsSubMenuOpenProperty, value);
     }
-    
+
     private bool _isDarkStyle;
 
     public bool IsDarkStyle
@@ -91,22 +94,23 @@ public class BaseNavMenuItemHeader : TemplatedControl
         get => _isDarkStyle;
         set => SetAndRaise(IsDarkStyleProperty, ref _isDarkStyle, value);
     }
-    
+
     private bool _isSelected;
-    
+
     public bool IsSelected
     {
         get => _isSelected;
         set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
     }
-    
+
     private bool _isInSelectedPath;
-    
+
     public bool IsInSelectedPath
     {
         get => _isInSelectedPath;
         set => SetAndRaise(IsInSelectedPathProperty, ref _isInSelectedPath, value);
     }
+
     #endregion
 
     #region 内部属性定义
@@ -178,6 +182,13 @@ public class BaseNavMenuItemHeader : TemplatedControl
             UpdatePseudoClasses();
         }
     }
+
+    #region 实现 控件接口
+
+    // The theme preserves the actual inheritance parent when owner typography is not explicit.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     private void UpdatePseudoClasses()
     {

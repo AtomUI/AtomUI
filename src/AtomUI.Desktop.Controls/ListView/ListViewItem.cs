@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using Avalonia.Controls.Primitives;
 using AtomUI.Animations;
 using AtomUI.Controls;
@@ -14,13 +15,14 @@ namespace AtomUI.Desktop.Controls;
 
 public class ListViewItem : ContentControl,
                             IListItemVirtualizingContextAware,
-                            ISelectable, ITransitionInitializationOwner
+                            ISelectable, ITransitionInitializationOwner,
+                            IThemeInheritanceSource
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsSelectedProperty =
         ListView.IsSelectedProperty.AddOwner<ListViewItem>();
-    
+
     public bool IsSelected
     {
         get => GetValue(IsSelectedProperty);
@@ -28,51 +30,51 @@ public class ListViewItem : ContentControl,
     }
 
     #endregion
-    
+
     #region 公共事件定义
 
-    public static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
-        RoutedEvent.Register<ListViewItem, RoutedEventArgs>(
-            nameof(Clicked),
-            RoutingStrategies.Bubble);
-    
     public event EventHandler<RoutedEventArgs>? Clicked
     {
         add => AddHandler(ClickedEvent, value);
         remove => RemoveHandler(ClickedEvent, value);
     }
 
+    public static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
+        RoutedEvent.Register<ListViewItem, RoutedEventArgs>(
+            nameof(Clicked),
+            RoutingStrategies.Bubble);
+
     #endregion
-    
+
     #region 内部属性定义
 
     internal static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<ListViewItem>();
-    
+
     internal static readonly StyledProperty<IBrush?> ItemHoverBgProperty =
         ListBox.ItemHoverBgProperty.AddOwner<ListViewItem>();
-    
+
     internal static readonly StyledProperty<IBrush?> ItemSelectedBgProperty =
         ListBox.ItemSelectedBgProperty.AddOwner<ListViewItem>();
-    
+
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ListViewItem>();
-    
+
     internal static readonly DirectProperty<ListViewItem, bool> IsShowSelectedIndicatorProperty =
         AvaloniaProperty.RegisterDirect<ListViewItem, bool>(nameof(IsShowSelectedIndicator),
             o => o.IsShowSelectedIndicator,
             (o, v) => o.IsShowSelectedIndicator = v);
-    
+
     internal static readonly DirectProperty<ListViewItem, bool> IsSelectedIndicatorVisibleProperty =
         AvaloniaProperty.RegisterDirect<ListViewItem, bool>(nameof(IsSelectedIndicatorVisible),
             o => o.IsSelectedIndicatorVisible,
             (o, v) => o.IsSelectedIndicatorVisible = v);
-    
+
     internal static readonly DirectProperty<ListViewItem, IconTemplate?> SelectedIndicatorProperty =
         AvaloniaProperty.RegisterDirect<ListViewItem, IconTemplate?>(nameof(SelectedIndicator),
             o => o.SelectedIndicator,
             (o, v) => o.SelectedIndicator = v);
-    
+
     internal static readonly StyledProperty<bool> IsGroupItemProperty =
         AvaloniaProperty.Register<ListViewItem, bool>(nameof(IsGroupItem));
 
@@ -93,7 +95,7 @@ public class ListViewItem : ContentControl,
 
     internal static readonly StyledProperty<ClickMode> ItemClickModeProperty =
         ListView.ItemClickModeProperty.AddOwner<ListViewItem>();
-    
+
     internal CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
@@ -105,19 +107,19 @@ public class ListViewItem : ContentControl,
         get => GetValue(ItemHoverBgProperty);
         set => SetValue(ItemHoverBgProperty, value);
     }
-    
+
     internal IBrush? ItemSelectedBg
     {
         get => GetValue(ItemSelectedBgProperty);
         set => SetValue(ItemSelectedBgProperty, value);
     }
-    
+
     internal bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     private bool _isShowSelectedIndicator;
 
     internal bool IsShowSelectedIndicator
@@ -125,7 +127,7 @@ public class ListViewItem : ContentControl,
         get => _isShowSelectedIndicator;
         set => SetAndRaise(IsShowSelectedIndicatorProperty, ref _isShowSelectedIndicator, value);
     }
-    
+
     private bool _isSelectedIndicatorVisible;
 
     internal bool IsSelectedIndicatorVisible
@@ -133,7 +135,7 @@ public class ListViewItem : ContentControl,
         get => _isSelectedIndicatorVisible;
         set => SetAndRaise(IsSelectedIndicatorVisibleProperty, ref _isSelectedIndicatorVisible, value);
     }
-    
+
     private IconTemplate? _selectedIndicator;
 
     internal IconTemplate? SelectedIndicator
@@ -141,13 +143,13 @@ public class ListViewItem : ContentControl,
         get => _selectedIndicator;
         set => SetAndRaise(SelectedIndicatorProperty, ref _selectedIndicator, value);
     }
-    
+
     internal bool IsGroupItem
     {
         get => GetValue(IsGroupItemProperty);
         set => SetValue(IsGroupItemProperty, value);
     }
-    
+
     private Thickness _effectiveBorderThickness;
 
     internal Thickness EffectiveBorderThickness
@@ -184,8 +186,9 @@ public class ListViewItem : ContentControl,
     internal long? EntryId { get; set; }
 
     #endregion
-    
+
     private static readonly Point s_invalidPoint = new(double.NaN, double.NaN);
+
     private Point _pointerDownPoint = s_invalidPoint;
     
     private readonly TransitionInitializationSession _transitionInitialization;
@@ -256,10 +259,6 @@ public class ListViewItem : ContentControl,
 
     }
 
-
-
-
-    
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -275,14 +274,14 @@ public class ListViewItem : ContentControl,
         {
             var p = e.GetCurrentPoint(this);
 
-            if (p.Properties.PointerUpdateKind is PointerUpdateKind.LeftButtonPressed or 
+            if (p.Properties.PointerUpdateKind is PointerUpdateKind.LeftButtonPressed or
                 PointerUpdateKind.RightButtonPressed)
             {
                 if (p.Pointer.Type == PointerType.Mouse
                     || (p.Pointer.Type == PointerType.Pen && p.Properties.IsRightButtonPressed))
                 {
                     // If the pressed point comes from a mouse or right-click pen, perform the selection immediately.
-                    // In case of pen, only right-click is accepted, as left click (a tip touch) is used for scrolling. 
+                    // In case of pen, only right-click is accepted, as left click (a tip touch) is used for scrolling.
                     e.Handled = owner.UpdateSelectionFromPointerEvent(this, e);
                 }
                 else
@@ -311,7 +310,7 @@ public class ListViewItem : ContentControl,
     {
         base.OnPointerReleased(e);
 
-        if (!e.Handled && 
+        if (!e.Handled &&
             !double.IsNaN(_pointerDownPoint.X) &&
             e.InitialPressMouseButton is MouseButton.Left or MouseButton.Right)
         {
@@ -340,7 +339,7 @@ public class ListViewItem : ContentControl,
                 }
             }
 
-            
+
         }
         if (!e.Handled && e.InitialPressMouseButton == MouseButton.Left)
         {
@@ -352,9 +351,11 @@ public class ListViewItem : ContentControl,
 
         _pointerDownPoint = s_invalidPoint;
     }
-    #region 实现 IListItemVirtualizingContextAware 接口
+
+    #region 实现 控件接口
 
     int IListItemVirtualizingContextAware.VirtualIndex { get; set; } = -1;
+
     bool IListItemVirtualizingContextAware.VirtualContextOperating { get; set; }
 
     #endregion
@@ -362,6 +363,9 @@ public class ListViewItem : ContentControl,
     #region 实现 ITransitionInitializationOwner 接口
 
     TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
+
+    // The theme preserves the actual inheritance parent when owner typography is not explicit.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 
     #endregion
 
@@ -376,6 +380,5 @@ public class ListViewItem : ContentControl,
         IsSplitLineEffectiveVisible = showSplitLine;
         EffectiveBorderThickness = showSplitLine ? BorderThickness : new Thickness(0);
     }
-
 
 }

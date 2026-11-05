@@ -4,6 +4,22 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:NavMenu}" TargetType="atom:NavMenu">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+
         <Style Selector="^[Mode=Inline],^[Mode=Vertical]">
             <Setter Property="Template">
                 <ControlTemplate>
@@ -42,7 +58,7 @@
                 </ControlTemplate>
             </Setter>
         </Style>
-        
+
         <Style Selector="^[Mode=Horizontal]">
             <Setter Property="Template">
                 <ControlTemplate>
@@ -50,7 +66,7 @@
                         <atom:PixelAlignedBorder Name="PART_HorizontalLine"
                                                  DockPanel.Dock="Bottom"
                                                  BorderThickness="0,0,0,1"
-                                                 Height="{atom:SharedTokenResource LineWidth}" />
+                                                 Height="{atom:OwnerTokenResource Kind=LineWidth, AnchorControlType={x:Type atom:NavMenu}, Priority=Template}" />
                         <atom:PixelAlignedBorder HorizontalAlignment="Stretch"
                                                  Padding="{TemplateBinding Padding}"
                                                  Background="{TemplateBinding Background}"
@@ -82,11 +98,12 @@
                 </ControlTemplate>
             </Setter>
         </Style>
-        
+
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
         <Setter Property="InlineCollapsedWidth" Value="{atom:NavMenuTokenResource InlineCollapsedWidth}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type atom:NavMenu}}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="MotionDuration" Value="{atom:NavMenuTokenResource MotionDurationMid}" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="EntryItemSpacing"
@@ -98,7 +115,7 @@
                 <atom:TextBlock Text="{Binding Header}" />
             </TreeDataTemplate>
         </Setter>
-        
+
         <Style Selector="^[Mode=Vertical]">
             <Setter Property="ItemsPanel">
                 <ItemsPanelTemplate>
@@ -108,7 +125,7 @@
             </Setter>
             <Setter Property="ItemSpacing"
                     Value="{atom:NavMenuTokenResource VerticalItemsPanelSpacing}" />
-            
+
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Padding"
                     Value="{atom:NavMenuTokenResource VerticalMenuContentPadding}" />
@@ -156,9 +173,9 @@
             <Setter Property="VerticalAlignment" Value="Top" />
             <Setter Property="Height" Value="{atom:NavMenuTokenResource MenuHorizontalHeight}" />
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HorizontalLine">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+                <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type atom:NavMenu}}" />
             </Style>
-            
+
             <Style Selector="^[IsDarkStyle=True]">
                 <Setter Property="Background" Value="{atom:NavMenuTokenResource DarkMenuBg}" />
                 <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HorizontalLine">

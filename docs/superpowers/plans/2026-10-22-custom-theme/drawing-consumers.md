@@ -1,5 +1,7 @@
 # CT-17 绘制控件执行计划
 
+状态（2026-11-04）：本轮明确范围已按V1–V5/C1/S1限定批准完成，50 metadata/92 Own；最终证据及批准只登记在[家族出口](drawing-family-exit.md#批准登记与最终结论)。以下分包安排作为执行历史保留。
+
 沿既有 `feature/custom-theme` 和当前工作目录执行，不创建分支/worktree，不自动提交，不使用子 agent。范围按既有目录补齐 Skeleton、四种 Progress、Rate、Slider、Switch、Separator、Watermark、BorderBeam 及实际内部绘制目标；一个线形修复不代表整族验收。
 
 ## P0 普通线形 Progress 的布局与文本缓存
@@ -22,4 +24,4 @@
 
 ## 共同出口
 
-各包均先有效失败，再最小修改、目标定制生效及原画面对照，实际输入、生命周期与性能按风险验证；当前Mac NativeAOT和其他OS／Browser分别留证。不增加常驻测试，临时验证及专用产物清理后运行精确模块检查。正式overview／implementation／token／semantic-part／changelog与Gallery示例按实际变化同步，目录字段和全家族状态只在证据满足时更新；完整CT-17仍开放。
+各包均先有效失败，再最小修改、目标定制生效及原画面对照，实际输入、生命周期与性能按风险验证；当前Mac NativeAOT和其他OS／Browser分别留证。不增加常驻测试，临时验证及专用产物清理后运行精确模块检查。正式overview／implementation／token／semantic-part／changelog与Gallery示例按实际变化同步，目录字段和全家族状态只在证据满足时更新；完整CT-17本轮既定范围已按上述批准关闭；原失败和其他CT/FW边界按权威记录保留。

@@ -1,0 +1,9 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net"
+                    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:Space}" TargetType="atom:Space">
+        <Setter Property="ItemSpacing" Value="{atom:SpaceTokenResource GapSmallSize}" />
+        <Setter Property="LineSpacing" Value="{atom:SpaceTokenResource GapSmallSize}" />
+    </ControlTheme>
+</ResourceDictionary>

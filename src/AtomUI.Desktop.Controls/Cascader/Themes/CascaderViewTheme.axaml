@@ -5,6 +5,14 @@
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.CascaderViewTheme"
               TargetType="atom:CascaderView">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:CascaderView">
             <atom:PixelAlignedBorder Name="Frame"
@@ -77,7 +85,7 @@
     <Style Selector="^:is(atom|CascaderView)">
         <Setter Property="FilterHighlightForeground"
                 Value="{atom:CascaderTokenResource FilterHighlightColor}" />
-        <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource Padding}" />
+        <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource Kind=Padding, AnchorControlType={x:Type atom:CascaderView}}" />
         <Setter Property="atom:ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
@@ -85,10 +93,10 @@
         <Setter Property="IsShowEmptyIndicator" Value="True" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="ClipToBounds" Value="True" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource Kind=BorderThickness, AnchorControlType={x:Type atom:CascaderView}}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorSplit, AnchorControlType={x:Type atom:CascaderView}}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadiusLG, AnchorControlType={x:Type atom:CascaderView}}" />
 
         <Setter Property="ExpandIcon">
             <atom:IconTemplate>
@@ -101,7 +109,7 @@
                 <antdicons:LoadingOutlined LoadingAnimation="Spin" />
             </atom:IconTemplate>
         </Setter>
-        
+
         <Setter Property="OptionTemplate">
             <DataTemplate x:DataType="atom:ICascaderOption">
                 <atom:TextBlock Text="{Binding Header}" />

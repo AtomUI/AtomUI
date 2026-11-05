@@ -51,9 +51,9 @@
             <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
 
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource Kind=BorderThickness, AnchorControlType={x:Type atom:InfoPickerInput}}" />
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_ButtonsFrame">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type atom:InfoPickerInput}}" />
         </Style>
         
         <Style Selector="^ /template/ Panel#PART_ButtonsLayout">

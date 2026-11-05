@@ -65,6 +65,10 @@
             </ControlTemplate>
         </Setter>
         
+        <Style Selector="^ /template/ atom|LineEdit#PART_HexValueInput">
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+        </Style>
+
         <Style Selector="^ /template/ atom|NumericUpDown">
             <Setter Property="SizeType" Value="Small"/>
             <Setter Property="Width" Value="48"/>

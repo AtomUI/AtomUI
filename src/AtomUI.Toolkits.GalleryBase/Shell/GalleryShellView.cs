@@ -4,6 +4,7 @@ using AtomUI.Data;
 using AtomUI.Theme.Resources;
 using AtomUI.Toolkits.GalleryBase.Configuration;
 using AtomUI.Toolkits.GalleryBase.Controls;
+using AtomUI.Toolkits.GalleryBase.Shell.DesignTokens;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -33,6 +34,14 @@ public sealed class GalleryShellView : UserControl, IDisposable
 
     #endregion
 
+    #region 公共属性定义
+
+    public Border ContentHost { get; }
+
+    public RoutedViewHost RoutedViewHost { get; }
+
+    #endregion
+
     private const MediaBreakPoint SidebarAutoCollapseBreakPoint = MediaBreakPoint.Medium;
     private readonly CompositeDisposable _themeBindings = new();
     private readonly CompositeDisposable _sidebarBindings = new();
@@ -45,10 +54,6 @@ public sealed class GalleryShellView : UserControl, IDisposable
     private bool _hasManualSidebarCollapseOverride;
     private bool _isApplyingResponsiveSidebarState;
     private bool _isDisposed;
-
-    public Border ContentHost { get; }
-
-    public RoutedViewHost RoutedViewHost { get; }
 
     public GalleryShellView(GalleryBaseConfiguration configuration,
                             Control navigationView,
@@ -179,19 +184,19 @@ public sealed class GalleryShellView : UserControl, IDisposable
         var brandContent = new Border
         {
             Name                = "WorkspaceBrandContent",
-            Margin              = new Thickness(24, 0, 0, 0),
             HorizontalAlignment = HorizontalAlignment.Left,
             Child               = CreateBrandContent(configuration.Branding)
         };
+        BindOwnToken(brandContent, MarginProperty, GalleryShellViewTokenKind.BrandMargin);
         var brandHeader = new Grid
         {
             Name   = "WorkspaceBrandHost",
-            Margin = new Thickness(0, 20, 0, 16),
             Children =
             {
                 brandContent
             }
         };
+        BindOwnToken(brandHeader, MarginProperty, GalleryShellViewTokenKind.BrandHeaderMargin);
 
         Border? sidebarHeaderActionHost = null;
         if (sidebarHeaderAction is not null)
@@ -399,31 +404,33 @@ public sealed class GalleryShellView : UserControl, IDisposable
         return mediaBreakPoint <= SidebarAutoCollapseBreakPoint;
     }
 
-    private static Control CreateBrandContent(GalleryBrandingConfiguration branding)
+    private Control CreateBrandContent(GalleryBrandingConfiguration branding)
     {
-        return branding.Logo switch
+        switch (branding.Logo)
         {
-            Control control => control,
-            string resourcePath => new SvgControl(new Uri("https://atomui.net"))
-            {
-                Path                = resourcePath,
-                Width               = 190,
-                Height              = 45,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment   = VerticalAlignment.Center
-            },
-            null => new TextBlock
-            {
-                Text         = branding.AppName,
-                FontSize     = 20,
-                FontWeight   = FontWeight.SemiBold,
-                TextWrapping = TextWrapping.NoWrap
-            },
-            _ => new ContentControl
-            {
-                Content = branding.Logo
-            }
-        };
+            case Control control:
+                return control;
+            case string resourcePath:
+                return new SvgControl(new Uri("https://atomui.net"))
+                {
+                    Path = resourcePath,
+                    Width = 190,
+                    Height = 45,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+            case null:
+                var label = new TextBlock
+                {
+                    Text = branding.AppName,
+                    FontWeight = FontWeight.SemiBold,
+                    TextWrapping = TextWrapping.NoWrap
+                };
+                BindOwnToken(label, TextBlock.FontSizeProperty, GalleryShellViewTokenKind.BrandFontSize);
+                return label;
+            default:
+                return new ContentControl { Content = branding.Logo };
+        }
     }
 
     private Border? CreateSidebarFooter(GalleryBaseConfiguration configuration)
@@ -467,10 +474,10 @@ public sealed class GalleryShellView : UserControl, IDisposable
         var footer = new Border
         {
             Name            = "WorkspaceSidebarFooter",
-            BorderThickness = new Thickness(0, 1, 0, 0),
-            Padding         = new Thickness(16, 12),
             Child           = footerLayout
         };
+        BindOwnToken(footer, Border.BorderThicknessProperty, GalleryShellViewTokenKind.FooterBorderThickness);
+        BindOwnToken(footer, Border.PaddingProperty, GalleryShellViewTokenKind.FooterPadding);
         BindToken(footer, Border.BorderBrushProperty, SharedTokenKind.ColorBorderSecondary);
         return footer;
     }
@@ -501,6 +508,16 @@ public sealed class GalleryShellView : UserControl, IDisposable
 
     private void BindToken(AvaloniaObject target, AvaloniaProperty property, SharedTokenKind tokenKind)
     {
-        _themeBindings.Add(TokenResourceBinder.CreateGlobalTokenBinding(target, property, tokenKind));
+        // The shell creates these Content targets from runtime branding and
+        // navigation factories. ControlTheme /template/ selectors cannot reach
+        // that tree or retain the existing Template-priority binding contract.
+        // All bindings retire through _themeBindings on Dispose/detach.
+        _themeBindings.Add(TokenResourceBinder.CreateControlTokenBinding(this, target, property, tokenKind));
+    }
+
+    private void BindOwnToken(AvaloniaObject target, AvaloniaProperty property, GalleryShellViewTokenKind tokenKind)
+    {
+        // Same runtime Content-tree and lifetime boundary as BindToken.
+        _themeBindings.Add(TokenResourceBinder.CreateControlTokenBinding(this, target, property, tokenKind));
     }
 }

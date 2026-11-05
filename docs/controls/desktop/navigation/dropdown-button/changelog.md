@@ -1,5 +1,9 @@
 # DropdownButton Changelog
 
+## 2026-11-04
+
+- Custom 公开尺寸使用基础默认，保留三档及指示器协议；支持普通 Style 的尺寸接管和撤回。
+
 本文档记录 DropdownButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-11-04
@@ -17,6 +21,12 @@
 
 - Changed
   - 明确 Dropdown 根层 Slide、嵌套菜单 ZoomBig 与实际 Flyout 的配置/释放责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
+## 2026-10-29
+
+- API / Theme
+  - 接入继承的公开`BoxShadow`原生根属性；独立主题默认读取Dropdown自己的VariantShadow，Style/local和空集合可以统一定制实际阴影，清除恢复当前默认。46个Own、默认视觉与弹层Part边界保持。
+
 
 ## 2026-10-27
 

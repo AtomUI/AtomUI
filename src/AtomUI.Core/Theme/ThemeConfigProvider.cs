@@ -27,6 +27,7 @@ public class ThemeConfigProvider : ThemeVariantScope
     #region 公共事件定义
 
     public event EventHandler<ThemeChangedEventArgs>? ThemeChanged;
+    public event EventHandler<ThemeTransitionCompletedEventArgs>? ThemeTransitionCompleted;
     public event EventHandler<ThemeChangeFailedEventArgs>? ThemeChangeFailed;
     public event EventHandler<ThemePresentationChangedEventArgs>? ThemePresentationChanged;
 
@@ -151,35 +152,54 @@ public class ThemeConfigProvider : ThemeVariantScope
     internal void DispatchResult(ThemeScopeUpdateResult result)
     {
         var publishDiagnostics = new List<ThemeDiagnostic>();
-        PublishPresentation(result.Presentation);
-        if (result.Status == ThemeTransitionStatus.Committed)
+        try
         {
+            PublishPresentation(result.Presentation);
+            if (result.Status == ThemeTransitionStatus.Committed)
+            {
+                ThemeEventDispatcher.Dispatch(
+                    ThemeChanged,
+                    this,
+                    new ThemeChangedEventArgs(
+                        result.Request,
+                        result.State,
+                        result.PublishDiagnostics),
+                    publishDiagnostics,
+                    nameof(ThemeChanged));
+                return;
+            }
+
+            if (result.Status != ThemeTransitionStatus.Failed)
+            {
+                return;
+            }
+
             ThemeEventDispatcher.Dispatch(
-                ThemeChanged,
+                ThemeChangeFailed,
                 this,
-                new ThemeChangedEventArgs(
+                new ThemeChangeFailedEventArgs(
                     result.Request,
-                    result.State,
-                    result.PublishDiagnostics),
+                    result.Diagnostics,
+                    result.Exception),
                 publishDiagnostics,
-                nameof(ThemeChanged));
-            return;
+                nameof(ThemeChangeFailed));
         }
-
-        if (result.Status != ThemeTransitionStatus.Failed)
+        finally
         {
-            return;
+            // An input assignment may be queued, superseded or a no-op. Editors require its
+            // actual receipt; ordinary consumers incur no additional allocation when unsubscribed.
+            if (ThemeTransitionCompleted is { } completed)
+            {
+                var receipt = new ThemeTransitionResult(result.TransitionId, result.Status, result.State,
+                    result.Diagnostics, result.PublishDiagnostics.Concat(publishDiagnostics).ToArray(), result.Exception)
+                {
+                    Presentation = result.Presentation
+                };
+                ThemeEventDispatcher.Dispatch(completed, this,
+                    new ThemeTransitionCompletedEventArgs(result.Request, receipt),
+                    publishDiagnostics, nameof(ThemeTransitionCompleted));
+            }
         }
-
-        ThemeEventDispatcher.Dispatch(
-            ThemeChangeFailed,
-            this,
-            new ThemeChangeFailedEventArgs(
-                result.Request,
-                result.Diagnostics,
-                result.Exception),
-            publishDiagnostics,
-            nameof(ThemeChangeFailed));
     }
 
     internal void PublishPresentation(ThemeContext context, ThemePresentationResult result)

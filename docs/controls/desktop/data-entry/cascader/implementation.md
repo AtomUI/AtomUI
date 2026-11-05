@@ -318,3 +318,14 @@ git diff --check
 根几何进入实际输入 frame；多选 Custom 的默认紧凑 inset 与显式 inset 分开，标签内在高度保持。现有多选尺寸/前缀参数继续引用 Select 家族资源。
 
 几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+输入 add-on 的 Outlined 常态边框、Error/Warning 边框及其 hover/focus/open 分支、Filled 常态与校验背景，从 Cascader 的有效 Global 读取。内部 add-on 不具有独立 identity；原生根画刷中继、状态归一和模板优先级保持，清除显式根画刷后恢复当前 owner 资源。
+
+
+## 有效主题输入与生命周期
+
+CascaderView 与 CascaderViewItem 的 Global 按其注册身份消费，内部节点从实际模板 owner 解析；字体族的可选覆盖保留父级继承。输入根及过滤输入继续沿既有合同工作；DropdownHeight 作为 Own 上限、页数预算可进一步缩小的高度所有权不改变。
+
+### Custom 尺寸与原生优先级
+
+Custom 的根 CornerRadius 与模式相关 Padding 由基础 Setter 提供。既有类型化 padding 转换器接收 IsMultiple、IsSelectionEmpty 与原高度预算，保留空选择和多选标签的默认差别；普通 Style/LocalValue 可接管及撤回。三档预设、标签内在高度、多列视图及 popup 高度协议保持。

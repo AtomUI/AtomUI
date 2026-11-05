@@ -198,3 +198,11 @@ Active shimmer 由挂在模板叶子节点 `PART_ActiveAnimationLayer` 上的样
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+## 端点与动态默认值
+
+Title 保留 SkeletonLine 的 StyleKey；共享主题通过有限类型分流选择 TitleHeight 或 ParagraphLineHeight，避免把标题误当段落。渐变背景、胶囊圆角和图像容器默认值声明真实 Own 依赖，显式配置及清除均重新到达消费者。
+
+Avatar 的显式 Size 在 AXAML 中控制 Width/Height；清除 Size 会退出该分支并恢复当前档位。Avatar、Button、Input 的 Custom 退出预设，使用中档高度作为基础回退；调用方可以接管更小高度，不以隐藏 MinHeight 约束覆盖它。
+
+扫光由各实际活动 Border 的样式动画承载，更新端点/周期会重建动画；IsActive 退出、detach 及 re-template 会移除旧样式并清理动画引用。组合 Skeleton 将活动状态传给其真实子骨架；图像图标的 Foreground 通过模板绑定投射，Node 的调用方内容不被该回退改色。

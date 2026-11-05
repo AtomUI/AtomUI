@@ -33,24 +33,27 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="TitleColor" Value="{atom:SharedTokenResource ColorTextHeading}" />
-        <Setter Property="LineColor" Value="{atom:SharedTokenResource ColorSplit}" />
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="TitleColor" Value="{atom:OwnerTokenResource ColorTextHeading}" />
+        <Setter Property="LineColor" Value="{atom:OwnerTokenResource ColorSplit}" />
         
         <Setter Property="TextPaddingInline" Value="{atom:SeparatorTokenResource TextPaddingInline}" />
         <Setter Property="OrientationMarginPercent" Value="{atom:SeparatorTokenResource OrientationMarginPercent}" />
-        <Setter Property="LineWidth" Value="{atom:SharedTokenResource LineWidth}" />
+        <Setter Property="LineWidth" Value="{atom:OwnerTokenResource LineWidth}" />
         
         <Style Selector="^[IsPlain=True]">
-            <Style Selector="^ /template/ atom|TextBlock#PART_Title">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-                <Setter Property="FontWeight" Value="Normal" />
-            </Style>
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
+            <Setter Property="FontWeight" Value="Normal" />
         </Style>
         <Style Selector="^[IsPlain=False]">
-            <Style Selector="^ /template/ atom|TextBlock#PART_Title">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
-                <Setter Property="FontWeight" Value="500" />
-            </Style>
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeLG}" />
+            <Setter Property="FontWeight" Value="500" />
         </Style>
 
         <Style Selector="^[Orientation=Horizontal]">

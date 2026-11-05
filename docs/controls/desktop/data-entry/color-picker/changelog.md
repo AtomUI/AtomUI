@@ -19,6 +19,16 @@
   - 明确 Popover 对应的 ZoomBig、Mid 时长、alignment 原点及公开配置 owner。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
 ## 2026-10-25（待完整家族验收）
+- Fix（R1限定范围已批准）：popup.root 专用 Style 定位到实际背景 Border，使背景、可见圆角和阴影圆角使用同一表面，箭头通过编译绑定跟随背景；保留生成 Style 名称及 Border 合同，直接 selector route 的迁移见 semantic-part.md。该限定修正独立于此前 V1–V3 批准。
+- Fix（R2限定范围已批准）：HEX 字段在自身 ControlTheme 中按行高伸展，修复自然高度 22 DIP 与相邻 Alpha 24 DIP 不统一；数值字号、宽度、格式和编辑规则保持。
+
+- Theme：四个公开根及实际内部绘制目标消费各自有效 Global；色板绘制与间距锚定实际 View，避免内部 Collapse 截获 owner。24 个 Own 及其默认依赖、名称、类型和资源身份保持。
+- Typography：触发文字和 View 输入消费有效字体并支持真实继承父与作用域更新；纯色文字通过模板绑定响应根 Foreground。数值通道固定字号 11 与默认宽度 48 保留。
+- Sizing：Custom 根允许应用样式设置字号、圆角和高度，未设置时保留 Middle 回退；内部色块尺寸与圆形几何计算保持。
+- Structure：两个基类按公共合同、内部协作、生命周期、接口与私有实现组织成员，初始化值与静态字段顺序保持；不新增公开 API、Own 或 Semantic Part。
+- Verification：原包28项临时检查与27项既有检查通过，Mac NativeAOT1365项及840图/1184项证据按V1–V3批准复用。R1/R2后续39项工程、全部清理后27项、NET8零警告错误及成员审计通过；合并660图/896项比较中854项符合预期，42对系统标题栏差异按S1具体接受，真实FAIL保留。历史失败、route迁移及其他平台边界保持，批准原话与范围统一见[权威结果](../../../../superpowers/plans/2026-10-22-custom-theme/color-picker-family-exit.md#最终批准登记与ct19结论)。
+
+## 2026-10-25（分包记录）
 
 - Behavior（C10设计及有限视觉已批准，本机切片出口完成）：具体 ColorSlider 接通未修饰方向键、PageUp／Down、Home／End，读取已有步长和边界；RTL仅反转水平键。保留绑定、单次颜色通知及既有 Alpha 舍入，多 stop 渐变轨道保持原合同；不新增公开签名、Token或Part。
 

@@ -65,7 +65,6 @@ public partial class SkeletonAvatar : AbstractSkeleton, ICustomizableSizeTypeAwa
         if (change.Property == SizeTypeProperty || change.Property == SizeProperty)
         {
             IsCustomSize = !double.IsNaN(Size);
-            ConfigureSize();
         }
         if (change.Property == ShapeProperty ||
             change.Property == SizeTypeProperty ||
@@ -84,20 +83,9 @@ public partial class SkeletonAvatar : AbstractSkeleton, ICustomizableSizeTypeAwa
         }
     }
 
-    private void ConfigureSize()
-    {
-        if (!double.IsNaN(Size))
-        {
-            // 不影响模板设置
-            SetValue(WidthProperty, Size, BindingPriority.Template);
-            SetValue(HeightProperty, Size, BindingPriority.Template);
-        }
-    }
-
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         ConfigureShape();
-        ConfigureSize();
     }
 }

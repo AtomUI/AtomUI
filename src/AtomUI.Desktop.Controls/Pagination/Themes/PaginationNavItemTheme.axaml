@@ -5,6 +5,17 @@
     x:ClassModifier="internal">
     <atom:StringToTextBlockConverter x:Key="StringToTextBlockConverter" VerticalAlignment="Center" />
     <ControlTheme x:Key="{x:Type atom:PaginationNavItem}" TargetType="atom:PaginationNavItem">
+        <Setter Property="Height" Value="{atom:PaginationTokenResource ItemSize}" />
+        <Setter Property="MinWidth" Value="{atom:PaginationTokenResource ItemSize}" />
+        <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+            <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+        </Style>
+        <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
+            <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+        </Style>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -37,18 +48,18 @@
             </ControlTemplate>
         </Setter>
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-        <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadius, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource Kind=FontSize, AnchorControlType={x:Type atom:PaginationNavItem}}" />
         <Setter Property="Padding"
                 Value="{atom:PaginationTokenResource PaginationItemPaddingInline}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorTransparent}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorTransparent, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource Kind=BorderThickness, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorText, AnchorControlType={x:Type atom:PaginationNavItem}}" />
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
             <Setter Property="IconBrush" Value="{TemplateBinding Foreground}" />
         </Style>
         <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atom:PaginationNavItem}}" />
         </Style>
 
         <Style Selector="^[PaginationItemType=PageIndicator]">
@@ -65,7 +76,7 @@
         <Style Selector="^[PaginationItemType=JumpPrevious], ^[PaginationItemType=JumpNext]">
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IsVisible" Value="True" />
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorTextDisabled, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                 <Setter Property="Opacity" Value="1" />
             </Style>
             <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
@@ -87,45 +98,45 @@
 
             <Style Selector="^[PaginationItemType=PageIndicator]">
                 <Style Selector="^:selected">
-                    <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+                    <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                     <Setter Property="Background"
                             Value="{atom:PaginationTokenResource ItemActiveBg}" />
                     <Setter Property="FontWeight" Value="SemiBold" />
                     <Setter Property="BorderBrush"
-                            Value="{atom:SharedTokenResource ColorPrimary}" />
+                            Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                     <Style Selector="^:pointerover">
                         <Setter Property="Foreground"
-                                Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+                                Value="{atom:OwnerTokenResource Kind=ColorPrimaryHover, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+                                Value="{atom:OwnerTokenResource Kind=ColorPrimaryHover, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                     </Style>
                 </Style>
                 <Style Selector="^:not(:selected)">
                     <Setter Property="Background" Value="{atom:PaginationTokenResource ItemBg}" />
-                    <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+                    <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorText, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                     <Style Selector="^:pointerover">
                         <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorBgTextHover}" />
+                                Value="{atom:OwnerTokenResource Kind=ColorBgTextHover, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                     </Style>
                     <Style Selector="^:pressed">
                         <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorBgTextActive}" />
+                                Value="{atom:OwnerTokenResource Kind=ColorBgTextActive, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                     </Style>
                 </Style>
             </Style>
 
             <Style Selector="^[PaginationItemType=Previous], ^[PaginationItemType=Next]">
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorTransparent}" />
+                        Value="{atom:OwnerTokenResource Kind=ColorTransparent, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorText}" />
+                        Value="{atom:OwnerTokenResource Kind=ColorText, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                 <Style Selector="^:pointerover">
                     <Setter Property="Background"
-                            Value="{atom:SharedTokenResource ColorBgTextHover}" />
+                            Value="{atom:OwnerTokenResource Kind=ColorBgTextHover, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                 </Style>
                 <Style Selector="^:pressed">
                     <Setter Property="Background"
-                            Value="{atom:SharedTokenResource ColorBgTextActive}" />
+                            Value="{atom:OwnerTokenResource Kind=ColorBgTextActive, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                 </Style>
             </Style>
         </Style>
@@ -135,37 +146,37 @@
             <Setter Property="MinWidth" Value="{atom:PaginationTokenResource ItemSize}" />
 
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeLG}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeLG}" />
+                <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+                <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:PaginationNavItem}}" />
             </Style>
             <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeLG}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeLG}" />
+                <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+                <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:PaginationNavItem}}" />
             </Style>
 
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="Height" Value="{atom:PaginationTokenResource ItemSize}" />
             <Setter Property="MinWidth" Value="{atom:PaginationTokenResource ItemSize}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
+                <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+                <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:PaginationNavItem}}" />
             </Style>
             <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
+                <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+                <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:PaginationNavItem}}" />
             </Style>
         </Style>
         <Style Selector="^[SizeType=Small]">
             <Setter Property="Height" Value="{atom:PaginationTokenResource ItemSizeSM}" />
             <Setter Property="MinWidth" Value="{atom:PaginationTokenResource ItemSizeSM}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeSM}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeSM}" />
+                <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+                <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:PaginationNavItem}}" />
             </Style>
             <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeSM}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeSM}" />
+                <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:PaginationNavItem}}" />
+                <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:PaginationNavItem}}" />
             </Style>
         </Style>
 
@@ -184,7 +195,7 @@
                 </Style>
                 <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
                     <Setter Property="Opacity" Value="0" />
-                    <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorTextDisabled, AnchorControlType={x:Type atom:PaginationNavItem}}" />
                 </Style>
             </Style>
 

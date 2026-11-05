@@ -300,3 +300,7 @@ LineEditTheme根级FontSize MultiBinding按SizeType选择Own三档最终资源�
 未配置路径通过Core内部ControlTypographyBindings观察protected真实InheritanceParent，不能替换为逻辑Parent；AbstractTextInput只暴露内部只读桥，不写最终字体属性。观察器随父变化及附着重订阅，分离/释放停止父订阅。原生字体继承、LocalValue、普通Style、raw资源与清除恢复独立验证；Select过滤器借用LineEdit身份仍归其容器迁移。
 
 内部frame与操作按钮通过[共享输入架构](../input-control-architecture-design.md#内部资产的主题查询路线)消费真实公开owner的Global；Content附加区的逻辑路线与模板路线同属该合同，保留原生样式优先级和状态归一。
+
+### Custom 尺寸与原生优先级
+
+Custom 的根 Padding 与 CornerRadius 使用中档资源的基础 Setter，Large/Middle/Small 保留各自预设规则。普通应用 Style 与 LocalValue 可接管根几何，现有模板绑定继续把最终值交给 AddOnDecoratedBox。内部 PresetContentPadding、附加区与文本最小度量保持独立，不由根 Padding 的撤回清空。

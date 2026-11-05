@@ -95,3 +95,9 @@ BorderBeamToken 变更要求：
 | 修改 `MaxVisibleStopPercent` | 验证单色、多 stop 渐变和透明尾迹连续性。 |
 | 修改 `Count` 或 hover 组合 | 验证实例属性与 Style 行为，并确认 BorderBeamToken 和默认资源键没有变化。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步所有 AXAML 引用和生成文件。 |
+
+## 有效默认计划
+
+4字段使用 DependencyDefaultsV2，保留 BeamSize=100、BeamOpacity=0.95、MotionDuration=6秒、MaxVisibleStopPercent=70 及原 key/slot。它们到达同一实际 BorderBeamPresenter。
+
+边框、圆角及默认渐变端点颜色从该 BorderBeam 实例的有效 Global 读取；Content/Color/ColorStops/Outset、Count 和边界感知模型保持原契约。IsMotionEnabled 继续是本控件独立的实例开关，不改为共享 EnableMotion 语义。

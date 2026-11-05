@@ -32,6 +32,9 @@
                 <atom:NumericUpDownSpinner
                     Name="PART_Spinner"
                     Classes.semantic-scope-spinner="True"
+                    Height="{TemplateBinding Height}"
+                    MinHeight="{TemplateBinding MinHeight}"
+                    MaxHeight="{TemplateBinding MaxHeight}"
                     Padding="{TemplateBinding Padding}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
@@ -124,6 +127,9 @@
                     <atom:NumericUpDownSpinner
                         Name="PART_Spinner"
                         Classes.semantic-scope-spinner="True"
+                        Height="{TemplateBinding Height}"
+                        MinHeight="{TemplateBinding MinHeight}"
+                        MaxHeight="{TemplateBinding MaxHeight}"
                         Padding="{TemplateBinding Padding}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
@@ -231,7 +237,10 @@
             <Setter Property="Padding" Value="{atom:NumericUpDownTokenResource InputPaddingLG}" />
             <Setter Property="CornerRadius" Value="{atom:NumericUpDownTokenResource BorderRadiusLG}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Setter Property="Padding" Value="{atom:NumericUpDownTokenResource InputPadding}" />
+        <Setter Property="CornerRadius" Value="{atom:NumericUpDownTokenResource BorderRadius}" />
+
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="Padding" Value="{atom:NumericUpDownTokenResource InputPadding}" />
             <Setter Property="CornerRadius" Value="{atom:NumericUpDownTokenResource BorderRadius}" />
         </Style>

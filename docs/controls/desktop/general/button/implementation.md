@@ -1,5 +1,7 @@
 # Button 桌面版实现原理
 
+阴影数据流为既有颜色/变体计算的`VariantShadow`→ControlTheme编译Self绑定的公开`BoxShadow`→既有阴影Border。公开属性以`Border.BoxShadowProperty.AddOwner<Button>()`注册；最终绑定全部位于ControlTheme，无代码绑定或手工存在位。未定制默认值保持，Style/local及空集合按Avalonia优先级生效，清除恢复当前默认。阴影不新增测量空间或节点。Dropdown独立基础主题有同一投射链，继续读取其自身Own；继承Button主题的Submit/Reset/DialogButton复用该原生入口。
+
 本文档描述 Button 桌面版的内部实现组织、状态归一、模板接入和维护边界。公共设计与 API 契约见
 [Button 桌面版架构设计](overview.md)，Button 支持的 Part、Selector 与逐 Part 定制边界见
 [Button Semantic Part 契约](semantic-part.md)，Semantic Part 的系统级契约见
@@ -253,3 +255,7 @@ ButtonTheme的高度、圆角、描边、图标、focus、loading与disabled Glo
 ## 原生兼容包装 SimpleButton
 
 AtomUI.Controls.Commons.SimpleButton保留空Avalonia Button包装合同。它没有独立AtomUI主题注册或Own，使用Avalonia ContentControl默认模板与原生属性/用户主题、宿主继承；不接受独立AtomUI Control Token配置，也不借用Button identity。此范围已经审查核定，新增独立产品主题需另行设计。默认ContentPresenter读取其背景、边框、线宽、圆角、Padding及内容，普通原生输入语义保持。
+
+### Custom 尺寸与原生优先级
+
+Custom 的字号、内边距、圆角及图标尺寸由基础 Setter 提供中档回退；三档预设仍使用各自条件规则。仅图标与 loading 的默认指标通过声明在 ControlTheme 的类型化 MultiBinding 选择，普通应用 Style 可接管 Custom 的公开属性。Circle 的固定几何和专属 padding 合同保持。

@@ -1,5 +1,7 @@
 # Calendar Token 设计
 
+组合Global按实际Calendar／LunarCalendar owner解析，普通Cell与农历内容越过公开DateViewer取得该组合身份。DatePanel及年月选择等公开子控件继续保留自身身份。FontFamily／FontSize明确配置后生效，清除保留实际继承。Fullscreen顶线使用LineWidthBold；业务条标签使用FontSizeSM、ColorTextLightSolid与PaddingXS的水平分量。工作日与节假日marker分别消费WorkdayMarkerColor／HolidayMarkerColor的状态Style，不以模板属性覆盖状态字段。
+
 本文定义 Calendar/农历的视觉资源。关联 [架构](overview.md)、[实现](implementation.md)、
 [行为](behavior-design.md)、[农历](lunar-calendar-design.md)、[范围条](range-bar-design.md)、[Changelog](changelog.md)和
 [公共面板资源](../../data-entry/date-viewer/token.md)。全局规则见
@@ -48,7 +50,7 @@ CalendarDateCellTheme 与 LunarCalendar 的 CellTheme 资源消费对应产品�
 
 CalendarToken与LunarCalendarToken均采用DependencyDefaultsV2 Revision1，各十一项名称／类型／默认／资源ID／slot保持。普通Calendar各字段继续读取原有效Global或常量。农历MiniContentHeight读取有效Own MiniDateCellSize，FullCellMinHeight和RangeBarTopOffset读取有效Own SecondaryTextLineHeight；明确下游值优先，清除后根据仍有效的上游重新计算。MiniMonthCellWidth继续独立取有效Global ControlHeightLG×2，不自动跟随MiniDateCellSize。
 
-MiniContentHeight的0是明确高度输入；SecondaryTextLineHeight须遵守文字LineHeight的正数合同，不能因其他尺寸接受0就推断该字段也接受0。非法行高的配置诊断和完整极值状态仍需专项验收。业务条位置按实际日期行几何加RangeBarTopOffset计算；行高与避让同时增长时，绝对Y变化包含此前行的增长，不能只比较绝对Y是否增加一个行高差值。
+MiniContentHeight的0是明确高度输入；SecondaryTextLineHeight须为正有限数，求值入口拒绝0、负数及非有限值，非法终端查询报告异常，现有绑定保留上次有效值；不能因其他尺寸接受0就推断该字段也接受0。业务条位置按实际日期行几何加RangeBarTopOffset计算；行高与避让同时增长时，绝对Y变化包含此前行的增长，不能只比较绝对Y是否增加一个行高差值。
 
 ## 6. 验证策略
 

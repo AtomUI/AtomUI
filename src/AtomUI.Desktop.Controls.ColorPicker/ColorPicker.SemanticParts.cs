@@ -28,6 +28,8 @@ using AvaloniaTextBlock = Avalonia.Controls.TextBlock;
 [SemanticPart(
     "popup.root",
     SelectorClass = "semantic-popup-root",
+    SelectorRoute = "/template/ .semantic-popup-host > .semantic-popup-surface /template/ .semantic-popup-root",
+    CrossNestedOwners = true,
     CrossVisualRoot = true,
     ContractType = typeof(Border),
     Since = "6.2.0")]

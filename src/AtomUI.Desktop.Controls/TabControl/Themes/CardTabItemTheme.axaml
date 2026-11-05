@@ -43,17 +43,17 @@
 
         <Setter Property="Margin" Value="{atom:TabControlTokenResource HorizontalItemMargin}" />
         <Setter Property="Background" Value="{atom:TabControlTokenResource CardBg}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type atom:TabItem}}" />
 
         <Style Selector="^:selected">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type atom:TabItem}}" />
             <Style Selector="^ /template/ Rectangle#LineMask">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
 
         <Style Selector="^[IsTabReorderDragging=True]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type atom:TabItem}}" />
             <Style Selector="^ /template/ Rectangle#LineMask">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
@@ -101,7 +101,7 @@
             <Style Selector="^ /template/ Rectangle#LineMask">
                 <Setter Property="VerticalAlignment" Value="Bottom" />
                 <Setter Property="Height"
-                        Value="{atom:SharedTokenResource LineWidth}" />
+                        Value="{atom:OwnerTokenResource Kind=LineWidth, AnchorControlType={x:Type atom:TabItem}}" />
             </Style>
         </Style>
 
@@ -112,7 +112,7 @@
             <Style Selector="^ /template/ Rectangle#LineMask">
                 <Setter Property="HorizontalAlignment" Value="Left" />
                 <Setter Property="Width"
-                        Value="{atom:SharedTokenResource LineWidth}" />
+                        Value="{atom:OwnerTokenResource Kind=LineWidth, AnchorControlType={x:Type atom:TabItem}}" />
             </Style>
         </Style>
 
@@ -124,7 +124,7 @@
             <Style Selector="^ /template/ Rectangle#LineMask">
                 <Setter Property="VerticalAlignment" Value="Top" />
                 <Setter Property="Height"
-                        Value="{atom:SharedTokenResource LineWidth}" />
+                        Value="{atom:OwnerTokenResource Kind=LineWidth, AnchorControlType={x:Type atom:TabItem}}" />
             </Style>
         </Style>
 
@@ -135,13 +135,13 @@
             <Style Selector="^ /template/ Rectangle#LineMask">
                 <Setter Property="HorizontalAlignment" Value="Right" />
                 <Setter Property="Width"
-                        Value="{atom:SharedTokenResource LineWidth}" />
+                        Value="{atom:OwnerTokenResource Kind=LineWidth, AnchorControlType={x:Type atom:TabItem}}" />
             </Style>
         </Style>
 
         <Style Selector="^:disabled">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:OwnerTokenResource Kind=ColorBgContainerDisabled, AnchorControlType={x:Type atom:TabItem}}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">

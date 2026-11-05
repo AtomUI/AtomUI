@@ -64,7 +64,7 @@
             </Style>
 
             <Style Selector="^[StyleVariant=Outlined]">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+                <Setter Property="BorderBrush" Value="{atom:CascaderTokenResource ColorBorder}" />
 
                 <Style Selector="^[IsInnerBoxHover=True]">
                     <Setter Property="BorderBrush"
@@ -88,50 +88,50 @@
 
                 <Style Selector="^[EffectiveStatus=Error]">
                     <Setter Property="BorderBrush"
-                            Value="{atom:SharedTokenResource ColorError}" />
+                            Value="{atom:CascaderTokenResource ColorError}" />
 
                     <Style Selector="^[IsInnerBoxHover=True]">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorErrorBorderHover}" />
+                                Value="{atom:CascaderTokenResource ColorErrorBorderHover}" />
                     </Style>
 
                     <Style Selector="^:focus-within">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
+                                Value="{atom:CascaderTokenResource ColorError}" />
                     </Style>
 
                     <Style Selector="^:pressed">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
+                                Value="{atom:CascaderTokenResource ColorError}" />
                     </Style>
                     
                     <Style Selector="^[IsDropDownOpen=True]">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
+                                Value="{atom:CascaderTokenResource ColorError}" />
                     </Style>
                 </Style>
 
                 <Style Selector="^[EffectiveStatus=Warning]">
                     <Setter Property="BorderBrush"
-                            Value="{atom:SharedTokenResource ColorWarning}" />
+                            Value="{atom:CascaderTokenResource ColorWarning}" />
 
                     <Style Selector="^[IsInnerBoxHover=True]">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarningBorderHover}" />
+                                Value="{atom:CascaderTokenResource ColorWarningBorderHover}" />
                     </Style>
 
                     <Style Selector="^:focus-within">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
+                                Value="{atom:CascaderTokenResource ColorWarning}" />
                     </Style>
 
                     <Style Selector="^:pressed">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
+                                Value="{atom:CascaderTokenResource ColorWarning}" />
                     </Style>
                     <Style Selector="^[IsDropDownOpen=True]">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
+                                Value="{atom:CascaderTokenResource ColorWarning}" />
                     </Style>
                 </Style>
             </Style>
@@ -139,11 +139,11 @@
             <Style Selector="^[StyleVariant=Filled]">
                 <Setter Property="BorderBrush" Value="Transparent" />
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorFillTertiary}" />
+                        Value="{atom:CascaderTokenResource ColorFillTertiary}" />
 
                 <Style Selector="^[IsInnerBoxHover=True]">
                     <Setter Property="Background"
-                            Value="{atom:SharedTokenResource ColorFillSecondary}" />
+                            Value="{atom:CascaderTokenResource ColorFillSecondary}" />
                 </Style>
 
                 <Style Selector="^:focus-within">
@@ -166,56 +166,56 @@
                     <Setter Property="BorderBrush"
                             Value="Transparent" />
                     <Setter Property="Background"
-                            Value="{atom:SharedTokenResource ColorErrorBg}" />
+                            Value="{atom:CascaderTokenResource ColorErrorBg}" />
 
                     <Style Selector="^[IsInnerBoxHover=True]">
                         <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorErrorBgHover}" />
+                                Value="{atom:CascaderTokenResource ColorErrorBgHover}" />
                     </Style>
 
                     <Style Selector="^:focus-within">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
+                                Value="{atom:CascaderTokenResource ColorError}" />
                         <Setter Property="Background"
                                 Value="{atom:CascaderTokenResource ColorTransparent}" />
                     </Style>
 
                     <Style Selector="^:pressed">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
+                                Value="{atom:CascaderTokenResource ColorError}" />
                     </Style>
                     
                     <Style Selector="^[IsDropDownOpen=True]">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
+                                Value="{atom:CascaderTokenResource ColorError}" />
                     </Style>
                 </Style>
 
                 <Style Selector="^[EffectiveStatus=Warning]">
                     <Setter Property="BorderBrush" Value="Transparent" />
                     <Setter Property="Background"
-                            Value="{atom:SharedTokenResource ColorWarningBg}" />
+                            Value="{atom:CascaderTokenResource ColorWarningBg}" />
 
                     <Style Selector="^[IsInnerBoxHover=True]">
                         <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorWarningBgHover}" />
+                                Value="{atom:CascaderTokenResource ColorWarningBgHover}" />
                     </Style>
 
                     <Style Selector="^:focus-within">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
+                                Value="{atom:CascaderTokenResource ColorWarning}" />
                         <Setter Property="Background"
                                 Value="{atom:CascaderTokenResource ColorTransparent}" />
                     </Style>
 
                     <Style Selector="^:pressed">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
+                                Value="{atom:CascaderTokenResource ColorWarning}" />
                     </Style>
                     
                     <Style Selector="^[IsDropDownOpen=True]">
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
+                                Value="{atom:CascaderTokenResource ColorWarning}" />
                     </Style>
                 </Style>
             </Style>

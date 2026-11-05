@@ -285,3 +285,7 @@ Semantic Style 优先级失效。
 - `SizeType` 四档与两组尺寸分支的映射一致，`Custom` 默认复用普通档，混用尺寸分支不产生布局错误。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - Generator 静态输出和 NativeAOT 路径不依赖反射或运行时扫描。
+
+## Custom 与加载出口
+
+Indicator/Content Style 继续分别命中 SwitchKnob 和实际内容 presenter。Custom 字号可由应用样式接管，几何基础回退与预设分支分离。加载业务态与动画执行分离；关闭 motion 保留静态加载指示及现有语义目标，未替换 indicator。

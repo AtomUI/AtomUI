@@ -437,3 +437,8 @@ Filter highlight runs 是 header 状态，不应写入 Token 或节点数据模�
   且携带显式 SelectorRoute）、`TreeView` 顶层 route 与 `TreeViewItem` 递归 route 命中、marker 数量与类型、容器回收后的
   marker 身份，见 [semantic-part.md §8](semantic-part.md#8-兼容性与验证)。
 - 文档改动运行 `git diff --check`。
+
+
+## 有效主题输入与生命周期
+
+树根、公开条目及 Transfer 派生条目分别消费自身 Global。内部标题、图标和开关从所属模板实例开始解析 owner，跳过中间 primitive 身份；Template 位置的绑定保留 Template 优先级。字体配置与换父、卸载遵守原生继承生命周期。

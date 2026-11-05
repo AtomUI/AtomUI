@@ -138,6 +138,10 @@ public class ButtonShowCasePageTests
 
             objectButton.Effect.ShouldBeOfType<DropShadowEffect>().BlurRadius.ShouldBe(2);
             objectButton.Effect.ShouldBeOfType<DropShadowEffect>().OffsetY.ShouldBe(1);
+            objectButton.BoxShadow.Count.ShouldBe(1);
+            objectButton.GetVisualDescendants().OfType<Border>()
+                        .Single(static border => border.Name == "ShadowsFrame")
+                        .BoxShadow.ShouldBe(objectButton.BoxShadow);
             functionButton.Background.ShouldBeAssignableTo<ISolidColorBrush>();
             ((ISolidColorBrush)functionButton.Background!).Color.ShouldBe(Color.Parse("#171717"));
 

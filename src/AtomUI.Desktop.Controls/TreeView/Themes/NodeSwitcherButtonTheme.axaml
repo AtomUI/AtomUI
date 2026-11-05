@@ -24,38 +24,38 @@
                 </Panel>
             </ControlTemplate>
         </Setter>
-        
+
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}"/>
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadius, AnchorControlType={x:Type atom:NodeSwitcherButton}}"/>
 
         <Style Selector="^ /template/ atom|IconPresenter atom|Icon">
-            <Setter Property="FillBrush" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
+            <Setter Property="FillBrush" Value="{atom:OwnerTokenResource Kind=ColorTextSecondary, AnchorControlType={x:Type atom:NodeSwitcherButton}}"/>
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource Kind=ColorTextSecondary, AnchorControlType={x:Type atom:NodeSwitcherButton}}"/>
         </Style>
-        
+
         <Style Selector="^:pointerover">
             <Setter Property="Background" Value="{atom:TreeViewTokenResource NodeHoverBg}"/>
         </Style>
-        
+
         <Style Selector="^ /template/ atom|IconPresenter">
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}"/>
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}"/>
+            <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:NodeSwitcherButton}}"/>
+            <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:NodeSwitcherButton}}"/>
         </Style>
-        
+
         <Style Selector="^[IconMode=Rotation] /template/ atom|IconPresenter#CurrentIconPresenter">
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeXS}"/>
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeXS}"/>
+            <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSizeXS, AnchorControlType={x:Type atom:NodeSwitcherButton}}"/>
+            <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSizeXS, AnchorControlType={x:Type atom:NodeSwitcherButton}}"/>
         </Style>
-        
+
         <Style Selector="^[IconMode=Loading] /template/ atom|IconPresenter#CurrentIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorPrimary}"/>
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atom:NodeSwitcherButton}}"/>
         </Style>
-        
+
         <Style Selector="^:checked[IconMode=Rotation]">
             <Setter Property="RotationIconRenderTransform" Value="rotate(90deg)"/>
         </Style>
-        
+
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
                 <atom:TokenTransitions>

@@ -1,5 +1,9 @@
 # Calendar 桌面版实现原理
 
+Calendar／LunarCalendar组合主题的Global输入锚定实际Calendar实例；专用Cell和农历内容越过内部公开DateViewer找到该组合owner。DatePanel本身继续保留DateViewer身份，年月ComboBox及模式按钮也保留各自公开身份。根可选字体使用实际InheritanceParent桥接，明确Global优先，清除恢复继承。
+
+Fullscreen日期顶边消费有效LineWidthBold，Mini焦点线消费FocusVisualBorderThickness。业务范围条的标签字号／前景由主题附加TextElement属性提供（FontSizeSM／ColorTextLightSolid），动态LabelPadding输入消费PaddingXS的水平分量；生成段的实际应用由布局统一执行。默认字号12、白色、水平padding8和顶线2保持；端帽半高圆角与lane排布属于业务几何。工作日marker背景使用状态Style，普通节假日背景也在Style声明，避免模板属性压住工作日字段。
+
 本文定义 Calendar 组合 DateViewer 的实现架构。关联 [架构](overview.md)、[行为](behavior-design.md)、
 [农历](lunar-calendar-design.md)、[范围条](range-bar-design.md)、[Token](token.md)、[Semantic Part](semantic-part.md)、
 [Changelog](changelog.md)与 [共享日期内核](../../data-entry/date-viewer/shared-panel-design.md)。

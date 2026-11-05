@@ -5,6 +5,26 @@
     x:ClassModifier="internal">
     <atom:StringToTextBlockConverter x:Key="StringToTextBlockConverter" VerticalAlignment="Center"/>
     <ControlTheme x:Key="{x:Type atom:Pagination}" TargetType="atom:Pagination">
+        <Style Selector="^ /template/ StackPanel#PART_RootLayout">
+            <Setter Property="Spacing" Value="{atom:PaginationTokenResource PaginationLayoutSpacing}"/>
+        </Style>
+
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:DashedBorder Background="{TemplateBinding Background}"
@@ -37,8 +57,8 @@
                 </atom:DashedBorder>
             </ControlTemplate>
         </Setter>
-        
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}"/>
+
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}"/>
         <Setter Property="PageText" Value="{atom:PaginationLangResource PageText}"/>
         <Setter Property="TotalInfoTemplate" Value="{atom:PaginationLangResource TotalInfoFormat}"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
@@ -51,13 +71,13 @@
         <Style Selector="^[Align=End]">
             <Setter Property="HorizontalAlignment" Value="Right"/>
         </Style>
-        
+
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ StackPanel#PART_RootLayout">
                 <Setter Property="Spacing" Value="{atom:PaginationTokenResource PaginationLayoutSpacing}"/>
             </Style>
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Style Selector="^ /template/ StackPanel#PART_RootLayout">
                 <Setter Property="Spacing" Value="{atom:PaginationTokenResource PaginationLayoutSpacing}"/>
             </Style>

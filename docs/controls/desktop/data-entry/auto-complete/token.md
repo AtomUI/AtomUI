@@ -10,6 +10,21 @@ AutoComplete Token 只表达组件级视觉变量，例如尺寸、间距、颜�
 
 - `AutoCompleteToken`，scope id 为 `AutoComplete`，源码位于 `src/AtomUI.Desktop.Controls/AutoComplete/AutoCompleteToken.cs`。
 
+四个既有字段采用 DependencyDefaultsV2、声明修订1；静态默认只读取有效Global或原常量，没有Own依赖边。字段名称、类型、公开资源ID与内部slot保持。AutoCompleteSearchEdit/TextArea保留各自Global身份，本身没有另建Own定义；共享候选主题继续读取这套既有AutoComplete家族参数。
+
+| 字段 | 默认与语义 |
+| --- | --- |
+| `OptionHeight` | 有效Global.ControlHeight；普通候选项的名义最小行高，同时参与行数预算。 |
+| `PopupContentPadding` | 四边有效Global.UniformlyPaddingXXS/2；参与实际内容内缩与最大高度预算。 |
+| `MinPopupWidth` | 120 DIP。 |
+| `MaxPopupWidth` | 200 DIP，仅不跟随锚点宽度分支使用。 |
+
+字体不是新增Own字段。三个公开AutoComplete外观分别使用自身有效Global.FontFamily及FontSize/SM/LG；普通/搜索未配置保留父字号继承，多行使用原可见三档预设并使root FontSize与其一致。标准root Style/Local字体优先。多行默认行框至少容纳实际字体自然行距，对应有效Global.FontHeight/SM/LG显式配置时仍为精确行高；不把字体消费扩成新的Own协议。
+
+输入占位文字及弹层背景读取公开owner有效Global.ColorTextPlaceholder与Global.ColorBgElevated。均为既有Global字段，不新增Own、key或公式。
+
+私有复用输入主题中的Global由其实际公开AutoComplete变体提供，包括正文、错误/警告/禁用文字、caret与selection；复用主题的字段名和原状态selector不变。标准root Foreground与专用Input Style继续按实际目标上的原生优先级生效。既有共享输入Own配方不转投、不生成新别名，真正公开子Button仍消费自身identity；不把父Global投射扩为整棵子树的统一资源替换。
+
 ## 2. Token 分类
 
 Token 按控件语义分类维护：
@@ -29,7 +44,7 @@ AutoComplete 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
-- Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
+- Token默认值从有效Global派生或使用固定边界，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
 ## 4. 控件家族影响
@@ -37,13 +52,17 @@ AutoComplete 的控件专项模型通过 Theme 消费 Token：
 调整 AutoComplete Token 时必须评估以下范围：
 
 - `AutoComplete`
-- `AutoCompleteLineEdit`
+- 内部 `AutoCompleteLineEditBox` 输入资产，不是独立公开identity。
 - `AutoCompleteSearchEdit`
 - `AutoCompleteTextArea`
 - 对应 Gallery ShowCase 的示例和源码片段。
 - Light/Dark 主题、Browser/Desktop 主题和 Compact/Form/Popup 集成场景。
 
 ## 5. 兼容性要求
+
+默认候选主题通过现有 `ItemContainerTheme` 将OptionHeight送入真实行的MinHeight；`MaxPopupHeight = OptionHeight × DisplayCandidateCount + PopupContentPadding.Top + PopupContentPadding.Bottom`。行高、行数与padding任一变化都重算。均匀普通行且自然高度不超过该最小值时形成对应名义行数；大字体、复杂模板或专用行Style可以使实际行更高，不承诺任意定制下仍完整显示同样行数。0保留资源与预算语义，不把文字自然高度强制写成0。
+
+`AutoCompletePopupListItemStyle` 等各公开变体的专用Style按原生优先级覆盖默认行高，退出资格后恢复当前有效Own；父主题不代码查找行后写尺寸。
 
 - 不删除或重命名已生成的 TokenKind、TokenResource key 和 AXAML 引用。
 - 不把实例状态、交互状态或 `EffectiveXxx` 状态写成 Token。

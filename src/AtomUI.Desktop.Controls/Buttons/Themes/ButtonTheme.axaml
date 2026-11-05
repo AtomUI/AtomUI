@@ -3,7 +3,7 @@
               xmlns:atom="https://atomui.net"
               xmlns:antdicons="https://atomui.net/icons/antdesign"
               x:Class="AtomUI.Desktop.Controls.Themes.ButtonTheme"
-              TargetType="atom:Button">
+              TargetType="atom:Button" x:DataType="atom:Button">
         <Setter Property="FontFamily">
             <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
                 <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
@@ -11,6 +11,9 @@
                 <atom:ButtonTokenResource Kind="FontFamily" />
             </MultiBinding>
         </Setter>
+
+    <Setter Property="BoxShadow"
+            Value="{CompiledBinding $self.VariantShadow, DataType={x:Type atom:Button}}" />
 
     <Style Selector="^:is(atom|Button)">
         <Style Selector="^[ButtonType=Default], ^[ButtonType=Link], ^[ButtonType=Primary], ^[ButtonType=Text]">
@@ -247,7 +250,7 @@
             </MultiBinding>
         </Setter>
         <Setter Property="BorderThickness" Value="{atom:ButtonTokenResource BorderThickness}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:ButtonTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="IsWaveSpiritEnabled"
                 Value="{atom:ButtonTokenResource EnableWaveSpirit}" />
         <Setter Property="Cursor" Value="Hand" />
@@ -296,18 +299,34 @@
             </Style>
         </Style>
 
-        <Style Selector="^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
-            <Setter Property="CornerRadius" Value="{atom:ButtonTokenResource BorderRadius}" />
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource IconSize}" />
-            <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPadding}" />
-            </Style>
-            <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource IconOnyPadding}" />
-            </Style>
-        </Style>
+        <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
+        <Setter Property="CornerRadius" Value="{atom:ButtonTokenResource BorderRadius}" />
+        <Setter Property="IconWidth">
+            <MultiBinding Converter="{x:Static atom:ButtonThemeConverters.IconOnlyValue}">
+                <CompiledBindingExtension Path="$self.Content" />
+                <CompiledBindingExtension Path="$self.Icon" />
+                <atom:ButtonTokenResource Kind="IconSize" />
+                <atom:ButtonTokenResource Kind="OnlyIconSize" />
+                <CompiledBindingExtension Path="$self.IsLoading" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="IconHeight">
+            <MultiBinding Converter="{x:Static atom:ButtonThemeConverters.IconOnlyValue}">
+                <CompiledBindingExtension Path="$self.Content" />
+                <CompiledBindingExtension Path="$self.Icon" />
+                <atom:ButtonTokenResource Kind="IconSize" />
+                <atom:ButtonTokenResource Kind="OnlyIconSize" />
+                <CompiledBindingExtension Path="$self.IsLoading" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Padding">
+            <MultiBinding Converter="{x:Static atom:ButtonThemeConverters.IconOnlyValue}">
+                <CompiledBindingExtension Path="$self.Content" />
+                <CompiledBindingExtension Path="$self.Icon" />
+                <atom:ButtonTokenResource Kind="ContentPadding" />
+                <atom:ButtonTokenResource Kind="IconOnyPadding" />
+            </MultiBinding>
+        </Setter>
 
         <Style Selector="^:icononly">
             <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon, ^ /template/ atom|Icon#PART_LoadingIcon">
@@ -320,10 +339,6 @@
             <Setter Property="IconHeight" Value="{atom:ButtonTokenResource OnlyIconSizeLG}" />
         </Style>
         <Style Selector="^:icononly:loading[SizeType=Middle]">
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource OnlyIconSize}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource OnlyIconSize}" />
-        </Style>
-        <Style Selector="^:icononly:loading[SizeType=Custom]">
             <Setter Property="IconWidth" Value="{atom:ButtonTokenResource OnlyIconSize}" />
             <Setter Property="IconHeight" Value="{atom:ButtonTokenResource OnlyIconSize}" />
         </Style>
@@ -443,7 +458,7 @@
 
         <Style Selector="^ /template/ Border#ShadowsFrame">
             <Setter Property="BoxShadow"
-                    Value="{Binding VariantShadow, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding BoxShadow}" />
         </Style>
         <!-- Color / Variant 视觉变量结束 -->
     </Style>

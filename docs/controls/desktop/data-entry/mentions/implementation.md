@@ -197,7 +197,27 @@ MaxPopupHeight = ItemHeight * DisplayCandidateCount
                + PopupContentPadding.Bottom
 ```
 
-`ItemHeight` 和 `PopupContentPadding` 来自 `MentionsToken`，`DisplayCandidateCount` 是实例属性。
+`ItemHeight` 和 `PopupContentPadding` 来自 `MentionsToken`，`DisplayCandidateCount` 是实例属性；三者的属性变化都会重新计算同一预算。默认padding也参与初始化最终结果，不依赖Setter应用次序。
+
+MentionsToken的三个字段由DependencyDefaultsV2 rev1静态计划求值，只有有效Global和原120常量，没有Own依赖边。父主题通过模板内CandidateList的ItemContainerTheme复用既有CandidateListItemTheme，在各尺寸trigger中将OptionHeight送入行MinHeight。原行模板和候选状态保持，专用MentionsPopupListItemStyle覆盖/撤回继续遵守原生优先级；任意大字体/替代行样式不承诺仍完整显示相同名义行数。
+
+当前Popup可由替代模板提供，其pinning行为绑定在获取部件后、打开前以本地优先级建立，不能由默认主题Setter等价保证所有替代部件的初始化与优先级。重新获取模板前释放旧绑定；离树关闭popup并退订外部订阅，同owner/part绑定保留支持重挂。新行高绑定仍以实际Visual为目标，不增加非Visual资源宿主或应用订阅。
+
+### 7.7 输入本体排版
+
+Mentions有效Global.FontFamily进入输入本体，未显式配置时保留真实父继承。FontSize按对应中/小/大档选择，保持原可见Large16/Middle14/Small12/Custom14预设；root标准FontSize主题值现与该可见预设对齐，父字号23时原root getter23但实际文字14的分离不再存在。内部MentionTextArea不借另一公开TextArea身份提供字体。
+
+root的普通Style和Local字体继续遵守Avalonia优先级；私有输入通过ControlTheme中的模板/编译绑定接收最终字体，字号投射采用声明式Local优先级，避免其复用输入主题的预设trigger覆盖父值。C#仅实现既有internal IThemeInheritanceSource只读父桥，没有新公开API、状态旗标或代码字体绑定。
+
+多行输入的默认LineHeight取原有效主题FontHeight与实际Typeface自然行距较大值，避免较大标准字体被旧行框裁剪；对应owner FontHeight显式配置时保留该精确值，包括用户有意选择的较小行高。该内部无状态转换器由AXAML调用，不保存owner或字形缓存。专用Input Style直接定制TextPresenter时，应同时给出满足该字体的LineHeight；专用Style撤回后恢复当前父投射。
+
+Mentions拥有占位文字、弹层背景及加载指示器布局margin。私有MentionTextArea通过单输入Local MultiBinding接收typed owner画刷；模板内DynamicResource自动降至Template优先级，该无状态画刷转换只承接声明的Local优先级，不管理订阅生命周期。Spin保持自身绘制与动画身份，由Mentions提供布局margin。
+
+MentionTextArea通过internal只读IControlThemeGlobalOwnerSource声明实际模板父Mentions。复用主题的OwnerTokenResource用SourceControlType明确原所属输入，值仍经原生资源观察者查询，保留局部Resources覆盖与清除。Own与真正公开子Control不改身份；不创建实例Token字典、ResourceProvider、ThemeContext、缓存或全局订阅。
+
+root Foreground主题默认读取Mentions有效Global.ColorText，标准Style/Local通过声明式Local编译绑定进入私有输入；实际默认正文颜色不变。局部Dark provider的root getter对齐原实际Dark正文颜色。Filled/Borderless错误/警告文字保持原较近状态节点的优先级，包括原禁用时的状态文字关系，不复制状态机或selector。
+
+生成的专用Input、Placeholder与PopupRoot Style仍为定制入口，Input Style可声明正文、caret和selection画刷；撤回恢复当前资源。配置更新保持同一editor、Value、selection/caret，跨scope、重模板与回收按实际对象验证；不以本消费实现关闭完整CT13。
 
 ## 8. 资源、性能与 AOT 边界
 

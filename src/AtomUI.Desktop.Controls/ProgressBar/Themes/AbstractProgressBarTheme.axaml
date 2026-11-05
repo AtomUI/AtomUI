@@ -21,9 +21,16 @@
     </Setter>
 
     <Style Selector="^:is(atomc|AbstractProgressBar)">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
@@ -36,9 +43,9 @@
         </Style>
         
         <Style Selector="^[IsEnabled=True]">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLabel}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextLabel}" />
             <Setter Property="GrooveBrush" Value="{atom:ProgressBarTokenResource RemainingColor}" />
-            <Setter Property="SuccessStrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+            <Setter Property="SuccessStrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
         </Style>
         
         <Style Selector="^[IsCompleted=True]">
@@ -59,7 +66,7 @@
             </Style>
             
             <Style Selector="^[IsCompleted=True]">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+                <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
                 <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="True" />
                 </Style>
@@ -78,7 +85,7 @@
             </Style>
             
             <Style Selector="^[IsCompleted=True]">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+                <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
                 <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="True" />
                 </Style>
@@ -86,7 +93,7 @@
         </Style>
 
         <Style Selector="^[Status=Exception]">
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorError}" />
             
             <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="True" />
@@ -97,7 +104,7 @@
             </Style>
             
             <Style Selector="^[IsCompleted=True]">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+                <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
                 <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="False" />
                 </Style>
@@ -105,7 +112,7 @@
         </Style>
         
         <Style Selector="^[Status=Success]">
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
             
             <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
@@ -116,7 +123,7 @@
             </Style>
             
             <Style Selector="^[IsCompleted=True]">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+                <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
                 <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="False" />
                 </Style>
@@ -125,10 +132,10 @@
         
         <Style Selector="^:disabled">
             <Setter Property="GrooveBrush"
-                    Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
             <Setter Property="StrokeBrush"
-                    Value="{atom:SharedTokenResource ControlItemBgActiveDisabled}" />
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:OwnerTokenResource ControlItemBgActiveDisabled}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
         </Style>
     </Style>
 </ControlTheme>

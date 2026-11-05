@@ -50,7 +50,10 @@ public class UploadTriggerTests
 
         source.ShouldContain("Upload.ListTypeProperty.AddOwner<UploadTrigger>()");
         source.ShouldContain("MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<UploadTrigger>()");
-        source.ShouldContain("ConfigureEffectiveCornerRadius");
+        source.ShouldNotContain("SetCurrentValue(CornerRadiusProperty");
+        theme.ShouldContain("^[ListType=PictureCircle]");
+        theme.ShouldContain("UploadShapeConverters.CircleCornerRadius");
+        theme.ShouldContain("CompiledBinding $self.Bounds");
         source.ShouldContain("FindAncestorOfType<Upload>()");
         source.ShouldContain("ClearOwnerBindings()");
         source.ShouldContain("BindingPriority.Template");
@@ -91,7 +94,7 @@ public class UploadTriggerTests
 
         rootTheme.ShouldContain("StackPanel Name=\"RootLayout\"");
         rootTheme.ShouldContain("Orientation=\"Vertical\"");
-        rootTheme.ShouldContain("Spacing=\"{atom:SharedTokenResource SpacingXS}\"");
+        rootTheme.ShouldContain("Spacing=\"{atom:UploadTokenResource SpacingXS}\"");
         rootTheme.ShouldNotContain("ControlTokenScope.Identity");
         rootTheme.ShouldNotContain("<DockPanel Name=\"RootLayout\"");
         rootTheme.ShouldNotContain("DockPanel.Dock=\"Top\"");
@@ -104,7 +107,8 @@ public class UploadTriggerTests
         var token = ReadRepoFile("src/AtomUI.Desktop.Controls/Upload/UploadToken.cs");
 
         token.ShouldContain("TextListProgressPadding");
-        token.ShouldContain("EffectiveGlobalToken.FontSize + EffectiveGlobalToken.UniformlyPaddingXS");
+        token.ShouldContain("ControlTokenDefault(nameof(TextListProgressPadding))");
+        token.ShouldContain("context.Global.FontSize + context.Global.UniformlyPaddingXS");
         theme.ShouldContain("Border Name=\"ProgressBarFrame\"");
         theme.ShouldContain("Padding=\"{atom:UploadTokenResource TextListProgressPadding}\"");
         theme.ShouldContain("<atom:ProgressBar Name=\"ProgressBar\"");

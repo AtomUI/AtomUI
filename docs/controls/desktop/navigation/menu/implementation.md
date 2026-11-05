@@ -325,3 +325,8 @@ Semantic Part 至少覆盖以下回归场景（见 [Menu Semantic Part 契约](s
 
 组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
 不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。
+
+
+## 有效主题输入与生命周期
+
+顶层条目普通色使用 TopLevelItemColor/TopLevelItemBg，子菜单打开时使用 TopLevelItemSelectedColor/TopLevelItemSelectedBg，禁用文字仍优先使用 ItemDisabledColor。MenuItem 的独立 Global 与 Menu Own 的显式复用分别处理。ContextMenu 通过已有 ThemeContextResourceBridge 转发缺失的局部资源发布，逻辑卸载时移除并释放，不复制资源字典。

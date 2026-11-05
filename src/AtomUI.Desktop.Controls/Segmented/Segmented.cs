@@ -1,10 +1,13 @@
+using AtomUI.Theme.Resources;
+using Avalonia;
 using AtomUI.Controls.Commons;
 using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-public partial class Segmented : AbstractSegmented
+public partial class Segmented : AbstractSegmented,
+    IThemeInheritanceSource
 {
     public Segmented()
     {
@@ -25,4 +28,11 @@ public partial class Segmented : AbstractSegmented
             segmentedItem.Classes.Add(SegmentedSemanticParts.ItemClass);
         }
     }
+    #region 实现 IThemeInheritanceSource 接口
+
+    // ControlTheme keeps native inheritance when no explicit owner typography is configured.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
 }

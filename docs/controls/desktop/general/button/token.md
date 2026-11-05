@@ -44,7 +44,7 @@ ButtonToken 当前按 Button 语义分为七类。
 - `ExtraContentMarginSM`
 - `GutterToFlyout`
 
-用于 Button 的尺寸密度、icon-only 内边距、圆形按钮内边距、DropdownButton 额外内容和下拉菜单间距。
+有效字段用于 Button 的尺寸密度、icon-only 内边距、圆形按钮内边距和关联 Flyout 间距。四个 `ExtraContent*` 字段为历史保留项，不提供可定制的额外内容区域；DropdownButton 的额外内容由其独立 Own 字段消费。
 
 `SizeType=Custom` 不新增 ButtonToken。Custom 复用 `Middle` 档的字体、Padding、圆角和 icon Token，不继承 Button
 预设档的 `MinHeight` 基线；实例级定制通过 Button 现有布局、排版以及 `IconWidth`、`IconHeight` 属性完成，Token 仍只
@@ -168,6 +168,8 @@ Button 家族控件支持 Custom 尺寸时，应复用 Middle 档中适用于该
 语义。
 
 ## 5. 兼容性要求
+
+`BoxShadow`是公开原生属性，不是新Own。ControlTheme默认将既有VariantShadow投射至它；Root Style/local可统一覆盖Default、Primary、Danger或preset色的实际阴影，清除恢复当前主题。既有三类Shadow Own的语义保持；未定制preset继续由Palette、ColorBgContainer及ControlOutlineWidth派生，Blur3/Spread0保持。控件Own总数不变，不把PrimaryShadow重新解释为所有preset色的配置。
 
 ButtonToken 属于 Button 主题契约。即使 `ButtonToken` 是 internal 类型，生成的 `ButtonTokenKind` 和 AXAML resource 使用点已经形成稳定依赖。
 

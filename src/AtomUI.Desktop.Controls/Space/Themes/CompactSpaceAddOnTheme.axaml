@@ -33,7 +33,15 @@
                     Value="{atom:SpaceTokenResource AddOnPaddingLG}" />
             <Setter Property="MinHeight" Value="{atom:CompactSpaceAddOnTokenResource ControlHeightLG}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Setter Property="FontSize"
+                Value="{atom:CompactSpaceAddOnTokenResource FontSize}" />
+        <Setter Property="CornerRadius"
+                Value="{atom:CompactSpaceAddOnTokenResource BorderRadius}" />
+        <Setter Property="Padding"
+                Value="{atom:SpaceTokenResource AddOnPadding}" />
+        <Setter Property="MinHeight" Value="{atom:CompactSpaceAddOnTokenResource ControlHeight}" />
+
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="FontSize"
                     Value="{atom:CompactSpaceAddOnTokenResource FontSize}" />
             <Setter Property="CornerRadius"

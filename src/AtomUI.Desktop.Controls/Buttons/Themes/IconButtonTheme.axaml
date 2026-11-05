@@ -35,7 +35,7 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="IsMotionEnabled" Value="{atom:IconButtonTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
 
         <Style Selector="^ /template/ atom|IconPresenter atom|Icon">
             <Setter Property="LoadingAnimationDuration" Value="{TemplateBinding LoadingAnimationDuration}" />

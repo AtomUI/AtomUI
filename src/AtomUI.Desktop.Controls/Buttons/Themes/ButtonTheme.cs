@@ -47,7 +47,22 @@ public class ButtonTheme : ControlTheme
 
 internal static class ButtonThemeConverters
 {
+    public static readonly IMultiValueConverter IconOnlyValue = new IconOnlyValueConverter();
     public static readonly IMultiValueConverter OptionalDisabledBorder = new OptionalDisabledBorderConverter();
+
+    private sealed class IconOnlyValueConverter : IMultiValueConverter
+    {
+        public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+        {
+            // Computed base Setters preserve icon-only defaults below caller
+            // Styles. Button loading metrics have an additional state input;
+            // HyperLink uses icon-only metrics whenever its content is absent.
+            return values.Count is 4 or 5
+                ? values[values[0] is null && values[1] is not null &&
+                         (values.Count == 4 || values[4] is true) ? 3 : 2] ?? AvaloniaProperty.UnsetValue
+                : AvaloniaProperty.UnsetValue;
+        }
+    }
 
     private sealed class OptionalDisabledBorderConverter : IMultiValueConverter
     {

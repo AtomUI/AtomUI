@@ -5,6 +5,22 @@
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.ListBoxTheme"
               TargetType="atom:ListBox">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
+    <Setter Property="FontSize">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+            <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontSize" />
+        </MultiBinding>
+    </Setter>
+
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ListBox">
             <atom:PixelAlignedBorder Name="Frame"
@@ -50,6 +66,9 @@
     </Setter>
 
     <Style Selector="^:is(atom|ListBox)">
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
+        <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource Padding}" />
+
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
@@ -62,19 +81,19 @@
         <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         <Setter Property="Padding" Value="{atom:ListBoxTokenResource ContentPadding}" />
         <Setter Property="FilterHighlightForeground" Value="{atom:ListBoxTokenResource FilterHighlightColor}" />
-        
+
         <Setter Property="SelectedIndicator">
             <atom:IconTemplate>
                 <antdicons:CheckOutlined />
             </atom:IconTemplate>
         </Setter>
-        
+
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
             <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource PaddingXL}" />
         </Style>
 
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
             <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource Padding}" />
         </Style>
@@ -83,7 +102,7 @@
             <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
             <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource Padding}" />
         </Style>
-        
+
         <Setter Property="ItemTemplate">
             <DataTemplate x:DataType="atom:IListItemData">
                 <atom:TextBlock Text="{Binding Content}" />

@@ -4,6 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:PaginationNav}" TargetType="atom:PaginationNav">
+        <Setter Property="ItemSpacing" Value="{atom:OwnerTokenResource Kind=UniformlyMarginXS, AnchorControlType={x:Type atom:PaginationNav}}"/>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="PART_Frame"
@@ -20,9 +22,13 @@
                 </Border>
             </ControlTemplate>
         </Setter>
-        
-        <Style Selector="^[SizeType=Large], ^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="ItemSpacing" Value="{atom:SharedTokenResource UniformlyMarginXS}"/>
+
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="ItemSpacing" Value="0" />
+        </Style>
+
+        <Style Selector="^[SizeType=Large], ^[SizeType=Middle]">
+            <Setter Property="ItemSpacing" Value="{atom:OwnerTokenResource Kind=UniformlyMarginXS, AnchorControlType={x:Type atom:PaginationNav}}"/>
         </Style>
     </ControlTheme>
 </ResourceDictionary>

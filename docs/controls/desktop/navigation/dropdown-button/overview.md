@@ -80,6 +80,8 @@ DropdownButton 自身通过 AddOwner 提供 OpenMotion/CloseMotion，作用于�
 
 ## 4. 行为与状态模型
 
+根阴影使用继承的`BoxShadow`/`BoxShadowProperty`。未定制时独立主题取Dropdown自己的VariantShadow；原生Style/local可以覆盖所有颜色的实际阴影，空集合表示无阴影，清除恢复当前Style或主题。它不改变46个Own及弹层Part合同，Button显式Own仍不会渗入Dropdown。
+
 DropdownButton 的状态流按以下路径收敛：
 
 ```text

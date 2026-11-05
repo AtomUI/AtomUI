@@ -56,3 +56,20 @@ Token已提交后的发布诊断及品牌表现结果分别按正式运行合同
 验证编辑→隔离预览→应用→保存→导入的完整路径，以及字段恢复、无效值、别名冲突、缺失资产、版本不兼容、生成取消/过期响应和失败草稿。导出再导入的有效值、样式和实际渲染等价。
 
 已有实例状态保持、嵌套/兄弟、Native/Overlay及离页释放共同验证。手动工作台与AI入口分别有实现证据；Browser的保存/网络/宿主能力及各OS差异单独标明，不以一个Host通过外推全部。
+
+
+## 8. 当前手动实现
+
+Desktop Gallery 的 Theme → Theme workbench 打开现有 workspace 下的工具窗。它复用当前 runtime 和主题菜单，提供 Ant、shadcn、Bootstrap、Square、HeavyBorder、LargeType、Compact、ReducedMotion 八套 AtomUI 适配配方；第三方名称表示适配方向，不承诺逐像素复刻第三方组件。
+
+先选择配方/明暗，再从注册 schema 选择 Global 或 Control owner 与 Global/Own 字段。界面显示类型、显式/继承状态和当前预览的有效值；Set override 创建草稿输入，Clear override 删除显式项，Restore preset 回到配方基线。兼容别名显示 canonical 名，Legacy/Reserved 无内置消费者字段为只读说明，完整 JSON 仍保留它们。字段不因列在 schema 中就被宣称具有当前视觉效果。
+
+Preview draft 更新左侧现有实例，右侧基线是独立 scope；按钮、输入/选择、反馈、日期/颜色与Grid不会因换草稿重建。Root 与局部配方各保留自己的已注册基础 definition，根菜单切主题不会迫使局部配方改用另一份 definition；版本要求仍严格校验。预览 current 来自 scope 完成 receipt（含 NoOp），赋值/排队本身不算成功。
+
+Apply to Gallery 使用同一个 ThemeManager 的真实事务。界面分别显示 Token 与 Presentation 结果、实际主题/品牌选择和最后应用的草稿修订。取消/新编辑/离页撤销旧请求所有权，旧返回不覆盖新草稿。代码不会恢复一个旧结果来替换新输入。
+
+完整配方 JSON 可编辑后显式 Read JSON as draft；未读取的编辑阻止预览/应用/保存，异步文件导入同时检查 session 与编辑器修订。缺 owner、资产、版本、类型或别名冲突均显示既有协议诊断。完整保存沿宿主 StorageProvider 写入精确 UTF-8 并在完成后标记实际保存内容；保存不等于应用，旧保存完成不能标记新草稿已保存。仅 Token 导出标明 tokenOnly，不能把该输入升级伪装成 complete。宿主没有文件能力时可使用 JSON 区，明确显示能力诊断；本轮不驱动 OS 文件选择器 UI，实际 Mac 文件 API 的读写/截断/往返另有验证。
+
+页面在离树时解除 runtime/请求/预览事件；Grid 的类型化本地 source 随视图释放。编译绑定与显式生成注册支持 AOT，没有运行期 AXAML、反射扫描全控件、第二个 ThemeManager 或旁路 Token 字典。CT24 AI 服务仍暂缓，本文第5节保持目标合同，不表示已经接入。
+
+实现/当前Host证据与保留边界见 [CT22–26 执行记录](../../superpowers/plans/2026-10-22-custom-theme/brand-workbench-exit.md)。

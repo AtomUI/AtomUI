@@ -10,8 +10,14 @@
             <themes:AbstractSkeletonTheme TargetType="atom:SkeletonLine" />
         </ControlTheme.BasedOn>
         
-        <Setter Property="Height" Value="{atom:SkeletonTokenResource ParagraphLineHeight}"/>
-        
+        <Setter Property="Height">
+            <MultiBinding Converter="{x:Static themes:AbstractSkeletonTheme.LineHeight}">
+                <CompiledBindingExtension Path="$self" DataType="{x:Type atom:SkeletonLine}" />
+                <atom:SkeletonTokenResource Kind="TitleHeight" />
+                <atom:SkeletonTokenResource Kind="ParagraphLineHeight" />
+            </MultiBinding>
+        </Setter>
+
         <Style Selector="^[IsRound=True]">
             <Setter Property="CornerRadius" Value="{atom:SkeletonTokenResource ParagraphLineRoundCornerRadius}"/>
         </Style>

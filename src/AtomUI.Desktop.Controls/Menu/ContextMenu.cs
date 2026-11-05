@@ -1,7 +1,10 @@
+using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using System.ComponentModel;
 using AtomUI.Controls;
 using AtomUI.Animations;
 using Avalonia;
+using Avalonia.LogicalTree;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
@@ -16,7 +19,8 @@ using AvaloniaContextMenu = Avalonia.Controls.ContextMenu;
 public class ContextMenu : AvaloniaContextMenu,
                            ICustomizableSizeTypeAware,
                            IMotionAwareControl,
-                           IScrollAwareControl
+                           IScrollAwareControl,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -146,6 +150,7 @@ public class ContextMenu : AvaloniaContextMenu,
     #region 运行时字段
 
     private Popup? _popup;
+    private ThemeContextResourceBridge? _themeResourceBridge;
 
     private IDisposable? _deactivationSubscription;
 
@@ -286,9 +291,26 @@ public class ContextMenu : AvaloniaContextMenu,
         _popup!.IsOpen = false;
     }
 
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        UpdateThemeResourceBridge();
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        ClearThemeResourceBridge();
+        base.OnDetachedFromLogicalTree(e);
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == ThemeScope.ContextProperty && ((ILogical)this).IsAttachedToLogicalTree)
+        {
+            UpdateThemeResourceBridge();
+        }
+
         if (change.Property == DisplayPageSizeProperty ||
             change.Property == ItemHeightProperty ||
             change.Property == PaddingProperty ||
@@ -509,4 +531,35 @@ public class ContextMenu : AvaloniaContextMenu,
     }
 
     #endregion
+
+    private void UpdateThemeResourceBridge()
+    {
+        var context = GetValue(ThemeScope.ContextProperty) ?? ThemeScope.ResolveContext(this);
+        if (context is not null && ReferenceEquals(_themeResourceBridge?.OwnerContext, context))
+        {
+            return;
+        }
+        ClearThemeResourceBridge();
+        if (context is not null)
+        {
+            // Avalonia's ContextMenu popup has a parent without membership in its
+            // logical children. AXAML can bind values but cannot forward that missing
+            // resource notification. The existing scoped bridge owns publication only.
+            _themeResourceBridge = new ThemeContextResourceBridge(context);
+            Resources.MergedDictionaries.Add(_themeResourceBridge);
+        }
+    }
+
+    private void ClearThemeResourceBridge()
+    {
+        if (_themeResourceBridge is { } bridge)
+        {
+            _themeResourceBridge = null;
+            Resources.MergedDictionaries.Remove(bridge);
+            bridge.Dispose();
+        }
+    }
+
+    // The theme preserves the actual inheritance parent when owner typography is not explicit.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

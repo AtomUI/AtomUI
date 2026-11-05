@@ -1,5 +1,9 @@
 # TextBox Changelog
 
+## 2026-11-04
+
+- Custom 行高、圆角和字号采用基础默认；保留无预设 padding、IsCustomFontSize 与三档字号合同。
+
 ## 2026-10-23
 
 - 内部输入框体及实际存在的clear/reveal按钮消费公开owner的有效Global，支持内容子树和重挂载，保留原状态与标准属性优先级。

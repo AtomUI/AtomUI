@@ -100,3 +100,8 @@
   - Add Menu implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add Menu control-level changelog.
   - Add Menu Token documentation covering MenuToken.
+
+
+## 2026-10-30 主题消费与字体
+
+顶层条目普通色使用 TopLevelItemColor/TopLevelItemBg，子菜单打开时使用 TopLevelItemSelectedColor/TopLevelItemSelectedBg，禁用文字仍优先使用 ItemDisabledColor。MenuItem 的独立 Global 与 Menu Own 的显式复用分别处理。ContextMenu 通过已有 ThemeContextResourceBridge 转发缺失的局部资源发布，逻辑卸载时移除并释放，不复制资源字典。

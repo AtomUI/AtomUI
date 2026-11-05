@@ -161,3 +161,9 @@ Separator 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+## 排版与动态几何
+
+主题把字号/字重角色设置到实际 owner，再由标题节点继承或 TemplateBinding 消费；实例字号不再被子节点主题默认压住。FontFamily 使用可选 Global/真实继承桥。标题色、线色和线宽由实际 owner Global 投射，专用 Content/Rail Style 可直接命中原目标。
+
+em 留白、边缘比例和纵向间距各声明其真实测量/排列依赖。固定最小线段比例、线型 dash 及数据内容继续属于绘制算法，不作为额外 Token。

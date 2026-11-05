@@ -48,6 +48,8 @@
             <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemTheme}">
                 <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemThemeSettings}"
                                Tag="{x:Static workspaceviews:WindowMenuItemKind.ThemeCatalog}" />
+                <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemThemeWorkbench}"
+                               Tag="{x:Static workspaceviews:WindowMenuItemKind.ThemeWorkbench}" />
                 <atom:MenuSeparator />
                 <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemAppearance}">
                     <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemLightMode}"

@@ -4,6 +4,14 @@
               x:Class="AtomUI.Desktop.Controls.Themes.BaseTabStripItemTheme"
               TargetType="atom:TabStripItem"
               x:ClassModifier="internal">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TabStripItem">
             <Border Name="Frame"
@@ -35,8 +43,8 @@
 
         <Style Selector="^ /template/ atom|IconButton#PART_ItemCloseButton">
             <Setter Property="Margin" Value="{atom:TabControlTokenResource CloseIconMargin}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:TabStripItem}}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:TabStripItem}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
@@ -62,11 +70,11 @@
         </Style>
 
         <Style Selector="^:pressed">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimaryActive}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorPrimaryActive, AnchorControlType={x:Type atom:TabStripItem}}" />
         </Style>
 
         <Style Selector="^[IsTabReorderDragging=True]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type atom:TabStripItem}}" />
         </Style>
 
         <Style Selector="^:selected">
@@ -77,9 +85,9 @@
             <Setter Property="FontSize" Value="{atom:TabControlTokenResource TitleFontSizeLG}" />
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSize}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:TabStripItem}}" />
                 <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSize}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:TabStripItem}}" />
             </Style>
         </Style>
 
@@ -87,9 +95,9 @@
             <Setter Property="FontSize" Value="{atom:TabControlTokenResource TitleFontSize}" />
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSize}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:TabStripItem}}" />
                 <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSize}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:TabStripItem}}" />
             </Style>
         </Style>
 
@@ -97,9 +105,9 @@
             <Setter Property="FontSize" Value="{atom:TabControlTokenResource TitleFontSizeSM}" />
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSizeSM}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:TabStripItem}}" />
                 <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSizeSM}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:TabStripItem}}" />
             </Style>
         </Style>
 
@@ -131,7 +139,7 @@
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextDisabled, AnchorControlType={x:Type atom:TabStripItem}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_ItemCloseButton">

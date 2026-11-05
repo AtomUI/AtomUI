@@ -4,8 +4,8 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class SkeletonToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class SkeletonToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -68,45 +68,77 @@ internal sealed class SkeletonToken : AbstractControlDesignToken
     public double ImageContainerSize {  get; set; }
     public double ImageContainerMaxSize { get; set; }
 
-    public SkeletonToken()
+    [ControlTokenDefault(nameof(GradientFromColor))]
+    private static Color DefaultForGradientFromColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorFillContent;
 
-    {
-    }
+    [ControlTokenDefault(nameof(GradientToColor))]
+    private static Color DefaultForGradientToColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorFill;
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        GradientFromColor     = EffectiveGlobalToken.ColorFillContent;
-        GradientToColor       = EffectiveGlobalToken.ColorFill;
-        TitleHeight           = EffectiveGlobalToken.ControlHeight / 2;
-        BlockRadius           = EffectiveGlobalToken.BorderRadiusSM;
-        ParagraphMarginTop    = new Thickness(0, EffectiveGlobalToken.UniformlyMarginLG + EffectiveGlobalToken.UniformlyMarginXXS, 0, 0);
-        AvatarMarginRight = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMargin, 0);
-        ParagraphLineHeight   = EffectiveGlobalToken.ControlHeight / 2;
-        ParagraphLineRoundCornerRadius = new CornerRadius(ParagraphLineHeight / 2);
-        LoadingMotionDuration = TimeSpan.FromSeconds(1.4);
-        LoadingBackgroundStart  = CreateLoadingBackground(-3.0, 1.0);
-        LoadingBackgroundMiddle = CreateLoadingBackground(-1.5, 2.5);
-        LoadingBackgroundEnd    = CreateLoadingBackground(0.0, 4.0);
+    [ControlTokenDefault(nameof(TitleHeight))]
+    private static double DefaultForTitleHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight / 2;
 
-        var imageSizeBase = EffectiveGlobalToken.ControlHeight * 1.5;
-        ImageSize             = imageSizeBase;
-        ImageContainerSize    = imageSizeBase * 2;
-        ImageContainerMaxSize = imageSizeBase * 4;
-    }
+    [ControlTokenDefault(nameof(BlockRadius))]
+    private static CornerRadius DefaultForBlockRadius(in ControlTokenDefaultContext context) =>
+        context.Global.BorderRadiusSM;
 
+    [ControlTokenDefault(nameof(ParagraphMarginTop))]
+    private static Thickness DefaultForParagraphMarginTop(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.UniformlyMarginLG + context.Global.UniformlyMarginXXS, 0, 0);
 
-    private LinearGradientBrush CreateLoadingBackground(double startX, double endX)
+    [ControlTokenDefault(nameof(AvatarMarginRight))]
+    private static Thickness DefaultForAvatarMarginRight(in ControlTokenDefaultContext context) =>
+        new Thickness(0, 0, context.Global.UniformlyMargin, 0);
+
+    [ControlTokenDefault(nameof(ParagraphLineHeight))]
+    private static double DefaultForParagraphLineHeight(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight / 2;
+
+    [ControlTokenDefault(nameof(ParagraphLineRoundCornerRadius), nameof(ParagraphLineHeight))]
+    private static CornerRadius DefaultForParagraphLineRoundCornerRadius(in ControlTokenDefaultContext context, double paragraphLineHeight) =>
+        new CornerRadius(paragraphLineHeight / 2);
+
+    [ControlTokenDefault(nameof(LoadingMotionDuration))]
+    private static TimeSpan DefaultForLoadingMotionDuration(in ControlTokenDefaultContext context) =>
+        TimeSpan.FromSeconds(1.4);
+
+    [ControlTokenDefault(nameof(LoadingBackgroundStart), nameof(GradientFromColor), nameof(GradientToColor))]
+    private static IBrush? DefaultForLoadingBackgroundStart(in ControlTokenDefaultContext context, Color gradientFromColor, Color gradientToColor) =>
+        CreateLoadingBackground(-3.0, 1.0, gradientFromColor, gradientToColor);
+
+    [ControlTokenDefault(nameof(LoadingBackgroundMiddle), nameof(GradientFromColor), nameof(GradientToColor))]
+    private static IBrush? DefaultForLoadingBackgroundMiddle(in ControlTokenDefaultContext context, Color gradientFromColor, Color gradientToColor) =>
+        CreateLoadingBackground(-1.5, 2.5, gradientFromColor, gradientToColor);
+
+    [ControlTokenDefault(nameof(LoadingBackgroundEnd), nameof(GradientFromColor), nameof(GradientToColor))]
+    private static IBrush? DefaultForLoadingBackgroundEnd(in ControlTokenDefaultContext context, Color gradientFromColor, Color gradientToColor) =>
+        CreateLoadingBackground(0.0, 4.0, gradientFromColor, gradientToColor);
+
+    [ControlTokenDefault(nameof(ImageSize))]
+    private static double DefaultForImageSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight * 1.5;
+
+    [ControlTokenDefault(nameof(ImageContainerSize), nameof(ImageSize))]
+    private static double DefaultForImageContainerSize(in ControlTokenDefaultContext context, double imageSize) =>
+        imageSize * 2;
+
+    [ControlTokenDefault(nameof(ImageContainerMaxSize), nameof(ImageSize))]
+    private static double DefaultForImageContainerMaxSize(in ControlTokenDefaultContext context, double imageSize) =>
+        imageSize * 4;
+
+    private static LinearGradientBrush CreateLoadingBackground(double startX, double endX, Color fromColor, Color toColor)
     {
         return new LinearGradientBrush
         {
             StartPoint = new RelativePoint(startX, 0.5, RelativeUnit.Relative),
-            EndPoint   = new RelativePoint(endX, 0.5, RelativeUnit.Relative),
+            EndPoint = new RelativePoint(endX, 0.5, RelativeUnit.Relative),
             GradientStops =
             {
-                new GradientStop { Offset = 0.25, Color = GradientFromColor },
-                new GradientStop { Offset = 0.37, Color = GradientToColor },
-                new GradientStop { Offset = 0.63, Color = GradientFromColor }
+                new GradientStop { Offset = 0.25, Color = fromColor },
+                new GradientStop { Offset = 0.37, Color = toColor },
+                new GradientStop { Offset = 0.63, Color = fromColor }
             }
         };
     }

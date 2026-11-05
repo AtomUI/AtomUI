@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -18,7 +19,8 @@ namespace AtomUI.Desktop.Controls;
 
 public partial class Upload : ContentControl,
                               IMotionAwareControl,
-                              IFormItemAware
+                              IFormItemAware,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -211,6 +213,12 @@ public partial class Upload : ContentControl,
         set => SetValue(TriggerContentTemplateProperty, value);
     }
 
+    public bool IsMotionEnabled
+    {
+        get => GetValue(IsMotionEnabledProperty);
+        set => SetValue(IsMotionEnabledProperty, value);
+    }
+
     private IFileUploadTransport? _uploadTransport;
 
     public IFileUploadTransport? UploadTransport
@@ -227,30 +235,25 @@ public partial class Upload : ContentControl,
         set => SetAndRaise(IsTaskRunningProperty, ref _isTaskRunning, value);
     }
 
-    public bool IsMotionEnabled
-    {
-        get => GetValue(IsMotionEnabledProperty);
-        set => SetValue(IsMotionEnabledProperty, value);
-    }
-
     #endregion
 
     #region 公共事件定义
 
     public event EventHandler<UploadTaskCreatedEventArgs>? UploadTaskCreated;
+
     public event EventHandler<UploadTaskAboutToSchedulingEventArgs>? UploadTaskAboutToScheduling;
+
     public event EventHandler<UploadTaskProgressEventArgs>? UploadTaskProgress;
+
     public event EventHandler<UploadTaskCompletedEventArgs>? UploadTaskCompleted;
+
     public event EventHandler<UploadTaskCancelledEventArgs>? UploadTaskCancelled;
+
     public event EventHandler<UploadTaskFailedEventArgs>? UploadTaskFailed;
+
     public event EventHandler<UploadTaskRemovedEventArgs>? UploadTaskRemoved;
+
     public event EventHandler<UploadInputBatchCompletedEventArgs>? InputBatchCompleted;
-
-    #endregion
-
-    #region 公共回调函数定义
-
-    public Func<UploadFileInfo, bool>? IsImageFilePredicate { get; set; }
 
     #endregion
 
@@ -266,13 +269,79 @@ public partial class Upload : ContentControl,
             nameof(EffectivePictureItems),
             o => o.EffectivePictureItems);
 
+    private IList<UploadFileItem> _effectiveFiles = null!;
+
     internal IList<UploadFileItem> EffectiveFiles
     {
         get => _effectiveFiles;
         private set => SetAndRaise(EffectiveFilesProperty, ref _effectiveFiles, value);
     }
 
+    private readonly AvaloniaList<object?> _effectivePictureItems = new();
+
     internal IList<object?> EffectivePictureItems => _effectivePictureItems;
+
+    #endregion
+
+    #region 内部协作 API
+
+    internal static void RegisterTaskRemoveRequestEvent(RoutedEvent<TaskRemoveRequestEventArgs> requestEvent)
+    {
+        requestEvent.AddClassHandler<Upload>(
+            (upload, args) => upload.HandleTaskRemoveRequest(args));
+    }
+
+    internal void NotifyUploadProgress(UploadFileItem item, UploadFileInfo fileInfo, double progress)
+    {
+        RunOnUiThread(() =>
+        {
+            if (IsTerminalUploadStatus(item.Status))
+            {
+                return;
+            }
+
+            item.Status   = FileUploadStatus.Uploading;
+            item.Progress = progress;
+            SetCurrentValue(IsTaskRunningProperty, true);
+            UploadTaskProgress?.Invoke(this, new UploadTaskProgressEventArgs(item.Id, fileInfo, progress));
+        });
+    }
+
+    internal void NotifyUploadCompleted(UploadFileItem item, UploadFileInfo fileInfo, FileUploadResult result)
+    {
+        RunOnUiThread(() =>
+        {
+            item.Status = FileUploadStatus.Success;
+            item.Result = result;
+            UploadTaskCompleted?.Invoke(this, new UploadTaskCompletedEventArgs(item.Id, fileInfo, result));
+            ScheduleSuccessAutoRemove(item);
+            UpdateTaskRunning();
+        });
+    }
+
+    internal void NotifyUploadFailed(UploadFileItem item, UploadFileInfo fileInfo, FileUploadResult result)
+    {
+        RunOnUiThread(() =>
+        {
+            item.Status       = FileUploadStatus.Failed;
+            item.ErrorMessage = result.UserFriendlyMessage;
+            item.Result       = result;
+            UploadTaskFailed?.Invoke(this, new UploadTaskFailedEventArgs(item.Id, fileInfo, result));
+            UpdateTaskRunning();
+        });
+    }
+
+    internal void NotifyUploadCancelled(UploadFileItem item, UploadFileInfo fileInfo, FileUploadResult result)
+    {
+        RunOnUiThread(() =>
+        {
+            item.Status       = FileUploadStatus.Cancelled;
+            item.ErrorMessage = result.UserFriendlyMessage;
+            item.Result       = result;
+            UploadTaskCancelled?.Invoke(this, new UploadTaskCancelledEventArgs(item.Id, fileInfo, result));
+            UpdateTaskRunning();
+        });
+    }
 
     #endregion
 
@@ -281,22 +350,22 @@ public partial class Upload : ContentControl,
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     private readonly AvaloniaList<UploadFileItem> _ownedFiles = new();
-    private readonly AvaloniaList<object?> _effectivePictureItems = new();
-    private readonly UploadAppendContentItem _appendContentItem = new();
-    private readonly HashSet<UploadFileItem> _observedFileItems = new();
-    private readonly Dictionary<Guid, CancellationTokenSource> _successAutoRemoveDelays = new();
-    private readonly Dictionary<Guid, UploadFileInfo> _acceptedFileInfos = new();
-    private readonly UploadQueue _uploadQueue;
-    private readonly UploadInputPipeline _inputPipeline;
-    private IList<UploadFileItem> _effectiveFiles = null!;
-    private INotifyCollectionChanged? _attachedFileCollection;
-    private EventHandler? _formValueChanged;
 
-    internal static void RegisterTaskRemoveRequestEvent(RoutedEvent<TaskRemoveRequestEventArgs> requestEvent)
-    {
-        requestEvent.AddClassHandler<Upload>(
-            (upload, args) => upload.HandleTaskRemoveRequest(args));
-    }
+    private readonly UploadAppendContentItem _appendContentItem = new();
+
+    private readonly HashSet<UploadFileItem> _observedFileItems = new();
+
+    private readonly Dictionary<Guid, CancellationTokenSource> _successAutoRemoveDelays = new();
+
+    private readonly Dictionary<Guid, UploadFileInfo> _acceptedFileInfos = new();
+
+    private readonly UploadQueue _uploadQueue;
+
+    private readonly UploadInputPipeline _inputPipeline;
+
+    private INotifyCollectionChanged? _attachedFileCollection;
+
+    private EventHandler? _formValueChanged;
 
     public Upload()
     {
@@ -307,6 +376,8 @@ public partial class Upload : ContentControl,
         AttachFileCollection(EffectiveFiles);
         SyncEffectivePictureItems();
     }
+
+    public Func<UploadFileInfo, bool>? IsImageFilePredicate { get; set; }
 
     public Task EnqueueFilesAsync(IEnumerable<UploadFileInfo> files, CancellationToken cancellationToken = default)
     {
@@ -379,17 +450,6 @@ public partial class Upload : ContentControl,
         StartObservedLifecycleOperation(ResetAsync());
     }
 
-    private void HandleTaskRemoveRequest(TaskRemoveRequestEventArgs args)
-    {
-        if (args.Handled)
-        {
-            return;
-        }
-
-        args.Handled = true;
-        StartObservedLifecycleOperation(RemoveFileAsync(args.TaskId));
-    }
-
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
@@ -426,7 +486,7 @@ public partial class Upload : ContentControl,
         }
     }
 
-    #region 实现 FormItem 接口
+    #region 实现 既有接口
 
     event EventHandler? IFormItemAware.ValueChanged
     {
@@ -491,56 +551,22 @@ public partial class Upload : ContentControl,
 
     #endregion
 
-    internal void NotifyUploadProgress(UploadFileItem item, UploadFileInfo fileInfo, double progress)
-    {
-        RunOnUiThread(() =>
-        {
-            if (IsTerminalUploadStatus(item.Status))
-            {
-                return;
-            }
+    #region 实现 IThemeInheritanceSource 接口
 
-            item.Status   = FileUploadStatus.Uploading;
-            item.Progress = progress;
-            SetCurrentValue(IsTaskRunningProperty, true);
-            UploadTaskProgress?.Invoke(this, new UploadTaskProgressEventArgs(item.Id, fileInfo, progress));
-        });
-    }
+    // AXAML cannot read AvaloniaObject's protected, potentially non-logical inheritance parent.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 
-    internal void NotifyUploadCompleted(UploadFileItem item, UploadFileInfo fileInfo, FileUploadResult result)
-    {
-        RunOnUiThread(() =>
-        {
-            item.Status = FileUploadStatus.Success;
-            item.Result = result;
-            UploadTaskCompleted?.Invoke(this, new UploadTaskCompletedEventArgs(item.Id, fileInfo, result));
-            ScheduleSuccessAutoRemove(item);
-            UpdateTaskRunning();
-        });
-    }
+    #endregion
 
-    internal void NotifyUploadFailed(UploadFileItem item, UploadFileInfo fileInfo, FileUploadResult result)
+    private void HandleTaskRemoveRequest(TaskRemoveRequestEventArgs args)
     {
-        RunOnUiThread(() =>
+        if (args.Handled)
         {
-            item.Status       = FileUploadStatus.Failed;
-            item.ErrorMessage = result.UserFriendlyMessage;
-            item.Result       = result;
-            UploadTaskFailed?.Invoke(this, new UploadTaskFailedEventArgs(item.Id, fileInfo, result));
-            UpdateTaskRunning();
-        });
-    }
+            return;
+        }
 
-    internal void NotifyUploadCancelled(UploadFileItem item, UploadFileInfo fileInfo, FileUploadResult result)
-    {
-        RunOnUiThread(() =>
-        {
-            item.Status       = FileUploadStatus.Cancelled;
-            item.ErrorMessage = result.UserFriendlyMessage;
-            item.Result       = result;
-            UploadTaskCancelled?.Invoke(this, new UploadTaskCancelledEventArgs(item.Id, fileInfo, result));
-            UpdateTaskRunning();
-        });
+        args.Handled = true;
+        StartObservedLifecycleOperation(RemoveFileAsync(args.TaskId));
     }
 
     private IReadOnlyList<UploadFileInfo> CommitInputFiles(

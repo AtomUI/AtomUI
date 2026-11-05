@@ -67,13 +67,14 @@
         </Setter>
 
         <Style Selector="^:is(atom|HorizontalNavMenuItemHeader)">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource Kind=FontSize, AnchorControlType={x:Type atom:HorizontalNavMenuItemHeader}}" />
 
             <Style Selector="^[IsTopLevel=False]">
                 <Setter Property="Height" Value="{atom:NavMenuTokenResource ItemHeight}" />
                 <Setter Property="Margin" Value="{atom:NavMenuTokenResource ItemContentMargin}" />
             </Style>
             <Style Selector="^[IsTopLevel=True]">
+                <Setter Property="CornerRadius" Value="{atom:NavMenuTokenResource HorizontalItemBorderRadius}" />
 
                 <Setter Property="ActiveBarScaleX"
                         Value="{atom:NavMenuTokenResource ActiveBarScaleX}" />
@@ -84,18 +85,21 @@
                 <Style Selector="^[IsDarkStyle=False]">
                     <Setter Property="Padding" Value="0" />
                     <Style Selector="^[IsSelected=True], ^[IsInSelectedPath=True]">
-                        <Setter Property="Background" Value="Transparent" />
+                        <Style Selector="^:not(:disabled)">
+                            <Setter Property="Foreground" Value="{atom:NavMenuTokenResource HorizontalItemSelectedColor}" />
+                        </Style>
+                        <Setter Property="Background" Value="{atom:NavMenuTokenResource HorizontalItemSelectedBg}" />
                     </Style>
                     <Style Selector="^ /template/ Rectangle#PART_ActiveIndicator">
                         <Setter Property="IsVisible" Value="True" />
                     </Style>
-                    <Style Selector="^:pointerover">
-                        <Setter Property="Background" Value="Transparent" />
+                    <Style Selector="^:pointerover:not(:disabled):not(^[IsSelected=True]):not(^[IsInSelectedPath=True])">
+                        <Setter Property="Foreground" Value="{atom:NavMenuTokenResource HorizontalItemHoverColor}" />
+                        <Setter Property="Background" Value="{atom:NavMenuTokenResource HorizontalItemHoverBg}" />
                     </Style>
                 </Style>
 
                 <Style Selector="^[IsDarkStyle=True]">
-                    <Setter Property="CornerRadius" Value="0" />
                     <Style Selector="^[IsSelected=True], ^[IsInSelectedPath=True]">
                         <Setter Property="Background"
                                 Value="{atom:NavMenuTokenResource DarkItemSelectedBg}" />
@@ -120,7 +124,7 @@
 
                 <Style Selector="^:pointerover, ^[IsSubMenuOpen=True], ^[IsSelected=True], ^[IsInSelectedPath=True]">
                     <Setter Property="ActiveBarColor"
-                            Value="{atom:SharedTokenResource ColorPrimary}" />
+                            Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atom:HorizontalNavMenuItemHeader}}" />
                 </Style>
 
                 <Style Selector="^ /template/ ContentPresenter#ItemTextPresenter">
@@ -132,7 +136,8 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <atom:TokenTransitions>
+                <atom:TokenTransitions EasingInput="{atom:NavMenuTokenResource ItemBackgroundMotionEasing}"
+                                       EasingProperty="{x:Static TemplatedControl.BackgroundProperty}">
                     <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}"/>
                     <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                     <atom:SolidColorBrushTransition Property="ActiveBarColor" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />

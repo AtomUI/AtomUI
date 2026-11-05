@@ -19,10 +19,15 @@
   - InfoPickerInput 声明 OpenMotion/CloseMotion；DatePicker 直接继承，RangeDatePicker 经 RangeInfoPickerInput 继承，不重复注册。
   - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
 
+## 2026-11-03
+
+- Presenter与时间子区域Global读取实际日期Picker宿主；Custom退出预设padding／radius分支，日期正文公开viewer身份及三项Own保持。
+
 ## 2026-11-02
 
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 
 ## 2026-10-25（待完整验收）
 

@@ -64,3 +64,10 @@ Menu 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+
+## 有效默认依赖与保留项
+
+41 项 Own 使用 DependencyDefaultsV2、Revision 1。ItemHoverColor 的默认值读取有效 ItemColor；三档 TopLevelItemLineHeight 读取对应有效字号，三档 padding 读取对应有效行高；显式下游值（含 0）优先。字段名称、类型、资源 key/ID 和默认公式保持。
+
+TopLevelItemColor/TopLevelItemBg 对应顶层普通状态，TopLevelItemSelectedColor/TopLevelItemSelectedBg 对应子菜单打开状态；普通与打开状态的禁用前景仍由 ItemDisabledColor 优先控制。ItemIconMarginInlineEnd 为 Legacy：实际图标间距由完整 Thickness 的 ItemMargin 拥有，不建立两者别名，不删除旧字段或配置往返。原三项 Reserved 不变。

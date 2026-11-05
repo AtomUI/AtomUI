@@ -6,6 +6,8 @@
 
 MentionsToken 是 Mentions 的控件级 Token scope，只描述候选弹层的结构尺寸。输入框本体由内部 `MentionTextArea` 复用 TextArea / `AbstractTextInput` / `InputControlFrame` / SharedToken 体系；候选列表项的选择、hover、disabled 和文本状态由 CandidateList 主题处理。
 
+三个既有字段采用DependencyDefaultsV2、声明修订1，只有有效Global与常量输入，没有Own依赖边；名称、类型、公开资源ID和slot保持。求值不读取实例输入/选择或Popup状态。
+
 MentionsToken 不承载以下状态：
 
 - `Value`、`FilterValue`、`TriggerPrefix`、`OptionsSource`、`OptionsAsyncLoader` 等数据状态。
@@ -13,19 +15,25 @@ MentionsToken 不承载以下状态：
 - 候选项 selected、hover、disabled、commit、cancel 等交互状态。
 - Popup 当前 offset、placement、实际高度或异步加载结果。
 
+输入本体字体不是新增Own字段。Mentions使用自身有效Global.FontFamily及FontSize/SM/LG，未配置字体族保留父继承，字号保持原可见三档预设并使root FontSize与其一致。标准root Style/Local字体优先。多行默认行框至少容纳实际字体自然行距，对应有效Global.FontHeight/SM/LG显式配置时仍为精确行高；不把字体消费扩成新的Own协议。
+
+输入占位文字及弹层背景读取Mentions有效Global.ColorTextPlaceholder与Global.ColorBgElevated；加载指示器布局margin读取Global.MarginLG。均为既有Global字段，不新增Own、key或公式。
+
+私有MentionTextArea复用主题中的Global转投Mentions，包括正文、错误/警告/禁用文字、caret与selection；字段和原状态selector保持。标准Foreground与专用Input Style遵守实际目标上的原生优先级。TextArea既有共享Own配方不转投或别名化，真正公开子Control保留自身identity，不进行整棵子树的资源覆盖。
+
 ## 2. Token 分类
 
 ### 2.1 候选弹层 padding Token
 
 - `PopupContentPadding`
 
-该 Token 控制 `PopupFrame` 内部 padding，并参与 `MaxPopupHeight` 计算。默认值为 `SharedToken.UniformlyPaddingXXS / 2` 的四边等距 padding。
+该Token控制PopupFrame内部padding，并参与MaxPopupHeight计算；padding热更新会立即重算预算。默认值为有效Global.UniformlyPaddingXXS/2的四边等距padding。
 
 ### 2.2 候选项高度 Token
 
 - `OptionHeight`
 
-该 Token 表示候选项行高基准，默认值为 `SharedToken.ControlHeight`。Mentions 使用它结合 `DisplayCandidateCount` 计算候选弹层最大高度。
+该Token表示普通候选项的名义最小行高，默认值为有效Global.ControlHeight。父主题通过现有ItemContainerTheme复用CandidateListItemTheme，将它声明式送入真实候选行MinHeight，并结合DisplayCandidateCount与padding计算最大高度。自然高度更大的字体/模板或专用Style可以高于该最小值；名义页数不承诺任意定制下的完整行数。0保持资源与预算语义，不强写文字自然高度为0。
 
 ### 2.3 候选弹层最小宽度 Token
 
@@ -38,7 +46,7 @@ MentionsToken 不承载以下状态：
 MentionsToken 使用路径：
 
 ```text
-SharedToken
+Effective Global / constants
    ↓
 MentionsToken
    ↓

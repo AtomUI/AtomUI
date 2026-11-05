@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
@@ -15,41 +16,42 @@ public class FormItemDecorator : TemplatedControl,
                                  IMotionAwareControl,
                                  ICustomizableSizeTypeAware,
                                  IFormItemAware,
-                                 IFormItemFeedbackAware
+                                 IFormItemFeedbackAware,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<Control?> ChildProperty =
         AvaloniaProperty.Register<FormItemDecorator, Control?>(nameof(Child));
-    
+
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
         InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<FormItemDecorator>();
 
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<FormItemDecorator>();
-    
+
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<FormItemDecorator>();
-    
-    public static readonly StyledProperty<bool> IsMotionEnabledProperty = 
+
+    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<FormItemDecorator>();
-    
+
     public static readonly StyledProperty<object?> ExtraProperty =
         AvaloniaProperty.Register<FormItemDecorator, object?>(nameof(Extra));
 
     public static readonly StyledProperty<IDataTemplate?> ExtraTemplateProperty =
         AvaloniaProperty.Register<FormItemDecorator, IDataTemplate?>(nameof(ExtraTemplate));
-    
+
     public static readonly StyledProperty<double> ItemSpacingProperty =
         AvaloniaProperty.Register<FormItemDecorator, double>(nameof(ItemSpacing));
-    
+
     [Content]
     public Control? Child
     {
         get => GetValue(ChildProperty);
         set => SetValue(ChildProperty, value);
     }
-    
+
     public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
@@ -67,38 +69,39 @@ public class FormItemDecorator : TemplatedControl,
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     [DependsOn(nameof(ExtraTemplate))]
     public object? Extra
     {
         get => GetValue(ExtraProperty);
         set => SetValue(ExtraProperty, value);
     }
-    
+
     public IDataTemplate? ExtraTemplate
     {
         get => GetValue(ExtraTemplateProperty);
         set => SetValue(ExtraTemplateProperty, value);
     }
-    
+
     public double ItemSpacing
     {
         get => GetValue(ItemSpacingProperty);
         set => SetValue(ItemSpacingProperty, value);
     }
+
     #endregion
 
     #region 内部属性定义
 
-    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty = 
+    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
         AvaloniaProperty.Register<FormItemDecorator, FormValidateFeedback?>(nameof(FormFeedback));
-    
+
     internal FormValidateFeedback? FormFeedback
     {
         get => GetValue(FormFeedbackProperty);
@@ -109,14 +112,18 @@ public class FormItemDecorator : TemplatedControl,
 
     private CompositeDisposable? _disposables;
 
+    private EventHandler? _formValueChanged;
+
     static FormItemDecorator()
     {
         AffectsMeasure<FormItemDecorator>(ChildProperty, PaddingProperty);
         ChildProperty.Changed.AddClassHandler<FormItemDecorator>((decorator, e) => decorator.HandleChildChanged(e));
     }
-    
-    #region 实现 FormItem 接口
-    private EventHandler? _formValueChanged;
+
+
+
+    #region 实现 既有接口
+
     event EventHandler? IFormItemAware.ValueChanged
     {
         add => _formValueChanged += value;
@@ -126,8 +133,11 @@ public class FormItemDecorator : TemplatedControl,
     void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value);
 
     object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+
     void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
 
     protected virtual void NotifySetFormValue(object? value)
@@ -171,6 +181,14 @@ public class FormItemDecorator : TemplatedControl,
             formItemFeedbackAware.SetFeedbackControl(value);
         }
     }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    // AXAML cannot read AvaloniaObject's protected, potentially non-logical inheritance parent.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
     #endregion
 
     private void HandleChildChanged(AvaloniaPropertyChangedEventArgs e)
@@ -191,6 +209,8 @@ public class FormItemDecorator : TemplatedControl,
 
         if (child is Control childControl)
         {
+            // User content is outside the ControlTheme template route. These
+            // interface behavior relays retain their existing acquire/release lifetime.
             _disposables.Add(FormSizeTypeBindingHelper.RelaySizeType(this, SizeTypeProperty, childControl));
             if (childControl is IMotionAwareControl)
             {

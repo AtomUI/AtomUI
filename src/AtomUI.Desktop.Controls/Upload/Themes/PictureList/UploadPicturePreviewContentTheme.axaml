@@ -42,28 +42,28 @@
         </Style>
 
         <Style Selector="^ /template/ DockPanel#ContentLayout">
-            <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource SpacingXS, SourceControlType={x:Type atom:Upload}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextSecondary}" />
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingXXS}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorTextSecondary, SourceControlType={x:Type atom:Upload}}" />
+            <Setter Property="Padding" Value="{atom:OwnerTokenResource PaddingXXS, SourceControlType={x:Type atom:Upload}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pointerover">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextSecondary}" />
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorTextSecondary, SourceControlType={x:Type atom:Upload}}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgTextHover, SourceControlType={x:Type atom:Upload}}" />
         </Style>
 
         <Style Selector="^[Status=Failed]">
             <Style Selector="^ /template/ atom|IconButton">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorError, SourceControlType={x:Type atom:Upload}}" />
             </Style>
         </Style>
 
         <Style Selector="^[Status=Cancelled]">
             <Style Selector="^ /template/ atom|IconButton">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorError, SourceControlType={x:Type atom:Upload}}" />
             </Style>
         </Style>
         

@@ -4,6 +4,7 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 
@@ -245,7 +246,7 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
         _progressBody?.SynchronizeTracks();
     }
 
-    // 需要评估是否需要
+    // Runtime text geometry is a template fallback, not a replacement for user constraints.
     private void CalculateMinBarThickness()
     {
         var thickness     = 0d;
@@ -253,32 +254,23 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
         if (Orientation == Orientation.Horizontal)
         {
             thickness += extraInfoSize.Height;
-            MinHeight =  thickness;
+            SetValue(MinHeightProperty, thickness, BindingPriority.Template);
+            SetValue(MinWidthProperty, 0d, BindingPriority.Template);
         }
         else
         {
             thickness += extraInfoSize.Width;
-            MinWidth  =  thickness;
+            SetValue(MinWidthProperty, thickness, BindingPriority.Template);
+            SetValue(MinHeightProperty, 0d, BindingPriority.Template);
         }
     }
 
     protected void CalculateSizeTypeThresholdValue()
     {
-        double fontSize   = default;
-        double fontSizeSM = default;
-        {
-            if (TokenResourceUtils.FindTokenResource(this, SharedTokenKind.FontSize) is double value)
-            {
-                fontSize = value;
-            }
-        }
-
-        {
-            if (TokenResourceUtils.FindTokenResource(this, SharedTokenKind.FontSizeSM) is double value)
-            {
-                fontSizeSM = value;
-            }
-        }
+        // These inputs are projected by the owning ControlTheme and stay current
+        // when that concrete owner's Global changes. FontSize is the pre-template fallback.
+        var fontSize = PresetFontSize > 0 ? PresetFontSize : FontSize;
+        var fontSizeSM = PresetSmallFontSize > 0 ? PresetSmallFontSize : FontSize;
         var defaultExtraInfoSize = CalculateExtraInfoSize(fontSize);
         var smallExtraInfoSize   = CalculateExtraInfoSize(fontSizeSM);
         if (Orientation == Orientation.Horizontal)
@@ -346,6 +338,19 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
     protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.NotifyPropertyChanged(change);
+        if (_progressBody is not null &&
+            (change.Property == FontSizeProperty || change.Property == FontFamilyProperty ||
+             change.Property == FontStyleProperty || change.Property == FontWeightProperty ||
+             change.Property == ValueProperty || change.Property == MinimumProperty ||
+             change.Property == MaximumProperty || change.Property == ProgressTextFormatProperty ||
+             change.Property == StatusProperty || change.Property == LineInfoIconSizeProperty ||
+             change.Property == LineExtraInfoMarginProperty || change.Property == LineProgressPaddingProperty ||
+             change.Property == PercentPositionProperty || change.Property == OrientationProperty))
+        {
+            _extraInfoSize = CalculateExtraInfoSize(FontSize);
+            InvalidateMeasure();
+            _progressBody.InvalidateArrange();
+        }
         if (change.Property == ChunkHeightProperty)
         {
             IndicatorThickness = change.GetNewValue<double>();

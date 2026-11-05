@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" trgLang="pt-BR" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUIGallery.Localization.ThemeWorkbenchLangResourceKind">
+    <unit id="Primary"><segment><source>Primary</source><target state="translated">Primário</target></segment></unit>
+    <unit id="Small"><segment><source>Small</source><target state="translated">Pequeno</target></segment></unit>
+    <unit id="Disabled"><segment><source>Disabled</source><target state="translated">Desabilitado</target></segment></unit>
+    <unit id="Feedback"><segment><source>Preview feedback</source><target state="translated">Feedback de prévia</target></segment></unit>
+    <unit id="Dark"><segment><source>Dark</source><target state="translated">Escuro</target></segment></unit>
+    <unit id="Preview"><segment><source>Preview draft</source><target state="translated">Prévia do rascunho</target></segment></unit>
+    <unit id="Apply"><segment><source>Apply to Gallery</source><target state="translated">Aplicar à Gallery</target></segment></unit>
+    <unit id="ResetBrand"><segment><source>Restore preset</source><target state="translated">Restaurar predefinição</target></segment></unit>
+    <unit id="Import"><segment><source>Import recipe</source><target state="translated">Importar receita</target></segment></unit>
+    <unit id="SaveComplete"><segment><source>Save complete recipe</source><target state="translated">Salvar receita completa</target></segment></unit>
+    <unit id="SaveTokens"><segment><source>Export tokens only</source><target state="translated">Exportar apenas tokens</target></segment></unit>
+    <unit id="Owner"><segment><source>Token owner</source><target state="translated">Proprietário do token</target></segment></unit>
+    <unit id="SetOverride"><segment><source>Set override</source><target state="translated">Definir valor</target></segment></unit>
+    <unit id="Inherit"><segment><source>Clear override</source><target state="translated">Limpar valor</target></segment></unit>
+    <unit id="RecipeJson"><segment><source>Complete recipe JSON</source><target state="translated">JSON da receita completa</target></segment></unit>
+    <unit id="ReadDraft"><segment><source>Read JSON as draft</source><target state="translated">Ler JSON como rascunho</target></segment></unit>
+    <unit id="Diff"><segment><source>Changes from preset</source><target state="translated">Alterações da predefinição</target></segment></unit>
+    <unit id="DraftPreview"><segment><source>Draft · isolated preview</source><target state="translated">Rascunho · prévia isolada</target></segment></unit>
+    <unit id="BaselinePreview"><segment><source>Preset · isolated reference</source><target state="translated">Predefinição · referência isolada</target></segment></unit>
+    <unit id="Cancel"><segment><source>Cancel apply</source><target state="translated">Cancelar aplicação</target></segment></unit>
+  </file>
+</xliff>

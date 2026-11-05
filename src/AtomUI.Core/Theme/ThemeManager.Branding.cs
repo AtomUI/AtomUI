@@ -126,7 +126,7 @@ internal partial class ThemeManager
             return registration!.Asset;
         }).ToArray();
         return new ThemeConfig(recipe.Config.Inherit, recipe.Config.Algorithms, recipe.Config.Tokens, recipe.Config.Controls,
-            assets, new ThemeBrandSelection(recipe.Id, recipe.Revision), recipe.Requirements);
+            assets, new ThemeBrandSelection(recipe.Id, recipe.Revision), recipe.Requirements, recipe.ThemeId);
     }
 
     internal ThemeConfig BindBrandRecipe(ThemeBrandRecipe recipe)

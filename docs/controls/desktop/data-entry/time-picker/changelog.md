@@ -16,10 +16,18 @@
   - 从 InfoPickerInput 继承 OpenMotion/CloseMotion；RangeTimePicker 经 RangeInfoPickerInput 继承，范围类型不重复定义。
   - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
 
+## 2026-11-03
+
+- 修复范围时间输入增高后popup偏上的锚点几何：水平保留Start／End区域，垂直读取完整输入框边界，动态变化、重新打开及受限空间翻转保持MarginToAnchor。
+
+- 内部Global锚定实际Picker宿主，修复重挂后误读ArrowDecoratedBox；循环行高在Token求值入口拒绝非正或非有限值。
+- 四种Picker的Custom退出预设padding／radius分支，保留基础默认。
+
 ## 2026-11-02
 
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 
 ## 2026-10-25（待完整验收）
 

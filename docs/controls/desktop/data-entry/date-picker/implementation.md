@@ -1,5 +1,7 @@
 # DatePicker 桌面版实现原理
 
+日期Presenter的边框与时间子区域Global锚定实际InfoPickerInput宿主，越过弹层装饰控件；DatePicker与RangeDatePicker保留独立Global身份。日期正文的公开DateViewer／RangeDateViewer及其页头仍使用自身身份，TimeView几何仍使用TimePicker Own角色。Custom尺寸退出三档预设padding／radius规则并保留基础默认，允许应用Style接管。
+
 本文说明当前实现架构。关联 [架构](overview.md)、[共享模型](../date-viewer/shared-panel-design.md)、
 [Token](token.md)、[Semantic Part](semantic-part.md)与 [Changelog](changelog.md)。
 

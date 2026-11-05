@@ -58,3 +58,20 @@ Skeleton 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 依赖默认计划与实际消费
+
+SkeletonToken 保留15字段及原默认/资源编号，使用 DependencyDefaultsV2。Own 上游显式值先确定，派生默认随后求值；显式下游继续优先。
+
+| 字段 | 默认依赖与实际消费者 |
+| --- | --- |
+| GradientFromColor / GradientToColor | 有效 Global ColorFillContent / ColorFill；静态背景及扫光端点颜色 |
+| LoadingBackgroundStart / Middle / End | 两个 Own 渐变色；保留400%渐变坐标和三组 stop，作为实际动画关键帧 |
+| LoadingMotionDuration | 原1.4秒；活动层周期，更新后重建本实例动画 |
+| TitleHeight | Global ControlHeight/2；实际 SkeletonTitle，独立于段落行高 |
+| ParagraphLineHeight / ParagraphLineRoundCornerRadius | Global ControlHeight/2；圆角默认依赖实际 Own 行高/2，服务行及 round 分支 |
+| BlockRadius | Global BorderRadiusSM；非 round 行的实际 CornerRadius |
+| ParagraphMarginTop / AvatarMarginRight | 原 Global margin 组合；组合模板中实际 paragraph/avatar |
+| ImageSize / ImageContainerSize / ImageContainerMaxSize | ImageSize 默认 ControlHeight×1.5；后两项分别依赖实际 ImageSize×2/×4，服务图像图标、容器及上限 |
+
+图像占位 glyph 的未配置色保持 #bfbfbf；明确的 SkeletonImage Global ColorTextPlaceholder 或实例 Foreground 可以到达真实图标。Node 承载调用方内容，不套用这项图像 glyph 前景回退。几何比例、段落内容和静态默认数据不作为额外 Own。

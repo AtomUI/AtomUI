@@ -14,7 +14,6 @@ internal sealed class CalendarRangeBarPanel : Panel
 
     public static readonly StyledProperty<DateViewerControl?> LayoutSourceProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, DateViewerControl?>(nameof(LayoutSource));
-    public DateViewerControl? LayoutSource { get => GetValue(LayoutSourceProperty); set => SetValue(LayoutSourceProperty, value); }
 
     public static readonly StyledProperty<CalendarMode> ModeProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, CalendarMode>(nameof(Mode));
@@ -33,6 +32,11 @@ internal sealed class CalendarRangeBarPanel : Panel
 
     public static readonly StyledProperty<double> RangeBarHorizontalInsetProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarHorizontalInset), 4);
+
+    public static readonly StyledProperty<Thickness> LabelPaddingProperty =
+        AvaloniaProperty.Register<CalendarRangeBarPanel, Thickness>(nameof(LabelPadding), new Thickness(8, 0));
+
+    public DateViewerControl? LayoutSource { get => GetValue(LayoutSourceProperty); set => SetValue(LayoutSourceProperty, value); }
 
     public CalendarMode Mode
     {
@@ -70,12 +74,16 @@ internal sealed class CalendarRangeBarPanel : Panel
         set => SetValue(RangeBarHorizontalInsetProperty, value);
     }
 
+    public Thickness LabelPadding
+    {
+        get => GetValue(LabelPaddingProperty);
+        set => SetValue(LabelPaddingProperty, value);
+    }
+
     #endregion
 
     private const double DefaultRangeBarHeight = 20;
     private const double DefaultRangeBarGap = 2;
-    private const double DefaultLabelFontSize = 12;
-    private const double DefaultLabelHorizontalPadding = 8;
 
     private static readonly HashSet<AvaloniaProperty> LayoutTriggers = new()
     {
@@ -83,6 +91,7 @@ internal sealed class CalendarRangeBarPanel : Panel
         FullscreenProperty,
         RangeBarsProperty,
         RangeBarHeightProperty,
+        LabelPaddingProperty,
         RangeBarTopOffsetProperty,
         RangeBarHorizontalInsetProperty,
         FlowDirectionProperty
@@ -99,6 +108,8 @@ internal sealed class CalendarRangeBarPanel : Panel
         ClipToBounds = true;
     }
 
+    #region 内部协作 API
+
     internal void InvalidateRangeBars()
     {
         _segmentsDirty = true;
@@ -106,6 +117,8 @@ internal sealed class CalendarRangeBarPanel : Panel
         InvalidateArrange();
         InvalidateVisual();
     }
+
+    #endregion
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -423,7 +436,9 @@ internal sealed class CalendarRangeBarPanel : Panel
             element.Height = segment.Bounds.Height;
         }
 
-        var padding = new Thickness(DefaultLabelHorizontalPadding, 0);
+        // These segments are generated from runtime business ranges, outside the
+        // template. The theme supplies their padding input; layout owns application.
+        var padding = LabelPadding;
         if (element.Padding != padding)
         {
             element.Padding = padding;
@@ -473,8 +488,6 @@ internal sealed class CalendarRangeBarPanel : Panel
         {
             Text = text,
             TextTrimming = TextTrimming.CharacterEllipsis,
-            Foreground = Brushes.White,
-            FontSize = DefaultLabelFontSize,
             VerticalAlignment = VerticalAlignment.Center,
             TextAlignment = FlowDirection == FlowDirection.RightToLeft ? TextAlignment.Right : TextAlignment.Left,
             IsHitTestVisible = false

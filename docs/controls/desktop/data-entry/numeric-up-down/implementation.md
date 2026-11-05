@@ -201,3 +201,7 @@ Token 通过动态资源进入主题。NumericUpDown 不把实例状态、当前
 Input 模式投射根 inset 与外框几何；Spinner 模式保留左右 action 段的布局，根 padding 进入文本区。
 
 几何默认、原生优先级和组合边界见[共享输入表面](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+### Custom 尺寸与原生优先级
+
+Custom 的根 Padding 与 CornerRadius 使用中档资源的基础 Setter，普通 Style 可以接管并撤回；Large/Middle/Small 继续各自预设。根 Height/MinHeight/MaxHeight 进入 ButtonSpinner；内部 frame 的基础最小高度取既有中档指标与实际 owner 预算的交集，未指定预算时保留原最小高度，三档仍取各自预设。私有 PresetPadding/ContentPadding 仅提供可覆盖默认，步进、数值编辑及 Input/Spinner 模式保持。

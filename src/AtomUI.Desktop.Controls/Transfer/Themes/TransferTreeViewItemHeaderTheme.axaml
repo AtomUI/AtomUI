@@ -100,7 +100,7 @@
             </Style>
             <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:OwnerTokenResource Kind=ColorTextDisabled, AnchorControlType={x:Type atom:TransferTreeViewItemHeader}}" />
             </Style>
             <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
                 <Setter Property="Opacity" Value="0.3" />
@@ -110,7 +110,7 @@
                 <Style Selector="^[IsSelectable=True]">
                     <Style Selector="^[IsSelected=True]">
                         <Setter Property="ContentFrameBackground"
-                                Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                                Value="{atom:OwnerTokenResource Kind=ColorBgContainerDisabled, AnchorControlType={x:Type atom:TransferTreeViewItemHeader}}" />
                     </Style>
                 </Style>
             </Style>
@@ -119,7 +119,7 @@
                 <Style Selector="^[IsSelectable=True]">
                     <Style Selector="^[IsSelected=True]">
                         <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                                Value="{atom:OwnerTokenResource Kind=ColorBgContainerDisabled, AnchorControlType={x:Type atom:TransferTreeViewItemHeader}}" />
                     </Style>
                 </Style>
             </Style>

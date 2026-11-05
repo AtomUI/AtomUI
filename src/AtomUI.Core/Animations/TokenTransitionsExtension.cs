@@ -25,6 +25,10 @@ internal sealed class TokenTransitionsExtension : MarkupExtension
 
     public SharedTokenKind? DurationKind { get; set; }
 
+    public BindingBase? EasingInput { get; set; }
+
+    public AvaloniaProperty? EasingProperty { get; set; }
+
     // Preserve an existing inert default while allowing directly configured duration
     // inputs to opt in. Presence uses the existing normalized Token resource contract.
     public TimeSpan? UnconfiguredDuration { get; set; }
@@ -73,10 +77,20 @@ internal sealed class TokenTransitionsExtension : MarkupExtension
                 slots[i] = slot + 1;
             }
         }
+        var easingSlot = 0;
+        if (EasingInput is { } easing)
+        {
+            if (EasingProperty is null)
+            {
+                throw new InvalidOperationException("A token easing requires its transition property.");
+            }
+            bindings.Add(easing);
+            easingSlot = bindings.Count;
+        }
         var result = new MultiBinding
         {
             Mode = BindingMode.OneWay,
-            Converter = new OwnerConverter(factories, slots, bindings.Count + 1, UnconfiguredDuration)
+            Converter = new OwnerConverter(factories, slots, bindings.Count + 1, UnconfiguredDuration, easingSlot, EasingProperty)
         };
         result.Bindings.Add(new CompiledBindingExtension(new CompiledBindingPathBuilder().Self().Build()));
         foreach (var binding in bindings)
@@ -151,7 +165,7 @@ internal sealed class TokenTransitionsExtension : MarkupExtension
     }
 
     private sealed class OwnerConverter(Func<TransitionBase>[] factories, int[] slots, int valueCount,
-                                       TimeSpan? unconfiguredDuration) : IMultiValueConverter
+                                       TimeSpan? unconfiguredDuration, int easingSlot, AvaloniaProperty? easingProperty) : IMultiValueConverter
     {
         // Weak owner keys keep the style definition from retaining discarded controls.
         // This caches only per-owner native objects; the binding engine owns priority.
@@ -160,6 +174,7 @@ internal sealed class TokenTransitionsExtension : MarkupExtension
         public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             if (values.Count != valueCount || values[0] is not Control owner ||
+                (easingSlot != 0 && values[easingSlot] is not Easing) ||
                 slots.Any(slot => slot != 0 && values[slot] is not TimeSpan &&
                                   !(unconfiguredDuration.HasValue && ReferenceEquals(values[slot], AvaloniaProperty.UnsetValue))))
             {
@@ -168,6 +183,10 @@ internal sealed class TokenTransitionsExtension : MarkupExtension
             var transitions = _owners.GetValue(owner, _ => CreateTransitions());
             for (var i = 0; i < transitions.Count; i++)
             {
+                if (easingSlot != 0 && ((TransitionBase)transitions[i]).Property == easingProperty)
+                {
+                    ((TransitionBase)transitions[i]).Easing = CopyEasing((Easing)values[easingSlot]!);
+                }
                 if (slots[i] != 0)
                 {
                     ((TransitionBase)transitions[i]).Duration = values[slots[i]] is TimeSpan duration

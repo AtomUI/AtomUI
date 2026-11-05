@@ -1,5 +1,9 @@
 # TreeSelect Changelog
 
+## 2026-11-04
+
+- Custom 根几何降为基础默认，保留多选/空选择与标签预算和原生 Style 优先级。
+
 本文档记录 TreeSelect 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
@@ -18,6 +22,11 @@
 
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
+## 2026-10-29
+
+- 内部 add-on 的通用边框、错误/警告与 Filled 背景改读公开 owner 有效 Global；保留默认值、原状态选择器、根画刷及专用样式优先级。
+
 
 ## 2026-10-28
 

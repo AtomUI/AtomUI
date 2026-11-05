@@ -34,7 +34,7 @@
         
         <Setter Property="SecondaryFillBrush" Value="{atom:IconTokenResource SecondaryFillColor}" />
         <Setter Property="SecondaryStrokeBrush" Value="{atom:IconTokenResource SecondaryStrokeColor}" />
-        <Setter Property="FallbackBrush" Value="White" />
+        <Setter Property="FallbackBrush" Value="{atom:IconTokenResource FallbackColor}" />
 
     </ControlTheme>
 </ResourceDictionary>

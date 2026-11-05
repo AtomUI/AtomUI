@@ -15,7 +15,7 @@
                 <atom:TextAreaTokenResource Kind="FontFamily" />
             </MultiBinding>
         </Setter>
-        <Setter Property="Foreground" Value="{atom:TextAreaTokenResource ColorText}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText, SourceControlType={x:Type atom:TextArea}}" />
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:TextArea">
                 <DockPanel LastChildFill="True"
@@ -62,7 +62,7 @@
                             <atom:TextAreaDecoratedBox.ContentRightAddOn>
                                 <StackPanel Orientation="Vertical"
                                             Classes.semantic-suffix="True"
-                                            Spacing="{atom:TextAreaTokenResource UniformlyPaddingXXS}">
+                                            Spacing="{atom:OwnerTokenResource UniformlyPaddingXXS, SourceControlType={x:Type atom:TextArea}}">
                                     <atom:InputClearIconButton
                                         Name="PART_ClearButton"
                                         Classes.semantic-clear="True"
@@ -135,17 +135,17 @@
             <Setter Property="Width" Value="{atom:TextAreaTokenResource ResizeHandleSize}" />
             <Setter Property="Height" Value="{atom:TextAreaTokenResource ResizeHandleSize}" />
             <Setter Property="Foreground" Value="{atom:TextAreaTokenResource ResizeIndicatorLineColor}" />
-            <Setter Property="ResizeIndicatorLineThickness" Value="{atom:TextAreaTokenResource LineWidth}" />
+            <Setter Property="ResizeIndicatorLineThickness" Value="{atom:OwnerTokenResource LineWidth, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:TextAreaTokenResource EnableMotion}" />
-        <Setter Property="SelectionBrush" Value="{atom:TextAreaTokenResource SelectionBackground}" />
-        <Setter Property="CaretBrush" Value="{atom:TextAreaTokenResource ColorText}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion, SourceControlType={x:Type atom:TextArea}}" />
+        <Setter Property="SelectionBrush" Value="{atom:OwnerTokenResource SelectionBackground, SourceControlType={x:Type atom:TextArea}}" />
+        <Setter Property="CaretBrush" Value="{atom:OwnerTokenResource ColorText, SourceControlType={x:Type atom:TextArea}}" />
         <Setter Property="SelectionForegroundBrush"
-                Value="{atom:TextAreaTokenResource SelectionForeground}" />
+                Value="{atom:OwnerTokenResource SelectionForeground, SourceControlType={x:Type atom:TextArea}}" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
         <Setter Property="PlaceholderForeground"
-                Value="{atom:TextAreaTokenResource ColorTextPlaceholder}" />
+                Value="{atom:OwnerTokenResource ColorTextPlaceholder, SourceControlType={x:Type atom:TextArea}}" />
         <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="AcceptsReturn" Value="True" />
         <Setter Property="MinLines" Value="1" />
@@ -159,19 +159,19 @@
             <Style Selector="^[Status=Error]">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:TextAreaTokenResource ColorErrorText}" />
+                            Value="{atom:OwnerTokenResource ColorErrorText, SourceControlType={x:Type atom:TextArea}}" />
                 </Style>
             </Style>
             <Style Selector="^:error">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:TextAreaTokenResource ColorErrorText}" />
+                            Value="{atom:OwnerTokenResource ColorErrorText, SourceControlType={x:Type atom:TextArea}}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:TextAreaTokenResource ColorWarningText}" />
+                            Value="{atom:OwnerTokenResource ColorWarningText, SourceControlType={x:Type atom:TextArea}}" />
                 </Style>
             </Style>
         </Style>
@@ -179,44 +179,48 @@
             <Style Selector="^[Status=Error]">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:TextAreaTokenResource ColorErrorText}" />
+                            Value="{atom:OwnerTokenResource ColorErrorText, SourceControlType={x:Type atom:TextArea}}" />
                 </Style>
             </Style>
             <Style Selector="^:error">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:TextAreaTokenResource ColorErrorText}" />
+                            Value="{atom:OwnerTokenResource ColorErrorText, SourceControlType={x:Type atom:TextArea}}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ Panel#ContentLayout">
                     <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:TextAreaTokenResource ColorWarningText}" />
+                            Value="{atom:OwnerTokenResource ColorWarningText, SourceControlType={x:Type atom:TextArea}}" />
                 </Style>
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="LineHeight" Value="{atom:TextAreaTokenResource FontHeightLG}" />
+            <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeightLG, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="LineHeight" Value="{atom:TextAreaTokenResource FontHeight}" />
+        <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeight, SourceControlType={x:Type atom:TextArea}}" />
+
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeight, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="LineHeight" Value="{atom:TextAreaTokenResource FontHeightSM}" />
+            <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeightSM, SourceControlType={x:Type atom:TextArea}}" />
             <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
                 <Setter Property="Margin" Value="0, 1, 0, 1" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="FontSize" Value="{atom:TextAreaTokenResource FontSizeLG}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeLG, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:TextAreaTokenResource FontSize}" />
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize, SourceControlType={x:Type atom:TextArea}}" />
+
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:TextAreaTokenResource FontSizeSM}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
 
         <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
@@ -227,49 +231,52 @@
         <Style
             Selector="^ /template/ StackPanel#PART_LeftAddOnLayout, ^ /template/ StackPanel#PART_RightAddOnLayout">
             <Setter Property="Spacing"
-                    Value="{atom:TextAreaTokenResource UniformlyPaddingXXS}" />
+                    Value="{atom:OwnerTokenResource UniformlyPaddingXXS, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|TextBlock#TextCountIndicator">
-            <Setter Property="Foreground" Value="{atom:TextAreaTokenResource ColorTextPlaceholder}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextPlaceholder, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
 
         <Style Selector="^[StyleVariant=Outlined] /template/ atom|TextAreaDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default][IsInnerBoxHover=True],
                          ^[StyleVariant=Underlined] /template/ atom|TextAreaDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default][IsInnerBoxHover=True]">
             <Setter Property="BorderBrush"
-                    Value="{atom:TextAreaTokenResource ColorPrimaryHover}" />
+                    Value="{atom:OwnerTokenResource ColorPrimaryHover, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
         <Style Selector="^:focus-within[StyleVariant=Outlined] /template/ atom|TextAreaDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default],
                          ^:focus-within[StyleVariant=Underlined] /template/ atom|TextAreaDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
             <Setter Property="BorderBrush"
-                    Value="{atom:TextAreaTokenResource ColorPrimary}" />
+                    Value="{atom:OwnerTokenResource ColorPrimary, SourceControlType={x:Type atom:TextArea}}" />
             <Setter Property="BoxShadow"
-                    Value="{atom:TextAreaTokenResource InputActiveShadow}" />
+                    Value="{atom:OwnerTokenResource InputActiveShadow, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
         <Style Selector="^:focus-within[StyleVariant=Filled] /template/ atom|TextAreaDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
             <Setter Property="BorderBrush"
-                    Value="{atom:TextAreaTokenResource ColorPrimary}" />
+                    Value="{atom:OwnerTokenResource ColorPrimary, SourceControlType={x:Type atom:TextArea}}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BoxShadow"
-                    Value="{atom:TextAreaTokenResource InputActiveShadow}" />
+                    Value="{atom:OwnerTokenResource InputActiveShadow, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:TextAreaTokenResource ColorTextDisabled}" />
+                    Value="{atom:OwnerTokenResource ColorTextDisabled, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
-        <Setter Property="BorderThickness" Value="{atom:TextAreaTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness, SourceControlType={x:Type atom:TextArea}}" />
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="Padding" Value="{atom:TextAreaTokenResource InputPaddingLG}" />
-            <Setter Property="CornerRadius" Value="{atom:TextAreaTokenResource BorderRadiusLG}" />
+            <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPaddingLG, SourceControlType={x:Type atom:TextArea}}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="Padding" Value="{atom:TextAreaTokenResource InputPadding}" />
-            <Setter Property="CornerRadius" Value="{atom:TextAreaTokenResource BorderRadius}" />
+        <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPadding, SourceControlType={x:Type atom:TextArea}}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius, SourceControlType={x:Type atom:TextArea}}" />
+
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPadding, SourceControlType={x:Type atom:TextArea}}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="Padding" Value="{atom:TextAreaTokenResource InputPaddingSM}" />
-            <Setter Property="CornerRadius" Value="{atom:TextAreaTokenResource BorderRadiusSM}" />
+            <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPaddingSM, SourceControlType={x:Type atom:TextArea}}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM, SourceControlType={x:Type atom:TextArea}}" />
         </Style>
 
     </ControlTheme>

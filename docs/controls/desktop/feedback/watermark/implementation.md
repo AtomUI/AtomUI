@@ -152,3 +152,11 @@ Watermark 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+## 绘制输入边界
+
+Watermark 不拥有独立 Own 或 ControlTheme 参数。TextGlyph 的文字、FontSize、Foreground 和固定 Typeface.Default 是 glyph 内容模型；ImageGlyph 的 Source/Height 决定实际比例尺寸，不从宿主字体或任意关联控件 Token 推导。
+
+TextGlyph 在文字或字号变化时重建排版，确保字号缩小时段落行高也恢复；前景色更新复用排版。Glyph 属性变化使矩阵/绘制缓存失效；目标尺寸变化也参与缓存 key。旋转、交叉/镜像、偏移和合法步长保持既有含义；非有限或不前进的 tile 步长由绘制入口拒绝。普通内容更新不新建全局资源字典。
+
+非 Visual glyph 使用生成的 scoped resource host。实际水印 attach 时取得目标资源 owner，detach 时解除 PropertyChanged 并释放该 attachment；共享 glyph 由最后活动 owner 提供单一资源值。实际 adorner 与 glyph 数据分别承担树成员和内容职责，不为水印制造独立 Token 身份。

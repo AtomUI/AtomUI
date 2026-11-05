@@ -335,3 +335,7 @@ Semantic Style 服从 Avalonia 原生属性优先级。Part Setter 命中只证�
 - owner-scoped Semantic Style（生成的 Style 类型）与 `x:SetterTargetType` 可以编译并命中对应最低 public 类型。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - Generator 静态输出和 NativeAOT 路径不依赖反射或运行时扫描。
+
+## 重挂与样式优先级
+
+rail/tracks/track/handle 继续命中 SliderTrack 所拥有的实际绘制节点，动态 handle 与 segment 不更换公共 route。owner 重新挂载会恢复输入订阅，专用 Style 的 Setter 与原生实例优先级不变；不通过扩大 hit 区域、重写 Part 画刷或另造透明代理完成恢复。

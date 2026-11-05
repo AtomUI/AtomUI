@@ -4,6 +4,21 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:UploadDefaultDropArea}" TargetType="atom:UploadDefaultDropArea">
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:DashedBorder Name="Frame"
@@ -26,55 +41,55 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}"/>
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}"/>
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}"/>
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}"/>
-        <Setter Property="Padding" Value="{atom:SharedTokenResource Padding}"/>
+        <Setter Property="Background" Value="{atom:UploadDefaultDropAreaTokenResource ColorFillAlter}"/>
+        <Setter Property="CornerRadius" Value="{atom:UploadDefaultDropAreaTokenResource BorderRadiusLG}"/>
+        <Setter Property="BorderBrush" Value="{atom:UploadDefaultDropAreaTokenResource ColorBorder}"/>
+        <Setter Property="BorderThickness" Value="{atom:UploadDefaultDropAreaTokenResource BorderThickness}"/>
+        <Setter Property="Padding" Value="{atom:UploadDefaultDropAreaTokenResource Padding}"/>
         <Setter Property="Header" Value="{atom:UploadLangResource DragUploadHead}"/>
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}"/>
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}"/>
         
         <Style Selector="^ /template/ atom|DashedBorder#Frame">
             <Setter Property="StrokeDashArray" Value="4, 2"/>
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorPrimary}"/>
+            <Setter Property="IconBrush" Value="{atom:UploadDefaultDropAreaTokenResource ColorPrimary}"/>
             <Setter Property="Width" Value="{atom:UploadTokenResource DragIconSize}"/>
             <Setter Property="Height" Value="{atom:UploadTokenResource DragIconSize}"/>
             <Setter Property="Margin" Value="{atom:UploadTokenResource DragIconMargin}"/>
         </Style>
         
         <Style Selector="^:pointerover">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>
+            <Setter Property="BorderBrush" Value="{atom:UploadDefaultDropAreaTokenResource ColorPrimaryHover}"/>
         </Style>
         
         <Style Selector="^ /template/ ContentPresenter#HeaderContentPresenter">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextHeading}"/>
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}"/>
+            <Setter Property="Foreground" Value="{atom:UploadDefaultDropAreaTokenResource ColorTextHeading}"/>
+            <Setter Property="FontSize" Value="{atom:UploadDefaultDropAreaTokenResource FontSizeLG}"/>
             <Setter Property="Margin" Value="{atom:UploadTokenResource DragHeaderMargin}"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
         
         <Style Selector="^ /template/ ContentPresenter#SubHeaderContentPresenter">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}"/>
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}"/>
+            <Setter Property="Foreground" Value="{atom:UploadDefaultDropAreaTokenResource ColorTextDescription}"/>
+            <Setter Property="FontSize" Value="{atom:UploadDefaultDropAreaTokenResource FontSize}"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
         
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextDisabled}"/>
+                <Setter Property="IconBrush" Value="{atom:UploadDefaultDropAreaTokenResource ColorTextDisabled}"/>
             </Style>
 
             <Style Selector="^ /template/ ContentPresenter#HeaderContentPresenter">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}"/>
+                <Setter Property="Foreground" Value="{atom:UploadDefaultDropAreaTokenResource ColorTextDisabled}"/>
             </Style>
 
             <Style Selector="^ /template/ ContentPresenter#SubHeaderContentPresenter">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}"/>
+                <Setter Property="Foreground" Value="{atom:UploadDefaultDropAreaTokenResource ColorTextDisabled}"/>
             </Style>
         </Style>
 

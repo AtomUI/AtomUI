@@ -27,7 +27,11 @@ using AvaloniaScrollViewer = Avalonia.Controls.ScrollViewer;
 
 namespace AtomUI.Registration.Fixtures;
 
+#if BROWSER
+public abstract partial class ProductApp : Application
+#else
 public partial class ProductApp : Application
+#endif
 {
     private Button _button = null!;
     private IReadOnlyList<EnabledControlPackage> _packages = null!;

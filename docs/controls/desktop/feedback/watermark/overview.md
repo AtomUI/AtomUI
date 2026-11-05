@@ -85,7 +85,7 @@ Watermark 的视觉模型由控件模板、ControlTheme、SharedToken 和必要�
 
 当前控件未抽取到专属 AXAML 主题文件；视觉契约主要来自继承控件、共享主题和资源 key。
 
-Watermark 当前没有专属 Token 文档；主题通过 SharedToken、关联控件 Token 或继承主题资源表达视觉语义。运行时状态不得写入 Token 模型。
+Watermark 没有独立 Own 或 ControlTheme；外观由 Glyph 内容属性及其作用域资源表达。TextGlyph 保留固定 Typeface.Default，ImageGlyph 按 Source/Height 保持比例；不把内容数据隐式转换为宿主 Global。运行时状态不得写入 Token 模型。
 
 主题维护规则：
 

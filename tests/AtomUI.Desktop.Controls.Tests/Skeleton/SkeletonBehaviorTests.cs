@@ -1,4 +1,5 @@
 using System.Reflection;
+using AtomUI.Theme;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Animation;
@@ -23,7 +24,7 @@ public class SkeletonBehaviorTests
     public void Loading_Background_Uses_AntDesign_Shimmer_Geometry()
     {
         var token = new SkeletonToken();
-        token.AssignEffectiveGlobalToken(new DesignToken
+        var global = new DesignToken
         {
             ColorFillContent   = Colors.LightGray,
             ColorFill          = Colors.WhiteSmoke,
@@ -33,9 +34,9 @@ public class SkeletonBehaviorTests
             UniformlyMarginLG  = 24,
             UniformlyMarginXXS = 4,
             ControlHeightXS    = 16
-        });
+        };
 
-        token.CalculateTokenValues(isDarkMode: false);
+        SkeletonToken.EvaluateDefaults(token, new ControlTokenDefaultContext(global, ThemeAppearance.Light), [0UL]);
 
         AssertLoadingBrush(token.LoadingBackgroundStart, new Point(-3.0, 0.5), new Point(1.0, 0.5));
         AssertLoadingBrush(token.LoadingBackgroundMiddle, new Point(-1.5, 0.5), new Point(2.5, 0.5));

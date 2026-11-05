@@ -70,6 +70,10 @@ Browser 当前要求 `WasmEnableWebcil=false`；桥接后的托管 ReadyToRun/�
 不计算哪些片段可达。源包、NuGet 缓存和原编译 DLL 不修改，副本保留 original → transformed 内容链。
 框架引用重定向仅采用已核验 SDK 框架映射；第三方程序集仍要求完整身份一致。
 
+旧 Core 也作为独立发布视图处理：按其原 net8 getter 的严格模板与四状态语义验证后，绑定已校验的目标 CoreLib10，
+将发布副本中的裁剪模式规范化为 true。普通 build 与原包缓存保持原件；NativeAOT 转换清单把该 Core 纳入原件、转换副本、
+引擎输入和部署内容链，托管 ILLink 路径要求其实际采用 Link action。现代 Core 仍使用官方 FeatureSwitchDefinition。
+
 官方 ILLink、ILC10 和 Browser 各自消费转换后的输入。Browser 接在 TypeMap materializer 注入之后、签名捕获之前，
 依次验证 linked、IL stripping / AOT 的最终结果及部署副本。纯 net10 快速路径不依赖 bridge 工具存在。
 

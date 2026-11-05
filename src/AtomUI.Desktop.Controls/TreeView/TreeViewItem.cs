@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
@@ -22,7 +23,8 @@ namespace AtomUI.Desktop.Controls;
 using AvaloniaTreeItem = Avalonia.Controls.TreeViewItem;
 
 [PseudoClasses(TreeViewPseudoClass.NodeToggleTypeCheckBox, TreeViewPseudoClass.NodeToggleTypeRadio)]
-public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
+public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> IconProperty =
@@ -1090,4 +1092,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     {
         public bool IsVisible { get; set; }
     }
+
+    // The theme preserves the actual inheritance parent when owner typography is not explicit.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

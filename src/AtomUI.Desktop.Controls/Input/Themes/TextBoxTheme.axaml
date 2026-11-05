@@ -3,7 +3,7 @@
               xmlns:atom="https://atomui.net"
               x:Class="AtomUI.Desktop.Controls.Themes.TextBoxTheme"
               x:ClassModifier="internal"
-              TargetType="atom:TextBox">
+              TargetType="atom:TextBox" x:DataType="atom:TextBox">
     <Setter Property="FontFamily">
         <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
             <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
@@ -161,26 +161,35 @@
             <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadiusSM}" />
             <Setter Property="Padding" Value="{atom:TextBoxTokenResource ContentPaddingSM}" />
         </Style>
-        <Style Selector="^[SizeType=Custom]">
-            <Setter Property="LineHeight" Value="{atom:TextBoxTokenResource FontHeight}" />
-            <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadius}" />
-        </Style>
+        <Setter Property="LineHeight" Value="{atom:TextBoxTokenResource FontHeight}" />
+        <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadius}" />
     
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <CompiledBindingExtension Path="$self.SizeType" />
+                <CompiledBindingExtension Path="$self.IsCustomFontSize" />
+                <atom:TextBoxTokenResource Kind="FontSize" />
+                <atom:TextBoxTokenResource Kind="FontSize" />
+                <atom:TextBoxTokenResource Kind="FontSizeSM" />
+                <atom:TextBoxTokenResource Kind="FontSizeSM" />
+                <atom:TextBoxTokenResource Kind="FontSizeLG" />
+                <atom:TextBoxTokenResource Kind="FontSizeLG" />
+            </MultiBinding>
+        </Setter>
+
         <Style Selector="^[IsCustomFontSize=False]">
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="FontSize" Value="{atom:TextBoxTokenResource FontSizeLG}" />
-                <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadiusLG}" />
             </Style>
-            <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <Style Selector="^[SizeType=Middle]">
                 <Setter Property="FontSize" Value="{atom:TextBoxTokenResource FontSize}" />
-                <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadius}" />
             </Style>
             <Style Selector="^[SizeType=Small]">
                 <Setter Property="FontSize" Value="{atom:TextBoxTokenResource FontSizeSM}" />
-                <Setter Property="CornerRadius" Value="{atom:TextBoxTokenResource BorderRadiusSM}" />
             </Style>
         </Style>
-    
+
         <Setter Property="PlaceholderForeground" Value="{atom:TextBoxTokenResource ColorTextPlaceholder}" />
 
         <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">

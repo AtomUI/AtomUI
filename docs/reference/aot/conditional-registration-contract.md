@@ -119,6 +119,11 @@ Register_<stableId>      -> builder.AddFragment(new 对应Proxy())
 完整/选中路径共用 thunk 与片段的 Add 实现。不得直接调用 Proxy.Add 绕过 builder 的去重、冲突和失败状态校验。
 平台 guard 留在片段中，在 descriptor/factory 引用之前执行；不改变主题与资源的原有业务事实。
 
+thunk 与三个协议 collector 必须位于包程序集内的同一无状态类型，且该类型无字段和类型初始化器。生成器将它与持有包
+启动定义的类型分开，避免选择单个片段时触发包级静态初始化。`registrationMethod.declaringType` 指向实际 thunk 类型；完整 collector 仍按
+原 order 传递同一 builder 调用这些方法。该类型是内部生成细节，不改变 format 1、片段身份或公开注册 API。
+已有产物若把 thunk 放在带包启动状态的类型中，需使用修正后的生成器重新编译；不能通过跳过 ILC8 校验消费该产物。
+
 绑定器在改写前核对这些方法体的调用目标、参数流和异常区域，并验证 proxy 继承及 self Attribute。
 允许协议规定的 Debug nop 等无语义差异；不接受任意额外调用、重入分支或已经物化过的入口。
 发布分析前将 Collect 切换到选中路径并断开完整集合根；没有有效分析结果时，不能把 selected stub 变成成功的空注册。
@@ -161,3 +166,7 @@ net8 的正常 Core getter 仍使用 `AppContext.TryGetSwitch("AtomUI.Registrati
 真实裁剪/AOT 发布后端通过 `atomui.trimmed-switch.v1` 校验完整 Core/BCL 身份、签名和四种输入状态下的布尔语义，
 再在发布视图中将 getter 规范化为 true。这样不依赖迟于 runtimeconfig 生成的 MSBuild setter，也不修改普通 build 的程序集。
 未知 getter 模板、额外调用或不等价返回规则会被拒绝；net10 保留官方 FeatureSwitchDefinition 路径。
+
+net10 桥接输入若包含 net8 Core，也必须在发布视图中执行同一规范化：该 Core 没有官方 FeatureSwitchDefinition，
+不能依赖迟到的运行开关让它报告已裁剪。桥接使用已校验 SDK runtime pack 的 CoreLib10 身份并保留四状态模板检查；
+net8 后端继续默认要求 CoreLib8。原包和缓存不修改，原生转换清单必须包含被规范化 Core 的原件/副本 hash 与实际消费路径。

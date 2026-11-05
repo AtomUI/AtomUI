@@ -88,6 +88,23 @@ reload command 或菜单，宿主需要刷新用户主题时直接调用 `ITheme
 首次用户来源降级、整批原子刷新和删除当前用户主题后的默认回退语义以
 [主题系统架构](../../architecture/systems/theming/runtime.md)为准。
 
+## 工具 owner 与预览内容
+
+GalleryBase 的页头、卡片、Zoom、Semantic Part Preview 和 Shell 绘制输入使用各自注册 owner 的有效 Global/Own。
+工具配置只改变工具表面或工具文字；预览内容中的 Button、输入、菜单等公开控件保留自己的 identity。Preview 不在
+产品内容的祖先上设置工具字号；标题、Part 行和技术信息分别从 Preview owner 读取自己的排版输入。
+
+`GalleryCodeViewer` 的 `CodeFontSize` / `CodeFontFamily` 是代码区 Own，默认13 DIP及原等宽字体列表，独立于产品 UI 字体。
+`LightSyntaxTheme` / `DarkSyntaxTheme` 继续属于 TextMate 语法设置；Search UI的兼容资源与代码字号是不同职责。
+Preview 的面板、紧凑留白、标题、列表行和信息区由其 Own 度量提供默认；分隔线默认依赖该工具 owner 的 LineWidth。
+Shell 的品牌文字/留白和footer由 Shell Own 提供默认；产品Logo factory、配置sidebar宽度及Medium自动折叠职责保持独立。
+
+Preview 的820 DIP外层断点与内部panel比较同一坐标空间：内部断点减去实际inspection margin和border。
+panel仍按实际available width/height测量，不能用上次Arrange状态强制其测量模式；有界高度钳制、内部滚动和无界pane cap保留。
+
+新 Own scope 的公开资源编号登记在既有 token-resource-ids.tsv，旧scope及编号不重排。运行时仍通过同一ThemeManager、
+Snapshot和原生Style优先级，不创建工具专用Token字典或预览旁路。
+
 ## Shell 主题选择状态
 
 `GalleryWorkspaceViewModel` 把 ThemeManager 已提交的 Catalog 和主题状态投影成 Shell 可消费的只读状态：
@@ -141,7 +158,7 @@ GalleryBase 当前主题资产包括：
 Styles；开发者不维护 `GalleryControlThemesProvider.axaml` 聚合字典、Theme Module、glob Attribute 或手工
 manifest。单个 Control 只有一个 ControlTheme 时只保留对应主题文件，不增加包装层。
 
-`GalleryShellView` 当前主要通过 C# 组合 AtomUI 现有控件和 Shared Token 完成 sidebar、footer、分隔线与内容区背景；后续如果 sidebar/navigation 有独立主题状态，再补对应 GalleryBase 控件主题和 token。
+`GalleryShellView` 通过 C# 组合既有控件，绑定 Shell owner 的有效 Global 和 Own 完成 sidebar、footer、分隔线与内容区背景。运行时 Content factory 的节点不能通过模板选择器到达，代码绑定随 Shell 对称释放。
 
 ## Control Token
 
@@ -156,6 +173,9 @@ GalleryBase Token 清单：
 | `GalleryWindowTitleBarToken` | 标题栏菜单字体和间距 |
 | `GallerySidebarToken` | 侧边栏宽度、brand/footer padding、分隔线 |
 | `GalleryNavigationToken` | 导航 margin、默认缩进、滚动条间距 |
+| `GalleryCodeViewerToken` | 代码区等宽字体族与字号，独立于 TextMate 语法主题 |
+| `SemanticPartPreviewToken` | 面板、标题、Part 行和信息区的密度与排版 |
+| `GalleryShellViewToken` | 默认品牌文字、品牌/页脚留白与页脚边线 |
 
 Own Token 类只在 Control 存在独有设计值时创建，并由 AtomUI generator 按约定识别：
 
@@ -177,6 +197,8 @@ Padding="{gallery:ShowCaseItemTokenResource CardPadding}"
 ```
 
 `GalleryShowCaseHeaderToken` 只承载 Gallery 文档页头的结构性视觉值，例如 margin、间距、字号、metadata 卡片边框和默认宽度。metadata label/value 属于页头信息文本，默认通过同一字体 token 跟随全局 UI 字体；等宽字体只用于 `GalleryCodeViewer` 等代码展示控件。分类、状态、引入版本 Tag 的颜色仍通过 `GalleryShowCaseHeader` 属性传给 AtomUI `Tag`，不在 token 中写死具体业务状态。
+
+`MetadataItemSpacing` 保留历史名称、类型、默认和资源编号，没有内置视觉消费者；兼容分类提案见 CT21 出口。它不作为有效布局入口向工作台用户展示。
 
 ## Global Token 使用规则
 
@@ -202,7 +224,7 @@ Global Token 时使用对应的 `XxxTokenResource`；只有要求该值永远跟
 GalleryBase复用其中已形成稳定产品中立责任的Shell、展示和检查设施，不持有产品配方、页面、服务凭据或第二套活动主题。
 
 Shell继续以已提交ThemeManager状态更新菜单；工作台草稿不能直接修改`CurrentThemeId`或应用资源。Token提交结果和品牌表现
-完整性分别消费，未完整应用不能显示为品牌成功。当前Shell切换和工作台目标能力分开记录实现证据。
+完整性分别消费，未完整应用不能显示为品牌成功。当前Shell切换与产品workspace手动工作台分别记录实现证据；工作台持有草稿及两个局部预览，不建立第二套活动主题。
 
 ## 通用页头本地化
 

@@ -14,6 +14,7 @@
                                          BorderThickness="{TemplateBinding BorderThickness}">
                     <atomc:RateItemsControl Name="PART_RateItems"
                                             Character="{TemplateBinding Character}"
+                                            SizeType="{TemplateBinding SizeType}"
                                             StarColor="{TemplateBinding StarColor}"
                                             StarBgColor="{TemplateBinding StarBgColor}"
                                             IsAllowClear="{TemplateBinding IsAllowClear}"
@@ -23,9 +24,19 @@
                 </atom:PixelAlignedBorder>
             </ControlTemplate>
         </Setter>
-        <Setter Property="FontFamily" Value="{atom:RateTokenResource CharacterFontFamily}" />
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                    <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                    <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                    <atom:OwnerTokenResource Kind="FontFamily" />
+                </MultiBinding>
+                <atom:RateTokenResource Kind="CharacterFontFamily" WhenExplicit="True" />
+                <atom:RateTokenResource Kind="CharacterFontFamily" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Focusable" Value="True" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="StarColor" Value="{atom:RateTokenResource StarColor}" />
         <Setter Property="StarBgColor" Value="{atom:RateTokenResource StarBg}" />
         <Setter Property="ClipToBounds" Value="False" />

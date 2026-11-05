@@ -88,7 +88,7 @@
                                            IsAllowClear="True">
                                 <atom:LineEdit.InnerLeftContent>
                                     <antdicons:SearchOutlined
-                                        StrokeBrush="{atom:SharedTokenResource ColorTextDescription}" />
+                                        StrokeBrush="{atom:OwnerTokenResource Kind=ColorTextDescription, AnchorControlType={x:Type atom:TransferItemDecorator}, Priority=Template}" />
                                 </atom:LineEdit.InnerLeftContent>
                             </atom:LineEdit>
                             <ContentPresenter Name="ContentPresenter"
@@ -107,26 +107,26 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorder, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource Kind=BorderThickness, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadiusLG, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
 
         <Setter Property="ItemUint" Value="{atom:TransferLangResource Item}" />
         <Setter Property="ItemUintPlural"
                 Value="{atom:TransferLangResource Items}" />
 
         <Style Selector="^/template/ atom|PixelAlignedBorder#HeaderFrame">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorSplit, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
         </Style>
 
         <Style Selector="^/template/ DockPanel#HeaderLayout">
-            <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource Kind=SpacingXXS, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
         </Style>
 
         <Style Selector="^/template/ atom|IconButton#MenuIndicator">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource FontSizeIcon}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource FontSizeIcon}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource Kind=FontSizeIcon, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource Kind=FontSizeIcon, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
         </Style>
 
         <Style Selector="^[IsShowSelectAllCheckbox=True][ViewType=Source]">
@@ -142,21 +142,21 @@
         </Style>
 
         <Style Selector="^/template/ atom|LineEdit#FilterInput">
-            <Setter Property="Margin" Value="{atom:SharedTokenResource MarginXS}" />
+            <Setter Property="Margin" Value="{atom:OwnerTokenResource Kind=MarginXS, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
         </Style>
 
         <Style Selector="^/template/ atom|PixelAlignedBorder#FooterFrame">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorSplit, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
         </Style>
-        
+
         <Style Selector="^:not(^:disabled)">
             <Style Selector="^[Status=Error]">
                 <Setter Property="BorderBrush"
-                        Value="{atom:SharedTokenResource ColorError}" />
+                        Value="{atom:OwnerTokenResource Kind=ColorError, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
             </Style>
             <Style Selector="^[Status=Warning]">
                 <Setter Property="BorderBrush"
-                        Value="{atom:SharedTokenResource ColorWarning}" />
+                        Value="{atom:OwnerTokenResource Kind=ColorWarning, AnchorControlType={x:Type atom:TransferItemDecorator}}" />
             </Style>
         </Style>
 

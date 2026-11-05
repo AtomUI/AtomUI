@@ -107,3 +107,8 @@
   - Add Pagination implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add Pagination control-level changelog.
   - Add Pagination Token documentation covering PaginationToken.
+
+
+## 2026-10-30 主题消费与字体
+
+Pagination 与 SimplePagination 保留各自公开身份；导航、条目及组合内容等内部节点使用真实 owner 的 Global。字体采用可选覆盖，Custom 不参与预设尺寸 activator；小号与标准输入的既有 Own 接线保持。导航和焦点由原模型及原输入流管理。

@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Animations;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -42,7 +43,8 @@ public abstract class AbstractAutoComplete : TemplatedControl,
                                              IFormItemAware,
                                              IInputControlStatusAware,
                                              IInputControlStyleVariantAware,
-                                             IFormItemFeedbackAware
+                                             IFormItemFeedbackAware,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -753,7 +755,8 @@ public abstract class AbstractAutoComplete : TemplatedControl,
     {
         base.OnPropertyChanged(change);
         if (change.Property == DisplayCandidateCountProperty ||
-            change.Property == ItemHeightProperty)
+            change.Property == ItemHeightProperty ||
+            change.Property == PopupContentPaddingProperty)
         {
             ConfigureMaxPopupHeight();
         }
@@ -911,6 +914,9 @@ public abstract class AbstractAutoComplete : TemplatedControl,
 
         if (_popup != null)
         {
+            // Pinning is behavior of the Popup supplied by the current (possibly custom) template.
+            // Bind that acquired part before opening, at local priority; a default-theme Setter
+            // cannot preserve the same initialization and priority for replacement template parts.
             _popupPinnedOpenBinding = BindUtils.RelayBind(
                 this,
                 IsPopupPinnedOpenProperty,
@@ -1884,4 +1890,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
     }
 
     #endregion
+
+    // AXAML cannot read AvaloniaObject's protected, potentially non-logical inheritance parent.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

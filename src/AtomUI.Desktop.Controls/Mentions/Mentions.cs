@@ -13,6 +13,7 @@ using AtomUI.Desktop.Controls.DataLoad;
 using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Input;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -35,24 +36,26 @@ public partial class Mentions : TemplatedControl,
                         IInputControlStatusAware,
                         IInputControlStyleVariantAware,
                         ICustomizableSizeTypeAware,
-                        IFormItemFeedbackAware
+                        IFormItemFeedbackAware,
+                        IThemeInheritanceSource
 {
     #region 公共属性定义
+
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
         AvaloniaProperty.Register<Mentions, PathIcon?>(nameof(ClearIcon));
-    
+
     public static readonly StyledProperty<string?> ValueProperty =
         AvaloniaProperty.Register<Mentions, string?>(
             nameof(Value),
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
-    
+
     public static readonly StyledProperty<bool> IsAllowClearProperty =
         AvaloniaProperty.Register<Mentions, bool>(nameof(IsAllowClear));
-    
+
     public static readonly StyledProperty<bool> IsAutoFocusProperty =
         AvaloniaProperty.Register<Mentions, bool>(nameof(IsAutoFocus));
-    
+
     public static readonly StyledProperty<bool> IsAutoSizeProperty =
         AvaloniaProperty.Register<Mentions, bool>(nameof(IsAutoSize));
 
@@ -61,88 +64,88 @@ public partial class Mentions : TemplatedControl,
 
     public static readonly StyledProperty<MentionsPlacementMode> PlacementProperty =
         AvaloniaProperty.Register<Mentions, MentionsPlacementMode>(nameof(Placement), MentionsPlacementMode.Bottom);
-    
+
     public static readonly StyledProperty<object?> EmptyIndicatorProperty =
         AvaloniaProperty.Register<Mentions, object?>(nameof(EmptyIndicator));
-    
+
     public static readonly StyledProperty<IDataTemplate?> EmptyIndicatorTemplateProperty =
         AvaloniaProperty.Register<Mentions, IDataTemplate?>(nameof(EmptyIndicatorTemplate));
-    
+
     public static readonly StyledProperty<bool> IsShowEmptyIndicatorProperty =
         AvaloniaProperty.Register<Mentions, bool>(nameof(IsShowEmptyIndicator), true);
-    
+
     public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
         AvaloniaProperty.Register<Mentions, Thickness>(nameof(EmptyIndicatorPadding));
-    
+
     public static readonly StyledProperty<IList<string>?> TriggerPrefixProperty =
         AvaloniaProperty.Register<Mentions, IList<string>?>(nameof(TriggerPrefix));
-    
+
     public static readonly StyledProperty<string?> SplitProperty =
         AvaloniaProperty.Register<Mentions, string?>(nameof(Split));
 
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         AvaloniaProperty.Register<Mentions, bool>(nameof(ShouldUseOverlayPopup), true);
-    
+
     public static readonly StyledProperty<object?> ContentLeftAddOnProperty =
         AddOnDecoratedBox.ContentLeftAddOnProperty.AddOwner<Mentions>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> ContentLeftAddOnTemplateProperty =
         AddOnDecoratedBox.ContentLeftAddOnTemplateProperty.AddOwner<Mentions>();
 
     public static readonly StyledProperty<object?> ContentRightAddOnProperty =
         AddOnDecoratedBox.ContentRightAddOnProperty.AddOwner<Mentions>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> ContentRightAddOnTemplateProperty =
         AddOnDecoratedBox.ContentRightAddOnTemplateProperty.AddOwner<Mentions>();
-    
+
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
         InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<Mentions>();
 
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<Mentions>();
-    
+
     public static readonly StyledProperty<string?> PlaceholderTextProperty =
         AvaloniaProperty.Register<Mentions, string?>(nameof(PlaceholderText));
-    
+
     public static readonly StyledProperty<IEnumerable<IMentionOption>?> OptionsSourceProperty =
         AvaloniaProperty.Register<Mentions, IEnumerable<IMentionOption>?>(nameof(OptionsSource));
-    
+
     public static readonly StyledProperty<IDataTemplate?> OptionTemplateProperty =
         AvaloniaProperty.Register<Mentions, IDataTemplate?>(nameof(OptionTemplate));
-    
-    public static readonly StyledProperty<bool> IsMotionEnabledProperty = 
+
+    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Mentions>();
-    
+
     public static readonly StyledProperty<int> LinesProperty =
         TextArea.LinesProperty.AddOwner<Mentions>();
-    
+
     public static readonly StyledProperty<int> MinLinesProperty =
         TextArea.MinLinesProperty.AddOwner<Mentions>();
-    
+
     public static readonly StyledProperty<int> MaxLinesProperty =
         TextArea.MaxLinesProperty.AddOwner<Mentions>();
-    
+
     public static readonly StyledProperty<IMentionOptionsAsyncLoader?> OptionsAsyncLoaderProperty =
         AvaloniaProperty.Register<Mentions, IMentionOptionsAsyncLoader?>(nameof(OptionsAsyncLoader));
-    
+
     public static readonly DirectProperty<Mentions, bool> IsLoadingProperty =
         AvaloniaProperty.RegisterDirect<Mentions, bool>(
             nameof(IsLoading),
             o => o.IsLoading);
-    
-    public static readonly StyledProperty<int> DisplayCandidateCountProperty = 
+
+    public static readonly StyledProperty<int> DisplayCandidateCountProperty =
         AvaloniaProperty.Register<Mentions, int>(nameof (DisplayCandidateCount), 10);
-    
+
     public static readonly StyledProperty<bool> IsReadOnlyProperty =
         TextArea.IsReadOnlyProperty.AddOwner<Mentions>();
-    
+
     public static readonly StyledProperty<IValueFilter?> FilterProperty =
         AvaloniaProperty.Register<Mentions, IValueFilter?>(nameof(Filter));
-    
+
     public static readonly StyledProperty<DefaultFilterValueSelector?> FilterValueSelectorProperty =
         AvaloniaProperty.Register<Mentions, DefaultFilterValueSelector?>(
             nameof(FilterValueSelector));
-    
+
     public static readonly StyledProperty<TimeSpan> AsyncLoadDebounceProperty =
         AvaloniaProperty.Register<Mentions, TimeSpan>(
             nameof(AsyncLoadDebounce),
@@ -153,53 +156,59 @@ public partial class Mentions : TemplatedControl,
         AvaloniaProperty.Register<Mentions, TimeSpan>(
             nameof(AsyncLoadTimeout),
             TimeSpan.FromSeconds(10));
-    
+
     public static readonly StyledProperty<bool> IsDropDownOpenProperty =
         AvaloniaProperty.Register<Mentions, bool>(
             nameof(IsDropDownOpen));
-    
+
     public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<Mentions>();
 
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<Mentions>();
-    
+
     public PathIcon? ClearIcon
     {
         get => GetValue(ClearIconProperty);
         set => SetValue(ClearIconProperty, value);
     }
-    
+
     public string? Value
     {
         get => GetValue(ValueProperty);
         set => SetValue(ValueProperty, value);
     }
-    
+
     public bool IsAllowClear
     {
         get => GetValue(IsAllowClearProperty);
         set => SetValue(IsAllowClearProperty, value);
     }
-    
+
     public bool IsAutoFocus
     {
         get => GetValue(IsAutoFocusProperty);
         set => SetValue(IsAutoFocusProperty, value);
     }
-    
+
     public bool IsAutoSize
     {
         get => GetValue(IsAutoSizeProperty);
         set => SetValue(IsAutoSizeProperty, value);
     }
-    
+
+    public string? DefaultValue
+    {
+        get => GetValue(DefaultValueProperty);
+        set => SetValue(DefaultValueProperty, value);
+    }
+
     public MentionsPlacementMode Placement
     {
         get => GetValue(PlacementProperty);
         set => SetValue(PlacementProperty, value);
     }
-    
+
     [DependsOn(nameof(EmptyIndicatorTemplate))]
     public object? EmptyIndicator
     {
@@ -212,25 +221,19 @@ public partial class Mentions : TemplatedControl,
         get => GetValue(EmptyIndicatorTemplateProperty);
         set => SetValue(EmptyIndicatorTemplateProperty, value);
     }
-    
+
     public bool IsShowEmptyIndicator
     {
         get => GetValue(IsShowEmptyIndicatorProperty);
         set => SetValue(IsShowEmptyIndicatorProperty, value);
     }
-    
+
     public Thickness EmptyIndicatorPadding
     {
         get => GetValue(EmptyIndicatorPaddingProperty);
         set => SetValue(EmptyIndicatorPaddingProperty, value);
     }
 
-    public string? DefaultValue
-    {
-        get => GetValue(DefaultValueProperty);
-        set => SetValue(DefaultValueProperty, value);
-    }
-    
     public IList<string>? TriggerPrefix
     {
         get => GetValue(TriggerPrefixProperty);
@@ -248,13 +251,13 @@ public partial class Mentions : TemplatedControl,
         get => GetValue(ShouldUseOverlayPopupProperty);
         set => SetValue(ShouldUseOverlayPopupProperty, value);
     }
-    
+
     public object? ContentLeftAddOn
     {
         get => GetValue(ContentLeftAddOnProperty);
         set => SetValue(ContentLeftAddOnProperty, value);
     }
-    
+
     public IDataTemplate? ContentLeftAddOnTemplate
     {
         get => GetValue(ContentLeftAddOnTemplateProperty);
@@ -266,13 +269,13 @@ public partial class Mentions : TemplatedControl,
         get => GetValue(ContentRightAddOnProperty);
         set => SetValue(ContentRightAddOnProperty, value);
     }
-    
+
     public IDataTemplate? ContentRightAddOnTemplate
     {
         get => GetValue(ContentRightAddOnTemplateProperty);
         set => SetValue(ContentRightAddOnTemplateProperty, value);
     }
-    
+
     public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
@@ -284,26 +287,26 @@ public partial class Mentions : TemplatedControl,
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
     }
-    
+
     public string? PlaceholderText
     {
         get => GetValue(PlaceholderTextProperty);
         set => SetValue(PlaceholderTextProperty, value);
     }
-    
+
     public IEnumerable<IMentionOption>? OptionsSource
     {
         get => GetValue(OptionsSourceProperty);
         set => SetValue(OptionsSourceProperty, value);
     }
-    
+
     [InheritDataTypeFromItems(nameof(OptionsSource))]
     public IDataTemplate? OptionTemplate
     {
         get => GetValue(OptionTemplateProperty);
         set => SetValue(OptionTemplateProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -315,25 +318,25 @@ public partial class Mentions : TemplatedControl,
         get => GetValue(LinesProperty);
         set => SetValue(LinesProperty, value);
     }
-    
+
     public int MinLines
     {
         get => GetValue(MinLinesProperty);
         set => SetValue(MinLinesProperty, value);
     }
-    
+
     public int MaxLines
     {
         get => GetValue(MaxLinesProperty);
         set => SetValue(MaxLinesProperty, value);
     }
-    
+
     public IMentionOptionsAsyncLoader? OptionsAsyncLoader
     {
         get => GetValue(OptionsAsyncLoaderProperty);
         set => SetValue(OptionsAsyncLoaderProperty, value);
     }
-    
+
     private bool _isLoading;
 
     public bool IsLoading
@@ -341,31 +344,31 @@ public partial class Mentions : TemplatedControl,
         get => _isLoading;
         internal set => SetAndRaise(IsLoadingProperty, ref _isLoading, value);
     }
-    
+
     public int DisplayCandidateCount
     {
         get => GetValue(DisplayCandidateCountProperty);
         set => SetValue(DisplayCandidateCountProperty, value);
     }
-    
+
     public bool IsReadOnly
     {
         get => GetValue(IsReadOnlyProperty);
         set => SetValue(IsReadOnlyProperty, value);
     }
-    
+
     public IValueFilter? Filter
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);
     }
-    
+
     public DefaultFilterValueSelector? FilterValueSelector
     {
         get => GetValue(FilterValueSelectorProperty);
         set => SetValue(FilterValueSelectorProperty, value);
     }
-    
+
     public TimeSpan AsyncLoadDebounce
     {
         get => GetValue(AsyncLoadDebounceProperty);
@@ -377,13 +380,13 @@ public partial class Mentions : TemplatedControl,
         get => GetValue(AsyncLoadTimeoutProperty);
         set => SetValue(AsyncLoadTimeoutProperty, value);
     }
-    
+
     public bool IsDropDownOpen
     {
         get => GetValue(IsDropDownOpenProperty);
         set => SetValue(IsDropDownOpenProperty, value);
     }
-    
+
     public bool IsPopupPinnedOpen
     {
         get => GetValue(IsPopupPinnedOpenProperty);
@@ -395,110 +398,7 @@ public partial class Mentions : TemplatedControl,
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
-    #endregion
 
-    #region 公共事件定义
-
-    public event EventHandler<MentionOptionsLoadedEventArgs>? OptionsLoaded;
-    public event EventHandler<MentionsPopulatingEventArgs>? Populating;
-    public event EventHandler<MentionsPopulatedEventArgs>? Populated;
-    public event EventHandler<CancelEventArgs>? DropDownOpening;
-    public event EventHandler? DropDownOpened;
-    public event EventHandler<CancelEventArgs>? DropDownClosing;
-    public event EventHandler? DropDownClosed;
-    public event EventHandler<MentionCandidateTriggeredEventArgs>? CandidateTriggered;
-    #endregion
-
-    #region 内部属性定义
-
-    internal static readonly DirectProperty<Mentions, string?> FilterValueProperty =
-        AvaloniaProperty.RegisterDirect<Mentions, string?>(
-            nameof(FilterValue),
-            o => o.FilterValue,
-            (o, v) => o.FilterValue = v);
-    
-    internal static readonly DirectProperty<Mentions, double> ItemHeightProperty =
-        AvaloniaProperty.RegisterDirect<Mentions, double>(
-            nameof(ItemHeight),
-            o => o.ItemHeight,
-            (o, v) => o.ItemHeight = v);
-    
-    internal static readonly DirectProperty<Mentions, double> MaxPopupHeightProperty =
-        AvaloniaProperty.RegisterDirect<Mentions, double>(
-            nameof(MaxPopupHeight),
-            o => o.MaxPopupHeight,
-            (o, v) => o.MaxPopupHeight = v);
-    
-    internal static readonly DirectProperty<Mentions, double> MinPopupWidthProperty =
-        AvaloniaProperty.RegisterDirect<Mentions, double>(
-            nameof(MinPopupWidth),
-            o => o.MinPopupWidth,
-            (o, v) => o.MinPopupWidth = v);
-    
-    internal static readonly DirectProperty<Mentions, Thickness> PopupContentPaddingProperty =
-        AvaloniaProperty.RegisterDirect<Mentions, Thickness>(nameof(PopupContentPadding),
-            o => o.PopupContentPadding,
-            (o, v) => o.PopupContentPadding = v);
-    
-    internal static readonly DirectProperty<Mentions, PlacementMode> PopupPlacementProperty =
-        AvaloniaProperty.RegisterDirect<Mentions, PlacementMode>(nameof(PopupPlacement),
-            o => o.PopupPlacement,
-            (o, v) => o.PopupPlacement = v);
-    
-    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty = 
-        AvaloniaProperty.Register<Mentions, FormValidateFeedback?>(nameof(FormFeedback));
-
-    internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
-        InputControlState.FormStatusProperty.AddOwner<Mentions>();
-    
-    private string? _filterValue;
-
-    internal string? FilterValue
-    {
-        get => _filterValue;
-        set => SetAndRaise(FilterValueProperty, ref _filterValue, value);
-    }
-    
-    private double _itemHeight;
-
-    internal double ItemHeight
-    {
-        get => _itemHeight;
-        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
-    }
-    
-    private double _maxPopupHeight;
-
-    internal double MaxPopupHeight
-    {
-        get => _maxPopupHeight;
-        set => SetAndRaise(MaxPopupHeightProperty, ref _maxPopupHeight, value);
-    }
-    
-    private double _minPopupWidth;
-
-    internal double MinPopupWidth
-    {
-        get => _minPopupWidth;
-        set => SetAndRaise(MinPopupWidthProperty, ref _minPopupWidth, value);
-    }
-    
-    private Thickness _popupContentPadding;
-
-    internal Thickness PopupContentPadding
-    {
-        get => _popupContentPadding;
-        set => SetAndRaise(PopupContentPaddingProperty, ref _popupContentPadding, value);
-    }
-    
-    private PlacementMode _placementMode;
-
-    internal PlacementMode PopupPlacement
-    {
-        get => _placementMode;
-        set => SetAndRaise(PopupPlacementProperty, ref _placementMode, value);
-    }
-    
     protected ICandidateList? CandidateList
     {
         get => _candidateList;
@@ -521,7 +421,119 @@ public partial class Mentions : TemplatedControl,
             }
         }
     }
-    
+
+    #endregion
+
+    #region 公共事件定义
+
+    public event EventHandler<MentionOptionsLoadedEventArgs>? OptionsLoaded;
+
+    public event EventHandler<MentionsPopulatingEventArgs>? Populating;
+
+    public event EventHandler<MentionsPopulatedEventArgs>? Populated;
+
+    public event EventHandler<CancelEventArgs>? DropDownOpening;
+
+    public event EventHandler? DropDownOpened;
+
+    public event EventHandler<CancelEventArgs>? DropDownClosing;
+
+    public event EventHandler? DropDownClosed;
+
+    public event EventHandler<MentionCandidateTriggeredEventArgs>? CandidateTriggered;
+
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<Mentions, string?> FilterValueProperty =
+        AvaloniaProperty.RegisterDirect<Mentions, string?>(
+            nameof(FilterValue),
+            o => o.FilterValue,
+            (o, v) => o.FilterValue = v);
+
+    internal static readonly DirectProperty<Mentions, double> ItemHeightProperty =
+        AvaloniaProperty.RegisterDirect<Mentions, double>(
+            nameof(ItemHeight),
+            o => o.ItemHeight,
+            (o, v) => o.ItemHeight = v);
+
+    internal static readonly DirectProperty<Mentions, double> MaxPopupHeightProperty =
+        AvaloniaProperty.RegisterDirect<Mentions, double>(
+            nameof(MaxPopupHeight),
+            o => o.MaxPopupHeight,
+            (o, v) => o.MaxPopupHeight = v);
+
+    internal static readonly DirectProperty<Mentions, double> MinPopupWidthProperty =
+        AvaloniaProperty.RegisterDirect<Mentions, double>(
+            nameof(MinPopupWidth),
+            o => o.MinPopupWidth,
+            (o, v) => o.MinPopupWidth = v);
+
+    internal static readonly DirectProperty<Mentions, Thickness> PopupContentPaddingProperty =
+        AvaloniaProperty.RegisterDirect<Mentions, Thickness>(nameof(PopupContentPadding),
+            o => o.PopupContentPadding,
+            (o, v) => o.PopupContentPadding = v);
+
+    internal static readonly DirectProperty<Mentions, PlacementMode> PopupPlacementProperty =
+        AvaloniaProperty.RegisterDirect<Mentions, PlacementMode>(nameof(PopupPlacement),
+            o => o.PopupPlacement,
+            (o, v) => o.PopupPlacement = v);
+
+    internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
+        AvaloniaProperty.Register<Mentions, FormValidateFeedback?>(nameof(FormFeedback));
+
+    internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
+        InputControlState.FormStatusProperty.AddOwner<Mentions>();
+
+    private string? _filterValue;
+
+    internal string? FilterValue
+    {
+        get => _filterValue;
+        set => SetAndRaise(FilterValueProperty, ref _filterValue, value);
+    }
+
+    private double _itemHeight;
+
+    internal double ItemHeight
+    {
+        get => _itemHeight;
+        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
+    }
+
+    private double _maxPopupHeight;
+
+    internal double MaxPopupHeight
+    {
+        get => _maxPopupHeight;
+        set => SetAndRaise(MaxPopupHeightProperty, ref _maxPopupHeight, value);
+    }
+
+    private double _minPopupWidth;
+
+    internal double MinPopupWidth
+    {
+        get => _minPopupWidth;
+        set => SetAndRaise(MinPopupWidthProperty, ref _minPopupWidth, value);
+    }
+
+    private Thickness _popupContentPadding;
+
+    internal Thickness PopupContentPadding
+    {
+        get => _popupContentPadding;
+        set => SetAndRaise(PopupContentPaddingProperty, ref _popupContentPadding, value);
+    }
+
+    private PlacementMode _placementMode;
+
+    internal PlacementMode PopupPlacement
+    {
+        get => _placementMode;
+        set => SetAndRaise(PopupPlacementProperty, ref _placementMode, value);
+    }
+
     internal FormValidateFeedback? FormFeedback
     {
         get => GetValue(FormFeedbackProperty);
@@ -533,35 +545,100 @@ public partial class Mentions : TemplatedControl,
         get => GetValue(FormStatusProperty);
         private set => SetCurrentValue(FormStatusProperty, value);
     }
+
     #endregion
-    
-    private static bool IsValidAsyncLoadDebounce(TimeSpan value) => value.TotalMilliseconds >= 0.0;
+
+    #region 内部协作 API
+
+    internal void NotifyTextAreaPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        if(!e.Handled && e.Source is Visual source)
+        {
+            if (_popup?.IsInsidePopup(source) == true)
+            {
+                e.Handled = true;
+                return;
+            }
+        }
+
+        if (IsDropDownOpen)
+        {
+            if (e.Source is Control sourceControl)
+            {
+                var textArea = sourceControl.FindAncestorOfType<MentionTextArea>();
+                if (textArea != null)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                IsDropDownOpen = false;
+                e.Handled      = true;
+            }
+        }
+        else
+        {
+            PseudoClasses.Set(StdPseudoClass.Pressed, true);
+        }
+    }
+
+    internal void NotifyTextAreaPointerReleased(PointerReleasedEventArgs e)
+    {
+        if (!e.Handled && e.Source is Visual source)
+        {
+            if (_popup?.IsInsidePopup(source) == true || PseudoClasses.Contains(StdPseudoClass.Pressed))
+            {
+                e.Handled = true;
+            }
+        }
+
+        PseudoClasses.Set(StdPseudoClass.Pressed, false);
+        base.OnPointerReleased(e);
+    }
+
+    #endregion
+
+    #region 字段定义
 
     private MentionTextArea? _textArea;
+
     private Popup? _popup;
+
     private CompositeDisposable? _subscriptionsOnOpen;
+
     private ICandidateList? _candidateList;
+
     private DispatcherTimer? _delayTimer;
+
     private List<IMentionOption>? _items;
+
     private IList<IMentionOption>? _view;
+
     private DropDownOpenChangeReason _dropDownOpenChangeReason;
+
     private long _populateRequestId;
+
     private IDisposable? _collectionChangeSubscription;
+
     private readonly AsyncSearchLoadCoordinator<string?, MentionOptionsLoadResult> _asyncLoadCoordinator = new();
+
     private IDisposable? _deactivationSubscription;
+
     private IDisposable? _popupPinnedOpenBinding;
 
-    private enum DropDownOpenChangeReason
-    {
-        None,
-        InternalSync
-    }
-    
+    private EventHandler? _formValueChanged;
+
+    #endregion
+
+    #region 构造函数
+
     static Mentions()
     {
         FocusableProperty.OverrideDefaultValue<Mentions>(true);
         LinesProperty.OverrideDefaultValue<Mentions>(1);
-        
+
         IsDropDownOpenProperty.Changed.AddClassHandler<Mentions>((mentions,e) => mentions.HandleIsDropDownOpenChanged(e));
         AsyncLoadDebounceProperty.Changed.AddClassHandler<Mentions>((mentions,e) => mentions.HandleAsyncLoadDebounceChanged(e));
         PlacementProperty.Changed.AddClassHandler<Mentions>((mentions,e) => mentions.ConfigurePopupPlacement());
@@ -569,63 +646,14 @@ public partial class Mentions : TemplatedControl,
         FilterValueProperty.Changed.AddClassHandler<Mentions>((mentions,e) => mentions.HandleFilterValueChanged());
         ValueProperty.Changed.AddClassHandler<Mentions>((mentions, args) => mentions.HandleValueChanged());
     }
-    
+
     public Mentions()
     {
     }
 
-    #region 实现 FormItem 接口
-
-    private EventHandler? _formValueChanged;
-
-    event EventHandler? IFormItemAware.ValueChanged
-    {
-        add => _formValueChanged += value;
-        remove => _formValueChanged -= value;
-    }
-
-    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
-
-    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
-    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
-    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
-    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
-    private void HandleValueChanged()
-    {
-        _formValueChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    protected virtual void NotifySetFormValue(string? value)
-    {
-        SetCurrentValue(ValueProperty, value);
-    }
-
-    protected virtual string? NotifyGetFormValue()
-    {
-        return Value;
-    }
-
-    protected virtual void NotifyClearFormValue()
-    {
-        SetCurrentValue(ValueProperty, null);
-    }
-
-    protected virtual void NotifyValidateStatus(FormValidateStatus status)
-    {
-        if (FormStatus != status)
-        {
-            SetCurrentValue(FormStatusProperty, status);
-        }
-    }
-
-    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
-    {
-        FormFeedback = value;
-    }
-
     #endregion
 
-    #region 生命周期
+    #region 控件方法
 
     protected override void OnInitialized()
     {
@@ -664,7 +692,7 @@ public partial class Mentions : TemplatedControl,
             _popup.Opened -= HandlePopupOpened;
             _popup.Closed -= HandlePopupClosed;
         }
-        
+
         _textArea     = e.NameScope.Find<MentionTextArea>("PART_TextArea");
         _popup        = e.NameScope.Find<Popup>("PART_Popup");
         CandidateList = e.NameScope.Find<ICandidateList>("PART_CandidateList");
@@ -678,6 +706,9 @@ public partial class Mentions : TemplatedControl,
 
         if (_popup != null)
         {
+            // Pinning is behavior of the Popup supplied by the current (possibly custom) template.
+            // Bind that acquired part before opening, at local priority; a default-theme Setter
+            // cannot preserve the same initialization and priority for replacement template parts.
             _popupPinnedOpenBinding = BindUtils.RelayBind(
                 this,
                 IsPopupPinnedOpenProperty,
@@ -691,7 +722,7 @@ public partial class Mentions : TemplatedControl,
             }
 
         }
-        
+
         ConfigurePopupPlacement();
         if (IsDropDownOpen)
         {
@@ -752,7 +783,8 @@ public partial class Mentions : TemplatedControl,
     {
         base.OnPropertyChanged(change);
         if (change.Property == DisplayCandidateCountProperty ||
-            change.Property == ItemHeightProperty)
+            change.Property == ItemHeightProperty ||
+            change.Property == PopupContentPaddingProperty)
         {
             ConfigureMaxPopupHeight();
         }
@@ -765,10 +797,187 @@ public partial class Mentions : TemplatedControl,
         }
     }
 
+    protected virtual void ConfigureMaxPopupHeight()
+    {
+        MaxPopupHeight = ItemHeight * DisplayCandidateCount + PopupContentPadding.Top + PopupContentPadding.Bottom;
+    }
+
+    protected virtual void NotifyDropDownOpening(CancelEventArgs eventArgs)
+    {
+        DropDownOpening?.Invoke(this, eventArgs);
+    }
+
+    protected virtual void NotifyDropDownOpened(EventArgs eventArgs)
+    {
+        DropDownOpened?.Invoke(this, eventArgs);
+    }
+
+    protected virtual void NotifyDropDownClosing(CancelEventArgs eventArgs)
+    {
+        DropDownClosing?.Invoke(this, eventArgs);
+    }
+
+    protected virtual void NotifyDropDownClosed(EventArgs eventArgs)
+    {
+        DropDownClosed?.Invoke(this, eventArgs);
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        _ = e ?? throw new ArgumentNullException(nameof(e));
+        base.OnKeyDown(e);
+        if (e.Handled || !IsEnabled)
+        {
+            return;
+        }
+
+        // The drop down is open, pass along the key event arguments to the
+        // selection adapter. If it isn't handled by the adapter's logic,
+        // then we handle some simple navigation scenarios for controlling
+        // the drop down.
+        if (IsDropDownOpen)
+        {
+            if (CandidateList != null)
+            {
+                CandidateList.HandleKeyDown(e);
+                if (e.Handled)
+                {
+                    return;
+                }
+            }
+
+            if (e.Key == Key.Escape)
+            {
+                HandleCandidateListCanceled(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+        }
+        else
+        {
+            // The drop down is not open, the Down key will toggle it open.
+            // Ignore key buttons, if they are used for XY focus.
+            if (e.Key == Key.Down
+                && !this.IsAllowedXYNavigationMode(e.KeyDeviceType))
+            {
+                SetCurrentValue(IsDropDownOpenProperty, true);
+                e.Handled = true;
+            }
+        }
+
+        // Standard drop down navigation
+        switch (e.Key)
+        {
+            case Key.F4:
+                SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
+                e.Handled = true;
+                break;
+
+            case Key.Enter:
+                if (IsDropDownOpen)
+                {
+                    HandleCandidateListComplete(this, new RoutedEventArgs());
+                    e.Handled = true;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    public void PopulateComplete()
+    {
+        // Apply the search filter
+        RefreshView();
+
+        // Fire the Populated event containing the read-only view data.
+        var populated = new MentionsPopulatedEventArgs(_view);
+        NotifyPopulated(populated);
+    }
+
+    protected virtual void NotifyPopulating(MentionsPopulatingEventArgs e)
+    {
+        IsLoading = true;
+        Populating?.Invoke(this, e);
+    }
+
+    protected virtual void NotifyPopulated(MentionsPopulatedEventArgs e)
+    {
+        IsLoading = false;
+        Populated?.Invoke(this, e);
+    }
 
     #endregion
 
-    #region 属性变更处理
+    #region 实现 IThemeInheritanceSource 接口
+
+    // AXAML cannot read AvaloniaObject's protected, potentially non-logical inheritance parent.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 实现 IFormItemAware 接口
+
+    event EventHandler? IFormItemAware.ValueChanged
+    {
+        add => _formValueChanged += value;
+        remove => _formValueChanged -= value;
+    }
+
+    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value?.ToString());
+
+    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
+
+    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
+
+    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
+
+    void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
+
+    private void HandleValueChanged()
+    {
+        _formValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifySetFormValue(string? value)
+    {
+        SetCurrentValue(ValueProperty, value);
+    }
+
+    protected virtual string? NotifyGetFormValue()
+    {
+        return Value;
+    }
+
+    protected virtual void NotifyClearFormValue()
+    {
+        SetCurrentValue(ValueProperty, null);
+    }
+
+    protected virtual void NotifyValidateStatus(FormValidateStatus status)
+    {
+        if (FormStatus != status)
+        {
+            SetCurrentValue(FormStatusProperty, status);
+        }
+    }
+
+    protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
+    {
+        FormFeedback = value;
+    }
+
+    #endregion
+
+    #region 内部实现
+
+    private static bool IsValidAsyncLoadDebounce(TimeSpan value) => value.TotalMilliseconds >= 0.0;
+
+    private enum DropDownOpenChangeReason
+    {
+        None,
+        InternalSync
+    }
 
     private void HandleIsDropDownOpenChanged(AvaloniaPropertyChangedEventArgs e)
     {
@@ -854,10 +1063,6 @@ public partial class Mentions : TemplatedControl,
         }
     }
 
-    #endregion
-
-    #region 布局和状态同步
-
     private void ConfigurePopupPlacement()
     {
         if (Placement == MentionsPlacementMode.Bottom)
@@ -870,19 +1075,10 @@ public partial class Mentions : TemplatedControl,
         }
     }
 
-    protected virtual void ConfigureMaxPopupHeight()
-    {
-        MaxPopupHeight = ItemHeight * DisplayCandidateCount + PopupContentPadding.Top + PopupContentPadding.Bottom;
-    }
-
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(MentionPseudoClass.CandidatePopupOpen, IsDropDownOpen);
     }
-
-    #endregion
-
-    #region 下拉状态管理
 
     private void SetDropDownOpenFromInternalSync(bool value)
     {
@@ -1011,30 +1207,6 @@ public partial class Mentions : TemplatedControl,
         SetCurrentValue(IsDropDownOpenProperty, false);
     }
 
-    protected virtual void NotifyDropDownOpening(CancelEventArgs eventArgs)
-    {
-        DropDownOpening?.Invoke(this, eventArgs);
-    }
-
-    protected virtual void NotifyDropDownOpened(EventArgs eventArgs)
-    {
-        DropDownOpened?.Invoke(this, eventArgs);
-    }
-
-    protected virtual void NotifyDropDownClosing(CancelEventArgs eventArgs)
-    {
-        DropDownClosing?.Invoke(this, eventArgs);
-    }
-
-    protected virtual void NotifyDropDownClosed(EventArgs eventArgs)
-    {
-        DropDownClosed?.Invoke(this, eventArgs);
-    }
-
-    #endregion
-
-    #region 候选交互
-
     private void HandleCandidateOpenRequest(object? sender, ShowMentionCandidateRequestEventArgs eventArgs)
     {
         CandidateTriggered?.Invoke(this, new MentionCandidateTriggeredEventArgs(eventArgs.TriggerChar));
@@ -1085,77 +1257,6 @@ public partial class Mentions : TemplatedControl,
         var value = option.Value?.ToString() ?? option.Header?.ToString() ?? string.Empty;
         _textArea?.InsertMentionOption(value, Split);
     }
-
-    #endregion
-
-    #region 键盘交互
-
-    protected override void OnKeyDown(KeyEventArgs e)
-    {
-        _ = e ?? throw new ArgumentNullException(nameof(e));
-        base.OnKeyDown(e);
-        if (e.Handled || !IsEnabled)
-        {
-            return;
-        }
-
-        // The drop down is open, pass along the key event arguments to the
-        // selection adapter. If it isn't handled by the adapter's logic,
-        // then we handle some simple navigation scenarios for controlling
-        // the drop down.
-        if (IsDropDownOpen)
-        {
-            if (CandidateList != null)
-            {
-                CandidateList.HandleKeyDown(e);
-                if (e.Handled)
-                {
-                    return;
-                }
-            }
-
-            if (e.Key == Key.Escape)
-            {
-                HandleCandidateListCanceled(this, new RoutedEventArgs());
-                e.Handled = true;
-            }
-        }
-        else
-        {
-            // The drop down is not open, the Down key will toggle it open.
-            // Ignore key buttons, if they are used for XY focus.
-            if (e.Key == Key.Down
-                && !this.IsAllowedXYNavigationMode(e.KeyDeviceType))
-            {
-                SetCurrentValue(IsDropDownOpenProperty, true);
-                e.Handled = true;
-            }
-        }
-
-        // Standard drop down navigation
-        switch (e.Key)
-        {
-            case Key.F4:
-                SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
-                e.Handled = true;
-                break;
-
-            case Key.Enter:
-                if (IsDropDownOpen)
-                {
-                    HandleCandidateListComplete(this, new RoutedEventArgs());
-                    e.Handled = true;
-                }
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    #endregion
-
-    #region 异步加载
 
     private void SchedulePopulateDropDown()
     {
@@ -1260,32 +1361,6 @@ public partial class Mentions : TemplatedControl,
             StatusCode          = statusCode
         }));
     }
-
-    public void PopulateComplete()
-    {
-        // Apply the search filter
-        RefreshView();
-
-        // Fire the Populated event containing the read-only view data.
-        var populated = new MentionsPopulatedEventArgs(_view);
-        NotifyPopulated(populated);
-    }
-
-    protected virtual void NotifyPopulating(MentionsPopulatingEventArgs e)
-    {
-        IsLoading = true;
-        Populating?.Invoke(this, e);
-    }
-
-    protected virtual void NotifyPopulated(MentionsPopulatedEventArgs e)
-    {
-        IsLoading = false;
-        Populated?.Invoke(this, e);
-    }
-
-    #endregion
-
-    #region 数据视图
 
     private void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -1415,55 +1490,4 @@ public partial class Mentions : TemplatedControl,
 
     #endregion
 
-    #region 文本区域指针协作
-
-    internal void NotifyTextAreaPointerPressed(PointerPressedEventArgs e)
-    {
-        base.OnPointerPressed(e);
-        if(!e.Handled && e.Source is Visual source)
-        {
-            if (_popup?.IsInsidePopup(source) == true)
-            {
-                e.Handled = true;
-                return;
-            }
-        }
-
-        if (IsDropDownOpen)
-        {
-            if (e.Source is Control sourceControl)
-            {
-                var textArea = sourceControl.FindAncestorOfType<MentionTextArea>();
-                if (textArea != null)
-                {
-                    return;
-                }
-            }
-            else
-            {
-                IsDropDownOpen = false;
-                e.Handled      = true;
-            }
-        }
-        else
-        {
-            PseudoClasses.Set(StdPseudoClass.Pressed, true);
-        }
-    }
-
-    internal void NotifyTextAreaPointerReleased(PointerReleasedEventArgs e)
-    {
-        if (!e.Handled && e.Source is Visual source)
-        {
-            if (_popup?.IsInsidePopup(source) == true || PseudoClasses.Contains(StdPseudoClass.Pressed))
-            {
-                e.Handled = true;
-            }
-        }
-
-        PseudoClasses.Set(StdPseudoClass.Pressed, false);
-        base.OnPointerReleased(e);
-    }
-
-    #endregion
 }

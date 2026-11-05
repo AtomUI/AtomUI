@@ -34,6 +34,10 @@ Timeline／TimelineItem 没有 SizeType 字号预设，其 FontSize 使用三输
 
 Foreground 同样使用真实继承前景、ColorText 存在位、最终画刷三输入；Core 复用有限类型的继承订阅，不反射、不将 Unset 当作继承保证。控件只通过内部只读接口暴露受保护父对象，最终属性由 ControlTheme Setter 声明；本地值及应用专用 Semantic Part Style 遵循原生优先级。这个兼容选择不自动改变未配置时的默认文字色，不能用来宣称旧暗色可读性已修复。
 
+## 内部owner资源流
+
+内部OwnerTokenResource按绑定定义和弱引用目标复用observable定义，避免同一目标的编译访问器刷新时反复创建资源流。这里只复用定义；实际owner、scope、资源值仍从当前订阅读取，重挂与显式Unset继续沿原生绑定生效。原生绑定负责取消订阅，弱键不延长离树目标的生命周期。
+
 ## 历史借用角色的显式 owner 迁移
 
 TimeViewCell原颜色取ListView角色，既有ListView Own及control Global定制仍需保留。仅用普通WhenExplicit不足以区分Cell直接输入与根Global输入：根Global存在时，直接切换为Cell值会跳过旧ListView明确配置。内部OwnerTokenResource的WhenControlExplicit因此只检查解析到的注册owner的直接Global输入，缺省返回原生Unset；最终有效值仍走同一snapshot资源查询。这个内部存在位由ExplicitTokenResourceKey的默认false标志区分，普通公开WhenExplicit及既有调用保持原合同，不增加public API或资源ID。

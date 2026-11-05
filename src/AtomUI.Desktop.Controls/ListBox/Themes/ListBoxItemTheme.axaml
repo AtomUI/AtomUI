@@ -4,6 +4,14 @@
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.ListBoxItemTheme"
               TargetType="atom:ListBoxItem">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ListBoxItem">
             <Panel>
@@ -42,8 +50,11 @@
             </Panel>
         </ControlTemplate>
     </Setter>
-    
+
     <Style Selector="^:is(atom|ListBoxItem)">
+        <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
+        <Setter Property="Padding" Value="{atom:ListBoxTokenResource ItemPadding}" />
+
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Margin" Value="{atom:ListBoxTokenResource ItemMargin}" />
         <Setter Property="Foreground" Value="{atom:ListBoxTokenResource ItemColor}" />
@@ -62,7 +73,7 @@
             <Setter Property="Background" Value="{Binding ItemSelectedBg, RelativeSource={RelativeSource Self}}" />
         </Style>
 
-        <Style Selector="^ /template/ atom|IconPresenter#SelectedIndicator">
+        <Style Selector="^ /template/ atom|IconTemplatePresenter#SelectedIndicator">
             <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
             <Setter Property="Width" Value="{atom:OwnerTokenResource IconSize}" />
             <Setter Property="Height" Value="{atom:OwnerTokenResource IconSize}" />
@@ -74,7 +85,7 @@
             <Setter Property="Padding" Value="{atom:ListBoxTokenResource ItemPaddingLG}" />
         </Style>
 
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
             <Setter Property="Padding" Value="{atom:ListBoxTokenResource ItemPadding}" />
         </Style>
@@ -85,6 +96,9 @@
         </Style>
 
         <Style Selector="^:disabled">
+            <Style Selector="^ /template/ atom|HighlightableTextBlock">
+                <Setter Property="Foreground" Value="{atom:ListBoxTokenResource ItemDisabledColor}" />
+            </Style>
             <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
                 <Setter Property="Foreground"
                         Value="{atom:ListBoxTokenResource ItemDisabledColor}" />

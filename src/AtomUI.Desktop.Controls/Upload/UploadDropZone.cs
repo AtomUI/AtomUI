@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia;
@@ -15,7 +16,8 @@ namespace AtomUI.Desktop.Controls;
     UploadDropZonePseudoClass.DragAccepting,
     UploadDropZonePseudoClass.DragRejecting,
     UploadDropZonePseudoClass.DropProcessing)]
-public sealed class UploadDropZone : ContentControl
+public sealed class UploadDropZone : ContentControl,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -132,6 +134,13 @@ public sealed class UploadDropZone : ContentControl
             SetDragState(UploadDragState.None);
         }
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    // AXAML cannot read AvaloniaObject's protected, potentially non-logical inheritance parent.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     private void HandleDragEnterOrOver(DragEventArgs e)
     {

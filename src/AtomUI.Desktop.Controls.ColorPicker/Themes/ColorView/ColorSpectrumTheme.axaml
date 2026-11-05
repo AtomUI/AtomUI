@@ -50,7 +50,7 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         <Setter Property="Focusable" Value="True" />
 
         <Style Selector="^ /template/ Border#PART_Frame">

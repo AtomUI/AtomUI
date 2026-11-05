@@ -18,7 +18,7 @@ DatePickerToken采用DependencyDefaultsV2 Revision1，三项字段继续使用�
 
 Presenter 主题组合 DateViewer/RangeDateViewer、TimeView 与 Footer。固定布局和可见性放在 ControlTheme；动态颜色和尺寸通过对应控件的 Token 资源解析。候选值、活动端点和确认进度不进入 Token。
 
-局部主题覆盖应作用于真实 owner：日期正文使用 DateViewer/RangeDateViewer Token 或专用 Semantic Style，Footer 使用 DatePicker Token，时间列使用 TimePicker Token。
+局部主题覆盖应作用于真实 owner：日期正文使用 DateViewer/RangeDateViewer Token 或专用 Semantic Style，Footer 的几何 Own 使用 DatePicker Token，时间列的几何 Own 使用 TimePicker Token。Presenter边框及TimeView的Global以InfoPickerInput锚点读取实际DatePicker／RangeDatePicker；公开viewer与子Button保留自身Global身份。
 
 ## 验证
 

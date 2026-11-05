@@ -306,7 +306,23 @@
             <Setter Property="Padding" Value="{atom:CascaderTokenResource InputPaddingLG}" />
             <Setter Property="CornerRadius" Value="{atom:CascaderTokenResource BorderRadiusLG}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Setter Property="CornerRadius" Value="{atom:CascaderTokenResource BorderRadius}" />
+        <Setter Property="Padding">
+            <MultiBinding Converter="{x:Static atom:CustomInputPaddingConverter.Instance}">
+                <atom:SelectTokenResource Kind="MultiModePadding" />
+                <atom:SelectTokenResource Kind="MultiModePaddingSM" />
+                <atom:SelectTokenResource Kind="MultipleItemHeight" />
+                <CompiledBindingExtension Path="$self.Height" />
+                <CompiledBindingExtension Path="$self.BorderThickness" />
+                <CompiledBindingExtension Path="$self.StyleVariant" />
+                <CompiledBindingExtension Path="$self.IsMultiple" />
+                <CompiledBindingExtension Path="$self.IsSelectionEmpty" />
+                <atom:CascaderTokenResource Kind="InputPadding" />
+                <atom:SelectTokenResource Kind="SingleModePadding" />
+            </MultiBinding>
+        </Setter>
+
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="Padding" Value="{atom:CascaderTokenResource InputPadding}" />
             <Setter Property="CornerRadius" Value="{atom:CascaderTokenResource BorderRadius}" />
         </Style>
@@ -320,7 +336,7 @@
                 <Style Selector="^[SizeType=Large]">
                     <Setter Property="Padding" Value="{atom:SelectTokenResource SingleModePaddingLG}" />
                 </Style>
-                <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+                <Style Selector="^[SizeType=Middle]">
                     <Setter Property="Padding" Value="{atom:SelectTokenResource SingleModePadding}" />
                 </Style>
                 <Style Selector="^[SizeType=Small]">
@@ -333,18 +349,6 @@
                 </Style>
                 <Style Selector="^[SizeType=Middle]">
                     <Setter Property="Padding" Value="{atom:SelectTokenResource MultiModePadding}" />
-                </Style>
-                <Style Selector="^[SizeType=Custom]">
-                    <Setter Property="Padding">
-                        <MultiBinding Converter="{x:Static atom:CustomInputPaddingConverter.Instance}">
-                            <atom:SelectTokenResource Kind="MultiModePadding" />
-                            <atom:SelectTokenResource Kind="MultiModePaddingSM" />
-                            <atom:SelectTokenResource Kind="MultipleItemHeight" />
-                            <CompiledBindingExtension Path="$self.Height" />
-                            <CompiledBindingExtension Path="$self.BorderThickness" />
-                            <CompiledBindingExtension Path="$self.StyleVariant" />
-                        </MultiBinding>
-                    </Setter>
                 </Style>
                 <Style Selector="^[SizeType=Small]">
                     <Setter Property="Padding" Value="{atom:SelectTokenResource MultiModePaddingSM}" />

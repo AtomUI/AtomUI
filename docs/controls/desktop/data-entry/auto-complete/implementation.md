@@ -4,6 +4,22 @@
 
 Popup 接入边界：`AbstractAutoComplete` 负责业务状态和内容准备，candidate Popup 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
 
+## 候选尺寸与默认求值
+
+AutoCompleteToken的四个字段由DependencyDefaultsV2 rev1静态计划求值，输入为有效Global或既有120/200边界，没有Own依赖边。共享AbstractAutoCompleteTheme继续服务三个公开AutoComplete外观，不复制新的Own定义。
+
+root的ItemHeight、DisplayCandidateCount和PopupContentPadding共同决定唯一MaxPopupHeight；三个输入变化均由现有属性回调重新求值。父主题为模板内CandidateList声明ItemContainerTheme，复用既有CandidateListItemTheme，并在四尺寸trigger中将Own.OptionHeight送入MinHeight。原行模板、active/selected状态、虚拟化和输入由原CandidateList体系负责。普通均匀行使用名义页数预算，大字体/替代行Style的自然高度可以超过最小值。
+
+root到当前Popup的pinning绑定属于行为接线：目标由每次模板获取、可以由自定义模板替换，必须在打开前保持本地绑定优先级。默认ControlTheme Setter无法为所有替代部件保证这一时序与优先级；旧绑定在重新获取模板部件前释放，离树按既有生命周期关闭物理popup并退订外部事件。同owner/part的绑定保留用于重挂。新增行高资源仍绑定既有Visual，不新建应用订阅或非Visual资源宿主。
+
+## 输入本体排版
+
+三个公开AutoComplete外观分别消费自身有效Global字体；内部LineEdit/SearchEdit/TextArea输入是父拥有的排版目标，不借另一个公开输入identity。FontFamily未显式配置时保留真实父继承。普通和搜索外观的FontSize未配置时也保留父继承，显式配置时按对应中/小/大档选择；多行外观保持原可见Large16/Middle14/Small12/Custom14预设。多行root的标准FontSize主题值现与原可见预设对齐，父字号23时root原getter23、实际文字14的分离不再存在。
+
+root的普通Style和Local字体继续遵守Avalonia优先级；私有输入通过ControlTheme中的模板/编译绑定接收最终字体，字号投射采用声明式Local优先级，避免其复用输入主题的预设trigger覆盖父值。C#仅实现既有internal IThemeInheritanceSource只读父桥，没有新公开API、状态旗标或代码字体绑定。
+
+多行输入的默认LineHeight取原有效主题FontHeight与实际Typeface自然行距较大值，避免较大标准字体被旧行框裁剪；对应owner FontHeight显式配置时保留该精确值，包括用户有意选择的较小行高。该内部无状态转换器由AXAML调用，不保存owner或字形缓存。专用Input Style直接定制TextPresenter时，应同时给出满足该字体的LineHeight；专用Style撤回后恢复当前父投射。
+
 ## 1. 实现定位
 
 本文档覆盖 AutoComplete 的控件实现、主题接入、状态同步和 Gallery 可见维护边界。具体属性注册、默认值、绘制细节和 AXAML selector 仍应直接阅读源码；本文只记录维护者必须理解的稳定结构和不变量。
@@ -132,6 +148,14 @@ AutoComplete 的交互事件应从输入源收敛到控件级语义事件：
 候选交互必须遵循统一 active candidate 流：`CandidateList` 保存唯一候选 owner，鼠标命中可用项时迁移该状态但不滚动，键盘导航复用同一写入路径并可滚动到可见位置；容器回收、过滤或 source 重建时只恢复 owner 状态，不把 `:pointerover` 当作独立候选来源。`Enter` 从 active candidate 读取提交目标，不能从旧的 `SelectedItem` 或指针命中状态重新推导。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
+
+各公开AutoComplete外观拥有自身占位文字与弹层背景。共享根主题解析实际owner，各私有输入用声明式Local编译绑定接收PlaceholderForeground，避免复用输入主题覆盖公开实例属性。
+
+四私有输入通过internal只读IControlThemeGlobalOwnerSource声明实际模板父owner。复用输入主题的OwnerTokenResource用SourceControlType明确原所属输入，解析到私有输入时改用其实际公开AutoComplete变体；Own与真正公开子Button保留原身份。值仍由原生资源观察者取得，局部Resources覆盖与清除保持；不创建实例Token字典、ResourceProvider、ThemeContext、缓存或全局订阅。
+
+root Foreground的主题默认读取有效Global.ColorText，标准Style/Local通过声明式Local编译绑定进入私有输入；实际默认字形颜色保持。局部Dark provider的root getter由原来外层Light继承值对齐到原实际Dark正文颜色。Filled/Borderless错误/警告文字仍由更近的原状态节点承担，包括原有禁用时的状态文字优先关系；不复制状态选择器。
+
+生成的专用Input、Placeholder与PopupRoot Style仍为定制入口，Input Style可声明正文、caret与selection画刷，撤回后恢复当前有效资源。配置更新保持同一editor、Value、selection与caret；跨scope、重模板与对象回收按实际输入验证。该消费实现不代表完整CT13或其他平台完成。
 
 ## 8. 资源、性能与 AOT 边界
 

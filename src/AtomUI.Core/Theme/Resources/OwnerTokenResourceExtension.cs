@@ -1,8 +1,10 @@
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Data.Converters;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.MarkupExtensions;
@@ -20,6 +22,7 @@ internal sealed class OwnerTokenResourceExtension : MarkupExtension
     public Type? SourceControlType { get; set; }
     public Type? AnchorControlType { get; set; }
     public BindingPriority Priority { get; set; } = BindingPriority.LocalValue;
+    public IValueConverter? Converter { get; set; }
 
     public OwnerTokenResourceExtension() { }
 
@@ -29,14 +32,16 @@ internal sealed class OwnerTokenResourceExtension : MarkupExtension
     }
 
     public override object ProvideValue(IServiceProvider serviceProvider) =>
-        CreateBinding(Kind, WhenExplicit || WhenControlExplicit, WhenControlExplicit, SourceControlType, AnchorControlType, Priority);
+        CreateBinding(Kind, WhenExplicit || WhenControlExplicit, WhenControlExplicit, SourceControlType, AnchorControlType, Priority, Converter);
 
-    internal static BindingBase CreateBinding(SharedTokenKind kind, bool whenExplicit = false, bool controlOnly = false, Type? sourceControlType = null, Type? anchorControlType = null, BindingPriority priority = BindingPriority.LocalValue)
+    internal static BindingBase CreateBinding(SharedTokenKind kind, bool whenExplicit = false, bool controlOnly = false, Type? sourceControlType = null, Type? anchorControlType = null, BindingPriority priority = BindingPriority.LocalValue, IValueConverter? converter = null)
     {
-        var source = new ClrPropertyInfo("OwnerTokenValue", value =>
+        // Re-evaluating a compiled accessor for the same target must retain its
+        // stream identity. The weak key owns only the observable definition;
+        // current routes/values and subscription disposal stay binding-owned.
+        var sources = new ConditionalWeakTable<Control, IObservable<object?>>();
+        ConditionalWeakTable<Control, IObservable<object?>>.CreateValueCallback createSource = owner =>
         {
-            var owner = (Control)value;
-            _ = ThemeScope.ResolveContext(owner);
             // Content add-ons are logical children with no TemplatedParent. Re-evaluate
             // their route on attachment/reparenting without subscribing to every ancestor.
             return Observable.Merge(
@@ -56,10 +61,16 @@ internal sealed class OwnerTokenResourceExtension : MarkupExtension
                     ? Observable.Return<object?>(AvaloniaProperty.UnsetValue)
                     : owner.GetResourceObservable(whenExplicit ? new ExplicitTokenResourceKey(source.Key, controlOnly) : source.Key))
                 .Switch();
+        };
+        var source = new ClrPropertyInfo("OwnerTokenValue", value =>
+        {
+            var owner = (Control)value;
+            _ = ThemeScope.ResolveContext(owner);
+            return sources.GetValue(owner, createSource);
         }, null, typeof(IObservable<object?>));
         return new CompiledBindingExtension(new CompiledBindingPathBuilder().Self()
             .Property(source, PropertyInfoAccessorFactory.CreateInpcPropertyAccessor)
-            .StreamObservable<object?>().Build()) { Priority = priority };
+            .StreamObservable<object?>().Build()) { Priority = priority, Converter = converter };
     }
 
     private static object ResolveResourceKey(Control owner, ThemeContext? context, SharedTokenKind kind, Type? sourceControlType, Type? anchorControlType)

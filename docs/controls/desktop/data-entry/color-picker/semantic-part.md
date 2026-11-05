@@ -11,8 +11,9 @@
 ColorPicker 的官方语义 API 逐一对齐：`root` / `body` / `content` / `description` / `popup.root`）。
 声明分别位于 `ColorPicker.SemanticParts.cs` 与 `GradientColorPicker.SemanticParts.cs` partial 文件。
 
-触发区部件（`body` / `description`）与弹层根部件（`popup.root`）的 marker 均位于两个 owner 自有的
-`Themes/ColorPickerTheme.axaml`、`Themes/GradientColorPickerTheme.axaml` 宿主模板内；`content` 的
+触发区部件（`body` / `description`）的 marker 位于两个 owner 自有的
+`Themes/ColorPickerTheme.axaml`、`Themes/GradientColorPickerTheme.axaml` 宿主模板内；`popup.root`
+位于本家族专用 `ColorPickerPopupSurfaceTheme` 的实际背景 Border。`content` 的
 marker 位于共享的 `Themes/ColorBlockTheme.axaml`（ColorBlock 自身模板内），因此 `content` 声明
 `CrossNestedOwners=true`——这与 Cascader 的 `clear` 部件（marker 在共享 `SelectHandle` 模板内）同构。
 
@@ -32,7 +33,7 @@ marker 位于共享的 `Themes/ColorBlockTheme.axaml`（ColorBlock 自身模板�
 | RuntimeCreated | `false` |
 | AtomUI 节点 | owner 根 |
 | 职责 | 触发器容器：边框、圆角、尺寸、状态与布局的组织边界。 |
-| 相关 API | `SizeType`、`Status`、`BorderBrush`、`TriggerPadding` 等 owner public API |
+| 相关 API | `SizeType`、`Status`、`BorderBrush`、`Padding` 等 owner public API |
 | 相关 Token | ColorPickerToken、SharedToken（ColorBorder、BorderRadius*） |
 | 稳定性 | stable since 6.2.0 |
 
@@ -103,15 +104,17 @@ marker 位于共享的 `Themes/ColorBlockTheme.axaml`（ColorBlock 自身模板�
 | Owner | `ColorPicker` / `GradientColorPicker` |
 | Part | `popup.root` |
 | Selector | `.semantic-popup-root` |
-| SelectorRoute | `/template/ .semantic-popup-root` |
+| SelectorRoute | `/template/ .semantic-popup-host > .semantic-popup-surface /template/ .semantic-popup-root` |
 | Style Type | `ColorPickerPopupRootStyle` / `GradientColorPickerPopupRootStyle` |
 | ContractType | `Border` |
 | Cardinality | `Single` |
 | Customization | `Selector` |
 | CrossVisualRoot | `true` |
+| CrossNestedOwners | `true` |
 | RuntimeCreated | `false` |
-| AtomUI 节点 | owner 模板 `PART_Popup` 直接子节点 `ColorPickerPopupRootFrame`（`Border` 子类，向内容层 `ArrowDecoratedBox` 转发 `IArrowAwareShadowMaskInfoProvider`），语义边框贴合弹层外沿（对齐上游 popup root） |
+| AtomUI 节点 | 家族专用 ArrowDecoratedBox 模板的 `PART_ContentDecorator` Border；背景、边框、圆角和阴影取自同一实际绘制面。外层 `ColorPickerPopupRootFrame` 保持直接 Child 协议转发，不承担该 Part 的样式。 |
 | 职责 | 弹层根容器：承载弹层边框、背景类视觉的定制入口；弹层 View 本身由 `CreatePresenter()` 动态创建，不经此 Part 发布。 |
+| Padding | 定制值叠加在既有 Arrow 内容 inset 外；基线 inset 由专用模板中的 ContentPresenter.Margin 保留。 |
 | 相关 API | `IsPopupPinnedOpen`（6.0 公共化）、`Placement`、`IsArrowVisible` |
 | 相关 Token | ColorPickerInsetShadow、SharedToken（ColorBgElevated） |
 | 稳定性 | stable since 6.2.0 |
@@ -125,18 +128,15 @@ marker 位于共享的 `Themes/ColorBlockTheme.axaml`（ColorBlock 自身模板�
 
 ## 2. 职责与存在条件
 
-- `body` / `description` / `popup.root` 的 marker 在 owner 宿主模板内，默认 route（`/template/
-  .<class>`），不声明 `CrossNestedOwners`。
+- `body` / `description` 的 marker 在 owner 宿主模板内，使用默认 route，不声明 `CrossNestedOwners`。
 - `content` 的物理节点在 `ColorBlock` 自身模板内，route 以 `body` 的 marker 为锚点经第二个
   `/template/` 跨入其模板；声明 `CrossNestedOwners=true`。弹层内的 `ColorBlock` 实例（清除示例、
   颜色预览）不带 `semantic-body`，selector 链不会误命中。
-- `popup.root` 采用静态包裹层而非弹层 View 内节点的原因：弹层 View 由 `CreatePresenter()` 在打开时
-  动态创建，其模板节点的 `TemplatedParent` 链断在 View 上，`/template/` route 与 `>>` 视觉步进均无法
-  从 owner 可达；owner 模板内的静态 `Border` 在 overlay 弹层（`ShouldUseOverlayPopup=true`）下经
-  `TemplatedParent` 传播保持可达。`PART_Popup` 直接子节点是 `ColorPickerPopupRootFrame`（`Border`
-  子类，向内容层 `ArrowDecoratedBox` 转发 `IArrowAwareShadowMaskInfoProvider`，共享 Popup 的箭头
-  布局与阴影遮罩机制只识别直接 Child，见 §5），语义边框贴合弹层外沿（对齐上游 popup root）；
-  该节点默认无背景无边框，零视觉影响。
+- `popup.root` 沿宿主模板的 `.semantic-popup-host` 与 `.semantic-popup-surface` 跨入本家族专用
+  ArrowDecoratedBox 模板，因此声明 `CrossNestedOwners=true`；`CrossVisualRoot=true` 支持独立 PopupRoot。
+  实际 Border 静态带 marker，生成专用 Style 命中同一背景/圆角/边框绘制面，箭头颜色通过编译绑定跟随
+  该面背景。面板 View 仍由 `CreatePresenter()` 动态创建，不成为该 Part 的定制目标。
+  `ColorPickerPopupRootFrame` 保持直接 Child 和箭头/阴影协议转发，默认无装饰，不绘制第二层定制背景。
 - 所有部件均为静态模板节点，无 `RuntimeCreated=true` 部件。
 
 ## 3. 数量语义
@@ -206,6 +206,11 @@ AXAML 命名空间 `https://atomui.net`）。`root` 不生成 Style 类型，own
 
 ## 6. 兼容性与验证
 
+`ColorPickerPopupRootStyle` 和 `GradientColorPickerPopupRootStyle` 的名称、Border 合同、五部件数量及应用语法保持。
+popup.root 的 selector route 修正为实际表面路径；直接书写旧 `/template/ .semantic-popup-root` 的应用需更新为
+上表完整 route，优先改用生成的专用 Style。外层协议 Frame 不再作为外观定制目标。该路由修正按主题契约变更审查，
+不能沿用此前功能批准或用旧直接 selector 的失效掩盖背景/阴影问题。
+
 删除或重命名 Part、修改 selector class / route、收窄 `ContractType`（含把 `Control` 收窄为具体实现
 类型）、改变 cardinality，或让任一内置模板变体缺少 marker，均属于公共主题契约变更。
 
@@ -213,8 +218,8 @@ AXAML 命名空间 `https://atomui.net`）。`root` 不生成 Style 类型，own
 
 - owner descriptor 只包含 §1 的 5 个 Part，字段值与本文一致
   （`tests/AtomUI.Desktop.Controls.Tests/ColorPicker/ColorPickerSemanticPartTests.cs`）。
-- `ColorPickerTheme.axaml` / `GradientColorPickerTheme.axaml` 携带 `body` / `description` /
-  `popup.root` 的静态 marker（含弹层包裹 Border）；`ColorBlockTheme.axaml` 携带 `content` marker。
+- `ColorPickerTheme.axaml` / `GradientColorPickerTheme.axaml` 携带 `body` / `description` 和跨模板锚点；
+  `ColorPickerPopupSurfaceTheme.axaml` 的实际 Border 携带 `popup.root`；`ColorBlockTheme.axaml` 携带 `content`。
 - 生成的 `ColorPicker*Style` / `GradientColorPicker*Style` 可编译，并在触发区与 overlay 弹层
   （`IsPopupPinnedOpen` 钉住展开）两条路径下命中目标节点（同上测试文件）。
 - 状态变化（清空颜色、disabled、`IsTextVisible`、弹层开合）不改变 marker 身份与数量语义。

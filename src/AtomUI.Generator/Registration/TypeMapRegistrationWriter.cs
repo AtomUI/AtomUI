@@ -137,6 +137,10 @@ internal static class TypeMapRegistrationWriter
             source.Append("        => global::System.Runtime.InteropServices.TypeMapping.GetOrCreateExternalTypeMapping<").Append(group).AppendLine(">();");
         }
         source.AppendLine("}");
+        if (!supportsTypeMap)
+        {
+            ConditionalRegistrationWriter.WriteThunks(source, package);
+        }
         foreach (var control in package.Controls)
         {
             var proxy = RegistrationNames.Proxy(control);

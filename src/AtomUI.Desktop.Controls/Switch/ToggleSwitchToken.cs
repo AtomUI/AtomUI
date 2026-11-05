@@ -5,16 +5,11 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class ToggleSwitchToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class ToggleSwitchToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
-    public ToggleSwitchToken()
-
-    {
-    }
-
-    /// <summary>
+/// <summary>
     /// 开关高度
     /// </summary>
     public double TrackHeight { get; set; }
@@ -119,51 +114,88 @@ internal sealed class ToggleSwitchToken : AbstractControlDesignToken
     /// </summary>
     public Color OffStateLoadIndicatorColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var fontSize      = EffectiveGlobalToken.FontSize;
-        var lineHeight    = EffectiveGlobalToken.RelativeLineHeight;
-        var controlHeight = EffectiveGlobalToken.ControlHeight;
+    [ControlTokenDefault(nameof(TrackHeight))]
+    private static double DefaultForTrackHeight(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize * context.Global.RelativeLineHeight;
 
-        var    height       = fontSize * lineHeight;
-        var    heightSM     = controlHeight / 2;
-        double padding      = 2; // Fixed value
-        var    handleSize   = height - padding * 2;
-        var    handleSizeSM = heightSM - padding * 2;
+    [ControlTokenDefault(nameof(TrackHeightSM))]
+    private static double DefaultForTrackHeightSM(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight / 2;
 
-        TrackHeight     = height;
-        TrackHeightSM   = heightSM;
-        TrackMinWidth   = handleSize * 2 + padding * 4;
-        TrackMinWidthSM = handleSizeSM * 2 + padding * 2;
-        TrackPadding    = padding; // Fixed value
-        HandleBg        = EffectiveGlobalToken.ColorWhite;
-        HandleSize      = new Size(handleSize, handleSize);
-        HandleSizeSM    = new Size(handleSizeSM, handleSizeSM);
+    [ControlTokenDefault(nameof(TrackPadding))]
+    private static double DefaultForTrackPadding(in ControlTokenDefaultContext context) =>
+        2;
 
-        InnerMinMargin   = handleSize / 2;
-        InnerMaxMargin   = handleSize + padding * 3;
-        InnerMinMarginSM = handleSizeSM / 2 - padding;
-        InnerMaxMarginSM = handleSizeSM + padding * 3;
-        
-        SwitchColor            = EffectiveGlobalToken.ColorPrimary;
-        SwitchDisabledOpacity  = EffectiveGlobalToken.OpacityLoading;
+    [ControlTokenDefault(nameof(TrackMinWidth), nameof(HandleSize), nameof(TrackPadding))]
+    private static double DefaultForTrackMinWidth(in ControlTokenDefaultContext context, Size handleSize, double trackPadding) =>
+        handleSize.Width * 2 + trackPadding * 4;
 
-        ExtraInfoFontSize   = EffectiveGlobalToken.FontSizeSM;
-        ExtraInfoFontSizeSM = ExtraInfoFontSize - 1;
+    [ControlTokenDefault(nameof(TrackMinWidthSM), nameof(HandleSizeSM), nameof(TrackPadding))]
+    private static double DefaultForTrackMinWidthSM(in ControlTokenDefaultContext context, Size handleSizeSM, double trackPadding) =>
+        handleSizeSM.Width * 2 + trackPadding * 2;
 
-        HandleShadow = new BoxShadow
-        {
-            OffsetX = 0,
-            OffsetY = 2,
-            Blur    = 4,
-            Color   = Color.FromArgb((int)(255 * 0.2), 0, 35, 11)
-        };
+    [ControlTokenDefault(nameof(HandleBg))]
+    private static Color DefaultForHandleBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorWhite;
 
-        ContentIconSize            = TrackHeightSM;
-        ContentIconSizeSM          = TrackHeightSM - EffectiveGlobalToken.UniformlyPaddingXXS;
-        LoadingAnimationDuration   = TimeSpan.FromMilliseconds(1200); // 毫秒
-        OffStateLoadIndicatorColor = ColorUtils.FromRgbF(0.4,0.0, 0.0, 0.0);
-    }
-    
+    [ControlTokenDefault(nameof(HandleSize), nameof(TrackHeight), nameof(TrackPadding))]
+    private static Size DefaultForHandleSize(in ControlTokenDefaultContext context, double trackHeight, double trackPadding) =>
+        new Size(trackHeight - trackPadding * 2, trackHeight - trackPadding * 2);
+
+    [ControlTokenDefault(nameof(HandleSizeSM), nameof(TrackHeightSM), nameof(TrackPadding))]
+    private static Size DefaultForHandleSizeSM(in ControlTokenDefaultContext context, double trackHeightSM, double trackPadding) =>
+        new Size(trackHeightSM - trackPadding * 2, trackHeightSM - trackPadding * 2);
+
+    [ControlTokenDefault(nameof(InnerMinMargin), nameof(HandleSize))]
+    private static double DefaultForInnerMinMargin(in ControlTokenDefaultContext context, Size handleSize) =>
+        handleSize.Width / 2;
+
+    [ControlTokenDefault(nameof(InnerMaxMargin), nameof(HandleSize), nameof(TrackPadding))]
+    private static double DefaultForInnerMaxMargin(in ControlTokenDefaultContext context, Size handleSize, double trackPadding) =>
+        handleSize.Width + trackPadding * 3;
+
+    [ControlTokenDefault(nameof(InnerMinMarginSM), nameof(HandleSizeSM), nameof(TrackPadding))]
+    private static double DefaultForInnerMinMarginSM(in ControlTokenDefaultContext context, Size handleSizeSM, double trackPadding) =>
+        handleSizeSM.Width / 2 - trackPadding;
+
+    [ControlTokenDefault(nameof(InnerMaxMarginSM), nameof(HandleSizeSM), nameof(TrackPadding))]
+    private static double DefaultForInnerMaxMarginSM(in ControlTokenDefaultContext context, Size handleSizeSM, double trackPadding) =>
+        handleSizeSM.Width + trackPadding * 3;
+
+    [ControlTokenDefault(nameof(SwitchColor))]
+    private static Color DefaultForSwitchColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(SwitchDisabledOpacity))]
+    private static double DefaultForSwitchDisabledOpacity(in ControlTokenDefaultContext context) =>
+        context.Global.OpacityLoading;
+
+    [ControlTokenDefault(nameof(ExtraInfoFontSize))]
+    private static double DefaultForExtraInfoFontSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeSM;
+
+    [ControlTokenDefault(nameof(ExtraInfoFontSizeSM), nameof(ExtraInfoFontSize))]
+    private static double DefaultForExtraInfoFontSizeSM(in ControlTokenDefaultContext context, double extraInfoFontSize) =>
+        extraInfoFontSize - 1;
+
+    [ControlTokenDefault(nameof(HandleShadow))]
+    private static BoxShadow DefaultForHandleShadow(in ControlTokenDefaultContext context) =>
+        new BoxShadow { OffsetX = 0, OffsetY = 2, Blur = 4, Color = Color.FromArgb((int)(255 * 0.2), 0, 35, 11) };
+
+    [ControlTokenDefault(nameof(ContentIconSize), nameof(TrackHeightSM))]
+    private static double DefaultForContentIconSize(in ControlTokenDefaultContext context, double trackHeightSM) =>
+        trackHeightSM;
+
+    [ControlTokenDefault(nameof(ContentIconSizeSM), nameof(TrackHeightSM))]
+    private static double DefaultForContentIconSizeSM(in ControlTokenDefaultContext context, double trackHeightSM) =>
+        trackHeightSM - context.Global.UniformlyPaddingXXS;
+
+    [ControlTokenDefault(nameof(LoadingAnimationDuration))]
+    private static TimeSpan DefaultForLoadingAnimationDuration(in ControlTokenDefaultContext context) =>
+        TimeSpan.FromMilliseconds(1200);
+
+    [ControlTokenDefault(nameof(OffStateLoadIndicatorColor))]
+    private static Color DefaultForOffStateLoadIndicatorColor(in ControlTokenDefaultContext context) =>
+        ColorUtils.FromRgbF(0.4, 0.0, 0.0, 0.0);
+
 }

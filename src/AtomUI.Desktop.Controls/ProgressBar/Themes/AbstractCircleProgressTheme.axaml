@@ -17,7 +17,7 @@
         <Style Selector="^:not(:disabled)">
             <Setter Property="Foreground">
                 <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
-                    <atom:SharedTokenResource Kind="ColorTextLabel" />
+                    <atom:OwnerTokenResource Kind="ColorTextLabel" />
                     <atom:ProgressBarTokenResource Kind="CircleTextColor" WhenExplicit="True" />
                     <atom:ProgressBarTokenResource Kind="CircleTextColor" />
                 </MultiBinding>
@@ -62,16 +62,16 @@
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorError}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconPresenter:disabled">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ControlItemBgActiveDisabled}" />
+                    Value="{atom:OwnerTokenResource ControlItemBgActiveDisabled}" />
         </Style>
 
         <Style Selector="^[Status=Exception] /template/ LayoutTransformControl#PART_LayoutTransformControl">
@@ -103,11 +103,11 @@
         </Style>
 
         <Style Selector="^[Status=Exception]:not(:disabled)">
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorError}" />
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ControlItemBgActiveDisabled}" />
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ControlItemBgActiveDisabled}" />
         </Style>
 
     </Style>

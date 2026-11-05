@@ -1,6 +1,6 @@
 # Cascader DropdownHeight 高度消费者结果
 
-2026-10-28，现有feature/custom-theme、HEAD346732602。合同已由用户选择Own上限与较小页数预算；限定视觉仍待审。N3-SC13默认协议与本消费者修复分开验收。
+2026-10-28，现有feature/custom-theme、HEAD346732602。合同已由用户选择Own上限与较小页数预算；2026-10-29用户明确批准本表限定视觉。N3-SC13默认协议与本消费者修复分开验收。
 
 ## 原始反例与根因
 
@@ -57,4 +57,4 @@ python3 .agents/skills/atomui-control-optimization/scripts/check-member-layout.p
 
 所有新增测试临时存放，不晋升常驻；框架/既有资源机制与原Cascader契约继续提供长期保障，常驻净增0。6个临时源（25,137 bytes）、原主题专用快照已删除；外部工程426文件（1,220,202,448 bytes）及312PNG/manifest共313文件已删除，媒体audit clean，临时测试目录为空、无本包进程遗留。清理后 `dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj --framework net10.0 --no-restore --filter FullyQualifiedName~AtomUI.Desktop.Controls.Tests.Cascader.` 共51PASS、0FAIL/Skip、3s。git diff --check通过。
 
-正式overview/implementation/token/changelog同步；Gallery API和使用形态不变。作者另步自审，遵守单agent约束，无独立评审、Git提交、分支/worktree、推送或发布。完整家族、其他模式/列/variant、原生像素/输入及CT25仍开放。未获本表视觉批准前，本包不能标完整完成。
+正式overview/implementation/token/changelog同步；Gallery API和使用形态不变。作者另步自审，遵守单agent约束，无独立评审、Git提交、分支/worktree、推送或发布。完整家族、其他模式/列/variant、原生像素/输入及CT25仍开放。2026-10-29用户明确回复“批准 Cascader 本表限定范围”；高度消费者分包通过限定视觉审查，完整家族及上述未覆盖项继续开放。

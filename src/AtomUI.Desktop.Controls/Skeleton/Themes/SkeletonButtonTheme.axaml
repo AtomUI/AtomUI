@@ -36,7 +36,7 @@
         </Setter>
         
         <Style Selector="^[Shape=Square]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}"/>
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}"/>
         </Style>
 
     </ControlTheme>

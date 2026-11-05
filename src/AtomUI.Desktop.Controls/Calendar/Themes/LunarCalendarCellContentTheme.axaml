@@ -12,8 +12,7 @@
                 <Grid Name="PART_SecondaryPresenter" Grid.Row="1" ColumnDefinitions="Auto,*"
                       HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Border Name="PART_Marker" Classes.semantic-marker="True" Width="4" Height="4" Margin="0,0,4,0"
-                            CornerRadius="2" IsVisible="{TemplateBinding ShowMarker}" VerticalAlignment="Center"
-                            Background="{atom:LunarCalendarTokenResource HolidayMarkerColor}" />
+                            CornerRadius="2" IsVisible="{TemplateBinding ShowMarker}" VerticalAlignment="Center" />
                     <atom:TextBlock Name="PART_SecondaryText" Classes.semantic-secondary-text="True" Grid.Column="1"
                                     Text="{Binding Context.SecondaryText, RelativeSource={RelativeSource TemplatedParent}}"
                                     TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -23,6 +22,9 @@
             </Grid>
         </ControlTemplate>
     </Setter>
+    <Style Selector="^ /template/ Border#PART_Marker">
+        <Setter Property="Background" Value="{atom:LunarCalendarTokenResource HolidayMarkerColor}" />
+    </Style>
     <Style Selector="^ /template/ atom|TextBlock#PART_SecondaryText">
         <Setter Property="Foreground" Value="{atom:LunarCalendarTokenResource SecondaryTextColor}" />
     </Style>
@@ -44,12 +46,12 @@
         <Setter Property="Background" Value="{atom:LunarCalendarTokenResource WorkdayMarkerColor}" />
     </Style>
     <Style Selector="^:selected:not(:disabled) /template/ atom|TextBlock#PART_SecondaryText">
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextLightSolid, AnchorControlType={x:Type atom:Calendar}}" />
     </Style>
     <Style Selector="^:selected:not(:disabled) /template/ atom|TextBlock#PART_Value">
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextLightSolid, AnchorControlType={x:Type atom:Calendar}}" />
     </Style>
     <Style Selector="^:outside /template/ atom|TextBlock#PART_SecondaryText, ^:disabled /template/ atom|TextBlock#PART_SecondaryText, ^:outside /template/ atom|TextBlock#PART_Value, ^:disabled /template/ atom|TextBlock#PART_Value">
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextDisabled, AnchorControlType={x:Type atom:Calendar}}" />
     </Style>
 </ControlTheme>

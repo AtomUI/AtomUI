@@ -1,5 +1,9 @@
 # ComboBox Changelog
 
+## 2026-11-04
+
+- Custom 根留白和圆角支持普通 Style 接管/撤回，保留三档与选择状态。
+
 本文档记录 ComboBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-11-05
@@ -37,6 +41,12 @@
   - 同步架构、实现、Semantic Part 与 Token 文档，公开 API 由源码和控件文档维护；Gallery 按现行规范只展示示例与 Semantic Parts。
 - Validation
   - 修复前后证据、实际验证范围与清理结果统一见[空态修复执行记录](../../../../superpowers/progress/2026-11-02-combobox-empty-state.md)，不将 Headless 或 Skia 结果扩大为原生平台验收结论。
+
+## 2026-10-29
+
+- 内部手柄的箭头宽高与按下颜色改读ComboBox有效Global；公开ComboBoxItem的圆角改读自身有效Global.BorderRadiusSM，保留Own、原选择器及专用Style入口。
+- 区分候选项Token身份和Semantic owner，修正文档中已过时的popup.listItem逻辑路由描述；实际路由保持既有直接子节点合同。
+
 
 ## 2026-10-28
 

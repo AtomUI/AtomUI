@@ -138,8 +138,9 @@ ContentPresenter Child observable 在 Child/Presenter 替换时重新配置圆�
 
 `IArrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox()` 是可空契约：提供方模板尚未应用或当前主题未提供
 `PART_ArrowDecorator` 时返回 `null`。container 探测到 `null` 时按无箭头降级（`IsArrowVisible=false`、圆角归零），
-并在降级期间订阅提供方的 `TemplateApplied`，下一次模板应用时重新探测，部件就绪即恢复箭头 relay binding；订阅随
-`surface bindings` 统一释放。custom placement 同样把部件不可用按箭头隐藏处理，复用阴影厚度补偿路径。
+提供方无论首次已有箭头还是正在降级，都在同一个 `surface bindings` 集中订阅 `TemplateApplied`。每次模板替换沿
+既有 `ConfigureContentSurface` 先退役旧 Border/Arrow relay，再探测当前部件，恢复对应圆角/箭头几何；不能在首次成功后
+继续持有旧模板部件。订阅随 surface bindings/detach 统一释放。custom placement 同样把部件不可用按箭头隐藏处理，复用阴影厚度补偿路径。
 
 Popup 持有本次宿主请求版本和局部 `Idle -> Requesting -> Pending -> Playing -> Completing` 关闭阶段；Core Motion 拥有活动播放资源。
 快速重开使旧版本失效，由新入场连续替代离场；同一时刻最多调度一次有效关闭。完成结果核对请求与表面身份，

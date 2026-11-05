@@ -12,7 +12,7 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="{x:Type gallery:ShowCaseItem}">
                 <Border x:Name="PART_RootBorder"
-                        Background="{atom:SharedTokenResource ColorBgContainer}"
+                        Background="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type gallery:ShowCaseItem}}"
                         BoxShadow="{gallery:ShowCaseItemTokenResource CardShadow}"
                         Padding="{gallery:ShowCaseItemTokenResource CardPadding}"
                         CornerRadius="{gallery:ShowCaseItemTokenResource CardCornerRadius}">
@@ -27,8 +27,8 @@
                                            MinHeight="{TemplateBinding DeferredPlaceholderHeight}"
                                            HorizontalAlignment="Stretch"
                                            VerticalAlignment="Stretch"
-                                           BorderBrush="{atom:SharedTokenResource ColorFillTertiary}"
-                                           BorderThickness="{atom:SharedTokenResource BorderThickness}"
+                                           BorderBrush="{atom:OwnerTokenResource Kind=ColorFillTertiary, AnchorControlType={x:Type gallery:ShowCaseItem}}"
+                                           BorderThickness="{atom:OwnerTokenResource Kind=BorderThickness, AnchorControlType={x:Type gallery:ShowCaseItem}}"
                                            CornerRadius="{gallery:ShowCaseItemTokenResource DeferredPlaceholderCornerRadius}"
                                            ClipToBounds="True" />
                             <ContentPresenter Name="PART_ContentPresenter"
@@ -83,7 +83,7 @@
                                       RibbonColor="{TemplateBinding BadgeColor}"
                                       BadgeIsVisible="True">
                         <Border x:Name="PART_RootBorder"
-                                Background="{atom:SharedTokenResource ColorBgContainer}"
+                                Background="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type gallery:ShowCaseItem}}"
                                 BoxShadow="{gallery:ShowCaseItemTokenResource CardShadow}"
                                 Padding="{gallery:ShowCaseItemTokenResource CardPadding}"
                                 CornerRadius="{gallery:ShowCaseItemTokenResource CardCornerRadius}">
@@ -98,8 +98,8 @@
                                                    MinHeight="{Binding DeferredPlaceholderHeight, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}"
                                                    HorizontalAlignment="Stretch"
                                                    VerticalAlignment="Stretch"
-                                                   BorderBrush="{atom:SharedTokenResource ColorFillTertiary}"
-                                                   BorderThickness="{atom:SharedTokenResource BorderThickness}"
+                                                   BorderBrush="{atom:OwnerTokenResource Kind=ColorFillTertiary, AnchorControlType={x:Type gallery:ShowCaseItem}}"
+                                                   BorderThickness="{atom:OwnerTokenResource Kind=BorderThickness, AnchorControlType={x:Type gallery:ShowCaseItem}}"
                                                    CornerRadius="{gallery:ShowCaseItemTokenResource DeferredPlaceholderCornerRadius}"
                                                    ClipToBounds="True" />
                                     <ContentPresenter Name="PART_ContentPresenter"

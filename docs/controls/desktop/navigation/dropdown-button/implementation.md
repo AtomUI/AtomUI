@@ -6,6 +6,8 @@ Popup 接入边界：`DropdownButton` 负责业务状态和内容准备，`Dropd
 
 ## 1. 实现定位
 
+独立DropdownButtonBaseTheme用编译Self绑定把当前VariantShadow提供给继承的公开BoxShadow，再由ControlTheme投射至既有阴影Border。阴影计算仍使用Dropdown身份，Style/local覆盖和清除由Avalonia处理；不增代码订阅或shadow Part，不把父Button的Own表复制进来。
+
 本文档覆盖 DropdownButton 的控件实现、主题接入、状态同步和 Gallery 可见维护边界。具体属性注册、默认值、绘制细节和 AXAML selector 仍应直接阅读源码；本文只记录维护者必须理解的稳定结构和不变量。
 
 ## 2. 源码文件结构
@@ -184,3 +186,7 @@ DropdownButtonBaseTheme和DropdownButtonTheme分别消费同一Dropdown identity
 高度继续使用原固定Height，不能改成Button的MinHeight。波纹与Transition仍由原动态机制驱动，实例、焦点与打开状态不因资源更新重建。
 
 loading图标的Spin通过ControlTheme的style Setter读取owner IsMotionEnabled资格；关闭动效保留静态loading图标、文字与透明度，恢复时重启默认旋转。模板不写死本地LoadingAnimation，不改变Button动作或弹层状态。
+
+### Custom 尺寸与原生优先级
+
+Custom 的 Height、FontSize、Padding、CornerRadius 和图标指标采用基础 Setter，中档默认值及下拉指示器独立间距保持。仅图标/loading 的指标由类型化 MultiBinding 选择，不以 Custom 条件规则压住公开属性。增大字号和垂直留白时，完整配方可显式设置 Height="Auto" 采用内容测量；未设置时仍保留原有中档高度。

@@ -18,7 +18,22 @@ internal sealed class CustomInputPaddingConverter : IMultiValueConverter
 
     public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (values.Count != 6 ||
+        // Selection owners need one base default that follows their mode and
+        // contents. Keeping it below native application Styles lets Custom
+        // callers own Padding while retaining the existing tag-height budget.
+        if (values.Count == 10)
+        {
+            var multiple = values[6] is true || values[6] is SelectMode.Multiple or SelectMode.Tags;
+            if (!multiple)
+            {
+                return values[8] ?? AvaloniaProperty.UnsetValue;
+            }
+            if (values[7] is true)
+            {
+                return values[9] ?? AvaloniaProperty.UnsetValue;
+            }
+        }
+        if (values.Count is not (6 or 10) ||
             values[0] is not Thickness padding ||
             values[1] is not Thickness compactPadding ||
             values[2] is not double minContentHeight ||

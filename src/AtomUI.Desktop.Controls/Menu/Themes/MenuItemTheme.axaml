@@ -8,6 +8,14 @@
               x:ClassModifier="internal">
     <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.MenuOpen}" />
     <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.MenuClose}" />
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:MenuItem">
             <Panel>
@@ -188,8 +196,8 @@
 
         <Style Selector="^ /template/ atom|Icon#MenuIndicatorIcon">
             <Setter Property="IsVisible" Value="True" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeXS}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeXS}" />
+            <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSizeXS, AnchorControlType={x:Type atom:MenuItem}}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSizeXS, AnchorControlType={x:Type atom:MenuItem}}" />
         </Style>
 
         <Style Selector="^:empty">

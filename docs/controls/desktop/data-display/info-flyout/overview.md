@@ -97,6 +97,10 @@ Public API / inherited command / item source / user input
 
 ## 5. 视觉与主题模型
 
+`FlyoutHost`、`MenuFlyoutPresenter` 与 `TreeViewFlyoutPresenter` 使用各自 Global 的可选字体入口，并保留原生字体优先及原继承链。普通内容的 `FlyoutPresenter` 继续复用 ArrowDecoratedBox 的 StyleKey；只有存在真实 FlyoutHost 逻辑祖先时，背景资源才连接该 owner 的 ColorBgElevated，独立 presenter 保留原 Arrow 主题身份。
+
+树形弹层在原尺寸约束内通过 ScrollViewer 呈现全部行，默认禁用横向滚动、竖向 Auto，并透传 lite/auto-hide/chaining/deferred 配置。树行原 Click 经冒泡进入 `TreeViewItemClicked`，不再错误地按 MenuItem 接线。
+
 InfoFlyout 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
 | 主题文件 | 职责 |
@@ -105,7 +109,7 @@ InfoFlyout 的视觉模型由控件模板、ControlTheme、SharedToken 和必要
 | `MenuFlyoutPresenterTheme.axaml` | 定义弹层、窗口或 overlay 宿主视觉。 |
 | `TreeViewFlyoutPresenterTheme.axaml` | 定义弹层、窗口或 overlay 宿主视觉。 |
 
-InfoFlyout 使用 `FlyoutHostToken`、`TreeFlyoutToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 open/close、collection/filter、motion、visual option 运行时状态。
+InfoFlyout 使用 `FlyoutHostToken`、`TreeViewFlyoutPresenterToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 open/close、collection/filter、motion、visual option 运行时状态。
 
 主题维护规则：
 
@@ -128,7 +132,7 @@ InfoFlyout 与同分类控件共享尺寸、状态、Token、Gallery 展示和�
 - `MenuFlyout`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `MenuFlyoutPresenter`：模板协作类型，承载内容展示、宿主或视觉边界。
 - `MenuFlyoutPresenterTheme`：ControlTheme 类型入口，连接主题资源和控件类型。
-- `TreeFlyoutToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
+- `TreeViewFlyoutPresenterToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
 - `TreeViewFlyout`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `TreeViewFlyoutPresenter`：模板协作类型，承载内容展示、宿主或视觉边界。
 - `TreeViewFlyoutPresenterTheme`：ControlTheme 类型入口，连接主题资源和控件类型。

@@ -3,11 +3,12 @@
                     xmlns:atom="https://atomui.net"
                     xmlns:antdicons="https://atomui.net/icons/antdesign"
                     x:ClassModifier="internal">
+    <atom:BorderThicknessFilterConverter x:Key="PickerHeaderLine" Left="False" Top="False" Right="False" />
     <DataTemplate x:Key="DatePickerViewerHeader" x:DataType="atom:DateViewerHeaderContext">
         <atom:PixelAlignedBorder Height="33"
-                                 BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
-                                 BorderThickness="0,0,0,1">
-            <Grid MinHeight="{atom:SharedTokenResource ControlHeight}">
+                                 BorderBrush="{atom:OwnerTokenResource ColorBorderSecondary}"
+                                 BorderThickness="{atom:OwnerTokenResource Kind=BorderThickness, Converter={StaticResource PickerHeaderLine}}">
+            <Grid MinHeight="{atom:OwnerTokenResource ControlHeight}">
                 <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="Bold"
                              Content="{Binding DisplayText}" Command="{Binding ChangePanelCommand}"
                              CommandParameter="{Binding ParentPanelKind}" />
@@ -31,7 +32,7 @@
         </atom:PixelAlignedBorder>
     </DataTemplate>
     <DataTemplate x:Key="RangeDatePickerViewerHeader" x:DataType="atom:DateViewerHeaderContext">
-        <Grid MinHeight="{atom:SharedTokenResource ControlHeight}">
+        <Grid MinHeight="{atom:OwnerTokenResource ControlHeight}">
             <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="Bold"
                          Content="{Binding DisplayText}" Command="{Binding ChangePanelCommand}"
                          CommandParameter="{Binding ParentPanelKind}" />

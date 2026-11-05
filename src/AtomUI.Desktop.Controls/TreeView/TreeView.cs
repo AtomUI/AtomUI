@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
@@ -44,7 +45,8 @@ public enum TreeFilterStrategy
 [PseudoClasses(StdPseudoClass.Draggable)]
 public partial class TreeView : AvaloniaTreeView, 
                                 IMotionAwareControl,
-                                IFormItemAware
+                                IFormItemAware,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
     public static readonly new DirectProperty<TreeView, IList> SelectedItemsProperty =
@@ -1160,4 +1162,7 @@ public partial class TreeView : AvaloniaTreeView,
         }
 
     }
+
+    // ControlTheme keeps native inheritance when no explicit owner typography is configured.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

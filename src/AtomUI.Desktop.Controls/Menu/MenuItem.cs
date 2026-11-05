@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
@@ -16,7 +17,8 @@ namespace AtomUI.Desktop.Controls;
 using AvaloniaMenuItem = Avalonia.Controls.MenuItem;
 
 [PseudoClasses(MenuItemPseudoClass.TopLevel)]
-public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
+public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -723,4 +725,7 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
     }
 
     #endregion
+
+    // The theme preserves the actual inheritance parent when owner typography is not explicit.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

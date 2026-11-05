@@ -1,4 +1,5 @@
-﻿using AtomUI.Media;
+using AtomUI.Theme.Resources;
+using AtomUI.Media;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -13,10 +14,9 @@ namespace AtomUI.Controls.Commons;
 using AvaloniaSeparator = Avalonia.Controls.Separator;
 
 [PseudoClasses(SeparatorPseudoClass.HasTitleText)]
-public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTypeAware
+public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTypeAware, IThemeInheritanceSource
 {
-    private const double SEPARATOR_LINE_MIN_PROPORTION = 0.25;
-    
+
     #region 公共属性定义
 
     public static readonly StyledProperty<string?> TitleProperty =
@@ -97,15 +97,6 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     }
     
     /// <summary>
-    /// 分割线是虚线、点线还是实线
-    /// </summary>
-    public SeparatorVariant Variant
-    {
-        get => GetValue(VariantProperty);
-        set => SetValue(VariantProperty, value);
-    }
-
-    /// <summary>
     /// The margin-left/right between the title and its closest border, while the orientation must be left or right,
     /// If a numeric value of type string is provided without a unit, it is assumed to be in pixels (px) by default.
     /// </summary>
@@ -114,6 +105,15 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     {
         get => GetValue(OrientationMarginProperty);
         set => SetValue(OrientationMarginProperty, value);
+    }
+
+    /// <summary>
+    /// 分割线是虚线、点线还是实线
+    /// </summary>
+    public SeparatorVariant Variant
+    {
+        get => GetValue(VariantProperty);
+        set => SetValue(VariantProperty, value);
     }
     
     /// <summary>
@@ -144,6 +144,8 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     }
 
     #endregion
+
+    private const double SEPARATOR_LINE_MIN_PROPORTION = 0.25;
 
     #region 内部属性定义
 
@@ -188,9 +190,9 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     {
         AffectsMeasure<AbstractSeparator>(OrientationProperty,
             LineWidthProperty,
-            TitleProperty);
+            TitleProperty, VerticalMarginInlineProperty, FontSizeProperty);
         AffectsArrange<AbstractSeparator>(TitlePositionProperty,
-            OrientationMarginProperty);
+            OrientationMarginProperty, TextPaddingInlineProperty, OrientationMarginPercentProperty);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -254,6 +256,12 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
 
         return size;
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     private void ArrangeRails(Size finalSize)
     {

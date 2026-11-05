@@ -82,7 +82,10 @@
             <Setter Property="DotSize" Value="{atom:SpinTokenResource DotSizeLG}" />
         </Style>
 
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Setter Property="IndicatorSize" Value="{atom:SpinTokenResource IndicatorSize}" />
+        <Setter Property="DotSize" Value="{atom:SpinTokenResource DotSize}" />
+
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="IndicatorSize" Value="{atom:SpinTokenResource IndicatorSize}" />
             <Setter Property="DotSize" Value="{atom:SpinTokenResource DotSize}" />
         </Style>

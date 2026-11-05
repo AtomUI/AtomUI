@@ -1,0 +1,15 @@
+# CT13 S6：Select候选项字体/行高接续核对
+
+本记录为下一分包入口，尚无产品修改，不因源码引用推定Bug已修复。
+
+公开Select.OptionFontSize由根主题设为Global.FontSize，但实际候选项直接读取Own.OptionFontSize；源码未找到公开实例值到候选项的投射。先验证实例27与Own21同时存在时的实际可见文字，再决定如何保持实例值/Own/default优先级及原标签字体职责。不要把默认资源可读当作公开实例入口生效。
+
+候选项MinHeight读取Own.OptionHeight，但与S2相同的BasedOn尺寸属性触发优先级可能覆盖它；Root.ItemHeight另取Global.ControlHeight并计算MaxPopupHeight=ItemHeight×DisplayPageSize+popup上下padding。字体/最小行高和popup预算不是同一属性，本轮先记录Own54的实际MinHeight/Bounds/viewport，不悄悄修改DisplayPageSize或去掉高度限制。0/自然内容高度、可变模板与原行数合同在取得证据后细化，不能机械把0当作空popup预算。
+
+拟保持公开实例优先于Own/default、同实例配置/清除、真实内容/选择/滚动/viewport及原高度条件；ControlTheme可表达的绑定继续优先声明。跨popup树的代码创建节点若需要代码投射，必须先证明AXAML不可等价表达并写明原因，不顺手扩大到整个选择状态机。
+
+新增测试临时存放，取得RED与基线后再实现；所有新视觉需具体范围独立审查，完整家族/CT25及S4待审范围互不替代，无Git。
+
+当前有效反例：四尺寸共8FAIL、1s，实例27/Own21时实际行字体21；Own.OptionHeight54时实际MinHeight32。Own21到真实文字的正对照1PASS，未把已有Own字体消费重复修改为“修复”。正式overview明确DisplayPageSize为可视行数；不能只修MinHeight而让三行预算仍按32估算。
+
+Ruling：常规均匀候选行的预算跟随实际已布局行高，保留三行及原popup上下padding；0表示取消行最小高度、由真实文字/内容/padding自然测量，不是空popup。优先尝试全部字体投射在AXAML表达；实际行高聚合属于运行时布局计算，可在现有SelectCandidateList.ArrangeOverride完成，只取首个已实现且可见的普通数据行，不遍历数据源、不强制实例化额外容器、不新增LayoutUpdated订阅/缓存/回写旗标。只在值变化时更新既有ItemHeight，验证有限布局收敛、0/清除/重开/替换/释放；分组/可变模板的完整合同继续单列，不能借均匀行通过关闭家族。

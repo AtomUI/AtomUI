@@ -99,6 +99,14 @@ Icon 的交互事件应从输入源收敛到控件级语义事件：
 
 ## 7. 内部算法与关键流程
 
+### 绘制几何快照
+
+生成图标可共享静态 `DrawingInstruction` 及路径。绘制时先克隆路径，再在克隆上应用指令矩阵与图标全局矩阵；合成器保留本次几何，源路径不因渲染而发生修改。变换仍作用于几何，不通过额外 DrawingContext 缩放改变笔宽。
+
+`PathDrawingInstruction.Data` 是运行时绘制数据，不能由 ControlTheme 监听。已挂载图标在首次绘制时获取几何变化订阅，以弱引用通知当前图标失效；`Unloaded` 和离开视觉树释放，重挂后重新获取。克隆几何不携带控件引用，也不释放调用方源几何。默认 SVG 的实际缩放修正须独立视觉审查，不能沿用修正前像素基线宣称默认无变化。
+
+### 画刷与动效
+
 基类初始化和属性变更按相同的 `IconBrushType` 槽位投影画刷与 Pen；主描边与 fallback 是独立槽位。
 派生类通过元数据提供的默认画刷也必须在首次初始化生效，不能依赖后续属性变更补齐。
 `DrawPens` 是 protected 派生契约，修改其创建时机或集合形态须独立评审兼容性。
@@ -112,6 +120,8 @@ Icon 的交互事件应从输入源收敛到控件级语义事件：
 - 状态变化时避免创建不必要的视觉对象、订阅或动画对象。
 
 `LoadingAnimation=Spin/Pulse` 使用 Icon 对应 `CompositionVisual` 的无限旋转动画。Icon 只在已加载、动画已配置且有效可见时启动；自身或 Visual 祖先不可见时停止动画并把 rotation 复位，重新可见时按当前 duration 和 bounds 重建动画。可见性订阅与 Compositor target 必须在 unload 和 detach 时释放。
+
+旋转重建先明确0起点，仅声明终点2π keyframe；首帧由Compositor的隐式起始值提供。这样避免显式0 key与隐式0 key构成零长度区间，整周期能回到原起点。Spin/Pulse的正常相位、easing、duration与停止/有效显隐机制保持；不增加产品时钟或公开属性。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
 
@@ -155,3 +165,6 @@ Icon 的交互事件应从输入源收敛到控件级语义事件：
 ## 主题消费合同（2026-10-23）
 
 `IconTemplatePresenter` 保存当前构建的 PathIcon，替换、detach 时释放全部宿主绑定，attach 时对同一个 child 重建。运行时 content 位于 ControlTemplate 外，普通 child Style 不能等价产生 Template 绑定优先级，因此保留有界 RelayBind 并在代码注明原因。IconPresenter 的默认 IconBrush 从其 Control Effective Global 的 ColorIconHover 读取，不能跳过该 owner 读 Shared。
+
+
+`FallbackBrush` 的主题默认读取 Icon owner 的 `FallbackColor`，默认仍为 White；明确 Own 覆盖动态更新现存 Icon，撤回恢复默认。实例原生值继续按 Avalonia 优先级覆盖主题，不创建本地颜色快照。

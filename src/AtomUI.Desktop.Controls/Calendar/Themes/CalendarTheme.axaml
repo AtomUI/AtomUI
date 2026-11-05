@@ -11,6 +11,7 @@
     x:ClassModifier="internal">
     <ControlTheme.Resources>
         <ResourceDictionary>
+        <atom:BorderThicknessFilterConverter x:Key="RangeLabelPadding" Top="False" Bottom="False" />
         <ResourceDictionary.MergedDictionaries>
             <ResourceInclude Source="/Calendar/Themes/CalendarDateCellTheme.axaml" />
         </ResourceDictionary.MergedDictionaries>
@@ -19,7 +20,7 @@
             <Setter Property="Width" Value="NaN" />
             <Setter Property="Padding" Value="0" />
             <Style Selector="^[Presentation=Compact]">
-                <Setter Property="WeekHeaderMinHeight" Value="{atom:SharedTokenResource FontHeightSM}" />
+                <Setter Property="WeekHeaderMinHeight" Value="{atom:OwnerTokenResource Kind=FontHeightSM, AnchorControlType={x:Type atom:Calendar}}" />
             </Style>
             <Style Selector="^[Presentation=Content]">
                 <Setter Property="WeekHeaderTextAlignment" Value="Right" />
@@ -29,6 +30,20 @@
         </ControlTheme>
         </ResourceDictionary>
     </ControlTheme.Resources>
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+    <Setter Property="FontSize">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+            <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontSize" />
+        </MultiBinding>
+    </Setter>
     <Setter Property="DateCellTheme" Value="{StaticResource CalendarDateCellTheme}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="controls:Calendar">
@@ -58,13 +73,13 @@
                                LastChildFill="True"
                                ClipToBounds="True">
                         <Border DockPanel.Dock="Top"
-                                Height="{atom:SharedTokenResource LineWidth}"
-                                Background="{atom:SharedTokenResource ColorSplit}"
+                                Height="{atom:OwnerTokenResource Kind=LineWidth, AnchorControlType={x:Type atom:Calendar}}"
+                                Background="{atom:OwnerTokenResource Kind=ColorSplit, AnchorControlType={x:Type atom:Calendar}}"
                                 IsVisible="{TemplateBinding Fullscreen, Converter={x:Static BoolConverters.Not}}" />
                         <Border DockPanel.Dock="Top"
-                                Height="{atom:SharedTokenResource UniformlyPaddingXS}" />
+                                Height="{atom:OwnerTokenResource Kind=UniformlyPaddingXS, AnchorControlType={x:Type atom:Calendar}}" />
                         <Border DockPanel.Dock="Bottom"
-                                Height="{atom:SharedTokenResource UniformlyPaddingXS}" />
+                                Height="{atom:OwnerTokenResource Kind=UniformlyPaddingXS, AnchorControlType={x:Type atom:Calendar}}" />
                         <Grid>
                             <controls:DateViewer Name="PART_DateViewer"
                                                    Classes.semantic-content="True"
@@ -85,7 +100,7 @@
                                                             RangeBars="{TemplateBinding RangeBars}"
                                                             RangeBarHeight="{atom:CalendarTokenResource RangeBarHeight}"
                                                             RangeBarTopOffset="{TemplateBinding EffectiveRangeBarTopOffset}"
-                                                            RangeBarHorizontalInset="{atom:SharedTokenResource UniformlyMarginXXS}"
+                                                            RangeBarHorizontalInset="{atom:OwnerTokenResource Kind=UniformlyMarginXXS, AnchorControlType={x:Type atom:Calendar}}"
                                                             HorizontalAlignment="Stretch"
                                                             VerticalAlignment="Stretch"
                                                             IsVisible="False"
@@ -99,11 +114,16 @@
     </Setter>
 
     <Setter Property="Background" Value="{atom:CalendarTokenResource FullBg}" />
-    <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+    <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type atom:Calendar}}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Padding" Value="0" />
     <Style Selector="^ /template/ controls|DateViewer">
         <Setter Property="Background" Value="{atom:CalendarTokenResource FullPanelBg}" />
+    </Style>
+    <Style Selector="^ /template/ calendar|CalendarRangeBarPanel">
+        <Setter Property="LabelPadding" Value="{atom:OwnerTokenResource Kind=PaddingXS, AnchorControlType={x:Type atom:Calendar}, Converter={StaticResource RangeLabelPadding}}" />
+        <Setter Property="TextElement.FontSize" Value="{atom:OwnerTokenResource Kind=FontSizeSM, AnchorControlType={x:Type atom:Calendar}}" />
+        <Setter Property="TextElement.Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextLightSolid, AnchorControlType={x:Type atom:Calendar}}" />
     </Style>
     <Style Selector="^:mini /template/ controls|DateViewer">
         <Setter Property="Height" Value="{TemplateBinding EffectiveMiniContentHeight}" />
@@ -119,6 +139,6 @@
     <Style Selector="^:mini">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadiusLG, AnchorControlType={x:Type atom:Calendar}}" />
     </Style>
 </ControlTheme>

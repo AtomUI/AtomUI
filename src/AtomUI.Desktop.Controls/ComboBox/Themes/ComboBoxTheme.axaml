@@ -251,7 +251,10 @@
             <Setter Property="Padding" Value="{atom:ComboBoxTokenResource InputPaddingLG}" />
             <Setter Property="CornerRadius" Value="{atom:ComboBoxTokenResource BorderRadiusLG}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Setter Property="Padding" Value="{atom:ComboBoxTokenResource InputPadding}" />
+        <Setter Property="CornerRadius" Value="{atom:ComboBoxTokenResource BorderRadius}" />
+
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="Padding" Value="{atom:ComboBoxTokenResource InputPadding}" />
             <Setter Property="CornerRadius" Value="{atom:ComboBoxTokenResource BorderRadius}" />
         </Style>

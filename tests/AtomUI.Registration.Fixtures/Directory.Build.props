@@ -8,5 +8,8 @@
         <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)/</IntermediateOutputPath>
         <IsTrimmable>true</IsTrimmable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <!-- Registration fixtures exercise the shipped official renderer, outside the
+             explicitly adopted Gallery/test compatibility-host inventory. -->
+        <AtomUIUseSkiaCompatibility>false</AtomUIUseSkiaCompatibility>
     </PropertyGroup>
 </Project>

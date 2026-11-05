@@ -17,3 +17,7 @@ ContentPadding 三档默认依赖有效高度、字号/行高和线宽。模板�
 公开owner的有效Global FontFamily仅在显式配置时覆盖原继承值；未配置及清除后跟随真实InheritanceParent，保持普通Style/LocalValue优先级。根属性由ControlTheme的有限MultiBinding选择，内部只读继承观察器在分离后释放父订阅，不通过代码写最终字体。TextBox派生的asset-only EmbeddedTextBox在自身主题恢复真实组合父字体，阻止公开TextBox配置通过BasedOn泄漏到其他组合owner。
 
 内部frame与操作按钮通过[共享输入架构](../input-control-architecture-design.md#内部资产的主题查询路线)消费真实公开owner的Global；Content附加区的逻辑路线与模板路线同属该合同，保留原生样式优先级和状态归一。
+
+### Custom 尺寸与原生优先级
+
+Custom 的 LineHeight、CornerRadius 与 FontSize 使用基础默认，Padding 继续不应用三档 ContentPadding。字体使用现有类型化字体转换器处理 SizeType 与 IsCustomFontSize；IsCustomFontSize=true 返回真实继承，false 使用对应资源。三档的显式字号规则保持，Custom 的普通 Style/LocalValue 可接管并撤回。

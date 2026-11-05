@@ -53,7 +53,8 @@ internal class DateTimePickerPanel : Panel
 {
     #region 公共属性定义
 
-    public static readonly StyledProperty<double> ItemHeightProperty = AvaloniaProperty.Register<DateTimePickerPanel, double>(nameof(ItemHeight), 28);
+    public static readonly StyledProperty<double> ItemHeightProperty = AvaloniaProperty.Register<DateTimePickerPanel, double>(
+        nameof(ItemHeight), 28, validate: static value => double.IsFinite(value) && value > 0);
     public static readonly StyledProperty<DateTimePickerPanelType> PanelTypeProperty = AvaloniaProperty.Register<DateTimePickerPanel, DateTimePickerPanelType>(nameof(PanelType));
     public static readonly StyledProperty<string> ItemFormatProperty = AvaloniaProperty.Register<DateTimePickerPanel, string>(nameof(ItemFormat), "hh");
     public static readonly StyledProperty<bool> ShouldLoopProperty = AvaloniaProperty.Register<DateTimePickerPanel, bool>(nameof(ShouldLoop));

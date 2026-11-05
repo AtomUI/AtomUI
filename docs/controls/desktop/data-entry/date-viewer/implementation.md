@@ -1,5 +1,7 @@
 # DateViewer 桌面版实现原理
 
+DateViewer与RangeDateViewer的可选字体在ControlTheme中选择本身份有效Global；未明确配置时通过只读实际InheritanceParent桥接保留原生字体继承，清除恢复当前父级。订阅由原生绑定生命周期释放，接口不增加公开属性或独立资源作用域。页头／页脚的分隔线消费有效BorderThickness，并通过原生有限厚度转换保留各自单侧线形；默认仍为1 DIP。
+
 本文描述当前公共日期面板的源码职责、状态流和真实模板结构。公共契约见 [架构设计](overview.md)，
 家族 ownership 见 [共享设计](shared-panel-design.md)，资源见 [Token 设计](token.md)，定制见
 [Semantic Part 契约](semantic-part.md)，变化见 [Changelog](changelog.md)。

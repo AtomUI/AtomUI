@@ -2,6 +2,14 @@
 
 本文档定义 Upload 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [Upload 桌面版架构设计](overview.md)，公开主题区域见 [Upload Semantic Part 契约](semantic-part.md)，拖动输入的专项状态与平台边界见 [Upload 拖动上传设计](drag-drop-design.md)，变化记录见 [Upload Changelog](changelog.md)，控件视觉变量见 [Upload Token 设计](token.md)。
 
+## Own默认求值
+
+UploadToken十三字段由DependencyDefaultsV2 rev1静态方法求值，只读取有效Global或原常量，没有Own依赖边。字段、类型、资源ID/slot及原公式保持，包括ControlHeightLG×2.55的精确浮点结果、progress默认线高2与FontSize+PaddingXS左内缩。默认计划不读取文件状态、上传进度或实例尺寸；现有模板仍负责各listType和状态的实际消费。
+
+## 公开Global表面
+
+Upload根列表间距和禁用文字读取Upload有效Global；独立公开UploadDefaultDropArea与UploadTrigger的表面、图标/文字与状态读取各自有效Global，不借父Upload的品牌值。既有UploadToken共享Own布局配方保持，motion继续沿原owner机制。原生实例/普通Style与专用Part Style优先级保持，退出样式恢复当前资源；透明值、清除、重模板、重挂和作用域迁移分别验证。
+
 ## 1. 实现定位
 
 Upload 的实现定位是上传状态协调器，而不是固定上传按钮、拖拽框或列表模板的集合。根控件只拥有文件状态、上传队列、Form 值投影和生命周期释放；`UploadTrigger`、`UploadDropZone`、`UploadList` 只作为可组合动作入口或视图层协作对象。
@@ -287,3 +295,9 @@ AOT 边界：
 rg -n "UploadFileItem|UploadTrigger|UploadDropZone|UploadDefaultDropArea|UploadInputPipeline|SuccessAutoRemoveDelay|UploadFileValueMode" docs/controls/desktop/data-entry/upload
 git diff --check
 ```
+
+## 2026-10-30 输入家族主题出口
+
+四个公开 owner 的可选 FontFamily/FontSize 进入自身内容；未配置保留实际父继承。DropArea 标题与副标题继续独立 FontSizeLG/FontSize 角色。内部列表、状态内容与动作的显式组合输入从公开 Upload 读取有效 Global；IconButton、ProgressBar 自己的基础主题 identity 保留。圆形内容和触发器的默认圆角由 ControlTheme 绑定 Bounds 得出，资源更新和 Circle→Card→Circle 不再遗留 SetCurrentValue 的圆角；公开实例值仍保留原生优先级。
+
+字体最终取值均在 ControlTheme 中声明；只读 IThemeInheritanceSource 桥用于取得 Avalonia 受保护的真实继承父，无字体代码绑定或每实例 Token 字典。触发器的行为 relay 因 TriggerContent 位于逻辑内容子树而不能用 owner 模板绑定表达，按 Template 优先级建立并在 detach 释放。

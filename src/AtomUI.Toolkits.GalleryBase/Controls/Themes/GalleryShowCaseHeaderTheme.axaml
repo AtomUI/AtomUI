@@ -6,6 +6,21 @@
 
     <ControlTheme x:Key="{x:Type gallery:GalleryShowCaseHeader}"
                   TargetType="{x:Type gallery:GalleryShowCaseHeader}">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource Kind=ColorTextHeading, WhenExplicit=True}" />
         <Setter Property="MetadataLabelWidth"
                 Value="{gallery:GalleryShowCaseHeaderTokenResource MetadataLabelWidth}" />
         <Setter Property="MetadataValueWidth"
@@ -50,20 +65,20 @@
                         <atom:TextBlock Name="PART_SubtitleText"
                                         Text="{TemplateBinding Subtitle}"
                                         FontSize="{gallery:GalleryShowCaseHeaderTokenResource SubtitleFontSize}"
-                                        Foreground="{atom:SharedTokenResource ColorTextSecondary}"
+                                        Foreground="{atom:OwnerTokenResource Kind=ColorTextSecondary, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}"
                                         IsVisible="{TemplateBinding IsSubtitleVisible}" />
                         <atom:TextBlock Name="PART_DescriptionText"
                                         Text="{TemplateBinding Description}"
                                         HorizontalAlignment="Left"
                                         TextWrapping="Wrap"
-                                        Foreground="{atom:SharedTokenResource ColorTextTertiary}"
+                                        Foreground="{atom:OwnerTokenResource Kind=ColorTextTertiary, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}"
                                         IsVisible="{TemplateBinding IsDescriptionVisible}" />
                     </StackPanel>
 
                     <atom:PixelAlignedBorder Name="PART_MetadataCard"
-                                             Background="{atom:SharedTokenResource ColorBgContainer}"
-                                             BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
-                                             BorderThickness="1"
+                                             Background="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}"
+                                             BorderBrush="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}"
+                                             BorderThickness="{atom:OwnerTokenResource Kind=BorderThickness, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}"
                                              CornerRadius="{gallery:GalleryShowCaseHeaderTokenResource MetadataCornerRadius}"
                                              MinHeight="{gallery:GalleryShowCaseHeaderTokenResource MetadataMinHeight}"
                                              Padding="{gallery:GalleryShowCaseHeaderTokenResource MetadataPadding}"
@@ -83,7 +98,7 @@
                                                 FontWeight="Bold"
                                                 LineHeight="{gallery:GalleryShowCaseHeaderTokenResource MetadataLineHeight}"
                                                 TextTrimming="CharacterEllipsis"
-                                                Foreground="{atom:SharedTokenResource ColorTextSecondary}"
+                                                Foreground="{atom:OwnerTokenResource Kind=ColorTextSecondary, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}"
                                                 VerticalAlignment="Center" />
                                 <atom:TextBlock Text="{TemplateBinding Namespace}"
                                                 FontFamily="{gallery:GalleryShowCaseHeaderTokenResource MetadataValueFontFamily}"
@@ -91,7 +106,7 @@
                                                 LineHeight="{gallery:GalleryShowCaseHeaderTokenResource MetadataLineHeight}"
                                                 TextWrapping="NoWrap"
                                                 TextTrimming="CharacterEllipsis"
-                                                Foreground="{atom:SharedTokenResource ColorTextSecondary}"
+                                                Foreground="{atom:OwnerTokenResource Kind=ColorTextSecondary, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}"
                                                 VerticalAlignment="Center" />
                             </gallery:GalleryShowCaseMetadataRowPanel>
 
@@ -107,7 +122,7 @@
                                                 FontWeight="Bold"
                                                 LineHeight="{gallery:GalleryShowCaseHeaderTokenResource MetadataLineHeight}"
                                                 TextTrimming="CharacterEllipsis"
-                                                Foreground="{atom:SharedTokenResource ColorTextSecondary}"
+                                                Foreground="{atom:OwnerTokenResource Kind=ColorTextSecondary, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}"
                                                 VerticalAlignment="Center" />
                                 <atom:TextBlock Text="{TemplateBinding Package}"
                                                 FontFamily="{gallery:GalleryShowCaseHeaderTokenResource MetadataValueFontFamily}"
@@ -115,7 +130,7 @@
                                                 LineHeight="{gallery:GalleryShowCaseHeaderTokenResource MetadataLineHeight}"
                                                 TextWrapping="NoWrap"
                                                 TextTrimming="CharacterEllipsis"
-                                                Foreground="{atom:SharedTokenResource ColorTextSecondary}"
+                                                Foreground="{atom:OwnerTokenResource Kind=ColorTextSecondary, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}"
                                                 VerticalAlignment="Center" />
                             </gallery:GalleryShowCaseMetadataRowPanel>
 
@@ -131,7 +146,7 @@
                                                 FontWeight="Bold"
                                                 LineHeight="{gallery:GalleryShowCaseHeaderTokenResource MetadataLineHeight}"
                                                 TextTrimming="CharacterEllipsis"
-                                                Foreground="{atom:SharedTokenResource ColorTextSecondary}"
+                                                Foreground="{atom:OwnerTokenResource Kind=ColorTextSecondary, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}"
                                                 VerticalAlignment="Center" />
                                 <atom:TextBlock Text="{TemplateBinding BaseClass}"
                                                 FontFamily="{gallery:GalleryShowCaseHeaderTokenResource MetadataValueFontFamily}"
@@ -139,7 +154,7 @@
                                                 LineHeight="{gallery:GalleryShowCaseHeaderTokenResource MetadataLineHeight}"
                                                 TextWrapping="NoWrap"
                                                 TextTrimming="CharacterEllipsis"
-                                                Foreground="{atom:SharedTokenResource ColorTextSecondary}"
+                                                Foreground="{atom:OwnerTokenResource Kind=ColorTextSecondary, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}"
                                                 VerticalAlignment="Center" />
                             </gallery:GalleryShowCaseMetadataRowPanel>
                         </StackPanel>

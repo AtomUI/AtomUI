@@ -17,11 +17,13 @@
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
         <Setter Property="BorderThickness" Value="{atom:TimePickerTokenResource BorderThickness}" />
+        <Setter Property="Padding" Value="{atom:TimePickerTokenResource InputPadding}" />
+        <Setter Property="CornerRadius" Value="{atom:TimePickerTokenResource BorderRadius}" />
         <Style Selector="^[SizeType=Large]">
             <Setter Property="Padding" Value="{atom:TimePickerTokenResource InputPaddingLG}" />
             <Setter Property="CornerRadius" Value="{atom:TimePickerTokenResource BorderRadiusLG}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="Padding" Value="{atom:TimePickerTokenResource InputPadding}" />
             <Setter Property="CornerRadius" Value="{atom:TimePickerTokenResource BorderRadius}" />
         </Style>

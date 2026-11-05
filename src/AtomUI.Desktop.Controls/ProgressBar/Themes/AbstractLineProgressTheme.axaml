@@ -35,25 +35,27 @@
     </Setter>
     
     <Style Selector="^:is(atomc|AbstractLineProgress)">
+        <Setter Property="PresetFontSize" Value="{atom:OwnerTokenResource FontSize}" />
+        <Setter Property="PresetSmallFontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
         <Setter Property="LineProgressPadding" Value="{atom:ProgressBarTokenResource LineProgressPadding}" />
         <Setter Property="LineExtraInfoMargin" Value="{atom:ProgressBarTokenResource LineExtraInfoMargin}" />
         
         <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorError}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconPresenter:disabled">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ControlItemBgActiveDisabled}" />
+                    Value="{atom:OwnerTokenResource ControlItemBgActiveDisabled}" />
         </Style>
         
         <Style Selector="^[EffectiveSizeType=Large]">
             <Setter Property="LineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="Width" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
                 <Setter Property="Height" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
@@ -61,8 +63,8 @@
         </Style>
         
         <Style Selector="^[EffectiveSizeType=Middle]">
-            <Setter Property="LineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+            <Setter Property="LineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="Width" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
                 <Setter Property="Height" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
@@ -71,11 +73,24 @@
         
         <Style Selector="^[EffectiveSizeType=Small]">
             <Setter Property="LineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="Width" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
                 <Setter Property="Height" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
             </Style>
+        </Style>
+
+        <Style Selector="^[Status=Exception]:not(:disabled)">
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorError}" />
+        </Style>
+        <Style Selector="^[Status=Exception] /template/ LayoutTransformControl#PART_LayoutTransformControl">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="^[Status=Success] /template/ LayoutTransformControl#PART_LayoutTransformControl">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="^[Status=Success][IsCompleted=True] /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
+            <Setter Property="IsVisible" Value="True" />
         </Style>
     </Style>
 </ControlTheme>

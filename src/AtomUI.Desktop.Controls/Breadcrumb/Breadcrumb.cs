@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Generated.AtomUIDesktopControls;
@@ -11,18 +12,17 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-public partial class Breadcrumb : ItemsControl, IMotionAwareControl
+public partial class Breadcrumb : ItemsControl, IMotionAwareControl,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
-
-    public const string DefaultSeparator = "/";
 
     public static readonly StyledProperty<object?> SeparatorProperty =
         AvaloniaProperty.Register<Breadcrumb, object?>(
             nameof(Separator),
             defaultValue: DefaultSeparator
         );
-    
+
     public static readonly StyledProperty<IDataTemplate?> SeparatorTemplateProperty =
         AvaloniaProperty.Register<Breadcrumb, IDataTemplate?>(nameof(SeparatorTemplate));
 
@@ -35,13 +35,13 @@ public partial class Breadcrumb : ItemsControl, IMotionAwareControl
         get => GetValue(SeparatorProperty);
         set => SetValue(SeparatorProperty, value);
     }
-    
+
     public IDataTemplate? SeparatorTemplate
     {
         get => GetValue(SeparatorTemplateProperty);
         set => SetValue(SeparatorTemplateProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -75,7 +75,10 @@ public partial class Breadcrumb : ItemsControl, IMotionAwareControl
 
     #endregion
 
+    public const string DefaultSeparator = "/";
+
     private readonly BreadcrumbSeparatorManager _separatorManager;
+
     private BorderRenderHelper? _borderRenderHelper;
 
     static Breadcrumb()
@@ -123,7 +126,7 @@ public partial class Breadcrumb : ItemsControl, IMotionAwareControl
                     breadcrumbItem.SetCurrentValue(BreadcrumbItem.ContentProperty, item);
                 }
             }
-            
+
             if (ItemTemplate != null)
             {
                 breadcrumbItem[!BreadcrumbItem.ContentTemplateProperty] = this[!ItemTemplateProperty];
@@ -147,7 +150,7 @@ public partial class Breadcrumb : ItemsControl, IMotionAwareControl
         base.ContainerForItemPreparedOverride(container, item, index);
         UpdateItemStates();
     }
-    
+
     protected virtual void PrepareBreadcrumbItem(BreadcrumbItem breadcrumbItem, object? item, int index)
     {
     }
@@ -206,6 +209,68 @@ public partial class Breadcrumb : ItemsControl, IMotionAwareControl
         _separatorManager.Dispose();
         base.OnDetachedFromVisualTree(e);
     }
+
+    protected override Size MeasureOverride(Size constraint)
+    {
+        var frameInset       = Padding + BorderThickness;
+        var layoutConstraint = new Size(
+            Math.Max(0, constraint.Width - frameInset.Left - frameInset.Right),
+            Math.Max(0, constraint.Height - frameInset.Top - frameInset.Bottom));
+
+        var childSize = new Size();
+        foreach (var visual in VisualChildren)
+        {
+            if (visual is not Control child)
+            {
+                continue;
+            }
+
+            child.Measure(layoutConstraint);
+            childSize = new Size(
+                Math.Max(childSize.Width, child.DesiredSize.Width),
+                Math.Max(childSize.Height, child.DesiredSize.Height));
+        }
+
+        return childSize.Inflate(frameInset);
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        var frameInset = Padding + BorderThickness;
+        var layoutSize = finalSize.Deflate(frameInset);
+
+        foreach (var visual in VisualChildren)
+        {
+            if (visual is Control child)
+            {
+                child.Arrange(new Rect(frameInset.Left, frameInset.Top, layoutSize.Width, layoutSize.Height));
+            }
+        }
+
+        return finalSize;
+    }
+
+    public sealed override void Render(DrawingContext context)
+    {
+        var borderRenderHelper = _borderRenderHelper ??= new BorderRenderHelper();
+        borderRenderHelper.Render(
+            context,
+            Bounds.Size,
+            BorderThickness,
+            CornerRadius,
+            BackgroundSizing.InnerBorderEdge,
+            Background,
+            BorderBrush,
+            null,
+            0);
+    }
+
+    #region 实现 控件接口
+
+    // ControlTheme keeps native inheritance when no explicit owner typography is configured.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
 
     private void ConfigureItemSeparator(BreadcrumbItem breadcrumbItem)
     {
@@ -281,58 +346,4 @@ public partial class Breadcrumb : ItemsControl, IMotionAwareControl
         breadcrumbItem.ClearValue(BreadcrumbItem.SeparatorTemplateProperty);
     }
 
-    protected override Size MeasureOverride(Size constraint)
-    {
-        var frameInset       = Padding + BorderThickness;
-        var layoutConstraint = new Size(
-            Math.Max(0, constraint.Width - frameInset.Left - frameInset.Right),
-            Math.Max(0, constraint.Height - frameInset.Top - frameInset.Bottom));
-
-        var childSize = new Size();
-        foreach (var visual in VisualChildren)
-        {
-            if (visual is not Control child)
-            {
-                continue;
-            }
-
-            child.Measure(layoutConstraint);
-            childSize = new Size(
-                Math.Max(childSize.Width, child.DesiredSize.Width),
-                Math.Max(childSize.Height, child.DesiredSize.Height));
-        }
-
-        return childSize.Inflate(frameInset);
-    }
-
-    protected override Size ArrangeOverride(Size finalSize)
-    {
-        var frameInset = Padding + BorderThickness;
-        var layoutSize = finalSize.Deflate(frameInset);
-
-        foreach (var visual in VisualChildren)
-        {
-            if (visual is Control child)
-            {
-                child.Arrange(new Rect(frameInset.Left, frameInset.Top, layoutSize.Width, layoutSize.Height));
-            }
-        }
-
-        return finalSize;
-    }
-
-    public sealed override void Render(DrawingContext context)
-    {
-        var borderRenderHelper = _borderRenderHelper ??= new BorderRenderHelper();
-        borderRenderHelper.Render(
-            context,
-            Bounds.Size,
-            BorderThickness,
-            CornerRadius,
-            BackgroundSizing.InnerBorderEdge,
-            Background,
-            BorderBrush,
-            null,
-            0);
-    }
 }

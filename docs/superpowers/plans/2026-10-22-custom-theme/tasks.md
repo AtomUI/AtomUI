@@ -4,11 +4,13 @@
 
 ## 0. 执行进度
 
+2026-11-05续作：已核对既有feature/custom-theme、HEAD35f9cc8f5及全部原改动；当前详细证据只见[CT25当前记录](platform-current-exit.md#2026-11-05-续作有限执行与证据账本)。保留后续表格的历史过程，不把旧阶段文字覆盖各家族最后出口。原724项目录与1244字段无重复主键，原90组与CT26逐项表双向一致。
+
 2026-10-24新增授权：完成CT-10全部子任务，并继续完成CT-11至CT-26；沿当前分支和worktree、不自动提交、不用subagent。CT-24后由用户明确暂缓，本轮先不做；其余工作继续。
 
 2026-10-25用户要求完成全部进行中任务，当前执行集合为CT-11–CT-19及CT-25；不把分包通过、视觉批准或提交当整项完成。
 
-更新日期：2026-10-28。工作位置为`feature/custom-theme`及现有worktree，源码审计基线`85407138f`；阶段提交`79f2fc00e`记录截至CT-08A的成果，本轮已持续推进至CT-19颜色选择及CT-25平台分包，机制及各分包清理后聚焦证据见下表，本轮修改继续交用户审查，不自动提交，整体重构尚未完成。CT-00/CT-01完成的是目录与源码分类，不表示控件或主题机制已经修复。**已完成CT-04/CT-05及CT-06机制和DataGrid17项兼容接入；Own V2持续按家族迁移，DataGrid78字段和ColorPicker24字段的后续默认计划已有独立结果；完整控件家族验收仍为0项**，不能把准备工作换算成视觉验收完成率。
+更新日期：2026-10-30。工作位置为`feature/custom-theme`及现有worktree，源码审计基线`85407138f`；阶段提交`79f2fc00e`记录截至CT-08A的成果，本轮已持续推进至CT-19颜色选择及CT-25平台分包，机制及各分包清理后聚焦证据见下表，本轮修改继续交用户审查，不自动提交，整体重构尚未完成。CT-00/CT-01完成的是目录与源码分类，不表示控件或主题机制已经修复。**已完成CT-04/CT-05及CT-06机制和DataGrid17项兼容接入；Own V2持续按家族迁移，DataGrid78字段和ColorPicker24字段的后续默认计划已有独立结果；完整控件家族已完成CT12–CT17六项（各既定批准范围；CT25/FW1及CT17明确排除项独立保留）**，不能把准备工作换算成视觉验收完成率。
 
 | ID | 状态 | 已完成与证据 | 下一步／未完成门槛 |
 | --- | --- | --- | --- |
@@ -23,22 +25,22 @@
 | CT-08 | 已完成（机制） | [A结果](style-assets-results.md)；[B结果](style-hosts-results.md)：Context和Application/Provider/Window lease接线、退役；临时Core19+补充1/Desktop3通过，清理后Core50/Desktop16、NET8零警告，代表Skia前后0像素差异，作者自审完成 | [C结果](style-transactions-results.md)：统一协调/继承重置/NoOp、完整stamp、版本1表现结果和有界清理；临时Core17/Desktop3通过，清理后Core58/Desktop17、NET8零警告，默认前后/品牌恢复0像素差异；作者自审通过。公开注册/manifest属CT-09，多平台/性能/全控件仍待后续验收 |
 | CT-09 | 已完成（机制） | [计划](brand-manifests.md)、[结果](brand-manifests-results.md)：显式规范登记/能力、版本1JSON与完整/TokenOnly导出、选择身份及同runtime事务；临时30/30通过并清理 | 清理后Core115/Desktop17、NET8零警告；默认HEAD79前后0px、10次完整往返0px、真实两类Popup、公开仅登记0px；作者自审完成。工作台/AI/全控件及平台仍待CT-22–CT-26 |
 | CT-10 | 已完成（共享消费） | [S1–S5计划](shared-consumers.md)、[总结果](shared-consumers-final-results.md)与[104项实际消费者](shared-consumers-catalog.md)：10根owner排版/前景、25既有身份、内部/公开子Control边界闭环；前序箭头/两类Popup/框体/图标/启动分包合并验收。本轮59+2临时验证已清理、净增常驻0；明暗26同轨迹旧新默认/恢复0、Mac AOT/JIT36帧0；最终Desktop960及Combo13/Core3、NET8零警告，作者自审与媒体清理完成 | CT-10无未决子任务；完整家族Own/业务状态/持续动效/平台专项继续CT-11–CT-26，不计作这些任务已通过 |
-| CT-11 | 进行中 | [动效消费计划](motion-consumers.md)：[M1结果](motion-wave-results.md)：曲线/范围/形状与缓存修复，默认固定时点0px；[M2结果](motion-transitions-results.md)：四模板动态时长、作用域/优先级/GC，临时10通过已清理，默认明暗终态0px、清理后Desktop76/NET8零警告，当前Mac NativeAOT运行通过；[M3结果](motion-exact-results.md)：精确时长/曲线、Splash周期/比例/停用、真实动画与合成时钟、可变easing隔离通过；清理后Core45/Controls3/Generator63/Desktop76及NET8零警告，当前Mac NativeAOT实际值/恢复通过；[扩展结果](motion-consumers-expanded-results.md)：其余83组/74文件接入、370资产实际物化，18项旧新RED→GREEN及30默认/30AOT对照0px；临时源/媒体已清理，最终Desktop2184/Core27/Grid39/Gallery22与NET8通过。全owner状态出口随家族回填 | [83路径](motion-transition-catalog.md)的逐owner业务状态、连续动效随家族完成后总验收 |
-| CT-12 | 进行中 | [家族计划](buttons.md)；[首包结果](buttons-defaults-results.md)：四终端91字段、字重和shape已验收，48实例明暗五状态默认0px、110默认值相同；清理后Core54/Desktop92及NET8零警告，当前Mac NativeAOT实际依赖/字重/shape通过。[Option19结果](option-buttons-results.md)：第五终端19字段、两identity与动态时长通过；明暗默认五状态0px，清理后Desktop30/NET8零警告、当前Mac AOT通过。[消费分包结果](button-consumers-results.md)：六Global身份/三动态集合、Dropdown23新增Own隔离、Hyper绑定优先级和Toggle四画刷通过；明暗五状态0px、清理后Buttons193与NET8零警告，当前Mac AOT通过。[原生稳定性结果](buttons-native-stability-results.md)：当前Mac实际显示面40帧、五阶段内均0px，1DIP检错29220、B变化253549及返回0。[六owner字体族结果](buttons-font-family-results.md)：可选Global/真实继承/优先级与GC、24实例明暗四状态0px及恢复0、当前Mac AOT通过，清理后Core30/Desktop223、NET8零警告。[其余消费分包](buttons-remaining-consumers-results.md)：显式默认禁用描边/实际Flyout owner间距通过；默认明暗/展开0px、原生API同阶段配置及恢复0px；原有9/5RGB1边缘单列CT25，清理后361项与NET8零警告。五个历史字段已明确Reserved/Legacy、保留兼容且非有效编辑入口；持续动效和完整输入继续推进。Button依赖失败及B10离屏稳定性对照；S2新旧A/B均复现Overlay owner边缘恢复4px（RGB1），新旧同阶段0px；Option往返2px/RGB1也旧新同阶段0，均须专项解释/处理 | 等所需机制；逐按钮identity、实际视觉与原生闪动专项 |
-| CT-13 | 进行中（分包） | [输入目录](inputs.md)；[R结果](input-resize-results.md)：ResizeHandleSize命中/可见绘制及owner线宽已接通；默认指示线恢复可见经用户批准（明暗88px），统一阶段配置清除0px；真实拖拽/滚动、Mac AOT通过，临时源/媒体清理后395项与NET8零警告。[F1结果](input-font-results.md)：LineEdit三档Own/Global字号及字体族、原生继承/优先级已接通，明暗四状态及清除0px、Mac AOT通过；[G1记录](input-global-results.md)：58处资源投射、四owner真实消费与当前Mac AOT通过，清理后Input136/NET8零警告；默认状态文字颜色已获用户批准、其他边缘/往返像素差异归CT25未决。[V1结果](input-defaults-results.md)：16字段迁移V2、96值相等，同轨迹新旧默认/配置/恢复0px，Mac AOT通过；清理后Core33/Generator1/Input-OTP198及NET8零警告。[F2记录](input-font-remaining-results.md)：三owner可选字体族、Search全尺寸Global字号及Embedded隔离通过；新旧四默认状态0、原生API新旧六阶段0，字体清除合成边缘现象原来即存在且继续CT25；临时源/媒体清理后Core26/Desktop195及NET8零警告。[G2记录](input-frame-owner-results.md)：共享frame及clear/reveal的95处资源接入真实owner，内容路线/同scope迁移和GC通过；26控件明暗六默认阶段0，真实点击48+12/主题。Mac NativeAOT运行通过且与JIT四图0，临时源/媒体清理后Core21/Desktop525及NET8零警告；配置往返/性能出口仍开放。[G3-A结果](input-otp-global-results.md)：OTP45处有效Global消费、17项专项及真实输入通过；96格明暗六默认阶段/清除0，Mac AOT运行及JIT对照四图0；临时源/媒体清理后OTP65及NET8零警告。[B1/B2A/B2B](inputs.md)已按各自结果完成；[C排版结果](input-otp-typography-results.md)已接通可选根字体与分隔符字号，20默认/22AOT画面0px、临时11已清理、最终OTP66/Core1与NET8通过。[D颜色结果](input-otp-color-results.md)完成用户批准的普通／禁用前景修复：73项、批准原型四图0、38AOT-JIT0，临时清理后OTP66及NET8零警告；其余输入选择继续，不能以分包代表家族完成 | 逐输入／选择控件及状态整改，保留焦点与输入 ；用户2026-10-24明确允许默认分隔符ColorText／ColorTextDisabled颜色修复，按[颜色结果](input-otp-color-results.md)完成独立消费验证，不再等待批准 |
-| CT-14 | 进行中 | [执行计划](container-consumers.md)：85项metadata/258字段，Reserved累计20；列表30、TreeView12、Transfer11、Breadcrumb8、Pagination14及Expander13的默认分包已提交；[Segmented14及三条Own依赖](segmented-defaults-results.md)完成本机验证、限定视觉批准与清理，尚未提交 | N2其余Global/字体、图标/键盘等业务状态、N3其余字段/Custom、N4全家族和原生最终像素继续；不能用本机切片关闭完整CT14 |
+| CT-11 | 已完成（动效消费合同） | [总出口结果](motion-exit-results.md)合并M1–M4：Wave/Splash精确输入、93组动态集合（92组本机实际路径、Windows专用1组归CT25）、74个owner开关断链及代码时长/跨根热更新修复完成。当前Mac managed/NativeAOT各357检查，33对象回收，NET8三个产品出口零警告错误；明暗1044对完整轨迹及补充定位已审，12对暗色传播与8对有限合成历史差异均获限定批准。13临时源、466原生工程文件及2261媒体文件清理；最终聚焦991PASS0Skip，成员10文件/9控件/0问题，作者另步自审完成 | CT11合同内无未决子任务；[Windows专用及有限合成差异](motion-exit-compositor-review.md)、其他Host原生最终像素/输入继续CT25。CT12–CT20完整家族状态不因共享机制完成而关闭；本批未提交/推送 |
+| CT-12 | 已完成（既定批准范围；CT25保留） | [最后工程出口](buttons-box-shadow-finish-results.md)：九owner/133Own（128有效+5历史）、V11公开BoxShadow接通；当前默认NSWindow managed/AOT各1236检查，52帧阶段内与恢复0、跨运行12对0，指针/按下0。六临时/441外部文件/121媒体已清理，最后Desktop172/Gallery16/Rendering1共189PASS、NET8零、成员1/1/0。 | [最后限定视觉](buttons-box-shadow-final-visual-review.md)已获用户明确批准，V11及完整CT12既定出口关闭。原始Skia24/max1、旧混合宿主两对3968/max2等按CT25保留，不设通用容差；Split Custom140仍CT20；未提交/推送。 |
+| CT-13 | 已完成（既定批准范围；CT25/FW1保留） | [输入目录](inputs.md)；[R结果](input-resize-results.md)：ResizeHandleSize命中/可见绘制及owner线宽已接通；默认指示线恢复可见经用户批准（明暗88px），统一阶段配置清除0px；真实拖拽/滚动、Mac AOT通过，临时源/媒体清理后395项与NET8零警告。[F1结果](input-font-results.md)：LineEdit三档Own/Global字号及字体族、原生继承/优先级已接通，明暗四状态及清除0px、Mac AOT通过；[G1记录](input-global-results.md)：58处资源投射、四owner真实消费与当前Mac AOT通过，清理后Input136/NET8零警告；默认状态文字颜色已获用户批准、其他边缘/往返像素差异归CT25未决。[V1结果](input-defaults-results.md)：16字段迁移V2、96值相等，同轨迹新旧默认/配置/恢复0px，Mac AOT通过；清理后Core33/Generator1/Input-OTP198及NET8零警告。[F2记录](input-font-remaining-results.md)：三owner可选字体族、Search全尺寸Global字号及Embedded隔离通过；新旧四默认状态0、原生API新旧六阶段0，字体清除合成边缘现象原来即存在且继续CT25；临时源/媒体清理后Core26/Desktop195及NET8零警告。[G2记录](input-frame-owner-results.md)：共享frame及clear/reveal的95处资源接入真实owner，内容路线/同scope迁移和GC通过；26控件明暗六默认阶段0，真实点击48+12/主题。Mac NativeAOT运行通过且与JIT四图0，临时源/媒体清理后Core21/Desktop525及NET8零警告；配置往返/性能出口仍开放。[G3-A结果](input-otp-global-results.md)：OTP45处有效Global消费、17项专项及真实输入通过；96格明暗六默认阶段/清除0，Mac AOT运行及JIT对照四图0；临时源/媒体清理后OTP65及NET8零警告。[B1/B2A/B2B](inputs.md)已按各自结果完成；[C排版结果](input-otp-typography-results.md)已接通可选根字体与分隔符字号，20默认/22AOT画面0px、临时11已清理、最终OTP66/Core1与NET8通过。[D颜色结果](input-otp-color-results.md)完成用户批准的普通／禁用前景修复：73项、批准原型四图0、38AOT-JIT0，临时清理后OTP66及NET8零警告；其余输入选择继续，不能以分包代表家族完成 | 逐输入／选择控件及状态整改，保留焦点与输入 ；用户2026-10-24明确允许默认分隔符ColorText／ColorTextDisabled颜色修复，按[颜色结果](input-otp-color-results.md)完成独立消费验证，不再等待批准 |
+| CT-14 | 已完成（既定批准范围；CT25/FW1保留） | [家族结果](container-family-exit-results.md)、[85项矩阵](container-family-exit-matrix.md)：37身份/258Own（221Active+13Derived+20Reserved+4Legacy）；Global/字体、109V2与12Own消费、Custom/Part/回收完成本机工程。临时清理后Desktop1014/Core17、NET8零；当前Mac managed556/AOT557、218资源一致，媒体/工程已清理 | [最终限定视觉](container-family-visual-review.md)V1–V7已获用户明确批准；完整CT14既定出口关闭，保留CT25/FW1原始失败及既定边界，不扩大容差；未提交 |
 | CT-15 | 完成（既定批准范围） | 137 metadata / 274 Own; 26 contract groups. [Final finite exit](feedback-final-exit-results.md): approved software Skia adopted; original named restores verified, scoped visual approvals registered; cleaned focused 483+7+77+276=843 PASS; NET8 and actual Gallery AOT integration verified. Details: [adoption](feedback-region-sdk-adoption-results.md), [native input](feedback-native-input-delivery-results.md). | Original FAIL/exception/missing-frame records, INPUT_NOT_PAIRED, platform and CT25/FW1/FW2 boundaries retained; no full regression, branch/worktree/subagent or commit. |
-| CT-16 | 进行中 | [执行计划](date-time-consumers.md)、[D1结果](date-time-width-results.md)：TimePicker8历史字段V2，Period列／footer修复；[D2-A结果](date-time-geometry-results.md)：行高变化保留逻辑视口，旧新18兼容帧0／Mac AOT24帧0；[D2-B结果](date-time-cell-results.md)：公开Cell字体／状态颜色及专用AXAML Style、既有配色与继承优先级已验证，21临时清理，最终Core13/Desktop133及NET8零警告 ；[D3-A范围结果](date-time-range-results.md)：两字段可选Own覆盖及动态指示条宽／坐标／底边修复，17临时清理，明暗30帧／Mac AOT-JIT30帧通过，最终133项／NET8零警告 ；[D4-A Global结果](date-viewer-global-results.md)：26处基础资源接通实际DateViewer／Range owner，14临时清理、最终337项／NET8通过，明色原生资源同值17图0；暗色10／24 RGB1及AOT一图10像素归CT25未闭合；[D3-B Own结果](date-time-own-results.md)：四终端43历史字段V2，86默认／ID／slot相同，实际行距／农历高度／业务条偏移更新，14临时清理，351项与Mac AOT-JIT30帧通过 | B的AOT38帧34为0，4帧触发框3像素另有旧版整帧对应0；选中行残留由旧版支持的背景色往返复现，外框及D1范围圆角具体归因继续CT25；D2内部TimeView Global／非法行高、四日期终端剩余逐字段消费、Global与完整状态继续；重套模板旧部件保留已复现并交CT25，完整家族仍0 |
-| CT-17 | 进行中（分包） | [绘制计划](drawing-consumers.md)：P0普通线形边界／动态字体与格式修复已获批，第三轮后续34文件经批准提交推送；[P1-A结果](progress-token-results.md)：13历史字段V2／26默认及ID／slot相同，两项明确Own接线获批，明暗各784像素、默认／重置0；当前Mac managed218／NativeAOT212检查及清理后204项、NET8零警告通过。测试宿主region单变量使原七控件42对A/A为0，不消费历史7像素许可。Skeleton端点helper已补查；[Steps边界结果](steps-progress-rounding-results.md)：真实字体末端1 DIP修复、明238／暗239像素已获批准，临时源和24张媒体清理，完整家族仍未验收 | [P1-B结果](progress-circle-results.md)的22项／144帧与真实Mac JIT／AOT各96项已执行，圆形尺寸／结果状态视觉已获批，临时源及244个媒体文件清理，204项聚焦、NET8及6文件成员审计通过；[P1-B3](progress-circle-fit-results.md)的44项反例、132帧及Mac managed／AOT各130项已通过，视觉已批准且临时取证清理，清理后42项与NET8通过；其余Own、Global及状态矩阵仍开放；测试宿主改动仅限Headless/Skia，原生最终显示面及完整家族保持开放 |
+| CT-16 | Complete within approved scope; CT25/FW1/FW2 retained | [Finite family exit](date-time-family-exit.md): 22 metadata / 51 Own; prior D1-D4-C reused. Actual Global/field consumers, strict row-height boundaries, fonts, scope/reparent, dedicated styles and state/size exits verified. JIT/AOT 202 full frames zero; actual NSWindow managed/AOT each 258 checks. After cleanup Desktop357 + Core15 = 372 PASS; NET8 zero warnings/errors. | V1 approved: default workday marker, 32 pixels per theme; no pixels outside the two markers. CT25/FW1/FW2 and old FAIL/INPUT_NOT_PAIRED retained; [Height/placement follow-up](date-time-popup-height-follow-up.md) complete with P1 approved; cleaned focused133 PASS / NET8 zero. No full regression, branch/worktree/subagent or commit. |
+| CT-17 | 已完成（本轮既定批准范围） | [家族出口及集中批准登记](drawing-family-exit.md#批准登记与最终结论)：50 metadata/92 Own（87消费+5批准兼容）；141临时已清理，最终Desktop152+Gallery22=174PASS，NET8零警告；当前Mac managed/AOT各648检查。V1–V5/C1/S1均已明确批准 | AOT/JIT309/310为0；命名S1为11像素/max7，仅按具体批准接受，原严格FAIL保留，不设通用容差或转CT25/FW。独立Steps、完整CT20及其他既定边界不扩张；未提交 |
 | CT-18 | 已完成（既定限定批准范围） | [家族权威出口](data-grid-family-exit.md)：42 metadata/78 Own=48 Active+17 Alias+13 Reserved；106工程精确PASS，临时清理后76PASS/NET8零/14文件6控件审计0；Mac managed/AOT各974，152对RTB与标准96对最终显示cross0；D1–D5/R1及表列N1已批准 | [批准集中登记](data-grid-family-exit.md#批准登记与最终结论)；N1的26对原生显示FAIL按具体接受保留，历史异常/无效帧、CT25/FW边界不改写；全部临时源/媒体/driver专用产物已清理，原有改动及暂存区保留；未提交，不自动开展其他CT |
-| CT-19 | 进行中（分包） | [B08文字结果](gradient-text-results.md)、[C1依赖结果](color-picker-defaults-results.md)、[C2输入结果](color-picker-input-sizing-results.md)、[C3历史formatter结果](gradient-legacy-formatter-results.md)：动态前景／恢复、四条Own依赖、两项输入Own及格式／Alpha／尺寸恢复已取得前后与Mac managed／AOT证据；所示视觉变化及逐场景限定合成差异已获用户明确批准，专用媒体已清理，清理后20项及NET8通过；[C4绘制结果](color-picker-drawing-results.md)：空值斜线／选择环有效颜色与线宽接线、0／恢复／owner隔离及GC通过，初始与补充视觉和限定历史3像素已获批，媒体清理；[C5位图顺序及挂载](color-slider-bitmap-order.md)：旧请求覆盖真实RED/GREEN，清理后Desktop23／Core17／NET8通过，重挂六对Alpha变化已获批准并随第十批提交；[C6输入重挂结果](color-picker-input-lifecycle-results.md)：权威输入回放、无变化保留草稿／校验／光标及原生模板格式绑定完成，20临时／Mac managed与AOT各308／清理后23及NET8通过，324帧及59对限定差异已获批准，临时源／工程／媒体清理，已随获批第十一批提交0c6d8445679e，C7色谱请求顺序继续 | 其余Own／Global／Part／状态与完整平台／原生最终像素继续；本行不表示完整家族验收 |
-| CT-20 | 未开始 | 尺寸／Custom候选已挂各家族 | 随家族逐属性区分基础值和预设，不批量替换 |
-| CT-21 | 未开始 | GalleryBase／Gallery目录已纳入 | 工具壳自身Token、预览owner隔离及视觉对照 |
-| CT-22 | 未开始 | — | 等品牌与控件机制；三品牌及边界配方真实渲染 |
-| CT-23 | 未开始 | — | 手动工作台编辑／预览／应用／保存／往返闭环 |
+| CT-19 | Complete within explicitly approved scope | [Final authority and approval](color-picker-family-exit.md):22 metadata/24 Active Own; V1-V3 and R1/R2 approved. Follow-up39 focused/cleaned27/NET8 zero/member3-0-0; current Mac AOT verified. | 660 images/896 comparisons:854 expected,42 named S1 titlebar FAIL explicitly accepted and retained. Route migration, V3 evidence limits, C9 history and CT25/FW retained; all task artifacts cleaned; no commit. |
+| CT-20 | 已完成（既定限定批准范围） | [权威出口/批准登记](custom-size-exit.md)：58行/45文件及扩展入口；默认144对0，Mac managed/AOT各292；清理后25类274PASS/NET8零/成员6-3-0 | V1–V4已批准，仅G1获准归CT25/FW1调查，严格FAIL及原边界保留；无Git授权 |
+| CT-21 | 已完成（既定限定批准范围） | [权威出口](gallery-tools-exit.md)：146目录（22/19/105）/41 Active+1兼容保留/23新增Own，默认20对0，Mac managed/AOT各28；清理后128PASS/NET8零 | T1–T3已批准，唯一登记见权威出口；中间图不当最终屏幕证据，其他平台及原FAIL保留 |
+| CT-22 | 已完成（有限工程与验收） | [权威出口](brand-workbench-exit.md)：8配方×明暗、16完整往返RGBA0；真实hover/pressed、尺寸/嵌套/Popup；Mac managed/AOT各152 | 适配配方非第三方像素复刻；清理后门禁与CT23合批，原平台/严格FAIL保留 |
+| CT-23 | 已完成（手动闭环工程） | [权威出口](brand-workbench-exit.md)：workspace主题菜单、schema/有效值/隔离预览/应用/文件保存/完整往返/diff/恢复/取消；Core定义锚定与真实scope receipt | 原实例/过期/释放通过；清理后Gallery33/Core63/Icon3、NET8零；常驻净增0；CT24排除，未提交 |
 | CT-24 | 未开始（用户暂缓） | 用户2026-10-24明确“这个先不做”，本轮不接AI服务 | 后续需要另行恢复授权；不再将实际endpoint／模型信息列作本轮阻塞 |
-| CT-25 | 进行中（分包） | 最新[第二十轮](platform-twentieth-results.md)以6bd607676完成8/8job：Windows/Linux/macOS各6405项选测、三NativeAOT各26项、两Browser各23项，所有实际源码相同；每OS本地化27对阶段及370主题资产通过。Windows证据来自GitHub Windows Host；本轮证明所列选测与fixture范围。历史失败与后续处置保留在各轮记录 | [资源编号兼容](token-resource-ordinals-results.md)的96范围1478ID、旧producer及MacAOT证据保持；[启动查询](startup-token-lookup-results.md)的0B热查询通过。完整家族、各Host输入/持续动效/最终像素、G2完整热切换性能、所有适用条件引擎/实际包消费专项仍开放；仅使用验证Actions，禁止NuGet发布 |
-| CT-26 | 未开始 | — | 汇总逐Control／90组子项、兼容与视觉证据，清理并最终审查 ；按用户决定，本轮排除暂缓的CT24 |
+| CT-25 | 已完成（本轮限定出口；开放边界保留） | [当前权威记录](platform-current-exit.md#最终状态本轮限定出口已收口)：最终Core下95处同载20进程计量与G2具体成本接受完成；原matched Native12阶段/36完整显示帧、590检查/0按下通过；预览表面修正已核对。最后精确19PASS，前139/NET8/包/Linux NativeAOT按相同源码复用 | G1/FW1、Windows依明确决定继续OPEN；原mixed/未配对/采用范围之外及具体FAIL保持，不换算PASS。唯一G2批准见权威记录；无Git/发布授权 |
+| CT-26 | 已完成（本轮限定交付收口） | [最终审查](final-exit-review.md#交付状态)：724目录/1244字段/原90组双向一致；正式模块文档、具名验收、精确门禁、作者另步自审、批准与临时清理已核对 | 全平台认证与已明确保留的开放项不算完成；独立Steps原排除、CT19具体接受及CT24暂缓保持；不自动提交 |
 
 2026-10-25最新平台出口：[第十批](platform-tenth-followups.md)已按批准提交abd62d849／9e0855940并推送，[Actions40163904747](https://github.com/AtomUI/AtomUI/actions/runs/40163904747)八个job均结束。三NativeAOT／两Browser通过，三OS前八测试项目各5664项通过；Windows import及Grid原失败通过，后续仍因build-host.log清理占用失败，Linux实际包消费600秒总限失败，Mac包消费通过后Gallery的Tour命中1项失败。未运行到的后续项目不计通过；[第十一轮取证](platform-eleventh-followups.md)继续定位，不宣称平台最终通过。
 
@@ -100,12 +102,12 @@ CT-16追加[D4-C页头结果](date-viewer-header-results.md)：范围Header以St
 | CT-11 | CT-02 | 动态Transition、motion/wave输入、WaveSpirit实际easing/时长/范围 | owner变化/主题切换更新且可释放，Transitions保留style setter；自绘实际消费公开输入 |
 | CT-12 | CT-05/CT-10/CT-11 | Button、HyperLinkButton、DropdownButton、SplitButton、OptionButton及实际按钮派生项 | 行高/padding依赖、字重、阴影、shape恢复、三档公式与字段兼容；各identity独立 |
 | CT-13 | CT-10/CT-11；有Own依赖者加CT-05 | LineEdit/TextArea/NumericUpDown/OTP、Select/ComboBox、CheckBox/Radio等输入选择 | 字体、frame、option padding、禁用态、resize/下划线几何、public属性和Part有效；保留输入与焦点 ；用户2026-10-24明确允许默认分隔符ColorText／ColorTextDisabled颜色修复，按[颜色结果](input-otp-color-results.md)完成独立消费验证，不再等待批准 |
-| CT-14 | CT-10/CT-11 | ListBox/ListView、Tree、Menu/NavMenu、TabControl/TabStrip、Cascader/TreeSelect/Transfer、Pagination/Expander | 容器owner/回收、方向与selected/open状态、组标题、密度；T37未公开能力按CT-01结论处置 |
+| CT-14 | 已完成（既定批准范围；CT25/FW1保留） | [家族结果](container-family-exit-results.md)、[85项矩阵](container-family-exit-matrix.md)：37身份/258Own（221Active+13Derived+20Reserved+4Legacy）；Global/字体、109V2与12Own消费、Custom/Part/回收完成本机工程。临时清理后Desktop1014/Core17、NET8零；当前Mac managed556/AOT557、218资源一致，媒体/工程已清理 | [最终限定视觉](container-family-visual-review.md)V1–V7已获用户明确批准；完整CT14既定出口关闭，保留CT25/FW1原始失败及既定边界，不扩大容差；未提交 |
 | CT-15 | CT-10/CT-11 | Alert、Card、Message/Notification/Dialog、ToolTip/PopupConfirm、Timeline、Avatar、Tag/Badge、FloatButton、ImagePreviewer/Carousel及Result | 实际区域/关闭图标/弹层尺寸/字体/阴影/形态入口有效；稳定Part；插画/命名色保留内容语义 |
-| CT-16 | CT-10/CT-11 | DatePicker、TimePicker、Calendar及范围条/内部Presenter/公开子Button ；[D3-A范围结果](date-time-range-results.md)：两字段可选Own覆盖及动态指示条宽／坐标／底边修复，17临时清理，明暗30帧／Mac AOT-JIT30帧通过，最终133项／NET8零警告 ；[D4-A Global结果](date-viewer-global-results.md)：26处基础资源接通实际DateViewer／Range owner，14临时清理、最终337项／NET8通过，明色原生资源同值17图0；暗色10／24 RGB1及AOT一图10像素归CT25未闭合；[D3-B Own结果](date-time-own-results.md)：四终端43历史字段V2，86默认／ID／slot相同，实际行距／农历高度／业务条偏移更新，14临时清理，351项与Mac AOT-JIT30帧通过 | Own取正确owner，头部与范围标签可定制，字体/描边/密度不破坏日期状态、焦点和弹层 |
+| CT-16 | Complete within approved scope; CT25/FW1/FW2 retained | [Finite family exit](date-time-family-exit.md): 22 metadata / 51 Own; prior D1-D4-C reused. Actual Global/field consumers, strict row-height boundaries, fonts, scope/reparent, dedicated styles and state/size exits verified. JIT/AOT 202 full frames zero; actual NSWindow managed/AOT each 258 checks. After cleanup Desktop357 + Core15 = 372 PASS; NET8 zero warnings/errors. | V1 approved: default workday marker, 32 pixels per theme; no pixels outside the two markers. CT25/FW1/FW2 and old FAIL/INPUT_NOT_PAIRED retained; [Height/placement follow-up](date-time-popup-height-follow-up.md) complete with P1 approved; cleaned focused133 PASS / NET8 zero. No full regression, branch/worktree/subagent or commit. |
 | CT-17 | CT-05/CT-10/CT-11；不含Own依赖者不等待CT-05 | Skeleton、Progress各形态、Rate、Slider、Switch、Separator、Watermark及相关绘制目标 | 标题/渐变/线宽/字体/几何实际消费；极值、细线及动态缓存；固定几何与开放形态明确 |
 | CT-18 | CT-06/CT-10/CT-11 | DataGrid表头/单元格/过滤器/选择列/拖拽/展开图形及虚拟化 | 全部规范字段/别名、内部非Visual对象、自绘线条及Custom；原有滚动、裁剪、冻结和回收保持 |
-| CT-19 | CT-05/CT-10/CT-11 | ColorPicker/GradientColorPicker、ColorBlock/Spectrum/SliderThumb/输入区域 | 尺寸依赖、HEX/HSV/RGB布局、文字/disabled更新、空值标记/线宽/选择环、scope与释放 |
+| CT-19 | Complete within explicitly approved scope | [Final authority and approval](color-picker-family-exit.md):22 metadata/24 Active Own; V1-V3 and R1/R2 approved. Follow-up39 focused/cleaned27/NET8 zero/member3-0-0; current Mac AOT verified. | 660 images/896 comparisons:854 expected,42 named S1 titlebar FAIL explicitly accepted and retained. Route migration, V3 evidence limits, C9 history and CT25/FW retained; all task artifacts cleaned; no commit. |
 | CT-20 | CT-01/CT-02；逐家族协调 | 58处Custom/Middle候选逐属性分离基础默认与预设；扩展至CT-00发现的其他尺寸入口 | 每处有实际职责及结论，Custom不接管其未拥有维度；保留三档、方向、Min/Max和输入几何 |
 
 CT-12–CT-19的边界由CT-00精确Control目录补齐：表中示例不能排除未列出的Control，也不能以某个共享修复替代每个实际模板、状态和Part的验证。跨家族同名字段不自动继承配置。
@@ -124,7 +126,7 @@ CT-10重点路径：[InputControlFrame](../../../../src/AtomUI.Desktop.Controls/
 | CT-22 | CT-08/CT-09；完整交付加CT-12–CT-20 | Ant默认、shadcn、Bootstrap及零圆角/粗线/大字/紧凑/关闭动效配方 | 配方多维进入真实渲染；状态/尺寸/嵌套/弹层一致；缺Host能力有诊断 |
 | CT-23 | CT-09/CT-21；完整交付加CT-22 | 复用workspace目录/主题菜单，完成草稿/有效值/预览/应用/保存、diff/恢复、完整导入导出 | 同一runtime，兄弟预览隔离，已有实例状态保持，Token与表现结果不混淆；取消/过期不覆盖新草稿 |
 | CT-24 | 未开始（用户暂缓） | 用户2026-10-24明确“这个先不做”，本轮不接AI服务 | 后续需要另行恢复授权；不再将实际endpoint／模型信息列作本轮阻塞 |
-| CT-25 | 机制及各家族逐批接入；最终等CT-04–CT-23适用任务 | 注册/资产/跨程序集、真实trim/NativeAOT、Browser与各OS、性能/生命周期对照 | 每个Host/平台分别有证据；无全量实例化、反射旁路、无界缓存或旧Visual保留；无证据平台不填通过 ；[Picker模板终版](picker-template-results.md)已修复旧部件保留／有效模板替换会话，34项临时及45相邻通过、Mac managed／AOT各851检查通过，临时源与媒体已清理、所示视觉及限定2像素已获批准；完整日期家族及平台最终像素仍待验收 ；用户允许使用github.com/AtomUI/AtomUI的Actions验证其他平台，明确禁止发布到nuget.org；[多平台方案](platform-validation.md)已检查验证流程且AtomUI凭证可用；cfb1d6668已获批提交推送并运行首轮Actions：3原生、2 Browser通过，3选测失败；[后续修复](platform-followups.md)20文件经批准分两次提交为938f6e3c9、1fe3358ec并推送；[第二轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40061147545)已结束：3原生／2 Browser通过，3选测失败；Mac Desktop4,128与Generator465通过后有2项包元数据断言失败，Linux Desktop9失败，Windows选择路径失败；[第二轮后续包](platform-second-followups.md)12文件获批提交847c441c1并推送；[第三轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40068141876)五个运行时通过，三个选测失败（Windows旧清单测试的Win32 shell入口、Mac Desktop6项、Linux Desktop12项）；[第三轮后续包](platform-third-followups.md)34文件获批分两次提交fc9896fb6／e9bc9e707并推送；[第四轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40089581608)已结束，5运行时通过，3选测失败；Mac／Linux Desktop各4128通过，Windows 6个POSIX stub Skip使证据不完整，Gallery Mac debounce1／Linux点击3失败，见[第四轮后续](platform-fourth-followups.md)，整体仍开放；[第五轮跟进](platform-fifth-followups.md)：29文件批准后提交975fc8e34／57ae294d4并推送；本轮3 NativeAOT／2 Browser及Mac选测6272项通过，Windows DataGrid2失败／Linux Desktop隔离1失败，整轮failure；[第六轮候选](platform-sixth-followups.md)已完成W15提交顺序及W13所属dispatcher机制修复，清理后基础15／桌面35／Grid73与NET8通过；W14补充失败阶段后随获批30文件提交ef09198b9运行[第六轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40149666278)，三原生／两Browser通过，Windows W14失败、Linux Gallery19高亮失败、Mac取编译器源码遇网络失败并已对同SHA重试；该阶段处置见[第七轮执行记录](platform-seventh-followups.md)，最新平台状态见[第二十一轮结果](platform-twenty-first-results.md) |
+| CT-25 | 机制及各家族逐批接入；最终等CT-04–CT-23适用任务 | 注册/资产/跨程序集、真实trim/NativeAOT、Browser与各OS、性能/生命周期对照 | 每个Host/平台分别有证据；无全量实例化、反射旁路、无界缓存或旧Visual保留；无证据平台不填通过 ；[Picker模板终版](picker-template-results.md)已修复旧部件保留／有效模板替换会话，34项临时及45相邻通过、Mac managed／AOT各851检查通过，临时源与媒体已清理、所示视觉及限定2像素已获批准；完整日期家族及平台最终像素仍待验收 ；用户允许使用github.com/AtomUI/AtomUI的Actions验证其他平台，明确禁止发布到nuget.org；[多平台方案](platform-validation.md)已检查验证流程且AtomUI凭证可用；cfb1d6668已获批提交推送并运行首轮Actions：3原生、2 Browser通过，3选测失败；[后续修复](platform-followups.md)20文件经批准分两次提交为938f6e3c9、1fe3358ec并推送；[第二轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40061147545)已结束：3原生／2 Browser通过，3选测失败；Mac Desktop4,128与Generator465通过后有2项包元数据断言失败，Linux Desktop9失败，Windows选择路径失败；[第二轮后续包](platform-second-followups.md)12文件获批提交847c441c1并推送；[第三轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40068141876)五个运行时通过，三个选测失败（Windows旧清单测试的Win32 shell入口、Mac Desktop6项、Linux Desktop12项）；[第三轮后续包](platform-third-followups.md)34文件获批分两次提交fc9896fb6／e9bc9e707并推送；[第四轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40089581608)已结束，5运行时通过，3选测失败；Mac／Linux Desktop各4128通过，Windows 6个POSIX stub Skip使证据不完整，Gallery Mac debounce1／Linux点击3失败，见[第四轮后续](platform-fourth-followups.md)，整体仍开放；[第五轮跟进](platform-fifth-followups.md)：29文件批准后提交975fc8e34／57ae294d4并推送；本轮3 NativeAOT／2 Browser及Mac选测6272项通过，Windows DataGrid2失败／Linux Desktop隔离1失败，整轮failure；[第六轮候选](platform-sixth-followups.md)已完成W15提交顺序及W13所属dispatcher机制修复，清理后基础15／桌面35／Grid73与NET8通过；W14补充失败阶段后随获批30文件提交ef09198b9运行[第六轮CI](https://github.com/AtomUI/AtomUI/actions/runs/40149666278)，三原生／两Browser通过，Windows W14失败、Linux Gallery19高亮失败、Mac取编译器源码遇网络失败并已对同SHA重试；该阶段处置见[第七轮执行记录](platform-seventh-followups.md)，最新平台状态见[第二十二轮结果](platform-twenty-second-results.md) |
 | CT-26 | CT-12–CT-23/CT-25；AI交付另核CT-24 | 汇总逐Control/问题处置及视觉兼容矩阵，清理临时验证/废弃接线，同步正式文档与迁移资料 | 全目录有结论，90组每个子项闭合或有范围/兼容决策；无未解释/未经批准视觉差异，最终focused验证和审查完成后再申请提交 ；按用户决定，本轮排除暂缓的CT24 |
 
 CT-21/CT-23使用现有[GalleryBase](../../../../src/AtomUI.Toolkits.GalleryBase)及[CustomizeTheme](../../../../controlgallery/AtomUIGallery/ShowCases/General/CustomizeTheme)；产品品牌及生成服务属于Gallery，稳定中立能力才下沉GalleryBase。CT-22/CT-24不得另外建立ThemeManager、Token字典或Style优先级引擎。
@@ -259,6 +261,277 @@ CT14 [HorizontalMargin分类](tab-horizontal-margin-results.md)完成：完整�
 
 2026-10-28 N3-SC13 [TreeSelect/Cascader默认结果](container-select-defaults-results.md)：1+12字段V2 rev1，2实际V1 RED→5PASS9s；104原/新值与type/key/ID/slot一致，两后端56对旧新及16对恢复均0。managed/AOT各123，字重别名均按精确600/400校验；NET8零20.42s、成员2Token文件/0Control/0问题。3临时源、422工程文件（1,228,223,829 bytes）、113媒体已清理且audit clean；精确两模块77PASS6s。仅本机默认迁移，DropdownHeight与行数预算的消费者所有权、标签身份、完整家族及CT25仍开放。用户已同意下一高度包取Own上限与更小页数预算，具体视觉另审；当前不提前Git提交。
 
-2026-10-28 CHT [Cascader高度结果](input-cascader-dropdown-height-results.md)：已按用户选择合同合并Own上限与较小名义页数预算；6有效RED→最终15PASS24s，原生实际Overlay/Native managed及AOT各1044，156内容不减为144。NET8零27.02s、成员1辅助文件/0Control/0问题；6临时源、426工程文件（1,220,202,448 bytes）、313媒体已清理且audit clean，精确Cascader51PASS3s。两后端各78对/70变化，[限定审查](input-cascader-dropdown-height-visual-review.md)包括默认320→180、自然列宽193→186（单变量证明确由实现标签范围导致），当前等待明确视觉确认。其余8对0，原整Panel复位3像素保留CT25；完整家族/其他模式/列/平台开放，不提前Git提交。
+2026-10-28 CHT [Cascader高度结果](input-cascader-dropdown-height-results.md)：已按用户选择合同合并Own上限与较小名义页数预算；6有效RED→最终15PASS24s，原生实际Overlay/Native managed及AOT各1044，156内容不减为144。NET8零27.02s、成员1辅助文件/0Control/0问题；6临时源、426工程文件（1,220,202,448 bytes）、313媒体已清理且audit clean，精确Cascader51PASS3s。两后端各78对/70变化，[限定审查](input-cascader-dropdown-height-visual-review.md)包括默认320→180、自然列宽193→186（单变量证明确由实现标签范围导致），2026-10-29用户已明确批准本表限定范围（高度320→180、自然列宽193→186、末行部分可见）。其余8对0，原整Panel复位3像素保留CT25；完整家族/其他模式/列/平台开放，不提前Git提交。
 
 2026-10-29 用户明确要求提交当前 custom-theme 快照；本次授权立即提交当前任务相关改动，不等待全部任务结束。提交不表示完整家族/整项任务完成，不代替Cascader高度包70对限定视觉批准；不含推送、发布或新建分支/worktree。原整任务完成后提交授权与本次快照提交分别记录。
+
+2026-10-29 CT11总出口完成，CT25继续保留[8对限定合成历史差异](motion-exit-compositor-review.md)、Windows专用CaptionButton真实状态及其他Host原生最终像素/输入。两份限定批准不构成通用容差或平台通过。
+
+2026-10-29 CT13 [S7 add-on结果](input-addon-owner-results.md)：三个内部主题69处Shared来源改为各自公开owner有效Global，12RED→19专项、Mac managed/AOT各325；临时2源/430工程文件/89媒体清理后精确三模块148PASS7s、NET8零21.20s。默认/hover/默认错误等24对和直接清除2对0；[8组配置与2组自然清除边缘](input-addon-owner-visual-review.md)已获用户限定批准，原始1/6点保留CT25，不放宽容差。Cascader CHT已在本会话明确获限定批准；完整CT13仍进行中，CT12代码和进度未改，不提交。
+
+2026-10-29 CT13 [CB5结果](input-combo-box-global-results.md)：手柄3Global/公开候选1Global资源改读准确identity，3RED+1positive→8PASS；Mac实际Overlay与Native managed/AOT各355，NET8零19.32s；4临时源/427工程文件/289媒体清理后ComboBox69PASS2s。144对中96对默认/清除等0，24配置场景在两后端各有精确变化；[限定视觉](input-combo-box-global-visual-review.md)包含Middle/Custom自动高度32→33，已获用户明确批准。无API/Own/route/C#生产改动；字体与完整CT13继续，无提交。
+
+2026-10-30 CT13 [AM1默认](input-autocomplete-mentions-defaults-results.md)完成7字段V2、70原值/meta相同及隔离22对RGBA0；[AM2指标](input-autocomplete-mentions-metrics-results.md)完成padding依赖与候选最小行高消费，6RED→联合18PASS，Mac managed/AOT543各、NET8零17.52s；8临时源/427工程文件/162媒体与工具fixture清理，最终28+1PASS及4文件/2Control/0成员问题。纯结构404成员指纹和初始化序列相同，行为仅两个回调改变；检查器guard/ref识别已用3临时fixture验证。[48个popup视觉](input-autocomplete-mentions-metrics-visual-review.md)包含默认预算96→100与viewport92→96，待限定审查，不代替完整CT13。S7与CB5已分别获批，字体/其余Global/Own/状态/家族出口继续，无提交。
+
+2026-10-30 CT13 [AM3字体结果](input-autocomplete-mentions-typography-results.md)：四root有效字体与标准API声明式进入真实输入，9消费者+2glyph行框RED→24PASS2s；16默认实际文本值不变，多行root8个getter与原可见预设对齐。当前Mac managed/AOT各1686、NET8零20.25s、成员3文件2Control0问题；5临时源/7备份/427工程文件/89媒体清理后精确52PASS2s。[6对配置字体/Local变化及root值对齐](input-autocomplete-mentions-typography-visual-review.md)待限定批准，16对默认/恢复等0；原暗局部主题混合白表面禁用低对比仍归CT25，匹配暗表面补充不替换原历史。AM2视觉、其余Global/Part/状态/Form/Upload与完整家族继续，无提交。
+
+2026-10-30 CT13 [AM4](input-autocomplete-mentions-surfaces-results.md): 9actualRED->15PASS1s;8dedicatedStyles/12GC,4sizes/transparent/foreign/local/clear/retemplate/scope. Mac managed+AOT834each,NET8zero18.58s/member1aux0control0;7temps28008B/2copies/native427/media201clean,final52PASS2s. Natural48pairs:28zero/8configured/12edge1or5(max1)rawFAIL;direct40nonconfigured0/8configured. [Scoped review](input-autocomplete-mentions-surfaces-visual-review.md) pending for8configs/2loading layouts/12edges;CT25open. [Remaining audit](input-autocomplete-mentions-remaining-audit.md):16body/caret/selection RED,Form8+Upload13 V1,Part/state/family exit open. No Git.
+
+2026-10-30 CT13 [AM5 owner](input-autocomplete-mentions-global-owner-results.md):16body/caret/selection+4standardForeground+4nativeResources RED ->39finalPASS2s;qualifiedSourceControlType86input+4SearchButton refs,4readonlyprivate-owner members,47oldmember fingerprints equal/member4files2controls0. Rejected per-instance ResourceProvider/Core-snapshot prototype fully removed;final uses existing native resource observers and no Token dictionary/scope/cache/global subscription. Mac managed+AOT6117each/NET8zero20.29s;10temps/15copies/3codeinventories/native439/media481clean;finalDesktop157PASS6s/Core22PASS207ms. [48scene/gutter review](input-autocomplete-mentions-global-owner-visual-review.md) pending:44natural default/restores0,4exactclear edgeFAIL2/2/13/15 (max1/2/4/6) CT25 retained;direct24nonconfig0. AM2/3/4 notapproved by continuation. FU1 Form8+Upload13 defaults next;fullCT13open/noGit.
+
+2026-10-30 CT13 [FU1 defaults](input-form-upload-defaults-results.md):Form8+Upload13 V2rev1 Global-only/constants,2protocolRED+2snapshotpositive->7finalPASS1s;168values/types/key-ID/slot exactequal incl47.5*2.55=121.12499999999999;14Skia old/newpairsRGBA0,3Formlayouts/4Uploadmodes/drop and20activeOwn targets observed. VerticalLabelPadding Legacy/CompatibilityRetained resource-only,20/30/40/50 addsnolayout. Mac managed+AOT699each,NET8zero25.57s/member2aux0/Generator1PASS.5temps19728B/2copies/native424/media29clean;finalForm+Upload167PASS2s;2stalesourceassertions updatedwithout productionmotionchange. NoGit/fullCT13open;remaining Global/fonts/Parts/states next.
+
+2026-10-30 CT13 [FU2 public surfaces](input-form-upload-global-surfaces-results.md):6publicthemes54Shared->exacttypedGlobal refs;12complete-contract actualRED1s->15PASS4s,3compiled dedicatedLabel/List/ItemStyles hit+withdraw4uploadmodes,4weakgraphs/Local/scope/retemplate. Mac managed+AOT81each,NET8zero19.59s;9temps25554B/6copies/native427/media71clean;finalFormUpload167PASS2s after2old source assertions updated. [Scoped review](input-form-upload-global-surfaces-visual-review.md) pending4config/disabledscenes+darkclear2max1 rawFAIL;natural9/10nonconfigzero,direct10/10zero. Font/DecoratorDarkExtra inheritedcontrast/internalUpload remainingGlobal/otherInput parts-states-familyexit stillopen. NoGit/noCT12production-progressedits.
+
+2026-10-30 human approvals:AM5 andFU2 scoped review tables explicitly approved(call_137bdbb52074425385b7e76e4759ef93:0/1);CT25 original raw failures retained. Not fullCT13/otherfonts/platforms/Git/tolerance. AM2/AM3/AM4 still pending.
+
+2026-10-30 [FU3 realfont audit](input-form-upload-typography-audit.md):7public FontFamily consumers realRED1s,1default-record positive. Root23:Form/FormItem label14,Decorator/Upload/Trigger/DropZone23,DropAreaHeader16. Member7files7controls22existingissues;no fontproductionedits.2audittemps/14copies/1codeinventory/media21clean. AM5/FU2 scopedapproval recorded,CT25retained;AM2/3/4pending;fullCT13incomplete.
+
+2026-10-30 CT13工程出口完成：FU3七公开字体族、FU4七根可选字号/暗色正文与冒号、Upload内部11主题69Global来源及圆形往返、三选择私有过滤输入颜色全部接通。52临时/28对象GC、真实Mac managed及AOT各810、NET8零及成员9/8/0；16临时源/42源副本与含源码inventory/427原生文件/223媒体全部清理。最后精确Desktop719/Core12/Generator1/Gallery23共755PASS0Skip；CT12六临时及31保护hash保持，无新分支/worktree/agent/提交/全量回归。目录91项与Own93逐条对账；4Legacy不虚构消费。AM2/AM3/AM4/FU3/FU4五张限定视觉待明确批准，已批准范围保持，CT25/FW1独立保留。见[家族结果](input-family-exit-results.md)、[核对矩阵](input-family-exit-matrix.md)、[最后限定视觉汇总](input-final-visual-review.md)。
+
+2026-10-30 最终关闭：用户明确批准AM2/AM3/AM4/FU3/FU4五表限定范围（request_user_input_async / call_5f004b68efc344048653a3d95ae55694 / item 0），原话“批准五表限定范围，保留 CT25/FW1”。CT13研发、清理、755项精确验收及当前Mac managed/AOT各810验证记录与全部限定视觉批准对齐，CT13已完成并关闭。CT25/FW1独立保留，不扩大其他字体/平台、恢复模式或像素容差；CT12代码/进度及六临时保持，未提交。见[最终批准](input-final-visual-review.md)及[结果](input-family-exit-results.md)。
+
+2026-10-30，用户已明确回复“批准本表限定范围，保留 CT25”（request_user_input_async / call_a2fe796a8df0481aadd7e4393060b87e / item 0）。公开BoxShadow工程、默认原生验证、清理后189项及限定视觉批准已全部完成，CT12在既定批准范围完成并关闭。原始24/max1、两对3968/max2及其他既定历史仍按CT25保留，不设通用容差，不扩大其他平台/背景/恢复模式，无Git授权。
+
+
+## 2026-10-30 最终批准与关闭登记
+
+用户通过 `request_user_input_async / call_656cee76f0f3440cb7dfe8d373826c6d / item 0` 明确回复：**“批准本表限定范围，保留 CT25/FW1”**。本次 V1–V7 限定视觉批准与工程、清理、Desktop1014/Core17、NET8零警告及当前Mac managed556/AOT557证据已对齐，CT14在既定批准范围完成并关闭。
+
+原始像素失败、TabStrip指示线复位、coercion/Style退役及其他既定CT25/FW1边界保持，不将其记为产品修复或平台像素通过，不扩大容差、其他字体/配置/Host/平台。CT12、CT13和Cascader既定高度批准保持；本次批准不授权Git提交、推送、发布或依赖替换。仅同步文字状态，产品源码不变，沿用相同最终输入的已完成验收。
+
+
+2026-10-31 CT15：用户分别批准Card表内32对及两属性纠正、Message P1表内8对及root有效值、Notification表内36对及root有效值；批准原话与请求ID分别登记在三份限定表和CSV。所有排除项、P2及完整CT15保留，无Git授权。
+
+
+2026-10-31 CT15 Avatar当前切片：[结果](avatar-consumers-results.md)、[48对限定视觉已批准](avatar-consumers-visual-review.md)、[作者另步自审](avatar-consumers-review.md)。3metadata/11Own全Active V2R1、44默认/type/key/slot与自然文字14保持；连续Custom/Circle、字体/owner/Group投射、membership退出及真实overflow热资源发布修复，39匹配验证、managed/AOT各100检查，136跨运行134零；两版主业务恢复各36零。closed/往返微差全部保留。18临时/1843取证/411driver/551原会话清理，最终Controls7/Desktop14及NET8零、成员5-2-0。仅48有意变化已获用户限定批准；完整Avatar/CT15、OS/Browser/Popup过程时相保留。下一[Tag](tag-consumers.md)已有4有效RED/5PASS、36默认导出，尚未改产品；NeedsDecision8及137/274不变，无Git。
+
+
+限定批准登记：2026-10-31，用户明确回复“批准表内48对，其余未通过与完整CT15保留”（request_user_input_async / call_7b292d7ef454420fb8fc0603ac3e3f4c / item 0）。仅本表48对有意变化获批准；closed/往返微差、OS/Browser/Popup过程时相及完整Avatar/CT15继续保留，不授权提交。
+
+
+2026-10-31 CT15 Tag：[结果](tag-consumers-results.md)、[26对限定视觉已批准](tag-consumers-visual-review.md)、[作者另步自审](tag-consumers-review.md)。8metadata/9Own全Active V2R1、36默认/type/key/slot保持；真实字体/owner/关闭glyph、container退役强链修复，84匹配验证、managed/AOT各120，164跨运行159零；原微差及派生输入大值影响保留，不改CT13批准。18临时/1090取证/外部driver与会话清理，最终66/NET8零、成员18-4-0。NeedsDecision余7，137/274不变；仅26有意帧已获限定批准，完整Tag/CT15不关闭。下一[Badge](badge-consumers.md)13metadata/20Own仅准备反例，未改源，无Git。
+
+
+限定批准登记：2026-10-31，用户明确回复“批准表内26对及列明派生影响，其余未通过与完整CT15保留”（request_user_input_async / call_5cea4f7e59a243dcab027c42807d9848 / item 0）。仅26对与列明SelectTag继承close37/0导致的换行/原高度裁剪影响获批准；恢复、5对跨运行微差、原CT13批准边界、OS/Browser及完整Tag/CT15保留，不授权提交。
+
+
+2026-10-31 CT15 Badge当前切片：[结果](badge-consumers-results.md)、[48对限定视觉已批准](badge-consumers-visual-review.md)、[作者另步自审](badge-consumers-review.md)。13metadata/20Own全Active V2R1、80默认/type/key/slot保持；真实owner字体/跨根发布/专用Style/实例颜色clear与投射退役修复。57所选56PASS、Count composition GC1FAIL保留；managed/AOT各72检查、164跨运行全零，4无定制默认旧新零，显隐/重挂及校准恢复非零不豁免。25临时用例3源26658字节、2524取证、419driver/15publish（原会话共537文件）已清理，清理后既有Badge32PASS/0Skip及NET8零警告零错误23.02s，成员22-7-0。NeedsDecision7与137/274不变；仅申请48对明确变化，完整Badge/CT15和CT25/FW1边界保留。下一按实际依赖推进ImagePreviewer/Carousel/Result，无Git提交。
+
+
+限定批准登记：2026-10-31，用户明确回复“批准表内48对，其余未通过与完整CT15保留”（request_user_input_async / call_d223a18435b5484787082d74b8ee393e / item 0）。仅Badge表内48对有意变化获批准；Count composition GC1FAIL、显隐/重挂/校准恢复非零、其余108对及完整Badge/CT15继续保留，不授权提交。
+
+
+ImagePreviewer current checkpoint: [execution](image-previewer-consumers.md). 13 metadata/14 Own, 56 default records unchanged, 142 focused checks passed (25 temporary/117 existing), member audit 27 files/12 controls/0 issues with exact pure-move fingerprints. Public owner/optional switch size/Global-font/real dedicated styles/Overlay bridge repairs implemented; normal-Skia old/new/AOT replay is in progress. Temporary cleanup and final verification pending; full family and CT15 remain open. Next [Carousel](carousel-consumers.md) is read-only preparation, no new product changes during shared sampling.
+
+
+2026-10-31 CT15 ImagePreviewer：[结果](image-previewer-consumers-results.md)、[104对限定视觉已批准](image-previewer-consumers-visual-review.md)、[作者另步自审](image-previewer-consumers-review.md)。13metadata/14Own V2R1、56默认/type/key/slot保持；可选切换尺寸、公开owner/Global字体、七部件专用Style与Overlay桥修复。142临时阶段全通过（25临时+117既有）；managed/AOT各200检查、448帧，384静态355跨运行零、29静态及64持续态非零保留。三版各32恢复全零，独立A/A/恢复零、1DIP各408/max155检出。3临时源18995字节、1401取证、原505会话（含driver414/publish15）已清理；清理后117PASS/0Skip及NET8零警告零错误22.76s，成员27-12-0纯移动指纹同。NeedsDecision余6，137/274不变。仅申请104明确变化，其他非零、OS/Browser/输入/极值及完整ImagePreviewer/CT15保留；下一Carousel6/7按有效反例推进，无提交。
+
+
+限定批准登记：2026-10-31，用户明确回复“批准表内104对，其余未通过与完整CT15保留”（request_user_input_async / call_5593304c893e46a296348b6914a561c3 / item 0）。仅ImagePreviewer表内104对明确变化获批准；其余171对旧新非零、29静态/64持续态跨运行非零、OS/Browser/输入/极值及完整ImagePreviewer/CT15继续保留，不授权提交。
+
+
+2026-10-31 CT15 Carousel：[结果](carousel-consumers-results.md)、[44对限定视觉已批准](carousel-consumers-visual-review.md)、[作者另步自审](carousel-consumers-review.md)。6metadata/7Own V2R1、28默认/type/key/slot保持；可选ArrowOffset、Global/字体/通知、空集、投射/进度/模板与caller-owned页退出修复。26聚焦+2持续工作检查通过，managed/AOT各48/128帧，全部112静态跨运行0、候选/AOT各44恢复0；4跨运行时相与16旧新持续态保留。25临时1源17042字节、481取证、原516会话（含driver408/publish15）清理；清理后3PASS/0Skip（含两项原持续工作）及NET8零警告零错误18.04s。成员最终9-4-0，两阶段纯移指纹同。NeedsDecision余5，137/274不变；仅44明确静态申请批准，平台/输入/极值/完整家族与CT25/FW1保留。下一Result2/15，无提交。
+
+
+Result当前切片：[执行](result-consumers.md)、[结果](result-consumers-results.md)、[作者自审](result-consumers-review.md)。2metadata/15Own，60默认精确保持；19匹配验证通过，候选四算法Skia68检查通过，旧新/AOT进行中。字体/Global/脱离状态回放修复，五专用Style及七状态/原插画内容保留，临时清理和最终模块/NET8尚未完成，不关闭家族。之后按[剩余交叉输入](feedback-cross-family-consumers.md)继续，不重复ButtonSpinner/既有批准机制。
+
+
+限定批准登记：2026-10-31，用户明确回复“批准表内44对，其余未通过与完整CT15保留”（request_user_input_async / call_aa6a1cc8835941ae997eada0a60a4e92 / item 0）。仅Carousel表内44对静态变化获批准；其余16对旧新持续态、4对跨运行时相、平台/输入/极值及完整Carousel/CT15继续保留，不授权提交。
+
+
+2026-10-31 CT15 Result：[结果](result-consumers-results.md)、[60对限定视觉已批准](result-consumers-visual-review.md)、[作者另步自审](result-consumers-review.md)。2metadata/15Own V2R1、60默认/type/key/slot保持；字体/Global/attach回放、逐glyph Template优先typed relay与退出修复。24匹配验证（15临时+9既有）、managed/AOT各72检查/132帧，跨运行132全0、候选/AOT各32恢复0、四默认旧新0。原pre-glyph384帧/18恢复失败账本保留，最终旧132中60有意差异含Native glyph27×31/Orange优先修正。3临时源16187字节、846取证、原501会话（含driver414/publish15）已清理；清理后9PASS/0Skip及NET8零警告零错误17.21s。成员8-2-0，早期7项纯移指纹同、后功能变化单列。NeedsDecision5与137/274不变；资源GC判据不足/平台/自然极值及完整Result/CT15保留，不扩CT25/FW1。下一按既定归属推进FloatButton13/8与剩余交叉，无提交。
+
+
+限定批准登记：2026-10-31，用户明确回复“批准表内60对及列明原生优先修正，其余边界与完整CT15保留”（request_user_input_async / call_99a149043b344680ba0a26e4e74cb239 / item 0）。仅Result表内60对与自定义glyph27×31/Orange原生优先修正获批准；原pre-glyph384帧/18失败文本、GC判据不足、平台/极值/完整Result与CT15继续保留，不授权提交。
+
+
+2026-10-31 CT15 FloatButton：[结果](float-button-consumers-results.md)、[65对限定视觉已批准](float-button-consumers-visual-review.md)、[两offset Reserved已批准](float-button-token-ruling.md)、[作者另步自审](float-button-consumers-review.md)。13metadata/8Own V2R1、32默认/type/key/slot精确保持；6Active真实消费者、2legacy scalar保留未决，NeedsDecision5不减。95临时阶段通过（49临时+46既有），BackTop正常显隐/精确滚动/Caller绑定、badge/成员退出、真实Style与Group reflow修复；managed/AOT各72检查68PASS/4最终恢复FAIL，200跨运行166零（静态162/168零，6静态/28定时非零保留）。仅65明确静态与两Reserved提案待限定审查，原文字/窄宽/字体23换行及窗口上缘裁剪列明；其余115旧新非零、主恢复、平台/极值/GC及完整家族未关闭。3临时源32518字节、777取证、537原会话（含driver414/publish15）与6最终文件清理；清理后Float46PASS/0Skip、NET8零警告零错误25.23s，成员19源/10含注册类型0问题。137/274与CT12/13/14既定批准、CT25/FW1边界不变，不提交。下一[Drawer3/13](drawer-consumers.md)已只读准备，按实际反证继续。
+
+
+限定批准登记：2026-10-31，用户明确回复“批准65对及两项Reserved，其余保留”（request_user_input_async / call_e7be1ded2cd04cea8d90b50314dba528 / item 0）。仅FloatButton表内65对明确静态（含列明原窄宽换行/窗口上缘裁剪）与CircleBadgeOffset/SquareBadgeOffset两项Reserved兼容分类获批准；两字段仍无scalar消费者，不改写成Active/ConsumerVerified，不缩分母。NeedsDecision由5降为3，仅余GroupBox三字段。其余115旧新非零、34跨运行非零、恢复/平台/GC/极值及完整FloatButton/CT15保留，CT12/13/14既定批准和CT25/FW1不变，不授权提交。
+
+
+2026-11-01 CT15 Drawer：[结果](drawer-consumers-results.md)、[20对限定视觉已批准](drawer-consumers-visual-review.md)、[作者自审](drawer-consumers-review.md)。3metadata/13Own V2R1、52默认精确保持；73聚焦（35临时+38既有），Global/可选字体、标题省略和两层重模板回放修复。原预修复588帧/8中途失败、校准失败47帧及旧AOT错批196帧留账。最终有效三版各196帧，候选/AOT各116检查、164静态跨运行0、各68恢复0。20明确静态已获限定批准，21旧新/20跨运行定时非零保留。35临时3源25362字节、1518取证、550原会话与4最终文件清理；清理后38PASS/0Skip、NET8零警告17.97s，成员7-3-0。137/274与Own未决3保持，完整家族/CT15/平台/GC/极值及CT25/FW1保留，不提交。下一[Tour7/9](tour-consumers.md)，未启动余35metadata/71Own。
+
+
+2026-11-01 CT15 Tour：[结果](tour-consumers-results.md)、[44静态已获限定批准](tour-consumers-visual-review.md)、[作者自审](tour-consumers-review.md)。7metadata/9Own全Active V2R1、36默认精确保持；60聚焦（31临时+29既有）通过，退投射/动态margin/12专用Style/动作及模板/目标跟随与失锚修复。非CSD最终flip报告按实际margin输入校正，CSD/旧批准不改；成员16源/7控件0问题。候选/AOT各212帧/112检查，cross198零/14非零，各80主恢复零；旧版同动作模板异常只到140帧、缺72不能称完整，old独立cal16帧另计。仅44明确静态已获限定批准，2静态micro/12跨运行定时/16旧新定时及缺帧后历史/自然极值/GC/平台/完整CT15保留。31临时3源29446字节、1448取证、614原会话（driver415/两publish各15）与4最终文件清理；清理后29PASS/0Skip、NET8零警告17.12s。137/274与Own未决3保持，下一[Flyouts4/11](flyouts-consumers.md)，未完成当前家族之外未启动余28metadata/62Own，不提交。
+
+
+2026-11-01 CT15 Flyouts：[结果](flyouts-consumers-results.md)、[48对待限定视觉审查](flyouts-consumers-visual-review.md)、[作者自审](flyouts-consumers-review.md)。4metadata/11Own全Active V2R1、44默认/type/key/slot保持；40聚焦（23临时+17既有）通过，实际owner字体/背景、跨scope与热Popup offset、真实Tree click/scroll和pinned重模板修复。候选/AOT各196帧/144检查PASS，180静态cross0、12定时非零；旧版144主帧/100检查40FAIL、缺52，独立16cal不填主历史。48明确静态全cross0，其他4恢复micro/12定时、原裁剪与暗Own配色、平台/完整出口保留；有效背景null→Own及Compact Pointer8→4列明。23临时3源25325字节、1191取证、488原会话（driver320/两publish各15）与6最终文件清理；最终Flyouts17PASS/0Skip、NET8零警告19.83s，成员14源/7控件0。137/274与Own未决3保持，完整家族/CT15及CT25/FW1开放；下一[Collapse2/15](collapse-consumers.md)，当前家族之外未启动24metadata/51Own，不提交。
+
+
+2026-11-01 CT15 Collapse：[结果](collapse-consumers-results.md)、[12静态待限定视觉审查](collapse-consumers-visual-review.md)、[作者自审](collapse-consumers-review.md)。2metadata/15Own全Active V2R1、60默认精确保持；75临时阶段73PASS/2GC FAIL，Global字体/原角色、runtime item退休和四专用Style验证完成，GC保留。三版各220帧，候选/AOT各128检查PASS，204静态cross全0、11定时非零；old/new196零24非零，仅12明确静态待审。三版各76主恢复0，另4 Global恢复5/max1；原长文/Extra/520宽/裁剪与暗色显式低对比列明，GC原始和各独立/整批失败不映射FW1。25临时3源21834字节、723取证、518原会话（driver414/最终publish15）及6最终文件清理；清理后50PASS/0Skip与NET8零警告18.27s，成员5源/2控件17→0纯指纹和字段序列同。137/274与Own未决3保持，完整家族/CT15开放；下一[Descriptions6/10](descriptions-consumers.md)，其他未启动22metadata/36Own，不提交。
+
+
+2026-11-01 CT15 Descriptions：[结果](descriptions-consumers-results.md)、[16静态待限定视觉审查](descriptions-consumers-visual-review.md)、[作者自审](descriptions-consumers-review.md)。6metadata/10Own全Active V2R1、40默认精确保持；运行只有Root独立Own10、五模型/内部视觉无独立fragment，维持原身份不缩输入。81聚焦PASS（48临时+33既有），Global/角色、generated cell退休/Native parent/focus/集合/offtree快照修复。主三版164静态、候选/AOT124检查PASS，静态cross全0及56+4恢复0；仅16有意变化待审。原主Native缺40/异常保留，无模板原生探针不算glyph证据；独立可见TextBox候选/AOT44帧44检查/cross全0，原初始4后异常/缺40不填。520宽三列窄槽/长Wrap/下缘裁剪及暗低对比列明，平台/完整出口/CT15开放。48临时3源24053字节、1033取证、569原会话（driver415/两publish各15）与6最终文件清理；清理后33PASS/0Skip、NET8零警告18.03s，成员8源/4注册属性类型16→0纯指纹和字段序列同。137/274与Own未决3保持，下一[GroupBox1/7](group-box-consumers.md)，其他未启动16metadata/26Own，不提交。
+
+
+2026-11-01 CT15 GroupBox：[结果](group-box-consumers-results.md)、[40静态待限定视觉审查](group-box-consumers-visual-review.md)、[三Reserved待裁决](group-box-token-ruling.md)、[作者自审](group-box-consumers-review.md)。1metadata/7Own V2R1、28默认保持，四Active真实消费；三scalar resolved0/非零但无几何/RGBA消费，仍NeedsDecision。42聚焦PASS（23临时+19既有），实际Global/字体/图标owner与固定外框child-only缺口重绘修复，观察者旧0/当前1退休通过。三版各164帧，候选/AOT各64检查、164cross全0，68主恢复0，Global恢复4/7/9/9 max1保留。40有意静态含28缺口修复/12Global与原生；固定420宽长标题裁剪/暗半标题低对比列明，正文offset180视口外不夸大glyph证据。23临时3源19113字节、545取证、503原会话（driver414/publish15）及6最终文件清理；清理后19PASS/0Skip和NET8零警告18.08s，成员3源/1属性类型0问题。137/274、Own未决3与既定批准保持，完整家族/CT15开放；下一[Empty2/6](empty-consumers.md)，其他未启动15metadata/19Own，不提交。
+
+
+2026-11-01 CT15 Empty：[结果](empty-consumers-results.md)、[20静态待限定视觉审查](empty-consumers-visual-review.md)、[作者自审](empty-consumers-review.md)。2metadata/6Own全Active V2R1、24默认/type/key/slot保持；37聚焦PASS（24临时+13既有），实际Global/可选字体/三专用Style、离树图片和原生Footer弱焦点回放修复。三版各180帧，候选/AOT各96检查PASS，156静态cross全0、56主恢复及独立A/A/restore各4全0；仅20明确静态已获限定批准。旧32FAIL、19旧新与10跨运行输入持续态非零、原暗色低对比及平台/完整路径/极值/GC/完整CT15保留。24临时3源16381字节、545取证、508原会话（driver414/publish15）及4最终文件清理；清理后13PASS/0Skip（573ms，命令27.72s）、NET8零警告18.85s，成员6源/1含注册属性类型0问题。137/274与Own未决3保持，下一[Statistic4/2](statistic-consumers.md)，其他未启动13metadata/13Own，不提交。
+
+
+2026-11-01 CT15 Statistic：[结果](statistic-consumers-results.md)、[12静态待限定视觉审查](statistic-consumers-visual-review.md)、[作者自审](statistic-consumers-review.md)。4metadata/2Own V2R1、8默认/type/key/slot保持，四Global身份Own数量0/2/0/0；34+1个不同用例PASS（30临时+5既有），实际Global/字体/六专用Style、原生输入弱焦点与完成倒计时重建分类修复。三版各212帧，候选/AOT各140检查PASS，128静态cross全0、52主恢复及独立A/A/restore各4全0；仅12明确静态待审。旧44FAIL、72旧新/46跨运行持续态非零、原字号0官方异常/正极值裁剪/显式暗低对比及平台/GC/完整CT15保留。30临时3源22642字节、641取证、534原会话（driver414/publish15）及4最终文件清理；清理后5PASS/0Skip（Debug416ms，命令26.96s）与NET8零警告18.08s，成员8源/4含注册属性类型0问题。137/274与Own未决3保持，下一[QRCode2/2](qr-code-consumers.md)，其他未启动9metadata/11Own，不提交。
+
+
+2026-11-01 CT15 QRCode：[结果](qr-code-consumers-results.md)、[16静态待限定视觉审查](qr-code-consumers-visual-review.md)、[作者自审](qr-code-consumers-review.md)。2metadata/2Own V2R1、8默认/type/key/slot保持；43不同用例PASS（40所选+11补充中3新，35临时+8既有），原Global/字体/专用Cover、空Value清码、Bitmap/刷新退休与原生输入弱focus修复。错误背景480帧与未运行publish排除，修正scope后有效三版各240帧，候选/AOT各140检查PASS，176静态cross全0，四默认0；仅16明确静态待审。三版主恢复52零/8微差（L/C两清除各1/max2，D/DC各12/max1），旧44FAIL/46旧新与41cross持续态非零、原裁剪/方角Cover/低对比/ECI/平台/GC/完整CT15保留。35临时3源24025字节、1221取证、566原会话（driver415/两publish各15）及4最终文件清理；最终8PASS/0Skip（Debug706ms，命令29.01s）、NET8零警告19.04s，成员6源/1注册属性类型0。137/274与Own未决3保持，下一[MarqueeLabel2/2](marquee-label-consumers.md)，未启动7metadata/9Own，不提交。
+
+
+限定批准登记：2026-11-01，用户明确回复“批准表内20对，其余边界保留”（request_user_input_async / call_cf78d1ab3bc3431289c5246103fe223e / item 0）。仅Drawer表内20对明确静态变化获批准；其余原失败、缺帧、恢复/持续态、平台/GC/极值和完整家族/CT15继续保留，不授权提交。
+
+
+限定批准登记：2026-11-01，用户明确回复“批准表内44对，其余边界保留”（request_user_input_async / call_e83d092a248045288230fca221d69589 / item 0）。仅Tour表内44对明确静态变化获批准；其余原失败、缺帧、恢复/持续态、平台/GC/极值和完整家族/CT15继续保留，不授权提交。 Primary大min仍沿原生slide/重叠，不批准“极值不重叠”。
+
+
+2026-11-01 CT15 MarqueeLabel：[结果](marquee-label-consumers-results.md)、[8静态已获限定批准](marquee-label-consumers-visual-review.md)、[作者自审](marquee-label-consumers-review.md)。2metadata/2Own V2R1、8默认/type/key/slot保持；22所选PASS（21临时+既有1），Owner Global/原生Style、真实宽度重建和旧完成退休修复。首批空遮挡43帧排除，有效三版各172帧，managed/AOT各100检查PASS、112静态cross全0、各44主恢复与独立A/A/restore各4全0。仅8明确静态已获限定批准；48旧新/55跨运行持续态非零，原4倍时长、0速度异常、窄宽与字体23裁剪及平台/GC/完整CT15保留。21临时1源12070字节、564取证、500原会话（driver408/publish15）及4最终文件清理；最终10PASS/0Skip（637ms，命令36.86s）、NET8零警告21.98s，成员3源/1属性类型0问题。137/274与GroupBox未决3不变，下一[Spin5/7](spin-consumers.md)，未启动只余5metadata/7Own，不提交。
+
+
+限定批准登记：2026-11-01，用户明确回复“批准表内8对，其余边界保留”（request_user_input_async / call_492fb90497c742dfbc2801dac1500c71 / item 0）。仅MarqueeLabel表内8对Global/跨scope字体颜色变化获批准；48旧新/55跨运行持续态非零、首批43帧排除、原4倍时长/0速度异常、裁剪、平台/GC/完整CT15继续保留，不授权提交。
+
+
+2026-11-01 CT15 Spin：[结果](spin-consumers-results.md)、[46主静态已获限定批准](spin-consumers-visual-review.md)、[作者自审](spin-consumers-review.md)。5metadata/7Own V2R1，四算法28默认保持；50所选全PASS（34临时+既有16），Owner字体/Global、仅模板自定义、原生glyph尺寸/Style热更新与原内容弱focus修复。最终三版各172帧、managed/AOT各124检查PASS、136静态cross全0；独立无Controls默认12对旧新/cross零，各56主恢复与A/A/restore各4零。旧124中28FAIL、32旧新/32cross持续态及8独立cal旧新非零、OS/Browser/GC/完整周期与完整CT15保留。86错误驱动帧及480 pre-hot-style帧独立留账。34临时3源18621字节、1114取证、原540会话（driver420/两publish各15）及4最终文件清理；最终16PASS/0Skip（663ms，命令36.54s）、NET8零警告21.80s（命令22.05s），成员8源/2控件0。137/274与GroupBox Own未决3保持；实际未启动家族归零，复用ButtonSpinner4/8的CT13批准，不代表CT15完成。下一回到Timeline P3持续端点/Part恢复与[Count退出保留](badge-count-retirement.md)等真实出口，无提交。
+
+
+限定批准登记：2026-11-01，用户明确回复“批准表内46对及列明原生优先修正，其余边界保留”（request_user_input_async / call_4176ecaa6e314f4da281e28a8657ee2f / item 0）。仅Spin表内46对主静态与列明glyph尺寸/普通Style优先修正获批准；32持续态cross非零、8独立cal旧新非零、平台/GC/完整周期及完整家族/CT15保留，不授权提交。
+
+
+2026-11-01 CT15 P3-C：[端点结果](timeline-endpoint-results.md)、[96独立端点已获限定批准](timeline-endpoint-visual-review.md)、[作者自审](timeline-endpoint-review.md)。官方12.1.4显式0首key在整周期产生NaN，原8Timeline+4Native有效FAIL；terminal-only4和RecordingEasing1单变量定位。Core Icon用明确0隐式起点+唯一2π终点修正，70所选+时钟访问1项PASS；不改周期/easing/显隐/内容/布局/依赖。三版各752帧、managed/AOT各648检查PASS，旧504PASS/144FAIL；720受控相位及16校准cross全0，96独立变化+64同帧重复，其余576原新受控/校准零，正常clock各15非零保留。18临时2源14672字节、2817取证、原470会话（driver412/publish15）及4最终文件清理；最终53PASS/0Skip（命令30.80s）、Core NET8零警告3.37s。成员1源/1控件24→0纯指纹/字段序列同。只关闭当前消费者端点缺陷的工程验证，不改写旧FAIL或CT12/13/14、CT25/FW1；Part恢复/平台/完整家族与CT15仍开放，137/274及Own未决3不变。下一核对Spin完整循环与已记录Count退出保留，不重复已批准静态分包。
+
+
+限定批准登记：2026-11-01，用户明确回复“批准表内96对，其余边界保留”（request_user_input_async / call_d2f7bcbd00ab46e7b6cd3610f38aa4bb / item 0）。仅P3-C表内96个独立端点变化获批准；64张second为相同图像复核，不新增产品状态。各15真实clock非零、Part恢复max1、原失败账本、平台及完整P3/CT15继续保留。官方显式0模型NaN仍可复现，不改CT25/FW1，不授权提交。
+
+
+2026-11-01 CT15 Spin循环：[结果](spin-cycle-results.md)、[308独立变化已获限定批准](spin-cycle-visual-review.md)、[作者自审](spin-cycle-review.md)。原12旋转/初始opacity/稳态FAIL，次正规模型7PASS/1FAIL，最小正规模型8PASS；实际36+8不同用例通过（28临时+既有16），保持原Alternate/Delay/曲线与Native合同。最终三版各2372帧，managed/AOT各3004检查PASS，旧2624PASS/380FAIL，完整无缺帧；2356受控/就绪/显隐/校准cross零，16真实clock非零保留。old-new592非零=308独立变化+268同帧复核+16真实时相；原1160就绪不足帧独立排除，内容/过渡未删除。28临时1源10258字节、9375取证、原469会话（driver412/publish15）和4最终文件清理；最终16PASS/0Skip（581ms，命令31.29s）、NET8零警告21.04s，成员1-1-0。137/274及Own未决3、此前46静态和P3-C96限定批准保持，CT12/13/14与CT25/FW1不改写，完整家族/CT15开放。下一按[Count退出保留](badge-count-retirement.md)继续，不提交。
+
+
+限定批准登记：2026-11-01，用户明确回复“批准表内308对，其余边界保留”（request_user_input_async / call_122c5e1eef6b4d7ca6e0c98bd9c0c55b / item 0）。仅Spin循环表内308独立起点/端点/错峰/重新可见变化获批准，51行整帧等价合并及268同帧second复核不扩大产品状态。16真实clock非零、原12FAIL/模型及就绪坏批、其他恢复/平台/GC与完整CT15保留；原46静态/P3-C96批准不扩大，不授权提交。
+
+
+2026-11-01 CT15 Count退出：[因果/执行](badge-count-retirement.md)、[结果](badge-count-retirement-results.md)、[72静态零变化核对](badge-count-retirement-visual-review.md)、[作者自审](badge-count-retirement-review.md)。原standalone保留adorner GC与新增layer target GC分别由公开composition成员滞后、public association清理时机定位；只在项目成员退出同步public关系及先清association后离树，不写private字段或改依赖。41及target35所选PASS，累计44不同用例（12临时+既有32）；正常三轮show/hide/重挂/模式往返和64×32原按钮左中右点击+Space到达。最终三版各88帧，managed/AOT各108检查含20normal回收全PASS，旧100PASS/8GC FAIL；72静态old-new/cross全0，无新增有意视觉变化，13旧新/16cross真实时相非零保留。12临时2源12902字节、304取证、原492会话（driver411/publish15）及4最终文件清理；最终32PASS/0Skip（759ms，命令30.58s）、NET8零警告19.66s，成员2-2-0。原57中Count GC失败保持历史，当前两已定位路径已修正，不关闭其他Badge/CT15边界；137/274、Own未决3、原48批准、CT12/13/14及CT25/FW1不改写。下一核对Collapse原回收失败与其他真实出口，不提交。
+
+
+2026-11-01 CT15 Collapse回收复现核对：[结果](collapse-retirement-audit.md)。八不同严格NoInlining条件Debug/Release四批全PASS，原内容/520宽/120viewport900extent/motion及Global/Own/专用Style实际命中和资格退出保持；本轮未复现旧失败、不改产品、不把旧75中2GC FAIL或Debug/Release不一致倒写通过。8临时3源5529字节与14原会话清理，最终精确50PASS/0Skip（命令16.44s），复用相同源码NET8零警告证据。旧GC仍未定位，其他恢复/平台/原12视觉等待与完整CT15继续保留，无全量/Git。
+
+
+2026-11-01 CT15 P2：[共享归属与几何核对](feedback-stack-p2-ownership-results.md)。正式架构和CT10已有归属将16/8及背板定义为共享产品几何，不推导未经批准的Spacing映射/新Own，不重复研发。无源变化，精确managerPadding/panelGeometry37PASS/0Skip（900ms，命令10.74s），临时会话清理；该终态几何门禁不替代真实host/正常motion/像素/其他业务平台。原Message/Notification非零与完整P2/CT15继续开放，137/274保持，无全量/Git。
+
+
+## GroupBox三项兼容分类批准登记
+
+2026-11-01 用户明确回复“批准三项 Reserved，其余边界保留”（request_user_input_async / call_c8732844a7a841caacc4385b24e13bd3 / item 0）。仅TextPaddingInline、OrientationMarginPercent、VerticalMarginInline归ReservedDocumented；保持名称/类型/默认/key/slot及原布局，无几何消费者，不标Active/ConsumerVerified。40对视觉仍待限定批准，恢复4/7/9/9 max1及其他家族/完整CT15边界保留，不授权提交。CT15 Own未决由3减为0，原137metadata/274Own及CT12/13/14、CT25/FW1不变。
+
+
+## 六包限定批准登记
+
+2026-11-01 用户明确回复“仅批准六表现有条目及列明纠正，其余保留”（request_user_input_async / call_08c452ba85d7442ab817b3cf6c7dcce6 / item 0）。仅Flyouts48对及表列两项有效默认纠正、Collapse12对、Descriptions16对、GroupBox40对、Statistic12对、QRCode16对获得限定视觉批准。各表列明的裁剪、低对比、原失败、缺帧、恢复与持续态、平台及完整家族/CT15均保留，不授权提交；GroupBox三Reserved另按call_c8732844a7a841caacc4385b24e13bd3/0既有批准，不扩大。
+
+
+## Empty限定批准登记
+
+2026-11-01 用户明确回复“仅批准 Empty 表内20对，其余保留”（request_user_input_async / call_630c3c2e47fe460594f8888610f2e347 / item 0）。仅Empty表内20对Global/跨scope字体颜色获限定批准；原32失败、19旧新/10跨运行输入持续态非零、原裁剪/低对比、平台/完整家族与CT15保留，不授权提交。此前没有引用明确回复的“已批准”摘要不作为批准来源，本条为明确登记。
+
+
+2026-11-01 Result严格退出补证：六不同临时用例Debug/Release均PASS，包含provider/window持续保留、当前Presenter持父链正对照及释放、保留已替换caller glyph而owner退出；实际scope93/23、Native27×31和120viewport900extent保持。首次Debug2回收观测FAIL由断言暂存Presenter定位，NoInlining观测后4PASS；不改产品、不把原INCONCLUSIVE倒写为修复。单临时源6584字节已删除，清理后精确Result9PASS/0Skip、745ms；产品未变，复用相同最终源码NET8零警告。原384/18、其他恢复/平台/极值和完整CT15保留，见result-retirement-audit.md。
+
+
+2026-11-01 P2原生宿主补证：native NSWindow960×720/scale2，managed/AOT完整各147及固定激活各148检查，六位置/变高gap16、原NoWrap全文/显式换行、Cocoa click/Space、五卡片hover/gap/leave、1500ms真实悬停剩余计时、四算法RTL通过。应用内合成Cocoa经Avalonia.Native，不冒充外部物理/其他OS输入。完整OS阴影画布随激活变化，跨运行像素不通过；正常入场初Frame与稳定绘制3497/max2差异定位，初始frame重绘触发、Window重绘无效，纯Border/淡入不复现，不归FW1或扩大容差。248取证/447原会话(411driver)/两AOT已清理，audit clean；清理后精确feedback padding/panel/motion与GroupBox70PASS/0Skip、1s，NET8零警告零错误21.10s。见feedback-native-p2.md；无反馈运行代码改变，GroupBox仅三Reserved XML说明同步。原失败、完整P2/CT15及CT25/FW1保留，不提交。
+
+
+2026-11-01 Timeline P3 Part恢复定位：四算法/八专用Style32独立A-B-A，32AA0、实际命中/实例/几何恢复；8 icon/title恢复0，其他24严格非零。明暗item/rail采集值相同，背景根重绘均0。无AtomUI独立Avalonia12.1.4工程managed/AOT各20检查17PASS/3恢复FAIL，rail各14/max30、Opacity19/max14，15帧cross全0；公开开关试验未消除，不改产品/依赖/容差。23临时case/3源28395字节、446取证及339会话848665821字节已清理；最终精确Timeline52PASS/0Skip/1s，产品未变复用NET8零警告21.10s。FW2限定归属提案待用户批准，原P3-B102/82、FW1/CT25及CT12/13/14和完整CT15保留，见timeline-part-restore-audit.md、feedback-partial-redraw-visual-review.md，不提交。
+
+
+## FW2限定归属批准登记
+
+2026-11-01 用户明确回复“仅批准表列路径归 CT25/FW2，其余保留”（request_user_input_async / call_58d9ca164cbe4d43b4254cc21caa6b70 / item 0）。仅feedback-partial-redraw-visual-review.md列出的3个无AtomUI独立反例及24个当前Timeline局部恢复路径归CT25/FW2继续调查；非零仍FAIL，不设置或扩大任何像素容差，不修改既有FW1。原P3-B102/102/82/82、其他家族/native/平台/GC及完整CT15均保留，不授权提交。
+
+
+2026-11-01 Message恢复定位：四配方×entry/shift/Own/Global的16独立场景，实际值/几何/四card身份恢复、AA0；managed/AOT各224检查220PASS/4严格零恢复FAIL，76帧66cross零/10非零，16完整背景重绘cross全0且每配方四条历史的重绘图彼此0。原正常初始/局部恢复仍非零，不把重绘当修复；新Message路径尚不在已批准FW2范围，原P1与native3497/max2均保留。4临时case/1源9518字节、331取证、427会话1068266516字节已清理，audit clean；最终精确Message Semantic/managerPadding17PASS/0Skip/1s，产品未变复用NET8零警告21.10s。见message-restore-audit.md，完整Message/CT15未关闭，不提交。
+
+
+2026-11-01 Notification恢复定位：四算法/六卡/1280×900/384宽MaxHeight380及4/10公开输入保持，colour/global八A-B-A。所有数值/gradient stops/几何/原引用/命中通过；managed/AOT各128检查124PASS/4严格恢复FAIL，40原帧cross全0，各配方两完整背景重绘参考彼此0。原初始/局部恢复仍非零，旧两暗图4/max16不倒写；新两像素位置为卡片外缘/阴影，非进度输入丢失。不在原FW2批准表，未改归属。4临时/1源10908字节、174取证、427会话1107631045字节已清理，audit clean；清理后精确29PASS/0Skip/980ms，产品未变复用NET8零警告21.10s；见notification-restore-audit.md，完整家族/CT15保留，无提交。
+
+
+2026-11-01 Modal原生输入/Tab修复：原生Overlay Tab进入owner input/opener，匹配原AtomUI Window宿主有效RED4项1PASS/3FAIL；仅在既有IsModal=True AXAML Style声明TabNavigation=Cycle，modeless默认Continue与热切换/嵌套LTR-RTL保持。7临时+276原模块283PASS；最终同源managed/AOT Dialog/MessageBox×Overlay/NSWindow各261PASS/exit0，Cocoa点击/选择/输入/Tab、async veto/Escape/重开Enter/恢复焦点、520×420Surface/140viewport/24行/23Menlo保持。旧原生偶发输入/焦点失败和shutdown观察者坏批留账，不声称全修。7临时/1源8644字节、38取证、425会话1125334263字节清理audit clean；清理后精确276PASS/0Skip17s、NET8零警告零错误19.98s。见modal-native-input.md；只有生产主题3行导航增量，原CT11 owner绑定保留，完整Modal/CT15和既定FW1/FW2边界不变，不提交。
+
+
+2026-11-01 ToolTip/PopupConfirm原生出口：默认400ms hover、两种native popup/Overlay真实Root，Tooltip120/900与Confirm140/900原长文/箭头/两按钮保持；应用内Cocoa hover/leave、实际取消确认各一次、Escape light dismiss、已打开Global23→25均验证。最终同源managed/AOT各75PASS/exit0；首hover未打开原因未证实保留，初诊断反射IL2026产物未执行，移除后零IL/CS warning重发，无suppression。无产品源改动；17取证及439会话1220947773字节已清理audit clean，最终精确67PASS/0Skip/1s，复用当前相同源码NET8零警告19.98s。旧四颜色/Compact恢复、FW1/FW2原限与完整CT15保留，见tooltip-popup-confirm-native-input.md，不提交。
+
+
+2026-11-01 Marquee正常周期补证：原220×28/Clip/全文及4×时长保持，default150/native450两组2临时PASS；AOT2874检查PASS/exit0，各两次实际回绕与offset有限/范围、隐藏600ms冻结/显示恢复通过。default实测周期13053.818ms，AOT13047.828ms；native450实测4374.079ms/AOT4373.230ms，期望13053.333/4351.111ms，误差界来自实际采样间隔，非像素容差。不冻结clock或作跨时相RGBA0声明。2临时/1源4618字节、16取证、303会话448595997字节已清理audit clean；最终精确原Marquee显隐模块1PASS/0Skip25ms（本轮不是旧10项），产品未变复用NET8零警告19.98s。原48/55持续态非零、4倍语义/0速度异常、平台/GC与完整CT15保留，见marquee-cycle-audit.md，不提交。
+
+
+2026-11-01 Carousel正常周期补证：三临时用例PASS（45.1134s），default3000/native700真实页序均0,1,2,0,1,2,0；同源AOT38检查PASS/exit0。隐藏暂停/恢复/公开停止、有限末页与空集均验证，原caller-owned内容/120viewport900extent和normal motion保持。3临时/1源5375字节、5取证和310会话757588934字节已清理audit clean，清理后Carousel3项PASS（与Float46共49项/6.9191s）。无Carousel产品源修改/新视觉批准，原16旧新/4cross持续态、平台/极值与完整CT15保留，见carousel-cycle-audit.md。
+
+
+2026-11-01 BackTop Target退出：两条NoInlining有效GC RED，唯一ConfigureTarget订阅条件限定attach后，三临时用例PASS/10.8843s，同源AOT21检查PASS/exit0；原120viewport900extent/450ms/400阈值/全文/滚动条、换目标/旧目标退出/reattach/Space回顶和之后可滚动保持。AOT46245192字节SHA256 bcacc57aff05811cd365287dc12aae28b662d9a175c31e7b281a9164c68c325a，零IL/CS、五既有Homebrew linker warning。3临时/1源5170字节及309会话757297643字节已清理，无新增媒体；清理后Float46+Carousel3共49PASS/0Skip/6.9191s；NET8最终源码构建中。仅修正这两条资源获取路径，不关闭原恢复/其他GC/平台/极值与完整CT15。见float-button-target-retirement.md，不提交。
+
+
+清理后最终门禁：Float46与Carousel3精确共49PASS/0Skip/6.9191s；Desktop NET8 Release最终源码零警告零错误28.37s。全程共享run.lock非阻塞独占，无全量。成员1源/2控件0问题，确切原未提交快照到当前仅一个条件替换；注册/初始化/API/Token/布局均无增量。作者另步自审，非独立审查；订阅获取/退出与再次挂载配对，未改原动效模型或已批准家族。两条具体泄漏已修正，其他保留项不倒写。最终门禁helper/marker随读取清理，不自动提交。
+
+
+2026-11-01 Tour共享mask退出：原两条严格GC FAIL，公开Dispose三绑定单变量使两条均释放，ClearValue无效留账。当前owner持CompositeDisposable并在close/detach/transfer释放，5临时PASS/20.5281s、同源AOT20检查PASS/exit0；重开/Step当前颜色/目标移动30/第二owner接管及旧owner不干扰均通过。5临时1源6866字节与311会话757466582字节已清理，无新增媒体；清理后实际Tour21+placement8共29PASS/0Skip，NET8零警告零错误17.61s、成员1/1/0。见tour-retirement-audit.md。只关闭当前共享mask持有链，不倒写旧缺72帧/18旧新/14cross非零或其他边界；原44限定批准/完整CT15保持，不提交。
+
+
+清理后最终Drawer37PASS/0Skip/4.5875s，Desktop NET8 Release0警告0错误16.76s。成员1源/1控件0问题、git diff --check通过；相对此前未提交源码仅获取条件增量，无注册/初始化/API/布局改变。作者另步自审，非独立审查。最终helper/marker读取后清理，当前两具体泄漏退出通过；其他原恢复/定时/平台/极值与完整CT15继续。
+
+
+最终结果：六不同场景Debug均PASS（原四12.4786s/新增二8.5300s），Release均PASS（四13.0868s/二7.4010s）；没有产品反例或源码修改，不把重复运行计为更多用例。6临时case/1源5368字节与7会话文件25204字节已删除，无媒体。清理后实际重建精确Statistic5+QRCode8+Empty13+Spin16+Marquee1共43PASS/0Skip/3.8264s；最终产品源码未变，复用Drawer最终NET8零警告零错误16.76s。git diff --check通过。作者另步自审确认provider/window保持存活与NoInlining观测，没有强持有被测对象；只补本六条对象退出，不关闭其他恢复/持续态/平台/极值或完整CT15。
+
+
+四不同场景Debug4PASS/0Skip/17.7252s，Release4PASS/0Skip/17.5788s；实际cross root均ImagePreviewerDialog（当前Headless Window，不是NSWindow/Browser）。公开IsOpen/IsCurrentLoaded/cross root打开判据均通过；关闭移除或打开直接移除后root退出且owner可回收。调用方32×16 borrowed WriteableBitmap和ObservableCollection仍保持活着，原标题/Source不变，退出后调用方继续Add成功；不释放调用方图片/不清集合制造回收。
+
+无产品失败/源码修改。4临时case/1源3877字节已删除，无媒体；清理后真实重建精确ImagePreviewer117PASS/0Skip/15.2674s。当前产品源码未变，复用同源NET8零警告零错误16.76s，git diff --check通过。最终会话/marker读取后清理，作者另步自审非独立审查。该四条本体GC不关闭旧171旧新/29静态及64持续态cross非零、平台/极值或完整CT15。
+
+
+清理结果：当前10临时case/2源14466字节已删除；官方evidence cleanup clean/findings=[]、removed=true/550文件。外部111会话文件569551767字节（含独立工程/原失败与坏模型日志）及marker删除。清理后实际重建MessageSemanticPartTests13PASS/0Skip/3.7454s；首namespace误写Feedback而Padding实际为FeedbackStack，未把未匹配项计入，随后同一重建程序集精确Padding4PASS/0Skip/3.1545s，合计17不同既有用例。未改产品源码，复用相同最终源码NET8零警告零错误16.76s。最终helper/marker随读取清理，无新常驻测试、无全量或提交。
+
+作者另步自审：纯模型默认图0只用于确认图元等价，独立裁剪错误已纠正并保留反证；不将未复现产品历史的模型解释为框架修复。原真实恢复仍FAIL，当前无新视觉批准或FW2归属请求，完整Message/CT15保持开放。
+
+
+通知顺序补验已闭环：1有效RED原[1,0]→修复后1临时+21Tour共22PASS/0Skip/7.6984s；2390字节单临时源已删除。清理后真实重建Tour/placement29PASS/0Skip/5.7930s，最终源码Desktop NET8 Release0警告0错误17.41s，成员1/1/0与diff check通过。原AOT20明确保留为此前mask绑定增量证据，本次仅既有调用顺序/重复通知修正，没有新增AOT敏感路径，不冒称本次重新发布。最终会话/marker随读取清理。作者自审补验发现并纠正本轮回归，不影响其他既定批准/原失败、未关闭完整CT15。
+
+
+最终清理后精确Timeline52PASS/0Skip/4.5166s，实际重建测试程序集；本轮无产品源码改动，复用相同最终源码NET8零警告零错误17.41s。1130取证经官方audit/cleanup clean删除，外部454会话文件1374532913字节、全部恢复的历史命令/驱动/发布产物与marker均删除；最后helper读取后清理。没有执行历史命令中的Git或旧源码替换，没有新增永久测试/全量/分支/worktree/提交。
+
+作者另步自审：原主批64/440保持完整；组合/Content/排除Content与重绘分别分账，透明懒滚动条节点例外明确披露；208跨运行/96只读图全0不替代恢复失败。8路径限定归属表已完成工程、清理、精确门禁，等待用户是否交FW2调查的明确裁决，未自动修改原归属、FW1或完整P3/CT15结论。
+
+
+## 原 P3-B 八路径限定归属批准登记
+
+用户明确回复“仅批准表列8路径归CT25/FW2，其余保留”（request_user_input_async / call_cd2233cdfe1848fc889d777f91b52754 / item 0）。仅timeline-original-part-visual-review.md列出的4条原P3-B组合恢复102/102/82/82及4条原值Content0.7恢复124/102/98/82交CT25/FW2继续调查；非零仍FAIL，不增像素容差、不改既有FW1，不把透明滚动条懒节点差别抹去。其他原故障账本、家族/原生平台/完整P3与CT15保留，不授权提交。此前3独立模型/24路径批准范围不自动扩成其他家族。
+
+
+最终清理后精确MessageSemanticPart13+FeedbackManagerPadding4共17PASS/0Skip/4.5267s，实际重建；本轮无产品源码变化，复用相同最终源码NET8零警告零错误17.41s。1191取证与795会话2176410897字节已清理audit clean，最后helper/marker记录后删除；没有新增永久测试、全量或Git操作。作者另步自审，非独立审查；原动效/内容/滚动/选择/关闭合同未改，独立模型与真实主批限制明确分账。仅34条有限调查路径提案待用户裁决，完整CT15及其他排除项保持开放。
+
+
+## Message 原历史34路径限定调查批准登记
+
+用户明确回复“仅批准表列34路径归CT25/FW2调查，其余保留”（request_user_input_async / call_8107eb29ed024cfbb7dd7fd40dec2aed / item 0）。仅message-original-visual-review.md表列28当前业务恢复、4独立检错路径及2无AtomUI队列重排反例交CT25/FW2继续调查。模型未精确复现原全部像素的限制保持，不宣称完整框架根因；非零仍FAIL、不增容差、不关产品动效、不改FW1。原native3497、其他36跨运行非零、旧失败批、其他家族与完整CT15均保留，不授权提交。
+
+
+清理后精确Card20PASS/0Skip/4.7581s，实际重建测试程序集；本轮无生产源码变化，复用相同最终源码NET8零警告零错误17.41s。官方cleanup910取证、外部790会话2173296792字节与全部恢复/诊断/发布源码已删除，marker删除；最终helper记录后清理。作者另步自审：原88图完整，单变量clear范围限制已纠正、Frame重录因果与独立差分精确对应，严格4FAIL未改为PASS；无永久测试/全量/分支/worktree/提交。
+
+仅card-original-visual-review.md表列40路径提出FW2继续调查，尚待用户明确裁决。原312/110非零仍FAIL、旧新Global完整对比与其他原边界/完整CT15不变，不将当前调查当整个家族关闭。
+
+
+最终清理后NotificationCardTheme/NotificationSemanticPart精确29PASS/0Skip/4.4735s，实际重建；本轮无生产源码变化，复用相同最终源码NET8零警告零错误17.41s。313取证经官方audit/cleanup clean后删除，外部438会话1374918333字节、全部历史恢复/原驱动/发布文件与marker删除；最终helper记录后清理。作者另步自审确认旧新两对与候选自身恢复/后续新ABA4FAIL不混报，没有以新绿倒写原账本。仅两对旧残留消失的限定接受待用户裁决，完整CT15继续。
+
+
+## Card 40路径限定调查批准登记
+
+用户明确回复“仅批准表列40路径归CT25/FW2调查，其余保留”（request_user_input_async / call_c8333768d41d4ba692fea52d54ee7dea / item 0）。仅card-original-visual-review.md表列原32恢复、4同值Frame重录及4独立图元路径交CT25/FW2继续调查；非零仍FAIL，不增容差、不打产品重绘补丁、不改FW1/官方依赖。原旧新Global非零、其他边界与完整CT15保留，不授权提交。
+
+
+## Notification 原两对恢复限定接受登记
+
+用户明确回复“仅接受表列两对恢复差异，其余保留”（request_user_input_async / call_fdb5ce1da6f04f16b707b0e5d6b02d29 / item 0）。仅notification-original-visual-review.md列出的原Dark/Dark+Compact旧新global-restore各4/max16，作为旧版清除残留消失、候选回到共同默认的两对差异获限定接受。不宣称渲染根因已定，不把历史FAIL改写成当时PASS；后续新ABA4FAIL、平台/其他边界与完整CT15保留，不授权提交。
+
+
+当前续作清理后Notification精确29PASS/0Skip/4.3151s，实际重建测试程序集；无生产源码变化，复用相同最终源码NET8零警告零错误17.41s。4临时理论/单源11785字节、460取证、779外部会话2174450601字节和marker已删除，audit clean；最后helper记录后清理。作者另步自审确认原正常4FAIL、no-motion3FAIL、独立模型7FAIL均保留，不把独立复现或跨运行0当像素PASS。18路径有限调查提案待用户裁决，未自动纳入FW2；原两个旧新差异的接受、其他家族/平台/完整CT15保持各自边界。
+
+
+## Notification 新 ABA 18路径有限调查批准登记
+
+用户明确回复“仅批准表列18路径归CT25/FW2调查，其余保留”（request_user_input_async / call_3c0dd46bb06948bfa8d56cec286a3aff / item 0）。仅notification-aba-visual-review.md所列8真实ABA、3真实初始静态重绘、4纯入场、3纯静态交CT25/FW2继续调查；非零仍FAIL，不增容差、不关产品动效、不加产品重绘补丁。两暗色独立入场各差1像素的限制保持，不认定原全部框架根因；其他边界、FW1/官方依赖与完整CT15均保留，不授权提交。

@@ -18,9 +18,9 @@
         </Setter>
 
         <Style Selector="^ /template/ atom|IconButton#PART_OpenIndicatorButton">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="IconWidth" Value="{atom:ComboBoxTokenResource IconSizeSM}" />
             <Setter Property="IconHeight"
-                    Value="{atom:SharedTokenResource IconSizeSM}" />
+                    Value="{atom:ComboBoxTokenResource IconSizeSM}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconButton#PART_OpenIndicatorButton:pointerover">
@@ -29,7 +29,7 @@
         </Style>
         <Style Selector="^ /template/ atom|IconButton#PART_OpenIndicatorButton:pressed">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorPrimaryActive}" />
+                    Value="{atom:ComboBoxTokenResource ColorPrimaryActive}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

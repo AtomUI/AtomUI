@@ -144,7 +144,9 @@ Public API / ItemsSource / Command / Event
 - `PART_Popup`：承载弹层宿主、打开关闭或候选内容。
 - 其他 10 个 part 按相同生命周期规则维护。
 
-Semantic Part marker 的维护边界：`ColorPickerTheme.axaml` 与 `GradientColorPickerTheme.axaml` 各自承载 `semantic-body`（`PART_ColorIndicator`）、`semantic-description`（`PART_ColorText` / `PART_ColorTextPanel`）与 `semantic-popup-root`（`PART_Popup` 直接子节点 `ColorPickerPopupRootFrame`——`Border` 子类，向内容层 `ArrowDecoratedBox` 转发 `IArrowAwareShadowMaskInfoProvider`，共享 Popup 的箭头布局与阴影遮罩机制只识别直接 Child；语义边框贴合弹层外沿，对齐上游 popup root）三个静态 marker；共享 `ColorBlockTheme.axaml` 承载 `semantic-content` marker（`PART_ColorPreview`）。`content` 部件声明 `CrossNestedOwners=true`，route 以 `.semantic-body` 为锚点经第二个 `/template/` 跨入 ColorBlock 自身模板，弹层内的 ColorBlock 实例（清除示例、颜色预览）不带 `semantic-body`，不会被误命中。`popup.root` 不落在弹层 View 模板内的原因：View 由 `CreatePresenter()` 在打开时动态创建，其模板节点的 `TemplatedParent` 链断在 View 上，owner 的 `/template/` route 在 overlay 弹层下不可达；静态包裹 Border 经 TemplatedParent 传播保持可达且默认零视觉影响。
+Semantic Part 的所有权：ColorPickerTheme 与 GradientColorPickerTheme 保留 body/description marker，以及 popup-host/popup-surface 两个跨模板锚点。家族专用 ColorPickerPopupSurfaceTheme 在实际绘制背景、边框和圆角的 PART_ContentDecorator Border 上静态声明 popup.root。生成的专用 Style 沿明确路由跨入该模板；外层 ColorPickerPopupRootFrame 继续作为 Popup 直接 Child 转发箭头/阴影协议，不再承担被定制的绘制面。共享 ColorBlock 模板的 content 仍通过 body 限定，排除面板预览色块。
+
+私有表面主题继承 ArrowDecoratedBox 的默认值和布局规则，只拥有静态公共 Border marker 及箭头填充对实际 Border.Background 的编译绑定。基线 Arrow padding 由 ContentPresenter.Margin 承载，公共 popup Border.Padding 在其外叠加，保留既有内容总 inset 和尺寸。背景、边框、可见圆角与阴影圆角取自同一表面；默认几何和共享 primitive 主题保持。
 
 ## 6. 交互与事件处理
 
@@ -155,13 +157,15 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 - 集合类路径必须稳定处理 container prepare、clear、过滤、分组和虚拟化回收。
 - 输入类路径必须保持 Form、validation、clear、placeholder 和键盘行为一致。
 
-稳定事件路径包括 `ClearRequest`、`GradientActiveStopChanged`。事件参数和触发时机属于兼容边界。
+内部输入清除与活动 stop 通知收敛到面板的值事件／`ColorValueCleared`，再由宿主处理提交及 `ValueSelected`；内部通知不提升为公开事件。事件参数和触发时机属于兼容边界。
 
 纯色和渐变View的属性回调必须调用基类，确保公开Alpha可见性／可用性更新到实际输入与滑块；画刷刷新由基类统一处理。隐藏格式选择器保留当前格式，不能向Format枚举属性写入布尔值。
 
 格式选择在ColorPickerInput的ControlTheme中声明：编译型SelectedValueBinding读取ComboBoxItem.Tag，SelectedValue与输入区Format使用原生双向TemplateBinding，再由既有双向模板绑定连接公开面板Format。格式映射不再由控件代码维护SelectedIndex或SelectionChanged订阅；重模板时由原生模板生命周期释放旧绑定。
 
 输入区离树期间记录外部ColorValue／Format是否发生变化，回树时只在有此类变化时按当前值刷新，并清除待回放状态。即使离树A→B→A也代表外部覆盖；没有外部变化时保留无效／有效草稿、校验及光标，不能无条件ResetInput。字段可能包含无效或尚未提交的编辑文本，因此字段值的条件同步属于代码边界，不能以无条件展示绑定覆盖；格式选择本身仍由ControlTheme声明。重新应用模板或显式ResetInput同样清除待回放状态。
+
+格式/HEX/Alpha 输入行由同一 DockPanel 排布。HEX LineEdit 在 ColorPickerInput 自身主题中采用垂直 Stretch，消费该行由格式选择及数值输入共同确定的高度，避免继承 LineEdit 的 Top 对齐后仍以自然 22 DIP 绘制而邻接 Alpha 为 24 DIP。该接线只作用于家族内部 HEX 字段；数值字号 11、通道宽度、Alpha 兼容宽度、spinner 和文本编辑规则保持。
 
 色谱的 `Focusable=true` 在自身 ControlTheme 声明，焦点框由现有 AdornerLayer 根据 `:focus-visible` 创建和释放；色谱不创建自己的焦点视觉、事件订阅或补偿聚焦。普通步长下，LTR 的 Left／Up 映射如下；Right／Down 反向，RTL 仅将水平增量反向。
 
@@ -212,6 +216,12 @@ ColorBlock保持原空值斜线坐标和默认红色2 DIP。ControlTheme将所�
 Spectrum选择环在自身ControlTheme的style setter消费LineWidthBold，默认2 DIP。Popup View是独立公开主题owner，宿主Picker的专属Global不会跨越该身份替代View的配置；general Global、View专属Global和scope重挂载沿既有解析链更新。角色颜色使用算法之后的有效值，不能将原始输入色当作暗色算法输出。此接线不增加公开API、Own Token或Semantic Part。
 
 ## 8. 资源、性能与 AOT 边界
+
+四个公开根的 ControlTheme 使用 OwnerTokenResource 解析各自的 Global，Own 继续通过 ColorPickerTokenResource 读取共享 ColorPicker 集合。内部 Spectrum、ColorBlock、单分量及渐变滑轨和 thumb 沿实际 owner 解析；色板项和 WrapPanel 通过 AbstractColorPickerView 锚点跨过登记的 Collapse，避免将组合 primitive 当作颜色面板的主题身份。没有 View 祖先的独立内部资产仍使用共享回退。
+
+AbstractColorPicker 与 AbstractColorPickerView 的内部 IThemeInheritanceSource 只暴露真实继承父对象，字体最终值由 AXAML MultiBinding 选择：明确 owner 配置、真实继承值和默认字体按既有排版规则组合，本地属性继续优先。继承观察与资源绑定的挂载、撤回、重挂和释放由现有主题基础设施负责，不在控件代码保存字体快照或追加订阅。
+
+Custom 的根圆角和字号由基础 Setter 提供 Middle 默认，再允许应用样式覆盖；预设尺寸的条件 Setter 不匹配 Custom。运行时色块尺寸、圆形 thumb 半径、输入草稿校验和异步位图仍属于既有代码计算边界，不以模板绑定替代业务状态。
 
 资源和 AOT 约束：
 

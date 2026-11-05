@@ -29,10 +29,12 @@ public static class ConditionalInputTransformer
         }).ToArray();
         var manifests = metadata.Where(value => value.Records.Count != 0).Select(ConditionalRegistrationManifest.Parse).ToArray();
         using var resolver = new SnapshotResolver(input);
+        var core = resolver.Resolve(AssemblyNameReference.Parse(input.CoreAssemblyIdentity));
         var owners = manifests.Select(manifest => resolver.Resolve(AssemblyNameReference.Parse(manifest.Metadata.AssemblyIdentity))).ToArray();
+        var frameworkOwners = ConditionalTypeMapBridge.IsLegacyCore(core) ? owners.Append(core).Distinct().ToArray() : owners;
         var framework = manifests.Length == 0
             ? new FrameworkBindingSet(new Dictionary<string, string>(StringComparer.Ordinal), [])
-            : FrameworkBindingPolicy.Create(runtimePackDirectory, input, owners);
+            : FrameworkBindingPolicy.Create(runtimePackDirectory, input, frameworkOwners);
         resolver.SetFrameworkBindings(framework.Bindings);
         ConditionalProtocolGate.Validate(metadata, input.CoreAssemblyIdentity, name => resolver.Resolve(name));
         var binder = new ConditionalDefinitionBinder(name => resolver.Resolve(name), resolver.Location, input, framework.Bindings);
@@ -42,14 +44,14 @@ public static class ConditionalInputTransformer
         {
             throw new InvalidDataException("The bridge requires the declared executable entry assembly.");
         }
-        var core = resolver.Resolve(AssemblyNameReference.Parse(input.CoreAssemblyIdentity));
         var coreLibIdentity = input.Assemblies.Single(assembly => AssemblyNameReference.Parse(assembly.AssemblyIdentity).Name == "System.Private.CoreLib").AssemblyIdentity;
         var coreLib = resolver.Resolve(AssemblyNameReference.Parse(coreLibIdentity));
-        new ConditionalTypeMapBridge(application, core, coreLib).Apply(groups);
+        FrameworkBindingPolicy.NormalizeReferences(frameworkOwners, framework.Bindings);
+        var normalizedCore = new ConditionalTypeMapBridge(application, core, coreLib).Apply(groups);
         binder.RemoveConsumedRecords(manifests);
         FrameworkBindingPolicy.NormalizeReferences(owners, framework.Bindings);
 
-        var changed = groups.Length == 0 ? [] : owners.Append(application).Distinct().ToArray();
+        var changed = groups.Length == 0 ? [] : owners.Append(application).Concat(normalizedCore ? [core] : Array.Empty<AssemblyDefinition>()).Distinct().ToArray();
         var outputNames = changed.Select(assembly => Path.GetFileName(resolver.Location(assembly))).ToArray();
         if (outputNames.Distinct(StringComparer.Ordinal).Count() != changed.Length)
         {

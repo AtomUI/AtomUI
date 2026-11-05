@@ -34,14 +34,21 @@
             </ControlTemplate>
         </Setter>
 
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextLightSolid}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="IsWaveSpiritEnabled"
-                Value="{atom:SharedTokenResource EnableWaveSpirit}" />
+                Value="{atom:OwnerTokenResource EnableWaveSpirit}" />
         
         <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
             <Setter Property="WaveType" Value="PillWave"/>
@@ -76,18 +83,30 @@
 
         <Style Selector="^[IsChecked=True]:pointerover">
             <Setter Property="GrooveBackground"
-                    Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+                    Value="{atom:OwnerTokenResource ColorPrimaryHover}" />
         </Style>
 
         <Style Selector="^[IsChecked=False]">
             <Setter Property="GrooveBackground"
-                    Value="{atom:SharedTokenResource ColorTextQuaternary}" />
+                    Value="{atom:OwnerTokenResource ColorTextQuaternary}" />
         </Style>
 
         <Style Selector="^[IsChecked=False]:pointerover">
             <Setter Property="GrooveBackground"
-                    Value="{atom:SharedTokenResource ColorTextTertiary}" />
+                    Value="{atom:OwnerTokenResource ColorTextTertiary}" />
         </Style>
+
+        <Setter Property="FontSize"
+                Value="{atom:ToggleSwitchTokenResource ExtraInfoFontSize}" />
+        <Setter Property="KnobSize" Value="{atom:ToggleSwitchTokenResource HandleSize}" />
+        <Setter Property="InnerMaxMargin"
+                Value="{atom:ToggleSwitchTokenResource InnerMaxMargin}" />
+        <Setter Property="InnerMinMargin"
+                Value="{atom:ToggleSwitchTokenResource InnerMinMargin}" />
+        <Setter Property="TrackHeight" Value="{atom:ToggleSwitchTokenResource TrackHeight}" />
+        <Setter Property="TrackMinWidth"
+                Value="{atom:ToggleSwitchTokenResource TrackMinWidth}" />
+        <Setter Property="IconSize" Value="{atom:ToggleSwitchTokenResource ContentIconSize}" />
 
         <Style Selector="^[SizeType=Small]">
             <Setter Property="FontSize"
@@ -102,7 +121,7 @@
                     Value="{atom:ToggleSwitchTokenResource TrackMinWidthSM}" />
             <Setter Property="IconSize" Value="{atom:ToggleSwitchTokenResource ContentIconSizeSM}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom], ^[SizeType=Large]">
+        <Style Selector="^[SizeType=Middle], ^[SizeType=Large]">
             <Setter Property="FontSize"
                     Value="{atom:ToggleSwitchTokenResource ExtraInfoFontSize}" />
             <Setter Property="KnobSize" Value="{atom:ToggleSwitchTokenResource HandleSize}" />

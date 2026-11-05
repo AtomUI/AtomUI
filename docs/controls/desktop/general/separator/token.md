@@ -59,3 +59,9 @@ Separator 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 动态消费与兼容导出
+
+7字段保留原类型/默认/key/slot，采用 DependencyDefaultsV2。TextPaddingInline、OrientationMarginPercent 更新会重新排列实际 rail；VerticalMarginInline 和字体尺寸变化使测量失效。横向三档 margin 仍同时用于有/无标题，Custom 使用基础回退并允许调用方接管。
+
+HorizontalWithTextGutterMargin 保留导出和默认值，当前没有几何消费者，不叠加到既有三档 margin。标题和 rail 的 Global 语义从 Separator 实例解析；VerticalSeparator 保留现有 StyleKey/身份回退，不另造 Token 家族。

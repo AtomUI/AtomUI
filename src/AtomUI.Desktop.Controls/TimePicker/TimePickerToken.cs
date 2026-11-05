@@ -9,7 +9,20 @@ internal sealed partial class TimePickerToken : AbstractControlDesignToken, ICon
     /// <summary>
     /// 时间选择项高度
     /// </summary>
-    public double ItemHeight { get; set; }
+    public double ItemHeight
+    {
+        get => _itemHeight;
+        set
+        {
+            if (!double.IsFinite(value) || value <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "Time column height must be positive and finite.");
+            }
+            _itemHeight = value;
+        }
+    }
+
+    private double _itemHeight;
 
     /// <summary>
     /// 时间选择项宽度

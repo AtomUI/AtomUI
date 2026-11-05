@@ -12,10 +12,10 @@
             <ControlTemplate TargetType="{x:Type gallery:ShowCaseZoomOverlay}"
                              x:DataType="gallery:ShowCaseZoomOverlay">
                 <Border Name="PART_RootBorder"
-                        Background="{atom:SharedTokenResource ColorBgLayout}"
+                        Background="{atom:OwnerTokenResource Kind=ColorBgLayout, AnchorControlType={x:Type gallery:ShowCaseZoomOverlay}}"
                         ClipToBounds="True">
                     <Border Name="PART_CardBorder"
-                            Background="{atom:SharedTokenResource ColorBgContainer}"
+                            Background="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type gallery:ShowCaseZoomOverlay}}"
                             ClipToBounds="True">
                         <DockPanel Margin="{gallery:ShowCaseZoomOverlayTokenResource CardPadding}">
                             <Grid DockPanel.Dock="Top"

@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery"
+             xmlns:local="using:AtomUIGallery.Workspace.Views"
+             x:Class="AtomUIGallery.Workspace.Views.ThemeWorkbenchView">
+    <Grid RowDefinitions="Auto,Auto,*" Margin="16" RowSpacing="12">
+        <WrapPanel Orientation="Horizontal">
+            <atom:ComboBox Name="PresetPicker" Width="150" Margin="0,0,8,8" />
+            <atom:CheckBox Name="DarkPicker" Content="{gallery:ThemeWorkbenchLangResource Dark}" Margin="0,0,12,8" />
+            <atom:Button Name="PreviewButton" Content="{gallery:ThemeWorkbenchLangResource Preview}" Margin="0,0,8,8" />
+            <atom:Button Name="ApplyButton" ButtonType="Primary" Content="{gallery:ThemeWorkbenchLangResource Apply}" Margin="0,0,8,8" />
+            <atom:Button Name="CancelButton" Content="{gallery:ThemeWorkbenchLangResource Cancel}" Margin="0,0,8,8" />
+            <atom:Button Name="ResetButton" Content="{gallery:ThemeWorkbenchLangResource ResetBrand}" Margin="0,0,8,8" />
+            <atom:Button Name="ImportButton" Content="{gallery:ThemeWorkbenchLangResource Import}" Margin="0,0,8,8" />
+            <atom:Button Name="SaveButton" Content="{gallery:ThemeWorkbenchLangResource SaveComplete}" Margin="0,0,8,8" />
+            <atom:Button Name="TokenExportButton" Content="{gallery:ThemeWorkbenchLangResource SaveTokens}" Margin="0,0,8,8" />
+        </WrapPanel>
+        <TextBlock Grid.Row="1" Name="StatusText" TextWrapping="Wrap" />
+        <Grid Grid.Row="2" ColumnDefinitions="330,*,*" ColumnSpacing="16">
+            <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{gallery:ThemeWorkbenchLangResource Owner}" FontWeight="SemiBold" />
+                    <atom:ComboBox Name="OwnerPicker" />
+                    <atom:ComboBox Name="TokenPicker" />
+                    <TextBlock Name="ValueInfoText" TextWrapping="Wrap" />
+                    <atom:LineEdit Name="ValueEditor" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <atom:Button Name="SetValueButton" Content="{gallery:ThemeWorkbenchLangResource SetOverride}" />
+                        <atom:Button Name="InheritButton" Content="{gallery:ThemeWorkbenchLangResource Inherit}" />
+                    </StackPanel>
+                    <TextBlock Text="{gallery:ThemeWorkbenchLangResource RecipeJson}" FontWeight="SemiBold" Margin="0,12,0,0" />
+                    <atom:TextArea Name="JsonEditor" Height="280" IsResizable="False" />
+                    <atom:Button Name="ReadJsonButton" Content="{gallery:ThemeWorkbenchLangResource ReadDraft}" />
+                    <TextBlock Text="{gallery:ThemeWorkbenchLangResource Diff}" FontWeight="SemiBold" Margin="0,12,0,0" />
+                    <SelectableTextBlock Name="DiffText" TextWrapping="Wrap" />
+                    <TextBlock Name="DiagnosticsText" TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+            <Grid Grid.Column="1" RowDefinitions="Auto,*" RowSpacing="8">
+                <TextBlock Text="{gallery:ThemeWorkbenchLangResource DraftPreview}" FontWeight="SemiBold" />
+                <ScrollViewer Name="DraftScroller" Grid.Row="1" HorizontalScrollBarVisibility="Auto">
+                    <atom:ThemeConfigProvider Name="DraftScope">
+                        <local:ThemeWorkbenchPreview Name="DraftContent" MinWidth="340" />
+                    </atom:ThemeConfigProvider>
+                </ScrollViewer>
+            </Grid>
+            <Grid Grid.Column="2" RowDefinitions="Auto,*" RowSpacing="8">
+                <TextBlock Text="{gallery:ThemeWorkbenchLangResource BaselinePreview}" FontWeight="SemiBold" />
+                <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto">
+                    <atom:ThemeConfigProvider Name="BaselineScope">
+                        <local:ThemeWorkbenchPreview MinWidth="340" />
+                    </atom:ThemeConfigProvider>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

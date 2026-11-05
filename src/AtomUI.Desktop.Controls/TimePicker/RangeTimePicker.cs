@@ -132,6 +132,9 @@ public partial class RangeTimePicker : RangeInfoPickerInput
             o => o.PmText,
             (o, v) => o.PmText = v);
 
+    internal static readonly StyledProperty<Rect?> PickerPlacementRectProperty =
+        AvaloniaProperty.Register<RangeTimePicker, Rect?>(nameof(PickerPlacementRect));
+
     private double _preferredWidth;
 
     internal double PreferredWidth
@@ -163,6 +166,12 @@ public partial class RangeTimePicker : RangeInfoPickerInput
     {
         get => _pmText;
         set => SetAndRaise(PmTextProperty, ref _pmText, value);
+    }
+
+    internal Rect? PickerPlacementRect
+    {
+        get => GetValue(PickerPlacementRectProperty);
+        private set => SetValue(PickerPlacementRectProperty, value);
     }
 
     #endregion
@@ -552,7 +561,16 @@ public partial class RangeTimePicker : RangeInfoPickerInput
     
     protected override void NotifyRangeActivatedPartChanged()
     {
-        base.NotifyRangeActivatedPartChanged();
+        if (RangeActivatedPart == RangeActivatedPart.Start && PickerPlacement != PlacementMode.BottomEdgeAlignedLeft)
+        {
+            PickerPlacement = PlacementMode.BottomEdgeAlignedLeft;
+        }
+        else if (RangeActivatedPart == RangeActivatedPart.End && PickerPlacement != PlacementMode.BottomEdgeAlignedRight)
+        {
+            PickerPlacement = PlacementMode.BottomEdgeAlignedRight;
+        }
+        SetupPickerIndicatorPosition();
+        UpdatePickerPlacementRect();
         if (_pickerPresenter != null)
         {
             var value = RangeActivatedPart switch
@@ -567,6 +585,32 @@ public partial class RangeTimePicker : RangeInfoPickerInput
                 _pickerPresenter.ResetOpenPanelState();
             }
         }
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        var size = base.ArrangeOverride(finalSize);
+        UpdatePickerPlacementRect();
+        return size;
+    }
+
+    private void UpdatePickerPlacementRect()
+    {
+        var input = RangeActivatedPart == RangeActivatedPart.End ? SecondaryInfoInputBox : InfoInputBox;
+        Rect? rect = null;
+        if (input is { Bounds.Width: > 0 } &&
+            DecoratedBox is { ContentFrame: { Bounds.Height: > 0 } frame } container &&
+            input.TranslatePoint(default, container) is { } inputOrigin &&
+            frame.TranslatePoint(default, container) is { } frameOrigin)
+        {
+            // Horizontal placement follows the active endpoint, while vertical
+            // placement follows the visible input frame. Avalonia clips PlacementRect
+            // to its target, so the centered textbox cannot be the target here.
+            // Arranged cross-template coordinates require runtime geometry; the
+            // ControlTheme still owns the final Popup.PlacementRect binding.
+            rect = new Rect(inputOrigin.X, frameOrigin.Y, input.Bounds.Width, frame.Bounds.Height);
+        }
+        PickerPlacementRect = rect;
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -731,14 +775,7 @@ public partial class RangeTimePicker : RangeInfoPickerInput
             RefreshRangeTexts();
         }
         CalculatePreferredWidth();
-        if (PickerPopup is not null && RangeActivatedPart != RangeActivatedPart.None)
-        {
-            // Replay the surviving endpoint onto the new input part at the existing
-            // Local priority; a ControlTheme setter has different precedence. The
-            // endpoint-change hook would reset the edit and caller's PickerPlacement.
-            PickerPopup.PlacementTarget = RangeActivatedPart == RangeActivatedPart.End
-                ? SecondaryInfoInputBox : InfoInputBox;
-        }
+        UpdatePickerPlacementRect();
     }
     
     #region 实现 FormItem 接口

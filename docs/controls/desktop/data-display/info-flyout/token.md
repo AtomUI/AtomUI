@@ -9,9 +9,13 @@ InfoFlyout Token 只表达组件级视觉变量，例如尺寸、间距、颜色
 当前 Token scope：
 
 - `FlyoutHostToken`，scope id 为 `FlyoutHost`，源码位于 `src/AtomUI.Desktop.Controls/Flyouts/FlyoutHostToken.cs`。
-- `TreeFlyoutToken`，scope id 为 `TreeFlyout`，源码位于 `src/AtomUI.Desktop.Controls/Flyouts/TreeFlyoutToken.cs`。
+- `TreeViewFlyoutPresenterToken`，scope id 为 `TreeViewFlyoutPresenter`，源码位于 `src/AtomUI.Desktop.Controls/Flyouts/TreeViewFlyoutPresenterToken.cs`。
 
 ## 2. Token 分类
+
+两个 Own 定义采用 V2、revision 1；5+6 字段的名称、类型、资源 key、slot 及四算法 44 条默认记录保持。`FlyoutHost` 的 `HorizontalOffset` / `VerticalOffset` 仅用于 Menu/Tree 的 Pointer placement，以当前锚点的局部配置为资源上下文；普通 placement 仍归零，实例原生 offset 优先。换锚点先关闭旧宿主并退休旧资源，再连接新 scope。
+
+`TreeViewFlyoutPresenter.PopupBgColor` 在 presenter 根消费，再经原 `Background` TemplateBinding 进入 ArrowDecoratedBox。此前内层 Own Setter 被该绑定覆盖，有效背景为 null；修复后的 null→Own 背景属于待限定视觉审查的有效值纠正，不能以默认资源值不变代替批准。六字段的背景、padding、最小/最大宽高都对应实际目标，树的有限高度、全部原行和滚动条同时保留。
 
 Token 按控件语义分类维护：
 

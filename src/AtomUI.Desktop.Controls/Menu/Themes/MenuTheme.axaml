@@ -4,6 +4,25 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Menu}" TargetType="atom:Menu">
+        <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeight, AnchorControlType={x:Type atom:Menu}}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadius, AnchorControlType={x:Type atom:Menu}}" />
+
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder HorizontalAlignment="Stretch"
@@ -29,24 +48,24 @@
 
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorder, AnchorControlType={x:Type atom:Menu}}" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
-        
+
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeightLG, AnchorControlType={x:Type atom:Menu}}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadius, AnchorControlType={x:Type atom:Menu}}" />
         </Style>
 
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeight, AnchorControlType={x:Type atom:Menu}}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadius, AnchorControlType={x:Type atom:Menu}}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeightSM, AnchorControlType={x:Type atom:Menu}}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadiusSM, AnchorControlType={x:Type atom:Menu}}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

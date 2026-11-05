@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
@@ -22,7 +23,8 @@ public enum TabSharp
     Card
 }
 
-public partial class TabStripItem : AvaloniaTabStripItem
+public partial class TabStripItem : AvaloniaTabStripItem,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -355,4 +357,6 @@ public partial class TabStripItem : AvaloniaTabStripItem
         PseudoClasses.Set(StdPseudoClass.Pressed, isDragging);
     }
 
+    // The theme preserves the actual inheritance parent when owner typography is not explicit.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

@@ -30,6 +30,11 @@
 - 内联子菜单展开、收起时共享内容视口只失效自身测量，不再逐帧失效全部祖先排列（原实现使窗口外框等绘制型祖先每帧整窗重绘）；侧栏往返后的分配缺口改为仅重新排列 DesiredSize 变化的祖先来修复。
 - Wayland 启动时窗口先按缩放 1 布局再切到真实缩放导致的菜单文字尺寸变化，随 Window 初始缩放预测消除。
 
+## 2026-10-29
+
+- Theme / Implementation
+  - 整体折叠宽度动效的Mid时长由ControlTheme接入实际owner有效Global，默认200ms，不再旁路读取Application值。
+
 ## 2026-10-28
 
 - 修复透明度/可见性通知重入、准备期间关闭后重开时的占位交接，旧请求不再覆盖新租约；沿用尚未完成布局的零/当前起点，避免读取隐藏前旧 Bounds。
@@ -45,6 +50,7 @@
 
 - Inline Collapsed 根宽度改由原生 Animation 驱动内部布局值，移除16ms延时循环与逐帧Dispatcher投递；保留CubicEaseOut、主题时长、尺寸coercion和选中/展开路径语义。
 - 反转在取消前捕获当前呈现宽度；Mode切换取消旧宽度执行，避免临时宽度继续影响新的布局模式。动画绑定释放后由当前请求完成一次收尾，保留base Width/MinWidth及绑定。
+
 
 ## 2026-10-24
 
@@ -303,3 +309,8 @@
 - Token
   - 记录 NavMenuToken 的颜色、间距、popup、horizontal、dark 和 danger 分类。
   - 明确 `VerticalChildItemsMargin` 只服务背景模式下的 inline submenu 背景块外距。
+
+
+## 2026-10-30 主题消费与字体
+
+横向浅色顶层的悬停、选中及选中路径使用对应 HorizontalItem Own；禁用前景优先于选中前景。横向圆角与子菜单条目圆角分别消费 HorizontalItemBorderRadius 和 SubMenuItemBorderRadius。顶层弹层间距由 TopLevelItemPopupMarginToAnchor 提供；背景 transition 单独读取 ItemBackgroundMotionEasing，前景与指示条的曲线保持原声明。

@@ -4,6 +4,14 @@
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.ListViewItemTheme"
               TargetType="atom:ListViewItem">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ListViewItem">
             <Panel>
@@ -34,14 +42,17 @@
     </Setter>
 
     <Style Selector="^:is(atom|ListViewItem)">
+        <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeight, AnchorControlType={x:Type atom:ListViewItem}}" />
+        <Setter Property="Padding" Value="{atom:ListViewTokenResource ItemPadding}" />
+
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Margin" Value="{atom:ListViewTokenResource ItemMargin}" />
         <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemColor}" />
         <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorSplit, AnchorControlType={x:Type atom:ListViewItem}}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        
+
         <Style Selector="^[IsGroupItem=False]">
             <Style Selector="^:pointerover">
                 <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemHoverColor}" />
@@ -52,27 +63,27 @@
                 <Setter Property="Background" Value="{Binding ItemSelectedBg, RelativeSource={RelativeSource Self}}" />
             </Style>
         </Style>
-        
+
         <Style Selector="^ /template/ atom|IconTemplatePresenter#SelectedIndicator">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atom:ListViewItem}}" />
+            <Setter Property="Width" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:ListViewItem}}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:ListViewItem}}" />
             <Setter Property="Margin"
                     Value="{atom:ListViewTokenResource SelectedIndicatorMargin}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeightLG, AnchorControlType={x:Type atom:ListViewItem}}" />
             <Setter Property="Padding" Value="{atom:ListViewTokenResource ItemPaddingLG}" />
         </Style>
 
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeight, AnchorControlType={x:Type atom:ListViewItem}}" />
             <Setter Property="Padding" Value="{atom:ListViewTokenResource ItemPadding}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource Kind=ControlHeightSM, AnchorControlType={x:Type atom:ListViewItem}}" />
             <Setter Property="Padding" Value="{atom:ListViewTokenResource ItemPaddingSM}" />
         </Style>
 
@@ -84,19 +95,21 @@
         </Style>
 
         <Style Selector="^[IsGroupItem=True]">
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource Kind=FontSizeSM, AnchorControlType={x:Type atom:ListViewItem}}" />
+
             <Setter Property="Foreground" Value="{atom:ListViewTokenResource GroupHeaderColor}" />
             <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />
 
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+                <Setter Property="FontSize" Value="{atom:OwnerTokenResource Kind=FontSize, AnchorControlType={x:Type atom:ListViewItem}}" />
             </Style>
 
-            <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+            <Style Selector="^[SizeType=Middle]">
+                <Setter Property="FontSize" Value="{atom:OwnerTokenResource Kind=FontSizeSM, AnchorControlType={x:Type atom:ListViewItem}}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+                <Setter Property="FontSize" Value="{atom:OwnerTokenResource Kind=FontSizeSM, AnchorControlType={x:Type atom:ListViewItem}}" />
             </Style>
 
         </Style>

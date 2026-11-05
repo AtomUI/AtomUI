@@ -50,7 +50,7 @@ public class IconInfoItemTests
             "src/AtomUI.Toolkits.GalleryBase/Controls/Themes/IconInfoItemTheme.axaml");
 
         source.ShouldContain("<Setter Property=\"Cursor\" Value=\"Hand\" />");
-        source.ShouldContain("<Setter Property=\"IsMotionEnabled\" Value=\"{atom:SharedTokenResource EnableMotion}\" />");
+        source.ShouldContain("<Setter Property=\"IsMotionEnabled\" Value=\"{atom:OwnerTokenResource EnableMotion}\" />");
         source.ShouldContain("Selector=\"^:pointerover:not(:disabled)\"");
         source.ShouldContain("ColorBgTextHover");
         source.ShouldContain("Selector=\"^:pressed:not(:disabled)\"");

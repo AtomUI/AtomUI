@@ -158,3 +158,9 @@ Rate 的交互事件应从输入源收敛到控件级语义事件：
 ## 主题消费合同（2026-10-23）
 
 RateItem 为脱离普通继承树的 VisualBrush 字符快照复制有效 FontFamily/FontStyle/FontWeight；字体、字号、Width/Height 改变时重建两张画刷，保留选择/半星与 clip。RateCharacter 的 FontFamily 加入 measure 失效依赖，缓存文字与有效字体一致。不是每帧重建，也不为临时 glyph 创建独立 Own identity。完整 Rate 家族状态/尺寸和 Own V2 迁移仍按对应合同验证。
+
+## 容器尺寸与字体消费
+
+RateTheme 将真实 SizeType 传给 RateItemsControl，容器准备再传给 RateItem，三档不会停留在 Middle。容器继承实际 owner 字体，glyph 画刷在字体族/字重/样式、尺寸、字符和颜色变化时重建；attach 时重新采集容器离树准备期间的输入；半星裁剪仍基于实际 item 几何。
+
+可选字体投射通过现有继承父级桥完成，实际字体值参与字符测量和 VisualBrush。输入仍走原 hit/root 校验、Value/EffectiveValue 和焦点模型；Global 资源从实际 Rate owner 解析，未新增全局事件订阅或 Part 代码定制。

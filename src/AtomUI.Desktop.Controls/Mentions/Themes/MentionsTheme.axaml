@@ -2,12 +2,33 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:primitives="using:AtomUI.Desktop.Controls.Primitives.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Mentions}" TargetType="atom:Mentions">
+        <Setter Property="Foreground" Value="{atom:MentionsTokenResource ColorText}" />
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.PresetFontSizeConverter}">
+                <CompiledBindingExtension Path="$self.SizeType" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+                <atom:OwnerTokenResource Kind="FontSizeSM" />
+                <atom:OwnerTokenResource Kind="FontSizeLG" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
-                    <atom:MentionTextArea Name="PART_TextArea"
+                    <atom:MentionTextArea Foreground="{CompiledBinding $parent[atom:Mentions].Foreground, Priority=LocalValue}"
+                                          FontFamily="{TemplateBinding FontFamily}"
+                                          FontSize="{CompiledBinding $parent[atom:Mentions].FontSize, Priority=LocalValue}"
+                                          Name="PART_TextArea"
                                           Classes.semantic-scope-input="True"
                                           IsAutoSize="{TemplateBinding IsAutoSize}"
                                           IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -32,7 +53,29 @@
                                           SizeType="{TemplateBinding SizeType}"
                                           Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"
                                           FilterValue="{TemplateBinding FilterValue, Mode=TwoWay}"
-                                          FormFeedback="{TemplateBinding FormFeedback}"/>
+                                          FormFeedback="{TemplateBinding FormFeedback}">
+                        <atom:MentionTextArea.LineHeight>
+                            <MultiBinding Converter="{x:Static atom:CompoundInputTypographyBindings.LineHeight}" Priority="LocalValue">
+                                <CompiledBindingExtension Path="$self.FontFamily" />
+                                <CompiledBindingExtension Path="$self.FontSize" />
+                                <CompiledBindingExtension Path="$self.FontStyle" />
+                                <CompiledBindingExtension Path="$self.FontWeight" />
+                                <CompiledBindingExtension Path="$self.FontStretch" />
+                                <CompiledBindingExtension Path="$self.SizeType" />
+                                <atom:MentionsTokenResource Kind="FontHeight" WhenExplicit="True" />
+                                <atom:MentionsTokenResource Kind="FontHeight" />
+                                <atom:MentionsTokenResource Kind="FontHeightSM" WhenExplicit="True" />
+                                <atom:MentionsTokenResource Kind="FontHeightSM" />
+                                <atom:MentionsTokenResource Kind="FontHeightLG" WhenExplicit="True" />
+                                <atom:MentionsTokenResource Kind="FontHeightLG" />
+                            </MultiBinding>
+                        </atom:MentionTextArea.LineHeight>
+                        <atom:MentionTextArea.PlaceholderForeground>
+                            <MultiBinding Converter="{x:Static atom:CompoundInputTypographyBindings.PlaceholderForeground}" Priority="LocalValue">
+                                <atom:MentionsTokenResource Kind="ColorTextPlaceholder" />
+                            </MultiBinding>
+                        </atom:MentionTextArea.PlaceholderForeground>
+                    </atom:MentionTextArea>
                     <atom:Popup Name="PART_Popup"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="True"
@@ -67,23 +110,32 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="ItemHeight" Value="{atom:MentionsTokenResource OptionHeight}" />
         <Setter Property="PopupContentPadding" Value="{atom:MentionsTokenResource PopupContentPadding}" />
         <Setter Property="MinPopupWidth" Value="{atom:MentionsTokenResource MinPopupWidth}" />
+        <Style Selector="^ /template/ atom|CandidateList#PART_CandidateList">
+            <Setter Property="ItemContainerTheme">
+                <primitives:CandidateListItemTheme TargetType="atom:CandidateListItem">
+                    <Style Selector="^[SizeType=Large], ^[SizeType=Middle], ^[SizeType=Small], ^[SizeType=Custom]">
+                        <Setter Property="MinHeight" Value="{atom:MentionsTokenResource OptionHeight}" />
+                    </Style>
+                </primitives:CandidateListItemTheme>
+            </Setter>
+        </Style>
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor" Value="{atom:PopupTokenResource MarginToAnchor}" />
             <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
             <Setter Property="OverlayHostShadow" Value="{atom:PopupTokenResource OverlayHostShadow}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:MentionsTokenResource ColorBgElevated}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>
         
         <Style Selector="^ /template/ atom|Spin#LoadingIndicator">
-            <Setter Property="Margin" Value="{atom:SharedTokenResource MarginLG}" />
+            <Setter Property="Margin" Value="{atom:MentionsTokenResource MarginLG}" />
         </Style>
         
         <Setter Property="OptionTemplate">

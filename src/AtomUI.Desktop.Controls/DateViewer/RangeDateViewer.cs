@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Globalization;
 using AtomUI.Desktop.Controls.Internal.DateViewer;
 using AtomUI.Localization;
@@ -9,84 +10,156 @@ using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
-public partial class RangeDateViewer : TemplatedControl, IDatePanelHost
+public partial class RangeDateViewer : TemplatedControl, IDatePanelHost, IThemeInheritanceSource
 {
     #region 公共属性定义
+
     public static readonly StyledProperty<DateViewerRange?> ValueProperty = AvaloniaProperty.Register<RangeDateViewer, DateViewerRange?>(nameof(Value), defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+
     public static readonly StyledProperty<DateTime> DisplayDateProperty = DateViewer.DisplayDateProperty.AddOwner<RangeDateViewer>();
+
     public static readonly StyledProperty<DateViewerSelectionUnit> SelectionUnitProperty = DateViewer.SelectionUnitProperty.AddOwner<RangeDateViewer>();
+
     public static readonly StyledProperty<DateViewerPresentation> PresentationProperty = DateViewer.PresentationProperty.AddOwner<RangeDateViewer>();
+
     public static readonly StyledProperty<DateTime?> MinDateProperty = DateViewer.MinDateProperty.AddOwner<RangeDateViewer>();
+
     public static readonly StyledProperty<DateTime?> MaxDateProperty = DateViewer.MaxDateProperty.AddOwner<RangeDateViewer>();
+
     public static readonly StyledProperty<Func<DateTime, bool>?> DisabledDateProperty = DateViewer.DisabledDateProperty.AddOwner<RangeDateViewer>();
+
     public static readonly StyledProperty<DayOfWeek?> FirstDayOfWeekProperty = DateViewer.FirstDayOfWeekProperty.AddOwner<RangeDateViewer>();
+
     public static readonly StyledProperty<bool> ShowWeekProperty = DateViewer.ShowWeekProperty.AddOwner<RangeDateViewer>();
+
     public static readonly StyledProperty<bool> ShowHeaderProperty = DateViewer.ShowHeaderProperty.AddOwner<RangeDateViewer>();
+
     public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty = DateViewer.HeaderTemplateProperty.AddOwner<RangeDateViewer>();
+
     public static readonly StyledProperty<IDataTemplate?> CellTemplateProperty = DateViewer.CellTemplateProperty.AddOwner<RangeDateViewer>();
+
     public static readonly StyledProperty<IDataTemplate?> FullCellTemplateProperty = DateViewer.FullCellTemplateProperty.AddOwner<RangeDateViewer>();
+
     public static readonly DirectProperty<RangeDateViewer, DateViewerPanelKind> PanelKindProperty = AvaloniaProperty.RegisterDirect<RangeDateViewer, DateViewerPanelKind>(nameof(PanelKind), control => control.PanelKind);
+
     public static readonly DirectProperty<RangeDateViewer, DateTime?> FocusedValueProperty = AvaloniaProperty.RegisterDirect<RangeDateViewer, DateTime?>(nameof(FocusedValue), control => control.FocusedValue);
+
     public static readonly DirectProperty<RangeDateViewer, DateTime?> HoveredValueProperty = AvaloniaProperty.RegisterDirect<RangeDateViewer, DateTime?>(nameof(HoveredValue), control => control.HoveredValue);
+
     public DateViewerRange? Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
+
     public DateTime DisplayDate { get => GetValue(DisplayDateProperty); set => SetValue(DisplayDateProperty, value); }
+
     public DateViewerSelectionUnit SelectionUnit { get => GetValue(SelectionUnitProperty); set => SetValue(SelectionUnitProperty, value); }
+
     public DateViewerPresentation Presentation { get => GetValue(PresentationProperty); set => SetValue(PresentationProperty, value); }
+
     public DateTime? MinDate { get => GetValue(MinDateProperty); set => SetValue(MinDateProperty, value); }
+
     public DateTime? MaxDate { get => GetValue(MaxDateProperty); set => SetValue(MaxDateProperty, value); }
+
     public Func<DateTime, bool>? DisabledDate { get => GetValue(DisabledDateProperty); set => SetValue(DisabledDateProperty, value); }
+
     public DayOfWeek? FirstDayOfWeek { get => GetValue(FirstDayOfWeekProperty); set => SetValue(FirstDayOfWeekProperty, value); }
+
     public bool ShowWeek { get => GetValue(ShowWeekProperty); set => SetValue(ShowWeekProperty, value); }
+
     public bool ShowHeader { get => GetValue(ShowHeaderProperty); set => SetValue(ShowHeaderProperty, value); }
+
     public IDataTemplate? HeaderTemplate { get => GetValue(HeaderTemplateProperty); set => SetValue(HeaderTemplateProperty, value); }
+
     public IDataTemplate? CellTemplate { get => GetValue(CellTemplateProperty); set => SetValue(CellTemplateProperty, value); }
+
     public IDataTemplate? FullCellTemplate { get => GetValue(FullCellTemplateProperty); set => SetValue(FullCellTemplateProperty, value); }
+
     public DateViewerPanelKind PanelKind => _host?.ReadInput().PanelKind ?? _panelKind;
+
     public DateTime? FocusedValue => _session?.FocusedValue;
+
     public DateTime? HoveredValue => _session?.HoveredValue;
+
     #endregion
 
     #region 公共事件定义
+
     public event EventHandler<RangeDateViewerValueChangedEventArgs>? ValueChanged;
+
     public event EventHandler<RangeDateViewerSelectedEventArgs>? Selected;
+
     public event EventHandler<DateViewerPanelChangedEventArgs>? PanelChanged;
+
     public event EventHandler<DateViewerHoveredValueChangedEventArgs>? HoveredValueChanged;
+
     #endregion
 
     #region 内部属性定义
+
     internal static readonly StyledProperty<Avalonia.Styling.ControlTheme?> PanelThemeProperty = DateViewer.PanelThemeProperty.AddOwner<RangeDateViewer>();
-    internal Avalonia.Styling.ControlTheme? PanelTheme { get => GetValue(PanelThemeProperty); set => SetValue(PanelThemeProperty, value); }
+
     internal static readonly StyledProperty<IDataTemplate?> DefaultFullCellTemplateProperty = DateViewer.DefaultFullCellTemplateProperty.AddOwner<RangeDateViewer>();
-    internal IDataTemplate? DefaultFullCellTemplate { get => GetValue(DefaultFullCellTemplateProperty); set => SetValue(DefaultFullCellTemplateProperty, value); }
+
     internal static readonly StyledProperty<Avalonia.Styling.ControlTheme?> CellThemeProperty = DateViewer.CellThemeProperty.AddOwner<RangeDateViewer>();
-    internal Avalonia.Styling.ControlTheme? CellTheme { get => GetValue(CellThemeProperty); set => SetValue(CellThemeProperty, value); }
+
     internal static readonly DirectProperty<RangeDateViewer, DatePanelSession> PanelSessionProperty = AvaloniaProperty.RegisterDirect<RangeDateViewer, DatePanelSession>(nameof(PanelSession), control => control.PanelSession);
-    internal DatePanelSession PanelSession => _session;
+
     internal static readonly DirectProperty<RangeDateViewer, DateViewerHeaderContext?> HeaderContextProperty = AvaloniaProperty.RegisterDirect<RangeDateViewer, DateViewerHeaderContext?>(nameof(HeaderContext), control => control.HeaderContext);
-    internal DateViewerHeaderContext? HeaderContext => _headerContext;
+
     internal static readonly DirectProperty<RangeDateViewer, DateViewerHeaderContext?> SecondaryHeaderContextProperty =
         AvaloniaProperty.RegisterDirect<RangeDateViewer, DateViewerHeaderContext?>(nameof(SecondaryHeaderContext), control => control.SecondaryHeaderContext);
-    internal DateViewerHeaderContext? SecondaryHeaderContext => _secondaryHeaderContext;
+
     internal static readonly DirectProperty<RangeDateViewer, bool> HasSecondaryPanelProperty =
         AvaloniaProperty.RegisterDirect<RangeDateViewer, bool>(nameof(HasSecondaryPanel), control => control.HasSecondaryPanel);
-    internal bool HasSecondaryPanel => _session.Input.PanelCount == 2;
+
     internal static readonly StyledProperty<double> PanelSpacingProperty =
         AvaloniaProperty.Register<RangeDateViewer, double>(nameof(PanelSpacing), double.NaN);
-    internal double PanelSpacing { get => GetValue(PanelSpacingProperty); set => SetValue(PanelSpacingProperty, value); }
-    #endregion
+
+    internal Avalonia.Styling.ControlTheme? PanelTheme { get => GetValue(PanelThemeProperty); set => SetValue(PanelThemeProperty, value); }
+
+    internal IDataTemplate? DefaultFullCellTemplate { get => GetValue(DefaultFullCellTemplateProperty); set => SetValue(DefaultFullCellTemplateProperty, value); }
+
+    internal Avalonia.Styling.ControlTheme? CellTheme { get => GetValue(CellThemeProperty); set => SetValue(CellThemeProperty, value); }
 
     private readonly DatePanelSession _session;
-    private IDatePanelHost? _host;
-    private DatePanelInput? _headerInput;
+
+    internal DatePanelSession PanelSession => _session;
+
     private DateViewerHeaderContext? _headerContext;
+
+    internal DateViewerHeaderContext? HeaderContext => _headerContext;
+
     private DateViewerHeaderContext? _secondaryHeaderContext;
+
+    internal DateViewerHeaderContext? SecondaryHeaderContext => _secondaryHeaderContext;
+
+    internal bool HasSecondaryPanel => _session.Input.PanelCount == 2;
+
+    internal double PanelSpacing { get => GetValue(PanelSpacingProperty); set => SetValue(PanelSpacingProperty, value); }
+
+    #endregion
+
+    #region 运行时字段
+
+    private IDatePanelHost? _host;
+
+    private DatePanelInput? _headerInput;
+
     private DateViewerPanelKind _panelKind;
+
     private DateRangeActivePart _activePart;
+
     private CultureInfo _culture = CultureInfo.CurrentCulture;
+
     private ILanguageManager? _languageManager;
+
     private DateTime? _lastNotifiedFocus;
+
     private DateTime? _lastNotifiedHover;
+
     private bool _lastSecondaryPanel = true;
+
+    #endregion
+
+    #region 构造函数
 
     public RangeDateViewer()
     {
@@ -96,6 +169,10 @@ public partial class RangeDateViewer : TemplatedControl, IDatePanelHost
         PseudoClasses.Set(":single-panel", !HasSecondaryPanel);
         RefreshHeaderContext();
     }
+
+    #endregion
+
+    #region 公共与保护方法
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -142,46 +219,9 @@ public partial class RangeDateViewer : TemplatedControl, IDatePanelHost
         base.OnDetachedFromVisualTree(e);
     }
 
-    private void OnLanguageChanged(object? sender, LanguageChangedEventArgs e)
-    {
-        _culture = _languageManager?.Current.FormattingCulture ?? CultureInfo.CurrentCulture;
-        _session.UpdateInput();
-    }
+    #endregion
 
-    private void OnSessionChanged(object? sender, EventArgs e)
-    {
-        PseudoClasses.Set(":single-panel", !HasSecondaryPanel);
-        RaisePropertyChanged(HasSecondaryPanelProperty, _lastSecondaryPanel, HasSecondaryPanel);
-        _lastSecondaryPanel = HasSecondaryPanel;
-        var focus = FocusedValue;
-        var hover = HoveredValue;
-        RaisePropertyChanged(FocusedValueProperty, _lastNotifiedFocus, focus);
-        RaisePropertyChanged(HoveredValueProperty, _lastNotifiedHover, hover);
-        _lastNotifiedFocus = focus;
-        _lastNotifiedHover = hover;
-        RefreshHeaderContext();
-    }
-
-    private void RefreshHeaderContext()
-    {
-        var input = ((IDatePanelHost)this).ReadInput();
-        if (_headerInput is { } previous && previous.DisplayDate == input.DisplayDate &&
-            previous.PanelKind == input.PanelKind && previous.SelectionUnit == input.SelectionUnit &&
-            previous.PanelCount == input.PanelCount &&
-            Equals(previous.Culture, input.Culture))
-        {
-            return;
-        }
-
-        _headerInput = input;
-        var old = _headerContext;
-        var oldSecondary = _secondaryHeaderContext;
-        _headerContext = DateViewerHeaderContext.Create(input, _session.Apply);
-        var secondaryInput = input with { DisplayDate = DatePanelAlgorithms.Navigate(input.DisplayDate, input.PanelKind, 1) };
-        _secondaryHeaderContext = DateViewerHeaderContext.Create(secondaryInput, _session.Apply, 1);
-        RaisePropertyChanged(HeaderContextProperty, old, _headerContext);
-        RaisePropertyChanged(SecondaryHeaderContextProperty, oldSecondary, _secondaryHeaderContext);
-    }
+    #region 内部协作 API
 
     internal void SetHost(IDatePanelHost? host)
     {
@@ -210,6 +250,10 @@ public partial class RangeDateViewer : TemplatedControl, IDatePanelHost
         _session.SetAutomationNameFactory(factory);
 
     internal void RefreshContent() => _session.RefreshContent();
+
+    #endregion
+
+    #region 实现 IDatePanelHost 接口
 
     DatePanelInput IDatePanelHost.ReadInput() => _host?.ReadInput() ?? new()
     {
@@ -294,4 +338,58 @@ public partial class RangeDateViewer : TemplatedControl, IDatePanelHost
             HoveredValueChanged?.Invoke(this, new DateViewerHoveredValueChangedEventArgs(value));
         }
     }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 私有实现
+
+    private void OnLanguageChanged(object? sender, LanguageChangedEventArgs e)
+    {
+        _culture = _languageManager?.Current.FormattingCulture ?? CultureInfo.CurrentCulture;
+        _session.UpdateInput();
+    }
+
+    private void OnSessionChanged(object? sender, EventArgs e)
+    {
+        PseudoClasses.Set(":single-panel", !HasSecondaryPanel);
+        RaisePropertyChanged(HasSecondaryPanelProperty, _lastSecondaryPanel, HasSecondaryPanel);
+        _lastSecondaryPanel = HasSecondaryPanel;
+        var focus = FocusedValue;
+        var hover = HoveredValue;
+        RaisePropertyChanged(FocusedValueProperty, _lastNotifiedFocus, focus);
+        RaisePropertyChanged(HoveredValueProperty, _lastNotifiedHover, hover);
+        _lastNotifiedFocus = focus;
+        _lastNotifiedHover = hover;
+        RefreshHeaderContext();
+    }
+
+    private void RefreshHeaderContext()
+    {
+        var input = ((IDatePanelHost)this).ReadInput();
+        if (_headerInput is { } previous && previous.DisplayDate == input.DisplayDate &&
+            previous.PanelKind == input.PanelKind && previous.SelectionUnit == input.SelectionUnit &&
+            previous.PanelCount == input.PanelCount &&
+            Equals(previous.Culture, input.Culture))
+        {
+            return;
+        }
+
+        _headerInput = input;
+        var old = _headerContext;
+        var oldSecondary = _secondaryHeaderContext;
+        _headerContext = DateViewerHeaderContext.Create(input, _session.Apply);
+        var secondaryInput = input with { DisplayDate = DatePanelAlgorithms.Navigate(input.DisplayDate, input.PanelKind, 1) };
+        _secondaryHeaderContext = DateViewerHeaderContext.Create(secondaryInput, _session.Apply, 1);
+        RaisePropertyChanged(HeaderContextProperty, old, _headerContext);
+        RaisePropertyChanged(SecondaryHeaderContextProperty, oldSecondary, _secondaryHeaderContext);
+    }
+
+    #endregion
+
 }

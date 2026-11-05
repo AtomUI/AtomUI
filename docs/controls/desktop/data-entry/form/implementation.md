@@ -2,6 +2,14 @@
 
 本文档描述 Form 桌面版的表单项容器、布局配置传播、值读写、验证编排、反馈控件、按钮路由、动态表单项和 Token 资源边界。输入控件共享分层见 [输入控件共享架构设计](../input-control-architecture-design.md)，公共设计与 API 契约见 [Form 桌面版架构设计](overview.md)，Token 语义见 [Form Token 设计](token.md)，变化记录见 [Form Changelog](changelog.md)。
 
+## Own默认与兼容资源
+
+FormToken八字段由DependencyDefaultsV2 rev1静态方法求值，只读取有效Global或原常量，没有Own依赖边。标签颜色/字号、必填标记、colon margin、表单项及inline间距、vertical label margin沿原模板消费；字段与资源ID/slot不变。VerticalLabelPadding是兼容资源，保留默认与显式配置读取但无内置消费者，不在此次迁移中增加布局效果。
+
+## 公开Global表面
+
+Form的错误/警告消息默认画刷读取Form有效Global；FormItem自身间距、预设高度、图标及help/extra颜色读取FormItem有效Global，Decorator间距读取FormItemDecorator。既有FormToken标签/布局Own继续按原组合职责消费，不改为子identity的Own。原生实例/普通Style与专用Part Style优先级保持，退出样式恢复当前资源；透明值、清除、重模板、重挂和作用域迁移分别验证。
+
 ## 1. 实现定位
 
 Form 的实现以 `ItemsControl` 为容器基础，`FormItem` 作为字段级容器，`IFormItemAware` 作为输入控件接入边界。实现文档聚焦 Form 自身的状态编排、验证生命周期、模板接入和维护边界，不重新说明 Avalonia ItemsControl、Button 或通用输入控件的基础行为。
@@ -334,3 +342,9 @@ AOT 边界：
 | AXAML / Theme | 运行 Gallery Form showcase tests，并手动检查布局、feedback、required mark 和删除按钮。 |
 | Token | 检查 Form Token 语义、FormItem 标签和 spacing。 |
 | 文档改动 | 运行 `git diff --check`，检查相对链接存在。 |
+
+## 2026-10-30 输入家族主题出口
+
+表单根和两类 item 使用各自有效 Global 的可选 FontFamily/FontSize；未明确配置时仍继承实际父字体。标签继续 Form.Own.LabelFontSize/LabelColor 配方，附加正文与冒号使用根 Foreground。暗色正文/冒号按有效 ColorText 显示，实例属性与普通 Style 继续由 Avalonia 决定优先级。FormActionsItem 使用 FormItem 的 StyleKey；FormValidateFeedback 是无独立 Token identity 的内容适配表面，继承宿主排版。
+
+字体最终取值均在 ControlTheme 中声明；只读 IThemeInheritanceSource 桥用于取得 Avalonia 受保护的真实继承父，无字体代码绑定或每实例 Token 字典。FormItem 跨 Form 的 AddOwner 初始化在事件字段就绪后由静态构造器完成，保持两种构造入口安全。

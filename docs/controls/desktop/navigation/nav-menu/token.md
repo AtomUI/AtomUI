@@ -257,3 +257,12 @@ Token 变更要求：
 ## 未公开能力的兼容字段
 
 KeyGestureColor和十个DangerItem/DarkDangerItem颜色字段归Reserved。当前NavMenu条目/数据/状态与模板没有快捷键文字或危险项入口，不能把导出字段当作已公开能力。保留名称、类型、ID、原默认计算及配置往返；Token表/工作台标记历史保留且不可编辑。未来启用须另定义API、状态、Semantic Part和默认兼容合同。Menu的实际KeyGestureColor节点不受此分类影响。
+
+
+## 有效默认依赖与横向状态输入
+
+68 项 Own 使用 DependencyDefaultsV2、Revision 1。MenuPopupMaxHeight 和 InlineItemIndentUnit 的默认值分别读取有效 ItemHeight 的 8 倍和一半；显式下游及 0 优先，保留原默认与字段身份。
+
+HorizontalItemHoverColor/HorizontalItemHoverBg、HorizontalItemSelectedColor/HorizontalItemSelectedBg 作用于浅色横向顶层状态；禁用前景继续优先。HorizontalItemBorderRadius 控制横向顶层圆角，SubMenuItemBorderRadius 控制非顶层条目。TopLevelItemPopupMarginToAnchor 控制顶层弹层离锚点的间距；背景 transition 单独使用 ItemBackgroundMotionEasing，默认 CSS ease，其他 transition 曲线不随之替换。Own easing 通过 Control style Setter 上的绑定进入各 owner 的独立实例，不在 TransitionBase 上直接持有资源绑定。
+
+CollapsedWidth 为既有兼容字段，内联折叠布局使用 InlineCollapsedWidth。MenuSubMenuBg 为 Legacy：弹层表面与内联子菜单表面分别由 MenuPopupBg 与 SubMenuItemBg 拥有；不建立别名。11 项既有 Reserved 的能力边界不变。

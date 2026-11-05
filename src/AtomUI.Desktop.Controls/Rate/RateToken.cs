@@ -1,11 +1,12 @@
+using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class RateToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class RateToken : AbstractControlDesignToken, IControlTokenDefaults
 {
     
     /// <summary>
@@ -48,21 +49,33 @@ internal sealed class RateToken : AbstractControlDesignToken
     /// Star background color
     /// </summary>
     public Color StarBg { get; set; }
-    
-    public RateToken()
 
-    {
-    }
+    [ControlTokenDefault(nameof(CharacterFontFamily))]
+    private static FontFamily DefaultForCharacterFontFamily(in ControlTokenDefaultContext context) =>
+        FontFamily.Default;
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        StarColor      = EffectiveGlobalToken.ColorPalettes[PresetPrimaryColor.Yellow].Color6;
-        StarSize       = EffectiveGlobalToken.ControlHeight * 0.625;
-        StarSizeSM     = EffectiveGlobalToken.ControlHeightSM * 0.625;
-        StarSizeLG     = EffectiveGlobalToken.ControlHeightLG * 0.625;
-        StarHoverScale = 1.2;
-        StarBg         = EffectiveGlobalToken.ColorFillContent;
-    }
-    
+    [ControlTokenDefault(nameof(StarColor))]
+    private static Color DefaultForStarColor(in ControlTokenDefaultContext context) =>
+        PresetPalettes.GetPresetPalette(PresetPrimaryColor.Yellow, context.Appearance == ThemeAppearance.Dark).Primary;
+
+    [ControlTokenDefault(nameof(StarSize))]
+    private static double DefaultForStarSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight * 0.625;
+
+    [ControlTokenDefault(nameof(StarSizeSM))]
+    private static double DefaultForStarSizeSM(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightSM * 0.625;
+
+    [ControlTokenDefault(nameof(StarSizeLG))]
+    private static double DefaultForStarSizeLG(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG * 0.625;
+
+    [ControlTokenDefault(nameof(StarHoverScale))]
+    private static double DefaultForStarHoverScale(in ControlTokenDefaultContext context) =>
+        1.2;
+
+    [ControlTokenDefault(nameof(StarBg))]
+    private static Color DefaultForStarBg(in ControlTokenDefaultContext context) =>
+        context.Global.ColorFillContent;
+
 }

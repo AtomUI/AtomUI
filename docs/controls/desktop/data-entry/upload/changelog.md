@@ -2,6 +2,15 @@
 
 本文档记录 Upload 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-10-30
+
+- 接通 Upload、UploadTrigger、UploadDropZone、UploadDefaultDropArea 的有效 Global 字体，保留默认父继承与语义字号；正文前景进入实际文字。
+- 内部上传状态资产显式读取 Upload Global；圆形默认几何改用主题声明，修复配置清除后变方和形态往返遗留。
+
+- 公开表面Global接入各自注册identity，保留既有Own组合语义、模板、状态与原生样式优先级。
+
+- 十三个Own默认采用DependencyDefaultsV2 rev1，保留名称/类型和资源ID/slot、精确公式及常量；不改变上传任务或视觉状态。
+
 ## Unreleased
 
 - Design

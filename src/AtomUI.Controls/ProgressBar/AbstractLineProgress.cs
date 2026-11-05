@@ -61,6 +61,12 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     internal static readonly StyledProperty<IBrush?> PercentageLabelColorProperty =
         AvaloniaProperty.Register<AbstractLineProgress, IBrush?>(nameof(PercentageLabelColor));
 
+    internal static readonly StyledProperty<double> PresetFontSizeProperty =
+        AvaloniaProperty.Register<AbstractLineProgress, double>(nameof(PresetFontSize));
+
+    internal static readonly StyledProperty<double> PresetSmallFontSizeProperty =
+        AvaloniaProperty.Register<AbstractLineProgress, double>(nameof(PresetSmallFontSize));
+
     internal double LineProgressPadding
     {
         get => GetValue(LineProgressPaddingProperty);
@@ -85,6 +91,18 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         set => SetValue(PercentageLabelColorProperty, value);
     }
 
+    internal double PresetFontSize
+    {
+        get => GetValue(PresetFontSizeProperty);
+        set => SetValue(PresetFontSizeProperty, value);
+    }
+
+    internal double PresetSmallFontSize
+    {
+        get => GetValue(PresetSmallFontSizeProperty);
+        set => SetValue(PresetSmallFontSizeProperty, value);
+    }
+
     #endregion
 
     private protected SizeTypeThresholdValue _largeSizeTypeThresholdValue;
@@ -99,13 +117,14 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     {
         if (IsProgressInfoVisible)
         {
-            if (Status == ProgressStatus.Exception || MathUtils.AreClose(Value, Maximum))
+            if (Status == ProgressStatus.Exception || Status == ProgressStatus.Success || MathUtils.AreClose(Value, Maximum))
             {
                 // 只要图标
                 return new Size(LineInfoIconSize, LineInfoIconSize);
             }
 
-            return TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Value), fontSize, FontFamily);
+            return TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Percentage), fontSize,
+                FontFamily, FontStyle, FontWeight);
         }
         return default;
     }
@@ -119,6 +138,20 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.NotifyPropertyChanged(change);
+
+        if (change.Property == PresetFontSizeProperty || change.Property == PresetSmallFontSizeProperty ||
+            change.Property == FontFamilyProperty || change.Property == FontStyleProperty ||
+            change.Property == FontWeightProperty || change.Property == LineProgressPaddingProperty ||
+            change.Property == OrientationProperty)
+        {
+            _sizeTypeThresholdValuesInitialized = false;
+            var crossSize = Orientation == Orientation.Horizontal ? Height : Width;
+            if (this.IsAttachedToVisualTree() && !double.IsNaN(crossSize))
+            {
+                EffectiveSizeType = CalculateEffectiveSizeType(crossSize);
+                CalculateStrokeThickness();
+            }
+        }
 
         if (this.IsAttachedToVisualTree())
         {

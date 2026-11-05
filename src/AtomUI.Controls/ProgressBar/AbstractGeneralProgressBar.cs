@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 
@@ -351,21 +352,10 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     protected void CalculateSizeTypeThresholdValue()
     {
-        double fontSize   = default;
-        double fontSizeSM = default;
-        {
-            if (TokenResourceUtils.FindTokenResource(this, SharedTokenKind.FontSize) is double value)
-            {
-                fontSize = value;
-            }
-        }
-
-        {
-            if (TokenResourceUtils.FindTokenResource(this, SharedTokenKind.FontSizeSM) is double value)
-            {
-                fontSizeSM = value;
-            }
-        }
+        // These inputs are projected by the owning ControlTheme and stay current
+        // when that concrete owner's Global changes. FontSize is the pre-template fallback.
+        var fontSize = PresetFontSize > 0 ? PresetFontSize : FontSize;
+        var fontSizeSM = PresetSmallFontSize > 0 ? PresetSmallFontSize : FontSize;
         var defaultExtraInfoSize = CalculateExtraInfoSize(fontSize);
         var smallExtraInfoSize   = CalculateExtraInfoSize(fontSizeSM);
         if (Orientation == Orientation.Horizontal)
@@ -572,7 +562,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
     {
         if (IsProgressInfoVisible)
         {
-            if ((Status == ProgressStatus.Exception || MathUtils.AreClose(Value, Maximum)) &&
+            if ((Status == ProgressStatus.Exception || Status == ProgressStatus.Success || MathUtils.AreClose(Value, Maximum)) &&
                 !PercentPosition.IsInner)
             {
                 // 只要图标
@@ -616,6 +606,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
              change.Property == ValueProperty || change.Property == MinimumProperty ||
              change.Property == MaximumProperty || change.Property == ProgressTextFormatProperty ||
              change.Property == StatusProperty || change.Property == LineInfoIconSizeProperty ||
+             change.Property == LineExtraInfoMarginProperty || change.Property == LineProgressPaddingProperty ||
              change.Property == PercentPositionProperty || change.Property == OrientationProperty))
         {
             _extraInfoSize = CalculateExtraInfoSize(FontSize);
@@ -655,7 +646,8 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         }
     }
 
-    // 需要评估是否需要
+    // Runtime text geometry cannot be expressed by a theme Setter. Template priority
+    // keeps this computed fallback below the caller's MinWidth/MinHeight constraints.
     private void CalculateMinBarThickness()
     {
         var thickness     = LineProgressPadding * 2;
@@ -663,14 +655,14 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         if (Orientation == Orientation.Horizontal)
         {
             thickness += extraInfoSize.Height;
-            MinHeight =  thickness;
-            MinWidth  =  extraInfoSize.Width;
+            SetValue(MinHeightProperty, thickness, BindingPriority.Template);
+            SetValue(MinWidthProperty, extraInfoSize.Width, BindingPriority.Template);
         }
         else
         {
             thickness += extraInfoSize.Width;
-            MinWidth  =  thickness;
-            MinHeight =  extraInfoSize.Height;
+            SetValue(MinWidthProperty, thickness, BindingPriority.Template);
+            SetValue(MinHeightProperty, extraInfoSize.Height, BindingPriority.Template);
         }
     }
 

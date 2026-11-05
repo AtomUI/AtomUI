@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Globalization;
@@ -27,9 +28,9 @@ namespace AtomUI.Desktop.Controls;
     CalendarRootPseudoClass.ShowWeek)]
 [TemplatePart(DateViewerPart, typeof(DateViewer))]
 [TemplatePart(RangeBarPanelPart, typeof(CalendarRangeBarPanelControl))]
-public partial class Calendar : TemplatedControl
+public partial class Calendar : TemplatedControl, IThemeInheritanceSource
 {
-    #region Avalonia Properties
+    #region 公共属性定义
 
     public static readonly StyledProperty<DateTime> ValueProperty =
         AvaloniaProperty.Register<Calendar, DateTime>(nameof(Value), defaultBindingMode: BindingMode.TwoWay);
@@ -159,7 +160,7 @@ public partial class Calendar : TemplatedControl
 
     #endregion
 
-    #region Public Events
+    #region 公共事件定义
 
     /// <summary>选中日期实际变化时触发。程序直接设置 <see cref="Value"/> 不触发。</summary>
     public event EventHandler<CalendarValueChangedEventArgs>? ValueChanged;
@@ -172,21 +173,19 @@ public partial class Calendar : TemplatedControl
 
     #endregion
 
-    #region Internal Presentation Properties
+    #region 内部属性定义
 
     internal static readonly StyledProperty<Avalonia.Styling.ControlTheme?> DateCellThemeProperty =
         AvaloniaProperty.Register<Calendar, Avalonia.Styling.ControlTheme?>(nameof(DateCellTheme));
-    internal Avalonia.Styling.ControlTheme? DateCellTheme { get => GetValue(DateCellThemeProperty); set => SetValue(DateCellThemeProperty, value); }
+
     internal static readonly StyledProperty<IDataTemplate?> DefaultDateCellTemplateProperty =
         AvaloniaProperty.Register<Calendar, IDataTemplate?>(nameof(DefaultDateCellTemplate));
-    internal IDataTemplate? DefaultDateCellTemplate { get => GetValue(DefaultDateCellTemplateProperty); set => SetValue(DefaultDateCellTemplateProperty, value); }
+
     internal static readonly DirectProperty<Calendar, DateViewerPresentation> DatePresentationProperty =
         AvaloniaProperty.RegisterDirect<Calendar, DateViewerPresentation>(nameof(DatePresentation), calendar => calendar.DatePresentation);
-    internal DateViewerPresentation DatePresentation => Fullscreen ? DateViewerPresentation.Content : DateViewerPresentation.Compact;
 
     internal static readonly DirectProperty<Calendar, DateViewer?> EffectiveDateViewerProperty =
         AvaloniaProperty.RegisterDirect<Calendar, DateViewer?>(nameof(EffectiveDateViewer), calendar => calendar.EffectiveDateViewer);
-    internal DateViewer? EffectiveDateViewer => _dateViewer;
 
     internal static readonly StyledProperty<double> EffectiveMiniContentHeightProperty =
         AvaloniaProperty.Register<Calendar, double>(nameof(EffectiveMiniContentHeight), double.NaN);
@@ -196,6 +195,16 @@ public partial class Calendar : TemplatedControl
 
     internal static readonly StyledProperty<double> EffectiveRangeBarTopOffsetProperty =
         AvaloniaProperty.Register<Calendar, double>(nameof(EffectiveRangeBarTopOffset), double.NaN);
+
+    internal Avalonia.Styling.ControlTheme? DateCellTheme { get => GetValue(DateCellThemeProperty); set => SetValue(DateCellThemeProperty, value); }
+
+    internal IDataTemplate? DefaultDateCellTemplate { get => GetValue(DefaultDateCellTemplateProperty); set => SetValue(DefaultDateCellTemplateProperty, value); }
+
+    internal DateViewerPresentation DatePresentation => Fullscreen ? DateViewerPresentation.Content : DateViewerPresentation.Compact;
+
+    private DateViewer? _dateViewer;
+
+    internal DateViewer? EffectiveDateViewer => _dateViewer;
 
     internal double EffectiveMiniContentHeight
     {
@@ -215,7 +224,42 @@ public partial class Calendar : TemplatedControl
         set => SetValue(EffectiveRangeBarTopOffsetProperty, value);
     }
 
+    internal CultureInfo CurrentCulture { get; private set; } = CultureInfo.CurrentCulture;
+
     #endregion
+
+    #region 运行时字段
+
+    internal const string DateViewerPart = "PART_DateViewer";
+
+    internal const string RangeBarPanelPart = "PART_RangeBarPanel";
+
+    internal const string DefaultHeaderPart = "PART_DefaultHeader";
+
+    internal const string CustomHeaderPart = "PART_CustomHeader";
+
+    private CalendarRangeBarPanelControl? _rangeBarPanel;
+
+    private CalendarHeader? _defaultHeader;
+
+    private ContentControl? _customHeader;
+
+    private ICalendarPresentationAdapter _presentationAdapter = DefaultCalendarPresentationAdapter.Instance;
+
+    private IDisposable? _miniContentHeightBinding;
+
+    private IDisposable? _fullCellMinHeightBinding;
+
+    private IDisposable? _rangeBarTopOffsetBinding;
+
+    private readonly Dictionary<CalendarRangeBar, CalendarRangeBarAttachment> _rangeBarAttachments =
+        new(ReferenceEqualityComparer.Instance);
+
+    private ILanguageManager? _subscribedLanguageManager;
+
+    #endregion
+
+    #region 构造函数
 
     public Calendar()
     {
@@ -224,23 +268,9 @@ public partial class Calendar : TemplatedControl
         BindPresentationMetrics();
     }
 
-    internal const string DateViewerPart = "PART_DateViewer";
-    internal const string RangeBarPanelPart = "PART_RangeBarPanel";
-    internal const string DefaultHeaderPart = "PART_DefaultHeader";
-    internal const string CustomHeaderPart = "PART_CustomHeader";
+    #endregion
 
-    private DateViewer? _dateViewer;
-    private CalendarRangeBarPanelControl? _rangeBarPanel;
-    private CalendarHeader? _defaultHeader;
-    private ContentControl? _customHeader;
-    private ICalendarPresentationAdapter _presentationAdapter = DefaultCalendarPresentationAdapter.Instance;
-    private IDisposable? _miniContentHeightBinding;
-    private IDisposable? _fullCellMinHeightBinding;
-    private IDisposable? _rangeBarTopOffsetBinding;
-    private readonly Dictionary<CalendarRangeBar, CalendarRangeBarAttachment> _rangeBarAttachments =
-        new(ReferenceEqualityComparer.Instance);
-
-    internal CultureInfo CurrentCulture { get; private set; } = CultureInfo.CurrentCulture;
+    #region 公共与保护方法
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -281,20 +311,6 @@ public partial class Calendar : TemplatedControl
         UpdateRootPseudoClasses();
     }
 
-    /// <summary>
-    /// 为自定义 HeaderTemplate 提供强类型 <see cref="CalendarHeaderContext"/> 作为 DataContext，
-    /// 使模板能通过命令提交 Value/Mode。Value/Mode 变化时重建 context。
-    /// </summary>
-    private void RefreshCustomHeaderContent()
-    {
-        if (_customHeader is not null)
-        {
-            _customHeader.Content = HeaderTemplate is null ? null : BuildHeaderContext();
-        }
-    }
-
-    private ILanguageManager? _subscribedLanguageManager;
-
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -314,6 +330,161 @@ public partial class Calendar : TemplatedControl
         base.OnDetachedFromVisualTree(e);
         DetachAllRangeBars();
         DetachLanguageListener();
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == ModeProperty)
+        {
+            RefreshCustomHeaderContent();
+            _dateViewer?.RefreshHost();
+            UpdateRangeBarPanelVisibility();
+            UpdateRootPseudoClasses();
+        }
+        else if (change.Property == ValueProperty)
+        {
+            var value = (DateTime)change.NewValue!;
+            if (value != value.Date)
+            {
+                SetCurrentValue(ValueProperty, value.Date);
+                return;
+            }
+
+            RefreshCustomHeaderContent();
+            _dateViewer?.RefreshHost();
+        }
+        else if (change.Property == FullscreenProperty ||
+                 change.Property == ShowWeekProperty)
+        {
+            RaisePropertyChanged(DatePresentationProperty, default, DatePresentation);
+            _dateViewer?.RefreshHost();
+            UpdateRangeBarPanelVisibility();
+            UpdateRootPseudoClasses();
+        }
+        else if (change.Property == HeaderTemplateProperty)
+        {
+            RefreshCustomHeaderContent();
+        }
+        else if (change.Property == ValidRangeProperty || change.Property == DisabledDateProperty)
+        {
+            _dateViewer?.RefreshHost();
+        }
+    }
+
+    #endregion
+
+    #region 内部协作 API
+
+    internal void SetPresentationAdapter(ICalendarPresentationAdapter presentationAdapter)
+    {
+        ArgumentNullException.ThrowIfNull(presentationAdapter);
+        if (ReferenceEquals(_presentationAdapter, presentationAdapter))
+        {
+            return;
+        }
+
+        _presentationAdapter = presentationAdapter;
+        BindPresentationMetrics();
+        _dateViewer?.RefreshHost();
+        _dateViewer?.RefreshContent();
+
+        if (_defaultHeader is not null)
+        {
+            _defaultHeader.PresentationAdapter = presentationAdapter;
+        }
+
+        RefreshCustomHeaderContent();
+    }
+
+    internal void RefreshPresentation()
+    {
+        _dateViewer?.RefreshHost();
+        _dateViewer?.RefreshContent();
+        _defaultHeader?.RefreshPresentation();
+        RefreshCustomHeaderContent();
+    }
+
+    /// <summary>
+    /// 处理一次有效用户选择：写入 Value，并按 PanelChanged -> ValueChanged -> Selected 的顺序触发事件。
+    /// </summary>
+    internal void CommitUserSelection(DateTime target, CalendarSelectSource source)
+    {
+        target = target.Date;
+        var oldValue = Value.Date;
+        var panelChanged = Mode == CalendarMode.Year
+            ? oldValue.Year != target.Year
+            : oldValue.Year != target.Year || oldValue.Month != target.Month;
+
+        SetCurrentValue(ValueProperty, target);
+
+        if (panelChanged)
+        {
+            PanelChanged?.Invoke(this, new CalendarPanelChangedEventArgs(target, Mode));
+        }
+
+        if (target != oldValue)
+        {
+            ValueChanged?.Invoke(this, new CalendarValueChangedEventArgs(oldValue, target));
+        }
+
+        Selected?.Invoke(this, new CalendarSelectedEventArgs(target, source));
+    }
+
+    /// <summary>
+    /// 处理一次用户 Mode 切换：写入 Mode 并触发一次 <see cref="PanelChanged"/>。
+    /// 不触发 ValueChanged / Selected。
+    /// </summary>
+    internal void CommitModeChange(CalendarMode mode)
+    {
+        if (mode == Mode)
+        {
+            return;
+        }
+
+        SetCurrentValue(ModeProperty, mode);
+
+        PanelChanged?.Invoke(this, new CalendarPanelChangedEventArgs(Value.Date, mode));
+    }
+
+    /// <summary>
+    /// 为自定义 Header 模板构建强类型上下文。命令的 CanExecute 校验参数类型；
+    /// ChangeValueCommand 以 <see cref="CalendarSelectSource.Customize"/> 提交，且不自动应用
+    /// ValidRange 或 DisabledDate（约束由自定义 Header 负责）。
+    /// </summary>
+    internal CalendarHeaderContext BuildHeaderContext()
+    {
+        var changeValue = new CalendarRelayCommand(
+            execute: p => CommitUserSelection((DateTime)p!, CalendarSelectSource.Customize),
+            canExecute: p => p is DateTime);
+
+        var changeMode = new CalendarRelayCommand(
+            execute: p => CommitModeChange((CalendarMode)p!),
+            canExecute: p => p is CalendarMode mode && (mode == CalendarMode.Month || mode == CalendarMode.Year));
+
+        return _presentationAdapter.CreateHeaderContext(this, changeValue, changeMode);
+    }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 私有实现
+
+    /// <summary>
+    /// 为自定义 HeaderTemplate 提供强类型 <see cref="CalendarHeaderContext"/> 作为 DataContext，
+    /// 使模板能通过命令提交 Value/Mode。Value/Mode 变化时重建 context。
+    /// </summary>
+    private void RefreshCustomHeaderContent()
+    {
+        if (_customHeader is not null)
+        {
+            _customHeader.Content = HeaderTemplate is null ? null : BuildHeaderContext();
+        }
     }
 
     private void AttachRangeBars(IEnumerable<CalendarRangeBar> rangeBars)
@@ -506,27 +677,6 @@ public partial class Calendar : TemplatedControl
         RefreshCustomHeaderContent();
     }
 
-    internal void SetPresentationAdapter(ICalendarPresentationAdapter presentationAdapter)
-    {
-        ArgumentNullException.ThrowIfNull(presentationAdapter);
-        if (ReferenceEquals(_presentationAdapter, presentationAdapter))
-        {
-            return;
-        }
-
-        _presentationAdapter = presentationAdapter;
-        BindPresentationMetrics();
-        _dateViewer?.RefreshHost();
-        _dateViewer?.RefreshContent();
-
-        if (_defaultHeader is not null)
-        {
-            _defaultHeader.PresentationAdapter = presentationAdapter;
-        }
-
-        RefreshCustomHeaderContent();
-    }
-
     private void BindPresentationMetrics()
     {
         // Adapter resource keys are computed at runtime (Gregorian/lunar); a fixed AXAML resource cannot express this switch.
@@ -546,14 +696,6 @@ public partial class Calendar : TemplatedControl
             new DynamicResourceExtension(metrics.RangeBarTopOffsetResourceKey));
     }
 
-    internal void RefreshPresentation()
-    {
-        _dateViewer?.RefreshHost();
-        _dateViewer?.RefreshContent();
-        _defaultHeader?.RefreshPresentation();
-        RefreshCustomHeaderContent();
-    }
-
     private void OnHeaderYearSelected(object? sender, DateTime target) =>
         CommitUserSelection(target, CalendarSelectSource.Year);
 
@@ -563,46 +705,6 @@ public partial class Calendar : TemplatedControl
     private void OnHeaderModeSwitched(object? sender, CalendarMode mode) =>
         CommitModeChange(mode);
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == ModeProperty)
-        {
-            RefreshCustomHeaderContent();
-            _dateViewer?.RefreshHost();
-            UpdateRangeBarPanelVisibility();
-            UpdateRootPseudoClasses();
-        }
-        else if (change.Property == ValueProperty)
-        {
-            var value = (DateTime)change.NewValue!;
-            if (value != value.Date)
-            {
-                SetCurrentValue(ValueProperty, value.Date);
-                return;
-            }
-
-            RefreshCustomHeaderContent();
-            _dateViewer?.RefreshHost();
-        }
-        else if (change.Property == FullscreenProperty ||
-                 change.Property == ShowWeekProperty)
-        {
-            RaisePropertyChanged(DatePresentationProperty, default, DatePresentation);
-            _dateViewer?.RefreshHost();
-            UpdateRangeBarPanelVisibility();
-            UpdateRootPseudoClasses();
-        }
-        else if (change.Property == HeaderTemplateProperty)
-        {
-            RefreshCustomHeaderContent();
-        }
-        else if (change.Property == ValidRangeProperty || change.Property == DisabledDateProperty)
-        {
-            _dateViewer?.RefreshHost();
-        }
-    }
-
     private void UpdateRootPseudoClasses()
     {
         PseudoClasses.Set(CalendarRootPseudoClass.Fullscreen, Fullscreen);
@@ -610,66 +712,6 @@ public partial class Calendar : TemplatedControl
         PseudoClasses.Set(CalendarRootPseudoClass.Month, Mode == CalendarMode.Month);
         PseudoClasses.Set(CalendarRootPseudoClass.Year, Mode == CalendarMode.Year);
         PseudoClasses.Set(CalendarRootPseudoClass.ShowWeek, ShowWeek);
-    }
-
-    /// <summary>
-    /// 处理一次有效用户选择：写入 Value，并按 PanelChanged -> ValueChanged -> Selected 的顺序触发事件。
-    /// </summary>
-    internal void CommitUserSelection(DateTime target, CalendarSelectSource source)
-    {
-        target = target.Date;
-        var oldValue = Value.Date;
-        var panelChanged = Mode == CalendarMode.Year
-            ? oldValue.Year != target.Year
-            : oldValue.Year != target.Year || oldValue.Month != target.Month;
-
-        SetCurrentValue(ValueProperty, target);
-
-        if (panelChanged)
-        {
-            PanelChanged?.Invoke(this, new CalendarPanelChangedEventArgs(target, Mode));
-        }
-
-        if (target != oldValue)
-        {
-            ValueChanged?.Invoke(this, new CalendarValueChangedEventArgs(oldValue, target));
-        }
-
-        Selected?.Invoke(this, new CalendarSelectedEventArgs(target, source));
-    }
-
-    /// <summary>
-    /// 处理一次用户 Mode 切换：写入 Mode 并触发一次 <see cref="PanelChanged"/>。
-    /// 不触发 ValueChanged / Selected。
-    /// </summary>
-    internal void CommitModeChange(CalendarMode mode)
-    {
-        if (mode == Mode)
-        {
-            return;
-        }
-
-        SetCurrentValue(ModeProperty, mode);
-
-        PanelChanged?.Invoke(this, new CalendarPanelChangedEventArgs(Value.Date, mode));
-    }
-
-    /// <summary>
-    /// 为自定义 Header 模板构建强类型上下文。命令的 CanExecute 校验参数类型；
-    /// ChangeValueCommand 以 <see cref="CalendarSelectSource.Customize"/> 提交，且不自动应用
-    /// ValidRange 或 DisabledDate（约束由自定义 Header 负责）。
-    /// </summary>
-    internal CalendarHeaderContext BuildHeaderContext()
-    {
-        var changeValue = new CalendarRelayCommand(
-            execute: p => CommitUserSelection((DateTime)p!, CalendarSelectSource.Customize),
-            canExecute: p => p is DateTime);
-
-        var changeMode = new CalendarRelayCommand(
-            execute: p => CommitModeChange((CalendarMode)p!),
-            canExecute: p => p is CalendarMode mode && (mode == CalendarMode.Month || mode == CalendarMode.Year));
-
-        return _presentationAdapter.CreateHeaderContext(this, changeValue, changeMode);
     }
 
     private sealed class CalendarRangeBarAttachment : IDisposable
@@ -688,4 +730,7 @@ public partial class Calendar : TemplatedControl
             _resourceHostAttachment.Dispose();
         }
     }
+
+    #endregion
+
 }

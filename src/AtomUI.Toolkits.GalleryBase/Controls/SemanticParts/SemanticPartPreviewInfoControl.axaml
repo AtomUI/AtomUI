@@ -5,7 +5,7 @@
     xmlns:gallery="https://atomui.net/toolkits/gallery-base"
     x:Class="AtomUI.Toolkits.GalleryBase.Controls.SemanticPartPreviewInfoControl"
     x:DataType="gallery:SemanticPartPreviewItem">
-    <Border Padding="16">
+    <Border Padding="{gallery:SemanticPartPreviewTokenResource InfoPadding}">
         <StackPanel Spacing="14">
             <atom:TextBlock Text="{gallery:SemanticPartPreviewLangResource PartDetailsTitle}"
                             FontWeight="SemiBold" />
@@ -17,7 +17,7 @@
                                 Grid.Column="0"
                                 Text="{gallery:SemanticPartPreviewLangResource SelectorLabel}"
                                 VerticalAlignment="Center"
-                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                                Foreground="{gallery:SemanticPartPreviewTokenResource ColorTextSecondary}" />
                 <atom:TextBlock Grid.Row="0"
                                 Grid.Column="1"
                                 Text="{Binding Selector}"
@@ -29,7 +29,7 @@
                                 Grid.Column="0"
                                 Text="{gallery:SemanticPartPreviewLangResource SelectorRouteLabel}"
                                 VerticalAlignment="Center"
-                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                                Foreground="{gallery:SemanticPartPreviewTokenResource ColorTextSecondary}" />
                 <atom:TextBlock Grid.Row="1"
                                 Grid.Column="1"
                                 Text="{Binding SelectorRoute}"
@@ -41,7 +41,7 @@
                                 Grid.Column="0"
                                 Text="{gallery:SemanticPartPreviewLangResource ContractTypeLabel}"
                                 VerticalAlignment="Center"
-                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                                Foreground="{gallery:SemanticPartPreviewTokenResource ColorTextSecondary}" />
                 <atom:TextBlock Grid.Row="2"
                                 Grid.Column="1"
                                 Text="{Binding ContractType}"
@@ -53,7 +53,7 @@
                                 Grid.Column="0"
                                 Text="{gallery:SemanticPartPreviewLangResource StyleTypeLabel}"
                                 VerticalAlignment="Center"
-                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                                Foreground="{gallery:SemanticPartPreviewTokenResource ColorTextSecondary}" />
                 <atom:TextBlock Grid.Row="3"
                                 Grid.Column="1"
                                 Text="{Binding StyleType}"
@@ -65,7 +65,7 @@
                                 Grid.Column="0"
                                 Text="{gallery:SemanticPartPreviewLangResource CardinalityLabel}"
                                 VerticalAlignment="Center"
-                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                                Foreground="{gallery:SemanticPartPreviewTokenResource ColorTextSecondary}" />
                 <atom:TextBlock Grid.Row="4"
                                 Grid.Column="1"
                                 Text="{Binding Cardinality}"
@@ -75,7 +75,7 @@
                                 Grid.Column="0"
                                 Text="{gallery:SemanticPartPreviewLangResource CustomizationLabel}"
                                 VerticalAlignment="Center"
-                                Foreground="{atom:SharedTokenResource ColorTextSecondary}" />
+                                Foreground="{gallery:SemanticPartPreviewTokenResource ColorTextSecondary}" />
                 <atom:TextBlock Grid.Row="5"
                                 Grid.Column="1"
                                 Text="{Binding Customization}"

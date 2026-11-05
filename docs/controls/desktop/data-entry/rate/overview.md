@@ -170,3 +170,7 @@ Rate 的视觉选项通过 public API 归一为 theme variables、伪类或模�
 ## 主题消费合同（2026-10-23）
 
 字符/字符串 Character 属于 glyph 内容，字体入口是原生根 FontFamily；主题默认来自 Own `CharacterFontFamily`，默认 FontFamily.Default 保留原有平台字形。它独立于普通界面文字的全局 FontFamily，可由该 Own 字段或根原生属性/Style 精确覆盖；默认 SVG 星形不受字体影响。
+
+## 有效主题输入
+
+三档尺寸沿 Rate→RateItemsControl→RateItem 传递；字符支持明确 Own/Global 字体与实际继承，字形大小仍由星形几何控制。未新增 Part 或改变输入和半星语义。

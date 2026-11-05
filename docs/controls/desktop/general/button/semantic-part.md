@@ -83,7 +83,7 @@ Button 公开 `root`、`icon` 和 `content` 三个 Semantic Part。Part 名称�
 
 - 承载 `ButtonType`、`Color`、`Variant`、危险态、加载态、尺寸、形状和命令等公共状态。
 - 承载 `:pointerover`、`:pressed`、`:disabled` 及 Button 专属伪类。
-- 提供最终 `Background`、`BorderBrush`、`Foreground`、`Padding`、`Effect`、圆角和尺寸等根视觉属性。
+- 提供最终 `Background`、`BorderBrush`、`Foreground`、`Padding`、`BoxShadow`、`Effect`、圆角和尺寸等根视觉属性。
 - 作为 `icon`、`content` owner-scoped Selector 的作用域边界。
 
 适合通过 root 定制 Button 整体背景、边框、阴影、内边距、透明度和状态组合。需要根据 Button 状态改变根样式时，应在
@@ -91,6 +91,8 @@ owner Selector 上组合公开属性或伪类。Button 的 Wave 在播放前读�
 交互反馈使用同一视觉事实源。
 
 root 不表示模板中的 Frame、阴影层、Wave 节点或布局容器；这些节点的名称、数量和层级不属于 root 契约。
+
+`BoxShadow`直接控制既有阴影层，默认跟随主题；原生Root Style/local可以覆盖，显式空集合和清除遵循原生优先级。它不新增shadow Part，也不要求应用访问内部阴影节点。`Effect`仍是独立的整个视觉效果入口。
 
 ### 2.2 icon
 

@@ -11,9 +11,9 @@
         </ControlTheme.BasedOn>
 
         <Setter Property="ColorTextLabel"
-                Value="{atom:SharedTokenResource ColorTextLabel}" />
+                Value="{atom:OwnerTokenResource ColorTextLabel}" />
         <Setter Property="ColorTextLightSolid"
-                Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+                Value="{atom:OwnerTokenResource ColorTextLightSolid}" />
 
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:ProgressBar">
@@ -116,6 +116,9 @@
         </Style>
 
         <Style Selector="^:labelinner">
+            <Style Selector="^ /template/ LayoutTransformControl#PART_LayoutTransformControl">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
             <!-- 如果是 Inner 模式，成功状态下不显示成功 icon -->
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IsVisible" Value="False" />

@@ -11,31 +11,37 @@
             <ControlTemplate TargetType="{x:Type gallery:SemanticPartPreview}">
                 <Grid>
                     <Border Name="PART_InspectionPanel"
-                            MinHeight="360"
-                            Margin="24,20,24,32"
+                            MinHeight="{gallery:SemanticPartPreviewTokenResource InspectionMinHeight}"
+                            Margin="{gallery:SemanticPartPreviewTokenResource InspectionMargin}"
                             VerticalAlignment="Top"
-                            Background="{atom:SharedTokenResource ColorBgContainer}"
-                            BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
-                            BorderThickness="1">
+                            Background="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type gallery:SemanticPartPreview}}"
+                            BorderBrush="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type gallery:SemanticPartPreview}}"
+                            BorderThickness="{atom:OwnerTokenResource Kind=BorderThickness, AnchorControlType={x:Type gallery:SemanticPartPreview}}">
                         <!--  内容行用星号:Auto 行会以无穷高度测量布局面板,
                               宿主 MaxHeight 钳制无法传导,固定高度内容会溢出视口  -->
                         <Grid RowDefinitions="*,Auto">
                             <gallery:SemanticPartPreviewLayoutPanel Name="PART_Layout"
                                                                     Grid.Row="0"
-                                                                    CompactBreakpoint="820"
                                                                     Spacing="0"
                                                                     PreviewStageMinHeight="{TemplateBinding PreviewStageMinHeight}"
                                                                     PaneMaxHeight="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=MaxHeight, Converter={x:Static gallery:SemanticPartPreview.PaneMaxHeightConverter}}">
+                                <gallery:SemanticPartPreviewLayoutPanel.CompactBreakpoint>
+                                    <MultiBinding Converter="{x:Static gallery:SemanticPartPreviewBreakpointConverter.Instance}"
+                                                  ConverterParameter="{x:Static gallery:SemanticPartPreviewBreakpointConverter.OuterBreakpoint}">
+                                        <CompiledBindingExtension Path="#PART_InspectionPanel.Margin" />
+                                        <CompiledBindingExtension Path="#PART_InspectionPanel.BorderThickness" />
+                                    </MultiBinding>
+                                </gallery:SemanticPartPreviewLayoutPanel.CompactBreakpoint>
                                 <Border Name="PART_PreviewStage"
-                                        Background="{atom:SharedTokenResource ColorBgLayout}"
-                                        Padding="16">
+                                        Background="{atom:OwnerTokenResource Kind=ColorBgLayout, AnchorControlType={x:Type gallery:SemanticPartPreview}}"
+                                        Padding="{gallery:SemanticPartPreviewTokenResource StagePadding}">
                                     <Grid RowDefinitions="Auto,*">
                                         <TextBlock Name="PART_Title"
-                                                   Margin="0,0,0,12"
+                                                   Margin="{gallery:SemanticPartPreviewTokenResource TitleMargin}"
                                                    Text="{TemplateBinding Title}"
-                                                   FontSize="16"
+                                                   FontSize="{gallery:SemanticPartPreviewTokenResource TitleFontSize}"
                                                    FontWeight="SemiBold"
-                                                   Foreground="{atom:SharedTokenResource ColorText}"
+                                                   Foreground="{atom:OwnerTokenResource Kind=ColorText, AnchorControlType={x:Type gallery:SemanticPartPreview}}"
                                                    IsVisible="{TemplateBinding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                                         <ContentPresenter Name="PART_PreviewContentHost"
                                                           Grid.Row="1"
@@ -49,8 +55,8 @@
 
                                 <Border Name="PART_PartsPane"
                                         ClipToBounds="True"
-                                        BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
-                                        BorderThickness="1,0,0,0">
+                                        BorderBrush="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type gallery:SemanticPartPreview}}"
+                                        BorderThickness="{gallery:SemanticPartPreviewTokenResource VerticalDividerThickness}">
                                     <atom:ScrollViewer VerticalScrollBarVisibility="Auto"
                                                        AllowAutoHide="False"
                                                        BringIntoViewOnFocusChange="False">
@@ -72,13 +78,13 @@
 
                             <Border Name="PART_DetailsPane"
                                     Grid.Row="1"
-                                    Background="{atom:SharedTokenResource ColorFillAlter}"
-                                    BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
-                                    BorderThickness="0,1,0,0"
+                                    Background="{atom:OwnerTokenResource Kind=ColorFillAlter, AnchorControlType={x:Type gallery:SemanticPartPreview}}"
+                                    BorderBrush="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type gallery:SemanticPartPreview}}"
+                                    BorderThickness="{gallery:SemanticPartPreviewTokenResource HorizontalDividerThickness}"
                                     IsVisible="{TemplateBinding CodeContent, Converter={x:Static ObjectConverters.IsNotNull}}">
                                 <DockPanel LastChildFill="True">
                                     <Border Name="PART_InfoPane"
-                                            BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}">
+                                            BorderBrush="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type gallery:SemanticPartPreview}}">
                                         <ContentPresenter Name="PART_InfoContent"
                                                           Content="{TemplateBinding InfoContent}" />
                                     </Border>
@@ -93,26 +99,26 @@
         </Setter>
 
         <Style Selector="^:compact /template/ Border#PART_InspectionPanel">
-            <Setter Property="Margin" Value="16,16,16,24" />
+            <Setter Property="Margin" Value="{gallery:SemanticPartPreviewTokenResource CompactInspectionMargin}" />
         </Style>
         <Style Selector="^:compact /template/ TextBlock#PART_Title">
-            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Margin" Value="{gallery:SemanticPartPreviewTokenResource CompactTitleMargin}" />
         </Style>
         <Style Selector="^:compact /template/ Border#PART_PreviewStage">
-            <Setter Property="Padding" Value="20" />
+            <Setter Property="Padding" Value="{gallery:SemanticPartPreviewTokenResource CompactStagePadding}" />
         </Style>
         <Style Selector="^:compact /template/ Border#PART_PartsPane">
-            <Setter Property="BorderThickness" Value="0,1,0,0" />
+            <Setter Property="BorderThickness" Value="{gallery:SemanticPartPreviewTokenResource HorizontalDividerThickness}" />
         </Style>
         <Style Selector="^ /template/ Border#PART_InfoPane">
             <Setter Property="Width" Value="340" />
             <Setter Property="DockPanel.Dock" Value="Left" />
-            <Setter Property="BorderThickness" Value="0,0,1,0" />
+            <Setter Property="BorderThickness" Value="{gallery:SemanticPartPreviewTokenResource InfoDividerThickness}" />
         </Style>
         <Style Selector="^:compact /template/ Border#PART_InfoPane">
             <Setter Property="Width" Value="NaN" />
             <Setter Property="DockPanel.Dock" Value="Top" />
-            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="BorderThickness" Value="{gallery:SemanticPartPreviewTokenResource CompactInfoDividerThickness}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -345,3 +345,8 @@ git diff --check
 
 `ListBoxItem` 在构造阶段抑制过渡，覆盖生成容器挂载后才写入的初始选择；自身加载完成后恢复最新集合。父控件在清理容器之前复位会话，使虚拟化清理和下次挂载共用初始化边界。
 共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。
+
+
+## 有效主题输入与生命周期
+
+根与条目从各自注册身份读取有效 Global；内部选中标记的目标是 IconTemplatePresenter。过滤中的禁用正文与普通呈现器均消费 ItemDisabledColor，高亮颜色保持独立。字体族和根字号采用可选覆盖，未显式配置时保留实际父级继承与实例 Local 优先级。

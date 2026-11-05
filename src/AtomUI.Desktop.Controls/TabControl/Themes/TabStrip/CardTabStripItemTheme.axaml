@@ -37,14 +37,14 @@
 
         <Setter Property="Margin" Value="{atom:TabControlTokenResource HorizontalItemMargin}" />
         <Setter Property="Background" Value="{atom:TabControlTokenResource CardBg}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type atom:TabStripItem}}" />
 
         <Style Selector="^:selected">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type atom:TabStripItem}}" />
         </Style>
 
         <Style Selector="^[IsTabReorderDragging=True]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type atom:TabStripItem}}" />
         </Style>
 
         <Style Selector="^[TabStripPlacement=Top], ^[TabStripPlacement=Bottom]">
@@ -107,7 +107,7 @@
 
         <Style Selector="^:disabled">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:OwnerTokenResource Kind=ColorBgContainerDisabled, AnchorControlType={x:Type atom:TabStripItem}}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

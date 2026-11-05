@@ -1,5 +1,9 @@
 # Drawer Changelog
 
+## 2026-11-04
+
+- Custom DialogSize 的默认降为 Style 优先级，支持普通 Style 的实际 dialog 尺寸接管与撤回；三档及百分比/placement 协议保持。
+
 本文档记录 Drawer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-11-01

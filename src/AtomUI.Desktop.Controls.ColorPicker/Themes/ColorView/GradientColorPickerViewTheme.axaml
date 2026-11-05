@@ -32,7 +32,7 @@
                                                  IsVisible="{TemplateBinding IsPaletteGroupEnabled}" />
                         <StackPanel Orientation="Vertical"
                                     ClipToBounds="False"
-                                    Spacing="{atom:SharedTokenResource SpacingXS}">
+                                    Spacing="{atom:OwnerTokenResource SpacingXS}">
                             <atom:ColorBlock Name="PART_ClearColor"
                                              HorizontalAlignment="Right"
                                              IsEmptyColorMode="True"
@@ -89,7 +89,7 @@
                             <StackPanel Name="PART_ConfirmationFooter"
                                         Orientation="Horizontal"
                                         HorizontalAlignment="Right"
-                                        Spacing="{atom:SharedTokenResource SpacingXS}"
+                                        Spacing="{atom:OwnerTokenResource SpacingXS}"
                                         IsVisible="{TemplateBinding IsNeedConfirm}">
                                 <atom:Button Name="PART_CancelButton"
                                              SizeType="Small"

@@ -14,6 +14,9 @@
             </MultiBinding>
         </Setter>
 
+    <Setter Property="BoxShadow"
+            Value="{CompiledBinding $self.VariantShadow, DataType={x:Type atom:DropdownButton}}" />
+
     <Style Selector="^:is(atom|Button)">
         <Style Selector="^[ButtonType=Default], ^[ButtonType=Link], ^[ButtonType=Primary], ^[ButtonType=Text]">
             <Setter Property="Template">
@@ -282,19 +285,35 @@
             </Style>
         </Style>
 
-        <Style Selector="^[SizeType=Custom]">
-            <Setter Property="Height" Value="{atom:DropdownButtonTokenResource ControlHeight}" />
-            <Setter Property="FontSize" Value="{atom:DropdownButtonTokenResource ContentFontSize}" />
-            <Setter Property="CornerRadius" Value="{atom:DropdownButtonTokenResource BorderRadius}" />
-            <Setter Property="IconWidth" Value="{atom:DropdownButtonTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:DropdownButtonTokenResource IconSize}" />
-            <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{atom:DropdownButtonTokenResource ContentPadding}" />
-            </Style>
-            <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{atom:DropdownButtonTokenResource IconOnyPadding}" />
-            </Style>
-        </Style>
+        <Setter Property="Height" Value="{atom:DropdownButtonTokenResource ControlHeight}" />
+        <Setter Property="FontSize" Value="{atom:DropdownButtonTokenResource ContentFontSize}" />
+        <Setter Property="CornerRadius" Value="{atom:DropdownButtonTokenResource BorderRadius}" />
+        <Setter Property="IconWidth">
+            <MultiBinding Converter="{x:Static atom:ButtonThemeConverters.IconOnlyValue}">
+                <CompiledBindingExtension Path="$self.Content" />
+                <CompiledBindingExtension Path="$self.Icon" />
+                <atom:DropdownButtonTokenResource Kind="IconSize" />
+                <atom:DropdownButtonTokenResource Kind="OnlyIconSize" />
+                <CompiledBindingExtension Path="$self.IsLoading" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="IconHeight">
+            <MultiBinding Converter="{x:Static atom:ButtonThemeConverters.IconOnlyValue}">
+                <CompiledBindingExtension Path="$self.Content" />
+                <CompiledBindingExtension Path="$self.Icon" />
+                <atom:DropdownButtonTokenResource Kind="IconSize" />
+                <atom:DropdownButtonTokenResource Kind="OnlyIconSize" />
+                <CompiledBindingExtension Path="$self.IsLoading" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Padding">
+            <MultiBinding Converter="{x:Static atom:ButtonThemeConverters.IconOnlyValue}">
+                <CompiledBindingExtension Path="$self.Content" />
+                <CompiledBindingExtension Path="$self.Icon" />
+                <atom:DropdownButtonTokenResource Kind="ContentPadding" />
+                <atom:DropdownButtonTokenResource Kind="IconOnyPadding" />
+            </MultiBinding>
+        </Setter>
 
         <Style Selector="^:icononly">
             <Style Selector="^ /template/ atom|IconPresenter#PART_ButtonIcon, ^ /template/ atom|Icon#PART_LoadingIcon">
@@ -307,10 +326,6 @@
             <Setter Property="IconHeight" Value="{atom:DropdownButtonTokenResource OnlyIconSizeLG}" />
         </Style>
         <Style Selector="^:icononly:loading[SizeType=Middle]">
-            <Setter Property="IconWidth" Value="{atom:DropdownButtonTokenResource OnlyIconSize}" />
-            <Setter Property="IconHeight" Value="{atom:DropdownButtonTokenResource OnlyIconSize}" />
-        </Style>
-        <Style Selector="^:icononly:loading[SizeType=Custom]">
             <Setter Property="IconWidth" Value="{atom:DropdownButtonTokenResource OnlyIconSize}" />
             <Setter Property="IconHeight" Value="{atom:DropdownButtonTokenResource OnlyIconSize}" />
         </Style>
@@ -421,7 +436,7 @@
 
         <Style Selector="^ /template/ Border#ShadowsFrame">
             <Setter Property="BoxShadow"
-                    Value="{Binding VariantShadow, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding BoxShadow}" />
         </Style>
         <!-- Color / Variant 视觉变量结束 -->
     </Style>

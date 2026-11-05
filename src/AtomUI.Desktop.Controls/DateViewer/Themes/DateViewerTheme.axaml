@@ -4,6 +4,23 @@
               xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
               x:Class="AtomUI.Desktop.Controls.Themes.DateViewerTheme"
               x:ClassModifier="internal" TargetType="atom:DateViewer">
+    <ControlTheme.Resources>
+        <atom:BorderThicknessFilterConverter x:Key="FooterLine" Left="False" Right="False" Bottom="False" />
+    </ControlTheme.Resources>
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+    <Setter Property="FontSize">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+            <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontSize" />
+        </MultiBinding>
+    </Setter>
     <Setter Property="Background" Value="{atom:DateViewerTokenResource PanelBg}" />
     <Setter Property="Padding" Value="{atom:DateViewerTokenResource PanelPadding}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
@@ -40,7 +57,7 @@
     </Setter>
     <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_DefaultFooter">
         <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorderSecondary}" />
-        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource Kind=BorderThickness, Converter={StaticResource FooterLine}}" />
         <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
     </Style>
     <Style Selector="^[Presentation=Content]">

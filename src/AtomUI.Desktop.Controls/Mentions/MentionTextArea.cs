@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Desktop.Controls.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -7,14 +8,16 @@ using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class MentionTextArea : TextArea
+internal class MentionTextArea : TextArea, IControlThemeGlobalOwnerSource
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<IList<string>?> TriggerPrefixProperty =
         AvaloniaProperty.Register<MentionTextArea, IList<string>?>(nameof(TriggerPrefix));
-    
+
     public static readonly StyledProperty<string?> FilterValueProperty =
         AvaloniaProperty.Register<MentionTextArea, string?>(nameof(FilterValue));
-           
+
     public static readonly StyledProperty<bool> IsDropDownOpenProperty =
         AbstractAutoComplete.IsDropDownOpenProperty.AddOwner<MentionTextArea>();
 
@@ -23,7 +26,7 @@ internal class MentionTextArea : TextArea
         get => GetValue(TriggerPrefixProperty);
         set => SetValue(TriggerPrefixProperty, value);
     }
-    
+
     public string? FilterValue
     {
         get => GetValue(FilterValueProperty);
@@ -35,10 +38,13 @@ internal class MentionTextArea : TextArea
         get => GetValue(IsDropDownOpenProperty);
         set => SetValue(IsDropDownOpenProperty, value);
     }
-    
+
+    #endregion
+
     #region 公共事件定义
 
     public event EventHandler<ShowMentionCandidateRequestEventArgs>? CandidateOpenRequest;
+
     public event EventHandler<EventArgs>? CandidateCloseRequest;
 
     #endregion
@@ -50,9 +56,9 @@ internal class MentionTextArea : TextArea
             nameof(TriggerState),
             o => o.TriggerState,
             (o, v) => o.TriggerState = v);
-    
+
     private bool _triggerState;
-    
+
     internal bool TriggerState
     {
         get => _triggerState;
@@ -61,25 +67,102 @@ internal class MentionTextArea : TextArea
 
     #endregion
 
-    protected override Type StyleKeyOverride => typeof(TextArea);
+    #region 内部协作 API
+
+    internal Mentions? Owner;
+
+    internal Rect GetTriggerBounds(Rect triggerBounds, Control? relativeControl = null)
+    {
+        if (relativeControl != null && _textPresenter != null)
+        {
+            var offset = _textPresenter.TranslatePoint(triggerBounds.Position, relativeControl) ?? triggerBounds.Position;
+            return new Rect(offset, triggerBounds.Size);
+        }
+        return triggerBounds;
+    }
+
+    internal void InsertMentionOption(string value, string? split)
+    {
+        if (!TryGetCurrentTriggerState(out var triggerState))
+        {
+            return;
+        }
+
+        this.SnapshotUndoRedo();
+        var  triggerIndex = triggerState.TriggerIndex;
+        var  foundSplit   = false;
+        var  foundSpace   = false;
+        var  text         = Text ?? string.Empty;
+        char triggerCh    = text[triggerIndex];
+        if (triggerIndex > 0)
+        {
+            var previousCh = text[triggerIndex - 1];
+            if (split is { Length: 1 } && previousCh == split[0])
+            {
+                foundSplit = true;
+            }
+            else if (previousCh == ' ')
+            {
+                foundSpace = true;
+            }
+        }
+
+        SetCurrentValue(SelectionStartProperty, triggerIndex);
+        SetCurrentValue(SelectionEndProperty, CaretIndex);
+
+        if (!string.IsNullOrWhiteSpace(split))
+        {
+            if (foundSplit)
+            {
+                value = triggerCh + value + split;
+            }
+            else
+            {
+                value = split + triggerCh + value + split;
+            }
+        }
+        else
+        {
+            if (foundSpace)
+            {
+                value = triggerCh + value + " ";
+            }
+            else
+            {
+                if (triggerIndex > 0)
+                {
+                    value = " " + triggerCh + value + " ";
+                }
+                else
+                {
+                    value = triggerCh + value + " ";
+                }
+            }
+        }
+        this.HandleTextInput(value);
+    }
+
+    #endregion
 
     private TextPresenter? _textPresenter;
-    internal Mentions? Owner;
+
     private Rect? _currentTriggerBounds;
+
     private string? _currentTriggerText;
+
     private string? _currentPredicate;
 
-    private readonly record struct MentionTriggerState(
-        int TriggerIndex,
-        string TriggerText,
-        string Predicate,
-        Rect TriggerBounds);
-    
+    #region 构造函数
+
     static MentionTextArea()
     {
         LinesProperty.OverrideDefaultValue<MentionTextArea>(1);
         CaretIndexProperty.Changed.AddClassHandler<MentionTextArea>((textArea, args) => textArea.HandleCaretIndexChanged());
     }
+
+    #endregion
+
+    protected override Type StyleKeyOverride => typeof(TextArea);
 
     protected override void OnTextInput(TextInputEventArgs e)
     {
@@ -103,6 +186,37 @@ internal class MentionTextArea : TextArea
         }
     }
 
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        Owner?.NotifyTextAreaPointerPressed(e);
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        Owner?.NotifyTextAreaPointerReleased(e);
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Return)
+        {
+            if (IsDropDownOpen)
+            {
+                return;
+            }
+        }
+        base.OnKeyDown(e);
+    }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    // The template parent owns this private input; AXAML cannot parameterize the reused theme keys.
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => TemplatedParent as Control;
+
+    #endregion
+
     private void CheckTriggerState()
     {
         if (TryGetCurrentTriggerState(out var triggerState))
@@ -116,7 +230,7 @@ internal class MentionTextArea : TextArea
         {
             TriggerState = false;
         }
-        
+
         if (TriggerState)
         {
             if (!IsDropDownOpen)
@@ -149,16 +263,6 @@ internal class MentionTextArea : TextArea
         {
             SetCurrentValue(FilterValueProperty, null);
         }
-    }
-    
-    internal Rect GetTriggerBounds(Rect triggerBounds, Control? relativeControl = null)
-    {
-        if (relativeControl != null && _textPresenter != null)
-        {
-            var offset = _textPresenter.TranslatePoint(triggerBounds.Position, relativeControl) ?? triggerBounds.Position;
-            return new Rect(offset, triggerBounds.Size);
-        }
-        return triggerBounds;
     }
 
     private bool TryGetTriggerPrefix(char ch, out string triggerText)
@@ -216,88 +320,9 @@ internal class MentionTextArea : TextArea
         return false;
     }
 
-    protected override void OnPointerPressed(PointerPressedEventArgs e)
-    {
-        base.OnPointerPressed(e);
-        Owner?.NotifyTextAreaPointerPressed(e);
-    }
-
-    protected override void OnPointerReleased(PointerReleasedEventArgs e)
-    {
-        base.OnPointerReleased(e);
-        Owner?.NotifyTextAreaPointerReleased(e);
-    }
-
-    internal void InsertMentionOption(string value, string? split)
-    {
-        if (!TryGetCurrentTriggerState(out var triggerState))
-        {
-            return;
-        }
-
-        this.SnapshotUndoRedo();
-        var  triggerIndex = triggerState.TriggerIndex;
-        var  foundSplit   = false;
-        var  foundSpace   = false;
-        var  text         = Text ?? string.Empty;
-        char triggerCh    = text[triggerIndex];
-        if (triggerIndex > 0)
-        {
-            var previousCh = text[triggerIndex - 1];
-            if (split is { Length: 1 } && previousCh == split[0])
-            {
-                foundSplit = true;
-            }
-            else if (previousCh == ' ')
-            {
-                foundSpace = true;
-            }
-        }
-
-        SetCurrentValue(SelectionStartProperty, triggerIndex);
-        SetCurrentValue(SelectionEndProperty, CaretIndex);
-        
-        if (!string.IsNullOrWhiteSpace(split))
-        {
-            if (foundSplit)
-            {
-                value = triggerCh + value + split;
-            }
-            else
-            {
-                value = split + triggerCh + value + split;
-            }
-        }
-        else
-        {
-            if (foundSpace)
-            {
-                value = triggerCh + value + " ";
-            }
-            else
-            {
-                if (triggerIndex > 0)
-                {
-                    value = " " + triggerCh + value + " ";
-                }
-                else
-                {
-                    value = triggerCh + value + " ";
-                }
-            }
-        }
-        this.HandleTextInput(value);
-    }
-    
-    protected override void OnKeyDown(KeyEventArgs e)
-    {
-        if (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Return)
-        {
-            if (IsDropDownOpen)
-            {
-                return;
-            }
-        }
-        base.OnKeyDown(e);
-    }
+    private readonly record struct MentionTriggerState(
+        int TriggerIndex,
+        string TriggerText,
+        string Predicate,
+        Rect TriggerBounds);
 }

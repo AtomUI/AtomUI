@@ -237,3 +237,7 @@ Slider 的多 handle 专项模型由 [Slider 多 Handle 设计](multi-handle-des
 | Token | 验证默认轨道、rail、thumb、mark、outline 和方向 padding。 |
 | Gallery | 验证两个 Slider Showcase 的结构、绑定和交互。 |
 | 文档 | 检查相对链接、命名一致性并运行 `git diff --check`。 |
+
+## 有效主题输入
+
+Own 派生值、可选字体和实际子 owner Global 到达原绘制节点。父内容重挂后恢复输入与轨道订阅，同一实例保留命中/范围/标记布局。

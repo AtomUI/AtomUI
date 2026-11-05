@@ -329,3 +329,11 @@ body 是 owner 模板 target；已声明的 rail、track 和 indicator 是 body 
 - disabled 状态和 `IsMotionEnabled=false`。
 
 文档改动至少运行 `git diff --check`，并检查 `overview.md`、`implementation.md`、`token.md`、`changelog.md` 之间的相对链接存在。
+
+## owner、测量缓存与结果出口
+
+抽象主题以实际公开实例解析 Global；字体通过继承父级桥投射，未配置时保留原生继承。普通/步骤的预设字号由 AXAML 写入内部指标，尺寸分类不再从应用级 Shared 值缓存。文字按 Percentage、格式和完整 Typeface 度量；普通与步骤的信息缓存和真实 body 排列随输入更新。运行时计算的 MinWidth/MinHeight 以 Template fallback 提供，保留调用方约束。
+
+非内嵌线形/步骤在 Success/Exception 时隐藏百分比并显示对应图标；显式异常在完成后仍为错误色，显式成功完成后保留成功图标。普通/Active 完成仍采用成功结果。普通线形内嵌模式保留百分比和原旋转/排列，隐藏状态图标；disabled 和信息区开关仍独立生效。上述替代关系在 ControlTheme 声明，未增加代码查找节点设置样式的入口。
+
+Circle/Dashboard 的内容适配、图标互斥和固定几何继续由现有信息 panel 与圆形布局承担。Line/Steps body 只排列其拥有的实际绘制节点；Steps 的动态矩形由 panel 在 detach 解除 owner 订阅并清理。

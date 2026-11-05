@@ -6,12 +6,16 @@
 
 FormToken 是 Form 的控件级 Token scope，描述标签视觉、必填标记、冒号间距和表单项布局间距。输入控件自身高度、边框、状态色、图标尺寸、字体基础值和通用 spacing 来自 SharedToken 或对应输入控件 Token。
 
+八字段采用DependencyDefaultsV2、声明修订1；静态默认只依赖有效Global或原常量，没有Own依赖边。名称、类型、公共资源ID和slot保持，LabelColonMargin保留MarginXXS/2与MarginXS的原边分配，默认VerticalLabelMargin仍为0。
+
 FormToken 不承载以下状态：
 
 - `FieldName`、`InitialValues`、提交 values 或业务数据。
 - `ValidateStatus`、`ValidateResult`、错误消息、警告消息或验证中状态。
 - `FormLayout`、`RequiredMark`、`ValidateTrigger`、`ValidateStrategy` 等实例配置。
 - 动态表单项数量、删除按钮显示状态或响应式 breakpoint 当前值。
+
+公开表面Global按exact注册identity消费：Form、FormItem与FormItemDecorator各自独立；FormToken Own仍为既有组合输入。 不新增Own/key或状态字段。
 
 ## 2. Token 分类
 
@@ -46,14 +50,14 @@ FormToken 不承载以下状态：
 - `VerticalLabelPadding`
 - `VerticalLabelMargin`
 
-这些 Token 描述垂直布局下标签区域的 padding 和 margin。当前主题使用 `VerticalLabelMargin`，`VerticalLabelPadding` 属于 FormToken 稳定契约，调整时需要同步验证主题引用和 Token 类型、生成数据和 token.md。
+当前内置主题只消费VerticalLabelMargin。VerticalLabelPadding分类为Legacy/CompatibilityRetained：保留Thickness、默认四边0/0/0/有效Global.UniformlyPaddingXS、资源ID和显式配置/读取，内置模板没有消费者，不将其描述为有效的内置padding调节项，也不新增8 DIP默认间距。应用自定义主题仍可显式消费该兼容资源。
 
 ## 3. 控件专项模型中的 Token 使用
 
 FormToken 使用路径：
 
 ```text
-SharedToken
+Effective Global / constants
   → FormToken
   → FormTheme / FormItemTheme
   → Form root spacing + FormItem label / marker / colon / help spacing
@@ -114,3 +118,9 @@ Token 变更要求：
 | 修改垂直标签 Token | 验证 `FormLayout=Vertical` 下标签与输入控件的垂直节奏。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步 AXAML 引用、生成文件、Token 类型、生成数据和 token.md和控件文档。 |
 | 文档改动 | 运行 `git diff --check`，检查文档链接存在。 |
+
+## 公开字体与组合输入
+
+表单根和两类 item 使用各自有效 Global 的可选 FontFamily/FontSize；未明确配置时仍继承实际父字体。标签继续 Form.Own.LabelFontSize/LabelColor 配方，附加正文与冒号使用根 Foreground。暗色正文/冒号按有效 ColorText 显示，实例属性与普通 Style 继续由 Avalonia 决定优先级。FormActionsItem 使用 FormItem 的 StyleKey；FormValidateFeedback 是无独立 Token identity 的内容适配表面，继承宿主排版。
+
+这些入口消费有效 Global，不增加 Own 字段、资源 ID 或 slot。Semantic Part 定制仍使用生成的专用 Style；不能通过查找内部节点赋值替代。当前本机验证与未决框架恢复/CT25 边界见 [CT13 家族出口](../../../../superpowers/plans/2026-10-22-custom-theme/input-family-exit-results.md)。

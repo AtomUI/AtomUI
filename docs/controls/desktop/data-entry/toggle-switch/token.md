@@ -63,7 +63,7 @@ Switch `ComponentToken` 的 `trackHeight` / `trackMinWidth` / `trackPadding` / `
 - `SwitchDisabledOpacity`
 - `OffStateLoadIndicatorColor`
 
-`SwitchColor` 用于 checked 轨道和 checked 状态 loading 指示。unchecked 轨道和 hover 色来自 SharedToken。`SwitchDisabledOpacity` 用于 disabled 和 loading 状态整体透明度。`OffStateLoadIndicatorColor` 用于 unchecked loading 指示。
+`SwitchColor` 用于 checked 轨道和 checked 状态 loading 指示。unchecked 轨道和 hover 色来自实际 owner 的有效 Global。`SwitchDisabledOpacity` 用于 disabled 和 loading 状态整体透明度。`OffStateLoadIndicatorColor` 用于 unchecked loading 指示。
 
 ### 2.6 加载动画 Token
 
@@ -92,12 +92,12 @@ SizeType=Small
   → TrackHeightSM / TrackMinWidthSM / HandleSizeSM
   → InnerMinMarginSM / InnerMaxMarginSM / IconSizeSM / ExtraInfoFontSizeSM
 
-SizeType=Middle|Large|Custom
+SizeType=Middle|Large
   → TrackHeight / TrackMinWidth / HandleSize
   → InnerMinMargin / InnerMaxMargin / IconSize / ExtraInfoFontSize
 ```
 
-`Custom` 当前复用普通尺寸分支。用户通过显式属性覆盖尺寸时，Token 仍作为默认值来源。
+`Custom` 退出预设 selector；普通几何仅提供基础回退，调用方 Style 或实例属性可以接管对应维度。
 
 ## 4. 控件家族影响
 
@@ -120,7 +120,7 @@ Token 变更要求：
 - 不擅自重命名、删除或迁移既有 Token。
 - 不把 `IsChecked`、`IsLoading`、`IsPressed`、内容实例或 Form 值迁移为 Token。
 - 不新增未经授权的 `Custom` 专属 Token 组。
-- 不把 unchecked hover 色复制到 ToggleSwitchToken；当前由 SharedToken selector 表达。
+- 不把 unchecked hover 色复制到 ToggleSwitchToken；当前由 owner Global selector 表达。
 - 调整尺寸 Token 时必须同时验证内容测量、把手位置、loading arc 和 Gallery 示例。
 - 需要破坏性变更时，必须先说明影响范围并获得授权。
 
@@ -136,3 +136,9 @@ Token 变更要求：
 | 修改加载动画 Token | 验证 loading animation 周期、attach/detach 取消和停止 loading 状态。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步 AXAML 引用、生成文件、Token 类型、生成数据和 token.md和控件文档。 |
 | 文档改动 | 运行 `git diff --check`，检查文档链接存在。 |
+
+## 默认依赖与尺寸边界
+
+21字段保留原默认与资源编号，采用 DependencyDefaultsV2。HandleSize/SM 依赖实际 TrackHeight/SM 与 TrackPadding；最小宽度及内部边距依赖实际 handle/padding；ContentIconSize 两档依赖 TrackHeightSM；小字号依赖 ExtraInfoFontSize。显式下游值仍优先，不逆向覆盖上游。
+
+Custom 不合并进 Middle 预设。中档几何和字体作为基础回退，Small/Middle/Large 继续使用既有映射；调用方 Style 或实例可接管 Custom 字号。LoadingAnimationDuration 更新实际加载动画；IsMotionEnabled=false 停止旋转而保留业务 IsLoading 和静态加载指示。

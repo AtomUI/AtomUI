@@ -58,4 +58,7 @@ N3-S [Segmented本机结果](segmented-defaults-results.md)：14默认V2、三�
 
 2026-10-28 N3-SC13 [TreeSelect/Cascader默认结果](container-select-defaults-results.md)：1+12字段V2 rev1，2实际V1 RED→5PASS9s；104原/新值与type/key/ID/slot一致，两后端56对旧新及16对恢复均0。managed/AOT各123，字重别名均按精确600/400校验；NET8零20.42s、成员2Token文件/0Control/0问题。3临时源、422工程文件（1,228,223,829 bytes）、113媒体已清理且audit clean；精确两模块77PASS6s。仅本机默认迁移，DropdownHeight与行数预算的消费者所有权、标签身份、完整家族及CT25仍开放。用户已同意下一高度包取Own上限与更小页数预算，具体视觉另审；当前不提前Git提交。
 
-2026-10-28 CHT [Cascader高度结果](input-cascader-dropdown-height-results.md)：已按用户选择合同合并Own上限与较小名义页数预算；6有效RED→最终15PASS24s，原生实际Overlay/Native managed及AOT各1044，156内容不减为144。NET8零27.02s、成员1辅助文件/0Control/0问题；6临时源、426工程文件（1,220,202,448 bytes）、313媒体已清理且audit clean，精确Cascader51PASS3s。两后端各78对/70变化，[限定审查](input-cascader-dropdown-height-visual-review.md)包括默认320→180、自然列宽193→186（单变量证明确由实现标签范围导致），当前等待明确视觉确认。其余8对0，原整Panel复位3像素保留CT25；完整家族/其他模式/列/平台开放，不提前Git提交。
+2026-10-28 CHT [Cascader高度结果](input-cascader-dropdown-height-results.md)：已按用户选择合同合并Own上限与较小名义页数预算；6有效RED→最终15PASS24s，原生实际Overlay/Native managed及AOT各1044，156内容不减为144。NET8零27.02s、成员1辅助文件/0Control/0问题；6临时源、426工程文件（1,220,202,448 bytes）、313媒体已清理且audit clean，精确Cascader51PASS3s。两后端各78对/70变化，[限定审查](input-cascader-dropdown-height-visual-review.md)包括默认320→180、自然列宽193→186（单变量证明确由实现标签范围导致），2026-10-29用户已明确批准本表限定范围（高度320→180、自然列宽193→186、末行部分可见）。其余8对0，原整Panel复位3像素保留CT25；完整家族/其他模式/列/平台开放，不提前Git提交。
+
+
+2026-10-30 完整家族工程出口见[结果](container-family-exit-results.md)、[85项矩阵](container-family-exit-matrix.md)及[限定视觉](container-family-visual-review.md)。既有各默认分包不重复；当前37身份/258Own已对账，清理后1014+17、NET8及Mac managed556/AOT557已验证。用户已明确批准本次V1–V7限定视觉范围；完整CT14在既定批准范围完成并关闭，CT25/FW1独立保留，无Git提交。

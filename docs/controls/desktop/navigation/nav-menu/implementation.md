@@ -405,11 +405,12 @@ open path cache 应记录路径语义而不是持有容器引用。容器可能�
 
 根宽度使用控件拥有的单次原生 `Animation`，从当前呈现宽度到目标宽度，沿用 `CubicEaseOut` 和有效
 `MotionDurationMid`。起点取实际 Bounds，终点涉及 base Width 与 metadata coercion，属于运行期计算值，
-由控件代码驱动现有内部属性；不新增主题绑定或独立帧定时器。中途反转先捕获当前尺寸，再取消旧执行。
+由控件代码驱动现有内部属性；不使用独立帧定时器。中途反转先捕获当前尺寸，再取消旧执行。
 每次运行以取消源身份取得唯一收尾权；关闭动效、切换 Mode、修改折叠目标及 detach 取消旧运行并解除临时宽度。
 取消期间coercion保持当前呈现宽度，直到旧绑定释放并安装新起点或清理覆盖，避免首tick之前反转产生临时零宽通知。
 `FillMode.Forward` 保持末帧。动画结束只排队一次收尾，等待框架动画绑定和最终填充值完成释放；不通过 Dispatcher
 逐帧投递宽度。过期收尾无权清理新执行或覆盖用户尺寸绑定。
+ControlTheme把NavMenu有效Global的`MotionDurationMid`绑定到内部时长属性，默认200ms；已有实例的局部scope、控件配置和清除会更新下一次motion的输入，原生LocalValue仍保持优先级。
 
 ### 7.10 内容展开的共享接入边界
 
@@ -620,3 +621,7 @@ owner 之间转移或被回收复用时既不残留旧层级，也不重复添�
 
 组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
 不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。
+
+## 有效主题输入与生命周期
+
+横向浅色顶层的悬停、选中及选中路径使用对应 HorizontalItem Own；禁用前景优先于选中前景。横向圆角与子菜单条目圆角分别消费 HorizontalItemBorderRadius 和 SubMenuItemBorderRadius。顶层弹层间距由 TopLevelItemPopupMarginToAnchor 提供；背景 transition 单独读取 ItemBackgroundMotionEasing，前景与指示条的曲线保持原声明。

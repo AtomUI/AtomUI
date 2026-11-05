@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -9,8 +10,9 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareControl
+public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareControl, IThemeInheritanceSource
 {
+
     #region 公共属性定义
 
     public static readonly StyledProperty<ColorSpectrumComponents> ColorSpectrumComponentsProperty =
@@ -178,6 +180,7 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
         get => GetValue(PaletteGroupProperty);
         set => SetValue(PaletteGroupProperty, value);
     }
+
     #endregion
 
     #region 公共事件定义
@@ -227,6 +230,7 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     }
 
     private bool _isAlphaEffectiveVisible;
+
     internal bool IsAlphaEffectiveVisible
     {
         get => _isAlphaEffectiveVisible;
@@ -234,9 +238,11 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     }
 
     private readonly SolidColorBrush _hsvColorBrush = new(Colors.White);
+
     internal IBrush HsvColorBrush => _hsvColorBrush;
 
     private readonly SolidColorBrush _hsvColorWithoutAlphaBrush = new(Colors.White);
+
     internal IBrush HsvColorWithoutAlphaBrush => _hsvColorWithoutAlphaBrush;
 
     internal bool IsNeedConfirm
@@ -261,14 +267,11 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
 
     #endregion
 
-    #region 内部事件定义
+    #region 内部协作 API
 
     internal event EventHandler? ConfirmRequested;
+
     internal event EventHandler? CancelRequested;
-
-    #endregion
-
-    #region 内部协作 API
 
     internal void BeginEdit()
     {
@@ -302,54 +305,33 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     {
     }
 
+    internal static Color CoerceColor(AvaloniaObject instance, Color value)
+    {
+        if (instance is AbstractColorPickerView colorView)
+        {
+            return colorView.NotifyCoerceColor(value);
+        }
+
+        return value;
+    }
+
     #endregion
 
     private Avalonia.Controls.Button? _confirmButton;
+
     private Avalonia.Controls.Button? _cancelButton;
+
     private ColorPickerInput? _colorInput;
 
-    private void HandleInputColorEdited(object? sender, EventArgs args)
-    {
-        if (IsNeedConfirm && IsEditing)
-        {
-            NotifyInputColorEdited();
-        }
-    }
+    private ColorBlock? _clearColorButton;
 
-    private void HandleConfirmClicked(object? sender, RoutedEventArgs args) => RequestConfirm();
-    private void HandleCancelClicked(object? sender, RoutedEventArgs args) => RequestCancel();
+    private ColorPickerPaletteGroup? _paletteGroup;
 
-    private void ReleaseFooterHandlers()
-    {
-        if (_colorInput != null)
-        {
-            _colorInput.ColorInputEdited -= HandleInputColorEdited;
-        }
-        if (_confirmButton != null)
-        {
-            _confirmButton.Click -= HandleConfirmClicked;
-        }
-        if (_cancelButton != null)
-        {
-            _cancelButton.Click -= HandleCancelClicked;
-        }
-    }
+    private protected bool IgnorePropertyChanged = false;
 
-    private void AttachFooterHandlers()
+    public AbstractColorPickerView()
     {
-        ReleaseFooterHandlers();
-        if (_colorInput != null)
-        {
-            _colorInput.ColorInputEdited += HandleInputColorEdited;
-        }
-        if (_confirmButton != null)
-        {
-            _confirmButton.Click += HandleConfirmClicked;
-        }
-        if (_cancelButton != null)
-        {
-            _cancelButton.Click += HandleCancelClicked;
-        }
+        ConfigureHsvColorBrushes();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -362,15 +344,6 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     {
         base.OnAttachedToVisualTree(e);
         AttachFooterHandlers();
-    }
-
-    private ColorBlock? _clearColorButton;
-    private ColorPickerPaletteGroup? _paletteGroup;
-    private protected bool IgnorePropertyChanged = false;
-
-    public AbstractColorPickerView()
-    {
-        ConfigureHsvColorBrushes();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -400,42 +373,6 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
         var hsvValue = HsvValue;
         _hsvColorBrush.Color = hsvValue.ToRgb();
         _hsvColorWithoutAlphaBrush.Color = HsvColor.ToRgb(hsvValue.H, hsvValue.S, hsvValue.V);
-    }
-
-    private void ConfigureAlphaEffectiveVisible()
-    {
-        if (!IsAlphaEnabled)
-        {
-            IsAlphaEffectiveVisible = false;
-        }
-        else
-        {
-            IsAlphaEffectiveVisible = IsAlphaVisible;
-        }
-    }
-
-    #region 内部协作 API
-
-    internal static Color CoerceColor(AvaloniaObject instance, Color value)
-    {
-        if (instance is AbstractColorPickerView colorView)
-        {
-            return colorView.NotifyCoerceColor(value);
-        }
-
-        return value;
-    }
-
-    #endregion
-
-    private static HsvColor CoerceHsvColor(AvaloniaObject instance, HsvColor value)
-    {
-        if (instance is AbstractColorPickerView colorView)
-        {
-            return colorView.NotifyCoerceHsvColor(value);
-        }
-
-        return value;
     }
 
     protected virtual Color NotifyCoerceColor(Color value)
@@ -493,6 +430,94 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
         }
     }
 
+    protected virtual void NotifyColorClearRequest()
+    {
+        HsvValue = new HsvColor(0.0, HsvValue.H, HsvValue.S, HsvValue.V);
+        InvokeColorValueClearedEvent();
+    }
+
+    protected void InvokeColorValueClearedEvent()
+    {
+        ColorValueCleared?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void NotifyPaletteColorSelected(Color color)
+    {
+    }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    private void HandleInputColorEdited(object? sender, EventArgs args)
+    {
+        if (IsNeedConfirm && IsEditing)
+        {
+            NotifyInputColorEdited();
+        }
+    }
+
+    private void HandleConfirmClicked(object? sender, RoutedEventArgs args) => RequestConfirm();
+
+    private void HandleCancelClicked(object? sender, RoutedEventArgs args) => RequestCancel();
+
+    private void ReleaseFooterHandlers()
+    {
+        if (_colorInput != null)
+        {
+            _colorInput.ColorInputEdited -= HandleInputColorEdited;
+        }
+        if (_confirmButton != null)
+        {
+            _confirmButton.Click -= HandleConfirmClicked;
+        }
+        if (_cancelButton != null)
+        {
+            _cancelButton.Click -= HandleCancelClicked;
+        }
+    }
+
+    private void AttachFooterHandlers()
+    {
+        ReleaseFooterHandlers();
+        if (_colorInput != null)
+        {
+            _colorInput.ColorInputEdited += HandleInputColorEdited;
+        }
+        if (_confirmButton != null)
+        {
+            _confirmButton.Click += HandleConfirmClicked;
+        }
+        if (_cancelButton != null)
+        {
+            _cancelButton.Click += HandleCancelClicked;
+        }
+    }
+
+    private void ConfigureAlphaEffectiveVisible()
+    {
+        if (!IsAlphaEnabled)
+        {
+            IsAlphaEffectiveVisible = false;
+        }
+        else
+        {
+            IsAlphaEffectiveVisible = IsAlphaVisible;
+        }
+    }
+
+    private static HsvColor CoerceHsvColor(AvaloniaObject instance, HsvColor value)
+    {
+        if (instance is AbstractColorPickerView colorView)
+        {
+            return colorView.NotifyCoerceHsvColor(value);
+        }
+
+        return value;
+    }
+
     private void HandlePaletteColorSelected(object? sender, ColorPickerPaletteColorSelectedEventArgs args)
     {
         NotifyPaletteColorSelected(args.SelectedColor);
@@ -523,20 +548,4 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     {
         NotifyColorClearRequest();
     }
-
-    protected virtual void NotifyColorClearRequest()
-    {
-        HsvValue = new HsvColor(0.0, HsvValue.H, HsvValue.S, HsvValue.V);
-        InvokeColorValueClearedEvent();
-    }
-
-    protected void InvokeColorValueClearedEvent()
-    {
-        ColorValueCleared?.Invoke(this, EventArgs.Empty);
-    }
-
-    protected virtual void NotifyPaletteColorSelected(Color color)
-    {
-    }
-
 }

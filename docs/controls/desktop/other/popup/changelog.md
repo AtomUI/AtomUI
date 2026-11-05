@@ -25,6 +25,10 @@
 - Changed
   - 定义语义中立默认、唯一配置 owner、布局后取值、Surface 几何和完整阴影的共享动效契约。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
+## 2026-10-31
+
+- CT15模板消费修复：共享阴影容器在提供方每次换模板时退役旧Border/Arrow绑定并跟踪新mask，避免ToolTip恢复模板后阴影消失；shadow数值、host尺寸/裁剪与motion不改。此切片不代替既有完整平台/关闭生命周期验收。
+
 ## 2026-10-29
 
 - Token
@@ -62,6 +66,7 @@
   - 实际表面改为 `PopupSurface : Panel`，去除 Actor 包装；显示前准备使用可释放的属性覆盖。
   - 入场替代离场保持当前值，关闭 completion 与排队 Close 均核对请求版本和表面身份。
   - Direct Popup 同时支持 visual attach 就绪，不依赖 rooted logical owner。
+
 
 ## 2026-10-25（待完整验收）
 

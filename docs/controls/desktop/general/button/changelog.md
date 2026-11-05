@@ -1,5 +1,9 @@
 # Button Changelog
 
+## 2026-11-04
+
+- Custom 的公开尺寸默认降为基础 Setter，保留三档、Circle 与仅图标/loading 的原有默认；普通 Style 可接管并撤回。
+
 本文档记录 Button 控件级设计、API、主题契约、Token 和实现结构的变化。它用于维护控件设计历史，不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 记录原则：
@@ -7,6 +11,11 @@
 - 只记录会影响 Button 设计理解、兼容边界、实现架构或维护方式的变化。
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
+
+## 2026-10-29
+
+- API / Theme
+  - 新增公开`BoxShadow`及`BoxShadowProperty`，以原生Style/local统一定制实际按钮阴影（含预设色）；默认由ControlTheme读取既有VariantShadow，空集合及清除保持原生语义。Dropdown及复用Button主题的派生类继承该入口，不新增Own或Semantic Part，原默认视觉和三个Shadow Own语义保持。
 
 ## 2026-10-27
 

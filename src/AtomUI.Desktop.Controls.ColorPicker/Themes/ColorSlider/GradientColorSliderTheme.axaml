@@ -39,7 +39,7 @@
         <Setter Property="Minimum" Value="0.0" />
         <Setter Property="Maximum" Value="1.0" />
         <Setter Property="TransparentBgIntervalColor"
-                Value="{atom:SharedTokenResource ColorFillSecondary}" />
+                Value="{atom:OwnerTokenResource ColorFillSecondary}" />
         <Setter Property="TransparentBgSize"
                 Value="{atom:ColorPickerTokenResource TransparentBgSize}" />
         <Setter Property="ClipToBounds" Value="False" />

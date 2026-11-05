@@ -38,6 +38,12 @@ internal class AbstractUploadPictureContent : TemplatedControl, IMotionAwareCont
         set => SetValue(IsImageFileProperty, value);
     }
     
+    public FileUploadStatus Status
+    {
+        get => GetValue(StatusProperty);
+        set => SetValue(StatusProperty, value);
+    }
+
     public string? FileName
     {
         get => GetValue(FileNameProperty);
@@ -49,13 +55,7 @@ internal class AbstractUploadPictureContent : TemplatedControl, IMotionAwareCont
         get => GetValue(FilePathProperty);
         set => SetValue(FilePathProperty, value);
     }
-    
-    public FileUploadStatus Status
-    {
-        get => GetValue(StatusProperty);
-        set => SetValue(StatusProperty, value);
-    }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -75,36 +75,5 @@ internal class AbstractUploadPictureContent : TemplatedControl, IMotionAwareCont
     }
     
     #endregion
-    
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
 
-        if (change.Property == ListTypeProperty)
-        {
-            if (ListType == UploadListType.PictureCircle)
-            {
-                var radius = Math.Max(Width, Height);
-                if (double.IsNaN(radius))
-                {
-                    radius = Math.Min(DesiredSize.Width, DesiredSize.Height);
-                }
-                ConfigureEffectiveCornerRadius(radius);
-            }
-        }
-    }
-    
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
-    {
-        base.OnSizeChanged(e);
-        ConfigureEffectiveCornerRadius(Math.Max(e.NewSize.Width, e.NewSize.Height));
-    }
-
-    private void ConfigureEffectiveCornerRadius(double cornerRadius)
-    {
-        if (ListType == UploadListType.PictureCircle)
-        {
-            SetCurrentValue(CornerRadiusProperty, new CornerRadius(cornerRadius));
-        }
-    }
 }

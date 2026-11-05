@@ -150,11 +150,13 @@
             <Setter Property="Padding" Value="0" />
         </Style>
         <Setter Property="BorderThickness" Value="{atom:RangeDatePickerTokenResource BorderThickness}" />
+        <Setter Property="Padding" Value="{atom:RangeDatePickerTokenResource InputPadding}" />
+        <Setter Property="CornerRadius" Value="{atom:RangeDatePickerTokenResource BorderRadius}" />
         <Style Selector="^[SizeType=Large]">
             <Setter Property="Padding" Value="{atom:RangeDatePickerTokenResource InputPaddingLG}" />
             <Setter Property="CornerRadius" Value="{atom:RangeDatePickerTokenResource BorderRadiusLG}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="Padding" Value="{atom:RangeDatePickerTokenResource InputPadding}" />
             <Setter Property="CornerRadius" Value="{atom:RangeDatePickerTokenResource BorderRadius}" />
         </Style>

@@ -195,3 +195,8 @@ CT15最新限定验收：有效managed/AOT各116检查/196帧，164静态跨运�
 
 
 百分比 OpenOn 的 SizeChanged 订阅仅在 Drawer 处于视觉树且已打开时获取；未挂载或脱离后替换 OpenOn 只计算当前尺寸，不让存活目标保留已退出 Drawer。再次挂载沿原 Open 路径恢复订阅，关闭和脱离解除，保留横纵百分比公式与原容器/滚动合同。
+
+
+### Custom 尺寸默认与优先级
+
+Custom 的 DialogSize 由 DrawerTheme 基础 Setter 提供 SmallSize，应用 Style 与实例 Dimension 可以接管并撤回。进入 Custom 先释放预设代码绑定；Large/Middle/Small 保持原有 Template 优先级和尺寸映射，切回时重新绑定。三档的 Template 优先级无法由条件 selector 等价表达，继续由原类型化绑定按重挂载/卸载对称释放。Custom 不使用会在重入时压住已有应用 Style 的代码绑定。绝对/百分比、placement 与 visible frame 的解析不变。

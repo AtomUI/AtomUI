@@ -1,5 +1,9 @@
 # NumericUpDown Changelog
 
+## 2026-11-04
+
+- Custom 根留白和圆角降为基础默认，保留两种模式的组合几何与数值编辑。
+
 本文档记录 NumericUpDown 控件级设计、API、主题契约、Token 和实现结构的变化。它用于维护控件设计历史，不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 记录原则：

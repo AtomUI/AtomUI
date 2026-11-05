@@ -4,14 +4,30 @@
               x:Class="AtomUI.Desktop.Controls.Themes.BaseTabControlTheme"
               TargetType="atom:BaseTabControl"
               x:ClassModifier="internal">
-    
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
+    <Setter Property="FontSize">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+            <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontSize" />
+        </MultiBinding>
+    </Setter>
+
+
     <Style Selector="^:is(atom|BaseTabControl)">
-        <Setter Property="SeparatorBorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="SeparatorBorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="SeparatorBorderThickness" Value="{atom:OwnerTokenResource Kind=BorderThickness, AnchorControlType={x:Type atom:BaseTabControl}}" />
+        <Setter Property="SeparatorBorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorderSecondary, AnchorControlType={x:Type atom:BaseTabControl}}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="TabAndContentGutter" Value="{atom:TabControlTokenResource TabAndContentGutter}" />
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Stretch"/>
     </Style>
-    
+
 </ControlTheme>

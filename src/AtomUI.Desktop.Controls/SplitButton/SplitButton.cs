@@ -905,10 +905,9 @@ public partial class SplitButton : ContentControl,
         ConfigureButtonCustomSizeOverride(_secondaryButton, HeightProperty, Height, useCustomOverrides);
         ConfigureButtonCustomSizeOverride(_primaryButton, MinHeightProperty, MinHeight, useCustomOverrides);
         ConfigureButtonCustomSizeOverride(_secondaryButton, MinHeightProperty, MinHeight, useCustomOverrides);
-        ConfigureButtonCustomSizeOverride(_primaryButton, WidthProperty, Width, useCustomOverrides);
-        ConfigureButtonCustomSizeOverride(_secondaryButton, WidthProperty, Width, useCustomOverrides);
-        ConfigureButtonCustomSizeOverride(_primaryButton, MinWidthProperty, MinWidth, useCustomOverrides);
-        ConfigureButtonCustomSizeOverride(_secondaryButton, MinWidthProperty, MinWidth, useCustomOverrides);
+        // Width and MinWidth constrain the composite. DockPanel measures the
+        // secondary action, then gives the primary action the remaining width.
+        // Copying either total to both children makes a fixed-width owner overflow.
         ConfigureButtonCustomSizeOverride(_primaryButton, PaddingProperty, Padding, useCustomOverrides);
         ConfigureButtonCustomSizeOverride(_secondaryButton, PaddingProperty, Padding, useCustomOverrides);
         ConfigureButtonCustomSizeOverride(_primaryButton, FontSizeProperty, FontSize, useCustomOverrides);
@@ -928,6 +927,9 @@ public partial class SplitButton : ContentControl,
 
         if (useCustomOverrides && IsLocalValue(property))
         {
+            // ControlTheme cannot query whether an arbitrary owner property is
+            // set. Preserve each public Button's own default when the owner has
+            // no override, and clear this forwarding when Custom is withdrawn.
             button.SetValue(property, value);
         }
         else
@@ -946,8 +948,6 @@ public partial class SplitButton : ContentControl,
         return property == SizeTypeProperty ||
                property == HeightProperty ||
                property == MinHeightProperty ||
-               property == WidthProperty ||
-               property == MinWidthProperty ||
                property == PaddingProperty ||
                property == FontSizeProperty;
     }

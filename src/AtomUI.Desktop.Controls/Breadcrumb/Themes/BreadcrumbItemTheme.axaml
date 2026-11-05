@@ -4,13 +4,21 @@
     xmlns:atom="https://atomui.net"
     >
     <ControlTheme x:Key="{x:Type atom:BreadcrumbItem}" TargetType="atom:BreadcrumbItem">
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="ContentInfoFrame"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}">
-                    <StackPanel Orientation="Horizontal" Spacing="{atom:SharedTokenResource SpacingXXS}">
+                    <StackPanel Orientation="Horizontal" Spacing="{atom:OwnerTokenResource Kind=SpacingXXS, AnchorControlType={x:Type atom:BreadcrumbItem}, Priority=Template}">
                         <atom:IconPresenter Name="IconPresenter"
                                              Icon="{TemplateBinding Icon}"
                                              IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -21,16 +29,16 @@
                 </Border>
             </ControlTemplate>
         </Setter>
-        
+
         <Setter Property="Padding" Value="{atom:BreadcrumbTokenResource BreadcrumbItemContentPadding}"/>
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}"/>
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadius, AnchorControlType={x:Type atom:BreadcrumbItem}}"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{atom:BreadcrumbTokenResource ItemColor}"/>
-        
+
         <Style Selector="^[IsLast=True][IsNavigateResponsive=False]">
             <Setter Property="Foreground" Value="{atom:BreadcrumbTokenResource LastItemColor}"/>
         </Style>
-        
+
         <Style Selector="^[IsNavigateResponsive=True]">
             <Setter Property="Cursor" Value="Hand"/>
 
@@ -53,16 +61,16 @@
                 </Style>
             </Style>
         </Style>
-        
+
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
             <Setter Property="IconBrush"
                     Value="{atom:BreadcrumbTokenResource ItemColor}" />
             <Setter Property="Width"
-                    Value="{atom:SharedTokenResource IconSizeSM}" />
+                    Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:BreadcrumbItem}}" />
             <Setter Property="Height"
-                    Value="{atom:SharedTokenResource IconSizeSM}" />
+                    Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:BreadcrumbItem}}" />
         </Style>
-        
+
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">

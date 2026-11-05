@@ -16,7 +16,7 @@
         </Setter>
         
         <Style Selector="^ /template/ StackPanel#PART_LineLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource ControlHeightXS}"/>
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource ControlHeightXS}"/>
         </Style>
 
     </ControlTheme>

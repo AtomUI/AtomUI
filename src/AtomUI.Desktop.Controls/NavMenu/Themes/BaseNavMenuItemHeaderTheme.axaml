@@ -5,11 +5,19 @@
     TargetType="atom:BaseNavMenuItemHeader"
     x:Class="AtomUI.Desktop.Controls.Themes.BaseNavMenuItemHeaderTheme"
     x:ClassModifier="internal">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
 
     <Style Selector="^:is(atom|BaseNavMenuItemHeader)">
         <Style Selector="^ /template/ ContentPresenter#ItemTextPresenter">
             <Setter Property="Margin" Value="{atom:NavMenuTokenResource ItemMargin}" />
-        </Style> 
+        </Style>
 
         <Setter Property="Cursor" Value="Hand" />
 
@@ -25,17 +33,17 @@
                         Value="{atom:NavMenuTokenResource ItemHoverColor}" />
             </Style>
         </Style>
-        
+
         <Style Selector="^[IsSelected=True]">
             <Setter Property="Foreground"
                     Value="{atom:NavMenuTokenResource ItemSelectedColor}" />
         </Style>
-        
+
         <Style Selector="^[IsInSelectedPath=True]">
             <Setter Property="Foreground"
                     Value="{atom:NavMenuTokenResource ItemSelectedColor}" />
         </Style>
-        
+
         <Style Selector="^[HasSubMenu=True]:not(^[IsSelected=True]):not(^[IsInSelectedPath=True])">
             <Style Selector="^:pointerover">
                 <Setter Property="Foreground"
@@ -85,12 +93,12 @@
                             Value="{atom:NavMenuTokenResource DarkItemHoverColor}" />
                 </Style>
             </Style>
-            
+
             <Style Selector="^[IsSelected=True]">
                 <Setter Property="Foreground"
                         Value="{atom:NavMenuTokenResource DarkItemSelectedColor}" />
             </Style>
-            
+
             <Style Selector="^[IsInSelectedPath=True]">
                 <Setter Property="Foreground"
                         Value="{atom:NavMenuTokenResource DarkItemSelectedColor}" />
@@ -172,7 +180,8 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <atom:TokenTransitions>
+                <atom:TokenTransitions EasingInput="{atom:NavMenuTokenResource ItemBackgroundMotionEasing}"
+                                       EasingProperty="{x:Static TemplatedControl.BackgroundProperty}">
                     <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
                     <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                 </atom:TokenTransitions>

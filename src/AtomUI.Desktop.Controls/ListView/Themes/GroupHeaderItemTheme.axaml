@@ -9,8 +9,8 @@
         </ControlTheme.BasedOn>
 
         <Style Selector="^[IsGroupItem=True]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
-            <Setter Property="FontWeight" Value="{atom:SharedTokenResource FontWeightStrong}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorFillAlter, AnchorControlType={x:Type atom:GroupHeaderItem}}" />
+            <Setter Property="FontWeight" Value="{atom:OwnerTokenResource Kind=FontWeightStrong, AnchorControlType={x:Type atom:GroupHeaderItem}}" />
             <Setter Property="Padding" Value="{atom:ListViewTokenResource GroupHeaderPadding}" />
         </Style>
     </ControlTheme>

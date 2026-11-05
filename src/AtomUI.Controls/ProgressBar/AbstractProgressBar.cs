@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Animations;
 using AtomUI.Utils;
 using Avalonia;
@@ -14,11 +15,8 @@ namespace AtomUI.Controls.Commons;
 [PseudoClasses(ProgressBarPseudoClass.Indeterminate, ProgressBarPseudoClass.Completed)]
 public abstract class AbstractProgressBar : RangeBase,
                                             ISizeTypeAware,
-                                            IMotionAwareControl
+                                            IMotionAwareControl, IThemeInheritanceSource
 {
-    protected const double LARGE_STROKE_THICKNESS = 8;
-    protected const double MIDDLE_STROKE_THICKNESS = 6;
-    protected const double SMALL_STROKE_THICKNESS = 4;
 
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsIndeterminateProperty =
@@ -97,6 +95,21 @@ public abstract class AbstractProgressBar : RangeBase,
         set => SetValue(ProgressTextFormatProperty, value);
     }
     
+    private double _percentage;
+
+    /// <summary>
+    /// Gets the overall percentage complete of the progress
+    /// </summary>
+    /// <remarks>
+    /// This read-only property is automatically calculated using the current <see cref="RangeBase.Value" /> and
+    /// the effective range (<see cref="RangeBase.Maximum" /> - <see cref="RangeBase.Minimum" />).
+    /// </remarks>
+    public double Percentage
+    {
+        get => _percentage;
+        private set => SetAndRaise(PercentageProperty, ref _percentage, value);
+    }
+
     public IBrush? StrokeBrush
     {
         get => GetValue(StrokeBrushProperty);
@@ -127,37 +140,22 @@ public abstract class AbstractProgressBar : RangeBase,
         set => SetValue(StatusProperty, value);
     }
 
-    private double _percentage;
-
-    /// <summary>
-    /// Gets the overall percentage complete of the progress
-    /// </summary>
-    /// <remarks>
-    /// This read-only property is automatically calculated using the current <see cref="RangeBase.Value" /> and
-    /// the effective range (<see cref="RangeBase.Maximum" /> - <see cref="RangeBase.Minimum" />).
-    /// </remarks>
-    public double Percentage
-    {
-        get => _percentage;
-        private set => SetAndRaise(PercentageProperty, ref _percentage, value);
-    }
-
     public double IndicatorThickness
     {
         get => GetValue(IndicatorThicknessProperty);
         set => SetValue(IndicatorThicknessProperty, value);
     }
 
-    public IBrush? SuccessStrokeBrush
-    {
-        get => GetValue(SuccessStrokeBrushProperty);
-        set => SetValue(SuccessStrokeBrushProperty, value);
-    }
-
     public double SuccessThreshold
     {
         get => GetValue(SuccessThresholdProperty);
         set => SetValue(SuccessThresholdProperty, value);
+    }
+
+    public IBrush? SuccessStrokeBrush
+    {
+        get => GetValue(SuccessStrokeBrushProperty);
+        set => SetValue(SuccessStrokeBrushProperty, value);
     }
 
     public bool IsMotionEnabled
@@ -177,7 +175,20 @@ public abstract class AbstractProgressBar : RangeBase,
         get => GetValue(SuccessCompletedIconProperty);
         set => SetValue(SuccessCompletedIconProperty, value);
     }
+    private double _strokeThickness;
+
+    protected double StrokeThickness
+    {
+        get => _strokeThickness;
+        set => SetAndRaise(StrokeThicknessProperty, ref _strokeThickness, value);
+    }
     #endregion
+
+    protected const double LARGE_STROKE_THICKNESS = 8;
+
+    protected const double MIDDLE_STROKE_THICKNESS = 6;
+
+    protected const double SMALL_STROKE_THICKNESS = 4;
 
     #region 内部属性定义
 
@@ -209,14 +220,6 @@ public abstract class AbstractProgressBar : RangeBase,
     {
         get => _effectiveSizeType;
         set => SetAndRaise(EffectiveSizeTypeProperty, ref _effectiveSizeType, value);
-    }
-
-    private double _strokeThickness;
-
-    protected double StrokeThickness
-    {
-        get => _strokeThickness;
-        set => SetAndRaise(StrokeThicknessProperty, ref _strokeThickness, value);
     }
 
     internal IBrush? GrooveBrush
@@ -371,12 +374,6 @@ public abstract class AbstractProgressBar : RangeBase,
         return Math.Abs(range) < double.Epsilon ? 1.0 : (value - Minimum) / range;
     }
 
-    private void UpdateProgress()
-    {
-        Percentage = CalculateProgressRatio(Value) * 100;
-        NotifyUpdateProgress();
-    }
-
     protected virtual void NotifyUpdateProgress()
     {
         if (IsProgressInfoVisible && PercentageLabel != null)
@@ -392,42 +389,6 @@ public abstract class AbstractProgressBar : RangeBase,
 
     protected virtual void NotifyHandleExtraInfoVisibility()
     {
-    }
-
-    private void HandlePropertyChangedForStyle(AvaloniaPropertyChangedEventArgs change)
-    {
-        if (change.Property == SizeTypeProperty)
-        {
-            EffectiveSizeType = change.GetNewValue<SizeType>();
-        }
-        else if (change.Property == ValueProperty)
-        {
-            IsCompleted = MathUtils.AreClose(Value, Maximum);
-            UpdatePseudoClasses();
-        }
-        else if (change.Property == IsCompletedProperty)
-        {
-            InvalidateMeasure();
-        }
-
-        if (this.IsAttachedToVisualTree())
-        {
-            if (change.Property == WidthProperty || change.Property == HeightProperty)
-            {
-                NotifyHandleExtraInfoVisibility();
-            }
-            else if (change.Property == EffectiveSizeTypeProperty)
-            {
-                NotifyEffectSizeTypeChanged();
-            }
-        }
-        NotifyPropertyChanged(change);
-    }
-
-    private void UpdatePseudoClasses()
-    {
-        PseudoClasses.Set(ProgressBarPseudoClass.Indeterminate, IsIndeterminate);
-        PseudoClasses.Set(ProgressBarPseudoClass.Completed, MathUtils.AreClose(Value, Maximum));
     }
 
     protected virtual void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -472,4 +433,53 @@ public abstract class AbstractProgressBar : RangeBase,
         base.OnLoaded(e);
         _transitionInitialization.CompleteInitialization();
     }
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    private void UpdateProgress()
+    {
+        Percentage = CalculateProgressRatio(Value) * 100;
+        NotifyUpdateProgress();
+    }
+
+    private void HandlePropertyChangedForStyle(AvaloniaPropertyChangedEventArgs change)
+    {
+        if (change.Property == SizeTypeProperty)
+        {
+            EffectiveSizeType = change.GetNewValue<SizeType>();
+        }
+        else if (change.Property == ValueProperty)
+        {
+            IsCompleted = MathUtils.AreClose(Value, Maximum);
+            UpdatePseudoClasses();
+        }
+        else if (change.Property == IsCompletedProperty)
+        {
+            InvalidateMeasure();
+        }
+
+        if (this.IsAttachedToVisualTree())
+        {
+            if (change.Property == WidthProperty || change.Property == HeightProperty)
+            {
+                NotifyHandleExtraInfoVisibility();
+            }
+            else if (change.Property == EffectiveSizeTypeProperty)
+            {
+                NotifyEffectSizeTypeChanged();
+            }
+        }
+        NotifyPropertyChanged(change);
+    }
+
+    private void UpdatePseudoClasses()
+    {
+        PseudoClasses.Set(ProgressBarPseudoClass.Indeterminate, IsIndeterminate);
+        PseudoClasses.Set(ProgressBarPseudoClass.Completed, MathUtils.AreClose(Value, Maximum));
+    }
+
 }

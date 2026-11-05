@@ -19,5 +19,6 @@
             </MultiBinding>
         </Setter>
         <Setter Property="ContentPadding" Value="{atom:DrawerTokenResource ContentPadding}" />
+        <Setter Property="DialogSize" Value="{atom:DrawerTokenResource SmallSize}" />
     </ControlTheme>
 </ResourceDictionary>

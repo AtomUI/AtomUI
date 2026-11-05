@@ -48,13 +48,19 @@ public sealed class InitializeStep : IStep
         {
             throw new InvalidDataException("Bridged package implementations must use actual Link action.");
         }
-        var bindings = FrameworkBindingPolicy.Create(runtimePack, input, owners);
+        var core = context.TryResolve(AssemblyNameReference.Parse(input.CoreAssemblyIdentity)) ?? throw new InvalidDataException("Missing Core implementation.");
+        var frameworkOwners = ConditionalTypeMapBridge.IsLegacyCore(core) ? owners.Append(core).Distinct().ToArray() : owners;
+        var bindings = FrameworkBindingPolicy.Create(runtimePack, input, frameworkOwners);
         var binder = new ConditionalDefinitionBinder(context.TryResolve, context.GetAssemblyLocation, input, bindings.Bindings);
         var groups = manifests.Select(binder.Bind).ToArray();
-        var core = context.TryResolve(AssemblyNameReference.Parse(input.CoreAssemblyIdentity)) ?? throw new InvalidDataException("Missing Core implementation.");
         var coreLib = context.TryResolve("System.Private.CoreLib") ?? throw new InvalidDataException("Missing target CoreLib.");
         var application = context.Annotations.GetEntryPointAssembly() ?? throw new InvalidDataException("Missing application entry assembly.");
-        new ConditionalTypeMapBridge(application, core, coreLib).Apply(groups);
+        FrameworkBindingPolicy.NormalizeReferences(frameworkOwners, bindings.Bindings);
+        var normalizedCore = new ConditionalTypeMapBridge(application, core, coreLib).Apply(groups);
+        if (normalizedCore && context.Annotations.GetAction(core) != AssemblyAction.Link)
+        {
+            throw new InvalidDataException("The legacy Core mode view requires actual Link action.");
+        }
         binder.RemoveConsumedRecords(manifests);
         FrameworkBindingPolicy.NormalizeReferences(owners, bindings.Bindings);
 

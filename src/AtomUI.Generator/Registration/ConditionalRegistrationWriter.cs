@@ -10,6 +10,7 @@ namespace AtomUI.Generator;
 // build inputs, never a runtime registry or a second source of control/asset dependency facts.
 internal static class ConditionalRegistrationWriter
 {
+    internal const string ThunkOwnerName = "GeneratedConditionalRegistrationThunks";
     internal const string CollectorTemplateId = "atomui.collector.v1";
     internal const string RequiredCapability = "atomui.conditional.v1";
     private const int MaximumIdentityLength = 65536;
@@ -22,6 +23,17 @@ internal static class ConditionalRegistrationWriter
     internal static void WriteCollector(StringBuilder source, RegistrationPackage package)
     {
         const string parameter = "global::AtomUI.Registration.ControlPackageRegistrationBuilder builder";
+        source.Append("    private static void Collect(").Append(parameter).Append(") => ")
+            .Append(ThunkOwnerName).AppendLine(".CollectFragments(builder);");
+    }
+
+    internal static void WriteThunks(StringBuilder source, RegistrationPackage package)
+    {
+        // PackageDefinition initializes the package owner. Both conditional backends require
+        // the exact collectors and fragment entrypoints together on a stateless owner.
+        source.Append("internal static class ").Append(ThunkOwnerName).AppendLine("\n{");
+        const string parameter = "global::AtomUI.Registration.ControlPackageRegistrationBuilder builder";
+        source.Append("    internal static void CollectFragments(").Append(parameter).AppendLine(") => Collect(builder);");
         source.Append("    private static void Collect(").Append(parameter).AppendLine(") => CollectFull(builder);");
         source.Append("    private static void CollectFull(").Append(parameter).AppendLine(")\n    {");
         // 本方法体受 net8 ILLink/ILC8 后端的精确 IL 模板绑定（仅允许逐片段调用）：
@@ -41,6 +53,7 @@ internal static class ConditionalRegistrationWriter
             source.Append("        builder.AddFragment(new ").Append(RegistrationNames.Proxy(control)).AppendLine("());");
             source.AppendLine("    }");
         }
+        source.AppendLine("}");
     }
 
     internal static bool Write(GenerationOutput output, RegistrationPackage package, string groupName)
@@ -54,7 +67,7 @@ internal static class ConditionalRegistrationWriter
         var groupNameWithNamespace = package.Namespace + "." + groupName;
         var groupIdentity = groupNameWithNamespace + ", " + package.AssemblyIdentity;
         var group = NamedType(package.AssemblyIdentity, groupNameWithNamespace);
-        var collector = NamedType(package.AssemblyIdentity, package.Namespace + ".GeneratedControlPackageRegistration");
+        var collector = NamedType(package.AssemblyIdentity, package.Namespace + "." + ThunkOwnerName);
         var records = new List<Record>();
         var identities = new HashSet<string>(StringComparer.Ordinal);
         var packagePayload = Fields(

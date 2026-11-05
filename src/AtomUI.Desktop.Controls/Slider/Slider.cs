@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using AtomUI.Media;
 using AtomUI.Utils;
@@ -29,7 +30,7 @@ public record SliderMark(string Label, double Value)
 [PseudoClasses(StdPseudoClass.Vertical, StdPseudoClass.Horizontal, StdPseudoClass.Pressed)]
 public partial class Slider : RangeBase,
                       IMotionAwareControl,
-                      IFormItemAware
+                      IFormItemAware, IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -227,13 +228,24 @@ public partial class Slider : RangeBase,
             SliderTrack.ThumbsChanged += HandleTrackThumbsChanged;
         }
 
-        _pointerPressDispose = this.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
-        _pointerReleaseDispose = this.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
-        _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
+        SubscribePointerHandlers();
         ConfigureTipHostWidth();
         ConfigureTemplateThumbTips();
         SetupSliderThumbPlacement();
         UpdatePseudoClasses(Orientation);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        SubscribePointerHandlers();
+        if (SliderTrack is not null)
+        {
+            SliderTrack.ThumbsChanged -= HandleTrackThumbsChanged;
+            SliderTrack.ThumbsChanged += HandleTrackThumbsChanged;
+            ConfigureTemplateThumbTips();
+            SetupSliderThumbPlacement();
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -390,6 +402,12 @@ public partial class Slider : RangeBase,
 
     #endregion
 
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
     private static IReadOnlyList<double>? CoerceRangeValues(AvaloniaObject sender, IReadOnlyList<double>? values)
     {
         var normalized = SliderRangeMath.NormalizeRangeValues(
@@ -397,6 +415,14 @@ public partial class Slider : RangeBase,
             sender.GetValue(MinimumProperty),
             sender.GetValue(MaximumProperty));
         return normalized.Count == 0 ? sender.GetValue(RangeValuesProperty) : normalized;
+    }
+
+    private void SubscribePointerHandlers()
+    {
+        DisposePointerHandlers();
+        _pointerPressDispose = this.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
+        _pointerReleaseDispose = this.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+        _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
     }
 
     private void DisposePointerHandlers()

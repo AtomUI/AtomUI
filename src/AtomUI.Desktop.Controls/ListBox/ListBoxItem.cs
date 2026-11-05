@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using Avalonia.Controls.Primitives;
 using AtomUI.Animations;
 using AtomUI.Controls;
@@ -13,81 +14,100 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaListBoxItem = Avalonia.Controls.ListBoxItem;
 
-public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAware, ITransitionInitializationOwner
+public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAware, ITransitionInitializationOwner,
+    IThemeInheritanceSource
 {
+    #region 公共属性定义
+
+    private TextBlockHighlightStrategy _filterHighlightStrategy = TextBlockHighlightStrategy.All;
+
+    public TextBlockHighlightStrategy FilterHighlightStrategy
+    {
+        get => _filterHighlightStrategy;
+        set => SetAndRaise(FilterHighlightStrategyProperty, ref _filterHighlightStrategy, value);
+    }
+
+    public IBrush? FilterHighlightForeground
+    {
+        get => GetValue(FilterHighlightForegroundProperty);
+        set => SetValue(FilterHighlightForegroundProperty, value);
+    }
+
+    #endregion
+
     #region 公共事件定义
 
-    public static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
-        RoutedEvent.Register<ListBoxItem, RoutedEventArgs>(
-            nameof(Clicked),
-            RoutingStrategies.Bubble);
-    
     public event EventHandler<RoutedEventArgs>? Clicked
     {
         add => AddHandler(ClickedEvent, value);
         remove => RemoveHandler(ClickedEvent, value);
     }
 
+    public static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
+        RoutedEvent.Register<ListBoxItem, RoutedEventArgs>(
+            nameof(Clicked),
+            RoutingStrategies.Bubble);
+
     #endregion
-    
+
     #region 内部属性定义
 
     internal static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<ListBoxItem>();
-    
+
     internal static readonly StyledProperty<IBrush?> ItemHoverBgProperty =
         ListBox.ItemHoverBgProperty.AddOwner<ListBoxItem>();
-    
+
     internal static readonly StyledProperty<IBrush?> ItemSelectedBgProperty =
         ListBox.ItemSelectedBgProperty.AddOwner<ListBoxItem>();
-    
+
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ListBoxItem>();
-    
+
     internal static readonly DirectProperty<ListBoxItem, bool> IsShowSelectedIndicatorProperty =
         AvaloniaProperty.RegisterDirect<ListBoxItem, bool>(nameof(IsShowSelectedIndicator),
             o => o.IsShowSelectedIndicator,
             (o, v) => o.IsShowSelectedIndicator = v);
-    
+
     internal static readonly DirectProperty<ListBoxItem, bool> IsSelectedIndicatorVisibleProperty =
         AvaloniaProperty.RegisterDirect<ListBoxItem, bool>(nameof(IsSelectedIndicatorVisible),
             o => o.IsSelectedIndicatorVisible,
             (o, v) => o.IsSelectedIndicatorVisible = v);
-    
+
     internal static readonly DirectProperty<ListBoxItem, IconTemplate?> SelectedIndicatorProperty =
         AvaloniaProperty.RegisterDirect<ListBoxItem, IconTemplate?>(nameof(SelectedIndicator),
             o => o.SelectedIndicator,
             (o, v) => o.SelectedIndicator = v);
-    
+
     internal static readonly DirectProperty<ListBoxItem, bool> IsFilteringProperty =
         AvaloniaProperty.RegisterDirect<ListBoxItem, bool>(nameof(IsFiltering),
             o => o.IsFiltering,
             (o, v) => o.IsFiltering = v);
-    
+
     internal static readonly DirectProperty<ListBoxItem, object?> FilterValueProperty =
         AvaloniaProperty.RegisterDirect<ListBoxItem, object?>(nameof(FilterValue),
             o => o.FilterValue,
             (o, v) => o.FilterValue = v);
-    
+
     internal static readonly DirectProperty<ListBoxItem, TextBlockHighlightStrategy> FilterHighlightStrategyProperty =
         AvaloniaProperty.RegisterDirect<ListBoxItem, TextBlockHighlightStrategy>(
             nameof(FilterHighlightStrategy),
             o => o.FilterHighlightStrategy,
             (o, v) => o.FilterHighlightStrategy = v);
-    
+
     internal static readonly DirectProperty<ListBoxItem, string?> FilterHighlightWordsProperty =
         AvaloniaProperty.RegisterDirect<ListBoxItem, string?>(
-            nameof(FilterHighlightWords), t => t.FilterHighlightWords, 
+            nameof(FilterHighlightWords), t => t.FilterHighlightWords,
             (t, v) => t.FilterHighlightWords = v);
-    
+
     internal static readonly DirectProperty<ListBoxItem, string?> ContentTextProperty =
         AvaloniaProperty.RegisterDirect<ListBoxItem, string?>(
-            nameof(ContentText), t => t.ContentText, 
+            nameof(ContentText), t => t.ContentText,
             (t, v) => t.ContentText = v);
-    
+
     internal static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         ListBox.FilterHighlightForegroundProperty.AddOwner<ListBoxItem>();
-    
+
     internal static readonly DirectProperty<ListBoxItem, Thickness> EffectiveBorderThicknessProperty =
         AvaloniaProperty.RegisterDirect<ListBoxItem, Thickness>(nameof(EffectiveBorderThickness),
             o => o.EffectiveBorderThickness,
@@ -114,19 +134,19 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         get => GetValue(ItemHoverBgProperty);
         set => SetValue(ItemHoverBgProperty, value);
     }
-    
+
     internal IBrush? ItemSelectedBg
     {
         get => GetValue(ItemSelectedBgProperty);
         set => SetValue(ItemSelectedBgProperty, value);
     }
-    
+
     internal bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     private bool _isShowSelectedIndicator;
 
     internal bool IsShowSelectedIndicator
@@ -134,7 +154,7 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         get => _isShowSelectedIndicator;
         set => SetAndRaise(IsShowSelectedIndicatorProperty, ref _isShowSelectedIndicator, value);
     }
-    
+
     private bool _isSelectedIndicatorVisible;
 
     internal bool IsSelectedIndicatorVisible
@@ -142,7 +162,7 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         get => _isSelectedIndicatorVisible;
         set => SetAndRaise(IsSelectedIndicatorVisibleProperty, ref _isSelectedIndicatorVisible, value);
     }
-    
+
     private IconTemplate? _selectedIndicator;
 
     internal IconTemplate? SelectedIndicator
@@ -150,7 +170,7 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         get => _selectedIndicator;
         set => SetAndRaise(SelectedIndicatorProperty, ref _selectedIndicator, value);
     }
-    
+
     private bool _isFiltering;
 
     internal bool IsFiltering
@@ -158,7 +178,7 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         get => _isFiltering;
         set => SetAndRaise(IsFilteringProperty, ref _isFiltering, value);
     }
-    
+
     private object? _filterValue;
 
     internal object? FilterValue
@@ -166,33 +186,21 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         get => _filterValue;
         set => SetAndRaise(FilterValueProperty, ref _filterValue, value);
     }
-    
-    private TextBlockHighlightStrategy _filterHighlightStrategy = TextBlockHighlightStrategy.All;
-    
-    public TextBlockHighlightStrategy FilterHighlightStrategy
-    {
-        get => _filterHighlightStrategy;
-        set => SetAndRaise(FilterHighlightStrategyProperty, ref _filterHighlightStrategy, value);
-    }
-    
+
     private string? _filterHighlightWords;
+
     internal string? FilterHighlightWords
     {
         get => _filterHighlightWords;
         set => SetAndRaise(FilterHighlightWordsProperty, ref _filterHighlightWords, value);
     }
-    
+
     private string? _contentText;
+
     internal string? ContentText
     {
         get => _contentText;
         set => SetAndRaise(ContentTextProperty, ref _contentText, value);
-    }
-    
-    public IBrush? FilterHighlightForeground
-    {
-        get => GetValue(FilterHighlightForegroundProperty);
-        set => SetValue(FilterHighlightForegroundProperty, value);
     }
 
     private Thickness _effectiveBorderThickness;
@@ -218,9 +226,11 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         get => _isSplitLineEffectiveVisible;
         private set => SetAndRaise(IsSplitLineEffectiveVisibleProperty, ref _isSplitLineEffectiveVisible, value);
     }
+
     #endregion
-    
+
     private static readonly Point s_invalidPoint = new(double.NaN, double.NaN);
+
     private Point _pointerDownPoint = s_invalidPoint;
 
     private readonly TransitionInitializationSession _transitionInitialization;
@@ -292,10 +302,6 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
 
     }
 
-
-
-
-
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         _pointerDownPoint = s_invalidPoint;
@@ -309,13 +315,13 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         {
             var p = e.GetCurrentPoint(this);
 
-            if (p.Properties.PointerUpdateKind is PointerUpdateKind.LeftButtonPressed or 
+            if (p.Properties.PointerUpdateKind is PointerUpdateKind.LeftButtonPressed or
                 PointerUpdateKind.RightButtonPressed)
             {
                 if (p.Pointer.Type == PointerType.Mouse || (p.Pointer.Type == PointerType.Pen && p.Properties.IsRightButtonPressed))
                 {
                     // If the pressed point comes from a mouse or right-click pen, perform the selection immediately.
-                    // In case of pen, only right-click is accepted, as left click (a tip touch) is used for scrolling. 
+                    // In case of pen, only right-click is accepted, as left click (a tip touch) is used for scrolling.
                     e.Handled = owner.UpdateSelectionFromPointerEvent(this, e);
                 }
                 else
@@ -375,9 +381,11 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
 
         _pointerDownPoint = s_invalidPoint;
     }
-    #region 实现 IListItemVirtualizingContextAware 接口
+
+    #region 实现 控件接口
 
     int IListItemVirtualizingContextAware.VirtualIndex { get; set; } = -1;
+
     bool IListItemVirtualizingContextAware.VirtualContextOperating { get; set; }
 
     #endregion
@@ -385,6 +393,9 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
     #region 实现 ITransitionInitializationOwner 接口
 
     TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
+
+    // The theme preserves the actual inheritance parent when owner typography is not explicit.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 
     #endregion
 
@@ -399,6 +410,5 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         IsSplitLineEffectiveVisible = showSplitLine;
         EffectiveBorderThickness = showSplitLine ? BorderThickness : new Thickness(0);
     }
-
 
 }

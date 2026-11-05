@@ -6,6 +6,12 @@ Popup 接入边界：`FlyoutHost` / `Flyout` 负责业务状态和内容准备�
 
 ## 1. 实现定位
 
+跨根背景连接仅在 presenter attach 时查询真实 FlyoutHost 逻辑祖先，以 Style 优先订阅 owner 资源，detach 时释放；普通 ControlTheme 无法从 owner 模板访问此运行时创建的共享 StyleKey 节点，原因同时写在代码注释中。原生值及专用 Semantic Part Style 均能覆盖它，清除后恢复资源值。
+
+Flyout 的 Pointer offset lease 记录当前 placement target；跨 target 重开先完成旧生命周期关闭，避免旧关闭回调释放新 scope 的 lease。关闭、detach 退休订阅并清空 context。TreeViewFlyoutPresenter 使用 TreeViewItem 的 class handler 接收原有冒泡 Click，不保留逐项递归 delegate；原生树容器准备路径保持。
+
+官方 PopupFlyoutBase 只在打开时把 offset 复制给 Popup。AtomUI 在打开期间将 Own/原生 offset 的变更回放到当前 Popup，保留同一内容和焦点；关闭时不访问或创建懒 Popup。FlyoutHost 换模板导致原 anchor 卸载时先走原生命周期关闭，在新模板应用后复用既有带 generation/可见/可用 guard 的 QueuePinnedOpen 重新协调 pinned 状态，原 scroll 对象与 Offset 保留。
+
 本文档覆盖 InfoFlyout 的控件实现、主题接入、状态同步和 Gallery 可见维护边界。具体属性注册、默认值、绘制细节和 AXAML selector 仍应直接阅读源码；本文只记录维护者必须理解的稳定结构和不变量。
 
 ## 2. 源码文件结构
@@ -26,7 +32,7 @@ Popup 接入边界：`FlyoutHost` / `Flyout` 负责业务状态和内容准备�
 - `src/AtomUI.Desktop.Controls/Flyouts/Themes/MenuFlyoutPresenterTheme.cs`
 - `src/AtomUI.Desktop.Controls/Flyouts/Themes/TreeViewFlyoutPresenterTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Flyouts/Themes/TreeViewFlyoutPresenterTheme.cs`
-- `src/AtomUI.Desktop.Controls/Flyouts/TreeFlyoutToken.cs`
+- `src/AtomUI.Desktop.Controls/Flyouts/TreeViewFlyoutPresenterToken.cs`
 - `src/AtomUI.Desktop.Controls/Flyouts/TreeViewFlyout.cs`
 - `src/AtomUI.Desktop.Controls/Flyouts/TreeViewFlyoutPresenter.cs`
 
@@ -51,7 +57,7 @@ Popup 接入边界：`FlyoutHost` / `Flyout` 负责业务状态和内容准备�
 - `MenuFlyout`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `MenuFlyoutPresenter`：模板协作类型，承载内容展示、宿主或视觉边界。
 - `MenuFlyoutPresenterTheme`：ControlTheme 类型入口，连接主题资源和控件类型。
-- `TreeFlyoutToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
+- `TreeViewFlyoutPresenterToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
 - `TreeViewFlyout`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `TreeViewFlyoutPresenter`：模板协作类型，承载内容展示、宿主或视觉边界。
 - `TreeViewFlyoutPresenterTheme`：ControlTheme 类型入口，连接主题资源和控件类型。

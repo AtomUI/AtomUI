@@ -5,6 +5,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls;
 
 internal sealed class SemanticPartPreviewLayoutPanel : Panel
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<double> CompactBreakpointProperty =
         AvaloniaProperty.Register<SemanticPartPreviewLayoutPanel, double>(nameof(CompactBreakpoint), 820);
 
@@ -23,12 +25,6 @@ internal sealed class SemanticPartPreviewLayoutPanel : Panel
     /// </summary>
     public static readonly StyledProperty<double> PreviewStageMinHeightProperty =
         AvaloniaProperty.Register<SemanticPartPreviewLayoutPanel, double>(nameof(PreviewStageMinHeight), 360);
-
-    public double PreviewStageMinHeight
-    {
-        get => GetValue(PreviewStageMinHeightProperty);
-        set => SetValue(PreviewStageMinHeightProperty, value);
-    }
 
     public double CompactBreakpoint
     {
@@ -53,6 +49,14 @@ internal sealed class SemanticPartPreviewLayoutPanel : Panel
         get => GetValue(PaneMaxHeightProperty);
         set => SetValue(PaneMaxHeightProperty, value);
     }
+
+    public double PreviewStageMinHeight
+    {
+        get => GetValue(PreviewStageMinHeightProperty);
+        set => SetValue(PreviewStageMinHeightProperty, value);
+    }
+
+    #endregion
 
     static SemanticPartPreviewLayoutPanel()
     {

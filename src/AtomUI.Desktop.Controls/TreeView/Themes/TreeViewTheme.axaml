@@ -4,6 +4,22 @@
               xmlns:atom="https://atomui.net"
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.TreeViewTheme">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
+    <Setter Property="FontSize">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+            <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontSize" />
+        </MultiBinding>
+    </Setter>
+
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TreeView">
             <Border Name="Frame">
@@ -42,17 +58,17 @@
 
     <Style Selector="^:is(atom|TreeView)">
         <Setter Property="FilterHighlightForeground" Value="{atom:TreeViewTokenResource FilterHighlightColor}" />
-        <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource PaddingXL}" />
+        <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource Kind=PaddingXL, AnchorControlType={x:Type atom:TreeView}}" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="atom:ScrollViewer.IsScrollChainingEnabled" Value="False" />
         <Setter Property="IsShowEmptyIndicator" Value="True" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationSlow}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="MotionDuration" Value="{atom:OwnerTokenResource MotionDurationSlow}" />
         <Setter Property="DragIndicatorLineWidth"
                 Value="{atom:TreeViewTokenResource DragIndicatorLineWidth}" />
-        <Setter Property="DragIndicatorBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
-        
+        <Setter Property="DragIndicatorBrush" Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atom:TreeView}}" />
+
         <Setter Property="ItemTemplate">
             <TreeDataTemplate ItemsSource="{Binding Children}" DataType="atom:ITreeItemNode">
                 <atom:TextBlock Text="{Binding Header}" />

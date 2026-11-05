@@ -82,7 +82,7 @@ active/inactive 是控件实例状态。Token 只提供对应颜色，实际选�
 | `CloseHoverBackgroundColor` | 通用 close action hover 背景。 |
 | `ClosePressedBackgroundColor` | 通用 close action pressed 背景。 |
 
-这些变量属于生成的 WindowTitleBar Token 契约。内置 caption themes 使用更精确的 active/inactive 与 Windows close 变量；通用兼容颜色仍保持可生成、可覆盖和不可随意重命名。
+这些变量属于生成的 WindowTitleBar Token 契约。内置 caption themes 使用更精确的 active/inactive 与 Windows close 变量；通用兼容颜色按 Legacy 保留名称、类型、默认和资源编号，内置主题不消费它们；可完整导入导出，但不能宣称它们具有内置 caption 视觉效果。工作台显示为兼容只读，精确状态定制使用上列 active/inactive/Windows close 字段。
 
 ## 3. 控件专项模型中的 Token 使用
 

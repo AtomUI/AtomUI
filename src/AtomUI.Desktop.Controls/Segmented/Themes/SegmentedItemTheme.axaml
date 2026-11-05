@@ -4,6 +4,30 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SegmentedItem}" TargetType="atom:SegmentedItem">
+        <Setter Property="CornerRadius"
+                Value="{atom:OwnerTokenResource Kind=BorderRadiusSM, AnchorControlType={x:Type atom:SegmentedItem}}" />
+        <Setter Property="FontSize"
+                Value="{atom:OwnerTokenResource Kind=FontSize, AnchorControlType={x:Type atom:SegmentedItem}}" />
+        <Setter Property="MinHeight"
+                Value="{atom:SegmentedTokenResource ItemMinHeight}" />
+        <Setter Property="Padding"
+                Value="{atom:SegmentedTokenResource SegmentedItemPadding}" />
+
+        <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
+            <Setter Property="Width"
+                    Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:SegmentedItem}}" />
+            <Setter Property="Height"
+                    Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:SegmentedItem}}" />
+        </Style>
+
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="Frame"
@@ -98,20 +122,20 @@
 
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CornerRadius"
-                    Value="{atom:SharedTokenResource BorderRadius}" />
+                    Value="{atom:OwnerTokenResource Kind=BorderRadius, AnchorControlType={x:Type atom:SegmentedItem}}" />
             <Setter Property="FontSize"
-                    Value="{atom:SharedTokenResource FontSizeLG}" />
+                    Value="{atom:OwnerTokenResource Kind=FontSizeLG, AnchorControlType={x:Type atom:SegmentedItem}}" />
             <Setter Property="MinHeight"
                     Value="{atom:SegmentedTokenResource ItemMinHeightLG}" />
             <Setter Property="Padding"
                     Value="{atom:SegmentedTokenResource SegmentedItemPadding}" />
         </Style>
 
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="CornerRadius"
-                    Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                    Value="{atom:OwnerTokenResource Kind=BorderRadiusSM, AnchorControlType={x:Type atom:SegmentedItem}}" />
             <Setter Property="FontSize"
-                    Value="{atom:SharedTokenResource FontSize}" />
+                    Value="{atom:OwnerTokenResource Kind=FontSize, AnchorControlType={x:Type atom:SegmentedItem}}" />
             <Setter Property="MinHeight"
                     Value="{atom:SegmentedTokenResource ItemMinHeight}" />
             <Setter Property="Padding"
@@ -120,9 +144,9 @@
 
         <Style Selector="^[SizeType=Small]">
             <Setter Property="CornerRadius"
-                    Value="{atom:SharedTokenResource BorderRadiusXS}" />
+                    Value="{atom:OwnerTokenResource Kind=BorderRadiusXS, AnchorControlType={x:Type atom:SegmentedItem}}" />
             <Setter Property="FontSize"
-                    Value="{atom:SharedTokenResource FontSize}" />
+                    Value="{atom:OwnerTokenResource Kind=FontSize, AnchorControlType={x:Type atom:SegmentedItem}}" />
             <Setter Property="MinHeight"
                     Value="{atom:SegmentedTokenResource ItemMinHeightSM}" />
             <Setter Property="Padding"
@@ -143,36 +167,36 @@
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSizeLG}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:SegmentedItem}}" />
                 <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSizeLG}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSizeLG, AnchorControlType={x:Type atom:SegmentedItem}}" />
             </Style>
         </Style>
 
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSize}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:SegmentedItem}}" />
                 <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSize}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSize, AnchorControlType={x:Type atom:SegmentedItem}}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Small]">
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSizeSM}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:SegmentedItem}}" />
                 <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSizeSM}" />
+                        Value="{atom:OwnerTokenResource Kind=IconSizeSM, AnchorControlType={x:Type atom:SegmentedItem}}" />
             </Style>
         </Style>
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:OwnerTokenResource Kind=ColorTextDisabled, AnchorControlType={x:Type atom:SegmentedItem}}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:OwnerTokenResource Kind=ColorTextDisabled, AnchorControlType={x:Type atom:SegmentedItem}}" />
             </Style>
         </Style>
 

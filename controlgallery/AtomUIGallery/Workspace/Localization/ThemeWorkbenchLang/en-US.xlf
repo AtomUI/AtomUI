@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUIGallery.Localization.ThemeWorkbenchLangResourceKind">
+    <unit id="Primary"><segment><source>Primary</source></segment></unit>
+    <unit id="Small"><segment><source>Small</source></segment></unit>
+    <unit id="Disabled"><segment><source>Disabled</source></segment></unit>
+    <unit id="Feedback"><segment><source>Preview feedback</source></segment></unit>
+    <unit id="Dark"><segment><source>Dark</source></segment></unit>
+    <unit id="Preview"><segment><source>Preview draft</source></segment></unit>
+    <unit id="Apply"><segment><source>Apply to Gallery</source></segment></unit>
+    <unit id="ResetBrand"><segment><source>Restore preset</source></segment></unit>
+    <unit id="Import"><segment><source>Import recipe</source></segment></unit>
+    <unit id="SaveComplete"><segment><source>Save complete recipe</source></segment></unit>
+    <unit id="SaveTokens"><segment><source>Export tokens only</source></segment></unit>
+    <unit id="Owner"><segment><source>Token owner</source></segment></unit>
+    <unit id="SetOverride"><segment><source>Set override</source></segment></unit>
+    <unit id="Inherit"><segment><source>Clear override</source></segment></unit>
+    <unit id="RecipeJson"><segment><source>Complete recipe JSON</source></segment></unit>
+    <unit id="ReadDraft"><segment><source>Read JSON as draft</source></segment></unit>
+    <unit id="Diff"><segment><source>Changes from preset</source></segment></unit>
+    <unit id="DraftPreview"><segment><source>Draft · isolated preview</source></segment></unit>
+    <unit id="BaselinePreview"><segment><source>Preset · isolated reference</source></segment></unit>
+    <unit id="Cancel"><segment><source>Cancel apply</source></segment></unit>
+  </file>
+</xliff>

@@ -218,3 +218,9 @@ AOT 边界：
 - WaveSpirit 开关不改变值状态。
 - Gallery ToggleSwitch 示例、源码片段。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。
+
+## 字体、加载与退出
+
+字体族使用明确 Global 与真实继承的可选投射，Foreground/状态色和 wave 输入由实际 ToggleSwitch owner 解析。主题把几何与画刷传到实际 SwitchKnob，专用 Indicator/Content Style 保留原生优先级。
+
+加载请求仍由 owner 状态驱动；knob 执行动画前检查业务请求、motion、正周期和 attach。motion/周期热更新会释放旧执行，再按当前输入启动；退出加载或 detach 取消并释放执行。关闭 motion 不清除 IsLoading，也不覆盖调用方状态。

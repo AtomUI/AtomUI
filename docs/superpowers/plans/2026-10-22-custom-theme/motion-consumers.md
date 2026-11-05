@@ -59,6 +59,6 @@ M3 实际数值、固定时点/真实时钟、清理和当前Mac NativeAOT结果
 
 IndicatorScrollBarThumb另行处理：原HEAD及当前版本的Border.Transitions实际Duration均为0，作用域800ms仍0。模板中的非Control目标不能直接使用Owner绑定；CT-10机械替换没有解决这条动效链。该集合迁到ControlTheme的style Setter，默认仍为0；只有规范配置直接提供MotionDurationMid时才使用有效时长。复用已有WhenExplicit存在位与owner解析，在TokenTransitions声明可选的UnconfiguredDuration=0；不以数值相等猜配置，不给内部节点造identity。直接改成普通Mid默认200ms会改变既有时序，故不采用。独立未登记primitive保持0，真实公开owner下验证明确配置及清除。另将AvaScrollViewer分隔区的模板内100ms集合移至style Setter，以默认100ms的MotionDurationFast接入；视口、范围和可见滚动条保持。GalleryBase的内部扩展访问经真实物化失败后补齐，与现有产品包使用相同Core内部消费边界。
 
-- [ ] 按实际 transition/motion/wave 消费路径列举公开 owner、值、时序、像素、scope 与释放结果，未验证平台明确挂 CT-25。
+- [x] 按实际transition/motion/wave消费路径核对owner、值、时序、像素、scope与释放，见[总出口结果](motion-exit-results.md)。M1–M3和已批准的按钮持续动效证据合并，本轮92/93组本机实际路径、Windows专用路径明确挂CT25；两份限定视觉结论、媒体/源码清理及991项最终模块证据均已闭合。
 - [x] 本次83集合接入的临时验证源/驱动/媒体和专用产物清理；清理后受影响模块及正式文档已同步，见[扩展结果](motion-consumers-expanded-results.md)。
-- [x] 本次接入作者自审、tasks/results已更新。第一项逐家族状态出口仍开放，M1完成不能代替 M2/M3 或 CT-12 按钮原生闪动验收。
+- [x] 作者自审、tasks/results已更新，2026-10-29关闭CT11动效消费合同出口。完整家族Own/业务输入与原生闪动仍归CT12–CT20/CT25，不因本任务完成而改写这些任务状态。

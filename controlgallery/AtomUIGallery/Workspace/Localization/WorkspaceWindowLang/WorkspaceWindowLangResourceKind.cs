@@ -7,6 +7,7 @@ public enum WorkspaceWindowLangResourceKind
     MenuItemSettings,
     MenuItemTheme,
     MenuItemThemeSettings,
+    MenuItemThemeWorkbench,
     MenuItemLanguage,
     MenuItemWindowOptions,
     MenuItemEnableFullScreen,

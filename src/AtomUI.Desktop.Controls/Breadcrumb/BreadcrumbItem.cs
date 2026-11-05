@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Diagnostics;
 using AtomUI.Animations;
 using AtomUI.Controls;
@@ -15,24 +16,25 @@ namespace AtomUI.Desktop.Controls;
 using AvaloniaButton = Avalonia.Controls.Button;
 
 [PseudoClasses(StdPseudoClass.Pressed, BreadcrumbPseudoClass.HasIcon, BreadcrumbPseudoClass.IsLast)]
-public class BreadcrumbItem : AvaloniaButton
+public class BreadcrumbItem : AvaloniaButton,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<BreadcrumbItem, PathIcon?>(nameof(Icon));
-    
+
     public static readonly StyledProperty<object?> NavigateContextProperty =
         AvaloniaProperty.Register<BreadcrumbItem, object?>(nameof(NavigateContext));
-    
+
     public static readonly StyledProperty<Uri?> NavigateUriProperty =
         AvaloniaProperty.Register<BreadcrumbItem, Uri?>(
             nameof(NavigateUri),
             defaultValue: null);
-    
+
     public static readonly StyledProperty<object?> SeparatorProperty =
         Breadcrumb.SeparatorProperty.AddOwner<BreadcrumbItem>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> SeparatorTemplateProperty =
         Breadcrumb.SeparatorTemplateProperty.AddOwner<BreadcrumbItem>();
 
@@ -47,20 +49,20 @@ public class BreadcrumbItem : AvaloniaButton
         get => GetValue(NavigateContextProperty);
         set => SetValue(NavigateContextProperty, value);
     }
-    
+
     public Uri? NavigateUri
     {
         get => GetValue(NavigateUriProperty);
         set => SetValue(NavigateUriProperty, value);
     }
-    
+
     [DependsOn(nameof(SeparatorTemplate))]
     public object? Separator
     {
         get => GetValue(SeparatorProperty);
         set => SetValue(SeparatorProperty, value);
     }
-    
+
     public IDataTemplate? SeparatorTemplate
     {
         get => GetValue(SeparatorTemplateProperty);
@@ -70,36 +72,38 @@ public class BreadcrumbItem : AvaloniaButton
     #endregion
 
     #region 内部属性定义
-    
-    internal static readonly StyledProperty<bool> IsMotionEnabledProperty = 
+
+    internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<BreadcrumbItem>();
-    
+
     internal static readonly DirectProperty<BreadcrumbItem, bool> IsLastProperty =
         AvaloniaProperty.RegisterDirect<BreadcrumbItem, bool>(
             nameof(IsLast),
             o => o.IsLast,
             (o, v) => o.IsLast = v);
-    
+
     internal static readonly DirectProperty<BreadcrumbItem, bool> IsNavigateResponsiveProperty =
         AvaloniaProperty.RegisterDirect<BreadcrumbItem, bool>(
             nameof(IsNavigateResponsive),
             o => o.IsNavigateResponsive,
             (o, v) => o.IsNavigateResponsive = v);
-    
+
     internal bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     private bool _isLast;
+
     internal bool IsLast
     {
         get => _isLast;
         set => SetAndRaise(IsLastProperty, ref _isLast, value);
     }
-    
+
     private bool _isNavigateResponsive;
+
     internal bool IsNavigateResponsive
     {
         get => _isNavigateResponsive;
@@ -138,12 +142,12 @@ public class BreadcrumbItem : AvaloniaButton
         base.OnAttachedToLogicalTree(e);
         Debug.Assert(Parent is Breadcrumb, "BreadcrumbItem's Parent must be Breadcrumb Control.");
     }
-    
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == IconProperty || 
+        if (change.Property == IconProperty ||
             change.Property == IsLastProperty)
         {
             UpdatePseudoClasses();
@@ -154,7 +158,7 @@ public class BreadcrumbItem : AvaloniaButton
             IsNavigateResponsive = NavigateUri != null || NavigateContext != null;
         }
     }
-    
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -186,9 +190,17 @@ public class BreadcrumbItem : AvaloniaButton
         }
     }
 
+    #region 实现 控件接口
+
+    // The theme preserves the actual inheritance parent when owner typography is not explicit.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(BreadcrumbPseudoClass.HasIcon, Icon is not null);
         PseudoClasses.Set(BreadcrumbPseudoClass.IsLast, IsLast);
     }
+
 }

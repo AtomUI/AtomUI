@@ -61,3 +61,8 @@
   - 新增 ListView Token 设计文档，记录 root 结构、条目文字、条目背景、条目间距、分页、分组和选中标记 Token 边界。
   - 补充分组设计说明，明确 group key、`GroupListItemData`、`GroupItemTemplate`、selection source、分页组合和虚拟化清理边界。
   - 在 Data Display 分类入口中登记 ListView 文档。
+
+
+## 2026-10-30 主题消费与字体
+
+列表根、公开条目及 Transfer 派生条目保留实际注册身份；组标题等内部节点解析所属公开 owner。边框、尺寸与标记消费有效 Global，可选字体保持原生继承。Custom 使用稳定基础默认值，退出预设尺寸选择器。

@@ -60,3 +60,8 @@
   - Add Breadcrumb implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add Breadcrumb control-level changelog.
   - Add Breadcrumb Token documentation covering BreadcrumbToken.
+
+
+## 2026-10-30 主题消费与字体
+
+根与公开条目保持独立 Global 身份，分隔内容间距、圆角及图标尺寸从条目模板实例解析。字体族和根字号仅在显式配置时覆盖实际继承，实例属性与专用 Semantic Part Style 保持原生优先级。

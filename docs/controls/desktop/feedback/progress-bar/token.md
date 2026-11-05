@@ -142,3 +142,14 @@ Token 变更要求：
 | 修改图标尺寸 | 验证线形、步骤线形、圆形和仪表盘的成功 / 异常图标不裁剪。 |
 | 修改圆形最小尺寸 | 验证 Large / Middle / Small、显式宽高和小尺寸圆形中的文本与图标可见性。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步所有 AXAML 引用、生成文件、Token 类型、生成数据和 token.md和控件文档。 |
+
+## 有效 owner 与动态指标
+
+四个公开 owner 保留各自 Global identity；13 Own 继续使用既有 ProgressBar 家族 scope。`DefaultColor`、`RemainingColor`、圆形最小字号/图标、线形留白及两档图标按实际目标消费，不为形态复制 Own 字典。
+
+- `LineExtraInfoMargin` 更新普通/步骤的信息留位及实际轨道排列；`LineProgressPadding` 更新普通线形内嵌留白和尺寸分类输入。
+- `LineInfoIconSize` 服务 Large，`LineInfoIconSizeSM` 服务 Middle/Small；测量和模板图标使用同一档。
+- 线形字号来自该具体 owner 的有效 `FontSize`/`FontSizeSM`。固定交叉尺寸的档位阈值使用同一有效指标，字体族/字重/样式及 padding 变化会使阈值失效；不会以应用级旧值永久缓存。
+- `ProgressStepMinWidth`、`ProgressStepMarginInlineEnd`、`ProgressActiveMotionDuration` 保留名称、类型、key、slot 和原零默认，当前没有绘制消费者，不改变固定 chunk 几何或启用额外动画。
+
+字体族只在有效 Global 明确配置时投射，否则保留真实继承；实例 FontFamily/FontSize 和生成的专用 Part Style 继续由 Avalonia 原生优先级处理。Circle/Dashboard 的信息字号继续按内圆几何和 Own 最小值计算，本地 FontSize 可覆盖；不把固定圆形改成通用圆角形态。

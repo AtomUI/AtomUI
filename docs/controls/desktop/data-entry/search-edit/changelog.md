@@ -1,5 +1,9 @@
 # SearchEdit Changelog
 
+## 2026-11-04
+
+- Custom 根留白和圆角支持普通 Style 接管及撤回，保留搜索动作与输入同高合同。
+
 本文档记录 SearchEdit 控件级设计、API、主题契约、Token 和实现结构的变化。它用于维护控件设计历史，不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-11-05

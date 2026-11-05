@@ -208,3 +208,7 @@ BorderBeam 公共状态。
 | Token | Light / dark 主题下默认颜色、线宽、圆角和 motion 默认值正确。 |
 | Public API | `Count` 默认值与模板转发、普通内容、感知内容、无内容、零尺寸、不可见状态不抛异常。 |
 | Gallery | Basic、Show on hover、Multiple beams、Custom container、Non-uniform radius、Customized color、Duration、Size、Line width 的稳定 SourceKey、布局和四语资源；Multiple beams 在同一示例中成对展示 `Count=3` 与 `Count=2`；Custom container 以标准 Avalonia `Border` 验证普通内容的显式几何契约；Customized color 提供六组可切换预设，并同步展示用途、说明和显式颜色/百分比 Tag；Duration 对比 `3s`、`6s`、`12s`，Size 对比默认 `100`、`56`、`160`，Line width 通过匹配 BorderBeam 与内容容器的 `BorderThickness=2` 展示线宽；本次新增的 Show on hover、Multiple beams、Custom container、Duration、Size 和 Line width 均标记 AtomUI 当前版本 `v6.1.8`。 |
+
+## 有效主题输入
+
+4 Own 与边框/圆角/渐变端点投射到同一实际 presenter；公开 owner 的有效 Global 与实例 motion 独立语义分别处理。

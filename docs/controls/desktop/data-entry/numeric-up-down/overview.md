@@ -204,7 +204,7 @@ NumericUpDown 属于 Data Entry 控件，与 LineEdit、TextBox、TextArea、Sel
 
 ### 8.1 Custom SizeType 模型
 
-`CustomizableSizeType.Custom` 表示用户接管 NumericUpDown 的尺寸属性。主题层仍把 `Custom` 归入 `Middle` 的 line height、corner radius 和 font size 默认分支；用户显式设置 `Height`、`FontSize`、`Padding` 等属性时，由 Avalonia 属性优先级和 `IsCustomFontSize` 控制最终效果。
+`CustomizableSizeType.Custom` 表示用户接管 NumericUpDown 的尺寸属性。主题以基础默认提供 `Middle` 的尺寸回退，`Custom` 不进入根 Padding/CornerRadius 的预设分支；用户显式设置 `Height`、`FontSize`、`Padding` 等属性时，由 Avalonia 属性优先级和 `IsCustomFontSize` 控制最终效果。
 
 `SizeType` 必须同时传递给 `ButtonSpinner`、内部 `TextBox` 和 Handle 相关主题，使 `Input` 与 `Spinner` 两种模式在 Large / Middle / Small / Custom 下共享同一输入尺寸语义。
 

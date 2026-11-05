@@ -188,3 +188,7 @@ Skeleton 的视觉选项通过 public API 归一为 theme variables、伪类或�
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+## 有效主题输入
+
+15 Own 包括独立标题高度和有向渐变/圆角/图像尺寸默认依赖。Avatar 的显式 Size 与三种端点的 Custom 由主题提供稳定回退及原生接管；Image glyph 的明确占位色/Foreground 可定制，未配置默认灰色保持。

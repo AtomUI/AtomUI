@@ -1,6 +1,8 @@
 # DropdownButton Token
 
-DropdownButton以`AtomUI:DropdownButton`独立求值，23个Own字段由DropdownButtonToken定义；同名字段不读取Button的显式Own配置。完整Global覆盖与[Own默认求值合同](../../../../architecture/systems/theming/own-token-evaluation.md)共用现有运行时。
+DropdownButton以`AtomUI:DropdownButton`独立求值，46个Own字段由DropdownButtonToken定义；同名字段不读取Button的显式Own配置。完整Global覆盖与[Own默认求值合同](../../../../architecture/systems/theming/own-token-evaluation.md)共用现有运行时。
+
+公开BoxShadow属性继承自Button，作为原生Root Style/local的阴影定制入口，不新增Own。未定制时仍消费Dropdown自己的Default/Primary/DangerShadow与preset计算；清除恢复当前默认，不改变PrimaryShadow语义。
 
 字体、DIP布局行高、内边距构成三组独立尺寸依赖。布局行高默认由对应有效ContentFontSize计算，ContentPadding及IconOnyPadding读取对应行高；ExtraContentMargin、CirclePadding读取有效Padding。显式上游进入下游默认函数，显式下游独立保留，0与缺省分开。
 

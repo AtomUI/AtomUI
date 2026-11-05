@@ -167,3 +167,8 @@ Breadcrumb 的交互事件应从输入源收敛到控件级语义事件：
 
 `BreadcrumbItem` 使用构造阶段建立的共享初始化会话，完整初始外观及加载完成后恢复过渡；模板变更和分离时复位。
 共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。
+
+
+## 有效主题输入与生命周期
+
+根与公开条目保持独立 Global 身份，分隔内容间距、圆角及图标尺寸从条目模板实例解析。字体族和根字号仅在显式配置时覆盖实际继承，实例属性与专用 Semantic Part Style 保持原生优先级。

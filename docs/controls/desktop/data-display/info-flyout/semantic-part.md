@@ -217,6 +217,8 @@ Gallery 的 StyleClass 示例即用此契约：在外层普通 Style 上限定�
 
 ## 6. 兼容性与验证
 
+CT15 消费验证通过 AXAML 专用 `FlyoutHostPopupRootStyle`、`FlyoutHostPopupContainerStyle`、`FlyoutHostPopupContentStyle`、`FlyoutHostPopupArrowStyle` 覆盖实际跨根节点并清除恢复；静态验证锁定专用类及关键 Setter，不使用 code-behind 获取部件后设置颜色的回退。此次未新增或扩大 Menu/Tree 的 Semantic Part descriptor，五个既有 Part、route、数量及共享 Arrow StyleKey 保持。
+
 删除或重命名 Part、修改 selector class / route、收窄 `ContractType`（含把公共基类承诺收窄为具体实现
 类型）、改变 cardinality，或让弹层模板变体缺少 marker，均属于公共主题契约变更。
 

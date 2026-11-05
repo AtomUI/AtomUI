@@ -3,6 +3,16 @@
 本文档记录 Form 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-10-30
+
+- 接通 Form、FormItem、FormItemDecorator 的有效 Global 字体，保留默认父继承与语义字号；正文前景进入实际文字。
+- 整理触及成员布局，并保持跨 Form/FormItem 初始化及 FormActionsItem 契约。
+
+- 公开表面Global接入各自注册identity，保留既有Own组合语义、模板、状态与原生样式优先级。
+
+- 八个Own默认采用DependencyDefaultsV2 rev1，保留公式、名称/类型与资源ID/slot，无Own依赖边。
+- VerticalLabelPadding按Legacy/CompatibilityRetained保留资源和配置读取，明确无内置模板消费，不新增默认标签间距。
+
 ## 2026-09-01
 
 - Theme

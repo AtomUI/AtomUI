@@ -622,7 +622,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             var scopePreparation = PrepareScopeCapture(
                 themePreparation.Snapshot!,
                 scopeCapture,
-                useLastValidConfig: true);
+                useLastValidConfig: true,
+                catalog);
             if (!scopePreparation.Success)
             {
                 return CatalogReloadPreparation.Failed(
@@ -1645,7 +1646,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     private ScopePreparation PrepareScopeCapture(
         ThemeSnapshot rootParentSnapshot,
         ThemeScopeCapture capture,
-        bool useLastValidConfig)
+        bool useLastValidConfig,
+        CompiledThemeCatalog? catalog = null)
     {
         if (capture.Nodes.Count == 0)
         {
@@ -1668,7 +1670,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             }
 
             var config = useLastValidConfig ? node.LastValidConfig : node.Config;
-            var compileResult = CompileScopeSnapshot(parentSnapshot, config);
+            var compileResult = CompileScopeSnapshot(parentSnapshot, config, catalog);
             if (!compileResult.Success)
             {
                 return ScopePreparation.Failed(
@@ -1685,16 +1687,34 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 
     private ThemeCompileResult CompileScopeSnapshot(
         ThemeSnapshot parentSnapshot,
-        ThemeConfig config)
+        ThemeConfig config,
+        CompiledThemeCatalog? catalog = null)
     {
+        var definition = parentSnapshot.Definition;
+        var definitionRevision = parentSnapshot.DefinitionRevision;
+        if (config.BrandThemeId is { } baseThemeId)
+        {
+            // Resolve against the candidate catalog during reload as well as ordinary transactions.
+            // A local recipe's base is independent of the parent definition, but its revision is still strict.
+            var entry = (catalog ?? CompiledThemeCatalog).OrderedDefinitions.FirstOrDefault(item => item.Info.Id == baseThemeId);
+            if (entry is null)
+            {
+                return new ThemeCompileResult(null,
+                    [new ThemeDefinitionDiagnostic("ATMTHM7205", ThemeDefinitionDiagnosticSeverity.Error,
+                        "BrandRecipe", 0, 0, "$.themeId", "The scoped recipe base theme is not registered.")], null);
+            }
+            definition = entry.Definition;
+            definitionRevision = entry.Revision;
+        }
+        var sameDefinition = definitionRevision == parentSnapshot.DefinitionRevision;
         var brandDiagnostics = ValidateBrandConfig(config,
-            parentSnapshot.RegistryRevision, parentSnapshot.DefinitionRevision);
+            parentSnapshot.RegistryRevision, definitionRevision);
         if (brandDiagnostics.Count != 0)
         {
             return new ThemeCompileResult(null, brandDiagnostics.Select(static item => new ThemeDefinitionDiagnostic(
                 item.Code, ThemeDefinitionDiagnosticSeverity.Error, item.Source, 0, 0, item.Path, item.Message)).ToArray(), null);
         }
-        if (config.Inherit &&
+        if (sameDefinition && config.Inherit &&
             config.Algorithms is null &&
             config.Tokens.Count == 0 &&
             config.Controls.Count == 0)
@@ -1713,14 +1733,14 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 
         var defaults = config.Inherit
             ? ThemeCompiler.CreateDefinitionDefaults(
-                parentSnapshot.Definition,
+                definition,
                 parentSnapshot.Registry)
             : ThemeCompiler.CreateLibraryDefaults(parentSnapshot.Registry);
         var merge = ThemeConfigMerger.Merge(
             defaults,
             parentSnapshot.EffectiveConfig,
             normalized.Config!);
-        if (merge.ChangeSet.IsEmpty)
+        if (sameDefinition && merge.ChangeSet.IsEmpty)
         {
             return new ThemeCompileResult(
                 parentSnapshot,
@@ -1729,12 +1749,12 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         }
 
         var input = new ThemeCompileInput(
-            parentSnapshot.Definition,
-            parentSnapshot.DefinitionRevision,
+            definition,
+            definitionRevision,
             merge.EffectiveConfig,
             parentSnapshot.Registry,
-            parentSnapshot,
-            merge.ChangeSet);
+            sameDefinition ? parentSnapshot : null,
+            sameDefinition ? merge.ChangeSet : null);
         var key = ThemeSnapshotCacheKey.Create(input);
         return GetThemeSnapshotCache().GetOrCompile(key, input, GetThemeCompiler());
     }

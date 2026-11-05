@@ -312,7 +312,7 @@ Select 必须保持三层选项模型：
 
 ### 8.4 Custom SizeType 模型
 
-`SizeType=Custom` 共享 `Middle` 字体和 padding 默认分支。该语义必须同时传递给 `SelectAddOnDecoratedBox`、`SelectFilterTextBox`、`SelectResultOptionsBox` 和 `SelectTag`，保证单选、多选和 Tags 模式尺寸基线一致。
+`SizeType=Custom` 通过基础默认复用 `Middle` 字体和模式相关 padding；不进入根尺寸的预设条件规则。该语义必须同时传递给 `SelectAddOnDecoratedBox`、`SelectFilterTextBox`、`SelectResultOptionsBox` 和 `SelectTag`，保证单选、多选和 Tags 模式尺寸基线一致。
 
 ## 9. 文档导航与验证策略
 

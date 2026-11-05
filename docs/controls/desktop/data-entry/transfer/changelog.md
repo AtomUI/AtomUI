@@ -70,3 +70,8 @@
   - Add Transfer implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add Transfer control-level changelog.
   - Add Transfer Token documentation covering TransferToken.
+
+
+## 2026-10-30 主题消费与字体
+
+ListTransfer/TreeTransfer 与公开列表、树视图和条目保留独立 Global 身份。分区、标题及动作等内部对象从实际模板 owner 解析；资源绑定不因查找中间公开 primitive 而改用其身份。根及继承的公开子控件支持可选字体，容器和 scoped 数据对象沿原 prepare/clear 生命周期释放。

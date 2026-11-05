@@ -59,4 +59,10 @@ Rate 的控件专项模型通过 Theme 消费 Token：
 
 ## 字符 glyph 字体
 
-`CharacterFontFamily: FontFamily` 的默认值为 `FontFamily.Default`，保持原来脱离继承树的字符画刷使用的平台字形。它是内容字体的 Own 字段，不从普通 UI 的 Global.FontFamily 自动派生。`RateTheme` 把它设为根 FontFamily 的主题默认；原生根属性/Style 可覆盖，字重、字形继续消费对应原生输入。char/string 两条实际绘制路径在字体更新后重建快照；SVG Icon Character 保留自身矢量内容。此新增字段不表示 Rate 已完成 Own V2 迁移。
+`CharacterFontFamily: FontFamily` 的字段默认值保持 `FontFamily.Default`；它是字符内容字体 Own，不把 Global.FontFamily 复制成 Own 默认。只有明确 Own 才投射该值，否则明确 Global 或实际继承提供根字体。char/string 两条绘制路径在字体更新后重建快照，SVG Icon Character 保留自身矢量内容。当前7字段均采用依赖默认计划。
+
+## 默认计划与字符字体
+
+7字段使用 DependencyDefaultsV2，名称/类型/key/slot及默认不变。StarColor 复用现有标准黄色预设缓存，并按当前 appearance 选择明暗色；StarBg、三档 StarSize 从该 owner 的有效 Global 取得，StarHoverScale 保留原1.2。
+
+字符字体依次选择明确 CharacterFontFamily Own、明确 Global FontFamily、真实继承。实例 FontFamily 仍由原生优先级覆盖。字符的 em 尺寸继续跟随 StarSize 对应的星形几何，Root FontSize 不替代星形尺寸。图标内容与字符内容保持原语义，焦点虚线及 glyph 裁剪属于固定绘制几何。

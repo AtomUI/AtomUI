@@ -150,3 +150,10 @@ Space 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+### Custom 尺寸与原生优先级
+
+CompactSpaceAddOn 的 Custom FontSize、CornerRadius、Padding 和 MinHeight 使用原中档资源的基础 Setter，三档预设保持独立。普通 Style/LocalValue 可接管和撤回这些公开维度；Space 的间距、方向、CompactSpace 接缝和内容测量不由该尺寸回退替代。
+
+
+Space 的 SizeType=Custom 由 SpaceTheme 的两个基础 Setter 复用 GapSmallSize，应用 Style 与实例值可接管 ItemSpacing/LineSpacing。切入 Custom 先释放上一对预设代码绑定，由原生 ControlTheme 默认接续；反向切档重新使用原有 Template 优先级的预设绑定。条件尺寸 selector 不能等价表达这项预设优先级，因此三档代码绑定仍按 attach/detach 对称释放。Custom 默认不使用条件 selector，也不创建代码 Style 级绑定覆盖已有应用 Style。

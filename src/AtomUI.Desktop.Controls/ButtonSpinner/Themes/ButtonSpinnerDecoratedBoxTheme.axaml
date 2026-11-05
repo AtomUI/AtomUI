@@ -10,6 +10,14 @@
         </ControlTheme.BasedOn>
 
         <Setter Property="ContentPadding" Value="{CompiledBinding $self.PresetContentPadding}" />
+        <Setter Property="MinHeight">
+            <MultiBinding Converter="{x:Static atom:CustomInputMinHeightConverter.Instance}">
+                <atom:OwnerTokenResource Kind="ControlHeight" />
+                <TemplateBinding Property="{x:Static atom:ButtonSpinner.HeightProperty}" />
+                <TemplateBinding Property="{x:Static atom:ButtonSpinner.MinHeightProperty}" />
+                <TemplateBinding Property="{x:Static atom:ButtonSpinner.MaxHeightProperty}" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:ButtonSpinnerDecoratedBox">
                 <DockPanel Name="RootLayout" LastChildFill="True"> 
@@ -158,17 +166,19 @@
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="PresetContentPadding"
                         Value="{atom:ButtonSpinnerTokenResource InputPaddingLG}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
             </Style>
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
                 <Setter Property="PresetContentPadding"
                         Value="{atom:ButtonSpinnerTokenResource InputPadding}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+            </Style>
+            <Style Selector="^[SizeType=Middle]">
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
             </Style>
             <Style Selector="^[SizeType=Small]">
                 <Setter Property="PresetContentPadding"
                         Value="{atom:ButtonSpinnerTokenResource InputPaddingSM}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
             </Style>
             <Style Selector="^[SizeType=Large], ^[SizeType=Middle], ^[SizeType=Custom], ^[SizeType=Small]">
                 <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">

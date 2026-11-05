@@ -1,4 +1,5 @@
-﻿using System.Collections;
+using AtomUI.Theme.Resources;
+using System.Collections;
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Animations;
@@ -20,16 +21,14 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOverflowOwner
+public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOverflowOwner,
+    IThemeInheritanceSource
 {
-    private static readonly FuncTemplate<Panel?> DefaultPanel =
-        new(() => new StackPanel());
-
     #region 公共属性定义
-    
+
     public static readonly StyledProperty<Dock> TabStripPlacementProperty =
         AvaloniaProperty.Register<BaseTabControl, Dock>(nameof(TabStripPlacement), defaultValue: Dock.Top);
-    
+
     public static readonly StyledProperty<IReadOnlyList<double>?> BorderDashArrayProperty =
         AvaloniaProperty.Register<BaseTabControl, IReadOnlyList<double>?>(nameof(BorderDashArray));
 
@@ -38,22 +37,22 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
 
     public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
         ContentControl.HorizontalContentAlignmentProperty.AddOwner<BaseTabControl>();
-    
+
     public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
         ContentControl.VerticalContentAlignmentProperty.AddOwner<BaseTabControl>();
-    
+
     public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
         ContentControl.ContentTemplateProperty.AddOwner<BaseTabControl>();
 
     public static readonly StyledProperty<IDataTemplate?> OverflowPopupTemplateProperty =
         AvaloniaProperty.Register<BaseTabControl, IDataTemplate?>(nameof(OverflowPopupTemplate));
-    
+
     public static readonly DirectProperty<BaseTabControl, object?> SelectedContentProperty =
         AvaloniaProperty.RegisterDirect<BaseTabControl, object?>(nameof(SelectedContent), o => o.SelectedContent);
 
     public static readonly DirectProperty<BaseTabControl, IDataTemplate?> SelectedContentTemplateProperty =
         AvaloniaProperty.RegisterDirect<BaseTabControl, IDataTemplate?>(nameof(SelectedContentTemplate), o => o.SelectedContentTemplate);
-    
+
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<BaseTabControl>();
 
@@ -70,83 +69,43 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<BaseTabControl>();
-    
-    public static readonly StyledProperty<double> HeaderStartEdgePaddingProperty = 
+
+    public static readonly StyledProperty<double> HeaderStartEdgePaddingProperty =
         AvaloniaProperty.Register<BaseTabControl, double>(nameof (HeaderStartEdgePadding));
-    
-    public static readonly StyledProperty<double> HeaderEndEdgePaddingProperty = 
+
+    public static readonly StyledProperty<double> HeaderEndEdgePaddingProperty =
         AvaloniaProperty.Register<BaseTabControl, double>(nameof (HeaderEndEdgePadding));
-    
-    public static readonly StyledProperty<Thickness> ContentPaddingProperty = 
+
+    public static readonly StyledProperty<Thickness> ContentPaddingProperty =
         AvaloniaProperty.Register<BaseTabControl, Thickness>(nameof (ContentPadding));
-    
+
     public static readonly StyledProperty<double> TabAndContentGutterProperty =
         AvaloniaProperty.Register<BaseTabControl, double>(nameof(TabAndContentGutter));
-    
-    public static readonly StyledProperty<object?> HeaderStartExtraContentProperty = 
+
+    public static readonly StyledProperty<object?> HeaderStartExtraContentProperty =
         AvaloniaProperty.Register<BaseTabControl, object?>(nameof (HeaderStartExtraContent));
-    
+
     public static readonly StyledProperty<IDataTemplate?> HeaderStartExtraContentTemplateProperty =
         AvaloniaProperty.Register<BaseTabControl, IDataTemplate?>(nameof(HeaderStartExtraContentTemplate));
-    
-    public static readonly StyledProperty<object?> HeaderEndExtraContentProperty = 
+
+    public static readonly StyledProperty<object?> HeaderEndExtraContentProperty =
         AvaloniaProperty.Register<BaseTabControl, object?>(nameof (HeaderEndExtraContent));
-    
+
     public static readonly StyledProperty<IDataTemplate?> HeaderEndExtraContentTemplateProperty =
         AvaloniaProperty.Register<BaseTabControl, IDataTemplate?>(nameof(HeaderEndExtraContentTemplate));
-    
+
     public static readonly StyledProperty<bool> IsTabClosableProperty =
         AvaloniaProperty.Register<BaseTabControl, bool>(nameof(IsTabClosable));
-    
+
     public static readonly StyledProperty<bool> IsTabAutoHideCloseButtonProperty =
         AvaloniaProperty.Register<BaseTabControl, bool>(nameof(IsTabAutoHideCloseButton));
-
-    #region 公共事件定义
-    
-    public static readonly RoutedEvent<TabClosingEventArgs> ClosingEvent =
-        RoutedEvent.Register<BaseTabControl, TabClosingEventArgs>(nameof(Closing), RoutingStrategies.Bubble);
-
-    public static readonly RoutedEvent<TabClosedEventArgs> ClosedEvent =
-        RoutedEvent.Register<BaseTabControl, TabClosedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
-
-    internal static readonly RoutedEvent<TabReorderingEventArgs> TabReorderingEvent =
-        RoutedEvent.Register<BaseTabControl, TabReorderingEventArgs>(nameof(TabReordering), RoutingStrategies.Bubble);
-
-    internal static readonly RoutedEvent<TabReorderedEventArgs> TabReorderedEvent =
-        RoutedEvent.Register<BaseTabControl, TabReorderedEventArgs>(nameof(TabReordered), RoutingStrategies.Bubble);
-
-    public event EventHandler<TabClosingEventArgs>? Closing
-    {
-        add => AddHandler(ClosingEvent, value);
-        remove => RemoveHandler(ClosingEvent, value);
-    }
-
-    public event EventHandler<TabClosedEventArgs>? Closed
-    {
-        add => AddHandler(ClosedEvent, value);
-        remove => RemoveHandler(ClosedEvent, value);
-    }
-
-    public event EventHandler<TabReorderingEventArgs>? TabReordering
-    {
-        add => AddHandler(TabReorderingEvent, value);
-        remove => RemoveHandler(TabReorderingEvent, value);
-    }
-
-    public event EventHandler<TabReorderedEventArgs>? TabReordered
-    {
-        add => AddHandler(TabReorderedEvent, value);
-        remove => RemoveHandler(TabReorderedEvent, value);
-    }
-    
-    #endregion
 
     public Dock TabStripPlacement
     {
         get => GetValue(TabStripPlacementProperty);
         set => SetValue(TabStripPlacementProperty, value);
     }
-    
+
     public IReadOnlyList<double>? BorderDashArray
     {
         get => GetValue(BorderDashArrayProperty);
@@ -164,13 +123,13 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         get => GetValue(HorizontalContentAlignmentProperty);
         set => SetValue(HorizontalContentAlignmentProperty, value);
     }
-    
+
     public VerticalAlignment VerticalContentAlignment
     {
         get => GetValue(VerticalContentAlignmentProperty);
         set => SetValue(VerticalContentAlignmentProperty, value);
     }
-    
+
     public IDataTemplate? ContentTemplate
     {
         get => GetValue(ContentTemplateProperty);
@@ -186,19 +145,23 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         get => GetValue(OverflowPopupTemplateProperty);
         set => SetValue(OverflowPopupTemplateProperty, value);
     }
-    
+
+    private object? _selectedContent;
+
     public object? SelectedContent
     {
         get => _selectedContent;
         internal set => SetAndRaise(SelectedContentProperty, ref _selectedContent, value);
     }
-    
+
+    private IDataTemplate? _selectedContentTemplate;
+
     public IDataTemplate? SelectedContentTemplate
     {
         get => _selectedContentTemplate;
         internal set => SetAndRaise(SelectedContentTemplateProperty, ref _selectedContentTemplate, value);
     }
-    
+
     public SizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
@@ -234,71 +197,119 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         get => GetValue(HeaderStartEdgePaddingProperty);
         set => SetValue(HeaderStartEdgePaddingProperty, value);
     }
-    
+
     public double HeaderEndEdgePadding
     {
         get => GetValue(HeaderEndEdgePaddingProperty);
         set => SetValue(HeaderEndEdgePaddingProperty, value);
     }
-    
+
     public Thickness ContentPadding
     {
         get => GetValue(ContentPaddingProperty);
         set => SetValue(ContentPaddingProperty, value);
     }
-    
+
     public double TabAndContentGutter
     {
         get => GetValue(TabAndContentGutterProperty);
         set => SetValue(TabAndContentGutterProperty, value);
     }
-    
+
     [DependsOn(nameof(HeaderStartExtraContentTemplate))]
     public object? HeaderStartExtraContent
     {
         get => GetValue(HeaderStartExtraContentProperty);
         set => SetValue(HeaderStartExtraContentProperty, value);
     }
-    
+
     public IDataTemplate? HeaderStartExtraContentTemplate
     {
         get => GetValue(HeaderStartExtraContentTemplateProperty);
         set => SetValue(HeaderStartExtraContentTemplateProperty, value);
     }
-    
+
     [DependsOn(nameof(HeaderEndExtraContentTemplate))]
     public object? HeaderEndExtraContent
     {
         get => GetValue(HeaderEndExtraContentProperty);
         set => SetValue(HeaderEndExtraContentProperty, value);
     }
-    
+
     public IDataTemplate? HeaderEndExtraContentTemplate
     {
         get => GetValue(HeaderEndExtraContentTemplateProperty);
         set => SetValue(HeaderEndExtraContentTemplateProperty, value);
     }
-    
+
     public bool IsTabClosable
     {
         get => GetValue(IsTabClosableProperty);
         set => SetValue(IsTabClosableProperty, value);
     }
-    
+
     public bool IsTabAutoHideCloseButton
     {
         get => GetValue(IsTabAutoHideCloseButtonProperty);
         set => SetValue(IsTabAutoHideCloseButtonProperty, value);
     }
+
     #endregion
 
-    #region 内部属性实现
-    
+    #region 公共事件定义
+
+    public event EventHandler<TabClosingEventArgs>? Closing
+    {
+        add => AddHandler(ClosingEvent, value);
+        remove => RemoveHandler(ClosingEvent, value);
+    }
+
+    public event EventHandler<TabClosedEventArgs>? Closed
+    {
+        add => AddHandler(ClosedEvent, value);
+        remove => RemoveHandler(ClosedEvent, value);
+    }
+
+    public event EventHandler<TabReorderingEventArgs>? TabReordering
+    {
+        add => AddHandler(TabReorderingEvent, value);
+        remove => RemoveHandler(TabReorderingEvent, value);
+    }
+
+    public event EventHandler<TabReorderedEventArgs>? TabReordered
+    {
+        add => AddHandler(TabReorderedEvent, value);
+        remove => RemoveHandler(TabReorderedEvent, value);
+    }
+
+    public static readonly RoutedEvent<TabClosingEventArgs> ClosingEvent =
+        RoutedEvent.Register<BaseTabControl, TabClosingEventArgs>(nameof(Closing), RoutingStrategies.Bubble);
+
+    public static readonly RoutedEvent<TabClosedEventArgs> ClosedEvent =
+        RoutedEvent.Register<BaseTabControl, TabClosedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
+
+    #endregion
+
+    #region 内部属性定义
+
     internal static readonly StyledProperty<IBrush?> SeparatorBorderBrushProperty =
         AvaloniaProperty.Register<BaseTabControl, IBrush?>(nameof(SeparatorBorderBrush));
 
     internal static readonly StyledProperty<Thickness> SeparatorBorderThicknessProperty =
         AvaloniaProperty.Register<BaseTabControl, Thickness>(nameof(SeparatorBorderThickness));
+
+    internal static readonly DirectProperty<BaseTabControl, Thickness> TabStripMarginProperty =
+        AvaloniaProperty.RegisterDirect<BaseTabControl, Thickness>(nameof(TabStripMargin),
+            o => o.TabStripMargin,
+            (o, v) => o.TabStripMargin = v);
+
+    internal static readonly DirectProperty<BaseTabControl, Thickness> EffectiveHeaderPaddingProperty =
+        AvaloniaProperty.RegisterDirect<BaseTabControl, Thickness>(nameof(EffectiveHeaderPadding),
+            o => o.EffectiveHeaderPadding,
+            (o, v) => o.EffectiveHeaderPadding = v);
+
+    internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
+        Flyout.IsPopupPinnedOpenProperty.AddOwner<BaseTabControl>();
 
     internal IBrush? SeparatorBorderBrush
     {
@@ -312,19 +323,6 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         set => SetValue(SeparatorBorderThicknessProperty, value);
     }
 
-    internal static readonly DirectProperty<BaseTabControl, Thickness> TabStripMarginProperty =
-        AvaloniaProperty.RegisterDirect<BaseTabControl, Thickness>(nameof(TabStripMargin),
-            o => o.TabStripMargin,
-            (o, v) => o.TabStripMargin = v);
-    
-    internal static readonly DirectProperty<BaseTabControl, Thickness> EffectiveHeaderPaddingProperty =
-        AvaloniaProperty.RegisterDirect<BaseTabControl, Thickness>(nameof(EffectiveHeaderPadding),
-            o => o.EffectiveHeaderPadding,
-            (o, v) => o.EffectiveHeaderPadding = v);
-
-    internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
-        Flyout.IsPopupPinnedOpenProperty.AddOwner<BaseTabControl>();
-
     private Thickness _tabStripMargin;
 
     internal Thickness TabStripMargin
@@ -332,7 +330,7 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         get => _tabStripMargin;
         set => SetAndRaise(TabStripMarginProperty, ref _tabStripMargin, value);
     }
-    
+
     private Thickness _effectiveHeaderPadding;
 
     internal Thickness EffectiveHeaderPadding
@@ -350,216 +348,12 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
     internal ItemsPresenter? ItemsPresenterPart { get; private set; }
 
     internal ContentPresenter? ContentPart { get; private set; }
+
+    internal bool IsTabReorderIndicatorRefreshDeferred => _isTabReorderIndicatorRefreshDeferred;
+
     #endregion
-    
-    private object? _selectedContent;
-    private IDataTemplate? _selectedContentTemplate;
-    private CompositeDisposable? _selectedItemSubscriptions;
-    private Panel? _alignWrapper;
-    private Point _tabStripBorderStartPoint;
-    private Point _tabStripBorderEndPoint;
-    private Pen? _tabStripBorderPen;
-    private IBrush? _tabStripBorderPenBrush;
-    private double _tabStripBorderPenThickness;
-    private TabScrollViewer? _tabReorderScrollViewer;
-    private EventHandler? _overflowSelectionChanged;
-    private DispatcherTimer? _tabReorderAutoScrollTimer;
-    private TabItem? _pendingTabActivationContainer;
-    private IPointer? _pendingTabActivationPointer;
-    private TabItem? _tabReorderContainer;
-    private IPointer? _tabReorderPointer;
-    private object? _tabReorderItem;
-    private object? _tabReorderSelectedItem;
-    private int _tabReorderOldIndex = TabReorderHelper.InvalidIndex;
-    private int _tabReorderTargetIndex = TabReorderHelper.InvalidIndex;
-    private Point _tabReorderStartPointerRootPosition;
-    private double _tabReorderPointerAnchorPrimary;
-    private bool _isTabReorderDragging;
-    private TransitionSuppressionScope? _tabReorderIndicatorSuppression;
-    private bool _isTabReorderIndicatorRefreshDeferred;
-    private bool _isTabReorderIndicatorRefreshPending;
-    private readonly Dictionary<Control, ITransform?> _tabReorderOriginalTransforms = new();
-    private readonly Dictionary<Control, int> _tabReorderOriginalZIndexes = new();
-    private readonly Dictionary<Control, Vector> _tabReorderPreviewOffsets = new();
-    private int _tabReorderAutoScrollDirection;
-    private Point _tabReorderLastPointerRootPosition;
-    private const double TabReorderAutoScrollEdgeThickness = 24;
-    private const double TabReorderAutoScrollStep = 16;
-    private static readonly TimeSpan TabReorderAutoScrollInterval = TimeSpan.FromMilliseconds(16);
-    private const int UnselectedIndex = -1;
-    private const int FirstItemIndex  = 0;
-    private const int SingleItemCount = 1;
 
-    static BaseTabControl()
-    {
-        SelectionModeProperty.OverrideDefaultValue<BaseTabControl>(SelectionMode.AlwaysSelected);
-        AutoScrollToSelectedItemProperty.OverrideDefaultValue<BaseTabControl>(false);
-        ItemsPanelProperty.OverrideDefaultValue<BaseTabControl>(DefaultPanel);
-        AffectsRender<BaseTabControl>(SeparatorBorderBrushProperty, SeparatorBorderThicknessProperty, UseLayoutRoundingProperty);
-        AffectsMeasure<BaseTabControl>(TabStripMarginProperty, TabAndContentGutterProperty, TabStripPlacementProperty);
-        SelectedItemProperty.Changed.AddClassHandler<BaseTabControl>((x, e) => x.UpdateSelectedContent());
-    }
-
-    public BaseTabControl()
-    {
-        AddHandler(PointerMovedEvent, HandleTabReorderPointerMoved, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
-        AddHandler(PointerReleasedEvent, HandleTabReorderPointerReleased, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
-        AddHandler(PointerCaptureLostEvent, HandleTabReorderPointerCaptureLost, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
-    }
-    
-    public bool CloseTab(TabItem tabItem)
-    {
-        if (!tabItem.IsClosable)
-        {
-            return false;
-        }
-
-        if (!TabReorderHelper.TryResolveItemsList(this, out var list) ||
-            !TabReorderHelper.CanMoveItems(list))
-        {
-            return false;
-        }
-
-        var index = TabReorderHelper.FindContainerIndex(this, list, tabItem);
-        if (!TabReorderHelper.IsValidIndex(index, list.Count))
-        {
-            return false;
-        }
-
-        var item = list[index];
-        var closingArgs = new TabClosingEventArgs(ClosingEvent, tabItem);
-        RaiseEvent(closingArgs);
-
-        if (closingArgs.Cancel || !tabItem.IsClosable ||
-            !TabReorderHelper.TryGetCurrentItemIndex(this, list, tabItem, item, out index))
-        { 
-            return false;
-        }
-
-        var nextSelectionIndex = GetNextSelectionIndex(index);
-        var nextSelectedItem = TabReorderHelper.IsValidIndex(nextSelectionIndex, list.Count)
-            ? list[nextSelectionIndex]
-            : null;
-        SelectedIndex = nextSelectionIndex;
-        if (!tabItem.IsClosable ||
-            !TabReorderHelper.TryGetCurrentItemIndex(this, list, tabItem, item, out index))
-        {
-            return false;
-        }
-        var itemAfterCallback = SelectedItem;
-        // A collection change during SelectionChanged can recommit the original numeric index.
-        var selectionDrifted = SelectedIndex == nextSelectionIndex &&
-                               !TabReorderHelper.IsSameItem(itemAfterCallback, nextSelectedItem);
-        list.RemoveAt(index);
-        if (selectionDrifted)
-        {
-            TabReorderHelper.RestoreSelectionAfterClose(this, list, nextSelectedItem, itemAfterCallback);
-        }
-        
-        var closedArgs = new TabClosedEventArgs(ClosedEvent, tabItem);
-        RaiseEvent(closedArgs);
-        
-        return true;
-    }
-
-    private int GetNextSelectionIndex(int closingIndex)
-    {
-        if (SelectedIndex != closingIndex)
-        {
-            return SelectedIndex;
-        }
-
-        var isClosingLastItem = Items.Count <= SingleItemCount;
-        if (isClosingLastItem)
-        {
-            return UnselectedIndex;
-        }
-
-        var previousIndex = closingIndex - SingleItemCount;
-        return previousIndex >= FirstItemIndex ? previousIndex : FirstItemIndex;
-    }
-    
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        ClearPendingTabActivation();
-        CancelTabReorder();
-        DetachTabScrollViewer();
-        base.OnApplyTemplate(e);
-        
-        ItemsPresenterPart = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
-        ItemsPresenterPart?.ApplyTemplate();
-        _tabReorderScrollViewer = TabReorderHelper.FindTabScrollViewer(e.NameScope);
-        _tabReorderScrollViewer?.AttachOverflowOwner(this);
-
-        UpdateTabStripPlacement();
-
-        // Set TabNavigation to Once on the panel if not already set and
-        // forward the TabOnceActiveElement to the panel.
-        if (ItemsPresenterPart?.Panel is { } panel)
-        {
-            if (!panel.IsSet(KeyboardNavigation.TabNavigationProperty))
-            {
-                panel.SetCurrentValue(
-                    KeyboardNavigation.TabNavigationProperty,
-                    KeyboardNavigationMode.Once);
-            }
-            KeyboardNavigation.SetTabOnceActiveElement(
-                panel,
-                KeyboardNavigation.GetTabOnceActiveElement(this));
-        }
-
-        _alignWrapper = e.NameScope.Find<Panel>("PART_AlignWrapper");
-        HandlePlacementChanged();
-        ConfigureEffectiveHeaderPadding();
-    }
-
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        _tabReorderScrollViewer?.AttachOverflowOwner(this);
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        _tabReorderScrollViewer?.DetachOverflowOwner(this);
-        ClearPendingTabActivation();
-        CancelTabReorder();
-        base.OnDetachedFromVisualTree(e);
-    }
-
-    private void DetachTabScrollViewer()
-    {
-        if (_tabReorderScrollViewer is { } scrollViewer)
-        {
-            scrollViewer.DetachOverflowOwner(this);
-        }
-        _tabReorderScrollViewer = null;
-    }
-    
-    protected override bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs)
-    {
-        if (eventArgs.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
-        {
-            return TabActivationTrigger == TabActivationTrigger.PointerReleased &&
-                   IsEnabled &&
-                   selectable is Control { IsEnabled: true } &&
-                   IsPendingTabActivationRelease(selectable, eventArgs);
-        }
-
-        return eventArgs.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed &&
-               TabActivationTrigger == TabActivationTrigger.PointerPressed &&
-               base.ShouldTriggerSelection(selectable, eventArgs);
-    }
-
-    public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
-    {
-        if (eventArgs is FocusChangedEventArgs { NavigationMethod: not NavigationMethod.Directional })
-        {
-            return false;
-        }
-
-        return base.UpdateSelectionFromEvent(container, eventArgs);
-    }
+    #region 内部协作 API
 
     internal void NotifyTabActivationPointerPressed(TabItem tabItem, PointerPressedEventArgs args)
     {
@@ -672,36 +466,265 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
     {
         UpdateIconSlotReservation();
     }
-    
-    private void UpdateTabStripPlacement()
+
+    // The indexer bindings created in PrepareContainerForItemOverride subscribe to this
+    // owner's PropertyChanged, and Avalonia never disposes them on its own: without this
+    // release every removed item stays alive for the owner's lifetime. Avalonia skips
+    // ClearContainerForItemOverride for items that are their own container, so TabItem
+    // also routes its direct logical detach into this method.
+    internal virtual void ReleaseTabItemOwnerBindings(TabItem tabItem)
     {
-        var controls = ItemsPresenterPart?.Panel?.Children;
-        if (controls is null)
-        {
-            return;
-        }
-
-        foreach (var control in controls)
-        {
-            if (control is TabItem tabItem)
-            {
-                tabItem.TabStripPlacement = TabStripPlacement;
-            }
-        }
-
-        UpdateIconSlotReservation();
+        BindingOperations.GetBindingExpressionBase(tabItem, TabItem.SizeTypeProperty)?.Dispose();
+        BindingOperations.GetBindingExpressionBase(tabItem, TabItem.IsMotionEnabledProperty)?.Dispose();
+        BindingOperations.GetBindingExpressionBase(tabItem, TabItem.ContentTemplateProperty)?.Dispose();
     }
-    
+
+    internal double GetTabReorderPreviewPrimaryOffset(Control container)
+    {
+        if (!_tabReorderPreviewOffsets.TryGetValue(container, out var offset))
+        {
+            return 0;
+        }
+
+        return TabReorderHelper.IsHorizontal(TabStripPlacement) ? offset.X : offset.Y;
+    }
+
+    #endregion
+
+    private static readonly FuncTemplate<Panel?> DefaultPanel =
+        new(() => new StackPanel());
+
+    internal static readonly RoutedEvent<TabReorderingEventArgs> TabReorderingEvent =
+        RoutedEvent.Register<BaseTabControl, TabReorderingEventArgs>(nameof(TabReordering), RoutingStrategies.Bubble);
+
+    internal static readonly RoutedEvent<TabReorderedEventArgs> TabReorderedEvent =
+        RoutedEvent.Register<BaseTabControl, TabReorderedEventArgs>(nameof(TabReordered), RoutingStrategies.Bubble);
+
+    private CompositeDisposable? _selectedItemSubscriptions;
+
+    private Panel? _alignWrapper;
+
+    private Point _tabStripBorderStartPoint;
+
+    private Point _tabStripBorderEndPoint;
+
+    private Pen? _tabStripBorderPen;
+
+    private IBrush? _tabStripBorderPenBrush;
+
+    private double _tabStripBorderPenThickness;
+
+    private TabScrollViewer? _tabReorderScrollViewer;
+
+    private EventHandler? _overflowSelectionChanged;
+
+    private DispatcherTimer? _tabReorderAutoScrollTimer;
+
+    private TabItem? _pendingTabActivationContainer;
+
+    private IPointer? _pendingTabActivationPointer;
+
+    private TabItem? _tabReorderContainer;
+
+    private IPointer? _tabReorderPointer;
+
+    private object? _tabReorderItem;
+
+    private object? _tabReorderSelectedItem;
+
+    private int _tabReorderOldIndex = TabReorderHelper.InvalidIndex;
+
+    private int _tabReorderTargetIndex = TabReorderHelper.InvalidIndex;
+
+    private Point _tabReorderStartPointerRootPosition;
+
+    private double _tabReorderPointerAnchorPrimary;
+
+    private bool _isTabReorderDragging;
+
+    private TransitionSuppressionScope? _tabReorderIndicatorSuppression;
+
+    private bool _isTabReorderIndicatorRefreshDeferred;
+
+    private bool _isTabReorderIndicatorRefreshPending;
+
+    private readonly Dictionary<Control, ITransform?> _tabReorderOriginalTransforms = new();
+
+    private readonly Dictionary<Control, int> _tabReorderOriginalZIndexes = new();
+
+    private readonly Dictionary<Control, Vector> _tabReorderPreviewOffsets = new();
+
+    private int _tabReorderAutoScrollDirection;
+
+    private Point _tabReorderLastPointerRootPosition;
+
+    private const double TabReorderAutoScrollEdgeThickness = 24;
+
+    private const double TabReorderAutoScrollStep = 16;
+
+    private static readonly TimeSpan TabReorderAutoScrollInterval = TimeSpan.FromMilliseconds(16);
+
+    private const int UnselectedIndex = -1;
+
+    private const int FirstItemIndex  = 0;
+
+    private const int SingleItemCount = 1;
+
+    static BaseTabControl()
+    {
+        SelectionModeProperty.OverrideDefaultValue<BaseTabControl>(SelectionMode.AlwaysSelected);
+        AutoScrollToSelectedItemProperty.OverrideDefaultValue<BaseTabControl>(false);
+        ItemsPanelProperty.OverrideDefaultValue<BaseTabControl>(DefaultPanel);
+        AffectsRender<BaseTabControl>(SeparatorBorderBrushProperty, SeparatorBorderThicknessProperty, UseLayoutRoundingProperty);
+        AffectsMeasure<BaseTabControl>(TabStripMarginProperty, TabAndContentGutterProperty, TabStripPlacementProperty);
+        SelectedItemProperty.Changed.AddClassHandler<BaseTabControl>((x, e) => x.UpdateSelectedContent());
+    }
+
+    public BaseTabControl()
+    {
+        AddHandler(PointerMovedEvent, HandleTabReorderPointerMoved, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
+        AddHandler(PointerReleasedEvent, HandleTabReorderPointerReleased, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
+        AddHandler(PointerCaptureLostEvent, HandleTabReorderPointerCaptureLost, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
+    }
+
+    public bool CloseTab(TabItem tabItem)
+    {
+        if (!tabItem.IsClosable)
+        {
+            return false;
+        }
+
+        if (!TabReorderHelper.TryResolveItemsList(this, out var list) ||
+            !TabReorderHelper.CanMoveItems(list))
+        {
+            return false;
+        }
+
+        var index = TabReorderHelper.FindContainerIndex(this, list, tabItem);
+        if (!TabReorderHelper.IsValidIndex(index, list.Count))
+        {
+            return false;
+        }
+
+        var item = list[index];
+        var closingArgs = new TabClosingEventArgs(ClosingEvent, tabItem);
+        RaiseEvent(closingArgs);
+
+        if (closingArgs.Cancel || !tabItem.IsClosable ||
+            !TabReorderHelper.TryGetCurrentItemIndex(this, list, tabItem, item, out index))
+        {
+            return false;
+        }
+
+        var nextSelectionIndex = GetNextSelectionIndex(index);
+        var nextSelectedItem = TabReorderHelper.IsValidIndex(nextSelectionIndex, list.Count)
+            ? list[nextSelectionIndex]
+            : null;
+        SelectedIndex = nextSelectionIndex;
+        if (!tabItem.IsClosable ||
+            !TabReorderHelper.TryGetCurrentItemIndex(this, list, tabItem, item, out index))
+        {
+            return false;
+        }
+        var itemAfterCallback = SelectedItem;
+        // A collection change during SelectionChanged can recommit the original numeric index.
+        var selectionDrifted = SelectedIndex == nextSelectionIndex &&
+                               !TabReorderHelper.IsSameItem(itemAfterCallback, nextSelectedItem);
+        list.RemoveAt(index);
+        if (selectionDrifted)
+        {
+            TabReorderHelper.RestoreSelectionAfterClose(this, list, nextSelectedItem, itemAfterCallback);
+        }
+
+        var closedArgs = new TabClosedEventArgs(ClosedEvent, tabItem);
+        RaiseEvent(closedArgs);
+
+        return true;
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        ClearPendingTabActivation();
+        CancelTabReorder();
+        DetachTabScrollViewer();
+        base.OnApplyTemplate(e);
+
+        ItemsPresenterPart = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
+        ItemsPresenterPart?.ApplyTemplate();
+        _tabReorderScrollViewer = TabReorderHelper.FindTabScrollViewer(e.NameScope);
+        _tabReorderScrollViewer?.AttachOverflowOwner(this);
+
+        UpdateTabStripPlacement();
+
+        // Set TabNavigation to Once on the panel if not already set and
+        // forward the TabOnceActiveElement to the panel.
+        if (ItemsPresenterPart?.Panel is { } panel)
+        {
+            if (!panel.IsSet(KeyboardNavigation.TabNavigationProperty))
+            {
+                panel.SetCurrentValue(
+                    KeyboardNavigation.TabNavigationProperty,
+                    KeyboardNavigationMode.Once);
+            }
+            KeyboardNavigation.SetTabOnceActiveElement(
+                panel,
+                KeyboardNavigation.GetTabOnceActiveElement(this));
+        }
+
+        _alignWrapper = e.NameScope.Find<Panel>("PART_AlignWrapper");
+        HandlePlacementChanged();
+        ConfigureEffectiveHeaderPadding();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _tabReorderScrollViewer?.AttachOverflowOwner(this);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _tabReorderScrollViewer?.DetachOverflowOwner(this);
+        ClearPendingTabActivation();
+        CancelTabReorder();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs)
+    {
+        if (eventArgs.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
+        {
+            return TabActivationTrigger == TabActivationTrigger.PointerReleased &&
+                   IsEnabled &&
+                   selectable is Control { IsEnabled: true } &&
+                   IsPendingTabActivationRelease(selectable, eventArgs);
+        }
+
+        return eventArgs.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed &&
+               TabActivationTrigger == TabActivationTrigger.PointerPressed &&
+               base.ShouldTriggerSelection(selectable, eventArgs);
+    }
+
+    public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
+    {
+        if (eventArgs is FocusChangedEventArgs { NavigationMethod: not NavigationMethod.Directional })
+        {
+            return false;
+        }
+
+        return base.UpdateSelectionFromEvent(container, eventArgs);
+    }
+
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         return new TabItem();
     }
-    
+
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<TabItem>(item, out recycleKey);
     }
-    
+
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         if (index == SelectedIndex)
@@ -711,7 +734,7 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         if (container is TabItem tabItem)
         {
             tabItem.TabStripPlacement = TabStripPlacement;
-            
+
             if (item != null && item is not Visual)
             {
                 if (!tabItem.IsSet(TabItem.ContentProperty))
@@ -777,7 +800,7 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
     protected virtual void PrepareTabItem(TabItem tabItem, object? item, int index)
     {
     }
-    
+
     protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
     {
         base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
@@ -789,7 +812,7 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
             UpdateSelectedContent();
         }
     }
-    
+
     protected override void ClearContainerForItemOverride(Control element)
     {
         base.ClearContainerForItemOverride(element);
@@ -802,51 +825,6 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         UpdateSelectedContent();
     }
 
-    // The indexer bindings created in PrepareContainerForItemOverride subscribe to this
-    // owner's PropertyChanged, and Avalonia never disposes them on its own: without this
-    // release every removed item stays alive for the owner's lifetime. Avalonia skips
-    // ClearContainerForItemOverride for items that are their own container, so TabItem
-    // also routes its direct logical detach into this method.
-    internal virtual void ReleaseTabItemOwnerBindings(TabItem tabItem)
-    {
-        BindingOperations.GetBindingExpressionBase(tabItem, TabItem.SizeTypeProperty)?.Dispose();
-        BindingOperations.GetBindingExpressionBase(tabItem, TabItem.IsMotionEnabledProperty)?.Dispose();
-        BindingOperations.GetBindingExpressionBase(tabItem, TabItem.ContentTemplateProperty)?.Dispose();
-    }
-    
-    private void UpdateSelectedContent(Control? container = null)
-    {
-        _selectedItemSubscriptions?.Dispose();
-        _selectedItemSubscriptions = null;
-
-        if (SelectedIndex == -1)
-        {
-            SelectedContent = SelectedContentTemplate = null;
-        }
-        else
-        {
-            container ??= ContainerFromIndex(SelectedIndex);
-            if (container != null)
-            {
-                if (SelectedContentTemplate != SelectContentTemplate(container.GetValue(ContentTemplateProperty)))
-                {
-                    // If the value of SelectedContentTemplate is about to change, clear it first. This ensures
-                    // that the template is not reused as soon as SelectedContent changes in the statement below
-                    // this block, and also that controls generated from it are unloaded before SelectedContent
-                    // (which is typically their DataContext) changes.
-                    SelectedContentTemplate = null;
-                }
-
-                _selectedItemSubscriptions = new CompositeDisposable(
-                    container.GetObservable(ContentControl.ContentProperty).Subscribe(v => SelectedContent = v),
-                    container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = SelectContentTemplate(v)));
-
-                // Note how we fall back to our own ContentTemplate if the container doesn't specify one
-                IDataTemplate? SelectContentTemplate(IDataTemplate? containerTemplate) => containerTemplate ?? ContentTemplate;
-            }
-        }
-    }
-    
     protected virtual bool RegisterContentPresenter(ContentPresenter presenter)
     {
         if (presenter.Name == "PART_SelectedContentHost")
@@ -873,7 +851,7 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         {
             var newTemplate = change.GetNewValue<IDataTemplate?>();
             if (SelectedContentTemplate != newTemplate &&
-                ContainerFromIndex(SelectedIndex) is { } container && 
+                ContainerFromIndex(SelectedIndex) is { } container &&
                 container.GetValue(ContentControl.ContentTemplateProperty) == null)
             {
                 SelectedContentTemplate = newTemplate; // See also UpdateSelectedContent
@@ -908,6 +886,157 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
                         ConfigureTabItem(tabItem);
                     }
                 }
+            }
+        }
+    }
+
+    public override void Render(DrawingContext context)
+    {
+        if (Items.Count > 0)
+        {
+            SetupTabStripBorderPoints();
+            var borderThickness = SeparatorBorderThickness.Left;
+            using var optionState = context.PushRenderOptions(new RenderOptions
+            {
+                EdgeMode = EdgeMode.Aliased
+            });
+            context.DrawLine(GetTabStripBorderPen(borderThickness), _tabStripBorderStartPoint, _tabStripBorderEndPoint);
+        }
+    }
+
+    #region 实现 控件接口
+
+    // ControlTheme keeps native inheritance when no explicit owner typography is configured.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    int ITabOverflowOwner.OverflowItemCount => ItemCount;
+
+    int ITabOverflowOwner.OverflowSelectedIndex => SelectedIndex;
+
+    INotifyCollectionChanged ITabOverflowOwner.OverflowItems => ItemsView;
+
+    event EventHandler? ITabOverflowOwner.OverflowSelectionChanged
+    {
+        add => _overflowSelectionChanged += value;
+        remove => _overflowSelectionChanged -= value;
+    }
+
+    Control? ITabOverflowOwner.GetOverflowContainer(int index) => ContainerFromIndex(index);
+
+    object? ITabOverflowOwner.GetOverflowLogicalItem(int index) =>
+        index >= 0 && index < ItemsView.Count ? ItemsView[index] : null;
+
+    TabOverflowItem ITabOverflowOwner.CreateOverflowItem(int index, object? logicalItem, Control container)
+    {
+        if (container is not TabItem tabItem)
+        {
+            throw new ArgumentException("TabControl overflow containers must be TabItem instances.", nameof(container));
+        }
+
+        return new TabOverflowItem(
+            logicalItem,
+            tabItem.Header,
+            tabItem.HeaderTemplate,
+            tabItem.IsEffectivelyEnabled,
+            index == SelectedIndex,
+            tabItem.IsClosable);
+    }
+
+    bool ITabOverflowOwner.TryActivateOverflowItem(int index, object? logicalItem, Control container)
+    {
+        if (!IsCurrentOverflowEntry(index, logicalItem, container) || !container.IsEffectivelyEnabled)
+        {
+            return false;
+        }
+
+        container.BringIntoView();
+        SelectedIndex = index;
+        return true;
+    }
+
+    bool ITabOverflowOwner.TryCloseOverflowItem(int index, object? logicalItem, Control container)
+    {
+        return IsCurrentOverflowEntry(index, logicalItem, container) &&
+               container is TabItem tabItem &&
+               CloseTab(tabItem);
+    }
+
+    #endregion
+
+    private int GetNextSelectionIndex(int closingIndex)
+    {
+        if (SelectedIndex != closingIndex)
+        {
+            return SelectedIndex;
+        }
+
+        var isClosingLastItem = Items.Count <= SingleItemCount;
+        if (isClosingLastItem)
+        {
+            return UnselectedIndex;
+        }
+
+        var previousIndex = closingIndex - SingleItemCount;
+        return previousIndex >= FirstItemIndex ? previousIndex : FirstItemIndex;
+    }
+
+    private void DetachTabScrollViewer()
+    {
+        if (_tabReorderScrollViewer is { } scrollViewer)
+        {
+            scrollViewer.DetachOverflowOwner(this);
+        }
+        _tabReorderScrollViewer = null;
+    }
+
+    private void UpdateTabStripPlacement()
+    {
+        var controls = ItemsPresenterPart?.Panel?.Children;
+        if (controls is null)
+        {
+            return;
+        }
+
+        foreach (var control in controls)
+        {
+            if (control is TabItem tabItem)
+            {
+                tabItem.TabStripPlacement = TabStripPlacement;
+            }
+        }
+
+        UpdateIconSlotReservation();
+    }
+
+    private void UpdateSelectedContent(Control? container = null)
+    {
+        _selectedItemSubscriptions?.Dispose();
+        _selectedItemSubscriptions = null;
+
+        if (SelectedIndex == -1)
+        {
+            SelectedContent = SelectedContentTemplate = null;
+        }
+        else
+        {
+            container ??= ContainerFromIndex(SelectedIndex);
+            if (container != null)
+            {
+                if (SelectedContentTemplate != SelectContentTemplate(container.GetValue(ContentTemplateProperty)))
+                {
+                    // If the value of SelectedContentTemplate is about to change, clear it first. This ensures
+                    // that the template is not reused as soon as SelectedContent changes in the statement below
+                    // this block, and also that controls generated from it are unloaded before SelectedContent
+                    // (which is typically their DataContext) changes.
+                    SelectedContentTemplate = null;
+                }
+
+                _selectedItemSubscriptions = new CompositeDisposable(
+                    container.GetObservable(ContentControl.ContentProperty).Subscribe(v => SelectedContent = v),
+                    container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = SelectContentTemplate(v)));
+
+                // Note how we fall back to our own ContentTemplate if the container doesn't specify one
+                IDataTemplate? SelectContentTemplate(IDataTemplate? containerTemplate) => containerTemplate ?? ContentTemplate;
             }
         }
     }
@@ -996,20 +1125,6 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         }
     }
 
-    public override void Render(DrawingContext context)
-    {
-        if (Items.Count > 0)
-        {
-            SetupTabStripBorderPoints();
-            var borderThickness = SeparatorBorderThickness.Left;
-            using var optionState = context.PushRenderOptions(new RenderOptions
-            {
-                EdgeMode = EdgeMode.Aliased
-            });
-            context.DrawLine(GetTabStripBorderPen(borderThickness), _tabStripBorderStartPoint, _tabStripBorderEndPoint);
-        }
-    }
-
     private Pen GetTabStripBorderPen(double borderThickness)
     {
         if (_tabStripBorderPen is null ||
@@ -1023,7 +1138,7 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
 
         return _tabStripBorderPen!;
     }
-    
+
     private void ConfigureTabItem(TabItem tabItem)
     {
         tabItem.SetValue(TabItem.IsClosableProperty, IsTabClosable, BindingPriority.Template);
@@ -1153,18 +1268,6 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
             _tabReorderOriginalZIndexes,
             _tabReorderPreviewOffsets);
     }
-
-    internal double GetTabReorderPreviewPrimaryOffset(Control container)
-    {
-        if (!_tabReorderPreviewOffsets.TryGetValue(container, out var offset))
-        {
-            return 0;
-        }
-
-        return TabReorderHelper.IsHorizontal(TabStripPlacement) ? offset.X : offset.Y;
-    }
-
-    internal bool IsTabReorderIndicatorRefreshDeferred => _isTabReorderIndicatorRefreshDeferred;
 
     private void NotifyTabReorderPreviewChanged()
     {
@@ -1629,58 +1732,6 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         }
     }
 
-    int ITabOverflowOwner.OverflowItemCount => ItemCount;
-
-    int ITabOverflowOwner.OverflowSelectedIndex => SelectedIndex;
-
-    INotifyCollectionChanged ITabOverflowOwner.OverflowItems => ItemsView;
-
-    event EventHandler? ITabOverflowOwner.OverflowSelectionChanged
-    {
-        add => _overflowSelectionChanged += value;
-        remove => _overflowSelectionChanged -= value;
-    }
-
-    Control? ITabOverflowOwner.GetOverflowContainer(int index) => ContainerFromIndex(index);
-
-    object? ITabOverflowOwner.GetOverflowLogicalItem(int index) =>
-        index >= 0 && index < ItemsView.Count ? ItemsView[index] : null;
-
-    TabOverflowItem ITabOverflowOwner.CreateOverflowItem(int index, object? logicalItem, Control container)
-    {
-        if (container is not TabItem tabItem)
-        {
-            throw new ArgumentException("TabControl overflow containers must be TabItem instances.", nameof(container));
-        }
-
-        return new TabOverflowItem(
-            logicalItem,
-            tabItem.Header,
-            tabItem.HeaderTemplate,
-            tabItem.IsEffectivelyEnabled,
-            index == SelectedIndex,
-            tabItem.IsClosable);
-    }
-
-    bool ITabOverflowOwner.TryActivateOverflowItem(int index, object? logicalItem, Control container)
-    {
-        if (!IsCurrentOverflowEntry(index, logicalItem, container) || !container.IsEffectivelyEnabled)
-        {
-            return false;
-        }
-
-        container.BringIntoView();
-        SelectedIndex = index;
-        return true;
-    }
-
-    bool ITabOverflowOwner.TryCloseOverflowItem(int index, object? logicalItem, Control container)
-    {
-        return IsCurrentOverflowEntry(index, logicalItem, container) &&
-               container is TabItem tabItem &&
-               CloseTab(tabItem);
-    }
-
     private bool IsCurrentOverflowEntry(int index, object? logicalItem, Control container)
     {
         return index >= 0 &&
@@ -1688,6 +1739,7 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
                ReferenceEquals(ContainerFromIndex(index), container) &&
                Equals(ItemsView[index], logicalItem);
     }
+
 }
 
 
@@ -1698,7 +1750,7 @@ public class TabClosingEventArgs : RoutedEventArgs
     {
         TabItem = tabItem;
     }
-    
+
     public TabItem TabItem { get; }
     public bool Cancel { get; set; }
 }
@@ -1710,6 +1762,6 @@ public class TabClosedEventArgs : RoutedEventArgs
     {
         TabItem = tabItem;
     }
-    
+
     public TabItem TabItem { get; }
 }

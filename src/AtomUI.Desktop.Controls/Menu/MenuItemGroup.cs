@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
@@ -12,8 +13,11 @@ namespace AtomUI.Desktop.Controls;
 /// 下拉菜单里的「分组标题 + 选项列表」容器，对应 antd 的
 /// <c>ant-menu-item-group</c>：标题渲染为不可交互的标题行，子项为普通菜单项。
 /// </summary>
-public class MenuItemGroup : ItemsControl
+public class MenuItemGroup : ItemsControl,
+    IThemeInheritanceSource
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<object?> HeaderProperty =
         AvaloniaProperty.Register<MenuItemGroup, object?>(nameof(Header));
 
@@ -32,10 +36,9 @@ public class MenuItemGroup : ItemsControl
         set => SetValue(HeaderTemplateProperty, value);
     }
 
-    private const string ItemTitleGroupClass = "semantic-item-title-group";
+    #endregion
 
-    // 分组所在层级由 owner 在 prepare 时下发；分组内的菜单项继承该层级。
-    private MenuSemanticLevel _semanticLevel;
+    #region 内部属性定义
 
     internal MenuSemanticLevel SemanticLevel
     {
@@ -50,6 +53,13 @@ public class MenuItemGroup : ItemsControl
             }
         }
     }
+
+    #endregion
+
+    private const string ItemTitleGroupClass = "semantic-item-title-group";
+
+    // 分组所在层级由 owner 在 prepare 时下发；分组内的菜单项继承该层级。
+    private MenuSemanticLevel _semanticLevel;
 
     public MenuItemGroup()
     {
@@ -166,8 +176,16 @@ public class MenuItemGroup : ItemsControl
         base.ClearContainerForItemOverride(container);
     }
 
+    #region 实现 控件接口
+
+    // The theme preserves the actual inheritance parent when owner typography is not explicit.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
     private void ApplyChildSemanticLevel(MenuItem menuItem)
     {
         menuItem.SemanticLevel = SemanticLevel;
     }
+
 }

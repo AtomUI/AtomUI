@@ -46,7 +46,7 @@
         </Setter>
 
         <Setter Property="TransparentBgIntervalColor"
-                Value="{atom:SharedTokenResource ColorFillSecondary}" />
+                Value="{atom:OwnerTokenResource ColorFillSecondary}" />
         <Setter Property="TransparentBgSize"
                 Value="{atom:ColorPickerTokenResource TransparentBgSize}" />
         <Setter Property="ClipToBounds" Value="False" />

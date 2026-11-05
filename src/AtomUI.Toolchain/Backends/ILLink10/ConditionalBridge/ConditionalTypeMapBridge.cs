@@ -18,7 +18,12 @@ internal sealed class ConditionalTypeMapBridge
         _coreLib = coreLib;
     }
 
-    internal void Apply(IReadOnlyList<BoundConditionalRegistrationGroup> groups)
+    internal static bool IsLegacyCore(AssemblyDefinition core) =>
+        core.CustomAttributes.SingleOrDefault(attribute =>
+            attribute.AttributeType.FullName == "System.Runtime.Versioning.TargetFrameworkAttribute") is { ConstructorArguments.Count: 1 } framework &&
+        Equals(framework.ConstructorArguments[0].Value, ".NETCoreApp,Version=v8.0");
+
+    internal bool Apply(IReadOnlyList<BoundConditionalRegistrationGroup> groups)
     {
         // Validate all added member slots before changing any collector.
         foreach (var group in groups)
@@ -39,6 +44,14 @@ internal sealed class ConditionalTypeMapBridge
         {
             Apply(group);
         }
+        var normalizedCore = groups.Count != 0 && IsLegacyCore(_core);
+        if (normalizedCore)
+        {
+            // The legacy getter has no official FeatureSwitchDefinition attribute. Normalize
+            // its verified boolean template in this publish view, using the SDK-bound CoreLib.
+            CoreRegistrationModeNormalizer.Normalize(_core, type => type.Resolve(), method => method.Resolve(), _coreLib.Name.FullName);
+        }
+        return normalizedCore;
     }
 
     private void Apply(BoundConditionalRegistrationGroup group)

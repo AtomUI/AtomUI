@@ -24,6 +24,7 @@ internal enum WindowMenuItemKind
     Move,
     Resize,
     ThemeCatalog,
+    ThemeWorkbench,
     LightMode,
     DarkMode,
     FollowSystem,
@@ -42,6 +43,7 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
     private const string TitleBarMenuResourceKey = "WorkspaceTitleBarMenu";
     private const string ThemeColorGroupName = "ThemeColor";
     private GalleryShellView? _shellView;
+    private Avalonia.Controls.Window? _themeWorkbenchWindow;
     private bool _closed;
     private MenuItem? _themeMenuItem;
     private readonly List<MenuItem> _themeMenuItems = new();
@@ -117,6 +119,8 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
             ViewModel.PropertyChanged -= _viewModelPropertyChangedHandler;
             _viewModelPropertyChangedHandler = null;
         }
+        _themeWorkbenchWindow?.Close();
+        _themeWorkbenchWindow = null;
         _shellView?.Dispose();
         _shellView = null;
         ViewModel?.Dispose();
@@ -225,6 +229,33 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
         return header;
     }
 
+    private void OpenThemeWorkbench(string title)
+    {
+        if (_themeWorkbenchWindow is { } existing)
+        {
+            existing.Activate();
+            return;
+        }
+        var view = new ThemeWorkbenchView();
+        var window = new AtomUI.Desktop.Controls.Window
+        {
+            Title = title,
+            Width = 1300,
+            Height = 880,
+            MinWidth = 1100,
+            MinHeight = 620,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Content = view
+        };
+        _themeWorkbenchWindow = window;
+        window.Closed += (_, _) =>
+        {
+            view.Dispose();
+            _themeWorkbenchWindow = null;
+        };
+        window.Show(this);
+    }
+
     private void HandleMenuItemClick(object? sender, RoutedEventArgs e)
     {
         if (ViewModel is null)
@@ -234,6 +265,11 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
 
         if (e.Source is MenuItem menuItem && menuItem.Tag is WindowMenuItemKind kind)
         {
+            if (kind == WindowMenuItemKind.ThemeWorkbench)
+            {
+                OpenThemeWorkbench(menuItem.Header?.ToString() ?? "Theme workbench");
+                return;
+            }
             if (menuItem.ToggleType == MenuItemToggleType.None)
             {
                 return;

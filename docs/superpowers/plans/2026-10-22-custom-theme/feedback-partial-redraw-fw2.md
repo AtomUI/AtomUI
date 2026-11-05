@@ -1,5 +1,7 @@
 # CT25/FW2 局部重绘限定调查边界
 
+当前状态补读：[2026-11-05原表/正式采用后的分层核对](platform-current-exit.md#原问题恢复及当前阻塞)。以下保留原FAIL和限定批准；指定软件host的后续有效原场景新绿以CT15最终出口为准，不将旧失败重新列为已完成家族的当前待办，也不扩大到对外NuGet、GPU或其他平台。
+
 2026-11-01 用户明确回复“仅批准表列路径归 CT25/FW2，其余保留”（request_user_input_async / call_58d9ca164cbe4d43b4254cc21caa6b70 / item 0）。仅feedback-partial-redraw-visual-review.md列出的3个无AtomUI独立反例及24个当前Timeline局部恢复路径归CT25/FW2继续调查；非零仍FAIL，不设置或扩大任何像素容差，不修改既有FW1。原P3-B102/102/82/82、其他家族/native/平台/GC及完整CT15均保留，不授权提交。
 
 证据及明确数值的唯一清单见[限定审查表](feedback-partial-redraw-visual-review.md)，因果与反证见[timeline定位](timeline-part-restore-audit.md)。当前不改官方Avalonia12.1.4，不改宿主开关，不补全屏强制重绘绕过，不批准通用容差，不把未列场景自动纳入。

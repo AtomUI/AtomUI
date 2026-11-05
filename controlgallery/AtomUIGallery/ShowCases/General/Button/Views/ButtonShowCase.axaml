@@ -608,6 +608,8 @@
                                         </atom:ButtonContentStyle>
                                     </Style>
                                     <Style Selector="atom|Button.semantic-part-demo.semantic-object">
+                                        <Setter Property="BoxShadow"
+                                                Value="{atom:ButtonTokenResource DefaultShadow}" />
                                         <Setter Property="Effect">
                                             <DropShadowEffect OffsetX="0"
                                                               OffsetY="1"

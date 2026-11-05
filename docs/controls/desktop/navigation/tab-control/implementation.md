@@ -386,3 +386,8 @@ TabControl 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+
+## 有效主题输入与生命周期
+
+TabControl/CardTabControl/TabStrip/CardTabStrip 及公开条目保留实际 Global 身份，TabControl Own 继续按命名合同显式复用。分隔线、滚动、图标及交互颜色使用所属模板 owner；字体族支持可选覆盖及实际父级继承。添加按钮尺寸关系保持模板内声明式绑定，专用 Add Style 遵守原生样式优先级。

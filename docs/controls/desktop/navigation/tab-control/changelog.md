@@ -181,3 +181,8 @@
   - Add TabControl implementation documentation covering source ownership, state flow, lifecycle, resources, AOT boundaries and maintenance invariants.
   - Add TabControl control-level changelog.
   - Add TabControl Token documentation covering TabControlToken.
+
+
+## 2026-10-30 主题消费与字体
+
+TabControl/CardTabControl/TabStrip/CardTabStrip 及公开条目保留实际 Global 身份，TabControl Own 继续按命名合同显式复用。分隔线、滚动、图标及交互颜色使用所属模板 owner；字体族支持可选覆盖及实际父级继承。添加按钮尺寸关系保持模板内声明式绑定，专用 Add Style 遵守原生样式优先级。

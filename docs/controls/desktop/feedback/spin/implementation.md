@@ -27,3 +27,7 @@ Opacity首key使用最小正规正float进度，避免显式0与隐式0的零长
 
 根控件的 MaskOpacity 自动过渡使用 `TransitionInitializationSession`：构造时抑制、Loaded 完成基线、detach 复位，
 恢复最新 Transitions 来源。指示器的持续反馈独立于该初始化作用域，不通过私有开关或 Dispatcher 猜测就绪。
+
+### Custom 尺寸与原生优先级
+
+SpinIndicator 的 Custom IndicatorSize 与 DotSize 使用中档 Own 的基础 Setter，Large/Middle/Small 仍按各自指标。普通 Style 可接管这两个公开属性，最终值通过原 TemplateBinding 进入外框与四个点，撤回后恢复动态 Own 默认。该规则不改变循环动画、有效可见性或自定义 indicator 的生命周期。

@@ -35,7 +35,7 @@
                     <antdicons:ImageFilled Name="Image"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
-                                           FillBrush="#bfbfbf" />
+                                           FillBrush="{TemplateBinding Foreground}" />
                 </Panel>
             </Panel>
         </ControlTemplate>
@@ -44,7 +44,7 @@
     <Style Selector="^:is(atom|SkeletonImage)">
         <Setter Property="Height" Value="{atom:SkeletonTokenResource ImageContainerSize}" />
         <Setter Property="Width" Value="{atom:SkeletonTokenResource ImageContainerSize}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         <Setter Property="MaxWidth" Value="{atom:SkeletonTokenResource ImageContainerMaxSize}" />
         <Setter Property="MaxHeight" Value="{atom:SkeletonTokenResource ImageContainerMaxSize}" />
     
@@ -53,5 +53,15 @@
             <Setter Property="Height" Value="{atom:SkeletonTokenResource ImageSize}" />
         </Style>
 
+    </Style>
+    <!-- Node owns caller content rather than this built-in image glyph. -->
+    <Style Selector="^:not(:is(atom|SkeletonNode))">
+        <Setter Property="Foreground">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.ForegroundConverter}">
+                <Binding Source="{x:Static themes:SkeletonImageTheme.DefaultGlyphForeground}" />
+                <atom:OwnerTokenResource Kind="ColorTextPlaceholder" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="ColorTextPlaceholder" />
+            </MultiBinding>
+        </Setter>
     </Style>
 </ControlTheme>

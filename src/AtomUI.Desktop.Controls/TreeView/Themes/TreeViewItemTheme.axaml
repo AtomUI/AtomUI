@@ -4,6 +4,14 @@
               xmlns:atom="https://atomui.net"
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.TreeViewItemTheme">
+    <Setter Property="FontFamily">
+        <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+            <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+            <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+            <atom:OwnerTokenResource Kind="FontFamily" />
+        </MultiBinding>
+    </Setter>
+
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TreeViewItem">
             <StackPanel Orientation="Vertical">
@@ -55,8 +63,8 @@
     </Setter>
 
     <Style Selector="^:is(atom|TreeViewItem)">
-        <Setter Property="Focusable" Value="False" /> 
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource Kind=ColorBorder, AnchorControlType={x:Type atom:TreeViewItem}}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource Kind=BorderThickness, AnchorControlType={x:Type atom:TreeViewItem}}" />
     </Style>
 </ControlTheme>

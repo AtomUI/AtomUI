@@ -91,7 +91,9 @@ foreach (var file in files)
     foreach (var type in root.DescendantNodes().OfType<TypeDeclarationSyntax>())
     {
         var fields = type.Members.OfType<FieldDeclarationSyntax>().ToArray();
-        var properties = type.Members.OfType<PropertyDeclarationSyntax>().ToDictionary(member => member.Identifier.ValueText);
+        var properties = type.Members.OfType<PropertyDeclarationSyntax>()
+            .Where(member => member.ExplicitInterfaceSpecifier is null)
+            .ToDictionary(member => member.Identifier.ValueText);
         var registrations = fields.Where(IsRegistration).ToArray();
         var headerEnd = type.OpenBraceToken.IsKind(SyntaxKind.OpenBraceToken) ? type.OpenBraceToken.SpanStart : type.Span.End;
         var header = text[type.SpanStart..headerEnd];
@@ -154,8 +156,38 @@ foreach (var file in files)
                 {
                     continue;
                 }
-                var references = property.DescendantNodes().OfType<IdentifierNameSyntax>()
+                // Setter guards and derived-value inputs are not DirectProperty backing fields.
+                // Prefer the field actually passed by ref to SetAndRaise, then a simple getter.
+                var references = property.DescendantNodes().OfType<InvocationExpressionSyntax>()
+                    .Where(call => call.Expression switch
+                    {
+                        IdentifierNameSyntax name => name.Identifier.ValueText == "SetAndRaise",
+                        MemberAccessExpressionSyntax access => access.Name.Identifier.ValueText == "SetAndRaise",
+                        _ => false
+                    })
+                    .SelectMany(call => call.ArgumentList.Arguments.Where(argument =>
+                        argument.RefOrOutKeyword.IsKind(SyntaxKind.RefKeyword)))
+                    .SelectMany(argument => argument.Expression.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>())
                     .Select(identifier => identifier.Identifier.ValueText).ToHashSet();
+                if (references.Count == 0)
+                {
+                    var getter = property.AccessorList?.Accessors.FirstOrDefault(accessor =>
+                        accessor.IsKind(SyntaxKind.GetAccessorDeclaration));
+                    var expression = property.ExpressionBody?.Expression ?? getter?.ExpressionBody?.Expression;
+                    if (expression is null && getter?.Body?.Statements is { Count: 1 } statements &&
+                        statements[0] is ReturnStatementSyntax returned)
+                    {
+                        expression = returned.Expression;
+                    }
+                    if (expression is IdentifierNameSyntax identifier)
+                    {
+                        references.Add(identifier.Identifier.ValueText);
+                    }
+                    else if (expression is MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax } access)
+                    {
+                        references.Add(access.Name.Identifier.ValueText);
+                    }
+                }
                 foreach (var backing in fields.Where(candidate => !IsRegistration(candidate) &&
                              candidate.Declaration.Variables.Any(value => references.Contains(value.Identifier.ValueText))))
                 {

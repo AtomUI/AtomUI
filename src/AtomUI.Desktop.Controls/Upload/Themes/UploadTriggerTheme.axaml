@@ -4,6 +4,21 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:UploadTrigger}" TargetType="atom:UploadTrigger">
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="FontFamily">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontFamilyConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontFamily" />
+                <atom:OwnerTokenResource Kind="FontFamily" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontFamily" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <ContentPresenter Name="PART_ContentPresenter"
@@ -15,7 +30,7 @@
         </Setter>
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextSecondary}" />
+        <Setter Property="Foreground" Value="{atom:UploadTriggerTokenResource ColorTextSecondary}" />
 
         <Style Selector="^[ListType=PictureCard], ^[ListType=PictureCircle]">
             <Setter Property="Template">
@@ -34,10 +49,10 @@
                     </atom:DashedBorder>
                 </ControlTemplate>
             </Setter>
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-            <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+            <Setter Property="Background" Value="{atom:UploadTriggerTokenResource ColorFillAlter}" />
+            <Setter Property="CornerRadius" Value="{atom:UploadTriggerTokenResource BorderRadiusLG}" />
+            <Setter Property="BorderBrush" Value="{atom:UploadTriggerTokenResource ColorBorder}" />
+            <Setter Property="BorderThickness" Value="{atom:UploadTriggerTokenResource BorderThickness}" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
 
@@ -48,12 +63,17 @@
             </Style>
 
             <Style Selector="^:pointerover">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="BorderBrush" Value="{atom:UploadTriggerTokenResource ColorPrimary}" />
             </Style>
         </Style>
 
+        <Style Selector="^[ListType=PictureCircle]">
+            <Setter Property="CornerRadius"
+                    Value="{CompiledBinding $self.Bounds, Converter={x:Static atom:UploadShapeConverters.CircleCornerRadius}}" />
+        </Style>
+
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:UploadTriggerTokenResource ColorTextDisabled}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">

@@ -590,3 +590,7 @@ AtomUI 使用 owner-scoped AXAML Style 和生成的 Semantic Style Type 表达�
   Examples 后全部释放。四种类型与 Gradient 状态严格对应官方示例。
 - Gallery Semantic custom 示例只包含官方六个百分比值和官方样式映射。
 - NativeAOT 不依赖运行时类型发现、反射或动态代码。
+
+## 动态结果与真实目标
+
+四形态的 body/rail/track/indicator 保持现有 route、ContractType 和 cardinality。结果图标与文字在同一实际 indicator 内替代，普通内嵌模式仍为百分比。Root、图标替代节点和动态步骤矩形继续通过生成的专用 Style 定制；配置与清除不通过查找节点回写属性。

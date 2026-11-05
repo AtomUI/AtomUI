@@ -269,7 +269,7 @@ LineEdit 是 Data Entry 文本输入家族的根入口，与 NumericUpDown、Dat
 
 ### 8.1 Custom SizeType 模型
 
-`CustomizableSizeType.Custom` 表示用户接管尺寸属性。主题层仍把 `Custom` 归入 `Middle` 的默认 line height、corner radius 和 font size 分支；用户显式设置 `Height`、`FontSize`、`Padding` 等属性时，由 Avalonia 属性优先级和 `IsCustomFontSize` 控制最终效果。
+`CustomizableSizeType.Custom` 表示用户接管尺寸属性。主题以基础默认提供 `Middle` 的尺寸回退，`Custom` 不进入根 Padding/CornerRadius 的预设分支；用户显式设置 `Height`、`FontSize`、`Padding` 等属性时，由 Avalonia 属性优先级和 `IsCustomFontSize` 控制最终效果。
 
 ### 8.2 SearchEdit 模型
 

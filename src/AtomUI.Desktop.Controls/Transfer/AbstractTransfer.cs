@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using AtomUI.Controls;
@@ -19,213 +20,205 @@ namespace AtomUI.Desktop.Controls;
 public abstract class AbstractTransfer: TemplatedControl,
                                         IMotionAwareControl,
                                         IInputControlStatusAware,
-                                        ICustomizableSizeTypeAware
+                                        ICustomizableSizeTypeAware,
+    IThemeInheritanceSource
 {
-    [Flags]
-    protected enum FilterChangeType
-    {
-        Source = 0x01,
-        Target = 0x02,
-        Both = Source | Target
-    }
-
     #region 公共属性定义
-    
+
     public static readonly StyledProperty<IEnumerable<IItemKey>?> ItemsSourceProperty =
         AvaloniaProperty.Register<AbstractTransfer, IEnumerable<IItemKey>?>(nameof(ItemsSource));
-    
+
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<AbstractTransfer>();
-    
+
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractTransfer>();
-    
+
     public static readonly StyledProperty<double> ListWidthProperty =
         AvaloniaProperty.Register<AbstractTransfer, double>(nameof(ListWidth), double.NaN);
-    
+
     public static readonly StyledProperty<double> ListHeightProperty =
         AvaloniaProperty.Register<AbstractTransfer, double>(nameof(ListHeight), double.NaN);
-    
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractTransfer>();
-    
+
     public static readonly StyledProperty<object?> SourceViewFooterProperty =
         AvaloniaProperty.Register<AbstractTransfer, object?>(nameof(SourceViewFooter));
-    
+
     public static readonly StyledProperty<IDataTemplate?> SourceViewFooterTemplateProperty =
         AvaloniaProperty.Register<AbstractTransfer, IDataTemplate?>(nameof(SourceViewFooterTemplate));
-    
+
     public static readonly StyledProperty<object?> TargetViewFooterProperty =
         AvaloniaProperty.Register<AbstractTransfer, object?>(nameof(TargetViewFooter));
-    
+
     public static readonly StyledProperty<IDataTemplate?> TargetViewFooterTemplateProperty =
         AvaloniaProperty.Register<AbstractTransfer, IDataTemplate?>(nameof(TargetViewFooterTemplate));
-    
+
     public static readonly StyledProperty<IIconTemplate?> SelectionsIconProperty =
         AvaloniaProperty.Register<AbstractTransfer, IIconTemplate?>(nameof(SelectionsIcon));
-    
+
     public static readonly StyledProperty<PathIcon?> ToSourceTransferIconProperty =
         AvaloniaProperty.Register<AbstractTransfer, PathIcon?>(nameof(ToSourceTransferIcon));
-    
+
     public static readonly StyledProperty<PathIcon?> ToTargetTransferIconProperty =
         AvaloniaProperty.Register<AbstractTransfer, PathIcon?>(nameof(ToTargetTransferIcon));
-    
+
     public static readonly StyledProperty<bool> IsShowSearchProperty =
         AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsShowSearch));
-    
+
     public static readonly StyledProperty<bool> IsShowSelectAllProperty =
         AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsShowSelectAll));
-    
+
     public static readonly StyledProperty<object?> SourceTitleProperty =
         AvaloniaProperty.Register<AbstractTransfer, object?>(nameof(SourceTitle));
-    
+
     public static readonly StyledProperty<IDataTemplate?> SourceTitleTemplateProperty =
         AvaloniaProperty.Register<AbstractTransfer, IDataTemplate?>(nameof(SourceTitleTemplate));
-    
+
     public static readonly StyledProperty<object?> TargetTitleProperty =
         AvaloniaProperty.Register<AbstractTransfer, object?>(nameof(TargetTitle));
-    
+
     public static readonly StyledProperty<IDataTemplate?> TargetTitleTemplateProperty =
         AvaloniaProperty.Register<AbstractTransfer, IDataTemplate?>(nameof(TargetTitleTemplate));
-    
+
     public static readonly StyledProperty<bool> IsOneWayProperty =
         AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsOneWay));
-    
+
     public static readonly StyledProperty<IList<EntityKey>?> SelectedKeysProperty =
         AvaloniaProperty.Register<AbstractTransfer, IList<EntityKey>?>(
             nameof(SelectedKeys),
             defaultBindingMode: BindingMode.TwoWay);
-    
+
     public static readonly StyledProperty<IList<EntityKey>?> TargetKeysProperty =
         AvaloniaProperty.Register<AbstractTransfer, IList<EntityKey>?>(
             nameof(TargetKeys),
             defaultBindingMode: BindingMode.TwoWay);
-    
+
     public static readonly StyledProperty<bool> IsFilterEnabledProperty =
         AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsFilterEnabled), false);
-    
+
     public static readonly StyledProperty<IValueFilter?> FilterProperty =
         AvaloniaProperty.Register<AbstractTransfer, IValueFilter?>(nameof(Filter));
-    
+
     public static readonly StyledProperty<DefaultFilterValueSelector?> FilterValueSelectorProperty =
         AvaloniaProperty.Register<AbstractTransfer, DefaultFilterValueSelector?>(
             nameof(FilterValueSelector));
-    
+
     public static readonly StyledProperty<string?> FilterPlaceholderTextProperty =
         AvaloniaProperty.Register<AbstractTransfer, string?>(nameof(FilterPlaceholderText));
-    
+
     public static readonly StyledProperty<string?> ToSourceButtonTextProperty =
         AvaloniaProperty.Register<AbstractTransfer, string?>(nameof(ToSourceButtonText));
-    
+
     public static readonly StyledProperty<string?> ToTargetButtonTextProperty =
         AvaloniaProperty.Register<AbstractTransfer, string?>(nameof(ToTargetButtonText));
-    
+
     public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
         ItemsControl.ItemTemplateProperty.AddOwner<AbstractTransfer>();
-    
+
     public static readonly StyledProperty<bool> IsStretchViewProperty =
         AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsStretchView));
-    
-    
+
     public IEnumerable<IItemKey>? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
         set => SetValue(ItemsSourceProperty, value);
     }
-    
+
     public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
     }
-    
+
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
-    
+
     public double ListWidth
     {
         get => GetValue(ListWidthProperty);
         set => SetValue(ListWidthProperty, value);
     }
-    
+
     public double ListHeight
     {
         get => GetValue(ListHeightProperty);
         set => SetValue(ListHeightProperty, value);
     }
-    
+
+    public bool IsMotionEnabled
+    {
+        get => GetValue(IsMotionEnabledProperty);
+        set => SetValue(IsMotionEnabledProperty, value);
+    }
+
     [DependsOn(nameof(SourceViewFooterTemplate))]
     public object? SourceViewFooter
     {
         get => GetValue(SourceViewFooterProperty);
         set => SetValue(SourceViewFooterProperty, value);
     }
-    
+
     public IDataTemplate? SourceViewFooterTemplate
     {
         get => GetValue(SourceViewFooterTemplateProperty);
         set => SetValue(SourceViewFooterTemplateProperty, value);
     }
-    
+
     [DependsOn(nameof(TargetViewFooterTemplate))]
     public object? TargetViewFooter
     {
         get => GetValue(TargetViewFooterProperty);
         set => SetValue(TargetViewFooterProperty, value);
     }
-    
+
     public IDataTemplate? TargetViewFooterTemplate
     {
         get => GetValue(TargetViewFooterTemplateProperty);
         set => SetValue(TargetViewFooterTemplateProperty, value);
     }
-    
-    public bool IsMotionEnabled
-    {
-        get => GetValue(IsMotionEnabledProperty);
-        set => SetValue(IsMotionEnabledProperty, value);
-    }
-    
+
     public IIconTemplate? SelectionsIcon
     {
         get => GetValue(SelectionsIconProperty);
         set => SetValue(SelectionsIconProperty, value);
     }
-    
+
     public PathIcon? ToSourceTransferIcon
     {
         get => GetValue(ToSourceTransferIconProperty);
         set => SetValue(ToSourceTransferIconProperty, value);
     }
-    
+
     public PathIcon? ToTargetTransferIcon
     {
         get => GetValue(ToTargetTransferIconProperty);
         set => SetValue(ToTargetTransferIconProperty, value);
     }
-    
+
     public bool IsShowSearch
     {
         get => GetValue(IsShowSearchProperty);
         set => SetValue(IsShowSearchProperty, value);
     }
-    
+
     public bool IsShowSelectAll
     {
         get => GetValue(IsShowSelectAllProperty);
         set => SetValue(IsShowSelectAllProperty, value);
     }
-    
+
     [DependsOn(nameof(SourceTitleTemplate))]
     public object? SourceTitle
     {
         get => GetValue(SourceTitleProperty);
         set => SetValue(SourceTitleProperty, value);
     }
-    
+
     public IDataTemplate? SourceTitleTemplate
     {
         get => GetValue(SourceTitleTemplateProperty);
@@ -238,25 +231,25 @@ public abstract class AbstractTransfer: TemplatedControl,
         get => GetValue(TargetTitleProperty);
         set => SetValue(TargetTitleProperty, value);
     }
-    
+
     public IDataTemplate? TargetTitleTemplate
     {
         get => GetValue(TargetTitleTemplateProperty);
         set => SetValue(TargetTitleTemplateProperty, value);
     }
-    
+
     public bool IsOneWay
     {
         get => GetValue(IsOneWayProperty);
         set => SetValue(IsOneWayProperty, value);
     }
-    
+
     public IList<EntityKey>? SelectedKeys
     {
         get => GetValue(SelectedKeysProperty);
         set => SetValue(SelectedKeysProperty, value);
     }
-    
+
     public IList<EntityKey>? TargetKeys
     {
         get => GetValue(TargetKeysProperty);
@@ -268,110 +261,114 @@ public abstract class AbstractTransfer: TemplatedControl,
         get => GetValue(IsFilterEnabledProperty);
         set => SetValue(IsFilterEnabledProperty, value);
     }
-    
+
     public IValueFilter? Filter
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);
     }
-    
+
     public DefaultFilterValueSelector? FilterValueSelector
     {
         get => GetValue(FilterValueSelectorProperty);
         set => SetValue(FilterValueSelectorProperty, value);
     }
-    
+
     public string? FilterPlaceholderText
     {
         get => GetValue(FilterPlaceholderTextProperty);
         set => SetValue(FilterPlaceholderTextProperty, value);
     }
-    
+
     public string? ToSourceButtonText
     {
         get => GetValue(ToSourceButtonTextProperty);
         set => SetValue(ToSourceButtonTextProperty, value);
     }
-    
+
     public string? ToTargetButtonText
     {
         get => GetValue(ToTargetButtonTextProperty);
         set => SetValue(ToTargetButtonTextProperty, value);
     }
-    
+
     [InheritDataTypeFromItems(nameof(ItemsSource))]
     public IDataTemplate? ItemTemplate
     {
         get => GetValue(ItemTemplateProperty);
         set => SetValue(ItemTemplateProperty, value);
     }
-    
+
     public bool IsStretchView
     {
         get => GetValue(IsStretchViewProperty);
         set => SetValue(IsStretchViewProperty, value);
     }
-    
+
     #endregion
 
     #region 公共事件定义
+
     public event EventHandler<TransferSelectionChangedEventArgs>? SelectionChanged;
+
     #endregion
 
     #region 内部属性定义
-    
+
     internal static readonly StyledProperty<IEnumerable<IItemKey>?> SourceViewSourceProperty =
         AvaloniaProperty.Register<AbstractTransfer, IEnumerable<IItemKey>?>(nameof(SourceViewSource));
-    
+
     internal static readonly StyledProperty<IEnumerable<IItemKey>?> TargetViewSourceProperty =
         AvaloniaProperty.Register<AbstractTransfer, IEnumerable<IItemKey>?>(nameof(TargetViewSource));
-    
+
     internal static readonly DirectProperty<AbstractTransfer, bool> IsToTargetButtonEnabledProperty =
         AvaloniaProperty.RegisterDirect<AbstractTransfer, bool>(nameof(IsToTargetButtonEnabled),
             o => o.IsToTargetButtonEnabled,
             (o, v) => o.IsToTargetButtonEnabled = v);
-    
+
     internal static readonly DirectProperty<AbstractTransfer, bool> IsToSourceButtonEnabledProperty =
         AvaloniaProperty.RegisterDirect<AbstractTransfer, bool>(nameof(IsToSourceButtonEnabled),
             o => o.IsToSourceButtonEnabled,
             (o, v) => o.IsToSourceButtonEnabled = v);
-    
+
     internal static readonly DirectProperty<AbstractTransfer, string?> SourceFilterValueProperty =
         AvaloniaProperty.RegisterDirect<AbstractTransfer, string?>(nameof(SourceFilterValue),
             o => o.SourceFilterValue,
             (o, v) => o.SourceFilterValue = v);
-    
+
     internal static readonly DirectProperty<AbstractTransfer, string?> TargetFilterValueProperty =
         AvaloniaProperty.RegisterDirect<AbstractTransfer, string?>(nameof(TargetFilterValue),
             o => o.TargetFilterValue,
             (o, v) => o.TargetFilterValue = v);
-    
+
     internal static readonly StyledProperty<bool> IsPaginationEnabledProperty =
         AvaloniaProperty.Register<AbstractTransfer, bool>(nameof(IsPaginationEnabled));
 
     internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         TransferSelectDropdown.IsPopupPinnedOpenProperty.AddOwner<AbstractTransfer>();
-    
+
     internal IEnumerable<IItemKey>? SourceViewSource
     {
         get => GetValue(SourceViewSourceProperty);
         set => SetValue(SourceViewSourceProperty, value);
     }
-    
+
     internal IEnumerable<IItemKey>? TargetViewSource
     {
         get => GetValue(TargetViewSourceProperty);
         set => SetValue(TargetViewSourceProperty, value);
     }
-    
+
     private bool _toTargetButtonEnabled;
+
     internal bool IsToTargetButtonEnabled
     {
         get => _toTargetButtonEnabled;
         set => SetAndRaise(IsToTargetButtonEnabledProperty, ref _toTargetButtonEnabled, value);
     }
-    
+
     private bool _toSourceButtonEnabled;
+
     internal bool IsToSourceButtonEnabled
     {
         get => _toSourceButtonEnabled;
@@ -379,19 +376,21 @@ public abstract class AbstractTransfer: TemplatedControl,
     }
 
     private string? _sourceFilterValue;
+
     internal string? SourceFilterValue
     {
         get => _sourceFilterValue;
         set => SetAndRaise(SourceFilterValueProperty, ref _sourceFilterValue, value);
     }
-    
+
     private string? _targetFilterValue;
+
     internal string? TargetFilterValue
     {
         get => _targetFilterValue;
         set => SetAndRaise(TargetFilterValueProperty, ref _targetFilterValue, value);
     }
-    
+
     internal bool IsPaginationEnabled
     {
         get => GetValue(IsPaginationEnabledProperty);
@@ -403,28 +402,46 @@ public abstract class AbstractTransfer: TemplatedControl,
         get => GetValue(IsPopupPinnedOpenProperty);
         set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
     }
-    
+
     #endregion
 
+    [Flags]
+    protected enum FilterChangeType
+    {
+        Source = 0x01,
+        Target = 0x02,
+        Both = Source | Target
+    }
+
     private TransferItemDecorator? _sourceViewDecorator;
+
     private TransferItemDecorator? _targetViewDecorator;
+
     private ITransferView? _sourceView;
+
     private ITransferView? _targetView;
+
     private Grid? _rootLayout;
+
     private IDisposable? _popupPinnedOpenBinding;
+
     private TransferSelectDropdown? _pinnedOpenDropdown;
+
     private int _pinnedOpenGeneration;
+
     private INotifyCollectionChanged? _selectedKeysCollectionChangedSource;
+
     private INotifyCollectionChanged? _targetKeysCollectionChangedSource;
+
     private bool _isVisualTreeAttached;
-    
+
     static AbstractTransfer()
     {
         IconButton.ClickEvent.AddClassHandler<AbstractTransfer>((transfer, args) => transfer.HandleTransferRequest(args));
         TransferSelectDropdown.SelectActionRequestEvent.AddClassHandler<AbstractTransfer>((transfer, args) => transfer.HandleSelectActionRequest(args));
         LineEdit.TextChangedEvent.AddClassHandler<AbstractTransfer>((transfer, args) => transfer.HandleTransferFilterChanged(args));
     }
-    
+
     public AbstractTransfer()
     {
     }
@@ -517,7 +534,7 @@ public abstract class AbstractTransfer: TemplatedControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
- 
+
         if (change.Property == SourceFilterValueProperty)
         {
             ConfigurePanelItemsSourceForFilter(FilterChangeType.Source);
@@ -561,64 +578,6 @@ public abstract class AbstractTransfer: TemplatedControl,
                 UnpinPinnedOpenDropdown();
             }
         }
-    }
-
-    private void QueuePinnedOpenDropdownRegistration()
-    {
-        var generation = ++_pinnedOpenGeneration;
-        Dispatcher.UIThread.Post(() =>
-        {
-            if (generation != _pinnedOpenGeneration ||
-                !IsPopupPinnedOpen ||
-                !_isVisualTreeAttached)
-            {
-                return;
-            }
-
-            var dropdowns = this.GetVisualDescendants()
-                                .OfType<TransferSelectDropdown>()
-                                .ToArray();
-            var dropdown = dropdowns.FirstOrDefault(candidate => candidate.ViewType == TransferViewType.Source)
-                           ?? dropdowns.FirstOrDefault();
-            RegisterPinnedOpenDropdown(dropdown);
-        }, DispatcherPriority.Loaded);
-    }
-
-    private void RegisterPinnedOpenDropdown(TransferSelectDropdown? dropdown)
-    {
-        if (dropdown is null || ReferenceEquals(dropdown, _pinnedOpenDropdown))
-        {
-            return;
-        }
-
-        ReleasePinnedOpenDropdown();
-        _pinnedOpenDropdown      = dropdown;
-        _popupPinnedOpenBinding = BindUtils.RelayBind(
-            this,
-            IsPopupPinnedOpenProperty,
-            dropdown,
-            TransferSelectDropdown.IsPopupPinnedOpenProperty);
-    }
-
-    private void ReleasePinnedOpenDropdown()
-    {
-        ++_pinnedOpenGeneration;
-        _pinnedOpenDropdown?.CloseForLifecycle();
-        ClearPinnedOpenDropdownRegistration();
-    }
-
-    private void UnpinPinnedOpenDropdown()
-    {
-        ++_pinnedOpenGeneration;
-        ClearPinnedOpenDropdownRegistration();
-    }
-
-    private void ClearPinnedOpenDropdownRegistration()
-    {
-        _popupPinnedOpenBinding?.Dispose();
-        _popupPinnedOpenBinding = null;
-        _pinnedOpenDropdown?.SetCurrentValue(TransferSelectDropdown.IsPopupPinnedOpenProperty, false);
-        _pinnedOpenDropdown = null;
     }
 
     protected virtual void ConfigurePanelItemsSourceForFilter(FilterChangeType changeType)
@@ -769,6 +728,71 @@ public abstract class AbstractTransfer: TemplatedControl,
             keyList.Add(item.ItemKey ?? default);
         }
         return keyList;
+    }
+
+    #region 实现 控件接口
+
+    // ControlTheme keeps native inheritance when no explicit owner typography is configured.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    private void QueuePinnedOpenDropdownRegistration()
+    {
+        var generation = ++_pinnedOpenGeneration;
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (generation != _pinnedOpenGeneration ||
+                !IsPopupPinnedOpen ||
+                !_isVisualTreeAttached)
+            {
+                return;
+            }
+
+            var dropdowns = this.GetVisualDescendants()
+                                .OfType<TransferSelectDropdown>()
+                                .ToArray();
+            var dropdown = dropdowns.FirstOrDefault(candidate => candidate.ViewType == TransferViewType.Source)
+                           ?? dropdowns.FirstOrDefault();
+            RegisterPinnedOpenDropdown(dropdown);
+        }, DispatcherPriority.Loaded);
+    }
+
+    private void RegisterPinnedOpenDropdown(TransferSelectDropdown? dropdown)
+    {
+        if (dropdown is null || ReferenceEquals(dropdown, _pinnedOpenDropdown))
+        {
+            return;
+        }
+
+        ReleasePinnedOpenDropdown();
+        _pinnedOpenDropdown      = dropdown;
+        _popupPinnedOpenBinding = BindUtils.RelayBind(
+            this,
+            IsPopupPinnedOpenProperty,
+            dropdown,
+            TransferSelectDropdown.IsPopupPinnedOpenProperty);
+    }
+
+    private void ReleasePinnedOpenDropdown()
+    {
+        ++_pinnedOpenGeneration;
+        _pinnedOpenDropdown?.CloseForLifecycle();
+        ClearPinnedOpenDropdownRegistration();
+    }
+
+    private void UnpinPinnedOpenDropdown()
+    {
+        ++_pinnedOpenGeneration;
+        ClearPinnedOpenDropdownRegistration();
+    }
+
+    private void ClearPinnedOpenDropdownRegistration()
+    {
+        _popupPinnedOpenBinding?.Dispose();
+        _popupPinnedOpenBinding = null;
+        _pinnedOpenDropdown?.SetCurrentValue(TransferSelectDropdown.IsPopupPinnedOpenProperty, false);
+        _pinnedOpenDropdown = null;
     }
 
     private bool IsFilterMatched(IItemKey item, string? filterValue)
@@ -1317,4 +1341,5 @@ public abstract class AbstractTransfer: TemplatedControl,
             }
         }
     }
+
 }

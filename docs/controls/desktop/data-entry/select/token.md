@@ -68,7 +68,7 @@ SelectToken 不承载以下状态：
 
 `MultiModePadding*` 的左值服务于标签区域（较小的起点），`MultiModePrefixIndent*` 作为 `PART_ContentLeftAddOn`（prefix）的额外左 Margin，使多选 / Tags 模式下有选中项时 prefix 的左内缩与单选模式一致（对齐 Ant Design：selector 小左内缩 + prefix 自身 margin 补偿）。两者之和等于对应尺寸的单选水平内边距。
 
-`SizeType=Custom` 在主题中与 `Middle` 共享 `SingleModePadding` 和 `MultiModePadding` 分支。它不是独立 Token 组；不另有名为Padding/PaddingSM/PaddingLG的Select Own字段。
+`SizeType=Custom` 通过根基础 Setter 复用中档 `SingleModePadding` 和 `MultiModePadding`，模式、空选择和有限高度决定默认留白；普通 Style 可接管最终 Padding。它不是独立 Token 组；不另有名为Padding/PaddingSM/PaddingLG的Select Own字段。
 
 ### 2.4 弹层 Token
 
@@ -145,3 +145,9 @@ Token 变更要求：
 ## 根几何与 Effective Global 消费
 
 公开 owner 的 `Padding`、`BorderThickness`、`CornerRadius` 默认值从该 Control 的 Effective Global 读取，再以原生主题优先级投射到实际框体。共享框体继续负责状态色、focus/hover shadow、variant 与 CompactSpace；不能把它描述为跳过 owner 的全局几何入口。字号和其他消费链按各控件当前模板分别定义。本次未增加 Own 字段或改变 Token identity。详见 [共享输入架构的根几何合同](../input-control-architecture-design.md#81-根表面几何与预设默认值)。
+
+内部 add-on 的通用状态颜色使用 Select 有效 Global：`ColorBorder`、`ColorError`/`ColorWarning` 与对应 BorderHover、`ColorFillTertiary`/`ColorFillSecondary`、Error/Warning 的 Bg/BgHover。它们不属于新增 Own；主题对原键的选择和状态条件保持。
+
+## 私有过滤输入的主题来源
+
+Select、TreeSelect、Cascader 共享的私有 SelectFilterTextBox 将正文、光标、选区与选中文字、禁用颜色读取到各自公开选择 owner 的有效 Global。字号与字体继承链已经正确，保持原有 Single/Multiple 模型和几何；没有新 Own 或公开开关。

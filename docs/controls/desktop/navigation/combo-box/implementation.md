@@ -149,7 +149,7 @@ Items / 过滤条件变化
 owner 与模板边界：
 
 - `ComboBox` 是唯一 Semantic owner，直接派生 Avalonia `ComboBox`，不共享 `AbstractSelect` / `AbstractAutoComplete`
-  基类。`ComboBoxHandle`、`ComboBoxTextBox`、`ComboBoxItem` 都不持有独立 descriptor。
+  基类。`ComboBoxHandle`、`ComboBoxTextBox`、`ComboBoxItem` 都不持有独立 Semantic descriptor；其中公开 `ComboBoxItem` 仍具有独立 Token identity。
 - 三层模板边界决定了 route 形态：owner 模板（`ComboBoxTheme.axaml`）、嵌套控件模板（`ComboBoxHandleTheme.axaml`、
   `ComboBoxTextBoxTheme.axaml`）和模板内 Popup 的独立视觉根（`PopupFrame` 子树）。
 
@@ -167,7 +167,7 @@ marker 归属表：
 | `popup.root` | `PART_Popup` 的直接子节点 `PopupFrame` | 静态，`CrossVisualRoot=true` | `/template/ .semantic-popup-root` |
 | `popup.list` | `PopupFrame` 内 `atom:ScrollViewer` | 静态，`CrossVisualRoot=true` | `/template/ .semantic-popup-root >> .semantic-popup-list` |
 | `popup.empty` | `PART_EmptyIndicator` | 静态，`CrossVisualRoot=true` | `/template/ .semantic-popup-root >> .semantic-popup-empty` |
-| `popup.listItem` | `ComboBoxItem` 容器实例本身 | 运行时注入生成常量，`CrossVisualRoot` + `RuntimeCreated` + `Multiple` | 以 `popup.list` 为锚点，经 `>>` 命中容器 |
+| `popup.listItem` | `ComboBoxItem` 容器实例本身 | 运行时注入生成常量，`CrossVisualRoot` + `RuntimeCreated` + `Multiple` | 容器为 owner 直接逻辑子节点，经 `> .semantic-popup-list-item` 命中，不从 PopupFrame 查逻辑后代 |
 
 关于两类 marker 的关键约束：
 
@@ -340,4 +340,14 @@ ComboBox 实例拥有 OpenMotion/CloseMotion 的有效值，组件主题提供 S
 
 `PlaceholderForeground` 的主题默认读取 ComboBox 有效 Global.ColorTextPlaceholder。普通显示区通过 TemplateBinding 读取该公开属性；可编辑输入沿既有属性转发进入内部占位文字。普通占位不叠加固定透明度，公开画刷的 alpha 与专用 Placeholder Style 的 Opacity 分别按原生属性规则参与绘制。
 
+## 手柄组合尺寸与候选项圆角
+
+内部 `ComboBoxHandle` 的模板明确控制箭头按钮的 `IconWidth`/`IconHeight` 和 pressed `IconBrush`：尺寸读取 ComboBox 有效 Global.IconSizeSM，按下色读取其 ColorPrimaryActive，hover 仍读取既有 Own.HandleHoverColor。实际 IconButton 保留自身公开身份与原生属性优先级，应用使用 `ComboBoxIndicatorStyle` 定制此部件。
+
+公开 `ComboBoxItem` 的主题圆角读取自身有效 Global.BorderRadiusSM，并由 TemplateBinding 进入实际 ContentPresenter 绘制；条目颜色/间距继续读取父组件的既有 ComboBox Own。父组件的 `OptionFontSize` 通过现有本地绑定拥有候选字号，不能用候选项的主题字号默认反向覆盖。应用的 `ComboBoxPopupListItemStyle` 继续拥有条目专用样式入口；退出样式资格后恢复当前有效主题值。
+
 禁用显示文字继续由共享输入 frame 的既有有效 ColorTextDisabled 消费负责，根 Foreground 的原有默认读取行为保持。Filled/Borderless 的错误和警告文字规则只在启用时激活；禁用时撤回这层局部状态色，由 frame 继承链提供禁用文字颜色。该声明不改变校验状态、输入选择或弹层条目的颜色入口。
+
+### Custom 尺寸与原生优先级
+
+Custom 的根 Padding 与 CornerRadius 使用 ComboBox 中档资源的基础 Setter，普通 Style 和 LocalValue 可接管；三档预设保持。模板的 input frame、显示区、handle 与 popup 的 owner 边界不变，尺寸撤回不重建选择实例。

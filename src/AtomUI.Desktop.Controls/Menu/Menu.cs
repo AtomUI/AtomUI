@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -14,7 +15,8 @@ using AvaloniaMenu = Avalonia.Controls.Menu;
 public partial class Menu : AvaloniaMenu,
                             ICustomizableSizeTypeAware,
                             IMotionAwareControl,
-                            IScrollAwareControl
+                            IScrollAwareControl,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -84,11 +86,50 @@ public partial class Menu : AvaloniaMenu,
 
     #endregion
 
+    #region 内部协作 API
+
+    internal void CloseImmediately()
+    {
+        if (IsPopupPinnedOpen)
+        {
+            return;
+        }
+
+        if (InteractionHandler is DefaultMenuInteractionHandler interactionHandler)
+        {
+            interactionHandler.CancelPendingHoverOperations();
+        }
+
+        if (!IsOpen && !_isClosing)
+        {
+            return;
+        }
+
+        _isClosing = false;
+        for (var i = 0; i < ItemCount; i++)
+        {
+            var container = ContainerFromIndex(i);
+            if (container is MenuItem menuItem)
+            {
+                menuItem.Close();
+            }
+        }
+
+        HandleMenuClosed();
+    }
+
+    #endregion
+
     private bool _isClosing;
+
     private bool _isClosingForLifecycle;
+
     private bool _isApplyingPinnedOpen;
+
     private bool _isSyncingDetachedTitleBarRadioGroup;
+
     private IDisposable? _detachedTitleBarPopupDismissRoot;
+
     private MenuItem? _pinnedOpenMenuItem;
 
     static Menu()
@@ -251,6 +292,87 @@ public partial class Menu : AvaloniaMenu,
         base.OnDetachedFromVisualTree(e);
     }
 
+    protected virtual void PrepareMenuItem(MenuItem menuItem, object? item, int index)
+    {
+    }
+
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        ConfigureItemContainerTheme(false);
+        ConfigureDetachedTitleBarPopupDismissRoot();
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        DetachedTitleBarPopupSupport.ClearDismissRoot(ref _detachedTitleBarPopupDismissRoot);
+        base.OnDetachedFromLogicalTree(e);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        ConfigureDetachedTitleBarPopupDismissRoot();
+    }
+
+    public override void Close()
+    {
+        if (IsPopupPinnedOpen)
+        {
+            return;
+        }
+
+        if (InteractionHandler is DefaultMenuInteractionHandler interactionHandler)
+        {
+            interactionHandler.CancelPendingHoverOperations();
+        }
+
+        if (!IsOpen || _isClosing)
+        {
+            return;
+        }
+
+        _isClosing = true;
+        if (IsMotionEnabled)
+        {
+            Dispatcher.InvokeAsync(async () =>
+            {
+                for (var i = 0; i < ItemCount; i++)
+                {
+                    var container = ContainerFromIndex(i);
+                    if (container is MenuItem menuItem)
+                    {
+                        await menuItem.CloseItemAsync();
+                    }
+                }
+
+                HandleMenuClosed();
+                _isClosing = false;
+            });
+        }
+        else
+        {
+            for (var i = 0; i < ItemCount; i++)
+            {
+                var container = ContainerFromIndex(i);
+                if (container is MenuItem menuItem)
+                {
+                    menuItem.Close();
+                }
+            }
+
+            HandleMenuClosed();
+            _isClosing = false;
+        }
+    }
+
+    #region 实现 控件接口
+
+    // ControlTheme keeps native inheritance when no explicit owner typography is configured.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
     private void EnsurePinnedOpenMenuItem()
     {
         if (!IsPopupPinnedOpen || !this.IsAttachedToVisualTree() || _isApplyingPinnedOpen)
@@ -344,29 +466,6 @@ public partial class Menu : AvaloniaMenu,
         _pinnedOpenMenuItem = null;
     }
 
-    protected virtual void PrepareMenuItem(MenuItem menuItem, object? item, int index)
-    {
-    }
-
-    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToLogicalTree(e);
-        ConfigureItemContainerTheme(false);
-        ConfigureDetachedTitleBarPopupDismissRoot();
-    }
-
-    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
-    {
-        DetachedTitleBarPopupSupport.ClearDismissRoot(ref _detachedTitleBarPopupDismissRoot);
-        base.OnDetachedFromLogicalTree(e);
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        ConfigureDetachedTitleBarPopupDismissRoot();
-    }
-
     private void ConfigureItemContainerTheme(bool force)
     {
         if (Theme == null || force)
@@ -382,87 +481,6 @@ public partial class Menu : AvaloniaMenu,
                 }
             }
         }
-    }
-
-    public override void Close()
-    {
-        if (IsPopupPinnedOpen)
-        {
-            return;
-        }
-
-        if (InteractionHandler is DefaultMenuInteractionHandler interactionHandler)
-        {
-            interactionHandler.CancelPendingHoverOperations();
-        }
-
-        if (!IsOpen || _isClosing)
-        {
-            return;
-        }
-
-        _isClosing = true;
-        if (IsMotionEnabled)
-        {
-            Dispatcher.InvokeAsync(async () =>
-            {
-                for (var i = 0; i < ItemCount; i++)
-                {
-                    var container = ContainerFromIndex(i);
-                    if (container is MenuItem menuItem)
-                    {
-                        await menuItem.CloseItemAsync();
-                    }
-                }
-
-                HandleMenuClosed();
-                _isClosing = false;
-            });
-        }
-        else
-        {
-            for (var i = 0; i < ItemCount; i++)
-            {
-                var container = ContainerFromIndex(i);
-                if (container is MenuItem menuItem)
-                {
-                    menuItem.Close();
-                }
-            }
-
-            HandleMenuClosed();
-            _isClosing = false;
-        }
-    }
-
-    internal void CloseImmediately()
-    {
-        if (IsPopupPinnedOpen)
-        {
-            return;
-        }
-
-        if (InteractionHandler is DefaultMenuInteractionHandler interactionHandler)
-        {
-            interactionHandler.CancelPendingHoverOperations();
-        }
-
-        if (!IsOpen && !_isClosing)
-        {
-            return;
-        }
-
-        _isClosing = false;
-        for (var i = 0; i < ItemCount; i++)
-        {
-            var container = ContainerFromIndex(i);
-            if (container is MenuItem menuItem)
-            {
-                menuItem.Close();
-            }
-        }
-
-        HandleMenuClosed();
     }
 
     private void ClosePinnedForLifecycle()
@@ -640,4 +658,5 @@ public partial class Menu : AvaloniaMenu,
 
         return false;
     }
+
 }

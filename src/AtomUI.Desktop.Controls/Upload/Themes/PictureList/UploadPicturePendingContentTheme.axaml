@@ -30,24 +30,24 @@
         </Setter>
         
         <Style Selector="^ /template/ DockPanel#ContentLayout">
-            <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource SpacingXS, SourceControlType={x:Type atom:Upload}}" />
             <Setter Property="Height" Value="{atom:UploadTokenResource PictureListPreviewerSize}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconButton">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextSecondary}" />
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingXXS}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorTextSecondary, SourceControlType={x:Type atom:Upload}}" />
+            <Setter Property="Padding" Value="{atom:OwnerTokenResource PaddingXXS, SourceControlType={x:Type atom:Upload}}" />
         </Style>
         
         <Style Selector="^ /template/ atom|Icon#Indicator">
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorTextSecondary}" />
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorTextSecondary, SourceControlType={x:Type atom:Upload}}" />
             <Setter Property="Width" Value="{atom:UploadTokenResource UploadThumbnailSize}" />
             <Setter Property="Height" Value="{atom:UploadTokenResource UploadThumbnailSize}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconButton:pointerover">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextSecondary}" />
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorTextSecondary, SourceControlType={x:Type atom:Upload}}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgTextHover, SourceControlType={x:Type atom:Upload}}" />
         </Style>
         
     </ControlTheme>

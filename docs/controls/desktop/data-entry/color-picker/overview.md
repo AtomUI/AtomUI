@@ -8,6 +8,8 @@
 
 ColorPicker 与 GradientColorPicker 各自公开 5 个 Semantic Part（`root`、`body`、`content`、`description`、`popup.root`），与上游 ColorPicker 的公开语义 API 逐一对齐；完整 Part 表、Selector 用法与定制边界见 [ColorPicker Semantic Part 契约](semantic-part.md)。
 
+popup.root 的专用 Style 作用于实际面板 Border，背景、边框、圆角和阴影由同一表面表达，箭头跟随该背景；外层弹层协议包装不作为定制绘制面。格式输入行的 HEX 与 Alpha 使用同一行高，固定数值字号和宽度规则保持。
+
 ## 1. 控件定位
 
 | 项 | 值 |
@@ -45,12 +47,11 @@ ColorPicker 的公共契约由 public/protected 类型成员、Avalonia 属性�
 
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
-| 内容与数据 | `ColorValue`、`ColorValueBrush`、`DefaultValue`、`EmptyColorText`、`GradientValue`、`IsTextVisible`、`MaxValue`、`MinValue`、`Value`、`ValueSyncStrategy` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
-| 选择与集合 | `ColorModel`、`IsEmptyColorMode`、`IsPaletteGroupEnabled` | 维护选择、展开、过滤、分页、分组或集合状态。 |
-| 交互与状态 | `IsNeedConfirm`、`IsActivated`、`IsAlphaEnabled`、`IsAlphaVisible`、`IsArrowVisible`、`IsClearEnabled`、`IsColorSpectrumSliderVisible`、`IsFormatEnabled`、`IsMotionEnabled`、`IsPerceptive`、`IsPointAtCenter` | 表达确认策略、用户可观察状态、可用性、清除和反馈语义。 |
-| 视觉与布局 | `Color`、`ColorComponent`、`ColorSpectrumComponents`、`HsvColor`、`MarginToAnchor`、`Placement`、`PlacementAnchor`、`PlacementGravity`、`Shape`、`Size` 等 12 项 | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
-| 动效与异步 | `MouseEnterDelay`、`MouseLeaveDelay` | 约束动效开关、异步加载、播放速度、超时和任务边界。 |
-| 其他稳定入口 | `ActivatedThumb`、`Components`、`DecreaseButton`、`Format`、`IncreaseButton`、`MaxHue`、`MaxSaturation`、`Maximum`、`MinHue`、`MinSaturation` 等 14 项 | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
+| 内容与数据 | `Value`、`DefaultValue`、`EmptyColorText`、`IsTextVisible`、纯色宿主的 `ValueSyncStrategy` | 宿主提交值、面板输入值、显示文字与同步策略。 |
+| 预设色与格式 | `PaletteGroup`、`IsPaletteGroupEnabled`、`Format`、`IsFormatEnabled` | 预设数据及 HEX／HSV／RGB 输入格式。 |
+| 交互与状态 | 宿主 `IsNeedConfirm`、`IsPopupPinnedOpen`，面板 `IsAlphaVisible`、`IsColorSpectrumSliderVisible`，共同的 `IsAlphaEnabled`、`IsClearEnabled`、`IsMotionEnabled` | 确认、打开、透明度、清除和动效合同；宿主与面板属性并非全部同名继承。 |
+| 视觉与布局 | 宿主 `SizeType`、`Status`、`StyleVariant`、`MarginToAnchor`、`Placement`、`PlacementAnchor`、`PlacementGravity`；面板 `ColorSpectrumComponents` 和 HSV 范围 | 触发器布局与状态、弹层锚点、二维分量及范围。 |
+| 打开触发 | `TriggerType`、`MouseEnterDelay`、`MouseLeaveDelay`、`ClosePicker()` | 点击、悬停、焦点及业务关闭。 |
 
 `ColorPicker.Value` 和 `GradientColorPicker.Value` 是用户拥有的提交值：纯色选择器使用 `Color?`，渐变选择器使用 `LinearGradientBrush?`。两个 `Value` CLR wrapper 均可公开设置，默认 `TwoWay` 绑定，并接入 Avalonia `DataValidationErrors`。Form clear 和外部绑定写入 `null` 直接清空提交值；面板清除在确认模式下先将候选值置为 `null`，确认后才清空提交值。清空提交值必须由 `Value=null` 驱动文字、色块和 Form 状态，不能只清空视觉。
 
@@ -58,14 +59,15 @@ ColorPicker 的公共契约由 public/protected 类型成员、Avalonia 属性�
 
 `ValueChanged` / `GradientValueChanged` 报告提交值变化。确认模式下，面板编辑与取消不触发宿主值事件，确认非空值后 `ValueSelected` 触发一次；确认清空通过值变化事件报告 `null`，保持既有事件参数契约。默认模式保留原有关闭时 `ValueSelected` 的语义。
 
-稳定事件包括 `ClearRequest`、`GradientActiveStopChanged`。事件触发顺序属于兼容契约，不能因内部状态重排而改变。
+两个宿主分别以 `ValueChanged`／`GradientValueChanged` 和 `ValueSelected` 报告值变化与选择；面板公开相应值事件及 `ColorValueCleared`。内部输入清除请求和渐变活动 stop 通知不是新增的宿主公开事件。事件触发顺序属于兼容契约，不能因内部状态重排而改变。
 
 主要公开类型与枚举：
 
-- 类型：`AbstractColorPicker`、`AbstractColorPickerSliderTrack`、`AbstractColorPickerView`、`AbstractColorSlider`、`AtomUIColorPickerThemesProvider`、`ColorBlock`、`ColorChangedEventArgs`、`ColorPicker`、`ColorPickerCollapse`、`ColorPickerInput`、`ColorPickerLangResourceExtension`、`ColorPickerPalette`、`ColorPickerPaletteColorSelectedEventArgs`、`ColorPickerPaletteGroup` 等 36 项。
+- 公开控件根：`ColorPicker`、`GradientColorPicker`、`ColorPickerView`、`GradientColorPickerView`；公共基类为 `AbstractColorPicker`、`AbstractColorPickerView`，预设数据模型为 `ColorPickerPalette`。
+- `ColorBlock`、`ColorSpectrum`、`ColorPickerInput`、`ColorPickerCollapse`、滑轨、thumb 与 palette item 是内部组合目标，不作为应用可实例化的公共控件或独立主题 owner。
 - 枚举：`ColorFormat`、`ColorPickerLangResourceKind`、`ColorPickerTokenKind`、`ColorPickerValueSyncMode`。
 
-稳定 template part：
+内部模板协作入口（不作为公开 Semantic Part 定制入口）：
 
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
@@ -155,7 +157,11 @@ ColorPicker 的视觉模型由控件模板、ControlTheme、SharedToken 和 Colo
 | `GradientColorPickerTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 | `PaletteColorItemTheme.axaml` | 定义集合项、容器项或局部单元的状态视觉。 |
 
-ColorPicker 拥有独立 Control identity；`ColorPickerToken` 只表达 ColorPicker Own Token 语义，不承载 open/close、collection/filter、input/value、motion 或 visual option 运行时状态。Control 级 Global Token 覆盖与 Own Token 通过 `ColorPickerTokenResource` 统一读取。
+四个公开根分别拥有 `AtomUI:ColorPicker`、`AtomUI:GradientColorPicker`、`AtomUI:ColorPickerView` 和 `AtomUI:GradientColorPickerView` 身份。背景、边框、状态角色、字体、圆角和间距按实际根的有效 Global 解析；运行时创建的 popup View 保持独立身份，宿主 Picker 的专属 Global 不替代 View 配置。四者的 24 个 Own 均复用 `ColorPickerToken`，不另建渐变或 View Own 集合。
+
+触发文字和面板输入继承根的有效字体；明确的控件字体配置优先于继承值，本地属性仍遵循 Avalonia 优先级。数值通道的固定字号 11 和默认宽度 48 保留。色板经过内部 Collapse 组合后仍从实际 View 取得绘制 Global。
+
+触发器的 `Large`、`Middle`、`Small` 使用预设圆角和字号。`Custom` 可通过根样式设置高度、字号、圆角，未设置时使用 Middle 回退；内部色块按既有高度减去边框及 padding 的规则计算，不新增全家族尺寸算法或 Token。
 
 渐变触发文字使用当前有效前景与禁用色，选择节点不冻结颜色。正常文字跟随宿主 `Foreground` 或 `description` 专用 Style 的文本前景；当前活动节点保留弱化显示。禁用、主题及作用域变化不会要求重新选择节点。formatter 显式设置的本地颜色按原生样式优先级生效。
 

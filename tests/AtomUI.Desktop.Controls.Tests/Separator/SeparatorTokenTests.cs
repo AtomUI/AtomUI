@@ -1,3 +1,4 @@
+using AtomUI.Theme;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Shouldly;
@@ -19,7 +20,7 @@ public class SeparatorTokenTests
         var separatorToken = new SeparatorToken();
         separatorToken.AssignEffectiveGlobalToken(sharedToken);
 
-        separatorToken.CalculateTokenValues(isDarkMode: false);
+        SeparatorToken.EvaluateDefaults(separatorToken, new ControlTokenDefaultContext(sharedToken, ThemeAppearance.Light), [0UL]);
 
         separatorToken.HorizontalMarginBlockSM.ShouldBe(new Thickness(0, sharedToken.UniformlyMarginXS));
         separatorToken.HorizontalMarginBlock.ShouldBe(new Thickness(0, sharedToken.UniformlyMargin));

@@ -1,4 +1,5 @@
 using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Animation.Easings;
 using Shouldly;
@@ -13,9 +14,11 @@ public class NavMenuTokenTests
     {
         var property = typeof(NavMenuToken).GetProperty("ItemBackgroundMotionEasing").ShouldNotBeNull();
         var navMenuToken = new NavMenuToken();
-        navMenuToken.AssignEffectiveGlobalToken(new DesignToken());
+        var sharedToken = new DesignToken();
+        navMenuToken.AssignEffectiveGlobalToken(sharedToken);
 
-        navMenuToken.CalculateTokenValues(isDarkMode: false);
+        NavMenuToken.EvaluateDefaults(navMenuToken,
+            new ControlTokenDefaultContext(sharedToken, ThemeAppearance.Light), ReadOnlySpan<ulong>.Empty);
 
         var easing = property.GetValue(navMenuToken).ShouldBeOfType<SplineEasing>();
         easing.X1.ShouldBe(0.25);
@@ -35,7 +38,8 @@ public class NavMenuTokenTests
         var navMenuToken = new NavMenuToken();
         navMenuToken.AssignEffectiveGlobalToken(sharedToken);
 
-        navMenuToken.CalculateTokenValues(isDarkMode: false);
+        NavMenuToken.EvaluateDefaults(navMenuToken,
+            new ControlTokenDefaultContext(sharedToken, ThemeAppearance.Light), ReadOnlySpan<ulong>.Empty);
 
         navMenuToken.ItemHeight.ShouldBe(sharedToken.ControlHeightLG);
     }
@@ -50,7 +54,8 @@ public class NavMenuTokenTests
         var navMenuToken = new NavMenuToken();
         navMenuToken.AssignEffectiveGlobalToken(sharedToken);
 
-        navMenuToken.CalculateTokenValues(isDarkMode: false);
+        NavMenuToken.EvaluateDefaults(navMenuToken,
+            new ControlTokenDefaultContext(sharedToken, ThemeAppearance.Light), ReadOnlySpan<ulong>.Empty);
 
         navMenuToken.MenuPopupMaxHeight.ShouldBe(navMenuToken.ItemHeight * 8);
     }
@@ -65,7 +70,8 @@ public class NavMenuTokenTests
         var navMenuToken = new NavMenuToken();
         navMenuToken.AssignEffectiveGlobalToken(sharedToken);
 
-        navMenuToken.CalculateTokenValues(isDarkMode: false);
+        NavMenuToken.EvaluateDefaults(navMenuToken,
+            new ControlTokenDefaultContext(sharedToken, ThemeAppearance.Light), ReadOnlySpan<ulong>.Empty);
 
         navMenuToken.ItemContentMargin.ShouldBe(new Thickness(4, 0, 4, 4));
         navMenuToken.VerticalMenuContentPadding.ShouldBe(new Thickness(0, 4, 0, 0));
@@ -83,7 +89,8 @@ public class NavMenuTokenTests
         var navMenuToken = new NavMenuToken();
         navMenuToken.AssignEffectiveGlobalToken(sharedToken);
 
-        navMenuToken.CalculateTokenValues(isDarkMode: false);
+        NavMenuToken.EvaluateDefaults(navMenuToken,
+            new ControlTokenDefaultContext(sharedToken, ThemeAppearance.Light), ReadOnlySpan<ulong>.Empty);
 
         navMenuToken.InlineCollapsedWidth.ShouldBe(48);
         navMenuToken.CollapsedWidth.ShouldBe(sharedToken.ControlHeight * 2);
@@ -100,7 +107,8 @@ public class NavMenuTokenTests
         var navMenuToken = new NavMenuToken();
         navMenuToken.AssignEffectiveGlobalToken(sharedToken);
 
-        navMenuToken.CalculateTokenValues(isDarkMode: false);
+        NavMenuToken.EvaluateDefaults(navMenuToken,
+            new ControlTokenDefaultContext(sharedToken, ThemeAppearance.Light), ReadOnlySpan<ulong>.Empty);
 
         navMenuToken.ItemIconSize.ShouldBe(sharedToken.IconSize);
         navMenuToken.CollapsedIconSize.ShouldBe(sharedToken.IconSizeLG);

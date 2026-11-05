@@ -2,8 +2,8 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class BorderBeamToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class BorderBeamToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
     public double BeamSize { get; set; }
@@ -14,18 +14,20 @@ internal sealed class BorderBeamToken : AbstractControlDesignToken
 
     public double MaxVisibleStopPercent { get; set; }
 
-    public BorderBeamToken()
+    [ControlTokenDefault(nameof(BeamSize))]
+    private static double DefaultForBeamSize(in ControlTokenDefaultContext context) =>
+        100d;
 
-    {
-    }
+    [ControlTokenDefault(nameof(BeamOpacity))]
+    private static double DefaultForBeamOpacity(in ControlTokenDefaultContext context) =>
+        0.95d;
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        BeamSize              = 100d;
-        BeamOpacity           = 0.95d;
-        MotionDuration        = TimeSpan.FromSeconds(6);
-        MaxVisibleStopPercent = 70d;
-    }
+    [ControlTokenDefault(nameof(MotionDuration))]
+    private static TimeSpan DefaultForMotionDuration(in ControlTokenDefaultContext context) =>
+        TimeSpan.FromSeconds(6);
+
+    [ControlTokenDefault(nameof(MaxVisibleStopPercent))]
+    private static double DefaultForMaxVisibleStopPercent(in ControlTokenDefaultContext context) =>
+        70d;
 
 }

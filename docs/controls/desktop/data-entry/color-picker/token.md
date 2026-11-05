@@ -10,6 +10,10 @@ ColorPicker Token 只表达组件级视觉变量，例如尺寸、间距、颜�
 
 - `ColorPickerToken`，scope id 为 `ColorPicker`，源码位于 `src/AtomUI.Desktop.Controls.ColorPicker/ColorPickerToken.cs`。
 
+24 个 Own 均有实际消费；`ColorPickerHandlerSizeSM` 经下游默认驱动两类滑轨高度和 thumb 尺寸。纯色、渐变及两类 View 共同使用该 Own 集合，四个公开根的 Global 身份彼此独立。不能把 View 的专属 Global 写入 ColorPicker Own 配置，也不能将内部 Collapse 的身份当作色板的 Global 来源。
+
+根与内部绘制目标的背景、边框、状态色、圆角、间距及字体使用所属根有效 Global；调色板绘制和间距显式锚定实际 View。字号 11、通道默认宽 48、固定分隔线 1 DIP、圆形几何和业务状态保持原语义，不新增参数槽。`Custom` 只释放根样式的有限字号、圆角和高度定制，Own 默认计划、字段类型、资源 key、slot 与编辑入口均保持。
+
 ## 2. Token 分类
 
 Token 按控件语义分类维护：

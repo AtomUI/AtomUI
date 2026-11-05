@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -6,38 +7,22 @@ using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class AutoCompleteTextAreaBox : TextArea
+internal class AutoCompleteTextAreaBox : TextArea, IControlThemeGlobalOwnerSource
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<bool> IsDropDownOpenProperty =
         AbstractAutoComplete.IsDropDownOpenProperty.AddOwner<AutoCompleteTextAreaBox>();
-    
+
     public bool IsDropDownOpen
     {
         get => GetValue(IsDropDownOpenProperty);
         set => SetValue(IsDropDownOpenProperty, value);
     }
 
-    protected override Type StyleKeyOverride => typeof(TextArea);
+    #endregion
 
-    protected override void OnPointerPressed(PointerPressedEventArgs e)
-    {
-        base.OnPointerPressed(e);
-        e.Handled = false;
-    }
-
-    protected override void OnPointerReleased(PointerReleasedEventArgs e)
-    {
-        base.OnPointerReleased(e);
-        e.Handled = false;
-    }
-    
-    private TextPresenter? _textPresenter;
-    
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _textPresenter = e.NameScope.Find<TextPresenter>("PART_TextPresenter");
-    }
+    #region 内部协作 API
 
     internal Rect GetTextPresenterBounds()
     {
@@ -62,7 +47,31 @@ internal class AutoCompleteTextAreaBox : TextArea
         }
         return bounds;
     }
-    
+
+    #endregion
+
+    private TextPresenter? _textPresenter;
+
+    protected override Type StyleKeyOverride => typeof(TextArea);
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        e.Handled = false;
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        e.Handled = false;
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _textPresenter = e.NameScope.Find<TextPresenter>("PART_TextPresenter");
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         if (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Return)
@@ -74,4 +83,11 @@ internal class AutoCompleteTextAreaBox : TextArea
         }
         base.OnKeyDown(e);
     }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    // The template parent owns this private input; AXAML cannot parameterize the reused theme keys.
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => TemplatedParent as Control;
+
+    #endregion
 }

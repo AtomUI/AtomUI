@@ -96,5 +96,6 @@
         <source>AtomUI Desktop Gallery</source>
       </segment>
     </unit>
+    <unit id="MenuItemThemeWorkbench"><segment><source>Theme workbench</source></segment></unit>
   </file>
 </xliff>

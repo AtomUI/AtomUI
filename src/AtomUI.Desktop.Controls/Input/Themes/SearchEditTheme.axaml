@@ -28,7 +28,7 @@
                 <atom:SearchEditTokenResource Kind="FontSizeLG" />
             </MultiBinding>
         </Setter>
-        <Setter Property="Foreground" Value="{atom:SearchEditTokenResource ColorText}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText, SourceControlType={x:Type atom:SearchEdit}}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:SearchEditDecoratedBox
@@ -72,7 +72,7 @@
                     <atom:SearchEditDecoratedBox.ContentRightAddOn>
                         <StackPanel Orientation="Horizontal"
                                     Classes.semantic-suffix="True"
-                                    Spacing="{atom:SearchEditTokenResource UniformlyPaddingXXS}">
+                                    Spacing="{atom:OwnerTokenResource UniformlyPaddingXXS, SourceControlType={x:Type atom:SearchEdit}}">
                             <atom:InputClearIconButton
                                 Name="PART_ClearButton"
                                 Classes.semantic-clear="True"
@@ -143,17 +143,17 @@
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
-        <Setter Property="SelectionBrush" Value="{atom:SearchEditTokenResource SelectionBackground}" />
-        <Setter Property="CaretBrush" Value="{atom:SearchEditTokenResource ColorText}" />
+        <Setter Property="SelectionBrush" Value="{atom:OwnerTokenResource SelectionBackground, SourceControlType={x:Type atom:SearchEdit}}" />
+        <Setter Property="CaretBrush" Value="{atom:OwnerTokenResource ColorText, SourceControlType={x:Type atom:SearchEdit}}" />
         <Setter Property="SelectionForegroundBrush"
-                Value="{atom:SearchEditTokenResource SelectionForeground}" />
-        <Setter Property="PlaceholderForeground" Value="{atom:SearchEditTokenResource ColorTextPlaceholder}" />
+                Value="{atom:OwnerTokenResource SelectionForeground, SourceControlType={x:Type atom:SearchEdit}}" />
+        <Setter Property="PlaceholderForeground" Value="{atom:OwnerTokenResource ColorTextPlaceholder, SourceControlType={x:Type atom:SearchEdit}}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SearchEditTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion, SourceControlType={x:Type atom:SearchEdit}}" />
         <Setter Property="SearchButtonTheme">
             <themes:SearchButtonTheme TargetType="{x:Type atom:Button}" />
         </Setter>
@@ -162,19 +162,19 @@
             <Style Selector="^[Status=Error]">
                 <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SearchEditTokenResource ColorErrorText}" />
+                            Value="{atom:OwnerTokenResource ColorErrorText, SourceControlType={x:Type atom:SearchEdit}}" />
                 </Style>
             </Style>
             <Style Selector="^:error">
                 <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SearchEditTokenResource ColorErrorText}" />
+                            Value="{atom:OwnerTokenResource ColorErrorText, SourceControlType={x:Type atom:SearchEdit}}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SearchEditTokenResource ColorWarningText}" />
+                            Value="{atom:OwnerTokenResource ColorWarningText, SourceControlType={x:Type atom:SearchEdit}}" />
                 </Style>
             </Style>
         </Style>
@@ -182,19 +182,19 @@
             <Style Selector="^[Status=Error]">
                 <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SearchEditTokenResource ColorErrorText}" />
+                            Value="{atom:OwnerTokenResource ColorErrorText, SourceControlType={x:Type atom:SearchEdit}}" />
                 </Style>
             </Style>
             <Style Selector="^:error">
                 <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SearchEditTokenResource ColorErrorText}" />
+                            Value="{atom:OwnerTokenResource ColorErrorText, SourceControlType={x:Type atom:SearchEdit}}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ atom|ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SearchEditTokenResource ColorWarningText}" />
+                            Value="{atom:OwnerTokenResource ColorWarningText, SourceControlType={x:Type atom:SearchEdit}}" />
                 </Style>
             </Style>
         </Style>
@@ -202,35 +202,38 @@
         <Style Selector="^[StyleVariant=Outlined] /template/ atom|SearchEditDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default][IsInnerBoxHover=True],
                          ^[StyleVariant=Underlined] /template/ atom|SearchEditDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default][IsInnerBoxHover=True]">
             <Setter Property="BorderBrush"
-                    Value="{atom:SearchEditTokenResource ColorPrimaryHover}" />
+                    Value="{atom:OwnerTokenResource ColorPrimaryHover, SourceControlType={x:Type atom:SearchEdit}}" />
         </Style>
         <Style Selector="^:focus-within[StyleVariant=Outlined] /template/ atom|SearchEditDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default],
                          ^:focus-within[StyleVariant=Underlined] /template/ atom|SearchEditDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
             <Setter Property="BorderBrush"
-                    Value="{atom:SearchEditTokenResource ColorPrimary}" />
+                    Value="{atom:OwnerTokenResource ColorPrimary, SourceControlType={x:Type atom:SearchEdit}}" />
             <Setter Property="BoxShadow"
-                    Value="{atom:SearchEditTokenResource InputActiveShadow}" />
+                    Value="{atom:OwnerTokenResource InputActiveShadow, SourceControlType={x:Type atom:SearchEdit}}" />
         </Style>
         <Style Selector="^:focus-within[StyleVariant=Filled] /template/ atom|SearchEditDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
             <Setter Property="BorderBrush"
-                    Value="{atom:SearchEditTokenResource ColorPrimary}" />
+                    Value="{atom:OwnerTokenResource ColorPrimary, SourceControlType={x:Type atom:SearchEdit}}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BoxShadow"
-                    Value="{atom:SearchEditTokenResource InputActiveShadow}" />
+                    Value="{atom:OwnerTokenResource InputActiveShadow, SourceControlType={x:Type atom:SearchEdit}}" />
         </Style>
 
-        <Setter Property="BorderThickness" Value="{atom:SearchEditTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness, SourceControlType={x:Type atom:SearchEdit}}" />
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="Padding" Value="{atom:SearchEditTokenResource InputPaddingLG}" />
-            <Setter Property="CornerRadius" Value="{atom:SearchEditTokenResource BorderRadiusLG}" />
+            <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPaddingLG, SourceControlType={x:Type atom:SearchEdit}}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG, SourceControlType={x:Type atom:SearchEdit}}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="Padding" Value="{atom:SearchEditTokenResource InputPadding}" />
-            <Setter Property="CornerRadius" Value="{atom:SearchEditTokenResource BorderRadius}" />
+        <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPadding, SourceControlType={x:Type atom:SearchEdit}}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius, SourceControlType={x:Type atom:SearchEdit}}" />
+
+        <Style Selector="^[SizeType=Middle]">
+            <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPadding, SourceControlType={x:Type atom:SearchEdit}}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius, SourceControlType={x:Type atom:SearchEdit}}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="Padding" Value="{atom:SearchEditTokenResource InputPaddingSM}" />
-            <Setter Property="CornerRadius" Value="{atom:SearchEditTokenResource BorderRadiusSM}" />
+            <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPaddingSM, SourceControlType={x:Type atom:SearchEdit}}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM, SourceControlType={x:Type atom:SearchEdit}}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

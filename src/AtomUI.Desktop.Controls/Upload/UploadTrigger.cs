@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
@@ -11,7 +12,8 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class UploadTrigger : ContentControl, IMotionAwareControl
+public class UploadTrigger : ContentControl, IMotionAwareControl,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -63,26 +65,12 @@ public class UploadTrigger : ContentControl, IMotionAwareControl
         base.OnDetachedFromVisualTree(e);
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
+    #region 实现 IThemeInheritanceSource 接口
 
-        if (change.Property == ListTypeProperty)
-        {
-            var radius = Math.Max(Width, Height);
-            if (double.IsNaN(radius))
-            {
-                radius = Math.Min(DesiredSize.Width, DesiredSize.Height);
-            }
-            ConfigureEffectiveCornerRadius(radius);
-        }
-    }
+    // AXAML cannot read AvaloniaObject's protected, potentially non-logical inheritance parent.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
-    {
-        base.OnSizeChanged(e);
-        ConfigureEffectiveCornerRadius(Math.Max(e.NewSize.Width, e.NewSize.Height));
-    }
+    #endregion
 
     private void HandlePointerReleased(object? sender, PointerReleasedEventArgs e)
     {
@@ -126,6 +114,8 @@ public class UploadTrigger : ContentControl, IMotionAwareControl
             return;
         }
 
+        // TriggerContent is a logical content child, outside the owner ControlTheme template route.
+        // Relay these behavior inputs at template priority and release them on detach.
         _ownerBindings = new CompositeDisposable
         {
             BindUtils.RelayBind(owner, Upload.ListTypeProperty, this, ListTypeProperty, priority: BindingPriority.Template),
@@ -144,11 +134,4 @@ public class UploadTrigger : ContentControl, IMotionAwareControl
         _ownerBindings = null;
     }
 
-    private void ConfigureEffectiveCornerRadius(double cornerRadius)
-    {
-        if (ListType == UploadListType.PictureCircle)
-        {
-            SetCurrentValue(CornerRadiusProperty, new CornerRadius(cornerRadius));
-        }
-    }
 }

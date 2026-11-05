@@ -31,25 +31,25 @@
         </Setter>
         
         <Style Selector="^ /template/ atom|Icon">
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorIcon}" />
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorIcon, SourceControlType={x:Type atom:Upload}}" />
         </Style>
         <Setter Property="RelativeLineHeight"
-                Value="{atom:SharedTokenResource RelativeLineHeight}" />
+                Value="{atom:OwnerTokenResource RelativeLineHeight, SourceControlType={x:Type atom:Upload}}" />
         <Setter Property="Margin" Value="{atom:UploadTokenResource TextListItemMargin}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM, SourceControlType={x:Type atom:Upload}}" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillSecondary}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorFillSecondary, SourceControlType={x:Type atom:Upload}}" />
 
         <Style Selector="^ /template/ atom|IconButton">
             <Setter Property="IconBrush" Value="{atom:UploadTokenResource ActionsColor}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSize, SourceControlType={x:Type atom:Upload}}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSize, SourceControlType={x:Type atom:Upload}}" />
         </Style>
         
         <Style Selector="^[Status=Uploading]">
             <Style Selector="^ /template/ atom|Icon#LoadingIcon">
                 <Setter Property="IsVisible" Value="True" />
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorPrimary, SourceControlType={x:Type atom:Upload}}" />
             </Style>
         </Style>
         <Style Selector="^:not(^[Status=Uploading])">
@@ -59,12 +59,12 @@
         </Style> 
         
         <Style Selector="^[Status=Failed]">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorError, SourceControlType={x:Type atom:Upload}}" />
             <Style Selector="^ /template/ atom|Icon">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorError, SourceControlType={x:Type atom:Upload}}" />
             </Style>
             <Style Selector="^ /template/ atom|IconButton">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorError, SourceControlType={x:Type atom:Upload}}" />
                 <Setter Property="IsVisible" Value="True" />
             </Style>
             <Setter Property="atom:ToolTip.Tip" Value="{Binding ErrorMessage, RelativeSource={RelativeSource Self}}" />
@@ -72,21 +72,21 @@
         </Style>
 
         <Style Selector="^ /template/ TextBlock#FileName">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorLink}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorLink, SourceControlType={x:Type atom:Upload}}" />
             <Setter Property="Padding" Value="{atom:UploadTokenResource TextListNamePadding}" />
         </Style>
 
         <Style Selector="^[Status=Failed] /template/ TextBlock#FileName">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorError, SourceControlType={x:Type atom:Upload}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pointerover">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ControlItemBgHover}" />
+                    Value="{atom:OwnerTokenResource ControlItemBgHover, SourceControlType={x:Type atom:Upload}}" />
         </Style>
 
         <Style Selector="^:pointerover">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ControlItemBgHover}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ControlItemBgHover, SourceControlType={x:Type atom:Upload}}" />
 
             <Style Selector="^ /template/ atom|IconButton#DeleteAction">
                 <Setter Property="IsVisible" Value="True" />

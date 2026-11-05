@@ -99,3 +99,7 @@ Gallery 的五个元素预览会把带有 `semantic-preview-owner` 标记的 own
 - Gallery Semantic Parts Tab 延迟创建主控件和元素 owner Preview；Examples Tab 的既有示例树保持不变。
 - Semantic 示例标题使用 `Custom Semantic Part styling`，文案只描述 AtomUI owner-scoped Style；Tag 使用当前版本
   `GalleryVersionInfo.DisplayVersion`（`v6.1.3`）。
+
+## 标题与端点的尺寸来源
+
+title 的真实目标仍为 SkeletonTitle，虽然其 StyleKey 复用 SkeletonLine；默认高度消费 TitleHeight，专用 SkeletonTitleStyle 的 Height Setter 仍可覆盖。Avatar/Button/Input 的 Custom 退出预设，显式 Size 由主题接管；Content Style 仍命中原静态/活动 Border，未添加代理节点。SkeletonImage 的 glyph 颜色属于 root Foreground，未增加图标 Part；Node 调用方内容不套用图像灰色回退。

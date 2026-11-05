@@ -1,5 +1,10 @@
 # Skeleton Changelog
 
+## 2026-11-04
+
+- 15 Own 采用依赖默认计划，接通独立标题高度及显式渐变/行高/图像尺寸的派生关系。
+- Avatar Size 和有限 Custom 回退改由 ControlTheme；图像占位支持明确 owner 色与 Foreground，保留默认灰色及 Node 内容语义。
+
 本文档记录 Skeleton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-10-18

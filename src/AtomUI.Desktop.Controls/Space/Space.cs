@@ -90,12 +90,6 @@ public partial class Space : Control,
     public static readonly StyledProperty<double> BorderDashOffsetProperty =
         AvaloniaProperty.Register<Space, double>(nameof(BorderDashOffset));
     
-    public CustomizableSizeType SizeType
-    {
-        get => GetValue(SizeTypeProperty);
-        set => SetValue(SizeTypeProperty, value);
-    }
-    
     public double ItemSpacing
     {
         get => GetValue(ItemSpacingProperty);
@@ -120,6 +114,12 @@ public partial class Space : Control,
         set => SetValue(ItemsAlignmentProperty, value);
     }
     
+    public CustomizableSizeType SizeType
+    {
+        get => GetValue(SizeTypeProperty);
+        set => SetValue(SizeTypeProperty, value);
+    }
+
     public double ItemWidth
     {
         get => GetValue(ItemWidthProperty);
@@ -606,7 +606,7 @@ public partial class Space : Control,
     {
         _spacingBindings?.Dispose();
         _spacingBindings = null;
-        if (!this.IsAttachedToVisualTree())
+        if (!this.IsAttachedToVisualTree() || SizeType == CustomizableSizeType.Custom)
         {
             return;
         }
@@ -618,6 +618,9 @@ public partial class Space : Control,
             CustomizableSizeType.Large  => SpaceTokenKind.GapLargeSize,
             _                           => SpaceTokenKind.GapSmallSize
         };
+        // Presets retain Template priority; selectors would change that
+        // contract. Custom instead uses the ControlTheme's base Setters, so
+        // rebinding cannot displace an already-active caller Style.
         _spacingBindings = new CompositeDisposable
         {
             TokenResourceBinder.CreateControlTokenBinding(this, ItemSpacingProperty, tokenKind),

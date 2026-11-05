@@ -1,18 +1,13 @@
-﻿using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.DesignTokens;
 using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class SeparatorToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class SeparatorToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
-    public SeparatorToken()
-
-    {
-    }
-
-    /// <summary>
+/// <summary>
     /// 文本横向内间距 单位 em
     /// </summary>
     public double TextPaddingInline { get; set; }
@@ -47,17 +42,33 @@ internal sealed class SeparatorToken : AbstractControlDesignToken
     /// Horizontal margin of divider with text
     /// </summary>
     public Thickness HorizontalWithTextGutterMargin { get; set; }
-    
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        TextPaddingInline              = 1.0;
-        OrientationMarginPercent       = 0.05;
-        VerticalMarginInline           = EffectiveGlobalToken.UniformlyMarginXS;
-        HorizontalMarginBlockSM        = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS);
-        HorizontalMarginBlock          = new Thickness(0, EffectiveGlobalToken.UniformlyMargin);
-        HorizontalMarginBlockLG        = new Thickness(0, EffectiveGlobalToken.UniformlyMarginLG);
-        HorizontalWithTextGutterMargin = new Thickness(0, EffectiveGlobalToken.UniformlyMargin);
-    }
-    
+
+    [ControlTokenDefault(nameof(TextPaddingInline))]
+    private static double DefaultForTextPaddingInline(in ControlTokenDefaultContext context) =>
+        1.0;
+
+    [ControlTokenDefault(nameof(OrientationMarginPercent))]
+    private static double DefaultForOrientationMarginPercent(in ControlTokenDefaultContext context) =>
+        0.05;
+
+    [ControlTokenDefault(nameof(VerticalMarginInline))]
+    private static double DefaultForVerticalMarginInline(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyMarginXS;
+
+    [ControlTokenDefault(nameof(HorizontalMarginBlockSM))]
+    private static Thickness DefaultForHorizontalMarginBlockSM(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.UniformlyMarginXS);
+
+    [ControlTokenDefault(nameof(HorizontalMarginBlock))]
+    private static Thickness DefaultForHorizontalMarginBlock(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.UniformlyMargin);
+
+    [ControlTokenDefault(nameof(HorizontalMarginBlockLG))]
+    private static Thickness DefaultForHorizontalMarginBlockLG(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.UniformlyMarginLG);
+
+    [ControlTokenDefault(nameof(HorizontalWithTextGutterMargin))]
+    private static Thickness DefaultForHorizontalWithTextGutterMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.UniformlyMargin);
+
 }

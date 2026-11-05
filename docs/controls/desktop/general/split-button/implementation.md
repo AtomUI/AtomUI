@@ -1,6 +1,6 @@
 # SplitButton 桌面版实现原理
 
-本文档描述 SplitButton 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [SplitButton 桌面版架构设计](overview.md)，Semantic Part 契约见 [SplitButton Semantic Part 契约](semantic-part.md)，变化记录见 [SplitButton Changelog](changelog.md)。SplitButton 没有独立 Token 文档；涉及主题变量时应回到 overview 的视觉与主题模型。
+本文档描述 SplitButton 桌面版的内部实现范围、源码职责、状态流、生命周期、资源边界和维护规则。公共设计与 API 契约见 [SplitButton 桌面版架构设计](overview.md)，Own 与组合消费边界见 [SplitButton Token 设计](token.md)，Semantic Part 契约见 [SplitButton Semantic Part 契约](semantic-part.md)，变化记录见 [SplitButton Changelog](changelog.md)。
 
 Popup 接入边界：`SplitButton` 负责业务状态和内容准备，关联 `Flyout` 仅作为 relay 适配层，Flyout Popup 负责实际显示。模板重建或宿主切换时必须先释放旧 relay，再绑定新的 Popup；普通外点、Escape、失焦和业务关闭在 pinned 状态下被拦截，detach、窗口销毁、跨 TopLevel 和无效锚点必须走生命周期关闭并释放 Popup host。完整状态机见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。
 
@@ -174,3 +174,12 @@ SplitButton 实例拥有组合浮层配置，经关联 Flyout 单向进入 Popup
 
 组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
 不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。
+
+### Custom 尺寸与原生优先级
+
+Width 与 MinWidth 约束整个组合，不向两个子 Button 复制。DockPanel 先测量次动作，再把剩余宽度交给主动作；两个动作沿垂直方向 Stretch，共享自然测量或显式 Height 得到的行高。CornerRadius 使用基础默认与三档预设。
+
+Custom 的根 Height/MinHeight/Padding/FontSize 显式覆盖沿既有实例投射协议进入两个公开子 Button，撤回后恢复各自有效默认。未设置根 Padding/FontSize 时不使用无条件 TemplateBinding，避免根的零留白或继承字号压住子 Button 的默认。该条件投射需要查询任意 owner 属性的 IsSet，ControlTheme 不能等价表达，代码保留具体原因；宽度始终只属于组合布局。
+
+
+主动作的 ControlTheme 对继承的 `TextBlock.TextTrimming` 设置 `CharacterEllipsis`。固定总宽时，次动作先保留自己的自然宽度，主动作的图标和文字在剩余区域测量；隐式文字按实际可用宽度省略，避免未换行文字的绘制宽度超过 Bounds、越入次动作图标。自然宽度充足时保留全文。字体、图标尺寸、总宽、命令、Flyout 和主次接缝协议不变，调用方可按原生优先级覆盖该文字呈现属性。

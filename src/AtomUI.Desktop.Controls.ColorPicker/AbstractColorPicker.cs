@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Animations;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
@@ -32,7 +33,8 @@ public abstract class AbstractColorPicker : AvaloniaButton,
                                             ICompactSpaceAware,
                                             IFormItemAware,
                                             IInputControlStatusAware,
-                                            IInputControlStyleVariantAware
+                                            IInputControlStyleVariantAware,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -1423,4 +1425,7 @@ public abstract class AbstractColorPicker : AvaloniaButton,
     }
 
     #endregion
+
+    // The theme preserves the actual inheritance parent when owner typography is not explicit.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 }

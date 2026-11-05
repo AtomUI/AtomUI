@@ -7,7 +7,7 @@
 | 本文 | 产品边界、模块职责与阅读入口 |
 | [主题工作台](workbench.md) | 草稿/预览/应用/保存、配置诊断、品牌比较、完整往返及受限生成入口 |
 
-工作台属于目标设计。当前Shell切换、主题Catalog、局部示例与Part Preview继续按既有实现工作；完整编辑/品牌导出/AI的实现证据不能由设计文档替代。
+手动工作台已在现有 workspace/主题菜单接入，具体操作与Host证据见[当前实现](workbench.md#8-当前手动实现)。Shell切换、主题Catalog、局部示例与Part Preview继续沿既有合同；AI入口仍暂缓，平台与最终屏幕边界不由设计文档代替。
 
 - [品牌配方与scope](../../architecture/systems/theming/brand-recipes.md)：配方、资产、样式资格、跨根与激活失败语义。
 - [Control渲染合同](../../architecture/systems/theming/control-rendering.md)：工具所编辑输入的真实消费要求。

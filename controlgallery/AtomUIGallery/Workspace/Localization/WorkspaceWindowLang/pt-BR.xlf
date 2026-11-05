@@ -115,5 +115,6 @@
         <target state="translated">AtomUI Desktop Gallery</target>
       </segment>
     </unit>
+    <unit id="MenuItemThemeWorkbench"><segment><source>Theme workbench</source><target state="translated">Bancada de temas</target></segment></unit>
   </file>
 </xliff>

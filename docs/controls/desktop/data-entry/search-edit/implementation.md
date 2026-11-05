@@ -196,3 +196,7 @@ SearchEdit是独立Global owner；自身模板的caret/selection/placeholder、�
 SearchEdit根FontFamily和三档Global字号在对应字段显式配置时生效；未配置时保留真实InheritanceParent的字体。Custom采用中档，IsCustomFontSize=true退出主题字号，普通Style/LocalValue优先级保持。选择最终值的有限MultiBinding位于ControlTheme，继承父通过内部只读桥和AOT编译observable读取；不借用LineEdit的Own字段，也不通过代码设置最终字体。搜索按钮仍保留独立Button身份。
 
 内部frame与操作按钮通过[共享输入架构](../input-control-architecture-design.md#内部资产的主题查询路线)消费真实公开owner的Global；Content附加区的逻辑路线与模板路线同属该合同，保留原生样式优先级和状态归一。
+
+### Custom 尺寸与原生优先级
+
+Custom 的根 Padding 与 CornerRadius 使用中档资源的基础 Setter，普通 Style 可覆盖和撤回；三档预设及可选字体规则保持。实际 frame 与搜索按钮继续共享输入最终高度，不以移除高度约束或更换内层输入实现 Custom。

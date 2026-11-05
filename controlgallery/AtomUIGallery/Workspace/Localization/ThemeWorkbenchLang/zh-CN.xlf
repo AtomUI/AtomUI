@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" trgLang="zh-CN" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUIGallery.Localization.ThemeWorkbenchLangResourceKind">
+    <unit id="Primary"><segment><source>Primary</source><target state="translated">主要按钮</target></segment></unit>
+    <unit id="Small"><segment><source>Small</source><target state="translated">小尺寸</target></segment></unit>
+    <unit id="Disabled"><segment><source>Disabled</source><target state="translated">禁用</target></segment></unit>
+    <unit id="Feedback"><segment><source>Preview feedback</source><target state="translated">预览反馈</target></segment></unit>
+    <unit id="Dark"><segment><source>Dark</source><target state="translated">深色</target></segment></unit>
+    <unit id="Preview"><segment><source>Preview draft</source><target state="translated">预览草稿</target></segment></unit>
+    <unit id="Apply"><segment><source>Apply to Gallery</source><target state="translated">应用到 Gallery</target></segment></unit>
+    <unit id="ResetBrand"><segment><source>Restore preset</source><target state="translated">恢复配方</target></segment></unit>
+    <unit id="Import"><segment><source>Import recipe</source><target state="translated">导入配方</target></segment></unit>
+    <unit id="SaveComplete"><segment><source>Save complete recipe</source><target state="translated">保存完整配方</target></segment></unit>
+    <unit id="SaveTokens"><segment><source>Export tokens only</source><target state="translated">仅导出 Token</target></segment></unit>
+    <unit id="Owner"><segment><source>Token owner</source><target state="translated">Token 所有者</target></segment></unit>
+    <unit id="SetOverride"><segment><source>Set override</source><target state="translated">设置覆盖</target></segment></unit>
+    <unit id="Inherit"><segment><source>Clear override</source><target state="translated">清除覆盖</target></segment></unit>
+    <unit id="RecipeJson"><segment><source>Complete recipe JSON</source><target state="translated">完整配方 JSON</target></segment></unit>
+    <unit id="ReadDraft"><segment><source>Read JSON as draft</source><target state="translated">读取 JSON 为草稿</target></segment></unit>
+    <unit id="Diff"><segment><source>Changes from preset</source><target state="translated">相对配方的差异</target></segment></unit>
+    <unit id="DraftPreview"><segment><source>Draft · isolated preview</source><target state="translated">草稿 · 隔离预览</target></segment></unit>
+    <unit id="BaselinePreview"><segment><source>Preset · isolated reference</source><target state="translated">配方 · 隔离对照</target></segment></unit>
+    <unit id="Cancel"><segment><source>Cancel apply</source><target state="translated">取消应用</target></segment></unit>
+  </file>
+</xliff>

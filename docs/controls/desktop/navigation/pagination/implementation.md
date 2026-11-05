@@ -304,3 +304,8 @@ owner-to-context 同步与 context-to-owner 请求使用不同入口，并在值
 
 `PaginationNavItem` 构造时建立共享初始化会话，覆盖导航容器挂载后才同步的初始页码状态；加载后恢复前景、边框和背景过渡。
 共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。
+
+
+## 有效主题输入与生命周期
+
+Pagination 与 SimplePagination 保留各自公开身份；导航、条目及组合内容等内部节点使用真实 owner 的 Global。字体采用可选覆盖，Custom 不参与预设尺寸 activator；小号与标准输入的既有 Own 接线保持。导航和焦点由原模型及原输入流管理。

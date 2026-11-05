@@ -1,5 +1,9 @@
 # HyperLinkButton Changelog
 
+## 2026-11-04
+
+- Custom 高度、排版和图标指标改用可由普通 Style 接管的基础默认，保留中档回退与三档预设。
+
 ## 2026-10-27
 
 - 修复IsLoading未同步loading伪类，接通现有图标替换、旋转与加载透明度主题规则；保持Click、命令、enabled及导航语义。

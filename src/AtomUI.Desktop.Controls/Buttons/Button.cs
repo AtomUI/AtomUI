@@ -118,6 +118,9 @@ public partial class Button : AvaloniaButton,
     public static readonly StyledProperty<double> IconHeightProperty =
         AvaloniaProperty.Register<Button, double>(nameof(IconHeight));
 
+    public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
+        Border.BoxShadowProperty.AddOwner<Button>();
+
     public static readonly StyledProperty<ButtonIconPlacement> IconPlacementProperty =
         AvaloniaProperty.Register<Button, ButtonIconPlacement>(
             nameof(IconPlacement),
@@ -187,6 +190,16 @@ public partial class Button : AvaloniaButton,
     {
         get => GetValue(IconHeightProperty);
         set => SetValue(IconHeightProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the button shadow. The theme supplies the current semantic
+    /// shadow by default; native styles and local values can override it.
+    /// </summary>
+    public BoxShadows BoxShadow
+    {
+        get => GetValue(BoxShadowProperty);
+        set => SetValue(BoxShadowProperty, value);
     }
 
     public ButtonIconPlacement IconPlacement

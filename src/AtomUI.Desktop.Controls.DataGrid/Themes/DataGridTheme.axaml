@@ -211,7 +211,7 @@
         <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="CornerRadius" Value="{atom:DataGridTokenResource TableRadius}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="OperatingMsg"
                 Value="{atom:DataGridLangResource Operating}" />
 

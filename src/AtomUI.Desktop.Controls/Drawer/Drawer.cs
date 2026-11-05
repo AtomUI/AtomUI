@@ -638,12 +638,12 @@ public partial class Drawer : Control,
 
     private void ApplyDialogSizeTokenBinding()
     {
-        // Size selectors in ControlTheme would use Style/StyleTrigger priority rather
-        // than this Template-priority default, changing caller style precedence and
-        // the existing Custom fallback. Keep the typed, lifetime-owned default binding.
+        // Presets keep their Template-priority contract. Custom uses the
+        // ControlTheme's base Setter; a new code binding at Style priority
+        // would otherwise displace an already-active caller Style on reentry.
         _dialogSizeBinding?.Dispose();
         _dialogSizeBinding = null;
-        if (!this.IsAttachedToVisualTree())
+        if (!this.IsAttachedToVisualTree() || SizeType == CustomizableSizeType.Custom)
         {
             return;
         }

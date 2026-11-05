@@ -174,6 +174,13 @@ internal class SwitchKnob : TemplatedControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == IsMotionEnabledProperty || change.Property == LoadingAnimationDurationProperty)
+        {
+            if (_isLoading)
+            {
+                StartLoadingAnimation();
+            }
+        }
         if (change.Property == KnobSizeProperty)
         {
             KnobRenderWidth = KnobSize.Width;
@@ -249,7 +256,7 @@ internal class SwitchKnob : TemplatedControl
         var previous = _loadingAnimation;
         _loadingAnimation = null;
         previous?.Dispose();
-        if (!_isLoading || !this.IsAttachedToVisualTree())
+        if (!_isLoading || !IsMotionEnabled || LoadingAnimationDuration <= TimeSpan.Zero || !this.IsAttachedToVisualTree())
         {
             return;
         }

@@ -202,3 +202,10 @@ ButtonSpinnerHandle的普通/Filled状态分别消费HandleBg/FilledHandleBg，B
 内部DecoratedBox与Handle的SpinnerBorderThickness通过OwnerTokenResource读取真实公开owner的有效Global.BorderThickness，独立ButtonSpinner与NumericUpDown按各自身份更新。保持既有完整Thickness输入及绘制取Left为线宽的规则，不在资源接线时重定义边分量或把LineWidth-only配置当作别名已重推。此内部描边职责与根实例BorderThickness的外框投射分别维护。
 
 ControlWidth没有内置布局消费者，仍作为默认90的兼容资源导出和读取，不影响实例Width。其他手柄/根Global状态与优先级按现有模板分别核对，默认计划不能代替逐消费者验收。
+
+
+### Custom 高度预算与预设最小高度
+
+Large/Middle/Small 的内部框体最小高度继续对应其预设。Custom 的私有 PresetPadding/CornerRadius 只提供公开属性的基础回退；内部框体最小高度由 ControlTheme 的基础 Setter 计算，取中档名义高度与 owner Height/MinHeight/MaxHeight 预算的交集。没有预算时保留原名义最小高度，空内容也不收缩。NumericUpDown 两种模式沿模板投射同一组高度约束，不通过取消 MaxHeight、裁剪或隐藏 spinner 让框体适配。
+
+计算绑定位于 frame 自身主题的 Setter，保持普通 Style 与三档预设的原生优先级。转换器无状态、无缓存和订阅；输入的资源与 TemplateBinding 随真实控件模板生命周期释放。

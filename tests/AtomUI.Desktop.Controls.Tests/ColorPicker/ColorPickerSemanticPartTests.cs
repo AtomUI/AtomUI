@@ -32,14 +32,12 @@ public class ColorPickerSemanticPartTests
             "ColorBlock", "Classes.semantic-body"),
         ("src/AtomUI.Desktop.Controls.ColorPicker/Themes/ColorPickerTheme.axaml",
             "TextBlock", "Classes.semantic-description"),
-        ("src/AtomUI.Desktop.Controls.ColorPicker/Themes/ColorPickerTheme.axaml",
-            "ColorPickerPopupRootFrame", "Classes.semantic-popup-root"),
         ("src/AtomUI.Desktop.Controls.ColorPicker/Themes/GradientColorPickerTheme.axaml",
             "ColorBlock", "Classes.semantic-body"),
         ("src/AtomUI.Desktop.Controls.ColorPicker/Themes/GradientColorPickerTheme.axaml",
             "WrapPanel", "Classes.semantic-description"),
-        ("src/AtomUI.Desktop.Controls.ColorPicker/Themes/GradientColorPickerTheme.axaml",
-            "ColorPickerPopupRootFrame", "Classes.semantic-popup-root"),
+        ("src/AtomUI.Desktop.Controls.ColorPicker/Themes/ColorPickerPopupSurfaceTheme.axaml",
+            "Border", "Classes.semantic-popup-root"),
         ("src/AtomUI.Desktop.Controls.ColorPicker/Themes/ColorBlockTheme.axaml",
             "Border", "Classes.semantic-content"),
     ];
@@ -71,7 +69,8 @@ public class ColorPickerSemanticPartTests
 
         var popupRoot = descriptor.Parts.Single(static part => part.Name == "popup.root");
         popupRoot.SelectorClass.ShouldBe(PopupRootClass);
-        popupRoot.SelectorRoute.ShouldBe("/template/ .semantic-popup-root");
+        popupRoot.SelectorRoute.ShouldBe("/template/ .semantic-popup-host > .semantic-popup-surface /template/ .semantic-popup-root");
+        popupRoot.CrossNestedOwners.ShouldBeTrue();
         popupRoot.ContractType.ShouldBe(typeof(Border));
         popupRoot.CrossVisualRoot.ShouldBeTrue();
         popupRoot.Since.ShouldBe("6.2.0");
@@ -102,7 +101,8 @@ public class ColorPickerSemanticPartTests
 
         var popupRoot = descriptor.Parts.Single(static part => part.Name == "popup.root");
         popupRoot.SelectorClass.ShouldBe(PopupRootClass);
-        popupRoot.SelectorRoute.ShouldBe("/template/ .semantic-popup-root");
+        popupRoot.SelectorRoute.ShouldBe("/template/ .semantic-popup-host > .semantic-popup-surface /template/ .semantic-popup-root");
+        popupRoot.CrossNestedOwners.ShouldBeTrue();
         popupRoot.ContractType.ShouldBe(typeof(Border));
         popupRoot.CrossVisualRoot.ShouldBeTrue();
         popupRoot.Since.ShouldBe("6.2.0");
@@ -256,7 +256,7 @@ public class ColorPickerSemanticPartTests
     {
         // Popup.cs 的箭头/阴影遮罩机制只识别直接 Child 为 IArrowAwareShadowMaskInfoProvider
         // （Popup.cs:621），popup.root 语义宿主 ColorPickerPopupRootFrame（Border 子类）直接作为
-        // Popup 的 Child 承载弹层外沿（语义边框贴合弹层边缘），并向内容层 ArrowDecoratedBox
+        // Popup 的 Child 保持协议转发，实际语义 Border 位于颜色面板自己的 surface theme；并向 ArrowDecoratedBox
         // 转发 IArrowAwareShadowMaskInfoProvider 契约，保持箭头/阴影机制完整。
         var picker = (Control)Activator.CreateInstance(pickerType)!;
         picker.SetValue(Avalonia.Controls.Primitives.TemplatedControl.BackgroundProperty, Avalonia.Media.Brushes.Transparent); // no-op 占位，防止未用告警

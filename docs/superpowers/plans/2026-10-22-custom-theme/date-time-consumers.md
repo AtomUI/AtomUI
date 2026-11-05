@@ -1,5 +1,7 @@
 # CT-16 日期／时间控件执行计划
 
+2026-11-03：CT16既定范围已完成，22项metadata／51 Own逐项闭合，V1默认工作日marker变化已获限定批准。清理后的372项精确门禁、NativeAOT尺寸／Custom及原生出口、批准登记与保留边界统一见[有限家族出口](date-time-family-exit.md)。下列分包路线保留原执行上下文，不作为新增待办重开。
+
 沿现有feature/custom-theme主agent执行，不建分支/worktree、不提交。目录22项metadata（9 ProductControl、12 InternalTarget、1工具边界），5个Own终端51字段：DatePicker3、TimePicker8、DateViewer18、Calendar11、LunarCalendar11。每个真实公开owner、内部目标、方向／尺寸／模式／弹层仍单独验收，不将一包迁移计作完整家族通过。
 
 ## D1 TimePicker 宽度、间距与有效 Own 依赖

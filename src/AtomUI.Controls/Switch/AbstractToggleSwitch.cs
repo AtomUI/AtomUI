@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Reactive.Disposables;
 using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
@@ -27,7 +28,7 @@ public abstract class AbstractToggleSwitch : ToggleButton,
                                              ICustomHitTest,
                                              IWaveSpiritAwareControl,
                                              IFormItemAware,
-                                             ITransitionInitializationOwner
+                                             ITransitionInitializationOwner, IThemeInheritanceSource
 {
     #region 公共属性定义
     
@@ -539,6 +540,12 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     #region 实现 ITransitionInitializationOwner 接口
 
     TransitionInitializationSession ITransitionInitializationOwner.TransitionInitialization => _transitionInitialization;
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
 
     #endregion
 

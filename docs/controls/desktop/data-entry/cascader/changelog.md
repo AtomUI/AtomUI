@@ -1,5 +1,9 @@
 # Cascader Changelog
 
+## 2026-11-04
+
+- Custom 根几何采用基础默认，保留多选标签预算、多列 popup 与三档尺寸。
+
 本文档记录 Cascader 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
@@ -18,6 +22,11 @@
 
 - Changed
   - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
+## 2026-10-29
+
+- 内部 add-on 的通用边框、错误/警告与 Filled 背景改读公开 owner 有效 Global；保留默认值、原状态选择器、根画刷及专用样式优先级。
+
 
 ## 2026-10-28
 
@@ -142,3 +151,8 @@
   - `CascaderViewLevelList` 在容器准备和清理路径管理绑定型选项生命周期，回收容器时先释放订阅再清空容器值。
 - Tests
   - 新增绑定型选项 parent 维护、容器同步、资源宿主优先级和 WeakReference 生命周期覆盖。
+
+
+## 2026-10-30 主题消费与字体
+
+CascaderView 与 CascaderViewItem 的 Global 按其注册身份消费，内部节点从实际模板 owner 解析；字体族的可选覆盖保留父级继承。输入根及过滤输入继续沿既有合同工作；DropdownHeight 作为 Own 上限、页数预算可进一步缩小的高度所有权不改变。

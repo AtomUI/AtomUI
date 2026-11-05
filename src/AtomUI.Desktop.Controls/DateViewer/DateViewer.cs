@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Globalization;
 using System.Windows.Input;
 using AtomUI.Desktop.Controls.Internal.DateViewer;
@@ -10,82 +11,151 @@ using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
-public partial class DateViewer : TemplatedControl, IDatePanelHost
+public partial class DateViewer : TemplatedControl, IDatePanelHost, IThemeInheritanceSource
 {
     #region 公共属性定义
+
     public static readonly StyledProperty<DateTime?> ValueProperty = AvaloniaProperty.Register<DateViewer, DateTime?>(nameof(Value), defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+
     public static readonly StyledProperty<DateTime> DisplayDateProperty = AvaloniaProperty.Register<DateViewer, DateTime>(nameof(DisplayDate), defaultBindingMode: BindingMode.TwoWay);
+
     public static readonly StyledProperty<DateViewerSelectionUnit> SelectionUnitProperty = AvaloniaProperty.Register<DateViewer, DateViewerSelectionUnit>(nameof(SelectionUnit));
+
     public static readonly StyledProperty<DateViewerPresentation> PresentationProperty = AvaloniaProperty.Register<DateViewer, DateViewerPresentation>(nameof(Presentation));
+
     public static readonly StyledProperty<DateTime?> MinDateProperty = AvaloniaProperty.Register<DateViewer, DateTime?>(nameof(MinDate));
+
     public static readonly StyledProperty<DateTime?> MaxDateProperty = AvaloniaProperty.Register<DateViewer, DateTime?>(nameof(MaxDate));
+
     public static readonly StyledProperty<Func<DateTime, bool>?> DisabledDateProperty = AvaloniaProperty.Register<DateViewer, Func<DateTime, bool>?>(nameof(DisabledDate));
+
     public static readonly StyledProperty<DayOfWeek?> FirstDayOfWeekProperty = AvaloniaProperty.Register<DateViewer, DayOfWeek?>(nameof(FirstDayOfWeek));
+
     public static readonly StyledProperty<bool> ShowWeekProperty = AvaloniaProperty.Register<DateViewer, bool>(nameof(ShowWeek));
+
     public static readonly StyledProperty<bool> ShowHeaderProperty = AvaloniaProperty.Register<DateViewer, bool>(nameof(ShowHeader), true);
+
     public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty = AvaloniaProperty.Register<DateViewer, IDataTemplate?>(nameof(HeaderTemplate));
+
     public static readonly StyledProperty<IDataTemplate?> CellTemplateProperty = AvaloniaProperty.Register<DateViewer, IDataTemplate?>(nameof(CellTemplate));
+
     public static readonly StyledProperty<IDataTemplate?> FullCellTemplateProperty = AvaloniaProperty.Register<DateViewer, IDataTemplate?>(nameof(FullCellTemplate));
+
     public static readonly DirectProperty<DateViewer, DateViewerPanelKind> PanelKindProperty = AvaloniaProperty.RegisterDirect<DateViewer, DateViewerPanelKind>(nameof(PanelKind), control => control.PanelKind);
+
     public static readonly DirectProperty<DateViewer, DateTime?> FocusedValueProperty = AvaloniaProperty.RegisterDirect<DateViewer, DateTime?>(nameof(FocusedValue), control => control.FocusedValue);
+
     public static readonly DirectProperty<DateViewer, DateTime?> HoveredValueProperty = AvaloniaProperty.RegisterDirect<DateViewer, DateTime?>(nameof(HoveredValue), control => control.HoveredValue);
 
     public DateTime? Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
+
     public DateTime DisplayDate { get => GetValue(DisplayDateProperty); set => SetValue(DisplayDateProperty, value); }
+
     public DateViewerSelectionUnit SelectionUnit { get => GetValue(SelectionUnitProperty); set => SetValue(SelectionUnitProperty, value); }
+
     public DateViewerPresentation Presentation { get => GetValue(PresentationProperty); set => SetValue(PresentationProperty, value); }
+
     public DateTime? MinDate { get => GetValue(MinDateProperty); set => SetValue(MinDateProperty, value); }
+
     public DateTime? MaxDate { get => GetValue(MaxDateProperty); set => SetValue(MaxDateProperty, value); }
+
     public Func<DateTime, bool>? DisabledDate { get => GetValue(DisabledDateProperty); set => SetValue(DisabledDateProperty, value); }
+
     public DayOfWeek? FirstDayOfWeek { get => GetValue(FirstDayOfWeekProperty); set => SetValue(FirstDayOfWeekProperty, value); }
+
     public bool ShowWeek { get => GetValue(ShowWeekProperty); set => SetValue(ShowWeekProperty, value); }
+
     public bool ShowHeader { get => GetValue(ShowHeaderProperty); set => SetValue(ShowHeaderProperty, value); }
+
     public IDataTemplate? HeaderTemplate { get => GetValue(HeaderTemplateProperty); set => SetValue(HeaderTemplateProperty, value); }
+
     public IDataTemplate? CellTemplate { get => GetValue(CellTemplateProperty); set => SetValue(CellTemplateProperty, value); }
+
     public IDataTemplate? FullCellTemplate { get => GetValue(FullCellTemplateProperty); set => SetValue(FullCellTemplateProperty, value); }
+
     public DateViewerPanelKind PanelKind => _host?.ReadInput().PanelKind ?? _panelKind;
+
     public DateTime? FocusedValue => _session?.FocusedValue;
+
     public DateTime? HoveredValue => _session?.HoveredValue;
+
     #endregion
 
     #region 公共事件定义
+
     public event EventHandler<DateViewerValueChangedEventArgs>? ValueChanged;
+
     public event EventHandler<DateViewerSelectedEventArgs>? Selected;
+
     public event EventHandler<DateViewerPanelChangedEventArgs>? PanelChanged;
+
     public event EventHandler<DateViewerHoveredValueChangedEventArgs>? HoveredValueChanged;
+
     #endregion
 
     #region 内部属性定义
+
     internal static readonly StyledProperty<Avalonia.Styling.ControlTheme?> PanelThemeProperty = AvaloniaProperty.Register<DateViewer, Avalonia.Styling.ControlTheme?>(nameof(PanelTheme));
-    internal Avalonia.Styling.ControlTheme? PanelTheme { get => GetValue(PanelThemeProperty); set => SetValue(PanelThemeProperty, value); }
+
     internal static readonly StyledProperty<IDataTemplate?> DefaultFullCellTemplateProperty = AvaloniaProperty.Register<DateViewer, IDataTemplate?>(nameof(DefaultFullCellTemplate));
-    internal IDataTemplate? DefaultFullCellTemplate { get => GetValue(DefaultFullCellTemplateProperty); set => SetValue(DefaultFullCellTemplateProperty, value); }
+
     internal static readonly StyledProperty<Avalonia.Styling.ControlTheme?> CellThemeProperty = AvaloniaProperty.Register<DateViewer, Avalonia.Styling.ControlTheme?>(nameof(CellTheme));
-    internal Avalonia.Styling.ControlTheme? CellTheme { get => GetValue(CellThemeProperty); set => SetValue(CellThemeProperty, value); }
+
     internal static readonly DirectProperty<DateViewer, DatePanelSession> PanelSessionProperty = AvaloniaProperty.RegisterDirect<DateViewer, DatePanelSession>(nameof(PanelSession), control => control.PanelSession);
-    internal DatePanelSession PanelSession => _session;
+
     internal static readonly DirectProperty<DateViewer, DateViewerHeaderContext?> HeaderContextProperty = AvaloniaProperty.RegisterDirect<DateViewer, DateViewerHeaderContext?>(nameof(HeaderContext), control => control.HeaderContext);
-    internal DateViewerHeaderContext? HeaderContext => _headerContext;
+
     internal static readonly DirectProperty<DateViewer, bool> IsDefaultFooterVisibleProperty = AvaloniaProperty.RegisterDirect<DateViewer, bool>(nameof(IsDefaultFooterVisible), control => control.IsDefaultFooterVisible);
-    internal bool IsDefaultFooterVisible => _host is null && SelectionUnit == DateViewerSelectionUnit.Date;
+
     internal static readonly DirectProperty<DateViewer, ICommand> TodayCommandProperty = AvaloniaProperty.RegisterDirect<DateViewer, ICommand>(nameof(TodayCommand), control => control.TodayCommand);
-    internal ICommand TodayCommand => _todayCommand;
-    #endregion
+
+    internal Avalonia.Styling.ControlTheme? PanelTheme { get => GetValue(PanelThemeProperty); set => SetValue(PanelThemeProperty, value); }
+
+    internal IDataTemplate? DefaultFullCellTemplate { get => GetValue(DefaultFullCellTemplateProperty); set => SetValue(DefaultFullCellTemplateProperty, value); }
+
+    internal Avalonia.Styling.ControlTheme? CellTheme { get => GetValue(CellThemeProperty); set => SetValue(CellThemeProperty, value); }
 
     private readonly DatePanelSession _session;
-    private IDatePanelHost? _host;
-    private DatePanel? _geometryPanel;
-    private IReadOnlyList<DateCellLayout> _cellLayouts = Array.Empty<DateCellLayout>();
-    internal IReadOnlyList<DateCellLayout> CellLayouts => _cellLayouts;
-    internal event EventHandler? CellLayoutChanged;
-    private DatePanelInput? _headerInput;
+
+    internal DatePanelSession PanelSession => _session;
+
     private DateViewerHeaderContext? _headerContext;
+
+    internal DateViewerHeaderContext? HeaderContext => _headerContext;
+
+    internal bool IsDefaultFooterVisible => _host is null && SelectionUnit == DateViewerSelectionUnit.Date;
+
     private readonly DateViewerCommand _todayCommand;
+
+    internal ICommand TodayCommand => _todayCommand;
+
+    internal IReadOnlyList<DateCellLayout> CellLayouts => _cellLayouts;
+
+    #endregion
+
+    #region 运行时字段
+
+    private IDatePanelHost? _host;
+
+    private DatePanel? _geometryPanel;
+
+    private IReadOnlyList<DateCellLayout> _cellLayouts = Array.Empty<DateCellLayout>();
+
+    private DatePanelInput? _headerInput;
+
     private DateViewerPanelKind _panelKind;
+
     private CultureInfo _culture = CultureInfo.CurrentCulture;
+
     private ILanguageManager? _languageManager;
+
     private DateTime? _lastNotifiedFocus;
+
     private DateTime? _lastNotifiedHover;
+
+    #endregion
+
+    #region 构造函数
 
     public DateViewer()
     {
@@ -95,6 +165,10 @@ public partial class DateViewer : TemplatedControl, IDatePanelHost
         _session.Changed += OnSessionChanged;
         RefreshHeaderContext();
     }
+
+    #endregion
+
+    #region 公共与保护方法
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -164,19 +238,6 @@ public partial class DateViewer : TemplatedControl, IDatePanelHost
         PublishCellGeometry();
     }
 
-    private void SubscribePanelGeometry()
-    {
-        if (_geometryPanel is null)
-        {
-            return;
-        }
-
-        _geometryPanel.GeometryChanged -= OnPanelGeometryChanged;
-        _geometryPanel.GeometryChanged += OnPanelGeometryChanged;
-    }
-
-    private void OnPanelGeometryChanged(object? sender, EventArgs e) => PublishCellGeometry();
-
     protected override Size ArrangeOverride(Size finalSize)
     {
         var result = base.ArrangeOverride(finalSize);
@@ -184,36 +245,11 @@ public partial class DateViewer : TemplatedControl, IDatePanelHost
         return result;
     }
 
-    private void PublishCellGeometry()
-    {
-        var transform = _geometryPanel?.TransformToVisual(this) ?? Matrix.Identity;
-        var layouts = _geometryPanel?.GetCellLayouts().Select(cell => cell with { Bounds = cell.Bounds.TransformToAABB(transform) }).ToArray()
-            ?? Array.Empty<DateCellLayout>();
-        if (_cellLayouts.SequenceEqual(layouts))
-        {
-            return;
-        }
+    #endregion
 
-        _cellLayouts = layouts;
-        CellLayoutChanged?.Invoke(this, EventArgs.Empty);
-    }
+    #region 内部协作 API
 
-    private void OnLanguageChanged(object? sender, LanguageChangedEventArgs e)
-    {
-        _culture = _languageManager?.Current.FormattingCulture ?? CultureInfo.CurrentCulture;
-        _session.UpdateInput();
-    }
-
-    private void OnSessionChanged(object? sender, EventArgs e)
-    {
-        var focused = FocusedValue;
-        var hovered = HoveredValue;
-        RaisePropertyChanged(FocusedValueProperty, _lastNotifiedFocus, focused);
-        RaisePropertyChanged(HoveredValueProperty, _lastNotifiedHover, hovered);
-        _lastNotifiedFocus = focused;
-        _lastNotifiedHover = hovered;
-        RefreshHeaderContext();
-    }
+    internal event EventHandler? CellLayoutChanged;
 
     internal static DateViewerPanelKind TargetPanel(DateViewerSelectionUnit unit) => unit switch
     {
@@ -223,22 +259,6 @@ public partial class DateViewer : TemplatedControl, IDatePanelHost
         DateViewerSelectionUnit.Year => DateViewerPanelKind.Year,
         _ => throw new ArgumentOutOfRangeException(nameof(unit))
     };
-
-    private void RefreshHeaderContext()
-    {
-        var input = ((IDatePanelHost)this).ReadInput();
-        if (_headerInput is { } previous && previous.DisplayDate == input.DisplayDate &&
-            previous.PanelKind == input.PanelKind && previous.SelectionUnit == input.SelectionUnit &&
-            Equals(previous.Culture, input.Culture))
-        {
-            return;
-        }
-
-        _headerInput = input;
-        var old = _headerContext;
-        _headerContext = DateViewerHeaderContext.Create(input, _session.Apply);
-        RaisePropertyChanged(HeaderContextProperty, old, _headerContext);
-    }
 
     internal void SetHost(IDatePanelHost? host)
     {
@@ -271,26 +291,9 @@ public partial class DateViewer : TemplatedControl, IDatePanelHost
 
     internal void RefreshContent() => _session.RefreshContent();
 
-    private bool CanSelectToday()
-    {
-        var today = DateTime.Today;
-        return IsDefaultFooterVisible &&
-               (MinDate is null || today >= MinDate.Value.Date) &&
-               (MaxDate is null || today <= MaxDate.Value.Date) &&
-               DisabledDate?.Invoke(today) != true;
-    }
+    #endregion
 
-    private void SelectToday()
-    {
-        if (!CanSelectToday())
-        {
-            return;
-        }
-
-        var today = DateTime.Today;
-        ((IDatePanelHost)this).NavigateTo(today, DateViewerPanelKind.Date);
-        _session.Apply(new DatePanelAction.Activate(today, DateViewerCellType.Date));
-    }
+    #region 实现 IDatePanelHost 接口
 
     DatePanelInput IDatePanelHost.ReadInput() => _host?.ReadInput() ?? new()
     {
@@ -371,4 +374,98 @@ public partial class DateViewer : TemplatedControl, IDatePanelHost
             HoveredValueChanged?.Invoke(this, new DateViewerHoveredValueChangedEventArgs(hoveredValue));
         }
     }
+
+    #endregion
+
+    #region 实现 IThemeInheritanceSource 接口
+
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+    #region 私有实现
+
+    private void SubscribePanelGeometry()
+    {
+        if (_geometryPanel is null)
+        {
+            return;
+        }
+
+        _geometryPanel.GeometryChanged -= OnPanelGeometryChanged;
+        _geometryPanel.GeometryChanged += OnPanelGeometryChanged;
+    }
+
+    private void OnPanelGeometryChanged(object? sender, EventArgs e) => PublishCellGeometry();
+
+    private void PublishCellGeometry()
+    {
+        var transform = _geometryPanel?.TransformToVisual(this) ?? Matrix.Identity;
+        var layouts = _geometryPanel?.GetCellLayouts().Select(cell => cell with { Bounds = cell.Bounds.TransformToAABB(transform) }).ToArray()
+            ?? Array.Empty<DateCellLayout>();
+        if (_cellLayouts.SequenceEqual(layouts))
+        {
+            return;
+        }
+
+        _cellLayouts = layouts;
+        CellLayoutChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnLanguageChanged(object? sender, LanguageChangedEventArgs e)
+    {
+        _culture = _languageManager?.Current.FormattingCulture ?? CultureInfo.CurrentCulture;
+        _session.UpdateInput();
+    }
+
+    private void OnSessionChanged(object? sender, EventArgs e)
+    {
+        var focused = FocusedValue;
+        var hovered = HoveredValue;
+        RaisePropertyChanged(FocusedValueProperty, _lastNotifiedFocus, focused);
+        RaisePropertyChanged(HoveredValueProperty, _lastNotifiedHover, hovered);
+        _lastNotifiedFocus = focused;
+        _lastNotifiedHover = hovered;
+        RefreshHeaderContext();
+    }
+
+    private void RefreshHeaderContext()
+    {
+        var input = ((IDatePanelHost)this).ReadInput();
+        if (_headerInput is { } previous && previous.DisplayDate == input.DisplayDate &&
+            previous.PanelKind == input.PanelKind && previous.SelectionUnit == input.SelectionUnit &&
+            Equals(previous.Culture, input.Culture))
+        {
+            return;
+        }
+
+        _headerInput = input;
+        var old = _headerContext;
+        _headerContext = DateViewerHeaderContext.Create(input, _session.Apply);
+        RaisePropertyChanged(HeaderContextProperty, old, _headerContext);
+    }
+
+    private bool CanSelectToday()
+    {
+        var today = DateTime.Today;
+        return IsDefaultFooterVisible &&
+               (MinDate is null || today >= MinDate.Value.Date) &&
+               (MaxDate is null || today <= MaxDate.Value.Date) &&
+               DisabledDate?.Invoke(today) != true;
+    }
+
+    private void SelectToday()
+    {
+        if (!CanSelectToday())
+        {
+            return;
+        }
+
+        var today = DateTime.Today;
+        ((IDatePanelHost)this).NavigateTo(today, DateViewerPanelKind.Date);
+        _session.Apply(new DatePanelAction.Activate(today, DateViewerCellType.Date));
+    }
+
+    #endregion
+
 }

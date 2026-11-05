@@ -22,7 +22,7 @@
             <ControlTemplate TargetType="atom:RangeTimePicker">
                 <Panel>
                     <atom:AddOnDecoratedBox
-                        Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
+                        Name="PART_AddOnDecoratedBox"
                         Focusable="True"
                         Classes.semantic-scope-input="True"
                         IsEnabled="{TemplateBinding IsEnabled}"
@@ -124,11 +124,13 @@
                     <atom:Popup Name="PART_Popup"
                                 OpenMotion="{TemplateBinding OpenMotion}"
                                 CloseMotion="{TemplateBinding CloseMotion}"
+                                PlacementTarget="{CompiledBinding #PART_AddOnDecoratedBox, Priority=LocalValue}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="True"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}"
                                 RequestedPlacement="{TemplateBinding PickerPlacement}"
+                                PlacementRect="{TemplateBinding PickerPlacementRect}"
                                 IsPointAtCenter="{TemplateBinding IsPointAtCenter}"
                                 OverlayDismissEventPassThrough="True"
                                 IsHorizontalFlipped="{TemplateBinding IsPopupHorizontalFlipped, Mode=TwoWay}"
@@ -165,11 +167,13 @@
             </Setter>
         </Style>
         <Setter Property="BorderThickness" Value="{atom:RangeTimePickerTokenResource BorderThickness}" />
+        <Setter Property="Padding" Value="{atom:RangeTimePickerTokenResource InputPadding}" />
+        <Setter Property="CornerRadius" Value="{atom:RangeTimePickerTokenResource BorderRadius}" />
         <Style Selector="^[SizeType=Large]">
             <Setter Property="Padding" Value="{atom:RangeTimePickerTokenResource InputPaddingLG}" />
             <Setter Property="CornerRadius" Value="{atom:RangeTimePickerTokenResource BorderRadiusLG}" />
         </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Style Selector="^[SizeType=Middle]">
             <Setter Property="Padding" Value="{atom:RangeTimePickerTokenResource InputPadding}" />
             <Setter Property="CornerRadius" Value="{atom:RangeTimePickerTokenResource BorderRadius}" />
         </Style>

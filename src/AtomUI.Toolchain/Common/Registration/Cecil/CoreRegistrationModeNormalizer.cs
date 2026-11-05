@@ -9,8 +9,14 @@ internal static class CoreRegistrationModeNormalizer
     private const string SwitchName = "AtomUI.Registration.Trimmed";
 
     internal static void Normalize(AssemblyDefinition core,
-        Func<TypeReference, TypeDefinition?> resolveType, Func<MethodReference, MethodDefinition?> resolveMethod)
+        Func<TypeReference, TypeDefinition?> resolveType, Func<MethodReference, MethodDefinition?> resolveMethod,
+        string coreLibIdentity = "System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e")
     {
+        if (coreLibIdentity is not ("System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e" or
+            "System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e"))
+        {
+            throw Invalid("The mode normalizer requires the admitted target CoreLib identity.");
+        }
         var framework = core.CustomAttributes.SingleOrDefault(attribute => attribute.AttributeType.FullName == "System.Runtime.Versioning.TargetFrameworkAttribute");
         if (core.Name.Name != "AtomUI.Core" || framework?.ConstructorArguments.Count != 1 ||
             !Equals(framework.ConstructorArguments[0].Value, ".NETCoreApp,Version=v8.0"))
@@ -24,7 +30,7 @@ internal static class CoreRegistrationModeNormalizer
         if (!owner.IsPublic || !owner.IsAbstract || !owner.IsSealed || owner.HasGenericParameters ||
             property?.GetMethod != getter || !getter.IsPublic || !getter.IsStatic || !getter.IsGetter || getter.HasParameters ||
             getter.HasGenericParameters || !getter.HasBody || getter.Body.HasExceptionHandlers || boolean?.FullName != "System.Boolean" ||
-            boolean.Module.Assembly.Name.FullName != "System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e" ||
+            boolean.Module.Assembly.Name.FullName != coreLibIdentity ||
             getter.Body.Variables.Any(variable => resolveType(variable.VariableType) != boolean))
         {
             throw Invalid("Unknown IsTrimmed signature or local-variable contract.");

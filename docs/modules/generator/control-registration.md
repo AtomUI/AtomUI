@@ -73,6 +73,10 @@ delegate；Group 和共享生成类不能通过静态初始化保留全部控件
 不变。生成 descriptor 缓存与资源/快照惰性创建保留；Core 在启动提交时一次补齐全部片段（见
 [启动生命周期](../../architecture/systems/startup/lifecycle.md#4-提交一次)）。
 
+net8 的三个协议 collector 和片段 thunk 一起生成在无字段、无类型初始化器的内部类型中；包启动定义继续保留原有初始化与缓存职责。
+条件记录与 `CollectFull` 同时引用真实 thunk，满足 ILC8 对无状态入口的校验，不通过放宽后端校验保留整个包。
+.NET 10 TypeMap 输出路径不受此拆分影响，字符串 ABI 的版本和公开注册入口保持不变。
+
 ## 4. 主题导出与资源
 
 Control 到资产的关联来自顶层导出的 ControlTheme key/TargetType。嵌套模板 TargetType、局部定制主题或 standalone 非默认

@@ -16,8 +16,8 @@
         </ResourceDictionary.MergedDictionaries>
         <ControlTheme x:Key="LunarDateCellTheme" TargetType="viewer:DateViewerCell" BasedOn="{StaticResource CalendarDateCellTheme}">
             <Style Selector="^[Presentation=Content]:date:selected:not(:disabled) /template/ Border#PART_CellInner">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+                <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorPrimary, AnchorControlType={x:Type atom:Calendar}}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource Kind=BorderRadiusLG, AnchorControlType={x:Type atom:Calendar}}" />
             </Style>
             <Style Selector="^[Presentation=Compact]:date /template/ Border#PART_Item">
                 <Setter Property="Height" Value="{atom:LunarCalendarTokenResource MiniDateCellSize}" />

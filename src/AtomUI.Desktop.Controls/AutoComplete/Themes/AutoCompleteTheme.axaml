@@ -7,10 +7,26 @@
         <ControlTheme.BasedOn>
             <atom:AbstractAutoCompleteTheme TargetType="atom:AutoComplete" />
         </ControlTheme.BasedOn>
+        <Setter Property="FontSize">
+            <MultiBinding Converter="{x:Static atom:ControlTypographyBindings.FontSizeConverter}">
+                <x:Static Member="atom:ControlTypographyBindings.InheritedFontSize" />
+                <CompiledBindingExtension Path="$self.SizeType" />
+                <atom:OwnerTokenResource Kind="FontSize" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSize" />
+                <atom:OwnerTokenResource Kind="FontSizeSM" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSizeSM" />
+                <atom:OwnerTokenResource Kind="FontSizeLG" WhenExplicit="True" />
+                <atom:OwnerTokenResource Kind="FontSizeLG" />
+            </MultiBinding>
+        </Setter>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
-                    <atom:AutoCompleteLineEditBox Name="{x:Static atom:AutoCompleteThemeConstants.TextBoxPart}"
+                    <atom:AutoCompleteLineEditBox Foreground="{CompiledBinding $parent[atom:AutoComplete].Foreground, Priority=LocalValue}"
+                                                  FontFamily="{TemplateBinding FontFamily}"
+                                                  FontSize="{CompiledBinding $parent[atom:AutoComplete].FontSize, Priority=LocalValue}"
+                                                  Name="{x:Static atom:AutoCompleteThemeConstants.TextBoxPart}"
                                                   Classes.semantic-scope-input="True"
                                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                                   IsAllowClear="{TemplateBinding IsAllowClear}"
@@ -25,13 +41,15 @@
                                                   InnerRightContent="{TemplateBinding ContentRightAddOn}"
                                                   InnerRightContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
                                                   PlaceholderText="{TemplateBinding PlaceholderText}"
+                                                  PlaceholderForeground="{CompiledBinding $parent[atom:AutoComplete].PlaceholderForeground, Priority=LocalValue}"
                                                   IsReadOnly="{TemplateBinding IsReadOnly}"
                                                   Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"
                                                   ClearIcon="{TemplateBinding ClearIcon}"
                                                   CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                                                   CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
                                                   IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
-                                                  FormFeedback="{TemplateBinding FormFeedback}" />
+                                                  FormFeedback="{TemplateBinding FormFeedback}">
+                    </atom:AutoCompleteLineEditBox>
                     <atom:Popup Name="{x:Static atom:AutoCompleteThemeConstants.PopupPart}"
                                 OpenMotion="{TemplateBinding OpenMotion}"
                                 CloseMotion="{TemplateBinding CloseMotion}"

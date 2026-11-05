@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls.Primitives;
@@ -5,19 +6,17 @@ using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
-public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTypeAware, IMotionAwareControl
+public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTypeAware, IMotionAwareControl,
+    IThemeInheritanceSource
 {
     #region 公共属性定义
 
-    public const int DefaultPageSize = 10;
-    public const int DefaultCurrentPage = 1;
-
     public static readonly StyledProperty<bool> IsHideOnSinglePageProperty =
         AvaloniaProperty.Register<AbstractPagination, bool>(nameof(IsHideOnSinglePage));
-    
+
     public static readonly StyledProperty<PaginationAlign> AlignProperty =
         AvaloniaProperty.Register<AbstractPagination, PaginationAlign>(nameof(Align));
-    
+
     public static readonly StyledProperty<IReadOnlyList<double>?> BorderDashArrayProperty =
         AvaloniaProperty.Register<AbstractPagination, IReadOnlyList<double>?>(nameof(BorderDashArray));
 
@@ -26,44 +25,44 @@ public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTy
 
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractPagination>();
-    
+
     public static readonly StyledProperty<int> CurrentPageProperty =
         AvaloniaProperty.Register<AbstractPagination, int>(
             nameof(CurrentPage),
             DefaultCurrentPage,
             defaultBindingMode: BindingMode.TwoWay,
             validate:v => v > 0);
-    
+
     public static readonly StyledProperty<int> PageSizeProperty =
         AvaloniaProperty.Register<AbstractPagination, int>(
             nameof(PageSize),
             DefaultPageSize,
             defaultBindingMode: BindingMode.TwoWay,
             validate:PageSizeValidator);
-    
+
     public static readonly StyledProperty<int> TotalProperty =
         AvaloniaProperty.Register<AbstractPagination, int>(nameof(Total), validate:v => v >= 0);
-    
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractPagination>();
-    
+
     public static readonly DirectProperty<AbstractPagination, int> PageCountProperty =
         AvaloniaProperty.RegisterDirect<AbstractPagination, int>(nameof(PageCount),
             o => o.PageCount,
             (o, v) => o.PageCount = v);
-    
+
     public bool IsHideOnSinglePage
     {
         get => GetValue(IsHideOnSinglePageProperty);
         set => SetValue(IsHideOnSinglePageProperty, value);
     }
-    
+
     public PaginationAlign Align
     {
         get => GetValue(AlignProperty);
         set => SetValue(AlignProperty, value);
     }
-    
+
     public IReadOnlyList<double>? BorderDashArray
     {
         get => GetValue(BorderDashArrayProperty);
@@ -81,56 +80,57 @@ public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTy
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
-    
+
     public int CurrentPage
     {
         get => GetValue(CurrentPageProperty);
         set => SetValue(CurrentPageProperty, value);
     }
-    
+
     public int PageSize
     {
         get => GetValue(PageSizeProperty);
         set => SetValue(PageSizeProperty, value);
     }
-    
+
     public int Total
     {
         get => GetValue(TotalProperty);
         set => SetValue(TotalProperty, value);
     }
-    
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     private int _pageCount;
-    
+
     public int PageCount
     {
         get => _pageCount;
         internal set => SetAndRaise(PageCountProperty, ref _pageCount, value);
     }
-    
+
     #endregion
-    
+
     #region 公共事件定义
 
     public event EventHandler<PageChangedEventArgs>? CurrentPageChanged;
 
     #endregion
-    
+
     #region 内部属性定义
-    
+
     internal static readonly DirectProperty<AbstractPagination, bool> IsEffectiveVisibleProperty =
         AvaloniaProperty.RegisterDirect<AbstractPagination, bool>(
             nameof(IsEffectiveVisible),
             o => o.IsEffectiveVisible,
             (o, v) => o.IsEffectiveVisible = v);
-    
+
     private bool _isEffectiveVisible = false;
+
     internal bool IsEffectiveVisible
     {
         get => _isEffectiveVisible;
@@ -138,9 +138,13 @@ public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTy
     }
 
     #endregion
-    
+
+    public const int DefaultPageSize = 10;
+
+    public const int DefaultCurrentPage = 1;
+
     protected bool TemplateConfigured = false;
-    
+
     static AbstractPagination()
     {
         AffectsMeasure<AbstractPagination>(SizeTypeProperty);
@@ -203,8 +207,16 @@ public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTy
         CurrentPageChanged?.Invoke(this, new PageChangedEventArgs(currentPage, pageCount, pageSize));
     }
 
+    #region 实现 控件接口
+
+    // ControlTheme keeps native inheritance when no explicit owner typography is configured.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
     private static bool PageSizeValidator(int pageSize)
     {
         return pageSize >= 0;
     }
+
 }

@@ -1,5 +1,9 @@
 # BorderBeam Changelog
 
+## 2026-11-04
+
+- 4字段采用依赖默认计划；边框/圆角和端点颜色按实际 BorderBeam owner 投射，独立 motion 语义保持。
+
 本文档记录 BorderBeam 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 

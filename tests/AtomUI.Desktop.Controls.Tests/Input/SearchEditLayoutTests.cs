@@ -55,7 +55,10 @@ public class SearchEditLayoutTests
         decoratedBoxTheme.ShouldContain("Theme=\"{TemplateBinding SearchButtonTheme}\"");
         searchButtonTheme.ShouldContain("TargetType=\"{x:Type atom:Button}\"");
         searchButtonTheme.ShouldContain("ButtonTokenResource");
-        searchButtonTheme.ShouldContain("SearchEditTokenResource");
+        foreach (var kind in new[] { "ColorBgTextHover", "ColorBgTextActive", "ColorTextDescription", "ColorTextDisabled" })
+        {
+            searchButtonTheme.ShouldContain($"OwnerTokenResource {kind}, SourceControlType={{x:Type atom:SearchEdit}}");
+        }
         searchButtonTheme.ShouldNotContain("LineEditTokenResource");
     }
 

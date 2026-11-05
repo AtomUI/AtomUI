@@ -2,6 +2,11 @@
 
 本文档记录 ComboBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-05
+
+- 实现结构
+  - 编辑输入模板直接使用 Avalonia `TextPresenter`；保留文本、选区、密码、caret 和编辑绑定契约。
+
 ## 2026-11-04
 
 - Changed

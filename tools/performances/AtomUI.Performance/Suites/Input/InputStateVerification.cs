@@ -81,7 +81,7 @@ internal static partial class Program
             Width = 260,
             Text  = "selection"
         }, defaultToken.ColorPrimary, Colors.White, "TextArea", failures);
-        VerifyInputTextPresenterInvalidatesSelectionTextLayout(failures);
+        VerifyTextPresenterSelectionForeground(failures);
     }
 
     private static void VerifyInputSelectionBrushes(Avalonia.Controls.TextBox textBox,
@@ -104,51 +104,79 @@ internal static partial class Program
         Expect(presenter != null,
             $"{label} should realize PART_TextPresenter for text selection rendering.",
             failures);
-        Expect(presenter is InputTextPresenter,
-            $"{label} should use InputTextPresenter to clear Avalonia 12 text run cache for selected text.",
-            failures);
         Expect(GetSolidBrushColor(presenter?.SelectionBrush) == expectedSelectionBackground,
             $"{label} PART_TextPresenter SelectionBrush should use the Ant Design primary selection token.",
             failures);
         Expect(GetSolidBrushColor(presenter?.SelectionForegroundBrush) == expectedSelectionForeground,
             $"{label} PART_TextPresenter SelectionForegroundBrush should use the Ant Design selected-text foreground.",
             failures);
+        if (presenter != null)
+        {
+            textBox.SetCurrentValue(Avalonia.Controls.TextBox.SelectionStartProperty, 1);
+            textBox.SetCurrentValue(Avalonia.Controls.TextBox.SelectionEndProperty, 5);
+            presenter.SetCurrentValue(TextPresenter.ShowSelectionHighlightProperty, true);
+            Expect(GetTextWithForeground(presenter, expectedSelectionForeground) == "elec",
+                $"{label} PART_TextPresenter should render the selected text with the selection foreground token.",
+                failures);
+        }
     }
 
-    private static void VerifyInputTextPresenterInvalidatesSelectionTextLayout(ICollection<string> failures)
+    private static void VerifyTextPresenterSelectionForeground(ICollection<string> failures)
     {
-        var presenter = new CountingInputTextPresenter
+        var presenter = new TextPresenter
         {
             Text                     = "selection",
-            SelectionForegroundBrush = Brush(Colors.Black),
+            Foreground               = Brush(Colors.Black),
+            SelectionForegroundBrush = Brush(Colors.Red),
+            SelectionStart           = 1,
+            SelectionEnd             = 5,
             ShowSelectionHighlight   = true
         };
         using var realized = RealizeControl(presenter);
         RefreshLayout(realized.Window);
 
-        presenter.ResetTextLayoutInvalidations();
+        VerifySelectedText(Colors.Red, "elec", "initial selection");
+
         presenter.SetCurrentValue(TextPresenter.SelectionForegroundBrushProperty, Brush(Colors.White));
-        Expect(presenter.TextLayoutInvalidations > 0,
-            "InputTextPresenter should fully invalidate text layout when SelectionForegroundBrush changes.",
-            failures);
+        VerifySelectedText(Colors.White, "elec", "selection foreground change");
 
-        presenter.ResetTextLayoutInvalidations();
-        presenter.SetCurrentValue(TextPresenter.SelectionStartProperty, 1);
-        Expect(presenter.TextLayoutInvalidations > 0,
-            "InputTextPresenter should fully invalidate text layout when SelectionStart changes.",
-            failures);
+        presenter.SetCurrentValue(TextPresenter.SelectionStartProperty, 2);
+        VerifySelectedText(Colors.White, "lec", "selection start change");
 
-        presenter.ResetTextLayoutInvalidations();
         presenter.SetCurrentValue(TextPresenter.SelectionEndProperty, 8);
-        Expect(presenter.TextLayoutInvalidations > 0,
-            "InputTextPresenter should fully invalidate text layout when SelectionEnd changes.",
-            failures);
+        VerifySelectedText(Colors.White, "lectio", "selection end change");
 
-        presenter.ResetTextLayoutInvalidations();
         presenter.SetCurrentValue(TextPresenter.ShowSelectionHighlightProperty, false);
-        Expect(presenter.TextLayoutInvalidations > 0,
-            "InputTextPresenter should fully invalidate text layout when ShowSelectionHighlight changes.",
-            failures);
+        VerifySelectedText(Colors.White, string.Empty, "hidden selection");
+
+        presenter.SetCurrentValue(TextPresenter.ShowSelectionHighlightProperty, true);
+        VerifySelectedText(Colors.White, "lectio", "restored selection");
+
+        presenter.SetCurrentValue(TextPresenter.SelectionForegroundBrushProperty, null);
+        VerifySelectedText(Colors.Black, "selection", "null selection foreground");
+
+        presenter.SetCurrentValue(TextPresenter.SelectionStartProperty, 3);
+        presenter.SetCurrentValue(TextPresenter.SelectionEndProperty, 0);
+        VerifySelectedText(Colors.Black, "selection", "reversed selection without foreground override");
+
+        presenter.SetCurrentValue(TextPresenter.SelectionForegroundBrushProperty, Brush(Colors.Red));
+        VerifySelectedText(Colors.Red, "sel", "restored foreground on reversed selection");
+
+        void VerifySelectedText(Color color, string expected, string state)
+        {
+            var actual = GetTextWithForeground(presenter, color);
+            Expect(actual == expected,
+                $"TextPresenter should render '{expected}' with {color} after {state}, actual '{actual}'.",
+                failures);
+        }
+    }
+
+    private static string GetTextWithForeground(TextPresenter presenter, Color color)
+    {
+        return string.Concat(presenter.TextLayout.TextLines
+            .SelectMany(static line => line.TextRuns)
+            .Where(run => GetSolidBrushColor(run.Properties?.ForegroundBrush) == color)
+            .Select(static run => run.Text.ToString()));
     }
 
     private static void VerifyTextBoxRuntimeSlots(ICollection<string> failures)

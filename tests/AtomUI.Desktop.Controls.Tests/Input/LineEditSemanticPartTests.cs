@@ -85,7 +85,7 @@ public class LineEditSemanticPartTests
                    "Classes.semantic-count:TextBlock",
                    "Classes.semantic-content:Panel",
                    "Classes.semantic-placeholder:TextBlock",
-                   "Classes.semantic-input:InputTextPresenter"
+                   "Classes.semantic-input:TextPresenter"
                ]);
         markers.ShouldAllBe(static marker =>
             string.Equals(marker.Attribute.Value, "true", StringComparison.OrdinalIgnoreCase));

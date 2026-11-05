@@ -128,7 +128,9 @@
         <Style Selector="^[Mode=Inline]">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <StackPanel Orientation="Vertical">
+                    <!-- Group the collapsing viewport before its opacity is applied. -->
+                    <StackPanel Orientation="Vertical"
+                                RenderOptions.RequiresFullOpacityHandling="True">
                         <atom:InlineNavMenuItemHeader
                             Name="PART_Header"
                             Classes.semantic-scope-header="True"

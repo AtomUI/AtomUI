@@ -75,7 +75,7 @@ public class TextAreaSemanticPartTests
                    "Classes.semantic-clear:InputClearIconButton",
                    "Classes.semantic-content:Panel",
                    "Classes.semantic-placeholder:TextBlock",
-                   "Classes.semantic-textarea:InputTextPresenter"
+                   "Classes.semantic-textarea:TextPresenter"
                ]);
         markers.ShouldAllBe(static marker =>
             string.Equals(marker.Attribute.Value, "true", StringComparison.OrdinalIgnoreCase));

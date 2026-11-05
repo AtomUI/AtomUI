@@ -2,6 +2,11 @@
 
 本文档记录 SearchEdit 控件级设计、API、主题契约、Token 和实现结构的变化。它用于维护控件设计历史，不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-05
+
+- 实现结构
+  - 输入模板直接使用 Avalonia `TextPresenter`，选区前景色刷新由框架负责；保留 `PART_TextPresenter`、`input` Semantic Part 及搜索行为。
+
 ## 2026-09-15
 
 - Documentation

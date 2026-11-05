@@ -4,7 +4,7 @@ using AtomUI.Icons.AntDesign;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using AvaloniaButton = Avalonia.Controls.Button;
-using AtomMenuFlyout = AtomUI.Desktop.Controls.MenuFlyout;
+using AvaloniaControl = Avalonia.Controls.Control;
 using AtomTabControl = AtomUI.Desktop.Controls.TabControl;
 using AtomTabItem = AtomUI.Desktop.Controls.TabItem;
 using AtomTabStrip = AtomUI.Desktop.Controls.TabStrip;
@@ -22,9 +22,9 @@ internal static partial class Program
         VerifyTabStripItemLazySlots(failures);
         VerifyTabStripItemCloseBehavior(failures);
         VerifyCardAddButtonDoesNotDuplicateRetemplateHandlers(failures);
-        VerifyTabControlOverflowFlyoutCleanup(failures);
-        VerifyTabControlOverflowMenuReopensAfterVisualReattach(failures);
-        VerifyTabStripOverflowMenuReopensAfterVisualReattach(failures);
+        VerifyTabControlOverflowPopupCleanup(failures);
+        VerifyTabOverflowPopupReopensAfterVisualReattach(CreateOverflowTabControl(), "TabControl", failures);
+        VerifyTabOverflowPopupReopensAfterVisualReattach(CreateOverflowTabStrip(), "TabStrip", failures);
 
         if (failures.Count == 0)
         {
@@ -250,151 +250,78 @@ internal static partial class Program
         }
     }
 
-    private static void VerifyTabControlOverflowFlyoutCleanup(ICollection<string> failures)
+    private static void VerifyTabControlOverflowPopupCleanup(ICollection<string> failures)
     {
-        var tabControl = new AtomTabControl
+        var tabControl = CreateOverflowTabControl();
+        using var realized = RealizeTabOverflowControl(tabControl);
+        var context = OpenTabOverflowPopup(tabControl, realized.Window, failures, "TabControl", "initial");
+        var scrollViewer = FindVisualByName<TabScrollViewer>(tabControl, "PART_TabsContainer");
+        if (context is null || scrollViewer is null)
         {
-            Width = 260
-        };
-        for (var i = 0; i < 16; i++)
-        {
-            tabControl.Items.Add(new AtomTabItem
-            {
-                Header = $"Long Tab Header {i + 1}",
-                Content = $"Content {i + 1}"
-            });
+            return;
         }
 
-        using var realized = RealizeControl(tabControl);
-        var scrollViewer = FindVisualByName<TabControlScrollViewer>(tabControl, "PART_TabsContainer");
-        var menuIndicator = scrollViewer is null
-            ? null
-            : FindVisualByName<IconButton>(scrollViewer, "PART_ScrollMenuIndicator");
-        Expect(scrollViewer != null,
-            "Overflow TabControl should realize PART_TabsContainer.",
+        var item = context.Items[0];
+        context.Dismiss();
+        RefreshLayout(realized.Window);
+
+        Expect(!scrollViewer.IsOverflowPopupOpen && scrollViewer.OverflowPopup?.IsOpen == false,
+            "Dismissed TabControl overflow popup should close its actual host and open state.",
             failures);
-        Expect(menuIndicator?.IsVisible == true,
-            "Overflow TabControl should show the scroll menu indicator.",
+        Expect(context.Items.Count == 0 && context.SelectedItem is null,
+            "Closed TabControl overflow context should release its item and selection snapshot.",
+            failures);
+        Expect(!context.TryActivate(item) && !context.TryClose(item),
+            "Closed TabControl overflow context should reject stale item actions.",
             failures);
 
-        var flyout = new AtomUI.Desktop.Controls.MenuFlyout();
-        var disposable = new TrackingDisposable();
-        if (scrollViewer is not null)
-        {
-            SetPrivateField(scrollViewer,
-                "AtomUI.Desktop.Controls.BaseTabScrollViewer",
-                "MenuFlyout",
-                flyout);
-            SetPrivateField(scrollViewer,
-                "AtomUI.Desktop.Controls.TabControlScrollViewer",
-                "_flyoutBindingDisposable",
-                disposable);
-        }
-
-        if (scrollViewer is not null)
-        {
-            InvokePrivateMethod(scrollViewer,
-                "AtomUI.Desktop.Controls.TabControlScrollViewer",
-                "HandleMenuFlyoutClosed",
-                flyout,
-                EventArgs.Empty);
-        }
-
-        Expect(scrollViewer is null ||
-               GetPrivateField(scrollViewer, "AtomUI.Desktop.Controls.TabControlScrollViewer", "_flyoutBindingDisposable") == null,
-            "Closed TabControl MenuFlyout should dispose its motion binding.",
-            failures);
-        Expect(disposable.IsDisposed,
-            "Closed TabControl MenuFlyout should dispose the previous binding disposable.",
-            failures);
-        Expect(scrollViewer is null ||
-               GetPrivateField(scrollViewer, "AtomUI.Desktop.Controls.BaseTabScrollViewer", "MenuFlyout") == null,
-            "Closed TabControl MenuFlyout should clear the retained flyout field.",
+        tabControl.SelectedIndex = 2;
+        RefreshLayout(realized.Window);
+        Expect(context.Items.Count == 0,
+            "Closed TabControl overflow context should not republish after owner selection changes.",
             failures);
     }
 
-    private static void VerifyTabControlOverflowMenuReopensAfterVisualReattach(ICollection<string> failures)
+    private static void VerifyTabOverflowPopupReopensAfterVisualReattach(
+        AvaloniaControl innerOwner,
+        string label,
+        ICollection<string> failures)
     {
-        var innerTabControl = CreateOverflowTabControl();
-        var outerTabControl = new AtomTabControl();
+        var outerTabControl = new AtomTabControl { IsMotionEnabled = false };
         outerTabControl.Items.Add(new AtomTabItem
         {
-            Header  = "TabControl",
-            Content = innerTabControl
+            Header = label,
+            Content = innerOwner
         });
         outerTabControl.Items.Add(new AtomTabItem
         {
-            Header  = "Other",
+            Header = "Other",
             Content = new Avalonia.Controls.TextBlock { Text = "Other content" }
         });
 
-        using var realized = RealizeControlInVisualLayerManager(outerTabControl);
-        var firstFlyout = OpenTabControlOverflowMenu(innerTabControl,
-            realized.Window,
-            failures,
-            "initial");
+        using var realized = RealizeTabOverflowControl(outerTabControl);
+        var firstContext = OpenTabOverflowPopup(innerOwner, realized.Window, failures, label, "initial");
+        var scrollViewer = FindVisualByName<TabScrollViewer>(innerOwner, "PART_TabsContainer");
+        var firstPopup = scrollViewer?.OverflowPopup;
 
         outerTabControl.SelectedIndex = 1;
         RefreshLayout(realized.Window);
 
-        Expect(firstFlyout?.IsOpen == false,
-            "Open TabControl overflow flyout should close when its control is detached by a parent tab switch.",
+        Expect(firstPopup?.IsOpen == false && scrollViewer?.IsOverflowPopupOpen == false,
+            $"Open {label} overflow popup should close when detached by a parent tab switch.",
+            failures);
+        Expect(scrollViewer is not null && scrollViewer.OverflowPopupContext is null &&
+               firstContext is { Items.Count: 0, SelectedItem: null },
+            $"Detached {label} overflow popup should release its context and snapshot.",
             failures);
 
         outerTabControl.SelectedIndex = 0;
         RefreshLayout(realized.Window);
 
-        var secondFlyout = OpenTabControlOverflowMenu(innerTabControl,
-            realized.Window,
-            failures,
-            "reattached");
-
-        Expect(secondFlyout is not null && !ReferenceEquals(firstFlyout, secondFlyout),
-            "Reattached TabControl overflow menu should open a fresh flyout after parent tab switch.",
-            failures);
-
-        outerTabControl.SelectedIndex = 1;
-        RefreshLayout(realized.Window);
-    }
-
-    private static void VerifyTabStripOverflowMenuReopensAfterVisualReattach(ICollection<string> failures)
-    {
-        var innerTabStrip = CreateOverflowTabStrip();
-        var outerTabControl = new AtomTabControl();
-        outerTabControl.Items.Add(new AtomTabItem
-        {
-            Header  = "TabStrip",
-            Content = innerTabStrip
-        });
-        outerTabControl.Items.Add(new AtomTabItem
-        {
-            Header  = "Other",
-            Content = new Avalonia.Controls.TextBlock { Text = "Other content" }
-        });
-
-        using var realized = RealizeControlInVisualLayerManager(outerTabControl);
-        var firstFlyout = OpenTabStripOverflowMenu(innerTabStrip,
-            realized.Window,
-            failures,
-            "initial");
-
-        outerTabControl.SelectedIndex = 1;
-        RefreshLayout(realized.Window);
-
-        Expect(firstFlyout?.IsOpen == false,
-            "Open TabStrip overflow flyout should close when its control is detached by a parent tab switch.",
-            failures);
-
-        outerTabControl.SelectedIndex = 0;
-        RefreshLayout(realized.Window);
-
-        var secondFlyout = OpenTabStripOverflowMenu(innerTabStrip,
-            realized.Window,
-            failures,
-            "reattached");
-
-        Expect(secondFlyout is not null && !ReferenceEquals(firstFlyout, secondFlyout),
-            "Reattached TabStrip overflow menu should open a fresh flyout after parent tab switch.",
+        var secondContext = OpenTabOverflowPopup(innerOwner, realized.Window, failures, label, "reattached");
+        Expect(firstContext is not null && secondContext is not null &&
+               !ReferenceEquals(firstContext, secondContext),
+            $"Reattached {label} overflow popup should open a fresh context after a parent tab switch.",
             failures);
 
         outerTabControl.SelectedIndex = 1;
@@ -405,7 +332,8 @@ internal static partial class Program
     {
         var tabControl = new AtomTabControl
         {
-            Width = 260
+            Width = 260,
+            IsMotionEnabled = false
         };
         for (var i = 0; i < 16; i++)
         {
@@ -423,7 +351,8 @@ internal static partial class Program
     {
         var tabStrip = new AtomTabStrip
         {
-            Width = 260
+            Width = 260,
+            IsMotionEnabled = false
         };
         for (var i = 0; i < 16; i++)
         {
@@ -436,98 +365,66 @@ internal static partial class Program
         return tabStrip;
     }
 
-    private static AtomMenuFlyout? OpenTabControlOverflowMenu(AtomTabControl tabControl,
-                                                              Avalonia.Controls.Window window,
-                                                              ICollection<string> failures,
-                                                              string phase)
+    private static RealizedScenario RealizeTabOverflowControl(AvaloniaControl owner)
     {
-        var scrollViewer  = FindVisualByName<TabControlScrollViewer>(tabControl, "PART_TabsContainer");
-        var menuIndicator = scrollViewer is null
-            ? null
-            : FindVisualByName<IconButton>(scrollViewer, "PART_ScrollMenuIndicator");
-        Expect(scrollViewer != null,
-            $"Overflow TabControl should realize PART_TabsContainer during {phase} open.",
-            failures);
-        Expect(menuIndicator?.IsVisible == true,
-            $"Overflow TabControl should show the scroll menu indicator during {phase} open.",
-            failures);
-
-        try
+        // The styled Window supplies a real popup overlay host in headless mode.
+        var window = new AtomUI.Desktop.Controls.Window
         {
-            menuIndicator?.RaiseEvent(new RoutedEventArgs(AvaloniaButton.ClickEvent, menuIndicator));
-        }
-        catch (InvalidOperationException exception) when (IsMissingPopupHostException(exception))
-        {
-            // The headless verification window may not provide a popup host. Creating the flyout still
-            // proves the click handler was invoked, which is the lifecycle path being verified here.
-        }
-        catch (Exception exception)
-        {
-            failures.Add(
-                $"Overflow TabControl menu threw unexpected exception during {phase} click: {exception.GetType().Name}: {exception.Message}");
-        }
-        finally
-        {
-            RefreshLayout(window);
-        }
-
-        var flyout = scrollViewer is null
-            ? null
-            : GetPrivateField(scrollViewer,
-                "AtomUI.Desktop.Controls.BaseTabScrollViewer",
-                "MenuFlyout") as AtomMenuFlyout;
-        Expect(flyout is not null,
-            $"Overflow TabControl menu should create a flyout during {phase} click.",
-            failures);
-
-        return flyout;
+            Width = MeasureSize.Width,
+            Height = 900,
+            Content = owner,
+            ShowInTaskbar = false
+        };
+        window.Show();
+        RefreshLayout(window);
+        return new RealizedScenario(window, [owner]);
     }
 
-    private static AtomMenuFlyout? OpenTabStripOverflowMenu(AtomTabStrip tabStrip,
-                                                            Avalonia.Controls.Window window,
-                                                            ICollection<string> failures,
-                                                            string phase)
+    private static TabOverflowPopupContext? OpenTabOverflowPopup(
+        AvaloniaControl owner,
+        Avalonia.Controls.Window window,
+        ICollection<string> failures,
+        string label,
+        string phase)
     {
-        var scrollViewer  = FindVisualByName<TabStripScrollViewer>(tabStrip, "PART_TabsContainer");
+        var scrollViewer = FindVisualByName<TabScrollViewer>(owner, "PART_TabsContainer");
         var menuIndicator = scrollViewer is null
             ? null
             : FindVisualByName<IconButton>(scrollViewer, "PART_ScrollMenuIndicator");
         Expect(scrollViewer != null,
-            $"Overflow TabStrip should realize PART_TabsContainer during {phase} open.",
+            $"Overflow {label} should realize PART_TabsContainer during {phase} open.",
             failures);
         Expect(menuIndicator?.IsVisible == true,
-            $"Overflow TabStrip should show the scroll menu indicator during {phase} open.",
+            $"Overflow {label} should show the scroll menu indicator during {phase} open.",
             failures);
+        if (scrollViewer is null || menuIndicator is null)
+        {
+            return null;
+        }
 
         try
         {
-            menuIndicator?.RaiseEvent(new RoutedEventArgs(AvaloniaButton.ClickEvent, menuIndicator));
-        }
-        catch (InvalidOperationException exception) when (IsMissingPopupHostException(exception))
-        {
-            // The headless verification window may not provide a popup host. Creating the flyout still
-            // proves the click handler was invoked, which is the lifecycle path being verified here.
+            menuIndicator.RaiseEvent(new RoutedEventArgs(AvaloniaButton.ClickEvent, menuIndicator));
         }
         catch (Exception exception)
         {
             failures.Add(
-                $"Overflow TabStrip menu threw unexpected exception during {phase} click: {exception.GetType().Name}: {exception.Message}");
+                $"Overflow {label} popup threw during {phase} click: {exception.GetType().Name}: {exception.Message}");
+            return null;
         }
         finally
         {
             RefreshLayout(window);
         }
 
-        var flyout = scrollViewer is null
-            ? null
-            : GetPrivateField(scrollViewer,
-                "AtomUI.Desktop.Controls.BaseTabScrollViewer",
-                "MenuFlyout") as AtomMenuFlyout;
-        Expect(flyout is not null,
-            $"Overflow TabStrip menu should create a flyout during {phase} click.",
+        Expect(scrollViewer.IsOverflowPopupOpen && scrollViewer.OverflowPopup?.IsOpen == true,
+            $"Overflow {label} should open its actual popup during {phase} click.",
             failures);
-
-        return flyout;
+        var context = scrollViewer.OverflowPopupContext;
+        Expect(context is { Items.Count: > 0 },
+            $"Overflow {label} should publish a populated context during {phase} click.",
+            failures);
+        return context is { Items.Count: > 0 } ? context : null;
     }
 
     private static bool IsMissingPopupHostException(InvalidOperationException exception)
@@ -536,13 +433,4 @@ internal static partial class Program
                exception.Message.Contains("overlay layer");
     }
 
-    private sealed class TrackingDisposable : IDisposable
-    {
-        public bool IsDisposed { get; private set; }
-
-        public void Dispose()
-        {
-            IsDisposed = true;
-        }
-    }
 }

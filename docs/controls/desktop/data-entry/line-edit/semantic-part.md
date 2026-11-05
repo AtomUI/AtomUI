@@ -78,7 +78,7 @@ descriptor，也不能通过继承关系自动获得其他 owner 的 owner-scope
 | Customization | `Selector` |
 | CrossVisualRoot | `false` |
 | RuntimeCreated | `false` |
-| AtomUI 节点 | `InputTextPresenter#PART_TextPresenter` |
+| AtomUI 节点 | `TextPresenter#PART_TextPresenter` |
 | 职责 | 绘制当前文本、光标、选择范围和密码 reveal 结果。 |
 | 相关 API | `Text`、`CaretIndex`、`SelectionStart`、`SelectionEnd`、`PasswordChar`、`RevealPassword` |
 | 相关 Token | `FontSize`、`LineHeight`、选择色与 caret 资源 |
@@ -203,7 +203,7 @@ route、`ContractType` 与 LineEdit 同名 Part 一致（`TextArea*` Style 前�
 | Customization | `Selector` |
 | CrossVisualRoot | `false` |
 | RuntimeCreated | `false` |
-| AtomUI 节点 | `InputTextPresenter#PART_TextPresenter` |
+| AtomUI 节点 | `TextPresenter#PART_TextPresenter` |
 | 职责 | 承载多行文本的输入、光标、选择与换行展示。 |
 | 相关 API | `Text`、`Lines`、`MinLines`、`MaxLines`、`IsAutoSize`、`IsResizable` |
 | 稳定性 | stable since 6.2.0 |

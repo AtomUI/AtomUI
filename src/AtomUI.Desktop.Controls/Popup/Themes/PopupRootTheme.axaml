@@ -10,6 +10,7 @@
                 <!-- The standard presenter exposes only the transparent motion
                      margin as positioning Deflate, preserving content geometry. -->
                 <ContentPresenter Name="PART_ContentPresenter"
+                                  RenderOptions.RequiresFullOpacityHandling="True"
                                   Background="{x:Null}"
                                   BorderBrush="{x:Null}"
                                   BorderThickness="0"

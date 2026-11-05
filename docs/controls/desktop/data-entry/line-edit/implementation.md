@@ -17,7 +17,6 @@ LineEdit 家族的实现以 Avalonia `TextBox` 为文本编辑内核，AtomUI �
 - `src/AtomUI.Desktop.Controls/Input/LineEdit.SemanticParts.cs`：LineEdit 的 `prefix`、`input`、`suffix`、`clear`、`count` Semantic Part 声明；`root` 由 generator 隐式补齐。
 - `src/AtomUI.Desktop.Controls/Input/SearchEdit.cs`：搜索输入框，提供搜索按钮样式、搜索按钮文本、加载态和搜索点击事件。
 - `src/AtomUI.Desktop.Controls/Input/TextArea.cs`：多行输入框，继承 `AbstractTextInput`，提供固定行数、自动高度和 resize。
-- `src/AtomUI.Desktop.Controls/Input/InputTextPresenter.cs`：输入文本 presenter，处理 Avalonia 12 selection foreground 缓存刷新。
 - `src/AtomUI.Desktop.Controls/Input/SearchEditDecoratedBox.cs`：SearchEdit 输入壳体与搜索按钮协作。
 - `src/AtomUI.Desktop.Controls/Input/TextAreaDecoratedBox.cs`：TextArea 输入壳体、scroll viewer 和 resize 相关协作。
 - `src/AtomUI.Desktop.Controls/Input/TextViewportMetrics.cs`：输入控件向同程序集消费方发布有效文本 viewport 宽度的内部度量契约。
@@ -177,7 +176,7 @@ TextArea resize 以控件当前 `Bounds.Height` 为起点。拖拽时高度被�
 
 ### 7.5 Selection foreground 刷新
 
-`InputTextPresenter` 在 `SelectionStart`、`SelectionEnd`、`SelectionForegroundBrush` 和 `ShowSelectionHighlight` 变化时调用 `InvalidateTextLayout()`，用于避免 Avalonia 12 文本 run 缓存导致选中文本前景色滞留。
+模板直接使用 Avalonia `TextPresenter`。选区起止、选中文本前景色和高亮开关变化时，文本 run 缓存由 presenter 自身维护；`SelectionForegroundBrush=null` 时使用普通文本前景色，移动选区不需要重建前景色覆盖。AtomUI 通过模板绑定传递选择状态和主题画刷，不追加文本布局失效处理。
 
 ### 7.6 文本 viewport 宽度
 
@@ -206,7 +205,7 @@ owner。generator 在编译期补齐 root descriptor，并为各 selector Part �
 | --- | --- | --- |
 | `root` | LineEdit owner | 不适用 |
 | `prefix` | `AddOnContentPresenter.semantic-prefix` | `/template/ .semantic-scope-input-frame /template/ .semantic-scope-prefix > .semantic-prefix` |
-| `input` | `InputTextPresenter.semantic-input` | `/template/ .semantic-input` |
+| `input` | `TextPresenter.semantic-input` | `/template/ .semantic-input` |
 | `suffix` | `StackPanel.semantic-suffix` | `/template/ .semantic-scope-input-frame /template/ .semantic-scope-suffix > .semantic-suffix` |
 | `clear` | `InputClearIconButton.semantic-clear` | `/template/ .semantic-scope-input-frame /template/ .semantic-scope-suffix > .semantic-suffix > .semantic-clear` |
 | `count` | `TextBlock.semantic-count` | `/template/ .semantic-scope-input-frame /template/ .semantic-scope-suffix > .semantic-suffix > .semantic-count` |

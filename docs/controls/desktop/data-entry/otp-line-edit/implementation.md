@@ -126,7 +126,7 @@ OtpLineEdit
 - `Length` 默认值为 `6`，小于 `1` 的输入按契约归一到最小有效长度。
 - `Text` 的默认值为空字符串或 `null` 时，cell display 统一按空文本处理。
 - `Focusable=true`，根控件负责键盘输入和焦点状态。
-- cell 内部允许使用轻量 `Avalonia.Controls.TextBox` 承载 `TextPresenter` 和 caret，但真实键盘焦点始终由根 `OtpLineEdit` 持有，cell `TextBox` 不参与 tab/focus owner 竞争。
+- cell 内部的轻量 `OtpTextBox` 继承 `Avalonia.Controls.TextBox`，模板直接使用 Avalonia `TextPresenter` 承载文本，但真实键盘焦点始终由根 `OtpLineEdit` 持有，cell `TextBox` 不参与 tab/focus owner 竞争。
 - cell 的 `StyleVariant` 和有效状态视觉由 `OtpLineEditCellTheme.axaml` 基于 `InputControlFrameTheme` 投射根控件的有效状态；cell 不维护独立的 native validation、Form 或显式 status owner。根控件遵守 disabled/read-only 交互门禁及 shared `EffectiveStatus` 优先级，cell 的 active/hover 只在有效状态允许时叠加。
 
 `OnApplyTemplate` 规则：

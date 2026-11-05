@@ -21,7 +21,7 @@
                         LineHeight="{TemplateBinding LineHeight}"
                         TextAlignment="{TemplateBinding TextAlignment}"
                         TextWrapping="{TemplateBinding TextWrapping}" />
-                    <atom:InputTextPresenter
+                    <TextPresenter
                         Name="PART_TextPresenter"
                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"

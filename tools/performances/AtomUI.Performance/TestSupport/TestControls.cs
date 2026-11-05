@@ -34,22 +34,6 @@ internal sealed class MarkerDataTemplate : IDataTemplate
     }
 }
 
-internal sealed class CountingInputTextPresenter : InputTextPresenter
-{
-    public int TextLayoutInvalidations { get; private set; }
-
-    public void ResetTextLayoutInvalidations()
-    {
-        TextLayoutInvalidations = 0;
-    }
-
-    protected override void InvalidateTextLayout()
-    {
-        TextLayoutInvalidations++;
-        base.InvalidateTextLayout();
-    }
-}
-
 internal sealed class EffectiveBrushSet
 {
     public IBrush DefaultBorder { get; } = ProgramTestBrush(10, 10, 10);

@@ -1,4 +1,6 @@
 using System.Text;
+using AtomUI.Desktop.Controls;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Headless;

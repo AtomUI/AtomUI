@@ -59,6 +59,10 @@ keyboard navigation coordinator 只拥有临时 active/focus 状态，不拥有�
 
 Header 控件只承担显示和局部视觉状态，不拥有选择或打开逻辑。
 
+Inline 模板在 `ContentViewport` 上方的现有 StackPanel 声明 `RenderOptions.RequiresFullOpacityHandling`，
+将子菜单底色与选中、悬停等项目背景整体合成后应用展开/收起透明度，避免重叠底色在淡出时分别混合。
+Horizontal / Vertical 的弹出分支沿用共享 Popup 宿主的同一合成契约。
+
 ## 4. 状态与数据流
 
 状态流：

@@ -7,14 +7,18 @@
     <ControlTheme x:Key="{x:Type OverlayPopupHost}" TargetType="OverlayPopupHost">
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:PopupSurface Name="PART_PopupSurface" ClipToBounds="False">
-                    <VisualLayerManager ClipToBounds="False">
-                        <atom:ShadowsAwareContainer IsOverlayMode="True">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}"/>
-                        </atom:ShadowsAwareContainer>
-                    </VisualLayerManager>
-                </atom:PopupSurface>
+                <!-- Opacity handling belongs above the animated surface so overlapping
+                     content backgrounds and shadows fade as one composited group. -->
+                <Panel RenderOptions.RequiresFullOpacityHandling="True" ClipToBounds="False">
+                    <atom:PopupSurface Name="PART_PopupSurface" ClipToBounds="False">
+                        <VisualLayerManager ClipToBounds="False">
+                            <atom:ShadowsAwareContainer IsOverlayMode="True">
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                            </atom:ShadowsAwareContainer>
+                        </VisualLayerManager>
+                    </atom:PopupSurface>
+                </Panel>
             </ControlTemplate>
         </Setter>
 

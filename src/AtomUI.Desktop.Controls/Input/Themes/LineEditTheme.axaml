@@ -101,7 +101,7 @@
                                 TextAlignment="{TemplateBinding TextAlignment}"
                                 TextWrapping="{TemplateBinding TextWrapping}"
                                 IsVisible="{TemplateBinding IsPlaceholderTextVisible}" />
-                            <atom:InputTextPresenter
+                            <TextPresenter
                                 Name="PART_TextPresenter"
                                 Classes.semantic-input="True"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"

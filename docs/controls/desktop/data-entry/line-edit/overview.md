@@ -138,7 +138,7 @@ TextArea 专项 API：
 | --- | --- | --- | --- |
 | `PART_InputControlFrame` | `InputControlFrame` / `AddOnDecoratedBox` 派生类型 | 全家族输入主题 | 输入表面、边框、背景、状态视觉、CompactSpace 和动效承载；派生 decorated box 只增加 AddOn 或专用布局。 |
 | `PART_ScrollViewer` / `ScrollViewer` | `ScrollViewer` | 全家族 | 文本滚动区域。 |
-| `PART_TextPresenter` | `InputTextPresenter` | 全家族 | 文本显示、光标、选择和密码 reveal。 |
+| `PART_TextPresenter` | `TextPresenter` | 全家族 | 文本显示、光标、选择和密码 reveal。 |
 | `Placeholder` | `TextBlock` | 全家族 | 空文本占位提示。 |
 | `PART_ClearButton` | `InputClearIconButton` | 全家族 | 清除当前文本。 |
 | `PART_RevealButton` | `RevealButton` | `TextBox`、`LineEdit`、`SearchEdit` | 切换密码 reveal。 |

@@ -1,5 +1,10 @@
 # LineEdit Changelog
 
+## 2026-11-05
+
+- 实现结构
+  - TextBox、LineEdit、SearchEdit、TextArea 的输入模板统一直接使用 Avalonia `TextPresenter`，移除内部选区缓存兼容子类；PART 名称、绑定、Semantic Part 契约和选择/密码行为保持一致。
+
 ## 2026-10-19
 
 - Compatibility

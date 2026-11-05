@@ -69,7 +69,7 @@ SearchEdit 的右侧外部 add-on 位置由搜索按钮占用。维护时不应�
 | `PART_RightAddOn` | `Button` | `SearchEditDecoratedBoxTheme.axaml` | public Button 语义部件，承载图标、文字、loading、按钮样式和点击事件。 |
 | `PART_ContentFrame` | `Border` | `SearchEditDecoratedBoxTheme.axaml` | 文本输入框视觉边框和背景。 |
 | `PART_ScrollViewer` | `ScrollViewer` | `SearchEditTheme.axaml` | 文本滚动区域。 |
-| `PART_TextPresenter` | `InputTextPresenter` | `SearchEditTheme.axaml` | 文本显示、光标、选择和密码 reveal。 |
+| `PART_TextPresenter` | `TextPresenter` | `SearchEditTheme.axaml` | 文本显示、光标、选择和密码 reveal。 |
 | `Placeholder` | `TextBlock` | `SearchEditTheme.axaml` | 空文本占位提示。 |
 | `PART_ClearButton` | `InputClearIconButton` | `SearchEditTheme.axaml` | 清除当前搜索文本。 |
 | `PART_RevealButton` | `RevealButton` | `SearchEditTheme.axaml` | 密码 reveal 兼容入口。 |

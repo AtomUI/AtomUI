@@ -40,6 +40,10 @@ Popup 的物理关闭策略还承载内部钉住打开状态。`IsPopupPinnedOpe
 Child 圆角/箭头几何、在 Child 之前绘制 surface/shadow，以及为 native shadow 预留有效 thickness。内部
 `PopupFrameRenderer` 是纯 frame 绘制节点，不处理 placement、输入或 open state。
 
+两类 host 的模板都在 `PopupSurface` 的父级声明 `RenderOptions.RequiresFullOpacityHandling`，将表面、内容和阴影
+作为一个整体应用动效透明度。native host 复用现有 ContentPresenter；overlay host 使用不裁剪的 Panel 作为合成边界。
+该设置必须位于动效表面之上，避免菜单底色与项目背景分别混合后，在淡出期间形成不同的不透明度。
+
 ## 4. 状态与数据流
 
 ```text

@@ -16,6 +16,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
@@ -661,7 +662,15 @@ public partial class Window : AvaloniaWindow,
         UpdateCaptionButtonCapabilities();
         // Before the first layout: Wayland would otherwise lay out and render at scale 1 until the compositor
         // reports the preferred scale after mapping, then re-lay out the whole window.
-        WaylandInitialScaling.Apply(PlatformImpl);
+        var scalingStatus = WaylandInitialScaling.Apply(PlatformImpl, out var scalingReason);
+        if (scalingStatus != WaylandInitialScalingStatus.NotApplicable)
+        {
+            var level = scalingStatus is WaylandInitialScalingStatus.Incompatible or WaylandInitialScalingStatus.Failed
+                ? LogEventLevel.Warning
+                : LogEventLevel.Debug;
+            Logger.TryGet(level, AtomUILogArea.System)?.Log(
+                typeof(Window), "Wayland initial scaling: {Status}. {Reason}", scalingStatus, scalingReason);
+        }
     }
 
     internal IDisposable SuppressDrawnChromeOverlay()

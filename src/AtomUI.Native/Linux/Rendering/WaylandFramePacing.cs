@@ -15,6 +15,11 @@ internal static class WaylandFramePacing
     internal static bool TryInstall(Action<Exception> reportFailure,
         Action<WaylandPresentationTiming> presentationTimingBound, out string reason)
     {
+        if (!OperatingSystem.IsLinux())
+        {
+            reason = "Wayland EGL frame pacing is not applicable on this platform.";
+            return false;
+        }
         if (!WaylandFramePacingCompatibility.TryCreate(reportFailure, presentationTimingBound, out var compatibility,
                 out reason))
         {

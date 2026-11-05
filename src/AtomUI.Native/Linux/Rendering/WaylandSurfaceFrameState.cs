@@ -28,6 +28,8 @@ internal sealed class WaylandSurfaceFrameState : IDisposable
 
     internal void InstallCallbackRelay()
     {
+        VerifyAccess();
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
         if (Bridge.GetCallback() is not { } callback)
         {
             return;

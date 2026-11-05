@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using AtomUI.Desktop.Controls.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -15,8 +16,7 @@ namespace AtomUI.Desktop.Controls;
 
 public abstract class DataGridBoundColumn : DataGridColumn
 {
-    private BindingBase? _binding;
-    private BindingBase? _editingBinding;
+    #region 公共属性定义
 
     /// <summary>
     /// Gets or sets the binding that associates the column with a property in the data source.
@@ -82,6 +82,8 @@ public abstract class DataGridBoundColumn : DataGridColumn
         set => base.ClipboardContentBinding = value;
     }
 
+    #endregion
+
     //TODO Rename
     //TODO Validation
     protected sealed override Control GenerateEditingElement(DataGridCell cell, object dataItem, out BindingExpressionBase? editBinding)
@@ -89,6 +91,7 @@ public abstract class DataGridBoundColumn : DataGridColumn
         Control element = GenerateEditingElementDirect(cell, dataItem);
         editBinding = null;
 
+        // Editors and their binding targets are created per cell at runtime, outside a ControlTheme.
         // Edits are committed through the data source, so the editor only reads the bound value.
         if (Binding != null && (_editingBinding ??= CreateOneWayBinding(Binding)) is { } editingBinding)
         {
@@ -102,6 +105,9 @@ public abstract class DataGridBoundColumn : DataGridColumn
     protected abstract Control GenerateEditingElementDirect(DataGridCell cell, object dataItem);
 
     protected AvaloniaProperty? BindingTarget { get; set; }
+
+    private BindingBase? _binding;
+    private BindingBase? _editingBinding;
 
     internal void SetHeaderFromBinding()
     {
@@ -202,42 +208,23 @@ public abstract class DataGridBoundColumn : DataGridColumn
 
     private static BindingBase? CreateOneWayBinding(BindingBase binding)
     {
-        return binding switch
+        if (binding is not (CompiledBinding or ReflectionBinding))
         {
-            CompiledBinding compiledBinding => new CompiledBinding
-            {
-                Path = compiledBinding.Path,
-                Mode = BindingMode.OneWay,
-                Converter = compiledBinding.Converter,
-                ConverterCulture = compiledBinding.ConverterCulture,
-                ConverterParameter = compiledBinding.ConverterParameter,
-                FallbackValue = compiledBinding.FallbackValue,
-                TargetNullValue = compiledBinding.TargetNullValue,
-                StringFormat = compiledBinding.StringFormat,
-                Source = compiledBinding.Source,
-                Priority = compiledBinding.Priority,
-                Delay = compiledBinding.Delay
-            },
-            ReflectionBinding reflectionBinding => new ReflectionBinding
-            {
-                Path = reflectionBinding.Path,
-                Mode = BindingMode.OneWay,
-                Converter = reflectionBinding.Converter,
-                ConverterCulture = reflectionBinding.ConverterCulture,
-                ConverterParameter = reflectionBinding.ConverterParameter,
-                FallbackValue = reflectionBinding.FallbackValue,
-                TargetNullValue = reflectionBinding.TargetNullValue,
-                StringFormat = reflectionBinding.StringFormat,
-                Source = reflectionBinding.Source,
-                Priority = reflectionBinding.Priority,
-                Delay = reflectionBinding.Delay,
-                ElementName = reflectionBinding.ElementName,
-                RelativeSource = reflectionBinding.RelativeSource,
-                TypeResolver = reflectionBinding.TypeResolver
-            },
-            _ => null
-        };
+            return null;
+        }
+
+        // Preserve the caller's complete definition, including weak XAML anchors/name scopes.
+        // Copying an existing definition does not introduce a ReflectionBinding constructor
+        // into compiled-binding applications, and never mutates the caller's binding mode.
+        var editingBinding = (BindingBase)CloneBindingDefinition(binding);
+        SetBindingMode(editingBinding, BindingMode.OneWay);
+        return editingBinding;
     }
+
+    // System.Object's shallow-copy intrinsic is statically resolved by .NET 8/10 NativeAOT;
+    // it copies an existing runtime instance without member discovery or binding constructors.
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "MemberwiseClone")]
+    private static extern object CloneBindingDefinition(object source);
 
     private static (IValueConverter? Converter, object? Parameter, CultureInfo? Culture) GetBindingConversion(
         BindingBase binding)

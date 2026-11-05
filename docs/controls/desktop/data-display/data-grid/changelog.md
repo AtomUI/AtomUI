@@ -2,6 +2,11 @@
 
 本文档记录 DataGrid 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-05
+
+- Implementation
+  - 编辑器的 OneWay 绑定副本保留完整 XAML 作用域与锚点，修复 ElementName 来源丢失；移除公共编辑路径中的反射绑定构造依赖，原定义与 Source 提交语义保持不变。
+
 ## 2026-11-04
 
 - Changed

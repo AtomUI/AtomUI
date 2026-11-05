@@ -84,6 +84,18 @@ macOS 签名沿用既有顺序：`Contents/MacOS` 下文件按序号（Ordinal�
 
 ## 产物校验规则
 
+### 发布运行时版本
+
+`build/Versions.props` 的 `AtomUIGalleryRuntimeVersion` 集中维护 Gallery 的安全 servicing 版本，当前为 `10.0.14`。
+Desktop 的 self-contained 发布和 Browser 应用使用 `RuntimeFrameworkVersion` 选择运行时及匹配的 ILCompiler/ILLink 包，
+而不是只覆盖编译器版本。两个宿主拒绝低于该版本的显式覆盖；SDK 基线与普通 Desktop framework-dependent 开发配置保持原有选择方式。
+
+修复进入最终 NativeAOT 可执行文件和 Browser runtime pack，必须重新发布；更新开发机共享运行时不能替换已经静态链接的产物。
+验收检查 restore 图、实际使用的编译器/运行时包及最终启动，不以版本属性存在或审计输出安静代替。
+裁剪工具 ILLink 10.0.14 也需要匹配的构建宿主运行时；保留旧 SDK 的构建机须同时提供 .NET 10.0.14 runtime。
+工具必须由实际包含该 runtime 的宿主执行；不改写 NuGet 工具的 runtimeconfig，也不以旧 runtime 冒充已修复版本。
+旧 net8-only 包的混合 ABI 桥仍遵守[独立工具链能力边界](../../modules/toolchain/framework-routing.md)，不因 Gallery 的 servicing 版本更新放宽门禁。
+
 NativeAOT 发布成功不只看 `dotnet publish` 退出码。脚本还会拒绝包含下列文件的输出目录：
 
 ```text

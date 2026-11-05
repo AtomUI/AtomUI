@@ -8,6 +8,7 @@
         <WasmEnableThreads>false</WasmEnableThreads>
         <!-- .NET 10 browser-wasm Webcil output currently fails during mono_wasm_load_runtime in Chromium. -->
         <WasmEnableWebcil>false</WasmEnableWebcil>
+        <RuntimeFrameworkVersion>$(AtomUIGalleryRuntimeVersion)</RuntimeFrameworkVersion>
         <!--
             The .NET 10.0.10 wasm runtime pack treats an explicit false value as a
             relinking request. Keep it for the nested publish path, where native linking
@@ -16,6 +17,11 @@
         <RunAOTCompilation Condition="'$(WasmBuildingForNestedPublish)' == 'true'">false</RunAOTCompilation>
         <DebuggerSupport Condition="'$(Configuration)' == 'Debug'">true</DebuggerSupport>
     </PropertyGroup>
+
+    <Target Name="ValidateGalleryRuntimeVersion" BeforeTargets="ProcessFrameworkReferences">
+        <Error Condition="$([MSBuild]::VersionLessThan('$(RuntimeFrameworkVersion)', '$(AtomUIGalleryRuntimeVersion)'))"
+               Text="Gallery Browser publishing requires runtime $(AtomUIGalleryRuntimeVersion) or later." />
+    </Target>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <MetricsSupport>true</MetricsSupport>

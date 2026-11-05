@@ -1,53 +1,35 @@
-# Linux Wayland Dispatcher 时间源修复
+# Linux Wayland Dispatcher 时间源
 
-## 接入与原理
+## 当前接入
 
-`UseAtomUIPlatformDetect()` 选择原生 Wayland 时，会在原 Wayland 初始化器执行完成后、所有平台就绪回调和
-Application 创建之前，执行一次共享时钟适配。默认构建使用官方 Avalonia 12.1.4 包。
+AtomUI 的 Avalonia 最低依赖为 12.1.5。Dispatcher 由框架维护统一时间轴：替换平台后端时保持当前时间连续，
+向后端提交 timer 截止值时转换到后端时间轴。Wayland worker 初始化前创建 Dispatcher、随后安装 Managed 后端，
+不再需要 AtomUI 将两个 Stopwatch 合并。
 
-Wayland 的输入队列会在 worker 就绪之前创建 Dispatcher；随后安装的 Managed 后端另起 Stopwatch，
-而 Dispatcher 仍保留首次创建时的时间源。两个时间基准不一致时，Dispatcher 计算的绝对定时截止值会在后端延迟执行。
+`UseAtomUIPlatformDetect()` 的 Wayland 入口仍按顺序安装帧节奏适配、执行框架 Wayland 初始化器，
+但不再读取或改写 Dispatcher 的私有字段。初始缩放与 EGL 帧节奏是不同能力，各自按实际成员契约校验，
+不再以版本或 commit 白名单决定接入；程序集版本只用于诊断。
 
-私有成员访问集中在 `AtomUI.Core/Reflection/DispatcherReflectionExtensions.cs`；Desktop 平台入口只负责
-调用时机。适配器取出 Dispatcher 已有时间源捕获的 Stopwatch，将默认 Managed 后端的 `_clock` 指向同一个
-对象。Dispatcher 的时间源、已有绝对定时截止值保持不变；后端读取时间、判断到期和等待全部使用该对象。
-不修改 Startup，不重启时钟，不添加偏移补偿、定时唤醒或持续动画。
+ApplicationStartup 仍在平台服务就绪后启动后台 Prepare，保留既有配置回调、UI 线程与 Application 构造边界；
+移除时钟补丁不改变这些启动契约。
 
-## 兼容边界
+## 历史问题与移除依据
 
-适配不检查 Avalonia 版本号，以实际后端和时钟结构判定兼容性：精确后端类型、闭包类型与 Stopwatch 字段
-必须匹配，捕获的时钟必须正在运行。
-反射信息按项目约定集中声明为 `Lazy<FieldInfo>`，使用 `FixedMemberReflection.RequireField` 校验，
-并通过精确成员级 `DynamicDependency` 声明裁剪依赖；执行路径复用缓存。重复调用保留同一时钟引用。
-不支持的后端或结构跳过写入并记录 Warning；升级框架时必须重新验证结构及裁剪后的运行行为。
+旧版框架在首次创建 Dispatcher 时固定时间源，后来安装的 Managed 后端另起 Stopwatch，绝对 timer 截止值
+在两个起点之间没有转换。后台初始化耗时因此会反复叠加到定时器间隔。原 AtomUI 适配通过共享同一 Stopwatch
+修复此问题。
 
-仅经 AtomUI 平台选择入口配置的默认 Wayland Managed 主循环适用。直接调用 Avalonia `UseWayland()`、
-可选 GLib 主循环、X11、macOS 和 Windows 不由该适配器修复。非 Wayland 平台不会调用它。
+框架现在原生完成时间轴转换，旧 `_timeProvider` 和其编译器生成闭包已经不存在。继续保留反射适配既没有作用，
+也会留下失效的裁剪保留声明；因此已删除内部适配及平台入口中的调用，不以修改其他 hook 代替。
 
-## 构建与启动
+## 升级验证要求
 
-```bash
-dotnet build controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj \
-  -c Debug --framework net10.0
+升级框架或更换 Dispatcher 后端时，验证以下独立契约：
 
-ATOMUI_WINDOWING_PLATFORM=wayland \
-  .agents/skills/atomui-gallery-local-debug/scripts/launch-gallery-debug.sh --no-build
-```
+1. 在后端初始化之前创建 Dispatcher，并留出可观测的初始化起点差。
+2. 初始化前排队的 timer 保留剩余等待时间；更换后端后时间不倒退或跳变。
+3. 初始化后启动的 16ms timer 不再反复额外等待后端起点差；驱动真实主循环，不能只调用 `RunJobs()`。
+4. 在真实 Wayland Gallery 中复核 hover/Transition、Popup 和退出行为；定时器周期不是屏幕 FPS。
+5. 对实际 trim/NativeAOT 产物运行启动与定时器检查。签名核对、Headless 与 macOS 结果不能代替 Linux 运行证据。
 
-## 验证与维护
-
-当前结构兼容性已在官方 Avalonia 12.1.3 与 12.1.4 包上验证，共享时钟、重复调用与 DispatcherTimer
-均通过。12.1.4 的 osx-arm64 NativeAOT 临时宿主链接实际适配代码后发布和运行通过，没有新增私有成员
-保留配置或 trim/AOT 诊断。临时测试与宿主已清理。
-
-以下 Linux 实测证据来自此前 12.1.3 验证；本轮 macOS 验证不代替 Linux Wayland 交互复验。
-
-- 官方 12.1.3 Gallery Debug/net10.0 构建通过，实际加载的 Base/Wayland 与官方包内 DLL 一致。
-- 链接实际反射适配和平台入口的 linux-x64 NativeAOT 宿主发布无裁剪警告；重复接入返回成功，
-  16ms DispatcherTimer 实测约15–16ms。宿主没有额外私有成员反射或裁剪保留配置。
-- 精确筛选的 Core 固定成员反射测试2项、Desktop平台选择与Linux AOT边界测试34项通过。
-- 临时宿主、探针、旧源码补丁构建入口和专用产物已清理，没有新增永久测试。
-
-NativeAOT 宿主验证不等于完整 Gallery NativeAOT 发布，也不代表其他平台验收。
-计时器测量不是屏幕 FPS。更新 Avalonia 时应重新核对固定字段与编译器生成的闭包结构，
-验证裁剪后可共享同一时钟，并复核原始 Gallery hover 场景。
+帧节奏和初始缩放的职责、线程与版本边界见 [Native Linux 平台 API](../../modules/native/linux.md)。

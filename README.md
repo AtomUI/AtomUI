@@ -70,8 +70,8 @@ requests are welcome.
 #### Requirements
 
 .NET 10 (the .NET 10 SDK is required to build AtomUI MSBuild integration)<br>
-Avalonia 12.1.4<br>
-Windows, macOS and Linux<br>
+Avalonia 12.1.5<br>
+Windows, macOS 12 or later, and Linux<br>
 
 TypeMap publishing supports .NET 10 and later stable versions by default. Browser trimmed and AOT publishing follows
 the SDK-selected ILLink and WASM toolchain, without SDK or servicing-version allowlists. Publish checks validate the

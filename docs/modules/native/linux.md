@@ -107,13 +107,18 @@ xdg_popup 之后不再接收任何输入区域更新。详见 [Popup 实现原�
 
 ## 实验性 Wayland EGL 帧调度
 
-`Linux/Rendering` 提供 internal 的单帧准备与延迟提交适配器，版本/成员校验（`WaylandFramePacingCompatibility`）、
+`Linux/Rendering` 提供 internal 的单帧准备与延迟提交适配器，成员契约校验（`WaylandFramePacingCompatibility`）、
 render interface 包装和安装入口（`WaylandFramePacing.TryInstall`）均位于 Native。Desktop 只负责策略：
 在 Wayland 初始化前根据开关调用安装入口、记录日志，并把失败回调与呈现时间交给上层。
-仅对已验证 ABI 的 EGL surface 启用；软件、dmabuf、X11 及其他 surface 原样转发。
-已验证的 Wayland EGL 后端默认启用。诊断对照时可在 AppBuilder 初始化前设置
+仅包装契约匹配的 Wayland EGL surface；软件、dmabuf、X11 及其他 surface 原样转发。
+该 Wayland EGL 路径默认启用。诊断对照时可在 AppBuilder 初始化前设置
 `AppContext.SetSwitch("AtomUI.Experimental.WaylandFramePacing", false)` 显式关闭；设为 true 则显式开启。
-该开关不是稳定公共 API；版本或成员签名不匹配时记录拒绝原因并保留原路径，显式开启也不绕过兼容性校验。
+该开关不是稳定公共 API；成员契约不匹配时记录具体成员与拒绝原因并保留原路径，显式开启也不绕过校验。
+
+不按 Avalonia 版本、commit 或 NWayland 版本放行。安装入口先检查 Linux 平台，再只读绑定完整成员契约：
+类型继承、字段类型及必要的可写性、属性类型/getter、方法参数和返回类型；NWayland 的 callback/listener 也在此范围。
+全部绑定成功后才安装包装器。诊断保留实际程序集版本，成功日志表示适配器已安装，不表示平台行为已经验收。
+成员签名核对、macOS NativeAOT 元数据保留与真实 Linux Wayland 运行分别记录；相同签名不能证明上游语义未变。
 
 - `WaylandSurfaceFrameState` 按 persistent surface 共享；graphics context 更换不能切断旧 callback 与待提交帧的联系。
 - 每 surface 最多一个准备帧、一个未完成 callback。准备帧存在时停止继续绘制，避免覆盖尚未提交的后备缓冲区。
@@ -122,11 +127,12 @@ render interface 包装和安装入口（`WaylandFramePacing.TryInstall`）均�
 - 连接、surface、configure serial、scale 或 shadow extents 变化会使准备帧失效，退役 target 并请求重绘。
 - EGL swap 保留原生返回值；context loss 通知框架重建。延迟提交异常记录后退回原渲染路径，清理本次失败提交
   新建的 callback，不能通过清除正常 callback 强行解除门控。
-- 协议与 EGL 操作只在 owning worker 上运行；surface 断开时清理准备帧，不能由 UI 线程直接提交。
+- 协议与 EGL 操作只在 owning worker 上运行；callback relay 安装在读取 callback 前检查线程和释放状态。
+  surface 断开时清理准备帧，不能由 UI 线程直接提交。
 
 ### 呈现时间预测
 
-Avalonia 不绑定 `wp_presentation`。Native 经同一版本校验从 `WaylandGlobals` 的 `Registry` 与 `_knownGlobals`
+Avalonia 不绑定 `wp_presentation`。Native 经同一成员契约校验从 `WaylandGlobals` 的 `Registry` 与 `_knownGlobals`
 按连接绑定一次，`WaylandPresentationTiming` 在每次准备帧提交前请求 feedback，记录 presented 时间、刷新周期，
 以及最近 32 帧“提交→上屏”刷新数的众数。仅在 `CLOCK_MONOTONIC`（Linux 上即 Stopwatch 时钟）与固定刷新
 （refresh>0）下提供预测；VRR、其他时钟或尚无 feedback 时返回空，Motion 退回脉冲时间。
@@ -150,16 +156,18 @@ internal 计数（presented/predicted/hits）仅供诊断工具读取。
 
 ## Wayland 初始缩放预测
 
-Avalonia 12.1.4 的 Wayland toplevel 以缩放 1 起步，mutter 在窗口映射并进入输出后才发送
+Wayland toplevel 默认以缩放 1 起步，mutter 在窗口映射并进入输出后才发送
 `wp_fractional_scale.preferred_scale`，因此首次布局与首帧按 1 进行，约 250ms 后整窗按真实缩放重新布局
 （本机表现为 NavMenu 文字尺寸 62×22 → 62.4×22.2、窗口缩放 1 → 5/3，观感为“字体变化”，字体族与字号实际不变）。
 
 Native 的 `WaylandInitialScaling`（`Linux/WaylandInitialScaling.cs`）由 AtomUI `Window` 构造末尾、首次布局前调用，
-经版本校验的反射读取输出列表：
+先只读校验窗口、worker、globals、输出列表及各输出属性的完整成员契约，再读取输出：
 分数缩放可用时取 mode 宽 ÷ xdg 逻辑宽（考虑 90/270 旋转），按协议 1/120 取整；否则取整数输出缩放。
 所有输出缩放一致时调用 impl 的 `UpdateScaling`，与合成器通知走同一路径；缓冲区按每帧 UI 缩放生成，
 首帧即为正确缩放，随后到达的 preferred_scale 相同而不触发布局。输出缩放不一致或成员不匹配时不做预测，
-预测错误时仍由合成器通知纠正。Popup 本就继承父窗口缩放，不需要处理。
+预测错误时仍由合成器通知纠正。若后端已提供有限、正数且不同于 1 的缩放，直接保留；无效缩放不写入预测值。
+返回不适用、跳过、已应用、契约不兼容或执行失败状态，由 Window 入口记录诊断；不兼容/失败为 Warning，
+正常跳过/应用为 Debug，其他后端不产生日志。Popup 本就继承父窗口缩放，不需要处理。
 
 剩余：首次 configure 时客户区宽度由 1300 变为 1300.2 DIP（合成器整数窗口几何 + 阴影边距），
 仅页面区域重新布局一次，NavMenu 尺寸与文字不变；该几何取整未处理。

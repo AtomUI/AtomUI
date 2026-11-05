@@ -3,11 +3,18 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Avalonia;
 using Avalonia.Platform;
-using NWayland;
-using NWayland.Interop;
 using NWayland.Protocols.Wayland;
 
 namespace AtomUI.Native;
+
+internal enum WaylandInitialScalingStatus
+{
+    NotApplicable,
+    Skipped,
+    Applied,
+    Incompatible,
+    Failed
+}
 
 /// <summary>
 /// Predicts a Wayland toplevel's scale before its first layout.
@@ -19,7 +26,7 @@ namespace AtomUI.Native;
 /// arrives. Buffers are sized from the UI scale passed with each frame, so adopting the outputs' scale up front
 /// renders the first frame correctly; the later compositor notification then matches and changes nothing. When
 /// outputs disagree the prediction is skipped, and a wrong prediction is corrected by the compositor as before.
-/// Deliberately version-bound: these members are framework integration details.
+/// The private integration is checked by its actual member contract, independently of package build metadata.
 /// </remarks>
 internal static class WaylandInitialScaling
 {
@@ -35,29 +42,69 @@ internal static class WaylandInitialScaling
     // Protocol scales are multiples of 1/120.
     private const double FractionalDenominator = 120;
 
-    private static readonly Lazy<Members?> Bound = new(Bind);
+    private static readonly Lazy<Members> Bound = new(Bind);
 
-    internal static void Apply(ITopLevelImpl? impl)
+    internal static WaylandInitialScalingStatus Apply(ITopLevelImpl? impl, out string reason)
     {
-        if (impl is null || Bound.Value is not { } members || !members.WindowBaseImpl.IsInstanceOfType(impl))
+        reason = "The window does not use the Avalonia Wayland backend.";
+        if (impl is null || impl.GetType().Assembly.GetName().Name != "Avalonia.Wayland")
         {
-            return;
+            return WaylandInitialScalingStatus.NotApplicable;
+        }
+        // This constructor-time optimisation must never overwrite a scale already supplied by the backend.
+        if (!double.IsFinite(impl.RenderScaling) || impl.RenderScaling <= 0)
+        {
+            reason = $"The backend supplies invalid render scaling {impl.RenderScaling}; no prediction was applied.";
+            return WaylandInitialScalingStatus.Failed;
+        }
+        if (Math.Abs(impl.RenderScaling - 1) > 1e-6)
+        {
+            reason = $"The backend already supplies render scaling {impl.RenderScaling}; prediction was skipped.";
+            return WaylandInitialScalingStatus.Skipped;
+        }
+        Members members;
+        try
+        {
+            members = Bound.Value;
+        }
+        catch (Exception error) when (error is TypeLoadException or MissingMemberException or NotSupportedException or MemberAccessException or AmbiguousMatchException)
+        {
+            reason = DescribeFailure(impl, error);
+            return WaylandInitialScalingStatus.Incompatible;
+        }
+        if (!members.WindowBaseImpl.IsInstanceOfType(impl))
+        {
+            reason = $"The Wayland window implementation {impl.GetType().FullName} does not implement {WindowBaseImplTypeName}.";
+            return WaylandInitialScalingStatus.Incompatible;
         }
         try
         {
-            if (PredictScale(members, impl) is { } scale && Math.Abs(scale - impl.RenderScaling) > 1e-6)
+            if (PredictScale(members, impl, out reason) is not { } scale || Math.Abs(scale - 1) <= 1e-6)
             {
-                members.UpdateScaling.Invoke(impl, [scale]);
+                return WaylandInitialScalingStatus.Skipped;
             }
+            members.UpdateScaling.Invoke(impl, [scale]);
+            if (Math.Abs(impl.RenderScaling - scale) > 1e-6)
+            {
+                reason = $"UpdateScaling did not apply predicted scale {scale}; actual={impl.RenderScaling}.";
+                return WaylandInitialScalingStatus.Failed;
+            }
+            reason = $"Predicted render scaling {scale} before the first layout.";
+            return WaylandInitialScalingStatus.Applied;
         }
-        catch (Exception error) when (error is TargetInvocationException or InvalidCastException or NullReferenceException)
+        catch (Exception error) when (error is TargetInvocationException or InvalidCastException or NullReferenceException or InvalidOperationException or MemberAccessException or ArgumentException)
         {
-            // Prediction is an optimisation; the compositor's scale still arrives through the framework.
+            reason = DescribeFailure(impl, error is TargetInvocationException { InnerException: { } inner } ? inner : error);
+            return WaylandInitialScalingStatus.Failed;
         }
     }
 
-    private static double? PredictScale(Members members, object impl)
+    private static string DescribeFailure(ITopLevelImpl impl, Exception error) =>
+        $"{error.Message} Backend={impl.GetType().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}; NWayland={typeof(WlOutput).Assembly.GetName().Version}.";
+
+    private static double? PredictScale(Members members, object impl, out string reason)
     {
+        reason = "Wayland output information is not ready for scale prediction.";
         var client = members.Client.GetValue(impl);
         var worker = client is null ? null : members.Worker.GetValue(client);
         var globals = worker is null ? null : members.Globals.GetValue(worker);
@@ -72,19 +119,26 @@ internal static class WaylandInitialScaling
         {
             if (output is null || OutputScale(members, output, fractional) is not { } scale)
             {
+                reason = "Wayland output mode/logical size does not provide a valid scale prediction.";
                 return null;
             }
             if (predicted is { } previous && Math.Abs(previous - scale) > 1e-6)
             {
+                reason = "Wayland outputs use different scales; initial scaling prediction was skipped.";
                 return null;
             }
             predicted = scale;
         }
+        reason = $"The output scale {predicted} matches the initial backend scale.";
         return predicted;
     }
 
     private static double? OutputScale(Members members, object output, bool fractional)
     {
+        if (!members.OutputType.IsInstanceOfType(output))
+        {
+            throw new InvalidOperationException($"Wayland Outputs contains {output.GetType().FullName}; expected {members.OutputType.FullName}.");
+        }
         if (!fractional)
         {
             var integer = (int)members.IntegerScale.GetValue(output)!;
@@ -119,49 +173,55 @@ internal static class WaylandInitialScaling
     [DynamicDependency("get_HasFractionalScaling", GlobalsTypeName, "Avalonia.Wayland")]
     [DynamicDependency("get_Outputs", TrackerTypeName, "Avalonia.Wayland")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, OutputDependencyTypeName, "Avalonia.Wayland")]
-    private static Members? Bind()
+    private static Members Bind()
     {
-        var version = Type.GetType("Avalonia.WaylandPlatformOptions, Avalonia.Wayland")?.Assembly
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        if (!OperatingSystem.IsLinux() || version != "12.1.4+2d79ba55fae1b1e71c69f93a668080c9029e6a31" ||
-            typeof(WlProxy).Assembly.GetName().Version != new Version(0, 11, 0, 0))
+        var impl = Type.GetType(WindowBaseImplTypeName + ", Avalonia.Wayland", true)!;
+        var client = Type.GetType(WorkerClientTypeName + ", Avalonia.Wayland", true)!;
+        var worker = Type.GetType(WorkerTypeName + ", Avalonia.Wayland", true)!;
+        var globals = Type.GetType(GlobalsTypeName + ", Avalonia.Wayland", true)!;
+        var tracker = Type.GetType(TrackerTypeName + ", Avalonia.Wayland", true)!;
+        var output = Type.GetType(OutputTypeName + ", Avalonia.Wayland", true)!;
+        var members = new Members(
+            impl,
+            output,
+            impl.GetProperty("Client", Instance) ?? throw new MissingMemberException(WindowBaseImplTypeName, "Client"),
+            impl.GetMethod("UpdateScaling", Instance, [typeof(double)]) ?? throw new MissingMethodException(WindowBaseImplTypeName, "UpdateScaling"),
+            client.GetField("_worker", Instance) ?? throw new MissingFieldException(WorkerClientTypeName, "_worker"),
+            worker.GetProperty("Globals", Instance) ?? throw new MissingMemberException(WorkerTypeName, "Globals"),
+            globals.GetProperty("Outputs", Instance) ?? throw new MissingMemberException(GlobalsTypeName, "Outputs"),
+            globals.GetProperty("HasFractionalScaling", Instance) ?? throw new MissingMemberException(GlobalsTypeName, "HasFractionalScaling"),
+            tracker.GetProperty("Outputs", Instance) ?? throw new MissingMemberException(TrackerTypeName, "Outputs"),
+            output.GetProperty("ModeSize", Instance) ?? throw new MissingMemberException(OutputTypeName, "ModeSize"),
+            output.GetProperty("LogicalSize", Instance) ?? throw new MissingMemberException(OutputTypeName, "LogicalSize"),
+            output.GetProperty("Scale", Instance) ?? throw new MissingMemberException(OutputTypeName, "Scale"),
+            output.GetProperty("Transform", Instance) ?? throw new MissingMemberException(OutputTypeName, "Transform"));
+        if (!typeof(ITopLevelImpl).IsAssignableFrom(impl))
         {
-            return null;
+            throw new NotSupportedException($"{WindowBaseImplTypeName} must implement {typeof(ITopLevelImpl).FullName}.");
         }
-        try
+        WaylandMemberContract.ReadProperty(members.Client, impl, "Client", client);
+        WaylandMemberContract.InstanceMethod(members.UpdateScaling, impl, "UpdateScaling", typeof(void), typeof(double));
+        WaylandMemberContract.ReadField(members.Worker, client, "_worker", worker);
+        WaylandMemberContract.ReadProperty(members.Globals, worker, "Globals", globals);
+        WaylandMemberContract.ReadProperty(members.Outputs, globals, "Outputs", tracker);
+        WaylandMemberContract.ReadProperty(members.HasFractionalScaling, globals, "HasFractionalScaling", typeof(bool));
+        if (members.OutputList.GetMethod is not { IsStatic: false } || members.OutputList.GetIndexParameters().Length != 0 ||
+            !members.OutputList.PropertyType.IsGenericType ||
+            members.OutputList.PropertyType.GetGenericTypeDefinition() != typeof(List<>) ||
+            members.OutputList.PropertyType.GenericTypeArguments[0] != output)
         {
-            var impl = Type.GetType(WindowBaseImplTypeName + ", Avalonia.Wayland", true)!;
-            var client = Type.GetType(WorkerClientTypeName + ", Avalonia.Wayland", true)!;
-            var worker = Type.GetType(WorkerTypeName + ", Avalonia.Wayland", true)!;
-            var globals = Type.GetType(GlobalsTypeName + ", Avalonia.Wayland", true)!;
-            var tracker = Type.GetType(TrackerTypeName + ", Avalonia.Wayland", true)!;
-            var output = Type.GetType(OutputTypeName + ", Avalonia.Wayland", true)!;
-            var members = new Members(
-                impl,
-                impl.GetProperty("Client", Instance) ?? throw new MissingMemberException(WindowBaseImplTypeName, "Client"),
-                impl.GetMethod("UpdateScaling", Instance, [typeof(double)]) ?? throw new MissingMethodException(WindowBaseImplTypeName, "UpdateScaling"),
-                client.GetField("_worker", Instance) ?? throw new MissingFieldException(WorkerClientTypeName, "_worker"),
-                worker.GetProperty("Globals", Instance) ?? throw new MissingMemberException(WorkerTypeName, "Globals"),
-                globals.GetProperty("Outputs", Instance) ?? throw new MissingMemberException(GlobalsTypeName, "Outputs"),
-                globals.GetProperty("HasFractionalScaling", Instance) ?? throw new MissingMemberException(GlobalsTypeName, "HasFractionalScaling"),
-                tracker.GetProperty("Outputs", Instance) ?? throw new MissingMemberException(TrackerTypeName, "Outputs"),
-                output.GetProperty("ModeSize", Instance) ?? throw new MissingMemberException(OutputTypeName, "ModeSize"),
-                output.GetProperty("LogicalSize", Instance) ?? throw new MissingMemberException(OutputTypeName, "LogicalSize"),
-                output.GetProperty("Scale", Instance) ?? throw new MissingMemberException(OutputTypeName, "Scale"),
-                output.GetProperty("Transform", Instance) ?? throw new MissingMemberException(OutputTypeName, "Transform"));
-            return members.ModeSize.PropertyType == typeof(PixelSize) && members.LogicalSize.PropertyType == typeof(PixelSize) &&
-                   members.IntegerScale.PropertyType == typeof(int) && members.HasFractionalScaling.PropertyType == typeof(bool) &&
-                   members.Transform.PropertyType == typeof(WlOutput.TransformEnum)
-                ? members : null;
+            throw new NotSupportedException($"{TrackerTypeName}.Outputs must expose a readable instance List<{OutputTypeName}>; found {members.OutputList.PropertyType}.");
         }
-        catch (Exception error) when (error is TypeLoadException or MissingMemberException)
-        {
-            return null;
-        }
+        WaylandMemberContract.ReadProperty(members.ModeSize, output, "ModeSize", typeof(PixelSize));
+        WaylandMemberContract.ReadProperty(members.LogicalSize, output, "LogicalSize", typeof(PixelSize));
+        WaylandMemberContract.ReadProperty(members.IntegerScale, output, "Scale", typeof(int));
+        WaylandMemberContract.ReadProperty(members.Transform, output, "Transform", typeof(WlOutput.TransformEnum));
+        return members;
     }
 
     private sealed record Members(
         Type WindowBaseImpl,
+        Type OutputType,
         PropertyInfo Client,
         MethodInfo UpdateScaling,
         FieldInfo Worker,

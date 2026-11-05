@@ -19,6 +19,16 @@
         <UseAppHost Condition="'$(GalleryPublishTrimmed)' == 'true' or '$(GalleryPublishAot)' == 'true'">true</UseAppHost>
     </PropertyGroup>
 
+    <Target Name="ValidateGalleryRuntimeVersion" BeforeTargets="ProcessFrameworkReferences"
+            Condition="'$(SelfContained)' == 'true'">
+        <!-- SelfContained may be inferred after project evaluation, including Debug publishing. -->
+        <PropertyGroup>
+            <RuntimeFrameworkVersion Condition="'$(RuntimeFrameworkVersion)' == ''">$(AtomUIGalleryRuntimeVersion)</RuntimeFrameworkVersion>
+        </PropertyGroup>
+        <Error Condition="$([MSBuild]::VersionLessThan('$(RuntimeFrameworkVersion)', '$(AtomUIGalleryRuntimeVersion)'))"
+               Text="Gallery self-contained publishing requires runtime $(AtomUIGalleryRuntimeVersion) or later, including matching NativeAOT compiler packs." />
+    </Target>
+
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <MetricsSupport>true</MetricsSupport>
         <HasAvaloniaDiagnosticsSupport>true</HasAvaloniaDiagnosticsSupport>

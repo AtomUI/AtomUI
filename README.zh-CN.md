@@ -64,8 +64,8 @@ Token 和本地化开发的源代码生成器。欢迎提交 Issue、PR 和改�
 #### 运行环境
 
 .NET 10（构建 AtomUI MSBuild 集成需要 .NET 10 SDK）<br>
-Avalonia 12.1.4<br>
-支持 Windows、macOS、Linux 跨平台<br>
+Avalonia 12.1.5<br>
+支持 Windows、macOS 12 及以上、Linux 跨平台<br>
 
 TypeMap 发布默认支持 .NET 10 及后续稳定版本。Browser 裁剪与 AOT 发布使用 SDK 选择的 ILLink 和 WASM 工具链，
 不设置 SDK 或补丁版本白名单；发布时验证映射转换结果和实际消费产物。独立的 net8-only 包兼容桥接仍遵循其文档中的工具链要求。

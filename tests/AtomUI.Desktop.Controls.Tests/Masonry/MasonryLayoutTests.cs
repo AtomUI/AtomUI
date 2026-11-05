@@ -1001,6 +1001,56 @@ public class MasonryLayoutTests
     }
 
     [Fact]
+    public void Arrange_Width_Different_From_Measure_Width_Does_Not_Cycle_Or_Keep_Stale_Extent()
+    {
+        // 可横向滚动的 ScrollViewer 以无限宽度 Measure、再以视口宽度 Arrange；宽度相关子项在 Arrange 重测后
+        // 若下一轮仍按原约束测量，会形成永久布局循环（每次无关布局请求都重测全部子项）。
+        var measureCount = 0;
+        var masonry = new AtomUI.Desktop.Controls.Masonry
+        {
+            ColumnCount = 0, MinColumnWidth = 320, MaxColumnCount = 4, ColumnGap = 16, RowGap = 16
+        };
+        for (var i = 0; i < 8; i++)
+        {
+            masonry.Items.Add(new CountingWidthDependentControl(() => measureCount++));
+        }
+        var sibling = new TextBlock { Text = "sibling" };
+        var scroll = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Width = 1600, Height = 600, Content = masonry
+        };
+        var window = new AvaloniaWindow
+        {
+            Width = 1700, Height = 800, Content = new StackPanel { Children = { sibling, scroll } }
+        };
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            var panel = masonry.GetVisualDescendants().OfType<MasonryPanel>().Single();
+            panel.Bounds.Width.ShouldBe(1600, 0.5);
+
+            measureCount = 0;
+            sibling.InvalidateMeasure();
+            window.UpdateLayout();
+            measureCount.ShouldBe(0, "an unrelated layout request must not re-measure Masonry items");
+
+            scroll.Width = 1400;
+            window.UpdateLayout();
+            panel.Bounds.Width.ShouldBe(1400, 0.5,
+                "a shrinking viewport must not keep the previously arranged width as the content extent");
+            scroll.Extent.Width.ShouldBeLessThanOrEqualTo(1400.5);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [Fact]
     public void Replacing_ItemsPanel_Replaces_Default_Masonry_Layout_Engine()
     {
         var first  = new Border { Height = 40, Background = Brushes.White };
@@ -1121,6 +1171,16 @@ public class MasonryLayoutTests
         protected override Size MeasureOverride(Size availableSize)
         {
             return new Size(Math.Min(availableSize.Width, 100), MeasuredHeight);
+        }
+    }
+
+    private sealed class CountingWidthDependentControl(Action onMeasure) : Control
+    {
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            onMeasure();
+            var width = double.IsFinite(availableSize.Width) ? availableSize.Width : 300;
+            return new Size(width, width / 2);
         }
     }
 

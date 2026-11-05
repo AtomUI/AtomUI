@@ -161,101 +161,41 @@ public class MasonryMotionTests
     }
 
     [Fact]
-    public void Moved_Item_Glides_From_Previous_Visual_Position()
+    public void Relayout_Moves_Existing_Items_Without_Animation()
     {
+        // 重新布局（内容高度变化、宽度变化、列数变化）时既有 item 直接就位：不做位置动画、不淡入。
+        // 拖拽缩放每帧都会重新布局，逐项动画会让 item 持续落后于布局位置并占用 UI 线程。
         var first  = new Border { Height = 40 };
         var second = new Border { Height = 40 };
+        var third  = new Border { Height = 40 };
         var masonry = new AtomUIMasonry
         {
-            ColumnCount = 2, ColumnGap = 0, RowGap = 0, Width = 200,
-            MotionDuration = TimeSpan.FromSeconds(2) // 长时长冻结观察起点
+            ColumnCount = 2, ColumnGap = 0, RowGap = 0, Width = 200, MotionDuration = TimeSpan.Zero
         };
-        var clock = new ManualClock();
-        ShowInWindow(masonry, () =>
-        {
-            InjectClock(first, clock);
-            InjectClock(second, clock);
-            masonry.Items.Add(first);
-            masonry.Items.Add(second);
-            Dispatcher.UIThread.RunJobs();
-            masonry.UpdateLayout();
-            // 初始：first 左列 (0,0)，second 右列 (100,0)。
-            // 先完成入场淡入（越过 2s），入场中的项不做位置过渡（antd 语义）
-            clock.Step(0);
-            clock.Step(2000);
-            Dispatcher.UIThread.RunJobs();
-            WaitForCondition(() => Math.Abs(second.Opacity - 1d) < 0.01);
-
-            masonry.ColumnCount = 1; // second → (0,40)，触发滑动
-            Dispatcher.UIThread.RunJobs();
-            masonry.UpdateLayout();
-
-            // first 原地不动，无滑动变换
-            first.RenderTransform.ShouldBeNull();
-            // second 预置了旧位置偏移：旧 (100,0) - 新 (0,40) = translate(100,-40)，动画优先级持有
-            var matrix = second.RenderTransform.ShouldNotBeNull().Value;
-            Math.Round(matrix.M31, 1).ShouldBe(100);
-            Math.Round(matrix.M32, 1).ShouldBe(-40);
-            // 布局矩形已是最终位置（Bounds 不受 RenderTransform 影响）
-            Math.Round(second.Bounds.X, 2).ShouldBe(0);
-        });
-    }
-
-    [Fact]
-    public void Glide_Releases_Transform_After_Completion()
-    {
-        var second = new Border { Height = 40 };
-        var masonry = new AtomUIMasonry
-        {
-            ColumnCount = 2, ColumnGap = 0, RowGap = 0, Width = 200,
-            MotionDuration = TimeSpan.FromMilliseconds(40)
-        };
-        var clock = new ManualClock();
-        ShowInWindow(masonry, () =>
-        {
-            InjectClock(second, clock);
-            masonry.Items.Add(new Border { Height = 40 });
-            masonry.Items.Add(second);
-            Dispatcher.UIThread.RunJobs();
-            masonry.UpdateLayout();
-            // 先完成入场淡入
-            clock.Step(0);
-            clock.Step(60);
-            Dispatcher.UIThread.RunJobs();
-            WaitForCondition(() => Math.Abs(second.Opacity - 1d) < 0.01);
-
-            masonry.ColumnCount = 1;
-            Dispatcher.UIThread.RunJobs();
-            masonry.UpdateLayout();
-            second.RenderTransform.ShouldNotBeNull();
-            // 每个动画实例内部包裹独立时钟：首次脉冲只建基线，第二次才推进（80ms > 40ms 完成）
-            clock.Step(120);
-            clock.Step(200);
-            Dispatcher.UIThread.RunJobs();
-            WaitForCondition(() => second.RenderTransform is null);
-            second.RenderTransform.ShouldBeNull();
-        });
-    }
-
-    [Fact]
-    public void Zero_Duration_Skips_Glide()
-    {
-        var second = new Border { Height = 40 };
-        var masonry = new AtomUIMasonry
-        {
-            ColumnCount = 2, ColumnGap = 0, RowGap = 0, Width = 200,
-            MotionDuration = TimeSpan.Zero
-        };
-        masonry.Items.Add(new Border { Height = 40 });
+        masonry.Items.Add(first);
         masonry.Items.Add(second);
+        masonry.Items.Add(third);
         ShowInWindow(masonry, () =>
         {
+            masonry.MotionDuration = TimeSpan.FromSeconds(5);
+            Dispatcher.UIThread.RunJobs();
+
+            first.Height = 80;   // 内容高度变化：third (0,40) → (0,80)
+            masonry.Width = 300; // 宽度变化：second x 100 → 150
             Dispatcher.UIThread.RunJobs();
             masonry.UpdateLayout();
-            masonry.ColumnCount = 1;
+            masonry.ColumnCount = 1; // 列数变化：second → (0,80)，third → (0,120)
             Dispatcher.UIThread.RunJobs();
             masonry.UpdateLayout();
-            second.RenderTransform.ShouldBeNull();
+            Dispatcher.UIThread.RunJobs();
+
+            foreach (var item in new[] { first, second, third })
+            {
+                item.RenderTransform.ShouldBeNull("relayout must not animate item positions");
+                item.Opacity.ShouldBe(1d, "relayout must not fade existing items");
+            }
+            Math.Round(second.Bounds.Y, 1).ShouldBe(80);
+            Math.Round(third.Bounds.Y, 1).ShouldBe(120);
         });
     }
 

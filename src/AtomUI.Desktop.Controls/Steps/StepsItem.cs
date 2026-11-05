@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -15,7 +16,7 @@ namespace AtomUI.Desktop.Controls;
     StepsItemPseudoClass.ItemHeaderForegroundOverride,
     StepsItemPseudoClass.ItemSubHeaderForegroundOverride,
     StepsItemPseudoClass.ItemRailBackgroundOverride)]
-public class StepsItem : HeaderedContentControl
+public class StepsItem : HeaderedContentControl, IControlThemeGlobalOwnerSource
 {
     #region 公共属性定义
 
@@ -318,6 +319,8 @@ public class StepsItem : HeaderedContentControl
             SizeTypeProperty);
     }
 
+    #region 内部协作 API
+
     internal void AttachToOwner(Steps owner, int index)
     {
         Owner = owner;
@@ -325,6 +328,10 @@ public class StepsItem : HeaderedContentControl
         UpdateCanInvoke();
         UpdateProgressState();
     }
+
+    #endregion
+
+    #region 内部协作 API
 
     internal void ApplyOwnerState(
         int stepNumber,
@@ -344,6 +351,10 @@ public class StepsItem : HeaderedContentControl
         UpdateProgressState();
     }
 
+    #endregion
+
+    #region 内部协作 API
+
     internal void DetachFromOwner()
     {
         Owner = null;
@@ -359,6 +370,8 @@ public class StepsItem : HeaderedContentControl
         IsProgressVisible = false;
         IsProgressFrameReserved = false;
     }
+
+    #endregion
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -496,6 +509,14 @@ public class StepsItem : HeaderedContentControl
             _indicator.IsItemHover = false;
         }
     }
+
+    #region 实现 IControlThemeGlobalOwnerSource 接口
+
+    // The owning Steps supplies composed item globals. Standalone items retain
+    // their own identity; template ancestor bindings cannot express this owner.
+    Control? IControlThemeGlobalOwnerSource.ThemeGlobalOwner => Owner;
+
+    #endregion
 
     private void UpdateCanInvoke()
     {

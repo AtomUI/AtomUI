@@ -6,12 +6,9 @@ namespace AtomUI.Desktop.Controls;
 
 internal class StepsItemSectionPanel : Panel
 {
-    // The arrange width is the layout-rounded value of the measured heading width,
-    // while the check below recomputes header+subHeader as a fresh double sum. On a
-    // heading that exactly fills the section the two can differ by a rounding ulp,
-    // which must not flip the same-line decision between measure and arrange or the
-    // wrapped subheader is stacked onto the content line (text overlap).
-    private const double SameLineTolerance = 0.01;
+
+
+    #region 公共属性定义
 
     public static readonly StyledProperty<StepsType> TypeProperty =
         AvaloniaProperty.Register<StepsItemSectionPanel, StepsType>(nameof(Type), StepsType.Default);
@@ -39,6 +36,15 @@ internal class StepsItemSectionPanel : Panel
         get => GetValue(TitlePlacementProperty);
         set => SetValue(TitlePlacementProperty, value);
     }
+
+    #endregion
+
+    // The arrange width is the layout-rounded value of the measured heading width,
+    // while the check below recomputes header+subHeader as a fresh double sum. On a
+    // heading that exactly fills the section the two can differ by a rounding ulp,
+    // which must not flip the same-line decision between measure and arrange or the
+    // wrapped subheader is stacked onto the content line (text overlap).
+    private const double SameLineTolerance = 0.01;
 
     internal Orientation EffectiveTitlePlacement =>
         StepsItemLayoutPanel.ResolveTitlePlacement(Type, Orientation, TitlePlacement);

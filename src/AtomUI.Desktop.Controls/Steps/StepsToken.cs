@@ -1,15 +1,15 @@
+using AtomUI.Theme;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[ControlDesignToken]
-internal sealed class StepsToken : AbstractControlDesignToken
+[ControlDesignToken(ControlTokenEvaluationVersion.DependencyDefaultsV2, Revision = 1)]
+internal sealed partial class StepsToken : AbstractControlDesignToken, IControlTokenDefaults
 {
 
     public StepsToken()
-
     {
     }
 
@@ -190,115 +190,332 @@ internal sealed class StepsToken : AbstractControlDesignToken
 
     #endregion
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
+    [ControlTokenDefault(nameof(DescriptionMaxWidth))]
+    private static double DefaultForDescriptionMaxWidth(in ControlTokenDefaultContext context) =>
+        140;
 
-        CustomIconSize      = EffectiveGlobalToken.ControlHeight;
-        CustomIconFontSize  = EffectiveGlobalToken.ControlHeightSM;
-        IconContainerSize   = EffectiveGlobalToken.ControlHeight;
-        IconContainerCornerRadius = new CornerRadius(IconContainerSize);
-        IconFontSize        = EffectiveGlobalToken.FontSize;
-        IconContainerSizeSM = EffectiveGlobalToken.FontSizeHeading3;
-        DotSize             = EffectiveGlobalToken.ControlHeight / 4;
-        DotCurrentSize      = EffectiveGlobalToken.ControlHeightLG / 4;
-        NavArrowColor       = EffectiveGlobalToken.ColorTextDisabled;
-        DescriptionMaxWidth = 140;
+    [ControlTokenDefault(nameof(CustomIconSize))]
+    private static double DefaultForCustomIconSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight;
 
-        WaitIconColor         = EffectiveGlobalToken.ColorTextLabel;
-        WaitIconBgColor       = EffectiveGlobalToken.ColorFillContent;
-        WaitIconBorderColor   = Colors.Transparent;
-        WaitTitleColor        = EffectiveGlobalToken.ColorTextDescription;
-        WaitDescriptionColor  = EffectiveGlobalToken.ColorTextDescription;
-        WaitTailColor         = EffectiveGlobalToken.ColorTextDisabled;
-        WaitDotColor          = EffectiveGlobalToken.ColorTextDisabled;
+    [ControlTokenDefault(nameof(CustomIconFontSize))]
+    private static double DefaultForCustomIconFontSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightSM;
 
-        ProcessIconColor        = EffectiveGlobalToken.ColorTextLightSolid;
-        ProcessTitleColor       = EffectiveGlobalToken.ColorText;
-        ProcessDescriptionColor = EffectiveGlobalToken.ColorText;
-        ProcessIconBgColor      = EffectiveGlobalToken.ColorPrimary;
-        ProcessIconBorderColor  = EffectiveGlobalToken.ColorPrimary;
-        ProcessDotColor         = EffectiveGlobalToken.ColorPrimary;
-        ProcessTailColor        = EffectiveGlobalToken.ColorPrimary;
+    [ControlTokenDefault(nameof(IconContainerSize))]
+    private static double DefaultForIconContainerSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight;
 
-        ProgressGrooveColor = EffectiveGlobalToken.ColorSplit;
-        ProgressColor       = EffectiveGlobalToken.ColorPrimary;
+    [ControlTokenDefault(nameof(IconContainerCornerRadius), nameof(IconContainerSize))]
+    private static CornerRadius DefaultForIconContainerCornerRadius(in ControlTokenDefaultContext context, double iconContainerSize) =>
+        new CornerRadius(iconContainerSize);
 
-        FinishIconBgColor       = EffectiveGlobalToken.ControlItemBgActive;
-        FinishIconBorderColor   = EffectiveGlobalToken.ControlItemBgActive;
-        FinishIconColor         = EffectiveGlobalToken.ColorPrimary;
-        FinishTitleColor        = EffectiveGlobalToken.ColorText;
-        FinishDescriptionColor  = EffectiveGlobalToken.ColorTextDescription;
-        FinishTailColor         = EffectiveGlobalToken.ColorPrimary;
-        FinishDotColor          = EffectiveGlobalToken.ColorPrimary;
+    [ControlTokenDefault(nameof(IconFontSize))]
+    private static double DefaultForIconFontSize(in ControlTokenDefaultContext context) =>
+        context.Global.FontSize;
 
-        ErrorIconColor          = EffectiveGlobalToken.ColorTextLightSolid;
-        ErrorTitleColor         = EffectiveGlobalToken.ColorError;
-        ErrorDescriptionColor   = EffectiveGlobalToken.ColorError;
-        ErrorTailColor          = EffectiveGlobalToken.ColorError;
-        ErrorIconBgColor        = EffectiveGlobalToken.ColorError;
-        ErrorIconBorderColor    = EffectiveGlobalToken.ColorError;
-        ErrorDotColor           = EffectiveGlobalToken.ColorError;
-        StepsNavActiveColor     = EffectiveGlobalToken.ColorPrimary;
-        // Steps inline variable
-        InlineDotSize       = 6;
-        InlineHeaderMargin  = new Thickness();
-        InlineHeaderPadding = new Thickness();
-        InlineTitleColor    = EffectiveGlobalToken.ColorTextSecondary;
-        InlineTailColor     = EffectiveGlobalToken.ColorTextDisabled;
-        var inlineItemHorizontalPadding = EffectiveGlobalToken.UniformlyPaddingXXS + EffectiveGlobalToken.UniformlyMarginXXS / 2;
-        InlineItemPadding   = new Thickness(
-            inlineItemHorizontalPadding,
-            EffectiveGlobalToken.UniformlyPaddingXS + EffectiveGlobalToken.LineWidth,
-            inlineItemHorizontalPadding,
-            0);
+    [ControlTokenDefault(nameof(DotSize))]
+    private static double DefaultForDotSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeight / 4;
 
-        HorizontalHeaderMargin     = new Thickness(EffectiveGlobalToken.UniformlyMargin, 0);
-        SubHeaderMargin            = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, 0, 0);
-        VerticalItemSpacing        = EffectiveGlobalToken.UniformlyMarginXXS;
-        VerticalDescriptionPadding = new Thickness();
-        DotLineThickness           = EffectiveGlobalToken.LineWidth * 3;
+    [ControlTokenDefault(nameof(DotCurrentSize))]
+    private static double DefaultForDotCurrentSize(in ControlTokenDefaultContext context) =>
+        context.Global.ControlHeightLG / 4;
 
-        VerticalLabelContentMargin = new Thickness(0, EffectiveGlobalToken.UniformlyMarginSM, 0, 0);
-        VerticalNavArrowMargin     = new Thickness();
-        VerticalNavArrowMarginSM   = new Thickness();
-        VerticalNavItemPadding     = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, EffectiveGlobalToken.UniformlyPadding);
-        NavItemGutter              = EffectiveGlobalToken.Spacing;
-        ProgressFramePadding       = new Thickness(EffectiveGlobalToken.LineWidthBold * 2);
-        ProgressFramePaddingSM     = new Thickness(EffectiveGlobalToken.LineWidthBold * 2);
+    [ControlTokenDefault(nameof(NavArrowColor))]
+    private static Color DefaultForNavArrowColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDisabled;
 
-        var panelTitleHeight = EffectiveGlobalToken.FontSizeLG * EffectiveGlobalToken.RelativeLineHeightLG;
-        var panelItemHeight = EffectiveGlobalToken.UniformlyPaddingSM * 2 +
-                              EffectiveGlobalToken.ControlHeight +
-                              panelTitleHeight;
-        var panelItemHeightSM = EffectiveGlobalToken.UniformlyPaddingXS * 2 +
-                                EffectiveGlobalToken.ControlHeightSM +
-                                EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight;
-        PanelArrowWidth   = panelItemHeight * 0.7071;
-        PanelArrowWidthSM = panelItemHeightSM * 0.7071;
-        PanelWaitBackground          = EffectiveGlobalToken.ColorFillTertiary;
-        PanelProcessBackground       = EffectiveGlobalToken.ColorPrimaryBg;
-        PanelFinishBackground        = EffectiveGlobalToken.ColorPrimaryBg;
-        PanelErrorBackground         = EffectiveGlobalToken.ColorErrorBg;
-        PanelWaitActiveBackground    = EffectiveGlobalToken.ColorPrimary;
-        PanelProcessActiveBackground = EffectiveGlobalToken.ColorPrimary;
-        PanelFinishActiveBackground  = EffectiveGlobalToken.ColorPrimary;
-        PanelErrorActiveBackground   = EffectiveGlobalToken.ColorError;
-        PanelWaitTextColor            = EffectiveGlobalToken.ColorTextLabel;
-        PanelProcessTextColor         = EffectiveGlobalToken.ColorPrimary;
-        PanelFinishTextColor          = EffectiveGlobalToken.ColorPrimary;
-        PanelErrorTextColor           = EffectiveGlobalToken.ColorError;
-        PanelActiveTextColor          = EffectiveGlobalToken.ColorTextLightSolid;
-        PanelErrorActiveTextColor     = EffectiveGlobalToken.ColorTextLightSolid;
-        PanelFirstBorderThickness  = new Thickness(EffectiveGlobalToken.LineWidthBold, EffectiveGlobalToken.LineWidthBold, 0, EffectiveGlobalToken.LineWidthBold);
-        PanelMiddleBorderThickness = new Thickness(0, EffectiveGlobalToken.LineWidthBold, 0, EffectiveGlobalToken.LineWidthBold);
-        PanelLastBorderThickness   = new Thickness(0, EffectiveGlobalToken.LineWidthBold, EffectiveGlobalToken.LineWidthBold, EffectiveGlobalToken.LineWidthBold);
-        var panelRadius = EffectiveGlobalToken.BorderRadius.TopLeft;
-        var panelRadiusSM = EffectiveGlobalToken.BorderRadiusSM.TopLeft;
-        PanelFirstCornerRadius = new CornerRadius(panelRadius, 0, 0, panelRadius);
-        PanelLastCornerRadius  = new CornerRadius(0, panelRadius, panelRadius, 0);
-        PanelFirstCornerRadiusSM = new CornerRadius(panelRadiusSM, 0, 0, panelRadiusSM);
-        PanelLastCornerRadiusSM  = new CornerRadius(0, panelRadiusSM, panelRadiusSM, 0);
-    }
+    [ControlTokenDefault(nameof(IconContainerSizeSM))]
+    private static double DefaultForIconContainerSizeSM(in ControlTokenDefaultContext context) =>
+        context.Global.FontSizeHeading3;
+
+    [ControlTokenDefault(nameof(HorizontalHeaderMargin))]
+    private static Thickness DefaultForHorizontalHeaderMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMargin, 0);
+
+    [ControlTokenDefault(nameof(SubHeaderMargin))]
+    private static Thickness DefaultForSubHeaderMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyMarginXS, 0, 0, 0);
+
+    [ControlTokenDefault(nameof(VerticalItemSpacing))]
+    private static double DefaultForVerticalItemSpacing(in ControlTokenDefaultContext context) =>
+        context.Global.UniformlyMarginXXS;
+
+    [ControlTokenDefault(nameof(VerticalDescriptionPadding))]
+    private static Thickness DefaultForVerticalDescriptionPadding(in ControlTokenDefaultContext context) =>
+        new Thickness();
+
+    [ControlTokenDefault(nameof(VerticalLabelContentMargin))]
+    private static Thickness DefaultForVerticalLabelContentMargin(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.UniformlyMarginSM, 0, 0);
+
+    [ControlTokenDefault(nameof(VerticalNavArrowMargin))]
+    private static Thickness DefaultForVerticalNavArrowMargin(in ControlTokenDefaultContext context) =>
+        new Thickness();
+
+    [ControlTokenDefault(nameof(VerticalNavArrowMarginSM))]
+    private static Thickness DefaultForVerticalNavArrowMarginSM(in ControlTokenDefaultContext context) =>
+        new Thickness();
+
+    [ControlTokenDefault(nameof(VerticalNavItemPadding))]
+    private static Thickness DefaultForVerticalNavItemPadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.UniformlyPaddingSM, context.Global.UniformlyPadding);
+
+    [ControlTokenDefault(nameof(NavItemGutter))]
+    private static double DefaultForNavItemGutter(in ControlTokenDefaultContext context) =>
+        context.Global.Spacing;
+
+    [ControlTokenDefault(nameof(WaitIconColor))]
+    private static Color DefaultForWaitIconColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextLabel;
+
+    [ControlTokenDefault(nameof(WaitIconBgColor))]
+    private static Color DefaultForWaitIconBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorFillContent;
+
+    [ControlTokenDefault(nameof(WaitIconBorderColor))]
+    private static Color DefaultForWaitIconBorderColor(in ControlTokenDefaultContext context) =>
+        Colors.Transparent;
+
+    [ControlTokenDefault(nameof(FinishIconBgColor))]
+    private static Color DefaultForFinishIconBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgActive;
+
+    [ControlTokenDefault(nameof(FinishIconBorderColor))]
+    private static Color DefaultForFinishIconBorderColor(in ControlTokenDefaultContext context) =>
+        context.Global.ControlItemBgActive;
+
+    [ControlTokenDefault(nameof(ProcessTailColor))]
+    private static Color DefaultForProcessTailColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(ProcessIconColor))]
+    private static Color DefaultForProcessIconColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextLightSolid;
+
+    [ControlTokenDefault(nameof(ProcessTitleColor))]
+    private static Color DefaultForProcessTitleColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(ProcessDescriptionColor))]
+    private static Color DefaultForProcessDescriptionColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(ProcessIconBgColor))]
+    private static Color DefaultForProcessIconBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(ProcessIconBorderColor))]
+    private static Color DefaultForProcessIconBorderColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(ProcessDotColor))]
+    private static Color DefaultForProcessDotColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(WaitTitleColor))]
+    private static Color DefaultForWaitTitleColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDescription;
+
+    [ControlTokenDefault(nameof(WaitDescriptionColor))]
+    private static Color DefaultForWaitDescriptionColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDescription;
+
+    [ControlTokenDefault(nameof(WaitTailColor))]
+    private static Color DefaultForWaitTailColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDisabled;
+
+    [ControlTokenDefault(nameof(WaitDotColor))]
+    private static Color DefaultForWaitDotColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDisabled;
+
+    [ControlTokenDefault(nameof(FinishIconColor))]
+    private static Color DefaultForFinishIconColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(FinishTitleColor))]
+    private static Color DefaultForFinishTitleColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorText;
+
+    [ControlTokenDefault(nameof(FinishDescriptionColor))]
+    private static Color DefaultForFinishDescriptionColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDescription;
+
+    [ControlTokenDefault(nameof(FinishTailColor))]
+    private static Color DefaultForFinishTailColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(FinishDotColor))]
+    private static Color DefaultForFinishDotColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(ErrorIconColor))]
+    private static Color DefaultForErrorIconColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextLightSolid;
+
+    [ControlTokenDefault(nameof(ErrorTitleColor))]
+    private static Color DefaultForErrorTitleColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(ErrorDescriptionColor))]
+    private static Color DefaultForErrorDescriptionColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(ErrorTailColor))]
+    private static Color DefaultForErrorTailColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(ErrorIconBgColor))]
+    private static Color DefaultForErrorIconBgColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(ErrorIconBorderColor))]
+    private static Color DefaultForErrorIconBorderColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(ErrorDotColor))]
+    private static Color DefaultForErrorDotColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(StepsNavActiveColor))]
+    private static Color DefaultForStepsNavActiveColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(InlineDotSize))]
+    private static double DefaultForInlineDotSize(in ControlTokenDefaultContext context) =>
+        6;
+
+    [ControlTokenDefault(nameof(InlineHeaderMargin))]
+    private static Thickness DefaultForInlineHeaderMargin(in ControlTokenDefaultContext context) =>
+        new Thickness();
+
+    [ControlTokenDefault(nameof(InlineHeaderPadding))]
+    private static Thickness DefaultForInlineHeaderPadding(in ControlTokenDefaultContext context) =>
+        new Thickness();
+
+    [ControlTokenDefault(nameof(InlineItemPadding))]
+    private static Thickness DefaultForInlineItemPadding(in ControlTokenDefaultContext context) =>
+        new Thickness( (context.Global.UniformlyPaddingXXS + context.Global.UniformlyMarginXXS / 2), context.Global.UniformlyPaddingXS + context.Global.LineWidth, (context.Global.UniformlyPaddingXXS + context.Global.UniformlyMarginXXS / 2), 0);
+
+    [ControlTokenDefault(nameof(InlineTitleColor))]
+    private static Color DefaultForInlineTitleColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextSecondary;
+
+    [ControlTokenDefault(nameof(InlineTailColor))]
+    private static Color DefaultForInlineTailColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextDisabled;
+
+    [ControlTokenDefault(nameof(DotLineThickness))]
+    private static double DefaultForDotLineThickness(in ControlTokenDefaultContext context) =>
+        context.Global.LineWidth * 3;
+
+    [ControlTokenDefault(nameof(ProgressFramePadding))]
+    private static Thickness DefaultForProgressFramePadding(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.LineWidthBold * 2);
+
+    [ControlTokenDefault(nameof(ProgressFramePaddingSM))]
+    private static Thickness DefaultForProgressFramePaddingSM(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.LineWidthBold * 2);
+
+    [ControlTokenDefault(nameof(ProgressGrooveColor))]
+    private static Color DefaultForProgressGrooveColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorSplit;
+
+    [ControlTokenDefault(nameof(ProgressColor))]
+    private static Color DefaultForProgressColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(PanelArrowWidth))]
+    private static double DefaultForPanelArrowWidth(in ControlTokenDefaultContext context) =>
+        (context.Global.UniformlyPaddingSM * 2 + context.Global.ControlHeight + (context.Global.FontSizeLG * context.Global.RelativeLineHeightLG)) * 0.7071;
+
+    [ControlTokenDefault(nameof(PanelArrowWidthSM))]
+    private static double DefaultForPanelArrowWidthSM(in ControlTokenDefaultContext context) =>
+        (context.Global.UniformlyPaddingXS * 2 + context.Global.ControlHeightSM + context.Global.FontSize * context.Global.RelativeLineHeight) * 0.7071;
+
+    [ControlTokenDefault(nameof(PanelWaitBackground))]
+    private static Color DefaultForPanelWaitBackground(in ControlTokenDefaultContext context) =>
+        context.Global.ColorFillTertiary;
+
+    [ControlTokenDefault(nameof(PanelProcessBackground))]
+    private static Color DefaultForPanelProcessBackground(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimaryBg;
+
+    [ControlTokenDefault(nameof(PanelFinishBackground))]
+    private static Color DefaultForPanelFinishBackground(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimaryBg;
+
+    [ControlTokenDefault(nameof(PanelErrorBackground))]
+    private static Color DefaultForPanelErrorBackground(in ControlTokenDefaultContext context) =>
+        context.Global.ColorErrorBg;
+
+    [ControlTokenDefault(nameof(PanelWaitActiveBackground))]
+    private static Color DefaultForPanelWaitActiveBackground(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(PanelProcessActiveBackground))]
+    private static Color DefaultForPanelProcessActiveBackground(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(PanelFinishActiveBackground))]
+    private static Color DefaultForPanelFinishActiveBackground(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(PanelErrorActiveBackground))]
+    private static Color DefaultForPanelErrorActiveBackground(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(PanelWaitTextColor))]
+    private static Color DefaultForPanelWaitTextColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextLabel;
+
+    [ControlTokenDefault(nameof(PanelProcessTextColor))]
+    private static Color DefaultForPanelProcessTextColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(PanelFinishTextColor))]
+    private static Color DefaultForPanelFinishTextColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorPrimary;
+
+    [ControlTokenDefault(nameof(PanelErrorTextColor))]
+    private static Color DefaultForPanelErrorTextColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorError;
+
+    [ControlTokenDefault(nameof(PanelActiveTextColor))]
+    private static Color DefaultForPanelActiveTextColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextLightSolid;
+
+    [ControlTokenDefault(nameof(PanelErrorActiveTextColor))]
+    private static Color DefaultForPanelErrorActiveTextColor(in ControlTokenDefaultContext context) =>
+        context.Global.ColorTextLightSolid;
+
+    [ControlTokenDefault(nameof(PanelFirstBorderThickness))]
+    private static Thickness DefaultForPanelFirstBorderThickness(in ControlTokenDefaultContext context) =>
+        new Thickness(context.Global.LineWidthBold, context.Global.LineWidthBold, 0, context.Global.LineWidthBold);
+
+    [ControlTokenDefault(nameof(PanelMiddleBorderThickness))]
+    private static Thickness DefaultForPanelMiddleBorderThickness(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.LineWidthBold, 0, context.Global.LineWidthBold);
+
+    [ControlTokenDefault(nameof(PanelLastBorderThickness))]
+    private static Thickness DefaultForPanelLastBorderThickness(in ControlTokenDefaultContext context) =>
+        new Thickness(0, context.Global.LineWidthBold, context.Global.LineWidthBold, context.Global.LineWidthBold);
+
+    [ControlTokenDefault(nameof(PanelFirstCornerRadius))]
+    private static CornerRadius DefaultForPanelFirstCornerRadius(in ControlTokenDefaultContext context) =>
+        new CornerRadius((context.Global.BorderRadius.TopLeft), 0, 0, (context.Global.BorderRadius.TopLeft));
+
+    [ControlTokenDefault(nameof(PanelLastCornerRadius))]
+    private static CornerRadius DefaultForPanelLastCornerRadius(in ControlTokenDefaultContext context) =>
+        new CornerRadius(0, (context.Global.BorderRadius.TopLeft), (context.Global.BorderRadius.TopLeft), 0);
+
+    [ControlTokenDefault(nameof(PanelFirstCornerRadiusSM))]
+    private static CornerRadius DefaultForPanelFirstCornerRadiusSM(in ControlTokenDefaultContext context) =>
+        new CornerRadius((context.Global.BorderRadiusSM.TopLeft), 0, 0, (context.Global.BorderRadiusSM.TopLeft));
+
+    [ControlTokenDefault(nameof(PanelLastCornerRadiusSM))]
+    private static CornerRadius DefaultForPanelLastCornerRadiusSM(in ControlTokenDefaultContext context) =>
+        new CornerRadius(0, (context.Global.BorderRadiusSM.TopLeft), (context.Global.BorderRadiusSM.TopLeft), 0);
 
 }

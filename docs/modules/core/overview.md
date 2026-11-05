@@ -145,3 +145,6 @@ ThemeManager 管理自己的主题资源字典与根 Context Style；Localizatio
 - [统一图片加载系统](../../architecture/systems/image-loading/overview.md)
 
 主题托管表现的批次协调由 `ThemeManager.Presentation` 与 `Styling/ThemeStyleBatch` 拥有，Token Snapshot 不持有 Style/Visual。`IThemeManager` 增加版本1表现结果/事件及显式清理重试；Provider/Window/root 清理失败由统一有界责任表保留。详细合同及公开配方格式见[品牌协调](../../architecture/systems/theming/brand-recipes.md#41-统一表现协调的现行接口)。
+
+Core的StyleHost lease在注册时向ThemeManager登记，由Desktop运行时通过`InstallStyleHostCompatibility`注入Native共享样式退役工厂；lease注销时成对释放，同一Styles的Window/Popup入口复用引用计数订阅。
+Core不引用Native；Native只提供固定Avalonia通知/ValueStore兼容，Token求值、事务和产品属性仍由Core/Controls决定。

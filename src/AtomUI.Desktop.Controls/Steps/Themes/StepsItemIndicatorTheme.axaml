@@ -10,8 +10,8 @@
         <Setter Property="FontSize" Value="{atom:StepsTokenResource IconFontSize}" />
         <Setter Property="ProgressGrooveColor" Value="{atom:StepsTokenResource ProgressGrooveColor}" />
         <Setter Property="ProgressColor" Value="{atom:StepsTokenResource ProgressColor}" />
-        <Setter Property="ProgressLineThickness" Value="{atom:SharedTokenResource LineWidthBold}" />
-        <Setter Property="IsWaveSpiritEnabled" Value="{atom:SharedTokenResource EnableWaveSpirit}" />
+        <Setter Property="ProgressLineThickness" Value="{atom:OwnerTokenResource LineWidthBold}" />
+        <Setter Property="IsWaveSpiritEnabled" Value="{atom:OwnerTokenResource EnableWaveSpirit}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel Margin="{TemplateBinding Padding}">
@@ -154,7 +154,7 @@
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
             <Style Selector="^ /template/ atom|PixelAlignedBorder#Frame">
                 <Setter Property="Width" Value="{atom:StepsTokenResource IconContainerSizeSM}" />
                 <Setter Property="Height" Value="{atom:StepsTokenResource IconContainerSizeSM}" />
@@ -322,8 +322,8 @@
             </Style>
         </Style>
         <Style Selector="^[Status=Process][IsClickable=True][IsItemHover=True]">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryHover}" />
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimaryHover}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimaryHover}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource ProcessIconColor}" />
         </Style>
         <Style Selector="^[Type=Dot][IsClickable=True][IsItemHover=True]">
@@ -335,7 +335,7 @@
         </Style>
         <Style Selector="^[Type=OutlineDot][Status=Process][IsClickable=True][IsItemHover=True]">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimaryHover}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource ProcessIconColor}" />
         </Style>
 

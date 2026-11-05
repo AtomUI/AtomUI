@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -13,7 +14,8 @@ namespace AtomUI.Desktop.Controls;
 [PseudoClasses(StdPseudoClass.Vertical, StdPseudoClass.Horizontal)]
 public partial class Steps : ItemsControl,
                               ISizeTypeAware,
-                              IMotionAwareControl
+                              IMotionAwareControl,
+                              IThemeInheritanceSource
 {
     #region 公共属性定义
 
@@ -238,6 +240,8 @@ public partial class Steps : ItemsControl,
             stepsItem[!ContentControl.ContentTemplateProperty] = this[!ItemTemplateProperty];
         }
 
+        // Container projections precede logical/visual attachment and are released
+        // on recycle. Theme ancestry cannot provide that preparation-time owner state.
         stepsItem[!StepsItem.TypeProperty] = this[!TypeProperty];
         stepsItem[!StepsItem.PanelVariantProperty] = this[!PanelVariantProperty];
         stepsItem[!StepsItem.OrientationProperty] = this[!OrientationProperty];
@@ -283,25 +287,8 @@ public partial class Steps : ItemsControl,
         RefreshItemState(oldIndex - 1);
     }
 
-    private void HandleItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action == NotifyCollectionChangedAction.Reset)
-        {
-            foreach (var container in GetRealizedContainers())
-            {
-                DetachDirectItem(container as StepsItem);
-            }
-        }
-        else if (e.Action is NotifyCollectionChangedAction.Remove or NotifyCollectionChangedAction.Replace &&
-                 e.OldItems is not null)
-        {
-            foreach (var oldItem in e.OldItems)
-            {
-                DetachDirectItem(oldItem as StepsItem);
-            }
-        }
 
-    }
+
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -325,6 +312,17 @@ public partial class Steps : ItemsControl,
         }
     }
 
+    #region 实现 IThemeInheritanceSource 接口
+
+    // The actual inheritance parent is protected; AXAML cannot read this source.
+    // The ControlTheme retains ownership of the optional final FontFamily value.
+    AvaloniaObject? IThemeInheritanceSource.ThemeInheritanceParent => InheritanceParent;
+
+    #endregion
+
+
+    #region 内部协作 API
+
     internal void HandleItemStatusChanged(StepsItem item)
     {
         var index = item.ItemIndex;
@@ -338,6 +336,10 @@ public partial class Steps : ItemsControl,
         ApplyItemState(item, index);
         RefreshItemState(index - 1);
     }
+
+    #endregion
+
+    #region 内部协作 API
 
     internal void RequestCurrentChange(StepsItem item)
     {
@@ -354,6 +356,8 @@ public partial class Steps : ItemsControl,
             this,
             new StepsCurrentChangeRequestedEventArgs(item.StepNumber));
     }
+
+    #endregion
 
     private static double? CoercePercent(AvaloniaObject sender, double? value)
     {
@@ -413,6 +417,26 @@ public partial class Steps : ItemsControl,
             index == 0,
             index == ItemCount - 1,
             connectorStatus);
+    }
+
+    private void HandleItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            foreach (var container in GetRealizedContainers())
+            {
+                DetachDirectItem(container as StepsItem);
+            }
+        }
+        else if (e.Action is NotifyCollectionChangedAction.Remove or NotifyCollectionChangedAction.Replace &&
+                 e.OldItems is not null)
+        {
+            foreach (var oldItem in e.OldItems)
+            {
+                DetachDirectItem(oldItem as StepsItem);
+            }
+        }
+
     }
 
     private void RefreshRealizedItems()

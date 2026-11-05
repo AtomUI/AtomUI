@@ -16,6 +16,11 @@ StepsToken 不承载：
 
 ## 2. Token 分类
 
+82个Own使用DependencyDefaultsV2，显式Own先参与依赖默认求值；IconContainerCornerRadius在未显式设置时读取有效
+IconContainerSize，清除后重新继承。未配置的四算法默认值保持。根与组合item的Global读取实际Steps owner；
+独立StepsItem保留自身身份。字体族遵循真实原生继承父，控件级显式Global和实例LocalValue可覆盖。
+
+
 ### 2.1 标题与内容区域
 
 - `DescriptionMaxWidth`
@@ -29,9 +34,9 @@ StepsToken 不承载：
 
 ### 2.2 默认 Indicator
 
-- `IconSize`
+- `IconContainerSize`
 - `IconFontSize`
-- `IconSizeSM`
+- `IconContainerSizeSM`
 - `CustomIconSize`
 - `CustomIconFontSize`
 - `IconContainerCornerRadius`
@@ -81,7 +86,7 @@ TailColor 遵循步骤条 rail 的语义：Wait 使用 disabled 色，Process �
 - `ProgressGrooveColor`
 - `ProgressColor`
 
-Progress 外径由当前 `IconSize` / `IconSizeSM` 加对应 padding 推导，不维护重复的固定 size Token。Progress Token 控制 padding、groove 和 arc 颜色。Percent 是运行时输入，不进入 Token。
+Progress 外径由当前 `IconContainerSize` / `IconContainerSizeSM` 加对应 padding 推导，不维护重复的固定 size Token。Progress Token 控制 padding、groove 和 arc 颜色。Percent 是运行时输入，不进入 Token。
 
 ### 2.7 Inline
 
@@ -198,3 +203,17 @@ StepsToken 只影响：
 | 实例语义样式 | 验证三项属性默认 null、非 null 优先级、运行时修改、清空回退，以及不会改变未覆盖的状态/类型 Token 视觉。 |
 | Token 删除或重命名 | 同步类型、生成资源、AXAML、Token 类型、生成数据和 token.md和控件文档。 |
 | 文档 | 运行 `git diff --check`，检查相对链接。 |
+
+## 5. 历史默认与显式覆盖
+
+三个既有声明值曾被template内Local绑定压住，声明默认与历史绘制并不一致。名称、类型、资源号和声明默认保持，
+用已有显式存在位控制覆盖：
+
+| Own | 未显式配置时的视觉来源 | 显式配置／清除 |
+| --- | --- | --- |
+| NavItemGutter | 实际owner的SpacingXS | 明确Own接管Navigation IndicatorSpacing，清除恢复SpacingXS |
+| DotLineThickness | 实际owner的LineWidth | 明确Own接管Dot/OutlineDot ConnectorThickness，清除恢复LineWidth |
+| PanelArrowWidthSM | 通用PanelArrowWidth | Small下明确Own接管箭头及wrapper宽，清除回到通用宽 |
+
+私有布局与箭头输入由ControlTemplate的声明式状态/Own存在位/fallback MultiBinding组合；保留历史初始优先级与时机，不重赋控件属性。
+这些兼容回退不将声明默认冒充实际绘制值；配置、清除和再次应用复用同一owner。

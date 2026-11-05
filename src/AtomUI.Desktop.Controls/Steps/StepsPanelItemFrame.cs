@@ -10,6 +10,8 @@ namespace AtomUI.Desktop.Controls;
 /// </summary>
 internal sealed class StepsPanelItemFrame : Border
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<StepsPanelVariant> PanelVariantProperty =
         AvaloniaProperty.Register<StepsPanelItemFrame, StepsPanelVariant>(nameof(PanelVariant), StepsPanelVariant.Filled);
 
@@ -45,6 +47,8 @@ internal sealed class StepsPanelItemFrame : Border
         get => GetValue(ArrowWidthProperty);
         set => SetValue(ArrowWidthProperty, value);
     }
+
+    #endregion
 
     static StepsPanelItemFrame()
     {

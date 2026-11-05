@@ -10,6 +10,8 @@ namespace AtomUI.Desktop.Controls;
 /// </summary>
 internal sealed class StepsPanelArrow : Control
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<IBrush?> FillBrushProperty =
         AvaloniaProperty.Register<StepsPanelArrow, IBrush?>(nameof(FillBrush));
 
@@ -36,6 +38,8 @@ internal sealed class StepsPanelArrow : Control
         get => GetValue(StrokeThicknessProperty);
         set => SetValue(StrokeThicknessProperty, value);
     }
+
+    #endregion
 
     static StepsPanelArrow()
     {

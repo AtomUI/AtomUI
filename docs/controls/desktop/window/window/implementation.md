@@ -273,11 +273,13 @@ ControlTheme Setter 和 `TemplateBinding` 无法覆盖这条赋值路径。`Wind
 Window 构造时安装 `AtomUI.Native` 的 `AvaloniaStyleRemovalHook`，使本地 Styles 集合移除的普通类型样式能从
 模板继承子树一并退役。hook 在其他消费者订阅前建立，原资源所有权与属性优先级仍由 Avalonia 处理；补齐的来源
 退役在构造期入口之后订阅的消费者集合通知前完成。该入口与 ThemeManager 共用按 Styles 引用计数的安装。
-关闭入口先释放自己的 hook 租约并清空引用，最后一个租约释放时恢复框架 delegate，随后执行原有窗口清理。
+关闭入口先释放自己的 hook 租约并清空引用，最后一个租约释放时恢复框架 delegate，随后执行原有窗口清理；
+保留已释放 lease 不会持有 Window。
 
 构造器租约只作用于当前 Window 的 Styles 集合；Application、Provider、嵌套集合及普通 Avalonia Window
-由 Desktop 初始化的 ThemeManager 兼容工厂及其宿主租约另行覆盖，不重复安装通知 wrapper。
-内部私有边界、通知异常、重入及 NativeAOT 维护约束见 [Native 架构](../../../../modules/native/architecture.md#avalonia-1214-样式退役兼容)。
+由 Desktop 初始化的 ThemeManager 兼容工厂及其宿主租约另行覆盖，Popup 由其打开期租约覆盖，不重复安装通知 wrapper。
+内部私有边界、通知异常、重入、Border 脱离缓存清理及 NativeAOT 维护约束见
+[Native 架构](../../../../modules/native/architecture.md#avalonia-1214-兼容-hook)。
 
 ## 8. 资源、性能与 AOT 边界
 

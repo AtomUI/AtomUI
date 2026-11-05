@@ -6,6 +6,8 @@ namespace AtomUI.Desktop.Controls;
 
 internal class StepsNavigationArrow : Control
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<IBrush?> BorderBrushProperty =
         AvaloniaProperty.Register<StepsNavigationArrow, IBrush?>(nameof(BorderBrush));
 
@@ -23,6 +25,8 @@ internal class StepsNavigationArrow : Control
         get => GetValue(BorderThicknessProperty);
         set => SetValue(BorderThicknessProperty, value);
     }
+
+    #endregion
 
     static StepsNavigationArrow()
     {

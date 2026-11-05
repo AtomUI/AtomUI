@@ -420,3 +420,9 @@ Windows 10 build 19045（150% 缩放，`RedirectionSurface`）复测，记录见
 可复用 Flyout 解除配置 owner 后，定位目标缓存和退役 presenter 的合成缓存随旧身份释放。
 清理只发生在旧宿主结束且没有新活动宿主时；普通 Hide 仍可通过 IsOpen=true 重开，重新定位时不复用退役 owner。
 固定方法反射保留与 Border 缓存保护遵守共享弹层生命周期契约，不新增逐帧清理或资源查询。
+
+## 宿主Style来源退役
+
+Popup的每次Opened session为自身Styles及实际公开PopupRoot/OverlayPopupHost取得共享Native兼容lease，Closed成对释放。
+实际host从已显示Child的视觉祖先取得，避开Avalonia12已内部化的IPopupHostProvider；不创建第二套host或改变定位、阴影、
+动效、输入和Child所有权。样式来源的完整快照、优先级、重入与异常语义由[Native兼容边界](../../../../modules/native/architecture.md#avalonia-1214-兼容-hook)拥有。

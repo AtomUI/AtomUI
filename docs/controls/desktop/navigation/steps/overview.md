@@ -401,3 +401,9 @@ Percent.HasValue
 | 生命周期 | 容器 owner 释放、语义样式投影建立与释放、直接/生成/回收容器、模板重套、detach/reattach、Wave part 释放。 |
 | Semantic Part | descriptor、路由、marker 同步、生成的 Style 应用与 Gallery 预览。 |
 | 文档 | `git diff --check`、相对链接。 |
+
+## 主题与Panel对齐
+
+Steps支持控件级有效Global、82个Own的依赖默认与显式配置/清除；具体兼容默认见[Token设计](token.md)。
+Filled、Outlined Panel将标题与描述整组在面板内容区垂直居中，保留面板/箭头尺寸；自然高度与拉伸高度一致，
+`itemSection`专用Style提供布局对齐定制。原实例字体/颜色/尺寸按实际owner更新，实例值和专用Style保留原优先级。

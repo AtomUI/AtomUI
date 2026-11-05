@@ -18,6 +18,7 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -241,6 +242,8 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     private TopLevel? _openTopLevel;
 
     private PopupLightDismissRegistration? _lightDismissRegistration;
+    private AvaloniaStyleRemovalHook? _popupStyleRemovalHook;
+    private AvaloniaStyleRemovalHook? _hostStyleRemovalHook;
 
     private ShadowsAwareContainer? _motionFrame;
 
@@ -773,6 +776,15 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     private void HandlePopupOpened(object? sender, EventArgs e)
     {
+        ReleaseStyleRemovalHooks();
+        _popupStyleRemovalHook = new AvaloniaStyleRemovalHook(this);
+        // Both public host controls are reachable through the displayed child;
+        // Avalonia 12's IPopupHostProvider is not a public reference API.
+        if (Child?.GetVisualAncestors().FirstOrDefault(
+                visual => visual is OverlayPopupHost or PopupRoot) is IStyleHost host)
+        {
+            _hostStyleRemovalHook = new AvaloniaStyleRemovalHook(host);
+        }
         _hasRaisedOpened = true;
         _isPinnedOpenSuspended = false;
         _isLogicallyAttachedAtOpen = ((ILogical)this).IsAttachedToLogicalTree;
@@ -894,8 +906,17 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         }
     }
 
+    private void ReleaseStyleRemovalHooks()
+    {
+        _hostStyleRemovalHook?.Dispose();
+        _hostStyleRemovalHook = null;
+        _popupStyleRemovalHook?.Dispose();
+        _popupStyleRemovalHook = null;
+    }
+
     private void HandlePopupClosed(object? sender, EventArgs e)
     {
+        ReleaseStyleRemovalHooks();
         DetachShadowHitTest();
         _hasRaisedOpened = false;
         _isOpenMotionActive = false;

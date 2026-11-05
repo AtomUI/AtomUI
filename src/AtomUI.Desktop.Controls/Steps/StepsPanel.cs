@@ -6,6 +6,8 @@ namespace AtomUI.Desktop.Controls;
 
 internal class StepsPanel : Panel
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<StepsType> TypeProperty =
         AvaloniaProperty.Register<StepsPanel, StepsType>(nameof(Type), StepsType.Default);
 
@@ -61,6 +63,8 @@ internal class StepsPanel : Panel
         get => GetValue(MinItemWidthProperty);
         set => SetValue(MinItemWidthProperty, value);
     }
+
+    #endregion
 
     private double[] _itemBases      = [];
     private double[] _computedWidths = [];

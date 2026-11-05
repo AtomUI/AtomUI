@@ -24,6 +24,9 @@
 
 - Changed
   - 定义语义中立默认、唯一配置 owner、布局后取值、Surface 几何和完整阴影的共享动效契约。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+- Implementation / Fix
+  - Opened/Closed按实际Native或Overlay宿主取得/释放共享Style退役hook；移除来源后模板字体等恢复，不改变Popup.Child、物理host、动画或输入合同。
+  - 归整internal协作方法区域，成员方法体保持。
 
 ## 2026-10-31
 

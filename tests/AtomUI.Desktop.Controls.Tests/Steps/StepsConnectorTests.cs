@@ -112,7 +112,8 @@ public class StepsConnectorTests
         var unconsumed = typeof(Desktop.Controls.StepsToken)
                          .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
                          .Select(property => property.Name)
-                         .Where(name => !themeSource.Contains($"StepsTokenResource {name}", StringComparison.Ordinal))
+                         .Where(name => !themeSource.Contains($"StepsTokenResource {name}", StringComparison.Ordinal) &&
+                                        !themeSource.Contains($"StepsTokenResource Kind=\"{name}\"", StringComparison.Ordinal))
                          .ToArray();
 
         unconsumed.ShouldBeEmpty();

@@ -456,3 +456,19 @@ Semantic Part：
 - Gallery 语义预览、样式示例与四语言本地化文案。
 
 收尾运行 `StepsSemanticPartTests` / `StepsRootFrameTests` 与 Steps 定向测试、相邻 Desktop Controls 测试、Gallery 测试（含 `StepsShowCasePageTests`）和 `git diff --check`。
+
+## 12. 主题消费与Panel文字对齐
+
+StepsToken的82个Own由V2依赖默认计划求值；IconContainerCornerRadius依赖有效IconContainerSize。
+StepsItem通过明确owner提供组合Global，独立item继续使用自身identity；Steps暴露internal只读继承父桥，
+ControlTheme决定可选字体族和最终值。容器准备阶段的业务状态投影发生在logical/visual attach之前，回收时成对清理。
+
+私有LayoutPanel/arrow输入通过ControlTemplate声明式MultiBinding合并真实Type/Size、Own存在位与历史fallback，保持原初始优先级和时机。三个历史不一致默认按
+[Token兼容边界](token.md#5-历史默认与显式覆盖)使用显式存在位，清除恢复历史实际来源。
+
+Panel的frame/arrow保持整个item单元尺寸；section获得完整padding内内容slot，由Panel分支ControlTheme默认
+VerticalAlignment=Center排列标题、辅助标题与详情组成的整组内容。自然高度、拉伸高度及RTL使用同一规则，
+原生layout rounding决定半像素中心的最终顶边。专用itemSection Style仍可覆盖VerticalAlignment，退役后恢复主题默认。
+
+Progress底槽使用与进度弧线相同的Geometry绘制路径，EllipseGeometry按progress Rect缓存；Rect/pen/brush不变，
+避免原Ellipse primitive在局部重放时产生历史相关的暗色边缘差异。此修复不改框架、Skia源码、damage选项或触发强制绘制。

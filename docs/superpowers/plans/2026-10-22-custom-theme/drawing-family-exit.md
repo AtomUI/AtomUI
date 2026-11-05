@@ -143,3 +143,7 @@ NativeAOT真实Mach-O arm64 SHA256：`c54539b5241476f20c70918aded8d857b8fff57e79
 完成范围：Skeleton及实际端点、四种Progress、Rate、Slider、Switch、Separator、Watermark、BorderBeam与实际内部绘制目标；50 metadata、92 Own=87消费字段+5批准兼容字段。141临时检查完成并删除，清理后精确174PASS、NET8零警告/错误，当前Mac managed/NativeAOT实际NSWindow各648检查；AOT/JIT309/310零，余一对按A2精确接受。正式文档、CSV、任务表、作者自审和清理均已闭合；复用既有有效证据，本次仅登记批准和同步状态，不重复构建/发布/采样。
 
 CT17本轮既定范围无剩余工程或待批准项。独立Steps的9 metadata/82 Own、完整CT20、其他CT任务及既定平台/最终OS显示面/物理输入边界不因本次关闭而扩张；CT12–CT16既定结论未重开。始终在现有目录和feature/custom-theme，无分支/worktree、子agent或提交/推送。
+
+## 2026-11-05 独立Steps恢复
+
+本记录原50/92出口与批准保持；用户新授权恢复此前排除的Steps9/82，工程、A-B-A/四算法/真实NativeAOT和具体视觉批准已完成，详见[后续唯一记录](../2026-11-05-custom-theme-followups.md)。合并目录为59 metadata/174 Own，不把原批准扩成Steps或其他平台的无条件通过。

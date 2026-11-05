@@ -11,7 +11,7 @@
 - 承载 Wayland input-region 的协议对象解析与 NWayland 调用；调用时机、输入矩形计算和 Window 状态策略仍属于
   `AtomUI.Desktop.Controls`。
 - 承载实验性 Wayland EGL 帧准备与延迟提交；Desktop 负责兼容性探测，已验证的 Wayland EGL 后端默认启用，可显式关闭。
-- 提供 Desktop Window 构造期与 ThemeManager 宿主租约共享的 Avalonia 样式退役兼容 hook，边界见 [架构](architecture.md#avalonia-1214-样式退役兼容)。
+- 提供由 Window 构造期、Popup 打开期与 ThemeManager 宿主租约共享的限定 Avalonia 样式退役兼容 hook，以及 Border 合成缓存释放 hook，边界见 [架构](architecture.md#avalonia-1214-兼容-hook)。
 - 为 `AtomUI.Core` 和 `AtomUI.Desktop.Controls` 提供内部基础设施。
 - 为目标 `AtomUI.Mobile.Controls` 保留 internal 能力边界；当前没有 Mobile 实现消费者。
 
@@ -24,7 +24,7 @@ owner 生命周期与平台默认策略。预留的 `InternalsVisibleTo` 不代�
 ```text
 src/AtomUI.Native/
 ├── WindowExtensions.cs
-├── Compatibility/AvaloniaStyleRemovalHook.cs
+├── Compatibility/
 ├── Windows/
 ├── MacOS/
 └── Linux/

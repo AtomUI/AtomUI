@@ -26,6 +26,7 @@ public static class ThemeManagerBuilderExtensions
         {
             manager.InstallStyleHostCompatibility(StyleRemovalHook.Attach);
         }
+        context.Own(AvaloniaVisualDetachHook.Attach());
         DialogInputCaptureTracker.Initialize();
         var inputManager = AvaloniaLocator.CurrentMutable.GetService(typeof(IInputManager)) as IInputManager;
         if (inputManager is not null)

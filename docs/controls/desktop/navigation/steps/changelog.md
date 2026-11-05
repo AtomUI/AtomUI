@@ -3,6 +3,16 @@
 本文档记录 Steps 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-05
+
+- Theme / Fix
+  - 82个Own迁移DependencyDefaultsV2，显式图标容器尺寸进入派生圆角默认；接通实际owner Global与原生字体族继承桥。
+  - 三处被模板Local值压住的Own改由声明式状态/存在位/fallback MultiBinding消费，保持历史未配置显示与原声明默认。
+  - Filled/Outlined Panel文字组在自然与拉伸单元中垂直居中；完整内容slot由布局提供，Center默认及Part覆盖由ControlTheme拥有。
+  - Progress底槽与arc统一Geometry路径，消除暗色配置撤回的边缘重放差异；缓存EllipseGeometry避免逐帧重建。
+- Structure
+  - 归整9节点的属性、协作API及接口实现区域，成员签名和方法体保持。
+
 ## 2026-09-28
 
 - Layout

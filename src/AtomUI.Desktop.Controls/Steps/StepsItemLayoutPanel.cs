@@ -7,6 +7,8 @@ namespace AtomUI.Desktop.Controls;
 
 internal class StepsItemLayoutPanel : Panel
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<StepsType> TypeProperty =
         AvaloniaProperty.Register<StepsItemLayoutPanel, StepsType>(nameof(Type), StepsType.Default);
 
@@ -111,6 +113,8 @@ internal class StepsItemLayoutPanel : Panel
 
     public Orientation EffectiveTitlePlacement => ResolveTitlePlacement(Type, EffectiveOrientation, TitlePlacement);
 
+    #endregion
+
     private Orientation EffectiveOrientation => Type == StepsType.Panel ? Orientation.Horizontal : Orientation;
 
     static StepsItemLayoutPanel()
@@ -151,6 +155,8 @@ internal class StepsItemLayoutPanel : Panel
         return element.GetValue(RoleProperty);
     }
 
+    #region 内部协作 API
+
     internal static Orientation ResolveTitlePlacement(
         StepsType type,
         Orientation orientation,
@@ -171,6 +177,8 @@ internal class StepsItemLayoutPanel : Panel
             _ => requested
         };
     }
+
+    #endregion
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -380,7 +388,10 @@ internal class StepsItemLayoutPanel : Panel
         if (section is not null)
         {
             section.ArrangedHeadingHeight = headingHeight;
-            section.Arrange(new Rect(layoutRect.X + bodyX, layoutRect.Y, bodyWidth, bodyHeight));
+            // Panel cells stretch their frame and arrow. Give the section the same
+            // content slot so the ControlTheme's alignment can center the group.
+            var bodySlotHeight = Type == StepsType.Panel ? layoutHeight : bodyHeight;
+            section.Arrange(new Rect(layoutRect.X + bodyX, layoutRect.Y, bodyWidth, bodySlotHeight));
         }
 
         if (connector is not null && Type != StepsType.Navigation)

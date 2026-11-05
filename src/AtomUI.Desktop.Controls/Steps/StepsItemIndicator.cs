@@ -65,11 +65,7 @@ internal class StepsItemIndicator : TemplatedControl
     internal static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<StepsItemIndicator>();
 
-    internal bool IsWaveSpiritEnabled
-    {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
-    }
+
 
     internal static readonly DirectProperty<StepsItemIndicator, int> StepNumberProperty =
         AvaloniaProperty.RegisterDirect<StepsItemIndicator, int>(
@@ -132,6 +128,12 @@ internal class StepsItemIndicator : TemplatedControl
 
     internal static readonly StyledProperty<IBrush?> ProgressColorProperty =
         AvaloniaProperty.Register<StepsItemIndicator, IBrush?>(nameof(ProgressColor));
+
+    internal bool IsWaveSpiritEnabled
+    {
+        get => GetValue(IsWaveSpiritEnabledProperty);
+        set => SetValue(IsWaveSpiritEnabledProperty, value);
+    }
 
     private int _stepNumber;
 
@@ -232,6 +234,7 @@ internal class StepsItemIndicator : TemplatedControl
     private WaveSpiritDecorator? _waveSpiritDecorator;
     private IPen? _progressGroovePen;
     private IPen? _progressPen;
+    private EllipseGeometry? _progressGrooveGeometry;
 
     internal bool IsWavePlaying => _waveSpiritDecorator?.IsPlaying == true;
 
@@ -252,6 +255,8 @@ internal class StepsItemIndicator : TemplatedControl
             UseLayoutRoundingProperty);
     }
 
+    #region 内部协作 API
+
     internal void PlayWave()
     {
         if (Type == StepsType.OutlineDot ||
@@ -266,6 +271,8 @@ internal class StepsItemIndicator : TemplatedControl
 
         _waveSpiritDecorator.Play();
     }
+
+    #endregion
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -295,7 +302,13 @@ internal class StepsItemIndicator : TemplatedControl
         var progressRect = new Rect(Bounds.Size).Deflate(lineThickness / 2);
 
         PenUtils.TryModifyOrCreate(ref _progressGroovePen, ProgressGrooveColor, lineThickness);
-        context.DrawEllipse(null, _progressGroovePen, progressRect);
+        if (_progressGrooveGeometry?.Rect != progressRect)
+        {
+            _progressGrooveGeometry = new EllipseGeometry(progressRect);
+        }
+        // Use the same geometry path as the arc. The ellipse primitive's clipped
+        // replay otherwise changes antialiased groove edges after reconfiguration.
+        context.DrawGeometry(null, _progressGroovePen, _progressGrooveGeometry);
 
         PenUtils.TryModifyOrCreate(
             ref _progressPen,

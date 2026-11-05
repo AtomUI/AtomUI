@@ -80,7 +80,7 @@ Rendered最大间隔60.81ms，未取得正式帧率预算达标证据。临时�
 | 内容展开 | 公开 IMotionLayout 与 Controls.ContentViewport 已接入 Expander、Collapse、NavMenu Inline 和 TreeView 系列，几何 / 输入有定向证据 |
 | 状态初始化 | Animations 下已有 TransitionInitializationSession/TransitionSuppressionScope，继续服从独立初始化合同 |
 | 显示隐藏 | 内置消费者已迁入 Motion，Overlay Dialog 使用框架时钟并校准为普通 Zoom；实际呈现的支持矩阵尚未验收 |
-| 注册 | 基础 Motion 不依赖 Desktop animator 注册；旧 TransformOperations 注册已删除，Masonry 继续拥有自己的 ITransform 适配 |
+| 注册 | 基础 Motion 不依赖 Desktop animator 注册；旧 TransformOperations 注册已删除；Masonry 不再做位置动画，已移除其 ITransform 适配注册 |
 | 性能 | 已运行 NavMenu 侧栏与子菜单原生探针；没有实际 display present 数据及最低设备证据，跨平台帧率目标尚未验收 |
 
 源码入口：[定义基类](../../../../src/AtomUI.Core/Animations/Motion/AbstractMotion.cs)、

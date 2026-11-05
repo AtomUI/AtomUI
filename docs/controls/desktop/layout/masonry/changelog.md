@@ -3,6 +3,22 @@
 本文档记录 Masonry 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-05
+
+- Behavior
+  - Relayout no longer animates items. Existing items move to their new positions instantly when content height (for example a loaded image), width (window resizing), column count, breakpoint or the item set changes; the position glide added on 2026-09-15 is removed. Continuous relayout made glides trail behind the layout (misaligned columns and overlap while resizing) and cost UI-thread time per moved item.
+  - New items still fade in and removed items still fade out in place.
+- Performance
+  - Fix a permanent layout cycle when the Measure constraint width differs from the final Arrange width (fractional constraints rounded up by layout rounding, odd-width star columns, fractional scaling, horizontally scrollable `ScrollViewer`) and items have width-dependent sizes. Measure now reuses the last arranged effective width while the input width is unchanged; the reported DesiredSize width still follows the constraint, so a shrinking viewport does not keep a stale horizontal extent.
+  - Create appear fade-ins only for items within the effective viewport extended by one viewport size in each direction, and finish off-screen fade-ins once the viewport is known, so mounting many items does not start one animation per item.
+- Implementation
+  - Remove the glide motion and the global `ITransform` keyframe animator registration (`MasonryItemTransformAnimator`); every appear run releases its Animation-priority preset on completion, cancellation, viewport pruning or detachment.
+- Docs
+  - Document the relayout motion policy, appear range and arranged-width reuse in implementation.md, overview.md and semantic-part.md.
+- Verification
+  - Replace the glide tests with a relayout contract test (content height, width and column count changes leave no transform or fade) and add layout coverage for the Measure/Arrange width mismatch.
+  - Scripted rendering check of the Gallery image example during a 60-frame drag resize: zero item lag and frames pixel-identical to motion disabled.
+
 ## 2026-09-15
 
 - Behavior

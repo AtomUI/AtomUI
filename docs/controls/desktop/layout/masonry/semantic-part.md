@@ -217,7 +217,7 @@ marker，均属于公共主题契约变更。
 - 直接子元素和 `ItemsSource` 两种模式均产生一一对应的 `.semantic-item` marker，且不引入额外包装层。
 - `MasonryItemStyle` 通过 owner-scoped route 命中真实 item container，且不穿透嵌套控件模板。
 - `Masonry.Column`、`Masonry.Span`、`IsVisible`、集合增删、替换 `ItemsPanel` 和响应式断点变化不破坏 marker 生命周期。
-- item 动效：入场淡入与位置滑动以 Animation 优先级临时驱动 `Opacity` / `RenderTransform`，完成后释放并回落用户样式基值；离场淡出期间容器由 ghost 层托管并保留 marker，释放后回归基值。对 item 应用 `MasonryItemStyle` 的 `Opacity` / `RenderTransform` Setter 时，动效结束后必须呈现 Setter 值。
+- item 动效：入场淡入以 Animation 优先级临时驱动 `Opacity`，完成后释放并回落用户样式基值；重新布局不做 item 动画，不写入 `RenderTransform`；离场淡出期间容器由 ghost 层托管并保留 marker，释放后回归基值。对 item 应用 `MasonryItemStyle` 的 `Opacity` / `RenderTransform` Setter 时，动效结束后必须呈现 Setter 值。
 - 默认布局、响应式、动态 item、Gallery Semantic Preview 保持一致。
 - Gallery Semantic Preview 不要求 Masonry 关闭 `ClipToBounds`，也不改变 root border、item 容器或布局祖先的 `Clip`。高亮由
   GalleryBase 的统一 `SemanticPartAdorner` 处理：其 ancestor clipping 关闭，外扩 marker 在自身 Bounds 内绘制，因此 Masonry

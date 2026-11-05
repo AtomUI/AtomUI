@@ -76,6 +76,9 @@ src/AtomUI.Native/
 ├── NativeWindowStyles.cs
 ├── NativePopupShadowHitTest.cs
 ├── WindowExtensions.cs
+├── Compatibility/AvaloniaStyleRemovalHook.cs
+├── Compatibility/StyleRemovalHook.cs
+├── Compatibility/StyleFrameRetirement.cs
 ├── FileSystem/
 │   └── NativeFileSystem.cs
 ├── Windows/
@@ -172,6 +175,26 @@ input-region 方法，并通过 `WaylandWorkerClient.PostWithCommit` 下发。
 7. 原生调用失败不能让 Window manager 的更新队列永久卡死；异步/延迟状态更新需要 `try/finally` 恢复标志。
 8. AOT 要同时满足 metadata 保留和真实 publish；`DynamicDependency`、普通 build、源码字符串测试分别只能
    覆盖一部分风险。
+
+## Avalonia 12.1.4 样式退役兼容
+
+`Compatibility/AvaloniaStyleRemovalHook` 是 Desktop `Window` 构造时获取、关闭时释放的租约入口。
+它委托给 `StyleRemovalHook`，与 ThemeManager 的宿主租约共用按 Styles 集合引用计数的同一安装；
+关闭窗口或释放任一租约不会提前卸载其他持有者的 hook。Desktop 初始化另行安装 ThemeManager 兼容工厂，
+覆盖 Application、Provider、嵌套 Styles 及普通 Avalonia Window 的具名生命周期；不是构造器适配器额外扫描这些宿主。
+Token、控件状态与最终属性优先级仍由原有框架和主题系统拥有。
+
+hook 使用静态 `UnsafeAccessor` 访问固定集合通知及继承子树边界，保留官方程序集。
+它在原回调前快照继承作用域中实际属于旧来源的 StyleInstance frame，在资源所有权与框架退役后、
+构造期入口之后订阅的 Window 消费者集合通知前完成退役。仅移除捕获且不再属于当前有效来源的 frame，
+不重复走逻辑子树，不删除通知中重新加入或仍有效的样式。异常或回调中关闭窗口仍执行相同的兜底完成路径；
+每次通知只完成一次，重入保存并恢复外层完成状态，单个异常原样抛出，多个异常合并报告。
+最后一个租约释放时恢复原 delegate 及其他订阅顺序，已释放 lease 不持有 owner。
+
+Add 保留原框架通知并同步嵌套集合安装；移除增加一次继承树扫描及旧来源 frame 快照/退役，成本随作用域和 frame 数变化。
+不存在全局控件缓存、逐帧监听、运行时发码、属性重赋或控件特判。固定私有边界要求升级 Avalonia 时重新验证原始
+完整轨迹、通知/释放语义及实际 NativeAOT；普通编译不构成兼容性证明。固定 frame 私有成员通过静态
+DynamicDependency 保留；没有修改官方 Avalonia 程序集。
 
 ## 已知结构问题
 

@@ -1,7 +1,7 @@
 # Windows custom-theme 缺口补齐
 
 本记录延续[原 Windows 验收](2026-11-05-windows-theme-acceptance.md)，适用当前
-`feature/custom-theme` 未提交源码。没有创建提交、推送或发布。历史脚本缺失的边界不变；
+`feature/custom-theme` 的验证源码；以下各次执行保留其当时提交/未提交状态。历史脚本缺失的边界不变；
 31-owner 验证采用已公开完整控件清单的当前重建协议。
 
 最新结果：Windows x64完整平台专项已通过（608.063秒），此前.NET10的40626像素差异已在完整重验中消失。
@@ -176,3 +176,20 @@ scripts/verification/verify-windows-custom-theme.ps1 -Check platform-interaction
 原快照的5595项模块检查、七路径引擎/46行矩阵、冷包和Gallery结果继续保留其各自输入身份。
 完整依赖回归、三个符号链接权限前提、ARM64仍未认证；本次通过的是既定Windows x64平台专项，
 不能据此声称全分支、全平台或统一最新上下文的所有门禁全部通过。未提交代码。
+
+## 推送前的远端合并
+
+用户随后要求提交全部改动并推送。全部122文件已提交为`2e5a8071d`；首次普通推送因远端新增
+`74be4a1a6`被拒绝，保留双方提交并执行merge，未强推或改写历史。
+
+远端Window构造器新增的AvaloniaStyleRemovalHook与本地ThemeManager兼容工厂重复替换同一
+Styles通知delegate。真实临时测试观察到4个NotSupportedException失败（含两种安装顺序和真实Window.Show）。
+将构造器入口改为共享StyleRemovalHook的引用计数租约后，两种顺序通过；真实Split模板进一步验证
+公共集合通知前仍需完成退役，先观察到32与14的实际差异，再补齐提前通知完成及异常/重入兜底。
+最终5项通过，包括两种安装顺序、消费者异常及嵌套移除；临时测试源码随即删除，空目录清理被
+自动审批以blocked by policy拒绝，未绕过。独立审查没有Critical/Important发现。
+
+清理后现有Window及SplitButton精确过滤检查260通过、0失败、0跳过；Native的.NET8 Release
+构建成功，0警告/0错误。首次no-restore构建因现有assets仅含NET10而失败，正常restore后通过。
+此合并没有新增反射成员或AOT动态机制；以上是合并后的模块/编译证据，不把之前的完整
+NativeAOT/平台回执升级为合并后源码认证。完整依赖回归、ARM64及3项符号链接权限验证仍开放。

@@ -33,6 +33,7 @@
 - `src/AtomUI.Desktop.Controls/Window/Window.ContentCache.cs`
 - `src/AtomUI.Desktop.Controls/Window/WindowContentBackdrop.cs`
 - `src/AtomUI.Desktop.Controls/Window/WindowToken.cs`
+- `src/AtomUI.Native/Compatibility/AvaloniaStyleRemovalHook.cs`
 - `src/AtomUI.Native/WindowExtensions.cs`
 - `src/AtomUI.Native/Linux/WaylandWindowReflectionExtensions.cs`
 - `src/AtomUI.Native/Linux/WaylandWindowUtils.cs`
@@ -266,6 +267,17 @@ Avalonia `TopLevel` 在应用模板和透明度变化时以 local value 写入�
 ControlTheme Setter 和 `TemplateBinding` 无法覆盖这条赋值路径。`Window` 因此只补充 fallback 属性变化时
 的同步，不新增资源订阅，不参与 Token 解析，也不接管透明度切换。部件引用在模板重套用时替换、关闭时释放；
 没有该部件的自定义模板保持自身绘制行为。
+
+### 7.3 Window Styles 的退役与关闭
+
+Window 构造时安装 `AtomUI.Native` 的 `AvaloniaStyleRemovalHook`，使本地 Styles 集合移除的普通类型样式能从
+模板继承子树一并退役。hook 在其他消费者订阅前建立，原资源所有权与属性优先级仍由 Avalonia 处理；补齐的来源
+退役在构造期入口之后订阅的消费者集合通知前完成。该入口与 ThemeManager 共用按 Styles 引用计数的安装。
+关闭入口先释放自己的 hook 租约并清空引用，最后一个租约释放时恢复框架 delegate，随后执行原有窗口清理。
+
+构造器租约只作用于当前 Window 的 Styles 集合；Application、Provider、嵌套集合及普通 Avalonia Window
+由 Desktop 初始化的 ThemeManager 兼容工厂及其宿主租约另行覆盖，不重复安装通知 wrapper。
+内部私有边界、通知异常、重入及 NativeAOT 维护约束见 [Native 架构](../../../../modules/native/architecture.md#avalonia-1214-样式退役兼容)。
 
 ## 8. 资源、性能与 AOT 边界
 

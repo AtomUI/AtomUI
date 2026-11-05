@@ -399,3 +399,41 @@ Ruling：用户已选择Native hook并要求自主完成，设计选项与约束
 AOT第一次命令误把DefineConstants全局覆盖，触发工具链编译条件错误；改为仅临时消费者FW1AotProbe局部追加后成功，不算产品失败或修复收益。临时只读反射诊断未编入AOT，产品依赖与官方缓存未改。此处没有像素采样或其他平台认证结论。
 
 用户最新指令“所有改动先提交 然后 push”授权提交并推送当前分支全部仓库改动；此前未提交限制据此仅对本次操作解除。仓库外hook原型不进入本次提交，不将其计作已交付修复；正式接入仍按最新Native-only限制推进。
+
+### 正式接入的有限计划与TDD
+
+本次完成条件：Native拥有固定12.1.4边界的可释放通知hook，AtomUI Window构造安装/关闭释放；原16根global-types完整G1恢复；Remove/Replace/Clear/样式组退役、来源隔离/优先级、通知顺序/回调摘树/重入/异常/释放用临时测试核对；NET8构建、Mac JIT/NativeAOT与清理后的Native/Window/Buttons精确门禁。CT24、Windows专项及任意App/Provider/Popup Styles作用域的自动hook不纳入本项；不扩大原绘制/性能批准。
+
+当前接入前临时Headless/真实Skia四项已执行有效RED：Custom档Split模板两Button在Remove/Clear/整组移除后Font仍23，Replace不能切换到新19；原场景16根Native完整RED继续保留。测试准备的Window命名空间与SizeType命名空间编译错误、未切Custom的前置条件错误均不算产品RED。原型尚无产品修复。
+
+窄范围控件审查：只给Window增加单一hook lease和构造/关闭配对，不改公共/受保护API、StyledProperty、模板、token、伪类或业务策略；不拆控件文件、不建代码绑定。Native内部通知订阅拥有原delegate/作用域快照，外层lease释放后不保留owner，暂无可复用等价hook。除原移除缺陷外契约保持，按控件结构检查与精确模块验证收尾。
+
+### 接入后的保护与成本纠偏
+
+正式产品版本（Window自动安装，未显式调用原型）JIT、NET8实际NSWindow、Mac NativeAOT各自两个原profile均280检查通过；原14/92×37、primary Padding15,4及secondary4,4恢复。增加的临时保护最终14项通过，覆盖Remove/Replace/Clear/整组、无类型Class与Nested选择器、LocalValue/其他源、消费者前完成及资源owner/订阅顺序、父回调摘树、嵌套退役、原回调/公开事件异常原样传播、回调内关闭、独立窗口隔离与保留已释放lease时owner可回收。Replace最初错误替换Window内部首组而非本次entry，已改为IndexOf(entry)；该准备失败不作产品RED。
+
+成本复核发现首个全scope补退役版本有不可交付的重复逻辑树遍历：同原16根、完整root-scoped轨迹，ABBA×3、on/off各6进程，每进程明暗两次撤回16条，共每侧12样本，均280检查通过；on分配中位7,033,376B/109.93885ms，off391,316B/5.49945ms。没有把这组额外6,642,060B/104.4394ms算入旧G2接受；立即纠偏，未提交该产品版本。
+
+当前改为以Avalonia Selector.TargetType必要条件（同样使用StyleKey）筛选候选，而不按当前class、pseudo-class、parent或原回调后的连接状态过滤；无类型选择器保留完整scope，selector-free只作用于owner。目标条件与继承候选在原回调前取得，仍由原IStyleHost按来源删除frame。静态get_TargetType边界已用实际具体Selector验证虚调用；保护14项通过。该源码变化后将重跑具名成本、原G1与NET8/NativeAOT，不复用先前源码的绿作为最终证据。
+
+最终候选相同具名对照（ABBA×3、on/off各6进程，每侧12个16条撤回样本、每进程280检查均通过）：on分配中位611,036B/8.11015ms，off391,316B/5.58005ms，额外219,720B/2.5301ms；on最大11.0727ms、off最大6.7679ms。相较首个hook撤回分配降低91.31%；这是原root-scoped完整操作体内16条Style退役的同步UI成本，不是原G2的95处Owner/10往返负载，不把它写成G2追加接受、端到端加速或零额外成本。保留全scope未类型化选择器的成本边界，未为过关关闭动效、删原控件或改属性。
+
+14项临时验证源码现已删除，最终不净增常驻测试；现有Window构造/生命周期测试及实际原生/AOT验证负责安装边界和兼容性保障，具体G1临时轨迹不成为全局永久负担。Native最终候选SHA9b68081af2beeab7dde82a94d802c9b8d03c7d40758080733af7ccb5b7a81b69，Window SHA2e9bee75e92617b7399acee21ba74ff0dfd046acc980807920fd5c25912a15ce。后续仅进行同源码最终专项/清理/模块门禁，不继续扩大组合。
+
+### 最终专项与临时清理
+
+最终上述SHA源码：NET10原global-types280；相同源码root-scoped在成本12进程均280；NET8 Release构建成功，global-types/root-scoped各280；最终osx-arm64 NativeAOT重新发布成功，两个原profile各280、实际Avalonia.Native.WindowImpl，Base12.1.4.0。最终NativeAOT没有CS/IL诊断；既有ILCompiler8.0.27/10.0.8的NU1903及Homebrew dylib部署版本链接警告如实保留，本次未升级依赖或抑制诊断，不宣称旧macOS部署兼容。
+
+官方Base net8 SHA ffaf5263f964ea313ed29361c0dc86ed20fa7fda1473aefa687fde3a90622f8d、net10 SHA99bf47f44f8e6b2c91f96f175dcf7efa8ba64267a1acd17faa05266d7210b72e保持。参考Avalonia HEAD8eeda4f6f546165b3f72e63c9f42247abb306905、工作树干净、XamlX仍未初始化；没有修改官方程序集/缓存/native依赖或参考源码。
+
+唯一外部G1会话目录的846个专有文件/2231211022逻辑字节现删除，含原型、候选patch、诊断/驱动/完整历史提取、JIT/NET8/AOT产物和成本日志；14项临时测试源码已删除。不删共享构建缓存、用户截图或其他worktree；未生成本次媒体。Window完整成员审计1文件/1控件/0问题，文档按control-documentation同步Native兼容边界、Window实现和changelog，未改变Gallery/API/Token用法。后续在清理后的工作树执行Window/Buttons精确门禁，结果在下段登记。
+
+清理后最终精确模块：Window/Buttons两个命名空间，dotnet test net10.0 --filter，Passed!  - Failed:     0, Passed:   362, Skipped:     0, Total:   362, Duration: 8 s - AtomUI.Desktop.Controls.Tests.dll (net10.0)，命令总耗时47.47s，exit0；完整输出仅临时文件，结束已关闭删除。未跑全量或affected-wide。
+
+### G1/FW1最终结论与另步作者审查
+
+本次限定原G1已修复：官方Avalonia12.1.4不变，由AtomUI.Native hook补齐AtomUI Window.Styles退役，原900×700/16根/明暗四档/全局普通类型Style完整添加移除与Split140→180→140及清根值均恢复；G1/FW1不再按“尚无约束内工程解”OPEN。上游Avalonia本体未修改，其他Application/Provider/独立Popup Styles集合没有自动安装本hook，未认证这些作用域或其他OS的原G1。Windows专项仍按原明确决定OPEN，CT24暂缓；旧RED与具体像素FAIL、范围接受与排除保持，不以此次Native功能修复改写。
+
+作者在工程、成本纠偏、专项、临时清理、最终362项/0Skip及成员审计后另步只读自审：核对本次相对已推送d3fef28a2的唯一运行差异为Native兼容hook及Window安装/关闭配对；无Split/模板/property重写、无新Public API/Token或全局静态控件缓存，通知/首异常/重入/关闭/弱目标和官方Base身份有实际证据。已发现的首版成本问题已纠偏并验证；当前没有未处理的本次Critical/Important发现。这是作者自审，不冒充独立评审，遵守用户禁止子agent的要求。
+
+当前所有仓库改动按用户最新明确“所有改动先提交 然后 push”执行提交/推送；535文件检查点d3fef28a2已推送并核对远端，Native修复按同一指令另作修复提交。没有创建分支/worktree/clone，没有amend/rebase/merge或NuGet发布。记录中的旧“未提交/无Git授权/HEAD35f9”是当时历史，不能覆盖当前Git指令与真实提交状态。具体最终提交身份由Git HEAD及远端同名分支核对。

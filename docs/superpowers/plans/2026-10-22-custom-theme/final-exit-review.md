@@ -123,8 +123,10 @@
 
 724目录/1244字段/原90组去向已双向核对，Active/Derived/Alias/Legacy/Reserved真实合同与正式模块文档保持。作者另步自审及临时清理完成；这是作者自审，不是外部独立评审。最后689专有文件及125媒体/清单已删除，用户原截图及共享缓存未删除，产品源码和暂存区保持最后已验证状态。
 
-本轮收口不把以下事项算成PASS：G1/FW1和Windows继续按用户明确决定OPEN；原mixed具体FAIL、旧无效/缺帧/未配对与FW2采用范围之外按原表保留。外部物理输入/IME和任意平台排列不属于本轮新增验收；完整全平台认证仍未完成。独立Steps9/82继续排除，CT19的42具体差异保留原比较器FAIL及原范围接受；CT24继续暂缓。
+本轮收口不把以下事项算成PASS：原G1/FW1已通过Native hook修复并按原Window.Styles完整场景验证；Windows专项仍按用户明确决定OPEN，其他Styles作用域及其他OS原G1没有自动认证；原mixed具体FAIL、旧无效/缺帧/未配对与FW2采用范围之外按原表保留。外部物理输入/IME和任意平台排列不属于本轮新增验收；完整全平台认证仍未完成。独立Steps9/82继续排除，CT19的42具体差异保留原比较器FAIL及原范围接受；CT24继续暂缓。
 
 所有原失败、限定批准、产物/源码身份、精确数值和清理receipt只见[CT25权威记录](platform-current-exit.md)。历史阶段曾经未收口的描述不再作为当前待办；没有扩大G2批准来替其他边界关闭。
 
-工作分支feature/custom-theme与HEAD35f9cc8f5ec63c9a713a95bdcaa8ad2f09bd5b86保持。没有创建分支/worktree/clone/子agent，没有commit/amend/rebase/push/merge/发布。提交仍需用户明确指令。
+工作分支仍为feature/custom-theme。用户最新已明确要求所有改动提交并push，检查点d3fef28a2已推送，Native修复按同一指令另作提交；具体身份以Git HEAD与远端核对。没有创建分支/worktree/clone/子agent，没有amend/rebase/merge或NuGet发布。
+
+G1最终增量及另步作者审查只见[唯一权威记录](platform-current-exit.md#g1fw1最终结论与另步作者审查)；14项临时保护已删除，清理后Window/Buttons362PASS/0Skip、NET8及Mac NativeAOT原轨迹通过。旧平台/显示/成本证据保留其原源码身份，不外推为本次Native源码的全平台认证。

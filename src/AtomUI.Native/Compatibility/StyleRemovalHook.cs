@@ -63,6 +63,8 @@ internal sealed class StyleRemovalHook : IDisposable
         // collect even if that notification chain never reaches this entry.
         private readonly ConditionalWeakTable<Window, IDisposable> _windows = new();
         private IDisposable? _windowObserver;
+        private NotifyCollectionChangedEventArgs? _retirementArgs;
+        private Action? _completeRetirement;
         private bool _disposed;
 
         internal Entry(Styles styles)
@@ -79,6 +81,7 @@ internal sealed class StyleRemovalHook : IDisposable
             subscribers = Replace(subscribers, _original, _wrapper);
             try
             {
+                styles.CollectionChanged += HandleStylesChanged;
                 if (styles.Owner is Application application && ReferenceEquals(application.Styles, styles))
                 {
                     // Plain Avalonia Windows do not acquire AtomUI context leases.
@@ -127,6 +130,7 @@ internal sealed class StyleRemovalHook : IDisposable
                 return;
             }
             _disposed = true;
+            Styles.CollectionChanged -= HandleStylesChanged;
             _windowObserver?.Dispose();
             _windowObserver = null;
             foreach (var window in _windows)
@@ -179,20 +183,51 @@ internal sealed class StyleRemovalHook : IDisposable
                 ? StyleFrameRetirement.Capture(CaptureScope(Styles.Owner), removed)
                 : [];
             var errors = new List<Exception>();
-            // Install new nested collection hooks before AddOwner notifications
-            // can cause reentrant mutations. Keep removed hooks until completion.
-            Try(() => SynchronizeChildren(remove: false), errors);
-            Try(() => _original(sender, args), errors);
-            foreach (var element in scope)
+            var previousArgs = _retirementArgs;
+            var previousCompletion = _completeRetirement;
+            var completed = false;
+            void CompleteRetirement()
             {
-                // A notification may re-add the same source and apply it again.
-                // Retire captured frames individually without recursively touching
-                // logical children that now have a different live style scope.
-                Try(element.Retire, errors);
+                if (completed)
+                {
+                    return;
+                }
+                completed = true;
+                var retirementErrors = new List<Exception>();
+                foreach (var element in scope)
+                {
+                    // A notification may re-add the source. Only captured frames
+                    // that no longer belong to the live scope may be retired.
+                    Try(element.Retire, retirementErrors);
+                }
+                if (retirementErrors.Count == 1)
+                {
+                    ExceptionDispatchInfo.Capture(retirementErrors[0]).Throw();
+                }
+                if (retirementErrors.Count > 1)
+                {
+                    throw new AggregateException("Style frame retirement failed.", retirementErrors);
+                }
             }
-            if (!_disposed)
+            _retirementArgs = args;
+            _completeRetirement = CompleteRetirement;
+            try
             {
-                Try(() => SynchronizeChildren(remove: true), errors);
+                // Install new nested hooks before framework callbacks can mutate
+                // them. Retire before consumers see the public Styles event;
+                // exceptions/disposal before that event still use the fallback.
+                Try(() => SynchronizeChildren(remove: false), errors);
+                Try(() => _original(sender, args), errors);
+                Try(CompleteRetirement, errors);
+                if (!_disposed)
+                {
+                    Try(() => SynchronizeChildren(remove: true), errors);
+                }
+            }
+            finally
+            {
+                _retirementArgs = previousArgs;
+                _completeRetirement = previousCompletion;
             }
             if (errors.Count == 1)
             {
@@ -201,6 +236,14 @@ internal sealed class StyleRemovalHook : IDisposable
             if (errors.Count > 1)
             {
                 throw new AggregateException("Style notification and retirement failed.", errors);
+            }
+        }
+
+        private void HandleStylesChanged(object? sender, NotifyCollectionChangedEventArgs args)
+        {
+            if (ReferenceEquals(_retirementArgs, args))
+            {
+                _completeRetirement?.Invoke();
             }
         }
 

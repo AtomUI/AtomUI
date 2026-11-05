@@ -2,6 +2,21 @@
 
 本文档记录 Window 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-06
+
+- Fix / Implementation
+  - Windows 分支合并时将构造期 hook 接入共享引用计数安装，保留消费者通知前退役及异常/重入兜底，避免与 ThemeManager 宿主租约重复替换框架 delegate。
+
+## 2026-11-05
+
+- Fix / Implementation
+  - Window 生命周期安装、释放 Native 样式退役 hook；移除全局普通类型 Style 后补齐模板继承子树的来源退役，恢复 Split 子按钮字体、留白和原尺寸。保留官方 Avalonia 12.1.4、既有属性优先级和公开 API。
+
+## 2026-10-29
+
+- Theme / Implementation
+  - 显示时复用ThemeContextLease，优先取有效逻辑owner主题，再回退物理owner；保留原窗口所有权与本地值优先级。
+
 ## 2026-10-29
 
 - Performance
@@ -25,8 +40,6 @@
   - Overlay popups (title-bar menu, tooltip), native-window popups (InfoFlyout with `ShouldUseOverlayPopup=False`) and the transparent splash render identically under both composition modes; no black-box regressions.
   - `WindowResizeArtifactTests`: 62 passed, including the updated composition-order assertion and a new assertion that the background hook skips the erase fill during size-move.
   - Windows 10 active frame borders, Windows 10 19045 @150%: on white, gray and black backdrops, active and inactive borders now match a native Notepad window pixel for pixel, including after maximize/restore, fullscreen enter/exit, resizing and refocusing. Live resize A/B in one session shows the same gap and stripe frame counts before and after (13 and 4). `AtomUI.Desktop.Controls.Tests` Window tests: 238 passed.
-- Theme / Implementation
-  - 显示时复用ThemeContextLease，优先取有效逻辑owner主题，再回退物理owner；保留原窗口所有权与本地值优先级。
 
 ## 2026-10-21
 

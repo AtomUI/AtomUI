@@ -896,6 +896,8 @@ public partial class Window : AvaloniaWindow,
 
     private ThemeContextLease? _themeContextLease;
 
+    private AvaloniaStyleRemovalHook? _styleRemovalHook;
+
     private WindowState _windowStateBeforeFullScreen = WindowState.Normal;
 
     // macOS 下 ConfigureMacOsWindow 的输入缓存，用于在 live resize 时短路，避免重复 P/Invoke
@@ -940,6 +942,7 @@ public partial class Window : AvaloniaWindow,
 
     public Window()
     {
+        _styleRemovalHook = new AvaloniaStyleRemovalHook(this);
         _captionButtonCommand = new WindowCaptionButtonCommand(this);
         ConfigureCsdStatus();
         UpdateLegacyWindowsFrameBorderVisibility();
@@ -1173,6 +1176,8 @@ public partial class Window : AvaloniaWindow,
 
     protected override void OnClosed(EventArgs e)
     {
+        _styleRemovalHook?.Dispose();
+        _styleRemovalHook = null;
         _isOpened = false;
         ScalingChanged -= HandleWindowScalingChanged;
         _transparencyFallbackBorder = null;

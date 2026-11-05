@@ -45,7 +45,7 @@
 
 2026-11-05续作的实际状态以[tasks进度表](tasks.md#0-执行进度)、[CT25当前证据](platform-current-exit.md)和[最终审查](final-exit-review.md)为准。
 CT11–CT23复用各自既定有限出口，CT24暂缓；724项目录与1244字段记录保留原合同和历史分类，不将下文旧阶段数字或旧待办重新作为当前门槛。
-CT25/CT26已按本轮确认范围收口：具名包/条件后端/Browser/Linux、FW2指定host、G2原负载计量/有限优化及具体成本接受、当前matched原生完整显示和最后精确门禁完成；CT26目录/合同/正式文档/作者审查与临时清理完成。G1/FW1与Windows按用户决定继续OPEN，原mixed/未配对/采用范围之外及具体FAIL仍保留，不宣称全平台或全部历史问题通过。CT24继续暂缓，批准及证据只见[唯一CT25记录](platform-current-exit.md#最终状态本轮限定出口已收口)。
+CT25/CT26已按本轮确认范围收口：具名包/条件后端/Browser/Linux、FW2指定host、G2原负载计量/有限优化及具体成本接受、当前matched原生完整显示和最后精确门禁完成；CT26目录/合同/正式文档/作者审查与临时清理完成。原G1/FW1已在官方12.1.4下通过Native hook修复并完成原Window.Styles完整轨迹及清理后模块门禁（见[最新结论](platform-current-exit.md#g1fw1最终结论与另步作者审查)）；Windows专项继续OPEN，原mixed/未配对/采用范围之外及具体FAIL仍保留，不宣称全平台或全部历史问题通过。CT24继续暂缓，批准及证据只见[唯一CT25记录](platform-current-exit.md#最终状态本轮限定出口已收口)。
 
 | 资料 | 用途 |
 | --- | --- |

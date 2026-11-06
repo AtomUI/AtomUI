@@ -513,7 +513,7 @@ public class GalleryShellViewCollapseTests
             Dispatcher.UIThread.RunJobs();
 
             brandHeader.IsVisible.ShouldBeTrue();
-            brandHeader.Margin.ShouldBe(new Thickness(0, 20, 0, 0));
+            brandHeader.Margin.ShouldBe(new Thickness(0, 20, 0, 4));
             brandContent.IsVisible.ShouldBeFalse();
             actionHost.IsVisible.ShouldBeTrue();
             actionHost.HorizontalAlignment.ShouldBe(HorizontalAlignment.Center);
@@ -532,6 +532,76 @@ public class GalleryShellViewCollapseTests
         {
             window.Close();
         }
+    }
+
+    [Fact]
+    public void Collapsed_Brand_Header_Bottom_Margin_Follows_UniformlyMarginXXS_Token()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        using var resourceOverride = OverrideApplicationResource(SharedTokenKind.UniformlyMarginXXS, 6d);
+        var navigationView = new TestCollapsibleNavigationView();
+        using var shell = new GalleryShellView(CreateConfiguration(), navigationView, new RoutingState());
+        var window = ShowInWindow(shell);
+
+        try
+        {
+            var brandHeader = FindNamedGrid(shell, "WorkspaceBrandHost");
+
+            navigationView.SidebarNavMenu.IsInlineCollapsed = true;
+            Dispatcher.UIThread.RunJobs();
+
+            brandHeader.Margin.ShouldBe(new Thickness(0, 20, 0, 6));
+
+            navigationView.SidebarNavMenu.IsInlineCollapsed = false;
+            Dispatcher.UIThread.RunJobs();
+
+            brandHeader.Margin.ShouldBe(new Thickness(0, 20, 0, 16));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [Fact]
+    public void Collapsed_Brand_Header_Bottom_Margin_Uses_Configured_Spacing_Over_Token()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        using var resourceOverride = OverrideApplicationResource(SharedTokenKind.UniformlyMarginXXS, 6d);
+        var navigationView = new TestCollapsibleNavigationView();
+        using var shell = new GalleryShellView(CreateConfiguration(collapsedSidebarHeaderSpacing: 12),
+                                               navigationView,
+                                               new RoutingState());
+        var window = ShowInWindow(shell);
+
+        try
+        {
+            var brandHeader = FindNamedGrid(shell, "WorkspaceBrandHost");
+
+            navigationView.SidebarNavMenu.IsInlineCollapsed = true;
+            Dispatcher.UIThread.RunJobs();
+
+            brandHeader.Margin.ShouldBe(new Thickness(0, 20, 0, 12));
+
+            navigationView.SidebarNavMenu.IsInlineCollapsed = false;
+            Dispatcher.UIThread.RunJobs();
+
+            brandHeader.Margin.ShouldBe(new Thickness(0, 20, 0, 16));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [Theory]
+    [InlineData(-1d)]
+    [InlineData(double.NaN)]
+    [InlineData(double.PositiveInfinity)]
+    public void Configuration_Rejects_Invalid_Collapsed_Sidebar_Header_Spacing(double spacing)
+    {
+        Should.Throw<GalleryConfigurationException>(() => CreateConfiguration(collapsedSidebarHeaderSpacing: spacing))
+              .Message.ShouldContain("CollapsedSidebarHeaderSpacing");
     }
 
     private static AvaloniaWindow ShowInWindow(Control content)
@@ -575,9 +645,11 @@ public class GalleryShellViewCollapseTests
         return new ApplicationResourceOverride(resources, key, hadValue, previousValue);
     }
 
-    private static GalleryBaseConfiguration CreateConfiguration(bool enableBrowserMediaBreakpoints = true)
+    private static GalleryBaseConfiguration CreateConfiguration(bool enableBrowserMediaBreakpoints = true,
+                                                                double? collapsedSidebarHeaderSpacing = null)
     {
         var options = new GalleryBaseOptions();
+        options.Shell.CollapsedSidebarHeaderSpacing = collapsedSidebarHeaderSpacing;
         options.Platform.EnableBrowserMediaBreakpoints = enableBrowserMediaBreakpoints;
         options.Branding.VersionText = "v1";
         options.Navigation.DefaultRoute = "Overview";

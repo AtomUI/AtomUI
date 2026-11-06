@@ -49,6 +49,8 @@ public sealed class GalleryShellOptions
 {
     public double SidebarWidth { get; set; } = 280;
 
+    public double? CollapsedSidebarHeaderSpacing { get; set; }
+
     public Size InitialDesktopWindowSize { get; set; } = new(1300, 900);
 
     public Size MinDesktopWindowSize { get; set; } = new(1040, 720);

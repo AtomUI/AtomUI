@@ -136,7 +136,8 @@ public enum DataGridSelectionMode
 public enum DataGridSelectTriggerType
 {
     Cell,
-    SelectIndicator
+    SelectIndicator,
+    Row
 }
 
 public enum DataGridFilterPresenterMode

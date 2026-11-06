@@ -136,6 +136,8 @@ public enum DataGridShowCaseLangResourceKind
     P2ContentClearFiltersAndSorters,
     P2ContentExtended,
     P2ContentSingle,
+    P2ContentIndicatorTrigger,
+    P2ContentRowTrigger,
     P2TextPaginationvisibility,
     P2ContentTopPagination,
     P2ContentBottomPagination,

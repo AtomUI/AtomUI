@@ -319,6 +319,18 @@
         <target state="translated">Single</target>
       </segment>
     </unit>
+    <unit id="P2ContentIndicatorTrigger">
+      <segment>
+        <source>Select indicator</source>
+        <target state="translated">Indicador de seleção</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentRowTrigger">
+      <segment>
+        <source>Click row</source>
+        <target state="translated">Clique na linha</target>
+      </segment>
+    </unit>
     <unit id="P2ContentSortAge">
       <segment>
         <source>Sort age</source>
@@ -879,8 +891,8 @@
     </unit>
     <unit id="SelectionDescription">
       <segment>
-        <source>Use SelectionMode to switch between multiple selection and single selection. Click a checkbox or radio button to select a row; clicking elsewhere in the row keeps the selection unchanged.</source>
-        <target state="translated">Use SelectionMode para alternar entre seleção múltipla e seleção única. Clique em uma caixa de seleção ou botão de opção para selecionar uma linha; clicar em outra área da linha mantém a seleção atual.</target>
+        <source>Use SelectionMode to switch between multiple selection and single selection, and SelectTriggerType to choose what a click selects. With SelectIndicator, click a checkbox or radio button to select a row; clicking elsewhere in the row keeps the selection unchanged. With Row, clicking anywhere in a row selects it, and clicking a selected row again in multiple selection deselects it.</source>
+        <target state="translated">Use SelectionMode para alternar entre seleção múltipla e seleção única, e SelectTriggerType para escolher o que um clique seleciona. Com SelectIndicator, clique em uma caixa de seleção ou botão de opção para selecionar uma linha; clicar em outra área da linha mantém a seleção atual. Com Row, clicar em qualquer ponto da linha a seleciona e, na seleção múltipla, clicar novamente em uma linha selecionada remove a seleção.</target>
       </segment>
     </unit>
     <unit id="SelectionTitle">

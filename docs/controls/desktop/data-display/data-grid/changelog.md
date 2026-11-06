@@ -2,6 +2,15 @@
 
 本文档记录 DataGrid 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-06
+
+- API
+  - `DataGridSelectTriggerType` 新增 `Row`：点击行内任意位置改变选择，`Extended` 下普通点击切换单行、Shift 范围选择；`SelectIndicator` 默认值与 `Cell` 语义不变。
+- Interaction
+  - `Row` 下点击进入编辑或行处于编辑时保留选择；选择指示器增删和 `None` 禁选与其他触发方式一致。
+- Gallery
+  - 选择示例新增“点击选择框 / 点击行”触发方式切换，同步四种语言的选择说明。
+
 ## 2026-11-05
 
 - Implementation

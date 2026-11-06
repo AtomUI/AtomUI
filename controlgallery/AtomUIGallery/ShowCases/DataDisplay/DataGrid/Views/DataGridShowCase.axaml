@@ -162,6 +162,10 @@
                 <atom:RadioButton x:Name="ExtendedSelection" IsChecked="True" IsCheckedChanged="HandleSelectionModeCheckedChanged" Content="{gallery:DataGridShowCaseLangResource P2ContentExtended}" />
                 <atom:RadioButton x:Name="SingleSelection" IsCheckedChanged="HandleSelectionModeCheckedChanged" Content="{gallery:DataGridShowCaseLangResource P2ContentSingle}" />
             </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <atom:RadioButton x:Name="IndicatorTrigger" IsChecked="True" IsCheckedChanged="HandleSelectTriggerCheckedChanged" Content="{gallery:DataGridShowCaseLangResource P2ContentIndicatorTrigger}" />
+                <atom:RadioButton x:Name="RowTrigger" IsCheckedChanged="HandleSelectTriggerCheckedChanged" Content="{gallery:DataGridShowCaseLangResource P2ContentRowTrigger}" />
+            </StackPanel>
             <atom:DataGrid x:Name="SelectionDataGrid" SelectionMode="Extended" SelectTriggerType="SelectIndicator"
                                    x:DataType="vm:DataGridBaseInfo"
                            AttachedToVisualTree="HandleExampleDataGridAttached">

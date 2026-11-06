@@ -202,6 +202,25 @@ public partial class DataGridShowCase : GalleryReactiveUserControl<DataGridViewM
             : DataGridSelectionMode.Single;
     }
 
+    private void HandleSelectTriggerCheckedChanged(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not AtomUIRadioButton radioButton ||
+            radioButton.IsChecked != true)
+        {
+            return;
+        }
+
+        var selectionDataGrid = FindNamedControlNearSender<AtomDataGrid>(sender, "SelectionDataGrid");
+        if (selectionDataGrid is null)
+        {
+            return;
+        }
+
+        selectionDataGrid.SelectTriggerType = radioButton.Name == "RowTrigger"
+            ? DataGridSelectTriggerType.Row
+            : DataGridSelectTriggerType.SelectIndicator;
+    }
+
     private void HandleSortAgeBtnClick(object? sender, RoutedEventArgs? eventArgs)
     {
         FindNamedControlNearSender<AtomDataGrid>(sender, "ResetFilterAndSortGrid")

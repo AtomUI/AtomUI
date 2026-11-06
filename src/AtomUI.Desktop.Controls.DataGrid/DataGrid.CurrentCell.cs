@@ -460,6 +460,10 @@ public partial class DataGrid
                     }
                 }
             }
+            else if (SelectTriggerType == DataGridSelectTriggerType.Row)
+            {
+                action = GetRowTriggerSelectionAction(slot, shift, beginEdit);
+            }
         }
         UpdateSelectionAndCurrency(columnIndex, slot, action, scrollIntoView: false);
 
@@ -469,5 +473,28 @@ public partial class DataGrid
         }
 
         return true;
+    }
+
+    private DataGridSelectionAction GetRowTriggerSelectionAction(int slot, bool shift, bool beginEdit)
+    {
+        if (SelectionMode == DataGridSelectionMode.Single)
+        {
+            return DataGridSelectionAction.SelectCurrent;
+        }
+
+        if (shift)
+        {
+            return DataGridSelectionAction.SelectFromAnchorToCurrent;
+        }
+
+        if (!GetRowSelection(slot))
+        {
+            return DataGridSelectionAction.AddCurrentToSelection;
+        }
+
+        // 再次点击当前单元格进入编辑或行仍在编辑时保留选择，避免编辑手势取消选中
+        return beginEdit || EditingRow != null
+            ? DataGridSelectionAction.None
+            : DataGridSelectionAction.RemoveCurrentFromSelection;
     }
 }

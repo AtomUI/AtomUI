@@ -319,6 +319,18 @@
         <target state="translated">单选</target>
       </segment>
     </unit>
+    <unit id="P2ContentIndicatorTrigger">
+      <segment>
+        <source>Select indicator</source>
+        <target state="translated">点击选择框</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentRowTrigger">
+      <segment>
+        <source>Click row</source>
+        <target state="translated">点击行</target>
+      </segment>
+    </unit>
     <unit id="P2ContentSortAge">
       <segment>
         <source>Sort age</source>
@@ -879,8 +891,8 @@
     </unit>
     <unit id="SelectionDescription">
       <segment>
-        <source>Use SelectionMode to switch between multiple selection and single selection. Click a checkbox or radio button to select a row; clicking elsewhere in the row keeps the selection unchanged.</source>
-        <target state="translated">通过 SelectionMode 切换多选和单选。点击复选框或单选框选择行；点击行内其他位置保留已有选择。</target>
+        <source>Use SelectionMode to switch between multiple selection and single selection, and SelectTriggerType to choose what a click selects. With SelectIndicator, click a checkbox or radio button to select a row; clicking elsewhere in the row keeps the selection unchanged. With Row, clicking anywhere in a row selects it, and clicking a selected row again in multiple selection deselects it.</source>
+        <target state="translated">通过 SelectionMode 切换多选和单选，通过 SelectTriggerType 切换点击选择的方式。SelectIndicator 下点击复选框或单选框选择行，点击行内其他位置保留已有选择；Row 下点击行内任意位置即可选择该行，多选时再次点击已选中的行取消选中。</target>
       </segment>
     </unit>
     <unit id="SelectionTitle">

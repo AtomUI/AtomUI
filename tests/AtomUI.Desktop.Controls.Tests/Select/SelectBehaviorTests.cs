@@ -609,6 +609,51 @@ public class SelectBehaviorTests
     [Theory]
     [InlineData(SelectMode.Multiple)]
     [InlineData(SelectMode.Tags)]
+    public void Multiple_And_Tags_Filtering_Keeps_Selected_Options_Hidden_By_Filter(SelectMode mode)
+    {
+        var apple  = new SelectOption { Header = "Apple", Content  = "apple" };
+        var banana = new SelectOption { Header = "Banana", Content = "banana" };
+        var cherry = new SelectOption { Header = "Cherry", Content = "cherry" };
+        var select = new Desktop.Controls.Select
+        {
+            Width           = 240,
+            Mode            = mode,
+            IsFilterEnabled = true,
+            IsMotionEnabled = false,
+            Filter          = new StringContainsFilter(),
+            OptionsSource   = [apple, banana, cherry],
+            SelectedOptions = [apple, cherry]
+        };
+
+        ShowInWindow(select, () =>
+        {
+            select.IsDropDownOpen = true;
+            Dispatcher.UIThread.RunJobs();
+
+            var searchTextBox = GetTagsSearchTextBox(select);
+            searchTextBox.Focus();
+            searchTextBox.Text = "ban";
+            Dispatcher.UIThread.RunJobs();
+
+            select.FilterValue.ShouldBe("ban");
+            select.SelectedOptions.ShouldNotBeNull();
+            select.SelectedOptions.ShouldBe([apple, cherry], ignoreOrder: true);
+
+            var candidateList = GetCandidateList(select);
+            RaiseCandidateKeyDown(candidateList, Key.Down);
+            Dispatcher.UIThread.RunJobs();
+            candidateList.CandidateSelectedItem.ShouldBeSameAs(banana);
+
+            RaiseCandidateKeyDown(candidateList, Key.Enter);
+            Dispatcher.UIThread.RunJobs();
+
+            select.SelectedOptions.ShouldBe([apple, banana, cherry], ignoreOrder: true);
+        });
+    }
+
+    [Theory]
+    [InlineData(SelectMode.Multiple)]
+    [InlineData(SelectMode.Tags)]
     public void Multiple_And_Tags_Placeholder_Hides_While_Search_Preedit_Text_Is_Rendered(SelectMode mode)
     {
         var select = new Desktop.Controls.Select

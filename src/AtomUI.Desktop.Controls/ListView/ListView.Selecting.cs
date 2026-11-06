@@ -329,6 +329,19 @@ public partial class ListView
         }
     }
 
+    protected IEnumerable<int> EnumerateSourceIndexes()
+    {
+        if (_entryView is null)
+        {
+            yield break;
+        }
+
+        for (var index = 0; index < _entryView.SourceEntryCount; index++)
+        {
+            yield return index;
+        }
+    }
+
     protected IDisposable BeginSelectionBatchUpdate() => _selection.BeginSelectionBatchUpdate();
 
     protected int GlobalIndex(int index) => SourceIndexFromViewIndex(index);

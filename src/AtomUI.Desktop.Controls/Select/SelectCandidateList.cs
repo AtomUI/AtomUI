@@ -47,7 +47,7 @@ internal class SelectCandidateList : ListView, ICandidateList
         if (items is not null)
         {
             var remaining = items.Cast<object?>().ToList();
-            foreach (var sourceIndex in EnumerateCurrentViewSourceIndexes())
+            foreach (var sourceIndex in EnumerateSourceIndexes())
             {
                 if (!TryGetSourceItem(sourceIndex, out var sourceItem))
                 {
@@ -64,7 +64,7 @@ internal class SelectCandidateList : ListView, ICandidateList
         }
         else if (item is not null)
         {
-            foreach (var sourceIndex in EnumerateCurrentViewSourceIndexes())
+            foreach (var sourceIndex in EnumerateSourceIndexes())
             {
                 if (TryGetSourceItem(sourceIndex, out var sourceItem) && ReferenceEquals(sourceItem, item))
                 {

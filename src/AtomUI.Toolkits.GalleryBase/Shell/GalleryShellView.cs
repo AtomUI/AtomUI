@@ -20,6 +20,19 @@ namespace AtomUI.Toolkits.GalleryBase.Shell;
 
 public sealed class GalleryShellView : UserControl, IDisposable
 {
+    #region 内部属性定义
+
+    internal static readonly StyledProperty<double> CollapsedSidebarHeaderSpacingProperty =
+        AvaloniaProperty.Register<GalleryShellView, double>(nameof(CollapsedSidebarHeaderSpacing));
+
+    internal double CollapsedSidebarHeaderSpacing
+    {
+        get => GetValue(CollapsedSidebarHeaderSpacingProperty);
+        set => SetValue(CollapsedSidebarHeaderSpacingProperty, value);
+    }
+
+    #endregion
+
     private const MediaBreakPoint SidebarAutoCollapseBreakPoint = MediaBreakPoint.Medium;
     private readonly CompositeDisposable _themeBindings = new();
     private readonly CompositeDisposable _sidebarBindings = new();
@@ -218,7 +231,8 @@ public sealed class GalleryShellView : UserControl, IDisposable
                                 brandContent,
                                 sidebarHeaderActionHost,
                                 footer,
-                                sidebarNavMenu);
+                                sidebarNavMenu,
+                                configuration.Shell.CollapsedSidebarHeaderSpacing);
 
         return sidebar;
     }
@@ -227,19 +241,30 @@ public sealed class GalleryShellView : UserControl, IDisposable
                                          Control brandContent,
                                          Border? sidebarHeaderActionHost,
                                          Control? footer,
-                                         DesktopNavMenu? sidebarNavMenu)
+                                         DesktopNavMenu? sidebarNavMenu,
+                                         double? collapsedSidebarHeaderSpacing)
     {
         if (sidebarNavMenu is null)
         {
             return;
         }
 
+        if (collapsedSidebarHeaderSpacing is { } spacing)
+        {
+            SetCurrentValue(CollapsedSidebarHeaderSpacingProperty, spacing);
+        }
+        else
+        {
+            BindToken(this, CollapsedSidebarHeaderSpacingProperty, SharedTokenKind.UniformlyMarginXXS);
+        }
+
         void UpdatePresentation()
         {
             var isInlineCollapsed = sidebarNavMenu.Mode == DesktopNavMenuMode.Inline &&
                                     sidebarNavMenu.IsInlineCollapsed;
+            // Collapsed: keep the same gap between the header action and the first menu item as between menu items.
             brandHeader.Margin = isInlineCollapsed
-                ? new Thickness(0, 20, 0, 0)
+                ? new Thickness(0, 20, 0, CollapsedSidebarHeaderSpacing)
                 : new Thickness(0, 20, 0, 16);
             brandContent.IsVisible = !isInlineCollapsed;
             if (footer is not null)
@@ -257,6 +282,8 @@ public sealed class GalleryShellView : UserControl, IDisposable
             }
         }
 
+        _sidebarBindings.Add(this.GetObservable(CollapsedSidebarHeaderSpacingProperty)
+                                 .Subscribe(_ => UpdatePresentation()));
         _sidebarBindings.Add(sidebarNavMenu.GetObservable(DesktopNavMenu.IsInlineCollapsedProperty)
                                            .Subscribe(_ => UpdatePresentation()));
         _sidebarBindings.Add(sidebarNavMenu.GetObservable(DesktopNavMenu.ModeProperty)

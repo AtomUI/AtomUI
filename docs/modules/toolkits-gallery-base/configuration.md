@@ -99,6 +99,7 @@ Logo 渲染策略：
 public sealed class GalleryShellOptions
 {
     public double SidebarWidth { get; set; } = 280;
+    public double? CollapsedSidebarHeaderSpacing { get; set; }
     public Size InitialDesktopWindowSize { get; set; } = new(1300, 900);
     public Size MinDesktopWindowSize { get; set; } = new(1040, 720);
     public bool IsThemeMenuEnabled { get; set; } = true;
@@ -111,6 +112,9 @@ public sealed class GalleryShellOptions
 规则：
 
 - `SidebarWidth` 必须大于 0。
+- `CollapsedSidebarHeaderSpacing` 是 Sidebar 折叠后 `SidebarHeaderAction` 与第一个导航项之间的间距。
+  为 `null`（默认）时跟随全局 Token `UniformlyMarginXXS`，与导航项间距一致并随主题变化；设置后使用固定值，
+  必须是大于等于 0 的有限值。展开状态不受影响。
 - `MinDesktopWindowSize` 不能大于 `InitialDesktopWindowSize`。
 - 菜单开关只控制 Shell 菜单是否出现，不改变 AtomUI ThemeManager 本身能力。
 - Browser Shell 忽略窗口尺寸，但仍使用 `SidebarWidth`。
@@ -200,6 +204,7 @@ GalleryBase 必须在启动阶段校验：
 | route key 重复 | 抛出 `GalleryConfigurationException` |
 | 配置构建后继续修改配置快照 routes | 抛出 `GalleryConfigurationException` |
 | `SidebarWidth <= 0` | 抛出 `GalleryConfigurationException` |
+| `CollapsedSidebarHeaderSpacing` 小于 0、NaN 或无穷 | 抛出 `GalleryConfigurationException` |
 | link URI 非法 | 抛出 `GalleryConfigurationException` |
 
 异常信息必须包含产品可定位的信息，例如 route key、导航路径、配置属性名。

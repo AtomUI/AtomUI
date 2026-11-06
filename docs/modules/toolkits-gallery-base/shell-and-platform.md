@@ -55,6 +55,8 @@ public interface IGallerySidebarNavMenuHost
   右侧，不拥有其命令、图标、文案或折叠状态。
 - 品牌区使用左侧品牌内容与右侧 Header Action 两个独立视觉单元。展开状态下 Action 位于 Sidebar 右上角；
   折叠状态下只隐藏品牌内容，Action 在折叠宽度内保持居中和可交互。
+- 折叠状态下品牌区保留 `GalleryShellConfiguration.CollapsedSidebarHeaderSpacing` 作为下边距，避免 Action
+  与第一个导航项贴在一起；未配置时跟随全局 Token `UniformlyMarginXXS`，与导航项间距保持一致。
 - Sidebar 在宽度 motion 期间裁剪品牌和 footer 内容；完整品牌内容和 footer 在折叠状态下隐藏。
 - NavMenu Header 不承载 Sidebar 折叠入口，避免把全局布局操作夹在品牌区与第一个导航项之间。
 - `GalleryShellView.Dispose()` 必须释放从 NavMenu 到 Sidebar 的属性绑定，不能让 Shell 或导航 ViewModel

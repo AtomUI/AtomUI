@@ -336,13 +336,40 @@ public sealed class ValidateRegistrationToolchainTask : RegistrationBuildTask
 
             if (!string.IsNullOrEmpty(NativeCompiler))
             {
-                using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(NativeCompiler)
+                var start = new System.Diagnostics.ProcessStartInfo(NativeCompiler)
                 {
                     ArgumentList = { "--version" }, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true
-                }) ?? throw new InvalidDataException($"Cannot start actual NativeAOT compiler '{NativeCompiler}'.");
+                };
+                string? compilerHash = null;
+                if (OperatingSystem.IsWindows() && Path.GetFullPath(NativeCompiler).Length >= 260)
+                {
+                    var compiler = Path.GetFullPath(NativeCompiler);
+                    if (!compiler.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || !File.Exists(compiler) ||
+                        compiler.IndexOfAny(['%','"','\r','\n']) >= 0)
+                    {
+                        throw new InvalidDataException("Long Windows compiler validation requires an existing exact .exe path without percent signs, quotes or line breaks.");
+                    }
+                    if (!compiler.StartsWith(@"\\?\", StringComparison.Ordinal))
+                    {
+                        compiler = compiler.StartsWith(@"\\", StringComparison.Ordinal) ? @"\\?\UNC\" + compiler[2..] : @"\\?\" + compiler;
+                    }
+                    // CreateProcess cannot launch this long executable directly, even with its
+                    // extended prefix. Match the official SDK's quoted implicit ilc command,
+                    // restricted to this one --version invocation and exact .exe-only lookup.
+                    compilerHash = RegistrationFiles.Hash(NativeCompiler);
+                    start.FileName = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+                    start.ArgumentList.Clear();
+                    start.Arguments = "/d /s /v:off /c \"\"" + compiler[..^4] + "\" --version\"";
+                    start.Environment["PATHEXT"] = ".EXE";
+                }
+                using var process = System.Diagnostics.Process.Start(start) ?? throw new InvalidDataException($"Cannot start actual NativeAOT compiler '{NativeCompiler}'.");
                 var version = process.StandardOutput.ReadToEnd().Trim();
                 var errors = process.StandardError.ReadToEnd();
                 process.WaitForExit();
+                if (compilerHash is not null && RegistrationFiles.Hash(NativeCompiler) != compilerHash)
+                {
+                    throw new InvalidDataException("The exact NativeAOT compiler changed during version validation.");
+                }
                 if (process.ExitCode != 0 || !TypeMapBuildContract.IsSupportedDesktopToolchain(version, targetVersion))
                 {
                     throw new InvalidDataException(

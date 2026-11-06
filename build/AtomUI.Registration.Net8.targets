@@ -93,9 +93,17 @@
             <_AtomUINet8TaskOverrideSource>@(_AtomUINet8FrozenTaskSource)</_AtomUINet8TaskOverrideSource>
             <_AtomUINet8HostDirectory>$([System.IO.Path]::GetDirectoryName('$(_AtomUINet8TaskOverrideSource)'))</_AtomUINet8HostDirectory>
             <IntermediateLinkDir>$([System.IO.Path]::GetDirectoryName('$(AtomUINet8RegistrationInputs)'))/linked/</IntermediateLinkDir>
-            <_LinkSemaphore>$(IntermediateLinkDir)Link.semaphore</_LinkSemaphore>
             <AtomUINet8VerifiedReceipt>$([System.IO.Path]::GetDirectoryName('$(AtomUINet8RegistrationInputs)'))/verified.json</AtomUINet8VerifiedReceipt>
             <MSBuildAllProjects>$(MSBuildAllProjects);$(AtomUINet8RegistrationInputs)</MSBuildAllProjects>
+        </PropertyGroup>
+        <!-- Use one Windows extended absolute directory for the engine, SDK candidate/copy
+             and removed-assembly/deps bookkeeping. Candidate-only normalization leaves
+             the SDK second Exists check unable to see retained long-path assemblies. -->
+        <PropertyGroup>
+            <IntermediateLinkDir Condition="$([MSBuild]::IsOSPlatform('Windows'))">$([System.IO.Path]::GetFullPath('$(IntermediateLinkDir)'))</IntermediateLinkDir>
+            <IntermediateLinkDir Condition="$([MSBuild]::IsOSPlatform('Windows')) and !$([System.String]::Copy('$(IntermediateLinkDir)').StartsWith('\\?\')) and $([System.String]::Copy('$(IntermediateLinkDir)').StartsWith('\\'))">\\?\UNC\$([System.String]::Copy('$(IntermediateLinkDir)').Substring(2))</IntermediateLinkDir>
+            <IntermediateLinkDir Condition="$([MSBuild]::IsOSPlatform('Windows')) and !$([System.String]::Copy('$(IntermediateLinkDir)').StartsWith('\\?\'))">\\?\$(IntermediateLinkDir)</IntermediateLinkDir>
+            <_LinkSemaphore>$(IntermediateLinkDir)Link.semaphore</_LinkSemaphore>
         </PropertyGroup>
         <ItemGroup>
             <ManagedAssemblyToLink Remove="@(ManagedAssemblyToLink)" />

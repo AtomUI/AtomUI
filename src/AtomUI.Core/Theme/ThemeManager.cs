@@ -1156,6 +1156,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         DisposeBoundary(Resources.MergedDictionaries.Clear);
         DisposeBoundary(Resources.Clear);
         DisposeBoundary(Clear);
+        _styleHostCompatibilityFactory = null;
 
         _themeDefinitionLoadCache.Dispose();
         if (_themeSnapshotCache is { } snapshotCache)

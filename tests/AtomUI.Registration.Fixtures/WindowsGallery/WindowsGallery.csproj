@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <PublishAot Condition="'$(GalleryPublishAot)' == 'true'">true</PublishAot>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="../../../controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj" />
+    </ItemGroup>
+</Project>

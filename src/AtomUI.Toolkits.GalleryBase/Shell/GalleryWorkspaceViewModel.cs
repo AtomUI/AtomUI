@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Diagnostics;
 using System.Reactive;
 using AtomUI.Localization;
@@ -143,17 +144,17 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         SyncThemeState(_themeManager?.CurrentTheme, null);
         SyncLanguageState(_languageManager?.Current);
 
-        _toggleDarkModeCommand = new(() => ReactiveCommand.CreateFromTask<bool>(SetDarkModeAsync));
-        _setAppearanceModeCommand = new(() => ReactiveCommand.CreateFromTask<ThemePreference>(SetAppearanceModeAsync));
-        _toggleCompactModeCommand = new(() => ReactiveCommand.CreateFromTask<bool>(SetCompactModeAsync));
-        _toggleMotionCommand = new(() => ReactiveCommand.CreateFromTask<bool>(SetMotionEnabledAsync));
-        _toggleWaveSpiritCommand = new(() => ReactiveCommand.CreateFromTask<bool>(SetWaveSpiritEnabledAsync));
-        _switchThemeCommand = new(() => ReactiveCommand.CreateFromTask<string>(SwitchThemeAsync));
+        _toggleDarkModeCommand = new(() => GalleryCommands.CreateFromTask<bool>(SetDarkModeAsync));
+        _setAppearanceModeCommand = new(() => GalleryCommands.CreateFromTask<ThemePreference>(SetAppearanceModeAsync));
+        _toggleCompactModeCommand = new(() => GalleryCommands.CreateFromTask<bool>(SetCompactModeAsync));
+        _toggleMotionCommand = new(() => GalleryCommands.CreateFromTask<bool>(SetMotionEnabledAsync));
+        _toggleWaveSpiritCommand = new(() => GalleryCommands.CreateFromTask<bool>(SetWaveSpiritEnabledAsync));
+        _switchThemeCommand = new(() => GalleryCommands.CreateFromTask<string>(SwitchThemeAsync));
 
-        _switchToZhCNCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.ZhCN)));
-        _switchToZhTWCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.ZhTW)));
-        _switchToEnUSCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.EnUS)));
-        _switchToPtBRCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.PtBR)));
+        _switchToZhCNCommand = new(() => GalleryCommands.Create(() => SetLanguage(LanguageTags.ZhCN)));
+        _switchToZhTWCommand = new(() => GalleryCommands.Create(() => SetLanguage(LanguageTags.ZhTW)));
+        _switchToEnUSCommand = new(() => GalleryCommands.Create(() => SetLanguage(LanguageTags.EnUS)));
+        _switchToPtBRCommand = new(() => GalleryCommands.Create(() => SetLanguage(LanguageTags.PtBR)));
 
         if (_themeManager is not null)
         {

@@ -1,0 +1,10 @@
+<Project>
+    <Import Project="../Directory.Build.props" />
+    <PropertyGroup>
+        <TargetFramework />
+        <AtomUIUseSkiaCompatibility>true</AtomUIUseSkiaCompatibility>
+        <OutputPath Condition="'$(WindowsThemeOutputRoot)' != ''">$(WindowsThemeOutputRoot)/bin/$(Configuration)/</OutputPath>
+        <BaseIntermediateOutputPath Condition="'$(WindowsThemeOutputRoot)' != ''">$(WindowsThemeOutputRoot)/obj/</BaseIntermediateOutputPath>
+        <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)/</IntermediateOutputPath>
+    </PropertyGroup>
+</Project>

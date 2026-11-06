@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reactive;
@@ -172,8 +173,8 @@ public class ListViewModel : ReactiveObject, IRoutableViewModel
     public ListViewModel(IScreen screen)
     {
         HostScreen                         = screen;
-        SelectBoundSelectedItemsCommand    = ReactiveCommand.Create(SelectBoundSelectedItems);
-        ClearBoundSelectedItemsCommand     = ReactiveCommand.Create(ClearBoundSelectedItems);
+        SelectBoundSelectedItemsCommand    = GalleryCommands.Create(SelectBoundSelectedItems);
+        ClearBoundSelectedItemsCommand     = GalleryCommands.Create(ClearBoundSelectedItems);
         _boundSelectedItems.CollectionChanged += HandleBoundSelectedItemsCollectionChanged;
     }
 

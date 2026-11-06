@@ -27,7 +27,8 @@ XLIFF 解析与文件级校验模型，但普通应用和模块编译不再运�
 ## MSBuild items
 
 `build/AtomUI.Localization.targets` 集中拥有输入发现、项目引用桥接、模板导出和打包流程。它自动收集标准目录中的
-XLIFF，并排除 `bin/`、`obj/` 和生成目录：
+XLIFF，并排除 `bin/`、`obj/`、生成目录和实际 `NuGetPackageRoot`。项目内包缓存不会被重新认作应用源码；
+包 props 显式导入的语言文件及模块元数据仍保留。包根按项目目录规范化，空属性不会形成项目根排除：
 
 ```xml
 <AtomUILanguage Include="**/Localization/**/*.xlf" />

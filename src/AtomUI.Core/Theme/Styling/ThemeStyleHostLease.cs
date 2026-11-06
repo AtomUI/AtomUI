@@ -10,6 +10,7 @@ internal sealed class ThemeStyleHostLease : IDisposable
     private ThemeContext? _context;
     private readonly List<Styles> _mounted = [];
     private bool _disposed;
+    private IDisposable? _compatibility;
 
     private ThemeStyleHostLease(IStyleHost host, ThemeContext context)
     {
@@ -40,6 +41,7 @@ internal sealed class ThemeStyleHostLease : IDisposable
         var group = lease.Prepare(context.Styles.Current);
         try
         {
+            context.Manager.RegisterStyleHost(lease);
             context.Styles.Register(lease);
             lease.Mount(group);
             lease.Current = group;
@@ -58,6 +60,17 @@ internal sealed class ThemeStyleHostLease : IDisposable
             }
             throw;
         }
+    }
+
+    internal void AttachCompatibility(Func<IStyleHost, IDisposable> factory)
+    {
+        _compatibility ??= factory(Host);
+    }
+
+    internal void ReleaseCompatibility()
+    {
+        _compatibility?.Dispose();
+        _compatibility = null;
     }
 
     internal Styles Prepare(ThemeStyleGeneration generation)
@@ -146,6 +159,7 @@ internal sealed class ThemeStyleHostLease : IDisposable
         }
         if (errors.Count == 0)
         {
+            _context!.Manager.UnregisterStyleHost(this);
             _context!.Styles.Unregister(this);
             Current = null!;
             _host = null;

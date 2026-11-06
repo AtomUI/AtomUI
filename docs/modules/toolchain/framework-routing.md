@@ -42,7 +42,9 @@ Browser 物化检查实际官方 ILLink、转换阶段和消费产物；WASM 工
 时，才在能力允许的组合中转换副本。转换只调整 ABI，最终依赖闭包仍由目标版本的官方引擎计算。
 
 Windows NativeAOT 的 SDK 引用集合也包含没有 CLR 元数据的原生 PE DLL。探测仅检查具有有效 CLR 元数据和
-程序集 manifest 的输入；原生 PE 不参与注册协议探测，SDK 的原始输入集合保持不变。损坏的 PE、存在 CLR header
+程序集 manifest 的输入；原生 PE 不参与注册协议探测。桥接准备仅允许原始 SDK `IlcReference` 中的原生 PE，
+保留原项元数据并将路径重定向到冻结副本；实际引擎校验精确引用集合、路径和内容摘要。`RuntimeList` 的 Native
+标签不能覆盖 PE 元数据分类，例如 CoreLib 仍按托管程序集核对身份。损坏的 PE、存在 CLR header
 但缺少元数据，以及没有程序集 manifest 的托管模块仍明确失败，不能通过忽略解析异常来跳过旧包或错误输入。
 
 探测按每个包自己的 TFA 与框架引用 major 验证官方 accessor。例如 net11 应用引用正常 net10 控件包时，

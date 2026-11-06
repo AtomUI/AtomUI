@@ -306,6 +306,14 @@
         "tests/AtomUI.Build.Tasks.Tests/ThemeAssetWrapperTaskTests.cs"
       ],
       "conservative": true
+    },
+    {
+      "id": "registration-fixtures",
+      "roots": [
+        "tests/AtomUI.Registration.Fixtures"
+      ],
+      "depth": 1,
+      "tests": []
     }
   ],
   "rules": [
@@ -634,7 +642,12 @@
     "scripts/verification/test.py",
     "scripts/verification/test-policy.json",
     ".github/workflows/verify-affected.yml",
-    "scripts/verification/verify-browser-fixture.py"
+    "scripts/verification/verify-browser-fixture.py",
+    "scripts/verification/verify-windows-custom-theme.py",
+    "scripts/verification/verify-windows-custom-theme.ps1",
+    "scripts/verification/launch-windows-gallery.ps1",
+    "scripts/verification/windows_packages.py",
+    "scripts/verification/windows_desktop.py"
   ],
   "obligations": [
     {
@@ -672,7 +685,22 @@
         "src/AtomUI.Toolchain/Tasks/TaskProcessHost.cs",
         "src/AtomUI.Toolchain/Tasks/TypeMap*.cs"
       ],
-      "description": "Validate the affected real NativeAOT/trim publish and startup paths according to docs/engineering/development/aot-programming-guidelines.md. Unit test success alone does not satisfy this obligation."
+      "description": "Validate the affected real NativeAOT/trim publish and startup paths according to docs/engineering/development/aot-programming-guidelines.md. Unit test success alone does not satisfy this obligation.",
+      "verifier": [
+        "pwsh",
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "scripts/verification/verify-windows-custom-theme.ps1",
+        "-Check",
+        "native-aot"
+      ],
+      "verifier_excludes": [
+        "controlgallery/AtomUIGallery.Browser/**",
+        "src/AtomUI.Native/MacOS/**",
+        "src/AtomUI.Native/Linux/**",
+        ".github/workflows/release-gallery.yml"
+      ]
     },
     {
       "id": "package-layout",
@@ -703,7 +731,16 @@
         "src/AtomUI.Toolchain/Tasks/TaskProcessHost.cs",
         "src/AtomUI.Toolchain/Tasks/TypeMap*.cs"
       ],
-      "description": "Validate actual package assets with scripts/verification/verify-package-layout.ps1 and verify-build-task-isolation.ps1 for the affected package configuration."
+      "description": "Validate actual package assets with scripts/verification/verify-package-layout.ps1 and verify-build-task-isolation.ps1 for the affected package configuration.",
+      "verifier": [
+        "pwsh",
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "scripts/verification/verify-windows-custom-theme.ps1",
+        "-Check",
+        "package-layout"
+      ]
     },
     {
       "id": "platform-interaction",
@@ -712,7 +749,22 @@
         "controlgallery/AtomUIGallery.Browser/**",
         ".github/workflows/release-gallery.yml"
       ],
-      "description": "Run the affected platform host and validate its original interaction/startup contract; record platform and concrete evidence."
+      "description": "Run the affected platform host and validate its original interaction/startup contract; record platform and concrete evidence.",
+      "verifier": [
+        "pwsh",
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "scripts/verification/verify-windows-custom-theme.ps1",
+        "-Check",
+        "platform-interaction"
+      ],
+      "verifier_excludes": [
+        "controlgallery/AtomUIGallery.Browser/**",
+        "src/AtomUI.Native/MacOS/**",
+        "src/AtomUI.Native/Linux/**",
+        ".github/workflows/release-gallery.yml"
+      ]
     },
     {
       "id": "performance",
@@ -750,7 +802,16 @@
         "src/AtomUI.Toolchain/Tasks/TaskProcessHost.cs",
         "src/AtomUI.Toolchain/Tasks/TypeMap*.cs"
       ],
-      "description": "Run the affected actual conditional engine and SDK/cold-package route described in docs/reference/aot/conditional-registration-contract.md and docs/engineering/workflows/affected-verification.md#conditional-registration-backends. Existing net10 materializer/build-task tests cover their own contracts only; they do not prove ILLink8 or ILC8 closure, runtime resources, malformed-ABI rejection, or final-output consumption. Record exact compiler/runtime/RID and fail-before/pass-after evidence; no mock-marking or stale receipt substitutes for the required route."
+      "description": "Run the affected actual conditional engine and SDK/cold-package route described in docs/reference/aot/conditional-registration-contract.md and docs/engineering/workflows/affected-verification.md#conditional-registration-backends. Existing net10 materializer/build-task tests cover their own contracts only; they do not prove ILLink8 or ILC8 closure, runtime resources, malformed-ABI rejection, or final-output consumption. Record exact compiler/runtime/RID and fail-before/pass-after evidence; no mock-marking or stale receipt substitutes for the required route.",
+      "verifier": [
+        "pwsh",
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "scripts/verification/verify-windows-custom-theme.ps1",
+        "-Check",
+        "conditional-registration-engines"
+      ]
     }
   ]
 }

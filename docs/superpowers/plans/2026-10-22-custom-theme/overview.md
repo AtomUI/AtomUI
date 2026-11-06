@@ -1,5 +1,12 @@
 # 精确自定义主题优化与重构任务路线图
 
+2026-11-05 后续 Windows 新增授权及实际交付状态见
+[Windows 验收记录](../../progress/2026-11-05-windows-theme-acceptance.md)。本文 Windows OPEN 属于先前限定出口；
+当前 .NET 8 NativeAOT/旧包桥接及本机原生验收单独登记；2026-11-06 已补31-owner/40控件、880×700、12阶段的 Windows 托管/NativeAOT 验证。
+场景依据原记录重建，历史脚本本身及其逐字布局身份未恢复，原 mixed-host 失败不改写。
+2026-11-06 正式 Native hook、G1修复及当前修补包/专项回执见
+[Windows 缺口补齐](../../progress/2026-11-06-windows-theme-gap-closure.md)。
+
 > **For agentic workers:** 使用 superpowers:executing-plans 按已审查的子计划执行；只有用户明确选择委派后才使用 superpowers:subagent-driven-development。路线图中的待细化任务不能直接作为批量改码指令。
 
 **Goal:** 把已确认的主题设计与90组审计条目转化为可追溯、可分批审查、可验证的基础设施及控件整改任务。

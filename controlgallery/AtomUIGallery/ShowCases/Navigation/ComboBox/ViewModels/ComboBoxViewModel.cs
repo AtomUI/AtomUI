@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Reactive;
 using AtomUI.Controls;
 using ReactiveUI;
@@ -56,8 +57,8 @@ public class ComboBoxViewModel : ReactiveObject, IRoutableViewModel
         SemanticPreviewItems          = CreateSemanticPreviewItems();
         StyleClassItems               = CreateSemanticPreviewItems();
         BoundSelectedItem             = ComboBoxItems[1];
-        SetBoundSelectedItemCommand   = ReactiveCommand.Create(SetBoundSelectedItem);
-        ClearBoundSelectedItemCommand = ReactiveCommand.Create(ClearBoundSelectedItem);
+        SetBoundSelectedItemCommand   = GalleryCommands.Create(SetBoundSelectedItem);
+        ClearBoundSelectedItemCommand = GalleryCommands.Create(ClearBoundSelectedItem);
     }
 
     public ReactiveCommand<Unit, Unit> SetBoundSelectedItemCommand { get; }

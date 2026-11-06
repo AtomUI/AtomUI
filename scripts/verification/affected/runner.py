@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .evidence import fingerprint, output_fingerprint, output_manifest, read_trx, read_trx_failures, write_json
+from .repository import matches
 
 
 class RunLock:
@@ -151,8 +152,17 @@ def matching_specialist_checks(repo, plan, output):
     except (OSError, ValueError):
         return []
     context = specialist_context(repo)
+    def covers_plan(obligation):
+        exclusions = obligation.get("verifier_excludes", [])
+        if not exclusions:
+            return True
+        changes = plan.get("changes")
+        return (isinstance(exclusions, list) and all(isinstance(pattern, str) for pattern in exclusions) and
+                isinstance(changes, list) and all(isinstance(path, str) for path in changes) and
+                not any(matches(path, pattern) for path in changes for pattern in exclusions))
     return [evidence[o["id"]] for o in plan["obligations"] if evidence.get(o["id"], {}).get("status") == "passed"
-            and evidence[o["id"]].get("context") == context and evidence[o["id"]].get("check") == o]
+            and evidence[o["id"]].get("context") == context and evidence[o["id"]].get("check") == o
+            and covers_plan(o)]
 
 
 def run_verification(repo, plan, output, dotnet=None, reuse=True, configuration="Debug", framework="net10.0", timeout=1800, announce=None, tests_only=False, preparation_seconds=0):

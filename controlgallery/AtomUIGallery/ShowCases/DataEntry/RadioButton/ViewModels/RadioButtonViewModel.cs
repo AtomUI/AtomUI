@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Reactive;
 using AtomUI.Controls;
 using ReactiveUI;
@@ -82,9 +83,9 @@ public class RadioButtonViewModel : ReactiveObject, IRoutableViewModel
         _toggleDisabledRadioUnCheckedEnabled = true;
         _toggleDisabledRadioCheckedEnabled = true;
 
-        ToggleDisabledCommand = ReactiveCommand.Create(HandleToggleDisabled);
-        SelectChengduCommand  = ReactiveCommand.Create(HandleSelectChengdu);
-        ClearTwoWayCheckedItemCommand = ReactiveCommand.Create(HandleClearTwoWayCheckedItem);
+        ToggleDisabledCommand = GalleryCommands.Create(HandleToggleDisabled);
+        SelectChengduCommand  = GalleryCommands.Create(HandleSelectChengdu);
+        ClearTwoWayCheckedItemCommand = GalleryCommands.Create(HandleClearTwoWayCheckedItem);
     }
 
     private void HandleToggleDisabled()

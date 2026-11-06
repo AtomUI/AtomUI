@@ -22,6 +22,89 @@ internal static class RegistrationInputBootstrap
     internal static bool TryCleanup(string[] arguments, out int exitCode)
     {
         exitCode = 0;
+        if (arguments.Length >= 3 && arguments[0] is "--atomui-compiler-config" or "--atomui-native-link-config" or "--atomui-host-config")
+        {
+            string[] configuration = JsonSerializer.Deserialize<string[]>(Convert.FromBase64String(arguments[1]));
+            bool hostOnly = arguments[0] == "--atomui-host-config";
+            if (arguments[2] != "--" || configuration is null || configuration.Length != (hostOnly ? 2 : 8) ||
+                !Path.IsPathFullyQualified(configuration[0]) ||
+                !Native8Invocation.PathComparer.Equals(Path.GetFullPath(Environment.ProcessPath), Path.GetFullPath(configuration[0])) ||
+                !Native8Invocation.PathComparer.Equals(Path.GetFullPath(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ""), Path.GetFullPath(configuration[0])) ||
+                Hash(Environment.ProcessPath) != configuration[1])
+            {
+                throw new InvalidDataException("Native8 launcher requires the captured DOTNET_HOST_PATH and unchanged host bytes.");
+            }
+            if (arguments[0] == "--atomui-native-link-config")
+            {
+                return TryCleanup(new[] { "--atomui-native-link" }.Concat(configuration.Skip(2)).Append("--").Concat(arguments.Skip(3)).ToArray(), out exitCode);
+            }
+            void Cleanup()
+            {
+                if (!hostOnly)
+                {
+                    TryCleanup(new[] { "--atomui-cleanup-invocation" }.Concat(configuration.Skip(2).Take(5)).ToArray(), out _);
+                }
+            }
+            try
+            {
+                var start = new ProcessStartInfo(Environment.ProcessPath) { UseShellExecute = false };
+                start.ArgumentList.Add(typeof(RegistrationInputBootstrap).Assembly.Location);
+                foreach (string argument in arguments.Skip(3))
+                {
+                    start.ArgumentList.Add(argument);
+                }
+                using var child = Process.Start(start) ?? throw new IOException("Cannot start native compiler.");
+                child.WaitForExit();
+                exitCode = child.ExitCode;
+            }
+            catch
+            {
+                Cleanup();
+                throw;
+            }
+            if (exitCode != 0)
+            {
+                Cleanup();
+            }
+            return true;
+        }
+        if (arguments.Length >= 8 && arguments[0] == "--atomui-native-link")
+        {
+            if (arguments[7] != "--")
+            {
+                throw new InvalidDataException("Invalid native link driver boundary.");
+            }
+            var owner = new Native8Invocation(arguments[2], arguments[1]);
+            var cleanup = arguments.Skip(3).Take(3).Select(owner.RequireOwned).Concat(new[]
+            {
+                owner.File("analysis.json"), owner.File("receipt.json"), owner.File("verified.json"), owner.File("compiler-arguments.rsp")
+            }).ToArray();
+            if (File.Exists(owner.File("linked.json")))
+            {
+                throw new InvalidDataException("Cannot relink an invocation with an immutable linked proof.");
+            }
+            try
+            {
+                var start = new ProcessStartInfo(arguments[6]) { UseShellExecute = false };
+                foreach (string argument in arguments.Skip(8))
+                {
+                    start.ArgumentList.Add(argument);
+                }
+                using var child = Process.Start(start) ?? throw new IOException("Cannot start native linker.");
+                child.WaitForExit();
+                exitCode = child.ExitCode;
+            }
+            catch
+            {
+                owner.DeleteOwned(cleanup);
+                throw;
+            }
+            if (exitCode != 0)
+            {
+                owner.DeleteOwned(cleanup);
+            }
+            return true;
+        }
         if (arguments.Length != 6 || arguments[0] != "--atomui-cleanup-invocation")
         {
             return false;
@@ -29,7 +112,7 @@ internal static class RegistrationInputBootstrap
         var invocation = new Native8Invocation(arguments[2], arguments[1]);
         var outputs = arguments.Skip(3).Select(invocation.RequireOwned).Concat(new[]
         {
-            invocation.File("analysis.json"), invocation.File("receipt.json"), invocation.File("verified.json")
+            invocation.File("analysis.json"), invocation.File("receipt.json"), invocation.File("verified.json"), invocation.File("compiler-arguments.rsp")
         }).ToArray();
         if (!File.Exists(invocation.File("linked.json")))
         {
@@ -55,7 +138,7 @@ internal static class RegistrationInputBootstrap
     {
         string supplied = Environment.GetEnvironmentVariable("ATOMUI_ILC8_INPUTS");
         string prepareRoot = Environment.GetEnvironmentVariable("ATOMUI_ILC8_PREPARE_ROOT");
-        string[] originalPaths = inputs.Values.Concat(references.Values).Select(Path.GetFullPath).Distinct(StringComparer.Ordinal).ToArray();
+        string[] originalPaths = inputs.Values.Concat(references.Values).Select(Path.GetFullPath).Distinct(Native8Invocation.PathComparer).ToArray();
         bool formal = !string.IsNullOrEmpty(supplied) || !string.IsNullOrEmpty(prepareRoot);
         if (formal)
         {
@@ -63,7 +146,7 @@ internal static class RegistrationInputBootstrap
                 Environment.GetEnvironmentVariable("ATOMUI_ILC8_OWNED_ROOT"));
             using var owner = JsonDocument.Parse(File.ReadAllBytes(Invocation.File("invocation.json")));
             if (owner.RootElement.GetProperty("invocationId").GetString() != Invocation.Id ||
-                owner.RootElement.GetProperty("ownedRoot").GetString() != Invocation.Root || File.Exists(Invocation.File("linked.json")))
+                !Native8Invocation.PathComparer.Equals(owner.RootElement.GetProperty("ownedRoot").GetString(), Invocation.Root) || File.Exists(Invocation.File("linked.json")))
             {
                 throw new InvalidDataException("Native compiler invocation is foreign or has already been linked");
             }
@@ -73,7 +156,7 @@ internal static class RegistrationInputBootstrap
         }
         if (formal)
         {
-            var protectedPaths = originalPaths.Concat(additional.Values.SelectMany(p => p).Select(Path.GetFullPath)).ToHashSet(StringComparer.Ordinal);
+            var protectedPaths = originalPaths.Concat(additional.Values.SelectMany(p => p).Select(Path.GetFullPath)).ToHashSet(Native8Invocation.PathComparer);
             if (protectedPaths.Contains(Path.GetFullPath(objectFile)) ||
                 (!string.IsNullOrEmpty(exportsFile) && protectedPaths.Contains(Path.GetFullPath(exportsFile))))
             {
@@ -142,7 +225,7 @@ internal static class RegistrationInputBootstrap
         string reportPath = Invocation.RequireExact(RegistrationContractJson.String(root, "analysisReportPath"), "analysis.json");
         var frozenAssemblies = root.GetProperty("assemblies").EnumerateArray().ToArray();
         var frozenAdditional = root.GetProperty("additionalInputs").EnumerateArray().ToArray();
-        var sourceMappings = new Dictionary<string, string>(StringComparer.Ordinal);
+        var sourceMappings = new Dictionary<string, string>(Native8Invocation.PathComparer);
         string statePath = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(supplied)), "input-state.json");
         if (File.Exists(statePath))
         {
@@ -157,14 +240,14 @@ internal static class RegistrationInputBootstrap
         {
             string hash = Hash(path);
             string[] matches = candidates.Where(entry => entry.GetProperty("sha256").GetString() == hash &&
-                Path.GetFileName(entry.GetProperty("path").GetString()) == Path.GetFileName(path))
-                .Select(entry => entry.GetProperty("path").GetString()).Distinct(StringComparer.Ordinal).ToArray();
+                Native8Invocation.PathComparer.Equals(Path.GetFileName(entry.GetProperty("path").GetString()), Path.GetFileName(path)))
+                .Select(entry => entry.GetProperty("path").GetString()).Distinct(Native8Invocation.PathComparer).ToArray();
             string fullPath = Path.GetFullPath(path);
-            if (matches.Contains(fullPath, StringComparer.Ordinal))
+            if (matches.Contains(fullPath, Native8Invocation.PathComparer))
             {
                 return fullPath;
             }
-            if (sourceMappings.TryGetValue(fullPath, out string mapped) && matches.Contains(mapped, StringComparer.Ordinal))
+            if (sourceMappings.TryGetValue(fullPath, out string mapped) && matches.Contains(mapped, Native8Invocation.PathComparer))
             {
                 return mapped;
             }
@@ -174,37 +257,43 @@ internal static class RegistrationInputBootstrap
             }
             return matches[0];
         }
-        var redirectedAdditional = new Dictionary<string, string>(StringComparer.Ordinal);
+        var redirectedAdditional = new Dictionary<string, string>(Native8Invocation.PathComparer);
         foreach (ConditionalAdditionalInput entry in declared)
         {
             redirectedAdditional[Path.GetFullPath(entry.Path)] = Match(entry.Path,
                 frozenAdditional.Where(item => item.GetProperty("kind").GetString() == entry.Kind));
         }
         string frozenHost = redirectedAdditional[typeof(RegistrationInputBootstrap).Assembly.Location];
-        if (Path.GetFullPath(frozenHost) != Path.GetFullPath(typeof(RegistrationInputBootstrap).Assembly.Location))
+        if (!Native8Invocation.SameFilePath(frozenHost, typeof(RegistrationInputBootstrap).Assembly.Location))
         {
             if (Environment.GetEnvironmentVariable("ATOMUI_ILC8_FROZEN_CHILD") == "1")
             {
-                throw new InvalidDataException("Frozen compiler bundle did not resolve to the executing host");
+                throw new InvalidDataException("Frozen compiler bundle did not resolve to the executing host: executing=" +
+                    typeof(RegistrationInputBootstrap).Assembly.Location + "; resolved=" + frozenHost);
             }
             // The initial process is only a parser/copier. All analysis and code generation
             // execute in the frozen bundle with official matching native helpers.
             var start = new ProcessStartInfo(Environment.ProcessPath) { UseShellExecute = false };
             start.ArgumentList.Add(frozenHost);
-            foreach (string argument in effectiveArguments)
-            {
-                start.ArgumentList.Add(argument);
-            }
+            string responsePath = Invocation.File("compiler-arguments.rsp");
+            using var response = WriteResponseFile(responsePath, effectiveArguments);
+            AttemptOutputs.Add(responsePath);
+            string responseHash = Hash(responsePath);
+            start.ArgumentList.Add("@" + responsePath);
             start.Environment.Remove("ATOMUI_ILC8_PREPARE_ROOT");
             start.Environment["ATOMUI_ILC8_INPUTS"] = Path.GetFullPath(supplied);
             start.Environment["ATOMUI_ILC8_FROZEN_CHILD"] = "1";
             using Process child = Process.Start(start) ?? throw new InvalidOperationException("Cannot start frozen compiler host");
             child.WaitForExit();
+            if (Hash(responsePath) != responseHash)
+            {
+                throw new InvalidDataException("Frozen compiler argument transport changed during compilation.");
+            }
             Environment.Exit(child.ExitCode);
         }
         string[] allFrozen = frozenAssemblies.Concat(frozenAdditional).Select(entry => entry.GetProperty("path").GetString()).ToArray();
-        if (Path.GetFullPath(reportPath) == Path.GetFullPath(supplied) || originalPaths.Contains(reportPath, StringComparer.Ordinal) ||
-            allFrozen.Contains(reportPath, StringComparer.Ordinal))
+        if (Native8Invocation.PathComparer.Equals(Path.GetFullPath(reportPath), Path.GetFullPath(supplied)) || originalPaths.Contains(reportPath, Native8Invocation.PathComparer) ||
+            allFrozen.Contains(reportPath, Native8Invocation.PathComparer))
         {
             throw new InvalidDataException("Analysis report must not overwrite an input snapshot");
         }
@@ -225,7 +314,7 @@ internal static class RegistrationInputBootstrap
         {
             throw new InvalidDataException("Expected conditional input transport v2 with an absolute report path");
         }
-        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var seen = new HashSet<string>(Native8Invocation.PathComparer);
         foreach (string field in new[] { "assemblies", "additionalInputs" })
         {
             foreach (JsonElement entry in root.GetProperty(field).EnumerateArray())
@@ -248,5 +337,39 @@ internal static class RegistrationInputBootstrap
     {
         using var stream = File.OpenRead(path);
         return Convert.ToHexStringLower(SHA256.HashData(stream));
+    }
+
+    internal static FileStream WriteResponseFile(string path, string[] arguments)
+    {
+        if (arguments.Any(argument => argument.Contains('\r') || argument.Contains('\n')))
+        {
+            throw new InvalidDataException("Compiler response arguments cannot contain line breaks.");
+        }
+        // The official parser opens FileShare.Read. Release the writer, then hold a
+        // read-only shared-read handle for the whole child lifetime and validate the
+        // transition against the exact serialized bytes before allowing consumption.
+        byte[] bytes = System.Text.Encoding.UTF8.GetBytes(string.Join("\n", arguments.Select(argument => "\"" + argument + "\"")) + "\n");
+        using (var writer = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+        {
+            writer.Write(bytes);
+            writer.Flush(flushToDisk: true);
+        }
+        FileStream stream = null;
+        try
+        {
+            stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            if (stream.Length != bytes.Length || !SHA256.HashData(stream).AsSpan().SequenceEqual(SHA256.HashData(bytes)))
+            {
+                throw new InvalidDataException("Compiler argument transport changed before acquiring its immutable read lease.");
+            }
+            stream.Position = 0;
+            return stream;
+        }
+        catch
+        {
+            stream?.Dispose();
+            File.Delete(path);
+            throw;
+        }
     }
 }

@@ -7,6 +7,7 @@ public sealed class GalleryRouteDescriptor
 {
     private readonly Func<IScreen, IRoutableViewModel> _viewModelFactory;
     private readonly Action<DefaultViewLocator>        _registerView;
+    private readonly Func<IViewFor>                    _createView;
 
     public EntityKey RouteKey { get; }
 
@@ -18,13 +19,15 @@ public sealed class GalleryRouteDescriptor
                                    Type viewModelType,
                                    Type viewType,
                                    Func<IScreen, IRoutableViewModel> viewModelFactory,
-                                   Action<DefaultViewLocator> registerView)
+                                   Action<DefaultViewLocator> registerView,
+                                   Func<IViewFor> createView)
     {
         RouteKey          = routeKey;
         ViewModelType     = viewModelType;
         ViewType          = viewType;
         _viewModelFactory = viewModelFactory;
         _registerView     = registerView;
+        _createView       = createView;
     }
 
     internal static GalleryRouteDescriptor Create<TViewModel, TView>(EntityKey routeKey,
@@ -38,7 +41,8 @@ public sealed class GalleryRouteDescriptor
             typeof(TViewModel),
             typeof(TView),
             screen => viewModelFactory(screen),
-            locator => locator.Map<TViewModel, TView>(viewFactory));
+            locator => locator.Map<TViewModel>(() => viewFactory()),
+            () => viewFactory());
     }
 
     public IRoutableViewModel CreateViewModel(IScreen hostScreen)
@@ -49,5 +53,10 @@ public sealed class GalleryRouteDescriptor
     public void RegisterView(DefaultViewLocator locator)
     {
         _registerView(locator);
+    }
+
+    internal IViewFor CreateView()
+    {
+        return _createView();
     }
 }

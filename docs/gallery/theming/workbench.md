@@ -66,6 +66,8 @@ Desktop Gallery 的 Theme → Theme workbench 打开现有 workspace 下的工�
 
 Preview draft 更新左侧现有实例，右侧基线是独立 scope；按钮、输入/选择、反馈、日期/颜色与Grid不会因换草稿重建。Root 与局部配方各保留自己的已注册基础 definition，根菜单切主题不会迫使局部配方改用另一份 definition；版本要求仍严格校验。预览 current 来自 scope 完成 receipt（含 NoOp），赋值/排队本身不算成功。
 
+预览根在 AXAML 中声明当前 scope 的 ColorText、FontSize 和 FontFamily。应用草稿改变外层窗口字体时，预览中的继承字体仍来自各自 scope；恢复配方也不依赖外层应用先恢复。输入控件继续遵循原有字体优先级，工作台不另行改写子节点属性。
+
 Apply to Gallery 使用同一个 ThemeManager 的真实事务。界面分别显示 Token 与 Presentation 结果、实际主题/品牌选择和最后应用的草稿修订。取消/新编辑/离页撤销旧请求所有权，旧返回不覆盖新草稿。代码不会恢复一个旧结果来替换新输入。
 
 完整配方 JSON 可编辑后显式 Read JSON as draft；未读取的编辑阻止预览/应用/保存，异步文件导入同时检查 session 与编辑器修订。缺 owner、资产、版本、类型或别名冲突均显示既有协议诊断。完整保存沿宿主 StorageProvider 写入精确 UTF-8 并在完成后标记实际保存内容；保存不等于应用，旧保存完成不能标记新草稿已保存。仅 Token 导出标明 tokenOnly，不能把该输入升级伪装成 complete。宿主没有文件能力时可使用 JSON 区，明确显示能力诊断；本轮不驱动 OS 文件选择器 UI，实际 Mac 文件 API 的读写/截断/往返另有验证。

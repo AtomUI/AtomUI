@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Reactive;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
@@ -80,8 +81,8 @@ public class MentionsViewModel : ReactiveObject, IRoutableViewModel
     public MentionsViewModel(IScreen screen)
     {
         HostScreen              = screen;
-        SetBoundValueCommand    = ReactiveCommand.Create(SetBoundValue);
-        ClearBoundValueCommand  = ReactiveCommand.Create(ClearBoundValue);
+        SetBoundValueCommand    = GalleryCommands.Create(SetBoundValue);
+        ClearBoundValueCommand  = GalleryCommands.Create(ClearBoundValue);
     }
 
     private void SetBoundValue()

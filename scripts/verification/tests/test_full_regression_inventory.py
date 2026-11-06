@@ -36,9 +36,15 @@ class FullRegressionInventoryTests(unittest.TestCase):
             result = subprocess.run(
                 [
                     bash, "-c",
+                    # Git Bash prepends /usr/bin when importing the Windows
+                    # environment, which would select its real sleep executable.
+                    # Reapply the owned stub directory inside the shell first.
+                    'stub_dir="$1"; if command -v cygpath >/dev/null 2>&1; then '
+                    'stub_dir="$(cygpath -u "$stub_dir")"; fi; '
+                    'export PATH="$stub_dir:$PATH"; '
                     # Verify the command stubs before starting the inventory-only shell run.
-                    'if [[ ! "$(command -v dotnet)" -ef "$1/dotnet" || '
-                    '! "$(command -v sleep)" -ef "$1/sleep" ]]; then '
+                    'if [[ ! "$(command -v dotnet)" -ef "$stub_dir/dotnet" || '
+                    '! "$(command -v sleep)" -ef "$stub_dir/sleep" ]]; then '
                     'echo "Inventory requires temporary dotnet and sleep stubs" >&2; exit 1; fi; '
                     'exec "$BASH" "$2"',
                     "inventory", bin_dir.as_posix(), (root / "scripts/run-full-regression.sh").as_posix(),

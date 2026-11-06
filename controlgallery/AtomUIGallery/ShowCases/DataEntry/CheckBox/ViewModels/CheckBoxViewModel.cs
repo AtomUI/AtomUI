@@ -1,4 +1,5 @@
-﻿using System.Collections;
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
+using System.Collections;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Reactive;
@@ -163,16 +164,16 @@ public class CheckBoxViewModel : ReactiveObject, IRoutableViewModel
         OrangeCheckedStatus = true;
         CheckedAllStatus    = null;
 
-        EnableStatusCommand = ReactiveCommand.Create(HandleStatus);
-        CheckStatusCommand  = ReactiveCommand.Create(HandleCheckStatus);
-        CheckBoxCommand     = ReactiveCommand.Create(HandleCheckBox);
+        EnableStatusCommand = GalleryCommands.Create(HandleStatus);
+        CheckStatusCommand  = GalleryCommands.Create(HandleCheckStatus);
+        CheckBoxCommand     = GalleryCommands.Create(HandleCheckBox);
 
-        CheckedAllStatusCommand   = ReactiveCommand.Create(HandleCheckedAllStatus);
-        CheckedItemStatusCommand1 = ReactiveCommand.Create(HandleCheckedItemStatus);
-        CheckedItemStatusCommand2 = ReactiveCommand.Create(HandleCheckedItemStatus);
-        CheckedItemStatusCommand3 = ReactiveCommand.Create(HandleCheckedItemStatus);
-        AddPearToTwoWayCheckedItemsCommand = ReactiveCommand.Create(HandleAddPearToTwoWayCheckedItems);
-        ClearTwoWayCheckedItemsCommand     = ReactiveCommand.Create(HandleClearTwoWayCheckedItems);
+        CheckedAllStatusCommand   = GalleryCommands.Create(HandleCheckedAllStatus);
+        CheckedItemStatusCommand1 = GalleryCommands.Create(HandleCheckedItemStatus);
+        CheckedItemStatusCommand2 = GalleryCommands.Create(HandleCheckedItemStatus);
+        CheckedItemStatusCommand3 = GalleryCommands.Create(HandleCheckedItemStatus);
+        AddPearToTwoWayCheckedItemsCommand = GalleryCommands.Create(HandleAddPearToTwoWayCheckedItems);
+        ClearTwoWayCheckedItemsCommand     = GalleryCommands.Create(HandleClearTwoWayCheckedItems);
     }
 
     private void HandleCheckStatus()

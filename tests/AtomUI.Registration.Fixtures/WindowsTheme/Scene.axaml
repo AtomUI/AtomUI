@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:a="https://atomui.net" xmlns:c="using:AtomUI.Controls.Commons" x:Class="Win31.Scene"
+ Foreground="{a:SharedTokenResource ColorText}" FontSize="{a:SharedTokenResource FontSize}" FontFamily="{a:SharedTokenResource FontFamily}">
+ <Border Background="{a:SharedTokenResource ColorBgLayout}" Padding="16">
+ <StackPanel Spacing="12">
+ <TextBlock Text="Windows · 31 owners / 40 controls · same instances" />
+ <UniformGrid Name="ButtonMatrix" Columns="5" Rows="4" Height="224">
+  <a:Button Name="B01" Content="Default" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:Button Name="B02" Content="Primary" ButtonType="Primary" SizeType="Large" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:Button Name="B03" Content="Dashed" ButtonType="Dashed" SizeType="Small" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:Button Name="B04" Content="Text" ButtonType="Text" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:Button Name="B05" Content="Link" ButtonType="Link" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <Border Background="#808080" Padding="5" HorizontalAlignment="Left" VerticalAlignment="Center"><a:Button Name="B06" Content="Ghost" IsGhost="True" /></Border>
+  <a:Button Name="B07" Content="Danger" IsDanger="True" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:Button Name="B08" Content="Custom" SizeType="Custom" Width="106" Height="36" Shape="Round" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:Button Name="B09" Content="D" IsEnabled="False" Shape="Circle" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:DropdownButton Name="D01" Content="Default" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:DropdownButton Name="D02" Content="Primary" ButtonType="Primary" SizeType="Large" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:DropdownButton Name="D03" Content="Small" SizeType="Small" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:DropdownButton Name="D04" Content="Dashed" ButtonType="Dashed" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:DropdownButton Name="D05" Content="Text" ButtonType="Text" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:DropdownButton Name="D06" Content="Link" ButtonType="Link" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:DropdownButton Name="D07" Content="Danger" IsDanger="True" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:DropdownButton Name="D08" Content="Round" SizeType="Custom" Width="116" Height="36" Shape="Round" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:DropdownButton Name="D09" Content="Disabled" IsEnabled="False" HorizontalAlignment="Left" VerticalAlignment="Center" />
+ </UniformGrid>
+ <UniformGrid Columns="4" Height="52">
+  <a:HyperLinkButton Name="H01" Content="Hyper link" VerticalAlignment="Center" />
+  <a:HyperLinkButton Name="H02" Content="Large link" SizeType="Large" VerticalAlignment="Center" />
+  <a:HyperLinkButton Name="H03" Content="Small link" SizeType="Small" VerticalAlignment="Center" />
+  <a:HyperLinkButton Name="H04" Content="Disabled link" IsEnabled="False" VerticalAlignment="Center" />
+ </UniformGrid>
+ <UniformGrid Columns="3" Height="60">
+  <a:SplitButton Name="S01" Content="Split default" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:SplitButton Name="S02" Content="Split large" SizeType="Large" HorizontalAlignment="Left" VerticalAlignment="Center" />
+  <a:SplitButton Name="S03" Content="Split small" SizeType="Small" HorizontalAlignment="Left" VerticalAlignment="Center" />
+ </UniformGrid>
+ <UniformGrid Columns="3" Height="70">
+  <a:OptionButtonGroup Name="G01" SelectedIndex="1" VerticalAlignment="Center"><x:String>One</x:String><x:String>Two</x:String><x:String>Three</x:String></a:OptionButtonGroup>
+  <a:OptionButtonGroup Name="G02" SelectedIndex="0" ButtonStyle="Solid" SizeType="Small" VerticalAlignment="Center"><x:String>One</x:String><x:String>Two</x:String><x:String>Three</x:String></a:OptionButtonGroup>
+  <a:OptionButtonGroup Name="G03" SelectedIndex="2" SizeType="Large" VerticalAlignment="Center"><x:String>One</x:String><x:String>Two</x:String><x:String>Three</x:String></a:OptionButtonGroup>
+ </UniformGrid>
+ <StackPanel Orientation="Horizontal" Spacing="24" Height="48">
+  <a:IconButton Name="Icon" Width="34" Height="34"><a:IconButton.Icon><PathIcon Data="M2,8 L8,2 L14,8 L8,14 Z" /></a:IconButton.Icon></a:IconButton>
+  <a:ToggleIconButton Name="Toggle" Width="34" Height="34" IsChecked="True"><a:ToggleIconButton.CheckedIcon><PathIcon Data="M2,7 L6,11 L13,3 L15,5 L6,15 L0,9 Z" /></a:ToggleIconButton.CheckedIcon><a:ToggleIconButton.UnCheckedIcon><PathIcon Data="M3,1 L8,6 L13,1 L15,3 L10,8 L15,13 L13,15 L8,10 L3,15 L1,13 L6,8 L1,3 Z" /></a:ToggleIconButton.UnCheckedIcon></a:ToggleIconButton>
+  <c:SimpleButton Name="Plain" Content="Plain sample" Background="LightGray" Foreground="Black" Padding="12,4" />
+ </StackPanel>
+ </StackPanel>
+ </Border>
+</UserControl>

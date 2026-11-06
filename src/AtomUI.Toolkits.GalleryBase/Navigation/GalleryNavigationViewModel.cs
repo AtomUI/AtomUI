@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Reactive;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
@@ -50,9 +51,9 @@ public class GalleryNavigationViewModel : ReactiveObject, IActivatableViewModel,
             .Select(node => node.Key)
             .ToHashSet();
 
-        _navigateToCommand = new(() => ReactiveCommand.Create<EntityKey>(DoNavigateTo));
-        _testNavigatePagesCommand = new(() => ReactiveCommand.Create<TimeSpan>(DoTestNavigatePages));
-        _stopTestNavigatePagesCommand = new(() => ReactiveCommand.Create(DoStopTestNavigatePages));
+        _navigateToCommand = new(() => GalleryCommands.Create<EntityKey>(DoNavigateTo));
+        _testNavigatePagesCommand = new(() => GalleryCommands.Create<TimeSpan>(DoTestNavigatePages));
+        _stopTestNavigatePagesCommand = new(() => GalleryCommands.Create(DoStopTestNavigatePages));
 
         _activationSubscription = Activator.Activated.Subscribe(_ => DoNavigateTo(_configuration.DefaultRoute));
     }

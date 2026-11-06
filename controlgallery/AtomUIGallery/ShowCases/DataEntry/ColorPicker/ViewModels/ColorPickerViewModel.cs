@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Reactive;
 using AtomUI.Controls;
 using Avalonia;
@@ -62,10 +63,10 @@ public class ColorPickerViewModel : ReactiveObject, IRoutableViewModel
     public ColorPickerViewModel(IScreen screen)
     {
         HostScreen                         = screen;
-        SetBoundColorValueCommand          = ReactiveCommand.Create(SetBoundColorValue);
-        ClearBoundColorValueCommand        = ReactiveCommand.Create(ClearBoundColorValue);
-        SetBoundGradientValueCommand       = ReactiveCommand.Create(SetBoundGradientValue);
-        ClearBoundGradientValueCommand     = ReactiveCommand.Create(ClearBoundGradientValue);
+        SetBoundColorValueCommand          = GalleryCommands.Create(SetBoundColorValue);
+        ClearBoundColorValueCommand        = GalleryCommands.Create(ClearBoundColorValue);
+        SetBoundGradientValueCommand       = GalleryCommands.Create(SetBoundGradientValue);
+        ClearBoundGradientValueCommand     = GalleryCommands.Create(ClearBoundGradientValue);
     }
 
     private void SetBoundColorValue()

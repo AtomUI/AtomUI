@@ -3,7 +3,6 @@ using AtomUI.Controls;
 using AtomUI.Controls.AsyncLoad;
 using Avalonia;
 using Avalonia.Threading;
-using DynamicData;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -78,7 +77,10 @@ public partial class CascaderView
                     {
                         child.UpdateParentNode(option);
                     }
-                    ((IList<ICascaderOption>)option.Children).AddRange(result.Data);
+                    foreach (var child in result.Data)
+                    {
+                        ((IList<ICascaderOption>)option.Children).Add(child);
+                    }
                 }
                 return;
             }

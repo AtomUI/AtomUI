@@ -46,6 +46,28 @@
 
     <Import Project="$(MSBuildThisFileDirectory)AtomUI.Generator.targets" />
 
+    <!-- NuGet excludes package imports from restore inputs. Keep SDK pack choices
+         in this repository-owned import so restore and build see identical values.
+         External applications own these choices in their project/Directory.Build.targets. -->
+    <ItemGroup>
+        <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler">
+            <ILCompilerPackVersion Condition="'%(KnownILCompilerPack.TargetFramework)' == 'net8.0' and $([MSBuild]::VersionLessThan('%(KnownILCompilerPack.ILCompilerPackVersion)', '8.0.33'))">8.0.33</ILCompilerPackVersion>
+            <ILCompilerPackVersion Condition="'%(KnownILCompilerPack.TargetFramework)' == 'net10.0' and $([MSBuild]::VersionLessThan('%(KnownILCompilerPack.ILCompilerPackVersion)', '10.0.14'))">10.0.14</ILCompilerPackVersion>
+        </KnownILCompilerPack>
+    </ItemGroup>
+    <PropertyGroup Condition="('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(SelfContained)' == 'true' and '$(PublishAot)' == 'true' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-')) and '$(RuntimeFrameworkVersion)' == ''">
+        <RuntimeFrameworkVersion Condition="'$(_AtomUIRegistrationFrameworkFamily)' == 'Net8Compatibility'">8.0.33</RuntimeFrameworkVersion>
+        <RuntimeFrameworkVersion Condition="'$(_AtomUIRegistrationFrameworkVersion)' == '10.0'">10.0.14</RuntimeFrameworkVersion>
+    </PropertyGroup>
+    <!-- A global RuntimeFrameworkVersion also overrides ILLink's tool version.
+         Managed trimming services the runtime through framework metadata instead. -->
+    <ItemGroup Condition="('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(SelfContained)' == 'true' and '$(PublishAot)' != 'true' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-')) and '$(RuntimeFrameworkVersion)' == ''">
+        <FrameworkReference Update="Microsoft.NETCore.App">
+            <RuntimeFrameworkVersion Condition="'%(FrameworkReference.RuntimeFrameworkVersion)' == '' and '$(_AtomUIRegistrationFrameworkFamily)' == 'Net8Compatibility'">8.0.33</RuntimeFrameworkVersion>
+            <RuntimeFrameworkVersion Condition="'%(FrameworkReference.RuntimeFrameworkVersion)' == '' and '$(_AtomUIRegistrationFrameworkVersion)' == '10.0'">10.0.14</RuntimeFrameworkVersion>
+        </FrameworkReference>
+    </ItemGroup>
+
     <ItemGroup>
         <ProjectReference Update="@(ProjectReference->WithMetadataValue('Filename', 'AtomUI.Toolchain'))">
             <GlobalPropertiesToRemove>%(ProjectReference.GlobalPropertiesToRemove);$(AtomUIToolchainGlobalPropertiesToRemove)</GlobalPropertiesToRemove>

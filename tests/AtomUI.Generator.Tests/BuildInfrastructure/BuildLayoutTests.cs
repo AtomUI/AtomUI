@@ -140,7 +140,7 @@ public sealed class BuildLayoutTests
         var repositoryTargets = XDocument.Load(GetRepoFile("build/AtomUI.Repository.targets"));
 
         GetImports("build/AtomUI.Repository.targets")
-            .ShouldBe(["$(MSBuildThisFileDirectory)AtomUI.Generator.targets"]);
+            .ShouldContain("$(MSBuildThisFileDirectory)AtomUI.Generator.targets");
         GetTargetNames(repositoryTargets)
             .ShouldContain("AtomUIPrepareGeneratorConsumerPackageAssets");
     }

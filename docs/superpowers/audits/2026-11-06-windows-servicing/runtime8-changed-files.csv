@@ -1,0 +1,203 @@
+status,path,area,impact
+M,.config/dotnet-tools.json,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,Directory.Build.props,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,NuGet.config,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/Version.Details.xml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/Versions.props,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+A,eng/common/Get-GitHubAppToken.ps1,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/SetupNugetSources.ps1,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/SetupNugetSources.sh,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+A,eng/common/core-templates/steps/get-github-app-token.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+D,eng/common/sdl/extract-artifact-packages.ps1,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates-official/job/onelocbuild.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates-official/job/publish-build-assets.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates-official/jobs/codeql-build.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates-official/post-build/common-variables.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+A,eng/common/templates-official/steps/get-github-app-token.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates-official/steps/source-build.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates/job/execute-sdl.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates/job/onelocbuild.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates/job/publish-build-assets.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates/jobs/codeql-build.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates/post-build/common-variables.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+A,eng/common/templates/steps/get-github-app-token.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates/steps/source-build.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/evaluate-default-paths.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/restore-internal-tools.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+D,eng/pipelines/common/templates/wasm-debugger-tests.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/xplat-setup.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/templates/helix-queues-setup.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/extra-platforms/runtime-extra-platforms-ioslike.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/extra-platforms/runtime-extra-platforms-wasm.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/libraries/helix-queues-setup.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/libraries/helix.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/libraries/outerloop.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,global.json,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,src/coreclr/debug/daccess/daccess.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/debug/daccess/dacfn.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/debug/daccess/dacimpl.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/debug/daccess/enummem.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/inc/clrconfigvalues.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/inc/dacvars.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/jit/loopcloning.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/optimizer.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/nativeaot/System.Private.CoreLib/src/Internal/Runtime/CompilerHelpers/InteropHelpers.cs,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/nativeaot/System.Private.CoreLib/src/System/Runtime/InteropServices/PInvokeMarshal.cs,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/pal/inc/pal.h,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/src/include/pal/mutex.hpp,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/src/include/pal/sharedmemory.h,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+D,src/coreclr/pal/src/include/pal/sharedmemory.inl,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/src/sharedmemory/sharedmemory.cpp,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/src/synchobj/mutex.cpp,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/tests/palsuite/threading/NamedMutex/test1/namedmutex.cpp,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/coreclr/pal/tests/palsuite/threading/NamedMutex/test1/nopal.cpp,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/coreclr/vm/ceemain.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/eventing/eventpipe/ds-rt-coreclr.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/qcallentrypoints.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/vars.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/vars.hpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/libraries/Common/tests/System/Net/Configuration.Certificates.Dynamic.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Common/tests/System/Net/Http/HttpClientHandlerTest.Proxy.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Common/tests/System/Net/Http/LoopbackProxyServer.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Common/tests/WasmTestRunner/WasmTestRunner.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Formats.Cbor/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Cbor/src/System.Formats.Cbor.csproj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Cbor/src/System/Formats/Cbor/Reader/CborReader.Array.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Cbor/src/System/Formats/Cbor/Reader/CborReader.Map.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Cbor/src/System/Formats/Cbor/Reader/CborReader.String.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Cbor/src/System/Formats/Cbor/Reader/CborReader.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Cbor/tests/Reader/CborReaderTests.SkipValue.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Formats.Cbor/tests/Reader/CborReaderTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Formats.Tar/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Tar/src/System.Formats.Tar.csproj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Tar/src/System/Formats/Tar/TarEntry.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Tar/src/System/Formats/Tar/TarFile.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Tar/src/System/Formats/Tar/TarHelpers.Unix.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Tar/src/System/Formats/Tar/TarHelpers.Windows.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Tar/src/System/Formats/Tar/TarHelpers.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Tar/tests/TarFile/TarFile.ExtractToDirectory.File.Tests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Globalization/tests/NumberFormatInfo/NumberFormatInfoNumberGroupSizes.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Http/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/Http2Connection.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/Http2StreamWindowManager.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/RedirectHandler.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Http/tests/FunctionalTests/SocketsHttpHandlerTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.HttpListener/src/System/Net/Managed/HttpListenerRequest.Managed.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.HttpListener/tests/HttpListenerRequestTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.HttpListener/tests/InvalidClientRequestTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Mail/src/System/Net/Mime/EightBitStream.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Quic/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Quic/src/System.Net.Quic.csproj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Quic/src/System/Net/Quic/Internal/MsQuicConfiguration.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Quic/src/System/Net/Quic/QuicConnection.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Quic/tests/FunctionalTests/MsQuicTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Security/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Security/src/System/Net/Security/NegotiateAuthentication.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Security/src/System/Net/Security/SslStream.IO.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Security/src/System/Net/Security/TlsFrameHelper.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Security/tests/FunctionalTests/SslStreamStreamToStreamTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Security/tests/UnitTests/NegotiateAuthenticationTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Sockets/src/System/Net/Sockets/Socket.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Sockets/src/System/Net/Sockets/SocketAsyncEventArgs.Windows.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Sockets/tests/FunctionalTests/ReceiveFrom.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Sockets/tests/FunctionalTests/SendTo.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.WebSockets/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.WebSockets/src/System/Net/WebSockets/Compression/WebSocketInflater.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.WebSockets/src/System/Net/WebSockets/ManagedWebSocket.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.WebSockets/tests/WebSocketDeflateTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Private.CoreLib/src/System/Globalization/DateTimeParse.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.CoreLib/src/System/Threading/Mutex.Windows.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.Xml/src/System/Xml/Cache/XPathNodeInfoAtom.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.Xml/src/System/Xml/Core/LocalAppContextSwitches.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.Xml/src/System/Xml/Core/XmlTextReaderImpl.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.Xml/src/System/Xml/Core/XmlTextReaderImplAsync.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.Xml/src/System/Xml/Core/XmlTextReaderImplHelpers.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+A,src/libraries/System.Private.Xml/tests/Misc/AttributeReadingPerformanceTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Private.Xml/tests/System.Private.Xml.Tests.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/libraries/System.Private.Xml/tests/XmlReader/Tests/AttributeBufferInvalidationTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime.InteropServices/tests/System.Runtime.InteropServices.UnitTests/System/Runtime/InteropServices/Marshal/StructureToPtrTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime.Serialization.Xml/tests/Canonicalization/XmlCanonicalizationTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime/tests/System/DateTimeTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime/tests/System/TimeZoneInfoTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Pkcs/src/Internal/Cryptography/Pal/Windows/HelpersWindows.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Pkcs/src/System.Security.Cryptography.Pkcs.csproj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Pkcs/src/System/Security/Cryptography/Pkcs/Rfc3161TimestampRequest.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Pkcs/src/System/Security/Cryptography/Pkcs/SignedCms.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Pkcs/src/System/Security/Cryptography/Pkcs/SignerInfo.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Pkcs/tests/EnvelopedCms/UnprotectedAttributeTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Pkcs/tests/SignedCms/SignedCmsTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System.Security.Cryptography.Xml.csproj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/C14NAncestralNamespaceContextManager.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/CanonicalXml.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/CanonicalXmlElement.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/CryptoHelpers.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/EncryptedXml.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/ExcAncestralNamespaceContextManager.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/ExcCanonicalXml.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/KeyInfoX509Data.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/LocalAppContextSwitches.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/SignedXml.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/Transform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/TransformChain.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/Utils.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDecryptionTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigBase64Transform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigC14NTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigEnvelopedSignatureTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigExcC14NTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigXPathTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigXsltTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlLicenseTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+A,src/libraries/System.Security.Cryptography.Xml/tests/EncryptedXmlSample5.xml,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/EncryptedXmlTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/KeyInfoX509DataTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/SignedXmlTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/SignedXmlTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/SignedXml_SignatureMethodAlgorithm.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/System.Security.Cryptography.Xml.Tests.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/TransformChainTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/XmlDecryptionTransformTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/XmlDsigC14NTransformTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/XmlDsigEnvelopedSignatureTransformTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/XmlDsigExcC14NTransformTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/XmlDsigXPathTransformTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography/src/System/Security/Cryptography/X509Certificates/CertificateData.ManagedDecode.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography/src/System/Security/Cryptography/X509Certificates/OpenSslCrlCache.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography/src/System/Security/Cryptography/X509Certificates/OpenSslX509ChainEventSource.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography/tests/X509Certificates/PropsTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography/tests/X509Certificates/X509FilesystemTests.Unix.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Threading/tests/MutexTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/sendtohelix-wasm.targets,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/sendtohelix.proj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/sendtohelixhelp.proj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/tests.proj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/mono/wasi/Makefile,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/wasm/Makefile,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/wasm/Wasm.Build.Tests/BuildTestBase.cs,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/wasm/Wasm.Build.Tests/data/test-main-7.0.js,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/wasm/debugger/Wasm.Debugger.Tests/Wasm.Debugger.Tests.csproj,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+D,src/mono/wasm/debugger/Wasm.Debugger.Tests/wasm.helix.targets,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/wasm/host/DevServer/WebAssemblyNetDebugProxyAppBuilderExtensions.cs,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/wasm/runtime/loader/run.ts,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/wasm/symbolicator/WasmSymbolicator.csproj,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/wasm/test-main.js,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/native/corehost/hostmisc/pal.h,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/corehost/hostmisc/pal.unix.cpp,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/corehost/hostpolicy/args.h,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/eventpipe/ds-ipc-pal-socket.c,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/external/brotli-version.txt,brotli-security,Decoder status/bounds correction in official native runtime package; patched package identity is mandatory.
+M,src/native/external/brotli/common/version.h,brotli-security,Decoder status/bounds correction in official native runtime package; patched package identity is mandatory.
+M,src/native/external/brotli/dec/decode.c,brotli-security,Decoder status/bounds correction in official native runtime package; patched package identity is mandatory.
+M,src/native/external/brotli/include/brotli/decode.h,brotli-security,Decoder status/bounds correction in official native runtime package; patched package identity is mandatory.
+M,src/native/external/cgmanifest.json,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/libs/System.Security.Cryptography.Native/openssl.c,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/tests/Common/XHarnessRunnerLibrary/GeneratedTestRunner.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/Common/helixpublishwitharcade.proj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/FunctionalTests/iOS/Device/AOT/iOS.Device.Aot.Test.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/FunctionalTests/iOS/Device/ExportManagedSymbols/iOS.Device.ExportManagedSymbols.Test.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_122057/Runtime_122057.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_122057/Runtime_122057.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/opt/Cloning/DownCounted.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/opt/Cloning/DownCounted.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.

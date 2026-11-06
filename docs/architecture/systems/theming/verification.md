@@ -2,11 +2,19 @@
 
 本文维护[Own有效求值](own-token-evaluation.md)、[品牌配方](brand-recipes.md)与[Control渲染](control-rendering.md)的源码符合程度和验收边界。正式设计合同不等于实现完成；执行规则由[主题验收规范](../../../engineering/development/theming/verification.md)拥有。
 
+2026-11-05 新增 Windows x64 本机验收与平台交付，当前证据及剩余边界统一见
+[Windows 验收记录](../../../superpowers/progress/2026-11-05-windows-theme-acceptance.md)。原生输入、最终显示、RTB、
+机制专项和冷包消费分别登记；2026-11-06 已依据原记录重建31-owner/40控件、880×700、12阶段场景并通过 Windows 托管及 NativeAOT 原生验证。
+这是对应执行时源码快照和指定宿主的实际验证；不声称找回历史脚本或证明其布局/像素逐字身份，不改写原 mixed-host 失败。
+托管与原生截图相等只证明两条渲染路径一致，仍须检查图标的实际语义及选中/未选中状态。
+`PathIcon` 的填充轮廓必须有面积；开放折线可能被隐式闭合成三角形，独立线段可能完全不可见。
+下述各家族未验范围、G1/FW1、FW2 采用范围、CT19 具体差异及 CT24 暂缓不因新增平台证据自动关闭。
+
 ## 1. 当前实现事实
 
 | 领域 | 当前源码边界 | 状态 |
 | --- | --- | --- |
-| Control求值 | descriptor保留WholeEvaluatorV1并增加DependencyDefaultsV2；Compiler新版先写显式Own／存在位，再求依赖默认；旧版整体后覆盖不变 | 本分支机制已实现并有聚焦／跨包AOT证据；95个产品Token尚未迁移，不代表真实控件消费已修复 |
+| Control求值 | descriptor保留WholeEvaluatorV1并增加DependencyDefaultsV2；Compiler新版先写显式Own／存在位，再求依赖默认；旧版整体后覆盖不变 | 机制及家族迁移已进入产品源码，当前80个Token源文件显式声明DependencyDefaultsV2，包括SplitButton；其余默认/旧版定义继续兼容，不能再沿用“95个尚未迁移”的早期状态 |
 | 定义继承 | 旧版仍验证virtual/base链；新版读取同／跨程序集静态默认声明、验证图并生成扁平计划及独立revision | 有跨包protected默认、重定义、非法声明和实际运行证据；逐产品依赖边仍待家族迁移验收 |
 | Own兼容别名 | 显式属性及中立生成表；动态/XML/compiled在各层绑定归一，Compiler求值后投影历史字段 | 机制及DataGrid17对已实现；实际消费者和产品Window/Skia代表视觉已验，不代表CT-18完整家族或原生Popup/最终显示面通过 |
 | Token提交 | 五阶段事务、稳定Context、scope graph、CommitCore引用交换与Publish诊断 | Token合同保持；内部有序资产输入已进入root/scope统一表现协调，已接公开版本1注册/manifest；品牌编辑和全覆盖工具仍待后续验收 |

@@ -1,4 +1,5 @@
-﻿using System.Reactive;
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
+using System.Reactive;
 using System.Reactive.Subjects;
 using AtomUI.Controls;
 using ReactiveUI;
@@ -70,8 +71,8 @@ public class QRCodeViewModel : ReactiveObject, IRoutableViewModel
         HostScreen = screen;
         _smallerCanExecute = new BehaviorSubject<bool>(CanDecreaseSize());
         _largerCanExecute  = new BehaviorSubject<bool>(CanIncreaseSize());
-        SmallerCommand     = ReactiveCommand.Create(() => { Size -= 10; }, _smallerCanExecute);
-        LargerCommand      = ReactiveCommand.Create(() => { Size += 10; }, _largerCanExecute);
+        SmallerCommand     = GalleryCommands.Create(() => { Size -= 10; }, _smallerCanExecute);
+        LargerCommand      = GalleryCommands.Create(() => { Size += 10; }, _largerCanExecute);
     }
 
     private bool CanDecreaseSize()

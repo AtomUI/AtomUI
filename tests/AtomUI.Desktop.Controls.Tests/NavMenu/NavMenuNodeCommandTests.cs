@@ -10,7 +10,7 @@ using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Threading;
 using ReactiveUI;
-using ReactiveUI.Avalonia;
+using ReactiveUI.Primitives.Concurrency;
 using Shouldly;
 using Xunit;
 using AvaloniaWindow = Avalonia.Controls.Window;

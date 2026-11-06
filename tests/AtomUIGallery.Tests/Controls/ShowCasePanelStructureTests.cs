@@ -49,7 +49,8 @@ public class ShowCasePanelStructureTests
         panelTheme.ShouldContain("VerticalScrollBarVisibility=\"Auto\"");
         panelTheme.ShouldContain("Selector=\"^[IsScrollEnabled=False]\"");
         itemTheme.ShouldContain("ShowCaseItemTokenResource");
-        itemTheme.ShouldContain("{atom:SharedTokenResource ");
+        itemTheme.ShouldContain("{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type gallery:ShowCaseItem}}");
+        itemTheme.ShouldNotContain("{atom:SharedTokenResource ");
         itemTheme.ShouldNotContain("ControlTokenScope.Identity");
         itemTheme.ShouldNotContain("TokenSharedTokenResource");
         itemTheme.ShouldContain("ShowCaseItemTokenResource BadgePreviewMargin");
@@ -97,7 +98,8 @@ public class ShowCasePanelStructureTests
         headerToken.ShouldContain("MetadataValueWidth");
 
         headerTheme.ShouldContain("GalleryShowCaseHeaderTokenResource");
-        headerTheme.ShouldContain("{atom:SharedTokenResource ");
+        headerTheme.ShouldContain("{atom:OwnerTokenResource Kind=ColorBgContainer, AnchorControlType={x:Type gallery:GalleryShowCaseHeader}}");
+        headerTheme.ShouldNotContain("{atom:SharedTokenResource ");
         headerTheme.ShouldNotContain("ControlTokenScope.Identity");
         headerTheme.ShouldNotContain("TokenSharedTokenResource");
         headerTheme.ShouldContain("GalleryShowCaseHeaderLangResource");

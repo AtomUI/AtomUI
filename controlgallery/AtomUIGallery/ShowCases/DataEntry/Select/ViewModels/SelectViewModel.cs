@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reactive;
@@ -211,10 +212,10 @@ public class SelectViewModel : ReactiveObject, IRoutableViewModel
     public SelectViewModel(IScreen screen)
     {
         HostScreen = screen;
-        SetBoundSelectedOptionCommand  = ReactiveCommand.Create(SetBoundSelectedOption);
-        ClearBoundSelectedOptionCommand = ReactiveCommand.Create(ClearBoundSelectedOption);
-        SetBoundSelectedOptionsCommand = ReactiveCommand.Create(SetBoundSelectedOptions);
-        ClearBoundSelectedOptionsCommand = ReactiveCommand.Create(ClearBoundSelectedOptions);
+        SetBoundSelectedOptionCommand  = GalleryCommands.Create(SetBoundSelectedOption);
+        ClearBoundSelectedOptionCommand = GalleryCommands.Create(ClearBoundSelectedOption);
+        SetBoundSelectedOptionsCommand = GalleryCommands.Create(SetBoundSelectedOptions);
+        ClearBoundSelectedOptionsCommand = GalleryCommands.Create(ClearBoundSelectedOptions);
     }
 
     public ReactiveCommand<Unit, Unit> SetBoundSelectedOptionCommand { get; }

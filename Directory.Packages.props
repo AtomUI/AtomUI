@@ -20,7 +20,7 @@
         <PackageVersion Include="Avalonia.AvaloniaEdit" Version="12.0.0"/>
         <PackageVersion Include="AvaloniaEdit.TextMate" Version="12.0.0"/>
         <PackageVersion Include="TextMateSharp.Grammars" Version="2.0.3"/>
-        <PackageVersion Include="ReactiveUI.Avalonia" Version="12.0.3"/>
+        <PackageVersion Include="ReactiveUI.Avalonia" Version="12.1.6"/>
         <PackageVersion Include="Svg.Controls.Avalonia" Version="12.0.0.15"/>
         <PackageVersion Include="Svg.Model" Version="5.2.1"/>
         <PackageVersion Include="Svg.Custom" Version="5.2.1"/>

@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Collections.ObjectModel;
 using System.Reactive;
 using AtomUI.Controls;
@@ -69,8 +70,8 @@ public class MasonryViewModel : ReactiveObject, IRoutableViewModel
         EnsureImageItems();
         EnsureDynamicItems();
 
-        AddDynamicMasonryItemCommand    = ReactiveCommand.Create(AddDynamicMasonryItem);
-        RemoveDynamicMasonryItemCommand = ReactiveCommand.Create<int>(RemoveDynamicMasonryItem);
+        AddDynamicMasonryItemCommand    = GalleryCommands.Create(AddDynamicMasonryItem);
+        RemoveDynamicMasonryItemCommand = GalleryCommands.Create<int>(RemoveDynamicMasonryItem);
     }
 
     private void EnsureBasicItems()

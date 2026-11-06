@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Collections.ObjectModel;
 using System.Reactive;
 using AtomUI.Controls;
@@ -157,9 +158,9 @@ public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
     public ImagePreviewerViewModel(IScreen screen)
     {
         HostScreen            = screen;
-        StartRapidSwitchCommand = ReactiveCommand.Create(HandleStartRapidSwitch);
-        StopRapidSwitchCommand  = ReactiveCommand.Create(HandleStopRapidSwitch);
-        ReplaceSamePathCommand  = ReactiveCommand.CreateFromTask(HandleReplaceSamePathAsync);
+        StartRapidSwitchCommand = GalleryCommands.Create(HandleStartRapidSwitch);
+        StopRapidSwitchCommand  = GalleryCommands.Create(HandleStopRapidSwitch);
+        ReplaceSamePathCommand  = GalleryCommands.CreateFromTask(HandleReplaceSamePathAsync);
     }
 
     public void EnsurePreviewAssets()

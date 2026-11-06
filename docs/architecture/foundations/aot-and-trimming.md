@@ -134,6 +134,8 @@ Package Core，其控件主题也按实际契约选择；不能继续用 Common 
 裁剪发布则由受控 ILLink8 / ILC8 在真实依赖图内选择片段，不引用运行时不存在的 TypeMap API，也不回退到完整注册。
 后端按[目标框架规则](../../modules/toolchain/framework-routing.md)自动选择；工具组合、发布阶段和平台门禁见 [.NET 8 条件后端](aot-net8-conditional-backends.md)。
 普通 .NET 8 构建成功不能证明其裁剪/NativeAOT 发布通过。该实现尚未完成跨平台正式交付验收。
+Windows x64 的新增宿主、PE/COFF 机制、冷包消费与原生 Gallery 证据单独登记在
+[Windows 验收记录](../../superpowers/progress/2026-11-05-windows-theme-acceptance.md)，不扩大到其他 Windows 架构或全平台发布认证。
 
 源码、直接或传递 ProjectReference、普通预编译 adapter DLL、NuGet 消费均使用已解析包标记完成引导。
 不要求消费类库导出 usage 清单，不沿 ProjectReference 传播旧 linked context，也不恢复旧 DLL 的方法体使用分析。

@@ -71,6 +71,10 @@ Popup 接入边界：`AbstractColorPicker` 负责业务状态和内容准备，c
 
 ## 4. 状态与数据流
 
+单色触发器的描述文字由当前 `Value`、`Format` 与 `ColorTextFormatter` 计算。空值时读取
+`EmptyColorText`，该提示更新也会重新计算描述；已有颜色时仍使用颜色或自定义格式器输出。
+空值提示不建立覆盖描述属性的持续绑定，主题或语言更新不会将已选颜色的描述改回空值提示。
+
 ColorPicker 的状态流遵循下面路径：
 
 ```text

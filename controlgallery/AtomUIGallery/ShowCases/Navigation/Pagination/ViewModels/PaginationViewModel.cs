@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Reactive;
 using AtomUI.Controls;
 using ReactiveUI;
@@ -56,8 +57,8 @@ public class PaginationViewModel : ReactiveObject, IRoutableViewModel
     public PaginationViewModel(IScreen screen)
     {
         HostScreen                     = screen;
-        SetBoundPaginationCommand      = ReactiveCommand.Create(SetBoundPagination);
-        ResetBoundPaginationCommand    = ReactiveCommand.Create(ResetBoundPagination);
+        SetBoundPaginationCommand      = GalleryCommands.Create(SetBoundPagination);
+        ResetBoundPaginationCommand    = GalleryCommands.Create(ResetBoundPagination);
     }
 
     private void SetBoundPagination()

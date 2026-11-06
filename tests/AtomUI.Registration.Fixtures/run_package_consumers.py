@@ -10,6 +10,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import threading
 import time
 import zipfile
@@ -18,8 +19,6 @@ from xml.sax.saxutils import escape
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 FIXTURES = Path("tests/AtomUI.Registration.Fixtures")
-PRODUCTS = ["AtomUI.Generator", "AtomUI.Localization", "AtomUI.Native", "AtomUI.Core", "AtomUI.Controls.Shared",
-            "AtomUI.Fonts.AlibabaSans", "AtomUI.Icons.AntDesign", "AtomUI.Controls", "AtomUI.Desktop.Controls"]
 
 
 def stage_sources(destination):
@@ -36,7 +35,7 @@ def stage_sources(destination):
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
         copied.append(relative)
-    consumers = [name for name in copied if name.startswith(str(FIXTURES / "PackageConsumers") + "/")]
+    consumers = [name for name in copied if name.startswith((FIXTURES / "PackageConsumers").as_posix() + "/")]
     if len(consumers) != 20:
         raise RuntimeError(f"Expected all 20 deliverable consumer sources/configs, found {len(consumers)}")
     return copied
@@ -47,9 +46,12 @@ def main():
     parser.add_argument("--output", type=Path, required=True, help="New owned directory for snapshot, feed, caches, logs and outputs")
     parser.add_argument("--rid", default="osx-arm64", help="Desktop host RID to publish/run (default: osx-arm64)")
     parser.add_argument("--serve", action="store_true", help="Serve Browser output and wait for its actual runtime assertion")
+    parser.add_argument("--desktop-only", action="store_true", help="Run only desktop routes; no Browser completion claim")
     parser.add_argument("--browser-timeout", type=int, default=300)
     parser.add_argument("--port", type=int, default=0)
     args = parser.parse_args()
+    if args.desktop_only and args.serve:
+        parser.error("--desktop-only cannot be combined with --serve")
     output = args.output.expanduser().resolve()
     output.mkdir(parents=True, exist_ok=False)
     source = output / "source"
@@ -59,6 +61,9 @@ def main():
     feed = output / "feed"; feed.mkdir()
     env = os.environ.copy()
     env["NUGET_PACKAGES"] = str(output / "source-packages")
+    env["NUGET_HTTP_CACHE_PATH"] = str(output / "source-http")
+    env["AtomUIRegistrationPython"] = sys.executable
+    env["DOTNET_CLI_UI_LANGUAGE"] = "en-US"
     results = {"source_artifacts_existed": (source / ".artifacts").exists(), "commands": [], "runtime": {}}
     if results["source_artifacts_existed"]:
         raise RuntimeError("The staged source must not contain existing .artifacts")
@@ -66,7 +71,7 @@ def main():
     def run(label, command, environment=env, expected_exit=0):
         log = logs / (label + ".log")
         started = time.monotonic()
-        with log.open("w") as stream:
+        with log.open("w", encoding="utf-8") as stream:
             stream.write("$ " + " ".join(map(str, command)) + "\n"); stream.flush()
             completed = subprocess.run(command, cwd=source, env=environment, stdout=stream, stderr=subprocess.STDOUT)
         results["commands"].append({"label": label, "command": list(map(str, command)), "exit": completed.returncode, "expected_exit": expected_exit,
@@ -75,26 +80,32 @@ def main():
         if completed.returncode != expected_exit:
             raise RuntimeError(f"{label} failed; see {log}")
         print(label + (" PASS" if expected_exit == 0 else " EXPECTED_FAILURE"), flush=True)
-        return log.read_text()
+        return log.read_text(encoding="utf-8", errors="replace")
 
     # Explicit source prerequisites. The staged checkout has no existing build outputs or package cache.
     run("build-adapter", ["dotnet", "build", str(FIXTURES / "BinaryAdapter/BinaryAdapter.csproj"), "-c", "Release"])
-    run("build-linker", ["dotnet", "build", "src/AtomUI.Toolchain/AtomUI.Toolchain.csproj", "-t:BuildManagedToolchain", "-c", "Release"])
-    version = subprocess.check_output(["dotnet", "msbuild", "src/AtomUI.Core/AtomUI.Core.csproj", "-getProperty:AtomUIVersion"], cwd=source, env=env, text=True).strip()
-    for project in PRODUCTS:
-        run("pack-" + project, ["dotnet", "pack", f"src/{project}/{project}.csproj", "-c", "Release", "--no-build", "--no-restore", "-o", str(feed)])
+    # Use the release owner for the complete package list, both runtime TFMs,
+    # compiler recipes and absolute payload/worker-isolation checks. A second
+    # hard-coded package inventory silently missed newer optional packages.
+    run("build-pack-release", ["pwsh", "-NoLogo", "-NoProfile", "-File",
+                               "scripts/BuildNuGetPackages.ps1", "-BuildType", "Release",
+                               "-PackageOutputDir", str(feed)])
+    version = subprocess.check_output(["dotnet", "msbuild", "src/AtomUI.Core/AtomUI.Core.csproj", "-getProperty:AtomUIVersion"], cwd=source, env=env, text=True, encoding="utf-8").strip()
     inventory = {}
     for package in sorted(feed.glob("*.nupkg")):
         with zipfile.ZipFile(package) as archive:
             entries = archive.namelist()
-        if any("LinkedRegistration" in entry or "LinkedPublish" in entry or entry.startswith("lib/net8.0/") or
-               entry.endswith(("/illink.dll", "/Mono.Cecil.dll")) for entry in entries):
+        if any("LinkedRegistration" in entry or "LinkedPublish" in entry or
+               entry.endswith("/illink.dll") or
+               (entry.endswith("/Mono.Cecil.dll") and entry != "tools/typemap/Mono.Cecil.dll")
+               for entry in entries):
             raise RuntimeError("Unexpected package payload: " + package.name)
         inventory[package.name] = {"sha256": hashlib.sha256(package.read_bytes()).hexdigest(), "entries": entries}
     (output / "package-inventory.json").write_text(json.dumps(inventory, indent=2))
 
     consumer_env = env.copy()
     consumer_env["NUGET_PACKAGES"] = str(output / "consumer-packages")
+    consumer_env["NUGET_HTTP_CACHE_PATH"] = str(output / "consumer-http")
     config = output / "NuGet.Config"
     config.write_text('<configuration><packageSources><clear/>'
                       f'<add key="atomui-local" value="{escape(str(feed))}"/>'
@@ -123,8 +134,12 @@ def main():
     if "STATIC_RESOURCE_PASS trimmed=False" not in named:
         raise RuntimeError("Named resource ordinary consumer did not pass")
     named_output = output / "named-resources"
+    run("named-restore", ["dotnet", "restore", str(named_project), "-r", args.rid,
+                          "-p:Configuration=Release", "-p:SelfContained=true", "-p:PublishTrimmed=true",
+                          *common], consumer_env)
     run("named-publish", ["dotnet", "publish", str(named_project), "-c", "Release", "-r", args.rid,
-                          "--self-contained", "true", "-p:PublishTrimmed=true", "-p:TrimMode=full", *common,
+                          "--no-restore", "--self-contained", "true", "-p:PublishTrimmed=true", "-p:TrimMode=full",
+                          *common,
                           "-o", str(named_output)], consumer_env)
     named = run("named-trimmed", [str(named_output / ("NamedResources.exe" if args.rid.startswith("win-") else "NamedResources"))], consumer_env)
     if "STATIC_RESOURCE_PASS trimmed=True" not in named:
@@ -142,20 +157,28 @@ def main():
     results["runtime"]["named-resources"] = "ordinary and fulltrim pass; unrelated exported target absent"
     for mode in ["direct", "transitive", "binary"]:
         destination = output / mode
+        run("restore-" + mode, ["dotnet", "restore", str(ordinary / "Host/Host.csproj"), "-r", args.rid,
+                                "-p:Configuration=Release", "-p:SelfContained=true", "-p:PublishTrimmed=true",
+                                "-p:FixtureReferenceMode=" + mode, "-p:FixtureBinaryAdapterPath=" + str(adapter),
+                                *common], consumer_env)
         run("publish-" + mode, ["dotnet", "publish", str(ordinary / "Host/Host.csproj"), "-c", "Release", "-r", args.rid,
-                               "--self-contained", "true", "-p:PublishTrimmed=true", "-p:FixtureReferenceMode=" + mode,
+                               "--no-restore", "--self-contained", "true", "-p:PublishTrimmed=true", "-p:FixtureReferenceMode=" + mode,
                                "-p:FixtureBinaryAdapterPath=" + str(adapter), *common, "-o", str(destination)], consumer_env)
         app = destination / ("Host.exe" if args.rid.startswith("win-") else "Host")
         text = run("run-" + mode, [str(app)], consumer_env)
         if "COLD_CONSUMER_PASS" not in text or "trimmed=True" not in text:
             raise RuntimeError("Missing consumer runtime assertion: " + mode)
         results["runtime"][mode] = "pass"
+    if args.desktop_only:
+        (output / "results.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
+        print("PACKAGE_DESKTOP_CONSUMERS_PASS (Browser excluded)", flush=True)
+        return
     destination = output / "browser"
     run("publish-browser", ["dotnet", "publish", str(ordinary / "Browser/Browser.csproj"), "-c", "Release",
                             "-p:RunAOTCompilation=false", "-p:FixtureBinaryAdapterPath=" + str(adapter), *common,
                             "-o", str(destination)], consumer_env)
     receipt_path = source / ordinary / "Browser/obj/Release/net10.0-browser/AtomUI.TypeMap.receipt.json"
-    receipt = json.loads(receipt_path.read_text())
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     if receipt["status"] != "output-verified" or len(receipt["accessors"]) != 3:
         raise RuntimeError("Product package Browser receipt did not verify Common/Desktop/Author")
     shutil.copy2(receipt_path, output / "browser-receipt.json")

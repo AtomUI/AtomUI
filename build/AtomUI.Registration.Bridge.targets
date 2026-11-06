@@ -8,20 +8,25 @@
         <AtomUIConditionalBridgeCecilAssembly Condition="'$(AtomUIConditionalBridgeCecilAssembly)' == ''">$([System.IO.Path]::GetDirectoryName('$(AtomUIConditionalBridgeAssembly)'))/Mono.Cecil.dll</AtomUIConditionalBridgeCecilAssembly>
     </PropertyGroup>
     <Target Name="AtomUIPrepareConditionalBridgeManaged" BeforeTargets="_RunILLink;AtomUICaptureTypeMapBackendInputs"
+            DependsOnTargets="ResolveFrameworkReferences"
             Condition="'$(_AtomUIRegistrationFrameworkFamily)' == 'OfficialTypeMap' and '$(PublishTrimmed)' == 'true' and '$(PublishAot)' != 'true' and '$(RunILLink)' != 'false'">
         <AtomUI.Build.Tasks.PrepareConditionalRegistrationBridgeTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)" ProbeOnly="true" Assemblies="@(ManagedAssemblyToLink)">
             <Output TaskParameter="NeedsBridge" PropertyName="_AtomUIBridgeManagedProbe" />
         </AtomUI.Build.Tasks.PrepareConditionalRegistrationBridgeTask>
+        <ItemGroup>
+            <_AtomUIBridgeRuntimePack Include="@(ResolvedRuntimePack)" Condition="'%(ResolvedRuntimePack.Identity)' == 'Microsoft.NETCore.App.Runtime.osx-arm64' or '%(ResolvedRuntimePack.Identity)' == 'Microsoft.NETCore.App.Runtime.win-x64' or '%(ResolvedRuntimePack.Identity)' == 'Microsoft.NETCore.App.Runtime.Mono.browser-wasm'" />
+        </ItemGroup>
         <PropertyGroup>
             <AtomUIConditionalBridgeInputsRoot Condition="'$(AtomUIConditionalBridgeInputsRoot)' == ''">$(IntermediateOutputPath)AtomUIRegistration/bridge10</AtomUIConditionalBridgeInputsRoot>
             <_AtomUIBridgeWasmSdkDirectory Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">$([System.IO.Path]::GetFullPath('$([System.IO.Path]::GetDirectoryName('$(WasmAppBuilderTasksAssemblyPath)'))/../../Sdk'))/</_AtomUIBridgeWasmSdkDirectory>
+            <_AtomUIBridgeManagedRuntimeVersion>@(_AtomUIBridgeRuntimePack->'%(NuGetPackageVersion)')</_AtomUIBridgeManagedRuntimeVersion>
+            <_AtomUIBridgeManagedRuntimePackIdentity>@(_AtomUIBridgeRuntimePack)</_AtomUIBridgeManagedRuntimePackIdentity>
         </PropertyGroup>
-        <Error Condition="'$(_AtomUIBridgeManagedProbe)' == 'true' and ('$(NETCoreSdkVersion)' != '10.0.300' or !(('$(TargetFramework)' == 'net10.0' and '$(RuntimeIdentifier)' == 'osx-arm64') or ('$(TargetFramework)' == 'net10.0-browser' and '$(RuntimeIdentifier)' == 'browser-wasm')) or '$(TrimMode)' != 'full')"
-               Code="ATOMUIREG006" Text="The conditional bridge currently admits SDK 10.0.300, full managed trimming on net10.0/osx-arm64 or net10.0-browser/browser-wasm. Other SDK publish routes require their own acceptance evidence." />
+        <Error Condition="'$(_AtomUIBridgeManagedProbe)' == 'true' and ('$(NETCoreSdkVersion)' != '10.0.300' or !(('$(TargetFramework)' == 'net10.0' and ('$(RuntimeIdentifier)' == 'osx-arm64' or ('$(RuntimeIdentifier)' == 'win-x64' and '@(_AtomUIBridgeRuntimePack->Count())' == '1' and '$(_AtomUIBridgeManagedRuntimePackIdentity)' == 'Microsoft.NETCore.App.Runtime.win-x64' and '$(_AtomUIBridgeManagedRuntimeVersion)' == '10.0.14' and '$(NETCoreSdkRuntimeIdentifier)' == 'win-x64'))) or ('$(TargetFramework)' == 'net10.0-browser' and '$(RuntimeIdentifier)' == 'browser-wasm')) or '$(TrimMode)' != 'full')"
+               Code="ATOMUIREG006" Text="The conditional bridge currently admits SDK 10.0.300, full managed trimming on net10.0/osx-arm64, net10.0/win-x64/runtime 10.0.14 on Windows x64 SDK host or net10.0-browser/browser-wasm. Other SDK publish routes require their own acceptance evidence." />
         <Error Condition="'$(_AtomUIBridgeManagedProbe)' == 'true' and ('$(PublishReadyToRun)' == 'true' or '$(PublishSingleFile)' == 'true')" Code="ATOMUIREG006" Text="The conditional bridge managed SDK gate currently verifies ordinary publish copying; post-link transformations are not admitted." />
         <Error Condition="'$(_AtomUIBridgeManagedProbe)' == 'true' and '$(RuntimeIdentifier)' == 'browser-wasm' and '$(WasmEnableWebcil)' != 'false'" Code="ATOMUIREG006" Text="The admitted browser bridge currently requires WasmEnableWebcil=false so its deployed managed identities and bytes can be independently verified." />
         <ItemGroup>
-            <_AtomUIBridgeRuntimePack Include="@(ResolvedRuntimePack)" Condition="'%(ResolvedRuntimePack.Identity)' == 'Microsoft.NETCore.App.Runtime.osx-arm64' or '%(ResolvedRuntimePack.Identity)' == 'Microsoft.NETCore.App.Runtime.Mono.browser-wasm'" />
             <_AtomUIBridgeOriginalAssemblies Include="@(ManagedAssemblyToLink)" />
             <_AtomUIBridgeOriginalRoots Include="@(TrimmerRootAssembly)" />
             <_AtomUIBridgeOriginalReferences Include="@(ReferencePath)" />
@@ -76,11 +81,19 @@
         <PropertyGroup Condition="'$(_AtomUIBridgeNeeded)' == 'true'">
             <_ExtraTrimmerArgs>$(_AtomUIBridgePreparedArguments)</_ExtraTrimmerArgs>
             <IntermediateLinkDir>$([System.IO.Path]::GetDirectoryName('$(AtomUIConditionalBridgeInputs)'))/linked/</IntermediateLinkDir>
-            <_LinkSemaphore>$(IntermediateLinkDir)Link.semaphore</_LinkSemaphore>
             <AtomUIConditionalBridgeReceipt>$([System.IO.Path]::GetDirectoryName('$(AtomUIConditionalBridgeInputs)'))/bridge-receipt.json</AtomUIConditionalBridgeReceipt>
             <_AtomUIBridgeManagedEngine>illink</_AtomUIBridgeManagedEngine>
             <_AtomUIBridgeManagedEngine Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">wasm</_AtomUIBridgeManagedEngine>
             <MSBuildAllProjects>$(MSBuildAllProjects);$(AtomUIConditionalBridgeInputs)</MSBuildAllProjects>
+        </PropertyGroup>
+        <!-- Use one Windows extended absolute directory for the engine, SDK candidate/copy
+             and removed-assembly/deps bookkeeping. Candidate-only normalization leaves
+             the SDK second Exists check unable to see retained long-path assemblies. -->
+        <PropertyGroup Condition="'$(_AtomUIBridgeNeeded)' == 'true'">
+            <IntermediateLinkDir Condition="$([MSBuild]::IsOSPlatform('Windows'))">$([System.IO.Path]::GetFullPath('$(IntermediateLinkDir)'))</IntermediateLinkDir>
+            <IntermediateLinkDir Condition="$([MSBuild]::IsOSPlatform('Windows')) and !$([System.String]::Copy('$(IntermediateLinkDir)').StartsWith('\\?\')) and $([System.String]::Copy('$(IntermediateLinkDir)').StartsWith('\\'))">\\?\UNC\$([System.String]::Copy('$(IntermediateLinkDir)').Substring(2))</IntermediateLinkDir>
+            <IntermediateLinkDir Condition="$([MSBuild]::IsOSPlatform('Windows')) and !$([System.String]::Copy('$(IntermediateLinkDir)').StartsWith('\\?\'))">\\?\$(IntermediateLinkDir)</IntermediateLinkDir>
+            <_LinkSemaphore>$(IntermediateLinkDir)Link.semaphore</_LinkSemaphore>
         </PropertyGroup>
         <ItemGroup Condition="'$(_AtomUIBridgeNeeded)' == 'true'">
             <ManagedAssemblyToLink Remove="@(ManagedAssemblyToLink)" />
@@ -142,8 +155,8 @@
         <AtomUI.Build.Tasks.PrepareConditionalRegistrationBridgeTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)" ProbeOnly="true" Assemblies="@(IlcCompileInput);@(IlcReference);@(IlcSatelliteAssembly)">
             <Output TaskParameter="NeedsBridge" PropertyName="_AtomUIBridgeNativeProbe" />
         </AtomUI.Build.Tasks.PrepareConditionalRegistrationBridgeTask>
-        <Error Condition="'$(_AtomUIBridgeNativeProbe)' == 'true' and ('$(NETCoreSdkVersion)' != '10.0.300' or '$(TargetFramework)' != 'net10.0' or '$(RuntimeIdentifier)' != 'osx-arm64' or '$(RuntimeFrameworkVersion)' != '10.0.8' or '$(IlcMultiModule)' == 'true' or '$(NativeLib)' != '')"
-               Code="ATOMUIREG006" Text="The bridge NativeAOT SDK gate admits SDK 10.0.300/runtime 10.0.8, net10.0 executable osx-arm64 single-module publishing only." />
+        <Error Condition="'$(_AtomUIBridgeNativeProbe)' == 'true' and ('$(NETCoreSdkVersion)' != '10.0.300' or '$(TargetFramework)' != 'net10.0' or ('$(RuntimeIdentifier)' != 'osx-arm64' and '$(RuntimeIdentifier)' != 'win-x64') or ('$(RuntimeIdentifier)' == 'win-x64' and '$(NETCoreSdkRuntimeIdentifier)' != 'win-x64') or ('$(RuntimeIdentifier)' == 'osx-arm64' and '$(RuntimeFrameworkVersion)' != '10.0.8') or ('$(RuntimeIdentifier)' == 'win-x64' and '$(RuntimeFrameworkVersion)' != '10.0.14') or '$(IlcMultiModule)' == 'true' or '$(NativeLib)' != '')"
+               Code="ATOMUIREG006" Text="The bridge NativeAOT SDK gate admits SDK 10.0.300, osx runtime 10.0.8 or Windows runtime 10.0.14, net10.0 executable osx-arm64 or win-x64 (Windows x64 SDK host) single-module publishing only." />
         <Error Condition="'$(_AtomUIBridgeNativeProbe)' == 'true' and ('@(IlcArg)' != '' or '$(IlcOrderFile)' != '' or '$(_ReachabilityInstrumentationFile)' != '')"
                Code="ATOMUIREG006" Text="Raw ILC arguments and extra ordered/reachability input files require a separately audited immutable mapping before this bridge route can consume them." />
         <PropertyGroup>
@@ -155,7 +168,8 @@
             <_AtomUIBridgeNativeCompile Include="@(IlcCompileInput)" />
             <_AtomUIBridgeNativeReferences Include="@(IlcReference)" />
             <_AtomUIBridgeNativeSatellites Include="@(IlcSatelliteAssembly)" />
-            <_AtomUIBridgeNativeInputs Include="@(IlcCompileInput);@(IlcReference);@(IlcSatelliteAssembly)" />
+            <_AtomUIBridgeNativeInputs Include="@(IlcCompileInput);@(IlcSatelliteAssembly)" />
+            <_AtomUIBridgeNativeInputs Include="@(IlcReference)" AtomUINativeAotReference="true" />
             <_AtomUIBridgeNativeAdditional Include="$(MSBuildAllProjects)" Kind="configuration" />
             <_AtomUIBridgeNativeAdditional Include="@(RdXmlFile)" Kind="root-descriptor" AtomUIEngineItem="RdXmlFile" />
             <_AtomUIBridgeNativeAdditional Include="@(TrimmerRootDescriptor)" Kind="root-descriptor" AtomUIEngineItem="TrimmerRootDescriptor" />
@@ -185,7 +199,11 @@
             <Output TaskParameter="PreparedAdditionalInputs" ItemName="_AtomUIBridgeNativePreparedAdditional" />
         </AtomUI.Build.Tasks.PrepareConditionalRegistrationBridgeTask>
         <JoinItems Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'" Left="@(_AtomUIBridgeNativeCompile)" LeftKey="FullPath" LeftMetadata="*" Right="@(_AtomUIBridgeNativePrepared)" RightKey="AtomUIOriginalPath" RightMetadata="AtomUIOriginalPath" ItemSpecToUse="Right"><Output TaskParameter="JoinResult" ItemName="_AtomUIBridgeNativePreparedCompile" /></JoinItems>
-        <JoinItems Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'" Left="@(_AtomUIBridgeNativeReferences)" LeftKey="FullPath" LeftMetadata="*" Right="@(_AtomUIBridgeNativePrepared)" RightKey="AtomUIOriginalPath" RightMetadata="AtomUIOriginalPath" ItemSpecToUse="Right"><Output TaskParameter="JoinResult" ItemName="_AtomUIBridgeNativePreparedReferences" /></JoinItems>
+        <ItemGroup Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'">
+            <_AtomUIBridgeNativePreparedReferenceInputs Include="@(_AtomUIBridgeNativePrepared)" />
+            <_AtomUIBridgeNativePreparedReferenceInputs Include="@(_AtomUIBridgeNativePreparedAdditional)" Condition="'%(_AtomUIBridgeNativePreparedAdditional.Kind)' == 'reference'" />
+        </ItemGroup>
+        <JoinItems Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'" Left="@(_AtomUIBridgeNativeReferences)" LeftKey="FullPath" LeftMetadata="*" Right="@(_AtomUIBridgeNativePreparedReferenceInputs)" RightKey="AtomUIOriginalPath" RightMetadata="AtomUIOriginalPath" ItemSpecToUse="Right"><Output TaskParameter="JoinResult" ItemName="_AtomUIBridgeNativePreparedReferences" /></JoinItems>
         <JoinItems Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'" Left="@(_AtomUIBridgeNativeSatellites)" LeftKey="FullPath" LeftMetadata="*" Right="@(_AtomUIBridgeNativePrepared)" RightKey="AtomUIOriginalPath" RightMetadata="AtomUIOriginalPath" ItemSpecToUse="Right"><Output TaskParameter="JoinResult" ItemName="_AtomUIBridgeNativePreparedSatellites" /></JoinItems>
         <ItemGroup Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'">
             <IlcCompileInput Remove="@(IlcCompileInput)" /><IlcCompileInput Include="@(_AtomUIBridgeNativePreparedCompile)" />
@@ -200,9 +218,23 @@
         <Error Condition="'$(_AtomUIBridgeNativeProbe)' == 'true' and ('$(_AtomUIBridgeNativeNeeded)' == 'true' and '@(_AtomUIBridgeNativeFrozenCompiler->Count())' != '1')" Code="ATOMUIREG006" Text="The official ILC executable must belong to its frozen tool bundle exactly once." />
         <PropertyGroup Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'">
             <_AtomUIBridgeNativeRun>$([System.IO.Path]::GetDirectoryName('$(AtomUIConditionalBridgeInputs)'))</_AtomUIBridgeNativeRun>
+            <_AtomUIBridgeNativeOriginalSourceLinkArgument>/SOURCELINK:&quot;$(NativeIntermediateOutputPath)$(TargetName).sourcelink&quot;</_AtomUIBridgeNativeOriginalSourceLinkArgument>
             <IlcToolsPath>@(_AtomUIBridgeNativeFrozenCompiler->'%(RootDir)%(Directory)')</IlcToolsPath>
+            <!-- The official Windows SDK Exec uses an implicit ilc suffix. At long frozen
+                 paths cmd requires extended spelling; keep that same physical tool bundle. -->
+            <IlcToolsPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">$([System.IO.Path]::GetFullPath('$(IlcToolsPath)'))</IlcToolsPath>
+            <IlcToolsPath Condition="$([MSBuild]::IsOSPlatform('Windows')) and !$([System.String]::Copy('$(IlcToolsPath)').StartsWith('\\?\')) and $([System.String]::Copy('$(IlcToolsPath)').StartsWith('\\'))">\\?\UNC\$([System.String]::Copy('$(IlcToolsPath)').Substring(2))</IlcToolsPath>
+            <IlcToolsPath Condition="$([MSBuild]::IsOSPlatform('Windows')) and !$([System.String]::Copy('$(IlcToolsPath)').StartsWith('\\?\'))">\\?\$(IlcToolsPath)</IlcToolsPath>
             <NativeIntermediateOutputPath>$(_AtomUIBridgeNativeRun)/native-obj/</NativeIntermediateOutputPath>
             <NativeOutputPath>$(_AtomUIBridgeNativeRun)/native/</NativeOutputPath>
+            <!-- MSVC must receive extended, backslash-normalized response/output paths as
+                 well as the compiler; it does not infer long-path support from the host. -->
+            <NativeIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">$([System.IO.Path]::GetFullPath('$(NativeIntermediateOutputPath)'))</NativeIntermediateOutputPath>
+            <NativeIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows')) and !$([System.String]::Copy('$(NativeIntermediateOutputPath)').StartsWith('\\?\')) and $([System.String]::Copy('$(NativeIntermediateOutputPath)').StartsWith('\\'))">\\?\UNC\$([System.String]::Copy('$(NativeIntermediateOutputPath)').Substring(2))</NativeIntermediateOutputPath>
+            <NativeIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows')) and !$([System.String]::Copy('$(NativeIntermediateOutputPath)').StartsWith('\\?\'))">\\?\$(NativeIntermediateOutputPath)</NativeIntermediateOutputPath>
+            <NativeOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">$([System.IO.Path]::GetFullPath('$(NativeOutputPath)'))</NativeOutputPath>
+            <NativeOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows')) and !$([System.String]::Copy('$(NativeOutputPath)').StartsWith('\\?\')) and $([System.String]::Copy('$(NativeOutputPath)').StartsWith('\\'))">\\?\UNC\$([System.String]::Copy('$(NativeOutputPath)').Substring(2))</NativeOutputPath>
+            <NativeOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows')) and !$([System.String]::Copy('$(NativeOutputPath)').StartsWith('\\?\'))">\\?\$(NativeOutputPath)</NativeOutputPath>
             <NativeObject>$(NativeIntermediateOutputPath)$(TargetName)$(NativeObjectExt)</NativeObject>
             <NativeBinary>$(NativeOutputPath)$(NativeBinaryPrefix)$(TargetName)$(NativeBinaryExt)</NativeBinary>
             <ExportsFile>$(NativeIntermediateOutputPath)$(TargetName)$(ExportsFileExt)</ExportsFile>
@@ -210,6 +242,13 @@
         </PropertyGroup>
         <ItemGroup Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'">
             <ManagedBinary><IlcRspFile>$(NativeIntermediateOutputPath)%(Filename).ilc.rsp</IlcRspFile><IlcOutputFile>$(NativeIntermediateOutputPath)%(Filename)$(IlcOutputFileExt)</IlcOutputFile></ManagedBinary>
+        </ItemGroup>
+        <!-- SetupOSSpecificProps captured the SDK source-link output before the bridge
+             changed paths. Keep its actual optional item aligned with ILC's new output. -->
+        <ItemGroup Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true' and $([MSBuild]::IsOSPlatform('Windows'))">
+            <_AtomUIBridgeNativeSourceLinkArgument Include="@(LinkerArg)" Condition="'%(LinkerArg.Identity)' == '$(_AtomUIBridgeNativeOriginalSourceLinkArgument)'" />
+            <LinkerArg Remove="@(_AtomUIBridgeNativeSourceLinkArgument)" />
+            <LinkerArg Include="@(_AtomUIBridgeNativeSourceLinkArgument->'/SOURCELINK:&quot;$(NativeIntermediateOutputPath)$(TargetName).sourcelink&quot;')" />
         </ItemGroup>
         <AtomUI.Build.Tasks.VerifyConditionalRegistrationBridgeTask Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'" TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
             InputsPath="$(AtomUIConditionalBridgeInputs)" TransformationPath="$(AtomUIConditionalBridgeTransformation)" ReceiptPath="$(AtomUIConditionalBridgeReceipt)"
@@ -220,6 +259,7 @@
         <AtomUI.Build.Tasks.VerifyConditionalRegistrationBridgeTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
             InputsPath="$(AtomUIConditionalBridgeInputs)" TransformationPath="$(AtomUIConditionalBridgeTransformation)" ReceiptPath="$(AtomUIConditionalBridgeReceipt)"
             EngineKind="nativeaot" Phase="linked-output" OutputDirectory="$(NativeOutputPath)" OutputFiles="@(_AtomUIBridgeNativeOutput)" />
+        <PropertyGroup><IlcToolsPath>$(_AtomUIBridgeNativeOriginalTools)</IlcToolsPath></PropertyGroup>
     </Target>
     <Target Name="AtomUIVerifyConditionalBridgeNativePublished" AfterTargets="CopyNativeBinary" Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'">
         <ItemGroup><_AtomUIBridgeNativePublished Include="$(PublishDir)$(NativeBinaryPrefix)$(TargetName)$(NativeBinaryExt)" /></ItemGroup>

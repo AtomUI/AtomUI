@@ -8,6 +8,9 @@
         </_AtomUILanguageFileExcludes>
         <_AtomUILanguageFileExcludes Condition="'$(BaseOutputPath)' != ''">$(_AtomUILanguageFileExcludes);$(BaseOutputPath)**/*.xlf</_AtomUILanguageFileExcludes>
         <_AtomUILanguageFileExcludes Condition="'$(BaseIntermediateOutputPath)' != ''">$(_AtomUILanguageFileExcludes);$(BaseIntermediateOutputPath)**/*.xlf</_AtomUILanguageFileExcludes>
+        <!-- Project-local NuGet caches contain other modules' XLIFF. Exclude only
+             automatic discovery; package props keep their explicit module metadata. -->
+        <_AtomUILanguageFileExcludes Condition="'$(NuGetPackageRoot)' != ''">$(_AtomUILanguageFileExcludes);$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(NuGetPackageRoot)'))**/*.xlf</_AtomUILanguageFileExcludes>
         <_AtomUILanguageGeneratorMetadata>AtomUILanguageSourceKind;AtomUILanguageSourceIdentity;AtomUILanguageModuleId;AtomUILanguageContractValidation;AtomUILanguageSourceFingerprint</_AtomUILanguageGeneratorMetadata>
     </PropertyGroup>
 

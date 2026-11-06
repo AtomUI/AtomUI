@@ -21,31 +21,42 @@ public class LunarCalendarProviderTests
     [Fact]
     public void MonthPanelData_QueriesProviderOnceAndReusesItForSamePanelSelection()
     {
-        var provider = new RecordingProvider([
-            new LunarCalendarHoliday(new DateTime(2026, 7, 15), "Holiday", LunarCalendarHolidayKind.Holiday)
-        ]);
-        var calendar = new LunarCalendarControl
+        // This provider-cache scenario asserts a Sunday-first visible range.
+        // Its manually constructed session has not attached to a language host.
+        var previousCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+        try
         {
-            Value = new DateTime(2026, 7, 15),
-            HolidayProvider = provider
-        };
-        var view = CreateView(calendar);
-        ApplyTemplateParts(view);
+            var provider = new RecordingProvider([
+                new LunarCalendarHoliday(new DateTime(2026, 7, 15), "Holiday", LunarCalendarHolidayKind.Holiday)
+            ]);
+            var calendar = new LunarCalendarControl
+            {
+                Value = new DateTime(2026, 7, 15),
+                HolidayProvider = provider
+            };
+            var view = CreateView(calendar);
+            ApplyTemplateParts(view);
 
-        provider.CallCount.ShouldBe(1);
-        provider.LastRange!.Start.ShouldBe(new DateTime(2026, 6, 28));
-        provider.LastRange.End.ShouldBe(new DateTime(2026, 8, 8));
+            provider.CallCount.ShouldBe(1);
+            provider.LastRange!.Start.ShouldBe(new DateTime(2026, 6, 28));
+            provider.LastRange.End.ShouldBe(new DateTime(2026, 8, 8));
 
-        calendar.Value = new DateTime(2026, 7, 16);
-        ApplyTemplateParts(view);
-        provider.CallCount.ShouldBe(1);
+            calendar.Value = new DateTime(2026, 7, 16);
+            ApplyTemplateParts(view);
+            provider.CallCount.ShouldBe(1);
 
-        calendar.Fullscreen = false;
-        provider.CallCount.ShouldBe(1);
+            calendar.Fullscreen = false;
+            provider.CallCount.ShouldBe(1);
 
-        calendar.Value = new DateTime(2026, 8, 16);
-        ApplyTemplateParts(view);
-        provider.CallCount.ShouldBe(2);
+            calendar.Value = new DateTime(2026, 8, 16);
+            ApplyTemplateParts(view);
+            provider.CallCount.ShouldBe(2);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+        }
     }
 
     [Fact]

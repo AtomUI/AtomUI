@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Reactive;
 using AtomUI.Controls;
 using ReactiveUI;
@@ -58,8 +59,8 @@ public class RateViewModel : ReactiveObject, IRoutableViewModel
     {
         HostScreen = screen;
         _twoWayValue = 2.0;
-        SetFourStarsCommand      = ReactiveCommand.Create(HandleSetFourStars);
-        ClearTwoWayValueCommand  = ReactiveCommand.Create(HandleClearTwoWayValue);
+        SetFourStarsCommand      = GalleryCommands.Create(HandleSetFourStars);
+        ClearTwoWayValueCommand  = GalleryCommands.Create(HandleClearTwoWayValue);
         UpdateTwoWayValueSummary();
     }
 

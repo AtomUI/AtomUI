@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Reactive;
 using System.Reactive.Linq;
 using AtomUI.Controls;
@@ -56,8 +57,8 @@ public class AvatarViewModel : ReactiveObject, IRoutableViewModel, IActivatableV
         _colorList = ["#f56a00", "#7265e6", "#ffbf00", "#00a2ae"];
         _gapList   = [4, 3, 2, 1];
 
-        ChangeUserCommand = ReactiveCommand.Create(SetupAvatarText);
-        ChangeGapCommand  = ReactiveCommand.Create(SetupAvatarGap);
+        ChangeUserCommand = GalleryCommands.Create(SetupAvatarText);
+        ChangeGapCommand  = GalleryCommands.Create(SetupAvatarGap);
 
         Activator.Activated.Subscribe(_ =>
         {

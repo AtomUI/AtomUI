@@ -82,6 +82,7 @@ public sealed class PrepareConditionalRegistrationBridgeTask : RegistrationBuild
             {
                 BuildEngine = BuildEngine,
                 OutputRoot = Path.Combine(Path.GetFullPath(OutputRoot), "inputs"),
+                UseSiblingInvocationRoot = OperatingSystem.IsWindows() && Configuration.StartsWith("nativeaot|", StringComparison.Ordinal),
                 Configuration = Configuration + "|bridge-v1|" + RuntimePackDirectory + "|" + ApplicationAssemblyIdentity,
                 Assemblies = Assemblies,
                 AdditionalInputs = additional.ToArray(),

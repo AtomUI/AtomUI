@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
+using AtomUI.Native;
 using AtomUI.Registration;
 using AtomUI.Theme;
 using Avalonia;
@@ -21,6 +22,10 @@ public static class ThemeManagerBuilderExtensions
 
     private static void InitializeDesktopRuntime(ControlPackageContext context)
     {
+        if (context.ThemeManager is ThemeManager manager)
+        {
+            manager.InstallStyleHostCompatibility(StyleRemovalHook.Attach);
+        }
         DialogInputCaptureTracker.Initialize();
         var inputManager = AvaloniaLocator.CurrentMutable.GetService(typeof(IInputManager)) as IInputManager;
         if (inputManager is not null)

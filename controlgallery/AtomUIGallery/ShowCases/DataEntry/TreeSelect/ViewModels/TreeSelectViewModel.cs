@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reactive;
@@ -251,10 +252,10 @@ public class TreeSelectViewModel : ReactiveObject, IRoutableViewModel
     public TreeSelectViewModel(IScreen screen)
     {
         HostScreen = screen;
-        SetBoundSelectedItemCommand   = ReactiveCommand.Create(SetBoundSelectedItem);
-        ClearBoundSelectedItemCommand = ReactiveCommand.Create(ClearBoundSelectedItem);
-        SetBoundSelectedItemsCommand  = ReactiveCommand.Create(SetBoundSelectedItems);
-        ClearBoundSelectedItemsCommand = ReactiveCommand.Create(ClearBoundSelectedItems);
+        SetBoundSelectedItemCommand   = GalleryCommands.Create(SetBoundSelectedItem);
+        ClearBoundSelectedItemCommand = GalleryCommands.Create(ClearBoundSelectedItem);
+        SetBoundSelectedItemsCommand  = GalleryCommands.Create(SetBoundSelectedItems);
+        ClearBoundSelectedItemsCommand = GalleryCommands.Create(ClearBoundSelectedItems);
     }
 
     public ReactiveCommand<Unit, Unit> SetBoundSelectedItemCommand { get; }

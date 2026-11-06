@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using AtomUI.Controls;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
@@ -58,9 +59,9 @@ public class CustomizeThemeViewModel : ReactiveObject, IRoutableViewModel, IActi
                                  .WithToken(nameof(DesignToken.ColorPrimary), "#faad14")
                                  .Build();
         _runtimeThemeConfig = BuildGlobalConfig("#1677ff");
-        UseRuntimePrimaryBlue      = ReactiveCommand.Create(() => SetRuntimePrimaryColor("#1677ff"));
-        UseRuntimePrimaryGreen     = ReactiveCommand.Create(() => SetRuntimePrimaryColor("#00b96b"));
-        UseRuntimePrimaryMagenta   = ReactiveCommand.Create(() => SetRuntimePrimaryColor("#eb2f96"));
+        UseRuntimePrimaryBlue      = GalleryCommands.Create(() => SetRuntimePrimaryColor("#1677ff"));
+        UseRuntimePrimaryGreen     = GalleryCommands.Create(() => SetRuntimePrimaryColor("#00b96b"));
+        UseRuntimePrimaryMagenta   = GalleryCommands.Create(() => SetRuntimePrimaryColor("#eb2f96"));
     }
 
     private void SetRuntimePrimaryColor(string color)

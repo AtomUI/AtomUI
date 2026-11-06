@@ -1,5 +1,8 @@
 # GalleryBase 导航与路由设计
 
+当前 Reactive 依赖、命名空间迁移和每宿主显式页面工厂解析规则见
+[Reactive 依赖迁移](reactive-dependency-migration.md)。
+
 本文档细化 GalleryBase 的导航树、路由注册、ReactiveUI ViewLocator 适配和导航生命周期。该部分是产品复用的核心：产品只描述“有哪些页面”和“如何创建页面”，GalleryBase 负责生成导航模型并完成路由。
 
 ## 设计目标

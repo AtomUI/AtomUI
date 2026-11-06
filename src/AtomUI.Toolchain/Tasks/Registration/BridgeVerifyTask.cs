@@ -28,6 +28,15 @@ public sealed class VerifyConditionalRegistrationBridgeTask : RegistrationBuildT
             {
                 throw new InvalidDataException("Unknown bridge verification engine or phase.");
             }
+            if (Phase != "published-output" && (File.Exists(ReceiptPath + ".linked.json") || File.Exists(ReceiptPath + ".published.json")))
+            {
+                throw new InvalidDataException("This bridge invocation already has immutable output proof; it cannot be analyzed or linked again.");
+            }
+            if (Phase == "published-output" && (File.Exists(ReceiptPath + ".published.json") ||
+                !File.Exists(ReceiptPath + ".linked.json") || Hash(ReceiptPath + ".linked.json") != Hash(ReceiptPath)))
+            {
+                throw new InvalidDataException("Published validation requires the original immutable linked receipt exactly once.");
+            }
             using var inputs = JsonDocument.Parse(File.ReadAllBytes(InputsPath));
             using var transformation = JsonDocument.Parse(File.ReadAllBytes(TransformationPath));
             RegistrationContractJson.ValidateUniqueFields(inputs.RootElement);
@@ -94,15 +103,24 @@ public sealed class VerifyConditionalRegistrationBridgeTask : RegistrationBuildT
             object receipt;
             if (Phase == "analysis-input")
             {
-                var actual = ConsumedAssemblies.Select(item => Path.GetFullPath(item.ItemSpec)).Distinct(StringComparer.Ordinal)
-                    .ToDictionary(path => AssemblyName.GetAssemblyName(path).FullName!, StringComparer.Ordinal);
+                var consumed = ConsumedAssemblies.Select(item => Path.GetFullPath(item.ItemSpec)).Distinct(StringComparer.Ordinal).ToArray();
+                var native = consumed.Where(path => !BridgeInputProbe.IsManagedAssembly(path)).ToArray();
+                var expectedNative = additional.Where(entry => entry.GetProperty("kind").GetString() == "reference")
+                    .Select(entry => entry.GetProperty("path").GetString()!).Where(path => !BridgeInputProbe.IsManagedAssembly(path))
+                    .ToHashSet(StringComparer.Ordinal);
+                if ((native.Length != 0 || expectedNative.Count != 0) && EngineKind != "nativeaot" || !expectedNative.SetEquals(native))
+                {
+                    throw new InvalidDataException("The NativeAOT compiler must consume exactly the frozen native reference set.");
+                }
+                var actual = consumed.Except(native).ToDictionary(path => AssemblyName.GetAssemblyName(path).FullName!, StringComparer.Ordinal);
                 if (actual.Count != expected.Count || expected.Any(pair => !actual.TryGetValue(pair.Key, out var path) || path != pair.Value))
                 {
                     throw new InvalidDataException("The SDK compiler did not consume exactly the prepared bridge assembly paths.");
                 }
                 var actualAdditional = ConsumedAdditionalInputs.Select(item => Path.GetFullPath(item.ItemSpec)).ToHashSet(StringComparer.Ordinal);
                 var expectedAdditional = additional.Where(entry => entry.GetProperty("kind").GetString() is
-                    "root-descriptor" or "reference" or "custom-step" or "opaque").Select(entry => entry.GetProperty("path").GetString()!).ToHashSet(StringComparer.Ordinal);
+                    "root-descriptor" or "reference" or "custom-step" or "opaque").Select(entry => entry.GetProperty("path").GetString()!)
+                    .Where(path => !expectedNative.Contains(path)).ToHashSet(StringComparer.Ordinal);
                 if (!actualAdditional.SetEquals(expectedAdditional))
                 {
                     throw new InvalidDataException("The SDK compiler additional inputs do not match the frozen input paths.");
@@ -158,6 +176,12 @@ public sealed class VerifyConditionalRegistrationBridgeTask : RegistrationBuildT
                 }
                 else
                 {
+                    // Copy verification cannot reauthenticate changed linked bytes. The immutable
+                    // linked receipt and its source outputs remain available after a failed copy.
+                    foreach (var output in prior.GetProperty("outputs").EnumerateArray())
+                    {
+                        VerifyFile(output.GetProperty("path").GetString()!, output.GetProperty("sha256").GetString()!);
+                    }
                     var published = outputs.ToDictionary(file => file.relativePath, StringComparer.Ordinal);
                     foreach (var output in prior.GetProperty("outputs").EnumerateArray())
                     {
@@ -171,13 +195,18 @@ public sealed class VerifyConditionalRegistrationBridgeTask : RegistrationBuildT
                         linkedReceiptHash = Hash(ReceiptPath), outputs };
                 }
             }
+            if (Phase is "linked-output" or "published-output")
+            {
+                var proof = ReceiptPath + (Phase == "linked-output" ? ".linked.json" : ".published.json");
+                RegistrationFiles.CreateJson(proof, receipt);
+            }
             RegistrationFiles.ReplaceJson(ReceiptPath, receipt);
             return true;
         }
         catch (Exception error) when (error is InvalidDataException or IOException or UnauthorizedAccessException or ArgumentException or
                                      BadImageFormatException or InvalidOperationException or JsonException or KeyNotFoundException)
         {
-            if (File.Exists(ReceiptPath))
+            if (Phase != "published-output" && !File.Exists(ReceiptPath + ".linked.json") && File.Exists(ReceiptPath))
             {
                 File.Delete(ReceiptPath);
             }

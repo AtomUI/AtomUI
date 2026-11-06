@@ -1,3 +1,5 @@
+using System.Reflection;
+using System.Security.Cryptography;
 using AtomUI.Registration.Shared;
 using Mono.Cecil;
 
@@ -5,6 +7,39 @@ namespace AtomUI.TypeMap.Linker.ConditionalBridge;
 
 internal static class BridgeProgram
 {
+    // The Windows .NET host exposes long-path TPA entries as extended DOS/UNC paths in
+    // Assembly.Location. Compare that documented filesystem spelling to the frozen input,
+    // while retaining both exact file membership and byte verification; never probe caches.
+    internal static bool SameToolPath(string first, string second) =>
+        string.Equals(ToolPath(first), ToolPath(second), OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+
+    private static string ToolPath(string path)
+    {
+        var full = Path.GetFullPath(path);
+        if (OperatingSystem.IsWindows())
+        {
+            if (full.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase))
+            {
+                return Path.GetFullPath(@"\\" + full[8..]);
+            }
+            if (full.StartsWith(@"\\?\", StringComparison.Ordinal) && full.Length > 6 &&
+                char.IsAsciiLetter(full[4]) && full[5] == ':' && full[6] == '\\')
+            {
+                return Path.GetFullPath(full[4..]);
+            }
+        }
+        return full;
+    }
+
+    internal static void VerifyToolInput(ConditionalInputSnapshot input, string path)
+    {
+        var frozen = input.AdditionalInputs?.SingleOrDefault(file => file.Kind == "tool" && SameToolPath(file.Path, path));
+        if (frozen is null || Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path))) != frozen.Sha256)
+        {
+            throw new InvalidDataException("The bridge host/dependency must match its verified frozen tool input: " + path);
+        }
+    }
+
     private static int Main(string[] args)
     {
         try
@@ -29,16 +64,14 @@ internal static class BridgeProgram
             }
             var ownAssembly = typeof(BridgeProgram).Assembly.Location;
             var cecil = typeof(AssemblyDefinition).Assembly.Location;
-            if (Path.GetFullPath(values["--cecil"]) != Path.GetFullPath(cecil))
+            if (!SameToolPath(values["--cecil"], cecil) ||
+                AssemblyName.GetAssemblyName(values["--cecil"]).FullName != typeof(AssemblyDefinition).Assembly.FullName)
             {
                 throw new InvalidDataException("The bridge host loaded a different Cecil implementation than its frozen input.");
             }
             foreach (var path in new[] { ownAssembly, cecil, Path.ChangeExtension(ownAssembly, ".runtimeconfig.json"), Path.ChangeExtension(ownAssembly, ".deps.json") })
             {
-                if (input.AdditionalInputs?.Any(file => file.Kind == "tool" && file.Path == Path.GetFullPath(path)) != true)
-                {
-                    throw new InvalidDataException("The bridge host/dependency must belong to its verified frozen tool inputs: " + path);
-                }
+                VerifyToolInput(input, path);
             }
             Console.WriteLine(ConditionalInputTransformer.Transform(values["--input"], values["--runtime-pack"],
                 values["--application"], values["--output"]));

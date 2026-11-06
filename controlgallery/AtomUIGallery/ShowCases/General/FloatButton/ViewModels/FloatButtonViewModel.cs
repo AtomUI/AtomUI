@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Reactive;
 using AtomUI.Controls;
 using ReactiveUI;
@@ -40,7 +41,7 @@ public class FloatButtonViewModel : ReactiveObject, IRoutableViewModel
     public FloatButtonViewModel(IScreen screen)
     {
         HostScreen         = screen;
-        FloatButtonCommand = ReactiveCommand.Create<string>(HandleFloatButtonCommand);
+        FloatButtonCommand = GalleryCommands.Create<string>(HandleFloatButtonCommand);
     }
 
     private void HandleFloatButtonCommand(string source)

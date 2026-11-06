@@ -22,6 +22,7 @@ public sealed class PrepareConditionalRegistrationInputsTask : RegistrationBuild
     [Output] public ITaskItem[] PreparedAssemblies { get; set; } = [];
     [Output] public ITaskItem[] PreparedAdditionalInputs { get; set; } = [];
     [Output] public string PreparedEngineArguments { get; set; } = string.Empty;
+    internal bool UseSiblingInvocationRoot { get; set; }
 
     public override bool Execute()
     {
@@ -46,7 +47,12 @@ public sealed class PrepareConditionalRegistrationInputsTask : RegistrationBuild
             {
                 throw new InvalidDataException("Raw ILLink file/response/custom-step arguments are not immutable inputs. Use TrimmerRootDescriptor, ReferencePath, structured custom steps with AtomUIBundleRoot, or declared CustomDataKey opaque inputs.");
             }
-            var inputs = Assemblies.Select(item => new
+            var nativeReferences = Assemblies.Where(item => !BridgeInputProbe.IsManagedAssembly(item.ItemSpec)).ToArray();
+            if (nativeReferences.Any(item => item.GetMetadata("AtomUINativeAotReference") != "true"))
+            {
+                throw new InvalidDataException("Native PE inputs are admitted only from the original NativeAOT SDK reference set.");
+            }
+            var inputs = Assemblies.Except(nativeReferences).Select(item => new
             {
                 Item = item, Identity = AssemblyName.GetAssemblyName(item.ItemSpec)
             }).ToArray();
@@ -56,7 +62,13 @@ public sealed class PrepareConditionalRegistrationInputsTask : RegistrationBuild
             {
                 throw new InvalidDataException("Conditional registration requires exactly one resolved AtomUI.Core implementation identity.");
             }
-            var additional = AdditionalInputs.Select(item =>
+            var nativeAdditional = nativeReferences.Select(item =>
+            {
+                var copy = TaskWireItem.FromItem(item);
+                copy.SetMetadata("Kind", "reference");
+                return (ITaskItem)copy;
+            });
+            var additional = AdditionalInputs.Concat(nativeAdditional).Select(item =>
             {
                 var kind = string.IsNullOrWhiteSpace(item.GetMetadata("Kind")) ? "configuration" : item.GetMetadata("Kind");
                 if (kind == "opaque" && (string.IsNullOrWhiteSpace(item.GetMetadata("CustomDataKey")) ||
@@ -86,7 +98,7 @@ public sealed class PrepareConditionalRegistrationInputsTask : RegistrationBuild
                 additional = additional.Select(input => new { input.Path, input.Kind,
                     metadata = TaskWireItem.FromItem(input.Item).Metadata.OrderBy(pair => pair.Key, StringComparer.Ordinal) }).ToArray()
             });
-            var manifestPath = ConditionalRegistrationSnapshot.PrepareInputs(OutputRoot, Assemblies.Select(item => item.ItemSpec).ToArray(),
+            var manifestPath = ConditionalRegistrationSnapshot.PrepareInputs(OutputRoot, inputs.Select(input => input.Item.ItemSpec).ToArray(),
                 cores[0], profile, additional.Select(input => new ConditionalAdditionalInput(input.Path, input.Kind,
                     input.Item.GetMetadata("AtomUIBundleRoot"))).ToArray());
             using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
@@ -125,6 +137,14 @@ public sealed class PrepareConditionalRegistrationInputsTask : RegistrationBuild
                 item.FullPath = item.ItemSpec;
                 preparedAdditional.Add(item);
             }
+            foreach (var reference in preparedAdditional.Where(item => item.GetMetadata("AtomUINativeAotReference") == "true" &&
+                         nativeReferences.Any(native => Path.GetFullPath(native.ItemSpec) == item.GetMetadata("AtomUIOriginalPath"))))
+            {
+                if (BridgeInputProbe.IsManagedAssembly(reference.ItemSpec))
+                {
+                    throw new InvalidDataException("Native SDK reference changed classification while freezing inputs.");
+                }
+            }
             ValidateCustomStepDependencies(preparedAdditional);
             PreparedAdditionalInputs = preparedAdditional.ToArray();
             PreparedEngineArguments = engineArguments + LinkAttributeArguments(preparedAdditional.Where(item =>
@@ -132,8 +152,24 @@ public sealed class PrepareConditionalRegistrationInputsTask : RegistrationBuild
             InputFingerprint = Path.GetFileName(cacheDirectory);
             // Immutable assemblies can be shared. Mutable analysis/linked outputs cannot: two SDK
             // publishes with identical inputs must not overwrite each other's report or semaphore.
-            executionDirectory = Path.Combine(cacheDirectory, "runs", Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(executionDirectory);
+            // Windows MSVC cannot write the bridge's deeply nested native output, even
+            // with extended paths. Only that bridge route places mutable runs beside
+            // the immutable input cache; no frozen file or consumer root is relocated.
+            var invocationRoot = UseSiblingInvocationRoot
+                ? Path.Combine(Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(OutputRoot)))!, "runs")
+                : Path.Combine(cacheDirectory, "runs");
+            var invocationId = Guid.NewGuid().ToString("N");
+            var invocationDirectory = Path.Combine(invocationRoot, invocationId);
+            if (UseSiblingInvocationRoot)
+            {
+                Native8Invocation.RequireUnlinkedAbsolute(invocationDirectory);
+            }
+            Directory.CreateDirectory(invocationDirectory);
+            if (UseSiblingInvocationRoot)
+            {
+                _ = new Native8Invocation(invocationId, invocationDirectory);
+            }
+            executionDirectory = invocationDirectory;
             InputsPath = Path.Combine(executionDirectory, "inputs.json");
             File.WriteAllText(InputsPath, JsonSerializer.Serialize(new
             {
@@ -153,7 +189,21 @@ public sealed class PrepareConditionalRegistrationInputsTask : RegistrationBuild
             PreparedEngineArguments = string.Empty;
             if (executionDirectory is not null && Directory.Exists(executionDirectory))
             {
-                Directory.Delete(executionDirectory, recursive: true);
+                // The compact native route must not follow a replaced run directory
+                // during failure cleanup. Never take deletion authority from JSON.
+                try
+                {
+                    if (UseSiblingInvocationRoot)
+                    {
+                        Native8Invocation.RequireUnlinkedAbsolute(executionDirectory);
+                    }
+                    Directory.Delete(executionDirectory, recursive: true);
+                }
+                catch (Exception cleanupError) when (UseSiblingInvocationRoot &&
+                    cleanupError is IOException or UnauthorizedAccessException or InvalidDataException)
+                {
+                    // Preserve the original failure when caller-owned cleanup is unsafe.
+                }
             }
             return Fail("ATOMUIREG006", error);
         }

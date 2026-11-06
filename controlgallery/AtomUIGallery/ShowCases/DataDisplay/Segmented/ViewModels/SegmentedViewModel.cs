@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Collections.ObjectModel;
 using System.Reactive;
 using AtomUI;
@@ -42,7 +43,7 @@ public class SegmentedViewModel : ReactiveObject, IRoutableViewModel
     public SegmentedViewModel(IScreen screen)
     {
         HostScreen = screen;
-        LoadMoreOptionsCommand = ReactiveCommand.Create(LoadMoreOptions);
+        LoadMoreOptionsCommand = GalleryCommands.Create(LoadMoreOptions);
     }
 
     private void LoadMoreOptions()

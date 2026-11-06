@@ -2,7 +2,19 @@
 
 这份文档记录 AtomUI Gallery Desktop 在 Windows 11 上发布 `win-x64` Native AOT 时的工具链要求、推荐命令、验证方法和本次实际遇到的问题。它是给维护者排障用的，不替代 [AtomUI AOT 编程规范](../development/aot-programming-guidelines.md)。
 
-最后验证日期：2026-06-11。
+历史基线日期：2026-06-11。当前分支复验日期：2026-11-06。
+
+2026-11-05 使用正式 `PublishToLocal.ps1 -runtime win-x64 -buildType Release -publishAot true` 完成当前
+`feature/custom-theme` 发布、恢复资产与原生产物检查，并实际打开 Gallery、主题菜单和工作台。
+主程序为 100,100,608 字节，SHA256 为 `39b49e90bfaae8b498fb3ed91c29e2e6a35e3b9544be5bfa54902691f0346573`；
+LargeType/深色实际应用、Ant/明色恢复及隔离预览均经过原生交互核对，输入和选择保留。保留固定 ILC10.0.8 的
+NU1903，以及 ReactiveUI/ReactiveUI.Avalonia 的 IL2104、IL3053 警告，不能称为零警告发布。这是修补前的历史结果。
+2026-11-06 已将Windows原生编译器/runtime修补至10.0.14（Native8为8.0.33），并迁移Reactive依赖与显式路由解析；
+正式脚本发布已消除上述诊断。实际NativeAOT Gallery路由宿主在.NET10.0.14上通过78路由/316检查，
+涉及465种实际控件类型；原生进程无CoreCLR。依赖及源码影响见
+[迁移说明](../../modules/toolkits-gallery-base/reactive-dependency-migration.md)与[修补评估](../../superpowers/audits/2026-11-06-windows-servicing/assessment.md)。
+当前完整范围、清理与模块门禁见 [Windows 验收记录](../../superpowers/progress/2026-11-05-windows-theme-acceptance.md)。
+下文旧产物体积与“本次”排障过程属于 2026-06-11 基线，不替代当前结果。
 
 ## 结论先行
 

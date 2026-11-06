@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Reactive;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
@@ -166,7 +167,7 @@ public class MenuViewModel : ReactiveObject, IRoutableViewModel, IActivatableVie
     {
         HostScreen      = screen;
         Activator       = new ViewModelActivator();
-        NavigateCommand = ReactiveCommand.Create<string>(OnNavigate);
+        NavigateCommand = GalleryCommands.Create<string>(OnNavigate);
     }
 
     private void OnNavigate(string itemKey)

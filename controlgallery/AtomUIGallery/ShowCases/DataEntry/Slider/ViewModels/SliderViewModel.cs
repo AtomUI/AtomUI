@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Reactive;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
@@ -115,8 +116,8 @@ public class SliderViewModel : ReactiveObject, IRoutableViewModel
     public SliderViewModel(IScreen screen)
     {
         HostScreen                   = screen;
-        SetBoundRangeValuesCommand   = ReactiveCommand.Create(SetBoundRangeValues);
-        ClearBoundRangeValuesCommand = ReactiveCommand.Create(ClearBoundRangeValues);
+        SetBoundRangeValuesCommand   = GalleryCommands.Create(SetBoundRangeValues);
+        ClearBoundRangeValuesCommand = GalleryCommands.Create(ClearBoundRangeValues);
     }
 
     private void SetBoundRangeValues()

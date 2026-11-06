@@ -4,7 +4,9 @@
              xmlns:local="using:AtomUIGallery.Workspace.Views"
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              x:Class="AtomUIGallery.Workspace.Views.ThemeWorkbenchPreview"
-             Foreground="{atom:SharedTokenResource ColorText}">
+             Foreground="{atom:SharedTokenResource ColorText}"
+             FontSize="{atom:SharedTokenResource FontSize}"
+             FontFamily="{atom:SharedTokenResource FontFamily}">
     <Border Background="{atom:SharedTokenResource ColorBgLayout}">
         <StackPanel Spacing="16" Margin="16">
             <StackPanel Orientation="Horizontal" Spacing="8">

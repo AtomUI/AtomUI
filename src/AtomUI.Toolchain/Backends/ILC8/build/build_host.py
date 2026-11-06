@@ -5,6 +5,7 @@ All generated compiler projects/outputs stay in the explicitly supplied source/o
 workspaces. This does not change the AtomUI build graph or the global NuGet cache.
 """
 import argparse
+import base64
 import contextlib
 import os
 import time
@@ -148,7 +149,7 @@ def build(args):
         tail = tail.replace('Get(_command.' + option + ')', '(registrationInputPlan?.Redirect(Get(_command.' + option + ')) ?? Get(_command.' + option + '))')
         modified = source_prefix + tail
     modified = replace_once(modified,
-        '            CompilerGeneratedState compilerGeneratedState = new CompilerGeneratedState(ilProvider, logger);',
+        '            ilProvider = new FeatureSwitchManager(ilProvider, logger, featureSwitches, substitutions);',
         '''            ConditionalRegistrationBackend registrationBackend = null;
             if (registrationInputPlan != null)
             {
@@ -156,12 +157,15 @@ def build(args):
                 {
                     throw new CommandLineException("Conditional registration requires whole-program app compilation");
                 }
-                registrationBackend = new ConditionalRegistrationBackend(ilProvider, typeSystemContext, registrationInputPlan.SnapshotPath, useScanner);
+                registrationBackend = new ConditionalRegistrationBackend(ilProvider, typeSystemContext, registrationInputPlan.SnapshotPath, useScanner,
+                    logger, featureSwitches, substitutions);
                 ilProvider = registrationBackend;
                 compilationRoots.Add(registrationBackend);
             }
-
-            CompilerGeneratedState compilerGeneratedState = new CompilerGeneratedState(ilProvider, logger);''')
+            else
+            {
+                ilProvider = new FeatureSwitchManager(ilProvider, logger, featureSwitches, substitutions);
+            }''')
     modified = replace_once(modified,
         '            DynamicInvokeThunkGenerationPolicy invokeThunkGenerationPolicy = new DefaultDynamicInvokeThunkGenerationPolicy();',
         '            mdBlockingPolicy = registrationBackend?.WrapMetadataBlockingPolicy(mdBlockingPolicy) ?? mdBlockingPolicy;\n\n            DynamicInvokeThunkGenerationPolicy invokeThunkGenerationPolicy = new DefaultDynamicInvokeThunkGenerationPolicy();')
@@ -210,6 +214,17 @@ def build(args):
         '        private static int Main(string[] args) =>\n            RegistrationInputBootstrap.TryCleanup(args, out int cleanupExit) ? cleanupExit :')
     (generated / 'Program.cs').write_text(modified)
     (generated / 'driver.patch').write_text(''.join(difflib.unified_diff(original.splitlines(True), modified.splitlines(True), fromfile='a/src/coreclr/tools/aot/ILCompiler/Program.cs', tofile='b/src/coreclr/tools/aot/ILCompiler/Program.cs')))
+    # Expose only the substitution lookup; all official caller rewriting stays intact.
+    # Compile the generated copy without changing the pinned tracked source checkout.
+    feature_source = source / 'src/coreclr/tools/aot/ILCompiler.Compiler/Compiler/FeatureSwitchManager.cs'
+    feature_original = feature_source.read_text(encoding='utf-8-sig')
+    feature_modified = replace_once(feature_original,
+        '        private BodySubstitution GetSubstitution(MethodDesc method)',
+        '        protected virtual BodySubstitution GetSubstitution(MethodDesc method)')
+    (generated / 'FeatureSwitchManager.cs').write_text(feature_modified)
+    (generated / 'feature-switch.patch').write_text(''.join(difflib.unified_diff(
+        feature_original.splitlines(True), feature_modified.splitlines(True),
+        fromfile='a/Compiler/FeatureSwitchManager.cs', tofile='b/Compiler/FeatureSwitchManager.cs')))
     (generated / 'SharedStrings.cs').write_text('''namespace ILLink.Shared
 {
     internal static class SharedStrings
@@ -238,6 +253,8 @@ def build(args):
     (generated / 'tool.props').write_text(props)
     (generated / 'tool.targets').write_text(f'''<Project>
 <ItemGroup Condition="'$(MSBuildProjectName)' == 'ILCompiler.Compiler'">
+<Compile Remove="Compiler/FeatureSwitchManager.cs" />
+<Compile Include="{xml(generated)}/FeatureSwitchManager.cs" />
 <Compile Include="{xml(generated)}/SharedStrings.cs" />
 <EmbeddedResource Include="{xml(source)}/src/tools/illink/src/ILLink.Shared/SharedStrings.resx" Condition="false" />
 <EmbeddedResource Update="{xml(source)}/src/tools/illink/src/ILLink.Shared/SharedStrings.resx"><LogicalName>ILLink.Shared.SharedStrings.resources</LogicalName></EmbeddedResource>
@@ -277,8 +294,11 @@ def build(args):
     resolved_dotnet = shutil.which(args.dotnet) or args.dotnet
     if not args.managed_only:
         if host_os == 'win':
-            launcher = '@echo off\r\n"' + str(resolved_dotnet) + '" "' + str(host / 'ilc.dll') + '" %*\r\n'
-            (tools / 'ilc.cmd').write_text(launcher)
+            # ASCII batch source is independent of the inherited console code page.
+            # The managed bootstrap validates the inherited host identity before forwarding.
+            configuration = base64.b64encode(json.dumps([str(resolved_dotnet), hashlib.sha256(pathlib.Path(resolved_dotnet).read_bytes()).hexdigest()]).encode('utf-8')).decode('ascii')
+            launcher = '@echo off\r\nsetlocal DisableDelayedExpansion\r\nif not defined DOTNET_HOST_PATH exit /b 87\r\n"%DOTNET_HOST_PATH%" "%~dp0..\\host\\ilc.dll" --atomui-host-config ' + configuration + ' -- %*\r\nexit /b %errorlevel%\r\n'
+            (tools / 'ilc.cmd').write_bytes(launcher.encode('ascii'))
         else:
             import shlex
             launcher = '#!/bin/sh\nexec ' + shlex.quote(resolved_dotnet) + ' ' + shlex.quote(str(host / 'ilc.dll')) + ' "$@"\n'

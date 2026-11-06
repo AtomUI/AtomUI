@@ -131,7 +131,8 @@ Generator 自身不维护一套独立 pack 准备逻辑。`pack --no-build` 只�
 
 测试工程、探针和专用产物按[测试生命周期](../../engineering/development/test-value-and-lifecycle.md)清理。
 
-`tests/AtomUI.Registration.Fixtures` 的源码 fixture 显式设置 `AtomUIUseSkiaCompatibility=false`，保持对外包的官方渲染器基线。
+`tests/AtomUI.Registration.Fixtures` 的普通源码 fixture 显式设置 `AtomUIUseSkiaCompatibility=false`，保持对外包的官方渲染器基线。
+`WindowsTheme` 与 `WindowsGallery` 是按需执行的真实 Windows 专项宿主，单独设置为 true，与本分支 Gallery 的采用范围一致。
 Gallery/明确测试宿主的私有软件 Skia 采用范围不自动覆盖这些 fixture；不能让共享目录的兼容资产排除规则删除它们需要的官方运行资产。
 阶段测试计数与一次性日志属于实施记录，不在本模块概览中充当长期支持承诺；当前 SDK、runtime、RID 和未验收边界
 由正式 AOT 架构及后端文档维护。

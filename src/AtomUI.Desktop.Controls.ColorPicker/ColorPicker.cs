@@ -126,7 +126,7 @@ public partial class ColorPicker : AbstractColorPicker
             ResetConfirmationDraft();
         }
 
-        if (change.Property == ColorTextFormatterProperty)
+        if (change.Property == ColorTextFormatterProperty || change.Property == EmptyColorTextProperty)
         {
             GenerateValueText();
         }
@@ -151,7 +151,6 @@ public partial class ColorPicker : AbstractColorPicker
             else
             {
                 SetCurrentValue(ColorTextProperty, EmptyColorText);
-                this[!ColorTextProperty] = this[!EmptyColorTextProperty];
             }
         }
     }
@@ -297,8 +296,8 @@ public partial class ColorPicker : AbstractColorPicker
         if (_colorIndicator != null)
         {
             _colorIndicator.SetCurrentValue(ColorBlock.IsEmptyColorModeProperty, true);
-            this[!ColorTextProperty] = this[!EmptyColorTextProperty];
         }
+        GenerateValueText();
     }
 
     #region 实现 FormItem 接口

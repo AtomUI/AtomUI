@@ -84,9 +84,9 @@ public class UserDirectoryThemeDefinitionResolverTests
         {
             File.CreateSymbolicLink(link, target);
         }
-        catch (Exception exception) when (exception is PlatformNotSupportedException or UnauthorizedAccessException)
+        catch (Exception exception) when (CannotCreateSymbolicLink(exception))
         {
-            return;
+            Assert.Skip($"Symbolic-link creation is unavailable on this host: {exception.Message}");
         }
 
         var result = new UserDirectoryThemeDefinitionResolver(directory.Path).Resolve(Context());
@@ -107,9 +107,9 @@ public class UserDirectoryThemeDefinitionResolverTests
         {
             File.CreateSymbolicLink(link, target);
         }
-        catch (Exception exception) when (exception is PlatformNotSupportedException or UnauthorizedAccessException)
+        catch (Exception exception) when (CannotCreateSymbolicLink(exception))
         {
-            return;
+            Assert.Skip($"Symbolic-link creation is unavailable on this host: {exception.Message}");
         }
 
         Should.Throw<IOException>(() => ThemeDefinitionFileStream.OpenReadNoFollow(link));
@@ -149,9 +149,9 @@ public class UserDirectoryThemeDefinitionResolverTests
         {
             Directory.CreateSymbolicLink(linkedParent, realParent);
         }
-        catch (Exception exception) when (exception is PlatformNotSupportedException or UnauthorizedAccessException)
+        catch (Exception exception) when (CannotCreateSymbolicLink(exception))
         {
-            return;
+            Assert.Skip($"Symbolic-link creation is unavailable on this host: {exception.Message}");
         }
 
         var result = new UserDirectoryThemeDefinitionResolver(
@@ -209,6 +209,11 @@ public class UserDirectoryThemeDefinitionResolverTests
     {
         return new ThemeDefinitionResolveContext("TestApp", string.Empty, false, 0);
     }
+
+    private static bool CannotCreateSymbolicLink(Exception exception) =>
+        exception is PlatformNotSupportedException or UnauthorizedAccessException ||
+        (OperatingSystem.IsWindows() && exception is IOException &&
+         exception.HResult == unchecked((int)0x80070522)); // ERROR_PRIVILEGE_NOT_HELD
 
     private static string ThemeXml(string id)
     {

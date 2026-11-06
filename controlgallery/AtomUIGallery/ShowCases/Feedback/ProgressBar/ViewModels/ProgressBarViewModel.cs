@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Media;
@@ -220,9 +221,9 @@ public class ProgressBarViewModel : ReactiveObject, IRoutableViewModel
         _toggleStatus       = true;
         _toggleDisabledText = "Disable";
 
-        AddProgressValue = ReactiveCommand.Create(AddProgressValueImpl);
-        SubProgressValue = ReactiveCommand.Create(SubProgressValueImpl);
-        ToggleEnabledStatus = ReactiveCommand.Create(ToggleEnabledStatusImpl);
+        AddProgressValue = GalleryCommands.Create(AddProgressValueImpl);
+        SubProgressValue = GalleryCommands.Create(SubProgressValueImpl);
+        ToggleEnabledStatus = GalleryCommands.Create(ToggleEnabledStatusImpl);
     }
 
     public ReactiveCommand<System.Reactive.Unit, System.Reactive.Unit> AddProgressValue { get; }

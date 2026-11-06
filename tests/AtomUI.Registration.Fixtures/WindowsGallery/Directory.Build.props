@@ -1,0 +1,9 @@
+<Project>
+    <Import Project="../Directory.Build.props" />
+    <PropertyGroup>
+        <AtomUIUseSkiaCompatibility>true</AtomUIUseSkiaCompatibility>
+        <OutputPath Condition="'$(WindowsGalleryOutputRoot)' != ''">$(WindowsGalleryOutputRoot)/bin/$(Configuration)/</OutputPath>
+        <BaseIntermediateOutputPath Condition="'$(WindowsGalleryOutputRoot)' != ''">$(WindowsGalleryOutputRoot)/obj/</BaseIntermediateOutputPath>
+        <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)/</IntermediateOutputPath>
+    </PropertyGroup>
+</Project>

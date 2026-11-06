@@ -43,20 +43,31 @@ internal static class BridgeInputProbe
         return conditional;
     }
 
-    private static bool IsManagedAssembly(string path)
+    internal static bool IsManagedAssembly(string path)
     {
         try
         {
             using var stream = File.OpenRead(path);
             using var pe = new PEReader(stream);
+            if (pe.PEHeaders.PEHeader is null)
+            {
+                throw new InvalidDataException("Bridge input must be a PE image: " + path);
+            }
             if (!pe.HasMetadata)
             {
                 if (pe.PEHeaders.CorHeader is not null)
                 {
                     throw new InvalidDataException("Bridge input has a CLR header but no metadata: " + path);
                 }
-                // Windows NativeAOT SDK references also contain native PE DLLs. They
-                // cannot carry registration records; leave the SDK input items untouched.
+                // Only an intact native PE may bypass metadata inspection. A malformed CLR
+                // image must never become an untracked native reference.
+                if ((pe.PEHeaders.CoffHeader.Characteristics & Characteristics.ExecutableImage) == 0 ||
+                    pe.PEHeaders.SectionHeaders.Length == 0 || pe.PEHeaders.SectionHeaders.Any(section =>
+                        section.PointerToRawData < 0 || section.SizeOfRawData < 0 ||
+                        (long)section.PointerToRawData + section.SizeOfRawData > stream.Length))
+                {
+                    throw new InvalidDataException("Invalid native bridge PE input: " + path);
+                }
                 return false;
             }
             if (!pe.GetMetadataReader().IsAssembly)

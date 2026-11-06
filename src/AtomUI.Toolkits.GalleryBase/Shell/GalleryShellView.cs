@@ -4,6 +4,7 @@ using AtomUI.Data;
 using AtomUI.Theme.Resources;
 using AtomUI.Toolkits.GalleryBase.Configuration;
 using AtomUI.Toolkits.GalleryBase.Controls;
+using AtomUI.Toolkits.GalleryBase.Routing;
 using AtomUI.Toolkits.GalleryBase.Shell.DesignTokens;
 using Avalonia;
 using Avalonia.Controls;
@@ -91,6 +92,7 @@ public sealed class GalleryShellView : UserControl, IDisposable
         {
             Name           = "RoutedViewHost",
             Router         = router,
+            ViewLocator    = new GalleryRouteViewLocator(configuration.Routes),
             PageTransition = null,
             ClipToBounds   = true
         };

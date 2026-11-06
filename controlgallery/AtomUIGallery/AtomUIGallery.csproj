@@ -9,6 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="../../src/AtomUI.Toolkits.GalleryBase/Infrastructure/GalleryCommands.cs"
+                 Link="Infrastructure/GalleryCommands.cs" />
         <AvaloniaResource Include="Assets/**/*.*"/>
         <AtomUIThemeDefinition Include="Assets/Themes/PolarGreen.theme.xml" />
         <AtomUIThemeDefinition Include="Assets/Themes/SunsetOrange.theme.xml" />

@@ -16,13 +16,15 @@ var window = new Avalonia.Controls.Window { Content = control };
 window.Show();
 Dispatcher.UIThread.RunJobs();
 if (control.GetType().Name != "SearchEdit" || control is not TemplatedControl { Template: not null } || !control.GetVisualDescendants().Any())
+{
     throw new Exception("COLD_CONSUMER_FAIL ordinary adapter template");
+}
 window.Close();
 Console.WriteLine("COLD_CONSUMER_PASS ordinary adapter template, trimmed=" + AtomUI.Registration.ControlRegistrationRuntime.IsTrimmed);
 
-public sealed class ConsumerApp : Application
+public sealed partial class ConsumerApp : Application
 {
-    // 本工程不引用 AtomUI 生成器，按公开契约手写挂接。
+    // 包传递的生成器提供启动映像；手写挂接仍遵循公开契约。
     public override void RegisterServices()
     {
         base.RegisterServices();

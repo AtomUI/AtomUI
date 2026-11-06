@@ -1,3 +1,4 @@
+using AtomUI.Toolkits.GalleryBase.Infrastructure;
 using System.Globalization;
 using System.Reactive;
 using AtomUI.Controls;
@@ -43,8 +44,8 @@ public class LineEditViewModel : ReactiveObject, IRoutableViewModel
     public LineEditViewModel(IScreen screen)
     {
         HostScreen                         = screen;
-        SetOtpLineEditBoundValueCommand   = ReactiveCommand.Create(HandleSetOtpLineEditBoundValue);
-        ClearOtpLineEditBoundValueCommand = ReactiveCommand.Create(HandleClearOtpLineEditBoundValue);
+        SetOtpLineEditBoundValueCommand   = GalleryCommands.Create(HandleSetOtpLineEditBoundValue);
+        ClearOtpLineEditBoundValueCommand = GalleryCommands.Create(HandleClearOtpLineEditBoundValue);
         UpdateOtpLineEditBoundValueSummary();
     }
 

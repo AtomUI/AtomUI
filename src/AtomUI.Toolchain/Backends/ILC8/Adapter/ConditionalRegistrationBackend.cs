@@ -27,14 +27,16 @@ internal sealed class ConditionalRegistrationBackend : ILProvider, ICompilationR
     private readonly string _receiptSymbol;
     private readonly AtomUI.Build.Tasks.Registration.Native8Invocation _invocation;
     private string _objectFile;
-    public IEnumerable<string> ExportSymbols(IEnumerable<string> symbols) => (symbols ?? Array.Empty<string>()).Append(_receiptSymbol);
+    private readonly TargetDetails _target;
+    public IEnumerable<string> ExportSymbols(IEnumerable<string> symbols) => (symbols ?? Array.Empty<string>()).Append(_target.IsWindows ? _receiptSymbol + ",DATA" : _receiptSymbol);
 
 
     public ILProvider PreinitializationView { get; }
 
-    public ConditionalRegistrationBackend(ILProvider inner, CompilerTypeSystemContext context, string inputs, bool useScanner)
+    public ConditionalRegistrationBackend(ILProvider inner, CompilerTypeSystemContext context, string inputs, bool useScanner,
+        Logger logger, IReadOnlyDictionary<string, bool> featureSwitches, BodyAndFieldSubstitutions substitutions)
     {
-        _inner = inner;
+        _target = context.Target;
         _inputPath = Path.GetFullPath(inputs);
         _useScanner = useScanner;
         ConditionalInputBinding binding = ConditionalInputBinder.Read(inputs, context, inner);
@@ -43,6 +45,9 @@ internal sealed class ConditionalRegistrationBackend : ILProvider, ICompilationR
         _reportPath = binding.ReportPath;
         _inputHash = binding.InputHash;
         _trimmedGetter = binding.TrimmedGetter;
+        // Caller branches must be folded before scanning. Replacing the getter body
+        // alone leaves the untrimmed resolver visible to the conservative IL scanner.
+        _inner = new RegistrationFeatureSwitchManager(inner, logger, featureSwitches, substitutions, _trimmedGetter);
         _invocation = RegistrationInputBootstrap.Invocation ?? throw new InvalidDataException("Missing caller invocation");
         _invocation.RequireExact(binding.ReportPath, "analysis.json");
         _receiptSymbol = "__atomui_compile_" + _invocation.Id;
@@ -152,6 +157,8 @@ internal sealed class ConditionalRegistrationBackend : ILProvider, ICompilationR
                 HostRuntime = RuntimeInformation.FrameworkDescription,
                 Scanner = _useScanner,
                 TargetPointerSize = factory.Target.PointerSize,
+                TargetOS = factory.Target.OperatingSystem.ToString(),
+                TargetArchitecture = factory.Target.Architecture.ToString(),
                 ObjectFile = _objectFile,
                 ObjectHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(objectFile))).ToLowerInvariant(),
                 Groups = groups
@@ -165,7 +172,7 @@ internal sealed class ConditionalRegistrationBackend : ILProvider, ICompilationR
     public void CompleteCompilation(string exportsFile)
     {
         if (string.IsNullOrEmpty(exportsFile) || !File.Exists(exportsFile) ||
-            !File.ReadAllLines(exportsFile).Contains("_" + _receiptSymbol, StringComparer.Ordinal))
+            File.ReadAllLines(exportsFile).Count(line => _target.IsWindows ? line.Trim() == _receiptSymbol + " DATA" : line == "_" + _receiptSymbol) != 1)
         {
             throw new InvalidDataException("Controlled native compilation requires its receipt in the exports list");
         }

@@ -45,11 +45,16 @@ internal static class FrameworkBindingPolicy
         }
         var pack = new DirectoryInfo(Path.GetFullPath(runtimePackDirectory));
         var admitted = pack.Parent is not null &&
-            (pack.Name == "10.0.8" && pack.Parent.Name.StartsWith("Microsoft.NETCore.App.Runtime.", StringComparison.Ordinal) ||
-             pack.Name == "10.0.10" && pack.Parent.Name == "Microsoft.NETCore.App.Runtime.Mono.browser-wasm");
+            (pack.Name == "10.0.8" && new[] { "Microsoft.NETCore.App.Runtime.osx-arm64",
+                "Microsoft.NETCore.App.Runtime.NativeAOT.osx-arm64" }
+                .Contains(pack.Parent.Name, StringComparer.OrdinalIgnoreCase) ||
+             pack.Name == "10.0.14" && new[] { "Microsoft.NETCore.App.Runtime.win-x64",
+                "Microsoft.NETCore.App.Runtime.NativeAOT.win-x64" }
+                .Contains(pack.Parent.Name, StringComparer.OrdinalIgnoreCase) ||
+             pack.Name == "10.0.10" && pack.Parent.Name.Equals("Microsoft.NETCore.App.Runtime.Mono.browser-wasm", StringComparison.OrdinalIgnoreCase));
         if (!admitted)
         {
-            throw new InvalidDataException("The bridge requires an admitted SDK runtime pack (10.0.8, or Mono browser-wasm 10.0.10).");
+            throw new InvalidDataException("The bridge requires an admitted SDK runtime pack (osx-arm64 10.0.8, win-x64 10.0.14, or Mono browser-wasm 10.0.10).");
         }
         var listPath = snapshot.Format == 2
             ? (snapshot.AdditionalInputs ?? []).Single(input => input.Kind == "configuration" &&
@@ -64,7 +69,7 @@ internal static class FrameworkBindingPolicy
         {
             throw new InvalidDataException("Unexpected target FrameworkReference runtime-pack manifest.");
         }
-        var managed = list.Elements("File").Where(file => (string?)file.Attribute("Type") == "Managed")
+        var managed = list.Elements("File").Where(file => file.Attribute("AssemblyName") is not null)
             .ToLookup(file => (string?)file.Attribute("AssemblyName"), StringComparer.Ordinal);
         var inputs = snapshot.Assemblies.ToDictionary(input => input.AssemblyIdentity, StringComparer.Ordinal);
         var bindings = new Dictionary<string, string>(StringComparer.Ordinal);

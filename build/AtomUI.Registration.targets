@@ -9,9 +9,13 @@
     </PropertyGroup>
 
     <Target Name="AtomUIValidateNativeCompiler" BeforeTargets="IlcCompile" Condition="'$(PublishAot)' == 'true' and '$(_AtomUINative8Registration)' != 'true'">
+        <PropertyGroup>
+            <_AtomUICompilerFileName>ilc</_AtomUICompilerFileName>
+            <_AtomUICompilerFileName Condition="$([MSBuild]::IsOSPlatform('Windows'))">ilc.exe</_AtomUICompilerFileName>
+        </PropertyGroup>
         <AtomUI.Build.Tasks.ValidateRegistrationToolchainTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
             TargetFrameworkIdentifier="$(_AtomUIRegistrationFrameworkIdentifier)" TargetFrameworkVersion="$(_AtomUIRegistrationFrameworkVersion)"
-            NativeCompiler="$(IlcToolsPath)/ilc$(_ExeExt)" />
+            NativeCompiler="$([System.IO.Path]::Combine('$(IlcToolsPath)', '$(_AtomUICompilerFileName)'))" />
     </Target>
 
     <Target Name="AtomUIResolveRegistrationGenerator" BeforeTargets="CoreCompile" DependsOnTargets="ResolveReferences"

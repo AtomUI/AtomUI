@@ -35,8 +35,8 @@
     </Target>
     <Target Name="AtomUIPrepareNative8Registration" BeforeTargets="IlcCompile"
             Condition="'$(_AtomUINative8Registration)' == 'true'">
-        <Error Condition="'$(TargetFramework)' != 'net8.0' or '$(NETCoreSdkVersion)' != '10.0.300' or '$(RuntimeFrameworkVersion)' != '8.0.27' or '$(TrimMode)' != 'full'"
-               Code="ATOMUIREG008" Text="Native8 registration currently requires net8.0, SDK 10.0.300, target runtime 8.0.27 and full trimming." />
+        <Error Condition="'$(TargetFramework)' != 'net8.0' or '$(NETCoreSdkVersion)' != '10.0.300' or '$(RuntimeFrameworkVersion)' != '8.0.33' or '$(TrimMode)' != 'full'"
+               Code="ATOMUIREG008" Text="Native8 registration currently requires net8.0, SDK 10.0.300, target runtime 8.0.33 and full trimming." />
         <Error Condition="'$(NativeLib)' != '' or '$(IlcMultiModule)' == 'true' or '$(ExportsFile)' == ''"
                Code="ATOMUIREG008" Text="Native8 registration currently verifies whole-program executables with the SDK exports file." />
         <PropertyGroup>

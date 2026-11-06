@@ -1,0 +1,464 @@
+status,path,area,impact
+M,.config/dotnet-tools.json,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,Directory.Build.props,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,NuGet.config,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,docs/design/coreclr/botr/clr-abi.md,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/Tools.props,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/Version.Details.props,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/Version.Details.xml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/Versions.props,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+A,eng/common/Get-GitHubAppToken.ps1,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/build.ps1,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/build.sh,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+A,eng/common/core-templates/job/helix-job-monitor.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/core-templates/job/onelocbuild.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/core-templates/job/publish-build-assets.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/core-templates/jobs/codeql-build.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/core-templates/post-build/common-variables.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/core-templates/post-build/post-build.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+A,eng/common/core-templates/steps/get-github-app-token.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/core-templates/steps/publish-logs.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/core-templates/steps/send-to-helix.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/core-templates/steps/source-index-stage1-publish.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/cross/build-rootfs.sh,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/cross/install-debs.py,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/cross/toolchain.cmake,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/darc-init.ps1,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/darc-init.sh,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/dotnet.ps1,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+A,eng/common/native/LocateNativeCompiler.targets,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+A,eng/common/native/NativeAotSupported.props,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/native/init-distro-rid.sh,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/native/install-dependencies.sh,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/post-build/redact-logs.ps1,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+A,eng/common/templates-official/steps/get-github-app-token.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+A,eng/common/templates/steps/get-github-app-token.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates/steps/vmr-sync.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/templates/vmr-build-pr.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/tools.ps1,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/common/tools.sh,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/restore-internal-tools.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/templates/browser-wasm-build-tests.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/templates/pipeline-with-resources.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/templates/runtimes/build-runtime-tests-and-send-to-helix.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/templates/runtimes/run-test-job.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/templates/runtimes/send-to-helix-step.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/templates/simple-wasm-build-tests.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/templates/wasm-library-aot-tests.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/templates/wasm-library-tests.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/templates/wasm-runtime-tests.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/common/variables.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/ci.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/crossgen2-composite.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/crossgen2-gcstress.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/crossgen2-outerloop.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/crossgen2.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/gc-longrunning.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/gc-simulator.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/gc-standalone.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/gcstress-extra.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/gcstress0x3-gcstress0xc.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/interpreter.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/libraries-gcstress-extra.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/libraries-gcstress0x3-gcstress0xc.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/libraries-jitstress-random.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/libraries-jitstress.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/libraries-jitstress2-jitstressregs.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/libraries-jitstressregs.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/libraries-pgo.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/nativeaot-post-build-steps.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/r2r-extra.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/r2r.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/release-tests.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/runincontext.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/runtime-nativeaot-outerloop.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/templates/helix-queues-setup.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/templates/run-paltests-step.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/templates/run-superpmi-collect-job.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/templates/upload-jits-steps.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/coreclr/tieringtest.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/extra-platforms/runtime-extra-platforms-android.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/extra-platforms/runtime-extra-platforms-androidemulator.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/extra-platforms/runtime-extra-platforms-ioslike.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/extra-platforms/runtime-extra-platforms-ioslikesimulator.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/extra-platforms/runtime-extra-platforms-maccatalyst.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/extra-platforms/runtime-extra-platforms-other.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/extra-platforms/runtime-extra-platforms-wasm.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/installer/helix-queues-setup.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/installer/helix.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/libraries/helix-queues-setup.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/libraries/helix.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/libraries/outerloop-mono.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/libraries/outerloop.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/libraries/run-test-job.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/libraries/superpmi-postprocess-step.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/performance/perf.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-android.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-androidemulator.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-cet.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-extra-platforms.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-ioslike.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-ioslikesimulator.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-llvm.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-maccatalyst.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-sanitized.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-wasm-dbgtests.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-wasm-libtests.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-wasm-non-libtests.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-wasm-optional.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime-wasm.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtime.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/pipelines/runtimelab.yml,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/regenerate-download-table.proj,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/regenerate-third-party-notices.proj,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,eng/testing/tests.targets,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,global.json,upstream-build,Official package producer/build metadata; repository uses its own managed compiler recipe and SDK-restored signed packages.
+M,src/coreclr/System.Private.CoreLib/src/System/Reflection/MdImport.cs,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/System.Private.CoreLib/src/System/ValueType.cs,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/debug/daccess/daccess.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/debug/daccess/dacdbiimplstackwalk.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/debug/daccess/dacfn.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/debug/daccess/dacimpl.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/debug/daccess/enummem.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/debug/ee/debugger.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/debug/ee/debugger.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/gc/env/gcenv.os.h,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/gc/gc.cpp,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/gc/gcconfig.cpp,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/gc/gcpriv.h,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/gc/handletable.inl,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/gc/unix/cgroup.cpp,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/gc/unix/gcenv.unix.cpp,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/gc/windows/gcenv.windows.cpp,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/hosts/corerun/CMakeLists.txt,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/inc/clrconfigvalues.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/inc/dacvars.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/jit/assertionprop.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/block.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/block.h,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/fgopt.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/forwardsub.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/gentree.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/gentree.h,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/importer.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/inductionvariableopts.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/layout.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/layout.h,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/lower.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/morph.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/morphblock.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/objectalloc.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/optimizebools.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/rangecheck.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/redundantbranchopts.cpp,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/jit/simd.h,jit,SDK-restored JIT interface used by ILC; actual scanner/optimization case matrix is required.
+M,src/coreclr/md/compiler/emit.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/md/compiler/regmeta_emit.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/md/enc/mdinternalrw.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/nativeaot/Runtime/RhConfig.cpp,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/nativeaot/Runtime/RhConfig.h,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/nativeaot/Runtime/amd64/ExceptionHandling.S,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/nativeaot/Runtime/amd64/ExceptionHandling.asm,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/nativeaot/Runtime/eventpipe/ep-rt-aot.h,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/nativeaot/Runtime/gcenv.ee.cpp,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/nativeaot/Runtime/unix/PalUnix.cpp,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/nativeaot/Runtime/windows/PalMinWin.cpp,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/nativeaot/System.Private.CoreLib/src/Internal/Runtime/CompilerHelpers/InteropHelpers.cs,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/nativeaot/System.Private.CoreLib/src/System/Runtime/InteropServices/PInvokeMarshal.cs,native-runtime,"SDK-restored NativeAOT runtime/corelib; Windows runtime, exception, interop and real control trajectories require execution."
+M,src/coreclr/pal/inc/pal.h,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/src/arch/arm64/context2.S,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/src/exception/signal.cpp,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/src/include/pal/context.h,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/src/misc/perfjitdump.cpp,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/src/misc/sysinfo.cpp,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/src/thread/context.cpp,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/pal/src/thread/thread.cpp,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/coreclr/tools/aot/ILCompiler.Compiler/Compiler/ObjectWriter/MachObjectWriter.cs,compiler,Direct compiler impact; inspect individual changes and validate actual native engine plus closure/receipt matrix.
+M,src/coreclr/tools/aot/ILCompiler.Compiler/Compiler/TypePreinit.cs,compiler,Direct compiler impact; inspect individual changes and validate actual native engine plus closure/receipt matrix.
+M,src/coreclr/tools/aot/ILCompiler.ReadyToRun/Compiler/DependencyAnalysis/ReadyToRun/TypeValidationChecker.cs,compiler,Direct compiler impact; inspect individual changes and validate actual native engine plus closure/receipt matrix.
+M,src/coreclr/tools/aot/crossgen2/Program.cs,compiler,Direct compiler impact; inspect individual changes and validate actual native engine plus closure/receipt matrix.
+M,src/coreclr/utilcode/ex.cpp,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/coreclr/vm/amd64/Context.S,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/amd64/virtualcallstubamd64.S,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/arm/stubs.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/arm64/virtualcallstubcpu.hpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/ceeload.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/ceemain.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/class.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/codeman.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/codeman.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/codeversion.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/comcallablewrapper.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/comutilnative.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/crst.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/crst.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/dllimport.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/dynamicmethod.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/dynamicmethod.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/ecalllist.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/eventing/eventpipe/ds-rt-coreclr.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/eventing/eventpipe/ep-rt-coreclr.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/eventtrace.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/exceptionhandling.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/genericdict.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/genmeth.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/loongarch64/virtualcallstubcpu.hpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/managedmdimport.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/managedmdimport.hpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/method.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/method.hpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/mlinfo.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/peimagelayout.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/perfmap.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/perfmap.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/qcallentrypoints.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/riscv64/virtualcallstubcpu.hpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/stubgen.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/threadstatics.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/threadstatics.h,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/threadsuspend.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/unsafeaccessors.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/vars.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/vars.hpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/coreclr/vm/virtualcallstub.cpp,coreclr,"CoreCLR host/runtime serving code; does not enter custom managed ILC sources, host runtime remains independently identified."
+M,src/installer/pkg/sfx/installers.proj,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/installer/pkg/sfx/installers/dotnet-host.proj,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+A,src/installer/pkg/sfx/installers/dotnet-runtime-deps/dotnet-runtime-deps-azl.4.proj,other,"Producer/support files; review against exact package/runtime recipe, not presumed ABI equivalence."
+M,src/installer/tests/AppHost.Bundle.Tests/AppLaunch.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/installer/tests/AppHost.Bundle.Tests/StaticHost.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/installer/tests/Assets/Projects/HelloWorld/Program.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Common/src/Interop/Android/System.Security.Cryptography.Native.Android/Interop.X509Chain.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/Common/src/Interop/Linux/cgroups/Interop.cgroups.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/Common/src/Interop/Unix/System.Security.Cryptography.Native/Interop.Ssl.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/Common/src/Interop/Windows/NtDll/Interop.NtStatus.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/Common/src/System/Security/Cryptography/MLDsaImplementation.CreateCng.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/Common/tests/System/GenericMathTestMemberData.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Common/tests/System/Net/StressTests/run-docker-compose.ps1,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Common/tests/System/Net/StressTests/run-docker-compose.sh,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Common/tests/System/Security/Cryptography/MLKemImplementationTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Common/tests/TestUtilities/System/PlatformDetection.Unix.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Common/tests/Tests/Interop/cgroupsTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Microsoft.Bcl.Cryptography/src/System/Security/Cryptography/PemEncoding.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/Microsoft.Bcl.Cryptography/tests/PemEncodingFindTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Microsoft.Extensions.Logging.Abstractions/gen/LoggerMessageGenerator.Parser.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+A,src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Baselines/TestWithMultipleClassesStableOrder.generated.txt,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/LoggerMessageGeneratorEmitterTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Collections.Concurrent/tests/ConcurrentQueueTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Formats.Cbor/src/System/Formats/Cbor/Reader/CborReader.String.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Cbor/tests/Reader/CborReaderTests.TextString.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Formats.Tar/src/System/Formats/Tar/TarEntry.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Tar/src/System/Formats/Tar/TarHeader.Read.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Formats.Tar/tests/TarFile/TarFile.ExtractToDirectory.File.Tests.Windows.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Formats.Tar/tests/TarFile/TarFile.ExtractToDirectory.File.Tests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Http/src/ILLink/ILLink.Descriptors.LibraryBuild.xml,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Http/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Http/src/System/Net/Http/HttpHandlerDefaults.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/Http2Connection.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/Http2StreamWindowManager.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/HttpConnectionSettings.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/SocketsHttpHandler.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Http/tests/FunctionalTests/SocketsHttpHandlerTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.HttpListener/src/System/Net/Managed/HttpListenerRequest.Managed.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.HttpListener/tests/HttpListenerRequestTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.HttpListener/tests/InvalidClientRequestTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Mail/src/System/Net/Mail/MailAddressParser.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Mail/src/System/Net/Mime/EightBitStream.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Mail/tests/Functional/SmtpClientSendMailTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Mail/tests/Unit/MailAddressTests/MailAddressParserTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Mail/tests/Unit/MailAddressTests/MailAddressParsingTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Quic/src/System/Net/Quic/Internal/MsQuicConfiguration.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Quic/src/System/Net/Quic/QuicConnection.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Security/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Security/src/System/Net/Security/NegotiateAuthentication.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Security/src/System/Net/Security/SslStream.IO.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Security/src/System/Net/Security/TlsFrameHelper.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Security/tests/FunctionalTests/SslStreamStreamToStreamTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Security/tests/UnitTests/NegotiateAuthenticationTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.Sockets/src/System/Net/Sockets/Socket.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Sockets/src/System/Net/Sockets/SocketAsyncEventArgs.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.Sockets/tests/FunctionalTests/Accept.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Net.WebSockets/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.WebSockets/src/System/Net/WebSockets/Compression/WebSocketInflater.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.WebSockets/src/System/Net/WebSockets/ManagedWebSocket.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Net.WebSockets/tests/WebSocketDeflateTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Private.CoreLib/src/System/Collections/Concurrent/ConcurrentQueueSegment.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.CoreLib/src/System/IO/Enumeration/FileSystemEnumerable.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.CoreLib/src/System/IO/Enumeration/FileSystemEnumerableFactory.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.CoreLib/src/System/IO/Enumeration/FileSystemEnumerator.Unix.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.CoreLib/src/System/IO/Enumeration/FileSystemEnumerator.Windows.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.CoreLib/src/System/IO/Enumeration/FileSystemName.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/CastCache.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/GenericCache.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.CoreLib/src/System/Runtime/InteropServices/ComWrappers.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.Xml/src/System/Xml/Cache/XPathNodeInfoAtom.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.Xml/src/System/Xml/Core/XmlTextReaderImpl.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Private.Xml/src/System/Xml/Core/XmlTextReaderImplHelpers.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+A,src/libraries/System.Private.Xml/tests/Misc/AttributeReadingPerformanceTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Private.Xml/tests/System.Private.Xml.Tests.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime.InteropServices/gen/ComInterfaceGenerator/ComClassGenerator.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Runtime.InteropServices/gen/ComInterfaceGenerator/ComMethodInfo.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Runtime.InteropServices/tests/ComInterfaceGenerator.Tests/CrossAssemblyInheritanceTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/libraries/System.Runtime.InteropServices/tests/ComInterfaceGenerator.Tests/Interfaces/IDerivedFromExternalSameName.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime.InteropServices/tests/ComInterfaceGenerator.Unit.Tests/ComClassGeneratorOutputShape.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime.InteropServices/tests/LibraryImportGenerator.UnitTests/LibraryImportGenerator.Unit.Tests.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime.InteropServices/tests/System.Runtime.InteropServices.UnitTests/System/Runtime/InteropServices/Marshal/StructureToPtrTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime.InteropServices/tests/System.Runtime.InteropServices.UnitTests/System/Runtime/InteropServices/MarshalAsAttributeTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/libraries/System.Runtime.InteropServices/tests/TestAssets/SharedTypes/BaseInterfaces/ISameNameMethodsDifferentAssembly.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime.Serialization.Schema/tests/System/Runtime/Serialization/Schema/Import/ImporterTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime/tests/System.IO.FileSystem.Tests/Enumeration/MatchCasingTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime/tests/System.IO.FileSystem.Tests/Enumeration/MatchTypesTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Runtime/tests/System.IO.FileSystem.Tests/Enumeration/SpecialDirectoryTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Cose/tests/TestKeyRing.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System.Security.Cryptography.Xml.csproj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/CanonicalizationDispatcher.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/CryptoHelpers.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/EncryptedData.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/EncryptedKey.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/EncryptedType.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/EncryptedXml.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/KeyInfo.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+A,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/LocalAppContextSwitches.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/SignedXml.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/Transform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/TransformChain.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDecryptionTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigBase64Transform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigC14NTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigEnvelopedSignatureTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigExcC14NTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigXPathTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlDsigXsltTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlLicenseTransform.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+A,src/libraries/System.Security.Cryptography.Xml/tests/EncryptedXmlSample4.xml,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/libraries/System.Security.Cryptography.Xml/tests/EncryptedXmlSample5.xml,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/EncryptedXmlTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/EncryptedXmlTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/SignedXmlTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/SignedXml_SignatureMethodAlgorithm.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/System.Security.Cryptography.Xml.Tests.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/TransformChainTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/XmlDsigC14NTransformTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography.Xml/tests/XmlDsigExcC14NTransformTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography/src/Resources/Strings.resx,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography/src/System/Security/Cryptography/PemEncoding.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography/src/System/Security/Cryptography/X509Certificates/CertificateData.ManagedDecode.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography/src/System/Security/Cryptography/X509Certificates/ChainPal.Android.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography/src/System/Security/Cryptography/X509Certificates/OpenSslCrlCache.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography/src/System/Security/Cryptography/X509Certificates/OpenSslX509ChainEventSource.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Security.Cryptography/tests/ChaCha20Poly1305Tests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography/tests/PemEncodingFindTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography/tests/X509Certificates/CertificateCreation/DSAX509SignatureGenerator.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography/tests/X509Certificates/DynamicChainTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography/tests/X509Certificates/PropsTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography/tests/X509Certificates/PublicKeyTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Security.Cryptography/tests/X509Certificates/X509FilesystemTests.Unix.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Metadata/PropertyRef.cs,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/System.Text.Json/tests/Common/NumberHandlingTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Text.Json/tests/System.Text.Json.Tests/ILLink.Descriptors.xml,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Text.Json/tests/System.Text.Json.Tests/Serialization/CacheTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Text.Json/tests/System.Text.Json.Tests/System.Text.Json.Tests.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/System.Threading/tests/System.Threading.Tests.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/libraries/System.Threading/tests/VolatileTests.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/libraries/pretest.proj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/sendtohelix.proj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/libraries/sendtohelixhelp.proj,bcl,Serviced BCL/reference/runtime inputs; inspect reachable interop/XML/network/serialization contracts and execute product/native consumers.
+M,src/mono/mono/eventpipe/ep-rt-mono.h,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/mono/metadata/class-accessors.c,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/mono/metadata/class-init.c,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/mono/metadata/class-internals.h,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/mono/metadata/class-private-definition.h,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/mono/metadata/native-library.c,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/mono/metadata/object.c,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/mono/mini/iltests.il,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/mono/mini/interp/transform-opt.c,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/mono/mini/interp/transform.c,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/mono/mini/method-to-ir.c,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/mono/mini/mini-generic-sharing.c,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/nuget/Microsoft.NET.Sdk.WebAssembly.Pack/build/Microsoft.NET.Sdk.WebAssembly.Browser.targets,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/wasm/Wasm.Build.Tests/LazyLoadingTests.cs,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/mono/wasm/host/DevServer/WebAssemblyNetDebugProxyAppBuilderExtensions.cs,other-runtime,Mono/non-Windows PAL implementation; Windows x64 uses CoreCLR host and NativeAOT target.
+M,src/native/corehost/apphost/CMakeLists.txt,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/corehost/apphost/static/CMakeLists.txt,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/corehost/dotnet/CMakeLists.txt,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/eventpipe/ds-ipc-pal-socket.c,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/eventpipe/ep-rt.h,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/eventpipe/ep.c,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/libs/System.Globalization.Native/pal_calendarData.m,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/libs/System.Globalization.Native/pal_collation.m,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/libs/System.Native/pal_mount.c,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/libs/System.Security.Cryptography.Native.Android/pal_x509chain.c,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/libs/System.Security.Cryptography.Native.Apple/pal_x509_ios.c,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/libs/System.Security.Cryptography.Native/openssl.c,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/native/minipal/CMakeLists.txt,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+A,src/native/minipal/cpucount.c,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+A,src/native/minipal/cpucount.h,native-support,Inspect target conditional compilation; official Windows runtime/native helper integrity and runtime tests remain required.
+M,src/tests/FunctionalTests/iOS/Device/AOT/iOS.Device.Aot.Test.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/FunctionalTests/iOS/Device/ExportManagedSymbols/iOS.Device.ExportManagedSymbols.Test.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/GC/API/GC/GetConfigurationVariables.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/GC/API/GC/GetConfigurationVariables.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/GC/Regressions/Github/Runtime_126043/Runtime_126043.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/GC/Regressions/Github/Runtime_126043/Runtime_126043.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Interop/COM/VirtualMethodOverride/VirtualMethodOverrideTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Interop/COM/VirtualMethodOverride/VirtualMethodOverrideTest.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/Interop/DllImportSearchPaths/DllImportSearchPathsTest.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/Interop/IJW/IjwNativeCallingManagedDll/IjwNativeCallingManagedDll.cpp,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/Interop/IJW/NativeCallingManaged/NativeCallingManaged.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_122237/Runtime_122237.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_122237/Runtime_122237.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_122254/Runtime_122254.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_124425/Runtime_124425.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_124425/Runtime_124425.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_124507/Runtime_124507.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_124507/Runtime_124507.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_127075/Runtime_127075.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_127075/Runtime_127075.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_128373/Runtime_128373.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_128373/Runtime_128373.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_128631/Runtime_128631.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_128631/Runtime_128631.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_128895/Runtime_128895.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_128895/Runtime_128895.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_130189/Runtime_130189.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_130189/Runtime_130189.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_130700/Runtime_130700.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_130700/Runtime_130700.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_131716/Runtime_131716.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_131716/Runtime_131716.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_132370/Runtime_132370.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_132370/Runtime_132370.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_132599/Runtime_132599.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_132599/Runtime_132599.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_133022/Runtime_133022.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_133022/Runtime_133022.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_133085/Runtime_133085.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/Regression/JitBlue/Runtime_133085/Runtime_133085.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/opt/ObjectStackAllocation/Runtime_131713.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/JIT/opt/ObjectStackAllocation/Runtime_131713.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Loader/CollectibleAssemblies/GenericVirtualMethod/GenericVirtualMethod.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Loader/CollectibleAssemblies/GenericVirtualMethod/GenericVirtualMethod.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Loader/CollectibleAssemblies/GenericVirtualMethod/GenericVirtualMethodUnloaded.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Loader/CollectibleAssemblies/GenericVirtualMethod/GenericVirtualMethodUnloaded.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Loader/classloader/DefaultInterfaceMethods/regressions/ReabstractedInterfaceMethodIMT.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Loader/classloader/DefaultInterfaceMethods/regressions/ReabstractedInterfaceMethodIMT.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Regressions/coreclr/GitHub_129010/Test129010.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Regressions/coreclr/GitHub_129010/test129010.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Regressions/coreclr/GitHub_129692/test129692.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Regressions/coreclr/GitHub_129692/test129692.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Regressions/coreclr/GitHub_132581/CMakeLists.txt,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Regressions/coreclr/GitHub_132581/nativetest132581.cpp,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Regressions/coreclr/GitHub_132581/test132581.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/Regressions/coreclr/GitHub_132581/test132581.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/baseservices/compilerservices/UnsafeAccessors/UnsafeAccessorsTests.Generics.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/baseservices/exceptions/exceptioninterop/ExceptionInterop.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/nativeaot/SmokeTests/Preinitialization/Preinitialization.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/profiler/ijw/CMakeLists.txt,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/profiler/ijw/IjwProfileeDll.cpp,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/profiler/ijw/ijw.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/profiler/ijw/ijw.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/profiler/native/CMakeLists.txt,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+M,src/tests/profiler/native/classfactory.cpp,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/profiler/native/ijw/ijwprofiler.cpp,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/profiler/native/ijw/ijwprofiler.h,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/tracing/eventpipe/samplingrate/samplingrate.cs,upstream-tests,Companion evidence only; not shipped into the compiler or application.
+A,src/tests/tracing/eventpipe/samplingrate/samplingrate.csproj,upstream-tests,Companion evidence only; not shipped into the compiler or application.

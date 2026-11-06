@@ -93,18 +93,26 @@ public sealed class VerifyNative8RegistrationTask : RegistrationBuildTask
                 }
             }
             string executingHost = result.GetProperty("ExecutingHost").GetString()!;
-            if (!extra.Any(file => file.GetProperty("kind").GetString() == "tool" && file.GetProperty("path").GetString() == executingHost))
+            if (!extra.Any(file => file.GetProperty("kind").GetString() == "tool" && Native8Invocation.SameFilePath(file.GetProperty("path").GetString()!, executingHost)))
             {
                 throw new InvalidDataException("Native compilation ran outside the frozen tool bundle.");
             }
-            if (invocation.RequireOwned(result.GetProperty("ObjectFile").GetString()!) != NativeObject ||
-                invocation.RequireOwned(result.GetProperty("ExportsFile").GetString()!) != ExportsFile ||
+            if (!Native8Invocation.PathComparer.Equals(invocation.RequireOwned(result.GetProperty("ObjectFile").GetString()!), NativeObject) ||
+                !Native8Invocation.PathComparer.Equals(invocation.RequireOwned(result.GetProperty("ExportsFile").GetString()!), ExportsFile) ||
                 Hash(NativeObject) != result.GetProperty("ObjectHash").GetString() || Hash(ExportsFile) != result.GetProperty("ExportsHash").GetString())
             {
                 throw new InvalidDataException("Native object or export list does not match this invocation.");
             }
             string symbol = result.GetProperty("ReceiptSymbol").GetString()!;
-            if (symbol != "__atomui_compile_" + InvocationId || System.IO.File.ReadAllLines(ExportsFile).Count(line => line == "_" + symbol) != 1)
+            string targetOS = result.GetProperty("TargetOS").GetString()!;
+            string targetArchitecture = result.GetProperty("TargetArchitecture").GetString()!;
+            bool windows = targetOS == "Windows" && targetArchitecture == "X64";
+            if (!windows && !(targetOS == "OSX" && targetArchitecture is "ARM64" or "X64"))
+            {
+                throw new InvalidDataException("Unsupported native compilation target.");
+            }
+            if (symbol != "__atomui_compile_" + InvocationId || System.IO.File.ReadAllLines(ExportsFile)
+                .Count(line => windows ? line.Trim() == symbol + " DATA" : line == "_" + symbol) != 1)
             {
                 throw new InvalidDataException("Missing caller-bound compilation export.");
             }
@@ -150,7 +158,14 @@ public sealed class VerifyNative8RegistrationTask : RegistrationBuildTask
                 throw new InvalidDataException("Published copy has no independently verified linked image.");
             }
             byte[] native = System.IO.File.ReadAllBytes(NativeBinary);
-            MachOReceipt.Verify(native, "_" + symbol, Encoding.ASCII.GetBytes(symbol));
+            if (windows)
+            {
+                PeReceipt.Verify(native, symbol, Encoding.ASCII.GetBytes(symbol));
+            }
+            else
+            {
+                MachOReceipt.Verify(native, "_" + symbol, Encoding.ASCII.GetBytes(symbol));
+            }
             RegistrationFiles.CreateJson(linkedPath, new { format = 2, invocationId = InvocationId, backend = "AtomUI.Registration.ILC8", stage = "sdk-link-verified",
                 reportPath, reportHash = Hash(reportPath), inputPath = inputsPath, objectPath = NativeObject, objectHash = Hash(NativeObject),
                 exportsPath = ExportsFile, exportsHash = Hash(ExportsFile), binaryPath = NativeBinary, binaryHash, receiptSymbol = symbol });

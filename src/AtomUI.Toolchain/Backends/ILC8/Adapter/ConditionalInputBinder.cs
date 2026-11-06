@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -32,6 +33,7 @@ internal static class ConditionalInputBinder
         }
         var manifests = new List<ConditionalRegistrationManifest>();
         var supplied = new Dictionary<string, string>(StringComparer.Ordinal);
+        var suppliedPaths = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (JsonElement file in root.GetProperty("assemblies").EnumerateArray())
         {
             RegistrationContractJson.Fields(file, "path", "assemblyIdentity", "sha256");
@@ -42,13 +44,14 @@ internal static class ConditionalInputBinder
             {
                 throw new InvalidDataException("Input paths must be absolute and assembly identities unique");
             }
+            suppliedPaths.Add(identity, filePath);
             ConditionalRegistrationMetadata metadata = ConditionalRegistrationMetadata.Read(filePath, coreIdentity);
             if (metadata.AssemblyIdentity != identity || metadata.ContentHash != hash)
             {
                 throw new InvalidDataException("Conditional input snapshot identity/hash mismatch: " + filePath);
             }
             var resolved = (EcmaModule)context.ResolveAssembly(new AssemblyName(identity), true);
-            string consumedHash = Convert.ToHexStringLower(SHA256.HashData(resolved.PEReader.GetEntireImage().GetContent().AsSpan()));
+            string consumedHash = HashConsumedImage(resolved.PEReader, File.ReadAllBytes(filePath));
             if (resolved.Assembly.GetName().FullName != identity || consumedHash != hash)
             {
                 throw new InvalidDataException("ILC resolver consumed different implementation bytes: " + identity);
@@ -66,8 +69,8 @@ internal static class ConditionalInputBinder
         {
             EcmaModule actual = context.GetModuleFromPath(actualPath);
             string identity = actual.Assembly.GetName().FullName;
-            string actualHash = Convert.ToHexStringLower(SHA256.HashData(actual.PEReader.GetEntireImage().GetContent().AsSpan()));
-            if (!supplied.TryGetValue(identity, out string expectedHash) || expectedHash != actualHash)
+            if (!supplied.TryGetValue(identity, out string expectedHash) ||
+                expectedHash != HashConsumedImage(actual.PEReader, File.ReadAllBytes(suppliedPaths[identity])))
             {
                 throw new InvalidDataException("Input snapshot does not cover the actual ILC input: " + identity);
             }
@@ -151,6 +154,22 @@ internal static class ConditionalInputBinder
         }
         return new ConditionalInputBinding(groups.OrderBy(g => g.SymbolName, StringComparer.Ordinal).ToArray(), attribute, report,
             Convert.ToHexStringLower(SHA256.HashData(inputBytes)), trimmedGetter);
+    }
+
+    internal static string HashConsumedImage(PEReader reader, byte[] frozen)
+    {
+        ReadOnlySpan<byte> mapped = reader.GetEntireImage().GetContent().AsSpan();
+        // The pinned compiler maps with SafeMemoryMappedViewHandle.ByteLength. Windows
+        // rounds that view to pages; verify every file byte and only permit the exact
+        // OS page-rounded, zero-filled tail, never a different implementation image.
+        long rounded = ((long)frozen.Length + Environment.SystemPageSize - 1) / Environment.SystemPageSize * Environment.SystemPageSize;
+        if (reader.IsLoadedImage || mapped.Length < frozen.Length ||
+            (mapped.Length != frozen.Length && (!OperatingSystem.IsWindows() || mapped.Length != rounded)) ||
+            !mapped[..frozen.Length].SequenceEqual(frozen) || mapped[frozen.Length..].IndexOfAnyExcept((byte)0) >= 0)
+        {
+            throw new InvalidDataException("ILC mapped implementation differs from the complete frozen file bytes.");
+        }
+        return Convert.ToHexStringLower(SHA256.HashData(mapped[..frozen.Length]));
     }
 
     private static void ValidatePackageMarker(EcmaModule module, ConditionalRegistrationPackage package,

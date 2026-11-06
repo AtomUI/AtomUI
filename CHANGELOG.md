@@ -4,6 +4,30 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## 6.2.13
+
+`2026-11-06`
+
+- Breaking Changes
+  - Dependencies: require Avalonia 12.1.5. Applications pinned to 12.1.4 must upgrade Avalonia before installing AtomUI 6.2.13; see the [migration guide](docs/releases/6.2.13-api-changes.md).
+  - Registration: Generated `ControlPackageGroup_*` identities change with the assembly version. Upgrade related packages and Generator together, rebuild consumers and republish trimmed/NativeAOT applications; see the [migration guide](docs/releases/6.2.13-api-changes.md).
+- Avalonia and Wayland
+  - Upgrade to Avalonia 12.1.5 and retire the Wayland shared-clock compatibility path now fixed upstream; Wayland frame pacing and initial scaling validate their member contracts and log the applied status.
+  - Input controls use Avalonia's `TextPresenter` directly now that selection foreground refreshes correctly upstream; `PART_TextPresenter`, the `input` Semantic Part and selection/password behavior are unchanged.
+- DataGrid
+  - Add `SelectTriggerType="Row"`: clicking anywhere in a row changes selection; in `Extended` mode an ordinary click toggles the row and Shift selects a range. The `SelectIndicator` default and `Cell` semantics are unchanged. #418
+  - Keep ElementName sources in editor OneWay binding copies and remove the reflection-based binding construction from the public editing path.
+- Select
+  - Keep selected values that are hidden by the current filter in multiple mode. #531
+- Masonry
+  - Fix a permanent layout cycle when the Measure constraint width differs from the final Arrange width and items have width-dependent sizes.
+  - Relayout no longer glides existing items; new items still fade in (only within the extended viewport) and removed items still fade out.
+- NavMenu and Popup
+  - Composite menu and inline submenu opacity as a group so item backgrounds no longer remain visible after the menu background fades out.
+- Gallery
+  - Keep a spacing between the collapsed sidebar header action and the first navigation item; follow `UniformlyMarginXXS` by default, or set `GalleryShellOptions.CollapsedSidebarHeaderSpacing`. Remove product-side margin workarounds to avoid doubled spacing.
+  - Repair Gallery NativeAOT publishing and the performance tool build for Avalonia 12.1.5.
+
 ## 6.2.12
 
 `2026-11-04`

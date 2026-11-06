@@ -6,6 +6,30 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 6.2.13
+
+`2026-11-06`
+
+- Breaking Changes
+  - Dependencies：要求 Avalonia 12.1.5。固定在 12.1.4 的应用须先升级 Avalonia 再安装 AtomUI 6.2.13，详见[迁移指南](docs/releases/6.2.13-api-changes.zh-CN.md)。
+  - Registration：生成的 `ControlPackageGroup_*` 身份随程序集版本变化。请同步升级相关包与 Generator、重新编译消费方并重新发布裁剪/NativeAOT 应用，详见[迁移指南](docs/releases/6.2.13-api-changes.zh-CN.md)。
+- Avalonia 与 Wayland
+  - 升级到 Avalonia 12.1.5，移除上游已修复的 Wayland 共享时钟兼容路径；Wayland 帧节拍与初始缩放校验成员契约并记录应用状态。
+  - 上游已修复选区前景色刷新，输入控件直接使用 Avalonia `TextPresenter`；`PART_TextPresenter`、`input` Semantic Part 及选择/密码行为不变。
+- DataGrid
+  - 新增 `SelectTriggerType="Row"`：点击行内任意位置改变选择，`Extended` 下普通点击切换单行、Shift 范围选择；`SelectIndicator` 默认值与 `Cell` 语义不变。#418
+  - 编辑器 OneWay 绑定副本保留 ElementName 来源，并移除公共编辑路径中的反射绑定构造。
+- Select
+  - 多选模式下保留被当前筛选隐藏的已选值。#531
+- Masonry
+  - 修复 Measure 约束宽度与 Arrange 最终宽度不一致且子项尺寸依赖宽度时的永久布局循环。
+  - 重新布局不再对既有项做位置滑动；新项仍淡入（仅限扩展视口范围内），移除项仍原位淡出。
+- NavMenu 与 Popup
+  - 菜单与 Inline 子菜单整体合成透明度，修复菜单背景淡出后项目背景仍显眼的问题。
+- Gallery
+  - 侧边栏折叠后在 Header Action 与第一个导航项之间保留间距，默认跟随 `UniformlyMarginXXS`，也可通过 `GalleryShellOptions.CollapsedSidebarHeaderSpacing` 配置；请移除产品侧的边距绕过以免间距叠加。
+  - 修复 Avalonia 12.1.5 下 Gallery NativeAOT 发布与性能工具构建。
+
 ## 6.2.12
 
 `2026-11-04`

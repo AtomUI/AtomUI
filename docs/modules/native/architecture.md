@@ -208,7 +208,7 @@ DynamicDependency 保留；没有修改官方 Avalonia 程序集。
 不会沿旧合成parent链反向保留ContentPresenter及旧Window。重新挂载使用原CreateCompositionVisual重建缓存，CornerRadius等
 公开属性保持，活动树不清理。hook不强制渲染、不修改逻辑/视觉parent或控件属性。
 
-这两项均属于固定12.1.4私有边界。升级Avalonia须重新验证原完整轨迹、通知/重入/异常/弱目标与真实NativeAOT；
+这两项按12.1.4私有边界实现；随release/6.0升级到12.1.5时，`StyledElement.DetachStyles`仍只遍历逻辑子节点、`Border._borderVisual`缓存行为未变，私有成员签名与现有契约测试均已复核通过。升级Avalonia须重新验证原完整轨迹、通知/重入/异常/弱目标与真实NativeAOT；
 普通编译不能代替兼容性证明。具名宿主证据不扩成所有平台认证。
 
 ## 已知结构问题

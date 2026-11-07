@@ -456,7 +456,6 @@ public partial class ComboBox : AvaloniaComboBox,
     // Keep popup closing after SelectionChanged callbacks finish updating bound state.
     private bool _selectionFromEventInProgress;
 
-    private EventHandler? _formValueChanged;
 
     static ComboBox()
     {
@@ -1768,10 +1767,5 @@ public partial class ComboBox : AvaloniaComboBox,
     }
 
     private readonly record struct FilterVisibilityState(bool IsSet, bool Value);
-
-    private static void ApplySemanticItemMarker(ComboBoxItem comboBoxItem)
-    {
-        comboBoxItem.Classes.Add(ComboBoxSemanticParts.PopupListItemClass);
-    }
 
 }

@@ -262,7 +262,7 @@ foreach($package in $AtomUIReleasePackages | Where-Object {$_.PackageRole -in @(
     for name, family, tfm, native, noscan in routes:
         directory = root / name
         items = reference("AtomUI.Desktop.Controls") + reference("AtomUI.Generator")
-        items += reference("AtomUI.Registration.Fixtures.ThirdParty") + reference("Avalonia.Desktop", "12.1.4")
+        items += reference("AtomUI.Registration.Fixtures.ThirdParty") + reference("Avalonia.Desktop", "12.1.5")
         for file, kind in (("ProductApp.cs", "Compile"), ("ProductFixtureStyles.axaml.cs", "Compile"),
                            ("ProductFixtureStyles.axaml", "AvaloniaXaml")):
             items += link(kind, fixtures / "Shared" / file, file)

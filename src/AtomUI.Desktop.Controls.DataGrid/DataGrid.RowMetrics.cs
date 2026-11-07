@@ -136,10 +136,9 @@ public partial class DataGrid
         _rowMetricAnchor = null;
         if (anchor.HasValue && _rangePresentationIndex is not null && DisplayData.FirstScrollingSlot >= 0)
         {
-            var maximumOffset = Math.Max(0, GetRangeExtent() - CellsEstimatedHeight);
-            var offset = Math.Clamp(_rangePresentationIndex.RestoreAnchor(anchor.Value), 0, maximumOffset);
-            _rangeDesiredOffset = offset;
-            ApplyRangeVerticalOffset(offset, DisplayData.FirstScrollingSlot, normalizeDisplayedRows: true);
+            // Metric changes rebuild the height index; reconcile the restored anchor through the
+            // committed-range path, which clamps, normalizes displayed rows and publishes the offset.
+            ReconcileCommittedRangeOffset(_rangePresentationIndex.RestoreAnchor(anchor.Value));
             InvalidateMeasure();
         }
     }

@@ -3,9 +3,9 @@
         <TargetFrameworks>net10.0;net8.0</TargetFrameworks>
         <AssemblyName>Avalonia.Skia</AssemblyName>
         <RootNamespace>Avalonia.Skia</RootNamespace>
-        <AssemblyVersion>12.1.4.0</AssemblyVersion>
-        <FileVersion>12.1.4.0</FileVersion>
-        <Version>12.1.4-atomui.ct15.1</Version>
+        <AssemblyVersion>12.1.5.0</AssemblyVersion>
+        <FileVersion>12.1.5.0</FileVersion>
+        <Version>12.1.5-atomui.ct15.1</Version>
         <PackageId>AtomUI.Compatibility.Avalonia.Skia</PackageId>
         <IsPackable>false</IsPackable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -24,7 +24,7 @@
                           LogicalName="Avalonia.Skia.Assets.NoiseAsset_256X256_PNG.png" />
         <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"
                           GeneratePathProperty="true" ExcludeAssets="compile;runtime" />
-        <!-- Exact dependencies of official Avalonia.Skia 12.1.4; native assets stay official. -->
+        <!-- Exact dependencies of official Avalonia.Skia 12.1.5; native assets stay official. -->
         <PackageReference Include="SkiaSharp" Version="3.119.4" />
         <PackageReference Include="HarfBuzzSharp" Version="8.3.1.3" />
     </ItemGroup>
@@ -39,7 +39,7 @@
         </ItemGroup>
     </Target>
     <Target Name="RejectUnreviewedAvaloniaVersion" BeforeTargets="CoreCompile">
-        <Error Condition="'$(AvaloniaVersion)' != '12.1.4'"
-               Text="The software Skia compatibility source is pinned to Avalonia 12.1.4. Review its upstream diff before changing this version." />
+        <Error Condition="'$(AvaloniaVersion)' != '12.1.5'"
+               Text="The software Skia compatibility source is pinned to Avalonia 12.1.5. Review its upstream diff before changing this version." />
     </Target>
 </Project>

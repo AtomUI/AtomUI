@@ -259,7 +259,7 @@ public class DataGridFrameCornerRadiusTests
         }
     }
 
-    private static void AssertBlankAreaOpensContextMenu(Control owner, Window window)
+    private static void AssertBlankAreaOpensContextMenu(Control owner, AvaloniaWindow window)
     {
         var menu = new ContextMenu();
         menu.Items.Add(new MenuItem { Header = "Action" });

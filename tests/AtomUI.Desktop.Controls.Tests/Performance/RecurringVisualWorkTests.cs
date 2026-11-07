@@ -68,7 +68,8 @@ public class RecurringVisualWorkTests
             clock.Step(800);
             target.Opacity.ShouldBe(.6);
 
-            var knob = new SwitchKnob { Width = 24, Height = 24, LoadingAnimationDuration = TimeSpan.FromMilliseconds(100) };
+            // The loading loop follows the owner's motion switch; a standalone knob opts in explicitly.
+            var knob = new SwitchKnob { Width = 24, Height = 24, IsMotionEnabled = true, LoadingAnimationDuration = TimeSpan.FromMilliseconds(100) };
             target.Child = knob;
             Dispatcher.UIThread.RunJobs();
             knob.NotifyStartLoading();

@@ -479,6 +479,31 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
+        if (e.OldValue is IControlTemplate)
+        {
+            // Retired template theme activators can subscribe to this owner.
+            // Logical detach only releases ordinary styles in the framework.
+            var ownerParts = this.GetVisualDescendants().OfType<Control>()
+                .Where(part => ReferenceEquals(part.TemplatedParent, this)).ToArray();
+            // This owner intentionally preserves the presenter across templates.
+            // It may already be absent from the retired Popup.Child subtree.
+            var borders = PickerPresenter?.GetSelfAndVisualDescendants().OfType<Border>().ToArray();
+            ClosePickerForLifecycle();
+            if (borders is not null)
+            {
+                foreach (var border in borders)
+                {
+                    border.ReleaseDetachedCompositionCache();
+                }
+            }
+            if (ReferenceEquals(Template, e.NewValue))
+            {
+                foreach (var part in ownerParts)
+                {
+                    part.ReleaseTemplatedParentTheme();
+                }
+            }
+        }
         ++_templateGeneration;
         _templateCompletionPending = true;
         TemplatePartThemeCompatibility.TrackTemplateReplacement(this);
@@ -584,38 +609,6 @@ public abstract class InfoPickerInput : TemplatedControl,
         var input = _pendingInputFocus is { } focus ? e.NameScope.Find<TextBox>(focus.Name) : null;
         ScheduleTemplateCompletion(input);
     }
-
-
-    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
-    {
-        if (e.OldValue is IControlTemplate)
-        {
-            // Retired template theme activators can subscribe to this owner.
-            // Logical detach only releases ordinary styles in the framework.
-            var ownerParts = this.GetVisualDescendants().OfType<Control>()
-                .Where(part => ReferenceEquals(part.TemplatedParent, this)).ToArray();
-            // This owner intentionally preserves the presenter across templates.
-            // It may already be absent from the retired Popup.Child subtree.
-            var borders = PickerPresenter?.GetSelfAndVisualDescendants().OfType<Border>().ToArray();
-            ClosePickerForLifecycle();
-            if (borders is not null)
-            {
-                foreach (var border in borders)
-                {
-                    border.ReleaseDetachedCompositionCache();
-                }
-            }
-            if (ReferenceEquals(Template, e.NewValue))
-            {
-                foreach (var part in ownerParts)
-                {
-                    part.ReleaseTemplatedParentTheme();
-                }
-            }
-        }
-        base.OnTemplateChanged(e);
-    }
-
 
     protected override void OnPointerReleased(PointerReleasedEventArgs args)
     {
@@ -1028,36 +1021,6 @@ public abstract class InfoPickerInput : TemplatedControl,
         }
 
         return false;
-    }
-
-    private void SetupContentRightAddOnBindings(TemplateAppliedEventArgs e)
-    {
-        // These named controls live in AddOnDecoratedBox's Content subtree, outside
-        // this owner's template selector route. Keep the existing local-priority
-        // relays ready during OnApplyTemplate; theme setters change their precedence
-        // and ancestor bindings resolve later, when that content attaches.
-        _contentRightAddOnBindings?.Dispose();
-        _contentRightAddOnBindings = new CompositeDisposable();
-
-        if (PickerClearUpButton is { } clearUpButton)
-        {
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, IsClearButtonVisibleProperty, clearUpButton,
-                PickerClearUpButton.IsInClearModeProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, InfoIconProperty, clearUpButton,
-                PickerClearUpButton.IconProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, FormFeedbackProperty, clearUpButton,
-                PickerClearUpButton.FormFeedbackProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, InfoIconProperty, clearUpButton,
-                Visual.IsVisibleProperty, value => value is not null));
-        }
-
-        if (e.NameScope.Find<ContentPresenter>("PART_ContentRightAddOnPresenter") is { } contentPresenter)
-        {
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, ContentRightAddOnProperty, contentPresenter,
-                ContentPresenter.ContentProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, ContentRightAddOnTemplateProperty,
-                contentPresenter, ContentPresenter.ContentTemplateProperty));
-        }
     }
 
     private void EnsurePickerPresenter()

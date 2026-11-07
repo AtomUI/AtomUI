@@ -262,7 +262,10 @@ public sealed class GalleryShellView : UserControl, IDisposable
         }
         else
         {
-            BindToken(this, CollapsedSidebarHeaderSpacingProperty, SharedTokenKind.UniformlyMarginXXS);
+            // Released 6.2.13 contract: this spacing follows the application-level shared token
+            // resource (including Application resource overrides), not the shell's control snapshot.
+            _themeBindings.Add(TokenResourceBinder.CreateGlobalTokenBinding(
+                this, CollapsedSidebarHeaderSpacingProperty, SharedTokenKind.UniformlyMarginXXS));
         }
 
         void UpdatePresentation()

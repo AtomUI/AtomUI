@@ -284,13 +284,6 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
         }
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        CheckImageSource();
-        SetupImage();
-    }
-
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ++_templateGeneration;
@@ -308,6 +301,7 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        CheckImageSource();
         SetupImage();
         if (_pendingTemplateFocus is { } focus)
         {

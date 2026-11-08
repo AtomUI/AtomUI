@@ -46,6 +46,11 @@ CornerRadius 类型 Token，由 `IconContainerSize` 派生为默认全圆；它�
 - `DotSize`
 - `DotCurrentSize`
 - `DotLineThickness`
+- `OutlineDotBorderThickness`
+
+`DotLineThickness` 是 Dot / OutlineDot 的 Connector 线宽，默认 `LineWidthBold`（对应 antd progress-dot `rail-size`）；
+`OutlineDotBorderThickness` 是 OutlineDot 的边框宽度，默认 `Thickness(LineWidthBold)`（antd dot icon border width）。
+默认 Indicator 的边框宽度读取 Global Token `BorderThickness`（`Thickness(LineWidth)`）。
 
 Dot Token 在 `Type=Dot` 和 `Type=OutlineDot` 下生效。`Dot` 使用状态色作为填充色，`OutlineDot` 使用同一状态色作为边框色并保持背景透明。Connector 方向和长度由 LayoutPanel 决定，Token 只提供尺寸与颜色。
 
@@ -109,11 +114,17 @@ Panel 箭头宽度按 Ant Design 的几何关系由 item 基础高度乘以 `0.7
 ## 3. 控件专项模型中的 Token 使用
 
 ```text
-SharedToken
+Steps 的 Effective Global Token
     -> StepsToken
-    -> StepsTheme / StepsItemTheme / StepsItemIndicatorTheme
+    -> StepsTheme / StepsItemTheme / StepsItemIndicatorTheme（全部读取 StepsTokenResource）
     -> root + item + indicator + connector + progress
 ```
+
+三个主题都以 `StepsTokenResource` 读取 Own Token 与 Global Token，`Controls[Steps]` 的覆盖作用于 item 标题、详情、图标、
+Connector、箭头和 Panel 视觉。`StepsItem` 是注册控件但没有 Own Token，标记为 Token owner 透明：item 与其 Indicator 继承
+Steps 为 owner，`atom:TokenTransitions` 的时长同样跟随 `Controls[Steps]`；`Controls[StepsItem]` 不产生视觉效果。
+模板部件中会被状态 Setter 覆盖的默认值（LayoutPanel 间距与 Connector 线宽、Panel 箭头宽度与描边、item frame 箭头宽度）
+写在 Style Setter 中，不写在模板节点属性上，Small、Dot、Inline、Panel 等状态值因此生效。
 
 主要映射：
 

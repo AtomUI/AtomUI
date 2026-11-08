@@ -35,6 +35,10 @@ AtomUI 的重要变更记录在此文件中。
   - `ProgressBar.LineBorderRadius` 设置圆头进度条圆角，`StepsProgressBar.ProgressStepMarginInlineEnd` / `ProgressStepMinWidth` 设置步骤间距与最小步骤宽度，`CircleTextColor` 设置圆形百分比文字颜色；`ProgressBar.ProgressActiveMotionDuration` 标为保留（Active 闪光动画尚未实现）。
   - 线形与步骤进度条上的本地或样式 `MinWidth` / `MinHeight`、圆形与仪表盘进度条上的本地 `FontSize` 不再被计算出的文字几何覆盖；Token 变化会重新布局圆形文字与状态图标。
   - 可见变化：圆形与仪表盘进度条的百分比文字改用 `ColorText`（`CircleTextColor`），不再是 `ColorTextLabel`；小于 2px 的显式 `ChunkWidth` 提升到 `ProgressStepMinWidth`。
+- Steps
+  - `Controls[Steps]` 现在作用于 item、图标、Connector、箭头与 Panel 的全部主题读取；StepsItem 是 Token owner 透明部件，Steps 同样设置它们的过渡时长；自定义图标保留 IconPresenter 自身的 identity。
+  - 会被状态样式覆盖的模板默认值改为样式 Setter，尺寸、类型与 Panel 状态因此生效：Small Panel 箭头使用 `LineWidth` 与 `PanelArrowWidthSM`；Dot 与 OutlineDot 的 Connector 使用 `DotLineThickness`；Indicator 间距跟随 Panel、标题竖排、Dot、Navigation（`NavItemGutter`）与 Inline 状态；纵向最后一项去掉底部内边距；Inline 项不再有 Connector 间隙。
+  - 可见变化：Dot 与 OutlineDot 的 Connector 为 `LineWidthBold`（2px，`DotLineThickness` 默认改为与 antd 一致的 `LineWidthBold`），不再是 1px；OutlineDot 边框读取新增的 `Steps.OutlineDotBorderThickness`（2px，不变），Indicator 边框读取 `BorderThickness`；以及上述间距与内边距变化。
 - Popup
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。
 

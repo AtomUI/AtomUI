@@ -33,6 +33,10 @@ All notable changes to AtomUI are documented in this file.
   - `ProgressBar.LineBorderRadius` sets the rounded bar radius, `StepsProgressBar.ProgressStepMarginInlineEnd` / `ProgressStepMinWidth` set the step gap and minimum step width, and `CircleTextColor` colours the circle percentage; `ProgressBar.ProgressActiveMotionDuration` is reserved (the Active shimmer is not implemented yet).
   - A local or Style `MinWidth` / `MinHeight` on a line or steps progress bar, and a local `FontSize` on a circle or dashboard progress, are no longer overwritten by the computed text geometry; Token changes re-lay out the circle label and status icon.
   - Visible changes: the circle and dashboard percentage text uses `ColorText` (`CircleTextColor`) instead of `ColorTextLabel`; an explicit `ChunkWidth` below 2 px is raised to `ProgressStepMinWidth`.
+- Steps
+  - `Controls[Steps]` now reaches every theme read of the items, icons, tails, arrows and panels; StepsItem is Token-owner transparent, so the Steps also sets their transition durations, and the custom icon keeps the IconPresenter identity.
+  - Template defaults that state styles override are now style setters, so the size, type and panel states apply: the Small panel arrow uses `LineWidth` and `PanelArrowWidthSM`; Dot and OutlineDot connectors use `DotLineThickness`; the indicator spacing follows the Panel, vertical title, Dot, Navigation (`NavItemGutter`) and Inline states; the last vertical item drops its bottom padding; Inline items have no rail gap.
+  - Visible changes: Dot and OutlineDot connectors are `LineWidthBold` (2 px, `DotLineThickness` now defaults to `LineWidthBold` as antd) instead of 1 px; the OutlineDot border reads the new `Steps.OutlineDotBorderThickness` (2 px, unchanged) and the indicator border reads `BorderThickness`; the spacing and padding changes listed above.
 - Popup
   - Popup content (drop-down options, popup frames) now inherits the Token owner of the control that hosts the Popup, so `Controls[X]` overrides, including motion durations, reach the drop-downs of X; `Controls[Popup]` keeps applying to the Popup's own shadow, corner radius and anchor margin.
 

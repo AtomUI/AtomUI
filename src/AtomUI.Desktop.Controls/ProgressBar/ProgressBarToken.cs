@@ -1,72 +1,31 @@
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
-using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ProgressBarToken : AbstractControlDesignToken
+internal sealed class ProgressBarToken : AbstractLineProgressToken
 {
-    
-    /// <summary>
-    /// 进度条默认颜色
-    /// </summary>
-    public Color DefaultColor { get; set; }
-
-    /// <summary>
-    /// 进度条剩余部分颜色
-    /// </summary>
-    public Color RemainingColor { get; set; }
-
-    /// <summary>
-    /// 圆形进度条文字颜色
-    /// </summary>
-    public Color CircleTextColor { get; set; }
-
     /// <summary>
     /// 条状进度条圆角
+    /// Corner radius of the rounded (capsule) line progress bar
     /// </summary>
     public CornerRadius LineBorderRadius { get; set; }
 
     /// <summary>
-    /// 圆形进度条文本最小大小
+    /// 内部百分比模式下进度条的内间距
+    /// Padding of the bar around an inner percentage label
     /// </summary>
-    public double CircleMinimumTextFontSize { get; set; }
+    public double LineProgressPadding { get; set; }
 
-    /// <summary>
-    /// 圆形进度条图标最小大小
-    /// </summary>
-    public double CircleMinimumIconSize { get; set; }
-
-    // 内部属性
-    public double ProgressStepMinWidth { get; set; }
-    public Thickness ProgressStepMarginInlineEnd { get; set; } // Step 之间的间距
+    [ReservedToken("antd Progress progressActiveMotionDuration. The Active status shimmer animation over the track " +
+                   "is not implemented yet; Active renders like Normal.")]
     public double ProgressActiveMotionDuration { get; set; }
-    public double LineExtraInfoMargin { get; set; } // 额外信息和 Indicator 之间的间距
-    public double LineProgressPadding { get; set; } // 线行进度条的内间距
-    public double LineInfoIconSize { get; set; }
-    public double LineInfoIconSizeSM { get; set; }
-
-    public ProgressBarToken()
-
-    {
-    }
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-
-        CircleTextColor  = EffectiveGlobalToken.ColorText;
-        DefaultColor     = EffectiveGlobalToken.ColorInfo;
-        RemainingColor   = EffectiveGlobalToken.ColorFillSecondary;
         LineBorderRadius = new CornerRadius(100); // magic for capsule shape, should be a very large number
-        // 这两个要通过计算
-        CircleMinimumIconSize     = EffectiveGlobalToken.SizeXS;
-        CircleMinimumTextFontSize = EffectiveGlobalToken.FontSizeSM - 2;
-        LineInfoIconSize          = EffectiveGlobalToken.IconSize;
-        LineInfoIconSizeSM        = EffectiveGlobalToken.IconSizeSM;
-        LineExtraInfoMargin       = EffectiveGlobalToken.ControlPaddingHorizontalSM;
-        LineProgressPadding       = EffectiveGlobalToken.UniformlyPaddingXXS / 2;
+        LineProgressPadding = EffectiveGlobalToken.UniformlyPaddingXXS / 2;
     }
-    
 }

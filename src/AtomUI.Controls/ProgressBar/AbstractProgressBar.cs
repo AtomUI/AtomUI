@@ -215,10 +215,10 @@ public abstract class AbstractProgressBar : RangeBase,
             o => o.EffectiveSizeType,
             (o, v) => o.EffectiveSizeType = v);
 
-    internal static readonly DirectProperty<AbstractProgressBar, double> StrokeThicknessProperty =
-        AvaloniaProperty.RegisterDirect<AbstractProgressBar, double>(nameof(StrokeThickness),
-            o => o.StrokeThickness,
-            (o, v) => o.StrokeThickness = v);
+    internal static readonly DirectProperty<AbstractProgressBar, double> EffectiveStrokeThicknessProperty =
+        AvaloniaProperty.RegisterDirect<AbstractProgressBar, double>(nameof(EffectiveStrokeThickness),
+            o => o.EffectiveStrokeThickness,
+            (o, v) => o.EffectiveStrokeThickness = v);
 
     internal static readonly StyledProperty<IBrush?> GrooveBrushProperty =
         AvaloniaProperty.Register<AbstractProgressBar, IBrush?>(nameof(GrooveBrush));
@@ -242,6 +242,13 @@ public abstract class AbstractProgressBar : RangeBase,
         get => _isProgressInfoPresented;
         private set => SetAndRaise(IsProgressInfoPresentedProperty, ref _isProgressInfoPresented, value);
     }
+    // Status icon brushes resolved by the control theme from the progress control's own Tokens. The icon presenters are
+    // registered controls with an identity of their own, so their brushes are read on the progress control and bound down.
+    internal static readonly StyledProperty<IBrush?> ExceptionIconBrushProperty =
+        AvaloniaProperty.Register<AbstractProgressBar, IBrush?>(nameof(ExceptionIconBrush));
+
+    internal static readonly StyledProperty<IBrush?> SuccessIconBrushProperty =
+        AvaloniaProperty.Register<AbstractProgressBar, IBrush?>(nameof(SuccessIconBrush));
 
     private SizeType _effectiveSizeType;
 
@@ -253,10 +260,10 @@ public abstract class AbstractProgressBar : RangeBase,
 
     private double _strokeThickness;
 
-    protected double StrokeThickness
+    protected double EffectiveStrokeThickness
     {
         get => _strokeThickness;
-        set => SetAndRaise(StrokeThicknessProperty, ref _strokeThickness, value);
+        set => SetAndRaise(EffectiveStrokeThicknessProperty, ref _strokeThickness, value);
     }
 
     internal IBrush? GrooveBrush
@@ -281,6 +288,18 @@ public abstract class AbstractProgressBar : RangeBase,
     {
         get => GetValue(IsCompletedProperty);
         set => SetValue(IsCompletedProperty, value);
+    }
+
+    internal IBrush? ExceptionIconBrush
+    {
+        get => GetValue(ExceptionIconBrushProperty);
+        set => SetValue(ExceptionIconBrushProperty, value);
+    }
+
+    internal IBrush? SuccessIconBrush
+    {
+        get => GetValue(SuccessIconBrushProperty);
+        set => SetValue(SuccessIconBrushProperty, value);
     }
 
     #endregion
@@ -322,7 +341,7 @@ public abstract class AbstractProgressBar : RangeBase,
         AffectsRender<AbstractProgressBar>(StrokeBrushProperty,
             StrokeLineCapProperty,
             TrailColorProperty,
-            StrokeThicknessProperty,
+            EffectiveStrokeThicknessProperty,
             SuccessStrokeBrushProperty,
             SuccessThresholdProperty);
         ValueProperty.OverrideMetadata<AbstractProgressBar>(

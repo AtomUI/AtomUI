@@ -51,14 +51,14 @@ public abstract class AbstractGeneralDashboardProgress : AbstractCircleProgress
     protected override void RenderGroove(DrawingContext context)
     {
         var controlRect = new Rect(new Point(0, 0), Bounds.Size);
-        _currentGrooveRect = GetProgressBarRect(controlRect).Deflate(StrokeThickness / 2);
+        _currentGrooveRect = GetProgressBarRect(controlRect).Deflate(EffectiveStrokeThickness / 2);
         _currentGrooveRect = new Rect(_currentGrooveRect.Position, new Size(Math.Floor(_currentGrooveRect.Size.Width),
             Math.Floor(_currentGrooveRect.Size.Height)));
         // 轨道与成功弧取自共享缓存，进度与角度过渡期间不重新构建
         var lineCap = IsStepMode ? PenLineCap.Flat : StrokeLineCap;
         PenUtils.TryModifyOrCreate(ref _groovePen,
             GrooveBrush,
-            StrokeThickness,
+            EffectiveStrokeThickness,
             lineCap: lineCap);
         context.DrawGeometry(null, _groovePen, GetRailGeometry(_currentGrooveRect));
     }
@@ -68,7 +68,7 @@ public abstract class AbstractGeneralDashboardProgress : AbstractCircleProgress
         var lineCap = IsStepMode ? PenLineCap.Flat : StrokeLineCap;
         PenUtils.TryModifyOrCreate(ref _indicatorPen,
             StrokeBrush,
-            StrokeThickness,
+            EffectiveStrokeThickness,
             lineCap: lineCap);
         context.DrawGeometry(null, _indicatorPen, GetTrackGeometry(_currentGrooveRect));
 
@@ -76,7 +76,7 @@ public abstract class AbstractGeneralDashboardProgress : AbstractCircleProgress
         {
             PenUtils.TryModifyOrCreate(ref _successPen,
                 SuccessStrokeBrush,
-                StrokeThickness,
+                EffectiveStrokeThickness,
                 lineCap: lineCap);
             context.DrawGeometry(null, _successPen, GetSuccessGeometry(_currentGrooveRect));
         }

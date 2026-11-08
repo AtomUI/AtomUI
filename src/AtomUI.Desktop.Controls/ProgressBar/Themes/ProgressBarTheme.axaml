@@ -10,10 +10,16 @@
             <themes:AbstractLineProgressTheme TargetType="atom:ProgressBar" />
         </ControlTheme.BasedOn>
 
+        <Setter Property="GrooveBrush" Value="{atom:ProgressBarTokenResource RemainingColor}" />
+        <Setter Property="StrokeBrush" Value="{atom:ProgressBarTokenResource DefaultColor}" />
+        <Setter Property="LineProgressPadding" Value="{atom:ProgressBarTokenResource LineProgressPadding}" />
+        <Setter Property="LineExtraInfoMargin" Value="{atom:ProgressBarTokenResource LineExtraInfoMargin}" />
+        <Setter Property="PresetLineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
+        <Setter Property="PresetLineInfoIconSizeSM" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
         <Setter Property="ColorTextLabel"
-                Value="{atom:SharedTokenResource ColorTextLabel}" />
+                Value="{atom:ProgressBarTokenResource ColorTextLabel}" />
         <Setter Property="ColorTextLightSolid"
-                Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+                Value="{atom:ProgressBarTokenResource ColorTextLightSolid}" />
 
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:ProgressBar">
@@ -67,7 +73,7 @@
 
         <Style Selector="^[StrokeLineCap=Round]">
             <Style Selector="^ /template/ Border#PART_ProgressRail, ^ /template/ Border#PART_ProgressTrack, ^ /template/ Border#PART_ProgressSuccess">
-                <Setter Property="CornerRadius" Value="1000" />
+                <Setter Property="CornerRadius" Value="{atom:ProgressBarTokenResource LineBorderRadius}" />
             </Style>
         </Style>
         

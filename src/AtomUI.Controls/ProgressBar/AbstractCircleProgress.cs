@@ -55,6 +55,15 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         AvaloniaProperty.Register<AbstractCircleProgress, double>(
             nameof(CircleMinimumIconSize));
 
+    // Percentage font size and status icon size computed from the circle size (bounded below by the Tokens). The control
+    // theme projects them to FontSize and to the icon presenters, so a local FontSize or an application Style still wins.
+    internal static readonly StyledProperty<double> ExtraInfoFontSizeProperty =
+        AvaloniaProperty.Register<AbstractCircleProgress, double>(nameof(ExtraInfoFontSize),
+            FontSizeProperty.GetDefaultValue(typeof(AbstractCircleProgress)));
+
+    internal static readonly StyledProperty<double> ExtraInfoIconSizeProperty =
+        AvaloniaProperty.Register<AbstractCircleProgress, double>(nameof(ExtraInfoIconSize));
+
     internal static readonly DirectProperty<AbstractCircleProgress, PenLineCap> ShapeStrokeLineCapProperty =
         AvaloniaProperty.RegisterDirect<AbstractCircleProgress, PenLineCap>(
             nameof(ShapeStrokeLineCap),
@@ -79,6 +88,18 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         set => SetValue(CircleMinimumIconSizeProperty, value);
     }
 
+    internal double ExtraInfoFontSize
+    {
+        get => GetValue(ExtraInfoFontSizeProperty);
+        set => SetValue(ExtraInfoFontSizeProperty, value);
+    }
+
+    internal double ExtraInfoIconSize
+    {
+        get => GetValue(ExtraInfoIconSizeProperty);
+        set => SetValue(ExtraInfoIconSizeProperty, value);
+    }
+
     private PenLineCap _shapeStrokeLineCap;
 
     internal PenLineCap ShapeStrokeLineCap
@@ -100,7 +121,6 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     private Geometry? _stepTrackGeometry;
     private FullTextSizeKey? _fullTextSizeKey;
     private Size _fullTextSize;
-    private IDisposable? _extraInfoFontSizeValue;
 
     // 轨道几何只取决于槽矩形、分段与描边；进度变化不重建它
     private readonly record struct RailGeometryKey(
@@ -241,7 +261,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     {
         var circleSize = CalculateCircleSize();
         CalculateStrokeThickness(circleSize);
-        var extraInfoSize = circleSize - StrokeThickness - 1; // 写死一个像素的 padding 吧
+        var extraInfoSize = circleSize - EffectiveStrokeThickness - 1; // 写死一个像素的 padding 吧
         var extraInfo     = GetFullTextSize();
 
         // 这三个是不可能同时满足的
@@ -257,32 +277,9 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             }
         }
 
-        if (ExceptionCompletedIconPresenter is not null)
+        if (ExceptionCompletedIconPresenter is not null || SuccessCompletedIconPresenter is not null)
         {
-            var exceptionIconWidth  = ExceptionCompletedIconPresenter.Width;
-            var exceptionIconHeight = ExceptionCompletedIconPresenter.Height;
-            if (exceptionIconWidth > extraInfoSize || exceptionIconHeight > extraInfoSize)
-            {
-                IsStatusIconVisible = false;
-            }
-            else
-            {
-                IsStatusIconVisible = true;
-            }
-        }
-
-        if (SuccessCompletedIconPresenter is not null)
-        {
-            var successIconWidth  = SuccessCompletedIconPresenter.Width;
-            var successIconHeight = SuccessCompletedIconPresenter.Height;
-            if (successIconWidth > extraInfoSize || successIconHeight > extraInfoSize)
-            {
-                IsStatusIconVisible = false;
-            }
-            else
-            {
-                IsStatusIconVisible = true;
-            }
+            IsStatusIconVisible = ExtraInfoIconSize <= extraInfoSize;
         }
     }
 
@@ -306,7 +303,9 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         
         if (this.IsAttachedToVisualTree())
         {
-            if (change.Property == WidthProperty || change.Property == HeightProperty)
+            if (change.Property == WidthProperty || change.Property == HeightProperty ||
+                change.Property == CircleMinimumTextFontSizeProperty ||
+                change.Property == CircleMinimumIconSizeProperty)
             {
                 var circleSize = CalculateCircleSize();
                 CalculateStrokeThickness(circleSize);
@@ -326,7 +325,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             change.Property == SuccessThresholdProperty ||
             change.Property == StepCountProperty ||
             change.Property == StepGapProperty ||
-            change.Property == StrokeThicknessProperty ||
+            change.Property == EffectiveStrokeThicknessProperty ||
             change.Property == StrokeLineCapProperty)
         {
             ShapeStrokeLineCap = StepCount > 0 && StepGap > 0
@@ -344,24 +343,12 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             fontSize = CircleMinimumTextFontSize;
         }
 
-        // 模板优先级：主题样式值让位于它，本地值胜过它；持有句柄替换，避免每次改尺寸累积属性帧
-        this.SetHeldValue(FontSizeProperty, fontSize, ref _extraInfoFontSizeValue);
+        ExtraInfoFontSize = fontSize;
     }
 
     private void SetupExtraInfoIconSize(double circleSize)
     {
-        var calculatedSize = Math.Max(circleSize / 4.5, CircleMinimumIconSize);
-        if (ExceptionCompletedIconPresenter is not null)
-        {
-            ExceptionCompletedIconPresenter.Width  = calculatedSize;
-            ExceptionCompletedIconPresenter.Height = calculatedSize;
-        }
-
-        if (SuccessCompletedIconPresenter is not null)
-        {
-            SuccessCompletedIconPresenter.Width  = calculatedSize;
-            SuccessCompletedIconPresenter.Height = calculatedSize;
-        }
+        ExtraInfoIconSize = Math.Max(circleSize / 4.5, CircleMinimumIconSize);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -466,7 +453,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     protected override Rect GetExtraInfoRect(Rect controlRect)
     {
-        return GetProgressBarRect(controlRect).Deflate(StrokeThickness);
+        return GetProgressBarRect(controlRect).Deflate(EffectiveStrokeThickness);
     }
 
     protected override void CalculateStrokeThickness()
@@ -483,7 +470,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             calculatedValue = Math.Max(IndicatorThickness, CIRCLE_MIN_STROKE_THICKNESS);
         }
 
-        StrokeThickness = calculatedValue;
+        EffectiveStrokeThickness = calculatedValue;
     }
 
     protected override void NotifyEffectSizeTypeChanged()
@@ -539,7 +526,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     private RailGeometryKey CreateRailGeometryKey(Rect grooveRect)
     {
-        return new RailGeometryKey(grooveRect, StepCount, StepGap, StrokeThickness, ShapeStrokeLineCap);
+        return new RailGeometryKey(grooveRect, StepCount, StepGap, EffectiveStrokeThickness, ShapeStrokeLineCap);
     }
 
     /// <summary>
@@ -610,8 +597,8 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     internal Rect GetCircleProgressPathRect(Size size)
     {
-        var strokeThickness = double.IsFinite(StrokeThickness)
-            ? Math.Max(0, StrokeThickness)
+        var strokeThickness = double.IsFinite(EffectiveStrokeThickness)
+            ? Math.Max(0, EffectiveStrokeThickness)
             : 0;
         var width = Math.Floor(Math.Max(0, size.Width - strokeThickness));
         var height = Math.Floor(Math.Max(0, size.Height - strokeThickness));

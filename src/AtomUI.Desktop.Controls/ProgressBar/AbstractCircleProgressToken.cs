@@ -1,0 +1,37 @@
+using AtomUI.Theme.DesignTokens;
+using Avalonia.Media;
+
+namespace AtomUI.Desktop.Controls;
+
+/// <summary>
+/// Own Tokens of the circle-shaped progress controls (<see cref="CircleProgress"/> and <see cref="DashboardProgress"/>).
+/// </summary>
+[ControlDesignToken]
+internal abstract class AbstractCircleProgressToken : AbstractProgressToken
+{
+    /// <summary>
+    /// 圆形进度条文字颜色
+    /// Text color of the circle percentage label (antd Progress circleTextColor)
+    /// </summary>
+    public Color CircleTextColor { get; set; }
+
+    /// <summary>
+    /// 圆形进度条文本最小大小
+    /// Minimum font size of the circle percentage label
+    /// </summary>
+    public double CircleMinimumTextFontSize { get; set; }
+
+    /// <summary>
+    /// 圆形进度条图标最小大小
+    /// Minimum size of the circle status icon
+    /// </summary>
+    public double CircleMinimumIconSize { get; set; }
+
+    public override void CalculateTokenValues(bool isDarkMode)
+    {
+        base.CalculateTokenValues(isDarkMode);
+        CircleTextColor           = EffectiveGlobalToken.ColorText;
+        CircleMinimumIconSize     = EffectiveGlobalToken.SizeXS;
+        CircleMinimumTextFontSize = EffectiveGlobalToken.FontSizeSM - 2;
+    }
+}

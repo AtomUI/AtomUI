@@ -1,3 +1,6 @@
+<!-- The shared base theme of every progress control. Its TargetType has no Token identity: global Tokens are read through
+     OwnerTokenResource and resolve to the hosting progress control (ProgressBar, StepsProgressBar, CircleProgress,
+     DashboardProgress). The Own Tokens (DefaultColor, RemainingColor, ...) are read by each control's own theme. -->
 <ControlTheme
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -25,7 +28,9 @@
     <Style Selector="^:is(atomc|AbstractProgressBar)">
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="ExceptionIconBrush" Value="{atom:OwnerTokenResource ColorError}" />
+        <Setter Property="SuccessIconBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
@@ -38,51 +43,47 @@
                 </atom:TokenTransitions>
             </Setter>
         </Style>
-        
+
         <Style Selector="^[IsEnabled=True]">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLabel}" />
-            <Setter Property="GrooveBrush" Value="{atom:ProgressBarTokenResource RemainingColor}" />
-            <Setter Property="SuccessStrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextLabel}" />
+            <Setter Property="SuccessStrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
         </Style>
-        
+
         <Style Selector="^[IsCompleted=True]">
             <Style Selector="^ /template/ LayoutTransformControl#PART_LayoutTransformControl">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
         </Style>
-        
+
+        <!-- Normal and Active keep the StrokeBrush of the control theme (the control's DefaultColor). -->
         <Style Selector="^[Status=Normal]">
-            <Setter Property="StrokeBrush" Value="{atom:ProgressBarTokenResource DefaultColor}" />
-            
             <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
-        
+
             <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
-            
+
             <Style Selector="^[IsCompleted=True]">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+                <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
                 <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="True" />
                 </Style>
             </Style>
         </Style>
-        
+
         <Style Selector="^[Status=Active]">
-            <Setter Property="StrokeBrush" Value="{atom:ProgressBarTokenResource DefaultColor}" />
-            
             <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
-        
+
             <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
-            
+
             <Style Selector="^[IsCompleted=True]">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+                <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
                 <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="True" />
                 </Style>
@@ -90,49 +91,61 @@
         </Style>
 
         <Style Selector="^[Status=Exception]">
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorError}" />
-            
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorError}" />
+
             <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
-        
+
             <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
-            
+
             <Style Selector="^[IsCompleted=True]">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+                <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
                 <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="False" />
                 </Style>
             </Style>
         </Style>
-        
+
         <Style Selector="^[Status=Success]">
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
-            
+            <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
+
             <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
-        
+
             <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
-            
+
             <Style Selector="^[IsCompleted=True]">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+                <Setter Property="StrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
                 <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
                     <Setter Property="IsVisible" Value="False" />
                 </Style>
             </Style>
         </Style>
-        
+
+        <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
+            <Setter Property="IconBrush"
+                    Value="{Binding ExceptionIconBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
+
+        <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
+            <Setter Property="IconBrush"
+                    Value="{Binding SuccessIconBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
+
         <Style Selector="^:disabled">
             <Setter Property="GrooveBrush"
-                    Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
             <Setter Property="StrokeBrush"
-                    Value="{atom:SharedTokenResource ControlItemBgActiveDisabled}" />
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:OwnerTokenResource ControlItemBgActiveDisabled}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
+            <Setter Property="ExceptionIconBrush" Value="{atom:OwnerTokenResource ControlItemBgActiveDisabled}" />
+            <Setter Property="SuccessIconBrush" Value="{atom:OwnerTokenResource ControlItemBgActiveDisabled}" />
         </Style>
     </Style>
 </ControlTheme>

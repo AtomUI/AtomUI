@@ -1,5 +1,3 @@
-using AtomUI.Data;
-using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -68,11 +66,37 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
 
     #endregion
 
+    #region 内部属性定义
+
+    // Gap between two steps and the minimum step width, filled by the control theme from the control's own Tokens.
+    internal static readonly StyledProperty<double> ChunkSpaceProperty =
+        AvaloniaProperty.Register<AbstractGeneralStepsProgressBar, double>(nameof(ChunkSpace), DEFAULT_CHUNK_SPACE);
+
+    internal static readonly StyledProperty<double> MinChunkWidthProperty =
+        AvaloniaProperty.Register<AbstractGeneralStepsProgressBar, double>(nameof(MinChunkWidth));
+
+    internal double ChunkSpace
+    {
+        get => GetValue(ChunkSpaceProperty);
+        set => SetValue(ChunkSpaceProperty, value);
+    }
+
+    internal double MinChunkWidth
+    {
+        get => GetValue(MinChunkWidthProperty);
+        set => SetValue(MinChunkWidthProperty, value);
+    }
+
+    #endregion
+
     #region 内部协作 API
 
-    internal static double ChunkSpace => DEFAULT_CHUNK_SPACE;
-
     internal double GetChunkWidth()
+    {
+        return Math.Max(GetPresetChunkWidth(), MinChunkWidth);
+    }
+
+    private double GetPresetChunkWidth()
     {
         var chunkWidth = 0d;
         if (!double.IsNaN(ChunkWidth))
@@ -107,7 +131,7 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
         }
         else
         {
-            chunkHeight = StrokeThickness;
+            chunkHeight = EffectiveStrokeThickness;
         }
 
         return chunkHeight;
@@ -141,7 +165,8 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
 
     static AbstractGeneralStepsProgressBar()
     {
-        AffectsMeasure<AbstractGeneralStepsProgressBar>(StepsProperty, ChunkWidthProperty, ChunkHeightProperty);
+        AffectsMeasure<AbstractGeneralStepsProgressBar>(StepsProperty, ChunkWidthProperty, ChunkHeightProperty,
+            ChunkSpaceProperty, MinChunkWidthProperty);
         AffectsArrange<AbstractGeneralStepsProgressBar>(PercentPositionProperty);
         AffectsRender<AbstractGeneralStepsProgressBar>(StepsStrokeBrushProperty);
     }
@@ -160,7 +185,7 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
             {
                 var chunkRect = new Rect(offsetX, offsetY, chunkWidth, chunkHeight);
                 context.FillRectangle(GrooveBrush!, chunkRect);
-                offsetX += chunkWidth + DEFAULT_CHUNK_SPACE;
+                offsetX += chunkWidth + ChunkSpace;
             }
         }
         else
@@ -173,7 +198,7 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
             {
                 var chunkRect = new Rect(offsetX, offsetY, chunkWidth, chunkHeight);
                 context.FillRectangle(GrooveBrush!, chunkRect);
-                offsetY += chunkHeight + DEFAULT_CHUNK_SPACE;
+                offsetY += chunkHeight + ChunkSpace;
             }
         }
     }
@@ -205,7 +230,7 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
             {
                 var chunkRect = new Rect(offsetX, offsetY, chunkWidth, chunkHeight);
                 context.FillRectangle(GetChunkBrush(i), chunkRect);
-                offsetX += chunkWidth + DEFAULT_CHUNK_SPACE;
+                offsetX += chunkWidth + ChunkSpace;
             }
         }
         else
@@ -218,7 +243,7 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
             {
                 var chunkRect = new Rect(offsetX, offsetY, chunkWidth, chunkHeight);
                 context.FillRectangle(GetChunkBrush(i), chunkRect);
-                offsetY += chunkHeight + DEFAULT_CHUNK_SPACE;
+                offsetY += chunkHeight + ChunkSpace;
             }
         }
     }
@@ -232,7 +257,7 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
             strokeThickness = ChunkHeight;
         }
 
-        StrokeThickness = strokeThickness;
+        EffectiveStrokeThickness = strokeThickness;
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -261,7 +286,8 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
         }
     }
 
-    // 需要评估是否需要
+    // Runtime text geometry is a theme-level fallback (projected to MinWidth / MinHeight by the control theme), not a
+    // replacement for the caller's constraints.
     private void CalculateMinBarThickness()
     {
         var thickness     = 0d;
@@ -269,32 +295,22 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
         if (Orientation == Orientation.Horizontal)
         {
             thickness += extraInfoSize.Height;
-            MinHeight =  thickness;
+            FallbackMinHeight = thickness;
+            FallbackMinWidth  = 0d;
         }
         else
         {
             thickness += extraInfoSize.Width;
-            MinWidth  =  thickness;
+            FallbackMinWidth  = thickness;
+            FallbackMinHeight = 0d;
         }
     }
 
     protected void CalculateSizeTypeThresholdValue()
     {
-        double fontSize   = default;
-        double fontSizeSM = default;
-        {
-            if (TokenResourceUtils.FindTokenResource(this, SharedTokenKind.FontSize) is double value)
-            {
-                fontSize = value;
-            }
-        }
-
-        {
-            if (TokenResourceUtils.FindTokenResource(this, SharedTokenKind.FontSizeSM) is double value)
-            {
-                fontSizeSM = value;
-            }
-        }
+        // The preset font sizes come from the control's effective Tokens through the theme (PresetFontSize / SM).
+        var fontSize   = PresetFontSize;
+        var fontSizeSM = PresetFontSizeSM;
         var defaultExtraInfoSize = CalculateExtraInfoSize(fontSize);
         var smallExtraInfoSize   = CalculateExtraInfoSize(fontSizeSM);
         if (Orientation == Orientation.Horizontal)
@@ -359,6 +375,15 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
         CalculateMinBarThickness();
     }
 
+    private protected override void NotifyLineMetricsChanged()
+    {
+        base.NotifyLineMetricsChanged();
+        CalculateSizeTypeThresholdValue();
+        CalculateMinBarThickness();
+        _progressBody?.InvalidateMeasure();
+        _progressBody?.InvalidateArrange();
+    }
+
     protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.NotifyPropertyChanged(change);
@@ -382,8 +407,8 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
         {
             var chunkWidth  = GetChunkWidth();
             var chunkHeight = GetChunkHeight();
-            targetWidth = chunkWidth * Steps + DEFAULT_CHUNK_SPACE * (Steps - 1);
-            if (IsProgressInfoPresented)
+            targetWidth = chunkWidth * Steps + ChunkSpace * (Steps - 1);
+            if (IsProgressInfoVisible)
             {
                 if (PercentPosition == LinePercentAlignment.Center)
                 {
@@ -401,8 +426,8 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
         {
             var chunkWidth  = GetChunkHeight();
             var chunkHeight = GetChunkWidth();
-            targetHeight = chunkHeight * Steps + DEFAULT_CHUNK_SPACE * (Steps - 1);
-            if (IsProgressInfoPresented)
+            targetHeight = chunkHeight * Steps + ChunkSpace * (Steps - 1);
+            if (IsProgressInfoVisible)
             {
                 if (PercentPosition == LinePercentAlignment.Center)
                 {
@@ -426,7 +451,7 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
         double deflateTop      = 0;
         double deflateRight    = 0;
         double deflateBottom   = 0;
-        var    strokeThickness = StrokeThickness;
+        var    strokeThickness = EffectiveStrokeThickness;
         if (Orientation == Orientation.Horizontal)
         {
             if (IsProgressInfoPresented)

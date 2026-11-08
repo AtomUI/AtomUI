@@ -66,6 +66,27 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     /// </summary>
     internal static readonly StyledProperty<double> IndicatorRatioProperty =
         AvaloniaProperty.Register<AbstractLineProgress, double>(nameof(IndicatorRatio));
+    // Status icon sizes of the large / small presets, filled by the control theme from the control's own Tokens.
+    internal static readonly StyledProperty<double> PresetLineInfoIconSizeProperty =
+        AvaloniaProperty.Register<AbstractLineProgress, double>(nameof(PresetLineInfoIconSize));
+
+    internal static readonly StyledProperty<double> PresetLineInfoIconSizeSMProperty =
+        AvaloniaProperty.Register<AbstractLineProgress, double>(nameof(PresetLineInfoIconSizeSM));
+
+    // Font sizes of the large / small presets, used to compute the size-type thresholds of an explicit bar thickness.
+    internal static readonly StyledProperty<double> PresetFontSizeProperty =
+        AvaloniaProperty.Register<AbstractLineProgress, double>(nameof(PresetFontSize));
+
+    internal static readonly StyledProperty<double> PresetFontSizeSMProperty =
+        AvaloniaProperty.Register<AbstractLineProgress, double>(nameof(PresetFontSizeSM));
+
+    // Text-geometry minimum computed at runtime. The control theme projects it to MinWidth / MinHeight with a theme
+    // Setter, so local values and application Styles keep their native precedence over this fallback.
+    internal static readonly StyledProperty<double> FallbackMinWidthProperty =
+        AvaloniaProperty.Register<AbstractLineProgress, double>(nameof(FallbackMinWidth));
+
+    internal static readonly StyledProperty<double> FallbackMinHeightProperty =
+        AvaloniaProperty.Register<AbstractLineProgress, double>(nameof(FallbackMinHeight));
 
     internal double LineProgressPadding
     {
@@ -97,6 +118,42 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         set => SetValue(IndicatorRatioProperty, value);
     }
 
+    internal double PresetLineInfoIconSize
+    {
+        get => GetValue(PresetLineInfoIconSizeProperty);
+        set => SetValue(PresetLineInfoIconSizeProperty, value);
+    }
+
+    internal double PresetLineInfoIconSizeSM
+    {
+        get => GetValue(PresetLineInfoIconSizeSMProperty);
+        set => SetValue(PresetLineInfoIconSizeSMProperty, value);
+    }
+
+    internal double PresetFontSize
+    {
+        get => GetValue(PresetFontSizeProperty);
+        set => SetValue(PresetFontSizeProperty, value);
+    }
+
+    internal double PresetFontSizeSM
+    {
+        get => GetValue(PresetFontSizeSMProperty);
+        set => SetValue(PresetFontSizeSMProperty, value);
+    }
+
+    internal double FallbackMinWidth
+    {
+        get => GetValue(FallbackMinWidthProperty);
+        set => SetValue(FallbackMinWidthProperty, value);
+    }
+
+    internal double FallbackMinHeight
+    {
+        get => GetValue(FallbackMinHeightProperty);
+        set => SetValue(FallbackMinHeightProperty, value);
+    }
+
     #endregion
 
     private protected SizeTypeThresholdValue _largeSizeTypeThresholdValue;
@@ -109,6 +166,9 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     static AbstractLineProgress()
     {
         AffectsRender<AbstractLineProgress>(IndicatorRatioProperty);
+        AffectsMeasure<AbstractLineProgress>(LineProgressPaddingProperty,
+            LineExtraInfoMarginProperty,
+            LineInfoIconSizeProperty);
     }
 
     // 根据当前的状态进行计算
@@ -165,7 +225,27 @@ public abstract class AbstractLineProgress : AbstractProgressBar
             {
                 NotifyOrientationChanged();
             }
+            else if (change.Property == LineInfoIconSizeProperty ||
+                     change.Property == LineProgressPaddingProperty ||
+                     change.Property == LineExtraInfoMarginProperty ||
+                     change.Property == PresetFontSizeProperty ||
+                     change.Property == PresetFontSizeSMProperty ||
+                     change.Property == FontSizeProperty)
+            {
+                NotifyLineMetricsChanged();
+            }
         }
+    }
+
+    /// <summary>
+    /// Recomputes the text geometry after a Token-driven metric (icon size, padding, gap, font size) changed, so a theme
+    /// change re-lays the bar out instead of keeping values computed when the template was applied.
+    /// </summary>
+    private protected virtual void NotifyLineMetricsChanged()
+    {
+        _extraInfoSize = CalculateExtraInfoSize(FontSize);
+        InvalidateMeasure();
+        InvalidateArrange();
     }
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

@@ -1,6 +1,4 @@
-using AtomUI.Data;
 using AtomUI.Media;
-using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -65,7 +63,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         double targetHeight = 0;
         if (Orientation == Orientation.Horizontal)
         {
-            targetHeight = StrokeThickness;
+            targetHeight = EffectiveStrokeThickness;
             if (!PercentPosition.IsInner && IsProgressInfoPresented)
             {
                 if (PercentPosition.Alignment == LinePercentAlignment.Center)
@@ -85,7 +83,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         }
         else
         {
-            targetWidth = StrokeThickness;
+            targetWidth = EffectiveStrokeThickness;
             if (!PercentPosition.IsInner && IsProgressInfoPresented)
             {
                 if (PercentPosition.Alignment == LinePercentAlignment.Center)
@@ -244,7 +242,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
             }
         }
 
-        StrokeThickness = strokeThickness;
+        EffectiveStrokeThickness = strokeThickness;
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -309,21 +307,9 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     protected void CalculateSizeTypeThresholdValue()
     {
-        double fontSize   = default;
-        double fontSizeSM = default;
-        {
-            if (TokenResourceUtils.FindTokenResource(this, SharedTokenKind.FontSize) is double value)
-            {
-                fontSize = value;
-            }
-        }
-
-        {
-            if (TokenResourceUtils.FindTokenResource(this, SharedTokenKind.FontSizeSM) is double value)
-            {
-                fontSizeSM = value;
-            }
-        }
+        // The preset font sizes come from the control's effective Tokens through the theme (PresetFontSize / SM).
+        var fontSize   = PresetFontSize;
+        var fontSizeSM = PresetFontSizeSM;
         var defaultExtraInfoSize = CalculateExtraInfoSize(fontSize);
         var smallExtraInfoSize   = CalculateExtraInfoSize(fontSizeSM);
         if (Orientation == Orientation.Horizontal)
@@ -360,7 +346,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         double deflateTop      = 0;
         double deflateRight    = 0;
         double deflateBottom   = 0;
-        var    strokeThickness = StrokeThickness;
+        var    strokeThickness = EffectiveStrokeThickness;
         if (Orientation == Orientation.Horizontal)
         {
             if (IsProgressInfoPresented)
@@ -564,6 +550,15 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         CalculateMinBarThickness();
     }
 
+    private protected override void NotifyLineMetricsChanged()
+    {
+        base.NotifyLineMetricsChanged();
+        CalculateSizeTypeThresholdValue();
+        CalculateMinBarThickness();
+        CalculateStrokeThickness();
+        _progressBody?.InvalidateArrange();
+    }
+
     protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.NotifyPropertyChanged(change);
@@ -591,7 +586,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
             change.Property == MaximumProperty ||
             change.Property == SuccessThresholdProperty ||
             change.Property == OrientationProperty ||
-            change.Property == StrokeThicknessProperty ||
+            change.Property == EffectiveStrokeThicknessProperty ||
             change.Property == StrokeLineCapProperty ||
             change.Property == IsProgressInfoVisibleProperty ||
             change.Property == ProgressInfoContentProperty ||
@@ -637,7 +632,8 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         }
     }
 
-    // 需要评估是否需要
+    // Runtime text geometry is a theme-level fallback (projected to MinWidth / MinHeight by the control theme), not a
+    // replacement for the caller's constraints.
     private void CalculateMinBarThickness()
     {
         var thickness     = LineProgressPadding * 2;
@@ -645,14 +641,14 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         if (Orientation == Orientation.Horizontal)
         {
             thickness += extraInfoSize.Height;
-            MinHeight =  thickness;
-            MinWidth  =  extraInfoSize.Width;
+            FallbackMinHeight = thickness;
+            FallbackMinWidth  = extraInfoSize.Width;
         }
         else
         {
             thickness += extraInfoSize.Width;
-            MinWidth  =  thickness;
-            MinHeight =  extraInfoSize.Height;
+            FallbackMinWidth  = thickness;
+            FallbackMinHeight = extraInfoSize.Height;
         }
     }
 

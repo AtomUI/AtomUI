@@ -10,17 +10,25 @@
             <themes:AbstractCircleProgressTheme TargetType="atom:CircleProgress" />
         </ControlTheme.BasedOn>
 
+        <Setter Property="GrooveBrush" Value="{atom:CircleProgressTokenResource RemainingColor}" />
+        <Setter Property="StrokeBrush" Value="{atom:CircleProgressTokenResource DefaultColor}" />
+        <Setter Property="CircleMinimumTextFontSize" Value="{atom:CircleProgressTokenResource CircleMinimumTextFontSize}" />
+        <Setter Property="CircleMinimumIconSize" Value="{atom:CircleProgressTokenResource CircleMinimumIconSize}" />
+        <Style Selector="^[IsEnabled=True]">
+            <Setter Property="Foreground" Value="{atom:CircleProgressTokenResource CircleTextColor}" />
+        </Style>
+
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:CircleProgress">
                 <atomc:CircleProgressPanel Classes.semantic-body="True">
                     <Path Name="PART_ProgressRail"
-                          StrokeThickness="{TemplateBinding StrokeThickness}"
+                          StrokeThickness="{TemplateBinding EffectiveStrokeThickness}"
                           Classes.semantic-rail="True" />
                     <Path Name="PART_ProgressTrack"
-                          StrokeThickness="{TemplateBinding StrokeThickness}"
+                          StrokeThickness="{TemplateBinding EffectiveStrokeThickness}"
                           Classes.semantic-track="True" />
                     <Path Name="PART_ProgressSuccess"
-                          StrokeThickness="{TemplateBinding StrokeThickness}" />
+                          StrokeThickness="{TemplateBinding EffectiveStrokeThickness}" />
                     <Canvas Name="PART_ProgressIndicator"
                             Classes.semantic-indicator="True"
                             IsVisible="{TemplateBinding IsProgressInfoPresented}">

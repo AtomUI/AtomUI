@@ -1,3 +1,5 @@
+<!-- Shared base theme of the circle-shaped progress controls (CircleProgress, DashboardProgress). The circle Own Tokens are
+     filled by each control's own theme. -->
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
@@ -11,16 +13,14 @@
     </ControlTheme.BasedOn>
 
     <Style Selector="^:is(atomc|AbstractCircleProgress)">
-        <Setter Property="CircleMinimumTextFontSize"
-                Value="{atom:ProgressBarTokenResource CircleMinimumTextFontSize}" />
-        <Setter Property="CircleMinimumIconSize"
-                Value="{atom:ProgressBarTokenResource CircleMinimumIconSize}" />
+        <!-- The percentage size follows the circle size: a theme Setter so a local FontSize still wins. -->
+        <Setter Property="FontSize" Value="{Binding ExtraInfoFontSize, RelativeSource={RelativeSource Self}}" />
 
         <Style Selector="^ /template/ Path#PART_ProgressRail">
             <Setter Property="Stroke"
                     Value="{Binding GrooveBrush, RelativeSource={RelativeSource TemplatedParent}}" />
             <Setter Property="StrokeThickness"
-                    Value="{Binding StrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{Binding EffectiveStrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
             <Setter Property="StrokeLineCap"
                     Value="{Binding ShapeStrokeLineCap, RelativeSource={RelativeSource TemplatedParent}}" />
         </Style>
@@ -29,7 +29,7 @@
             <Setter Property="Stroke"
                     Value="{Binding StrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
             <Setter Property="StrokeThickness"
-                    Value="{Binding StrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{Binding EffectiveStrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
             <Setter Property="StrokeLineCap"
                     Value="{Binding ShapeStrokeLineCap, RelativeSource={RelativeSource TemplatedParent}}" />
         </Style>
@@ -38,23 +38,16 @@
             <Setter Property="Stroke"
                     Value="{Binding SuccessStrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
             <Setter Property="StrokeThickness"
-                    Value="{Binding StrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{Binding EffectiveStrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
             <Setter Property="StrokeLineCap"
                     Value="{Binding ShapeStrokeLineCap, RelativeSource={RelativeSource TemplatedParent}}" />
         </Style>
 
-        <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+        <Style Selector="^ /template/ atom|IconPresenter">
+            <Setter Property="Width"
+                    Value="{Binding ExtraInfoIconSize, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="Height"
+                    Value="{Binding ExtraInfoIconSize, RelativeSource={RelativeSource TemplatedParent}}" />
         </Style>
-
-        <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
-        </Style>
-        
-        <Style Selector="^ /template/ atom|IconPresenter:disabled">
-            <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ControlItemBgActiveDisabled}" />
-        </Style>
-
     </Style>
 </ControlTheme>

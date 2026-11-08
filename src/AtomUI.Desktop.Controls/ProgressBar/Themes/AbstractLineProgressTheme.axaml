@@ -1,3 +1,5 @@
+<!-- Shared base theme of the line-shaped progress controls (ProgressBar, StepsProgressBar). Global Tokens are read through
+     OwnerTokenResource; the line Own Tokens are filled into the Preset* / Line* properties by each control's own theme. -->
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
@@ -19,12 +21,12 @@
                            Foreground="{TemplateBinding PercentageLabelColor}"
                            IsEnabled="{TemplateBinding IsEnabled}" />
                 </LayoutTransformControl>
-                
+
                 <atom:IconPresenter
                     Name="PART_ExceptionCompletedIconPresenter"
                     Icon="{TemplateBinding ExceptionCompletedIcon}"
                     HorizontalAlignment="Left"/>
-                
+
                 <atom:IconPresenter
                     Name="PART_SuccessCompletedIconPresenter"
                     Icon="{TemplateBinding SuccessCompletedIcon}"
@@ -35,48 +37,38 @@
             </Canvas>
         </ControlTemplate>
     </Setter>
-    
+
     <Style Selector="^:is(atomc|AbstractLineProgress)">
-        <Setter Property="LineProgressPadding" Value="{atom:ProgressBarTokenResource LineProgressPadding}" />
-        <Setter Property="LineExtraInfoMargin" Value="{atom:ProgressBarTokenResource LineExtraInfoMargin}" />
-        
-        <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
-        </Style>
-        
-        <Style Selector="^ /template/ atom|IconPresenter#PART_SuccessCompletedIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
-        </Style>
-        
-        <Style Selector="^ /template/ atom|IconPresenter:disabled">
-            <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ControlItemBgActiveDisabled}" />
-        </Style>
-        
+        <Setter Property="PresetFontSize" Value="{atom:OwnerTokenResource FontSize}" />
+        <Setter Property="PresetFontSizeSM" Value="{atom:OwnerTokenResource FontSizeSM}" />
+        <!-- Text-geometry fallback: a theme Setter so local values and application Styles keep precedence. -->
+        <Setter Property="MinWidth" Value="{Binding FallbackMinWidth, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="MinHeight" Value="{Binding FallbackMinHeight, RelativeSource={RelativeSource Self}}" />
+
         <Style Selector="^[EffectiveSizeType=Large]">
-            <Setter Property="LineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="LineInfoIconSize" Value="{Binding PresetLineInfoIconSize, RelativeSource={RelativeSource Self}}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
             <Style Selector="^ /template/ atom|IconPresenter">
-                <Setter Property="Width" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
-                <Setter Property="Height" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
+                <Setter Property="Width" Value="{Binding PresetLineInfoIconSize, RelativeSource={RelativeSource TemplatedParent}}" />
+                <Setter Property="Height" Value="{Binding PresetLineInfoIconSize, RelativeSource={RelativeSource TemplatedParent}}" />
             </Style>
         </Style>
-        
+
         <Style Selector="^[EffectiveSizeType=Middle]">
-            <Setter Property="LineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+            <Setter Property="LineInfoIconSize" Value="{Binding PresetLineInfoIconSize, RelativeSource={RelativeSource Self}}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
             <Style Selector="^ /template/ atom|IconPresenter">
-                <Setter Property="Width" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
-                <Setter Property="Height" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
+                <Setter Property="Width" Value="{Binding PresetLineInfoIconSizeSM, RelativeSource={RelativeSource TemplatedParent}}" />
+                <Setter Property="Height" Value="{Binding PresetLineInfoIconSizeSM, RelativeSource={RelativeSource TemplatedParent}}" />
             </Style>
         </Style>
-        
+
         <Style Selector="^[EffectiveSizeType=Small]">
-            <Setter Property="LineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+            <Setter Property="LineInfoIconSize" Value="{Binding PresetLineInfoIconSizeSM, RelativeSource={RelativeSource Self}}" />
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
             <Style Selector="^ /template/ atom|IconPresenter">
-                <Setter Property="Width" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
-                <Setter Property="Height" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
+                <Setter Property="Width" Value="{Binding PresetLineInfoIconSizeSM, RelativeSource={RelativeSource TemplatedParent}}" />
+                <Setter Property="Height" Value="{Binding PresetLineInfoIconSizeSM, RelativeSource={RelativeSource TemplatedParent}}" />
             </Style>
         </Style>
     </Style>

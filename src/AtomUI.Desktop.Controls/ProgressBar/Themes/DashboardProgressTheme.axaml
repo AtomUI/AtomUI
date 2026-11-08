@@ -10,22 +10,30 @@
             <themes:AbstractCircleProgressTheme TargetType="atom:DashboardProgress" />
         </ControlTheme.BasedOn>
 
+        <Setter Property="GrooveBrush" Value="{atom:DashboardProgressTokenResource RemainingColor}" />
+        <Setter Property="StrokeBrush" Value="{atom:DashboardProgressTokenResource DefaultColor}" />
+        <Setter Property="CircleMinimumTextFontSize" Value="{atom:DashboardProgressTokenResource CircleMinimumTextFontSize}" />
+        <Setter Property="CircleMinimumIconSize" Value="{atom:DashboardProgressTokenResource CircleMinimumIconSize}" />
+        <Style Selector="^[IsEnabled=True]">
+            <Setter Property="Foreground" Value="{atom:DashboardProgressTokenResource CircleTextColor}" />
+        </Style>
+
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:DashboardProgress">
                 <atomc:CircleProgressPanel Classes.semantic-body="True">
                     <Path Name="PART_ProgressRail"
                           Stroke="{TemplateBinding GrooveBrush}"
-                          StrokeThickness="{TemplateBinding StrokeThickness}"
+                          StrokeThickness="{TemplateBinding EffectiveStrokeThickness}"
                           StrokeLineCap="{TemplateBinding ShapeStrokeLineCap}"
                           Classes.semantic-rail="True" />
                     <Path Name="PART_ProgressTrack"
                           Stroke="{TemplateBinding StrokeBrush}"
-                          StrokeThickness="{TemplateBinding StrokeThickness}"
+                          StrokeThickness="{TemplateBinding EffectiveStrokeThickness}"
                           StrokeLineCap="{TemplateBinding ShapeStrokeLineCap}"
                           Classes.semantic-track="True" />
                     <Path Name="PART_ProgressSuccess"
                           Stroke="{TemplateBinding SuccessStrokeBrush}"
-                          StrokeThickness="{TemplateBinding StrokeThickness}"
+                          StrokeThickness="{TemplateBinding EffectiveStrokeThickness}"
                           StrokeLineCap="{TemplateBinding ShapeStrokeLineCap}" />
                     <Canvas Name="PART_ProgressIndicator"
                             Classes.semantic-indicator="True"

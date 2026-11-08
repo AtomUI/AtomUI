@@ -414,7 +414,7 @@ git commit -m "test(Button): Button 家族 Token 生效测试全绿并转分析�
 | 10.7 | Navigation | `NavMenu`（E3：`Application.Current.TryGetResource(MotionDurationMid)` 与 200ms 回落删除）、`Menu`、`TabControl` / `TabItem` / `TabStripItem`（E3）、`Breadcrumb`、`Pagination`、`Tour` | 借鉴 `473c43b1f`（NavMenu 分组标题 P1）、`9c01e0cc7`（Tour 间距绑定随 Gap 重建） |
 | 10.8 | Layout / Container | `Card`、`Collapse`、`Splitter`（借鉴 `b1a6fc37a`：尺寸挂载期绑定 + `AffectsMeasure`）、`SplitView`（分隔线 `Width="1"` → `LineWidth`）、`Separator`、`Space`、`Masonry` | |
 | 10.9 | Data | `Table`（基础）、`List`、`Tree`、`Avatar`、`Timeline`、`Calendar`（E2 `CalendarRangeBarPanel` 字号 12 / 高度 20 / 内边距 8 → Own Token）、`DatePicker` / `TimePicker`、`Carousel`、`Statistic` | |
-| 10.10 | 其余 | `ScrollBar`、`Icon`、`Window` 装饰、`FloatButton` 之外的剩余控件；以及 Button 家族遗留的 DropdownButton / SplitButton 变体色 | 以 `ATOMUIGEN041`–`047` 报告为清单。DropdownButton、SplitButton 的变体色绑定的是 Button 的 Own Token，这些值由 Button 的有效全局 Token 派生，所以 `Controls[DropdownButton].Tokens[ColorText]` 不改变它们的默认文字色：把变体相关 Own Token 提取到一个抽象 `[ControlDesignToken]` 层，由 `ButtonToken` 与新的 `DropdownButtonToken` 终端分别继承，变体绑定改用各自 identity 的键，并补隔离测试。同一模式另见 Input 家族：NumericUpDown 借用 ButtonSpinner 的手柄 Own Token，AutoCompleteSearchEdit / AutoCompleteTextArea 借用 AutoComplete 的 Own Token；SearchEdit 的搜索按钮颜色跟随 Button、动效时长跟随 SearchEdit，需统一；Select 家族中 Cascader、TreeSelect 读取 SelectToken，因而跟随 `Controls[Select]`，同样提取抽象层 |
+| 10.10 | 其余 | `ScrollBar`、`Icon`、`Window` 装饰、`FloatButton` 之外的剩余控件；以及 Button 家族遗留的 DropdownButton / SplitButton 变体色 | 以 `ATOMUIGEN041`–`047` 报告为清单。DropdownButton、SplitButton 的变体色绑定的是 Button 的 Own Token，这些值由 Button 的有效全局 Token 派生，所以 `Controls[DropdownButton].Tokens[ColorText]` 不改变它们的默认文字色：把变体相关 Own Token 提取到一个抽象 `[ControlDesignToken]` 层，由 `ButtonToken` 与新的 `DropdownButtonToken` 终端分别继承，变体绑定改用各自 identity 的键，并补隔离测试。同一模式另见 Input 家族：NumericUpDown 借用 ButtonSpinner 的手柄 Own Token，AutoCompleteSearchEdit / AutoCompleteTextArea 借用 AutoComplete 的 Own Token；SearchEdit 的搜索按钮颜色跟随 Button、动效时长跟随 SearchEdit，需统一；Select 家族中 Cascader、TreeSelect 读取 SelectToken，因而跟随 `Controls[Select]`，同样提取抽象层；FloatButton 徽标颜色在主题切换时不重算（Tag/Badge 家族已改为快照色板，FloatButton 需接入同一 `PresetColorPalette`） |
 
 每个家族完成的定义：该家族生效测试全绿；`Controls[X]` 隔离测试通过；分析器对该家族目录转错误；`token.md` 更新；一个或多个 commit。
 
@@ -655,7 +655,7 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Desktop | RadioButton | RadioBgColor | 10.3 | Active（选中态圆点背景） |
 | Desktop | Slider | MarginPartWithMark | 10.3 | Reserved |
 | Desktop | ProgressBar | CircleTextColor, LineBorderRadius, ProgressActiveMotionDuration, ProgressStepMarginInlineEnd, ProgressStepMinWidth | 10.4 | CircleTextColor、LineBorderRadius、ProgressStepMarginInlineEnd、ProgressStepMinWidth → Active（按控件拆分到各自终端 Token）；ProgressActiveMotionDuration → Reserved |
-| Desktop | Tag | TagCloseIconSize | 10.5 | |
+| Desktop | Tag | TagCloseIconSize | 10.5 | Active（关闭图标尺寸） |
 | Desktop | Alert | CloseIconSize, MessageWithDescriptionMargin | 10.6 | |
 | Desktop | MessageCard | CardHeight | 10.6 | |
 | Desktop | PopupConfirm | PopupMinHeight, PopupMinWidth | 10.6 | |

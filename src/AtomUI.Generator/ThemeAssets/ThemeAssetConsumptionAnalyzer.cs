@@ -9,8 +9,8 @@ namespace AtomUI.Generator;
 
 /// <summary>
 /// Static checks over the parsed theme AXAML assets of one package:
-/// <c>ATOMUIGEN041</c> (global Token read kind versus the ControlTheme's Token identity, and load-time frozen
-/// <c>SharedTokenResourceValue</c> reads in any ControlTheme),
+/// <c>ATOMUIGEN041</c> (global Token read kind versus the ControlTheme's Token identity; load-time frozen
+/// <c>SharedTokenResourceValue</c> reads and TokenResource reads on transition durations in any ControlTheme),
 /// <c>ATOMUIGEN045</c> (visual literals) and <c>ATOMUIGEN046</c> (template node attributes that mask state Setters).
 /// The analysis is pure <see cref="XElement"/> traversal. Only provable patterns are reported; anything that cannot be
 /// resolved statically is left to review. The parsed documents never enter the incremental cache.
@@ -28,6 +28,11 @@ internal static class ThemeAssetConsumptionAnalyzer
     // `{atom:SharedTokenResourceValue Kind=MotionDurationMid}`: a value read once from the application at load.
     private static readonly Regex s_frozenTokenResource = new(
         @"\{\s*(?:[\w.-]+:)?SharedTokenResourceValue\b(?:\s+(?:Kind\s*=\s*)?(?<name>[\w.]+))?",
+        RegexOptions.CultureInvariant);
+
+    // Any TokenResource read: `{atom:SharedTokenResource X}`, `{atom:OwnerTokenResource X}`, `{atom:ButtonTokenResource Kind=X}`.
+    private static readonly Regex s_anyTokenResource = new(
+        @"\{\s*(?:[\w.-]+:)?(?<extension>\w*TokenResource)(?:Extension)?\b(?:\s+(?:Kind\s*=\s*)?(?<name>[\w.]+))?",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex s_hexColor = new(
@@ -250,7 +255,22 @@ internal static class ThemeAssetConsumptionAnalyzer
                         AtomUIDiagnosticDescriptors.ThemeAssetFrozenTokenRead,
                         LocateAttribute(attribute),
                         theme.TargetTypeName ?? "<unknown>",
-                        frozen.Groups["name"].Success ? frozen.Groups["name"].Value : "?"));
+                        frozen.Groups["name"].Success ? frozen.Groups["name"].Value : "?",
+                        "SharedTokenResourceValue"));
+                    continue;
+                }
+
+                var timing = IsTransitionTiming(element, attribute) ? s_anyTokenResource.Match(attribute.Value) : null;
+                if (timing is not null && timing.Success)
+                {
+                    // A transition is one instance shared by every target and has no resource host: no TokenResource
+                    // kind (and no shared exemption) gives it the running control's value.
+                    _report(Diagnostic.Create(
+                        AtomUIDiagnosticDescriptors.ThemeAssetFrozenTokenRead,
+                        LocateAttribute(attribute),
+                        theme.TargetTypeName ?? "<unknown>",
+                        timing.Groups["name"].Success ? timing.Groups["name"].Value : "?",
+                        timing.Groups["extension"].Value));
                     continue;
                 }
 
@@ -270,6 +290,13 @@ internal static class ThemeAssetConsumptionAnalyzer
                     replacement));
             }
         }
+
+        // `<DoubleTransition Duration="...">` / `Delay="..."`; attached properties (`atom:TokenTransitions.Duration`) carry
+        // a namespace and are not timing attributes of the transition itself.
+        private static bool IsTransitionTiming(XElement element, XAttribute attribute) =>
+            element.Name.LocalName.EndsWith("Transition", StringComparison.Ordinal) &&
+            attribute.Name.NamespaceName.Length == 0 &&
+            (attribute.Name.LocalName == "Duration" || attribute.Name.LocalName == "Delay");
 
         // ---- ATOMUIGEN045 -------------------------------------------------------------
 

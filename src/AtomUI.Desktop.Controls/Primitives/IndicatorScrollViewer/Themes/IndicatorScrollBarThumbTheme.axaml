@@ -12,9 +12,12 @@
                         Background="{TemplateBinding Background}"
                         CornerRadius="{TemplateBinding CornerRadius}">
                     <Border.Transitions>
-                        <Transitions>
-                            <atom:SolidColorBrushTransition Property="Background" Easing="LinearEasing" Duration="{atom:SharedTokenResource MotionDurationMid}"/>
-                        </Transitions>
+                        <atom:TokenTransitions>
+                            <Transitions>
+                                <atom:SolidColorBrushTransition Property="Background" Easing="LinearEasing"
+                                                                atom:TokenTransitions.Duration="MotionDurationMid" />
+                            </Transitions>
+                        </atom:TokenTransitions>
                     </Border.Transitions>
                 </Border>
             </ControlTemplate>

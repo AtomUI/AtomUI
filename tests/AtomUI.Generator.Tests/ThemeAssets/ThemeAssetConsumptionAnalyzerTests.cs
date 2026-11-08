@@ -235,6 +235,63 @@ public class ThemeAssetConsumptionAnalyzerTests
              .ShouldBe("Duration=\"{atom:SharedTokenResourceValue Kind=MotionDurationMid}\"");
     }
 
+    [Theory]
+    [InlineData("atom:Button", "Duration", "{atom:SharedTokenResource MotionDurationMid}", "SharedTokenResource")]
+    [InlineData("atom:InputControlFrame", "Duration", "{atom:OwnerTokenResource MotionDurationMid}", "OwnerTokenResource")]
+    [InlineData("atom:Button", "Duration", "{atom:ButtonTokenResource Kind=MotionDurationMid}", "ButtonTokenResource")]
+    [InlineData("atom:Button", "Delay", "{atom:ButtonTokenResource MotionDurationMid}", "ButtonTokenResource")]
+    public void Reports_TokenResource_Reads_On_Transition_Durations_With_The_TokenTransitions_Remedy(
+        string targetType, string attribute, string value, string extension)
+    {
+        var diagnostic = Analyze(Theme(targetType, $"""
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Frame">
+                        <Border.Transitions>
+                            <Transitions>
+                                <atom:SolidColorBrushTransition Property="Background" {attribute}="{value}" />
+                            </Transitions>
+                        </Border.Transitions>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+            """)).ShouldHaveSingleItem();
+
+        diagnostic.Id.ShouldBe(SharedRead);
+        var message = diagnostic.GetMessage();
+        message.ShouldContain(extension);
+        message.ShouldContain("MotionDurationMid");
+        message.ShouldContain("atom:TokenTransitions.Duration");
+        // The generic remedies would bind a value the transition cannot resolve.
+        message.ShouldNotContain("use OwnerTokenResource");
+        message.ShouldNotContain("use ButtonTokenResource");
+        message.ShouldNotContain("shared: reason");
+    }
+
+    [Fact]
+    public void A_Shared_Comment_Does_Not_Allow_A_SharedTokenResource_Transition_Duration()
+    {
+        Analyze(Theme("atom:Button", """
+            <!-- shared: every control animates alike -->
+            <DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResource MotionDurationMid}" />
+            """)).ShouldHaveSingleItem().GetMessage().ShouldContain("atom:TokenTransitions.Duration");
+    }
+
+    [Fact]
+    public void Does_Not_Report_Token_Declared_Or_Literal_Transition_Durations()
+    {
+        Analyze(Theme("atom:Button", """
+            <Setter Property="Transitions">
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="Width" Duration="0:0:0.2" Delay="0:0:0.1" />
+                    </Transitions>
+                </atom:TokenTransitions>
+            </Setter>
+            """)).ShouldBeEmpty();
+    }
+
     [Fact]
     public void Does_Not_Report_TokenTransitions_Nor_SharedTokenResourceValue_In_Application_Styles()
     {

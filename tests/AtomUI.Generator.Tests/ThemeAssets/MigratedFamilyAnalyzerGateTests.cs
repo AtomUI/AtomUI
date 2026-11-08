@@ -21,14 +21,21 @@ public class MigratedFamilyAnalyzerGateTests
 
     /// <summary>Directories (relative to the package) of migrated families.</summary>
     private static readonly string[] s_familyDirectories =
-        ["Buttons", "DropdownButton", "SplitButton", "FloatButton", "OptionButtonGroup"];
+    [
+        // Button family
+        "Buttons", "DropdownButton", "SplitButton", "FloatButton", "OptionButtonGroup",
+        // Input family (InputControlFrame's theme lives with AddOnDecoratedBox)
+        "Input", "ButtonSpinner", "NumericUpDown", "AutoComplete", "Primitives/AddOnDecoratedBox"
+    ];
 
     /// <summary>Token identities declared in those directories.</summary>
     private static readonly string[] s_familyControls =
     [
         "Button", "HyperLinkButton", "IconButton", "ToggleIconButton", "DropdownButton", "SplitButton", "FloatButton",
         "BackTopFloatButton", "FloatButtonGroup", "FloatButtonHost", "FloatButtonGroupHost", "BackTopFloatButtonHost",
-        "OptionButton", "OptionButtonGroup"
+        "OptionButton", "OptionButtonGroup",
+        "LineEdit", "TextBox", "TextArea", "SearchEdit", "ButtonSpinner", "NumericUpDown", "AutoComplete",
+        "AutoCompleteSearchEdit", "AutoCompleteTextArea"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -73,7 +80,12 @@ public class MigratedFamilyAnalyzerGateTests
         // Sanity: a control without Own Tokens still has a Token identity, so its theme must use its own TokenResource.
         IdentityControls.Value.ShouldContain("IconButton");
         IdentityControls.Value.ShouldContain("OptionButtonGroup");
+        IdentityControls.Value.ShouldContain("SearchEdit");
+        IdentityControls.Value.ShouldContain("NumericUpDown");
         IdentityControls.Value.ShouldNotContain("FloatButtonItemsControl");
+        // Input primitives have no identity and read their owner's globals.
+        IdentityControls.Value.ShouldNotContain("InputControlFrame");
+        IdentityControls.Value.ShouldNotContain("AddOnDecoratedBox");
     }
 
     [Fact]

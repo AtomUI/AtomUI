@@ -54,7 +54,9 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     // 普通 Setter 会随 BasedOn 把注册控件的身份带给部件，使部件不再继承宿主身份。
     private void EnsureTokenOwnerSetter(object key, ControlTheme theme)
     {
-        if (key is not Type controlType)
+        // Owner-transparent containers (Popup) keep the host's owner flowing into the content they host.
+        if (key is not Type controlType ||
+            controlType.IsDefined(typeof(TokenOwnerTransparentAttribute), inherit: false))
         {
             return;
         }

@@ -17,6 +17,7 @@ public class ThemeScopeTokenOwnerTests
 {
     private static readonly ControlTokenIdentity s_lineEditIdentity = new("AtomUI", "LineEdit");
     private static readonly ControlTokenIdentity s_buttonIdentity = new("AtomUI", "Button");
+    private static readonly ControlTokenIdentity s_containerIdentity = new("AtomUI", "Popup");
 
     [Fact]
     public void Default_ControlTheme_Injects_TokenOwner_Once()
@@ -152,6 +153,64 @@ public class ThemeScopeTokenOwnerTests
         });
     }
 
+    [Fact]
+    public void Owner_Transparent_Container_Gets_No_Injected_Owner()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var manager = CreateManager();
+            var theme = new ControlTheme(typeof(TransparentContainerTestControl));
+
+            manager.NotifyControlThemeResolved(typeof(TransparentContainerTestControl), theme);
+
+            OwnerSetters(theme).ShouldBeEmpty();
+        });
+    }
+
+    [Fact]
+    public void Content_Of_An_Owner_Transparent_Container_Inherits_The_Host_Owner()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var manager = CreateManager();
+            var primitive = new FrameTestPrimitive();
+            var container = new TransparentContainerTestControl
+            {
+                Theme = ResolveTheme(manager, typeof(TransparentContainerTestControl), () => primitive)
+            };
+            var control = new LineEditThemeTestControl
+            {
+                Theme = ResolveTheme(manager, typeof(LineEditThemeTestControl), () => container)
+            };
+
+            using var host = Show(control);
+            container.ApplyTemplate();
+
+            container.GetValue(ThemeScope.TokenOwnerProperty).ShouldBe(s_lineEditIdentity);
+            primitive.GetValue(ThemeScope.TokenOwnerProperty).ShouldBe(s_lineEditIdentity);
+        });
+    }
+
+    [Fact]
+    public void Content_Of_A_Standalone_Owner_Transparent_Container_Has_No_Owner()
+    {
+        // Without a host the content has no owner, so owner reads fall back to the global values.
+        HeadlessTestApp.Run(() =>
+        {
+            var manager = CreateManager();
+            var primitive = new FrameTestPrimitive();
+            var container = new TransparentContainerTestControl
+            {
+                Theme = ResolveTheme(manager, typeof(TransparentContainerTestControl), () => primitive)
+            };
+
+            using var host = Show(container);
+
+            primitive.GetValue(ThemeScope.TokenOwnerProperty).ShouldBeNull();
+            ThemeScope.GetTokenOwner(primitive).ShouldBeNull();
+        });
+    }
+
     private static Setter[] OwnerSetters(ControlTheme theme) =>
         theme.Children.OfType<Style>()
              .SelectMany(static style => style.Setters.OfType<Setter>())
@@ -183,7 +242,8 @@ public class ThemeScopeTokenOwnerTests
     {
         var registry = TypedThemeSnapshotCacheTests.CreateRegistry([
             new ControlTokenDescriptor(typeof(LineEditThemeTestControl), s_lineEditIdentity),
-            new ControlTokenDescriptor(typeof(ButtonThemeTestControl), s_buttonIdentity)
+            new ControlTokenDescriptor(typeof(ButtonThemeTestControl), s_buttonIdentity),
+            new ControlTokenDescriptor(typeof(TransparentContainerTestControl), s_containerIdentity)
         ]);
         var input = TypedThemeSnapshotCacheTests.CreateInput(registry);
         var snapshot = new ThemeCompiler().Compile(input).Snapshot!;
@@ -209,5 +269,11 @@ public class ThemeScopeTokenOwnerTests
 }
 
 internal sealed class FrameTestPrimitive : TemplatedControl
+{
+}
+
+/// <summary>A registered, owner-transparent container (the role of the AtomUI Popup).</summary>
+[TokenOwnerTransparent]
+internal sealed class TransparentContainerTestControl : TemplatedControl
 {
 }

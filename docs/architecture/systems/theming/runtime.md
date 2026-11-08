@@ -1055,7 +1055,10 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
   AutoCompleteLineEditBox 仍是 LineEdit）。Control 作者与生成器都不写这段代码；用户完全替换默认 ControlTheme
   （不 `BasedOn`）时失去该值，基元回落为共享全局值。
 - 基元与部件在模板内沿逻辑树继承到该值；Popup 内容经逻辑父级继承，独立 TopLevel 经现有 lease 继承。
-- 注册控件作为模板部件（IconPresenter、IconButton、ScrollViewer、Popup 等）携带自己的 identity，Setter 目标或模板节点
+- owner 透明容器：类型标记 internal `[TokenOwnerTransparent]` 的注册控件（`atom:Popup`）不注入 owner，它承载的内容
+  （下拉候选项、弹层框体）沿 Popup 的逻辑父级继承宿主的 owner，独立使用时没有 owner、回落为全局值；容器自身的视觉以自己的
+  `XxxTokenResource`（`PopupTokenResource`）显式读取。
+- 注册控件作为模板部件（IconPresenter、IconButton、ScrollViewer 等）携带自己的 identity，Setter 目标或模板节点
   位于这类部件之上或之内时，`OwnerTokenResource` 解析到该部件。需要跟随宿主的值在无身份层（宿主本身或无身份部件）上
   读取后向下绑定，或显式读取宿主的 `XxxTokenResource`。
 - 以显式 `Theme` 赋值且不 `BasedOn` 已解析默认主题的注册控件不经过注入，继承外层 owner：SearchEdit 的搜索按钮使用

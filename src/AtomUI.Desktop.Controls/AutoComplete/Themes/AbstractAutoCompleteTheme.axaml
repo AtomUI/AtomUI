@@ -22,7 +22,7 @@
             <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
             <Setter Property="OverlayHostShadow" Value="{atom:PopupTokenResource OverlayHostShadow}" />
         </Style>
-        <!-- Resolved on the control and bound into the frame: the frame lives inside the registered Popup. -->
+        <!-- Resolved on the control and bound into the frame inside the (owner-transparent) Popup. -->
         <Setter Property="PopupBackground" Value="{atom:OwnerTokenResource ColorBgElevated}" />
         <Style Selector="^ /template/ Border#PopupFrame">
             <Setter Property="Background"

@@ -38,15 +38,22 @@ public partial class SelectFamilyEffectTests
             WaitForPopup(select);
             var option = TopLevel.GetTopLevel(select)!.GetVisualDescendants().OfType<SelectCandidateListItem>()
                                 .First(static item => item.IsSelected);
-            // The option is in the popup layer, not under the Select, and the registered Popup is its Token owner: owner
-            // reads inside the drop-down would follow Controls[Popup], so the option reads SelectTokenResource explicitly.
+            // The option is in the popup layer, not under the Select. The Popup is an owner-transparent container, so the
+            // option inherits the Select's Token owner through the Popup's logical parent.
             option.GetVisualAncestors().ShouldNotContain(select);
-            ThemeScope.GetTokenOwner(option).ShouldBe(PopupTokens.Identity);
+            ThemeScope.GetTokenOwner(option).ShouldBe(SelectTokens.Identity);
             using var baseline = capture();
 
             provider.Config = IsolationConfig(control: (ComboBoxTokens.Identity, "ControlItemBgActive"));
             using var comboBox = capture();
             ChangedRatioOf(baseline, comboBox, option).ShouldBe(0d, "Controls[ComboBox] reached the Select option.");
+
+            foreach (var token in new[] { "ControlItemBgActive", "ColorText" })
+            {
+                provider.Config = IsolationConfig(control: (PopupTokens.Identity, token));
+                using var popup = capture();
+                ChangedRatioOf(baseline, popup, option).ShouldBe(0d, $"Controls[Popup].{token} reached the Select option.");
+            }
 
             provider.Config = IsolationConfig(control: (SelectTokens.Identity, "ControlItemBgActive"));
             using var own = capture();
@@ -60,6 +67,59 @@ public partial class SelectFamilyEffectTests
                                                   .First(static item => !item.IsSelected && item.IsEnabled))
                 .ShouldBeGreaterThan(0d, "Controls[Select].ColorText did not reach an option in the drop-down.");
         });
+    }
+
+    [Fact]
+    public void Controls_Select_MotionDurationMid_Reaches_A_Transition_Inside_The_Dropdown_But_Controls_Popup_Does_Not()
+    {
+        // The option's background transition is declared with atom:TokenTransitions on the identity-less option item; its
+        // duration resolves through the inherited owner, which is the Select across the owner-transparent Popup.
+        var select = new Select { Width = 200, OptionsSource = s_selectOptions, IsMotionEnabled = true };
+        select.IsPopupPinnedOpen = true;
+        var provider = new ThemeConfigProvider { Config = new ThemeConfigBuilder().Build(), Child = select };
+        var layers   = new VisualLayerManager { Child = provider };
+        typeof(VisualLayerManager)
+            .GetProperty("EnablePopupOverlayLayer", BindingFlags.Instance | BindingFlags.NonPublic)
+            .ShouldNotBeNull()
+            .SetValue(layers, true);
+        var window = new AvaloniaWindow { Width = 400, Height = 400, Content = layers };
+        try
+        {
+            window.Show();
+            WaitForPopup(select);
+            var option = TopLevel.GetTopLevel(select)!.GetVisualDescendants().OfType<SelectCandidateListItem>().First();
+            var baseline = BackgroundDuration(option).ShouldNotBeNull();
+            baseline.ShouldBeGreaterThan(TimeSpan.Zero);
+
+            provider.Config = MotionConfig(PopupTokens.Identity);
+            SettleWindow(window);
+            BackgroundDuration(option).ShouldBe(baseline, "Controls[Popup].MotionDurationMid reached the Select option.");
+
+            provider.Config = MotionConfig(SelectTokens.Identity);
+            var stopwatch = Stopwatch.StartNew();
+            while (BackgroundDuration(option) == baseline && stopwatch.Elapsed < TimeSpan.FromSeconds(10))
+            {
+                Dispatcher.UIThread.RunJobs();
+                Thread.Sleep(5);
+            }
+            BackgroundDuration(option).ShouldBe(TimeSpan.FromMilliseconds(500));
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        static ThemeConfig MotionConfig(ControlTokenIdentity identity) =>
+            new ThemeConfigBuilder()
+                .WithControl(identity, new ControlThemeConfigBuilder()
+                                       .WithToken(nameof(SharedTokenKind.MotionDurationMid), "00:00:00.5000000").Build())
+                .Build();
+
+        static TimeSpan? BackgroundDuration(Control control) =>
+            control.Transitions?.OfType<Avalonia.Animation.TransitionBase>()
+                   .FirstOrDefault(static transition =>
+                       transition.Property == Avalonia.Controls.Primitives.TemplatedControl.BackgroundProperty)?.Duration;
     }
 
     [Fact]

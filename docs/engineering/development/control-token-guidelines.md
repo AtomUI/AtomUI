@@ -230,9 +230,11 @@ TokenResourceExtension、TokenKey 和 OwnTokenKind 的使用都应保留对应�
   有效值（SearchEdit 里的 Button 读 `ButtonTokenResource`）。用户不经 `BasedOn` 完全替换默认 ControlTheme 时，基元回落为全局值。
 - 注册控件作为部件（IconPresenter、IconButton、ScrollViewer、Popup）携带自己的 identity：Setter 目标或模板节点在它们之上
   或之内时，`OwnerTokenResource` 解析到该部件。需要跟随宿主的值在无身份层读取后向下绑定，或显式读宿主的 `XxxTokenResource`。
-- `atom:Popup` 同样是注册控件：弹层内容（下拉候选项、弹层框体）继承的 owner 是 Popup，不是宿主。只属于一个宿主的弹层内容
-  以宿主的 `XxxTokenResource` 显式读取（Select 的候选项读 `SelectTokenResource`）；弹层中的注册控件（ComboBoxItem、
-  CascaderView）用自己的 identity 读取 Global Token，宿主的 Own Token 仍以宿主 TokenResource 读取。
+- owner 透明容器：纯容器类注册控件（`atom:Popup`）以 internal `[TokenOwnerTransparent]` 标记，ThemeManager 不为它注入
+  owner，弹层内容（下拉候选项、弹层框体）经 Popup 的逻辑父级继承宿主的 owner；容器自身的视觉以自己的 `XxxTokenResource`
+  显式读取（Popup 读 `PopupTokenResource`）。只属于一个宿主的弹层内容仍以宿主的 `XxxTokenResource` 显式读取（Select 的候选项读
+  `SelectTokenResource`），不依赖继承链；弹层中的注册控件（ComboBoxItem、CascaderView）用自己的 identity 读取 Global Token，
+  宿主的 Own Token 仍以宿主 TokenResource 读取。
 - 只属于一个宿主的无身份部件可以直接读宿主的 `XxxTokenResource`；被多个宿主共用的部件（SelectHandle、InputControlFrame）
   用 `OwnerTokenResource`。
 - 共享主题被无身份的派生部件复用时（TextBoxTheme 之于 EmbeddedTextBox，ButtonSpinnerTheme 之于 NumericUpDownSpinner），

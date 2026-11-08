@@ -591,7 +591,7 @@ public abstract class AbstractAutoComplete : TemplatedControl,
 
     /// <summary>
     /// Background of the candidate popup frame, resolved on this control so it follows the control's Token scope
-    /// (the frame itself lives inside the registered Popup, whose own identity owner reads would resolve to).
+    /// (the frame lives inside the owner-transparent Popup, which also hands this control's owner to its content).
     /// </summary>
     internal static readonly StyledProperty<IBrush?> PopupBackgroundProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, IBrush?>(nameof(PopupBackground));

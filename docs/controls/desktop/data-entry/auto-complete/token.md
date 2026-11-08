@@ -36,8 +36,8 @@ Token 作用域（2026-11-08 输入家族迁移后）：
 
 - 共享的 `AbstractAutoCompleteTheme` 以 `OwnerTokenResource` 读取全局值（`EnableMotion`、`ColorTextPlaceholder`、
   `ColorBgElevated`），在 AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea 上分别解析为各自的有效值。
-  候选弹层边框背景先解析到控件的内部属性 `PopupBackground` 再绑定进弹层：弹层内容位于注册控件 Popup 之内，
-  owner 读取会解析到 Popup。`PlaceholderForeground` 经模板绑定交给内部输入框。
+  候选弹层边框背景先解析到控件的内部属性 `PopupBackground` 再绑定进弹层（Popup 是 owner 透明容器，弹层内容同样继承
+  AutoComplete 的 owner；控件上解析保持读取点集中在控件主题）。`PlaceholderForeground` 经模板绑定交给内部输入框。
 - 输入框是嵌套的注册控件（LineEdit / SearchEdit / TextArea，经 `StyleKeyOverride` 使用它们的默认主题），输入表面跟随
   `Controls[LineEdit]` 等，而不是 `Controls[AutoComplete]`。
 - `OptionHeight` 当前只参与弹层最大高度（`OptionHeight × DisplayCandidateCount + 内边距`），候选项自身高度来自

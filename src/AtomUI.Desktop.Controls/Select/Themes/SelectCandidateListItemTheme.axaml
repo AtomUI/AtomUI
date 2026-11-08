@@ -3,9 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <!-- The option item exists only in the Select drop-down, which opens inside a registered Popup (owner reads would
-         resolve to the Popup): every visual reads the Select's effective Tokens explicitly, so Controls[Select] reaches
-         the options. The ListViewItem base theme only provides the template and layout. -->
+    <!-- The option item exists only in the Select drop-down: every visual reads the Select's effective Tokens explicitly
+         (the owner-transparent Popup also hands the Select's owner to it), so Controls[Select] reaches the options. The
+         ListViewItem base theme only provides the template and layout. -->
     <ControlTheme x:Key="{x:Type atom:SelectCandidateListItem}" TargetType="atom:SelectCandidateListItem">
         <ControlTheme.BasedOn>
             <atom:ListViewItemTheme TargetType="atom:SelectCandidateListItem" />

@@ -7,6 +7,7 @@ using AtomUI.Media;
 using AtomUI.Animations;
 using AtomUI.Native;
 using AtomUI.Reflection;
+using AtomUI.Theme;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
@@ -24,6 +25,9 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaPopup = Avalonia.Controls.Primitives.Popup;
 
+// A Token-owner transparent container: popup content (drop-down options, popup frames) inherits the host's Token
+// owner; the Popup's own visuals read PopupTokenResource explicitly.
+[TokenOwnerTransparent]
 public class Popup : AvaloniaPopup, IMotionAwareControl
 {
     #region 公共属性定义

@@ -26,9 +26,9 @@ release/6.0 的主题配置模型与 Ant Design 的主题配置一一对应：
 | 嵌套 `ConfigProvider`、`inherit` | `ThemeConfigProvider`、`Inherit` |
 | 运行时切换 | `ApplyThemeAsync`，事务式提交 |
 | 主题编辑器 | 无（Gallery 只有写死的示例配置） |
-| 预设 | 只有 DaybreakBlue 一个内置主题 |
+| 预设 | Core 内置 DaybreakBlue；Gallery 自带 4 个色板主题（PolarGreen、SunsetOrange、GoldenPurple、Magenta），以 `<AtomUIThemeDefinition>` 项编译为主题包 |
 
-还多了 antd 没有的：主题 XML 文件与用户主题目录热重载、编译主题包、局部作用域事务、Semantic Part。
+还多了 antd 没有的：主题 XML 文件与用户主题目录热重载、**编译主题包**（项目里声明 `<AtomUIThemeDefinition Include="x.theme.xml"/>`，生成器产出类型化注册与 `Register(builder)`，经 `AddCompiledThemePackage` 进入同一 Catalog）、局部作用域事务、Semantic Part。编译主题包就是现成的"主题 NuGet 包"机制。
 
 ### 2.2 精确性缺口（对源码的实测）
 
@@ -93,21 +93,36 @@ builder.ApplyExplicit()                           // 再写一遍显式值，保
 
 每个家族的验收是该家族的生效测试全部通过（3.6）。
 
-### 3.5 预设：在 Ant 体系内模拟其他设计语言
+### 3.5 预设：以主题 NuGet 包交付
 
-预设就是主题 XML，放在 `AtomUI.Core/Assets/Themes/`，与 DaybreakBlue 同级，按现有 Resolver 注册：
+预设用现有的**编译主题包**机制交付，一个预设一个 NuGet 包，别人引用即用；Core 仍只内置 DaybreakBlue。每个包就是一个小项目：
 
-| 预设 | 做法 | 明确不支持 |
+```text
+AtomUI.Themes.ShadcnLike/
++-- AtomUI.Themes.ShadcnLike.csproj          引用 AtomUI.Core；<AtomUIThemeDefinition Include="Themes/*.theme.xml" />
++-- Themes/ShadcnZinc.theme.xml              Appearance="Light"：zinc 中性色、主色近黑、BorderRadius 6、ControlHeight 36、
+|                                            细边框、EnableWaveSpirit=false、弱阴影；逐控件 <Control> 覆盖按需
++-- Themes/ShadcnSlate.theme.xml …           同一语言的其他色系
++-- ShadcnLikeThemes.cs                      UseShadcnLikeThemes() 扩展：调用生成的 Register(builder)
+\-- README.md                                模拟了什么、放弃了什么（焦点环形态、Command 式弹层）
+```
+
+生成器把 XML 编译为类型化注册，运行时不读 XML；注册进同一 Catalog，出现在 `AvailableThemes`，与用户目录主题、DaybreakBlue 走同一事务。暗色由现有 Dark 算法从该主题的 Seed 派生，不单独写暗色 XML；需要时同包可放 `Appearance="Dark"` 的独立定义。
+
+首批包：
+
+| 包 | 模拟 | 明确不支持（写进 README） |
 | --- | --- | --- |
-| DaybreakBlue（默认）及 Ant 色板系列 | 只换 `ColorPrimary` 等 Seed | 无 |
-| ShadcnLike | zinc 中性色、主色近黑、`BorderRadius 6`、`ControlHeight 36`、细边框、无 wave（`EnableWaveSpirit=false`）、弱阴影 | 焦点环形态、Command 式弹层 |
-| BootstrapLike | `#0d6efd` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 6`、渐变不可表达 | 渐变背景、内阴影 |
-| MaterialLike | 主色紫、`BorderRadius 4`、`ControlHeight 40`、全大写不可表达、阴影层级用三级 BoxShadow 近似 | ripple、浮动标签、全大写 |
-| Square、HeavyBorder、LargeType、Compact、ReducedMotion | 单一维度调整 | 无 |
+| `AtomUI.Themes.ShadcnLike` | zinc / slate / stone 三色系，近黑主色，细边框，无 wave，弱阴影 | 焦点环形态、Command 式弹层 |
+| `AtomUI.Themes.BootstrapLike` | `#0d6efd` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 6` | 渐变背景、内阴影 |
+| `AtomUI.Themes.MaterialLike` | 紫色主色、`BorderRadius 4`、`ControlHeight 40`、三级 BoxShadow 近似 elevation | ripple、浮动标签、全大写 |
+| `AtomUI.Themes.Variants` | Square、HeavyBorder、LargeType、ReducedMotion 等单维度变体，各一个主题 | 无 |
 
-每个预设在 XML 顶部注释写明"模拟了什么、放弃了什么"。它们证明的命题是：Ant Design 的 Token 词汇足以表达这些语言的大致观感；表达不了的部分写清楚，不改控件。
+Gallery 现有的 4 个色板主题也可以迁成 `AtomUI.Themes.AntColors` 包，Gallery 改为引用；是否迁移由用户定。第三方做自己的预设走完全相同的路径：一个项目、若干 `.theme.xml`、一个扩展方法。
 
-Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，顶部一排预设图标，点击后对页面内的 `ThemeConfigProvider` 应用对应主题；明暗、紧凑与预设正交组合；"复制主题"按钮导出当前 XML。
+它们证明的命题是：Ant Design 的 Token 词汇足以表达这些语言的大致观感；表达不了的部分写在包的 README 里，不改控件。
+
+Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，顶部一排预设图标来自已注册的主题包，点击后对页面内的 `ThemeConfigProvider` 应用对应主题；明暗、紧凑与预设正交组合；"复制主题"按钮导出当前 XML。
 
 ### 3.6 生效测试：声称可定制的都要被证明
 
@@ -142,7 +157,7 @@ Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，�
 | 生成器：Own 引用分析、全局 Token 消费图、生效测试骨架 | 新能力 | 支撑 3.1、3.6、3.7 |
 | 分析器：控件主题内 `SharedTokenResource`、`IsNaN` 哨兵、代码直接 `FindResource` 读 Token、未标注字面量 | 新能力 | 存量先警告，按家族转错误 |
 | `IThemeManager.Schema` 只读视图 | 新能力 | 编辑器与文档工具 |
-| 内置预设 XML 若干 | 新能力 | 3.5 |
+| 预设主题 NuGet 包若干（编译主题包机制，Core 不变） | 新能力 | 3.5 |
 | Gallery 主题预设页与主题编辑器 | 新能力 | 3.5、3.7 |
 
 不改动：`ThemeConfig` 模型、XML v1 格式、事务与作用域、资源扩展与 Token 键、Semantic Part、控件结构与模板、公开控件 API。
@@ -165,7 +180,7 @@ Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，�
 | 2 | 生成器：Own 引用分析（先警告）、消费图、`IThemeManager.Schema` | 产出约 100 个待裁决字段清单与消费图 |
 | 3 | 生效测试骨架与第一个家族（Button 家族）跑通；同时完成该家族的 B、C、D、E | Button 家族全绿 |
 | 4 | 按家族推进：Input 家族、Select、Checkbox/Radio/Switch、Steps、Progress、Tag、Card、Alert、Dialog、Notification，再其余 | 每家族全绿后分析器对其转错误 |
-| 5 | 内置预设 XML + Gallery 主题预设页 | 预设页可切换，"不支持"清单齐全 |
+| 5 | 预设主题包（ShadcnLike、BootstrapLike、MaterialLike、Variants）+ Gallery 主题预设页 | 包可独立引用；预设页可切换；README 的"不支持"清单齐全 |
 | 6 | Gallery 主题编辑器 | 往返测试通过 |
 | 7 | 可选控件包（DataGrid、ColorPicker、Extras）走第 3、4 步同样流程 | 同上 |
 
@@ -181,5 +196,5 @@ Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，�
 | 无消费者的 Own Token | Active / Reserved / 删除三选一，构建期强制 | 承诺面必须真实 |
 | 验收方式 | 生效测试（有变化）为门禁，像素对照只做回归 | 避免 custom-theme 分支的零差异门禁与逐表批准 |
 | 主题文件格式 | 保持 XML v1 | 与 antd 配置同构，基础设施已全 |
-| 预设的位置 | Core 内置 XML | 几 KB，与 DaybreakBlue 同路 |
+| 预设的交付 | 一个预设一个 NuGet 主题包，用现有编译主题包机制 | 引用即用，不膨胀 Core；第三方走同一路径；Gallery 已有 4 个色板主题证明机制可用 |
 | custom-theme 分支 | 不合并；只借它暴露的问题清单与工作台交互 | 修复与样式资产改动缠在一起 |

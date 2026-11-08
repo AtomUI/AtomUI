@@ -623,7 +623,7 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Desktop | Button | DefaultBorderColorDisabled, ExtraContentItemSpacing, ExtraContentMargin, ExtraContentMarginLG, ExtraContentMarginSM, FontWeight, GroupBorderColor, GutterToFlyout | 9 | FontWeight、DefaultBorderColorDisabled → Active；GroupBorderColor → Reserved；ExtraContentItemSpacing、ExtraContentMargin(LG/SM)、GutterToFlyout → 删除 |
 | Desktop | OptionButton | ButtonBackground, ButtonCheckedBackground, ButtonPadding, ContentLineHeightLG | 9 | ContentLineHeightLG → Active（修正 ContentPadding 运算数后）；ButtonPadding → Active（供 ContentPadding/LG 水平分量，对应 antd Radio buttonPaddingInline）；ButtonBackground、ButtonCheckedBackground → Reserved（对应 antd Radio buttonBg / buttonCheckedBg；组框分隔线与选中边框绘制在选项背后，不透明背景会遮盖） |
 | Desktop | FloatButton | CircleBadgeOffset, SquareBadgeOffset | 9 | 删除 |
-| Desktop | LineEdit | InputFontSizeSM | 10.1 | Active（补大小号字号预设：大 16、小 12） |
+| Desktop | LineEdit | InputFontSizeSM | 10.1 | Active（补大小号字号预设：小号默认跟随 InputFontSize（14），大号 FontSizeLG（16），对齐 antd input token） |
 | Desktop | ButtonSpinner | ControlWidth | 10.1 | Reserved（对应 antd InputNumber controlWidth） |
 | Desktop | TextArea | ResizeHandleSize | 10.1 | Active（resize 指示此前从未可见，已接通） |
 | Desktop | Select | FixedItemMargin, OptionPadding, SelectAffixPadding | 10.2 | |

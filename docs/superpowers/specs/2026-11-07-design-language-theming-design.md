@@ -1,19 +1,23 @@
 # 多设计语言主题架构设计
 
-日期：2026-11-07。状态：设计草案，待用户审阅；产品实现未启动。
+日期：2026-11-07。状态：设计草案第三版，待用户审阅；产品实现未启动。
 
 基线：`release/6.0`（`ae5ac0a32`，AtomUI 6.2.13，Avalonia 12.1.5）。分支 `feature/custom-theme` 的全部改动不作为参考，本文不复用其设计、术语或实现。
 
+版本演进：第一版"Ant 基线 + 按语言补丁样式"被否决（Ant 特殊化、控件目录膨胀、运行时改选择器）。第二版改为"一份控件代码、N 套对等 ControlTheme、独立主题包"，但把设计语言与主题定义当作正交轴。第三版按用户定义改为层级模型：**设计语言是主题定义之上的更广概念；主题定义在语言之下调色与微调，不涉及 ControlTheme；设计语言涉及。**
+
 ## 1. 目标
 
-让 AtomUI 应用在运行时切换多种设计语言（Ant Design、Material、shadcn、Bootstrap……），效果对齐 ant.design 首页 "Flexible theme customization" 的预设切换器：同一棵控件树，不重建、不丢状态，切换后整体外观变为另一套设计语言；同一应用内允许不同子树使用不同设计语言。
+让 AtomUI 应用在运行时切换多种设计语言（Ant Design、Material、shadcn、Bootstrap……），效果对齐 ant.design 首页 "Flexible theme customization" 的预设切换器：同一棵控件树，不重建、控件属性上的状态不丢，切换后整体外观变为另一套设计语言；同一应用内允许不同子树使用不同设计语言。
 
 成功标准：
 
-1. Gallery 增加一个与 ant.design 预览区等价的"设计语言预览"页，至少提供 Ant、Material、shadcn、Bootstrap 四套，切换在一次 UI 线程 Publish 内完成，不重挂载子树，输入框文字、选中项、滚动位置、焦点保持。
-2. 第三方控件包与应用可以为任一设计语言提供自己的样式片段与 Token 片段，不修改 AtomUI 源码。
-3. 不依赖 Avalonia 私有成员、不 hook 框架内部、不修改 Avalonia；仅使用公开且在 12.1.5 源码中核对过的行为。
-4. 对 `release/6.0` 的改动，除新增能力外只允许三类：简化代码、提升性能、架构优化；每一处在本文第 9 节登记理由。
+1. Gallery 增加一个与 ant.design 预览区等价的"设计语言预览"页，至少提供 Ant、Material、shadcn、Bootstrap 四套，切换在一次 UI 线程 Publish 内完成，输入框文字与选区、选中项、焦点保持。
+2. 每种设计语言是独立 NuGet 包；不引用不占产物，引用未激活只登记一张表，激活后只物化页面上出现过的控件主题。
+3. 第三方控件包与应用可以为任一设计语言提供自己的 ControlTheme、主题定义与 Token，不修改 AtomUI 源码。
+4. 不依赖 Avalonia 私有成员、不 hook 框架内部、不修改 Avalonia；仅使用公开且在 12.1.5 源码中核对过的行为。
+5. 对 `release/6.0` 的改动，除新增能力外只允许三类：简化代码、提升性能、架构优化；每一处在第 9 节登记理由。
+6. 机制与平台无关：桌面与未来的移动控件包共用同一套定义与注册协议。
 
 ## 2. 参考实现：ant.design 的切换器是怎么做的
 
@@ -27,94 +31,85 @@
 | 逐组件 `classNames` / `styles` | 对语义 DOM 区域注入 CSS（渐变、硬投影、backdrop blur、霓虹阴影、全大写、自定义 ripple） | 7/13 |
 | 结构/模板替换、图标替换、`cssVar`、`componentSize` | 无 | 0 |
 
-预览区 JSX 固定，DOM 结构在所有预设下完全一致，切换只改 class 与注入的 CSS。结论：**设计语言 = Token 层 + 语义区域样式层**，两层都必须能按作用域热切换；结构层（模板）不是必需，但作为可选扩展保留。
+预览区 JSX 固定；切换只改 class 与注入的 CSS，预览子树整体重挂载。结论：**一个预设 = 语言的视觉层 + 它自己的色板 + 逐组件 Token**。antd 的视觉层是运行时生成的 CSS；Avalonia 里视觉层就是 ControlTheme，是编译产物。AtomUI 的 Token 层照抄 antd（`ThemeConfig` 已经是它），视觉层按 Avalonia 的方式交付：一个语言一套 ControlTheme。
 
-对应到 AtomUI 已有的原语：
+## 3. 核心模型
 
-| ant.design | AtomUI release/6.0 已有 | 缺口 |
-| --- | --- | --- |
-| `token` / `components` / `algorithm` | `ThemeConfig.Tokens` / `Controls` / `Algorithms`，`ThemeConfigProvider` 作用域 | 没有"按设计语言打包并切换"的入口 |
-| `classNames` / `styles` | Semantic Part：`.semantic-*` marker + 生成的 `XxxPartStyle` 嵌套样式 | 只能由应用手写进 `Application.Styles`，不能按语言打包、不能按作用域切换 |
-| 模板差异 | 每个控件一个 `ControlTheme`，Style 可设置 `Template` | 同上 |
-
-所以本设计不新建第二套样式系统，而是给现有 Token 层和 Semantic Part 层各加一个"按设计语言分组并按作用域激活"的维度。
-
-## 3. 核心概念
-
-### 3.1 三个正交轴
+### 3.1 层级：设计语言 ⊃ 主题定义 ⊃ 运行时配置
 
 ```text
-Theme definition（色板，XML v1，可来自用户目录）   DaybreakBlue / 用户主题 …
-Design language（形态 + 语义样式 + 语言默认 Token） Ant / Material / Shadcn / Bootstrap …
-Algorithms（派生算法）                              Default / Dark / Compact
+Design language   Ant                Material              Shadcn            Bootstrap
+  视觉层          默认 ControlTheme   Material ControlTheme  （回落 Ant）       （回落 Ant）
+  基础 Token      无                  高度/圆角/字体/阴影…    zinc 色系/圆角…    主色/字号/高度…
+  默认主题        DaybreakBlue        MaterialPurple         ShadcnZinc        BootstrapBlue
+  主题定义        DaybreakBlue        MaterialPurple          ShadcnZinc        BootstrapBlue
+  （语言专属）    DustRed …           MaterialTeal …          ShadcnSlate …     …
+  通用主题        任何只调色板的主题定义，在任何语言下可用（含用户目录里的主题）
+  算法            Default / Dark / Compact（与语言无关，按请求组合）
+  运行时配置      ThemeRequest.Config、局部 ThemeConfigProvider.Config
 ```
 
-一个作用域的有效外观 = 三者的组合。`Ant` 是内置默认设计语言，等于当前 `release/6.0` 外观，不携带任何样式片段。
-
-### 3.2 设计语言由什么组成
-
-| 组成 | 内容 | 所有者 |
+| 概念 | 拥有什么 | 不拥有什么 |
 | --- | --- | --- |
-| `DesignLanguageDefinition` | `Id`、显示名、语言默认全局 Token（`Tokens`）、暗色追加 Token（`DarkTokens`） | 定义该语言的程序集，一个语言一个 |
-| `DesignLanguageFragment` | 面向某个控件包的片段：该语言下这些控件的 Own/Effective Global Token 覆盖，以及一个 `DesignLanguageStyles`（AXAML） | 拥有这些控件的程序集（AtomUI 控件包、第三方控件包、应用） |
+| 设计语言 | ControlTheme 集；语言基础 Token（含暗色追加）；逐控件 Token 默认；默认主题 id | 色板选择；用户配置 |
+| 主题定义 | 一组 Token 值（色板为主）；所属语言（或通用）；Appearance 元数据 | 任何 ControlTheme、模板、样式 |
+| 运行时配置 | Token/控件/算法覆盖；局部作用域的语言切换 | 新的 Token 字段或控件 identity |
 
-一个语言可以有多个片段，来自多个程序集；运行时按 `Id` 聚合。片段引用的 `Id` 没有对应定义时，启动阶段给出诊断并忽略该片段，不阻断启动。
+利弊评估：
 
-### 3.3 激活模型：一个可继承附加属性
+- 利：优先级不再需要裁决（语言基础 < 主题 < 用户配置，"主题是对语言的细化"天然成立）；与 antd 预设的心智一致（预设 = 语言 + 它自己的色板）；目录与 UI 按语言分组、每个语言有默认主题；语言专属主题可以调只在该语言下有意义的 Token，通用主题只碰色板，边界清楚。
+- 弊：切换语言时当前主题可能不属于新语言，需要一条确定的回退规则（3.3）；`ThemeRequest`、`ThemeInfo`、跟随系统模板、Catalog 都要带语言，不兼容旧请求；主题 XML v1、编译主题包、用户目录要认可选的 `DesignLanguage` 属性，并在引用未安装语言时给诊断；局部作用域换语言套同一条回退规则。这些都只是多一条确定的规则，没有新增机制，故采用。
 
-新增 `ThemeScope.DesignLanguageProperty`：`AttachedProperty<string>`，`inherits: true`，与现有 `ThemeScope.ContextProperty` 并列。每个样式片段中的顶层 `Style` 在挂载时被追加限定 `.PropertyEquals(ThemeScope.DesignLanguageProperty, "<Id>")`。
-
-切换语言只改变根或局部作用域上这个属性的值；Avalonia 的 `PropertyEqualsActivator` 订阅目标控件的属性 observable（`PropertyEqualsActivator.Initialize` → `_control.GetObservable(_property)`），继承值变化沿树传播即触发 Setter 激活/退役。这与伪类切换走同一条框架路径，不增删 `Styles`，因此不触碰 Avalonia 移除样式时模板节点 frame 不退役的问题。
-
-### 3.4 Token 层
-
-设计语言的 Token 作为一个新的合并层进入现有 `ThemeConfigMerger`：
+### 3.2 Token 合并顺序
 
 ```text
 library defaults
-  → theme definition tokens           （色板）
-  → design language Tokens            （语言默认：圆角、高度、字体、线宽、必要时主色）
-  → design language DarkTokens        （仅当有效外观为 Dark 时追加）
-  → fragments 的 Controls 覆盖        （语言下逐控件 Token）
-  → root ThemeRequest.Config          （应用全局覆盖）
-  → 局部 ThemeConfigProvider.Config   （作用域覆盖，沿父链继承）
+  → design language 基础 Tokens
+  → design language DarkTokens          （仅当有效外观为 Dark 时追加）
+  → design language 逐控件 Token 默认
+  → theme definition Tokens             （所属语言的专属主题，或通用主题）
+  → root ThemeRequest.Config
+  → 局部 ThemeConfigProvider.Config     （沿父链继承；Inherit=false 回到"语言 + 语言默认主题"基线）
 ```
 
-决策：语言 Token 覆盖主题定义，用户配置再覆盖语言。理由：选择 shadcn 的用户期待 zinc 色系，这是语言身份的一部分；不想要时在请求里覆盖 `ColorPrimary` 即可。不设计 Token 的"按语言条件"语法，`DarkTokens` 是唯一的条件维度，由规范化阶段按有效外观选择。
+现有 `ThemeConfigMerger` 增加两层输入，不新建配置对象。
 
-`ThemeConfig` 新增可空字段 `DesignLanguage`（`string?`）：根请求 `null` 表示 `Ant`；局部作用域 `null` 表示继承父作用域。它参与请求缓存键与 Snapshot 身份，语言不同的两个作用域不共享控件编译结果。
+### 3.3 语言与主题的组合与回退
+
+- 根请求必须给出语言；主题 id 可省略，省略即该语言的默认主题。
+- 语言专属主题只能在其所属语言下使用；在别的语言下请求它，规范化阶段 `Failed` 并给诊断。
+- 只换语言（主题 id 省略）时：当前主题是通用主题则沿用；是语言专属主题则换成新语言的默认主题。回退结果写进 `ThemeState`，调用方可见。
+- 局部 `ThemeConfigProvider` 指定语言但未指定主题时套同一规则；Popup、独立窗口沿现有资源链继承，不另设规则。
+- 用户目录的主题 XML 可声明 `DesignLanguage`；声明了未注册的语言时该主题进入 Catalog 诊断、不可选，不静默变通用。
+- 用户目录不得定义设计语言，只能定义主题；设计语言是编译交付的程序集。
+
+### 3.4 激活模型：Theme 属性走作用域资源
+
+每个作用域的 `ThemeContext` 已持有有效配置和唯一的 Token ResourceProvider。只给这个 Provider 增加一种可回答的键：
+
+```text
+DesignLanguageThemeKey(controlType)
+    -> 当前作用域语言在该类型上注册的 ControlTheme（惰性物化）
+    -> 未注册：不命中（Avalonia 置为 Unset，Theme 回到 null，走隐式默认主题）
+```
+
+ThemeManager 启动时按注册表为每个导出了类型键默认主题的控件类型建立一条样式并挂入自己的 `Styles`：
+
+```text
+Style OfType<T>  { Setter(StyledElement.Theme, DynamicResource(DesignLanguageThemeKey(T))) }
+```
+
+- `Theme` 是普通 StyledProperty，样式可以设置；用户显式设置的本地值优先级更高，仍然赢。
+- DynamicResource 在目标控件上实例化、沿目标控件的资源链解析，天然按作用域取值；局部 `ThemeConfigProvider`、Popup、带 owner 的独立窗口全部沿用现有资源链，不加新机制。
+- 切换语言就是一次普通事务：Publish 阶段 Provider 发出 `ResourcesChanged`，每个控件的 Theme 绑定重新取值；只有主题实例真的变化的控件会重套模板，只换 Token 的语言零重套。
+
+不需要可继承附加属性、PropertyEquals、改选择器或按语言挂卸样式。
 
 ## 4. 公开 API
 
-全部位于 `AtomUI.Core`，命名空间 `AtomUI.Theme`（定义/片段/注册）与 `AtomUI.Theme.Resources`（AXAML 容器）。
+全部位于 `AtomUI.Core`，命名空间 `AtomUI.Theme`；资源键位于 `AtomUI.Theme.Resources`。
 
 ```csharp
-public sealed class DesignLanguageDefinition
-{
-    public DesignLanguageDefinition(string id, string displayName,
-        ThemeConfig? tokens = null, ThemeConfig? darkTokens = null);
-    public string Id { get; }
-    public string DisplayName { get; }
-    public ThemeConfig? Tokens { get; }      // 只允许 Tokens；Algorithms/Controls/Inherit 非默认时构造失败
-    public ThemeConfig? DarkTokens { get; }
-}
-
-public sealed class DesignLanguageFragment
-{
-    public DesignLanguageFragment(string languageId,
-        IReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig>? controls,
-        Func<DesignLanguageStyles>? styles);
-    public string LanguageId { get; }
-    public IReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig> Controls { get; }
-    public Func<DesignLanguageStyles>? Styles { get; }   // 惰性，首次激活该语言时调用一次
-}
-
-// AXAML 根元素。普通 Styles 子类，仅多一个 Language 属性。
-public class DesignLanguageStyles : Styles
-{
-    public string Language { get; set; }
-}
-
 public static class DesignLanguageIds
 {
     public const string Ant = "Ant";
@@ -123,218 +118,236 @@ public static class DesignLanguageIds
     public const string Bootstrap = "Bootstrap";
 }
 
+public sealed class DesignLanguageDefinition
+{
+    public DesignLanguageDefinition(string id, string displayName, string defaultThemeId,
+        ThemeConfig? tokens = null, ThemeConfig? darkTokens = null,
+        IReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig>? controls = null);
+    public string Id { get; }
+    public string DisplayName { get; }
+    public string DefaultThemeId { get; }      // 必须是该语言专属或通用的已注册主题
+    public ThemeConfig? Tokens { get; }        // 只允许 Tokens；Algorithms/Controls/Inherit 非默认时构造失败
+    public ThemeConfig? DarkTokens { get; }
+    public IReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig> Controls { get; }
+}
+
+// 一个程序集为某个语言贡献的 ControlTheme 集，由生成器产出；手工构造也允许。
+public sealed class DesignLanguageThemeSet
+{
+    public DesignLanguageThemeSet(string languageId, IEnumerable<ControlThemeAssetDescriptor> themeAssets);
+    public string LanguageId { get; }
+    public IReadOnlyList<ControlThemeAssetDescriptor> ThemeAssets { get; }   // TargetType 即键
+}
+
 public interface IThemeManagerBuilder
 {
     void AddDesignLanguage(DesignLanguageDefinition definition);
-    void AddDesignLanguageFragment(DesignLanguageFragment fragment);
+    void AddDesignLanguageThemes(DesignLanguageThemeSet themes);
+    void WithInitialTheme(string designLanguage, string? themeId = null, ThemeConfig? config = null);
+    void WithFollowSystemThemes(ThemeRequest light, ThemeRequest dark);   // 不变，请求已带语言
     // 其余不变
 }
+
+public sealed record ThemeRequest(
+    string DesignLanguage,
+    string? ThemeId,                 // null = 该语言默认主题，或按 3.3 回退
+    ThemeConfig? Config,
+    ThemeTransitionReason Reason);
+
+public sealed record ThemeInfo(string Id, string Name, ThemeAppearance Appearance, bool IsDefault,
+    string? DesignLanguage /* null = 通用 */, Color? AccentColor);
+
+public sealed record DesignLanguageInfo(string Id, string DisplayName, string DefaultThemeId, int ThemedControlCount);
 
 public interface IThemeManager
 {
-    IReadOnlyList<DesignLanguageInfo> AvailableDesignLanguages { get; }   // Id、DisplayName、片段数
+    IReadOnlyList<DesignLanguageInfo> AvailableDesignLanguages { get; }
+    IReadOnlyList<ThemeInfo> AvailableThemes { get; }       // 不变；ThemeInfo 多了 DesignLanguage
+    void AddDesignLanguage(DesignLanguageDefinition definition, params DesignLanguageThemeSet[] themes); // 运行期追加，5.4
+    event EventHandler? DesignLanguagesChanged;
     // 其余不变
 }
 
-public sealed class ThemeConfig { public string? DesignLanguage { get; } /* 其余不变 */ }
+public sealed class ThemeConfig        { public string? DesignLanguage { get; } /* 局部作用域切语言；根请求忽略 */ }
 public sealed class ThemeConfigBuilder { public ThemeConfigBuilder WithDesignLanguage(string? id); }
-public sealed record ThemeState { public string DesignLanguage { get; } /* 其余不变 */ }
+public sealed record ThemeState        { public string DesignLanguage { get; } /* ThemeId 为回退后的实际主题 */ }
 ```
 
-`ControlPackageRegistration` 增加 `IReadOnlyList<DesignLanguageFragment> DesignLanguageFragments`，由生成器从约定目录产出（见第 6 节）；手工注册走 `AddDesignLanguageFragment`。
+主题 XML v1 增加可选根属性：
 
-不提供：运行时从文件加载样式、JSON/XML 承载样式、任何形式的配方对象、AI 生成入口。设计语言是代码交付的程序集，与控件包同一生命周期。
+```xml
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="MaterialTeal" Name="Material Teal"
+       Appearance="Light" DesignLanguage="Material">
+```
+
+省略 `DesignLanguage` 即通用主题。`IsDefault` 改为由语言定义的 `DefaultThemeId` 决定，XML 上不再声明。编译主题包与用户目录 Resolver 读取同一属性。
+
+AXAML 侧新增一个标记扩展，供语言主题派生默认主题：
+
+```xml
+<ControlTheme x:Key="{x:Type atom:Button}" TargetType="atom:Button"
+              BasedOn="{atom:DefaultControlTheme atom:Button}">
+    <Setter Property="CornerRadius" Value="{atom:ButtonTokenResource BorderRadiusLG}" />
+</ControlTheme>
+```
+
+`DefaultControlTheme` 在主题物化时同步从注册表取默认主题实例；物化只发生在激活之后、UI 线程上，此时注册表已冻结。
+
+不提供：运行时从文件加载样式、JSON/XML 承载样式、配方对象、AI 生成入口。
 
 ## 5. 运行时
 
-### 5.1 ThemeManager 新增状态
+### 5.1 注册表
 
-- `_designLanguages`：`Id → (Definition, List<Fragment>)`，启动注册期冻结。
-- `_mountedLanguageStyles`：`Id → Styles`，已挂载到 `Application.Styles` 的片段样式；只增不减，上界为已注册语言数。
-- `RootDesignLanguage`：`IObservable<string>`，根作用域当前语言，供根 TopLevel 样式的 Setter 绑定。
+`DesignLanguageRegistry`（ThemeManager 持有）：
+
+- `Definitions`：`Id → DesignLanguageDefinition`，重复 Id 启动失败；`DefaultThemeId` 必须解析到该语言专属或通用的主题，否则启动失败。
+- `Themes`：`(Id, Type) → DeferredControlThemeResourceProvider`，复用现有惰性 provider；同一 `(Id, Type)` 两次注册启动失败。
+- 主题集引用了没有定义的 Id：启动失败并指出缺少哪个包。
+- `Ant` 由 Core 内置：空基础 Token，默认主题 `DaybreakBlue`，主题集就是各控件包现有的类型键导出，不重复登记。
+- Catalog（`CompiledThemeCatalog`）为每个主题定义记录 `DesignLanguage`，并提供"语言 → 可用主题"的分组查询。
 
 ### 5.2 一次切换的事务路径
 
 沿用现有 Capture / Prepare / CommitCore / Publish / Complete，不加阶段：
 
-1. **Capture**：请求携带 `DesignLanguage`。未注册的 Id 在 Normalizer 失败，`Failed` 返回诊断，不进编译。
-2. **Prepare**（可后台）：Normalizer 把语言 Tokens/DarkTokens/片段 Controls 合并进有效配置；编译器照常产出 Snapshot。语言不同即有效配置不同，缓存键自然区分。
-3. **CommitCore**（UI 线程，无通知）：替换 Snapshot 引用（不变）。
-4. **Publish**（UI 线程）按固定顺序：
-   1. 对本次事务涉及的每个作用域的目标语言，若 `_mountedLanguageStyles` 没有，则创建并挂载（5.3）。挂载在属性切换之前，保证属性变化时样式已就位，不出现"属性已切、样式未到"的帧。
-   2. 根事务：推送 `RootDesignLanguage`；局部事务：`ThemeConfigProvider` 在既有 `PublishCommittedContext` 中 `SetValue(DesignLanguageProperty, effective)`。
-   3. 既有 Token 资源通知、`RequestedThemeVariant`、事件。
+1. **Capture**：按 3.3 解析 `(语言, 主题)`；未注册语言、专属主题跨语言、未知主题 id 在 Normalizer 失败，`Failed` 返回诊断。
+2. **Prepare**（可后台）：Normalizer 按 3.2 合并；编译器照常产出 Snapshot。语言不同即有效配置不同，缓存键自然区分。不物化任何 ControlTheme。
+3. **CommitCore**（UI 线程，无通知）：替换 Snapshot 引用，不变。
+4. **Publish**（UI 线程）：既有的 Token 资源通知同时驱动 Token 绑定与 Theme 绑定重新取值；Theme 绑定首次命中新语言的某个类型时才物化该 ControlTheme。`RequestedThemeVariant`、事件不变。
+5. **Complete**：`ThemeState` 记录实际生效的语言与主题。
 
-   Avalonia 在同一次 UI 线程回合内处理样式失效与属性变化，首个可见帧已是完整新状态，与现有"Publish 阶段才可见"的保证一致。
-5. **Complete**：`ThemeState.DesignLanguage` 更新。
+### 5.3 Provider 回答 Theme 键
 
-### 5.3 片段样式的挂载与限定
+`ThemeTokenResourceProvider.TryGetResource` 增加一个分支：键为 `DesignLanguageThemeKey` 时，取 `Snapshot.EffectiveConfig.DesignLanguage`，在注册表查 `(语言, 键.ControlType)`；命中返回物化后的 ControlTheme，未命中返回 `false`。键对象按类型缓存为单例，保证 DynamicResource 的键相等。语言为 `Ant` 时恒不命中，行为与今天完全一致。
 
-首次激活语言 `L` 时：
+### 5.4 按需与运行期追加
 
-1. 对 `L` 的每个片段调用 `Styles()` 工厂（AXAML 编译的 `DesignLanguageStyles`），校验 `Language == L`。
-2. 遍历其顶层 `Style`，把 `Selector` 替换为 `Selector.PropertyEquals(ThemeScope.DesignLanguageProperty, L)`。只处理顶层；嵌套样式通过 `^` 继承父选择器。`Style.Selector` 是公开可写属性，在未挂载前修改是公开用法。
-3. 把片段 `Styles` 追加到 `Application.Styles`（ThemeManager 本身是 `Styles` 宿主，追加到其后保持"框架样式先于应用样式"的既有顺序）。
+- 不引用语言包：不进产物。
+- 引用未激活：只登记定义、它自带的主题定义和一张 `(Id, Type) → 工厂` 表，AXAML 不解析。
+- 激活：只物化被查询过的类型；切回后实例留在惰性 provider 中，上界为"已激活过的语言 × 出现过的控件类型"。
+- 运行期追加：语言包不新增 Token schema、不新增控件 identity，不碰启动时冻结的 `ThemeSchemaRegistry`，只往注册表和 Catalog 加行；`IThemeManager.AddDesignLanguage` 在 UI 线程追加并派发 `DesignLanguagesChanged` 与 `ThemeCatalogChanged`。JIT 应用可配合 `AssemblyLoadContext` 在运行中装载语言包；NativeAOT 无运行期装配加载，只用前三条。
 
-限定追加在选择器链末端，Avalonia 按链从左到右求值并在首个不匹配处短路（`Selector.Match` → `MatchUntilCombinator`），因此 `atom|Button:pointerover` 这类选择器先做类型判断，非 Button 元素既不创建 activator 也不订阅；只有匹配类型的元素才为 `DesignLanguageProperty` 建立一个订阅。成本与"再加一条按钮伪类样式"同阶。
+### 5.5 与 Semantic Part、Own Token 的关系
 
-不卸载：语言 `L` 退役只靠属性值不再等于 `L`，所有 Setter 按框架路径退役。已挂载但当前无人使用的语言样式只保留订阅成本，数量受已注册语言数限制。
+- 语言主题是 ControlTheme，必须像默认主题一样完整实现该控件的 Semantic Part descriptor（非 Optional marker 齐全）；现有 ThemeAssets 分析器对默认主题做的校验原样作用于语言包。
+- 用户的 Semantic Part Style 继续写在 `Application.Styles` / 局部 StyleHost，对任何语言的主题都生效，因为 marker 一致。
+- Own Token 定义不随语言变化；语言只能改它们的默认值（定义的 `Controls`），不能新增字段。一种语言需要新的可调值时，那是给控件加 Own Token，所有语言共享。
 
-### 5.4 属性在树上的来源
+## 6. 语言包作者约定
 
-| TopLevel 类型 | 值来源 |
-| --- | --- |
-| 无逻辑父级的 Window | 根样式 `Is<TopLevel>().PropertyEquals(StyledElement.ParentProperty, null)`，Setter 绑定 `RootDesignLanguage` |
-| 带 owner 的独立 TopLevel（Dialog、Notification host 等） | `ThemeContextLease.Attach` 在设置 `ContextProperty` 与 `RequestedThemeVariant` 时同时设置本地值；Dispose 时同样清除 |
-| PopupRoot / OverlayPopupHost | 有逻辑父级，不命中根样式，沿 Popup 的继承链自然取得作用域值 |
-| `ThemeConfigProvider` 子树 | Provider 本地值，Publish 时更新 |
-
-现有 `ContextProperty` 根样式使用 `OfType<TopLevel>()`，会把根 Context 以样式值写到 PopupRoot 上并覆盖其从 Popup 继承来的局部 Context。本设计把两个属性共用同一条 `Parent == null` 限定的根样式（见第 9 节的改动登记）。
-
-### 5.5 片段中的资源解析
-
-片段样式的 Setter 使用 `{atom:XxxTokenResource ...}` / `{atom:SharedTokenResource ...}`，即 DynamicResource。绑定在目标控件上实例化，沿目标控件的资源链解析，因此局部 `ThemeConfigProvider` 的 Token Provider 对片段样式同样生效，片段无需感知作用域。
-
-片段的 `Styles.Resources` 允许放只被该片段自身引用的 `ControlTheme`/模板/画刷；禁止放会被应用以 key 查找的公共资源（挂载顺序不保证）。
-
-### 5.6 片段可以做什么
-
-| 需求 | 写法 |
-| --- | --- |
-| 根属性（圆角、边框、阴影、字重、Padding） | `<Style Selector="atom|Button"><Setter .../></Style>` |
-| 语义区域（图标、内容、弹层框体……） | 外层 owner Style + 嵌套生成的 `atom:ButtonIconStyle` 等 |
-| 状态 | `<Style Selector="atom|Button:pointerover">`、`^:pressed`、属性选择器 |
-| 结构差异 | `<Setter Property="Template">` 直接替换模板；模板内须保留该控件的 Semantic marker |
-| 语言专属视觉效果（渐变、硬投影、模糊） | Setter 值为片段资源中的画刷/效果；需要代码时片段程序集可携带转换器与装饰器 |
-| 该语言下控件默认 Token | 片段的 `Controls` 覆盖，或语言定义的 `Tokens` |
-
-不允许：在片段里写 `[(ThemeScope.DesignLanguage)=…]`（由运行时追加，重复限定报错）、修改 `Application.Resources`、引用其他语言的样式。
-
-## 6. 作者约定与生成器
-
-### 6.1 目录约定
+### 6.1 项目结构
 
 ```text
-Buttons/
-+-- Button.cs
-+-- Button.SemanticParts.cs
-+-- ButtonToken.cs
-+-- Themes/
-|   \-- ButtonTheme.axaml                  Ant 基线，不变
-\-- DesignLanguages/
-    +-- Material/
-    |   \-- ButtonMaterialStyles.axaml      <atom:DesignLanguageStyles Language="Material">
-    \-- Shadcn/
-        \-- ButtonShadcnStyles.axaml
+AtomUI.Themes.Material/                         一个语言一个程序集
++-- AtomUI.Themes.Material.csproj               <AtomUIDesignLanguage>Material</AtomUIDesignLanguage>
++-- MaterialDesignLanguage.cs                   DesignLanguageDefinition：Id、显示名、默认主题、基础 Tokens、DarkTokens、Controls
++-- Definitions/
+|   +-- MaterialPurple.theme.xml                DesignLanguage="Material"，语言默认主题
+|   \-- MaterialTeal.theme.xml
+\-- Themes/                                     与控件包同构的目录，ControlTheme
+    +-- Buttons/ButtonTheme.axaml               完整主题或 BasedOn 默认主题
+    +-- Switch/SwitchTheme.axaml
+    \-- …
+
+AtomUI.Themes.Shadcn/
++-- AtomUI.Themes.Shadcn.csproj
++-- ShadcnDesignLanguage.cs
+\-- Definitions/ShadcnZinc.theme.xml            只有定义与色板，零 AXAML，ControlTheme 回落 Ant
 ```
 
-生成器把 `DesignLanguages/<Id>/**/*.axaml` 按 `<Id>` 聚合为一个 `DesignLanguageFragment`（一个程序集一个语言一个片段，内部用一个外层 `DesignLanguageStyles` 以 `StyleInclude` 聚合各文件）。该语言下的控件 Token 覆盖写在同目录的 C# 文件里，用一个静态方法声明：
+生成器规则：项目设置了 `AtomUIDesignLanguage` 时，`Themes/**/*.axaml` 中以类型为键的 ControlTheme 登记到该语言的主题集，`Definitions/*.theme.xml` 作为编译主题定义登记并强制 `DesignLanguage` 等于该语言；产出 `GeneratedDesignLanguageRegistration.Register(builder)`，由 `UseDesignLanguage<MaterialDesignLanguage>()` 一类的扩展方法调用。未设置该属性的程序集（控件包）行为不变，其 ControlTheme 属于 `Ant`，其 `*.theme.xml` 按自身属性决定专属或通用。
 
-```csharp
-// DesignLanguages/Material/MaterialTokens.cs
-internal static class MaterialTokens
-{
-    [DesignLanguageControlTokens(DesignLanguageIds.Material)]
-    internal static IEnumerable<KeyValuePair<ControlTokenIdentity, ControlThemeConfig>> Create() => [ ... ];
-}
-```
-
-生成器把同一 `Id` 的样式工厂与 Token 方法并入同一片段；一个程序集内同一 `Id` 出现两个方法报错。产物进入 `ControlPackageRegistration.DesignLanguageFragments`，走现有包注册路径，运行时不扫描目录、不反射。
+一个程序集只属于一个语言。第三方控件包要支持 Material，另建 `Vendor.Controls.Themes.Material`，引用 `AtomUI.Themes.Material` 取定义，按同一目录约定放 ControlTheme。可选控件包（DataGrid、ColorPicker、Extras）的 Material 主题同样是独立小程序集 `AtomUI.Themes.Material.DataGrid`，按需引用。
 
 构建期校验（新增诊断号沿用 `ATOMUIGEN` 序列）：
 
-- 根元素必须是 `DesignLanguageStyles` 且 `Language` 与目录名一致。
-- 顶层 Style 选择器必须以本程序集或其依赖包中已注册的 Control 类型开头；禁止 `:is(Control)`、裸 class、通配。
-- 顶层选择器不得含 `/template/`、`>`、后代组合子；语义区域必须用生成的 Part Style 嵌套表达。
-- `Template` Setter 的模板必须包含该控件 descriptor 声明的全部非 Optional Semantic marker。
-- 不得出现对 `ThemeScope.DesignLanguage` 的手写限定。
+- 语言包内 ControlTheme 必须以类型为键；`TargetType` 必须是引用的控件包中已注册的 Control。
+- 同一程序集内同一 `TargetType` 只能出现一次。
+- 非 Optional Semantic marker 齐全（现有校验）。
+- `DefaultControlTheme` 的类型参数必须与 `TargetType` 一致。
+- `Definitions/*.theme.xml` 的 `DesignLanguage` 必须等于项目的 `AtomUIDesignLanguage`。
 
-### 6.2 控件侧契约：一份代码、一份基线 ControlTheme 如何承载多种语言
+### 6.2 控件侧契约：一份代码如何承载多套主题
 
-控件不感知语言。语言差异分三档，各有固定吸收点：
+控件不感知语言。语言差异分三档，各有吸收点：
 
 | 差异档 | 例子 | 吸收点 | 对控件的要求 |
 | --- | --- | --- | --- |
-| 值差异 | 主色、圆角、高度、字体、线宽、阴影、间距、动效开关 | Token 层 | ControlTheme 的每个视觉值来自 Token 或控件属性，无字面量 |
-| 区域差异 | 渐变、硬投影、模糊、图标尺寸与位置、hover 效果、有无 ripple | 片段 Style：根 Setter + 嵌套 Semantic Part Style | 可能被重绘的区域都是 Semantic Part；状态经伪类/属性暴露 |
-| 结构差异 | Material Switch 圆钮在轨道外、浮动标签、Bootstrap 勾选框形状 | 片段 `Template` Setter 整体换模板 | 代码与模板的契约只有 `PART_*` 与行为属性；可选 PART 缺失时容错 |
+| 值差异 | 主色、圆角、高度、字体、线宽、阴影、间距、动效开关 | 语言基础 Token、逐控件默认、主题定义 | ControlTheme 的每个视觉值来自 Token 或控件属性，无字面量 |
+| 区域差异 | 渐变、硬投影、模糊、图标尺寸与位置、hover 效果、有无 ripple | `BasedOn` 默认主题的派生 ControlTheme，加 Setter 与嵌套 Style | 可能被重绘的区域都是 Semantic Part；状态经伪类/属性暴露 |
+| 结构差异 | Material Switch 圆钮在轨道外、浮动标签、Bootstrap 勾选框形状 | 完整 ControlTheme 换模板 | 代码与模板的契约只有 `PART_*` 与行为属性；可选 PART 缺失时容错 |
 
-控件须满足的五条契约（逐控件二元审计，不建立字段目录）：
+这正是 Avalonia Fluent / Simple 两套主题共用一份控件代码的做法。控件须满足的五条契约（逐控件二元审计，不建立字段目录）：
 
 1. 视觉值不进代码：颜色、尺寸、圆角在模板/样式中绑定 Token 或属性；自绘控件把画刷、笔、几何参数暴露为 StyledProperty 后在 Render 中读取。
 2. 模板契约最小化：代码依赖的 `PART_*` 列入控件文档；非必需 PART 允许为空；不在代码中按类型或 Name 搜索可视树做视觉赋值。
 3. 状态只经伪类和属性表达，代码不直接设置 `Background`、`Foreground` 等视觉属性。
 4. 几何从 Token/属性推导，不写常量。
-5. Semantic marker 覆盖语言可能重绘的全部区域；语言替换的模板保持同一组非 Optional marker（6.1 的构建期校验保证）。
+5. Semantic marker 覆盖语言可能重绘的全部区域；语言主题保持同一组非 Optional marker。
 
-设计语言只覆盖视觉。行为差异（浮动标签动画、通知位置规则等）不属于主题；确有需要时给控件增加所有语言可用的属性，由语言片段设默认值。
+设计语言只覆盖视觉。行为差异（浮动标签动画、通知位置规则等）不属于主题；确有需要时给控件增加所有语言可用的属性，由语言主题设默认值。
 
-### 6.3 语言定义的位置
+### 6.3 平台
 
-设计语言与平台无关：定义只含 Token，片段跟随拥有控件的程序集。布局照控件包的分层走，不绑定桌面：
-
-| 程序集 | 内容 |
-| --- | --- |
-| `AtomUI.Core` | 机制；`DesignLanguageIds` 常量；`Ant` 定义（空 Token、无片段） |
-| `AtomUI.DesignLanguages`（新，仅依赖 Core） | `Material`、`Shadcn`、`Bootstrap` 的定义：显示名、全局 `Tokens`、`DarkTokens`。不含任何样式，桌面与移动共用 |
-| `AtomUI.Controls`（平台共享控件） | Button、Switch、CheckBox、Tag、Badge、Progress 等在各语言下的片段，放在各控件的 `DesignLanguages/<Id>/` 目录 |
-| `AtomUI.Desktop.Controls` 及 DataGrid / ColorPicker / Extras | 桌面控件的片段，同一约定 |
-| 未来的移动控件包 | 移动控件的片段，同一约定；移动端需要的触控尺寸等差异写在该包的片段 Token 里，不进语言定义 |
-
-每个包的片段由该包的生成注册自动带入，应用只需 `UseDesignLanguages()` 注册三套定义；不调用则只有 `Ant`，零额外开销。第三方包按 6.1 约定或手工 `AddDesignLanguageFragment` 参与。iOS/Cupertino、Material 3 这类以移动为主的语言也走同一模型：一个定义，各控件包各自出片段。
+机制在 Core，定义、主题定义与 ControlTheme 集在语言包，控件包不含任何语言文件。移动控件包出现后，`AtomUI.Themes.Material.Mobile` 按同一约定为移动控件提供 ControlTheme；触控尺寸等差异写在它的逐控件默认里，不进语言定义。iOS/Cupertino、Material 3 这类以移动为主的语言走同一模型。
 
 ## 7. Gallery
 
-- 工作台顶栏增加设计语言切换（与明暗、紧凑并列），调用 `ApplyThemeAsync` 并在 `ThemeConfig` 设置 `DesignLanguage`。
-- 新增"设计语言预览"展示页：复刻 ant.design 预览区的控件集合（输入、选择、日期、开关、步骤、进度、徽标、按钮组、验证码、卡片、通知、对话框等），页面内一个 `ThemeConfigProvider` 承载预览，切换只改该 Provider 的 `Config`，演示局部作用域能力；同页可同时放两个不同语言的 Provider 做对照。
-- 现有 CustomizeTheme 页继续演示 Token 覆盖。
+- 工作台顶栏：先选设计语言，再在该语言下选主题（语言专属 + 通用），与明暗、紧凑并列；`ApplyThemeAsync(new ThemeRequest(language, themeId, config, reason))`。
+- 新增"设计语言预览"展示页：复刻 ant.design 预览区的控件集合（输入、选择、日期、开关、步骤、进度、徽标、按钮组、验证码、卡片、通知、对话框等），页面内一个 `ThemeConfigProvider` 承载预览，切换只改该 Provider 的 `Config.DesignLanguage`；同页可同时放两个不同语言的 Provider 做对照。
+- Gallery 引用 `AtomUI.Themes.Material` / `Shadcn` / `Bootstrap` 三个包。
 
 ## 8. 性能、内存与 AOT
 
-- 切换成本 = 一次 Token 事务 + 属性变化引发的 Setter 激活/退役；首次激活某语言额外一次 `Styles` 挂载（`InvalidateStyles(recurse)` 一次）。目标：Gallery 预览页（约 60 个控件）切换在 16 ms 内完成 Publish，首次挂载不超过 50 ms；以 Stopwatch 计 Publish 区间，不以截图计时。
-- 常驻订阅：每个已挂载语言，每个被其顶层选择器类型命中的元素一个 `PropertyEqualsActivator`；四套语言下相当于每个控件多三条伪类样式。超出接受范围时的优化手段是减少顶层 Style 数量（合并同类型），不是卸载。
-- Token 侧：语言 Token 只是合并层；缓存键包含语言，`LazyControlSnapshots` 按控件惰性物化不变，无新缓存。
-- AOT：定义与片段都是静态构造 + AXAML 编译产物，无反射、无 `Activator`、无字符串类型名；`DesignLanguageStyles` 是普通 `Styles` 子类。
+- 启动：ThemeManager 多挂一组按类型的样式（每个导出默认主题的控件类型一条，约 380 条 `OfType` 选择器，每条一个 Setter）。`OfType` 匹配是类型相等比较，每个元素套样式时多约 380 次比较。若实测可见，改为一条 `:is(Control)` 样式加自定义 `IBinding` 按目标 `StyleKey` 计算键，把比较降为零；spike 顺带测这两种的差距。
+- 每个控件多一个 DynamicResource 订阅（Theme）；AtomUI 控件已有数十个 Token 订阅，增量可忽略。
+- 切换：只换 Token 的语言与今天的主题切换成本相同；换主题的语言在被覆盖类型上重套模板，代价小于 ant.design 的整树重挂载。目标：Gallery 预览页（约 60 个控件）Publish 在 16 ms 内，首次激活含物化不超过 50 ms；以 Stopwatch 计。
+- 内存：惰性 provider 上界见 5.4；Snapshot 缓存键含语言与主题，`LazyControlSnapshots` 不变。
+- AOT：定义、主题定义与 ControlTheme 集是静态构造 + 编译产物，无反射、无 `Activator`、无字符串类型名。
 
 ## 9. 对 release/6.0 的改动登记
 
 | 改动 | 类别 | 理由 |
 | --- | --- | --- |
-| 根 Context 样式选择器由 `OfType<TopLevel>()` 改为 `Is<TopLevel>().PropertyEquals(ParentProperty, null)`，并与 `DesignLanguage` 共用一条样式 | 架构优化 | 消除根样式覆盖 PopupRoot 继承值的隐患；一个根样式承载两个根值 |
-| `ThemeContextLease` 同时管理 `DesignLanguageProperty` | 新能力所需 | 独立 TopLevel 与局部作用域语言一致 |
-| `ThemeConfig` 增加 `DesignLanguage`；Normalizer/Merger 增加语言层 | 新能力所需 | 复用既有合并器，不新建配置对象 |
-| `ThemeState`/`ThemeInfo` 旁新增 `DesignLanguageInfo` | 新能力所需 | 只读观察 |
+| `ThemeRequest` 增加 `DesignLanguage`，`ThemeId` 可空；`ThemeInfo`/`ThemeState` 携带语言；XML v1 增加 `DesignLanguage` 属性，`IsDefault` 改由语言定义决定 | 新能力所需 | 层级模型要求请求与目录都知道语言；默认主题归属语言比散落在 XML 更一致 |
+| `ThemeConfig` 增加 `DesignLanguage`（仅局部作用域使用）；Normalizer/Merger 增加语言基础与逐控件默认两层 | 新能力所需 | 复用既有合并器，不新建配置对象 |
+| `ThemeTokenResourceProvider` 多回答一种键 | 新能力所需 | 复用作用域资源链，不加第二条传播机制 |
+| ThemeManager 启动挂一组按类型的 Theme 样式 | 新能力所需 | 把隐式主题查找改为可随作用域变化的显式绑定 |
+| `DesignLanguageRegistry`、定义/主题集类型、`DefaultControlTheme` 标记扩展、Catalog 按语言分组 | 新能力所需 | 复用 `ControlThemeAssetDescriptor` 与惰性 provider |
+| 根 Context 样式选择器由 `OfType<TopLevel>()` 改为 `Is<TopLevel>().PropertyEquals(ParentProperty, null)` | 架构优化，可独立提交 | 现样式把根 Context 以样式值写到 PopupRoot 上，覆盖它从 Popup 继承的局部 Context |
 
-不改动：事务结果枚举、算法枚举、Own Token 求值、资源扩展、Semantic Part 生成、启动流程、用户主题目录、编译主题包。不引入别名、兼容层或过渡 API。
+不改动：事务结果枚举、算法枚举、Own Token 求值、资源扩展、Semantic Part 生成、`ThemeContextLease`、编译主题包的 ABI、用户主题目录的安全边界。不引入别名、兼容层或过渡 API。
 
 ## 10. 验证
 
 单元（`AtomUI.Core.Tests`）：
 
-- 合并顺序：主题定义 < 语言 Tokens < DarkTokens（仅 Dark）< 片段 Controls < 根配置 < 局部配置，各层逐对验证。
-- 未注册语言 Id → `Failed` 且当前状态不变；片段引用未知 Id → 启动诊断，语言列表不含它。
-- 首次激活挂载一次，再次激活不重复挂载；A→B→A 后 `Application.Styles` 中语言样式数量不变。
-- 属性传播：根 Window、带 owner 的 Window（lease）、PopupRoot、`ThemeConfigProvider` 子树四种宿主在切换后 `DesignLanguageProperty` 值正确；lease 释放后不残留。
-- 选择器限定：顶层 Style 被追加限定且仅一次；嵌套样式未被修改。
-- 泄漏：关闭带 lease 的窗口、移除 Provider 后 WeakReference 回收。
+- 合并顺序：语言基础 < DarkTokens（仅 Dark）< 逐控件默认 < 主题定义 < 根配置 < 局部配置，逐对验证。
+- 组合与回退：语言专属主题跨语言 → `Failed`；只换语言时通用主题沿用、专属主题回退到新语言默认，`ThemeState` 反映实际值；`DefaultThemeId` 不可解析 → 启动失败。
+- 注册：未注册语言 → `Failed`；主题集引用无定义的 Id → 启动失败并指明缺包；同 `(Id, Type)` 重复 → 启动失败；用户目录主题声明未安装语言 → Catalog 诊断且不可选。
+- Theme 键：Ant 下恒不命中；Material 下覆盖类型命中、未覆盖类型不命中；物化恰好一次；A→B→A 后实例数不变。
+- 作用域：根、`ThemeConfigProvider` 子树、Popup、带 owner 的独立窗口四种宿主下 Theme 绑定取到各自作用域语言的主题。
+- 运行期追加：`AddDesignLanguage` 后 `AvailableDesignLanguages`、`AvailableThemes` 更新，再切换生效。
+- 泄漏：关闭窗口、移除 Provider 后 WeakReference 回收；惰性 provider 不持有控件。
 
 集成（`AtomUI.Desktop.Controls.Tests` / Gallery 测试）：
 
-- 每套语言 × 预览页：切换后关键区域（按钮背景/圆角/阴影、输入框边框、开关轨道、步骤条连接线）按已采用的容差策略对比各自基准；不设整帧零差异门槛。
-- 状态保持：切换前后 TextBox 文本与光标、ListBox 选中项、ScrollViewer 偏移、焦点元素相同。
-- 局部作用域：同页两个 Provider 分别为 Material/Shadcn，各自子树命中各自样式，Popup 跟随所在作用域。
-- `Template` Setter 替换模板后 Semantic Part 预览仍能解析全部非 Optional 部件。
+- 每套语言 × 预览页：切换后关键区域（按钮背景/圆角/阴影、输入框边框、开关轨道、步骤条连接线）按已采用的容差策略对比各自基准。
+- 状态保持：切换前后 TextBox 文本与选区、ListBox 选中项、焦点元素相同；被换模板的控件记录模板内状态丢失范围。
+- 语言主题的 Semantic Part 预览能解析全部非 Optional 部件。
+- 用户显式设置 `Theme` 的控件不被语言切换改写。
 
 性能：第 8 节两项计时在 Gallery headless 宿主下由测试断言。
 
 ## 11. 实施顺序
 
-1. **Spike（半天）**：在 `release/6.0` 上用一个临时 Styles 验证三件事并记录结果：`PropertyEquals` 对继承附加属性值变化的实时激活；`Application.Styles` 运行时追加后已挂载控件被重新套用；Style 中 `Template` Setter 切换对已挂载控件实时生效且 Semantic marker 保留。任一不成立即停下修订本设计。
-2. Core 机制：属性、定义/片段/注册、合并层、挂载与限定、lease、根样式合并、`ThemeState`。
-3. 生成器：目录约定、片段聚合、六条校验。
-4. `AtomUI.DesignLanguages` 三套定义；在 `AtomUI.Controls` 与 `AtomUI.Desktop.Controls` 内为 Button、Input 家族、Select、Checkbox/Radio/Switch、Steps、Progress、Tag、Card、Alert、Dialog、Notification 这组预览集合补 Material/Shadcn/Bootstrap 片段。
+1. **Spike（半天）**：在 `release/6.0` 上用临时样式验证并记录：样式 Setter 改变已挂载控件的 `Theme` 后实时重套模板且 `PART_*` 查找正常；DynamicResource 不命中时 `Theme` 回到 null 并恢复隐式主题；作用域 Provider 的 `ResourcesChanged` 能驱动 Popup 内与 lease 窗口内控件的 Theme 绑定；约 380 条 `OfType` 样式对 Gallery 首页套样式耗时的影响。任一不成立即停下修订本设计。
+2. Core 机制：`ThemeRequest`/`ThemeInfo`/`ThemeState`/XML v1 属性、`ThemeConfig.DesignLanguage`、合并层、回退规则、注册表与 Catalog 分组、Theme 键与 Provider 分支、启动样式、`DefaultControlTheme`、运行期追加。
+3. 生成器：`AtomUIDesignLanguage` 属性、主题集与主题定义登记、五条校验。
+4. `AtomUI.Themes.Shadcn`、`AtomUI.Themes.Bootstrap`（定义 + 色板主题）；`AtomUI.Themes.Material` 先覆盖 Button、Input 家族、Select、Checkbox/Radio/Switch、Steps、Progress、Tag、Card、Alert、Dialog、Notification 这组预览集合。
 5. Gallery 切换器与预览页；验证第 10 节。
-6. 扩展到其余控件包（DataGrid、ColorPicker、Extras）。
+6. 扩展 Material 到其余控件与可选包。
 
 每一步独立提交、独立验收；第 4 步之后即可在 Gallery 看到 ant.design 式切换效果。
 
@@ -342,9 +355,12 @@ internal static class MaterialTokens
 
 | 问题 | 决策 | 替代方案及为何不选 |
 | --- | --- | --- |
-| 设计语言能否作为数据文件交付 | 不能，只能是程序集 | 样式必须是编译 AXAML；数据化样式需要自建解析与校验，分支已证明成本极高且不 AOT 友好 |
-| 语言 Token 与主题定义谁优先 | 语言覆盖主题，用户配置覆盖语言 | 主题覆盖语言会让 shadcn 失去自身色系，需要再引入"语言推荐主题"机制 |
-| 语言样式是否卸载 | 不卸载，靠属性退役 | 卸载触碰 Avalonia 移除样式的 frame 残留问题，需要私有 hook |
-| 结构替换方式 | Style 中 `Template` Setter | 替换以类型为 key 的 ControlTheme 资源只在挂入树时解析，要求重挂载 |
-| 首批语言 | Material、Shadcn、Bootstrap | 与 ant.design 预设对齐，覆盖"仅 Token"与"需要语义样式"两类 |
-| 是否支持一个控件同时属于多个语言 | 不支持；属性值唯一 | 多值匹配需要 class 级机制，且无产品需求 |
+| 语言与主题定义的关系 | 层级：语言 ⊃ 主题；主题要么专属要么通用 | 正交轴（第二版）：需要裁决"谁覆盖谁"，目录无法按语言分组 |
+| 视觉层的形态 | 一个语言一套对等的 ControlTheme，独立主题包 | 第一版"Ant 基线 + 补丁样式"：Ant 特殊化、控件目录膨胀、运行时改选择器 |
+| 语言如何到达控件 | `Theme` 属性经 DynamicResource 走作用域 Provider | 可继承附加属性 + PropertyEquals：多一条传播机制，且不能换模板 |
+| 只换语言时的主题 | 通用主题沿用，专属主题回退到新语言默认 | 一律回退到默认：用户选好的色板无故丢失；一律沿用：专属主题在别的语言下无意义 |
+| 设计语言能否作为数据文件交付 | 不能，只能是程序集；主题定义仍可是 XML | 数据化 ControlTheme 需自建解析与校验，不 AOT 友好 |
+| 主题集引用无定义的 Id | 启动失败 | 隐式造定义会让两个包对同一语言各执一词 |
+| 一个程序集能否属于多个语言 | 不能 | 目录与注册都会二义 |
+| 首批语言 | Material（换形态）、Shadcn、Bootstrap（只换值） | 与 ant.design 预设对齐，覆盖两类 |
+| 已物化的语言主题是否回收 | 不回收，惰性 provider 持有 | 上界有限；回收需要引用计数，收益小 |

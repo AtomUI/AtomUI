@@ -209,19 +209,19 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="BorderThickness" Value="{atom:DropdownButtonTokenResource BorderThickness}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:DropdownButtonTokenResource EnableMotion}" />
         <Setter Property="IsWaveSpiritEnabled"
-                Value="{atom:SharedTokenResource EnableWaveSpirit}" />
+                Value="{atom:DropdownButtonTokenResource EnableWaveSpirit}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="ClipToBounds" Value="False" />
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightLG}" />
+            <Setter Property="Height" Value="{atom:DropdownButtonTokenResource ControlHeightLG}" />
             <Setter Property="FontSize" Value="{atom:DropdownButtonTokenResource ContentFontSizeLG}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeLG}" />
+            <Setter Property="CornerRadius" Value="{atom:DropdownButtonTokenResource BorderRadiusLG}" />
+            <Setter Property="IconWidth" Value="{atom:DropdownButtonTokenResource IconSizeLG}" />
+            <Setter Property="IconHeight" Value="{atom:DropdownButtonTokenResource IconSizeLG}" />
             <Style Selector="^:not(^[Shape=Circle])">
                 <Setter Property="Padding" Value="{atom:DropdownButtonTokenResource ContentPaddingLG}" />
             </Style>
@@ -231,11 +231,11 @@
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="Height" Value="{atom:DropdownButtonTokenResource ControlHeight}" />
             <Setter Property="FontSize" Value="{atom:DropdownButtonTokenResource ContentFontSize}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="CornerRadius" Value="{atom:DropdownButtonTokenResource BorderRadius}" />
+            <Setter Property="IconWidth" Value="{atom:DropdownButtonTokenResource IconSize}" />
+            <Setter Property="IconHeight" Value="{atom:DropdownButtonTokenResource IconSize}" />
             <Style Selector="^:not(^[Shape=Circle])">
                 <Setter Property="Padding" Value="{atom:DropdownButtonTokenResource ContentPadding}" />
             </Style>
@@ -245,11 +245,11 @@
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+            <Setter Property="Height" Value="{atom:DropdownButtonTokenResource ControlHeightSM}" />
             <Setter Property="FontSize" Value="{atom:DropdownButtonTokenResource ContentFontSizeSM}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="CornerRadius" Value="{atom:DropdownButtonTokenResource BorderRadiusSM}" />
+            <Setter Property="IconWidth" Value="{atom:DropdownButtonTokenResource IconSizeSM}" />
+            <Setter Property="IconHeight" Value="{atom:DropdownButtonTokenResource IconSizeSM}" />
             <Style Selector="^:not(^[Shape=Circle])">
                 <Setter Property="Padding" Value="{atom:DropdownButtonTokenResource ContentPaddingSM}" />
             </Style>
@@ -259,11 +259,11 @@
         </Style>
 
         <Style Selector="^[SizeType=Custom]">
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="Height" Value="{atom:DropdownButtonTokenResource ControlHeight}" />
             <Setter Property="FontSize" Value="{atom:DropdownButtonTokenResource ContentFontSize}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="CornerRadius" Value="{atom:DropdownButtonTokenResource BorderRadius}" />
+            <Setter Property="IconWidth" Value="{atom:DropdownButtonTokenResource IconSize}" />
+            <Setter Property="IconHeight" Value="{atom:DropdownButtonTokenResource IconSize}" />
             <Style Selector="^:not(^[Shape=Circle])">
                 <Setter Property="Padding" Value="{atom:DropdownButtonTokenResource ContentPadding}" />
             </Style>
@@ -330,7 +330,7 @@
             <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
-            <Setter Property="Opacity" Value="{atom:SharedTokenResource OpacityLoading}" />
+            <Setter Property="Opacity" Value="{atom:DropdownButtonTokenResource OpacityLoading}" />
         </Style>
 
         <Style Selector="^[Shape=Circle]">
@@ -344,12 +344,12 @@
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:DropdownButtonTokenResource ColorTextDisabled}" />
             <Setter Property="BorderBrush"
                     Value="{atom:DropdownButtonTokenResource BorderColorDisabled}" />
 
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:DropdownButtonTokenResource ColorBgContainerDisabled}" />
         </Style>
         <!-- 公用样式结束 -->
 

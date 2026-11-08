@@ -632,7 +632,8 @@ internal sealed class RegistrationModelBuilder
                 var prefix = separator < 0 ? "" : name.Substring(0, separator);
                 name = separator < 0 ? name : name.Substring(separator + 1);
                 const string suffix = "TokenResource";
-                if (!name.EndsWith(suffix, StringComparison.Ordinal) || name == "SharedTokenResource")
+                // Shared and Owner reads resolve global Tokens without naming a Token owner.
+                if (!name.EndsWith(suffix, StringComparison.Ordinal) || name is "SharedTokenResource" or "OwnerTokenResource")
                     {
                         continue;
                     }

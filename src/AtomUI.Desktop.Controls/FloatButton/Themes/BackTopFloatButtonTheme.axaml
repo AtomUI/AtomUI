@@ -105,15 +105,15 @@
             </Setter>
         </Style>
         
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
+        <Setter Property="MotionDuration" Value="{atom:BackTopFloatButtonTokenResource MotionDurationMid}" />
         <Setter Property="IsActive" Value="True" />
 
         <Style Selector="^ /template/ atomc|BackTopProgressRing#ProgressRing">
             <!-- 默认隐藏：由 IsShowProgress=True 的下述选择器置 True（后序样式覆盖先序） -->
             <Setter Property="IsVisible" Value="False" />
-            <Setter Property="StrokeThickness" Value="{atom:SharedTokenResource LineWidthBold}" />
-            <Setter Property="TrackBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
-            <Setter Property="IndicatorBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="StrokeThickness" Value="{atom:BackTopFloatButtonTokenResource LineWidthBold}" />
+            <Setter Property="TrackBrush" Value="{atom:BackTopFloatButtonTokenResource ColorBorderSecondary}" />
+            <Setter Property="IndicatorBrush" Value="{atom:BackTopFloatButtonTokenResource ColorPrimary}" />
         </Style>
 
         <Style Selector="^[IsShowProgress=True] /template/ atomc|BackTopProgressRing#ProgressRing">

@@ -119,19 +119,6 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             info.AvailableGlobalTokenNames.UnionWith(info.Tokens.Select(t => t.Name));
             var controlInfos = ControlThemeModelBuilder.Build(compilation, ownTokens,
                 info.AvailableGlobalTokenNames, context.ReportDiagnostic).ToList();
-            // Analyses the theme AXAML against the Token identities of this package; documents never enter the cache.
-            var identityControls = new HashSet<string>(
-                controlInfos.Where(static control => control.HasDescriptor).Select(static control => control.ControlName),
-                StringComparer.Ordinal);
-            identityControls.UnionWith(ThemeAssetConsumptionAnalyzer.GetReferencedIdentityControls(compilation));
-            var analyzedAssets = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var asset in assets)
-            {
-                if (analyzedAssets.Add(asset.Path) && documents.TryGetValue(asset.Path, out var assetRoot))
-                {
-                    ThemeAssetConsumptionAnalyzer.Analyze(asset, assetRoot, identityControls, context.ReportDiagnostic);
-                }
-            }
             var hasSemanticRuntime = compilation.GetTypeByMetadataName("AtomUI.Theme.Schema.ControlSemanticDescriptor") is not null;
             var resourceFacts = new RegistrationModelBuilder(compilation, packageId, catalog, context.ReportDiagnostic);
             resourceFacts.ReadResources(assets, documents, semanticDeclarations);
@@ -169,6 +156,22 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 CompiledThemePackageWriter.Error(context, null, 0, 0, "Compiled theme inputs require generated ABI v1.");
             }
             info.ControlThemeInfos.AddRange(controlInfos);
+            // Token identities of this package: controls with Own Tokens plus identity-only controls that the
+            // registration model adds for exported themes (IconButton, OptionButtonGroup, ...), and owners published
+            // by referenced packages. Collected after the registration build so identity-only controls are included.
+            var identityControls = new HashSet<string>(
+                controlInfos.Where(static control => control.HasDescriptor).Select(static control => control.ControlName),
+                StringComparer.Ordinal);
+            identityControls.UnionWith(ThemeAssetConsumptionAnalyzer.GetReferencedIdentityControls(compilation));
+            // Analyses the theme AXAML against those identities; documents never enter the cache.
+            var analyzedAssets = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var asset in assets)
+            {
+                if (analyzedAssets.Add(asset.Path) && documents.TryGetValue(asset.Path, out var assetRoot))
+                {
+                    ThemeAssetConsumptionAnalyzer.Analyze(asset, assetRoot, identityControls, context.ReportDiagnostic);
+                }
+            }
             // Promise state of every Own Token and the global Token consumption map, from the parsed theme AXAML and this package's code.
             var consumption = OwnTokenReferenceAnalysis.Analyze(compilation, catalog, controlInfos,
                 info.AvailableGlobalTokenNames, identityControls, documents.Values, cancellationToken);

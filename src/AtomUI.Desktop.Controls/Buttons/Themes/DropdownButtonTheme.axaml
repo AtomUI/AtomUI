@@ -80,8 +80,8 @@
                 Value="{atom:DropdownButtonTokenResource MarginToAnchor}" />
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_DropdownIndicator">
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="Width" Value="{atom:DropdownButtonTokenResource IconSizeSM}" />
+            <Setter Property="Height" Value="{atom:DropdownButtonTokenResource IconSizeSM}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">

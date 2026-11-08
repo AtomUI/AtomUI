@@ -20,9 +20,50 @@
 6. 对 `release/6.0` 的改动，除新增能力外只允许三类：简化代码、提升性能、架构优化；每一处在第 9 节登记理由。
 7. 机制与平台无关：桌面与未来的移动控件包共用同一套定义与注册协议。
 
-## 2. 参考实现：ant.design 的切换器是怎么做的
+## 2. 参考实现：Ant Design 6.6.6 的主题架构
 
-来源：`ant-design/.dumi/pages/index/components/ThemePreview/previewThemes/*.ts`（master）。14 个预设全部是普通 `ConfigProvider` 配置对象：
+依据：本地引用项目 `/Users/chinboy/Projects/ReferenceProjects/ant-design`，版本 6.6.6，提交 `211c6ed29b`，核对时工作树干净。`@ant-design/cssinjs` 与 `cssinjs-utils`（`^2.1.2`）未安装在该工作树，其内部行为按 antd 的调用方式与公开类型描述。
+
+### 2.1 Token 层：`ThemeConfig` 与三层派生
+
+`components/config-provider/context.ts:99` 定义 `ThemeConfig = { token, components, algorithm, inherit, hashed, cssVar, zeroRuntime }`。`components[Comp]` 是组件 Token 覆盖加可选 `algorithm: boolean | MappingAlgorithm[]`（`:93`），即"该组件用自己的算法重跑"。
+
+派生管线在 `components/theme/useToken.ts` 的 `getComputedToken`：
+
+```text
+derivativeToken = theme.getDerivativeToken(seed)      // 算法链：每个 derivative(seed, previousMap) → nextMap
+merged          = { ...derivativeToken, override }    // 用户 token 覆盖（Seed 键被剔除，见 util/alias.ts:19）
+alias           = formatToken(merged)                 // Alias 层：util/alias.ts 的固定公式（93 个字段）
+components[k]   = componentTheme ? getComputedToken({ ...alias, ...componentTokens }, …, componentTheme) : componentTokens
+```
+
+三个算法在 `components/theme/themes/{default,dark,compact}/index.ts`：`default` 从 Seed 生成全部 Map；`dark` 与 `compact` 的签名是 `(token, mapToken?) => mapToken ?? defaultAlgorithm(token)` 再覆盖，即接收前一算法的结果。这与 AtomUI 现有 `IThemeAlgorithm.Evaluate(effectiveSeed, previousMap, nextMap)` 同构。
+
+词汇表规模：Seed 34 个（`interface/seeds.ts`，含 11 个 motion 缓动、`wireframe`、`focusOutline`、`motion`）；Map 119 个（`interface/maps/`：colors 79、font 20、size 12、style 5、其他 3）；Alias 93 个（`interface/alias.ts`）。AtomUI 对应 25 / 112 / 118，分层一致，字段有出入，本方案不改词汇表。
+
+### 2.2 组件层：组件 Token 默认是全局 Token 的纯函数，且与组件同目录
+
+`components/button/style/token.ts` 定义 `ComponentToken`（约 50 个字段，带中英文 `@desc`）和 `prepareComponentToken: GetDefaultToken<'Button'> = (token) => ({ primaryShadow: \`0 ${token.controlOutlineWidth}px 0 ${token.controlOutline}\`, defaultColor: token.colorText, paddingInline: token.paddingContentHorizontal - token.lineWidth, … })`。这就是 AtomUI `ButtonToken.CalculateTokenValues` 的原型：**组件 Token 的默认值是全局 Token 的派生函数，放在组件自己的目录里，不放在主题包里**。这是第五版把 Own Token 参考求值器留在控件包的直接依据。
+
+组件样式在 `components/button/style/index.ts` 末尾 `genStyleHooks('Button', token => [genSharedButtonStyle, genSizeBase/Small/Large, genBlock, genVariant, genGroup], prepareComponentToken, { unitless })`：样式是 `(token) => CSSObject` 的纯函数，首次使用时按 token 哈希生成并缓存。对应 AtomUI 的"ControlTheme 绑定 Token + 惰性物化"。
+
+`components/button/style/variant.ts` 值得单独看：v6 的变体样式先声明一组 CSS 变量（`--ant-btn-border-color`、`--ant-btn-bg-color`、`--ant-btn-text-color`、`--ant-btn-shadow`…），模板规则只消费这些变量；每个变体（`solid`/`outlined`/`dashed`/`filled`/`text`/`link`）只是给变量赋值。这是"**模板 + 变量，变体改变量**"模式。AtomUI 的 `Button.EffectiveColor`/`VariantShadow` 这类内部 StyledProperty 就是同一模式里的"变量"；6.2 的 lookless 规则据此修正为：视觉类型的变量属性可以存在，但其值必须由主题 Setter 按状态赋予，不能在控件代码里计算。
+
+### 2.3 语义层：Semantic DOM 与 `classNames` / `styles`
+
+每个组件声明自己的语义结构类型，如 `components/button/Button.tsx:40` 的 `ButtonSemanticType = { classNames?: { root, icon, content }, styles?: {…} }`，Select 的是嵌套结构 `{ root, prefix, suffix, input, placeholder, content, item, popup: { root } }`（`components/select/index.tsx:60`）。组件文档的 "Semantic DOM" 段由 `demo/_semantic.tsx` 生成，逐项给出名称、说明与引入版本。
+
+合并在 `components/_util/hooks/useMergeSemantic/index.ts`：`useMergeSemantic([contextClassNames, propsClassNames], [contextStyles, contextStyleRoot, propsStyles, styleRoot], { props }, schema)`。来源有两层：`ConfigProvider` 的逐组件配置（`useComponentConfig('button')`，`config-provider/context.ts:651`）与实例 props；两者都可以是对象或 `(info: { props }) => …` 函数，即按实例状态决定样式；根节点的 `style` prop 被折叠为 `styles.root`。合并结果直接落到 DOM：`Button.tsx:400` 把 `mergedClassNames.root` 加到根 class，`mergedClassNames.icon` 传给 `IconWrapper`。
+
+对应 AtomUI：Semantic Part descriptor（名称、路由、ContractType、Since）= `SemanticType` + `_semantic.tsx`；生成的 Part Style 嵌套在 owner Style 内 = `classNames`；`ConfigProvider` 级配置 = `Application.Styles` 或局部 StyleHost 中的 owner-scoped Style；`(info: { props })` 函数形式 = 属性选择器与伪类。嵌套语义（`popup.root`）对应 AtomUI 已有的 `popup.*` 三级键。
+
+### 2.4 作用域：嵌套 `ConfigProvider` 与 `inherit`
+
+`ConfigProvider theme` 可嵌套，`inherit: false` 切断继承（`context.ts:121`）；`DesignTokenContext`（`theme/context.ts`）向下传递 `token/theme/components/override/hashed/cssVar`。对应 `ThemeConfigProvider` 与 `Inherit`。
+
+### 2.5 首页切换器
+
+`.dumi/pages/index/components/ThemePreview/index.tsx:368-384`：`<ComponentsBlock key={activeThemeKey} config={activeTheme?.props} />`，预设就是 `ConfigProviderProps`，切换用 `key` 整体重挂载预览子树；`previewThemes/` 下 14 个预设文件：
 
 | 机制 | 用途 | 使用预设数 |
 | --- | --- | --- |
@@ -32,22 +73,28 @@
 | 逐组件 `classNames` / `styles` | 对语义 DOM 区域注入 CSS（渐变、硬投影、backdrop blur、霓虹阴影、全大写、自定义 ripple） | 7/13 |
 | 结构/模板替换、图标替换、`cssVar`、`componentSize` | 无 | 0 |
 
-预览区 JSX 固定；切换只改 class 与注入的 CSS，预览子树整体重挂载。结论：**一个预设 = 语言的视觉层 + 它自己的色板 + 逐组件 Token**。antd 的视觉层是运行时生成的 CSS；Avalonia 里视觉层就是 ControlTheme，是编译产物。AtomUI 的 Token 层照抄 antd（`ThemeConfig` 已经是它），视觉层按 Avalonia 的方式交付：一个语言一套 ControlTheme。
+预览区 JSX 固定；切换只改 class 与注入的 CSS。`muiTheme.ts` 是最重的预设：约 148 个 token、约 65 组组件 token、约 30 个组件的 `classNames`（Roboto 字体、全大写、MUI 阴影），并用 `wave.showEffect` 换成自写的 inset ripple（`muiTheme.ts:42-66`，在按钮节点上动态插入 div 并做 transition）。`v4Theme.ts` 则只有 `algorithm: [theme.defaultAlgorithm, compatibleDefaultAlgorithm]` 加 `defaultTheme.token/components`，零样式注入：**一个外观差异明显的"设计语言"可以只由算法链与 Token 构成**。
 
-### 2.1 Ant Design 主题架构与本方案的对应
+结论：**一个预设 = 语言的视觉层 + 它自己的色板 + 逐组件 Token**。antd 的视觉层是运行时生成的 CSS；Avalonia 里视觉层就是 ControlTheme，是编译产物。AtomUI 的 Token 层照抄 antd（`ThemeConfig` 已经是它），视觉层按 Avalonia 的方式交付：一个语言一套 ControlTheme。
 
-| Ant Design | 本方案 |
+### 2.6 对应关系与借鉴
+
+| Ant Design 6.6.6（源码位置） | 本方案 |
 | --- | --- |
-| Seed → Map → Alias 三层 Token；`algorithm` 是可组合的派生函数链 | 同一套词汇表（Core）；派生策略归语言（3.5） |
-| `components[Comp]` 组件 Token；`algorithm: true` 让组件重跑算法 | Own Token；`ControlAlgorithmMode` |
-| 组件样式是 Token 的纯函数（`genStyleHooks`），首次使用才生成并按 Token 缓存 | ControlTheme 绑定 Token；惰性物化；Snapshot 缓存 |
-| 语义 DOM：组件文档声明 `root/icon/content`；`classNames`/`styles` 按语义区域注入 | Semantic Part descriptor 与生成的 Part Style |
-| 嵌套 `ConfigProvider`、`theme.inherit` | `ThemeConfigProvider`、`Inherit` |
-| "Ant Design V4" 外观 = `@ant-design/compatible` 的算法 + 组件 Token，不是代码分叉 | 设计语言 = 定义 + 派生 + 主题集；V4 是"只换派生与 Token"的语言 |
-| 预设是有意的近似，不追复刻 | 3.8 的保真度立场 |
-| 预览区"复制主题代码"一键导出配置 | Gallery 预览页导出当前语言 + 主题 + 配置的 C# 与 XML（7） |
+| `ThemeConfig { token, components, algorithm, inherit }`（`config-provider/context.ts:99`） | `ThemeConfig { Tokens, Controls, Algorithms, Inherit }`，加 `DesignLanguage` |
+| 算法链 `derivative(seed, previousMap)`（`themes/dark/index.ts:11`）；Alias 固定公式（`util/alias.ts`） | 同构的 `IThemeAlgorithm`；Alias 计算器可按语言替换（比 antd 多一级自由度） |
+| 组件 Token 默认 = 全局 Token 的纯函数，与组件同目录（`button/style/token.ts: prepareComponentToken`） | Own Token 参考求值器留在控件包，登记为 `Ant`（第五版依据） |
+| `components[Comp].algorithm`（`context.ts:93`） | `ControlAlgorithmMode` |
+| 组件样式 `(token) => CSSObject`，首次使用生成并缓存（`genStyleHooks`） | ControlTheme 绑定 Token；惰性物化；Snapshot 缓存 |
+| 变体 = "模板 + CSS 变量，变体改变量"（`button/style/variant.ts`） | 内部变量属性由主题 Setter 按状态赋值；6.2 规则 2 据此修正 |
+| Semantic DOM：`XxxSemanticType`、`_semantic.tsx`、`useMergeSemantic`（context + props，可为 props 的函数） | Semantic Part descriptor、生成 Part Style、owner-scoped Style、属性选择器 |
+| 嵌套 `ConfigProvider`、`inherit`（`context.ts:121`） | `ThemeConfigProvider`、`Inherit` |
+| V4 预设 = 算法链 + Token，零样式（`previewThemes/v4Theme.ts`） | 设计语言可以只有定义与派生；`AtomUI.Themes.AntV4` 作为验证用例 |
+| MUI 预设用 `wave.showEffect` 换反馈实现（`muiTheme.ts:42`） | 行为策略属性（3.8 B） |
+| 预设切换用 `key` 重挂载（`ThemePreview/index.tsx:372`） | 不重挂载；只有主题实例变化的控件重套模板 |
+| 预览区"复制主题代码" | Gallery 预览页导出 C# 与 XML（7） |
 
-antd 没有而本方案需要的：模板级替换（Web 用 CSS 就能换形态，Avalonia 要换 ControlTheme）、显式回落链、lookless 控件约束。antd 有而本方案不需要的：CSS 变量模式、hash 隔离、`@layer` 优先级。
+antd 没有而本方案需要的：模板级替换（Web 用 CSS 就能换形态，Avalonia 要换 ControlTheme）、显式回落链、lookless 控件约束、契约部件。antd 有而本方案不需要的：CSS 变量模式、hash 隔离、`zeroRuntime`。
 
 ## 3. 核心模型
 
@@ -423,7 +470,7 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 **lookless 规则**（逐控件二元审计，构建期能查的进分析器）：
 
 1. **视觉值不进代码。** 控件代码不得出现 `Brush`、`Color`、`BoxShadows`、`CornerRadius`、`Thickness`、字号、尺寸的字面量或由 Token 计算得出的值；不得命令式绑定 Token。自绘控件把画刷、笔、几何参数暴露为 StyledProperty，在 `Render` 中只读取，默认值由主题 Setter 给。
-2. **状态可以进代码，视觉不行。** 由用户输入解析出的离散状态（如 Button 的 `EffectiveVariant`、`EffectiveIsDanger`）允许作为内部 StyledProperty 或伪类存在，供主题选择器使用；由状态映射出的视觉值（如 `VariantShadow`、按 `SizeType` 算出的 `EffectiveCornerRadius`）不允许，改为主题里的 `^[SizeType=Large]` 之类 Setter。判据：属性类型是枚举/布尔/数值计数就是状态，是画刷/阴影/圆角/厚度/字号就是视觉。
+2. **状态与变量可以进代码，计算不行。** 由用户输入解析出的离散状态（如 Button 的 `EffectiveVariant`、`EffectiveIsDanger`）允许作为内部 StyledProperty 或伪类存在，供主题选择器使用。视觉类型的内部属性（如 `VariantShadow`、`EffectiveCornerRadius`）允许作为**模板变量**存在，对应 antd v6 `variant.ts` 的"模板 + CSS 变量，变体改变量"模式；但它们的值只能由主题 Setter 按状态赋予（`^[EffectiveVariant=Solid]`、`^[SizeType=Large]`），控件代码不得计算或默认它们。判据：代码里出现从 Token 或常量算出画刷/阴影/圆角/厚度/字号的语句即违规；声明一个供主题赋值的属性不违规。
 3. **模板契约显式、最小、按需契约化。** 每个控件用 `[TemplatePart(Name, ContractType, IsRequired)]` 声明代码依赖的全部部件；只有存在真实语言分歧的部件（弹层宿主、输入呈现、反馈装饰等，预计每个控件零到两个）才以接口作为 `ContractType`（3.8 A），其余部件用具体类型，不为对称而抽象；用 `[PseudoClasses]` 声明全部伪类；`OnApplyTemplate` 只经 `NameScope` 取部件并按契约类型校验，可选部件为空时行为降级不抛；不在代码中按类型或 Name 搜索可视树。
 3a. **行为经策略属性注入，不内置默认。** 反馈、定位等可替换行为以 `StyledProperty<IXxxBehavior?>` 暴露，默认值 null；控件代码不包含任何语言的默认策略实现。
 4. **几何从属性推导，不写常量。** 布局、命中、动效原点使用模板设置的属性与 Token 绑定值。
@@ -517,7 +564,7 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 | Ant 的地位 | 逻辑上与其他语言完全对等：同一协议登记、校验、回落，Core 不认识它；定义与派生在小包 `AtomUI.Themes.Ant` | 内置于 Core：永远存在"回落 Ant"特例 |
 | Ant 视觉的物理位置 | 留在控件包，带语言标签登记 | 拆成 `AtomUI.Themes.Ant` 大包加可选包各一个子包：回落链末端永远是 Ant，省不下产物体积，只增加包数与约 380 个文件的迁移；作者在第四版接受了该方案，第五版撤回 |
 | 语言未覆盖的控件 / 缺口 | 显式 `Fallback` 回落链，注册期解析，链末端必须完整 | 隐式回落 Ant：Core 知道 Ant；无回落：Material 要先写满 95 个主题才能用 |
-| Own Token 默认求值归谁 | 逻辑上归语言（登记为 Ant 的求值器，其他语言可按控件替换）；物理上留在 Token 类 | 搬入语言包：约 95 个类的搬运，收益同上为零 |
+| Own Token 默认求值归谁 | 逻辑上归语言（登记为 Ant 的求值器，其他语言可按控件替换）；物理上留在 Token 类，与 antd 把 `prepareComponentToken` 放在组件目录一致 | 搬入语言包：约 95 个类的搬运，收益同上为零 |
 | lookless 重构节奏 | 分析器先上（存量为警告），按语言覆盖范围分家族转错误，不设全量前置 | 全量前置：Token-only 语言不需要它，第一个可见成果推迟数月 |
 | Token 词汇表归谁 | Core | 也交给语言：所有语言的 ControlTheme 失去共同契约 |
 | 语言与主题定义的关系 | 层级：语言 ⊃ 主题；主题专属或通用 | 正交轴：需要裁决优先级，目录无法分组 |

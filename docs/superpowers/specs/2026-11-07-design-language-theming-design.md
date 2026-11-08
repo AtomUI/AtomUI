@@ -20,19 +20,19 @@
 6. 对 `release/6.0` 的改动，除新增能力外只允许三类：简化代码、提升性能、架构优化；每一处在第 9 节登记理由。
 7. 机制与平台无关：桌面与未来的移动控件包共用同一套定义与注册协议。
 
-## 2. 参考实现：Ant Design 6.6.6 的主题架构
+## 2. 参考实现：Ant Design 6.7.0 的主题架构
 
-依据：本地引用项目 `/Users/chinboy/Projects/ReferenceProjects/ant-design`，版本 6.6.6，提交 `211c6ed29b`，核对时工作树干净。`@ant-design/cssinjs` 与 `cssinjs-utils`（`^2.1.2`）未安装在该工作树，其内部行为按 antd 的调用方式与公开类型描述。
+依据：本地引用项目 `/Users/chinboy/Projects/ReferenceProjects/ant-design`，已拉取并检出标签 `6.7.0`（提交 `c811baa979`，2026-11-04 发布），工作树干净。6.6.6（`211c6ed29b`）到 6.7.0 在主题相关源码上只有六个文件变化，架构无变，下文行号均按 6.7.0。`@ant-design/cssinjs` 与 `cssinjs-utils`（`^2.1.2`）未安装在该工作树，其内部行为按 antd 的调用方式与公开类型描述。
 
 ### 2.1 Token 层：`ThemeConfig` 与三层派生
 
-`components/config-provider/context.ts:99` 定义 `ThemeConfig = { token, components, algorithm, inherit, hashed, cssVar, zeroRuntime }`。`components[Comp]` 是组件 Token 覆盖加可选 `algorithm: boolean | MappingAlgorithm[]`（`:93`），即"该组件用自己的算法重跑"。
+`components/config-provider/context.ts:100` 定义 `ThemeConfig = { token, components, algorithm, inherit, hashed, cssVar, zeroRuntime }`。`components[Comp]` 是组件 Token 覆盖加可选 `algorithm: boolean | MappingAlgorithm[]`（`:96`），即"该组件用自己的算法重跑"。
 
 派生管线在 `components/theme/useToken.ts` 的 `getComputedToken`：
 
 ```text
 derivativeToken = theme.getDerivativeToken(seed)      // 算法链：每个 derivative(seed, previousMap) → nextMap
-merged          = { ...derivativeToken, override }    // 用户 token 覆盖（Seed 键被剔除，见 util/alias.ts:19）
+merged          = { ...derivativeToken, override }    // 用户 token 覆盖（Seed 键被剔除，见 util/alias.ts:20）
 alias           = formatToken(merged)                 // Alias 层：util/alias.ts 的固定公式（93 个字段）
 components[k]   = componentTheme ? getComputedToken({ ...alias, ...componentTokens }, …, componentTheme) : componentTokens
 ```
@@ -43,7 +43,7 @@ components[k]   = componentTheme ? getComputedToken({ ...alias, ...componentToke
 
 ### 2.2 组件层：组件 Token 默认是全局 Token 的纯函数，且与组件同目录
 
-`components/button/style/token.ts` 定义 `ComponentToken`（约 50 个字段，带中英文 `@desc`）和 `prepareComponentToken: GetDefaultToken<'Button'> = (token) => ({ primaryShadow: \`0 ${token.controlOutlineWidth}px 0 ${token.controlOutline}\`, defaultColor: token.colorText, paddingInline: token.paddingContentHorizontal - token.lineWidth, … })`。这就是 AtomUI `ButtonToken.CalculateTokenValues` 的原型：**组件 Token 的默认值是全局 Token 的派生函数，放在组件自己的目录里，不放在主题包里**。这是第五版把 Own Token 参考求值器留在控件包的直接依据。
+`components/button/style/token.ts` 定义 `ComponentToken`（约 50 个字段，带中英文 `@desc`）和 `prepareComponentToken: GetDefaultToken<'Button'>`（`:299`）`= (token) => ({ primaryShadow: \`0 ${token.controlOutlineWidth}px 0 ${token.controlOutline}\`, defaultColor: token.colorText, paddingInline: token.paddingContentHorizontal - token.lineWidth, … })`。这就是 AtomUI `ButtonToken.CalculateTokenValues` 的原型：**组件 Token 的默认值是全局 Token 的派生函数，放在组件自己的目录里，不放在主题包里**。这是第五版把 Own Token 参考求值器留在控件包的直接依据。
 
 组件样式在 `components/button/style/index.ts` 末尾 `genStyleHooks('Button', token => [genSharedButtonStyle, genSizeBase/Small/Large, genBlock, genVariant, genGroup], prepareComponentToken, { unitless })`：样式是 `(token) => CSSObject` 的纯函数，首次使用时按 token 哈希生成并缓存。对应 AtomUI 的"ControlTheme 绑定 Token + 惰性物化"。
 
@@ -51,19 +51,21 @@ components[k]   = componentTheme ? getComputedToken({ ...alias, ...componentToke
 
 ### 2.3 语义层：Semantic DOM 与 `classNames` / `styles`
 
-每个组件声明自己的语义结构类型，如 `components/button/Button.tsx:40` 的 `ButtonSemanticType = { classNames?: { root, icon, content }, styles?: {…} }`，Select 的是嵌套结构 `{ root, prefix, suffix, input, placeholder, content, item, popup: { root } }`（`components/select/index.tsx:60`）。组件文档的 "Semantic DOM" 段由 `demo/_semantic.tsx` 生成，逐项给出名称、说明与引入版本。
+每个组件声明自己的语义结构类型，如 `components/button/Button.tsx:44` 的 `ButtonSemanticType = { classNames?: { root, icon, content }, styles?: {…} }`，Select 的是嵌套结构 `{ root, prefix, suffix, input, placeholder, content, item, popup: { root } }`（`components/select/index.tsx:61`）。组件文档的 "Semantic DOM" 段由 `demo/_semantic.tsx` 生成，逐项给出名称、说明与引入版本。
 
-合并在 `components/_util/hooks/useMergeSemantic/index.ts`：`useMergeSemantic([contextClassNames, propsClassNames], [contextStyles, contextStyleRoot, propsStyles, styleRoot], { props }, schema)`。来源有两层：`ConfigProvider` 的逐组件配置（`useComponentConfig('button')`，`config-provider/context.ts:651`）与实例 props；两者都可以是对象或 `(info: { props }) => …` 函数，即按实例状态决定样式；根节点的 `style` prop 被折叠为 `styles.root`。合并结果直接落到 DOM：`Button.tsx:400` 把 `mergedClassNames.root` 加到根 class，`mergedClassNames.icon` 传给 `IconWrapper`。
+合并在 `components/_util/hooks/useMergeSemantic/index.ts`：`useMergeSemantic([contextClassNames, propsClassNames], [contextStyles, contextStyleRoot, propsStyles, styleRoot], { props }, schema)`。来源有两层：`ConfigProvider` 的逐组件配置（`useComponentConfig('button')`，`config-provider/context.ts:668`）与实例 props；两者都可以是对象或 `(info: { props }) => …` 函数，即按实例状态决定样式；根节点的 `style` prop 被折叠为 `styles.root`。合并结果直接落到 DOM：`Button.tsx:405` 把 `mergedClassNames.root` 加到根 class，`mergedClassNames.icon` 传给 `IconWrapper`。
+
+6.7.0 新增：`ConfigProvider` 可为 Button、Tag、Steps、Alert、Timeline 设置全局 `variant`，Button 经 `useVariant('button', variant, { variants, defaultVariant: 'outlined' })`（`Button.tsx:185`）解析"实例 > 上下文 > 默认"。这是**组件开关由上层配置设默认值**的 antd 版本，对应 3.8 C"控件开关由语言主题设默认值"。
 
 对应 AtomUI：Semantic Part descriptor（名称、路由、ContractType、Since）= `SemanticType` + `_semantic.tsx`；生成的 Part Style 嵌套在 owner Style 内 = `classNames`；`ConfigProvider` 级配置 = `Application.Styles` 或局部 StyleHost 中的 owner-scoped Style；`(info: { props })` 函数形式 = 属性选择器与伪类。嵌套语义（`popup.root`）对应 AtomUI 已有的 `popup.*` 三级键。
 
 ### 2.4 作用域：嵌套 `ConfigProvider` 与 `inherit`
 
-`ConfigProvider theme` 可嵌套，`inherit: false` 切断继承（`context.ts:121`）；`DesignTokenContext`（`theme/context.ts`）向下传递 `token/theme/components/override/hashed/cssVar`。对应 `ThemeConfigProvider` 与 `Inherit`。
+`ConfigProvider theme` 可嵌套，`inherit: false` 切断继承（`context.ts:122`）；`DesignTokenContext`（`theme/context.ts`）向下传递 `token/theme/components/override/hashed/cssVar`。对应 `ThemeConfigProvider` 与 `Inherit`。
 
 ### 2.5 首页切换器
 
-`.dumi/pages/index/components/ThemePreview/index.tsx:368-384`：`<ComponentsBlock key={activeThemeKey} config={activeTheme?.props} />`，预设就是 `ConfigProviderProps`，切换用 `key` 整体重挂载预览子树；`previewThemes/` 下 14 个预设文件：
+`.dumi/pages/index/components/ThemePreview/index.tsx:387`：`<ComponentsBlock key={activeThemeKey} config={activeTheme?.props} />`，预设就是 `ConfigProviderProps`，切换用 `key` 整体重挂载预览子树（6.7.0 还把 Dashboard 改为 `React.lazy` 并预取背景图，与机制无关）；`previewThemes/` 下 14 个预设文件：
 
 | 机制 | 用途 | 使用预设数 |
 | --- | --- | --- |
@@ -79,19 +81,20 @@ components[k]   = componentTheme ? getComputedToken({ ...alias, ...componentToke
 
 ### 2.6 对应关系与借鉴
 
-| Ant Design 6.6.6（源码位置） | 本方案 |
+| Ant Design 6.7.0（源码位置） | 本方案 |
 | --- | --- |
-| `ThemeConfig { token, components, algorithm, inherit }`（`config-provider/context.ts:99`） | `ThemeConfig { Tokens, Controls, Algorithms, Inherit }`，加 `DesignLanguage` |
+| `ThemeConfig { token, components, algorithm, inherit }`（`config-provider/context.ts:100`） | `ThemeConfig { Tokens, Controls, Algorithms, Inherit }`，加 `DesignLanguage` |
 | 算法链 `derivative(seed, previousMap)`（`themes/dark/index.ts:11`）；Alias 固定公式（`util/alias.ts`） | 同构的 `IThemeAlgorithm`；Alias 计算器可按语言替换（比 antd 多一级自由度） |
-| 组件 Token 默认 = 全局 Token 的纯函数，与组件同目录（`button/style/token.ts: prepareComponentToken`） | Own Token 参考求值器留在控件包，登记为 `Ant`（第五版依据） |
-| `components[Comp].algorithm`（`context.ts:93`） | `ControlAlgorithmMode` |
+| 组件 Token 默认 = 全局 Token 的纯函数，与组件同目录（`button/style/token.ts:299 prepareComponentToken`） | Own Token 参考求值器留在控件包，登记为 `Ant`（第五版依据） |
+| `components[Comp].algorithm`（`context.ts:96`） | `ControlAlgorithmMode` |
+| `ConfigProvider` 全局 `variant` 经 `useVariant` 给组件设默认（6.7.0，`Button.tsx:185`） | 控件开关由语言主题设默认值（3.8 C） |
 | 组件样式 `(token) => CSSObject`，首次使用生成并缓存（`genStyleHooks`） | ControlTheme 绑定 Token；惰性物化；Snapshot 缓存 |
 | 变体 = "模板 + CSS 变量，变体改变量"（`button/style/variant.ts`） | 内部变量属性由主题 Setter 按状态赋值；6.2 规则 2 据此修正 |
 | Semantic DOM：`XxxSemanticType`、`_semantic.tsx`、`useMergeSemantic`（context + props，可为 props 的函数） | Semantic Part descriptor、生成 Part Style、owner-scoped Style、属性选择器 |
-| 嵌套 `ConfigProvider`、`inherit`（`context.ts:121`） | `ThemeConfigProvider`、`Inherit` |
+| 嵌套 `ConfigProvider`、`inherit`（`context.ts:122`） | `ThemeConfigProvider`、`Inherit` |
 | V4 预设 = 算法链 + Token，零样式（`previewThemes/v4Theme.ts`） | 设计语言可以只有定义与派生；`AtomUI.Themes.AntV4` 作为验证用例 |
 | MUI 预设用 `wave.showEffect` 换反馈实现（`muiTheme.ts:42`） | 行为策略属性（3.8 B） |
-| 预设切换用 `key` 重挂载（`ThemePreview/index.tsx:372`） | 不重挂载；只有主题实例变化的控件重套模板 |
+| 预设切换用 `key` 重挂载（`ThemePreview/index.tsx:387`） | 不重挂载；只有主题实例变化的控件重套模板 |
 | 预览区"复制主题代码" | Gallery 预览页导出 C# 与 XML（7） |
 
 antd 没有而本方案需要的：模板级替换（Web 用 CSS 就能换形态，Avalonia 要换 ControlTheme）、显式回落链、lookless 控件约束、契约部件。antd 有而本方案不需要的：CSS 变量模式、hash 隔离、`zeroRuntime`。

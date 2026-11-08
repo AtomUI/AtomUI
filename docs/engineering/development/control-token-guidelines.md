@@ -231,7 +231,8 @@ TokenResourceExtension、TokenKey 和 OwnTokenKind 的使用都应保留对应�
 - 注册控件作为部件（IconPresenter、IconButton、ScrollViewer、Popup）携带自己的 identity：Setter 目标或模板节点在它们之上
   或之内时，`OwnerTokenResource` 解析到该部件。需要跟随宿主的值在无身份层读取后向下绑定，或显式读宿主的 `XxxTokenResource`。
 - 共享主题被无身份的派生部件复用时（TextBoxTheme 之于 EmbeddedTextBox，ButtonSpinnerTheme 之于 NumericUpDownSpinner），
-  即使 TargetType 有身份，全局值也以 `OwnerTokenResource` 读取，部件随宿主；在注册控件自身上 owner 就是它自己。
+  即使 TargetType 有身份，全局值也以 `OwnerTokenResource` 读取，部件随宿主；在注册控件自身上 owner 就是它自己。这种主题必须在
+  `<ControlTheme>` 前紧邻一条 `<!-- owner: 原因 -->` 注释；没有该标记时，有身份 TargetType 上的 `OwnerTokenResource` 报 ATOMUIGEN041。
 - `OwnerTokenResource` 只接受全局 Token；基元没有 Own Token。
 - ControlTheme 不声明 `ControlTokenScope.Identity`，也不存在 ambient snapshot fallback。
 - 过渡时长不分 TargetType，一律把 `<Transitions>` 包在 `<atom:TokenTransitions>` 中，并在过渡上用附加属性

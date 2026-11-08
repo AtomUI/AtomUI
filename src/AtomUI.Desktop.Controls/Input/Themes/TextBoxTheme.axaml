@@ -1,3 +1,6 @@
+<!-- owner: global Tokens are read from the owner because this theme is also the base of identity-less embedded editors
+     (EmbeddedTextBox in NumericUpDown, pickers and select filters), which follow their hosting control. On a TextBox
+     itself the owner is the TextBox. -->
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
@@ -6,9 +9,6 @@
               TargetType="atom:TextBox">
     <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
     <Setter Property="FocusAdorner" Value="{x:Null}" />
-    <!-- Global Tokens are read from the owner: this theme is also the base of identity-less embedded editors
-         (EmbeddedTextBox in NumericUpDown, pickers and select filters), which follow their hosting control.
-         On a TextBox itself the owner is the TextBox. -->
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TextBox">
             <atom:InputControlFrame

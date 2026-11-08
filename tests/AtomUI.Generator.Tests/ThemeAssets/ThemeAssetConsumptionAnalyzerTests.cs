@@ -56,10 +56,82 @@ public class ThemeAssetConsumptionAnalyzerTests
     [Theory]
     [InlineData("atom:Button", "{atom:ButtonTokenResource ColorPrimary}")]
     [InlineData("atom:InputControlFrame", "{atom:OwnerTokenResource ColorPrimary}")]
-    [InlineData("atom:Button", "{atom:OwnerTokenResource ColorPrimary}")]
     public void Does_Not_Report_Matching_TokenResource_Kinds(string targetType, string value)
     {
         Analyze(Theme(targetType, $"""<Setter Property="Foreground" Value="{value}" />""")).ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("{atom:OwnerTokenResource ColorPrimary}")]
+    [InlineData("{atom:OwnerTokenResource Kind=ColorPrimary}")]
+    public void Reports_OwnerTokenResource_When_TargetType_Has_A_Token_Identity(string value)
+    {
+        var diagnostic = Analyze(Theme("atom:Button", $"""<Setter Property="Foreground" Value="{value}" />"""))
+            .ShouldHaveSingleItem();
+        diagnostic.Id.ShouldBe(SharedRead);
+        diagnostic.GetMessage().ShouldContain("OwnerTokenResource");
+        diagnostic.GetMessage().ShouldContain("ButtonTokenResource");
+        diagnostic.GetMessage().ShouldContain("owner:");
+        diagnostic.GetMessage().ShouldContain("ColorPrimary");
+    }
+
+    [Fact]
+    public void Reports_The_Element_Form_Of_OwnerTokenResource_On_An_Identity_TargetType()
+    {
+        var diagnostic = Analyze(Theme("atom:Button", """
+            <Setter Property="Foreground">
+                <atom:OwnerTokenResource Kind="ColorPrimary" />
+            </Setter>
+            """)).ShouldHaveSingleItem();
+        diagnostic.Id.ShouldBe(SharedRead);
+        diagnostic.GetMessage().ShouldContain("ColorPrimary");
+    }
+
+    [Theory]
+    [InlineData("<!-- owner: reused by an identity-less part -->")]
+    [InlineData("<!--   OWNER: reused by an identity-less part -->")]
+    public void An_Owner_Comment_Directly_Before_The_ControlTheme_Allows_OwnerTokenResource(string marker)
+    {
+        Analyze(marker + "\n" + Theme("atom:Button", """
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorPrimary}" />
+            """)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void An_Owner_Comment_Before_A_Theme_In_A_Resource_Dictionary_Applies_To_That_Theme_Only()
+    {
+        var diagnostics = Analyze("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:atom="using:Demo">
+                <!-- owner: reused by an identity-less part -->
+                <ControlTheme TargetType="atom:Button">
+                    <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorPrimary}" />
+                </ControlTheme>
+                <ControlTheme TargetType="atom:Button">
+                    <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+                </ControlTheme>
+            </ResourceDictionary>
+            """);
+        diagnostics.ShouldHaveSingleItem().GetMessage().ShouldContain("ColorText");
+    }
+
+    [Fact]
+    public void An_Owner_Comment_Inside_The_ControlTheme_Does_Not_Allow_OwnerTokenResource()
+    {
+        Analyze(Theme("atom:Button", """
+            <!-- owner: reused by an identity-less part -->
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorPrimary}" />
+            """)).ShouldHaveSingleItem().Id.ShouldBe(SharedRead);
+    }
+
+    [Fact]
+    public void OwnerTokenResource_On_A_TargetType_Without_Identity_Needs_No_Marker()
+    {
+        Analyze(Theme("atom:InputControlFrame", """
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorPrimary}" />
+            <Setter Property="Background">
+                <atom:OwnerTokenResource Kind="ColorBgContainer" />
+            </Setter>
+            """)).ShouldBeEmpty();
     }
 
     [Theory]

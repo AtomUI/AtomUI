@@ -30,8 +30,9 @@ public class ThemeAssetRegistrationTests
     public void Owner_Token_Reads_In_An_Exported_Theme_Do_Not_Name_A_Token_Owner()
     {
         // OwnerTokenResource reads the inherited owner's Effective Global Token; like SharedTokenResource it names no
-        // Token family, so an exported primitive theme using it must not require a control called "Owner".
-        var asset = new TextFile("Rating/Themes/RatingItemTheme.axaml", "<ResourceDictionary xmlns=\"https://github.com/avaloniaui\" xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\" xmlns:local=\"using:Demo\" xmlns:atom=\"using:AtomUI.Theme.Resources\"><ControlTheme x:Key=\"{x:Type local:RatingItem}\" TargetType=\"local:RatingItem\"><Setter Property=\"Tag\" Value=\"{atom:OwnerTokenResource ColorBorder}\" /></ControlTheme></ResourceDictionary>");
+        // Token family, so an exported primitive theme using it must not require a control called "Owner". The exported
+        // TargetType gets an identity, so the theme carries the `owner:` marker that allows owner reads (ATOMUIGEN041).
+        var asset = new TextFile("Rating/Themes/RatingItemTheme.axaml", "<ResourceDictionary xmlns=\"https://github.com/avaloniaui\" xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\" xmlns:local=\"using:Demo\" xmlns:atom=\"using:AtomUI.Theme.Resources\"><!-- owner: reused by identity-less parts --><ControlTheme x:Key=\"{x:Type local:RatingItem}\" TargetType=\"local:RatingItem\"><Setter Property=\"Tag\" Value=\"{atom:OwnerTokenResource ColorBorder}\" /></ControlTheme></ResourceDictionary>");
         var result = Run("namespace Demo { public class RatingItem : Avalonia.Controls.Control { } }", asset);
         result.Diagnostics.ShouldBeEmpty();
     }

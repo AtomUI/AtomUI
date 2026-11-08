@@ -3,8 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <!-- Global Tokens are read from the owner: NumericUpDownSpinner's theme is BasedOn this one, and its owner is the
-         hosting NumericUpDown. On a ButtonSpinner itself the owner is the ButtonSpinner. -->
+    <!-- owner: global Tokens are read from the owner because NumericUpDownSpinner's theme is BasedOn this one and its
+         owner is the hosting NumericUpDown (no identity of its own). On a ButtonSpinner itself the owner is the ButtonSpinner. -->
     <ControlTheme x:Key="{x:Type atom:ButtonSpinner}" TargetType="atom:ButtonSpinner">
         <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
         <Setter Property="FocusAdorner" Value="{x:Null}" />

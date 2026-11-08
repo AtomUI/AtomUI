@@ -346,6 +346,17 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
+    // Same rule (ATOMUIGEN041), distinct message: an OwnerTokenResource read in a ControlTheme whose TargetType has a Token
+    // identity. Only a theme marked `<!-- owner: reason -->` (reused by identity-less parts that follow their host) may do so.
+    public static readonly DiagnosticDescriptor ThemeAssetOwnerReadOnIdentity = new(
+        AtomUIDiagnosticIds.ThemeAssetSharedReadMismatch,
+        "ControlTheme must read global Tokens through the TokenResource that matches its TargetType",
+        "ControlTheme for '{0}' reads global Token '{1}' with OwnerTokenResource although '{0}' has a Token identity; use {2}, or add a '<!-- owner: reason -->' comment right before the ControlTheme when identity-less parts reuse this theme and must follow their host",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
     // Same rule (ATOMUIGEN041), distinct message: a load-time frozen read (SharedTokenResourceValue) or any TokenResource
     // read on a transition's Duration/Delay. Neither has a shared exemption, and the generic remedies do not apply: a
     // transition is shared by every target of its style and has no resource host.

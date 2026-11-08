@@ -19,10 +19,16 @@ internal static class ThemeAssetConsumptionAnalyzer
 {
     private const string AvaloniaNamespace = "https://github.com/avaloniaui";
     private const string SharedMarker = "shared:";
+    private const string OwnerMarker = "owner:";
     private const string LayoutMarker = "layout";
 
     private static readonly Regex s_sharedTokenResource = new(
         @"\{\s*(?:[\w.-]+:)?SharedTokenResource\b(?:\s+(?:Kind\s*=\s*)?(?<name>[\w.]+))?",
+        RegexOptions.CultureInvariant);
+
+    // `{atom:OwnerTokenResource ColorText}` / `{atom:OwnerTokenResource Kind=ColorText}`.
+    private static readonly Regex s_ownerTokenResource = new(
+        @"\{\s*(?:[\w.-]+:)?OwnerTokenResource(?:Extension)?\b(?:\s+(?:Kind\s*=\s*)?(?<name>[\w.]+))?",
         RegexOptions.CultureInvariant);
 
     // `{atom:SharedTokenResourceValue Kind=MotionDurationMid}`: a value read once from the application at load.
@@ -163,7 +169,7 @@ internal static class ThemeAssetConsumptionAnalyzer
         var targetType = AttributeValue(controlTheme, "TargetType")?.Trim();
         if (string.IsNullOrEmpty(targetType))
         {
-            return new ThemeScope(null, false);
+            return new ThemeScope(null, false, false);
         }
 
         if (targetType!.StartsWith("{x:Type", StringComparison.Ordinal) && targetType.EndsWith("}", StringComparison.Ordinal))
@@ -180,19 +186,25 @@ internal static class ThemeAssetConsumptionAnalyzer
         // Types in the Avalonia namespace are framework primitives even when a package control shares the name.
         var hasIdentity = !string.Equals(xmlNamespace, AvaloniaNamespace, StringComparison.Ordinal) &&
                           tokenIdentityControls.Contains(name);
-        return new ThemeScope(name, hasIdentity);
+        // `<!-- owner: reason -->` right before the ControlTheme: identity-less parts reuse this theme (as a BasedOn base)
+        // and must follow their host, so its global reads go through the owner.
+        return new ThemeScope(name, hasIdentity, HasPrecedingComment(controlTheme, OwnerMarker));
     }
 
     internal sealed class ThemeScope
     {
-        internal ThemeScope(string? targetTypeName, bool hasIdentity)
+        internal ThemeScope(string? targetTypeName, bool hasIdentity, bool allowsOwnerReads)
         {
             TargetTypeName = targetTypeName;
             HasIdentity = hasIdentity;
+            AllowsOwnerReads = allowsOwnerReads;
         }
 
         internal string? TargetTypeName { get; }
         internal bool HasIdentity { get; }
+
+        /// <summary>The ControlTheme carries an <c>owner:</c> marker: owner reads are allowed on its identity TargetType.</summary>
+        internal bool AllowsOwnerReads { get; }
     }
 
     private sealed class Analysis
@@ -240,6 +252,20 @@ internal static class ThemeAssetConsumptionAnalyzer
 
         private void AnalyzeSharedReads(XElement element, ThemeScope theme)
         {
+            var ownerReadsForbidden = theme.HasIdentity && !theme.AllowsOwnerReads;
+            if (ownerReadsForbidden &&
+                (element.Name.LocalName == "OwnerTokenResource" || element.Name.LocalName == "OwnerTokenResourceExtension"))
+            {
+                // Element form `<atom:OwnerTokenResource Kind="ColorText" />`.
+                var kind = AttributeValue(element, "Kind");
+                _report(Diagnostic.Create(
+                    AtomUIDiagnosticDescriptors.ThemeAssetOwnerReadOnIdentity,
+                    _asset.CreateLocation(),
+                    theme.TargetTypeName ?? "<unknown>",
+                    kind ?? "?",
+                    theme.TargetTypeName + "TokenResource"));
+            }
+
             foreach (var attribute in element.Attributes())
             {
                 if (attribute.IsNamespaceDeclaration)
@@ -271,6 +297,17 @@ internal static class ThemeAssetConsumptionAnalyzer
                         theme.TargetTypeName ?? "<unknown>",
                         timing.Groups["name"].Success ? timing.Groups["name"].Value : "?",
                         timing.Groups["extension"].Value));
+                    continue;
+                }
+
+                if (ownerReadsForbidden && s_ownerTokenResource.Match(attribute.Value) is { Success: true } owner)
+                {
+                    _report(Diagnostic.Create(
+                        AtomUIDiagnosticDescriptors.ThemeAssetOwnerReadOnIdentity,
+                        LocateAttribute(attribute),
+                        theme.TargetTypeName ?? "<unknown>",
+                        owner.Groups["name"].Success ? owner.Groups["name"].Value : "?",
+                        theme.TargetTypeName + "TokenResource"));
                     continue;
                 }
 

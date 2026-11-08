@@ -166,6 +166,29 @@ public class ThemeAssetConsumptionAnalyzerTests
              .ShouldBe("Value=\"{atom:SharedTokenResource ColorPrimary}\"");
     }
 
+    [Fact]
+    public void Token_Identities_Published_By_Referenced_Packages_Count_As_Identities()
+    {
+        var reference = CreateOwnerReference("Dropdown");
+
+        var shared = Analyze(Theme("atom:Dropdown", """
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+            """), reference);
+        var diagnostic = shared.ShouldHaveSingleItem();
+        diagnostic.Id.ShouldBe(SharedRead);
+        diagnostic.GetMessage().ShouldContain("DropdownTokenResource");
+        diagnostic.GetMessage().ShouldNotContain("OwnerTokenResource");
+
+        Analyze(Theme("atom:Dropdown", """
+            <Setter Property="Foreground" Value="{atom:DropdownTokenResource ColorPrimary}" />
+            """), reference).ShouldBeEmpty();
+
+        // Names the referenced package does not publish remain primitives.
+        Analyze(Theme("atom:DropdownItem", """
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+            """), reference).ShouldHaveSingleItem().GetMessage().ShouldContain("OwnerTokenResource");
+    }
+
     // ---- ATOMUIGEN045 -------------------------------------------------------------------
 
     [Theory]
@@ -473,7 +496,7 @@ public class ThemeAssetConsumptionAnalyzerTests
             """);
     }
 
-    private static ImmutableArray<Diagnostic> Analyze(string axaml)
+    private static ImmutableArray<Diagnostic> Analyze(string axaml, params MetadataReference[] additionalReferences)
     {
         var references = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))!
                          .Split(Path.PathSeparator)
@@ -486,7 +509,7 @@ public class ThemeAssetConsumptionAnalyzerTests
                 CSharpSyntaxTree.ParseText(TokenSource, path: "TokenSource.cs"),
                 CSharpSyntaxTree.ParseText(ThemeSchemaGeneratorTests.AtomUIStubs)
             ],
-            references,
+            references.AddRange(additionalReferences),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var theme = new InMemoryAdditionalText("Button/Themes/ButtonTheme.axaml", axaml);
         var driver = CSharpGeneratorDriver.Create(
@@ -503,6 +526,34 @@ public class ThemeAssetConsumptionAnalyzerTests
                .Where(static d => d.Id is SharedRead or VisualLiteral or MasksSetter)
                .OrderBy(static d => d.Location.SourceSpan.Start)
                .ToImmutableArray();
+    }
+
+    // A referenced package publishes its Token owners through assembly-level ThemeBuildOwnerAttribute metadata.
+    private static MetadataReference CreateOwnerReference(string controlName)
+    {
+        var source = $$"""
+            [assembly: AtomUI.Theme.Definitions.Compiled.ThemeBuildOwner(1, "AtomUI", "{{controlName}}", "Other, Version=1.0.0.0", "Other.{{controlName}}", "global::Other.{{controlName}}Tokens", "{{new string('0', 64)}}")]
+
+            namespace AtomUI.Theme.Definitions.Compiled
+            {
+                [System.AttributeUsage(System.AttributeTargets.Assembly, AllowMultiple = true)]
+                public sealed class ThemeBuildOwnerAttribute : System.Attribute
+                {
+                    public ThemeBuildOwnerAttribute(int version, string catalog, string id, string ownerAssembly,
+                        string ownerType, string identityProvider, string digest)
+                    {
+                    }
+                }
+            }
+            """;
+        return CSharpCompilation.Create(
+                "OtherPackage",
+                [CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken)],
+                ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))!
+                    .Split(Path.PathSeparator)
+                    .Select(static path => MetadataReference.CreateFromFile(path)),
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+            .ToMetadataReference();
     }
 
     private const string TokenSource = """

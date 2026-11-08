@@ -123,6 +123,7 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             var identityControls = new HashSet<string>(
                 controlInfos.Where(static control => control.HasDescriptor).Select(static control => control.ControlName),
                 StringComparer.Ordinal);
+            identityControls.UnionWith(ThemeAssetConsumptionAnalyzer.GetReferencedIdentityControls(compilation));
             var analyzedAssets = new HashSet<string>(StringComparer.Ordinal);
             foreach (var asset in assets)
             {

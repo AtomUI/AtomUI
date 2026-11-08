@@ -69,6 +69,27 @@ internal static class ThemeAssetConsumptionAnalyzer
         .Split(' '),
         StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Control names that referenced packages publish as Token owners (<c>ThemeBuildOwnerAttribute.Id</c>). Matching is by
+    /// simple control name, the same granularity used for this package's own controls. The attribute is only read here;
+    /// its validation belongs to <c>ThemeBuildContracts</c>.
+    /// </summary>
+    internal static IEnumerable<string> GetReferencedIdentityControls(Compilation compilation)
+    {
+        foreach (var assembly in compilation.SourceModule.ReferencedAssemblySymbols)
+        {
+            foreach (var attribute in assembly.GetAttributes())
+            {
+                if (attribute.AttributeClass?.ToDisplayString() == "AtomUI.Theme.Definitions.Compiled.ThemeBuildOwnerAttribute" &&
+                    attribute.ConstructorArguments.Length > 2 &&
+                    attribute.ConstructorArguments[2].Value is string { Length: > 0 } id)
+                {
+                    yield return id;
+                }
+            }
+        }
+    }
+
     /// <param name="tokenIdentityControls">Names of the controls of this package that have a Token identity.</param>
     internal static void Analyze(
         ThemeAssetInfo asset,

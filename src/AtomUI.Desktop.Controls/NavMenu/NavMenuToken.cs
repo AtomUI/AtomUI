@@ -376,13 +376,15 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
             ActiveBarHeight = EffectiveGlobalToken.LineWidthBold;
         }
 
-        var itemContentMargin = ItemContentMargin != default
-            ? ItemContentMargin
-            : new Thickness(
+        if (!IsExplicit(NavMenuTokenKind.ItemContentMargin))
+        {
+            ItemContentMargin = new Thickness(
                 EffectiveGlobalToken.UniformlyMarginXXS,
                 0,
                 EffectiveGlobalToken.UniformlyMarginXXS,
                 EffectiveGlobalToken.UniformlyMarginXXS);
+        }
+
         var colorTextDark = ColorUtils.FromRgbF(
             0.65d,
             colorTextLightSolid.GetRedF(),
@@ -417,7 +419,6 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
 
         KeyGestureColor = EffectiveGlobalToken.ColorTextSecondary;
         
-        ItemContentMargin    = itemContentMargin;
         ItemContentPadding   = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingXXS);
         ItemMargin           = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
         ItemHeight           = EffectiveGlobalToken.ControlHeightLG;

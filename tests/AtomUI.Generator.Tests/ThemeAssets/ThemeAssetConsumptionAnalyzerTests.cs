@@ -211,6 +211,42 @@ public class ThemeAssetConsumptionAnalyzerTests
     }
 
     [Theory]
+    [InlineData("Spacing", "8")]
+    [InlineData("ZIndex", "1000")]
+    [InlineData("BadgeOffset", "-10, 4")]
+    [InlineData("HorizontalOffset", "6")]
+    [InlineData("Margin", "-1,0,0,0")]
+    public void Reports_Spacing_ZIndex_Offset_And_Signed_Literals_Through_Setters(string property, string value)
+    {
+        var diagnostic = Analyze(Theme("atom:Button", $"""<Setter Property="{property}" Value="{value}" />"""))
+            .ShouldHaveSingleItem();
+        diagnostic.Id.ShouldBe(VisualLiteral);
+        diagnostic.GetMessage().ShouldContain(property);
+    }
+
+    [Theory]
+    [InlineData("Spacing", "8")]
+    [InlineData("ZIndex", "1000")]
+    [InlineData("BadgeOffset", "-10, 4")]
+    [InlineData("HorizontalOffset", "6")]
+    public void A_Layout_Comment_Allows_Spacing_ZIndex_And_Offset_Literals(string property, string value)
+    {
+        Analyze(Theme("atom:Button", $"""
+            <!-- layout: stacking and placement constants -->
+            <Setter Property="{property}" Value="{value}" />
+            """)).ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("Spacing", "0")]
+    [InlineData("BadgeOffset", "0, 0")]
+    [InlineData("OffsetX", "4")]
+    public void Zero_Placements_And_Names_Not_Ending_In_Offset_Are_Not_Reported(string property, string value)
+    {
+        Analyze(Theme("atom:Button", $"""<Setter Property="{property}" Value="{value}" />""")).ShouldBeEmpty();
+    }
+
+    [Theory]
     [InlineData("Background", "#FFF")]
     [InlineData("Foreground", "#80FFFFFF")]
     [InlineData("BorderBrush", "#112233")]

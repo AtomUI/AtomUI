@@ -28,7 +28,8 @@ internal static class ThemeAssetConsumptionAnalyzer
         @"^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
         RegexOptions.CultureInvariant);
 
-    private static readonly Regex s_numeric = new(@"^[\d.,\s]+$", RegexOptions.CultureInvariant);
+    // Signed numbers and comma/space separated tuples (Thickness, Point, CornerRadius).
+    private static readonly Regex s_numeric = new(@"^[-+\d.,\s]+$", RegexOptions.CultureInvariant);
 
     // The last compound selector must be `<Type>#<Name>` (optionally followed by classes or pseudo-classes) after /template/.
     private static readonly Regex s_templateNodeSelector = new(
@@ -48,8 +49,12 @@ internal static class ThemeAssetConsumptionAnalyzer
     private static readonly HashSet<string> s_numericProperties = new(StringComparer.Ordinal)
     {
         "CornerRadius", "BorderThickness", "FontSize", "StrokeThickness", "Width", "Height",
-        "MinWidth", "MinHeight", "Padding", "Margin", "Opacity", "FontWeight"
+        "MinWidth", "MinHeight", "Padding", "Margin", "Opacity", "FontWeight", "Spacing", "ZIndex"
     };
+
+    // Any property named `*Offset` (BadgeOffset, HorizontalOffset, VerticalOffset, ...) carries a numeric placement value.
+    private static bool IsNumericProperty(string property) =>
+        s_numericProperties.Contains(property) || property.EndsWith("Offset", StringComparison.Ordinal);
 
     // Avalonia's named colours except Transparent, which (like ATOMUIGEN044 for code) is not a visual decision.
     private static readonly HashSet<string> s_namedColors = new(
@@ -294,7 +299,7 @@ internal static class ThemeAssetConsumptionAnalyzer
                 return s_hexColor.IsMatch(value) || s_namedColors.Contains(value);
             }
 
-            if (!s_numericProperties.Contains(property) || !s_numeric.IsMatch(value))
+            if (!IsNumericProperty(property) || !s_numeric.IsMatch(value))
             {
                 return false;
             }

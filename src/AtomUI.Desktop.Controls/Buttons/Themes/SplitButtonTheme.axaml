@@ -76,12 +76,15 @@
         </Style>
 
         <Style Selector="^ /template/ #PART_MainLayout > atom|Button">
+            <!-- layout: stacking order of the two Buttons -->
             <Setter Property="ZIndex" Value="1000"/>
         </Style>
         <Style Selector="^ /template/ #PART_MainLayout > atom|Button#PART_SecondaryButton">
+            <!-- layout: stacking order of the two Buttons -->
             <Setter Property="ZIndex" Value="1001"/>
         </Style>
         <Style Selector="^ /template/ #PART_MainLayout > atom|Button:pointerover">
+            <!-- layout: stacking order of the two Buttons -->
             <Setter Property="ZIndex" Value="2000"/>
         </Style>
 </ControlTheme>

@@ -116,6 +116,7 @@ internal static class OwnTokenReferenceAnalysis
         }
 
         var active = collector.ResolveActiveMembers();
+        collector.AddFieldFedConsumers(active);
         var entries = new List<OwnTokenAnalysisEntry>();
         foreach (var control in controls.Where(static control => control.HasOwnToken))
         {
@@ -224,6 +225,47 @@ internal static class OwnTokenReferenceAnalysis
         }
 
         internal IEnumerable<GlobalConsumerAnalysisEntry> GlobalConsumers => _consumers;
+
+        // `Field = ... EffectiveGlobalToken.X ...` in an evaluator: X is consumed only when Field is (Active).
+        private readonly Dictionary<(string Control, string Member), HashSet<string>> _fieldFedGlobals = new();
+
+        /// <summary>
+        /// Adds the global reads that feed an Own field directly once the active fields are known: a global that only
+        /// feeds Reserved or Unreferenced fields has no visible consumer and is not part of the control's consumption.
+        /// Reads through locals or outside such assignments are recorded unconditionally when collected.
+        /// </summary>
+        internal void AddFieldFedConsumers(ISet<(string Control, string Member)> active)
+        {
+            foreach (var pair in _fieldFedGlobals)
+            {
+                if (!active.Contains(pair.Key))
+                {
+                    continue;
+                }
+
+                foreach (var global in pair.Value)
+                {
+                    _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, pair.Key.Control, global, CodeSource));
+                }
+            }
+        }
+
+        private static string? GetAssignedOwnField(MemberAccessExpressionSyntax access, ISet<string> own)
+        {
+            var assignment = access.Ancestors().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
+            if (assignment is null || !assignment.Right.Span.Contains(access.Span))
+            {
+                return null;
+            }
+
+            var target = assignment.Left switch
+            {
+                IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+                MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax } member => member.Name.Identifier.ValueText,
+                _ => null
+            };
+            return target is not null && own.Contains(target) ? target : null;
+        }
 
         // ---- AXAML ------------------------------------------------------------------------
 
@@ -357,7 +399,20 @@ internal static class OwnTokenReferenceAnalysis
             {
                 if (_globals.Contains(name) && GetEnclosingTokenControl(access) is { } tokenControl)
                 {
-                    _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, tokenControl, name, CodeSource));
+                    if (GetAssignedOwnField(access, _ownByControl[tokenControl]) is { } field)
+                    {
+                        if (!_fieldFedGlobals.TryGetValue((tokenControl, field), out var globals))
+                        {
+                            globals = new HashSet<string>(StringComparer.Ordinal);
+                            _fieldFedGlobals.Add((tokenControl, field), globals);
+                        }
+
+                        globals.Add(name);
+                    }
+                    else
+                    {
+                        _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, tokenControl, name, CodeSource));
+                    }
                 }
             }
             else if (expressionName.EndsWith(TokenKindSuffix, StringComparison.Ordinal) ||

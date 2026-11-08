@@ -287,7 +287,28 @@ public class OwnTokenReferenceAnalysisTests
     [Fact]
     public void EffectiveGlobalToken_Reads_Are_Attributed_To_The_Token_Class_Control()
     {
-        var run = Run(DemoTokens);
+        var run = Run(DemoTokens, ButtonTheme("""<Setter Property="Height" Value="{atom:ButtonTokenResource Height}" />"""));
+
+        run.Consumers.ShouldBe([("AtomUI", "Button", "ControlHeight", "code")]);
+    }
+
+    [Fact]
+    public void A_Global_That_Only_Feeds_A_Field_Without_Consumer_Is_Not_Consumed()
+    {
+        // Height is Unreferenced here; LabelToken.Gap is Reserved. Neither makes its source global a consumer.
+        var run = Run(DemoTokens.Replace(
+            "public double Gap { get; set; }",
+            "public double Gap { get; set; }\n\n                public override void CalculateTokenValues(bool isDark) { Gap = EffectiveGlobalToken.ControlHeight; }"));
+
+        run.Consumers.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Global_Reads_Through_Locals_Or_Outside_Field_Assignments_Stay_Consumers()
+    {
+        var run = Run(DemoTokens.Replace(
+            "Height = EffectiveGlobalToken.ControlHeight;",
+            "var height = EffectiveGlobalToken.ControlHeight; Height = height;"));
 
         run.Consumers.ShouldBe([("AtomUI", "Button", "ControlHeight", "code")]);
     }
@@ -298,6 +319,7 @@ public class OwnTokenReferenceAnalysisTests
         var run = Run(DemoTokens, ButtonTheme("""
             <Setter Property="Foreground" Value="{atom:ButtonTokenResource ColorText}" />
             <Setter Property="Background" Value="{atom:ButtonTokenResource ColorPrimary}" />
+            <Setter Property="Height" Value="{atom:ButtonTokenResource Height}" />
             """), LabelTheme("""<Setter Property="Foreground" Value="{atom:LabelTokenResource ColorText}" />"""));
 
         run.Consumers.ShouldBe([

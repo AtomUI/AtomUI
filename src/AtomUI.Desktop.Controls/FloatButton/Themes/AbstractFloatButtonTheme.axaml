@@ -31,15 +31,19 @@
         <Setter Property="Width" Value="{atom:FloatButtonTokenResource FloatButtonSize}" />
 
         <Style Selector="^[Shape=Circle][IsDotBadge=True]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-10, 4" />
         </Style>
         <Style Selector="^[Shape=Circle][IsDotBadge=False]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-10, -2" />
         </Style>
         <Style Selector="^[Shape=Square][IsDotBadge=True]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-5, -1" />
         </Style>
         <Style Selector="^[Shape=Square][IsDotBadge=False]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-10, -5" />
         </Style>
 

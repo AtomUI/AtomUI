@@ -11,7 +11,9 @@ namespace AtomUI.Generator.Tests.ThemeAssets;
 /// are raised to errors per directory in <c>src/AtomUI.Desktop.Controls/.editorconfig</c>; the generator-reported
 /// diagnostics (ATOMUIGEN041/042/045/046) do not take path-scoped <c>.editorconfig</c> severities, so this test fails
 /// the build for them instead: it runs the theme-asset analysis over the family's real AXAML with the package's real
-/// Token identities, and reads the generated consumption map for Unreferenced Own Tokens.
+/// Token identities, and reads the generated consumption map for Unreferenced Own Tokens. The test project references
+/// AtomUI.Controls and AtomUI.Desktop.Controls for build order only, so those generated files are current whenever the
+/// tests are built.
 /// </summary>
 public class MigratedFamilyAnalyzerGateTests
 {
@@ -67,12 +69,18 @@ public class MigratedFamilyAnalyzerGateTests
     {
         var map = File.ReadAllText(Path.Combine(RepositoryRoot, DesktopControls,
             "GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedThemeConsumption.g.cs"));
-        var unreferenced = Regex.Matches(map,
-                                    @"new OwnTokenEntry\(""AtomUI"", ""(?<control>\w+)"", ""(?<token>\w+)"", OwnTokenState\.Unreferenced")
-                                .Where(static match => s_familyControls.Contains(match.Groups["control"].Value))
-                                .Select(static match => $"{match.Groups["control"].Value}.{match.Groups["token"].Value}")
-                                .ToArray();
+        var familyEntries = Regex.Matches(map,
+                                     @"new OwnTokenEntry\(""AtomUI"", ""(?<control>\w+)"", ""(?<token>\w+)"", OwnTokenState\.(?<state>\w+)")
+                                 .Where(static match => s_familyControls.Contains(match.Groups["control"].Value))
+                                 .ToArray();
+        // Guards the parse itself: a format change of the generated map must not make the gate pass vacuously.
+        familyEntries.Count(static match => match.Groups["state"].Value == "Active").ShouldBeGreaterThan(0,
+            "No Active Own Token entries of the family were found in the generated consumption map.");
 
+        var unreferenced = familyEntries
+                           .Where(static match => match.Groups["state"].Value == "Unreferenced")
+                           .Select(static match => $"{match.Groups["control"].Value}.{match.Groups["token"].Value}")
+                           .ToArray();
         unreferenced.ShouldBeEmpty("ATOMUIGEN042: consume, [ReservedToken], or delete these Own Tokens.");
     }
 

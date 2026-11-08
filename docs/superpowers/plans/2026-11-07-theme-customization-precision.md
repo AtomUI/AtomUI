@@ -628,8 +628,8 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Desktop | TextArea | ResizeHandleSize | 10.1 | Active（resize 指示此前从未可见，已接通） |
 | Desktop | Select | FixedItemMargin, OptionPadding, SelectAffixPadding | 10.2 | OptionPadding → Active（选项行内边距，对应 antd Select optionPadding）；SelectAffixPadding、FixedItemMargin → Reserved |
 | Desktop | ComboBox | ItemDisabledColor | 10.2 | Active |
-| Desktop | RadioButton | RadioBgColor | 10.3 | |
-| Desktop | Slider | MarginPartWithMark | 10.3 | |
+| Desktop | RadioButton | RadioBgColor | 10.3 | Active（选中态圆点背景） |
+| Desktop | Slider | MarginPartWithMark | 10.3 | Reserved |
 | Desktop | ProgressBar | CircleTextColor, LineBorderRadius, ProgressActiveMotionDuration, ProgressStepMarginInlineEnd, ProgressStepMinWidth | 10.4 | |
 | Desktop | Tag | TagCloseIconSize | 10.5 | |
 | Desktop | Alert | CloseIconSize, MessageWithDescriptionMargin | 10.6 | |

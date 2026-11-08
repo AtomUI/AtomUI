@@ -133,6 +133,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIGEN045` | Generator | Warning | 主题 AXAML 中出现颜色字面量，或数值视觉字面量（CornerRadius、BorderThickness、FontSize、StrokeThickness、Width/Height 等）未以 `<!-- layout -->` 注释标注 | 视觉值改读 Token（线宽用 `LineWidth`）；确属布局常量时加 `<!-- layout -->` | ThemeAssets |
 | `ATOMUIGEN046` | Generator | Warning | ControlTemplate 节点属性上写了默认值，而同一主题存在针对该节点同一属性的状态 Setter；模板属性为 LocalValue 优先级会遮蔽状态 Setter | 把默认值移到 Style Setter，与状态 Setter 同级 | ThemeAssets |
 | `ATOMUIGEN047` | Generator | Warning | 控件代码以 `SetValue(prop, value)` 或属性赋值把 LocalValue 写入视觉 StyledProperty，覆盖用户绑定与主题 Setter | 改用 `SetCurrentValue`，或带 `BindingPriority.Template` 的可撤销写入 | ThemeConsumption |
+| `ATOMUIGEN048` | Generator | Error | `CalculateTokenValues` 内对 Own 属性无条件赋值后，同一方法又读取它派生其他字段；派生字段因此读到默认值而非用户显式值 | 用 `if (!IsExplicit(XxxTokenKind.Field)) Field = …;` 包裹该默认赋值 | DesignToken |
 | `ATOMUIGEN101` | Generator | Warning | Gallery source code display generator 发现参与默认源码匹配的 `ShowCasePanel` 缺少 `Name` | 给 `ShowCasePanel` 设置稳定 `Name`，或使用显式源码 key 规则 | GallerySourceCodeDisplay |
 | `ATOMUILOC001` | Localization | Error | AtomUI 固定语言数据记录的 schema、标识符、BCP 47 标签或元数据无效 | 按数据 schema 修正发生错误的具体记录 | LanguageTags |
 | `ATOMUILOC002` | Localization | Error | AtomUI 固定语言数据包含重复的属性标识符或规范 BCP 47 标签 | 删除重复记录并为每个属性和标签保留唯一映射 | LanguageTags |
@@ -148,7 +149,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 独立 ILLink 适配器使用公开 `CreateCustomErrorMessage` API，因此传输编号为 `IL6505`、`IL6506`、`IL6507`，
 分别对应消息中的 `ATOMUIREG005`、`ATOMUIREG006`、`ATOMUIREG007`。REG 保持统一语义编号；不得通过私有 API 改写 ILLink 前缀。
 
-`ATOMUIGEN040`–`ATOMUIGEN047` 属于主题消费精确性检查，保证"声称可定制的 Token 设置后一定有效果"。除 `040` 外
+`ATOMUIGEN040`–`ATOMUIGEN048` 属于主题消费精确性检查，保证"声称可定制的 Token 设置后一定有效果"。除 `040`、`048` 外
 默认 Warning：存量控件主题分家族迁移，每个家族迁移完成后由控件包 `.editorconfig` 把该家族范围升级为 Error。
 `042` 的引用分析只统计所属包内的主题 AXAML 与 C# 引用，不分析应用代码。`044`、`046`、`047` 只报告可静态证明的
 写法：经变量间接传入的字面量、运行时才能确定的 Setter 目标不报告，由评审补充。背景与修复规则见

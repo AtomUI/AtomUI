@@ -641,8 +641,9 @@ Control 默认 Token evaluator 必须接收 Control appearance 和 Effective Glo
 `IsDark`。
 
 第 4 到第 6 步固定为 `MarkExplicit(config.OwnTokens)` → `Evaluate(builder, appearance)` → `ApplyExplicit()`。
-内部派生字段（例如 DataGrid 由 `BorderColor` 派生的 `Table*` 字段）在第 5 步从已含显式值的公开字段派生，因此用户
-覆盖公开字段后派生字段跟随变化。编译器不引入 Own Token 依赖图、求值版本或别名机制；`CalculateTokenValues`
+求值器对字段的默认赋值是无条件的，所以被其他字段读取的基字段（例如 DataGrid 的 `BorderColor`）必须以
+`if (!IsExplicit(kind)) Field = …;` 守卫默认赋值；只被消费的字段不需要守卫，第 6 步已保证其最终值。这样内部派生字段
+（`TableBorderColor = BorderColor`）在第 5 步读到的就是显式值，用户覆盖公开字段后派生字段跟随变化。编译器不引入 Own Token 依赖图、求值版本或别名机制；`CalculateTokenValues`
 仍是唯一默认计算入口。
 
 控件槽位编译契约：`ApplyTheme` 返回时全局 token 与资源完整提交；控件级 `ControlThemeSnapshot`

@@ -532,6 +532,35 @@ git commit -m "docs(Theme): 主题精确生效重构收尾，登记 Reserved/删
 
 ---
 
+### Task 16: 派生基字段的 `IsExplicit` 守卫与 `ATOMUIGEN048`（在 Task 2 之后、Task 3 之前执行）
+
+Task 2 实施时发现：评估器对每个 Own 字段都是无条件赋值，`MarkExplicit → Evaluate → ApplyExplicit` 能保证基字段最终是显式值，但同一方法里由基字段派生的字段（DataGrid `TableBorderColor = BorderColor`、Button `ContentLineHeight` 由 `ContentFontSize` 推）在 Evaluate 期间读到的仍是刚被覆盖回去的默认值。因此"派生字段自动跟随"只在基字段的默认赋值被 `IsExplicit` 守卫时成立。本任务把这条规则变成分析器并一次性改写存量。
+
+**Files:**
+- Create: `src/AtomUI.Generator/DesignToken/OwnTokenDerivationBaseAnalyzer.cs`
+- Modify: `src/AtomUI.Generator/Diagnostics/AtomUIDiagnosticIds.cs`、`AtomUIDiagnosticDescriptors.cs`
+- Modify: `src/AtomUI.Controls/**/*Token.cs`、`src/AtomUI.Desktop.Controls/**/*Token.cs`、`src/AtomUI.Desktop.Controls.DataGrid/DataGridToken.cs`、`src/AtomUI.Desktop.Controls.ColorPicker/**/*Token.cs`、`src/AtomUI.Desktop.Controls.Extras/**/*Token.cs`（分析器报告的每一处）
+- Test: `tests/AtomUI.Generator.Tests/DesignToken/OwnTokenDerivationBaseAnalyzerTests.cs`
+- Test: `tests/AtomUI.Desktop.Controls.DataGrid.Tests/Theme/DataGridBorderColorOverrideTests.cs`（已有，保持通过）
+
+**Interfaces:**
+- Produces: `AtomUIDiagnosticIds.OwnTokenDerivationBaseUnguarded = "ATOMUIGEN048"`，Error。规则：在 `[ControlDesignToken]` 类型的 `CalculateTokenValues` 内，对 Own 属性 `P` 的赋值语句没有被 `if (!IsExplicit(<Kind>.P))` 直接包裹，而 `P` 在同一方法体中该赋值之后被读取（出现在任何表达式的右侧，含 `new Thickness(P, …)`、方法参数）→ 报告，位置在该赋值。只读不写、或写后不再读的属性不报；`base.CalculateTokenValues(...)` 调用忽略。
+- 修复形态固定为 `if (!IsExplicit(XxxTokenKind.P)) { P = expr; }`，不改变 `expr`。
+
+- [ ] **Step 1: 写分析器失败测试**：正例 `A = 1; B = A * 2;`（A 未守卫 → 1 个 048 在 `A = 1`）；`A = 1; B = new Thickness(A);`（1 个）；反例 `if (!IsExplicit(K.A)) A = 1; B = A * 2;`（0）、`A = 1;` 后无读取（0）、读取发生在赋值之前 `B = A; A = 1;`（0）；边界：赋值在 `if/else` 两个分支里各一次且之后被读取（2 个）。
+- [ ] **Step 2: 运行确认失败。**
+- [ ] **Step 3: 实现分析器**（数据流只需语法顺序：收集方法体内按位置排序的赋值与读取，对每个 Own 属性判断"存在未守卫赋值且其后有读取"）。
+- [ ] **Step 4: 运行确认通过。**
+- [ ] **Step 5: 构建全部控件包，按 048 报告逐处加守卫**（不改表达式；守卫使用该字段的 `XxxTokenKind` 成员），直到 `dotnet build` 对 `src/AtomUI.Controls`、`src/AtomUI.Desktop.Controls`、`DataGrid`、`ColorPicker`、`Extras` 以 `-warnaserror:ATOMUIGEN048` 全部通过。记录改写处数到计划末尾"存量基线"。
+- [ ] **Step 6: 回归**：`tests/AtomUI.Core.Tests`、`tests/AtomUI.Desktop.Controls.Tests`、`tests/AtomUI.Desktop.Controls.DataGrid.Tests` 全部通过。
+- [ ] **Step 7: Commit**
+
+```bash
+git commit -m "refactor(Theme): 派生基字段默认赋值加 IsExplicit 守卫并新增 ATOMUIGEN048"
+```
+
+---
+
 ## 存量基线（Task 5 / 7 执行后填写）
 
 | 诊断 | AtomUI.Controls | AtomUI.Desktop.Controls | DataGrid | ColorPicker | Extras |

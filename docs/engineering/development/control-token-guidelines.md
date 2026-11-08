@@ -86,7 +86,9 @@ internal sealed class RatingToken : AbstractControlDesignToken
 
 编译器在调用 `CalculateTokenValues` 前已写入用户的显式 Own Token 覆盖并置显式位，计算结束后再次写入显式值。因此：
 
-- 默认计算读到的同类字段已经是用户覆盖后的值，依赖它的派生字段自动跟随；不需要在计算里重新查配置。
+- 被其他字段读取的基字段（`ContentFontSize`、DataGrid 的 `BorderColor`）必须以 `if (!IsExplicit(kind)) Field = …;`
+  守卫默认赋值，否则派生字段在计算期间读到的是刚被写回的默认值；只被消费的字段不需要守卫，编译器最后一步会重写
+  显式值。分析器 `ATOMUIGEN048` 报告未守卫的基字段。
 - 需要"用户没设置时才派生"的字段用 `IsExplicit(kind)` 判断；禁止以 `double.NaN`、`default`、`null` 等哨兵值
   判断显式性，Color、Thickness、CornerRadius 等类型没有可用哨兵。
 - 内部派生字段（例如 DataGrid 由公开 `BorderColor` 派生的 `TableBorderColor`）从公开字段派生，主题消费派生字段
@@ -382,6 +384,7 @@ Semantic 和资产 factory，不运行时扫描程序集或 AXAML。作者不手
 - Semantic Part 的 ContractType 与模板 marker 类型不兼容，或 Part 名称、class、cardinality 与 descriptor 不一致。
 - internal 实现类型被错误声明为独立 Token owner。
 - `CalculateTokenValues` 以 `double.IsNaN` 或其他哨兵判断 Own Token 显式性。
+- `CalculateTokenValues` 内对 Own 字段无条件赋值后，同一方法又读取该字段派生其他字段（基字段未用 `IsExplicit` 守卫）。
 
 以下问题由分析器报告，迁移期为警告，所属控件家族迁移完成后由项目 `.editorconfig` 升级为错误：
 

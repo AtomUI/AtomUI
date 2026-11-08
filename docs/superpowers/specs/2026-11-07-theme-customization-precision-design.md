@@ -106,7 +106,7 @@ descriptor.Evaluate(builder, appearance)          // CalculateTokenValues 只为
 builder.ApplyExplicit()                           // 再写一遍显式值，无论求值器怎么写都以显式为准
 ```
 
-`AbstractControlDesignToken` 增加 `protected bool IsExplicit(XxxTokenKind kind)`；求值器用它代替 `IsNaN` 哨兵（NaN 对 Color、Thickness 等类型不可用）。分析器禁止新的 `IsNaN` 哨兵，存量 22 处改写。内部派生字段（如 DataGrid 的 `Table*`）从已含显式值的公开字段派生，A′ 随之修复。这是对现有 `CalculateTokenValues` 的最小修正，不引入依赖图、求值版本或别名机制。
+`AbstractControlDesignToken` 增加 `protected bool IsExplicit(XxxTokenKind kind)`；求值器用它代替 `IsNaN` 哨兵（NaN 对 Color、Thickness 等类型不可用）。分析器禁止新的 `IsNaN` 哨兵，存量 22 处改写。求值器对字段的默认赋值是无条件的，所以"派生字段跟随显式值"要求**被派生的基字段**的默认赋值用 `IsExplicit` 守卫（`if (!IsExplicit(Kind.BorderColor)) BorderColor = …;`）；只被消费、不被其他字段读取的字段不需要守卫，最后一步重写显式值已经保证它。分析器（`ATOMUIGEN048`）报告"同一方法内赋值后又被读取、却没有守卫"的字段，存量一次改写。内部派生字段（如 DataGrid 的 `Table*`）由此从已含显式值的公开字段派生，A′ 随之修复。这是对现有 `CalculateTokenValues` 的最小修正，不引入依赖图、求值版本或别名机制。
 
 ### 3.3 修复 B：控件主题只读"控件有效全局值"
 

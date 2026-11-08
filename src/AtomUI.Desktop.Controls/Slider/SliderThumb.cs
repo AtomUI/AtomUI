@@ -1,3 +1,4 @@
+using AtomUI.Theme;
 using AtomUI.Controls;
 using AtomUI.Media;
 using Avalonia;
@@ -11,6 +12,9 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Pressed)]
+// A Token-owner transparent part: the thumb is created by the Slider track only, so its theme reads the Slider
+// TokenResource and its Token-declared transitions resolve to the Slider through the inherited owner.
+[TokenOwnerTransparent]
 public class SliderThumb : TemplatedControl
 {
     #region 公共属性定义

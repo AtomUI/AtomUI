@@ -19,7 +19,10 @@ internal sealed class SliderToken : AbstractControlDesignToken
 
     /// <summary>
     /// 滑动条控件的高度
+    /// Slider track size (antd controlSize)
     /// </summary>
+    [ReservedToken("antd Slider controlSize. The Slider cross size is pinned to ControlHeight by the derived padding and " +
+                   "the rail inset follows the thumb size, so this Token has no design-meaningful effect yet.")]
     public double SliderTrackSize { get; set; }
 
     /// <summary>
@@ -147,10 +150,7 @@ internal sealed class SliderToken : AbstractControlDesignToken
         var handleLineWidth      = EffectiveGlobalToken.LineWidth + increaseThumbWidth;
         var handleLineWidthHover = EffectiveGlobalToken.LineWidth + increaseThumbWidth * 1.5;
 
-        if (!IsExplicit(SliderTokenKind.SliderTrackSize))
-        {
-            SliderTrackSize                 = controlSizeHover;
-        }
+        SliderTrackSize                 = controlSizeHover;
 
         RailSize                        = 4;
         MarkSize                        = 8;
@@ -189,11 +189,14 @@ internal sealed class SliderToken : AbstractControlDesignToken
             ColorUtils.OnBackground(EffectiveGlobalToken.ColorTextDisabled, EffectiveGlobalToken.ColorBgContainer);
         TrackBgDisabled = EffectiveGlobalToken.ColorBgContainerDisabled;
 
+        // The track reserves the hovered handle circle across the rail; the padding brings the cross size to
+        // ControlHeight. SliderTrackSize (antd controlSize) is reserved and does not take part in the layout.
+        var trackCrossSize = ThumbCircleSizeHover;
         SliderPaddingHorizontal =
-            new Thickness(SliderTrackSize / 2, (EffectiveGlobalToken.ControlHeight - SliderTrackSize) / 2);
-        SliderPaddingVertical = new Thickness((EffectiveGlobalToken.ControlHeight - SliderTrackSize) / 2,
-            SliderTrackSize / 2);
-        MarginPartWithMark = new Thickness(0, 0, 0, EffectiveGlobalToken.ControlHeightLG - SliderTrackSize);
+            new Thickness(trackCrossSize / 2, (EffectiveGlobalToken.ControlHeight - trackCrossSize) / 2);
+        SliderPaddingVertical = new Thickness((EffectiveGlobalToken.ControlHeight - trackCrossSize) / 2,
+            trackCrossSize / 2);
+        MarginPartWithMark = new Thickness(0, 0, 0, EffectiveGlobalToken.ControlHeightLG - controlSize);
 
         ThumbOutlineColor = ColorUtils.FromRgbF(0.2, ThumbCircleBorderActiveColor.GetRedF(),
             ThumbCircleBorderActiveColor.GetGreenF(),

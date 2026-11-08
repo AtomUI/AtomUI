@@ -1,3 +1,4 @@
+using AtomUI.Theme;
 using System.Globalization;
 using AtomUI.Controls;
 using AtomUI.Data;
@@ -20,6 +21,9 @@ using Avalonia.Rendering;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Vertical, StdPseudoClass.Horizontal)]
+// A Token-owner transparent part: the track is a template part of the Slider only, so its theme reads the Slider
+// TokenResource and its Token-declared transitions resolve to the Slider through the inherited owner.
+[TokenOwnerTransparent]
 public class SliderTrack : TemplatedControl, ICustomHitTest
 {
     /// <summary>

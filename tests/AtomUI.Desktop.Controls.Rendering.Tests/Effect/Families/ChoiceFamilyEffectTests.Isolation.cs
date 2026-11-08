@@ -119,13 +119,15 @@ public partial class ChoiceFamilyEffectTests
     [Fact]
     public void Slider_Thumb_Follows_Controls_Slider_Not_Controls_SliderThumb()
     {
-        // SliderThumb is registered, so its Token owner is itself; its theme reads the Slider's TokenResource, so the host's
-        // override reaches it and the thumb's own identity does not.
+        // SliderThumb is registered but Token-owner transparent: it inherits the Slider as owner, and its theme reads the
+        // Slider's TokenResource, so the host's override reaches it and the thumb's own identity does not.
         var slider = new Slider { Width = 240, Value = 50 };
         WithControls([slider], (provider, capture) =>
         {
             var thumb = slider.GetVisualDescendants().OfType<SliderThumb>().First();
-            ThemeScope.GetTokenOwner(thumb).ShouldBe(SliderThumbTokens.Identity);
+            ThemeScope.GetTokenOwner(thumb).ShouldBe(SliderTokens.Identity);
+            ThemeScope.GetTokenOwner(slider.GetVisualDescendants().OfType<SliderTrack>().First())
+                      .ShouldBe(SliderTokens.Identity);
             using var before = capture();
 
             provider.Config = IsolationConfig(control: (SliderThumbTokens.Identity, "ColorBgContainer"));
@@ -217,6 +219,126 @@ public partial class ChoiceFamilyEffectTests
         static TimeSpan BackgroundDuration(Animatable control) =>
             control.Transitions.ShouldNotBeNull().OfType<TransitionBase>()
                    .First(static transition => transition.Property == TemplatedControl.BackgroundProperty).Duration;
+    }
+
+    [Fact]
+    public void Controls_Slider_MotionDurationMid_Reaches_The_Track_And_Thumb_Transitions()
+    {
+        // The track and thumb are Token-owner transparent, so their atom:TokenTransitions resolve to the Slider.
+        var slider   = new Slider { Width = 240, Value = 50 };
+        var provider = new ThemeConfigProvider { Config = new ThemeConfigBuilder().Build(), Child = slider };
+        var window   = new AvaloniaWindow { Width = 400, Height = 200, Content = provider };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var track = slider.GetVisualDescendants().OfType<SliderTrack>().First();
+            var thumb = slider.GetVisualDescendants().OfType<SliderThumb>().First();
+            var trackBaseline = DurationOf(track, SliderTrack.TrackGrooveBrushProperty);
+            var thumbBaseline = DurationOf(thumb, TemplatedControl.BorderBrushProperty);
+            trackBaseline.ShouldBeGreaterThan(TimeSpan.Zero);
+            thumbBaseline.ShouldBeGreaterThan(TimeSpan.Zero);
+
+            foreach (var part in new[] { SliderTrackTokens.Identity, SliderThumbTokens.Identity })
+            {
+                provider.Config = MotionDurationConfig(part);
+                SettleFor(TimeSpan.FromMilliseconds(200));
+                DurationOf(track, SliderTrack.TrackGrooveBrushProperty).ShouldBe(trackBaseline, $"Controls[{part}] reached the track.");
+                DurationOf(thumb, TemplatedControl.BorderBrushProperty).ShouldBe(thumbBaseline, $"Controls[{part}] reached the thumb.");
+            }
+
+            provider.Config = MotionDurationConfig(SliderTokens.Identity);
+            var stopwatch = Stopwatch.StartNew();
+            while ((DurationOf(track, SliderTrack.TrackGrooveBrushProperty) == trackBaseline ||
+                    DurationOf(thumb, TemplatedControl.BorderBrushProperty) == thumbBaseline) &&
+                   stopwatch.Elapsed < TimeSpan.FromSeconds(10))
+            {
+                Dispatcher.UIThread.RunJobs();
+                Thread.Sleep(5);
+            }
+
+            DurationOf(track, SliderTrack.TrackGrooveBrushProperty).ShouldBe(TimeSpan.FromMilliseconds(500));
+            DurationOf(thumb, TemplatedControl.BorderBrushProperty).ShouldBe(TimeSpan.FromMilliseconds(500));
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        static ThemeConfig MotionDurationConfig(ControlTokenIdentity identity) =>
+            new ThemeConfigBuilder()
+                .WithControl(identity, new ControlThemeConfigBuilder()
+                                       .WithToken(nameof(SharedTokenKind.MotionDurationMid), "00:00:00.5000000").Build())
+                .Build();
+
+        static void SettleFor(TimeSpan duration)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            while (stopwatch.Elapsed < duration)
+            {
+                Dispatcher.UIThread.RunJobs();
+                Thread.Sleep(5);
+            }
+        }
+
+        static TimeSpan DurationOf(Animatable control, AvaloniaProperty property) =>
+            control.Transitions.ShouldNotBeNull().OfType<TransitionBase>()
+                   .First(transition => transition.Property == property).Duration;
+    }
+
+    [Fact]
+    public void Disabled_ToggleSwitch_Is_Dimmed_Once_As_A_Whole()
+    {
+        // antd dims a disabled switch once, on the root (opacity: switchDisabledOpacity). The disabled switch must render
+        // exactly like an enabled switch whose only change is that root opacity: a knob or groove dimmed on its own as
+        // well would differ from it.
+        var disabled  = new ToggleSwitch { IsChecked = true, IsEnabled = false };
+        var reference = new ToggleSwitch { IsChecked = true };
+        var page = new Border
+        {
+            Background = Avalonia.Media.Brushes.White,
+            Padding    = new Thickness(24),
+            Child      = new StackPanel { Spacing = 24, Children = { disabled, reference } }
+        };
+        WithControls([page], (_, capture) =>
+        {
+            var opacity = ControlTokenAccessor.Capture(disabled).GetOwn<double>(ToggleSwitchTokenKind.SwitchDisabledOpacity);
+            opacity.ShouldBeLessThan(1d);
+            disabled.Opacity.ShouldBe(opacity);
+            disabled.GetVisualDescendants().OfType<SwitchKnob>().First().Opacity.ShouldBe(1d);
+            reference.Opacity = opacity;
+
+            using var frame  = capture();
+            var       window = (Visual)TopLevel.GetTopLevel(disabled)!;
+            var       a      = disabled.TranslatePoint(new Point(), window).ShouldNotBeNull();
+            var       b      = reference.TranslatePoint(new Point(), window).ShouldNotBeNull();
+            disabled.Bounds.Size.ShouldBe(reference.Bounds.Size);
+            var differing = 0;
+            for (var y = 0; y < (int)disabled.Bounds.Height; y++)
+            {
+                for (var x = 0; x < (int)disabled.Bounds.Width; x++)
+                {
+                    var left  = frame.GetPixel((int)a.X + x, (int)a.Y + y);
+                    var right = frame.GetPixel((int)b.X + x, (int)b.Y + y);
+                    if (Math.Abs(left.Red - right.Red) > TokenEffectHarness.DefaultChannelTolerance ||
+                        Math.Abs(left.Green - right.Green) > TokenEffectHarness.DefaultChannelTolerance ||
+                        Math.Abs(left.Blue - right.Blue) > TokenEffectHarness.DefaultChannelTolerance)
+                    {
+                        differing++;
+                    }
+                }
+            }
+
+            differing.ShouldBe(0, "The disabled switch is not the root-opacity result of the enabled switch.");
+            // And the dimming is visible: the reference without root opacity differs.
+            reference.Opacity = 1;
+            using var undimmed = capture();
+            var knob   = reference.GetVisualDescendants().OfType<SwitchKnob>().First();
+            var centre = knob.TranslatePoint(new Point(4, knob.Bounds.Height / 2), window).ShouldNotBeNull();
+            undimmed.GetPixel((int)centre.X - 8, (int)centre.Y)
+                    .ShouldNotBe(frame.GetPixel((int)centre.X - 8, (int)centre.Y));
+        });
     }
 
     // ---- helpers ------------------------------------------------------------------------------

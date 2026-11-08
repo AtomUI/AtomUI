@@ -21,10 +21,9 @@ public partial class ChoiceFamilyEffectTests
     public void Slider_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
-        var marks      = false;
-        var vertical   = false;
-        var disabled   = false;
-        var autoLength = false;
+        var marks    = false;
+        var vertical = false;
+        var disabled = false;
         Action<Control>? arrange = null;
         switch (token)
         {
@@ -57,11 +56,6 @@ public partial class ChoiceFamilyEffectTests
             case "SliderPaddingVertical":
                 vertical = true;
                 break;
-            case "SliderTrackSize":
-                // The cross size is SliderTrackSize plus the derived padding, which always adds up to ControlHeight; the
-                // track size shows as the minimum length of a Slider that is not stretched (2 x SliderTrackSize).
-                autoLength = true;
-                break;
         }
 
         Run(() =>
@@ -71,10 +65,6 @@ public partial class ChoiceFamilyEffectTests
             {
                 slider.Orientation = Orientation.Vertical;
                 slider.Height      = 200;
-            }
-            else if (autoLength)
-            {
-                slider.HorizontalAlignment = HorizontalAlignment.Left;
             }
             else
             {

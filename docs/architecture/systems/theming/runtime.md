@@ -1057,7 +1057,8 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
 - 基元与部件在模板内沿逻辑树继承到该值；Popup 内容经逻辑父级继承，独立 TopLevel 经现有 lease 继承。
 - owner 透明容器：类型标记 internal `[TokenOwnerTransparent]` 的注册控件（`atom:Popup`）不注入 owner，它承载的内容
   （下拉候选项、弹层框体）沿 Popup 的逻辑父级继承宿主的 owner，独立使用时没有 owner、回落为全局值；容器自身的视觉以自己的
-  `XxxTokenResource`（`PopupTokenResource`）显式读取。
+  `XxxTokenResource`（`PopupTokenResource`）显式读取。只作宿主模板部件、没有 Own Token 的注册控件（SliderTrack、SliderThumb）
+  同样标记，继承宿主 owner。
 - 注册控件作为模板部件（IconPresenter、IconButton、ScrollViewer 等）携带自己的 identity，Setter 目标或模板节点
   位于这类部件之上或之内时，`OwnerTokenResource` 解析到该部件。需要跟随宿主的值在无身份层（宿主本身或无身份部件）上
   读取后向下绑定，或显式读取宿主的 `XxxTokenResource`。

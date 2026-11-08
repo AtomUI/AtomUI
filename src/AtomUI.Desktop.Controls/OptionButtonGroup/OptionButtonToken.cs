@@ -9,11 +9,32 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 internal sealed class OptionButtonToken : AbstractControlDesignToken
 {
-    
+    private const string GroupDrawnFrame =
+        "OptionButtonGroup draws its separators and the selection border behind the options, so an opaque option " +
+        "background would cover them; options stay transparent until the group draws the frame above its options.";
+
+    /// <summary>
+    /// 单选框按钮背景色（antd Radio buttonBg）
+    /// </summary>
+    [ReservedToken("antd Radio buttonBg. " + GroupDrawnFrame)]
+    public Color ButtonBackground { get; set; }
+
+    /// <summary>
+    /// 单选框按钮选中背景色（antd Radio buttonCheckedBg）
+    /// </summary>
+    [ReservedToken("antd Radio buttonCheckedBg. " + GroupDrawnFrame)]
+    public Color ButtonCheckedBackground { get; set; }
+
     /// <summary>
     /// 单选框按钮文本颜色
     /// </summary>
     public Color ButtonColor { get; set; }
+
+    /// <summary>
+    /// 单选框按钮水平内间距（antd Radio buttonPaddingInline），作为默认与大号 <see cref="ContentPadding"/> 的左右分量；
+    /// 只使用 Left / Right。
+    /// </summary>
+    public Thickness ButtonPadding { get; set; }
 
     /// <summary>
     /// 单选框按钮选中并禁用时的背景色
@@ -102,6 +123,8 @@ internal sealed class OptionButtonToken : AbstractControlDesignToken
         ButtonSolidCheckedBackground       = EffectiveGlobalToken.ColorPrimary;
         ButtonSolidCheckedHoverBackground  = EffectiveGlobalToken.ColorPrimaryHover;
         ButtonSolidCheckedActiveBackground = EffectiveGlobalToken.ColorPrimaryActive;
+        ButtonBackground                   = EffectiveGlobalToken.ColorBgContainer;
+        ButtonCheckedBackground            = EffectiveGlobalToken.ColorBgContainer;
         ButtonColor                        = EffectiveGlobalToken.ColorText;
         ButtonCheckedBgDisabled            = EffectiveGlobalToken.ControlItemBgActiveDisabled;
         ButtonCheckedColorDisabled         = EffectiveGlobalToken.ColorTextDisabled;
@@ -145,9 +168,21 @@ internal sealed class OptionButtonToken : AbstractControlDesignToken
         var controlHeightLG = EffectiveGlobalToken.ControlHeightLG;
         var lineWidth       = EffectiveGlobalToken.LineWidth;
 
-        ContentPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
+        if (!IsExplicit(OptionButtonTokenKind.ButtonPadding))
+        {
+            ButtonPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontal - lineWidth, 0);
+        }
+
+        // Kept as direct reads in the assignments: the Own Token reference analysis follows derivations, not locals.
+        ContentPadding = new Thickness(
+            ButtonPadding.Left,
+            Math.Max((controlHeight - ContentFontSize * ContentLineHeight) / 2 - lineWidth, 0),
+            ButtonPadding.Right,
             Math.Max((controlHeight - ContentFontSize * ContentLineHeight) / 2 - lineWidth, 0));
-        ContentPaddingLG = new Thickness(EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
+        ContentPaddingLG = new Thickness(
+            ButtonPadding.Left,
+            Math.Max((controlHeightLG - ContentFontSizeLG * ContentLineHeightLG) / 2 - lineWidth, 0),
+            ButtonPadding.Right,
             Math.Max((controlHeightLG - ContentFontSizeLG * ContentLineHeightLG) / 2 - lineWidth, 0));
         ContentPaddingSM = new Thickness(8 - lineWidth,
             Math.Max((controlHeightSM - ContentFontSizeSM * ContentLineHeightSM) / 2 - lineWidth, 0));

@@ -13,11 +13,11 @@
 - Changed
   - `OptionButtonTheme`、`OptionButtonGroupTheme` 的全局 Token 改读 `OptionButtonTokenResource` / `OptionButtonGroupTokenResource`，
     控件级覆盖生效。
+  - `ButtonPadding`（antd `buttonPaddingInline`）接入默认与大号 `ContentPadding*` 的左右分量；`ButtonBackground`、
+    `ButtonCheckedBackground`（antd `buttonBg` / `buttonCheckedBg`）标为 Reserved，原因是分组在选项之下绘制分隔线与选中边框。
 - Fixed
   - `OptionButtonToken` 的 `ContentPaddingLG` 改用大号高度、字号与行高计算，`ContentPaddingSM` 改用小号的同组值（此前分别借用
     小号值与无意义的运算）；字号、行高去掉无效的 `-1` 哨兵，基础字号变化后重新派生。
-- Removed
-  - 删除无消费者的 OptionButton Own Token `ButtonBackground`、`ButtonCheckedBackground`、`ButtonPadding`。
 
 ## 2026-10-20
 

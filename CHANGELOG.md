@@ -7,7 +7,7 @@ All notable changes to AtomUI are documented in this file.
 ## Unreleased
 
 - Breaking Changes
-  - Theme Tokens: remove Button-family Own Tokens that had no consumer. Delete `Button.ExtraContentItemSpacing`, `Button.ExtraContentMargin`, `Button.ExtraContentMarginLG`, `Button.ExtraContentMarginSM`, `Button.GutterToFlyout`, `HyperLinkButton.BorderColorDisabled`, `FloatButton.SquareBadgeOffset`, `FloatButton.CircleBadgeOffset`, `OptionButton.ButtonBackground`, `OptionButton.ButtonCheckedBackground` and `OptionButton.ButtonPadding` from theme configurations; use `DropdownButton.ExtraContentMargin*`/`MarginToAnchor`, `SplitButton.GutterToFlyout`, `FloatButton.BadgeOffset` or the `ContentPadding*` Tokens instead.
+  - Theme Tokens: remove Button-family Own Tokens that had no consumer. Delete `Button.ExtraContentItemSpacing`, `Button.ExtraContentMargin`, `Button.ExtraContentMarginLG`, `Button.ExtraContentMarginSM`, `Button.GutterToFlyout`, `HyperLinkButton.BorderColorDisabled`, `FloatButton.SquareBadgeOffset`, and `FloatButton.CircleBadgeOffset` from theme configurations; use `DropdownButton.ExtraContentMargin*`/`MarginToAnchor`, `SplitButton.GutterToFlyout` or `FloatButton.BadgeOffset` instead.
   - Theme Tokens: `Button.FontWeight` is now a `FontWeight` value (`500` or `Medium`) and sets the Button font weight; `Button.GroupBorderColor` is reserved and has no visual effect yet.
 - Button family
   - Control-level overrides (`Controls[Button]`, `Controls[DropdownButton]`, ...) now reach every theme read and the code-side variant colours; scoped and Application resources apply to variant colours.

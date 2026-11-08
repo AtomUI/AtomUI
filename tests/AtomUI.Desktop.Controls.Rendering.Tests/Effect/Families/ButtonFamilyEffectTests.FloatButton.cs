@@ -35,6 +35,18 @@ public partial class ButtonFamilyEffectTests
     private static readonly string[] s_floatButtonGroupOwnerReads =
         ["BorderRadiusLG", "ColorBgElevated", "ColorSplit", "Spacing"];
 
+    [Fact]
+    public void Owner_Read_Lists_Match_The_Primitive_Themes()
+    {
+        // Drift guard: a new OwnerTokenResource read in a primitive theme must get an effect row through its owners.
+        ThemeOwnerReads.Read("src/AtomUI.Desktop.Controls/FloatButton/Themes/AbstractFloatButtonTheme.axaml")
+                       .Order(StringComparer.Ordinal)
+                       .ShouldBe(s_floatButtonOwnerReads.Order(StringComparer.Ordinal));
+        ThemeOwnerReads.Read("src/AtomUI.Desktop.Controls/FloatButton/Themes/FloatButtonItemsControlTheme.axaml")
+                       .Order(StringComparer.Ordinal)
+                       .ShouldBe(s_floatButtonGroupOwnerReads.Order(StringComparer.Ordinal));
+    }
+
     public static IEnumerable<object[]> FloatButtonRows() =>
         WithOwnerReads(EffectTestData.For("AtomUI", "FloatButton"), s_floatButtonOwnerReads);
 

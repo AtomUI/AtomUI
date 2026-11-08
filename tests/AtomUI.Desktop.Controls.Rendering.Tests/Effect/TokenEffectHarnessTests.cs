@@ -174,6 +174,21 @@ public class TokenEffectHarnessTests
     }
 }
 
+public class ThemeOwnerReadsTests
+{
+    [Fact]
+    public void Owner_Reads_Are_Parsed_In_Every_Markup_Form_And_Other_Kinds_Are_Ignored()
+    {
+        ThemeOwnerReads.Parse("""
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgElevated}" />
+            <Setter Property="BorderBrush"><atom:OwnerTokenResource Kind="ColorBorder" /></Setter>
+            <Setter Property="Margin" Value="{atom:ButtonTokenResource IconMargin}" />
+            <Setter Property="Opacity" Value="{atom:SharedTokenResource OpacityLoading}" />
+            """).Order(StringComparer.Ordinal).ShouldBe(["ColorBgElevated", "ColorBorder", "ColorText"]);
+    }
+}
+
 public class TokenPerturbationTests
 {
     [Fact]

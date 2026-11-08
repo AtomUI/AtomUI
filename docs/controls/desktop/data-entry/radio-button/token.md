@@ -34,8 +34,11 @@ RadioButton 的控件专项模型通过 Theme 消费 Token：
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 - OptionButtonGroup 的方向、位置和边框几何由 C# 状态与 Theme selector 表达，不为 Horizontal/Vertical 展开 Token 矩阵。
 - Group 和 Item 的预设高度与圆角继续使用 SharedToken 的 `ControlHeight*` 和 `BorderRadius*`；方向能力不增加组件专属高度或圆角 Token。
-- OptionButtonGroup 在选项之后绘制外框与选中边框，选项背景保持透明，因此没有按钮级背景 Token。原 `ButtonBackground`、
-  `ButtonCheckedBackground` 与 `ButtonPadding`（与 `ContentPadding*` 重复）没有消费者，已于 2026-11-08 删除。
+- `ButtonPadding` 对应 antd Radio `buttonPaddingInline`，提供默认与大号 `ContentPadding` / `ContentPaddingLG` 的左右分量
+  （只取 Left / Right；默认 `PaddingContentHorizontal - LineWidth`），小号沿用 `ContentPaddingSM`。
+- `ButtonBackground`、`ButtonCheckedBackground` 对应 antd Radio `buttonBg`、`buttonCheckedBg`，当前为 Reserved：
+  OptionButtonGroup 在选项之下绘制分隔线与选中边框，不透明的选项背景会盖住它们，因此选项保持透明；分组改为在选项之上绘制
+  边框后再接通这两个 Token。
 - `ContentLineHeight*` 是相对对应字号的行高倍数；`ContentPaddingLG`、`ContentPaddingSM` 的垂直内边距分别由
   `ControlHeightLG` / `ControlHeightSM` 与同档字号、行高计算。
 

@@ -165,6 +165,157 @@ public partial class StepsProgressFamilyEffectTests
                    .First(static transition => transition.Property == RangeBase.ValueProperty).Duration;
     }
 
+    // ---- Steps ----------------------------------------------------------------------------------
+
+    [Fact]
+    public void Controls_Steps_ColorPrimary_Changes_Only_The_Steps()
+    {
+        var steps    = CreateIsolationSteps();
+        var checkBox = new CheckBox { Content = "CheckBox", IsChecked = true };
+        Control[] all = [steps, checkBox];
+        WithControls(all, (provider, capture) =>
+        {
+            using var before = capture();
+            provider.Config = IsolationConfig(control: (StepsTokens.Identity, "ColorPrimary"));
+            using var bySteps = capture();
+            ChangedRatioOf(before, bySteps, steps).ShouldBeGreaterThan(TokenEffectHarness.DefaultThresholdRatio,
+                "Controls[Steps].ColorPrimary did not reach the Steps.");
+            ChangedRatioOf(before, bySteps, checkBox).ShouldBe(0d, "Controls[Steps].ColorPrimary leaked into the CheckBox.");
+
+            provider.Config = IsolationConfig(root: "ColorPrimary");
+            using var byRoot = capture();
+            foreach (var control in all)
+            {
+                ChangedRatioOf(before, byRoot, control).ShouldBeGreaterThan(TokenEffectHarness.DefaultThresholdRatio,
+                    $"Root ColorPrimary did not reach {control.GetType().Name}.");
+            }
+        });
+    }
+
+    [Fact]
+    public void Steps_Items_Follow_Controls_Steps_Not_Controls_StepsItem()
+    {
+        // StepsItem is registered but Token-owner transparent: the item, its indicator and its tail inherit the Steps as
+        // owner, so Controls[Steps] reaches the titles, icons and tails and Controls[StepsItem] does not.
+        var steps = CreateIsolationSteps();
+        WithControls([steps], (provider, capture) =>
+        {
+            var item      = steps.Items.OfType<StepsItem>().First();
+            var indicator = item.GetVisualDescendants().OfType<StepsItemIndicator>().First();
+            ThemeScope.GetTokenOwner(item).ShouldBe(StepsTokens.Identity);
+            ThemeScope.GetTokenOwner(indicator).ShouldBe(StepsTokens.Identity);
+            using var before = capture();
+
+            provider.Config = IsolationConfig(control: (StepsItemTokens.Identity, "ColorPrimary"));
+            using var byItem = capture();
+            ChangedRatioOf(before, byItem, steps).ShouldBe(0d, "Controls[StepsItem].ColorPrimary reached the Steps.");
+
+            provider.Config = IsolationConfig(control: (StepsTokens.Identity, "ColorPrimary"));
+            using var bySteps = capture();
+            ChangedRatioOf(before, bySteps, indicator).ShouldBeGreaterThan(TokenEffectHarness.DefaultThresholdRatio,
+                "Controls[Steps].ColorPrimary did not reach the item icon.");
+        });
+    }
+
+    [Fact]
+    public void Steps_Custom_Icon_Keeps_Its_Identity_And_Follows_The_Steps_Colours()
+    {
+        // The custom icon presenter is a registered control nested in the item template: it keeps its own identity, and
+        // its brush is read explicitly from the Steps TokenResource.
+        var steps = CreateIsolationSteps(customIcon: true);
+        WithControls([steps], (provider, capture) =>
+        {
+            var icon = steps.GetVisualDescendants().OfType<IconPresenter>().First(static p => p.Name == "CustomIconPresenter");
+            ThemeScope.GetTokenOwner(icon).ShouldBe(IconPresenterTokens.Identity);
+            using var before = capture();
+
+            provider.Config = IsolationConfig(control: (IconPresenterTokens.Identity, "ColorPrimary"));
+            using var byIcon = capture();
+            ChangedRatioOf(before, byIcon, steps).ShouldBe(0d, "Controls[IconPresenter].ColorPrimary reached the Steps icon.");
+
+            provider.Config = IsolationConfig(control: (StepsTokens.Identity, "ColorPrimary"));
+            using var bySteps = capture();
+            ChangedRatioOf(before, bySteps, icon).ShouldBeGreaterThan(TokenEffectHarness.DefaultThresholdRatio,
+                "Controls[Steps].ColorPrimary did not reach the custom icon.");
+        });
+    }
+
+    [Fact]
+    public void Controls_Steps_MotionDurationMid_Reaches_The_Item_Transitions()
+    {
+        // The indicator and inline item transitions are Token-declared and resolve through the inherited owner: the Steps.
+        var steps    = CreateIsolationSteps(type: StepsType.Inline);
+        var provider = new ThemeConfigProvider { Config = new ThemeConfigBuilder().Build(), Child = steps };
+        var window   = new AvaloniaWindow { Width = 800, Height = 300, Content = provider };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var item      = steps.Items.OfType<StepsItem>().First();
+            var indicator = item.GetVisualDescendants().OfType<StepsItemIndicator>().First();
+            var itemBaseline      = BackgroundDuration(item);
+            var indicatorBaseline = BackgroundDuration(indicator);
+            itemBaseline.ShouldBeGreaterThan(TimeSpan.Zero);
+            indicatorBaseline.ShouldBeGreaterThan(TimeSpan.Zero);
+
+            provider.Config = MotionConfig(StepsItemTokens.Identity);
+            SettleFor(TimeSpan.FromMilliseconds(200));
+            BackgroundDuration(item).ShouldBe(itemBaseline, "Controls[StepsItem] reached the item transition.");
+            BackgroundDuration(indicator).ShouldBe(indicatorBaseline, "Controls[StepsItem] reached the indicator transition.");
+
+            provider.Config = MotionConfig(StepsTokens.Identity);
+            var stopwatch = Stopwatch.StartNew();
+            while ((BackgroundDuration(item) == itemBaseline || BackgroundDuration(indicator) == indicatorBaseline) &&
+                   stopwatch.Elapsed < TimeSpan.FromSeconds(10))
+            {
+                Dispatcher.UIThread.RunJobs();
+                Thread.Sleep(5);
+            }
+
+            BackgroundDuration(item).ShouldBe(TimeSpan.FromMilliseconds(500));
+            BackgroundDuration(indicator).ShouldBe(TimeSpan.FromMilliseconds(500));
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        static ThemeConfig MotionConfig(ControlTokenIdentity identity) =>
+            new ThemeConfigBuilder()
+                .WithControl(identity, new ControlThemeConfigBuilder()
+                                       .WithToken(nameof(SharedTokenKind.MotionDurationMid), "00:00:00.5000000").Build())
+                .Build();
+
+        static void SettleFor(TimeSpan duration)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            while (stopwatch.Elapsed < duration)
+            {
+                Dispatcher.UIThread.RunJobs();
+                Thread.Sleep(5);
+            }
+        }
+
+        static TimeSpan BackgroundDuration(Animatable control) =>
+            control.Transitions.ShouldNotBeNull().OfType<TransitionBase>()
+                   .First(static transition => transition.Property == TemplatedControl.BackgroundProperty).Duration;
+    }
+
+    private static Steps CreateIsolationSteps(StepsType type = StepsType.Default, bool customIcon = false)
+    {
+        var steps = new Steps { Type = type, Current = 1 };
+        if (type != StepsType.Inline)
+        {
+            steps.Width = 480;
+        }
+
+        steps.Items.Add(new StepsItem { Header = "Finished", Content = "Description", Icon = customIcon ? new AtomUI.Icons.AntDesign.UserOutlined() : null });
+        steps.Items.Add(new StepsItem { Header = "In Progress", Content = "Description" });
+        steps.Items.Add(new StepsItem { Header = "Waiting", Content = "Description" });
+        return steps;
+    }
+
     // ---- helpers ------------------------------------------------------------------------------
 
     private static ThemeConfig IsolationConfig((ControlTokenIdentity Identity, string Token)? control = null, string? root = null)

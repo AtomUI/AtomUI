@@ -31,7 +31,7 @@ public class MigratedFamilyAnalyzerGateTests
         // Choice family
         "CheckBox", "RadioButton", "Switch", "Slider", "Rate",
         // Steps / Progress family
-        "ProgressBar"
+        "ProgressBar", "Steps"
     ];
 
     /// <summary>Token identities declared in those directories.</summary>
@@ -45,7 +45,7 @@ public class MigratedFamilyAnalyzerGateTests
         "Select", "ComboBox", "ComboBoxItem", "Cascader", "CascaderView", "CascaderViewItem", "TreeSelect",
         "CheckBox", "CheckBoxGroup", "RadioButton", "RadioButtonGroup", "ToggleSwitch", "Slider", "SliderTrack",
         "SliderThumb", "Rate",
-        "ProgressBar", "StepsProgressBar", "CircleProgress", "DashboardProgress"
+        "ProgressBar", "StepsProgressBar", "CircleProgress", "DashboardProgress", "Steps", "StepsItem"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -113,6 +113,10 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldContain("StepsProgressBar");
         IdentityControls.Value.ShouldNotContain("AbstractProgressBar");
         IdentityControls.Value.ShouldNotContain("AbstractLineProgress");
+        // StepsItem is registered (Token-owner transparent); the indicator, panels and arrows are not.
+        IdentityControls.Value.ShouldContain("StepsItem");
+        IdentityControls.Value.ShouldNotContain("StepsItemIndicator");
+        IdentityControls.Value.ShouldNotContain("StepsPanelArrow");
     }
 
     [Fact]

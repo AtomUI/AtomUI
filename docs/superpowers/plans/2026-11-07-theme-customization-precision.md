@@ -566,7 +566,7 @@ git commit -m "refactor(Theme): 派生基字段默认赋值加 IsExplicit 守卫
 | 诊断 | AtomUI.Controls | AtomUI.Desktop.Controls | DataGrid | ColorPicker | Extras |
 | --- | --- | --- | --- | --- | --- |
 | ATOMUIGEN041 | 23 | 1714 | | | |
-| ATOMUIGEN042 | | | | | |
+| ATOMUIGEN042 | 3 | 99 | 21 | 2 | 0 |
 | ATOMUIGEN043 | | | | | |
 | ATOMUIGEN044 | | | | | |
 | ATOMUIGEN045 | 0 | 90 | | | |
@@ -579,3 +579,49 @@ git commit -m "refactor(Theme): 派生基字段默认赋值加 IsExplicit 守卫
 ## 待裁决 Own Token（Task 6 执行后填写）
 
 按控件分组列出 `ATOMUIGEN042` 报告的字段，每行裁决为 Active / Reserved（理由）/ 删除，随家族任务勾销。
+
+Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生已消费字段的基字段已按派生链计为 Active，不在此表。
+"所属任务"列是负责裁决该字段的家族任务；裁决结果与勾销在该任务提交里更新本表。
+
+| 包 | 控件 | 字段 | 所属任务 | 裁决 |
+| --- | --- | --- | --- | --- |
+| Controls | Avatar | GroupOverlapping, GroupSpace | 10.9 | |
+| Controls | Icon | FallbackColor | 10.10 | |
+| Desktop | Button | DefaultBorderColorDisabled, ExtraContentItemSpacing, ExtraContentMargin, ExtraContentMarginLG, ExtraContentMarginSM, FontWeight, GroupBorderColor, GutterToFlyout | 9 | |
+| Desktop | OptionButton | ButtonBackground, ButtonCheckedBackground, ButtonPadding, ContentLineHeightLG | 9 | |
+| Desktop | FloatButton | CircleBadgeOffset, SquareBadgeOffset | 9 | |
+| Desktop | LineEdit | InputFontSizeSM | 10.1 | |
+| Desktop | ButtonSpinner | ControlWidth | 10.1 | |
+| Desktop | TextArea | ResizeHandleSize | 10.1 | |
+| Desktop | Select | FixedItemMargin, OptionPadding, SelectAffixPadding | 10.2 | |
+| Desktop | ComboBox | ItemDisabledColor | 10.2 | |
+| Desktop | RadioButton | RadioBgColor | 10.3 | |
+| Desktop | Slider | MarginPartWithMark | 10.3 | |
+| Desktop | ProgressBar | CircleTextColor, LineBorderRadius, ProgressActiveMotionDuration, ProgressStepMarginInlineEnd, ProgressStepMinWidth | 10.4 | |
+| Desktop | Tag | TagCloseIconSize | 10.5 | |
+| Desktop | Alert | CloseIconSize, MessageWithDescriptionMargin | 10.6 | |
+| Desktop | MessageCard | CardHeight | 10.6 | |
+| Desktop | PopupConfirm | PopupMinHeight, PopupMinWidth | 10.6 | |
+| Desktop | ToolTip | MotionDuration | 10.6 | |
+| Desktop | NavMenu | CollapsedWidth, DangerItemActiveBg, DangerItemColor, DangerItemHoverColor, DangerItemSelectedBg, DangerItemSelectedColor, DarkDangerItemActiveBg, DarkDangerItemColor, DarkDangerItemHoverColor, DarkDangerItemSelectedBg, DarkDangerItemSelectedColor, HorizontalItemBorderRadius, HorizontalItemHoverBg, HorizontalItemHoverColor, HorizontalItemSelectedBg, HorizontalItemSelectedColor, ItemBackgroundMotionEasing, KeyGestureColor, MenuSubMenuBg, SubMenuItemBorderRadius, TopLevelItemPopupMarginToAnchor | 10.7 | |
+| Desktop | Menu | DangerItemColor, DangerItemHoverColor, ItemIconMarginInlineEnd, MenuTearOffHeight, TopLevelItemBg, TopLevelItemColor, TopLevelItemSelectedBg, TopLevelItemSelectedColor | 10.7 | |
+| Desktop | TabControl | HorizontalMargin | 10.7 | |
+| Desktop | Pagination | InputOutlineOffset, ItemInputBg, ItemLinkBg, PaginationMiniQuickJumperInputWidth | 10.7 | |
+| Desktop | Card | ActionsSpacing, CardHeadPadding, CardPaddingBase, ExtraColor, TabsMarginBottom | 10.8 | |
+| Desktop | Expander | LeftExpandButtonVMargin, RightExpandButtonVMargin | 10.8 | |
+| Desktop | GroupBox | OrientationMarginPercent, TextPaddingInline, VerticalMarginInline | 10.8 | |
+| Desktop | Separator | HorizontalWithTextGutterMargin | 10.8 | |
+| Desktop | ListBox | ItemDisabledColor | 10.9 | |
+| Desktop | ListView | ItemDisabledColor | 10.9 | |
+| Desktop | TreeView | DirectoryNodeSelectedBg, DirectoryNodeSelectedColor | 10.9 | |
+| Desktop | Timeline | LastItemContentMinHeight | 10.9 | |
+| Desktop | TimePicker | ButtonsMargin, PeriodHostWidth, RangePickerArrowMargin, RangePickerIndicatorThickness | 10.9 | |
+| Desktop | Carousel | ArrowOffset | 10.9 | |
+| Desktop | Skeleton | GradientToColor, TitleHeight | 10.9 | |
+| Desktop | ImagePreviewer | ImagePreviewSwitchSize | 10.9 | |
+| Desktop | Form | VerticalLabelPadding | 10.10 | |
+| Desktop | WindowTitleBar | CloseHoverBackgroundColor, ClosePressedBackgroundColor, ForegroundColor, HoverBackgroundColor, PressedBackgroundColor | 10.10 | |
+| ColorPicker | ColorPicker | ColorPickerAlphaInputWidth, ColorPickerInputNumberHandleWidth | 14 | |
+| DataGrid | DataGrid | ExpandIconBg, ExpandIconHalfInner, ExpandIconMargin, ExpandIconScale, ExpandIconSize, FilterDropdownMenuBg, FixedHeaderSortActiveBg, HeaderFilterHoverBg, SelectionColumnWidth, SortIndicatorLayoutMargin, TableBodySortBg, TableExpandColumnWidth, TableExpandIconBg, TableFilterDropdownHeight, TableFilterDropdownSearchWidth, TableFixedHeaderSortActiveBg, TableHeaderCellSplitColor, TableHeaderFilterActiveBg, TableHeaderSortBg, TableHeaderSortHoverBg, TableSelectionColumnWidth | 14 | |
+
+已知限制：派生链只跟踪 `XxxToken.CalculateTokenValues` 内的直接赋值，经局部变量或私有辅助方法转手的基字段仍可能被误报；裁决时先核对这一点。

@@ -6,6 +6,15 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## Unreleased
+
+- Breaking Changes
+  - Theme Tokens：删除 Button 家族中没有消费者的 Own Token。请从主题配置中移除 `Button.ExtraContentItemSpacing`、`Button.ExtraContentMargin`、`Button.ExtraContentMarginLG`、`Button.ExtraContentMarginSM`、`Button.GutterToFlyout`、`HyperLinkButton.BorderColorDisabled`、`FloatButton.SquareBadgeOffset`、`FloatButton.CircleBadgeOffset`、`OptionButton.ButtonBackground`、`OptionButton.ButtonCheckedBackground` 和 `OptionButton.ButtonPadding`；改用 `DropdownButton.ExtraContentMargin*`/`MarginToAnchor`、`SplitButton.GutterToFlyout`、`FloatButton.BadgeOffset` 或 `ContentPadding*` Token。
+  - Theme Tokens：`Button.FontWeight` 改为 `FontWeight` 值（`500` 或 `Medium`）并设置 Button 字重；`Button.GroupBorderColor` 标为保留，暂无视觉效果。
+- Button 家族
+  - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
+  - 修复 HyperLinkButton 的仅图标、加载与危险视觉，BackTop 徽标，以及由分组或 Host 提供的 FloatButtonGroup 阴影。
+
 ## 6.2.14
 
 `2026-11-13`

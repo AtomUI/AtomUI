@@ -32,6 +32,9 @@ ButtonToken 当前按 Button 语义分为七类。
 
 用于控制 Button 内容文本的字体大小、行高和字重。字体大小默认来自 SharedToken；行高在 `CalculateTokenValues` 中根据字体大小计算。
 
+`FontWeight` 的类型是 `FontWeight`（默认 `Normal`，配置可写 `500` 或 `Medium`），由 `ButtonTheme` 写入 Button 自身的
+`FontWeight`，内容经文本属性继承得到它；Button 实例上的本地 `FontWeight` 仍然优先。
+
 ### 2.2 尺寸与间距 Token
 
 - `Padding`
@@ -42,13 +45,10 @@ ButtonToken 当前按 Button 语义分为七类。
 - `IconOnyPaddingLG`
 - `IconOnyPaddingSM`
 - `IconMargin`
-- `ExtraContentItemSpacing`
-- `ExtraContentMargin`
-- `ExtraContentMarginLG`
-- `ExtraContentMarginSM`
-- `GutterToFlyout`
+- `IconEndMargin`
 
-用于 Button 的尺寸密度、icon-only 内边距、圆形按钮内边距、DropdownButton 额外内容和下拉菜单间距。
+用于 Button 的尺寸密度、icon-only 内边距和圆形按钮内边距。下拉指示器外边距与弹层间距由拥有它们的控件表达：
+DropdownButton 的 `ExtraContentMargin*` 与 `MarginToAnchor`，SplitButton 的 `GutterToFlyout`。
 
 `SizeType=Custom` 不新增 ButtonToken。Custom 复用 `Middle` 档的字体、Padding、圆角和 icon Token，不继承 Button
 预设档的 `MinHeight` 基线；实例级定制通过 Button 现有布局、排版以及 `IconWidth`、`IconHeight` 属性完成，Token 仍只
@@ -88,6 +88,9 @@ Theme 把上述 ButtonToken 或 SharedToken 资源设置到 Button 自身的 `Ic
 
 用于普通动作的文本、背景、边框及 hover / active / disabled 状态。该组 Token 服务 `ButtonType=Default`、`ButtonType=Dashed` 和 `Color=Default` 的基础视觉。
 
+禁用边框按颜色区分：`Color=Default`（含 Default / Dashed 类型）使用 `DefaultBorderColorDisabled`，Primary、Danger 与预设色
+使用 `BorderColorDisabled`；两者默认都来自 `ColorBorder`。
+
 ### 2.5 主色与危险 Token
 
 - `PrimaryColor`
@@ -126,6 +129,9 @@ Text Token 必须保持以下语义：
 - `GroupBorderColor`
 
 用于默认按钮阴影和按钮组边框协调。该组 Token 影响 Button 与 Button 家族或周边控件的视觉关系。
+
+`GroupBorderColor` 为 Reserved（`[ReservedToken]`）：紧凑空间中相邻主按钮之间的组分隔线尚未绘制，设置它当前没有视觉效果，
+不属于可调 Token 列表；接通分隔线后转为 Active。
 
 ## 3. Button 多彩模型中的 Token 使用
 
@@ -184,7 +190,24 @@ ButtonToken 变更要求：
 - 不在 ButtonToken 中硬编码 Button 私有 preset 色表。
 - 需要破坏性变更时，必须先说明影响范围并获得授权。
 
-## 6. 验证策略
+## 6. 承诺面裁决
+
+2026-11-08 Button 家族迁移按[承诺面](../../../../engineering/development/control-token-guidelines.md#own-token-承诺面)裁决了
+没有消费者的 Own Token：
+
+| Token | 裁决 |
+| --- | --- |
+| `FontWeight` | Active：类型改为 `FontWeight`，驱动 Button 字重 |
+| `DefaultBorderColorDisabled` | Active：Default 颜色的禁用边框 |
+| `GroupBorderColor` | Reserved：组分隔线尚未绘制 |
+| `ExtraContentItemSpacing`、`ExtraContentMargin`、`ExtraContentMarginLG`、`ExtraContentMarginSM` | 删除：Button 模板没有额外内容区，DropdownButton 保留自己的同名 Token |
+| `GutterToFlyout` | 删除：Button 不拥有弹层，DropdownButton / SplitButton 各有自己的间距 Token |
+| `HyperLinkButtonToken.BorderColorDisabled` | 删除：HyperLinkButton 模板不绘制边框 |
+
+删除项记录在仓库 `CHANGELOG.md` 的 Breaking Changes 中。全部 Active Own Token 与消费的 Global Token 由
+`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/ButtonFamilyEffectTests` 逐项验证生效。
+
+## 7. 验证策略
 
 | 改动类型 | 验证要求 |
 | --- | --- |

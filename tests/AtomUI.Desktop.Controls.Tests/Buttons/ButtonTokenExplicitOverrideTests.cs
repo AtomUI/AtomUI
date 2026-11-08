@@ -103,6 +103,44 @@ public class ButtonTokenExplicitOverrideTests
         }
     }
 
+    [Fact]
+    public async Task Reapplying_An_Override_With_A_New_Base_Font_Size_Recomputes_The_Derived_Line_Height()
+    {
+        var manager = GetThemeManager();
+        var button  = new Button { Content = "Explicit" };
+        var window  = new AvaloniaWindow { Content = button };
+        try
+        {
+            await Apply(manager, Config(fontSize: "14"));
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var accessor = ControlTokenAccessor.Capture<Button>(button);
+            accessor.GetOwn<double>(ButtonTokenKind.ContentFontSizeLG).ShouldBe(20d);
+            accessor.GetOwn<double>(ButtonTokenKind.ContentFontSize).ShouldBe(14d);
+            accessor.GetOwn<double>(ButtonTokenKind.ContentLineHeight).ShouldBe(22d, 1e-9);
+
+            // Same explicit Own override, different base font size: derived values track the new base, the override stays.
+            await Apply(manager, Config(fontSize: "16"));
+            Dispatcher.UIThread.RunJobs();
+            accessor = ControlTokenAccessor.Capture<Button>(button);
+            accessor.GetOwn<double>(ButtonTokenKind.ContentFontSizeLG).ShouldBe(20d);
+            accessor.GetOwn<double>(ButtonTokenKind.ContentFontSize).ShouldBe(16d);
+            accessor.GetOwn<double>(ButtonTokenKind.ContentLineHeight).ShouldBe(24d, 1e-9);
+            accessor.GetOwn<double>(ButtonTokenKind.ContentLineHeightLG).ShouldBe(28d, 1e-9);
+        }
+        finally
+        {
+            window.Close();
+            await Apply(manager, null);
+        }
+
+        static ThemeConfig Config(string fontSize) =>
+            new ThemeConfigBuilder()
+                .WithToken("FontSize", fontSize)
+                .WithControl(ButtonTokens.Identity, new ControlThemeConfigBuilder().WithToken("ContentFontSizeLG", "20").Build())
+                .Build();
+    }
+
     private static ThemeManager GetThemeManager()
     {
         return AvaloniaLocator.Current.GetService(typeof(ThemeManager)).ShouldBeOfType<ThemeManager>();

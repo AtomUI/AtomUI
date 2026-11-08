@@ -14,7 +14,7 @@ internal sealed class ButtonToken : AbstractControlDesignToken
     /// <summary>
     /// 文字字重
     /// </summary>
-    public double FontWeight { get; set; }
+    public FontWeight FontWeight { get; set; }
 
     /// <summary>
     /// 默认按钮阴影
@@ -154,26 +154,6 @@ internal sealed class ButtonToken : AbstractControlDesignToken
     public Thickness ContentPaddingSM { get; set; }
 
     /// <summary>
-    /// 按钮右边一个额外的区域内容控件间的间隔
-    /// </summary>
-    public double ExtraContentItemSpacing { get; set; }
-    
-    /// <summary>
-    /// 按钮右边一个额外的区域对右侧的小号外边距
-    /// </summary>
-    public Thickness ExtraContentMarginSM { get; set; }
-
-    /// <summary>
-    /// 按钮右边一个额外的区域对右侧的外边距
-    /// </summary>
-    public Thickness ExtraContentMargin { get; set; }
-
-    /// <summary>
-    /// 按钮右边一个额外的区域对右侧的大号外边距
-    /// </summary>
-    public Thickness ExtraContentMarginLG { get; set; }
-
-    /// <summary>
     /// 圆形按钮内间距
     /// </summary>
     public Thickness CirclePadding { get; set; }
@@ -206,6 +186,7 @@ internal sealed class ButtonToken : AbstractControlDesignToken
     /// <summary>
     /// 按钮组边框颜色
     /// </summary>
+    [ReservedToken("Compact-space primary buttons do not draw a group separator yet; the token is kept for that separator.")]
     public Color GroupBorderColor { get; set; }
 
     /// <summary>
@@ -247,11 +228,6 @@ internal sealed class ButtonToken : AbstractControlDesignToken
     /// 小号按钮内容字体行高
     /// </summary>
     public double ContentLineHeightSM { get; set; }
-    
-    /// <summary>
-    /// 按钮的下拉弹出菜单跟按钮之间的间距大小
-    /// </summary>
-    public double GutterToFlyout { get; set; }
 
     #region 内部 Token 定义
 
@@ -314,7 +290,7 @@ internal sealed class ButtonToken : AbstractControlDesignToken
         }
 
         var controlOutlineWidth = EffectiveGlobalToken.ControlOutlineWidth;
-        FontWeight = 400;
+        FontWeight = FontWeight.Normal;
         DefaultShadow = new BoxShadows(new BoxShadow
         {
             OffsetX = 0,
@@ -401,11 +377,6 @@ internal sealed class ButtonToken : AbstractControlDesignToken
                 Math.Max((controlHeightLG - ContentLineHeightLG) / 2 - lineWidth, 0));
         }
 
-        ExtraContentMarginSM    = new Thickness(ContentPaddingSM.Left / 2, 0, 0, 0);
-        ExtraContentMargin      = new Thickness(ContentPadding.Left / 2, 0, 0, 0);
-        ExtraContentMarginLG    = new Thickness(ContentPaddingLG.Left / 2, 0, 0, 0);
-        ExtraContentItemSpacing = EffectiveGlobalToken.UniformlyMarginXXS / 2;
-
         CirclePadding  = new Thickness(ContentPaddingSM.Left / 2);
         OnlyIconSizeSM = EffectiveGlobalToken.IconSize;
         OnlyIconSize   = EffectiveGlobalToken.IconSizeLG;
@@ -417,8 +388,6 @@ internal sealed class ButtonToken : AbstractControlDesignToken
         IconOnyPadding   = new Thickness(Math.Max((controlHeight - ContentLineHeight) / 2 - lineWidth, 0));
         IconOnyPaddingLG = new Thickness(Math.Max((controlHeightLG - ContentLineHeightLG) / 2 - lineWidth, 0));
         IconOnyPaddingSM = new Thickness(Math.Max((controlHeightSM - ContentLineHeightSM) / 2 - lineWidth, 0));
-        
-        GutterToFlyout = EffectiveGlobalToken.UniformlyMarginXXS;
     }
     
 }

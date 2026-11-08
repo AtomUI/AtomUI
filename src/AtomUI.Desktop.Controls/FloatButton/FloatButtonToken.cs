@@ -25,16 +25,6 @@ internal sealed class FloatButtonToken : AbstractControlDesignToken
     public double FloatButtonIconSize { get; set; }
     
     /// <summary>
-    /// 正方形的徽章偏移大小
-    /// </summary>
-    public double SquareBadgeOffset { get; set; }
-    
-    /// <summary>
-    /// 原型的徽章偏移大小
-    /// </summary>
-    public double CircleBadgeOffset { get; set; }
-    
-    /// <summary>
     /// 主要按钮文本颜色
     /// </summary>
     public Color PrimaryColor { get; set; }
@@ -63,10 +53,6 @@ internal sealed class FloatButtonToken : AbstractControlDesignToken
         DescriptionLineHeight = EffectiveGlobalToken.FontSizeSM * 1.2;
         FloatOffsetX          = EffectiveGlobalToken.UniformlyMargin;
         FloatOffsetY          = EffectiveGlobalToken.UniformlyMargin;
-        var r       = Math.Sqrt(2);
-        var offsetR = (r - 1) / r;
-        SquareBadgeOffset = EffectiveGlobalToken.BorderRadius.BottomLeft * offsetR;
-        CircleBadgeOffset = EffectiveGlobalToken.ControlHeight / 2 * offsetR;
     }
     
 }

@@ -161,6 +161,8 @@
         </Style>
 
         <Style Selector="^[ButtonStyle=Outline]">
+            <!-- The group draws the frame and the selection border behind the options; options stay transparent. -->
+            <Setter Property="Background" Value="Transparent" />
             <Style Selector="^[IsMotionEnabled=True]">
                 <Setter Property="Transitions">
                     <Transitions>
@@ -169,7 +171,6 @@
                     </Transitions>
                 </Setter>
             </Style>
-            <Setter Property="Background" Value="Transparent" />
             <Style Selector="^:checked">
                 <Setter Property="Foreground"
                         Value="{atom:OptionButtonTokenResource ColorPrimary}" />

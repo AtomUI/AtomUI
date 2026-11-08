@@ -2,14 +2,12 @@ using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
-using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
 internal sealed class HyperLinkButtonToken : AbstractControlDesignToken
 {
-    public Color BorderColorDisabled { get; set; }
     public Thickness ContentPadding { get; set; }
     public Thickness ContentPaddingLG { get; set; }
     public Thickness ContentPaddingSM { get; set; }
@@ -84,7 +82,6 @@ internal sealed class HyperLinkButtonToken : AbstractControlDesignToken
         IconOnyPadding = UniformIconPadding(controlHeight, ContentLineHeight, lineWidth);
         IconOnyPaddingLG = UniformIconPadding(controlHeightLG, ContentLineHeightLG, lineWidth);
         IconOnyPaddingSM = UniformIconPadding(controlHeightSM, ContentLineHeightSM, lineWidth);
-        BorderColorDisabled = EffectiveGlobalToken.ColorBorder;
     }
 
     private static double CalculateLineHeight(double fontSize)

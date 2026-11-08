@@ -17,7 +17,7 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `FloatButtonSize`、`FloatButtonIconSize`、`DescriptionLineHeight` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `SquareBadgeOffset`、`CircleBadgeOffset`、`FloatOffsetX`、`FloatOffsetY` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `FloatOffsetX`、`FloatOffsetY` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `PrimaryColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `DescriptionLineHeight` |
 
@@ -32,6 +32,13 @@ FloatButton 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 - BackTop 进度环不引入控件专属 Token；`BackTopFloatButtonTheme.axaml` 中的进度环节点直接引用全局 SharedToken——线宽取 `LineWidthBold`，轨道色取 `ColorBorderSecondary`，进度色取 `ColorPrimary`。
+
+徽标位置由 `BadgeOffset` 属性的按形状默认值表达。原 `SquareBadgeOffset`、`CircleBadgeOffset` 两个 Token 没有任何消费者，
+已于 2026-11-08 删除（见仓库 `CHANGELOG.md` 的 Breaking Changes）。
+
+`AbstractFloatButtonTheme` 由 FloatButton 与 BackTopFloatButton 共用，其中的 Global Token 经 `OwnerTokenResource` 读取实际
+公开 owner 的有效值；图标颜色跟随按钮 `Foreground`，因为 `IconPresenter` 本身是带 Token 身份的公开控件，在它上面读取
+`OwnerTokenResource` 会落到 IconPresenter 自己的身份。
 
 ## 4. 控件家族影响
 

@@ -200,8 +200,6 @@
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
                     Value="{atom:HyperLinkButtonTokenResource ColorTextDisabled}" />
-            <Setter Property="BorderBrush"
-                    Value="{atom:HyperLinkButtonTokenResource BorderColorDisabled}" />
 
             <Style Selector="^/template/ Border#Frame">
                 <Setter Property="Background" Value="Transparent" />

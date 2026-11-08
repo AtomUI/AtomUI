@@ -220,6 +220,7 @@
         <Setter Property="IsMotionEnabled" Value="{atom:ButtonTokenResource EnableMotion}" />
         <Setter Property="IsWaveSpiritEnabled"
                 Value="{atom:ButtonTokenResource EnableWaveSpirit}" />
+        <Setter Property="FontWeight" Value="{atom:ButtonTokenResource FontWeight}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="ClipToBounds" Value="False" />
 
@@ -344,10 +345,6 @@
         </Style>
 
 
-
-
-
-
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
                     Value="{atom:ButtonTokenResource ColorTextDisabled}" />
@@ -356,6 +353,10 @@
 
             <Setter Property="Background"
                     Value="{atom:ButtonTokenResource ColorBgContainerDisabled}" />
+        </Style>
+        <Style Selector="^[EffectiveColor=Default]:disabled">
+            <Setter Property="BorderBrush"
+                    Value="{atom:ButtonTokenResource DefaultBorderColorDisabled}" />
         </Style>
         <!-- 公用样式结束 -->
 

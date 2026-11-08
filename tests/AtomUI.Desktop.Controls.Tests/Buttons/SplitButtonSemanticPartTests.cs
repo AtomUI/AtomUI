@@ -254,9 +254,9 @@ public class SplitButtonSemanticPartTests
     }
 
     [Fact]
-    public void Default_Shape_Separator_Brush_Keeps_ColorBorder()
+    public void Default_Shape_Has_No_Separator_Brush()
     {
-        // default（outline）形态接缝无边框线，分隔线画刷保持 ColorBorder 语义。
+        // default（outline）形态两个按钮边框重叠、不绘制接缝分隔线，主题不再为它设置未被绘制的分隔线画刷。
         var splitButton = new AtomUISplitButton
         {
             Content = "Split Action",
@@ -266,9 +266,7 @@ public class SplitButtonSemanticPartTests
 
         ShowInWindow(splitButton, window =>
         {
-            var expectedColor = GetSolidBrushColor(GetThemeResource<IBrush>(SharedTokenKind.ColorBorder));
-            var separatorBrush = splitButton.SplitSeparatorBrush.ShouldNotBeNull();
-            GetSolidBrushColor(separatorBrush).ShouldBe(expectedColor);
+            splitButton.SplitSeparatorBrush.ShouldBeNull();
         });
     }
 

@@ -77,11 +77,11 @@ public class TokenEffectHarnessTests
     [Fact]
     public void Token_Without_Visible_Effect_Fails()
     {
-        // GutterToFlyout is an Unreferenced Button Own Token (ATOMUIGEN042 list): changing it must not repaint.
+        // GroupBorderColor is a Reserved Button Own Token (no consumer yet): changing it must not repaint.
         var exception = Should.Throw<ShouldAssertException>(() => TokenEffectHarness.AssertHasEffect(
             () => new AtomButton { Content = "Go" },
             ButtonTokens.Identity,
-            "GutterToFlyout"));
+            "GroupBorderColor"));
         exception.Message.ShouldContain("pixels changed inside the Control bounds");
     }
 
@@ -254,8 +254,9 @@ public class EffectTestDataTests
     {
         var tokens = EffectTestData.For("AtomUI", "Button").Select(row => (string)row[0]).ToList();
 
-        tokens.ShouldNotContain("GutterToFlyout");
-        tokens.ShouldNotContain("FontWeight");
+        // GroupBorderColor is Reserved; FontWeight is Active since it drives the Button's font weight.
+        tokens.ShouldNotContain("GroupBorderColor");
+        tokens.ShouldContain("FontWeight");
     }
 
     [Fact]

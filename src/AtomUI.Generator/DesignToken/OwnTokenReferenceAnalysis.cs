@@ -115,13 +115,14 @@ internal static class OwnTokenReferenceAnalysis
             collector.CollectCode(tree.GetRoot(cancellationToken));
         }
 
+        var active = collector.ResolveActiveMembers();
         var entries = new List<OwnTokenAnalysisEntry>();
         foreach (var control in controls.Where(static control => control.HasOwnToken))
         {
             foreach (var token in control.OwnTokens)
             {
                 control.OwnToken!.OwnTokenFacts.TryGetValue(token.Name, out var fact);
-                var state = collector.ActiveOwnTokens.Contains((control.ControlName, token.Name))
+                var state = active.Contains((control.ControlName, token.Name))
                     ? OwnTokenState.Active
                     : fact?.ReservedReason is not null ? OwnTokenState.Reserved : OwnTokenState.Unreferenced;
                 entries.Add(new OwnTokenAnalysisEntry(
@@ -188,7 +189,39 @@ internal static class OwnTokenReferenceAnalysis
             _identities = identities;
         }
 
-        internal HashSet<(string Control, string Token)> ActiveOwnTokens { get; } = new();
+        // Members of a Token class read by AXAML or by code outside the Token class.
+        private readonly HashSet<(string Control, string Member)> _referenced = new();
+
+        // control -> assigned member -> members read on the right-hand side of those assignments in CalculateTokenValues.
+        private readonly Dictionary<(string Control, string Member), HashSet<string>> _derivations = new();
+
+        /// <summary>
+        /// Members that are consumed: referenced directly, or read to derive another consumed member (transitively, any order).
+        /// A member that only feeds members nobody consumes stays out of the set.
+        /// </summary>
+        internal HashSet<(string Control, string Member)> ResolveActiveMembers()
+        {
+            var active = new HashSet<(string Control, string Member)>(_referenced);
+            var pending = new Stack<(string Control, string Member)>(_referenced);
+            while (pending.Count != 0)
+            {
+                var current = pending.Pop();
+                if (!_derivations.TryGetValue(current, out var sources))
+                {
+                    continue;
+                }
+
+                foreach (var source in sources)
+                {
+                    if (active.Add((current.Control, source)))
+                    {
+                        pending.Push((current.Control, source));
+                    }
+                }
+            }
+
+            return active;
+        }
 
         internal IEnumerable<GlobalConsumerAnalysisEntry> GlobalConsumers => _consumers;
 
@@ -259,9 +292,9 @@ internal static class OwnTokenReferenceAnalysis
                 return;
             }
 
-            if (_ownByControl.TryGetValue(kind, out var own) && own.Contains(name))
+            if (_ownByControl.TryGetValue(kind, out var own) && (own.Contains(name) || !_globals.Contains(name)))
             {
-                ActiveOwnTokens.Add((kind, name));
+                _referenced.Add((kind, name));
             }
             else if (_globals.Contains(name) && _identities.Contains(kind))
             {
@@ -291,50 +324,120 @@ internal static class OwnTokenReferenceAnalysis
 
         internal void CollectCode(SyntaxNode root)
         {
-            foreach (var access in root.DescendantNodes().OfType<MemberAccessExpressionSyntax>())
+            foreach (var node in root.DescendantNodes())
             {
-                var expressionName = GetRightmostName(access.Expression);
-                if (expressionName is null)
+                if (node is ClassDeclarationSyntax declaration)
                 {
-                    continue;
+                    CollectDerivations(declaration);
                 }
+                else if (node is MemberAccessExpressionSyntax access)
+                {
+                    CollectMemberAccess(access);
+                }
+            }
+        }
 
-                var name = access.Name.Identifier.ValueText;
-                if (string.Equals(expressionName, "SharedTokenKind", StringComparison.Ordinal))
+        private void CollectMemberAccess(MemberAccessExpressionSyntax access)
+        {
+            var expressionName = GetRightmostName(access.Expression);
+            if (expressionName is null)
+            {
+                return;
+            }
+
+            var name = access.Name.Identifier.ValueText;
+            if (string.Equals(expressionName, "SharedTokenKind", StringComparison.Ordinal))
+            {
+                if (_globals.Contains(name))
                 {
-                    if (_globals.Contains(name))
+                    _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, GetEnclosingControl(access), name, CodeSource));
+                }
+            }
+            else if (string.Equals(expressionName, "EffectiveGlobalToken", StringComparison.Ordinal))
+            {
+                if (_globals.Contains(name) && GetEnclosingTokenControl(access) is { } tokenControl)
+                {
+                    _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, tokenControl, name, CodeSource));
+                }
+            }
+            else if (expressionName.EndsWith(TokenKindSuffix, StringComparison.Ordinal) ||
+                     expressionName.EndsWith(TokenKeySuffix, StringComparison.Ordinal))
+            {
+                var isKind = expressionName.EndsWith(TokenKindSuffix, StringComparison.Ordinal);
+                var control = expressionName.Substring(
+                    0, expressionName.Length - (isKind ? TokenKindSuffix.Length : TokenKeySuffix.Length));
+                if (_ownByControl.TryGetValue(control, out var own) && (own.Contains(name) || !_globals.Contains(name)))
+                {
+                    // A field read by its own evaluator is not a reference; derivations are handled separately.
+                    if (!IsInsideTokenClass(access, control))
                     {
-                        _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, GetEnclosingControl(access), name, CodeSource));
+                        _referenced.Add((control, name));
                     }
                 }
-                else if (string.Equals(expressionName, "EffectiveGlobalToken", StringComparison.Ordinal))
+                else if (!isKind && _globals.Contains(name) && _identities.Contains(control))
                 {
-                    if (_globals.Contains(name) && GetEnclosingTokenControl(access) is { } tokenControl)
-                    {
-                        _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, tokenControl, name, CodeSource));
-                    }
+                    _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, control, name, CodeSource));
                 }
-                else if (expressionName.EndsWith(TokenKindSuffix, StringComparison.Ordinal) ||
-                         expressionName.EndsWith(TokenKeySuffix, StringComparison.Ordinal))
+            }
+        }
+
+        // `Y = f(X)` in `<Control>Token.CalculateTokenValues` makes X a source of Y: X is consumed when Y is.
+        private void CollectDerivations(ClassDeclarationSyntax declaration)
+        {
+            var className = declaration.Identifier.ValueText;
+            if (className.Length <= TokenSuffix.Length || !className.EndsWith(TokenSuffix, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            var control = className.Substring(0, className.Length - TokenSuffix.Length);
+            if (!_ownByControl.TryGetValue(control, out var own))
+            {
+                return;
+            }
+
+            foreach (var method in declaration.Members.OfType<MethodDeclarationSyntax>()
+                                              .Where(static method => method.Identifier.ValueText == "CalculateTokenValues"))
+            {
+                foreach (var assignment in method.DescendantNodes().OfType<AssignmentExpressionSyntax>())
                 {
-                    var isKind = expressionName.EndsWith(TokenKindSuffix, StringComparison.Ordinal);
-                    var control = expressionName.Substring(
-                        0, expressionName.Length - (isKind ? TokenKindSuffix.Length : TokenKeySuffix.Length));
-                    if (_ownByControl.TryGetValue(control, out var own) && own.Contains(name))
+                    var target = assignment.Left switch
                     {
-                        // A field read only by its own evaluator is not a consumer.
-                        if (!IsInsideTokenClass(access, control))
+                        IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+                        MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax } member => member.Name.Identifier.ValueText,
+                        _ => null
+                    };
+                    if (target is null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var read in assignment.Right.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>())
+                    {
+                        var name = read.Identifier.ValueText;
+                        if (!own.Contains(name) || IsForeignMemberName(read))
                         {
-                            ActiveOwnTokens.Add((control, name));
+                            continue;
                         }
-                    }
-                    else if (!isKind && _globals.Contains(name) && _identities.Contains(control))
-                    {
-                        _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, control, name, CodeSource));
+
+                        if (!_derivations.TryGetValue((control, target), out var sources))
+                        {
+                            _derivations.Add((control, target), sources = new HashSet<string>(StringComparer.Ordinal));
+                        }
+
+                        sources.Add(name);
                     }
                 }
             }
         }
+
+        // `other.X` / `a?.X`: the name belongs to another object, only `this.X` and bare `X` are fields of the Token class.
+        private static bool IsForeignMemberName(IdentifierNameSyntax name) => name.Parent switch
+        {
+            MemberAccessExpressionSyntax member => member.Name == name && member.Expression is not ThisExpressionSyntax,
+            MemberBindingExpressionSyntax => true,
+            _ => false
+        };
 
         private static string? GetRightmostName(ExpressionSyntax expression) => expression switch
         {

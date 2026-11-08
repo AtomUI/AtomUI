@@ -134,6 +134,68 @@ public class OwnTokenReferenceAnalysisTests
         run.Entry("Button", "Height").State.ShouldBe("Unreferenced");
     }
 
+    // ---- derivation chains ----------------------------------------------------------------
+
+    [Fact]
+    public void A_Base_Field_Read_To_Derive_An_Active_Field_Is_Active()
+    {
+        var run = Run(DerivationTokens, ButtonTheme("""<Setter Property="Height" Value="{atom:ButtonTokenResource Derived}" />"""));
+
+        run.Entry("Button", "Derived").State.ShouldBe("Active");
+        run.Entry("Button", "Base").State.ShouldBe("Active");
+    }
+
+    [Fact]
+    public void A_Base_Field_That_Only_Feeds_An_Unreferenced_Field_Stays_Unreferenced()
+    {
+        var run = Run(DerivationTokens, ButtonTheme("""<Setter Property="Height" Value="{atom:ButtonTokenResource Derived}" />"""));
+
+        run.Entry("Button", "Dead").State.ShouldBe("Unreferenced");
+        run.Entry("Button", "Orphan").State.ShouldBe("Unreferenced");
+        run.Diagnostics.Select(static diagnostic => diagnostic.GetMessage())
+           .ShouldContain(message => message.Contains("Button.Orphan"));
+        run.Diagnostics.Select(static diagnostic => diagnostic.GetMessage())
+           .ShouldNotContain(message => message.Contains("Button.Base"));
+    }
+
+    [Fact]
+    public void Derivation_Is_Transitive_Regardless_Of_Statement_Order()
+    {
+        // Leaf = Mid + 1 is written before Mid = Root * 2; only Leaf is consumed.
+        var run = Run(DerivationTokens, ButtonTheme("""<Setter Property="Height" Value="{atom:ButtonTokenResource Leaf}" />"""));
+
+        run.Entry("Button", "Leaf").State.ShouldBe("Active");
+        run.Entry("Button", "Mid").State.ShouldBe("Active");
+        run.Entry("Button", "Root").State.ShouldBe("Active");
+    }
+
+    [Fact]
+    public void An_Internal_Alias_Consumed_By_Axaml_Makes_Its_Source_Active()
+    {
+        var run = Run(DerivationTokens, ButtonTheme("""<Setter Property="Height" Value="{atom:ButtonTokenResource Alias}" />"""));
+
+        run.Entry("Button", "AliasSource").State.ShouldBe("Active");
+        run.Entry("Button", "Base").State.ShouldBe("Unreferenced");
+    }
+
+    [Fact]
+    public void An_Alias_Consumed_By_Code_Makes_Its_Source_Active()
+    {
+        var run = Run(DerivationTokens + ConsumerClass("var key = ButtonTokenKey.Alias;"));
+
+        run.Entry("Button", "AliasSource").State.ShouldBe("Active");
+    }
+
+    [Fact]
+    public void Reads_Of_Another_Objects_Member_Do_Not_Create_A_Derivation()
+    {
+        // Shown = peer.Lone and Shown = this.Base: only the `this` form reads this token's field.
+        var run = Run(DerivationTokens, ButtonTheme("""<Setter Property="Height" Value="{atom:ButtonTokenResource Shown}" />"""));
+
+        run.Entry("Button", "Lone").State.ShouldBe("Unreferenced");
+        run.Entry("Button", "Base").State.ShouldBe("Active");
+    }
+
     // ---- global consumption map -----------------------------------------------------------
 
     [Fact]
@@ -376,6 +438,45 @@ public class OwnTokenReferenceAnalysisTests
 
         public override Microsoft.CodeAnalysis.Text.SourceText GetText(CancellationToken cancellationToken = default) => _text;
     }
+
+    private const string DerivationTokens = """
+        using AtomUI.Theme.DesignTokens;
+
+        namespace Demo
+        {
+            [GlobalDesignToken]
+            public partial class GlobalToken : AbstractDesignToken
+            {
+                public double ControlHeight { get; set; }
+            }
+
+            [ControlDesignToken]
+            internal sealed class ButtonToken : AbstractControlDesignToken
+            {
+                public double Base { get; set; }
+                public double Derived { get; set; }
+                public double Orphan { get; set; }
+                public double Dead { get; set; }
+                public double Root { get; set; }
+                public double Mid { get; set; }
+                public double Leaf { get; set; }
+                public double AliasSource { get; set; }
+                internal double Alias { get; set; }
+                public double Lone { get; set; }
+                public double Shown { get; set; }
+
+                public override void CalculateTokenValues(bool isDark)
+                {
+                    Leaf = Mid + 1;
+                    Derived = Base * 2;
+                    Dead = Orphan;
+                    Mid = Root * 2;
+                    Alias = AliasSource;
+                    Shown = peer.Lone + this.Base;
+                }
+            }
+        }
+        """;
 
     private const string DemoTokens = """
         using AtomUI.Theme.DesignTokens;

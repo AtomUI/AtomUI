@@ -32,18 +32,21 @@ public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
         {
             var attributeSymbol = compilationContext.Compilation.GetTypeByMetadataName(
                 TargetMarkConstants.ControlDesignTokenAttribute);
-            if (attributeSymbol is null)
+            var baseTokenSymbol = compilationContext.Compilation.GetTypeByMetadataName(
+                TargetMarkConstants.AbstractControlDesignToken);
+            if (attributeSymbol is null || baseTokenSymbol is null)
             {
                 return;
             }
 
             compilationContext.RegisterSyntaxNodeAction(
-                nodeContext => AnalyzeMethod(nodeContext, attributeSymbol),
+                nodeContext => AnalyzeMethod(nodeContext, attributeSymbol, baseTokenSymbol),
                 SyntaxKind.MethodDeclaration);
         });
     }
 
-    private static void AnalyzeMethod(SyntaxNodeAnalysisContext context, INamedTypeSymbol attributeSymbol)
+    private static void AnalyzeMethod(
+        SyntaxNodeAnalysisContext context, INamedTypeSymbol attributeSymbol, INamedTypeSymbol baseTokenSymbol)
     {
         var methodSyntax = (MethodDeclarationSyntax)context.Node;
         if (!string.Equals(methodSyntax.Identifier.ValueText, CalculateMethodName, StringComparison.Ordinal))
@@ -69,7 +72,7 @@ public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
         foreach (var assignment in body.DescendantNodes().OfType<AssignmentExpressionSyntax>())
         {
             if (GetOwnProperty(context, assignment.Left, tokenType) is not { } property ||
-                IsGuarded(assignment, property))
+                IsGuarded(context, assignment, property, tokenType, baseTokenSymbol))
             {
                 continue;
             }
@@ -141,7 +144,12 @@ public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
     /// <summary>
     /// 赋值语句是 <c>if (!IsExplicit(Kind.P))</c> 的直接语句体（或其块内唯一语句），且 Kind 成员名等于属性名。
     /// </summary>
-    private static bool IsGuarded(AssignmentExpressionSyntax assignment, IPropertySymbol property)
+    private static bool IsGuarded(
+        SyntaxNodeAnalysisContext context,
+        AssignmentExpressionSyntax assignment,
+        IPropertySymbol property,
+        INamedTypeSymbol tokenType,
+        INamedTypeSymbol baseTokenSymbol)
     {
         if (assignment.Parent is not ExpressionStatementSyntax statement)
         {
@@ -179,19 +187,26 @@ public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        var calledName = invocation.Expression switch
-        {
-            IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
-            MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax } memberAccess => memberAccess.Name.Identifier.ValueText,
-            _ => null
-        };
-        if (!string.Equals(calledName, IsExplicitMethodName, StringComparison.Ordinal))
+        // 调用必须解析到 AbstractControlDesignToken.IsExplicit<TKind>，同名的其它方法不算守卫。
+        if (context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken).Symbol is not IMethodSymbol called ||
+            !string.Equals(called.Name, IsExplicitMethodName, StringComparison.Ordinal) ||
+            !SymbolEqualityComparer.Default.Equals(called.OriginalDefinition.ContainingType, baseTokenSymbol))
         {
             return false;
         }
 
-        return invocation.ArgumentList.Arguments[0].Expression is MemberAccessExpressionSyntax kindAccess &&
-               string.Equals(kindAccess.Name.Identifier.ValueText, property.Name, StringComparison.Ordinal);
+        // 实参必须是 <ControlName>TokenKind 枚举中与属性同名的成员。
+        if (context.SemanticModel.GetSymbolInfo(invocation.ArgumentList.Arguments[0].Expression, context.CancellationToken).Symbol
+            is not IFieldSymbol { ContainingType.TypeKind: TypeKind.Enum } kindField)
+        {
+            return false;
+        }
+
+        var controlName = tokenType.Name.EndsWith(TokenSuffix, StringComparison.Ordinal)
+            ? tokenType.Name.Substring(0, tokenType.Name.Length - TokenSuffix.Length)
+            : tokenType.Name;
+        return string.Equals(kindField.Name, property.Name, StringComparison.Ordinal) &&
+               string.Equals(kindField.ContainingType.Name, controlName + "TokenKind", StringComparison.Ordinal);
     }
 
     private static bool IsAssignmentTarget(IdentifierNameSyntax identifier)

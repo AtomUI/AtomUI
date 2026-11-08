@@ -4,6 +4,7 @@ internal static class TargetMarkConstants
 {
     public const string GlobalDesignTokenAttribute = "AtomUI.Theme.DesignTokens.GlobalDesignTokenAttribute";
     public const string ControlDesignTokenAttribute = "AtomUI.Theme.DesignTokens.ControlDesignTokenAttribute";
+    public const string AbstractControlDesignToken = "AtomUI.Theme.DesignTokens.AbstractControlDesignToken";
     public const string SemanticPartAttribute = "AtomUI.Theme.SemanticPartAttribute";
     public const string DesignTokenKindAttribute = "AtomUI.Theme.DesignTokens.DesignTokenKindAttribute";
     public const string NotTokenDefinitionAttribute = "AtomUI.Theme.DesignTokens.NotTokenDefinitionAttribute";

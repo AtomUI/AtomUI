@@ -129,6 +129,43 @@ public class OwnTokenDerivationBaseAnalyzerTests
     }
 
     [Fact]
+    public async Task Reports_When_Guard_Calls_A_Same_Named_Local_Method()
+    {
+        var diagnostics = await AnalyzeAsync(CreateToken(
+            """
+            if (!IsExplicit(DemoTokenKind.A)) { A = 1; }
+            B = A;
+            """,
+            "private bool IsExplicit(DemoTokenKind kind) => false;"));
+
+        diagnostics.ShouldHaveSingleItem().Id.ShouldBe("ATOMUIGEN048");
+    }
+
+    [Fact]
+    public async Task Reports_When_Guard_Uses_A_Different_Enum_Type()
+    {
+        var diagnostics = await AnalyzeAsync(CreateToken(
+            """
+            if (!IsExplicit(OtherKind.A)) { A = 1; }
+            B = A;
+            """,
+            "public enum OtherKind { A = 0 }"));
+
+        diagnostics.ShouldHaveSingleItem().Id.ShouldBe("ATOMUIGEN048");
+    }
+
+    [Fact]
+    public async Task Reports_When_Guard_Names_A_Different_Member()
+    {
+        var diagnostics = await AnalyzeAsync(CreateToken("""
+            if (!IsExplicit(DemoTokenKind.B)) { A = 1; }
+            B = A;
+            """));
+
+        diagnostics.ShouldHaveSingleItem().Id.ShouldBe("ATOMUIGEN048");
+    }
+
+    [Fact]
     public async Task Does_Not_Report_Assignment_That_Is_Never_Read()
     {
         var diagnostics = await AnalyzeAsync(CreateToken("A = 1;"));

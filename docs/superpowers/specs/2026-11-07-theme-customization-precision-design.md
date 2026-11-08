@@ -7,10 +7,10 @@
 
 AtomUI 自始至终是 Ant Design 设计语言，不引入设计语言抽象层。本方案只做两件事：
 
-1. **证明可模拟**：在 Ant Design 框架内，只通过主题定义（Token、逐控件 Token、算法）模拟出其他设计语言的大致样式，以 NuGet 主题包交付，并在 Gallery 里像 ant.design 首页那样切换。不追求复刻细节；凡是需要改控件结构或代码才能达到的效果，明确列为不支持。
+1. **证明可模拟**：在 Ant Design 框架内，只通过主题定义（Token、逐控件 Token、算法）模拟出其他设计语言的大致样式，以 NuGet 主题包交付，并在 Gallery 里像 ant.design 首页那样切换。首批包是 **PrimeNG**（重点，含 Aura、Lara、Nora 三个预设）、shadcn、Bootstrap、Material。不追求复刻细节；凡是需要改控件结构或代码才能达到的效果，明确列为不支持。
 2. **保证精确生效**：凡是我们声称可定制的 Token，设置后必须在渲染层精确体现。不能出现"主题设置了，但没有效果"。
 
-不做：lookless 全量重构、契约部件、按语言切换 ControlTheme、设计语言包、合并 `feature/custom-theme`。
+不做：lookless 全量重构、契约部件、按语言切换 ControlTheme、设计语言包、合并 `feature/custom-theme`。主题编辑器是独立工具，另立项目，不在本次范围；本方案只保证它将来需要的数据（承诺面、消费图）由生成器产出。
 
 ## 2. 现状
 
@@ -172,12 +172,58 @@ AtomUI.Themes.Shadcn/
 
 | 包 | 模拟 | 明确不支持（写进 README） |
 | --- | --- | --- |
+| `AtomUI.Themes.PrimeNG` | Aura（默认）、Lara、Nora 三个预设，见 3.5.1 | ripple、浮动标签、以透明度表达禁用、Filled 字段形态 |
 | `AtomUI.Themes.Shadcn` | zinc / slate / stone 三色系，近黑主色，细边框，无 wave，弱阴影 | 焦点环形态、Command 式弹层 |
 | `AtomUI.Themes.Bootstrap` | `#0d6efd` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 6` | 渐变背景、内阴影 |
 | `AtomUI.Themes.Material` | 紫色主色、`BorderRadius 4`、`ControlHeight 40`、三级 BoxShadow 近似 elevation | ripple、浮动标签、全大写 |
-| `AtomUI.Themes.Variants` | Square、HeavyBorder、LargeType、ReducedMotion 等单维度变体 | 无 |
 
 Gallery 现有 4 个色板主题可迁成 `AtomUI.Themes.AntColors` 包，是否迁移由用户定。第三方做自己的预设走完全相同的路径。这些包证明的命题是：Ant Design 的 Token 词汇足以表达这些语言的大致观感；表达不了的部分写在 README 里，不改控件。
+
+#### 3.5.1 PrimeNG：重点预设
+
+依据 `@primeuix/themes` 源码（`presets/{aura,lara,nora}/base/index.ts` 与 button、inputtext、checkbox、select、card、dialog、tooltip 的组件 Token；文档 primeng.dev/theming，v22）。PrimeNG 的 Token 分三层：primitive（22 个色板，每个 50 到 950 十一阶，加 `borderRadius none/xs/sm/md/lg/xl = 0/2/4/6/8/12px`）、semantic（primary、surface、colorScheme.light/dark 下的 text / content / overlay / formField / list / navigation / highlight / mask）、component（逐组件，大多引用 semantic）。这与 AtomUI 的 Seed / Map / Alias / Own 分层可以逐项对应，PrimeNG 本身不派生、全部直接给值，所以预设就是一张值表加少量逐控件覆盖。
+
+默认色板：primary = emerald，surface 浅色 = slate，深色 = zinc。基准字号按 PrimeNG 的 `-compat`（14px 根字号）变体取值，与 AtomUI 的 14px 一致。
+
+**语义 Token 到 AtomUI 全局 Token 的映射（Aura 浅色）**：
+
+| PrimeNG | 值 | AtomUI Token |
+| --- | --- | --- |
+| primary.color / hoverColor / activeColor | emerald 500 `#10b981` / 600 `#059669` / 700 `#047857` | `ColorPrimary` / `ColorPrimaryHover` / `ColorPrimaryActive` |
+| primary.contrastColor | `#ffffff` | `ColorTextLightSolid` |
+| highlight.background / color | emerald 50 `#ecfdf5` / 700 | `ColorPrimaryBg` / `ColorPrimaryText` |
+| text.color / mutedColor | slate 700 `#334155` / 500 `#64748b` | `ColorText` / `ColorTextSecondary`、`ColorTextDescription` |
+| content.background / hoverBackground / borderColor | `#ffffff` / slate 100 / slate 200 `#e2e8f0` | `ColorBgContainer` / `ColorFillTertiary` / `ColorBorderSecondary` |
+| formField.borderColor / hoverBorderColor / focusBorderColor | slate 300 `#cbd5e1` / slate 400 / primary | `ColorBorder` / 悬停边框见"差异" / `ColorPrimary` |
+| formField.placeholderColor / disabledBackground | slate 500 / slate 200 | `ColorTextPlaceholder` / `ColorFillTertiary` |
+| formField.invalidBorderColor | red 400 | `ColorError` |
+| borderRadius xs / sm / md / lg | 2 / 4 / 6 / 8 px | `BorderRadiusXS` / `BorderRadiusSM` / `BorderRadius` / `BorderRadiusLG` |
+| formField.paddingX / paddingY | 12 / 8 px | `PaddingContentHorizontal 12`；高度由 paddingY 推 `ControlHeight 40`（sm 36，lg 48） |
+| formField.sm / lg fontSize | 0.875rem / 1.125rem | `FontSizeSM 12`（compat）/ `FontSizeLG 16` |
+| focusRing（按钮）width / color / offset | 1px solid / primary / 2px | `FocusVisualBorderThickness 1` / `ColorFocusBorder`；字段无 outline → `ControlOutlineWidth 0` |
+| transitionDuration | 0.2s | `MotionDurationMid 200ms` |
+| overlay.select / popover shadow | `0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1)` | `BoxShadowsSecondary` |
+| overlay.modal shadow / radius | `0 20px 25px -5px …` / xl 12px | `BoxShadows` / Dialog 的 Own 圆角 Token |
+| mask.background | `rgba(0,0,0,0.4)` | `ColorBgMask` |
+
+**逐控件覆盖（`<Control>`）**：Button `FontWeight 500`、圆角 6；Checkbox 尺寸 20、圆角 4、图标 14；Select 弹层选项内边距 8 / 12、选项圆角 4、列表内边距 4、间距 2；Card 圆角 12、阴影 `0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px -1px rgba(0,0,0,.1)`、内边距 20；Dialog 圆角 12、内边距 20、标题 20px / 600；Tooltip 背景 slate 700、圆角 6、内边距 8 / 12。
+
+**三个预设的差异**，分别落在各自的 XML：
+
+| | Aura | Lara | Nora |
+| --- | --- | --- | --- |
+| 圆角 | 字段 6、选项 4、卡片与对话框 12 | 字段 6，选项与导航项 0 | 几乎全部 2 |
+| 密度 | paddingY 8，Checkbox 20 | paddingY 10，Checkbox 24，按钮 paddingX 16 | 列表最紧（`0.125rem 0`） |
+| 字重与对比 | 按钮 500，文字 slate 700，边框 slate 300 | 按钮 600 | 按钮 700，文字 slate 900，字段边框 slate 500，主色 emerald 600 |
+| 焦点 | 按钮 1px 实线外环偏移 2，字段无外环只变边框色 | 无外环，`0 0 0 0.2rem` primary 200 光晕（`ControlOutlineWidth 3`、`ColorControlOutline` primary 200） | 2px 实线外环，字段内缩 1px |
+| 动效 | 0.2s | 0.2s | 0s（`EnableMotion=false`） |
+| 弹层 | 浅阴影、边框 slate 200 | 更浅阴影 `0 2px 12px` | 阴影同 Aura、边框透明 |
+
+**暗色**：PrimeNG 暗色是显式值表（primary emerald 400 `#34d399`、surface 换 zinc、content 背景 zinc 900 `#18181b`、字段背景 zinc 950、边框 zinc 700）。首版由 AtomUI 的 Dark 算法从 emerald 与 zinc Seed（`ColorBgBase`、`ColorTextBase`）派生，属近似；若对照后差异不可接受，同包增加 `Appearance="Dark"` 的独立定义（AuraDark 等），XML v1 已支持。
+
+**明确不支持**：ripple（PrimeNG 是运行时可选项）、浮动标签、以 `disabledOpacity 0.6` 表达禁用（AtomUI 用禁用色）、Filled 字段形态、rem 根字号缩放。悬停边框色是一处已知差异：AtomUI 输入框悬停边框由 ControlTheme 用主色，PrimeNG Aura 用 slate 400；如需精确，给输入框家族增加"悬停边框色" Own Token，属于 3.4 的 E 类审计项。
+
+PrimeNG 的 Material 预设与 `AtomUI.Themes.Material` 重叠，不重复做。
 
 Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，顶部一排预设图标来自已注册的主题包，点击后对页面内的 `ThemeConfigProvider` 应用对应主题；明暗、紧凑与预设正交组合；"复制主题"导出当前 XML。
 
@@ -190,9 +236,9 @@ Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，�
 - 验收是"有变化"，不是像素精确；像素对照沿用已采用的关键区域容差策略，只用于视觉回归。
 - 每个控件家族迁移完成的门禁就是该家族生效测试全绿。
 
-### 3.7 Gallery 主题编辑器
+### 3.7 主题编辑器（不在本次范围）
 
-参照 ant.design Theme Editor：左侧按全局 Token（Seed / Map / Alias）与按控件（Own Token、该控件消费的全局 Token）编辑，只显示 Active，Reserved 灰显并给理由；右侧预览区在独立 `ThemeConfigProvider` 内即时生效；导出 XML、导入 XML、与基线 diff。需要一个只读的公开 schema 视图 `IThemeManager.Schema`（`GlobalTokens` 与 `Controls` 的 descriptor：名称、类型、Stage、Active / Reserved、消费者列表），这是本方案唯一新增的公开运行时 API。
+主题编辑器作为独立工具另立项目。本方案为它准备的只有数据：承诺面（Active / Reserved）与全局 Token 消费图由生成器产出为可被工具读取的清单。不在本次新增运行时 API；编辑器需要的 schema 读取接口到那个项目再定。
 
 ### 3.8 主题文件格式
 
@@ -206,13 +252,12 @@ Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，�
 | 控件主题内 `SharedTokenResource` → `XxxTokenResource` / `OwnerTokenResource`（1917 处，分家族）；新增 `ThemeScope.TokenOwner` 可继承附加属性与 `OwnerTokenResource` | 架构优化 + 新能力 | 修复 B；公开控件读法成本不变，基元多一个继承属性订阅 |
 | Own Token 字段分类（Active / Reserved / 删除）与生成器引用分析 | 架构优化 | 修复 C；删除字段进发布说明 |
 | 主题 AXAML 字面量与代码侧消费审计，含 2.3 的借鉴修复（分家族） | 架构优化 | 修复 D、E |
-| 生成器：Own 引用分析、全局 Token 消费图、生效测试骨架 | 新能力 | 支撑 3.1、3.6、3.7 |
+| 生成器：Own 引用分析、全局 Token 消费图、生效测试骨架 | 新能力 | 支撑 3.1、3.6；消费图同时供将来的编辑器工具读取 |
 | 分析器：3.4 的七条规则，存量先警告，按家族转错误 | 新能力 | |
-| `IThemeManager.Schema` 只读视图 | 新能力 | 编辑器与文档工具 |
-| 预设主题 NuGet 包（Shadcn、Bootstrap、Material、Variants；编译主题包机制，Core 不变） | 新能力 | 3.5 |
-| Gallery 主题预设页与主题编辑器 | 新能力 | 3.5、3.7 |
+| 预设主题 NuGet 包（PrimeNG、Shadcn、Bootstrap、Material；编译主题包机制，Core 不变） | 新能力 | 3.5 |
+| Gallery 主题预设页 | 新能力 | 3.5 |
 
-不改动：`ThemeConfig` 模型、XML v1 格式、事务与作用域、资源扩展与 Token 键、Semantic Part、控件结构与模板、公开控件 API。
+不改动：`ThemeConfig` 模型、XML v1 格式、事务与作用域、资源扩展与 Token 键、Semantic Part、控件结构与模板、公开控件 API、公开运行时 API。
 
 ## 5. 验证
 
@@ -221,8 +266,7 @@ Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，�
 - 承诺面：生成器对未引用且未标 Reserved 的 Own 字段报错；消费图与实际 AXAML 引用一致（抽样核对）。
 - 生效测试：每个迁移家族的全部 Active Own Token 与消费的全局 Token 有变化；全家族迁移完成后全绿。
 - 借鉴修复：2.3 清单每项附一个可失败的测试（该分支原有测试按本方案读法改写）。
-- 预设：每个包可独立引用；预设页渲染无异常，明暗与紧凑组合正常；README 的"不支持"清单与实际一致。
-- 编辑器：编辑 → 预览 → 导出 → 导入往返后有效 Token 相同。
+- 预设：每个包可独立引用；预设页渲染无异常，明暗与紧凑组合正常；README 的"不支持"清单与实际一致。PrimeNG 的 Aura / Lara / Nora 三个预设对 3.5.1 映射表逐项核对值，并与 primeng.dev 的 Aura 演示截图按关键区域容差对照一次，结论记入 README。
 - 性能：迁移前后 Gallery 首页套样式耗时与主题切换 Publish 耗时同阶（Stopwatch，断言不劣化超过 5%）。
 
 ## 6. 实施顺序
@@ -230,14 +274,13 @@ Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，�
 | 步 | 内容 | 验收 |
 | --- | --- | --- |
 | 1 | 修复 A：编译器顺序、显式位、`IsExplicit`；改写 22 处哨兵；DataGrid `BorderColor` 用例 | 现有测试全过 + 第 5 节修复 A 用例 |
-| 2 | 生成器：Own 引用分析（先警告）、消费图、`IThemeManager.Schema`；`TokenOwner` 属性与 `OwnerTokenResource` | 产出约 100 个待裁决字段清单与消费图 |
+| 2 | 生成器：Own 引用分析（先警告）、消费图；`TokenOwner` 属性与 `OwnerTokenResource` | 产出约 100 个待裁决字段清单与消费图 |
 | 3 | 生效测试骨架与第一个家族（Button 家族）跑通；同时完成该家族的 B、C、D、E 与借鉴修复 | Button 家族全绿 |
 | 4 | 按家族推进：Input 家族（含 InputControlFrame、AddOnDecoratedBox）、Select、Checkbox / Radio / Switch、Steps、Progress、Tag、Card、Alert、Dialog、Notification，再其余 | 每家族全绿后分析器对其转错误 |
-| 5 | 预设主题包（Shadcn、Bootstrap、Material、Variants）+ Gallery 主题预设页 | 包可独立引用；预设页可切换；README 齐全 |
-| 6 | Gallery 主题编辑器 | 往返测试通过 |
-| 7 | 可选控件包（DataGrid、ColorPicker、Extras）走第 3、4 步同样流程 | 同上 |
+| 5 | 预设主题包：先 `AtomUI.Themes.PrimeNG`（Aura、Lara、Nora）与 Gallery 主题预设页，再 Shadcn、Bootstrap、Material | 包可独立引用；预设页可切换；PrimeNG 映射表逐项核对；README 齐全 |
+| 6 | 可选控件包（DataGrid、ColorPicker、Extras）走第 3、4 步同样流程 | 同上 |
 
-量级：第 1、2 步各几天；第 3 步建立模板约一周；第 4 步每家族一到三天，十余个家族约一到两个月；第 5、6 步各一到两周。第 1 步独立成立，可以先合。
+量级：第 1、2 步各几天；第 3 步建立模板约一周；第 4 步每家族一到三天，十余个家族约一到两个月；第 5 步 PrimeNG 一到两周，其余三个包各数天。第 1 步独立成立，可以先合。
 
 ## 7. 决策
 
@@ -250,4 +293,6 @@ Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，�
 | 无消费者的 Own Token | Active / Reserved / 删除三选一，构建期强制 | 承诺面必须真实 |
 | 验收方式 | 生效测试（有变化）为门禁，像素对照只做回归 | 避免零差异门禁与逐表批准 |
 | 主题文件格式 | 保持 XML v1 | 与 antd 配置同构，基础设施已全 |
-| 预设的交付 | 一个预设一个 NuGet 主题包，用现有编译主题包机制 | 引用即用，不膨胀 Core；第三方走同一路径 |
+| 预设的交付 | 一个设计语言一个 NuGet 主题包（PrimeNG 包内含 Aura / Lara / Nora 三个主题），用现有编译主题包机制 | 引用即用，不膨胀 Core；第三方走同一路径 |
+| PrimeNG 的暗色 | 首版由 Dark 算法从 Seed 派生；对照不可接受再加独立 Dark 定义 | 先用现有机制，证据决定是否加值表 |
+| 主题编辑器 | 不在本次范围，另立独立工具 | 本次只产出它需要的承诺面与消费图数据 |

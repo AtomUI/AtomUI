@@ -249,7 +249,27 @@ internal static class MaterialTokens
 - `Template` Setter 的模板必须包含该控件 descriptor 声明的全部非 Optional Semantic marker。
 - 不得出现对 `ThemeScope.DesignLanguage` 的手写限定。
 
-### 6.2 语言定义的位置
+### 6.2 控件侧契约：一份代码、一份基线 ControlTheme 如何承载多种语言
+
+控件不感知语言。语言差异分三档，各有固定吸收点：
+
+| 差异档 | 例子 | 吸收点 | 对控件的要求 |
+| --- | --- | --- | --- |
+| 值差异 | 主色、圆角、高度、字体、线宽、阴影、间距、动效开关 | Token 层 | ControlTheme 的每个视觉值来自 Token 或控件属性，无字面量 |
+| 区域差异 | 渐变、硬投影、模糊、图标尺寸与位置、hover 效果、有无 ripple | 片段 Style：根 Setter + 嵌套 Semantic Part Style | 可能被重绘的区域都是 Semantic Part；状态经伪类/属性暴露 |
+| 结构差异 | Material Switch 圆钮在轨道外、浮动标签、Bootstrap 勾选框形状 | 片段 `Template` Setter 整体换模板 | 代码与模板的契约只有 `PART_*` 与行为属性；可选 PART 缺失时容错 |
+
+控件须满足的五条契约（逐控件二元审计，不建立字段目录）：
+
+1. 视觉值不进代码：颜色、尺寸、圆角在模板/样式中绑定 Token 或属性；自绘控件把画刷、笔、几何参数暴露为 StyledProperty 后在 Render 中读取。
+2. 模板契约最小化：代码依赖的 `PART_*` 列入控件文档；非必需 PART 允许为空；不在代码中按类型或 Name 搜索可视树做视觉赋值。
+3. 状态只经伪类和属性表达，代码不直接设置 `Background`、`Foreground` 等视觉属性。
+4. 几何从 Token/属性推导，不写常量。
+5. Semantic marker 覆盖语言可能重绘的全部区域；语言替换的模板保持同一组非 Optional marker（6.1 的构建期校验保证）。
+
+设计语言只覆盖视觉。行为差异（浮动标签动画、通知位置规则等）不属于主题；确有需要时给控件增加所有语言可用的属性，由语言片段设默认值。
+
+### 6.3 语言定义的位置
 
 | 程序集 | 内容 |
 | --- | --- |

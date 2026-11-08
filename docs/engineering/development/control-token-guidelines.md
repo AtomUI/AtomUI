@@ -229,6 +229,14 @@ TokenResourceExtension、TokenKey 和 OwnTokenKind 的使用都应保留对应�
   Button）带自己的 identity，读自己的有效值。用户不经 `BasedOn` 完全替换默认 ControlTheme 时，基元回落为全局值。
 - `OwnerTokenResource` 只接受全局 Token；基元没有 Own Token。
 - ControlTheme 不声明 `ControlTokenScope.Identity`，也不存在 ambient snapshot fallback。
+- 过渡时长不分 TargetType，一律把 `<Transitions>` 包在 `<atom:TokenTransitions>` 中，并在过渡上用附加属性
+  `atom:TokenTransitions.Duration="MotionDurationMid"`（`SharedTokenKind` 枚举键）声明时长 Token：
+  `<Setter Property="Transitions"><atom:TokenTransitions><Transitions><atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" /></Transitions></atom:TokenTransitions></Setter>`。
+  它按接收 `Transitions` 的 Control 解析（有身份的 Control 读自己的 Effective Global 值，基元读继承 owner 的值，与
+  `OwnerTokenResource` 相同），随主题发布、`EnableMotion=false`（时长归零）、`Controls[Xxx]` 覆盖和局部
+  ThemeConfigProvider 作用域实时变化；未声明 Token 的过渡保留写死的时长。直接写在 `<Transitions>` 上的值是该样式
+  全部目标共享的单个实例，无法按 Control 区分；旧的 `SharedTokenResourceValue`（加载时一次性取应用级值）已删除，
+  ControlTheme 中出现即报 ATOMUIGEN041，且没有 `shared:` 豁免。
 
 ## C# 访问契约
 

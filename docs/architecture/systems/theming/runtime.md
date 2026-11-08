@@ -1032,6 +1032,9 @@ OwnerTokenResource(X), X is any registered Global Token
     -> owner = inherited ThemeScope.TokenOwner
     -> owner present: ControlEffectiveGlobalDelta(owner)[X] -> miss: GlobalResources[X]
     -> owner absent:  GlobalResources[X]
+
+TokenTransitions.Duration(X), X is a MotionDuration* Global Token
+    -> same resolution as OwnerTokenResource(X), on the control that receives the Transitions
 ```
 
 普通应用内容和明确要求所有 Control 永远共享同一个值的样式使用 `SharedTokenResource`。有 Token 身份的 Control
@@ -1057,6 +1060,18 @@ OwnerTokenResource(X), X is any registered Global Token
 父级订阅仍属于禁止的旁路。继承属性由 Avalonia 原生传播，`OwnerTokenResource` 不沿 `TemplatedParent` 或
 `Parent` 跳链观察，每个绑定只多一个对继承属性的订阅。
 
+Transition 时长使用 `atom:TokenTransitions`。Avalonia 的 `<Setter Property="Transitions"><Transitions>…` 只生成一个
+`Transitions` 实例并交给该样式的全部目标，`TransitionBase.Duration` 在过渡开始时从这个共享对象读取；Transition 不在
+可视树中、没有资源宿主，因此无论在 `Duration` 上写静态值还是绑定，都不可能按 Control 取不同时长。`TokenTransitions`
+把 `<Transitions>` 内容作为延迟模板保存，过渡用附加属性 `atom:TokenTransitions.Duration="MotionDurationMid"`（枚举
+键 `SharedTokenKind`）声明时长 Token，标记本身返回按目标实例化的绑定（与 `OwnerTokenResource` 同一机制）：在接收
+`Transitions` 的 Control 上按继承到的 owner 解析各声明 Token 的 Effective Global 值，订阅 `ResourcesChanged`、
+`ActualThemeVariantChanged` 与 owner 变化，并发布按该时长向量构建的 `Transitions`。时长相同的目标共享同一个构建实例
+（每个标记最多缓存 8 个时长向量，默认主题只需 1 个），重取命中已发布向量时零分配、不重新发布；工厂只属于主题，
+不持有任何目标。根主题切换（含 `EnableMotion=false` 把全部标准时长规范化为 `TimeSpan.Zero`）、
+`Controls[X].Tokens[MotionDuration*]` 与局部 ThemeConfigProvider 作用域都经同一条资源查询到达过渡。
+未声明 Token 的过渡保留 AXAML 中写的时长。
+
 无 Control 级覆盖时 `XxxTokenResource` 走 `UsesRootSharedResources` 直接读全局表，成本与 `SharedTokenResource`
 相同；`OwnerTokenResource` 只用于共享基元，数量约为控件主题读取总量的十分之一。
 
@@ -1076,11 +1091,22 @@ Token 资源的公开 AXAML 语法固定为：
 
 <!-- 共享基元的主题：读取当前所属公开 Control 的 Effective Global Token。 -->
 <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
+
+<!-- 过渡时长：接收 Transitions 的 Control 的 Effective Global 时长 Token。 -->
+<Setter Property="Transitions">
+    <atom:TokenTransitions>
+        <Transitions>
+            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+        </Transitions>
+    </atom:TokenTransitions>
+</Setter>
 ```
 
 读法由 ControlTheme 的 `TargetType` 决定：有 Token 身份的公开 Control 用 `XxxTokenResource`；没有 Token 身份的共享
 基元、部件和 Presenter 用 `OwnerTokenResource`；`SharedTokenResource` 只出现在应用级样式和明确跨 Control 共享语义
-的场合，后者在 AXAML 中以注释标注理由。生成器的资产分析器按 TargetType 的 Token 身份校验读法。
+的场合，后者在 AXAML 中以注释标注理由。生成器的资产分析器按 TargetType 的 Token 身份校验读法。过渡时长不论
+TargetType 一律用 `atom:TokenTransitions` 声明；加载时一次性取应用级值的旧扩展 `SharedTokenResourceValue` 已删除，
+ControlTheme 中出现该名称时 ATOMUIGEN041 报告（无 `shared:` 豁免）。
 
 `XxxTokenResource` 的位置参数是生成的强类型 `XxxTokenKey`，不是字符串。主题作者可选择 Xxx Own Token 和当前
 Global Token schema 中的全部候选。Global Token 与 Own Token 禁止同名，因此
@@ -1546,7 +1572,7 @@ Theme/
 |
 +-- Resources/
 |   +-- ThemeTokenResourceProvider、ThemeTokenResolver
-|   +-- SharedTokenResource、OwnerTokenResource、生成式 XxxTokenResource 和 Effective Control Token keys
+|   +-- SharedTokenResource、OwnerTokenResource、TokenTransitions、生成式 XxxTokenResource 和 Effective Control Token keys
 |   +-- Control theme provider contracts and generated package registration
 |   +-- BaseControlTheme and manifest-backed provider loading
 |   \-- snapshot lookup、style/template 和 Control theme 加载辅助

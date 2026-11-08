@@ -14,15 +14,12 @@ internal sealed class VisualValueRecognizer
 {
     private static readonly string[] s_colorFactoryNames = ["FromRgb", "FromArgb", "FromUInt32", "Parse"];
 
-    // Property or field names (also matched as the last word of a longer name) that carry visual numeric/brush values.
+    // Exact property or field names that carry visual numeric/brush values.
     private static readonly HashSet<string> s_visualNames = new(StringComparer.Ordinal)
     {
         "Background", "Foreground", "BorderBrush", "Fill", "Stroke",
         "BorderThickness", "CornerRadius", "FontSize", "StrokeThickness", "BoxShadow", "BoxShadows"
     };
-
-    // Names that may also be recognised as the last word of a compound name such as DefaultLabelFontSize.
-    private static readonly string[] s_suffixNames = ["FontSize", "BorderThickness", "CornerRadius", "StrokeThickness"];
 
     private readonly INamedTypeSymbol? _color;
     private readonly INamedTypeSymbol? _colors;
@@ -47,29 +44,13 @@ internal sealed class VisualValueRecognizer
         _timeSpan = compilation.GetTypeByMetadataName("System.TimeSpan");
     }
 
-    /// <summary>True when <paramref name="name"/> is, or ends with, one of the visual property names.</summary>
+    /// <summary>
+    /// True when <paramref name="name"/> equals a visual member name after stripping one leading <c>_</c> or
+    /// <c>s_</c> and upper-casing the first letter (so <c>_borderThickness</c> matches, <c>DefaultFontSize</c> does not).
+    /// </summary>
     public static bool IsVisualName(string name)
     {
-        var normalized = NormalizeName(name);
-        if (normalized.Length == 0)
-        {
-            return false;
-        }
-
-        if (s_visualNames.Contains(normalized))
-        {
-            return true;
-        }
-
-        foreach (var suffix in s_suffixNames)
-        {
-            if (normalized.EndsWith(suffix, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return s_visualNames.Contains(NormalizeName(name));
     }
 
     /// <summary>A literal expression: numeric/string/char literals, possibly parenthesised, signed, cast or combined.</summary>
@@ -296,7 +277,9 @@ internal sealed class VisualValueRecognizer
 
     private static string NormalizeName(string name)
     {
-        var trimmed = name.TrimStart('_');
+        var trimmed = name.StartsWith("s_", StringComparison.Ordinal)
+            ? name.Substring(2)
+            : name.StartsWith("_", StringComparison.Ordinal) ? name.Substring(1) : name;
         return trimmed.Length == 0 ? trimmed : char.ToUpperInvariant(trimmed[0]) + trimmed.Substring(1);
     }
 }

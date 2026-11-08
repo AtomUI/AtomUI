@@ -15,15 +15,16 @@ namespace AtomUI.Generator.ThemeConsumption;
 /// <c>BoxShadows.Parse("...")</c>, <c>new Pen(brush, &lt;literal thickness&gt;)</c>, and non-zero numeric literals or
 /// <c>new Thickness/CornerRadius(&lt;literals&gt;)</c> assigned to a property, field or constant named
 /// Background/Foreground/BorderBrush/Fill/Stroke/BorderThickness/CornerRadius/FontSize/StrokeThickness/BoxShadow
-/// (FontSize, BorderThickness, CornerRadius and StrokeThickness also match as the last word of a longer name, for
-/// example <c>DefaultLabelFontSize</c>), or passed as the value of <c>SetValue/SetCurrentValue(XxxProperty, ...)</c>
+/// (exact names; one leading <c>_</c> or <c>s_</c> and the first letter's case are ignored, so <c>_borderThickness</c>
+/// matches and <c>DefaultLabelFontSize</c> does not; the target must resolve to a field or property, never a local or
+/// parameter), or passed as the value of <c>SetValue/SetCurrentValue(XxxProperty, ...)</c>
 /// for those names.
 /// </para>
 /// <para>
 /// Not detected: values that reach the consuming site through a local variable, a named constant or a computation;
 /// <c>Width/Height/Padding/Margin</c>; default values passed to <c>AvaloniaProperty.Register</c>;
 /// <c>using static</c> access to <c>Brushes</c>/<c>Colors</c>; <c>Color.TryParse</c> and non-literal arguments.
-/// Assemblies that do not consume <c>SharedTokenKind</c>, the assembly defining it and <c>[ControlDesignToken]</c>
+/// Applications and libraries that are not control packages (no <c>SharedTokenKind</c>, no <c>[ControlDesignToken]</c> type and no <c>AtomUIThemeAssetProjectDirectory</c> build property), the assembly defining <c>SharedTokenKind</c> and <c>[ControlDesignToken]</c>
 /// types are exempt.
 /// </para>
 /// </summary>
@@ -41,7 +42,7 @@ public sealed class VisualLiteralAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.RegisterCompilationStartAction(static compilationContext =>
         {
-            var scope = ControlCodeScope.TryCreate(compilationContext.Compilation);
+            var scope = ControlCodeScope.TryCreate(compilationContext);
             if (scope is null)
             {
                 return;
@@ -145,8 +146,10 @@ public sealed class VisualLiteralAnalyzer : DiagnosticAnalyzer
     {
         var assignment = (AssignmentExpressionSyntax)context.Node;
         if (ControlCodeScope.GetRightmostName(assignment.Left) is not { } name ||
-            !VisualValueRecognizer.IsVisualName(name))
+            !VisualValueRecognizer.IsVisualName(name) ||
+            context.SemanticModel.GetSymbolInfo(assignment.Left, context.CancellationToken).Symbol is not (IFieldSymbol or IPropertySymbol))
         {
+            // Locals and parameters are never visual members, whatever their name.
             return;
         }
 

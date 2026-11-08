@@ -13,6 +13,9 @@ namespace AtomUI.Generator.Tests.ThemeConsumption;
 /// </summary>
 internal static class ThemeConsumptionAnalyzerTestHost
 {
+    /// <summary>Value of the theme-asset build property that marks the test compilation as a control package.</summary>
+    public const string DefaultThemeAssetDirectory = "/src/Demo.Controls";
+
     public const string Stubs = """
         using System;
 
@@ -83,7 +86,7 @@ internal static class ThemeConsumptionAnalyzerTestHost
                         .Where(static reference => !(Path.GetFileName(reference.Display) ?? string.Empty)
                                                    .StartsWith("AtomUI.", StringComparison.Ordinal))]);
 
-    public static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync<TAnalyzer>(string source, bool withStubs = true)
+    public static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync<TAnalyzer>(string source, bool withStubs = true, string? themeAssetDirectory = DefaultThemeAssetDirectory)
         where TAnalyzer : DiagnosticAnalyzer, new()
     {
         var references = new List<MetadataReference>(s_platformReferences.Value);
@@ -112,7 +115,12 @@ internal static class ThemeConsumptionAnalyzerTestHost
                    .ShouldBeEmpty();
 
         var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(new TAnalyzer());
-        var compilationWithAnalyzers = compilation.WithAnalyzers(analyzers);
+        var options = new AnalyzerOptions(
+            [],
+            new GlobalOptionsProvider(themeAssetDirectory is null
+                ? new Dictionary<string, string>()
+                : new Dictionary<string, string> { ["build_property.AtomUIThemeAssetProjectDirectory"] = themeAssetDirectory }));
+        var compilationWithAnalyzers = compilation.WithAnalyzers(analyzers, options);
         var diagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
         return [.. diagnostics.OrderBy(static d => d.Location.SourceSpan.Start)];
     }
@@ -122,5 +130,29 @@ internal static class ThemeConsumptionAnalyzerTestHost
         return diagnostic.Location.SourceTree!
                          .GetText(TestContext.Current.CancellationToken)
                          .ToString(diagnostic.Location.SourceSpan);
+    }
+
+    private sealed class GlobalOptionsProvider(IReadOnlyDictionary<string, string> globalOptions) : AnalyzerConfigOptionsProvider
+    {
+        public override AnalyzerConfigOptions GlobalOptions { get; } = new Options(globalOptions);
+
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => GlobalOptions;
+
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => GlobalOptions;
+
+        private sealed class Options(IReadOnlyDictionary<string, string> values) : AnalyzerConfigOptions
+        {
+            public override bool TryGetValue(string key, out string value)
+            {
+                if (values.TryGetValue(key, out var found))
+                {
+                    value = found;
+                    return true;
+                }
+
+                value = null!;
+                return false;
+            }
+        }
     }
 }

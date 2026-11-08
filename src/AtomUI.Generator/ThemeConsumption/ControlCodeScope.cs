@@ -1,17 +1,20 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace AtomUI.Generator.ThemeConsumption;
 
 /// <summary>
-/// Decides where the control-code analyzers (ATOMUIGEN043/044/047) apply. They only run in assemblies that
-/// <em>consume</em> <c>AtomUI.Theme.Resources.SharedTokenKind</c> (the control packages); the assembly that defines
+/// Decides where the control-code analyzers (ATOMUIGEN043/044/047) apply. They only run in control packages
+/// (assemblies that consume <c>AtomUI.Theme.Resources.SharedTokenKind</c> and either declare a Token type or build
+/// theme assets); the assembly that defines
 /// the Token infrastructure (AtomUI.Core) and any code inside a <c>[ControlDesignToken]</c> type are exempt, because
 /// Token definitions legitimately contain concrete values.
 /// </summary>
 internal sealed class ControlCodeScope
 {
+    public const string ThemeAssetProjectDirectoryOption = "build_property.AtomUIThemeAssetProjectDirectory";
     public const string SharedTokenKindMetadataName = "AtomUI.Theme.Resources.SharedTokenKind";
 
     private ControlCodeScope(INamedTypeSymbol sharedTokenKind, INamedTypeSymbol? controlDesignTokenAttribute)
@@ -24,9 +27,15 @@ internal sealed class ControlCodeScope
 
     public INamedTypeSymbol? ControlDesignTokenAttribute { get; }
 
-    /// <summary>Returns <see langword="null"/> when the compilation is not a control package.</summary>
-    public static ControlCodeScope? TryCreate(Compilation compilation)
+    /// <summary>
+    /// Returns <see langword="null"/> when the compilation is not a control package: <c>SharedTokenKind</c> must be
+    /// resolvable and not defined by the compilation itself, and the compilation must either declare a
+    /// <c>[ControlDesignToken]</c> type or carry the <c>AtomUIThemeAssetProjectDirectory</c> build property (set by
+    /// the theme-asset build targets of control packages). Plain applications referencing AtomUI.Core match neither.
+    /// </summary>
+    public static ControlCodeScope? TryCreate(CompilationStartAnalysisContext context)
     {
+        var compilation = context.Compilation;
         var sharedTokenKind = compilation.GetTypeByMetadataName(SharedTokenKindMetadataName);
         if (sharedTokenKind is null ||
             SymbolEqualityComparer.Default.Equals(sharedTokenKind.ContainingAssembly, compilation.Assembly))
@@ -34,9 +43,44 @@ internal sealed class ControlCodeScope
             return null;
         }
 
-        return new ControlCodeScope(
-            sharedTokenKind,
-            compilation.GetTypeByMetadataName(TargetMarkConstants.ControlDesignTokenAttribute));
+        var attribute = compilation.GetTypeByMetadataName(TargetMarkConstants.ControlDesignTokenAttribute);
+        var isControlPackage =
+            (context.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue(
+                 ThemeAssetProjectDirectoryOption, out var directory) &&
+             !string.IsNullOrWhiteSpace(directory)) ||
+            (attribute is not null && DeclaresAttributedType(compilation.Assembly.GlobalNamespace, attribute, context.CancellationToken));
+        return isControlPackage ? new ControlCodeScope(sharedTokenKind, attribute) : null;
+    }
+
+    private static bool DeclaresAttributedType(INamespaceOrTypeSymbol container, INamedTypeSymbol attribute, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        foreach (var member in container.GetMembers())
+        {
+            switch (member)
+            {
+                case INamespaceSymbol or INamedTypeSymbol { TypeKind: TypeKind.Class }:
+                    if (member is INamedTypeSymbol type)
+                    {
+                        foreach (var data in type.GetAttributes())
+                        {
+                            if (SymbolEqualityComparer.Default.Equals(data.AttributeClass, attribute))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+
+                    if (DeclaresAttributedType((INamespaceOrTypeSymbol)member, attribute, cancellationToken))
+                    {
+                        return true;
+                    }
+
+                    break;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>True when <paramref name="node"/> sits inside a type carrying <c>[ControlDesignToken]</c>.</summary>

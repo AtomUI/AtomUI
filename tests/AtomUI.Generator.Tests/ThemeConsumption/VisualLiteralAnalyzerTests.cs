@@ -73,7 +73,7 @@ public class VisualLiteralAnalyzerTests
     public async Task Reports_Numeric_Literals_Assigned_To_Visual_Properties_And_Fields()
     {
         var diagnostics = await AnalyzeAsync<VisualLiteralAnalyzer>(ControlWith("""
-            private const double DefaultLabelFontSize = 12;
+            private static readonly double s_fontSize = 12;
             private double _strokeThickness = 1.5;
 
             private void Apply(Border border, TextBlock text)
@@ -220,5 +220,56 @@ public class VisualLiteralAnalyzerTests
             withStubs: false);
 
         diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Does_Not_Report_Application_Compilation_Without_Token_Types_Or_Theme_Asset_Option()
+    {
+        var diagnostics = await AnalyzeAsync<VisualLiteralAnalyzer>(ControlWith("""
+            private IBrush Pick() => Brushes.Red;
+            private static readonly Color Blue = Color.FromRgb(1, 2, 3);
+            """),
+            themeAssetDirectory: null);
+
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Reports_When_Compilation_Declares_Control_Design_Token_Without_Theme_Asset_Option()
+    {
+        var diagnostics = await AnalyzeAsync<VisualLiteralAnalyzer>(ControlWith("""
+            private IBrush Pick() => Brushes.Red;
+            """,
+            "[ControlDesignToken] public sealed class OtherToken { }"),
+            themeAssetDirectory: null);
+
+        FlaggedTexts(diagnostics).ShouldBe(["Brushes.Red"]);
+    }
+
+    [Fact]
+    public async Task Matches_Exact_Visual_Member_Names_Only()
+    {
+        var diagnostics = await AnalyzeAsync<VisualLiteralAnalyzer>(ControlWith("""
+            private double _legacyWindowsFrameBorderThickness = 1;
+            private const double DefaultLabelFontSize = 12;
+            private double _borderThickness = 1;
+            private static readonly double s_fontSize = 14;
+
+            private void Apply(Border other)
+            {
+                var fontSize = 12;
+                double cornerRadius;
+                cornerRadius = 4;
+                other.CornerRadius = new CornerRadius(4);
+                _legacyWindowsFrameBorderThickness = 2;
+            }
+
+            private void Parameter(double fontSize)
+            {
+                fontSize = 13;
+            }
+            """));
+
+        FlaggedTexts(diagnostics).ShouldBe(["1", "14", "new CornerRadius(4)"]);
     }
 }

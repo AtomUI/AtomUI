@@ -219,4 +219,34 @@ public class LocalValueVisualWriteAnalyzerTests
 
         diagnostics.ShouldBeEmpty();
     }
+
+    [Fact]
+    public async Task Does_Not_Report_Application_Compilation_Without_Token_Types_Or_Theme_Asset_Option()
+    {
+        var diagnostics = await AnalyzeAsync<LocalValueVisualWriteAnalyzer>(ControlWith("""
+            private void Apply(Border border, IBrush brush)
+            {
+                border.SetValue(Border.BackgroundProperty, brush);
+                border.Background = brush;
+            }
+            """),
+            themeAssetDirectory: null);
+
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Reports_When_Compilation_Declares_Control_Design_Token_Without_Theme_Asset_Option()
+    {
+        var diagnostics = await AnalyzeAsync<LocalValueVisualWriteAnalyzer>(ControlWith("""
+            private void Apply(Border border, IBrush brush)
+            {
+                border.SetValue(Border.BackgroundProperty, brush);
+            }
+            """,
+            "[ControlDesignToken] public sealed class OtherToken { }"),
+            themeAssetDirectory: null);
+
+        diagnostics.ShouldHaveSingleItem().Id.ShouldBe(Id);
+    }
 }

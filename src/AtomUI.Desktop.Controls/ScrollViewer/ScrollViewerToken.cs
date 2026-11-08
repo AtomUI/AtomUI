@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
@@ -64,19 +65,43 @@ internal sealed class ScrollViewerToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        LiteModeThumbThickness   = EffectiveGlobalToken.LineWidthBold;
-        NormalModeThumbThickness = EffectiveGlobalToken.SizeXS;
+
+        if (!IsExplicit(ScrollViewerTokenKind.LiteModeThumbThickness))
+        {
+            LiteModeThumbThickness   = EffectiveGlobalToken.LineWidthBold;
+        }
+
+        if (!IsExplicit(ScrollViewerTokenKind.NormalModeThumbThickness))
+        {
+            NormalModeThumbThickness = EffectiveGlobalToken.SizeXS;
+        }
 
         if (isDarkMode)
         {
-            ThumbBg       = EffectiveGlobalToken.ColorBorder;
-            ThumbHoverBg  = ThumbBg.Lighten();
+            if (!IsExplicit(ScrollViewerTokenKind.ThumbBg))
+            {
+                ThumbBg       = EffectiveGlobalToken.ColorBorder;
+            }
+
+            if (!IsExplicit(ScrollViewerTokenKind.ThumbHoverBg))
+            {
+                ThumbHoverBg  = ThumbBg.Lighten();
+            }
+
             ThumbActiveBg = ThumbHoverBg.Lighten();
         }
         else
         {
-            ThumbBg       = EffectiveGlobalToken.ColorBorder;
-            ThumbHoverBg  = ThumbBg.Darken();
+            if (!IsExplicit(ScrollViewerTokenKind.ThumbBg))
+            {
+                ThumbBg       = EffectiveGlobalToken.ColorBorder;
+            }
+
+            if (!IsExplicit(ScrollViewerTokenKind.ThumbHoverBg))
+            {
+                ThumbHoverBg  = ThumbBg.Darken();
+            }
+
             ThumbActiveBg = ThumbHoverBg.Darken();
         }
         ThumbCornerRadius        = new CornerRadius(NormalModeThumbThickness / 2);

@@ -1,4 +1,5 @@
 ﻿using AtomUI.Media;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia.Media;
 
@@ -60,7 +61,12 @@ internal sealed class ButtonSpinnerToken : AbstractControlDesignToken
         HandleWidth    = EffectiveGlobalToken.ControlHeightSM;
         HandleIconSize = EffectiveGlobalToken.FontSize / 2;
         HandleActiveBg = EffectiveGlobalToken.ColorFillAlter;
-        HandleBg       = EffectiveGlobalToken.ColorBgContainer;
+
+        if (!IsExplicit(ButtonSpinnerTokenKind.HandleBg))
+        {
+            HandleBg       = EffectiveGlobalToken.ColorBgContainer;
+        }
+
         FilledHandleBg = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillSecondary,
             HandleBg);
         HandleHoverColor  = EffectiveGlobalToken.ColorPrimary;

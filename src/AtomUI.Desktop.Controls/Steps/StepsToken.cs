@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -196,7 +197,12 @@ internal sealed class StepsToken : AbstractControlDesignToken
 
         CustomIconSize      = EffectiveGlobalToken.ControlHeight;
         CustomIconFontSize  = EffectiveGlobalToken.ControlHeightSM;
-        IconContainerSize   = EffectiveGlobalToken.ControlHeight;
+
+        if (!IsExplicit(StepsTokenKind.IconContainerSize))
+        {
+            IconContainerSize   = EffectiveGlobalToken.ControlHeight;
+        }
+
         IconContainerCornerRadius = new CornerRadius(IconContainerSize);
         IconFontSize        = EffectiveGlobalToken.FontSize;
         IconContainerSizeSM = EffectiveGlobalToken.FontSizeHeading3;

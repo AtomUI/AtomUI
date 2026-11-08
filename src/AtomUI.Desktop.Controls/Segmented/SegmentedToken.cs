@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -76,7 +77,12 @@ internal sealed class SegmentedToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        TrackPadding      = new Thickness(EffectiveGlobalToken.LineWidthBold);
+
+        if (!IsExplicit(SegmentedTokenKind.TrackPadding))
+        {
+            TrackPadding      = new Thickness(EffectiveGlobalToken.LineWidthBold);
+        }
+
         TrackBg           = EffectiveGlobalToken.ColorBgLayout;
         ItemColor         = EffectiveGlobalToken.ColorTextLabel;
         ItemHoverColor    = EffectiveGlobalToken.ColorText;

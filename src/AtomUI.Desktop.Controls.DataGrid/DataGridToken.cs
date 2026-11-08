@@ -276,42 +276,140 @@ internal sealed class DataGridToken : AbstractControlDesignToken
         var expandIconHalfInner = EffectiveGlobalToken.ControlInteractiveSize / 2 - EffectiveGlobalToken.LineWidth;
         var expandIconSize      = expandIconHalfInner * 2 + EffectiveGlobalToken.LineWidth * 3;
 
-        HeaderBg                    = colorFillAlterSolid;
-        HeaderColor                 = EffectiveGlobalToken.ColorTextHeading;
-        HeaderSortActiveBg          = colorFillSecondarySolid;
-        HeaderSortHoverBg           = colorFillContentSolid;
-        BodySortBg                  = colorFillAlterSolid;
-        RowHoverBg                  = colorFillAlterSolid;
-        RowSelectedBg               = EffectiveGlobalToken.ControlItemBgActive;
-        RowSelectedHoverBg          = EffectiveGlobalToken.ControlItemBgActiveHover;
-        RowExpandedBg               = EffectiveGlobalToken.ColorFillAlter;
-        CellPadding                 = EffectiveGlobalToken.Padding;
+        if (!IsExplicit(DataGridTokenKind.HeaderBg))
+        {
+            HeaderBg                    = colorFillAlterSolid;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.HeaderColor))
+        {
+            HeaderColor                 = EffectiveGlobalToken.ColorTextHeading;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.HeaderSortActiveBg))
+        {
+            HeaderSortActiveBg          = colorFillSecondarySolid;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.HeaderSortHoverBg))
+        {
+            HeaderSortHoverBg           = colorFillContentSolid;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.BodySortBg))
+        {
+            BodySortBg                  = colorFillAlterSolid;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.RowHoverBg))
+        {
+            RowHoverBg                  = colorFillAlterSolid;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.RowSelectedBg))
+        {
+            RowSelectedBg               = EffectiveGlobalToken.ControlItemBgActive;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.RowSelectedHoverBg))
+        {
+            RowSelectedHoverBg          = EffectiveGlobalToken.ControlItemBgActiveHover;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.RowExpandedBg))
+        {
+            RowExpandedBg               = EffectiveGlobalToken.ColorFillAlter;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.CellPadding))
+        {
+            CellPadding                 = EffectiveGlobalToken.Padding;
+        }
+
         // 对齐 AntD：中等尺寸单元格横向 paddingXS、纵向 paddingSM（12x8）。
-        CellPaddingMD               = new Thickness(
-            EffectiveGlobalToken.PaddingXS.Left,
-            EffectiveGlobalToken.PaddingSM.Top,
-            EffectiveGlobalToken.PaddingXS.Right,
-            EffectiveGlobalToken.PaddingSM.Bottom);
-        CellPaddingSM               = EffectiveGlobalToken.PaddingXS;
+
+        if (!IsExplicit(DataGridTokenKind.CellPaddingMD))
+        {
+            CellPaddingMD               = new Thickness(
+                EffectiveGlobalToken.PaddingXS.Left,
+                EffectiveGlobalToken.PaddingSM.Top,
+                EffectiveGlobalToken.PaddingXS.Right,
+                EffectiveGlobalToken.PaddingSM.Bottom);
+        }
+
+        if (!IsExplicit(DataGridTokenKind.CellPaddingSM))
+        {
+            CellPaddingSM               = EffectiveGlobalToken.PaddingXS;
+        }
+
         // BorderColor 派生出 TableBorderColor，用户显式覆盖必须先于派生值生效。
         if (!IsExplicit(DataGridTokenKind.BorderColor))
         {
             BorderColor = EffectiveGlobalToken.ColorBorderSecondary;
         }
 
-        HeaderBorderRadius          = EffectiveGlobalToken.BorderRadiusLG;
-        FooterBg                    = colorFillAlterSolid;
-        FooterColor                 = EffectiveGlobalToken.ColorTextHeading;
-        CellFontSize                = EffectiveGlobalToken.FontSize;
-        CellFontSizeMD              = EffectiveGlobalToken.FontSize;
-        CellFontSizeSM              = EffectiveGlobalToken.FontSize;
-        HeaderSplitColor            = EffectiveGlobalToken.ColorBorderSecondary;
-        FixedHeaderSortActiveBg     = colorFillSecondarySolid;
-        HeaderFilterHoverBg         = EffectiveGlobalToken.ColorFillContent;
+        if (!IsExplicit(DataGridTokenKind.HeaderBorderRadius))
+        {
+            HeaderBorderRadius          = EffectiveGlobalToken.BorderRadiusLG;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.FooterBg))
+        {
+            FooterBg                    = colorFillAlterSolid;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.FooterColor))
+        {
+            FooterColor                 = EffectiveGlobalToken.ColorTextHeading;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.CellFontSize))
+        {
+            CellFontSize                = EffectiveGlobalToken.FontSize;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.CellFontSizeMD))
+        {
+            CellFontSizeMD              = EffectiveGlobalToken.FontSize;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.CellFontSizeSM))
+        {
+            CellFontSizeSM              = EffectiveGlobalToken.FontSize;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.HeaderSplitColor))
+        {
+            HeaderSplitColor            = EffectiveGlobalToken.ColorBorderSecondary;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.FixedHeaderSortActiveBg))
+        {
+            FixedHeaderSortActiveBg     = colorFillSecondarySolid;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.HeaderFilterHoverBg))
+        {
+            HeaderFilterHoverBg         = EffectiveGlobalToken.ColorFillContent;
+        }
+
         FilterDropdownMenuBg        = EffectiveGlobalToken.ColorBgContainer;
-        FilterDropdownBg            = EffectiveGlobalToken.ColorBgContainer;
-        ExpandIconBg                = EffectiveGlobalToken.ColorBgContainer;
-        SelectionColumnWidth        = EffectiveGlobalToken.ControlHeight;
+
+        if (!IsExplicit(DataGridTokenKind.FilterDropdownBg))
+        {
+            FilterDropdownBg            = EffectiveGlobalToken.ColorBgContainer;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.ExpandIconBg))
+        {
+            ExpandIconBg                = EffectiveGlobalToken.ColorBgContainer;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.SelectionColumnWidth))
+        {
+            SelectionColumnWidth        = EffectiveGlobalToken.ControlHeight;
+        }
+
         ExpandIconMargin            = new Thickness(0, 
             (EffectiveGlobalToken.FontSize * EffectiveGlobalToken.FontHeight - EffectiveGlobalToken.LineWidth * 3) / 2 -
             Math.Ceiling((EffectiveGlobalToken.FontSizeSM * 1.4 - EffectiveGlobalToken.LineWidth * 3) / 2),

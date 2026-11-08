@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
@@ -174,10 +175,20 @@ internal sealed class WindowTitleBarToken : AbstractControlDesignToken
         ForegroundColor             = EffectiveGlobalToken.ColorTextSecondary;
         HoverBackgroundColor        = EffectiveGlobalToken.ColorBgTextHover;
         PressedBackgroundColor      = EffectiveGlobalToken.ColorBgTextActive;
-        LogoAndTitleSpacing         = EffectiveGlobalToken.SizeUnit * 2;
+
+        if (!IsExplicit(WindowTitleBarTokenKind.LogoAndTitleSpacing))
+        {
+            LogoAndTitleSpacing         = EffectiveGlobalToken.SizeUnit * 2;
+        }
+
         LogoAndLeftAddOnSpacing     = EffectiveGlobalToken.SpacingXXS;
         TitleBarPadding             = new Thickness(LogoAndTitleSpacing * 1.8, 0);
-        CaptionButtonIconSize       = EffectiveGlobalToken.IconSize;
+
+        if (!IsExplicit(WindowTitleBarTokenKind.CaptionButtonIconSize))
+        {
+            CaptionButtonIconSize       = EffectiveGlobalToken.IconSize;
+        }
+
         WindowsCaptionIconSize      = 11;
         LogoSize                    = EffectiveGlobalToken.SizeUnit * 4;
         
@@ -191,7 +202,11 @@ internal sealed class WindowTitleBarToken : AbstractControlDesignToken
         InactiveBgColor      = EffectiveGlobalToken.ColorFillQuaternary;
         InactiveHoverBgColor = EffectiveGlobalToken.ColorFillTertiary;
         
-        CaptionButtonPadding = new Thickness(EffectiveGlobalToken.SizeUnit * 2);
+        if (!IsExplicit(WindowTitleBarTokenKind.CaptionButtonPadding))
+        {
+            CaptionButtonPadding = new Thickness(EffectiveGlobalToken.SizeUnit * 2);
+        }
+
         CaptionGroupSpacing  = EffectiveGlobalToken.SizeUnit * 2;
 
         // managed caption button 按自身实测尺寸取 max(w, h) / 2 得到正圆圆角；
@@ -208,7 +223,11 @@ internal sealed class WindowTitleBarToken : AbstractControlDesignToken
         FullscreenCaptionButtonSize = 24;
         HeaderHorizontalSpacing     = 8;
 
-        WindowsCloseButtonHoverBgColor   = Color.FromRgb(244, 67, 54); // #F44336
+        if (!IsExplicit(WindowTitleBarTokenKind.WindowsCloseButtonHoverBgColor))
+        {
+            WindowsCloseButtonHoverBgColor   = Color.FromRgb(244, 67, 54); // #F44336
+        }
+
         WindowsCloseButtonPressedBgColor = Color.FromArgb(190, 244, 67, 54);
         WindowsCloseButtonHoverColor     = ColorUtils.OnBackground(Colors.White, WindowsCloseButtonHoverBgColor);
 

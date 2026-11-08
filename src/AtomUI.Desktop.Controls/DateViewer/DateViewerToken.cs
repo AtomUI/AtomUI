@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -35,7 +36,12 @@ internal sealed class DateViewerToken : AbstractControlDesignToken
         var dateColumnWidth = EffectiveGlobalToken.ControlHeightSM * 1.5;
         var bodyHorizontalPadding = EffectiveGlobalToken.UniformlyPadding + EffectiveGlobalToken.UniformlyPaddingXXS / 2;
         PanelWidth = dateColumnWidth * 7 + bodyHorizontalPadding * 2;
-        CellHeight = EffectiveGlobalToken.ControlHeightSM;
+
+        if (!IsExplicit(DateViewerTokenKind.CellHeight))
+        {
+            CellHeight = EffectiveGlobalToken.ControlHeightSM;
+        }
+
         CellWidth = EffectiveGlobalToken.ControlHeightSM;
         CellRowHeight = CellHeight + EffectiveGlobalToken.UniformlyPaddingXXS * 3;
         PeriodCellWidth = EffectiveGlobalToken.ControlHeightLG * 1.5;

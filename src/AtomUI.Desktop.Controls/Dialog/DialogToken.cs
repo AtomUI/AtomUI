@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -117,8 +118,13 @@ internal sealed class DialogToken : AbstractControlDesignToken
             EffectiveGlobalToken.PaddingContentVerticalLG,
             EffectiveGlobalToken.PaddingContentHorizontalLG,
             EffectiveGlobalToken.PaddingContentVerticalLG);
-        HeaderPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, EffectiveGlobalToken.UniformlyPaddingSM,
-            EffectiveGlobalToken.PaddingContentHorizontalSM, 0);
+
+        if (!IsExplicit(DialogTokenKind.HeaderPadding))
+        {
+            HeaderPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, EffectiveGlobalToken.UniformlyPaddingSM,
+                EffectiveGlobalToken.PaddingContentHorizontalSM, 0);
+        }
+
         HeaderMarginBottom = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXS);
         LogoSize           = EffectiveGlobalToken.SizeLG;
         MinHeight = EffectiveGlobalToken.ControlHeightLG + HeaderPadding.Top + HeaderPadding.Bottom +

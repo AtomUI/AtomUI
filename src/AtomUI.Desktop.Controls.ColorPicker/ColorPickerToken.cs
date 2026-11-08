@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -150,14 +151,29 @@ public sealed class ColorPickerToken : AbstractControlDesignToken
         ColorPickerWidth = 234;
         ColorPickerHandlerSizeLG = 32; // 用在触摸屏上
         ColorPickerHandlerSize = 16;
-        ColorPickerHandlerSizeSM = 12;
+
+        if (!IsExplicit(ColorPickerTokenKind.ColorPickerHandlerSizeSM))
+        {
+            ColorPickerHandlerSizeSM = 12;
+        }
+
         ColorPickerAlphaInputWidth = 44;
         ColorPickerInputNumberHandleWidth = 16;
-        ColorPickerPresetColorSize = 24;
+
+        if (!IsExplicit(ColorPickerTokenKind.ColorPickerPresetColorSize))
+        {
+            ColorPickerPresetColorSize = 24;
+        }
+
         CheckedMarkSize = ColorPickerPresetColorSize * 0.6;
         ColorPickerPresetPanelWidth = 220;
         ColorPickerSliderSize = ColorPickerHandlerSizeSM;
-        ColorPickerSliderTrackSize = 8;
+
+        if (!IsExplicit(ColorPickerTokenKind.ColorPickerSliderTrackSize))
+        {
+            ColorPickerSliderTrackSize = 8;
+        }
+
         ColorPickerSliderThumbSize = ColorPickerHandlerSizeSM + EffectiveGlobalToken.LineWidth * 2;
         ColorPickerPreviewSize = ColorPickerSliderTrackSize * 2 + EffectiveGlobalToken.UniformlyMarginSM;
         ColorPickerInsetShadow = new BoxShadows(new BoxShadow()

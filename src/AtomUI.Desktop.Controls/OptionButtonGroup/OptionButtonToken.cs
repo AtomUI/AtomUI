@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Utils;
@@ -127,15 +128,35 @@ internal sealed class OptionButtonToken : AbstractControlDesignToken
         var fontSize   = EffectiveGlobalToken.FontSize;
         var fontSizeLG = EffectiveGlobalToken.FontSizeLG;
 
-        ContentFontSize   = !MathUtils.AreClose(ContentFontSize, -1) ? ContentFontSize : fontSize;
-        ContentFontSizeSM = !MathUtils.AreClose(ContentFontSizeSM, -1) ? ContentFontSizeSM : fontSize;
-        ContentFontSizeLG = !MathUtils.AreClose(ContentFontSizeLG, -1) ? ContentFontSizeLG : fontSizeLG;
-        ContentLineHeight = !MathUtils.AreClose(ContentLineHeight, -1)
-            ? ContentLineHeight
-            : CalculatorUtils.CalculateLineHeight(ContentFontSize);
-        ContentLineHeightSM = !MathUtils.AreClose(ContentLineHeightSM, -1)
-            ? ContentLineHeightSM
-            : CalculatorUtils.CalculateLineHeight(ContentFontSizeSM);
+        if (!IsExplicit(OptionButtonTokenKind.ContentFontSize))
+        {
+            ContentFontSize   = !MathUtils.AreClose(ContentFontSize, -1) ? ContentFontSize : fontSize;
+        }
+
+        if (!IsExplicit(OptionButtonTokenKind.ContentFontSizeSM))
+        {
+            ContentFontSizeSM = !MathUtils.AreClose(ContentFontSizeSM, -1) ? ContentFontSizeSM : fontSize;
+        }
+
+        if (!IsExplicit(OptionButtonTokenKind.ContentFontSizeLG))
+        {
+            ContentFontSizeLG = !MathUtils.AreClose(ContentFontSizeLG, -1) ? ContentFontSizeLG : fontSizeLG;
+        }
+
+        if (!IsExplicit(OptionButtonTokenKind.ContentLineHeight))
+        {
+            ContentLineHeight = !MathUtils.AreClose(ContentLineHeight, -1)
+                ? ContentLineHeight
+                : CalculatorUtils.CalculateLineHeight(ContentFontSize);
+        }
+
+        if (!IsExplicit(OptionButtonTokenKind.ContentLineHeightSM))
+        {
+            ContentLineHeightSM = !MathUtils.AreClose(ContentLineHeightSM, -1)
+                ? ContentLineHeightSM
+                : CalculatorUtils.CalculateLineHeight(ContentFontSizeSM);
+        }
+
         ContentLineHeightLG = !MathUtils.AreClose(ContentLineHeightLG, -1)
             ? ContentLineHeightLG
             : CalculatorUtils.CalculateLineHeight(ContentFontSizeLG);

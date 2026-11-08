@@ -421,7 +421,12 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
         
         ItemContentPadding   = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingXXS);
         ItemMargin           = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        ItemHeight           = EffectiveGlobalToken.ControlHeightLG;
+
+        if (!IsExplicit(NavMenuTokenKind.ItemHeight))
+        {
+            ItemHeight           = EffectiveGlobalToken.ControlHeightLG;
+        }
+
         GroupTitleLineHeight = EffectiveGlobalToken.ControlHeight;
         CollapsedWidth       = EffectiveGlobalToken.ControlHeight * 2;
         InlineCollapsedWidth = 48d;

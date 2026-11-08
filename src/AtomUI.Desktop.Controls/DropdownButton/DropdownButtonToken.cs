@@ -74,15 +74,26 @@ internal sealed class DropdownButtonToken : AbstractControlDesignToken
         var controlHeight = EffectiveGlobalToken.ControlHeight;
         var controlHeightLG = EffectiveGlobalToken.ControlHeightLG;
 
-        ContentPaddingSM = new Thickness(
-            8 - lineWidth,
-            Math.Max((controlHeightSM - ContentLineHeightSM) / 2 - lineWidth, 0));
-        ContentPadding = new Thickness(
-            EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
-            Math.Max((controlHeight - ContentLineHeight) / 2 - lineWidth, 0));
-        ContentPaddingLG = new Thickness(
-            EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
-            Math.Max((controlHeightLG - ContentLineHeightLG) / 2 - lineWidth, 0));
+        if (!IsExplicit(DropdownButtonTokenKind.ContentPaddingSM))
+        {
+            ContentPaddingSM = new Thickness(
+                8 - lineWidth,
+                Math.Max((controlHeightSM - ContentLineHeightSM) / 2 - lineWidth, 0));
+        }
+
+        if (!IsExplicit(DropdownButtonTokenKind.ContentPadding))
+        {
+            ContentPadding = new Thickness(
+                EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
+                Math.Max((controlHeight - ContentLineHeight) / 2 - lineWidth, 0));
+        }
+
+        if (!IsExplicit(DropdownButtonTokenKind.ContentPaddingLG))
+        {
+            ContentPaddingLG = new Thickness(
+                EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
+                Math.Max((controlHeightLG - ContentLineHeightLG) / 2 - lineWidth, 0));
+        }
 
         ExtraContentMarginSM = new Thickness(ContentPaddingSM.Left / 2, 0, 0, 0);
         ExtraContentMargin = new Thickness(ContentPadding.Left / 2, 0, 0, 0);

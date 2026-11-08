@@ -40,7 +40,15 @@ internal sealed class SkeletonToken : AbstractSkeletonToken
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
+        // AbstractSkeletonToken assigns the shared defaults unconditionally; an explicit ParagraphLineHeight is restored
+        // so the derived capsule radius below follows it.
+        var paragraphLineHeight = ParagraphLineHeight;
         base.CalculateTokenValues(isDarkMode);
+        if (IsExplicit(SkeletonTokenKind.ParagraphLineHeight))
+        {
+            ParagraphLineHeight = paragraphLineHeight;
+        }
+
         ParagraphMarginTop    = new Thickness(0, EffectiveGlobalToken.UniformlyMarginLG + EffectiveGlobalToken.UniformlyMarginXXS, 0, 0);
         AvatarMarginRight = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMargin, 0);
         ParagraphLineRoundCornerRadius = new CornerRadius(ParagraphLineHeight / 2);

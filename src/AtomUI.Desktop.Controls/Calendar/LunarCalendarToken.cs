@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia.Media;
 
@@ -22,12 +23,21 @@ internal sealed class LunarCalendarToken : AbstractControlDesignToken
     {
         base.CalculateTokenValues(isDarkMode);
 
-        MiniDateCellSize = EffectiveGlobalToken.ControlHeightLG;
+        if (!IsExplicit(LunarCalendarTokenKind.MiniDateCellSize))
+        {
+            MiniDateCellSize = EffectiveGlobalToken.ControlHeightLG;
+        }
+
         MiniContentHeight = EffectiveGlobalToken.FontHeightSM +
                             (MiniDateCellSize + EffectiveGlobalToken.UniformlyMarginXS) * 6;
         MiniMonthCellWidth = EffectiveGlobalToken.ControlHeightLG * 2;
         SecondaryTextFontSize = EffectiveGlobalToken.FontSizeSM;
-        SecondaryTextLineHeight = EffectiveGlobalToken.FontHeightSM;
+
+        if (!IsExplicit(LunarCalendarTokenKind.SecondaryTextLineHeight))
+        {
+            SecondaryTextLineHeight = EffectiveGlobalToken.FontHeightSM;
+        }
+
         SecondaryTextColor = EffectiveGlobalToken.ColorTextTertiary;
         WeekendTextColor = EffectiveGlobalToken.ColorError;
         HolidayMarkerColor = EffectiveGlobalToken.ColorError;

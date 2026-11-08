@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -70,7 +71,12 @@ internal sealed class TimelineToken : AbstractControlDesignToken
         IndicatorTailWidth = EffectiveGlobalToken.LineWidthBold;
 
         IndicatorDotBorderWidth = EffectiveGlobalToken.LineWidth * 3;
-        ItemPaddingBottom       = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyPadding * 1.25);
+
+        if (!IsExplicit(TimelineTokenKind.ItemPaddingBottom))
+        {
+            ItemPaddingBottom       = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyPadding * 1.25);
+        }
+
         ItemPaddingBottomLG     = ItemPaddingBottom * 2;
         
         IndicatorStartModeMargin  = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMargin, 0);

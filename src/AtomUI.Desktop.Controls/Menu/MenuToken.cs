@@ -240,7 +240,12 @@ internal sealed class MenuToken : AbstractControlDesignToken
 
         KeyGestureColor  = colorTextSecondary;
         ItemBorderRadius = EffectiveGlobalToken.BorderRadius;
-        ItemColor        = EffectiveGlobalToken.ColorText;
+
+        if (!IsExplicit(MenuTokenKind.ItemColor))
+        {
+            ItemColor        = EffectiveGlobalToken.ColorText;
+        }
+
         ItemHoverColor   = ItemColor;
         ItemBg           = colorBgElevated;
         ItemHoverBg      = colorBgTextHover;
@@ -251,7 +256,11 @@ internal sealed class MenuToken : AbstractControlDesignToken
         DangerItemColor      = colorError;
         DangerItemHoverColor = colorError;
 
-        ItemHeight       = controlHeight;
+        if (!IsExplicit(MenuTokenKind.ItemHeight))
+        {
+            ItemHeight       = controlHeight;
+        }
+
         MenuPopupBgColor = EffectiveGlobalToken.ColorBgElevated;
 
         ItemPaddingInline       = new Thickness(padding, EffectiveGlobalToken.UniformlyPaddingXXS);

@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -34,9 +35,18 @@ internal sealed class CountBadgeToken : AbstractControlDesignToken
         base.CalculateTokenValues(isDarkMode);
 
         var lineWidth = EffectiveGlobalToken.LineWidth;
-        IndicatorHeight = Math.Round(EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight) -
-                          2 * lineWidth;
-        IndicatorHeightSM = EffectiveGlobalToken.FontSize;
+
+        if (!IsExplicit(CountBadgeTokenKind.IndicatorHeight))
+        {
+            IndicatorHeight = Math.Round(EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight) -
+                              2 * lineWidth;
+        }
+
+        if (!IsExplicit(CountBadgeTokenKind.IndicatorHeightSM))
+        {
+            IndicatorHeightSM = EffectiveGlobalToken.FontSize;
+        }
+
         TextFontSize       = EffectiveGlobalToken.FontSizeSM;
         TextFontSizeSM     = EffectiveGlobalToken.FontSizeSM - 2;
         TextColor          = EffectiveGlobalToken.ColorTextLightSolid;

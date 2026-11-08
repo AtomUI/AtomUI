@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia.Media;
 
@@ -43,9 +44,22 @@ internal sealed class SplitterToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        SplitBarDraggableSize = 20;
-        SplitBarSize          = 2;
-        SplitTriggerSize      = 6;
+
+        if (!IsExplicit(SplitterTokenKind.SplitBarDraggableSize))
+        {
+            SplitBarDraggableSize = 20;
+        }
+
+        if (!IsExplicit(SplitterTokenKind.SplitBarSize))
+        {
+            SplitBarSize          = 2;
+        }
+
+        if (!IsExplicit(SplitterTokenKind.SplitTriggerSize))
+        {
+            SplitTriggerSize      = 6;
+        }
+
         SplitBarHandleSize    = SplitTriggerSize + EffectiveGlobalToken.FontSizeSM * 2;
         var collapseOffset = SplitBarSize / 2d + 1d;
         SplitBarCollapseOffset         = collapseOffset;
@@ -54,7 +68,12 @@ internal sealed class SplitterToken : AbstractControlDesignToken
         HandleLineColor                = EffectiveGlobalToken.ControlItemBgHover;
         HandleLineHoverColor           = EffectiveGlobalToken.ControlItemBgActive;
         HandleLineDragColor            = EffectiveGlobalToken.ControlItemBgActiveHover;
-        HandleIconColor                = EffectiveGlobalToken.ColorText;
+
+        if (!IsExplicit(SplitterTokenKind.HandleIconColor))
+        {
+            HandleIconColor                = EffectiveGlobalToken.ColorText;
+        }
+
         HandleIconHoverColor           = HandleIconColor;
         HandleIconPressedColor         = HandleIconColor;
         HandleLineThickness            = SplitBarSize;

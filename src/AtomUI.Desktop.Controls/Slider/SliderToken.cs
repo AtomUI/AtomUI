@@ -1,4 +1,5 @@
 ﻿using AtomUI.Media;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -140,13 +141,26 @@ internal sealed class SliderToken : AbstractControlDesignToken
         var handleLineWidth      = EffectiveGlobalToken.LineWidth + increaseThumbWidth;
         var handleLineWidthHover = EffectiveGlobalToken.LineWidth + increaseThumbWidth * 1.5;
 
-        SliderTrackSize                 = controlSizeHover;
+        if (!IsExplicit(SliderTokenKind.SliderTrackSize))
+        {
+            SliderTrackSize                 = controlSizeHover;
+        }
+
         RailSize                        = 4;
         MarkSize                        = 8;
         ThumbCircleSize                 = controlSize;
-        ThumbCircleSizeHover            = controlSizeHover;
+
+        if (!IsExplicit(SliderTokenKind.ThumbCircleSizeHover))
+        {
+            ThumbCircleSizeHover            = controlSizeHover;
+        }
+
         ThumbCircleBorderThickness      = new Thickness(handleLineWidth);
-        ThumbCircleBorderThicknessHover = new Thickness(handleLineWidthHover);
+
+        if (!IsExplicit(SliderTokenKind.ThumbCircleBorderThicknessHover))
+        {
+            ThumbCircleBorderThicknessHover = new Thickness(handleLineWidthHover);
+        }
 
         RailBg       = EffectiveGlobalToken.ColorFillTertiary;
         RailHoverBg  = EffectiveGlobalToken.ColorFillSecondary;
@@ -159,7 +173,12 @@ internal sealed class SliderToken : AbstractControlDesignToken
 
         ThumbCircleBorderColor       = EffectiveGlobalToken.ColorPrimaryBorder;
         ThumbCircleBorderHoverColor  = EffectiveGlobalToken.ColorPrimaryBorderHover;
-        ThumbCircleBorderActiveColor = EffectiveGlobalToken.ColorPrimary;
+
+        if (!IsExplicit(SliderTokenKind.ThumbCircleBorderActiveColor))
+        {
+            ThumbCircleBorderActiveColor = EffectiveGlobalToken.ColorPrimary;
+        }
+
         ThumbCircleBorderColorDisabled =
             ColorUtils.OnBackground(EffectiveGlobalToken.ColorTextDisabled, EffectiveGlobalToken.ColorBgContainer);
         TrackBgDisabled = EffectiveGlobalToken.ColorBgContainerDisabled;
@@ -173,7 +192,12 @@ internal sealed class SliderToken : AbstractControlDesignToken
         ThumbOutlineColor = ColorUtils.FromRgbF(0.2, ThumbCircleBorderActiveColor.GetRedF(),
             ThumbCircleBorderActiveColor.GetGreenF(),
             ThumbCircleBorderActiveColor.GetBlueF());
-        ThumbOutlineThickness = new Thickness(EffectiveGlobalToken.WaveAnimationRange);
+
+        if (!IsExplicit(SliderTokenKind.ThumbOutlineThickness))
+        {
+            ThumbOutlineThickness = new Thickness(EffectiveGlobalToken.WaveAnimationRange);
+        }
+
         ThumbSize = ThumbCircleSizeHover + ThumbCircleBorderThicknessHover.Left * 2 + ThumbOutlineThickness.Left * 2;
     }
     

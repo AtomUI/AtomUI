@@ -1,4 +1,5 @@
 ﻿using AtomUI.Media;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -192,7 +193,10 @@ internal sealed class TabControlToken : AbstractControlDesignToken
 
         CardBg = EffectiveGlobalToken.ColorFillAlter;
 
-        CardSize = EffectiveGlobalToken.ControlHeightLG;
+        if (!IsExplicit(TabControlTokenKind.CardSize))
+        {
+            CardSize = EffectiveGlobalToken.ControlHeightLG;
+        }
 
         CardPadding = new Thickness(EffectiveGlobalToken.UniformlyPadding,
             (CardSize - Math.Round(EffectiveGlobalToken.FontSize * lineHeight)) / 2 - lineWidth);

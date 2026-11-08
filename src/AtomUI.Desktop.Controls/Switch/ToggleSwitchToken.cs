@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
@@ -133,7 +134,12 @@ internal sealed class ToggleSwitchToken : AbstractControlDesignToken
         var    handleSizeSM = heightSM - padding * 2;
 
         TrackHeight     = height;
-        TrackHeightSM   = heightSM;
+
+        if (!IsExplicit(ToggleSwitchTokenKind.TrackHeightSM))
+        {
+            TrackHeightSM   = heightSM;
+        }
+
         TrackMinWidth   = handleSize * 2 + padding * 4;
         TrackMinWidthSM = handleSizeSM * 2 + padding * 2;
         TrackPadding    = padding; // Fixed value
@@ -149,7 +155,11 @@ internal sealed class ToggleSwitchToken : AbstractControlDesignToken
         SwitchColor            = EffectiveGlobalToken.ColorPrimary;
         SwitchDisabledOpacity  = EffectiveGlobalToken.OpacityLoading;
 
-        ExtraInfoFontSize   = EffectiveGlobalToken.FontSizeSM;
+        if (!IsExplicit(ToggleSwitchTokenKind.ExtraInfoFontSize))
+        {
+            ExtraInfoFontSize   = EffectiveGlobalToken.FontSizeSM;
+        }
+
         ExtraInfoFontSizeSM = ExtraInfoFontSize - 1;
 
         HandleShadow = new BoxShadow

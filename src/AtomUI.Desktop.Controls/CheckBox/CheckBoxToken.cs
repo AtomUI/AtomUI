@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 
@@ -22,7 +23,12 @@ internal sealed class CheckBoxToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        CheckIndicatorSize        = EffectiveGlobalToken.ControlInteractiveSize;
+
+        if (!IsExplicit(CheckBoxTokenKind.CheckIndicatorSize))
+        {
+            CheckIndicatorSize        = EffectiveGlobalToken.ControlInteractiveSize;
+        }
+
         CheckedMarkSize           = CheckIndicatorSize * 0.6;
         IndicatorTristateMarkSize = EffectiveGlobalToken.FontSizeLG / 2;
         TextMargin                = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);

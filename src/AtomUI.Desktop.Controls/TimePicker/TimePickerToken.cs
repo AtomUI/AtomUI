@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 
@@ -54,9 +55,19 @@ internal sealed class TimePickerToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        ItemWidth                     = EffectiveGlobalToken.ControlHeightLG * 1.4;
+
+        if (!IsExplicit(TimePickerTokenKind.ItemWidth))
+        {
+            ItemWidth                     = EffectiveGlobalToken.ControlHeightLG * 1.4;
+        }
+
         PeriodHostWidth               = ItemWidth;
-        ItemHeight                    = EffectiveGlobalToken.ControlHeight - 4;
+
+        if (!IsExplicit(TimePickerTokenKind.ItemHeight))
+        {
+            ItemHeight                    = EffectiveGlobalToken.ControlHeight - 4;
+        }
+
         ItemPadding                   = new Thickness((ItemWidth - ItemHeight) / 2, 0, 0, 0);
         ButtonsMargin                 = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
         RangePickerArrowMargin        = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0);

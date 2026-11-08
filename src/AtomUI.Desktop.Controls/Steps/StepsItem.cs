@@ -1,3 +1,4 @@
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -11,6 +12,10 @@ using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
+// A Token-owner transparent part: a StepsItem is an item of Steps only and has no Own Tokens, so its theme reads the Steps
+// TokenResource and its Token-declared transitions (and those of its indicator) resolve to the Steps through the
+// inherited owner. Controls[Steps] therefore reaches the item titles, tails, icons and motion.
+[TokenOwnerTransparent]
 [PseudoClasses(
     StepsItemPseudoClass.ItemHeaderForegroundOverride,
     StepsItemPseudoClass.ItemSubHeaderForegroundOverride,

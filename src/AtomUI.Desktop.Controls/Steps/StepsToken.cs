@@ -161,6 +161,12 @@ internal sealed class StepsToken : AbstractControlDesignToken
     public Color InlineTitleColor { get; set; }
     public Color InlineTailColor { get; set; }
     public double DotLineThickness { get; set; }
+
+    /// <summary>
+    /// 空心点状步骤点的边框宽度
+    /// Border width of the outline dot (antd Steps dot icon border width)
+    /// </summary>
+    public Thickness OutlineDotBorderThickness { get; set; }
     public Thickness ProgressFramePadding { get; set; }
     public Thickness ProgressFramePaddingSM { get; set; }
     public Color ProgressGrooveColor { get; set; }
@@ -263,7 +269,8 @@ internal sealed class StepsToken : AbstractControlDesignToken
         SubHeaderMargin            = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, 0, 0);
         VerticalItemSpacing        = EffectiveGlobalToken.UniformlyMarginXXS;
         VerticalDescriptionPadding = new Thickness();
-        DotLineThickness           = EffectiveGlobalToken.LineWidth * 3;
+        DotLineThickness           = EffectiveGlobalToken.LineWidthBold; // antd Steps progress-dot rail-size
+        OutlineDotBorderThickness  = new Thickness(EffectiveGlobalToken.LineWidthBold);
 
         VerticalLabelContentMargin = new Thickness(0, EffectiveGlobalToken.UniformlyMarginSM, 0, 0);
         VerticalNavArrowMargin     = new Thickness();

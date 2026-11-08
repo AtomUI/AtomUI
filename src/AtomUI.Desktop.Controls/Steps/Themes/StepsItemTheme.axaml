@@ -10,18 +10,13 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="CornerRadius" Value="{atom:StepsTokenResource BorderRadiusSM}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:StepsItemLayoutPanel
                     Background="Transparent"
-                    ConnectorThickness="{atom:SharedTokenResource LineWidth}"
-                    HorizontalConnectorGap="{atom:SharedTokenResource UniformlyMarginXXS}"
-                    IndicatorSpacing="{atom:SharedTokenResource SpacingXS}"
                     Type="{TemplateBinding Type}"
                     PanelVariant="{TemplateBinding PanelVariant}"
-                    VerticalConnectorMargin="{atom:StepsTokenResource VerticalItemSpacing}"
-                    VerticalItemPadding="{atom:SharedTokenResource UniformlyPaddingSM}"
                     Orientation="{TemplateBinding Orientation}"
                     TitlePlacement="{TemplateBinding TitlePlacement}">
                     <atom:StepsPanelItemFrame
@@ -36,7 +31,6 @@
                         Type="{TemplateBinding Type}"
                         IsFirst="{TemplateBinding IsFirst}"
                         PanelVariant="{TemplateBinding PanelVariant}"
-                        ArrowWidth="{atom:StepsTokenResource PanelArrowWidth}"
                         IsHitTestVisible="False" />
 
                     <atom:StepsItemIndicator
@@ -98,10 +92,10 @@
                     <atom:StepsNavigationArrow
                         Name="NavigationArrow"
                         atom:StepsItemLayoutPanel.Role="NavigationArrow"
-                        Width="{atom:SharedTokenResource FontSizeIcon}"
-                        Height="{atom:SharedTokenResource FontSizeIcon}"
+                        Width="{atom:StepsTokenResource FontSizeIcon}"
+                        Height="{atom:StepsTokenResource FontSizeIcon}"
                         BorderBrush="{atom:StepsTokenResource NavArrowColor}"
-                        BorderThickness="{atom:SharedTokenResource LineWidth}"
+                        BorderThickness="{atom:StepsTokenResource LineWidth}"
                         RenderTransformOrigin="{x:Static RelativePoint.Center}"
                         RenderTransform="rotate(45deg)"
                         IsHitTestVisible="False"
@@ -112,8 +106,6 @@
                         atom:StepsItemLayoutPanel.Role="PanelArrow"
                         FillBrush="{Binding Background, RelativeSource={RelativeSource AncestorType=atom:StepsItem}}"
                         StrokeBrush="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=atom:StepsItem}}"
-                        StrokeThickness="{atom:SharedTokenResource LineWidthBold}"
-                        Width="{atom:StepsTokenResource PanelArrowWidth}"
                         IsHitTestVisible="False"
                         IsVisible="False" />
 
@@ -121,8 +113,8 @@
                         Name="NavigationActiveIndicator"
                         atom:StepsItemLayoutPanel.Role="NavigationActiveIndicator"
                         IsHitTestVisible="False"
-                        MinWidth="{atom:SharedTokenResource LineWidthBold}"
-                        MinHeight="{atom:SharedTokenResource LineWidthBold}"
+                        MinWidth="{atom:StepsTokenResource LineWidthBold}"
+                        MinHeight="{atom:StepsTokenResource LineWidthBold}"
                         Background="{atom:StepsTokenResource StepsNavActiveColor}"
                         RenderTransformOrigin="{x:Static RelativePoint.Center}"
                         IsVisible="False" />
@@ -130,24 +122,38 @@
             </ControlTemplate>
         </Setter>
 
+        <!-- Defaults of template parts that state Setters override are Style Setters, not template attributes: a template
+             resource read is a local value and would mask every state Setter below. -->
         <Style Selector="^ /template/ atom|StepsItemLayoutPanel">
-            <Setter Property="PreferredHorizontalConnectorLength" Value="{atom:SharedTokenResource UniformlyMargin}" />
+            <Setter Property="PreferredHorizontalConnectorLength" Value="{atom:StepsTokenResource UniformlyMargin}" />
+            <Setter Property="ConnectorThickness" Value="{atom:StepsTokenResource LineWidth}" />
+            <Setter Property="HorizontalConnectorGap" Value="{atom:StepsTokenResource UniformlyMarginXXS}" />
+            <Setter Property="IndicatorSpacing" Value="{atom:StepsTokenResource SpacingXS}" />
+            <Setter Property="VerticalConnectorMargin" Value="{atom:StepsTokenResource VerticalItemSpacing}" />
+            <Setter Property="VerticalItemPadding" Value="{atom:StepsTokenResource UniformlyPaddingSM}" />
+        </Style>
+        <Style Selector="^ /template/ atom|StepsPanelItemFrame#ItemWrapper">
+            <Setter Property="ArrowWidth" Value="{atom:StepsTokenResource PanelArrowWidth}" />
+        </Style>
+        <Style Selector="^ /template/ atom|StepsPanelArrow#PanelArrow">
+            <Setter Property="StrokeThickness" Value="{atom:StepsTokenResource LineWidthBold}" />
+            <Setter Property="Width" Value="{atom:StepsTokenResource PanelArrowWidth}" />
         </Style>
         <Style Selector="^[CanInvoke=True]">
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="^:focus-visible">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ControlItemBgHover}" />
+            <Setter Property="Background" Value="{atom:StepsTokenResource ControlItemBgHover}" />
         </Style>
         <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
+            <Setter Property="FontSize" Value="{atom:StepsTokenResource FontSizeLG}" />
         </Style>
         <Style Selector="^ /template/ ContentPresenter#SubHeaderPresenter">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:StepsTokenResource FontSize}" />
             <Setter Property="Margin" Value="{atom:StepsTokenResource SubHeaderMargin}" />
         </Style>
         <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:StepsTokenResource FontSize}" />
         </Style>
         <Style Selector="^[CanInvoke=True]:not(^[IsCurrent=True]):not(^[Type=Inline]):pointerover">
             <Setter Property="Foreground" Value="{atom:StepsTokenResource ProcessIconBorderColor}" />
@@ -282,39 +288,39 @@
         </Style>
 
         <Style Selector="^[Type=Panel][PanelVariant=Outlined][EffectiveStatus=Wait]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Background" Value="{atom:StepsTokenResource ColorBgContainer}" />
+            <Setter Property="BorderBrush" Value="{atom:StepsTokenResource ColorTextDisabled}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource PanelWaitTextColor}" />
         </Style>
         <Style Selector="^[Type=Panel][PanelVariant=Outlined][EffectiveStatus=Process]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="Background" Value="{atom:StepsTokenResource ColorBgContainer}" />
+            <Setter Property="BorderBrush" Value="{atom:StepsTokenResource ColorPrimary}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource PanelProcessTextColor}" />
         </Style>
         <Style Selector="^[Type=Panel][PanelVariant=Outlined][EffectiveStatus=Finish]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="Background" Value="{atom:StepsTokenResource ColorBgContainer}" />
+            <Setter Property="BorderBrush" Value="{atom:StepsTokenResource ColorPrimary}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource PanelFinishTextColor}" />
         </Style>
         <Style Selector="^[Type=Panel][PanelVariant=Outlined][EffectiveStatus=Error]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="Background" Value="{atom:StepsTokenResource ColorBgContainer}" />
+            <Setter Property="BorderBrush" Value="{atom:StepsTokenResource ColorError}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource PanelErrorTextColor}" />
         </Style>
         <Style Selector="^[Type=Panel][PanelVariant=Outlined][IsCurrent=True][EffectiveStatus=Wait]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillTertiary}" />
+            <Setter Property="Background" Value="{atom:StepsTokenResource ColorFillTertiary}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource PanelWaitTextColor}" />
         </Style>
         <Style Selector="^[Type=Panel][PanelVariant=Outlined][IsCurrent=True][EffectiveStatus=Process]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimaryBg}" />
+            <Setter Property="Background" Value="{atom:StepsTokenResource ColorPrimaryBg}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource PanelProcessTextColor}" />
         </Style>
         <Style Selector="^[Type=Panel][PanelVariant=Outlined][IsCurrent=True][EffectiveStatus=Finish]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimaryBg}" />
+            <Setter Property="Background" Value="{atom:StepsTokenResource ColorPrimaryBg}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource PanelFinishTextColor}" />
         </Style>
         <Style Selector="^[Type=Panel][PanelVariant=Outlined][IsCurrent=True][EffectiveStatus=Error]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorErrorBg}" />
+            <Setter Property="Background" Value="{atom:StepsTokenResource ColorErrorBg}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource PanelErrorTextColor}" />
         </Style>
 
@@ -339,15 +345,15 @@
             <Setter Property="IsVisible" Value="False" />
         </Style>
         <Style Selector="^[Type=Panel] /template/ atom|StepsItemLayoutPanel">
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingSM}" />
+            <Setter Property="Padding" Value="{atom:StepsTokenResource PaddingSM}" />
             <Setter Property="IndicatorSpacing" Value="0" />
         </Style>
         <Style Selector="^[Type=Panel][SizeType=Small] /template/ atom|StepsItemLayoutPanel">
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingXS}" />
+            <Setter Property="Padding" Value="{atom:StepsTokenResource PaddingXS}" />
         </Style>
         <Style Selector="^[Type=Panel][SizeType=Small] /template/ atom|StepsPanelArrow#PanelArrow">
             <Setter Property="Width" Value="{atom:StepsTokenResource PanelArrowWidthSM}" />
-            <Setter Property="StrokeThickness" Value="{atom:SharedTokenResource LineWidth}" />
+            <Setter Property="StrokeThickness" Value="{atom:StepsTokenResource LineWidth}" />
         </Style>
         <Style Selector="^[Type=Panel][SizeType=Small] /template/ atom|StepsPanelItemFrame#ItemWrapper">
             <Setter Property="ArrowWidth" Value="{atom:StepsTokenResource PanelArrowWidthSM}" />
@@ -383,7 +389,7 @@
         </Style>
 
         <Style Selector="^[Type=Default][Orientation=Horizontal][TitlePlacement=Vertical] /template/ atom|StepsItemLayoutPanel">
-            <Setter Property="IndicatorSpacing" Value="{atom:SharedTokenResource PaddingSM}" />
+            <Setter Property="IndicatorSpacing" Value="{atom:StepsTokenResource UniformlyPaddingSM}" />
         </Style>
         <Style Selector="^[Type=Default][Orientation=Horizontal][TitlePlacement=Vertical] /template/ ContentPresenter#HeaderPresenter">
             <Setter Property="Margin" Value="{atom:StepsTokenResource VerticalLabelContentMargin}" />
@@ -397,17 +403,17 @@
 
         <Style Selector="^[Type=Dot] /template/ atom|StepsItemLayoutPanel">
             <Setter Property="ConnectorThickness" Value="{atom:StepsTokenResource DotLineThickness}" />
-            <Setter Property="IndicatorSpacing" Value="{atom:SharedTokenResource PaddingSM}" />
+            <Setter Property="IndicatorSpacing" Value="{atom:StepsTokenResource UniformlyPaddingSM}" />
         </Style>
         <Style Selector="^[Type=OutlineDot] /template/ atom|StepsItemLayoutPanel">
             <Setter Property="ConnectorThickness" Value="{atom:StepsTokenResource DotLineThickness}" />
-            <Setter Property="IndicatorSpacing" Value="{atom:SharedTokenResource PaddingSM}" />
+            <Setter Property="IndicatorSpacing" Value="{atom:StepsTokenResource UniformlyPaddingSM}" />
         </Style>
         <Style Selector="^[Type=Dot][Orientation=Vertical] /template/ atom|StepsItemLayoutPanel">
-            <Setter Property="IndicatorSpacing" Value="{atom:SharedTokenResource UniformlyMargin}" />
+            <Setter Property="IndicatorSpacing" Value="{atom:StepsTokenResource UniformlyMargin}" />
         </Style>
         <Style Selector="^[Type=OutlineDot][Orientation=Vertical] /template/ atom|StepsItemLayoutPanel">
-            <Setter Property="IndicatorSpacing" Value="{atom:SharedTokenResource UniformlyMargin}" />
+            <Setter Property="IndicatorSpacing" Value="{atom:StepsTokenResource UniformlyMargin}" />
         </Style>
         <Style Selector="^[Type=Dot] /template/ atom|PixelAlignedBorder#Connector">
             <Setter Property="Margin" Value="0" />
@@ -422,7 +428,7 @@
             <Setter Property="Margin" Value="0" />
         </Style>
         <Style Selector="^[Type=Navigation] /template/ atom|StepsItemLayoutPanel">
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingSM}" />
+            <Setter Property="Padding" Value="{atom:StepsTokenResource PaddingSM}" />
             <Setter Property="IndicatorSpacing" Value="{atom:StepsTokenResource NavItemGutter}" />
         </Style>
         <Style Selector="^[Type=Navigation][Orientation=Vertical] /template/ atom|StepsItemLayoutPanel">
@@ -470,7 +476,7 @@
             <Setter Property="atom:ToolTip.Placement" Value="Top" />
         </Style>
         <Style Selector="^[Type=Inline]:pointerover:not(:disabled)">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ControlItemBgHover}" />
+            <Setter Property="Background" Value="{atom:StepsTokenResource ControlItemBgHover}" />
         </Style>
         <Style Selector="^[Type=Inline][IsMotionEnabled=True]">
             <Setter Property="Transitions">
@@ -483,17 +489,17 @@
         </Style>
         <Style Selector="^[Type=Inline] /template/ atom|StepsItemLayoutPanel">
             <Setter Property="Padding" Value="{atom:StepsTokenResource InlineItemPadding}" />
-            <Setter Property="IndicatorSpacing" Value="{atom:SharedTokenResource UniformlyPaddingXS}" />
+            <Setter Property="IndicatorSpacing" Value="{atom:StepsTokenResource UniformlyPaddingXS}" />
             <Setter Property="HorizontalConnectorGap" Value="0" />
         </Style>
         <Style Selector="^[Type=Inline] /template/ ContentPresenter#HeaderPresenter">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+            <Setter Property="FontSize" Value="{atom:StepsTokenResource FontSizeSM}" />
             <Setter Property="FontWeight" Value="Normal" />
             <Setter Property="Margin" Value="{atom:StepsTokenResource InlineHeaderMargin}" />
             <Setter Property="Padding" Value="{atom:StepsTokenResource InlineHeaderPadding}" />
         </Style>
         <Style Selector="^[Type=Inline] /template/ ContentPresenter#SubHeaderPresenter">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+            <Setter Property="FontSize" Value="{atom:StepsTokenResource FontSizeSM}" />
             <Setter Property="Margin" Value="0" />
         </Style>
         <Style Selector="^[Type=Inline] /template/ ContentPresenter#ContentPresenter">
@@ -507,7 +513,7 @@
         </Style>
 
         <Style Selector="^[SizeType=Small]:not(^[Type=Inline]) /template/ ContentPresenter#HeaderPresenter">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:StepsTokenResource FontSize}" />
         </Style>
 
         <Style Selector="^[IsLast=True] /template/ atom|PixelAlignedBorder#Connector">

@@ -598,12 +598,14 @@ git commit -m "refactor(Theme): 派生基字段默认赋值加 IsExplicit 守卫
 | ATOMUIGEN042 | 3 | 99 | 21 | 2 | 0 |
 | ATOMUIGEN043 | 0 | 3 | 0 | 0 | 0 |
 | ATOMUIGEN044 | 19 | 2 | 0 | 23 | 0 |
-| ATOMUIGEN045 | 0 | 90 | | | |
+| ATOMUIGEN045 | 0 | 99 | 4 | 3 | |
 | ATOMUIGEN046 | 3 | 29 | | | |
 | ATOMUIGEN047 | 11 | 28 | 0 | 8 | 0 |
 | ATOMUIGEN048（Task 16 已清零；改写处数） | 0 | 50 | 24 | 3 | 0 |
 
 041/045/046 为 Task 5 实测（唯一文件+行，`--no-incremental`）。045 低于计划估计的约 134：其余字面量是 0、`Opacity="1"` 或位于 ControlTheme/Style 之外；主题中颜色字面量为 0。`Splash/Themes/SplashDefaultTheme.axaml` 以 Link 引入、不在 `Themes/` 资产路径下，其 12 处读取未被扫描，在 Task 10.10 处理。DataGrid、ColorPicker、Extras 的 041/045/046 在 Task 14 迁移时统计。
+
+Task 9 修正后 045 覆盖 `Spacing`、`ZIndex`、`*Offset` 与带符号数值，Button 家族之外新增 17 处：Desktop.Controls 9（Calendar 1、Slider 2、SplitView 4、TabControl 1、Window 1）、DataGrid 4、ColorPicker 3、GalleryBase 1，由对应家族任务处理；表中 Desktop.Controls 的 045 已扣除 Button 家族（清零）。
 
 043/044/047 为 Task 7 实测。043 只覆盖 Token 键读取：NavMenu 的 `Application.Current.TryGetResource(MotionDurationMid)` 与 200 ms 回落、Window 的 `this.TryFindResource(WindowTokenKind.DefaultBackground)`。TabItem、TabStripItem、Menu 经 `Application.Current` 按字符串键查命名 ControlTheme，DataGridColumn 转发运行时键，这些是 E3 的命名主题作用域旁路，不在 043 范围内，在 Task 10.7 与 Task 14 手工修复。044 只按精确视觉成员名匹配，`CalendarRangeBarPanel` 的字号 12 / 高度 20 / 内边距 8 与 `SwitchKnob` 笔宽 1 经局部变量或复合名传入，不被报告，在 Task 10.9、10.3 手工修复（E2）。
 
@@ -619,7 +621,7 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Controls | Avatar | GroupOverlapping, GroupSpace | 10.9 | |
 | Controls | Icon | FallbackColor | 10.10 | |
 | Desktop | Button | DefaultBorderColorDisabled, ExtraContentItemSpacing, ExtraContentMargin, ExtraContentMarginLG, ExtraContentMarginSM, FontWeight, GroupBorderColor, GutterToFlyout | 9 | FontWeight、DefaultBorderColorDisabled → Active；GroupBorderColor → Reserved；ExtraContentItemSpacing、ExtraContentMargin(LG/SM)、GutterToFlyout → 删除 |
-| Desktop | OptionButton | ButtonBackground, ButtonCheckedBackground, ButtonPadding, ContentLineHeightLG | 9 | ContentLineHeightLG → Active（修正 ContentPadding 运算数后）；ButtonBackground、ButtonCheckedBackground、ButtonPadding → 删除 |
+| Desktop | OptionButton | ButtonBackground, ButtonCheckedBackground, ButtonPadding, ContentLineHeightLG | 9 | ContentLineHeightLG → Active（修正 ContentPadding 运算数后）；ButtonPadding → Active（供 ContentPadding/LG 水平分量，对应 antd Radio buttonPaddingInline）；ButtonBackground、ButtonCheckedBackground → Reserved（对应 antd Radio buttonBg / buttonCheckedBg；组框分隔线与选中边框绘制在选项背后，不透明背景会遮盖） |
 | Desktop | FloatButton | CircleBadgeOffset, SquareBadgeOffset | 9 | 删除 |
 | Desktop | LineEdit | InputFontSizeSM | 10.1 | |
 | Desktop | ButtonSpinner | ControlWidth | 10.1 | |

@@ -152,7 +152,10 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 `ATOMUIGEN040`–`ATOMUIGEN048` 属于主题消费精确性检查，保证"声称可定制的 Token 设置后一定有效果"。除 `040`、`048` 外
 默认 Warning：存量控件主题分家族迁移，每个家族迁移完成后由控件包 `.editorconfig` 把该家族范围升级为 Error。
 `042` 的引用分析只统计所属包内的主题 AXAML 与 C# 引用，不分析应用代码。`044`、`046`、`047` 只报告可静态证明的
-写法：经变量间接传入的字面量、运行时才能确定的 Setter 目标不报告，由评审补充。背景与修复规则见
+写法：经变量间接传入的字面量、运行时才能确定的 Setter 目标不报告，由评审补充。
+`043`、`044`、`047` 检查控件代码，只在控件包内运行：编译单元引用 `SharedTokenKind` 且不是其定义程序集，并且声明了
+`[ControlDesignToken]` 类型，或项目设置了编译器可见属性 `AtomUIThemeConsumptionAnalysis=true`（仓库内五个第一方控件包已设置，
+未设置视为关闭）；`[ControlDesignToken]` 类型内部不报告。背景与修复规则见
 [Control Token 规范](control-token-guidelines.md)。
 
 `ATOMUIGEN005` 和 `ATOMUIGEN006` 原本约束 `[ControlDesignToken]` 类型上的 `public const ID`，该手工 ID 契约已

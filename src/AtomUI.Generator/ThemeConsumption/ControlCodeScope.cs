@@ -14,7 +14,7 @@ namespace AtomUI.Generator.ThemeConsumption;
 /// </summary>
 internal sealed class ControlCodeScope
 {
-    public const string ThemeAssetProjectDirectoryOption = "build_property.AtomUIThemeAssetProjectDirectory";
+    public const string ThemeConsumptionAnalysisOption = "build_property.AtomUIThemeConsumptionAnalysis";
     public const string SharedTokenKindMetadataName = "AtomUI.Theme.Resources.SharedTokenKind";
 
     private ControlCodeScope(INamedTypeSymbol sharedTokenKind, INamedTypeSymbol? controlDesignTokenAttribute)
@@ -30,8 +30,8 @@ internal sealed class ControlCodeScope
     /// <summary>
     /// Returns <see langword="null"/> when the compilation is not a control package: <c>SharedTokenKind</c> must be
     /// resolvable and not defined by the compilation itself, and the compilation must either declare a
-    /// <c>[ControlDesignToken]</c> type or carry the <c>AtomUIThemeAssetProjectDirectory</c> build property (set by
-    /// the theme-asset build targets of control packages). Plain applications referencing AtomUI.Core match neither.
+    /// <c>[ControlDesignToken]</c> type or opt in with the compiler-visible MSBuild property
+    /// <c>AtomUIThemeConsumptionAnalysis=true</c>. Plain applications referencing AtomUI.Core match neither.
     /// </summary>
     public static ControlCodeScope? TryCreate(CompilationStartAnalysisContext context)
     {
@@ -46,8 +46,8 @@ internal sealed class ControlCodeScope
         var attribute = compilation.GetTypeByMetadataName(TargetMarkConstants.ControlDesignTokenAttribute);
         var isControlPackage =
             (context.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue(
-                 ThemeAssetProjectDirectoryOption, out var directory) &&
-             !string.IsNullOrWhiteSpace(directory)) ||
+                 ThemeConsumptionAnalysisOption, out var enabled) &&
+             string.Equals(enabled?.Trim(), "true", StringComparison.OrdinalIgnoreCase)) ||
             (attribute is not null && DeclaresAttributedType(compilation.Assembly.GlobalNamespace, attribute, context.CancellationToken));
         return isControlPackage ? new ControlCodeScope(sharedTokenKind, attribute) : null;
     }

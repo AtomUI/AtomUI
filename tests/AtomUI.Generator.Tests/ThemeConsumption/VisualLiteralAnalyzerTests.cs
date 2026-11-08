@@ -223,25 +223,25 @@ public class VisualLiteralAnalyzerTests
     }
 
     [Fact]
-    public async Task Does_Not_Report_Application_Compilation_Without_Token_Types_Or_Theme_Asset_Option()
+    public async Task Does_Not_Report_Application_Compilation_Without_Token_Types_Or_Opt_In()
     {
         var diagnostics = await AnalyzeAsync<VisualLiteralAnalyzer>(ControlWith("""
             private IBrush Pick() => Brushes.Red;
             private static readonly Color Blue = Color.FromRgb(1, 2, 3);
             """),
-            themeAssetDirectory: null);
+            consumptionAnalysis: null);
 
         diagnostics.ShouldBeEmpty();
     }
 
     [Fact]
-    public async Task Reports_When_Compilation_Declares_Control_Design_Token_Without_Theme_Asset_Option()
+    public async Task Reports_When_Compilation_Declares_Control_Design_Token_Without_Opt_In()
     {
         var diagnostics = await AnalyzeAsync<VisualLiteralAnalyzer>(ControlWith("""
             private IBrush Pick() => Brushes.Red;
             """,
             "[ControlDesignToken] public sealed class OtherToken { }"),
-            themeAssetDirectory: null);
+            consumptionAnalysis: null);
 
         FlaggedTexts(diagnostics).ShouldBe(["Brushes.Red"]);
     }
@@ -271,5 +271,19 @@ public class VisualLiteralAnalyzerTests
             """));
 
         FlaggedTexts(diagnostics).ShouldBe(["1", "14", "new CornerRadius(4)"]);
+    }
+
+    [Theory]
+    [InlineData("false")]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Does_Not_Report_When_Opt_In_Is_False_Empty_Or_Whitespace(string value)
+    {
+        var diagnostics = await AnalyzeAsync<VisualLiteralAnalyzer>(ControlWith("""
+            private IBrush Pick() => Brushes.Red;
+            """),
+            consumptionAnalysis: value);
+
+        diagnostics.ShouldBeEmpty();
     }
 }

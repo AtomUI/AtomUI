@@ -25,7 +25,7 @@ namespace AtomUI.Generator.ThemeConsumption;
 /// Not detected: reads whose key is a string, a <c>Type</c> (ControlTheme lookups) or a forwarded <c>object</c>
 /// variable; a Token key stored in an <c>object</c> local before the call; custom resource hosts declared in the same
 /// compilation; fallbacks that are not literals (named constants, computed values) or that sit outside the shapes
-/// above. Applications and libraries that are not control packages (no <c>SharedTokenKind</c>, no <c>[ControlDesignToken]</c> type and no <c>AtomUIThemeAssetProjectDirectory</c> build property), the assembly defining <c>SharedTokenKind</c> and
+/// above. Applications and libraries that are not control packages (no <c>SharedTokenKind</c>, no <c>[ControlDesignToken]</c> type and no <c>AtomUIThemeConsumptionAnalysis=true</c> opt-in), the assembly defining <c>SharedTokenKind</c> and
 /// <c>[ControlDesignToken]</c> types are exempt.
 /// </para>
 /// </summary>

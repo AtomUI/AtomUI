@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <AtomUIThemeConsumptionAnalysis>true</AtomUIThemeConsumptionAnalysis>
         <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
         <Nullable>enable</Nullable>
         <AtomUIRegistrationPackageId>AtomUI.Controls.Common</AtomUIRegistrationPackageId>

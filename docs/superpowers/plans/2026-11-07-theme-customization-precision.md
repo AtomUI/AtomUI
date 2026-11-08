@@ -568,7 +568,7 @@ git commit -m "refactor(Theme): 派生基字段默认赋值加 IsExplicit 守卫
 | ATOMUIGEN041 | 23 | 1714 | | | |
 | ATOMUIGEN042 | 3 | 99 | 21 | 2 | 0 |
 | ATOMUIGEN043 | 0 | 3 | 0 | 0 | 0 |
-| ATOMUIGEN044 | 19 | 4 | 0 | 23 | 0 |
+| ATOMUIGEN044 | 19 | 2 | 0 | 23 | 0 |
 | ATOMUIGEN045 | 0 | 90 | | | |
 | ATOMUIGEN046 | 3 | 29 | | | |
 | ATOMUIGEN047 | 11 | 28 | 0 | 8 | 0 |
@@ -576,7 +576,7 @@ git commit -m "refactor(Theme): 派生基字段默认赋值加 IsExplicit 守卫
 
 041/045/046 为 Task 5 实测（唯一文件+行，`--no-incremental`）。045 低于计划估计的约 134：其余字面量是 0、`Opacity="1"` 或位于 ControlTheme/Style 之外；主题中颜色字面量为 0。`Splash/Themes/SplashDefaultTheme.axaml` 以 Link 引入、不在 `Themes/` 资产路径下，其 12 处读取未被扫描，在 Task 10.10 处理。DataGrid、ColorPicker、Extras 的 041/045/046 在 Task 14 迁移时统计。
 
-043/044/047 为 Task 7 实测。043 只覆盖 Token 键读取：NavMenu 的 `Application.Current.TryGetResource(MotionDurationMid)` 与 200 ms 回落、Window 的 `this.TryFindResource(WindowTokenKind.DefaultBackground)`。TabItem、TabStripItem、Menu 经 `Application.Current` 按字符串键查命名 ControlTheme，DataGridColumn 转发运行时键，这些是 E3 的命名主题作用域旁路，不在 043 范围内，在 Task 10.7 与 Task 14 手工修复。
+043/044/047 为 Task 7 实测。043 只覆盖 Token 键读取：NavMenu 的 `Application.Current.TryGetResource(MotionDurationMid)` 与 200 ms 回落、Window 的 `this.TryFindResource(WindowTokenKind.DefaultBackground)`。TabItem、TabStripItem、Menu 经 `Application.Current` 按字符串键查命名 ControlTheme，DataGridColumn 转发运行时键，这些是 E3 的命名主题作用域旁路，不在 043 范围内，在 Task 10.7 与 Task 14 手工修复。044 只按精确视觉成员名匹配，`CalendarRangeBarPanel` 的字号 12 / 高度 20 / 内边距 8 与 `SwitchKnob` 笔宽 1 经局部变量或复合名传入，不被报告，在 Task 10.9、10.3 手工修复（E2）。
 
 ## 待裁决 Own Token（Task 6 执行后填写）
 

@@ -13,8 +13,8 @@ namespace AtomUI.Generator.Tests.ThemeConsumption;
 /// </summary>
 internal static class ThemeConsumptionAnalyzerTestHost
 {
-    /// <summary>Value of the theme-asset build property that marks the test compilation as a control package.</summary>
-    public const string DefaultThemeAssetDirectory = "/src/Demo.Controls";
+    /// <summary>Value of the opt-in build property that marks the test compilation as a control package.</summary>
+    public const string DefaultConsumptionAnalysis = "true";
 
     public const string Stubs = """
         using System;
@@ -86,7 +86,7 @@ internal static class ThemeConsumptionAnalyzerTestHost
                         .Where(static reference => !(Path.GetFileName(reference.Display) ?? string.Empty)
                                                    .StartsWith("AtomUI.", StringComparison.Ordinal))]);
 
-    public static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync<TAnalyzer>(string source, bool withStubs = true, string? themeAssetDirectory = DefaultThemeAssetDirectory)
+    public static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync<TAnalyzer>(string source, bool withStubs = true, string? consumptionAnalysis = DefaultConsumptionAnalysis)
         where TAnalyzer : DiagnosticAnalyzer, new()
     {
         var references = new List<MetadataReference>(s_platformReferences.Value);
@@ -117,9 +117,9 @@ internal static class ThemeConsumptionAnalyzerTestHost
         var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(new TAnalyzer());
         var options = new AnalyzerOptions(
             [],
-            new GlobalOptionsProvider(themeAssetDirectory is null
+            new GlobalOptionsProvider(consumptionAnalysis is null
                 ? new Dictionary<string, string>()
-                : new Dictionary<string, string> { ["build_property.AtomUIThemeAssetProjectDirectory"] = themeAssetDirectory }));
+                : new Dictionary<string, string> { ["build_property.AtomUIThemeConsumptionAnalysis"] = consumptionAnalysis }));
         var compilationWithAnalyzers = compilation.WithAnalyzers(analyzers, options);
         var diagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
         return [.. diagnostics.OrderBy(static d => d.Location.SourceSpan.Start)];

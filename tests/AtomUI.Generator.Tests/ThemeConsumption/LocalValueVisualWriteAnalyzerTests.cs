@@ -221,7 +221,7 @@ public class LocalValueVisualWriteAnalyzerTests
     }
 
     [Fact]
-    public async Task Does_Not_Report_Application_Compilation_Without_Token_Types_Or_Theme_Asset_Option()
+    public async Task Does_Not_Report_Application_Compilation_Without_Token_Types_Or_Opt_In()
     {
         var diagnostics = await AnalyzeAsync<LocalValueVisualWriteAnalyzer>(ControlWith("""
             private void Apply(Border border, IBrush brush)
@@ -230,13 +230,13 @@ public class LocalValueVisualWriteAnalyzerTests
                 border.Background = brush;
             }
             """),
-            themeAssetDirectory: null);
+            consumptionAnalysis: null);
 
         diagnostics.ShouldBeEmpty();
     }
 
     [Fact]
-    public async Task Reports_When_Compilation_Declares_Control_Design_Token_Without_Theme_Asset_Option()
+    public async Task Reports_When_Compilation_Declares_Control_Design_Token_Without_Opt_In()
     {
         var diagnostics = await AnalyzeAsync<LocalValueVisualWriteAnalyzer>(ControlWith("""
             private void Apply(Border border, IBrush brush)
@@ -245,8 +245,25 @@ public class LocalValueVisualWriteAnalyzerTests
             }
             """,
             "[ControlDesignToken] public sealed class OtherToken { }"),
-            themeAssetDirectory: null);
+            consumptionAnalysis: null);
 
         diagnostics.ShouldHaveSingleItem().Id.ShouldBe(Id);
+    }
+
+    [Theory]
+    [InlineData("false")]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Does_Not_Report_When_Opt_In_Is_False_Empty_Or_Whitespace(string value)
+    {
+        var diagnostics = await AnalyzeAsync<LocalValueVisualWriteAnalyzer>(ControlWith("""
+            private void Apply(Border border, IBrush brush)
+            {
+                border.SetValue(Border.BackgroundProperty, brush);
+            }
+            """),
+            consumptionAnalysis: value);
+
+        diagnostics.ShouldBeEmpty();
     }
 }

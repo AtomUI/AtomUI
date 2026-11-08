@@ -224,6 +224,7 @@ internal partial class NativeOverlayTheme : ResourceDictionary
 - 干净 NuGet cache 的消费应用只引用产品包即可构建，不需要手工添加构建工具或配置类型映射。
 - 声明支持 Browser 时，分别运行 trimmed interpreter 与 AOT 发布产物，证明未用控件/资源被裁剪。
 - 构建工具不进入运行时依赖、应用输出和发布目录。
+- 控件代码的主题消费检查（`ATOMUIGEN043`、`044`、`047`）只在控件包内运行：声明了 `[ControlDesignToken]` Token 类型的包自动启用，其余第三方控件包在项目文件里设置 `<AtomUIThemeConsumptionAnalysis>true</AtomUIThemeConsumptionAnalysis>` 显式启用；应用项目不会收到这些诊断。
 
 升级到此生成 ABI 的控件包需要使用对应 SDK 重新构建；普通消费 adapter 不需要新增注册分析产物。
 更完整的类型与资源规则见 [控件注册契约](../../architecture/foundations/control-registration-contracts.md)，

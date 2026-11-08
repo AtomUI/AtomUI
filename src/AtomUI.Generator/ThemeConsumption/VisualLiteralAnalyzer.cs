@@ -24,7 +24,7 @@ namespace AtomUI.Generator.ThemeConsumption;
 /// Not detected: values that reach the consuming site through a local variable, a named constant or a computation;
 /// <c>Width/Height/Padding/Margin</c>; default values passed to <c>AvaloniaProperty.Register</c>;
 /// <c>using static</c> access to <c>Brushes</c>/<c>Colors</c>; <c>Color.TryParse</c> and non-literal arguments.
-/// Applications and libraries that are not control packages (no <c>SharedTokenKind</c>, no <c>[ControlDesignToken]</c> type and no <c>AtomUIThemeAssetProjectDirectory</c> build property), the assembly defining <c>SharedTokenKind</c> and <c>[ControlDesignToken]</c>
+/// Applications and libraries that are not control packages (no <c>SharedTokenKind</c>, no <c>[ControlDesignToken]</c> type and no <c>AtomUIThemeConsumptionAnalysis=true</c> opt-in), the assembly defining <c>SharedTokenKind</c> and <c>[ControlDesignToken]</c>
 /// types are exempt.
 /// </para>
 /// </summary>

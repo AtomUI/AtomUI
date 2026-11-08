@@ -17,7 +17,6 @@
                 <atom:TokenTransitions>
                     <Transitions>
                         <DoubleTransition Property="KnobRenderWidth" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

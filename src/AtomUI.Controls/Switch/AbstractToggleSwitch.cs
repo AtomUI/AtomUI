@@ -190,9 +190,6 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     internal static readonly StyledProperty<Point> OffContentOffsetProperty = 
         AvaloniaProperty.Register<AbstractToggleSwitch, Point>(nameof(OffContentOffset));
 
-    internal static readonly StyledProperty<double> SwitchOpacityProperty = 
-        AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(SwitchOpacity), 1d);
-
     internal double InnerMaxMargin
     {
         get => GetValue(InnerMaxMarginProperty);
@@ -235,12 +232,6 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         set => SetValue(OffContentOffsetProperty, value);
     }
 
-    internal double SwitchOpacity
-    {
-        get => GetValue(SwitchOpacityProperty);
-        set => SetValue(SwitchOpacityProperty, value);
-    }
-    
     #endregion
 
     private const double STRETCH_FACTOR = 1.3d;
@@ -281,7 +272,7 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             KnobMovingRectProperty,
             OnContentOffsetProperty,
             OffContentOffsetProperty);
-        AffectsRender<AbstractToggleSwitch>(GrooveBackgroundProperty, SwitchOpacityProperty);
+        AffectsRender<AbstractToggleSwitch>(GrooveBackgroundProperty);
         IsCheckedProperty.Changed.AddClassHandler<AbstractToggleSwitch>((toggleSwitch, args) => toggleSwitch.NotifyFormValueChanged(args.NewValue as bool?));
     }
 
@@ -462,8 +453,7 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     public sealed override void Render(DrawingContext context)
     {
-        using var state = context.PushOpacity(SwitchOpacity);
-        var       size  = Bounds.Size;
+        var size = Bounds.Size;
         context.DrawPilledRect(GrooveBackground, null, new Rect(new Point(0, 0), size));
     }
 

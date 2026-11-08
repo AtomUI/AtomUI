@@ -72,7 +72,7 @@ Switch `ComponentToken` 的 `trackHeight` / `trackMinWidth` / `trackPadding` / `
 该 Token 控制 `SwitchKnob` loading arc 的旋转周期。它不表达当前旋转角度或动画是否运行。
 
 loading arc 的线宽读全局 `LineWidth`（`SwitchKnobTheme` 以 `ToggleSwitchTokenResource LineWidth` 设置内部
-`LoadIndicatorThickness`）。禁用或加载中的把手透明度与轨道相同，读 `SwitchDisabledOpacity`。`SwitchKnob` 只属于
+`LoadIndicatorThickness`）。禁用或加载中的开关与 antd 一致，在根上以 `SwitchDisabledOpacity` 整体变暗一次（轨道、把手与开/关内容），把手自身不再单独变暗；loading arc 另以 `LoadingBgOpacity` 绘制。`SwitchKnob` 只属于
 ToggleSwitch，以 `ToggleSwitchTokenResource` 读取。
 
 ## 3. 控件专项模型中的 Token 使用

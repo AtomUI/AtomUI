@@ -57,19 +57,16 @@
                         <PointTransition Property="OnContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
                         <PointTransition Property="OffContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
                         <atom:SolidColorBrushTransition Property="GrooveBackground" atom:TokenTransitions.Duration="MotionDurationMid"/>
-                        <DoubleTransition Property="SwitchOpacity" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid"/>
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>
         </Style>
 
+        <!-- As in antd, a disabled or loading switch is dimmed once as a whole (groove, knob and content). -->
         <Style Selector="^[IsLoading=True], ^:disabled">
-            <Setter Property="SwitchOpacity"
+            <Setter Property="Opacity"
                     Value="{atom:ToggleSwitchTokenResource SwitchDisabledOpacity}" />
-            <Style Selector="^ /template/ atom|SwitchKnob#PART_SwitchKnob">
-                <Setter Property="Opacity"
-                        Value="{atom:ToggleSwitchTokenResource SwitchDisabledOpacity}" />
-            </Style>
         </Style>
 
         <Style Selector="^[IsChecked=True]">

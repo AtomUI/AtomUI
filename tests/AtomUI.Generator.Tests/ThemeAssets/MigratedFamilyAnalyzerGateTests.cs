@@ -56,6 +56,18 @@ public class MigratedFamilyAnalyzerGateTests
     }
 
     [Fact]
+    public void Family_Transition_Durations_Are_Declared_With_TokenTransitions()
+    {
+        // ATOMUIGEN041 reports SharedTokenResourceValue through the theory above; this guards that the family really
+        // carries Token-declared durations, so the gate cannot pass because the transitions were dropped.
+        var texts = FamilyAssets().Select(static row => File.ReadAllText(Path.Combine(RepositoryRoot, (string)row[0])))
+                                  .ToArray();
+        texts.ShouldAllBe(static text => !text.Contains("SharedTokenResourceValue"));
+        texts.Sum(static text => Regex.Matches(text, @"atom:TokenTransitions\.Duration=""MotionDuration\w+""").Count)
+             .ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
     public void The_Identity_Set_Contains_Identity_Only_Family_Controls()
     {
         // Sanity: a control without Own Tokens still has a Token identity, so its theme must use its own TokenResource.

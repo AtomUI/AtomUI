@@ -346,6 +346,16 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
+    // Same rule (ATOMUIGEN041), distinct message: the frozen load-time read has no shared exemption.
+    public static readonly DiagnosticDescriptor ThemeAssetFrozenTokenRead = new(
+        AtomUIDiagnosticIds.ThemeAssetSharedReadMismatch,
+        "ControlTheme must read global Tokens through the TokenResource that matches its TargetType",
+        "ControlTheme for '{0}' reads global Token '{1}' with SharedTokenResourceValue, which freezes the application value at load and ignores theme switches, EnableMotion, Controls overrides and local scopes; declare transition durations with atom:TokenTransitions.Duration inside atom:TokenTransitions",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
     public static readonly DiagnosticDescriptor OwnTokenUnreferenced = new(
         AtomUIDiagnosticIds.OwnTokenUnreferenced,
         "Own Token field must be consumed, reserved or deleted",

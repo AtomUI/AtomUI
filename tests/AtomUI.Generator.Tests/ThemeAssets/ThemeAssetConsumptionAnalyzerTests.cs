@@ -189,6 +189,77 @@ public class ThemeAssetConsumptionAnalyzerTests
             """), reference).ShouldHaveSingleItem().GetMessage().ShouldContain("OwnerTokenResource");
     }
 
+    [Theory]
+    [InlineData("atom:Button")]
+    [InlineData("atom:InputControlFrame")]
+    [InlineData("Border")]
+    public void Reports_SharedTokenResourceValue_In_Any_ControlTheme(string targetType)
+    {
+        var diagnostic = Analyze(Theme(targetType, """
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+                </Transitions>
+            </Setter>
+            """)).ShouldHaveSingleItem();
+
+        diagnostic.Id.ShouldBe(SharedRead);
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
+        diagnostic.GetMessage().ShouldContain("SharedTokenResourceValue");
+        diagnostic.GetMessage().ShouldContain("MotionDurationMid");
+        diagnostic.GetMessage().ShouldContain("TokenTransitions");
+    }
+
+    [Fact]
+    public void A_Shared_Comment_Does_Not_Allow_SharedTokenResourceValue()
+    {
+        var diagnostic = Analyze(Theme("atom:Button", """
+            <!-- shared: every control animates alike -->
+            <DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue MotionDurationSlow}" />
+            """)).ShouldHaveSingleItem();
+
+        diagnostic.Id.ShouldBe(SharedRead);
+        diagnostic.GetMessage().ShouldContain("MotionDurationSlow");
+    }
+
+    [Fact]
+    public void SharedTokenResourceValue_Report_Is_Located_On_The_Offending_Attribute()
+    {
+        var axaml = Theme("atom:Button", """
+            <DoubleTransition Property="Opacity"
+                              Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+            """);
+        var diagnostic = Analyze(axaml).ShouldHaveSingleItem();
+
+        axaml.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length)
+             .ShouldBe("Duration=\"{atom:SharedTokenResourceValue Kind=MotionDurationMid}\"");
+    }
+
+    [Fact]
+    public void Does_Not_Report_TokenTransitions_Nor_SharedTokenResourceValue_In_Application_Styles()
+    {
+        Analyze(Theme("atom:Button", """
+            <Setter Property="Transitions">
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
+            </Setter>
+            """)).ShouldBeEmpty();
+        Analyze("""
+            <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:atom="using:Demo">
+                <Style Selector="Border.demo">
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
+                        </Transitions>
+                    </Setter>
+                </Style>
+            </Styles>
+            """).ShouldBeEmpty();
+    }
+
     // ---- ATOMUIGEN045 -------------------------------------------------------------------
 
     [Theory]

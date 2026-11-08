@@ -9,7 +9,8 @@ namespace AtomUI.Generator;
 
 /// <summary>
 /// Static checks over the parsed theme AXAML assets of one package:
-/// <c>ATOMUIGEN041</c> (global Token read kind versus the ControlTheme's Token identity),
+/// <c>ATOMUIGEN041</c> (global Token read kind versus the ControlTheme's Token identity, and load-time frozen
+/// <c>SharedTokenResourceValue</c> reads in any ControlTheme),
 /// <c>ATOMUIGEN045</c> (visual literals) and <c>ATOMUIGEN046</c> (template node attributes that mask state Setters).
 /// The analysis is pure <see cref="XElement"/> traversal. Only provable patterns are reported; anything that cannot be
 /// resolved statically is left to review. The parsed documents never enter the incremental cache.
@@ -22,6 +23,11 @@ internal static class ThemeAssetConsumptionAnalyzer
 
     private static readonly Regex s_sharedTokenResource = new(
         @"\{\s*(?:[\w.-]+:)?SharedTokenResource\b(?:\s+(?:Kind\s*=\s*)?(?<name>[\w.]+))?",
+        RegexOptions.CultureInvariant);
+
+    // `{atom:SharedTokenResourceValue Kind=MotionDurationMid}`: a value read once from the application at load.
+    private static readonly Regex s_frozenTokenResource = new(
+        @"\{\s*(?:[\w.-]+:)?SharedTokenResourceValue\b(?:\s+(?:Kind\s*=\s*)?(?<name>[\w.]+))?",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex s_hexColor = new(
@@ -233,6 +239,18 @@ internal static class ThemeAssetConsumptionAnalyzer
             {
                 if (attribute.IsNamespaceDeclaration)
                 {
+                    continue;
+                }
+
+                var frozen = s_frozenTokenResource.Match(attribute.Value);
+                if (frozen.Success)
+                {
+                    // No `shared:` exemption: the frozen value is wrong for every control, shared or not.
+                    _report(Diagnostic.Create(
+                        AtomUIDiagnosticDescriptors.ThemeAssetFrozenTokenRead,
+                        LocateAttribute(attribute),
+                        theme.TargetTypeName ?? "<unknown>",
+                        frozen.Groups["name"].Success ? frozen.Groups["name"].Value : "?"));
                     continue;
                 }
 

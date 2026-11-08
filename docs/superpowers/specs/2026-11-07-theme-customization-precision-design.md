@@ -44,7 +44,21 @@ release/6.0 的主题配置模型与 Ant Design 的主题配置一一对应：
 | E3 | 绕过作用域读资源 | `NavMenu` 用 `Application.Current.TryGetResource` 读 `MotionDurationMid`，失败回落写死的 200 ms；`TabItem`/`TabStripItem` 经 `Application.Current` 查命名主题；`DataGridColumn` 查不到时回落 Application；共约 6 处 | 局部 `ThemeConfigProvider` 的覆盖对这些读取无效 |
 | E4 | 代码侧计算视觉值的模式 | 111 处代码赋视觉属性，38 个自绘。Button 的做法是对的：`ControlTokenAccessor` 读控件有效值，`ThemeTokenResolver.Subscribe` 在主题变化时重算 | 模式可用但没有统一约束；需逐控件确认都订阅了变化、都读有效值 |
 
-A、B 是机制缺口，C、D、E 是逐控件的消费缺口。结论是：控件代码确实需要优化，但范围是可枚举的有限清单，不是重写；Button 这类核心控件的代码模式已经正确，问题集中在少数控件和历史遗留处。custom-theme 分支修过其中一部分，但和它的样式资产改动缠在一起，本方案在 release/6.0 上重做。
+A、B 是机制缺口，C、D、E 是逐控件的消费缺口。结论是：控件代码确实需要优化，但范围是可枚举的有限清单，不是重写；Button 这类核心控件的代码模式已经正确，问题集中在少数控件和历史遗留处。
+
+缺口 B 的 1917 处里有一个结构性原因：`InputControlFrame`（90 处）、`AddOnDecoratedBox`（29 处）这类**没有自己 Token 身份的共享基元**被多个公开控件的模板复用，它们的主题没法写 `LineEditTokenResource`，只能退而读共享全局值，于是用户对 LineEdit 的逐控件覆盖传不进输入框的边框、圆角与内边距。这不是作者疏忽，是缺一个"读当前所属公开控件的有效值"的机制。
+
+### 2.3 custom-theme 分支已做的相关修复
+
+该分支在这些缺口上做过大量工作，可作为核对清单，但不直接合并：
+
+| 缺口 | 分支做法 | 评价 |
+| --- | --- | --- |
+| A | 编译器先写显式 Own 值、求值、再写一遍；另加依赖式默认值 V2、存在位、逐层 Revision | 顺序修正与本方案一致；V2 机制过重，不采用 |
+| B | 新增 `OwnerTokenResource`，沿 `TemplatedParent → Parent` 跳链在运行时找注册的公开 owner 并观察路由变化；控件主题中 `SharedTokenResource` 从 1917 处降到 164 处，`OwnerTokenResource` 1664 处 | 方向正确，证明了问题范围；路由靠跳链观察，成本与复杂度偏高，本方案改用可继承附加属性（3.3） |
+| E3 | `NavMenu` 的 `Application.Current` 读取已移除 | 同类修复约 20 个 fix 提交（Tag、ToolTip 改读快照色板，Steps、Splitter、AddOnDecoratedBox 等） |
+| E1 | `BadgeColorUtils` 的 14 个 RGB 常量未改 | 本方案要修 |
+| 整体 | 这些改动与样式资产子系统、50 个新增 Own 字段、V2 求值缠在同一批提交里 | cherry-pick 成本接近重做；只借它的问题清单与修复思路 |
 
 ## 3. 方案
 
@@ -80,11 +94,27 @@ builder.ApplyExplicit()                           // 再写一遍显式值，保
 
 ### 3.3 修复 B：控件主题只读"控件有效全局值"
 
-规则：控件的 ControlTheme 与其专用 Style 内，全局 Token 一律用 `{atom:XxxTokenResource Name}`；`{atom:SharedTokenResource Name}` 只允许出现在应用级样式和明确跨控件共享语义的场合，后者需在 AXAML 上以注释标注理由。分析器对控件主题内的 `SharedTokenResource` 报警告，迁移完成后转错误。
+规则按主题所属类型分两种：
 
-1917 处是机械替换，按控件家族分批，每批跑该家族的生效测试。替换后 `ThemeConfig.Controls[X].Tokens[全局名]` 对该控件的全部消费点生效，与 antd `components[Comp]` 的语义一致。
+| 主题的 TargetType | 全局 Token 的读法 | 数量 |
+| --- | --- | --- |
+| 有 Token 身份的公开控件（Button、LineEdit、Steps…） | `{atom:XxxTokenResource Name}`，读自己的有效全局值 | 约 1700 处 |
+| 没有 Token 身份的共享基元与部件（InputControlFrame、AddOnDecoratedBox、各类 Item/Cell/Presenter） | `{atom:OwnerTokenResource Name}`，读**当前所属公开控件**的有效全局值 | 约 200 处 |
 
-性能：`XxxTokenResource` 的查询路径已存在且为零分配；控件级无覆盖时走 `UsesRootSharedResources` 直接读全局表，与 `Shared` 成本相同。
+`SharedTokenResource` 只允许出现在应用级样式和明确跨控件共享语义的场合，后者需在 AXAML 上以注释标注理由。分析器根据 TargetType 是否有 Token 身份判断该用哪种，用错报警告，迁移完成后转错误。
+
+`OwnerTokenResource` 的机制：
+
+- 每个有 Token 身份的公开控件在构造时把自己的 identity 写入可继承附加属性 `ThemeScope.TokenOwner`（生成器在注册代码里产出，控件作者不写）。
+- 基元与部件在模板内继承到这个值；Popup 内容经逻辑父级同样继承，独立窗口经现有 lease 继承。
+- `OwnerTokenResource` 产出一个绑定：输入是继承到的 owner identity 与 Token kind，输出是作用域 Provider 对 `ControlTokenResourceKey.Global(identity, kind)` 的查询结果；owner 变化（重套模板、重新挂载）或主题变化都触发重取。
+- 没有继承到 owner（基元被单独使用）时回落为共享全局值。
+
+与 custom-theme 分支沿 `TemplatedParent → Parent` 跳链并观察每一跳的做法相比：继承属性由 Avalonia 原生传播，无需路由观察；天然跨 Popup 边界；每个绑定只多一个对继承属性的订阅。嵌套的公开控件（SearchEdit 里的 Button）写入自己的 identity，读自己的有效值，这与 antd 一致。
+
+替换后 `ThemeConfig.Controls[X].Tokens[全局名]` 对该控件的全部消费点生效，包括它模板里的共享基元，与 antd `components[Comp]` 的语义一致。约 1900 处替换按控件家族分批，每批跑该家族的生效测试。
+
+性能：`XxxTokenResource` 的查询路径已存在且为零分配，控件级无覆盖时走 `UsesRootSharedResources` 直接读全局表，与 `Shared` 成本相同；`OwnerTokenResource` 多一个继承属性订阅，只用于约 200 处基元与部件。
 
 ### 3.4 修复 C、D、E：逐控件消费审计
 
@@ -164,7 +194,7 @@ Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，�
 | 改动 | 类别 | 说明 |
 | --- | --- | --- |
 | 编译器：显式 Own 覆盖先于 `CalculateTokenValues`，加显式位与 `IsExplicit` | 架构优化 | 修复 A；替换 22 处 `IsNaN` 哨兵 |
-| 控件主题内 `SharedTokenResource` → `XxxTokenResource`（1917 处，分家族） | 架构优化 | 修复 B；查询成本不变 |
+| 控件主题内 `SharedTokenResource` → `XxxTokenResource` / `OwnerTokenResource`（1917 处，分家族）；新增 `ThemeScope.TokenOwner` 可继承附加属性与 `OwnerTokenResource` 标记扩展 | 架构优化 + 新能力 | 修复 B；公开控件读法成本不变，基元多一个继承属性订阅 |
 | Own Token 字段分类（Active / Reserved / 删除）与生成器引用分析 | 架构优化 | 修复 C；删除字段进发布说明 |
 | 主题 AXAML 字面量与代码侧消费审计（分家族） | 架构优化 | 修复 D、E |
 | 生成器：Own 引用分析、全局 Token 消费图、生效测试骨架 | 新能力 | 支撑 3.1、3.6、3.7 |
@@ -205,7 +235,8 @@ Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，�
 | --- | --- | --- |
 | 要不要设计语言抽象层 | 不要 | Ant Design 是唯一设计语言；其他语言只模拟不复刻 |
 | 修复 A 的方式 | 覆盖先写入 + 显式位 + 求值后再写 | 对现有 `CalculateTokenValues` 的最小修正；不引入依赖图与求值版本 |
-| 控件主题内全局 Token 的读法 | 一律控件有效值 | 让逐控件覆盖对全部消费点生效，与 antd 语义一致；成本不变 |
+| 控件主题内全局 Token 的读法 | 公开控件读自己的有效值；共享基元经继承的 owner identity 读所属控件的有效值 | 让逐控件覆盖对全部消费点生效，与 antd 语义一致；不用跳链观察 |
+| custom-theme 分支 | 不合并；借问题清单与修复思路，`OwnerTokenResource` 改用继承属性重做 | 修复与样式资产、V2、新增字段缠在一起 |
 | 无消费者的 Own Token | Active / Reserved / 删除三选一，构建期强制 | 承诺面必须真实 |
 | 验收方式 | 生效测试（有变化）为门禁，像素对照只做回归 | 避免 custom-theme 分支的零差异门禁与逐表批准 |
 | 主题文件格式 | 保持 XML v1 | 与 antd 配置同构，基础设施已全 |

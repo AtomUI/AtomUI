@@ -51,13 +51,15 @@ public static class TokenEffectHarness
     /// <param name="arrange">Puts the attached Control into a state where the Token is visible.</param>
     /// <param name="thresholdRatio">Minimum ratio of changed pixels within the Control's bounds.</param>
     /// <param name="channelTolerance">A pixel changes when any channel differs by more than this.</param>
+    /// <param name="options">Hosting, perturbation and comparison-region adjustments for Tokens that need them.</param>
     public static void AssertHasEffect(
         Func<Control> create,
         ControlTokenIdentity identity,
         string token,
         Action<Control>? arrange = null,
         double thresholdRatio = DefaultThresholdRatio,
-        int channelTolerance = DefaultChannelTolerance)
+        int channelTolerance = DefaultChannelTolerance,
+        EffectOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(create);
         ArgumentNullException.ThrowIfNull(token);
@@ -66,13 +68,10 @@ public static class TokenEffectHarness
 
         var target         = ResolveToken(identity, token);
         var comparesPixels = target.ValueType != typeof(TimeSpan) && target.ValueType != typeof(bool);
-        var control        = create();
-        if (!target.ControlType.IsInstanceOfType(control))
+        var root           = create();
+        if (options?.Target is null)
         {
-            throw new ArgumentException(
-                $"Control '{control.GetType().FullName}' does not match identity '{identity}' " +
-                $"('{target.ControlType.FullName}').",
-                nameof(create));
+            EnsureMatches(root, target, identity);
         }
 
         var provider = new ThemeConfigProvider { Config = CreateConfig(comparesPixels, null) };
@@ -81,7 +80,7 @@ public static class TokenEffectHarness
             Padding             = new Thickness(24),
             HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment   = VerticalAlignment.Top,
-            Child               = control
+            Child               = root
         };
         var window = new AvaloniaWindow
         {
@@ -98,20 +97,26 @@ public static class TokenEffectHarness
             window.Show();
             FrameCapture.Refresh(window);
             failure.ShouldBeNull(DescribeFailure(failure));
+            // Hosted members (items containers, popups) exist only once the root is shown.
+            var control = options?.Target?.Invoke(root) ?? root;
+            EnsureMatches(control, target, identity);
             arrange?.Invoke(control);
             FrameCapture.Refresh(window);
 
             var current = target.Read(control) ?? throw new NotSupportedException(
                 $"Token '{token}' of '{identity}' resolves to null; add an explicit perturbation case.");
-            var perturbed = PerturbFor(identity, token, current);
+            var perturbed = options?.Perturb?.Invoke(current) ?? PerturbFor(identity, token, current);
             var formatted = ThemeTokenValueFormatter.Format(perturbed);
             formatted.ShouldNotBe(ThemeTokenValueFormatter.Format(current),
                 $"Perturbation of '{token}' must produce a different value.");
 
             using var before = comparesPixels ? FrameCapture.Capture(window) : null;
             // Shadows paint outside the Control, so the region grows by the larger shadow extent per axis.
-            var inflation    = MaxExtent(ShadowExtent(current), ShadowExtent(perturbed));
-            var boundsBefore = before is null ? default : GetPixelBounds(control, window, before, inflation);
+            var inflation    = MaxExtent(
+                MaxExtent(ShadowExtent(current), ShadowExtent(perturbed)),
+                (options?.RegionInflation ?? 0, options?.RegionInflation ?? 0));
+            var regionOf     = options?.Region?.Invoke(control) ?? control;
+            var boundsBefore = before is null ? default : GetPixelBounds(regionOf, window, before, inflation);
 
             provider.Config = CreateConfig(comparesPixels, (identity, token, formatted));
             WaitForValue(control, target, formatted, () => failure is not null);
@@ -126,7 +131,7 @@ public static class TokenEffectHarness
 
             FrameCapture.Refresh(window);
             using var after   = FrameCapture.Capture(window);
-            var boundsAfter   = GetPixelBounds(control, window, after, inflation);
+            var boundsAfter   = GetPixelBounds(regionOf, window, after, inflation);
             var region        = SKRectI.Union(boundsBefore, boundsAfter);
             var area          = region.Width * region.Height;
             var changed       = FrameCapture.CountDifferentPixels(before, after, region, channelTolerance);
@@ -142,6 +147,17 @@ public static class TokenEffectHarness
             provider.ThemeChangeFailed -= onFailed;
             window.Close();
             Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    private static void EnsureMatches(Control control, TokenTarget target, ControlTokenIdentity identity)
+    {
+        if (!target.ControlType.IsInstanceOfType(control))
+        {
+            throw new ArgumentException(
+                $"Control '{control.GetType().FullName}' does not match identity '{identity}' " +
+                $"('{target.ControlType.FullName}').",
+                nameof(control));
         }
     }
 
@@ -300,4 +316,32 @@ public static class TokenEffectHarness
     }
 
     private sealed record TokenTarget(Type ControlType, Type ValueType, Func<Control, object?> Read);
+}
+
+/// <summary>Adjustments for Tokens whose effect needs more than a state setup.</summary>
+public sealed record EffectOptions
+{
+    /// <summary>
+    /// Selects the Control under test from the created root once it is shown, for members that only exist inside a
+    /// host (items containers such as OptionButton inside OptionButtonGroup). Bounds, reads and arrange use it.
+    /// </summary>
+    public Func<Control, Control>? Target { get; init; }
+
+    /// <summary>
+    /// Selects the visual whose bounds are compared, for Tokens a member forwards to a visual outside its own bounds
+    /// (a host's overlay button or menu). Defaults to the Control under test.
+    /// </summary>
+    public Func<Control, Control>? Region { get; init; }
+
+    /// <summary>
+    /// Replaces the table perturbation for a Token whose visible response is one-sided: a derived value clamped at
+    /// zero (a vertical padding computed from a line height) only shows when the Token decreases.
+    /// </summary>
+    public Func<object, object>? Perturb { get; init; }
+
+    /// <summary>
+    /// Grows the comparison region on every side, for Tokens that move something painted outside the bounds without
+    /// being a shadow value themselves (a shadow offset or width).
+    /// </summary>
+    public double RegionInflation { get; init; }
 }

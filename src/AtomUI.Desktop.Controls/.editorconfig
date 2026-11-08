@@ -1,0 +1,14 @@
+# Theme consumption analyzers are errors for control families whose migration is complete
+# (docs/engineering/development/control-token-guidelines.md, "诊断与启动校验"). Other families keep the
+# migration-time warning severity until their own migration finishes. Section globs are relative to this file.
+
+# Button family: Button, HyperLinkButton, IconButton, ToggleIconButton, DropdownButton, SplitButton,
+# FloatButton (FloatButtonGroup, BackTop and hosts), OptionButton and OptionButtonGroup.
+[{Buttons,DropdownButton,SplitButton,FloatButton,OptionButtonGroup}/**]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN042.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN046.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

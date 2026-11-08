@@ -39,6 +39,7 @@ assert   A 与 B 在控件边界内的像素差异比例 > 阈值
 | Thickness / CornerRadius | 每个分量加 4 |
 | TimeSpan（动效时长） | 不做像素断言，改为断言动效系统读到的时长值变化 |
 | bool（EnableMotion、EnableWaveSpirit 等） | 取反；断言对应行为开关 |
+| FontWeight | 低于 SemiBold 取 Bold，否则取 Normal |
 | BoxShadows | 偏移加 8、模糊加 8 |
 
 阈值默认是控件边界内 0.5% 的像素发生通道差异大于 8；细线类 Token（`LineWidth`、边框线宽）阈值降到 0.1%。
@@ -55,6 +56,16 @@ BoxShadows 类 Token 画在控件边界之外，比较区域是控件边界向�
 提供状态 setup；没有 setup 的 Token 使用控件默认状态。
 
 一个 Token 在任何状态下都看不见时，它不是 Active：要么改为 Reserved 并写明理由，要么删除。生效测试不接受"跳过"。
+
+状态 setup 之外，辅助方法的 `EffectOptions` 提供三种调整，均需在用例旁说明原因：
+
+- `Target`：成员只存在于宿主内部（OptionButton 在 OptionButtonGroup 里、FloatButton 由 Host 放进浮层）时，从显示后的根节点
+  选出被测成员。
+- `Perturb`：响应单向的 Token 改用显式扰动值，例如行高只在变小时抬高被钳制为 0 的垂直内边距。
+- `RegionInflation` / `Region`：Token 移动的内容画在控件边界之外（阴影偏移、浮层里的按钮或菜单）时，扩大或改用比较区域。
+
+弹层间距类 Token（`MarginToAnchor`、`GutterToFlyout`）改为断言打开的弹层相对锚点的位移等于间距变化；整数 Token（`ZIndexPopupBase`）
+断言对应属性等于覆盖值。
 
 ## 5. 位置与执行
 

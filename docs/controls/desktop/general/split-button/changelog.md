@@ -2,6 +2,13 @@
 
 本文档记录 SplitButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Changed
+  - `SplitButtonTheme` 的全局 Token 改读 `SplitButtonTokenResource`；删除从未绘制的 `BorderBrush` 与默认（outline）形态的
+    `SplitSeparatorBrush` Setter，默认形态的 `SplitSeparatorBrush` 为 null。
+  - 拼接圆角写入内部 Button 的内部 `HostCornerRadius`，不再以本地值覆盖其公开 `CornerRadius`；分隔线画刷为空时不绘制。
+
 ## 2026-11-04
 
 - Changed

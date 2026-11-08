@@ -2,6 +2,19 @@
 
 本文档记录 FloatButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Changed
+  - FloatButton 家族主题的全局 Token 改读各自身份：`AbstractFloatButtonTheme` 与内部 `FloatButtonItemsControlTheme` 用
+    `OwnerTokenResource`，Host、Group、BackTop 主题用各自的 `XxxTokenResource`；徽标色改读 owner 的有效 `ColorError`。
+  - 图标颜色跟随按钮 `Foreground`（`OwnerTokenResource ColorText`），`Controls[FloatButton]` 的 `ColorText` 生效。
+  - `FloatButtonItemsControl` 不再自行设置方形阴影，`FloatButtonGroup.BoxShadow`（含 Host 转发）到达菜单面板。
+- Fixed
+  - BackTop 滚动投射 `IsActive` 改用 `SetCurrentValue`，不再以本地值覆盖调用方或主题的绑定来源。
+  - BackTopFloatButton 模板的徽标画布改名为 `PART_BadgeLayout`，徽标可以显示。
+- Removed
+  - 删除无消费者的 Own Token `SquareBadgeOffset`、`CircleBadgeOffset`。
+
 ## 2026-10-31
 
 - Behavior

@@ -2,6 +2,14 @@
 
 本文档记录 DropdownButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Changed
+  - `DropdownButtonBaseTheme`、`DropdownButtonTheme` 的全局 Token 改读 `DropdownButtonTokenResource`；`IsMotionEnabled` 读取
+    DropdownButton 的有效 Global `EnableMotion`，`Controls[DropdownButton]` 的动效开关生效，`Controls[Button]` 不再影响它。
+  - 变体颜色的 Global Token 读取 DropdownButton 自己的有效值（Own 颜色 Token 仍为 Button 的），控件级覆盖不再串到 Button。
+  - FocusVisual 模板节点去掉遮蔽 `:focus-visible` 的 `IsVisible="False"` 属性。
+
 ## 2026-11-04
 
 - Changed

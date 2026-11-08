@@ -16,6 +16,26 @@
 - Tests
   - `ButtonKeyboardNavigationTests` 改为断言键盘聚焦挂上 `FocusOutlineAdorner`；`ButtonFocusVisualRenderingTests` 宿主补充 `VisualLayerManager`（AdornerLayer 由窗口视觉层提供）。
 
+## 2026-11-08
+
+- Changed
+  - `ButtonTheme`、`HyperLinkButtonTheme`、`IconButtonTheme`、`ToggleIconButtonTheme` 的全局 Token 改读各自的
+    `XxxTokenResource`，`Controls[Button]` 等控件级覆盖对圆角、高度、图标尺寸、禁用色、焦点框和动效开关生效；默认视觉不变。
+  - 变体颜色与阴影改为绑定 ControlTheme 使用的同一组资源键（Own Token 的 `ButtonTokenKind`、Global Token 的有效值键），
+    Application 与局部 Resources 覆盖、`ThemeConfigProvider` 覆盖都作用于变体颜色，资源变化后自动刷新；预设色仍来自快照色板。
+  - `FontWeight` Own Token 类型改为 `FontWeight` 并驱动 Button 字重；`DefaultBorderColorDisabled` 用于 Default 颜色的禁用边框。
+  - Circle / Round 形状的圆角改写入内部 `EffectiveCornerRadius`，不再以本地值覆盖公开 `CornerRadius`；SplitButton 的拼接圆角经内部
+    `HostCornerRadius` 写入，内部 Button 的公开 `CornerRadius` 保留主题与用户值。
+  - FocusVisual 模板节点去掉 `IsVisible="False"` 属性，`:focus-visible` 状态 Setter 不再被遮蔽。
+- Removed
+  - 删除无消费者的 Own Token：`ExtraContentItemSpacing`、`ExtraContentMargin`、`ExtraContentMarginLG`、`ExtraContentMarginSM`、
+    `GutterToFlyout`，以及 HyperLinkButton 的 `BorderColorDisabled`；`GroupBorderColor` 标为 Reserved。
+- Fixed
+  - HyperLinkButton 维护 `:icononly`、`:loading`、`:danger` 伪类，图标按钮内边距、加载图标与危险色生效。
+- Tests
+  - Button 家族 Token 生效测试（`ButtonFamilyEffectTests`）覆盖全部 Active Own Token 与消费的 Global Token，并验证
+    `Controls[Button]` 与根 Token 的作用域隔离。
+
 ## 2026-08-31
 
 - Fix

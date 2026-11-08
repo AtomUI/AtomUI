@@ -8,6 +8,17 @@
   - 键盘焦点改用共享的 `FocusOutlineAdorner`（Ant Design `genFocusOutline`）：3px `ColorPrimaryBorder` 描边，向外偏移 1px，跟随圆角，且不被宿主裁剪；原全局方角 `DefaultFocusAdorner` 已移除。
   - `RadioIndicator#Indicator` 标记 `TemplatedControl.IsTemplateFocusTarget`，并实现 `IFocusOutlineShapeProvider`（未显式设置 CornerRadius 时按自身尺寸给出正圆），描边为包围圆点的圆形。
 
+## 2026-11-08
+
+- Changed
+  - `OptionButtonTheme`、`OptionButtonGroupTheme` 的全局 Token 改读 `OptionButtonTokenResource` / `OptionButtonGroupTokenResource`，
+    控件级覆盖生效。
+- Fixed
+  - `OptionButtonToken` 的 `ContentPaddingLG` 改用大号高度、字号与行高计算，`ContentPaddingSM` 改用小号的同组值（此前分别借用
+    小号值与无意义的运算）；字号、行高去掉无效的 `-1` 哨兵，基础字号变化后重新派生。
+- Removed
+  - 删除无消费者的 OptionButton Own Token `ButtonBackground`、`ButtonCheckedBackground`、`ButtonPadding`。
+
 ## 2026-10-20
 
 - Fixed

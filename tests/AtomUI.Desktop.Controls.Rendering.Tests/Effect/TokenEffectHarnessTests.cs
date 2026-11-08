@@ -53,12 +53,15 @@ public class TokenEffectHarnessTests
     [Fact]
     public void Corner_Radius_Token_Changes_Pixels()
     {
-        // Button reads BorderRadius through SharedTokenResource (ButtonTheme.axaml), which a
-        // Controls[Button] override cannot reach; Collapse reads its radius through its owner resource.
         TokenEffectHarness.AssertHasEffect(
             () => new Collapse { Items = { new CollapseItem { Header = "Panel", Content = "Body" } } },
             CollapseTokens.Identity,
             "CollapsePanelBorderRadius");
+        // ButtonTheme reads BorderRadius through ButtonTokenResource, so a Controls[Button] override reaches it.
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "BorderRadius");
     }
 
     [Fact]
@@ -85,6 +88,42 @@ public class TokenEffectHarnessTests
         exception.Message.ShouldContain("pixels changed inside the Control bounds");
     }
 
+    [Fact]
+    public void Explicit_Perturbation_Replaces_The_Table_Value()
+    {
+        // ContentLineHeight only lowers the clamped vertical padding when it grows; a smaller value raises it.
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go", MinHeight = 0 },
+            ButtonTokens.Identity,
+            "ContentLineHeight",
+            options: new EffectOptions { Perturb = static value => (double)value / 2 });
+    }
+
+    [Fact]
+    public void Region_Inflation_Covers_Visuals_Painted_Outside_The_Bounds()
+    {
+        // ControlOutlineWidth moves the default shadow, which is painted below the Button's bounds.
+        Should.Throw<ShouldAssertException>(() => TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "ControlOutlineWidth"));
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "ControlOutlineWidth",
+            options: new EffectOptions { RegionInflation = 8 });
+    }
+
+    [Fact]
+    public void Target_Selects_A_Hosted_Member()
+    {
+        TokenEffectHarness.AssertHasEffect(
+            () => new Avalonia.Controls.Border { Child = new AtomButton { Content = "Go", ButtonType = ButtonType.Primary } },
+            ButtonTokens.Identity,
+            "ColorPrimary",
+            options: new EffectOptions { Target = static root => (Avalonia.Controls.Control)((Avalonia.Controls.Border)root).Child! });
+    }
+
     [Theory]
     [InlineData("MotionDurationMid")]
     [InlineData("EnableWaveSpirit")]
@@ -102,8 +141,8 @@ public class TokenEffectHarnessTests
         var exception = Should.Throw<NotSupportedException>(() => TokenEffectHarness.AssertHasEffect(
             () => new AtomButton { Content = "Go" },
             ButtonTokens.Identity,
-            "FontWeightStrong"));
-        exception.Message.ShouldContain("FontWeightStrong");
+            "ScreenXS"));
+        exception.Message.ShouldContain("ScreenXS");
     }
 
     [Fact]
@@ -221,6 +260,16 @@ public class TokenPerturbationTests
     }
 
     [Theory]
+    [InlineData(400, 700)]
+    [InlineData(500, 700)]
+    [InlineData(600, 400)]
+    [InlineData(700, 400)]
+    public void FontWeight_Toggles_Between_Normal_And_Bold(int value, int expected)
+    {
+        TokenPerturbation.Perturb((FontWeight)value).ShouldBe((FontWeight)expected);
+    }
+
+    [Theory]
     [InlineData(true, false)]
     [InlineData(false, true)]
     public void Bool_Is_Negated(bool value, bool expected)
@@ -231,7 +280,7 @@ public class TokenPerturbationTests
     [Fact]
     public void Unsupported_Type_Throws()
     {
-        Should.Throw<NotSupportedException>(() => TokenPerturbation.Perturb(FontWeight.Bold));
+        Should.Throw<NotSupportedException>(() => TokenPerturbation.Perturb(PenLineCap.Round));
         Should.Throw<NotSupportedException>(() => TokenPerturbation.Perturb(3));
     }
 }

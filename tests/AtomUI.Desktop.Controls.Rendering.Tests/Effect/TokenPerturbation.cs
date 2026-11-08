@@ -42,6 +42,8 @@ public static class TokenPerturbation
             BoxShadows shadows => PerturbShadows(shadows),
             BoxShadow shadow => PerturbShadow(shadow),
             TimeSpan duration => duration == TimeSpan.Zero ? TimeSpan.FromMilliseconds(200) : duration * 2,
+            // Below semi-bold goes bold, semi-bold and heavier go normal: the glyph stroke width visibly changes.
+            FontWeight weight => (int)weight < (int)FontWeight.SemiBold ? FontWeight.Bold : FontWeight.Normal,
             bool flag => !flag,
             _ => throw new NotSupportedException(
                 $"No Token perturbation is defined for value type '{value.GetType().FullName}'. " +

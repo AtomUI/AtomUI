@@ -51,13 +51,15 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:RectTransition Property="KnobMovingRect" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-                    <PointTransition Property="OnContentOffset" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-                    <PointTransition Property="OffContentOffset" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-                    <atom:SolidColorBrushTransition Property="GrooveBackground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-                    <DoubleTransition Property="SwitchOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:RectTransition Property="KnobMovingRect" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <PointTransition Property="OnContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <PointTransition Property="OffContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <atom:SolidColorBrushTransition Property="GrooveBackground" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <DoubleTransition Property="SwitchOpacity" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

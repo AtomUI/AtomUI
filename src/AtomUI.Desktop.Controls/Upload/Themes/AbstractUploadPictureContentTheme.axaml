@@ -53,9 +53,11 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="MaskOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <DoubleTransition Property="MaskOpacity" atom:TokenTransitions.Duration="MotionDurationSlow" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </Style>

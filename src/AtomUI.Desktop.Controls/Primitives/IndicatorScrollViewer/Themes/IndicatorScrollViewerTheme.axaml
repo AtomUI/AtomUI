@@ -38,10 +38,12 @@
         </Style>
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="ScrollBarsSeparatorOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <DoubleTransition Property="ScrollBarOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <DoubleTransition Property="ScrollBarsSeparatorOpacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="ScrollBarOpacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

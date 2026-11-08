@@ -129,14 +129,16 @@
 
             <Style Selector="^[IsMotionEnabled=True]">
                 <Setter Property="Transitions">
-                    <Transitions>
-                        <atom:SolidColorBrushTransition Property="BorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <DoubleTransition Property="HandleOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <DoubleTransition Property="HandleOffset" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <DoubleTransition Property="ContentLeftShift" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <DoubleTransition Property="ContentRightShift" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    </Transitions>
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <DoubleTransition Property="HandleOpacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <DoubleTransition Property="HandleOffset" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <DoubleTransition Property="ContentLeftShift" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <DoubleTransition Property="ContentRightShift" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        </Transitions>
+                    </atom:TokenTransitions>
                 </Setter>
             </Style>
 

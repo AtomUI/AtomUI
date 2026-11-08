@@ -78,20 +78,24 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background"
-                                                    Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <!-- 文字颜色即时跟随选中值并柔化切换（antd item color transition） -->
-                    <atom:SolidColorBrushTransition Property="Foreground"
-                                                    Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background"
+                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <!-- 文字颜色即时跟随选中值并柔化切换（antd item color transition） -->
+                        <atom:SolidColorBrushTransition Property="Foreground"
+                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="Transitions">
-                    <Transitions>
-                        <atom:SolidColorBrushTransition Property="IconBrush"
-                                                        Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    </Transitions>
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="IconBrush"
+                                                            atom:TokenTransitions.Duration="MotionDurationMid" />
+                        </Transitions>
+                    </atom:TokenTransitions>
                 </Setter>
             </Style>
         </Style>

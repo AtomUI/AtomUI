@@ -27,11 +27,13 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <TransformOperationsTransition Property="RenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <TransformOperationsTransition Property="RenderTransform" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

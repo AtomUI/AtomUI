@@ -149,11 +149,13 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <DoubleTransition Property="CloseButtonOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="CloseButtonOpacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

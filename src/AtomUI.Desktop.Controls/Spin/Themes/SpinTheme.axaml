@@ -51,9 +51,11 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="MaskOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <DoubleTransition Property="MaskOpacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
         <Style Selector="^ /template/ atom|TextBlock#Tip">

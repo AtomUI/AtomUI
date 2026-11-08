@@ -51,11 +51,13 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="OutlineBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <ThicknessTransition Property="OutlineThickness" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}" />
-                    <atom:SolidColorBrushTransition Property="BorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="OutlineBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <ThicknessTransition Property="OutlineThickness" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

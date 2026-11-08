@@ -167,9 +167,11 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:BoxShadowsTransition Property="BoxShadow" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="MotionDurationFast" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

@@ -29,11 +29,13 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Value" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationVerySlow}" Easing="ExponentialEaseOut" />
-                    <atom:SolidColorBrushTransition Property="StrokeBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}" />
-                    <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <DoubleTransition Property="Value" atom:TokenTransitions.Duration="MotionDurationVerySlow" Easing="ExponentialEaseOut" />
+                        <atom:SolidColorBrushTransition Property="StrokeBrush" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationFast" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
         

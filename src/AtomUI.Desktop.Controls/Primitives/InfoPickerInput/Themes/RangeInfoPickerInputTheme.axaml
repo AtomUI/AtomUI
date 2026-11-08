@@ -193,12 +193,14 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="PickerIndicatorOffsetX"
-                                      Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <DoubleTransition Property="RangePickerIndicatorOpacity"
-                                      Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <DoubleTransition Property="PickerIndicatorOffsetX"
+                                          atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="RangePickerIndicatorOpacity"
+                                          atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

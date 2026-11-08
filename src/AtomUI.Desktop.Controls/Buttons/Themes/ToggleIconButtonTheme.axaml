@@ -54,11 +54,13 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="IconBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <TransformOperationsTransition Property="RenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="IconBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <TransformOperationsTransition Property="RenderTransform" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

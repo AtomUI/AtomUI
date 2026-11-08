@@ -20,11 +20,13 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="TrackGrooveBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="TrackBarBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="MarkBorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="TrackGrooveBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="TrackBarBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="MarkBorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

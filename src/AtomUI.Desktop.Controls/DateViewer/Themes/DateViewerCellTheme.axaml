@@ -55,9 +55,11 @@
     </Style>
     <Style Selector="^[IsMotionEnabled=True] /template/ Border#PART_ValueFrame">
         <Setter Property="Transitions">
-            <Transitions>
-                <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-            </Transitions>
+            <atom:TokenTransitions>
+                <Transitions>
+                    <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                </Transitions>
+            </atom:TokenTransitions>
         </Setter>
     </Style>
     <Style Selector="^ /template/ Border#PART_WeekSelection">
@@ -69,9 +71,11 @@
     </Style>
     <Style Selector="^[IsMotionEnabled=True]:week-mode /template/ Border#PART_WeekSelection">
         <Setter Property="Transitions">
-            <Transitions>
-                <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-            </Transitions>
+            <atom:TokenTransitions>
+                <Transitions>
+                    <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                </Transitions>
+            </atom:TokenTransitions>
         </Setter>
     </Style>
     <Style Selector="^:today:date:not(:disabled)">
@@ -184,16 +188,20 @@
     </Style>
     <Style Selector="^[Presentation=Content][IsMotionEnabled=True] /template/ Border#PART_CellSurface">
         <Setter Property="Transitions">
-            <Transitions>
-                <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
-            </Transitions>
+            <atom:TokenTransitions>
+                <Transitions>
+                    <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationSlow" />
+                </Transitions>
+            </atom:TokenTransitions>
         </Setter>
     </Style>
     <Style Selector="^[Presentation=Content][IsMotionEnabled=True] /template/ atom|TextBlock#PART_Value">
         <Setter Property="Transitions">
-            <Transitions>
-                <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
-            </Transitions>
+            <atom:TokenTransitions>
+                <Transitions>
+                    <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationSlow" />
+                </Transitions>
+            </atom:TokenTransitions>
         </Setter>
     </Style>
     <Style Selector="^[Presentation=Content] /template/ Border#PART_ValueFrame">

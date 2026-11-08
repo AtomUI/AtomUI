@@ -12,10 +12,12 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="KnobRenderWidth" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <DoubleTransition Property="KnobRenderWidth" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

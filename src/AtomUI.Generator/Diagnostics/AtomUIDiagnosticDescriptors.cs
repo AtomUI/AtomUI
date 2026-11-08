@@ -301,6 +301,15 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
+    public static readonly DiagnosticDescriptor OwnTokenDerivationBaseUnguarded = new(
+        AtomUIDiagnosticIds.OwnTokenDerivationBaseUnguarded,
+        "Own Token read by a derived value must be assigned under an IsExplicit guard",
+        "Own Token '{0}' is assigned unconditionally in CalculateTokenValues but read afterwards; guard the assignment with if (!IsExplicit({1}TokenKind.{0})) so user overrides survive",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
     public static readonly DiagnosticDescriptor LocalizationInvalidLanguageData = new(
         AtomUIDiagnosticIds.LocalizationInvalidLanguageData,
         "Pinned language data record is invalid",

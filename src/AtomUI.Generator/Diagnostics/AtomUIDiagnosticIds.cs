@@ -52,6 +52,7 @@ internal static class AtomUIDiagnosticIds
     public const string SemanticPartInvalidSince = "ATOMUIGEN038";
     public const string StartupHookMissingAttach = "ATOMUIGEN039";
     public const string OwnTokenSentinel = "ATOMUIGEN040";
+    public const string OwnTokenDerivationBaseUnguarded = "ATOMUIGEN048";
     public const string LocalizationInvalidLanguageData = "ATOMUILOC001";
     public const string LocalizationDuplicateLanguageData = "ATOMUILOC002";
     public const string LocalizationInvalidCatalog = "ATOMUILOC003";

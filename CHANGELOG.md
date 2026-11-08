@@ -21,6 +21,11 @@ All notable changes to AtomUI are documented in this file.
   - Root `BorderBrush` / `Background` of these controls are projected onto the input surface instead of being written as local values; Select option rows apply `OptionHeight` and the newly wired `Select.OptionPadding`, option text uses `ColorText`, and TreeSelect applies `MinPopupWidth`.
   - Focus shadows of these controls are no longer clipped; `Select.SelectAffixPadding` and `Select.FixedItemMargin` are reserved and have no visual effect yet.
   - Visible changes: the Select drop-down height now follows `OptionHeight` (option height x page size); TreeSelect drop-downs are at least 300 px wide (`TreeSelect.MinPopupWidth`); the ComboBox placeholder uses `ColorTextPlaceholder` instead of 30% opacity; disabled Cascader option icons are tinted `ColorTextDisabled` instead of drawn at 0.3 opacity.
+- Choice family
+  - Control-level overrides (`Controls[CheckBox]`, `Controls[RadioButton]`, `Controls[ToggleSwitch]`, `Controls[Slider]`, `Controls[Rate]`, and the CheckBoxGroup / RadioButtonGroup spacing) now reach every theme read of that control, including its indicator, switch knob, slider track and thumb, and rate stars; group items keep the CheckBox / RadioButton identity.
+  - `Controls[CheckBox]` sizes the indicator (`CheckIndicatorSize`, `CheckedMarkSize`, `BorderRadiusSM`), the check mark follows `ColorWhite`, the checked RadioButton fill uses `RadioButton.RadioBgColor`, and the ToggleSwitch loading arc width follows `LineWidth`.
+  - Token changes now re-lay out or redraw the RadioButton dot, the ToggleSwitch content margins, the Slider track (size, rail and padding) and the Slider thumb background; `Slider.MarginPartWithMark` is reserved and has no visual effect yet.
+  - Visible changes: Rate applies `SizeType` (small and large stars use `StarSizeSM` / `StarSizeLG`); the Rate keyboard focus outline is `BorderThickness` (1 px) instead of 0.75 px; the ToggleSwitch knob of a disabled or loading switch uses `SwitchDisabledOpacity` instead of 0.9 opacity.
 - Popup
   - Popup content (drop-down options, popup frames) now inherits the Token owner of the control that hosts the Popup, so `Controls[X]` overrides, including motion durations, reach the drop-downs of X; `Controls[Popup]` keeps applying to the Popup's own shadow, corner radius and anchor margin.
 

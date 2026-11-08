@@ -28,6 +28,10 @@ SliderToken 不承载：
 
 `SliderTrackSize` 表示轨道区域推荐尺寸，`RailSize` 表示 rail 厚度。水平和垂直 padding 为 thumb、rail 和 mark 提供布局空间。
 
+`MarginPartWithMark` 对应 antd `marginPartWithMark`，当前为 Reserved：SliderTrack 测量 mark 文本并把文本尺寸计入轨道高度，
+不再使用固定的 mark 外边距。`SliderTrackSize` 与派生的 padding 合计等于 `ControlHeight`，单独覆盖它只改变未拉伸 Slider 的
+最小长度（2 × `SliderTrackSize`）。
+
 ### 2.2 Mark
 
 - `MarkSize`
@@ -97,6 +101,10 @@ SliderTrack.Render + SliderThumb.Render
 ## 4. 控件家族影响
 
 SliderToken 只服务 Slider、SliderTrack 和 SliderThumb，不被 NumericUpDown、Progress、ScrollBar 或其他轨道控件直接消费。
+
+SliderTrack、SliderThumb 是注册控件，但只作为 Slider 的模板部件使用：它们的主题以 `SliderTokenResource` 读取全部 Token
+（含全局 `ColorBgContainer`、`ColorBgElevated`、`ColorText`），`Controls[Slider]` 覆盖作用于轨道、刻度与滑块；
+`Controls[SliderThumb]` / `Controls[SliderTrack]` 只影响它们按自身 owner 解析的过渡时长。
 
 需要同时影响多个轨道类控件的视觉语义时，应确认其是否属于 SharedToken，而不是直接复用 SliderToken。
 

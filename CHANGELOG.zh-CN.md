@@ -23,6 +23,11 @@ AtomUI 的重要变更记录在此文件中。
   - 这些控件的根 `BorderBrush` / `Background` 改为投射到输入表面，不再写入本地值；Select 候选行应用 `OptionHeight` 与新接入的 `Select.OptionPadding`，候选文本使用 `ColorText`，TreeSelect 的 `MinPopupWidth` 生效。
   - 这些控件的聚焦阴影不再被裁剪；`Select.SelectAffixPadding`、`Select.FixedItemMargin` 标为保留，暂无视觉效果。
   - 可见变化：Select 下拉弹层高度跟随 `OptionHeight`（选项高度 × 每页数量）；TreeSelect 下拉弹层最小宽度为 300px（`TreeSelect.MinPopupWidth`）；ComboBox 占位文字改用 `ColorTextPlaceholder`，不再是 30% 不透明度；Cascader 禁用选项的图标改用 `ColorTextDisabled` 着色，不再是 0.3 不透明度。
+- 选择类家族
+  - 控件级覆盖（`Controls[CheckBox]`、`Controls[RadioButton]`、`Controls[ToggleSwitch]`、`Controls[Slider]`、`Controls[Rate]`，以及 CheckBoxGroup / RadioButtonGroup 的间距）现在作用于该控件的全部主题读取，包括指示器、开关把手、滑动条轨道与滑块、评分星；分组内的选项保留 CheckBox / RadioButton 自身的 identity。
+  - `Controls[CheckBox]` 可设置指示器尺寸（`CheckIndicatorSize`、`CheckedMarkSize`、`BorderRadiusSM`），勾选标记跟随 `ColorWhite`；RadioButton 选中填充使用 `RadioButton.RadioBgColor`；ToggleSwitch 加载指示线宽跟随 `LineWidth`。
+  - Token 变化现在会重新布局或重绘 RadioButton 圆点、ToggleSwitch 内容边距、Slider 轨道（尺寸、滑轨与内边距）和 Slider 滑块背景；`Slider.MarginPartWithMark` 标为保留，暂无视觉效果。
+  - 可见变化：Rate 应用 `SizeType`（小号与大号星使用 `StarSizeSM` / `StarSizeLG`）；Rate 键盘焦点虚线框改为 `BorderThickness`（1px），不再是 0.75px；禁用或加载中的 ToggleSwitch 把手使用 `SwitchDisabledOpacity`，不再是 0.9 不透明度。
 - Popup
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。
 

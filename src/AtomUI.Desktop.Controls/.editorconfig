@@ -53,3 +53,15 @@ dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
 dotnet_diagnostic.ATOMUIGEN046.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Steps / Progress family: ProgressBar, StepsProgressBar, CircleProgress and DashboardProgress. Their shared abstract
+# bases live in src/AtomUI.Controls/ProgressBar, gated by its .editorconfig.
+# Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
+[ProgressBar/**]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN042.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN046.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

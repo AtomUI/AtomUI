@@ -8,3 +8,10 @@
 dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Steps / Progress family parts: the abstract progress bases and their panels.
+# Keep in step with the Steps / Progress family section of src/AtomUI.Desktop.Controls/.editorconfig.
+[ProgressBar/**]
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

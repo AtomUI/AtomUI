@@ -29,7 +29,9 @@ public class MigratedFamilyAnalyzerGateTests
         // Select family
         "Select", "ComboBox", "Cascader", "TreeSelect",
         // Choice family
-        "CheckBox", "RadioButton", "Switch", "Slider", "Rate"
+        "CheckBox", "RadioButton", "Switch", "Slider", "Rate",
+        // Steps / Progress family
+        "ProgressBar"
     ];
 
     /// <summary>Token identities declared in those directories.</summary>
@@ -42,7 +44,8 @@ public class MigratedFamilyAnalyzerGateTests
         "AutoCompleteSearchEdit", "AutoCompleteTextArea",
         "Select", "ComboBox", "ComboBoxItem", "Cascader", "CascaderView", "CascaderViewItem", "TreeSelect",
         "CheckBox", "CheckBoxGroup", "RadioButton", "RadioButtonGroup", "ToggleSwitch", "Slider", "SliderTrack",
-        "SliderThumb", "Rate"
+        "SliderThumb", "Rate",
+        "ProgressBar", "StepsProgressBar", "CircleProgress", "DashboardProgress"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -105,6 +108,11 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldNotContain("RadioIndicator");
         IdentityControls.Value.ShouldNotContain("SwitchKnob");
         IdentityControls.Value.ShouldNotContain("RateItem");
+        // Steps / Progress family: every progress shape is registered; the shared abstract bases are not.
+        IdentityControls.Value.ShouldContain("CircleProgress");
+        IdentityControls.Value.ShouldContain("StepsProgressBar");
+        IdentityControls.Value.ShouldNotContain("AbstractProgressBar");
+        IdentityControls.Value.ShouldNotContain("AbstractLineProgress");
     }
 
     [Fact]

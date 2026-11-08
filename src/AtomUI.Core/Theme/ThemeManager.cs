@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using AtomUI.Animations;
 using AtomUI.Registration;
 using AtomUI.Generated.AtomUICore;
@@ -40,7 +41,39 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     public event EventHandler<ThemeCatalogChangedEventArgs>? ThemeCatalogChanged;
     internal event Action<object, ControlTheme>? ControlThemeResolved;
 
-    internal void NotifyControlThemeResolved(object key, ControlTheme theme) => ControlThemeResolved?.Invoke(key, theme);
+    internal void NotifyControlThemeResolved(object key, ControlTheme theme)
+    {
+        EnsureTokenOwnerSetter(key, theme);
+        ControlThemeResolved?.Invoke(key, theme);
+    }
+
+    // 注册控件的默认 ControlTheme 首次按 Type 键解析时，注入 ThemeScope.TokenOwner：
+    // Style 优先级的有效值参与继承，模板内的共享基元沿继承链读到宿主控件身份。
+    private void EnsureTokenOwnerSetter(object key, ControlTheme theme)
+    {
+        if (key is not Type controlType)
+        {
+            return;
+        }
+
+        var registry = CurrentSnapshot?.Registry ?? _startupRegistry;
+        if (registry is null || !registry.TryGetControl(controlType, out var descriptor))
+        {
+            return;
+        }
+
+        lock (_tokenOwnerInjected)
+        {
+            if (!_tokenOwnerInjected.TryAdd(theme, s_tokenOwnerInjectedMarker))
+            {
+                return;
+            }
+            theme.Setters.Add(new Setter(ThemeScope.TokenOwnerProperty, descriptor.Identity));
+        }
+    }
+
+    private static readonly object s_tokenOwnerInjectedMarker = new();
+    private readonly ConditionalWeakTable<ControlTheme, object> _tokenOwnerInjected = new();
 
     private readonly List<ControlTokenDescriptor> _controlTokenDescriptors;
     private readonly List<ControlThemeAssetDescriptor> _controlThemeAssetDescriptors;

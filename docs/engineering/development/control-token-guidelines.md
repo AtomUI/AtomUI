@@ -287,7 +287,9 @@ identity/slot 的 AOT-safe 映射；基类 Effective Global 读取使用注册�
 4. 预设色（Badge、Tag、ToolTip、Button 的 preset color）从快照的 `PresetPalettes` 取并按快照缓存，不在控件实例里
    重算，也不以 RGB 常量写死；暗色下预设色必须跟随色板。
 5. 主题里需要被状态 Setter（`:pointerover`、`:disabled`、暗色 variant）覆盖的默认值必须写成 Style Setter，不能写在
-   模板节点的属性上。模板属性是 LocalValue 优先级，会遮蔽全部状态 Setter。
+   模板节点的属性上，默认值与状态值在同一层 Setter 里才能一眼对照（ATOMUIGEN046 检查）。TokenResource 在模板内为
+   Template 优先级，会被触发样式（伪类、类选择器）覆盖，但仍盖过同节点的非触发 Style Setter；模板外写在元素属性上
+   仍是 LocalValue，写在 Setter 里取该样式的优先级。
 6. 代码写入控件或子节点的值用 `SetCurrentValue`，或可撤销的 Template 优先级值；不得以本地值覆盖用户与主题的绑定。
 7. 代码算出的视觉值写入 internal 属性，由主题 Setter 投射到公开视觉属性；公开属性留给用户与应用样式，应用样式与
    本地值保持更高优先级。

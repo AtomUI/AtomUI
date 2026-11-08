@@ -39,6 +39,9 @@ All notable changes to AtomUI are documented in this file.
   - Visible changes: Dot and OutlineDot connectors are `LineWidthBold` (2 px, `DotLineThickness` now defaults to `LineWidthBold` as antd) instead of 1 px; the OutlineDot border reads the new `Steps.OutlineDotBorderThickness` (2 px, unchanged) and the indicator border reads `BorderThickness`; the spacing and padding changes listed above.
 - Popup
   - Popup content (drop-down options, popup frames) now inherits the Token owner of the control that hosts the Popup, so `Controls[X]` overrides, including motion durations, reach the drop-downs of X; `Controls[Popup]` keeps applying to the Popup's own shadow, corner radius and anchor margin.
+- Theme
+  - Token reads written on ControlTemplate elements (`{atom:XxxTokenResource}`, `{atom:SharedTokenResource}`) now use Template priority like `DynamicResource`, so triggered styles (`:pointerover`, `:disabled`, classes, property selectors), including application styles, override them; plain style setters still do not, and reads outside templates keep their priority.
+  - Visible changes: state styles that these reads masked now apply. Dark-style NavMenu group titles use `NavMenu.DarkGroupTitleColor` instead of `GroupTitleColor`, and LunarCalendar workday markers use `LunarCalendar.WorkdayMarkerColor` instead of `HolidayMarkerColor`.
 
 ## 6.2.14
 

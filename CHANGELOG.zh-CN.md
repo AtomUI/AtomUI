@@ -41,6 +41,9 @@ AtomUI 的重要变更记录在此文件中。
   - 可见变化：Dot 与 OutlineDot 的 Connector 为 `LineWidthBold`（2px，`DotLineThickness` 默认改为与 antd 一致的 `LineWidthBold`），不再是 1px；OutlineDot 边框读取新增的 `Steps.OutlineDotBorderThickness`（2px，不变），Indicator 边框读取 `BorderThickness`；以及上述间距与内边距变化。
 - Popup
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。
+- Theme
+  - 写在 ControlTemplate 元素上的 Token 读取（`{atom:XxxTokenResource}`、`{atom:SharedTokenResource}`）现在与 `DynamicResource` 一样取 Template 优先级，触发样式（`:pointerover`、`:disabled`、类与属性选择器，包括应用样式）可以覆盖它们；非触发的样式 Setter 仍不能覆盖，模板外的读取优先级不变。
+  - 可见变化：原先被这些读取遮蔽的状态样式生效。暗色 NavMenu 的分组标题使用 `NavMenu.DarkGroupTitleColor`，不再是 `GroupTitleColor`；LunarCalendar 的调休上班标记使用 `LunarCalendar.WorkdayMarkerColor`，不再是 `HolidayMarkerColor`。
 
 ## 6.2.14
 

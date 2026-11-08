@@ -68,6 +68,55 @@ public class BadgePresetColorTests
         });
     }
 
+    [Theory]
+    [MemberData(nameof(Badges))]
+    public void Preset_Color_Is_Re_Resolved_When_Re_Attached_After_A_Theme_Change(string kind)
+    {
+        var (badge, read) = Create(kind, "volcano");
+        var host     = new StackPanel { Children = { badge } };
+        var provider = new ThemeConfigProvider { Child = host, Config = new ThemeConfigBuilder().Build() };
+        Show(provider, () =>
+        {
+            read().ShouldBe(PresetPalettes.GetPresetPalette(PresetPrimaryColor.Volcano).ColorSequence[5]);
+
+            host.Children.Remove(badge);
+            Dispatcher.UIThread.RunJobs();
+            provider.Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build();
+            Dispatcher.UIThread.RunJobs();
+            host.Children.Add(badge);
+            Dispatcher.UIThread.RunJobs();
+
+            read().ShouldBe(PresetPalettes.GetPresetPalette(PresetPrimaryColor.Volcano, isDark: true).ColorSequence[5],
+                $"{kind} kept the preset colour of the theme it was detached from.");
+        });
+    }
+
+    [Theory]
+    [MemberData(nameof(Badges))]
+    public void Preset_Color_Follows_The_Provider_It_Moves_Into(string kind)
+    {
+        var (badge, read) = Create(kind, "volcano");
+        var lightHost = new StackPanel { Children = { badge } };
+        var darkHost  = new StackPanel();
+        var light     = new ThemeConfigProvider { Child = lightHost, Config = new ThemeConfigBuilder().Build() };
+        var dark = new ThemeConfigProvider
+        {
+            Child  = darkHost,
+            Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build()
+        };
+        Show(new StackPanel { Children = { light, dark } }, () =>
+        {
+            read().ShouldBe(PresetPalettes.GetPresetPalette(PresetPrimaryColor.Volcano).ColorSequence[5]);
+
+            lightHost.Children.Remove(badge);
+            darkHost.Children.Add(badge);
+            Dispatcher.UIThread.RunJobs();
+
+            read().ShouldBe(PresetPalettes.GetPresetPalette(PresetPrimaryColor.Volcano, isDark: true).ColorSequence[5],
+                $"{kind} kept the preset colour of the provider it left.");
+        });
+    }
+
     [Fact]
     public void Clearing_The_Count_Badge_Color_Restores_The_Indicator_Color()
     {

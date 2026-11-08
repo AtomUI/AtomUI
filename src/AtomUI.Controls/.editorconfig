@@ -1,0 +1,10 @@
+# Control-code Token analyzers (ATOMUIGEN043/044/047) are errors for the parts of migrated control families that live in
+# this package (docs/engineering/development/control-token-guidelines.md, "诊断与启动校验"). Other directories keep the
+# migration-time warning severity. Section globs are relative to this file.
+
+# Choice family parts: CheckBoxIndicator, RadioIndicator, SwitchKnob / AbstractToggleSwitch, RateItem / AbstractRate.
+# Keep in step with the Choice family section of src/AtomUI.Desktop.Controls/.editorconfig.
+[{CheckBox,RadioButton,Switch,Rate}/**]
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

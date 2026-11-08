@@ -27,7 +27,9 @@ public class MigratedFamilyAnalyzerGateTests
         // Input family (InputControlFrame's theme lives with AddOnDecoratedBox)
         "Input", "ButtonSpinner", "NumericUpDown", "AutoComplete", "Primitives/AddOnDecoratedBox",
         // Select family
-        "Select", "ComboBox", "Cascader", "TreeSelect"
+        "Select", "ComboBox", "Cascader", "TreeSelect",
+        // Choice family
+        "CheckBox", "RadioButton", "Switch", "Slider", "Rate"
     ];
 
     /// <summary>Token identities declared in those directories.</summary>
@@ -38,7 +40,9 @@ public class MigratedFamilyAnalyzerGateTests
         "OptionButton", "OptionButtonGroup",
         "LineEdit", "TextBox", "TextArea", "SearchEdit", "ButtonSpinner", "NumericUpDown", "AutoComplete",
         "AutoCompleteSearchEdit", "AutoCompleteTextArea",
-        "Select", "ComboBox", "ComboBoxItem", "Cascader", "CascaderView", "CascaderViewItem", "TreeSelect"
+        "Select", "ComboBox", "ComboBoxItem", "Cascader", "CascaderView", "CascaderViewItem", "TreeSelect",
+        "CheckBox", "CheckBoxGroup", "RadioButton", "RadioButtonGroup", "ToggleSwitch", "Slider", "SliderTrack",
+        "SliderThumb", "Rate"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -94,6 +98,13 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldContain("CascaderViewItem");
         IdentityControls.Value.ShouldNotContain("SelectHandle");
         IdentityControls.Value.ShouldNotContain("SelectCandidateListItem");
+        // Choice family: the Slider's track and thumb are registered; the indicators, the knob and the rate items are not.
+        IdentityControls.Value.ShouldContain("SliderThumb");
+        IdentityControls.Value.ShouldContain("SliderTrack");
+        IdentityControls.Value.ShouldNotContain("CheckBoxIndicator");
+        IdentityControls.Value.ShouldNotContain("RadioIndicator");
+        IdentityControls.Value.ShouldNotContain("SwitchKnob");
+        IdentityControls.Value.ShouldNotContain("RateItem");
     }
 
     [Fact]

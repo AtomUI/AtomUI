@@ -41,3 +41,15 @@ dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
 dotnet_diagnostic.ATOMUIGEN046.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Choice family: CheckBox (CheckBoxGroup), RadioButton (RadioButtonGroup), ToggleSwitch, Slider (SliderTrack, SliderThumb)
+# and Rate. Their identity-less parts (indicators, SwitchKnob, RateItem) live in src/AtomUI.Controls, gated by its
+# .editorconfig. Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
+[{CheckBox,RadioButton,Switch,Slider,Rate}/**]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN042.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN046.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

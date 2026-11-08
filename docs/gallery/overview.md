@@ -9,6 +9,7 @@
 - [Semantic Part Gallery Preview](authoring/semantic-part-preview.md)：独立 Tab、真延迟创建、descriptor 驱动目标解析、
   Adorner 生命周期和零 Control 增量边界。
 - [ShowCase 组织规范](authoring/organization.md)
+- [主题预设页](authoring/theme-presets-page.md)：预设主题包的切换展示、正交的暗色/紧凑开关、固定预览控件集合与导出。
 
 ## Platforms
 

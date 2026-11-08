@@ -125,6 +125,14 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIGEN037` | Generator | Error | Semantic Style 的完整 CLR identity 与另一生成候选、当前程序集已有类型或 canonical XML namespace 下可见的引用程序集 public 类型冲突 | 调整 Control 或 Part path 命名，或移除占用 `AtomUI.Theme.Styling` 生成 identity 的类型 | SemanticParts |
 | `ATOMUIGEN038` | Generator | Error | Semantic Part 的 `Since` 不是 `major.minor.patch` 三段式发布版本（例如写成版本线 `6.0` / `6.2`，或带 `v` 前缀、预发布后缀、段数不符） | 写成具体发布版本，例如 `6.2.0` | SemanticParts |
 | `ATOMUIGEN039` | Generator | Error | 具体 Application 手写了 `RegisterServices` 重写，但方法体内没有调用 `ApplicationStartup.Attach` | 在 `base.RegisterServices()` 之后调用 `ApplicationStartup.Attach(this)`，或删除手写重写让生成器生成 | ApplicationStartupHook |
+| `ATOMUIGEN040` | Generator | Error | `CalculateTokenValues` 以 `double.IsNaN` 或其他哨兵值判断 Own Token 是否被显式设置 | 改用 `IsExplicit(XxxTokenKind.Field)`；编译器在求值前已写入显式覆盖 | DesignToken |
+| `ATOMUIGEN041` | Generator | Warning | ControlTheme 读全局 Token 的 TokenResource 种类与 TargetType 的 Token 身份不匹配：有身份的 TargetType 用了 `SharedTokenResource`，或无身份的 TargetType 用了 `SharedTokenResource` 且没有共享语义注释 | 有身份改用 `XxxTokenResource`，无身份改用 `OwnerTokenResource`；确属跨控件共享时在 Setter 上方加注释说明 | ThemeAssets |
+| `ATOMUIGEN042` | Generator | Warning | Own Token 字段在所属包的主题 AXAML 与代码中无任何引用，且未标 `[ReservedToken]` | 接通消费，或加 `[ReservedToken("原因")]`，或删除字段 | DesignToken |
+| `ATOMUIGEN043` | Generator | Warning | 控件代码经 `Application.Current.TryGetResource`、`TryFindResource` 或 `FindResource` 读 Token key，或在读取失败分支回落视觉字面量 | 改用 `ControlTokenAccessor`、`TokenResourceBinder` 或 AXAML TokenResource；删除回落值 | ThemeConsumption |
+| `ATOMUIGEN044` | Generator | Warning | 控件代码以字面量构造视觉值（`Color.FromRgb`、`Color.Parse`、`Brushes.X`、`new Thickness(n)`、`FontSize = n` 等赋给视觉属性），`Colors.Transparent` 与 `0` 除外 | 改为 Own Token 或 Global Token；预设色从 `PresetPalettes` 读取 | ThemeConsumption |
+| `ATOMUIGEN045` | Generator | Warning | 主题 AXAML 中出现颜色字面量，或数值视觉字面量（CornerRadius、BorderThickness、FontSize、StrokeThickness、Width/Height 等）未以 `<!-- layout -->` 注释标注 | 视觉值改读 Token（线宽用 `LineWidth`）；确属布局常量时加 `<!-- layout -->` | ThemeAssets |
+| `ATOMUIGEN046` | Generator | Warning | ControlTemplate 节点属性上写了默认值，而同一主题存在针对该节点同一属性的状态 Setter；模板属性为 LocalValue 优先级会遮蔽状态 Setter | 把默认值移到 Style Setter，与状态 Setter 同级 | ThemeAssets |
+| `ATOMUIGEN047` | Generator | Warning | 控件代码以 `SetValue(prop, value)` 或属性赋值把 LocalValue 写入视觉 StyledProperty，覆盖用户绑定与主题 Setter | 改用 `SetCurrentValue`，或带 `BindingPriority.Template` 的可撤销写入 | ThemeConsumption |
 | `ATOMUIGEN101` | Generator | Warning | Gallery source code display generator 发现参与默认源码匹配的 `ShowCasePanel` 缺少 `Name` | 给 `ShowCasePanel` 设置稳定 `Name`，或使用显式源码 key 规则 | GallerySourceCodeDisplay |
 | `ATOMUILOC001` | Localization | Error | AtomUI 固定语言数据记录的 schema、标识符、BCP 47 标签或元数据无效 | 按数据 schema 修正发生错误的具体记录 | LanguageTags |
 | `ATOMUILOC002` | Localization | Error | AtomUI 固定语言数据包含重复的属性标识符或规范 BCP 47 标签 | 删除重复记录并为每个属性和标签保留唯一映射 | LanguageTags |
@@ -139,6 +147,12 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 
 独立 ILLink 适配器使用公开 `CreateCustomErrorMessage` API，因此传输编号为 `IL6505`、`IL6506`、`IL6507`，
 分别对应消息中的 `ATOMUIREG005`、`ATOMUIREG006`、`ATOMUIREG007`。REG 保持统一语义编号；不得通过私有 API 改写 ILLink 前缀。
+
+`ATOMUIGEN040`–`ATOMUIGEN047` 属于主题消费精确性检查，保证"声称可定制的 Token 设置后一定有效果"。除 `040` 外
+默认 Warning：存量控件主题分家族迁移，每个家族迁移完成后由控件包 `.editorconfig` 把该家族范围升级为 Error。
+`042` 的引用分析只统计所属包内的主题 AXAML 与 C# 引用，不分析应用代码。`044`、`046`、`047` 只报告可静态证明的
+写法：经变量间接传入的字面量、运行时才能确定的 Setter 目标不报告，由评审补充。背景与修复规则见
+[Control Token 规范](control-token-guidelines.md)。
 
 `ATOMUIGEN005` 和 `ATOMUIGEN006` 原本约束 `[ControlDesignToken]` 类型上的 `public const ID`，该手工 ID 契约已
 删除，因此这两个诊断不在新主题架构中复用。无参数 `[ControlDesignToken]` 本身继续保留，只负责标记 Own Token
@@ -210,7 +224,8 @@ src/AtomUI.Generator/Diagnostics/
 - Roslyn diagnostic ID 必须来自 `AtomUIDiagnosticIds`。
 - Roslyn category 必须来自 `AtomUIDiagnosticCategories`。
 - `DiagnosticDescriptor` 优先定义在 `AtomUIDiagnosticDescriptors`。
-- analyzer 可以放在对应领域目录，例如 `DataMemberAccessors/`、`DesignToken/`、`Language/`。
+- analyzer 可以放在对应领域目录，例如 `DataMemberAccessors/`、`DesignToken/`、`Language/`、`ThemeAssets/`；
+  控件代码侧的主题消费 analyzer（`ATOMUIGEN043`、`044`、`047`）放在 `ThemeConsumption/`。
 - analyzer 不要在业务文件中散落硬编码 ID、category 或重复 descriptor。
 
 浏览器链接后端不能为了复用诊断定义而加载 Roslyn Generator。跨工具共享的 ID/消息契约应采用无 Roslyn/ILLink

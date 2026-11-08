@@ -25,9 +25,16 @@
 - 每个主题作用域只拥有一个稳定的 Token 资源 Provider。
 - 每个对外可主题化的 Control 都拥有独立 `ControlTokenIdentity`；TargetType、Control 继承和 ControlTheme
   `BasedOn` 都不能替代或推断该 identity。
-- AXAML 中 `{atom:SharedTokenResource TokenName}` 永远读取全局 Token；需要响应 Control 级覆盖时统一使用生成的
-  `{atom:XxxTokenResource TokenName}`，它同时读取该 Control 的 Effective Global Token 和 Own Token。
-- ControlTheme 不携带 ambient Token scope；Token 所属 Control 必须由资源扩展名显式表达。
+- AXAML 中 `{atom:SharedTokenResource TokenName}` 永远读取全局 Token；有 Token 身份的 Control 主题统一使用生成的
+  `{atom:XxxTokenResource TokenName}`，它同时读取该 Control 的 Effective Global Token 和 Own Token；没有 Token
+  身份的共享基元与部件使用 `{atom:OwnerTokenResource TokenName}`，读取当前所属公开 Control 的 Effective Global
+  Token。Control 级配置对该 Control 模板内的全部消费点生效。
+- ControlTheme 不携带 ambient Token scope；Token 所属 Control 由资源扩展名显式表达，或由公开 Control 写入的可继承
+  `ThemeScope.TokenOwner` identity 表达。
+- 显式 Control Own Token 覆盖先于 Own Token 默认计算写入，默认计算只为未显式设置的字段求值；覆盖一个 Own Token
+  必须传导到依赖它的全部派生默认值。
+- 承诺面真实：每个全局 Token 和每个 Active Own Token 设置后都在渲染层产生可观测变化；没有消费者的 Own Token 要么
+  标为 Reserved，要么删除。
 - Token 资源查询热路径不分配对象，不执行字符串解析、反射或 LINQ。
 - 局部主题只复制发生变化的数据，不能按作用域复制完整全局 Token 和全部 Control Token 值。
 - 缓存、作用域图、事件订阅和异步编译任务都必须有确定的容量或释放边界。
@@ -323,8 +330,8 @@ Evaluate(effectiveSeed, previousMap?) -> nextMap
 schema、Control identity、Control CLR type、Own Token name/kind/stage/value type/resource key schema、主题资产
 结构、算法枚举值/revision 及其外观声明。ControlTheme 或 C# 实现消费了哪些 Global Token 不属于 schema，也不进入
 revision。Control Own Token 属性声明在终端类型还是显式标记的抽象定义层、定义层所在程序集和继承深度也不进入
-revision。注册顺序不影响 revision；任何会改变配置绑定、Token 类型或资源投影结构的 descriptor 变化都必须改变
-revision。
+revision。Own Token 的 Active / Reserved 分类与全局 Token 消费图是生成器的分析产物，不进入 schema 和 revision。
+注册顺序不影响 revision；任何会改变配置绑定、Token 类型或资源投影结构的 descriptor 变化都必须改变 revision。
 
 Registry 在首个 snapshot 编译前冻结。Manager 构建完成后不能追加 Token、Control、算法或主题资产
 descriptor；可选控件包必须在 `UseAtomUI` Builder 阶段完成显式注册。
@@ -622,14 +629,21 @@ ThemeCompileInput
 2. `Disabled` 时只保留直接覆盖，不重新派生；`Global` 或 `Custom` 时，从 Control effective Seed 按相应算法链
    重新生成 Map 和 Alias。
 3. 在重新派生后应用该 Control 的 Map、Alias override 和 Motion 最终规范化。
-4. 使用 Control 的有效全局 Token 计算 Control 自身默认 Token。
-5. 应用 Control 自身 Token override。
-6. 根据全局 appearance 和 Control 算法 effect 计算 Control appearance；它只提供给该 Control evaluator，不
+4. 把该 Control 配置中的显式 Own Token override 写入 builder，并为这些字段置显式位。
+5. 使用 Control 的有效全局 Token 计算其余 Own Token 默认值；evaluator 通过 `IsExplicit(kind)` 判断字段是否已被
+   显式设置，不得以 `double.NaN` 等哨兵值判断。
+6. 再次写入全部显式 Own Token override；无论 evaluator 如何写字段，显式值最终胜出。
+7. 根据全局 appearance 和 Control 算法 effect 计算 Control appearance；它只提供给该 Control evaluator，不
    修改 ThemeContext appearance。
-7. 生成 Effective Global Token 差量、Own Token 值和统一的 Effective Control Token 资源投影。
+8. 生成 Effective Global Token 差量、Own Token 值和统一的 Effective Control Token 资源投影。
 
 Control 默认 Token evaluator 必须接收 Control appearance 和 Effective Global Token，不能继续只读取全局
 `IsDark`。
+
+第 4 到第 6 步固定为 `MarkExplicit(config.OwnTokens)` → `Evaluate(builder, appearance)` → `ApplyExplicit()`。
+内部派生字段（例如 DataGrid 由 `BorderColor` 派生的 `Table*` 字段）在第 5 步从已含显式值的公开字段派生，因此用户
+覆盖公开字段后派生字段跟随变化。编译器不引入 Own Token 依赖图、求值版本或别名机制；`CalculateTokenValues`
+仍是唯一默认计算入口。
 
 控件槽位编译契约：`ApplyTheme` 返回时全局 token 与资源完整提交；控件级 `ControlThemeSnapshot`
 按槽位惰性编译，首次查询时经同一 `CompileControl` 函数与同一缓存键编译，结果值与急切编译逐位
@@ -1012,10 +1026,35 @@ XxxTokenResource(X), X is any registered Global Token
 
 XxxTokenResource(X), X is Own Token
     -> ControlOwnResources[X]
+
+OwnerTokenResource(X), X is any registered Global Token
+    -> owner = inherited ThemeScope.TokenOwner
+    -> owner present: ControlEffectiveGlobalDelta(owner)[X] -> miss: GlobalResources[X]
+    -> owner absent:  GlobalResources[X]
 ```
 
-普通应用内容和明确要求所有 Control 永远共享同一个值的样式使用 `SharedTokenResource`。ControlTheme 中希望
-响应 Control 级覆盖的全局 Token 必须使用对应的 `XxxTokenResource`。
+普通应用内容和明确要求所有 Control 永远共享同一个值的样式使用 `SharedTokenResource`。有 Token 身份的 Control
+的 ControlTheme 读全局 Token 必须使用对应的 `XxxTokenResource`；没有 Token 身份的共享基元与部件（输入框框架、
+附加区装饰盒、各类 Item / Cell / Presenter）的 ControlTheme 读全局 Token 使用 `OwnerTokenResource`。目标是
+`ThemeConfig.Controls[X].Tokens[全局名]` 对 X 的全部消费点生效，包括其模板内复用的共享基元；这与 Ant Design
+`components[Comp]` 的语义一致。
+
+`OwnerTokenResource` 的机制：
+
+- 每个有 Token 身份的公开 Control 在构造时把自己的 `ControlTokenIdentity` 写入可继承附加属性
+  `ThemeScope.TokenOwner`。写入代码由生成器放在该 Control 的注册片段中，Control 作者不手写。
+- 基元与部件在模板内沿逻辑树继承到该值；Popup 内容经逻辑父级继承，独立 TopLevel 经现有 lease 继承。
+- `OwnerTokenResource` 产出一个绑定：输入是继承到的 owner identity 与 Token kind，输出是当前作用域 Provider 对
+  `ControlTokenResourceKey.Global(identity, kind)` 的查询结果；owner 变化或主题发布都触发重取。
+- 没有继承到 owner（基元被单独使用或放在应用内容中）时回落为共享全局值。
+- 嵌套的公开 Control（SearchEdit 模板里的 Button）写入自己的 identity、读自己的有效值，不读外层 Control 的值。
+
+`ThemeScope.TokenOwner` 只携带 identity，不携带 snapshot、Token 值或 Provider 引用；基于 snapshot attached value 的
+父级订阅仍属于禁止的旁路。继承属性由 Avalonia 原生传播，`OwnerTokenResource` 不沿 `TemplatedParent` 或
+`Parent` 跳链观察，每个绑定只多一个对继承属性的订阅。
+
+无 Control 级覆盖时 `XxxTokenResource` 走 `UsesRootSharedResources` 直接读全局表，成本与 `SharedTokenResource`
+相同；`OwnerTokenResource` 只用于共享基元，数量约为控件主题读取总量的十分之一。
 
 ### 13.1 AXAML 访问契约
 
@@ -1030,19 +1069,28 @@ Token 资源的公开 AXAML 语法固定为：
 
 <!-- 读取 Alert Own Token。 -->
 <Setter Property="Padding" Value="{atom:AlertTokenResource DefaultPadding}" />
+
+<!-- 共享基元的主题：读取当前所属公开 Control 的 Effective Global Token。 -->
+<Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
 ```
+
+读法由 ControlTheme 的 `TargetType` 决定：有 Token 身份的公开 Control 用 `XxxTokenResource`；没有 Token 身份的共享
+基元、部件和 Presenter 用 `OwnerTokenResource`；`SharedTokenResource` 只出现在应用级样式和明确跨 Control 共享语义
+的场合，后者在 AXAML 中以注释标注理由。生成器的资产分析器按 TargetType 的 Token 身份校验读法。
 
 `XxxTokenResource` 的位置参数是生成的强类型 `XxxTokenKey`，不是字符串。主题作者可选择 Xxx Own Token 和当前
 Global Token schema 中的全部候选。Global Token 与 Own Token 禁止同名，因此
 `{atom:AlertTokenResource ColorText}` 不需要额外写 `Global=` 或 `Own=`。
 
 `SharedTokenResource` 永远映射全局 key，不读取 ambient identity。`XxxTokenResource` 在构造时已经绑定生成的
-`XxxTokens.Identity`，并按 Token key 的 schema 分类为 Effective Global Token 或 Own Token。ProvideValue 和
+`XxxTokens.Identity`，并按 Token key 的 schema 分类为 Effective Global Token 或 Own Token。`OwnerTokenResource`
+的位置参数是 `SharedTokenKind`，只接受全局 Token，identity 来自继承的 `ThemeScope.TokenOwner`。ProvideValue 和
 资源查询热路径都不解析字符串、不遍历 Visual、不查找 templated parent，也不推断 TargetType。
 
 ControlTheme 不声明 `ControlTokenScope.Identity`。强类型 Token key 在 AXAML 编译期验证 Global/Own Token 名称；
-资产生成器只分析 owner、引用的 Control identity、URI、资源结构和 Semantic Part Theme 资产关系，不收集 Global
-Token 消费关系。Semantic Part Generator 独立分析 Control 声明和 `.semantic-*` marker；
+资产生成器分析 owner、引用的 Control identity、URI、资源结构和 Semantic Part Theme 资产关系。它另外产出一份
+全局 Token 消费图（哪个 Control 的主题与代码消费了哪个全局 Token）；消费图只用于生效测试骨架、文档和将来的
+主题工具，不进入 schema、不限制配置、不参与 registry revision。Semantic Part Generator 独立分析 Control 声明和 `.semantic-*` marker；
 `EffectiveGlobalToken.X`、`XxxTokenResource X` 和 C# Binding 都不会扩展 schema。
 
 - 引用 Own Token 时必须属于显式 Xxx Control。
@@ -1453,7 +1501,7 @@ Theme/
 +-- ThemeContext.cs                   稳定主题上下文
 +-- ThemeContextLease.cs              独立 TopLevel 的 owner context 生命周期租约
 +-- ThemeContextResourceBridge.cs     独立资源根到 owner context 的稳定资源代理
-+-- ThemeScope.cs                     唯一可继承的 Context attached property
++-- ThemeScope.cs                     可继承的 Context 与 TokenOwner attached property
 +-- ThemeScopeGraph.cs                局部主题作用域图
 +-- ThemeScopeNode.cs                 作用域节点
 +-- ThemeRequest.cs                   主题变更请求
@@ -1494,14 +1542,14 @@ Theme/
 |
 +-- Resources/
 |   +-- ThemeTokenResourceProvider、ThemeTokenResolver
-|   +-- SharedTokenResource、生成式 XxxTokenResource 和 Effective Control Token keys
+|   +-- SharedTokenResource、OwnerTokenResource、生成式 XxxTokenResource 和 Effective Control Token keys
 |   +-- Control theme provider contracts and generated package registration
 |   +-- BaseControlTheme and manifest-backed provider loading
 |   \-- snapshot lookup、style/template 和 Control theme 加载辅助
 |
 +-- DesignTokens/
-|   +-- global/control compile-only builders
-|   +-- Token definitions and kind metadata
+|   +-- global/control compile-only builders（含 Own Token 显式位与 IsExplicit）
+|   +-- Token definitions、kind metadata 和 ReservedTokenAttribute
 |   \-- Token value converters
 ```
 
@@ -1576,6 +1624,11 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
 - `ControlThemeAssets` glob Attribute、逐 Theme Module、手工 asset manifest 和只为聚合主题创建的额外 AXAML。
 - cache pin、父 snapshot Version cache key 和字符串拼接 cache key。
 - 旧主题 XML 的 `ControlTokens/ControlToken` 结构。
+- 在 `CalculateTokenValues` 中以 `double.NaN` 或其他哨兵值判断 Own Token 是否被显式设置；显式性只由 `IsExplicit`
+  表达。
+- Control 代码经 `Application.Current.TryGetResource`、`TryFindResource` 或 `FindResource` 读 Token，以及读取失败时
+  回落到写死的视觉值；Token 只经 `ControlTokenAccessor`、`TokenResourceBinder` 和三种 TokenResource 读取。
+- 有 Token 身份的 Control 的 ControlTheme 用 `SharedTokenResource` 读全局 Token，使 Control 级覆盖对该消费点失效。
 
 这些内容不建立 adapter，也不能以 obsolete、兼容层或内部入口的形式继续存在。
 
@@ -1639,7 +1692,13 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
 - 重复更新不增长 `MergedDictionaries`。
 - 控件实例不创建 Control Token 资源字典。
 - `{atom:SharedTokenResource ...}` 永远读取全局值；`{atom:XxxTokenResource ...}` 统一读取 Xxx Control 的
-  Effective Global Token 和 Own Token，两者没有 ambient 行为。
+  Effective Global Token 和 Own Token；`{atom:OwnerTokenResource ...}` 读取继承到的 owner Control 的 Effective
+  Global Token，无 owner 时读取全局值。三者都没有 ambient snapshot 行为。
+- `Controls[X].Tokens[全局名]` 只改变 X 及其模板内的共享基元，不改变其他 Control；根 `Tokens[全局名]` 改变全部。
+- 显式 Own Token override 先于默认计算写入并最终胜出；覆盖 `DataGrid.BorderColor` 后表格边框变色，覆盖 Button
+  `ContentFontSize` 后 `ContentLineHeight` 跟随。
+- 每个 Active Own Token 和消费图中该 Control 消费的全局 Token 都有生效测试：改变 Token 后控件边界内像素发生变化。
+  未引用且未标 `[ReservedToken]` 的 Own Token 字段构建失败。
 - global、Control delta hit、global fallback 和 Own Token 均返回正确值；不同 Control identity 的同名 Global
   Token 覆盖不串值。
 - 每个 Control 都能覆盖 registry 中任意 Global Token；未知名称失败，合法但未消费的 Global Token 允许存在且
@@ -1668,7 +1727,8 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
 - 人工构造相同 fingerprint、不同结构化配置的碰撞测试不会错误复用 snapshot 或 Control 编译结果。
 - 不同 registry revision 允许 slot 重新分配，绑定、缓存和资源查询仍解析到当前 revision 的正确 slot。
 - 单 Control 配置变化复用全局表和其他 Control snapshot。
-- Token 资源查询热路径保持零分配。
+- Token 资源查询热路径保持零分配；`OwnerTokenResource` 只增加一个继承属性订阅，不增加查询分配。
+- 控件主题读法迁移前后，Gallery 首页套样式耗时与主题切换 Publish 耗时同阶，不劣化超过 5%。
 - cache 和旧 snapshot 存活数量满足本文定义的容量上界。
 - ThemeConfigProvider、Popup、Flyout 和 Gallery 导航生命周期 WeakReference 测试通过。
 - 正常主题切换路径不执行 Token 反射或 Activator。

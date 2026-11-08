@@ -15,7 +15,10 @@
   context lease/resource bridge。
 - 承接类型化主题包注册与默认赋值；保留动态 XML Reader/Binder，派生算法仅由现有运行时执行。
 - 定义生成式全局/Control Own Token schema、所有 Control 可覆盖完整 Global Token 的规则、不可变
-  `ThemeSnapshot`、稳定资源键，以及 `SharedTokenResource`/`XxxTokenResource` 强类型资源扩展。
+  `ThemeSnapshot`、稳定资源键，以及 `SharedTokenResource`/`XxxTokenResource`/`OwnerTokenResource` 三种强类型
+  资源扩展；公开 Control 经可继承的 `ThemeScope.TokenOwner` 把 identity 传给模板内的共享基元。
+- 编译 Control Own Token 时先写入显式覆盖并置显式位，再计算默认值，最后以显式值收尾；evaluator 用 `IsExplicit`
+  判断显式性。
 - 定义 Semantic Part 声明、不可变 descriptor、冻结 registry 与 `IThemeManager.SemanticParts` 运行时查询入口；
   Avalonia Selector 继续负责实际样式匹配。
 - 组合根 `IAtomUIBuilder` 的主题与本地化子 Builder，并把 `ILanguageManager`、`ILocalizer` 暴露给应用。
@@ -28,15 +31,15 @@
 
 | 目录 | 说明 |
 |---|---|
-| `Theme/` | 唯一运行时 ThemeManager、五阶段事务、ThemeContext、作用域图、TopLevel lease/bridge 及公开主题入口 |
+| `Theme/` | 唯一运行时 ThemeManager、五阶段事务、ThemeContext、`ThemeScope`（Context 与 TokenOwner 继承属性）、作用域图、TopLevel lease/bridge 及公开主题入口 |
 | `Theme/Algorithms/` | 算法契约、默认/暗色/紧凑计算器、调色板和颜色计算辅助 |
 | `Theme/Configuration/` | ThemeConfig、ControlThemeConfig、配置规范化、继承与覆盖合并 |
 | `Theme/Definitions/` | 编译主题包 ABI/注册、主题来源、默认选择、动态 XML v1 读取、语法模型、Schema 绑定和 diagnostics |
 | `Theme/Schema/` | 生成式 Token schema、Control/算法 descriptor、ControlTheme asset descriptor 与 manifest 契约 |
 | `Theme/SemanticParts/` | Semantic Part Attribute、数量/定制枚举、Control descriptor 与冻结 registry |
-| `Theme/Compilation/` | 纯 ThemeCompiler、不可变 ThemeSnapshot 和 Snapshot 缓存 |
-| `Theme/Resources/` | Snapshot-backed ResourceProvider、全局 SharedTokenResource、生成式 XxxTokenResource、ControlTheme asset manifest、resolver 和样式加载辅助 |
-| `Theme/DesignTokens/` | 仅供编译阶段使用的 DesignToken、ControlToken builder、定义和 value converter |
+| `Theme/Compilation/` | 纯 ThemeCompiler（Own Token 显式覆盖先于默认计算）、不可变 ThemeSnapshot 和 Snapshot 缓存 |
+| `Theme/Resources/` | Snapshot-backed ResourceProvider、全局 SharedTokenResource、owner 继承的 OwnerTokenResource、生成式 XxxTokenResource、ControlTheme asset manifest、resolver 和样式加载辅助 |
+| `Theme/DesignTokens/` | 仅供编译阶段使用的 DesignToken、ControlToken builder（显式位、`IsExplicit`）、`ReservedTokenAttribute`、定义和 value converter |
 | `Localization/` | 根 Builder 的本地化扩展；Catalog、Snapshot、Manager 和资源扩展位于 `AtomUI.Localization` 项目 |
 | `Collections/` | ItemsSource 集合适配与弱事件转发 |
 | `Animations/` | [动画基础设施](animations.md)：框架复用、Transition 初始化、有限 Motion、持续反馈与最小适配 |

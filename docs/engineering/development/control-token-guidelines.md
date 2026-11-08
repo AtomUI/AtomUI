@@ -17,8 +17,9 @@ Global Token 使用示例；全部 Global Token 都可覆盖，不在单 Control
 Global Token
     -> Control-specific Global Override
 Effective Global Token
-    -> calculate Control Own Token defaults
-    -> Control Own Token Override
+    -> mark explicit Control Own Token overrides
+    -> calculate remaining Control Own Token defaults
+    -> re-apply explicit Control Own Token overrides
 Effective Control Token
     -> ControlTheme
     -> Semantic Part Theme
@@ -75,10 +76,21 @@ internal sealed class RatingToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         StarSize = EffectiveGlobalToken.ControlHeight;
-        StarGap  = EffectiveGlobalToken.UniformlyMarginXS;
+        if (!IsExplicit(RatingTokenKind.StarGap))
+        {
+            StarGap = StarSize / 4; // StarSize 此时已含用户的显式覆盖
+        }
     }
 }
 ```
+
+编译器在调用 `CalculateTokenValues` 前已写入用户的显式 Own Token 覆盖并置显式位，计算结束后再次写入显式值。因此：
+
+- 默认计算读到的同类字段已经是用户覆盖后的值，依赖它的派生字段自动跟随；不需要在计算里重新查配置。
+- 需要"用户没设置时才派生"的字段用 `IsExplicit(kind)` 判断；禁止以 `double.NaN`、`default`、`null` 等哨兵值
+  判断显式性，Color、Thickness、CornerRadius 等类型没有可用哨兵。
+- 内部派生字段（例如 DataGrid 由公开 `BorderColor` 派生的 `TableBorderColor`）从公开字段派生，主题消费派生字段
+  时用户覆盖公开字段仍然生效。
 
 约束：
 
@@ -113,6 +125,23 @@ Generator 只为终端生成 evaluator，默认计算使用 C# virtual dispatch�
 直接继承 `AbstractControlDesignToken` 的终端和直接重写根方法的第一层抽象 Token 不要求调用根类型空实现；某层没有
 override 时正常继承基类实现。定义 public 抽象 Token 的包必须启用兼容版本 Generator，使方法体契约在产生 metadata
 前得到验证。
+
+## Own Token 承诺面
+
+承诺面是主题系统对用户的声明："这些 Token 设置后一定有效果"。承诺面 = 全部 Global Token + 每个 Control 的
+Active Own Token。每个 Own Token 字段必须属于以下之一：
+
+| 分类 | 含义 | 要求 |
+| --- | --- | --- |
+| Active | 有真实消费者 | 所属包的主题 AXAML 或代码至少引用一次；该字段的生效测试必须通过 |
+| Reserved | 暂无消费者，有保留理由 | 字段加 `[ReservedToken("原因")]`；文档与工具标为保留，不出现在"可调"列表 |
+| 删除 | 既无消费者也无理由 | 删除字段，写入发布说明 |
+
+生成器对每个 Own 字段做包内引用分析：未引用且未标 `[ReservedToken]` 的字段报构建诊断（迁移期为警告，家族迁移完成后
+转错误）。Reserved 不是长期状态；字段接通消费后去掉 Attribute，长期没有消费计划的字段删除。
+
+Global Token 不要求每个 Control 都消费。生成器另外产出消费图：哪个 Control 的主题与代码消费了哪个 Global Token。
+消费图供生效测试骨架、文档生成和将来的主题工具读取，不进入 schema、不限制配置，也不是支持边界。
 
 ## 可配置 Token 契约
 
@@ -170,6 +199,9 @@ Global Token snapshot 不受影响。名称未出现在完整 Global Token schem
 
 <!-- 读取 Rating Own Token。 -->
 <Setter Property="Margin" Value="{atom:RatingTokenResource StarGap}" />
+
+<!-- 共享基元（无 Token 身份）的主题：读取当前所属公开 Control 的 Effective Global Token。 -->
+<Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
 ```
 
 `RatingTokenResource` 同时读取两类 Token，消费语法不写 `Global=` 或 `Own=`。生成器产生强类型
@@ -180,11 +212,20 @@ Global Token snapshot 不受影响。名称未出现在完整 Global Token schem
 TokenResourceExtension、TokenKey 和 OwnTokenKind 的使用都应保留对应注册片段。把 enum 转为裸整数或仅做常量计算
 不代表使用控件资源。Token-only、生成 identity-only 的代码不能依赖 owner 控件稍后才被构造来补注册。
 
-选择规则：
+选择规则由 ControlTheme 的 `TargetType` 是否拥有 Token 身份决定：
 
-- 希望某值永远跟随当前 ThemeContext 的全局结果时使用 `SharedTokenResource`。
-- 希望用户能够在 Rating 配置下局部覆盖时使用 `RatingTokenResource`。
-- ControlTheme 不声明 `ControlTokenScope.Identity`，也不存在 ambient fallback。
+| TargetType | 全局 Token 的读法 | 说明 |
+| --- | --- | --- |
+| 有 Token 身份的公开 Control（Button、LineEdit、Rating…） | `{atom:XxxTokenResource Name}` | 读自己的 Effective Global Token，用户在 `Controls[Xxx]` 下的覆盖生效 |
+| 无 Token 身份的共享基元与部件（InputControlFrame、AddOnDecoratedBox、各类 Item / Cell / Presenter） | `{atom:OwnerTokenResource Name}` | 读继承到的 `ThemeScope.TokenOwner` 所指公开 Control 的 Effective Global Token；无 owner 时读全局值 |
+| 应用级样式，或明确要求所有 Control 永远共享同一值 | `{atom:SharedTokenResource Name}` | 后者在 AXAML 中加注释说明共享理由 |
+
+- Control 主题里不得用 `SharedTokenResource` 读全局 Token，否则 `Controls[Xxx]` 的覆盖对该消费点无效。生成器按
+  TargetType 校验读法，迁移期警告，家族迁移完成后转错误。
+- 每个有 Token 身份的公开 Control 在构造时写入 `ThemeScope.TokenOwner`，代码由生成器放在注册片段中，Control
+  作者不手写。模板里嵌套的公开 Control（SearchEdit 里的 Button）写入自己的 identity，读自己的有效值。
+- `OwnerTokenResource` 只接受全局 Token；基元没有 Own Token。
+- ControlTheme 不声明 `ControlTokenScope.Identity`，也不存在 ambient snapshot fallback。
 
 ## C# 访问契约
 
@@ -202,6 +243,28 @@ TokenResourceBinder.CreateControlTokenBinding(
 `ControlTokenAccessor.Capture(owner)`，同一次计算只读取一次 snapshot。生成 descriptor 提供 exact CLR type 到
 identity/slot 的 AOT-safe 映射；基类 Effective Global 读取使用注册派生类型的 identity，Own Token 不随继承替换。
 未注册 exact type 必须失败，不能回退到基类 identity，也不能使用隐藏 StyledProperty 转运 Token。
+
+### 控件代码的七条消费规则
+
+控件代码里凡是影响视觉的值都来自主题，并在主题变化时重算。以下规则由分析器检查，不能静态证明的部分由评审检查：
+
+1. 视觉值（颜色、画刷、阴影、线宽、圆角、字号、尺寸）不得以字面量出现在控件代码里；`Colors.Transparent`、`0`
+   和行为常量（阈值、计数、索引）允许。
+2. 读 Token 只经 `ControlTokenAccessor`、`TokenResourceBinder` 或 AXAML 的三种 TokenResource；禁止
+   `Application.Current.TryGetResource`、`TryFindResource`、`FindResource` 读 Token，禁止读取失败时回落写死的值。
+   局部 `ThemeConfigProvider` 的覆盖必须对所有读取生效。
+3. 由 Token 算出的视觉值必须在主题变化时重算：挂载期绑定到属性并让变化驱动重算或重测（`AffectsMeasure`），
+   或 `ThemeTokenResolver.Subscribe`；不得在测量或构造时一次性读 Token 后缓存。
+4. 预设色（Badge、Tag、ToolTip、Button 的 preset color）从快照的 `PresetPalettes` 取并按快照缓存，不在控件实例里
+   重算，也不以 RGB 常量写死；暗色下预设色必须跟随色板。
+5. 主题里需要被状态 Setter（`:pointerover`、`:disabled`、暗色 variant）覆盖的默认值必须写成 Style Setter，不能写在
+   模板节点的属性上。模板属性是 LocalValue 优先级，会遮蔽全部状态 Setter。
+6. 代码写入控件或子节点的值用 `SetCurrentValue`，或可撤销的 Template 优先级值；不得以本地值覆盖用户与主题的绑定。
+7. 代码算出的视觉值写入 internal 属性，由主题 Setter 投射到公开视觉属性；公开属性留给用户与应用样式，应用样式与
+   本地值保持更高优先级。
+
+Button 是参考实现：`ControlTokenAccessor.Capture<Button>` 读控件有效值，`ThemeTokenResolver.Subscribe` 在主题
+变化时重算变体画刷，变体画刷经资源键写入以支持作用域覆盖。
 
 ## ControlTheme Asset
 
@@ -232,6 +295,9 @@ AXAML。只有一个 ControlTheme 时就只有一个主题文件。
 
 主题和资源作者必须遵循：
 
+- 主题 AXAML 里的数值字面量只允许表达布局常量，并以 `<!-- layout -->` 注释标注，分析器据此放行；线宽、分隔线、
+  圆角、字号、阴影等视觉值必须读 Token，边框与分隔线线宽统一用 `LineWidth`。颜色字面量不允许出现。
+- 需要被状态 Setter 覆盖的默认值写成 Style Setter，不写在模板节点属性上（消费规则 5）。
 - 只有真正导出的顶层主题建立 Control → asset 关联；嵌套模板 TargetType 和局部定制主题不产生反向默认主题归属。
 - 自定义 `SearchButtonTheme` 不能使普通 Button 使用反向保留 SearchEdit；顶层命名主题则按其真实导出保留。
 - 同一字典导出多个主题时保留完整资产，由实际 factory 引用进入链接闭包；多个片段引用同一 AssetId 只挂载一次。
@@ -314,6 +380,18 @@ Semantic 和资产 factory，不运行时扫描程序集或 AXAML。作者不手
 - Semantic Part Theme 的 TargetType 与属性契约不兼容。
 - Semantic Part 的 ContractType 与模板 marker 类型不兼容，或 Part 名称、class、cardinality 与 descriptor 不一致。
 - internal 实现类型被错误声明为独立 Token owner。
+- `CalculateTokenValues` 以 `double.IsNaN` 或其他哨兵判断 Own Token 显式性。
+
+以下问题由分析器报告，迁移期为警告，所属控件家族迁移完成后由项目 `.editorconfig` 升级为错误：
+
+- 有 Token 身份的 TargetType 的 ControlTheme 用 `SharedTokenResource` 读全局 Token；无 Token 身份的 TargetType 用
+  `SharedTokenResource` 而非 `OwnerTokenResource`，且没有共享语义注释。
+- Own Token 字段在所属包内无引用且未标 `[ReservedToken]`。
+- 控件代码经 `Application.Current` 或 `FindResource` 系列读 Token，或读取失败回落字面量。
+- 控件代码里的视觉字面量。
+- 主题 AXAML 里未标 `<!-- layout -->` 的数值字面量，或任何颜色字面量。
+- 模板节点属性上写了被同一主题状态 Setter 覆盖的默认值。
+- 控件代码以 `SetValue` 或属性赋值把 LocalValue 写入视觉属性。
 
 配置规范化必须在身份去重前检查 owner 冲突。跨包依赖在全部入口返回后统一校验；缺少 RequiredTokenOwners、未注册
 exact CLR type、无效配置名称、资源与语义契约不完整时启动失败，不能回退到基类 identity 或追加全包注册。
@@ -324,13 +402,18 @@ exact CLR type、无效配置名称、资源与语义契约不完整时启动失
 | 改动类型 | 验证要求 |
 | --- | --- |
 | 新增 Control | 验证 identity、可选 Own Token、语义/主题片段、包入口和无运行时发现路径；内部资源控件不伪造 Token owner。 |
-| 修改 Own Token | 验证强类型 key、默认计算、override 和 AXAML 消费。 |
+| 修改 Own Token | 验证强类型 key、默认计算、override 先于默认计算且最终胜出、AXAML 消费，以及该字段的生效测试。 |
+| 新增或裁决 Own Token 字段 | Active 字段补消费并通过生效测试；Reserved 字段写明理由；删除字段写入发布说明。 |
 | 修改 Own Token 继承层 | 验证继承链诊断、属性扁平化、base 计算顺序、跨程序集增量失效、sibling 隔离和 schema revision 等价。 |
-| 修改 Control 对 Global Token 的使用 | 验证 Effective Global 覆盖、Global fallback、算法间接派生和跨 Control 隔离。 |
+| 修改 Control 对 Global Token 的使用 | 验证 Effective Global 覆盖、Global fallback、算法间接派生和跨 Control 隔离；共享基元经 `OwnerTokenResource` 读到所属 Control 的覆盖，无 owner 时回落全局值。 |
+| 迁移一个控件家族的主题读法 | 该家族全部 Active Own Token 与消费的 Global Token 生效测试全绿；`Controls[X]` 覆盖只改变 X；分析器对该家族转错误。 |
 | 修改 Semantic Part | 验证 selector marker、ContractType、cardinality、模板变体、Style-only 保留与 descriptor 一致性。 |
 | 修改 Semantic Part Theme | 额外验证 owner/Part Token 分工、TargetType 和默认/实例替换。 |
 | 修改生成器 | 验证确定性、增量构建、Token/identity-only 保留，以及 NativeAOT、trimmed CoreCLR、Browser 裁剪运行和 Browser AOT。 |
 | 修改主题视觉 | 验证 Light/Dark、Control 算法和相关 Control 家族。 |
+| 修改控件代码里的视觉计算 | 验证主题变化后重算、局部 ThemeConfigProvider 覆盖生效、用户本地值与应用样式不被覆盖。 |
+
+生效测试的定义、骨架生成和阈值见[主题生效测试规范](theme-effect-tests.md)。
 
 涉及 identity 合并时覆盖 raw→typed、typed→raw、正确 typed→错误 typed 及反序，确认 owner 校验不被 Dictionary 去重吞掉。
 涉及资源时同时验证共同资产优先级与未用资产删除；独立原型通过不能替代真实产品宿主验收。

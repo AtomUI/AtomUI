@@ -89,7 +89,7 @@ C# 编译、表达式树编译、反射程序集发现或代码下载。
 | Generator | 读取符号与声明，解析静态字面量，校验可访问性，生成类型化注册与赋值 |
 | Toolchain Common/Tasks | 有界 XML 校验，传输声明文本、位置与摘要，验证构建产物 |
 | 控件包 | 导出自身 Token 构建契约、现有运行期 descriptor/evaluator 与真实资源工厂 |
-| 主题包 | 提供 XML、元数据、类型化注册与默认赋值；不持有运行中的应用 |
+| 主题包（含 `AtomUI.Themes.*` 预设包） | 提供 XML、元数据、类型化注册与默认赋值；不持有运行中的应用，不含控件代码或 ControlTheme |
 | ThemeManager/Catalog | 来源冲突、实际注册绑定、有效配置、快照/缓存和统一提交 |
 | 资源 Provider/Bridge | 已提交值查询、宿主关系和既有通知/释放协议 |
 
@@ -180,3 +180,44 @@ Token 类型、stage、资源键和值能力版本验证全部静态主题；仅
 - 新的运行期公开入口应集中在包注册和受限工厂 ABI，不为每个优化再增加一种应用层主题管理方式。
 
 完成交付必须通过[验证要求](verification.md)。设计目标和测试计划不能作为“无资源泄漏”或性能收益的完成证据。
+
+## 11. 预设主题包
+
+编译主题包也是 AtomUI 交付"预设"的唯一机制：一个设计语言一个 NuGet 主题包，引用即用。Core 仍只内置 DaybreakBlue；
+预设不进入 Core，也不引入设计语言抽象层。这些包证明的命题是：Ant Design 的 Token 词汇足以表达其他设计语言的大致
+观感；表达不了的部分写进包的 README，不改控件结构或代码。
+
+| 包 | 内容 | 明确不支持（写进 README） |
+| --- | --- | --- |
+| `AtomUI.Themes.PrimeNG` | Aura（默认）、Lara、Nora 三个预设；primary emerald、surface slate / zinc、直接给值的语义层逐项映射到 AtomUI 全局 Token，少量 `<Control>` 覆盖 | ripple、浮动标签、以透明度表达禁用、Filled 字段形态、rem 根字号缩放 |
+| `AtomUI.Themes.Shadcn` | zinc / slate / stone 三色系，近黑主色，细边框，无 wave，弱阴影 | 焦点环形态、Command 式弹层 |
+| `AtomUI.Themes.Bootstrap` | `#0d6efd` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 6` | 渐变背景、内阴影 |
+| `AtomUI.Themes.Material` | 紫色主色、`BorderRadius 4`、`ControlHeight 40`、三级 BoxShadow 近似 elevation | ripple、浮动标签、全大写 |
+
+包名不带 `Like` 等后缀。PrimeNG 的 Material 预设与 `AtomUI.Themes.Material` 重叠，不重复做。
+
+每个包是一个只引用 `AtomUI.Core` 的小项目：
+
+```text
+AtomUI.Themes.PrimeNG/
++-- AtomUI.Themes.PrimeNG.csproj   <AtomUIThemeDefinition Include="Themes/*.theme.xml" />
++-- Themes/PrimeNGAura.theme.xml   语义值表 + 逐控件 <Control> 覆盖
++-- Themes/PrimeNGLara.theme.xml
++-- Themes/PrimeNGNora.theme.xml
++-- PrimeNGThemes.cs               UsePrimeNGThemes() 扩展：调用生成的 Register(builder)
+\-- README.md                      模拟了什么、放弃了什么、与原设计语言的已知差异
+```
+
+约束与本文其余部分完全相同：
+
+- 生成器把 XML 编译为类型化注册，运行时不读 XML；注册进同一 Catalog，出现在 `AvailableThemes`，与用户目录主题和
+  DaybreakBlue 走同一事务；Theme.Id 跨包不得重复。
+- 暗色首版由现有 Dark 算法从该预设的 Seed 派生；对照原设计语言的暗色值表后差异不可接受时，同包增加
+  `Appearance="Dark"` 的独立定义（例如 `PrimeNGAuraDark`），不改算法。
+- 预设 XML 里的 `<Control>` 覆盖只能引用 Core 与已启用控件包中登记的 Control 与 Token；预设包不自动启用控件包。
+- 预设包不含 C# 运行时逻辑、不含 ControlTheme、不含控件代码；只有 XML、生成的注册与一个 `UseXxxThemes()` 入口。
+- README 的"不支持"清单与实际行为一致，属于验收项；首版 PrimeNG 的 Aura / Lara / Nora 对映射表逐项核对，并与
+  primeng.dev 的 Aura 演示按关键区域容差对照一次，结论记入 README。
+
+Gallery 用"主题预设"页展示这些包的切换效果，见 [Gallery 主题预设页](../../../../gallery/authoring/theme-presets-page.md)。
+第三方做自己的预设走完全相同的路径，见[预设主题包指南](../../../../guides/theming/preset-theme-packages.md)。

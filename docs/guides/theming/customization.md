@@ -137,7 +137,7 @@ identity，又会导致用户不知道应该在 Button、LineEdit 还是 SearchE
 
 这使 ControlTheme 可以自由组合，而 Token 的归属仍然清晰。
 
-## 4. 两种 TokenResource，各自只做一件事
+## 4. 三种 TokenResource，各自只做一件事
 
 ### 4.1 SharedTokenResource
 
@@ -172,6 +172,33 @@ Global Token，`StarGap` 来自 Own Token，但语法完全一致。
 这里故意没有 `Global=`、`Own=` 或 ControlTheme scope 配置。定义层负责分类，消费层只表达“读取 Rating 的这个
 Token”。
 
+### 4.3 OwnerTokenResource
+
+```xml
+<!-- InputControlFrame 的主题；它被 LineEdit、NumericUpDown、Select 等多个 Control 的模板复用。 -->
+<Setter Property="BorderBrush"
+        Value="{atom:OwnerTokenResource ColorBorder}" />
+```
+
+像输入框框架、附加区装饰盒、各类 Item / Cell / Presenter 这样的共享基元没有自己的 Token identity，却出现在多个公开
+Control 的模板里。它们的主题写不出 `LineEditTokenResource`，如果写 `SharedTokenResource`，用户对 LineEdit 的
+局部覆盖就传不进输入框的边框、圆角和内边距。
+
+`OwnerTokenResource` 读取"当前所属公开 Control"的 Effective Global Token。每个有 Token identity 的公开 Control 在
+构造时把自己的 identity 写进可继承的 `ThemeScope.TokenOwner`，模板内的基元沿逻辑树继承到它。基元被单独使用、
+没有继承到 owner 时，读取全局值。它只接受 Global Token，因为基元没有 Own Token。
+
+于是三种读法由主题的 `TargetType` 决定，不由作者偏好决定：
+
+| TargetType | 读法 |
+| --- | --- |
+| 有 Token identity 的公开 Control | `XxxTokenResource` |
+| 没有 identity 的共享基元与部件 | `OwnerTokenResource` |
+| 应用级样式，或明确要求所有 Control 永远共享的值 | `SharedTokenResource` |
+
+这保证了一件事：`Controls[LineEdit].Tokens[ColorBorder]` 改变 LineEdit 的每一处边框，包括模板里复用的基元；它与
+Ant Design 里 `components.Input.colorBorder` 的含义相同。
+
 ## 5. 每个 Control 都拥有完整 Effective Global Token
 
 Control 配置允许使用的 Token 固定为：
@@ -187,7 +214,8 @@ AtomUI 不维护“这个 Control 消费了哪些 Global Token”的白名单。
 Global Token schema；两处都不存在才报错。Own Token 与任意 Global Token 禁止同名。
 
 一个合法 Global Token 如果没有被当前 Control 直接或间接使用，覆盖后可以没有视觉效果。这是允许的确定行为，
-不能因此影响其他 Control identity 或真正的 Global Token snapshot。启用 `Global` 或 `Custom` Control 算法时，
+不能因此影响其他 Control identity 或真正的 Global Token snapshot。Own Token 则不同：每个没有标为 Reserved 的 Own
+Token 都承诺有效果，并由生效测试证明；设置了没有效果是缺陷，不是"允许的确定行为"。启用 `Global` 或 `Custom` Control 算法时，
 Seed/Map 覆盖可能重新派生其他 Token，因此一个看似未直接使用的 Token 仍可能产生局部间接效果。
 
 ### 5.1 AXAML 和 C# 使用同一语义
@@ -334,7 +362,9 @@ Global Token 都可以配置；只有名称在这两个 schema 中都不存在�
 
 主题定义通过两种明确入口进入同一个 ThemeCatalog：
 
-- 包内固定 XML 声明为 `AtomUIThemeDefinition` 构建项，通过生成的主题包注册入口接入。Core 默认主题使用此路径。
+- 包内固定 XML 声明为 `AtomUIThemeDefinition` 构建项，通过生成的主题包注册入口接入。Core 默认主题和
+  `AtomUI.Themes.*` 预设主题包（PrimeNG、Shadcn、Bootstrap、Material）都使用此路径；引用预设包的方式见
+  [预设主题包指南](preset-theme-packages.md)。
 - 动态 XML 通过 Resolver、Reader 和 Binder 加载；包括显式 avares URI 与主动启用的用户主题目录。
 
 例如程序集 `Acme.Themes` 可声明：
@@ -649,6 +679,11 @@ Control 使用同一条确定性路径。
 | `NumericUpDownToken : ButtonSpinnerToken` | 配置 identity 与实际消费关系失真 | 定义独立 Own Token，共享值提升到 Global Token |
 | 把合法但未消费的 Global Token 当成配置错误 | 重新引入不完整消费白名单 | 接受全部 Global Token，未知名称才失败 |
 | 用 `SharedTokenResource` 期待 Rating 局部覆盖 | Shared 始终读取全局值 | 改用 `RatingTokenResource` |
+| 共享基元（InputControlFrame 等）的主题用 `SharedTokenResource` | 用户对 LineEdit 的覆盖传不进基元 | 改用 `OwnerTokenResource` |
+| 在 `CalculateTokenValues` 里用 `double.IsNaN` 判断用户是否设置了某字段 | 编译器已先写入显式值，哨兵永远判为未设置；Color 等类型也没有哨兵 | 用 `IsExplicit(kind)` |
+| 控件代码用 `Application.Current.TryGetResource` 读 Token，失败回落写死值 | 局部 ThemeConfigProvider 的覆盖对它无效 | `ControlTokenAccessor` 或 `TokenResourceBinder` |
+| 预设色用 RGB 常量写在代码里 | 不跟随主题色板，暗色下也不变 | 从快照 `PresetPalettes` 读取并按快照缓存 |
+| 把默认值写在模板节点属性上 | LocalValue 优先级遮蔽 `:pointerover`、暗色等状态 Setter | 写成 Style Setter |
 | 为 SearchEdit 创建借用 Button/LineEdit Token 的 SearchButton | 一个类型出现多个 Token 归属 | 组合 public Button + `SearchButtonTheme` |
 | 为每个 ControlTheme 写注册代码 | 容易遗漏且破坏第三方开发体验 | 约定目录 + 生成 manifest |
 | 运行时扫描第三方程序集 | trimming 后元数据不可靠，启动成本不可控 | 包级生成注册入口 |
@@ -671,7 +706,8 @@ Control 使用同一条确定性路径。
 
 1. Global Token 定义设计语言，Own Token 只表达某个 Control 独有的稳定语义。
 2. Control 可以覆盖完整 Global Token schema，但不能修改全局结果或影响其他 Control。
-3. `SharedTokenResource` 永远读全局，`XxxTokenResource` 永远读 Xxx 的 Effective Control Token。
+3. `SharedTokenResource` 永远读全局，`XxxTokenResource` 永远读 Xxx 的 Effective Control Token，`OwnerTokenResource`
+   读所属公开 Control 的 Effective Global Token。
 4. ControlTheme 负责整体样式和模板，Semantic Selector 负责稳定区域覆盖，Semantic Part Theme 只负责可选的
    public 子 Control 完整替换。
 5. 所有输入先编译成不可变 ThemeSnapshot，再由稳定 ThemeContext 原子发布。
@@ -681,5 +717,7 @@ Control 使用同一条确定性路径。
 - [AtomUI 主题系统架构](../../architecture/systems/theming/runtime.md)：完整运行时模型、事务、缓存、生命周期和验收标准。
 - [Semantic Part 系统设计](../../architecture/systems/theming/semantic-parts.md)：稳定视觉区域、Selector、ContractType、Popup 和兼容性契约。
 - [Control Token 设计规范](../../engineering/development/control-token-guidelines.md)：Control 和第三方 Control 的研发约束。
+- [预设主题包指南](preset-theme-packages.md)：引用 PrimeNG、Shadcn、Bootstrap、Material 预设包，以及制作自己的预设包。
+- [主题生效测试规范](../../engineering/development/theme-effect-tests.md)：承诺面中每个 Token 如何被证明有效。
 - [主题定义 XML v1 规范](../../reference/theming/theme-definition-xml-v1.md)：主题文件格式、算法和验证规则。
 - [启动与注册链路](../../architecture/foundations/startup-and-registration.md)：应用、Control 包和 ThemeManager 的构建顺序。

@@ -97,11 +97,15 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
             o => o.IsAdornerMode,
             (o, v) => o.IsAdornerMode = v);
 
-    internal static readonly DirectProperty<AbstractCountBadgeAdorner, BoxShadows> BoxShadowProperty =
+    /// <summary>
+    /// The indicator's ring, computed from <see cref="BadgeShadowSize"/> and <see cref="BadgeShadowColor"/>; the template
+    /// projects it onto the indicator border's BoxShadow.
+    /// </summary>
+    internal static readonly DirectProperty<AbstractCountBadgeAdorner, BoxShadows> IndicatorShadowsProperty =
         AvaloniaProperty.RegisterDirect<AbstractCountBadgeAdorner, BoxShadows>(
-            nameof(BoxShadow),
-            o => o.BoxShadow,
-            (o, v) => o.BoxShadow = v);
+            nameof(IndicatorShadows),
+            o => o.IndicatorShadows,
+            (o, v) => o.IndicatorShadows = v);
 
     internal static readonly DirectProperty<AbstractCountBadgeAdorner, string?> CountTextProperty =
         AvaloniaProperty.RegisterDirect<AbstractCountBadgeAdorner, string?>(
@@ -137,12 +141,12 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         set => SetAndRaise(IsAdornerModeProperty, ref _isAdornerMode, value);
     }
 
-    private BoxShadows _boxShadow;
+    private BoxShadows _indicatorShadows;
 
-    internal BoxShadows BoxShadow
+    internal BoxShadows IndicatorShadows
     {
-        get => _boxShadow;
-        set => SetAndRaise(BoxShadowProperty, ref _boxShadow, value);
+        get => _indicatorShadows;
+        set => SetAndRaise(IndicatorShadowsProperty, ref _indicatorShadows, value);
     }
 
     private object? _presentedContent;
@@ -234,11 +238,11 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         // The border ring is rendered as a shadow; without a border there is nothing to draw.
         if (!IsBordered)
         {
-            BoxShadow = default;
+            IndicatorShadows = default;
         }
         else if (BadgeShadowColor is not null)
         {
-            BoxShadow = new BoxShadows(new BoxShadow
+            IndicatorShadows = new BoxShadows(new BoxShadow
             {
                 OffsetX = 0,
                 OffsetY = 0,
@@ -342,11 +346,13 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
 
     private void DetachFromAdornerLayer(AdornerLayer? adornerLayer)
     {
+        // Clear the association while the layer can still update the existing composition visual. Removing the
+        // visual first leaves its old adorned visual reference alive after the public property has been cleared.
+        AdornerLayer.SetAdornedElement(this, null);
         adornerLayer?.Children.Remove(this);
         if (((ILogical)this).LogicalParent is not null)
         {
             ((ISetLogicalParent)this).SetParent(null);
         }
-        AdornerLayer.SetAdornedElement(this, null);
     }
 }

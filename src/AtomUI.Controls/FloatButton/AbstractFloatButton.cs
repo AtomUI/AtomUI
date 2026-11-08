@@ -272,7 +272,7 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         }
         else if (change.Property == BadgeColorProperty)
         {
-            SetCurrentValue(BadgeEffectiveColorProperty, BadgeColorUtils.CalculateColor(BadgeColor));
+            SetCurrentValue(BadgeEffectiveColorProperty, BadgeColorUtils.CalculateColor(this, BadgeColor));
         }
     }
 

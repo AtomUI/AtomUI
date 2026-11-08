@@ -40,7 +40,7 @@ internal class DotBadgeIndicator : Control
 
     static DotBadgeIndicator()
     {
-        AffectsRender<DotBadgeIndicator>(BadgeDotColorProperty, BadgeShadowSizeProperty);
+        AffectsRender<DotBadgeIndicator>(BadgeDotColorProperty, BadgeShadowSizeProperty, BadgeShadowColorProperty);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

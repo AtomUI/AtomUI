@@ -200,11 +200,13 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
 
     private void DetachFromAdornerLayer(AdornerLayer? adornerLayer)
     {
+        // Clear the association while the layer can still update the existing composition visual. Removing the
+        // visual first leaves its old adorned visual reference alive after the public property has been cleared.
+        AdornerLayer.SetAdornedElement(this, null);
         adornerLayer?.Children.Remove(this);
         if (((ILogical)this).LogicalParent is not null)
         {
             ((ISetLogicalParent)this).SetParent(null);
         }
-        AdornerLayer.SetAdornedElement(this, null);
     }
 }

@@ -16,10 +16,7 @@ public partial class RibbonBadge : AbstractRibbonBadge
             _ribbonBadgeAdorner = new RibbonBadgeAdorner();
             _ribbonBadgeAdorner.Classes.Add(RibbonBadgeSemanticParts.IndicatorClass);
             SetupTokenBindings();
-            if (RibbonColor is not null)
-            {
-                SetupRibbonColor(RibbonColor);
-            }
+            ConfigureRibbonColor();
         }
 
         return _ribbonBadgeAdorner;

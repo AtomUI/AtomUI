@@ -16,10 +16,7 @@ public partial class DotBadge : AbstractDotBadge
             _dotBadgeAdorner.Classes.Add("semantic-scope-indicator");
             SetupTokenBindings();
             NotifyDecoratedTargetChanged();
-            if (DotColor is not null)
-            {
-                ConfigureDotColor(DotColor);
-            }
+            ConfigureDotColor(DotColor);
         }
 
         return _dotBadgeAdorner;

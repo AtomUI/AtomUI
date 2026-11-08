@@ -318,10 +318,10 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         base.OnDetachedFromVisualTree(e);
         _motionBinding?.Dispose();
         _motionBinding = null;
-        _ancestorVisibilityTracker?.Dispose();
-        _ancestorVisibilityTracker = null;
         _themeSubscription?.Dispose();
         _themeSubscription = null;
+        _ancestorVisibilityTracker?.Dispose();
+        _ancestorVisibilityTracker = null;
         Loaded -= HandleAdornerLayerRetryLoaded;
         _adornerLayerRetryScheduled = false;
         _adornerLayerRetryCount     = 0;
@@ -602,12 +602,24 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         }
     }
 
-    private protected virtual void ConfigureDotColor(string colorStr)
+    /// <summary>
+    /// Writes the resolved colour into the internal indicator, or clears it so the indicator falls back to the
+    /// theme's indicator colour when the colour is unset or invalid.
+    /// </summary>
+    private protected virtual void ConfigureDotColor(string? colorStr)
     {
-        if (_dotBadgeAdorner is not null)
+        if (_dotBadgeAdorner is null)
         {
-            _dotBadgeAdorner.BadgeDotColor = BadgeColorUtils.CalculateColor(this, colorStr);
+            return;
+        }
+
+        if (BadgeColorUtils.CalculateColor(this, colorStr) is { } brush)
+        {
+            _dotBadgeAdorner.BadgeDotColor = brush;
+        }
+        else
+        {
+            _dotBadgeAdorner.ClearValue(AbstractDotBadgeAdorner.BadgeDotColorProperty);
         }
     }
-    
 }

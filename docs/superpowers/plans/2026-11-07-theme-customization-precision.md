@@ -518,6 +518,35 @@ git commit -m "gallery(ThemePresets): 新增主题预设页展示 PrimeNG 等主
 
 ---
 
+### Task 17: 动效时长随主题与控件级覆盖生效（`SharedTokenResourceValue` 替换）
+
+Task 9 实施时发现：主题 AXAML 中 Transition 的 `Duration` 用 `{atom:SharedTokenResourceValue Kind=MotionDurationMid}` 读取（约 80 个文件）。该扩展在 XAML 加载时经 `Application.Current.TryGetResource` 一次性取全局值并写死：根主题切换（含 `EnableMotion=false` 把时长规范化为 0）与 `Controls[X].Tokens[MotionDuration*]` 都不会到达这些 Transition，041 也看不到它。本任务在 Task 10 各家族迁移之前或并行完成，使动效时长与其他 Token 一样随作用域与主题变化。
+
+**Files:**
+- Modify: `src/AtomUI.Core/Data/SharedTokenResourceValue.cs`（删除或改为仅供应用级样式的静态值，见 Interfaces）
+- Create: `src/AtomUI.Core/Theme/Resources/TransitionDurationBinding.cs`（或在 Avalonia Transition 支持的机制上实现等价物）
+- Modify: 全部使用 `SharedTokenResourceValue` 的主题 AXAML（按控件包批量替换）
+- Modify: `src/AtomUI.Generator/ThemeAssets/ThemeAssetConsumptionAnalyzer.cs`（041 识别 `SharedTokenResourceValue`）
+- Test: `tests/AtomUI.Core.Tests/Theme/TransitionDurationTests.cs`、`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/` 中追加动效时长用例
+
+**Interfaces:**
+- Avalonia `Transition.Duration` 是 `StyledProperty<TimeSpan>`（`Transition<T>` 派生自 `AvaloniaObject`），可接受绑定，但 Transition 不在可视树中、没有资源宿主。先核实 Avalonia 12.1.5 中 Transition 能否经 `Bind(DurationProperty, …)` 跟随宿主控件资源变化；可行时，读法改为与 `XxxTokenResource` / `OwnerTokenResource` 同语义的值绑定，宿主取 Transition 所属 Style 的目标控件（经 `Transitions` 集合所在控件）。不可行时，退而由控件在 `Transitions` 附着时以 `ControlTokenAccessor` 读取有效时长并在 `ThemeTokenResolver.Subscribe` 回调中重建，主题 AXAML 改为声明式标记（例如 `Duration="{atom:MotionDuration Mid}"`）由控件侧解析。两条路线二选一，在报告中写明依据。
+- 041 扩展：控件主题中出现 `SharedTokenResourceValue` 一律报告（无 `shared:` 豁免），迁移完成后该扩展只允许出现在非 ControlTheme 的应用级样式中，或直接删除。
+
+- [ ] **Step 1: 写失败测试**：`MotionDurationMid` 根覆盖为 0（或 `EnableMotion=false`）后，某控件 Transition 的 `Duration` 变为 0；`Controls[Button].Tokens[MotionDurationMid]="00:00:00.5000000"` 只改变 Button 的 Transition；主题切换后旧值不残留。
+- [ ] **Step 2: 运行确认失败。**
+- [ ] **Step 3: 选定并实现机制**（见 Interfaces 的二选一）。
+- [ ] **Step 4: 批量替换主题 AXAML 中的 `SharedTokenResourceValue`**，按控件包提交；每个包替换后跑该包测试。
+- [ ] **Step 5: 041 扩展与测试**；`MigratedFamilyAnalyzerGateTests` 对已迁移家族不再允许 `SharedTokenResourceValue`。
+- [ ] **Step 6: 回归**：Core、Desktop.Controls、Rendering 测试全部通过。
+- [ ] **Step 7: Commit**
+
+```bash
+git commit -m "fix(Theme): 动效时长改为随作用域与主题变化的 Token 读取"
+```
+
+---
+
 ### Task 15: 收尾：性能对照、全量回归、文档同步
 
 - [ ] **Step 1: 性能对照**：在 `tests/AtomUI.Core.Tests/Theme/Performance` 增加 `ThemeReadMigrationBenchmarkTests`：Stopwatch 测 Gallery 首页（`AtomUIGallery.Tests` 可加载的首页视图）套样式耗时与一次 `ApplyThemeAsync` Publish 耗时各 20 次取中位数，对照 `release/6.0` 在同机的记录（先在基线分支跑一次记入测试注释），断言不劣化超过 5%。
@@ -589,9 +618,9 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | --- | --- | --- | --- | --- |
 | Controls | Avatar | GroupOverlapping, GroupSpace | 10.9 | |
 | Controls | Icon | FallbackColor | 10.10 | |
-| Desktop | Button | DefaultBorderColorDisabled, ExtraContentItemSpacing, ExtraContentMargin, ExtraContentMarginLG, ExtraContentMarginSM, FontWeight, GroupBorderColor, GutterToFlyout | 9 | |
-| Desktop | OptionButton | ButtonBackground, ButtonCheckedBackground, ButtonPadding, ContentLineHeightLG | 9 | |
-| Desktop | FloatButton | CircleBadgeOffset, SquareBadgeOffset | 9 | |
+| Desktop | Button | DefaultBorderColorDisabled, ExtraContentItemSpacing, ExtraContentMargin, ExtraContentMarginLG, ExtraContentMarginSM, FontWeight, GroupBorderColor, GutterToFlyout | 9 | FontWeight、DefaultBorderColorDisabled → Active；GroupBorderColor → Reserved；ExtraContentItemSpacing、ExtraContentMargin(LG/SM)、GutterToFlyout → 删除 |
+| Desktop | OptionButton | ButtonBackground, ButtonCheckedBackground, ButtonPadding, ContentLineHeightLG | 9 | ContentLineHeightLG → Active（修正 ContentPadding 运算数后）；ButtonBackground、ButtonCheckedBackground、ButtonPadding → 删除 |
+| Desktop | FloatButton | CircleBadgeOffset, SquareBadgeOffset | 9 | 删除 |
 | Desktop | LineEdit | InputFontSizeSM | 10.1 | |
 | Desktop | ButtonSpinner | ControlWidth | 10.1 | |
 | Desktop | TextArea | ResizeHandleSize | 10.1 | |
@@ -625,5 +654,7 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Desktop | WindowTitleBar | CloseHoverBackgroundColor, ClosePressedBackgroundColor, ForegroundColor, HoverBackgroundColor, PressedBackgroundColor | 10.10 | |
 | ColorPicker | ColorPicker | ColorPickerAlphaInputWidth, ColorPickerInputNumberHandleWidth | 14 | |
 | DataGrid | DataGrid | ExpandIconBg, ExpandIconHalfInner, ExpandIconMargin, ExpandIconScale, ExpandIconSize, FilterDropdownMenuBg, FixedHeaderSortActiveBg, HeaderFilterHoverBg, SelectionColumnWidth, SortIndicatorLayoutMargin, TableBodySortBg, TableExpandColumnWidth, TableExpandIconBg, TableFilterDropdownHeight, TableFilterDropdownSearchWidth, TableFixedHeaderSortActiveBg, TableHeaderCellSplitColor, TableHeaderFilterActiveBg, TableHeaderSortBg, TableHeaderSortHoverBg, TableSelectionColumnWidth | 14 | |
+
+Task 9 另删除 HyperLinkButton.BorderColorDisabled（该控件不绘制边框），不在原清单中。
 
 已知限制：派生链只跟踪 `XxxToken.CalculateTokenValues` 内的直接赋值，经局部变量或私有辅助方法转手的基字段仍可能被误报；裁决时先核对这一点。

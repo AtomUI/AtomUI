@@ -292,6 +292,15 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
+    public static readonly DiagnosticDescriptor OwnTokenSentinel = new(
+        AtomUIDiagnosticIds.OwnTokenSentinel,
+        "Own Token explicit override must be detected with IsExplicit",
+        "Own Token '{0}' is checked with IsNaN in CalculateTokenValues; use IsExplicit({1}TokenKind.{0}) instead",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
     public static readonly DiagnosticDescriptor LocalizationInvalidLanguageData = new(
         AtomUIDiagnosticIds.LocalizationInvalidLanguageData,
         "Pinned language data record is invalid",

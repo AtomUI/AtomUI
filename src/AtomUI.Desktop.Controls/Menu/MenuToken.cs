@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
@@ -172,32 +173,32 @@ internal sealed class MenuToken : AbstractControlDesignToken
     /// <summary>
     /// 顶层菜单项小号字体
     /// </summary>
-    public double TopLevelItemFontSizeSM { get; set; } = double.NaN;
+    public double TopLevelItemFontSizeSM { get; set; }
 
     /// <summary>
     /// 顶层菜单项字体
     /// </summary>
-    public double TopLevelItemFontSize { get; set; } = double.NaN;
+    public double TopLevelItemFontSize { get; set; }
 
     /// <summary>
     /// 顶层菜单项大号字体
     /// </summary>
-    public double TopLevelItemFontSizeLG { get; set; } = double.NaN;
+    public double TopLevelItemFontSizeLG { get; set; }
 
     /// <summary>
     /// 顶层菜单项内容字体行高
     /// </summary>
-    public double TopLevelItemLineHeight { get; set; } = double.NaN;
+    public double TopLevelItemLineHeight { get; set; }
 
     /// <summary>
     /// 大号顶层菜单项内容字体行高
     /// </summary>
-    public double TopLevelItemLineHeightLG { get; set; } = double.NaN;
+    public double TopLevelItemLineHeightLG { get; set; }
 
     /// <summary>
     /// 小号顶层菜单项内容字体行高
     /// </summary>
-    public double TopLevelItemLineHeightSM { get; set; } = double.NaN;
+    public double TopLevelItemLineHeightSM { get; set; }
 
     /// <summary>
     /// 顶层弹出菜单，距离顶层菜单项的边距
@@ -269,19 +270,35 @@ internal sealed class MenuToken : AbstractControlDesignToken
         TopLevelItemBorderRadius   = EffectiveGlobalToken.BorderRadius;
         TopLevelItemBorderRadiusLG = EffectiveGlobalToken.BorderRadiusLG;
 
-        TopLevelItemFontSize   = !double.IsNaN(TopLevelItemFontSize) ? TopLevelItemFontSize : fontSize;
-        TopLevelItemFontSizeSM = !double.IsNaN(TopLevelItemFontSizeSM) ? TopLevelItemFontSizeSM : fontSize;
-        TopLevelItemFontSizeLG = !double.IsNaN(TopLevelItemFontSizeLG) ? TopLevelItemFontSizeLG : fontSizeLG;
+        if (!IsExplicit(MenuTokenKind.TopLevelItemFontSize))
+        {
+            TopLevelItemFontSize = fontSize;
+        }
 
-        TopLevelItemLineHeight = !double.IsNaN(TopLevelItemLineHeight)
-            ? TopLevelItemLineHeight
-            : CalculatorUtils.CalculateLineHeight(TopLevelItemFontSize) * TopLevelItemFontSize;
-        TopLevelItemLineHeightSM = !double.IsNaN(TopLevelItemLineHeightSM)
-            ? TopLevelItemLineHeightSM
-            : CalculatorUtils.CalculateLineHeight(TopLevelItemFontSizeSM) * TopLevelItemFontSizeSM;
-        TopLevelItemLineHeightLG = !double.IsNaN(TopLevelItemLineHeightLG)
-            ? TopLevelItemLineHeightLG
-            : CalculatorUtils.CalculateLineHeight(TopLevelItemFontSizeLG) * TopLevelItemFontSizeLG;
+        if (!IsExplicit(MenuTokenKind.TopLevelItemFontSizeSM))
+        {
+            TopLevelItemFontSizeSM = fontSize;
+        }
+
+        if (!IsExplicit(MenuTokenKind.TopLevelItemFontSizeLG))
+        {
+            TopLevelItemFontSizeLG = fontSizeLG;
+        }
+
+        if (!IsExplicit(MenuTokenKind.TopLevelItemLineHeight))
+        {
+            TopLevelItemLineHeight = CalculatorUtils.CalculateLineHeight(TopLevelItemFontSize) * TopLevelItemFontSize;
+        }
+
+        if (!IsExplicit(MenuTokenKind.TopLevelItemLineHeightSM))
+        {
+            TopLevelItemLineHeightSM = CalculatorUtils.CalculateLineHeight(TopLevelItemFontSizeSM) * TopLevelItemFontSizeSM;
+        }
+
+        if (!IsExplicit(MenuTokenKind.TopLevelItemLineHeightLG))
+        {
+            TopLevelItemLineHeightLG = CalculatorUtils.CalculateLineHeight(TopLevelItemFontSizeLG) * TopLevelItemFontSizeLG;
+        }
 
         TopLevelItemPaddingSM = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalXS * 0.7,
             Math.Max((controlHeightSM - TopLevelItemLineHeightSM) / 2, 0));

@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
@@ -292,7 +293,12 @@ internal sealed class DataGridToken : AbstractControlDesignToken
             EffectiveGlobalToken.PaddingXS.Right,
             EffectiveGlobalToken.PaddingSM.Bottom);
         CellPaddingSM               = EffectiveGlobalToken.PaddingXS;
-        BorderColor                 = EffectiveGlobalToken.ColorBorderSecondary;
+        // BorderColor 派生出 TableBorderColor，用户显式覆盖必须先于派生值生效。
+        if (!IsExplicit(DataGridTokenKind.BorderColor))
+        {
+            BorderColor = EffectiveGlobalToken.ColorBorderSecondary;
+        }
+
         HeaderBorderRadius          = EffectiveGlobalToken.BorderRadiusLG;
         FooterBg                    = colorFillAlterSolid;
         FooterColor                 = EffectiveGlobalToken.ColorTextHeading;

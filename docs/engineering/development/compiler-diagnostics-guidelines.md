@@ -125,7 +125,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIGEN037` | Generator | Error | Semantic Style 的完整 CLR identity 与另一生成候选、当前程序集已有类型或 canonical XML namespace 下可见的引用程序集 public 类型冲突 | 调整 Control 或 Part path 命名，或移除占用 `AtomUI.Theme.Styling` 生成 identity 的类型 | SemanticParts |
 | `ATOMUIGEN038` | Generator | Error | Semantic Part 的 `Since` 不是 `major.minor.patch` 三段式发布版本（例如写成版本线 `6.0` / `6.2`，或带 `v` 前缀、预发布后缀、段数不符） | 写成具体发布版本，例如 `6.2.0` | SemanticParts |
 | `ATOMUIGEN039` | Generator | Error | 具体 Application 手写了 `RegisterServices` 重写，但方法体内没有调用 `ApplicationStartup.Attach` | 在 `base.RegisterServices()` 之后调用 `ApplicationStartup.Attach(this)`，或删除手写重写让生成器生成 | ApplicationStartupHook |
-| `ATOMUIGEN040` | Generator | Error | `CalculateTokenValues` 以 `double.IsNaN` 或其他哨兵值判断 Own Token 是否被显式设置 | 改用 `IsExplicit(XxxTokenKind.Field)`；编译器在求值前已写入显式覆盖 | DesignToken |
+| `ATOMUIGEN040` | Generator | Error | `CalculateTokenValues` 以 `double.IsNaN` / `float.IsNaN` 判断本类型 Own Token 是否被显式设置 | 改用 `IsExplicit(XxxTokenKind.Field)`；编译器在求值前已写入显式覆盖 | DesignToken |
 | `ATOMUIGEN041` | Generator | Warning | ControlTheme 读全局 Token 的 TokenResource 种类与 TargetType 的 Token 身份不匹配：有身份的 TargetType 用了 `SharedTokenResource`，或无身份的 TargetType 用了 `SharedTokenResource` 且没有共享语义注释 | 有身份改用 `XxxTokenResource`，无身份改用 `OwnerTokenResource`；确属跨控件共享时在 Setter 上方加注释说明 | ThemeAssets |
 | `ATOMUIGEN042` | Generator | Warning | Own Token 字段在所属包的主题 AXAML 与代码中无任何引用，且未标 `[ReservedToken]` | 接通消费，或加 `[ReservedToken("原因")]`，或删除字段 | DesignToken |
 | `ATOMUIGEN043` | Generator | Warning | 控件代码经 `Application.Current.TryGetResource`、`TryFindResource` 或 `FindResource` 读 Token key，或在读取失败分支回落视觉字面量 | 改用 `ControlTokenAccessor`、`TokenResourceBinder` 或 AXAML TokenResource；删除回落值 | ThemeConsumption |

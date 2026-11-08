@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
@@ -21,12 +22,12 @@ internal sealed class DropdownButtonToken : AbstractControlDesignToken
     public double OnlyIconSizeSM { get; set; }
     public Thickness IconMargin { get; set; }
     public Thickness IconEndMargin { get; set; }
-    public double ContentFontSize { get; set; } = double.NaN;
-    public double ContentFontSizeLG { get; set; } = double.NaN;
-    public double ContentFontSizeSM { get; set; } = double.NaN;
-    public double ContentLineHeight { get; set; } = double.NaN;
-    public double ContentLineHeightLG { get; set; } = double.NaN;
-    public double ContentLineHeightSM { get; set; } = double.NaN;
+    public double ContentFontSize { get; set; }
+    public double ContentFontSizeLG { get; set; }
+    public double ContentFontSizeSM { get; set; }
+    public double ContentLineHeight { get; set; }
+    public double ContentLineHeightLG { get; set; }
+    public double ContentLineHeightSM { get; set; }
     public double MarginToAnchor { get; set; }
     public Thickness IconOnyPadding { get; set; }
     public Thickness IconOnyPaddingLG { get; set; }
@@ -38,12 +39,35 @@ internal sealed class DropdownButtonToken : AbstractControlDesignToken
 
         var fontSize = EffectiveGlobalToken.FontSize;
         var fontSizeLG = EffectiveGlobalToken.FontSizeLG;
-        ContentFontSize = !double.IsNaN(ContentFontSize) ? ContentFontSize : fontSize;
-        ContentFontSizeSM = !double.IsNaN(ContentFontSizeSM) ? ContentFontSizeSM : fontSize;
-        ContentFontSizeLG = !double.IsNaN(ContentFontSizeLG) ? ContentFontSizeLG : fontSizeLG;
-        ContentLineHeight = ResolveLineHeight(ContentLineHeight, ContentFontSize);
-        ContentLineHeightSM = ResolveLineHeight(ContentLineHeightSM, ContentFontSizeSM);
-        ContentLineHeightLG = ResolveLineHeight(ContentLineHeightLG, ContentFontSizeLG);
+        if (!IsExplicit(DropdownButtonTokenKind.ContentFontSize))
+        {
+            ContentFontSize = fontSize;
+        }
+
+        if (!IsExplicit(DropdownButtonTokenKind.ContentFontSizeSM))
+        {
+            ContentFontSizeSM = fontSize;
+        }
+
+        if (!IsExplicit(DropdownButtonTokenKind.ContentFontSizeLG))
+        {
+            ContentFontSizeLG = fontSizeLG;
+        }
+
+        if (!IsExplicit(DropdownButtonTokenKind.ContentLineHeight))
+        {
+            ContentLineHeight = CalculateLineHeight(ContentFontSize);
+        }
+
+        if (!IsExplicit(DropdownButtonTokenKind.ContentLineHeightSM))
+        {
+            ContentLineHeightSM = CalculateLineHeight(ContentFontSizeSM);
+        }
+
+        if (!IsExplicit(DropdownButtonTokenKind.ContentLineHeightLG))
+        {
+            ContentLineHeightLG = CalculateLineHeight(ContentFontSizeLG);
+        }
 
         var lineWidth = EffectiveGlobalToken.LineWidth;
         var controlHeightSM = EffectiveGlobalToken.ControlHeightSM;
@@ -76,11 +100,9 @@ internal sealed class DropdownButtonToken : AbstractControlDesignToken
         MarginToAnchor = EffectiveGlobalToken.UniformlyMarginXXS;
     }
 
-    private static double ResolveLineHeight(double value, double fontSize)
+    private static double CalculateLineHeight(double fontSize)
     {
-        return !double.IsNaN(value)
-            ? value
-            : CalculatorUtils.CalculateLineHeight(fontSize) * fontSize;
+        return CalculatorUtils.CalculateLineHeight(fontSize) * fontSize;
     }
 
     private static Thickness UniformIconPadding(double height, double lineHeight, double lineWidth)

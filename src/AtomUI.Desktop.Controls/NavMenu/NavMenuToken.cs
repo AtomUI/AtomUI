@@ -1,4 +1,5 @@
-﻿using AtomUI.Media;
+﻿using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Animation.Easings;
@@ -163,12 +164,12 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     /// <summary>
     /// 菜单项指示条宽度
     /// </summary>
-    public double ActiveBarScaleX { get; set; } = double.NaN;
+    public double ActiveBarScaleX { get; set; }
     
     /// <summary>
     /// 菜单项指示条高度
     /// </summary>
-    public double ActiveBarHeight { get; set; } = double.NaN;
+    public double ActiveBarHeight { get; set; }
     
     /// <summary>
     /// 菜单项外间距
@@ -365,10 +366,16 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
         
         var colorTextLightSolid = EffectiveGlobalToken.ColorTextLightSolid;
         
-        var activeBarWidth = !double.IsNaN(ActiveBarScaleX) ? ActiveBarScaleX : 1.0d;
-        var activeBarHeight = !double.IsNaN(ActiveBarHeight)
-            ? ActiveBarHeight
-            : EffectiveGlobalToken.LineWidthBold;
+        if (!IsExplicit(NavMenuTokenKind.ActiveBarScaleX))
+        {
+            ActiveBarScaleX = 1.0d;
+        }
+
+        if (!IsExplicit(NavMenuTokenKind.ActiveBarHeight))
+        {
+            ActiveBarHeight = EffectiveGlobalToken.LineWidthBold;
+        }
+
         var itemContentMargin = ItemContentMargin != default
             ? ItemContentMargin
             : new Thickness(
@@ -397,8 +404,6 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
         ItemSelectedBg              = EffectiveGlobalToken.ControlItemBgActive;
         ItemBackgroundMotionEasing  = Easing.Parse("0.25,0.1,0.25,1");
         HorizontalItemSelectedBg    = Colors.Transparent;
-        ActiveBarScaleX              = activeBarWidth;
-        ActiveBarHeight             = activeBarHeight;
         
         // Disabled
         ItemDisabledColor = EffectiveGlobalToken.ColorTextDisabled;

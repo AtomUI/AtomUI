@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
@@ -220,32 +221,32 @@ internal sealed class ButtonToken : AbstractControlDesignToken
     /// <summary>
     /// 按钮内容字体大小
     /// </summary>
-    public double ContentFontSize { get; set; } = double.NaN;
+    public double ContentFontSize { get; set; }
 
     /// <summary>
     /// 大号按钮内容字体大小
     /// </summary>
-    public double ContentFontSizeLG { get; set; } = double.NaN;
+    public double ContentFontSizeLG { get; set; }
 
     /// <summary>
     /// 小号按钮内容字体大小
     /// </summary>
-    public double ContentFontSizeSM { get; set; } = double.NaN;
+    public double ContentFontSizeSM { get; set; }
 
     /// <summary>
     /// 按钮内容字体行高
     /// </summary>
-    public double ContentLineHeight { get; set; } = double.NaN;
+    public double ContentLineHeight { get; set; }
 
     /// <summary>
     /// 大号按钮内容字体行高
     /// </summary>
-    public double ContentLineHeightLG { get; set; } = double.NaN;
+    public double ContentLineHeightLG { get; set; }
 
     /// <summary>
     /// 小号按钮内容字体行高
     /// </summary>
-    public double ContentLineHeightSM { get; set; } = double.NaN;
+    public double ContentLineHeightSM { get; set; }
     
     /// <summary>
     /// 按钮的下拉弹出菜单跟按钮之间的间距大小
@@ -282,18 +283,35 @@ internal sealed class ButtonToken : AbstractControlDesignToken
         var fontSize   = EffectiveGlobalToken.FontSize;
         var fontSizeLG = EffectiveGlobalToken.FontSizeLG;
 
-        ContentFontSize   = !double.IsNaN(ContentFontSize) ? ContentFontSize : fontSize;
-        ContentFontSizeSM = !double.IsNaN(ContentFontSizeSM) ? ContentFontSizeSM : fontSize;
-        ContentFontSizeLG = !double.IsNaN(ContentFontSizeLG) ? ContentFontSizeLG : fontSizeLG;
-        ContentLineHeight = !double.IsNaN(ContentLineHeight)
-            ? ContentLineHeight
-            : CalculatorUtils.CalculateLineHeight(ContentFontSize) * ContentFontSize;
-        ContentLineHeightSM = !double.IsNaN(ContentLineHeightSM)
-            ? ContentLineHeightSM
-            : CalculatorUtils.CalculateLineHeight(ContentFontSizeSM) * ContentFontSizeSM;
-        ContentLineHeightLG = !double.IsNaN(ContentLineHeightLG)
-            ? ContentLineHeightLG
-            : CalculatorUtils.CalculateLineHeight(ContentFontSizeLG) * ContentFontSizeLG;
+        if (!IsExplicit(ButtonTokenKind.ContentFontSize))
+        {
+            ContentFontSize = fontSize;
+        }
+
+        if (!IsExplicit(ButtonTokenKind.ContentFontSizeSM))
+        {
+            ContentFontSizeSM = fontSize;
+        }
+
+        if (!IsExplicit(ButtonTokenKind.ContentFontSizeLG))
+        {
+            ContentFontSizeLG = fontSizeLG;
+        }
+
+        if (!IsExplicit(ButtonTokenKind.ContentLineHeight))
+        {
+            ContentLineHeight = CalculatorUtils.CalculateLineHeight(ContentFontSize) * ContentFontSize;
+        }
+
+        if (!IsExplicit(ButtonTokenKind.ContentLineHeightSM))
+        {
+            ContentLineHeightSM = CalculatorUtils.CalculateLineHeight(ContentFontSizeSM) * ContentFontSizeSM;
+        }
+
+        if (!IsExplicit(ButtonTokenKind.ContentLineHeightLG))
+        {
+            ContentLineHeightLG = CalculatorUtils.CalculateLineHeight(ContentFontSizeLG) * ContentFontSizeLG;
+        }
 
         var controlOutlineWidth = EffectiveGlobalToken.ControlOutlineWidth;
         FontWeight = 400;

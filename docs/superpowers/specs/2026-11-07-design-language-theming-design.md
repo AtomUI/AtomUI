@@ -131,9 +131,16 @@ gaps  = fallback chain
 - Control Own Token 的默认求值（今天各控件的 `CalculateTokenValues`）是视觉值，归语言所有：语言包为控件提供求值器，缺省沿回落链取。Own Token 的**字段**仍在控件包，它是契约；语言只能给值，不能增减字段。
 - `NormalizeFinalBehavior`（动效开关等最终行为规范化）与语言无关，保持在管线末尾。
 
-### 3.6 语言扩展 Token（本轮不实现）
+### 3.6 语言扩展 Token
 
-Material 的色调角色（`primaryContainer`、`onPrimary`、五级 elevation）在 Core 词汇表里没有一一对应。首批实现要求语言把自己的概念映射到现有词汇（`primaryContainer → ColorPrimaryBg`、`onPrimary → ColorTextLightSolid`、elevation → 三级 BoxShadow），并把映射不了的概念列成清单。清单出来后再决定是否允许语言包在启动注册期扩展全局 schema；那会要求运行期追加的语言不得携带扩展 Token，因为 schema 启动后冻结。
+Material 的色调角色（`primaryContainer`、`onPrimary`、五级 elevation）在 Core 词汇表里没有一一对应，压到 Ant 词汇是有损的。为了精确，语言包可以在启动注册期扩展全局 Token：
+
+- 语言包声明一个 `[DesignLanguageToken]` 标注的 Token 类（与 `DesignToken` 同样的字段定义方式），生成器为它产出 `MaterialTokenResource` 标记扩展、强类型 key 与 descriptor，注册进该包所属语言。
+- 扩展 Token 是该语言私有的全局 Token：只有该语言的 ControlTheme、基元与 Own Token 求值器能消费；其值由该语言的算法在派生管线中产出（`IThemeAlgorithm.Evaluate` 得到扩展 builder），可被主题定义与用户配置按名覆盖。
+- 走现有 slot 式资源查询与资源 ID 合同，热路径零增量；schema 仍在启动后冻结，因此运行期追加的语言不得携带扩展 Token（5.4）。
+- 不允许扩展 Own Token 字段（它是控件契约），也不允许改写 Core 词汇表中已有 Token 的类型或语义。
+
+首批 Material 先尽量映射到现有词汇，映射不了的概念用扩展 Token 承接并在保真度记录里注明。
 
 ### 3.7 激活模型：Theme 属性走作用域资源
 
@@ -155,29 +162,32 @@ Style OfType<T>  { Setter(StyledElement.Theme, DynamicResource(ControlThemeKey(T
 - DynamicResource 在目标控件上实例化、沿目标控件的资源链解析，天然按作用域取值；局部 `ThemeConfigProvider`、Popup、带 owner 的独立窗口全部沿用现有资源链。
 - 切换语言就是一次普通事务：Publish 阶段 Provider 发出 `ResourcesChanged`，Theme 绑定重新取值；只有主题实例真的变化的控件重套模板，只换 Token 的语言零重套。
 
-### 3.8 保真度边界与升级阶梯
+### 3.8 精确度机制：主题能替换到哪一层
 
-一份控件代码不可能 100% 还原每种设计语言的控件外观，任何单代码库方案都不能；ant.design 首页的 MUI/Bootstrap 预设是"像 MUI 的 antd"，Avalonia Fluent 也不是 WinUI 的像素复刻。本设计的目标是**AtomUI 适配版**：预览集合中的控件在该语言下静态视觉与反馈动效达到适配，每个语言包维护一份已知偏差清单。不承诺也不验收 100%。
+一份控件代码不可能 100% 还原每种设计语言，任何单代码库方案都不能；ant.design 的 MUI 预设是"像 MUI 的 antd"，Avalonia Fluent 也不是 WinUI 的像素复刻。本设计的目标是把可替换的边界推到**控件的公开 API 与状态语义**：这条线以内的一切（外观、反馈、部件行为、语言私有 Token）都由语言包决定，控件代码一份、运行时成本不随语言数增长。
 
-差距分五层，覆盖能力与吸收点分别为：
+差距分五层，每层的覆盖机制：
 
-| 层 | 例子 | 覆盖能力 | 吸收点 |
+| 层 | 例子 | 覆盖 | 机制 |
 | --- | --- | --- | --- |
-| 静态视觉 | 颜色、圆角、边框、阴影、字体、密度 | 接近完全 | Token、ControlTheme |
-| 渲染能力 | backdrop blur、渐变描边、文字全大写、阴影 spread | 受 Avalonia 渲染器限制 | 能做的用主题；做不到的登记偏差 |
-| 反馈与动效 | Material 从点击点扩散的 ripple，Ant 的 wave 外扩 | 可覆盖 | 语言包自带基元（6.1 `Primitives/`） |
-| 行为与状态模型 | 浮动标签、Select 以 Menu 弹出、Snackbar 位置规则 | 部分 | 状态已是伪类/属性的靠模板；行为不同的给控件加全语言共用的属性；再不行登记偏差 |
-| 组件清单 | Material 的 FAB、Chip、Navigation Rail | 不覆盖 | 语言包只提供视觉，不发明控件；需要时另立控件包，不在本方案范围 |
+| 静态视觉 | 颜色、圆角、边框、阴影、字体、密度 | 完全 | Token、扩展 Token（3.6）、ControlTheme |
+| 渲染能力 | backdrop blur、渐变描边、阴影 spread | 受 Avalonia 渲染器限制 | 能做的用主题与基元；做不到的进保真度记录 |
+| 反馈与动效 | Material 从点击点扩散的 ripple，Ant 的 wave 外扩 | 完全 | 行为策略（下文 B）或基元 |
+| 部件行为 | Select 以 Menu 方式弹出、浮动标签、Snackbar 位置规则 | 完全 | 契约部件（下文 A） |
+| 公开 API 与状态语义 | 控件有哪些属性、事件、状态 | 不由主题改变 | 需要时给控件加全语言共用的属性（下文 C） |
+| 组件清单 | Material 的 FAB、Chip、Navigation Rail | 不覆盖 | 语言包只提供视觉与部件，不发明控件；另立控件包 |
 
-遇到差距按固定阶梯处理，不得跳级也不得绕过：
+**A. 契约部件。** 控件对模板部件的依赖按接口而不是具体类型声明：`[TemplatePart("PART_Popup", typeof(ISelectPopupHost), IsRequired = true)]`。控件只经接口与部件对话（打开、关闭、定位、选中项同步等事件路径），部件实现随语言包交付并由该语言的模板放入。切换语言 = 重套模板 = 换部件，不需要任何新的运行时机制；接口调用都在事件路径上，不在布局与渲染热路径。这是 Avalonia 让 `TextBox` 经 `TextPresenter`、`ScrollViewer` 经 `ScrollContentPresenter` 工作的同一模式，只是把部件类型从具体类放宽为契约。
 
-1. Token（语言基础 Token、Own Token 默认、主题定义）；
-2. ControlTheme（`BasedOn` 回落主题加 Setter，或完整换模板）；
-3. 语言包自带基元：装饰器、呈现器、转换器，自身也是 lookless 的非可视类或控件，只被该语言的模板引用；
-4. 给控件增加一个所有语言都能用的属性开关（例如 `LabelPlacement`），由语言主题设默认值；
-5. 登记为该语言包的已知偏差，写明原因（渲染能力、行为差异、有意不做）。
+**B. 行为策略。** 不值得做成部件的小行为（点击反馈、弹层定位规则、标签浮动规则）做成策略对象：控件暴露 `StyledProperty<IFeedbackBehavior?>` 之类的属性，语言主题用 Setter 注入 `{StaticResource MaterialRipple}`。策略无状态时是语言包里的单例；有状态时由策略为每个控件创建轻量状态对象并在 detach 时释放。成本是一次属性读取，与任何 Setter 相同；无反射、无服务定位，AOT 友好。策略为空时控件采用"无行为"，不内置任何语言的默认行为。
 
-禁令：控件代码里不得出现按设计语言分支的逻辑，不得读取当前语言 id。差异只能表现为"控件多了一个所有语言可用的开关"或"语言包多了一个基元"。
+**C. 控件开关是最后手段。** 只有当差异必须改变控件自身的公开状态机（新增可观察状态、新增事件）时才给控件加属性，且语义对所有语言成立；由语言主题设默认值。
+
+遇到差距按固定顺序处理，不得跳级：Token / 扩展 Token → ControlTheme → 基元或行为策略 → 契约部件 → 控件开关 → 保真度记录。
+
+禁令：控件代码里不得出现按设计语言分支的逻辑，不得读取当前语言 id，不得内置任何语言的默认行为策略或默认部件实现。
+
+**保真度记录。** 每个语言包维护 `FIDELITY.md`：预览集合逐控件给出与原设计系统参考渲染（原框架真实渲染的截图，按已采用的容差策略对照）的结论、未覆盖项与所属层级。它是记录不是门禁；门禁是第 10 节对语言包自己基准的回归。
 
 ## 4. 公开 API
 
@@ -335,10 +345,13 @@ AtomUI.Themes.Material/                                   派生式，Fallback =
 +-- MaterialDesignLanguage.cs
 +-- Algorithms/MaterialDefaultCalculator.cs …             HCT 调色板；Alias 回落 Ant
 +-- Definitions/MaterialPurple.theme.xml …
-+-- Primitives/RippleDecorator.cs …                       本语言模板专用的 lookless 基元（3.8 阶梯第 3 级）
++-- Tokens/MaterialToken.cs                               [DesignLanguageToken] 扩展 Token（3.6）
++-- Primitives/RippleDecorator.cs …                       本语言模板专用的 lookless 基元
++-- Behaviors/MaterialRipple.cs …                         行为策略（3.8 B）
++-- Parts/MaterialSelectPopupHost.cs …                    契约部件实现（3.8 A）
 +-- TokenDefaults/…                                       需要改默认的控件
 +-- Themes/…                                              需要换形态的控件，可 BasedOn="{atom:FallbackControlTheme …}"
-\-- DEVIATIONS.md                                         已知偏差清单：项、原因、所属阶梯
+\-- FIDELITY.md                                           保真度记录：逐控件对照结论、未覆盖项、所属层级
 
 AtomUI.Themes.Prime/                                      直接指定式，Fallback = Ant
 +-- PrimeDesignLanguage.cs                                Derivation = ThemeDerivation.Tables(base, dark)
@@ -390,7 +403,8 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 
 1. **视觉值不进代码。** 控件代码不得出现 `Brush`、`Color`、`BoxShadows`、`CornerRadius`、`Thickness`、字号、尺寸的字面量或由 Token 计算得出的值；不得命令式绑定 Token。自绘控件把画刷、笔、几何参数暴露为 StyledProperty，在 `Render` 中只读取，默认值由主题 Setter 给。
 2. **状态可以进代码，视觉不行。** 由用户输入解析出的离散状态（如 Button 的 `EffectiveVariant`、`EffectiveIsDanger`）允许作为内部 StyledProperty 或伪类存在，供主题选择器使用；由状态映射出的视觉值（如 `VariantShadow`、按 `SizeType` 算出的 `EffectiveCornerRadius`）不允许，改为主题里的 `^[SizeType=Large]` 之类 Setter。判据：属性类型是枚举/布尔/数值计数就是状态，是画刷/阴影/圆角/厚度/字号就是视觉。
-3. **模板契约显式且最小。** 每个控件用 `[TemplatePart(Name, Type, IsRequired)]` 声明代码依赖的全部部件，用 `[PseudoClasses]` 声明全部伪类；`OnApplyTemplate` 只经 `NameScope` 取部件，可选部件为空时行为降级不抛；不在代码中按类型或 Name 搜索可视树。
+3. **模板契约显式、最小、按契约声明。** 每个控件用 `[TemplatePart(Name, ContractType, IsRequired)]` 声明代码依赖的全部部件，`ContractType` 优先是接口（3.8 A），只有 Avalonia 原生类型（`ContentPresenter`、`ScrollViewer`）或纯布局节点才用具体类型；用 `[PseudoClasses]` 声明全部伪类；`OnApplyTemplate` 只经 `NameScope` 取部件并按契约类型校验，可选部件为空时行为降级不抛；不在代码中按类型或 Name 搜索可视树。
+3a. **行为经策略属性注入，不内置默认。** 反馈、定位等可替换行为以 `StyledProperty<IXxxBehavior?>` 暴露，默认值 null；控件代码不包含任何语言的默认策略实现。
 4. **几何从属性推导，不写常量。** 布局、命中、动效原点使用模板设置的属性与 Token 绑定值。
 5. **Semantic marker 是主题的义务。** 每种语言的主题保持同一组非 Optional marker；控件代码不负责 marker。
 6. **没有主题也能构造、运行行为。** 控件在无模板下 `Measure/Arrange` 返回零尺寸、事件与命令照常；这是 lookless 的验收用例。
@@ -412,8 +426,10 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 - 启动：ThemeManager 多挂一组按类型的样式（每个已注册控件类型一条，约 380 条 `OfType` 选择器）。`OfType` 匹配是类型相等比较。隐式 ControlTheme 的资源查找同时被取消，净成本接近零；若实测可见，改为一条 `:is(Control)` 样式加自定义 `IBinding` 按目标 `StyleKey` 计算键，spike 顺带测两者差距。
 - 每个控件多一个 DynamicResource 订阅（Theme）；AtomUI 控件已有数十个 Token 订阅，增量可忽略。
 - 切换：只换 Token 的语言与今天的主题切换成本相同；换主题的语言在被覆盖类型上重套模板，代价小于 ant.design 的整树重挂载。目标：Gallery 预览页（约 60 个控件）Publish 在 16 ms 内，首次激活含物化不超过 50 ms；以 Stopwatch 计。
+- 契约部件与行为策略：只在模板实例化与事件路径付费，无逐帧成本；`OnApplyTemplate` 的接口类型校验是一次 `is` 判断；策略单例共享，有状态策略的对象数与控件实例数同阶且随 detach 释放。spike 顺带量 Select 换契约部件前后的模板应用耗时。
+- 扩展 Token：编译期分配 slot，与现有 Token 同一查询路径，热路径零增量；每个语言只为自己声明的字段付存储。
 - 内存：惰性 provider 上界见 5.4；Snapshot 缓存键含语言与主题，`LazyControlSnapshots` 不变。
-- AOT：定义、主题定义、ControlTheme 与求值器都是静态构造 + 编译产物，无反射、无 `Activator`、无字符串类型名。
+- AOT：定义、主题定义、ControlTheme、求值器、部件与策略都是静态构造 + 编译产物，无反射、无 `Activator`、无字符串类型名。
 
 ## 9. 对 release/6.0 的改动登记
 
@@ -451,7 +467,8 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 集成（`AtomUI.Desktop.Controls.Tests` / Gallery 测试）：
 
 - 每套语言 × 预览页：切换后关键区域按已采用的容差策略对比各自基准；基准是该语言包自己的参考渲染，不是原设计系统的截图。
-- 保真度：每个语言包的 `DEVIATIONS.md` 与预览集合逐控件核对，预览集合中未登记偏差的项必须在适配范围内；分析器对控件包内读取语言 id 或按语言分支的代码报错。
+- 保真度：每个语言包的 `FIDELITY.md` 与预览集合逐控件核对，对照原框架参考渲染的结论与未覆盖项齐全；分析器对控件包内读取语言 id、按语言分支、内置默认策略或默认部件实现的代码报错。
+- 契约部件：Ant 与 Material 的 Select 模板分别放入各自 `ISelectPopupHost` 实现后，控件行为测试（打开、关闭、键盘、选中同步）在两种语言下同一套用例通过；缺可选部件时降级不抛。
 - 状态保持：切换前后 TextBox 文本与选区、ListBox 选中项、焦点元素相同；被换模板的控件记录模板内状态丢失范围。
 - 每种语言主题的 Semantic Part 预览能解析全部非 Optional 部件。
 - 用户显式设置 `Theme` 的控件不被语言切换改写。
@@ -463,7 +480,8 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 1. **Spike（半天）**：在 `release/6.0` 上用临时样式验证并记录：样式 Setter 改变已挂载控件的 `Theme` 后实时重套模板且 `PART_*` 查找正常；DynamicResource 不命中时 `Theme` 回到 null；作用域 Provider 的 `ResourcesChanged` 能驱动 Popup 内与 lease 窗口内控件的 Theme 绑定；约 380 条 `OfType` 样式对 Gallery 首页套样式耗时的影响。任一不成立即停下修订本设计。
 2. **拆出 Ant 包（机械迁移，先行）**：新建 `AtomUI.Themes.Ant` 及可选包子包；搬入全部 ControlTheme AXAML、三个计算器、调色板、Alias 计算器、DaybreakBlue；生成器支持 `AtomUIDesignLanguage` 并禁止控件包含主题；`AtomUI` 元包引用 Ant 包；现有测试全部通过。此时只有一个语言，运行时仍走隐式查找，行为不变。
 3. **Own Token 默认搬迁**：各 `XxxToken.CalculateTokenValues` 搬入 Ant 包 `TokenDefaults/`，Token 类只剩字段；生成器登记 `(语言, identity) → 求值器`；测试不变。
-3a. **控件 lookless 重构**（与第 4、5 步并行，按控件家族分批）：先落分析器（视觉字面量、命令式 Token 绑定、计算型视觉属性三条诊断），再逐家族迁出 111 处视觉赋值与 16 处 Token 绑定、把 `VariantShadow`/`EffectiveCornerRadius` 一类计算型视觉属性改为 Ant 主题的 Setter、补齐 `[TemplatePart]`/`[PseudoClasses]`、为 38 个自绘控件补画刷/笔属性；每批以"无语言宿主下行为测试通过 + Ant 外观关键区域不变"验收。第 6 步的 Material 主题只能覆盖已完成 lookless 的控件。
+3a. **控件 lookless 重构**（与第 4、5 步并行，按控件家族分批）：先落分析器（视觉字面量、命令式 Token 绑定、计算型视觉属性、内置默认策略四条诊断），再逐家族迁出 111 处视觉赋值与 16 处 Token 绑定、把 `VariantShadow`/`EffectiveCornerRadius` 一类计算型视觉属性改为 Ant 主题的 Setter、补齐 `[TemplatePart]`/`[PseudoClasses]`、为 38 个自绘控件补画刷/笔属性；每批同时完成该家族的部件契约化（3.8 A：弹层宿主、输入呈现、反馈装饰等部件改为接口契约，Ant 实现搬入 Ant 包 `Parts/`）与行为策略化（3.8 B：wave 等反馈改为策略属性，Ant 实现搬入 Ant 包 `Behaviors/`）；每批以"无语言宿主下行为测试通过 + Ant 外观关键区域不变"验收。第 6 步的 Material 主题只能覆盖已完成 lookless 的控件。
+3b. **扩展 Token**（第 4 步之后）：`[DesignLanguageToken]`、生成的语言 TokenResource 与 descriptor、算法得到扩展 builder、运行期追加拒绝带扩展 Token 的语言。
 4. **Core 派生层**：`ThemeAlgorithm` 开放 id、`IThemeAliasCalculator`、`ThemeDerivation`、值表算法、按语言登记算法；Ant 回归测试保持通过。
 5. **Core 语言层**：注册表、回落解析与完整性校验、`ThemeRequest`/`ThemeInfo`/`ThemeState`/XML v1 属性、`ThemeConfig.DesignLanguage`、合并层、回退规则、Theme 键与 Provider 分支、启动样式、`FallbackControlTheme`、运行期追加；控件包不再导出类型键资源。
 6. **语言包**：`AtomUI.Themes.Shadcn`、`Bootstrap`（`Inherit` 派生 + 色板主题）；`AtomUI.Themes.Material`（HCT 派生）先覆盖 Button、Input 家族、Select、Checkbox/Radio/Switch、Steps、Progress、Tag、Card、Alert、Dialog、Notification；一个直接指定式最小示例语言进测试工程。
@@ -488,7 +506,10 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 | 只换语言时的主题 | 通用沿用，专属回退到新语言默认 | 一律回退或一律沿用都丢信息 |
 | 无语言注册时 | 与 Avalonia 一致：控件 lookless 无外观，启动记诊断不抛 | 启动失败：把"没有主题"当错误，与 lookless 模型矛盾，也阻碍无 UI 的单元测试 |
 | 控件代码里允许留什么 | 解析后的离散状态（枚举/布尔）可留作内部属性或伪类；画刷/阴影/圆角/厚度/字号一律迁到主题 | 全部迁出：状态选择器失去依据；全部保留：语言换主题时 Ant 视觉值漏出 |
-| 语言扩展全局 Token | 本轮不做，先映射并列清单 | 现在开放 schema 扩展：证据不足 |
-| 保真度目标 | AtomUI 适配版 + 每语言偏差清单；差距按 Token → 主题 → 基元 → 控件开关 → 偏差的阶梯处理 | 承诺 100%：单代码库做不到，参照物也没做到；不设阶梯：实现时会把语言分支塞进控件代码 |
-| 语言包能否带代码 | 能带 lookless 基元与转换器，只供自己的模板用 | 只许 AXAML：ripple 一类反馈差异只能登记为偏差 |
+| 语言扩展全局 Token | 允许，启动注册期声明，语言私有，走现有 slot 查询；运行期追加的语言不得携带 | 不做：Material 五级 elevation 与色调角色压到 Ant 词汇是有损的 |
+| 精确度边界 | 推到控件公开 API 与状态语义：外观、反馈、部件行为、私有 Token 全由语言包决定 | 止于模板：Select 弹层方式、浮动标签这类部件行为换不掉；靠控件开关：控件膨胀成所有语言行为的并集 |
+| 部件行为如何替换 | 契约部件（接口声明 `[TemplatePart]`）+ 行为策略属性，实现随语言包交付 | 派生控件类型：用户 XAML 写的是 `atom:Button`，运行时换不了类型 |
+| 控件内置默认行为 | 不内置；策略为空即无行为，默认由 Ant 包的主题注入 | 内置 Ant 行为再让别的语言覆盖：Ant 又成了特例 |
+| 语言包能否带代码 | 能带 lookless 基元、行为策略、契约部件实现、扩展 Token，只供自己的主题用 | 只许 AXAML：反馈与部件行为差异只能登记为偏差 |
+| 保真度验收 | 对语言包自己的基准做回归门禁；对原框架参考渲染的对照只进 `FIDELITY.md` 记录 | 以原框架截图为门禁：渲染器差异与字体差异让门禁永远红 |
 | 可选控件包的语言主题 | 独立小包 `AtomUI.Themes.<Lang>.<Pkg>` | 放回控件包：重新把主题塞进控件包 |

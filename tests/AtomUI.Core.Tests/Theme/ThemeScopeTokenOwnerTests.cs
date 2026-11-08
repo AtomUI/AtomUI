@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 
@@ -28,11 +29,11 @@ public class ThemeScopeTokenOwnerTests
             manager.NotifyControlThemeResolved(typeof(LineEditThemeTestControl), theme);
             manager.NotifyControlThemeResolved(typeof(LineEditThemeTestControl), theme);
 
-            var owners = theme.Setters.OfType<Setter>()
-                              .Where(static setter => setter.Property == ThemeScope.TokenOwnerProperty)
-                              .ToArray();
+            var owners = OwnerSetters(theme);
             owners.Length.ShouldBe(1);
             owners[0].Value.ShouldBe(s_lineEditIdentity);
+            // The owner is not a plain theme Setter: a theme BasedOn this one must not inherit it.
+            theme.Setters.OfType<Setter>().ShouldNotContain(static setter => setter.Property == ThemeScope.TokenOwnerProperty);
         });
     }
 
@@ -49,7 +50,9 @@ public class ThemeScopeTokenOwnerTests
             manager.NotifyControlThemeResolved(typeof(DefaultThemeTestControl), unregistered);
 
             byName.Setters.ShouldBeEmpty();
+            byName.Children.ShouldBeEmpty();
             unregistered.Setters.ShouldBeEmpty();
+            unregistered.Children.ShouldBeEmpty();
         });
     }
 
@@ -99,6 +102,36 @@ public class ThemeScopeTokenOwnerTests
     }
 
     [Fact]
+    public void Unregistered_Subclass_Theme_BasedOn_A_Default_Theme_Inherits_The_Host_Owner()
+    {
+        // NumericUpDownSpinner's theme is BasedOn the resolved ButtonSpinner default theme so that application
+        // replacements of that theme flow into it; the injected owner must stay with the registered type.
+        HeadlessTestApp.Run(() =>
+        {
+            var manager = CreateManager();
+            var buttonDefault = ResolveTheme(manager, typeof(ButtonThemeTestControl), static () => new FrameTestPrimitive());
+            var derived = new DerivedButtonThemeTestControl
+            {
+                Theme = new ControlTheme(typeof(DerivedButtonThemeTestControl)) { BasedOn = buttonDefault }
+            };
+            var button = new ButtonThemeTestControl { Theme = buttonDefault };
+            var control = new LineEditThemeTestControl
+            {
+                Theme = ResolveTheme(manager, typeof(LineEditThemeTestControl),
+                    () => new StackPanel { Children = { derived, button } })
+            };
+
+            using var host = Show(control);
+            derived.ApplyTemplate();
+
+            derived.GetValue(ThemeScope.TokenOwnerProperty).ShouldBe(s_lineEditIdentity);
+            derived.GetVisualChildren().OfType<FrameTestPrimitive>().ShouldHaveSingleItem()
+                   .GetValue(ThemeScope.TokenOwnerProperty).ShouldBe(s_lineEditIdentity);
+            button.GetValue(ThemeScope.TokenOwnerProperty).ShouldBe(s_buttonIdentity);
+        });
+    }
+
+    [Fact]
     public void Replaced_Theme_Without_BasedOn_Has_No_Owner()
     {
         HeadlessTestApp.Run(() =>
@@ -118,6 +151,12 @@ public class ThemeScopeTokenOwnerTests
             primitive.GetValue(ThemeScope.TokenOwnerProperty).ShouldBeNull();
         });
     }
+
+    private static Setter[] OwnerSetters(ControlTheme theme) =>
+        theme.Children.OfType<Style>()
+             .SelectMany(static style => style.Setters.OfType<Setter>())
+             .Where(static setter => setter.Property == ThemeScope.TokenOwnerProperty)
+             .ToArray();
 
     private static ControlTheme ResolveTheme(ThemeManager manager, Type controlType, Func<Control> content)
     {

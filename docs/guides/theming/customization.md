@@ -185,8 +185,8 @@ Control 的模板里。它们的主题写不出 `LineEditTokenResource`，如果
 局部覆盖就传不进输入框的边框、圆角和内边距。
 
 `OwnerTokenResource` 读取"当前所属公开 Control"的 Effective Global Token。每个有 Token identity 的公开 Control 的
-默认 ControlTheme 带一个由 ThemeManager 注入的 Setter，把 identity 写进可继承的 `ThemeScope.TokenOwner`，模板内的
-基元沿逻辑树继承到它。基元被单独使用、
+默认 ControlTheme 带一个由 ThemeManager 注入、只对该控件类型本身生效的 Setter，把 identity 写进可继承的
+`ThemeScope.TokenOwner`，模板内的基元沿逻辑树继承到它（基于该主题的未注册部件主题不会带走这个 identity）。基元被单独使用、
 没有继承到 owner 时，读取全局值。它只接受 Global Token，因为基元没有 Own Token。
 
 于是三种读法由主题的 `TargetType` 决定，不由作者偏好决定：

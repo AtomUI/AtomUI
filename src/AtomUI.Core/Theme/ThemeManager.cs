@@ -48,7 +48,10 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     }
 
     // 注册控件的默认 ControlTheme 首次按 Type 键解析时，注入 ThemeScope.TokenOwner：
-    // Style 优先级的有效值参与继承，模板内的共享基元沿继承链读到宿主控件身份。
+    // 有效值参与继承，模板内的共享基元沿继承链读到宿主控件身份。
+    // 注入为仅匹配该 StyleKey 的嵌套 Style，而不是主题的普通 Setter：未注册的派生部件主题可能
+    // BasedOn 这个已解析的默认主题（NumericUpDownSpinner 基于 ButtonSpinner 默认主题，以承接应用对它的替换），
+    // 普通 Setter 会随 BasedOn 把注册控件的身份带给部件，使部件不再继承宿主身份。
     private void EnsureTokenOwnerSetter(object key, ControlTheme theme)
     {
         if (key is not Type controlType)
@@ -68,7 +71,9 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             {
                 return;
             }
-            theme.Setters.Add(new Setter(ThemeScope.TokenOwnerProperty, descriptor.Identity));
+            var ownerStyle = new Style(selector => selector.Nesting().OfType(controlType));
+            ownerStyle.Setters.Add(new Setter(ThemeScope.TokenOwnerProperty, descriptor.Identity));
+            theme.Children.Add(ownerStyle);
         }
     }
 

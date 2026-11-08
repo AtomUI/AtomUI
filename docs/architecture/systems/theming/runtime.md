@@ -1048,13 +1048,23 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
 - 每个有 Token 身份的公开 Control 的实例都带有可继承附加属性 `ThemeScope.TokenOwner`，值是它的
   `ControlTokenIdentity`。写入点是 `ThemeManager` 已有的 ControlTheme 解析钩子（`NotifyControlThemeResolved`）：
   默认 ControlTheme 以 `Type` 键首次被解析时，若该 Type 在 registry 中有 descriptor，就向该 ControlTheme 注入一个
-  `Setter(ThemeScope.TokenOwnerProperty, identity)`，每个 ControlTheme 只注入一次。Control 作者与生成器都不写
-  这段代码；用户完全替换默认 ControlTheme（不 `BasedOn`）时失去该 Setter，基元回落为共享全局值。
+  只匹配该 StyleKey 的嵌套 Style（`^` + `OfType(Type)`），其中是 `Setter(ThemeScope.TokenOwnerProperty, identity)`，
+  每个 ControlTheme 只注入一次。注入不用主题的普通 Setter：未注册的派生部件主题可以 `BasedOn` 这个已解析的默认主题
+  （NumericUpDownSpinner 基于 ButtonSpinner 默认主题，以承接应用对它的替换），普通 Setter 会随 `BasedOn` 把注册控件的
+  identity 带给部件；嵌套 Style 只匹配注册类型本身及 `StyleKeyOverride` 为它的派生类（AutoComplete 内的
+  AutoCompleteLineEditBox 仍是 LineEdit）。Control 作者与生成器都不写这段代码；用户完全替换默认 ControlTheme
+  （不 `BasedOn`）时失去该值，基元回落为共享全局值。
 - 基元与部件在模板内沿逻辑树继承到该值；Popup 内容经逻辑父级继承，独立 TopLevel 经现有 lease 继承。
+- 注册控件作为模板部件（IconPresenter、IconButton、ScrollViewer、Popup 等）携带自己的 identity，Setter 目标或模板节点
+  位于这类部件之上或之内时，`OwnerTokenResource` 解析到该部件。需要跟随宿主的值在无身份层（宿主本身或无身份部件）上
+  读取后向下绑定，或显式读取宿主的 `XxxTokenResource`。
+- 以显式 `Theme` 赋值且不 `BasedOn` 已解析默认主题的注册控件不经过注入，继承外层 owner：SearchEdit 的搜索按钮使用
+  `SearchButtonTheme`，它的视觉经 `ButtonTokenResource` 读取 Button 有效值，过渡时长等 owner 解析的值跟随 SearchEdit。
 - `OwnerTokenResource` 产出一个绑定：输入是继承到的 owner identity 与 Token kind，输出是当前作用域 Provider 对
   `ControlTokenResourceKey.Global(identity, kind)` 的查询结果；owner 变化或主题发布都触发重取。
 - 没有继承到 owner（基元被单独使用或放在应用内容中）时回落为共享全局值。
-- 嵌套的公开 Control（SearchEdit 模板里的 Button）写入自己的 identity、读自己的有效值，不读外层 Control 的值。
+- 嵌套的公开 Control 以自己的 TokenResource 读自己的有效值，不读外层 Control 的值（SearchEdit 模板里的 Button 读
+  `ButtonTokenResource`；AutoComplete 模板里的 LineEdit 由默认主题注入 LineEdit identity）。
 
 `ThemeScope.TokenOwner` 只携带 identity，不携带 snapshot、Token 值或 Provider 引用；基于 snapshot attached value 的
 父级订阅仍属于禁止的旁路。继承属性由 Avalonia 原生传播，`OwnerTokenResource` 不沿 `TemplatedParent` 或

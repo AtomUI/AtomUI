@@ -37,6 +37,7 @@
         <InternalsVisibleTo Include="AtomUI.Mobile.Controls" />
         <InternalsVisibleTo Include="AtomUI.Controls.Tests" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
+        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Rendering.Tests" />
         <InternalsVisibleTo Include="AtomUI.AI.Controls" />
         <InternalsVisibleTo Include="AtomUI.AI.Controls.Tests" />
     </ItemGroup>

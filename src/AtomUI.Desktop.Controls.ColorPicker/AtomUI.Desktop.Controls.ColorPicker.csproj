@@ -19,6 +19,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
+        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Rendering.Tests" />
     </ItemGroup>
 
     <ItemGroup>

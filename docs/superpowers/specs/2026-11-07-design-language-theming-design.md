@@ -271,13 +271,17 @@ internal static class MaterialTokens
 
 ### 6.3 语言定义的位置
 
+设计语言与平台无关：定义只含 Token，片段跟随拥有控件的程序集。布局照控件包的分层走，不绑定桌面：
+
 | 程序集 | 内容 |
 | --- | --- |
 | `AtomUI.Core` | 机制；`DesignLanguageIds` 常量；`Ant` 定义（空 Token、无片段） |
-| `AtomUI.Desktop.DesignLanguages`（新） | `Material`、`Shadcn`、`Bootstrap` 的定义（全局 Token、DarkTokens）与对 `AtomUI.Desktop.Controls` 控件的片段 |
-| `AtomUI.Desktop.Controls.DataGrid` / `ColorPicker` / `Extras` | 各自控件在这些语言下的片段，放在各自的 `DesignLanguages/` 目录；它们引用 `DesignLanguageIds` 常量，不引用新程序集 |
+| `AtomUI.DesignLanguages`（新，仅依赖 Core） | `Material`、`Shadcn`、`Bootstrap` 的定义：显示名、全局 `Tokens`、`DarkTokens`。不含任何样式，桌面与移动共用 |
+| `AtomUI.Controls`（平台共享控件） | Button、Switch、CheckBox、Tag、Badge、Progress 等在各语言下的片段，放在各控件的 `DesignLanguages/<Id>/` 目录 |
+| `AtomUI.Desktop.Controls` 及 DataGrid / ColorPicker / Extras | 桌面控件的片段，同一约定 |
+| 未来的移动控件包 | 移动控件的片段，同一约定；移动端需要的触控尺寸等差异写在该包的片段 Token 里，不进语言定义 |
 
-应用通过 `UseDesktopDesignLanguages()` 一次注册内置三套；不调用则只有 `Ant`，零额外开销。第三方包按 6.1 约定或手工 `AddDesignLanguageFragment` 参与。
+每个包的片段由该包的生成注册自动带入，应用只需 `UseDesignLanguages()` 注册三套定义；不调用则只有 `Ant`，零额外开销。第三方包按 6.1 约定或手工 `AddDesignLanguageFragment` 参与。iOS/Cupertino、Material 3 这类以移动为主的语言也走同一模型：一个定义，各控件包各自出片段。
 
 ## 7. Gallery
 
@@ -328,7 +332,7 @@ internal static class MaterialTokens
 1. **Spike（半天）**：在 `release/6.0` 上用一个临时 Styles 验证三件事并记录结果：`PropertyEquals` 对继承附加属性值变化的实时激活；`Application.Styles` 运行时追加后已挂载控件被重新套用；Style 中 `Template` Setter 切换对已挂载控件实时生效且 Semantic marker 保留。任一不成立即停下修订本设计。
 2. Core 机制：属性、定义/片段/注册、合并层、挂载与限定、lease、根样式合并、`ThemeState`。
 3. 生成器：目录约定、片段聚合、六条校验。
-4. `AtomUI.Desktop.DesignLanguages`：先做 Button、Input 家族、Select、Checkbox/Radio/Switch、Steps、Progress、Tag、Card、Alert、Dialog、Notification 这组预览集合的 Material/Shadcn/Bootstrap 片段。
+4. `AtomUI.DesignLanguages` 三套定义；在 `AtomUI.Controls` 与 `AtomUI.Desktop.Controls` 内为 Button、Input 家族、Select、Checkbox/Radio/Switch、Steps、Progress、Tag、Card、Alert、Dialog、Notification 这组预览集合补 Material/Shadcn/Bootstrap 片段。
 5. Gallery 切换器与预览页；验证第 10 节。
 6. 扩展到其余控件包（DataGrid、ColorPicker、Extras）。
 

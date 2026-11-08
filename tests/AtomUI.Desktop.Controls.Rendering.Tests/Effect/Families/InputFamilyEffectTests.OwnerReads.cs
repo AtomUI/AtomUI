@@ -85,7 +85,7 @@ public partial class InputFamilyEffectTests
     ];
 
     /// <summary>The primitives each host carries, and the reads of them the host does not render (with the reason).</summary>
-    private static readonly Dictionary<string, (OwnerReadList[] Lists, Dictionary<string, string> NotRendered)> s_hosts =
+    internal static readonly Dictionary<string, (OwnerReadList[] Lists, Dictionary<string, string> NotRendered)> s_hosts =
         new(StringComparer.Ordinal)
         {
             ["TextBox"] = ([s_inputControlFrame, s_textBox, s_clearButton, s_revealButton], new(StringComparer.Ordinal)

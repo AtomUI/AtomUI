@@ -256,6 +256,14 @@ public partial class SelectFamilyEffectTests
         }
     }
 
+    /// <summary>Types into the single-mode filter input and selects the text, so the selection brushes show.</summary>
+    private static void SelectFilterText(SetupBuilder b) => b.Arrange.Add(static c =>
+    {
+        var filter = c.GetVisualDescendants().OfType<SelectFilterTextBox>().First(static box => box.IsEffectivelyVisible);
+        filter.Text = "Filter text";
+        filter.SelectAll();
+    });
+
     /// <summary>The input surface of the member: the outermost frame of its template.</summary>
     private static InputControlFrame FrameOf(Control control) =>
         control.GetVisualDescendants().OfType<InputControlFrame>().First();

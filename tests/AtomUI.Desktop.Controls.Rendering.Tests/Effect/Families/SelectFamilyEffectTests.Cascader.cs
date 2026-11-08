@@ -166,6 +166,10 @@ public partial class SelectFamilyEffectTests
                     Variant(InputControlStyleVariant.Filled);
                     b.Hover();
                     break;
+                case "SelectionBackground" or "SelectionForeground":
+                    b.Init.Add(static c => ((Cascader)c).IsFilterEnabled = true);
+                    SelectFilterText(b);
+                    break;
                 case "ColorTextPlaceholder":
                     b.Init.Add(static c => ((Cascader)c).PlaceholderText = "Placeholder");
                     break;

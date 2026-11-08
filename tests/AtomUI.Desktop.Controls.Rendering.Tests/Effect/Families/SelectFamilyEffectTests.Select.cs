@@ -108,6 +108,13 @@ public partial class SelectFamilyEffectTests
                 b.Init.Add(static c => ((Select)c).SizeType = CustomizableSizeType.Small);
                 Selected();
                 break;
+            case "SelectionBackground" or "SelectionForeground":
+                b.Init.Add(static c => ((Select)c).IsFilterEnabled = true);
+                // The filter input is read-only until the drop-down opens; compare the input, not the drop-down.
+                b.Popup  = true;
+                b.Region = static c => c;
+                SelectFilterText(b);
+                break;
             case "ColorTextPlaceholder":
                 b.Init.Add(static c => ((Select)c).PlaceholderText = "Placeholder");
                 break;

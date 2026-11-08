@@ -29,12 +29,30 @@ public partial class SelectFamilyEffectTests
     /// <summary>The single-mode filter input (no owner reads of its own; its TextBox base theme reads the owner).</summary>
     internal static readonly OwnerReadList s_selectFilterTextBox = new(SelectThemes + "SelectFilterTextBoxTheme.axaml", []);
 
-    private static readonly OwnerReadList[] s_familyLists =
-        [s_selectHandle, s_selectMaxCountIndicator, s_selectTagAwareTextBox, s_selectFilterTextBox];
-
     private static readonly OwnerReadList s_inputControlFrame = InputFamilyEffectTests.s_inputControlFrame;
     private static readonly OwnerReadList s_addOnDecoratedBox = InputFamilyEffectTests.s_addOnDecoratedBox;
     private static readonly OwnerReadList s_clearButton = InputFamilyEffectTests.s_clearButton;
+
+    /// <summary>
+    /// The filter input is an EmbeddedTextBox: its TextBoxTheme base reads the owner (the theme carries the owner: marker).
+    /// </summary>
+    private static readonly OwnerReadList s_textBox = InputFamilyEffectTests.s_textBox;
+
+    /// <summary>Lists whose reads must be rendered by a member of this family or of the input family.</summary>
+    private static readonly OwnerReadList[] s_familyLists =
+        [s_selectHandle, s_selectMaxCountIndicator, s_selectTagAwareTextBox, s_selectFilterTextBox, s_textBox];
+
+    /// <summary>
+    /// Reads of the embedded filter editor that it cannot show: it is SizeType=Custom and IsCustomFontSize=True (its font
+    /// is the host's FontSize), so the TextBox size presets do not apply, and it has no inner right content. A member keeps
+    /// such a Token as a row when another of its parts consumes it.
+    /// </summary>
+    private static Dictionary<string, string> FilterNotRendered() => new(StringComparer.Ordinal)
+    {
+        ["FontSizeSM"] = "the embedded filter is IsCustomFontSize=True and follows the host FontSize (TextBox renders it)",
+        ["UniformlyPaddingXXS"] =
+            "spaces the TextBox inner right content and clear button; the embedded filter has neither (TextBox renders it)"
+    };
 
     private const string SurfaceOnly = "drawn by the shared input surface; the input family renders it";
 
@@ -43,15 +61,15 @@ public partial class SelectFamilyEffectTests
         new(StringComparer.Ordinal)
         {
             ["Select"] = ([s_inputControlFrame, s_addOnDecoratedBox, s_clearButton, s_selectHandle, s_selectMaxCountIndicator,
-                s_selectFilterTextBox], new(StringComparer.Ordinal)),
+                s_selectFilterTextBox, s_textBox], FilterNotRendered()),
             ["ComboBox"] = ([s_inputControlFrame, s_addOnDecoratedBox], new(StringComparer.Ordinal)),
             ["ComboBoxItem"] = ([], new(StringComparer.Ordinal)),
             ["Cascader"] = ([s_inputControlFrame, s_addOnDecoratedBox, s_clearButton, s_selectHandle, s_selectMaxCountIndicator,
-                s_selectTagAwareTextBox, s_selectFilterTextBox], new(StringComparer.Ordinal)),
+                s_selectTagAwareTextBox, s_selectFilterTextBox, s_textBox], FilterNotRendered()),
             ["CascaderView"] = ([], new(StringComparer.Ordinal)),
             ["CascaderViewItem"] = ([], new(StringComparer.Ordinal)),
             ["TreeSelect"] = ([s_inputControlFrame, s_addOnDecoratedBox, s_clearButton, s_selectHandle, s_selectMaxCountIndicator,
-                s_selectTagAwareTextBox, s_selectFilterTextBox], new(StringComparer.Ordinal)),
+                s_selectTagAwareTextBox, s_selectFilterTextBox, s_textBox], FilterNotRendered()),
         };
 
     /// <summary>Consumption-map rows of the member plus the rendered owner reads of the primitives it carries.</summary>
@@ -98,12 +116,14 @@ public partial class SelectFamilyEffectTests
     [Fact]
     public void Every_Owner_Read_Is_Rendered_By_At_Least_One_Host()
     {
+        // Input-family primitives hosted here (the filter's TextBox base) may be rendered by an input-family host.
+        var hosts = s_hosts.Values.Concat(InputFamilyEffectTests.s_hosts.Values).ToArray();
         foreach (var list in s_familyLists)
         {
             foreach (var token in list.Tokens)
             {
-                s_hosts.Values.Any(host => host.Lists.Contains(list) && !host.NotRendered.ContainsKey(token))
-                       .ShouldBeTrue($"{list.Theme} reads '{token}' but no member renders it.");
+                hosts.Any(host => host.Lists.Contains(list) && !host.NotRendered.ContainsKey(token))
+                     .ShouldBeTrue($"{list.Theme} reads '{token}' but no member renders it.");
             }
         }
     }

@@ -97,6 +97,13 @@ public partial class SelectFamilyEffectTests
                     Variant(InputControlStyleVariant.Filled);
                     b.Hover();
                     break;
+                case "SelectionBackground" or "SelectionForeground":
+                    b.Init.Add(static c => ((TreeSelect)c).IsFilterEnabled = true);
+                    // The filter input is read-only until the drop-down opens; compare the input, not the drop-down.
+                    b.Popup  = true;
+                    b.Region = static c => c;
+                    SelectFilterText(b);
+                    break;
                 case "ColorTextPlaceholder":
                     b.Init.Add(static c => ((TreeSelect)c).PlaceholderText = "Placeholder");
                     break;

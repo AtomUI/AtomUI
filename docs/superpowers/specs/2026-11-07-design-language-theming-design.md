@@ -164,7 +164,7 @@ Style OfType<T>  { Setter(StyledElement.Theme, DynamicResource(ControlThemeKey(T
 
 ### 3.8 精确度机制：主题能替换到哪一层
 
-一份控件代码不可能 100% 还原每种设计语言，任何单代码库方案都不能；ant.design 的 MUI 预设是"像 MUI 的 antd"，Avalonia Fluent 也不是 WinUI 的像素复刻。本设计的目标是把可替换的边界推到**控件的公开 API 与状态语义**：这条线以内的一切（外观、反馈、部件行为、语言私有 Token）都由语言包决定，控件代码一份、运行时成本不随语言数增长。
+各设计语言的共性控件大同小异：**大同是控件的公开 API 与状态语义**（Button 都可点、可禁用、有加载态与尺寸变体；Select 都有选项、能打开、能选中），这一层所有语言一致，所以控件代码只有一份；**小异是外观、反馈与少数部件的行为方式**，由下面的机制按需要的深度逐级吸收。一份控件代码不可能 100% 还原每种设计语言，任何单代码库方案都不能；ant.design 的 MUI 预设是"像 MUI 的 antd"，Avalonia Fluent 也不是 WinUI 的像素复刻。本设计的目标是把可替换的边界推到**控件的公开 API 与状态语义**：这条线以内的一切（外观、反馈、部件行为、语言私有 Token）都由语言包决定，控件代码一份、运行时成本不随语言数增长。绝大多数差异停在前两级（ant.design 14 个预设中 13 个只用 Token 与样式），契约部件只用于一只手数得过来的真实分歧点。
 
 差距分五层，每层的覆盖机制：
 
@@ -403,7 +403,7 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 
 1. **视觉值不进代码。** 控件代码不得出现 `Brush`、`Color`、`BoxShadows`、`CornerRadius`、`Thickness`、字号、尺寸的字面量或由 Token 计算得出的值；不得命令式绑定 Token。自绘控件把画刷、笔、几何参数暴露为 StyledProperty，在 `Render` 中只读取，默认值由主题 Setter 给。
 2. **状态可以进代码，视觉不行。** 由用户输入解析出的离散状态（如 Button 的 `EffectiveVariant`、`EffectiveIsDanger`）允许作为内部 StyledProperty 或伪类存在，供主题选择器使用；由状态映射出的视觉值（如 `VariantShadow`、按 `SizeType` 算出的 `EffectiveCornerRadius`）不允许，改为主题里的 `^[SizeType=Large]` 之类 Setter。判据：属性类型是枚举/布尔/数值计数就是状态，是画刷/阴影/圆角/厚度/字号就是视觉。
-3. **模板契约显式、最小、按契约声明。** 每个控件用 `[TemplatePart(Name, ContractType, IsRequired)]` 声明代码依赖的全部部件，`ContractType` 优先是接口（3.8 A），只有 Avalonia 原生类型（`ContentPresenter`、`ScrollViewer`）或纯布局节点才用具体类型；用 `[PseudoClasses]` 声明全部伪类；`OnApplyTemplate` 只经 `NameScope` 取部件并按契约类型校验，可选部件为空时行为降级不抛；不在代码中按类型或 Name 搜索可视树。
+3. **模板契约显式、最小、按需契约化。** 每个控件用 `[TemplatePart(Name, ContractType, IsRequired)]` 声明代码依赖的全部部件；只有存在真实语言分歧的部件（弹层宿主、输入呈现、反馈装饰等，预计每个控件零到两个）才以接口作为 `ContractType`（3.8 A），其余部件用具体类型，不为对称而抽象；用 `[PseudoClasses]` 声明全部伪类；`OnApplyTemplate` 只经 `NameScope` 取部件并按契约类型校验，可选部件为空时行为降级不抛；不在代码中按类型或 Name 搜索可视树。
 3a. **行为经策略属性注入，不内置默认。** 反馈、定位等可替换行为以 `StyledProperty<IXxxBehavior?>` 暴露，默认值 null；控件代码不包含任何语言的默认策略实现。
 4. **几何从属性推导，不写常量。** 布局、命中、动效原点使用模板设置的属性与 Token 绑定值。
 5. **Semantic marker 是主题的义务。** 每种语言的主题保持同一组非 Optional marker；控件代码不负责 marker。

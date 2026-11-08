@@ -17,6 +17,21 @@ internal enum ControlTokenRole
     Terminal
 }
 
+/// <summary>
+/// Declaration facts of one flattened Own Token field: where it is declared and the <c>[ReservedToken]</c> reason, if any.
+/// </summary>
+internal sealed class OwnTokenFact
+{
+    internal OwnTokenFact(Location? location, string? reservedReason)
+    {
+        Location = location;
+        ReservedReason = reservedReason;
+    }
+
+    internal Location? Location { get; }
+    internal string? ReservedReason { get; }
+}
+
 internal sealed class ControlTokenInfo
 {
     public string TokenNamespace { get; set; }
@@ -24,6 +39,7 @@ internal sealed class ControlTokenInfo
     public string? ControlName { get; set; }
     public HashSet<TokenName> Tokens { get; }
     public HashSet<SchemaTokenInfo> SchemaTokens { get; }
+    public Dictionary<string, OwnTokenFact> OwnTokenFacts { get; }
     public List<Diagnostic> Diagnostics { get; }
     public Location? DeclarationLocation { get; set; }
     public ControlTokenRole Role { get; set; }
@@ -39,6 +55,7 @@ internal sealed class ControlTokenInfo
         TokenName = tokenName;
         Tokens      = tokens;
         SchemaTokens = new HashSet<SchemaTokenInfo>();
+        OwnTokenFacts = new Dictionary<string, OwnTokenFact>(StringComparer.Ordinal);
         Diagnostics = new List<Diagnostic>();
     }
 

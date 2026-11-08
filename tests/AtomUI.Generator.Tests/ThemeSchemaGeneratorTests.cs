@@ -129,6 +129,8 @@ public class ThemeSchemaGeneratorTests
             additionalTexts.ToImmutableArray(), (CSharpParseOptions)compilation.SyntaxTrees[0].Options,
             new BuiltinCatalogOptionsProvider(null));
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out diagnostics, TestContext.Current.CancellationToken);
+        // These fixtures declare Token shapes without theme assets; ATOMUIGEN042 has dedicated coverage in OwnTokenReferenceAnalysisTests.
+        diagnostics = diagnostics.Where(static diagnostic => diagnostic.Id != "ATOMUIGEN042").ToImmutableArray();
         return (CSharpCompilation)output;
     }
 
@@ -470,6 +472,17 @@ public class ThemeSchemaGeneratorTests
             [System.AttributeUsage(System.AttributeTargets.Property)]
             public sealed class NotTokenDefinitionAttribute : System.Attribute
             {
+            }
+
+            [System.AttributeUsage(System.AttributeTargets.Property)]
+            public sealed class ReservedTokenAttribute : System.Attribute
+            {
+                public ReservedTokenAttribute(string reason)
+                {
+                    Reason = reason;
+                }
+
+                public string Reason { get; }
             }
 
             public abstract class AbstractDesignToken

@@ -24,7 +24,8 @@ internal sealed class FlattenedControlTokenProperty
         string declaringType,
         string terminalType,
         Location? location,
-        bool isInherited)
+        bool isInherited,
+        string? reservedReason = null)
     {
         Name = name;
         ValueType = valueType;
@@ -32,6 +33,7 @@ internal sealed class FlattenedControlTokenProperty
         TerminalType = terminalType;
         Location = location;
         IsInherited = isInherited;
+        ReservedReason = reservedReason;
     }
 
     internal string Name { get; }
@@ -40,6 +42,7 @@ internal sealed class FlattenedControlTokenProperty
     internal string TerminalType { get; }
     internal Location? Location { get; }
     internal bool IsInherited { get; }
+    internal string? ReservedReason { get; }
 }
 
 internal sealed class ControlTokenInheritanceResult

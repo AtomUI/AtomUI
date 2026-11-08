@@ -319,6 +319,15 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
+    public static readonly DiagnosticDescriptor OwnTokenUnreferenced = new(
+        AtomUIDiagnosticIds.OwnTokenUnreferenced,
+        "Own Token field must be consumed, reserved or deleted",
+        "Own Token '{0}.{1}' is not referenced by the theme AXAML or the code of this package; consume it, mark it with [ReservedToken(\"reason\")], or delete the field",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
     public static readonly DiagnosticDescriptor ThemeAssetVisualLiteral = new(
         AtomUIDiagnosticIds.ThemeAssetVisualLiteral,
         "Theme AXAML must not hard-code visual literals",

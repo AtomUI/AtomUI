@@ -169,6 +169,11 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 CompiledThemePackageWriter.Error(context, null, 0, 0, "Compiled theme inputs require generated ABI v1.");
             }
             info.ControlThemeInfos.AddRange(controlInfos);
+            // Promise state of every Own Token and the global Token consumption map, from the parsed theme AXAML and this package's code.
+            var consumption = OwnTokenReferenceAnalysis.Analyze(compilation, catalog, controlInfos,
+                info.AvailableGlobalTokenNames, identityControls, documents.Values, cancellationToken);
+            OwnTokenReferenceAnalysis.Report(consumption, context.ReportDiagnostic);
+            new GeneratedThemeConsumptionWriter(context, assemblyName, consumption).Write();
             StartupImageWriter.Write(context, compilation, ownRegistration, references, localization, contracts, ownTheme);
             ThemeControlCatalogMetadataWriter.Write(context, catalog);
             if (info.SchemaTokens.Count > 0 || controlInfos.Count > 0 || algorithms.Length > 0)

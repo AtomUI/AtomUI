@@ -306,6 +306,7 @@ public partial class TypeMapIntegrationTests
             [AtomUI.Theme.DesignTokens.ControlDesignToken]
             internal sealed class PresenterToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
+                [AtomUI.Theme.DesignTokens.ReservedToken("fixture field without a theme asset")]
                 public double LocalHeight { get; set; }
                 public override void CalculateTokenValues(bool dark) { }
             }

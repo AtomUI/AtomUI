@@ -8,6 +8,7 @@ internal static class TargetMarkConstants
     public const string SemanticPartAttribute = "AtomUI.Theme.SemanticPartAttribute";
     public const string DesignTokenKindAttribute = "AtomUI.Theme.DesignTokens.DesignTokenKindAttribute";
     public const string NotTokenDefinitionAttribute = "AtomUI.Theme.DesignTokens.NotTokenDefinitionAttribute";
+    public const string ReservedTokenAttribute = "AtomUI.Theme.DesignTokens.ReservedTokenAttribute";
     public const string ThemeAlgorithmAttribute = "AtomUI.Theme.Algorithms.ThemeAlgorithmAttribute";
     public const string TokenValueConverterAttribute = "AtomUI.Theme.DesignTokens.TokenValueConverterAttribute";
     public const string GenerateDataMemberAccessorsAttribute = "AtomUI.Controls.Data.GenerateDataMemberAccessorsAttribute";

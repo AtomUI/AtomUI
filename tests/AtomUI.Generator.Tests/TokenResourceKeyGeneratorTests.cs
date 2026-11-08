@@ -1214,8 +1214,9 @@ public class TokenResourceKeyGeneratorTests
             out var secondPlatformDiagnostics,
             TestContext.Current.CancellationToken);
 
-        firstPlatformDiagnostics.ShouldBeEmpty();
-        secondPlatformDiagnostics.ShouldBeEmpty();
+        // ATOMUIGEN042 has dedicated coverage in OwnTokenReferenceAnalysisTests; this fixture has no theme assets.
+        firstPlatformDiagnostics.Where(static diagnostic => diagnostic.Id != "ATOMUIGEN042").ShouldBeEmpty();
+        secondPlatformDiagnostics.Where(static diagnostic => diagnostic.Id != "ATOMUIGEN042").ShouldBeEmpty();
         var firstSchema = GetGeneratedSource((CSharpCompilation)firstOutputCompilation, "GeneratedThemeSchema.g.cs");
         var secondSchema = GetGeneratedSource((CSharpCompilation)secondOutputCompilation, "GeneratedThemeSchema.g.cs");
         firstSchema.ShouldContain("global::System.Double");
@@ -1587,6 +1588,8 @@ public class TokenResourceKeyGeneratorTests
             new BuiltinCatalogOptionsProvider(optionsProvider));
 
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out diagnostics, cancellationToken);
+        // These fixtures declare Token shapes without theme assets; ATOMUIGEN042 has dedicated coverage in OwnTokenReferenceAnalysisTests.
+        diagnostics = diagnostics.Where(static diagnostic => diagnostic.Id != "ATOMUIGEN042").ToImmutableArray();
         return (CSharpCompilation)outputCompilation;
     }
 

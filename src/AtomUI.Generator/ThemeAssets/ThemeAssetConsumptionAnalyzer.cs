@@ -105,13 +105,13 @@ internal static class ThemeAssetConsumptionAnalyzer
         }
     }
 
-    private static bool IsControlTheme(XElement element) =>
+    internal static bool IsControlTheme(XElement element) =>
         string.Equals(element.Name.LocalName, "ControlTheme", StringComparison.Ordinal);
 
     private static bool IsStyle(XElement element) =>
         string.Equals(element.Name.LocalName, "Style", StringComparison.Ordinal);
 
-    private static string? AttributeValue(XElement element, string localName) =>
+    internal static string? AttributeValue(XElement element, string localName) =>
         element.Attributes().FirstOrDefault(attribute =>
             !attribute.IsNamespaceDeclaration && string.Equals(attribute.Name.LocalName, localName, StringComparison.Ordinal))?.Value;
 
@@ -138,7 +138,36 @@ internal static class ThemeAssetConsumptionAnalyzer
         return separator >= 0 ? propertyName.Substring(separator + 1) : propertyName;
     }
 
-    private sealed class ThemeScope
+    /// <summary>
+    /// Resolves the TargetType of a <c>ControlTheme</c> element: its simple type name and whether that type is a Token owner
+    /// (has a Token identity) among <paramref name="tokenIdentityControls"/>.
+    /// </summary>
+    internal static ThemeScope CreateScope(XElement controlTheme, ISet<string> tokenIdentityControls)
+    {
+        var targetType = AttributeValue(controlTheme, "TargetType")?.Trim();
+        if (string.IsNullOrEmpty(targetType))
+        {
+            return new ThemeScope(null, false);
+        }
+
+        if (targetType!.StartsWith("{x:Type", StringComparison.Ordinal) && targetType.EndsWith("}", StringComparison.Ordinal))
+        {
+            targetType = targetType.Substring("{x:Type".Length, targetType.Length - "{x:Type".Length - 1).Trim();
+        }
+
+        var separator = targetType.IndexOf(':');
+        var prefix = separator >= 0 ? targetType.Substring(0, separator) : string.Empty;
+        var name = separator >= 0 ? targetType.Substring(separator + 1) : targetType;
+        var xmlNamespace = prefix.Length == 0
+            ? controlTheme.GetDefaultNamespace().NamespaceName
+            : controlTheme.GetNamespaceOfPrefix(prefix)?.NamespaceName;
+        // Types in the Avalonia namespace are framework primitives even when a package control shares the name.
+        var hasIdentity = !string.Equals(xmlNamespace, AvaloniaNamespace, StringComparison.Ordinal) &&
+                          tokenIdentityControls.Contains(name);
+        return new ThemeScope(name, hasIdentity);
+    }
+
+    internal sealed class ThemeScope
     {
         internal ThemeScope(string? targetTypeName, bool hasIdentity)
         {
@@ -167,7 +196,7 @@ internal static class ThemeAssetConsumptionAnalyzer
         {
             if (IsControlTheme(element))
             {
-                theme = CreateScope(element);
+                theme = CreateScope(element, _identities);
                 visualScope = true;
             }
             else if (IsStyle(element))
@@ -189,31 +218,6 @@ internal static class ThemeAssetConsumptionAnalyzer
             {
                 Visit(child, theme, visualScope);
             }
-        }
-
-        private ThemeScope CreateScope(XElement controlTheme)
-        {
-            var targetType = AttributeValue(controlTheme, "TargetType")?.Trim();
-            if (string.IsNullOrEmpty(targetType))
-            {
-                return new ThemeScope(null, false);
-            }
-
-            if (targetType!.StartsWith("{x:Type", StringComparison.Ordinal) && targetType.EndsWith("}", StringComparison.Ordinal))
-            {
-                targetType = targetType.Substring("{x:Type".Length, targetType.Length - "{x:Type".Length - 1).Trim();
-            }
-
-            var separator = targetType.IndexOf(':');
-            var prefix = separator >= 0 ? targetType.Substring(0, separator) : string.Empty;
-            var name = separator >= 0 ? targetType.Substring(separator + 1) : targetType;
-            var xmlNamespace = prefix.Length == 0
-                ? controlTheme.GetDefaultNamespace().NamespaceName
-                : controlTheme.GetNamespaceOfPrefix(prefix)?.NamespaceName;
-            // Types in the Avalonia namespace are framework primitives even when a package control shares the name.
-            var hasIdentity = !string.Equals(xmlNamespace, AvaloniaNamespace, StringComparison.Ordinal) &&
-                              _identities.Contains(name);
-            return new ThemeScope(name, hasIdentity);
         }
 
         // ---- ATOMUIGEN041 -------------------------------------------------------------

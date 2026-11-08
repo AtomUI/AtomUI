@@ -141,7 +141,7 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
     {
         if (sender is AvaScrollViewer scrollViewer)
         {
-            IsActive = scrollViewer.Offset.Y >= VisibilityHeight;
+            SetCurrentValue(IsActiveProperty, scrollViewer.Offset.Y >= VisibilityHeight);
             UpdateScrollProgress(scrollViewer);
         }
     }
@@ -160,7 +160,7 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         base.OnLoaded(e);
         if (Target != null)
         {
-            IsActive = Target.Offset.Y >= VisibilityHeight;
+            SetCurrentValue(IsActiveProperty, Target.Offset.Y >= VisibilityHeight);
             UpdateScrollProgress(Target);
         }
     }

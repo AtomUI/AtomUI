@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Controls.Commons;
 
@@ -128,15 +129,27 @@ public abstract class AbstractHyperLinkButton : AvaloniaButton,
 
         if (change.Property == IsVisitedProperty ||
             change.Property == ContentProperty ||
-            change.Property == IsLoadingProperty)
+            change.Property == IconProperty ||
+            change.Property == IsLoadingProperty ||
+            change.Property == IsDangerProperty)
         {
             UpdatePseudoClasses();
         }
     }
 
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        UpdatePseudoClasses();
+    }
+
+    // The theme maps icon-only, loading and danger visuals through these pseudo-classes.
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(ButtonPseudoClass.Visited, IsVisited);
+        PseudoClasses.Set(ButtonPseudoClass.IconOnly, Icon is not null && Content is null);
+        PseudoClasses.Set(ButtonPseudoClass.Loading, IsLoading);
+        PseudoClasses.Set(ButtonPseudoClass.IsDanger, IsDanger);
     }
 
     protected override void OnClick()

@@ -54,7 +54,7 @@
                             <atomc:BackTopProgressRing Name="ProgressRing"
                                                         Progress="{TemplateBinding ScrollProgress}"
                                                         CornerRadius="{TemplateBinding CornerRadius}" />
-                            <Canvas Name="BadgeLayout" />
+                            <Canvas Name="PART_BadgeLayout" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -99,7 +99,7 @@
                             <atomc:BackTopProgressRing Name="ProgressRing"
                                                         Progress="{TemplateBinding ScrollProgress}"
                                                         CornerRadius="{TemplateBinding CornerRadius}" />
-                            <Canvas Name="BadgeLayout" />
+                            <Canvas Name="PART_BadgeLayout" />
                     </Panel>
                 </ControlTemplate>
             </Setter>

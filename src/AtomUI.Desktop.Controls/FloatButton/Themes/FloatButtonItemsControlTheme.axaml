@@ -48,7 +48,6 @@
 
         <Style Selector="^[Shape=Square]">
             <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgElevated}" />
-            <Setter Property="BoxShadow" Value="{atom:OwnerTokenResource BoxShadowsSecondary}" />
             <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
         </Style>
         <Style Selector="^ /template/ atomc|FloatButtonSeparatorLayer">

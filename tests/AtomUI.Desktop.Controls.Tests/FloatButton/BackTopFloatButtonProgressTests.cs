@@ -38,6 +38,31 @@ public class BackTopFloatButtonProgressTests
     }
 
     [Fact]
+    public void BackTop_Scrolling_Does_Not_Replace_A_Bound_IsActive_Source()
+    {
+        var backTop = new BackTopFloatButton { VisibilityHeight = 100 };
+        var scrollViewer = CreateScrollContent(backTop, 1000, out var window);
+        var source = new System.Reactive.Subjects.BehaviorSubject<bool>(false);
+        try
+        {
+            // A Style-priority source (as a theme Setter binding) must stay effective after the scroll projection.
+            backTop.Bind(AbstractBackTopFloatButton.IsActiveProperty, source, Avalonia.Data.BindingPriority.Style);
+            scrollViewer.Offset = new Vector(0, 300);
+            Dispatcher.UIThread.RunJobs();
+            backTop.IsActive.ShouldBeTrue();
+
+            // The projection is a current value: later source values still reach the property.
+            source.OnNext(true);
+            source.OnNext(false);
+            backTop.IsActive.ShouldBeFalse();
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [Fact]
     public void BackTop_IsShowProgress_Should_Default_To_False()
     {
         var backTop = new BackTopFloatButton();

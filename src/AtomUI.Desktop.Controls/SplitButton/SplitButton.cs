@@ -706,15 +706,10 @@ public partial class SplitButton : ContentControl,
             effectiveCornerRadius.BottomRight,
             0);
         
-        if (_primaryButton is not null)
-        {
-            _primaryButton.CornerRadius = primaryButtonCornerRadius;
-        }
-
-        if (_secondaryButton is not null)
-        {
-            _secondaryButton.CornerRadius = secondaryButtonCornerRadius;
-        }
+        // The split radii go to the inner Buttons' internal host radius: their public CornerRadius keeps the Button
+        // theme and user values, and the template frames follow the split shape.
+        _primaryButton?.SetValue(Button.HostCornerRadiusProperty, primaryButtonCornerRadius);
+        _secondaryButton?.SetValue(Button.HostCornerRadiusProperty, secondaryButtonCornerRadius);
     }
 
     private void ConfigureButtonCustomSizeOverrides()
@@ -1034,8 +1029,10 @@ public partial class SplitButton : ContentControl,
         if (IsPrimaryButtonType && _secondaryButton is not null)
         {
             var cornerRadius = (float)CornerRadius.TopLeft;
-            context.FillRectangle(SplitSeparatorBrush ?? Brushes.White, new Rect(0, 0, Bounds.Width, Bounds.Height),
-                cornerRadius);
+            if (SplitSeparatorBrush is { } separatorBrush)
+            {
+                context.FillRectangle(separatorBrush, new Rect(0, 0, Bounds.Width, Bounds.Height), cornerRadius);
+            }
         }
     }
     

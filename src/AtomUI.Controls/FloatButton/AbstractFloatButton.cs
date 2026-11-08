@@ -1,5 +1,6 @@
 using AtomUI.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -202,6 +203,8 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
     private protected ScopeAwareOverlayLayer? _overlayLayer;
     private protected Canvas? _badgeLayout;
     private protected Control? _badge;
+    private IDisposable? _themeSubscription;
+    private static readonly ThemeTokenResolver s_themeTokenResolver = new();
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {
@@ -272,7 +275,40 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         }
         else if (change.Property == BadgeColorProperty)
         {
-            SetCurrentValue(BadgeEffectiveColorProperty, BadgeColorUtils.CalculateColor(this, BadgeColor));
+            ConfigureBadgeColor();
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        // Preset badge colours come from the snapshot's palettes: resolve them for this attach's context (a XAML value
+        // set before attach has none) and again whenever the theme publishes.
+        _themeSubscription?.Dispose();
+        _themeSubscription = s_themeTokenResolver.Subscribe(this, _ => ConfigureBadgeColor());
+        ConfigureBadgeColor();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _themeSubscription?.Dispose();
+        _themeSubscription = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    /// <summary>
+    /// Writes the resolved <see cref="BadgeColor"/> into the internal <see cref="BadgeEffectiveColor"/> the badge binds,
+    /// or clears it so the theme's ColorError applies when the colour is unset, invalid or a preset without a theme.
+    /// </summary>
+    private void ConfigureBadgeColor()
+    {
+        if (BadgeColorUtils.CalculateColor(this, BadgeColor) is { } brush)
+        {
+            BadgeEffectiveColor = brush;
+        }
+        else
+        {
+            ClearValue(BadgeEffectiveColorProperty);
         }
     }
 

@@ -10,7 +10,6 @@ public class ThemeAssetConsumptionAnalyzerTests
 {
     private const string SharedRead = "ATOMUIGEN041";
     private const string VisualLiteral = "ATOMUIGEN045";
-    private const string MasksSetter = "ATOMUIGEN046";
 
     // ---- ATOMUIGEN041 -------------------------------------------------------------------
 
@@ -570,134 +569,17 @@ public class ThemeAssetConsumptionAnalyzerTests
             """).ShouldHaveSingleItem().Id.ShouldBe(VisualLiteral);
     }
 
-    // ---- ATOMUIGEN046 -------------------------------------------------------------------
+    // ---- retired ATOMUIGEN046 -----------------------------------------------------------
 
     [Fact]
-    public void Reports_Template_Attribute_Masking_A_State_Setter()
+    public void Template_Attribute_Defaults_Next_To_State_Setters_Report_Nothing()
     {
-        var diagnostic = Analyze(Theme("atom:Button", """
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Border Name="Frame" Background="{atom:ButtonTokenResource DefaultBg}" />
-                </ControlTemplate>
-            </Setter>
-            <Style Selector="^:pointerover /template/ Border#Frame">
-                <Setter Property="Background" Value="{atom:ButtonTokenResource HoverBg}" />
-            </Style>
-            """)).ShouldHaveSingleItem();
-
-        diagnostic.Id.ShouldBe(MasksSetter);
-        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
-        diagnostic.GetMessage().ShouldContain("Background");
-        diagnostic.GetMessage().ShouldContain("Frame");
-    }
-
-    [Fact]
-    public void Template_Masking_Is_Reported_On_The_Attribute_Of_The_Template_Node()
-    {
-        var axaml = Theme("atom:Button", """
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Border Name="Frame" Background="{atom:ButtonTokenResource DefaultBg}" />
-                </ControlTemplate>
-            </Setter>
-            <Style Selector="^:pointerover /template/ Border#Frame">
-                <Setter Property="Background" Value="{atom:ButtonTokenResource HoverBg}" />
-            </Style>
-            """);
-        var diagnostic = Analyze(axaml).ShouldHaveSingleItem();
-
-        axaml.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length)
-             .ShouldBe("Background=\"{atom:ButtonTokenResource DefaultBg}\"");
-        diagnostic.Location.GetLineSpan().StartLinePosition.Line.ShouldBe(3);
-    }
-
-    [Theory]
-    [InlineData("^.primary /template/ Border#Frame")]
-    [InlineData("^ /template/ Border#Frame:disabled")]
-    [InlineData("^:pointerover /template/ #Frame")]
-    public void Class_And_Pseudo_Class_Selectors_Are_State_Selectors(string selector)
-    {
-        Analyze(MaskTheme(selector, "Background", "Background", "Border")).ShouldHaveSingleItem().Id.ShouldBe(MasksSetter);
-    }
-
-    [Fact]
-    public void Reports_A_Literal_Template_Attribute_That_Masks_A_State_Setter()
-    {
-        var diagnostics = Analyze(MaskTheme("^:pointerover /template/ Border#Frame", "Opacity", "Opacity", "Border"));
-
-        diagnostics.Select(static d => d.Id).ShouldContain(MasksSetter);
-    }
-
-    [Fact]
-    public void Does_Not_Report_When_The_Default_Lives_In_A_Plain_Style_Setter()
-    {
-        Analyze("""
-            <ControlTheme xmlns="https://github.com/avaloniaui" xmlns:atom="using:Demo" TargetType="atom:Button">
-                <Setter Property="Template">
-                    <ControlTemplate>
-                        <Border Name="Frame" />
-                    </ControlTemplate>
-                </Setter>
-                <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="Background" Value="{atom:ButtonTokenResource DefaultBg}" />
-                </Style>
-                <Style Selector="^:pointerover /template/ Border#Frame">
-                    <Setter Property="Background" Value="{atom:ButtonTokenResource HoverBg}" />
-                </Style>
-            </ControlTheme>
-            """).ShouldBeEmpty();
-    }
-
-    [Theory]
-    // the state Setter targets another property
-    [InlineData("^:pointerover /template/ Border#Frame", "Background", "BorderBrush", "Border")]
-    // the selector resolves to a different node name
-    [InlineData("^:pointerover /template/ Border#Other", "Background", "Background", "Border")]
-    // the selector's type cannot match the named node
-    [InlineData("^:pointerover /template/ TextBlock#Frame", "Background", "Background", "Border")]
-    // a descendant of the named node is targeted, not the node itself
-    [InlineData("^:pointerover /template/ Border#Frame > TextBlock", "Background", "Background", "Border")]
-    // not the /template/ <Type>#<Name> form
-    [InlineData("^:pointerover Border#Frame", "Background", "Background", "Border")]
-    [InlineData("^:pointerover /template/ Border.frame", "Background", "Background", "Border")]
-    public void Does_Not_Report_Selectors_That_Cannot_Be_Statically_Resolved_To_The_Node_Property(
-        string selector,
-        string templateAttribute,
-        string setterProperty,
-        string nodeType)
-    {
-        Analyze(MaskTheme(selector, templateAttribute, setterProperty, nodeType)).ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void Does_Not_Report_A_State_Style_Of_Another_ControlTheme()
-    {
-        Analyze("""
-            <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:atom="using:Demo">
-                <ControlTheme x:Key="A" TargetType="atom:Button">
-                    <Setter Property="Template">
-                        <ControlTemplate>
-                            <Border Name="Frame" Background="{atom:ButtonTokenResource DefaultBg}" />
-                        </ControlTemplate>
-                    </Setter>
-                </ControlTheme>
-                <ControlTheme x:Key="B" TargetType="atom:Button">
-                    <Style Selector="^:pointerover /template/ Border#Frame">
-                        <Setter Property="Background" Value="{atom:ButtonTokenResource HoverBg}" />
-                    </Style>
-                </ControlTheme>
-            </ResourceDictionary>
-            """).ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void Does_Not_Report_Template_Bindings_Or_Non_Token_Markup()
-    {
+        // Former ATOMUIGEN046 positive case. ControlTemplate node values have Template priority, below the triggered
+        // state Style, so they cannot mask the state Setter and the rule is retired.
         Analyze(Theme("atom:Button", """
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Border Name="Frame" Background="{TemplateBinding Background}" />
+                    <Border Name="Frame" Background="{atom:ButtonTokenResource DefaultBg}" />
                 </ControlTemplate>
             </Setter>
             <Style Selector="^:pointerover /template/ Border#Frame">
@@ -715,21 +597,6 @@ public class ThemeAssetConsumptionAnalyzerTests
             {body}
             </ControlTheme>
             """;
-    }
-
-    private static string MaskTheme(string selector, string templateAttribute, string setterProperty, string nodeType)
-    {
-        var value = templateAttribute == "Opacity" ? "0.5" : "{atom:ButtonTokenResource DefaultBg}";
-        return Theme("atom:Button", $$"""
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <{{nodeType}} Name="Frame" {{templateAttribute}}="{{value}}" />
-                </ControlTemplate>
-            </Setter>
-            <Style Selector="{{selector}}">
-                <Setter Property="{{setterProperty}}" Value="{atom:ButtonTokenResource HoverBg}" />
-            </Style>
-            """);
     }
 
     private static ImmutableArray<Diagnostic> Analyze(string axaml, params MetadataReference[] additionalReferences)
@@ -759,7 +626,7 @@ public class ThemeAssetConsumptionAnalyzerTests
             out var diagnostics,
             TestContext.Current.CancellationToken);
         return diagnostics
-               .Where(static d => d.Id is SharedRead or VisualLiteral or MasksSetter)
+               .Where(static d => d.Id is SharedRead or VisualLiteral)
                .OrderBy(static d => d.Location.SourceSpan.Start)
                .ToImmutableArray();
     }

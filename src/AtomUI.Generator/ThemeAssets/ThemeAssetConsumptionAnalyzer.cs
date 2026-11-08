@@ -11,7 +11,7 @@ namespace AtomUI.Generator;
 /// Static checks over the parsed theme AXAML assets of one package:
 /// <c>ATOMUIGEN041</c> (global Token read kind versus the ControlTheme's Token identity; load-time frozen
 /// <c>SharedTokenResourceValue</c> reads and TokenResource reads on transition durations in any ControlTheme),
-/// <c>ATOMUIGEN045</c> (visual literals) and <c>ATOMUIGEN046</c> (template node attributes that mask state Setters).
+/// <c>ATOMUIGEN045</c> (visual literals).
 /// The analysis is pure <see cref="XElement"/> traversal. Only provable patterns are reported; anything that cannot be
 /// resolved statically is left to review. The parsed documents never enter the incremental cache.
 /// </summary>
@@ -47,14 +47,6 @@ internal static class ThemeAssetConsumptionAnalyzer
 
     // Signed numbers and comma/space separated tuples (Thickness, Point, CornerRadius).
     private static readonly Regex s_numeric = new(@"^[-+\d.,\s]+$", RegexOptions.CultureInvariant);
-
-    // The last compound selector must be `<Type>#<Name>` (optionally followed by classes or pseudo-classes) after /template/.
-    private static readonly Regex s_templateNodeSelector = new(
-        @"/template/\s+(?<type>[\w|]*)#(?<name>[\w-]+)(?<rest>[^\s>]*)\s*$",
-        RegexOptions.CultureInvariant);
-
-    private static readonly Regex s_stateSegment = new(@"[:.][A-Za-z_]", RegexOptions.CultureInvariant);
-    private static readonly Regex s_bracketGroup = new(@"\[[^\]]*\]", RegexOptions.CultureInvariant);
 
     // Attributes (and Setter Property names) that carry colour values.
     private static readonly HashSet<string> s_colorProperties = new(StringComparer.Ordinal)
@@ -121,10 +113,6 @@ internal static class ThemeAssetConsumptionAnalyzer
     {
         var analysis = new Analysis(asset, tokenIdentityControls, report);
         analysis.Visit(root, null, false);
-        foreach (var theme in root.DescendantsAndSelf().Where(IsControlTheme))
-        {
-            analysis.AnalyzeTemplateMasking(theme);
-        }
     }
 
     internal static bool IsControlTheme(XElement element) =>
@@ -408,116 +396,6 @@ internal static class ThemeAssetConsumptionAnalyzer
             return !HasPrecedingComment(element, LayoutMarker);
         }
 
-        // ---- ATOMUIGEN046 -------------------------------------------------------------
-
-        internal void AnalyzeTemplateMasking(XElement theme)
-        {
-            var owned = theme.Descendants().Where(element => ReferenceEquals(OwnerOf(element), theme)).ToArray();
-            var states = new List<StateStyle>();
-            foreach (var style in owned.Where(IsStyle))
-            {
-                var selector = AttributeValue(style, "Selector");
-                if (selector is null)
-                {
-                    continue;
-                }
-
-                var match = s_templateNodeSelector.Match(selector.Trim());
-                if (!match.Success)
-                {
-                    continue;
-                }
-
-                var prefix = selector.Substring(0, selector.IndexOf("/template/", StringComparison.Ordinal));
-                var stateText = s_bracketGroup.Replace(prefix + match.Groups["rest"].Value, string.Empty);
-                if (!s_stateSegment.IsMatch(stateText))
-                {
-                    continue;
-                }
-
-                var properties = new HashSet<string>(style.Elements()
-                    .Where(static child => string.Equals(child.Name.LocalName, "Setter", StringComparison.Ordinal))
-                    .Select(static setter => AttributeValue(setter, "Property"))
-                    .Where(static property => !string.IsNullOrWhiteSpace(property))
-                    .Select(static property => StripOwner(property!.Trim())), StringComparer.Ordinal);
-                if (properties.Count != 0)
-                {
-                    states.Add(new StateStyle(
-                        selector.Trim(), StripNamespace(match.Groups["type"].Value), match.Groups["name"].Value, properties));
-                }
-            }
-
-            if (states.Count == 0)
-            {
-                return;
-            }
-
-            foreach (var node in owned.Where(static element => element.Ancestors().Any(static ancestor =>
-                         string.Equals(ancestor.Name.LocalName, "ControlTemplate", StringComparison.Ordinal))))
-            {
-                var nodeName = AttributeValue(node, "Name");
-                if (string.IsNullOrEmpty(nodeName))
-                {
-                    continue;
-                }
-
-                foreach (var attribute in node.Attributes())
-                {
-                    if (IsNonProperty(attribute) || !IsDefaultValue(attribute.Value))
-                    {
-                        continue;
-                    }
-
-                    var propertyName = StripOwner(attribute.Name.LocalName);
-                    var state = states.FirstOrDefault(candidate =>
-                        candidate.NodeName == nodeName &&
-                        (candidate.TypeName.Length == 0 || candidate.TypeName == node.Name.LocalName) &&
-                        candidate.Properties.Contains(propertyName));
-                    if (state is null)
-                    {
-                        continue;
-                    }
-
-                    _report(Diagnostic.Create(
-                        AtomUIDiagnosticDescriptors.ThemeAssetTemplateAttributeMasksSetter,
-                        LocateAttribute(attribute),
-                        propertyName,
-                        nodeName,
-                        state.Selector));
-                }
-            }
-        }
-
-        private static XElement? OwnerOf(XElement element) => element.Ancestors().FirstOrDefault(IsControlTheme);
-
-        private static string StripNamespace(string typeName)
-        {
-            var separator = typeName.LastIndexOf('|');
-            return separator >= 0 ? typeName.Substring(separator + 1) : typeName;
-        }
-
-        private static bool IsNonProperty(XAttribute attribute)
-        {
-            if (attribute.IsNamespaceDeclaration)
-            {
-                return true;
-            }
-
-            var name = attribute.Name;
-            return name.NamespaceName.Length != 0 ||
-                   name.LocalName == "Name" ||
-                   name.LocalName == "Classes" ||
-                   name.LocalName.StartsWith("Classes.", StringComparison.Ordinal);
-        }
-
-        // Token reads and plain literals are both default values; bindings and other markup extensions are not.
-        private static bool IsDefaultValue(string value)
-        {
-            var trimmed = value.TrimStart();
-            return !trimmed.StartsWith("{", StringComparison.Ordinal) ||
-                   trimmed.IndexOf("TokenResource", StringComparison.Ordinal) >= 0;
-        }
-
         // ---- locations ----------------------------------------------------------------
 
         // The reported span covers `Name="value"` of the attribute as written in the source text.
@@ -569,21 +447,5 @@ internal static class ThemeAssetConsumptionAnalyzer
 
             return Math.Min(index + 1, length);
         }
-    }
-
-    private sealed class StateStyle
-    {
-        internal StateStyle(string selector, string typeName, string nodeName, HashSet<string> properties)
-        {
-            Selector = selector;
-            TypeName = typeName;
-            NodeName = nodeName;
-            Properties = properties;
-        }
-
-        internal string Selector { get; }
-        internal string TypeName { get; }
-        internal string NodeName { get; }
-        internal HashSet<string> Properties { get; }
     }
 }

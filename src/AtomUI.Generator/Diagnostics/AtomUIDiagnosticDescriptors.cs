@@ -387,15 +387,6 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
-    public static readonly DiagnosticDescriptor ThemeAssetTemplateAttributeMasksSetter = new(
-        AtomUIDiagnosticIds.ThemeAssetTemplateAttributeMasksSetter,
-        "ControlTemplate node attribute masks a state Setter",
-        "Attribute '{0}' on template node '{1}' masks the state Setter in Style '{2}'; move the default value into a Style Setter at the same level as the state Setter",
-        AtomUIDiagnosticCategories.Generator,
-        DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
-        customTags: [WellKnownDiagnosticTags.Telemetry]);
-
     public static readonly DiagnosticDescriptor LocalizationInvalidLanguageData = new(
         AtomUIDiagnosticIds.LocalizationInvalidLanguageData,
         "Pinned language data record is invalid",

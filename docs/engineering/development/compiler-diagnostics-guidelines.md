@@ -131,7 +131,6 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIGEN043` | Generator | Warning | 控件代码经 `Application.Current.TryGetResource`、`TryFindResource` 或 `FindResource` 读 Token key，或在读取失败分支回落视觉字面量 | 改用 `ControlTokenAccessor`、`TokenResourceBinder` 或 AXAML TokenResource；删除回落值 | ThemeConsumption |
 | `ATOMUIGEN044` | Generator | Warning | 控件代码以字面量构造视觉值（`Color.FromRgb`、`Color.Parse`、`Brushes.X`、`new Thickness(n)`、`FontSize = n` 等赋给视觉属性），`Colors.Transparent` 与 `0` 除外 | 改为 Own Token 或 Global Token；预设色从 `PresetPalettes` 读取 | ThemeConsumption |
 | `ATOMUIGEN045` | Generator | Warning | 主题 AXAML 中出现颜色字面量，或数值视觉字面量（CornerRadius、BorderThickness、FontSize、StrokeThickness、Width/Height 等）未以 `<!-- layout -->` 注释标注 | 视觉值改读 Token（线宽用 `LineWidth`）；确属布局常量时加 `<!-- layout -->` | ThemeAssets |
-| `ATOMUIGEN046` | Generator | Warning | ControlTemplate 节点属性上写了默认值，而同一主题存在针对该节点同一属性的状态 Setter；默认值与状态值应在同一层 Setter 中对照。TokenResource 在模板内为 Template 优先级，会被触发样式覆盖，但仍盖过同节点的非触发 Style Setter | 把默认值移到 Style Setter，与状态 Setter 同级 | ThemeAssets |
 | `ATOMUIGEN047` | Generator | Warning | 控件代码以 `SetValue(prop, value)` 或属性赋值把 LocalValue 写入视觉 StyledProperty，覆盖用户绑定与主题 Setter | 改用 `SetCurrentValue`，或带 `BindingPriority.Template` 的可撤销写入 | ThemeConsumption |
 | `ATOMUIGEN048` | Generator | Error | `CalculateTokenValues` 内对 Own 属性无条件赋值后，同一方法又读取它派生其他字段；派生字段因此读到默认值而非用户显式值 | 用 `if (!IsExplicit(XxxTokenKind.Field)) Field = …;` 包裹该默认赋值 | DesignToken |
 | `ATOMUIGEN101` | Generator | Warning | Gallery source code display generator 发现参与默认源码匹配的 `ShowCasePanel` 缺少 `Name` | 给 `ShowCasePanel` 设置稳定 `Name`，或使用显式源码 key 规则 | GallerySourceCodeDisplay |
@@ -149,9 +148,9 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 独立 ILLink 适配器使用公开 `CreateCustomErrorMessage` API，因此传输编号为 `IL6505`、`IL6506`、`IL6507`，
 分别对应消息中的 `ATOMUIREG005`、`ATOMUIREG006`、`ATOMUIREG007`。REG 保持统一语义编号；不得通过私有 API 改写 ILLink 前缀。
 
-`ATOMUIGEN040`–`ATOMUIGEN048` 属于主题消费精确性检查，保证"声称可定制的 Token 设置后一定有效果"。除 `040`、`048` 外
+`ATOMUIGEN040`–`ATOMUIGEN048`（`046` 已退役，见下文）属于主题消费精确性检查，保证"声称可定制的 Token 设置后一定有效果"。除 `040`、`048` 外
 默认 Warning：存量控件主题分家族迁移，每个家族迁移完成后由控件包 `.editorconfig` 把该家族范围升级为 Error。
-`042` 的引用分析只统计所属包内的主题 AXAML 与 C# 引用，不分析应用代码。`044`、`046`、`047` 只报告可静态证明的
+`042` 的引用分析只统计所属包内的主题 AXAML 与 C# 引用，不分析应用代码。`044`、`047` 只报告可静态证明的
 写法：经变量间接传入的字面量、运行时才能确定的 Setter 目标不报告，由评审补充。
 `043`、`044`、`047` 检查控件代码，只在控件包内运行：编译单元引用 `SharedTokenKind` 且不是其定义程序集，并且声明了
 `[ControlDesignToken]` 类型，或项目设置了编译器可见属性 `AtomUIThemeConsumptionAnalysis=true`（仓库内五个第一方控件包已设置，
@@ -183,6 +182,15 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 同名的无关私有资源不能单独触发 `InvalidResourceDependency`；开放宿主 DynamicResource 与包内必需资源必须按普通
 资源作用域区分。运行时才可确认的缺包、跨包 owner、资源和语义错误由启动校验报告，不伪装为应用 usage 编译诊断，
 也不为复刻旧诊断重新引入消费 DLL 调用图分析。
+
+## 已退役的 Generator 诊断
+
+下列 ID 标记为 **retired / reserved**：不再有生产者，不分配给新语义，源码中仅保留 ID 常量并标 `[Obsolete]`，
+`.editorconfig` 与测试不再引用。
+
+| ID | 原语义，仅用于识别旧日志 | 退役原因 |
+| --- | --- | --- |
+| `ATOMUIGEN046` | ControlTemplate 节点属性（字面量或 TokenResource）上的默认值遮蔽同节点同属性的状态 Setter | 自 e42b96cf5 起模板内字面量与 TokenResource 读取均为 Template 优先级，低于触发样式（`StyleTrigger`），遮蔽不再可能发生 |
 
 ## 历史 LINK 诊断保留表
 

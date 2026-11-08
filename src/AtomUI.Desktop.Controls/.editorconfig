@@ -10,7 +10,6 @@ dotnet_diagnostic.ATOMUIGEN042.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
-dotnet_diagnostic.ATOMUIGEN046.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
 
 # Input family: TextBox, LineEdit, SearchEdit, TextArea, ButtonSpinner, NumericUpDown, AutoComplete
@@ -22,7 +21,6 @@ dotnet_diagnostic.ATOMUIGEN042.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
-dotnet_diagnostic.ATOMUIGEN046.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
 
 [Primitives/InputControlFrame.cs]
@@ -39,7 +37,6 @@ dotnet_diagnostic.ATOMUIGEN042.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
-dotnet_diagnostic.ATOMUIGEN046.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
 
 # Choice family: CheckBox (CheckBoxGroup), RadioButton (RadioButtonGroup), ToggleSwitch, Slider (SliderTrack, SliderThumb)
@@ -51,7 +48,6 @@ dotnet_diagnostic.ATOMUIGEN042.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
-dotnet_diagnostic.ATOMUIGEN046.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
 
 # Steps / Progress family: Steps (StepsItem and its identity-less parts), ProgressBar, StepsProgressBar, CircleProgress and
@@ -63,5 +59,4 @@ dotnet_diagnostic.ATOMUIGEN042.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
-dotnet_diagnostic.ATOMUIGEN046.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error

@@ -57,6 +57,9 @@ internal static class AtomUIDiagnosticIds
     public const string ControlCodeScopedTokenRead = "ATOMUIGEN043";
     public const string ControlCodeVisualLiteral = "ATOMUIGEN044";
     public const string ThemeAssetVisualLiteral = "ATOMUIGEN045";
+    // Retired: ATOMUIGEN046 (template node attribute masks a state Setter) no longer reports; ControlTemplate node values
+    // have Template priority, below triggered styles. The ID is never reused and has no descriptor.
+    [Obsolete("ATOMUIGEN046 is retired and never reported; the ID is reserved and must not be reused.")]
     public const string ThemeAssetTemplateAttributeMasksSetter = "ATOMUIGEN046";
     public const string ControlCodeLocalValueVisualWrite = "ATOMUIGEN047";
     public const string OwnTokenDerivationBaseUnguarded = "ATOMUIGEN048";

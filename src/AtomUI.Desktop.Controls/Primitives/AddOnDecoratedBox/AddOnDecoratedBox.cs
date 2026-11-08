@@ -1,8 +1,10 @@
+using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.Primitives.Themes;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -254,6 +256,7 @@ internal class AddOnDecoratedBox : InputControlFrame
     private ContentPresenter? _rightAddOnPresenter;
     private ContentPresenter? _contentLeftAddOn;
     private ContentPresenter? _contentRightAddOn;
+    private CompositeDisposable? _statusColorValues;
     private bool _borderInfoDirty;
     private bool _cornerRadiusDirty;
     private bool _borderThicknessDirty;
@@ -631,93 +634,70 @@ internal class AddOnDecoratedBox : InputControlFrame
 
     private void UpdateIconStatusColors()
     {
+        // Status colours are removable Template-priority values: user local values and part styles on the add-on
+        // presenters and icons keep winning and are never erased, and leaving the status disposes exactly the values
+        // applied here (no ClearValue). Add-on icons are runtime content (not template parts), possibly logically
+        // owned by the outer input control, so a ControlTheme selector cannot reach them.
+        _statusColorValues?.Dispose();
+        _statusColorValues = null;
+
         var foreground = AddOnStatusForeground;
-        var iconBrush = AddOnStatusIconBrush;
-
-        // 应用 Foreground 到 addon 区域的 ContentPresenter
-        ApplyAddOnForeground(_contentLeftAddOn, foreground);
-        ApplyAddOnForeground(_contentRightAddOn, foreground);
-        ApplyAddOnForeground(_leftAddOnPresenter, foreground);
-        ApplyAddOnForeground(_rightAddOnPresenter, foreground);
-
-        // 应用 Icon 染色
-        ApplyIconBrush(_contentLeftAddOn, iconBrush);
-        ApplyIconBrush(_contentRightAddOn, iconBrush);
-        ApplyIconBrush(_leftAddOn, iconBrush);
-        ApplyIconBrush(_rightAddOn, iconBrush);
-    }
-
-    private static void ApplyAddOnForeground(ContentPresenter? presenter, IBrush? brush)
-    {
-        if (presenter == null)
+        var iconBrush  = AddOnStatusIconBrush;
+        if (foreground is null && iconBrush is null)
         {
             return;
         }
 
-        if (brush != null)
+        var values = new CompositeDisposable();
+        if (foreground is not null)
         {
-            if (!ReferenceEquals(presenter.Foreground, brush))
-            {
-                presenter.SetCurrentValue(ForegroundProperty, brush);
-            }
+            ApplyAddOnForeground(values, _contentLeftAddOn, foreground);
+            ApplyAddOnForeground(values, _contentRightAddOn, foreground);
+            ApplyAddOnForeground(values, _leftAddOnPresenter, foreground);
+            ApplyAddOnForeground(values, _rightAddOnPresenter, foreground);
         }
-        else
+
+        if (iconBrush is not null)
         {
-            if (presenter.IsSet(ForegroundProperty))
-            {
-                presenter.ClearValue(ForegroundProperty);
-            }
+            ApplyIconBrush(values, _contentLeftAddOn, iconBrush);
+            ApplyIconBrush(values, _contentRightAddOn, iconBrush);
+            ApplyIconBrush(values, _leftAddOn, iconBrush);
+            ApplyIconBrush(values, _rightAddOn, iconBrush);
         }
+
+        _statusColorValues = values;
     }
 
-    private static void ApplyIconBrush(Control? container, IBrush? brush)
+    private static void ApplyAddOnForeground(CompositeDisposable values, ContentPresenter? presenter, IBrush brush)
+    {
+        AddValue(values, presenter?.SetValue(ForegroundProperty, brush, BindingPriority.Template));
+    }
+
+    private static void ApplyIconBrush(CompositeDisposable values, Control? container, IBrush brush)
     {
         if (container == null)
         {
             return;
         }
+
         foreach (var descendant in container.GetVisualDescendants())
         {
-            if (descendant is not Icon icon)
+            if (descendant is not Icon icon || icon.Classes.Contains("skip-status"))
             {
                 continue;
             }
 
-            if (icon.Classes.Contains("skip-status"))
-            {
-                continue;
-            }
+            AddValue(values, icon.SetValue(Icon.FillBrushProperty, brush, BindingPriority.Template));
+            AddValue(values, icon.SetValue(Icon.StrokeBrushProperty, brush, BindingPriority.Template));
+            AddValue(values, icon.SetValue(Icon.ForegroundProperty, brush, BindingPriority.Template));
+        }
+    }
 
-            if (brush != null)
-            {
-                if (!ReferenceEquals(icon.FillBrush, brush))
-                {
-                    icon.SetCurrentValue(Icon.FillBrushProperty, brush);
-                }
-                if (!ReferenceEquals(icon.StrokeBrush, brush))
-                {
-                    icon.SetCurrentValue(Icon.StrokeBrushProperty, brush);
-                }
-                if (!ReferenceEquals(icon.Foreground, brush))
-                {
-                    icon.SetCurrentValue(Icon.ForegroundProperty, brush);
-                }
-            }
-            else
-            {
-                if (icon.IsSet(Icon.FillBrushProperty))
-                {
-                    icon.ClearValue(Icon.FillBrushProperty);
-                }
-                if (icon.IsSet(Icon.StrokeBrushProperty))
-                {
-                    icon.ClearValue(Icon.StrokeBrushProperty);
-                }
-                if (icon.IsSet(Icon.ForegroundProperty))
-                {
-                    icon.ClearValue(Icon.ForegroundProperty);
-                }
-            }
+    private static void AddValue(CompositeDisposable values, IDisposable? applied)
+    {
+        if (applied is not null)
+        {
+            values.Add(applied);
         }
     }
     

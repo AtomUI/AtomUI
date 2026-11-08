@@ -3,6 +3,7 @@ using AtomUI.Desktop.Controls.Primitives.Themes;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -275,6 +276,70 @@ public class AddOnContentTemplateTests
                 .IsVisible.ShouldBeFalse();
             decoratedBox.InnerBoxCornerRadius.TopLeft.ShouldBe(8);
             decoratedBox.InnerBoxCornerRadius.BottomLeft.ShouldBe(8);
+        });
+    }
+
+    [Fact]
+    public void Status_Icon_Colors_Do_Not_Erase_Local_AddOn_Icon_Brushes()
+    {
+        var plain  = new AtomUI.Icons.AntDesign.SearchOutlined();
+        var custom = new AtomUI.Icons.AntDesign.SearchOutlined { FillBrush = Avalonia.Media.Brushes.Purple };
+        var decoratedBox = new AddOnDecoratedBox
+        {
+            Width      = 320,
+            Content    = new Border { Width = 120, Height = 32 },
+            LeftAddOn  = plain,
+            RightAddOn = custom
+        };
+
+        ShowInWindow(decoratedBox, () =>
+        {
+            var plainDefault = plain.FillBrush;
+
+            decoratedBox.Status = InputControlStatus.Error;
+            Dispatcher.UIThread.RunJobs();
+            plain.FillBrush.ShouldBeSameAs(decoratedBox.AddOnStatusIconBrush);
+            custom.FillBrush.ShouldBeSameAs(Avalonia.Media.Brushes.Purple);
+
+            decoratedBox.Status = InputControlStatus.Default;
+            Dispatcher.UIThread.RunJobs();
+            plain.FillBrush.ShouldBe(plainDefault);
+            custom.FillBrush.ShouldBeSameAs(Avalonia.Media.Brushes.Purple);
+        });
+    }
+
+    [Fact]
+    public void Status_Foreground_Leaves_A_Styled_AddOn_Presenter_Foreground_And_Releases_On_Exit()
+    {
+        var styled = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Colors.Teal);
+        var decoratedBox = new AddOnDecoratedBox
+        {
+            Width     = 320,
+            Content   = new Border { Width = 120, Height = 32 },
+            LeftAddOn = "http://"
+        };
+        // A user part style on the add-on presenter (style trigger priority) must outrank the status colour.
+        var style = new Avalonia.Styling.Style(selector => selector.OfType<AddOnContentPresenter>().Class("user-prefix"));
+        style.Setters.Add(new Avalonia.Styling.Setter(ContentPresenter.ForegroundProperty, styled));
+        decoratedBox.Styles.Add(style);
+
+        ShowInWindow(decoratedBox, () =>
+        {
+            var presenter = FindPresenter(decoratedBox, AddOnDecoratedBoxThemeConstants.LeftAddOnPresenterPart);
+            var initial   = presenter.Foreground;
+
+            decoratedBox.Status = InputControlStatus.Error;
+            Dispatcher.UIThread.RunJobs();
+            presenter.Foreground.ShouldBeSameAs(decoratedBox.AddOnStatusForeground);
+
+            decoratedBox.Status = InputControlStatus.Default;
+            Dispatcher.UIThread.RunJobs();
+            presenter.Foreground.ShouldBe(initial);
+
+            presenter.Classes.Add("user-prefix");
+            decoratedBox.Status = InputControlStatus.Error;
+            Dispatcher.UIThread.RunJobs();
+            presenter.Foreground.ShouldBeSameAs(styled);
         });
     }
 

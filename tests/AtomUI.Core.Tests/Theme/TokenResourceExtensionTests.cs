@@ -19,6 +19,14 @@ public class TokenResourceExtensionTests
         key.ShouldBe(SharedTokenKind.ColorPrimary);
     }
 
+    [Fact]
+    public void Owner_Extension_Requires_A_Kind_Like_Token_Extensions()
+    {
+        Should.Throw<InvalidOperationException>(
+                  () => new OwnerTokenResourceExtension().ProvideValue(new ThrowingServiceProvider()))
+              .Message.ShouldBe("A Token resource key is required.");
+    }
+
     private sealed class ThrowingServiceProvider : IServiceProvider
     {
         public object? GetService(Type serviceType)

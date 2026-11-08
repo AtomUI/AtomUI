@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             x:Class="AtomUI.Desktop.Controls.Tests.Theme.OwnerTokenResourceView">
+    <UserControl.Resources>
+        <ControlTheme x:Key="OwnerFrameTheme" TargetType="Border">
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
+        </ControlTheme>
+    </UserControl.Resources>
+    <StackPanel>
+        <atom:Button Name="OwnerButton">
+            <StackPanel>
+                <Border Name="OwnedFrame" Theme="{StaticResource OwnerFrameTheme}" />
+                <Border Name="DirectFrame" BorderBrush="{atom:OwnerTokenResource Kind=ColorBorder}" />
+            </StackPanel>
+        </atom:Button>
+        <Border Name="UnownedFrame" Theme="{StaticResource OwnerFrameTheme}" />
+    </StackPanel>
+</UserControl>

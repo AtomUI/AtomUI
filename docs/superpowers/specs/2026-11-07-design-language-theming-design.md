@@ -19,7 +19,7 @@
 
 ## 1. 问题与要求
 
-ant.design 首页 "Flexible theme customization" 的切换器提供 14 个预设。读其源码（`.dumi/pages/index/components/ThemePreview/previewThemes/*.ts`）可知一个预设 = 全局 Token + 逐组件 Token + 算法 + 7/13 的预设还注入语义区域 CSS（渐变、硬投影、模糊、全大写、自定义 ripple）。DOM 结构在所有预设下一致。
+ant.design 首页 "Flexible theme customization" 的切换器提供 14 个预设。一个预设 = 全局 Token + 逐组件 Token + 算法，其中约一半预设还对语义区域注入样式（渐变、硬投影、模糊、全大写、自定义 ripple）。DOM 结构在所有预设下一致。
 
 AtomUI 的要求：
 
@@ -54,23 +54,22 @@ AtomUI 的要求：
 
 控件代码的 lookless 程度（`AtomUI.Controls` + `AtomUI.Desktop.Controls`，119 个控件）：111 处代码直接赋视觉属性，16 处命令式 Token 绑定（8 个文件），38 个 `Render` 自绘，`[TemplatePart]`/`[PseudoClasses]` 各 47/60 处，C# 构建的主题 0 个。
 
-## 3. 参照：Ant Design 6.7.0 怎么做
+## 3. 从 Ant Design 6.7.0 借鉴的原则
 
-| antd 6.7.0（源码位置） | 机制 | AtomUI 对应 |
+对照本地引用项目（6.7.0，`c811baa979`）核对后，采用以下六条；源码细节不进本方案。
+
+| 原则 | antd 的做法 | AtomUI 的落法 |
 | --- | --- | --- |
-| `ThemeConfig { token, components, algorithm, inherit }`（`config-provider/context.ts:100`） | 一个配置对象描述主题 | `ThemeConfig`，加 `DesignLanguage` |
-| `getComputedToken`：`theme.getDerivativeToken(seed)` → 覆盖 → `formatToken` Alias → 逐组件（`theme/useToken.ts`） | 算法链 `derivative(seed, previousMap)`，Alias 固定公式 | 同构管线；Alias 改为可替换 |
-| `prepareComponentToken(token)`（`button/style/token.ts:299`） | 组件 Token 默认是全局 Token 的纯函数，放组件目录 | Own Token 求值器留在控件包 |
-| `components[Comp].algorithm`（`context.ts:96`） | 组件重跑算法 | `ControlAlgorithmMode` |
-| `genStyleHooks('Button', token => styles, prepareComponentToken)`（`button/style/index.ts`） | 样式是 Token 的纯函数，首次使用生成并缓存 | ControlTheme 绑定 Token，惰性物化 |
-| `button/style/variant.ts`：先声明 `--ant-btn-*` 变量，模板只消费变量，变体给变量赋值 | 模板 + 变量，变体改变量 | 控件内部变量属性由主题 Setter 按状态赋值 |
-| `XxxSemanticType`、`useMergeSemantic`（context + props，可为 props 的函数） | Semantic DOM | Semantic Part 与属性选择器 |
-| `ConfigProvider` 全局 `variant` 经 `useVariant` 设组件默认（`Button.tsx:185`，6.7.0 新增） | 上层配置给组件开关设默认 | 语言主题给控件开关设默认值 |
-| `v4Theme.ts`：只有 `algorithm: [默认, compatible]` + Token，零样式 | 一种外观差异明显的"语言"可以只由算法与 Token 构成 | `AtomUI.Themes.AntV4` 验证用例 |
-| `muiTheme.ts:42` 用 `wave.showEffect` 换成 inset ripple | 反馈实现可替换 | 行为策略属性 |
-| `ThemePreview/index.tsx:387` 切换时 `key` 重挂载 | 不保状态 | AtomUI 不重挂载 |
+| 主题是一个配置对象 | 全局 Token、逐组件 Token、算法链、是否继承外层 | `ThemeConfig` 加一个 `DesignLanguage` 字段 |
+| 派生是链式算法，Alias 是独立一层 | 每个算法接收 Seed 与前一算法的结果；Alias 由固定公式生成 | 同构管线；算法与 Alias 计算按语言登记 |
+| 组件 Token 的默认是全局 Token 的纯函数，放在组件旁边 | 每个组件自带"从全局 Token 算出组件默认"的函数 | Own Token 求值器留在控件包，按语言打标签 |
+| 变体 = 模板 + 变量 | 模板只消费一组变量，每个变体只给变量赋值 | 控件的内部变量属性由主题 Setter 按状态赋值，代码不计算 |
+| 语义区域是公开契约 | 每个组件声明可定制的语义区域，上层配置与实例都能按区域注入样式，可依实例状态 | Semantic Part 与属性选择器 |
+| 上层配置可给组件开关设默认 | 6.7.0 新增全局 `variant`，组件按"实例 > 上下文 > 默认"解析 | 语言主题给控件开关设默认值 |
 
-antd 没有而 AtomUI 需要的：模板级替换（Web 用 CSS 就能换形态，Avalonia 要换 ControlTheme）、显式回落链、lookless 约束、契约部件。antd 有而 AtomUI 不需要的：CSS 变量模式、hash 隔离、`zeroRuntime`。
+两个有用的事实：antd 的 "Ant Design V4" 预设只由算法链加 Token 构成、没有任何样式注入，说明一种外观差异明显的语言可以不出一个 ControlTheme；antd 的 MUI 预设把点击反馈换成了自己的实现，说明反馈行为需要可替换。
+
+antd 没有而 AtomUI 需要的：模板级替换（Web 用 CSS 就能换形态，Avalonia 要换 ControlTheme）、显式回落链、lookless 约束、契约部件。antd 有而 AtomUI 不需要的：CSS 变量模式、hash 隔离、零运行时模式。antd 切换预设时整体重挂载预览区，AtomUI 不这样做。
 
 ## 4. 为什么这个方案可行
 
@@ -82,7 +81,7 @@ antd 没有而 AtomUI 需要的：模板级替换（Web 用 CSS 就能换形态�
 
 **机制**：`ThemeConfigMerger` 的输入多两层（语言基础 Token、语言逐控件默认），顺序为库默认 → 语言基础 → 语言逐控件默认 → 主题定义 → 根请求 → 局部配置；显式值仍按 Stage 注入现有管线。算法从 `Default/Dark/Compact` 闭合枚举改为开放 id，算法与 Alias 计算器按语言登记；Core 提供值表算法，让"直接指定式"语言把一张 Map/Alias 值表当算法用。
 
-**依据**：`ThemeCompiler.CompileGlobalBuilder` 今天就是 `seed(+Seed 显式值) → EvaluateAlgorithms → +Map 显式值 → CalculateAliasTokenValues → +Alias 显式值`，antd 的 `getComputedToken` 同构。改动是参数化，不是重写。
+**依据**：`ThemeCompiler.CompileGlobalBuilder` 今天就是 `seed(+Seed 显式值) → EvaluateAlgorithms → +Map 显式值 → CalculateAliasTokenValues → +Alias 显式值`，与 antd 的派生顺序一致。改动是参数化，不是重写。
 
 **否决**：保留全局算法，让 PrimeNG 式语言用约 230 个显式值硬压 Ant 的推导（可行但语义错误，且 Material 的 HCT 无处安放）。
 
@@ -117,7 +116,7 @@ Style OfType<T> { Setter(StyledElement.Theme, DynamicResource(ControlThemeKey(T)
 **机制**：
 - 契约部件：`[TemplatePart("PART_Popup", typeof(ISelectPopupHost), IsRequired = true)]`，控件只经接口与部件对话，部件实现随语言包交付并由该语言的模板放入。切换语言 = 重套模板 = 换部件。只用于真实分歧点，预计每控件零到两个。
 - 行为策略：控件暴露 `StyledProperty<IFeedbackBehavior?>`，语言主题用 Setter 注入；无状态策略是单例，有状态的由策略为控件建轻量状态并在 detach 释放。控件不内置任何语言的默认策略。
-- 控件开关是最后手段：只有差异必须改变控件公开状态机时才加属性，语义对所有语言成立，语言主题设默认值（antd 6.7.0 的全局 `variant` 就是这个模式）。
+- 控件开关是最后手段：只有差异必须改变控件公开状态机时才加属性，语义对所有语言成立，语言主题设默认值。
 
 **依据**：Avalonia 自己的 `TextBox`/`TextPresenter`、`ScrollViewer`/`ScrollContentPresenter` 就是"控件经部件工作"；接口调用都在事件路径，不在 `Measure/Arrange/Render`。
 
@@ -147,7 +146,7 @@ Style OfType<T> { Setter(StyledElement.Theme, DynamicResource(ControlThemeKey(T)
 
 **机制**：控件包的 ControlTheme 与 Own Token 求值器原地不动，由生成器打 `Ant` 标签，走与其他语言相同的注册、校验、回落；Core 里的 Ant 残留（三个计算器、调色板、Alias 公式、DaybreakBlue）搬进一个很小的 `AtomUI.Themes.Ant`。`AtomUI.Controls` 引用它，`UseAtomUI()` 开箱即是 Ant。
 
-**依据**：每种语言的回落链末端都是 Ant，Ant 的视觉永远在产物里；物理拆出约 380 个 AXAML 与 95 个求值器省不下体积，只增加包数。antd 也把 `prepareComponentToken` 放在组件目录。
+**依据**：每种语言的回落链末端都是 Ant，Ant 的视觉永远在产物里；物理拆出约 380 个 AXAML 与 95 个求值器省不下体积，只增加包数。antd 同样把组件 Token 的默认函数放在组件目录。
 
 **保留的边界**：全局 Token 词汇表来自 Ant Design 的分层与命名，但它是所有语言的 ControlTheme 共同消费的契约，留在 Core；各语言把自己的概念映射到这套词汇。
 
@@ -340,7 +339,7 @@ AtomUI.Themes.AntV4/                                    只换 Default 算法与
 六条规则（逐控件二元审计，能查的进分析器）：
 
 1. **视觉值不进代码**。不得出现画刷、颜色、阴影、圆角、厚度、字号、尺寸的字面量或由 Token 计算得出的值；不得命令式绑定 Token。自绘控件把画刷、笔、几何参数暴露为 StyledProperty，在 `Render` 中只读取。
-2. **状态与变量可以进代码，计算不行**。离散状态（`EffectiveVariant`、`EffectiveIsDanger`）可作为内部属性或伪类供选择器使用；视觉类型的内部属性（`VariantShadow`、`EffectiveCornerRadius`）可作为模板变量存在（antd v6 `variant.ts` 的模式），但值只能由主题 Setter 按状态赋予（`^[EffectiveVariant=Solid]`、`^[SizeType=Large]`），代码不得计算或给默认。
+2. **状态与变量可以进代码，计算不行**。离散状态（`EffectiveVariant`、`EffectiveIsDanger`）可作为内部属性或伪类供选择器使用；视觉类型的内部属性（`VariantShadow`、`EffectiveCornerRadius`）可作为模板变量存在（即"模板 + 变量，变体改变量"），但值只能由主题 Setter 按状态赋予（`^[EffectiveVariant=Solid]`、`^[SizeType=Large]`），代码不得计算或给默认。
 3. **模板契约显式、最小、按需契约化**。`[TemplatePart(Name, ContractType, IsRequired)]` 列全代码依赖的部件；只有真实分歧点用接口做 `ContractType`，其余具体类型；`[PseudoClasses]` 列全伪类；`OnApplyTemplate` 只经 `NameScope` 取部件，可选部件为空时降级不抛；不按类型或 Name 搜索可视树。
 4. **行为经策略属性注入，不内置默认**。`StyledProperty<IXxxBehavior?>` 默认 null。
 5. **几何从属性推导，不写常量**。

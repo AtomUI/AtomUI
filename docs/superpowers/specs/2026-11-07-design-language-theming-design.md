@@ -42,7 +42,7 @@ AtomUI 的要求：
 | 已有 | 位置 | 对本方案的意义 |
 | --- | --- | --- |
 | Seed→Map→Alias 三层全局 Token（25/112/118），算法链 `Evaluate(effectiveSeed, previousMap, nextMap)`，按 Stage 注入显式值 | `Theme/Compilation/ThemeCompiler.cs: CompileGlobalBuilder` | 派生管线已是 antd 结构，只需把算法与 Alias 计算变成可替换 |
-| Control Own Token：字段 + `CalculateTokenValues(isDark)` 默认求值 | 各控件 `XxxToken.cs` | 等价 antd 的 `prepareComponentToken`，位置也一样 |
+| Control Own Token：字段 + `CalculateTokenValues(isDark)` 默认求值 | 各控件 `XxxToken.cs` | 与 antd 组件 Token 默认函数同一模式、同一位置 |
 | `ThemeConfig { Tokens, Controls, Algorithms, Inherit }`、合并器、规范化器 | `Theme/Configuration/` | 直接加一层输入 |
 | `ThemeManager` 五阶段事务（Capture/Prepare/CommitCore/Publish/Complete）、Snapshot 唯一真源 | `Theme/ThemeManager.cs`、`ThemeTransaction.cs` | 切换语言复用，不加阶段 |
 | 作用域：`ThemeConfigProvider`、`ThemeContext`、每作用域一个 `ThemeTokenResourceProvider`、独立窗口的 `ThemeContextLease` | `Theme/ThemeScope*.cs`、`Resources/ThemeTokenResourceProvider.cs` | 视觉层的键由同一个 Provider 回答 |

@@ -414,7 +414,7 @@ git commit -m "test(Button): Button 家族 Token 生效测试全绿并转分析�
 | 10.7 | Navigation | `NavMenu`（E3：`Application.Current.TryGetResource(MotionDurationMid)` 与 200ms 回落删除）、`Menu`、`TabControl` / `TabItem` / `TabStripItem`（E3）、`Breadcrumb`、`Pagination`、`Tour` | 借鉴 `473c43b1f`（NavMenu 分组标题 P1）、`9c01e0cc7`（Tour 间距绑定随 Gap 重建） |
 | 10.8 | Layout / Container | `Card`、`Collapse`、`Splitter`（借鉴 `b1a6fc37a`：尺寸挂载期绑定 + `AffectsMeasure`）、`SplitView`（分隔线 `Width="1"` → `LineWidth`）、`Separator`、`Space`、`Masonry` | |
 | 10.9 | Data | `Table`（基础）、`List`、`Tree`、`Avatar`、`Timeline`、`Calendar`（E2 `CalendarRangeBarPanel` 字号 12 / 高度 20 / 内边距 8 → Own Token）、`DatePicker` / `TimePicker`、`Carousel`、`Statistic` | |
-| 10.10 | 其余 | `ScrollBar`、`Icon`、`Window` 装饰、`FloatButton` 之外的剩余控件 | 以 `ATOMUIGEN041`–`047` 报告为清单 |
+| 10.10 | 其余 | `ScrollBar`、`Icon`、`Window` 装饰、`FloatButton` 之外的剩余控件；以及 Button 家族遗留的 DropdownButton / SplitButton 变体色 | 以 `ATOMUIGEN041`–`047` 报告为清单。DropdownButton、SplitButton 的变体色绑定的是 Button 的 Own Token，这些值由 Button 的有效全局 Token 派生，所以 `Controls[DropdownButton].Tokens[ColorText]` 不改变它们的默认文字色：把变体相关 Own Token 提取到一个抽象 `[ControlDesignToken]` 层，由 `ButtonToken` 与新的 `DropdownButtonToken` 终端分别继承，变体绑定改用各自 identity 的键，并补隔离测试 |
 
 每个家族完成的定义：该家族生效测试全绿；`Controls[X]` 隔离测试通过；分析器对该家族目录转错误；`token.md` 更新；一个或多个 commit。
 

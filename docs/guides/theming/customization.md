@@ -684,7 +684,7 @@ Control 使用同一条确定性路径。
 | 在 `CalculateTokenValues` 里用 `double.IsNaN` 判断用户是否设置了某字段 | 编译器已先写入显式值，哨兵永远判为未设置；Color 等类型也没有哨兵 | 用 `IsExplicit(kind)` |
 | 控件代码用 `Application.Current.TryGetResource` 读 Token，失败回落写死值 | 局部 ThemeConfigProvider 的覆盖对它无效 | `ControlTokenAccessor` 或 `TokenResourceBinder` |
 | 预设色用 RGB 常量写在代码里 | 不跟随主题色板，暗色下也不变 | 从快照 `PresetPalettes` 读取并按快照缓存 |
-| 把默认值写在模板节点属性上 | LocalValue 优先级遮蔽 `:pointerover`、暗色等状态 Setter | 写成 Style Setter |
+| 同节点同属性同时在模板节点属性与非触发 Style Setter 写默认值 | 模板节点属性为 Template 优先级，非触发 Style Setter 不生效 | 只在一处写默认值 |
 | 为 SearchEdit 创建借用 Button/LineEdit Token 的 SearchButton | 一个类型出现多个 Token 归属 | 组合 public Button + `SearchButtonTheme` |
 | 为每个 ControlTheme 写注册代码 | 容易遗漏且破坏第三方开发体验 | 约定目录 + 生成 manifest |
 | 运行时扫描第三方程序集 | trimming 后元数据不可靠，启动成本不可控 | 包级生成注册入口 |

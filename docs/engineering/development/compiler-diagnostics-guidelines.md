@@ -190,7 +190,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 
 | ID | 原语义，仅用于识别旧日志 | 退役原因 |
 | --- | --- | --- |
-| `ATOMUIGEN046` | ControlTemplate 节点属性（字面量或 TokenResource）上的默认值遮蔽同节点同属性的状态 Setter | 自 e42b96cf5 起模板内字面量与 TokenResource 读取均为 Template 优先级，低于触发样式（`StyleTrigger`），遮蔽不再可能发生 |
+| `ATOMUIGEN046` | ControlTemplate 节点属性（字面量或 TokenResource）上的默认值遮蔽同节点同属性的状态 Setter | TokenResource 在模板内取 Template 优先级后，模板内字面量与 TokenResource 读取均为 Template 优先级，低于触发样式（`StyleTrigger`），遮蔽不再可能发生 |
 
 ## 历史 LINK 诊断保留表
 

@@ -547,6 +547,30 @@ git commit -m "fix(Theme): 动效时长改为随作用域与主题变化的 Toke
 
 ---
 
+### Task 18: TokenResource 在模板内取 Template 优先级（在 10.4 之后、10.5 之前执行）
+
+Task 10.4 实施时确认：`TokenResourceExtension<T>.ProvideValue`（`src/AtomUI.Core/Theme/Resources/TokenResourceExtension.cs`）返回 `new DynamicResourceExtension(key)`，没有调用它的 `ProvideValue(serviceProvider)`。Avalonia 只有在 `DynamicResourceExtension.ProvideValue` 里检测到 ControlTemplate 上下文时才把绑定设为 Template 优先级，因此所有生成的 `XxxTokenResource` 与 `SharedTokenResource` 写在模板节点属性上时都是 LocalValue，会遮蔽 `:pointerover`、`:disabled` 等触发样式的 Setter。这是规则 P1 一类缺陷的共同根因，`OwnerTokenResource` 已在 Task 4 修正，其余扩展未修正。
+
+**Files:**
+- Modify: `src/AtomUI.Core/Theme/Resources/TokenResourceExtension.cs`
+- Test: `tests/AtomUI.Core.Tests/Theme/TokenResourceExtensionTests.cs`、`tests/AtomUI.Desktop.Controls.Tests/Theme/`（一个编译型 AXAML 用例）
+
+**Interfaces:**
+- `ProvideValue` 改为 `return new DynamicResourceExtension(GetResourceKey(kind)).ProvideValue(serviceProvider);`（或等价地复用 `OwnerTokenResourceExtension` 的模板检测），模板内使用得到 Template 优先级，模板外行为不变。
+
+- [ ] **Step 1: 写失败测试**：模板节点 `Background="{atom:ButtonTokenResource …}"` 加同节点的 `^:pointerover /template/ Border#X` Setter，悬停态 Setter 生效；模板外（Style Setter 与普通元素属性）的优先级不变；`SharedTokenResource` 同样。
+- [ ] **Step 2: 运行确认失败。**
+- [ ] **Step 3: 实现。**
+- [ ] **Step 4: 全量回归**：Core、Desktop.Controls、Rendering（含已迁移家族全部生效与隔离测试）、Gallery 测试全部通过；原先依赖 LocalValue 盖过触发样式的模板值若产生可见变化，逐一判断：若是被遮蔽的状态 Setter 终于生效，记入 CHANGELOG；若是真正依赖 LocalValue 的写法，改为显式 Style Setter。
+- [ ] **Step 5: 046 的说明与 `control-token-guidelines.md` 规则 5 补一句：TokenResource 在模板内为 Template 优先级，会被触发样式覆盖，但仍盖过同节点的非触发 Style Setter。**
+- [ ] **Step 6: Commit**
+
+```bash
+git commit -m "fix(Theme): TokenResource 在模板内取 Template 优先级不再遮蔽状态样式"
+```
+
+---
+
 ### Task 15: 收尾：性能对照、全量回归、文档同步
 
 - [ ] **Step 1: 性能对照**：在 `tests/AtomUI.Core.Tests/Theme/Performance` 增加 `ThemeReadMigrationBenchmarkTests`：Stopwatch 测 Gallery 首页（`AtomUIGallery.Tests` 可加载的首页视图）套样式耗时与一次 `ApplyThemeAsync` Publish 耗时各 20 次取中位数，对照 `release/6.0` 在同机的记录（先在基线分支跑一次记入测试注释），断言不劣化超过 5%。
@@ -630,7 +654,7 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Desktop | ComboBox | ItemDisabledColor | 10.2 | Active |
 | Desktop | RadioButton | RadioBgColor | 10.3 | Active（选中态圆点背景） |
 | Desktop | Slider | MarginPartWithMark | 10.3 | Reserved |
-| Desktop | ProgressBar | CircleTextColor, LineBorderRadius, ProgressActiveMotionDuration, ProgressStepMarginInlineEnd, ProgressStepMinWidth | 10.4 | |
+| Desktop | ProgressBar | CircleTextColor, LineBorderRadius, ProgressActiveMotionDuration, ProgressStepMarginInlineEnd, ProgressStepMinWidth | 10.4 | CircleTextColor、LineBorderRadius、ProgressStepMarginInlineEnd、ProgressStepMinWidth → Active（按控件拆分到各自终端 Token）；ProgressActiveMotionDuration → Reserved |
 | Desktop | Tag | TagCloseIconSize | 10.5 | |
 | Desktop | Alert | CloseIconSize, MessageWithDescriptionMargin | 10.6 | |
 | Desktop | MessageCard | CardHeight | 10.6 | |

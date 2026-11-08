@@ -31,8 +31,8 @@ AtomUI 应用在运行时切换设计语言，效果对齐 ant.design 首页的�
 
 | 概念 | 内容 | 举例 |
 | --- | --- | --- |
-| 设计语言 | 一套 ControlTheme；Token 派生策略（算法集、Alias 计算）；语言基础 Token；逐控件 Own Token 默认；默认主题；回落目标；少数行为实现（反馈策略、契约部件） | AntDesign、Shadcn、PrimeNG |
-| 主题定义 | 一组 Token 值，以色板为主；属于某个语言，或是通用的（任何语言下可用） | AntDesign 下的 DaybreakBlue、DustRed；Shadcn 下的 Zinc、Slate、Stone；PrimeNG 下的 Aura、Lara、Nora；用户目录里的通用色板 |
+| 设计语言 | 一套 ControlTheme；Token 派生策略（算法集、Alias 计算）；语言基础 Token；逐控件静态覆盖；逐控件 Own Token 求值器；默认主题；回落目标；少数行为实现（反馈策略、契约部件） | AntDesign、Shadcn、PrimeNG |
+| 主题定义 | 一组 Token 值，以色板为主，可按变体（Dark 等）分块给值；属于某个语言，或是通用的（任何语言下可用） | AntDesign 下的 DaybreakBlue、DustRed；Shadcn 下的 Zinc、Slate、Stone（各含明暗两套色值）；PrimeNG 下的 Aura、Lara、Nora；用户目录里的通用色板 |
 | 变体 | Default / Dark / Compact 等 id；每个语言声明自己支持哪些、各自怎么算 | Shadcn 与 PrimeNG 的 Dark 是一张值表而非算法；PrimeNG 可以不支持 Compact |
 | 运行时配置 | Token、逐控件 Token、算法、是否继承、局部切语言 | 应用级调色；某个面板换成 Shadcn |
 
@@ -67,13 +67,13 @@ Core 不认识任何一种设计语言。Ant Design 是默认语言，id 为 `An
 ```text
 库默认（词汇表的类型默认值）
 → 语言基础 Token
-→ 语言逐控件 Own Token 默认
-→ 主题定义 Token（语言专属或通用）
+→ 语言逐控件静态覆盖（Controls：某控件在该语言下固定的 Token 值）
+→ 主题定义 Token（语言专属或通用；含当前变体的分块值）
 → 根 ThemeRequest.Config
 → 局部 ThemeConfigProvider.Config（沿父链继承；Inherit=false 回到"语言 + 语言默认主题"）
 ```
 
-合并产出每个 Token 的显式值，按 Seed / Map / Alias 阶段注入派生管线；这是现有 `ThemeCompiler` 的顺序，不变。
+合并产出每个 Token 的显式值，按 Seed / Map / Alias / Own 阶段注入派生管线；这是现有 `ThemeCompiler` 的顺序，不变。"静态覆盖"是值，"Own 求值器"（4.2）是函数，两者不同：前者参与合并，后者在派生阶段为没有显式值的 Own Token 算默认。
 
 ### 4.2 派生策略归语言
 
@@ -88,7 +88,8 @@ own   = 语言.Own求值器[控件](alias) + 显式 Own 值         // 求值器
 - 变体 id 是开放字符串，`Default/Dark/Compact` 是约定常量。请求与控件级自定义算法的 id 在当前语言中解析，不支持 → 失败并诊断；UI 据 `SupportedAlgorithms` 禁用开关。
 - 外观（Light/Dark）由算法描述符声明，与今天一致。
 - 派生式语言（Ant Design）提供真算法：Seed 经调色板算法生成 Map，Alias 由公式生成。
-- 直接指定式语言（shadcn、PrimeNG）不派生：shadcn 的语义变量（background、foreground、primary、muted、accent、destructive、border、ring、radius…）和 PrimeNG 的 primitive / semantic / component 三层 Token 都是直接给值，明暗各一套。它们用 Core 提供的值表算法，把一张 Map/Alias 值表当算法，Dark 是另一张表；PrimeNG 的 Aura、Lara、Nora 预设与 shadcn 的 Zinc、Slate、Stone 色系是各自语言下的专属主题定义。
+- 直接指定式语言（shadcn、PrimeNG）不派生：shadcn 的语义变量（background、foreground、primary、muted、accent、destructive、border、ring、radius…）和 PrimeNG 的 primitive / semantic / component 三层 Token 都是直接给值，明暗各一套。它们用 Core 提供的值表算法：语言级的值表给与色板无关的值（圆角、线宽、阴影、字体），Dark 是另一张表并声明外观为 Dark；色板属于预设，所以 PrimeNG 的 Aura、Lara、Nora 与 shadcn 的 Zinc、Slate、Stone 是各自语言下的专属主题定义，**主题定义按变体分块给值**（默认块 + `Dark` 块），编译时把当前变体链命中的块叠加进显式值。主题 XML 为此增加可选的 `<Variant Id="Dark">` 子块；Ant Design 的主题不需要它。
+- 缺口填充的语义：语言没给出的 Map/Alias 沿回落链用回落语言的派生结果补齐，而回落语言是用**本语言的有效 Seed** 派生的。因此值表语言必须同时给出 Seed（`ColorPrimary`、`ColorBgBase` 等），否则补齐出来的是回落语言默认色系。启动校验报告每个语言被补齐的 Token 清单，语言作者据此决定是补值还是接受。
 - 第三方只想换几个值的最小语言可以声明派生策略为"继承"，全部沿回落链取。
 - 语言扩展全局 Token（PrimeNG 的 50 到 950 十一阶 primitive 调色板、shadcn 的 ring / muted / accent 在 AtomUI 词汇里没有一一对应）：设计保留，不在首批；首批先映射到现有词汇并在 `FIDELITY.md` 记录有损项，证据充分再做。
 
@@ -108,7 +109,8 @@ own   = 语言.Own求值器[控件](alias) + 显式 Own 值         // 求值器
 - 切换语言 = 一次普通主题事务。Publish 阶段的资源变化通知同时驱动 Token 绑定与 Theme 绑定重新取值；只有主题实例真的变化的控件重套模板，只换 Token 的语言零重套。
 - 局部 `ThemeConfigProvider`、Popup、带 owner 的独立窗口全部沿现有资源链取到各自作用域的主题，不加任何新的传播机制。
 - 用户在实例上显式设置的 `Theme` 本地值优先级更高，不被语言切换改写。
-- 没有注册任何语言时，键不命中，`Theme` 为 null，控件无模板、无外观，与未引用 Fluent 的 Avalonia 应用一致；启动记一条诊断，不抛。
+- 控件包不再以类型为键导出 ControlTheme 资源，所以没有隐式主题可回落。没有注册任何语言时键不命中，`Theme` 为 null，控件无模板、无外观，与未引用 Fluent 的 Avalonia 应用一致；启动记一条诊断，不抛。第三方代码里 `{StaticResource {x:Type atom:Button}}` 这类引用改用 `FallbackControlTheme`，属破坏性变更。
+- 组合控件的部件主题（`SearchEdit.SearchButtonTheme`、`Calendar.PanelTheme`、`DatePanel.CellTheme` 等）由 owner 的 ControlTheme 以 Setter 提供默认，模板内用 `TemplateBinding` 传给子控件；owner 的主题随语言切换，部件主题随之切换，不需要额外机制。命名的非类型键 ControlTheme（现有 9 个）随所在语言包的资源走。
 
 ## 6. 行为层：少数分歧的吸收点
 
@@ -148,6 +150,8 @@ own   = 语言.Own求值器[控件](alias) + 显式 Own 值         // 求值器
 | 没有主题也能运行 | 无模板下 `Measure/Arrange` 零尺寸，事件与命令照常；这是验收用例 |
 
 现状基线（`AtomUI.Controls` + `AtomUI.Desktop.Controls`，119 个控件）：111 处代码赋视觉属性，16 处命令式 Token 绑定，38 个自绘，`[TemplatePart]`/`[PseudoClasses]` 各 47/60 处，C# 构建主题 0 个。分析器先对存量警告，按语言覆盖的控件家族逐批清零转错误；不做全量前置。
+
+公开 API 清理：控件上带有 Ant Design 专属语义的公开属性要随 lookless 一起处理。`IsWaveSpiritEnabled`（8 个控件）描述的是 Ant 的 wave 反馈，改为 `Feedback` 策略属性，wave 的形状参数成为 `WaveFeedback` 自己的附加属性；`IsMotionEnabled`（110 处）是与语言无关的通用开关，保留。重构每个家族时列出该家族的此类属性并逐个裁决。
 
 Semantic marker 是主题的义务：每种语言的 ControlTheme 保持同一组非 Optional marker，用户写的 Semantic Part Style 对任何语言都生效。
 
@@ -265,11 +269,12 @@ internal sealed class ButtonToken : AbstractControlDesignToken
 ### 9.1 构成
 
 ```text
-AtomUI.Themes.AntDesign/                      小包：默认语言的定义与派生
+AtomUI.Themes.AntDesign/                      小包，只依赖 Core：默认语言的定义与派生
 +-- AntDesignLanguage.cs                      Id=AntDesign、显示名、默认主题 DaybreakBlue、派生策略、无 Fallback
 +-- Algorithms/                               Default/Dark/Compact 三个计算器、调色板、Alias 计算器（自 Core 搬入）
-+-- Behaviors/WaveFeedback.cs                 点击 wave 反馈策略（自控件代码迁出）
-\-- Definitions/DaybreakBlue.theme.xml …      专属主题定义（自 Core 搬入）；ControlTheme 与 Own 求值器在控件包里打标签
+\-- Definitions/DaybreakBlue.theme.xml …      专属主题定义（自 Core 搬入）
+                                              ControlTheme、Own 求值器、wave 基元与 WaveFeedback 策略留在控件包，打 AntDesign 标签
+                                              （它们依赖控件类型，不能放进只依赖 Core 的小包；依赖方向：控件包 → 小包 → Core）
 
 AtomUI.Themes.Shadcn/                         <AtomUIDesignLanguage>Shadcn</AtomUIDesignLanguage>，Fallback=AntDesign
 +-- ShadcnDesignLanguage.cs                   派生策略 = 值表（Light/Dark 两张），基础 Token：圆角、线宽、字体、焦点环
@@ -287,7 +292,7 @@ AtomUI.Themes.PrimeNG/                        <AtomUIDesignLanguage>PrimeNG</Ato
 \-- FIDELITY.md
 ```
 
-控件包（`<AtomUIThemesLanguage>AntDesign</AtomUIThemesLanguage>`）继续在各控件的 `Themes/` 放 ControlTheme、在 `XxxToken.cs` 放求值器，生成器给它们打 `AntDesign` 标签；控件包不得含语言定义、计算器、主题定义。第三方控件包用同一属性声明自带主题属于哪个语言，为别的语言另建主题程序集。可选控件包（DataGrid、ColorPicker）的 Ant Design 主题随包；其他语言按需 `AtomUI.Themes.<Lang>.<Pkg>`。
+控件包（`<AtomUIThemesLanguage>AntDesign</AtomUIThemesLanguage>`）继续在各控件的 `Themes/` 放 ControlTheme、在 `XxxToken.cs` 放求值器，并可在 `Behaviors/`、`Primitives/` 放该语言的策略与基元，生成器给它们打 `AntDesign` 标签；控件包不得含语言定义、计算器、主题定义。策略与部件的契约接口（`IFeedbackBehavior`、`ISelectPopupHost` 等）与控件同在控件包或 Core，语言包只提供实现。第三方控件包用同一属性声明自带主题属于哪个语言，为别的语言另建主题程序集。可选控件包（DataGrid、ColorPicker）的 Ant Design 主题随包；其他语言按需 `AtomUI.Themes.<Lang>.<Pkg>`。
 
 ### 9.2 生成器
 
@@ -370,7 +375,7 @@ public sealed class ThemeConfigBuilder { public ThemeConfigBuilder WithDesignLan
 public sealed record ThemeState        { public string DesignLanguage { get; } }
 ```
 
-主题 XML 增加可选根属性 `DesignLanguage`（省略 = 通用）；`IsDefault` 改由语言定义的默认主题决定。AXAML 增加 `{atom:FallbackControlTheme atom:Button}` 标记扩展。
+主题 XML 增加可选根属性 `DesignLanguage`（省略 = 通用）与可选的 `<Variant Id="Dark">` 子块（该变体命中时叠加的 Token 值）；`IsDefault` 改由语言定义的默认主题决定。AXAML 增加 `{atom:FallbackControlTheme atom:Button}` 标记扩展。
 
 ## 12. 性能与内存
 
@@ -392,8 +397,8 @@ public sealed record ThemeState        { public string DesignLanguage { get; } }
 **已核对（AtomUI release/6.0）**：派生管线顺序；每作用域一个 ResourceProvider；惰性 ControlTheme provider；Semantic Part 生成；控件 lookless 基线数字。
 
 **待 spike（半天，任一不成立停下修订）**：
-1. 样式 Setter 改变已挂载控件的 `Theme` 后实时重套模板，`PART_*` 查找正常。
-2. DynamicResource 不命中时 `Theme` 回到 null 并恢复隐式主题。
+1. **首要风险**：样式 Setter 设置 `Theme` 是否在首次套样式时即生效、改变后是否实时重套模板。Avalonia 在一次 `ApplyStyling` 里先应用 ControlTheme 再应用 Styles；样式给出的 `Theme` 值到达时主题已应用过一次，依赖随后的 `OnControlThemeChanged` 重置标志并由下一次套样式（挂树、测量前）补应用。要验证首帧无闪烁、`PART_*` 查找正常、切换实时。若不成立，备选机制已定：每个控件类型在静态构造中登记一个 `AttachedToLogicalTree` 类处理器，用公开的 `GetResourceObservable(ControlThemeKey)` 把 `Theme` 以样式优先级绑定到作用域资源；语义不变，只是绑定由代码而非样式安装。
+2. DynamicResource 不命中时 `Theme` 回到 null，控件无模板且不抛。
 3. 作用域 Provider 的资源变化通知能驱动 Popup 内与独立窗口内控件的 Theme 绑定。
 顺带测量约 380 条样式对首页套样式耗时、Select 换契约部件前后的模板应用耗时。
 
@@ -422,7 +427,7 @@ public sealed record ThemeState        { public string DesignLanguage { get; } }
 | 9 | 语言扩展 Token，仅当第 8 步证明损失不可接受 | 按证据 |
 | 后续 | Material、Bootstrap 等其他语言，按同一协议另立包 | 不在本方案范围 |
 
-量级：1 到 5 步数周；6 步含对应家族 lookless 另数周；8 步长期。
+量级（诚实估计）：1 到 5 步机制部分数周。第 6 步是真正的大头：两种语言各覆盖 12 个控件家族并做精细，每个家族含 lookless 重构、ControlTheme、Own 求值器、明暗值表、保真度对照，按每语言每家族数天计，两种语言合计以季度为单位；可以按家族分批可见。第 8 步长期。
 
 ## 15. 验证
 

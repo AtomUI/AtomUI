@@ -49,6 +49,14 @@
 - Validation
   - 根因、修复前后证据、验证范围及清理见[修复记录](../../../../superpowers/plans/2026-11-10-combobox-clear.md)。
 
+## 2026-11-08
+
+- 主题契约
+  - 主题改读 ComboBox 的有效 Global Token；`ComboBoxItem` 以自身 identity 读取 Global Token，候选行颜色与尺寸跟随 ComboBox Own Token；`ItemDisabledColor` 接入禁用候选行前景。见 [ComboBox Token](token.md) §7。
+  - 根 `BorderBrush` / `Background` 经输入帧 `HostBorderBrush` / `HostBackground` 投射，移除代码侧 LocalValue 中继。
+- Fix
+  - 占位文字改用 `PlaceholderForeground`（默认 `ColorTextPlaceholder`），替代 `Opacity="0.3"`；聚焦阴影不再被根裁剪。
+
 ## 2026-11-05
 
 - 实现结构

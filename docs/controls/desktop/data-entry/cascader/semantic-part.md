@@ -43,8 +43,8 @@ Popup 模板内：`popup.root` 标注在宿主模板节点上，`popup.list` 的
 | 稳定性 | stable since 6.2.0 |
 
 **根边框与背景定制：** 可见外框由共享 `AddOnDecoratedBox` 帧绘制，其状态机拥有 `BorderBrush` 与
-`Background`。owner 的 `BorderBrush` / `Background` 会以 LocalValue 中继到帧节点生效（对齐上游 root
-border/background 语义与输入族的根表面投射 `HostBorderBrush` / `HostBackground`），因此在 owner-scoped Style
+`Background`。owner 的 `BorderBrush` / `Background` 由模板绑定到帧的 `HostBorderBrush` / `HostBackground`，帧主题在全部
+状态画刷之后把它们投射到帧上（对齐上游 root border/background 语义与输入族的根表面投射），因此在 owner-scoped Style
 里直接写根 `Setter Property="BorderBrush"` / `Property="Background"` 即可定制外框：
 
 ```xml
@@ -54,9 +54,8 @@ border/background 语义与输入族的根表面投射 `HostBorderBrush` / `Host
 </Style>
 ```
 
-定制期间该属性槽的 hover / focus / open 变色冻结（LocalValue 优先于帧状态机），focus 的 `BoxShadow` 光晕不受
-影响；置空（或不设置）后恢复帧状态机。中继带接管标记：仅当本控件实际写入过该槽位时才在置空时清除，因此嵌套
-owner 不会被外层清除。
+定制期间外框的 hover / focus / open 变色让位于根画刷，focus 的 `BoxShadow` 光晕不受影响；置空（或不设置）后恢复帧
+状态机。投射发生在控件自身的模板内，嵌套 owner 各自投射到自己的帧。
 
 
 #### `prefix`

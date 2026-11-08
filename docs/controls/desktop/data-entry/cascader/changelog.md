@@ -11,6 +11,14 @@
   - 嵌入式 `SelectFilterTextBox` 设置空 `FocusAdorner`；空前缀 add-on 不再保留缩进与间距。
   - 宿主主题设置 `ClipToBounds=False`，`Outlined` focus 外发光不再被宿主裁剪。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读 Cascader 的有效 Global Token；`CascaderView` / `CascaderViewItem` 以各自 identity 读取 Global Token。见 [Cascader Token](token.md) §7。
+  - 根 `BorderBrush` / `Background` 经输入帧投射，移除 LocalValue 中继；装饰盒主题删除与输入帧重复的状态样式。
+- Fix
+  - 聚焦阴影不再被 Cascader 根裁剪；禁用选项前缀图标改用 `ColorTextDisabled` 着色。
+
 ## 2026-11-04
 
 - Changed

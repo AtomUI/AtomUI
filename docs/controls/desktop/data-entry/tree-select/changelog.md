@@ -23,6 +23,13 @@
 - Fix
   - 隧道阶段的键盘转发只接收 TreeSelect 自身的过滤输入框；附加区或项模板中的输入框保留自己的按键，按 Enter 不再提交活动节点并关闭下拉。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读 TreeSelect 的有效 Global Token；根 `BorderBrush` / `Background` 经输入帧投射，移除 LocalValue 中继；装饰盒主题删除与输入帧重复的状态样式。
+- Fix
+  - `MinPopupWidth` 此前被弹层框体的模板绑定遮蔽，现在作为 `EffectivePopupWidth` 的下限生效（见 [TreeSelect Token](token.md)）；聚焦阴影不再被根裁剪。
+
 ## 2026-11-04
 
 - Changed

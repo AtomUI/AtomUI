@@ -485,8 +485,6 @@ public partial class ComboBox : AvaloniaComboBox,
     private FilterProjection _presentedFilterProjection;
     // A refresh requested while the leaving view was frozen; Popup.Closed publishes it.
     private bool _hasDeferredFilterRefresh;
-    private bool _isFrameBorderBrushRelayed;
-    private bool _isFrameBackgroundRelayed;
     private EventHandler? _formValueChanged;
     // Selection commits include nested display-text updates; their view projection
     // is published after callbacks and the popup's physical closing boundary.
@@ -568,8 +566,8 @@ public partial class ComboBox : AvaloniaComboBox,
         _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
         _editableTextBox   = e.NameScope.Find<AvaloniaTextBox>("PART_EditableTextBox");
         _popup             = e.NameScope.Find<Popup>("PART_Popup");
-        RelayRootSurfaceBrush(BorderBrushProperty);
-        RelayRootSurfaceBrush(BackgroundProperty);
+        // Root BorderBrush / Background reach the input frame through the template's HostBorderBrush / HostBackground
+        // bindings, which the frame theme projects over its state brushes (antd styles.root).
         if (_popup != null)
         {
             // Popup.IsPopupPinnedOpen is internal and cannot be targeted by compiled AXAML.
@@ -777,10 +775,6 @@ public partial class ComboBox : AvaloniaComboBox,
                 change.Property == DataValidationErrors.ErrorsProperty)
             {
                 UpdatePseudoClasses();
-            }
-            else if (change.Property == BorderBrushProperty || change.Property == BackgroundProperty)
-            {
-                RelayRootSurfaceBrush(change.Property);
             }
             else if (change.Property == DropDownDisplayPageSizeProperty ||
                      change.Property == ItemHeightProperty ||
@@ -1176,57 +1170,6 @@ public partial class ComboBox : AvaloniaComboBox,
             _popup.OverlayInputPassThroughElement = _addOnDecoratedBox;
         }
     }
-
-    /// <summary>
-    /// 把 owner 的根表面画刷以 LocalValue 中继到输入帧，使应用级根 <c>BorderBrush</c> / <c>Background</c>
-    /// 定制压过帧状态机；未设置时把属性交还状态机。ComboBox 派生自 Avalonia 的 ComboBox，不在
-    /// <c>AbstractTextInput</c> / <c>AbstractSelect</c> 的继承链上，因此需要与
-    /// <c>AbstractSelect.RelayRootSurfaceBrush</c> 保持一致的同名中继，让输入族的根边框定制契约对
-    /// ComboBox 同样成立。
-    /// </summary>
-    private void RelayRootSurfaceBrush(AvaloniaProperty property)
-    {
-        if (_addOnDecoratedBox is null)
-        {
-            return;
-        }
-
-        var value = GetValue(property);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            // 仅当本控件确实接管过该槽位时才交还，避免清除嵌套 owner 的中继结果。
-            if (IsRootSurfaceBrushRelayed(property))
-            {
-                _addOnDecoratedBox.ClearValue(property);
-                SetRootSurfaceBrushRelayed(property, false);
-            }
-
-            return;
-        }
-
-        _addOnDecoratedBox.SetValue(property, value, BindingPriority.LocalValue);
-        SetRootSurfaceBrushRelayed(property, true);
-    }
-
-    private bool IsRootSurfaceBrushRelayed(AvaloniaProperty property)
-    {
-        return ReferenceEquals(property, BorderBrushProperty)
-            ? _isFrameBorderBrushRelayed
-            : _isFrameBackgroundRelayed;
-    }
-
-    private void SetRootSurfaceBrushRelayed(AvaloniaProperty property, bool value)
-    {
-        if (ReferenceEquals(property, BorderBrushProperty))
-        {
-            _isFrameBorderBrushRelayed = value;
-        }
-        else
-        {
-            _isFrameBackgroundRelayed = value;
-        }
-    }
-
 
     /// <summary>
     /// 按业务状态打开弹层。开合不再由模板 <c>IsOpen</c> 绑定承担，因为模板充气阶段的绑定求值

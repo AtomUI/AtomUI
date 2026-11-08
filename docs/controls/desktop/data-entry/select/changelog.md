@@ -12,6 +12,17 @@
   - 嵌入式 `SelectFilterTextBox` 设置空 `FocusAdorner`，搜索框聚焦时不在外框内部绘制方框。
   - 宿主主题设置 `ClipToBounds=False`：`Outlined` focus 外发光绘制在 frame 外侧，此前被 `TemplatedControl` 默认裁剪丢弃。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读 Select 的有效 Global Token：`Controls[Select]` 的覆盖作用于输入表面、下拉候选项、弹层框体、多选标签区和手柄；共用部件读取宿主有效值。见 [Select Token](token.md) §7。
+  - 根 `BorderBrush` / `Background` 经输入帧 `HostBorderBrush` / `HostBackground` 投射，移除 `AbstractSelect.RelayRootSurfaceBrush` 的 LocalValue 中继；`SelectAddOnDecoratedBoxTheme` 删除与输入帧重复的状态样式，只保留展开激活边框。
+  - `OptionPadding` 接入候选行内边距；`SelectAffixPadding`、`FixedItemMargin` 标为 Reserved。
+- Fix
+  - 候选行 `OptionHeight` 与内边距此前被 ListViewItem 尺寸触发样式遮蔽，现在生效；弹层最大高度按 `OptionHeight` 计算。
+  - 候选行默认文本色改为 `ColorText`（原为 ListView 的 `ColorTextSecondary`），对齐 antd。
+  - 聚焦阴影不再被 Select 根裁剪；过滤输入跟随宿主字号。
+
 ## 2026-11-04
 
 - Changed

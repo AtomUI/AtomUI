@@ -63,3 +63,19 @@ git diff --check
 - Large / Middle / Small / Custom 下输入高度、tag 高度和选项行高度。
 - 单选、多选、过滤、空状态和异步 loading popup。
 - disabled、pointerover、expanded、checked 和 max count reached 状态。
+
+## 7. 主题读法与归属（Select 家族迁移）
+
+- `CascaderTheme` 与 `CascaderAddOnDecoratedBoxTheme` 以 `CascaderTokenResource` 读取 Global Token，`Controls[Cascader]` 的覆盖作用于
+  输入表面、弹层框体、选中文本和占位文字；共用部件 `SelectHandle`、`SelectMaxCountIndicator`、`SelectTagAwareTextBox` 读取宿主
+  （Cascader）的有效值。
+- `CascaderView` 与 `CascaderViewItem` 是注册控件，各自以 `CascaderViewTokenResource` / `CascaderViewItemTokenResource` 读取 Global
+  Token（如分隔线、圆角、图标色），跟随 `Controls[CascaderView]` / `Controls[CascaderViewItem]`；它们读取的 CascaderToken（选项
+  状态色、列宽、padding）跟随 `Controls[Cascader]`，独立使用的 CascaderView 同样读取 CascaderToken。
+- 多选内容 padding 与标签视觉仍复用 SelectToken（跟随 `Controls[Select]`），见 [Select Token](../select/token.md) §4。
+- 根 `BorderBrush` / `Background` 经输入帧的 `HostBorderBrush` / `HostBackground` 投射，不再以 LocalValue 中继。
+- 禁用选项的前缀图标改用 `ColorTextDisabled` 着色（原为 `Opacity="0.3"` 字面量）；`CascaderViewItem` 未绑定到模板的
+  `BorderBrush` Setter 已移除，前缀图标尺寸沿用 `FontSizeIcon`（原 `IconSize` Setter 被同主题后续 Setter 覆盖，从未生效）。
+
+生效与隔离测试：`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/SelectFamilyEffectTests.Cascader.cs`、
+`SelectFamilyEffectTests.Isolation.cs`。

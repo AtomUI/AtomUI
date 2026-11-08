@@ -633,8 +633,6 @@ public abstract class AbstractSelect : TemplatedControl,
     private protected bool PopupHasOpened;
     private protected bool IgnorePropertyChange;
     private AddOnDecoratedBox? _addOnDecoratedBox;
-    private bool _isFrameBorderBrushRelayed;
-    private bool _isFrameBackgroundRelayed;
 
     private IDisposable? _deactivationSubscription;
     private IDisposable? _popupPinnedOpenBinding;
@@ -698,10 +696,8 @@ public abstract class AbstractSelect : TemplatedControl,
 
         Popup = e.NameScope.Find<Popup>("PART_Popup");
         _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
-        _isFrameBorderBrushRelayed = false;
-        _isFrameBackgroundRelayed  = false;
-        RelayRootSurfaceBrush(BorderBrushProperty);
-        RelayRootSurfaceBrush(BackgroundProperty);
+        // Root BorderBrush / Background reach the input frame through the template's HostBorderBrush / HostBackground
+        // bindings, which the frame theme projects over its state brushes (antd styles.root).
 
         if (Popup != null)
         {
@@ -719,57 +715,6 @@ public abstract class AbstractSelect : TemplatedControl,
         if (IsDropDownOpen && Popup != null && !Popup.IsOpen)
         {
             OpeningDropDown(false);
-        }
-    }
-
-    /// <summary>
-    /// Relays the owner's root surface brushes onto the input frame as local values so
-    /// application-level customization wins over the frame state machine, mirroring the input
-    /// family (<c>AbstractTextInput.RelayRootSurfaceBrush</c>) and the upstream root
-    /// border/background semantics. An unset owner value restores the state machine.
-    /// </summary>
-    private void RelayRootSurfaceBrush(AvaloniaProperty property)
-    {
-        var decoratedBox = _addOnDecoratedBox;
-        if (decoratedBox is null)
-        {
-            return;
-        }
-
-        var value = GetValue(property);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            // Only hand the property back when this control is the one that took it over: a
-            // nested owner may hold its own relay on the same frame node.
-            if (IsRelayed(property))
-            {
-                decoratedBox.ClearValue(property);
-                SetRelayed(property, false);
-            }
-
-            return;
-        }
-
-        decoratedBox.SetValue(property, value, BindingPriority.LocalValue);
-        SetRelayed(property, true);
-    }
-
-    private bool IsRelayed(AvaloniaProperty property)
-    {
-        return ReferenceEquals(property, BorderBrushProperty)
-            ? _isFrameBorderBrushRelayed
-            : _isFrameBackgroundRelayed;
-    }
-
-    private void SetRelayed(AvaloniaProperty property, bool value)
-    {
-        if (ReferenceEquals(property, BorderBrushProperty))
-        {
-            _isFrameBorderBrushRelayed = value;
-        }
-        else
-        {
-            _isFrameBackgroundRelayed = value;
         }
     }
 
@@ -799,11 +744,7 @@ public abstract class AbstractSelect : TemplatedControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == BorderBrushProperty || change.Property == BackgroundProperty)
-        {
-            RelayRootSurfaceBrush(change.Property);
-        }
-        else if (change.Property == StatusProperty ||
+        if (change.Property == StatusProperty ||
             change.Property == FormStatusProperty ||
             change.Property == DataValidationErrors.HasErrorsProperty ||
             change.Property == DataValidationErrors.ErrorsProperty)

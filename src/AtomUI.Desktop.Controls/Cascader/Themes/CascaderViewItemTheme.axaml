@@ -69,8 +69,7 @@
     <Style Selector="^:is(atom|CascaderViewItem)">
         <Setter Property="Focusable" Value="False" />
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:CascaderViewItemTokenResource BorderThickness}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Cursor" Value="Hand" />
 
@@ -81,12 +80,7 @@
         <Setter Property="MinHeight" Value="{atom:CascaderTokenResource HeaderHeight}" />
         <Setter Property="Padding" Value="{atom:CascaderTokenResource OptionPadding}" />
         <Setter Property="CornerRadius"
-                Value="{atom:SharedTokenResource BorderRadius}" />
-
-        <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-        </Style>
+                Value="{atom:CascaderViewItemTokenResource BorderRadius}" />
 
         <Style Selector="^:pointerover">
             <Setter Property="Background" Value="Transparent" />
@@ -119,23 +113,23 @@
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:CascaderViewItemTokenResource ColorTextDisabled}" />
             </Style>
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-                <Setter Property="Opacity" Value="0.3" />
+                <Setter Property="IconBrush" Value="{atom:CascaderViewItemTokenResource ColorTextDisabled}" />
             </Style>
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorIcon}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource FontSizeIcon}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource FontSizeIcon}" />
+            <Setter Property="IconBrush" Value="{atom:CascaderViewItemTokenResource ColorIcon}" />
+            <Setter Property="Width" Value="{atom:CascaderViewItemTokenResource FontSizeIcon}" />
+            <Setter Property="Height" Value="{atom:CascaderViewItemTokenResource FontSizeIcon}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconTemplatePresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorIcon}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource FontSizeIcon}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource FontSizeIcon}" />
+            <Setter Property="IconBrush" Value="{atom:CascaderViewItemTokenResource ColorIcon}" />
+            <Setter Property="Width" Value="{atom:CascaderViewItemTokenResource FontSizeIcon}" />
+            <Setter Property="Height" Value="{atom:CascaderViewItemTokenResource FontSizeIcon}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">

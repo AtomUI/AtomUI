@@ -210,30 +210,23 @@ marker 归属表：
 - 模板重应用（`OnApplyTemplate`）后所有静态 marker 由新模板重建，运行时 marker 由容器路径重新注入，两者都不得依赖
   旧实例。
 
-### 5.2 根表面定制（root surface brush relay）
+### 5.2 根表面定制（root surface brush projection）
 
 输入族约定：应用对输入控件根表面（`BorderBrush` / `Background`）的定制必须压过共享帧的状态机。可见外框由共享
 `AddOnDecoratedBox` 帧绘制、其状态机（rest / hover / focus / status）拥有 `BorderBrush`，因此 owner 上的
-`BorderBrush` 默认落不到帧上。ComboBox 直接派生 Avalonia `ComboBox`，不在 `AbstractTextInput` /
-`AbstractSelect` 继承链上，`AbstractSelect.RelayRootSurfaceBrush` 覆盖不到它，故 `ComboBox.cs` 自持一份同名中继。
+`BorderBrush` 默认落不到帧上。
 
-中继规则：
+投射规则（与 TextBox / LineEdit / Select 家族相同）：
 
-- `OnApplyTemplate` 取得 `AddOnDecoratedBox` 后，立即对 `BorderBrush` / `Background` 各调用一次
-  `RelayRootSurfaceBrush`，保证模板应用**之前**设置的定制值也能生效。
-- `OnPropertyChanged` 监听这两个属性，运行时改动即时重放；写入方式为
-  `_addOnDecoratedBox.SetValue(property, value, BindingPriority.LocalValue)`，`LocalValue` 是压过帧状态机的关键。
-- 每个属性各自带一个接管标记（`_isFrameBorderBrushRelayed` / `_isFrameBackgroundRelayed`）。owner 值被清空时，只在
-  自身确有接管时才 `ClearValue` 并把属性交还状态机，避免误清内层 owner 的中继（与 `ButtonSpinner` 的接管标记同形）。
-- 模板必须把 `IsMotionEnabled="{TemplateBinding IsMotionEnabled}"` 接到 `AddOnDecoratedBox`。帧动效未接线时过渡常开，
-  **进行中的 `SolidColorBrush` 过渡优先级高于中继写入的 `LocalValue`**，会让运行中的根边框定制静默失效；模板应用前
-  赋值不存在过渡基线，因此只在运行时改值才暴露该缺陷。回归护栏见 `ComboBoxRootSurfaceRelayTests`。
+- ComboBox 模板把 `HostBorderBrush="{TemplateBinding BorderBrush}"`、`HostBackground="{TemplateBinding Background}"`
+  绑定到 `AddOnDecoratedBox`。`InputControlFrame` 在值非空时置 `:host-border-brush` / `:host-background` 伪类，
+  `InputControlFrameTheme` 在全部状态画刷之后用这两个伪类把根画刷投射到帧的 `BorderBrush` / `Background`。
+- 未设置或置空时伪类撤销，帧回到状态机；不再有代码侧 LocalValue 中继和接管标记，模板应用前设置的值同样经模板绑定生效。
+- 投射是主题样式值，应用样式（含 `frame` 专用 Style）优先于它；回归护栏见 `ComboBoxRootSurfaceRelayTests`。
 
-与 `frame` 部件的分工：根表面中继是**输入族的标准根定制入口**（改输入框边框色，作用于 owner 根）；`frame` 部件是
+与 `frame` 部件的分工：根表面投射是**输入族的标准根定制入口**（改输入框边框色，作用于 owner 根）；`frame` 部件是
 **语义选择器入口**（可用 `.semantic-frame` 的专用 Style 精确命中帧节点，并覆盖状态无关的边框宽度、圆角、背景等）。
-两者都作用于同一个 `PART_ContentFrame` 节点，但入口形态与优先级不同：中继写入 `LocalValue`，语义 Style 走
-`Style` 优先级，因此根中继会压过 `frame` 专用 Style。契约边界见
-[ComboBox Semantic Part 契约](semantic-part.md) §5。
+两者都作用于同一个帧节点。契约边界见 [ComboBox Semantic Part 契约](semantic-part.md) §5。
 
 ## 6. 交互与事件处理
 

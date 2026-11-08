@@ -18,6 +18,10 @@ AtomUI 的重要变更记录在此文件中。
   - 控件级覆盖（`Controls[LineEdit]`、`Controls[TextBox]`、`Controls[NumericUpDown]` 等）作用于该控件自己的共享输入表面（边框、背景、圆角、状态色、焦点阴影、内边距），不影响其他输入控件；NumericUpDown 的输入表面与内嵌编辑器不再跟随 `Controls[ButtonSpinner]` 或 `Controls[TextBox]`。
   - LineEdit 与 SearchEdit 按尺寸预设设置字号（`LineEdit.InputFontSize*`、SearchEdit 的 `FontSize*`）：大号输入框为 16px，小号保持中号字号（`LineEdit.InputFontSizeSM` 默认等于 `InputFontSize`，与 antd 一致）；设置 `IsCustomFontSize` 可保留继承或本地字号。
   - 输入框焦点阴影现在绘制；TextArea 的 resize 指示绘制在输入表面之上（`TextArea.ResizeHandleSize`）；AutoComplete 把 `PlaceholderForeground` 交给内部输入框；附加区状态色不再擦除附加区图标上的用户画刷。
+- Select 家族
+  - 控件级覆盖（`Controls[Select]`、`Controls[ComboBox]`、`Controls[Cascader]`、`Controls[TreeSelect]`）现在作用于该控件自身的输入表面、下拉弹层、候选项和手柄；ComboBoxItem、CascaderView、CascaderViewItem 以各自 identity 读取 Global Token。
+  - 这些控件的根 `BorderBrush` / `Background` 改为投射到输入表面，不再写入本地值；Select 候选行应用 `OptionHeight` 与新接入的 `Select.OptionPadding`，候选文本使用 `ColorText`，TreeSelect 的 `MinPopupWidth` 生效。
+  - 这些控件的聚焦阴影不再被裁剪；`Select.SelectAffixPadding`、`Select.FixedItemMargin` 标为保留，暂无视觉效果。
 
 ## 6.2.14
 

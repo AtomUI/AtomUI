@@ -3,6 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
+    <!-- The option item exists only in the Select drop-down, which opens inside a registered Popup (owner reads would
+         resolve to the Popup): every visual reads the Select's effective Tokens explicitly, so Controls[Select] reaches
+         the options. The ListViewItem base theme only provides the template and layout. -->
     <ControlTheme x:Key="{x:Type atom:SelectCandidateListItem}" TargetType="atom:SelectCandidateListItem">
         <ControlTheme.BasedOn>
             <atom:ListViewItemTheme TargetType="atom:SelectCandidateListItem" />
@@ -11,10 +14,19 @@
 
         <Style Selector="^:is(atom|SelectCandidateListItem)">
             <Setter Property="FontSize" Value="{atom:SelectTokenResource OptionFontSize}"/>
-            <Setter Property="MinHeight" Value="{atom:SelectTokenResource OptionHeight}"/>
+            <Setter Property="Foreground" Value="{atom:SelectTokenResource ColorText}" />
+            <Setter Property="Background" Value="Transparent" />
+
+            <!-- The base theme sets MinHeight and Padding in SizeType trigger styles, which outrank plain setters:
+                 the option metrics are trigger styles too, applied after the base ones. -->
+            <Style Selector="^[IsGroupItem=False]">
+                <Setter Property="MinHeight" Value="{atom:SelectTokenResource OptionHeight}"/>
+                <Setter Property="Padding" Value="{atom:SelectTokenResource OptionPadding}"/>
+            </Style>
+
             <Style Selector="^[IsGroupItem=False]:pointerover">
-                <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemColor}" />
-                <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />
+                <Setter Property="Foreground" Value="{atom:SelectTokenResource ColorText}" />
+                <Setter Property="Background" Value="Transparent" />
             </Style>
 
             <Style Selector="^[IsGroupItem=False][IsSelected=False][IsCandidateSelected=True]:not(:disabled)">
@@ -29,6 +41,20 @@
                 <Setter Property="FontWeight" Value="{atom:SelectTokenResource OptionSelectedFontWeight}"/>
                 <Setter Property="Foreground" Value="{atom:SelectTokenResource OptionSelectedColor}"/>
                 <Setter Property="Background" Value="{atom:SelectTokenResource OptionSelectedBg}"/>
+            </Style>
+
+            <Style Selector="^[IsGroupItem=True]">
+                <Setter Property="Foreground" Value="{atom:SelectTokenResource ColorTextDescription}" />
+            </Style>
+
+            <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="Foreground" Value="{atom:SelectTokenResource ColorTextDisabled}" />
+            </Style>
+
+            <Style Selector="^ /template/ atom|IconTemplatePresenter#SelectedIndicator">
+                <Setter Property="IconBrush" Value="{atom:SelectTokenResource ColorPrimary}" />
+                <Setter Property="Width" Value="{atom:SelectTokenResource IconSize}" />
+                <Setter Property="Height" Value="{atom:SelectTokenResource IconSize}" />
             </Style>
         </Style>
     </ControlTheme>

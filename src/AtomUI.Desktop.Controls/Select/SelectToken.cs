@@ -86,8 +86,20 @@ internal sealed class SelectToken : AbstractControlDesignToken
     /// </summary>
     public double OptionHeight { get; set; }
 
+    /// <summary>
+    /// 前后缀内间距
+    /// Padding of the select affix (prefix / suffix)
+    /// </summary>
+    [ReservedToken("antd Select selectAffixPadding. The prefix is aligned by MultiModePrefixIndent* and the suffix sits " +
+                   "inside the input frame padding, so no separate affix padding is applied yet.")]
     public Thickness SelectAffixPadding { get; set; }
 
+    /// <summary>
+    /// 多选标签固定外边距
+    /// Fixed margin of multiple-mode tags
+    /// </summary>
+    [ReservedToken("antd Select INTERNAL_FIXED_ITEM_MARGIN (floor(paddingXXS / 2)). Multiple-mode tags are spaced by " +
+                   "the tag panels (SpacingXXS) and sized by MultipleItemHeight*, so no tag margin is applied yet.")]
     public Thickness FixedItemMargin { get; set; }
 
     /// <summary>

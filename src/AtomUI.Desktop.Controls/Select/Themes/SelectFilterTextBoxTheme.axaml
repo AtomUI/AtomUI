@@ -14,23 +14,15 @@
         <!-- Embedded in the select frame, which already shows the focus state. -->
         <Setter Property="FocusAdorner" Value="{x:Null}" />
 
-        <Style Selector="^[IsCustomFontSize=False]">
-            <Style Selector="^[SizeType=Large]">
-                <Setter Property="FontSize" Value="{atom:LineEditTokenResource InputFontSizeLG}" />
-            </Style>
-            <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                <Setter Property="FontSize" Value="{atom:LineEditTokenResource InputFontSize}" />
-            </Style>
-            <Style Selector="^[SizeType=Small]">
-                <Setter Property="FontSize" Value="{atom:LineEditTokenResource InputFontSize}" />
-            </Style>
-        </Style>
-
+        <!-- EmbeddedTextBoxTheme makes the filter IsCustomFontSize: its font is the host's FontSize (template- or
+             code-bound by Select, Cascader and TreeSelect), which follows the host's size presets. -->
         <Style Selector="^ /template/ :is(TextPresenter)#PART_TextPresenter">
+            <!-- layout -->
             <Setter Property="Margin" Value="2 0 2 0" />
         </Style>
 
         <Style Selector="^ /template/ atom|TextBlock#Placeholder">
+            <!-- layout -->
             <Setter Property="Margin" Value="2 0 2 0" />
         </Style>
 

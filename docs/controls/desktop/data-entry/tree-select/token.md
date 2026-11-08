@@ -44,6 +44,10 @@ PopupFrame.MinWidth = max(EffectivePopupWidth, TreeSelectToken.MinPopupWidth)
 
 `EffectivePopupWidth`、`MaxPopupHeight`、`SelectedCount`、`IsSelectionEmpty` 和 `EffectiveSelectedItems` 都是实例运行状态，不是 Token。
 
+实现上主题把 `MinPopupWidth` 写入 TreeSelect 的 internal `MinPopupWidth` 属性，TreeSelect 计算
+`EffectivePopupWidth = max(匹配宽度, MinPopupWidth)`，`PopupFrame.MinWidth` 模板绑定该值；主题变化或 `Controls[TreeSelect]`
+覆盖时重新计算。旧实现在 `PopupFrame` 上用普通主题 Setter 写 `MinWidth`，被模板绑定的 `MinWidth` 遮蔽，从未生效。
+
 ## 4. 控件家族影响
 
 TreeSelectToken 直接影响 TreeSelect。TreeSelect 还复用以下 Token 系统：

@@ -60,3 +60,13 @@ ComboBox 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 7. 主题读法与归属（Select 家族迁移）
+
+- `ComboBoxTheme` 与仅属于 ComboBox 的部件（`ComboBoxHandle`、弹层框体）以 `ComboBoxTokenResource` 读取 Global Token，
+  `Controls[ComboBox]` 的覆盖作用于输入表面、手柄、弹层框体和占位文字（`PlaceholderForeground` 默认 `ColorTextPlaceholder`）。
+- `ComboBoxItem` 拥有自己的 Token identity：其 Global Token（如圆角 `BorderRadiusSM`）跟随 `Controls[ComboBoxItem]`；
+  候选行颜色与尺寸读 ComboBox 的 Own Token（`Item*`），跟随 `Controls[ComboBox]`。
+- `ItemDisabledColor` 为 Active：禁用候选行的前景色。
+- 生效与隔离测试：`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/SelectFamilyEffectTests.ComboBox.cs`、
+  `SelectFamilyEffectTests.Isolation.cs`。

@@ -418,15 +418,14 @@ disabled、`Status`/`FormStatus`、`IsDropDownOpen`、集合空与非空、过�
   应用定制静态边框色时注意：聚焦或校验态的状态色优先级高于静态语义 Setter 的场景由 Avalonia 原生样式优先级决定
   （系统设计 §7），需要连状态色一起覆盖时应在语义 Style 中同时覆盖对应状态选择器。
 - **根表面定制走 owner 属性，不新增 Part**：改「输入框边框颜色」这类最常见的需求，标准入口是直接设置
-  `ComboBox.BorderBrush` / `Background`——控件已把这两个根表面画刷以 `LocalValue` 中继到共享输入帧，压过帧的
-  rest / hover / focus / status 状态机。这是输入族的统一约定（`Select`、`ButtonSpinner`、`OtpLineEdit` 等同样如此），
-  与 `frame` 部件的关系如下：
-  - **根中继**（`ComboBox.BorderBrush` / `Background`）作用于 owner 根，写入 `LocalValue`，用于「整个输入框换一个颜色」；
-  - **`frame` 专用 Style**（`ComboBoxFrameStyle`）精确命中帧节点，写入 `Style` 优先级，用于状态无关的边框宽度、圆角、
-    背景等需要区分于 owner 根的场景。
-  两者都落在同一个 `PART_ContentFrame` 节点上，但 `LocalValue` 高 `Style` 一级，因此**同时使用时根中继胜出**。
-  需要连状态色一并覆盖时用 `frame` 语义 Style 里的状态选择器，而不是根中继。中继的接管标记、清空回退与
-  `IsMotionEnabled` 接线要求见 [ComboBox 实现](implementation.md) §5.2。
+  `ComboBox.BorderBrush` / `Background`——模板把这两个根表面画刷绑定到共享输入帧的 `HostBorderBrush` /
+  `HostBackground`，帧主题在 rest / hover / focus / status 状态画刷之后投射它们。这是输入族的统一约定（`Select`、
+  `ButtonSpinner`、`TextBox` 等同样如此），与 `frame` 部件的关系如下：
+  - **根投射**（`ComboBox.BorderBrush` / `Background`）作用于 owner 根，用于「整个输入框换一个颜色」；
+  - **`frame` 专用 Style**（`ComboBoxFrameStyle`）精确命中帧节点，用于状态无关的边框宽度、圆角、背景等需要区分于
+    owner 根的场景。
+  两者都落在同一个帧节点上；根投射是主题值，应用样式（含 `frame` 专用 Style）优先于它。投射规则见
+  [ComboBox 实现](implementation.md) §5.2。
 
 - **内置 AddOn 区**（`LeftAddOn` / `RightAddOn` 的 `PixelAlignedBorder`）：由共享 `AddOnDecoratedBox` 契约与
   其 `ContentLeftAddOn` / `ContentRightAddOn` 投影承担，ComboBox 不重复声明嵌套 owner 的区域。

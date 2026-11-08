@@ -162,7 +162,7 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
             : AvaloniaProperty.UnsetValue;
     }
 
-    private static bool IsKnownUnregistered(StyledElement target, ControlTokenIdentity owner) =>
+    internal static bool IsKnownUnregistered(StyledElement target, ControlTokenIdentity owner) =>
         ThemeScope.ResolveContext(target) is { } context &&
         !context.Snapshot.Registry.TryGetControl(owner, out _);
 

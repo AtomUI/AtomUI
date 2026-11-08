@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             x:Class="AtomUI.Desktop.Controls.Tests.Theme.TokenTransitionsView">
+    <UserControl.Resources>
+        <ControlTheme x:Key="PlainTransitionsTheme" TargetType="Border">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <atom:SolidColorBrushTransition Property="Background" Duration="0:0:0.3" />
+                </Transitions>
+            </Setter>
+        </ControlTheme>
+        <ControlTheme x:Key="TokenTransitionsTheme" TargetType="Border">
+            <Setter Property="Transitions">
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background"
+                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationSlow" />
+                        <ThicknessTransition Property="Padding" Duration="0:0:0.07" />
+                    </Transitions>
+                </atom:TokenTransitions>
+            </Setter>
+        </ControlTheme>
+        <ControlTheme x:Key="TemplatedTransitionsTheme" TargetType="ContentControl">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="PART_Frame">
+                        <Border.Transitions>
+                            <atom:TokenTransitions>
+                                <Transitions>
+                                    <TransformOperationsTransition Property="RenderTransform"
+                                                                   atom:TokenTransitions.Duration="MotionDurationMid" />
+                                </Transitions>
+                            </atom:TokenTransitions>
+                        </Border.Transitions>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+    </UserControl.Resources>
+    <StackPanel>
+        <Border Name="PlainFirst" Theme="{StaticResource PlainTransitionsTheme}" />
+        <Border Name="PlainSecond" Theme="{StaticResource PlainTransitionsTheme}" />
+        <atom:Button Name="OwnerButton">
+            <StackPanel>
+                <Border Name="OwnedFrame" Theme="{StaticResource TokenTransitionsTheme}" />
+                <ContentControl Name="TemplatedHost" Theme="{StaticResource TemplatedTransitionsTheme}" />
+            </StackPanel>
+        </atom:Button>
+        <Border Name="UnownedFrame" Theme="{StaticResource TokenTransitionsTheme}" />
+        <Border Name="SecondUnownedFrame" Theme="{StaticResource TokenTransitionsTheme}" />
+    </StackPanel>
+</UserControl>

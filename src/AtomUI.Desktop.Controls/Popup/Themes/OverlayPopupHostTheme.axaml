@@ -22,9 +22,9 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
-        <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        <Setter Property="FontFamily" Value="{atom:SharedTokenResource FontFamily}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
+        <Setter Property="FontFamily" Value="{atom:OwnerTokenResource FontFamily}" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontStyle" Value="Normal" />
         <Setter Property="ClipToBounds" Value="False" />

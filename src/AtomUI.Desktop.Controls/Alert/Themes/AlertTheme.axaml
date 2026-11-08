@@ -18,19 +18,19 @@
                                DockPanel.Dock="Left">
                             <antdicons:CheckCircleFilled Name="SuccessIcon"
                                                          Classes.semantic-icon="True"
-                                                         FillBrush="{atom:SharedTokenResource ColorSuccess}"
+                                                         FillBrush="{atom:AlertTokenResource ColorSuccess}"
                                                          IsVisible="False"/>
                             <antdicons:InfoCircleFilled Name="InfoIcon"
                                                         Classes.semantic-icon="True"
-                                                        FillBrush="{atom:SharedTokenResource ColorPrimary}"
+                                                        FillBrush="{atom:AlertTokenResource ColorPrimary}"
                                                         IsVisible="False"/>
                             <antdicons:ExclamationCircleFilled Name="WarningIcon"
                                                                Classes.semantic-icon="True"
-                                                               FillBrush="{atom:SharedTokenResource ColorWarning}"
+                                                               FillBrush="{atom:AlertTokenResource ColorWarning}"
                                                                IsVisible="False"/>
                             <antdicons:CloseCircleFilled Name="ErrorIcon"
                                                          Classes.semantic-icon="True"
-                                                         FillBrush="{atom:SharedTokenResource ColorError}"
+                                                         FillBrush="{atom:AlertTokenResource ColorError}"
                                                          IsVisible="False"/>
                         </Panel>
                         
@@ -79,34 +79,34 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+        <Setter Property="CornerRadius" Value="{atom:AlertTokenResource BorderRadiusLG}" />
         
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:AlertTokenResource BorderThickness}" />
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         
         <Style Selector="^ /template/ DockPanel#RootLayout">
-            <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="HorizontalSpacing" Value="{atom:AlertTokenResource SpacingXXS}" />
         </Style>
  
         <Style Selector="^[Type=Success]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorSuccessBg}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSuccessBorder}" />
+            <Setter Property="Background" Value="{atom:AlertTokenResource ColorSuccessBg}" />
+            <Setter Property="BorderBrush" Value="{atom:AlertTokenResource ColorSuccessBorder}" />
         </Style>
 
         <Style Selector="^[Type=Info]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorder}" />
+            <Setter Property="Background" Value="{atom:AlertTokenResource ColorInfoBg}" />
+            <Setter Property="BorderBrush" Value="{atom:AlertTokenResource ColorInfoBorder}" />
         </Style>
 
         <Style Selector="^[Type=Warning]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorWarningBg}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorWarningBorder}" />
+            <Setter Property="Background" Value="{atom:AlertTokenResource ColorWarningBg}" />
+            <Setter Property="BorderBrush" Value="{atom:AlertTokenResource ColorWarningBorder}" />
         </Style>
 
         <Style Selector="^[Type=Error]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorErrorBg}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorErrorBorder}" />
+            <Setter Property="Background" Value="{atom:AlertTokenResource ColorErrorBg}" />
+            <Setter Property="BorderBrush" Value="{atom:AlertTokenResource ColorErrorBorder}" />
         </Style>
 
         <Style Selector="^:not(:has-description)">
@@ -120,19 +120,19 @@
         <Style Selector="^:has-description">
             <Style Selector="^ /template/ Label#MessageLabel, ^ /template/ atom|MarqueeLabel#MarqueeLabel">
                 <Setter Property="TemplatedControl.FontSize"
-                        Value="{atom:SharedTokenResource FontSizeLG}" />
+                        Value="{atom:AlertTokenResource FontSizeLG}" />
                 <Setter Property="TemplatedControl.VerticalAlignment" Value="Top" />
             </Style>
         </Style>
         <Style Selector="^:not(:has-description)">
             <Style Selector="^ /template/ Label#MessageLabel, ^ /template/ atom|MarqueeLabel#MarqueeLabel">
                 <Setter Property="TemplatedControl.FontSize"
-                        Value="{atom:SharedTokenResource FontSize}" />
+                        Value="{atom:AlertTokenResource FontSize}" />
                 <Setter Property="TemplatedControl.VerticalAlignment" Value="Stretch" />
             </Style>
         </Style>
         <Style Selector="^ /template/ Label#MessageLabel">
-            <Setter Property="TextBox.LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
+            <Setter Property="TextBox.LineHeight" Value="{atom:AlertTokenResource FontHeight}" />
         </Style>
          <!-- 根据是否显示 MarqueeLabel 是指对应的样式 -->
          <Style Selector="^[IsMessageMarqueeEnabled=True]">
@@ -142,7 +142,7 @@
          </Style>
         
         <Style Selector="^ /template/ Label#DescriptionLabel">
-            <Setter Property="TextBox.LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
+            <Setter Property="TextBox.LineHeight" Value="{atom:AlertTokenResource FontHeight}" />
             <Setter Property="Margin" Value="{atom:AlertTokenResource DescriptionLabelMargin}" />
         </Style>
  
@@ -158,8 +158,8 @@
             </Style>
         </Style>
         <Style Selector="^ /template/ atom|IconButton#PART_CloseBtn">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="IconWidth" Value="{atom:AlertTokenResource CloseIconSize}" />
+            <Setter Property="IconHeight" Value="{atom:AlertTokenResource CloseIconSize}" />
             <Setter Property="Margin" Value="{atom:AlertTokenResource ExtraElementMargin}" />
         </Style>
 

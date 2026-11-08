@@ -33,7 +33,9 @@ public class MigratedFamilyAnalyzerGateTests
         // Steps / Progress family
         "ProgressBar", "Steps",
         // Tag / Badge family
-        "Tag", "Badge"
+        "Tag", "Badge",
+        // Feedback family
+        "Alert", "Popup", "Tooltip"
     ];
 
     /// <summary>Token identities declared in those directories.</summary>
@@ -48,7 +50,8 @@ public class MigratedFamilyAnalyzerGateTests
         "CheckBox", "CheckBoxGroup", "RadioButton", "RadioButtonGroup", "ToggleSwitch", "Slider", "SliderTrack",
         "SliderThumb", "Rate",
         "ProgressBar", "StepsProgressBar", "CircleProgress", "DashboardProgress", "Steps", "StepsItem",
-        "Tag", "CheckableTag", "CheckableTagGroup", "CountBadge", "DotBadge", "RibbonBadge"
+        "Tag", "CheckableTag", "CheckableTagGroup", "CountBadge", "DotBadge", "RibbonBadge",
+        "Alert", "Popup", "ToolTip"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -127,6 +130,11 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldNotContain("CheckableTagItemsControl");
         IdentityControls.Value.ShouldNotContain("CountBadgeAdorner");
         IdentityControls.Value.ShouldNotContain("DotBadgeIndicator");
+        // Feedback family: Popup (Token-owner transparent) and ToolTip are registered; the popup hosts and surface are not.
+        IdentityControls.Value.ShouldContain("Popup");
+        IdentityControls.Value.ShouldContain("ToolTip");
+        IdentityControls.Value.ShouldNotContain("PopupSurface");
+        IdentityControls.Value.ShouldNotContain("OverlayPopupHost");
     }
 
     [Fact]

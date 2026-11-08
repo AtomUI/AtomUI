@@ -17,7 +17,7 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:RadioButtonGroupTokenResource EnableMotion}" />
 
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
@@ -28,8 +28,8 @@
             </ItemsPanelTemplate>
         </Setter>
 
-        <Setter Property="ItemSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
-        <Setter Property="LineSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+        <Setter Property="ItemSpacing" Value="{atom:RadioButtonGroupTokenResource SpacingXS}" />
+        <Setter Property="LineSpacing" Value="{atom:RadioButtonGroupTokenResource SpacingXS}" />
 
         <Setter Property="ItemTemplate">
             <DataTemplate x:DataType="atom:IRadioButtonOption">

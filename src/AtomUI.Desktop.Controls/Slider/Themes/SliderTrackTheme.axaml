@@ -3,19 +3,20 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
+    <!-- The track is a template part of the Slider only: every Token, global or Own, is read from the Slider, so
+         Controls[Slider] reaches the rail, marks and labels. IsMotionEnabled is template-bound from the Slider. -->
     <ControlTheme x:Key="{x:Type atom:SliderTrack}" TargetType="atom:SliderTrack">
         <Setter Property="SliderTrackSize" Value="{atom:SliderTokenResource SliderTrackSize}" />
         <Setter Property="SliderMarkSize" Value="{atom:SliderTokenResource MarkSize}" />
         <Setter Property="SliderRailSize" Value="{atom:SliderTokenResource RailSize}" />
-        <Setter Property="MarkBackgroundBrush" Value="{atom:SharedTokenResource ColorBgElevated}" />
+        <Setter Property="MarkBackgroundBrush" Value="{atom:SliderTokenResource ColorBgElevated}" />
         <Setter Property="MarkBorderThickness"
                 Value="{atom:SliderTokenResource ThumbCircleBorderThickness}" />
-        <Setter Property="MarkLabelBrush" Value="{atom:SharedTokenResource ColorText}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="MarkLabelBrush" Value="{atom:SliderTokenResource ColorText}" />
 
         <Style Selector="^:disabled">
             <Setter Property="MarkLabelBrush"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:SliderTokenResource ColorTextDisabled}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">

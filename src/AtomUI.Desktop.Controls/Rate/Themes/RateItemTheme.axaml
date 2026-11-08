@@ -9,7 +9,7 @@
             <ControlTemplate>
                 <Border Background="{TemplateBinding Background}">
                     <Panel>
-                        <atom:DashedBorder BorderThickness="0.75" BorderBrush="{TemplateBinding StarColor}" StrokeDashArray="4, 2"
+                        <atom:DashedBorder BorderThickness="{atom:RateTokenResource BorderThickness}" BorderBrush="{TemplateBinding StarColor}" StrokeDashArray="4, 2"
                                            IsVisible="{TemplateBinding IsFocusStartItem}"/>
                         <Rectangle Fill="{TemplateBinding CharacterBgBrush}"
                                    HorizontalAlignment="Stretch"

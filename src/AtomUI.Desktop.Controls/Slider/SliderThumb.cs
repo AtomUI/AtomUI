@@ -110,7 +110,8 @@ public class SliderThumb : TemplatedControl
         DragStartedEvent.AddClassHandler<SliderThumb>((x, e) => x.OnDragStarted(e), RoutingStrategies.Bubble);
         DragDeltaEvent.AddClassHandler<SliderThumb>((x, e) => x.OnDragDelta(e), RoutingStrategies.Bubble);
         DragCompletedEvent.AddClassHandler<SliderThumb>((x, e) => x.OnDragCompleted(e), RoutingStrategies.Bubble);
-        AffectsRender<SliderThumb>(ThumbCircleSizeProperty,
+        AffectsRender<SliderThumb>(BackgroundProperty,
+            ThumbCircleSizeProperty,
             OutlineThicknessProperty,
             BorderThicknessProperty,
             OutlineBrushProperty,

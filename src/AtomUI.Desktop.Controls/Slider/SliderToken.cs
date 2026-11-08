@@ -129,6 +129,12 @@ internal sealed class SliderToken : AbstractControlDesignToken
 
     public Thickness SliderPaddingHorizontal { get; set; }
     public Thickness SliderPaddingVertical { get; set; }
+    /// <summary>
+    /// 带刻度时的底部外边距
+    /// Bottom margin of a slider with marks
+    /// </summary>
+    [ReservedToken("antd Slider marginPartWithMark (controlHeightLG - controlSize). SliderTrack measures the mark labels " +
+                   "and adds their size to the track height, so no fixed mark margin is applied yet.")]
     public Thickness MarginPartWithMark { get; set; }
 
     public override void CalculateTokenValues(bool isDarkMode)

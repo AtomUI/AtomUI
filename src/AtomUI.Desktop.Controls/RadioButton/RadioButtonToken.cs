@@ -23,9 +23,16 @@ internal sealed class RadioButtonToken : AbstractControlDesignToken
     /// </summary>
     public Color DotColorDisabled { get; set; }
 
-    /// 内部使用
+    /// <summary>
+    /// 选中时圆点颜色（内部使用）
+    /// Dot color of a checked radio (internal)
+    /// </summary>
     public Color RadioColor { get; set; }
 
+    /// <summary>
+    /// 选中时单选框背景色（内部使用）
+    /// Background of a checked radio (internal)
+    /// </summary>
     public Color RadioBgColor { get; set; }
 
     public double DotPadding { get; set; }

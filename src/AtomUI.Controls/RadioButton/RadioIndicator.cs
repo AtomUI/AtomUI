@@ -186,9 +186,13 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
 
         if (this.IsAttachedToVisualTree())
         {
+            // The dot metrics come from Tokens, so a theme change recomputes the dot as a state change does.
             if (change.Property == IsPointerOverProperty ||
                 change.Property == IsCheckedProperty ||
-                change.Property == IsEnabledProperty)
+                change.Property == IsEnabledProperty ||
+                change.Property == DotSizeValueProperty ||
+                change.Property == RadioSizeProperty ||
+                change.Property == DotPaddingProperty)
             {
                 RadioDotEffectSize = CalculateDotSize(IsEnabled, IsChecked.HasValue && IsChecked.Value);
             }

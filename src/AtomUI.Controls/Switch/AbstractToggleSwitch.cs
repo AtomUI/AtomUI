@@ -272,7 +272,9 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             TrackHeightProperty,
             TrackMinWidthProperty,
             TrackPaddingProperty,
-            KnobSizeProperty);
+            KnobSizeProperty,
+            InnerMinMarginProperty,
+            InnerMaxMarginProperty);
         AffectsArrange<AbstractToggleSwitch>(
             IsPressedProperty,
             KnobRectProperty,

@@ -39,8 +39,7 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False"/>
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="BorderThickness" Value="{atom:CheckBoxTokenResource BorderThickness}" />
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">

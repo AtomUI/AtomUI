@@ -385,11 +385,16 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
 
     static SliderTrack()
     {
+        // The track and rail sizes and the padding are theme Token values: a theme change re-lays out the track.
         AffectsMeasure<SliderTrack>(MarksProperty,
             MarkLabelFontSizeProperty,
             MarkLabelFontFamilyProperty,
             RangeValuesProperty,
-            IsRangeModeProperty);
+            IsRangeModeProperty,
+            SliderTrackSizeProperty,
+            SliderRailSizeProperty,
+            SliderMarkSizeProperty,
+            PaddingProperty);
         AffectsArrange<SliderTrack>(IsDirectionReversedProperty,
             MinimumProperty,
             MaximumProperty,
@@ -928,15 +933,16 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         _trackRangeRect = CreateTrackRangeRect(railRect, values);
 
         var pillRadius = (Orientation == Orientation.Horizontal ? railRect.Height : railRect.Width) / 2;
+        // The pill radius follows the arranged rail; Template priority keeps semantic part styles in charge of it.
         var cornerRadius = new CornerRadius(pillRadius);
-        _railElement.CornerRadius = cornerRadius;
+        _railElement.SetValue(Border.CornerRadiusProperty, cornerRadius, BindingPriority.Template);
         _railElement.Arrange(railRect);
-        _tracksElement.CornerRadius = cornerRadius;
+        _tracksElement.SetValue(Border.CornerRadiusProperty, cornerRadius, BindingPriority.Template);
         _tracksElement.Arrange(_trackRangeRect);
         for (var i = 0; i < _trackSegmentElements.Count; i++)
         {
             var segment = _trackSegmentElements[i].Element;
-            segment.CornerRadius = cornerRadius;
+            segment.SetValue(Border.CornerRadiusProperty, cornerRadius, BindingPriority.Template);
             segment.Arrange(segmentRects[i]);
         }
 

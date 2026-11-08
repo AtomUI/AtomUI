@@ -19,12 +19,13 @@
                                             IsAllowClear="{TemplateBinding IsAllowClear}"
                                             IsAllowHalf="{TemplateBinding IsAllowHalf}"
                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                            SizeType="{TemplateBinding SizeType}"
                                             FontSize="{TemplateBinding FontSize}" />
                 </atom:PixelAlignedBorder>
             </ControlTemplate>
         </Setter>
         <Setter Property="Focusable" Value="True" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:RateTokenResource EnableMotion}" />
         <Setter Property="StarColor" Value="{atom:RateTokenResource StarColor}" />
         <Setter Property="StarBgColor" Value="{atom:RateTokenResource StarBg}" />
         <Setter Property="ClipToBounds" Value="False" />

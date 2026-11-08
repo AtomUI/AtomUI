@@ -52,6 +52,12 @@ internal class SwitchKnob : TemplatedControl
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<SwitchKnob>();
     
+    /// <summary>
+    /// Stroke width of the loading arc; the theme fills it from a line-width Token.
+    /// </summary>
+    internal static readonly StyledProperty<double> LoadIndicatorThicknessProperty =
+        AvaloniaProperty.Register<SwitchKnob, double>(nameof(LoadIndicatorThickness));
+
     internal static readonly StyledProperty<TimeSpan> LoadingAnimationDurationProperty =
         AvaloniaProperty.Register<SwitchKnob, TimeSpan>(nameof(LoadingAnimationDuration));
 
@@ -90,6 +96,12 @@ internal class SwitchKnob : TemplatedControl
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
+    internal double LoadIndicatorThickness
+    {
+        get => GetValue(LoadIndicatorThicknessProperty);
+        set => SetValue(LoadIndicatorThicknessProperty, value);
+    }
+
     internal TimeSpan LoadingAnimationDuration
     {
         get => GetValue(LoadingAnimationDurationProperty);
@@ -108,12 +120,14 @@ internal class SwitchKnob : TemplatedControl
     private bool _isLoading;
     private IDisposable? _loadingAnimation;
     private IBrush? _loadIndicatorPenBrush;
+    private double _loadIndicatorPenThickness;
     private Pen? _loadIndicatorPen;
     
     static SwitchKnob()
     {
         AffectsRender<SwitchKnob>(
-            BackgroundProperty, RotationProperty, KnobRenderWidthProperty, LoadIndicatorBrushProperty);
+            BackgroundProperty, RotationProperty, KnobRenderWidthProperty, LoadIndicatorBrushProperty,
+            LoadIndicatorThicknessProperty);
         AffectsMeasure<SwitchKnob>(KnobSizeProperty);
     }
     
@@ -295,11 +309,14 @@ internal class SwitchKnob : TemplatedControl
 
     private Pen GetLoadIndicatorPen()
     {
-        var brush = LoadIndicatorBrush;
-        if (_loadIndicatorPen == null || !ReferenceEquals(_loadIndicatorPenBrush, brush))
+        var brush     = LoadIndicatorBrush;
+        var thickness = LoadIndicatorThickness;
+        if (_loadIndicatorPen == null || !ReferenceEquals(_loadIndicatorPenBrush, brush) ||
+            !MathUtils.AreClose(_loadIndicatorPenThickness, thickness))
         {
-            _loadIndicatorPenBrush = brush;
-            _loadIndicatorPen      = new Pen(brush, 1, null, PenLineCap.Round);
+            _loadIndicatorPenBrush     = brush;
+            _loadIndicatorPenThickness = thickness;
+            _loadIndicatorPen          = new Pen(brush, thickness, null, PenLineCap.Round);
         }
         return _loadIndicatorPen;
     }

@@ -7,6 +7,8 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="LoadingBgOpacity"
                 Value="{atom:ToggleSwitchTokenResource SwitchDisabledOpacity}" />
+        <Setter Property="LoadIndicatorThickness"
+                Value="{atom:ToggleSwitchTokenResource LineWidth}" />
         <Setter Property="LoadingAnimationDuration"
                 Value="{atom:ToggleSwitchTokenResource LoadingAnimationDuration}" />
 

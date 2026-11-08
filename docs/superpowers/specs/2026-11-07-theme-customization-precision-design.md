@@ -58,7 +58,34 @@ A、B 是机制缺口，C、D、E 是逐控件的消费缺口。结论是：控�
 | B | 新增 `OwnerTokenResource`，沿 `TemplatedParent → Parent` 跳链在运行时找注册的公开 owner 并观察路由变化；控件主题中 `SharedTokenResource` 从 1917 处降到 164 处，`OwnerTokenResource` 1664 处 | 方向正确，证明了问题范围；路由靠跳链观察，成本与复杂度偏高，本方案改用可继承附加属性（3.3） |
 | E3 | `NavMenu` 的 `Application.Current` 读取已移除 | 同类修复约 20 个 fix 提交（Tag、ToolTip 改读快照色板，Steps、Splitter、AddOnDecoratedBox 等） |
 | E1 | `BadgeColorUtils` 的 14 个 RGB 常量未改 | 本方案要修 |
-| 整体 | 这些改动与样式资产子系统、50 个新增 Own 字段、V2 求值缠在同一批提交里 | cherry-pick 成本接近重做；只借它的问题清单与修复思路 |
+| 整体 | 这些改动与样式资产子系统、50 个新增 Own 字段、V2 求值缠在同一批提交里 | 不合并；逐个判断有效性后借鉴，见下表 |
+
+逐提交核对后，确认**真的让主题设置生效、且不依赖被删机制**的修复如下（"依赖"列是该提交 diff 中引用分支专有机制的次数，0 表示可直接按思路重做）：
+
+| 提交 | 控件 | 修的是什么 | 依赖 | 结论 |
+| --- | --- | --- | --- | --- |
+| `473c43b1f` | NavMenu | 分组标题颜色写在模板属性上（LocalValue 优先级），遮蔽了暗色样式的 Setter；移入 Style Setter | 0 | 借鉴；同时提炼为规则 P1 |
+| `9f4173894` | Steps | 面板箭头描边同一问题，Small 尺寸细描边不生效 | 2（仅 `OwnerTokenResource` 写法） | 借鉴，按本方案读法改写 |
+| `b1a6fc37a` | Splitter | 分隔条尺寸在测量时一次性 `FindTokenResource`，运行时换主题不重测；改为挂载期绑定属性并 `AffectsMeasure` | 0 | 借鉴；规则 P2 |
+| `e9e49500f` | FloatButton | `IsActive = …` 以本地值覆盖了用户绑定；改 `SetCurrentValue` | 1 | 借鉴；规则 P3 |
+| `8af4c1678` | AddOnDecoratedBox | 状态色直接 `SetCurrentValue` 到附加区呈现器，擦掉用户画刷；改为可撤销的 Template 优先级值 | 0 | 借鉴；规则 P3 |
+| `daa17c067` | ToolTip | 预设色改为内部属性 `ColorBackground`，由主题的无触发 Setter 转发到 `Background`，应用样式与本地值保持更高优先级；色板读快照 | 2（`OwnerTokenResource`） | 借鉴；规则 P4、P5 |
+| `9ba3924ab` | Tag | 同上模式：计算色改为内部属性由主题投射；预设色板按快照缓存 | 3 | 借鉴；规则 P4、P5。本方案 E1 的 Tag 项即据此修 |
+| `5e587b055` | ProgressBar | 文字几何最小尺寸从 `SetValue(…, Template)` 改为 `FallbackMinWidth/Height` 内部属性由主题投射，保留用户 Min 约束 | 2 | 借鉴；规则 P4 |
+| `b3f82db2f` | Button | 变体画刷经资源键写入以支持作用域覆盖；订阅 `ResourcesChanged` 重算 | 1 | 借鉴 |
+| `0b4725a24` | DropdownButton | 动效开关改读 owner 有效全局值 | 3 | 借鉴，按本方案读法改写 |
+| `9c01e0cc7` | Tour | Popup 间距 Token 绑定在打开期间随 Gap 重建 | 0 | 借鉴 |
+| `fe9c9c583`、`33534c625`、`92631f292` | Badge、Popup、DataGrid | 生命周期与几何正确性修复 | 0–1 | 借鉴 |
+| `1e690fc2d`、`33c686f3f` | TextBox、Button | 字号预设与字重继承 | 6、19（依赖分支新建的 `ControlTypographyBindings`） | 不借实现；问题本身（排版继承）进 E4 审计 |
+| `417d206fb`、`d9b9696f1`、`aa250220a`、`def92ef74`、`7cea29ce7` | 输入与按钮家族、DataGrid、Progress、Steps | 大批"接通主题消费"，与 V2 默认求值同提交 | 多 | 不借实现；它们改动的 `token.md` 就是各控件"哪些 Token 过去没被消费"的清单，直接用于 3.1 的字段裁决 |
+
+从这些修复里提炼出五条可推广的规则，并入 3.4：
+
+- **P1** 需要被状态 Setter 覆盖的默认值不能写在模板节点的属性上（那是 LocalValue 优先级），必须写成 Style Setter。
+- **P2** 代码里不得一次性 `FindResource` 读 Token 后缓存；改为挂载期绑定到属性，变化驱动重算或重测。
+- **P3** 代码写入控件或子节点的值必须用 `SetCurrentValue` 或可撤销的 Template 优先级值，不得以本地值覆盖用户与主题的绑定。
+- **P4** 代码算出的视觉值写入 internal 属性，由主题 Setter 投射到公开视觉属性；公开属性本身留给用户与应用样式。
+- **P5** 预设色从快照的 `PresetPalettes` 取，并按快照缓存，不在控件实例里重算或写死。
 
 ## 3. 方案
 
@@ -118,12 +145,15 @@ builder.ApplyExplicit()                           // 再写一遍显式值，保
 
 ### 3.4 修复 C、D、E：逐控件消费审计
 
-控件代码的规则只有四条，写进分析器：
+控件代码与主题的规则，写进分析器（P1 到 P5 来自对 custom-theme 分支有效修复的提炼，见 2.3）：
 
 1. 视觉值（颜色、画刷、阴影、线宽、圆角、字号、尺寸）不得以字面量出现在控件代码里；`Colors.Transparent` 与 0 允许。
-2. 读 Token 只经 `ControlTokenAccessor`（控件有效值）或 `XxxTokenResource` 绑定；禁止 `Application.Current.TryGetResource` / `TryFindResource` 读 Token，禁止读取失败时回落写死的值。
-3. 代码里由 Token 算出的视觉值必须在主题变化时重算（`ThemeTokenResolver.Subscribe`），不得在模板应用时算一次就缓存。
-4. 预设色（Badge、Tag、Button 的 preset color）必须从快照的 `PresetPalettes` 取，随主题与明暗变化。
+2. 读 Token 只经 `ControlTokenAccessor`（控件有效值）或 `XxxTokenResource` / `OwnerTokenResource` 绑定；禁止 `Application.Current.TryGetResource` / `TryFindResource` 读 Token，禁止读取失败时回落写死的值。
+3. （P2）代码里由 Token 算出的视觉值必须在主题变化时重算（`ThemeTokenResolver.Subscribe` 或挂载期绑定），不得算一次就缓存。
+4. （P5）预设色（Badge、Tag、ToolTip、Button 的 preset color）必须从快照的 `PresetPalettes` 取并按快照缓存，随主题与明暗变化。
+5. （P1）主题里需要被状态 Setter 覆盖的默认值必须写成 Style Setter，不能写在模板节点的属性上（LocalValue 优先级会遮蔽状态 Setter）。
+6. （P3）代码写入控件或子节点的值用 `SetCurrentValue` 或可撤销的 Template 优先级值，不得以本地值覆盖用户与主题的绑定。
+7. （P4）代码算出的视觉值写入 internal 属性，由主题 Setter 投射到公开视觉属性，公开属性留给用户与应用样式。
 
 按控件家族推进，每个家族一次性处理：
 

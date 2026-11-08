@@ -38,10 +38,13 @@ release/6.0 的主题配置模型与 Ant Design 的主题配置一一对应：
 | A′ | 同一根因的具体案例 | `DataGridToken.CalculateTokenValues` 里 `TableBorderColor = BorderColor`，主题消费的是 `TableBorderColor`；用户设置 `BorderColor` 后无任何效果 | 同上 |
 | B | 逐控件的全局 Token 覆盖对一半以上的消费点无效 | 控件主题 AXAML 中 `SharedTokenResource` 1917 处、`XxxTokenResource` 1643 处；`Shared` 永远读全局值，`Controls[Button].ColorPrimary` 对那 76 处 `SharedTokenResource ColorPrimary` 无效 | 主题作者在应读"控件有效全局值"处读了"共享全局值" |
 | C | 声明了但没人消费的 Own Token | 96 个 Token 类 1150 个字段中约 100 个在所属包内无任何引用（DataGrid 的 20 个经内部派生字段间接消费，仍受 A′ 影响） | 字段随文档声明，消费未跟上，或命名不一致 |
-| D | 主题 AXAML 里的视觉字面量 | 99 处数值字面量（Padding 24、Height 21、BorderThickness 18、Margin 13、Width 12、CornerRadius 11）；颜色字面量 0 处 | 部分是布局常量，部分应是 Token |
-| E | 代码侧计算的视觉值 | 111 处代码赋视觉属性，38 个自绘；Button 的变体画刷由 `ControlTokenAccessor` 读 Token 后在代码里算出，经 `ThemeTokenResolver.Subscribe` 在主题变化时重算 | 模式本身可用，但没有统一约束，部分控件可能未订阅变化或读了共享全局值 |
+| D | 主题 AXAML 里的视觉字面量 | 134 处数值字面量，颜色字面量 0 处。集中在 OverlayDialogResizer（12）、DataGridRowGroupHeader（11）、SplitView（8，分隔线 `Width="1"`/`BorderThickness="0,0,1,0"`）、NumericUpDownSpinner（8）、ScrollBar、Alert、ProgressBar 系列 | 约一半是布局常量，另一半（线宽、分隔线、圆角 0、字号）应是 Token |
+| E1 | 代码里写死的颜色 | `BadgeColorUtils` 用 14 个 RGB 常量定义 Badge 的预设色，不读主题的预设色板，暗色下也不变；Tag 的自定义色用固定亮度 0.95 算浅底；其余 127 处命中几乎全是 `Colors.Transparent`（合法） | 绕过了主题的 `PresetPalettes` |
+| E2 | 代码里写死的几何 | `CalendarRangeBarPanel` 的字号 12、高度 20、内边距 8；`SwitchKnob` 加载指示笔宽 1；共 12 处视觉常量，其余是行为常量（拖拽阈值、自动滚动边距）属合法 | 应改为 Own Token 或全局 Token |
+| E3 | 绕过作用域读资源 | `NavMenu` 用 `Application.Current.TryGetResource` 读 `MotionDurationMid`，失败回落写死的 200 ms；`TabItem`/`TabStripItem` 经 `Application.Current` 查命名主题；`DataGridColumn` 查不到时回落 Application；共约 6 处 | 局部 `ThemeConfigProvider` 的覆盖对这些读取无效 |
+| E4 | 代码侧计算视觉值的模式 | 111 处代码赋视觉属性，38 个自绘。Button 的做法是对的：`ControlTokenAccessor` 读控件有效值，`ThemeTokenResolver.Subscribe` 在主题变化时重算 | 模式可用但没有统一约束；需逐控件确认都订阅了变化、都读有效值 |
 
-A、B 是机制缺口，C、D、E 是逐控件的消费缺口。custom-theme 分支修过其中一部分，但和它的样式资产改动缠在一起，本方案在 release/6.0 上重做。
+A、B 是机制缺口，C、D、E 是逐控件的消费缺口。结论是：控件代码确实需要优化，但范围是可枚举的有限清单，不是重写；Button 这类核心控件的代码模式已经正确，问题集中在少数控件和历史遗留处。custom-theme 分支修过其中一部分，但和它的样式资产改动缠在一起，本方案在 release/6.0 上重做。
 
 ## 3. 方案
 
@@ -85,11 +88,21 @@ builder.ApplyExplicit()                           // 再写一遍显式值，保
 
 ### 3.4 修复 C、D、E：逐控件消费审计
 
+控件代码的规则只有四条，写进分析器：
+
+1. 视觉值（颜色、画刷、阴影、线宽、圆角、字号、尺寸）不得以字面量出现在控件代码里；`Colors.Transparent` 与 0 允许。
+2. 读 Token 只经 `ControlTokenAccessor`（控件有效值）或 `XxxTokenResource` 绑定；禁止 `Application.Current.TryGetResource` / `TryFindResource` 读 Token，禁止读取失败时回落写死的值。
+3. 代码里由 Token 算出的视觉值必须在主题变化时重算（`ThemeTokenResolver.Subscribe`），不得在模板应用时算一次就缓存。
+4. 预设色（Badge、Tag、Button 的 preset color）必须从快照的 `PresetPalettes` 取，随主题与明暗变化。
+
 按控件家族推进，每个家族一次性处理：
 
 - C：每个未引用 Own 字段裁决为 Active（补消费）、Reserved（加理由）或删除。
-- D：99 处字面量逐个判断：是布局常量则保留并加 `<!-- layout -->` 注释（分析器据此放行），是视觉值则改为 Token。
-- E：代码侧视觉计算统一为 Button 现有模式：用 `ControlTokenAccessor` 读值（读的是控件有效全局值与 Own 值），用 `ThemeTokenResolver.Subscribe` 在主题变化时重算，不缓存跨主题的值。分析器禁止控件代码中直接 `FindResource` / `TryGetResource` 读 Token。
+- D：134 处 AXAML 字面量逐个判断：是布局常量则保留并加 `<!-- layout -->` 注释（分析器据此放行），是视觉值则改为 Token；分隔线与边框线宽统一用 `LineWidth`。
+- E1：`BadgeColorUtils` 改读 `PresetPalettes`；Tag 自定义色的浅底改用现有调色板算法而非固定亮度。
+- E2：`CalendarRangeBarPanel`、`SwitchKnob` 等 12 处几何常量改为 Own Token 或全局 Token。
+- E3：`NavMenu`、`TabItem`、`TabStripItem`、`DataGridColumn` 等约 6 处改经作用域读取，删除写死的回落值。
+- E4：逐控件核对代码侧视觉计算是否订阅主题变化、是否读控件有效值；不符合的改成 Button 的模式。
 
 每个家族的验收是该家族的生效测试全部通过（3.6）。
 

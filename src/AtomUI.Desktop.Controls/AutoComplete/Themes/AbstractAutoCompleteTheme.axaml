@@ -8,11 +8,11 @@
     <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
 
     <Style Selector="^:is(atom|AbstractAutoComplete)">
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="PlaceholderForeground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+        <Setter Property="PlaceholderForeground" Value="{atom:OwnerTokenResource ColorTextPlaceholder}" />
         <Setter Property="ItemHeight" Value="{atom:AutoCompleteTokenResource OptionHeight}" />
         <Setter Property="PopupContentPadding"
                 Value="{atom:AutoCompleteTokenResource PopupContentPadding}" />
@@ -22,8 +22,11 @@
             <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
             <Setter Property="OverlayHostShadow" Value="{atom:PopupTokenResource OverlayHostShadow}" />
         </Style>
+        <!-- Resolved on the control and bound into the frame: the frame lives inside the registered Popup. -->
+        <Setter Property="PopupBackground" Value="{atom:OwnerTokenResource ColorBgElevated}" />
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background"
+                    Value="{Binding (atom:AbstractAutoComplete).PopupBackground, RelativeSource={RelativeSource TemplatedParent}}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>

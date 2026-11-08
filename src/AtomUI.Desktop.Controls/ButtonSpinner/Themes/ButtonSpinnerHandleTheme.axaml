@@ -33,14 +33,14 @@
         
         <Setter Property="ClipToBounds" Value="True"/>
         <Setter Property="BorderBrush" Value="{atom:ButtonSpinnerTokenResource HandleBorderColor}"/>
-        <Setter Property="SpinnerBorderThickness" Value="{atom:SharedTokenResource BorderThickness}"/>
+        <Setter Property="SpinnerBorderThickness" Value="{atom:OwnerTokenResource BorderThickness}"/>
         <Setter Property="Background" Value="{atom:ButtonSpinnerTokenResource HandleBg}"/>
         <Style Selector="^[StyleVariant=Filled]">
             <Setter Property="Background" Value="{atom:ButtonSpinnerTokenResource FilledHandleBg}" />
         </Style>
         <Style Selector="^:disabled">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
         </Style>
         <Style
             Selector="^ /template/ atom|IconButton#PART_IncreaseButton, ^ /template/ atom|IconButton#PART_DecreaseButton">
@@ -57,8 +57,10 @@
         
         <Style
             Selector="^ /template/ atom|IconButton#PART_IncreaseButton:pressed, ^ /template/ atom|IconButton#PART_DecreaseButton:pressed">
+            <!-- The increase/decrease buttons are registered IconButtons, so an owner read on them would resolve to
+                 IconButton; the handle reads its host's value explicitly like its other handle Tokens. -->
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorPrimaryActive}" />
+                    Value="{atom:ButtonSpinnerTokenResource ColorPrimaryActive}" />
         </Style>
         
         <Style

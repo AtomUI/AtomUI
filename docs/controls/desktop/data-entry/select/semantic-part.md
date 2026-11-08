@@ -44,7 +44,7 @@ Select 是唯一 Semantic owner，公开 13 个 Semantic Part（语义对齐：`
 
 **根边框与背景定制：** 可见外框由共享 `AddOnDecoratedBox` 帧绘制，其状态机拥有 `BorderBrush` 与
 `Background`。owner 的 `BorderBrush` / `Background` 会以 LocalValue 中继到帧节点生效（对齐上游 root
-border/background 语义与输入族 `AbstractTextInput.RelayRootSurfaceBrush` 行为），因此在 owner-scoped Style
+border/background 语义与输入族的根表面投射 `HostBorderBrush` / `HostBackground`），因此在 owner-scoped Style
 里直接写根 `Setter Property="BorderBrush"` / `Property="Background"` 即可定制外框：
 
 ```xml

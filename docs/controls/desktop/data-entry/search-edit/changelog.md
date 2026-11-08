@@ -10,6 +10,16 @@
 - Fixed
   - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读 `SearchEditTokenResource`，输入表面经共享 `InputControlFrame` / `AddOnDecoratedBox` 以 `OwnerTokenResource` 读取
+    SearchEdit 的有效值；`Controls[SearchEdit]` 不改变搜索按钮的颜色（按钮读取 Button 有效值），拼接圆角与 Text 型按钮的搜索语义
+    色跟随 SearchEdit。
+- Fixed
+  - 按 `SizeType` 使用 SearchEdit 的 `FontSize` / `FontSizeLG` / `FontSizeSM`（`IsCustomFontSize=False` 时），此前没有字号预设。
+  - 焦点阴影现在绘制；根 `BorderBrush` / `Background` 经 `HostBorderBrush` / `HostBackground` 投射到输入表面。
+
 ## 2026-11-05
 
 - 实现结构

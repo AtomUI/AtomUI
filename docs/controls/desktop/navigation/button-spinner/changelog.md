@@ -7,6 +7,17 @@
 - Theme
   - 基础模板的外框与 `ButtonSpinnerHandle` 的增减按钮设为 `IsTabStop=False`。独立 ButtonSpinner 仍保持 `TabNavigation=None`，行为不变；派生的 NumericUpDown 旋钮恢复 Tab 导航后，这些部件不会成为额外停靠点。
 
+## 2026-11-08
+
+- Changed
+  - 主题的全局值以 `OwnerTokenResource` 读取（ButtonSpinnerTheme 也是 NumericUpDownSpinner 的基础主题），`Controls[ButtonSpinner]`
+    的覆盖作用于输入表面、内容内边距、最小高度、Handle 边框与禁用色；左侧附加图标的尺寸改设在无 identity 的
+    `SizeTypeAwareIconPresenter` 上（内部 IconPresenter 是注册控件）。Handle 按下图标色读取 ButtonSpinner 的 `ColorPrimaryActive`。
+  - 根 `BorderBrush` 经模板绑定写入输入表面的 `HostBorderBrush`，删除代码侧本地值转写。
+  - `ControlWidth` 标为 Reserved（对应 antd InputNumber `controlWidth`，暂不应用默认宽度）。
+- Fixed
+  - 内容表面此前没有绑定 `BoxShadow`，且控件裁剪到自身边界，焦点阴影不可见；现在绘制。
+
 ## 2026-10-03
 
 - Implementation

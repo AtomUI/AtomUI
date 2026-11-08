@@ -25,6 +25,7 @@
                                                   InnerRightContent="{TemplateBinding ContentRightAddOn}"
                                                   InnerRightContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
                                                   PlaceholderText="{TemplateBinding PlaceholderText}"
+                                                  PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
                                                   IsReadOnly="{TemplateBinding IsReadOnly}"
                                                   Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"
                                                   ClearIcon="{TemplateBinding ClearIcon}"

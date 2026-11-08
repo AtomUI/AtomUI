@@ -122,7 +122,7 @@
         <Style Selector="^:is(atom|ButtonSpinnerDecoratedBox)">
 
             <Setter Property="SpinnerBorderThickness"
-                    Value="{atom:SharedTokenResource BorderThickness}" />
+                    Value="{atom:OwnerTokenResource BorderThickness}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="SpinnerHandleWidth"
                     Value="{atom:ButtonSpinnerTokenResource HandleWidth}" />
@@ -133,6 +133,7 @@
                         <Transitions>
                             <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
                             <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="MotionDurationMid" />
                             <DoubleTransition Property="HandleOpacity" atom:TokenTransitions.Duration="MotionDurationMid" />
                             <DoubleTransition Property="HandleOffset" atom:TokenTransitions.Duration="MotionDurationMid" />
                             <DoubleTransition Property="ContentLeftShift" atom:TokenTransitions.Duration="MotionDurationMid" />
@@ -154,23 +155,23 @@
             </Style>
 
             <Style Selector="^ /template/ atom|ButtonSpinnerContentPanel#ContentLayout">
-                <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+                <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource SpacingXXS}" />
             </Style>
 
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="ContentPadding"
-                        Value="{atom:ButtonSpinnerTokenResource InputPaddingLG}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
+                        Value="{atom:OwnerTokenResource InputPaddingLG}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
             </Style>
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
                 <Setter Property="ContentPadding"
-                        Value="{atom:ButtonSpinnerTokenResource InputPadding}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+                        Value="{atom:OwnerTokenResource InputPadding}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
             </Style>
             <Style Selector="^[SizeType=Small]">
                 <Setter Property="ContentPadding"
-                        Value="{atom:ButtonSpinnerTokenResource InputPaddingSM}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                        Value="{atom:OwnerTokenResource InputPaddingSM}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
             </Style>
             <Style Selector="^[SizeType=Large], ^[SizeType=Middle], ^[SizeType=Custom], ^[SizeType=Small]">
                 <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">

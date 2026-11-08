@@ -22,6 +22,29 @@
   - `InputControlFrameTheme` 统一设置空 `FocusAdorner`：模板为接收内边距点击而把外框设为可聚焦时，键盘到达外框也不会叠加焦点描边，焦点仍由 `:focus-within` 外框表达。
   - TextArea：内部 `TextAreaDecoratedBox` 设 `IsTabStop=False`，只保留指针聚焦，不再是额外的 Tab 停靠点。
 
+## 2026-11-08
+
+- Changed
+  - 共享输入表面 `InputControlFrame`、`AddOnDecoratedBox` 及 `SearchEditDecoratedBox` / `TextAreaDecoratedBox` 的主题改以
+    `OwnerTokenResource` 读取所属公开控件的有效 Global Token，`Controls[TextBox]`、`Controls[LineEdit]`、`Controls[SearchEdit]`、
+    `Controls[TextArea]` 的覆盖作用于各自的边框、背景、圆角、状态色、焦点阴影与内边距，且不影响同窗口的其他输入控件；
+    LineEdit / SearchEdit / TextArea / TextBox 主题中为 hover / focus 重复设置表面颜色的样式随之删除。默认视觉不变。
+  - LineEdit、SearchEdit、TextArea 的主题改读各自的 `XxxTokenResource`；`TextBoxTheme` 的全局值以 `OwnerTokenResource`
+    读取，因为它也是 EmbeddedTextBox 等无 identity 内嵌编辑器的基础主题，这些编辑器跟随宿主（NumericUpDown、选择器、筛选框）。
+  - 宿主根上的 `BorderBrush` / `Background` 改经模板绑定写入输入表面的内部属性 `HostBorderBrush` / `HostBackground`，由
+    `InputControlFrameTheme` 在全部状态色之后投射；`AbstractTextInput` 不再以本地值写入内部表面。
+- Fixed
+  - LineEdit 按 `SizeType` 使用 `InputFontSize` / `InputFontSizeLG` / `InputFontSizeSM`（`IsCustomFontSize=False` 时；`Custom`
+    取中档），SearchEdit 按 `SizeType` 使用自己的 `FontSize` / `FontSizeLG` / `FontSizeSM`。此前二者没有字号预设，大号与小号
+    沿用继承字号（默认主题下 14px）；现在大号为 16px、小号为 12px，与 TextBox 一致。
+  - 输入框获得焦点和 Error / Warning 焦点时的 `InputActiveShadow` / `InputErrorActiveShadow` / `InputWarningActiveShadow`
+    阴影此前不绘制（共享边框绘制在非均匀背景路径中丢弃了阴影），现在可见；TextArea 不再裁剪到自身边界，阴影绘制在控件外。
+  - TextArea 的 resize 指示线此前绘制在输入表面之下、被表面背景覆盖；现由叠放在表面之上的 `ResizeHandle` 绘制，指示与命中
+    区尺寸使用 `TextArea.ResizeHandleSize`，线宽使用 `LineWidth`。
+  - `AddOnDecoratedBox` 的状态色改为可撤销的 Template 优先级值：附加区图标与呈现器上的用户本地 FillBrush / StrokeBrush /
+    Foreground 与部件样式不再被 `SetCurrentValue` 覆盖或在退出状态时被 `ClearValue` 擦除，退出状态只释放自身施加的值。
+  - TextArea 的内容呈现器位于注册控件 ScrollViewer 之内，行高、最小高度与小号内容边距改为显式读取 TextArea 的有效值。
+
 ## 2026-11-05
 
 - 实现结构

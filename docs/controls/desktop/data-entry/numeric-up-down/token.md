@@ -4,9 +4,14 @@
 
 ## 1. 定位
 
-NumericUpDownToken 是 NumericUpDown 的控件级 Token scope。它继承 `ButtonSpinnerToken`，以独立 `NumericUpDown` scope 提供步进 Handle、字体和尺寸语义；输入表面边框、背景、圆角、focus shadow、error/warning、disabled 和 motion 统一由 `InputControlFrameTheme` 与 `SharedToken` 提供。
+NumericUpDownToken 是 NumericUpDown 的控件级 Token scope 的目标设计：继承 `ButtonSpinnerToken`，以独立 `NumericUpDown` scope 提供步进 Handle、字体和尺寸语义；输入表面边框、背景、圆角、focus shadow、error/warning、disabled 和 motion 统一由 `InputControlFrameTheme` 读取 NumericUpDown 的有效 Global Token。
 
-该设计使 NumericUpDown 能复用 ButtonSpinner 输入壳体体系，同时保留控件级 Token scope。生成的 `NumericUpDownTokenKind` 表达 NumericUpDown scope 下可展示和可覆盖的 Token；默认主题中的输入壳体和 Handle 仍通过 `ButtonSpinnerTokenResource` 消费共享 ButtonSpinner 语义值。
+当前实现（2026-11-08 输入家族迁移后）：源码中没有 `NumericUpDownToken` 类型，`NumericUpDown` 是只有 identity、没有 Own Token 的控件。
+`Controls[NumericUpDown]` 的 Global Token 覆盖作用于它的输入表面、内嵌编辑器（EmbeddedTextBox 继承 NumericUpDown 的 owner）、
+步进 Handle 的边框宽度与禁用色、圆角和动效开关；Handle 的 Own Token（`HandleWidth`、`HandleBg`、`HandleHoverColor` 等）、
+Handle 按下图标色以及 Spinner mode 分隔线颜色仍经 `ButtonSpinnerTokenResource` 读取 ButtonSpinner 的值，因此
+`Controls[ButtonSpinner]` 会影响 NumericUpDown 的这些 Handle 视觉。按目标设计把 Handle Token 提取为
+ButtonSpinner / NumericUpDown 共用的抽象 `[ControlDesignToken]` 层并由各自主题投射到 Handle，是后续工作。
 
 NumericUpDownToken 不承载以下状态：
 

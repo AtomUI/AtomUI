@@ -12,6 +12,10 @@ All notable changes to AtomUI are documented in this file.
 - Button family
   - Control-level overrides (`Controls[Button]`, `Controls[DropdownButton]`, ...) now reach every theme read and the code-side variant colours; scoped and Application resources apply to variant colours.
   - Fix HyperLinkButton icon-only, loading and danger visuals, the BackTop badge, and FloatButtonGroup shadows supplied by the group or its host.
+- Input family
+  - Control-level overrides (`Controls[LineEdit]`, `Controls[TextBox]`, `Controls[NumericUpDown]`, ...) now reach the shared input surface (border, background, radius, status colours, focus shadow, padding) of that control only; NumericUpDown no longer follows `Controls[ButtonSpinner]` or `Controls[TextBox]` for its surface and editor.
+  - LineEdit and SearchEdit apply size presets to their font size (`LineEdit.InputFontSize*`, SearchEdit `FontSize*`): large inputs now use 16px and small inputs 12px, like TextBox; set `IsCustomFontSize` to keep an inherited or local size.
+  - Input focus shadows now render, the TextArea resize indicator is drawn above the input surface (`TextArea.ResizeHandleSize`), AutoComplete passes `PlaceholderForeground` to its input, and add-on status colours no longer erase user brushes on add-on icons.
 
 ## 6.2.14
 

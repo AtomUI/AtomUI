@@ -240,7 +240,6 @@ public abstract class AbstractTextInput : AvaloniaTextBox,
 
     private IconButton? _clearButton;
     private TextPresenter? _textPresenter;
-    private InputControlFrame? _inputControlFrame;
     private IDisposable? _preeditTextSubscription;
     private IDisposable? _textViewportSubscription;
     private IDisposable? _feedbackStatusSubscription;
@@ -285,10 +284,6 @@ public abstract class AbstractTextInput : AvaloniaTextBox,
         {
             ConfigureFormFeedbackSubscription();
         }
-        else if (change.Property == BorderBrushProperty || change.Property == BackgroundProperty)
-        {
-            RelayRootSurfaceBrush(change.Property);
-        }
 
         if (change.Property == StatusProperty ||
             change.Property == FormStatusProperty ||
@@ -315,11 +310,8 @@ public abstract class AbstractTextInput : AvaloniaTextBox,
         _preeditTextSubscription = _textPresenter?.GetObservable(TextPresenter.PreeditTextProperty)
             .Subscribe(_ => ConfigurePlaceholderTextVisibility());
 
-        _inputControlFrame = this.GetVisualDescendants()
-                                 .OfType<InputControlFrame>()
-                                 .FirstOrDefault();
-        RelayRootSurfaceBrush(BorderBrushProperty);
-        RelayRootSurfaceBrush(BackgroundProperty);
+        // Root BorderBrush / Background reach the input frame through the template's HostBorderBrush / HostBackground
+        // bindings, which the frame theme projects over its state brushes (antd styles.root).
 
         SetupTextViewportMetrics(
             e.NameScope.Find<ScrollViewer>("PART_ScrollViewer") ??
@@ -493,29 +485,5 @@ public abstract class AbstractTextInput : AvaloniaTextBox,
         _textViewportSubscription = null;
         TextViewportMetrics.SetViewportWidth(this, null);
         _textPresenter = null;
-        _inputControlFrame = null;
-    }
-
-    /// <summary>
-    /// Relays the owner's root surface brushes onto the input frame as local values so
-    /// application-level customization wins over the frame state machine, mirroring antd
-    /// inline styles.root semantics. An unset owner value restores the state machine.
-    /// </summary>
-    private void RelayRootSurfaceBrush(AvaloniaProperty property)
-    {
-        if (_inputControlFrame is null)
-        {
-            return;
-        }
-
-        var value = GetValue(property);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            _inputControlFrame.ClearValue(property);
-        }
-        else
-        {
-            _inputControlFrame.SetValue(property, value, BindingPriority.LocalValue);
-        }
     }
 }

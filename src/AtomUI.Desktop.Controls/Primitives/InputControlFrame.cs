@@ -109,6 +109,30 @@ internal class InputControlFrame : ContentControl,
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty =
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<InputControlFrame>();
 
+    /// <summary>
+    /// Border brush set on the root of the hosting input control, template-bound by the host. When set, the theme
+    /// projects it onto <see cref="TemplatedControl.BorderBrush"/> after every state brush (antd <c>styles.root</c>);
+    /// unset hands the border back to the state machine.
+    /// </summary>
+    internal static readonly StyledProperty<IBrush?> HostBorderBrushProperty =
+        AvaloniaProperty.Register<InputControlFrame, IBrush?>(nameof(HostBorderBrush));
+
+    /// <summary>Background set on the root of the hosting input control; projected like <see cref="HostBorderBrush"/>.</summary>
+    internal static readonly StyledProperty<IBrush?> HostBackgroundProperty =
+        AvaloniaProperty.Register<InputControlFrame, IBrush?>(nameof(HostBackground));
+
+    internal IBrush? HostBorderBrush
+    {
+        get => GetValue(HostBorderBrushProperty);
+        set => SetValue(HostBorderBrushProperty, value);
+    }
+
+    internal IBrush? HostBackground
+    {
+        get => GetValue(HostBackgroundProperty);
+        set => SetValue(HostBackgroundProperty, value);
+    }
+
     public FormValidateStatus FormStatus
     {
         get => GetValue(FormStatusProperty);
@@ -217,6 +241,12 @@ internal class InputControlFrame : ContentControl,
             PseudoClasses.Set(StdPseudoClass.Pressed, IsInnerBoxPressed);
         }
 
+        if (change.Property == HostBorderBrushProperty ||
+            change.Property == HostBackgroundProperty)
+        {
+            UpdateHostBrushPseudoClasses();
+        }
+
         if (change.Property == StatusProperty ||
             change.Property == FormStatusProperty ||
             change.Property == DataValidationErrors.HasErrorsProperty ||
@@ -232,9 +262,19 @@ internal class InputControlFrame : ContentControl,
         UpdateVariantPseudoClasses();
         UpdateFocusWithinPseudoClass();
         PseudoClasses.Set(StdPseudoClass.Pressed, IsInnerBoxPressed);
+        UpdateHostBrushPseudoClasses();
         UpdateEffectiveStatus();
         _transitionInitialization.CompleteInitialization();
     }
+
+    private void UpdateHostBrushPseudoClasses()
+    {
+        PseudoClasses.Set(HostBorderBrushPseudoClass, HostBorderBrush is not null);
+        PseudoClasses.Set(HostBackgroundPseudoClass, HostBackground is not null);
+    }
+
+    internal const string HostBorderBrushPseudoClass = ":host-border-brush";
+    internal const string HostBackgroundPseudoClass = ":host-background";
 
     protected override void OnPointerEntered(PointerEventArgs e)
     {

@@ -12,6 +12,7 @@
             <ControlTemplate>
                 <atom:NumericUpDownSpinner
                     Name="PART_Spinner"
+                    BorderBrush="{TemplateBinding BorderBrush}"
                     Classes.semantic-scope-spinner="True"
                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                     IsSpinEnabled="{TemplateBinding AllowSpin}"
@@ -47,7 +48,7 @@
                                     Name="PART_SuffixGroup"
                                     Classes.semantic-suffix="True"
                                     DockPanel.Dock="Right"
-                                    Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
+                                    Spacing="{atom:NumericUpDownTokenResource UniformlyPaddingXXS}">
                             <!-- The suffix group precedes the text box (DockPanel order). The host is a local tab group
                                  (Avalonia NumericUpDown), so TabIndex keeps the input first and the clear button next. -->
                             <atom:InputClearIconButton
@@ -100,6 +101,7 @@
                 <ControlTemplate>
                     <atom:NumericUpDownSpinner
                         Name="PART_Spinner"
+                        BorderBrush="{TemplateBinding BorderBrush}"
                         Classes.semantic-scope-spinner="True"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         IsSpinEnabled="{TemplateBinding AllowSpin}"
@@ -135,12 +137,13 @@
                                 Focusable="False" />
                         </atom:ButtonSpinner.InnerLeftContent>
                         <atom:NumericUpDownInputPanel Name="PART_InputPanel" LastChildFill="True">
+                            <!-- layout: keeps the suffix group off the increase handle of the spinner mode -->
                             <StackPanel Orientation="Horizontal"
                                         Name="PART_SuffixGroup"
                                         Classes.semantic-suffix="True"
                                         DockPanel.Dock="Right"
                                         Margin="0,0,8,0"
-                                        Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
+                                        Spacing="{atom:NumericUpDownTokenResource UniformlyPaddingXXS}">
                                 <!-- Input first, then the clear button: see the default template. -->
                                 <atom:InputClearIconButton
                                     Name="PART_ClearButton"
@@ -191,12 +194,14 @@
         </Style>
 
         <Setter Property="IsMotionEnabled"
-                Value="{atom:SharedTokenResource EnableMotion}" />
+                Value="{atom:NumericUpDownTokenResource EnableMotion}" />
         <Setter Property="SpinnerHandleWidth"
                 Value="{atom:ButtonSpinnerTokenResource HandleWidth}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
+        <!-- The focus shadow of the input frame paints outside the control. -->
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="PlaceholderForeground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+        <Setter Property="PlaceholderForeground" Value="{atom:NumericUpDownTokenResource ColorTextPlaceholder}" />
 
     </ControlTheme>
 </ResourceDictionary>

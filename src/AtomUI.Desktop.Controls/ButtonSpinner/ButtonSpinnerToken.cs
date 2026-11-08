@@ -17,6 +17,8 @@ internal sealed class ButtonSpinnerToken : AbstractControlDesignToken
     /// <summary>
     /// 输入框宽度
     /// </summary>
+    [ReservedToken("antd InputNumber controlWidth. ButtonSpinner and NumericUpDown size to their content or host " +
+                   "layout; a themed default width would override every layout, so no default width is applied yet.")]
     public double ControlWidth { get; set; }
 
     /// <summary>

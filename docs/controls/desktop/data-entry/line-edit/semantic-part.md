@@ -34,8 +34,8 @@ descriptor，也不能通过继承关系自动获得其他 owner 的 owner-scope
 | 稳定性 | stable since 6.2.0 |
 
 `root` 是控件自身，不声明 `.semantic-root` marker。它适合定制 LineEdit 整体 `Background`、`BorderBrush`、
-`BorderThickness`、`Opacity`、对齐和尺寸约束；其中 `Background` / `BorderBrush` 由 `AbstractTextInput` 以 LocalValue
-中继到 `InputControlFrame` 生效——定制期间该属性槽的 hover / pressed / focus 变色冻结，focus 的 `BoxShadow` 光晕不受
+`BorderThickness`、`Opacity`、对齐和尺寸约束；其中 `Background` / `BorderBrush` 经模板绑定进入 `InputControlFrame` 的
+`HostBackground` / `HostBorderBrush`，由 frame 主题在全部状态色之后投射——定制期间该属性槽的 hover / pressed / focus 变色冻结，focus 的 `BoxShadow` 光晕不受
 影响，置空后恢复 frame 状态机。variant、effective status、CompactSpace 与 native validation 的状态归一仍由
 `AbstractTextInput` 和 `InputControlFrame` 负责。
 

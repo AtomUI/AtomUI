@@ -589,6 +589,19 @@ public abstract class AbstractAutoComplete : TemplatedControl,
     internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
         InputControlState.FormStatusProperty.AddOwner<AbstractAutoComplete>();
 
+    /// <summary>
+    /// Background of the candidate popup frame, resolved on this control so it follows the control's Token scope
+    /// (the frame itself lives inside the registered Popup, whose own identity owner reads would resolve to).
+    /// </summary>
+    internal static readonly StyledProperty<IBrush?> PopupBackgroundProperty =
+        AvaloniaProperty.Register<AbstractAutoComplete, IBrush?>(nameof(PopupBackground));
+
+    internal IBrush? PopupBackground
+    {
+        get => GetValue(PopupBackgroundProperty);
+        set => SetValue(PopupBackgroundProperty, value);
+    }
+
     private double _itemHeight;
 
     internal double ItemHeight

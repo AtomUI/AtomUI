@@ -50,7 +50,20 @@ ButtonSpinner 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值变更必须同步评估 Gallery 示例和截图可观察外观。
 - 如需引入新 Token，必须同步 Token 类型、生成资源、主题引用和本文档。
 
-## 6. 验证策略
+## 6. 承诺面裁决
+
+2026-11-08 输入家族迁移按[承诺面](../../../../engineering/development/control-token-guidelines.md#own-token-承诺面)裁决：
+
+| Token | 裁决 |
+| --- | --- |
+| `ControlWidth` | Reserved：对应 antd InputNumber `controlWidth`；ButtonSpinner 与 NumericUpDown 按内容或宿主布局取宽，主题默认宽度会覆盖全部布局，暂不应用 |
+
+主题读法：`ButtonSpinnerTheme` 的全局值以 `OwnerTokenResource` 读取（它也是 NumericUpDownSpinner 的基础主题，owner 为
+NumericUpDown）；`ButtonSpinnerDecoratedBoxTheme`、`ButtonSpinnerHandleTheme`、`SizeTypeAwareIconPresenter` 的全局值读取
+所属控件的有效值，Handle 的 Own Token 与按下图标色读取 ButtonSpinner 的值（增减按钮是注册控件 IconButton）。
+全部 Active Own Token 与消费的 Global Token 由 `InputFamilyEffectTests` 逐项验证生效。
+
+## 7. 验证策略
 
 | 改动类型 | 验证要求 |
 | --- | --- |

@@ -11,8 +11,11 @@
         </Setter>
         
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Height" Value="8" />
-        <Setter Property="Width" Value="8" />
+        <Setter Property="IndicatorBrush" Value="{atom:TextAreaTokenResource ResizeIndicatorLineColor}" />
+        <Setter Property="IndicatorLineWidth" Value="{atom:OwnerTokenResource LineWidth}" />
+        <!-- The drag target and the indicator span TextArea.ResizeHandleSize. -->
+        <Setter Property="Height" Value="{atom:TextAreaTokenResource ResizeHandleSize}" />
+        <Setter Property="Width" Value="{atom:TextAreaTokenResource ResizeHandleSize}" />
         
     </ControlTheme>
 </ResourceDictionary>

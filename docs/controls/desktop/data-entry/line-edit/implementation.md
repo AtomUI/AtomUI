@@ -29,7 +29,7 @@ LineEdit 家族的实现以 Avalonia `TextBox` 为文本编辑内核，AtomUI �
 
 ## 3. 核心类职责
 
-`AbstractTextInput` 是文本输入逻辑唯一 owner。它统一维护 `StyleVariant`、`Status`、`SizeType`、`IsMotionEnabled`、清除/reveal/count、placeholder、Form value、native validation 接入、FormStatus、CompactSpace 和 `TextViewportMetrics`，并负责把 owner 的 root `Background` / `BorderBrush` 中继到 frame（见第 5 节）。`TextBox`、`LineEdit`、`TextArea` 只补充单行、多行或 AddOn 专用结构，不重复声明这些共有状态。
+`AbstractTextInput` 是文本输入逻辑唯一 owner。它统一维护 `StyleVariant`、`Status`、`SizeType`、`IsMotionEnabled`、清除/reveal/count、placeholder、Form value、native validation 接入、FormStatus、CompactSpace 和 `TextViewportMetrics`；owner 的 root `Background` / `BorderBrush` 由模板绑定投射到 frame（见第 5 节）。`TextBox`、`LineEdit`、`TextArea` 只补充单行、多行或 AddOn 专用结构，不重复声明这些共有状态。
 
 `InputControlFrame` 是输入表面视觉唯一 owner。它从 `AbstractTextInput` 接收已经归一化的 `StyleVariant`、`SizeType`、`IsMotionEnabled`、`Status`、`FormStatus`、`DataValidationErrors`、`IsEnabled`、focus/hover/pressed 和 CompactSpace 输入，计算 `EffectiveStatus`，并渲染边框、背景、圆角、shadow、error/warning、disabled 与 motion。它不拥有文本值，也不负责 AddOn 内容布局；`DataValidationErrors` 仍是 frame 上的 native validation 唯一真源，不在 frame 外形成第二套验证源。
 
@@ -110,8 +110,8 @@ OverflowTip and other internal consumers
 `OnApplyTemplate` 规则：
 
 - 旧清除按钮 click 订阅必须解除，再绑定新 `PART_ClearButton`。
-- `AbstractTextInput` 每次套用模板都重新查找第一个 `InputControlFrame` 后代作为 root 表面中继目标，并把共有状态回放到 frame；frame 负责初始 transitions 抑制、边框厚度和 CompactSpace 状态计算。
-- root 表面中继：`OnApplyTemplate` 建立缓存后立即同步当前 `Background` / `BorderBrush`；owner 这两个属性变化时，有值以 `BindingPriority.LocalValue` 写入 frame 同名属性（共享 `TemplatedControl` 属性实例，直接 `SetValue`），置空或 `UnsetValue` 时对 frame `ClearValue`。LocalValue 高于 frame 状态机的 StyleTrigger，因此定制期间 hover / pressed / focus 的边框变色让位；focus 的 `BoxShadow` 是独立属性槽，反馈不丢失。中继在模板重新套用时丢弃旧 frame 引用并重建。
+- frame 负责初始 transitions 抑制、边框厚度和 CompactSpace 状态计算；共有状态经模板绑定回放到 frame。
+- root 表面投射：四个输入模板把 owner 的 `BorderBrush` / `Background` 模板绑定到 frame 的内部属性 `HostBorderBrush` / `HostBackground`（ButtonSpinner 与 NumericUpDown 只绑定 `BorderBrush`）。有值时 frame 置 `:host-border-brush` / `:host-background` 伪类，`InputControlFrameTheme` 在全部状态样式之后把它投射到 frame 的 `BorderBrush` / `Background`，因此定制期间 hover / pressed / focus 的边框变色让位；focus 的 `BoxShadow` 是独立属性槽，反馈不丢失。置空时伪类撤销，状态机恢复。控件代码不向 frame 写本地值。
 - `TextBox` 的 `PART_InputControlFrame` 必须水平填满 TextBox 已分配宽度；placeholder、短文本和长文本只改变内部文本布局，不改变输入外框宽度。
 - `TextBox` 模板通过 `TemplateBinding` 将继承的 `InnerLeftContent` / `InnerRightContent` 交给独立的 `ContentPresenter`。左侧 presenter 停靠在编辑区左侧，右侧 presenter 位于 clear/reveal/Form feedback 之后、count 之前；两者均在文本 scroll viewer 外。模板把内容是否为空映射到布局容器的内部 class，ControlTheme 仅在至少一侧内容非空时为 `AdaptiveSpacingDockPanel` 设置 `SpacingXXS`；面板只为可见且具有宽度的辅助区分配间距。两侧内容均为空时撤销间距 setter，保留原有 clear/reveal/Form feedback/count 场景的编辑宽度。空值 presenter 折叠，避免辅助区内部的 `Spacing` 留下空隙。内容的创建、隐式 DataTemplate 查找、替换和释放由 presenter 管理，不增加代码绑定或内容订阅；重新套用模板时由新模板实例接管当前内容。
 - `AddOnDecoratedBox` 派生 part 只接收 frame 状态并建立 AddOn/内部内容布局，不再承担独立状态选择器。
@@ -262,8 +262,9 @@ AOT 边界：
 - 输入控件不得向内部消费方暴露 `TextPresenter` / `ScrollViewer` 实例；模板结构变化只能影响输入控件自己的度量实现。
 - `.semantic-scope-input-frame`、`.semantic-scope-prefix`、`.semantic-scope-suffix` 只能服务 LineEdit 的显式 route，不得提升为公开 Part 或默认主题 selector。
 - clear、count、prefix、suffix 的可见性和内容变化不得增删 marker；五个 selector Part 在内置 LineEdit 模板中均保持 `Single`。
-- 四个输入主题（LineEdit / TextBox / SearchEdit / TextArea）不得在 owner 层恢复 `Background` / `BorderBrush` 默认值，`TextBox` 模板不得重新绑定这两个属性的 `TemplateBinding`；owner 属性值是中继判定“是否定制”的唯一输入。`EmbeddedTextBox` 这类需要压制 chrome 的内嵌派生在自身 ControlTheme 中显式设置 owner 值，经中继成为 frame LocalValue，不依赖模板绑定。
-- root `Background` / `BorderBrush` 中继不得改变共享状态机：未定制路径零 LocalValue 写入，rest / hover / pressed / focus / disabled 视觉与 `LineEditBorderRenderTests` 基线保持一致；定制路径冻结该属性槽的交互态变色，`ClearValue` 后必须完整恢复状态机。
+- 四个输入主题（LineEdit / TextBox / SearchEdit / TextArea）不得在 owner 层恢复 `Background` / `BorderBrush` 默认值，模板不得把这两个属性直接 `TemplateBinding` 到 frame 的 `Background` / `BorderBrush`；owner 属性值只经 `HostBackground` / `HostBorderBrush` 进入 frame，是判定“是否定制”的唯一输入。`EmbeddedTextBox` 这类需要压制 chrome 的内嵌派生在自身 ControlTheme 中显式设置 owner 值，经同一投射成为 frame 表面值。
+- root `Background` / `BorderBrush` 投射不得改变共享状态机：未定制路径 frame 无 host 伪类，rest / hover / pressed / focus / disabled 视觉与 `LineEditBorderRenderTests` 基线保持一致；定制路径冻结该属性槽的交互态变色，置空后必须完整恢复状态机。
+- 输入控件主题不得再为 hover / focus 在 `/template/` 选择器上重复设置 frame 的表面颜色：frame 以 `OwnerTokenResource` 读取宿主的有效值，`Controls[X]` 覆盖直接生效；宿主主题上的模板选择器样式会压过 frame 自身样式（含根表面投射）。
 
 ## 10. 测试与验证
 

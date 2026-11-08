@@ -22,6 +22,18 @@
     - Enter / Space 或点击清除后焦点回到输入框（键盘触发时保持键盘焦点可见），描边在按钮聚焦时挂在按钮上。
     - 从控件后方 Shift+Tab 进入时，Avalonia NumericUpDown 把首次进入的焦点交给输入框，因此落在输入框，再按 Tab 才到清除按钮。
 
+## 2026-11-08
+
+- Changed
+  - NumericUpDown 的内部 NumericUpDownSpinner 与 EmbeddedTextBox 改为继承 NumericUpDown 的 Token owner：此前 NumericUpDownSpinner
+    主题 `BasedOn` 已解析的 ButtonSpinner 默认主题，也继承了其中注入的 ButtonSpinner identity，整个 NumericUpDown 的输入表面跟随
+    `Controls[ButtonSpinner]`。现在 `Controls[NumericUpDown]` 的全局覆盖作用于输入表面、内嵌编辑器、圆角、Handle 边框宽度与禁用色，
+    `Controls[ButtonSpinner]` / `Controls[TextBox]` 不再改变它们；Handle 的 Own Token 仍读取 ButtonSpinner（见 token.md）。
+  - 根 `BorderBrush` 经模板绑定交给内部 spinner，再进入输入表面的 `HostBorderBrush`，不再以本地值写入内部表面。
+  - Spinner mode 的 -/+ 分隔线宽度跟随输入表面边框宽度；-/+ 图标尺寸读取 NumericUpDown 的 `IconSize`。
+- Fixed
+  - 焦点阴影此前未绑定到 spinner 的内容表面、且控件裁剪到自身边界，现在可见。
+
 ## 2026-10-18
 
 - Implementation

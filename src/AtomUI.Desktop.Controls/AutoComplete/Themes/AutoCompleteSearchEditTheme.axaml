@@ -26,6 +26,7 @@
                                                     InnerRightContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
                                                     SizeType="{TemplateBinding SizeType}"
                                                     PlaceholderText="{TemplateBinding PlaceholderText}"
+                                                    PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
                                                     IsReadOnly="{TemplateBinding IsReadOnly}"
                                                     Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"
                                                     SearchButtonStyle="{TemplateBinding SearchButtonStyle}"

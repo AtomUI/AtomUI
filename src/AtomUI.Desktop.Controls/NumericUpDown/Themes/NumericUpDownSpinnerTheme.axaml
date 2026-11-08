@@ -5,6 +5,12 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <Thickness x:Key="NumericUpDownSpinnerContentPadding">0</Thickness>
+    <!-- The -/+ separators are drawn with the frame's border width on the inner side of each handle.
+         The -/+ buttons are registered IconButtons, so their icon size reads the NumericUpDown value explicitly. -->
+    <atom:BorderThicknessFilterConverter x:Key="NumericUpDownSpinnerRightSeparatorConverter"
+                                         Left="False" Top="False" Bottom="False" />
+    <atom:BorderThicknessFilterConverter x:Key="NumericUpDownSpinnerLeftSeparatorConverter"
+                                         Top="False" Right="False" Bottom="False" />
 
     <ControlTheme x:Key="{x:Type atom:NumericUpDownSpinner}"
                   TargetType="atom:NumericUpDownSpinner"
@@ -31,6 +37,7 @@
                         Status="{TemplateBinding Status}"
                         FormStatus="{TemplateBinding FormStatus}"
                         IsInputFocusWithin="{TemplateBinding IsKeyboardFocusWithin}"
+                        HostBorderBrush="{TemplateBinding BorderBrush}"
                         DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                         IsShowHandle="False"
                         IsHandleFloatable="False"
@@ -46,7 +53,7 @@
                             <atom:PixelAlignedBorder
                                 DockPanel.Dock="Left"
                                 BorderBrush="{atom:ButtonSpinnerTokenResource HandleBorderColor}"
-                                BorderThickness="0,0,1,0"
+                                BorderThickness="{Binding $parent[atom:ButtonSpinnerDecoratedBox].BorderThickness, Converter={StaticResource NumericUpDownSpinnerRightSeparatorConverter}}"
                                 IsVisible="{TemplateBinding IsButtonSpinnerVisible}">
                                 <atom:IconButton
                                     Name="PART_DecreaseButton"
@@ -57,15 +64,15 @@
                                     Padding="0"
                                     Width="{CompiledBinding $self.Bounds.Height}"
                                     BackgroundSizing="InnerBorderEdge"
-                                    IconWidth="{atom:SharedTokenResource IconSize}"
-                                    IconHeight="{atom:SharedTokenResource IconSize}"
+                                    IconWidth="{atom:NumericUpDownTokenResource IconSize}"
+                                    IconHeight="{atom:NumericUpDownTokenResource IconSize}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch" />
                             </atom:PixelAlignedBorder>
                             <atom:PixelAlignedBorder
                                 DockPanel.Dock="Right"
                                 BorderBrush="{atom:ButtonSpinnerTokenResource HandleBorderColor}"
-                                BorderThickness="1,0,0,0"
+                                BorderThickness="{Binding $parent[atom:ButtonSpinnerDecoratedBox].BorderThickness, Converter={StaticResource NumericUpDownSpinnerLeftSeparatorConverter}}"
                                 IsVisible="{TemplateBinding IsButtonSpinnerVisible}">
                                 <atom:IconButton
                                     Name="PART_IncreaseButton"
@@ -76,8 +83,8 @@
                                     Padding="0"
                                     Width="{CompiledBinding $self.Bounds.Height}"
                                     BackgroundSizing="InnerBorderEdge"
-                                    IconWidth="{atom:SharedTokenResource IconSize}"
-                                    IconHeight="{atom:SharedTokenResource IconSize}"
+                                    IconWidth="{atom:NumericUpDownTokenResource IconSize}"
+                                    IconHeight="{atom:NumericUpDownTokenResource IconSize}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch" />
                             </atom:PixelAlignedBorder>

@@ -349,10 +349,10 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         {
             _buttonSpinner = buttonSpinner;
             // The frame node lives inside the spinner's own template; apply it now so the
-            // border relay below can reach the decorated box instead of silently no-oping.
+            // template part bindings below can reach the decorated box.
             buttonSpinner.ApplyTemplate();
         }
-        RelayFrameBorderBrush();
+        // The root BorderBrush is template-bound onto the spinner, which binds it into the frame's HostBorderBrush.
         SetupTemplatePartBindings(e);
     }
 
@@ -364,10 +364,6 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == BorderBrushProperty)
-        {
-            RelayFrameBorderBrush();
-        }
 
         if (change.Property == IsReadOnlyProperty ||
             change.Property == TextProperty ||
@@ -545,31 +541,6 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
     }
 
     #endregion
-
-    /// <summary>
-    /// Relays the owner's root border brush onto the input frame as a local value so
-    /// application-level customization wins over the frame state machine, mirroring antd
-    /// inline styles.root semantics and the shared AbstractTextInput behavior. An unset
-    /// owner value restores the state machine.
-    /// </summary>
-    private void RelayFrameBorderBrush()
-    {
-        var decoratedBox = _buttonSpinner?.DecoratedBox;
-        if (decoratedBox is null)
-        {
-            return;
-        }
-
-        var value = GetValue(BorderBrushProperty);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            decoratedBox.ClearValue(BorderBrushProperty);
-        }
-        else
-        {
-            decoratedBox.SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
-        }
-    }
 
     private void HandleClearButtonClicked(object? sender, RoutedEventArgs args)
     {

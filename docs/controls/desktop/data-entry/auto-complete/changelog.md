@@ -9,6 +9,14 @@
 - Tests
   - `AutoCompleteFocusTests` 的 Filled 用例改为断言聚焦边框存在且无 `BoxShadow`。
 
+## 2026-11-08
+
+- Changed
+  - 共享主题的全局值以 `OwnerTokenResource` 读取，AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea 各自的覆盖生效；
+    候选弹层背景经控件内部属性 `PopupBackground` 绑定进弹层（弹层内容位于注册控件 Popup 之内）。
+- Fixed
+  - `PlaceholderForeground` 此前未传给内部输入框，现经模板绑定生效。
+
 ## 2026-11-04
 
 - Changed

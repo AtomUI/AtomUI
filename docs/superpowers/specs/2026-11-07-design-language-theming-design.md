@@ -155,6 +155,30 @@ Style OfType<T>  { Setter(StyledElement.Theme, DynamicResource(ControlThemeKey(T
 - DynamicResource 在目标控件上实例化、沿目标控件的资源链解析，天然按作用域取值；局部 `ThemeConfigProvider`、Popup、带 owner 的独立窗口全部沿用现有资源链。
 - 切换语言就是一次普通事务：Publish 阶段 Provider 发出 `ResourcesChanged`，Theme 绑定重新取值；只有主题实例真的变化的控件重套模板，只换 Token 的语言零重套。
 
+### 3.8 保真度边界与升级阶梯
+
+一份控件代码不可能 100% 还原每种设计语言的控件外观，任何单代码库方案都不能；ant.design 首页的 MUI/Bootstrap 预设是"像 MUI 的 antd"，Avalonia Fluent 也不是 WinUI 的像素复刻。本设计的目标是**AtomUI 适配版**：预览集合中的控件在该语言下静态视觉与反馈动效达到适配，每个语言包维护一份已知偏差清单。不承诺也不验收 100%。
+
+差距分五层，覆盖能力与吸收点分别为：
+
+| 层 | 例子 | 覆盖能力 | 吸收点 |
+| --- | --- | --- | --- |
+| 静态视觉 | 颜色、圆角、边框、阴影、字体、密度 | 接近完全 | Token、ControlTheme |
+| 渲染能力 | backdrop blur、渐变描边、文字全大写、阴影 spread | 受 Avalonia 渲染器限制 | 能做的用主题；做不到的登记偏差 |
+| 反馈与动效 | Material 从点击点扩散的 ripple，Ant 的 wave 外扩 | 可覆盖 | 语言包自带基元（6.1 `Primitives/`） |
+| 行为与状态模型 | 浮动标签、Select 以 Menu 弹出、Snackbar 位置规则 | 部分 | 状态已是伪类/属性的靠模板；行为不同的给控件加全语言共用的属性；再不行登记偏差 |
+| 组件清单 | Material 的 FAB、Chip、Navigation Rail | 不覆盖 | 语言包只提供视觉，不发明控件；需要时另立控件包，不在本方案范围 |
+
+遇到差距按固定阶梯处理，不得跳级也不得绕过：
+
+1. Token（语言基础 Token、Own Token 默认、主题定义）；
+2. ControlTheme（`BasedOn` 回落主题加 Setter，或完整换模板）；
+3. 语言包自带基元：装饰器、呈现器、转换器，自身也是 lookless 的非可视类或控件，只被该语言的模板引用；
+4. 给控件增加一个所有语言都能用的属性开关（例如 `LabelPlacement`），由语言主题设默认值；
+5. 登记为该语言包的已知偏差，写明原因（渲染能力、行为差异、有意不做）。
+
+禁令：控件代码里不得出现按设计语言分支的逻辑，不得读取当前语言 id。差异只能表现为"控件多了一个所有语言可用的开关"或"语言包多了一个基元"。
+
 ## 4. 公开 API
 
 全部位于 `AtomUI.Core`，命名空间 `AtomUI.Theme`；资源键位于 `AtomUI.Theme.Resources`。
@@ -311,8 +335,10 @@ AtomUI.Themes.Material/                                   派生式，Fallback =
 +-- MaterialDesignLanguage.cs
 +-- Algorithms/MaterialDefaultCalculator.cs …             HCT 调色板；Alias 回落 Ant
 +-- Definitions/MaterialPurple.theme.xml …
++-- Primitives/RippleDecorator.cs …                       本语言模板专用的 lookless 基元（3.8 阶梯第 3 级）
 +-- TokenDefaults/…                                       需要改默认的控件
-\-- Themes/…                                              需要换形态的控件，可 BasedOn="{atom:FallbackControlTheme …}"
++-- Themes/…                                              需要换形态的控件，可 BasedOn="{atom:FallbackControlTheme …}"
+\-- DEVIATIONS.md                                         已知偏差清单：项、原因、所属阶梯
 
 AtomUI.Themes.Prime/                                      直接指定式，Fallback = Ant
 +-- PrimeDesignLanguage.cs                                Derivation = ThemeDerivation.Tables(base, dark)
@@ -369,7 +395,7 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 5. **Semantic marker 是主题的义务。** 每种语言的主题保持同一组非 Optional marker；控件代码不负责 marker。
 6. **没有主题也能构造、运行行为。** 控件在无模板下 `Measure/Arrange` 返回零尺寸、事件与命令照常；这是 lookless 的验收用例。
 
-设计语言只覆盖视觉。行为差异不属于主题；确有需要时给控件增加所有语言可用的属性，由语言主题设默认值。
+设计语言只覆盖视觉。行为差异不属于主题；确有需要时按 3.8 的阶梯给控件增加所有语言可用的属性，由语言主题设默认值；控件代码永远不感知当前语言。
 
 ### 6.3 平台
 
@@ -424,7 +450,8 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 
 集成（`AtomUI.Desktop.Controls.Tests` / Gallery 测试）：
 
-- 每套语言 × 预览页：切换后关键区域按已采用的容差策略对比各自基准。
+- 每套语言 × 预览页：切换后关键区域按已采用的容差策略对比各自基准；基准是该语言包自己的参考渲染，不是原设计系统的截图。
+- 保真度：每个语言包的 `DEVIATIONS.md` 与预览集合逐控件核对，预览集合中未登记偏差的项必须在适配范围内；分析器对控件包内读取语言 id 或按语言分支的代码报错。
 - 状态保持：切换前后 TextBox 文本与选区、ListBox 选中项、焦点元素相同；被换模板的控件记录模板内状态丢失范围。
 - 每种语言主题的 Semantic Part 预览能解析全部非 Optional 部件。
 - 用户显式设置 `Theme` 的控件不被语言切换改写。
@@ -462,4 +489,6 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 | 无语言注册时 | 与 Avalonia 一致：控件 lookless 无外观，启动记诊断不抛 | 启动失败：把"没有主题"当错误，与 lookless 模型矛盾，也阻碍无 UI 的单元测试 |
 | 控件代码里允许留什么 | 解析后的离散状态（枚举/布尔）可留作内部属性或伪类；画刷/阴影/圆角/厚度/字号一律迁到主题 | 全部迁出：状态选择器失去依据；全部保留：语言换主题时 Ant 视觉值漏出 |
 | 语言扩展全局 Token | 本轮不做，先映射并列清单 | 现在开放 schema 扩展：证据不足 |
+| 保真度目标 | AtomUI 适配版 + 每语言偏差清单；差距按 Token → 主题 → 基元 → 控件开关 → 偏差的阶梯处理 | 承诺 100%：单代码库做不到，参照物也没做到；不设阶梯：实现时会把语言分支塞进控件代码 |
+| 语言包能否带代码 | 能带 lookless 基元与转换器，只供自己的模板用 | 只许 AXAML：ripple 一类反馈差异只能登记为偏差 |
 | 可选控件包的语言主题 | 独立小包 `AtomUI.Themes.<Lang>.<Pkg>` | 放回控件包：重新把主题塞进控件包 |

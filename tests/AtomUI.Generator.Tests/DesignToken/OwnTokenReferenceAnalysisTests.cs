@@ -196,6 +196,23 @@ public class OwnTokenReferenceAnalysisTests
         run.Entry("Button", "Base").State.ShouldBe("Active");
     }
 
+    [Fact]
+    public void Abstract_Layer_Derivations_And_Global_Reads_Count_For_Each_Inheriting_Terminal()
+    {
+        // Size is declared and derived in an abstract layer shared by Button and Label; only Button's theme reads it.
+        var run = Run(LayerTokens, ButtonTheme("""<Setter Property="Height" Value="{atom:ButtonTokenResource Size}" />"""),
+            LabelTheme("""<Setter Property="Foreground" Value="{atom:LabelTokenResource Tint}" />"""));
+
+        run.Entry("Button", "Size").State.ShouldBe("Active");
+        run.Entry("Button", "Base").State.ShouldBe("Active");
+        run.Entry("Label", "Size").State.ShouldBe("Unreferenced");
+        run.Entry("Label", "Base").State.ShouldBe("Unreferenced");
+        run.Consumers.ShouldContain(("AtomUI", "Button", "ControlHeight", "code"));
+        run.Consumers.ShouldContain(("AtomUI", "Label", "ColorText", "code"));
+        run.Consumers.ShouldNotContain(("AtomUI", "Label", "ControlHeight", "code"));
+        run.Consumers.ShouldNotContain(("AtomUI", "Button", "ColorText", "code"));
+    }
+
     // ---- global consumption map -----------------------------------------------------------
 
     [Fact]
@@ -496,6 +513,53 @@ public class OwnTokenReferenceAnalysisTests
                     Alias = AliasSource;
                     Shown = peer.Lone + this.Base;
                 }
+            }
+        }
+        """;
+
+    private const string LayerTokens = """
+        using AtomUI.Theme.DesignTokens;
+
+        namespace Demo
+        {
+            [GlobalDesignToken]
+            public partial class GlobalToken : AbstractDesignToken
+            {
+                public double ControlHeight { get; set; }
+                public string ColorText { get; set; } = string.Empty;
+            }
+
+            public sealed class Label : Avalonia.Controls.Control
+            {
+            }
+
+            [ControlDesignToken]
+            internal abstract class AbstractSharedToken : AbstractControlDesignToken
+            {
+                public double Base { get; set; }
+                public double Size { get; set; }
+                public string Tint { get; set; } = string.Empty;
+
+                public override void CalculateTokenValues(bool isDark)
+                {
+                    if (!IsExplicit(ButtonTokenKind.Base))
+                    {
+                        Base = EffectiveGlobalToken.ControlHeight;
+                    }
+
+                    Size = Base * 2;
+                    Tint = EffectiveGlobalToken.ColorText;
+                }
+            }
+
+            [ControlDesignToken]
+            internal sealed class ButtonToken : AbstractSharedToken
+            {
+            }
+
+            [ControlDesignToken]
+            internal sealed class LabelToken : AbstractSharedToken
+            {
             }
         }
         """;

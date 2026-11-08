@@ -109,10 +109,12 @@ internal static class OwnTokenReferenceAnalysis
             collector.CollectAxaml(root);
         }
 
-        foreach (var tree in compilation.SyntaxTrees)
+        var roots = compilation.SyntaxTrees.Select(tree => tree.GetRoot(cancellationToken)).ToList();
+        collector.CollectTokenLayers(roots);
+        foreach (var root in roots)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            collector.CollectCode(tree.GetRoot(cancellationToken));
+            collector.CollectCode(root);
         }
 
         var active = collector.ResolveActiveMembers();
@@ -188,6 +190,69 @@ internal static class OwnTokenReferenceAnalysis
             _ownByControl = ownByControl;
             _globals = globals;
             _identities = identities;
+        }
+
+        // Abstract Token layer class name -> the controls whose terminal Token inherits it (directly or through other layers).
+        private readonly Dictionary<string, HashSet<string>> _layerControls = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Maps every abstract <c>[ControlDesignToken]</c> layer to the terminal controls that inherit it, so the
+        /// derivations and global reads in a layer's <c>CalculateTokenValues</c> count for each of those controls. The
+        /// chain is followed syntactically by base-type name within the package's own sources.
+        /// </summary>
+        internal void CollectTokenLayers(IEnumerable<SyntaxNode> roots)
+        {
+            var baseOf = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var declaration in roots.SelectMany(static root => root.DescendantNodes().OfType<ClassDeclarationSyntax>()))
+            {
+                var name = declaration.Identifier.ValueText;
+                if (!name.EndsWith(TokenSuffix, StringComparison.Ordinal) ||
+                    declaration.BaseList?.Types.FirstOrDefault()?.Type is not { } baseType ||
+                    GetRightmostTypeName(baseType) is not { } baseName)
+                {
+                    continue;
+                }
+
+                baseOf[name] = baseName;
+            }
+
+            foreach (var control in _ownByControl.Keys)
+            {
+                var visited = new HashSet<string>(StringComparer.Ordinal) { control + TokenSuffix };
+                for (var current = control + TokenSuffix; baseOf.TryGetValue(current, out var layer) && visited.Add(layer); current = layer)
+                {
+                    if (!_layerControls.TryGetValue(layer, out var controls))
+                    {
+                        _layerControls.Add(layer, controls = new HashSet<string>(StringComparer.Ordinal));
+                    }
+
+                    controls.Add(control);
+                }
+            }
+        }
+
+        private static string? GetRightmostTypeName(TypeSyntax type) => type switch
+        {
+            IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+            QualifiedNameSyntax qualified => qualified.Right.Identifier.ValueText,
+            AliasQualifiedNameSyntax alias => alias.Name.Identifier.ValueText,
+            _ => null
+        };
+
+        // The controls whose Own Tokens a Token class declares: its own control for a terminal, every inheriting terminal
+        // control for an abstract layer.
+        private IEnumerable<string> GetTokenClassControls(string className)
+        {
+            if (className.Length > TokenSuffix.Length && className.EndsWith(TokenSuffix, StringComparison.Ordinal))
+            {
+                var control = className.Substring(0, className.Length - TokenSuffix.Length);
+                if (_ownByControl.ContainsKey(control))
+                {
+                    return [control];
+                }
+            }
+
+            return _layerControls.TryGetValue(className, out var controls) ? controls : [];
         }
 
         // Members of a Token class read by AXAML or by code outside the Token class.
@@ -397,21 +462,24 @@ internal static class OwnTokenReferenceAnalysis
             }
             else if (string.Equals(expressionName, "EffectiveGlobalToken", StringComparison.Ordinal))
             {
-                if (_globals.Contains(name) && GetEnclosingTokenControl(access) is { } tokenControl)
+                if (_globals.Contains(name))
                 {
-                    if (GetAssignedOwnField(access, _ownByControl[tokenControl]) is { } field)
+                    foreach (var tokenControl in GetEnclosingTokenControls(access))
                     {
-                        if (!_fieldFedGlobals.TryGetValue((tokenControl, field), out var globals))
+                        if (GetAssignedOwnField(access, _ownByControl[tokenControl]) is { } field)
                         {
-                            globals = new HashSet<string>(StringComparer.Ordinal);
-                            _fieldFedGlobals.Add((tokenControl, field), globals);
-                        }
+                            if (!_fieldFedGlobals.TryGetValue((tokenControl, field), out var globals))
+                            {
+                                globals = new HashSet<string>(StringComparer.Ordinal);
+                                _fieldFedGlobals.Add((tokenControl, field), globals);
+                            }
 
-                        globals.Add(name);
-                    }
-                    else
-                    {
-                        _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, tokenControl, name, CodeSource));
+                            globals.Add(name);
+                        }
+                        else
+                        {
+                            _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, tokenControl, name, CodeSource));
+                        }
                     }
                 }
             }
@@ -439,18 +507,14 @@ internal static class OwnTokenReferenceAnalysis
         // `Y = f(X)` in `<Control>Token.CalculateTokenValues` makes X a source of Y: X is consumed when Y is.
         private void CollectDerivations(ClassDeclarationSyntax declaration)
         {
-            var className = declaration.Identifier.ValueText;
-            if (className.Length <= TokenSuffix.Length || !className.EndsWith(TokenSuffix, StringComparison.Ordinal))
+            foreach (var control in GetTokenClassControls(declaration.Identifier.ValueText))
             {
-                return;
+                CollectDerivations(declaration, control, _ownByControl[control]);
             }
+        }
 
-            var control = className.Substring(0, className.Length - TokenSuffix.Length);
-            if (!_ownByControl.TryGetValue(control, out var own))
-            {
-                return;
-            }
-
+        private void CollectDerivations(ClassDeclarationSyntax declaration, string control, HashSet<string> own)
+        {
             foreach (var method in declaration.Members.OfType<MethodDeclarationSyntax>()
                                               .Where(static method => method.Identifier.ValueText == "CalculateTokenValues"))
             {
@@ -501,30 +565,26 @@ internal static class OwnTokenReferenceAnalysis
             _ => null
         };
 
-        private static bool IsInsideTokenClass(SyntaxNode node, string control)
+        private bool IsInsideTokenClass(SyntaxNode node, string control)
         {
-            var tokenClass = control + TokenSuffix;
             return node.Ancestors().OfType<ClassDeclarationSyntax>()
-                       .Any(declaration => string.Equals(declaration.Identifier.ValueText, tokenClass, StringComparison.Ordinal));
+                       .Any(declaration => GetTokenClassControls(declaration.Identifier.ValueText).Contains(control));
         }
 
-        // `ButtonToken` -> `Button` for the innermost enclosing terminal Token class of a control with Own Tokens.
-        private string? GetEnclosingTokenControl(SyntaxNode node)
+        // `ButtonToken` -> `Button` for the innermost enclosing terminal Token class of a control with Own Tokens; an
+        // abstract Token layer yields every terminal control that inherits it.
+        private IEnumerable<string> GetEnclosingTokenControls(SyntaxNode node)
         {
             foreach (var declaration in node.Ancestors().OfType<ClassDeclarationSyntax>())
             {
-                var name = declaration.Identifier.ValueText;
-                if (name.Length > TokenSuffix.Length && name.EndsWith(TokenSuffix, StringComparison.Ordinal))
+                var controls = GetTokenClassControls(declaration.Identifier.ValueText).ToList();
+                if (controls.Count != 0)
                 {
-                    var control = name.Substring(0, name.Length - TokenSuffix.Length);
-                    if (_ownByControl.ContainsKey(control))
-                    {
-                        return control;
-                    }
+                    return controls;
                 }
             }
 
-            return null;
+            return [];
         }
 
         // The innermost enclosing type that is a control with a Token identity (or its Token class); otherwise shared.

@@ -11,6 +11,8 @@ AtomUI 的重要变更记录在此文件中。
 - Breaking Changes
   - Theme Tokens：删除 Button 家族中没有消费者的 Own Token。请从主题配置中移除 `Button.ExtraContentItemSpacing`、`Button.ExtraContentMargin`、`Button.ExtraContentMarginLG`、`Button.ExtraContentMarginSM`、`Button.GutterToFlyout`、`HyperLinkButton.BorderColorDisabled`、`FloatButton.SquareBadgeOffset` 和 `FloatButton.CircleBadgeOffset`；改用 `DropdownButton.ExtraContentMargin*`/`MarginToAnchor`、`SplitButton.GutterToFlyout` 或 `FloatButton.BadgeOffset`。
   - Theme Tokens：`Button.FontWeight` 改为 `FontWeight` 值（`500` 或 `Medium`）并设置 Button 字重；`Button.GroupBorderColor` 标为保留，暂无视觉效果。
+  - Theme Tokens：各进度控件拥有各自的 Own Token。`ProgressBar.CircleTextColor`、`ProgressBar.CircleMinimumTextFontSize`、`ProgressBar.CircleMinimumIconSize` 移到 `CircleProgress` / `DashboardProgress`，`ProgressBar.ProgressStepMarginInlineEnd` / `ProgressBar.ProgressStepMinWidth` 移到 `StepsProgressBar`（`ProgressStepMarginInlineEnd` 改为 `double` 间距）；`Controls[ProgressBar]` 不再改变步骤、圆形与仪表盘进度条。
+  - 进度控件：受保护成员 `AbstractProgressBar.StrokeThickness` 更名为 `EffectiveStrokeThickness`（计算值），子类需改用新名称。
 - Button 家族
   - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
   - 修复 HyperLinkButton 的仅图标、加载与危险视觉，BackTop 徽标，以及由分组或 Host 提供的 FloatButtonGroup 阴影。
@@ -28,6 +30,11 @@ AtomUI 的重要变更记录在此文件中。
   - `Controls[CheckBox]` 可设置指示器尺寸（`CheckIndicatorSize`、`CheckedMarkSize`、`BorderRadiusSM`），勾选标记跟随 `ColorWhite`；RadioButton 选中填充使用 `RadioButton.RadioBgColor`；ToggleSwitch 加载指示线宽跟随 `LineWidth`。
   - Token 变化现在会重新布局或重绘 RadioButton 圆点、ToggleSwitch 内容边距、Slider 轨道（尺寸、滑轨与内边距）和 Slider 滑块背景；`Slider.MarginPartWithMark` 与 `Slider.SliderTrackSize` 标为保留，暂无视觉效果（轨道横向尺寸与内边距跟随默认值相同的 `ThumbCircleSizeHover`）。
   - 可见变化：Rate 应用 `SizeType`（小号与大号星使用 `StarSizeSM` / `StarSizeLG`）；Rate 键盘焦点虚线框改为 `BorderThickness`（1px），不再是 0.75px；禁用或加载中的 ToggleSwitch 按 antd 以 `SwitchDisabledOpacity` 整体变暗一次，把手（原为 0.9）与开/关内容（原先不变暗）现在与轨道同一透明度。
+- 进度条家族
+  - 控件级覆盖（`Controls[ProgressBar]`、`Controls[StepsProgressBar]`、`Controls[CircleProgress]`、`Controls[DashboardProgress]`）现在作用于该控件的全部主题读取，包括状态色、状态图标与过渡时长；每个控件以自己的有效 Global Token 计算 `DefaultColor` / `RemainingColor`。
+  - `ProgressBar.LineBorderRadius` 设置圆头进度条圆角，`StepsProgressBar.ProgressStepMarginInlineEnd` / `ProgressStepMinWidth` 设置步骤间距与最小步骤宽度，`CircleTextColor` 设置圆形百分比文字颜色；`ProgressBar.ProgressActiveMotionDuration` 标为保留（Active 闪光动画尚未实现）。
+  - 线形与步骤进度条上的本地或样式 `MinWidth` / `MinHeight`、圆形与仪表盘进度条上的本地 `FontSize` 不再被计算出的文字几何覆盖；Token 变化会重新布局圆形文字与状态图标。
+  - 可见变化：圆形与仪表盘进度条的百分比文字改用 `ColorText`（`CircleTextColor`），不再是 `ColorTextLabel`；小于 2px 的显式 `ChunkWidth` 提升到 `ProgressStepMinWidth`。
 - Popup
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。
 

@@ -1,9 +1,11 @@
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
+using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
 using Avalonia;
@@ -13,6 +15,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -34,11 +37,22 @@ public class OwnerTokenResourceTests
     [Fact]
     public void ProvideValue_Returns_Binding_Without_Resolving_Owner()
     {
+        var serviceProvider = new ThrowingServiceProvider();
         var value = new OwnerTokenResourceExtension(SharedTokenKind.ColorBorder)
-            .ProvideValue(new ThrowingServiceProvider());
+            .ProvideValue(serviceProvider);
 
-        value.ShouldBeAssignableTo<BindingBase>();
         value.ShouldNotBeOfType<DynamicResourceExtension>();
+        value.ShouldBeAssignableTo<CompiledBinding>()!.Priority.ShouldBe(BindingPriority.LocalValue);
+        serviceProvider.Requested.ShouldBe([typeof(IAvaloniaXamlIlControlTemplateProvider)]);
+    }
+
+    [Fact]
+    public void ProvideValue_In_Control_Template_Uses_Template_Priority()
+    {
+        var value = new OwnerTokenResourceExtension(SharedTokenKind.ColorBorder)
+            .ProvideValue(new ThrowingServiceProvider(new ControlTemplateMarker()));
+
+        value.ShouldBeAssignableTo<CompiledBinding>()!.Priority.ShouldBe(BindingPriority.Template);
     }
 
     [Fact]
@@ -188,21 +202,62 @@ public class OwnerTokenResourceTests
     }
 
     [Fact]
-    public void Unregistered_Owner_Falls_Back_To_Global_Without_Throwing()
+    public void Unregistered_Owner_Falls_Back_To_Global_Without_Exceptions()
     {
         HeadlessTestApp.Run(() =>
         {
+            var extraIdentity = new ControlTokenIdentity("AtomUI", "Extra");
             using var fixture = new Fixture(LineEditBorderConfig("#FF0000"));
             var primitive = fixture.CreatePrimitive();
-            primitive.SetValue(ThemeScope.TokenOwnerProperty, new ControlTokenIdentity("AtomUI", "Missing"));
+            primitive.SetValue(ThemeScope.TokenOwnerProperty, extraIdentity);
+            var exceptions = 0;
+            void CountException(object? sender, FirstChanceExceptionEventArgs e) => exceptions++;
+            AppDomain.CurrentDomain.FirstChanceException += CountException;
+            try
+            {
+                fixture.Show(primitive);
+                BorderColor(primitive).ShouldBe(fixture.GlobalBorderColor());
 
-            fixture.Show(primitive);
+                fixture.Apply(LineEditBorderConfig("#0000FF"), ThemeTransitionReason.UserRequest);
+                BorderColor(primitive).ShouldBe(fixture.GlobalBorderColor());
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.FirstChanceException -= CountException;
+            }
+            exceptions.ShouldBe(0, "an unregistered owner is a schema decision, not an exception path");
 
-            BorderColor(primitive).ShouldBe(fixture.GlobalBorderColor());
+            // The fallback is re-decided on every refresh: once the owner becomes registered it is used.
+            fixture.RegisterControls(new ControlTokenDescriptor(typeof(DefaultThemeTestControl), extraIdentity));
+            fixture.Apply(new ThemeConfigBuilder()
+                          .WithControl(extraIdentity, BorderConfig("#00FF00"))
+                          .Build(),
+                ThemeTransitionReason.CatalogReload);
 
-            fixture.Apply(LineEditBorderConfig("#0000FF"), ThemeTransitionReason.UserRequest);
+            BorderColor(primitive).ShouldBe(s_buttonBorder);
+        });
+    }
 
-            BorderColor(primitive).ShouldBe(fixture.GlobalBorderColor());
+    [Fact]
+    public void Owner_Snapshot_Failure_Is_Not_Masked_As_Global()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            using var fixture = new Fixture(LineEditBorderConfig("#FF0000"), ThrowingLineEditDescriptor());
+            var primitive = fixture.CreatePrimitive();
+            var ownerKey = OwnerTokenBinding.GetResourceKey(s_lineEditIdentity, SharedTokenKind.ColorBorder);
+
+            // The failure surfaces from the refresh on attach, exactly where a DynamicResource refresh of the
+            // same key would surface it.
+            Should.Throw<InvalidOperationException>(
+                      () => fixture.Show(fixture.CreateOwner(typeof(LineEditThemeTestControl), primitive)))
+                  .Message.ShouldBe(ThrowingEvaluatorMessage);
+
+            primitive.GetValue(ThemeScope.TokenOwnerProperty).ShouldBe(s_lineEditIdentity);
+            Should.Throw<InvalidOperationException>(
+                      () => primitive.TryFindResource(ownerKey, primitive.ActualThemeVariant, out _))
+                  .Message.ShouldBe(ThrowingEvaluatorMessage);
+            primitive.BorderBrush.ShouldBeNull("a failing owner snapshot must not be masked as the global value");
         });
     }
 
@@ -227,7 +282,37 @@ public class OwnerTokenResourceTests
                 .ShouldBe(0, "global fallback lookup must not allocate");
             MeasureAllocations(() => primitive.TryFindResource(ownerKey, primitive.ActualThemeVariant, out _))
                 .ShouldBe(0, "refresh lookup through the primitive's resource chain must not allocate");
+            MeasureAllocations(() => ThemeScope.ResolveContext(primitive)!.Snapshot.Registry
+                                               .TryGetControl(s_lineEditIdentity, out _))
+                .ShouldBe(0, "the per-refresh owner registration check must not allocate");
         });
+    }
+
+    private const string ThrowingEvaluatorMessage = "LineEdit Token evaluator failed.";
+
+    /// <summary>
+    /// A LineEdit whose Control Token evaluator throws; its snapshot is materialized lazily on the first
+    /// owner-key lookup, so the failure surfaces from the resource query.
+    /// </summary>
+    private static ControlTokenDescriptor ThrowingLineEditDescriptor()
+    {
+        var height = new TokenDescriptor(
+            nameof(CompilerButtonToken.Height),
+            0,
+            TokenStage.Control,
+            typeof(double),
+            CompilerButtonTokenKind.Height,
+            static value => ThemeTokenValueParser.Parse<double>(value),
+            static value => ThemeTokenValueFormatter.Format((double)value!),
+            static token => ((CompilerButtonToken)token).Height,
+            static (token, value) => ((CompilerButtonToken)token).Height = (double)value!,
+            static token => ((CompilerButtonToken)token).Height);
+        return new ControlTokenDescriptor(
+            typeof(LineEditThemeTestControl),
+            s_lineEditIdentity,
+            [height],
+            static () => new CompilerButtonToken(),
+            static (_, _) => throw new InvalidOperationException(ThrowingEvaluatorMessage));
     }
 
     private static ControlThemeConfig BorderConfig(string color) =>
@@ -283,22 +368,41 @@ public class OwnerTokenResourceTests
 
     private sealed class Fixture : IDisposable
     {
-        private readonly ThemeSchemaRegistry _registry;
         private readonly Window _window;
+        private ThemeSchemaRegistry _registry;
 
-        internal Fixture(ThemeConfig config)
+        internal Fixture(ThemeConfig config, ControlTokenDescriptor? lineEdit = null)
         {
-            _registry = TypedThemeSnapshotCacheTests.CreateRegistry([
-                new ControlTokenDescriptor(typeof(LineEditThemeTestControl), s_lineEditIdentity),
-                new ControlTokenDescriptor(typeof(ButtonThemeTestControl), s_buttonIdentity)
-            ]);
+            _registry = CreateRegistry(
+                lineEdit ?? new ControlTokenDescriptor(typeof(LineEditThemeTestControl), s_lineEditIdentity));
             Manager = new ThemeManager(
                 static () => true,
                 (request, _, _) => ValueTask.FromResult(Prepare(_registry, request.Config)));
             Apply(config, ThemeTransitionReason.Startup);
             _window = new Window();
             _window.Resources.MergedDictionaries.Add(Manager.Resources);
+            // Production sets the root context on every TopLevel through ThemeManager's root style.
+            _window.SetValue(ThemeScope.ContextProperty, Manager.RootContext);
         }
+
+        /// <summary>
+        /// Later snapshots are compiled against a registry that additionally registers the given controls.
+        /// </summary>
+        internal void RegisterControls(params ControlTokenDescriptor[] controls)
+        {
+            _registry = CreateRegistry(
+                new ControlTokenDescriptor(typeof(LineEditThemeTestControl), s_lineEditIdentity),
+                controls);
+        }
+
+        private static ThemeSchemaRegistry CreateRegistry(
+            ControlTokenDescriptor lineEdit,
+            params ControlTokenDescriptor[] extra) =>
+            TypedThemeSnapshotCacheTests.CreateRegistry([
+                lineEdit,
+                new ControlTokenDescriptor(typeof(ButtonThemeTestControl), s_buttonIdentity),
+                ..extra
+            ]);
 
         internal ThemeManager Manager { get; }
 
@@ -414,11 +518,27 @@ public class OwnerTokenResourceTests
         }
     }
 
-    private sealed class ThrowingServiceProvider : IServiceProvider
+    /// <summary>
+    /// Allows only the control-template context query that <see cref="DynamicResourceExtension"/> also
+    /// performs; resolving an owner or a resource while loading markup would request anything else.
+    /// </summary>
+    private sealed class ThrowingServiceProvider(IAvaloniaXamlIlControlTemplateProvider? templateProvider = null)
+        : IServiceProvider
     {
+        internal List<Type> Requested { get; } = [];
+
         public object? GetService(Type serviceType)
         {
+            Requested.Add(serviceType);
+            if (serviceType == typeof(IAvaloniaXamlIlControlTemplateProvider))
+            {
+                return templateProvider;
+            }
             throw new InvalidOperationException($"OwnerTokenResource must not request '{serviceType}'.");
         }
+    }
+
+    private sealed class ControlTemplateMarker : IAvaloniaXamlIlControlTemplateProvider
+    {
     }
 }

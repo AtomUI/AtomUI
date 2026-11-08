@@ -1,4 +1,6 @@
+using Avalonia.Data;
 using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
 
 namespace AtomUI.Theme.Resources;
 
@@ -17,9 +19,11 @@ namespace AtomUI.Theme.Resources;
 /// <see cref="SharedTokenResourceExtension"/>.
 /// </para>
 /// <para>
-/// The returned binding is instantiated per target element; the owner is resolved at that point, never
-/// while the markup is being loaded, so the service provider is not queried. Only targets that are
-/// <see cref="Avalonia.StyledElement"/> instances can resolve a value.
+/// The returned binding is instantiated per target element; the owner and the resource are resolved at
+/// that point, never while the markup is being loaded. The service provider is only asked whether the
+/// markup sits in a control template, as <c>DynamicResourceExtension</c> does, so direct use on a template
+/// element gets Template priority. Only targets that are <see cref="Avalonia.StyledElement"/> instances can
+/// resolve a value.
 /// </para>
 /// </remarks>
 public sealed class OwnerTokenResourceExtension : MarkupExtension
@@ -51,6 +55,11 @@ public sealed class OwnerTokenResourceExtension : MarkupExtension
         {
             throw new InvalidOperationException("A Token resource key is required.");
         }
-        return OwnerTokenBinding.Create(kind);
+        // Same template-context check as DynamicResourceExtension: values inside a ControlTemplate use
+        // Template priority so triggered styles can still override them.
+        var priority = serviceProvider.GetService(typeof(IAvaloniaXamlIlControlTemplateProvider)) is not null
+            ? BindingPriority.Template
+            : BindingPriority.LocalValue;
+        return OwnerTokenBinding.Create(kind, priority);
     }
 }

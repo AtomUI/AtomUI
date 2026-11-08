@@ -22,9 +22,14 @@ namespace AtomUI.Theme.Resources;
 /// resource on <see cref="StyledElement.ResourcesChanged"/> and
 /// <see cref="StyledElement.ActualThemeVariantChanged"/>, and additionally switches the resource key when
 /// the inherited <see cref="ThemeScope.TokenOwnerProperty"/> changes. The key is the owner's unbound
-/// Effective Global key, or the plain <see cref="SharedTokenKind"/> without an owner. An owner the active
-/// schema does not register falls back to the plain key instead of throwing, because a primitive must not
-/// fail because of its host.
+/// Effective Global key, or the plain <see cref="SharedTokenKind"/> without an owner.
+/// </para>
+/// <para>
+/// On every refresh the owner is checked against the registry of the target's <see cref="ThemeContext"/>;
+/// an owner that registry does not register uses the plain key, because a primitive must not fail because
+/// of its host. The decision is not cached, so a later snapshot that registers the owner is picked up on
+/// its publish. Without a resolvable context the owner key is used and the provider decides, like any other
+/// resource lookup; lookup failures (e.g. a failing Control snapshot evaluation) propagate unchanged.
 /// </para>
 /// </remarks>
 internal sealed class OwnerTokenBinding : IPropertyAccessor
@@ -40,6 +45,7 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
     private readonly SharedTokenKind _kind;
     private Action<object?>? _listener;
     private StyledElement? _target;
+    private ControlTokenIdentity? _owner;
     private object? _ownerKey;
     private object? _value = AvaloniaProperty.UnsetValue;
 
@@ -54,7 +60,7 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
 
     public object? Value => _value;
 
-    internal static BindingBase Create(SharedTokenKind kind)
+    internal static BindingBase Create(SharedTokenKind kind, BindingPriority priority)
     {
         var path = new CompiledBindingPathBuilder()
                    .Self()
@@ -62,7 +68,8 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
                    .Build();
         return new CompiledBinding(path)
         {
-            Mode = BindingMode.OneWay
+            Mode     = BindingMode.OneWay,
+            Priority = priority
         };
     }
 
@@ -86,10 +93,10 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
             return;
         }
 
-        _target                           =  target;
-        target.PropertyChanged            += OnTargetPropertyChanged;
-        target.ResourcesChanged           += OnResourcesChanged;
-        target.ActualThemeVariantChanged  += OnActualThemeVariantChanged;
+        _target                          =  target;
+        target.PropertyChanged           += OnTargetPropertyChanged;
+        target.ResourcesChanged          += OnResourcesChanged;
+        target.ActualThemeVariantChanged += OnActualThemeVariantChanged;
         UpdateOwner(target.GetValue(ThemeScope.TokenOwnerProperty));
     }
 
@@ -104,6 +111,7 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
         }
 
         _listener = null;
+        _owner    = null;
         _ownerKey = null;
         _value    = AvaloniaProperty.UnsetValue;
     }
@@ -131,6 +139,7 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
     private void UpdateOwner(ControlTokenIdentity? owner)
     {
         // Allocates one boxed key per owner change; refreshes reuse it.
+        _owner    = owner;
         _ownerKey = owner is null ? null : GetResourceKey(owner, _kind);
         Refresh();
     }
@@ -145,27 +154,17 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
 
     private object? FindValue(StyledElement target)
     {
-        var theme = target.ActualThemeVariant;
-        if (_ownerKey is { } ownerKey)
-        {
-            try
-            {
-                return target.TryFindResource(ownerKey, theme, out var ownerValue)
-                    ? ownerValue
-                    : AvaloniaProperty.UnsetValue;
-            }
-            catch (InvalidOperationException)
-            {
-                // ThemeTokenResourceProvider rejects identities the active schema does not register.
-                // Keep the plain global key for this owner so later refreshes do not throw again.
-                _ownerKey = null;
-            }
-        }
-
-        return target.TryFindResource(_globalKey, theme, out var value)
+        var key = _ownerKey is { } ownerKey && !IsKnownUnregistered(target, _owner!.Value)
+            ? ownerKey
+            : _globalKey;
+        return target.TryFindResource(key, target.ActualThemeVariant, out var value)
             ? value
             : AvaloniaProperty.UnsetValue;
     }
+
+    private static bool IsKnownUnregistered(StyledElement target, ControlTokenIdentity owner) =>
+        ThemeScope.ResolveContext(target) is { } context &&
+        !context.Snapshot.Registry.TryGetControl(owner, out _);
 
     private void Publish(object? value)
     {

@@ -6,6 +6,7 @@ using AtomUI.Theme.Resources;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AvaloniaWindow = Avalonia.Controls.Window;
@@ -23,7 +24,7 @@ public class OwnerTokenResourceAxamlTests
     }
 
     [Fact]
-    public void Compiled_Axaml_Resolves_Owner_Token_Resource_In_Setter_And_Property()
+    public void Compiled_Axaml_Resolves_Owner_Token_Resource_In_Setter_Property_And_Template()
     {
         var view = new OwnerTokenResourceView();
         var provider = new ThemeConfigProvider
@@ -55,6 +56,14 @@ public class OwnerTokenResourceAxamlTests
             unowned.ShouldNotBe(s_buttonBorder);
             view.TryFindResource(SharedTokenKind.ColorBorder, view.ActualThemeVariant, out var global).ShouldBeTrue();
             unowned.ShouldBe(global.ShouldBeAssignableTo<ISolidColorBrush>()!.Color);
+
+            // Direct use on a ControlTemplate element takes Template priority: the owner value applies,
+            // and a triggered style setter on the same property still wins over it.
+            FrameColor(view, "TemplatedHost").ShouldBe(s_buttonBorder);
+            FrameColor(view, "OverriddenTemplatedHost").ShouldBe(Color.Parse("#00FF00"));
+            view.FindControl<ContentControl>("OverriddenTemplatedHost")!.Classes.Remove("override");
+            Dispatcher.UIThread.RunJobs();
+            FrameColor(view, "OverriddenTemplatedHost").ShouldBe(s_buttonBorder);
         }
         finally
         {
@@ -63,8 +72,15 @@ public class OwnerTokenResourceAxamlTests
     }
 
     private static Color BorderColor(Control view, string name) =>
-        view.FindControl<Border>(name)
-            .ShouldNotBeNull()
-            .BorderBrush.ShouldBeAssignableTo<ISolidColorBrush>()!
-            .Color;
+        BrushColor(view.FindControl<Border>(name).ShouldNotBeNull());
+
+    private static Color FrameColor(Control view, string hostName) =>
+        BrushColor(view.FindControl<ContentControl>(hostName)
+                       .ShouldNotBeNull()
+                       .GetVisualDescendants()
+                       .OfType<Border>()
+                       .Single(border => border.Name == "PART_Frame"));
+
+    private static Color BrushColor(Border border) =>
+        border.BorderBrush.ShouldBeAssignableTo<ISolidColorBrush>()!.Color;
 }

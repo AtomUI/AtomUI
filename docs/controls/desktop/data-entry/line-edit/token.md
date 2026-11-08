@@ -30,11 +30,12 @@ TextBox / LineEdit / TextArea Token 不承载文本值、placeholder、清除状
 - `LineEdit.InputFontSizeLG`
 - `LineEdit.InputFontSizeSM`
 
-这些 Token 保持 LineEdit 单行输入框字号契约。当前默认计算语义与 TextBox 字号一致（`FontSize`、`FontSizeLG`、
-`FontSizeSM`）。`LineEditTheme` 在 `IsCustomFontSize=False` 时按 `SizeType` 把它们写入 LineEdit 的 `FontSize`
+这些 Token 保持 LineEdit 单行输入框字号契约，默认值对齐 antd Input：`InputFontSize` 取 `FontSize`，`InputFontSizeLG`
+取 `FontSizeLG`，`InputFontSizeSM` 取 `InputFontSize`（小号输入框不缩小字号；显式覆盖 `InputFontSize` 时小号随之变化，
+除非同时显式设置 `InputFontSizeSM`）。`LineEditTheme` 在 `IsCustomFontSize=False` 时按 `SizeType` 把它们写入 LineEdit 的 `FontSize`
 （`Custom` 取中档），`IsCustomFontSize=True` 保留继承或本地字号；复用 LineEdit 主题的组合控件（AutoComplete 的输入框、
-Pagination 的快速跳转框）随之使用。SearchEdit 是独立 identity，读自己的 `FontSize` / `FontSizeLG` / `FontSizeSM`
-有效值，不借用 LineEdit 的 Own Token。
+Pagination 的快速跳转框）随之使用。SearchEdit 是独立 identity，读自己的 `FontSize` / `FontSizeLG` 有效值
+（小号同样取 `FontSize`），不借用 LineEdit 的 Own Token。
 
 ### 2.3 TextArea 字号
 
@@ -137,7 +138,7 @@ Token 变更要求：
 
 | Token | 裁决 |
 | --- | --- |
-| `LineEdit.InputFontSize`、`InputFontSizeLG`、`InputFontSizeSM` | Active：LineEditTheme 按 SizeType 设置 LineEdit 字号（此前 LineEdit 没有字号预设，大号与小号沿用继承字号） |
+| `LineEdit.InputFontSize`、`InputFontSizeLG`、`InputFontSizeSM` | Active：LineEditTheme 按 SizeType 设置 LineEdit 字号（此前 LineEdit 没有字号预设，大号与小号沿用继承字号）；`InputFontSizeSM` 默认改为 `InputFontSize`，对齐 antd |
 | `TextArea.ResizeHandleSize` | Active：resize handle 的命中区与指示尺寸 |
 | `ButtonSpinner.ControlWidth` | Reserved，见 ButtonSpinner token.md |
 | 输入家族 `HoverBorderColor`（PrimeNG 的悬停边框色需求） | 不新增：悬停边框由无身份的共享输入表面绘制，基元只能读取全局 Token；要让每个输入控件一致消费，需要在 LineEdit、SearchEdit、TextArea、TextBox、ButtonSpinner、NumericUpDown 以及 Select、Cascader、TreeSelect、DatePicker 等全部输入表面宿主上各加同名 Own Token，并在各自主题里按状态重新投射到表面，这正是本次迁移移除的重复状态样式。迁移后 `Controls[X].Tokens[ColorPrimaryHover]` 只改变 X 的悬停边框，已能表达该需求（例如设为 slate-400） |

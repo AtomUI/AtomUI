@@ -35,8 +35,9 @@
     `InputControlFrameTheme` 在全部状态色之后投射；`AbstractTextInput` 不再以本地值写入内部表面。
 - Fixed
   - LineEdit 按 `SizeType` 使用 `InputFontSize` / `InputFontSizeLG` / `InputFontSizeSM`（`IsCustomFontSize=False` 时；`Custom`
-    取中档），SearchEdit 按 `SizeType` 使用自己的 `FontSize` / `FontSizeLG` / `FontSizeSM`。此前二者没有字号预设，大号与小号
-    沿用继承字号（默认主题下 14px）；现在大号为 16px、小号为 12px，与 TextBox 一致。
+    取中档），SearchEdit 按 `SizeType` 使用自己的 `FontSize` / `FontSizeLG`（小号取 `FontSize`）。此前二者没有字号预设，
+    大号与小号沿用继承字号（默认主题下 14px）；现在大号为 16px，小号与中号同为 14px，对齐 antd Input
+    （`InputFontSizeSM` 默认等于 `InputFontSize`，原默认 `FontSizeSM` 未曾生效）。
   - 输入框获得焦点和 Error / Warning 焦点时的 `InputActiveShadow` / `InputErrorActiveShadow` / `InputWarningActiveShadow`
     阴影此前不绘制（共享边框绘制在非均匀背景路径中丢弃了阴影），现在可见；TextArea 不再裁剪到自身边界，阴影绘制在控件外。
   - TextArea 的 resize 指示线此前绘制在输入表面之下、被表面背景覆盖；现由叠放在表面之上的 `ResizeHandle` 绘制，指示与命中

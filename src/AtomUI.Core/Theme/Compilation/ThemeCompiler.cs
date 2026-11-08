@@ -521,10 +521,18 @@ internal sealed class ThemeCompiler
         if (controlBuilder is not null)
         {
             controlBuilder.AssignEffectiveGlobalToken(effectiveGlobalBuilder);
-            descriptor.Evaluate(controlBuilder, appearance);
-            if (config is not null)
+            var ownTokens = config?.OwnTokens;
+            if (ownTokens is not null)
             {
-                ApplyAllValues(controlBuilder, config.OwnTokens);
+                // Explicit overrides are written and flagged before the evaluator runs so default
+                // calculations can see them; they are written again afterwards so they still win.
+                MarkExplicit(controlBuilder, ownTokens);
+            }
+
+            descriptor.Evaluate(controlBuilder, appearance);
+            if (ownTokens is not null)
+            {
+                ApplyAllValues(controlBuilder, ownTokens);
             }
 
             controlTokenValues = TokenValueTable.Freeze(controlBuilder, descriptor.OwnTokens);
@@ -805,6 +813,17 @@ internal sealed class ThemeCompiler
             {
                 value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
             }
+        }
+    }
+
+    private static void MarkExplicit(
+        AbstractControlDesignToken builder,
+        IReadOnlyList<NormalizedTokenValue> values)
+    {
+        foreach (var value in values)
+        {
+            value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
+            builder.MarkExplicit(value.Descriptor.Slot);
         }
     }
 

@@ -6,6 +6,7 @@ using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Shouldly;
 using SkiaSharp;
@@ -108,7 +109,9 @@ public static class TokenEffectHarness
                 $"Perturbation of '{token}' must produce a different value.");
 
             using var before = comparesPixels ? FrameCapture.Capture(window) : null;
-            var boundsBefore = before is null ? default : GetPixelBounds(control, window, before);
+            // Shadows paint outside the Control, so the region grows by the larger shadow extent per axis.
+            var inflation    = MaxExtent(ShadowExtent(current), ShadowExtent(perturbed));
+            var boundsBefore = before is null ? default : GetPixelBounds(control, window, before, inflation);
 
             provider.Config = CreateConfig(comparesPixels, (identity, token, formatted));
             WaitForValue(control, target, formatted, () => failure is not null);
@@ -123,7 +126,7 @@ public static class TokenEffectHarness
 
             FrameCapture.Refresh(window);
             using var after   = FrameCapture.Capture(window);
-            var boundsAfter   = GetPixelBounds(control, window, after);
+            var boundsAfter   = GetPixelBounds(control, window, after, inflation);
             var region        = SKRectI.Union(boundsBefore, boundsAfter);
             var area          = region.Width * region.Height;
             var changed       = FrameCapture.CountDifferentPixels(before, after, region, channelTolerance);
@@ -131,7 +134,7 @@ public static class TokenEffectHarness
             var threshold     = ResolveThreshold(token, thresholdRatio);
             ratio.ShouldBeGreaterThan(threshold,
                 $"Token '{token}' of '{identity}' changed from '{ThemeTokenValueFormatter.Format(current)}' to " +
-                $"'{formatted}' but only {changed}/{area} pixels changed inside the Control bounds; a Token without " +
+                $"'{formatted}' but only {changed}/{area} pixels changed inside the Control bounds{(inflation == (0, 0) ? string.Empty : " (inflated by the shadow extent)")}; a Token without " +
                 "visible effect is not Active (make it Reserved, delete it, or arrange a state where it shows).");
         }
         finally
@@ -242,15 +245,40 @@ public static class TokenEffectHarness
         }
     }
 
-    private static SKRectI GetPixelBounds(Control control, AvaloniaWindow window, SKBitmap frame)
+    /// <summary>
+    /// How far a shadow value paints beyond the Control per axis: the maximum over its shadows of
+    /// |offset| + blur + spread. Values that are not shadows paint inside the bounds and have no extent.
+    /// </summary>
+    internal static (double X, double Y) ShadowExtent(object value)
+    {
+        return value switch
+        {
+            BoxShadows shadows => Enumerable.Range(0, shadows.Count)
+                                            .Select(index => ShadowExtent(shadows[index]))
+                                            .Aggregate((0d, 0d), MaxExtent),
+            BoxShadow shadow => (
+                Math.Abs(shadow.OffsetX) + shadow.Blur + Math.Max(0, shadow.Spread),
+                Math.Abs(shadow.OffsetY) + shadow.Blur + Math.Max(0, shadow.Spread)),
+            _ => (0, 0)
+        };
+    }
+
+    private static (double X, double Y) MaxExtent((double X, double Y) left, (double X, double Y) right) =>
+        (Math.Max(left.X, right.X), Math.Max(left.Y, right.Y));
+
+    private static SKRectI GetPixelBounds(
+        Control control,
+        AvaloniaWindow window,
+        SKBitmap frame,
+        (double X, double Y) inflation)
     {
         var origin = control.TranslatePoint(new Point(), window) ?? throw new InvalidOperationException(
             "The Control under test is not inside the test window.");
         var size   = control.Bounds.Size;
-        var left   = Math.Clamp((int)Math.Floor(origin.X), 0, frame.Width);
-        var top    = Math.Clamp((int)Math.Floor(origin.Y), 0, frame.Height);
-        var right  = Math.Clamp((int)Math.Ceiling(origin.X + size.Width), 0, frame.Width);
-        var bottom = Math.Clamp((int)Math.Ceiling(origin.Y + size.Height), 0, frame.Height);
+        var left   = Math.Clamp((int)Math.Floor(origin.X - inflation.X), 0, frame.Width);
+        var top    = Math.Clamp((int)Math.Floor(origin.Y - inflation.Y), 0, frame.Height);
+        var right  = Math.Clamp((int)Math.Ceiling(origin.X + size.Width + inflation.X), 0, frame.Width);
+        var bottom = Math.Clamp((int)Math.Ceiling(origin.Y + size.Height + inflation.Y), 0, frame.Height);
         if (right <= left || bottom <= top)
         {
             throw new InvalidOperationException(

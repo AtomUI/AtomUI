@@ -38,6 +38,42 @@ public class TokenEffectHarnessTests
             "LineWidth");
     }
 
+    [Theory]
+    [InlineData("ContentPadding", ButtonType.Default)] // Thickness
+    [InlineData("DefaultShadow", ButtonType.Default)]  // BoxShadows, painted outside the bounds
+    [InlineData("PrimaryShadow", ButtonType.Primary)]  // BoxShadows, painted outside the bounds
+    public void Geometry_Tokens_Change_Pixels(string token, ButtonType buttonType)
+    {
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go", ButtonType = buttonType },
+            ButtonTokens.Identity,
+            token);
+    }
+
+    [Fact]
+    public void Corner_Radius_Token_Changes_Pixels()
+    {
+        // Button reads BorderRadius through SharedTokenResource (ButtonTheme.axaml), which a
+        // Controls[Button] override cannot reach; Collapse reads its radius through its owner resource.
+        TokenEffectHarness.AssertHasEffect(
+            () => new Collapse { Items = { new CollapseItem { Header = "Panel", Content = "Body" } } },
+            CollapseTokens.Identity,
+            "CollapsePanelBorderRadius");
+    }
+
+    [Fact]
+    public void Shadow_Extent_Is_The_Largest_Offset_Plus_Blur_Plus_Spread_Per_Axis()
+    {
+        var shadows = new BoxShadows(
+            new BoxShadow { OffsetX = -2, OffsetY = 6, Blur = 16, Spread = 0 },
+            [new BoxShadow { OffsetX = 0, OffsetY = 3, Blur = 6, Spread = -4 },
+             new BoxShadow { OffsetX = 0, OffsetY = 9, Blur = 28, Spread = 8 }]);
+
+        TokenEffectHarness.ShadowExtent(shadows).ShouldBe((36d, 45d));
+        TokenEffectHarness.ShadowExtent(new BoxShadows()).ShouldBe((0d, 0d));
+        TokenEffectHarness.ShadowExtent(Colors.Red).ShouldBe((0d, 0d));
+    }
+
     [Fact]
     public void Token_Without_Visible_Effect_Fails()
     {

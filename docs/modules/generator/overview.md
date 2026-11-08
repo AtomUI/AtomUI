@@ -11,8 +11,8 @@ Browser 的映射转换属于独立的 [TypeMap Linker 模块](../typemap-linker
 
 - 从 Global Token 和可选 `[ControlDesignToken]` 定义生成强类型 schema、资源键、owner identity 与投影代码。
 - 验证标记抽象 Token 与 `sealed` 终端 Token 的继承契约，将跨程序集属性扁平化到终端 schema。
-- 发现具备真实主题、Token 或语义契约的 public/internal Control，生成逐控件注册片段及单项 descriptor factory；
-  片段内为有 Token 身份的公开 Control 生成 `ThemeScope.TokenOwner` 写入。
+- 发现具备真实主题、Token 或语义契约的 public/internal Control，生成逐控件注册片段及单项 descriptor factory。
+  `ThemeScope.TokenOwner` 由 Core 运行时在 ControlTheme 解析时注入，不经生成器。
 - 对每个 Own Token 字段做包内引用分析，产出 Active / Reserved 承诺面清单与全局 Token 消费图，并从承诺面生成
   生效测试骨架；未引用且未标 `[ReservedToken]` 的字段报诊断。
 - 以 analyzer 检查主题消费精确性：ControlTheme 的 TokenResource 种类与 TargetType 身份匹配、主题与代码里的视觉

@@ -119,7 +119,7 @@ builder.ApplyExplicit()                           // 再写一遍显式值，无
 
 `OwnerTokenResource` 的机制：
 
-- 每个有 Token 身份的公开控件在构造时把自己的 identity 写入可继承附加属性 `ThemeScope.TokenOwner`（生成器在注册代码里产出，控件作者不写）。
+- 每个有 Token 身份的公开控件实例带有可继承附加属性 `ThemeScope.TokenOwner`，值是其 identity。写入点是 `ThemeManager` 已有的 ControlTheme 解析钩子：默认 ControlTheme 首次解析时按 TargetType 查 registry，有 descriptor 就注入一个 `Setter(TokenOwner, identity)`（Style 优先级的有效值参与继承；每个 ControlTheme 只注入一次）。控件作者与生成器都不写代码。用户不经 `BasedOn` 完全替换默认 ControlTheme 时失去该 Setter，基元回落全局值。
 - 基元与部件在模板内继承到这个值；Popup 内容经逻辑父级继承，独立窗口经现有 lease 继承。
 - `OwnerTokenResource` 产出一个绑定：输入是继承到的 owner identity 与 Token kind，输出是作用域 Provider 对 `ControlTokenResourceKey.Global(identity, kind)` 的查询结果；owner 变化或主题变化都触发重取。
 - 没有继承到 owner（基元被单独使用）时回落为共享全局值。

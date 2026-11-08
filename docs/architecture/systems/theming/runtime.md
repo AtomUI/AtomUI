@@ -29,8 +29,8 @@
   `{atom:XxxTokenResource TokenName}`，它同时读取该 Control 的 Effective Global Token 和 Own Token；没有 Token
   身份的共享基元与部件使用 `{atom:OwnerTokenResource TokenName}`，读取当前所属公开 Control 的 Effective Global
   Token。Control 级配置对该 Control 模板内的全部消费点生效。
-- ControlTheme 不携带 ambient Token scope；Token 所属 Control 由资源扩展名显式表达，或由公开 Control 写入的可继承
-  `ThemeScope.TokenOwner` identity 表达。
+- ControlTheme 不携带 ambient Token scope；Token 所属 Control 由资源扩展名显式表达，或由默认 ControlTheme 注入的可
+  继承 `ThemeScope.TokenOwner` identity 表达。
 - 显式 Control Own Token 覆盖先于 Own Token 默认计算写入，默认计算只为未显式设置的字段求值；覆盖一个 Own Token
   必须传导到依赖它的全部派生默认值。
 - 承诺面真实：每个全局 Token 和每个 Active Own Token 设置后都在渲染层产生可观测变化；没有消费者的 Own Token 要么
@@ -1041,8 +1041,11 @@ OwnerTokenResource(X), X is any registered Global Token
 
 `OwnerTokenResource` 的机制：
 
-- 每个有 Token 身份的公开 Control 在构造时把自己的 `ControlTokenIdentity` 写入可继承附加属性
-  `ThemeScope.TokenOwner`。写入代码由生成器放在该 Control 的注册片段中，Control 作者不手写。
+- 每个有 Token 身份的公开 Control 的实例都带有可继承附加属性 `ThemeScope.TokenOwner`，值是它的
+  `ControlTokenIdentity`。写入点是 `ThemeManager` 已有的 ControlTheme 解析钩子（`NotifyControlThemeResolved`）：
+  默认 ControlTheme 以 `Type` 键首次被解析时，若该 Type 在 registry 中有 descriptor，就向该 ControlTheme 注入一个
+  `Setter(ThemeScope.TokenOwnerProperty, identity)`，每个 ControlTheme 只注入一次。Control 作者与生成器都不写
+  这段代码；用户完全替换默认 ControlTheme（不 `BasedOn`）时失去该 Setter，基元回落为共享全局值。
 - 基元与部件在模板内沿逻辑树继承到该值；Popup 内容经逻辑父级继承，独立 TopLevel 经现有 lease 继承。
 - `OwnerTokenResource` 产出一个绑定：输入是继承到的 owner identity 与 Token kind，输出是当前作用域 Provider 对
   `ControlTokenResourceKey.Global(identity, kind)` 的查询结果；owner 变化或主题发布都触发重取。

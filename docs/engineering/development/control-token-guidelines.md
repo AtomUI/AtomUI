@@ -222,8 +222,9 @@ TokenResourceExtension、TokenKey 和 OwnTokenKind 的使用都应保留对应�
 
 - Control 主题里不得用 `SharedTokenResource` 读全局 Token，否则 `Controls[Xxx]` 的覆盖对该消费点无效。生成器按
   TargetType 校验读法，迁移期警告，家族迁移完成后转错误。
-- 每个有 Token 身份的公开 Control 在构造时写入 `ThemeScope.TokenOwner`，代码由生成器放在注册片段中，Control
-  作者不手写。模板里嵌套的公开 Control（SearchEdit 里的 Button）写入自己的 identity，读自己的有效值。
+- 每个有 Token 身份的公开 Control 的默认 ControlTheme 在首次解析时由 ThemeManager 注入
+  `Setter(ThemeScope.TokenOwner, identity)`；Control 作者不写任何代码。模板里嵌套的公开 Control（SearchEdit 里的
+  Button）带自己的 identity，读自己的有效值。用户不经 `BasedOn` 完全替换默认 ControlTheme 时，基元回落为全局值。
 - `OwnerTokenResource` 只接受全局 Token；基元没有 Own Token。
 - ControlTheme 不声明 `ControlTokenScope.Identity`，也不存在 ambient snapshot fallback。
 

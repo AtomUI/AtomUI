@@ -14,6 +14,7 @@ AtomUI 的重要变更记录在此文件中。
   - Theme Tokens：各进度控件拥有各自的 Own Token。`ProgressBar.CircleTextColor`、`ProgressBar.CircleMinimumTextFontSize`、`ProgressBar.CircleMinimumIconSize` 移到 `CircleProgress` / `DashboardProgress`，`ProgressBar.ProgressStepMarginInlineEnd` / `ProgressBar.ProgressStepMinWidth` 移到 `StepsProgressBar`（`ProgressStepMarginInlineEnd` 改为 `double` 间距）；`Controls[ProgressBar]` 不再改变步骤、圆形与仪表盘进度条。
   - 进度控件：受保护成员 `AbstractProgressBar.StrokeThickness` 更名为 `EffectiveStrokeThickness`（计算值），子类需改用新名称。
   - Theme Tokens：CheckableTag 拥有自己的 Own Token `TagFontSize`、`TagLineHeight`、`TagIconSize`、`TagPadding`、`TagTextPaddingInline`，请经 `Controls[CheckableTag]` 设置；`Controls[Tag]` 不再改变 CheckableTag。
+  - Theme Tokens：删除没有消费者的 `Alert.MessageWithDescriptionMargin`；标题与描述的间距由 `Alert.DescriptionLabelMargin` 表达。
 - Button 家族
   - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
   - 修复 HyperLinkButton 的仅图标、加载与危险视觉，BackTop 徽标，以及由分组或 Host 提供的 FloatButtonGroup 阴影。
@@ -46,7 +47,12 @@ AtomUI 的重要变更记录在此文件中。
   - 徽标预设色（`BadgeColor`、`DotColor`、`RibbonColor`）取自主题的预设色板，并在主题变化时重算；清除或设为无效颜色时恢复主题颜色（`IndicatorColor`、状态色或 `DotColor`、`ColorPrimary`），不再让计数与圆点指示器没有填充、缎带停留在先前颜色；`ShadowColor` 变化时 DotBadge 外环会重绘；带装饰目标的 DotBadge、CountBadge 脱离时先清除被装饰元素，再从装饰层移除指示器。
   - 可见变化：暗色主题下预设色徽标使用暗色色板（暗色算法下 antd 的 `color-6`），不再是亮色；自定义颜色 Tag 的浅色背景改为由该颜色生成的色板第 1 级，不再是固定 HSL 亮度 0.95 的颜色，暗色主题下为暗色色板第 1 级，不再是接近白色的浅色。这与 antd 6.7.0 有意不同：antd 在所有主题下都把 HSL 亮度固定为 0.95，AtomUI 改用色板以便暗色主题下仍然可读。
   - FloatButton 徽标预设色（`BadgeColor`）与徽标一样取自色板：按钮挂载时解析（挂载前在 XAML 中设置的值现在生效，不再回落到 `ColorError`），主题变化时重算（暗色主题使用暗色色板），清除颜色时恢复 `ColorError`。
+- Feedback 家族
+  - 控件级覆盖（`Controls[Alert]`、`Controls[ToolTip]`）现在作用于该控件全部主题读取；`Alert.CloseIconSize` 设置 Alert 关闭图标尺寸（默认 `FontSizeIcon`，与此前同为 12px），`ToolTip.MotionDuration` 设置 Tooltip 缩放动效时长（默认 `MotionDurationFast`，不变）。
+  - ToolTip 预设色（`ToolTip.PresetColor`）取主题预设色板，挂载时与主题变化时重新计算；预设色与自定义色由主题投射，应用样式与本地 `Background` 可以覆盖，未设置颜色重新打开的 Tooltip 回到 `ToolTipBackground`，不再沿用上一次的颜色。
+  - 可见变化：暗色主题下带预设色的 Tooltip 使用暗色色板（暗色算法的 antd `color-6`），不再沿用亮色。
 - Popup
+  - Popup 动效（`MotionDurationMid`、`EnableMotion`）跟随 `Controls[Popup]`，弹层宿主（`OverlayPopupHost`、`PopupRoot`）的文本默认值跟随承载 Popup 的控件；Tooltip 与 Popover 缩放原点按框体实际绘制的圆角内缩，不再读取根 `BorderRadius` / `BorderRadiusLG`，控件级圆角覆盖会移动原点（默认圆角下原点不变）。
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。
 - Theme
   - 写在 ControlTemplate 元素上的 Token 读取（`{atom:XxxTokenResource}`、`{atom:SharedTokenResource}`）现在与 `DynamicResource` 一样取 Template 优先级，触发样式（`:pointerover`、`:disabled`、类与属性选择器，包括应用样式）可以覆盖它们；非触发的样式 Setter 仍不能覆盖，模板外的读取优先级不变。

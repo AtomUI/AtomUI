@@ -2,6 +2,13 @@
 
 本文档记录 Popup 控件级 API、Theme、Token、实现结构和设计契约变化，不替代仓库根目录 `CHANGELOG.md`。
 
+## 2026-11-08
+
+- Theme / Token
+  - Popup motion (`MotionDurationMid`, `EnableMotion`) is read through `PopupTokenResource`; popup host text defaults (`OverlayPopupHost`, `PopupRoot`) use `OwnerTokenResource`, so they follow the control hosting the Popup.
+- Fixed
+  - Tooltip / popover zoom origins inset by the corner radius the frame actually draws (the ShadowsAwareContainer content shape) instead of the scope-root `BorderRadius` / `BorderRadiusLG`, so Control-level radius overrides move the origin; default radii keep the previous origin.
+
 ## 2026-11-05
 
 - Fixed

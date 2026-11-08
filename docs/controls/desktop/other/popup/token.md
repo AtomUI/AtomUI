@@ -18,6 +18,12 @@
 `FlyoutHostToken.PopupRootShadow` 同样派生自 `BoxShadowsSecondary`，Flyout、InfoFlyout、PopupConfirm 与其他 Popup 家族
 保持一致。native 阴影此前刻意收小（`0 1 6 0` 两层）以减少被阴影拦截的输入面积；阴影输入穿透落地后不再需要该限制。
 
+Popup 是 Token owner 透明容器（`[TokenOwnerTransparent]`）：弹层内容与 `OverlayPopupHost` / `PopupRoot` 的文本默认值
+（`ColorText`、`FontSize`、`FontFamily`，以 `OwnerTokenResource` 读取）继承宿主控件的 owner；Popup 自身的阴影、动效时长
+（`MotionDurationMid`）与动效开关（`EnableMotion`）以 `PopupTokenResource` 读取，由 `Controls[Popup]` 调整。
+`PopupRootShadow` 只由原生弹层窗口绘制，headless 测试以弹层 `FrameShadow` 断言其语义。边对齐弹层的缩放原点按框体实际
+绘制的圆角内缩，不读取作用域根的 `BorderRadius` / `BorderRadiusLG`。
+
 `PopupCornerRadius` 不由 transparent host 绘制；它由 Child、Presenter 或 `PopupFrame` 提供给
 `ShadowsAwareContainer`，使 frame shadow 与显式可选 surface 和内容圆角一致。
 

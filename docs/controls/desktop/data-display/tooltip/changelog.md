@@ -2,6 +2,13 @@
 
 本文档记录 Tooltip 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Theme / Token
+  - ToolTip theme reads its globals through `ToolTipTokenResource`; the Own Token `MotionDuration` (default `MotionDurationFast`) now sets the zoom duration.
+  - Preset colours come from the snapshot palettes (dark palette under a dark theme) and are re-resolved on attach and theme change; the colour is projected onto `Background` by the theme, so application styles and local `Background` values win over a preset or custom colour, and a tooltip without a colour returns to `ToolTipBackground`.
+  - Edge-aligned zoom origins inset by the frame's drawn corner radius instead of the scope-root `BorderRadius`.
+
 ## 2026-11-04
 
 - Changed

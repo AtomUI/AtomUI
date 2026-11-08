@@ -16,12 +16,22 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `IconSize`、`WithDescriptionIconSize`、`CloseIconSize` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `DefaultPadding`、`WithDescriptionPadding`、`MessageWithDescriptionMargin`、`IconDefaultMargin`、`IconWithDescriptionMargin`、`ExtraElementMargin` |
+| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `DefaultIconSize`、`WithDescriptionIconSize`、`CloseIconSize` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `DefaultPadding`、`WithDescriptionPadding`、`DescriptionLabelMargin`、`IconDefaultMargin`、`IconWithDescriptionMargin`、`ExtraElementMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 按源码 Token 语义维护 |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+### 主题读取与裁决（Task 10.6）
+
+- Alert 主题的全局 Token 一律经 `AlertTokenResource` 读取（状态色、浅底与边框、圆角、线宽、字号、行高、图标间距），
+  `Controls[Alert]` 的覆盖对 Alert 全部生效，不影响其他控件。
+- `CloseIconSize`（Active）：关闭按钮图标宽高，对应 antd Alert close-icon 的 `fontSizeIcon`；默认值由
+  `FontSizeIcon + 2`（从未被读取）改为 `FontSizeIcon`，与此前实际使用的 `IconSizeSM` 相同（12），默认外观不变。
+  关闭按钮是注册控件 IconButton，保留自身 identity，图标尺寸显式读 Alert 的 `CloseIconSize`。
+- `MessageWithDescriptionMargin`（删除）：标题与描述的间距已由 `DescriptionLabelMargin`（描述上外边距 `marginXS`）表达，
+  该字段从未被消费，也不对应 antd 组件 Token；主题配置中请改用 `DescriptionLabelMargin`。
 
 ## 3. 控件专项模型中的 Token 使用
 

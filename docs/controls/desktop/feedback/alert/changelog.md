@@ -7,6 +7,12 @@
 - Fix
   - `MarqueeLabel` 的启动统一检查溢出、挂树、运动门控与悬停暂停：`IsPausedOnPointerOver=false` 时指针停在文本上也能在运动门控重新开启后恢复滚动；`IsPausedOnPointerOver=true` 且悬停时，重新布局与延迟计时器都不会启动滚动。
 
+## 2026-11-08
+
+- Theme / Token
+  - Alert theme reads every global Token through `AlertTokenResource`, so `Controls[Alert]` reaches status colours, frame, typography and icon spacing.
+  - `CloseIconSize` now sizes the close icon (default `FontSizeIcon`, the same 12px as before); `MessageWithDescriptionMargin` is removed (use `DescriptionLabelMargin`).
+
 ## 2026-11-07
 
 - API

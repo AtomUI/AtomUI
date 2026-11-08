@@ -22,6 +22,9 @@ AtomUI 的重要变更记录在此文件中。
   - 控件级覆盖（`Controls[Select]`、`Controls[ComboBox]`、`Controls[Cascader]`、`Controls[TreeSelect]`）现在作用于该控件自身的输入表面、下拉弹层、候选项和手柄；ComboBoxItem、CascaderView、CascaderViewItem 以各自 identity 读取 Global Token。
   - 这些控件的根 `BorderBrush` / `Background` 改为投射到输入表面，不再写入本地值；Select 候选行应用 `OptionHeight` 与新接入的 `Select.OptionPadding`，候选文本使用 `ColorText`，TreeSelect 的 `MinPopupWidth` 生效。
   - 这些控件的聚焦阴影不再被裁剪；`Select.SelectAffixPadding`、`Select.FixedItemMargin` 标为保留，暂无视觉效果。
+  - 可见变化：Select 下拉弹层高度跟随 `OptionHeight`（选项高度 × 每页数量）；TreeSelect 下拉弹层最小宽度为 300px（`TreeSelect.MinPopupWidth`）；ComboBox 占位文字改用 `ColorTextPlaceholder`，不再是 30% 不透明度；Cascader 禁用选项的图标改用 `ColorTextDisabled` 着色，不再是 0.3 不透明度。
+- Popup
+  - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。
 
 ## 6.2.14
 

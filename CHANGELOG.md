@@ -20,6 +20,9 @@ All notable changes to AtomUI are documented in this file.
   - Control-level overrides (`Controls[Select]`, `Controls[ComboBox]`, `Controls[Cascader]`, `Controls[TreeSelect]`) now reach the input surface, drop-down frame, options and handle of that control only; ComboBoxItem, CascaderView and CascaderViewItem keep their own identities for global Tokens.
   - Root `BorderBrush` / `Background` of these controls are projected onto the input surface instead of being written as local values; Select option rows apply `OptionHeight` and the newly wired `Select.OptionPadding`, option text uses `ColorText`, and TreeSelect applies `MinPopupWidth`.
   - Focus shadows of these controls are no longer clipped; `Select.SelectAffixPadding` and `Select.FixedItemMargin` are reserved and have no visual effect yet.
+  - Visible changes: the Select drop-down height now follows `OptionHeight` (option height x page size); TreeSelect drop-downs are at least 300 px wide (`TreeSelect.MinPopupWidth`); the ComboBox placeholder uses `ColorTextPlaceholder` instead of 30% opacity; disabled Cascader option icons are tinted `ColorTextDisabled` instead of drawn at 0.3 opacity.
+- Popup
+  - Popup content (drop-down options, popup frames) now inherits the Token owner of the control that hosts the Popup, so `Controls[X]` overrides, including motion durations, reach the drop-downs of X; `Controls[Popup]` keeps applying to the Popup's own shadow, corner radius and anchor margin.
 
 ## 6.2.14
 

@@ -1,4 +1,5 @@
 using System.Reactive.Disposables;
+using AtomUI.Controls.Primitives;
 using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Reflection;
@@ -116,6 +117,36 @@ public abstract class AbstractTag : TemplatedControl
             o => o.RenderScaleAwareBorderThickness,
             (o, v) => o.RenderScaleAwareBorderThickness = v);
 
+    // Runtime palette colours are projected by untriggered ControlTheme setters (unset = the Token defaults the theme
+    // gives these inputs). Keeping them in internal inputs instead of writing Background/Foreground/BorderBrush lets
+    // app Styles, Semantic Part Styles and local values override the visuals natively (consumption rule 7).
+    internal static readonly StyledProperty<IBrush?> CalculatedBackgroundProperty =
+        AvaloniaProperty.Register<AbstractTag, IBrush?>(nameof(CalculatedBackground));
+
+    internal static readonly StyledProperty<IBrush?> CalculatedForegroundProperty =
+        AvaloniaProperty.Register<AbstractTag, IBrush?>(nameof(CalculatedForeground));
+
+    internal static readonly StyledProperty<IBrush?> CalculatedBorderBrushProperty =
+        AvaloniaProperty.Register<AbstractTag, IBrush?>(nameof(CalculatedBorderBrush));
+
+    internal IBrush? CalculatedBackground
+    {
+        get => GetValue(CalculatedBackgroundProperty);
+        set => SetValue(CalculatedBackgroundProperty, value);
+    }
+
+    internal IBrush? CalculatedForeground
+    {
+        get => GetValue(CalculatedForegroundProperty);
+        set => SetValue(CalculatedForegroundProperty, value);
+    }
+
+    internal IBrush? CalculatedBorderBrush
+    {
+        get => GetValue(CalculatedBorderBrushProperty);
+        set => SetValue(CalculatedBorderBrushProperty, value);
+    }
+
     internal Thickness TagTextPaddingInline
     {
         get => GetValue(TagTextPaddingInlineProperty);
@@ -138,7 +169,7 @@ public abstract class AbstractTag : TemplatedControl
     private bool _closeButtonCreatedOnDemand;
     private IDisposable? _closeIconBinding;
     private IDisposable? _themeSubscription;
-    private CompositeDisposable? _calculatedVisualValues;
+    private (Color Background, Color Foreground, Color Border)? _calculatedColors;
     private IDisposable? _borderThicknessValue;
     private TagColorTable? _colorTable;
 
@@ -179,8 +210,6 @@ public abstract class AbstractTag : TemplatedControl
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ReleaseThemeTracking();
-        _calculatedVisualValues?.Dispose();
-        _calculatedVisualValues = null;
         base.OnDetachedFromVisualTree(e);
     }
 
@@ -276,45 +305,87 @@ public abstract class AbstractTag : TemplatedControl
 
     private void UpdateTagColorVisualState()
     {
-        _calculatedVisualValues?.Dispose();
-        _calculatedVisualValues = null;
+        if (!TryApplyTagColor() && _calculatedColors is not null)
+        {
+            // Fall back to the ControlTheme Token defaults of the Calculated* inputs.
+            _calculatedColors = null;
+            ClearValue(CalculatedBackgroundProperty);
+            ClearValue(CalculatedForegroundProperty);
+            ClearValue(CalculatedBorderBrushProperty);
+            InvalidateVisual();
+        }
+    }
+
+    private bool TryApplyTagColor()
+    {
         PseudoClasses.Set(TagPseudoClass.PresetColor, false);
         PseudoClasses.Set(TagPseudoClass.StatusColor, false);
         PseudoClasses.Set(TagPseudoClass.CustomColor, false);
 
         var colorSpan = TagColor.AsSpan().Trim();
-        if (IsColorEmpty(TagColor))
+        if (IsColorEmpty(TagColor) || _colorTable is not { } table)
         {
-            InvalidateVisual();
-            return;
+            // Off-tree tags get their colours once the theme subscription attaches a context.
+            return false;
         }
 
-        var table = _colorTable;
-        if (table is not null)
-        {
-            if (table.TryGetPreset(colorSpan, out var presetColor))
-            {
-                ApplyPresetColor(presetColor, table.SolidTextColor);
-                PseudoClasses.Set(TagPseudoClass.PresetColor, true);
-                return;
-            }
+        // Status and solid text colours are the Tag's effective global Tokens, so Controls[Tag] and scoped overrides
+        // reach them; preset palettes belong to the snapshot.
+        var (snapshot, controlSlot) = s_themeTokenResolver.CaptureControl(this);
+        Color Global(SharedTokenKind kind) =>
+            s_themeTokenResolver.GetEffectiveGlobal<Color>(snapshot, controlSlot, (int)kind);
 
-            if (table.TryGetStatus(colorSpan, out var statusColor))
-            {
-                ApplyStatusColor(statusColor, table.SolidTextColor);
-                PseudoClasses.Set(TagPseudoClass.StatusColor, true);
-                return;
-            }
+        var solidTextColor = Global(SharedTokenKind.ColorTextLightSolid);
+        if (table.TryGetPreset(colorSpan, out var presetColor))
+        {
+            ApplyPresetColor(presetColor, solidTextColor);
+            PseudoClasses.Set(TagPseudoClass.PresetColor, true);
+            return true;
+        }
+
+        if (table.TryGetStatus(colorSpan, out var statusColor))
+        {
+            ApplyStatusColor(ResolveEffectiveStatusColor(colorSpan, Global) ?? statusColor, solidTextColor);
+            PseudoClasses.Set(TagPseudoClass.StatusColor, true);
+            return true;
         }
 
         if (Color.TryParse(colorSpan, out var color))
         {
-            ApplyCustomColor(color, table?.SolidTextColor ?? default);
+            // antd lightens a custom colour to a fixed HSL lightness, which stays near-white under a dark theme; the
+            // palette algorithm of the snapshot's appearance gives the same step 1 colour preset tags use.
+            ApplyCustomColor(color, PresetColorPalette.ResolveCustom(snapshot, color).LightColor, solidTextColor);
             PseudoClasses.Set(TagPseudoClass.CustomColor, true);
-            return;
+            return true;
         }
 
-        InvalidateVisual();
+        return false;
+    }
+
+    private static TagStatusCalcColor? ResolveEffectiveStatusColor(ReadOnlySpan<char> name, Func<SharedTokenKind, Color> global)
+    {
+        (SharedTokenKind Color, SharedTokenKind Background, SharedTokenKind Border)? kinds =
+            name.Equals(nameof(TagStatus.Success), StringComparison.OrdinalIgnoreCase)
+                ? (SharedTokenKind.ColorSuccess, SharedTokenKind.ColorSuccessBg, SharedTokenKind.ColorSuccessBorder)
+                : name.Equals(nameof(TagStatus.Info), StringComparison.OrdinalIgnoreCase) ||
+                  name.Equals("processing", StringComparison.OrdinalIgnoreCase)
+                    ? (SharedTokenKind.ColorInfo, SharedTokenKind.ColorInfoBg, SharedTokenKind.ColorInfoBorder)
+                    : name.Equals(nameof(TagStatus.Warning), StringComparison.OrdinalIgnoreCase)
+                        ? (SharedTokenKind.ColorWarning, SharedTokenKind.ColorWarningBg, SharedTokenKind.ColorWarningBorder)
+                        : name.Equals(nameof(TagStatus.Error), StringComparison.OrdinalIgnoreCase)
+                            ? (SharedTokenKind.ColorError, SharedTokenKind.ColorErrorBg, SharedTokenKind.ColorErrorBorder)
+                            : null;
+        if (kinds is not { } k)
+        {
+            return null;
+        }
+
+        return new TagStatusCalcColor
+        {
+            Color       = global(k.Color),
+            Background  = global(k.Background),
+            BorderColor = global(k.Border)
+        };
     }
 
     // Outline: transparent background, the main color for border and text.
@@ -342,10 +413,8 @@ public abstract class AbstractTag : TemplatedControl
         ApplyCalculatedColors(background, foreground, border);
     }
 
-    private void ApplyCustomColor(Color color, Color solidText)
+    private void ApplyCustomColor(Color color, Color lightBackground, Color solidText)
     {
-        var hsl             = new HslColor(color);
-        var lightBackground = new HslColor(hsl.A, hsl.H, hsl.S, 0.95).ToRgb();
         var (background, foreground, border) = Variant switch
         {
             TagVariant.Solid    => (color, solidText, Colors.Transparent),
@@ -358,28 +427,17 @@ public abstract class AbstractTag : TemplatedControl
 
     private void ApplyCalculatedColors(Color background, Color foreground, Color border)
     {
-        var values = new CompositeDisposable(3);
-        try
+        // Theme publications and variant refreshes re-run this projection; unchanged colours keep their brushes and
+        // raise no property change.
+        if (_calculatedColors == (background, foreground, border))
         {
-            AddTemplateValue(values, BackgroundProperty, new ImmutableSolidColorBrush(background));
-            AddTemplateValue(values, ForegroundProperty, new ImmutableSolidColorBrush(foreground));
-            AddTemplateValue(values, BorderBrushProperty, new ImmutableSolidColorBrush(border));
-            _calculatedVisualValues = values;
+            return;
         }
-        catch
-        {
-            values.Dispose();
-            throw;
-        }
+        _calculatedColors     = (background, foreground, border);
+        CalculatedBackground  = new ImmutableSolidColorBrush(background);
+        CalculatedForeground  = new ImmutableSolidColorBrush(foreground);
+        CalculatedBorderBrush = new ImmutableSolidColorBrush(border);
         InvalidateVisual();
-    }
-
-    private void AddTemplateValue<T>(CompositeDisposable values, StyledProperty<T> property, T value)
-    {
-        if (SetValue(property, value, BindingPriority.Template) is { } disposable)
-        {
-            values.Add(disposable);
-        }
     }
 
     private void SetupDefaultCloseIcon()

@@ -1,50 +1,44 @@
 using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
-using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TagToken : AbstractControlDesignToken
+internal sealed class TagToken : AbstractTagToken
 {
     /// <summary>
     /// 默认背景色
+    /// Default background color
     /// </summary>
     public Color DefaultBg { get; set; }
 
     /// <summary>
     /// 默认文字颜色
+    /// Default text color
     /// </summary>
     public Color DefaultColor { get; set; }
 
-    public double TagFontSize { get; set; }
-    public double TagLineHeight { get; set; }
-    public double TagIconSize { get; set; }
+    /// <summary>
+    /// 关闭图标尺寸
+    /// Size of the close icon
+    /// </summary>
     public double TagCloseIconSize { get; set; }
-    public Thickness TagPadding { get; set; }
-    public Thickness TagTextPaddingInline { get; set; }
+
+    /// <summary>
+    /// 默认实心标签的文本色
+    /// Default text color for solid tag
+    /// </summary>
     public Color SolidTextColor { get; set; }
-
-    public TagToken()
-
-    {
-    }
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        TagFontSize      = EffectiveGlobalToken.FontSizeSM;
-        TagLineHeight    = EffectiveGlobalToken.FontHeightSM;
         TagCloseIconSize = EffectiveGlobalToken.IconSizeXS;
-        TagIconSize      = EffectiveGlobalToken.FontSizeIcon;
-        TagPadding       = new Thickness(EffectiveGlobalToken.SizeXS - 1, 0);
-        DefaultBg            = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillTertiary, EffectiveGlobalToken.ColorBgContainer);
-        DefaultColor         = EffectiveGlobalToken.ColorText;
-        TagTextPaddingInline = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, 0);
-        SolidTextColor       = ColorUtils.IsBright(EffectiveGlobalToken.ColorBgSolid, Colors.White)
+        DefaultBg        = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillTertiary, EffectiveGlobalToken.ColorBgContainer);
+        DefaultColor     = EffectiveGlobalToken.ColorText;
+        SolidTextColor   = ColorUtils.IsBright(EffectiveGlobalToken.ColorBgSolid, Colors.White)
             ? Colors.Black
             : Colors.White;
     }
-    
 }

@@ -7,6 +7,7 @@ using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -149,7 +150,7 @@ public class TagColorVariantTests
     [InlineData(TagVariant.Filled)]
     [InlineData(TagVariant.Solid)]
     [InlineData(TagVariant.Outlined)]
-    public void Custom_Color_Uses_The_Hsl_Light_Background(TagVariant variant)
+    public void Custom_Color_Uses_The_Palette_Light_Background(TagVariant variant)
     {
         var color = Color.Parse("#1677ff");
         var tag = new AtomUITag
@@ -161,8 +162,7 @@ public class TagColorVariantTests
 
         ShowInWindow(tag, () =>
         {
-            var hsl = new HslColor(color);
-            var lightBackground = new HslColor(hsl.A, hsl.H, hsl.S, 0.95).ToRgb();
+            var lightBackground = PaletteGenerator.GeneratePalette(color)[0];
 
             GetBrushColor(tag.Background).ShouldBe(
                 variant == TagVariant.Solid ? color : lightBackground);
@@ -171,6 +171,46 @@ public class TagColorVariantTests
             GetBrushColor(tag.BorderBrush).ShouldBe(
                 variant == TagVariant.Outlined ? color : Colors.Transparent);
             tag.Classes.Contains(TagPseudoClass.CustomColor).ShouldBeTrue();
+        });
+    }
+
+    [Fact]
+    public void Custom_Color_Light_Background_Follows_The_Dark_Palette()
+    {
+        var color = Color.Parse("#1677ff");
+        var tag = new AtomUITag { TagColor = color.ToString(), Variant = TagVariant.Filled, Text = "Custom" };
+        var provider = new ThemeConfigProvider { Child = tag, Config = new ThemeConfigBuilder().Build() };
+
+        ShowInWindow(provider, () =>
+        {
+            GetBrushColor(tag.Background).ShouldBe(PaletteGenerator.GeneratePalette(color)[0]);
+
+            provider.Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build();
+            Dispatcher.UIThread.RunJobs();
+
+            var dark = PaletteGenerator.GeneratePalette(color, new PaletteGenerateOption { ThemeVariant = ThemeVariant.Dark })[0];
+            GetBrushColor(tag.Background).ShouldBe(dark);
+            GetBrushColor(tag.Foreground).ShouldBe(color);
+        });
+    }
+
+    [Fact]
+    public void Status_Colors_Follow_Controls_Tag_Overrides()
+    {
+        var tag = new AtomUITag { TagColor = "success", Variant = TagVariant.Solid, Text = "Status" };
+        var provider = new ThemeConfigProvider { Child = tag, Config = new ThemeConfigBuilder().Build() };
+
+        ShowInWindow(provider, () =>
+        {
+            GetBrushColor(tag.Background).ShouldBe(GetThemeColor(SharedTokenKind.ColorSuccess));
+
+            provider.Config = new ThemeConfigBuilder()
+                              .WithControl(AtomUI.Desktop.Controls.DesignTokens.TagTokens.Identity,
+                                  new ControlThemeConfigBuilder().WithToken(nameof(SharedTokenKind.ColorSuccess), "#ff00b96b").Build())
+                              .Build();
+            Dispatcher.UIThread.RunJobs();
+
+            GetBrushColor(tag.Background).ShouldBe(Color.Parse("#ff00b96b"));
         });
     }
 
@@ -299,6 +339,57 @@ public class TagColorVariantTests
             Dispatcher.UIThread.RunJobs();
 
             AssertPresetPalette(tag, isDark: false);
+        });
+    }
+
+    [Theory]
+    [InlineData("red")]
+    [InlineData("success")]
+    [InlineData("#1677ff")]
+    public void App_Style_Overrides_Calculated_Colors(string color)
+    {
+        var tag  = new AtomUITag { Text = "Colored", TagColor = color, Variant = TagVariant.Outlined };
+        var host = new StackPanel { Children = { tag } };
+
+        ShowInWindow(host, () =>
+        {
+            host.Styles.Add(new Style(x => x.OfType<AtomUITag>())
+            {
+                Setters =
+                {
+                    new Setter(TemplatedControl.BackgroundProperty, Brushes.Black),
+                    new Setter(TemplatedControl.ForegroundProperty, Brushes.White),
+                    new Setter(TemplatedControl.BorderBrushProperty, Brushes.Orange)
+                }
+            });
+            Dispatcher.UIThread.RunJobs();
+
+            tag.Background.ShouldBeSameAs(Brushes.Black);
+            tag.Foreground.ShouldBeSameAs(Brushes.White);
+            tag.BorderBrush.ShouldBeSameAs(Brushes.Orange);
+        });
+    }
+
+    [Fact]
+    public void App_Style_Overrides_Default_Solid_Colors()
+    {
+        var tag  = new AtomUITag { Text = "Solid", Variant = TagVariant.Solid };
+        var host = new StackPanel { Children = { tag } };
+
+        ShowInWindow(host, () =>
+        {
+            host.Styles.Add(new Style(x => x.OfType<AtomUITag>())
+            {
+                Setters =
+                {
+                    new Setter(TemplatedControl.BackgroundProperty, Brushes.Orange),
+                    new Setter(TemplatedControl.ForegroundProperty, Brushes.Black)
+                }
+            });
+            Dispatcher.UIThread.RunJobs();
+
+            tag.Background.ShouldBeSameAs(Brushes.Orange);
+            tag.Foreground.ShouldBeSameAs(Brushes.Black);
         });
     }
 

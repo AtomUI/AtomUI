@@ -19,8 +19,8 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="ItemSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
-        <Setter Property="LineSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:CheckableTagGroupTokenResource EnableMotion}" />
+        <Setter Property="ItemSpacing" Value="{atom:CheckableTagGroupTokenResource SpacingXS}" />
+        <Setter Property="LineSpacing" Value="{atom:CheckableTagGroupTokenResource SpacingXS}" />
     </ControlTheme>
 </ResourceDictionary>

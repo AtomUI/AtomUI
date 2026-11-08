@@ -60,3 +60,15 @@ dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Tag / Badge family: Tag, CheckableTag, CheckableTagGroup (CheckableTagItemsControl), CountBadge, DotBadge and RibbonBadge
+# with their identity-less indicators (adorners, DotBadgeIndicator theme). The shared abstract bases live in
+# src/AtomUI.Controls/{Tag,Badge}, gated by its .editorconfig.
+# Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
+[{Tag,Badge}/**]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN042.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

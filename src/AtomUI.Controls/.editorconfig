@@ -15,3 +15,16 @@ dotnet_diagnostic.ATOMUIGEN047.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Tag / Badge family parts: AbstractTag / AbstractCheckableTag, the abstract badges, their adorners and DotBadgeIndicator,
+# and the preset colour palette helper they share (also used by ToolTip).
+# Keep in step with the Tag / Badge family section of src/AtomUI.Desktop.Controls/.editorconfig.
+[{Tag,Badge}/**]
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+[Primitives/PresetColorPalette.cs]
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

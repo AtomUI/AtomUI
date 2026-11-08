@@ -31,7 +31,9 @@ public class MigratedFamilyAnalyzerGateTests
         // Choice family
         "CheckBox", "RadioButton", "Switch", "Slider", "Rate",
         // Steps / Progress family
-        "ProgressBar", "Steps"
+        "ProgressBar", "Steps",
+        // Tag / Badge family
+        "Tag", "Badge"
     ];
 
     /// <summary>Token identities declared in those directories.</summary>
@@ -45,7 +47,8 @@ public class MigratedFamilyAnalyzerGateTests
         "Select", "ComboBox", "ComboBoxItem", "Cascader", "CascaderView", "CascaderViewItem", "TreeSelect",
         "CheckBox", "CheckBoxGroup", "RadioButton", "RadioButtonGroup", "ToggleSwitch", "Slider", "SliderTrack",
         "SliderThumb", "Rate",
-        "ProgressBar", "StepsProgressBar", "CircleProgress", "DashboardProgress", "Steps", "StepsItem"
+        "ProgressBar", "StepsProgressBar", "CircleProgress", "DashboardProgress", "Steps", "StepsItem",
+        "Tag", "CheckableTag", "CheckableTagGroup", "CountBadge", "DotBadge", "RibbonBadge"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -117,6 +120,13 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldContain("StepsItem");
         IdentityControls.Value.ShouldNotContain("StepsItemIndicator");
         IdentityControls.Value.ShouldNotContain("StepsPanelArrow");
+        // Tag / Badge family: the tags and badges are registered; the group's items control and the badge indicators
+        // (adorners, dot indicator) are not.
+        IdentityControls.Value.ShouldContain("CheckableTag");
+        IdentityControls.Value.ShouldContain("RibbonBadge");
+        IdentityControls.Value.ShouldNotContain("CheckableTagItemsControl");
+        IdentityControls.Value.ShouldNotContain("CountBadgeAdorner");
+        IdentityControls.Value.ShouldNotContain("DotBadgeIndicator");
     }
 
     [Fact]

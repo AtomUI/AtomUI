@@ -43,7 +43,8 @@ Tag 的控件专项模型通过 Theme 消费 Token：
 代码计算的颜色写入内部输入 `CalculatedBackground`、`CalculatedForeground`、`CalculatedBorderBrush`，Tag 主题以 Token 默认值
 （及默认颜色的 Solid / Outlined 变体）作为它们的主题值，并经非触发 Setter 投射到 `Background`、`Foreground`、`BorderBrush`，应用样式与本地值保持原生优先级。
 预设色取主题快照的预设色板（antd `genPresetColor`：1、3、6、7 级），状态色与实心文字色读取 Tag 的有效 Global Token
-（`ColorSuccess*`、`ColorInfo*`、`ColorWarning*`、`ColorError*`、`ColorTextLightSolid`），自定义色的浅色背景取该颜色按快照外观生成的色板第 1 级；主题变化时全部重算。
+（`ColorSuccess*`、`ColorInfo*`、`ColorWarning*`、`ColorError*`、`ColorTextLightSolid`），自定义色的浅色背景取该颜色按快照外观生成的色板第 1 级；主题变化时全部重算。antd 6.7.0（`components/tag/hooks/useColor.ts`）
+对自定义色固定使用 HSL 亮度 0.95，暗色主题下仍接近白色；AtomUI 有意改用色板第 1 级，使暗色主题下自定义色标签保持可读，这是与 antd 的已知差异。
 
 `CheckableTag` 经自己的 `CheckableTagToken` 复用 Tag 家族的字号、行高、Icon 尺寸和内容间距语义，并以 `CheckableTagTokenResource` 读取自己的有效 Global Token：圆角、primary、text、hover、pressed、focus 和 disabled 颜色。checked 是控件实例状态，不新增 checked Token，也不复用普通 Tag 的 `Color × Variant` 矩阵。
 

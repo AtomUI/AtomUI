@@ -44,7 +44,7 @@ Badge 的控件专项模型通过 Theme 消费 Token：
 - `BadgeColor`、`DotColor`、`RibbonColor` 的预设色名对应 antd `genPresetColor` 的 `darkColor`（色板第 6 级），取自徽标所在
   主题快照的预设色板（暗色主题为暗色色板），主题变化时重算；预设色不跟随 `ColorPrimary`。其他文本按颜色解析；未设置或无效时
   清除内部值，回到主题的 `IndicatorColor`、状态色或 `DotColor`、`ColorPrimary`。共享的色板查找位于
-  `src/AtomUI.Controls/Primitives/PresetColorPalette.cs`（Tag 与 ToolTip 复用）。
+  `src/AtomUI.Controls/Primitives/PresetColorPalette.cs`，Tag 与 FloatButton 徽标同样使用，ToolTip 将在其家族迁移中复用。
 - `CornerTransform` 的覆盖值按矩阵格式书写（`1,0,0,0.75,0,0` 即 antd `scaleY(0.75)`）。
 
 ### 3.2 RibbonBadge Token 语义

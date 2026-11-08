@@ -44,7 +44,8 @@ AtomUI 的重要变更记录在此文件中。
   - 控件级覆盖（`Controls[Tag]`、`Controls[CheckableTag]`、`Controls[CheckableTagGroup]`、`Controls[CountBadge]`、`Controls[DotBadge]`、`Controls[RibbonBadge]`）现在作用于该控件的全部主题读取，包括 Tag 的状态色与实心文字色、绘制在装饰层中的徽标指示器及其动效时长；`Tag.TagCloseIconSize` 设置关闭图标尺寸；分组内的标签保留 CheckableTag 自身的 identity。
   - Tag 的预设色、状态色与自定义色改由主题投射，不再以 Template 优先级写入，应用样式、语义 Part 样式与本地值可按原生优先级覆盖 `Background`、`Foreground`、`BorderBrush`（含默认颜色的实心与描边标签）；Token 变化会重新应用 Tag 边框宽度。
   - 徽标预设色（`BadgeColor`、`DotColor`、`RibbonColor`）取自主题的预设色板，并在主题变化时重算；清除或设为无效颜色时恢复主题颜色（`IndicatorColor`、状态色或 `DotColor`、`ColorPrimary`），不再让计数与圆点指示器没有填充、缎带停留在先前颜色；`ShadowColor` 变化时 DotBadge 外环会重绘；带装饰目标的 DotBadge、CountBadge 脱离时先清除被装饰元素，再从装饰层移除指示器。
-  - 可见变化：暗色主题下预设色徽标使用暗色色板（暗色算法下 antd 的 `color-6`），不再是亮色；自定义颜色 Tag 的浅色背景改为该颜色色板的第 1 级（antd `color-1`），不再是固定 HSL 亮度 0.95 的颜色，暗色主题下为暗色色板第 1 级，不再是接近白色的浅色。
+  - 可见变化：暗色主题下预设色徽标使用暗色色板（暗色算法下 antd 的 `color-6`），不再是亮色；自定义颜色 Tag 的浅色背景改为由该颜色生成的色板第 1 级，不再是固定 HSL 亮度 0.95 的颜色，暗色主题下为暗色色板第 1 级，不再是接近白色的浅色。这与 antd 6.7.0 有意不同：antd 在所有主题下都把 HSL 亮度固定为 0.95，AtomUI 改用色板以便暗色主题下仍然可读。
+  - FloatButton 徽标预设色（`BadgeColor`）与徽标一样取自色板：按钮挂载时解析（挂载前在 XAML 中设置的值现在生效，不再回落到 `ColorError`），主题变化时重算（暗色主题使用暗色色板），清除颜色时恢复 `ColorError`。
 - Popup
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。
 - Theme

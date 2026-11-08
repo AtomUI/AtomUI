@@ -565,14 +565,16 @@ git commit -m "refactor(Theme): 派生基字段默认赋值加 IsExplicit 守卫
 
 | 诊断 | AtomUI.Controls | AtomUI.Desktop.Controls | DataGrid | ColorPicker | Extras |
 | --- | --- | --- | --- | --- | --- |
-| ATOMUIGEN041 | | | | | |
+| ATOMUIGEN041 | 23 | 1714 | | | |
 | ATOMUIGEN042 | | | | | |
 | ATOMUIGEN043 | | | | | |
 | ATOMUIGEN044 | | | | | |
-| ATOMUIGEN045 | | | | | |
-| ATOMUIGEN046 | | | | | |
+| ATOMUIGEN045 | 0 | 90 | | | |
+| ATOMUIGEN046 | 3 | 29 | | | |
 | ATOMUIGEN047 | | | | | |
 | ATOMUIGEN048（Task 16 已清零；改写处数） | 0 | 50 | 24 | 3 | 0 |
+
+041/045/046 为 Task 5 实测（唯一文件+行，`--no-incremental`）。045 低于计划估计的约 134：其余字面量是 0、`Opacity="1"` 或位于 ControlTheme/Style 之外；主题中颜色字面量为 0。`Splash/Themes/SplashDefaultTheme.axaml` 以 Link 引入、不在 `Themes/` 资产路径下，其 12 处读取未被扫描，在 Task 10.10 处理。DataGrid、ColorPicker、Extras 的 041/045/046 在 Task 14 迁移时统计。
 
 ## 待裁决 Own Token（Task 6 执行后填写）
 

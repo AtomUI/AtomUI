@@ -57,4 +57,16 @@ public class ThemeTokenValueParserTests
         var red = ThemeTokenValueParser.Parse<IBrush>("#FF4D4F");
         ThemeTokenValueFormatter.Format(blue).ShouldNotBe(ThemeTokenValueFormatter.Format(red));
     }
+
+    [Fact]
+    public void Format_Round_Trips_Transforms_Through_The_Parser()
+    {
+        var scale  = ThemeTokenValueParser.Parse<ImmutableTransform>("1,0,0,0.75,0,0");
+        var offset = ThemeTokenValueParser.Parse<ImmutableTransform>("1,0,0,1,4,8");
+
+        var formatted = ThemeTokenValueFormatter.Format(scale);
+        formatted.ShouldBe("1,0,0,0.75,0,0");
+        ThemeTokenValueParser.Parse<ImmutableTransform>(formatted).Value.ShouldBe(scale.Value);
+        ThemeTokenValueFormatter.Format(offset).ShouldNotBe(formatted);
+    }
 }

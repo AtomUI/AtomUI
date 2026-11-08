@@ -235,7 +235,11 @@ TokenResourceExtension、TokenKey 和 OwnTokenKind 的使用都应保留对应�
   显式读取（Popup 读 `PopupTokenResource`）。只属于一个宿主的弹层内容仍以宿主的 `XxxTokenResource` 显式读取（Select 的候选项读
   `SelectTokenResource`），不依赖继承链；弹层中的注册控件（ComboBoxItem、CascaderView）用自己的 identity 读取 Global Token，
   宿主的 Own Token 仍以宿主 TokenResource 读取。只作为某个宿主模板部件使用、没有 Own Token 的注册控件（SliderTrack、
-  SliderThumb）同样标记 `[TokenOwnerTransparent]`，继承宿主 owner，主题以宿主 `XxxTokenResource` 读取。
+  SliderThumb，以及只属于一个宿主的项容器 StepsItem）同样标记 `[TokenOwnerTransparent]`，继承宿主 owner，主题以宿主
+  `XxxTokenResource` 读取。
+- 多个有身份的控件共用一个无身份基础主题（AbstractProgressBarTheme 之于 ProgressBar、CircleProgress 等）且共享 Own Token
+  语义时，Own Token 定义放进抽象 `[ControlDesignToken]` 层，由各控件终端继承；基础主题只以 `OwnerTokenResource` 读 Global
+  Token，Own Token 由各控件自己的主题以自己的 `XxxTokenResource` 读取，基础主题需要时经内部属性绑定使用。
 - 只属于一个宿主的无身份部件可以直接读宿主的 `XxxTokenResource`；被多个宿主共用的部件（SelectHandle、InputControlFrame）
   用 `OwnerTokenResource`。
 - 共享主题被无身份的派生部件复用时（TextBoxTheme 之于 EmbeddedTextBox，ButtonSpinnerTheme 之于 NumericUpDownSpinner），

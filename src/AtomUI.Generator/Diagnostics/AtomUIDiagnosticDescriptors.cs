@@ -310,6 +310,33 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
+    public static readonly DiagnosticDescriptor ControlCodeScopedTokenRead = new(
+        AtomUIDiagnosticIds.ControlCodeScopedTokenRead,
+        "Control code must not read Tokens outside the scoped Token pipeline",
+        "'{0}': {1}",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    public static readonly DiagnosticDescriptor ControlCodeVisualLiteral = new(
+        AtomUIDiagnosticIds.ControlCodeVisualLiteral,
+        "Control code must not hard-code visual values",
+        "Visual literal '{0}' in control code; read the value from a Token with ControlTokenAccessor or TokenResourceBinder instead",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    public static readonly DiagnosticDescriptor ControlCodeLocalValueVisualWrite = new(
+        AtomUIDiagnosticIds.ControlCodeLocalValueVisualWrite,
+        "Control code must not write LocalValue into visual properties",
+        "{0} writes the LocalValue of visual property '{1}'; use SetCurrentValue or a Template-priority write so user and theme values keep precedence",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
     public static readonly DiagnosticDescriptor ThemeAssetSharedReadMismatch = new(
         AtomUIDiagnosticIds.ThemeAssetSharedReadMismatch,
         "ControlTheme must read global Tokens through the TokenResource that matches its TargetType",

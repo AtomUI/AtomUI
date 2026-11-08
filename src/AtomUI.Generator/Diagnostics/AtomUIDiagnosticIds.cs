@@ -54,8 +54,11 @@ internal static class AtomUIDiagnosticIds
     public const string OwnTokenSentinel = "ATOMUIGEN040";
     public const string ThemeAssetSharedReadMismatch = "ATOMUIGEN041";
     public const string OwnTokenUnreferenced = "ATOMUIGEN042";
+    public const string ControlCodeScopedTokenRead = "ATOMUIGEN043";
+    public const string ControlCodeVisualLiteral = "ATOMUIGEN044";
     public const string ThemeAssetVisualLiteral = "ATOMUIGEN045";
     public const string ThemeAssetTemplateAttributeMasksSetter = "ATOMUIGEN046";
+    public const string ControlCodeLocalValueVisualWrite = "ATOMUIGEN047";
     public const string OwnTokenDerivationBaseUnguarded = "ATOMUIGEN048";
     public const string LocalizationInvalidLanguageData = "ATOMUILOC001";
     public const string LocalizationDuplicateLanguageData = "ATOMUILOC002";

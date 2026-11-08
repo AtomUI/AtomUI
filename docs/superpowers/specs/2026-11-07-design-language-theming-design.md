@@ -4,7 +4,7 @@
 
 基线：`release/6.0`（`ae5ac0a32`，AtomUI 6.2.13，Avalonia 12.1.5）。分支 `feature/custom-theme` 的全部改动不作为参考，本文不复用其设计、术语或实现。
 
-版本演进：第一版"Ant 基线 + 按语言补丁样式"被否决。第二版改为"一份控件代码、N 套对等 ControlTheme、独立主题包"。第三版按用户定义改为层级模型（设计语言 ⊃ 主题定义），并把 Token 派生策略交给语言。第四版拿掉最后一处特殊：**Ant Design 对 AtomUI 不再有任何特殊地位，它是第一个、也是参照用的设计语言包 `AtomUI.Themes.Ant`；控件包不含任何 ControlTheme、算法或主题定义；Core 不知道任何一种设计语言。**
+版本演进：第一版"Ant 基线 + 按语言补丁样式"被否决。第二版改为"一份控件代码、N 套对等 ControlTheme、独立主题包"。第三版按用户定义改为层级模型（设计语言 ⊃ 主题定义），并把 Token 派生策略交给语言。第四版拿掉最后一处特殊：Ant Design 对 AtomUI 不再有任何特殊地位，Core 不知道任何一种设计语言。第五版是作者对前四版的自我修正：区分**逻辑对等**与**物理分包**，Ant 的视觉随控件包交付但走与其他语言完全相同的注册、校验与回落协议；lookless 重构由语言覆盖范围驱动而非全量前置；扩展 Token 放到最后、按证据决定。
 
 ## 1. 目标
 
@@ -13,8 +13,8 @@
 成功标准：
 
 1. Gallery 增加一个与 ant.design 预览区等价的"设计语言预览"页，至少提供 Ant、Material、shadcn、Bootstrap 四套，切换在一次 UI 线程 Publish 内完成，输入框文字与选区、选中项、焦点保持。
-2. 每种设计语言是独立 NuGet 包，Ant 也是；不引用不占产物，引用未激活只登记一张表，激活后只物化页面上出现过的控件主题。
-3. 控件是 lookless 的，与 Avalonia 自身控件同一标准：控件包只含行为与契约（`[TemplatePart]`、`[PseudoClasses]`、Semantic Part、Own Token 字段），任何视觉值都在语言包里；没有注册任何语言时控件没有外观，像没有引用 Fluent 的 Avalonia 应用一样，默认外观由 `AtomUI` 元包带上的 `AtomUI.Themes.Ant` 提供。
+2. 每种设计语言经同一协议注册；非默认语言是独立 NuGet 包，不引用不占产物，引用未激活只登记一张表，激活后只物化页面上出现过的控件主题。Ant 的视觉随控件包交付，但登记、校验、回落与其他语言完全相同，Core 不认识它。
+3. 控件代码是 lookless 的，与 Avalonia 自身控件同一标准：控件代码只含行为与契约（`[TemplatePart]`、`[PseudoClasses]`、Semantic Part、Own Token 字段），不含任何视觉值；视觉值只能出现在带语言标签的 ControlTheme、Own Token 求值器与主题定义中。没有注册任何语言时控件没有外观，像没有引用 Fluent 的 Avalonia 应用一样。
 4. 第三方控件包与应用可以为任一设计语言提供自己的 ControlTheme、主题定义与 Token，走与 AtomUI 自己的语言包完全相同的协议。
 5. 不依赖 Avalonia 私有成员、不 hook 框架内部、不修改 Avalonia；仅使用公开且在 12.1.5 源码中核对过的行为。
 6. 对 `release/6.0` 的改动，除新增能力外只允许三类：简化代码、提升性能、架构优化；每一处在第 9 节登记理由。
@@ -32,7 +32,22 @@
 | 逐组件 `classNames` / `styles` | 对语义 DOM 区域注入 CSS（渐变、硬投影、backdrop blur、霓虹阴影、全大写、自定义 ripple） | 7/13 |
 | 结构/模板替换、图标替换、`cssVar`、`componentSize` | 无 | 0 |
 
-预览区 JSX 固定；切换只改 class 与注入的 CSS，预览子树整体重挂载。结论：**一个预设 = 语言的视觉层 + 它自己的色板 + 逐组件 Token**。antd 的视觉层是运行时生成的 CSS；Avalonia 里视觉层就是 ControlTheme，是编译产物。AtomUI 的 Token 层照抄 antd（`ThemeConfig` 已经是它），视觉层按 Avalonia 的方式交付：一个语言一套 ControlTheme，由语言包携带。
+预览区 JSX 固定；切换只改 class 与注入的 CSS，预览子树整体重挂载。结论：**一个预设 = 语言的视觉层 + 它自己的色板 + 逐组件 Token**。antd 的视觉层是运行时生成的 CSS；Avalonia 里视觉层就是 ControlTheme，是编译产物。AtomUI 的 Token 层照抄 antd（`ThemeConfig` 已经是它），视觉层按 Avalonia 的方式交付：一个语言一套 ControlTheme。
+
+### 2.1 Ant Design 主题架构与本方案的对应
+
+| Ant Design | 本方案 |
+| --- | --- |
+| Seed → Map → Alias 三层 Token；`algorithm` 是可组合的派生函数链 | 同一套词汇表（Core）；派生策略归语言（3.5） |
+| `components[Comp]` 组件 Token；`algorithm: true` 让组件重跑算法 | Own Token；`ControlAlgorithmMode` |
+| 组件样式是 Token 的纯函数（`genStyleHooks`），首次使用才生成并按 Token 缓存 | ControlTheme 绑定 Token；惰性物化；Snapshot 缓存 |
+| 语义 DOM：组件文档声明 `root/icon/content`；`classNames`/`styles` 按语义区域注入 | Semantic Part descriptor 与生成的 Part Style |
+| 嵌套 `ConfigProvider`、`theme.inherit` | `ThemeConfigProvider`、`Inherit` |
+| "Ant Design V4" 外观 = `@ant-design/compatible` 的算法 + 组件 Token，不是代码分叉 | 设计语言 = 定义 + 派生 + 主题集；V4 是"只换派生与 Token"的语言 |
+| 预设是有意的近似，不追复刻 | 3.8 的保真度立场 |
+| 预览区"复制主题代码"一键导出配置 | Gallery 预览页导出当前语言 + 主题 + 配置的 C# 与 XML（7） |
+
+antd 没有而本方案需要的：模板级替换（Web 用 CSS 就能换形态，Avalonia 要换 ControlTheme）、显式回落链、lookless 控件约束。antd 有而本方案不需要的：CSS 变量模式、hash 隔离、`@layer` 优先级。
 
 ## 3. 核心模型
 
@@ -40,8 +55,8 @@
 
 ```text
 Design language   Ant                   Material                 Shadcn                Prime（直接指定式）
-  包              AtomUI.Themes.Ant     AtomUI.Themes.Material   AtomUI.Themes.Shadcn  AtomUI.Themes.Prime
-  ControlTheme    全部控件              部分控件                 无                    部分控件
+  定义所在        AtomUI.Themes.Ant（小）AtomUI.Themes.Material  AtomUI.Themes.Shadcn  AtomUI.Themes.Prime
+  ControlTheme    随各控件包，标签 Ant  部分控件                 无                    部分控件
   回落            无（必须完整）        Ant                      Ant                   Ant
   Token 派生      Ant 计算器 + Alias    HCT 计算器，Alias 复用 Ant 复用 Ant，覆盖语义色  值表
   默认主题        DaybreakBlue          MaterialPurple           ShadcnZinc            PrimeAura
@@ -53,17 +68,19 @@ Design language   Ant                   Material                 Shadcn         
 | 概念 | 拥有什么 | 不拥有什么 |
 | --- | --- | --- |
 | Core | Token 词汇表（Seed/Map/Alias 字段名）、Own Token 字段 schema 的注册与资源 ID 合同、派生管线、事务、作用域、注册表、校验 | 任何具体的值、算法、ControlTheme、主题定义 |
-| 控件包 | 控件代码、`PART_*` 契约、Semantic Part 声明、Own Token 字段定义 | 任何 ControlTheme、视觉默认值、算法、主题定义 |
-| 设计语言包 | ControlTheme 集；Token 派生策略（算法集、Alias 计算）；语言基础 Token；逐控件 Own Token 默认；主题定义（含默认主题）；回落目标 | 色板之外的用户配置；控件行为 |
+| 控件包 | 控件代码、`PART_*` 契约、Semantic Part 声明、Own Token 字段定义；以及**带语言标签**（`Ant`）登记的 ControlTheme 与 Own Token 参考求值器 | 控件代码中的任何视觉值；未打语言标签的主题；算法与主题定义 |
+| 设计语言包 | 语言定义；Token 派生策略（算法集、Alias 计算）；语言基础 Token；主题定义（含默认主题）；回落目标；该语言需要的 ControlTheme、Own Token 求值器、基元、部件、策略 | 色板之外的用户配置；控件行为 |
 | 主题定义 | 一组 Token 值（色板为主）；所属语言或通用；Appearance 元数据 | 任何 ControlTheme、模板、样式 |
 | 运行时配置 | Token/控件/算法覆盖；局部作用域的语言切换 | 新的 Token 字段或控件 identity |
 
 **不能"不特殊"的一条**：全局 Token 的词汇表来自 Ant Design 的分层与命名，但它是所有语言的 ControlTheme 共同消费的契约，留在 Core。能搬出 Core 的是值与派生，搬不走的是词汇；每种语言把自己的概念映射到这套词汇上（3.6）。
 
+**逻辑对等，不要求物理分包。** Ant 的 ControlTheme 与 Own Token 参考求值器继续放在各控件包里，但必须带语言标签 `Ant` 经同一协议登记，受同一套校验与回落规则约束；Core 与注册表没有任何"Ant"分支。理由：每种语言的回落链末端都是 Ant，Ant 的视觉永远在产物里，物理拆出去（约 380 个 AXAML、95 个求值器、可选包各再拆一个子包）省不下产物体积，只增加包数与迁移量。Core 里的 Ant 残留（三个计算器、调色板、Alias 公式、DaybreakBlue）搬进一个很小的 `AtomUI.Themes.Ant`，它只含定义、派生与色板主题。将来若要物理拆分控件包里的 Ant 主题，是一次文件移动，不改变本设计。
+
 利弊评估：
 
-- 利：模型彻底对称，Core 与注册表没有任何"回落 Ant"分支；控件包变成纯行为与契约，6.2 的五条契约从自律变为结构强制；Core 去掉三个计算器、调色板、Alias 公式与 DaybreakBlue；应用只带所选语言；AtomUI 自己的 Ant 包与第三方语言包走同一协议。
-- 弊：应用必须注册至少一个语言才有外观，`AtomUI` 元包默认带 `AtomUI.Themes.Ant`，没有语言时按 Avalonia 的方式处理（控件无外观，启动记一条诊断，不抛异常）；语言必须显式声明回落目标（3.3），不声明则必须完整覆盖；控件要按 6.2 的 lookless 标准逐个重构，现状有 111 处代码赋视觉属性与 16 处命令式 Token 绑定要迁出；Own Token 默认求值从控件包搬到语言包是最大的一块迁移，分两步做（11）；可选控件包的 Ant 主题拆成 `AtomUI.Themes.Ant.DataGrid` 等小包，包数翻倍；一次性迁移约 380 个 AXAML，机械但量大。
+- 利：机制彻底对称，Core 与注册表没有任何"回落 Ant"分支；控件代码变成纯行为与契约，由分析器保证；Core 去掉三个计算器、调色板、Alias 公式与 DaybreakBlue；第三方语言包与 AtomUI 自己的语言走同一协议；不发生大规模文件迁移。
+- 弊：控件包仍携带 Ant 视觉，想完全不含 Ant 的应用做不到（但回落链决定了本来也做不到）；语言必须显式声明回落目标（3.3），不声明则必须完整覆盖；控件代码要按 6.2 的 lookless 标准逐步重构，现状有 111 处代码赋视觉属性与 16 处命令式 Token 绑定，按语言覆盖范围分家族推进（11）；没有语言时按 Avalonia 的方式处理（控件无外观，启动记一条诊断，不抛异常）。
 
 ### 3.2 Token 合并顺序
 
@@ -131,16 +148,16 @@ gaps  = fallback chain
 - Control Own Token 的默认求值（今天各控件的 `CalculateTokenValues`）是视觉值，归语言所有：语言包为控件提供求值器，缺省沿回落链取。Own Token 的**字段**仍在控件包，它是契约；语言只能给值，不能增减字段。
 - `NormalizeFinalBehavior`（动效开关等最终行为规范化）与语言无关，保持在管线末尾。
 
-### 3.6 语言扩展 Token
+### 3.6 语言扩展 Token（设计保留，最后实施，按证据决定）
 
-Material 的色调角色（`primaryContainer`、`onPrimary`、五级 elevation）在 Core 词汇表里没有一一对应，压到 Ant 词汇是有损的。为了精确，语言包可以在启动注册期扩展全局 Token：
+Material 的色调角色（`primaryContainer`、`onPrimary`、五级 elevation）在 Core 词汇表里没有一一对应，压到 Ant 词汇是有损的，但损失多大没有证据，而扩展 schema 触碰资源 ID 合同与生成器，是本方案风险最高的一块。因此首批 Material 必须先把概念映射到现有词汇并在 `FIDELITY.md` 列出有损项；只有清单证明损失不可接受时才实施本节。设计如下，供届时执行：
 
 - 语言包声明一个 `[DesignLanguageToken]` 标注的 Token 类（与 `DesignToken` 同样的字段定义方式），生成器为它产出 `MaterialTokenResource` 标记扩展、强类型 key 与 descriptor，注册进该包所属语言。
 - 扩展 Token 是该语言私有的全局 Token：只有该语言的 ControlTheme、基元与 Own Token 求值器能消费；其值由该语言的算法在派生管线中产出（`IThemeAlgorithm.Evaluate` 得到扩展 builder），可被主题定义与用户配置按名覆盖。
 - 走现有 slot 式资源查询与资源 ID 合同，热路径零增量；schema 仍在启动后冻结，因此运行期追加的语言不得携带扩展 Token（5.4）。
 - 不允许扩展 Own Token 字段（它是控件契约），也不允许改写 Core 词汇表中已有 Token 的类型或语义。
 
-首批 Material 先尽量映射到现有词汇，映射不了的概念用扩展 Token 承接并在保真度记录里注明。
+在本节实施之前，映射不了的概念在保真度记录里注明为"词汇限制"。
 
 ### 3.7 激活模型：Theme 属性走作用域资源
 
@@ -292,8 +309,9 @@ AXAML 侧新增标记扩展，供语言主题派生回落语言的主题：
 - `TokenDefaults`：`(Id, ControlTokenIdentity) → 求值器`；重复 → 启动失败。
 - 主题集引用无定义的 Id → 启动失败并指出缺包。
 - 注册期按回落链解析出每个 `(语言, 控件)` 的最终 ControlTheme 工厂与求值器，以及每个语言的最终派生计划；链末端语言对每个已注册控件都必须有二者，派生后不得有未指定 Map/Alias，否则启动失败并列出全部缺口。
-- 一个语言都没注册 → 不失败：控件 lookless，无模板即无外观，与未引用 Fluent 的 Avalonia 应用一致；启动在 `ThemeCatalogDiagnostics` 记一条 `ATMTHM` 诊断提示引用 `AtomUI.Themes.Ant` 或其他语言包。
-- 算法描述符随语言登记：`[ThemeAlgorithm]` 标注的计算器由生成器归入所在语言包。Core 不含任何计算器。
+- 一个语言都没注册 → 不失败：控件 lookless，无模板即无外观，与未引用 Fluent 的 Avalonia 应用一致；启动在 `ThemeCatalogDiagnostics` 记一条 `ATMTHM` 诊断提示注册语言。`AtomUI.Controls` 的注册扩展默认带上 `AtomUI.Themes.Ant` 的定义，所以 `UseAtomUI()` 开箱即是 Ant。
+- 算法描述符随语言登记：`[ThemeAlgorithm]` 标注的计算器由生成器归入所在程序集声明的语言。Core 不含任何计算器。
+- 控件包登记的 ControlTheme 与 Own Token 求值器带该包声明的语言标签（`AtomUIThemesLanguage`），与语言包登记的内容在注册表中无区别。
 - Catalog（`CompiledThemeCatalog`）为每个主题定义记录 `DesignLanguage`，并提供"语言 → 可用主题"的分组查询。
 
 ### 5.2 一次切换的事务路径
@@ -328,18 +346,17 @@ AXAML 侧新增标记扩展，供语言主题派生回落语言的主题：
 ### 6.1 包布局
 
 ```text
-AtomUI.Controls / AtomUI.Desktop.Controls / …DataGrid   控件包：代码、PART_*、Semantic Part 声明、Own Token 字段；无 AXAML 主题
-                                                          （Avatar/Avatar.cs、Avatar.SemanticParts.cs、AvatarToken.cs）
+AtomUI.Controls / AtomUI.Desktop.Controls / …DataGrid   控件包：<AtomUIThemesLanguage>Ant</AtomUIThemesLanguage>
++-- Avatar/Avatar.cs、Avatar.SemanticParts.cs             控件代码与契约，无视觉值（分析器保证）
++-- Avatar/AvatarToken.cs                                 Own Token 字段 + 参考求值器，求值器登记为 Ant
+\-- Avatar/Themes/AvatarTheme.axaml                       ControlTheme，登记为 Ant；位置不变
 
-AtomUI.Themes.Ant/                                        第一个语言包，链末端，必须完整
+AtomUI.Themes.Ant/                                        小包：Ant 的定义、派生与色板，链末端
 +-- AtomUI.Themes.Ant.csproj                              <AtomUIDesignLanguage>Ant</AtomUIDesignLanguage>
 +-- AntDesignLanguage.cs                                  Id、显示名、默认主题 DaybreakBlue、Derivation、无 Fallback
 +-- Algorithms/                                           Default/Dark/Compact 三个计算器、调色板、Alias 计算器（自 Core 搬入）
-+-- Definitions/DaybreakBlue.theme.xml                    自 Core 搬入，DesignLanguage="Ant"
-+-- TokenDefaults/Buttons/ButtonTokenDefaults.cs          自控件包 ButtonToken.CalculateTokenValues 搬入
-\-- Themes/Buttons/ButtonTheme.axaml …                    自控件包 Themes/ 搬入，目录与控件包同构
-
-AtomUI.Themes.Ant.DataGrid / .ColorPicker / .Extras       可选控件包的 Ant 主题，按需引用
++-- Behaviors/AntWave.cs                                  Ant 的反馈策略（自控件代码迁出，3.8 B）
+\-- Definitions/DaybreakBlue.theme.xml …                  自 Core 搬入，DesignLanguage="Ant"
 
 AtomUI.Themes.Material/                                   派生式，Fallback = Ant
 +-- MaterialDesignLanguage.cs
@@ -363,11 +380,14 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 \-- Definitions/ShadcnZinc.theme.xml                      零 AXAML
 ```
 
-`AtomUI` 元包默认引用 `AtomUI.Themes.Ant`，`UseAtomUI()` 开箱即是 Ant；引用其他语言包后调用其 `UseDesignLanguage<T>()` 注册。
+`AtomUI.Controls` 引用 `AtomUI.Themes.Ant` 并在注册扩展中带上它的定义，`UseAtomUI()` 开箱即是 Ant；引用其他语言包后调用其 `UseDesignLanguage<T>()` 注册。
 
-生成器规则：项目设置了 `AtomUIDesignLanguage` 时，`Themes/**/*.axaml` 中以类型为键的 ControlTheme 登记到该语言的主题集，`[ThemeAlgorithm]` 计算器与 `[ThemeAliasCalculator]` 登记到该语言的派生策略，`TokenDefaults/**` 中带 `[ControlTokenDefaults(typeof(XxxToken))]` 的求值器登记到该语言，`Definitions/*.theme.xml` 作为编译主题定义登记并强制 `DesignLanguage` 等于该语言；产出 `GeneratedDesignLanguageRegistration.Register(builder)`。控件包（未设置该属性）内出现 ControlTheme、计算器或主题定义 → 构建错误。
+生成器规则，两种程序集：
 
-一个程序集只属于一个语言。第三方控件包要支持 Ant 或 Material，各建 `Vendor.Controls.Themes.Ant`、`Vendor.Controls.Themes.Material`，引用对应语言包取定义，按同一目录约定放主题。
+- **语言包**（`AtomUIDesignLanguage=X`）：拥有语言 `X` 的定义；`Themes/**/*.axaml` 中以类型为键的 ControlTheme、`[ThemeAlgorithm]` 计算器、`[ThemeAliasCalculator]`、`[ControlTokenDefaults]` 求值器、`Parts/`、`Behaviors/`、`Primitives/` 都登记到 `X`；`Definitions/*.theme.xml` 作为编译主题定义登记并强制 `DesignLanguage=X`。
+- **控件包**（`AtomUIThemesLanguage=X`）：拥有控件；其 `Themes/**/*.axaml` 与 Own Token 求值器登记到 `X`（AtomUI 自己的控件包是 `Ant`）；不得含语言定义、计算器或主题定义。没有声明 `AtomUIThemesLanguage` 的控件包不得含任何 ControlTheme。
+
+两类程序集都产出 `GeneratedDesignLanguageRegistration.Register(builder)`，注册表里登记来源无区别。第三方控件包用 `AtomUIThemesLanguage` 声明自带主题属于哪个语言（通常 `Ant`），要支持 Material 则另建 `Vendor.Controls.Themes.Material` 语言包片段。
 
 构建期校验（新增诊断号沿用 `ATOMUIGEN` 序列）：
 
@@ -375,7 +395,8 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 - 非 Optional Semantic marker 齐全（现有校验）。
 - `FallbackControlTheme` 的类型参数必须与 `TargetType` 一致，且所在语言声明了 `Fallback`。
 - `Definitions/*.theme.xml` 的 `DesignLanguage` 必须等于项目的 `AtomUIDesignLanguage`。
-- 控件包内不得含 ControlTheme、计算器、主题定义或 Own Token 求值方法。
+- 控件包不得含语言定义、计算器或主题定义；未声明 `AtomUIThemesLanguage` 的控件包不得含 ControlTheme。
+- 控件代码（非 Token 类、非 Themes/）不得含视觉字面量、命令式 Token 绑定、计算型视觉属性、读取语言 id、内置默认策略或默认部件实现；对存量控件先为警告，按 11 的家族推进转为错误。
 
 ### 6.2 控件 lookless 标准：一份代码如何承载多套主题
 
@@ -413,13 +434,13 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 
 ### 6.3 平台
 
-机制在 Core，定义、主题定义、ControlTheme 与 Own Token 默认在语言包，控件包不含任何语言文件。移动控件包出现后，`AtomUI.Themes.Ant.Mobile`、`AtomUI.Themes.Material.Mobile` 按同一约定为移动控件提供主题；触控尺寸等差异写在它们的 Own Token 默认里，不进语言定义。
+机制在 Core，语言定义与派生在语言包，ControlTheme 跟随拥有控件的程序集并带语言标签。移动控件包出现后，自带标签为 `Ant` 的主题；`AtomUI.Themes.Material.Mobile` 按同一约定为移动控件提供 Material 主题；触控尺寸等差异写在各自的 Own Token 求值器里，不进语言定义。
 
 ## 7. Gallery
 
 - 工作台顶栏：先选设计语言，再在该语言下选主题（语言专属 + 通用），与明暗、紧凑并列；不支持的变体按 `SupportedAlgorithms` 禁用。
-- 新增"设计语言预览"展示页：复刻 ant.design 预览区的控件集合，页面内一个 `ThemeConfigProvider` 承载预览，切换只改该 Provider 的 `Config.DesignLanguage`；同页可同时放两个不同语言的 Provider 做对照。
-- Gallery 引用 `AtomUI.Themes.Ant`（含 DataGrid/ColorPicker/Extras 子包）、`Material`、`Shadcn`、`Bootstrap`。
+- 新增"设计语言预览"展示页：复刻 ant.design 预览区的控件集合，页面内一个 `ThemeConfigProvider` 承载预览，切换只改该 Provider 的 `Config.DesignLanguage`；同页可同时放两个不同语言的 Provider 做对照；"复制主题代码"按钮导出当前语言 + 主题 + 配置为可粘贴的 C#（`ThemeRequest` 构造）与主题 XML。
+- Gallery 引用 `AtomUI.Themes.Material`、`Shadcn`、`Bootstrap`、`AntV4`。
 
 ## 8. 性能、内存与 AOT
 
@@ -435,9 +456,8 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 
 | 改动 | 类别 | 理由 |
 | --- | --- | --- |
-| 全部控件包的 `Themes/**/*.axaml`、Core 的三个计算器、调色板、Alias 公式、`DaybreakBlue.theme.xml` 搬入 `AtomUI.Themes.Ant`（可选包的进各自 Ant 子包） | 架构优化 | 控件包只剩行为与契约；Core 不含任何语言的值与算法 |
-| 各控件 `XxxToken.CalculateTokenValues` 搬入 `AtomUI.Themes.Ant/TokenDefaults`，Token 类只剩字段 | 架构优化 | Own Token 默认是 Ant 的视觉值；控件包不含视觉值 |
-| 控件 lookless 重构：迁出 111 处代码视觉赋值与 16 处命令式 Token 绑定，计算型视觉属性改为主题 Setter，补齐 `[TemplatePart]`/`[PseudoClasses]`，自绘控件改为读取主题设置的属性 | 架构优化 | 与 Avalonia 控件同一标准；没有它，语言包替换主题时控件代码里的 Ant 视觉值会漏出来 |
+| Core 的三个计算器、调色板、Alias 公式、`DaybreakBlue.theme.xml` 搬入小包 `AtomUI.Themes.Ant`；控件包的 ControlTheme 与 Own Token 求值器原地不动，经生成器打 `Ant` 标签登记 | 架构优化 | Core 不含任何语言的值与算法；控件包的 Ant 视觉走与其他语言相同的协议；不做无收益的文件迁移 |
+| 控件 lookless 重构（按语言覆盖范围分家族）：迁出代码视觉赋值与命令式 Token 绑定，计算型视觉属性改为主题 Setter，补齐 `[TemplatePart]`/`[PseudoClasses]`，自绘控件改为读取主题设置的属性，真实分歧点契约化 | 架构优化 | 与 Avalonia 控件同一标准；没有它，语言包替换主题时控件代码里的 Ant 视觉值会漏出来 |
 | `DesignToken.CalculateAliasTokenValues` 抽为 `IThemeAliasCalculator` | 架构优化 | Token 定义类只剩数据 |
 | `ThemeAlgorithm` 由闭合枚举改为开放 id；算法描述符按语言登记 | 新能力所需 + 架构优化 | 派生策略归语言所有 |
 | 删除 `IThemeManager.DEFAULT_THEME_ID`；`WithInitialTheme` 改为语言优先 | 新能力所需 | Core 不再知道 DaybreakBlue |
@@ -478,25 +498,27 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 ## 11. 实施顺序
 
 1. **Spike（半天）**：在 `release/6.0` 上用临时样式验证并记录：样式 Setter 改变已挂载控件的 `Theme` 后实时重套模板且 `PART_*` 查找正常；DynamicResource 不命中时 `Theme` 回到 null；作用域 Provider 的 `ResourcesChanged` 能驱动 Popup 内与 lease 窗口内控件的 Theme 绑定；约 380 条 `OfType` 样式对 Gallery 首页套样式耗时的影响。任一不成立即停下修订本设计。
-2. **拆出 Ant 包（机械迁移，先行）**：新建 `AtomUI.Themes.Ant` 及可选包子包；搬入全部 ControlTheme AXAML、三个计算器、调色板、Alias 计算器、DaybreakBlue；生成器支持 `AtomUIDesignLanguage` 并禁止控件包含主题；`AtomUI` 元包引用 Ant 包；现有测试全部通过。此时只有一个语言，运行时仍走隐式查找，行为不变。
-3. **Own Token 默认搬迁**：各 `XxxToken.CalculateTokenValues` 搬入 Ant 包 `TokenDefaults/`，Token 类只剩字段；生成器登记 `(语言, identity) → 求值器`；测试不变。
-3a. **控件 lookless 重构**（与第 4、5 步并行，按控件家族分批）：先落分析器（视觉字面量、命令式 Token 绑定、计算型视觉属性、内置默认策略四条诊断），再逐家族迁出 111 处视觉赋值与 16 处 Token 绑定、把 `VariantShadow`/`EffectiveCornerRadius` 一类计算型视觉属性改为 Ant 主题的 Setter、补齐 `[TemplatePart]`/`[PseudoClasses]`、为 38 个自绘控件补画刷/笔属性；每批同时完成该家族的部件契约化（3.8 A：弹层宿主、输入呈现、反馈装饰等部件改为接口契约，Ant 实现搬入 Ant 包 `Parts/`）与行为策略化（3.8 B：wave 等反馈改为策略属性，Ant 实现搬入 Ant 包 `Behaviors/`）；每批以"无语言宿主下行为测试通过 + Ant 外观关键区域不变"验收。第 6 步的 Material 主题只能覆盖已完成 lookless 的控件。
-3b. **扩展 Token**（第 4 步之后）：`[DesignLanguageToken]`、生成的语言 TokenResource 与 descriptor、算法得到扩展 builder、运行期追加拒绝带扩展 Token 的语言。
+2. **语言协议与 Ant 小包**：新建 `AtomUI.Themes.Ant`，搬入 Core 的三个计算器、调色板、Alias 计算器、DaybreakBlue 与 Ant 定义；生成器支持 `AtomUIDesignLanguage`（语言包）与 `AtomUIThemesLanguage`（控件包），控件包现有 ControlTheme 与 Own Token 求值器原地打 `Ant` 标签登记；现有测试全部通过。此时只有一个语言，运行时仍走隐式查找，行为不变。
+3. **分析器上线**：视觉字面量、命令式 Token 绑定、计算型视觉属性、读取语言 id、内置默认策略五条诊断，对存量控件为警告并产出清单（基线：111 处赋值、16 处绑定、38 个自绘）。
+3a. **控件 lookless 重构**（与第 4、5 步并行，按语言覆盖范围分家族）：第 6 步 Material 预览集合涉及的家族先做，每家族把警告清零转为错误：迁出视觉赋值与 Token 绑定、`VariantShadow`/`EffectiveCornerRadius` 一类计算型视觉属性改为 Ant 主题 Setter、补齐 `[TemplatePart]`/`[PseudoClasses]`、自绘控件补画刷/笔属性、真实分歧点的部件契约化（3.8 A，Ant 实现留在控件包并打标签）与反馈策略化（3.8 B，Ant 策略进 Ant 小包 `Behaviors/`）；每家族以"无语言宿主下行为测试通过 + Ant 外观关键区域不变"验收。其余家族随后续语言覆盖推进，不设全量截止。
 4. **Core 派生层**：`ThemeAlgorithm` 开放 id、`IThemeAliasCalculator`、`ThemeDerivation`、值表算法、按语言登记算法；Ant 回归测试保持通过。
 5. **Core 语言层**：注册表、回落解析与完整性校验、`ThemeRequest`/`ThemeInfo`/`ThemeState`/XML v1 属性、`ThemeConfig.DesignLanguage`、合并层、回退规则、Theme 键与 Provider 分支、启动样式、`FallbackControlTheme`、运行期追加；控件包不再导出类型键资源。
-6. **语言包**：`AtomUI.Themes.Shadcn`、`Bootstrap`（`Inherit` 派生 + 色板主题）；`AtomUI.Themes.Material`（HCT 派生）先覆盖 Button、Input 家族、Select、Checkbox/Radio/Switch、Steps、Progress、Tag、Card、Alert、Dialog、Notification；一个直接指定式最小示例语言进测试工程。
+6. **语言包**：`AtomUI.Themes.Shadcn`、`Bootstrap`（`Inherit` 派生 + 色板主题）；`AtomUI.Themes.AntV4`（只换 `Default` 算法与组件 Token，零 ControlTheme，验证派生层）；`AtomUI.Themes.Material`（HCT 派生）先覆盖 Button、Input 家族、Select、Checkbox/Radio/Switch、Steps、Progress、Tag、Card、Alert、Dialog、Notification；一个直接指定式最小示例语言进测试工程。
 7. **Gallery**：切换器与预览页；验证第 10 节。
-8. 扩展 Material 到其余控件与可选包；按 3.6 列出映射不了的 Token 概念清单。
+8. 扩展 Material 到其余控件与可选包；`FIDELITY.md` 列出映射不了的 Token 概念。
+9. **扩展 Token（按证据）**：仅当第 8 步的清单证明词汇限制造成不可接受的损失时实施 3.6。
 
-每一步独立提交、独立验收；第 2、3 步是纯搬运但建立了后续全部约束；第 6 步之后即可在 Gallery 看到 ant.design 式切换效果。
+每一步独立提交、独立验收；第 2 步只搬 Core 残留与打标签，量小；第 6 步之后即可在 Gallery 看到 ant.design 式切换效果。量级判断：第 1 到 5 步（机制）数周；第 6 步 Material 覆盖预览集合另数周，含对应家族的 lookless 重构；第 8 步是长期工作，按家族持续推进。
 
 ## 12. 已决策事项（供审阅时推翻）
 
 | 问题 | 决策 | 替代方案及为何不选 |
 | --- | --- | --- |
-| Ant 的地位 | 普通语言包 `AtomUI.Themes.Ant`，控件包与 Core 不含任何语言的值 | Ant 内置于控件包：永远存在"回落 Ant"特例，契约靠自律 |
+| Ant 的地位 | 逻辑上与其他语言完全对等：同一协议登记、校验、回落，Core 不认识它；定义与派生在小包 `AtomUI.Themes.Ant` | 内置于 Core：永远存在"回落 Ant"特例 |
+| Ant 视觉的物理位置 | 留在控件包，带语言标签登记 | 拆成 `AtomUI.Themes.Ant` 大包加可选包各一个子包：回落链末端永远是 Ant，省不下产物体积，只增加包数与约 380 个文件的迁移；作者在第四版接受了该方案，第五版撤回 |
 | 语言未覆盖的控件 / 缺口 | 显式 `Fallback` 回落链，注册期解析，链末端必须完整 | 隐式回落 Ant：Core 知道 Ant；无回落：Material 要先写满 95 个主题才能用 |
-| Own Token 默认求值归谁 | 语言包，经回落链取；字段留控件包 | 留控件包：控件包含 Ant 视觉值，与"不特殊"矛盾 |
+| Own Token 默认求值归谁 | 逻辑上归语言（登记为 Ant 的求值器，其他语言可按控件替换）；物理上留在 Token 类 | 搬入语言包：约 95 个类的搬运，收益同上为零 |
+| lookless 重构节奏 | 分析器先上（存量为警告），按语言覆盖范围分家族转错误，不设全量前置 | 全量前置：Token-only 语言不需要它，第一个可见成果推迟数月 |
 | Token 词汇表归谁 | Core | 也交给语言：所有语言的 ControlTheme 失去共同契约 |
 | 语言与主题定义的关系 | 层级：语言 ⊃ 主题；主题专属或通用 | 正交轴：需要裁决优先级，目录无法分组 |
 | 视觉层的形态 | 一个语言一套 ControlTheme，独立包 | 补丁样式：Ant 特殊化、目录膨胀、改选择器 |
@@ -506,10 +528,10 @@ AtomUI.Themes.Shadcn/                                     Fallback = Ant，Deriv
 | 只换语言时的主题 | 通用沿用，专属回退到新语言默认 | 一律回退或一律沿用都丢信息 |
 | 无语言注册时 | 与 Avalonia 一致：控件 lookless 无外观，启动记诊断不抛 | 启动失败：把"没有主题"当错误，与 lookless 模型矛盾，也阻碍无 UI 的单元测试 |
 | 控件代码里允许留什么 | 解析后的离散状态（枚举/布尔）可留作内部属性或伪类；画刷/阴影/圆角/厚度/字号一律迁到主题 | 全部迁出：状态选择器失去依据；全部保留：语言换主题时 Ant 视觉值漏出 |
-| 语言扩展全局 Token | 允许，启动注册期声明，语言私有，走现有 slot 查询；运行期追加的语言不得携带 | 不做：Material 五级 elevation 与色调角色压到 Ant 词汇是有损的 |
+| 语言扩展全局 Token | 设计保留，最后实施，仅当 Material 的映射清单证明损失不可接受 | 现在就做：触碰资源 ID 合同与生成器，是方案里风险最高的一块，而损失多大尚无证据；完全不做：Material 可能永远有损 |
 | 精确度边界 | 推到控件公开 API 与状态语义：外观、反馈、部件行为、私有 Token 全由语言包决定 | 止于模板：Select 弹层方式、浮动标签这类部件行为换不掉；靠控件开关：控件膨胀成所有语言行为的并集 |
 | 部件行为如何替换 | 契约部件（接口声明 `[TemplatePart]`）+ 行为策略属性，实现随语言包交付 | 派生控件类型：用户 XAML 写的是 `atom:Button`，运行时换不了类型 |
 | 控件内置默认行为 | 不内置；策略为空即无行为，默认由 Ant 包的主题注入 | 内置 Ant 行为再让别的语言覆盖：Ant 又成了特例 |
 | 语言包能否带代码 | 能带 lookless 基元、行为策略、契约部件实现、扩展 Token，只供自己的主题用 | 只许 AXAML：反馈与部件行为差异只能登记为偏差 |
 | 保真度验收 | 对语言包自己的基准做回归门禁；对原框架参考渲染的对照只进 `FIDELITY.md` 记录 | 以原框架截图为门禁：渲染器差异与字体差异让门禁永远红 |
-| 可选控件包的语言主题 | 独立小包 `AtomUI.Themes.<Lang>.<Pkg>` | 放回控件包：重新把主题塞进控件包 |
+| 可选控件包的语言主题 | Ant 主题随可选控件包自身（标签 Ant）；其他语言按需建 `AtomUI.Themes.<Lang>.<Pkg>` | Ant 也拆子包：同"物理位置"一行的理由 |

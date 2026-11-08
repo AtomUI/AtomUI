@@ -98,12 +98,12 @@ builder.ApplyExplicit()                           // 再写一遍显式值，保
 预设用现有的**编译主题包**机制交付，一个预设一个 NuGet 包，别人引用即用；Core 仍只内置 DaybreakBlue。每个包就是一个小项目：
 
 ```text
-AtomUI.Themes.ShadcnLike/
-+-- AtomUI.Themes.ShadcnLike.csproj          引用 AtomUI.Core；<AtomUIThemeDefinition Include="Themes/*.theme.xml" />
+AtomUI.Themes.Shadcn/
++-- AtomUI.Themes.Shadcn.csproj          引用 AtomUI.Core；<AtomUIThemeDefinition Include="Themes/*.theme.xml" />
 +-- Themes/ShadcnZinc.theme.xml              Appearance="Light"：zinc 中性色、主色近黑、BorderRadius 6、ControlHeight 36、
 |                                            细边框、EnableWaveSpirit=false、弱阴影；逐控件 <Control> 覆盖按需
 +-- Themes/ShadcnSlate.theme.xml …           同一语言的其他色系
-+-- ShadcnLikeThemes.cs                      UseShadcnLikeThemes() 扩展：调用生成的 Register(builder)
++-- ShadcnThemes.cs                      UseShadcnThemes() 扩展：调用生成的 Register(builder)
 \-- README.md                                模拟了什么、放弃了什么（焦点环形态、Command 式弹层）
 ```
 
@@ -113,9 +113,9 @@ AtomUI.Themes.ShadcnLike/
 
 | 包 | 模拟 | 明确不支持（写进 README） |
 | --- | --- | --- |
-| `AtomUI.Themes.ShadcnLike` | zinc / slate / stone 三色系，近黑主色，细边框，无 wave，弱阴影 | 焦点环形态、Command 式弹层 |
-| `AtomUI.Themes.BootstrapLike` | `#0d6efd` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 6` | 渐变背景、内阴影 |
-| `AtomUI.Themes.MaterialLike` | 紫色主色、`BorderRadius 4`、`ControlHeight 40`、三级 BoxShadow 近似 elevation | ripple、浮动标签、全大写 |
+| `AtomUI.Themes.Shadcn` | zinc / slate / stone 三色系，近黑主色，细边框，无 wave，弱阴影 | 焦点环形态、Command 式弹层 |
+| `AtomUI.Themes.Bootstrap` | `#0d6efd` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 6` | 渐变背景、内阴影 |
+| `AtomUI.Themes.Material` | 紫色主色、`BorderRadius 4`、`ControlHeight 40`、三级 BoxShadow 近似 elevation | ripple、浮动标签、全大写 |
 | `AtomUI.Themes.Variants` | Square、HeavyBorder、LargeType、ReducedMotion 等单维度变体，各一个主题 | 无 |
 
 Gallery 现有的 4 个色板主题也可以迁成 `AtomUI.Themes.AntColors` 包，Gallery 改为引用；是否迁移由用户定。第三方做自己的预设走完全相同的路径：一个项目、若干 `.theme.xml`、一个扩展方法。
@@ -180,7 +180,7 @@ Gallery 新增"主题预设"页：复刻 ant.design 预览区的控件集合，�
 | 2 | 生成器：Own 引用分析（先警告）、消费图、`IThemeManager.Schema` | 产出约 100 个待裁决字段清单与消费图 |
 | 3 | 生效测试骨架与第一个家族（Button 家族）跑通；同时完成该家族的 B、C、D、E | Button 家族全绿 |
 | 4 | 按家族推进：Input 家族、Select、Checkbox/Radio/Switch、Steps、Progress、Tag、Card、Alert、Dialog、Notification，再其余 | 每家族全绿后分析器对其转错误 |
-| 5 | 预设主题包（ShadcnLike、BootstrapLike、MaterialLike、Variants）+ Gallery 主题预设页 | 包可独立引用；预设页可切换；README 的"不支持"清单齐全 |
+| 5 | 预设主题包（Shadcn、Bootstrap、Material、Variants）+ Gallery 主题预设页 | 包可独立引用；预设页可切换；README 的"不支持"清单齐全 |
 | 6 | Gallery 主题编辑器 | 往返测试通过 |
 | 7 | 可选控件包（DataGrid、ColorPicker、Extras）走第 3、4 步同样流程 | 同上 |
 

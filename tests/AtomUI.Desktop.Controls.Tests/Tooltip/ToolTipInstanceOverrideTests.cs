@@ -104,7 +104,7 @@ public class ToolTipInstanceOverrideTests
             Dispatcher.UIThread.RunJobs();
 
             var expected = PresetPrimaryColor.GetColor(PresetColorType.Blue).Color();
-            tip.Background.ShouldBeOfType<SolidColorBrush>().Color.ShouldBe(expected);
+            tip.Background.ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(expected);
         }
         finally
         {

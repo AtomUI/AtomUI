@@ -39,7 +39,7 @@ internal sealed class ToolTipToken : AbstractControlDesignToken
     public Thickness ContentPadding { get; set; }
     
     /// <summary>
-    /// 动画时长
+    /// 弹出与收起的缩放动效时长（antd Tooltip 使用 zoom-big-fast，即 motionDurationFast）
     /// </summary>
     public TimeSpan MotionDuration { get; set; }
 
@@ -52,7 +52,7 @@ internal sealed class ToolTipToken : AbstractControlDesignToken
         ToolTipBackground = EffectiveGlobalToken.ColorBgSpotlight;
         ToolTipCornerRadius = new CornerRadius(4);
         ContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, EffectiveGlobalToken.UniformlyPaddingSM / 2 + 2);
-        MotionDuration = EffectiveGlobalToken.MotionDurationMid;
+        MotionDuration = EffectiveGlobalToken.MotionDurationFast;
     }
     
 }

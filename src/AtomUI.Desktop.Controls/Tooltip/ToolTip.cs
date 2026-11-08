@@ -2,7 +2,10 @@ using System.Diagnostics;
 using System.Reactive.Disposables;
 using AtomUI.Animations;
 using AtomUI.Controls;
+using AtomUI.Controls.Primitives;
+using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -11,6 +14,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -136,6 +140,14 @@ public partial class ToolTip : ContentControl,
     internal static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         Flyout.ShouldUseOverlayPopupProperty.AddOwner<ToolTip>();
 
+    /// <summary>
+    /// The effective tooltip background: the ControlTheme gives it the ToolTipBackground Token and projects it onto
+    /// Background through an untriggered setter, so app styles and local values keep precedence; a preset or custom
+    /// colour of the host is written here (rule 7 of the control-code Token rules).
+    /// </summary>
+    internal static readonly StyledProperty<IBrush?> ColorBackgroundProperty =
+        AvaloniaProperty.Register<ToolTip, IBrush?>(nameof(ColorBackground));
+
     private static readonly AttachedProperty<EventHandler<VisualTreeAttachmentEventArgs>?> PendingAttachHandlerProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, EventHandler<VisualTreeAttachmentEventArgs>?>("PendingAttachHandler");
 
@@ -143,6 +155,12 @@ public partial class ToolTip : ContentControl,
     {
         get => GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
+    }
+
+    internal IBrush? ColorBackground
+    {
+        get => GetValue(ColorBackgroundProperty);
+        set => SetValue(ColorBackgroundProperty, value);
     }
 
     internal bool ShouldUseOverlayPopup
@@ -170,6 +188,15 @@ public partial class ToolTip : ContentControl,
     private ArrowDecoratedBox? _arrowDecoratedBox;
 
     private ContentPresenter? _contentPresenter;
+
+    private static readonly ThemeTokenResolver s_themeTokenResolver = new();
+
+    private IDisposable? _themeSubscription;
+
+    // The preset / custom colour requested by the host (or the tip instance) of the current opening.
+    private PresetColorType? _requestedPresetColor;
+
+    private Color? _requestedColor;
 
     #endregion
 
@@ -387,6 +414,23 @@ public partial class ToolTip : ContentControl,
 
     public static void RemoveToolTipClosingHandler(Control element, EventHandler<RoutedEventArgs> handler) =>
         element.RemoveHandler(ToolTipClosingEvent, handler);
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        // Preset colours come from the snapshot's palettes: re-resolve them whenever the theme publishes. The
+        // subscription does not fire for the first context, so resolve against the context of this attach too.
+        _themeSubscription?.Dispose();
+        _themeSubscription = s_themeTokenResolver.Subscribe(this, _ => UpdateColorBackground());
+        UpdateColorBackground();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _themeSubscription?.Dispose();
+        _themeSubscription = null;
+    }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -824,32 +868,40 @@ public partial class ToolTip : ContentControl,
     private void SetToolTipColor(Control control)
     {
         // Preset 优先级高
-        if (_arrowDecoratedBox is not null)
-        {
-            var presetColorType = GetToolTipValue(control, PresetColorProperty);
-            var color           = GetToolTipValue(control, ColorProperty);
-            if (presetColorType is not null)
-            {
-                var presetColor = PresetPrimaryColor.GetColor(presetColorType.Value);
-                SetBackgroundColorIfChanged(presetColor.Color());
-            }
-            else if (color is not null)
-            {
-                SetBackgroundColorIfChanged(color.Value);
-            }
-        }
+        _requestedPresetColor = GetToolTipValue(control, PresetColorProperty);
+        _requestedColor       = GetToolTipValue(control, ColorProperty);
+        UpdateColorBackground();
     }
 
-    private void SetBackgroundColorIfChanged(Color color)
+    private void UpdateColorBackground()
     {
-        if (Background is ISolidColorBrush { Opacity: 1.0 } solidColorBrush &&
-            solidColorBrush.Color == color)
+        Color? background = null;
+        if (_requestedPresetColor is { } presetColorType)
         {
-            return;
+            // antd genPresetColor darkColor: palette step 6 of the snapshot (dark palettes under a dark theme).
+            if (ThemeScope.ResolveContext(this) is { } context &&
+                PresetColorPalette.TryResolve(context.Snapshot, PresetPrimaryColor.GetColor(presetColorType), out var colors))
+            {
+                background = colors.DarkColor;
+            }
+        }
+        else if (_requestedColor is { } color)
+        {
+            background = color;
         }
 
-        Background = new SolidColorBrush(color);
-        InvalidateVisual();
+        if (background is { } effective)
+        {
+            if (ColorBackground is not ISolidColorBrush { Opacity: 1.0 } current || current.Color != effective)
+            {
+                ColorBackground = new ImmutableSolidColorBrush(effective);
+            }
+        }
+        else
+        {
+            // Falls back to the ToolTipBackground Token the ControlTheme gives ColorBackground.
+            ClearValue(ColorBackgroundProperty);
+        }
     }
 
     #endregion

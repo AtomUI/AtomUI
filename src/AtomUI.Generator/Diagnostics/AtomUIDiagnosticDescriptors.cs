@@ -310,6 +310,33 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
+    public static readonly DiagnosticDescriptor ThemeAssetSharedReadMismatch = new(
+        AtomUIDiagnosticIds.ThemeAssetSharedReadMismatch,
+        "ControlTheme must read global Tokens through the TokenResource that matches its TargetType",
+        "ControlTheme for '{0}' reads global Token '{1}' with SharedTokenResource; use {2}, or add a '<!-- shared: reason -->' comment above the element when the read is intentionally shared across controls",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    public static readonly DiagnosticDescriptor ThemeAssetVisualLiteral = new(
+        AtomUIDiagnosticIds.ThemeAssetVisualLiteral,
+        "Theme AXAML must not hard-code visual literals",
+        "Property '{0}' is set to the literal '{1}'; read a Token instead (use LineWidth for line widths), or add a '<!-- layout -->' comment above the element when the value is a layout constant",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    public static readonly DiagnosticDescriptor ThemeAssetTemplateAttributeMasksSetter = new(
+        AtomUIDiagnosticIds.ThemeAssetTemplateAttributeMasksSetter,
+        "ControlTemplate node attribute masks a state Setter",
+        "Attribute '{0}' on template node '{1}' masks the state Setter in Style '{2}'; move the default value into a Style Setter at the same level as the state Setter",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
     public static readonly DiagnosticDescriptor LocalizationInvalidLanguageData = new(
         AtomUIDiagnosticIds.LocalizationInvalidLanguageData,
         "Pinned language data record is invalid",

@@ -124,9 +124,10 @@ AtomUI 对应审计与映射：
 - Tag 节点可见性由数据驱动：`icon` 随 `Icon` 非空折叠、`close` 随 `IsClosable` 折叠，`content` 常驻；折叠不
   移除 marker，因此 descriptor 的 Cardinality 与主题静态校验不受数据状态影响。
 - Tag 颜色算法（`TagColor` × `Variant` 的 Default/Preset/Status/Custom 计算与颜色伪类）是行为状态，不是
-  Part；它以 `BindingPriority.Template` 写回 `Background` / `Foreground` / `BorderBrush`，低于用户 selector
-  Style 的 `StyleTrigger` 与本地值优先级，因此用户 root 样式 setter 统一覆盖全部颜色分支，移除后状态机
-  恢复——覆盖颜色是受支持的定制入口，颜色算法本身不发布为 Part。
+  Part；它把计算色写入内部输入 `CalculatedBackground` / `CalculatedForeground` / `CalculatedBorderBrush`，主题以
+  非触发 Setter 投射到 `Background` / `Foreground` / `BorderBrush`，应用样式（含非触发的普通 Style）与本地值
+  保持原生优先级，因此用户 root 样式 setter 统一覆盖全部颜色分支，移除后状态机恢复——覆盖颜色是受支持的定制入口，
+  颜色算法本身不发布为 Part。
 - Group 的 `item` 是运行时容器 Part：Group 不是 ItemsControl，选项容器 `CheckableTag` 的逻辑父级是 internal
   的 `CheckableTagItemsControl`，因此 route 必须先 `/template/` 进入 Group 模板命中
   `.semantic-scope-items` 跳点（静态声明在 `CheckableTagGroupTheme.axaml` 的
@@ -170,21 +171,23 @@ TagColor + Variant + ThemeSnapshot
 颜色类别包括 `Default`、`Preset`、`Status` 和 `Custom`。`TagColor` 只改变颜色类别，`Variant` 只改变视觉形态。
 颜色解析不得通过副作用写回 Variant 或边框状态。
 
-颜色计算所需的预设色、状态色（含 `primary`、`danger`）与 Solid 文字色由 `TagColorTable` 提供，它按 `ThemeSnapshot` 构建一次并缓存在
-`ConditionalWeakTable` 中，同一快照下的所有 Tag 共享同一实例。`TagColor` 为空、空白或 `default` 时不订阅主题也不取快照；
-设置颜色时才订阅，每次挂树按 `ThemeScope.ResolveContext` 重新解析，保证离树期间的主题切换在挂回后生效。
+预设色由 `TagColorTable` 提供，它按 `ThemeSnapshot` 构建一次并缓存在 `ConditionalWeakTable` 中，同一快照下的所有 Tag
+共享同一实例。`TagColor` 为空、空白或 `default` 时不订阅主题也不取快照；设置颜色时才订阅，每次挂树按
+`ThemeScope.ResolveContext` 重新解析，保证离树期间的主题切换在挂回后生效。
 
 `Outline` 变体：有颜色时背景透明，边框和文字取该颜色的主色；无颜色时由 `TagTheme.axaml` 的样式提供透明背景与主色边框和文字。
 
-预设颜色读取调色板序列的第 1、3、6、7 号色；状态颜色读取 Success、Info、Warning、Error 的语义 Token；
-`info` 和 `processing` 共享 Info Token；`default` 使用 Tag 基础 Token。
+预设颜色读取快照预设色板的第 1、3、6、7 号色，暗色主题下为暗色色板；状态颜色读取 Tag 有效的 Success、Info、Warning、
+Error 语义 Token，实心文字读取有效 `ColorTextLightSolid`，因此 `Controls[Tag]` 与局部覆盖都会到达；`info` 和
+`processing` 共享 Info Token，`primary`、`danger` 取快照的语义色；`default` 使用 Tag 基础 Token。
 
-自定义颜色按以下规则计算：Filled 使用亮度为 0.95 的 HSL 背景和原色文字，Solid 使用原色背景和浅色文字，
-Outlined 使用亮度为 0.95 的 HSL 背景、原色边框和原色文字。
+自定义颜色按以下规则计算：Filled 使用该颜色按快照外观生成的色板第 1 号色作背景、原色文字，Solid 使用原色背景和浅色文字，
+Outlined 使用色板第 1 号色背景、原色边框和原色文字。antd 固定把 HSL 亮度设为 0.95，暗色主题下仍接近白色；AtomUI 改用
+与预设色相同的色板算法，暗色主题下得到暗色色板的第 1 号色。
 
-Default 颜色由 `TagTheme.axaml` 的 Variant selector 提供；Preset、Status 和 Custom 颜色由控件根据当前主题
-计算。计算结果以 `BindingPriority.Template` 应用，并由 `CompositeDisposable` 管理旧值，保证颜色切换和模板
-重套用不会叠加旧的属性值。用户本地 Brush 值优先于控件模板计算值。
+Default 颜色由 `TagTheme.axaml` 的 Variant selector 写入 `Calculated*` 输入的主题值；Preset、Status 和 Custom 颜色由控件根据
+当前主题计算并写入 `Calculated*` 的本地值，主题经非触发 Setter 投射到公开画刷；颜色类别回到 Default 时清除本地值。
+控件订阅主题快照，主题发布时重算。应用样式与用户本地 Brush 值优先于计算值。
 
 所有 Variant 使用相同的边框厚度。Filled 和默认/自定义 Solid 通过透明 BorderBrush 表达；Preset/Status Solid
 使用与背景相同的主色作为 BorderBrush，因此不会产生额外可见边界；所有 Variant 都不通过零厚度改变控件测量尺寸。

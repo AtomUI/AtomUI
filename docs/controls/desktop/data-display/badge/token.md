@@ -18,10 +18,10 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `IndicatorHeight`、`IndicatorHeightSM`、`DotSize`、`TextFontSize`、`TextFontSizeSM`、`StatusSize` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `BadgeRibbonOffset`、`BadgeRibbonTextPadding`、`DotBadgeLabelMargin`、`CountBadgeTextPadding` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `BadgeTextColor`、`BadgeColor`、`BadgeColorHover`、`BadgeShadowColor` |
-| 结构与装饰 | 圆角、阴影、指示器、折角、弹层和装饰线相关变量。 | `IndicatorHeight`、`IndicatorHeightSM`、`BadgeShadowSize`、`BadgeShadowColor`、`CountBadgeCornerRadius`、`CountBadgeCornerRadiusSM`、`BadgeRibbonCornerTransform`、`BadgeRibbonCornerDarkenAmount` |
+| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | CountBadge `IndicatorHeight`、`IndicatorHeightSM`、`TextFontSize`、`TextFontSizeSM`；DotBadge `DotSize` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | RibbonBadge `Offset`、`TextPadding`；DotBadge `LabelMargin`；CountBadge `TextPadding` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | CountBadge `TextColor`、`IndicatorColor`、`ShadowColor`；DotBadge `DotColor`、`ShadowColor` |
+| 结构与装饰 | 圆角、阴影、指示器、折角、弹层和装饰线相关变量。 | CountBadge `CornerRadius`、`CornerRadiusSM`、`ShadowSize`；DotBadge `ShadowSize`；RibbonBadge `CornerTransform`、`CornerDarkenAmount` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
@@ -34,7 +34,20 @@ Badge 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
-### 3.1 RibbonBadge Token 语义
+### 3.1 读取方式与预设色
+
+- 三个徽标的指示器（`CountBadgeAdorner`、`DotBadgeAdorner`、`DotBadgeIndicator`、`RibbonBadgeAdorner`）没有 Token
+  identity，各自只属于一个宿主，主题以宿主的 `CountBadgeTokenResource`、`DotBadgeTokenResource`、`RibbonBadgeTokenResource`
+  显式读取 Own Token 与 Global Token（含 `MotionDurationMid`、DotBadge 状态色、Ribbon 的 `ColorPrimary`、`BorderRadiusSM`、
+  `ColorTextLightSolid`）。带装饰目标时指示器位于 AdornerLayer，经逻辑父级（徽标本身）解析资源，`Controls[CountBadge]`
+  等覆盖同样到达。
+- `BadgeColor`、`DotColor`、`RibbonColor` 的预设色名对应 antd `genPresetColor` 的 `darkColor`（色板第 6 级），取自徽标所在
+  主题快照的预设色板（暗色主题为暗色色板），主题变化时重算；预设色不跟随 `ColorPrimary`。其他文本按颜色解析；未设置或无效时
+  清除内部值，回到主题的 `IndicatorColor`、状态色或 `DotColor`、`ColorPrimary`。共享的色板查找位于
+  `src/AtomUI.Controls/Primitives/PresetColorPalette.cs`（Tag 与 ToolTip 复用）。
+- `CornerTransform` 的覆盖值按矩阵格式书写（`1,0,0,0.75,0,0` 即 antd `scaleY(0.75)`）。
+
+### 3.2 RibbonBadge Token 语义
 
 `RibbonBadgeToken` 只描述 Ribbon 默认视觉所需的静态指标。它不保存 `Placement`、public `Offset`、目标尺寸或实例
 `RibbonColor`。运行时布局必须把这些 Token 作为输入，和 owner 当前状态共同计算最终几何。

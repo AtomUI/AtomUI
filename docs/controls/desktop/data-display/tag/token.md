@@ -8,7 +8,13 @@ Tag Token 只表达组件级视觉变量，例如尺寸、间距、颜色、圆�
 
 当前 Token scope：
 
-- `TagToken`，scope id 为 `Tag`，源码位于 `src/AtomUI.Desktop.Controls/Tag/TagToken.cs`。
+- `AbstractTagToken`：Tag 与 CheckableTag 共用的抽象层（`TagFontSize`、`TagLineHeight`、`TagIconSize`、`TagPadding`、
+  `TagTextPaddingInline`），源码位于 `src/AtomUI.Desktop.Controls/Tag/AbstractTagToken.cs`。
+- `TagToken`，scope id 为 `Tag`，继承抽象层并增加 `DefaultBg`、`DefaultColor`、`SolidTextColor`、`TagCloseIconSize`，源码位于
+  `src/AtomUI.Desktop.Controls/Tag/TagToken.cs`。
+- `CheckableTagToken`，scope id 为 `CheckableTag`，只继承抽象层，源码位于 `src/AtomUI.Desktop.Controls/Tag/CheckableTagToken.cs`。
+  两个终端各自从自己的有效 Global Token 计算共用字段，`Controls[Tag]` 不影响 CheckableTag。
+- `CheckableTagGroup` 有 identity、没有 Own Token，主题以 `CheckableTagGroupTokenResource` 读 `SpacingXS`、`EnableMotion`。
 
 ## 2. Token 分类
 
@@ -32,11 +38,16 @@ Tag 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
-`TagToken` 提供 Default 颜色和 Variant 基础视觉所需的组件语义值。`SolidTextColor` 根据 `ColorBgSolid` 的亮度选择黑色或白色，用于 Default Solid Tag 的文字对比度；Preset、Status 和 Custom 的颜色组合不复制到 Token 中，而由控件状态归一和 Theme selector 组合完成。
+`TagToken` 提供 Default 颜色和 Variant 基础视觉所需的组件语义值。`SolidTextColor` 根据 `ColorBgSolid` 的亮度选择黑色或白色，用于 Default Solid Tag 的文字对比度；Preset、Status 和 Custom 的颜色组合不复制到 Token 中，而由控件状态归一和 Theme selector 组合完成。`TagCloseIconSize`（默认 `IconSizeXS`）设置关闭按钮图标尺寸，关闭按钮是保留自身 IconButton identity 的注册部件，尺寸由 Tag 主题显式读取 `TagTokenResource TagCloseIconSize`。
 
-`CheckableTag` 复用 Tag 家族的字号、行高、Icon 尺寸、圆角和内容间距语义，并从 SharedToken 读取 primary、text、hover、pressed、focus 和 disabled 颜色。checked 是控件实例状态，不新增 checked Token，也不复用普通 Tag 的 `Color × Variant` 矩阵。
+代码计算的颜色写入内部输入 `CalculatedBackground`、`CalculatedForeground`、`CalculatedBorderBrush`，Tag 主题以 Token 默认值
+（及默认颜色的 Solid / Outlined 变体）作为它们的主题值，并经非触发 Setter 投射到 `Background`、`Foreground`、`BorderBrush`，应用样式与本地值保持原生优先级。
+预设色取主题快照的预设色板（antd `genPresetColor`：1、3、6、7 级），状态色与实心文字色读取 Tag 的有效 Global Token
+（`ColorSuccess*`、`ColorInfo*`、`ColorWarning*`、`ColorError*`、`ColorTextLightSolid`），自定义色的浅色背景取该颜色按快照外观生成的色板第 1 级；主题变化时全部重算。
 
-`CheckableTagGroup` 不定义控件 Token。`ItemSpacing` 和 `LineSpacing` 的默认值从 SharedToken 派生；Options、IsMultiple、CheckedItem(s) 和内部 selection 均不进入 Token scope。
+`CheckableTag` 经自己的 `CheckableTagToken` 复用 Tag 家族的字号、行高、Icon 尺寸和内容间距语义，并以 `CheckableTagTokenResource` 读取自己的有效 Global Token：圆角、primary、text、hover、pressed、focus 和 disabled 颜色。checked 是控件实例状态，不新增 checked Token，也不复用普通 Tag 的 `Color × Variant` 矩阵。
+
+`CheckableTagGroup` 不定义控件 Own Token。`ItemSpacing` 和 `LineSpacing` 的默认值来自它的有效 `SpacingXS`，内部 `CheckableTagItemsControl` 经模板绑定取得；Options、IsMultiple、CheckedItem(s) 和内部 selection 均不进入 Token scope。
 
 颜色组合遵循以下边界：
 

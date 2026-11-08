@@ -2,6 +2,18 @@
 
 本文档记录 Tag 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Token
+  - Tag、CheckableTag 共用的字号、行高、图标尺寸与内间距移入抽象 `AbstractTagToken` 层，`TagToken`、新增的
+    `CheckableTagToken` 各自继承；`Controls[Tag]` 不再改变 CheckableTag。`Tag.TagCloseIconSize` 接通关闭图标尺寸。
+  - Tag、CheckableTag、CheckableTagGroup 主题改读各自的 `XxxTokenResource`；`CheckableTagItemsControl` 上被模板绑定覆盖的
+    间距 Setter 删除。
+- Fixed
+  - 预设/状态/自定义颜色改写入内部 `Calculated*` 输入，经主题非触发 Setter 投射（原为 Template 优先级代码赋值），应用样式、
+    语义 Part 样式与本地值按原生优先级覆盖；状态色与实心文字色读取 Tag 的有效 Global Token；预设色直接查快照色板，
+    不再每实例重建；自定义色浅底改用色板算法（暗色主题跟随暗色色板）；BorderThickness Token 变化重新应用边框宽度。
+
 ## 2026-11-07
 
 - API

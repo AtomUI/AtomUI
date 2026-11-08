@@ -7,6 +7,17 @@
 - Fix
   - `CountBadge` 与 `DotBadge` 的目标挂载和替换不再依赖指示器可见性：首次挂树时为零计数、空字符串 `Content` 或 `BadgeIsVisible=false`，以及隐藏期间替换 `DecoratedTarget`，目标都会挂入；旧目标在替换时移除。
 
+## 2026-11-08
+
+- Token
+  - 指示器主题改读宿主徽标的 `CountBadgeTokenResource` / `DotBadgeTokenResource` / `RibbonBadgeTokenResource`，
+    `Controls[X]` 覆盖到达装饰层中的指示器。
+  - 预设色不再写死 14 个 RGB 常量，改取主题快照预设色板第 6 级（antd `darkColor`），主题变化时重算，暗色主题跟随暗色色板。
+- Fixed
+  - 清除或设为无效颜色时恢复主题颜色；DotBadge 外环随 `ShadowColor` 重绘；CountBadge 外环改由内部 `IndicatorShadows`
+    投射到指示器边框。
+  - DotBadge、CountBadge 装饰器脱离 AdornerLayer 时先清除 AdornedElement 再移除视觉，不再让旧被装饰视觉的组合引用残留。
+
 ## 2026-11-07
 
 - API

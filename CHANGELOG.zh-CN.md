@@ -13,6 +13,7 @@ AtomUI 的重要变更记录在此文件中。
   - Theme Tokens：`Button.FontWeight` 改为 `FontWeight` 值（`500` 或 `Medium`）并设置 Button 字重；`Button.GroupBorderColor` 标为保留，暂无视觉效果。
   - Theme Tokens：各进度控件拥有各自的 Own Token。`ProgressBar.CircleTextColor`、`ProgressBar.CircleMinimumTextFontSize`、`ProgressBar.CircleMinimumIconSize` 移到 `CircleProgress` / `DashboardProgress`，`ProgressBar.ProgressStepMarginInlineEnd` / `ProgressBar.ProgressStepMinWidth` 移到 `StepsProgressBar`（`ProgressStepMarginInlineEnd` 改为 `double` 间距）；`Controls[ProgressBar]` 不再改变步骤、圆形与仪表盘进度条。
   - 进度控件：受保护成员 `AbstractProgressBar.StrokeThickness` 更名为 `EffectiveStrokeThickness`（计算值），子类需改用新名称。
+  - Theme Tokens：CheckableTag 拥有自己的 Own Token `TagFontSize`、`TagLineHeight`、`TagIconSize`、`TagPadding`、`TagTextPaddingInline`，请经 `Controls[CheckableTag]` 设置；`Controls[Tag]` 不再改变 CheckableTag。
 - Button 家族
   - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
   - 修复 HyperLinkButton 的仅图标、加载与危险视觉，BackTop 徽标，以及由分组或 Host 提供的 FloatButtonGroup 阴影。
@@ -39,10 +40,16 @@ AtomUI 的重要变更记录在此文件中。
   - `Controls[Steps]` 现在作用于 item、图标、Connector、箭头与 Panel 的全部主题读取；StepsItem 是 Token owner 透明部件，Steps 同样设置它们的过渡时长；自定义图标保留 IconPresenter 自身的 identity。
   - 会被状态样式覆盖的模板默认值改为样式 Setter，尺寸、类型与 Panel 状态因此生效：Small Panel 箭头使用 `LineWidth` 与 `PanelArrowWidthSM`；Dot 与 OutlineDot 的 Connector 使用 `DotLineThickness`；Indicator 间距跟随 Panel、标题竖排、Dot、Navigation（`NavItemGutter`）与 Inline 状态；纵向最后一项去掉底部内边距；Inline 项不再有 Connector 间隙。
   - 可见变化：Dot 与 OutlineDot 的 Connector 为 `LineWidthBold`（2px，`DotLineThickness` 默认改为与 antd 一致的 `LineWidthBold`），不再是 1px；OutlineDot 边框读取新增的 `Steps.OutlineDotBorderThickness`（2px，不变），Indicator 边框读取 `BorderThickness`；以及上述间距与内边距变化。
+- Tag / Badge 家族
+  - 控件级覆盖（`Controls[Tag]`、`Controls[CheckableTag]`、`Controls[CheckableTagGroup]`、`Controls[CountBadge]`、`Controls[DotBadge]`、`Controls[RibbonBadge]`）现在作用于该控件的全部主题读取，包括 Tag 的状态色与实心文字色、绘制在装饰层中的徽标指示器及其动效时长；`Tag.TagCloseIconSize` 设置关闭图标尺寸；分组内的标签保留 CheckableTag 自身的 identity。
+  - Tag 的预设色、状态色与自定义色改由主题投射，不再以 Template 优先级写入，应用样式、语义 Part 样式与本地值可按原生优先级覆盖 `Background`、`Foreground`、`BorderBrush`（含默认颜色的实心与描边标签）；Token 变化会重新应用 Tag 边框宽度。
+  - 徽标预设色（`BadgeColor`、`DotColor`、`RibbonColor`）取自主题的预设色板，并在主题变化时重算；清除或设为无效颜色时恢复主题颜色（`IndicatorColor`、状态色或 `DotColor`、`ColorPrimary`），不再让计数与圆点指示器没有填充、缎带停留在先前颜色；`ShadowColor` 变化时 DotBadge 外环会重绘；带装饰目标的 DotBadge、CountBadge 脱离时先清除被装饰元素，再从装饰层移除指示器。
+  - 可见变化：暗色主题下预设色徽标使用暗色色板（暗色算法下 antd 的 `color-6`），不再是亮色；自定义颜色 Tag 的浅色背景改为该颜色色板的第 1 级（antd `color-1`），不再是固定 HSL 亮度 0.95 的颜色，暗色主题下为暗色色板第 1 级，不再是接近白色的浅色。
 - Popup
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。
 - Theme
   - 写在 ControlTemplate 元素上的 Token 读取（`{atom:XxxTokenResource}`、`{atom:SharedTokenResource}`）现在与 `DynamicResource` 一样取 Template 优先级，触发样式（`:pointerover`、`:disabled`、类与属性选择器，包括应用样式）可以覆盖它们；非触发的样式 Setter 仍不能覆盖，模板外的读取优先级不变。
+  - 变换类 Token 值（`ImmutableTransform`，例如 `RibbonBadge.CornerTransform`）按矩阵格式化（`1,0,0,0.75,0,0`），不同变换不再共用同一规范文本，覆盖值可往返解析。
   - 可见变化：原先被这些读取遮蔽的状态样式生效。暗色 NavMenu 的分组标题使用 `NavMenu.DarkGroupTitleColor`，不再是 `GroupTitleColor`；LunarCalendar 的调休上班标记使用 `LunarCalendar.WorkdayMarkerColor`，不再是 `HolidayMarkerColor`。
 
 ## 6.2.14

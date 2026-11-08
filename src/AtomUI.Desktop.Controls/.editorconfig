@@ -29,3 +29,15 @@ dotnet_diagnostic.ATOMUIGEN047.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Select family: Select, ComboBox (ComboBoxItem), Cascader (CascaderView, CascaderViewItem), TreeSelect and their
+# identity-less parts (decorated boxes, handles, option items, filter / tag boxes).
+# Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
+[{Select,ComboBox,Cascader,TreeSelect}/**]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN042.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN046.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

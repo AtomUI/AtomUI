@@ -25,7 +25,9 @@ public class MigratedFamilyAnalyzerGateTests
         // Button family
         "Buttons", "DropdownButton", "SplitButton", "FloatButton", "OptionButtonGroup",
         // Input family (InputControlFrame's theme lives with AddOnDecoratedBox)
-        "Input", "ButtonSpinner", "NumericUpDown", "AutoComplete", "Primitives/AddOnDecoratedBox"
+        "Input", "ButtonSpinner", "NumericUpDown", "AutoComplete", "Primitives/AddOnDecoratedBox",
+        // Select family
+        "Select", "ComboBox", "Cascader", "TreeSelect"
     ];
 
     /// <summary>Token identities declared in those directories.</summary>
@@ -35,7 +37,8 @@ public class MigratedFamilyAnalyzerGateTests
         "BackTopFloatButton", "FloatButtonGroup", "FloatButtonHost", "FloatButtonGroupHost", "BackTopFloatButtonHost",
         "OptionButton", "OptionButtonGroup",
         "LineEdit", "TextBox", "TextArea", "SearchEdit", "ButtonSpinner", "NumericUpDown", "AutoComplete",
-        "AutoCompleteSearchEdit", "AutoCompleteTextArea"
+        "AutoCompleteSearchEdit", "AutoCompleteTextArea",
+        "Select", "ComboBox", "ComboBoxItem", "Cascader", "CascaderView", "CascaderViewItem", "TreeSelect"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -86,6 +89,11 @@ public class MigratedFamilyAnalyzerGateTests
         // Input primitives have no identity and read their owner's globals.
         IdentityControls.Value.ShouldNotContain("InputControlFrame");
         IdentityControls.Value.ShouldNotContain("AddOnDecoratedBox");
+        // Select family: the drop-down view, its items and the ComboBox item are registered; the shared select parts are not.
+        IdentityControls.Value.ShouldContain("ComboBoxItem");
+        IdentityControls.Value.ShouldContain("CascaderViewItem");
+        IdentityControls.Value.ShouldNotContain("SelectHandle");
+        IdentityControls.Value.ShouldNotContain("SelectCandidateListItem");
     }
 
     [Fact]

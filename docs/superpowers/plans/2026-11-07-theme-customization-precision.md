@@ -406,7 +406,7 @@ git commit -m "test(Button): Button 家族 Token 生效测试全绿并转分析�
 | 序 | 家族 | 成员 | 家族特有事项 |
 | --- | --- | --- | --- |
 | 10.1 | Input | `InputControlFrame`（90 处 Shared → `OwnerTokenResource`）、`AddOnDecoratedBox`（29 处）、`LineEdit`、`TextBox`、`TextArea`、`NumericUpDown`、`ButtonSpinner`、`SearchEdit`、`PasswordEdit`、`AutoComplete` | 借鉴 `8af4c1678`（AddOnDecoratedBox 状态色改为可撤销 Template 优先级）；`1e690fc2d` 的 TextBox 字号预设问题按 E4 修；PrimeNG 的"悬停边框色"需求评估是否增加输入框家族 Own Token `HoverBorderColor`（增加则 Active 且有生效测试） |
-| 10.2 | Select | `Select`、`ComboBox`、`Cascader`、`TreeSelect`、下拉 Option Item / Presenter | Popup 内基元经逻辑父级继承 owner（Task 4 已测，这里用真实控件再测一次） |
+| 10.2 | Select | `Select`、`ComboBox`、`Cascader`、`TreeSelect`、下拉 Option Item / Presenter | Popup 内基元经逻辑父级继承 owner（Task 4 已测，这里用真实控件再测一次）；Select / ComboBox 仍以 LocalValue 转发根画刷，改为与 Input 家族一致的内部投射属性（HostBorderBrush 类） |
 | 10.3 | Choice | `CheckBox`、`RadioButton`、`Switch`（`SwitchKnob` 加载指示笔宽 1 → Token）、`Slider`、`Rate` | E2 `SwitchKnob` |
 | 10.4 | Steps / Progress | `Steps`、`ProgressBar` 系列 | 借鉴 `9f4173894`（Steps 箭头描边 P1）、`5e587b055`（ProgressBar 文字几何 P4） |
 | 10.5 | Tag / Badge | `Tag`、`Badge`、`RibbonBadge` | E1：`BadgeColorUtils` 改读 `PresetPalettes`；Tag 自定义色浅底改用现有调色板算法；借鉴 `9ba3924ab`、`fe9c9c583` |
@@ -414,7 +414,7 @@ git commit -m "test(Button): Button 家族 Token 生效测试全绿并转分析�
 | 10.7 | Navigation | `NavMenu`（E3：`Application.Current.TryGetResource(MotionDurationMid)` 与 200ms 回落删除）、`Menu`、`TabControl` / `TabItem` / `TabStripItem`（E3）、`Breadcrumb`、`Pagination`、`Tour` | 借鉴 `473c43b1f`（NavMenu 分组标题 P1）、`9c01e0cc7`（Tour 间距绑定随 Gap 重建） |
 | 10.8 | Layout / Container | `Card`、`Collapse`、`Splitter`（借鉴 `b1a6fc37a`：尺寸挂载期绑定 + `AffectsMeasure`）、`SplitView`（分隔线 `Width="1"` → `LineWidth`）、`Separator`、`Space`、`Masonry` | |
 | 10.9 | Data | `Table`（基础）、`List`、`Tree`、`Avatar`、`Timeline`、`Calendar`（E2 `CalendarRangeBarPanel` 字号 12 / 高度 20 / 内边距 8 → Own Token）、`DatePicker` / `TimePicker`、`Carousel`、`Statistic` | |
-| 10.10 | 其余 | `ScrollBar`、`Icon`、`Window` 装饰、`FloatButton` 之外的剩余控件；以及 Button 家族遗留的 DropdownButton / SplitButton 变体色 | 以 `ATOMUIGEN041`–`047` 报告为清单。DropdownButton、SplitButton 的变体色绑定的是 Button 的 Own Token，这些值由 Button 的有效全局 Token 派生，所以 `Controls[DropdownButton].Tokens[ColorText]` 不改变它们的默认文字色：把变体相关 Own Token 提取到一个抽象 `[ControlDesignToken]` 层，由 `ButtonToken` 与新的 `DropdownButtonToken` 终端分别继承，变体绑定改用各自 identity 的键，并补隔离测试 |
+| 10.10 | 其余 | `ScrollBar`、`Icon`、`Window` 装饰、`FloatButton` 之外的剩余控件；以及 Button 家族遗留的 DropdownButton / SplitButton 变体色 | 以 `ATOMUIGEN041`–`047` 报告为清单。DropdownButton、SplitButton 的变体色绑定的是 Button 的 Own Token，这些值由 Button 的有效全局 Token 派生，所以 `Controls[DropdownButton].Tokens[ColorText]` 不改变它们的默认文字色：把变体相关 Own Token 提取到一个抽象 `[ControlDesignToken]` 层，由 `ButtonToken` 与新的 `DropdownButtonToken` 终端分别继承，变体绑定改用各自 identity 的键，并补隔离测试。同一模式另见 Input 家族：NumericUpDown 借用 ButtonSpinner 的手柄 Own Token，AutoCompleteSearchEdit / AutoCompleteTextArea 借用 AutoComplete 的 Own Token；SearchEdit 的搜索按钮颜色跟随 Button、动效时长跟随 SearchEdit，需统一 |
 
 每个家族完成的定义：该家族生效测试全绿；`Controls[X]` 隔离测试通过；分析器对该家族目录转错误；`token.md` 更新；一个或多个 commit。
 
@@ -623,9 +623,9 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Desktop | Button | DefaultBorderColorDisabled, ExtraContentItemSpacing, ExtraContentMargin, ExtraContentMarginLG, ExtraContentMarginSM, FontWeight, GroupBorderColor, GutterToFlyout | 9 | FontWeight、DefaultBorderColorDisabled → Active；GroupBorderColor → Reserved；ExtraContentItemSpacing、ExtraContentMargin(LG/SM)、GutterToFlyout → 删除 |
 | Desktop | OptionButton | ButtonBackground, ButtonCheckedBackground, ButtonPadding, ContentLineHeightLG | 9 | ContentLineHeightLG → Active（修正 ContentPadding 运算数后）；ButtonPadding → Active（供 ContentPadding/LG 水平分量，对应 antd Radio buttonPaddingInline）；ButtonBackground、ButtonCheckedBackground → Reserved（对应 antd Radio buttonBg / buttonCheckedBg；组框分隔线与选中边框绘制在选项背后，不透明背景会遮盖） |
 | Desktop | FloatButton | CircleBadgeOffset, SquareBadgeOffset | 9 | 删除 |
-| Desktop | LineEdit | InputFontSizeSM | 10.1 | |
-| Desktop | ButtonSpinner | ControlWidth | 10.1 | |
-| Desktop | TextArea | ResizeHandleSize | 10.1 | |
+| Desktop | LineEdit | InputFontSizeSM | 10.1 | Active（补大小号字号预设：大 16、小 12） |
+| Desktop | ButtonSpinner | ControlWidth | 10.1 | Reserved（对应 antd InputNumber controlWidth） |
+| Desktop | TextArea | ResizeHandleSize | 10.1 | Active（resize 指示此前从未可见，已接通） |
 | Desktop | Select | FixedItemMargin, OptionPadding, SelectAffixPadding | 10.2 | |
 | Desktop | ComboBox | ItemDisabledColor | 10.2 | |
 | Desktop | RadioButton | RadioBgColor | 10.3 | |

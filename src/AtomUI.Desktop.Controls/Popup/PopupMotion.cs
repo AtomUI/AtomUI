@@ -21,8 +21,7 @@ internal readonly record struct PopupMotionGeometry(
     Rect ContentBounds,
     Rect AnchorBounds,
     bool HasAlignment,
-    double BorderRadius,
-    double BorderRadiusLG,
+    double SurfaceCornerRadius,
     MenuSemanticLevel? MenuLevel = null,
     bool IsHorizontalMenu = false);
 
@@ -54,8 +53,8 @@ internal static class PopupMotionDefaults
         GetDirection(geometry) is Direction.Top ? Direction.Top : Direction.Bottom;
 
     private static Direction GetBottomDirection(PopupMotionGeometry geometry) => Direction.Bottom;
-    private static Point GetPopoverOrigin(PopupMotionGeometry geometry) => GetAlignedOrigin(geometry, geometry.BorderRadiusLG);
-    private static Point GetTooltipOrigin(PopupMotionGeometry geometry) => GetAlignedOrigin(geometry, geometry.BorderRadius);
+    private static Point GetPopoverOrigin(PopupMotionGeometry geometry) => GetAlignedOrigin(geometry, geometry.SurfaceCornerRadius);
+    private static Point GetTooltipOrigin(PopupMotionGeometry geometry) => GetAlignedOrigin(geometry, geometry.SurfaceCornerRadius);
 
     private static Point GetMenuOrigin(PopupMotionGeometry geometry)
     {

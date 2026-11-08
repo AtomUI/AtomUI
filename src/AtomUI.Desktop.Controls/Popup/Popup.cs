@@ -1289,18 +1289,22 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         preparation.Add(target.SetValue(OpacityProperty, 0, Avalonia.Data.BindingPriority.Animation) ?? Disposable.Empty);
     }
 
-    private PopupMotionGeometry GetMotionGeometry()
+    internal PopupMotionGeometry GetMotionGeometry()
     {
         var placement = RequestedPlacement ?? Placement;
         var bounds = default(Rect);
         var anchorBounds = default(Rect);
         var hasAlignment = false;
         var radius = 0d;
-        var radiusLG = 0d;
         if (_motionTarget is { } surface)
         {
             _motionFrame ??= surface.GetVisualDescendants().OfType<ShadowsAwareContainer>().FirstOrDefault();
-            bounds = _motionFrame?.GetContentShape(surface)?.Body ?? new Rect(surface.Bounds.Size);
+            var shape = _motionFrame?.GetContentShape(surface);
+            bounds = shape?.Body ?? new Rect(surface.Bounds.Size);
+            // The origin inset follows the radius the frame actually draws, so Control-level corner overrides
+            // (Controls[ToolTip].ToolTipCornerRadius, popover radii) are honoured instead of the scope-root
+            // BorderRadius Tokens.
+            radius = (shape?.CornerRadius ?? _motionFrame?.CornerRadius ?? default).TopLeft;
             if (PopupUtils.IsCanonicalAnchorPlacementMode(placement) &&
                 ResolvePlacementTarget() is { } anchor && anchor.IsAttachedToVisualTree() && surface.IsAttachedToVisualTree())
             {
@@ -1310,11 +1314,9 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 anchorBounds = new Rect(topLeft, bottomRight);
                 hasAlignment = true;
             }
-            radius = (TokenResourceUtils.FindTokenResource(surface, SharedTokenKind.BorderRadius) as CornerRadius?)?.TopLeft ?? 0;
-            radiusLG = (TokenResourceUtils.FindTokenResource(surface, SharedTokenKind.BorderRadiusLG) as CornerRadius?)?.TopLeft ?? 0;
         }
         return new PopupMotionGeometry(placement, IsHorizontalFlipped, IsVerticalFlipped,
-            FlowDirection, bounds, anchorBounds, hasAlignment, radius, radiusLG,
+            FlowDirection, bounds, anchorBounds, hasAlignment, radius,
             (TemplatedParent as MenuItem)?.SemanticLevel,
             TemplatedParent is NavMenuItem { Mode: NavMenuMode.Horizontal, IsTopLevel: true });
     }

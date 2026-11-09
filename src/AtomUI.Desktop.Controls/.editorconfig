@@ -87,9 +87,10 @@ dotnet_diagnostic.ATOMUIGEN047.severity = error
 
 # Navigation family: NavMenu (identity-less items, groups, dividers, popup frame and vertical header; the horizontal and
 # inline headers are registered and Token-owner transparent), Menu (MenuItem, MenuItemGroup, MenuSeparator, ContextMenu,
-# MenuPopupScrollHost) and the MenuFlyoutPresenter of drop-down flyouts (its theme lives in Flyouts/Themes).
-# Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
-[{NavMenu,Menu}/**]
+# MenuPopupScrollHost), the MenuFlyoutPresenter of drop-down flyouts (its theme lives in Flyouts/Themes) and the tab
+# controls (TabControl, CardTabControl, TabStrip, CardTabStrip, TabItem, TabStripItem and the identity-less bases, scroll
+# viewer and overflow menu). Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
+[{NavMenu,Menu,TabControl}/**]
 dotnet_diagnostic.ATOMUIGEN041.severity = error
 dotnet_diagnostic.ATOMUIGEN042.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error

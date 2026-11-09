@@ -37,7 +37,7 @@ public class MigratedFamilyAnalyzerGateTests
         // Feedback family
         "Alert", "Popup", "Tooltip", "Dialog", "MessageBox", "Message", "Notifications", "PopupConfirm",
         // Navigation family
-        "NavMenu", "Menu"
+        "NavMenu", "Menu", "TabControl"
     ];
 
     /// <summary>Single theme assets (relative to the package) of migrated families whose directory holds other families.</summary>
@@ -63,7 +63,8 @@ public class MigratedFamilyAnalyzerGateTests
         "Alert", "Popup", "ToolTip", "Dialog", "DialogButtonBox", "MessageBox", "MessageCard", "WindowMessageManager",
         "NotificationCard", "WindowNotificationManager", "PopupConfirm",
         "NavMenu", "HorizontalNavMenuItemHeader", "InlineNavMenuItemHeader", "Menu", "MenuItem", "MenuItemGroup",
-        "MenuSeparator", "ContextMenu", "MenuFlyoutPresenter"
+        "MenuSeparator", "ContextMenu", "MenuFlyoutPresenter",
+        "TabControl", "CardTabControl", "TabStrip", "CardTabStrip", "TabItem", "TabStripItem"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -169,6 +170,14 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldContain("MenuItem");
         IdentityControls.Value.ShouldContain("MenuFlyoutPresenter");
         IdentityControls.Value.ShouldNotContain("MenuPopupScrollHost");
+        // Tab controls: the hosts and items are registered; the shared bases, the scroll viewer and the overflow menu are not.
+        IdentityControls.Value.ShouldContain("CardTabStrip");
+        IdentityControls.Value.ShouldContain("TabStripItem");
+        IdentityControls.Value.ShouldNotContain("BaseTabControl");
+        IdentityControls.Value.ShouldNotContain("BaseTabStrip");
+        IdentityControls.Value.ShouldNotContain("TabScrollViewer");
+        IdentityControls.Value.ShouldNotContain("TabOverflowMenu");
+        IdentityControls.Value.ShouldNotContain("TabOverflowMenuItem");
     }
 
     [Fact]

@@ -556,7 +556,7 @@ public partial class Calendar : TemplatedControl
     private IDisposable BindMetric(AvaloniaProperty property, Type ownerType, Enum tokenKind)
     {
         var resourceKey = tokenKind is SharedTokenKind globalKind
-            ? ControlTokenResourceKey.Global(GetType(), globalKind)
+            ? ControlTokenResourceKey.Global(ownerType, globalKind)
             : ControlTokenResourceKey.Own(ownerType, tokenKind);
         return TokenResourceBinder.CreateTokenResourceBinding(this, this, property, resourceKey);
     }

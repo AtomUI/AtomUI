@@ -123,6 +123,8 @@ internal sealed class CalendarRangeBarPanel : Panel
         RangeBarHorizontalInsetProperty,
         RangeBarGapProperty,
         RangeBarLabelPaddingProperty,
+        RangeBarLabelFontSizeProperty,
+        RangeBarLabelForegroundProperty,
         FlowDirectionProperty
     };
 
@@ -428,14 +430,13 @@ internal sealed class CalendarRangeBarPanel : Panel
 
     private Border CreateRangeBarElement()
     {
-        var element = new Border
+        // No per-child bindings to the panel: a removed bar would stay rooted by the panel's observables. The themed padding,
+        // label colour and size are applied in ApplySegment and re-applied when they change (LayoutTriggers).
+        return new Border
         {
             ClipToBounds = true,
             IsHitTestVisible = false
         };
-        // The label padding follows the panel's themed value.
-        element.Bind(Border.PaddingProperty, this.GetObservable(RangeBarLabelPaddingProperty));
-        return element;
     }
 
     private void ApplySegment(Border element, CalendarRangeBarSegment segment)
@@ -458,6 +459,11 @@ internal sealed class CalendarRangeBarPanel : Panel
         if (element.Height != segment.Bounds.Height)
         {
             element.SetCurrentValue(HeightProperty, segment.Bounds.Height);
+        }
+
+        if (element.Padding != RangeBarLabelPadding)
+        {
+            element.SetCurrentValue(Border.PaddingProperty, RangeBarLabelPadding);
         }
 
         var text = segment.Label?.ToString();
@@ -485,10 +491,26 @@ internal sealed class CalendarRangeBarPanel : Panel
             {
                 label.TextAlignment = textAlignment;
             }
+
+            ApplyLabelStyle(label);
         }
         else
         {
             element.Child = CreateLabel(text, element);
+        }
+    }
+
+    /// <summary>The label colour and size follow the panel's themed values (owner ColorTextLightSolid / FontSizeSM).</summary>
+    private void ApplyLabelStyle(TextBlock label)
+    {
+        if (!Equals(label.Foreground, RangeBarLabelForeground))
+        {
+            label.SetCurrentValue(TextBlock.ForegroundProperty, RangeBarLabelForeground);
+        }
+
+        if (label.FontSize != RangeBarLabelFontSize)
+        {
+            label.SetCurrentValue(TextBlock.FontSizeProperty, RangeBarLabelFontSize);
         }
     }
 
@@ -508,9 +530,7 @@ internal sealed class CalendarRangeBarPanel : Panel
             TextAlignment = bar.FlowDirection == FlowDirection.RightToLeft ? TextAlignment.Right : TextAlignment.Left,
             IsHitTestVisible = false
         };
-        // Label colour and size follow the panel's themed values (owner ColorTextLightSolid / FontSizeSM).
-        textBlock.Bind(TextBlock.ForegroundProperty, this.GetObservable(RangeBarLabelForegroundProperty));
-        textBlock.Bind(TextBlock.FontSizeProperty, this.GetObservable(RangeBarLabelFontSizeProperty));
+        ApplyLabelStyle(textBlock);
         return textBlock;
     }
 

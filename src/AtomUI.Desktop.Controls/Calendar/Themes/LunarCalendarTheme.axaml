@@ -14,7 +14,8 @@
         <ResourceDictionary.MergedDictionaries>
             <ResourceInclude Source="/Calendar/Themes/CalendarDateCellTheme.axaml" />
         </ResourceDictionary.MergedDictionaries>
-        <!-- The cells sit in the registered DateViewer: the lunar cell theme reads the LunarCalendar's Tokens explicitly. -->
+        <!-- The cells take the LunarCalendar's Token owner (the Calendar forwards it to its DateViewer); this lunar-only cell
+             theme reads the LunarCalendar's Tokens explicitly, and its base reads the Calendar Own Tokens (borrowed). -->
         <ControlTheme x:Key="LunarDateCellTheme" TargetType="viewer:DateViewerCell" BasedOn="{StaticResource CalendarDateCellTheme}">
             <Style Selector="^[Presentation=Content]:date:selected:not(:disabled) /template/ Border#PART_CellInner">
                 <Setter Property="Background" Value="{atom:LunarCalendarTokenResource ColorPrimary}" />

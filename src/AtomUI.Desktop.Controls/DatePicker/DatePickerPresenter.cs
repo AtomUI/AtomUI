@@ -1,6 +1,7 @@
 using System.Globalization;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Internal.DateViewer;
+using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Controls;
@@ -86,6 +87,7 @@ internal class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
     protected bool UpdatingCandidate;
     private CultureInfo _culture = CultureInfo.CurrentCulture;
     private ILanguageManager? _languageManager;
+    private IDisposable? _viewerOwnerBinding;
 
     protected virtual bool IsRangeEditor => false;
     protected virtual DateTime? SecondarySelectedDateTimeCore => null;
@@ -120,6 +122,7 @@ internal class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
         RangeViewer = e.NameScope.Find<RangeDateViewer>("PART_RangeDateViewer");
         SingleViewer?.SetHost(this);
         RangeViewer?.SetHost(this);
+        ForwardTokenOwner();
         AttachTemplate();
         if (_sessionOpened)
         {
@@ -501,6 +504,19 @@ internal class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
     {
         SingleViewer?.RefreshHost();
         RangeViewer?.RefreshHost();
+    }
+
+    /// <summary>
+    /// The picker supplies the panel theme and header of its popup date viewer, so the viewer takes the presenter's Token
+    /// owner (the picker's, forwarded by InfoPickerInput) instead of the DateViewer identity, as the Calendar does for its
+    /// grid: <c>Controls[DatePicker]</c> / <c>Controls[RangeDatePicker]</c> reach the popup cells, header and panel text,
+    /// while the DateViewer's Own Tokens are still read from the DateViewer identity (borrowed Own Tokens).
+    /// </summary>
+    private void ForwardTokenOwner()
+    {
+        _viewerOwnerBinding?.Dispose();
+        Control? viewer = (Control?)SingleViewer ?? RangeViewer;
+        _viewerOwnerBinding = viewer is null ? null : TokenOwnerForwarding.Forward(this, viewer);
     }
 
     private void AttachTemplate()

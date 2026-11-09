@@ -116,12 +116,14 @@
         <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="MarginToAnchor" Value="{atom:PopupTokenResource MarginToAnchor}" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
+        <!-- The input frame paints its focus shadow outside the control bounds (as Select / ComboBox / NumericUpDown). -->
+        <Setter Property="ClipToBounds" Value="False" />
 
         <!-- Only a hover preview is dimmed; the candidate keeps the normal text color while open, as in Ant Design. -->
         <Style Selector="^:previewing">
             <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
                 <Setter Property="Foreground"
-                        Value="{atom:OwnerTokenResource ColorTextTertiary}" />
+                        Value="{atom:OwnerTokenResource ColorTextPlaceholder}" />
             </Style>
         </Style>
 

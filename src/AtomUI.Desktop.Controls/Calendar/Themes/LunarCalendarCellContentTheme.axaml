@@ -1,5 +1,5 @@
-<!-- The lunar cell content sits in a DateViewer cell (its owner is the DateViewer) and belongs to LunarCalendar only: it
-     reads the LunarCalendar's Tokens explicitly. -->
+<!-- The lunar cell content sits in a cell of the LunarCalendar's date grid, which takes the LunarCalendar's Token owner
+     (forwarded by the Calendar); it belongs to LunarCalendar only and reads the LunarCalendar's Tokens explicitly. -->
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"

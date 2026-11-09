@@ -17,7 +17,7 @@
     </Style>
 
     <!-- The text colour is drawn by the inner input frame; it follows this editor's Foreground, which the picker sets for
-         its states (popup open, inactive range part, disabled). -->
+         its states (hover preview, disabled). -->
     <Style Selector="^ /template/ atom|InputControlFrame#PART_InputControlFrame">
         <Setter Property="Foreground" Value="{TemplateBinding Foreground}" />
     </Style>

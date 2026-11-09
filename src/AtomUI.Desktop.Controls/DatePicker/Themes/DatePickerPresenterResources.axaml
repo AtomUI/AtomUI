@@ -3,12 +3,12 @@
                     xmlns:atom="https://atomui.net"
                     xmlns:antdicons="https://atomui.net/icons/antdesign"
                     x:ClassModifier="internal">
-    <!-- The headers are shown by the popup's registered DateViewer (their owner is the DateViewer): each reads its
-         picker's Tokens explicitly. -->
+    <!-- The headers are shown by the popup's DateViewer, which takes the picker's Token owner (forwarded by the presenter):
+         the globals are owner reads; DatePicker.HeaderBorderThickness is an Own Token and stays explicit. -->
     <DataTemplate x:Key="DatePickerViewerHeader" x:DataType="atom:DateViewerHeaderContext">
-        <atom:PixelAlignedBorder BorderBrush="{atom:DatePickerTokenResource ColorBorderSecondary}"
+        <atom:PixelAlignedBorder BorderBrush="{atom:OwnerTokenResource ColorBorderSecondary}"
                                  BorderThickness="{atom:DatePickerTokenResource HeaderBorderThickness}">
-            <Grid MinHeight="{atom:DatePickerTokenResource ControlHeight}">
+            <Grid MinHeight="{atom:OwnerTokenResource ControlHeight}">
                 <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="Bold"
                              Content="{Binding DisplayText}" Command="{Binding ChangePanelCommand}"
                              CommandParameter="{Binding ParentPanelKind}" />
@@ -32,7 +32,7 @@
         </atom:PixelAlignedBorder>
     </DataTemplate>
     <DataTemplate x:Key="RangeDatePickerViewerHeader" x:DataType="atom:DateViewerHeaderContext">
-        <Grid MinHeight="{atom:RangeDatePickerTokenResource ControlHeight}">
+        <Grid MinHeight="{atom:OwnerTokenResource ControlHeight}">
             <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="Bold"
                          Content="{Binding DisplayText}" Command="{Binding ChangePanelCommand}"
                          CommandParameter="{Binding ParentPanelKind}" />

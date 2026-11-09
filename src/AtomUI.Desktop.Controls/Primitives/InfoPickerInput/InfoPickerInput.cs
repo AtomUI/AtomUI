@@ -1146,8 +1146,9 @@ public abstract class InfoPickerInput : TemplatedControl,
     /// The picker presenter is shown inside the popup's registered ArrowDecoratedBox, whose identity would otherwise
     /// become the presenter's Token owner. The presenter belongs to this picker, so its owner follows the picker's own:
     /// the identity-less presenter parts (time view, buttons frame) read the picker's effective globals, and
-    /// <c>Controls[picker]</c> reaches them. Registered controls inside the presenter (DateViewer, Button) keep their
-    /// own identity.
+    /// <c>Controls[picker]</c> reaches them. The date presenter forwards the same owner to its DateViewer (the picker takes
+    /// over that viewer's globals); other registered controls inside the presenter (Button, IconButton) keep their own
+    /// identity.
     /// </summary>
     private void ForwardTokenOwner(Control? newPresenter)
     {

@@ -35,7 +35,16 @@ public class MigratedFamilyAnalyzerGateTests
         // Tag / Badge family
         "Tag", "Badge",
         // Feedback family
-        "Alert", "Popup", "Tooltip", "Dialog", "MessageBox", "Message", "Notifications", "PopupConfirm"
+        "Alert", "Popup", "Tooltip", "Dialog", "MessageBox", "Message", "Notifications", "PopupConfirm",
+        // Navigation family
+        "NavMenu", "Menu"
+    ];
+
+    /// <summary>Single theme assets (relative to the package) of migrated families whose directory holds other families.</summary>
+    private static readonly string[] s_familyFiles =
+    [
+        // Navigation family: the drop-down flyout menu presenter (Flyouts also holds FlyoutHost and the TreeView flyout).
+        "Flyouts/Themes/MenuFlyoutPresenterTheme.axaml"
     ];
 
     /// <summary>Token identities declared in those directories.</summary>
@@ -52,13 +61,16 @@ public class MigratedFamilyAnalyzerGateTests
         "ProgressBar", "StepsProgressBar", "CircleProgress", "DashboardProgress", "Steps", "StepsItem",
         "Tag", "CheckableTag", "CheckableTagGroup", "CountBadge", "DotBadge", "RibbonBadge",
         "Alert", "Popup", "ToolTip", "Dialog", "DialogButtonBox", "MessageBox", "MessageCard", "WindowMessageManager",
-        "NotificationCard", "WindowNotificationManager", "PopupConfirm"
+        "NotificationCard", "WindowNotificationManager", "PopupConfirm",
+        "NavMenu", "HorizontalNavMenuItemHeader", "InlineNavMenuItemHeader", "Menu", "MenuItem", "MenuItemGroup",
+        "MenuSeparator", "ContextMenu", "MenuFlyoutPresenter"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
         s_familyDirectories
             .SelectMany(directory => Directory.EnumerateFiles(
                 Path.Combine(RepositoryRoot, DesktopControls, directory), "*.axaml", SearchOption.AllDirectories))
+            .Concat(s_familyFiles.Select(static file => Path.Combine(RepositoryRoot, DesktopControls, file)))
             .Select(path => Path.GetRelativePath(RepositoryRoot, path).Replace('\\', '/'))
             .Order(StringComparer.Ordinal)
             .Select(static path => new object[] { path });
@@ -145,6 +157,18 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldNotContain("MessageBoxContent");
         IdentityControls.Value.ShouldNotContain("PopupConfirmContainer");
         IdentityControls.Value.ShouldNotContain("NotificationProgressBar");
+        // Navigation family: the NavMenu's horizontal and inline headers are registered (Token-owner transparent); its
+        // items, groups, dividers, popup frame and vertical header are not. Menu items, groups, separators, context menus and
+        // the flyout presenter are registered; the popup scroll host is not.
+        IdentityControls.Value.ShouldContain("HorizontalNavMenuItemHeader");
+        IdentityControls.Value.ShouldContain("InlineNavMenuItemHeader");
+        IdentityControls.Value.ShouldNotContain("NavMenuItem");
+        IdentityControls.Value.ShouldNotContain("VerticalNavMenuItemHeader");
+        IdentityControls.Value.ShouldNotContain("NavMenuPopupFrame");
+        IdentityControls.Value.ShouldNotContain("NavMenuGroupItem");
+        IdentityControls.Value.ShouldContain("MenuItem");
+        IdentityControls.Value.ShouldContain("MenuFlyoutPresenter");
+        IdentityControls.Value.ShouldNotContain("MenuPopupScrollHost");
     }
 
     [Fact]

@@ -84,3 +84,20 @@ dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Navigation family: NavMenu (identity-less items, groups, dividers, popup frame and vertical header; the horizontal and
+# inline headers are registered and Token-owner transparent), Menu (MenuItem, MenuItemGroup, MenuSeparator, ContextMenu,
+# MenuPopupScrollHost) and the MenuFlyoutPresenter of drop-down flyouts (its theme lives in Flyouts/Themes).
+# Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
+[{NavMenu,Menu}/**]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN042.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+[Flyouts/{MenuFlyoutPresenter.cs,Themes/MenuFlyoutPresenterTheme.cs}]
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

@@ -297,7 +297,7 @@ public partial class FeedbackFamilyEffectTests
         return OverlayLayerHost(stack, 640, 600);
     }
 
-    private static ThemeConfig IsolationConfig(
+    internal static ThemeConfig IsolationConfig(
         (ControlTokenIdentity Identity, string Token, string Value)? control = null,
         (string Token, string Value)? root = null)
     {
@@ -314,7 +314,7 @@ public partial class FeedbackFamilyEffectTests
         return builder.Build();
     }
 
-    private static void WithIsolationWindow(Control content, Action<ThemeConfigProvider, Func<SKBitmap>> body)
+    internal static void WithIsolationWindow(Control content, Action<ThemeConfigProvider, Func<SKBitmap>> body)
     {
         content.HorizontalAlignment = HorizontalAlignment.Left;
         content.VerticalAlignment   = VerticalAlignment.Top;
@@ -355,7 +355,7 @@ public partial class FeedbackFamilyEffectTests
         }
     }
 
-    private static double ChangedRatioOf(SKBitmap before, SKBitmap after, Control control)
+    internal static double ChangedRatioOf(SKBitmap before, SKBitmap after, Control control)
     {
         var window = (Visual)TopLevel.GetTopLevel(control)!;
         var origin = control.TranslatePoint(new Point(), window).ShouldNotBeNull();

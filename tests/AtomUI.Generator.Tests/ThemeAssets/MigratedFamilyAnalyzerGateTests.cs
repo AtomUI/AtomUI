@@ -35,7 +35,7 @@ public class MigratedFamilyAnalyzerGateTests
         // Tag / Badge family
         "Tag", "Badge",
         // Feedback family
-        "Alert", "Popup", "Tooltip"
+        "Alert", "Popup", "Tooltip", "Dialog", "MessageBox", "Message", "Notifications", "PopupConfirm"
     ];
 
     /// <summary>Token identities declared in those directories.</summary>
@@ -51,7 +51,8 @@ public class MigratedFamilyAnalyzerGateTests
         "SliderThumb", "Rate",
         "ProgressBar", "StepsProgressBar", "CircleProgress", "DashboardProgress", "Steps", "StepsItem",
         "Tag", "CheckableTag", "CheckableTagGroup", "CountBadge", "DotBadge", "RibbonBadge",
-        "Alert", "Popup", "ToolTip"
+        "Alert", "Popup", "ToolTip", "Dialog", "DialogButtonBox", "MessageBox", "MessageCard", "WindowMessageManager",
+        "NotificationCard", "WindowNotificationManager", "PopupConfirm"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -135,6 +136,15 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldContain("ToolTip");
         IdentityControls.Value.ShouldNotContain("PopupSurface");
         IdentityControls.Value.ShouldNotContain("OverlayPopupHost");
+        // Dialog session controls and the cards are registered; the dialog surface parts and the confirm container are not.
+        IdentityControls.Value.ShouldContain("DialogButtonBox");
+        IdentityControls.Value.ShouldContain("WindowMessageManager");
+        IdentityControls.Value.ShouldNotContain("DialogSurface");
+        IdentityControls.Value.ShouldNotContain("OverlayDialogHeader");
+        IdentityControls.Value.ShouldNotContain("DialogCaptionButton");
+        IdentityControls.Value.ShouldNotContain("MessageBoxContent");
+        IdentityControls.Value.ShouldNotContain("PopupConfirmContainer");
+        IdentityControls.Value.ShouldNotContain("NotificationProgressBar");
     }
 
     [Fact]

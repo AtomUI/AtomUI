@@ -94,7 +94,7 @@ public partial class FeedbackFamilyEffectTests
     internal sealed record OwnerReadList(string Theme, string[] Tokens);
 
     /// <summary>Every owner-read list of the family; the drift guard keeps each equal to its theme AXAML.</summary>
-    private static OwnerReadList[] FamilyOwnerReadLists() => [s_overlayPopupHost, s_popupRoot];
+    private static OwnerReadList[] FamilyOwnerReadLists() => [s_overlayPopupHost, s_popupRoot, ..DialogOwnerReadLists()];
 
     [Fact]
     public void Owner_Read_Lists_Match_The_Part_Themes()

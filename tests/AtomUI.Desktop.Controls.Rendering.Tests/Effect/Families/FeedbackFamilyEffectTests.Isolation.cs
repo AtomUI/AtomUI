@@ -145,7 +145,157 @@ public partial class FeedbackFamilyEffectTests
             control.Foreground.ShouldBeAssignableTo<ISolidColorBrush>()!.Color;
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Dialog_Surface_Follows_The_Identity_Hosting_It(bool messageBox)
+    {
+        // The surface parts have no identity and inherit the Dialog or the MessageBox as owner: Controls[Dialog] reaches
+        // a Dialog surface, Controls[MessageBox] a MessageBox surface, and neither reaches the other.
+        var create = CreateDialogRoot(static _ => { },
+            messageBox ? static () => new MessageBox { Style = MessageBoxStyle.Information } : static () => new Dialog());
+        var root = create.Root();
+        WithIsolationWindow(root, (provider, capture) =>
+        {
+            var dialog  = create.Target(root);
+            var surface = SurfaceOf(dialog);
+            var (self, other) = messageBox
+                ? (MessageBoxTokens.Identity, DialogTokens.Identity)
+                : (DialogTokens.Identity, MessageBoxTokens.Identity);
+            using var before = capture();
+
+            provider.Config = IsolationConfig(control: (other, "BorderRadiusLG", "28"));
+            using var byOther = capture();
+            ChangedRatioOf(before, byOther, surface).ShouldBe(0d, $"Controls[{other}].BorderRadiusLG reached the surface.");
+
+            provider.Config = IsolationConfig(control: (self, "BorderRadiusLG", "28"));
+            using var bySelf = capture();
+            ChangedRatioOf(before, bySelf, surface).ShouldBeGreaterThan(TokenEffectHarness.ThinLineThresholdRatio,
+                $"Controls[{self}].BorderRadiusLG did not reach the surface.");
+        });
+    }
+
+    [Fact]
+    public void Dialog_Footer_Buttons_Keep_The_Button_Identity()
+    {
+        var create = CreateDialogRoot(static _ => { }, static () => new Dialog());
+        var root   = create.Root();
+        WithIsolationWindow(root, (provider, capture) =>
+        {
+            var dialog = create.Target(root);
+            var ok     = SurfaceOf(dialog).GetVisualDescendants().OfType<DialogButton>()
+                                .First(static b => b.StandardButtonType == DialogStandardButton.Ok);
+            ThemeScope.GetTokenOwner(ok).ShouldBe(ButtonTokens.Identity);
+            using var before = capture();
+
+            provider.Config = IsolationConfig(control: (DialogTokens.Identity, "BorderRadius", "16"));
+            using var byDialog = capture();
+            ChangedRatioOf(before, byDialog, ok).ShouldBe(0d, "Controls[Dialog].BorderRadius reached the footer button.");
+
+            provider.Config = IsolationConfig(control: (ButtonTokens.Identity, "BorderRadius", "16"));
+            using var byButton = capture();
+            ChangedRatioOf(before, byButton, ok).ShouldBeGreaterThan(TokenEffectHarness.ThinLineThresholdRatio,
+                "Controls[Button].BorderRadius did not reach the footer button.");
+        });
+    }
+
+    [Fact]
+    public void Controls_Card_Main_Colours_Change_Only_Their_Card()
+    {
+        var message      = new MessageCard { Message = "Message", IsMotionEnabled = false };
+        var notification = new NotificationCard { Title = "Notification", Content = "Body", IsMotionEnabled = false };
+        var confirmRoot  = CardsAndConfirmHost(message, notification);
+        WithIsolationWindow(confirmRoot, (provider, capture) =>
+        {
+            var confirm = WaitForVisual(() => ConfirmContainerOrNull(confirmRoot), "The confirm flyout");
+            var members = new (ControlTokenIdentity Identity, string Token, Control Control)[]
+            {
+                (MessageCardTokens.Identity, "ColorPrimary", message),
+                (NotificationCardTokens.Identity, "ColorBgElevated", notification),
+                (PopupConfirmTokens.Identity, "ColorWarning", confirm)
+            };
+            foreach (var (identity, token, target) in members)
+            {
+                provider.Config = IsolationConfig();
+                using var before = capture();
+                provider.Config = IsolationConfig(control: (identity, token, IsolationColor));
+                using var after = capture();
+                foreach (var (_, _, control) in members)
+                {
+                    var ratio = ChangedRatioOf(before, after, control);
+                    if (ReferenceEquals(control, target))
+                    {
+                        ratio.ShouldBeGreaterThan(TokenEffectHarness.ThinLineThresholdRatio,
+                            $"Controls[{identity}].{token} did not reach {control.GetType().Name}.");
+                    }
+                    else
+                    {
+                        ratio.ShouldBe(0d, $"Controls[{identity}].{token} leaked into {control.GetType().Name}.");
+                    }
+                }
+
+                provider.Config = IsolationConfig();
+                using var rootBefore = capture();
+                provider.Config = IsolationConfig(root: (token, IsolationColor));
+                using var rootAfter = capture();
+                ChangedRatioOf(rootBefore, rootAfter, target).ShouldBeGreaterThan(TokenEffectHarness.ThinLineThresholdRatio,
+                    $"Root {token} did not reach {target.GetType().Name}.");
+            }
+        });
+    }
+
+    [Fact]
+    public void Card_And_Confirm_Nested_Controls_Keep_Their_Identity()
+    {
+        // The notification close button is a registered IconButton sized by the card; the confirm buttons are Buttons.
+        var notification = new NotificationCard { Title = "Notification", Content = "Body", IsMotionEnabled = false };
+        var confirmRoot  = CardsAndConfirmHost(notification);
+        WithIsolationWindow(confirmRoot, (provider, capture) =>
+        {
+            var container = WaitForVisual(() => ConfirmContainerOrNull(confirmRoot), "The confirm flyout");
+            var close     = (IconButton)CloseButtonOf(notification);
+            var ok        = container.GetVisualDescendants().OfType<Button>().First(static b => b.Name == "PART_OkButton");
+            ThemeScope.GetTokenOwner(close).ShouldBe(IconButtonTokens.Identity);
+            ThemeScope.GetTokenOwner(ok).ShouldBe(ButtonTokens.Identity);
+            using var before = capture();
+
+            provider.Config = IsolationConfig(control: (IconButtonTokens.Identity, "IconSizeSM", "20"));
+            using var byButton = capture();
+            ChangedRatioOf(before, byButton, notification).ShouldBe(0d, "Controls[IconButton].IconSizeSM reached the close icon.");
+
+            provider.Config = IsolationConfig(control: (NotificationCardTokens.Identity, "IconSizeSM", "20"));
+            using var byCard = capture();
+            ChangedRatioOf(before, byCard, close).ShouldBeGreaterThan(TokenEffectHarness.DefaultThresholdRatio,
+                "Controls[NotificationCard].IconSizeSM did not reach the close icon.");
+
+            provider.Config = IsolationConfig(control: (PopupConfirmTokens.Identity, "ColorPrimary", IsolationColor));
+            using var byConfirm = capture();
+            ChangedRatioOf(before, byConfirm, ok).ShouldBe(0d, "Controls[PopupConfirm].ColorPrimary reached the OK button.");
+        });
+    }
+
     // ---- helpers ------------------------------------------------------------------------------
+
+    /// <summary>Cards stacked above a PopupConfirm whose flyout opens below it, all inside one overlay layer host.</summary>
+    private static Control CardsAndConfirmHost(params Control[] cards)
+    {
+        // Wide gaps keep each card's shadow out of its neighbours' bounds.
+        var stack = new StackPanel { Spacing = 56 };
+        foreach (var card in cards)
+        {
+            card.HorizontalAlignment = HorizontalAlignment.Left;
+            stack.Children.Add(card);
+        }
+        stack.Children.Add(new PopupConfirm
+        {
+            Title             = "Delete the task",
+            Content           = new Avalonia.Controls.Button { Content = "Delete" },
+            Placement         = PlacementMode.BottomEdgeAlignedLeft,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            IsPopupPinnedOpen = true
+        });
+        return OverlayLayerHost(stack, 640, 600);
+    }
 
     private static ThemeConfig IsolationConfig(
         (ControlTokenIdentity Identity, string Token, string Value)? control = null,

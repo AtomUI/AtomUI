@@ -160,10 +160,12 @@ public partial class DataFamilyEffectTests
             item.IsLoading = true;
             WaitFor(() => HeaderOf(tree, "Second parent").GetVisualDescendants().OfType<NodeSwitcherButton>().First()
                                                        .IconMode == NodeSwitcherButtonIconMode.Loading);
+            provider.Config = ControlConfig(TreeViewTokens.Identity, "MotionDurationSlow", "00:00:00.6000000");
+            WaitFor(() => tree.MotionDuration == TimeSpan.FromMilliseconds(600));
+            tree.MotionDuration.ShouldBe(TimeSpan.FromMilliseconds(600));
             provider.Config = new AtomUI.Theme.Configuration.ThemeConfigBuilder()
                               .WithControl(TreeViewTokens.Identity, new AtomUI.Theme.Configuration.ControlThemeConfigBuilder()
                                                                      .WithToken("ColorPrimary", "#ff00b96b")
-                                                                     .WithToken("MotionDurationSlow", "00:00:00.6000000")
                                                                      .WithToken("EnableMotion", "false").Build())
                               .Build();
             WaitFor(() => !tree.IsMotionEnabled);

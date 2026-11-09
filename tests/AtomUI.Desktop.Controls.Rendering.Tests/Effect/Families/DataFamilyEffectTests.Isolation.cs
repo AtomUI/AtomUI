@@ -1,3 +1,5 @@
+using AtomUI.Controls;
+using AtomUI.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
@@ -16,8 +18,9 @@ namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 
 /// <summary>
 /// Scope isolation of the data family (theme-effect-tests.md, family gate): a <c>Controls[X]</c> override reaches X only, the
-/// root Token reaches X, the Token-owner transparent items (ListBoxItem, ListViewItem, TreeViewItem) and the Skeleton follow
-/// their host, and registered controls nested in a member keep their own identity.
+/// root Token reaches X, the Token-owner transparent items and containers (ListBoxItem, ListViewItem, TreeViewItem,
+/// TimelineItem, CarouselPage, the Skeleton, CardGridContent) follow their host, and registered controls nested in a member
+/// (the tree toggle CheckBox, grouped avatars, the carousel arrows, the Skeleton placeholders) keep their own identity.
 /// </summary>
 public partial class DataFamilyEffectTests
 {
@@ -93,7 +96,7 @@ public partial class DataFamilyEffectTests
     {
         var listBox  = CreateListBox(showIndicator: true);
         var listView = CreateListView();
-        var tree     = CreateTreeView(toggle: AtomUI.Controls.ItemToggleType.CheckBox);
+        var tree     = CreateTreeView(toggle: ItemToggleType.CheckBox);
         var root = new StackPanel { Spacing = 12, Children = { listBox, listView, tree } };
         WithIsolationWindow(root, (provider, capture) =>
         {
@@ -141,6 +144,71 @@ public partial class DataFamilyEffectTests
             provider.Config = IsolationConfig(control: (CheckBoxTokens.Identity, "ColorBorder", IsolationColor));
             using var byCheckBox = capture();
             ChangedRatioOf(before, byCheckBox, checkBox).ShouldBeGreaterThan(0d, "Controls[CheckBox] did not reach the toggle.");
+        });
+    }
+
+    [Fact]
+    public void Controls_X_Colours_Change_Only_X_For_Display_Members()
+    {
+        var avatar    = new Avatar { Text = "U" };
+        var timeline  = CreateTimeline();
+        var statistic = CreateStatistic();
+        var carousel  = CreateCarousel();
+        var left  = new StackPanel { Spacing = 12, Children = { avatar, statistic, carousel } };
+        var root  = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Children = { left, timeline } };
+        WithIsolationWindow(root, (provider, capture) =>
+        {
+            AssertReachesOnly(provider, capture,
+            [
+                (AvatarTokens.Identity, "ColorTextPlaceholder", avatar),
+                (TimelineTokens.Identity, "ColorPrimary", timeline),
+                (StatisticTokens.Identity, "ColorTextHeading", statistic),
+                (CarouselTokens.Identity, "ColorBgContainer", carousel)
+            ]);
+        });
+    }
+
+    [Fact]
+    public void Display_Parts_Follow_Their_Host_And_Nested_Controls_Keep_Their_Identity()
+    {
+        var timeline = CreateTimeline();
+        var carousel = CreateCarousel();
+        var group    = CreateAvatarGroup();
+        var root = new StackPanel { Spacing = 12, Children = { group, timeline, carousel } };
+        WithIsolationWindow(root, (provider, capture) =>
+        {
+            var item      = timeline.GetVisualDescendants().OfType<TimelineItem>().First();
+            var page      = carousel.GetVisualDescendants().OfType<CarouselPage>().First();
+            var arrow     = PreviousButtonOf(carousel);
+            var dots      = Descendant<CarouselPagination>(carousel);
+            var avatar    = group.GetVisualDescendants().OfType<Avatar>().ElementAt(1);
+            ThemeScope.GetTokenOwner(item).ShouldBe(TimelineTokens.Identity);
+            ThemeScope.GetTokenOwner(page).ShouldBe(CarouselTokens.Identity);
+            ThemeScope.GetTokenOwner(arrow).ShouldBe(CarouselNavButtonTokens.Identity);
+            ThemeScope.GetTokenOwner(avatar).ShouldBe(AvatarTokens.Identity);
+            using var before = capture();
+
+            // TimelineItem is transparent: Controls[TimelineItem] reaches nothing.
+            provider.Config = IsolationConfig(control: (TimelineItemTokens.Identity, "ColorPrimary", IsolationColor));
+            using var byItem = capture();
+            ChangedRatioOf(before, byItem, timeline).ShouldBe(0d, "Controls[TimelineItem] reached a transparent timeline item.");
+
+            // The dots follow the Carousel, the arrows keep the CarouselNavButton identity.
+            provider.Config = IsolationConfig(control: (CarouselTokens.Identity, "ColorBgContainer", "#ffff0000"));
+            using var byCarousel = capture();
+            ChangedRatioOf(before, byCarousel, dots).ShouldBeGreaterThan(0d, "Controls[Carousel] did not reach the dots.");
+            ChangedRatioOf(before, byCarousel, arrow).ShouldBe(0d, "Controls[Carousel].ColorBgContainer reached the arrows.");
+            provider.Config = IsolationConfig(control: (CarouselNavButtonTokens.Identity, "ColorBgContainer", "#ffff0000"));
+            using var byArrow = capture();
+            ChangedRatioOf(before, byArrow, arrow).ShouldBeGreaterThan(0d, "Controls[CarouselNavButton] did not reach the arrows.");
+
+            // Grouped avatars keep the Avatar identity: the ring colour is Controls[Avatar]'s, not the group's.
+            provider.Config = IsolationConfig(control: (AvatarGroupTokens.Identity, "ColorBorderBg", IsolationColor));
+            using var byGroup = capture();
+            ChangedRatioOf(before, byGroup, group).ShouldBe(0d, "Controls[AvatarGroup].ColorBorderBg reached the avatar ring.");
+            provider.Config = IsolationConfig(control: (AvatarTokens.Identity, "ColorBorderBg", IsolationColor));
+            using var byAvatar = capture();
+            ChangedRatioOf(before, byAvatar, group).ShouldBeGreaterThan(0d, "Controls[Avatar] did not reach the avatar ring.");
         });
     }
 

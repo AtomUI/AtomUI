@@ -18,6 +18,7 @@ namespace AtomUI.Generator.Tests.ThemeAssets;
 public class MigratedFamilyAnalyzerGateTests
 {
     private const string DesktopControls = "src/AtomUI.Desktop.Controls";
+    private const string Controls = "src/AtomUI.Controls";
 
     /// <summary>Directories (relative to the package) of migrated families.</summary>
     private static readonly string[] s_familyDirectories =
@@ -41,7 +42,14 @@ public class MigratedFamilyAnalyzerGateTests
         // Layout / container family
         "Card", "Collapse", "Expander", "GroupBox", "Splitter", "SplitView", "Separator", "Space", "Masonry",
         // Data family (first half)
-        "ListBox", "ListView", "TreeView", "Skeleton"
+        "ListBox", "ListView", "TreeView", "Skeleton", "Avatar", "Timeline", "Statistic", "Carousel", "ImagePreviewer"
+    ];
+
+    /// <summary>Directories (relative to AtomUI.Controls) of migrated families whose theme assets live in that package.</summary>
+    private static readonly string[] s_controlsFamilyDirectories =
+    [
+        // Data family: Avatar (its AvatarGroup lives in AtomUI.Desktop.Controls)
+        "Avatar"
     ];
 
     /// <summary>Single theme assets (relative to the package) of migrated families whose directory holds other families.</summary>
@@ -76,14 +84,20 @@ public class MigratedFamilyAnalyzerGateTests
         "CompactSpaceAddOn", "Masonry",
         "ListBox", "ListBoxItem", "ListView", "ListViewItem", "TreeView", "TreeViewItem", "Skeleton", "SkeletonAvatar",
         "SkeletonButton", "SkeletonElement", "SkeletonImage", "SkeletonInput", "SkeletonLine", "SkeletonNode",
-        "SkeletonParagraph"
+        "SkeletonParagraph", "AvatarGroup", "Timeline", "TimelineItem", "AbstractStatistic", "Statistic", "TimerStatistic",
+        "StatisticCountUp", "Carousel", "CarouselNavButton", "CarouselPage", "ImagePreviewer", "ImageGroupPreviewer"
     ];
+
+    /// <summary>Token identities of migrated families declared in AtomUI.Controls.</summary>
+    private static readonly string[] s_controlsFamilyControls = ["Avatar"];
 
     public static IEnumerable<object[]> FamilyAssets() =>
         s_familyDirectories
             .SelectMany(directory => Directory.EnumerateFiles(
                 Path.Combine(RepositoryRoot, DesktopControls, directory), "*.axaml", SearchOption.AllDirectories))
             .Concat(s_familyFiles.Select(static file => Path.Combine(RepositoryRoot, DesktopControls, file)))
+            .Concat(s_controlsFamilyDirectories.SelectMany(directory => Directory.EnumerateFiles(
+                Path.Combine(RepositoryRoot, Controls, directory), "*.axaml", SearchOption.AllDirectories)))
             .Select(path => Path.GetRelativePath(RepositoryRoot, path).Replace('\\', '/'))
             .Order(StringComparer.Ordinal)
             .Select(static path => new object[] { path });
@@ -93,7 +107,8 @@ public class MigratedFamilyAnalyzerGateTests
     public void Family_Theme_Assets_Have_No_Theme_Consumption_Diagnostics(string relativePath)
     {
         var text = new FileText(Path.Combine(RepositoryRoot, relativePath));
-        var asset = ThemeAssetInfo.Create(text, Path.Combine(RepositoryRoot, DesktopControls), null,
+        var package = relativePath.StartsWith(Controls + "/", StringComparison.Ordinal) ? Controls : DesktopControls;
+        var asset = ThemeAssetInfo.Create(text, Path.Combine(RepositoryRoot, package), null,
             TestContext.Current.CancellationToken, out var root);
         root.ShouldNotBeNull($"{relativePath} is not well-formed AXAML.");
 
@@ -220,17 +235,22 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldNotContain("NodeSwitcherButton");
         IdentityControls.Value.ShouldNotContain("GroupHeaderItem");
         IdentityControls.Value.ShouldNotContain("SkeletonTitle");
+        IdentityControls.Value.ShouldContain("Avatar");
+        IdentityControls.Value.ShouldContain("TimelineItem");
+        IdentityControls.Value.ShouldContain("CarouselPage");
+        IdentityControls.Value.ShouldNotContain("TimelineIndicator");
+        IdentityControls.Value.ShouldNotContain("CarouselPageIndicator");
+        IdentityControls.Value.ShouldNotContain("ImagePreviewerCover");
+        IdentityControls.Value.ShouldNotContain("ImageViewer");
+        IdentityControls.Value.ShouldNotContain("ImagePreviewerDialog");
     }
 
     [Fact]
     public void Family_Own_Tokens_Are_Active_Or_Reserved()
     {
-        var map = File.ReadAllText(Path.Combine(RepositoryRoot, DesktopControls,
-            "GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedThemeConsumption.g.cs"));
-        var familyEntries = Regex.Matches(map,
-                                     @"new OwnTokenEntry\(""AtomUI"", ""(?<control>\w+)"", ""(?<token>\w+)"", OwnTokenState\.(?<state>\w+)")
-                                 .Where(static match => s_familyControls.Contains(match.Groups["control"].Value))
-                                 .ToArray();
+        var familyEntries = OwnTokenEntries(DesktopControls, s_familyControls)
+                            .Concat(OwnTokenEntries(Controls, s_controlsFamilyControls))
+                            .ToArray();
         // Guards the parse itself: a format change of the generated map must not make the gate pass vacuously.
         familyEntries.Count(static match => match.Groups["state"].Value == "Active").ShouldBeGreaterThan(0,
             "No Active Own Token entries of the family were found in the generated consumption map.");
@@ -240,6 +260,16 @@ public class MigratedFamilyAnalyzerGateTests
                            .Select(static match => $"{match.Groups["control"].Value}.{match.Groups["token"].Value}")
                            .ToArray();
         unreferenced.ShouldBeEmpty("ATOMUIGEN042: consume, [ReservedToken], or delete these Own Tokens.");
+    }
+
+    /// <summary>The Own Token entries of the given controls in a package's generated consumption map.</summary>
+    private static IEnumerable<Match> OwnTokenEntries(string package, string[] controls)
+    {
+        var map = File.ReadAllText(Path.Combine(RepositoryRoot, package,
+            "GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedThemeConsumption.g.cs"));
+        return Regex.Matches(map,
+                        @"new OwnTokenEntry\(""AtomUI"", ""(?<control>\w+)"", ""(?<token>\w+)"", OwnTokenState\.(?<state>\w+)")
+                    .Where(match => controls.Contains(match.Groups["control"].Value));
     }
 
     /// <summary>

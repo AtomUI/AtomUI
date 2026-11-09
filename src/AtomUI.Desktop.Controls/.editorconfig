@@ -120,11 +120,14 @@ dotnet_diagnostic.ATOMUIGEN045.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
 
 # Data family (first half): ListBox (Token-owner transparent ListBoxItem), ListView (transparent ListViewItem, identity-less
-# group header), TreeView (transparent TreeViewItem, identity-less node header and switcher) and Skeleton (Token-owner
+# group header), TreeView (transparent TreeViewItem, identity-less node header and switcher), Skeleton (Token-owner
 # transparent; SkeletonAvatar, SkeletonButton, SkeletonInput, SkeletonImage, SkeletonNode, SkeletonLine / SkeletonTitle,
-# SkeletonParagraph).
+# SkeletonParagraph), AvatarGroup (Avatar lives in src/AtomUI.Controls/Avatar, gated by its .editorconfig), Timeline
+# (transparent TimelineItem; the TimelineIndicator part lives in src/AtomUI.Controls/Timeline), Statistic (TimerStatistic,
+# StatisticCountUp), Carousel (CarouselNavButton, transparent CarouselPage, identity-less pagination) and the image previewers
+# (ImagePreviewer, ImageGroupPreviewer and the identity-less preview UI).
 # Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
-[{ListBox,ListView,TreeView,Skeleton}/**]
+[{ListBox,ListView,TreeView,Skeleton,Avatar,Timeline,Statistic,Carousel,ImagePreviewer}/**]
 dotnet_diagnostic.ATOMUIGEN041.severity = error
 dotnet_diagnostic.ATOMUIGEN042.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error

@@ -59,10 +59,10 @@ public class ImagePreviewerLoadingVisualTests
         var coverTheme  = ReadRepoFile("src/AtomUI.Desktop.Controls/ImagePreviewer/Themes/ImagePreviewerCoverTheme.axaml");
         var viewerTheme = ReadRepoFile("src/AtomUI.Desktop.Controls/ImagePreviewer/Themes/ImageViewerTheme.axaml");
 
-        coverTheme.ShouldContain("<Setter Property=\"Width\" Value=\"48\" />");
-        coverTheme.ShouldContain("<Setter Property=\"Height\" Value=\"48\" />");
-        viewerTheme.ShouldContain("<Setter Property=\"Width\" Value=\"48\" />");
-        viewerTheme.ShouldContain("<Setter Property=\"Height\" Value=\"48\" />");
+        coverTheme.ShouldContain("<Setter Property=\"Width\" Value=\"{atom:ImagePreviewerTokenResource ErrorIconSize}\" />");
+        coverTheme.ShouldContain("<Setter Property=\"Height\" Value=\"{atom:ImagePreviewerTokenResource ErrorIconSize}\" />");
+        viewerTheme.ShouldContain("<Setter Property=\"Width\" Value=\"{atom:ImagePreviewerTokenResource ErrorIconSize}\" />");
+        viewerTheme.ShouldContain("<Setter Property=\"Height\" Value=\"{atom:ImagePreviewerTokenResource ErrorIconSize}\" />");
     }
 
     [Fact]

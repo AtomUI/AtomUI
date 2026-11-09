@@ -35,3 +35,11 @@ dotnet_diagnostic.ATOMUIGEN047.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Data family parts: Avatar (AbstractAvatar, its theme and Own Tokens) and the Timeline bases and indicator (AbstractTimeline,
+# AbstractTimelineItem, TimelineIndicator and the panels).
+# Keep in step with the Data family section of src/AtomUI.Desktop.Controls/.editorconfig.
+[{Avatar,Timeline}/**]
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

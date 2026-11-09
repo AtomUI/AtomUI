@@ -39,7 +39,9 @@ public class MigratedFamilyAnalyzerGateTests
         // Navigation family
         "NavMenu", "Menu", "TabControl", "Breadcrumb", "Pagination", "Tour",
         // Layout / container family
-        "Card", "Collapse", "Expander", "GroupBox", "Splitter", "SplitView", "Separator", "Space", "Masonry"
+        "Card", "Collapse", "Expander", "GroupBox", "Splitter", "SplitView", "Separator", "Space", "Masonry",
+        // Data family (first half)
+        "ListBox", "ListView", "TreeView", "Skeleton"
     ];
 
     /// <summary>Single theme assets (relative to the package) of migrated families whose directory holds other families.</summary>
@@ -71,7 +73,10 @@ public class MigratedFamilyAnalyzerGateTests
         "TextTourIndicator",
         "Card", "CardActionButton", "CardGridContent", "CardGridItem", "CardMetaContent", "CardTabsContent", "Collapse",
         "CollapseItem", "Expander", "GroupBox", "Splitter", "SplitView", "Separator", "Space", "CompactSpace",
-        "CompactSpaceAddOn", "Masonry"
+        "CompactSpaceAddOn", "Masonry",
+        "ListBox", "ListBoxItem", "ListView", "ListViewItem", "TreeView", "TreeViewItem", "Skeleton", "SkeletonAvatar",
+        "SkeletonButton", "SkeletonElement", "SkeletonImage", "SkeletonInput", "SkeletonLine", "SkeletonNode",
+        "SkeletonParagraph"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -205,6 +210,16 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldNotContain("SplitterHandle");
         IdentityControls.Value.ShouldNotContain("SplitterDragBar");
         IdentityControls.Value.ShouldNotContain("SplitterPanel");
+        // Data family: the list and tree items and the Skeleton placeholders are registered (the items and the Skeleton are
+        // Token-owner transparent); the tree node header and switcher and the list group header are not.
+        IdentityControls.Value.ShouldContain("ListBoxItem");
+        IdentityControls.Value.ShouldContain("ListViewItem");
+        IdentityControls.Value.ShouldContain("TreeViewItem");
+        IdentityControls.Value.ShouldContain("SkeletonParagraph");
+        IdentityControls.Value.ShouldNotContain("TreeViewItemHeader");
+        IdentityControls.Value.ShouldNotContain("NodeSwitcherButton");
+        IdentityControls.Value.ShouldNotContain("GroupHeaderItem");
+        IdentityControls.Value.ShouldNotContain("SkeletonTitle");
     }
 
     [Fact]

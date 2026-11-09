@@ -129,10 +129,9 @@ public partial class LayoutFamilyEffectTests
             var tabControl = Descendant<TabControl>(tabs);
             var gridItem   = Descendant<CardGridItem>(gridCard);
             var action     = Descendant<CardActionButton>(tabsCard);
-            // The card body sits in the registered Skeleton, so the transparent parts inherit the Skeleton as owner (until
-            // Skeleton itself becomes owner transparent); their reads name the Card TokenResource explicitly.
-            ThemeScope.GetTokenOwner(tabs).ShouldNotBe(CardTabsContentTokens.Identity);
-            ThemeScope.GetTokenOwner(gridItem).ShouldNotBe(CardGridItemTokens.Identity);
+            // The card body sits in the Skeleton, which is Token-owner transparent: the transparent parts inherit the Card.
+            ThemeScope.GetTokenOwner(tabs).ShouldBe(CardTokens.Identity);
+            ThemeScope.GetTokenOwner(gridItem).ShouldBe(CardTokens.Identity);
             ThemeScope.GetTokenOwner(tabControl).ShouldBe(TabControlTokens.Identity);
             ThemeScope.GetTokenOwner(action).ShouldBe(CardActionButtonTokens.Identity);
             using var before = capture();

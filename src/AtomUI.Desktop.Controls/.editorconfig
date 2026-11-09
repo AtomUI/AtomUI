@@ -118,3 +118,16 @@ dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Data family (first half): ListBox (Token-owner transparent ListBoxItem), ListView (transparent ListViewItem, identity-less
+# group header), TreeView (transparent TreeViewItem, identity-less node header and switcher) and Skeleton (Token-owner
+# transparent; SkeletonAvatar, SkeletonButton, SkeletonInput, SkeletonImage, SkeletonNode, SkeletonLine / SkeletonTitle,
+# SkeletonParagraph).
+# Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
+[{ListBox,ListView,TreeView,Skeleton}/**]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN042.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

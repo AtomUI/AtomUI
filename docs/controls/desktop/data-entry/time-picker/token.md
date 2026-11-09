@@ -30,8 +30,10 @@ Task 10.9b 裁决：
 
 TimeView 与 TimeViewCell 位于注册控件 ScrollViewer 内；TimeView 把所属 Picker 的 Token owner 转发给各列，TimeViewCell 是 Token owner
 透明的注册控件，因此单元的颜色、圆角与过渡时长跟随所属 Picker（原先借读 `ListView` 的 Own Token，现读所属 Picker 的全局 Token，默认
-值不变）。TimeView 的 Own Token 读 TimePicker 身份：DatePicker 的日期时间弹层借用 `Controls[TimePicker]` 的 `ItemHeight`、`ItemWidth`、
-`HeaderMargin` 等覆盖（待抽象层任务处理）。
+值不变）。TimeView 与 TimeViewCell 的 Own Token 读 TimePicker 身份：RangeTimePicker 与 DatePicker / RangeDatePicker 的日期时间弹层借用
+`Controls[TimePicker]` 的 `ItemHeight`、`ItemWidth`、`ItemMargin`、`HeaderMargin` 等覆盖（待抽象层任务处理）。
+
+输入框在弹层打开时保持 `ColorText`（antd 一致）；指针预览时间（`:choosing`）时，预览写入的输入框文字为 `ColorTextPlaceholder`。
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
@@ -58,7 +60,8 @@ TimePicker 的控件专项模型通过 Theme 消费 Token：
 
 ## 5. 兼容性要求
 
-- 不删除或重命名已生成的 TokenKind、TokenResource key 和 AXAML 引用。
+- 删除或重命名已生成的 TokenKind、TokenResource key 属于 Breaking 变更，必须经裁决并登记到本文档与根 CHANGELOG 的 Breaking 段（如
+  Task 10.9b 删除的 `RangePickerArrowMargin`、`RangePickerIndicatorThickness`）。
 - 不把实例状态、交互状态或 `EffectiveXxx` 状态写成 Token。
 - 不在 Token 中展开颜色、variant 和状态的组合矩阵；组合关系应由 Theme selector 表达。
 - Token 默认值变更必须同步评估 Gallery 示例和截图可观察外观。

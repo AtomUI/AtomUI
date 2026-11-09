@@ -237,6 +237,15 @@ TokenResourceExtension、TokenKey 和 OwnTokenKind 的使用都应保留对应�
   宿主的 Own Token 仍以宿主 TokenResource 读取。只作为某个宿主模板部件使用、没有 Own Token 的注册控件（SliderTrack、
   SliderThumb，以及只属于一个宿主的项容器 StepsItem）同样标记 `[TokenOwnerTransparent]`，继承宿主 owner，主题以宿主
   `XxxTokenResource` 读取。
+- owner 转发（第三种 owner 来源，见 [主题运行时 §13](../../architecture/systems/theming/runtime.md)）：宿主在
+  `OnApplyTemplate` / 部件更换时调用 internal `Primitives/TokenOwnerForwarding.Forward(host, part)`，把部件的
+  `ThemeScope.TokenOwner` 绑定到宿主的 owner，并在模板重新应用或部件更换时释放返回的 `IDisposable`。按以下规则选择：
+  - 纯容器、只属于一个宿主、自身没有 Token：`[TokenOwnerTransparent]`。
+  - 宿主拥有的部件位于共享的、有自己视觉与 Token 的注册控件之后（ArrowDecoratedBox、ScrollViewer）：转发到部件，被越过的
+    注册控件保持自己的身份。
+  - 转发到注册的公开控件（Calendar → DateViewer、Picker → DateViewer）：只在宿主接管该控件全局 Token 时使用；该控件的 Own
+    Token 继续按它自己的身份显式读取，属于借用的 Own Token，须登记在宿主 token.md。
+  - 每一处转发都配 owner 断言（`ThemeScope.GetTokenOwner`）与像素隔离测试。
 - 多个有身份的控件共用一个无身份基础主题（AbstractProgressBarTheme 之于 ProgressBar、CircleProgress 等）且共享 Own Token
   语义时，Own Token 定义放进抽象 `[ControlDesignToken]` 层，由各控件终端继承；基础主题只以 `OwnerTokenResource` 读 Global
   Token，Own Token 由各控件自己的主题以自己的 `XxxTokenResource` 读取，基础主题需要时经内部属性绑定使用。

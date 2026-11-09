@@ -1059,6 +1059,20 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
   （下拉候选项、弹层框体）沿 Popup 的逻辑父级继承宿主的 owner，独立使用时没有 owner、回落为全局值；容器自身的视觉以自己的
   `XxxTokenResource`（`PopupTokenResource`）显式读取。只作宿主模板部件、没有 Own Token 的注册控件（SliderTrack、SliderThumb）
   以及只属于一个宿主的项容器（StepsItem）同样标记，继承宿主 owner。
+- owner 转发：第三种 owner 来源。宿主用 internal 帮助类 `Primitives/TokenOwnerForwarding.Forward(host, part)` 把部件的
+  `ThemeScope.TokenOwner` 绑定到宿主的 owner（LocalValue 绑定，宿主 owner 变化时跟随；返回的 `IDisposable` 在模板重新应用或
+  部件更换时释放并清除转发值，部件回到继承）。部件及其子树里的 `OwnerTokenResource` 与 `TokenTransitions` 因此解析到宿主，
+  中间那个注册控件的 identity 不再截断宿主链。现有转发：InfoPickerInput → 弹层 Presenter（越过 ArrowDecoratedBox）、
+  DatePickerPresenter → 弹层 DateViewer / RangeDateViewer、TimeView → 各列选择面板（越过 ScrollViewer）、Calendar → 模板中的
+  DateViewer。三种来源的选择规则：
+  - `[TokenOwnerTransparent]`：只属于一个宿主、自身没有 Token 的纯容器（Popup、SliderTrack、StepsItem、TimeViewCell）。
+  - 转发：宿主拥有的部件位于一个共享的注册控件之后，而该注册控件有自己的视觉与 Token（ArrowDecoratedBox、ScrollViewer），
+    不能标记为透明；转发只改变部件子树的 owner，注册控件自身的视觉仍按自己的身份读取（弹层外框仍跟随 ArrowDecoratedBox）。
+  - 转发到注册的公开控件（Calendar → DateViewer、Picker → DateViewer）：只在宿主接管该控件全局 Token 时使用（宿主提供该控件的
+    面板 / 单元主题或 Header，产品上属于宿主）。被转发控件的 Own Token 仍以显式 `XxxTokenResource` 按它自己的身份读取，是借用的
+    Own Token，必须在宿主的 token.md 登记。
+  - 每一处转发都要有 owner 断言（`ThemeScope.GetTokenOwner`）与像素隔离测试：`Controls[宿主]` 到达部件，`Controls[被越过的注册控件]`
+    的全局 Token 不再到达部件。
 - 注册控件作为模板部件（IconPresenter、IconButton、ScrollViewer 等）携带自己的 identity，Setter 目标或模板节点
   位于这类部件之上或之内时，`OwnerTokenResource` 解析到该部件。需要跟随宿主的值在无身份层（宿主本身或无身份部件）上
   读取后向下绑定，或显式读取宿主的 `XxxTokenResource`。

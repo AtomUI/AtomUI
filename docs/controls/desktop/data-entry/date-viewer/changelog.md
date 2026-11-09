@@ -7,6 +7,12 @@
 - Theme
   - 默认 `DateViewerCellTheme` 把 `PART_ValueFrame` 标记为 `TemplatedControl.IsTemplateFocusTarget`：该格子主题没有自身焦点视觉，共享焦点描边改为只包围圆角数值框，不再框住整列宽的格子。日期选择器的面板共用此主题。
 
+## 2026-11-09
+
+- Theme
+  - DatePicker / RangeDatePicker 弹层中的 DateViewer / RangeDateViewer 接收 Picker 转发的 Token owner（与 Calendar 相同）：
+    `Controls[DateViewer]` 的全局 Token 不再作用于 Picker 弹层，Own Token 仍按 DateViewer 身份读取（借用）。
+
 ## 2026-11-08
 
 - Theme

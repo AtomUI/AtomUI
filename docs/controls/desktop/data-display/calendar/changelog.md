@@ -13,6 +13,13 @@
 - Tests
   - `CalendarRenderTests` 新增 Compact 月 / 年模式数字垂直居中测试；`FocusOutlineTargetTests` 覆盖两种呈现方式的焦点表现。
 
+## 2026-11-09
+
+- Fixed
+  - `CalendarRangeBarPanel` 不再为每个业务条和标签建立指向面板的绑定（移除后仍被面板持有）；内边距、标签颜色与字号改为在布局时以
+    `SetCurrentValue` 写入，相应面板属性变化时重新应用。
+  - 呈现度量的 Global Token 键改用度量声明的 `OwnerType`（与 Own Token 键一致），不再取运行时类型。
+
 ## 2026-11-08
 
 - Theme

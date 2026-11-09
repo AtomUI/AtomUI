@@ -35,7 +35,10 @@ DateViewerToken 为独立单值与范围面板提供默认资源。关联 [架�
 面板、Header 与日期格是无身份部件，以 `OwnerTokenResource` 读取所属 DateViewer / RangeDateViewer 的有效全局 Token；Own Token 以
 `DateViewerTokenResource` 读取。RangeDateViewer 没有 Own Token，其主题借用 DateViewer 的 Own Token（`PanelBg`、`PanelPadding`、
 `PanelSpacing`、`PanelWidth`、`Cell*` 等），`Controls[DateViewer]` 的这些覆盖也到达 RangeDateViewer（待抽象层任务处理）。
-DatePicker 弹层中的 DateViewer 保持自己的身份；Calendar 中的 DateViewer 接收 Calendar 转发的 Token owner（见 Calendar token.md）。
+Calendar 与 DatePicker / RangeDatePicker 弹层中的 DateViewer / RangeDateViewer 接收宿主转发的 Token owner（见 Calendar 与 DatePicker
+token.md）：面板、Header 与日期格的全局 Token 跟随宿主（`Controls[Calendar]`、`Controls[DatePicker]` 等），`Controls[DateViewer]` 的全局
+Token 只作用于独立使用的 DateViewer；Own Token 仍按 DateViewer 身份读取，`Controls[DateViewer]` 的 Own Token 覆盖也到达这些宿主
+（借用的 Own Token，待抽象层任务处理）。
 
 主色、文字、禁用透明度、圆角与边框直接消费 SharedToken。日期值、PanelKind、活动端点、Hover 值与业务禁用
 结果不进入 Token；本组没有独立 Motion Token。

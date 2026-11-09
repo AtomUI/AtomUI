@@ -25,15 +25,27 @@
 - Fixed
   - DatePicker / RangeDatePicker 的可聚焦外框在键盘聚焦时不再画焦点框（经 `InputControlFrameTheme` 统一设置空 `FocusAdorner`），7e40bc14a 只覆盖了宿主，遗漏了外框。
 
+## 2026-11-09
+
+- Theme
+  - 日期 Presenter 把 Picker 的 Token owner 转发给弹层 DateViewer / RangeDateViewer（与 Calendar 相同）：日期格、面板文字与 Header 的
+    全局 Token 跟随 `Controls[DatePicker]` / `Controls[RangeDatePicker]`（antd `components.DatePicker.colorPrimary` 改变选中日期格），
+    `Controls[DateViewer]` 的全局 Token 不再作用于弹层；DateViewer 的 Own Token 仍按 DateViewer 身份读取（借用）。Header 模板的
+    `ColorBorderSecondary` / `ControlHeight` 改为 `OwnerTokenResource`。
+  - 输入框不再在弹层打开时变为 `ColorTextTertiary`（antd 保持 `colorText`）；指针预览日期或时间（`:choosing`）时，预览写入的输入框
+    文字为 `ColorTextPlaceholder`（antd `-input-placeholder`）。禁用文字仍为 `ColorTextDisabled`。
+  - Picker 不再裁剪输入框的焦点阴影（`ClipToBounds=False`，与 Select / ComboBox 相同）：`InputActiveShadow`、`InputErrorActiveShadow`、
+    `InputWarningActiveShadow` 的焦点环完整显示，范围 Picker 也一样（此前完全不可见）。
+
 ## 2026-11-08
 
 - Theme
   - Picker 把 Token owner 转发给弹层 Presenter（Presenter 位于注册控件 ArrowDecoratedBox 内），Footer、TimeView 与时间单元跟随
-    `Controls[DatePicker]` / `Controls[RangeDatePicker]`；弹层 DateViewer 保持自己的身份。
+    `Controls[DatePicker]` / `Controls[RangeDatePicker]`（弹层 DateViewer 的 owner 见 2026-11-09）。
   - 共享输入基类 InfoPickerInput / RangeInfoPickerInput 主题以 `OwnerTokenResource` 读取具体 Picker 的全局 Token；根 `BorderBrush` 改经
     `HostBorderBrush` 投射到输入框，不再写 LocalValue。
   - 范围箭头尺寸与颜色在 Picker 上读取后模板绑定（箭头是注册 Icon）；激活条厚度变化后重新定位到输入框底边。
-  - 输入文字颜色改由编辑器 Foreground 投射到内部输入框，弹层打开时文字按设计变为 `ColorTextTertiary`（范围 Picker 的未激活端）。
+  - 输入文字颜色改由编辑器 Foreground 投射到内部输入框（禁用文字颜色不变；弹层打开时的文字颜色见 2026-11-09）。
   - 新增 `DatePicker.HeaderBorderThickness`，弹层 Header 去掉固定 33 px 高度（由 `ControlHeight` 最小高度与分隔线得出，尺寸不变）。
 
 ## 2026-11-04

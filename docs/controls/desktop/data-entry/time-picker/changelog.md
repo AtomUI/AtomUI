@@ -20,6 +20,14 @@
 - Fixed
   - TimePicker / RangeTimePicker 的可聚焦外框在键盘聚焦时不再画焦点框（经 `InputControlFrameTheme` 统一设置空 `FocusAdorner`）。
 
+## 2026-11-09
+
+- Theme
+  - 输入框不再在弹层打开时变为 `ColorTextTertiary`（antd 保持 `colorText`）；指针预览时间（`:choosing`）时，预览写入的输入框文字为
+    `ColorTextPlaceholder`。禁用文字仍为 `ColorTextDisabled`。
+  - Picker 不再裁剪输入框的焦点阴影：焦点环完整显示，RangeTimePicker 也一样（此前完全不可见）。
+  - RangeTimePicker 的时间单元借用 `TimePicker.ItemMargin` 等 Own Token（已登记）。
+
 ## 2026-11-08
 
 - Token

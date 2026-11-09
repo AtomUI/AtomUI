@@ -73,9 +73,10 @@ AtomUI 的重要变更记录在此文件中。
   - 可见变化：NavMenu Vertical / Horizontal 子菜单弹层内的菜单项改用 `NavMenu.SubMenuItemBorderRadius`（`BorderRadiusSM`，4px，与 antd 一致），此前为 `ItemBorderRadius`（8px）。
 - Layout / Container 家族
   - 控件级覆盖（`Controls[Card]`、`Controls[CardActionButton]`、`Controls[CardMetaContent]`、`Controls[Collapse]`、`Controls[Expander]`、`Controls[GroupBox]`、`Controls[Splitter]`、`Controls[SplitView]`、`Controls[Separator]`、`Controls[CompactSpaceAddOn]`、`Controls[Masonry]`）作用于该控件的全部主题读取。Card 网格项、Card 页签内容与 Collapse 面板项是 Token owner 透明部件，读取宿主 Token，`Controls[Card]` / `Controls[Collapse]` 作用于它们；卡片操作区、分隔条手柄与拖拽条随宿主。Card 圆角经 `Controls[Card].BorderRadiusLG` 设置。
-  - `Card.ExtraColor` 设置头部 extra 文字色，`Card.ActionsBg` 改为真正填充操作区（此前被模板背景遮蔽）；新增 `Separator.TitleFontWeight`（默认 500，与 antd 一致），并接通 `Separator.HorizontalWithTextGutterMargin`（中号带标题分割线），取代固定字重与普通外边距。
+  - `Card.ExtraColor` 设置头部 extra 文字色，`Card.ActionsBg` 改为真正填充操作区（此前被模板背景遮蔽）；新增 `Separator.TitleFontWeight`（默认 500，与 antd 一致），并接通 `Separator.HorizontalWithTextGutterMargin`（大号带标题分割线，即 antd 未设尺寸的分割线；antd `md` / `sm` 尺寸外边距优先，对应 AtomUI Middle / Small），取代固定字重与普通外边距。
+  - 新增 `Card.RestingShadows`（AtomUI 扩展，antd 无对应 Token）：有边框卡片的静止阴影，供主题预设给卡片设置常驻阴影；默认是与 `CardShadows` 同层数的透明阴影，Borderless 卡片仍为 `BoxShadowsTertiary`，悬停的 hoverable 卡片仍为 `CardShadows`。
   - Token 变化后立即重新布局：Splitter 面板间距（`Splitter.SplitBarSize`，此前每次测量只读取一次）、Separator 标题内间距、边距比例与纵向外间距（`TextPaddingInline`、`OrientationMarginPercent`、`VerticalMarginInline`）。
-  - 可见变化：Collapse 与 Expander 内容区按 antd 绘制 `ContentBg`（`ColorBgContainer`），此前透明；ghost 样式的 Collapse / Expander 头部改为透明，此前为 `ContentBg`；页面背景不是容器色时可见（如暗色主题下的 `ColorBgLayout`）。SplitView 窗格默认带打开/关闭动效（`IsMotionEnabled` 跟随 `EnableMotion`，此前除非显式设置否则关闭）；窗格分隔线改为 `ColorBorder` 填充的 `LineWidth` 线条（渲染仍为 1px）。
+  - 可见变化：Collapse 与 Expander 内容区按 antd 绘制 `ContentBg`（`ColorBgContainer`），此前透明；ghost 样式的 Collapse / Expander 头部改为透明，此前为 `ContentBg`；页面背景不是容器色时可见（如暗色主题下的 `ColorBgLayout`）。SplitView 窗格默认带打开/关闭动效（`IsMotionEnabled` 跟随 `EnableMotion`，此前除非显式设置否则关闭）；窗格分隔线改为 `ColorBorder` 填充的 `LineWidth` 线条（渲染仍为 1px）。大号带标题的水平 Separator 上下外边距改用 `HorizontalWithTextGutterMargin`（16px），此前为 `HorizontalMarginBlockLG`（24px）。
 - Popup
   - Popup 动效（`MotionDurationMid`、`EnableMotion`）跟随 `Controls[Popup]`，弹层宿主（`OverlayPopupHost`、`PopupRoot`）的文本默认值跟随承载 Popup 的控件；Tooltip 与 Popover 缩放原点按框体实际绘制的圆角内缩，不再读取根 `BorderRadius` / `BorderRadiusLG`，控件级圆角覆盖会移动原点（默认圆角下原点不变）。
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。

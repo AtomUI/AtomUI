@@ -33,7 +33,7 @@ Space 的控件专项模型通过 Theme 消费 Token：
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 - `AddonBg`、`AddOnPadding*` 是 Space 的 Own Token，由 `CompactSpaceAddOn` 以 `SpaceTokenResource` 读取，因此经 `Controls[Space]` 设置；
   `CompactSpaceAddOn` 的全局 Token（边框、圆角、字号、高度、状态色、禁用色）以自己的 `CompactSpaceAddOnTokenResource` 读取，经
-  `Controls[CompactSpaceAddOn]` 设置（借用 Own Token 的抽象层由 Task 10.10 处理）。
+  `Controls[CompactSpaceAddOn]` 设置；`Controls[CompactSpaceAddOn]` 不改变 add-on 背景与内间距。
 
 ## 4. 控件家族影响
 

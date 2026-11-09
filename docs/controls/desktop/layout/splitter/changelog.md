@@ -6,7 +6,7 @@
 
 - Changed
   - 主题改读 `SplitterTokenResource`（无 identity 的 handle、drag bar 读取宿主），`Controls[Splitter]` 覆盖生效。
-  - `SplitterPanel` 的面板间距改为挂载期绑定 `SplitBarSize` 到内部属性并 `AffectsMeasure`（借鉴 `b1a6fc37a`），主题或控件级覆盖变化后立即
+  - `SplitterPanel` 的面板间距改为挂载期绑定 `SplitBarSize` 到内部属性并 `AffectsMeasure`，主题或控件级覆盖变化后立即
     重新测量；此前每次测量以资源查找读取一次，变化后不重测。
 
 ## 2026-09-14

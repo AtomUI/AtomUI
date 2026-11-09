@@ -1,4 +1,5 @@
 using AtomUI.Controls.DesignTokens;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -29,6 +30,12 @@ internal sealed class SkeletonToken : AbstractSkeletonToken
     public IBrush? LoadingBackgroundMiddle { get; set; }
     public IBrush? LoadingBackgroundEnd { get; set; }
     
+    /// <summary>
+    /// 图片占位图标颜色（antd 固定 #bfbfbf）
+    /// Fill color of the image placeholder icon (antd fixes #bfbfbf)
+    /// </summary>
+    public Color ImageColor { get; set; }
+
     public double ImageSize { get; set; }
     public double ImageContainerSize {  get; set; }
     public double ImageContainerMaxSize { get; set; }
@@ -40,21 +47,29 @@ internal sealed class SkeletonToken : AbstractSkeletonToken
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
-        // AbstractSkeletonToken assigns the shared defaults unconditionally; an explicit ParagraphLineHeight is restored
-        // so the derived capsule radius below follows it.
-        var paragraphLineHeight = ParagraphLineHeight;
         base.CalculateTokenValues(isDarkMode);
-        if (IsExplicit(SkeletonTokenKind.ParagraphLineHeight))
+        // The gradient colors and the paragraph line height feed the derived values below, so their defaults yield to
+        // explicit overrides; AbstractSkeletonToken leaves these three to the terminal for that reason.
+        if (!IsExplicit(SkeletonTokenKind.GradientFromColor))
         {
-            ParagraphLineHeight = paragraphLineHeight;
+            GradientFromColor = EffectiveGlobalToken.ColorFillContent;
+        }
+        if (!IsExplicit(SkeletonTokenKind.GradientToColor))
+        {
+            GradientToColor = EffectiveGlobalToken.ColorFill;
+        }
+        if (!IsExplicit(SkeletonTokenKind.ParagraphLineHeight))
+        {
+            ParagraphLineHeight = EffectiveGlobalToken.ControlHeight / 2;
         }
 
         ParagraphMarginTop    = new Thickness(0, EffectiveGlobalToken.UniformlyMarginLG + EffectiveGlobalToken.UniformlyMarginXXS, 0, 0);
         AvatarMarginRight = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMargin, 0);
         ParagraphLineRoundCornerRadius = new CornerRadius(ParagraphLineHeight / 2);
-        LoadingBackgroundStart  = CreateLoadingBackground(-3.0, 1.0);
-        LoadingBackgroundMiddle = CreateLoadingBackground(-1.5, 2.5);
-        LoadingBackgroundEnd    = CreateLoadingBackground(0.0, 4.0);
+        LoadingBackgroundStart  = CreateLoadingBackground(-3.0, 1.0, GradientFromColor, GradientToColor);
+        LoadingBackgroundMiddle = CreateLoadingBackground(-1.5, 2.5, GradientFromColor, GradientToColor);
+        LoadingBackgroundEnd    = CreateLoadingBackground(0.0, 4.0, GradientFromColor, GradientToColor);
+        ImageColor              = Color.FromRgb(0xbf, 0xbf, 0xbf);
 
         var imageSizeBase = EffectiveGlobalToken.ControlHeight * 1.5;
         ImageSize             = imageSizeBase;
@@ -63,7 +78,7 @@ internal sealed class SkeletonToken : AbstractSkeletonToken
     }
 
 
-    private LinearGradientBrush CreateLoadingBackground(double startX, double endX)
+    private static LinearGradientBrush CreateLoadingBackground(double startX, double endX, Color fromColor, Color toColor)
     {
         return new LinearGradientBrush
         {
@@ -71,9 +86,9 @@ internal sealed class SkeletonToken : AbstractSkeletonToken
             EndPoint   = new RelativePoint(endX, 0.5, RelativeUnit.Relative),
             GradientStops =
             {
-                new GradientStop { Offset = 0.25, Color = GradientFromColor },
-                new GradientStop { Offset = 0.37, Color = GradientToColor },
-                new GradientStop { Offset = 0.63, Color = GradientFromColor }
+                new GradientStop { Offset = 0.25, Color = fromColor },
+                new GradientStop { Offset = 0.37, Color = toColor },
+                new GradientStop { Offset = 0.63, Color = fromColor }
             }
         };
     }

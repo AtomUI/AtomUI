@@ -69,6 +69,9 @@
                             <atom:IconPresenter
                                 Name="{x:Static atom:TreeViewItemHeaderThemeConstants.IconPresenterPart}"
                                 Icon="{TemplateBinding Icon}"
+                                Width="{TemplateBinding IconSize}"
+                                Height="{TemplateBinding IconSize}"
+                                IconBrush="{TemplateBinding IconBrush}"
                                 IsEnabled="{TemplateBinding IsEnabled}"
                                 IsVisible="{TemplateBinding IconEffectiveVisible}" />
                         </Decorator>

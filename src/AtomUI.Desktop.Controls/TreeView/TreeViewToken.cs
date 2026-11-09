@@ -31,11 +31,15 @@ internal sealed class TreeViewToken : AbstractControlDesignToken
     /// <summary>
     /// 目录树节点选中文字颜色
     /// </summary>
+    [ReservedToken("antd Tree directoryNodeSelectedColor: the selected node text of a DirectoryTree. AtomUI TreeView has no " +
+                   "directory-tree mode; selected nodes use NodeSelectedBg with the normal text colour.")]
     public Color DirectoryNodeSelectedColor { get; set; }
 
     /// <summary>
     /// 目录树节点选中背景色
     /// </summary>
+    [ReservedToken("antd Tree directoryNodeSelectedBg: the selected row background of a DirectoryTree. AtomUI TreeView has " +
+                   "no directory-tree mode; selected nodes use NodeSelectedBg.")]
     public Color DirectoryNodeSelectedBg { get; set; }
 
     /// <summary>

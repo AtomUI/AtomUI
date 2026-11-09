@@ -7,6 +7,7 @@ public class SkeletonTitle : SkeletonLine
     static SkeletonTitle()
     {
         LineWidthProperty.OverrideDefaultValue<SkeletonTitle>(new Dimension(50, DimensionUnitType.Percentage));
+        IsTitleProperty.OverrideDefaultValue<SkeletonTitle>(true);
     }
     
     public SkeletonTitle()

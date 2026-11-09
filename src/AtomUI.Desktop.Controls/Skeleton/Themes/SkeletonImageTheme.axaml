@@ -1,3 +1,5 @@
+<!-- owner: global Tokens are read from the owner because this theme is also the base of SkeletonNode (its own
+     identity). On a SkeletonImage the owner is the SkeletonImage. -->
 <ControlTheme
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -29,7 +31,7 @@
                     <antdicons:ImageFilled Name="Image"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
-                                           FillBrush="#bfbfbf" />
+                                           FillBrush="{atom:SkeletonTokenResource ImageColor}" />
                 </Panel>
             </Panel>
         </ControlTemplate>
@@ -38,7 +40,7 @@
     <Style Selector="^:is(atom|SkeletonImage)">
         <Setter Property="Height" Value="{atom:SkeletonTokenResource ImageContainerSize}" />
         <Setter Property="Width" Value="{atom:SkeletonTokenResource ImageContainerSize}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         <Setter Property="MaxWidth" Value="{atom:SkeletonTokenResource ImageContainerMaxSize}" />
         <Setter Property="MaxHeight" Value="{atom:SkeletonTokenResource ImageContainerMaxSize}" />
     

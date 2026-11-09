@@ -1,5 +1,6 @@
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -7,6 +8,9 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
+// A Token-owner transparent container: the grid content has no Own Tokens and no Token reads of its own, so its grid items
+// (themselves transparent) keep the Card as owner and Controls[Card] reaches their reads and transitions.
+[TokenOwnerTransparent]
 public class CardGridContent : ItemsControl
 {
     #region 公共属性定义

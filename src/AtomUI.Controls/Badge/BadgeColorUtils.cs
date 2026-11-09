@@ -11,6 +11,7 @@ internal static class BadgeColorUtils
 {
     // Preset entries keep a fixed light-theme color for callers that have no theme snapshot (ribbon badge,
     // detached controls); with a snapshot the preset resolves from the palette so it follows dark mode.
+#pragma warning disable ATOMUIGEN044 // Ant Design preset seed colours: reference data for callers without a theme snapshot.
     private static readonly (string Name, Color Color, PresetColorType Type)[] PresetColorEntries =
     {
         (nameof(PresetColorType.Red), Color.FromRgb(0xF5, 0x22, 0x2D), PresetColorType.Red),
@@ -28,6 +29,7 @@ internal static class BadgeColorUtils
         (nameof(PresetColorType.Magenta), Color.FromRgb(0xEB, 0x2F, 0x96), PresetColorType.Magenta),
         (nameof(PresetColorType.Grey), Color.FromRgb(0x66, 0x66, 0x66), PresetColorType.Grey)
     };
+#pragma warning restore ATOMUIGEN044
 
     // "danger" is an alias of "error".
     private static readonly (string Name, SharedTokenKind Token)[] StatusColorEntries =

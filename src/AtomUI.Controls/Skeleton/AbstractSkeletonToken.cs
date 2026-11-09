@@ -45,11 +45,10 @@ internal abstract class AbstractSkeletonToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        GradientFromColor     = EffectiveGlobalToken.ColorFillContent;
-        GradientToColor       = EffectiveGlobalToken.ColorFill;
+        // GradientFromColor, GradientToColor and ParagraphLineHeight feed values derived in the terminal, which
+        // assigns their defaults behind an IsExplicit guard of its own Token kind.
         TitleHeight           = EffectiveGlobalToken.ControlHeight / 2;
         BlockRadius           = EffectiveGlobalToken.BorderRadiusSM;
-        ParagraphLineHeight   = EffectiveGlobalToken.ControlHeight / 2;
         LoadingMotionDuration = TimeSpan.FromSeconds(1.4);
     }
 }

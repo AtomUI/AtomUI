@@ -68,6 +68,9 @@
                                         Classes.semantic-item-icon="True"
                                         Grid.Column="2"
                                         Icon="{TemplateBinding Icon}"
+                                        Width="{TemplateBinding IconSize}"
+                                        Height="{TemplateBinding IconSize}"
+                                        IconBrush="{TemplateBinding IconBrush}"
                                         IsEnabled="{TemplateBinding IsEnabled}"
                                         IsVisible="{TemplateBinding IconEffectiveVisible}" />
                     <Border Name="PART_HeaderContentFrame"
@@ -96,17 +99,20 @@
         <Setter Property="MinHeight" Value="{atom:TreeViewTokenResource HeaderHeight}" />
         <Setter Property="Margin" Value="{atom:TreeViewTokenResource TreeItemMargin}" />
         <Setter Property="CornerRadius"
-                Value="{atom:SharedTokenResource BorderRadius}" />
+                Value="{atom:OwnerTokenResource BorderRadius}" />
+
+        <!-- The node icon size and brush are read on the header (the tree is its owner) and bound down to the registered
+             IconPresenter. The icon takes the node text colour, as in antd. -->
+        <Setter Property="IconSize" Value="{atom:OwnerTokenResource IconSize}" />
+        <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorText}" />
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
             <Setter Property="Margin" Value="{atom:TreeViewTokenResource TreeNodeIconMargin}" />
         </Style>
 
         <Style Selector="^ /template/ Border#PART_HeaderContentFrame">
             <Setter Property="CornerRadius"
-                    Value="{atom:SharedTokenResource BorderRadius}" />
+                    Value="{atom:OwnerTokenResource BorderRadius}" />
             <Setter Property="Margin" Value="{atom:TreeViewTokenResource TreeItemHeaderMargin}" />
             <Setter Property="Padding" Value="{atom:TreeViewTokenResource TreeItemHeaderPadding}" />
             <Setter Property="Cursor" Value="Hand" />
@@ -206,27 +212,24 @@
 
         <Style Selector="^[IsDragging=True]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#Frame">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
             </Style>
         </Style>
 
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
-            <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
-                <Setter Property="Opacity" Value="0.3" />
-            </Style>
-            <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
-                <Setter Property="Opacity" Value="0.3" />
-            </Style>
+            <!-- Disabled nodes draw their icon in the disabled text colour (antd colours the whole node); the switcher dims
+                 its own icon in NodeSwitcherButtonTheme. -->
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
 
             <Style Selector="^[NodeHoverMode=Default], ^[NodeHoverMode=Block]">
                 <Style Selector="^[IsSelectable=True]">
                     <Style Selector="^[IsSelected=True]">
                         <Setter Property="ContentFrameBackground"
-                                Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                                Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
                     </Style>
                 </Style>
             </Style>
@@ -235,7 +238,7 @@
                 <Style Selector="^[IsSelectable=True]">
                     <Style Selector="^[IsSelected=True]">
                         <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                                Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
                     </Style>
                 </Style>
             </Style>

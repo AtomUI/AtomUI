@@ -261,7 +261,7 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         }
         // The subscription does not fire for the first context, and a re-attached badge reuses its adorner: resolve
         // against the context of this attach (the theme may have changed, or the badge moved to another provider).
-        ConfigureDotColor();
+        ConfigureDotColor(DotColor);
 
         UpdateAncestorVisibilityTracking();
         UpdateThemeSubscription();

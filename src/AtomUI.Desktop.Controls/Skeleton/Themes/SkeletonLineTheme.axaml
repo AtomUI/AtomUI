@@ -11,6 +11,11 @@
         </ControlTheme.BasedOn>
         
         <Setter Property="Height" Value="{atom:SkeletonTokenResource ParagraphLineHeight}"/>
+
+        <!-- SkeletonTitle shares this theme (StyleKey SkeletonLine); a title line is TitleHeight tall (antd titleHeight). -->
+        <Style Selector="^[IsTitle=True]">
+            <Setter Property="Height" Value="{atom:SkeletonTokenResource TitleHeight}"/>
+        </Style>
         
         <Style Selector="^[IsRound=True]">
             <Setter Property="CornerRadius" Value="{atom:SkeletonTokenResource ParagraphLineRoundCornerRadius}"/>

@@ -16,11 +16,15 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls;
 
 using AvaloniaTreeItem = Avalonia.Controls.TreeViewItem;
 
+// Token-owner transparent item container: the item, header and switcher themes read the hosting tree's Tokens (TreeView,
+// or the host of a derived tree such as TreeSelect), so Controls[TreeView] also reaches the nodes and their transitions.
+[TokenOwnerTransparent]
 [PseudoClasses(TreeViewPseudoClass.NodeToggleTypeCheckBox, TreeViewPseudoClass.NodeToggleTypeRadio, TreeViewPseudoClass.KeyboardActive)]
 public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
 {

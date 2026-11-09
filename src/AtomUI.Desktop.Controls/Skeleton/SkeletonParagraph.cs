@@ -8,7 +8,10 @@ public class SkeletonParagraph : AbstractSkeletonParagraph
 {
     protected override Control CreateLine()
     {
-        return new SkeletonLine();
+        var line = new SkeletonLine();
+        // The lines draw the paragraph's background (the theme's GradientFromColor unless the paragraph is restyled).
+        line[!BackgroundProperty] = this[!BackgroundProperty];
+        return line;
     }
 
     protected override void ApplyLineWidth(Control line, Dimension? width)
@@ -32,9 +35,8 @@ public class SkeletonParagraph : AbstractSkeletonParagraph
     {
         if (line is SkeletonLine skeletonLine)
         {
-            skeletonLine.IsActive   = IsActive;
-            skeletonLine.IsRound    = IsRound;
-            skeletonLine.Background = Background;
+            skeletonLine.IsActive = IsActive;
+            skeletonLine.IsRound  = IsRound;
         }
     }
 }

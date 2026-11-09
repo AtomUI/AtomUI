@@ -9,9 +9,13 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
+using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls;
 
+// Token-owner transparent item container: the item theme reads the hosting list's Tokens (ListView, or the host of a derived
+// list such as the Select candidate list), so Controls[ListView] also reaches the items and their transitions.
+[TokenOwnerTransparent]
 public class ListViewItem : ContentControl,
                             IListItemVirtualizingContextAware,
                             ISelectable, ITransitionInitializationOwner
@@ -85,6 +89,17 @@ public class ListViewItem : ContentControl,
         AvaloniaProperty.RegisterDirect<ListViewItem, bool>(nameof(IsSplitLineVisible),
             o => o.IsSplitLineVisible,
             (o, v) => o.IsSplitLineVisible = v);
+
+    // The default split line under the item is SplitLineWidth thick (the theme reads the host's LineWidth); a BorderThickness
+    // set by the application or a semantic style replaces it as a whole.
+    internal static readonly StyledProperty<double> SplitLineWidthProperty =
+        AvaloniaProperty.Register<ListViewItem, double>(nameof(SplitLineWidth));
+
+    internal double SplitLineWidth
+    {
+        get => GetValue(SplitLineWidthProperty);
+        set => SetValue(SplitLineWidthProperty, value);
+    }
 
     internal static readonly DirectProperty<ListViewItem, bool> IsSplitLineEffectiveVisibleProperty =
         AvaloniaProperty.RegisterDirect<ListViewItem, bool>(nameof(IsSplitLineEffectiveVisible),
@@ -241,6 +256,7 @@ public class ListViewItem : ContentControl,
         }
 
         if (change.Property == BorderThicknessProperty ||
+            change.Property == SplitLineWidthProperty ||
             change.Property == IsGroupItemProperty ||
             change.Property == IsSplitLineVisibleProperty)
         {
@@ -372,9 +388,10 @@ public class ListViewItem : ContentControl,
 
     private void ConfigureEffectiveBorderThickness()
     {
-        var showSplitLine = IsSplitLineVisible && !IsGroupItem && BorderThickness.Bottom > 0;
+        var thickness     = IsSet(BorderThicknessProperty) ? BorderThickness : new Thickness(0, 0, 0, SplitLineWidth);
+        var showSplitLine = IsSplitLineVisible && !IsGroupItem && thickness.Bottom > 0;
         IsSplitLineEffectiveVisible = showSplitLine;
-        EffectiveBorderThickness = showSplitLine ? BorderThickness : new Thickness(0);
+        EffectiveBorderThickness = showSplitLine ? thickness : new Thickness(0);
     }
 
 

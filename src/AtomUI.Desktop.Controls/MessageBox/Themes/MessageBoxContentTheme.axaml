@@ -4,7 +4,7 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <!-- MessageBoxContent has no Token identity and only one host: it reads the MessageBox TokenResource explicitly (the
-         dialog content sits inside the surface's Skeleton, a registered control, so an owner read would resolve to it). -->
+         dialog content sits inside the surface's Skeleton, which is Token-owner transparent, so it inherits the MessageBox). -->
     <ControlTheme x:Key="{x:Type atom:MessageBoxContent}" TargetType="atom:MessageBoxContent">
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:MessageBoxContent">

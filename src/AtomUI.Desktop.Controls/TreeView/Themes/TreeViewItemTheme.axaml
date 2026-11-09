@@ -1,3 +1,5 @@
+<!-- owner: global Tokens are read from the owner. TreeViewItem is Token-owner transparent, so its owner is the hosting
+     TreeView; the theme is also the base of TransferTreeViewItem and the identity-less TreeSelect tree items. -->
 <ControlTheme TargetType="atom:TreeViewItem"
               xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -58,7 +60,7 @@
 
     <Style Selector="^:is(atom|TreeViewItem)">
         <Setter Property="Focusable" Value="False" /> 
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
     </Style>
 </ControlTheme>

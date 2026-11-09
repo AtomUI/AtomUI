@@ -146,6 +146,26 @@ internal class TreeViewItemHeader : ContentControl
     
     #region 内部属性定义
 
+    // The node icon size and brush are resolved on the header (owner reads of the hosting tree) and bound down to the
+    // registered IconPresenter, whose own identity would otherwise answer the owner reads.
+    internal static readonly StyledProperty<double> IconSizeProperty =
+        AvaloniaProperty.Register<TreeViewItemHeader, double>(nameof(IconSize), double.NaN);
+
+    internal static readonly StyledProperty<IBrush?> IconBrushProperty =
+        AvaloniaProperty.Register<TreeViewItemHeader, IBrush?>(nameof(IconBrush));
+
+    internal double IconSize
+    {
+        get => GetValue(IconSizeProperty);
+        set => SetValue(IconSizeProperty, value);
+    }
+
+    internal IBrush? IconBrush
+    {
+        get => GetValue(IconBrushProperty);
+        set => SetValue(IconBrushProperty, value);
+    }
+
     internal static readonly StyledProperty<bool> IsHoverProperty =
         AvaloniaProperty.Register<TreeViewItemHeader, bool>(nameof(IsHover), false);
     

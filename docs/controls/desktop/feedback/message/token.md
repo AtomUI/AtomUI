@@ -16,12 +16,20 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 卡片高度、图标尺寸。 | `CardHeight`、`MessageIconSize` |
+| 尺寸与密度 | 图标尺寸。 | `MessageIconSize` |
 | 间距与布局 | 卡片 padding、图标间距、宿主边距。 | `ContentPadding`、`MessageIconMargin`、`MessageTopMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ContentBg` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+### 主题读取与裁决（Task 10.6）
+
+- MessageCard 主题的全局 Token 一律经 `MessageCardTokenResource` 读取（状态色、圆角、阴影、文本与选区色、动效）。
+- WindowMessageManager 的折叠背板模拟被压住的卡片，背景、圆角、阴影（`BoxShadowsTertiary`）读 `MessageCardTokenResource`，
+  与卡片一起跟随 `Controls[MessageCard]`；背板高度 16 是布局常量；管理器自身的 `EnableMotion` 读
+  `WindowMessageManagerTokenResource`；宿主安全区外边距以 `SetCurrentValue` 写入。
+- `CardHeight`（删除）：从未赋值也从未被消费，不对应 antd Message 组件 Token；卡片高度由内容与 `ContentPadding` 决定。
 
 ## 3. 控件专项模型中的 Token 使用
 

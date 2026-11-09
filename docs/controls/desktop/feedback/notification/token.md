@@ -17,11 +17,21 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `NotificationIconSize`、`NotificationCloseButtonSize`、`NotificationProgressHeight`、`NotificationWidth` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `NotificationPadding`、`NotificationIconMargin`、`NotificationSectionSpacing`、`NotificationTitlePadding`、`NotificationActionsMargin`、`NotificationCloseButtonPadding`、`NotificationCloseButtonMargin`、`NotificationProgressMargin`、`NotificationTopMargin`、`NotificationBottomMargin` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `NotificationPadding`、`NotificationIconMargin`、`NotificationSectionSpacing`、`NotificationTitlePadding`、`NotificationActionsMargin`、`NotificationCloseButtonMargin`、`NotificationProgressMargin`、`NotificationTopMargin`、`NotificationBottomMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `NotificationBg`、`NotificationProgressBg`、`NotificationProgressTrackBg` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+### 主题读取与裁决（Task 10.6）
+
+- NotificationCard 主题的全局 Token 一律经 `NotificationCardTokenResource` 读取，包括关闭按钮（注册控件 IconButton，保留
+  自身 identity）的圆角、图标尺寸与默认 / 悬停 / 按下颜色；WindowNotificationManager 的 `EnableMotion` 读
+  `WindowNotificationManagerTokenResource`，宿主安全区外边距以 `SetCurrentValue` 写入。
+- 描述文本的行高 `FontHeight` 现在生效：字符串内容转换出的 SelectableTextBlock 不再写入本地 `LineHeight = NaN`，继承描述
+  presenter 的行高。
+- `NotificationCloseButtonPadding`（删除）：关闭按钮宽高固定为 `NotificationCloseButtonSize`、图标固定为 `IconSizeSM` 且居中，
+  对称内边距没有任何可见效果（生效测试证实），antd Notification 也没有对应 Token。
 
 ## 3. 控件专项模型中的 Token 使用
 

@@ -2,6 +2,13 @@
 
 本文档记录 Notification 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Theme / Token
+  - NotificationCard reads its globals (including the close button colours, radius and icon size) through `NotificationCardTokenResource`; `WindowNotificationManager` reads its own `EnableMotion`; the safe-area margin is applied with `SetCurrentValue`.
+  - The description now applies the `FontHeight` line height (the string-to-text converter no longer writes a local NaN `LineHeight`).
+  - `NotificationCloseButtonPadding` is removed: the fixed-size close button with a fixed, centred icon cannot show it.
+
 ## 2026-10-27
 
 - Motion

@@ -2,6 +2,12 @@
 
 本文档记录 PopupConfirm 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Theme / Token
+  - PopupConfirm reads its motion Tokens through `PopupConfirmTokenResource`; the confirm container reads the PopupConfirm TokenResource (title colour and `FontWeightStrong`, icon size, status colours).
+  - `PopupConfirm.PopupMinWidth` and `PopupMinHeight` are removed (copied from the menu popup Tokens and never consumed).
+
 ## 2026-11-04
 
 - Changed

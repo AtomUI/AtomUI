@@ -16,12 +16,22 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `PopupMinWidth`、`PopupMinHeight` |
+| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | 按源码 Token 语义维护 |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `IconMargin`、`ContentContainerMargin`、`ButtonContainerMargin`、`TitleMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 按源码 Token 语义维护 |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `PopupMinWidth`、`PopupMinHeight` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+### 主题读取与裁决（Task 10.6）
+
+- PopupConfirm 主题的动效时长与开关读 `PopupConfirmTokenResource`；确认框容器 `PopupConfirmContainer` 没有 Token 身份且只属于
+  PopupConfirm，以 `PopupConfirmTokenResource` 显式读取标题色、标题字重（`FontWeightStrong`，此前为字面量 SemiBold，值相同）、
+  图标尺寸与状态色。确认按钮是注册控件 Button，保留自身 identity。
+- 弹层阴影仍读 FlyoutHost Own Token（`FlyoutHostTokenResource PopupRootShadow/OverlayHostShadow`）、锚点间距读 Popup Own Token
+  （`PopupTokenResource MarginToAnchor`），与其他弹层控件一致。
+- `PopupMinWidth`、`PopupMinHeight`（删除）：注释与取值抄自菜单弹层，从未被消费；antd Popconfirm 只有 `zIndexPopup` 组件 Token，
+  接通会让确认框变成 240 × 80 的最小尺寸，属于无依据的外观变化。
 
 ## 3. 控件专项模型中的 Token 使用
 

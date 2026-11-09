@@ -15,6 +15,7 @@ AtomUI 的重要变更记录在此文件中。
   - 进度控件：受保护成员 `AbstractProgressBar.StrokeThickness` 更名为 `EffectiveStrokeThickness`（计算值），子类需改用新名称。
   - Theme Tokens：CheckableTag 拥有自己的 Own Token `TagFontSize`、`TagLineHeight`、`TagIconSize`、`TagPadding`、`TagTextPaddingInline`，请经 `Controls[CheckableTag]` 设置；`Controls[Tag]` 不再改变 CheckableTag。
   - Theme Tokens：删除没有消费者的 `Alert.MessageWithDescriptionMargin`；标题与描述的间距由 `Alert.DescriptionLabelMargin` 表达。
+  - Theme Tokens：删除从未被消费的 `MessageCard.CardHeight`、`PopupConfirm.PopupMinWidth`、`PopupConfirm.PopupMinHeight`，以及固定尺寸关闭按钮无法体现的 `NotificationCard.NotificationCloseButtonPadding`；请从主题配置中移除。
 - Button 家族
   - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
   - 修复 HyperLinkButton 的仅图标、加载与危险视觉，BackTop 徽标，以及由分组或 Host 提供的 FloatButtonGroup 阴影。
@@ -51,6 +52,9 @@ AtomUI 的重要变更记录在此文件中。
   - 控件级覆盖（`Controls[Alert]`、`Controls[ToolTip]`）现在作用于该控件全部主题读取；`Alert.CloseIconSize` 设置 Alert 关闭图标尺寸（默认 `FontSizeIcon`，与此前同为 12px），`ToolTip.MotionDuration` 设置 Tooltip 缩放动效时长（默认 `MotionDurationFast`，不变）。
   - ToolTip 预设色（`ToolTip.PresetColor`）取主题预设色板，挂载时与主题变化时重新计算；预设色与自定义色由主题投射，应用样式与本地 `Background` 可以覆盖，未设置颜色重新打开的 Tooltip 回到 `ToolTipBackground`，不再沿用上一次的颜色。
   - 可见变化：暗色主题下带预设色的 Tooltip 使用暗色色板（暗色算法的 antd `color-6`），不再沿用亮色。
+  - 控件级覆盖（`Controls[Dialog]`、`Controls[MessageBox]`、`Controls[DialogButtonBox]`、`Controls[MessageCard]`、`Controls[WindowMessageManager]`、`Controls[NotificationCard]`、`Controls[WindowNotificationManager]`、`Controls[PopupConfirm]`）现在作用于该控件全部主题读取；对话框 surface（标题栏、标题栏按钮、遮罩、presenter 动效）跟随承载它的 Dialog 或 MessageBox，消息折叠背板跟随 `Controls[MessageCard]`，嵌套按钮保留 Button / IconButton 身份。
+  - 最大化的 Overlay 对话框经主题去掉圆角（恢复后回到 `BorderRadiusLG`），消息与通知管理器的窗口安全区外边距不再以本地值写入。
+  - 可见变化：通知描述文本应用 `FontHeight` 行高（默认 22px），不再使用字体自然行高，多行描述略高。
 - Popup
   - Popup 动效（`MotionDurationMid`、`EnableMotion`）跟随 `Controls[Popup]`，弹层宿主（`OverlayPopupHost`、`PopupRoot`）的文本默认值跟随承载 Popup 的控件；Tooltip 与 Popover 缩放原点按框体实际绘制的圆角内缩，不再读取根 `BorderRadius` / `BorderRadiusLG`，控件级圆角覆盖会移动原点（默认圆角下原点不变）。
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。

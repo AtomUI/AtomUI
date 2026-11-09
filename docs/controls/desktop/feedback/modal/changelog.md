@@ -14,6 +14,13 @@
   - Overlay Dialog 激活不再在 pointer 隧道阶段强制聚焦 Surface，保留时间、日期及范围选择器等内容弹层的点击与确认语义。
   - 调整多个 Dialog 的叠放顺序时移动现有 presenter，不再移除并重新挂载，避免内容失焦和 Popup owner 提前 detach。
 
+## 2026-11-08
+
+- Theme / Token
+  - Dialog, MessageBox and DialogButtonBox read their globals through their own TokenResource; the identity-less surface parts read the hosting Dialog / MessageBox through `OwnerTokenResource`, so `Controls[Dialog]` and `Controls[MessageBox]` reach their own surface only; MessageBoxContent reads `MessageBoxTokenResource`.
+  - A maximized overlay surface drops its corner radius through a theme state setter instead of a local value; the mask margin is reset with `SetCurrentValue`.
+  - The 12 resize-handle sizes of `OverlayDialogResizer` are marked as layout constants.
+
 ## 2026-10-29
 
 - Performance

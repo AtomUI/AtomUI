@@ -36,6 +36,8 @@ internal sealed class PaginationToken : AbstractControlDesignToken
     /// 页码链接背景色
     /// Background color of Pagination item link
     /// </summary>
+    [ReservedToken("antd Pagination itemLinkBg: the background of the bordered pagination's previous / next buttons. " +
+                   "AtomUI Pagination has no bordered variant, so no element draws it.")]
     public Color ItemLinkBg { get; set; }
     
     /// <summary>
@@ -60,6 +62,8 @@ internal sealed class PaginationToken : AbstractControlDesignToken
     /// 输入框轮廓偏移量
     /// Outline offset of input
     /// </summary>
+    [ReservedToken("antd Pagination inputOutlineOffset (internal): the x offset of the simple pager input's focus " +
+                   "box-shadow. The simple pager input here is a LineEdit drawn with the Input family's focus shadow.")]
     public Thickness InputOutlineOffset { get; set; }
     
     /// <summary>
@@ -115,7 +119,7 @@ internal sealed class PaginationToken : AbstractControlDesignToken
         
         PaginationQuickJumperInputWidth     = EffectiveGlobalToken.ControlHeightLG * 1.25;
         PaginationMiniQuickJumperInputWidth = EffectiveGlobalToken.ControlHeightLG * 1.1;
-        PaginationItemPaddingInline         = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS * 1.5);
+        PaginationItemPaddingInline         = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS * 1.5, 0);
     }
     
 }

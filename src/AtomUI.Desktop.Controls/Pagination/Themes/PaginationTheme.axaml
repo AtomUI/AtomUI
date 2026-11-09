@@ -38,7 +38,7 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}"/>
+        <Setter Property="IsMotionEnabled" Value="{atom:PaginationTokenResource EnableMotion}"/>
         <Setter Property="PageText" Value="{atom:PaginationLangResource PageText}"/>
         <Setter Property="TotalInfoTemplate" Value="{atom:PaginationLangResource TotalInfoFormat}"/>
         <Setter Property="VerticalAlignment" Value="Top"/>

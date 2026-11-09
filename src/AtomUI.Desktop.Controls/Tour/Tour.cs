@@ -51,6 +51,17 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
     public static readonly StyledProperty<bool> IsDisabledInteractionProperty =
         AvaloniaProperty.Register<Tour, bool>(nameof(IsDisabledInteraction));
     
+    // The popup's Token gap to the target (TourToken.PopupMarginToAnchor), projected by the theme so it follows theme and
+    // Control-level changes; the open popup's margin is the gap offset of the step placement plus this value.
+    internal static readonly StyledProperty<double> PopupMarginToAnchorProperty =
+        AvaloniaProperty.Register<Tour, double>(nameof(PopupMarginToAnchor));
+
+    internal double PopupMarginToAnchor
+    {
+        get => GetValue(PopupMarginToAnchorProperty);
+        set => SetValue(PopupMarginToAnchorProperty, value);
+    }
+
     public static readonly StyledProperty<double> GapOffsetXProperty =
         AvaloniaProperty.Register<Tour, double>(nameof(GapOffsetX), 6);
     
@@ -421,7 +432,8 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
                 stepOption.StyleType        ??= StyleType;
                 stepOption.Placement        ??= Placement;
                 stepOption.IsScrollIntoView ??= IsScrollIntoView;
-                stepOption.MaskColor        ??= MaskColor;
+                // MaskColor is not copied: its default is the Tour's theme value (ColorBgMask), resolved when a step shows
+                // so theme and Control-level changes keep reaching the mask.
             }
         }
     }
@@ -466,10 +478,19 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
             }
         }
         
-        if (change.Property == GapOffsetXProperty ||
-            change.Property == GapOffsetYProperty)
+        // The popup margin belongs to the open popup only: ShowTour configures it for the current step, so a closed or
+        // detached Tour does not reconfigure it when its gap inputs or the Token gap change (borrowed 9c01e0cc7).
+        if (_isReallyOpened &&
+            (change.Property == GapOffsetXProperty ||
+             change.Property == GapOffsetYProperty ||
+             change.Property == PopupMarginToAnchorProperty))
         {
             ConfigurePopupOffset(GetCurrentPlacement());
+        }
+        if (change.Property == MaskColorProperty && _layer != null && _isReallyOpened &&
+            CurrentIndex >= 0 && CurrentIndex < Steps.Count && Steps[CurrentIndex] is ITourStepOption maskStep)
+        {
+            CurrentMaskColor = maskStep.MaskColor ?? MaskColor;
         }
         if (change.Property == IsMotionEnabledProperty && _layer != null && _isReallyOpened)
         {
@@ -739,7 +760,7 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
 
     private void HandleCurrentStepChanged()
     {
-        if (CurrentIndex == -1 || _popup == null || !IsOpen)
+        if (CurrentIndex == -1 || _popup == null || !IsOpen || !this.IsAttachedToVisualTree())
         {
             return;
         }
@@ -893,7 +914,6 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
     private void AdjustForGap(TourPlacementMode placement)
     {
         Debug.Assert(_popup != null);
-        var defaultMarginToAnchor  = (TokenResourceUtils.FindTokenResource(this, TourTokenKind.PopupMarginToAnchor) as double?) ?? 0.0d;
         var value = placement switch
         {
             TourPlacementMode.Left => GapOffsetX,
@@ -910,7 +930,7 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
             TourPlacementMode.BottomRight => GapOffsetY,
             _ => 0.0d
         };
-        _popup.MarginToAnchor = value + defaultMarginToAnchor;
+        _popup.SetCurrentValue(Popup.MarginToAnchorProperty, value + PopupMarginToAnchor);
     }
     
      protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

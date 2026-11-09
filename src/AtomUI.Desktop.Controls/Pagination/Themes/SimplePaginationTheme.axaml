@@ -49,7 +49,7 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:SimplePaginationTokenResource EnableMotion}" />
 
         <Style Selector="^[Align=Start]">
             <Setter Property="HorizontalAlignment" Value="Left" />
@@ -80,9 +80,16 @@
             </Style>
         </Style>
 
+        <!-- The simple pager input (antd itemInputBg / quickJumperInputWidth, paginationMiniQuickJumperInputWidth when small). -->
         <Style Selector="^ /template/ atom|LineEdit#PART_QuickJumper">
+            <Setter Property="Background"
+                    Value="{atom:PaginationTokenResource ItemInputBg}" />
             <Setter Property="MinWidth"
                     Value="{atom:PaginationTokenResource PaginationQuickJumperInputWidth}" />
+        </Style>
+        <Style Selector="^[SizeType=Small] /template/ atom|LineEdit#PART_QuickJumper">
+            <Setter Property="MinWidth"
+                    Value="{atom:PaginationTokenResource PaginationMiniQuickJumperInputWidth}" />
         </Style>
 
     </ControlTheme>

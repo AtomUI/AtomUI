@@ -10,7 +10,7 @@
                         CornerRadius="{TemplateBinding CornerRadius}"
                         Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}">
-                    <StackPanel Orientation="Horizontal" Spacing="{atom:SharedTokenResource SpacingXXS}">
+                    <StackPanel Orientation="Horizontal" Spacing="{atom:BreadcrumbItemTokenResource SpacingXXS}">
                         <atom:IconPresenter Name="IconPresenter"
                                              Icon="{TemplateBinding Icon}"
                                              IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -23,7 +23,7 @@
         </Setter>
         
         <Setter Property="Padding" Value="{atom:BreadcrumbTokenResource BreadcrumbItemContentPadding}"/>
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}"/>
+        <Setter Property="CornerRadius" Value="{atom:BreadcrumbItemTokenResource BorderRadius}"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{atom:BreadcrumbTokenResource ItemColor}"/>
         
@@ -58,9 +58,9 @@
             <Setter Property="IconBrush"
                     Value="{atom:BreadcrumbTokenResource ItemColor}" />
             <Setter Property="Width"
-                    Value="{atom:SharedTokenResource IconSizeSM}" />
+                    Value="{atom:BreadcrumbItemTokenResource IconSizeSM}" />
             <Setter Property="Height"
-                    Value="{atom:SharedTokenResource IconSizeSM}" />
+                    Value="{atom:BreadcrumbItemTokenResource IconSizeSM}" />
         </Style>
         
 

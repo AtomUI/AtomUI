@@ -29,5 +29,9 @@
         <Style Selector="^ /template/ atom|LineEdit#PART_PageLineEdit">
             <Setter Property="Width" Value="{atom:PaginationTokenResource PaginationQuickJumperInputWidth}"/>
         </Style>
+
+        <Style Selector="^[SizeType=Small] /template/ atom|LineEdit#PART_PageLineEdit">
+            <Setter Property="Width" Value="{atom:PaginationTokenResource PaginationMiniQuickJumperInputWidth}"/>
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

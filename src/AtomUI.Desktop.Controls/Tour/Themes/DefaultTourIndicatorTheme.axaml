@@ -5,11 +5,11 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:DefaultTourIndicator}" TargetType="atom:DefaultTourIndicator">
 
-        <Setter Property="ItemSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+        <Setter Property="ItemSpacing" Value="{atom:DefaultTourIndicatorTokenResource SpacingXXS}" />
         <Setter Property="IndicatorSize" Value="{atom:TourTokenResource IndicatorSize}" />
-        <Setter Property="IndicatorColor" Value="{atom:SharedTokenResource ColorFill}" />
+        <Setter Property="IndicatorColor" Value="{atom:DefaultTourIndicatorTokenResource ColorFill}" />
         <Setter Property="IndicatorActiveColor"
-                Value="{atom:SharedTokenResource ColorPrimary}" />
+                Value="{atom:DefaultTourIndicatorTokenResource ColorPrimary}" />
 
         <Setter Property="Template">
             <ControlTemplate>
@@ -40,7 +40,7 @@
             <Setter Property="IndicatorColor"
                     Value="{atom:TourTokenResource PrimaryPrevBtnBg}" />
             <Setter Property="IndicatorActiveColor"
-                    Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+                    Value="{atom:DefaultTourIndicatorTokenResource ColorTextLightSolid}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -2,6 +2,7 @@ using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Controls;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
@@ -40,6 +41,35 @@ internal class PaginationNavItem : ContentControl, ISelectable
     
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<PaginationNavItem, PathIcon?>(nameof(Icon));
+
+    // The icon size and the jump / ellipsis icon brushes: read from the host's effective Tokens by this item's theme (the
+    // icon presenters are registered parts that would resolve owner reads to themselves) and bound by the presenters.
+    internal static readonly StyledProperty<double> ItemIconSizeProperty =
+        AvaloniaProperty.Register<PaginationNavItem, double>(nameof(ItemIconSize));
+
+    internal static readonly StyledProperty<IBrush?> JumpIconBrushProperty =
+        AvaloniaProperty.Register<PaginationNavItem, IBrush?>(nameof(JumpIconBrush));
+
+    internal static readonly StyledProperty<IBrush?> EllipsisIconBrushProperty =
+        AvaloniaProperty.Register<PaginationNavItem, IBrush?>(nameof(EllipsisIconBrush));
+
+    internal double ItemIconSize
+    {
+        get => GetValue(ItemIconSizeProperty);
+        set => SetValue(ItemIconSizeProperty, value);
+    }
+
+    internal IBrush? JumpIconBrush
+    {
+        get => GetValue(JumpIconBrushProperty);
+        set => SetValue(JumpIconBrushProperty, value);
+    }
+
+    internal IBrush? EllipsisIconBrush
+    {
+        get => GetValue(EllipsisIconBrushProperty);
+        set => SetValue(EllipsisIconBrushProperty, value);
+    }
 
     public static readonly StyledProperty<PathIcon?> JumpIconProperty =
         AvaloniaProperty.Register<PaginationNavItem, PathIcon?>(nameof(JumpIcon));

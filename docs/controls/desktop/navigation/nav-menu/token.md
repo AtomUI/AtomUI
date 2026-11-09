@@ -59,6 +59,8 @@ active bar 颜色（悬浮、展开、选中三态）；`HorizontalItemHoverColo
 - `HorizontalItemSelectedBg`
 
 用于 header hover、active、selected 以及 inline submenu 背景块。`SubMenuItemBg` 只应用于 inline child frame，不应被用作 root menu 背景。
+`HorizontalItemBorderRadius`（默认 0，与 antd 一致）是 light 与 dark horizontal 顶层项的圆角；light 顶层项背景在悬浮、展开、选中、键盘激活和
+按住时都透明，圆角只在 `HorizontalItemHoverBg` / `HorizontalItemSelectedBg` 或应用样式给出背景时可见。
 `HorizontalItemHoverBg` 是 light horizontal 顶层项悬浮与展开背景，`HorizontalItemSelectedBg` 是其选中背景（默认均透明，对应 antd）。
 header 背景与前景过渡以 `atom:TokenTransitions` 声明 `MotionDurationSlow` / `MotionDurationMid`，随 NavMenu 的有效值（含
 `Controls[NavMenu]`）变化；`ItemBackgroundMotionEasing` 从未被消费且 antd 没有对应组件 Token（背景过渡用全局 `motionEaseInOut`），已删除。
@@ -155,8 +157,8 @@ header 背景与前景过渡以 `atom:TokenTransitions` 声明 `MotionDurationSl
 - `DangerItemActiveBg`
 - `DangerItemSelectedBg`
 
-Dark token 服务 NavMenu dark style，不应由 light token 自动反推。Danger token 由危险菜单项消费：`NavMenuItem.IsDanger`、
-`NavMenuNode.IsDanger`（`INavMenuNode.IsDanger` 默认 `false`）标记危险项，文字使用 `DangerItemColor`，悬浮文字
+Dark token 服务 NavMenu dark style，不应由 light token 自动反推。Danger token 由危险菜单项消费：
+`NavMenuNode.IsDanger` / `INavMenuNode.IsDanger`（默认 `false`）标记危险项，经内部容器投影到公开的 `BaseNavMenuItemHeader.IsDanger`，文字使用 `DangerItemColor`，悬浮文字
 `DangerItemHoverColor`，按下背景 `DangerItemActiveBg`，选中文字与背景 `DangerItemSelectedColor` / `DangerItemSelectedBg`；dark style 使用对应的
 `DarkDanger*` Token。与 antd 一致，`DangerItemActiveBg`、`DangerItemSelectedBg` 默认 `ColorErrorBg`。
 

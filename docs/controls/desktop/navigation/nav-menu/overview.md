@@ -82,6 +82,7 @@ NavMenu 的公共 API 分为控件 API、节点 API 和事件 API。
 | `ItemKey` | `EntityKey?` | 路径和业务标识。 |
 | `Icon` | `PathIcon?` | 菜单项图标。 |
 | `IsEnabled` | `bool` | 节点可用状态，默认 `true`。 |
+| `IsDanger` | `bool` | 节点是否为危险（破坏性）操作，默认 `false`。`NavMenuNode.IsDanger` 为可通知属性；`INavMenuNode.IsDanger` 是默认返回 `false` 的接口成员，既有自定义节点无需实现，需要时自行声明同名属性并通过 `INotifyPropertyChanged` 通知。 |
 | `Command` | `ICommand?` | 节点被有效触发时由当前 `NavMenuItem` 容器执行的业务命令。节点只承载命令配置，不负责订阅或执行。 |
 | `CommandParameter` | `object?` | 传递给 `Command` 的参数。默认 `null`，不隐式回退到 `ItemKey` 或节点自身。 |
 | `INavMenuNode.Entries` | `IEnumerable<INavMenuEntry>` | 容器读取子 entry 的协变契约。接口默认返回既有 `Children`，自定义节点无需新增实现。 |
@@ -277,7 +278,16 @@ Theme 映射规则：
 - 根默认 ItemsPanel 通过 `TemplateBinding` 消费公开 `ItemSpacing`；submenu、popup 和 group 默认 ItemsPanel 消费由根控件投影的内部 effective spacing。该路径不使用进入子控件模板的 selector，也不建立逐容器 binding。自定义 ItemsPanel 是否消费 spacing 由自定义面板负责。
 - `IsItemBackgroundEnabled=true` 时，inline child frame 使用 `SubMenuItemBg` / `DarkSubMenuItemBg`，并应用背景块专用外距。
 - `IsItemBackgroundEnabled=false` 时，inline child frame 背景为 `Transparent`，不应用背景块专用外距；header 的文字色、hover、selected 和 selected path 仍然生效。
-- Horizontal 顶层 light style 通过 `PART_ActiveIndicator` 表达选中；dark style 可以使用 selected background。
+- Horizontal 顶层 light style 通过 `PART_ActiveIndicator`（颜色 `HorizontalItemSelectedColor`）表达悬浮、展开与选中；悬浮/展开背景
+  `HorizontalItemHoverBg`、选中背景 `HorizontalItemSelectedBg`（默认均透明），选中文字 `HorizontalItemSelectedColor`；顶层项圆角在 light
+  与 dark style 下都使用 `HorizontalItemBorderRadius`（默认 `0`，与 antd 一致）；light 顶层项背景在所有状态下默认透明（包括键盘激活与指针按住），
+  圆角只在主题或应用样式给出背景时可见。dark style 可以使用 selected background。
+- Vertical / Horizontal 子菜单弹层中的菜单项使用 `SubMenuItemBorderRadius`（默认 `BorderRadiusSM`）；根层与 inline 菜单项使用
+  `ItemBorderRadius`。
+- 危险项（节点 `IsDanger=true`，经容器投影到公开的 `BaseNavMenuItemHeader.IsDanger`）：文字 `DangerItemColor`，悬浮文字
+  `DangerItemHoverColor`（选中项除外），指针按住背景 `DangerItemActiveBg`（选中项除外），选中文字与背景
+  `DangerItemSelectedColor` / `DangerItemSelectedBg`；dark style 使用对应的 `DarkDanger*` Token。危险映射位于普通状态之后、dark
+  映射之前，dark 危险映射位于 dark 普通状态之后；禁用视觉仍优先。与 antd 一致，危险语义只作用于菜单项，子菜单标题不消费。
 
 Header 背景与 NavMenuItem / inline submenu 背景块是不同职责，不应混为一个 selector 控制。
 

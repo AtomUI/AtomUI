@@ -43,9 +43,13 @@ Menu 的公共契约由 public/protected 类型成员、Avalonia 属性、事件
 | --- | --- | --- |
 | 内容与数据 | `Items`、`MenuItem`、`MenuItemData`、`MenuSeparatorData` | 定义菜单项集合、数据驱动菜单项和分割项入口。 |
 | 选择与集合 | `DisplayPageSize`、`IsScrollEnabled` | 维护弹层显示页数上限、滚动开关、选择、展开和集合状态。 |
-| 交互与状态 | `IsMotionEnabled`、`ShouldUseOverlayPopup` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
+| 交互与状态 | `IsMotionEnabled`、`ShouldUseOverlayPopup`、`MenuItem.IsDanger`、`MenuItemData.IsDanger` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
 | 视觉与布局 | `LineWidth`、`Orientation`、`OverlayHostShadow`、`PopupRootShadow`、`SizeType` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
 | 子菜单/独立浮层动效 | MenuItem 的 `OpenMotion` / `CloseMotion`，ContextMenu / MenuFlyout 的既有同名入口 | 配置所在项或根浮层；Menu 本体不增加整树配置。 |
+
+危险项：`MenuItem.IsDanger`（StyledProperty，默认 `false`）标记破坏性操作；数据驱动时 `MenuItemData.IsDanger`（`init`）经
+`IMenuItemData.IsDanger`（默认返回 `false` 的接口成员，既有实现无需改动）在 Menu、MenuItem、MenuItemGroup、ContextMenu 与
+MenuFlyoutPresenter 准备容器时投影到未本地设置该属性的 `MenuItem`。
 
 稳定事件包括 `IsCheckStateChanged`。事件触发顺序属于兼容契约，不能因内部状态重排而改变。
 
@@ -147,6 +151,9 @@ Menu 使用 `MenuToken` 作为控件 Token scope。Token 只表达组件视觉�
 - 弹层滚动开关通过内部 `MenuPopupScrollHost` 复用模板分支；禁用滚动时不能保留隐藏或禁用状态的 `ScrollViewer`。
 - 不把 hover、pressed、selected、expanded、loading、filter、popup open 等运行时状态写入 Token。
 - Browser 或平台特化主题必须保持同一 API 的语义一致。
+- 危险项（`IsDanger=true`）：文字 `DangerItemColor`，悬浮文字 `DangerItemHoverColor`；悬浮背景仍为 `ItemHoverBg`，禁用视觉优先。
+- 菜单栏顶层项：默认文字/背景 `TopLevelItemColor` / `TopLevelItemBg`，悬浮 `TopLevelItemHover*`，展开 `TopLevelItemSelected*`；图标与文字间距
+  `ItemIconMarginInlineEnd`（顶层项与弹层项相同）；分组标题内间距 `GroupTitlePadding`。
 
 ## 6. 控件家族或集成关系
 

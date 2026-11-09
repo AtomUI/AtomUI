@@ -18,10 +18,10 @@
   - 主题全部改读 `NavMenuTokenResource`：`Controls[NavMenu]` 的覆盖到达菜单项、分组标题、分隔线、horizontal 底线和子菜单弹层；
     `HorizontalNavMenuItemHeader`、`InlineNavMenuItemHeader` 标记为 Token owner 透明，header 过渡时长随 NavMenu。inline 折叠宽度动画
     时长改读 NavMenu 有效的 `MotionDurationMid`（删除 `Application.Current` 查询与 200 ms 回落），局部 `ThemeConfigProvider` 生效。
-  - 新增 `NavMenuItem.IsDanger`、`NavMenuNode.IsDanger`（`INavMenuNode.IsDanger` 默认 `false`）：危险项消费 `Danger*` / `DarkDanger*`
-    Token；`DangerItemActiveBg`、`DangerItemSelectedBg` 默认改为 `ColorErrorBg`（与 antd 一致，此前从未渲染）。
+  - 新增公开的 `NavMenuNode.IsDanger`、`INavMenuNode.IsDanger`（默认 `false`）与 `BaseNavMenuItemHeader.IsDanger` /
+    `IsDangerProperty`（经内部容器投影）：危险项消费 `Danger*` / `DarkDanger*` Token；`DangerItemActiveBg`、`DangerItemSelectedBg` 默认改为 `ColorErrorBg`（与 antd 一致，此前从未渲染）。
   - light horizontal 顶层项消费 `HorizontalItemSelectedColor`（选中文字与 active bar）、`HorizontalItemSelectedBg`、`HorizontalItemHoverBg`、
-    `HorizontalItemBorderRadius`（dark 选中背景圆角，默认 0 不变）；`HorizontalLineHeight` 改作用于实际存在的文字呈现器；
+    `HorizontalItemBorderRadius`（light 与 dark 顶层项圆角，默认 0；light 顶层项背景在各状态下都透明，默认渲染不变）；`HorizontalLineHeight` 改作用于实际存在的文字呈现器；
     `TopLevelItemPopupMarginToAnchor`（默认 `UniformlyMarginXXS`）作为顶层弹层间距。
   - 可见变化：Vertical / Horizontal 子菜单弹层内的菜单项圆角改用 `SubMenuItemBorderRadius`（`BorderRadiusSM`，4px，antd 一致），此前为
     `ItemBorderRadius`（8px）。

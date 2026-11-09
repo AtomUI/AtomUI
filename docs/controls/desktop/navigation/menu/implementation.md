@@ -215,7 +215,8 @@ Menu 的交互事件应从输入源收敛到控件级语义事件：
 菜单项图标容器必须保持以下不变量：
 
 - `IconPresenter` 自身不测量图标，尺寸由主题 Setter 提供。菜单栏一级项与弹层菜单项都必须声明 `Width` / `Height`
-  （取 `MenuTokenResource ItemIconSize`）与 `Margin`（取 `MenuTokenResource ItemMargin`）；只声明 `Margin` 会让图标
+  （取 `MenuTokenResource ItemIconSize`）与行内结束侧间距（`MenuTokenResource ItemIconMarginInlineEnd` 经内部
+  `MenuItem.IconMarginInlineEnd` 与 `MenuItemTheme.InlineEndMarginConverter` 投影为 `Margin`）；只声明间距会让图标
   量到 `0x0`：图标不可见但间距仍在，菜单项文字出现幽灵右移。
 - 图标为空时靠 `IsVisible` 折叠整个 `IconPresenter`，不得用固定占位宽度对齐无图标项。
 - 菜单栏顶层项按自身内容排布，图标列不参与跨项 `SharedSizeGroup`；否则无图标项会让出图标列宽。
@@ -224,6 +225,10 @@ Menu 的交互事件应从输入源收敛到控件级语义事件：
   `ItemsPresenter`，其子项位于该作用域之外，图标列不会被同层有图标的兄弟撑开。因此弹层内同一层菜单项若在
   有/无图标之间混用，分组行的图标列会量到 `0`、文字左移，与直接子项文字左边缘不齐。示例与演示内容应保持
   同一层菜单项的图标使用一致；该行为是既有布局契约，不在本次语义改造范围内。
+
+危险项投影：`IMenuItemData.IsDanger`（接口默认 `false`）在五个容器准备入口（Menu、MenuItem、MenuItemGroup、ContextMenu、
+MenuFlyoutPresenter）以 `SetCurrentValue` 写入未本地设置的 `MenuItem.IsDanger`，与 Icon、IsEnabled、InputGesture 同一规则；主题以
+`[IsDanger=True]` 选择器映射 `DangerItemColor` / `DangerItemHoverColor`。
 
 子菜单延迟算法必须保持以下不变量：
 

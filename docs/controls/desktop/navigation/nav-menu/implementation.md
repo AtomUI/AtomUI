@@ -224,11 +224,16 @@ Keyboard navigation：
 
 `NeedsContainerOverride`、`CreateContainerForItemOverride`、`PrepareContainerForItemOverride` 和 `ClearContainerForItemOverride` 由三个 entry owner 委托给统一 coordinator。节点、分组、分隔线必须使用三个稳定且不同的 recycle key；own-container 项使用 `null`，不能把不同生成容器放入 Avalonia 的同一回收池。
 
-节点数据到容器的绑定必须包括 Header、HeaderTemplate、Icon、ItemKey、IsEnabled、Command、CommandParameter、Entries、owner menu、local entry owner、semantic parent、level、mode、dark style、background mode 和 motion 状态。根菜单直接拥有的节点从 NavMenu 接收 effective inline-collapsed 状态；根层透明分组拥有的节点从该分组继续接收同一状态，任意数量的根层透明嵌套分组都不得截断状态；节点或非根分组中的后代固定使用非折叠 popup/inline 子级视觉。容器解绑时必须释放资源宿主关系、relay binding、语义 owner 和命令事件订阅。
+节点数据到容器的绑定必须包括 Header、HeaderTemplate、Icon、ItemKey、IsEnabled、IsDanger、Command、CommandParameter、Entries、owner menu、local entry owner、semantic parent、level、mode、dark style、background mode 和 motion 状态。根菜单直接拥有的节点从 NavMenu 接收 effective inline-collapsed 状态；根层透明分组拥有的节点从该分组继续接收同一状态，任意数量的根层透明嵌套分组都不得截断状态；节点或非根分组中的后代固定使用非折叠 popup/inline 子级视觉。容器解绑时必须释放资源宿主关系、relay binding、语义 owner 和命令事件订阅。
 
 `NavMenuNode` 作为非 Visual Avalonia binding target 时使用 `[GenerateScopedResourceHost]`。container binder 先把 generated `AttachResourceHost(owner)` token 加入当前 `NavMenuItem` 的 `CompositeDisposable`，再通过 AvaloniaProperty overload 建立节点属性投影。自定义 `INavMenuNode` 使用强类型 getter overload；实现了 `INotifyPropertyChanged` 的节点保持运行期更新，普通节点取得初始值，未声明命令的既有实现使用接口的 `null` 默认值。所有 `BindUtils.RelayBind` 返回值必须加入同一个 disposable；禁止丢弃返回值或把最后一次容器永久挂回节点。
 
 owner menu、parent item 或 parent group 到生成容器的运行期状态关系无法由固定 ControlTemplate 的 `TemplateBinding` 表达，因此 coordinator 使用 `BindUtils.RelayBind`。这些 binding 的 owner 分别是 node、group、divider 容器中的 `CompositeDisposable`；clear 路径必须先 dispose 订阅，再对 target property 执行 `ClearValue` 和默认状态复位，避免 DirectProperty binding 被丢弃后继续持有已回收容器。
+
+危险项状态按同一路径投影：`NavMenuNode.IsDanger` 经 AvaloniaProperty overload、自定义 `INavMenuNode.IsDanger`（接口默认 `false`）经
+强类型 getter overload 中继到内部容器的 `NavMenuItem.IsDanger`；三种 mode 的模板再以 `TemplateBinding` 投影到公开的
+`BaseNavMenuItemHeader.IsDanger`（`NavMenuItem.IsDangerProperty` 的 AddOwner）。`BaseNavMenuItemHeaderTheme` 以 `[IsDanger=True]`
+属性选择器映射 `Danger*` / `DarkDanger*` Token，不在代码中写入颜色。
 
 ### 7.2 Entry 集合与父级投影
 

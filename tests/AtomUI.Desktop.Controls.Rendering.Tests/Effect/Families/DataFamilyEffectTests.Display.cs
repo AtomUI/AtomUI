@@ -250,8 +250,14 @@ public partial class DataFamilyEffectTests
     public void TimerStatistic_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
-        Run(static () => new TimerStatistic { Header = "Countdown", Width = 240, Value = DateTime.Now.AddDays(2) }, null,
-            TimerStatisticTokens.Identity, token);
+        // A fixed remaining-time text: the live countdown would change pixels between the captures on its own.
+        Run(static () => new TimerStatistic
+            {
+                Header    = "Countdown",
+                Width     = 240,
+                Value     = DateTime.Now.AddDays(2),
+                Formatter = static _ => "48:00:00"
+            }, null, TimerStatisticTokens.Identity, token);
     }
 
     public static IEnumerable<object[]> StatisticCountUpRows() => MapRows("StatisticCountUp");

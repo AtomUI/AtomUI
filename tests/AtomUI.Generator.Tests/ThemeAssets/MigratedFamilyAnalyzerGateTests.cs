@@ -248,12 +248,14 @@ public class MigratedFamilyAnalyzerGateTests
     [Fact]
     public void Family_Own_Tokens_Are_Active_Or_Reserved()
     {
-        var familyEntries = OwnTokenEntries(DesktopControls, s_familyControls)
-                            .Concat(OwnTokenEntries(Controls, s_controlsFamilyControls))
-                            .ToArray();
-        // Guards the parse itself: a format change of the generated map must not make the gate pass vacuously.
-        familyEntries.Count(static match => match.Groups["state"].Value == "Active").ShouldBeGreaterThan(0,
-            "No Active Own Token entries of the family were found in the generated consumption map.");
+        var desktopEntries  = OwnTokenEntries(DesktopControls, s_familyControls).ToArray();
+        var controlsEntries = OwnTokenEntries(Controls, s_controlsFamilyControls).ToArray();
+        // Guards the parse itself, per package: a format change of either generated map must not make the gate pass vacuously.
+        desktopEntries.Count(static match => match.Groups["state"].Value == "Active").ShouldBeGreaterThan(0,
+            "No Active Own Token entries of the family were found in the AtomUI.Desktop.Controls consumption map.");
+        controlsEntries.Count(static match => match.Groups["state"].Value == "Active").ShouldBeGreaterThan(0,
+            "No Active Own Token entries of the family were found in the AtomUI.Controls consumption map.");
+        var familyEntries = desktopEntries.Concat(controlsEntries).ToArray();
 
         var unreferenced = familyEntries
                            .Where(static match => match.Groups["state"].Value == "Unreferenced")

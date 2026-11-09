@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Media;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
@@ -246,9 +247,8 @@ public partial class DataFamilyEffectTests
                 dialog.MinWidth.ShouldBe(800);
                 dialog.MinHeight.ShouldBe(300);
                 ((ISolidColorBrush)dialog.Background!).Color.ShouldBe(Color.Parse("#ff102030"));
-                // Light mode darkens ColorBorderSecondary by 1% for the title bar.
-                ((ISolidColorBrush)dialog.TitleBarFrameBackground!).Color.ShouldNotBe(
-                    ControlTokenAccessor.Capture(previewer).GetEffectiveGlobal<Color>(SharedTokenKind.ColorBorderSecondary));
+                // Light mode derives the title bar from ColorBorderSecondary darkened by 1%.
+                ((ISolidColorBrush)dialog.TitleBarFrameBackground!).Color.ShouldBe(Color.Parse("#ff405060").Darken(1));
                 var titleIcon = dialog.GetVisualDescendants().OfType<IconPresenter>()
                                       .First(static presenter => presenter.Name == "PART_IconPresenter");
                 titleIcon.Width.ShouldBe(20);

@@ -19,11 +19,6 @@ internal sealed class MessageCardToken : AbstractControlDesignToken
     public Thickness ContentPadding { get; set; }
 
     /// <summary>
-    /// 提示框高度
-    /// </summary>
-    public double CardHeight { get; set; }
-
-    /// <summary>
     /// 提醒框图标尺寸
     /// </summary>
     public double MessageIconSize { get; set; }

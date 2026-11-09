@@ -13,16 +13,6 @@ internal sealed class PopupConfirmToken : AbstractControlDesignToken
     }
 
     /// <summary>
-    /// 菜单 Popup 最小宽度
-    /// </summary>
-    public double PopupMinWidth { get; set; }
-
-    /// <summary>
-    /// 菜单 Popup 最小高度
-    /// </summary>
-    public double PopupMinHeight { get; set; }
-
-    /// <summary>
     /// 按钮的外边距
     /// </summary>
     public double ButtonSpacing { get; set; }
@@ -50,8 +40,6 @@ internal sealed class PopupConfirmToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        PopupMinWidth          = 240;
-        PopupMinHeight         = 80;
         ButtonSpacing          = EffectiveGlobalToken.UniformlyMarginXS;
         IconMargin             = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS / 2, EffectiveGlobalToken.UniformlyMarginXS, 0);
         ContentContainerMargin = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXS);

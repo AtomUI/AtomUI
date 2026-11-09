@@ -36,21 +36,23 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:WindowMessageManagerTokenResource EnableMotion}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
 
         <Style Selector="^ /template/ Panel.message-backplates">
             <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
+        <!-- Backplates echo the stacked message cards: they read the MessageCard Tokens like the cards they stand for. -->
         <Style Selector="^ /template/ Border.message-backplate">
+            <!-- layout -->
             <Setter Property="Height" Value="16" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Top" />
             <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="Background" Value="{atom:MessageCardTokenResource ContentBg}" />
-            <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsTertiary}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+            <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource BoxShadowsTertiary}" />
+            <Setter Property="CornerRadius" Value="{atom:MessageCardTokenResource BorderRadiusLG}" />
             <Setter Property="Opacity" Value="1" />
             <Setter Property="RenderTransform" Value="translate(0px, 0px)" />
             <Setter Property="Transitions">

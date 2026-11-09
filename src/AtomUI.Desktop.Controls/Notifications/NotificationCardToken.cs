@@ -39,11 +39,6 @@ internal sealed class NotificationCardToken : AbstractControlDesignToken
     public double NotificationCloseButtonSize { get; set; }
     
     /// <summary>
-    /// 提醒框关闭按钮内间距
-    /// </summary>
-    public Thickness NotificationCloseButtonPadding { get; set; }
-
-    /// <summary>
     /// 内容区域标题与描述之间的间距
     /// </summary>
     public double NotificationSectionSpacing { get; set; }
@@ -152,7 +147,6 @@ internal sealed class NotificationCardToken : AbstractControlDesignToken
         NotificationTopMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginLG, EffectiveGlobalToken.UniformlyMarginLG, EffectiveGlobalToken.UniformlyMarginLG, 0);
         NotificationBottomMargin =
             new Thickness(EffectiveGlobalToken.UniformlyMarginLG, 0, EffectiveGlobalToken.UniformlyMarginLG, EffectiveGlobalToken.UniformlyMarginLG);
-        NotificationCloseButtonPadding = EffectiveGlobalToken.PaddingXXS;
     }
     
 }

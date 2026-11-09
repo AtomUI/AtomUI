@@ -53,15 +53,20 @@ internal class StringToSelectableTextBlockConverter : IValueConverter
     {
         if (value is string str)
         {
-            return new SelectableTextBlock
+            var textBlock = new SelectableTextBlock
             {
                 Text                = str,
                 VerticalAlignment   = VerticalAlignment,
                 HorizontalAlignment = HorizontalAlignment,
                 Height              = Height,
-                Width               = Width,
-                LineHeight          = LineHeight,
+                Width               = Width
             };
+            // LineHeight is inherited from the hosting presenter; a local NaN would block the presenter's (theme) value.
+            if (!double.IsNaN(LineHeight))
+            {
+                textBlock.LineHeight = LineHeight;
+            }
+            return textBlock;
         }
         return value;
     }

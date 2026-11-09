@@ -57,6 +57,7 @@
                                             Classes.semantic-sub-menu-item-icon="True"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
+                                            Margin="{TemplateBinding IconMarginInlineEnd, Converter={x:Static atom:MenuItemTheme.InlineEndMarginConverter}}"
                                             Icon="{TemplateBinding Icon}"
                                             IconBrush="{TemplateBinding Foreground}"
                                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
@@ -167,8 +168,8 @@
             <Setter Property="Foreground" Value="{atom:MenuTokenResource KeyGestureColor}" />
         </Style>
 
+        <Setter Property="IconMarginInlineEnd" Value="{atom:MenuTokenResource ItemIconMarginInlineEnd}" />
         <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
-            <Setter Property="Margin" Value="{atom:MenuTokenResource ItemMargin}" />
             <Setter Property="Width" Value="{atom:MenuTokenResource ItemIconSize}" />
             <Setter Property="Height" Value="{atom:MenuTokenResource ItemIconSize}" />
         </Style>
@@ -186,10 +187,18 @@
             <Setter Property="Background" Value="{atom:MenuTokenResource ItemHoverBg}" />
         </Style>
 
+        <!-- Danger items (antd dropdown / menu item-danger). -->
+        <Style Selector="^[IsDanger=True]">
+            <Setter Property="Foreground" Value="{atom:MenuTokenResource DangerItemColor}" />
+            <Style Selector="^:pointerover">
+                <Setter Property="Foreground" Value="{atom:MenuTokenResource DangerItemHoverColor}" />
+            </Style>
+        </Style>
+
         <Style Selector="^ /template/ atom|Icon#MenuIndicatorIcon">
             <Setter Property="IsVisible" Value="True" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeXS}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeXS}" />
+            <Setter Property="Width" Value="{atom:MenuItemTokenResource IconSizeXS}" />
+            <Setter Property="Height" Value="{atom:MenuItemTokenResource IconSizeXS}" />
         </Style>
 
         <Style Selector="^:empty">

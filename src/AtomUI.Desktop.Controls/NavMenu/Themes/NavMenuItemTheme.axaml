@@ -28,7 +28,7 @@
                                                            HeaderTemplate="{TemplateBinding HeaderTemplate}"
                                                            HasSubMenu="{TemplateBinding HasSubMenu}"
                                                            IsSubMenuOpen="{TemplateBinding IsSubMenuOpen}"
-                                                           IsDarkStyle="{TemplateBinding IsDarkStyle}"
+                                                           IsDanger="{TemplateBinding IsDanger}"                                                           IsDarkStyle="{TemplateBinding IsDarkStyle}"
                                                            IsItemBackgroundEnabled="{TemplateBinding IsItemBackgroundEnabled}"
                                                            IsEnabled="{TemplateBinding IsEnabled}"
                                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -84,7 +84,7 @@
                                                          HeaderTemplate="{TemplateBinding HeaderTemplate}"
                                                          HasSubMenu="{TemplateBinding HasSubMenu}"
                                                          IsSubMenuOpen="{TemplateBinding IsSubMenuOpen}"
-                                                         IsDarkStyle="{TemplateBinding IsDarkStyle}"
+                                                         IsDanger="{TemplateBinding IsDanger}"                                                         IsDarkStyle="{TemplateBinding IsDarkStyle}"
                                                          IsItemBackgroundEnabled="{TemplateBinding IsItemBackgroundEnabled}"
                                                          IsEnabled="{TemplateBinding IsEnabled}"
                                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -144,7 +144,7 @@
                             Level="{TemplateBinding Level}"
                             HasSubMenu="{TemplateBinding HasSubMenu}"
                             IsSubMenuOpen="{TemplateBinding IsSubMenuOpen}"
-                            IsDarkStyle="{TemplateBinding IsDarkStyle}"
+                            IsDanger="{TemplateBinding IsDanger}"                            IsDarkStyle="{TemplateBinding IsDarkStyle}"
                             IsItemBackgroundEnabled="{TemplateBinding IsItemBackgroundEnabled}"
                             IsEnabled="{TemplateBinding IsEnabled}"
                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -211,23 +211,28 @@
         <Style Selector="^[Mode=Horizontal],^[Mode=Vertical]">
             <Style Selector="^ /template/ atom|Popup#PART_Popup">
                 <Setter Property="RequestedPlacement" Value="RightEdgeAlignedTop" />
-                <Setter Property="HorizontalOffset" Value="{atom:SharedTokenResource SpacingXS}" />
-                <Setter Property="VerticalOffset" Value="{atom:SharedTokenResource SpacingXXS}" />
+                <Setter Property="HorizontalOffset" Value="{atom:NavMenuTokenResource SpacingXS}" />
+                <Setter Property="VerticalOffset" Value="{atom:NavMenuTokenResource SpacingXXS}" />
+            </Style>
+            <!-- Items inside a submenu popup use the smaller sub-menu item radius. -->
+            <Style Selector="^:not(:toplevel) /template/ :is(atom|BaseNavMenuItemHeader)#PART_Header">
+                <Setter Property="CornerRadius" Value="{atom:NavMenuTokenResource SubMenuItemBorderRadius}" />
             </Style>
         </Style>
 
         <Style Selector="^[Mode=Horizontal]:toplevel">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:NavMenuTokenResource FontSize}" />
             <Style Selector="^ /template/ atom|Popup#PART_Popup">
                 <Setter Property="RequestedPlacement" Value="Bottom" />
-                <Setter Property="VerticalOffset" Value="{atom:SharedTokenResource SpacingXXS}" />
+                <Setter Property="MarginToAnchor" Value="{atom:NavMenuTokenResource TopLevelItemPopupMarginToAnchor}" />
+                <Setter Property="VerticalOffset" Value="0" />
                 <Setter Property="HorizontalOffset" Value="0" />
             </Style>
         </Style>
 
         <Style Selector="^[Mode=Inline]">
             <Setter Property="OpenCloseMotionDuration"
-                    Value="{atom:SharedTokenResource MotionDurationMid}" />
+                    Value="{atom:NavMenuTokenResource MotionDurationMid}" />
 
             <Setter Property="Focusable" Value="False" />
             <Style Selector="^[IsItemBackgroundEnabled=True]">

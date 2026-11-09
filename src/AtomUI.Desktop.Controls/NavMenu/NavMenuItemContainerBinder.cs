@@ -27,6 +27,7 @@ internal static class NavMenuItemContainerBinder
             BindProperty(navMenuNode, NavMenuNode.HeaderProperty, NavMenuItem.NodeHeaderProperty);
             BindProperty(navMenuNode, NavMenuNode.TooltipProperty, NavMenuItem.TooltipProperty);
             BindProperty(navMenuNode, NavMenuNode.IsTooltipEnabledProperty, NavMenuItem.IsTooltipEnabledProperty);
+            BindProperty(navMenuNode, NavMenuNode.IsDangerProperty, NavMenuItem.IsDangerProperty);
         }
         else
         {
@@ -35,6 +36,7 @@ internal static class NavMenuItemContainerBinder
             BindValue(nameof(INavMenuNode.Header), node => node.Header, NavMenuItem.NodeHeaderProperty);
             BindValue(nameof(INavMenuNode.Tooltip), node => node.Tooltip, NavMenuItem.TooltipProperty);
             BindValue(nameof(INavMenuNode.IsTooltipEnabled), node => node.IsTooltipEnabled, NavMenuItem.IsTooltipEnabledProperty);
+            BindValue(nameof(INavMenuNode.IsDanger), node => node.IsDanger, NavMenuItem.IsDangerProperty);
         }
 
         BindValue(nameof(INavMenuNode.Icon), node => node.Icon, NavMenuItem.IconProperty);

@@ -49,8 +49,7 @@
                     <DockPanel LastChildFill="True">
                         <atom:PixelAlignedBorder Name="PART_HorizontalLine"
                                                  DockPanel.Dock="Bottom"
-                                                 BorderThickness="0,0,0,1"
-                                                 Height="{atom:SharedTokenResource LineWidth}" />
+                                                 Height="{atom:NavMenuTokenResource LineWidth}" />
                         <atom:PixelAlignedBorder HorizontalAlignment="Stretch"
                                                  Padding="{TemplateBinding Padding}"
                                                  Background="{TemplateBinding Background}"
@@ -88,8 +87,8 @@
         <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
         <Setter Property="InlineCollapsedWidth" Value="{atom:NavMenuTokenResource InlineCollapsedWidth}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="BorderBrush" Value="{atom:NavMenuTokenResource ColorBorderSecondary}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:NavMenuTokenResource EnableMotion}" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="EntryItemSpacing"
@@ -158,8 +157,9 @@
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="VerticalAlignment" Value="Top" />
             <Setter Property="Height" Value="{atom:NavMenuTokenResource MenuHorizontalHeight}" />
+            <!-- The bottom divider is a LineWidth-high strip filled with the divider colour. -->
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HorizontalLine">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+                <Setter Property="Background" Value="{atom:NavMenuTokenResource ColorBorderSecondary}" />
             </Style>
             
             <Style Selector="^[IsDarkStyle=True]">

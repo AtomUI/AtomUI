@@ -12,8 +12,8 @@
                                       Classes.semantic-sub-menu-item-title="True"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Center"
-                                      Foreground="{atom:SharedTokenResource ColorTextDescription}"
-                                      Padding="16,8"
+                                      Foreground="{atom:MenuItemGroupTokenResource ColorTextDescription}"
+                                      Padding="{atom:MenuTokenResource GroupTitlePadding}"
                                       Content="{TemplateBinding Header}"
                                       ContentTemplate="{TemplateBinding HeaderTemplate}" />
                     <ItemsPresenter Name="PART_ItemsPresenter"

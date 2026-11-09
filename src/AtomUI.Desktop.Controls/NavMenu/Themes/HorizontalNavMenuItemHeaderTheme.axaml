@@ -67,7 +67,7 @@
         </Setter>
 
         <Style Selector="^:is(atom|HorizontalNavMenuItemHeader)">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:NavMenuTokenResource FontSize}" />
 
             <Style Selector="^[IsTopLevel=False]">
                 <Setter Property="Height" Value="{atom:NavMenuTokenResource ItemHeight}" />
@@ -80,22 +80,29 @@
                 <Setter Property="ActiveBarHeight"
                         Value="{atom:NavMenuTokenResource ActiveBarHeight}" />
                 <Setter Property="Background" Value="Transparent" />
+                <Setter Property="CornerRadius"
+                        Value="{atom:NavMenuTokenResource HorizontalItemBorderRadius}" />
 
+                <!-- antd horizontal menu: hover / open use the hover background, the selected item its own background
+                     and text colour; the active bar shows in all three states. -->
                 <Style Selector="^[IsDarkStyle=False]">
                     <Setter Property="Padding" Value="0" />
-                    <Style Selector="^[IsSelected=True], ^[IsInSelectedPath=True]">
-                        <Setter Property="Background" Value="Transparent" />
-                    </Style>
                     <Style Selector="^ /template/ Rectangle#PART_ActiveIndicator">
                         <Setter Property="IsVisible" Value="True" />
                     </Style>
-                    <Style Selector="^:pointerover">
-                        <Setter Property="Background" Value="Transparent" />
+                    <Style Selector="^:pointerover, ^[IsSubMenuOpen=True]">
+                        <Setter Property="Background"
+                                Value="{atom:NavMenuTokenResource HorizontalItemHoverBg}" />
+                    </Style>
+                    <Style Selector="^[IsSelected=True], ^[IsInSelectedPath=True]">
+                        <Setter Property="Foreground"
+                                Value="{atom:NavMenuTokenResource HorizontalItemSelectedColor}" />
+                        <Setter Property="Background"
+                                Value="{atom:NavMenuTokenResource HorizontalItemSelectedBg}" />
                     </Style>
                 </Style>
 
                 <Style Selector="^[IsDarkStyle=True]">
-                    <Setter Property="CornerRadius" Value="0" />
                     <Style Selector="^[IsSelected=True], ^[IsInSelectedPath=True]">
                         <Setter Property="Background"
                                 Value="{atom:NavMenuTokenResource DarkItemSelectedBg}" />
@@ -107,7 +114,7 @@
                             Value="{atom:NavMenuTokenResource HorizontalItemMargin}" />
                 </Style>
 
-                <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+                <Style Selector="^ /template/ ContentPresenter#ItemTextPresenter">
                     <Setter Property="LineHeight"
                             Value="{atom:NavMenuTokenResource HorizontalLineHeight}" />
                 </Style>
@@ -120,7 +127,7 @@
 
                 <Style Selector="^:pointerover, ^[IsSubMenuOpen=True], ^[IsSelected=True], ^[IsInSelectedPath=True]">
                     <Setter Property="ActiveBarColor"
-                            Value="{atom:SharedTokenResource ColorPrimary}" />
+                            Value="{atom:NavMenuTokenResource HorizontalItemSelectedColor}" />
                 </Style>
 
                 <Style Selector="^ /template/ ContentPresenter#ItemTextPresenter">

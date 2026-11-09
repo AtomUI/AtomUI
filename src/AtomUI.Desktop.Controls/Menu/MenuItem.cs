@@ -38,6 +38,18 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
     public static readonly StyledProperty<int> DisplayPageSizeProperty =
         Menu.DisplayPageSizeProperty.AddOwner<MenuItem>();
 
+    public static readonly StyledProperty<bool> IsDangerProperty =
+        AvaloniaProperty.Register<MenuItem, bool>(nameof(IsDanger));
+
+    internal static readonly StyledProperty<double> IconMarginInlineEndProperty =
+        AvaloniaProperty.Register<MenuItem, double>(nameof(IconMarginInlineEnd));
+
+    internal double IconMarginInlineEnd
+    {
+        get => GetValue(IconMarginInlineEndProperty);
+        set => SetValue(IconMarginInlineEndProperty, value);
+    }
+
     public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
@@ -72,6 +84,15 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
     {
         get => GetValue(DisplayPageSizeProperty);
         set => SetValue(DisplayPageSizeProperty, value);
+    }
+
+    /// <summary>
+    /// Whether the item is a danger (destructive) action, drawn with the menu's danger item colours.
+    /// </summary>
+    public bool IsDanger
+    {
+        get => GetValue(IsDangerProperty);
+        set => SetValue(IsDangerProperty, value);
     }
 
     public ITreeNode<IMenuItemData>? ParentNode => Parent as ITreeNode<IMenuItemData>;
@@ -343,6 +364,11 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
                     if (!menuItem.IsSet(InputGestureProperty))
                     {
                         menuItem.SetCurrentValue(InputGestureProperty, menuItemData.InputGesture);
+                    }
+
+                    if (!menuItem.IsSet(IsDangerProperty))
+                    {
+                        menuItem.SetCurrentValue(IsDangerProperty, menuItemData.IsDanger);
                     }
                 }
             }

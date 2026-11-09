@@ -29,6 +29,9 @@ public class BaseNavMenuItemHeader : TemplatedControl
     
     public static readonly StyledProperty<bool> IsSubMenuOpenProperty =
         AvaloniaProperty.Register<BaseNavMenuItemHeader, bool>(nameof(IsSubMenuOpen));
+
+    public static readonly StyledProperty<bool> IsDangerProperty =
+        NavMenuItem.IsDangerProperty.AddOwner<BaseNavMenuItemHeader>();
     
     public static readonly DirectProperty<BaseNavMenuItemHeader, bool> IsDarkStyleProperty =
         AvaloniaProperty.RegisterDirect<BaseNavMenuItemHeader, bool>(nameof(IsDarkStyle),
@@ -83,6 +86,12 @@ public class BaseNavMenuItemHeader : TemplatedControl
     {
         get => GetValue(IsSubMenuOpenProperty);
         set => SetValue(IsSubMenuOpenProperty, value);
+    }
+
+    public bool IsDanger
+    {
+        get => GetValue(IsDangerProperty);
+        set => SetValue(IsDangerProperty, value);
     }
     
     private bool _isDarkStyle;

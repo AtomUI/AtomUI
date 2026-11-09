@@ -120,6 +120,11 @@ public class MenuItemGroup : ItemsControl
                     {
                         menuItem.SetCurrentValue(MenuItem.InputGestureProperty, menuItemData.InputGesture);
                     }
+
+                    if (!menuItem.IsSet(MenuItem.IsDangerProperty))
+                    {
+                        menuItem.SetCurrentValue(MenuItem.IsDangerProperty, menuItemData.IsDanger);
+                    }
                 }
             }
         }

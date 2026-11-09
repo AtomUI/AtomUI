@@ -27,14 +27,14 @@
     <Style Selector="^:is(atom|MenuFlyoutPresenter)">
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+        <Setter Property="Background" Value="{atom:MenuFlyoutPresenterTokenResource ColorBgElevated}" />
         <Setter Property="CornerRadius" Value="{atom:PopupTokenResource PopupCornerRadius}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:MenuFlyoutPresenterTokenResource EnableMotion}" />
         <Setter Property="Padding" Value="{atom:MenuTokenResource MenuPopupContentPadding}" />
         <Setter Property="ItemHeight" Value="{atom:MenuTokenResource ItemHeight}" />
 
         <Style Selector="^ /template/ atom|ArrowDecoratedBox#PART_ArrowDecorator">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:MenuFlyoutPresenterTokenResource ColorBgElevated}" />
             <Setter Property="MinWidth" Value="{atom:MenuTokenResource MenuPopupMinWidth}" />
             <Setter Property="MaxWidth" Value="{atom:MenuTokenResource MenuPopupMaxWidth}" />
         </Style>

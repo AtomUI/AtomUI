@@ -96,6 +96,9 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     
     public static readonly StyledProperty<EntityKey?> ItemKeyProperty =
         AvaloniaProperty.Register<NavMenuItem, EntityKey?>(nameof(ItemKey));
+
+    public static readonly StyledProperty<bool> IsDangerProperty =
+        AvaloniaProperty.Register<NavMenuItem, bool>(nameof(IsDanger));
     
     public AbstractMotion? OpenMotion
     {
@@ -137,6 +140,15 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     {
         get => GetValue(InputGestureProperty);
         set => SetValue(InputGestureProperty, value);
+    }
+
+    /// <summary>
+    /// Whether the item is a danger (destructive) action, drawn with the menu's danger item colours.
+    /// </summary>
+    public bool IsDanger
+    {
+        get => GetValue(IsDangerProperty);
+        set => SetValue(IsDangerProperty, value);
     }
     
     public bool IsSelected

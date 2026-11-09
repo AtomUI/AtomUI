@@ -2,7 +2,6 @@
 using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
-using Avalonia.Animation.Easings;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -62,11 +61,6 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     public CornerRadius SubMenuItemBorderRadius { get; set; }
     
     /// <summary>
-    /// 快捷键颜色
-    /// </summary>
-    public Color KeyGestureColor { get; set; }
-    
-    /// <summary>
     /// 菜单项文字颜色
     /// </summary>
     public Color ItemColor { get; set; }
@@ -79,6 +73,9 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     /// <summary>
     /// 水平菜单项文字悬浮颜色
     /// </summary>
+    [ReservedToken("antd Menu horizontalItemHoverColor. antd 6.7 declares it but its menu style never reads it: " +
+                   "horizontal hover text uses itemHoverColor (ItemHoverColor here), so wiring it would diverge from " +
+                   "antd's rendering.")]
     public Color HorizontalItemHoverColor { get; set; }
     
     /// <summary>
@@ -145,11 +142,6 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     /// 菜单项选中态背景色
     /// </summary>
     public Color ItemSelectedBg { get; set; }
-
-    /// <summary>
-    /// 菜单项背景过渡统一缓动曲线
-    /// </summary>
-    public Easing? ItemBackgroundMotionEasing { get; set; }
 
     /// <summary>
     /// 图标尺寸
@@ -229,6 +221,9 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     /// <summary>
     /// 收起后的宽度
     /// </summary>
+    [ReservedToken("antd Menu collapsedWidth (controlHeightLG * 2). The inline collapsed width here is " +
+                   "InlineCollapsedWidth (48); CollapsedWidth is kept as the antd-named compatibility token and no " +
+                   "element reads it.")]
     public double CollapsedWidth { get; set; }
 
     /// <summary>
@@ -347,10 +342,13 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     /// 菜单箭头尺寸
     /// </summary>
     public double MenuArrowSize { get; set; }
-    
+
     /// <summary>
     /// 子菜单背景色
     /// </summary>
+    [ReservedToken("antd Menu menuSubMenuBg (colorBgElevated). In antd the submenu popup's later popupBg rule paints the " +
+                   "same element, so the popup surface is popupBg; here that surface is MenuPopupBg and there is no " +
+                   "second submenu layer to paint.")]
     public Color MenuSubMenuBg { get; set; }
 
     #endregion
@@ -404,7 +402,6 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
         ItemActiveBg                = EffectiveGlobalToken.ColorFillContent;
         SubMenuItemBg               = EffectiveGlobalToken.ColorFillAlter;
         ItemSelectedBg              = EffectiveGlobalToken.ControlItemBgActive;
-        ItemBackgroundMotionEasing  = Easing.Parse("0.25,0.1,0.25,1");
         HorizontalItemSelectedBg    = Colors.Transparent;
         
         // Disabled
@@ -414,11 +411,9 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
         DangerItemColor         = EffectiveGlobalToken.ColorError;
         DangerItemHoverColor    = EffectiveGlobalToken.ColorError;
         DangerItemSelectedColor = EffectiveGlobalToken.ColorError;
-        DangerItemActiveBg      = EffectiveGlobalToken.ColorError;
-        DangerItemSelectedBg    = EffectiveGlobalToken.ColorError;
+        DangerItemActiveBg      = EffectiveGlobalToken.ColorErrorBg;
+        DangerItemSelectedBg    = EffectiveGlobalToken.ColorErrorBg;
 
-        KeyGestureColor = EffectiveGlobalToken.ColorTextSecondary;
-        
         ItemContentPadding   = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingXXS);
         ItemMargin           = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
 
@@ -472,7 +467,7 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
         MenuPopupMinWidth               = 160d;
         MenuPopupMaxWidth               = 800d;
         MenuPopupMaxHeight              = ItemHeight * 8;
-        TopLevelItemPopupMarginToAnchor = EffectiveGlobalToken.UniformlyMarginXS;
+        TopLevelItemPopupMarginToAnchor = EffectiveGlobalToken.UniformlyMarginXXS;
         
         MenuPopupBg               = EffectiveGlobalToken.ColorBgElevated;
         MenuPopupContentPadding   = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXXS, 0, 0);

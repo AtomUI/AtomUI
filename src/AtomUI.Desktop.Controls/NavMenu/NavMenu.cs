@@ -1003,18 +1003,9 @@ public partial class NavMenu : ItemsControl,
         ClearInlineCollapsedLayoutWidth();
     }
 
-    private TimeSpan ResolveInlineCollapsedWidthMotionDuration()
-    {
-        var application = Application.Current;
-        var themeVariant = application?.ActualThemeVariant;
-        if (application?.TryGetResource(SharedTokenKind.MotionDurationMid, themeVariant, out var value) == true &&
-            value is TimeSpan duration)
-        {
-            return duration;
-        }
-
-        return TimeSpan.FromMilliseconds(200);
-    }
+    // The effective value of this NavMenu (local ThemeConfigProvider scopes and Controls[NavMenu] included).
+    internal TimeSpan ResolveInlineCollapsedWidthMotionDuration() =>
+        ControlTokenAccessor.Capture<NavMenu>(this).GetEffectiveGlobal<TimeSpan>(SharedTokenKind.MotionDurationMid);
 
     private void CancelInlineCollapsedWidthMotion()
     {

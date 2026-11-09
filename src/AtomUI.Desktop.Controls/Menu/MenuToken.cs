@@ -31,11 +31,6 @@ internal sealed class MenuToken : AbstractControlDesignToken
     public double MenuPopupMaxWidth { get; set; }
 
     /// <summary>
-    /// 分离菜单项的高度
-    /// </summary>
-    public double MenuTearOffHeight { get; set; }
-
-    /// <summary>
     /// 菜单弹出框背景色
     /// </summary>
     public Color MenuPopupBgColor { get; set; }
@@ -96,9 +91,14 @@ internal sealed class MenuToken : AbstractControlDesignToken
     public double ItemIconSize { get; set; }
 
     /// <summary>
-    /// 图标与文字间距
+    /// 图标与文字间距（图标的行内结束侧外边距）
     /// </summary>
     public double ItemIconMarginInlineEnd { get; set; }
+
+    /// <summary>
+    /// 菜单分组标题内间距
+    /// </summary>
+    public Thickness GroupTitlePadding { get; set; }
 
     /// <summary>
     /// 菜单项的圆角
@@ -227,7 +227,6 @@ internal sealed class MenuToken : AbstractControlDesignToken
         var colorTextDisabled  = EffectiveGlobalToken.ColorTextDisabled;
         var colorError         = EffectiveGlobalToken.ColorError;
         var colorTextSecondary = EffectiveGlobalToken.ColorTextQuaternary;
-        var colorBgContainer   = EffectiveGlobalToken.ColorBgContainer;
         var colorBgElevated    = EffectiveGlobalToken.ColorBgElevated;
         var colorBgTextHover   = EffectiveGlobalToken.ColorBgTextHover;
         var padding            = EffectiveGlobalToken.UniformlyPadding;
@@ -265,13 +264,15 @@ internal sealed class MenuToken : AbstractControlDesignToken
 
         ItemPaddingInline       = new Thickness(padding, EffectiveGlobalToken.UniformlyPaddingXXS);
         ItemIconSize            = EffectiveGlobalToken.IconSize;
-        ItemIconMarginInlineEnd = controlHeight - fontSize;
+        ItemIconMarginInlineEnd = EffectiveGlobalToken.UniformlyMarginXXS;
+        GroupTitlePadding       = new Thickness(padding, EffectiveGlobalToken.UniformlyPaddingXS);
 
         TopLevelItemColor         = EffectiveGlobalToken.ColorText;
         TopLevelItemSelectedColor = EffectiveGlobalToken.ColorTextSecondary;
         TopLevelItemHoverColor    = EffectiveGlobalToken.ColorTextSecondary;
 
-        TopLevelItemBg         = colorBgContainer;
+        // The menu bar paints its own background; its items stay transparent until hovered or opened.
+        TopLevelItemBg         = Colors.Transparent;
         TopLevelItemHoverBg    = colorBgTextHover;
         TopLevelItemSelectedBg = colorBgTextHover;
 
@@ -322,7 +323,6 @@ internal sealed class MenuToken : AbstractControlDesignToken
         MenuPopupMaxWidth = 800;
 
         SeparatorItemHeight = EffectiveGlobalToken.LineWidth * 5;
-        MenuTearOffHeight   = ItemHeight * 1.2;
 
         MenuPopupContentPadding =
             new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, EffectiveGlobalToken.BorderRadiusLG.TopLeft / 2);

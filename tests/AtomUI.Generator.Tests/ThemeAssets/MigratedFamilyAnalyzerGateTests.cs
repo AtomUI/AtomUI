@@ -37,7 +37,9 @@ public class MigratedFamilyAnalyzerGateTests
         // Feedback family
         "Alert", "Popup", "Tooltip", "Dialog", "MessageBox", "Message", "Notifications", "PopupConfirm",
         // Navigation family
-        "NavMenu", "Menu", "TabControl", "Breadcrumb", "Pagination", "Tour"
+        "NavMenu", "Menu", "TabControl", "Breadcrumb", "Pagination", "Tour",
+        // Layout / container family
+        "Card", "Collapse", "Expander", "GroupBox", "Splitter", "SplitView", "Separator", "Space", "Masonry"
     ];
 
     /// <summary>Single theme assets (relative to the package) of migrated families whose directory holds other families.</summary>
@@ -66,7 +68,10 @@ public class MigratedFamilyAnalyzerGateTests
         "MenuSeparator", "ContextMenu", "MenuFlyoutPresenter",
         "TabControl", "CardTabControl", "TabStrip", "CardTabStrip", "TabItem", "TabStripItem",
         "Breadcrumb", "BreadcrumbItem", "Pagination", "SimplePagination", "Tour", "TourStep", "DefaultTourIndicator",
-        "TextTourIndicator"
+        "TextTourIndicator",
+        "Card", "CardActionButton", "CardGridContent", "CardGridItem", "CardMetaContent", "CardTabsContent", "Collapse",
+        "CollapseItem", "Expander", "GroupBox", "Splitter", "SplitView", "Separator", "Space", "CompactSpace",
+        "CompactSpaceAddOn", "Masonry"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -189,6 +194,17 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldNotContain("QuickJumperBar");
         IdentityControls.Value.ShouldNotContain("TourStepsView");
         IdentityControls.Value.ShouldNotContain("TourLayer");
+        // Layout / container family: the card parts, collapse items and compact space parts are registered (the card grid
+        // items, tabs content and collapse items are Token-owner transparent); the card action panel and the splitter
+        // handle, drag bar and panel are not.
+        IdentityControls.Value.ShouldContain("CardGridItem");
+        IdentityControls.Value.ShouldContain("CardTabsContent");
+        IdentityControls.Value.ShouldContain("CollapseItem");
+        IdentityControls.Value.ShouldContain("CompactSpaceAddOn");
+        IdentityControls.Value.ShouldNotContain("CardActionPanel");
+        IdentityControls.Value.ShouldNotContain("SplitterHandle");
+        IdentityControls.Value.ShouldNotContain("SplitterDragBar");
+        IdentityControls.Value.ShouldNotContain("SplitterPanel");
     }
 
     [Fact]

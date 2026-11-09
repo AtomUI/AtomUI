@@ -104,3 +104,17 @@ dotnet_diagnostic.ATOMUIGEN047.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Layout / container family: Card (CardActionButton, CardMetaContent, CardGridContent and the Token-owner transparent
+# CardGridItem / CardTabsContent; the identity-less CardActionPanel), Collapse (Token-owner transparent CollapseItem),
+# Expander, GroupBox, Splitter (identity-less handle, drag bar and panel), SplitView, Separator (its AbstractSeparator /
+# SeparatorRail base lives in src/AtomUI.Controls/Separator, gated by its .editorconfig), Space (CompactSpace,
+# CompactSpaceAddOn) and Masonry.
+# Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
+[{Card,Collapse,Expander,GroupBox,Splitter,SplitView,Separator,Space,Masonry}/**]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN042.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

@@ -28,3 +28,10 @@ dotnet_diagnostic.ATOMUIGEN047.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Layout / container family parts: AbstractSeparator and SeparatorRail of the Separator.
+# Keep in step with the Layout / container family section of src/AtomUI.Desktop.Controls/.editorconfig.
+[Separator/**]
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

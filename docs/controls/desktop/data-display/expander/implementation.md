@@ -134,8 +134,8 @@ Expander owner，因此路由保持单一 `/template/` 边界，不穿越 `Layou
   `PART_ContentPresenter` 是它的子节点，且各自带背景。
 - `ClipToBounds` 只做**矩形**裁剪，不做圆角裁剪。缺少 `ClipContentToCornerRadius` 时，子节点的不透明背景会平铺到方形
   边界，覆盖父节点画出的圆弧，两个上角（以及展开态的下角）视觉上变成方角。
-- 默认主题 `HeaderBg = ColorFillAlter` 实测 alpha≈2%，缺陷几乎不可见；一旦通过 Semantic Part 或 `IsGhostStyle`
-  （header 背景为 `ColorBgContainer`，完全不透明）设置不透明背景就会显形。
+- 默认主题 `HeaderBg = ColorFillAlter` 实测 alpha≈2%，但内容区背景 `ContentBg`（`ColorBgContainer`）完全不透明；通过 Semantic Part
+  设置不透明的头部背景时同样会显形。
 - 裁剪由 `PART_Frame` 统一施加于整棵子树，与 `IsExpanded`、`ExpandDirection`、`IsBorderless` / `IsGhostStyle` 无关，
   不增删任何 marker，也不改变 Part 的命中数量。
 

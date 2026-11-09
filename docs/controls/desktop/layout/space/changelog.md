@@ -31,6 +31,12 @@
   - 现有 `CompactSpaceBehaviorTests`、`SpaceRootFrameTests`、`SpaceSemanticPartTests` 保持不变并通过。
   - V6 回归：`dotnet test tests/AtomUI.Controls.Tests` 222 项、`tests/AtomUI.Desktop.Controls.Tests` 4,179 项、`tests/AtomUIGallery.Tests` 412 项（含 `SpaceShowCasePageTests`，Space 展示页可打开）全部通过，`controlgallery/AtomUIGallery.Desktop` 构建通过。
 
+## 2026-11-08
+
+- Changed
+  - `CompactSpaceAddOn` 主题以 `CompactSpaceAddOnTokenResource` 读取全局 Token，`Controls[CompactSpaceAddOn]` 覆盖生效；add-on 背景与内间距
+    仍是 Space 的 Own Token（`Controls[Space]`）。默认渲染不变。
+
 ## 2026-08-21
 
 - Code

@@ -10,7 +10,7 @@ GroupBox Token 不表达实例状态，也不负责 Header 缺口的运行时 bo
 
 ## 2. Token 分类
 
-GroupBox Token 按语义分为三类。
+GroupBox Token 按语义分为两类。
 
 ### 内容区域 Token
 
@@ -26,15 +26,11 @@ GroupBox Token 按语义分为三类。
 | `HeaderContentPadding` | `Thickness` | Header 内容内边距，扩大标题缺口和标题文字/图标周围留白。 |
 | `HeaderIconMargin` | `Thickness` | Header 图标与标题之间的间距。 |
 
-### Fieldset 语义 Token
+原 `TextPaddingInline`、`OrientationMarginPercent`、`VerticalMarginInline` 复制自 Separator，从未被消费；GroupBox 的标题缺口与标题到
+边缘的距离由 `HeaderContentPadding` / `HeaderContainerMargin` 表达，GroupBox 也没有 antd 对应组件，三者已删除（见 [Changelog](changelog.md)）。
 
-| Token | 类型 | 用途 |
-| --- | --- | --- |
-| `TextPaddingInline` | `double` | Fieldset 标题文本横向内间距语义值。 |
-| `OrientationMarginPercent` | `double` | 标题与边缘距离比例语义值。 |
-| `VerticalMarginInline` | `double` | 纵向分隔线横向外间距语义值。 |
-
-`TextPaddingInline`、`OrientationMarginPercent` 和 `VerticalMarginInline` 是 GroupBox fieldset 语义保留值。维护时不得把它们误改为实例状态或模板节点尺寸。
+颜色、边框厚度、圆角、字号与图标尺寸是全局 Token（`ColorBgContainer`、`ColorBorder`、`BorderThickness`、`BorderRadius`、`ColorText`、
+`FontSize`、`IconSizeLG`），经 `GroupBoxTokenResource` 读取，`Controls[GroupBox]` 覆盖生效。
 
 ## 3. 控件专项模型中的 Token 使用
 

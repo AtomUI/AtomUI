@@ -208,7 +208,7 @@ others/null -> Default
 
 ### 8.3 操作区模型
 
-`Actions` 集合中的控件被复制到内部 `CardActionPanel.Actions`。`CardActionPanel` 用 `UniformGrid` 均分每个 action，并在 render 阶段绘制顶部边线和 action 分隔线。
+`Actions` 集合中的控件被复制到内部 `CardActionPanel.Actions`。`CardActionPanel` 用 `UniformGrid` 均分每个 action（间隙为 `LineWidth`），并在 render 阶段依次绘制背景（`ActionsBg`，只取下圆角）、顶部边线和 action 分隔线，分隔线位于背景之上。
 
 ### 8.4 标签页内容模型
 

@@ -9,6 +9,13 @@
   - `PART_HeaderDecorator` 标记 `TemplatedControl.IsTemplateFocusTarget`，描边只包围标题，不包含展开后的正文。
   - 键盘停靠点跟随 `TriggerType`：Header 模式下展开按钮不再是额外的 Tab 停靠点；Icon 模式下 `CollapseItem` 不是停靠点，只保留展开按钮，因为此模式下只有它能切换。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读 `CollapseTokenResource`；`CollapseItem` 标为 Token owner 透明部件，`Controls[Collapse]` 作用于面板头部、内容、分隔线与动效。
+  - `ContentBg` 改为面板内容区背景（与 antd `contentBg` 一致，此前只在 Ghost 模式下用作头部背景）；Ghost 模式头部与内容区透明。
+  - 可见变化：内容区绘制 `ColorBgContainer`（此前透明），Ghost 头部改为透明（此前 `ContentBg`）；页面背景不是容器色时可见。
+
 ## 2026-10-27
 
 - Implementation

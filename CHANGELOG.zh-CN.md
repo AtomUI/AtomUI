@@ -19,6 +19,7 @@ AtomUI 的重要变更记录在此文件中。
   - Theme Tokens：`TabControl.HorizontalMargin` 标为保留，暂无视觉效果（页签栏与内容的间距为 `TabControl.TabAndContentGutter`）；`TabControl.MenuEdgeThickness` 标为保留（溢出阴影载体位于视口外，厚度改为布局常量，默认 32px 不变）。
   - Theme Tokens：`Pagination.ItemLinkBg`（antd bordered 上一页/下一页按钮）与 `Pagination.InputOutlineOffset` 标为保留，暂无视觉效果。
   - Theme Tokens：删除从未被消费的 `NavMenu.ItemBackgroundMotionEasing`、`NavMenu.KeyGestureColor` 与 `Menu.MenuTearOffHeight`（antd 无对应 Token；NavMenu 不显示快捷键，Menu 没有 tear-off 项）；请从主题配置中移除。`NavMenu.CollapsedWidth`、`NavMenu.MenuSubMenuBg`、`NavMenu.HorizontalItemHoverColor` 标为保留，暂无视觉效果。
+  - Theme Tokens：删除从未被消费的 `Expander.LeftExpandButtonVMargin` / `RightExpandButtonVMargin`（头部随展开方向旋转，`LeftExpandButtonHMargin` / `RightExpandButtonHMargin` 已覆盖所有方向）与 `GroupBox.TextPaddingInline`、`GroupBox.OrientationMarginPercent`、`GroupBox.VerticalMarginInline`（复制自 Separator 的 Token；GroupBox 标题缺口与边距由 `HeaderContentPadding` / `HeaderContainerMargin` 表达），请从主题配置中移除。`Card.ActionsSpacing`、`Card.TabsMarginBottom`、`Card.CardHeadPadding`、`Card.CardPaddingBase`（antd `actionsLiMargin`、`tabsMarginBottom`、`cardHeadPadding`、`cardPaddingBase`）标为保留，暂无视觉效果。
 - Button 家族
   - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
   - 修复 HyperLinkButton 的仅图标、加载与危险视觉，BackTop 徽标，以及由分组或 Host 提供的 FloatButtonGroup 阴影。
@@ -70,6 +71,11 @@ AtomUI 的重要变更记录在此文件中。
   - Tour：弹层间距（`Tour.PopupMarginToAnchor` 加步骤 Gap 偏移）在打开期间随 Token 与 Gap 变化重算，关闭期间不再重算；遮罩颜色不再在初始化时复制进步骤，`ColorBgMask` 变化即时作用于打开的 Tour。
   - 可见变化：小尺寸快速跳转输入框宽 44px（antd `controlHeightLG * 1.1`，此前 50px）；四位及以上页码两侧各有 6px 行内内间距。
   - 可见变化：NavMenu Vertical / Horizontal 子菜单弹层内的菜单项改用 `NavMenu.SubMenuItemBorderRadius`（`BorderRadiusSM`，4px，与 antd 一致），此前为 `ItemBorderRadius`（8px）。
+- Layout / Container 家族
+  - 控件级覆盖（`Controls[Card]`、`Controls[CardActionButton]`、`Controls[CardMetaContent]`、`Controls[Collapse]`、`Controls[Expander]`、`Controls[GroupBox]`、`Controls[Splitter]`、`Controls[SplitView]`、`Controls[Separator]`、`Controls[CompactSpaceAddOn]`、`Controls[Masonry]`）作用于该控件的全部主题读取。Card 网格项、Card 页签内容与 Collapse 面板项是 Token owner 透明部件，读取宿主 Token，`Controls[Card]` / `Controls[Collapse]` 作用于它们；卡片操作区、分隔条手柄与拖拽条随宿主。Card 圆角经 `Controls[Card].BorderRadiusLG` 设置。
+  - `Card.ExtraColor` 设置头部 extra 文字色，`Card.ActionsBg` 改为真正填充操作区（此前被模板背景遮蔽）；新增 `Separator.TitleFontWeight`（默认 500，与 antd 一致），并接通 `Separator.HorizontalWithTextGutterMargin`（中号带标题分割线），取代固定字重与普通外边距。
+  - Token 变化后立即重新布局：Splitter 面板间距（`Splitter.SplitBarSize`，此前每次测量只读取一次）、Separator 标题内间距、边距比例与纵向外间距（`TextPaddingInline`、`OrientationMarginPercent`、`VerticalMarginInline`）。
+  - 可见变化：Collapse 与 Expander 内容区按 antd 绘制 `ContentBg`（`ColorBgContainer`），此前透明；ghost 样式的 Collapse / Expander 头部改为透明，此前为 `ContentBg`；页面背景不是容器色时可见（如暗色主题下的 `ColorBgLayout`）。SplitView 窗格默认带打开/关闭动效（`IsMotionEnabled` 跟随 `EnableMotion`，此前除非显式设置否则关闭）；窗格分隔线改为 `ColorBorder` 填充的 `LineWidth` 线条（渲染仍为 1px）。
 - Popup
   - Popup 动效（`MotionDurationMid`、`EnableMotion`）跟随 `Controls[Popup]`，弹层宿主（`OverlayPopupHost`、`PopupRoot`）的文本默认值跟随承载 Popup 的控件；Tooltip 与 Popover 缩放原点按框体实际绘制的圆角内缩，不再读取根 `BorderRadius` / `BorderRadiusLG`，控件级圆角覆盖会移动原点（默认圆角下原点不变）。
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。

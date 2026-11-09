@@ -14,6 +14,13 @@
 - Tests
   - `FocusOutlineTargetTests` 覆盖两种触发模式的停靠点、Enter / Space 切换与描边圆角。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读 `ExpanderTokenResource`，`Controls[Expander]` 覆盖生效；`ContentBg` 改为内容区背景（antd `contentBg`），Ghost 模式头部与内容区透明。
+  - 删除从未被消费的 `LeftExpandButtonVMargin`、`RightExpandButtonVMargin`（左右展开时头部旋转，水平外边距 Token 已覆盖）。
+  - 可见变化：内容区绘制 `ColorBgContainer`（此前透明），Ghost 头部改为透明（此前 `ContentBg`）。
+
 ## 2026-10-27
 
 - Implementation

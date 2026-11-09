@@ -420,8 +420,7 @@ selector 以 `BindingPriority.StyleTrigger` 应用，高于主题 Style Setter �
 - Header 的 `StackPanel` 内部排布：图标与标题的相对位置由 `header` 节点内部的 `StackPanel` 决定，该层级不是公共契约。
 - Title 与 icon 之外的其他 Header 内容：GroupBox 没有 `extra` / `addOn` 之类的第三块 Header 区域，不需要也**不得**为了
   对称而虚构这类 Part。
-- Token 语义值：`TextPaddingInline`、`OrientationMarginPercent`、`VerticalMarginInline` 是 GroupBox 的 fieldset 语义保留
-  Token，不表示模板节点或实例状态，不是 Part。
+- Token 语义值：`HeaderContainerMargin`、`HeaderContentPadding` 等 GroupBox Token 不表示模板节点或实例状态，不是 Part。
 - 用户内容子树：`HeaderIcon` 传入的 `PathIcon` 内部图形、`ContentTemplate` 生成的子树由用户拥有；内层控件以自己的
   owner 作用域独立匹配，不继承 GroupBox 的 Part。嵌套 GroupBox 同理。
 - Popup、Flyout、Overlay 与独立 TopLevel：GroupBox 不创建任何弹层或独立宿主，`CrossVisualRoot=false`。

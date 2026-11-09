@@ -46,6 +46,11 @@ Splitter 必须区分两种尺寸：
 - `PART_Grip` 的短轴厚度应来自 drag bar 的 `LineThickness`。
 - handle 和 drag bar 的 `LineThickness` 默认值应能从 Splitter Token 派生。
 - 不在主题里绕过 `LineThickness` 直接写死 `SplitBarSize`，否则实例级样式 API 无法覆盖。
+- `SplitBarSize` 同时是面板之间的间距（handle spacing）：`SplitterPanel` 挂载期以 `TokenResourceBinder` 绑定到内部属性
+  `SplitBarSize` 并标记 `AffectsMeasure`，主题或 `Controls[Splitter]` 变化后立即重新测量（此前每次测量用资源查找读取一次，变化后不重测）。
+- `SplitTriggerSize` 是拖拽条（命中区）宽度，`SplitBarHandleSize` 是 handle 宽度，二者都不绘制可见像素；生效测试断言布局后的尺寸。
+- handle、drag bar 是无 identity 的单宿主部件，主题以 `SplitterTokenResource` 读取全局 Token（`BorderRadiusXS`、`ColorFill`、
+  `ControlItemBg*`、`FontSizeSM`、`ZIndexPopupBase`），`Controls[Splitter]` 覆盖生效。
 
 ### 3.3 圆角
 

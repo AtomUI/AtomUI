@@ -43,6 +43,17 @@
   - `CardBehaviorTests` 追加：`Skeleton_exists_only_while_loading`、`Loading_toggle_restores_content`、`Actions_sync_and_visibility`、`Headerless_follows_header_and_extra`、`Not_loading_card_has_no_skeleton_visuals`（含视觉元素数上限）。
   - V6 回归：`dotnet test tests/AtomUI.Controls.Tests` 222 项、`tests/AtomUI.Desktop.Controls.Tests` 4,179 项、`tests/AtomUIGallery.Tests` 412 项（含 `CardShowCasePageTests`，Card 展示页可打开）全部通过，`controlgallery/AtomUIGallery.Desktop` 构建通过。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：Card、CardActionButton、CardMetaContent 以各自 TokenResource 读取全局 Token；`CardGridItem`、`CardTabsContent`
+    标为 Token owner 透明部件，与无 identity 的 `CardActionPanel` 一样读取 Card 的 Token，`Controls[Card]` 作用于网格项、页签内容与操作区。
+    Card 圆角经 `Controls[Card].BorderRadiusLG` 设置。
+  - `ExtraColor` 接通头部 extra 文字色；`ActionsBg` 改由 `CardActionPanel` 在 Render 中绘制（此前模板背景的 TemplateBinding 遮蔽了样式
+    值，从未生效），分隔线保持在背景之上，操作项间隙改读 `LineWidth`；删除无效的 `Padding="0,1,0,0"` 字面量。
+  - `ActionsSpacing`、`TabsMarginBottom`、`CardHeadPadding`、`CardPaddingBase` 标为保留 Token（antd `actionsLiMargin`、`tabsMarginBottom`、
+    `cardHeadPadding`、`cardPaddingBase`）。默认渲染不变。
+
 ## 2026-08-13
 
 - Semantic Part

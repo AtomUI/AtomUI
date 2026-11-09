@@ -2,6 +2,13 @@
 
 本文档记录 Splitter 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读 `SplitterTokenResource`（无 identity 的 handle、drag bar 读取宿主），`Controls[Splitter]` 覆盖生效。
+  - `SplitterPanel` 的面板间距改为挂载期绑定 `SplitBarSize` 到内部属性并 `AffectsMeasure`（借鉴 `b1a6fc37a`），主题或控件级覆盖变化后立即
+    重新测量；此前每次测量以资源查找读取一次，变化后不重测。
+
 ## 2026-09-14
 
 - API

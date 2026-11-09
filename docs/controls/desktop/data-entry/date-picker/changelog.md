@@ -25,6 +25,17 @@
 - Fixed
   - DatePicker / RangeDatePicker 的可聚焦外框在键盘聚焦时不再画焦点框（经 `InputControlFrameTheme` 统一设置空 `FocusAdorner`），7e40bc14a 只覆盖了宿主，遗漏了外框。
 
+## 2026-11-08
+
+- Theme
+  - Picker 把 Token owner 转发给弹层 Presenter（Presenter 位于注册控件 ArrowDecoratedBox 内），Footer、TimeView 与时间单元跟随
+    `Controls[DatePicker]` / `Controls[RangeDatePicker]`；弹层 DateViewer 保持自己的身份。
+  - 共享输入基类 InfoPickerInput / RangeInfoPickerInput 主题以 `OwnerTokenResource` 读取具体 Picker 的全局 Token；根 `BorderBrush` 改经
+    `HostBorderBrush` 投射到输入框，不再写 LocalValue。
+  - 范围箭头尺寸与颜色在 Picker 上读取后模板绑定（箭头是注册 Icon）；激活条厚度变化后重新定位到输入框底边。
+  - 输入文字颜色改由编辑器 Foreground 投射到内部输入框，弹层打开时文字按设计变为 `ColorTextTertiary`（范围 Picker 的未激活端）。
+  - 新增 `DatePicker.HeaderBorderThickness`，弹层 Header 去掉固定 33 px 高度（由 `ControlHeight` 最小高度与分隔线得出，尺寸不变）。
+
 ## 2026-11-04
 
 - Fixed

@@ -13,6 +13,17 @@
 - Tests
   - `CalendarRenderTests` 新增 Compact 月 / 年模式数字垂直居中测试；`FocusOutlineTargetTests` 覆盖两种呈现方式的焦点表现。
 
+## 2026-11-08
+
+- Theme
+  - Calendar / LunarCalendar 主题改读有效 Token：Calendar 把 Token owner 转发给模板中的 DateViewer，日期格、面板、Header 读取宿主
+    Calendar / LunarCalendar 的有效全局 Token；`Controls[Calendar]` / `Controls[LunarCalendar]` 到达日期格与业务条。
+  - 新增 `Calendar.FullCellMargin` / `FullCellPadding` / `FullCellBorderThickness` / `RangeBarGap` / `RangeBarLabelPadding` 与
+    `LunarCalendar.MarkerSize` / `MarkerMargin` / `MarkerCornerRadius`，替换主题与 `CalendarRangeBarPanel` 中的字面量（默认值不变）；
+    范围条标签读 `FontSizeSM` / `ColorTextLightSolid`，不再写死 12 px 与白色。
+  - 呈现度量（Mini 高度、完整单元最小高度、业务条顶部偏移）改用 TokenResourceBinder 读取 Calendar 有效值。
+  - Header 模式切换不再设置被按钮遮盖的 `ColorBgContainer` 背景。
+
 ## 2026-10-04
 
 - Theme

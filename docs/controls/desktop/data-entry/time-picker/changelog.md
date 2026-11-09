@@ -20,6 +20,16 @@
 - Fixed
   - TimePicker / RangeTimePicker 的可聚焦外框在键盘聚焦时不再画焦点框（经 `InputControlFrameTheme` 统一设置空 `FocusAdorner`）。
 
+## 2026-11-08
+
+- Token
+  - Breaking：删除从未消费的 `TimePicker.RangePickerArrowMargin`、`RangePickerIndicatorThickness`，改用 `InfoPickerInput` 同名 Token。
+  - `ButtonsMargin`、`PeriodHostWidth` 接通消费；新增 `ItemMargin` 替换时间单元 `4,0` 字面量。
+- Theme
+  - TimeViewCell 标为 Token owner 透明，TimeView 把所属 Picker 的 owner 转发给各列；单元颜色改读所属 Picker 的全局 Token（不再借读
+    ListView Own Token，默认值不变），禁用单元的 `ColorTextDisabled` 选择器改正为模板中的 `ContentPresenter`。
+  - TimeView 分隔线宽度读所属 Picker 的 `LineWidth`。
+
 ## 2026-11-04
 
 - Fixed

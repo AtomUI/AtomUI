@@ -8,7 +8,15 @@ DatePicker 的日期正文直接消费 [DateViewer Token](../date-viewer/token.m
 | --- | --- | --- | --- |
 | PanelContentPadding | Thickness | `PaddingSM` | Popup 中 TimeView 的内容内边距。 |
 | ButtonsPanelMargin | Thickness | `0, UniformlyMarginXS, 0, 0` | Today、Now、Confirm Footer 与正文的间距。 |
-| RangePanelSpacing | double | `20` | 双面板范围 Picker 的面板与双 Header 间距。 |
+| RangePanelSpacing | double | `20` | 双面板范围 Picker 的面板与双 Header 间距（RangeDatePicker 借用，`Controls[DatePicker]` 到达它）。 |
+| HeaderBorderThickness | Thickness | `0, 0, 0, LineWidth` | 弹层面板 Header 底部分隔线（AtomUI 扩展，替换 `0,0,0,1` 字面量）。 |
+
+弹层 Presenter 位于注册控件 ArrowDecoratedBox 内；Picker 把自己的 Token owner 转发给 Presenter，因此 Footer 边框、TimeView 与其
+Token owner 透明的 TimeViewCell 读取 Picker 的有效全局 Token（`Controls[DatePicker]` / `Controls[RangeDatePicker]` 到达它们）。
+弹层中的 DateViewer / RangeDateViewer 保持自己的身份：选中日期等面板视觉跟随 `Controls[DateViewer]`，弹层外框跟随
+`Controls[ArrowDecoratedBox]`。Header 模板以 `DatePickerTokenResource` / `RangeDatePickerTokenResource` 显式读取。
+输入区的箭头与激活条 Own Token 属于抽象身份 `InfoPickerInput`（`RangePickerArrowMargin`、`RangePickerIndicatorThickness`、
+`RangeMarginToAnchor`），以 `Controls[InfoPickerInput]` 配置。
 
 日期面板背景、Cell 尺寸、Hover、范围背景与面板宽度归 DateViewer 所有；Picker 用 RangePanelSpacing 把产品双面板间距固定为原体验的 20。Picker 不再注册旧 CalendarView 的 Cell、Header、MonthView 或 RangeCalendar 资源别名。
 

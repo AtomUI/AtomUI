@@ -17,9 +17,21 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `ItemHeight`、`ItemWidth`、`PeriodHostWidth` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `ItemPadding`、`ButtonsMargin`、`RangePickerArrowMargin`、`HeaderMargin` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 按源码 Token 语义维护 |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `RangePickerIndicatorThickness` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `ItemPadding`、`ItemMargin`、`ButtonsMargin`、`HeaderMargin` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 读所属 Picker 的有效全局 Token |
+
+Task 10.9b 裁决：
+
+- `ButtonsMargin`（Now / OK 按钮区与时间列的间距）与 `PeriodHostWidth`（上午/下午列宽，默认等于 `ItemWidth`）接通消费（Active）。
+  按钮区原先借读 `DatePicker.ButtonsPanelMargin`，默认值相同。
+- 新增 `ItemMargin`（时间单元左右外边距，默认 `UniformlyMarginXXS`，antd `marginInline: marginXXS`），替换 `4,0` 字面量。
+- 删除 `RangePickerArrowMargin` 与 `RangePickerIndicatorThickness`（Breaking）：二者从未被消费，是 `InfoPickerInput` 同名 Own Token 的
+  重复；范围箭头间距与激活条厚度以 `Controls[InfoPickerInput].RangePickerArrowMargin` / `RangePickerIndicatorThickness` 配置。
+
+TimeView 与 TimeViewCell 位于注册控件 ScrollViewer 内；TimeView 把所属 Picker 的 Token owner 转发给各列，TimeViewCell 是 Token owner
+透明的注册控件，因此单元的颜色、圆角与过渡时长跟随所属 Picker（原先借读 `ListView` 的 Own Token，现读所属 Picker 的全局 Token，默认
+值不变）。TimeView 的 Own Token 读 TimePicker 身份：DatePicker 的日期时间弹层借用 `Controls[TimePicker]` 的 `ItemHeight`、`ItemWidth`、
+`HeaderMargin` 等覆盖（待抽象层任务处理）。
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
@@ -38,8 +50,9 @@ TimePicker 的控件专项模型通过 Theme 消费 Token：
 
 调整 TimePicker Token 时必须评估以下范围：
 
-- `TimePicker`
-- `TimePickerPresenter`
+- `TimePicker`、`RangeTimePicker`
+- `TimePickerPresenter`、`TimeView`、`TimeViewCell`
+- `DatePicker` / `RangeDatePicker` 的日期时间弹层（复用 TimeView）
 - 对应 Gallery ShowCase 的示例和源码片段。
 - Light/Dark 主题、Browser/Desktop 主题和 Compact/Form/Popup 集成场景。
 

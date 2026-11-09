@@ -29,6 +29,13 @@ DateViewerToken 为独立单值与范围面板提供默认资源。关联 [架�
 | 导航内边距 | HeaderHorizontalPadding | 左右 UniformlyPaddingXS、上下 0；导航箭头与面板边缘保持间距。 |
 | 日期正文 | DateBodyPadding | 左右为 UniformlyPadding + UniformlyPaddingXXS / 2、上下为 UniformlyPaddingXS，默认 18、8。 |
 | 范围布局 | PanelSpacing | UniformlyMargin，双面板及双 Header 间距。 |
+| 分隔线 | HeaderBorderThickness / FooterBorderThickness | 底边 / 顶边 LineWidth：默认 Header 底部与独立 Footer 顶部分隔线（AtomUI 扩展，替换 `0,0,0,1` / `0,1,0,0` 字面量）。 |
+| 周模式 | WeekNumberOpacity | 0.5：周模式下周序号的不透明度（AtomUI 扩展，替换字面量；antd 以半透明 colorTextLightSolid 表达）。 |
+
+面板、Header 与日期格是无身份部件，以 `OwnerTokenResource` 读取所属 DateViewer / RangeDateViewer 的有效全局 Token；Own Token 以
+`DateViewerTokenResource` 读取。RangeDateViewer 没有 Own Token，其主题借用 DateViewer 的 Own Token（`PanelBg`、`PanelPadding`、
+`PanelSpacing`、`PanelWidth`、`Cell*` 等），`Controls[DateViewer]` 的这些覆盖也到达 RangeDateViewer（待抽象层任务处理）。
+DatePicker 弹层中的 DateViewer 保持自己的身份；Calendar 中的 DateViewer 接收 Calendar 转发的 Token owner（见 Calendar token.md）。
 
 主色、文字、禁用透明度、圆角与边框直接消费 SharedToken。日期值、PanelKind、活动端点、Hover 值与业务禁用
 结果不进入 Token；本组没有独立 Motion Token。

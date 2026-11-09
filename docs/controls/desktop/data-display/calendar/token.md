@@ -24,6 +24,21 @@ DateViewer 提供共享面板和独立默认资源；Calendar 通过完整产品
 
 CalendarToken 持有根/正文背景、Header 宽度、月份内容宽度、Mini 高度、Fullscreen 周标题高度与内边距、完整内容最小高度与范围条高度；
 LunarCalendarToken 持有双行内容尺寸、文字/标记颜色与范围条避让。
+
+Task 10.9b 新增的 Own Token（AtomUI 扩展，替换主题与代码中的字面量，默认值与原渲染一致）：
+
+| Token | 默认 | 语义 |
+| --- | --- | --- |
+| `Calendar.FullCellMargin` | 左右 `UniformlyMarginXS / 2`（4） | Fullscreen 单元左右外边距（antd `margin: 0 marginXS/2`）。 |
+| `Calendar.FullCellPadding` | `UniformlyPaddingXS, UniformlyPaddingXS / 2, UniformlyPaddingXS, 0`（8,4,8,0） | Fullscreen 单元内边距（antd `padding: paddingXS/2 paddingXS 0`）。 |
+| `Calendar.FullCellBorderThickness` | 顶边 `LineWidthBold`（2） | Fullscreen 单元顶部分隔线与键盘焦点顶边（antd `borderTop: lineWidthBold`）。 |
+| `Calendar.RangeBarGap` | `UniformlyMarginXXS / 2`（2） | 同一单元内上下堆叠的范围条间距。 |
+| `Calendar.RangeBarLabelPadding` | 左右 `UniformlyPaddingXS`（8） | 范围条标签的水平内边距。 |
+| `LunarCalendar.MarkerSize` | `UniformlyMarginXXS`（4） | 节假日/调休标记圆点直径。 |
+| `LunarCalendar.MarkerMargin` | 右侧 `UniformlyMarginXXS`（4） | 标记圆点与次要文字的间距。 |
+| `LunarCalendar.MarkerCornerRadius` | `MarkerSize / 2` | 标记圆点圆角。 |
+
+范围条标签的字号与颜色读宿主的 `FontSizeSM` / `ColorTextLightSolid`；Mini 键盘焦点描边读 `FocusVisualBorderThickness`。
 日期、模式、约束、节日优先级、Provider revision 和确认状态不属于 Token。
 
 ## 3. 专项模型消费
@@ -43,6 +58,13 @@ DatePicker 不能采用 Calendar Mini 的内容高度或农历行高作为默认
 
 CalendarDateCellTheme 与 LunarCalendar 的 CellTheme 资源消费对应产品尺寸；正文背景消费 Calendar FullPanelBg，
 农历次级内容消费独立 Token。
+
+Token owner：Calendar 把自己的 Token owner 转发给模板中的 DateViewer（`TokenOwnerForwarding`），因此 Calendar 提供的面板与单元主题以
+`OwnerTokenResource` 读取宿主 Calendar / LunarCalendar 的有效全局 Token，`Controls[Calendar]` / `Controls[LunarCalendar]` 到达日期格；
+DateViewer 自己的 Own Token 仍读 DateViewer 身份。Header 中的 ComboBox、OptionButtonGroup 保持各自身份。
+LunarCalendar 复用 CalendarTheme 与 CalendarDateCellTheme：全局 Token 跟随 LunarCalendar，但其中的 Calendar Own Token（`FullBg`、
+`FullPanelBg`、`ItemActiveBg`、`RangeBarHeight`、`FullCell*`、`RangeBarGap`、`RangeBarLabelPadding`、`YearMonthCellWidth`、
+`WeekHeader*`、Header 宽度）借用 Calendar 身份，`Controls[Calendar]` 的这些覆盖也到达 LunarCalendar（待抽象层任务处理）。
 业务布局、模板内容、动态资源覆盖和尺寸语义必须完整；普通主题修改不能让农历次级行与业务条重叠。
 状态选择在 Theme Selector，资源更新由 scoped owner 链传播，不能以静态值规避生命周期。
 

@@ -7,6 +7,13 @@
 - Theme
   - 默认 `DateViewerCellTheme` 把 `PART_ValueFrame` 标记为 `TemplatedControl.IsTemplateFocusTarget`：该格子主题没有自身焦点视觉，共享焦点描边改为只包围圆角数值框，不再框住整列宽的格子。日期选择器的面板共用此主题。
 
+## 2026-11-08
+
+- Theme
+  - 面板、Header、日期格以 `OwnerTokenResource` 读所属 DateViewer / RangeDateViewer 的有效全局 Token；DateViewer 主题读
+    `DateViewerTokenResource`。
+  - 新增 `DateViewer.HeaderBorderThickness` / `FooterBorderThickness` / `WeekNumberOpacity`，替换分隔线与周序号透明度字面量（默认值不变）。
+
 ## 2026-10-04
 
 - API / Token

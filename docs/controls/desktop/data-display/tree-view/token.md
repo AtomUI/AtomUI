@@ -35,9 +35,9 @@ TreeViewToken 当前按 TreeView 语义分为五类。
 - `DirectoryNodeSelectedColor`
 - `DirectoryNodeSelectedBg`
 
-`NodeHoverBg` 用于节点 hover 背景。`NodeSelectedBg` 用于普通 selected / pressed 背景。`DirectoryNodeSelectedColor` 和 `DirectoryNodeSelectedBg` 当前由 Token 类型定义为目录树选中语义，默认 TreeView 主题不直接消费这两个 Token；维护时仍应保持其名称和语义稳定。
+`NodeHoverBg` 用于节点 hover 背景。`NodeSelectedBg` 用于普通 selected / pressed 背景。`DirectoryNodeSelectedColor` 和 `DirectoryNodeSelectedBg` 是保留 Token（`[ReservedToken]`，对应 antd Tree `directoryNodeSelectedColor` / `directoryNodeSelectedBg`）：AtomUI TreeView 没有目录树模式，设置后暂无视觉效果。
 
-节点 disabled 文本色、图标弱化和 switcher 图标色优先使用 SharedToken，不在 TreeViewToken 中重复定义。
+节点文字与图标色使用宿主的 `ColorText`，disabled 节点的文字、节点图标与 switcher 图标统一使用 `ColorTextDisabled`（与 antd 一致，此前图标与 switcher 以 0.3 不透明度弱化），不在 TreeViewToken 中重复定义。
 
 ### 2.3 节点结构间距 Token
 
@@ -83,6 +83,16 @@ TreeView Token 主要参与以下专项模型：
 - filter：`FilterHighlightColor` 通过 `FilterHighlightForeground` 传递到 header highlighter。
 
 Token 不参与 default selected / checked / expanded path 回放，不参与 `CheckedItems` 同步，不参与异步加载逻辑。
+
+### 3.1 主题读法与 Token owner
+
+- `TreeViewItem` 是 Token owner 透明的条目容器（`[TokenOwnerTransparent]`），无 identity 的 `TreeViewItemHeader` 与 `NodeSwitcherButton`
+  继承宿主树的 owner，以 `OwnerTokenResource` 读取全局 Token：`Controls[TreeView]` 作用于节点高度、圆角、图标尺寸与颜色、拖拽指示线、
+  树线与过渡时长，`Controls[TreeViewItem]` 不作用于节点。TransferTreeView 与 TreeSelect 的树复用这些主题，跟随各自的 owner。
+- `TreeViewTheme` / `TreeViewItemTheme` 也是 TransferTreeView / TransferTreeViewItem 的基础主题，全局 Token 以 `OwnerTokenResource` 读取
+  （主题前有 `<!-- owner: -->` 标记）。TreeView Own Token 仍以 `TreeViewTokenResource` 读取。
+- 节点图标与 switcher 图标位于注册控件 `IconPresenter` 中，owner 读取在 header / switcher 上完成，再经 internal `IconSize` / `IconBrush`
+  绑定到 IconPresenter（在 IconPresenter 上读取会解析到它自己的 identity）。
 
 ## 4. 控件家族影响
 

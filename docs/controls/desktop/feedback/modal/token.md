@@ -43,8 +43,8 @@ Modal 的控件专项模型通过 Theme 消费 Token：
   `OwnerTokenResource` 读取全局 Token（`BorderRadiusLG`、`BoxShadows`、`FontWeightStrong`、`MotionDurationMid/Slow`、
   `ColorBgMask`、标题栏按钮的 `ColorIcon` / `ColorBgText*` / `BorderRadiusSM`、`IconSize`、`SpacingSM`），
   `Controls[Dialog]` 与 `Controls[MessageBox]` 分别作用于各自的 surface。Dialog Own Token 仍以 `DialogTokenResource` 读取。
-- `MessageBoxContent` 只属于 MessageBox，以 `MessageBoxTokenResource` 显式读取状态色与图标间距（对话框正文位于 surface 的
-  `Skeleton` 中，owner 读取会解析到 Skeleton）。
+- `MessageBoxContent` 只属于 MessageBox，以 `MessageBoxTokenResource` 显式读取状态色与图标间距。对话框正文位于 surface 的
+  `Skeleton` 中；Skeleton 是 Token owner 透明控件，正文内容继承 Dialog（或 MessageBox）为 owner。
 - 最大化的 Overlay surface 通过 `^[IsDialogMaximized=True]` 状态 Setter 去掉圆角，不再由 presenter 写本地值；恢复后回到主题圆角。
 - `OverlayDialogResizer` 的 12 处尺寸字面量是透明拖拽热区的布局常量，标注 `<!-- layout -->`。
 - 主题包定制（PrimeNG 预设）：Dialog 圆角经 `Controls[Dialog].BorderRadiusLG`，正文内边距 `ContentPadding`，标题字号

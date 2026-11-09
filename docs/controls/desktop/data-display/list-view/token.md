@@ -38,7 +38,7 @@ ListViewToken 当前按 ListView 语义分为六类。
 
 - 普通和 hover 使用 `SharedToken.ColorTextSecondary`。
 - selected 使用 `SharedToken.ColorText`。
-- disabled 使用 `SharedToken.ColorTextDisabled`。
+- disabled 使用 `SharedToken.ColorTextDisabled`（disabled 条目的内容 presenter 前景读取 `ItemDisabledColor`）。
 
 组标题文字不使用这些 Token，而使用 `GroupHeaderColor`。
 
@@ -70,7 +70,7 @@ ListViewToken 当前按 ListView 语义分为六类。
 - `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG` 分别对应 small、middle/custom、large 尺寸，只表达水平 padding（垂直 padding 为 0），条目高度由 SizeType 分支的 `MinHeight` 控制。
 - `ItemMargin` 控制条目之间的垂直间距，当前默认值为 `Thickness(0)`：条目纵向密度由分割线表达，条目之间以及条目与外框之间不留间距。
 
-条目最小高度来自 SharedToken，由 SizeType selector 选择。条目表面保持直角，主题不设置条目圆角。条目底部分割线使用 SharedToken `ColorSplit` 与 1 DIP 线宽（条目 `BorderThickness` 默认 `0,0,0,1`），不在 ListViewToken 中重复定义。
+条目最小高度来自全局 Token，由 SizeType selector 选择。条目表面保持直角，主题不设置条目圆角。条目底部分割线使用全局 `ColorSplit` 与 `LineWidth`（主题写入 internal `SplitLineWidth`，只画底边）；应用或 Semantic Part 样式设置条目 `BorderThickness` 时整体替换默认分割线。分割线不在 ListViewToken 中重复定义。
 
 ### 2.5 分页 Token
 
@@ -98,6 +98,15 @@ ListViewToken 主要参与以下专项模型：
 - selected indicator：`SelectedIndicatorMargin` 控制右侧图标与内容间距，图标尺寸和颜色来自 SharedToken。
 
 Token 不参与 selection 更新、filter 计算、sort、group build、page move、container recycling、empty indicator 判定或 operating overlay。
+
+### 3.1 主题读法与 Token owner
+
+- `ListViewTheme` 与 `ListViewItemTheme` 也是 TransferListView / TransferListItem（自有 identity）与无 identity 的 Select 候选列表、组标题的
+  基础主题，因此全局 Token 以 `OwnerTokenResource` 读取（主题前有 `<!-- owner: -->` 标记）：在 ListView 上 owner 是 ListView，在 Select
+  候选列表上是 Select。组标题（`GroupHeaderItem`，无 identity）同样读 owner 的 `ColorFillAlter` / `FontWeightStrong`。ListView Own Token 仍以
+  `ListViewTokenResource` 读取。
+- `ListViewItem` 是 Token owner 透明的条目容器（`[TokenOwnerTransparent]`），`Controls[ListView]` 作用于条目的颜色、高度、组标题、
+  选中标记与过渡时长，`Controls[ListViewItem]` 不作用于条目。
 
 ## 4. 控件家族影响
 

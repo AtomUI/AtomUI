@@ -129,8 +129,8 @@ IsHoverable
 `Controls[Card].BorderRadiusLG`），外框与分隔线是 `ColorBorderSecondary` / `BorderThickness`，背景是 `ColorBgContainer`，Inner 模式头部是
 `ColorFillAlter`。`CardGridItem`、`CardTabsContent` 是 Token owner 透明部件（`[TokenOwnerTransparent]`），主题以 `CardTokenResource` 读取；
 `CardActionPanel` 无 identity，同样读 Card。`CardActionButton`、`CardMetaContent` 保留自己的 identity，以各自 TokenResource 读取全局 Token
-（`CardActionsIconSize` 仍是 Card 的 Own Token）。Card body 位于注册控件 `Skeleton` 中，透明部件当前继承的 owner 是 Skeleton，因此它们的
-TokenTransitions 时长跟随 Skeleton，`Controls[Card]` 的动效时长覆盖暂不作用于网格项与页签内容的过渡。
+（`CardActionsIconSize` 仍是 Card 的 Own Token）。Card body 位于 `Skeleton` 中，Skeleton 与 `CardGridContent` 都是 Token owner 透明控件，
+透明部件继承 Card 为 owner，`Controls[Card]` 的覆盖（含动效时长）作用于网格项与页签内容的过渡。
 
 ## 4. 控件家族影响
 

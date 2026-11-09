@@ -43,6 +43,12 @@
   - `CardBehaviorTests` 追加：`Skeleton_exists_only_while_loading`、`Loading_toggle_restores_content`、`Actions_sync_and_visibility`、`Headerless_follows_header_and_extra`、`Not_loading_card_has_no_skeleton_visuals`（含视觉元素数上限）。
   - V6 回归：`dotnet test tests/AtomUI.Controls.Tests` 222 项、`tests/AtomUI.Desktop.Controls.Tests` 4,179 项、`tests/AtomUIGallery.Tests` 412 项（含 `CardShowCasePageTests`，Card 展示页可打开）全部通过，`controlgallery/AtomUIGallery.Desktop` 构建通过。
 
+## 2026-11-08 (Skeleton owner)
+
+- Changed
+  - `CardGridContent` 标为 Token owner 透明容器；body 外层的 Skeleton 也已 owner 透明，网格项与页签内容的 owner 现为 Card，
+    `Controls[Card]` 的动效时长覆盖作用于它们的过渡。
+
 ## 2026-11-08
 
 - Changed

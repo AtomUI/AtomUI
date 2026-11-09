@@ -3,6 +3,18 @@
 本文档记录 ListBox 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：`ListBoxTheme` / `ListBoxItemTheme` 以 `OwnerTokenResource` 读取全局 Token（CandidateList 与 Cascader 过滤列表复用
+    这两个主题，各自跟随自己的 owner）；`ListBoxItem` 标为 Token owner 透明条目容器，`Controls[ListBox]` 作用于条目及其过渡时长。
+  - `ItemDisabledColor` 接通 disabled 条目文字色（默认 `ColorTextDisabled`，渲染不变）。
+  - 条目分割线改为 internal `SplitLineWidth`（读取 `LineWidth`）只画底边，取代 `BorderThickness="0,0,0,1"` 字面量；应用或 Semantic Part 样式
+    设置的 `BorderThickness` 仍整体替换分割线。
+- Fixed
+  - 选中标记的样式选择器指向 `IconPresenter`，与模板中的 `IconTemplatePresenter` 不匹配，主色、`IconSize` 与 `SelectedIndicatorMargin`
+    从未生效；可见变化：选中标记现为 `ColorPrimary`，尺寸为 `IconSize`。
+
 ## 2026-10-20
 
 - Fixed

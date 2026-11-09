@@ -56,6 +56,18 @@
   - 性能工具 `--verify-skeleton-states` 改为经反射读取 `IsShimmerHost`、`IsShimmerRunning`、`ShimmerBlockCount`、`ShimmerVisual`、`Placeholder` 验证运行状态。
   - V6 回归：`dotnet test tests/AtomUI.Controls.Tests` 222 项、`tests/AtomUI.Desktop.Controls.Tests` 4,179 项、`tests/AtomUIGallery.Tests` 412 项（含 `SkeletonShowCasePageTests`、`SpaceShowCasePageTests`、`CardShowCasePageTests`，Skeleton、Space、Card 三个展示页均可打开）全部通过，`controlgallery/AtomUIGallery.Desktop` 构建通过。
 
+## 2026-11-08
+
+- Changed
+  - `Skeleton` 标为 Token owner 透明控件：被包裹的内容（Card、Dialog 正文、Statistic 数值）保持宿主的 Token owner，`Controls[Card]` /
+    `Controls[Dialog]` 的覆盖（含过渡时长）作用于其中的无 identity 部件。
+  - 占位部件以各自 identity 读取全局 Token；`SkeletonElementTheme`、`SkeletonImageTheme` 带 `owner:` 标记。
+  - `TitleHeight` 接通标题行高度（经 internal `IsTitle`，默认与 `ParagraphLineHeight` 相同，渲染不变）；`GradientToColor` 与
+    `GradientFromColor` 显式覆盖后，流光关键帧画刷使用覆盖值。
+  - `SkeletonParagraph` 的行背景改为绑定段落 `Background`，不再以本地值写入。
+- Added
+  - 新增 Own Token `ImageColor`（AtomUI 扩展，默认 `#bfbfbf` 与 antd 相同）：图片占位图标的填充色，取代主题中的颜色字面量。
+
 ## 2026-10-18
 
 - Fixed

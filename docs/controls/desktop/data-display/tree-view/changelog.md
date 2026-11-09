@@ -32,6 +32,17 @@
 - Implementation
   - `TreeViewItem` / `TreeViewItemHeader` 新增内部状态 `IsKeyboardFocusOutlineVisible`；header 通过共享的 `ManagedFocusOutline` 显示 `DefaultFocusAdorner`，离开视觉树时移除。设计见 `keyboard-navigation-design.md` §6.3.1。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：`TreeViewItem` 标为 Token owner 透明条目容器，节点 header 与 switcher（无 identity）以 `OwnerTokenResource`
+    读取宿主树的全局 Token；`TreeViewTheme` / `TreeViewItemTheme` 带 `owner:` 标记（TransferTreeView 复用）。`Controls[TreeView]` 作用于
+    节点、switcher、拖拽指示线、树线与过渡时长。
+  - 节点图标与 switcher 图标的尺寸、颜色改由 header / switcher 的 internal `IconSize` / `IconBrush` 绑定到 IconPresenter；颜色为
+    `ColorText`（与此前 IconPresenter 默认的 `ColorIconHover` 同值）。TransferTreeViewItemHeader 模板同步绑定。
+  - `DirectoryNodeSelectedColor`、`DirectoryNodeSelectedBg` 标为保留 Token（antd DirectoryTree，AtomUI 无目录树模式）。
+  - 可见变化：disabled 节点的图标与 switcher 图标使用 `ColorTextDisabled`，此前以 0.3 不透明度弱化。
+
 ## 2026-10-28
 
 - Motion

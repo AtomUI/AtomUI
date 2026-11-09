@@ -77,6 +77,12 @@ AtomUI 的重要变更记录在此文件中。
   - 新增 `Card.RestingShadows`（AtomUI 扩展，antd 无对应 Token）：有边框卡片的静止阴影，供主题预设给卡片设置常驻阴影；默认是与 `CardShadows` 同层数的透明阴影，Borderless 卡片仍为 `BoxShadowsTertiary`，悬停的 hoverable 卡片仍为 `CardShadows`。
   - Token 变化后立即重新布局：Splitter 面板间距（`Splitter.SplitBarSize`，此前每次测量只读取一次）、Separator 标题内间距、边距比例与纵向外间距（`TextPaddingInline`、`OrientationMarginPercent`、`VerticalMarginInline`）。
   - 可见变化：Collapse 与 Expander 内容区按 antd 绘制 `ContentBg`（`ColorBgContainer`），此前透明；ghost 样式的 Collapse / Expander 头部改为透明，此前为 `ContentBg`；页面背景不是容器色时可见（如暗色主题下的 `ColorBgLayout`）。SplitView 窗格默认带打开/关闭动效（`IsMotionEnabled` 跟随 `EnableMotion`，此前除非显式设置否则关闭）；窗格分隔线改为 `ColorBorder` 填充的 `LineWidth` 线条（渲染仍为 1px）。大号带标题的水平 Separator 上下外边距改用 `HorizontalWithTextGutterMargin`（16px），此前为 `HorizontalMarginBlockLG`（24px）。
+- Data 家族（列表、树、骨架屏）
+  - 控件级覆盖（`Controls[ListBox]`、`Controls[ListView]`、`Controls[TreeView]`、`Controls[Skeleton]` 以及骨架屏占位控件 `Controls[SkeletonAvatar]`、`Controls[SkeletonButton]`、`Controls[SkeletonInput]`、`Controls[SkeletonImage]`、`Controls[SkeletonNode]`、`Controls[SkeletonParagraph]`）现在作用于该控件的全部主题读取。ListBoxItem、ListViewItem、TreeViewItem 标为 Token owner 透明，列表或树的覆盖同样作用于条目、树节点头部与展开按钮及其过渡时长；列表与树的基础主题从 owner 读取全局 Token，Cascader 过滤列表与 Select 候选列表跟随 Cascader / Select。
+  - Skeleton 标为 Token owner 透明：被它包裹的内容（Card 与 Dialog 正文、Statistic 数值）保持宿主的 Token owner，`Controls[Card]` / `Controls[Dialog]` 的覆盖（含动效时长）作用于其中的无 identity 部件；`CardGridContent` 出于同样原因标为 Token owner 透明。
+  - `ListBox.ItemDisabledColor` / `ListView.ItemDisabledColor` 接通禁用条目文字色，`Skeleton.TitleHeight` 接通标题行高度（默认值不变）；流光画刷跟随显式覆盖的 `Skeleton.GradientFromColor` / `GradientToColor`。新增 `Skeleton.ImageColor`（AtomUI 扩展，默认 `#bfbfbf` 与 antd 相同），用于图片占位图标。`TreeView.DirectoryNodeSelectedBg` / `DirectoryNodeSelectedColor`（antd DirectoryTree）标为保留，暂无视觉效果。
+  - 列表条目分割线改由 `LineWidth` 绘制（应用或 Semantic Part 样式设置的 `BorderThickness` 仍整体替换），树节点与展开按钮图标的尺寸与颜色取自树（`IconSize`、`ColorText`）。
+  - 可见变化：ListBox 选中项的对勾现为 `ColorPrimary`、`IconSize` 尺寸并应用 `SelectedIndicatorMargin`（其样式此前指向错误元素，从未生效）；禁用树节点的图标与展开按钮改用 `ColorTextDisabled`，此前以 0.3 不透明度弱化。
 - Popup
   - Popup 动效（`MotionDurationMid`、`EnableMotion`）跟随 `Controls[Popup]`，弹层宿主（`OverlayPopupHost`、`PopupRoot`）的文本默认值跟随承载 Popup 的控件；Tooltip 与 Popover 缩放原点按框体实际绘制的圆角内缩，不再读取根 `BorderRadius` / `BorderRadiusLG`，控件级圆角覆盖会移动原点（默认圆角下原点不变）。
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。

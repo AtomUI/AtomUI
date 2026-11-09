@@ -13,6 +13,16 @@
 - Tests
   - 新增 `AbstractListItemTests`（`AtomUI.Controls.Tests`）：默认值为 `null`、伪类常量、伪类随值独立变化、控件值成为逻辑子元素、非控件值不进入逻辑树。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：`ListViewTheme` / `ListViewItemTheme` / `GroupHeaderItemTheme` 以 `OwnerTokenResource` 读取全局 Token（TransferListView
+    与 Select 候选列表复用这些主题，各自跟随自己的 owner）；`ListViewItem` 标为 Token owner 透明条目容器，`Controls[ListView]` 作用于条目及其
+    过渡时长。
+  - `ItemDisabledColor` 接通 disabled 条目文字色（默认 `ColorTextDisabled`，渲染不变）。
+  - 条目分割线改为 internal `SplitLineWidth`（读取 `LineWidth`）只画底边，取代 `BorderThickness="0,0,0,1"` 字面量；应用或 Semantic Part 样式
+    设置的 `BorderThickness` 仍整体替换分割线。
+
 ## 2026-10-20
 
 - Fixed

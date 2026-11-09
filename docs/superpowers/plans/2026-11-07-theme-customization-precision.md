@@ -414,7 +414,7 @@ git commit -m "test(Button): Button 家族 Token 生效测试全绿并转分析�
 | 10.7 | Navigation | `NavMenu`（E3：`Application.Current.TryGetResource(MotionDurationMid)` 与 200ms 回落删除）、`Menu`、`TabControl` / `TabItem` / `TabStripItem`（E3）、`Breadcrumb`、`Pagination`、`Tour` | 借鉴 `473c43b1f`（NavMenu 分组标题 P1）、`9c01e0cc7`（Tour 间距绑定随 Gap 重建） |
 | 10.8 | Layout / Container | `Card`、`Collapse`、`Splitter`（借鉴 `b1a6fc37a`：尺寸挂载期绑定 + `AffectsMeasure`）、`SplitView`（分隔线 `Width="1"` → `LineWidth`）、`Separator`、`Space`、`Masonry` | |
 | 10.9 | Data | `Table`（基础）、`List`、`Tree`、`Avatar`、`Timeline`、`Calendar`（E2 `CalendarRangeBarPanel` 字号 12 / 高度 20 / 内边距 8 → Own Token）、`DatePicker` / `TimePicker`、`Carousel`、`Statistic` | 补 LunarCalendar `WorkdayMarkerColor` 生效测试（Task 18 解除遮蔽）；Skeleton 作为已注册控件截断对话框内容的 owner 链：若其自身视觉都显式读 SkeletonTokenResource，则标为 owner 透明 |
-| 10.10 | 其余 | `ScrollBar`、`Icon`、`Window` 装饰、`FloatButton` 之外的剩余控件；以及 Button 家族遗留的 DropdownButton / SplitButton 变体色 | 以 `ATOMUIGEN041`–`047` 报告为清单。DropdownButton、SplitButton 的变体色绑定的是 Button 的 Own Token，这些值由 Button 的有效全局 Token 派生，所以 `Controls[DropdownButton].Tokens[ColorText]` 不改变它们的默认文字色：把变体相关 Own Token 提取到一个抽象 `[ControlDesignToken]` 层，由 `ButtonToken` 与新的 `DropdownButtonToken` 终端分别继承，变体绑定改用各自 identity 的键，并补隔离测试。同一模式另见 Input 家族：NumericUpDown 借用 ButtonSpinner 的手柄 Own Token，AutoCompleteSearchEdit / AutoCompleteTextArea 借用 AutoComplete 的 Own Token；SearchEdit 的搜索按钮颜色跟随 Button、动效时长跟随 SearchEdit，需统一；Select 家族中 Cascader、TreeSelect 读取 SelectToken，因而跟随 `Controls[Select]`，同样提取抽象层；FloatButton 徽标颜色在主题切换时不重算（Task 10.5 已修复）；Feedback 家族中 MessageBox 读取 Dialog 的 Own Token（`Controls[Dialog]` 的 Own 覆盖会到达 MessageBox），同样提取抽象层；DialogWindow 经 Window 的 StyleKey 使 owner 解析为 Window，当前无可见影响，一并核对；Navigation 家族中 ContextMenu / MenuFlyoutPresenter 读取 Menu、卡片与条形页签宿主读取 TabControl、SimplePagination 读取 Pagination 的 Own Token，同样提取抽象层 |
+| 10.10 | 其余 | `ScrollBar`、`Icon`、`Window` 装饰、`FloatButton` 之外的剩余控件；以及 Button 家族遗留的 DropdownButton / SplitButton 变体色 | 以 `ATOMUIGEN041`–`047` 报告为清单。DropdownButton、SplitButton 的变体色绑定的是 Button 的 Own Token，这些值由 Button 的有效全局 Token 派生，所以 `Controls[DropdownButton].Tokens[ColorText]` 不改变它们的默认文字色：把变体相关 Own Token 提取到一个抽象 `[ControlDesignToken]` 层，由 `ButtonToken` 与新的 `DropdownButtonToken` 终端分别继承，变体绑定改用各自 identity 的键，并补隔离测试。同一模式另见 Input 家族：NumericUpDown 借用 ButtonSpinner 的手柄 Own Token，AutoCompleteSearchEdit / AutoCompleteTextArea 借用 AutoComplete 的 Own Token；SearchEdit 的搜索按钮颜色跟随 Button、动效时长跟随 SearchEdit，需统一；Select 家族中 Cascader、TreeSelect 读取 SelectToken，因而跟随 `Controls[Select]`，同样提取抽象层；FloatButton 徽标颜色在主题切换时不重算（Task 10.5 已修复）；Feedback 家族中 MessageBox 读取 Dialog 的 Own Token（`Controls[Dialog]` 的 Own 覆盖会到达 MessageBox），同样提取抽象层；DialogWindow 经 Window 的 StyleKey 使 owner 解析为 Window，当前无可见影响，一并核对；Navigation 家族中 ContextMenu / MenuFlyoutPresenter 读取 Menu、卡片与条形页签宿主读取 TabControl、SimplePagination 读取 Pagination 的 Own Token，同样提取抽象层；Data 家族中 CandidateList、Transfer、TreeSelect、TimerStatistic、ImageGroupPreviewer 借用其他控件 Own Token，TreeSelect 的树经 StyleKey 以 TreeView 为 owner，CandidateListItem 与 Transfer 条目容器未设 owner 透明，同样核对 |
 
 每个家族完成的定义：该家族生效测试全绿；`Controls[X]` 隔离测试通过；分析器对该家族目录转错误；`token.md` 更新；一个或多个 commit。
 
@@ -642,7 +642,7 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 
 | 包 | 控件 | 字段 | 所属任务 | 裁决 |
 | --- | --- | --- | --- | --- |
-| Controls | Avatar | GroupOverlapping, GroupSpace | 10.9 | |
+| Controls | Avatar | GroupOverlapping, GroupSpace | 10.9 | 迁移到新 AvatarGroupToken（默认值不变，Breaking） |
 | Controls | Icon | FallbackColor | 10.10 | |
 | Desktop | Button | DefaultBorderColorDisabled, ExtraContentItemSpacing, ExtraContentMargin, ExtraContentMarginLG, ExtraContentMarginSM, FontWeight, GroupBorderColor, GutterToFlyout | 9 | FontWeight、DefaultBorderColorDisabled → Active；GroupBorderColor → Reserved；ExtraContentItemSpacing、ExtraContentMargin(LG/SM)、GutterToFlyout → 删除 |
 | Desktop | OptionButton | ButtonBackground, ButtonCheckedBackground, ButtonPadding, ContentLineHeightLG | 9 | ContentLineHeightLG → Active（修正 ContentPadding 运算数后）；ButtonPadding → Active（供 ContentPadding/LG 水平分量，对应 antd Radio buttonPaddingInline）；ButtonBackground、ButtonCheckedBackground → Reserved（对应 antd Radio buttonBg / buttonCheckedBg；组框分隔线与选中边框绘制在选项背后，不透明背景会遮盖） |
@@ -668,14 +668,14 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Desktop | Expander | LeftExpandButtonVMargin, RightExpandButtonVMargin | 10.8 | 删除（无 antd 对应） |
 | Desktop | GroupBox | OrientationMarginPercent, TextPaddingInline, VerticalMarginInline | 10.8 | 删除（复制自 antd Divider，GroupBox 无对应组件） |
 | Desktop | Separator | HorizontalWithTextGutterMargin | 10.8 | Active（作用于大号带标题分割线，对齐 antd 未设尺寸分割线）；新增 Own TitleFontWeight（AtomUI 扩展） |
-| Desktop | ListBox | ItemDisabledColor | 10.9 | |
-| Desktop | ListView | ItemDisabledColor | 10.9 | |
-| Desktop | TreeView | DirectoryNodeSelectedBg, DirectoryNodeSelectedColor | 10.9 | |
-| Desktop | Timeline | LastItemContentMinHeight | 10.9 | |
+| Desktop | ListBox | ItemDisabledColor | 10.9 | Active |
+| Desktop | ListView | ItemDisabledColor | 10.9 | Active |
+| Desktop | TreeView | DirectoryNodeSelectedBg, DirectoryNodeSelectedColor | 10.9 | Reserved |
+| Desktop | Timeline | LastItemContentMinHeight | 10.9 | 删除 |
 | Desktop | TimePicker | ButtonsMargin, PeriodHostWidth, RangePickerArrowMargin, RangePickerIndicatorThickness | 10.9 | |
-| Desktop | Carousel | ArrowOffset | 10.9 | |
-| Desktop | Skeleton | GradientToColor, TitleHeight | 10.9 | |
-| Desktop | ImagePreviewer | ImagePreviewSwitchSize | 10.9 | |
+| Desktop | Carousel | ArrowOffset | 10.9 | Active |
+| Desktop | Skeleton | GradientToColor, TitleHeight | 10.9 | Active；新增 AtomUI 扩展 ImageColor；Skeleton 标为 owner 透明 |
+| Desktop | ImagePreviewer | ImagePreviewSwitchSize | 10.9 | Reserved；新增 AtomUI 扩展 ErrorIconSize |
 | Desktop | Form | VerticalLabelPadding | 10.10 | |
 | Desktop | WindowTitleBar | CloseHoverBackgroundColor, ClosePressedBackgroundColor, ForegroundColor, HoverBackgroundColor, PressedBackgroundColor | 10.10 | |
 | ColorPicker | ColorPicker | ColorPickerAlphaInputWidth, ColorPickerInputNumberHandleWidth | 14 | |

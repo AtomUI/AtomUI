@@ -27,11 +27,6 @@ internal sealed class TimelineToken : AbstractControlDesignToken
     /// 时间项下大内间距
     /// </summary>
     public Thickness ItemPaddingBottomLG { get; set; }
-    
-    /// <summary>
-    /// 最后一个Item的Content最小高度
-    /// </summary>
-    public double LastItemContentMinHeight { get; set; }
 
     /// <summary>
     /// 节点指示器的大小
@@ -83,7 +78,6 @@ internal sealed class TimelineToken : AbstractControlDesignToken
         IndicatorEndModeMargin    = new Thickness(EffectiveGlobalToken.UniformlyMargin, 0, 0, 0);
         IndicatorMiddleModeMargin = new Thickness(EffectiveGlobalToken.UniformlyMargin, 0);
 
-        LastItemContentMinHeight = EffectiveGlobalToken.ControlHeightLG * 1.2;
         IndicatorSize            = EffectiveGlobalToken.SizeMS;
         IndicatorDotSize         = 8;
     }

@@ -37,7 +37,7 @@
         </Setter>
 
         <Setter Property="CoverWidth" Value="{atom:ImagePreviewerTokenResource CoverImageWidth}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:ImageGroupPreviewerTokenResource EnableMotion}" />
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         

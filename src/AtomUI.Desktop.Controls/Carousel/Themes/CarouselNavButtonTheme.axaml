@@ -12,16 +12,16 @@
         <Style Selector="^:is(atom|CarouselNavButton)">
             <Setter Property="IconWidth" Value="{atom:CarouselTokenResource ArrowSize}" />
             <Setter Property="IconHeight" Value="{atom:CarouselTokenResource ArrowSize}" />
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorBgContainer}" />
-            <Setter Property="Opacity" Value="0.2" />
+            <Setter Property="IconBrush" Value="{atom:CarouselNavButtonTokenResource ColorBgContainer}" />
+            <Setter Property="Opacity" Value="{atom:CarouselTokenResource ArrowOpacity}" />
 
             <Style Selector="^:pointerover">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorBgContainer}" />
+                <Setter Property="IconBrush" Value="{atom:CarouselNavButtonTokenResource ColorBgContainer}" />
                 <Setter Property="Opacity" Value="1.0" />
             </Style>
 
             <Style Selector="^:pressed">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorBgContainer}" />
+                <Setter Property="IconBrush" Value="{atom:CarouselNavButtonTokenResource ColorBgContainer}" />
             </Style>
         </Style>
 

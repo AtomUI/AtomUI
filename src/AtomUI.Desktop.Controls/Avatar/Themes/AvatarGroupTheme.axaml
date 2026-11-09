@@ -6,11 +6,11 @@
     <ControlTheme x:Key="{x:Type atom:AvatarGroup}" TargetType="atom:AvatarGroup">
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="GroupSpace" Value="{atom:AvatarTokenResource GroupSpace}" />
-        <Setter Property="GroupOverlapping" Value="{atom:AvatarTokenResource GroupOverlapping}" />
+        <Setter Property="GroupSpace" Value="{atom:AvatarGroupTokenResource GroupSpace}" />
+        <Setter Property="GroupOverlapping" Value="{atom:AvatarGroupTokenResource GroupOverlapping}" />
         <Setter Property="FoldInfoAvatarForeground"
                 Value="{atom:AvatarTokenResource AvatarColor}" />
         <Setter Property="FoldInfoAvatarBackground" Value="{atom:AvatarTokenResource AvatarBg}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:AvatarGroupTokenResource BorderThickness}" />
     </ControlTheme>
 </ResourceDictionary>

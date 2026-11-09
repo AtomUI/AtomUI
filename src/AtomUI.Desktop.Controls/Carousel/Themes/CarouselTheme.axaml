@@ -40,9 +40,10 @@
         </Setter>
 
         <Setter Property="PaginationOffset" Value="{atom:CarouselTokenResource PaginationOffset}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="ArrowOffset" Value="{atom:CarouselTokenResource ArrowOffset}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:CarouselTokenResource EnableMotion}" />
         <Setter Property="PageTransitionDuration"
-                Value="{atom:SharedTokenResource MotionDurationSlow}" />
+                Value="{atom:CarouselTokenResource MotionDurationSlow}" />
         <Setter Property="PageInEasing" Value="CubicEaseOut" />
         <Setter Property="PageOutEasing" Value="CubicEaseOut" />
 

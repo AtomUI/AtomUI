@@ -69,6 +69,12 @@ internal class TimelineIndicator : TemplatedControl
     
     internal static readonly StyledProperty<IBrush?> DefaultIndicatorColorProperty =
         AvaloniaProperty.Register<TimelineIndicator, IBrush?>(nameof(DefaultIndicatorColor));
+
+    // The node colour: the item's IndicatorColor, or the theme's DefaultIndicatorColor (ColorPrimary) when the item has none.
+    // Recomputed when either changes, so theme changes reach uncoloured nodes.
+    internal static readonly DirectProperty<TimelineIndicator, IBrush?> EffectiveIndicatorColorProperty =
+        AvaloniaProperty.RegisterDirect<TimelineIndicator, IBrush?>(nameof(EffectiveIndicatorColor),
+            o => o.EffectiveIndicatorColor);
     
     internal static readonly StyledProperty<double> IndicatorDotBorderWidthProperty =
         AvaloniaProperty.Register<TimelineIndicator, double>(nameof(IndicatorDotBorderWidth));
@@ -98,6 +104,14 @@ internal class TimelineIndicator : TemplatedControl
     {
         get => GetValue(DefaultIndicatorColorProperty);
         set => SetValue(DefaultIndicatorColorProperty, value);
+    }
+
+    private IBrush? _effectiveIndicatorColor;
+
+    internal IBrush? EffectiveIndicatorColor
+    {
+        get => _effectiveIndicatorColor;
+        private set => SetAndRaise(EffectiveIndicatorColorProperty, ref _effectiveIndicatorColor, value);
     }
 
     private bool _isFirst;
@@ -193,7 +207,7 @@ internal class TimelineIndicator : TemplatedControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        IndicatorColor ??= DefaultIndicatorColor;
+        EffectiveIndicatorColor = IndicatorColor ?? DefaultIndicatorColor;
         _rail          =   e.NameScope.Find<Border>("PART_Rail");
         _dot           =   e.NameScope.Find<Border>("PART_Dot");
         _iconHost      =   e.NameScope.Find<Border>("PART_IconHost");
@@ -204,7 +218,11 @@ internal class TimelineIndicator : TemplatedControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == RelativeLineHeightProperty)
+        if (change.Property == IndicatorColorProperty || change.Property == DefaultIndicatorColorProperty)
+        {
+            EffectiveIndicatorColor = IndicatorColor ?? DefaultIndicatorColor;
+        }
+        else if (change.Property == RelativeLineHeightProperty)
         {
             IndicatorMinHeight = RelativeLineHeight * TextElement.GetFontSize(this);
         }
@@ -261,8 +279,10 @@ internal class TimelineIndicator : TemplatedControl
 
         if (_dot is not null)
         {
-            _dot.BorderThickness = new Thickness(IndicatorDotBorderWidth);
-            _dot.CornerRadius    = new CornerRadius(boxSize / 2);
+            // The ring width and the circle radius follow the dot Tokens; current values keep application styles on the
+            // dot part in charge.
+            _dot.SetCurrentValue(Border.BorderThicknessProperty, new Thickness(IndicatorDotBorderWidth));
+            _dot.SetCurrentValue(Border.CornerRadiusProperty, new CornerRadius(boxSize / 2));
             _dot.Arrange(new Rect(centerX - boxSize / 2, centerY - boxSize / 2, boxSize, boxSize));
         }
 

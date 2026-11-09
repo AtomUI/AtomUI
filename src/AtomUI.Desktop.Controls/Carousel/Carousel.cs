@@ -172,6 +172,10 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
     
     internal static readonly StyledProperty<double> PaginationOffsetProperty =
         AvaloniaProperty.Register<Carousel, double>(nameof(PaginationOffset));
+
+    // The switch arrows' inset from the carousel edge (antd arrowOffset); the theme reads Carousel.ArrowOffset.
+    internal static readonly StyledProperty<double> ArrowOffsetProperty =
+        AvaloniaProperty.Register<Carousel, double>(nameof(ArrowOffset));
     
     internal static readonly DirectProperty<Carousel, bool> IsEffectiveShowTransitionProgressProperty =
         AvaloniaProperty.RegisterDirect<Carousel, bool>(
@@ -223,7 +227,7 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
     internal Thickness EffectivePreviousButtonMargin
     {
         get => _effectivePreviousButtonMargin;
-        set => SetAndRaise(EffectivePaginationMarginProperty, ref _effectivePreviousButtonMargin, value);
+        set => SetAndRaise(EffectivePreviousButtonMarginProperty, ref _effectivePreviousButtonMargin, value);
     }
     
     private Thickness _effectiveNextButtonMargin;
@@ -231,7 +235,7 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
     internal Thickness EffectiveNextButtonMargin
     {
         get => _effectiveNextButtonMargin;
-        set => SetAndRaise(EffectivePaginationMarginProperty, ref _effectiveNextButtonMargin, value);
+        set => SetAndRaise(EffectiveNextButtonMarginProperty, ref _effectiveNextButtonMargin, value);
     }
     
     private bool _isEffectiveShowTransitionProgress;
@@ -246,6 +250,12 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
     {
         get => GetValue(PaginationOffsetProperty);
         set => SetValue(PaginationOffsetProperty, value);
+    }
+
+    internal double ArrowOffset
+    {
+        get => GetValue(ArrowOffsetProperty);
+        set => SetValue(ArrowOffsetProperty, value);
     }
     
     private IList<object>? _indicatorItems;
@@ -435,6 +445,10 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
                  change.Property == PaginationOffsetProperty)
         {
             ConfigurePaginationMargin();
+            ConfigureNavButtonsMargin();
+        }
+        else if (change.Property == ArrowOffsetProperty)
+        {
             ConfigureNavButtonsMargin();
         }
         else if (change.Property == TransitionEffectProperty)
@@ -642,14 +656,14 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
         if (PaginationPosition == CarouselPaginationPosition.Bottom ||
             PaginationPosition == CarouselPaginationPosition.Top)
         {
-            SetCurrentValue(EffectivePreviousButtonMarginProperty, new Thickness(PaginationOffset, 0, 0, 0));
-            SetCurrentValue(EffectiveNextButtonMarginProperty, new Thickness(0, 0, PaginationOffset, 0));
+            SetCurrentValue(EffectivePreviousButtonMarginProperty, new Thickness(ArrowOffset, 0, 0, 0));
+            SetCurrentValue(EffectiveNextButtonMarginProperty, new Thickness(0, 0, ArrowOffset, 0));
         }
         else if (PaginationPosition == CarouselPaginationPosition.Left ||
                  PaginationPosition == CarouselPaginationPosition.Right)
         {
-            SetCurrentValue(EffectivePreviousButtonMarginProperty, new Thickness(0, PaginationOffset, 0, 0));
-            SetCurrentValue(EffectiveNextButtonMarginProperty, new Thickness(0, 0, 0, PaginationOffset));
+            SetCurrentValue(EffectivePreviousButtonMarginProperty, new Thickness(0, ArrowOffset, 0, 0));
+            SetCurrentValue(EffectiveNextButtonMarginProperty, new Thickness(0, 0, 0, ArrowOffset));
         }
     }
 

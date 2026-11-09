@@ -34,15 +34,15 @@
         
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:ImagePreviewerTokenResource EnableMotion}" />
         
         <Setter Property="CoverIndicatorContentTemplate">
             <DataTemplate>
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Spacing="{atom:SharedTokenResource SpacingXXS}">
-                    <antdicons:EyeOutlined StrokeBrush="{atom:SharedTokenResource ColorTextLightSolid}"/>
+                            Spacing="{atom:ImagePreviewerTokenResource SpacingXXS}">
+                    <antdicons:EyeOutlined StrokeBrush="{atom:ImagePreviewerTokenResource ColorTextLightSolid}"/>
                     <TextBlock
                         Text="{atom:ImagePreviewerLangResource Preview}" />
                 </StackPanel>

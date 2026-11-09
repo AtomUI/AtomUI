@@ -19,7 +19,7 @@
                                                 Orientation="{TemplateBinding Orientation}"
                                                 IsLabelLayout="{TemplateBinding IsLabelLayout}"
                                                 AxisOverflow="{TemplateBinding Padding}"
-                                                IndicatorSpacing="{atom:SharedTokenResource UniformlyPaddingXS}">
+                                                IndicatorSpacing="{atom:TimelineTokenResource UniformlyPaddingXS}">
                         <StackPanel Name="Header" Classes.semantic-item-header="True">
                             <atom:TextBlock Name="Label"
                                             Classes.semantic-item-title="True"

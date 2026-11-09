@@ -52,6 +52,12 @@ internal sealed class CarouselToken : AbstractControlDesignToken
     /// arrows offset to Carousel edge
     /// </summary>
     public double ArrowOffset { get; set; }
+
+    /// <summary>
+    /// 切换箭头静止时的不透明度（AtomUI 扩展；antd 固定为 0.4），悬停时完全不透明
+    /// Opacity of the resting switch arrows (an AtomUI extension; antd fixes 0.4); hovered arrows are opaque
+    /// </summary>
+    public double ArrowOpacity { get; set; }
     
     public override void CalculateTokenValues(bool isDarkMode)
     {
@@ -59,6 +65,7 @@ internal sealed class CarouselToken : AbstractControlDesignToken
         IndicatorActiveWidth = 24;
         ArrowSize            = 16;
         ArrowOffset          = EffectiveGlobalToken.SpacingXS;
+        ArrowOpacity         = 0.2;
         IndicatorWidth       = 16;
         IndicatorHeight      = 3;
         IndicatorGap         = EffectiveGlobalToken.UniformlyMarginXS;

@@ -37,7 +37,15 @@ internal sealed class ImagePreviewerToken : AbstractControlDesignToken
     /// 预览切换按钮尺寸
     /// Size of preview switch button
     /// </summary>
+    [ReservedToken("antd Image imagePreviewSwitchSize: declared by antd 6.7 but not read by its styles; the AtomUI switch " +
+                   "buttons size from PreviewOperationSize and their padding.")]
     public double ImagePreviewSwitchSize { get; set; }
+
+    /// <summary>
+    /// 加载失败占位图标尺寸（AtomUI 扩展，antd 加载失败时显示 fallback 图片）
+    /// Size of the load-failure placeholder icon (an AtomUI extension; antd shows a fallback image)
+    /// </summary>
+    public double ErrorIconSize { get; set; }
     
     /// <summary>
     /// 封面的背景颜色
@@ -97,6 +105,7 @@ internal sealed class ImagePreviewerToken : AbstractControlDesignToken
         PreviewOperationColorDisabled = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.25);
         PreviewOperationSize          = EffectiveGlobalToken.FontSizeIcon * 1.5;
         ImagePreviewSwitchSize        = EffectiveGlobalToken.ControlHeightLG;
+        ErrorIconSize                 = EffectiveGlobalToken.ControlHeightLG * 1.2;
         MaskBgColor                   = ColorUtils.FromRgbF(0.3, 0, 0, 0);
         DialogMinWidth                = 710;
         DialogMinHeight               = 240;
@@ -114,7 +123,9 @@ internal sealed class ImagePreviewerToken : AbstractControlDesignToken
         NavButtonBgColor             = EffectiveGlobalToken.ColorBgMask.SetAlphaF(0.1);
         NavButtonBgHoverColor        = EffectiveGlobalToken.ColorBgMask.SetAlphaF(0.2);
         FloatToolbarPadding          = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG, 0);
-        FloatToolbarIndicatorPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
+        // The index indicator is transparent and centred above the actions, so only its block padding shows; the default
+        // adds none (the former inline-only default never rendered).
+        FloatToolbarIndicatorPadding = new Thickness(0);
     }
     
 }

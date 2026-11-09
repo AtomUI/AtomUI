@@ -10,7 +10,7 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextHeading}"/>
+        <Setter Property="Foreground" Value="{atom:StatisticCountUpTokenResource ColorTextHeading}"/>
         <Setter Property="FontSize" Value="{atom:StatisticTokenResource ContentFontSize}"/>
 
         <Style Selector="^">

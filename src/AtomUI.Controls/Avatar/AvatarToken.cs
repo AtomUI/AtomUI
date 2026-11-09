@@ -18,10 +18,6 @@ internal sealed class AvatarToken : AbstractControlDesignToken
 
     public double TextFontSizeSM { get; set; }
 
-    public double GroupSpace { get; set; }
-
-    public double GroupOverlapping { get; set; }
-
     public Color GroupBorderColor { get; set; }
 
     public Color AvatarBg { get; set; }
@@ -37,8 +33,6 @@ internal sealed class AvatarToken : AbstractControlDesignToken
         TextFontSize = Math.Round((EffectiveGlobalToken.FontSizeLG + EffectiveGlobalToken.FontSizeXL) / 2);
         TextFontSizeLG = EffectiveGlobalToken.FontSizeHeading3;
         TextFontSizeSM = EffectiveGlobalToken.FontSize;
-        GroupSpace = EffectiveGlobalToken.UniformlyMarginXXS;
-        GroupOverlapping = EffectiveGlobalToken.UniformlyMarginXS;
         GroupBorderColor = EffectiveGlobalToken.ColorBorderBg;
         AvatarBg = EffectiveGlobalToken.ColorTextPlaceholder;
         AvatarColor = EffectiveGlobalToken.ColorTextLightSolid;

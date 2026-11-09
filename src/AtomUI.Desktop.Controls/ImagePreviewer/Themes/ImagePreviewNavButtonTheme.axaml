@@ -12,8 +12,8 @@
             <Setter Property="IconWidth" Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}"/>
             <Setter Property="IconHeight" Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}"/>
             <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource NavButtonBgColor}"/>
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextLightSolid}"/>
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingXS}"/>
+            <Setter Property="IconBrush" Value="{atom:ImagePreviewerTokenResource ColorTextLightSolid}"/>
+            <Setter Property="Padding" Value="{atom:ImagePreviewerTokenResource PaddingXS}"/>
         
             <Style Selector="^:pointerover">
                 <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource NavButtonBgHoverColor}"/>

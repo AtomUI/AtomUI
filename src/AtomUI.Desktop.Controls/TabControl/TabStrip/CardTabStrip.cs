@@ -128,8 +128,10 @@ public partial class CardTabStrip : BaseTabStrip
     {
         base.OnPropertyChanged(change);
         
+        // The card radius is a Token (BorderRadius by size): a theme or Control-level change recomputes the per-side radius.
         if (change.Property == TabStripPlacementProperty ||
-            change.Property == CardSizeProperty)
+            change.Property == CardSizeProperty ||
+            change.Property == CardBorderRadiusProperty)
         {
             HandleTabStripPlacementChanged();
         }

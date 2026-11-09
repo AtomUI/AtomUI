@@ -34,8 +34,9 @@
                                         IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), RelativeSource={RelativeSource AncestorType=atom:TabScrollContentPresenter}}" />
                                 </atom:TabScrollContentPresenter.GestureRecognizers>
                             </atom:TabScrollContentPresenter>
-                            <!-- Outer shadows exclude the caster itself. Position the casters
-                                 outside the viewport so only their inward shadows cover the tabs. -->
+                            <!-- layout: ZIndex 1 keeps the shadow casters above the tabs. Outer shadows exclude the
+                                 caster itself. Position the casters outside the viewport so only their inward shadows
+                                 cover the tabs. -->
                             <Canvas ClipToBounds="True" IsHitTestVisible="False" ZIndex="1">
                                 <atom:TabOverflowEdgeIndicator Name="PART_ScrollStartEdgeIndicator"
                                         IsVisible="False"
@@ -60,10 +61,14 @@
         
         <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
 
+        <!-- The overflow-menu button is a registered IconButton: owner reads written on it resolve to the button, so the
+             scroll viewer reads its host's values and the button binds them. -->
+        <Setter Property="MenuIndicatorIconSize" Value="{atom:OwnerTokenResource IconSize}"/>
+        <Setter Property="MenuIndicatorIconBrush" Value="{atom:OwnerTokenResource ColorTextSecondary}"/>
         <Style Selector="^ /template/ atom|IconButton#PART_ScrollMenuIndicator">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}"/>
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}"/>
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
+            <Setter Property="IconWidth" Value="{TemplateBinding MenuIndicatorIconSize}"/>
+            <Setter Property="IconHeight" Value="{TemplateBinding MenuIndicatorIconSize}"/>
+            <Setter Property="IconBrush" Value="{TemplateBinding MenuIndicatorIconBrush}"/>
         </Style>
         
         <Style Selector="^[TabStripPlacement=Top]">

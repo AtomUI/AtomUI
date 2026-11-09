@@ -89,6 +89,16 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
         }
     }
 
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        // The ink bar thickness is a Token (InkBarThickness): a theme or Control-level change re-lays the indicator out.
+        if (change.Property == SelectedIndicatorThicknessProperty)
+        {
+            SetupSelectedIndicator();
+        }
+    }
+
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
         _transitionInitialization?.Reset();

@@ -33,19 +33,22 @@
         <Style Selector="^[TabStripPlacement=Left], ^[TabStripPlacement=Right]">
             <Style Selector="^[SizeType=Large]">
                 <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="Padding" Value="8,4"/>
+                    <!-- layout: compact line-tab padding for left / right placement (theme-internal, see token.md) -->
+                    <Setter Property="Padding" Value="8,4" />
                 </Style>
             </Style>
             
             <Style Selector="^[SizeType=Middle]">
                 <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="Padding" Value="8,4"/>
+                    <!-- layout: compact line-tab padding for left / right placement (theme-internal, see token.md) -->
+                    <Setter Property="Padding" Value="8,4" />
                 </Style>
             </Style>
             
             <Style Selector="^[SizeType=Small]">
                 <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="Padding" Value="8,4"/>
+                    <!-- layout: compact line-tab padding for left / right placement (theme-internal, see token.md) -->
+                    <Setter Property="Padding" Value="8,4" />
                 </Style>
             </Style>
         </Style>

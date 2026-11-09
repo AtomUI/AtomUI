@@ -68,6 +68,8 @@ internal sealed class TabControlToken : AbstractControlDesignToken
     /// <summary>
     /// 横向标签页外间距
     /// </summary>
+    [ReservedToken("antd Tabs horizontalMargin (the tab bar margin; antd sets its bottom side, the gap to the content). " +
+                   "The gap between the tab bar and the content here is TabAndContentGutter, so no element reads it.")]
     public Thickness HorizontalMargin { get; set; }
 
     /// <summary>

@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using AtomUI.Utils;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -41,6 +42,26 @@ internal sealed class TabScrollViewer : ScrollViewer, ITabOverflowPopupActionTar
         AvaloniaProperty.RegisterDirect<TabScrollViewer, PlacementMode>(
             nameof(OverflowPopupPlacement),
             control => control.OverflowPopupPlacement);
+
+    // The overflow-menu button's icon size and colour: read from the host's effective Tokens by this scroll viewer's
+    // theme (a registered IconButton would resolve owner reads to itself) and bound by the button.
+    internal static readonly StyledProperty<double> MenuIndicatorIconSizeProperty =
+        AvaloniaProperty.Register<TabScrollViewer, double>(nameof(MenuIndicatorIconSize));
+
+    internal static readonly StyledProperty<IBrush?> MenuIndicatorIconBrushProperty =
+        AvaloniaProperty.Register<TabScrollViewer, IBrush?>(nameof(MenuIndicatorIconBrush));
+
+    internal double MenuIndicatorIconSize
+    {
+        get => GetValue(MenuIndicatorIconSizeProperty);
+        set => SetValue(MenuIndicatorIconSizeProperty, value);
+    }
+
+    internal IBrush? MenuIndicatorIconBrush
+    {
+        get => GetValue(MenuIndicatorIconBrushProperty);
+        set => SetValue(MenuIndicatorIconBrushProperty, value);
+    }
 
     private Dock _tabStripPlacement;
     private bool _isOverflowPopupOpen;

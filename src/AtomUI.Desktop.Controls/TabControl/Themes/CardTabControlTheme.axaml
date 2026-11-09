@@ -77,17 +77,17 @@
         <Setter Property="CardSize"
                 Value="{atom:TabControlTokenResource CardSize}" />
         <Setter Property="CardBorderThickness"
-                Value="{atom:SharedTokenResource BorderThickness}" />
+                Value="{atom:CardTabControlTokenResource BorderThickness}" />
         
         <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
             <Setter Property="IconBrush"
                     Value="{atom:TabControlTokenResource ItemColor}" />
             <Setter Property="IconWidth"
-                    Value="{atom:SharedTokenResource IconSize}" />
+                    Value="{atom:CardTabControlTokenResource IconSize}" />
             <Setter Property="IconHeight"
-                    Value="{atom:SharedTokenResource IconSize}" />
+                    Value="{atom:CardTabControlTokenResource IconSize}" />
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+                    Value="{atom:CardTabControlTokenResource ColorBorderSecondary}" />
         </Style>
                 
         <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton:pointerover">
@@ -97,7 +97,7 @@
 
         <Style Selector="^[TabStripPlacement=Top]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="HorizontalSpacing" Value="{atom:CardTabControlTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -132,7 +132,7 @@
 
         <Style Selector="^[TabStripPlacement=Right]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="VerticalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="VerticalSpacing" Value="{atom:CardTabControlTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -167,7 +167,7 @@
 
         <Style Selector="^[TabStripPlacement=Bottom]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="HorizontalSpacing" Value="{atom:CardTabControlTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -202,7 +202,7 @@
 
         <Style Selector="^[TabStripPlacement=Left]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="VerticalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="VerticalSpacing" Value="{atom:CardTabControlTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -237,15 +237,15 @@
         
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CardBorderRadius"
-                    Value="{atom:SharedTokenResource BorderRadiusLG}" />
+                    Value="{atom:CardTabControlTokenResource BorderRadiusLG}" />
         </Style>
         <Style Selector="^[SizeType=Middle]">
             <Setter Property="CardBorderRadius"
-                    Value="{atom:SharedTokenResource BorderRadius}" />
+                    Value="{atom:CardTabControlTokenResource BorderRadius}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
             <Setter Property="CardBorderRadius"
-                    Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                    Value="{atom:CardTabControlTokenResource BorderRadiusSM}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">

@@ -294,15 +294,10 @@ public partial class TabStripItem : AvaloniaTabStripItem
                 resourceKey = "CardTabStripItemTheme";
             }
 
-            if (Application.Current != null)
+            // Resolve from the item itself so a theme supplied in a local resource scope wins over the application one.
+            if (this.TryFindResource(resourceKey, out var resource) && resource is ControlTheme theme)
             {
-                if (Application.Current.TryFindResource(resourceKey, out var resource))
-                {
-                    if (resource is ControlTheme theme)
-                    {
-                        Theme = theme;
-                    }
-                }
+                Theme = theme;
             }
         }
     }

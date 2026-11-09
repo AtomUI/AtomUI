@@ -2,6 +2,16 @@
 
 本文档记录 Pagination 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：Pagination、SimplePagination 以各自 TokenResource 读取，共用的页码项以 `OwnerTokenResource` 读取宿主值；
+    选中页码字重改读 `FontWeightStrong`（与 antd 一致，默认 600 不变）。
+  - `PaginationMiniQuickJumperInputWidth` 接通小尺寸快速跳转与简洁模式输入框宽度，`ItemInputBg` 接通简洁模式输入框背景；
+    `PaginationItemPaddingInline` 改为作用于页码文字（此前写在无子元素的背景边框上，从未生效），默认值改为仅水平方向；
+    `ItemLinkBg`、`InputOutlineOffset` 标为保留 Token。
+  - 可见变化：小尺寸快速跳转输入框宽 44px（此前 50px）；四位及以上页码两侧各有 6px 内间距。
+
 ## 2026-10-20
 
 - Fixed

@@ -25,6 +25,17 @@ Token 按控件语义分类维护：
 
 ## 3. 控件专项模型中的 Token 使用
 
+- `ItemLinkBg` 与 `InputOutlineOffset` 是保留 Token（`[ReservedToken]`）：前者对应 antd Pagination `itemLinkBg`，只绘制 bordered 变体的
+  上一页/下一页按钮，AtomUI 没有该变体；后者对应 antd 内部 `inputOutlineOffset`（简洁模式输入框焦点阴影的 x 偏移），这里简洁模式输入框
+  是 LineEdit，焦点阴影由 Input 家族绘制。
+- `ItemInputBg` 是 SimplePagination 输入框背景；`PaginationMiniQuickJumperInputWidth` 是小尺寸时快速跳转与简洁模式输入框的宽度（antd
+  `controlHeightLG * 1.1`）。
+- `PaginationItemPaddingInline` 是页码项的行内（水平）内间距，作用于页码文字，宽页码（如四位数）不再贴边；默认 `UniformlyMarginXXS * 1.5, 0`。
+- 页码项 `PaginationNavItem` 被 Pagination 与 SimplePagination 共用，以 `OwnerTokenResource` 读取所在分页控件的有效全局 Token；页码项内的
+  图标呈现器是注册部件，图标尺寸与跳转/省略图标颜色由页码项读取后向下绑定。SimplePagination 也读取 Pagination 的 Own Token（抽象 Token
+  层由 Task 10.10 处理）。
+
+
 Pagination 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。

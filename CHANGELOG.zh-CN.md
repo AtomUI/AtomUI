@@ -17,6 +17,7 @@ AtomUI 的重要变更记录在此文件中。
   - Theme Tokens：删除没有消费者的 `Alert.MessageWithDescriptionMargin`；标题与描述的间距由 `Alert.DescriptionLabelMargin` 表达。
   - Theme Tokens：删除从未被消费的 `MessageCard.CardHeight`、`PopupConfirm.PopupMinWidth`、`PopupConfirm.PopupMinHeight`，以及固定尺寸关闭按钮无法体现的 `NotificationCard.NotificationCloseButtonPadding`；请从主题配置中移除。
   - Theme Tokens：`TabControl.HorizontalMargin` 标为保留，暂无视觉效果（页签栏与内容的间距为 `TabControl.TabAndContentGutter`）。
+  - Theme Tokens：`Pagination.ItemLinkBg`（antd bordered 上一页/下一页按钮）与 `Pagination.InputOutlineOffset` 标为保留，暂无视觉效果。
   - Theme Tokens：删除从未被消费的 `NavMenu.ItemBackgroundMotionEasing`、`NavMenu.KeyGestureColor` 与 `Menu.MenuTearOffHeight`（antd 无对应 Token；NavMenu 不显示快捷键，Menu 没有 tear-off 项）；请从主题配置中移除。`NavMenu.CollapsedWidth`、`NavMenu.MenuSubMenuBg`、`NavMenu.HorizontalItemHoverColor` 标为保留，暂无视觉效果。
 - Button 家族
   - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
@@ -64,6 +65,10 @@ AtomUI 的重要变更记录在此文件中。
   - 新接通的 Token（默认值保持原渲染）：light horizontal NavMenu 顶层项使用 `HorizontalItemSelectedColor`（选中文字与 active bar）、`HorizontalItemSelectedBg`、`HorizontalItemHoverBg`、`HorizontalItemBorderRadius`，`HorizontalLineHeight` 作用于菜单项文字，`TopLevelItemPopupMarginToAnchor`（改为 `UniformlyMarginXXS`）为顶层弹层间距；Menu 顶层项使用 `TopLevelItemColor`、`TopLevelItemBg`（改为透明），展开时使用 `TopLevelItemSelectedColor` / `TopLevelItemSelectedBg`；菜单图标间距使用 `Menu.ItemIconMarginInlineEnd`（改为 `UniformlyMarginXXS`）；新增 `Menu.GroupTitlePadding` 取代写死的分组标题内间距 16,8。
   - 控件级覆盖（`Controls[TabControl]`、`Controls[CardTabControl]`、`Controls[TabStrip]`、`Controls[CardTabStrip]`、`Controls[TabItem]`、`Controls[TabStripItem]`）作用于该控件的全部主题读取；共享的页签基础主题、页签滚动视图（溢出按钮、边缘阴影）与溢出菜单随宿主。TabControl 的 Own Token 作用于全部四种页签宿主。页签项从自身资源作用域查找命名主题（`TabItemTheme`、`CardTabItemTheme`、`TabStripItemTheme`、`CardTabStripItemTheme`），局部提供的主题优先于应用主题。
   - `TabControl.InkBarThickness` 变化后墨条立即重新布局，卡片圆角 Token 变化后 CardTabControl / CardTabStrip 页签立即重算（此前都要等下一次选择或尺寸变化）。
+  - 控件级覆盖（`Controls[Breadcrumb]`、`Controls[BreadcrumbItem]`、`Controls[Pagination]`、`Controls[SimplePagination]`、`Controls[Tour]`、`Controls[TourStep]`、`Controls[DefaultTourIndicator]`）作用于该控件的全部主题读取；Pagination 与 SimplePagination 共用的页码项随宿主。
+  - `Pagination.PaginationMiniQuickJumperInputWidth` 设置小尺寸快速跳转与简洁模式输入框宽度，`Pagination.ItemInputBg` 填充简洁模式输入框，`Pagination.PaginationItemPaddingInline` 改为作用于页码文字（此前写在空的背景边框上，从未生效；默认值改为仅水平方向）。
+  - Tour：弹层间距（`Tour.PopupMarginToAnchor` 加步骤 Gap 偏移）在打开期间随 Token 与 Gap 变化重算，关闭期间不再重算；遮罩颜色不再在初始化时复制进步骤，`ColorBgMask` 变化即时作用于打开的 Tour。
+  - 可见变化：小尺寸快速跳转输入框宽 44px（antd `controlHeightLG * 1.1`，此前 50px）；四位及以上页码两侧各有 6px 行内内间距。
   - 可见变化：NavMenu Vertical / Horizontal 子菜单弹层内的菜单项改用 `NavMenu.SubMenuItemBorderRadius`（`BorderRadiusSM`，4px，与 antd 一致），此前为 `ItemBorderRadius`（8px）。
 - Popup
   - Popup 动效（`MotionDurationMid`、`EnableMotion`）跟随 `Controls[Popup]`，弹层宿主（`OverlayPopupHost`、`PopupRoot`）的文本默认值跟随承载 Popup 的控件；Tooltip 与 Popover 缩放原点按框体实际绘制的圆角内缩，不再读取根 `BorderRadius` / `BorderRadiusLG`，控件级圆角覆盖会移动原点（默认圆角下原点不变）。

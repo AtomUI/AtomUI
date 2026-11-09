@@ -2,6 +2,16 @@
 
 本文档记录 Tour 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：Tour 与只属于 Tour 的步骤视图以 `TourTokenResource` 读取，TourStep、DefaultTourIndicator 以各自 TokenResource
+    读取。
+  - 弹层到目标的间距改由主题投射的内部属性承载（`PopupMarginToAnchor` Token 加步骤 Gap 偏移），打开期间随 Token 与 Gap 变化重算，关闭或
+    分离的 Tour 不再重算（借鉴 9c01e0cc7）；此前 Token 只在步骤显示时读取一次。
+  - 遮罩颜色不再在初始化时复制进每个步骤：步骤未设置 `MaskColor` 时显示期间使用 Tour 的主题值（`ColorBgMask`），主题与 `Controls[Tour]`
+    变化即时生效。
+
 ## 2026-09-10
 
 - Semantic Part

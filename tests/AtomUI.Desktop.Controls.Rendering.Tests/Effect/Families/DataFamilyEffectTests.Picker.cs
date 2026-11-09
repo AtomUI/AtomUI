@@ -20,9 +20,10 @@ namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 /// DatePicker / RangeDatePicker / TimePicker / RangeTimePicker effect rows. A picker reads its globals through the shared
 /// InfoPickerInput themes (owner: marker) and the identity-less input surface, embedded editor, suffix and popup presenter;
 /// the picker forwards its Token owner to its presenter, which sits in the popup's registered ArrowDecoratedBox, so the time
-/// view, its Token-owner transparent cells and the buttons frame read the picker's globals. The popup's DateViewer keeps its
-/// own identity (see the isolation tests). Rows are the member's consumption-map rows plus the owner reads of the parts it
-/// carries, minus the reads a member cannot show (with the reason).
+/// view, its Token-owner transparent cells and the buttons frame read the picker's globals; the date presenter forwards the
+/// same owner to its DateViewer, so the popup date panel, header and cells read the picker's globals too (the DateViewer Own
+/// Tokens stay borrowed, see the isolation tests). Rows are the member's consumption-map rows plus the owner reads of the
+/// parts it carries, minus the reads a member cannot show (with the reason).
 /// </summary>
 public partial class DataFamilyEffectTests
 {
@@ -33,14 +34,14 @@ public partial class DataFamilyEffectTests
     /// <summary>InfoPickerInputTheme reads its globals from the owner: it is the base of DatePicker and TimePicker.</summary>
     internal static readonly OwnerReadList s_infoPickerInput = new(PickerPrimitives + "InfoPickerInputTheme.axaml",
     [
-        "ColorTextDisabled", "ColorTextTertiary", "EnableMotion", "FontHeight", "FontHeightLG", "FontHeightSM", "FontSize",
+        "ColorTextDisabled", "ColorTextPlaceholder", "EnableMotion", "FontHeight", "FontHeightLG", "FontHeightSM", "FontSize",
         "FontSizeLG", "FontSizeSM", "SpacingXS"
     ]);
 
     /// <summary>RangeInfoPickerInputTheme reads its globals from the owner: it is the base of the range pickers.</summary>
     internal static readonly OwnerReadList s_rangeInfoPickerInput = new(PickerPrimitives + "RangeInfoPickerInputTheme.axaml",
     [
-        "ColorError", "ColorIcon", "ColorPrimary", "ColorText", "ColorTextDisabled", "ColorTextTertiary", "ColorWarning",
+        "ColorError", "ColorIcon", "ColorPrimary", "ColorText", "ColorTextDisabled", "ColorTextPlaceholder", "ColorWarning",
         "IconSize", "SpacingXS"
     ]);
 
@@ -52,6 +53,10 @@ public partial class DataFamilyEffectTests
 
     internal static readonly OwnerReadList s_datePickerPresenter = new(DatePickerThemes + "DatePickerPresenterTheme.axaml",
         ["BorderThickness", "ColorBorderSecondary"]);
+
+    /// <summary>The popup date panel headers (shown by the forwarded DateViewer) read the picker's globals.</summary>
+    internal static readonly OwnerReadList s_datePickerHeaders = new(DatePickerThemes + "DatePickerPresenterResources.axaml",
+        ["ColorBorderSecondary", "ControlHeight"]);
 
     internal static readonly OwnerReadList s_timePickerPresenter = new(TimePickerThemes + "TimePickerPresenterTheme.axaml",
         ["BorderThickness", "ColorBorderSecondary"]);
@@ -81,7 +86,20 @@ public partial class DataFamilyEffectTests
     private static readonly OwnerReadList[] s_pickerOwnLists =
     [
         s_infoPickerInput, s_rangeInfoPickerInput, s_infoPickerTextBox, s_pickerClearUpButton, s_datePickerPresenter,
-        s_timePickerPresenter, s_timeView, s_timeViewCell
+        s_datePickerHeaders, s_timePickerPresenter, s_timeView, s_timeViewCell
+    ];
+
+    /// <summary>
+    /// The popup date panel of a date picker: the picker's headers and the forwarded DateViewer's panel and cells. The
+    /// DateViewer's default header (s_dateViewerHeader) is hidden, because the picker supplies its own header template.
+    /// </summary>
+    private static OwnerReadList[] PopupDatePanel() => [s_datePickerHeaders, s_datePanel, s_dateViewerCell];
+
+    /// <summary>Owner reads of the popup DateViewer cells that the compact popup panel cannot show.</summary>
+    private static (string Token, string Reason)[] PopupDatePanelNotRendered() =>
+    [
+        ("ColorSplit", "the top border of full-content cells; the popup panel is compact (Calendar and DateViewer render it)"),
+        ("ControlItemBgHover", "the hovered full-content cell; the compact popup hover is the DateViewer's CellHoverBg (Calendar and DateViewer render it)")
     ];
 
     /// <summary>Reads of the embedded editor and the input surface that a picker cannot show (it has no such part).</summary>
@@ -98,25 +116,18 @@ public partial class DataFamilyEffectTests
     private static readonly Dictionary<string, (OwnerReadList[] Lists, string[] Transparent, Dictionary<string, string> NotRendered)>
         s_pickerHosts = new(StringComparer.Ordinal)
         {
-            ["DatePicker"] = ([.. s_pickerSurface, s_datePickerPresenter, s_timeView, s_timeViewCell], [], WithNotRendered(
-                ("RangePanelSpacing", "the gap between the two panels of the range picker (RangeDatePicker renders it)"))),
-            ["RangeDatePicker"] = ([.. s_pickerSurface, s_rangeInfoPickerInput, s_datePickerPresenter, s_timeView, s_timeViewCell],
-                [], WithNotRendered(RangeFocusShadows())),
+            ["DatePicker"] = ([.. s_pickerSurface, s_datePickerPresenter, .. PopupDatePanel(), s_timeView, s_timeViewCell], [],
+                WithNotRendered([
+                    ("RangePanelSpacing", "the gap between the two panels of the range picker (RangeDatePicker renders it)"),
+                    .. PopupDatePanelNotRendered()
+                ])),
+            ["RangeDatePicker"] = ([.. s_pickerSurface, s_rangeInfoPickerInput, s_datePickerPresenter, .. PopupDatePanel(), s_timeView,
+                s_timeViewCell], [], WithNotRendered(PopupDatePanelNotRendered())),
             ["TimePicker"] = ([.. s_pickerSurface, s_timePickerPresenter, s_timeView, s_timeViewCell], [], WithNotRendered(
                 ("HeaderMargin", "the time view header is shown by the date-time picker only (the DatePicker fact renders it)"))),
             ["RangeTimePicker"] = ([.. s_pickerSurface, s_rangeInfoPickerInput, s_timePickerPresenter, s_timeView, s_timeViewCell],
-                [], WithNotRendered(RangeFocusShadows()))
+                [], WithNotRendered())
         };
-
-    /// <summary>
-    /// The range pickers' input frame fills the picker, which clips the frame's outer focus shadow entirely (pre-existing,
-    /// recorded as a concern). DatePicker / TimePicker and the input family render these Tokens.
-    /// </summary>
-    private static (string Token, string Reason)[] RangeFocusShadows()
-    {
-        const string reason = "the range picker clips its frame's outer focus shadow (DatePicker and LineEdit render it)";
-        return [("InputActiveShadow", reason), ("InputErrorActiveShadow", reason), ("InputWarningActiveShadow", reason)];
-    }
 
     private static Dictionary<string, string> WithNotRendered(params (string Token, string Reason)[] extra)
     {
@@ -249,7 +260,7 @@ public partial class DataFamilyEffectTests
 
     // ---- harness ------------------------------------------------------------------------------------------------------
 
-    internal enum PickerKind
+    public enum PickerKind
     {
         Date,
         RangeDate,
@@ -429,6 +440,10 @@ public partial class DataFamilyEffectTests
     private static InputControlFrame PickerFrameOf(Control control) =>
         control.GetVisualDescendants().OfType<InputControlFrame>().First();
 
+    internal static Internal.DateViewer.DateViewerCell SelectedPopupDateCell(Control control) =>
+        TopLevel.GetTopLevel(control)!.GetVisualDescendants().OfType<Internal.DateViewer.DateViewerCell>()
+                .First(static cell => cell.Model?.IsSelected == true && cell.IsEffectivelyVisible);
+
     private static TimeViewCell SelectedTimeCell(Control control) =>
         TopLevel.GetTopLevel(control)!.GetVisualDescendants().OfType<TimeViewCell>()
                 .First(static cell => cell.IsSelected && cell.IsEffectivelyVisible);
@@ -465,12 +480,9 @@ public partial class DataFamilyEffectTests
             case "ColorPrimaryHover":
                 b.Hover();
                 break;
-            case "ColorPrimary":
+            case "ColorPrimary" or "InputActiveShadow":
+                // The focus border; the focus ring around the frame (the picker does not clip it).
                 b.Focus();
-                break;
-            case "InputActiveShadow":
-                b.Focus();
-                b.Perturb = FocusShadow(b, "#ff1677ff");
                 break;
             case "ColorError":
                 b.Init.Add(static c => c.Status = InputControlStatus.Error);
@@ -482,7 +494,6 @@ public partial class DataFamilyEffectTests
             case "InputErrorActiveShadow":
                 b.Init.Add(static c => c.Status = InputControlStatus.Error);
                 b.Focus();
-                b.Perturb = FocusShadow(b, "#ffff4d4f");
                 break;
             case "ColorWarning":
                 b.Init.Add(static c => c.Status = InputControlStatus.Warning);
@@ -494,7 +505,6 @@ public partial class DataFamilyEffectTests
             case "InputWarningActiveShadow":
                 b.Init.Add(static c => c.Status = InputControlStatus.Warning);
                 b.Focus();
-                b.Perturb = FocusShadow(b, "#ffffad14");
                 break;
             case "ColorFillTertiary":
                 b.Init.Add(static c => c.StyleVariant = InputControlStyleVariant.Filled);
@@ -566,9 +576,10 @@ public partial class DataFamilyEffectTests
                 b.Arrange.Add(static c => c.GetVisualDescendants().OfType<InfoPickerTextBox>().First().SelectAll());
                 break;
             case "ColorTextTertiary":
-                // The input text dims while the popup is open (the range picker dims the inactive input).
-                b.Popup  = true;
-                b.Region = static c => c;
+                // The hovered clear icon (antd clear hover colorTextTertiary): the picker shows it while hovered with a value.
+                b.Hover();
+                b.Arrange.Add(static c => Pseudo(Descendant<InputClearIconButton>(c, "PART_ClearButton"), ":pointerover"));
+                b.Region = static c => Descendant<InputClearIconButton>(c, "PART_ClearButton");
                 break;
             case "ColorIcon" when b.IsRange:
                 // The range arrow between the two inputs.
@@ -579,9 +590,14 @@ public partial class DataFamilyEffectTests
                 b.Init.Add(static c => c.ContentRightAddOn = "UTC");
                 break;
 
-            // ---- popup: date panel header, buttons and time view ----
+            // ---- popup: date panel header, cells, buttons and time view ----
             case "HeaderBorderThickness" or "ControlHeight" when b.IsDate:
                 b.Popup = true;
+                break;
+            case "ColorTextLightSolid" when b.IsDate:
+                // The selected popup date cell's light text.
+                b.Popup  = true;
+                b.Region = static c => SelectedPopupDateCell(c);
                 break;
             case "ButtonsPanelMargin" or "ButtonsMargin":
                 b.Popup  = true;
@@ -620,17 +636,6 @@ public partial class DataFamilyEffectTests
         }
 
         return b.Build();
-    }
-
-    /// <summary>
-    /// A strong focus ring. The picker clips most of its input frame's outer shadow (pre-existing): the ring shows on the free
-    /// end of the single picker's frame only, so the perturbation is opaque and wide.
-    /// </summary>
-    private static Func<object, object> FocusShadow(PickerBuilder b, string color)
-    {
-        _ = b;
-        var shadow = Avalonia.Media.BoxShadows.Parse("0 0 0 6 " + color);
-        return _ => shadow;
     }
 
     private static Control RangeArrowOf(Control control) =>

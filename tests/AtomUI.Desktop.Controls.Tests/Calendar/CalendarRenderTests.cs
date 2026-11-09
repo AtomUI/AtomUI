@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Internal.Calendar;
 using AtomUI.Localization;
@@ -857,6 +858,107 @@ public class CalendarRenderTests
         {
             window.Close();
         }
+    }
+
+    [Fact]
+    public void RangeBarPanel_Does_Not_Root_Removed_Bars_Or_Labels()
+    {
+        // The panel applies the themed padding, label colour and size to its bar children with SetCurrentValue; a per-child
+        // binding to the panel's observables would keep every removed bar and label alive as long as the panel lives. The
+        // panel stays strongly referenced here, so only a reference it holds can keep the removed bar alive.
+        var (panel, bar, label) = AddAndRemoveRangeBar();
+
+        CollectGarbage();
+
+        bar.IsAlive.ShouldBeFalse("The range bar panel keeps a removed bar alive.");
+        label.IsAlive.ShouldBeFalse("The range bar panel keeps a removed bar label alive.");
+        panel.Children.Count.ShouldBe(1);
+        GC.KeepAlive(panel);
+    }
+
+    [Fact]
+    public void RangeBarPanel_Reapplies_Themed_Label_Values_To_Existing_Bars()
+    {
+        var calendar = new AtomUICalendar { Value = new DateTime(2026, 7, 15), Fullscreen = true, Width = 620 };
+        calendar.RangeBars.Add(new CalendarRangeBar
+        {
+            StartDate = new DateTime(2026, 7, 13), EndDate = new DateTime(2026, 7, 16), Label = "Sprint", Background = Brushes.SteelBlue
+        });
+        var window = Show(calendar, 700, 700);
+        try
+        {
+            var panel = calendar.GetVisualDescendants().OfType<CalendarRangeBarPanel>().Single();
+            var bar   = panel.Children.OfType<Avalonia.Controls.Border>().First();
+            var label = bar.Child.ShouldBeAssignableTo<Avalonia.Controls.TextBlock>()!;
+            label.Foreground.ShouldBeSameAs(panel.RangeBarLabelForeground);
+            label.FontSize.ShouldBe(panel.RangeBarLabelFontSize);
+            bar.Padding.ShouldBe(panel.RangeBarLabelPadding);
+
+            panel.RangeBarLabelForeground = Brushes.Red;
+            panel.RangeBarLabelFontSize   = 20;
+            panel.RangeBarLabelPadding    = new Thickness(6, 0, 6, 0);
+            panel.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+
+            panel.Children.OfType<Avalonia.Controls.Border>().First().ShouldBeSameAs(bar);
+            label.Foreground.ShouldBeSameAs(Brushes.Red);
+            label.FontSize.ShouldBe(20);
+            bar.Padding.ShouldBe(new Thickness(6, 0, 6, 0));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (CalendarRangeBarPanel Panel, WeakReference Bar, WeakReference Label) AddAndRemoveRangeBar()
+    {
+        var calendar = new AtomUICalendar { Value = new DateTime(2026, 7, 15), Fullscreen = true, Width = 620 };
+        calendar.RangeBars.Add(new CalendarRangeBar
+        {
+            StartDate = new DateTime(2026, 7, 13), EndDate = new DateTime(2026, 7, 16), Label = "Sprint", Background = Brushes.SteelBlue
+        });
+        var rangeBar = new CalendarRangeBar
+        {
+            StartDate = new DateTime(2026, 7, 14), EndDate = new DateTime(2026, 7, 17), Label = "Release", Background = Brushes.IndianRed
+        };
+        calendar.RangeBars.Add(rangeBar);
+        var window = Show(calendar, 700, 700);
+        try
+        {
+            var panel = calendar.GetVisualDescendants().OfType<CalendarRangeBarPanel>().Single();
+            panel.Children.Count.ShouldBe(2);
+            var bar   = (Avalonia.Controls.Border)panel.Children[^1];
+            var label = bar.Child.ShouldBeAssignableTo<Avalonia.Controls.TextBlock>()!;
+            label.Text.ShouldBe("Release");
+            var references = (new WeakReference(bar), new WeakReference(label));
+
+            calendar.RangeBars.Remove(rangeBar);
+            panel.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+            panel.Children.Count.ShouldBe(1);
+            return (panel, references.Item1, references.Item2);
+        }
+        finally
+        {
+            // The closed window and its renderer are released with this frame; the caller keeps only the panel.
+            window.Content = null;
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    private static void CollectGarbage()
+    {
+        for (var i = 0; i < 3; i++)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+
+        Dispatcher.UIThread.RunJobs();
     }
 
     private static Avalonia.Controls.Window Show(Control content, double width = 400, double height = 400)

@@ -97,6 +97,21 @@ public partial class DataFamilyEffectTests
     private static Control FirstRangeBarOf(Control calendar) =>
         CalendarRangeBarsOf(calendar).GetVisualChildren().OfType<Control>().First();
 
+    private static Control FirstRangeBarLabelOf(Control calendar) =>
+        Descendant<Avalonia.Controls.TextBlock>(FirstRangeBarOf(calendar));
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Range_Bar_Label_Follows_ColorTextLightSolid(bool lunar)
+    {
+        // The range bar label colour was a hard-coded Brushes.White; the panel now applies the owner's ColorTextLightSolid
+        // (the ColorTextLightSolid row of the member proves the selected cell's text, this row the bar label).
+        Run(() => CreateCalendar(fullscreen: true, lunar: lunar, rangeBars: true), null,
+            lunar ? LunarCalendarTokens.Identity : CalendarTokens.Identity, "ColorTextLightSolid",
+            new EffectOptions { Region = static c => FirstRangeBarLabelOf(c) });
+    }
+
     private static Control CalendarDividerOf(Control calendar) =>
         Descendant<DockPanel>(calendar, "PART_BodyPresenter").Children[0];
 

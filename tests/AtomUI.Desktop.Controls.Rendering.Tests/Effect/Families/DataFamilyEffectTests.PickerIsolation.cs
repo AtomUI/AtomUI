@@ -4,6 +4,8 @@ using AtomUI.Desktop.Controls.Internal.DateViewer;
 using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Schema;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
@@ -14,9 +16,9 @@ namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 
 /// <summary>
 /// Scope isolation of the calendar and picker members: a <c>Controls[X]</c> override reaches X only and the root Token
-/// reaches X; the Calendar forwards its owner to its date grid; a picker forwards its owner to its popup presenter and the
-/// time view to its cells, while the popup's DateViewer, the header selects of the Calendar and the popup frame keep their
-/// own identity. Borrowed Own Tokens (read through another member's identity) are pinned here as well.
+/// reaches X; the Calendar forwards its owner to its date grid; a picker forwards its owner to its popup presenter, the date
+/// presenter to its DateViewer and the time view to its cells, while the header selects of the Calendar and the popup frame
+/// keep their own identity. Borrowed Own Tokens (read through another member's identity) are pinned here as well.
 /// </summary>
 public partial class DataFamilyEffectTests
 {
@@ -94,7 +96,7 @@ public partial class DataFamilyEffectTests
     }
 
     [Fact]
-    public void Picker_Popup_Follows_The_Picker_And_Its_DateViewer_Keeps_Its_Identity()
+    public void Picker_Popup_Follows_The_Picker_Including_Its_Date_Panel()
     {
         var picker = (DatePicker)CreatePicker(PickerKind.Date);
         picker.IsShowTime        = true;
@@ -107,12 +109,15 @@ public partial class DataFamilyEffectTests
             var timeView  = Descendant<TimeView>(presenter);
             var timeCell  = SelectedTimeCell(picker);
             var viewer    = Descendant<DateViewer>(presenter);
-            var dateCell  = viewer.GetVisualDescendants().OfType<DateViewerCell>().First(static cell => cell.Model?.IsSelected == true);
+            var dateCell  = SelectedPopupDateCell(picker);
+            var hoverCell = viewer.GetVisualDescendants().OfType<DateViewerCell>()
+                                  .First(static cell => cell.Model is { IsSelected: false, IsInView: true, Kind: DateViewerCellType.Date });
             var frame     = PopupRootOf(picker);
             ThemeScope.GetTokenOwner(presenter).ShouldBe(DatePickerTokens.Identity);
             ThemeScope.GetTokenOwner(timeView).ShouldBe(DatePickerTokens.Identity);
             ThemeScope.GetTokenOwner(timeCell).ShouldBe(DatePickerTokens.Identity);
-            ThemeScope.GetTokenOwner(viewer).ShouldBe(DateViewerTokens.Identity);
+            ThemeScope.GetTokenOwner(viewer).ShouldBe(DatePickerTokens.Identity);
+            ThemeScope.GetTokenOwner(dateCell).ShouldBe(DatePickerTokens.Identity);
             ThemeScope.GetTokenOwner(frame).ShouldBe(ArrowDecoratedBoxTokens.Identity);
             using var before = capture();
 
@@ -121,23 +126,176 @@ public partial class DataFamilyEffectTests
             using var byPicker = capture();
             ChangedRatioOf(before, byPicker, timeCell).ShouldBeGreaterThan(0d, "Controls[DatePicker] did not reach the time cells.");
 
-            // The popup's DateViewer keeps its identity: Controls[DatePicker].ColorPrimary does not reach its selected cell,
-            // Controls[DateViewer] does, and Controls[Calendar] reaches nothing in the picker.
+            // The presenter forwards the picker's owner to its DateViewer (as the Calendar does): antd
+            // components.DatePicker.colorPrimary recolours the selected date cell, and Controls[DateViewer] globals no longer
+            // reach the popup.
             provider.Config = IsolationConfig(control: (DatePickerTokens.Identity, "ColorPrimary", IsolationColor));
             using var byPickerPrimary = capture();
-            ChangedRatioOf(before, byPickerPrimary, dateCell).ShouldBe(0d, "Controls[DatePicker].ColorPrimary reached the popup DateViewer.");
+            ChangedRatioOf(before, byPickerPrimary, dateCell).ShouldBeGreaterThan(0d, "Controls[DatePicker].ColorPrimary did not reach the popup date cell.");
             provider.Config = IsolationConfig(control: (DateViewerTokens.Identity, "ColorPrimary", IsolationColor));
             using var byViewer = capture();
-            ChangedRatioOf(before, byViewer, dateCell).ShouldBeGreaterThan(0d, "Controls[DateViewer] did not reach the popup cell.");
+            ChangedRatioOf(before, byViewer, presenter).ShouldBe(0d, "Controls[DateViewer].ColorPrimary reached the picker popup.");
             provider.Config = IsolationConfig(control: (CalendarTokens.Identity, "ColorPrimary", IsolationColor));
             using var byCalendar = capture();
             ChangedRatioOf(before, byCalendar, host).ShouldBe(0d, "Controls[Calendar] reached the DatePicker.");
 
-            // The popup frame keeps the ArrowDecoratedBox identity.
+            // The DateViewer Own Tokens are still read from the DateViewer identity (borrowed): its hover background shows on
+            // the picker's popup cells.
+            Pseudo(hoverCell, ":pointerover");
+            provider.Config = IsolationConfig();
+            using var hovered = capture();
+            provider.Config = IsolationConfig(control: (DateViewerTokens.Identity, "CellHoverBg", IsolationColor));
+            using var byViewerHover = capture();
+            ChangedRatioOf(hovered, byViewerHover, hoverCell).ShouldBeGreaterThan(0d, "Controls[DateViewer].CellHoverBg did not reach the popup cell.");
+            ((Avalonia.Controls.IPseudoClasses)hoverCell.Classes).Remove(":pointerover");
+
+            // The popup frame keeps its own identity: Controls[DatePicker].ColorBgElevated reaches the time view inside the
+            // frame, never the frame's own pixels around the presenter; the root ColorBgElevated does (the ArrowDecoratedBox
+            // theme still reads it as a shared Token).
+            provider.Config = IsolationConfig();
+            using var plain = capture();
             provider.Config = IsolationConfig(control: (DatePickerTokens.Identity, "ColorBgElevated", IsolationColor));
             using var byPickerElevated = capture();
-            ChangedRatioOf(before, byPickerElevated, timeView).ShouldBeGreaterThan(0d, "Controls[DatePicker] did not reach the time view.");
+            ChangedRatioOf(plain, byPickerElevated, timeView).ShouldBeGreaterThan(0d, "Controls[DatePicker] did not reach the time view.");
+            FrameOnlyChangedPixels(plain, byPickerElevated, frame, presenter).ShouldBe(0, "Controls[DatePicker].ColorBgElevated reached the popup frame.");
+            provider.Config = IsolationConfig(root: ("ColorBgElevated", IsolationColor));
+            using var byRoot = capture();
+            FrameOnlyChangedPixels(plain, byRoot, frame, presenter).ShouldBeGreaterThan(0, "The root ColorBgElevated did not reach the popup frame.");
         });
+    }
+
+    [Fact]
+    public void Range_Picker_Popup_Date_Panel_Follows_The_Range_Picker()
+    {
+        var picker = CreatePicker(PickerKind.RangeDate);
+        picker.IsPopupPinnedOpen = true;
+        var host = PickerOverlayHost(picker);
+        WithIsolationWindow(host, (provider, capture) =>
+        {
+            WaitForPickerPopup(picker);
+            var presenter = PresenterOf(picker);
+            var viewer    = Descendant<RangeDateViewer>(presenter);
+            var dateCell  = SelectedPopupDateCell(picker);
+            ThemeScope.GetTokenOwner(viewer).ShouldBe(RangeDatePickerTokens.Identity);
+            ThemeScope.GetTokenOwner(dateCell).ShouldBe(RangeDatePickerTokens.Identity);
+            using var before = capture();
+            provider.Config = IsolationConfig(control: (RangeDatePickerTokens.Identity, "ColorPrimary", IsolationColor));
+            using var byPicker = capture();
+            ChangedRatioOf(before, byPicker, dateCell).ShouldBeGreaterThan(0d, "Controls[RangeDatePicker].ColorPrimary did not reach the popup date cell.");
+            provider.Config = IsolationConfig(control: (DateViewerTokens.Identity, "ColorPrimary", IsolationColor));
+            using var byViewer = capture();
+            ChangedRatioOf(before, byViewer, presenter).ShouldBe(0d, "Controls[DateViewer].ColorPrimary reached the range picker popup.");
+            provider.Config = IsolationConfig(control: (DatePickerTokens.Identity, "ColorPrimary", IsolationColor));
+            using var byDatePicker = capture();
+            ChangedRatioOf(before, byDatePicker, host).ShouldBe(0d, "Controls[DatePicker].ColorPrimary reached the RangeDatePicker.");
+        });
+    }
+
+    [Theory]
+    [InlineData(PickerKind.Date)]
+    [InlineData(PickerKind.RangeDate)]
+    [InlineData(PickerKind.Time)]
+    [InlineData(PickerKind.RangeTime)]
+    public void Picker_Input_Keeps_The_Text_Colour_While_Open_And_Previews_In_The_Placeholder_Colour(PickerKind kind)
+    {
+        // antd 6.7 (date-picker/style/index.ts): the input inherits colorText while the popup is open; only the hover
+        // preview (`-placeholder` > input, AtomUI's :choosing state) shows colorTextPlaceholder, on the active input.
+        var picker = CreatePicker(kind);
+        picker.IsPopupPinnedOpen = true;
+        if (picker is RangeInfoPickerInput range)
+        {
+            range.RangeActivatedPart = RangeActivatedPart.End;
+        }
+
+        var host = PickerOverlayHost(picker);
+        var identity = IdentityOf(kind);
+        WithIsolationWindow(host, (provider, capture) =>
+        {
+            WaitForPickerPopup(picker);
+            var inputs = picker.GetVisualDescendants().OfType<InfoPickerTextBox>().ToList();
+            var active = inputs[^1];
+            using var before = capture();
+
+            // Open, not previewing: the inputs show the text colour.
+            provider.Config = IsolationConfig(control: (identity, "ColorText", IsolationColor));
+            using var byText = capture();
+            foreach (var input in inputs)
+            {
+                ChangedRatioOf(before, byText, input).ShouldBeGreaterThan(0d, $"{input.Name} of the open {kind} picker does not show ColorText.");
+            }
+
+            provider.Config = IsolationConfig(control: (identity, "ColorTextTertiary", IsolationColor));
+            using var byTertiary = capture();
+            ChangedRatioOf(before, byTertiary, picker).ShouldBe(0d, $"The open {kind} picker input reads ColorTextTertiary.");
+
+            // Previewing: the active input shows the placeholder colour; the other range input keeps the text colour.
+            Pseudo(picker, ":choosing");
+            provider.Config = IsolationConfig();
+            using var choosing = capture();
+            provider.Config = IsolationConfig(control: (identity, "ColorTextPlaceholder", IsolationColor));
+            using var byPlaceholder = capture();
+            ChangedRatioOf(choosing, byPlaceholder, active).ShouldBeGreaterThan(0d, $"The {kind} hover preview does not show ColorTextPlaceholder.");
+            if (inputs.Count > 1)
+            {
+                ChangedRatioOf(choosing, byPlaceholder, inputs[0]).ShouldBe(0d, $"The inactive {kind} input shows ColorTextPlaceholder.");
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData(PickerKind.Date)]
+    [InlineData(PickerKind.RangeDate)]
+    [InlineData(PickerKind.Time)]
+    [InlineData(PickerKind.RangeTime)]
+    public void Picker_Focus_Ring_Paints_Outside_The_Picker(PickerKind kind)
+    {
+        // The input frame's focus shadow (antd activeShadow, default strength) paints outside the picker bounds; the picker
+        // used to clip it (ClipToBounds), which hid the ring entirely on the range pickers.
+        var picker = CreatePicker(kind);
+        WithIsolationWindow(picker, (_, capture) =>
+        {
+            picker.ClipToBounds.ShouldBeFalse();
+            using var before = capture();
+            picker.GetVisualDescendants().OfType<InputControlFrame>().First().IsInputFocusWithin = true;
+            using var focused = capture();
+            var bounds = RegionOf(picker);
+            var above  = new SkiaSharp.SKRectI(bounds.Left, bounds.Top - 2, bounds.Right, bounds.Top);
+            var below  = new SkiaSharp.SKRectI(bounds.Left, bounds.Bottom, bounds.Right, bounds.Bottom + 2);
+            FrameCapture.CountDifferentPixels(before, focused, above, TokenEffectHarness.DefaultChannelTolerance)
+                        .ShouldBeGreaterThan(0, $"The focus ring of the {kind} picker does not show above the input.");
+            FrameCapture.CountDifferentPixels(before, focused, below, TokenEffectHarness.DefaultChannelTolerance)
+                        .ShouldBeGreaterThan(0, $"The focus ring of the {kind} picker does not show below the input.");
+        });
+    }
+
+    private static ControlTokenIdentity IdentityOf(PickerKind kind) => kind switch
+    {
+        PickerKind.Date => DatePickerTokens.Identity,
+        PickerKind.RangeDate => RangeDatePickerTokens.Identity,
+        PickerKind.Time => TimePickerTokens.Identity,
+        _ => RangeTimePickerTokens.Identity
+    };
+
+    /// <summary>Changed pixels of the popup frame outside the presenter it hosts (its padding, edge and arrow).</summary>
+    private static int FrameOnlyChangedPixels(SkiaSharp.SKBitmap before, SkiaSharp.SKBitmap after, Control frame, Control presenter)
+    {
+        var frameRegion     = RegionOf(frame);
+        var presenterRegion = RegionOf(presenter);
+        (frameRegion.Width * frameRegion.Height).ShouldBeGreaterThan(presenterRegion.Width * presenterRegion.Height,
+            "The popup frame shows no pixels of its own around the presenter.");
+        return FrameCapture.CountDifferentPixels(before, after, frameRegion, TokenEffectHarness.DefaultChannelTolerance) -
+               FrameCapture.CountDifferentPixels(before, after, presenterRegion, TokenEffectHarness.DefaultChannelTolerance);
+    }
+
+    private static SkiaSharp.SKRectI RegionOf(Control control)
+    {
+        var window = (Avalonia.Visual)TopLevel.GetTopLevel(control)!;
+        var origin = control.TranslatePoint(new Avalonia.Point(), window).ShouldNotBeNull();
+        return new SkiaSharp.SKRectI(
+            (int)Math.Floor(origin.X),
+            (int)Math.Floor(origin.Y),
+            (int)Math.Ceiling(origin.X + control.Bounds.Width),
+            (int)Math.Ceiling(origin.Y + control.Bounds.Height));
     }
 
     [Fact]
@@ -167,12 +325,14 @@ public partial class DataFamilyEffectTests
     [Fact]
     public void Borrowed_Own_Tokens_Reach_Their_Readers()
     {
-        // DatePicker.RangePanelSpacing spaces the two panels of the RangeDatePicker popup, and TimePicker.HeaderMargin /
-        // ItemHeight shape the time view of the date-time picker: these readers borrow another member's Own Tokens (recorded
-        // for the abstract-layer follow-up).
+        // DatePicker.RangePanelSpacing / ButtonsPanelMargin spaces the RangeDatePicker popup, TimePicker.ItemMargin the
+        // RangeTimePicker cells, and TimePicker.HeaderMargin / ItemHeight shape the time view of the date-time picker: these
+        // readers borrow another member's Own Tokens (recorded for the abstract-layer follow-up).
         foreach (var (kind, identity, token, value) in new[]
                  {
                      (PickerKind.RangeDate, DatePickerTokens.Identity, "RangePanelSpacing", "64"),
+                     (PickerKind.RangeDate, DatePickerTokens.Identity, "ButtonsPanelMargin", "24"),
+                     (PickerKind.RangeTime, TimePickerTokens.Identity, "ItemMargin", "8"),
                      (PickerKind.Date, TimePickerTokens.Identity, "HeaderMargin", "0,12,0,12"),
                      (PickerKind.Date, TimePickerTokens.Identity, "ItemHeight", "40")
                  })
@@ -194,5 +354,15 @@ public partial class DataFamilyEffectTests
                 ChangedRatioOf(before, after, host).ShouldBeGreaterThan(0.001, $"Controls[{identity}].{token}");
             });
         }
+
+        // LunarCalendar reuses the Calendar cell theme, which reads the Calendar Own Tokens explicitly.
+        var lunar = CreateCalendar(fullscreen: true, lunar: true);
+        WithIsolationWindow(lunar, (provider, capture) =>
+        {
+            using var before = capture();
+            provider.Config = IsolationConfig(control: (CalendarTokens.Identity, "FullCellPadding", "16"));
+            using var after = capture();
+            ChangedRatioOf(before, after, lunar).ShouldBeGreaterThan(0.001, "Controls[Calendar].FullCellPadding (LunarCalendar)");
+        });
     }
 }

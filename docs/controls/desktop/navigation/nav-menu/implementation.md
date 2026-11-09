@@ -181,7 +181,7 @@ ClearContainerForItemOverride / rebind / recycle
 - 合法释放（同一指针、主按钮、释放点命中待提交项 Header 视觉子树、节点与全部语义祖先仍可用、未被卸载或遗忘）进入 `CommitItemActivation`；先清空事务字段并解除 header 的 capture-lost 订阅、释放捕获，但保留 pointer-hold selected-background 视觉；selection 提交与用户回调完成后才在 `finally` 清除 pointer-hold，避免浅蓝背景在释放瞬间闪回 hover，同时防止命令或导航重入残留旧事务。
 - 取消路径统一无副作用：释放到另一节点或菜单外、当前捕获指针丢失、按下后节点被移除或禁用、菜单 detach 或 handler 替换、非主按钮释放、新按下替代旧事务；其他指针的 capture-lost 事件不得终止当前事务。捕获已转移到另一控件时只清理旧事务，不得释放新控件的捕获。Inline 父项展开后，子项位于父容器的视觉子树内，但不属于父 Header 的命中范围；按下父 Header、在子 Header 释放必须取消父项激活。
 - pointer-hold 与 keyboard-active 由独立 owner 持有并分别投影：前者通过 header 的 `IsPointerHold` 只使用 `ItemSelectedBg` / `DarkItemSelectedBg`，不覆盖文字颜色；后者通过 `IsKeyboardActive` 使用 `ItemActiveBg`。清除指针事务不得清除键盘导航锚点；pointer-hold 不依赖捕获期间的原生 `:pointerover`，也不写入 keyboard active、`IsSelected` 或 `IsInSelectedPath`。
-- header 背景 transition 使用全局 `MotionDurationSlow`（默认 300ms）和 NavMenu Own Token `ItemBackgroundMotionEasing`（默认 `Spline(0.25,0.1,0.25,1)`），对应参考 Menu 的 `background-color 0.3s ease`；Base、Inline、Horizontal 主题只通过强类型 `NavMenuTokenResource` 消费该曲线，不在 AXAML 中重复构造 easing。mouse down 后背景从 hover 灰进入 selected 浅蓝，但合法释放才提交 selection。
+- header 背景 transition 以 `atom:TokenTransitions` 声明 NavMenu 有效的 `MotionDurationSlow`（默认 300ms），对应参考 Menu 的 `background-color 0.3s`；过渡使用默认缓动（原 `ItemBackgroundMotionEasing` 从未被主题接入，已删除）。mouse down 后背景从 hover 灰进入 selected 浅蓝，但合法释放才提交 selection。
 
 Inline handler：
 

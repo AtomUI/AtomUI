@@ -16,12 +16,23 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `MenuPopupMinWidth`、`MenuPopupMaxWidth`、`MenuTearOffHeight`、`ItemHeight`、`ItemIconSize`、`TopLevelItemFontSizeSM` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `MenuPopupContentPadding`、`ItemMargin`、`ItemIconMarginInlineEnd`、`ItemPaddingInline`、`TopLevelItemPaddingSM`、`TopLevelItemPadding` |
+| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `MenuPopupMinWidth`、`MenuPopupMaxWidth`、`ItemHeight`、`ItemIconSize`、`TopLevelItemFontSizeSM` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `MenuPopupContentPadding`、`ItemMargin`、`ItemIconMarginInlineEnd`、`GroupTitlePadding`、`ItemPaddingInline`、`TopLevelItemPaddingSM`、`TopLevelItemPadding` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `MenuPopupBgColor`、`ItemColor`、`KeyGestureColor`、`ItemHoverColor`、`ItemDisabledColor`、`DangerItemColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `MenuPopupContentPadding`、`MenuPopupMinWidth`、`MenuPopupMaxWidth`、`MenuPopupBgColor`、`ItemBorderRadius`、`TopLevelItemBorderRadiusSM` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+要点：
+
+- 菜单栏顶层项：默认文字 `TopLevelItemColor`、背景 `TopLevelItemBg`（默认透明，菜单栏自身绘制背景）；悬浮
+  `TopLevelItemHoverColor` / `TopLevelItemHoverBg`；展开（菜单栏的选中项）`TopLevelItemSelectedColor` / `TopLevelItemSelectedBg`，
+  默认与悬浮相同。
+- 图标与文字间距 `ItemIconMarginInlineEnd`（默认 `UniformlyMarginXXS`，与此前的 `ItemMargin` 右侧值相同）同时作用于顶层项与弹层项的图标。
+- 分组标题内间距 `GroupTitlePadding`（默认 `UniformlyPadding, UniformlyPaddingXS`，即此前写死的 16,8）。
+- 危险项：`MenuItem.IsDanger`、`MenuItemData.IsDanger`（`IMenuItemData.IsDanger` 默认 `false`）标记，文字 `DangerItemColor`，悬浮文字
+  `DangerItemHoverColor`。
+- `MenuTearOffHeight` 已删除（从未消费，antd 无对应 Token，菜单没有 tear-off 项）。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -32,7 +43,17 @@ Menu 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
-## 4. 控件家族影响
+## 4. Token 读取与作用域
+
+`MenuToken` 的 Own Token 由菜单栏和所有菜单弹层读取：Menu、顶层与弹层 MenuItem、MenuItemGroup、MenuSeparator、ContextMenu 与
+MenuFlyoutPresenter 的主题都以 `MenuTokenResource` 读取它们，因此 `Controls[Menu]` 的 Own 覆盖（以及派生这些 Own Token 的全局覆盖）
+到达上下文菜单与下拉菜单的菜单项。各控件自身读取的全局 Token 以自己的 TokenResource 读取：`Controls[MenuItem]`（顶层项最小高度、子菜单
+箭头）、`Controls[MenuItemGroup]`（标题颜色）、`Controls[MenuSeparator]`（线色、线宽）、`Controls[ContextMenu]`、
+`Controls[MenuFlyoutPresenter]`（动效、弹层背景）。ContextMenu 与 MenuFlyoutPresenter 的弹层背景、内边距等仍读取 Menu 的 Own Token，
+所以 `Controls[ContextMenu]` 的全局覆盖不改变它们（抽象 Token 层由 Task 10.10 处理）。菜单栏顶层项主题 `TopLevelMenuItemTheme` 从 Menu
+所在的资源作用域查找，局部资源中同名主题优先于应用资源。
+
+## 5. 控件家族影响
 
 调整 Menu Token 时必须评估以下范围：
 
@@ -44,7 +65,7 @@ Menu 的控件专项模型通过 Theme 消费 Token：
 - 对应 Gallery ShowCase 的示例和源码片段。
 - Light/Dark 主题、Browser/Desktop 主题和 Compact/Form/Popup 集成场景。
 
-## 5. 兼容性要求
+## 6. 兼容性要求
 
 - 不删除或重命名已生成的 TokenKind、TokenResource key 和 AXAML 引用。
 - 不把实例状态、交互状态或 `EffectiveXxx` 状态写成 Token。
@@ -52,7 +73,7 @@ Menu 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值变更必须同步评估 Gallery 示例和截图可观察外观。
 - 如需引入新 Token，必须同步 Token 类型、生成资源、主题引用和本文档。
 
-## 6. 验证策略
+## 7. 验证策略
 
 | 改动类型 | 验证要求 |
 | --- | --- |
@@ -60,3 +81,4 @@ Menu 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+| 任意 Token | `NavigationFamilyEffectTests`（Menu / MenuItem / MenuItemGroup / MenuSeparator / ContextMenu / MenuFlyoutPresenter 行与隔离测试）全绿。 |

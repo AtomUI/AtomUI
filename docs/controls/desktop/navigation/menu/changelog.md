@@ -2,6 +2,18 @@
 
 本文档记录 Menu 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：Menu、MenuItem、MenuItemGroup、MenuSeparator、ContextMenu、MenuFlyoutPresenter 的全局 Token 以各自
+    TokenResource 读取，Menu Own Token 继续由所有菜单弹层以 `MenuTokenResource` 读取。菜单栏查找 `TopLevelMenuItemTheme` 改为从 Menu
+    自身的资源作用域解析（此前只查 `Application.Current`，忽略局部作用域）。
+  - 新增 `MenuItem.IsDanger`、`MenuItemData.IsDanger`（`IMenuItemData.IsDanger` 默认 `false`），危险项消费 `DangerItemColor` /
+    `DangerItemHoverColor`。顶层项消费 `TopLevelItemColor`、`TopLevelItemBg`（默认改为透明，与此前渲染一致）、展开态
+    `TopLevelItemSelectedColor` / `TopLevelItemSelectedBg`；图标间距消费 `ItemIconMarginInlineEnd`（默认改为 `UniformlyMarginXXS`，与此前渲染一致）；
+    新增 `GroupTitlePadding`（替代写死的分组标题内间距 16,8）。
+  - Breaking：删除 `MenuTearOffHeight`。
+
 ## 2026-11-04
 
 - Changed

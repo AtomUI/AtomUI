@@ -16,6 +16,7 @@ AtomUI 的重要变更记录在此文件中。
   - Theme Tokens：CheckableTag 拥有自己的 Own Token `TagFontSize`、`TagLineHeight`、`TagIconSize`、`TagPadding`、`TagTextPaddingInline`，请经 `Controls[CheckableTag]` 设置；`Controls[Tag]` 不再改变 CheckableTag。
   - Theme Tokens：删除没有消费者的 `Alert.MessageWithDescriptionMargin`；标题与描述的间距由 `Alert.DescriptionLabelMargin` 表达。
   - Theme Tokens：删除从未被消费的 `MessageCard.CardHeight`、`PopupConfirm.PopupMinWidth`、`PopupConfirm.PopupMinHeight`，以及固定尺寸关闭按钮无法体现的 `NotificationCard.NotificationCloseButtonPadding`；请从主题配置中移除。
+  - Theme Tokens：删除从未被消费的 `NavMenu.ItemBackgroundMotionEasing`、`NavMenu.KeyGestureColor` 与 `Menu.MenuTearOffHeight`（antd 无对应 Token；NavMenu 不显示快捷键，Menu 没有 tear-off 项）；请从主题配置中移除。`NavMenu.CollapsedWidth`、`NavMenu.MenuSubMenuBg`、`NavMenu.HorizontalItemHoverColor` 标为保留，暂无视觉效果。
 - Button 家族
   - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
   - 修复 HyperLinkButton 的仅图标、加载与危险视觉，BackTop 徽标，以及由分组或 Host 提供的 FloatButtonGroup 阴影。
@@ -55,6 +56,12 @@ AtomUI 的重要变更记录在此文件中。
   - 控件级覆盖（`Controls[Dialog]`、`Controls[MessageBox]`、`Controls[DialogButtonBox]`、`Controls[MessageCard]`、`Controls[WindowMessageManager]`、`Controls[NotificationCard]`、`Controls[WindowNotificationManager]`、`Controls[PopupConfirm]`）现在作用于该控件全部主题读取；对话框 surface（标题栏、标题栏按钮、遮罩、presenter 动效）跟随承载它的 Dialog 或 MessageBox，消息折叠背板跟随 `Controls[MessageCard]`，嵌套按钮保留 Button / IconButton 身份。
   - 最大化的 Overlay 对话框经主题去掉圆角（恢复后回到 `BorderRadiusLG`），消息与通知管理器的窗口安全区外边距不再以本地值写入。
   - 可见变化：通知描述文本应用 `FontHeight` 行高（默认 22px），不再使用字体自然行高，多行描述略高。
+- Navigation 家族
+  - 控件级覆盖（`Controls[NavMenu]`、`Controls[Menu]`、`Controls[MenuItem]`、`Controls[MenuItemGroup]`、`Controls[MenuSeparator]`、`Controls[ContextMenu]`、`Controls[MenuFlyoutPresenter]`）作用于该控件的全部主题读取。NavMenu 的菜单项、分组标题、分隔线、horizontal 底线与子菜单弹层随 `Controls[NavMenu]`；horizontal 与 inline 菜单项 header 为 Token owner 透明，其过渡时长也随 NavMenu。Menu 的 Own Token 继续作用于所有菜单弹层（菜单栏子菜单、上下文菜单、下拉菜单）。
+  - NavMenu inline 折叠宽度动画改读 NavMenu 有效的 `MotionDurationMid`（局部 `ThemeConfigProvider` 生效），不再读应用资源并回落 200 ms；Menu 从自身资源作用域查找 `TopLevelMenuItemTheme`，局部提供的主题优先于应用主题。
+  - 危险项：`NavMenuItem.IsDanger` / `NavMenuNode.IsDanger`（`INavMenuNode.IsDanger`，默认 `false`）与 `MenuItem.IsDanger` / `MenuItemData.IsDanger`（`IMenuItemData.IsDanger`，默认 `false`）以 `Danger*` / `DarkDanger*` Token 绘制；`NavMenu.DangerItemActiveBg`、`DangerItemSelectedBg` 与 antd 一致默认 `ColorErrorBg`。
+  - 新接通的 Token（默认值保持原渲染）：light horizontal NavMenu 顶层项使用 `HorizontalItemSelectedColor`（选中文字与 active bar）、`HorizontalItemSelectedBg`、`HorizontalItemHoverBg`、`HorizontalItemBorderRadius`，`HorizontalLineHeight` 作用于菜单项文字，`TopLevelItemPopupMarginToAnchor`（改为 `UniformlyMarginXXS`）为顶层弹层间距；Menu 顶层项使用 `TopLevelItemColor`、`TopLevelItemBg`（改为透明），展开时使用 `TopLevelItemSelectedColor` / `TopLevelItemSelectedBg`；菜单图标间距使用 `Menu.ItemIconMarginInlineEnd`（改为 `UniformlyMarginXXS`）；新增 `Menu.GroupTitlePadding` 取代写死的分组标题内间距 16,8。
+  - 可见变化：NavMenu Vertical / Horizontal 子菜单弹层内的菜单项改用 `NavMenu.SubMenuItemBorderRadius`（`BorderRadiusSM`，4px，与 antd 一致），此前为 `ItemBorderRadius`（8px）。
 - Popup
   - Popup 动效（`MotionDurationMid`、`EnableMotion`）跟随 `Controls[Popup]`，弹层宿主（`OverlayPopupHost`、`PopupRoot`）的文本默认值跟随承载 Popup 的控件；Tooltip 与 Popover 缩放原点按框体实际绘制的圆角内缩，不再读取根 `BorderRadius` / `BorderRadiusLG`，控件级圆角覆盖会移动原点（默认圆角下原点不变）。
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。

@@ -269,7 +269,7 @@ Theme 映射规则：
 - Root 背景使用 `ItemBg`，Dark root 背景使用 `DarkMenuBg`。
 - Popup 背景使用 `MenuPopupBg`，Dark popup 使用 `DarkMenuPopupBg`。
 - Header 默认背景为 `Transparent`，hover / selected 背景由 header state 直接控制。
-- Keyboard active 通过 `IsKeyboardActive` / `ItemActiveBg` 表达；指针按住通过独立的 `IsPointerHold` 只使用与 selected 相同的 `ItemSelectedBg`（dark 使用 `DarkItemSelectedBg`），不覆盖既有文字颜色。两者优先级都低于真实 `Selected`，清除其中一个 owner 不得覆盖另一个 owner 的状态。keyboard active 可以叠加在 `IsInSelectedPath` 父节点上，使父节点保留 selected-path 文字色的同时显示临时 active 背景。header 背景使用 `MotionDurationSlow`（默认 300ms）与 `ItemBackgroundMotionEasing`（默认 CSS `ease` 等价曲线），使 hover 灰在按下后过渡到 selected 色，而 selection 只在合法释放时提交。
+- Keyboard active 通过 `IsKeyboardActive` / `ItemActiveBg` 表达；指针按住通过独立的 `IsPointerHold` 只使用与 selected 相同的 `ItemSelectedBg`（dark 使用 `DarkItemSelectedBg`），不覆盖既有文字颜色。两者优先级都低于真实 `Selected`，清除其中一个 owner 不得覆盖另一个 owner 的状态。keyboard active 可以叠加在 `IsInSelectedPath` 父节点上，使父节点保留 selected-path 文字色的同时显示临时 active 背景。header 背景使用 NavMenu 有效的 `MotionDurationSlow`（默认 300ms）过渡，使 hover 灰在按下后过渡到 selected 色，而 selection 只在合法释放时提交。
 - Inline collapsed 根宽度使用 `InlineCollapsedWidth`，默认来自 `NavMenuToken.InlineCollapsedWidth=48`。折叠视觉只作用于 `Mode=Inline && IsInlineCollapsed=true`：一级 icon 使用 `CollapsedIconSize` 居中，标题和箭头收起，未配置 icon 的一级项从节点 `Header` 显示首字符；顶层叶子项使用独立 `Tooltip`，未设置时回退到 `Header`。
 - Inline/Vertical 的 Header 和 Footer 位于菜单滚动区之外；无 Header/Footer 时对应 presenter 折叠，不占用布局空间。Horizontal 中 Header 左停靠、Footer 右停靠，菜单项占用中间区域。进入 inline collapsed 后 Header 保持可见以承载展开入口，Footer 自动隐藏；Header 内容需要根据 `IsInlineCollapsed` 自适应折叠宽度。
 - 根层 inline collapsed 分组标题隐藏，分组及其透明嵌套分组内的节点继续继承根折叠状态，按顶层节点使用 `CollapsedIconSize` 居中；popup 或非根语义层级中的分组标题和节点保持普通 vertical 视觉。Horizontal 根层把分组渲染为透明水平集合并隐藏标题，popup 中恢复垂直分组标题。

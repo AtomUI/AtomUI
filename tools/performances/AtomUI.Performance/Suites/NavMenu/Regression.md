@@ -4,7 +4,7 @@
 
 - [ ] Pointer press has no selection, command, or routed-event side effects; a same-item primary-button release commits once.
 - [ ] Press-and-hold changes only the background to the exact selected background with the 300ms CSS-ease-equivalent transition while text color and logical selection remain unchanged; no hover/transparent/default background frame appears during the release handoff, and selection commits only on release.
-- [ ] Override `ItemBackgroundMotionEasing` and verify Base/Inline/Horizontal item header background transitions consume the NavMenu Token instead of an AXAML-local easing.
+- [ ] Override `Controls[NavMenu].MotionDurationSlow` and verify Base/Inline/Horizontal item header background transitions follow it.
 - [ ] Pointer capture stays on the hand-cursor item header for the full hold gesture.
 - [ ] Pointer capture loss cancels only when it belongs to the transaction pointer.
 - [ ] Pointer-hold and keyboard-active have independent owners and project through separate hover/active visual channels without overwriting each other.

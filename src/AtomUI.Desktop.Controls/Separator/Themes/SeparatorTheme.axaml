@@ -67,14 +67,15 @@
 
             <Style Selector="^[SizeType=Middle]">
                 <Setter Property="Margin" Value="{atom:SeparatorTokenResource HorizontalMarginBlock}"/>
-                <!-- antd: a horizontal divider with text uses the with-text gutter margin unless a size sets one. -->
+            </Style>
+
+            <!-- antd has only the md / sm size classes; an unsized divider (AtomUI Large: marginLG) with text uses the
+                 with-text gutter margin, while the md / sm size margins (AtomUI Middle / Small) win over it. -->
+            <Style Selector="^[SizeType=Large]">
+                <Setter Property="Margin" Value="{atom:SeparatorTokenResource HorizontalMarginBlockLG}"/>
                 <Style Selector="^:has-title">
                     <Setter Property="Margin" Value="{atom:SeparatorTokenResource HorizontalWithTextGutterMargin}"/>
                 </Style>
-            </Style>
-
-            <Style Selector="^[SizeType=Large]">
-                <Setter Property="Margin" Value="{atom:SeparatorTokenResource HorizontalMarginBlockLG}"/>
             </Style>
         </Style>
         

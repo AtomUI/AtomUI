@@ -32,9 +32,12 @@ Separator 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - 水平分隔线的 `HorizontalMarginBlockSM`、`HorizontalMarginBlock`、`HorizontalMarginBlockLG` 分别从 SharedToken 的 `UniformlyMarginXS`、`UniformlyMargin`、`UniformlyMarginLG` 派生；默认对应 `8px`、`16px`、`24px`。
-- 中号（默认尺寸）带标题的水平分隔线改用 `HorizontalWithTextGutterMargin`（antd `dividerHorizontalWithTextGutterMargin`，默认 `UniformlyMargin`，
-  与 `HorizontalMarginBlock` 默认值相同）；小号、大号带标题时仍用各自尺寸的外边距（antd 尺寸样式覆盖 with-text 外边距）。
-- `TitleFontWeight` 是非 Plain 标题的字重，默认 `Medium`（500，antd Divider 带文字时的固定字重）；Plain 标题为常规字重、`FontSize`。
+- 大号带标题的水平分隔线改用 `HorizontalWithTextGutterMargin`（antd `dividerHorizontalWithTextGutterMargin`，默认 `UniformlyMargin`）。
+  antd Divider 只有 `md` / `sm` 两个尺寸类，未设尺寸时外边距为 `marginLG`（对应 AtomUI Large 的 `HorizontalMarginBlockLG`），带文字时
+  改用 with-text 外边距；尺寸样式注册在共享样式之后、选择器优先级相同，所以 `md` / `sm`（对应 AtomUI Middle / Small）带文字时仍用各自
+  尺寸的外边距。因此中号、小号带标题时分别是 `HorizontalMarginBlock` / `HorizontalMarginBlockSM`。
+- `TitleFontWeight` 是非 Plain 标题的字重，默认 `Medium`（500）。它是 AtomUI 扩展：antd Divider 带文字时字重固定为 500，没有对应 Token；
+  Plain 标题为常规字重、`FontSize`。
 - `TextPaddingInline`、`OrientationMarginPercent` 绑定到内部属性并标记 `AffectsArrange`，`VerticalMarginInline` 标记 `AffectsMeasure`，
   主题或 `Controls[Separator]` 变化后立即重新排布。
 - 线色 `ColorSplit`、线宽 `LineWidth`、标题色 `ColorTextHeading`、标题字号 `FontSizeLG` / `FontSize` 经 `SeparatorTokenResource` 读取，

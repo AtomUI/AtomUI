@@ -85,7 +85,8 @@ Public API / inherited command / item source / user input
 
 `AbstractSeparator` 实现 `ICustomizableSizeTypeAware`，`SizeType` 使用 `CustomizableSizeType`，默认值为
 `Middle`。水平 Separator 的预设尺寸控制上下外间距：`Small`、`Middle`、`Large` 分别映射到控件 Token 的
-小、中、大 block margin；该规则对带标题和无标题的水平 Separator 一致，垂直 Separator 不应用这组间距。
+小、中、大 block margin；带标题的 `Large` 水平 Separator 改用 `HorizontalWithTextGutterMargin`（与 antd 未设尺寸、带文字的
+Divider 一致；antd `md` / `sm` 尺寸外边距优先，对应 `Middle` / `Small`），垂直 Separator 不应用这组间距。
 
 `SizeType=Custom` 表示调用方接管间距。Theme 保留 Middle block margin 作为未指定 `Margin` 时的基础值，但不为
 `Custom` 声明专属 selector；调用方可以通过实例 `Margin` 或 owner-scoped Style 覆盖。组合控件模板中的结构性

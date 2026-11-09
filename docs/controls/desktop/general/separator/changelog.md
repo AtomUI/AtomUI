@@ -6,9 +6,10 @@
 
 - Changed
   - 主题改读 `SeparatorTokenResource`，`Controls[Separator]` 覆盖生效。
-  - 新增 Own Token `TitleFontWeight`（默认 `Medium` 500，取代主题中的字面量 `500`）；接通 `HorizontalWithTextGutterMargin`（中号带标题分割线）。
+  - 新增 Own Token `TitleFontWeight`（默认 `Medium` 500，取代主题中的字面量 `500`）；接通 `HorizontalWithTextGutterMargin`（大号带标题分割线，对应 antd 未设尺寸带文字；antd `md` / `sm` 尺寸外边距优先）。
+  - 可见变化：大号带标题的水平分割线上下外边距由 24px（`HorizontalMarginBlockLG`）变为 16px（`HorizontalWithTextGutterMargin`）。
   - `AbstractSeparator` 的 `TextPaddingInline`、`OrientationMarginPercent` 标记 `AffectsArrange`，`VerticalMarginInline` 标记 `AffectsMeasure`，
-    Token 变化后立即重新排布（此前要等下一次布局）。默认渲染不变。
+    Token 变化后立即重新排布（此前要等下一次布局）。
 
 ## 2026-08-16
 

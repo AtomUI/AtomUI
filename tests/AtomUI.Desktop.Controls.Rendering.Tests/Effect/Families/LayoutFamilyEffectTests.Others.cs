@@ -71,6 +71,10 @@ public partial class LayoutFamilyEffectTests
             case "HorizontalMarginBlockLG" or "UniformlyMarginLG":
                 Run(static () => CreateSeparator(null, CustomizableSizeType.Large), null, SeparatorTokens.Identity, token);
                 return;
+            // A large (antd unsized) divider with a title uses the with-text gutter margin.
+            case "HorizontalWithTextGutterMargin":
+                Run(static () => CreateSeparator(size: CustomizableSizeType.Large), null, SeparatorTokens.Identity, token);
+                return;
             case "HorizontalMarginBlock":
                 Run(static () => CreateSeparator(null), null, SeparatorTokens.Identity, token);
                 return;
@@ -92,7 +96,7 @@ public partial class LayoutFamilyEffectTests
                     new EffectOptions { Perturb = static _ => FontWeight.Light });
                 return;
             default:
-                // A centred title: the with-text gutter margin, the text padding, the title weight / size / colour, the rails.
+                // A centred title: the text padding, the title size / colour, the rails.
                 Run(static () => CreateSeparator(), null, SeparatorTokens.Identity, token);
                 return;
         }

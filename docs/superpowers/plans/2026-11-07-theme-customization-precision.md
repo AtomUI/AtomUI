@@ -664,10 +664,10 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Desktop | Menu | DangerItemColor, DangerItemHoverColor, ItemIconMarginInlineEnd, MenuTearOffHeight, TopLevelItemBg, TopLevelItemColor, TopLevelItemSelectedBg, TopLevelItemSelectedColor | 10.7 | Active 7（`MenuItem.IsDanger`、顶层项色、ItemIconMarginInlineEnd）；删除 MenuTearOffHeight；新增 Own GroupTitlePadding 取代字面量 |
 | Desktop | TabControl | HorizontalMargin | 10.7 | Reserved（antd horizontalMargin，此处由 TabAndContentGutter 承担） |
 | Desktop | Pagination | InputOutlineOffset, ItemInputBg, ItemLinkBg, PaginationMiniQuickJumperInputWidth | 10.7 | Active：ItemInputBg、PaginationMiniQuickJumperInputWidth；Reserved：ItemLinkBg（antd 仅 bordered 变体）、InputOutlineOffset（antd 内部焦点阴影偏移） |
-| Desktop | Card | ActionsSpacing, CardHeadPadding, CardPaddingBase, ExtraColor, TabsMarginBottom | 10.8 | |
-| Desktop | Expander | LeftExpandButtonVMargin, RightExpandButtonVMargin | 10.8 | |
-| Desktop | GroupBox | OrientationMarginPercent, TextPaddingInline, VerticalMarginInline | 10.8 | |
-| Desktop | Separator | HorizontalWithTextGutterMargin | 10.8 | |
+| Desktop | Card | ActionsSpacing, CardHeadPadding, CardPaddingBase, ExtraColor, TabsMarginBottom | 10.8 | ExtraColor → Active；ActionsSpacing、TabsMarginBottom、CardHeadPadding、CardPaddingBase → Reserved（结构差异，各注明 antd 名称）；新增 Own RestingShadows（静止阴影，供预设表达常驻阴影） |
+| Desktop | Expander | LeftExpandButtonVMargin, RightExpandButtonVMargin | 10.8 | 删除（无 antd 对应） |
+| Desktop | GroupBox | OrientationMarginPercent, TextPaddingInline, VerticalMarginInline | 10.8 | 删除（复制自 antd Divider，GroupBox 无对应组件） |
+| Desktop | Separator | HorizontalWithTextGutterMargin | 10.8 | Active（作用于大号带标题分割线，对齐 antd 未设尺寸分割线）；新增 Own TitleFontWeight（AtomUI 扩展） |
 | Desktop | ListBox | ItemDisabledColor | 10.9 | |
 | Desktop | ListView | ItemDisabledColor | 10.9 | |
 | Desktop | TreeView | DirectoryNodeSelectedBg, DirectoryNodeSelectedColor | 10.9 | |

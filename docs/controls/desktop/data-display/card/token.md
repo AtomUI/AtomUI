@@ -67,10 +67,14 @@ antd `cardHeadPadding`（页签放在 head 内时标题的上内边距）；Atom
 
 - `ExtraColor`
 - `CardShadows`
+- `RestingShadows`
 - `CardGridItemShadows`
 
 `ExtraColor` 控制 Header Extra 区域文字色（`HeaderExtra` 的 `Foreground`）。`CardShadows` 是 hoverable Card 和 hoverable grid item 的
-悬停阴影（antd `cardShadow`）；静止的 Borderless Card 阴影是 `BoxShadowsTertiary`，经 `Controls[Card].BoxShadowsTertiary` 设置。`CardGridItemShadows` 使用多层阴影表达 grid item 之间的边线。
+悬停阴影（antd `cardShadow`）。`RestingShadows` 是有边框（Outlined）Card 不悬停时的静止阴影，是 AtomUI 扩展（antd 无对应 Token），供
+主题预设（例如 PrimeNG 的常驻卡片阴影、Material 的 elevation）表达常驻阴影；默认值是与 `CardShadows` 同层数的透明阴影（由
+`CardShadows` 派生），悬停过渡因此不增减阴影层。静止的 Borderless Card 阴影仍是 `BoxShadowsTertiary`（经
+`Controls[Card].BoxShadowsTertiary` 设置），悬停的 hoverable Card 仍切换到 `CardShadows` 并去掉边框。`CardGridItemShadows` 使用多层阴影表达 grid item 之间的边线。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -99,6 +103,7 @@ Header + Body + Cover + Actions + Grid + Tabs + Meta
 | `TabsMarginBottom` | 保留，无视觉效果。 |
 | `ExtraColor` | Extra 区域文字颜色。 |
 | `CardShadows` | Card hover 和 grid item hover 阴影。 |
+| `RestingShadows` | 有边框 Card 的静止阴影（默认透明）。 |
 | `CardActionsIconSize` | CardActionButton icon 宽高。 |
 | `CardGridItemShadows` | CardGridItem 默认边线阴影。 |
 
@@ -125,7 +130,7 @@ IsHoverable
 `ColorFillAlter`。`CardGridItem`、`CardTabsContent` 是 Token owner 透明部件（`[TokenOwnerTransparent]`），主题以 `CardTokenResource` 读取；
 `CardActionPanel` 无 identity，同样读 Card。`CardActionButton`、`CardMetaContent` 保留自己的 identity，以各自 TokenResource 读取全局 Token
 （`CardActionsIconSize` 仍是 Card 的 Own Token）。Card body 位于注册控件 `Skeleton` 中，透明部件当前继承的 owner 是 Skeleton，因此它们的
-TokenTransitions 时长跟随 Skeleton（Task 10.9 处理 Skeleton 的透明化）。
+TokenTransitions 时长跟随 Skeleton，`Controls[Card]` 的动效时长覆盖暂不作用于网格项与页签内容的过渡。
 
 ## 4. 控件家族影响
 

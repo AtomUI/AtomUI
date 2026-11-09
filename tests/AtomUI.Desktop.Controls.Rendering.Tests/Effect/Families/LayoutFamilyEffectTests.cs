@@ -3,6 +3,7 @@ using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
@@ -149,6 +150,10 @@ public partial class LayoutFamilyEffectTests
             // A hoverable card shows the card shadow on hover.
             case "CardShadows":
                 return new Scenario(static () => CreateCard(hoverable: true), static card => Pseudo(card, ":pointerover"));
+            // The resting shadow of an outlined card is transparent by default: perturb to a visible shadow.
+            case "RestingShadows":
+                return new Scenario(static () => CreateCard(), null,
+                    new EffectOptions { Perturb = static _ => BoxShadows.Parse(VisibleRestingShadows) });
             // A borderless card rests on the tertiary shadow.
             case "BoxShadowsTertiary":
                 return new Scenario(static () => CreateCard(variant: CardStyleVariant.Borderless));
@@ -203,6 +208,36 @@ public partial class LayoutFamilyEffectTests
                 Header  = "Card title",
                 Content = "This is the description"
             }, null, CardMetaContentTokens.Identity, token);
+    }
+
+    private const string VisibleRestingShadows = "0 1 3 0 #40000000, 0 1 2 -1 #40000000, 0 4 12 2 #30000000";
+
+    [Fact]
+    public void Card_Resting_Shadow_Yields_To_Borderless_And_Hover_Shadows()
+    {
+        // RestingShadows styles the resting outlined card only: a borderless card keeps BoxShadowsTertiary and a hovered
+        // hoverable card swaps to CardShadows (with no border).
+        var outlined   = CreateCard();
+        var borderless = CreateCard(variant: CardStyleVariant.Borderless);
+        var hoverable  = CreateCard(hoverable: true);
+        var root = new StackPanel { Spacing = 8, Children = { outlined, borderless, hoverable } };
+        WithProvider(root, provider =>
+        {
+            // Motion off: the shadow transition would otherwise still be running when the values are read.
+            provider.Config = IsolationConfig(control: (CardTokens.Identity, "RestingShadows", VisibleRestingShadows));
+            var expected = BoxShadows.Parse(VisibleRestingShadows);
+            WaitFor(() => outlined.BoxShadow == expected);
+            outlined.BoxShadow.ShouldBe(expected);
+            hoverable.BoxShadow.ShouldBe(expected);
+            borderless.BoxShadow.ShouldBe(
+                ControlTokenAccessor.Capture(borderless).GetEffectiveGlobal<BoxShadows>(SharedTokenKind.BoxShadowsTertiary));
+
+            Pseudo(hoverable, ":pointerover");
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            WaitFor(() => hoverable.BoxShadow != expected);
+            hoverable.BoxShadow.ShouldBe(ControlTokenAccessor.Capture(hoverable).GetOwn<BoxShadows>(CardTokenKind.CardShadows));
+            hoverable.BorderThickness.ShouldBe(new Thickness(0));
+        });
     }
 
     [Fact]

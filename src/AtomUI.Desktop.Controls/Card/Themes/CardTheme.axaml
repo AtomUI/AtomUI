@@ -78,7 +78,9 @@
                 <Setter Property="IsVisible" Value="False" />
             </Style>
         </Style>
-        <Setter Property="BoxShadow" Value="0 1 2 -1 #00000000, 0 3 6 0 #00000000, 0 5 12 4 #00000000" />
+        <!-- The resting shadow of an outlined card (transparent layers by default, matching CardShadows so the hover
+             transition keeps its layer count); borderless cards rest on BoxShadowsTertiary, hover swaps to CardShadows. -->
+        <Setter Property="BoxShadow" Value="{atom:CardTokenResource RestingShadows}" />
         <Style Selector="^[StyleVariant=Borderless]">
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="BoxShadow" Value="{atom:CardTokenResource BoxShadowsTertiary}" />

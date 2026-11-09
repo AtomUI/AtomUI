@@ -53,6 +53,8 @@
     值，从未生效），分隔线保持在背景之上，操作项间隙改读 `LineWidth`；删除无效的 `Padding="0,1,0,0"` 字面量。
   - `ActionsSpacing`、`TabsMarginBottom`、`CardHeadPadding`、`CardPaddingBase` 标为保留 Token（antd `actionsLiMargin`、`tabsMarginBottom`、
     `cardHeadPadding`、`cardPaddingBase`）。默认渲染不变。
+- Added
+  - 新增 Own Token `RestingShadows`（AtomUI 扩展）：有边框卡片的静止阴影，取代主题中的透明阴影字面量；默认透明，Borderless 与悬停阴影不变。
 
 ## 2026-08-13
 

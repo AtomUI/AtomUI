@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
@@ -120,6 +121,14 @@ internal sealed class CardToken : AbstractControlDesignToken
     /// Shadow of card
     /// </summary>
     public BoxShadows CardShadows { get; set; }
+
+    /// <summary>
+    /// 卡片静止阴影（AtomUI 扩展，antd 无对应 Token）：非悬停的有边框卡片的阴影，供主题预设表达常驻阴影；
+    /// 默认是与 <see cref="CardShadows"/> 同层数的透明阴影，悬停过渡不会增减阴影层
+    /// Resting shadow of an outlined card (an AtomUI extension for presets; antd has none). Defaults to transparent
+    /// layers matching <see cref="CardShadows"/>, so the hover transition keeps its layer count.
+    /// </summary>
+    public BoxShadows RestingShadows { get; set; }
     
     /// <summary>
     /// 卡片头部内边距
@@ -177,31 +186,40 @@ internal sealed class CardToken : AbstractControlDesignToken
         HeaderPadding    = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, 0);
         HeaderPaddingSM  = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
 
-        CardShadows         = new BoxShadows(new BoxShadow()
+        if (!IsExplicit(CardTokenKind.CardShadows))
         {
-            OffsetX = 0,
-            OffsetY = 1,
-            Blur    = 2,
-            Spread  = -1,
-            Color   = ColorUtils.FromRgbF(0.16, 0, 0, 0)
-        }, [
-            new BoxShadow
+            CardShadows         = new BoxShadows(new BoxShadow()
             {
                 OffsetX = 0,
-                OffsetY = 3,
-                Blur    = 6,
-                Spread  = 0,
-                Color   = ColorUtils.FromRgbF(0.12, 0, 0, 0)
-            },
-            new BoxShadow
-            {
-                OffsetX = 0,
-                OffsetY = 5,
-                Blur    = 12,
-                Spread  = 4,
-                Color   = ColorUtils.FromRgbF(0.09, 0, 0, 0)
-            }
-        ]);
+                OffsetY = 1,
+                Blur    = 2,
+                Spread  = -1,
+                Color   = ColorUtils.FromRgbF(0.16, 0, 0, 0)
+            }, [
+                new BoxShadow
+                {
+                    OffsetX = 0,
+                    OffsetY = 3,
+                    Blur    = 6,
+                    Spread  = 0,
+                    Color   = ColorUtils.FromRgbF(0.12, 0, 0, 0)
+                },
+                new BoxShadow
+                {
+                    OffsetX = 0,
+                    OffsetY = 5,
+                    Blur    = 12,
+                    Spread  = 4,
+                    Color   = ColorUtils.FromRgbF(0.09, 0, 0, 0)
+                }
+            ]);
+        }
+
+        if (!IsExplicit(CardTokenKind.RestingShadows))
+        {
+            RestingShadows = Transparent(CardShadows);
+        }
+
         var lineWidth = EffectiveGlobalToken.LineWidth;
         CardGridItemShadows = new BoxShadows(new BoxShadow()
         {
@@ -249,6 +267,24 @@ internal sealed class CardToken : AbstractControlDesignToken
         CardHeadPadding     = EffectiveGlobalToken.Padding;
         CardPaddingBase     = EffectiveGlobalToken.PaddingLG;
         CardActionsIconSize = EffectiveGlobalToken.FontSize;
+    }
+
+    /// <summary>The same shadow layers with a transparent colour: the resting start shape of the hover transition.</summary>
+    private static BoxShadows Transparent(BoxShadows shadows)
+    {
+        if (shadows.Count == 0)
+        {
+            return shadows;
+        }
+
+        static BoxShadow Clear(BoxShadow shadow) => shadow with { Color = Colors.Transparent };
+        var rest = new BoxShadow[shadows.Count - 1];
+        for (var index = 1; index < shadows.Count; index++)
+        {
+            rest[index - 1] = Clear(shadows[index]);
+        }
+
+        return new BoxShadows(Clear(shadows[0]), rest);
     }
     
 }

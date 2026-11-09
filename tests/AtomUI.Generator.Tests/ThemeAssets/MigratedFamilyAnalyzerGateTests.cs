@@ -42,7 +42,9 @@ public class MigratedFamilyAnalyzerGateTests
         // Layout / container family
         "Card", "Collapse", "Expander", "GroupBox", "Splitter", "SplitView", "Separator", "Space", "Masonry",
         // Data family (first half)
-        "ListBox", "ListView", "TreeView", "Skeleton", "Avatar", "Timeline", "Statistic", "Carousel", "ImagePreviewer"
+        "ListBox", "ListView", "TreeView", "Skeleton", "Avatar", "Timeline", "Statistic", "Carousel", "ImagePreviewer",
+        // Data family (second half; the shared date panel and the picker input base)
+        "Calendar", "DateViewer", "DatePicker", "TimePicker", "Primitives/InfoPickerInput"
     ];
 
     /// <summary>Directories (relative to AtomUI.Controls) of migrated families whose theme assets live in that package.</summary>
@@ -85,7 +87,9 @@ public class MigratedFamilyAnalyzerGateTests
         "ListBox", "ListBoxItem", "ListView", "ListViewItem", "TreeView", "TreeViewItem", "Skeleton", "SkeletonAvatar",
         "SkeletonButton", "SkeletonElement", "SkeletonImage", "SkeletonInput", "SkeletonLine", "SkeletonNode",
         "SkeletonParagraph", "AvatarGroup", "Timeline", "TimelineItem", "AbstractStatistic", "Statistic", "TimerStatistic",
-        "StatisticCountUp", "Carousel", "CarouselNavButton", "CarouselPage", "ImagePreviewer", "ImageGroupPreviewer"
+        "StatisticCountUp", "Carousel", "CarouselNavButton", "CarouselPage", "ImagePreviewer", "ImageGroupPreviewer",
+        "Calendar", "LunarCalendar", "DateViewer", "RangeDateViewer", "DatePicker", "RangeDatePicker", "TimePicker",
+        "RangeTimePicker", "TimeViewCell", "InfoPickerInput", "RangeInfoPickerInput"
     ];
 
     /// <summary>Token identities of migrated families declared in AtomUI.Controls.</summary>
@@ -243,6 +247,21 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldNotContain("ImagePreviewerCover");
         IdentityControls.Value.ShouldNotContain("ImageViewer");
         IdentityControls.Value.ShouldNotContain("ImagePreviewerDialog");
+        // Data family (second half): the time cell is registered (Token-owner transparent); the calendar header, range bar
+        // panel, lunar cell content, date panel / header / cell, picker presenters and time view are not.
+        IdentityControls.Value.ShouldContain("TimeViewCell");
+        IdentityControls.Value.ShouldContain("InfoPickerInput");
+        IdentityControls.Value.ShouldContain("RangeDateViewer");
+        IdentityControls.Value.ShouldNotContain("CalendarHeader");
+        IdentityControls.Value.ShouldNotContain("CalendarRangeBarPanel");
+        IdentityControls.Value.ShouldNotContain("LunarCalendarCellContent");
+        IdentityControls.Value.ShouldNotContain("DatePanel");
+        IdentityControls.Value.ShouldNotContain("DateViewerCell");
+        IdentityControls.Value.ShouldNotContain("DateViewerHeader");
+        IdentityControls.Value.ShouldNotContain("DatePickerPresenter");
+        IdentityControls.Value.ShouldNotContain("TimePickerPresenter");
+        IdentityControls.Value.ShouldNotContain("TimeView");
+        IdentityControls.Value.ShouldNotContain("PickerClearUpButton");
     }
 
     [Fact]

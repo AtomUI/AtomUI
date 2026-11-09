@@ -7,6 +7,15 @@
 - Theme
   - 键盘焦点描边对齐 Ant Design：线型 `TabItem` 只描边图标与文字所在的按钮行（模板中的行容器标记 `TemplatedControl.IsTemplateFocusTarget`），不再框住带内边距的整个标签；卡片 `TabItem` 的 `Frame` 标记焦点目标与 `FocusOutlineAdorner.IsInset`，描边内收在卡片内侧（`genFocusOutline(token, -3)`）。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：TabControl、CardTabControl、TabItem 的全局 Token 以各自 TokenResource 读取，`BaseTabControl` 基础主题、
+    页签滚动视图与溢出菜单以 `OwnerTokenResource` 读取宿主值（溢出按钮、溢出菜单项关闭按钮经内部属性向下绑定）。页签项命名主题改为从
+    页签项自身的资源作用域查找（此前只查 `Application.Current`，忽略局部作用域）。
+  - `InkBarThickness` 变化后墨条立即重新布局；CardTabControl 的卡片圆角 Token 变化后立即重算。
+  - `HorizontalMargin` 标为保留 Token；纵向 Line 页签的紧凑内边距保持主题内部布局常量。
+
 ## 2026-10-20
 
 - Fixed

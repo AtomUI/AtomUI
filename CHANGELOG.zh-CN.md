@@ -16,6 +16,7 @@ AtomUI 的重要变更记录在此文件中。
   - Theme Tokens：CheckableTag 拥有自己的 Own Token `TagFontSize`、`TagLineHeight`、`TagIconSize`、`TagPadding`、`TagTextPaddingInline`，请经 `Controls[CheckableTag]` 设置；`Controls[Tag]` 不再改变 CheckableTag。
   - Theme Tokens：删除没有消费者的 `Alert.MessageWithDescriptionMargin`；标题与描述的间距由 `Alert.DescriptionLabelMargin` 表达。
   - Theme Tokens：删除从未被消费的 `MessageCard.CardHeight`、`PopupConfirm.PopupMinWidth`、`PopupConfirm.PopupMinHeight`，以及固定尺寸关闭按钮无法体现的 `NotificationCard.NotificationCloseButtonPadding`；请从主题配置中移除。
+  - Theme Tokens：`TabControl.HorizontalMargin` 标为保留，暂无视觉效果（页签栏与内容的间距为 `TabControl.TabAndContentGutter`）。
   - Theme Tokens：删除从未被消费的 `NavMenu.ItemBackgroundMotionEasing`、`NavMenu.KeyGestureColor` 与 `Menu.MenuTearOffHeight`（antd 无对应 Token；NavMenu 不显示快捷键，Menu 没有 tear-off 项）；请从主题配置中移除。`NavMenu.CollapsedWidth`、`NavMenu.MenuSubMenuBg`、`NavMenu.HorizontalItemHoverColor` 标为保留，暂无视觉效果。
 - Button 家族
   - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
@@ -61,6 +62,8 @@ AtomUI 的重要变更记录在此文件中。
   - NavMenu inline 折叠宽度动画改读 NavMenu 有效的 `MotionDurationMid`（局部 `ThemeConfigProvider` 生效），不再读应用资源并回落 200 ms；Menu 从自身资源作用域查找 `TopLevelMenuItemTheme`，局部提供的主题优先于应用主题。
   - 危险项：`NavMenuItem.IsDanger` / `NavMenuNode.IsDanger`（`INavMenuNode.IsDanger`，默认 `false`）与 `MenuItem.IsDanger` / `MenuItemData.IsDanger`（`IMenuItemData.IsDanger`，默认 `false`）以 `Danger*` / `DarkDanger*` Token 绘制；`NavMenu.DangerItemActiveBg`、`DangerItemSelectedBg` 与 antd 一致默认 `ColorErrorBg`。
   - 新接通的 Token（默认值保持原渲染）：light horizontal NavMenu 顶层项使用 `HorizontalItemSelectedColor`（选中文字与 active bar）、`HorizontalItemSelectedBg`、`HorizontalItemHoverBg`、`HorizontalItemBorderRadius`，`HorizontalLineHeight` 作用于菜单项文字，`TopLevelItemPopupMarginToAnchor`（改为 `UniformlyMarginXXS`）为顶层弹层间距；Menu 顶层项使用 `TopLevelItemColor`、`TopLevelItemBg`（改为透明），展开时使用 `TopLevelItemSelectedColor` / `TopLevelItemSelectedBg`；菜单图标间距使用 `Menu.ItemIconMarginInlineEnd`（改为 `UniformlyMarginXXS`）；新增 `Menu.GroupTitlePadding` 取代写死的分组标题内间距 16,8。
+  - 控件级覆盖（`Controls[TabControl]`、`Controls[CardTabControl]`、`Controls[TabStrip]`、`Controls[CardTabStrip]`、`Controls[TabItem]`、`Controls[TabStripItem]`）作用于该控件的全部主题读取；共享的页签基础主题、页签滚动视图（溢出按钮、边缘阴影）与溢出菜单随宿主。TabControl 的 Own Token 作用于全部四种页签宿主。页签项从自身资源作用域查找命名主题（`TabItemTheme`、`CardTabItemTheme`、`TabStripItemTheme`、`CardTabStripItemTheme`），局部提供的主题优先于应用主题。
+  - `TabControl.InkBarThickness` 变化后墨条立即重新布局，卡片圆角 Token 变化后 CardTabControl / CardTabStrip 页签立即重算（此前都要等下一次选择或尺寸变化）。
   - 可见变化：NavMenu Vertical / Horizontal 子菜单弹层内的菜单项改用 `NavMenu.SubMenuItemBorderRadius`（`BorderRadiusSM`，4px，与 antd 一致），此前为 `ItemBorderRadius`（8px）。
 - Popup
   - Popup 动效（`MotionDurationMid`、`EnableMotion`）跟随 `Controls[Popup]`，弹层宿主（`OverlayPopupHost`、`PopupRoot`）的文本默认值跟随承载 Popup 的控件；Tooltip 与 Popover 缩放原点按框体实际绘制的圆角内缩，不再读取根 `BorderRadius` / `BorderRadiusLG`，控件级圆角覆盖会移动原点（默认圆角下原点不变）。

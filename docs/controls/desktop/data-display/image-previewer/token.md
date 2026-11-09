@@ -16,7 +16,8 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `PreviewOperationSize`、`ImagePreviewSwitchSize`、`DialogMinWidth`、`DialogMinHeight`、`CoverImageWidth` |
+| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `PreviewOperationSize`、`DialogMinWidth`、`DialogMinHeight`、`CoverImageWidth`、`ErrorIconSize` |
+| 保留 | 暂无视觉效果。 | `ImagePreviewSwitchSize`（antd Image `imagePreviewSwitchSize`：antd 6.7 声明但样式未读取；切换按钮尺寸由 `PreviewOperationSize` 与内边距决定） |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `FloatToolbarPadding`、`FloatToolbarIndicatorPadding` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `PreviewOperationColor`、`PreviewOperationHoverColor`、`PreviewOperationColorDisabled`、`MaskBgColor`、`TitleBarBackgroundColor`、`NavButtonBgColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `FloatToolbarIndicatorPadding` |
@@ -33,6 +34,15 @@ ImagePreviewer 的控件专项模型通过 Theme 消费 Token：
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 - 默认 loading/error 占位复用 Skeleton、Spin、SharedToken 和 `CoverImageWidth` 的视觉语义，不为 `Loading`、`Failed` 或网络图片失败新增实例状态 Token。
 - `CoverImageWidth` 只能作为没有显式 `CoverWidth` / `CoverHeight` 且没有有效布局约束时的封面占位尺寸兜底；它不表达图片自然尺寸，也不表达失败状态。
+
+`ErrorIconSize` 是封面与预览窗口中加载失败占位图标的尺寸（AtomUI 扩展，默认 `ControlHeightLG * 1.2` = 48px），取代主题中的
+`48` 字面量。`FloatToolbarIndicatorPadding` 的默认值改为 0：索引指示器透明且居中，原先只有水平分量的默认值从未产生视觉效果；
+设置垂直分量会调整指示器与操作区的距离。
+
+主题读法：封面、浮层宿主、预览查看器、切换按钮、浮动工具栏、标题栏工具栏、标题栏与原生预览窗口都没有 Token identity，它们位于
+浮层或独立窗口中并承载注册的 IconButton，因此以 `ImagePreviewerTokenResource` 显式读取全局 Token：`Controls[ImagePreviewer]` 作用于
+整个预览界面（ImageGroupPreviewer 打开的预览也使用 ImagePreviewer 的 Token）。ImagePreviewer 与 ImageGroupPreviewer 根主题以各自
+identity 读取动效开关。浮动工具栏与关闭按钮的 `CornerRadius="100"` 是胶囊/圆形形状的布局常量。
 
 ## 4. 控件家族影响
 

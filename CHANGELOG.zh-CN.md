@@ -20,6 +20,7 @@ AtomUI 的重要变更记录在此文件中。
   - Theme Tokens：`Pagination.ItemLinkBg`（antd bordered 上一页/下一页按钮）与 `Pagination.InputOutlineOffset` 标为保留，暂无视觉效果。
   - Theme Tokens：删除从未被消费的 `NavMenu.ItemBackgroundMotionEasing`、`NavMenu.KeyGestureColor` 与 `Menu.MenuTearOffHeight`（antd 无对应 Token；NavMenu 不显示快捷键，Menu 没有 tear-off 项）；请从主题配置中移除。`NavMenu.CollapsedWidth`、`NavMenu.MenuSubMenuBg`、`NavMenu.HorizontalItemHoverColor` 标为保留，暂无视觉效果。
   - Theme Tokens：删除从未被消费的 `Expander.LeftExpandButtonVMargin` / `RightExpandButtonVMargin`（头部随展开方向旋转，`LeftExpandButtonHMargin` / `RightExpandButtonHMargin` 已覆盖所有方向）与 `GroupBox.TextPaddingInline`、`GroupBox.OrientationMarginPercent`、`GroupBox.VerticalMarginInline`（复制自 Separator 的 Token；GroupBox 标题缺口与边距由 `HeaderContentPadding` / `HeaderContainerMargin` 表达），请从主题配置中移除。`Card.ActionsSpacing`、`Card.TabsMarginBottom`、`Card.CardHeadPadding`、`Card.CardPaddingBase`（antd `actionsLiMargin`、`tabsMarginBottom`、`cardHeadPadding`、`cardPaddingBase`）标为保留，暂无视觉效果。
+  - Theme Tokens：`Avatar.GroupSpace` 与 `Avatar.GroupOverlapping` 移到新的 AvatarGroup Own Token（`Controls[AvatarGroup].GroupSpace` / `GroupOverlapping`，默认值不变），它们只被 AvatarGroup 消费；删除从未被消费的 `Timeline.LastItemContentMinHeight`（antd 6.7 Timeline 无此样式）。`ImagePreviewer.ImagePreviewSwitchSize`（antd `imagePreviewSwitchSize`，antd 6.7 样式未读取）标为保留，暂无视觉效果。
 - Button 家族
   - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
   - 修复 HyperLinkButton 的仅图标、加载与危险视觉，BackTop 徽标，以及由分组或 Host 提供的 FloatButtonGroup 阴影。
@@ -83,6 +84,11 @@ AtomUI 的重要变更记录在此文件中。
   - `ListBox.ItemDisabledColor` / `ListView.ItemDisabledColor` 接通禁用条目文字色，`Skeleton.TitleHeight` 接通标题行高度（默认值不变）；流光画刷跟随显式覆盖的 `Skeleton.GradientFromColor` / `GradientToColor`。新增 `Skeleton.ImageColor`（AtomUI 扩展，默认 `#bfbfbf` 与 antd 相同），用于图片占位图标。`TreeView.DirectoryNodeSelectedBg` / `DirectoryNodeSelectedColor`（antd DirectoryTree）标为保留，暂无视觉效果。
   - 列表条目分割线改由 `LineWidth` 绘制（应用或 Semantic Part 样式设置的 `BorderThickness` 仍整体替换），树节点与展开按钮图标的尺寸与颜色取自树（`IconSize`、`ColorText`）。
   - 可见变化：ListBox 选中项的对勾现为 `ColorPrimary`、`IconSize` 尺寸并应用 `SelectedIndicatorMargin`（其样式此前指向错误元素，从未生效）；禁用树节点的图标与展开按钮改用 `ColorTextDisabled`，此前以 0.3 不透明度弱化。
+- Data 家族（头像、时间轴、统计数值、走马灯、图片预览）
+  - 控件级覆盖（`Controls[Avatar]`、`Controls[AvatarGroup]`、`Controls[Timeline]`、`Controls[Statistic]`、`Controls[TimerStatistic]`、`Controls[StatisticCountUp]`、`Controls[Carousel]`、`Controls[CarouselNavButton]`、`Controls[ImagePreviewer]`、`Controls[ImageGroupPreviewer]`）现在作用于该控件的全部主题读取。TimelineItem 与 CarouselPage 标为 Token owner 透明，Timeline / Carousel 的覆盖同样作用于条目、时间轴节点与页面内容；组内头像与走马灯箭头保持 Avatar / CarouselNavButton identity。图片预览界面（封面、浮层、查看器、工具栏、标题栏、预览窗口）跟随 `Controls[ImagePreviewer]`。
+  - 新增 `Carousel.ArrowOpacity`（静止箭头不透明度，默认 0.2；antd 固定 0.4）与 `ImagePreviewer.ErrorIconSize`（加载失败图标尺寸，默认 48px），均为 AtomUI 扩展，取代主题字面量；`ImagePreviewer.FloatToolbarIndicatorPadding` 默认值改为 0（原仅水平的默认值从未产生视觉效果）。
+  - 未设置 `IndicatorColor` 的时间轴节点在主题或 `Controls[Timeline]` 变化时跟随 `ColorPrimary`（默认色此前在模板应用时一次性复制），`Timeline.ItemPaddingBottom*` 变化后条目立即重新测量。
+  - 可见变化：走马灯前后切换箭头与边缘的距离改为 `Carousel.ArrowOffset`（8px，antd `arrowOffset`），此前为 `PaginationOffset`（12px）；分页位置变化时箭头边距也会刷新（此前变更通知发给了错误的属性）。
 - Popup
   - Popup 动效（`MotionDurationMid`、`EnableMotion`）跟随 `Controls[Popup]`，弹层宿主（`OverlayPopupHost`、`PopupRoot`）的文本默认值跟随承载 Popup 的控件；Tooltip 与 Popover 缩放原点按框体实际绘制的圆角内缩，不再读取根 `BorderRadius` / `BorderRadiusLG`，控件级圆角覆盖会移动原点（默认圆角下原点不变）。
   - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。

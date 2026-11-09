@@ -7,6 +7,13 @@
 - Fix
   - 自定义 `Size` 派生的宽高、图标尺寸、`TextPadding` 与圆形圆角各自持有一个可替换的 Template 优先级值：反复改尺寸不再为同一属性累积值帧，`Size` 清除或形状不再是圆形时释放对应值；首次设置 `Size` 不再因 `SizeType` 同步回调重复配置。
 
+## 2026-11-08
+
+- Token
+  - Breaking：`GroupSpace`、`GroupOverlapping` 从 `AvatarToken` 移到新的 `AvatarGroupToken`（`Controls[AvatarGroup].GroupSpace` /
+    `GroupOverlapping`，默认值不变）；它们只被 AvatarGroup 消费，按 AvatarGroup 的有效全局 Token 派生。
+  - 主题改读控件有效 Token：Avatar 以 `AvatarTokenResource`、AvatarGroup 以 `AvatarGroupTokenResource` 读取全局 Token。
+
 ## 2026-11-07
 
 - API

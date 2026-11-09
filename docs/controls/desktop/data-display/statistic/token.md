@@ -32,6 +32,11 @@ Statistic 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
+主题读法：`AbstractStatisticTheme` 是 Statistic 与 TimerStatistic 的共同基础主题（`AbstractStatistic` 本身不实例化），带
+`<!-- owner: -->` 标记以 `OwnerTokenResource` 读取标题与数值颜色（`ColorTextDescription` / `ColorTextHeading`），在两个控件上分别
+解析到各自的 identity；`StatisticTheme` 以 `StatisticTokenResource`、`StatisticCountUpTheme` 以 `StatisticCountUpTokenResource` 读取
+全局 Token。`TitleFontSize` / `ContentFontSize` 是 Statistic 的 Own Token，TimerStatistic 与 StatisticCountUp 同样读取它们。
+
 ## 4. 控件家族影响
 
 调整 Statistic Token 时必须评估以下范围：

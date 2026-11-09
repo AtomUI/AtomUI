@@ -233,7 +233,7 @@ AtomUI 九个 Part 随本次 Semantic Part 改造同时公开，descriptor 的 `
 | AtomUI 节点 | section 内的 `ContentPresenter#ContentPresenter` |
 | 职责 | 统一表示节点详细内容区域：`Content` / `ContentTemplate` 的呈现、受限宽度换行与下内边距；对应上游 item content 节点。 |
 | 相关 API | `Content`、`ContentTemplate`、`Mode`、`Orientation` |
-| 相关 Token | `ItemPaddingBottom`、`ItemPaddingBottomLG`、`LastItemContentMinHeight` |
+| 相关 Token | `ItemPaddingBottom`、`ItemPaddingBottomLG` |
 | 稳定性 | stable since 6.2.0 |
 
 #### `itemRail`
@@ -449,7 +449,6 @@ Timeline 没有 `SizeType` 分档，视觉基线由 TimelineToken 与全局 toke
 - 节点间距 `ItemPaddingBottom`（item 的下内边距，对齐上游 `li` 的 `paddingBottom`；指示器经 `AxisOverflow` 延伸
   到间距区保持 rail 连续），Pending 邻接升级为 `ItemPaddingBottomLG`，最后一个 Item 不保留（对齐上游
   `li:last-child`）。
-  最小高度 `LastItemContentMinHeight`。
 - Start/End/Alternate 指示器外边距分别为 `IndicatorStartModeMargin`、`IndicatorEndModeMargin`、
   `IndicatorMiddleModeMargin`。
 - 根背景 `ColorBgContainer`、边框 `ColorBorder`；IndicatorSpacing 使用 SharedToken `UniformlyPaddingXS`。

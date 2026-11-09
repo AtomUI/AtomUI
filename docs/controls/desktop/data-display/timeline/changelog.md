@@ -2,6 +2,18 @@
 
 本文档记录 Timeline 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Token
+  - Breaking：删除从未被消费的 `LastItemContentMinHeight`（antd 6.7 Timeline 无对应样式）。
+  - 主题改读控件有效 Token：Timeline、TimelineItem 与 TimelineIndicator 以 `TimelineTokenResource` 读取；`TimelineItem` 标为 Token owner
+    透明条目容器。
+- Fixed
+  - 未着色节点的颜色改为 internal `EffectiveIndicatorColor`（`IndicatorColor ?? DefaultIndicatorColor`），随主题与 `Controls[Timeline]`
+    的 `ColorPrimary` 重算；此前 `OnApplyTemplate` 一次性把默认色写成本地值。
+  - 条目 `Padding` 变化会重新测量，`ItemPaddingBottom*` Token 变化即时生效。
+  - 节点圆点的边框宽度与圆角改以 `SetCurrentValue` 写入。
+
 ## 2026-09-18
 
 - 将 header/title/content 默认对齐移至 ControlTheme，移除布局阶段的 LocalValue 写入，支持专用 Semantic Style 覆盖、移除及动态方向/Mode 切换。

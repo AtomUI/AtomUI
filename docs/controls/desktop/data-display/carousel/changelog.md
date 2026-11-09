@@ -7,6 +7,16 @@
 - Theme
   - 指示点设置空 `FocusAdorner`（Ant Design 指示点 `outline: none`），键盘焦点改为复用悬停透明度：未选中的点在 `:focus-visible` 时与 `:pointerover` 一样显示 0.75 透明度。选中点保持不透明，与 Ant Design 选中点悬停时一致。
 
+## 2026-11-08
+
+- Token
+  - `ArrowOffset` 接通切换箭头与边缘的距离（antd `arrowOffset`）；新增 `ArrowOpacity`（AtomUI 扩展，默认 0.2）取代箭头不透明度字面量。
+  - 主题改读控件有效 Token；`CarouselPage` 标为 Token owner 透明页面容器。
+- Fixed
+  - `EffectivePreviousButtonMargin` / `EffectiveNextButtonMargin` 的 setter 误发 `EffectivePaginationMargin` 的变更通知，箭头边距变化不会
+    刷新模板；现各自发出正确通知。
+  - 可见变化：切换箭头与边缘的距离为 `ArrowOffset`（8px），此前为 `PaginationOffset`（12px）。
+
 ## 2026-10-20
 
 - Fixed

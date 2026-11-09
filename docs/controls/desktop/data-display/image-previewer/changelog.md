@@ -2,6 +2,14 @@
 
 本文档记录 ImagePreviewer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Token
+  - 主题改读控件有效 Token：预览界面各部件以 `ImagePreviewerTokenResource` 显式读取全局 Token，`Controls[ImagePreviewer]` 作用于封面、
+    浮层、查看器、工具栏、标题栏与预览窗口。
+  - 新增 `ErrorIconSize`（AtomUI 扩展，默认 48px）取代加载失败图标的尺寸字面量；`ImagePreviewSwitchSize` 标为保留 Token。
+  - `FloatToolbarIndicatorPadding` 默认值改为 0（原水平内边距从未产生视觉效果），渲染不变。
+
 ## 2026-11-02
 
 - Gallery 与 Semantic Part 文档的图片样式使用公开 `Control` 作为 `x:SetterTargetType`，保持 `Border.CornerRadius` 限定属性与生成专用 Style；移除对 internal `ImagePreviewRenderer` 的跨程序集引用，保留封面图片圆角效果。

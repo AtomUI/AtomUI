@@ -38,18 +38,18 @@
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         
-        <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorIcon}" />
+        <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorIcon}" />
         
         <Style Selector="^:pointerover">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}" />
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorIconHover}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgTextHover}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorIconHover}" />
         </Style>
         
         <Style Selector="^:pressed">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextActive}" />
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorIconHover}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgTextActive}" />
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorIconHover}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">

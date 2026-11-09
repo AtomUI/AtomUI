@@ -3,11 +3,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
+    <!-- MessageBoxContent has no Token identity and only one host: it reads the MessageBox TokenResource explicitly (the
+         dialog content sits inside the surface's Skeleton, a registered control, so an owner read would resolve to it). -->
     <ControlTheme x:Key="{x:Type atom:MessageBoxContent}" TargetType="atom:MessageBoxContent">
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:MessageBoxContent">
                 <DockPanel LastChildFill="True"
-                           HorizontalSpacing="{atom:SharedTokenResource SpacingSM}">
+                           HorizontalSpacing="{atom:MessageBoxTokenResource SpacingSM}">
                     <atom:IconPresenter Name="StyleIconPresenter"
                                         Icon="{TemplateBinding StyleIcon}"
                                         VerticalAlignment="Top"
@@ -28,31 +30,31 @@
 
         <Style Selector="^[Style=Confirm]">
             <Style Selector="^ /template/ atom|IconPresenter#StyleIconPresenter">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorWarning}" />
+                <Setter Property="IconBrush" Value="{atom:MessageBoxTokenResource ColorWarning}" />
             </Style>
         </Style>
 
         <Style Selector="^[Style=Information]">
             <Style Selector="^ /template/ atom|IconPresenter#StyleIconPresenter">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorInfo}" />
+                <Setter Property="IconBrush" Value="{atom:MessageBoxTokenResource ColorInfo}" />
             </Style>
         </Style>
 
         <Style Selector="^[Style=Success]">
             <Style Selector="^ /template/ atom|IconPresenter#StyleIconPresenter">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorSuccess}" />
+                <Setter Property="IconBrush" Value="{atom:MessageBoxTokenResource ColorSuccess}" />
             </Style>
         </Style>
 
         <Style Selector="^[Style=Error]">
             <Style Selector="^ /template/ atom|IconPresenter#StyleIconPresenter">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="IconBrush" Value="{atom:MessageBoxTokenResource ColorError}" />
             </Style>
         </Style>
 
         <Style Selector="^[Style=Warning]">
             <Style Selector="^ /template/ atom|IconPresenter#StyleIconPresenter">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorWarning}" />
+                <Setter Property="IconBrush" Value="{atom:MessageBoxTokenResource ColorWarning}" />
             </Style>
         </Style>
     </ControlTheme>

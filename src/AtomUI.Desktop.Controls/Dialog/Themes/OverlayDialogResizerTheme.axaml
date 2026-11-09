@@ -6,42 +6,51 @@
     <ControlTheme x:Key="{x:Type atom:OverlayDialogResizer}" TargetType="atom:OverlayDialogResizer">
         <Setter Property="Template">
             <ControlTemplate>
+                <!-- The handles are transparent hit zones: their widths and heights are layout constants. -->
                 <Panel Name="PART_RootLayout">
+                    <!-- layout -->
                     <Border Tag="{x:Static atom:ResizeHandleLocation.North}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Top"
                             Cursor="SizeNorthSouth"
                             Height="6" />
+                    <!-- layout -->
                     <Border Tag="{x:Static atom:ResizeHandleLocation.South}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Bottom"
                             Cursor="SizeNorthSouth"
                             Height="6" />
+                    <!-- layout -->
                     <Border Tag="{x:Static atom:ResizeHandleLocation.West}"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Stretch"
                             Cursor="SizeWestEast"
                             Width="6" />
+                    <!-- layout -->
                     <Border Tag="{x:Static atom:ResizeHandleLocation.East}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Stretch"
                             Cursor="SizeWestEast"
                             Width="6" />
+                    <!-- layout -->
                     <Border Tag="{x:Static atom:ResizeHandleLocation.NorthWest}"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
                             Width="8"
                             Height="8" />
+                    <!-- layout -->
                     <Border Tag="{x:Static atom:ResizeHandleLocation.NorthEast}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
                             Width="8"
                             Height="8" />
+                    <!-- layout -->
                     <Border Tag="{x:Static atom:ResizeHandleLocation.SouthWest}"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Bottom"
                             Width="8"
                             Height="8" />
+                    <!-- layout -->
                     <Border Tag="{x:Static atom:ResizeHandleLocation.SouthEast}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Bottom"

@@ -675,7 +675,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _surface.Width = ownerBounds.Width;
         _surface.Height = ownerBounds.Height;
         SetSurfacePosition(ownerBounds.Position);
-        _surface.CornerRadius = default;
+        // The surface theme drops the corner radius while IsDialogMaximized is set.
     }
 
     private void UpdateCurrentLayerBounds()
@@ -748,7 +748,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _dialogMask.VerticalAlignment = VerticalAlignment.Top;
         _dialogMask.Width = maskSize.Width;
         _dialogMask.Height = maskSize.Height;
-        _dialogMask.Margin = default;
+        _dialogMask.SetCurrentValue(MarginProperty, default(Thickness));
     }
 
     private static Point ConstrainSurfacePosition(Rect ownerBounds, Size surfaceSize, Point position)
@@ -980,7 +980,6 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     private void HandleRestoreRequested(object? sender, EventArgs e)
     {
         _surface.IsDialogMaximized = false;
-        _surface.ClearValue(TemplatedControl.CornerRadiusProperty);
         var ownerBounds = ResolveCurrentDialogBodyOwnerBounds();
         ResolveNormalSurfaceSizeConstraints(ownerBounds);
         var restoreSize = _restoreSize ?? new Size(_surface.Width, _surface.Height);

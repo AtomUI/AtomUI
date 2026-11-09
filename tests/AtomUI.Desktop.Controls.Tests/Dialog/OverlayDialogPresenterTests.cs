@@ -3,6 +3,7 @@ using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.Tests.Window;
 using AtomUI.Desktop.Controls.Tests.Motion;
 using Avalonia;
+using Avalonia.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
@@ -851,6 +852,48 @@ public class OverlayDialogPresenterTests
                 GetSurfaceBodyBounds(fixture.Presenter.Surface, fixture.Presenter).ShouldBe(resizedBounds);
                 fixture.Presenter.Surface.Width.ShouldBe(resizedBounds.Width);
                 fixture.Presenter.Surface.Height.ShouldBe(double.NaN);
+            }
+            finally
+            {
+                fixture.Dispose();
+            }
+        });
+    }
+
+    [Fact]
+    public void Maximize_Drops_The_Surface_Corner_Radius_Through_The_Theme_And_Restore_Brings_It_Back()
+    {
+        RunOnUIThread(() =>
+        {
+            var fixture = ShowPresenter(new AtomUI.Desktop.Controls.Dialog
+            {
+                IsMotionEnabled = false,
+                IsMaximizable = true,
+                Content = new Border { Width = 180, Height = 70 }
+            });
+
+            try
+            {
+                var surface = fixture.Presenter.Surface;
+                var themeRadius = surface.CornerRadius;
+                themeRadius.TopLeft.ShouldBeGreaterThan(0);
+                var maximizeButton = surface.Header.ShouldNotBeNull()
+                                            .GetVisualDescendants()
+                                            .OfType<DialogCaptionButton>()
+                                            .Single(button => button.Name == "PART_MaximizeButton");
+
+                maximizeButton.RaiseEvent(new RoutedEventArgs(AtomUI.Desktop.Controls.Button.ClickEvent));
+                Dispatcher.UIThread.RunJobs();
+                surface.IsDialogMaximized.ShouldBeTrue();
+                surface.CornerRadius.ShouldBe(default);
+                // The maximized radius is a theme state value, not a local value written by the presenter.
+                surface.GetDiagnostic(Avalonia.Controls.Primitives.TemplatedControl.CornerRadiusProperty).Priority
+                       .ShouldNotBe(Avalonia.Data.BindingPriority.LocalValue);
+
+                maximizeButton.RaiseEvent(new RoutedEventArgs(AtomUI.Desktop.Controls.Button.ClickEvent));
+                Dispatcher.UIThread.RunJobs();
+                surface.IsDialogMaximized.ShouldBeFalse();
+                surface.CornerRadius.ShouldBe(themeRadius);
             }
             finally
             {

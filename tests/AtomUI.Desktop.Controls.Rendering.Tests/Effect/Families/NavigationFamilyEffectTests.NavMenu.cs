@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
@@ -31,6 +32,31 @@ public partial class NavigationFamilyEffectTests
         _ = isOwn;
         var scenario = NavMenuScenario(token);
         Run(scenario.Create, scenario.Arrange, NavMenuTokens.Identity, token, scenario.Options);
+    }
+
+    [Fact]
+    public void NavMenu_Light_Horizontal_Item_Radius_Shapes_A_Styled_Hover_Background()
+    {
+        // HorizontalItemBorderRadius applies to light horizontal top-level items too (antd horizontalItemBorderRadius). Their
+        // backgrounds are transparent in every state by default (hover, open, selected, keyboard-active and pointer-hold), so
+        // the radius shows on a background an application gives them: here an application style fills the hovered item
+        // (the map row covers the dark selected item).
+        Run(static () =>
+            {
+                var menu = CreateNavMenu(NavMenuMode.Horizontal);
+                menu.Styles.Add(new Style(static x => x.OfType<HorizontalNavMenuItemHeader>().Class(":pointerover"))
+                {
+                    Setters = { new Setter(TemplatedControl.BackgroundProperty, Avalonia.Media.Brushes.LightBlue) }
+                });
+                return menu;
+            },
+            static menu => Pseudo(HeaderOf(ItemOf((NavMenu)menu, "Mail")), ":pointerover"),
+            NavMenuTokens.Identity, "HorizontalItemBorderRadius",
+            new EffectOptions
+            {
+                Region  = static menu => HeaderOf(ItemOf((NavMenu)menu, "Mail")),
+                Perturb = static _ => new CornerRadius(16)
+            });
     }
 
     private sealed record NavScenario(Func<Control> Create, Action<Control>? Arrange, EffectOptions? Options = null);

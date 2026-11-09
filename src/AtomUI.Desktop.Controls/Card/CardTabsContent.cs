@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using AtomUI.Controls;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -11,6 +12,10 @@ namespace AtomUI.Desktop.Controls;
 
 using ControlList = Avalonia.Controls.Controls;
 
+// A Token-owner transparent part: CardTabsContent is the tabs body of a Card and has no Own Tokens, so its theme reads the
+// Card TokenResource; Controls[Card] reaches the tab bar edge padding and the tab content padding. The hosted TabControl
+// keeps its own identity.
+[TokenOwnerTransparent]
 public class CardTabsContent : TemplatedControl
 {
     #region 公共属性定义

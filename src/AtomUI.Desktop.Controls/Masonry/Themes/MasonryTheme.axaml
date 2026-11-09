@@ -6,9 +6,9 @@
     <ControlTheme x:Key="{x:Type atom:Masonry}" TargetType="atom:Masonry">
         <!-- Item 动效时长（appear/glide 用 Slow，leave 用 Fast），全局禁用动效时 token 值为 0，动效自动退化为瞬时 -->
         <Setter Property="MotionDuration"
-                Value="{atom:SharedTokenResource MotionDurationSlow}" />
+                Value="{atom:MasonryTokenResource MotionDurationSlow}" />
         <Setter Property="LeaveMotionDuration"
-                Value="{atom:SharedTokenResource MotionDurationFast}" />
+                Value="{atom:MasonryTokenResource MotionDurationFast}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder Name="PART_RootBorder"

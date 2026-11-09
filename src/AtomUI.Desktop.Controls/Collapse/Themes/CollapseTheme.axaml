@@ -20,9 +20,9 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:CollapseTokenResource EnableMotion}" />
+        <Setter Property="BorderThickness" Value="{atom:CollapseTokenResource BorderThickness}" />
+        <Setter Property="BorderBrush" Value="{atom:CollapseTokenResource ColorBorder}" />
         <Setter Property="CornerRadius" Value="{atom:CollapseTokenResource CollapsePanelBorderRadius}" />
     </ControlTheme>
 </ResourceDictionary>

@@ -28,6 +28,8 @@ internal class CardActionPanel : TemplatedControl
     static CardActionPanel()
     {
         AffectsRender<CardActionPanel>(
+            BackgroundProperty,
+            CornerRadiusProperty,
             BorderBrushProperty,
             BorderThicknessProperty,
             UseLayoutRoundingProperty);
@@ -90,6 +92,14 @@ internal class CardActionPanel : TemplatedControl
 
     public override void Render(DrawingContext context)
     {
+        // The background is painted here rather than by a template Border so the top border and the separators drawn
+        // below stay above it (children render above Render output); only the bottom corners follow the Card.
+        if (Background is { } background)
+        {
+            var radius = new CornerRadius(0, 0, CornerRadius.BottomRight, CornerRadius.BottomLeft);
+            context.DrawRectangle(background, null, new RoundedRect(new Rect(Bounds.Size), radius));
+        }
+
         var lineWidth = BorderUtils.BuildRenderScaleAwareThickness(this, BorderThickness.Left);
         PenUtils.TryModifyOrCreate(ref _borderPen, BorderBrush, lineWidth);
         if (_borderPen is null)

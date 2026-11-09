@@ -1,10 +1,14 @@
 using AtomUI.Controls;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+// A Token-owner transparent part: a CardGridItem lives in the grid content of a Card and has no Own Tokens, so its theme
+// reads the Card TokenResource and its Token-declared transitions resolve to the Card; Controls[Card] reaches the items.
+[TokenOwnerTransparent]
 public class CardGridItem : ContentControl
 {
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty = 

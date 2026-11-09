@@ -10,7 +10,7 @@
             <ControlTemplate>
                 <atom:PixelAlignedBorder
                     BorderThickness="{TemplateBinding ItemBorderThickness}"
-                    BorderBrush="{atom:SharedTokenResource ColorBorder}">
+                    BorderBrush="{atom:CollapseTokenResource ColorBorder}">
                     <DockPanel Name="PART_MainLayout"
                                LastChildFill="True">
                         <atom:PixelAlignedBorder Name="PART_HeaderDecorator"
@@ -30,6 +30,7 @@
                                 Icon="{TemplateBinding ExpandIcon}"
                                 IsVisible="{TemplateBinding IsShowExpandIcon}"
                                 IsEnabled="{TemplateBinding IsEnabled}"/>
+                            <!-- layout: one pixel optical nudge that centres the title text on the expand icon -->
                             <ContentPresenter Name="PART_HeaderPresenter"
                                               Classes.semantic-title="True"
                                               HorizontalAlignment="Stretch"
@@ -78,23 +79,25 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationSlow}" />
+        <Setter Property="MotionDuration" Value="{atom:CollapseTokenResource MotionDurationSlow}" />
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HeaderDecorator">
             <Setter Property="Background" Value="{atom:CollapseTokenResource HeaderBg}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+            <Setter Property="BorderBrush" Value="{atom:CollapseTokenResource ColorBorder}" />
         </Style>
 
+        <!-- antd: the panel content paints contentBg; borderless panels paint headerBg, ghost panels nothing. -->
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_ContentFrame">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+            <Setter Property="BorderBrush" Value="{atom:CollapseTokenResource ColorBorder}" />
+            <Setter Property="Background" Value="{atom:CollapseTokenResource ContentBg}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextHeading}" />
+            <Setter Property="Foreground" Value="{atom:CollapseTokenResource ColorTextHeading}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_ExpandButton">
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="IconWidth" Value="{atom:CollapseTokenResource IconSizeSM}" />
+            <Setter Property="IconHeight" Value="{atom:CollapseTokenResource IconSizeSM}" />
         </Style>
 
         <Style Selector="^[IsSelected=True]">
@@ -125,25 +128,25 @@
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HeaderDecorator">
                 <Setter Property="TextElement.FontSize"
-                        Value="{atom:SharedTokenResource FontSizeLG}" />
+                        Value="{atom:CollapseTokenResource FontSizeLG}" />
                 <Setter Property="TextBlock.LineHeight"
-                        Value="{atom:SharedTokenResource FontHeightLG}" />
+                        Value="{atom:CollapseTokenResource FontHeightLG}" />
             </Style>
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HeaderDecorator">
                 <Setter Property="TextElement.FontSize"
-                        Value="{atom:SharedTokenResource FontSize}" />
+                        Value="{atom:CollapseTokenResource FontSize}" />
                 <Setter Property="TextBlock.LineHeight"
-                        Value="{atom:SharedTokenResource FontHeight}" />
+                        Value="{atom:CollapseTokenResource FontHeight}" />
             </Style>
         </Style>
         <Style Selector="^[SizeType=Small]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HeaderDecorator">
                 <Setter Property="TextElement.FontSize"
-                        Value="{atom:SharedTokenResource FontSize}" />
+                        Value="{atom:CollapseTokenResource FontSize}" />
                 <Setter Property="TextBlock.LineHeight"
-                        Value="{atom:SharedTokenResource FontHeight}" />
+                        Value="{atom:CollapseTokenResource FontHeight}" />
             </Style>
         </Style>
 
@@ -223,15 +226,18 @@
 
         <Style Selector="^[IsGhostStyle=True]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HeaderDecorator">
-                <Setter Property="Background" Value="{atom:CollapseTokenResource ContentBg}" />
+                <Setter Property="Background" Value="{atom:CollapseTokenResource ColorTransparent}" />
+            </Style>
+            <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_ContentFrame">
+                <Setter Property="Background" Value="{atom:CollapseTokenResource ColorTransparent}" />
             </Style>
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:CollapseTokenResource ColorTextDisabled}" />
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HeaderDecorator ContentPresenter">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:CollapseTokenResource ColorTextDisabled}" />
             </Style>
         </Style>
 

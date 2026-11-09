@@ -1,5 +1,6 @@
 ﻿using AtomUI.Theme.DesignTokens;
 using Avalonia;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -47,6 +48,12 @@ internal sealed class SeparatorToken : AbstractControlDesignToken
     /// Horizontal margin of divider with text
     /// </summary>
     public Thickness HorizontalWithTextGutterMargin { get; set; }
+
+    /// <summary>
+    /// 带文本分割线的标题字重（非 Plain 样式）
+    /// Font weight of the title of a divider with text (not plain)
+    /// </summary>
+    public FontWeight TitleFontWeight { get; set; }
     
     public override void CalculateTokenValues(bool isDarkMode)
     {
@@ -58,6 +65,8 @@ internal sealed class SeparatorToken : AbstractControlDesignToken
         HorizontalMarginBlock          = new Thickness(0, EffectiveGlobalToken.UniformlyMargin);
         HorizontalMarginBlockLG        = new Thickness(0, EffectiveGlobalToken.UniformlyMarginLG);
         HorizontalWithTextGutterMargin = new Thickness(0, EffectiveGlobalToken.UniformlyMargin);
+        // antd Divider renders the title of a divider with text at weight 500 (a fixed value, not fontWeightStrong).
+        TitleFontWeight                = FontWeight.Medium;
     }
     
 }

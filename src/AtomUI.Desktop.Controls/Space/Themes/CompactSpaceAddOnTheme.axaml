@@ -20,61 +20,61 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="True" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:CompactSpaceAddOnTokenResource BorderThickness}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
 
         <Style Selector="^[SizeType=Large]">
             <Setter Property="FontSize"
-                    Value="{atom:SharedTokenResource FontSizeLG}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource FontSizeLG}" />
             <Setter Property="CornerRadius"
-                    Value="{atom:SharedTokenResource BorderRadiusLG}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource BorderRadiusLG}" />
             <Setter Property="Padding"
                     Value="{atom:SpaceTokenResource AddOnPaddingLG}" />
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
+            <Setter Property="MinHeight" Value="{atom:CompactSpaceAddOnTokenResource ControlHeightLG}" />
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
             <Setter Property="FontSize"
-                    Value="{atom:SharedTokenResource FontSize}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource FontSize}" />
             <Setter Property="CornerRadius"
-                    Value="{atom:SharedTokenResource BorderRadius}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource BorderRadius}" />
             <Setter Property="Padding"
                     Value="{atom:SpaceTokenResource AddOnPadding}" />
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="MinHeight" Value="{atom:CompactSpaceAddOnTokenResource ControlHeight}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
             <Setter Property="FontSize"
-                    Value="{atom:SharedTokenResource FontSizeSM}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource FontSizeSM}" />
             <Setter Property="CornerRadius"
-                    Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource BorderRadiusSM}" />
             <Setter Property="Padding"
                     Value="{atom:SpaceTokenResource AddOnPaddingSM}" />
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
+            <Setter Property="MinHeight" Value="{atom:CompactSpaceAddOnTokenResource ControlHeightSM}" />
         </Style>
         
         <Style Selector="^[Status=Error]">
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorErrorText}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource ColorErrorText}" />
         </Style>
         
         <Style Selector="^[Status=Warning]">
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorWarningText}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource ColorWarningText}" />
         </Style>
         
         <Style Selector="^[StyleVariant=Outlined]">
             <Setter Property="Background"
                     Value="{atom:SpaceTokenResource AddonBg}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+            <Setter Property="BorderBrush" Value="{atom:CompactSpaceAddOnTokenResource ColorBorder}" />
             
             <Style Selector="^[Status=Error]">
                 <Setter Property="BorderBrush"
-                        Value="{atom:SharedTokenResource ColorError}" />
+                        Value="{atom:CompactSpaceAddOnTokenResource ColorError}" />
             </Style>
         
             <Style Selector="^[Status=Warning]">
                 <Setter Property="BorderBrush"
-                        Value="{atom:SharedTokenResource ColorWarning}" />
+                        Value="{atom:CompactSpaceAddOnTokenResource ColorWarning}" />
             </Style>
         </Style>
 
@@ -84,21 +84,21 @@
             
             <Style Selector="^[Status=Error]">
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorErrorBg}" />
+                        Value="{atom:CompactSpaceAddOnTokenResource ColorErrorBg}" />
             </Style>
         
             <Style Selector="^[Status=Warning]">
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorWarningBg}" />
+                        Value="{atom:CompactSpaceAddOnTokenResource ColorWarningBg}" />
             </Style>
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+            <Setter Property="BorderBrush" Value="{atom:CompactSpaceAddOnTokenResource ColorBorder}" />
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource ColorTextDisabled}" />
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource ColorBgContainerDisabled}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -97,12 +97,16 @@ internal sealed class CardToken : AbstractControlDesignToken
     /// 操作区每一项的间距
     ///  Margin of each item in card actions
     /// </summary>
+    [ReservedToken("antd Card actionsLiMargin (the vertical margin of each action). The AtomUI action row is a " +
+                   "ControlHeightLG-high row whose actions stretch over the whole cell, so there is no item margin to set.")]
     public double ActionsSpacing { get; set; }
     
     /// <summary>
     /// 内置标签页组件下间距
     /// Margin bottom of tabs component
     /// </summary>
+    [ReservedToken("antd Card tabsMarginBottom (pulls the tabs inside the card head onto the head border). CardTabsContent " +
+                   "renders its tab bar in the body below the header, so there is no head to overlap.")]
     public Thickness TabsMarginBottom { get; set; }
     
     /// <summary>
@@ -121,12 +125,16 @@ internal sealed class CardToken : AbstractControlDesignToken
     /// 卡片头部内边距
     /// Padding of card header
     /// </summary>
+    [ReservedToken("antd Card cardHeadPadding (the title padding of a head that also holds the tabs). CardTabsContent " +
+                   "renders its tab bar in the body, so the header keeps its normal height and padding.")]
     public Thickness CardHeadPadding { get; set; }
     
     /// <summary>
     /// 卡片基础内边距
     /// Padding of base card
     /// </summary>
+    [ReservedToken("antd Card cardPaddingBase (the padding of a grid item). CardGridItem follows the card size with " +
+                   "BodyPaddingLG / BodyPadding / BodyPaddingSM instead.")]
     public Thickness CardPaddingBase { get; set; }
     
     /// <summary>

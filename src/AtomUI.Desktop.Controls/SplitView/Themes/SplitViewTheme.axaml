@@ -8,13 +8,14 @@
                 Value="{atom:SplitViewTokenResource OpenPaneThemeLength}" />
         <Setter Property="CompactPaneLength"
                 Value="{atom:SplitViewTokenResource CompactPaneThemeLength}" />
-        <Setter Property="PaneBackground" Value="{atom:SharedTokenResource ColorBgContainer}" />
+        <Setter Property="PaneBackground" Value="{atom:SplitViewTokenResource ColorBgContainer}" />
         <Setter Property="PaneOpenMotionDuration"
                 Value="{atom:SplitViewTokenResource PaneOpenMotionDuration}" />
         <Setter Property="PaneCloseMotionDuration"
                 Value="{atom:SplitViewTokenResource PaneCloseMotionDuration}" />
         <Setter Property="PaneMotionEasing"
                 Value="{atom:SplitViewTokenResource PaneMotionEasing}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:SplitViewTokenResource EnableMotion}" />
 
         <Style Selector="^:left">
             <Setter Property="Template">
@@ -27,6 +28,8 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
+                        <!-- layout: keeps the pane above the content and its light-dismiss layer -->
+
                         <Panel Name="PART_PaneRoot"
                                Background="{TemplateBinding PaneBackground}"
                                ClipToBounds="True"
@@ -36,9 +39,8 @@
                                               Content="{TemplateBinding Pane}"
                                               ContentTemplate="{TemplateBinding PaneTemplate}" />
                             <atom:PixelAlignedBorder Name="HCPaneBorder"
-                                                     BorderBrush="{atom:SharedTokenResource ColorBorder}"
-                                                     BorderThickness="0,0,1,0"
-                                                     Width="1"
+                                                     Background="{atom:SplitViewTokenResource ColorBorder}"
+                                                     Width="{atom:SplitViewTokenResource LineWidth}"
                                                      HorizontalAlignment="Right" />
                         </Panel>
 
@@ -118,6 +120,8 @@
                                 Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneColumnGridLength}" />
                         </Grid.ColumnDefinitions>
 
+                        <!-- layout: keeps the pane above the content and its light-dismiss layer -->
+
                         <Panel Name="PART_PaneRoot" Background="{TemplateBinding PaneBackground}"
                                ClipToBounds="True"
                                HorizontalAlignment="Right"
@@ -126,9 +130,8 @@
                                               Content="{TemplateBinding Pane}"
                                               ContentTemplate="{TemplateBinding PaneTemplate}" />
                             <atom:PixelAlignedBorder Name="HCPaneBorder"
-                                                     BorderBrush="{atom:SharedTokenResource ColorBorder}"
-                                                     BorderThickness="1,0,0,0"
-                                                     Width="1"
+                                                     Background="{atom:SplitViewTokenResource ColorBorder}"
+                                                     Width="{atom:SplitViewTokenResource LineWidth}"
                                                      HorizontalAlignment="Left" />
                         </Panel>
 
@@ -207,6 +210,8 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
+                        <!-- layout: keeps the pane above the content and its light-dismiss layer -->
+
                         <Panel Name="PART_PaneRoot"
                                Background="{TemplateBinding PaneBackground}"
                                ClipToBounds="True"
@@ -216,9 +221,8 @@
                                               Content="{TemplateBinding Pane}"
                                               ContentTemplate="{TemplateBinding PaneTemplate}" />
                             <atom:PixelAlignedBorder Name="HCPaneBorder"
-                                                     BorderBrush="{atom:SharedTokenResource ColorBorder}"
-                                                     BorderThickness="0,0,0,1"
-                                                     Height="1"
+                                                     Background="{atom:SplitViewTokenResource ColorBorder}"
+                                                     Height="{atom:SplitViewTokenResource LineWidth}"
                                                      VerticalAlignment="Bottom" />
                         </Panel>
 
@@ -299,6 +303,8 @@
                                 Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneRowGridLength}" />
                         </Grid.RowDefinitions>
 
+                        <!-- layout: keeps the pane above the content and its light-dismiss layer -->
+
                         <Panel Name="PART_PaneRoot" Background="{TemplateBinding PaneBackground}"
                                ClipToBounds="True"
                                VerticalAlignment="Bottom"
@@ -307,9 +313,8 @@
                                               Content="{TemplateBinding Pane}"
                                               ContentTemplate="{TemplateBinding PaneTemplate}" />
                             <atom:PixelAlignedBorder Name="HCPaneBorder"
-                                                     BorderBrush="{atom:SharedTokenResource ColorBorder}"
-                                                     BorderThickness="0,1,0,0"
-                                                     Height="1"
+                                                     Background="{atom:SplitViewTokenResource ColorBorder}"
+                                                     Height="{atom:SplitViewTokenResource LineWidth}"
                                                      VerticalAlignment="Top" />
                         </Panel>
 
@@ -426,7 +431,7 @@
         </Style>
 
         <Style Selector="^:lightDismiss /template/ Rectangle#LightDismissLayer">
-            <Setter Property="Fill" Value="{atom:SharedTokenResource ColorBgMask}" />
+            <Setter Property="Fill" Value="{atom:SplitViewTokenResource ColorBgMask}" />
         </Style>
         <Style Selector="^:overlay:open /template/ Rectangle#LightDismissLayer">
             <Setter Property="IsVisible" Value="True" />

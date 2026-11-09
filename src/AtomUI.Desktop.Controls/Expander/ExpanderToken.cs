@@ -58,8 +58,6 @@ internal sealed class ExpanderToken : AbstractControlDesignToken
     public CornerRadius ExpanderBorderRadius { get; set; }
     public Thickness LeftExpandButtonHMargin { get; set; }
     public Thickness RightExpandButtonHMargin { get; set; }
-    public Thickness LeftExpandButtonVMargin { get; set; }
-    public Thickness RightExpandButtonVMargin { get; set; }
 
     #endregion
 
@@ -77,8 +75,6 @@ internal sealed class ExpanderToken : AbstractControlDesignToken
         ExpanderBorderRadius     = EffectiveGlobalToken.BorderRadiusLG;
         LeftExpandButtonHMargin  = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginSM, 0);
         RightExpandButtonHMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginSM, 0, 0, 0);
-        LeftExpandButtonVMargin  = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginSM);
-        RightExpandButtonVMargin = new Thickness(0, EffectiveGlobalToken.UniformlyMarginSM, 0, 0);
     }
     
 }

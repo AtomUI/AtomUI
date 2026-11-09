@@ -33,23 +33,23 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="TitleColor" Value="{atom:SharedTokenResource ColorTextHeading}" />
-        <Setter Property="LineColor" Value="{atom:SharedTokenResource ColorSplit}" />
+        <Setter Property="TitleColor" Value="{atom:SeparatorTokenResource ColorTextHeading}" />
+        <Setter Property="LineColor" Value="{atom:SeparatorTokenResource ColorSplit}" />
         
         <Setter Property="TextPaddingInline" Value="{atom:SeparatorTokenResource TextPaddingInline}" />
         <Setter Property="OrientationMarginPercent" Value="{atom:SeparatorTokenResource OrientationMarginPercent}" />
-        <Setter Property="LineWidth" Value="{atom:SharedTokenResource LineWidth}" />
+        <Setter Property="LineWidth" Value="{atom:SeparatorTokenResource LineWidth}" />
         
         <Style Selector="^[IsPlain=True]">
             <Style Selector="^ /template/ atom|TextBlock#PART_Title">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+                <Setter Property="FontSize" Value="{atom:SeparatorTokenResource FontSize}" />
                 <Setter Property="FontWeight" Value="Normal" />
             </Style>
         </Style>
         <Style Selector="^[IsPlain=False]">
             <Style Selector="^ /template/ atom|TextBlock#PART_Title">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
-                <Setter Property="FontWeight" Value="500" />
+                <Setter Property="FontSize" Value="{atom:SeparatorTokenResource FontSizeLG}" />
+                <Setter Property="FontWeight" Value="{atom:SeparatorTokenResource TitleFontWeight}" />
             </Style>
         </Style>
 
@@ -67,6 +67,10 @@
 
             <Style Selector="^[SizeType=Middle]">
                 <Setter Property="Margin" Value="{atom:SeparatorTokenResource HorizontalMarginBlock}"/>
+                <!-- antd: a horizontal divider with text uses the with-text gutter margin unless a size sets one. -->
+                <Style Selector="^:has-title">
+                    <Setter Property="Margin" Value="{atom:SeparatorTokenResource HorizontalWithTextGutterMargin}"/>
+                </Style>
             </Style>
 
             <Style Selector="^[SizeType=Large]">

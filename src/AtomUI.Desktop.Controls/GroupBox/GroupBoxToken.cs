@@ -13,21 +13,6 @@ internal sealed class GroupBoxToken : AbstractControlDesignToken
     }
 
     /// <summary>
-    /// 文本横向内间距 单位 em
-    /// </summary>
-    public double TextPaddingInline { get; set; }
-
-    /// <summary>
-    /// 文本与边缘距离的比例，取值 0 ～ 1
-    /// </summary>
-    public double OrientationMarginPercent { get; set; }
-
-    /// <summary>
-    /// 纵向分割线的横向外间距
-    /// </summary>
-    public double VerticalMarginInline { get; set; }
-
-    /// <summary>
     /// 内容区域内间距
     /// </summary>
     public Thickness ContentPadding { get; set; }
@@ -50,9 +35,6 @@ internal sealed class GroupBoxToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        TextPaddingInline        = 1.0;
-        OrientationMarginPercent = 0.05;
-        VerticalMarginInline     = EffectiveGlobalToken.UniformlyMarginXS;
         ContentPadding           = EffectiveGlobalToken.PaddingXS;
         HeaderContainerMargin = new Thickness(EffectiveGlobalToken.UniformlyMargin, EffectiveGlobalToken.UniformlyMarginXS,
             EffectiveGlobalToken.UniformlyMargin, 0);

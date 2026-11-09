@@ -186,11 +186,16 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
 
     static AbstractSeparator()
     {
+        // The Token-fed spacing values are bound by the theme: a theme or Controls[Separator] change re-measures (vertical
+        // inline margin) or re-arranges (title padding and edge ratio) the separator.
         AffectsMeasure<AbstractSeparator>(OrientationProperty,
             LineWidthProperty,
-            TitleProperty);
+            TitleProperty,
+            VerticalMarginInlineProperty);
         AffectsArrange<AbstractSeparator>(TitlePositionProperty,
-            OrientationMarginProperty);
+            OrientationMarginProperty,
+            TextPaddingInlineProperty,
+            OrientationMarginPercentProperty);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
@@ -15,6 +16,9 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+// A Token-owner transparent part: a CollapseItem is an item of Collapse only and has no Own Tokens, so its theme reads the
+// Collapse TokenResource and Controls[Collapse] reaches the item headers, bodies, separators and motion.
+[TokenOwnerTransparent]
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Selected)]
 public class CollapseItem : HeaderedContentControl, ISelectable
 {

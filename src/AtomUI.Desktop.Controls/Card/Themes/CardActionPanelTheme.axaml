@@ -2,34 +2,25 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    xmlns:converters="using:Avalonia.Controls.Converters"
     x:ClassModifier="internal">
-    <converters:CornerRadiusFilterConverter x:Key="CornerRadiusFilterConverter"
-                                            Filter="BottomLeft, BottomRight"/>
+    <!-- CardActionPanel paints its background (ActionsBg, bottom corners only), the top border and the separators
+         between actions itself in Render, so the separators stay visible above the background; the grid leaves a
+         LineWidth gap between actions for them. -->
     <ControlTheme x:Key="{x:Type atom:CardActionPanel}" TargetType="atom:CardActionPanel">
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Name="Frame" 
-                        CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource CornerRadiusFilterConverter}}"
-                        Background="{TemplateBinding Background}">
-                    <UniformGrid Name="PART_GridPanel"
-                                 ColumnSpacing="1"/>
-                </Border>
+                <UniformGrid Name="PART_GridPanel"
+                             ColumnSpacing="{atom:CardTokenResource LineWidth}" />
             </ControlTemplate>
         </Setter>
-        <Setter Property="Padding" Value="0, 1, 0, 0"/>
-        <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}"/>
-        <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}"/>
-     
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}"/>
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}"/>
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}"/>
+        <Setter Property="MinHeight" Value="{atom:CardTokenResource ControlHeightLG}"/>
+        <Setter Property="FontSize" Value="{atom:CardTokenResource FontSize}"/>
+        <Setter Property="Background" Value="{atom:CardTokenResource ActionsBg}"/>
+        <Setter Property="Foreground" Value="{atom:CardTokenResource ColorTextDescription}"/>
+        <Setter Property="BorderBrush" Value="{atom:CardTokenResource ColorBorderSecondary}"/>
+        <Setter Property="BorderThickness" Value="{atom:CardTokenResource BorderThickness}"/>
         <Style Selector="^:pointerover">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}"/>
-        </Style>
-        
-        <Style Selector="^ /template/ Border#Frame">
-            <Setter Property="Background" Value="{atom:CardTokenResource ActionsBg}"/>
+            <Setter Property="Foreground" Value="{atom:CardTokenResource ColorPrimary}"/>
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">

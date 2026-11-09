@@ -32,7 +32,7 @@
 | 10.7 | Navigation 家族 | 完成 |
 | 10.8 | Layout / Container 家族 | 完成 |
 | 10.9a | Data 家族前半（List/Tree/Avatar/Timeline/Skeleton/Statistic/Carousel/ImagePreviewer） | 完成，最后提交 `eb8d42c85` |
-| 10.9b | Data 家族后半（Calendar/LunarCalendar、DatePicker/TimePicker、基础 Table） | **进行中**：旧会话基于 `eb8d42c85` 派发；交接时只有未提交的 Calendar 改动 |
+| 10.9b | Data 家族后半（Calendar/LunarCalendar、DateViewer、DatePicker/TimePicker；无基础 Table） | **实现完成、待评审**：提交 `2537e72cb`、`de8fb1004`、`56755dfc4`（基于 `eb8d42c85`）；评审要点见第 4 节台账最后一条 |
 | 10.10 | 其余控件 + 抽象 Token 层一致性汇总（见计划 10.10 行） | 未开始 |
 | 11 | `AtomUI.Themes.PrimeNG` | 未开始 |
 | 12 | Gallery 主题预设页 | 未开始 |
@@ -43,7 +43,7 @@
 
 ## 2. 接手步骤
 
-1. 查看 `eb8d42c85` 之后的提交与工作树：若有 10.9b 的提交或未提交改动，先判断是否已完成（看提交信息，以及 `tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/DataFamilyEffectTests*` 是否已有 Calendar/DatePicker/TimePicker 的行）。未完成的未提交改动交给新的实现子代理接着做，不要丢弃。
+1. 10.9b 已实现并提交（`eb8d42c85..56755dfc4`），尚未评审：先用评审包 `eb8d42c85..56755dfc4` 派评审子代理（实现报告已不在仓库内，评审以提交、计划、第 3 节规则和第 4 节台账最后一条为准），再按评审结果续派修复（新开实现子代理，带上评审发现）。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -374,3 +374,5 @@ Task 10.9a: minor (deferred): disabled-switcher wording ("antd colours the whole
 Task 10.9a: fix round 1/5 (3 addressed, 0 open — ImagePreviewer guard equality; TimerStatistic static formatter; per-package gate guards; commits a9c59f935..eb8d42c85). 270→269 was a miscount in the report.
 Task 10.9a: complete (commits 303c6740f..eb8d42c85, review clean)
 Task 10.9b: dispatched implementer (opus)
+Task 10.9b: implementer DONE_WITH_CONCERNS, commits 2537e72cb de8fb1004 56755dfc4 (Data effect 619; Rendering 2997; Desktop.Controls 4198; Generator 921; family 041 105, 042 4, 044 1, 045 14, 047 5 → 0). Scope added DateViewer + Primitives/InfoPickerInput; no basic Table exists. 042: TimePicker ButtonsMargin/PeriodHostWidth Active; RangePickerArrowMargin/RangePickerIndicatorThickness deleted (Breaking). New AtomUI-extension tokens: Calendar.FullCell*, RangeBarGap, RangeBarLabelPadding; LunarCalendar.Marker*; DateViewer Header/FooterBorderThickness, WeekNumberOpacity; DatePicker.HeaderBorderThickness; TimePicker.ItemMargin.
+Task 10.9b: REVIEW PENDING (not yet dispatched at handoff). Reviewer must judge: (1) new `Primitives/TokenOwnerForwarding` mechanism (picker→popup presenter inside registered ArrowDecoratedBox; TimeView→columns inside registered ScrollViewers; Calendar→DateViewer) — document as pattern vs alternative; (2) visible change: picker input text ColorTextTertiary while popup open — antd does not dim it → likely remove unless antd evidence; (3) borrowed Own tokens LunarCalendar→Calendar, RangeDateViewer→DateViewer, RangeDatePicker→DatePicker, date-time TimeView→TimePicker, range pickers→InfoPickerInput → 10.10; (4) pre-existing clipped picker focus shadow (range picker shadow rows excluded) → decide fix vs defer.

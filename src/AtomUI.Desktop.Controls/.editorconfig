@@ -89,8 +89,10 @@ dotnet_diagnostic.ATOMUIGEN047.severity = error
 # inline headers are registered and Token-owner transparent), Menu (MenuItem, MenuItemGroup, MenuSeparator, ContextMenu,
 # MenuPopupScrollHost), the MenuFlyoutPresenter of drop-down flyouts (its theme lives in Flyouts/Themes) and the tab
 # controls (TabControl, CardTabControl, TabStrip, CardTabStrip, TabItem, TabStripItem and the identity-less bases, scroll
-# viewer and overflow menu). Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
-[{NavMenu,Menu,TabControl}/**]
+# viewer and overflow menu), Breadcrumb (BreadcrumbItem), Pagination and SimplePagination (identity-less page items, nav and
+# quick jumper) and Tour (TourStep, DefaultTourIndicator, TextTourIndicator, the identity-less steps view and mask layer).
+# Keep in step with tests/AtomUI.Generator.Tests/ThemeAssets/MigratedFamilyAnalyzerGateTests.cs.
+[{NavMenu,Menu,TabControl,Breadcrumb,Pagination,Tour}/**]
 dotnet_diagnostic.ATOMUIGEN041.severity = error
 dotnet_diagnostic.ATOMUIGEN042.severity = error
 dotnet_diagnostic.ATOMUIGEN043.severity = error

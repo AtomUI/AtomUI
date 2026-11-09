@@ -37,7 +37,7 @@ public class MigratedFamilyAnalyzerGateTests
         // Feedback family
         "Alert", "Popup", "Tooltip", "Dialog", "MessageBox", "Message", "Notifications", "PopupConfirm",
         // Navigation family
-        "NavMenu", "Menu", "TabControl"
+        "NavMenu", "Menu", "TabControl", "Breadcrumb", "Pagination", "Tour"
     ];
 
     /// <summary>Single theme assets (relative to the package) of migrated families whose directory holds other families.</summary>
@@ -64,7 +64,9 @@ public class MigratedFamilyAnalyzerGateTests
         "NotificationCard", "WindowNotificationManager", "PopupConfirm",
         "NavMenu", "HorizontalNavMenuItemHeader", "InlineNavMenuItemHeader", "Menu", "MenuItem", "MenuItemGroup",
         "MenuSeparator", "ContextMenu", "MenuFlyoutPresenter",
-        "TabControl", "CardTabControl", "TabStrip", "CardTabStrip", "TabItem", "TabStripItem"
+        "TabControl", "CardTabControl", "TabStrip", "CardTabStrip", "TabItem", "TabStripItem",
+        "Breadcrumb", "BreadcrumbItem", "Pagination", "SimplePagination", "Tour", "TourStep", "DefaultTourIndicator",
+        "TextTourIndicator"
     ];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -178,6 +180,15 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldNotContain("TabScrollViewer");
         IdentityControls.Value.ShouldNotContain("TabOverflowMenu");
         IdentityControls.Value.ShouldNotContain("TabOverflowMenuItem");
+        // Breadcrumb, pagination and tour: the controls, items, steps and indicators are registered; the page items, quick
+        // jumper, steps view and mask layer are not.
+        IdentityControls.Value.ShouldContain("BreadcrumbItem");
+        IdentityControls.Value.ShouldContain("SimplePagination");
+        IdentityControls.Value.ShouldContain("TourStep");
+        IdentityControls.Value.ShouldNotContain("PaginationNavItem");
+        IdentityControls.Value.ShouldNotContain("QuickJumperBar");
+        IdentityControls.Value.ShouldNotContain("TourStepsView");
+        IdentityControls.Value.ShouldNotContain("TourLayer");
     }
 
     [Fact]

@@ -19,7 +19,7 @@ Token 按控件语义分类维护：
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `CardSize`、`TitleFontSize`、`TitleFontSizeLG`、`TitleFontSizeSM`、`InkBarThickness` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `CardPadding`、`CardPaddingSM`、`CardPaddingLG`、`HorizontalItemMargin`、`HorizontalItemPadding`、`HorizontalMargin`（保留） |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `CardBg`、`InkBarColor`、`ItemColor`、`ItemHoverColor`、`ItemSelectedColor` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `MenuIndicatorPaddingHorizontal`、`MenuIndicatorPaddingVertical`、`MenuEdgeThickness`、`BoxShadowTabsOverflowLeft`、`BoxShadowTabsOverflowRight`、`BoxShadowTabsOverflowTop`、`BoxShadowTabsOverflowBottom` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `MenuIndicatorPaddingHorizontal`、`MenuIndicatorPaddingVertical`、`MenuEdgeThickness`（保留）、`BoxShadowTabsOverflowLeft`、`BoxShadowTabsOverflowRight`、`BoxShadowTabsOverflowTop`、`BoxShadowTabsOverflowBottom` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
@@ -36,8 +36,8 @@ TabControl 的控件专项模型通过 Theme 消费 Token：
 - overflow Popup shell、默认菜单与 Gallery 搜索模板继续复用 Popup、Menu、SharedToken 和输入控件主题；`OverflowPopupTemplate` 只改变内容模板，不创建实例级 Token 状态。
 - `HorizontalMargin` 是保留 Token（`[ReservedToken]`，对应 antd Tabs `horizontalMargin`，antd 用它的底边作为页签栏与内容的间距）：这里该间距由
   `TabAndContentGutter` 表达，没有元素读取它。
-- `MenuEdgeThickness` 表达 start/end overflow shadow 载体在主轴上的厚度，默认派生自 `EffectiveGlobalToken.ControlHeight`。载体位于 viewport 外侧，此值不占用页签宽度，也不决定阴影向内容区渐淡的深度；
-  载体薄于阴影的负扩展（8）时阴影主体消失。
+- `MenuEdgeThickness` 是保留 Token（`[ReservedToken]`，antd 没有对应 Token，antd 以 `controlHeight` 作为阴影伪元素宽度）：start/end overflow
+  shadow 载体位于 viewport 外侧，只有其外阴影进入页签区，载体厚度没有可见语义；主题以布局常量（32，需大于阴影负扩展）给出载体厚度。
 - 四个 `BoxShadowTabsOverflow*` Token 使用普通外阴影并对齐 Ant Design Tabs 的方向参数：left 为 `(offsetX: 10, blur: 8, spread: -8)`，right 为 `(-10, 0, 8, -8)`，top 为 `(0, 10, 8, -8)`，bottom 为 `(0, -10, 8, -8)`，颜色统一为 8% 黑色。`Top` / `Bottom` placement 消费 left/right，`Left` / `Right` placement 消费 top/bottom；Theme 将透明载体放在 viewport 外侧，内侧面贴合溢出边界，并裁剪交叉轴及更多按钮方向的输出；这些参数保持逻辑 DIP；专用 edge renderer 仅在 Skia 绘制时补偿 offset 的变换顺序。必须连同载体几何、1×/2× 实际暗化强度验证，不能只断言属性值。
 - edge indicator 的当前可见性、滚动 offset 和 placement 是控件实例状态，不得写入 Token；Token 只保存方向性装饰值。
 - `InkBarThickness` 表达选中指示墨条的厚度，默认从 SharedToken 的 `LineWidthBold` 派生；按实例定制时通过控件 `Resources` 覆盖 `TabControlTokenKind.InkBarThickness`，与 `InkBarColor` 的定制方式一致。

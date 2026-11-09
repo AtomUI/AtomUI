@@ -352,12 +352,6 @@ public partial class NavigationFamilyEffectTests
                 return Tabs(TabKind.Line, null, options: new EffectOptions { Region = static host => TabOf(host, "Tab 1") });
 
             // ---- overflow: menu button, edge shadows ----------------------------------------------------------------
-            // The scrolled-to-middle viewer shows both edge shadows. The shadow casters sit outside the viewport and only
-            // their (negatively spread) outer shadows reach the tabs: the caster thickness (MenuEdgeThickness, from
-            // ControlHeight) shows when it shrinks below the spread and the shadow body vanishes.
-            case "MenuEdgeThickness" or "ControlHeight":
-                return Tabs(TabKind.Line, static host => ScrollToMiddle(host), count: 20, width: 360,
-                    options: new EffectOptions { Region = ScrollViewerOf, Perturb = static _ => 8d });
             // Each shadow is compared around its caster; negative offsets perturb outward (away from the caster) so the
             // shadow reaches further into the tabs.
             case "BoxShadowTabsOverflowLeft":

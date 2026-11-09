@@ -14,7 +14,7 @@
     页签滚动视图与溢出菜单以 `OwnerTokenResource` 读取宿主值（溢出按钮、溢出菜单项关闭按钮经内部属性向下绑定）。页签项命名主题改为从
     页签项自身的资源作用域查找（此前只查 `Application.Current`，忽略局部作用域）。
   - `InkBarThickness` 变化后墨条立即重新布局；CardTabControl 的卡片圆角 Token 变化后立即重算。
-  - `HorizontalMargin` 标为保留 Token；纵向 Line 页签的紧凑内边距保持主题内部布局常量。
+  - `HorizontalMargin`、`MenuEdgeThickness`（溢出阴影载体厚度没有可见语义，载体改用布局常量 32，默认渲染不变）标为保留 Token；纵向 Line 页签的紧凑内边距保持主题内部布局常量。
 
 ## 2026-10-20
 

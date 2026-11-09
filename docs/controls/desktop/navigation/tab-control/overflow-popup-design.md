@@ -144,7 +144,7 @@ Tab 轨道的溢出提示与 Popup surface 阴影是两种不同语义。轨道�
 `ScrollContentViewport` 中的 Canvas 与真实 presenter 同尺寸，只负责阴影定位和裁剪，不参与命中测试。
 普通外阴影不绘制在载体矩形内部，因此两个透明 `TabOverflowEdgeIndicator` 必须位于 viewport 外侧：水平 start 的右边等于 `0`，
 end 的左边等于 viewport width；垂直 start 的底边等于 `0`，end 的顶边等于 viewport height。
-主轴尺寸使用 `MenuEdgeThickness`，交叉轴尺寸和 Canvas 定位使用 compiled binding 跟随真实 `Bounds`。
+主轴尺寸使用主题布局常量（32；`MenuEdgeThickness` 已保留，载体厚度没有可见语义），交叉轴尺寸和 Canvas 定位使用 compiled binding 跟随真实 `Bounds`。
 阴影向内容区渐淡，Canvas 的裁剪边界使更多按钮和相邻内容保持干净；不能关闭所有祖先裁剪来掩盖几何错误。
 `TabOverflowEdgeIndicator` 在 Skia 实际绘制时按当前矩阵的线性部分补偿 offset，保持 Token 的逻辑 DIP 参数；
 这修正当前 Avalonia 在高 DPI 下 offset 与 blur/spread 缩放不一致的问题。draw operation 只保存值快照，不持有
@@ -337,7 +337,7 @@ assembly/type 扫描、`Activator.CreateInstance(Type)`、表达式编译或运�
 - 本专项不改变 Tab activation、drag reorder、close API、add button、content presenter、TabItem theme 或非 overflow
   滚动行为。
 - 本专项为 TabControl 家族定义 `BoxShadowTabsOverflowLeft/Right/Top/Bottom` 四个方向阴影 Token，并以
-  `MenuEdgeThickness=ControlHeight` 约束阴影承载矩形；默认 popup、menu、input 和空状态继续复用既有 SharedToken 与
+  阴影承载矩形使用布局常量厚度（原 `MenuEdgeThickness=ControlHeight`，已保留）；默认 popup、menu、input 和空状态继续复用既有 SharedToken 与
   Popup/Menu/Input Token。
 
 ## 10. Gallery 搜索体验

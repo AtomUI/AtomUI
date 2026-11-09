@@ -145,6 +145,9 @@ internal sealed class TabControlToken : AbstractControlDesignToken
     /// <summary>
     /// 滚动边缘的厚度
     /// </summary>
+    [ReservedToken("No antd Tabs Token: antd sizes the overflow shadow pseudo-element with controlHeight. The shadow casters " +
+                   "here sit outside the viewport and only their outer shadows reach the tabs, so the caster thickness has no " +
+                   "visible meaning; the theme gives the casters a layout-constant thickness.")]
     public double MenuEdgeThickness { get; set; }
 
     /// <summary>

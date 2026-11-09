@@ -78,14 +78,16 @@
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollStartEdgeIndicator">
-                <Setter Property="Width" Value="{atom:TabControlTokenResource MenuEdgeThickness}"/>
+                <!-- layout: shadow caster thickness (only its outer shadow reaches the tabs; it must exceed the shadow spread) -->
+                <Setter Property="Width" Value="32"/>
                 <Setter Property="Canvas.Right" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Height" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
                 <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowLeft}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollEndEdgeIndicator">
-                <Setter Property="Width" Value="{atom:TabControlTokenResource MenuEdgeThickness}"/>
+                <!-- layout: shadow caster thickness (only its outer shadow reaches the tabs; it must exceed the shadow spread) -->
+                <Setter Property="Width" Value="32"/>
                 <Setter Property="Canvas.Left" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Height" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
                 <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowRight}"/>
@@ -99,14 +101,16 @@
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollStartEdgeIndicator">
-                <Setter Property="Height" Value="{atom:TabControlTokenResource MenuEdgeThickness}"/>
+                <!-- layout: shadow caster thickness (only its outer shadow reaches the tabs; it must exceed the shadow spread) -->
+                <Setter Property="Height" Value="32"/>
                 <Setter Property="Width" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Canvas.Bottom" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
                 <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowTop}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollEndEdgeIndicator">
-                <Setter Property="Height" Value="{atom:TabControlTokenResource MenuEdgeThickness}"/>
+                <!-- layout: shadow caster thickness (only its outer shadow reaches the tabs; it must exceed the shadow spread) -->
+                <Setter Property="Height" Value="32"/>
                 <Setter Property="Width" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Canvas.Top" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
                 <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowBottom}"/>
@@ -120,14 +124,16 @@
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollStartEdgeIndicator">
-                <Setter Property="Width" Value="{atom:TabControlTokenResource MenuEdgeThickness}"/>
+                <!-- layout: shadow caster thickness (only its outer shadow reaches the tabs; it must exceed the shadow spread) -->
+                <Setter Property="Width" Value="32"/>
                 <Setter Property="Canvas.Right" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Height" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
                 <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowLeft}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollEndEdgeIndicator">
-                <Setter Property="Width" Value="{atom:TabControlTokenResource MenuEdgeThickness}"/>
+                <!-- layout: shadow caster thickness (only its outer shadow reaches the tabs; it must exceed the shadow spread) -->
+                <Setter Property="Width" Value="32"/>
                 <Setter Property="Canvas.Left" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Height" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
                 <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowRight}"/>
@@ -141,14 +147,16 @@
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollStartEdgeIndicator">
-                <Setter Property="Height" Value="{atom:TabControlTokenResource MenuEdgeThickness}"/>
+                <!-- layout: shadow caster thickness (only its outer shadow reaches the tabs; it must exceed the shadow spread) -->
+                <Setter Property="Height" Value="32"/>
                 <Setter Property="Width" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Canvas.Bottom" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
                 <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowTop}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollEndEdgeIndicator">
-                <Setter Property="Height" Value="{atom:TabControlTokenResource MenuEdgeThickness}"/>
+                <!-- layout: shadow caster thickness (only its outer shadow reaches the tabs; it must exceed the shadow spread) -->
+                <Setter Property="Height" Value="32"/>
                 <Setter Property="Width" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Canvas.Top" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
                 <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowBottom}"/>

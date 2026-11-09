@@ -12,6 +12,7 @@ internal sealed class DefaultCalendarPresentationAdapter : ICalendarPresentation
     internal static DefaultCalendarPresentationAdapter Instance { get; } = new();
 
     public CalendarPresentationMetrics Metrics { get; } = new(
+        typeof(AtomUI.Desktop.Controls.Calendar),
         CalendarTokenKind.MiniContentHeight,
         CalendarTokenKind.FullCellMinHeight,
         SharedTokenKind.ControlHeightSM);

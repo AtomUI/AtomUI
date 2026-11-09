@@ -63,9 +63,34 @@ internal sealed class CalendarToken : AbstractControlDesignToken
     public double FullCellMinHeight { get; set; }
 
     /// <summary>
+    /// Fullscreen 日期/月单元的水平外边距（antd 全屏单元 margin: 0 marginXS/2）。
+    /// </summary>
+    public Thickness FullCellMargin { get; set; }
+
+    /// <summary>
+    /// Fullscreen 日期/月单元的内边距（antd 全屏单元 padding: paddingXS/2 paddingXS 0）。
+    /// </summary>
+    public Thickness FullCellPadding { get; set; }
+
+    /// <summary>
+    /// Fullscreen 日期/月单元顶部分隔线的线宽（antd 全屏单元 borderTop: lineWidthBold）。
+    /// </summary>
+    public Thickness FullCellBorderThickness { get; set; }
+
+    /// <summary>
     /// Fullscreen 日期范围条默认高度。
     /// </summary>
     public double RangeBarHeight { get; set; }
+
+    /// <summary>
+    /// Fullscreen 同一单元内上下堆叠的日期范围条之间的间距。
+    /// </summary>
+    public double RangeBarGap { get; set; }
+
+    /// <summary>
+    /// Fullscreen 日期范围条标签的水平内边距。
+    /// </summary>
+    public Thickness RangeBarLabelPadding { get; set; }
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
@@ -89,6 +114,12 @@ internal sealed class CalendarToken : AbstractControlDesignToken
                             dateContentHeight +
                             EffectiveGlobalToken.UniformlyPaddingXS / 2 +
                             EffectiveGlobalToken.LineWidthBold;
+        FullCellMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginXS / 2, 0);
+        FullCellPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, EffectiveGlobalToken.UniformlyPaddingXS / 2,
+            EffectiveGlobalToken.UniformlyPaddingXS, 0);
+        FullCellBorderThickness = new Thickness(0, EffectiveGlobalToken.LineWidthBold, 0, 0);
         RangeBarHeight = EffectiveGlobalToken.ControlHeightSM - EffectiveGlobalToken.UniformlyMarginXXS;
+        RangeBarGap = EffectiveGlobalToken.UniformlyMarginXXS / 2;
+        RangeBarLabelPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
     }
 }

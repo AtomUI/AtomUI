@@ -10,9 +10,9 @@
         <ControlTemplate TargetType="calendar:CalendarHeader">
             <DockPanel LastChildFill="True">
                 <Border DockPanel.Dock="Top"
-                        Height="{atom:SharedTokenResource UniformlyPaddingSM}" />
+                        Height="{atom:OwnerTokenResource UniformlyPaddingSM}" />
                 <Border DockPanel.Dock="Bottom"
-                        Height="{atom:SharedTokenResource UniformlyPaddingSM}" />
+                        Height="{atom:OwnerTokenResource UniformlyPaddingSM}" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -21,12 +21,12 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Border Grid.Column="0"
-                            Width="{atom:SharedTokenResource UniformlyPaddingXS}"
+                            Width="{atom:OwnerTokenResource UniformlyPaddingXS}"
                             IsVisible="{TemplateBinding Fullscreen, Converter={x:Static BoolConverters.Not}}" />
                     <StackPanel Orientation="Horizontal"
                                 Grid.Column="2"
                                 HorizontalAlignment="Right"
-                                Spacing="{atom:SharedTokenResource UniformlyMarginXS}">
+                                Spacing="{atom:OwnerTokenResource UniformlyMarginXS}">
                         <atom:ComboBox Name="PART_YearSelect"
                                        MinWidth="{atom:CalendarTokenResource YearControlWidth}"
                                        DropDownDisplayPageSize="8" />
@@ -34,14 +34,13 @@
                                        MinWidth="{atom:CalendarTokenResource MonthControlWidth}"
                                        DropDownDisplayPageSize="8" />
                         <atom:OptionButtonGroup Name="PART_ModeSwitch"
-                                                ButtonStyle="Outline"
-                                                Background="{atom:SharedTokenResource ColorBgContainer}">
+                                                ButtonStyle="Outline">
                             <atom:OptionButton Content="Month" />
                             <atom:OptionButton Content="Year" />
                         </atom:OptionButtonGroup>
                     </StackPanel>
                     <Border Grid.Column="3"
-                            Width="{atom:SharedTokenResource UniformlyPaddingXS}"
+                            Width="{atom:OwnerTokenResource UniformlyPaddingXS}"
                             IsVisible="{TemplateBinding Fullscreen, Converter={x:Static BoolConverters.Not}}" />
                 </Grid>
             </DockPanel>

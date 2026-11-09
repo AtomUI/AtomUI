@@ -29,10 +29,23 @@ internal sealed class CalendarRangeBarPanel : Panel
         AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarHeight), double.NaN);
 
     public static readonly StyledProperty<double> RangeBarTopOffsetProperty =
-        AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarTopOffset), 32);
+        AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarTopOffset));
 
     public static readonly StyledProperty<double> RangeBarHorizontalInsetProperty =
-        AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarHorizontalInset), 4);
+        AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarHorizontalInset));
+
+    public static readonly StyledProperty<double> RangeBarGapProperty =
+        AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarGap));
+
+    public static readonly StyledProperty<double> RangeBarLabelFontSizeProperty =
+        AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarLabelFontSize),
+            TextBlock.FontSizeProperty.GetDefaultValue(typeof(TextBlock)));
+
+    public static readonly StyledProperty<Thickness> RangeBarLabelPaddingProperty =
+        AvaloniaProperty.Register<CalendarRangeBarPanel, Thickness>(nameof(RangeBarLabelPadding));
+
+    public static readonly StyledProperty<IBrush?> RangeBarLabelForegroundProperty =
+        AvaloniaProperty.Register<CalendarRangeBarPanel, IBrush?>(nameof(RangeBarLabelForeground));
 
     public CalendarMode Mode
     {
@@ -70,12 +83,35 @@ internal sealed class CalendarRangeBarPanel : Panel
         set => SetValue(RangeBarHorizontalInsetProperty, value);
     }
 
-    #endregion
+    /// <summary>Gap between range bars stacked in the same cell (the theme binds the Calendar's RangeBarGap).</summary>
+    public double RangeBarGap
+    {
+        get => GetValue(RangeBarGapProperty);
+        set => SetValue(RangeBarGapProperty, value);
+    }
 
-    private const double DefaultRangeBarHeight = 20;
-    private const double DefaultRangeBarGap = 2;
-    private const double DefaultLabelFontSize = 12;
-    private const double DefaultLabelHorizontalPadding = 8;
+    /// <summary>Font size of the range bar label (the theme binds the owner's FontSizeSM).</summary>
+    public double RangeBarLabelFontSize
+    {
+        get => GetValue(RangeBarLabelFontSizeProperty);
+        set => SetValue(RangeBarLabelFontSizeProperty, value);
+    }
+
+    /// <summary>Padding of the range bar label inside its bar (the theme binds the Calendar's RangeBarLabelPadding).</summary>
+    public Thickness RangeBarLabelPadding
+    {
+        get => GetValue(RangeBarLabelPaddingProperty);
+        set => SetValue(RangeBarLabelPaddingProperty, value);
+    }
+
+    /// <summary>Text colour of the range bar label (the theme binds the owner's ColorTextLightSolid).</summary>
+    public IBrush? RangeBarLabelForeground
+    {
+        get => GetValue(RangeBarLabelForegroundProperty);
+        set => SetValue(RangeBarLabelForegroundProperty, value);
+    }
+
+    #endregion
 
     private static readonly HashSet<AvaloniaProperty> LayoutTriggers = new()
     {
@@ -85,6 +121,8 @@ internal sealed class CalendarRangeBarPanel : Panel
         RangeBarHeightProperty,
         RangeBarTopOffsetProperty,
         RangeBarHorizontalInsetProperty,
+        RangeBarGapProperty,
+        RangeBarLabelPaddingProperty,
         FlowDirectionProperty
     };
 
@@ -284,12 +322,8 @@ internal sealed class CalendarRangeBarPanel : Panel
             return rangeBar.Height;
         }
 
-        if (double.IsFinite(RangeBarHeight) && RangeBarHeight > 0)
-        {
-            return RangeBarHeight;
-        }
-
-        return DefaultRangeBarHeight;
+        // The theme binds the Calendar's RangeBarHeight; without it a bar has no height and is not rendered.
+        return double.IsFinite(RangeBarHeight) && RangeBarHeight > 0 ? RangeBarHeight : 0;
     }
 
     private static int AllocateLane(IList<DateTime> laneEnds, DateTime rangeStart, DateTime rangeEnd)
@@ -342,7 +376,7 @@ internal sealed class CalendarRangeBarPanel : Panel
     private double GetLaneOffset(int lane, double barHeight)
     {
         var topOffset = Math.Max(0, RangeBarTopOffset);
-        return topOffset + lane * (barHeight + DefaultRangeBarGap);
+        return topOffset + lane * (barHeight + Math.Max(0, RangeBarGap));
     }
 
     private CornerRadius BuildCornerRadius(double radius, bool startsRange, bool endsRange)
@@ -392,41 +426,38 @@ internal sealed class CalendarRangeBarPanel : Panel
         }
     }
 
-    private static Border CreateRangeBarElement()
+    private Border CreateRangeBarElement()
     {
-        return new Border
+        var element = new Border
         {
             ClipToBounds = true,
             IsHitTestVisible = false
         };
+        // The label padding follows the panel's themed value.
+        element.Bind(Border.PaddingProperty, this.GetObservable(RangeBarLabelPaddingProperty));
+        return element;
     }
 
     private void ApplySegment(Border element, CalendarRangeBarSegment segment)
     {
         if (!Equals(element.Background, segment.Background))
         {
-            element.Background = segment.Background;
+            element.SetCurrentValue(Border.BackgroundProperty, segment.Background);
         }
 
         if (element.CornerRadius != segment.CornerRadius)
         {
-            element.CornerRadius = segment.CornerRadius;
+            element.SetCurrentValue(Border.CornerRadiusProperty, segment.CornerRadius);
         }
 
         if (element.Width != segment.Bounds.Width)
         {
-            element.Width = segment.Bounds.Width;
+            element.SetCurrentValue(WidthProperty, segment.Bounds.Width);
         }
 
         if (element.Height != segment.Bounds.Height)
         {
-            element.Height = segment.Bounds.Height;
-        }
-
-        var padding = new Thickness(DefaultLabelHorizontalPadding, 0);
-        if (element.Padding != padding)
-        {
-            element.Padding = padding;
+            element.SetCurrentValue(HeightProperty, segment.Bounds.Height);
         }
 
         var text = segment.Label?.ToString();
@@ -457,11 +488,11 @@ internal sealed class CalendarRangeBarPanel : Panel
         }
         else
         {
-            element.Child = CreateLabel(text);
+            element.Child = CreateLabel(text, element);
         }
     }
 
-    private TextBlock? CreateLabel(object? label)
+    private TextBlock? CreateLabel(object? label, Border bar)
     {
         var text = label?.ToString();
         if (string.IsNullOrEmpty(text))
@@ -469,16 +500,18 @@ internal sealed class CalendarRangeBarPanel : Panel
             return null;
         }
 
-        return new TextBlock
+        var textBlock = new TextBlock
         {
             Text = text,
             TextTrimming = TextTrimming.CharacterEllipsis,
-            Foreground = Brushes.White,
-            FontSize = DefaultLabelFontSize,
             VerticalAlignment = VerticalAlignment.Center,
-            TextAlignment = FlowDirection == FlowDirection.RightToLeft ? TextAlignment.Right : TextAlignment.Left,
+            TextAlignment = bar.FlowDirection == FlowDirection.RightToLeft ? TextAlignment.Right : TextAlignment.Left,
             IsHitTestVisible = false
         };
+        // Label colour and size follow the panel's themed values (owner ColorTextLightSolid / FontSizeSM).
+        textBlock.Bind(TextBlock.ForegroundProperty, this.GetObservable(RangeBarLabelForegroundProperty));
+        textBlock.Bind(TextBlock.FontSizeProperty, this.GetObservable(RangeBarLabelFontSizeProperty));
+        return textBlock;
     }
 
     private readonly record struct CalendarRangeBarSegment(

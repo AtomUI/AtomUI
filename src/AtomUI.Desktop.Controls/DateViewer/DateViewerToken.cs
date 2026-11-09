@@ -27,6 +27,21 @@ internal sealed class DateViewerToken : AbstractControlDesignToken
     public Thickness DateBodyPadding { get; set; }
     public double PanelSpacing { get; set; }
 
+    /// <summary>
+    /// Bottom divider of the default panel header (antd picker header borderBottom: lineWidth).
+    /// </summary>
+    public Thickness HeaderBorderThickness { get; set; }
+
+    /// <summary>
+    /// Top divider of the standalone footer (antd picker footer borderTop: lineWidth).
+    /// </summary>
+    public Thickness FooterBorderThickness { get; set; }
+
+    /// <summary>
+    /// Opacity of the week numbers in week mode (antd dims the selected row's week number to half alpha).
+    /// </summary>
+    public double WeekNumberOpacity { get; set; }
+
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -58,5 +73,8 @@ internal sealed class DateViewerToken : AbstractControlDesignToken
         HeaderHorizontalPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
         DateBodyPadding = new Thickness(bodyHorizontalPadding, EffectiveGlobalToken.UniformlyPaddingXS);
         PanelSpacing = EffectiveGlobalToken.UniformlyMargin;
+        HeaderBorderThickness = new Thickness(0, 0, 0, EffectiveGlobalToken.LineWidth);
+        FooterBorderThickness = new Thickness(0, EffectiveGlobalToken.LineWidth, 0, 0);
+        WeekNumberOpacity = 0.5;
     }
 }

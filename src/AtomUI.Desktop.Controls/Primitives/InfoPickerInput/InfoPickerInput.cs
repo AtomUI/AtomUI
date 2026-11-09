@@ -416,6 +416,7 @@ public abstract class InfoPickerInput : TemplatedControl,
     private IDisposable? _popupPinnedOpenBinding;
     private int _popupLifecycleCloseDepth;
     private Control? _ownedPickerPresenter;
+    private IDisposable? _presenterOwnerBinding;
     
 
     static InfoPickerInput()
@@ -572,7 +573,6 @@ public abstract class InfoPickerInput : TemplatedControl,
 
         _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
 
-        RelayFrameBorderBrush();
         SetupPopupProperties();
         ConfigureArrowPosition();
         ConfigureShowArrowEffective();
@@ -1067,9 +1067,9 @@ public abstract class InfoPickerInput : TemplatedControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == BorderBrushProperty)
+        if (change.Property == PickerPresenterProperty)
         {
-            RelayFrameBorderBrush();
+            ForwardTokenOwner(change.GetNewValue<Control?>());
         }
 
         if (change.Property == IsArrowVisibleProperty ||
@@ -1143,28 +1143,16 @@ public abstract class InfoPickerInput : TemplatedControl,
     }
 
     /// <summary>
-    /// 将 owner 根的 BorderBrush 以 LocalValue 中继到 AddOnDecoratedBox,使 root 级
-    /// Semantic 定制(对齐 antd styles.root.border)能覆盖输入框状态机的默认描边;
-    /// owner 未设置时清除中继并恢复状态机。中继必须使用 LocalValue 优先级才能胜过
-    /// 框体主题的状态触发器,ControlTheme 的 TemplateBinding 无法达到该优先级,
-    /// 因此放在控件代码中。
+    /// The picker presenter is shown inside the popup's registered ArrowDecoratedBox, whose identity would otherwise
+    /// become the presenter's Token owner. The presenter belongs to this picker, so its owner follows the picker's own:
+    /// the identity-less presenter parts (time view, buttons frame) read the picker's effective globals, and
+    /// <c>Controls[picker]</c> reaches them. Registered controls inside the presenter (DateViewer, Button) keep their
+    /// own identity.
     /// </summary>
-    private void RelayFrameBorderBrush()
+    private void ForwardTokenOwner(Control? newPresenter)
     {
-        if (_addOnDecoratedBox is not { } decoratedBox)
-        {
-            return;
-        }
-
-        var value = GetValue(BorderBrushProperty);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            decoratedBox.ClearValue(BorderBrushProperty);
-        }
-        else
-        {
-            decoratedBox.SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
-        }
+        _presenterOwnerBinding?.Dispose();
+        _presenterOwnerBinding = newPresenter is null ? null : TokenOwnerForwarding.Forward(this, newPresenter);
     }
 
     private void UpdateEffectiveStatus()

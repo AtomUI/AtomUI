@@ -365,7 +365,9 @@ public class CalendarSemanticPartTests
             var modeSwitch = header.GetVisualDescendants()
                                    .OfType<OptionButtonGroup>()
                                    .Single();
-            HasWhiteContainerColor(modeSwitch.Background).ShouldBeTrue();
+            // OptionButtonGroup does not paint its Background (its frame draws the border only and the outline options are
+            // transparent): the switch shows the Calendar's container background behind it.
+            HasWhiteContainerColor(calendar.Background).ShouldBeTrue();
             HasBorderColor(modeSwitch.BorderBrush).ShouldBeTrue();
         });
     }

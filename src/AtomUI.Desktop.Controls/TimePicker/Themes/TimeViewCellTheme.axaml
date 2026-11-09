@@ -4,6 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <atom:StringToTextBlockConverter x:Key="StringToTextBlockConverter"/>
+    <!-- owner: global Tokens are read from the owner. TimeViewCell is Token-owner transparent, so its owner is the
+         hosting picker (the picker presenter takes the picker's owner). -->
     <ControlTheme x:Key="{x:Type atom:TimeViewCell}" TargetType="atom:TimeViewCell">
         <Setter Property="Template">
             <ControlTemplate>
@@ -21,23 +23,23 @@
         
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="Margin" Value="4,0" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="Margin" Value="{atom:TimePickerTokenResource ItemMargin}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Focusable" Value="False" />
-        <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemColor}" />
-        <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorTransparent}" />
         <Setter Property="MinHeight" Value="{atom:TimePickerTokenResource ItemHeight}" />
         <Setter Property="Padding" Value="{atom:TimePickerTokenResource ItemPadding}" />
         
         <Style Selector="^:pointerover">
-            <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemHoverColor}" />
-            <Setter Property="Background" Value="{atom:ListViewTokenResource ItemHoverBgColor}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgTextHover}" />
         </Style>
         
         <Style Selector="^:selected">
-            <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemSelectedColor}" />
-            <Setter Property="Background" Value="{atom:ListViewTokenResource ItemSelectedBgColor}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ControlItemBgActive}" />
         </Style>
 
         <!-- The column stepped by navigation keys from the picker input: the selected-and-hovered shade. -->
@@ -46,8 +48,8 @@
         </Style>
         
         <Style Selector="^:disabled">
-            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
         </Style>
 

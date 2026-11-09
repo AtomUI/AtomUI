@@ -1,3 +1,5 @@
+<!-- owner: global Tokens are read from the owner because this theme is also the base of LunarCalendar (its own
+     identity). On a Calendar the owner is the Calendar. -->
 <ControlTheme
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -19,7 +21,7 @@
             <Setter Property="Width" Value="NaN" />
             <Setter Property="Padding" Value="0" />
             <Style Selector="^[Presentation=Compact]">
-                <Setter Property="WeekHeaderMinHeight" Value="{atom:SharedTokenResource FontHeightSM}" />
+                <Setter Property="WeekHeaderMinHeight" Value="{atom:OwnerTokenResource FontHeightSM}" />
             </Style>
             <Style Selector="^[Presentation=Content]">
                 <Setter Property="WeekHeaderTextAlignment" Value="Right" />
@@ -58,13 +60,13 @@
                                LastChildFill="True"
                                ClipToBounds="True">
                         <Border DockPanel.Dock="Top"
-                                Height="{atom:SharedTokenResource LineWidth}"
-                                Background="{atom:SharedTokenResource ColorSplit}"
+                                Height="{atom:OwnerTokenResource LineWidth}"
+                                Background="{atom:OwnerTokenResource ColorSplit}"
                                 IsVisible="{TemplateBinding Fullscreen, Converter={x:Static BoolConverters.Not}}" />
                         <Border DockPanel.Dock="Top"
-                                Height="{atom:SharedTokenResource UniformlyPaddingXS}" />
+                                Height="{atom:OwnerTokenResource UniformlyPaddingXS}" />
                         <Border DockPanel.Dock="Bottom"
-                                Height="{atom:SharedTokenResource UniformlyPaddingXS}" />
+                                Height="{atom:OwnerTokenResource UniformlyPaddingXS}" />
                         <Grid>
                             <controls:DateViewer Name="PART_DateViewer"
                                                    Classes.semantic-content="True"
@@ -78,6 +80,7 @@
                                                    HorizontalAlignment="Stretch"
                                                    VerticalAlignment="Stretch"
                                                    ZIndex="0" />
+                            <!-- layout: the range bars are painted above the date cells -->
                             <calendar:CalendarRangeBarPanel Name="PART_RangeBarPanel"
                                                             LayoutSource="{TemplateBinding EffectiveDateViewer}"
                                                             Mode="{TemplateBinding Mode}"
@@ -85,9 +88,13 @@
                                                             RangeBars="{TemplateBinding RangeBars}"
                                                             RangeBarHeight="{atom:CalendarTokenResource RangeBarHeight}"
                                                             RangeBarTopOffset="{TemplateBinding EffectiveRangeBarTopOffset}"
-                                                            RangeBarHorizontalInset="{atom:SharedTokenResource UniformlyMarginXXS}"
+                                                            RangeBarHorizontalInset="{atom:OwnerTokenResource UniformlyMarginXXS}"
                                                             HorizontalAlignment="Stretch"
                                                             VerticalAlignment="Stretch"
+                                                            RangeBarGap="{atom:CalendarTokenResource RangeBarGap}"
+                                                            RangeBarLabelFontSize="{atom:OwnerTokenResource FontSizeSM}"
+                                                            RangeBarLabelPadding="{atom:CalendarTokenResource RangeBarLabelPadding}"
+                                                            RangeBarLabelForeground="{atom:OwnerTokenResource ColorTextLightSolid}"
                                                             IsVisible="False"
                                                             IsHitTestVisible="False"
                                                             ZIndex="1" />
@@ -99,7 +106,7 @@
     </Setter>
 
     <Setter Property="Background" Value="{atom:CalendarTokenResource FullBg}" />
-    <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+    <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorderSecondary}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Padding" Value="0" />
     <Style Selector="^ /template/ controls|DateViewer">
@@ -119,6 +126,6 @@
     <Style Selector="^:mini">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
     </Style>
 </ControlTheme>

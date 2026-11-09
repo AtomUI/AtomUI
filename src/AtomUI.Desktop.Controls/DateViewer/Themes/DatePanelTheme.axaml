@@ -5,7 +5,7 @@
               x:Class="AtomUI.Desktop.Controls.Themes.DatePanelTheme"
               x:ClassModifier="internal" TargetType="viewer:DatePanel">
     <Setter Property="Width" Value="{atom:DateViewerTokenResource PanelWidth}" />
-    <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+    <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
     <Setter Property="WeekHeaderTextAlignment" Value="Center" />
     <Setter Property="WeekHeaderMinHeight" Value="{atom:DateViewerTokenResource CellRowHeight}" />
     <Setter Property="WeekHeaderPadding" Value="0" />

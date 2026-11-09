@@ -14,10 +14,15 @@ internal readonly record struct CalendarEffectiveRange(DateTime? Start, DateTime
     internal DateTime? MaxDate => IsEmpty ? DateTime.MinValue.Date : End;
 }
 
+/// <summary>
+/// The Token kinds of the presentation metrics. Own kinds belong to <see cref="OwnerType"/>; a
+/// <see cref="AtomUI.Theme.Resources.SharedTokenKind"/> reads the hosting Calendar's effective global value.
+/// </summary>
 internal readonly record struct CalendarPresentationMetrics(
-    object MiniContentHeightResourceKey,
-    object FullCellMinHeightResourceKey,
-    object RangeBarTopOffsetResourceKey);
+    Type OwnerType,
+    Enum MiniContentHeightResourceKey,
+    Enum FullCellMinHeightResourceKey,
+    Enum RangeBarTopOffsetResourceKey);
 
 internal interface ICalendarPresentationAdapter
 {

@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -8,6 +9,9 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaListBoxItem = Avalonia.Controls.ListBoxItem;
 
+// Token-owner transparent cell: a TimeViewCell belongs to one picker's time view and has no Own Tokens; its theme reads the
+// owner's globals, so Controls[TimePicker] (or the hosting date picker) reaches the cells.
+[TokenOwnerTransparent]
 [PseudoClasses(KeyboardActivePseudoClass)]
 public class TimeViewCell : AvaloniaListBoxItem
 {

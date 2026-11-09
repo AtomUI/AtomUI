@@ -46,7 +46,8 @@
                         VerticalContentAlignment="Stretch"
                         CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                         CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
-                        IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
+                        IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
+                        HostBorderBrush="{TemplateBinding BorderBrush}">
                         <atom:AddOnDecoratedBox.ContentLeftAddOn>
                             <atom:AddOnContentPresenter
                                 Classes.semantic-prefix="True"
@@ -59,7 +60,7 @@
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                             <StackPanel Orientation="Horizontal"
                                         Classes.semantic-suffix="True"
-                                        Spacing="{atom:SharedTokenResource SpacingXS}">
+                                        Spacing="{atom:RangeTimePickerTokenResource SpacingXS}">
                                 <atom:PickerClearUpButton
                                     Name="PART_ClearUpButton"
                                     Icon="{CompiledBinding $parent[atom:InfoPickerInput].InfoIcon}"
@@ -93,7 +94,11 @@
                                                     PlaceholderText="{TemplateBinding PlaceholderText}" />
                             <antdicons:SwapRightOutlined
                                 Name="PART_RangePickerArrow"
-                                Grid.Column="1" />
+                                Grid.Column="1"
+                                Width="{TemplateBinding RangeArrowSize}"
+                                Height="{TemplateBinding RangeArrowSize}"
+                                FillBrush="{TemplateBinding RangeArrowBrush}"
+                                StrokeBrush="{TemplateBinding RangeArrowBrush}" />
                             <atom:InfoPickerTextBox
                                 Name="PART_SecondaryInfoInputBox"
                                 KeyboardNavigation.TabIndex="1"

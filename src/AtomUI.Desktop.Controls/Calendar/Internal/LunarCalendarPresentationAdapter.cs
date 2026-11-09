@@ -18,6 +18,7 @@ internal sealed class LunarCalendarPresentationAdapter : ICalendarPresentationAd
     }
 
     public CalendarPresentationMetrics Metrics { get; } = new(
+        typeof(LunarCalendar),
         LunarCalendarTokenKind.MiniContentHeight,
         LunarCalendarTokenKind.FullCellMinHeight,
         LunarCalendarTokenKind.RangeBarTopOffset);

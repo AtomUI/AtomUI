@@ -38,14 +38,9 @@ internal sealed class TimePickerToken : AbstractControlDesignToken
     public Thickness ButtonsMargin { get; set; }
 
     /// <summary>
-    /// 范围选择箭头外间距
+    /// 时间选择项的水平外边距（antd 时间单元 marginInline: marginXXS）
     /// </summary>
-    public Thickness RangePickerArrowMargin { get; set; }
-
-    /// <summary>
-    /// 选择指示器厚度
-    /// </summary>
-    public double RangePickerIndicatorThickness { get; set; }
+    public Thickness ItemMargin { get; set; }
 
     /// <summary>
     /// Header 头内间距
@@ -70,8 +65,7 @@ internal sealed class TimePickerToken : AbstractControlDesignToken
 
         ItemPadding                   = new Thickness((ItemWidth - ItemHeight) / 2, 0, 0, 0);
         ButtonsMargin                 = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
-        RangePickerArrowMargin        = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0);
-        RangePickerIndicatorThickness = EffectiveGlobalToken.LineWidthBold;
+        ItemMargin                    = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0);
         HeaderMargin                  = new Thickness(0, 0, 0, 3);
     }
     

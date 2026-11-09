@@ -189,17 +189,17 @@ internal sealed class DatePanel : TemplatedControl
                 // The theme sets these metrics on DatePanel; the panel applies them to its pooled headers.
                 if (header.TextAlignment != WeekHeaderTextAlignment)
                 {
-                    header.TextAlignment = WeekHeaderTextAlignment;
+                    header.SetCurrentValue(TextBlock.TextAlignmentProperty, WeekHeaderTextAlignment);
                 }
 
                 if (!MathUtils.AreClose(header.MinHeight, WeekHeaderMinHeight))
                 {
-                    header.MinHeight = WeekHeaderMinHeight;
+                    header.SetCurrentValue(MinHeightProperty, WeekHeaderMinHeight);
                 }
 
                 if (header.Padding != WeekHeaderPadding)
                 {
-                    header.Padding = WeekHeaderPadding;
+                    header.SetCurrentValue(TextBlock.PaddingProperty, WeekHeaderPadding);
                 }
 
                 header.Text = model.ColumnHeaders[index];

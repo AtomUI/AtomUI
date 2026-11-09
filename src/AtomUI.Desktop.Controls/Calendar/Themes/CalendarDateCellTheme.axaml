@@ -4,9 +4,11 @@
                     xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
                     xmlns:controls="clr-namespace:AtomUI.Desktop.Controls"
                     x:ClassModifier="internal">
+        <!-- The Calendar forwards its Token owner to the DateViewer of its template, so these cells read the hosting
+             Calendar's (or LunarCalendar's) global Tokens from the owner; the Calendar Own Tokens are read explicitly. -->
         <ControlTheme x:Key="CalendarDateCellTheme" TargetType="viewer:DateViewerCell">
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="ClipToBounds" Value="False" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -67,8 +69,8 @@
                 </Setter>
             </Style>
             <Style Selector="^ /template/ Border#PART_CellInner">
-                <Setter Property="MinWidth" Value="{atom:SharedTokenResource ControlHeightSM}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                <Setter Property="MinWidth" Value="{atom:OwnerTokenResource ControlHeightSM}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
                         <Transitions>
@@ -91,18 +93,18 @@
 
             <!-- Mini 布局 -->
             <Style Selector="^[Presentation=Compact] /template/ Border#PART_Item">
-                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeightSM}" />
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
             <Style Selector="^[Presentation=Compact] /template/ Border#PART_CellInner">
-                <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeightSM}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                <Setter Property="Width" Value="{atom:OwnerTokenResource ControlHeightSM}" />
+                <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeightSM}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
                 <Setter Property="HorizontalAlignment" Value="Center" />
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
             <Style Selector="^[Presentation=Compact] /template/ Border#PART_CellOutline">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
             </Style>
             <Style Selector="^[Presentation=Compact]:month /template/ Border#PART_CellInner">
                 <Setter Property="Width" Value="{atom:CalendarTokenResource YearMonthCellWidth}" />
@@ -115,14 +117,14 @@
 
             <!-- Fullscreen 布局 -->
             <Style Selector="^[Presentation=Content] /template/ Border#PART_Item">
-                <Setter Property="Margin" Value="4,0" />
+                <Setter Property="Margin" Value="{atom:CalendarTokenResource FullCellMargin}" />
             </Style>
             <Style Selector="^[Presentation=Content] /template/ Border#PART_CellInner">
                 <Setter Property="CornerRadius" Value="0" />
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorFillSecondary}" />
-                <Setter Property="BorderThickness" Value="0,2,0,0" />
+                <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorFillSecondary}" />
+                <Setter Property="BorderThickness" Value="{atom:CalendarTokenResource FullCellBorderThickness}" />
                 <Setter Property="MinHeight" Value="{Binding $parent[controls:Calendar].EffectiveFullCellMinHeight}" />
-                <Setter Property="Padding" Value="8,4,8,0" />
+                <Setter Property="Padding" Value="{atom:CalendarTokenResource FullCellPadding}" />
             </Style>
             <Style Selector="^[Presentation=Content] /template/ atom|TextBlock#PART_Value">
                 <Setter Property="HorizontalAlignment" Value="Right" />
@@ -131,16 +133,16 @@
 
             <!-- 今天 -->
             <Style Selector="^[Presentation=Compact]:date:today /template/ Border#PART_CellOutline">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
-                <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+                <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
+                <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
             </Style>
             <Style Selector="^[Presentation=Content]:date:today /template/ Border#PART_CellInner">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
             </Style>
 
             <!-- 选中 -->
             <Style Selector="^[Presentation=Compact]:selected:not(:disabled) /template/ Border#PART_CellInner">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimary}" />
             </Style>
             <Style Selector="^[Presentation=Content]:selected /template/ Border#PART_CellInner">
                 <Setter Property="Background" Value="{atom:CalendarTokenResource ItemActiveBg}" />
@@ -152,8 +154,8 @@
                 <Setter Property="FocusAdorner" Value="{x:Null}" />
             </Style>
             <Style Selector="^[Presentation=Content]:focus-visible /template/ Border#PART_CellInner">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
-                <Setter Property="BorderThickness" Value="0,2,0,0" />
+                <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
+                <Setter Property="BorderThickness" Value="{atom:CalendarTokenResource FullCellBorderThickness}" />
             </Style>
 
             <!-- 禁用 -->
@@ -164,15 +166,15 @@
                 <Setter Property="IsHitTestVisible" Value="False" />
             </Style>
             <Style Selector="^[Presentation=Compact]:disabled">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
             </Style>
             <Style Selector="^[Presentation=Compact]:date:disabled:today /template/ Border#PART_CellOutline">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
 
             <!-- hover（非禁用非周序号） -->
             <Style Selector="^:pointerover:not(:disabled):not(:week):not(:selected) /template/ Border#PART_CellInner">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ControlItemBgHover}" />
+                <Setter Property="Background" Value="{atom:OwnerTokenResource ControlItemBgHover}" />
             </Style>
             <Style Selector="^[Presentation=Content]:not(:week) /template/ ContentControl#PART_CellContent">
                 <Setter Property="IsVisible" Value="True" />
@@ -190,16 +192,16 @@
                 <Setter Property="IsVisible" Value="False" />
             </Style>
             <Style Selector="^[Presentation=Compact]:selected:not(:disabled)">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+                <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextLightSolid}" />
             </Style>
             <Style Selector="^[Presentation=Content]:selected:not(:disabled)">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorPrimary}" />
             </Style>
             <Style Selector="^:week">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
             <Style Selector="^:outside, ^:disabled">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
         </ControlTheme>
 </ResourceDictionary>

@@ -18,7 +18,10 @@
                                 IsVisible="{TemplateBinding IsInClearMode, Converter={x:Static BoolConverters.Not}}">
                         <atom:IconPresenter
                             Name="PART_InfoIconPresenter"
-                            Icon="{TemplateBinding Icon}" />
+                            Icon="{TemplateBinding Icon}"
+                            Width="{TemplateBinding InfoIconSize}"
+                            Height="{TemplateBinding InfoIconSize}"
+                            IconBrush="{TemplateBinding InfoIconBrush}" />
                         <ContentPresenter
                             Name="FormFeedBack"
                             VerticalAlignment="Stretch"
@@ -31,15 +34,13 @@
             </ControlTemplate>
         </Setter>
 
-        <Style Selector="^ /template/ atom|IconPresenter#PART_InfoIconPresenter">
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorTextQuaternary}" />
-        </Style>
+        <!-- The info icon is a registered IconPresenter: an owner read on it would resolve to the presenter, so the
+             picker's values are read on this identity-less button and template-bound down. -->
+        <Setter Property="InfoIconSize" Value="{atom:OwnerTokenResource IconSize}" />
+        <Setter Property="InfoIconBrush" Value="{atom:OwnerTokenResource ColorTextQuaternary}" />
 
         <Style Selector="^ /template/ StackPanel#IconLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXS}" />
         </Style>
 
     </ControlTheme>

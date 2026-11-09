@@ -10,11 +10,17 @@ internal sealed class DatePickerToken : AbstractControlDesignToken
     public Thickness ButtonsPanelMargin { get; set; }
     public double RangePanelSpacing { get; set; }
 
+    /// <summary>
+    /// Bottom divider of the popup panel header (antd picker header borderBottom: lineWidth).
+    /// </summary>
+    public Thickness HeaderBorderThickness { get; set; }
+
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         PanelContentPadding = EffectiveGlobalToken.PaddingSM;
         ButtonsPanelMargin = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
         RangePanelSpacing = 20;
+        HeaderBorderThickness = new Thickness(0, 0, 0, EffectiveGlobalToken.LineWidth);
     }
 }

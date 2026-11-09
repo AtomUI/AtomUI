@@ -1,3 +1,5 @@
+<!-- owner: global Tokens are read from the owner because this theme is the base of RangeDatePicker and RangeTimePicker,
+     each with its own identity. -->
 <ControlTheme
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -43,10 +45,11 @@
                     VerticalContentAlignment="Stretch"
                     CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                     CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
-                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
+                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
+                    HostBorderBrush="{TemplateBinding BorderBrush}">
                     <atom:AddOnDecoratedBox.ContentRightAddOn>
                         <StackPanel Orientation="Horizontal"
-                                    Spacing="{atom:SharedTokenResource SpacingXS}">
+                                    Spacing="{atom:OwnerTokenResource SpacingXS}">
                             <atom:PickerClearUpButton
                                 Name="PART_ClearUpButton"
                                 Icon="{CompiledBinding $parent[atom:InfoPickerInput].InfoIcon}"
@@ -78,7 +81,11 @@
                                                 PlaceholderText="{TemplateBinding PlaceholderText}" />
                         <antdicons:SwapRightOutlined
                             Name="PART_RangePickerArrow"
-                            Grid.Column="1" />
+                            Grid.Column="1"
+                            Width="{TemplateBinding RangeArrowSize}"
+                            Height="{TemplateBinding RangeArrowSize}"
+                            FillBrush="{TemplateBinding RangeArrowBrush}"
+                            StrokeBrush="{TemplateBinding RangeArrowBrush}" />
                         <atom:InfoPickerTextBox
                             Name="PART_SecondaryInfoInputBox"
                             KeyboardNavigation.TabIndex="1"
@@ -131,19 +138,19 @@
         <Style Selector="^:flyout-open">
             <Style Selector="^ /template/ atom|InfoPickerTextBox">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorText}" />
+                        Value="{atom:OwnerTokenResource ColorText}" />
             </Style>
             <!-- Only the hover preview of the active part is dimmed, as in Ant Design. -->
             <Style Selector="^:previewing[RangeActivatedPart=Start]">
                 <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorTextTertiary}" />
+                            Value="{atom:OwnerTokenResource ColorTextTertiary}" />
                 </Style>
             </Style>
             <Style Selector="^:previewing[RangeActivatedPart=End]">
                 <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_SecondaryInfoInputBox">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorTextTertiary}" />
+                            Value="{atom:OwnerTokenResource ColorTextTertiary}" />
                 </Style>
             </Style>
         </Style>
@@ -151,21 +158,13 @@
         <Style Selector="^ /template/ atom|Icon#PART_RangePickerArrow">
             <Setter Property="Margin"
                     Value="{atom:InfoPickerInputTokenResource RangePickerArrowMargin}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="FillBrush"
-                    Value="{atom:SharedTokenResource ColorIcon}" />
-            <Setter Property="StrokeBrush"
-                    Value="{atom:SharedTokenResource ColorIcon}" />
         </Style>
 
+        <!-- The range arrow is a registered Icon: its size and colour are read on the picker and template-bound. -->
+        <Setter Property="RangeArrowSize" Value="{atom:OwnerTokenResource IconSize}" />
+        <Setter Property="RangeArrowBrush" Value="{atom:OwnerTokenResource ColorIcon}" />
         <Style Selector="^:disabled">
-            <Style Selector="^ /template/ atom|Icon#PART_RangePickerArrow">
-                <Setter Property="FillBrush"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
-                <Setter Property="StrokeBrush"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
-            </Style>
+            <Setter Property="RangeArrowBrush" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
         </Style>
 
         <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
@@ -175,19 +174,19 @@
 
         <Style Selector="^[EffectiveStatus=Default]">
             <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
-                <Setter Property="Fill" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="Fill" Value="{atom:OwnerTokenResource ColorPrimary}" />
             </Style>
         </Style>
 
         <Style Selector="^[EffectiveStatus=Error]">
             <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
-                <Setter Property="Fill" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="Fill" Value="{atom:OwnerTokenResource ColorError}" />
             </Style>
         </Style>
 
         <Style Selector="^[EffectiveStatus=Warning]">
             <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
-                <Setter Property="Fill" Value="{atom:SharedTokenResource ColorWarning}" />
+                <Setter Property="Fill" Value="{atom:OwnerTokenResource ColorWarning}" />
             </Style>
         </Style>
 

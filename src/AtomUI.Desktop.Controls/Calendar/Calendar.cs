@@ -2,7 +2,10 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Globalization;
 using AtomUI.Desktop.Controls.Internal.Calendar;
+using AtomUI.Data;
 using AtomUI.Localization;
+using AtomUI.Desktop.Controls.Primitives;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -230,6 +233,7 @@ public partial class Calendar : TemplatedControl
     internal const string CustomHeaderPart = "PART_CustomHeader";
 
     private DateViewer? _dateViewer;
+    private IDisposable? _dateViewerOwnerBinding;
     private CalendarRangeBarPanelControl? _rangeBarPanel;
     private CalendarHeader? _defaultHeader;
     private ContentControl? _customHeader;
@@ -249,10 +253,15 @@ public partial class Calendar : TemplatedControl
         _dateViewer?.SetContentFactory(null);
         _dateViewer?.SetAutomationNameFactory(null);
         _dateViewer?.SetHost(null);
+        _dateViewerOwnerBinding?.Dispose();
         SetAndRaise(EffectiveDateViewerProperty, ref _dateViewer, e.NameScope.Find<DateViewer>(DateViewerPart));
         _dateViewer?.SetHost(this);
         _dateViewer?.SetContentFactory(CreateDateCellContext);
         _dateViewer?.SetAutomationNameFactory(CreateDateAutomationName);
+        // The Calendar supplies the panel and cell themes of its date grid, so the grid takes the Calendar's Token owner
+        // (instead of the DateViewer identity): Controls[Calendar] / Controls[LunarCalendar] reach the cells. The
+        // DateViewer's Own Tokens are still read from the DateViewer identity.
+        _dateViewerOwnerBinding = _dateViewer is null ? null : TokenOwnerForwarding.Forward(this, _dateViewer);
 
         _rangeBarPanel = e.NameScope.Find<CalendarRangeBarPanelControl>(RangeBarPanelPart);
         UpdateRangeBarPanelVisibility();
@@ -529,21 +538,27 @@ public partial class Calendar : TemplatedControl
 
     private void BindPresentationMetrics()
     {
-        // Adapter resource keys are computed at runtime (Gregorian/lunar); a fixed AXAML resource cannot express this switch.
+        // Adapter Token kinds are chosen at runtime (Gregorian/lunar); a fixed AXAML resource cannot express this switch.
+        // The bindings resolve the Calendar's effective Tokens, so Controls[Calendar] / Controls[LunarCalendar] apply.
         _miniContentHeightBinding?.Dispose();
         _fullCellMinHeightBinding?.Dispose();
         _rangeBarTopOffsetBinding?.Dispose();
 
         var metrics = _presentationAdapter.Metrics;
-        _miniContentHeightBinding = Bind(
-            EffectiveMiniContentHeightProperty,
-            new DynamicResourceExtension(metrics.MiniContentHeightResourceKey));
-        _fullCellMinHeightBinding = Bind(
-            EffectiveFullCellMinHeightProperty,
-            new DynamicResourceExtension(metrics.FullCellMinHeightResourceKey));
-        _rangeBarTopOffsetBinding = Bind(
-            EffectiveRangeBarTopOffsetProperty,
-            new DynamicResourceExtension(metrics.RangeBarTopOffsetResourceKey));
+        _miniContentHeightBinding = BindMetric(EffectiveMiniContentHeightProperty, metrics.OwnerType,
+            metrics.MiniContentHeightResourceKey);
+        _fullCellMinHeightBinding = BindMetric(EffectiveFullCellMinHeightProperty, metrics.OwnerType,
+            metrics.FullCellMinHeightResourceKey);
+        _rangeBarTopOffsetBinding = BindMetric(EffectiveRangeBarTopOffsetProperty, metrics.OwnerType,
+            metrics.RangeBarTopOffsetResourceKey);
+    }
+
+    private IDisposable BindMetric(AvaloniaProperty property, Type ownerType, Enum tokenKind)
+    {
+        var resourceKey = tokenKind is SharedTokenKind globalKind
+            ? ControlTokenResourceKey.Global(GetType(), globalKind)
+            : ControlTokenResourceKey.Own(ownerType, tokenKind);
+        return TokenResourceBinder.CreateTokenResourceBinding(this, this, property, resourceKey);
     }
 
     internal void RefreshPresentation()

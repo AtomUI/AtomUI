@@ -51,13 +51,13 @@
             <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
 
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_ButtonsFrame">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorderSecondary}" />
         </Style>
         
         <Style Selector="^ /template/ Panel#PART_ButtonsLayout">
-            <Setter Property="Margin" Value="{atom:DatePickerTokenResource ButtonsPanelMargin}" />
+            <Setter Property="Margin" Value="{atom:TimePickerTokenResource ButtonsMargin}" />
         </Style>
         
     </ControlTheme>

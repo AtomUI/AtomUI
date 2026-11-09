@@ -2,6 +2,7 @@ using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
@@ -113,6 +114,19 @@ internal class TimeView : TemplatedControl
             o => o.SpacerWidth,
             (o, v) => o.SpacerWidth = v);
 
+    /// <summary>
+    /// Line width of the column separators, read from the owner by the theme; <see cref="SpacerWidth"/> is this width
+    /// in device pixels.
+    /// </summary>
+    internal static readonly StyledProperty<double> SpacerLineWidthProperty =
+        AvaloniaProperty.Register<TimeView, double>(nameof(SpacerLineWidth));
+
+    internal double SpacerLineWidth
+    {
+        get => GetValue(SpacerLineWidthProperty);
+        set => SetValue(SpacerLineWidthProperty, value);
+    }
+
     internal static readonly DirectProperty<TimeView, double> ItemHeightProperty =
         AvaloniaProperty.RegisterDirect<TimeView, double>(nameof(ItemHeight),
             o => o.ItemHeight,
@@ -138,6 +152,7 @@ internal class TimeView : TemplatedControl
             (o, v) => o.PmText = v);
     
     private double _spacerWidth;
+    private readonly List<IDisposable> _selectorOwnerForwardings = new();
 
     internal double SpacerWidth
     {
@@ -199,7 +214,6 @@ internal class TimeView : TemplatedControl
     private DateTimePickerPanel? _minuteSelector;
     private DateTimePickerPanel? _secondSelector;
     private DateTimePickerPanel? _periodSelector;
-    private IDisposable? _spacerWidthDisposable;
     private IDisposable? _pointerPositionDisposable;
     private TimeSpan? _pendingDisplayTime;
     private bool _isSyncingPanelValue;
@@ -273,14 +287,7 @@ internal class TimeView : TemplatedControl
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        _spacerWidthDisposable = TokenResourceBinder.CreateControlTokenBinding(
-            typeof(TimePicker),
-            this,
-            this,
-            SpacerWidthProperty,
-            SharedTokenKind.LineWidth,
-            BindingPriority.Template,
-            new RenderScaleAwareDoubleConfigure(this));
+        UpdateSpacerWidth();
         var inputManager = AvaloniaLocator.Current.GetService(typeof(IInputManager)) as IInputManager;
         Debug.Assert(inputManager != null);
         _pointerPositionDisposable = inputManager.Process.Subscribe(DetectPointerPosition);
@@ -288,13 +295,18 @@ internal class TimeView : TemplatedControl
         ApplyPendingDisplayTime();
     }
 
+    private void UpdateSpacerWidth()
+    {
+        // The separators are one device pixel wide at LineWidth 1, whatever the render scaling.
+        var renderScaling = this.GetPresentationSource()?.RenderScaling ?? 1d;
+        SpacerWidth = SpacerLineWidth / renderScaling;
+    }
+
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
         _pointerPositionDisposable?.Dispose();
-        _spacerWidthDisposable?.Dispose();
         _pointerPositionDisposable = null;
-        _spacerWidthDisposable     = null;
         IsPointerInSelector = false;
     }
 
@@ -311,6 +323,18 @@ internal class TimeView : TemplatedControl
         _minuteSelector = e.NameScope.Get<DateTimePickerPanel>("PART_MinuteSelector");
         _secondSelector = e.NameScope.Get<DateTimePickerPanel>("PART_SecondSelector");
         _periodSelector = e.NameScope.Get<DateTimePickerPanel>("PART_PeriodSelector");
+        // The selector panels sit in registered ScrollViewers, whose identity would become the owner of the time cells:
+        // the cells follow this time view's owner (the hosting picker) instead.
+        foreach (var forwarding in _selectorOwnerForwardings)
+        {
+            forwarding.Dispose();
+        }
+
+        _selectorOwnerForwardings.Clear();
+        foreach (var selector in new Control[] { _hourSelector, _minuteSelector, _secondSelector, _periodSelector })
+        {
+            _selectorOwnerForwardings.Add(TokenOwnerForwarding.Forward(this, selector));
+        }
         SetupPickerSelectorContainerHeight();
 
         _spacer3 = e.NameScope.Get<Rectangle>("PART_ThirdSpacer");
@@ -454,6 +478,11 @@ internal class TimeView : TemplatedControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+
+        if (change.Property == SpacerLineWidthProperty)
+        {
+            UpdateSpacerWidth();
+        }
 
         if (change.Property == MinuteIncrementProperty ||
             change.Property == SecondIncrementProperty ||

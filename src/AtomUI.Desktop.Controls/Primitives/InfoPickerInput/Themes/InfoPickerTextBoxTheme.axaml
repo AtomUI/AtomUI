@@ -10,13 +10,14 @@
     </ControlTheme.BasedOn>
 
     <Setter Property="Padding" Value="0" />
-    <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+    <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
 
     <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
         <Setter Property="Margin" Value="0" />
     </Style>
-    <!-- The shared input frame sets its own text color, which would cut the picker's text color (for example the
-         dimmed hover preview) off from the text presenter; the frame follows this text box instead. -->
+
+    <!-- The text colour is drawn by the inner input frame; it follows this editor's Foreground, which the picker sets for
+         its states (popup open, inactive range part, disabled). -->
     <Style Selector="^ /template/ atom|InputControlFrame#PART_InputControlFrame">
         <Setter Property="Foreground" Value="{TemplateBinding Foreground}" />
     </Style>

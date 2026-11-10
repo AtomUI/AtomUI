@@ -26,6 +26,7 @@ AtomUI 的重要变更记录在此文件中。
   - Theme Tokens：`Avatar.GroupSpace` 与 `Avatar.GroupOverlapping` 移到新的 AvatarGroup Own Token（`Controls[AvatarGroup].GroupSpace` / `GroupOverlapping`，默认值不变），它们只被 AvatarGroup 消费；删除从未被消费的 `Timeline.LastItemContentMinHeight`（antd 6.7 Timeline 无此样式）。`ImagePreviewer.ImagePreviewSwitchSize`（antd `imagePreviewSwitchSize`，antd 6.7 样式未读取）标为保留，暂无视觉效果。
   - Theme Tokens：删除从未被消费的 `TimePicker.RangePickerArrowMargin` 与 `TimePicker.RangePickerIndicatorThickness`（与范围 Picker 实际读取的 InfoPickerInput Token 重复；antd TimePicker 无此 Token）；范围箭头间距与激活条厚度请经 `Controls[InfoPickerInput].RangePickerArrowMargin` / `RangePickerIndicatorThickness` 设置。
 - 窗口、滚动与共享基元
+  - 保留受保护 flyout pointer offset API 中 Shared / 自定义 / 已类型化 resource key 的原义；已打开的 flyout 可直接 ShowAt(newTarget) 并持续读取新作用域，同目标关闭动效取消行为保持不变。
   - Window / WindowTitleBar、ScrollViewer、FlyoutHost、TreeViewFlyoutPresenter 与 ArrowDecoratedBox 读取控件有效全局值；共享部件、PathIcon、Embedding 与启动 Splash 读取有效 owner。保留滚动条尺寸、可见性与输入几何。
   - Icon.FallbackColor 现作用于 fallback 绘制区域（默认白色不变）；ArrowSize 随主题变化重建箭头几何。窗口首次显示背景遵循局部 Own 覆盖；内部背景、resize 与反馈可见性更新保留用户绑定。
   - TreeViewFlyoutPresenter 现绘制 PopupBgColor（原来被空 TemplateBinding 遮蔽）；菜单/树形 pointer offsets 遵循局部 Own 覆盖。TextSelectionHandle 补齐 Avalonia12 必需的透明 indicator 与 caret/start/end 选择器，保留32px可见形状并读取 owner 选区色。Splash 关闭图标描边改随 LineWidth（默认1px，原为1.5px）；间距、关闭图标尺寸和内缩遵循现有全局 Token。

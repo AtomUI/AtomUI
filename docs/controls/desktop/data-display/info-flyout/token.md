@@ -62,3 +62,5 @@ InfoFlyout 的控件专项模型通过 Theme 消费 Token：
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
 
 FlyoutHost 的全局动效读取自身有效值；MenuFlyout / TreeViewFlyout 的 pointer placement offset 在打开会话内读取 placement target 作用域中的 FlyoutHost Own Token，关闭、detach 时释放绑定。TreeViewFlyoutPresenter 的 `PopupBgColor` 设置 presenter 默认背景，经现有 TemplateBinding 传到箭头容器；显式根 Background 保持优先。
+
+受保护的 `BindPointerPlacementOffsets(object, object)` 只把 `FlyoutHostTokenKind` 规范化为 FlyoutHost Own key；SharedTokenKind、自定义枚举/字符串和已经类型化的 key 在 placement target 作用域中保持原义。已打开的同一 flyout 可直接 `ShowAt(newTarget)`：旧会话先关闭并释放绑定，再在新目标作用域中建立定位绑定；无需调用方先 Hide。同目标关闭动效中的 ShowAt 仍取消关闭并复用当前会话。

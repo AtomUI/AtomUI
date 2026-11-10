@@ -297,6 +297,13 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
 
     protected override bool ShowAtCore(Control placementTarget, bool showAtPointer = false)
     {
+        ArgumentNullException.ThrowIfNull(placementTarget);
+        if (IsOpen && !ReferenceEquals(Target, placementTarget))
+        {
+            // Retire the old session before acquiring the new target's bindings; its OnClosed
+            // cleanup must not dispose resources belonging to the next positioning session.
+            _ = HideCore(canCancel: false);
+        }
         EnsureGlobalResourceBindings(placementTarget);
         if (Popup is PopupControl popup)
         {
@@ -396,7 +403,9 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
 
     /// <summary>
     /// Bind <see cref="PopupFlyoutBase.HorizontalOffsetProperty"/> / <see cref="PopupFlyoutBase.VerticalOffsetProperty"/>
-    /// to the given tokens only while <see cref="RequestedPlacement"/> is <see cref="PlacementMode.Pointer"/>.
+    /// to the given resource keys only while <see cref="RequestedPlacement"/> is <see cref="PlacementMode.Pointer"/>.
+    /// FlyoutHost Own token keys are normalized to that control identity; Shared, custom and already-typed keys
+    /// retain their meaning in the placement target's resource scope.
     /// For non-pointer placements the offsets stay at their default values so edge-aligned placements
     /// (e.g. <c>BottomEdgeAlignedRight</c>) aren't shifted off anchor.
     /// </summary>
@@ -663,9 +672,9 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
             }
             // Pointer offsets are configured on this non-visual Flyout, so AXAML cannot bind them to
             // the runtime placement target. The open-session bindings are released on close / detach.
-            var horizontalKey = _pointerHorizontalOffsetTokenKey is Enum horizontalToken
+            var horizontalKey = _pointerHorizontalOffsetTokenKey is FlyoutHostTokenKind horizontalToken
                 ? ControlTokenResourceKey.Own(typeof(FlyoutHost), horizontalToken) : _pointerHorizontalOffsetTokenKey;
-            var verticalKey = _pointerVerticalOffsetTokenKey is Enum verticalToken
+            var verticalKey = _pointerVerticalOffsetTokenKey is FlyoutHostTokenKind verticalToken
                 ? ControlTokenResourceKey.Own(typeof(FlyoutHost), verticalToken) : _pointerVerticalOffsetTokenKey;
             _pointerHorizontalOffsetBinding = this.Bind(HorizontalOffsetProperty,
                 context.GetResourceObservable(horizontalKey), BindingPriority.Style);

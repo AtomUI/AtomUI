@@ -2,6 +2,7 @@
 
 ## 2026-11-10
 
+- 保留受保护 pointer offset API 对 Shared / 自定义 / 已类型化 resource key 的兼容；同一打开菜单直接切换 ShowAt 目标时，按旧会话释放、新会话建立的顺序切换局部资源，保留同目标关闭动效取消行为。
 - FlyoutHost 与树形 flyout presenter 读取有效全局 Token；pointer offsets 改用 placement target 的作用域资源并保留 open/close 释放生命周期。树形 presenter 默认背景接通 PopupBgColor，显式根背景保持优先。
 
 

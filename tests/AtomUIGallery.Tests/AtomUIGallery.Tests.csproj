@@ -7,6 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <AtomUIThemeDefinition Include="Fixtures/GalleryPreviewFixture.theme.xml" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Avalonia.Headless" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="Shouldly" />

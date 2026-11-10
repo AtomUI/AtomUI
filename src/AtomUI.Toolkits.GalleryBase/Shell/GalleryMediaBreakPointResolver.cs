@@ -1,90 +1,77 @@
-using System.Globalization;
+using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Data;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 
 namespace AtomUI.Toolkits.GalleryBase.Shell;
 
-internal static class GalleryMediaBreakPointResolver
+internal sealed class GalleryMediaBreakPointResolver : IDisposable
 {
-    public static MediaBreakPoint Resolve(double width)
+    private static readonly AttachedProperty<int> ScreenXXXLMinProperty =
+        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenXXXLMin");
+    private static readonly AttachedProperty<int> ScreenXXLMinProperty =
+        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenXXLMin");
+    private static readonly AttachedProperty<int> ScreenXLMinProperty =
+        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenXLMin");
+    private static readonly AttachedProperty<int> ScreenLGMinProperty =
+        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenLGMin");
+    private static readonly AttachedProperty<int> ScreenMDMinProperty =
+        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenMDMin");
+    private static readonly AttachedProperty<int> ScreenSMMinProperty =
+        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenSMMin");
+
+    private static readonly (AttachedProperty<int> Property, SharedTokenKind Token, MediaBreakPoint BreakPoint)[] s_thresholds =
+    [
+        (ScreenXXXLMinProperty, SharedTokenKind.ScreenXXXLMin, MediaBreakPoint.ExtraExtraExtraLarge),
+        (ScreenXXLMinProperty, SharedTokenKind.ScreenXXLMin, MediaBreakPoint.ExtraExtraLarge),
+        (ScreenXLMinProperty, SharedTokenKind.ScreenXLMin, MediaBreakPoint.ExtraLarge),
+        (ScreenLGMinProperty, SharedTokenKind.ScreenLGMin, MediaBreakPoint.Large),
+        (ScreenMDMinProperty, SharedTokenKind.ScreenMDMin, MediaBreakPoint.Medium),
+        (ScreenSMMinProperty, SharedTokenKind.ScreenSMMin, MediaBreakPoint.Small)
+    ];
+    private readonly Control _host;
+    private readonly Action _changed;
+    private readonly CompositeDisposable _bindings = new();
+
+    internal GalleryMediaBreakPointResolver(Control host, Action changed)
     {
-        return Resolve(width, null);
+        _host = host;
+        _changed = changed;
+        // These runtime-created shell hosts have no ControlTheme/template. Binding the
+        // properties on the real host preserves its local scope and resource lifecycle.
+        foreach (var threshold in s_thresholds)
+        {
+            _bindings.Add(TokenResourceBinder.CreateGlobalTokenBinding(host, threshold.Property, threshold.Token));
+        }
+        host.PropertyChanged += HandlePropertyChanged;
     }
 
-    public static MediaBreakPoint Resolve(double width, Control? resourceHost)
+    internal MediaBreakPoint Resolve(double width)
     {
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenXXXLMin,
-                                MediaBreakPoint.ExtraExtraExtraLarge))
+        foreach (var threshold in s_thresholds)
         {
-            return MediaBreakPoint.ExtraExtraExtraLarge;
+            if (width >= _host.GetValue(threshold.Property))
+            {
+                return threshold.BreakPoint;
+            }
         }
-
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenXXLMin,
-                                MediaBreakPoint.ExtraExtraLarge))
-        {
-            return MediaBreakPoint.ExtraExtraLarge;
-        }
-
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenXLMin,
-                                MediaBreakPoint.ExtraLarge))
-        {
-            return MediaBreakPoint.ExtraLarge;
-        }
-
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenLGMin,
-                                MediaBreakPoint.Large))
-        {
-            return MediaBreakPoint.Large;
-        }
-
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenMDMin,
-                                MediaBreakPoint.Medium))
-        {
-            return MediaBreakPoint.Medium;
-        }
-
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenSMMin,
-                                MediaBreakPoint.Small))
-        {
-            return MediaBreakPoint.Small;
-        }
-
         return MediaBreakPoint.ExtraSmall;
     }
 
-    private static double ResolveMin(Control? resourceHost,
-                                     SharedTokenKind token,
-                                     MediaBreakPoint fallback)
+    public void Dispose()
     {
-        if (TryResolveToken(resourceHost, token, out var value))
-        {
-            return value;
-        }
-
-        return (double)fallback;
+        _host.PropertyChanged -= HandlePropertyChanged;
+        _bindings.Dispose();
     }
 
-    private static bool TryResolveToken(Control? resourceHost,
-                                        SharedTokenKind token,
-                                        out double value)
+    private void HandlePropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
-        var themeVariant = resourceHost?.ActualThemeVariant ?? Application.Current?.ActualThemeVariant;
-        if (resourceHost?.TryGetResource(token, themeVariant, out var resourceValue) == true ||
-            Application.Current?.TryGetResource(token, themeVariant, out resourceValue) == true)
+        if (s_thresholds.Any(item => item.Property == change.Property))
         {
-            value = Convert.ToDouble(resourceValue, CultureInfo.InvariantCulture);
-            return true;
+            _changed();
         }
-
-        value = default;
-        return false;
     }
+
 }

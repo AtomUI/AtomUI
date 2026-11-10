@@ -311,6 +311,11 @@
         <source>Button</source>
       </segment>
     </unit>
+    <unit id="General_ThemePresets">
+      <segment>
+        <source>Theme presets</source>
+      </segment>
+    </unit>
     <unit id="General_CustomizeTheme">
       <segment>
         <source>CustomizeTheme</source>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" trgLang="zh-TW" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUIGallery.ShowCases.ThemePresets.ThemePresetsShowCaseLangResourceKind">
+    <unit id="PageTitle">
+      <segment>
+        <source>Theme presets</source>
+        <target state="translated">主題預設</target>
+      </segment>
+    </unit>
+    <unit id="PageSubtitle">
+      <segment>
+        <source>Explore themes in a local preview</source>
+        <target state="translated">在區域預覽中體驗主題</target>
+      </segment>
+    </unit>
+    <unit id="PageDescription">
+      <segment>
+        <source>Choose a preset and combine dark and compact modes. Copy the current preview as a theme file.</source>
+        <target state="translated">選擇預設並組合深色與緊湊模式，可將目前預覽複製為主題檔案。</target>
+      </segment>
+    </unit>
+    <unit id="ComponentCategory">
+      <segment>
+        <source>General</source>
+        <target state="translated">通用</target>
+      </segment>
+    </unit>
+    <unit id="Dark">
+      <segment>
+        <source>Dark</source>
+        <target state="translated">深色</target>
+      </segment>
+    </unit>
+    <unit id="Compact">
+      <segment>
+        <source>Compact</source>
+        <target state="translated">緊湊</target>
+      </segment>
+    </unit>
+    <unit id="CopyTheme">
+      <segment>
+        <source>Copy theme XML</source>
+        <target state="translated">複製主題 XML</target>
+      </segment>
+    </unit>
+    <unit id="Copied">
+      <segment>
+        <source>Theme XML copied</source>
+        <target state="translated">主題 XML 已複製</target>
+      </segment>
+    </unit>
+    <unit id="Preview">
+      <segment>
+        <source>Preview</source>
+        <target state="translated">預覽</target>
+      </segment>
+    </unit>
+    <unit id="Primary">
+      <segment>
+        <source>Primary</source>
+        <target state="translated">主要按鈕</target>
+      </segment>
+    </unit>
+    <unit id="Default">
+      <segment>
+        <source>Default</source>
+        <target state="translated">預設按鈕</target>
+      </segment>
+    </unit>
+    <unit id="Dashed">
+      <segment>
+        <source>Dashed</source>
+        <target state="translated">虛線按鈕</target>
+      </segment>
+    </unit>
+    <unit id="Text">
+      <segment>
+        <source>Text</source>
+        <target state="translated">文字按鈕</target>
+      </segment>
+    </unit>
+    <unit id="Link">
+      <segment>
+        <source>Link</source>
+        <target state="translated">連結按鈕</target>
+      </segment>
+    </unit>
+    <unit id="Placeholder">
+      <segment>
+        <source>Your name</source>
+        <target state="translated">姓名</target>
+      </segment>
+    </unit>
+    <unit id="Option">
+      <segment>
+        <source>Option</source>
+        <target state="translated">選項</target>
+      </segment>
+    </unit>
+    <unit id="TabOne">
+      <segment>
+        <source>Overview</source>
+        <target state="translated">概覽</target>
+      </segment>
+    </unit>
+    <unit id="TabTwo">
+      <segment>
+        <source>Details</source>
+        <target state="translated">詳細資料</target>
+      </segment>
+    </unit>
+    <unit id="Finished">
+      <segment>
+        <source>Finished</source>
+        <target state="translated">已完成</target>
+      </segment>
+    </unit>
+    <unit id="Current">
+      <segment>
+        <source>In progress</source>
+        <target state="translated">進行中</target>
+      </segment>
+    </unit>
+    <unit id="Waiting">
+      <segment>
+        <source>Waiting</source>
+        <target state="translated">待處理</target>
+      </segment>
+    </unit>
+    <unit id="Alert">
+      <segment>
+        <source>Your changes are saved.</source>
+        <target state="translated">變更已儲存。</target>
+      </segment>
+    </unit>
+    <unit id="CardTitle">
+      <segment>
+        <source>Project activity</source>
+        <target state="translated">專案動態</target>
+      </segment>
+    </unit>
+    <unit id="CardBody">
+      <segment>
+        <source>A consistent preview of everyday controls.</source>
+        <target state="translated">查看常用控制項在目前主題下的效果。</target>
+      </segment>
+    </unit>
+    <unit id="OpenDialog">
+      <segment>
+        <source>Open dialog</source>
+        <target state="translated">開啟對話框</target>
+      </segment>
+    </unit>
+    <unit id="Notification">
+      <segment>
+        <source>Show notification</source>
+        <target state="translated">顯示通知</target>
+      </segment>
+    </unit>
+    <unit id="Name">
+      <segment>
+        <source>Name</source>
+        <target state="translated">姓名</target>
+      </segment>
+    </unit>
+    <unit id="Role">
+      <segment>
+        <source>Role</source>
+        <target state="translated">角色</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

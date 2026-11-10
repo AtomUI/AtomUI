@@ -21,6 +21,7 @@
                     <gallery:GalleryStickyTabsPanel Name="PART_StickyPanel">
                         <ContentPresenter Name="PART_HeaderHost"
                                           Content="{TemplateBinding Header}" />
+                        <!-- layout: sticky content must paint above the scrolling body; ZIndex is structural ordering. -->
                         <atom:PixelAlignedBorder Name="PART_StickyContentHost"
                                                  Background="{TemplateBinding StickyBackground}"
                                                  BorderBrush="{TemplateBinding StickyBorderBrush}"

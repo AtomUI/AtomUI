@@ -395,13 +395,7 @@ public class GalleryBaseFoundationTests
         var viewModel = new GalleryWorkspaceViewModel(configuration);
         try
         {
-            viewModel.AvailableThemes.Select(static theme => theme.Id).ShouldBe([
-                "DaybreakBlue",
-                "PolarGreen",
-                "SunsetOrange",
-                "GoldenPurple",
-                "Magenta"
-            ]);
+            viewModel.AvailableThemes.ShouldBe(manager.AvailableThemes);
             viewModel.CurrentThemeId.ShouldBe(manager.CurrentTheme!.ThemeId);
 
             await viewModel.ToggleDarkModeCommand.Execute(true).ToTask();

@@ -20,6 +20,7 @@ internal sealed class GalleryShowCaseHeaderToken : AbstractControlDesignToken
     public Thickness MetadataPadding { get; set; }
     public CornerRadius MetadataCornerRadius { get; set; }
     public double MetadataMinHeight { get; set; }
+    [ReservedToken("Retained for compatibility with horizontal metadata layouts; the current vertical metadata layout has no consumer.")]
     public double MetadataItemSpacing { get; set; }
     public double MetadataLineSpacing { get; set; }
     public double MetadataPairSpacing { get; set; }

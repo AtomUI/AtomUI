@@ -16,11 +16,11 @@ public class GalleryBuiltInThemeTests
     }
 
     [Fact]
-    public void Gallery_Registers_The_Five_Product_Themes_In_Display_Order()
+    public void Gallery_Retains_Core_And_Palette_Themes_In_Display_Order()
     {
         var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
 
-        manager.AvailableThemes.ShouldBe([
+        manager.AvailableThemes.Where(theme => theme.Id is "DaybreakBlue" or "PolarGreen" or "SunsetOrange" or "GoldenPurple" or "Magenta").ShouldBe([
             new ThemeInfo("DaybreakBlue", "Daybreak Blue", ThemeAppearance.Light, true, Color.Parse("#1677FF")),
             new ThemeInfo("PolarGreen", "Polar Green", ThemeAppearance.Light, false, Color.Parse("#52C41A")),
             new ThemeInfo("SunsetOrange", "Sunset Orange", ThemeAppearance.Light, false, Color.Parse("#FA8C16")),

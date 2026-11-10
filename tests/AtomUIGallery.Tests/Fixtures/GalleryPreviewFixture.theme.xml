@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="GalleryPreviewFixture" Name="Preview isolation fixture" Appearance="Light" IsDefault="false">
+  <Algorithms><Algorithm Id="Default" /></Algorithms>
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#CC00CC" />
+    <Token Name="ColorInfoBg" Value="#123456" />
+  </Tokens>
+  <Controls>
+    <Control Catalog="AtomUI" Id="Button">
+      <Tokens><Token Name="DefaultBg" Value="#FF00FF" /></Tokens>
+    </Control>
+  </Controls>
+</Theme>

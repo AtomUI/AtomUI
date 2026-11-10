@@ -263,9 +263,9 @@ public sealed class GalleryShellView : UserControl, IDisposable
             var isInlineCollapsed = sidebarNavMenu.Mode == DesktopNavMenuMode.Inline &&
                                     sidebarNavMenu.IsInlineCollapsed;
             // Collapsed: keep the same gap between the header action and the first menu item as between menu items.
-            brandHeader.Margin = isInlineCollapsed
+            brandHeader.SetCurrentValue(MarginProperty, isInlineCollapsed
                 ? new Thickness(0, 20, 0, CollapsedSidebarHeaderSpacing)
-                : new Thickness(0, 20, 0, 16);
+                : new Thickness(0, 20, 0, 16));
             brandContent.IsVisible = !isInlineCollapsed;
             if (footer is not null)
             {
@@ -276,9 +276,9 @@ public sealed class GalleryShellView : UserControl, IDisposable
                 sidebarHeaderActionHost.HorizontalAlignment = isInlineCollapsed
                     ? HorizontalAlignment.Center
                     : HorizontalAlignment.Right;
-                sidebarHeaderActionHost.Margin = isInlineCollapsed
+                sidebarHeaderActionHost.SetCurrentValue(MarginProperty, isInlineCollapsed
                     ? default
-                    : new Thickness(0, 0, 4, 0);
+                    : new Thickness(0, 0, 4, 0));
             }
         }
 
@@ -399,9 +399,9 @@ public sealed class GalleryShellView : UserControl, IDisposable
         return mediaBreakPoint <= SidebarAutoCollapseBreakPoint;
     }
 
-    private static Control CreateBrandContent(GalleryBrandingConfiguration branding)
+    private Control CreateBrandContent(GalleryBrandingConfiguration branding)
     {
-        return branding.Logo switch
+        var content = branding.Logo switch
         {
             Control control => control,
             string resourcePath => new SvgControl(new Uri("https://atomui.net"))
@@ -415,7 +415,6 @@ public sealed class GalleryShellView : UserControl, IDisposable
             null => new TextBlock
             {
                 Text         = branding.AppName,
-                FontSize     = 20,
                 FontWeight   = FontWeight.SemiBold,
                 TextWrapping = TextWrapping.NoWrap
             },
@@ -424,6 +423,11 @@ public sealed class GalleryShellView : UserControl, IDisposable
                 Content = branding.Logo
             }
         };
+        if (branding.Logo is null)
+        {
+            BindToken(content, TextBlock.FontSizeProperty, SharedTokenKind.FontSizeHeading4);
+        }
+        return content;
     }
 
     private Border? CreateSidebarFooter(GalleryBaseConfiguration configuration)
@@ -467,10 +471,12 @@ public sealed class GalleryShellView : UserControl, IDisposable
         var footer = new Border
         {
             Name            = "WorkspaceSidebarFooter",
-            BorderThickness = new Thickness(0, 1, 0, 0),
             Padding         = new Thickness(16, 12),
             Child           = footerLayout
         };
+        _themeBindings.Add(TokenResourceBinder.CreateGlobalTokenBinding(footer, Border.BorderThicknessProperty,
+            SharedTokenKind.LineWidth, converter: value => value is double lineWidth
+                ? new Thickness(0, lineWidth, 0, 0) : AvaloniaProperty.UnsetValue));
         BindToken(footer, Border.BorderBrushProperty, SharedTokenKind.ColorBorderSecondary);
         return footer;
     }
@@ -501,6 +507,7 @@ public sealed class GalleryShellView : UserControl, IDisposable
 
     private void BindToken(AvaloniaObject target, AvaloniaProperty property, SharedTokenKind tokenKind)
     {
+        // Shell nodes are constructed in code and have no ControlTemplate/ControlTheme target.
         _themeBindings.Add(TokenResourceBinder.CreateGlobalTokenBinding(target, property, tokenKind));
     }
 }

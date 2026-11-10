@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" trgLang="pt-BR" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUIGallery.ShowCases.ThemePresets.ThemePresetsShowCaseLangResourceKind">
+    <unit id="PageTitle">
+      <segment>
+        <source>Theme presets</source>
+        <target state="translated">Temas predefinidos</target>
+      </segment>
+    </unit>
+    <unit id="PageSubtitle">
+      <segment>
+        <source>Explore themes in a local preview</source>
+        <target state="translated">Explore temas em uma prévia local</target>
+      </segment>
+    </unit>
+    <unit id="PageDescription">
+      <segment>
+        <source>Choose a preset and combine dark and compact modes. Copy the current preview as a theme file.</source>
+        <target state="translated">Escolha um tema, combine os modos escuro e compacto e copie a prévia como arquivo de tema.</target>
+      </segment>
+    </unit>
+    <unit id="ComponentCategory">
+      <segment>
+        <source>General</source>
+        <target state="translated">Geral</target>
+      </segment>
+    </unit>
+    <unit id="Dark">
+      <segment>
+        <source>Dark</source>
+        <target state="translated">Escuro</target>
+      </segment>
+    </unit>
+    <unit id="Compact">
+      <segment>
+        <source>Compact</source>
+        <target state="translated">Compacto</target>
+      </segment>
+    </unit>
+    <unit id="CopyTheme">
+      <segment>
+        <source>Copy theme XML</source>
+        <target state="translated">Copiar XML do tema</target>
+      </segment>
+    </unit>
+    <unit id="Copied">
+      <segment>
+        <source>Theme XML copied</source>
+        <target state="translated">XML do tema copiado</target>
+      </segment>
+    </unit>
+    <unit id="Preview">
+      <segment>
+        <source>Preview</source>
+        <target state="translated">Prévia</target>
+      </segment>
+    </unit>
+    <unit id="Primary">
+      <segment>
+        <source>Primary</source>
+        <target state="translated">Primário</target>
+      </segment>
+    </unit>
+    <unit id="Default">
+      <segment>
+        <source>Default</source>
+        <target state="translated">Padrão</target>
+      </segment>
+    </unit>
+    <unit id="Dashed">
+      <segment>
+        <source>Dashed</source>
+        <target state="translated">Tracejado</target>
+      </segment>
+    </unit>
+    <unit id="Text">
+      <segment>
+        <source>Text</source>
+        <target state="translated">Texto</target>
+      </segment>
+    </unit>
+    <unit id="Link">
+      <segment>
+        <source>Link</source>
+        <target state="translated">Link</target>
+      </segment>
+    </unit>
+    <unit id="Placeholder">
+      <segment>
+        <source>Your name</source>
+        <target state="translated">Seu nome</target>
+      </segment>
+    </unit>
+    <unit id="Option">
+      <segment>
+        <source>Option</source>
+        <target state="translated">Opção</target>
+      </segment>
+    </unit>
+    <unit id="TabOne">
+      <segment>
+        <source>Overview</source>
+        <target state="translated">Visão geral</target>
+      </segment>
+    </unit>
+    <unit id="TabTwo">
+      <segment>
+        <source>Details</source>
+        <target state="translated">Detalhes</target>
+      </segment>
+    </unit>
+    <unit id="Finished">
+      <segment>
+        <source>Finished</source>
+        <target state="translated">Concluído</target>
+      </segment>
+    </unit>
+    <unit id="Current">
+      <segment>
+        <source>In progress</source>
+        <target state="translated">Em andamento</target>
+      </segment>
+    </unit>
+    <unit id="Waiting">
+      <segment>
+        <source>Waiting</source>
+        <target state="translated">Aguardando</target>
+      </segment>
+    </unit>
+    <unit id="Alert">
+      <segment>
+        <source>Your changes are saved.</source>
+        <target state="translated">Suas alterações foram salvas.</target>
+      </segment>
+    </unit>
+    <unit id="CardTitle">
+      <segment>
+        <source>Project activity</source>
+        <target state="translated">Atividade do projeto</target>
+      </segment>
+    </unit>
+    <unit id="CardBody">
+      <segment>
+        <source>A consistent preview of everyday controls.</source>
+        <target state="translated">Uma prévia consistente dos controles do dia a dia.</target>
+      </segment>
+    </unit>
+    <unit id="OpenDialog">
+      <segment>
+        <source>Open dialog</source>
+        <target state="translated">Abrir diálogo</target>
+      </segment>
+    </unit>
+    <unit id="Notification">
+      <segment>
+        <source>Show notification</source>
+        <target state="translated">Mostrar notificação</target>
+      </segment>
+    </unit>
+    <unit id="Name">
+      <segment>
+        <source>Name</source>
+        <target state="translated">Nome</target>
+      </segment>
+    </unit>
+    <unit id="Role">
+      <segment>
+        <source>Role</source>
+        <target state="translated">Função</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

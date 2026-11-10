@@ -84,6 +84,11 @@
         <Token Name="FontWeightStrong" Value="600" />
       </Tokens>
     </Control>
+    <Control Catalog="AtomUI" Id="Steps">
+      <Tokens>
+        <Token Name="FinishIconColor" Value="#09090B" />
+      </Tokens>
+    </Control>
     <Control Catalog="AtomUI" Id="ToolTip">
       <Tokens>
         <Token Name="ToolTipBackground" Value="#3F3F46" />

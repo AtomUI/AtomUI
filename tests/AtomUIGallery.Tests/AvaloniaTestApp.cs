@@ -39,6 +39,7 @@ public static class TestAppBuilder
                              builder.UseDesktopDataGrid();
                              builder.UseGalleryBase(global::AtomUIGallery.AtomUIGalleryModule.Configure);
                              builder.UseGalleryControls();
+                             AtomUI.Generated.AtomUIGalleryTests.GeneratedThemePackageRegistration.Register(builder.Theme);
                              builder.UseLanguages(
                                  LanguageTags.EnUS,
                                  [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);

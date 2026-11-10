@@ -18,6 +18,7 @@ public class GalleryBrowserShellView : UserControl, IScreen, IMediaBreakAwareCon
     private readonly GalleryShellView          _shellView;
     private readonly bool                      _isBrowserMediaBreakpointsEnabled;
     private bool _isDisposed;
+    private GalleryMediaBreakPointResolver? _breakpoints;
 
     public RoutingState Router => _workspaceViewModel.Router;
 
@@ -69,6 +70,8 @@ public class GalleryBrowserShellView : UserControl, IScreen, IMediaBreakAwareCon
         {
             SizeChanged -= HandleShellSizeChanged;
         }
+        _breakpoints?.Dispose();
+        _breakpoints = null;
         _shellView.Dispose();
         _workspaceViewModel.Dispose();
     }
@@ -76,9 +79,14 @@ public class GalleryBrowserShellView : UserControl, IScreen, IMediaBreakAwareCon
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        if (_isBrowserMediaBreakpointsEnabled)
+        {
+            _breakpoints ??= new GalleryMediaBreakPointResolver(this, () =>
+                NotifyMediaBreakPointChanged(_breakpoints!.Resolve(Bounds.Width)));
+        }
         if (_isBrowserMediaBreakpointsEnabled && Bounds.Width > 0)
         {
-            NotifyMediaBreakPointChanged(GalleryMediaBreakPointResolver.Resolve(Bounds.Width, this));
+            NotifyMediaBreakPointChanged(_breakpoints!.Resolve(Bounds.Width));
         }
     }
 
@@ -90,7 +98,7 @@ public class GalleryBrowserShellView : UserControl, IScreen, IMediaBreakAwareCon
 
     private void HandleShellSizeChanged(object? sender, SizeChangedEventArgs e)
     {
-        NotifyMediaBreakPointChanged(GalleryMediaBreakPointResolver.Resolve(e.NewSize.Width, this));
+        NotifyMediaBreakPointChanged(_breakpoints?.Resolve(e.NewSize.Width) ?? MediaBreakPoint);
     }
 
     private void NotifyMediaBreakPointChanged(MediaBreakPoint breakPoint)

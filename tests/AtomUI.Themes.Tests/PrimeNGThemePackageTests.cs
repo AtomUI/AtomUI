@@ -129,6 +129,15 @@ public class PrimeNGThemePackageTests
         Global<Color>(snapshot, "ColorBorderSecondary").ShouldBe(Color.Parse("#00000000"));
         Own<FontWeight>(snapshot, "Button", "FontWeight").ShouldBe(FontWeight.Bold);
         Effective<CornerRadius>(snapshot, "Card", "BorderRadiusLG").ShouldBe(new CornerRadius(2));
+        foreach (var profile in new[] { "PrimeNGNora.Dark", "PrimeNGNora.DarkCompact" })
+        {
+            var dark = await Apply(profile);
+            Global<Color>(dark, "ColorPrimaryBg").ShouldBe(Color.Parse("#10B981"));
+            Global<Color>(dark, "ColorPrimaryText").ShouldBe(Color.Parse("#09090B"));
+            Own<Color>(dark, "Steps", "FinishIconColor").ShouldBe(Color.Parse("#09090B"));
+            Own<Color>(dark, "Steps", "ProcessIconColor").ShouldBe(Color.Parse("#09090B"));
+            Own<Color>(dark, "Steps", "FinishTitleColor").ShouldBe(Colors.White);
+        }
     }
 
     [AvaloniaFact]

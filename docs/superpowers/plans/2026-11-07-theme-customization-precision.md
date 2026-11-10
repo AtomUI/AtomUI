@@ -527,7 +527,7 @@ Commit：`feat(Themes): 新增 AtomUI.Themes.<Name> 主题包`。
 
 ### Task 14: 可选控件包家族（DataGrid、ColorPicker、Extras）
 
-按 Task 9 模板对 `src/AtomUI.Desktop.Controls.DataGrid`（`DataGridRowGroupHeader` 11 处字面量、`DataGridColumn` 的 Application 回落、借鉴 `92631f292`）、`src/AtomUI.Desktop.Controls.ColorPicker`、`src/AtomUI.Desktop.Controls.Extras` 各做一轮，完成定义同 Task 9。DataGrid 已完成并评审（`f4e226b21`）：真实列/Group scoped resource、生成 text/editor、live owner 替换及释放取代已不存在的旧命名主题/RowMetrics 机制；新增像素/隔离测试复用现有 Rendering.Tests，单一 DataGrid fixture source-link，模块资源生命周期与原指针测试保留在 DataGrid.Tests 原宿主。ColorPicker 已完成并评审（`a26dbc9b8` + `9f393f9a5`）：四终端 Own 按真实消费拆分，深层具体输入和现有 Rendering.Tests 复用，动态渐变文字与 popup View 动效优先级经原流程修复。Extras 尚待执行，不新建验收框架。
+按 Task 9 模板对 `src/AtomUI.Desktop.Controls.DataGrid`（`DataGridRowGroupHeader` 11 处字面量、`DataGridColumn` 的 Application 回落、借鉴 `92631f292`）、`src/AtomUI.Desktop.Controls.ColorPicker`、`src/AtomUI.Desktop.Controls.Extras` 各做一轮，完成定义同 Task 9。DataGrid 已完成并评审（`f4e226b21`）：真实列/Group scoped resource、生成 text/editor、live owner 替换及释放取代已不存在的旧命名主题/RowMetrics 机制；新增像素/隔离测试复用现有 Rendering.Tests，单一 DataGrid fixture source-link，模块资源生命周期与原指针测试保留在 DataGrid.Tests 原宿主。ColorPicker 已完成并评审（`a26dbc9b8` + `9f393f9a5`）：四终端 Own 按真实消费拆分，深层具体输入和现有 Rendering.Tests 复用，动态渐变文字与 popup View 动效优先级经原流程修复。Extras 已完成并评审（`c744fcfab`）：实际空注册包，无控件/资产/Own，effects/scope/OwnKind 为 N/A；现有包入口4/4与门禁2/2通过，未来资产/Own 纳入既有门禁，不新建验收框架或空断言。
 
 ---
 
@@ -659,6 +659,7 @@ Task 9 修正后 045 覆盖 `Spacing`、`ZIndex`、`*Offset` 与带符号数值�
 | 10.10d 终端 Own / 共享部件一致性 | 本轮相关已迁移路径原有 041–045/047/048 为 0；继承叶另复现 Semantic 032×10 | 对应路径与新终端全部 0；Semantic 继承修复通过 | `10b58893d`：2198 渲染、43 合同、37 Unit、350 门禁；`86ad4b636`：Lunar 100 / 350 定向与范围复审通过；51 终端当前 800 Active / 12 Reserved / 0 Unreferenced |
 | 14 DataGrid | 40 / 21 / 0 / 0 / 31 / 0 / 0（本轮当前分析器实测） | 对应家族路径全部 0 | `f4e226b21`；Rendering117、原模块52、门禁19、OwnKind2 全过并评审；67 Active / 11 Reserved；原自动列宽/排序交互保留 |
 | 14 ColorPicker | 59 / 2 / 0 / 23 / 16 / 8 / 0（本轮当前分析器实测） | 对应家族路径全部 0 | `a26dbc9b8`：177/19/23/3；`9f393f9a5`：原流程RED6→GREEN6、最终相关9/门禁19/Pinned9及范围复审通过；四终端54 Active |
+| 14 Extras | 0 / 0 / 0 / 0 / 0 / 0 / 0 | 对应空包为 0；effects/scope/OwnKind N/A | `c744fcfab`；实际生成清单与临时manifest decode均为0，现有注册4/门禁2通过并评审；未来控件须另补完整生效合同 |
 
 ## 待裁决 Own Token（Task 6 执行后填写）
 

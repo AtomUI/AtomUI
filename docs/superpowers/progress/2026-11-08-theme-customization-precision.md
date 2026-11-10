@@ -44,13 +44,13 @@
 | 13 Material | Material | 完成并评审通过，`8af56690d`；Themes7/Gallery3、四 profile/完整阴影/包检查通过，1 文档 minor 留收尾 |
 | 14 DataGrid | DataGrid 家族 | 完成并评审通过，`f4e226b21`；117/52/19/2，67 Active / 11 Reserved，原自动列宽与排序交互保持 |
 | 14 ColorPicker | ColorPicker 家族 | 完成并评审通过，`a26dbc9b8` + `9f393f9a5`；54 Active，177/19/23/3，修复后9/19/9及原流程RED/GREEN通过 |
-| 14 Extras | Extras 家族 | 未开始（独立实例） |
+| 14 Extras | Extras 家族 | 完成并评审通过，`c744fcfab`；空包0 controls/assets/Own/globals，现有注册4/门禁2通过；effects/scope/OwnKind N/A |
 | 15 | 收尾：性能对照、全量回归、文档同步 | 未开始 |
 | 终审 | 整分支评审 | 未开始 |
 
 ## 2. 接手步骤
 
-1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；12（Gallery 预设页）已完成并评审通过（`413d0a951`）；13 Shadcn 已完成并评审通过（`753cd119d`）；13 Bootstrap 已完成并评审通过（`04c193e06`）；13 Material 已完成并评审通过（`8af56690d`），Task13 三包完成；14 DataGrid 已完成并评审通过（`f4e226b21`）；14 ColorPicker 已完成并评审通过（`9f393f9a5`）；下一任务为 14 Extras（独立实例）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；12（Gallery 预设页）已完成并评审通过（`413d0a951`）；13 Shadcn 已完成并评审通过（`753cd119d`）；13 Bootstrap 已完成并评审通过（`04c193e06`）；13 Material 已完成并评审通过（`8af56690d`），Task13 三包完成；14 DataGrid 已完成并评审通过（`f4e226b21`）；14 ColorPicker 已完成并评审通过（`9f393f9a5`）；14 Extras 已完成并评审通过（`c744fcfab`），Task14 全部完成；下一任务为 15 收尾（性能/消费图/警告门禁/文档/视觉/全量回归），然后整分支终审；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -531,3 +531,11 @@ Task 14 ColorPicker: minor (deferred): reused builds include pre-existing CS0649
 Task 14 ColorPicker: fix round1/5 (I1/I2 addressed,0 open; `a26dbc9b8..9f393f9a5`). Original actual thumb click/state history RED6/6 ->GREEN6/6; cleaned relatedRendering9/9, gate19/19, Pinned9/9; prior177/19/23/3 outside changed paths reused. Gradient code only updates state class; existing WrapPanel AXAML compiled binding paints selected text and releases inheritance on close. Internal host motion input/conditional setter preserves View default, hostfalse and local priority.
 Task 14 ColorPicker: scoped re-review APPROVED (0 Critical /0 Important /0 new Minor); all6 RED/GREEN and final9/19/9 receipts checked without rerun; dynamic TextBlock subclasses retained, no template-parent mutation/new node/per-label lifecycle. M1 warning noise remains Task15.
 Task 14 ColorPicker: complete (`48bbe3469..9f393f9a5`, review clean). 2 original042 Active on real Views; four terminals54 Active/0 Reserved/0 Unreferenced, old24 names each mapped in user docs. Controller separately updates plan/current baseline; native/performance/full remain later authorized acceptance.
+
+Ruling: Extras 按实际空壳注册包验收，当前无控件/主题/Own 的生效、隔离与 OwnKind 项诚实标 N/A；只补包级错误配置和现有迁移门禁的未来资产/Own 发现，不造控件/空生效行/独立项目 — 实际生成清单为空，包入口及 common+desktop 依赖由现有 TypedPackageEntryTests 真实覆盖；让 OwnKind 非空断言套空包或制造 RED 均无独立价值 — 错了的代价：当前 Extras 无像素定制能力可证明，未来加入控件仍须完整家族 effect/scope 合同，门禁只能先防诊断回潮；生产行为保持空包注册，必须记录实际零清单并验证现有包入口合同。
+
+Task 15 finite carryover confirmed: actual HyperLinkTextBlock TokenTransitions.Duration reads MotionDurationMid, but generated consumer map has only five colour/EnableMotion entries. OwnTokenReferenceAnalysis.CollectAxaml only recognizes TokenResource forms and skips plain attached duration values; no alternate duration collection exists in DesignToken/ThemeSchema. This is a real metadata gap to fix in the existing collector, not an extra runtime requirement; current duration functionality remains separately proven. Evidence and exact paths are in the Task15 brief, no repeated audit needed.
+
+Task 14 Extras: independent Spec/Quality APPROVED (0 Critical /0 Important /1 inherited-warning Minor), `c744fcfab` three paths. Actual generated zero inventories/real registration/dependency checks and future-discovery gate were inspected; clean existing entry4/4 and gate2/2 receipts reused, no test rerun. Effects/scope/OwnKind remain honest N/A, not future controls certification.
+Task 14 Extras: minor (deferred to15): exact RS1012/Watermark044×3/xUnit1051 source locations retained in Extras report and Task15 brief. No Extras-local warning/defect, no warning-free claim.
+Task 14 Extras: complete (`85ab311d0..c744fcfab`, review clean). Task14 all three instances complete; controller updates zero baseline separately. Only Task15 and strongest whole-branch review/local finishing remain.

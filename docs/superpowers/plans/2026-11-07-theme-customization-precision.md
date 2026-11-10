@@ -488,6 +488,8 @@ git commit -m "feat(Themes): 新增 AtomUI.Themes.PrimeNG 主题包（Aura、Lar
 - Modify: `controlgallery/AtomUIGallery/AtomUIGallery.csproj`（引用 `AtomUI.Themes.PrimeNG`，后续包同样）、`controlgallery/AtomUIGallery/ThemeManagerBuilderExtensions.cs`（`.UsePrimeNGThemes()`）
 - Test: `tests/AtomUIGallery.Tests/ThemePresetsShowCaseTests.cs`
 
+**执行校准（`61125ea54` + `413d0a951` 已实现并评审）**：局部 ThemeConfigProvider 无 ThemeId、公开 ThemeInfo 无来源；Core 仅给 Gallery/Gallery.Tests 友元，单个 internal adapter 读取现有不可变 catalog/program/revision 并经现有 builder/formatter 投射声明，Inherit=false 回库默认，不临时切根。独立 compiler 全 globals/ButtonOwn 与父 definition 多余 Alias/Own 对照、根发布0、真实复制 XML/schema 已验收。复制失败有本页四语言反馈、可重试与请求身份保护。用户反馈的 Nora dark Steps 完成勾通过两 profile 现有 Own 配对修正，默认 Steps 不改；原生对比 1.316→7.843。GalleryBase 历史问题在限定范围处理，参考色板两条固定对比数据窄豁免留合同。
+
 **Interfaces:**
 - Consumes: `IThemeManager.AvailableThemes`（`ThemeInfo`：Id、Name、声明主色）、`ThemeConfigProvider`、Task 11 的主题包。
 - Produces: `ThemePresetsViewModel { IReadOnlyList<ThemePresetItem> Presets; string? SelectedPresetId; bool IsDark; bool IsCompact; ReactiveCommand CopyThemeXml; }`，`record ThemePresetItem(string ThemeId, string Name, Color Accent, AntDesignIconKind? Icon)`；预设条只列 `ThemeInfo` 来源为主题包的基础家族（有 base 的通用 mode profile 合并到其家族）（排除用户目录与 Gallery 自带色板），图标按 `ThemeId` 前缀映射（`PrimeNG*`、`Shadcn*`、`Bootstrap`、`Material`），无映射画主色圆点。

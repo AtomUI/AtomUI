@@ -38,7 +38,7 @@
 | 10.10c | 窗口、滚动、共享基元与 Controls 包 | 实现与定向评审完成：`f071b5978` + `0070c62e9`；665 主验收 + 40 修复覆盖通过；当前平台窗口/波纹视觉待 15，原生跨平台限制造册 |
 | 10.10d | 抽象 Token 层与一致性汇总（见计划 10.10 行） | 完成并评审通过：`10b58893d` + `86ad4b636`；2198 主渲染 + 43 合同 + 37 Unit + 350 门禁，Lunar 修复 100 / 350；性能/既定视觉留 15 |
 | 11 | `AtomUI.Themes.PrimeNG` | 完成并评审通过，`88306562a`；3 家族/12 profiles，最终 8 / 1 定向通过及实际五控件视觉对照；已知差异如实记 README |
-| 12 | Gallery 主题预设页 | 未开始 |
+| 12 | Gallery 主题预设页 | 完成并评审通过，`61125ea54` + `413d0a951`；根0发布/四语言/复制/实际原生往返与用户 Steps 回归已验收 |
 | 13 | Shadcn / Bootstrap / Material | 未开始 |
 | 14 | DataGrid / ColorPicker / Extras 家族 | 未开始 |
 | 15 | 收尾：性能对照、全量回归、文档同步 | 未开始 |
@@ -46,7 +46,7 @@
 
 ## 2. 接手步骤
 
-1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；下一任务为 12（Gallery 通用主题预设页）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；12（Gallery 预设页）已完成并评审通过（`413d0a951`）；下一任务为 13（Shadcn→Bootstrap→Material，各独立实例）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -462,3 +462,19 @@ Task 11: 12 XML profiles 已验证 3 家族×4 模式的实际 appearance/height
 Task 11: review APPROVED（0 Critical / 0 Important / 1 Minor）；完整 21 文件、最终 Lara 值后 8/8 与清理后 1/1 凭证、包 DLL/源哈希已核对，未重跑。3 家族/12 mode 定义、default Daybreak 不变、实际 Dark/Compact 与所有固定路径已验证；五控件观察与官方源、密度差异及媒体清理链已审阅，未冒充第二次图片检查。
 Task 11: minor (deferred): PrimeNGThemePackageTests 的 BoxShadows 仅断言两层，当前值正确；终审分拣是否在原廉价合同锁定完整 offsets/blur/spread/alpha，不建新框架。
 Task 11: complete（commits `05149f49f..88306562a`，review clean）。控制者另提交 profile/依赖/选项差异执行校准及 Task12 通用分组规则；Task12 UI 集成尚未实现，不计入本包已验收内容。
+Ruling: Core 仅增加 AtomUIGallery 友元，Gallery 集中 internal adapter 只读既有 catalog/program/definition/revision，经既有 compiler/builder/formatter生成局部 ThemeConfig 和导出 — 局部 Provider/ThemeConfig 无 ThemeId，公开 ThemeInfo 无包来源，纯公开路径无法准确选局部 package profile；不应新增公开运行时/模型/XML API、反射发现或新 generator — 错了的代价：Gallery 与 Core 内部契约耦合，未来变更需维护集中适配器；必须无临时全局切换、根发布计数为 0、对照父定义不污染所选 profile，缓存/订阅按 revision 更新并释放。
+Ruling: PaletteColorInfo 两处固定黑/白对比值作为原始色板参考数据，仅在两条赋值使用窄 044 pragma 并以真实 contrast 数据合同保护 — 这是按输入色板明度选择的对比数据，若改成可被主题覆盖的前景值会使参考色板对比失真；其余 GalleryBase 作用域/布局/LocalValue 诊断仍正常修复 — 错了的代价：若误把控件 chrome 颜色归为参考数据，会留下主题不生效点，必须限定语句范围并验证数据语义，不添加通用 analyzer 豁免。
+Task 12: GalleryBase 的 MetadataItemSpacing 保留为 Reserved（当前竖向 metadata 无横向消费者，兼容保留），sticky ZIndex=1 明确布局理由；Media resolver/壳层布局与字体/code viewer margin 在既有范围修复，不靠批量抑制消警。
+Ruling: Core 追加 AtomUIGallery.Tests 的单一测试友元，以现有纯 ThemeCompiler 捕获目标期望 snapshot，不在生产 adapter 增测试出口或反射 — preview 与 raw seed 不同，必须独立验证实际算法结果及父 definition 未覆盖字段污染；测试不能通过切根获取期望 — 错了的代价：多一个测试可见性维护点，不新增公开运行时 API；实际 profile 与预览必须一致，根发布仍为 0。
+Task 12: 页面 3 家族/12 定义分组与 profile 实值、root0publish 已通过；复制 XML 的 FontWeight 命名 Medium 与数值500按既有 Parse 语义断言。父定义多余 Alias/Own 对照及独立 compiler snapshot 仍在补验证；共享 Gallery obj 构建发现锁竞争后已转串行，不重复并发该分支。
+Task 12 用户实测反馈：预设页暗黑模式的 Steps 项 icon 和文字颜色异常（明确是本预设示例）。并入本任务必修视觉项：在同真实页面/当前 Dark profile 复现，记录 Finish/Process/Wait 的 icon/title/description 实际终点、owner 与独立目标 profile 值，单变量定位后最小根因修复；不得给部件 code-behind 写颜色掩盖或仅凭测试状态宣称修好。原 Card 离屏采样分支独立记账，不能覆盖此失败。
+Task 12 用户 Steps 失败已在同 Nora.DarkCompact 实页复现：独立 compiler 与 Steps Own 全字段一致，完成勾实际 Fill=#11A071 / 底=#10B981 对比 1.316；Process 数字=#09090B / 底=#11A071，Finish/Process 标题 White、Wait 数字/标题 #A1A1AA。不是 Token 白但实际文字黑；原例无 description 内容。官方 Nora dark 本来强 primary500 高亮/深色 contrast，先前把 Nora 误当 Aura/Lara alpha 高亮的假设已排除。
+Ruling: Nora.Dark 与 Nora.DarkCompact 通过现有 Active Steps.FinishIconColor Own 显式取 #09090B，与强高亮底配对，不改 StepsToken 全局默认 — Steps 的 AntD 默认完成勾 primary / 弱 ControlItemBgActive 本来合理，第三方 Nora 强底导致近同绿；按方案预设用现有逐控件 Own 适配，不能为模拟第三方把所有默认完成勾改 primary9 — 错了的代价：两个静态 Nora profile 多一个显式 Own 值，后续换高亮 palette 需同步配对；必须同实页对比从 1.316 达可读目标、保留当前黑数/白标题/灰等待、根0发布和其他预设/默认 Steps 不变，不能用 code-behind 节点赋色掩盖。
+Task 12 原 Card 本体已由原生截屏证实正常；内表格独立根因是新 IDataGridSource 契约不接受 IReadOnlyList 绑定，使用既有 typed DataGridLocalSource 修示例，不改 DataGrid。Steps 与该采样/数据问题分别验收，不以 Card 正常覆盖 Steps 失败。
+Task 12: implementer DONE `61125ea54`（38 明确任务文件）；Gallery 7/7、四语言/目录 2/2、GalleryBase 62/62、Generator 46/46、Nora 包 1/1，清理后 Desktop 构建通过。真实工作树原生页三模式往返、根发布0、clipboard、2行表格、通知与 Dialog 验证通过，临时驱动/测试/媒体/PID 已清理；独立评审中，不冒充已最终验收。
+Task 12 用户 Steps 回归：同真实 Nora 暗黑页面完成勾从对比1.316改为7.843，Fill=#09090B；Process黑数字/白标题、Wait灰保持，StepsToken/默认ControlTheme未改。Card 原生本体正常，表格typed source修复后Ada/Grace可见。修复与独立compiler/根0发布合同一并验收，不能以样式读值替代实际原生观察。
+Task 12: review Spec PASS / Quality Needs fixes（0 Critical / 1 Important / 1 Minor）。I1 真实 ICommand 注入 clipboard IOException 会进入 Rx 默认异常处理，需页内失败反馈/清空成功与重试；原实现者续修第 1 轮。内部 bridge/父定义隔离/根0发布/导出/用户 Steps/native 证据已通过，复用无关凭证。
+Task 12: minor (deferred): Copy 在等待期间切 profile，旧任务完成可能重新显示过时成功反馈；属请求身份反馈竞态，终审分拣，不独立进入修复循环。若 I1 反馈边界自然处理可在同范围说明。
+Task 12: fix round 1/5（I1 addressed、M1 自然一并 addressed，0 open；`61125ea54..413d0a951`）：异常仅围 terminal clipboard 委托，export 不吞错；本页四语言失败反馈、UI dispatcher 终态、重试与 captured PreviewConfig 身份保护。真实 ICommand 默认 handler 投递 1→0，清理后本页/locale 8/8，未重跑无关 62/46/Nora/native 凭证。
+Task 12: 范围复审 Spec/Quality APPROVED（0 Critical / 0 Important / 0 新 Minor），同评审核对失败/重试与过时请求反馈，无重复测试。原用户 Steps native/paint 回归有效，Nora 两暗黑 profile 专用 Own 保持，默认 Steps 算法/ControlTheme 未改。
+Task 12: complete（commits `44a7cc43d..413d0a951`，review clean）。本任务 Gallery 7 + locale2 / GalleryBase62 / Generator46 / Nora1 / 原生场景及修复后8 的凭证按各 scope 复用；临时驱动/测试/媒体/进程清理。Core 内部友元维护成本已裁定，计划校准由控制者另提交。

@@ -7,6 +7,10 @@
         <ControlTheme.BasedOn>
             <atom:AbstractStatisticTheme TargetType="atom:TimerStatistic"/>
         </ControlTheme.BasedOn>
+        <Setter Property="ContentFontSize" Value="{atom:TimerStatisticTokenResource ContentFontSize}" />
+        <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+            <Setter Property="FontSize" Value="{atom:TimerStatisticTokenResource TitleFontSize}" />
+        </Style>
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="Frame"

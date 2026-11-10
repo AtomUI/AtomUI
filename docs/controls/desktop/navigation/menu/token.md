@@ -45,12 +45,7 @@ Menu 的控件专项模型通过 Theme 消费 Token：
 
 ## 4. Token 读取与作用域
 
-`MenuToken` 的 Own Token 由菜单栏和所有菜单弹层读取：Menu、顶层与弹层 MenuItem、MenuItemGroup、MenuSeparator、ContextMenu 与
-MenuFlyoutPresenter 的主题都以 `MenuTokenResource` 读取它们，因此 `Controls[Menu]` 的 Own 覆盖（以及派生这些 Own Token 的全局覆盖）
-到达上下文菜单与下拉菜单的菜单项。各控件自身读取的全局 Token 以自己的 TokenResource 读取：`Controls[MenuItem]`（顶层项最小高度、子菜单
-箭头）、`Controls[MenuItemGroup]`（标题颜色）、`Controls[MenuSeparator]`（线色、线宽）、`Controls[ContextMenu]`、
-`Controls[MenuFlyoutPresenter]`（动效、弹层背景）。ContextMenu 与 MenuFlyoutPresenter 的弹层背景、内边距等仍读取 Menu 的 Own Token，
-所以 `Controls[ContextMenu]` 的全局覆盖不改变它们（抽象 Token 层由 Task 10.10 处理）。菜单栏顶层项主题 `TopLevelMenuItemTheme` 从 Menu
+Menu、ContextMenu、MenuFlyoutPresenter 各有独立 Own。20个真实弹层字段由 AbstractMenuPopupToken 复用，具体内部输入连接实际宿主与菜单项。TopLevel* 只属于 Menu，ContextMenuOffsetX/Y 只属于 ContextMenu。各自的有效全局值派生各自 Own，来源 Menu 覆盖不进入其他两种弹层。菜单栏顶层项主题 `TopLevelMenuItemTheme` 从 Menu
 所在的资源作用域查找，局部资源中同名主题优先于应用资源。
 
 ## 5. 控件家族影响
@@ -82,3 +77,7 @@ MenuFlyoutPresenter 的主题都以 `MenuTokenResource` 读取它们，因此 `C
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
 | 任意 Token | `NavigationFamilyEffectTests`（Menu / MenuItem / MenuItemGroup / MenuSeparator / ContextMenu / MenuFlyoutPresenter 行与隔离测试）全绿。 |
+
+## 独立 Token 身份与共享计算
+
+迁移 ContextMenuOffsetX/Y 到 Controls[ContextMenu]；其他弹层字段以实际 Menu/ContextMenu/MenuFlyoutPresenter 配置。菜单项内公开动作控件与各自独立的全局身份不做资源别名映射。

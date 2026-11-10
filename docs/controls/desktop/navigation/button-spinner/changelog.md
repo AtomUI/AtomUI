@@ -7,6 +7,10 @@
 - Theme
   - 基础模板的外框与 `ButtonSpinnerHandle` 的增减按钮设为 `IsTabStop=False`。独立 ButtonSpinner 仍保持 `TabNavigation=None`，行为不变；派生的 NumericUpDown 旋钮恢复 Tab 导航后，这些部件不会成为额外停靠点。
 
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
 ## 2026-11-08
 
 - Changed

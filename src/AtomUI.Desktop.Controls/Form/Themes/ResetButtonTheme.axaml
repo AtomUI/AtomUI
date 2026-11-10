@@ -3,6 +3,25 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net">
     <ControlTheme x:Key="{x:Type atom:ResetButton}" TargetType="atom:ResetButton">
+        <Setter Property="atom:ButtonThemeInputs.ThemeBorderColorDisabled" Value="{atom:ResetButtonTokenResource BorderColorDisabled}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeCirclePadding" Value="{atom:ResetButtonTokenResource CirclePadding}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentFontSize" Value="{atom:ResetButtonTokenResource ContentFontSize}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentFontSizeLG" Value="{atom:ResetButtonTokenResource ContentFontSizeLG}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentFontSizeSM" Value="{atom:ResetButtonTokenResource ContentFontSizeSM}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentPadding" Value="{atom:ResetButtonTokenResource ContentPadding}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentPaddingLG" Value="{atom:ResetButtonTokenResource ContentPaddingLG}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentPaddingSM" Value="{atom:ResetButtonTokenResource ContentPaddingSM}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeDefaultBorderColorDisabled" Value="{atom:ResetButtonTokenResource DefaultBorderColorDisabled}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeFontWeight" Value="{atom:ResetButtonTokenResource FontWeight}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeIconEndMargin" Value="{atom:ResetButtonTokenResource IconEndMargin}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeIconMargin" Value="{atom:ResetButtonTokenResource IconMargin}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeIconOnyPadding" Value="{atom:ResetButtonTokenResource IconOnyPadding}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeIconOnyPaddingLG" Value="{atom:ResetButtonTokenResource IconOnyPaddingLG}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeIconOnyPaddingSM" Value="{atom:ResetButtonTokenResource IconOnyPaddingSM}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeOnlyIconSize" Value="{atom:ResetButtonTokenResource OnlyIconSize}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeOnlyIconSizeLG" Value="{atom:ResetButtonTokenResource OnlyIconSizeLG}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeOnlyIconSizeSM" Value="{atom:ResetButtonTokenResource OnlyIconSizeSM}" />
+
         <ControlTheme.BasedOn>
             <atom:ButtonTheme TargetType="{x:Type atom:ResetButton}" />
         </ControlTheme.BasedOn>

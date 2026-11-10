@@ -11,7 +11,7 @@
         <Style Selector="^[IsGroupItem=True]">
             <Setter Property="Background" Value="{atom:OwnerTokenResource ColorFillAlter}" />
             <Setter Property="FontWeight" Value="{atom:OwnerTokenResource FontWeightStrong}" />
-            <Setter Property="Padding" Value="{atom:ListViewTokenResource GroupHeaderPadding}" />
+            <Setter Property="Padding" Value="{Binding $self.(atom:GroupHeaderItem.ThemeGroupHeaderPadding)}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -210,7 +210,12 @@ public partial class DataFamilyEffectTests
                 return CalendarOnSurface(lunar);
 
             // ---- fullscreen calendar ----
-            case "RangeBarHeight" or "RangeBarGap" or "UniformlyMarginXXS":
+            case "RangeBarGap":
+                return Full(rangeBars: true, options: new EffectOptions
+                {
+                    Region = static c => CalendarRangeBarsOf(c).GetVisualChildren().OfType<Control>().ElementAt(1)
+                });
+            case "RangeBarHeight" or "UniformlyMarginXXS":
                 return Full(rangeBars: true, options: new EffectOptions { Region = static c => CalendarRangeBarsOf(c) });
             case "RangeBarLabelPadding" or "FontSizeSM":
                 // The label inside the first bar.

@@ -22,26 +22,6 @@ internal sealed class SpaceToken : AbstractControlDesignToken
     /// </summary>
     public double GapLargeSize  { get; set; }
     
-    /// <summary>
-    /// Add On 背景色
-    /// </summary>
-    public Color AddonBg { get; set; }
-    
-    /// <summary>
-    /// AddOn 内边距
-    /// </summary>
-    public Thickness AddOnPadding { get; set; }
-
-    /// <summary>
-    /// AddOn 小号内边距
-    /// </summary>
-    public Thickness AddOnPaddingSM { get; set; }
-
-    /// <summary>
-    /// AddOn 大号内边距
-    /// </summary>
-    public Thickness AddOnPaddingLG { get; set; }
-    
     public SpaceToken()
 
     {
@@ -53,11 +33,7 @@ internal sealed class SpaceToken : AbstractControlDesignToken
         GapSmallSize  = EffectiveGlobalToken.SpacingXS;
         GapMiddleSize = EffectiveGlobalToken.Spacing;
         GapLargeSize  = EffectiveGlobalToken.SpacingLG;
-        AddonBg       = EffectiveGlobalToken.ColorFillAlter;
-        
-        AddOnPadding   = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, 0);
-        AddOnPaddingSM = new Thickness(EffectiveGlobalToken.ControlPaddingHorizontalSM, 0);
-        AddOnPaddingLG = new Thickness(EffectiveGlobalToken.ControlPaddingHorizontal, 0);
+
     }
     
 }

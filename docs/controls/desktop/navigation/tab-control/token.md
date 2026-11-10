@@ -45,10 +45,9 @@ TabControl 的控件专项模型通过 Theme 消费 Token：
 
 ## 3.1 Token 读取与作用域
 
-- TabControl 的 Own Token 由全部页签主题以 `TabControlTokenResource` 读取：`Controls[TabControl]` 的 Own 覆盖（以及派生它们的全局覆盖）
-  同时作用于 CardTabControl、TabStrip、CardTabStrip（抽象 Token 层由 Task 10.10 处理）。
+- TabControl、CardTabControl、TabStrip、CardTabStrip 各有自己的 Own。公共、线形、卡片三层只共享实际可渲染字段，终端主题给共享部件提供具体输入。
 - 各控件自己读取的全局 Token 以自己的 TokenResource 读取：`TabControl`、`CardTabControl`、`TabStrip`、`CardTabStrip`（页头间距、卡片圆角、
-  卡片边框与添加按钮）、`TabItem` / `TabStripItem`（图标尺寸、按下/禁用文字色、卡片背景与边框）。
+  卡片边框与添加按钮）、`TabItem` / `TabStripItem` 的既有显式全局读法；两个项容器的继承 owner 与过渡时长跟随实际页签宿主。
 - 无身份的共享部件 `BaseTabControl` / `BaseTabStrip` 基础主题、`TabScrollViewer` 与溢出菜单以 `OwnerTokenResource` 读取宿主的有效全局
   Token；溢出菜单所在 Popup 为 Token owner 透明，`Controls[TabStrip]` 等作用于其溢出菜单。溢出按钮与菜单项关闭按钮是注册的 IconButton，
   由无身份部件读取宿主值后向下绑定。
@@ -89,3 +88,7 @@ TabControl 的控件专项模型通过 Theme 消费 Token：
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
 | 任意 Token | `NavigationFamilyEffectTests`（TabControl / CardTabControl / TabStrip / CardTabStrip / TabItem / TabStripItem 行与隔离测试）全绿。 |
 | Overflow shadow | 覆盖四个 owner × 四个 placement，断言普通外阴影的方向、offset、blur、spread、颜色、尺寸及 start/end 可见性；同时验证透明绘制载体与viewport 阴影层裁剪边界与真实合成像素。 |
+
+## 独立 Token 身份与共享计算
+
+CardBg/CardSize/CardPadding*/CardGutter、AddTabButtonMargin*、VerticalItemPadding 从原 TabControl 配置移到 CardTabControl/CardTabStrip。线形 padding 与墨条只承诺于 TabControl/TabStrip；TabAndContentGutter 只属于带正文的两个 Control。原 HorizontalMargin、MenuEdgeThickness Reserved 只保留于 TabControl，不复制给新终端。

@@ -4,6 +4,24 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Dialog}" TargetType="atom:Dialog">
+        <Setter Property="atom:DialogSurface.ThemeHeaderBg" Value="{atom:DialogTokenResource HeaderBg}" />
+        <Setter Property="atom:DialogSurface.ThemeHeaderMarginBottom" Value="{atom:DialogTokenResource HeaderMarginBottom}" />
+        <Setter Property="atom:DialogSurface.ThemeLogoSize" Value="{atom:DialogTokenResource LogoSize}" />
+        <Setter Property="atom:DialogSurface.ThemeHeaderFontSize" Value="{atom:DialogTokenResource HeaderFontSize}" />
+        <Setter Property="atom:DialogSurface.ThemeHeaderColor" Value="{atom:DialogTokenResource HeaderColor}" />
+        <Setter Property="atom:DialogSurface.ThemeContentBg" Value="{atom:DialogTokenResource ContentBg}" />
+        <Setter Property="atom:DialogSurface.ThemeHeaderPadding" Value="{atom:DialogTokenResource HeaderPadding}" />
+        <Setter Property="atom:DialogSurface.ThemeContentPadding" Value="{atom:DialogTokenResource ContentPadding}" />
+        <Setter Property="atom:DialogSurface.ThemeWindowContentPadding" Value="{atom:DialogTokenResource WindowContentPadding}" />
+        <Setter Property="atom:DialogSurface.ThemeFooterBg" Value="{atom:DialogTokenResource FooterBg}" />
+        <Setter Property="atom:DialogSurface.ThemeFooterPadding" Value="{atom:DialogTokenResource FooterPadding}" />
+        <Setter Property="atom:DialogSurface.ThemeFooterMarginTop" Value="{atom:DialogTokenResource FooterMarginTop}" />
+        <Setter Property="atom:DialogSurface.ThemeCloseBtnSize" Value="{atom:DialogTokenResource CloseBtnSize}" />
+        <Setter Property="atom:DialogSurface.ThemeMinHeight" Value="{atom:DialogTokenResource MinHeight}" />
+        <Setter Property="atom:DialogSurface.ThemeMinWidth" Value="{atom:DialogTokenResource MinWidth}" />
+        <Setter Property="atom:DialogSurface.ThemeButtonGroupSpacing" Value="{atom:DialogTokenResource ButtonGroupSpacing}" />
+        <Setter Property="atom:DialogSurface.ThemeLoadingIndicatorMargin" Value="{atom:DialogTokenResource LoadingIndicatorMargin}" />
+
         <Setter Property="IsMotionEnabled" Value="{atom:DialogTokenResource EnableMotion}" />
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>

@@ -32,8 +32,7 @@ Token 按控件语义分类维护：
   `controlHeightLG * 1.1`）。
 - `PaginationItemPaddingInline` 是页码项的行内（水平）内间距，作用于页码文字，宽页码（如四位数）不再贴边；默认 `UniformlyMarginXXS * 1.5, 0`。
 - 页码项 `PaginationNavItem` 被 Pagination 与 SimplePagination 共用，以 `OwnerTokenResource` 读取所在分页控件的有效全局 Token；页码项内的
-  图标呈现器是注册部件，图标尺寸与跳转/省略图标颜色由页码项读取后向下绑定。SimplePagination 也读取 Pagination 的 Own Token（抽象 Token
-  层由 Task 10.10 处理）。
+  图标呈现器是注册部件，图标尺寸与跳转/省略图标颜色由页码项读取后向下绑定。SimplePagination 有自己的 Own，公共尺寸/禁用色/布局与输入宽度经抽象层共享计算、按终端独立覆盖。
 
 
 Pagination 的控件专项模型通过 Theme 消费 Token：
@@ -69,3 +68,7 @@ Pagination 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 独立 Token 身份与共享计算
+
+ItemInputBg 移到 SimplePagination。PaginationItemPaddingInline 只绘制页码文字，保留在 Pagination，不添加给只有箭头的 SimplePagination；ItemLinkBg/InputOutlineOffset 继续保留原 Reserved 状态。

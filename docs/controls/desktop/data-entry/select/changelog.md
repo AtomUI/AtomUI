@@ -12,6 +12,10 @@
   - 嵌入式 `SelectFilterTextBox` 设置空 `FocusAdorner`，搜索框聚焦时不在外框内部绘制方框。
   - 宿主主题设置 `ClipToBounds=False`：`Outlined` focus 外发光绘制在 frame 外侧，此前被 `TemplatedControl` 默认裁剪丢弃。
 
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
 ## 2026-11-08
 
 - Changed

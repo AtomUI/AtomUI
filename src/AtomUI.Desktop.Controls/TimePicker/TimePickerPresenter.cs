@@ -8,7 +8,7 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class TimePickerPresenter : PickerPresenterBase
+internal partial class TimePickerPresenter : PickerPresenterBase
 {
     #region 公共属性定义
 

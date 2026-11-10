@@ -79,3 +79,11 @@ git diff --check
 
 生效与隔离测试：`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/SelectFamilyEffectTests.Cascader.cs`、
 `SelectFamilyEffectTests.Isolation.cs`。
+
+## 独立 Token 身份与共享计算
+
+Select、Cascader、TreeSelect 的标签高度/背景、禁用标签、字体和单/多选 padding 共享 AbstractSelectInputToken，
+各终端从自己的有效 Global/Own 计算并经具体内部样式输入应用；`Controls[Select]` 不再改变 Cascader/TreeSelect 的输入表面。
+Cascader Small 空多选使用 Small padding。TreeSelect 弹层内的内部树跟随 TreeSelect，实际树展示字段由其 Own 配置，
+通过纯值函数复用树公式，不把树字段添加给 Select/Cascader；过滤高亮默认仍为 TreeSelect 的 ColorPrimary。
+TreeSelectTreeView 是无身份部件，不再借 TreeView 的 StyleKey 截断宿主 owner；公开 TreeView 和 CascaderView 仍各自独立。

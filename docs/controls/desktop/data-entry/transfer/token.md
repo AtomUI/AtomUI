@@ -65,7 +65,11 @@ Transfer 的控件专项模型通过 Theme 消费 Token：
 共享装饰框和操作间距通过 `OwnerTokenResource` 读取宿主的有效全局 Token。筛选框外边距、搜索图标颜色和
 选择菜单图标尺寸先在无身份装饰框读取，再由 AXAML 绑定投射到内嵌控件；LineEdit 本身保留独立身份。
 `TransferListItem` / `TransferTreeViewItem` 对 Token owner 透明，继承实际 TransferListView / TransferTreeView 的全局与动效。
-列表和树的 Own Token 仍分别来自 ListView / TreeView；宿主、视图和供体三种覆盖范围不可混同。
+TransferListView、TransferTreeView 使用自己的 Own，复用真实列表/树展示计算；ListView/TreeView 的来源覆盖不进入 Transfer 视图。分组专用 GroupHeaderPadding 和图标式 SelectedIndicatorMargin 只被原 ListView 模板消费，不添加给使用 CheckBox 的 Transfer 模板。
 
 `TreeTransfer.ListWidthLG` 为 Reserved：树穿梭视图不支持分页，没有可达的分页加宽状态。字段与默认值保留以维持配置兼容；
 普通宽度使用 `TreeTransfer.ListWidth`。`ListTransfer.ListWidthLG` 仍用于分页列表。
+
+## 独立 Token 身份与共享计算
+
+ListTransfer/TreeTransfer 的4个共同布局字段共享 AbstractTransferToken；TreeTransfer.ListWidthLG 仍 Reserved，ListTransfer.ListWidthLG 仍用于分页加宽，保持终端差异。

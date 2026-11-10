@@ -2,6 +2,9 @@
 
 ## 2026-11-10
 
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+
 - 全局外观读取 WindowTitleBar 有效值；删除五个从未消费的通用颜色 Own Token，改用现有按平台与状态划分的 Active / Inactive / WindowsClose Token。
 
 

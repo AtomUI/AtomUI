@@ -186,3 +186,7 @@ dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Abstract terminal layers/consistency use the same migrated directories above, including Form action buttons.
+[{Buttons,DropdownButton,Form,AutoComplete,ButtonSpinner,NumericUpDown,Select,Cascader,TreeSelect,Menu,TabControl,Pagination,Dialog,MessageBox,Statistic,ImagePreviewer,Calendar,DateViewer,DatePicker,TimePicker,Transfer,ListView,TreeView,Space,WindowTitleBar}/**]
+dotnet_diagnostic.ATOMUIGEN048.severity = error

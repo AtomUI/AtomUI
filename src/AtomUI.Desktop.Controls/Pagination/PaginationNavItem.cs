@@ -20,7 +20,7 @@ internal enum PaginationItemType
     JumpNext
 }
 
-internal class PaginationNavItem : ContentControl, ISelectable
+internal partial class PaginationNavItem : ContentControl, ISelectable
 {
     #region 公共属性定义
 

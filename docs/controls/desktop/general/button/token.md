@@ -216,3 +216,13 @@ ButtonToken 变更要求：
 | 删除或重命名 ButtonToken | 默认不允许；如获授权，需同步所有 AXAML 引用和生成文件。 |
 | 多彩按钮 Token 调整 | 验证 default、primary、danger、preset color 与各 variant 的状态映射。 |
 | Icon Token 投影调整 | 覆盖 Large / Middle / Small / Custom、普通 icon-only、icon-only loading、本地 `IconWidth` / `IconHeight` 覆盖，以及桌面 / Browser / DropdownButton 模板。 |
+
+## 独立 Token 身份与共享计算
+
+Button、DropdownButton、SubmitButton、ResetButton 各有独立 Own 身份；共享抽象层只复用变体与尺寸计算。
+Submit/Reset 使用标准按钮层，Dropdown 保留自己的额外内容间距与弹层间距；`GroupBorderColor` Reserved 只保留在原 Button 终端。
+变体的颜色/阴影与全局值使用同一终端身份，显式字体、行高、padding 的派生检查也使用该终端自己的 TokenKind。
+
+SplitButton 的两个实际子控件仍是公开 Button：两半的颜色与动效经 `Controls[Button]` 设置，SplitButton 自己控制接缝、尺寸与弹层。
+SearchEdit 的内嵌公开 Button 同样保留 Button 颜色与动效身份。对这些真实子控件的实例属性投射仍按原公共组合契约生效。
+原 Button 覆盖不会再影响独立 DropdownButton、SubmitButton 或 ResetButton。

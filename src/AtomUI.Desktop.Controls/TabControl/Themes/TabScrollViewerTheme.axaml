@@ -74,7 +74,7 @@
         <Style Selector="^[TabStripPlacement=Top]">
             <Style Selector="^ /template/ atom|IconButton#PART_ScrollMenuIndicator">
                 <Setter Property="DockPanel.Dock" Value="Right"/>
-                <Setter Property="Padding" Value="{atom:TabControlTokenResource MenuIndicatorPaddingHorizontal}"/>
+                <Setter Property="Padding" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeMenuIndicatorPaddingHorizontal)}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollStartEdgeIndicator">
@@ -82,7 +82,7 @@
                 <Setter Property="Width" Value="32"/>
                 <Setter Property="Canvas.Right" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Height" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
-                <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowLeft}"/>
+                <Setter Property="BoxShadow" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowLeft)}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollEndEdgeIndicator">
@@ -90,14 +90,14 @@
                 <Setter Property="Width" Value="32"/>
                 <Setter Property="Canvas.Left" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Height" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
-                <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowRight}"/>
+                <Setter Property="BoxShadow" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowRight)}"/>
             </Style>
         </Style>
         
         <Style Selector="^[TabStripPlacement=Right]">
             <Style Selector="^ /template/ atom|IconButton#PART_ScrollMenuIndicator">
                 <Setter Property="DockPanel.Dock" Value="Bottom"/>
-                <Setter Property="Padding" Value="{atom:TabControlTokenResource MenuIndicatorPaddingVertical}"/>
+                <Setter Property="Padding" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeMenuIndicatorPaddingVertical)}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollStartEdgeIndicator">
@@ -105,7 +105,7 @@
                 <Setter Property="Height" Value="32"/>
                 <Setter Property="Width" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Canvas.Bottom" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
-                <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowTop}"/>
+                <Setter Property="BoxShadow" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowTop)}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollEndEdgeIndicator">
@@ -113,14 +113,14 @@
                 <Setter Property="Height" Value="32"/>
                 <Setter Property="Width" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Canvas.Top" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
-                <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowBottom}"/>
+                <Setter Property="BoxShadow" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowBottom)}"/>
             </Style>
         </Style>
         
         <Style Selector="^[TabStripPlacement=Bottom]">
             <Style Selector="^ /template/ atom|IconButton#PART_ScrollMenuIndicator">
                 <Setter Property="DockPanel.Dock" Value="Right"/>
-                <Setter Property="Padding" Value="{atom:TabControlTokenResource MenuIndicatorPaddingHorizontal}"/>
+                <Setter Property="Padding" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeMenuIndicatorPaddingHorizontal)}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollStartEdgeIndicator">
@@ -128,7 +128,7 @@
                 <Setter Property="Width" Value="32"/>
                 <Setter Property="Canvas.Right" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Height" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
-                <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowLeft}"/>
+                <Setter Property="BoxShadow" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowLeft)}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollEndEdgeIndicator">
@@ -136,14 +136,14 @@
                 <Setter Property="Width" Value="32"/>
                 <Setter Property="Canvas.Left" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Height" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
-                <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowRight}"/>
+                <Setter Property="BoxShadow" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowRight)}"/>
             </Style>
         </Style>
         
         <Style Selector="^[TabStripPlacement=Left]">
             <Style Selector="^ /template/ atom|IconButton#PART_ScrollMenuIndicator">
                 <Setter Property="DockPanel.Dock" Value="Bottom"/>
-                <Setter Property="Padding" Value="{atom:TabControlTokenResource MenuIndicatorPaddingVertical}"/>
+                <Setter Property="Padding" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeMenuIndicatorPaddingVertical)}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollStartEdgeIndicator">
@@ -151,7 +151,7 @@
                 <Setter Property="Height" Value="32"/>
                 <Setter Property="Width" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Canvas.Bottom" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
-                <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowTop}"/>
+                <Setter Property="BoxShadow" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowTop)}"/>
             </Style>
             
             <Style Selector="^ /template/ atom|TabOverflowEdgeIndicator#PART_ScrollEndEdgeIndicator">
@@ -159,7 +159,7 @@
                 <Setter Property="Height" Value="32"/>
                 <Setter Property="Width" Value="{CompiledBinding $parent[Canvas].Bounds.Width}"/>
                 <Setter Property="Canvas.Top" Value="{CompiledBinding $parent[Canvas].Bounds.Height}"/>
-                <Setter Property="BoxShadow" Value="{atom:TabControlTokenResource BoxShadowTabsOverflowBottom}"/>
+                <Setter Property="BoxShadow" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowBottom)}"/>
             </Style>
         </Style>
         

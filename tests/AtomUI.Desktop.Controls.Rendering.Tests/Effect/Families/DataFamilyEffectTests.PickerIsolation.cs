@@ -343,18 +343,18 @@ public partial class DataFamilyEffectTests
     }
 
     [Fact]
-    public void Borrowed_Own_Tokens_Reach_Their_Readers()
+    public void Terminal_Own_Tokens_Reach_Their_Picker_Readers()
     {
         // DatePicker.RangePanelSpacing / ButtonsPanelMargin spaces the RangeDatePicker popup, TimePicker.ItemMargin the
         // RangeTimePicker cells, and TimePicker.HeaderMargin / ItemHeight shape the time view of the date-time picker: these
         // readers borrow another member's Own Tokens (recorded for the abstract-layer follow-up).
         foreach (var (kind, identity, token, value) in new[]
                  {
-                     (PickerKind.RangeDate, DatePickerTokens.Identity, "RangePanelSpacing", "64"),
-                     (PickerKind.RangeDate, DatePickerTokens.Identity, "ButtonsPanelMargin", "24"),
-                     (PickerKind.RangeTime, TimePickerTokens.Identity, "ItemMargin", "8"),
-                     (PickerKind.Date, TimePickerTokens.Identity, "HeaderMargin", "0,12,0,12"),
-                     (PickerKind.Date, TimePickerTokens.Identity, "ItemHeight", "40")
+                     (PickerKind.RangeDate, RangeDatePickerTokens.Identity, "RangePanelSpacing", "64"),
+                     (PickerKind.RangeDate, RangeDatePickerTokens.Identity, "ButtonsPanelMargin", "24"),
+                     (PickerKind.RangeTime, RangeTimePickerTokens.Identity, "ItemMargin", "8"),
+                     (PickerKind.Date, DatePickerTokens.Identity, "HeaderMargin", "0,12,0,12"),
+                     (PickerKind.Date, DatePickerTokens.Identity, "ItemHeight", "40")
                  })
         {
             var picker = CreatePicker(kind);

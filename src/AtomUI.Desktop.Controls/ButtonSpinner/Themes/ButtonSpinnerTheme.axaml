@@ -10,10 +10,18 @@
         <Setter Property="FocusAdorner" Value="{x:Null}" />
         <!-- The focus outline shadow is drawn outside the input frame and must not be clipped by the host. -->
         <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="HandleBg" Value="{atom:ButtonSpinnerTokenResource HandleBg}" />
+        <Setter Property="FilledHandleBg" Value="{atom:ButtonSpinnerTokenResource FilledHandleBg}" />
+        <Setter Property="HandleBorderColor" Value="{atom:ButtonSpinnerTokenResource HandleBorderColor}" />
+        <Setter Property="HandleHoverColor" Value="{atom:ButtonSpinnerTokenResource HandleHoverColor}" />
+        <Setter Property="HandleActiveBg" Value="{atom:ButtonSpinnerTokenResource HandleActiveBg}" />
+        <Setter Property="HandleIconSize" Value="{atom:ButtonSpinnerTokenResource HandleIconSize}" />
+        <Setter Property="HandlePressedColor" Value="{atom:ButtonSpinnerTokenResource ColorPrimaryActive}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:ButtonSpinnerDecoratedBox
                     Name="PART_DecoratedBox"
+                    SpinnerHandleWidth="{TemplateBinding SpinnerHandleWidth}"
                     Classes.semantic-scope-frame="True"
                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                     LeftAddOn="{TemplateBinding LeftAddOn}"

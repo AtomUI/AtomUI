@@ -30,7 +30,7 @@
             <Setter Property="CornerRadius"
                     Value="{atom:CompactSpaceAddOnTokenResource BorderRadiusLG}" />
             <Setter Property="Padding"
-                    Value="{atom:SpaceTokenResource AddOnPaddingLG}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource AddOnPaddingLG}" />
             <Setter Property="MinHeight" Value="{atom:CompactSpaceAddOnTokenResource ControlHeightLG}" />
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
@@ -39,7 +39,7 @@
             <Setter Property="CornerRadius"
                     Value="{atom:CompactSpaceAddOnTokenResource BorderRadius}" />
             <Setter Property="Padding"
-                    Value="{atom:SpaceTokenResource AddOnPadding}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource AddOnPadding}" />
             <Setter Property="MinHeight" Value="{atom:CompactSpaceAddOnTokenResource ControlHeight}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
@@ -48,7 +48,7 @@
             <Setter Property="CornerRadius"
                     Value="{atom:CompactSpaceAddOnTokenResource BorderRadiusSM}" />
             <Setter Property="Padding"
-                    Value="{atom:SpaceTokenResource AddOnPaddingSM}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource AddOnPaddingSM}" />
             <Setter Property="MinHeight" Value="{atom:CompactSpaceAddOnTokenResource ControlHeightSM}" />
         </Style>
         
@@ -64,7 +64,7 @@
         
         <Style Selector="^[StyleVariant=Outlined]">
             <Setter Property="Background"
-                    Value="{atom:SpaceTokenResource AddonBg}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource AddonBg}" />
             <Setter Property="BorderBrush" Value="{atom:CompactSpaceAddOnTokenResource ColorBorder}" />
             
             <Style Selector="^[Status=Error]">
@@ -80,7 +80,7 @@
 
         <Style Selector="^[StyleVariant=Filled]">
             <Setter Property="Background"
-                    Value="{atom:SpaceTokenResource AddonBg}" />
+                    Value="{atom:CompactSpaceAddOnTokenResource AddonBg}" />
             
             <Style Selector="^[Status=Error]">
                 <Setter Property="Background"

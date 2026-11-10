@@ -1,4 +1,4 @@
-<ControlTheme
+<ControlTheme xmlns:tokeninputs="using:AtomUI.Desktop.Controls.Internal.Calendar"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:AtomUI.Desktop.Controls"
@@ -9,6 +9,21 @@
     x:Class="AtomUI.Desktop.Controls.Themes.LunarCalendarControlTheme"
     TargetType="controls:LunarCalendar"
     x:ClassModifier="internal">
+        <Setter Property="tokeninputs:CalendarHeader.ThemeFullBg" Value="{atom:LunarCalendarTokenResource FullBg}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeFullPanelBg" Value="{atom:LunarCalendarTokenResource FullPanelBg}" />
+
+        <Setter Property="tokeninputs:CalendarHeader.ThemeYearControlWidth" Value="{atom:LunarCalendarTokenResource YearControlWidth}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeMonthControlWidth" Value="{atom:LunarCalendarTokenResource MonthControlWidth}" />
+
+        <Setter Property="tokeninputs:CalendarHeader.ThemeWeekHeaderHeight" Value="{atom:LunarCalendarTokenResource WeekHeaderHeight}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeWeekHeaderPadding" Value="{atom:LunarCalendarTokenResource WeekHeaderPadding}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellMargin" Value="{atom:LunarCalendarTokenResource FullCellMargin}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellPadding" Value="{atom:LunarCalendarTokenResource FullCellPadding}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellBorderThickness" Value="{atom:LunarCalendarTokenResource FullCellBorderThickness}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarHeight" Value="{atom:LunarCalendarTokenResource RangeBarHeight}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarGap" Value="{atom:LunarCalendarTokenResource RangeBarGap}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarLabelPadding" Value="{atom:LunarCalendarTokenResource RangeBarLabelPadding}" />
+
     <ControlTheme.Resources>
         <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>

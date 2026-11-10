@@ -8,8 +8,8 @@
         <Setter Property="Cursor" Value="Arrow" />
         <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
         <Setter Property="MotionDuration" Value="{atom:OwnerTokenResource MotionDurationMid}" />
-        <Setter Property="ContentViewportMinWidth" Value="{atom:DialogTokenResource MinWidth}" />
-        <Setter Property="ContentViewportMinHeight" Value="{atom:DialogTokenResource MinHeight}" />
+        <Setter Property="ContentViewportMinWidth" Value="{Binding $self.(atom:DialogSurface.ThemeMinWidth)}" />
+        <Setter Property="ContentViewportMinHeight" Value="{Binding $self.(atom:DialogSurface.ThemeMinHeight)}" />
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:DialogSurface">
                 <Panel>
@@ -66,15 +66,15 @@
              任何 Style setter，DialogContainerStyle（owner 实例级语义样式）将永远无法覆盖。
              CornerRadius 经 TemplatedParent 绑定保持对 Surface 运行时变更（如最大化归零）的跟随。 -->
         <Style Selector="^ /template/ Border#Frame">
-            <Setter Property="Background" Value="{atom:DialogTokenResource ContentBg}" />
+            <Setter Property="Background" Value="{Binding $self.(atom:DialogSurface.ThemeContentBg)}" />
             <Setter Property="CornerRadius"
                     Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
         </Style>
 
         <Style Selector="^ /template/ atom|OverlayDialogHeader#PART_Header">
-            <Setter Property="TitleFontSize" Value="{atom:DialogTokenResource HeaderFontSize}" />
+            <Setter Property="TitleFontSize" Value="{Binding $self.(atom:DialogSurface.ThemeHeaderFontSize)}" />
             <Setter Property="TitleFontWeight" Value="{atom:OwnerTokenResource FontWeightStrong}" />
-            <Setter Property="Margin" Value="{atom:DialogTokenResource HeaderMarginBottom}" />
+            <Setter Property="Margin" Value="{Binding $self.(atom:DialogSurface.ThemeHeaderMarginBottom)}" />
         </Style>
 
         <Style Selector="^.overlay-hosted /template/ atom|ShadowsAwareContainer#PART_ShadowHost">
@@ -92,24 +92,24 @@
         </Style>
 
         <Style Selector="^ /template/ Border#ContentFrame">
-            <Setter Property="Padding" Value="{atom:DialogTokenResource ContentPadding}" />
+            <Setter Property="Padding" Value="{Binding $self.(atom:DialogSurface.ThemeContentPadding)}" />
         </Style>
 
         <!-- Window host hides the Overlay header because the native window owns the title bar.
              Keep the body vertically separated from that title bar and preserve the same
              horizontal content inset used by the Overlay host. -->
         <Style Selector="^.window-hosted /template/ Border#ContentFrame">
-            <Setter Property="Padding" Value="{atom:DialogTokenResource WindowContentPadding}" />
+            <Setter Property="Padding" Value="{Binding $self.(atom:DialogSurface.ThemeWindowContentPadding)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|Skeleton">
-            <Setter Property="Margin" Value="{atom:DialogTokenResource LoadingIndicatorMargin}" />
+            <Setter Property="Margin" Value="{Binding $self.(atom:DialogSurface.ThemeLoadingIndicatorMargin)}" />
         </Style>
 
         <Style Selector="^ /template/ Border#FooterFrame">
-            <Setter Property="Background" Value="{atom:DialogTokenResource FooterBg}" />
-            <Setter Property="Margin" Value="{atom:DialogTokenResource FooterMarginTop}" />
-            <Setter Property="Padding" Value="{atom:DialogTokenResource FooterPadding}" />
+            <Setter Property="Background" Value="{Binding $self.(atom:DialogSurface.ThemeFooterBg)}" />
+            <Setter Property="Margin" Value="{Binding $self.(atom:DialogSurface.ThemeFooterMarginTop)}" />
+            <Setter Property="Padding" Value="{Binding $self.(atom:DialogSurface.ThemeFooterPadding)}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

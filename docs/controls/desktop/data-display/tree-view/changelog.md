@@ -32,6 +32,10 @@
 - Implementation
   - `TreeViewItem` / `TreeViewItemHeader` 新增内部状态 `IsKeyboardFocusOutlineVisible`；header 通过共享的 `ManagedFocusOutline` 显示 `DefaultFocusAdorner`，离开视觉树时移除。设计见 `keyboard-navigation-design.md` §6.3.1。
 
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
 ## 2026-11-08
 
 - Changed

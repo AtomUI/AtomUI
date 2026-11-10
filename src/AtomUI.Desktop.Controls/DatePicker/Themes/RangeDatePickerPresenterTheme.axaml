@@ -32,7 +32,7 @@
                 <StackPanel Orientation="Horizontal">
                     <atom:RangeDateViewer Name="PART_RangeDateViewer" Padding="0" Presentation="Compact"
                                           Height="{TemplateBinding PanelHeight}"
-                                          PanelSpacing="{atom:DatePickerTokenResource RangePanelSpacing}"
+                                          PanelSpacing="{atom:RangeDatePickerTokenResource RangePanelSpacing}"
                                           HeaderTemplate="{StaticResource RangeDatePickerViewerHeader}" />
                     <atom:TimeView Name="PART_TimeView" VerticalAlignment="Top"
                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -43,9 +43,9 @@
         </ControlTemplate>
     </Setter>
     <Style Selector="^ /template/ Panel#ButtonsLayout">
-        <Setter Property="Margin" Value="{atom:DatePickerTokenResource ButtonsPanelMargin}" />
+        <Setter Property="Margin" Value="{Binding $self.(atom:DatePickerPresenter.ThemeButtonsPanelMargin)}" />
     </Style>
     <Style Selector="^ /template/ atom|TimeView#PART_TimeView">
-        <Setter Property="Padding" Value="{atom:DatePickerTokenResource PanelContentPadding}" />
+        <Setter Property="Padding" Value="{Binding $self.(atom:DatePickerPresenter.ThemePanelContentPadding)}" />
     </Style>
 </ControlTheme>

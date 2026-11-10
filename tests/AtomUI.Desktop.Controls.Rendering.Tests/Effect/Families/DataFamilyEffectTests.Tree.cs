@@ -31,17 +31,36 @@ public partial class DataFamilyEffectTests
         bool showLine = false,
         bool rotation = true,
         ItemToggleType toggle = ItemToggleType.None,
-        bool empty = false)
+        bool empty = false, bool transfer = false)
     {
-        var tree = new TreeView
+        TreeView tree = transfer ? new TransferTreeView() : new TreeView();
+        tree.Width = 280;
+        tree.IsShowLine = showLine;
+        tree.IsShowIcon = true;
+        tree.IsSwitcherRotation = rotation;
+        tree.ToggleType = toggle;
+        if (!empty && transfer)
         {
-            Width              = 280,
-            IsShowLine         = showLine,
-            IsShowIcon         = true,
-            IsSwitcherRotation = rotation,
-            ToggleType         = toggle
-        };
-        if (!empty)
+            tree.ItemsSource = new[]
+            {
+                new TreeItemNode
+                {
+                    Header = "Parent node", ItemKey = "parent", IsExpanded = true, Icon = new FolderOutlined(),
+                    Children =
+                    {
+                        new TreeItemNode { Header = "Leaf one", ItemKey = "leaf1", IsLeaf = true, Icon = new FileOutlined() },
+                        new TreeItemNode { Header = "Leaf two", ItemKey = "leaf2", IsLeaf = true, Icon = new FileOutlined() },
+                        new TreeItemNode { Header = "Disabled leaf", ItemKey = "disabled", IsLeaf = true, Icon = new FileOutlined(), IsEnabled = false }
+                    }
+                },
+                new TreeItemNode
+                {
+                    Header = "Second parent", ItemKey = "second", Icon = new FolderOutlined(),
+                    Children = { new TreeItemNode { Header = "Hidden leaf", ItemKey = "hidden", IsLeaf = true } }
+                }
+            };
+        }
+        else if (!empty)
         {
             var parent = new TreeViewItem { Header = "Parent node", IsExpanded = true, Icon = new FolderOutlined() };
             parent.Items.Add(new TreeViewItem { Header = "Leaf one", Icon = new FileOutlined() });
@@ -61,10 +80,10 @@ public partial class DataFamilyEffectTests
     }
 
     private static TreeViewItemHeader HeaderOf(Control tree, string header) =>
-        tree.GetVisualDescendants().OfType<TreeViewItemHeader>().First(item => Equals(item.Content, header));
+        tree.GetVisualDescendants().OfType<TreeViewItemHeader>().First(item => Equals(item.Content is ITreeItemNode node ? node.Header : item.Content, header));
 
     private static TreeViewItem ItemOf(Control tree, string header) =>
-        tree.GetVisualDescendants().OfType<TreeViewItem>().First(item => Equals(item.Header, header));
+        tree.GetVisualDescendants().OfType<TreeViewItem>().First(item => Equals(item.Header is ITreeItemNode node ? node.Header : item.Header, header));
 
     private static void Select(Control tree, string header) => ItemOf(tree, header).IsSelected = true;
 
@@ -80,18 +99,32 @@ public partial class DataFamilyEffectTests
         Run(scenario.Create, scenario.Arrange, TreeViewTokens.Identity, token, scenario.Options);
     }
 
-    private static Scenario TreeViewScenario(string token)
+    public static IEnumerable<object[]> TransferTreeViewRows() =>
+        HostRows("TransferTreeView", ["TreeViewItem"], [s_treeViewItemHeader, s_nodeSwitcherButton]);
+
+    [Theory]
+    [MemberData(nameof(TransferTreeViewRows))]
+    public void TransferTreeView_Token_Has_Effect(string token, bool isOwn)
     {
+        _ = isOwn;
+        var scenario = TreeViewScenario(token, transfer: true);
+        Run(scenario.Create, scenario.Arrange, TransferTreeViewTokens.Identity, token, scenario.Options);
+    }
+
+    private static Scenario TreeViewScenario(string token, bool transfer = false)
+    {
+        TreeView CreateTreeView(bool showLine = false, bool rotation = true, ItemToggleType toggle = ItemToggleType.None,
+            bool empty = false) => DataFamilyEffectTests.CreateTreeView(showLine, rotation, toggle, empty, transfer);
         switch (token)
         {
             // Hovered node content background.
             case "NodeHoverBg" or "ControlItemBgHover":
-                return new Scenario(static () => CreateTreeView(), static tree => HeaderOf(tree, "Leaf one").IsHover = true);
+                return new Scenario(() => CreateTreeView(), static tree => HeaderOf(tree, "Leaf one").IsHover = true);
             // Selected node background (rounded by BorderRadius).
             case "NodeSelectedBg" or "ControlItemBgActive":
-                return new Scenario(static () => CreateTreeView(), static tree => Select(tree, "Leaf one"));
+                return new Scenario(() => CreateTreeView(), static tree => Select(tree, "Leaf one"));
             case "BorderRadius":
-                return new Scenario(static () => CreateTreeView(), static tree => Select(tree, "Leaf one"),
+                return new Scenario(() => CreateTreeView(), static tree => Select(tree, "Leaf one"),
                     new EffectOptions
                     {
                         Perturb = static _ => new CornerRadius(12),
@@ -99,35 +132,37 @@ public partial class DataFamilyEffectTests
                     });
             // A disabled selected node: disabled background, text and icon.
             case "ColorBgContainerDisabled" or "ColorTextDisabled":
-                return new Scenario(static () => CreateTreeView(), static tree => Select(tree, "Disabled leaf"),
+                return new Scenario(() => CreateTreeView(), static tree => Select(tree, "Disabled leaf"),
                     new EffectOptions { Region = static tree => HeaderOf(tree, "Disabled leaf") });
             // Filtering highlights matched words.
             case "FilterHighlightColor" or "ColorError":
-                return new Scenario(static () => CreateTreeView(), static tree => ((TreeView)tree).FilterValue = "leaf");
+                return new Scenario(() => CreateTreeView(), static tree => ((TreeView)tree).FilterValue = "leaf",
+                    // The original disabled label contains the actual split/highlighted "leaf" run.
+                    new EffectOptions { Region = static tree => HeaderOf(tree, "Disabled leaf") });
             // Tree lines: drawn with the item's border brush and thickness.
             case "ColorBorder" or "BorderThickness":
-                return new Scenario(static () => CreateTreeView(showLine: true), null,
+                return new Scenario(() => CreateTreeView(showLine: true), null,
                     new EffectOptions { Region = static tree => ItemOf(tree, "Parent node") });
             // The switcher margin only applies with a check box / radio toggle.
             case "TreeNodeSwitcherMargin":
-                return new Scenario(static () => CreateTreeView(toggle: ItemToggleType.CheckBox));
+                return new Scenario(() => CreateTreeView(toggle: ItemToggleType.CheckBox));
             // The default (non-rotating) switcher icons use IconSize; the rotating caret IconSizeXS.
             case "IconSize":
-                return new Scenario(static () => CreateTreeView(rotation: false));
+                return new Scenario(() => CreateTreeView(rotation: false));
             // The rotating caret of the expanded parent.
             case "IconSizeXS":
-                return new Scenario(static () => CreateTreeView(), null,
+                return new Scenario(() => CreateTreeView(), null,
                     new EffectOptions { Region = static tree => Descendant<NodeSwitcherButton>(HeaderOf(tree, "Parent node")) });
             // The drag indicator line (and the dragged node's border) during a drag.
             case "DragIndicatorLineWidth" or "LineWidthFocus" or "ColorPrimary":
-                return new Scenario(static () => CreateTreeView(), static tree => ShowDragIndicator((TreeView)tree));
+                return new Scenario(() => CreateTreeView(), static tree => ShowDragIndicator((TreeView)tree));
             case "PaddingXL":
-                return new Scenario(static () => CreateTreeView(empty: true));
+                return new Scenario(() => CreateTreeView(empty: true));
             default:
                 // HeaderHeight / ControlHeightSM, the header margins and paddings, TreeItemMargin, TreeNodeIconMargin,
                 // UniformlyPadding*, UniformlyMarginXXS, ColorText (node and switcher icons) / IconSizeXS (switcher), EnableMotion,
                 // MotionDurationSlow.
-                return new Scenario(static () => CreateTreeView());
+                return new Scenario(() => CreateTreeView());
         }
     }
 

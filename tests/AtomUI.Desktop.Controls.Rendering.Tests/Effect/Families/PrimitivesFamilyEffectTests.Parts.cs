@@ -1,3 +1,4 @@
+using Avalonia.Headless;
 using AtomUI.Controls;
 using AtomUI.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.DesignTokens;
@@ -76,21 +77,45 @@ public partial class PrimitivesFamilyEffectTests
     public static IEnumerable<object[]> ToggleAddOnRows() => EffectTestData.For("AtomUI", "WindowTitleBarToggleButton");
 
     [Theory, MemberData(nameof(AddOnRows))]
-    public void TitleBar_AddOn_Global_Has_Effect(string token, bool own)
+    public void TitleBar_AddOn_Token_Has_Effect(string token, bool own)
     {
         _ = own;
-        TokenEffectHarness.AssertHasEffect(() => new WindowTitleBarButton { Icon = new CheckOutlined(), IsEnabled = token != "ColorTextDisabled" },
-            WindowTitleBarButtonTokens.Identity, token, options: new EffectOptions
-            { Perturb = token == "BorderRadiusSM" ? _ => new CornerRadius(24) : null });
+        TokenEffectHarness.AssertHasEffect(() => new WindowTitleBarButton { Icon = new CheckOutlined(), IsEnabled = token != "ColorTextDisabled", IsWindowActive = !token.StartsWith("Inactive") && token is not "ColorTextQuaternary" and not "ColorFillQuaternary", HostOsType = token is "CaptionButtonCornerRadius" or "CaptionButtonBackgroundInset" ? OsType.Linux : OsType.Unknown },
+            WindowTitleBarButtonTokens.Identity, token, control =>
+            {
+                if (token.Contains("Pressed") || token == "ColorFill")
+                {
+                    ((Avalonia.Controls.IPseudoClasses)control.Classes).Add(":pressed");
+                }
+                else if (token.Contains("Hover") || token == "ColorFillSecondary")
+                {
+                    var topLevel = TopLevel.GetTopLevel(control)!;
+                    topLevel.MouseMove(control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), topLevel)!.Value);
+                    control.IsPointerOver.ShouldBeTrue();
+                }
+            }, options: new EffectOptions
+            { Perturb = token == "BorderRadiusSM" ? _ => new CornerRadius(24) : token == "CaptionButtonCornerRadius" ? _ => new CornerRadius(0) : null });
     }
 
     [Theory, MemberData(nameof(ToggleAddOnRows))]
-    public void TitleBar_Toggle_AddOn_Global_Has_Effect(string token, bool own)
+    public void TitleBar_Toggle_AddOn_Token_Has_Effect(string token, bool own)
     {
         _ = own;
-        TokenEffectHarness.AssertHasEffect(() => new WindowTitleBarToggleButton { UnCheckedIcon = new CheckOutlined(), IsEnabled = token != "ColorTextDisabled" },
-            WindowTitleBarToggleButtonTokens.Identity, token, options: new EffectOptions
-            { Perturb = token == "BorderRadiusSM" ? _ => new CornerRadius(24) : null });
+        TokenEffectHarness.AssertHasEffect(() => new WindowTitleBarToggleButton { UnCheckedIcon = new CheckOutlined(), IsEnabled = token != "ColorTextDisabled", IsWindowActive = !token.StartsWith("Inactive") && token is not "ColorTextQuaternary" and not "ColorFillQuaternary", HostOsType = token is "CaptionButtonCornerRadius" or "CaptionButtonBackgroundInset" ? OsType.Linux : OsType.Unknown },
+            WindowTitleBarToggleButtonTokens.Identity, token, control =>
+            {
+                if (token.Contains("Pressed") || token == "ColorFill")
+                {
+                    ((Avalonia.Controls.IPseudoClasses)control.Classes).Add(":pressed");
+                }
+                else if (token.Contains("Hover") || token == "ColorFillSecondary")
+                {
+                    var topLevel = TopLevel.GetTopLevel(control)!;
+                    topLevel.MouseMove(control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), topLevel)!.Value);
+                    control.IsPointerOver.ShouldBeTrue();
+                }
+            }, options: new EffectOptions
+            { Perturb = token == "BorderRadiusSM" ? _ => new CornerRadius(24) : token == "CaptionButtonCornerRadius" ? _ => new CornerRadius(0) : null });
     }
 
     [Fact]

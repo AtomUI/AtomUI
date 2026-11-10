@@ -38,9 +38,9 @@
 
     <Style Selector="^:is(atom|ListViewItem)">
         <Setter Property="Focusable" Value="False" />
-        <Setter Property="Margin" Value="{atom:ListViewTokenResource ItemMargin}" />
-        <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemColor}" />
-        <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />
+        <Setter Property="Margin" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemMargin)}" />
+        <Setter Property="Foreground" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemColor)}" />
+        <Setter Property="Background" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemBgColor)}" />
         <!-- The split line under the item is LineWidth thick; an application BorderThickness replaces it. -->
         <Setter Property="SplitLineWidth" Value="{atom:OwnerTokenResource LineWidth}" />
         <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
@@ -48,11 +48,11 @@
         
         <Style Selector="^[IsGroupItem=False]">
             <Style Selector="^:pointerover">
-                <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemHoverColor}" />
+                <Setter Property="Foreground" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemHoverColor)}" />
                 <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
             </Style>
             <Style Selector="^:selected:not(:disabled)">
-                <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemSelectedColor}" />
+                <Setter Property="Foreground" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemSelectedColor)}" />
                 <Setter Property="Background" Value="{Binding ItemSelectedBg, RelativeSource={RelativeSource Self}}" />
             </Style>
         </Style>
@@ -62,34 +62,34 @@
             <Setter Property="Width" Value="{atom:OwnerTokenResource IconSize}" />
             <Setter Property="Height" Value="{atom:OwnerTokenResource IconSize}" />
             <Setter Property="Margin"
-                    Value="{atom:ListViewTokenResource SelectedIndicatorMargin}" />
+                    Value="{Binding $self.(atom:GroupHeaderItem.ThemeSelectedIndicatorMargin)}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
             <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
-            <Setter Property="Padding" Value="{atom:ListViewTokenResource ItemPaddingLG}" />
+            <Setter Property="Padding" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemPaddingLG)}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
             <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
-            <Setter Property="Padding" Value="{atom:ListViewTokenResource ItemPadding}" />
+            <Setter Property="Padding" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemPadding)}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
             <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
-            <Setter Property="Padding" Value="{atom:ListViewTokenResource ItemPaddingSM}" />
+            <Setter Property="Padding" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemPaddingSM)}" />
         </Style>
 
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
                 <Setter Property="Foreground"
-                        Value="{atom:ListViewTokenResource ItemDisabledColor}" />
+                        Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemDisabledColor)}" />
             </Style>
         </Style>
 
         <Style Selector="^[IsGroupItem=True]">
-            <Setter Property="Foreground" Value="{atom:ListViewTokenResource GroupHeaderColor}" />
-            <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />
+            <Setter Property="Foreground" Value="{Binding $self.(atom:GroupHeaderItem.ThemeGroupHeaderColor)}" />
+            <Setter Property="Background" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemBgColor)}" />
 
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />

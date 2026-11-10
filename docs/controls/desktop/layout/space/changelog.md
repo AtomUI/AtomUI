@@ -31,6 +31,10 @@
   - 现有 `CompactSpaceBehaviorTests`、`SpaceRootFrameTests`、`SpaceSemanticPartTests` 保持不变并通过。
   - V6 回归：`dotnet test tests/AtomUI.Controls.Tests` 222 项、`tests/AtomUI.Desktop.Controls.Tests` 4,179 项、`tests/AtomUIGallery.Tests` 412 项（含 `SpaceShowCasePageTests`，Space 展示页可打开）全部通过，`controlgallery/AtomUIGallery.Desktop` 构建通过。
 
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
 ## 2026-11-08
 
 - Changed

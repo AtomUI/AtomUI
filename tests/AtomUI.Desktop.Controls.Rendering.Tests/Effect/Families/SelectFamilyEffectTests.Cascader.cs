@@ -112,7 +112,44 @@ public partial class SelectFamilyEffectTests
             step(TopLevel.GetTopLevel(c)!.GetVisualDescendants().OfType<CascaderViewItem>()
                          .First(IsZhejiang)));
 
-        if (!FrameState(b, token, Status, Variant, LeftAddOn, Selected))
+        void EmptyMultiple() => b.Init.Add(static c =>
+        {
+            ((Cascader)c).IsMultiple = true;
+            ((Cascader)c).PlaceholderText = "Placeholder";
+        });
+        var inputOwn = true;
+        switch (token)
+        {
+            case "MultiModePadding" or "MultiModePaddingLG" or "MultiModePaddingSM" or "MultipleItemHeight"
+                or "MultipleItemHeightLG" or "MultipleItemHeightSM" or "MultipleItemBg" or "ColorFillSecondary"
+                or "UniformlyPaddingXXS" or "FontHeightLG" or "ControlHeightLG":
+                Tags();
+                break;
+            case "MultiModePrefixIndent" or "MultiModePrefixIndentLG" or "MultiModePrefixIndentSM":
+                Tags();
+                b.Init.Add(static c => ((Cascader)c).ContentLeftAddOn = "$");
+                break;
+            case "MultipleItemColorDisabled" or "MultipleSelectorBgDisabled":
+                Tags();
+                b.Disabled();
+                break;
+            case "SingleModePadding" or "SingleModePaddingLG" or "SingleModePaddingSM" or "LineWidth"
+                or "ControlPaddingHorizontalSM":
+                EmptyMultiple();
+                break;
+            case "ControlPaddingHorizontal":
+                b.Init.Add(static c => ((Cascader)c).SizeType = CustomizableSizeType.Large);
+                EmptyMultiple();
+                break;
+            case "OptionFontSize":
+                Tags();
+                break;
+            default:
+                inputOwn = false;
+                break;
+        }
+
+        if (!inputOwn && !FrameState(b, token, Status, Variant, LeftAddOn, Selected))
         {
             switch (token)
             {

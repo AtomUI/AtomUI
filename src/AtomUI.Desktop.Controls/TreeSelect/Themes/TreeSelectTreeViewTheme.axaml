@@ -1,0 +1,19 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net"
+                    x:ClassModifier="internal">
+    <ControlTheme x:Key="{x:Type atom:TreeSelectTreeView}" TargetType="atom:TreeSelectTreeView">
+        <ControlTheme.BasedOn>
+            <atom:TreeViewTheme TargetType="atom:TreeSelectTreeView" />
+        </ControlTheme.BasedOn>
+        <Setter Property="atom:TreeViewItemHeader.ThemeHeaderHeight" Value="{atom:TreeSelectTokenResource HeaderHeight}" />
+        <Setter Property="atom:TreeViewItemHeader.ThemeNodeHoverBg" Value="{atom:TreeSelectTokenResource NodeHoverBg}" />
+        <Setter Property="atom:TreeViewItemHeader.ThemeNodeSelectedBg" Value="{atom:TreeSelectTokenResource NodeSelectedBg}" />
+        <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemMargin" Value="{atom:TreeSelectTokenResource TreeItemMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemHeaderPadding" Value="{atom:TreeSelectTokenResource TreeItemHeaderPadding}" />
+        <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemHeaderMargin" Value="{atom:TreeSelectTokenResource TreeItemHeaderMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.ThemeTreeNodeSwitcherMargin" Value="{atom:TreeSelectTokenResource TreeNodeSwitcherMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.ThemeTreeNodeIconMargin" Value="{atom:TreeSelectTokenResource TreeNodeIconMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.ThemeFilterHighlightColor" Value="{atom:TreeSelectTokenResource FilterHighlightColor}" />
+    </ControlTheme>
+</ResourceDictionary>

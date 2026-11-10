@@ -1,26 +1,55 @@
+<!-- owner: the transparent candidate part inherits the Mentions/AutoComplete host and has no Own schema. -->
 <ControlTheme TargetType="atom:CandidateListItem"
               xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               x:Class="AtomUI.Desktop.Controls.Primitives.Themes.CandidateListItemTheme">
+    <ControlTheme.Resources>
+        <atom:BorderThicknessFilterConverter x:Key="CandidateHorizontalPadding" Top="False" Bottom="False" />
+        <atom:BorderThicknessFilterConverter x:Key="CandidateIndicatorLeadingMargin" Top="False" Right="False" Bottom="False" />
+    </ControlTheme.Resources>
     <ControlTheme.BasedOn>
         <atom:ListBoxItemTheme TargetType="atom:CandidateListItem" />
     </ControlTheme.BasedOn>
     <Setter Property="BorderThickness" Value="0" />
 
     <Style Selector="^:is(atom|CandidateListItem)">
+        <Setter Property="CandidateIndicatorMargin" Value="{atom:OwnerTokenResource MarginXXS}" />
+        <Style Selector="^ /template/ atom|IconTemplatePresenter#SelectedIndicator">
+            <Setter Property="Margin" Value="{Binding (atom:CandidateListItem).CandidateIndicatorMargin, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource CandidateIndicatorLeadingMargin}}" />
+        </Style>
+        <!-- layout: candidate rows have no outer spacing. -->
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorTransparent}" />
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="CandidatePadding" Value="{atom:OwnerTokenResource Padding}" />
+            <Setter Property="Padding" Value="{Binding CandidatePadding, RelativeSource={RelativeSource Self}, Converter={StaticResource CandidateHorizontalPadding}}" />
+        </Style>
+        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <Setter Property="CandidatePadding" Value="{atom:OwnerTokenResource PaddingSM}" />
+            <Setter Property="Padding" Value="{Binding CandidatePadding, RelativeSource={RelativeSource Self}, Converter={StaticResource CandidateHorizontalPadding}}" />
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="CandidatePadding" Value="{atom:OwnerTokenResource PaddingXS}" />
+            <Setter Property="Padding" Value="{Binding CandidatePadding, RelativeSource={RelativeSource Self}, Converter={StaticResource CandidateHorizontalPadding}}" />
+        </Style>
+        <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
+        </Style>
+
         <Style Selector="^:pointerover:not(:disabled)">
-            <Setter Property="Foreground" Value="{atom:ListBoxTokenResource ItemColor}" />
-            <Setter Property="Background" Value="{atom:ListBoxTokenResource ItemBgColor}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorTransparent}" />
         </Style>
 
         <Style Selector="^[IsSelected=False][IsCandidateSelected=True]:not(:disabled)">
-            <Setter Property="Foreground" Value="{atom:ListBoxTokenResource ItemHoverColor}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
             <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
         </Style>
         
         <Style Selector="^[IsSelected=True]:not(:disabled)">
-            <Setter Property="Foreground" Value="{atom:ListBoxTokenResource ItemSelectedColor}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
             <Setter Property="Background" Value="{Binding ItemSelectedBg, RelativeSource={RelativeSource Self}}" />
         </Style>
     </Style>

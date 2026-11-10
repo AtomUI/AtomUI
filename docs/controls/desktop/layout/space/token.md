@@ -31,9 +31,7 @@ Space 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
-- `AddonBg`、`AddOnPadding*` 是 Space 的 Own Token，由 `CompactSpaceAddOn` 以 `SpaceTokenResource` 读取，因此经 `Controls[Space]` 设置；
-  `CompactSpaceAddOn` 的全局 Token（边框、圆角、字号、高度、状态色、禁用色）以自己的 `CompactSpaceAddOnTokenResource` 读取，经
-  `Controls[CompactSpaceAddOn]` 设置；`Controls[CompactSpaceAddOn]` 不改变 add-on 背景与内间距。
+- Space 只拥有 GapSmallSize/GapMiddleSize/GapLargeSize；AddonBg/AddOnPadding* 属于独立 CompactSpaceAddOn，颜色、padding 与全局值均通过 Controls[CompactSpaceAddOn] 配置。
 
 ## 4. 控件家族影响
 
@@ -60,3 +58,7 @@ Space 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 独立 Token 身份与共享计算
+
+将原 Controls[Space] 下的 AddonBg/AddOnPadding* 移到 Controls[CompactSpaceAddOn]；Space 的间距覆盖不再影响这个公开子控件。

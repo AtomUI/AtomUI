@@ -5,7 +5,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TreeViewFlyoutPresenterToken : AbstractControlDesignToken
+internal sealed class TreeViewFlyoutPresenterToken : AbstractPopupCornerToken
 {
     
     public TreeViewFlyoutPresenterToken()
@@ -45,6 +45,7 @@ internal sealed class TreeViewFlyoutPresenterToken : AbstractControlDesignToken
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
+        base.CalculateTokenValues(isDarkMode);
         PopupMinWidth     = 120;
         PopupMaxWidth = 800;
 

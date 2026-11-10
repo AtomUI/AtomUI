@@ -143,3 +143,7 @@ ListViewToken 变更验证：
 - `PaginationMargin` 在 top、bottom 和 both 分页器场景下保持稳定间距。
 - `GroupHeaderColor` 在分组列表中可读且弱于普通条目。
 - `SelectedIndicatorMargin` 不造成内容和 selected indicator 重叠。
+
+## 独立 Token 身份与共享计算
+
+ListView 与 TransferListView 独立拥有实际条目/分组的 Own。PaginationMargin 保持各自默认；GroupHeaderPadding/SelectedIndicatorMargin 仅原 ListView 有消费者，未复制给 Transfer。

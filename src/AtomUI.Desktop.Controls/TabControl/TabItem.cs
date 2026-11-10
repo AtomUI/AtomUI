@@ -1,3 +1,4 @@
+using AtomUI.Theme;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
@@ -19,6 +20,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Selected)]
+[TokenOwnerTransparent]
 public partial class TabItem : HeaderedContentControl, ISelectable
 {
     #region 公共属性定义

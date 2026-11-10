@@ -7,6 +7,10 @@
 - Theme
   - 键盘焦点描边对齐 Ant Design：线型 `TabItem` 只描边图标与文字所在的按钮行（模板中的行容器标记 `TemplatedControl.IsTemplateFocusTarget`），不再框住带内边距的整个标签；卡片 `TabItem` 的 `Frame` 标记焦点目标与 `FocusOutlineAdorner.IsInset`，描边内收在卡片内侧（`genFocusOutline(token, -3)`）。
 
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
 ## 2026-11-08
 
 - Changed

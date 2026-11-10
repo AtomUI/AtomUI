@@ -5,7 +5,7 @@ namespace AtomUI.Desktop.Controls;
 /// The group identity is a construction-time trait, so it never needs to be
 /// switched while a container is recycled.
 /// </summary>
-internal sealed class GroupHeaderItem : ListViewItem
+internal sealed partial class GroupHeaderItem : ListViewItem
 {
     public GroupHeaderItem()
     {

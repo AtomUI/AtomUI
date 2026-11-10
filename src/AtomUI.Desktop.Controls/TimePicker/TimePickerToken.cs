@@ -1,72 +1,25 @@
-using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
+using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TimePickerToken : AbstractControlDesignToken
+internal sealed class TimePickerToken : AbstractTimePickerToken
 {
-    
-    public TimePickerToken()
-    {
-    }
 
-    /// <summary>
-    /// 时间选择项高度
-    /// </summary>
-    public double ItemHeight { get; set; }
-    
-    /// <summary>
-    /// 时间选择项宽度
-    /// </summary>
-    public double ItemWidth { get; set; }
-    
-    /// <summary>
-    /// 上下午选择项的宽度
-    /// </summary>
-    public double PeriodHostWidth { get; set; }
-
-    /// <summary>
-    /// 时间选择项内间距
-    /// </summary>
-    public Thickness ItemPadding { get; set; }
-
-    /// <summary>
-    /// 按钮区域对上的外边距
-    /// </summary> 
-    public Thickness ButtonsMargin { get; set; }
-
-    /// <summary>
-    /// 时间选择项的水平外边距（antd 时间单元 marginInline: marginXXS）
-    /// </summary>
-    public Thickness ItemMargin { get; set; }
-
-    /// <summary>
-    /// Header 头内间距
-    /// </summary>
-    public Thickness HeaderMargin { get; set; }
-    
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-
         if (!IsExplicit(TimePickerTokenKind.ItemWidth))
         {
-            ItemWidth                     = EffectiveGlobalToken.ControlHeightLG * 1.4;
+            ItemWidth = EffectiveGlobalToken.ControlHeightLG * 1.4;
         }
-
-        PeriodHostWidth               = ItemWidth;
-
         if (!IsExplicit(TimePickerTokenKind.ItemHeight))
         {
-            ItemHeight                    = EffectiveGlobalToken.ControlHeight - 4;
+            ItemHeight = EffectiveGlobalToken.ControlHeight - 4;
         }
-
-        ItemPadding                   = new Thickness((ItemWidth - ItemHeight) / 2, 0, 0, 0);
-        ButtonsMargin                 = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
-        ItemMargin                    = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0);
-        HeaderMargin                  = new Thickness(0, 0, 0, 3);
+        PeriodHostWidth = ItemWidth;
+        ItemPadding = CalculateTimeItemPadding(ItemWidth, ItemHeight);
     }
-    
 }

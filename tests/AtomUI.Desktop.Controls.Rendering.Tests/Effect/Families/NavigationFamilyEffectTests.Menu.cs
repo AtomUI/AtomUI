@@ -1,3 +1,4 @@
+using Avalonia.Headless;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
@@ -50,34 +51,34 @@ public partial class NavigationFamilyEffectTests
         var root = ContextMenuHost(withMenuBar: true);
         WithProvider(root, provider =>
         {
-            var menu   = root.GetVisualDescendants().OfType<Menu>().First();
             var target = TopLevel.GetTopLevel(root)!.GetVisualDescendants().OfType<AvaloniaBorder>()
                                  .First(static border => border.ContextMenu is not null);
+            var origin = OpenAndLocate();
+            var menu = (ContextMenu)target.ContextMenu!;
             var accessor = ControlTokenAccessor.Capture(menu);
-            var before   = accessor.GetOwn<double>(MenuTokenKind.ContextMenuOffsetX);
-            var beforeY  = accessor.GetOwn<double>(MenuTokenKind.ContextMenuOffsetY);
-            var origin   = OpenAndLocate();
+            var before   = accessor.GetOwn<double>(ContextMenuTokenKind.ContextMenuOffsetX);
+            var beforeY  = accessor.GetOwn<double>(ContextMenuTokenKind.ContextMenuOffsetY);
 
             var current = token == "SpacingXXS"
                 ? accessor.GetEffectiveGlobal<double>(SharedTokenKind.SpacingXXS)
                 : token == "ContextMenuOffsetX" ? before : beforeY;
             provider.Config = new AtomUI.Theme.Configuration.ThemeConfigBuilder()
                               .WithToken(nameof(SharedTokenKind.EnableMotion), "false")
-                              .WithControl(MenuTokens.Identity, new AtomUI.Theme.Configuration.ControlThemeConfigBuilder()
+                              .WithControl(ContextMenuTokens.Identity, new AtomUI.Theme.Configuration.ControlThemeConfigBuilder()
                                                                 .WithToken(token, (current * 4 + 8).ToString(System.Globalization.CultureInfo.InvariantCulture))
                                                                 .Build())
                               .Build();
             WaitFor(() => ControlTokenAccessor.Capture(menu).GetOwn<double>(
-                token == "ContextMenuOffsetY" ? MenuTokenKind.ContextMenuOffsetY : MenuTokenKind.ContextMenuOffsetX) !=
+                token == "ContextMenuOffsetY" ? ContextMenuTokenKind.ContextMenuOffsetY : ContextMenuTokenKind.ContextMenuOffsetX) !=
                 (token == "ContextMenuOffsetY" ? beforeY : before));
             var after  = ControlTokenAccessor.Capture(menu);
-            var deltaX = after.GetOwn<double>(MenuTokenKind.ContextMenuOffsetX) - before;
-            var deltaY = after.GetOwn<double>(MenuTokenKind.ContextMenuOffsetY) - beforeY;
-            (deltaX + deltaY).ShouldBeGreaterThan(0, $"Controls[Menu].{token} did not reach the context menu offsets.");
+            var deltaX = after.GetOwn<double>(ContextMenuTokenKind.ContextMenuOffsetX) - before;
+            var deltaY = after.GetOwn<double>(ContextMenuTokenKind.ContextMenuOffsetY) - beforeY;
+            (deltaX + deltaY).ShouldBeGreaterThan(0, $"Controls[ContextMenu].{token} did not reach the context menu offsets.");
 
             var moved = OpenAndLocate();
-            (moved.X - origin.X).ShouldBe(deltaX, 0.5, $"Controls[Menu].{token}: the reopened context menu moved horizontally by {moved.X - origin.X}.");
-            (moved.Y - origin.Y).ShouldBe(deltaY, 0.5, $"Controls[Menu].{token}: the reopened context menu moved vertically by {moved.Y - origin.Y}.");
+            (moved.X - origin.X).ShouldBe(deltaX, 0.5, $"Controls[ContextMenu].{token}: the reopened context menu moved horizontally by {moved.X - origin.X}.");
+            (moved.Y - origin.Y).ShouldBe(deltaY, 0.5, $"Controls[ContextMenu].{token}: the reopened context menu moved vertically by {moved.Y - origin.Y}.");
 
             Point OpenAndLocate()
             {
@@ -222,6 +223,34 @@ public partial class NavigationFamilyEffectTests
         return menu;
     }
 
+    private static Control[] PopupItems(bool longItem = false) =>
+    [
+        new MenuItem { Header = "New", Icon = new SettingOutlined(), InputGesture = new KeyGesture(Key.N, KeyModifiers.Control) },
+        new MenuItem { Header = longItem ? string.Join(' ', Enumerable.Repeat("A long menu item", 6)) : "Open" },
+        new MenuSeparator(),
+        new MenuItemGroup { Header = "Recent", Items = { new MenuItem { Header = "Recent file" } } },
+        new MenuItem { Header = "Delete", IsDanger = true },
+        new MenuItem { Header = "Disabled", IsEnabled = false }
+    ];
+
+    private static void ArrangePopupToken(Control root, string token)
+    {
+        if (token is "ItemHoverBg" or "ItemHoverColor" or "ItemBorderRadius" or "ColorBgTextHover" or "BorderRadius")
+        {
+            var item = PopupItemOf(root, "Open");
+            var topLevel = TopLevel.GetTopLevel(item)!;
+            topLevel.MouseMove(item.TranslatePoint(new Point(item.Bounds.Width / 2, item.Bounds.Height / 2), topLevel)!.Value);
+            item.IsPointerOver.ShouldBeTrue();
+        }
+        if (token == "DangerItemHoverColor")
+        {
+            var item = PopupItemOf(root, "Delete");
+            var topLevel = TopLevel.GetTopLevel(item)!;
+            topLevel.MouseMove(item.TranslatePoint(new Point(item.Bounds.Width / 2, item.Bounds.Height / 2), topLevel)!.Value);
+            item.IsPointerOver.ShouldBeTrue();
+        }
+    }
+
     internal static MenuItem TopLevelOf(Menu menu, string header) =>
         menu.GetVisualDescendants().OfType<MenuItem>().First(item => Equals(item.Header, header));
 
@@ -317,9 +346,31 @@ public partial class NavigationFamilyEffectTests
     public void ContextMenu_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
+        if (token is "ContextMenuOffsetX" or "ContextMenuOffsetY" or "SpacingXXS")
+        {
+            AssertContextMenuOffsetFollowsToken(token);
+            return;
+        }
         // EnableMotion / MotionDurationMid read back; ContextMenu_Motion_Follows_Its_Motion_Tokens shows the consumers.
-        Run(static () => ContextMenuHost(withMenuBar: false), null, ContextMenuTokens.Identity, token,
-            new EffectOptions { Target = static root => OpenContextMenu(root) });
+        Run(static () => ContextMenuHost(withMenuBar: false), target => ArrangePopupToken(target, token), ContextMenuTokens.Identity, token,
+            new EffectOptions
+            {
+                Target = root =>
+                {
+                    var context = TopLevel.GetTopLevel(root)!.GetVisualDescendants().OfType<AvaloniaBorder>()
+                        .Select(static border => border.ContextMenu).OfType<ContextMenu>().First();
+                    context.Items.Clear();
+                    foreach (var item in PopupItems(token == "MenuPopupMaxWidth"))
+                    {
+                        context.Items.Add(item);
+                    }
+                    return OpenContextMenu(root);
+                },
+                Region = token is "ItemHoverBg" or "ItemHoverColor" or "ItemBorderRadius" or "ColorBgTextHover" or "BorderRadius"
+                    ? static root => PopupItemOf(root, "Open") : null,
+                Perturb = token == "MenuPopupMaxWidth" ? static _ => 140d : token == "MenuPopupMinWidth" ? static _ => 500d
+                    : token is "ItemBorderRadius" or "BorderRadius" ? static _ => new CornerRadius(14) : null
+            });
     }
 
     [Fact]
@@ -382,16 +433,22 @@ public partial class NavigationFamilyEffectTests
     public void MenuFlyoutPresenter_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
-        Run(static () =>
+        Run(() =>
             {
                 var flyout = new MenuFlyout();
-                flyout.Items.Add(new MenuItem { Header = "First item" });
-                flyout.Items.Add(new MenuItem { Header = "Second item" });
+                foreach (var item in PopupItems(token == "MenuPopupMaxWidth"))
+                {
+                    flyout.Items.Add(item);
+                }
                 return OverlayLayerHost(new DropdownButton { Content = "Dropdown", DropdownFlyout = flyout });
             },
-            null, MenuFlyoutPresenterTokens.Identity, token,
+            target => ArrangePopupToken(target, token), MenuFlyoutPresenterTokens.Identity, token,
             new EffectOptions
             {
+                Region = token is "ItemHoverBg" or "ItemHoverColor" or "ItemBorderRadius" or "ColorBgTextHover" or "BorderRadius"
+                    ? static root => PopupItemOf(root, "Open") : null,
+                Perturb = token == "MenuPopupMaxWidth" ? static _ => 140d : token == "MenuPopupMinWidth" ? static _ => 500d
+                    : token is "ItemBorderRadius" or "BorderRadius" ? static _ => new CornerRadius(14) : null,
                 Target = static root =>
                 {
                     root.GetVisualDescendants().OfType<DropdownButton>().First().IsPopupPinnedOpen = true;

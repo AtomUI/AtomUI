@@ -17,6 +17,9 @@
 
 ## 2026-11-10
 
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+
 - Theme
   - 候选列表和条目透传 Mentions owner；输入编辑器保留 TextArea identity，候选项 Own Token 仍复用 ListBox。
 

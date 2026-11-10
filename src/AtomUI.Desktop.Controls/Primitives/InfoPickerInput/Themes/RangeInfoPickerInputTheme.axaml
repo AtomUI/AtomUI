@@ -157,7 +157,7 @@
 
         <Style Selector="^ /template/ atom|Icon#PART_RangePickerArrow">
             <Setter Property="Margin"
-                    Value="{atom:InfoPickerInputTokenResource RangePickerArrowMargin}" />
+                    Value="{Binding $self.(atom:RangeInfoPickerInputTheme.ThemeRangePickerArrowMargin)}" />
         </Style>
 
         <!-- The range arrow is a registered Icon: its size and colour are read on the picker and template-bound. -->
@@ -169,7 +169,7 @@
 
         <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
             <Setter Property="Height"
-                    Value="{atom:InfoPickerInputTokenResource RangePickerIndicatorThickness}" />
+                    Value="{Binding $self.(atom:RangeInfoPickerInputTheme.ThemeRangePickerIndicatorThickness)}" />
         </Style>
 
         <Style Selector="^[EffectiveStatus=Default]">

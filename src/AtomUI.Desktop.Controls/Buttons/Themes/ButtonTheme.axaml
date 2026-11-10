@@ -1,9 +1,29 @@
+<!-- owner: this shared theme also serves SubmitButton and ResetButton; each terminal supplies its Own inputs. -->
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               xmlns:antdicons="https://atomui.net/icons/antdesign"
               x:Class="AtomUI.Desktop.Controls.Themes.ButtonTheme"
               TargetType="atom:Button">
+        <Setter Property="atom:ButtonThemeInputs.ThemeBorderColorDisabled" Value="{atom:ButtonTokenResource BorderColorDisabled}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeCirclePadding" Value="{atom:ButtonTokenResource CirclePadding}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentFontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentFontSizeLG" Value="{atom:ButtonTokenResource ContentFontSizeLG}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentFontSizeSM" Value="{atom:ButtonTokenResource ContentFontSizeSM}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentPadding" Value="{atom:ButtonTokenResource ContentPadding}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentPaddingLG" Value="{atom:ButtonTokenResource ContentPaddingLG}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeContentPaddingSM" Value="{atom:ButtonTokenResource ContentPaddingSM}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeDefaultBorderColorDisabled" Value="{atom:ButtonTokenResource DefaultBorderColorDisabled}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeFontWeight" Value="{atom:ButtonTokenResource FontWeight}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeIconEndMargin" Value="{atom:ButtonTokenResource IconEndMargin}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeIconMargin" Value="{atom:ButtonTokenResource IconMargin}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeIconOnyPadding" Value="{atom:ButtonTokenResource IconOnyPadding}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeIconOnyPaddingLG" Value="{atom:ButtonTokenResource IconOnyPaddingLG}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeIconOnyPaddingSM" Value="{atom:ButtonTokenResource IconOnyPaddingSM}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeOnlyIconSize" Value="{atom:ButtonTokenResource OnlyIconSize}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeOnlyIconSizeLG" Value="{atom:ButtonTokenResource OnlyIconSizeLG}" />
+        <Setter Property="atom:ButtonThemeInputs.ThemeOnlyIconSizeSM" Value="{atom:ButtonTokenResource OnlyIconSizeSM}" />
+
     <Style Selector="^:is(atom|Button)">
         <Style Selector="^[ButtonType=Default], ^[ButtonType=Link], ^[ButtonType=Primary], ^[ButtonType=Text]">
             <Setter Property="Template">
@@ -218,66 +238,66 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="BorderThickness" Value="{atom:ButtonTokenResource BorderThickness}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:ButtonTokenResource EnableMotion}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="IsWaveSpiritEnabled"
-                Value="{atom:ButtonTokenResource EnableWaveSpirit}" />
-        <Setter Property="FontWeight" Value="{atom:ButtonTokenResource FontWeight}" />
+                Value="{atom:OwnerTokenResource EnableWaveSpirit}" />
+        <Setter Property="FontWeight" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeFontWeight)}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="ClipToBounds" Value="False" />
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="MinHeight" Value="{atom:ButtonTokenResource ControlHeightLG}" />
-            <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSizeLG}" />
-            <Setter Property="CornerRadius" Value="{atom:ButtonTokenResource BorderRadiusLG}" />
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource IconSizeLG}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource IconSizeLG}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
+            <Setter Property="FontSize" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentFontSizeLG)}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSizeLG}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSizeLG}" />
             <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPaddingLG}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentPaddingLG)}" />
             </Style>
             <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource IconOnyPaddingLG}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeIconOnyPaddingLG)}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="MinHeight" Value="{atom:ButtonTokenResource ControlHeight}" />
-            <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
-            <Setter Property="CornerRadius" Value="{atom:ButtonTokenResource BorderRadius}" />
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource IconSize}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
+            <Setter Property="FontSize" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentFontSize)}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSize}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSize}" />
             <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPadding}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentPadding)}" />
             </Style>
             <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource IconOnyPadding}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeIconOnyPadding)}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="MinHeight" Value="{atom:ButtonTokenResource ControlHeightSM}" />
-            <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSizeSM}" />
-            <Setter Property="CornerRadius" Value="{atom:ButtonTokenResource BorderRadiusSM}" />
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource IconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource IconSizeSM}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
+            <Setter Property="FontSize" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentFontSizeSM)}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSizeSM}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSizeSM}" />
             <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPaddingSM}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentPaddingSM)}" />
             </Style>
             <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource IconOnyPaddingSM}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeIconOnyPaddingSM)}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
-            <Setter Property="CornerRadius" Value="{atom:ButtonTokenResource BorderRadius}" />
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource IconSize}" />
+            <Setter Property="FontSize" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentFontSize)}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSize}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSize}" />
             <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPadding}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentPadding)}" />
             </Style>
             <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource IconOnyPadding}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeIconOnyPadding)}" />
             </Style>
         </Style>
 
@@ -288,20 +308,20 @@
         </Style>
 
         <Style Selector="^:icononly:loading[SizeType=Large]">
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource OnlyIconSizeLG}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource OnlyIconSizeLG}" />
+            <Setter Property="IconWidth" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSizeLG)}" />
+            <Setter Property="IconHeight" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSizeLG)}" />
         </Style>
         <Style Selector="^:icononly:loading[SizeType=Middle]">
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource OnlyIconSize}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource OnlyIconSize}" />
+            <Setter Property="IconWidth" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSize)}" />
+            <Setter Property="IconHeight" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSize)}" />
         </Style>
         <Style Selector="^:icononly:loading[SizeType=Custom]">
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource OnlyIconSize}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource OnlyIconSize}" />
+            <Setter Property="IconWidth" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSize)}" />
+            <Setter Property="IconHeight" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSize)}" />
         </Style>
         <Style Selector="^:icononly:loading[SizeType=Small]">
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource OnlyIconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource OnlyIconSizeSM}" />
+            <Setter Property="IconWidth" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSizeSM)}" />
+            <Setter Property="IconHeight" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSizeSM)}" />
         </Style>
 
         <Style Selector="^[IconPlacement=Start]">
@@ -318,10 +338,10 @@
 
         <Style Selector="^:not(:icononly)">
             <Style Selector="^[IconPlacement=Start] /template/ atom|IconPresenter#PART_ButtonIcon, ^ /template/ atom|Icon#PART_LoadingIcon">
-                <Setter Property="Margin" Value="{atom:ButtonTokenResource IconMargin}" />
+                <Setter Property="Margin" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeIconMargin)}" />
             </Style>
             <Style Selector="^[IconPlacement=End] /template/ atom|IconPresenter#PART_ButtonIcon">
-                <Setter Property="Margin" Value="{atom:ButtonTokenResource IconEndMargin}" />
+                <Setter Property="Margin" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeIconEndMargin)}" />
             </Style>
         </Style>
 
@@ -339,26 +359,26 @@
             <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
-            <Setter Property="Opacity" Value="{atom:ButtonTokenResource OpacityLoading}" />
+            <Setter Property="Opacity" Value="{atom:OwnerTokenResource OpacityLoading}" />
         </Style>
 
         <Style Selector="^[Shape=Circle]">
-            <Setter Property="Padding" Value="{atom:ButtonTokenResource CirclePadding}" />
+            <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeCirclePadding)}" />
         </Style>
 
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:ButtonTokenResource ColorTextDisabled}" />
+                    Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             <Setter Property="BorderBrush"
-                    Value="{atom:ButtonTokenResource BorderColorDisabled}" />
+                    Value="{Binding $self.(atom:ButtonThemeInputs.ThemeBorderColorDisabled)}" />
 
             <Setter Property="Background"
-                    Value="{atom:ButtonTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
         </Style>
         <Style Selector="^[EffectiveColor=Default]:disabled">
             <Setter Property="BorderBrush"
-                    Value="{atom:ButtonTokenResource DefaultBorderColorDisabled}" />
+                    Value="{Binding $self.(atom:ButtonThemeInputs.ThemeDefaultBorderColorDisabled)}" />
         </Style>
         <!-- 公用样式结束 -->
 

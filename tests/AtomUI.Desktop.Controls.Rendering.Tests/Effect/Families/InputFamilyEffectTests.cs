@@ -1,3 +1,6 @@
+using Avalonia;
+using Avalonia.Headless;
+using Shouldly;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
@@ -153,8 +156,13 @@ public partial class InputFamilyEffectTests
             if (host == "NumericUpDown")
             {
                 // The floatable handle of the input mode only shows while the pointer is over the content.
-                arrange.Add(static c => c.GetVisualDescendants().OfType<ButtonSpinnerDecoratedBox>().First()
-                                         .IsSpinnerContentHover = true);
+                arrange.Add(static c =>
+                {
+                    var frame = c.GetVisualDescendants().OfType<ButtonSpinnerDecoratedBox>().First();
+                    var window = (Avalonia.Controls.Window)TopLevel.GetTopLevel(c)!;
+                    window.MouseMove(frame.TranslatePoint(new Point(8, 8), window)!.Value);
+                    frame.HandleOpacity.ShouldBe(frame.IsEffectivelyEnabled ? 1 : 0);
+                });
             }
             if (pseudoClass.Length > 0)
             {

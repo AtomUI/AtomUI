@@ -11,7 +11,7 @@
         </Setter>
         
         <Setter Property="Foreground" Value="{atom:StatisticCountUpTokenResource ColorTextHeading}"/>
-        <Setter Property="FontSize" Value="{atom:StatisticTokenResource ContentFontSize}"/>
+        <Setter Property="FontSize" Value="{atom:StatisticCountUpTokenResource ContentFontSize}"/>
 
         <Style Selector="^">
             <Setter Property="Transitions">

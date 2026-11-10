@@ -125,7 +125,7 @@
                     Value="{atom:OwnerTokenResource BorderThickness}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="SpinnerHandleWidth"
-                    Value="{atom:ButtonSpinnerTokenResource HandleWidth}" />
+                    Value="{Binding $parent[atom:ButtonSpinner].SpinnerHandleWidth}" />
 
             <Style Selector="^[IsMotionEnabled=True]">
                 <Setter Property="Transitions">

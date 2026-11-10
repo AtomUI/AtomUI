@@ -66,6 +66,11 @@ public partial class DisplayFamilyEffectTests
     public void TransferListView_Token_Has_Effect(string token, bool own)
     {
         _ = own;
+        if (token is not ("PaginationMargin" or "UniformlyMarginXXS"))
+        {
+            DataFamilyEffectTests.AssertTransferListViewEffect(token);
+            return;
+        }
         Run(new Scenario(static () => CreateTransfer(pagination: true), null,
             new EffectOptions { Target = static c => Part<TransferListView>(c) }), TransferListViewTokens.Identity, token);
     }

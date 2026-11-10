@@ -13,6 +13,10 @@
 - Tests
   - `CalendarRenderTests` 新增 Compact 月 / 年模式数字垂直居中测试；`FocusOutlineTargetTests` 覆盖两种呈现方式的焦点表现。
 
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
 ## 2026-11-09
 
 - Fixed

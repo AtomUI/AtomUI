@@ -21,7 +21,7 @@ namespace AtomUI.Desktop.Controls;
 /// (boxed <see cref="ButtonTokenKind"/> for Own Tokens, the owner's Effective Global key for global Tokens). Application,
 /// scoped and <c>ThemeConfigProvider</c> resources therefore reach the variant colours exactly as they reach every other
 /// Button Token, and the bound values follow resource changes without a recompute. Global keys use the registered
-/// identity of the instance (DropdownButton has its own), Own Tokens stay Button's. Preset colours are not Tokens: they
+/// identity of the instance (DropdownButton has its own), Own Tokens use that same terminal identity. Preset colours are not Tokens: they
 /// come from the captured snapshot's palettes and are recomputed when the theme publishes.
 /// </remarks>
 public partial class Button
@@ -33,7 +33,7 @@ public partial class Button
     private static readonly Func<object?, object?> s_toVariantBrush = ToVariantBrush;
 
     // Theme reads happen on the UI thread only.
-    private static readonly Dictionary<ButtonTokenKind, object> s_ownVariantKeys = new();
+    private static readonly Dictionary<(ControlTokenIdentity Identity, ButtonTokenKind Kind), object> s_ownVariantKeys = new();
     private static readonly Dictionary<(ControlTokenIdentity Identity, SharedTokenKind Kind), object> s_globalVariantKeys = new();
 
     private readonly VariantSlot[] _variantSlots = new VariantSlot[VariantSlotCount];
@@ -54,8 +54,8 @@ public partial class Button
                 tokens.Global(SharedTokenKind.ColorPrimaryBg),
                 tokens.Global(SharedTokenKind.ColorPrimaryBgHover),
                 tokens.Global(SharedTokenKind.ColorPrimaryBorder),
-                VariantTokens.Own(ButtonTokenKind.PrimaryColor),
-                VariantTokens.Own(ButtonTokenKind.PrimaryShadow));
+                tokens.Own(ButtonTokenKind.PrimaryColor),
+                tokens.Own(ButtonTokenKind.PrimaryShadow));
         }
         else if (EffectiveColor == ButtonColor.Danger)
         {
@@ -72,15 +72,15 @@ public partial class Button
                 VariantValue.Of(colors[0]),
                 VariantValue.Of(colors[1]),
                 VariantValue.Of(colors[2]),
-                VariantTokens.Own(ButtonTokenKind.SolidTextColor),
+                tokens.Own(ButtonTokenKind.SolidTextColor),
                 VariantValue.Of(CreatePresetShadow(snapshotTokens, colors[0])));
         }
     }
 
     private void ConfigureDangerVariantThemeVariables(VariantTokens tokens)
     {
-        var dangerColor      = VariantTokens.Own(ButtonTokenKind.DangerColor);
-        var dangerShadow     = EffectiveIsGhost ? NoShadowVariant : VariantTokens.Own(ButtonTokenKind.DangerShadow);
+        var dangerColor      = tokens.Own(ButtonTokenKind.DangerColor);
+        var dangerShadow     = EffectiveIsGhost ? NoShadowVariant : tokens.Own(ButtonTokenKind.DangerShadow);
         var colorError       = tokens.Global(SharedTokenKind.ColorError);
         var colorErrorHover  = tokens.Global(SharedTokenKind.ColorErrorHover);
         var colorErrorActive = tokens.Global(SharedTokenKind.ColorErrorActive);
@@ -105,9 +105,9 @@ public partial class Button
                     colorError,
                     tokens.Global(SharedTokenKind.ColorErrorBorderHover),
                     colorErrorActive,
-                    EffectiveIsGhost ? TransparentVariant : VariantTokens.Own(ButtonTokenKind.DefaultBg),
-                    EffectiveIsGhost ? TransparentVariant : VariantTokens.Own(ButtonTokenKind.DefaultHoverBg),
-                    EffectiveIsGhost ? TransparentVariant : VariantTokens.Own(ButtonTokenKind.DefaultActiveBg),
+                    EffectiveIsGhost ? TransparentVariant : tokens.Own(ButtonTokenKind.DefaultBg),
+                    EffectiveIsGhost ? TransparentVariant : tokens.Own(ButtonTokenKind.DefaultHoverBg),
+                    EffectiveIsGhost ? TransparentVariant : tokens.Own(ButtonTokenKind.DefaultActiveBg),
                     colorError,
                     tokens.Global(SharedTokenKind.ColorErrorBorderHover),
                     colorErrorActive,
@@ -161,7 +161,7 @@ public partial class Button
         {
             case ButtonVariant.Solid:
             {
-                var solidText = VariantTokens.Own(ButtonTokenKind.SolidTextColor);
+                var solidText = tokens.Own(ButtonTokenKind.SolidTextColor);
                 SetVariantThemeVariables(
                     solidText,
                     solidText,
@@ -172,7 +172,7 @@ public partial class Button
                     tokens.Global(SharedTokenKind.ColorBgSolid),
                     tokens.Global(SharedTokenKind.ColorBgSolidHover),
                     tokens.Global(SharedTokenKind.ColorBgSolidActive),
-                    EffectiveIsGhost ? NoShadowVariant : VariantTokens.Own(ButtonTokenKind.DefaultShadow));
+                    EffectiveIsGhost ? NoShadowVariant : tokens.Own(ButtonTokenKind.DefaultShadow));
                 break;
             }
             case ButtonVariant.Outlined:
@@ -180,35 +180,35 @@ public partial class Button
                 if (EffectiveIsGhost)
                 {
                     SetVariantThemeVariables(
-                        VariantTokens.Own(ButtonTokenKind.DefaultGhostColor),
-                        VariantTokens.Own(ButtonTokenKind.DefaultHoverColor),
-                        VariantTokens.Own(ButtonTokenKind.DefaultActiveColor),
-                        VariantTokens.Own(ButtonTokenKind.GhostBg),
-                        VariantTokens.Own(ButtonTokenKind.GhostBg),
-                        VariantTokens.Own(ButtonTokenKind.GhostBg),
-                        VariantTokens.Own(ButtonTokenKind.DefaultGhostBorderColor),
-                        VariantTokens.Own(ButtonTokenKind.DefaultHoverBorderColor),
-                        VariantTokens.Own(ButtonTokenKind.DefaultActiveBorderColor),
+                        tokens.Own(ButtonTokenKind.DefaultGhostColor),
+                        tokens.Own(ButtonTokenKind.DefaultHoverColor),
+                        tokens.Own(ButtonTokenKind.DefaultActiveColor),
+                        tokens.Own(ButtonTokenKind.GhostBg),
+                        tokens.Own(ButtonTokenKind.GhostBg),
+                        tokens.Own(ButtonTokenKind.GhostBg),
+                        tokens.Own(ButtonTokenKind.DefaultGhostBorderColor),
+                        tokens.Own(ButtonTokenKind.DefaultHoverBorderColor),
+                        tokens.Own(ButtonTokenKind.DefaultActiveBorderColor),
                         NoShadowVariant);
                 }
                 else
                 {
                     SetVariantThemeVariables(
-                        VariantTokens.Own(ButtonTokenKind.DefaultColor),
-                        VariantTokens.Own(ButtonTokenKind.DefaultHoverColor),
-                        VariantTokens.Own(ButtonTokenKind.DefaultActiveColor),
-                        VariantTokens.Own(ButtonTokenKind.DefaultBg),
-                        VariantTokens.Own(ButtonTokenKind.DefaultHoverBg),
-                        VariantTokens.Own(ButtonTokenKind.DefaultActiveBg),
-                        VariantTokens.Own(ButtonTokenKind.DefaultBorderColor),
-                        VariantTokens.Own(ButtonTokenKind.DefaultHoverBorderColor),
-                        VariantTokens.Own(ButtonTokenKind.DefaultActiveBorderColor),
-                        VariantTokens.Own(ButtonTokenKind.DefaultShadow));
+                        tokens.Own(ButtonTokenKind.DefaultColor),
+                        tokens.Own(ButtonTokenKind.DefaultHoverColor),
+                        tokens.Own(ButtonTokenKind.DefaultActiveColor),
+                        tokens.Own(ButtonTokenKind.DefaultBg),
+                        tokens.Own(ButtonTokenKind.DefaultHoverBg),
+                        tokens.Own(ButtonTokenKind.DefaultActiveBg),
+                        tokens.Own(ButtonTokenKind.DefaultBorderColor),
+                        tokens.Own(ButtonTokenKind.DefaultHoverBorderColor),
+                        tokens.Own(ButtonTokenKind.DefaultActiveBorderColor),
+                        tokens.Own(ButtonTokenKind.DefaultShadow));
                 }
                 break;
             case ButtonVariant.Filled:
             {
-                var text = VariantTokens.Own(ButtonTokenKind.DefaultColor);
+                var text = tokens.Own(ButtonTokenKind.DefaultColor);
                 SetVariantThemeVariables(
                     text,
                     text,
@@ -224,11 +224,11 @@ public partial class Button
             }
             case ButtonVariant.Text:
                 SetVariantThemeVariables(
-                    VariantTokens.Own(ButtonTokenKind.TextTextColor),
-                    VariantTokens.Own(ButtonTokenKind.TextTextHoverColor),
-                    VariantTokens.Own(ButtonTokenKind.TextTextActiveColor),
+                    tokens.Own(ButtonTokenKind.TextTextColor),
+                    tokens.Own(ButtonTokenKind.TextTextHoverColor),
+                    tokens.Own(ButtonTokenKind.TextTextActiveColor),
                     TransparentVariant,
-                    VariantTokens.Own(ButtonTokenKind.TextHoverBg),
+                    tokens.Own(ButtonTokenKind.TextHoverBg),
                     tokens.Global(SharedTokenKind.ColorFill),
                     TransparentVariant,
                     TransparentVariant,
@@ -241,7 +241,7 @@ public partial class Button
                     tokens.Global(SharedTokenKind.ColorLinkHover),
                     tokens.Global(SharedTokenKind.ColorLinkActive),
                     TransparentVariant,
-                    VariantTokens.Own(ButtonTokenKind.LinkHoverBg),
+                    tokens.Own(ButtonTokenKind.LinkHoverBg),
                     TransparentVariant,
                     TransparentVariant,
                     TransparentVariant,
@@ -279,7 +279,7 @@ public partial class Button
             case ButtonVariant.Outlined:
             case ButtonVariant.Dashed:
             {
-                var background = EffectiveIsGhost ? TransparentVariant : VariantTokens.Own(ButtonTokenKind.DefaultBg);
+                var background = EffectiveIsGhost ? TransparentVariant : new VariantTokens(this).Own(ButtonTokenKind.DefaultBg);
                 SetVariantThemeVariables(
                     baseColor,
                     hoverColor,
@@ -404,9 +404,13 @@ public partial class Button
             return false;
         }
 
-        accessor = this is DropdownButton
-            ? ControlTokenAccessor.Capture<DropdownButton>(this)
-            : ControlTokenAccessor.Capture<Button>(this);
+        accessor = this switch
+        {
+            DropdownButton => ControlTokenAccessor.Capture<DropdownButton>(this),
+            SubmitButton => ControlTokenAccessor.Capture<SubmitButton>(this),
+            ResetButton => ControlTokenAccessor.Capture<ResetButton>(this),
+            _ => ControlTokenAccessor.Capture<Button>(this)
+        };
         return true;
     }
 
@@ -445,9 +449,14 @@ public partial class Button
 
         internal VariantTokens(Button owner)
         {
-            // Registered product families keep separate Effective Global tables; Own Tokens are not replaced by
-            // inheritance and stay Button's.
-            _identity = owner is DropdownButton ? DropdownButtonTokens.Identity : ButtonTokens.Identity;
+            // Variant globals and Own values use the same terminal identity.
+            _identity = owner switch
+            {
+                DropdownButton => DropdownButtonTokens.Identity,
+                SubmitButton => SubmitButtonTokens.Identity,
+                ResetButton => ResetButtonTokens.Identity,
+                _ => ButtonTokens.Identity
+            };
         }
 
         internal VariantValue Global(SharedTokenKind kind)
@@ -461,12 +470,90 @@ public partial class Button
             return new VariantValue(key, true);
         }
 
-        internal static VariantValue Own(ButtonTokenKind kind)
+        internal VariantValue Own(ButtonTokenKind kind)
         {
-            if (!s_ownVariantKeys.TryGetValue(kind, out var key))
+            if (!s_ownVariantKeys.TryGetValue((_identity, kind), out var key))
             {
-                key = kind;
-                s_ownVariantKeys.Add(kind, key);
+                key = _identity == DropdownButtonTokens.Identity ? kind switch
+                {
+                    ButtonTokenKind.DangerColor => DropdownButtonTokenKind.DangerColor,
+                    ButtonTokenKind.DangerShadow => DropdownButtonTokenKind.DangerShadow,
+                    ButtonTokenKind.DefaultActiveBg => DropdownButtonTokenKind.DefaultActiveBg,
+                    ButtonTokenKind.DefaultActiveBorderColor => DropdownButtonTokenKind.DefaultActiveBorderColor,
+                    ButtonTokenKind.DefaultActiveColor => DropdownButtonTokenKind.DefaultActiveColor,
+                    ButtonTokenKind.DefaultBg => DropdownButtonTokenKind.DefaultBg,
+                    ButtonTokenKind.DefaultBorderColor => DropdownButtonTokenKind.DefaultBorderColor,
+                    ButtonTokenKind.DefaultColor => DropdownButtonTokenKind.DefaultColor,
+                    ButtonTokenKind.DefaultGhostBorderColor => DropdownButtonTokenKind.DefaultGhostBorderColor,
+                    ButtonTokenKind.DefaultGhostColor => DropdownButtonTokenKind.DefaultGhostColor,
+                    ButtonTokenKind.DefaultHoverBg => DropdownButtonTokenKind.DefaultHoverBg,
+                    ButtonTokenKind.DefaultHoverBorderColor => DropdownButtonTokenKind.DefaultHoverBorderColor,
+                    ButtonTokenKind.DefaultHoverColor => DropdownButtonTokenKind.DefaultHoverColor,
+                    ButtonTokenKind.DefaultShadow => DropdownButtonTokenKind.DefaultShadow,
+                    ButtonTokenKind.GhostBg => DropdownButtonTokenKind.GhostBg,
+                    ButtonTokenKind.LinkHoverBg => DropdownButtonTokenKind.LinkHoverBg,
+                    ButtonTokenKind.PrimaryColor => DropdownButtonTokenKind.PrimaryColor,
+                    ButtonTokenKind.PrimaryShadow => DropdownButtonTokenKind.PrimaryShadow,
+                    ButtonTokenKind.SolidTextColor => DropdownButtonTokenKind.SolidTextColor,
+                    ButtonTokenKind.TextHoverBg => DropdownButtonTokenKind.TextHoverBg,
+                    ButtonTokenKind.TextTextActiveColor => DropdownButtonTokenKind.TextTextActiveColor,
+                    ButtonTokenKind.TextTextColor => DropdownButtonTokenKind.TextTextColor,
+                    ButtonTokenKind.TextTextHoverColor => DropdownButtonTokenKind.TextTextHoverColor,
+                    _ => throw new ArgumentOutOfRangeException(nameof(kind))
+                } : _identity == SubmitButtonTokens.Identity ? kind switch
+                {
+                    ButtonTokenKind.DangerColor => SubmitButtonTokenKind.DangerColor,
+                    ButtonTokenKind.DangerShadow => SubmitButtonTokenKind.DangerShadow,
+                    ButtonTokenKind.DefaultActiveBg => SubmitButtonTokenKind.DefaultActiveBg,
+                    ButtonTokenKind.DefaultActiveBorderColor => SubmitButtonTokenKind.DefaultActiveBorderColor,
+                    ButtonTokenKind.DefaultActiveColor => SubmitButtonTokenKind.DefaultActiveColor,
+                    ButtonTokenKind.DefaultBg => SubmitButtonTokenKind.DefaultBg,
+                    ButtonTokenKind.DefaultBorderColor => SubmitButtonTokenKind.DefaultBorderColor,
+                    ButtonTokenKind.DefaultColor => SubmitButtonTokenKind.DefaultColor,
+                    ButtonTokenKind.DefaultGhostBorderColor => SubmitButtonTokenKind.DefaultGhostBorderColor,
+                    ButtonTokenKind.DefaultGhostColor => SubmitButtonTokenKind.DefaultGhostColor,
+                    ButtonTokenKind.DefaultHoverBg => SubmitButtonTokenKind.DefaultHoverBg,
+                    ButtonTokenKind.DefaultHoverBorderColor => SubmitButtonTokenKind.DefaultHoverBorderColor,
+                    ButtonTokenKind.DefaultHoverColor => SubmitButtonTokenKind.DefaultHoverColor,
+                    ButtonTokenKind.DefaultShadow => SubmitButtonTokenKind.DefaultShadow,
+                    ButtonTokenKind.GhostBg => SubmitButtonTokenKind.GhostBg,
+                    ButtonTokenKind.LinkHoverBg => SubmitButtonTokenKind.LinkHoverBg,
+                    ButtonTokenKind.PrimaryColor => SubmitButtonTokenKind.PrimaryColor,
+                    ButtonTokenKind.PrimaryShadow => SubmitButtonTokenKind.PrimaryShadow,
+                    ButtonTokenKind.SolidTextColor => SubmitButtonTokenKind.SolidTextColor,
+                    ButtonTokenKind.TextHoverBg => SubmitButtonTokenKind.TextHoverBg,
+                    ButtonTokenKind.TextTextActiveColor => SubmitButtonTokenKind.TextTextActiveColor,
+                    ButtonTokenKind.TextTextColor => SubmitButtonTokenKind.TextTextColor,
+                    ButtonTokenKind.TextTextHoverColor => SubmitButtonTokenKind.TextTextHoverColor,
+                    _ => throw new ArgumentOutOfRangeException(nameof(kind))
+                } : _identity == ResetButtonTokens.Identity ? kind switch
+                {
+                    ButtonTokenKind.DangerColor => ResetButtonTokenKind.DangerColor,
+                    ButtonTokenKind.DangerShadow => ResetButtonTokenKind.DangerShadow,
+                    ButtonTokenKind.DefaultActiveBg => ResetButtonTokenKind.DefaultActiveBg,
+                    ButtonTokenKind.DefaultActiveBorderColor => ResetButtonTokenKind.DefaultActiveBorderColor,
+                    ButtonTokenKind.DefaultActiveColor => ResetButtonTokenKind.DefaultActiveColor,
+                    ButtonTokenKind.DefaultBg => ResetButtonTokenKind.DefaultBg,
+                    ButtonTokenKind.DefaultBorderColor => ResetButtonTokenKind.DefaultBorderColor,
+                    ButtonTokenKind.DefaultColor => ResetButtonTokenKind.DefaultColor,
+                    ButtonTokenKind.DefaultGhostBorderColor => ResetButtonTokenKind.DefaultGhostBorderColor,
+                    ButtonTokenKind.DefaultGhostColor => ResetButtonTokenKind.DefaultGhostColor,
+                    ButtonTokenKind.DefaultHoverBg => ResetButtonTokenKind.DefaultHoverBg,
+                    ButtonTokenKind.DefaultHoverBorderColor => ResetButtonTokenKind.DefaultHoverBorderColor,
+                    ButtonTokenKind.DefaultHoverColor => ResetButtonTokenKind.DefaultHoverColor,
+                    ButtonTokenKind.DefaultShadow => ResetButtonTokenKind.DefaultShadow,
+                    ButtonTokenKind.GhostBg => ResetButtonTokenKind.GhostBg,
+                    ButtonTokenKind.LinkHoverBg => ResetButtonTokenKind.LinkHoverBg,
+                    ButtonTokenKind.PrimaryColor => ResetButtonTokenKind.PrimaryColor,
+                    ButtonTokenKind.PrimaryShadow => ResetButtonTokenKind.PrimaryShadow,
+                    ButtonTokenKind.SolidTextColor => ResetButtonTokenKind.SolidTextColor,
+                    ButtonTokenKind.TextHoverBg => ResetButtonTokenKind.TextHoverBg,
+                    ButtonTokenKind.TextTextActiveColor => ResetButtonTokenKind.TextTextActiveColor,
+                    ButtonTokenKind.TextTextColor => ResetButtonTokenKind.TextTextColor,
+                    ButtonTokenKind.TextTextHoverColor => ResetButtonTokenKind.TextTextHoverColor,
+                    _ => throw new ArgumentOutOfRangeException(nameof(kind))
+                } : kind;
+                s_ownVariantKeys.Add((_identity, kind), key);
             }
 
             return new VariantValue(key, true);

@@ -71,11 +71,11 @@
         </Style>
 
         <Style Selector="^ /template/ Panel#ButtonsLayout">
-            <Setter Property="Margin" Value="{atom:DatePickerTokenResource ButtonsPanelMargin}" />
+            <Setter Property="Margin" Value="{Binding $self.(atom:DatePickerPresenter.ThemeButtonsPanelMargin)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|TimeView#PART_TimeView">
-            <Setter Property="Padding" Value="{atom:DatePickerTokenResource PanelContentPadding}" />
+            <Setter Property="Padding" Value="{Binding $self.(atom:DatePickerPresenter.ThemePanelContentPadding)}" />
         </Style>
     </Style>
 

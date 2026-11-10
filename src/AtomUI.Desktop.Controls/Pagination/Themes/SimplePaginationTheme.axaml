@@ -5,6 +5,15 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SimplePagination}" TargetType="atom:SimplePagination">
+        <Setter Property="atom:PaginationNavItem.ThemeItemSize" Value="{atom:SimplePaginationTokenResource ItemSize}" />
+        <Setter Property="atom:PaginationNavItem.ThemeItemSizeSM" Value="{atom:SimplePaginationTokenResource ItemSizeSM}" />
+        <Setter Property="atom:PaginationNavItem.ThemeItemActiveColorDisabled" Value="{atom:SimplePaginationTokenResource ItemActiveColorDisabled}" />
+        <Setter Property="atom:PaginationNavItem.ThemePaginationLayoutSpacing" Value="{atom:SimplePaginationTokenResource PaginationLayoutSpacing}" />
+        <Setter Property="atom:PaginationNavItem.ThemePaginationLayoutMiniSpacing" Value="{atom:SimplePaginationTokenResource PaginationLayoutMiniSpacing}" />
+        <Setter Property="atom:PaginationNavItem.ThemePaginationQuickJumperInputWidth" Value="{atom:SimplePaginationTokenResource PaginationQuickJumperInputWidth}" />
+        <Setter Property="atom:PaginationNavItem.ThemePaginationMiniQuickJumperInputWidth" Value="{atom:SimplePaginationTokenResource PaginationMiniQuickJumperInputWidth}" />
+
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:DashedBorder Background="{TemplateBinding Background}"
@@ -64,32 +73,32 @@
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ StackPanel#PART_RootLayoutPart">
                 <Setter Property="Spacing"
-                        Value="{atom:PaginationTokenResource PaginationLayoutSpacing}" />
+                        Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationLayoutSpacing)}" />
             </Style>
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
             <Style Selector="^ /template/ StackPanel#PART_RootLayoutPart">
                 <Setter Property="Spacing"
-                        Value="{atom:PaginationTokenResource PaginationLayoutSpacing}" />
+                        Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationLayoutSpacing)}" />
             </Style>
         </Style>
         <Style Selector="^[SizeType=Small]">
             <Style Selector="^ /template/ StackPanel#PART_RootLayoutPart">
                 <Setter Property="Spacing"
-                        Value="{atom:PaginationTokenResource PaginationLayoutMiniSpacing}" />
+                        Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationLayoutMiniSpacing)}" />
             </Style>
         </Style>
 
         <!-- The simple pager input (antd itemInputBg / quickJumperInputWidth, paginationMiniQuickJumperInputWidth when small). -->
         <Style Selector="^ /template/ atom|LineEdit#PART_QuickJumper">
             <Setter Property="Background"
-                    Value="{atom:PaginationTokenResource ItemInputBg}" />
+                    Value="{atom:SimplePaginationTokenResource ItemInputBg}" />
             <Setter Property="MinWidth"
-                    Value="{atom:PaginationTokenResource PaginationQuickJumperInputWidth}" />
+                    Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationQuickJumperInputWidth)}" />
         </Style>
         <Style Selector="^[SizeType=Small] /template/ atom|LineEdit#PART_QuickJumper">
             <Setter Property="MinWidth"
-                    Value="{atom:PaginationTokenResource PaginationMiniQuickJumperInputWidth}" />
+                    Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationMiniQuickJumperInputWidth)}" />
         </Style>
 
     </ControlTheme>

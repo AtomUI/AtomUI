@@ -9,7 +9,7 @@
         <Setter Property="SeparatorBorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         <Setter Property="SeparatorBorderBrush" Value="{atom:OwnerTokenResource ColorBorderSecondary}" />
         <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
-        <Setter Property="TabAndContentGutter" Value="{atom:TabControlTokenResource TabAndContentGutter}" />
+        <Setter Property="TabAndContentGutter" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeTabAndContentGutter)}" />
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Stretch"/>
     </Style>

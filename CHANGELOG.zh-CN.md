@@ -9,6 +9,9 @@ AtomUI 的重要变更记录在此文件中。
 ## Unreleased
 
 - Breaking Changes
+  - Theme Own 作用域独立：DropdownButton、SubmitButton/ResetButton、NumericUpDown、AutoComplete 派生控件、Cascader/TreeSelect、MessageBox、ContextMenu/MenuFlyoutPresenter、卡片/条形页签、SimplePagination、Transfer 视图、TimerStatistic/StatisticCountUp、ImageGroupPreviewer、LunarCalendar、RangeDateViewer 与日期/时间范围选择器均通过实际控件身份配置。原来源控件的覆盖不再传播到其他终端；抽象层只共享计算。SplitButton 的两个公开 Button 与 SearchEdit 搜索 Button 保持 Button 颜色/动效身份。
+  - Own 键迁移：`Space.AddonBg`/`AddOnPadding*` → `CompactSpaceAddOn`；`Menu.ContextMenuOffsetX/Y` → `ContextMenu`；`Pagination.ItemInputBg` → `SimplePagination`；`DateViewer.PanelSpacing` → `RangeDateViewer`；`DatePicker.RangePanelSpacing` → `RangeDatePicker`；`TimePicker.HeaderMargin` → `DatePicker`/`RangeDatePicker`；`InfoPickerInput.RangePickerArrowMargin`/`RangePickerIndicatorThickness` → 实际 range 控件，`RangeMarginToAnchor` → `RangeTimePicker`。TabControl 的卡片/添加按钮/垂直卡片 padding 键移到 CardTabControl/CardTabStrip；`WindowTitleBar.CaptionButtonCornerRadius` 移到公开标题栏 Button/ToggleButton。仅来源可渲染或 Reserved 的字段不复制到无关终端。
+  - Mentions/AutoCompleteTextArea 内部编辑器和 TreeSelect 内部树跟随实际宿主；CandidateList 部件使用宿主 globals，不再借用 ListBox Own；TabItem/TabStripItem 动效跟随实际页签宿主。独立公开控件保持各自身份，Dialog surface 在 Window/Overlay 下均跟随真实 Dialog/MessageBox。
   - Theme Tokens：删除从未消费的 `WindowTitleBar.ForegroundColor`、`HoverBackgroundColor`、`PressedBackgroundColor`、`CloseHoverBackgroundColor` 与 `ClosePressedBackgroundColor`；请从主题配置移除，按平台/状态改用现有 Active*、Inactive* 与 WindowsClose* Token。ScrollBar / ScrollBarThumb 对继承的动效读取采用 owner 透明语义。
   - 展示类主题作用域：TransferListItem / TransferTreeViewItem 与 SpinIndicator 对 Token owner 透明，全局值通过实际视图或 Spin 宿主配置。TreeTransfer 不支持分页，ListWidthLG 保留为 Reserved，普通宽度使用 ListWidth。
   - 录入类主题作用域：FormItem / FormItemDecorator、Upload 触发器与拖拽区域、SegmentedItem、CandidateList / CandidateListItem 为 Token owner 透明部件；有效全局值经宿主 Form、Upload、Segmented、Mentions 或 AutoComplete 设置，部件自身的控件级全局覆盖不再生效。嵌套的注册输入框与动作控件保留各自 identity。
@@ -25,6 +28,9 @@ AtomUI 的重要变更记录在此文件中。
   - Theme Tokens：删除从未被消费的 `Expander.LeftExpandButtonVMargin` / `RightExpandButtonVMargin`（头部随展开方向旋转，`LeftExpandButtonHMargin` / `RightExpandButtonHMargin` 已覆盖所有方向）与 `GroupBox.TextPaddingInline`、`GroupBox.OrientationMarginPercent`、`GroupBox.VerticalMarginInline`（复制自 Separator 的 Token；GroupBox 标题缺口与边距由 `HeaderContentPadding` / `HeaderContainerMargin` 表达），请从主题配置中移除。`Card.ActionsSpacing`、`Card.TabsMarginBottom`、`Card.CardHeadPadding`、`Card.CardPaddingBase`（antd `actionsLiMargin`、`tabsMarginBottom`、`cardHeadPadding`、`cardPaddingBase`）标为保留，暂无视觉效果。
   - Theme Tokens：`Avatar.GroupSpace` 与 `Avatar.GroupOverlapping` 移到新的 AvatarGroup Own Token（`Controls[AvatarGroup].GroupSpace` / `GroupOverlapping`，默认值不变），它们只被 AvatarGroup 消费；删除从未被消费的 `Timeline.LastItemContentMinHeight`（antd 6.7 Timeline 无此样式）。`ImagePreviewer.ImagePreviewSwitchSize`（antd `imagePreviewSwitchSize`，antd 6.7 样式未读取）标为保留，暂无视觉效果。
   - Theme Tokens：删除从未被消费的 `TimePicker.RangePickerArrowMargin` 与 `TimePicker.RangePickerIndicatorThickness`（与范围 Picker 实际读取的 InfoPickerInput Token 重复；antd TimePicker 无此 Token）；范围箭头间距与激活条厚度请经 `Controls[InfoPickerInput].RangePickerArrowMargin` / `RangePickerIndicatorThickness` 设置。
+- 主题一致性
+  - 主题一致性：NumericUpDown Large 字号使用 FontSizeLG（默认16），Small/Middle 保持 FontSize（默认14）；Small 空多选 Cascader 使用小号 padding；公开标题栏 AddOn 按钮在非激活窗口中使用非激活悬停色。
+
 - 窗口、滚动与共享基元
   - 保留受保护 flyout pointer offset API 中 Shared / 自定义 / 已类型化 resource key 的原义；已打开的 flyout 可直接 ShowAt(newTarget) 并持续读取新作用域，同目标关闭动效取消行为保持不变。
   - Window / WindowTitleBar、ScrollViewer、FlyoutHost、TreeViewFlyoutPresenter 与 ArrowDecoratedBox 读取控件有效全局值；共享部件、PathIcon、Embedding 与启动 Splash 读取有效 owner。保留滚动条尺寸、可见性与输入几何。

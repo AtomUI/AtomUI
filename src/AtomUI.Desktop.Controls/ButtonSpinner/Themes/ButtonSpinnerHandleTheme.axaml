@@ -32,11 +32,11 @@
         </Setter>
         
         <Setter Property="ClipToBounds" Value="True"/>
-        <Setter Property="BorderBrush" Value="{atom:ButtonSpinnerTokenResource HandleBorderColor}"/>
+        <Setter Property="BorderBrush" Value="{Binding $parent[atom:ButtonSpinner].HandleBorderColor}"/>
         <Setter Property="SpinnerBorderThickness" Value="{atom:OwnerTokenResource BorderThickness}"/>
-        <Setter Property="Background" Value="{atom:ButtonSpinnerTokenResource HandleBg}"/>
+        <Setter Property="Background" Value="{Binding $parent[atom:ButtonSpinner].HandleBg}"/>
         <Style Selector="^[StyleVariant=Filled]">
-            <Setter Property="Background" Value="{atom:ButtonSpinnerTokenResource FilledHandleBg}" />
+            <Setter Property="Background" Value="{Binding $parent[atom:ButtonSpinner].FilledHandleBg}" />
         </Style>
         <Style Selector="^:disabled">
             <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
@@ -44,15 +44,15 @@
         </Style>
         <Style
             Selector="^ /template/ atom|IconButton#PART_IncreaseButton, ^ /template/ atom|IconButton#PART_DecreaseButton">
-            <Setter Property="IconWidth" Value="{atom:ButtonSpinnerTokenResource HandleIconSize}" />
+            <Setter Property="IconWidth" Value="{Binding $parent[atom:ButtonSpinner].HandleIconSize}" />
             <Setter Property="IconHeight"
-                    Value="{atom:ButtonSpinnerTokenResource HandleIconSize}" />
+                    Value="{Binding $parent[atom:ButtonSpinner].HandleIconSize}" />
         </Style>
         
         <Style
             Selector="^ /template/ atom|IconButton#PART_IncreaseButton:pointerover, ^ /template/ atom|IconButton#PART_DecreaseButton:pointerover">
             <Setter Property="IconBrush"
-                    Value="{atom:ButtonSpinnerTokenResource HandleHoverColor}" />
+                    Value="{Binding $parent[atom:ButtonSpinner].HandleHoverColor}" />
         </Style>
         
         <Style
@@ -60,13 +60,13 @@
             <!-- The increase/decrease buttons are registered IconButtons, so an owner read on them would resolve to
                  IconButton; the handle reads its host's value explicitly like its other handle Tokens. -->
             <Setter Property="IconBrush"
-                    Value="{atom:ButtonSpinnerTokenResource ColorPrimaryActive}" />
+                    Value="{Binding $parent[atom:ButtonSpinner].HandlePressedColor}" />
         </Style>
         
         <Style
             Selector="^ /template/ atom|IconButton#PART_IncreaseButton:pressed, ^ /template/ atom|IconButton#PART_DecreaseButton:pressed">
             <Setter Property="Background"
-                    Value="{atom:ButtonSpinnerTokenResource HandleActiveBg}" />
+                    Value="{Binding $parent[atom:ButtonSpinner].HandleActiveBg}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

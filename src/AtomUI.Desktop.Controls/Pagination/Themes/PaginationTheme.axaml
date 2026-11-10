@@ -5,6 +5,15 @@
     x:ClassModifier="internal">
     <atom:StringToTextBlockConverter x:Key="StringToTextBlockConverter" VerticalAlignment="Center"/>
     <ControlTheme x:Key="{x:Type atom:Pagination}" TargetType="atom:Pagination">
+        <Setter Property="atom:PaginationNavItem.ThemeItemSize" Value="{atom:PaginationTokenResource ItemSize}" />
+        <Setter Property="atom:PaginationNavItem.ThemeItemSizeSM" Value="{atom:PaginationTokenResource ItemSizeSM}" />
+        <Setter Property="atom:PaginationNavItem.ThemeItemActiveColorDisabled" Value="{atom:PaginationTokenResource ItemActiveColorDisabled}" />
+        <Setter Property="atom:PaginationNavItem.ThemePaginationLayoutSpacing" Value="{atom:PaginationTokenResource PaginationLayoutSpacing}" />
+        <Setter Property="atom:PaginationNavItem.ThemePaginationLayoutMiniSpacing" Value="{atom:PaginationTokenResource PaginationLayoutMiniSpacing}" />
+        <Setter Property="atom:PaginationNavItem.ThemePaginationQuickJumperInputWidth" Value="{atom:PaginationTokenResource PaginationQuickJumperInputWidth}" />
+        <Setter Property="atom:PaginationNavItem.ThemePaginationMiniQuickJumperInputWidth" Value="{atom:PaginationTokenResource PaginationMiniQuickJumperInputWidth}" />
+        <Setter Property="atom:PaginationNavItem.ThemePaginationItemPaddingInline" Value="{atom:PaginationTokenResource PaginationItemPaddingInline}" />
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:DashedBorder Background="{TemplateBinding Background}"
@@ -54,22 +63,22 @@
         
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ StackPanel#PART_RootLayout">
-                <Setter Property="Spacing" Value="{atom:PaginationTokenResource PaginationLayoutSpacing}"/>
+                <Setter Property="Spacing" Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationLayoutSpacing)}"/>
             </Style>
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
             <Style Selector="^ /template/ StackPanel#PART_RootLayout">
-                <Setter Property="Spacing" Value="{atom:PaginationTokenResource PaginationLayoutSpacing}"/>
+                <Setter Property="Spacing" Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationLayoutSpacing)}"/>
             </Style>
         </Style>
         <Style Selector="^[SizeType=Small]">
             <Style Selector="^ /template/ StackPanel#PART_RootLayout">
-                <Setter Property="Spacing" Value="{atom:PaginationTokenResource PaginationLayoutMiniSpacing}"/>
+                <Setter Property="Spacing" Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationLayoutMiniSpacing)}"/>
             </Style>
         </Style>
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:PaginationTokenResource ItemActiveColorDisabled}" />
+                    Value="{Binding $self.(atom:PaginationNavItem.ThemeItemActiveColorDisabled)}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

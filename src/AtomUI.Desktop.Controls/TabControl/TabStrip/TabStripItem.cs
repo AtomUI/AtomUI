@@ -1,3 +1,4 @@
+using AtomUI.Theme;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
@@ -22,6 +23,7 @@ public enum TabSharp
     Card
 }
 
+[TokenOwnerTransparent]
 public partial class TabStripItem : AvaloniaTabStripItem
 {
     #region 公共属性定义

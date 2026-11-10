@@ -4,6 +4,22 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:TransferListView}" TargetType="atom:TransferListView">
+        <Setter Property="atom:GroupHeaderItem.ThemeContentPadding" Value="{atom:TransferListViewTokenResource ContentPadding}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeItemColor" Value="{atom:TransferListViewTokenResource ItemColor}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeItemHoverColor" Value="{atom:TransferListViewTokenResource ItemHoverColor}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeItemSelectedColor" Value="{atom:TransferListViewTokenResource ItemSelectedColor}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeItemDisabledColor" Value="{atom:TransferListViewTokenResource ItemDisabledColor}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeItemBgColor" Value="{atom:TransferListViewTokenResource ItemBgColor}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeItemHoverBgColor" Value="{atom:TransferListViewTokenResource ItemHoverBgColor}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeItemSelectedBgColor" Value="{atom:TransferListViewTokenResource ItemSelectedBgColor}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeItemPaddingSM" Value="{atom:TransferListViewTokenResource ItemPaddingSM}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeItemPadding" Value="{atom:TransferListViewTokenResource ItemPadding}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeItemPaddingLG" Value="{atom:TransferListViewTokenResource ItemPaddingLG}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeItemMargin" Value="{atom:TransferListViewTokenResource ItemMargin}" />
+        <Setter Property="atom:GroupHeaderItem.ThemeGroupHeaderColor" Value="{atom:TransferListViewTokenResource GroupHeaderColor}" />
+
+
+
         <ControlTheme.BasedOn>
             <atom:ListViewTheme TargetType="atom:TransferListView" />
         </ControlTheme.BasedOn>

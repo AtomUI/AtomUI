@@ -4,6 +4,9 @@
 
 ## 2026-11-10
 
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+
 - Compatibility
   - `TreeTransfer.ListWidthLG` 保留为 Reserved；树穿梭视图无分页加宽状态，普通宽度使用 `ListWidth`。
   - Transfer 条目对 Token owner 透明，跟随实际列表或树视图。

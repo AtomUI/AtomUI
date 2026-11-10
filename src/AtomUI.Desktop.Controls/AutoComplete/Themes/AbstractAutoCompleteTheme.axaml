@@ -13,10 +13,6 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="PlaceholderForeground" Value="{atom:OwnerTokenResource ColorTextPlaceholder}" />
-        <Setter Property="ItemHeight" Value="{atom:AutoCompleteTokenResource OptionHeight}" />
-        <Setter Property="PopupContentPadding"
-                Value="{atom:AutoCompleteTokenResource PopupContentPadding}" />
-        <Setter Property="MinPopupWidth" Value="{atom:AutoCompleteTokenResource MinPopupWidth}" />
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor" Value="{atom:PopupTokenResource MarginToAnchor}" />
             <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
@@ -34,12 +30,6 @@
         <Style Selector="^[IsPopupMatchSelectWidth=True]">
             <Style Selector="^ /template/ Border#PopupFrame">
                 <Setter Property="Width" Value="{Binding EffectivePopupWidth, RelativeSource={RelativeSource TemplatedParent}}" />
-            </Style>
-        </Style>
-
-        <Style Selector="^[IsPopupMatchSelectWidth=False]">
-            <Style Selector="^ /template/ Border#PopupFrame">
-                <Setter Property="MaxWidth" Value="{atom:AutoCompleteTokenResource MaxPopupWidth}" />
             </Style>
         </Style>
 

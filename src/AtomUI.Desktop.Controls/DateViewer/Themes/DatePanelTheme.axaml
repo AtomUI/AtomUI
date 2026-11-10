@@ -1,13 +1,13 @@
-<ControlTheme xmlns="https://github.com/avaloniaui"
+<ControlTheme xmlns:tokeninputs="using:AtomUI.Desktop.Controls.Internal.DateViewer" xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
               x:Class="AtomUI.Desktop.Controls.Themes.DatePanelTheme"
               x:ClassModifier="internal" TargetType="viewer:DatePanel">
-    <Setter Property="Width" Value="{atom:DateViewerTokenResource PanelWidth}" />
+    <Setter Property="Width" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemePanelWidth)}" />
     <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
     <Setter Property="WeekHeaderTextAlignment" Value="Center" />
-    <Setter Property="WeekHeaderMinHeight" Value="{atom:DateViewerTokenResource CellRowHeight}" />
+    <Setter Property="WeekHeaderMinHeight" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellRowHeight)}" />
     <Setter Property="WeekHeaderPadding" Value="0" />
     <Setter Property="Template">
         <ControlTemplate TargetType="viewer:DatePanel">
@@ -18,7 +18,7 @@
             </DockPanel>
         </ControlTemplate>
     </Setter>
-    <Setter Property="Padding" Value="{atom:DateViewerTokenResource DateBodyPadding}" />
+    <Setter Property="Padding" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeDateBodyPadding)}" />
     <Style Selector="^[Presentation=Content]">
         <Setter Property="Width" Value="NaN" />
     </Style>

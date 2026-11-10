@@ -41,7 +41,7 @@
         <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
         <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
         <Setter Property="Padding"
-                Value="{atom:PaginationTokenResource PaginationItemPaddingInline}" />
+                Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationItemPaddingInline)}" />
         <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorTransparent}" />
         <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
@@ -140,25 +140,25 @@
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="Height" Value="{atom:PaginationTokenResource ItemSize}" />
-            <Setter Property="MinWidth" Value="{atom:PaginationTokenResource ItemSize}" />
+            <Setter Property="Height" Value="{Binding $self.(atom:PaginationNavItem.ThemeItemSize)}" />
+            <Setter Property="MinWidth" Value="{Binding $self.(atom:PaginationNavItem.ThemeItemSize)}" />
             <Setter Property="ItemIconSize" Value="{atom:OwnerTokenResource IconSizeLG}" />
 
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="Height" Value="{atom:PaginationTokenResource ItemSize}" />
-            <Setter Property="MinWidth" Value="{atom:PaginationTokenResource ItemSize}" />
+            <Setter Property="Height" Value="{Binding $self.(atom:PaginationNavItem.ThemeItemSize)}" />
+            <Setter Property="MinWidth" Value="{Binding $self.(atom:PaginationNavItem.ThemeItemSize)}" />
             <Setter Property="ItemIconSize" Value="{atom:OwnerTokenResource IconSize}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="Height" Value="{atom:PaginationTokenResource ItemSizeSM}" />
-            <Setter Property="MinWidth" Value="{atom:PaginationTokenResource ItemSizeSM}" />
+            <Setter Property="Height" Value="{Binding $self.(atom:PaginationNavItem.ThemeItemSizeSM)}" />
+            <Setter Property="MinWidth" Value="{Binding $self.(atom:PaginationNavItem.ThemeItemSizeSM)}" />
             <Setter Property="ItemIconSize" Value="{atom:OwnerTokenResource IconSizeSM}" />
         </Style>
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:PaginationTokenResource ItemActiveColorDisabled}" />
+                    Value="{Binding $self.(atom:PaginationNavItem.ThemeItemActiveColorDisabled)}" />
             <Style Selector="^:selected">
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Background"

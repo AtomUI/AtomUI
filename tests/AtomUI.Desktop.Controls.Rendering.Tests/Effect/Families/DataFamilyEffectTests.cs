@@ -233,15 +233,14 @@ public partial class DataFamilyEffectTests
         bool grouped = false,
         bool paged = false,
         bool empty = false,
-        bool longText = false)
+        bool longText = false, bool transfer = false)
     {
-        var listView = new ListView
-        {
-            Width                   = 260,
-            SizeType                = size,
-            IsShowSelectedIndicator = showIndicator,
-            IsGroupEnabled          = grouped,
-            ItemsSource = empty
+        ListView listView = transfer ? new TransferListView() : new ListView();
+        listView.Width = 260;
+        listView.SizeType = size;
+        listView.IsShowSelectedIndicator = showIndicator;
+        listView.IsGroupEnabled = grouped;
+        listView.ItemsSource = empty
                 ? Array.Empty<ListItemData>()
                 : new[]
                 {
@@ -249,8 +248,7 @@ public partial class DataFamilyEffectTests
                     new ListItemData { Content = "Banana split", Group = "Fruit" },
                     new ListItemData { Content = "Cherry tart", Group = "Tart" },
                     new ListItemData { Content = "Durian cake", Group = "Tart", IsEnabled = false }
-                }
-        };
+                };
         if (longText)
         {
             listView.ItemTemplate = TrimmedTextTemplate();
@@ -288,56 +286,65 @@ public partial class DataFamilyEffectTests
         Run(scenario.Create, scenario.Arrange, ListViewTokens.Identity, token, scenario.Options);
     }
 
-    private static Scenario ListViewScenario(string token)
+    internal static void AssertTransferListViewEffect(string token)
     {
+        var scenario = ListViewScenario(token, transfer: true);
+        Run(scenario.Create, scenario.Arrange, TransferListViewTokens.Identity, token, scenario.Options);
+    }
+
+    private static Scenario ListViewScenario(string token, bool transfer = false)
+    {
+        ListView CreateListView(CustomizableSizeType size = CustomizableSizeType.Middle, bool showIndicator = false,
+            bool grouped = false, bool paged = false, bool longText = false, bool empty = false) =>
+            DataFamilyEffectTests.CreateListView(size: size, showIndicator: showIndicator, grouped: grouped, paged: paged, empty: empty, longText: longText, transfer: transfer);
         switch (token)
         {
             case "ItemHoverBgColor" or "ItemHoverColor" or "ColorBgTextHover":
-                return new Scenario(static () => CreateListView(), static list => Pseudo(ListViewItemAt(list, 0), ":pointerover"));
+                return new Scenario(() => CreateListView(), static list => Pseudo(ListViewItemAt(list, 0), ":pointerover"));
             case "ItemSelectedBgColor" or "ItemSelectedColor" or "ControlItemBgActive" or "ColorText":
-                return new Scenario(static () => CreateListView(), static list => ((ListView)list).SelectedIndex = 1);
+                return new Scenario(() => CreateListView(), static list => ((ListView)list).SelectedIndex = 1);
             case "ColorPrimary":
-                return new Scenario(static () => CreateListView(showIndicator: true), static list => ((ListView)list).SelectedIndex = 1,
+                return new Scenario(() => CreateListView(showIndicator: true), static list => ((ListView)list).SelectedIndex = 1,
                     new EffectOptions { Region = static list => Descendant<IconTemplatePresenter>(ListViewItemAt(list, 1), "SelectedIndicator") });
             case "IconSize":
-                return new Scenario(static () => CreateListView(showIndicator: true), static list => ((ListView)list).SelectedIndex = 1,
+                return new Scenario(() => CreateListView(showIndicator: true), static list => ((ListView)list).SelectedIndex = 1,
                     new EffectOptions { Region = static list => ListViewItemAt(list, 1) });
             case "SelectedIndicatorMargin" or "UniformlyMarginXXS":
-                return new Scenario(static () => CreateListView(showIndicator: true, longText: true),
+                return new Scenario(() => CreateListView(showIndicator: true, longText: true),
                     static list => ((ListView)list).SelectedIndex = 1,
                     new EffectOptions { Region = static list => ListViewItemAt(list, 1) });
             case "ItemDisabledColor" or "ColorTextDisabled":
-                return new Scenario(static () => CreateListView(), null,
+                return new Scenario(() => CreateListView(), null,
                     new EffectOptions { Region = static list => ListViewItemAt(list, 3) });
             case "ItemBgColor" or "ColorTransparent":
-                return new Scenario(static () => CreateListView());
+                return new Scenario(() => CreateListView());
             // Group headers: colour, padding, background, weight; the middle size uses FontSizeSM, the large FontSize.
             case "GroupHeaderColor" or "ColorTextDescription" or "GroupHeaderPadding" or "ColorFillAlter" or "FontWeightStrong" or
                 "FontSizeSM":
-                return new Scenario(static () => CreateListView(grouped: true), null,
+                return new Scenario(() => CreateListView(grouped: true), null,
                     new EffectOptions { Region = static list => GroupHeaderOf(list) });
             case "FontSize":
-                return new Scenario(static () => CreateListView(CustomizableSizeType.Large, grouped: true), null,
+                return new Scenario(() => CreateListView(CustomizableSizeType.Large, grouped: true), null,
                     new EffectOptions { Region = static list => GroupHeaderOf(list) });
             // The pagination's distance from the items.
             case "PaginationMargin" or "UniformlyMarginXS":
-                return new Scenario(static () => CreateListView(paged: true));
+                return new Scenario(() => CreateListView(paged: true));
             case "ItemPaddingLG" or "UniformlyPadding" or "ControlHeightLG":
-                return new Scenario(static () => CreateListView(CustomizableSizeType.Large));
+                return new Scenario(() => CreateListView(CustomizableSizeType.Large));
             case "ItemPaddingSM" or "UniformlyPaddingXS" or "ControlHeightSM":
-                return new Scenario(static () => CreateListView(CustomizableSizeType.Small));
+                return new Scenario(() => CreateListView(CustomizableSizeType.Small));
             case "BorderRadiusLG":
-                return RoundedList(static () => CreateListView(CustomizableSizeType.Large));
+                return RoundedList(() => CreateListView(CustomizableSizeType.Large));
             case "BorderRadiusSM":
-                return RoundedList(static () => CreateListView(CustomizableSizeType.Small));
+                return RoundedList(() => CreateListView(CustomizableSizeType.Small));
             case "BorderRadius":
-                return RoundedList(static () => CreateListView());
+                return RoundedList(() => CreateListView());
             case "PaddingXL":
-                return new Scenario(static () => CreateListView(CustomizableSizeType.Large, empty: true));
+                return new Scenario(() => CreateListView(CustomizableSizeType.Large, empty: true));
             case "Padding":
-                return new Scenario(static () => CreateListView(empty: true));
+                return new Scenario(() => CreateListView(empty: true));
             default:
-                return new Scenario(static () => CreateListView());
+                return new Scenario(() => CreateListView());
         }
     }
 

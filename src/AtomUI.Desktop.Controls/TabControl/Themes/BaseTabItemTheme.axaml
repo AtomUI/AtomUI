@@ -32,18 +32,18 @@
 
     <Style Selector="^:is(atom|TabItem)">
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Foreground" Value="{atom:TabControlTokenResource ItemColor}" />
+        <Setter Property="Foreground" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeItemColor)}" />
         <Setter Property="Background" Value="Transparent" />
 
         <Style Selector="^ /template/ atom|IconButton#PART_ItemCloseButton">
-            <Setter Property="Margin" Value="{atom:TabControlTokenResource CloseIconMargin}" />
+            <Setter Property="Margin" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeCloseIconMargin)}" />
             <Setter Property="IconWidth" Value="{atom:TabItemTokenResource IconSizeSM}" />
             <Setter Property="IconHeight" Value="{atom:TabItemTokenResource IconSizeSM}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
             <Setter Property="IsVisible" Value="False" />
-            <Setter Property="Margin" Value="{atom:TabControlTokenResource ItemIconMargin}" />
+            <Setter Property="Margin" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeItemIconMargin)}" />
             <Setter Property="IconBrush" Value="{TemplateBinding Foreground}" />
         </Style>
 
@@ -60,7 +60,7 @@
         </Style>
 
         <Style Selector="^:pointerover">
-            <Setter Property="Foreground" Value="{atom:TabControlTokenResource ItemHoverColor}" />
+            <Setter Property="Foreground" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeItemHoverColor)}" />
         </Style>
 
         <Style Selector="^:pressed">
@@ -72,11 +72,11 @@
         </Style>
 
         <Style Selector="^:selected">
-            <Setter Property="Foreground" Value="{atom:TabControlTokenResource ItemSelectedColor}" />
+            <Setter Property="Foreground" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeItemSelectedColor)}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="FontSize" Value="{atom:TabControlTokenResource TitleFontSizeLG}" />
+            <Setter Property="FontSize" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeTitleFontSizeLG)}" />
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="Width"
                         Value="{atom:TabItemTokenResource IconSize}" />
@@ -86,7 +86,7 @@
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="FontSize" Value="{atom:TabControlTokenResource TitleFontSize}" />
+            <Setter Property="FontSize" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeTitleFontSize)}" />
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="Width"
                         Value="{atom:TabItemTokenResource IconSize}" />
@@ -96,7 +96,7 @@
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:TabControlTokenResource TitleFontSizeSM}" />
+            <Setter Property="FontSize" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeTitleFontSizeSM)}" />
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="Width"
                         Value="{atom:TabItemTokenResource IconSizeSM}" />

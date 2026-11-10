@@ -5,6 +5,9 @@
 
 ## 2026-11-10
 
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+
 - Theme
   - FormItem / FormItemDecorator 跟随 Form 的有效全局 Token；垂直标签启用 VerticalLabelPadding，并取消水平标签行的 control-height 最小高度。
 

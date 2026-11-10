@@ -216,7 +216,7 @@ public partial class NavigationFamilyEffectTests
         var size = token switch
         {
             "IconSizeLG" => CustomizableSizeType.Large,
-            "IconSizeSM" => CustomizableSizeType.Small,
+            "IconSizeSM" or "ItemSizeSM" or "ControlHeightSM" or "PaginationLayoutMiniSpacing" or "PaginationMiniQuickJumperInputWidth" or "UniformlyMarginXXS" => CustomizableSizeType.Small,
             _            => CustomizableSizeType.Middle
         };
         Action<Control>? arrange = token switch
@@ -225,11 +225,12 @@ public partial class NavigationFamilyEffectTests
             "ColorBgTextActive"                  => static host => Pseudo(NextItem(host), ":pressed"),
             _                                    => null
         };
-        Run(() => new SimplePagination { Total = 500, PageSize = 10, CurrentPage = 3, SizeType = size }, arrange,
+        Run(() => new SimplePagination { Total = 500, PageSize = 10, CurrentPage = 3, SizeType = size, IsReadOnly = false, IsEnabled = token is not ("ItemActiveColorDisabled" or "ColorTextDisabled") }, arrange,
             SimplePaginationTokens.Identity, token,
             new EffectOptions
             {
-                Region  = token == "EnableMotion" ? null : static host => NextItem(host),
+                Region = token is "ColorBgTextHover" or "ColorBgTextActive" or "BorderRadius" or "IconSize" or "IconSizeLG" or "IconSizeSM"
+                    ? static host => NextItem(host) : null,
                 Perturb = token == "BorderRadius" ? static _ => new CornerRadius(14) : null
             });
     }

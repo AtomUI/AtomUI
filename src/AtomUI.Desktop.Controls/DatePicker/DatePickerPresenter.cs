@@ -22,7 +22,7 @@ public sealed class DateSelectedEventArgs(DateTime? value) : EventArgs
     public DateTime? Date { get; } = value;
 }
 
-internal class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
+internal partial class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
 {
     public static readonly StyledProperty<bool> IsNeedConfirmProperty = DatePicker.IsNeedConfirmProperty.AddOwner<DatePickerPresenter>();
     public static readonly StyledProperty<bool> IsShowNowProperty = DatePicker.IsShowNowProperty.AddOwner<DatePickerPresenter>();

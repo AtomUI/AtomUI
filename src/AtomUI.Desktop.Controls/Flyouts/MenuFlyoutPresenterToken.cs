@@ -1,0 +1,20 @@
+using AtomUI.Theme.DesignTokens;
+using AtomUI.Desktop.Controls.DesignTokens;
+using Avalonia;
+using Avalonia.Media;
+
+namespace AtomUI.Desktop.Controls;
+
+[ControlDesignToken]
+internal sealed class MenuFlyoutPresenterToken : AbstractMenuPopupToken
+{
+    public override void CalculateTokenValues(bool isDarkMode)
+    {
+        base.CalculateTokenValues(isDarkMode);
+        if (!IsExplicit(MenuFlyoutPresenterTokenKind.ItemColor))
+        {
+            ItemColor = EffectiveGlobalToken.ColorText;
+        }
+        ItemHoverColor = ItemColor;
+    }
+}

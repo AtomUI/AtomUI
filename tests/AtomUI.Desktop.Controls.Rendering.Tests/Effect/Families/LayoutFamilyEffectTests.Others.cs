@@ -13,7 +13,7 @@ using AvaloniaTextBlock = Avalonia.Controls.TextBlock;
 namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 
 /// <summary>
-/// Separator, Space (its Own add-on Tokens style the CompactSpaceAddOn), CompactSpaceAddOn, Masonry and GroupBox.
+/// Separator, Space (gap Tokens), CompactSpaceAddOn, Masonry and GroupBox.
 /// </summary>
 public partial class LayoutFamilyEffectTests
 {
@@ -140,20 +140,10 @@ public partial class LayoutFamilyEffectTests
             "GapLargeSize" or "SpacingLG" => CustomizableSizeType.Large,
             _                             => CustomizableSizeType.Small
         };
-        var addOnSize = token switch
-        {
-            "AddOnPaddingSM" or "ControlPaddingHorizontalSM" => CustomizableSizeType.Small,
-            "AddOnPaddingLG" or "ControlPaddingHorizontal"   => CustomizableSizeType.Large,
-            _                                                 => CustomizableSizeType.Middle
-        };
-        // The add-on Tokens are Space Own Tokens styling the CompactSpaceAddOn: compare the add-on.
-        var addOnToken = token is "AddonBg" or "ColorFillAlter" or "AddOnPadding" or "AddOnPaddingSM" or "AddOnPaddingLG" or
-            "UniformlyPaddingSM" or "ControlPaddingHorizontalSM" or "ControlPaddingHorizontal";
-        Run(() => CreateSpaceHost(spaceSize, addOnSize), null, SpaceTokens.Identity, token,
+        Run(() => CreateSpaceHost(spaceSize), null, SpaceTokens.Identity, token,
             new EffectOptions
             {
-                Target = static root => ((StackPanel)root).Children.OfType<Space>().Single(),
-                Region = addOnToken ? AddOnOf : null
+                Target = static root => ((StackPanel)root).Children.OfType<Space>().Single()
             });
     }
 
@@ -166,8 +156,8 @@ public partial class LayoutFamilyEffectTests
         _ = isOwn;
         var size = token switch
         {
-            "FontSizeLG" or "BorderRadiusLG" or "ControlHeightLG" => CustomizableSizeType.Large,
-            "FontSizeSM" or "BorderRadiusSM" or "ControlHeightSM" => CustomizableSizeType.Small,
+            "FontSizeLG" or "BorderRadiusLG" or "ControlHeightLG" or "AddOnPaddingLG" or "ControlPaddingHorizontal" => CustomizableSizeType.Large,
+            "FontSizeSM" or "BorderRadiusSM" or "ControlHeightSM" or "AddOnPaddingSM" or "ControlPaddingHorizontalSM" => CustomizableSizeType.Small,
             _                                                     => CustomizableSizeType.Middle
         };
         var variant = token is "ColorErrorBg" or "ColorWarningBg" ? InputControlStyleVariant.Filled : InputControlStyleVariant.Outlined;

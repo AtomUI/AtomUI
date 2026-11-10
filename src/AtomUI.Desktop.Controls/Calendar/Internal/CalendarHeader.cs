@@ -14,7 +14,7 @@ namespace AtomUI.Desktop.Controls.Internal.Calendar;
 [TemplatePart(YearSelectPart, typeof(ComboBox))]
 [TemplatePart(MonthSelectPart, typeof(ComboBox))]
 [TemplatePart(ModeSwitchPart, typeof(OptionButtonGroup))]
-internal sealed class CalendarHeader : TemplatedControl
+internal sealed partial class CalendarHeader : TemplatedControl
 {
     internal const string YearSelectPart = "PART_YearSelect";
     internal const string MonthSelectPart = "PART_MonthSelect";

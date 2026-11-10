@@ -18,4 +18,26 @@ public class CandidateListItem : ListBoxItem
         set => SetValue(IsCandidateSelectedProperty, value);
     }
     #endregion
+
+    #region 内部属性定义
+
+    internal static readonly StyledProperty<Thickness> CandidateIndicatorMarginProperty =
+        AvaloniaProperty.Register<CandidateListItem, Thickness>(nameof(CandidateIndicatorMargin));
+    internal static readonly StyledProperty<Thickness> CandidatePaddingProperty =
+        AvaloniaProperty.Register<CandidateListItem, Thickness>(nameof(CandidatePadding));
+
+    internal Thickness CandidateIndicatorMargin
+    {
+        get => GetValue(CandidateIndicatorMarginProperty);
+        set => SetValue(CandidateIndicatorMarginProperty, value);
+    }
+
+
+    internal Thickness CandidatePadding
+    {
+        get => GetValue(CandidatePaddingProperty);
+        set => SetValue(CandidatePaddingProperty, value);
+    }
+
+    #endregion
 }

@@ -42,22 +42,22 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="Padding" Value="{atom:DialogTokenResource HeaderPadding}" />
-        <Setter Property="Background" Value="{atom:DialogTokenResource HeaderBg}" />
+        <Setter Property="Padding" Value="{Binding $self.(atom:DialogSurface.ThemeHeaderPadding)}" />
+        <Setter Property="Background" Value="{Binding $self.(atom:DialogSurface.ThemeHeaderBg)}" />
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-            <Setter Property="Width" Value="{atom:DialogTokenResource LogoSize}" />
-            <Setter Property="Height" Value="{atom:DialogTokenResource LogoSize}" />
+            <Setter Property="Width" Value="{Binding $self.(atom:DialogSurface.ThemeLogoSize)}" />
+            <Setter Property="Height" Value="{Binding $self.(atom:DialogSurface.ThemeLogoSize)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|DialogCaptionButton">
-            <Setter Property="Width" Value="{atom:DialogTokenResource CloseBtnSize}" />
-            <Setter Property="Height" Value="{atom:DialogTokenResource CloseBtnSize}" />
+            <Setter Property="Width" Value="{Binding $self.(atom:DialogSurface.ThemeCloseBtnSize)}" />
+            <Setter Property="Height" Value="{Binding $self.(atom:DialogSurface.ThemeCloseBtnSize)}" />
             <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSize}" />
             <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSize}" />
         </Style>
 
         <Style Selector="^ /template/ TextBlock#Title">
-            <Setter Property="Foreground" Value="{atom:DialogTokenResource HeaderColor}" />
+            <Setter Property="Foreground" Value="{Binding $self.(atom:DialogSurface.ThemeHeaderColor)}" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 

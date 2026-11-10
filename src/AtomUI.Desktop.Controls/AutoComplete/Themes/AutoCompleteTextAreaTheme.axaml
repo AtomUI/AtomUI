@@ -7,6 +7,13 @@
         <ControlTheme.BasedOn>
             <atom:AbstractAutoCompleteTheme TargetType="atom:AutoCompleteTextArea" />
         </ControlTheme.BasedOn>
+        <Setter Property="ItemHeight" Value="{atom:AutoCompleteTextAreaTokenResource OptionHeight}" />
+        <Setter Property="PopupContentPadding" Value="{atom:AutoCompleteTextAreaTokenResource PopupContentPadding}" />
+        <Setter Property="MinPopupWidth" Value="{atom:AutoCompleteTextAreaTokenResource MinPopupWidth}" />
+        <Style Selector="^[IsPopupMatchSelectWidth=False] /template/ Border#PopupFrame">
+            <Setter Property="MaxWidth" Value="{atom:AutoCompleteTextAreaTokenResource MaxPopupWidth}" />
+        </Style>
+
 
         <Setter Property="Template">
             <ControlTemplate>

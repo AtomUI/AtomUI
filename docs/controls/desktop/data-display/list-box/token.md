@@ -140,3 +140,7 @@ ListBoxToken 变更验证：
 - `SelectedIndicatorMargin` 不造成内容和 selected indicator 重叠。
 - `FilterHighlightColor` 能传递到过滤高亮文本。
 - CandidateList 和 Cascader filter list 继承后的视觉语义稳定。
+
+## 独立 Token 身份与共享计算
+
+独立 ListBox 的 Own 契约保持不变。CandidateList/CandidateListItem 是 Mentions/AutoComplete 的透明部件，其实际颜色与水平 padding 读取宿主 globals，不再借 ListBox Own。

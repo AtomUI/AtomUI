@@ -156,7 +156,7 @@ public partial class NavigationFamilyEffectTests
     }
 
     [Fact]
-    public void Menu_Items_In_Context_Menus_And_Flyouts_Follow_The_Menu_Own_Tokens()
+    public void Menu_Own_Tokens_Do_Not_Leak_Into_Context_Menus_Or_Flyouts()
     {
         // Menu Own Tokens style every menu popup: a context menu's items follow Controls[Menu].ItemColor; Controls[NavMenu]
         // does not reach them.
@@ -172,8 +172,7 @@ public partial class NavigationFamilyEffectTests
 
             provider.Config = IsolationConfig(control: (MenuTokens.Identity, "ItemColor", IsolationColor));
             using var byMenu = capture();
-            ChangedRatioOf(before, byMenu, contextMenu).ShouldBeGreaterThan(TokenEffectHarness.ThinLineThresholdRatio,
-                "Controls[Menu].ItemColor did not reach the context menu items.");
+            ChangedRatioOf(before, byMenu, contextMenu).ShouldBe(0d, "Menu Own leaked into ContextMenu.");
         });
     }
 }

@@ -6,7 +6,6 @@ namespace AtomUI.Desktop.Controls;
 
 internal class TreeSelectTreeView : TreeView
 {
-    protected override Type StyleKeyOverride => typeof(TreeView);
     
     internal static readonly DirectProperty<TreeSelectTreeView, bool> IsMaxSelectReachedProperty =
         AvaloniaProperty.RegisterDirect<TreeSelectTreeView, bool>(nameof(IsMaxSelectReached),

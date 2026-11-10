@@ -1,6 +1,6 @@
 <!-- owner: global Tokens are read from the owner because this theme is also the base of LunarCalendar (its own
      identity). On a Calendar the owner is the Calendar. -->
-<ControlTheme
+<ControlTheme xmlns:tokeninputs="using:AtomUI.Desktop.Controls.Internal.Calendar"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
@@ -11,6 +11,21 @@
     x:Class="AtomUI.Desktop.Controls.Themes.CalendarControlTheme"
     TargetType="controls:Calendar"
     x:ClassModifier="internal">
+        <Setter Property="tokeninputs:CalendarHeader.ThemeFullBg" Value="{atom:CalendarTokenResource FullBg}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeFullPanelBg" Value="{atom:CalendarTokenResource FullPanelBg}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeItemActiveBg" Value="{atom:CalendarTokenResource ItemActiveBg}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeYearControlWidth" Value="{atom:CalendarTokenResource YearControlWidth}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeMonthControlWidth" Value="{atom:CalendarTokenResource MonthControlWidth}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeYearMonthCellWidth" Value="{atom:CalendarTokenResource YearMonthCellWidth}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeWeekHeaderHeight" Value="{atom:CalendarTokenResource WeekHeaderHeight}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeWeekHeaderPadding" Value="{atom:CalendarTokenResource WeekHeaderPadding}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellMargin" Value="{atom:CalendarTokenResource FullCellMargin}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellPadding" Value="{atom:CalendarTokenResource FullCellPadding}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellBorderThickness" Value="{atom:CalendarTokenResource FullCellBorderThickness}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarHeight" Value="{atom:CalendarTokenResource RangeBarHeight}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarGap" Value="{atom:CalendarTokenResource RangeBarGap}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarLabelPadding" Value="{atom:CalendarTokenResource RangeBarLabelPadding}" />
+
     <ControlTheme.Resources>
         <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>
@@ -25,8 +40,8 @@
             </Style>
             <Style Selector="^[Presentation=Content]">
                 <Setter Property="WeekHeaderTextAlignment" Value="Right" />
-                <Setter Property="WeekHeaderMinHeight" Value="{atom:CalendarTokenResource WeekHeaderHeight}" />
-                <Setter Property="WeekHeaderPadding" Value="{atom:CalendarTokenResource WeekHeaderPadding}" />
+                <Setter Property="WeekHeaderMinHeight" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeWeekHeaderHeight)}" />
+                <Setter Property="WeekHeaderPadding" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeWeekHeaderPadding)}" />
             </Style>
         </ControlTheme>
         </ResourceDictionary>
@@ -86,14 +101,14 @@
                                                             Mode="{TemplateBinding Mode}"
                                                             Fullscreen="{TemplateBinding Fullscreen}"
                                                             RangeBars="{TemplateBinding RangeBars}"
-                                                            RangeBarHeight="{atom:CalendarTokenResource RangeBarHeight}"
+                                                            RangeBarHeight="{Binding $self.(tokeninputs:CalendarHeader.ThemeRangeBarHeight)}"
                                                             RangeBarTopOffset="{TemplateBinding EffectiveRangeBarTopOffset}"
                                                             RangeBarHorizontalInset="{atom:OwnerTokenResource UniformlyMarginXXS}"
                                                             HorizontalAlignment="Stretch"
                                                             VerticalAlignment="Stretch"
-                                                            RangeBarGap="{atom:CalendarTokenResource RangeBarGap}"
+                                                            RangeBarGap="{Binding $self.(tokeninputs:CalendarHeader.ThemeRangeBarGap)}"
                                                             RangeBarLabelFontSize="{atom:OwnerTokenResource FontSizeSM}"
-                                                            RangeBarLabelPadding="{atom:CalendarTokenResource RangeBarLabelPadding}"
+                                                            RangeBarLabelPadding="{Binding $self.(tokeninputs:CalendarHeader.ThemeRangeBarLabelPadding)}"
                                                             RangeBarLabelForeground="{atom:OwnerTokenResource ColorTextLightSolid}"
                                                             IsVisible="False"
                                                             IsHitTestVisible="False"
@@ -105,12 +120,12 @@
         </ControlTemplate>
     </Setter>
 
-    <Setter Property="Background" Value="{atom:CalendarTokenResource FullBg}" />
+    <Setter Property="Background" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeFullBg)}" />
     <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorderSecondary}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Padding" Value="0" />
     <Style Selector="^ /template/ controls|DateViewer">
-        <Setter Property="Background" Value="{atom:CalendarTokenResource FullPanelBg}" />
+        <Setter Property="Background" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeFullPanelBg)}" />
     </Style>
     <Style Selector="^:mini /template/ controls|DateViewer">
         <Setter Property="Height" Value="{TemplateBinding EffectiveMiniContentHeight}" />

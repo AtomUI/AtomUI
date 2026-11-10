@@ -33,7 +33,7 @@ internal class TimeSelectedEventArgs : EventArgs
 [TemplatePart("PART_PeriodSelector", typeof(DateTimePickerPanel), IsRequired = true)]
 [TemplatePart("PART_PickerContainer", typeof(Grid), IsRequired = true)]
 [TemplatePart("PART_ThirdSpacer", typeof(Rectangle), IsRequired = true)]
-internal class TimeView : TemplatedControl
+internal partial class TimeView : TemplatedControl
 {
     #region 公共属性定义
 

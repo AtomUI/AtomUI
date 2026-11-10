@@ -29,7 +29,7 @@
         <Setter Property="IsMotionEnabled" Value="{atom:DialogButtonBoxTokenResource EnableMotion}" />
         <Setter Property="ClipToBounds" Value="False" />
         <Style Selector="^ /template/ DockPanel">
-            <Setter Property="HorizontalSpacing" Value="{atom:DialogTokenResource ButtonGroupSpacing}" />
+            <Setter Property="HorizontalSpacing" Value="{Binding $self.(atom:DialogSurface.ThemeButtonGroupSpacing)}" />
         </Style>
 
         <Setter Property="OkButtonText" Value="{atom:DialogLangResource Ok}" />

@@ -62,9 +62,7 @@ CalendarDateCellTheme 与 LunarCalendar 的 CellTheme 资源消费对应产品�
 Token owner：Calendar 把自己的 Token owner 转发给模板中的 DateViewer（`TokenOwnerForwarding`），因此 Calendar 提供的面板与单元主题以
 `OwnerTokenResource` 读取宿主 Calendar / LunarCalendar 的有效全局 Token，`Controls[Calendar]` / `Controls[LunarCalendar]` 到达日期格；
 DateViewer 自己的 Own Token 仍读 DateViewer 身份。Header 中的 ComboBox、OptionButtonGroup 保持各自身份。
-LunarCalendar 复用 CalendarTheme 与 CalendarDateCellTheme：全局 Token 跟随 LunarCalendar，但其中的 Calendar Own Token（`FullBg`、
-`FullPanelBg`、`ItemActiveBg`、`RangeBarHeight`、`FullCell*`、`RangeBarGap`、`RangeBarLabelPadding`、`YearMonthCellWidth`、
-`WeekHeader*`、Header 宽度）借用 Calendar 身份，`Controls[Calendar]` 的这些覆盖也到达 LunarCalendar（待抽象层任务处理）。
+LunarCalendar 复用模板和 AbstractCalendarToken 的真实公共 Own 计算，但由自己的终端设置样式输入。MiniContentHeight/FullCellMinHeight 等月历度量保持各自公式；只被 Gregorian 消费的 ItemActiveBg/YearMonthCellWidth 不添加给 Lunar，后者使用自己的主色与 MiniMonthCellWidth。Controls[Calendar] 的 Own 不再进入 Lunar。
 业务布局、模板内容、动态资源覆盖和尺寸语义必须完整；普通主题修改不能让农历次级行与业务条重叠。
 状态选择在 Theme Selector，资源更新由 scoped owner 链传播，不能以静态值规避生命周期。
 

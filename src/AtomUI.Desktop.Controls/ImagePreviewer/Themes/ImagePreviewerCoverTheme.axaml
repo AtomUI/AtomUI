@@ -20,9 +20,9 @@
                         <Border Name="PART_LoadingPresenter"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
-                                MinWidth="{atom:ImagePreviewerTokenResource CoverImageWidth}"
-                                MinHeight="{atom:ImagePreviewerTokenResource CoverImageWidth}"
-                                Background="{atom:ImagePreviewerTokenResource ColorFillTertiary}"
+                                MinWidth="{Binding $self.(atom:ImageViewer.ThemeCoverImageWidth)}"
+                                MinHeight="{Binding $self.(atom:ImageViewer.ThemeCoverImageWidth)}"
+                                Background="{Binding $self.(atom:ImageViewer.ThemeColorFillTertiary)}"
                                 CornerRadius="{TemplateBinding OwnerCornerRadius}"
                                 IsVisible="False">
                             <Panel HorizontalAlignment="Center"
@@ -40,9 +40,9 @@
                         <Border Name="PART_ErrorPresenter"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
-                                MinWidth="{atom:ImagePreviewerTokenResource CoverImageWidth}"
-                                MinHeight="{atom:ImagePreviewerTokenResource CoverImageWidth}"
-                                Background="{atom:ImagePreviewerTokenResource ColorFillTertiary}"
+                                MinWidth="{Binding $self.(atom:ImageViewer.ThemeCoverImageWidth)}"
+                                MinHeight="{Binding $self.(atom:ImageViewer.ThemeCoverImageWidth)}"
+                                Background="{Binding $self.(atom:ImageViewer.ThemeColorFillTertiary)}"
                                 CornerRadius="{TemplateBinding OwnerCornerRadius}"
                                 IsVisible="{TemplateBinding HasError}">
                             <Panel HorizontalAlignment="Center"
@@ -50,7 +50,7 @@
                                 <StackPanel Name="DefaultErrorLayout"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
-                                            Spacing="{atom:ImagePreviewerTokenResource SpacingXXS}"
+                                            Spacing="{Binding $self.(atom:ImageViewer.ThemeSpacingXXS)}"
                                             IsVisible="{TemplateBinding ErrorContent, Converter={x:Static ObjectConverters.IsNull}}">
                                     <antdicons:PictureOutlined Name="DefaultErrorIcon"
                                                               HorizontalAlignment="Center" />
@@ -70,8 +70,8 @@
                                 Classes.semantic-cover="True"
                                 Opacity="{TemplateBinding MaskOpacity}"
                                 IsVisible="{TemplateBinding IsCoverMaskVisible}"
-                                Background="{atom:ImagePreviewerTokenResource MaskBgColor}"
-                                TextBlock.Foreground="{atom:ImagePreviewerTokenResource ColorTextLightSolid}"
+                                Background="{Binding $self.(atom:ImageViewer.ThemeMaskBgColor)}"
+                                TextBlock.Foreground="{Binding $self.(atom:ImageViewer.ThemeColorTextLightSolid)}"
                                 CornerRadius="{TemplateBinding OwnerCornerRadius}"
                                 Margin="{Binding OwnerMaskMargin, RelativeSource={RelativeSource TemplatedParent}}">
                             <ContentPresenter Name="MaskContentPresenter"
@@ -87,14 +87,14 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
       
-        <Setter Property="IsMotionEnabled" Value="{atom:ImagePreviewerTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{Binding $self.(atom:ImageViewer.ThemeEnableMotion)}" />
         <Style Selector="^ /template/ TextBlock#DefaultErrorText">
-            <Setter Property="Foreground" Value="{atom:ImagePreviewerTokenResource ColorTextTertiary}" />
+            <Setter Property="Foreground" Value="{Binding $self.(atom:ImageViewer.ThemeColorTextTertiary)}" />
         </Style>
         <Style Selector="^ /template/ atom|Icon#DefaultErrorIcon">
-            <Setter Property="Width" Value="{atom:ImagePreviewerTokenResource ErrorIconSize}" />
-            <Setter Property="Height" Value="{atom:ImagePreviewerTokenResource ErrorIconSize}" />
-            <Setter Property="StrokeBrush" Value="{atom:ImagePreviewerTokenResource ColorTextTertiary}" />
+            <Setter Property="Width" Value="{Binding $self.(atom:ImageViewer.ThemeErrorIconSize)}" />
+            <Setter Property="Height" Value="{Binding $self.(atom:ImageViewer.ThemeErrorIconSize)}" />
+            <Setter Property="StrokeBrush" Value="{Binding $self.(atom:ImageViewer.ThemeColorTextTertiary)}" />
         </Style>
 
         <Style Selector="^:loading:not(:has-image) /template/ Border#PART_LoadingPresenter">

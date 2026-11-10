@@ -1,31 +1,21 @@
 using AtomUI.Theme.DesignTokens;
+using AtomUI.Desktop.Controls.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class MessageBoxToken : AbstractControlDesignToken
+internal sealed class MessageBoxToken : AbstractDialogToken
 {
-
-    /// <summary>
-    /// Style Icon 的大小
-    /// </summary>
     public double StyleIconSize { get; set; }
-    
-    /// <summary>
-    /// 最小宽度
-    /// </summary>
-    public double MinWidth { get; set; }
-
-    public MessageBoxToken()
-
-    {
-    }
-
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
+        if (!IsExplicit(MessageBoxTokenKind.HeaderPadding))
+        {
+            HeaderPadding = CalculateHeaderPadding();
+        }
+        MinHeight = CalculateMinimumHeight(HeaderPadding);
+        MinWidth = 410;
         StyleIconSize = EffectiveGlobalToken.SizeLG * 1.2;
-        MinWidth      = 410;
     }
-
 }

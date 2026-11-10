@@ -14,6 +14,10 @@
   - Overlay Dialog 激活不再在 pointer 隧道阶段强制聚焦 Surface，保留时间、日期及范围选择器等内容弹层的点击与确认语义。
   - 调整多个 Dialog 的叠放顺序时移动现有 presenter，不再移除并重新挂载，避免内容失焦和 Popup owner 提前 detach。
 
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
 ## 2026-11-08
 
 - Theme / Token

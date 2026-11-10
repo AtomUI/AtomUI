@@ -1,8 +1,13 @@
+<!-- owner: the transparent candidate part inherits the Mentions/AutoComplete host and has no Own schema. -->
 <ControlTheme TargetType="atom:CandidateList"
               xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               x:Class="AtomUI.Desktop.Controls.Primitives.Themes.CandidateListTheme">
+    <Setter Property="ItemHoverBg" Value="{atom:OwnerTokenResource ColorBgTextHover}" />
+    <Setter Property="ItemSelectedBg" Value="{atom:OwnerTokenResource ControlItemBgActive}" />
+    <!-- layout: candidate popup content padding is supplied by its host frame. -->
+    <Setter Property="Padding" Value="0" />
     <ControlTheme.BasedOn>
         <atom:ListBoxTheme TargetType="atom:CandidateList" />
     </ControlTheme.BasedOn>

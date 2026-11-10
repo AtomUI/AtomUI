@@ -99,7 +99,7 @@ public class MigratedFamilyAnalyzerGateTests
         "StatisticCountUp", "Carousel", "CarouselNavButton", "CarouselPage", "ImagePreviewer", "ImageGroupPreviewer",
         "Calendar", "LunarCalendar", "DateViewer", "RangeDateViewer", "DatePicker", "RangeDatePicker", "TimePicker",
         "RangeTimePicker", "TimeViewCell", "InfoPickerInput", "RangeInfoPickerInput",
-        "Form", "FormItem", "FormItemDecorator", "Descriptions", "Upload", "UploadTrigger", "UploadDropZone",
+        "Form", "SubmitButton", "ResetButton", "FormItem", "FormItemDecorator", "Descriptions", "Upload", "UploadTrigger", "UploadDropZone",
         "UploadDefaultDropArea", "Mentions", "OtpLineEdit", "Segmented", "SegmentedItem", "CandidateList", "CandidateListItem",
         "ListTransfer", "TreeTransfer", "TransferListView", "TransferTreeView", "TransferListItem", "TransferTreeViewItem",
         "Drawer", "Spin", "SpinIndicator", "Result", "Empty", "QRCode", "HyperLinkTextBlock", "SelectableTextBlock",

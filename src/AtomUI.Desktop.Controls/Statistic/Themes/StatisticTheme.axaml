@@ -7,6 +7,10 @@
         <ControlTheme.BasedOn>
             <atom:AbstractStatisticTheme TargetType="atom:Statistic"/>
         </ControlTheme.BasedOn>
+        <Setter Property="ContentFontSize" Value="{atom:StatisticTokenResource ContentFontSize}" />
+        <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+            <Setter Property="FontSize" Value="{atom:StatisticTokenResource TitleFontSize}" />
+        </Style>
 
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:Statistic">

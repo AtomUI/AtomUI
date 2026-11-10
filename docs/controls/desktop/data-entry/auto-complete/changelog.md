@@ -11,6 +11,9 @@
 
 ## 2026-11-10
 
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+
 - Theme
   - CandidateList / CandidateListItem 透传 AutoComplete owner；候选列表 Own Token 仍复用 ListBox。
 

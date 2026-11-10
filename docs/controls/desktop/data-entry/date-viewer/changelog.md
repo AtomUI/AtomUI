@@ -7,6 +7,10 @@
 - Theme
   - 默认 `DateViewerCellTheme` 把 `PART_ValueFrame` 标记为 `TemplatedControl.IsTemplateFocusTarget`：该格子主题没有自身焦点视觉，共享焦点描边改为只包围圆角数值框，不再框住整列宽的格子。日期选择器的面板共用此主题。
 
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
 ## 2026-11-09
 
 - Theme

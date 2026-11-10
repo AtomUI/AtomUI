@@ -35,7 +35,7 @@ Statistic 的控件专项模型通过 Theme 消费 Token：
 主题读法：`AbstractStatisticTheme` 是 Statistic 与 TimerStatistic 的共同基础主题（`AbstractStatistic` 本身不实例化），带
 `<!-- owner: -->` 标记以 `OwnerTokenResource` 读取标题与数值颜色（`ColorTextDescription` / `ColorTextHeading`），在两个控件上分别
 解析到各自的 identity；`StatisticTheme` 以 `StatisticTokenResource`、`StatisticCountUpTheme` 以 `StatisticCountUpTokenResource` 读取
-全局 Token。`TitleFontSize` / `ContentFontSize` 是 Statistic 的 Own Token，TimerStatistic 与 StatisticCountUp 同样读取它们。
+全局 Token。Statistic 与 TimerStatistic 独立拥有 TitleFontSize/ContentFontSize；StatisticCountUp 仅独立拥有 ContentFontSize，共享最小数值字号层。
 
 ## 4. 控件家族影响
 
@@ -63,3 +63,7 @@ Statistic 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 独立 Token 身份与共享计算
+
+Standalone StatisticCountUp 不再读取 Statistic Own。作为 Statistic 的 Content 时，现有 ContentFontSize 通过 Style 优先级显式投射到 CountUp.FontSize，调用方本地 FontSize 优先；Content 更换和 visual detach 释放绑定。Timer 的文本 presenter 直接使用自身 ContentFontSize。

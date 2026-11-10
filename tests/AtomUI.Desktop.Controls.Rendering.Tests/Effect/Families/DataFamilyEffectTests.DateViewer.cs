@@ -13,7 +13,7 @@ namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 /// <summary>
 /// DateViewer and RangeDateViewer effect rows. Their identity-less header, panel and cells read the owner's globals
 /// (hand lists below); the Own Tokens are DateViewer's, and RangeDateViewer reads them from the DateViewer identity (a
-/// borrowed Own Token: <see cref="RangeDateViewer_Follows_The_DateViewer_Own_Tokens"/>).
+/// borrowed Own Token: <see cref="RangeDateViewer_Uses_Independent_Own_Tokens"/>).
 /// </summary>
 public partial class DataFamilyEffectTests
 {
@@ -32,7 +32,7 @@ public partial class DataFamilyEffectTests
 
     /// <summary>
     /// DateViewer Own Tokens (and their bases) that only the RangeDateViewer renders: the gap between its two panels.
-    /// They are covered by <see cref="RangeDateViewer_Follows_The_DateViewer_Own_Tokens"/>.
+    /// They are covered by <see cref="RangeDateViewer_Uses_Independent_Own_Tokens"/>.
     /// </summary>
     private static readonly HashSet<string> s_rangeOnlyViewerTokens = new(StringComparer.Ordinal) { "PanelSpacing", "UniformlyMargin" };
 
@@ -68,10 +68,17 @@ public partial class DataFamilyEffectTests
     internal static RangeDateViewer CreateRangeDateViewer(
         DateViewerPresentation presentation = DateViewerPresentation.Compact,
         DateTime? start = null,
-        DateTime? end = null) =>
+        DateTime? end = null,
+        DateViewerSelectionUnit unit = DateViewerSelectionUnit.Date,
+        bool cellTemplate = false) =>
         new()
         {
             Presentation = presentation,
+            SelectionUnit = unit,
+            CellTemplate = cellTemplate ? new FuncDataTemplate<object?>((_, _) => new Avalonia.Controls.Border
+            {
+                Height = 12, Background = Avalonia.Media.Brushes.SteelBlue
+            }) : null,
             Value        = new DateViewerRange(start ?? s_calendarDate, end ?? s_calendarDate.AddDays(5)),
             DisplayDate  = start ?? s_calendarDate
         };
@@ -127,7 +134,7 @@ public partial class DataFamilyEffectTests
 
         Scenario Content(bool cellTemplate = false, EffectOptions? options = null) =>
             new(() => range
-                    ? CreateRangeDateViewer(DateViewerPresentation.Content)
+                    ? CreateRangeDateViewer(DateViewerPresentation.Content, cellTemplate: cellTemplate)
                     : CreateDateViewer(DateViewerPresentation.Content, cellTemplate: cellTemplate), null, options);
 
         switch (token)
@@ -159,20 +166,21 @@ public partial class DataFamilyEffectTests
 
             // ---- period cells ----
             case "PeriodCellWidth":
-                return new Scenario(static () => CreateDateViewer(unit: DateViewerSelectionUnit.Month));
+                return new Scenario(() => range ? CreateRangeDateViewer(unit: DateViewerSelectionUnit.Month) : CreateDateViewer(unit: DateViewerSelectionUnit.Month));
             case "PeriodCellPadding":
                 // The period cells have a fixed width and centred text: a leading inset moves the text.
-                return new Scenario(static () => CreateDateViewer(unit: DateViewerSelectionUnit.Month), null,
+                return new Scenario(() => range ? CreateRangeDateViewer(unit: DateViewerSelectionUnit.Month) : CreateDateViewer(unit: DateViewerSelectionUnit.Month), null,
                     new EffectOptions { Perturb = static _ => new Thickness(30, 0, 0, 0) });
 
             // ---- week mode ----
             case "WeekNumberOpacity":
-                return new Scenario(static () => CreateDateViewer(unit: DateViewerSelectionUnit.Week), null,
+                return new Scenario(() => range ? CreateRangeDateViewer(unit: DateViewerSelectionUnit.Week) : CreateDateViewer(unit: DateViewerSelectionUnit.Week), null,
                     new EffectOptions { Region = static c => WeekNumberCell(c) });
 
             // ---- cell states ----
             case "CellHoverBg":
-                return Compact(static c => Pseudo(ViewerCell(c, s_calendarDate.AddDays(-3)), ":pointerover"));
+                return Compact(static c => Pseudo(ViewerCell(c, s_calendarDate.AddDays(-3)), ":pointerover"),
+                    new EffectOptions { Region = static c => ViewerCell(c, s_calendarDate.AddDays(-3)) });
             case "ControlItemBgHover":
                 // The hovered full-content cell (the compact hover is the DateViewer's CellHoverBg).
                 return new Scenario(() => range
@@ -206,19 +214,18 @@ public partial class DataFamilyEffectTests
     }
 
     [Fact]
-    public void RangeDateViewer_Follows_The_DateViewer_Own_Tokens()
+    public void RangeDateViewer_Uses_Independent_Own_Tokens()
     {
-        // The range viewer has no Own Tokens: its theme reads the DateViewer's, so Controls[DateViewer] reaches it (a
-        // borrowed Own Token, recorded for the abstract-layer follow-up). The panel gap and the range background show.
+        // Range geometry and cell colours belong to the range viewer terminal.
         foreach (var (token, value) in new[] { ("PanelSpacing", "48"), ("UniformlyMargin", "40"), ("CellRangeBg", "#ffff0000") })
         {
             var viewer = CreateRangeDateViewer();
             WithIsolationWindow(viewer, (provider, capture) =>
             {
                 using var before = capture();
-                provider.Config = IsolationConfig(control: (DateViewerTokens.Identity, token, value));
+                provider.Config = IsolationConfig(control: (RangeDateViewerTokens.Identity, token, value));
                 using var after = capture();
-                ChangedRatioOf(before, after, viewer).ShouldBeGreaterThan(0.005, $"Controls[DateViewer].{token}");
+                ChangedRatioOf(before, after, viewer).ShouldBeGreaterThan(0.005, $"Controls[RangeDateViewer].{token}");
             });
         }
     }

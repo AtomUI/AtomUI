@@ -6,7 +6,7 @@ using Avalonia.Skia;
 
 namespace AtomUI.Desktop.Controls;
 
-internal sealed class TabOverflowEdgeIndicator : Control
+internal sealed partial class TabOverflowEdgeIndicator : Control
 {
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
         Border.BoxShadowProperty.AddOwner<TabOverflowEdgeIndicator>();

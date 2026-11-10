@@ -4,7 +4,7 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TransferListViewToken : AbstractControlDesignToken
+internal sealed class TransferListViewToken : AbstractListViewToken
 {
     public Thickness PaginationMargin { get; set; }
 

@@ -25,13 +25,11 @@ Task 10.9b 裁决：
 - `ButtonsMargin`（Now / OK 按钮区与时间列的间距）与 `PeriodHostWidth`（上午/下午列宽，默认等于 `ItemWidth`）接通消费（Active）。
   按钮区原先借读 `DatePicker.ButtonsPanelMargin`，默认值相同。
 - 新增 `ItemMargin`（时间单元左右外边距，默认 `UniformlyMarginXXS`，antd `marginInline: marginXXS`），替换 `4,0` 字面量。
-- 删除 `RangePickerArrowMargin` 与 `RangePickerIndicatorThickness`（Breaking）：二者从未被消费，是 `InfoPickerInput` 同名 Own Token 的
-  重复；范围箭头间距与激活条厚度以 `Controls[InfoPickerInput].RangePickerArrowMargin` / `RangePickerIndicatorThickness` 配置。
+- RangeTimePicker 的 RangePickerArrowMargin/RangePickerIndicatorThickness 与 RangeMarginToAnchor 使用 RangeTimePicker 身份；原 InfoPickerInput 配置应迁移到实际 range 终端。
 
 TimeView 与 TimeViewCell 位于注册控件 ScrollViewer 内；TimeView 把所属 Picker 的 Token owner 转发给各列，TimeViewCell 是 Token owner
 透明的注册控件，因此单元的颜色、圆角与过渡时长跟随所属 Picker（原先借读 `ListView` 的 Own Token，现读所属 Picker 的全局 Token，默认
-值不变）。TimeView 与 TimeViewCell 的 Own Token 读 TimePicker 身份：RangeTimePicker 与 DatePicker / RangeDatePicker 的日期时间弹层借用
-`Controls[TimePicker]` 的 `ItemHeight`、`ItemWidth`、`ItemMargin`、`HeaderMargin` 等覆盖（待抽象层任务处理）。
+值不变）。TimeView 与 TimeViewCell 的具体 Own 样式输入由当前 TimePicker/RangeTimePicker/DatePicker/RangeDatePicker 设置，跨终端不借来源键。HeaderMargin 只用于显示时间 header 的两个日期时间终端，不添加给时间选择器。
 
 输入框在弹层打开时保持 `ColorText`（antd 一致）；指针预览时间（`:choosing`）时，预览写入的输入框文字为 `ColorTextPlaceholder`。
 
@@ -75,3 +73,7 @@ TimePicker 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 独立 Token 身份与共享计算
+
+ItemHeight/ItemWidth 的显式基值分别在四终端守卫，再调用共享纯函数派生 ItemPadding；PeriodHostWidth 跟随该终端 ItemWidth。原 TimePicker.HeaderMargin 移到 DatePicker/RangeDatePicker，时间 footer ButtonsMargin 只属于 TimePicker/RangeTimePicker。

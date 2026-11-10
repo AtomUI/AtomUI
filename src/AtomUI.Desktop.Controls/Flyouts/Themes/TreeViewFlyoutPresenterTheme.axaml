@@ -21,7 +21,7 @@
     
     <Style Selector="^:is(atom|TreeViewFlyoutPresenter)">
         <Setter Property="IsMotionEnabled" Value="{atom:TreeViewFlyoutPresenterTokenResource EnableMotion}" />
-        <Setter Property="CornerRadius" Value="{atom:PopupTokenResource PopupCornerRadius}" />
+        <Setter Property="CornerRadius" Value="{atom:TreeViewFlyoutPresenterTokenResource PopupCornerRadius}" />
         <Setter Property="Padding" Value="{atom:TreeViewFlyoutPresenterTokenResource PopupContentPadding}" />
         <Setter Property="Background" Value="{atom:TreeViewFlyoutPresenterTokenResource PopupBgColor}" />
         

@@ -17,38 +17,38 @@
                     </Style>
                     <Style Selector="^[SizeType=Large]">
                         <Setter Property="ContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePaddingLG}" />
+                                Value="{Binding $self.(atom:SelectTag.ThemeMultiModePaddingLG)}" />
                         <Setter Property="CompactContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePaddingSM}" />
+                                Value="{Binding $self.(atom:SelectTag.ThemeMultiModePaddingSM)}" />
                         <Setter Property="ContentMinHeight"
-                                Value="{atom:SelectTokenResource MultipleItemHeightLG}" />
+                                Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeightLG)}" />
                         <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
                             <Setter Property="Margin"
-                                    Value="{atom:SelectTokenResource MultiModePrefixIndentLG}" />
+                                    Value="{Binding $self.(atom:SelectTag.ThemeMultiModePrefixIndentLG)}" />
                         </Style>
                     </Style>
                     <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
                         <Setter Property="ContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePadding}" />
+                                Value="{Binding $self.(atom:SelectTag.ThemeMultiModePadding)}" />
                         <Setter Property="CompactContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePaddingSM}" />
+                                Value="{Binding $self.(atom:SelectTag.ThemeMultiModePaddingSM)}" />
                         <Setter Property="ContentMinHeight"
-                                Value="{atom:SelectTokenResource MultipleItemHeight}" />
+                                Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
                         <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
                             <Setter Property="Margin"
-                                    Value="{atom:SelectTokenResource MultiModePrefixIndent}" />
+                                    Value="{Binding $self.(atom:SelectTag.ThemeMultiModePrefixIndent)}" />
                         </Style>
                     </Style>
                     <Style Selector="^[SizeType=Small]">
                         <Setter Property="ContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePaddingSM}" />
+                                Value="{Binding $self.(atom:SelectTag.ThemeMultiModePaddingSM)}" />
                         <Setter Property="CompactContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePaddingSM}" />
+                                Value="{Binding $self.(atom:SelectTag.ThemeMultiModePaddingSM)}" />
                         <Setter Property="ContentMinHeight"
-                                Value="{atom:SelectTokenResource MultipleItemHeightSM}" />
+                                Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeightSM)}" />
                         <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
                             <Setter Property="Margin"
-                                    Value="{atom:SelectTokenResource MultiModePrefixIndentSM}" />
+                                    Value="{Binding $self.(atom:SelectTag.ThemeMultiModePrefixIndentSM)}" />
                         </Style>
                     </Style>
                 </Style>
@@ -57,20 +57,20 @@
                     <Style Selector="^[SizeType=Large]">
                         <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                             <Setter Property="Padding"
-                                    Value="{atom:SelectTokenResource SingleModePaddingLG}" />
+                                    Value="{Binding $self.(atom:SelectTag.ThemeSingleModePaddingLG)}" />
                         </Style>
                     </Style>
                     <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
                         <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                             <Setter Property="Padding"
-                                    Value="{atom:SelectTokenResource SingleModePadding}" />
+                                    Value="{Binding $self.(atom:SelectTag.ThemeSingleModePadding)}" />
                         </Style>
 
                     </Style>
                     <Style Selector="^[SizeType=Small]">
                         <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                             <Setter Property="Padding"
-                                    Value="{atom:SelectTokenResource SingleModePadding}" />
+                                    Value="{Binding $self.(atom:SelectTag.ThemeSingleModePaddingSM)}" />
                         </Style>
                     </Style>
                 </Style>

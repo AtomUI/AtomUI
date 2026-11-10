@@ -13,6 +13,8 @@
 - Tests
   - 新增 `AbstractListItemTests`（`AtomUI.Controls.Tests`）：默认值为 `null`、伪类常量、伪类随值独立变化、控件值成为逻辑子元素、非控件值不进入逻辑树。
 
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
 ## 2026-11-08
 
 - Changed

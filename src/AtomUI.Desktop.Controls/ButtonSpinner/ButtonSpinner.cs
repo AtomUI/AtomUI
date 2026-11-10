@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
@@ -180,6 +181,28 @@ public partial class ButtonSpinner : Spinner,
     #endregion
 
     #region 内部属性定义
+    internal static readonly StyledProperty<IBrush?> HandleBgProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleBg));
+
+    internal static readonly StyledProperty<IBrush?> FilledHandleBgProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(FilledHandleBg));
+
+    internal static readonly StyledProperty<IBrush?> HandleBorderColorProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleBorderColor));
+
+    internal static readonly StyledProperty<IBrush?> HandleHoverColorProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleHoverColor));
+
+    internal static readonly StyledProperty<IBrush?> HandleActiveBgProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleActiveBg));
+
+    internal static readonly StyledProperty<double> HandleIconSizeProperty =
+        AvaloniaProperty.Register<ButtonSpinner, double>(nameof(HandleIconSize));
+
+    internal static readonly StyledProperty<IBrush?> HandlePressedColorProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandlePressedColor));
+
+
 
     public static readonly StyledProperty<double> SpinnerHandleWidthProperty =
         AvaloniaProperty.Register<ButtonSpinner, double>(nameof (SpinnerHandleWidth));
@@ -195,6 +218,48 @@ public partial class ButtonSpinner : Spinner,
 
     internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
         InputControlState.FormStatusProperty.AddOwner<ButtonSpinner>();
+
+    internal IBrush? HandleBg
+    {
+        get => GetValue(HandleBgProperty);
+        set => SetValue(HandleBgProperty, value);
+    }
+
+    internal IBrush? FilledHandleBg
+    {
+        get => GetValue(FilledHandleBgProperty);
+        set => SetValue(FilledHandleBgProperty, value);
+    }
+
+    internal IBrush? HandleBorderColor
+    {
+        get => GetValue(HandleBorderColorProperty);
+        set => SetValue(HandleBorderColorProperty, value);
+    }
+
+    internal IBrush? HandleHoverColor
+    {
+        get => GetValue(HandleHoverColorProperty);
+        set => SetValue(HandleHoverColorProperty, value);
+    }
+
+    internal IBrush? HandleActiveBg
+    {
+        get => GetValue(HandleActiveBgProperty);
+        set => SetValue(HandleActiveBgProperty, value);
+    }
+
+    internal double HandleIconSize
+    {
+        get => GetValue(HandleIconSizeProperty);
+        set => SetValue(HandleIconSizeProperty, value);
+    }
+
+    internal IBrush? HandlePressedColor
+    {
+        get => GetValue(HandlePressedColorProperty);
+        set => SetValue(HandlePressedColorProperty, value);
+    }
 
     public double SpinnerHandleWidth
     {

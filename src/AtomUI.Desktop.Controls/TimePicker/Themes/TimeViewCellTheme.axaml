@@ -23,14 +23,14 @@
         
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="Margin" Value="{atom:TimePickerTokenResource ItemMargin}" />
+        <Setter Property="Margin" Value="{Binding $self.(atom:TimeView.ThemeItemMargin)}" />
         <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
         <Setter Property="Background" Value="{atom:OwnerTokenResource ColorTransparent}" />
-        <Setter Property="MinHeight" Value="{atom:TimePickerTokenResource ItemHeight}" />
-        <Setter Property="Padding" Value="{atom:TimePickerTokenResource ItemPadding}" />
+        <Setter Property="MinHeight" Value="{Binding $self.(atom:TimeView.ThemeItemHeight)}" />
+        <Setter Property="Padding" Value="{Binding $self.(atom:TimeView.ThemeItemPadding)}" />
         
         <Style Selector="^:pointerover">
             <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />

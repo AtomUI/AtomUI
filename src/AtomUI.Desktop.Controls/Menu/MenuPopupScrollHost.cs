@@ -4,7 +4,7 @@ using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class MenuPopupScrollHost : ContentControl, IMotionAwareControl, IScrollAwareControl
+internal partial class MenuPopupScrollHost : ContentControl, IMotionAwareControl, IScrollAwareControl
 {
     #region 公共属性定义
 

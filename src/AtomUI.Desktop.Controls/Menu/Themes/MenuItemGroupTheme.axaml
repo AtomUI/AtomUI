@@ -13,7 +13,7 @@
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Center"
                                       Foreground="{atom:MenuItemGroupTokenResource ColorTextDescription}"
-                                      Padding="{atom:MenuTokenResource GroupTitlePadding}"
+                                      Padding="{Binding $self.(atom:MenuPopupScrollHost.ThemeGroupTitlePadding)}"
                                       Content="{TemplateBinding Header}"
                                       ContentTemplate="{TemplateBinding HeaderTemplate}" />
                     <ItemsPresenter Name="PART_ItemsPresenter"

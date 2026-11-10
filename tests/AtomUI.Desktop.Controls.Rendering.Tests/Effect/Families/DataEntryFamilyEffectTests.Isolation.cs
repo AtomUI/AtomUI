@@ -345,7 +345,7 @@ public partial class DataEntryFamilyEffectTests
     }
 
     [Fact]
-    public void Mentions_Candidate_List_Follows_The_Mentions_And_Its_Input_Keeps_The_TextArea_Identity()
+    public void Mentions_Candidate_List_And_Internal_TextArea_Follow_The_Mentions()
     {
         var host     = CreateMentionsHost();
         var mentions = MentionsOf(host);
@@ -354,14 +354,14 @@ public partial class DataEntryFamilyEffectTests
             // The input is a nested TextArea: Controls[TextArea] styles it, Controls[Mentions] does not. Checked before the
             // popup opens, because the popup opens over the input at the trigger line.
             var textArea = Descendant<TextArea>(mentions);
-            ThemeScope.GetTokenOwner(textArea).ShouldBe(TextAreaTokens.Identity);
+            ThemeScope.GetTokenOwner(textArea).ShouldBe(MentionsTokens.Identity);
             using var closed = capture();
             provider.Config = IsolationConfig(control: (MentionsTokens.Identity, "ColorBorder", IsolationColor));
             using var byMentionsBorder = capture();
-            ChangedRatioOf(closed, byMentionsBorder, textArea).ShouldBe(0d, "Controls[Mentions].ColorBorder reached the TextArea.");
+            ChangedRatioOf(closed, byMentionsBorder, textArea).ShouldBeGreaterThan(0d, "Controls[Mentions].ColorBorder did not reach its internal input.");
             provider.Config = IsolationConfig(control: (TextAreaTokens.Identity, "ColorBorder", IsolationColor));
             using var byTextArea = capture();
-            ChangedRatioOf(closed, byTextArea, textArea).ShouldBeGreaterThan(0d, "Controls[TextArea] did not reach the Mentions input.");
+            ChangedRatioOf(closed, byTextArea, textArea).ShouldBe(0d, "Controls[TextArea] leaked into the Mentions input.");
             provider.Config = IsolationConfig();
 
             OpenMentions(mentions);
@@ -389,7 +389,18 @@ public partial class DataEntryFamilyEffectTests
             using var selected = capture();
             provider.Config = IsolationConfig(control: (ListBoxTokens.Identity, "ItemSelectedBgColor", IsolationColor));
             using var byListBox = capture();
-            ChangedRatioOf(selected, byListBox, item).ShouldBeGreaterThan(0d, "Controls[ListBox].ItemSelectedBgColor no longer reaches the candidate.");
+            ChangedRatioOf(selected, byListBox, item).ShouldBe(0d, "Controls[ListBox].ItemSelectedBgColor leaked into the candidate.");
+            list.IsShowSelectedIndicator = true;
+            provider.Config = IsolationConfig();
+            using var indicatorBaseline = capture();
+            var indicator = Descendant<IconTemplatePresenter>(item, "SelectedIndicator");
+            var margin = indicator.Margin;
+            provider.Config = IsolationConfig(control: (ListBoxTokens.Identity, "SelectedIndicatorMargin", "24,0,0,0"));
+            using var sourceMargin = capture();
+            indicator.Margin.ShouldBe(margin, "ListBox indicator Own leaked into its transparent candidate consumer.");
+            provider.Config = IsolationConfig(control: (MentionsTokens.Identity, "MarginXXS", "24"));
+            using var hostMargin = capture();
+            indicator.Margin.ShouldBe(new Avalonia.Thickness(24, 0, 0, 0));
         });
     }
 

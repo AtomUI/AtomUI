@@ -117,3 +117,7 @@ Token 变更要求：
 | 修改垂直标签 Token | 验证 `FormLayout=Vertical` 下标签与输入控件的垂直节奏。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步 AXAML 引用、生成文件、Token 类型、生成数据和 token.md和控件文档。 |
 | 文档改动 | 运行 `git diff --check`，检查文档链接存在。 |
+
+## 独立 Token 身份与共享计算
+
+SubmitButton 与 ResetButton 使用各自的有效 Global/Own Token，复用标准按钮抽象计算；原 `Controls[Button]` 的 Own 覆盖不再传入这两个终端。字段语义见 [Button Token](../../general/button/token.md)。

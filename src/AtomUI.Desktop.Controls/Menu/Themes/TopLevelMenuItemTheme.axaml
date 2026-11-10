@@ -81,8 +81,8 @@
             <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
 
             <Setter Property="PopupPadding"
-                    Value="{atom:MenuTokenResource MenuPopupContentPadding}" />
-            <Setter Property="ItemHeight" Value="{atom:MenuTokenResource ItemHeight}" />
+                    Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupContentPadding)}" />
+            <Setter Property="ItemHeight" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeItemHeight)}" />
 
             <Style Selector="^:pointerover">
                 <Setter Property="Background"
@@ -139,13 +139,13 @@
 
             <Style Selector="^ /template/ Border#PopupFrame">
                 <Setter Property="Background"
-                        Value="{atom:MenuTokenResource MenuPopupBgColor}" />
+                        Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupBgColor)}" />
                 <Setter Property="CornerRadius"
                         Value="{atom:PopupTokenResource PopupCornerRadius}" />
                 <Setter Property="MinWidth"
-                        Value="{atom:MenuTokenResource MenuPopupMinWidth}" />
+                        Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMinWidth)}" />
                 <Setter Property="MaxWidth"
-                        Value="{atom:MenuTokenResource MenuPopupMaxWidth}" />
+                        Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMaxWidth)}" />
             </Style>
 
             <Style Selector="^ /template/ atom|Popup#PART_Popup">
@@ -163,7 +163,7 @@
 
             <Style Selector="^:disabled">
                 <Setter Property="Foreground"
-                        Value="{atom:MenuTokenResource ItemDisabledColor}" />
+                        Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeItemDisabledColor)}" />
             </Style>
 
             <Style Selector="^[IsMotionEnabled=True]">
@@ -181,10 +181,10 @@
         <!-- 菜单栏一级项的图标必须与弹层内菜单项同样显式定尺寸：IconPresenter 自身不测量图标，
              缺少尺寸时图标渲染为 0x0，而图标与文字的间距仍会占位，菜单栏文字被无谓右移。
              图标为空时由 IsVisible 折叠，间距随节点一起消失。 -->
-        <Setter Property="IconMarginInlineEnd" Value="{atom:MenuTokenResource ItemIconMarginInlineEnd}" />
+        <Setter Property="IconMarginInlineEnd" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeItemIconMarginInlineEnd)}" />
         <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
-            <Setter Property="Width" Value="{atom:MenuTokenResource ItemIconSize}" />
-            <Setter Property="Height" Value="{atom:MenuTokenResource ItemIconSize}" />
+            <Setter Property="Width" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeItemIconSize)}" />
+            <Setter Property="Height" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeItemIconSize)}" />
         </Style>
 
 

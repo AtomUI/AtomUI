@@ -127,3 +127,7 @@ TreeViewToken 变更验证：
 - `DragIndicatorLineWidth` 与实际 drop indicator render line width 一致。
 - `FilterHighlightColor` 能传递到 filter highlight runs。
 - Light / dark 主题下 hover、selected、disabled、filter 和 drag indicator 可读性稳定。
+
+## 独立 Token 身份与共享计算
+
+TreeView 与 TransferTreeView 独立拥有实际树 Own；TreeSelect 只声明其实际树展示字段并通过纯值函数复用默认计算。原目录树模式字段仅在 TreeView 保留 Reserved，不扩大新终端承诺。

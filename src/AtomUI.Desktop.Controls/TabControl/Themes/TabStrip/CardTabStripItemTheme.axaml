@@ -38,8 +38,8 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="Margin" Value="{atom:TabControlTokenResource HorizontalItemMargin}" />
-        <Setter Property="Background" Value="{atom:TabControlTokenResource CardBg}" />
+        <Setter Property="Margin" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeHorizontalItemMargin)}" />
+        <Setter Property="Background" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeCardBg)}" />
         <Setter Property="BorderBrush" Value="{atom:TabStripItemTokenResource ColorBorderSecondary}" />
 
         <Style Selector="^:selected">
@@ -51,34 +51,34 @@
         </Style>
 
         <Style Selector="^[TabStripPlacement=Top], ^[TabStripPlacement=Bottom]">
-            <Setter Property="Margin" Value="{atom:TabControlTokenResource HorizontalItemMargin}" />
+            <Setter Property="Margin" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeHorizontalItemMargin)}" />
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="Padding" Value="{atom:TabControlTokenResource CardPaddingLG}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeCardPaddingLG)}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle]">
-                <Setter Property="Padding" Value="{atom:TabControlTokenResource CardPadding}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeCardPadding)}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="Padding" Value="{atom:TabControlTokenResource CardPaddingSM}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeCardPaddingSM)}" />
             </Style>
         </Style>
 
         <Style Selector="^[TabStripPlacement=Left], ^[TabStripPlacement=Right]">
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="Padding"
-                        Value="{atom:TabControlTokenResource VerticalItemPadding}" />
+                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeVerticalItemPadding)}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle]">
                 <Setter Property="Padding"
-                        Value="{atom:TabControlTokenResource VerticalItemPadding}" />
+                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeVerticalItemPadding)}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
                 <Setter Property="Padding"
-                        Value="{atom:TabControlTokenResource VerticalItemPadding}" />
+                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeVerticalItemPadding)}" />
             </Style>
         </Style>
 

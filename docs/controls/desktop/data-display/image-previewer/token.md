@@ -39,10 +39,7 @@ ImagePreviewer 的控件专项模型通过 Theme 消费 Token：
 `48` 字面量。`FloatToolbarIndicatorPadding` 的默认值改为 0：索引指示器透明且居中，原先只有水平分量的默认值从未产生视觉效果；
 设置垂直分量会调整指示器与操作区的距离。
 
-主题读法：封面、浮层宿主、预览查看器、切换按钮、浮动工具栏、标题栏工具栏、标题栏与原生预览窗口都没有 Token identity，它们位于
-浮层或独立窗口中并承载注册的 IconButton，因此以 `ImagePreviewerTokenResource` 显式读取全局 Token：`Controls[ImagePreviewer]` 作用于
-整个预览界面（ImageGroupPreviewer 打开的预览也使用 ImagePreviewer 的 Token）。ImagePreviewer 与 ImageGroupPreviewer 根主题以各自
-identity 读取动效开关。浮动工具栏与关闭按钮的 `CornerRadius="100"` 是胶囊/圆形形状的布局常量。
+主题读法：ImagePreviewer / ImageGroupPreviewer 从各自终端读取 Global/Own，再通过具体内部样式输入到达封面、overlay、viewer、工具栏与原生预览窗口。跨根沿真实逻辑 owner 链，来源 ImagePreviewer 的覆盖不再进入 Group。胶囊/圆形形状仍为布局常量。
 
 ## 4. 控件家族影响
 
@@ -72,3 +69,7 @@ identity 读取动效开关。浮动工具栏与关闭按钮的 `CornerRadius="1
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 独立 Token 身份与共享计算
+
+AbstractImagePreviewerToken 复用实际预览字段；ImagePreviewSwitchSize 只在原 ImagePreviewer 终端保留 Reserved，不添加给 Group。CoverImageWidth 是无显式封面尺寸时占位的最小尺寸兜底，不接管图片自然尺寸。

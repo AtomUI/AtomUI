@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.Primitives;
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -27,7 +28,7 @@ internal sealed class DialogSurfaceCloseRequestedEventArgs : EventArgs
     }
 }
 
-internal sealed class DialogSurface : ContentControl, IDisposable
+internal sealed partial class DialogSurface : ContentControl, IDisposable
 {
     internal static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<DialogSurface, string?>(nameof(Title));
@@ -234,6 +235,9 @@ internal sealed class DialogSurface : ContentControl, IDisposable
     internal DialogSurface(Dialog dialog)
     {
         _dialog = dialog;
+        // Presenters create this surface across visual roots at runtime; AXAML cannot reference that Dialog instance.
+        // The existing lifetime owner releases this forwarding together with the other presenter bindings.
+        _bindings.Add(TokenOwnerForwarding.Forward(dialog, this));
         Focusable = true;
         _bindings.Add(Bind(
             ContentProperty,

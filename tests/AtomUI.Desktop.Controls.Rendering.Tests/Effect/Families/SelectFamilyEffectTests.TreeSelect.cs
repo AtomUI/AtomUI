@@ -1,3 +1,4 @@
+using AtomUI.Icons.AntDesign;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia.Controls;
@@ -65,11 +66,85 @@ public partial class SelectFamilyEffectTests
             treeSelect.SelectedItems = [nodes[1], nodes[2]];
         });
 
-        if (!FrameState(b, token, Status, Variant, LeftAddOn, Selected))
+        void EmptyMultiple() => b.Init.Add(static c =>
+        {
+            ((TreeSelect)c).IsMultiple = true;
+            ((TreeSelect)c).PlaceholderText = "Placeholder";
+        });
+        var inputOwn = true;
+        switch (token)
+        {
+            case "MultiModePadding" or "MultiModePaddingLG" or "MultiModePaddingSM" or "MultipleItemHeight"
+                or "MultipleItemHeightLG" or "MultipleItemHeightSM" or "MultipleItemBg" or "ColorFillSecondary"
+                or "UniformlyPaddingXXS" or "FontHeightLG" or "ControlHeightLG" or "ControlHeightSM":
+                Tags();
+                break;
+            case "MultiModePrefixIndent" or "MultiModePrefixIndentLG" or "MultiModePrefixIndentSM":
+                Tags();
+                b.Init.Add(static c => ((TreeSelect)c).ContentLeftAddOn = "$");
+                break;
+            case "MultipleItemColorDisabled" or "MultipleSelectorBgDisabled":
+                Tags();
+                b.Disabled();
+                break;
+            case "SingleModePadding" or "SingleModePaddingLG" or "SingleModePaddingSM" or "LineWidth"
+                or "ControlPaddingHorizontalSM" or "UniformlyPaddingSM":
+                EmptyMultiple();
+                break;
+            case "ControlPaddingHorizontal":
+                b.Init.Add(static c => ((TreeSelect)c).SizeType = CustomizableSizeType.Large);
+                EmptyMultiple();
+                break;
+            case "OptionFontSize":
+                Tags();
+                break;
+            default:
+                inputOwn = false;
+                break;
+        }
+
+        if (!inputOwn && !FrameState(b, token, Status, Variant, LeftAddOn, Selected))
         {
             switch (token)
             {
-                case "ColorBgElevated":
+                case "HeaderHeight" or "TreeItemMargin" or "TreeItemHeaderPadding" or "TreeItemHeaderMargin":
+                    b.Popup = true;
+                    b.Init.Add(static c => ((TreeSelect)c).IsDefaultExpandAll = true);
+                    break;
+                case "TreeNodeSwitcherMargin":
+                    b.Popup = true;
+                    b.Init.Add(static c => ((TreeSelect)c).IsTreeCheckable = true);
+                    break;
+                case "TreeNodeIconMargin":
+                    b.Popup = true;
+                    b.Init.Add(static c =>
+                    {
+                        ((TreeSelect)c).IsShowIcon = true;
+                        var nodes = (TreeItemNode[])((TreeSelect)c).ItemsSource!;
+                        nodes[0] = nodes[0] with { Icon = new FolderOutlined() };
+                    });
+                    break;
+                case "NodeHoverBg" or "NodeSelectedBg":
+                    b.Popup = true;
+                    b.Arrange.Add(c =>
+                    {
+                        var item = TopLevel.GetTopLevel(c)!.GetVisualDescendants().OfType<TreeViewItem>().First();
+                        if (token == "NodeSelectedBg")
+                        {
+                            item.IsSelected = true;
+                        }
+                        else
+                        {
+                            item.GetVisualDescendants().OfType<TreeViewItemHeader>().First().IsHover = true;
+                        }
+                    });
+                    break;
+                case "FilterHighlightColor":
+                    b.Popup = true;
+                    b.Init.Add(static c => ((TreeSelect)c).IsFilterEnabled = true);
+                    b.Arrange.Add(static c => ((TreeSelect)c).FilterValue = "Leaf");
+                    break;
+                case "ColorBgElevated" or "PopupContentPadding":
                     b.Popup = true;
                     break;
                 case "MinPopupWidth":

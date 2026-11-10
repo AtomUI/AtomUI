@@ -1,3 +1,5 @@
+using Avalonia.Data;
+using Avalonia.VisualTree;
 using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
@@ -38,6 +40,8 @@ public partial class Statistic : AbstractStatistic
     }
 
     #endregion
+
+    private IDisposable? _countUpTypographyBinding;
 
     static Statistic()
     {
@@ -92,8 +96,35 @@ public partial class Statistic : AbstractStatistic
         SetCurrentValue(ContentProperty, content);
     }
     
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        ConfigureCountUpTypography();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _countUpTypographyBinding?.Dispose();
+        _countUpTypographyBinding = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void ConfigureCountUpTypography()
+    {
+        _countUpTypographyBinding?.Dispose();
+        _countUpTypographyBinding = null;
+        if (this.IsAttachedToVisualTree() && Content is StatisticCountUp countUp)
+        {
+            // This runtime Content object is not a template child: ControlTheme forbids direct child selectors, and
+            // /template/ cannot reach it. The host's explicit ContentFontSize projects at Style priority so a caller's
+            // local CountUp.FontSize still wins. Release on content replacement or visual detach.
+            _countUpTypographyBinding = countUp.Bind(FontSizeProperty, this.GetObservable(ContentFontSizeProperty), BindingPriority.Style);
+        }
+    }
+
     private void HandleContentChanged(AvaloniaPropertyChangedEventArgs e)
     {
+        ConfigureCountUpTypography();
         if (e.OldValue is StatisticCountUp oldCountUp &&
             ReferenceEquals(oldCountUp.DataContext, this))
         {

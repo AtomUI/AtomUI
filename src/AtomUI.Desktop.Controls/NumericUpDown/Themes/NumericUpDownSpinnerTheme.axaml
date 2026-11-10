@@ -19,6 +19,14 @@
              number input, which must be the keyboard stop (Ant Design InputNumber); the frame and the step buttons
              are not stops, Up / Down step the value from the input. -->
         <Setter Property="KeyboardNavigation.TabNavigation" Value="Continue" />
+        <Setter Property="HandleBg" Value="{atom:NumericUpDownTokenResource HandleBg}" />
+        <Setter Property="FilledHandleBg" Value="{atom:NumericUpDownTokenResource FilledHandleBg}" />
+        <Setter Property="HandleBorderColor" Value="{atom:NumericUpDownTokenResource HandleBorderColor}" />
+        <Setter Property="HandleHoverColor" Value="{atom:NumericUpDownTokenResource HandleHoverColor}" />
+        <Setter Property="HandleActiveBg" Value="{atom:NumericUpDownTokenResource HandleActiveBg}" />
+        <Setter Property="HandleIconSize" Value="{atom:NumericUpDownTokenResource HandleIconSize}" />
+        <Setter Property="HandlePressedColor" Value="{atom:NumericUpDownTokenResource ColorPrimaryActive}" />
+        <Setter Property="SpinnerHandleWidth" Value="{atom:NumericUpDownTokenResource HandleWidth}" />
         <Style Selector="^[IsButtonSpinnerFloatable=False]">
             <Setter Property="Template">
                 <ControlTemplate TargetType="atom:NumericUpDownSpinner">
@@ -52,7 +60,7 @@
                         <DockPanel LastChildFill="True">
                             <atom:PixelAlignedBorder
                                 DockPanel.Dock="Left"
-                                BorderBrush="{atom:ButtonSpinnerTokenResource HandleBorderColor}"
+                                BorderBrush="{atom:NumericUpDownTokenResource HandleBorderColor}"
                                 BorderThickness="{Binding $parent[atom:ButtonSpinnerDecoratedBox].BorderThickness, Converter={StaticResource NumericUpDownSpinnerRightSeparatorConverter}}"
                                 IsVisible="{TemplateBinding IsButtonSpinnerVisible}">
                                 <atom:IconButton
@@ -71,7 +79,7 @@
                             </atom:PixelAlignedBorder>
                             <atom:PixelAlignedBorder
                                 DockPanel.Dock="Right"
-                                BorderBrush="{atom:ButtonSpinnerTokenResource HandleBorderColor}"
+                                BorderBrush="{atom:NumericUpDownTokenResource HandleBorderColor}"
                                 BorderThickness="{Binding $parent[atom:ButtonSpinnerDecoratedBox].BorderThickness, Converter={StaticResource NumericUpDownSpinnerLeftSeparatorConverter}}"
                                 IsVisible="{TemplateBinding IsButtonSpinnerVisible}">
                                 <atom:IconButton
@@ -115,11 +123,11 @@
         </Style>
         <Style Selector="^[IsButtonSpinnerFloatable=False] /template/ atom|IconButton#PART_DecreaseButton:pointerover:not(:disabled),
                          ^[IsButtonSpinnerFloatable=False] /template/ atom|IconButton#PART_IncreaseButton:pointerover:not(:disabled)">
-            <Setter Property="IconBrush" Value="{atom:ButtonSpinnerTokenResource HandleHoverColor}" />
+            <Setter Property="IconBrush" Value="{atom:NumericUpDownTokenResource HandleHoverColor}" />
         </Style>
         <Style Selector="^[IsButtonSpinnerFloatable=False] /template/ atom|IconButton#PART_DecreaseButton:pressed:not(:disabled),
                          ^[IsButtonSpinnerFloatable=False] /template/ atom|IconButton#PART_IncreaseButton:pressed:not(:disabled)">
-            <Setter Property="Background" Value="{atom:ButtonSpinnerTokenResource HandleActiveBg}" />
+            <Setter Property="Background" Value="{atom:NumericUpDownTokenResource HandleActiveBg}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

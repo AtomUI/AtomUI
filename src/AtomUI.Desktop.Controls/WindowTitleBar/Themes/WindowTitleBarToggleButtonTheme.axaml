@@ -46,27 +46,27 @@
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="Padding" Value="{atom:WindowTitleBarTokenResource CaptionButtonPadding}" />
-    <Setter Property="IconWidth" Value="{atom:WindowTitleBarTokenResource CaptionButtonIconSize}" />
-    <Setter Property="IconHeight" Value="{atom:WindowTitleBarTokenResource CaptionButtonIconSize}" />
+    <Setter Property="Padding" Value="{atom:WindowTitleBarToggleButtonTokenResource CaptionButtonPadding}" />
+    <Setter Property="IconWidth" Value="{atom:WindowTitleBarToggleButtonTokenResource CaptionButtonIconSize}" />
+    <Setter Property="IconHeight" Value="{atom:WindowTitleBarToggleButtonTokenResource CaptionButtonIconSize}" />
     <Setter Property="CornerRadius" Value="{atom:WindowTitleBarToggleButtonTokenResource BorderRadiusSM}" />
-    <Setter Property="Background" Value="{atom:WindowTitleBarTokenResource ActiveBgColor}" />
-    <Setter Property="IconBrush" Value="{atom:WindowTitleBarTokenResource ActiveColor}" />
+    <Setter Property="Background" Value="{atom:WindowTitleBarToggleButtonTokenResource ActiveBgColor}" />
+    <Setter Property="IconBrush" Value="{atom:WindowTitleBarToggleButtonTokenResource ActiveColor}" />
 
     <Style Selector="^[IsWindowActive=False]">
-        <Setter Property="Background" Value="{atom:WindowTitleBarTokenResource InactiveBgColor}" />
-        <Setter Property="IconBrush" Value="{atom:WindowTitleBarTokenResource InactiveColor}" />
+        <Setter Property="Background" Value="{atom:WindowTitleBarToggleButtonTokenResource InactiveBgColor}" />
+        <Setter Property="IconBrush" Value="{atom:WindowTitleBarToggleButtonTokenResource InactiveColor}" />
         <Style Selector="^:pointerover">
-            <Setter Property="Background" Value="{atom:WindowTitleBarTokenResource InactiveHoverBgColor}" />
+            <Setter Property="Background" Value="{atom:WindowTitleBarToggleButtonTokenResource InactiveHoverBgColor}" />
         </Style>
     </Style>
 
-    <Style Selector="^:pointerover">
-        <Setter Property="Background" Value="{atom:WindowTitleBarTokenResource ActiveHoverBgColor}" />
+    <Style Selector="^[IsWindowActive=True]:pointerover">
+        <Setter Property="Background" Value="{atom:WindowTitleBarToggleButtonTokenResource ActiveHoverBgColor}" />
     </Style>
 
     <Style Selector="^:pressed">
-        <Setter Property="Background" Value="{atom:WindowTitleBarTokenResource ActivePressedBgColor}" />
+        <Setter Property="Background" Value="{atom:WindowTitleBarToggleButtonTokenResource ActivePressedBgColor}" />
     </Style>
 
     <Style Selector="^:disabled">
@@ -79,13 +79,13 @@
     </Style>
 
     <Style Selector="^[HostOsType=macOS]">
-        <Setter Property="CornerRadius" Value="{atom:WindowTitleBarTokenResource CaptionButtonCornerRadius}" />
+        <Setter Property="CornerRadius" Value="{atom:WindowTitleBarToggleButtonTokenResource CaptionButtonCornerRadius}" />
     </Style>
 
     <Style Selector="^[HostOsType=Linux]">
-        <Setter Property="CornerRadius" Value="{atom:WindowTitleBarTokenResource CaptionButtonCornerRadius}" />
+        <Setter Property="CornerRadius" Value="{atom:WindowTitleBarToggleButtonTokenResource CaptionButtonCornerRadius}" />
         <Style Selector="^ /template/ atom|CaptionButtonFrame">
-            <Setter Property="BackgroundInset" Value="{atom:WindowTitleBarTokenResource CaptionButtonBackgroundInset}" />
+            <Setter Property="BackgroundInset" Value="{atom:WindowTitleBarToggleButtonTokenResource CaptionButtonBackgroundInset}" />
         </Style>
     </Style>
 
@@ -97,19 +97,19 @@
         <Setter Property="Background" Value="Transparent" />
 
         <Style Selector="^:pointerover">
-            <Setter Property="Background" Value="{atom:WindowTitleBarTokenResource ActiveHoverBgColor}" />
+            <Setter Property="Background" Value="{atom:WindowTitleBarToggleButtonTokenResource ActiveHoverBgColor}" />
         </Style>
 
         <Style Selector="^[IsWindowActive=False]">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="IconBrush" Value="{atom:WindowTitleBarTokenResource InactiveColor}" />
+            <Setter Property="IconBrush" Value="{atom:WindowTitleBarToggleButtonTokenResource InactiveColor}" />
             <Style Selector="^:pointerover">
-                <Setter Property="Background" Value="{atom:WindowTitleBarTokenResource InactiveHoverBgColor}" />
+                <Setter Property="Background" Value="{atom:WindowTitleBarToggleButtonTokenResource InactiveHoverBgColor}" />
             </Style>
         </Style>
 
         <Style Selector="^:pressed">
-            <Setter Property="Background" Value="{atom:WindowTitleBarTokenResource ActivePressedBgColor}" />
+            <Setter Property="Background" Value="{atom:WindowTitleBarToggleButtonTokenResource ActivePressedBgColor}" />
         </Style>
 
         <Style Selector="^:disabled">

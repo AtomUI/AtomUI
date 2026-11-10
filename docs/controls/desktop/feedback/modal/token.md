@@ -42,7 +42,7 @@ Modal 的控件专项模型通过 Theme 消费 Token：
   没有 Token 身份，Overlay presenter 以 Dialog 为继承父级，部件继承 Dialog（或 MessageBox）为 Token owner，以
   `OwnerTokenResource` 读取全局 Token（`BorderRadiusLG`、`BoxShadows`、`FontWeightStrong`、`MotionDurationMid/Slow`、
   `ColorBgMask`、标题栏按钮的 `ColorIcon` / `ColorBgText*` / `BorderRadiusSM`、`IconSize`、`SpacingSM`），
-  `Controls[Dialog]` 与 `Controls[MessageBox]` 分别作用于各自的 surface。Dialog Own Token 仍以 `DialogTokenResource` 读取。
+  `Controls[Dialog]` 与 `Controls[MessageBox]` 分别作用于各自的 surface。共享 AbstractDialogToken 的 Own 由 Dialog / MessageBox 各自终端主题读入具体 surface 输入。
 - `MessageBoxContent` 只属于 MessageBox，以 `MessageBoxTokenResource` 显式读取状态色与图标间距。对话框正文位于 surface 的
   `Skeleton` 中；Skeleton 是 Token owner 透明控件，正文内容继承 Dialog（或 MessageBox）为 owner。
 - 最大化的 Overlay surface 通过 `^[IsDialogMaximized=True]` 状态 Setter 去掉圆角，不再由 presenter 写本地值；恢复后回到主题圆角。
@@ -50,9 +50,7 @@ Modal 的控件专项模型通过 Theme 消费 Token：
 - 主题包定制（PrimeNG 预设）：Dialog 圆角经 `Controls[Dialog].BorderRadiusLG`，正文内边距 `ContentPadding`，标题字号
   `HeaderFontSize`，标题字重 `FontWeightStrong`，均有生效测试。
 
-已知限制：MessageBox 的 surface 读取 Dialog Own Token（`DialogTokenResource`），因而跟随 `Controls[Dialog]`，待 Task 10.10
-抽象 Token 层统一；Window 宿主的 surface 位于注册控件 `Window`（DialogWindow 以 Window 为 StyleKey）之下，owner 读取解析到
-Window，Window 宿主下这些读取不可见（标题栏隐藏、圆角为 0、阴影仅 Overlay 使用）。
+MessageBox 具有独立的完整 surface Own，MinWidth 默认410（Dialog 默认200），StyleIconSize 为 MessageBox 专属。Window/Overlay surface 都显式跟随真实 Dialog/MessageBox owner；原生窗口装饰继续使用 Window 身份。
 
 ## 4. 控件家族影响
 
@@ -81,3 +79,7 @@ Window，Window 宿主下这些读取不可见（标题栏隐藏、圆角为 0�
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 独立 Token 身份与共享计算
+
+原 `Controls[Dialog]` 配置不再改变 MessageBox。窗口 surface 通过有释放路径的现有 owner forwarding 连接真实 dialog；Own 样式输入沿逻辑父链跨根传播，关闭/释放 presenter 时清理绑定。

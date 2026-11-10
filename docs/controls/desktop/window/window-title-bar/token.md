@@ -130,3 +130,7 @@ SharedToken
 - Token 名称或默认值变化核对 generated `WindowTitleBarTokenKind`、`WindowTitleBarTokenResource` 和全部 AXAML 引用。
 
 文档改动执行 `git diff --check`。Token 默认值或 Theme 映射变化运行 `WindowTitleBarTokenTests`、`ImagePreviewerTitleBarThemeTests` 以及相关 Window 主题测试。
+
+## 独立 Token 身份与共享计算
+
+WindowTitleBarButton / WindowTitleBarToggleButton 为独立公开动作控件，各有实际颜色、图标与padding Own，复用 AbstractTitleBarActionToken；不会随 WindowTitleBar Own 覆盖改变。CaptionButtonCornerRadius 只属于两个 AddOn 按钮，原 WindowTitleBar 配置需迁移；原生 caption 仍按实际布局求圆角。Inactive hover 使用各自 InactiveHoverBgColor，避免被 active hover Setter 覆盖。Window 装饰与真正 caption/host 部件继续遵循已有 Window/WindowTitleBar 宿主契约。

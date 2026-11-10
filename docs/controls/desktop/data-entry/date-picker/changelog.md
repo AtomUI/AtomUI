@@ -25,6 +25,10 @@
 - Fixed
   - DatePicker / RangeDatePicker 的可聚焦外框在键盘聚焦时不再画焦点框（经 `InputControlFrameTheme` 统一设置空 `FocusAdorner`），7e40bc14a 只覆盖了宿主，遗漏了外框。
 
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
 ## 2026-11-09
 
 - Theme

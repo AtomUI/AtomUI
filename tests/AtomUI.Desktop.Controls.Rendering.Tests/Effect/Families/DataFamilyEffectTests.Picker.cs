@@ -186,6 +186,11 @@ public partial class DataFamilyEffectTests
     public void RangeDatePicker_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
+        if (token is "RangePickerArrowMargin" or "RangePickerIndicatorThickness" or "RangeMarginToAnchor")
+        {
+            AssertRangeInputToken(PickerKind.RangeDate, token);
+            return;
+        }
         RunPicker(PickerSetup(PickerKind.RangeDate, token), RangeDatePickerTokens.Identity, token);
     }
 
@@ -202,6 +207,11 @@ public partial class DataFamilyEffectTests
     public void RangeTimePicker_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
+        if (token is "RangePickerArrowMargin" or "RangePickerIndicatorThickness" or "RangeMarginToAnchor")
+        {
+            AssertRangeInputToken(PickerKind.RangeTime, token);
+            return;
+        }
         RunPicker(PickerSetup(PickerKind.RangeTime, token), RangeTimePickerTokens.Identity, token);
     }
 
@@ -209,23 +219,8 @@ public partial class DataFamilyEffectTests
     /// The InfoPickerInput Own Tokens (and their bases). InfoPickerInput is an abstract identity: its Own Tokens are read by
     /// the shared range theme and run on a RangeDatePicker; its global reads resolve to the concrete picker (rows above).
     /// </summary>
-    public static IEnumerable<object[]> InfoPickerInputRows() =>
-        MapRows("InfoPickerInput").Where(static row => (bool)row[1] || s_infoPickerInputOwnBases.Contains((string)row[0]));
-
-    private static readonly HashSet<string> s_infoPickerInputOwnBases = new(StringComparer.Ordinal)
+    private static void AssertRangeInputToken(PickerKind requestedKind, string token)
     {
-        "LineWidthFocus", "UniformlyMarginXS"
-    };
-
-    /// <remarks>
-    /// The harness reads the overridden Token back from the Control under test, and an abstract identity cannot be read on a
-    /// concrete picker: the override is applied to <c>Controls[InfoPickerInput]</c> and the frames are compared directly.
-    /// </remarks>
-    [Theory]
-    [MemberData(nameof(InfoPickerInputRows))]
-    public void InfoPickerInput_Token_Has_Effect(string token, bool isOwn)
-    {
-        _ = isOwn;
         var (value, kind, popup, active) = token switch
         {
             // The popup's distance from the input (the range time picker reads it).
@@ -237,6 +232,8 @@ public partial class DataFamilyEffectTests
             "UniformlyMarginXS" => ("24", PickerKind.RangeDate, false, false),
             _ => throw new ArgumentOutOfRangeException(nameof(token), token, null)
         };
+        kind = requestedKind;
+        var identity = kind == PickerKind.RangeDate ? RangeDatePickerTokens.Identity : RangeTimePickerTokens.Identity;
         var picker = CreatePicker(kind);
         picker.IsPopupPinnedOpen = popup;
         var host = PickerOverlayHost(picker);
@@ -253,11 +250,10 @@ public partial class DataFamilyEffectTests
             }
 
             using var before = capture();
-            provider.Config = IsolationConfig(control: (AtomUI.Desktop.Controls.Primitives.DesignTokens.InfoPickerInputTokens.Identity,
-                token, value));
+            provider.Config = IsolationConfig(control: (identity, token, value));
             using var after = capture();
             // The popup moves within the host; the other Tokens change the input.
-            ChangedRatioOf(before, after, popup ? host : picker).ShouldBeGreaterThan(0.001, $"Controls[InfoPickerInput].{token}");
+            ChangedRatioOf(before, after, popup ? host : picker).ShouldBeGreaterThan(0.001, $"Controls[{identity}].{token}");
             if (active)
             {
                 // The thicker active bar stays on the bottom edge of the input frame.
@@ -602,6 +598,12 @@ public partial class DataFamilyEffectTests
                 break;
 
             // ---- popup: date panel header, cells, buttons and time view ----
+            case "RangePanelSpacing":
+                b.Popup = true;
+                break;
+            case "HeaderMargin":
+                b.TimeView();
+                break;
             case "HeaderBorderThickness" or "ControlHeight" when b.IsDate:
                 b.Popup = true;
                 break;

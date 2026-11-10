@@ -312,69 +312,75 @@ public partial class NavigationFamilyEffectTests
         Run(scenario.Create, scenario.Arrange, TabControlTokens.Identity, token, scenario.Options);
     }
 
-    private static NavScenario TabControlScenario(string token)
+    private static NavScenario TabControlScenario(string token, TabKind kind = TabKind.Line)
     {
+        if (kind is TabKind.Card or TabKind.CardStrip && token == "UniformlyPaddingXS")
+        {
+            return Tabs(kind, null, placement: Dock.Left);
+        }
         switch (token)
         {
+            case "BorderRadius" or "BorderRadiusLG" or "BorderRadiusSM":
+                return TabHostScenario(kind, token);
             // ---- card tabs and card strips draw the card Own Tokens: compare the card host -------------------------
             case "CardBg" or "ColorFillAlter" or "CardSize" or "ControlHeightLG" or "CardPadding" or "RelativeLineHeight" or
-                "LineWidth" or "CardGutter" or "UniformlyMarginXXS":
-                return Beside(TabKind.Card, addButton: true);
+                "LineWidth" or "CardGutter":
+                return Tabs(kind, null, addButton: true);
             case "AddTabButtonMarginHorizontal":
-                return Beside(TabKind.Card, addButton: true, region: AddButtonOf);
+                return Tabs(kind, null, addButton: true, options: new EffectOptions { Region = AddButtonOf });
             case "CardPaddingSM" or "UniformlyPaddingXXS":
-                return Beside(TabKind.Card, size: SizeType.Small);
+                return Tabs(kind, null, size: SizeType.Small);
             case "CardPaddingLG":
-                return Beside(TabKind.Card, size: SizeType.Large);
+                return Tabs(kind, null, size: SizeType.Large);
             case "VerticalItemPadding":
-                return Beside(TabKind.Card, placement: Dock.Left);
+                return Tabs(kind, null, placement: Dock.Left);
             case "AddTabButtonMarginVertical":
-                return Beside(TabKind.Card, placement: Dock.Left, addButton: true, region: AddButtonOf);
+                return Tabs(kind, null, placement: Dock.Left, addButton: true, options: new EffectOptions { Region = AddButtonOf });
 
             // ---- line tabs --------------------------------------------------------------------------------------
             case "ItemHoverColor" or "ColorPrimaryHover":
-                return Tabs(TabKind.Line, static host => Pseudo(TabOf(host, "Tab 2"), ":pointerover"),
+                return Tabs(kind, static host => Pseudo(TabOf(host, "Tab 2"), ":pointerover"),
                     options: new EffectOptions { Region = static host => TabOf(host, "Tab 2") });
             case "ItemSelectedColor" or "ColorPrimary":
-                return Tabs(TabKind.Line, null, options: new EffectOptions { Region = static host => TabOf(host, "Tab 1") });
+                return Tabs(kind, null, options: new EffectOptions { Region = static host => TabOf(host, "Tab 1") });
             case "InkBarColor" or "InkBarThickness" or "LineWidthBold":
-                return Tabs(TabKind.Line, null,
+                return Tabs(kind, null,
                     options: new EffectOptions { Region = static host => Descendant<Avalonia.Controls.Border>(host, "PART_SelectedItemIndicator") });
             case "TitleFontSizeLG" or "FontSizeLG" or "HorizontalItemPaddingLG" or "UniformlyPadding":
-                return Tabs(TabKind.Line, null, size: SizeType.Large);
+                return Tabs(kind, null, size: SizeType.Large);
             case "TitleFontSizeSM" or "HorizontalItemPaddingSM" or "UniformlyPaddingXS":
-                return Tabs(TabKind.Line, null, size: SizeType.Small);
+                return Tabs(kind, null, size: SizeType.Small);
             case "VerticalItemGutter" or "SpacingXXS":
-                return Tabs(TabKind.Line, null, placement: Dock.Left);
-            case "CloseIconMargin":
-                return Tabs(TabKind.Line, null, options: new EffectOptions { Region = static host => TabOf(host, "Closable") });
+                return Tabs(kind, null, placement: Dock.Left);
+            case "CloseIconMargin" or "UniformlyMarginXXS":
+                return Tabs(kind, null, options: new EffectOptions { Region = static host => TabOf(host, "Closable") });
             case "ItemIconMargin" or "UniformlyMarginSM":
-                return Tabs(TabKind.Line, null, options: new EffectOptions { Region = static host => TabOf(host, "Tab 1") });
+                return Tabs(kind, null, options: new EffectOptions { Region = static host => TabOf(host, "Tab 1") });
 
             // ---- overflow: menu button, edge shadows ----------------------------------------------------------------
             // Each shadow is compared around its caster; negative offsets perturb outward (away from the caster) so the
             // shadow reaches further into the tabs.
             case "BoxShadowTabsOverflowLeft":
-                return EdgeShadow(Dock.Top, start: true, "18 0 16 -8 #29000000");
+                return EdgeShadow(Dock.Top, start: true, "18 0 16 -8 #29000000", kind);
             case "BoxShadowTabsOverflowRight":
-                return EdgeShadow(Dock.Top, start: false, "-18 0 16 -8 #29000000");
+                return EdgeShadow(Dock.Top, start: false, "-18 0 16 -8 #29000000", kind);
             case "BoxShadowTabsOverflowTop":
-                return EdgeShadow(Dock.Left, start: true, "0 18 16 -8 #29000000");
+                return EdgeShadow(Dock.Left, start: true, "0 18 16 -8 #29000000", kind);
             case "BoxShadowTabsOverflowBottom":
-                return EdgeShadow(Dock.Left, start: false, "0 -18 16 -8 #29000000");
+                return EdgeShadow(Dock.Left, start: false, "0 -18 16 -8 #29000000", kind);
             case "MenuIndicatorPaddingHorizontal":
-                return Tabs(TabKind.Line, null, count: 20, width: 360, options: new EffectOptions { Region = MenuIndicatorOf });
+                return Tabs(kind, null, count: 20, width: 360, options: new EffectOptions { Region = MenuIndicatorOf });
             case "MenuIndicatorPaddingVertical":
-                return Tabs(TabKind.Line, null, placement: Dock.Left, count: 20, options: new EffectOptions { Region = MenuIndicatorOf });
+                return Tabs(kind, null, placement: Dock.Left, count: 20, options: new EffectOptions { Region = MenuIndicatorOf });
             case "ColorBgElevated" or "IconSizeSM":
-                return Overflow(TabKind.Line, host => OverflowMenuPart(host, token));
+                return Overflow(kind, host => OverflowMenuPart(host, token));
 
             // ---- the line host's separator, header extra content, scroll viewer -----------------------------------
             case "BorderThickness" or "ColorBorderSecondary" or "SpacingXS" or "ColorTextSecondary" or "IconSize":
-                return TabHostScenario(TabKind.Line, token);
+                return TabHostScenario(kind, token);
 
             default:
-                return Tabs(TabKind.Line, null);
+                return Tabs(kind, null);
         }
     }
 
@@ -382,8 +388,8 @@ public partial class NavigationFamilyEffectTests
     private static Control AddButtonOf(Control host) => Descendant<IconButton>(host, "PART_AddTabButton");
 
     /// <summary>A scrolled-to-middle overflowing line TabControl; the start or end edge shadow caster is compared.</summary>
-    private static NavScenario EdgeShadow(Dock placement, bool start, string perturbed) =>
-        Tabs(TabKind.Line, static host => ScrollToMiddle(host), placement: placement, count: 20,
+    private static NavScenario EdgeShadow(Dock placement, bool start, string perturbed, TabKind kind = TabKind.Line) =>
+        Tabs(kind, static host => ScrollToMiddle(host), placement: placement, count: 20,
             width: placement is Dock.Top or Dock.Bottom ? 360 : 520,
             options: new EffectOptions
             {
@@ -422,7 +428,7 @@ public partial class NavigationFamilyEffectTests
     public void CardTabControl_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
-        var scenario = TabHostScenario(TabKind.Card, token);
+        var scenario = TabControlScenario(token, TabKind.Card);
         Run(scenario.Create, scenario.Arrange, CardTabControlTokens.Identity, token, scenario.Options);
     }
 
@@ -434,7 +440,7 @@ public partial class NavigationFamilyEffectTests
     public void TabStrip_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
-        var scenario = TabHostScenario(TabKind.Strip, token);
+        var scenario = TabControlScenario(token, TabKind.Strip);
         Run(scenario.Create, scenario.Arrange, TabStripTokens.Identity, token, scenario.Options);
     }
 
@@ -446,7 +452,7 @@ public partial class NavigationFamilyEffectTests
     public void CardTabStrip_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
-        var scenario = TabHostScenario(TabKind.CardStrip, token);
+        var scenario = TabControlScenario(token, TabKind.CardStrip);
         Run(scenario.Create, scenario.Arrange, CardTabStripTokens.Identity, token, scenario.Options);
     }
 

@@ -32,6 +32,27 @@ public partial class ButtonFamilyEffectTests
             ButtonTokens.Identity, token);
     }
 
+    public static IEnumerable<object[]> SubmitButtonRows() => EffectTestData.For("AtomUI", "SubmitButton");
+    public static IEnumerable<object[]> ResetButtonRows() => EffectTestData.For("AtomUI", "ResetButton");
+
+    [Theory]
+    [MemberData(nameof(SubmitButtonRows))]
+    public void SubmitButton_Token_Has_Effect(string token, bool isOwn)
+    {
+        _ = isOwn;
+        Run(ButtonSetup(token, static () => new SubmitButton { Content = "Submit", ButtonType = ButtonType.Default }, isDropdown: false),
+            SubmitButtonTokens.Identity, token);
+    }
+
+    [Theory]
+    [MemberData(nameof(ResetButtonRows))]
+    public void ResetButton_Token_Has_Effect(string token, bool isOwn)
+    {
+        _ = isOwn;
+        Run(ButtonSetup(token, static () => new ResetButton { Content = "Reset" }, isDropdown: false),
+            ResetButtonTokens.Identity, token);
+    }
+
     // ---- HyperLinkButton --------------------------------------------------------------------
 
     public static IEnumerable<object[]> HyperLinkButtonRows() => EffectTestData.For("AtomUI", "HyperLinkButton");

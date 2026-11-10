@@ -57,7 +57,7 @@ public partial class FeedbackFamilyEffectTests
     /// MessageBox carries the dialog parts; its message content part (single host) reads the MessageBox TokenResource and
     /// is a map row of the MessageBox.
     /// </summary>
-    public static IEnumerable<object[]> MessageBoxRows() => OwnerRows("MessageBox", s_dialogParts);
+    public static IEnumerable<object[]> MessageBoxRows() => OwnerRows("MessageBox", s_dialogParts).Where(static row => !s_windowHostedOnly.Contains((string)row[0]));
 
     public static IEnumerable<object[]> DialogButtonBoxRows() => MapRows("DialogButtonBox");
 
@@ -99,6 +99,14 @@ public partial class FeedbackFamilyEffectTests
         var create = CreateDialogRoot(d =>
         {
             d.IsModal = token == "ColorBgMask";
+            if (token is "LogoSize" or "SizeLG" or "SpacingSM")
+            {
+                d.TitleIcon = new AtomUI.Icons.AntDesign.InfoCircleFilled();
+            }
+            if (token is "LoadingIndicatorMargin" or "UniformlyMargin")
+            {
+                d.IsLoading = true;
+            }
         }, () => new MessageBox { Style = style, Icon = new AtomUI.Icons.AntDesign.ExclamationCircleFilled() });
         Run(create.Root, arrange, MessageBoxTokens.Identity, token,
             new EffectOptions { Target = create.Target, Region = region, Perturb = perturb });
@@ -149,17 +157,18 @@ public partial class FeedbackFamilyEffectTests
         });
     }
 
-    [Fact]
-    public void Window_Hosted_Dialog_Content_Padding_Follows_The_Dialog_Tokens()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Window_Hosted_Dialog_Content_Padding_Follows_The_Dialog_Tokens(bool messageBox)
     {
         // The native dialog window renders outside the test window; assert the padding its content frame takes.
-        var dialog = new Dialog
-        {
-            Title          = "Window dialog",
-            Content        = new AvaloniaTextBlock { Text = "Some contents..." },
-            DialogHostType = DialogHostType.Window,
-            IsModal        = false
-        };
+        Dialog dialog = messageBox ? new MessageBox() : new Dialog();
+        dialog.Title = "Window dialog";
+        dialog.Content = new AvaloniaTextBlock { Text = "Some contents..." };
+        dialog.DialogHostType = DialogHostType.Window;
+        dialog.IsModal = false;
+        var identity = messageBox ? MessageBoxTokens.Identity : DialogTokens.Identity;
         WithProvider(new Panel { Children = { dialog } }, provider =>
         {
             var presenter = new WindowDialogPresenter(dialog, TopLevel.GetTopLevel(dialog).ShouldNotBeNull());
@@ -171,14 +180,16 @@ public partial class FeedbackFamilyEffectTests
                 var frame = WaitForVisual(() => surface.GetVisualDescendants().OfType<AvaloniaBorder>()
                                                        .FirstOrDefault(static b => b.Name == "ContentFrame"),
                     "The window-hosted dialog content");
-                frame.Padding.ShouldBe(ControlTokenAccessor.Capture(dialog).GetOwn<Thickness>(DialogTokenKind.WindowContentPadding));
+                frame.Padding.ShouldBe(messageBox
+                    ? ControlTokenAccessor.Capture<MessageBox>(dialog).GetOwn<Thickness>(MessageBoxTokenKind.WindowContentPadding)
+                    : ControlTokenAccessor.Capture<Dialog>(dialog).GetOwn<Thickness>(DialogTokenKind.WindowContentPadding));
 
                 var padding = new Thickness(40, 30, 40, 30);
-                provider.Config = WithControlToken(DialogTokens.Identity, "WindowContentPadding", "40,30,40,30");
+                provider.Config = WithControlToken(identity, "WindowContentPadding", "40,30,40,30");
                 WaitFor(() => frame.Padding == padding);
                 frame.Padding.ShouldBe(padding);
 
-                provider.Config = WithControlToken(DialogTokens.Identity, "PaddingContentVerticalLG", "28");
+                provider.Config = WithControlToken(identity, "PaddingContentVerticalLG", "28");
                 WaitFor(() => frame.Padding.Top == 28);
                 frame.Padding.Top.ShouldBe(28);
                 frame.Padding.Bottom.ShouldBe(28);

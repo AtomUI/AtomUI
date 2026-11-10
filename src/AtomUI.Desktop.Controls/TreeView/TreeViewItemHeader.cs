@@ -12,7 +12,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(TreeViewPseudoClass.NodeToggleTypeCheckBox, TreeViewPseudoClass.NodeToggleTypeRadio, TreeViewPseudoClass.KeyboardActive)]
-internal class TreeViewItemHeader : ContentControl
+internal partial class TreeViewItemHeader : ContentControl
 {
     public static readonly StyledProperty<bool> IsExpandedProperty =
         TreeViewItem.IsExpandedProperty.AddOwner<TreeViewItemHeader>();

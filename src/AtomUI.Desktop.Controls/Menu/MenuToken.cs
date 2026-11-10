@@ -7,7 +7,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class MenuToken : AbstractControlDesignToken
+internal sealed class MenuToken : AbstractMenuPopupToken
 {
 
     public MenuToken()
@@ -15,100 +15,24 @@ internal sealed class MenuToken : AbstractControlDesignToken
     {
     }
 
-    /// <summary>
-    /// 菜单内容边距
-    /// </summary>
-    public Thickness MenuPopupContentPadding { get; set; }
 
-    /// <summary>
-    /// 菜单 Popup 最小宽度
-    /// </summary>
-    public double MenuPopupMinWidth { get; set; }
 
-    /// <summary>
-    /// 菜单 Popup 最大宽度
-    /// </summary>
-    public double MenuPopupMaxWidth { get; set; }
 
-    /// <summary>
-    /// 菜单弹出框背景色
-    /// </summary>
-    public Color MenuPopupBgColor { get; set; }
 
-    /// <summary>
-    /// 菜单项文字颜色
-    /// </summary>
-    public Color ItemColor { get; set; }
 
-    /// <summary>
-    /// 快捷键颜色
-    /// </summary>
-    public Color KeyGestureColor { get; set; }
 
-    /// <summary>
-    /// 菜单项边距
-    /// </summary>
-    public Thickness ItemMargin { get; set; }
 
-    /// <summary>
-    /// 菜单项文字悬浮颜色
-    /// </summary>
-    public Color ItemHoverColor { get; set; }
 
-    /// <summary>
-    /// 菜单项文字禁用颜色
-    /// </summary>
-    public Color ItemDisabledColor { get; set; }
 
-    /// <summary>
-    /// 危险菜单项文字颜色
-    /// </summary>
-    public Color DangerItemColor { get; set; }
 
-    /// <summary>
-    /// 危险菜单项文字悬浮颜色
-    /// </summary>
-    public Color DangerItemHoverColor { get; set; }
 
-    /// <summary>
-    /// 菜单项背景色
-    /// </summary>
-    public Color ItemBg { get; set; }
 
-    /// <summary>
-    /// 菜单项悬浮态背景色
-    /// </summary>
-    public Color ItemHoverBg { get; set; }
 
-    /// <summary>
-    /// 菜单项高度
-    /// </summary>
-    public double ItemHeight { get; set; }
 
-    /// <summary>
-    /// 图标尺寸
-    /// </summary>
-    public double ItemIconSize { get; set; }
 
-    /// <summary>
-    /// 图标与文字间距（图标的行内结束侧外边距）
-    /// </summary>
-    public double ItemIconMarginInlineEnd { get; set; }
 
-    /// <summary>
-    /// 菜单分组标题内间距
-    /// </summary>
-    public Thickness GroupTitlePadding { get; set; }
 
-    /// <summary>
-    /// 菜单项的圆角
-    /// </summary>
-    public CornerRadius ItemBorderRadius { get; set; }
 
-    /// <summary>
-    /// 菜单项横向内间距
-    /// </summary>
-    public Thickness ItemPaddingInline { get; set; }
 
     /// <summary>
     /// 顶层菜单项颜色
@@ -205,24 +129,17 @@ internal sealed class MenuToken : AbstractControlDesignToken
     /// </summary>
     public double TopLevelItemPopupMarginToAnchor { get; set; }
 
-    /// <summary>
-    /// 菜单分割项的高度
-    /// </summary>
-    public double SeparatorItemHeight { get; set; }
 
-    /// <summary>
-    /// 上下文菜单水平位移
-    /// </summary>
-    public double ContextMenuOffsetX { get; set; }
 
-    /// <summary>
-    /// 上下文菜单垂直位移
-    /// </summary>
-    public double ContextMenuOffsetY { get; set; }
 
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
+        if (!IsExplicit(MenuTokenKind.ItemColor))
+        {
+            ItemColor = EffectiveGlobalToken.ColorText;
+        }
+        ItemHoverColor = ItemColor;
 
         var colorTextDisabled  = EffectiveGlobalToken.ColorTextDisabled;
         var colorError         = EffectiveGlobalToken.ColorError;
@@ -237,35 +154,7 @@ internal sealed class MenuToken : AbstractControlDesignToken
         var fontSize   = EffectiveGlobalToken.FontSize;
         var fontSizeLG = EffectiveGlobalToken.FontSizeLG;
 
-        KeyGestureColor  = colorTextSecondary;
-        ItemBorderRadius = EffectiveGlobalToken.BorderRadius;
 
-        if (!IsExplicit(MenuTokenKind.ItemColor))
-        {
-            ItemColor        = EffectiveGlobalToken.ColorText;
-        }
-
-        ItemHoverColor   = ItemColor;
-        ItemBg           = colorBgElevated;
-        ItemHoverBg      = colorBgTextHover;
-        ItemMargin       = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXXS, 0);
-
-        ItemDisabledColor = colorTextDisabled;
-
-        DangerItemColor      = colorError;
-        DangerItemHoverColor = colorError;
-
-        if (!IsExplicit(MenuTokenKind.ItemHeight))
-        {
-            ItemHeight       = controlHeight;
-        }
-
-        MenuPopupBgColor = EffectiveGlobalToken.ColorBgElevated;
-
-        ItemPaddingInline       = new Thickness(padding, EffectiveGlobalToken.UniformlyPaddingXXS);
-        ItemIconSize            = EffectiveGlobalToken.IconSize;
-        ItemIconMarginInlineEnd = EffectiveGlobalToken.UniformlyMarginXXS;
-        GroupTitlePadding       = new Thickness(padding, EffectiveGlobalToken.UniformlyPaddingXS);
 
         TopLevelItemColor         = EffectiveGlobalToken.ColorText;
         TopLevelItemSelectedColor = EffectiveGlobalToken.ColorTextSecondary;
@@ -319,16 +208,6 @@ internal sealed class MenuToken : AbstractControlDesignToken
 
         TopLevelItemPopupMarginToAnchor = EffectiveGlobalToken.UniformlyMarginXXS;
 
-        MenuPopupMinWidth = 120;
-        MenuPopupMaxWidth = 800;
-
-        SeparatorItemHeight = EffectiveGlobalToken.LineWidth * 5;
-
-        MenuPopupContentPadding =
-            new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, EffectiveGlobalToken.BorderRadiusLG.TopLeft / 2);
-
-        ContextMenuOffsetX = EffectiveGlobalToken.SpacingXXS;
-        ContextMenuOffsetY = EffectiveGlobalToken.SpacingXXS;
     }
 
 }

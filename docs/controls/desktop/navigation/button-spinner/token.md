@@ -71,3 +71,7 @@ NumericUpDown）；`ButtonSpinnerDecoratedBoxTheme`、`ButtonSpinnerHandleTheme`
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 独立 Token 身份与共享计算
+
+ButtonSpinner 与 NumericUpDown 共享 AbstractButtonSpinnerToken 的7个有效步进柄字段，由各自终端主题向柄传递具体样式值。原 `ControlWidth` 保留为 ButtonSpinner 的 Reserved 字段；NumericUpDown 不新增该无效果承诺。

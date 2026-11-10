@@ -1,4 +1,4 @@
-<ControlTheme xmlns="https://github.com/avaloniaui"
+<ControlTheme xmlns:tokeninputs="using:AtomUI.Desktop.Controls.Internal.DateViewer" xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
@@ -10,7 +10,7 @@
         <atom:CornerRadiusFilterConverter x:Key="StartCorners" TopRight="False" BottomRight="False" />
         <atom:CornerRadiusFilterConverter x:Key="EndCorners" TopLeft="False" BottomLeft="False" />
     </ControlTheme.Resources>
-    <Setter Property="MinHeight" Value="{atom:DateViewerTokenResource CellRowHeight}" />
+    <Setter Property="MinHeight" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellRowHeight)}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="viewer:DateViewerCell">
             <Border Name="PART_CellRoot" Background="Transparent">
@@ -18,11 +18,11 @@
                     <Border Name="PART_CellSurface" Grid.RowSpan="2" />
                     <Grid Grid.Row="0" ColumnDefinitions="*,*">
                         <Border Name="PART_RangeMiddle" Grid.ColumnSpan="2" IsVisible="False"
-                                Background="{atom:DateViewerTokenResource CellRangeBg}" />
+                                Background="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellRangeBg)}" />
                         <Border Name="PART_RangeStart" Grid.Column="1" IsVisible="False"
-                                Background="{atom:DateViewerTokenResource CellRangeBg}" />
+                                Background="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellRangeBg)}" />
                         <Border Name="PART_RangeEnd" Grid.Column="0" IsVisible="False"
-                                Background="{atom:DateViewerTokenResource CellRangeBg}" />
+                                Background="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellRangeBg)}" />
                         <Border Name="PART_WeekSelection" Grid.ColumnSpan="2" />
                     </Grid>
                     <!-- The cell has no focus visual of its own, so the shared outline wraps the rounded value
@@ -49,8 +49,8 @@
         <Setter Property="Background" Value="{TemplateBinding Background}" />
         <Setter Property="BorderBrush" Value="{TemplateBinding BorderBrush}" />
         <Setter Property="BorderThickness" Value="{TemplateBinding BorderThickness}" />
-        <Setter Property="MinWidth" Value="{atom:DateViewerTokenResource CellWidth}" />
-        <Setter Property="MinHeight" Value="{atom:DateViewerTokenResource CellHeight}" />
+        <Setter Property="MinWidth" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellWidth)}" />
+        <Setter Property="MinHeight" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellHeight)}" />
         <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
     </Style>
     <Style Selector="^[IsMotionEnabled=True] /template/ Border#PART_ValueFrame">
@@ -83,8 +83,8 @@
         <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
     </Style>
     <Style Selector="^:month /template/ Border#PART_ValueFrame, ^:quarter /template/ Border#PART_ValueFrame, ^:year /template/ Border#PART_ValueFrame">
-        <Setter Property="Width" Value="{atom:DateViewerTokenResource PeriodCellWidth}" />
-        <Setter Property="Padding" Value="{atom:DateViewerTokenResource PeriodCellPadding}" />
+        <Setter Property="Width" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemePeriodCellWidth)}" />
+        <Setter Property="Padding" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemePeriodCellPadding)}" />
     </Style>
     <Style Selector="^:visual-endpoint:not(:disabled), ^:navigation-current:not(:disabled)">
         <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimary}" />
@@ -118,7 +118,7 @@
         <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimary}" />
     </Style>
     <Style Selector="^:week-mode:range-middle /template/ Border#PART_WeekSelection, ^:week-mode:range-preview-middle /template/ Border#PART_WeekSelection">
-        <Setter Property="Background" Value="{atom:DateViewerTokenResource CellRangeBg}" />
+        <Setter Property="Background" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellRangeBg)}" />
     </Style>
     <Style Selector="^:week-selection-start /template/ Border#PART_WeekSelection">
         <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource StartCorners}}" />
@@ -133,12 +133,12 @@
         <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource EndCorners}}" />
     </Style>
     <Style Selector="^ /template/ Border#PART_RangeMiddle, ^ /template/ Border#PART_RangeStart, ^ /template/ Border#PART_RangeEnd, ^ /template/ Border#PART_WeekSelection">
-        <Setter Property="Height" Value="{atom:DateViewerTokenResource CellHeight}" />
+        <Setter Property="Height" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellHeight)}" />
         <Setter Property="VerticalAlignment" Value="Bottom" />
     </Style>
     <!-- :hovered also marks the cell a picker input reaches with navigation keys while the pointer is elsewhere. -->
     <Style Selector="^:pointerover:not(:week-mode):not(:selected):not(:disabled):not(:navigation-current):not(:range-start):not(:range-middle):not(:range-end):not(:range-preview-start):not(:range-preview-middle):not(:range-preview-end):not(:week-selection-start):not(:week-selection-middle):not(:week-selection-end), ^:hovered:not(:week-mode):not(:selected):not(:disabled):not(:navigation-current):not(:range-start):not(:range-middle):not(:range-end):not(:range-preview-start):not(:range-preview-middle):not(:range-preview-end):not(:week-selection-start):not(:week-selection-middle):not(:week-selection-end)">
-        <Setter Property="Background" Value="{atom:DateViewerTokenResource CellHoverBg}" />
+        <Setter Property="Background" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellHoverBg)}" />
     </Style>
     <Style Selector="^:outside">
         <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
@@ -150,7 +150,7 @@
         <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextLightSolid}" />
     </Style>
     <Style Selector="^:week-mode:week /template/ atom|TextBlock#PART_Value">
-        <Setter Property="Opacity" Value="{atom:DateViewerTokenResource WeekNumberOpacity}" />
+        <Setter Property="Opacity" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeWeekNumberOpacity)}" />
     </Style>
     <Style Selector="^:disabled">
         <Setter Property="Cursor" Value="Arrow" />
@@ -169,22 +169,22 @@
         <Setter Property="IsVisible" Value="False" />
     </Style>
     <Style Selector="^[Presentation=Content]">
-        <Setter Property="MinHeight" Value="{atom:DateViewerTokenResource ContentCellMinHeight}" />
+        <Setter Property="MinHeight" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeContentCellMinHeight)}" />
     </Style>
     <Style Selector="^[Presentation=Content] /template/ Border#PART_CellSurface">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
-        <Setter Property="BorderThickness" Value="{atom:DateViewerTokenResource ContentCellTopBorderThickness}" />
-        <Setter Property="Margin" Value="{atom:DateViewerTokenResource ContentCellSurfaceMargin}" />
+        <Setter Property="BorderThickness" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeContentCellTopBorderThickness)}" />
+        <Setter Property="Margin" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeContentCellSurfaceMargin)}" />
     </Style>
     <Style Selector="^[Presentation=Content] /template/ Border#PART_ValueFrame">
-        <Setter Property="Margin" Value="{atom:DateViewerTokenResource ContentCellValueMargin}" />
+        <Setter Property="Margin" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeContentCellValueMargin)}" />
     </Style>
     <Style Selector="^[Presentation=Content] /template/ ContentControl#PART_CellContent">
-        <Setter Property="Margin" Value="{atom:DateViewerTokenResource ContentCellContentMargin}" />
+        <Setter Property="Margin" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeContentCellContentMargin)}" />
     </Style>
     <Style Selector="^[Presentation=Content]:full-template /template/ ContentControl#PART_CellContent">
-        <Setter Property="Margin" Value="{atom:DateViewerTokenResource ContentCellValueMargin}" />
+        <Setter Property="Margin" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeContentCellValueMargin)}" />
     </Style>
     <Style Selector="^[Presentation=Content][IsMotionEnabled=True] /template/ Border#PART_CellSurface">
         <Setter Property="Transitions">

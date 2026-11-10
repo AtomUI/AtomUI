@@ -9,19 +9,19 @@
         </ControlTheme.BasedOn>
         
         <Style Selector="^:is(atom|ImagePreviewNavButton)">
-            <Setter Property="IconWidth" Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}"/>
-            <Setter Property="IconHeight" Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}"/>
-            <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource NavButtonBgColor}"/>
-            <Setter Property="IconBrush" Value="{atom:ImagePreviewerTokenResource ColorTextLightSolid}"/>
-            <Setter Property="Padding" Value="{atom:ImagePreviewerTokenResource PaddingXS}"/>
+            <Setter Property="IconWidth" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationSize)}"/>
+            <Setter Property="IconHeight" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationSize)}"/>
+            <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgColor)}"/>
+            <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemeColorTextLightSolid)}"/>
+            <Setter Property="Padding" Value="{Binding $self.(atom:ImageViewer.ThemePaddingXS)}"/>
         
             <Style Selector="^:pointerover">
-                <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource NavButtonBgHoverColor}"/>
+                <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgHoverColor)}"/>
             </Style>
         
             <Style Selector="^:disabled">
                 <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="IconBrush" Value="{atom:ImagePreviewerTokenResource PreviewOperationColorDisabled}"/>
+                <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationColorDisabled)}"/>
             </Style>
         </Style>
 

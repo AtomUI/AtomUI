@@ -85,7 +85,6 @@
                             AcceptsReturn="False"
                             DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                             SizeType="Custom"
-                            IsCustomFontSize="{TemplateBinding IsCustomFontSize}"
                             IsReadOnly="{TemplateBinding IsReadOnly}"
                             Text="{TemplateBinding Text, Mode=TwoWay}"
                             PlaceholderText="{TemplateBinding PlaceholderText}"
@@ -179,8 +178,7 @@
                                 AcceptsReturn="False"
                                 DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                                 SizeType="Custom"
-                                IsCustomFontSize="{TemplateBinding IsCustomFontSize}"
-                                IsReadOnly="{TemplateBinding IsReadOnly}"
+                                    IsReadOnly="{TemplateBinding IsReadOnly}"
                                 Text="{TemplateBinding Text, Mode=TwoWay}"
                                 TextAlignment="Center"
                                 PlaceholderText="{TemplateBinding PlaceholderText}"
@@ -196,11 +194,19 @@
         <Setter Property="IsMotionEnabled"
                 Value="{atom:NumericUpDownTokenResource EnableMotion}" />
         <Setter Property="SpinnerHandleWidth"
-                Value="{atom:ButtonSpinnerTokenResource HandleWidth}" />
+                Value="{atom:NumericUpDownTokenResource HandleWidth}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <!-- The focus shadow of the input frame paints outside the control. -->
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="FontSize" Value="{atom:NumericUpDownTokenResource FontSize}" />
+        <!-- The embedded editor remains Custom and receives the host typography; it must not run its own Custom=Middle font selector. -->
+        <Style Selector="^[SizeType=Small][IsCustomFontSize=False]">
+            <Setter Property="FontSize" Value="{atom:NumericUpDownTokenResource FontSize}" />
+        </Style>
+        <Style Selector="^[SizeType=Large][IsCustomFontSize=False]">
+            <Setter Property="FontSize" Value="{atom:NumericUpDownTokenResource FontSizeLG}" />
+        </Style>
         <Setter Property="PlaceholderForeground" Value="{atom:NumericUpDownTokenResource ColorTextPlaceholder}" />
 
     </ControlTheme>

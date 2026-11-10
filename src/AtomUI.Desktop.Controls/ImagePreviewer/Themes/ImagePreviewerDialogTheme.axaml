@@ -18,13 +18,13 @@
     <Setter Property="IsPinCaptionButtonVisible" Value="False" />
     <Setter Property="ImageScaleX" Value="1.0" />
     <Setter Property="ImageScaleY" Value="1.0" />
-    <Setter Property="MinWidth" Value="{atom:ImagePreviewerTokenResource DialogMinWidth}" />
-    <Setter Property="MinHeight" Value="{atom:ImagePreviewerTokenResource DialogMinHeight}" />
-    <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource ColorBgLayout}" />
+    <Setter Property="MinWidth" Value="{Binding $self.(atom:ImageViewer.ThemeDialogMinWidth)}" />
+    <Setter Property="MinHeight" Value="{Binding $self.(atom:ImageViewer.ThemeDialogMinHeight)}" />
+    <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeColorBgLayout)}" />
     <Setter Property="TitleBarFrameBackground"
-            Value="{atom:ImagePreviewerTokenResource TitleBarBackgroundColor}" />
+            Value="{Binding $self.(atom:ImageViewer.ThemeTitleBarBackgroundColor)}" />
 
     <Style Selector="^ /template/ atom|ImagePreviewNavButton">
-        <Setter Property="Margin" Value="{atom:ImagePreviewerTokenResource MarginSM}" />
+        <Setter Property="Margin" Value="{Binding $self.(atom:ImageViewer.ThemeMarginSM)}" />
     </Style>
 </ControlTheme>

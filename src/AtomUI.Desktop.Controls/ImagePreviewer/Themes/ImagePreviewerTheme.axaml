@@ -5,6 +5,38 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ImagePreviewer}" TargetType="atom:ImagePreviewer">
+        <Setter Property="atom:ImageViewer.ThemeColorBgLayout" Value="{atom:ImagePreviewerTokenResource ColorBgLayout}" />
+        <Setter Property="atom:ImageViewer.ThemeColorBgMask" Value="{atom:ImagePreviewerTokenResource ColorBgMask}" />
+        <Setter Property="atom:ImageViewer.ThemeColorBgTextActive" Value="{atom:ImagePreviewerTokenResource ColorBgTextActive}" />
+        <Setter Property="atom:ImageViewer.ThemeColorBgTextHover" Value="{atom:ImagePreviewerTokenResource ColorBgTextHover}" />
+        <Setter Property="atom:ImageViewer.ThemeColorFillTertiary" Value="{atom:ImagePreviewerTokenResource ColorFillTertiary}" />
+        <Setter Property="atom:ImageViewer.ThemeColorTextLightSolid" Value="{atom:ImagePreviewerTokenResource ColorTextLightSolid}" />
+        <Setter Property="atom:ImageViewer.ThemeColorTextTertiary" Value="{atom:ImagePreviewerTokenResource ColorTextTertiary}" />
+        <Setter Property="atom:ImageViewer.ThemeControlHeightSM" Value="{atom:ImagePreviewerTokenResource ControlHeightSM}" />
+        <Setter Property="atom:ImageViewer.ThemeCoverImageWidth" Value="{atom:ImagePreviewerTokenResource CoverImageWidth}" />
+        <Setter Property="atom:ImageViewer.ThemeDialogMinHeight" Value="{atom:ImagePreviewerTokenResource DialogMinHeight}" />
+        <Setter Property="atom:ImageViewer.ThemeDialogMinWidth" Value="{atom:ImagePreviewerTokenResource DialogMinWidth}" />
+        <Setter Property="atom:ImageViewer.ThemeEnableMotion" Value="{atom:ImagePreviewerTokenResource EnableMotion}" />
+        <Setter Property="atom:ImageViewer.ThemeErrorIconSize" Value="{atom:ImagePreviewerTokenResource ErrorIconSize}" />
+        <Setter Property="atom:ImageViewer.ThemeFloatToolbarIndicatorPadding" Value="{atom:ImagePreviewerTokenResource FloatToolbarIndicatorPadding}" />
+        <Setter Property="atom:ImageViewer.ThemeFloatToolbarPadding" Value="{atom:ImagePreviewerTokenResource FloatToolbarPadding}" />
+        <Setter Property="atom:ImageViewer.ThemeIconSize" Value="{atom:ImagePreviewerTokenResource IconSize}" />
+        <Setter Property="atom:ImageViewer.ThemeIconSizeLG" Value="{atom:ImagePreviewerTokenResource IconSizeLG}" />
+        <Setter Property="atom:ImageViewer.ThemeMarginSM" Value="{atom:ImagePreviewerTokenResource MarginSM}" />
+        <Setter Property="atom:ImageViewer.ThemeMarginXL" Value="{atom:ImagePreviewerTokenResource MarginXL}" />
+        <Setter Property="atom:ImageViewer.ThemeMaskBgColor" Value="{atom:ImagePreviewerTokenResource MaskBgColor}" />
+        <Setter Property="atom:ImageViewer.ThemeNavButtonBgColor" Value="{atom:ImagePreviewerTokenResource NavButtonBgColor}" />
+        <Setter Property="atom:ImageViewer.ThemeNavButtonBgHoverColor" Value="{atom:ImagePreviewerTokenResource NavButtonBgHoverColor}" />
+        <Setter Property="atom:ImageViewer.ThemePaddingSM" Value="{atom:ImagePreviewerTokenResource PaddingSM}" />
+        <Setter Property="atom:ImageViewer.ThemePaddingXS" Value="{atom:ImagePreviewerTokenResource PaddingXS}" />
+        <Setter Property="atom:ImageViewer.ThemePreviewOperationColor" Value="{atom:ImagePreviewerTokenResource PreviewOperationColor}" />
+        <Setter Property="atom:ImageViewer.ThemePreviewOperationColorDisabled" Value="{atom:ImagePreviewerTokenResource PreviewOperationColorDisabled}" />
+        <Setter Property="atom:ImageViewer.ThemePreviewOperationHoverColor" Value="{atom:ImagePreviewerTokenResource PreviewOperationHoverColor}" />
+        <Setter Property="atom:ImageViewer.ThemePreviewOperationSize" Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}" />
+        <Setter Property="atom:ImageViewer.ThemeSpacing" Value="{atom:ImagePreviewerTokenResource Spacing}" />
+        <Setter Property="atom:ImageViewer.ThemeSpacingXXS" Value="{atom:ImagePreviewerTokenResource SpacingXXS}" />
+        <Setter Property="atom:ImageViewer.ThemeTitleBarBackgroundColor" Value="{atom:ImagePreviewerTokenResource TitleBarBackgroundColor}" />
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder Background="{TemplateBinding Background}"
@@ -34,15 +66,15 @@
         
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
-        <Setter Property="IsMotionEnabled" Value="{atom:ImagePreviewerTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{Binding $self.(atom:ImageViewer.ThemeEnableMotion)}" />
         
         <Setter Property="CoverIndicatorContentTemplate">
             <DataTemplate>
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Spacing="{atom:ImagePreviewerTokenResource SpacingXXS}">
-                    <antdicons:EyeOutlined StrokeBrush="{atom:ImagePreviewerTokenResource ColorTextLightSolid}"/>
+                            Spacing="{Binding $self.(atom:ImageViewer.ThemeSpacingXXS)}">
+                    <antdicons:EyeOutlined StrokeBrush="{Binding $self.(atom:ImageViewer.ThemeColorTextLightSolid)}"/>
                     <TextBlock
                         Text="{atom:ImagePreviewerLangResource Preview}" />
                 </StackPanel>

@@ -65,6 +65,7 @@ public partial class ButtonFamilyEffectTests
         WithPair(search, new Border(), (provider, capture) =>
         {
             var searchButton = search.GetVisualDescendants().OfType<AtomButton>().First();
+            ThemeScope.GetTokenOwner(searchButton).ShouldBe(ButtonTokens.Identity);
             var baseline     = BrushColor(searchButton.Background);
             baseline.ShouldNotBe(Color.Parse(OverrideColor));
 

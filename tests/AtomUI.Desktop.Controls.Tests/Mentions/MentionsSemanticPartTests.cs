@@ -45,6 +45,36 @@ public class MentionsSemanticPartTests
     }
 
     [Fact]
+    public void Dedicated_Axaml_Styles_Reach_Internal_Editor_And_Tree_Themes()
+    {
+        var view = new IdentityConsistencySemanticView();
+        var mentions = view.FindControl<AtomUIMentions>("Mentions").ShouldNotBeNull();
+        var autoComplete = view.FindControl<AutoCompleteTextArea>("AutoComplete").ShouldNotBeNull();
+        var treeSelect = view.FindControl<AtomUI.Desktop.Controls.TreeSelect>("TreeSelect").ShouldNotBeNull();
+        treeSelect.ItemsSource = new[] { new TreeItemNode { Header = "Leaf", Value = "leaf", IsLeaf = true } };
+        var window = CreateWindow(view);
+        try
+        {
+            var mentionInput = mentions.GetVisualDescendants().OfType<TextPresenter>()
+                .Single(static input => input.Classes.Contains("semantic-textarea"));
+            var autoInput = autoComplete.GetVisualDescendants().OfType<TextPresenter>()
+                .Single(static input => input.Classes.Contains("semantic-textarea"));
+            mentionInput.Opacity.ShouldBe(0.71);
+            autoInput.Opacity.ShouldBe(0.61);
+            treeSelect.IsPopupPinnedOpen = true;
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            var tree = window.GetVisualDescendants().OfType<TreeSelectTreeView>().Single();
+            tree.Opacity.ShouldBe(0.63);
+        }
+        finally
+        {
+            treeSelect.IsPopupPinnedOpen = false;
+            window.Close();
+        }
+    }
+
+    [Fact]
     public void Registered_Descriptor_Exposes_Only_The_Approved_Mentions_Parts()
     {
         var registry = Application.Current.ShouldNotBeNull()

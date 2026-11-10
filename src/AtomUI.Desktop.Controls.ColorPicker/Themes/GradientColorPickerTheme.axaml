@@ -35,7 +35,14 @@
                             <Panel VerticalAlignment="Center">
                                 <WrapPanel Name="PART_ColorTextPanel"
                                            Classes.semantic-description="True"
-                                           IsVisible="{TemplateBinding IsTextVisible}" />
+                                           IsVisible="{TemplateBinding IsTextVisible}">
+                                    <WrapPanel.Styles>
+                                        <Style Selector=":is(TextBlock).active-stop">
+                                            <Setter Property="Foreground"
+                                                    Value="{CompiledBinding $parent[atom:GradientColorPicker].InactiveStopTextColor}" />
+                                        </Style>
+                                    </WrapPanel.Styles>
+                                </WrapPanel>
                             </Panel>
                         </DockPanel>
                     </atom:PixelAlignedBorder>

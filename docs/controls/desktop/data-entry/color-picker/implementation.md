@@ -176,7 +176,11 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 
 ## 8. 资源、性能与 AOT 边界
 
-四个公开终端从自身 TokenResource 读取 Own，经 `ColorPickerThemeInputs` 的具体可继承属性传给共享模板；抽象 Token 层只复用公式。Popup 中公开 View 与 NumericUpDown / LineEdit 等公开输入框保持独立身份，View 明确指定数值编辑器的紧凑字号及布局。
+渐变 trigger 代码只按当前 stop index 维护文本子节点的 active-stop 样式类。ControlTheme 对该类编译绑定宿主当前 InactiveStopTextColor；取消激活后由面板 TextElement.Foreground 继承，局部主题发布及禁用往返不会保留一次性拷贝的画刷，用户本地前景仍优先。
+
+四个公开终端从自身 TokenResource 读取 Own，经 `ColorPickerThemeInputs` 的具体可继承属性传给共享模板；抽象 Token 层只复用公式。Popup 中公开 View 的动效默认来自自身 EnableMotion；运行时宿主只绑定内部 HostIsMotionEnabled 输入，false 状态由 AXAML Setter 关闭 View 动效，用户显式 View.IsMotionEnabled 本地值仍优先。该 Content 节点不在 trigger 模板 selector 链内，宿主输入沿既有一致生命周期绑定传递。
+
+Popup 中公开 View 与 NumericUpDown / LineEdit 等公开输入框保持独立身份，View 明确指定数值编辑器的紧凑字号及布局。
 
 预设项位于公开 Collapse 之后：Collapse 保留自身身份，`PaletteColorItem` 在 attach 时复用 `TokenOwnerForwarding` 跟随 PaletteGroup，detach 时释放并清除转发值。ThemeScope 的 internal attached setter 无法从 AXAML 访问。WrapPanel 间距通过 PaletteGroup 的普通 PaletteSpacing 属性声明式传入。勾选 Icon 保持自身身份，前景由 PaletteColorItem.CheckedMarkForeground 明确投射；分隔线保留 BorderBrush，厚度经既有过滤转换器只取左边。
 

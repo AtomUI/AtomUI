@@ -2,6 +2,8 @@ using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
 using Avalonia;
+using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -159,6 +161,116 @@ public partial class ColorPickerFamilyEffectTests
             provider.Child = null;
             using var detached = capture();
             swatch.IsSet(ThemeScope.TokenOwnerProperty).ShouldBeFalse();
+        });
+    }
+    [Theory]
+    [InlineData("selected")]
+    [InlineData("closed")]
+    [InlineData("disabled")]
+    [InlineData("user-local")]
+    public void Gradient_Labels_Follow_Live_Tokens_After_Stop_And_Close_History(string phase)
+    {
+        var picker = (GradientColorPicker)Create("GradientColorPicker", "ColorText");
+        WithIsolationWindow(OverlayLayerHost(picker, 700, 550), (provider, capture) =>
+        {
+            picker.IsPickerOpen = true;
+            using var opened = capture();
+            var labels = picker.GetVisualDescendants().OfType<WrapPanel>().Single(p => p.Name == "PART_ColorTextPanel")
+                .Children.OfType<Avalonia.Controls.TextBlock>().ToArray();
+            if (phase == "user-local")
+            {
+                labels[0].Foreground = Brushes.Magenta;
+            }
+            var view = (GradientColorPickerView)picker.PickerPresenter!;
+            var thumb = view.GetVisualDescendants().OfType<GradientColorSliderThumb>().Last();
+            var window = (Avalonia.Controls.Window)TopLevel.GetTopLevel(picker)!;
+            var point = thumb.TranslatePoint(new Point(thumb.Bounds.Width / 2, thumb.Bounds.Height / 2), window)!.Value;
+            window.MouseMove(point);
+            window.MouseDown(point, MouseButton.Left);
+            window.MouseUp(point, MouseButton.Left);
+            using var selected = capture();
+            picker.ActivatedStopIndex.ShouldBe(1);
+            if (phase == "selected")
+            {
+                labels[1].Foreground.ShouldBe(picker.InactiveStopTextColor);
+                provider.Config = IsolationConfig(control: (GradientColorPickerTokens.Identity, "ColorTextDisabled", "#ff00b96b"));
+                using var live = capture();
+                ((ISolidColorBrush)picker.InactiveStopTextColor!).Color.ShouldBe(Color.Parse("#ff00b96b"));
+                ((ISolidColorBrush)labels[1].Foreground!).Color.ShouldBe(Color.Parse("#ff00b96b"));
+                ChangedRatioOf(selected, live, labels[1]).ShouldBeGreaterThan(0);
+                return;
+            }
+            picker.IsPickerOpen = false;
+            using var closed = capture();
+            picker.ActivatedStopIndex.ShouldBeNull();
+            if (phase == "closed")
+            {
+                provider.Config = IsolationConfig(control: (GradientColorPickerTokens.Identity, "ColorText", "#ff00b96b"));
+                using var live = capture();
+                labels.ShouldAllBe(label => ((ISolidColorBrush)label.Foreground!).Color == Color.Parse("#ff00b96b"));
+                ChangedRatioOf(closed, live, labels[0]).ShouldBeGreaterThan(0);
+            }
+            else if (phase == "disabled")
+            {
+                var enabledColor = ((ISolidColorBrush)labels[0].Foreground!).Color;
+                picker.IsEnabled = false;
+                using var disabled = capture();
+                labels.ShouldAllBe(label => ((ISolidColorBrush)label.Foreground!).Color == ((ISolidColorBrush)picker.InactiveStopTextColor!).Color);
+                ChangedRatioOf(closed, disabled, labels[0]).ShouldBeGreaterThan(0);
+                picker.IsEnabled = true;
+                using var enabled = capture();
+                labels.ShouldAllBe(label => ((ISolidColorBrush)label.Foreground!).Color == enabledColor);
+            }
+            else
+            {
+                labels[0].Foreground.ShouldBe(Brushes.Magenta);
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData("ColorPicker")]
+    [InlineData("GradientColorPicker")]
+    public void Popup_Motion_Uses_View_Default_Host_Disable_Gate_And_User_Local_Priority(string id)
+    {
+        var picker = (AbstractColorPicker)Create(id, "ColorBorder");
+        WithIsolationWindow(OverlayLayerHost(picker, 700, 550), (provider, capture) =>
+        {
+            ThemeConfig Motion(string? control = null, bool enabled = true) =>
+                control is null ? new ThemeConfigBuilder().WithToken("EnableMotion", "true").Build()
+                : new ThemeConfigBuilder().WithToken("EnableMotion", "true")
+                    .WithControl(Identity(control), new ControlThemeConfigBuilder().WithToken("EnableMotion", enabled ? "true" : "false").Build()).Build();
+            provider.Config = Motion();
+            using var initial = capture();
+            picker.IsPickerOpen = true;
+            using var opened = capture();
+            var view = (AbstractColorPickerView)picker.PickerPresenter!;
+            picker.IsMotionEnabled.ShouldBeTrue();
+            view.IsMotionEnabled.ShouldBeTrue();
+            provider.Config = Motion(id + "View", false);
+            using var viewOff = capture();
+            picker.IsMotionEnabled.ShouldBeTrue();
+            view.IsMotionEnabled.ShouldBeFalse();
+            provider.Config = Motion();
+            using var viewOn = capture();
+            view.IsMotionEnabled.ShouldBeTrue();
+            provider.Config = Motion(id, false);
+            using var hostOff = capture();
+            picker.IsMotionEnabled.ShouldBeFalse();
+            view.IsMotionEnabled.ShouldBeFalse();
+            view.IsMotionEnabled = true;
+            using var userOn = capture();
+            view.IsMotionEnabled.ShouldBeTrue();
+            view.ClearValue(AbstractColorPickerView.IsMotionEnabledProperty);
+            using var userCleared = capture();
+            view.IsMotionEnabled.ShouldBeFalse();
+            provider.Config = Motion();
+            using var hostOn = capture();
+            view.IsMotionEnabled.ShouldBeTrue();
+            view.IsMotionEnabled = false;
+            provider.Config = Motion(id + "View", true);
+            using var userOff = capture();
+            view.IsMotionEnabled.ShouldBeFalse();
         });
     }
 }

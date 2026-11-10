@@ -15,6 +15,9 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="Padding" Value="{atom:OwnerTokenResource PaddingXXS}" />
+        <Style Selector="^[HostIsMotionEnabled=False]">
+            <Setter Property="IsMotionEnabled" Value="False" />
+        </Style>
         <Style Selector="^ /template/ atom|GradientColorSlider#PART_GradientColorSlider">
             <Setter Property="IsVisible" Value="False"/>
         </Style>

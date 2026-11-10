@@ -39,7 +39,7 @@ ColorPicker 的控件专项模型通过 Theme 消费 Token：
 
 ## 4. 控件家族影响
 
-四终端的 Own 和有效全局覆盖互不串用。Popup 中公开 View 保持自己的身份；其中公开 NumericUpDown、LineEdit、ComboBox 和 Button 也保留各自身份。数值编辑器的 11px 字号由父 View 明确指定，用户本地 FontSize 仍优先；此场景不能声称 NumericUpDown.FontSize 会穿透父字号。
+四终端的 Own 和有效全局覆盖互不串用。Popup View 的 EnableMotion 默认独立生效；trigger 的 IsMotionEnabled=false 是宿主禁用门控，用户显式设置 View.IsMotionEnabled 本地值仍拥有更高优先级。Popup 中公开 View 保持自己的身份；其中公开 NumericUpDown、LineEdit、ComboBox 和 Button 也保留各自身份。数值编辑器的 11px 字号由父 View 明确指定，用户本地 FontSize 仍优先；此场景不能声称 NumericUpDown.FontSize 会穿透父字号。
 
 调整 ColorPicker Token 时必须评估以下范围：
 

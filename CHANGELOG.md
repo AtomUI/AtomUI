@@ -7,6 +7,7 @@ All notable changes to AtomUI are documented in this file.
 ## Unreleased
 
 - ColorPicker
+  - Gradient stop labels now update during live token publication and disabled/enabled transitions; closing restores the panel ColorText inheritance instead of retaining a copied trigger brush, while preserving local foregrounds. Popup Views honor their own EnableMotion default, with a trigger-false disable gate and explicit View local values taking priority.
   - ColorPicker, GradientColorPicker and both public Views use independent effective tokens. Public popup Views and nested editors retain their own scopes; palette swatches follow their View across Collapse.
   - Alpha input width and numeric handle width now affect their real editors; preserve the existing 48px alpha, 16px handle, 11px compact font and 262px row. Preset check marks now paint their intended light/dark contrast brush through FillBrush/StrokeBrush (Foreground alone did not paint the icon). The empty-colour slash now uses ColorError/LineWidthBold; the light-swatch check uses ColorTextSecondary instead of fixed rgba(0,0,0,.45).
 

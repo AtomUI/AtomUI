@@ -2,6 +2,12 @@
 
 本文档记录 ColorPicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 渐变 stop 文本通过动态状态样式读取当前前景，修复选择后主题发布、关闭后文字颜色与禁用往返更新；保留用户本地画刷。
+  - Popup View 动效默认读取自身 EnableMotion，trigger false 作为内部宿主门控，用户 View 本地值优先。
+
 ## 2026-11-10
 
 - Theme

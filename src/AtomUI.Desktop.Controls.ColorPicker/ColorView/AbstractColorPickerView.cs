@@ -184,6 +184,9 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
 
     #region 内部属性定义
 
+    internal static readonly StyledProperty<bool> HostIsMotionEnabledProperty =
+        AvaloniaProperty.Register<AbstractColorPickerView, bool>(nameof(HostIsMotionEnabled), true);
+
 #pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     internal static readonly StyledProperty<HsvColor> HsvValueProperty =
         AvaloniaProperty.Register<AbstractColorPickerView, HsvColor>(
@@ -208,6 +211,12 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
         AvaloniaProperty.RegisterDirect<AbstractColorPickerView, IBrush>(
             nameof(HsvColorWithoutAlphaBrush),
             o => o.HsvColorWithoutAlphaBrush);
+
+    internal bool HostIsMotionEnabled
+    {
+        get => GetValue(HostIsMotionEnabledProperty);
+        set => SetValue(HostIsMotionEnabledProperty, value);
+    }
 
     internal HsvColor HsvValue
     {

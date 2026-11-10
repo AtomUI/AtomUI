@@ -9,6 +9,7 @@ AtomUI 的重要变更记录在此文件中。
 ## Unreleased
 
 - ColorPicker
+  - 渐变 stop 文本在实时 Token 发布及禁用/启用往返后持续更新；关闭后恢复面板 ColorText 继承，不再保留拷贝的 trigger 画刷，并保留本地前景。Popup View 默认采用自身 EnableMotion，trigger false 作为关闭门控，显式 View 本地值优先。
   - ColorPicker、GradientColorPicker及两个公开View使用独立有效Token；Popup View与嵌套公开编辑器保持各自作用域，预设色项跨Collapse跟随View。
   - Alpha输入宽度和数值按钮宽度接通真实编辑器；保留原48px Alpha、16px按钮、11px紧凑字号和262px输入行。预设勾选图标通过FillBrush/StrokeBrush绘制明暗对比色（原Foreground未参与图标绘制）。空色斜线改用ColorError/LineWidthBold，浅色预设项勾选改用ColorTextSecondary（原固定rgba(0,0,0,.45)）。
 

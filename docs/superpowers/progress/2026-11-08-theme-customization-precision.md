@@ -34,7 +34,7 @@
 | 10.9a | Data 家族前半（List/Tree/Avatar/Timeline/Skeleton/Statistic/Carousel/ImagePreviewer） | 完成，最后提交 `eb8d42c85` |
 | 10.9b | Data 家族后半（Calendar/LunarCalendar、DateViewer、DatePicker/TimePicker；无基础 Table） | **完成并评审通过**：原实现及后续修复至 `3e55b3883`；本轮覆盖修复 `485ef3ba7`，定向渲染 410 / 控件 360 / 门禁 250 全过 |
 | 10.10a | 录入类剩余控件 | 完成并评审通过，`4bf2f1032`；240 / 205 / 287 定向检查通过，52 Own Active |
-| 10.10b | 展示类剩余控件 | 未开始 |
+| 10.10b | 展示类剩余控件 | 完成并评审通过：`7dcd4cdee` + `6160a423b`；58 Active / 1 Reserved，透明默认修复 7 / 310 定向通过 |
 | 10.10c | 窗口、滚动、共享基元与 Controls 包 | 未开始 |
 | 10.10d | 抽象 Token 层与一致性汇总（见计划 10.10 行） | 未开始 |
 | 11 | `AtomUI.Themes.PrimeNG` | 未开始 |
@@ -46,7 +46,7 @@
 
 ## 2. 接手步骤
 
-1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；下一任务为 10.10b，之后 c/d；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；下一任务为 10.10c，之后 10.10d；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -398,3 +398,16 @@ Task 10.10a: minor (deferred): 只读成员布局审计发现 16 个存量问题
 Task 10.10a: review PASS（0 Critical / 0 Important / 1 Minor）。独立核对最终 TRX 的 240 个用例与 52 个 Own 行、原源码 RED 31/140、固定因果 RED 18/20；205 / 287 定向输出已审阅，未重复跑测试。
 Task 10.10a: minor (deferred): `DataEntryFamilyEffectTests.MapRows` 捕获任意 ArgumentException 后返回空集，未来 OTP 消费图丢失可能保留基元行却漏掉 CellWidth/CellGap 等 Own 行；当前 52 Own 均存在。终审分拣必需成员 fail-fast 或独立 Own 集守卫。
 Task 10.10a: complete（commits `67349bc02..4bf2f1032`，review clean；minor 留台账）。计划补 Form.VerticalLabelPadding 裁决与家族基线。10.10d 另须核对有独立身份却沿 ButtonTheme 读取 Button globals/Own 的 SubmitButton/ResetButton，及 MentionTextArea/TextArea 的真实 StyleKey owner 边界。
+Task 10.10b: 起点 `9b01a7fd2` 干净工作树。初始定向 RED 55 项：53 passed / 2 failed / 0 skipped，失败为 Empty.ColorTextDescription 与 QRCode.ColorSplit 无像素效果。已枚举 68 处 Shared 读取；SpinIndicator 及 Transfer 条目容器 owner 透明属于本家族的宿主全局/动效路由，独立公开控件 Own 抽象仍留 10.10d。
+Ruling: TreeTransfer.ListWidthLG 标为 Reserved 并保留字段和默认值，不新增分页 API 来制造生效 — 唯一消费依赖 IsPaginationEnabled=True，但 TreeTransfer 没有分页 API 且视图 IsSupportPagination=false，实际生效用例为零差异 — 错了的代价：暂留一个不可定制的兼容字段；若发现受支持的真实渲染状态，需要恢复 Active 与相应测试。
+Ruling: Transfer 装饰器的宿主布局与搜索装饰量先在无身份基元根解析 OwnerTokenResource，再由 AXAML 模板绑定投射到内部 LineEdit — 直接在已注册 LineEdit 上读取 OwnerTokenResource 会得到 LineEdit 自身而非 Transfer，真实 MarginXS/装饰色用例已失败；编辑器自身身份仍独立 — 错了的代价：若某个量实际应由编辑器负责，需调整该量的归属并更新对应隔离断言。
+Ruling: Drawer 在独立 overlay 资源边界复用现有 ThemeContextResourceBridge，随打开建立、移出层释放 — 同一真实打开场景中控件访问器为局部 Red 而 Frame.Background 为 White，单变量桥接 A/B 后背景与资源查询均随局部发布变 Red，证明缺口在资源链而非 Token 计算 — 错了的代价：若边界选择或释放错误，会引入重复资源宿主、失效通知或作用域保留，需用发布、关闭重开及嵌套身份隔离契约纠正。
+Ruling: Transfer 保留继承 ListView 分组头的 FontSize/FontSizeSM 生效行，以公开 SourceView + IsGroupEnabled + ListItemData.Group 安排真实分组 — 最初直接设置 GroupListItemData.IsGroupItem 的探针被视图节点同步覆盖，不能证明分组不受支持；ListTransfer.cs 14–43 保留公开 ITransferView 实例，已有生产兼容分组路径已让两条字体行生效 — 错了的代价：若公开聚合场景安排仍不等价，需修正真实 Transfer 场景的测试，不得以错误探针删去消费者。
+Ruling: QRCode 显式 Color=null 时以 ControlTokenAccessor 的有效 ColorText 回落，并在该空值路径随主题变化重建、平衡挂载订阅 — AbstractQRCode 写死 Colors.Black 绕过控件有效主题，因果用例在 Controls[QRCode].ColorText 改变后为 0/25600 像素差异，正常非空 Color 应继续有最高优先级 — 错了的代价：依赖显式 null 永远得到不透明黑色的应用将改为主题文本色/透明度；文档需明确此变化，错误生命周期会导致重复位图工作或保留。
+Task 10.10b: implementer DONE `7dcd4cdee`（59 文件），213 生效/隔离、136 现有定向、310 门禁及最终 1+5 覆盖检查通过；58 Active / 1 Reserved。独立评审发现 HyperLinkTextBlock 新默认白底盖住 Gallery DataGrid 的悬停/选中行背景，待完整结论后由原实现者修复。
+Ruling: HyperLinkTextBlock 保持透明默认背景，同时保留显式用户 Background 到现有 PART_Text 的模板投射 — 新增 ColorBgContainer 默认绘制会在真实 Gallery DataGrid 单元格上形成不透明矩形，原场景与本地 antd typography reset 均要求透明背景，不能仅凭记录可见变化就接受回归 — 错了的代价：依赖本次未发布迁移中新默认白底的用法需显式设置 Background；如透明安排不等价，需修正真实行状态场景而非删除测试。
+Task 10.10b: review Changes requested：1 Important/P2（HyperLink 默认白底覆盖真实 DataGrid 行状态），1 Minor/P3。原实现者续修第 1 轮，保留透明默认与显式背景投射；其余资源桥接、QRCode 生命周期、覆盖和证据检查通过。
+Task 10.10b: minor (deferred): TransferItemDecorator 新增三个 internal 投射属性置于公共契约前，成员组织待终审分拣，不进入本轮功能修复。
+Task 10.10b: fix round 1/5（1 addressed，0 open；`7dcd4cdee..6160a423b`）：仅移除 HyperLink 默认 ColorBgContainer Setter，保留显式 Background 到 PART_Text 的投射。真实 Gallery BasicCaseGrid 原 5 列/4 链接/15 间距/1100×720，16 个链接×行状态严格比较默认与显式透明像素一致，并证明显式 Lime 生效；最终契约对坏 Setter 单变量回退为 RED 1/1，恢复后覆盖 7/7、门禁 310/310 通过。
+Task 10.10b: 范围复审 PASS，P2 已解决，无新增阻塞；P3 留台账。原主验收 213 / 136 记录复用，不冒充修改后重跑；最终公开消费图 HyperLink 6→5 行（移除过时背景消费），58 Own Active / 1 Reserved 不变，无临时源/探针残留。
+Task 10.10b: complete（commits `9b01a7fd2..6160a423b`，review clean；1 deferred minor）。计划基线与追加 TreeTransfer 裁决单独登记；Transfer Own 借用继续由 10.10d 负责。

@@ -641,12 +641,13 @@ Task 9 修正后 045 覆盖 `Spacing`、`ZIndex`、`*Offset` 与带符号数值�
 | --- | --- | --- | --- |
 | 10.9b Calendar / DateViewer / Picker | 105 / 4 / 0 / 1 / 14 / 5 / 0 | 对应家族路径全部 0（046 已退役） | `485ef3ba7`；定向渲染 410、控件 360、现有门禁 250 全过；范围复审 I1/I2 通过 |
 | 10.10a Form / Descriptions / Upload / Mentions / OTP / Segmented / CandidateList | 221 / 1 / 0 / 0 / 6 / 1 / 0 | 对应家族路径全部 0 | `4bf2f1032`；240 生效隔离、205 现有定向、287 门禁全过；52 Own Active，评审通过 |
+| 10.10b Transfer / Drawer / Spin / Result / Empty / QRCode / Text / BorderBeam / Adorner | 68 / 0 / 0 / 1 / 5 / 5 / 0 | 对应家族路径全部 0 | `7dcd4cdee` 主验收 213 / 136 / 310；`6160a423b` 默认透明修复后 7 / 310 定向通过并范围复审；58 Active / 1 Reserved |
 
 ## 待裁决 Own Token（Task 6 执行后填写）
 
 按控件分组列出 `ATOMUIGEN042` 报告的字段，每行裁决为 Active / Reserved（理由）/ 删除，随家族任务勾销。
 
-Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生已消费字段的基字段已按派生链计为 Active，不在此表。
+Task 6 实测共 125 个字段；10.10b 另发现 TreeTransfer.ListWidthLG 的原 Active 消费不可达，追加裁决行。被同一 `CalculateTokenValues` 用来派生已消费字段的基字段已按派生链计为 Active，不在此表。
 "所属任务"列是负责裁决该字段的家族任务；裁决结果与勾销在该任务提交里更新本表。
 
 | 包 | 控件 | 字段 | 所属任务 | 裁决 |
@@ -687,6 +688,7 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Desktop | ImagePreviewer | ImagePreviewSwitchSize | 10.9 | Reserved；新增 AtomUI 扩展 ErrorIconSize |
 | Desktop | Form | VerticalLabelPadding | 10.10a | Active（垂直标签内容下间距，默认 paddingXS；取消水平 ControlHeight 最小值；`4bf2f1032` 已评审） |
 | Desktop | WindowTitleBar | CloseHoverBackgroundColor, ClosePressedBackgroundColor, ForegroundColor, HoverBackgroundColor, PressedBackgroundColor | 10.10c | |
+| Desktop | TreeTransfer | ListWidthLG（家族实测追加，原消费在不支持的分页状态） | 10.10b | Reserved（保留字段/默认值；TreeTransfer 不支持分页，移除不可达消费；ListTransfer 的同名字段仍 Active） |
 | ColorPicker | ColorPicker | ColorPickerAlphaInputWidth, ColorPickerInputNumberHandleWidth | 14 | |
 | DataGrid | DataGrid | ExpandIconBg, ExpandIconHalfInner, ExpandIconMargin, ExpandIconScale, ExpandIconSize, FilterDropdownMenuBg, FixedHeaderSortActiveBg, HeaderFilterHoverBg, SelectionColumnWidth, SortIndicatorLayoutMargin, TableBodySortBg, TableExpandColumnWidth, TableExpandIconBg, TableFilterDropdownHeight, TableFilterDropdownSearchWidth, TableFixedHeaderSortActiveBg, TableHeaderCellSplitColor, TableHeaderFilterActiveBg, TableHeaderSortBg, TableHeaderSortHoverBg, TableSelectionColumnWidth | 14 | |
 

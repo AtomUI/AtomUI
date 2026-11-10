@@ -640,6 +640,7 @@ Task 9 修正后 045 覆盖 `Spacing`、`ZIndex`、`*Offset` 与带符号数值�
 | 家族 | 041 / 042 / 043 / 044 / 045 / 047 / 048 迁移前 | 迁移后 | 最新验收 |
 | --- | --- | --- | --- |
 | 10.9b Calendar / DateViewer / Picker | 105 / 4 / 0 / 1 / 14 / 5 / 0 | 对应家族路径全部 0（046 已退役） | `485ef3ba7`；定向渲染 410、控件 360、现有门禁 250 全过；范围复审 I1/I2 通过 |
+| 10.10a Form / Descriptions / Upload / Mentions / OTP / Segmented / CandidateList | 221 / 1 / 0 / 0 / 6 / 1 / 0 | 对应家族路径全部 0 | `4bf2f1032`；240 生效隔离、205 现有定向、287 门禁全过；52 Own Active，评审通过 |
 
 ## 待裁决 Own Token（Task 6 执行后填写）
 
@@ -684,7 +685,7 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Desktop | Carousel | ArrowOffset | 10.9 | Active |
 | Desktop | Skeleton | GradientToColor, TitleHeight | 10.9 | Active；新增 AtomUI 扩展 ImageColor；Skeleton 标为 owner 透明 |
 | Desktop | ImagePreviewer | ImagePreviewSwitchSize | 10.9 | Reserved；新增 AtomUI 扩展 ErrorIconSize |
-| Desktop | Form | VerticalLabelPadding | 10.10a | |
+| Desktop | Form | VerticalLabelPadding | 10.10a | Active（垂直标签内容下间距，默认 paddingXS；取消水平 ControlHeight 最小值；`4bf2f1032` 已评审） |
 | Desktop | WindowTitleBar | CloseHoverBackgroundColor, ClosePressedBackgroundColor, ForegroundColor, HoverBackgroundColor, PressedBackgroundColor | 10.10c | |
 | ColorPicker | ColorPicker | ColorPickerAlphaInputWidth, ColorPickerInputNumberHandleWidth | 14 | |
 | DataGrid | DataGrid | ExpandIconBg, ExpandIconHalfInner, ExpandIconMargin, ExpandIconScale, ExpandIconSize, FilterDropdownMenuBg, FixedHeaderSortActiveBg, HeaderFilterHoverBg, SelectionColumnWidth, SortIndicatorLayoutMargin, TableBodySortBg, TableExpandColumnWidth, TableExpandIconBg, TableFilterDropdownHeight, TableFilterDropdownSearchWidth, TableFixedHeaderSortActiveBg, TableHeaderCellSplitColor, TableHeaderFilterActiveBg, TableHeaderSortBg, TableHeaderSortHoverBg, TableSelectionColumnWidth | 14 | |

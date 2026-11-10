@@ -33,7 +33,7 @@
 | 10.8 | Layout / Container 家族 | 完成 |
 | 10.9a | Data 家族前半（List/Tree/Avatar/Timeline/Skeleton/Statistic/Carousel/ImagePreviewer） | 完成，最后提交 `eb8d42c85` |
 | 10.9b | Data 家族后半（Calendar/LunarCalendar、DateViewer、DatePicker/TimePicker；无基础 Table） | **完成并评审通过**：原实现及后续修复至 `3e55b3883`；本轮覆盖修复 `485ef3ba7`，定向渲染 410 / 控件 360 / 门禁 250 全过 |
-| 10.10a | 录入类剩余控件 | 已有未提交实现与生效测试，保留并等待接续验收 |
+| 10.10a | 录入类剩余控件 | 完成并评审通过，`4bf2f1032`；240 / 205 / 287 定向检查通过，52 Own Active |
 | 10.10b | 展示类剩余控件 | 未开始 |
 | 10.10c | 窗口、滚动、共享基元与 Controls 包 | 未开始 |
 | 10.10d | 抽象 Token 层与一致性汇总（见计划 10.10 行） | 未开始 |
@@ -46,7 +46,7 @@
 
 ## 2. 接手步骤
 
-1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。下一任务为 10.10a，接续保留的未提交实现与生效测试；不要重派已完成的 10.9b。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；下一任务为 10.10b，之后 c/d；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -390,3 +390,11 @@ Task 10.9b: minor (deferred): 动效测试对空 Transitions 集合可能 vacuou
 Task 10.9b: fix round 1/5（2 addressed，0 open；`21628b4fa..485ef3ba7`）：恢复四类 Picker 的 BorderRadiusSM 生效行，增加不可空覆盖守卫；新增 RangeDateViewer / RangeTimePicker 的正向、无关兄弟和根覆盖隔离。有效 RED 1 passed / 5 failed，GREEN 10/10；清理后定向 Rendering 410/410、Controls 360/360、Generator gate 250/250，0 failed / skipped。只提交两个测试文件；接手时 45 个未提交路径逐字节保持不变。
 Task 10.9b: 范围复审通过（I1/I2 ADDRESSED，0 新 Critical/Important/Minor）；未重复运行相同测试。历史原始 RED/原始报告未恢复，不冒充本轮验证记录。新门禁属于计划批准的常驻生效/契约测试，未留临时测试代码；原有 xUnit1051 和可选 DataGrid 警告留相应任务与收尾处置。
 Task 10.9b: complete（commits `eb8d42c85..485ef3ba7`，review clean；两个 deferred minor 见前条记录）。计划中的 TimePicker 裁决已核准，存量基线补家族验收增量。
+Task 10.10a: 实现者已恢复接手改动并开始定向运行；OTP 实际使用独立 OtpTextBox 模板，Mentions 使用 MentionTextArea/TextArea，初始“缺 s_textBox”判断经树拓扑核对纠正。门禁、文档与真实弹层消费仍需完成。
+Ruling: OTP 与 Mentions 按各自真实模板及编辑器消费者建立生效行，仅共享 TextBoxTheme 的 EmbeddedTextBox 子类承载 s_textBox 清单 — 真实类型分别为 OtpTextBox : Avalonia TextBox 与 MentionTextArea : TextArea，机械追加未消费主题的行会制造假承诺 — 错了的代价：若拓扑识别遗漏，将漏掉实际编辑器消费者，需以模板命中和 owner 隔离断言纠正。
+Task 10.10a: implementer DONE，commit `4bf2f1032`（66 个显式归属文件）；240/240 生效与隔离、205/205 现有定向、287/287 门禁通过，现正独立评审。52 Own 全部 Active，Form.VerticalLabelPadding 已生效，无 Reserved/删除；041 221、042 1、045 6、047 1 → 对应家族全部 0。
+Task 10.10a: carry to 10.10d：CandidateList/CandidateListItem 的 ListBox Own 借用；核对 SubmitButton/ResetButton 的注册 identity 后再判断 Button Own 读取是否为独立覆盖泄漏，不仅凭继承/文本读取新增 Token 身份。
+Task 10.10a: minor (deferred): 只读成员布局审计发现 16 个存量问题（AbstractGeneralProgressBar 4、FormItem 10、FormItemDecorator 1、CandidateList 1），本轮未新增该类问题，终审按价值分拣；047 仍可能漏检变量目标 SetValue，OTP 的实际 Width 路径已改 AXAML，分析器泛化加固留终审分拣。
+Task 10.10a: review PASS（0 Critical / 0 Important / 1 Minor）。独立核对最终 TRX 的 240 个用例与 52 个 Own 行、原源码 RED 31/140、固定因果 RED 18/20；205 / 287 定向输出已审阅，未重复跑测试。
+Task 10.10a: minor (deferred): `DataEntryFamilyEffectTests.MapRows` 捕获任意 ArgumentException 后返回空集，未来 OTP 消费图丢失可能保留基元行却漏掉 CellWidth/CellGap 等 Own 行；当前 52 Own 均存在。终审分拣必需成员 fail-fast 或独立 Own 集守卫。
+Task 10.10a: complete（commits `67349bc02..4bf2f1032`，review clean；minor 留台账）。计划补 Form.VerticalLabelPadding 裁决与家族基线。10.10d 另须核对有独立身份却沿 ButtonTheme 读取 Button globals/Own 的 SubmitButton/ResetButton，及 MentionTextArea/TextArea 的真实 StyleKey owner 边界。
